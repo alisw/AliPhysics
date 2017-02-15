@@ -71,8 +71,8 @@ AliAnalysisTaskCPV::AliAnalysisTaskCPV(const char *name)
   fITSTPCTrackCuts(0), //Track cuts
   fPIDResponse(0x0),
   fPIDCombined(0x0),
-  fGeometryCPV(0x0)
-
+  fGeometryCPV(0x0),
+  frCPV(428.3)
 {
   // Constructor
   // Output slots #0 write into a TH1 container
@@ -80,7 +80,7 @@ AliAnalysisTaskCPV::AliAnalysisTaskCPV(const char *name)
   DefineOutput(2,TList::Class());
 
   // Initialize the PHOS geometry
-  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
+  fPHOSGeo = AliPHOSGeometry::GetInstance("Run2") ;
   fGeometryCPV  = new AliPHOSCPVGeometry() ;
 
 }
@@ -223,11 +223,11 @@ void AliAnalysisTaskCPV::UserCreateOutputObjects()
   //ITS-TPC tracks matching 
   fOutputContainer1->Add(new TH1F("hITSTPCtrackN"  ,"Number of ITSTPC tracks"  ,100,0.,100.));
   fOutputContainer1->Add(new TH1F("hITSTPCtrackNinAcc"  ,"Number of ITSTPC tracks in CPV acceptance"  ,100,0.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCtrackPinAcc"  ,"Momentum of ITSTPC tracks in CPV acceptance"  ,10000,0.,10.));
-  fOutputContainer1->Add(new TH1F("hITSTPCtrackXinAcc"  ,"X coord of ITSTPC tracks on CPV plane"  ,10000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCtrackZinAcc"  ,"Z coord of ITSTPC tracks on CPV plane"  ,10000,-100.,100.));
-  fOutputContainer1->Add(new TH2F("hITSTPCtrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest track" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH2F("hITSTPCtrackInAccXZ"  ,"ITSTPC tracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCtrackPinAcc"  ,"Momentum of ITSTPC tracks in CPV acceptance"  ,100,0.,10.));
+  fOutputContainer1->Add(new TH1F("hITSTPCtrackXinAcc"  ,"X coord of ITSTPC tracks on CPV plane"  ,2000,-100.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCtrackZinAcc"  ,"Z coord of ITSTPC tracks on CPV plane"  ,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCtrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest track" ,500,-25.,25.,500,-25.,25.));
+  fOutputContainer1->Add(new TH2F("hITSTPCtrackInAccXZ"  ,"ITSTPC tracks projection on CPV module"      ,750,-75.,75.,750,-75.,75.));
   fOutputContainer1->Add(new TH1F("hITSTPCtrackProbEinAcc"  ,"Probability of ITSTPC track to be electron"  ,100,0.,1.));
   fOutputContainer1->Add(new TH1F("hITSTPCtrackProbMuinAcc"  ,"Probability of ITSTPC track to be muon"  ,100,0.,1.));
   fOutputContainer1->Add(new TH1F("hITSTPCtrackProbPiinAcc"  ,"Probability of ITSTPC track to be pion"  ,100,0.,1.));
@@ -238,196 +238,196 @@ void AliAnalysisTaskCPV::UserCreateOutputObjects()
 
 
 
-  fOutputContainer1->Add(new TH1F("hITSTPCtrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC track in CPV acceptance"  ,1000,0.,100.));
-  fOutputContainer1->Add(new TH2F("hITSTPCtrackMatchedInAccXZ"  ,"Matched ITSTPC tracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCtrackMatchedInAccP"  ,"Matched ITSTPC tracks momentum" ,1000,0.,100.));
-    fOutputContainer1->Add(new TH1F("hITSTPCtrackMatchedInAccPID"  ,"Matched ITSTPC tracks PID" ,10,0.,10.));
+  fOutputContainer1->Add(new TH1F("hITSTPCtrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC track in CPV acceptance"  ,250,0.,25.));
+  fOutputContainer1->Add(new TH2F("hITSTPCtrackMatchedInAccXZ"  ,"Matched ITSTPC tracks projection on CPV module" ,750,-75.,75.,750,-75.,75.));
+  fOutputContainer1->Add(new TH1F("hITSTPCtrackMatchedInAccP"  ,"Matched ITSTPC tracks momentum" ,100,0.,10.));
+  fOutputContainer1->Add(new TH1F("hITSTPCtrackMatchedInAccPID"  ,"Matched ITSTPC tracks PID" ,10,0.,10.));
 
-  fOutputContainer1->Add(new TH2F("hITSTPCtrackNonMatchedInAccXZ"  ,"Not Matched ITSTPC tracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCtrackNonMatchedInAccP"  ,"Not Matched ITSTPC tracks momentum" ,1000,0.,100.));
-    fOutputContainer1->Add(new TH1F("hITSTPCtrackNonMatchedInAccPID"  ,"Not Matched ITSTPC tracks PID" ,10,0.,10.));
+  fOutputContainer1->Add(new TH2F("hITSTPCtrackNonMatchedInAccXZ"  ,"Not Matched ITSTPC tracks projection on CPV module" ,750,-75.,75.,750,-75.,75.));
+  fOutputContainer1->Add(new TH1F("hITSTPCtrackNonMatchedInAccP"  ,"Not Matched ITSTPC tracks momentum" ,100,0.,10.));
+  fOutputContainer1->Add(new TH1F("hITSTPCtrackNonMatchedInAccPID"  ,"Not Matched ITSTPC tracks PID" ,10,0.,10.));
 
-  fOutputContainer1->Add(new TH2F("hCpvCluNonMatchedXZ"  ,"Not Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluNonMatchedEn"  ,"Not Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH2F("hCpvCluNonMatchedXZ"  ,"Not Matched CPV clusters" ,750,-75.,75.,750,-75.,75.));
+  fOutputContainer1->Add(new TH1F("hCpvCluNonMatchedEn"  ,"Not Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluNonMatchedN"  ,"Not Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluNonMatchedEvsN"  ,"Not Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH2F("hCpvCluNonMatchedEvsN"  ,"Not Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedXZ"  ,"Matched CPV clusters" ,750,-75.,75.,750,-75.,75.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
 
   //electron histograms
-  fOutputContainer1->Add(new TH2F("hITSTPCelectrondXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest electron" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCelectrondXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest electron" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCelectronInAccXZ"  ,"ITSTPC electrons projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCelectronDist"  ,"distance b/w CPV cluster and nearest ITSTPC electron in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCelectronDist"  ,"distance b/w CPV cluster and nearest ITSTPC electron in CPV acceptance"  ,250,0.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCelectronMatchedInAccXZ"  ,"Matched ITSTPC electrons projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCelectronMatchedInAccP"  ,"Matched ITSTPC electrons momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCelectronMatchedInAccP"  ,"Matched ITSTPC electrons momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hITSTPCelectronNonMatchedInAccXZ"  ,"Matched ITSTPC electrons projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCelectronNonMatchedInAccP"  ,"Matched ITSTPC electrons momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCelectronNonMatchedInAccP"  ,"Matched ITSTPC electrons momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hCpvCluMatchedElectronXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedElectronEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedElectronEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedElectronN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedElectronEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedElectronEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
   //high momentum histograms (P>0.5GeV/c)
-    fOutputContainer1->Add(new TH2F("hITSTPCHMtrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest HMtrack" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCHMtrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest HMtrack" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCHMtrackInAccXZ"  ,"ITSTPC HMtracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCHMtrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC HMtrack in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCHMtrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC HMtrack in CPV acceptance"  ,250,0.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCHMtrackMatchedInAccXZ"  ,"Matched ITSTPC HMtracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCHMtrackMatchedInAccP"  ,"Matched ITSTPC HMtracks momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCHMtrackMatchedInAccP"  ,"Matched ITSTPC HMtracks momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hITSTPCHMtrackNonMatchedInAccXZ"  ,"Matched ITSTPC HMtracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCHMtrackNonMatchedInAccP"  ,"Matched ITSTPC HMtracks momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCHMtrackNonMatchedInAccP"  ,"Matched ITSTPC HMtracks momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hCpvCluMatchedHMtrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedHMtrackEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedHMtrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedHMtrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedHMtrackEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedHMtrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
   
   //positive tracks
-    fOutputContainer1->Add(new TH2F("hITSTPCPosTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest PosTrack" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCPosTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest PosTrack" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosTrackInAccXZ"  ,"ITSTPC PosTracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC PosTrack in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC PosTrack in CPV acceptance"  ,250,0.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosTrackMatchedInAccXZ"  ,"Matched ITSTPC PosTracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosTrackMatchedInAccP"  ,"Matched ITSTPC PosTracks momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosTrackMatchedInAccP"  ,"Matched ITSTPC PosTracks momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosTrackNonMatchedInAccXZ"  ,"Matched ITSTPC PosTracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosTrackNonMatchedInAccP"  ,"Matched ITSTPC PosTracks momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosTrackNonMatchedInAccP"  ,"Matched ITSTPC PosTracks momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosTrackEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosTrackEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
   
   //negative tracks
-  fOutputContainer1->Add(new TH2F("hITSTPCNegTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest NegTrack" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCNegTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest NegTrack" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegTrackInAccXZ"  ,"ITSTPC NegTracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCNegTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC NegTrack in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCNegTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC NegTrack in CPV acceptance"  ,250,0.,10.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegTrackMatchedInAccXZ"  ,"Matched ITSTPC NegTracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
   fOutputContainer1->Add(new TH1F("hITSTPCNegTrackMatchedInAccP"  ,"Matched ITSTPC NegTracks momentum" ,1000,0.,100.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegTrackNonMatchedInAccXZ"  ,"Matched ITSTPC NegTracks projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCNegTrackNonMatchedInAccP"  ,"Matched ITSTPC NegTracks momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCNegTrackNonMatchedInAccP"  ,"Matched ITSTPC NegTracks momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegTrackEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegTrackEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
   
   //Z>0 tracks
-  fOutputContainer1->Add(new TH2F("hITSTPCPosZTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest Z>0 track" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCPosZTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest Z>0 track" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosZTrackInAccXZ"  ,"ITSTPC Z>0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosZTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC Z>0 track in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosZTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC Z>0 track in CPV acceptance"  ,250,0.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosZTrackMatchedInAccXZ"  ,"Matched ITSTPC Z>0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosZTrackMatchedInAccP"  ,"Matched ITSTPC Z>0 track momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosZTrackMatchedInAccP"  ,"Matched ITSTPC Z>0 track momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosZTrackNonMatchedInAccXZ"  ,"Matched ITSTPC Z>0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosZTrackNonMatchedInAccP"  ,"Matched ITSTPC Z>0 track momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosZTrackNonMatchedInAccP"  ,"Matched ITSTPC Z>0 track momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosZTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosZTrackEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosZTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosZTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosZTrackEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosZTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
   //Z<0 tracks
-  fOutputContainer1->Add(new TH2F("hITSTPCNegZTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest Z<0 track" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCNegZTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest Z<0 track" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegZTrackInAccXZ"  ,"ITSTPC Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCNegZTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC Z<0 track in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCNegZTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC Z<0 track in CPV acceptance"  ,250,0.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegZTrackMatchedInAccXZ"  ,"Matched ITSTPC Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCNegZTrackMatchedInAccP"  ,"Matched ITSTPC Z<0 track momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCNegZTrackMatchedInAccP"  ,"Matched ITSTPC Z<0 track momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegZTrackNonMatchedInAccXZ"  ,"Matched ITSTPC Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
   fOutputContainer1->Add(new TH1F("hITSTPCNegZTrackNonMatchedInAccP"  ,"Matched ITSTPC Z<0 track momentum" ,1000,0.,100.));
   fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegZTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegZTrackEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegZTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegZTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegZTrackEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegZTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
     //Z>0 HM tracks
-  fOutputContainer1->Add(new TH2F("hITSTPCPosZHMTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest Z>0 track" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCPosZHMTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest Z>0 track" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosZHMTrackInAccXZ"  ,"ITSTPC Z>0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosZHMTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC Z>0 track in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosZHMTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC Z>0 track in CPV acceptance"  ,250,0.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosZHMTrackMatchedInAccXZ"  ,"Matched ITSTPC Z>0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosZHMTrackMatchedInAccP"  ,"Matched ITSTPC Z>0 track momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosZHMTrackMatchedInAccP"  ,"Matched ITSTPC Z>0 track momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hITSTPCPosZHMTrackNonMatchedInAccXZ"  ,"Matched ITSTPC Z>0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCPosZHMTrackNonMatchedInAccP"  ,"Matched ITSTPC Z>0 track momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCPosZHMTrackNonMatchedInAccP"  ,"Matched ITSTPC Z>0 track momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosZHMTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosZHMTrackEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosZHMTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedPosZHMTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosZHMTrackEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedPosZHMTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
   //Z<0 HM tracks
-  fOutputContainer1->Add(new TH2F("hITSTPCNegZHMTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest Z<0 track" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer1->Add(new TH2F("hITSTPCNegZHMTrackdXdZ"  ,"distance dXvsdZ bwt CPV  and TPC nearest Z<0 track" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegZHMTrackInAccXZ"  ,"ITSTPC Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCNegZHMTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC Z<0 track in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCNegZHMTrackDist"  ,"distance b/w CPV cluster and nearest ITSTPC Z<0 track in CPV acceptance"  ,250,0.,25.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegZHMTrackMatchedInAccXZ"  ,"Matched ITSTPC Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hITSTPCNegZHMTrackMatchedInAccP"  ,"Matched ITSTPC Z<0 track momentum" ,1000,0.,100.));
+  fOutputContainer1->Add(new TH1F("hITSTPCNegZHMTrackMatchedInAccP"  ,"Matched ITSTPC Z<0 track momentum" ,100,0.,10.));
   fOutputContainer1->Add(new TH2F("hITSTPCNegZHMTrackNonMatchedInAccXZ"  ,"Matched ITSTPC Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
   fOutputContainer1->Add(new TH1F("hITSTPCNegZHMTrackNonMatchedInAccP"  ,"Matched ITSTPC Z<0 track momentum" ,1000,0.,100.));
   fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegZHMTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegZHMTrackEn"  ,"Matched CPV clusters energie" ,10000,0.,10000.));
+  fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegZHMTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer1->Add(new TH1F("hCpvCluMatchedNegZHMTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegZHMTrackEvsN"  ,"Matched CPV clusters energy vs size" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer1->Add(new TH2F("hCpvCluMatchedNegZHMTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
     //Z>0 Positive tracks
-  fOutputContainer2->Add(new TH2F("hPosZPosTrackdXdZ"  ,"dist. dXvsdZ bwt CPV  and TPC  pos. Z>0 track" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer2->Add(new TH2F("hPosZPosTrackdXdZ"  ,"dist. dXvsdZ bwt CPV  and TPC  pos. Z>0 track" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer2->Add(new TH2F("hPosZPosTrackInAccXZ"  ," pos. Z>0  track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hPosZPosTrackDist"  ,"dist. b/w CPV cluster and   pos. Z>0  track in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hPosZPosTrackDist"  ,"dist. b/w CPV cluster and   pos. Z>0  track in CPV acceptance"  ,250,0.,25.));
   fOutputContainer2->Add(new TH2F("hPosZPosTrackMatchedInAccXZ"  ,"Matched  pos. Z>0  track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hPosZPosTrackMatchedInAccP"  ,"Matched  pos. Z>0  track momentum" ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hPosZPosTrackMatchedInAccP"  ,"Matched  pos. Z>0  track momentum" ,100,0.,10.));
   fOutputContainer2->Add(new TH2F("hPosZPosTrackNonMatchedInAccXZ"  ,"Matched  pos. Z>0  track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hPosZPosTrackNonMatchedInAccP"  ,"Matched  pos. Z>0  track momentum" ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hPosZPosTrackNonMatchedInAccP"  ,"Matched  pos. Z>0  track momentum" ,100,0.,10.));
   fOutputContainer2->Add(new TH2F("hCpvCluMatchedPosZPosTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hCpvCluMatchedPosZPosTrackEn"  ,"Matched CPV clusters energie" ,1000,0.,1000.));
+  fOutputContainer2->Add(new TH1F("hCpvCluMatchedPosZPosTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer2->Add(new TH1F("hCpvCluMatchedPosZPosTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer2->Add(new TH2F("hCpvCluMatchedPosZPosTrackEvsN"  ,"Matched CPV clusters energy vs size" ,1000,0.,1000.,40,0.,40.));
+  fOutputContainer2->Add(new TH2F("hCpvCluMatchedPosZPosTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
   //Z<0 Negative tracks
-  fOutputContainer2->Add(new TH2F("hNegZNegTrackdXdZ"  ,"dist. dXvsdZ bwt CPV  and TPC  neg. Z<0 track" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer2->Add(new TH2F("hNegZNegTrackdXdZ"  ,"dist. dXvsdZ bwt CPV  and TPC  neg. Z<0 track" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer2->Add(new TH2F("hNegZNegTrackInAccXZ"  ," neg. Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hNegZNegTrackDist"  ,"dist. b/w CPV cluster and   neg. Z<0 track in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hNegZNegTrackDist"  ,"dist. b/w CPV cluster and   neg. Z<0 track in CPV acceptance"  ,250,0.,25.));
   fOutputContainer2->Add(new TH2F("hNegZNegTrackMatchedInAccXZ"  ,"Matched  neg. Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hNegZNegTrackMatchedInAccP"  ,"Matched  neg. Z<0 track momentum" ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hNegZNegTrackMatchedInAccP"  ,"Matched  neg. Z<0 track momentum" ,100,0.,10.));
   fOutputContainer2->Add(new TH2F("hNegZNegTrackNonMatchedInAccXZ"  ,"Matched  neg. Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hNegZNegTrackNonMatchedInAccP"  ,"Matched  neg. Z<0 track momentum" ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hNegZNegTrackNonMatchedInAccP"  ,"Matched  neg. Z<0 track momentum" ,100,0.,10.));
   fOutputContainer2->Add(new TH2F("hCpvCluMatchedNegZNegTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hCpvCluMatchedNegZNegTrackEn"  ,"Matched CPV clusters energie" ,1000,0.,1000.));
+  fOutputContainer2->Add(new TH1F("hCpvCluMatchedNegZNegTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer2->Add(new TH1F("hCpvCluMatchedNegZNegTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer2->Add(new TH2F("hCpvCluMatchedNegZNegTrackEvsN"  ,"Matched CPV clusters energy vs size" ,1000,0.,1000.,40,0.,40.));
+  fOutputContainer2->Add(new TH2F("hCpvCluMatchedNegZNegTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
     //Z>0 negative tracks
-  fOutputContainer2->Add(new TH2F("hPosZNegTrackdXdZ"  ,"dist. dXvsdZ bwt CPV  and TPC  neg. Z>0 track" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer2->Add(new TH2F("hPosZNegTrackdXdZ"  ,"dist. dXvsdZ bwt CPV  and TPC  neg. Z>0 track" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer2->Add(new TH2F("hPosZNegTrackInAccXZ"  ," neg. Z>0  track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hPosZNegTrackDist"  ,"dist. b/w CPV cluster and   neg. Z>0  track in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hPosZNegTrackDist"  ,"dist. b/w CPV cluster and   neg. Z>0  track in CPV acceptance"  ,250,0.,25.));
   fOutputContainer2->Add(new TH2F("hPosZNegTrackMatchedInAccXZ"  ,"Matched  neg. Z>0  track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hPosZNegTrackMatchedInAccP"  ,"Matched  neg. Z>0  track momentum" ,1000,0.,100.));
-  fOutputContainer2->Add(new TH2F("hPosZNegTrackNonMatchedInAccXZ"  ,"Matched  neg. Z>0  track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hPosZNegTrackNonMatchedInAccP"  ,"Matched  neg. Z>0  track momentum" ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hPosZNegTrackMatchedInAccP"  ,"Matched  neg. Z>0  track momentum" ,100,0.,10.));
+  fOutputContainer2->Add(new TH2F("hPosZNegTrackNonMatchedInAccXZ"  ,"Matched  neg. Z>0  track projection500 on CPV module" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer2->Add(new TH1F("hPosZNegTrackNonMatchedInAccP"  ,"Matched  neg. Z>0  track momentum" ,100,0.,10.));
   fOutputContainer2->Add(new TH2F("hCpvCluMatchedPosZNegTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hCpvCluMatchedPosZNegTrackEn"  ,"Matched CPV clusters energie" ,1000,0.,1000.));
+  fOutputContainer2->Add(new TH1F("hCpvCluMatchedPosZNegTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer2->Add(new TH1F("hCpvCluMatchedPosZNegTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer2->Add(new TH2F("hCpvCluMatchedPosZNegTrackEvsN"  ,"Matched CPV clusters energy vs size" ,1000,0.,1000.,40,0.,40.));
+  fOutputContainer2->Add(new TH2F("hCpvCluMatchedPosZNegTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
   //Z<0 Positive tracks
-  fOutputContainer2->Add(new TH2F("hNegZPosTrackdXdZ"  ,"dist. dXvsdZ bwt CPV  and TPC  pos. Z<0 track" ,2000,-100.,100.,2000,-100.,100.));
+  fOutputContainer2->Add(new TH2F("hNegZPosTrackdXdZ"  ,"dist. dXvsdZ bwt CPV  and TPC  pos. Z<0 track" ,500,-25.,25.,500,-25.,25.));
   fOutputContainer2->Add(new TH2F("hNegZPosTrackInAccXZ"  ," pos. Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hNegZPosTrackDist"  ,"dist. b/w CPV cluster and   pos. Z<0 track in CPV acceptance"  ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hNegZPosTrackDist"  ,"dist. b/w CPV cluster and   pos. Z<0 track in CPV acceptance"  ,250,0.,25.));
   fOutputContainer2->Add(new TH2F("hNegZPosTrackMatchedInAccXZ"  ,"Matched  pos. Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hNegZPosTrackMatchedInAccP"  ,"Matched  pos. Z<0 track momentum" ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hNegZPosTrackMatchedInAccP"  ,"Matched  pos. Z<0 track momentum" ,100,0.,10.));
   fOutputContainer2->Add(new TH2F("hNegZPosTrackNonMatchedInAccXZ"  ,"Matched  pos. Z<0 track projection on CPV module" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hNegZPosTrackNonMatchedInAccP"  ,"Matched  pos. Z<0 track momentum" ,1000,0.,100.));
+  fOutputContainer2->Add(new TH1F("hNegZPosTrackNonMatchedInAccP"  ,"Matched  pos. Z<0 track momentum" ,200,0.,10.));
   fOutputContainer2->Add(new TH2F("hCpvCluMatchedNegZPosTrackXZ"  ,"Matched CPV clusters" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hCpvCluMatchedNegZPosTrackEn"  ,"Matched CPV clusters energie" ,1000,0.,1000.));
+  fOutputContainer2->Add(new TH1F("hCpvCluMatchedNegZPosTrackEn"  ,"Matched CPV clusters energie" ,2000,0.,10000.));
   fOutputContainer2->Add(new TH1F("hCpvCluMatchedNegZPosTrackN"  ,"Matched CPV clusters size" ,40,0.,40.));
-  fOutputContainer2->Add(new TH2F("hCpvCluMatchedNegZPosTrackEvsN"  ,"Matched CPV clusters energy vs size" ,1000,0.,1000.,40,0.,40.));
+  fOutputContainer2->Add(new TH2F("hCpvCluMatchedNegZPosTrackEvsN"  ,"Matched CPV clusters energy vs size" ,2000,0.,10000.,40,0.,40.));
 
 
 
   //unmatched clusters from hot zones
-  fOutputContainer2->Add(new TH2F("hCpvCluHotNonMatchedXZ"  ,"Matched CPV clusters from hot zones" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hCpvCluHotNonMatchedNegZTrackEn"  ,"Matched CPV clusters energie from hot zones" ,10000,0.,10000.));
-  fOutputContainer2->Add(new TH1F("hCpvCluHotNonMatchedNegZTrackN"  ,"Matched CPV clusters size from hot zones" ,40,0.,40.));
-  fOutputContainer2->Add(new TH2F("hCpvCluHotNonMatchedNegZTrackEvsN"  ,"Matched CPV clusters energy vs size from hot zones" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer2->Add(new TH2F("hCpvCluHotNonMatchedXZ"  ,"Matched CPV clusters from hot zones" ,750,-75.,75.,750,-75.,75.));
+  fOutputContainer2->Add(new TH1F("hCpvCluHotNonMatchedEn"  ,"Matched CPV clusters energie from hot zones" ,2000,0.,10000.));
+  fOutputContainer2->Add(new TH1F("hCpvCluHotNonMatchedN"  ,"Matched CPV clusters size from hot zones" ,40,0.,40.));
+  fOutputContainer2->Add(new TH2F("hCpvCluHotNonMatchedEvsN"  ,"Matched CPV clusters energy vs size from hot zones" ,2000,0.,10000.,40,0.,40.));
 
     //unmatched clusters from cold zones
-  fOutputContainer2->Add(new TH2F("hCpvCluColdNonMatchedXZ"  ,"Matched CPV clusters from cold zones" ,2000,-100.,100.,2000,-100.,100.));
-  fOutputContainer2->Add(new TH1F("hCpvCluColdNonMatchedNegZTrackEn"  ,"Matched CPV clusters energie from cold zones" ,10000,0.,10000.));
-  fOutputContainer2->Add(new TH1F("hCpvCluColdNonMatchedNegZTrackN"  ,"Matched CPV clusters size from cold zones" ,40,0.,40.));
-  fOutputContainer2->Add(new TH2F("hCpvCluColdNonMatchedNegZTrackEvsN"  ,"Matched CPV clusters energy vs size from hot zones" ,10000,0.,10000.,40,0.,40.));
+  fOutputContainer2->Add(new TH2F("hCpvCluColdNonMatchedXZ"  ,"Matched CPV clusters from cold zones" ,750,-75.,75.,750,-75.,75.));
+  fOutputContainer2->Add(new TH1F("hCpvCluColdNonMatchedEn"  ,"Matched CPV clusters energie from cold zones" ,2000,0.,10000.));
+  fOutputContainer2->Add(new TH1F("hCpvCluColdNonMatchedN"  ,"Matched CPV clusters size from cold zones" ,40,0.,40.));
+  fOutputContainer2->Add(new TH2F("hCpvCluColdNonMatchedEvsN"  ,"Matched CPV clusters energy vs size from hot zones" ,2000,0.,10000.,40,0.,40.));
 
   
 
@@ -450,7 +450,7 @@ void AliAnalysisTaskCPV::UserExec(Option_t *)
 
   AliVEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!event) {
-     Printf("ERROR: Could not retrieve event");
+     AliError("ERROR: Could not retrieve event");
      return;
   }
 
@@ -462,23 +462,23 @@ void AliAnalysisTaskCPV::UserExec(Option_t *)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse=inputHandler->GetPIDResponse();
 
-  if(!fPIDResponse) cout<<" UserExec: No PIDResponse found !!! PID from ESD will be used." << endl;
+  if(!fPIDResponse) AliError("No PIDResponse found !!! PID from ESD will be used");
   
   //ITSTPC tracks
   Int_t ntr = event->GetNumberOfTracks();
   if(ntr==0) {
-    Printf("ERROR: no tracks found in current event!");
+    AliError("ERROR: no tracks found in current event!");
     PostData(1, fOutputContainer1);
     PostData(2, fOutputContainer2);
     return;
   }
   //main CPV geometry parameters
-  const Double_t rCPV = fPHOSGeo->GetIPtoCPVDistance(); //Distance to center of  CPV module
+  if (frCPV<0) frCPV  = fPHOSGeo->GetIPtoCPVDistance(); //Distance to center of  CPV module
   const Double_t kXmax = fPHOSGeo->GetCPVBoxSize(0); //Size of the CPV module 
   const Double_t kZmax = fPHOSGeo->GetCPVBoxSize(2); //Size of the CPV module
   const Double_t kAlpha0=270./180.*TMath::Pi() ; //angle of the center of CPV module M=3
-  const Double_t kAlpha= 20./180.*TMath::Pi() ; //PHOS module angular size
 
+  Printf("AliAnalysisTaskCPV::UserExec(): rCPV=%.1f cm\n",frCPV);
 
 //=====================  prepare and count ITSTPCtracks in CPV acceptance  ===================
   AliESDtrack** ITSTPCtracks = new  AliESDtrack*[ntr];
@@ -536,19 +536,19 @@ void AliAnalysisTaskCPV::UserExec(Option_t *)
       const AliExternalTrackParam *outerParam = track->GetOuterParam();
       if (!outerParam) continue;
       Double_t z; 
-      if(!outerParam->GetZAt(rCPV,bz,z)) continue ;
+      if(!outerParam->GetZAt(frCPV,bz,z)) continue ;
       if (TMath::Abs(z) > kZmax/2.) continue; // Some tracks miss the CPV module in Z
 	
 	
       AliExternalTrackParam t(*outerParam);
       if(!t.RotateParamOnly(kAlpha0)) continue ; // Rotate track to have CPV module direction angle = 0 degree.
       Double_t y;                       // Some tracks do not reach the CPV module
-      if (!t.GetYAt(rCPV,bz,y)) continue; //    because of the bending
+      if (!t.GetYAt(frCPV,bz,y)) continue; //    because of the bending
 	
       if(TMath::Abs(y) < kXmax/2.){//note rotation here
 	  //track is in CPV acceptance
 	t.GetBxByBz(b) ;
-	t.PropagateParamOnlyBxByBzTo(rCPV,b);        // Propagate to the matching module
+	t.PropagateParamOnlyBxByBzTo(frCPV,b);        // Propagate to the matching module
 	Double_t gposTrack[3] ; 
 	t.GetXYZ(gposTrack) ;
 	TVector3 globalPositionTr(gposTrack) ;
@@ -657,11 +657,11 @@ void AliAnalysisTaskCPV::UserExec(Option_t *)
     for(Int_t mod=0; mod<5; mod++) {
       PHOSMatrix = ((AliESDEvent*)event)->GetPHOSMatrix(mod);
       if(!PHOSMatrix) {
-	Printf("PHOS geo matrix for module # %d is missing\n", mod);
+	AliError(Form("PHOS geo matrix for module # %d is missing\n", mod));
 	continue;
       }
       fPHOSGeo->SetMisalMatrix(PHOSMatrix,mod) ;
-      Printf("PHOS geo matrix for module # %d is set to %p\n", mod, PHOSMatrix);
+      AliInfo(Form("PHOS geo matrix for module # %d is set to %p\n", mod, PHOSMatrix));
     }
   }
 
@@ -813,19 +813,19 @@ void AliAnalysisTaskCPV::UserExec(Option_t *)
 	const AliExternalTrackParam *outerParam = track->GetOuterParam();
 	if (!outerParam) continue;
 	Double_t z; 
-	if(!outerParam->GetZAt(rCPV,bz,z)) continue ;
+	if(!outerParam->GetZAt(frCPV,bz,z)) continue ;
 	if (TMath::Abs(z) > kZmax/2.) continue; // Some tracks miss the CPV module in Z
 	
 	
 	AliExternalTrackParam t(*outerParam);
 	if(!t.RotateParamOnly(kAlpha0)) continue ; // Rotate track to have CPV module direction angle = 0 degree.
 	Double_t y;                       // Some tracks do not reach the CPV module
-	if (!t.GetYAt(rCPV,bz,y)) continue; //    because of the bending
+	if (!t.GetYAt(frCPV,bz,y)) continue; //    because of the bending
 	
 	if(TMath::Abs(y) < kXmax/2.){//note rotation here
 	  //track is in CPV acceptance
 	  t.GetBxByBz(b) ;
-	  t.PropagateParamOnlyBxByBzTo(rCPV,b);        // Propagate to the matching module
+	  t.PropagateParamOnlyBxByBzTo(frCPV,b);        // Propagate to the matching module
 	  Double_t gposTrack[3] ; 
 	  t.GetXYZ(gposTrack) ;
 	  TVector3 globalPositionTr(gposTrack) ;
@@ -1247,10 +1247,9 @@ void AliAnalysisTaskCPV::UserExec(Option_t *)
 
   }
 
-
-  Printf("Event %d, trig.class %s, period %d, bc %d, orbit %d, N PHS clusters: %d, N CPV clusters: %d",
-	 eventNumberInFile,trigClasses.Data(),event->GetPeriodNumber(),
-	 event->GetBunchCrossNumber(),event->GetOrbitNumber(),multPHOSClust[0],multCPVClust);
+  AliDebug(2,Form("Event %d, trig.class %s, period %d, bc %d, orbit %d, N PHS clusters: %d, N CPV clusters: %d",
+		  eventNumberInFile,trigClasses.Data(),event->GetPeriodNumber(),
+		  event->GetBunchCrossNumber(),event->GetOrbitNumber(),multPHOSClust[0],multCPVClust));
   
   // Post output data.
   PostData(1, fOutputContainer1);

@@ -38,6 +38,8 @@ public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  void SetRCPV(Double_t rCPV) {frCPV = rCPV;}
+  Double_t GetRCPV() {return frCPV;}
   
 private:
   AliAnalysisTaskCPV(const AliAnalysisTaskCPV&); // not implemented
@@ -59,8 +61,9 @@ private:
   AliPIDResponse* fPIDResponse;  // PID response object
   AliPIDCombined* fPIDCombined;  // PID combined object
   AliPHOSCPVGeometry* fGeometryCPV;  // CPV geometry object
+  Double_t frCPV; // Radial distance from IT to CPV
 
-  ClassDef(AliAnalysisTaskCPV, 0); // PHOS analysis task
+  ClassDef(AliAnalysisTaskCPV, 1); // PHOS analysis task
 };
 
 #endif
