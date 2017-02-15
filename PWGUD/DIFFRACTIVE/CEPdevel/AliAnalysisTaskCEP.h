@@ -75,6 +75,8 @@ private:
   TArrayI        *fTrackStatus;   //! array of TrackStatus
   TString         fLHCPeriod;     //! LHC period
     
+  TVector3        fVtxPos;        // vertex position
+
 	// analysis task status
 	Long_t fAnalysisStatus; // stores the status bits used to specify
                           // processing steps to be performed

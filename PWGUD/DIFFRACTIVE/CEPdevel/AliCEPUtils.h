@@ -82,7 +82,7 @@ public:
   Int_t AnalyzeTracks(AliESDEvent* ESDEvent,
     TObjArray* fTracks,TArrayI* fTrackStatus);
 
-  UInt_t GetVtxPos(AliESDEvent *ESDEvent, TVector3 vtxpos);
+  UInt_t GetVtxPos(AliESDEvent *ESDEvent, TVector3 *vtxpos);
 
   Bool_t checkstatus(UInt_t stat, UInt_t mask, UInt_t pattern);
   Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern);

@@ -40,7 +40,7 @@ class CEPEventBuffer : public TObject {
     Int_t fnV0;             // number of V0s
 
     UInt_t   fVtxType;      // see AliCEPBase.h for a definition of the bits
-    TVector3 fVtxPos;
+    TVector3 fVtxPos;       // vertex position
     
     // Monte Carlo information
     TString  fMCGenerator;
@@ -87,7 +87,7 @@ class CEPEventBuffer : public TObject {
     void SetVtxType(UInt_t vtxtype)     { fVtxType = vtxtype; }
     void SetVtxPos(Double_t xp,Double_t yp,Double_t zp)
                                         { fVtxPos.SetXYZ(xp,yp,zp); }
-    void SetVtxPos(TVector3 vtxpos)     { fVtxPos = vtxpos; }
+    void SetVtxPos(TVector3 vtxpos)     { fVtxPos = TVector3(vtxpos); }
     void SetMCGenerator(TString MCGenerator) { fMCGenerator = MCGenerator; }
     void SetMCProcessType(UInt_t MCProcess)  { fMCProcessType = MCProcess; }
     void SetMCVtxPos(Double_t xp,Double_t yp,Double_t zp)
@@ -115,15 +115,12 @@ class CEPEventBuffer : public TObject {
     Int_t GetnResiduals()      const { return fnResiduals; }
     Int_t GetnMSelection()     const { return fnMSelection; }
 
-    Int_t GetnTracksisSet(UInt_t TTest);
-    Int_t GetnTracksisEqual(UInt_t TTest);
-
     Int_t GetnV0()       const { return fnV0; }
     UInt_t GetVtxType()  const { return fVtxType; }
     TVector3 GetVtxPos() const { return fVtxPos; }
 
     TString GetMCGenerator() const { return fMCGenerator; }
-    UInt_t GetMCProcessType() const { return fMCProcessType; }
+    UInt_t GetMCProcessType()const { return fMCProcessType; }
     TVector3 GetMCVtxPos()   const { return fMCVtxPos; }
   
     // readout gap condition

@@ -124,12 +124,12 @@ Int_t AliCEPUtils::GetEventType(const AliESDEvent *ESDEvent)
 //------------------------------------------------------------------------------
 // this is a copy of the method described on
 // https://twiki.cern.ch/twiki/bin/view/ALICE/PWGPPEvSelRun2pp
-UInt_t AliCEPUtils::GetVtxPos(AliESDEvent *fESDEvent, TVector3 fVtxPos)
+UInt_t AliCEPUtils::GetVtxPos(AliESDEvent *fESDEvent, TVector3 *fVtxPos)
 {
     
   // initialize
   UInt_t fVtxType = AliCEPBase::kVtxUnknown;
-  fVtxPos = TVector3(-999.9,-999.9,-999.9);
+  fVtxPos->SetXYZ(-999.9,-999.9,-999.9);
 
   const AliESDVertex *trkVertex = fESDEvent->GetPrimaryVertexTracks();
   const AliESDVertex *spdVertex = fESDEvent->GetPrimaryVertexSPD();
@@ -166,7 +166,8 @@ UInt_t AliCEPUtils::GetVtxPos(AliESDEvent *fESDEvent, TVector3 fVtxPos)
   if (TMath::Abs(vertex->GetZ())>10) return AliCEPBase::kVtxUnknown;
   
   // set the vertex position fVtxPos
-  fVtxPos = TVector3(vertex->GetX(),vertex->GetY(),vertex->GetZ());
+  fVtxPos->SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
+  printf("VtxPos 1 %f %f %f \n",vertex->GetX(),vertex->GetY(),vertex->GetZ());
   
   return fVtxType;
   

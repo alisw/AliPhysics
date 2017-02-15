@@ -56,6 +56,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fCEPEvent(0x0)
   , fTracks(0x0)
   , fTrackStatus(0x0)
+  , fVtxPos(TVector3(-999.9,-999.9,-999.9))
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
@@ -91,6 +92,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fCEPEvent(0x0)
   , fTracks(0x0)
   , fTrackStatus(0x0)
+  , fVtxPos(TVector3(-999.9,-999.9,-999.9))
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
@@ -411,8 +413,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // -1: no vertex
   //  1: from SPD
   //  2: from tracks
-  TVector3 fVtxPos;
-  Int_t kVertexType = fCEPUtil->GetVtxPos(fESDEvent,fVtxPos);
+  Int_t kVertexType = fCEPUtil->GetVtxPos(fESDEvent,&fVtxPos);
+  printf("VtxPos 2 %f %f %f \n",fVtxPos.X(),fVtxPos.Y(),fVtxPos.Z());
   
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
   // kSPDGFOBits: SPD (any fired chip)
@@ -505,7 +507,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // use the AliCEPUtils::GetCEPTracks method
   TArrayI *Pindices  = new TArrayI();
   Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
-  if (nPaulSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
+  if (nMartinSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
 
   const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
@@ -596,12 +598,23 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   }
   // for test purposes -------------------------------------------------------
   
-  // if the number of accepted tracks is within the limits OR
-  // if the .AliCEPBase::kBitSaveAllEvents bit is set ..
-  // reset and fill the event buffer, which will hold the output information
-  if ( (0 < nTracks && nTracks <= fnumTracksMax) ||
+  // decide which events have to be saved
+  // if the number of accepted tracks is within the limits ...
+  Bool_t isToSave = 0 < nTracks && nTracks <= fnumTracksMax;
+
+  // OR if the .AliCEPBase::kBitSaveAllEvents bit is set ..
+  // isToSave = isToSave ||
+  //  fCEPUtil->checkstatus(fAnalysisStatus,
+  //    AliCEPBase::kBitSaveAllEvents,AliCEPBase::kBitSaveAllEvents);
+  
+  // AND DGTrigger
+  isToSave = isToSave && isDGTrigger;
+  
+  // OR kBitSaveAllEvents is set
+  isToSave = isToSave ||
     fCEPUtil->checkstatus(fAnalysisStatus,
-      AliCEPBase::kBitSaveAllEvents,AliCEPBase::kBitSaveAllEvents)) {
+    AliCEPBase::kBitSaveAllEvents,AliCEPBase::kBitSaveAllEvents);
+  if ( isToSave ) {
     
     // update fhStatsFlow
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
