@@ -662,11 +662,22 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     q2NegTPC = Getq2(qnlist,kq2NegTPC);
     q2FullTPC = Getq2(qnlist,kq2TPC);
     if(q2<0 || q2PosTPC<0 || q2NegTPC<0 || q2FullTPC<0) return;
-    ((TH1F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2PosTPC,q2NegTPC);
-    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2FullTPC,q2NegTPC);
-    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2FullTPC,q2PosTPC);
+    ((TH1F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
+    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
+    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
   }
-  
+  if(fq2Smearing && fq2SmearingHisto) {
+    TAxis* ax=0x0;
+    if(fq2SmearingAxis==1) {ax=(TAxis*)fq2SmearingHisto->GetYaxis();}
+    else {ax=(TAxis*)fq2SmearingHisto->GetXaxis();}
+    Int_t bin = ax->FindBin(q2);
+    TH1F* hq2Slice = 0x0;
+    if(fq2SmearingAxis==1) {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionX("hq2Slice",bin,bin);}
+    else {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionY("hq2Slice",bin,bin);}
+    if(hq2Slice->GetEntries()>10) {q2 = hq2Slice->GetRandom();}
+    delete hq2Slice;
+  }
+
   AliEventplane *pl=aod->GetEventplane();
   if(!pl){
     Printf("AliAnalysisTaskSEHFvn::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
@@ -795,17 +806,6 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
       
       //fill the THnSparseF
-      if(fq2Smearing && fq2SmearingAxis) {
-        TAxis* ax=0x0;
-        if(fq2SmearingAxis==1) {ax=(TAxis*)fq2SmearingHisto->GetYaxis();}
-        else {ax=(TAxis*)fq2SmearingHisto->GetXaxis();}
-        Int_t bin = ax->FindBin(q2);
-        TH1F* hq2Slice = 0x0;
-        if(fq2SmearingAxis==1) {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionX("hq2Slice",bin,bin);}
-        else {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionY("hq2Slice",bin,bin);}
-        if(hq2Slice->GetEntries()>10) {q2 = hq2Slice->GetRandom();}
-        delete hq2Slice;
-      }
       if((fDecChannel==0 || fDecChannel==2) && isSelected) {
         Double_t sparsearray[5] = {invMass[0],d->Pt(),deltaphi,q2,centr};
         fHistMassPtPhiq2Centr->Fill(sparsearray);
