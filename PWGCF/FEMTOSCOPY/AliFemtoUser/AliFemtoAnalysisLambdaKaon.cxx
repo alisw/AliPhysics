@@ -1642,17 +1642,17 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.maxInvMassV0 = LambdaMass+0.005;
   tReturnParams.minCosPointingAngleV0 = 0.998;
   tReturnParams.etaV0 = 0.8;
-  tReturnParams.minPtV0 = 0.;
+  tReturnParams.minPtV0 = 0.4;
   tReturnParams.maxPtV0 = 100.;
   tReturnParams.onFlyStatusV0 = false;
-  tReturnParams.maxV0DecayLength = 100.;
+  tReturnParams.maxV0DecayLength = 60.;
   tReturnParams.minV0PosDaughterToPrimVertex = 0.1;
-  tReturnParams.minV0NegDaughterToPrimVertex = 0.1;
-  tReturnParams.maxDcaV0Daughters = 0.8;
+  tReturnParams.minV0NegDaughterToPrimVertex = 0.3;
+  tReturnParams.maxDcaV0Daughters = 0.4;
   tReturnParams.etaV0Daughters = 0.8;
-  tReturnParams.minPtPosV0Daughter = 0.;
+  tReturnParams.minPtPosV0Daughter = 0.5;
   tReturnParams.maxPtPosV0Daughter = 99.;
-  tReturnParams.minPtNegV0Daughter = 0.;
+  tReturnParams.minPtNegV0Daughter = 0.16;
   tReturnParams.maxPtNegV0Daughter = 99.;
 
   tReturnParams.minTPCnclsV0Daughters = 70;
@@ -1695,17 +1695,17 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.maxInvMassV0 = LambdaMass+0.005;
   tReturnParams.minCosPointingAngleV0 = 0.998;
   tReturnParams.etaV0 = 0.8;
-  tReturnParams.minPtV0 = 0.;
+  tReturnParams.minPtV0 = 0.4;
   tReturnParams.maxPtV0 = 100.;
   tReturnParams.onFlyStatusV0 = true;
-  tReturnParams.maxV0DecayLength = 100.;
-  tReturnParams.minV0PosDaughterToPrimVertex = 0.1;
+  tReturnParams.maxV0DecayLength = 60.;
+  tReturnParams.minV0PosDaughterToPrimVertex = 0.3;
   tReturnParams.minV0NegDaughterToPrimVertex = 0.1;
-  tReturnParams.maxDcaV0Daughters = 0.8;
+  tReturnParams.maxDcaV0Daughters = 0.4;
   tReturnParams.etaV0Daughters = 0.8;
-  tReturnParams.minPtPosV0Daughter = 0.;
+  tReturnParams.minPtPosV0Daughter = 0.16;
   tReturnParams.maxPtPosV0Daughter = 99.;
-  tReturnParams.minPtNegV0Daughter = 0.;
+  tReturnParams.minPtNegV0Daughter = 0.3;
   tReturnParams.maxPtNegV0Daughter = 99.;
 
   tReturnParams.minTPCnclsV0Daughters = 70;
