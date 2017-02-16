@@ -330,7 +330,7 @@ private:
   TH1D *SpecCorMu1[8]; //!
   TH1D *SpecCorMu2[8]; //!
   TH1D *SpecCorAv[8]; //!
-  TF1 *FitSpecCorSi[8]; //!
+  TH1D *SpecCorSi[8]; //!
   TH2D *fBadTowerCalibHist[100]; //!
   Int_t fCachedRunNum;   //
   

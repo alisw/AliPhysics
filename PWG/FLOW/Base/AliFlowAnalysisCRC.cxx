@@ -589,26 +589,26 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     Double_t QAIm = fZDCFlowVect[1].Y();
     Double_t QMA  = fZDCFlowVect[1].GetMult();
     if(fCentralityEBE>5. && fCentralityEBE<70.) {
-      if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)<1.5) {
+      if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
         fCRCZDCQVecVtxPos[fRunBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCRe);
         fCRCZDCQVecVtxPos[fRunBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCIm);
       }
-      if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)<1.5) {
+      if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
         fCRCZDCQVecVtxPos[fRunBin][2]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QARe);
         fCRCZDCQVecVtxPos[fRunBin][3]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAIm);
       }
     }
     if(fStoreZDCQVecVtxPos) {
-      if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)<1.5) {
+      if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
         fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCRe);
         fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCIm);
       }
-      if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)<1.5) {
+      if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
         fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][2]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QARe);
         fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][3]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAIm);
       }
     }
-    if(fCentralityEBE>5. &&  fCentralityEBE<60.) {
+    if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6 && fCentralityEBE>5. &&  fCentralityEBE<60.) {
       fCRCZDCQVecCov[fRunBin][0]->Fill(fVtxPos[0],QCRe);
       fCRCZDCQVecCov[fRunBin][1]->Fill(fVtxPos[1],QCRe);
       fCRCZDCQVecCov[fRunBin][2]->Fill(fVtxPos[2],QCRe);
@@ -616,7 +616,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
       fCRCZDCQVecCov[fRunBin][4]->Fill(fVtxPos[1],QCIm);
       fCRCZDCQVecCov[fRunBin][5]->Fill(fVtxPos[2],QCIm);
     }
-    if(fCentralityEBE>5. &&  fCentralityEBE<60.) {
+    if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6 && fCentralityEBE>5. &&  fCentralityEBE<60.) {
       fCRCZDCQVecCov[fRunBin][6]->Fill(fVtxPos[0],QARe);
       fCRCZDCQVecCov[fRunBin][7]->Fill(fVtxPos[1],QARe);
       fCRCZDCQVecCov[fRunBin][8]->Fill(fVtxPos[2],QARe);
@@ -625,21 +625,25 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
       fCRCZDCQVecCov[fRunBin][11]->Fill(fVtxPos[2],QAIm);
     }
     if( fInvertZDC ) QARe = -QARe;
-    if(QMC>0. && QMA>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6 && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
+    if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
       fhZNCenDis[0]->Fill(fCentralityEBE,QCRe,QCIm);
+    }
+    if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
       fhZNCenDis[1]->Fill(fCentralityEBE,QARe,QAIm);
     }
-    fCRCZDCQVecRes[fRunBin][0]->Fill(fCentralityEBE,QCRe*QARe);
-    fCRCZDCQVecRes[fRunBin][1]->Fill(fCentralityEBE,QCIm*QAIm);
-    fCRCZDCQVecRes[fRunBin][2]->Fill(fCentralityEBE,QCRe*QAIm);
-    fCRCZDCQVecRes[fRunBin][3]->Fill(fCentralityEBE,QCIm*QARe);
-    if(fCentralityEBE>5. &&  fCentralityEBE<60.) {
-      fCRCZDCQVecCov[fRunBin][12]->Fill(fVtxPos[0],QCRe*QARe);
-      fCRCZDCQVecCov[fRunBin][13]->Fill(fVtxPos[1],QCRe*QARe);
-      fCRCZDCQVecCov[fRunBin][14]->Fill(fVtxPos[2],QCRe*QARe);
-      fCRCZDCQVecCov[fRunBin][15]->Fill(fVtxPos[0],QCIm*QAIm);
-      fCRCZDCQVecCov[fRunBin][16]->Fill(fVtxPos[1],QCIm*QAIm);
-      fCRCZDCQVecCov[fRunBin][17]->Fill(fVtxPos[2],QCIm*QAIm);
+    if(QMC>0. && QMA>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6 && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
+      fCRCZDCQVecRes[fRunBin][0]->Fill(fCentralityEBE,QCRe*QARe);
+      fCRCZDCQVecRes[fRunBin][1]->Fill(fCentralityEBE,QCIm*QAIm);
+      fCRCZDCQVecRes[fRunBin][2]->Fill(fCentralityEBE,QCRe*QAIm);
+      fCRCZDCQVecRes[fRunBin][3]->Fill(fCentralityEBE,QCIm*QARe);
+      if(fCentralityEBE>5. &&  fCentralityEBE<60.) {
+        fCRCZDCQVecCov[fRunBin][12]->Fill(fVtxPos[0],QCRe*QARe);
+        fCRCZDCQVecCov[fRunBin][13]->Fill(fVtxPos[1],QCRe*QARe);
+        fCRCZDCQVecCov[fRunBin][14]->Fill(fVtxPos[2],QCRe*QARe);
+        fCRCZDCQVecCov[fRunBin][15]->Fill(fVtxPos[0],QCIm*QAIm);
+        fCRCZDCQVecCov[fRunBin][16]->Fill(fVtxPos[1],QCIm*QAIm);
+        fCRCZDCQVecCov[fRunBin][17]->Fill(fVtxPos[2],QCIm*QAIm);
+      }
     }
   }
   // ZDC-C (eta < -8.8)
@@ -18661,21 +18665,21 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   }
   
   if(fCentralityEBE>5. && fCentralityEBE<70.) {
-    if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)<1.5) {
+    if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
       fCRCZDCQVecVtxPos[fRunBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCReR);
       fCRCZDCQVecVtxPos[fRunBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCImR);
     }
-    if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)<1.5) {
+    if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
       fCRCZDCQVecVtxPos[fRunBin][2]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAReR);
       fCRCZDCQVecVtxPos[fRunBin][3]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAImR);
     }
   }
   if(fStoreZDCQVecVtxPos) {
-    if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)<1.5) {
+    if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
       fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCReR);
       fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCImR);
     }
-    if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)<1.5) {
+    if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
       fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][2]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAReR);
       fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][3]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAImR);
     }
@@ -18757,12 +18761,12 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   
   
   // store cos/sin terms of event planes
-  if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)<1.5) {
+  if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
     Double_t EvPlZDCC = TMath::ATan2(QCImR,QCReR);
     fCRCZDCQVecRes[fRunBin][4]->Fill(fCentralityEBE,cos(2.*EvPlZDCC));
     fCRCZDCQVecRes[fRunBin][5]->Fill(fCentralityEBE,sin(2.*EvPlZDCC));
   }
-  if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)<1.5) {
+  if(QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
     Double_t EvPlZDCA = TMath::ATan2(QAImR,QAReR);
     fCRCZDCQVecRes[fRunBin][6]->Fill(fCentralityEBE,cos(2.*EvPlZDCA));
     fCRCZDCQVecRes[fRunBin][7]->Fill(fCentralityEBE,sin(2.*EvPlZDCA));
@@ -18874,7 +18878,7 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   // cut on multiplicity
   if( fZNCen<=0. || fZNAen<=0. ) PassZDCcuts = kFALSE;
   // cut on centroid position
-  if(sqrt(ZCRe*ZCRe+ZCIm*ZCIm)>1.5 || sqrt(ZARe*ZARe+ZAIm*ZAIm)>1.5) PassZDCcuts = kFALSE;
+  if(sqrt(ZCRe*ZCRe+ZCIm*ZCIm)<1.E-6 || sqrt(ZARe*ZARe+ZAIm*ZAIm)<1.E-6) PassZDCcuts = kFALSE;
   // exclude ZDC bad runs
   if(fRunNum==138469 || fRunNum==138870 || fRunNum==139028 || fRunNum==139029 || fRunNum==139036) PassZDCcuts = kFALSE;
   Int_t CenBin = (Int_t)(fCentralityEBE);
@@ -19037,7 +19041,7 @@ void AliFlowAnalysisCRC::CalculateCRCQVec()
     Double_t VCRe = fZDCFlowVect[0].X();
     Double_t VCIm = fZDCFlowVect[0].Y();
     Double_t VCM  = fZDCFlowVect[0].GetMult();
-    if(VCM>0. && sqrt(VCRe*VCRe+VCIm*VCIm)<1.5) {
+    if(VCM>0. && sqrt(VCRe*VCRe+VCIm*VCIm)>1.E-6) {
       fCRCZDCQVecC[fRunBin][0]->Fill(fCentralityEBE,VCRe);
       fCRCZDCQVecC[fRunBin][1]->Fill(fCentralityEBE,VCIm);
     }
@@ -19045,7 +19049,7 @@ void AliFlowAnalysisCRC::CalculateCRCQVec()
     Double_t VARe = fZDCFlowVect[1].X();
     Double_t VAIm = fZDCFlowVect[1].Y();
     Double_t VAM  = fZDCFlowVect[1].GetMult();
-    if(VAM>0. && sqrt(VARe*VARe+VAIm*VAIm)<1.5) {
+    if(VAM>0. && sqrt(VARe*VARe+VAIm*VAIm)>1.E-6) {
       fCRCZDCQVecA[fRunBin][0]->Fill(fCentralityEBE,VARe);
       fCRCZDCQVecA[fRunBin][1]->Fill(fCentralityEBE,VAIm);
     }
@@ -20092,7 +20096,7 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
   if( fInvertZDC ) ZARe = -ZARe;
   
   // cut on multiplicity
-  if( ZCM<=0. || ZAM<=0. || sqrt(ZCRe*ZCRe+ZCIm*ZCIm)>1.5 || sqrt(ZARe*ZARe+ZAIm*ZAIm)>1.5 ) return;
+  if( ZCM<=0. || ZAM<=0. || sqrt(ZCRe*ZCRe+ZCIm*ZCIm)<1.E-6 || sqrt(ZARe*ZARe+ZAIm*ZAIm)<1.E-6 ) return;
   if( !std::isfinite(fZDCFlowVect[0].Mod()) || !std::isfinite(fZDCFlowVect[1].Mod())) return;
   // ZDC QA cuts
   if(fQAZDCCuts && !fQAZDCCutsFlag) return;
