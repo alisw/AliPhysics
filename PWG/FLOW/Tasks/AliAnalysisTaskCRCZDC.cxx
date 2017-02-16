@@ -1368,7 +1368,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       // Get centroid from ZDCs *******************************************************
       
       Double_t Enucl = (RunNum < 209122 ? 1380. : 2511.);
-      Double_t xyZNC[2]={999.,999.}, xyZNA[2]={999.,999.};
+      Double_t xyZNC[2]={0.,0.}, xyZNA[2]={0.,0.};
       Double_t towZNC[5]={0.}, towZNA[5]={0.};
       
       Double_t ZNCcalib=1., ZNAcalib=1.;
@@ -1464,23 +1464,27 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           Double_t trueE = towZNA[2];
           fhZNBCCorr->Fill(centrperc,trueE,recoE);
         }
-        if(denZNC!=0){
-          Double_t nSpecnC = zncEnergy/Enucl;
-          cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
-          xyZNC[0] = cZNC*numXZNC/denZNC;
-          xyZNC[1] = cZNC*numYZNC/denZNC;
+        if(denZNC>0.){
+        // Double_t nSpecnC = zncEnergy/Enucl;
+        // cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
+        // xyZNC[0] = cZNC*numXZNC/denZNC;
+        // xyZNC[1] = cZNC*numYZNC/denZNC;
+          xyZNC[0] = numXZNC/denZNC;
+          xyZNC[1] = numYZNC/denZNC;
         }
         else{
-          xyZNC[0] = xyZNC[1] = 999.;
+          xyZNC[0] = xyZNC[1] = 0.;
         }
-        if(denZNA!=0){
-          Double_t nSpecnA = znaEnergy/Enucl;
-          cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
-          xyZNA[0] = cZNA*numXZNA/denZNA;
-          xyZNA[1] = cZNA*numYZNA/denZNA;
+        if(denZNA>0.){
+        // Double_t nSpecnA = znaEnergy/Enucl;
+        // cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
+        // xyZNA[0] = cZNA*numXZNA/denZNA;
+        // xyZNA[1] = cZNA*numYZNA/denZNA;
+          xyZNA[0] = numXZNA/denZNA;
+          xyZNA[1] = numYZNA/denZNA;
         }
         else{
-          xyZNA[0] = xyZNA[1] = 999.;
+          xyZNA[0] = xyZNA[1] = 0.;
         }
       } else {
         for(Int_t i=0; i<4; i++) {
