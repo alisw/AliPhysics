@@ -164,6 +164,7 @@ private:
   Bool_t fCheckEdgeFlag; //Consider only clusters with edge flag set
   int fAddRandomClusters; // Add random clusters for stress tests
   int fSignificantBitsCharge; //Number of significant bits to be stored for cluster charge
+  int fSignificantBitsWidth; //Same for sigma
 
   AliHLTComponentBenchmark fBenchmark; // benchmarks
 };
