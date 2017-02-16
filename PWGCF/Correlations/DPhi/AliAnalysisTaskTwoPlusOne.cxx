@@ -527,3 +527,11 @@ AliGenEventHeader* AliAnalysisTaskTwoPlusOne::GetFirstHeader()
     return dynamic_cast<AliGenEventHeader*> (header->GenEventHeader());
   }
 }
+
+//____________________________________________________________________
+Int_t* AliAnalysisTaskTwoPlusOne::doNotCompile()
+{
+  //this code is intended to not compile so that the git test compile can be tested  
+  return "fail";
+}
+
