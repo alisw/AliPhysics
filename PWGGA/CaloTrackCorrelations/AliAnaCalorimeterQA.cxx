@@ -2928,7 +2928,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhNCellsTCardCorrRatioWithWeightNoSelection  = new TH2F 
     ("hNCellsTCardCorrRatioWithWeightNoSelection","custer # cells vs #it{E}, w > 0.01",nptbins,ptmin,ptmax, 100,0,1); 
     fhNCellsTCardCorrRatioWithWeightNoSelection->SetXTitle("#it{E} (GeV)");
-    fhNCellsTCardCorrRatioWithWeightNoSelection->SetYTitle("#it{n}_{cells}");
+    fhNCellsTCardCorrRatioWithWeightNoSelection->SetYTitle("#it{n}^{w>0.01]_{cells} / #it{n}_{cells}");
     outputContainer->Add(fhNCellsTCardCorrRatioWithWeightNoSelection);
     
     fhLambda0TCardCorrNoSelection  = new TH2F ("hLambda0TCardCorrNoSelection","#lambda^{2}_{0} vs #it{E}",
@@ -3127,7 +3127,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhNCellsPerClusterRatioWithWeight  = new TH2F 
     ("hNCellsPerClusterRatioWithWeight","# cells per cluster vs energy",nptbins,ptmin,ptmax, 100,0,1); 
     fhNCellsPerClusterRatioWithWeight->SetXTitle("#it{E} (GeV)");
-    fhNCellsPerClusterRatioWithWeight->SetYTitle("#it{n}_{cells}");
+    fhNCellsPerClusterRatioWithWeight->SetYTitle("#it{n}^{w>0.01]_{cells}/#it{n}_{cells}");
     outputContainer->Add(fhNCellsPerClusterRatioWithWeight);
   }
   
