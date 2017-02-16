@@ -38,7 +38,7 @@ class AliNuclexEventCutsContainer : public TNamed {
 
 class AliNuclexEventCuts : public TList {
   public:
-    AliNuclexEventCuts(bool savePlots = false);
+    AliNuclexEventCuts(bool savePlots = false)  __attribute__ ((deprecated("Please use AliEventCuts for your analysis.")));
     virtual ~AliNuclexEventCuts() { if (fMultiplicityV0McorrCut) delete fMultiplicityV0McorrCut; }
     enum CutsBin {
       kNoCuts = 0,
