@@ -41,8 +41,14 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	
 	TH2F*                   cent_ntracks;
 	TH2F*                   m_squared_pos;
+	TH2F*                   m_squared_pos_cut_T;
+	TH2F*                   m_squared_pos_cut_A;
+	TH2F*                   m_squared_pos_cut_B;
 	TH2F*                   m_squared_pos_cut_V;
 	TH2F*                   m_squared_neg;
+	TH2F*                   m_squared_neg_cut_T;
+	TH2F*                   m_squared_neg_cut_A;
+	TH2F*                   m_squared_neg_cut_B;
 	TH2F*                   m_squared_neg_cut_V;
 	TH2F*                   plength_vs_mom_pos;
 	TH2F*                   plength_vs_mom_neg;
@@ -52,8 +58,17 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                   beta_vs_mom_neg;
 	TH2F*                   deltat_vs_mom_pos;
 	TH2F*                   deltat_vs_mom_neg;
+	TH2F*                   deut_dphi_T;
+	TH2F*                   deut_dphi_A;
+	TH2F*                   deut_dphi_B;
 	TH2F*                   deut_dphi_V;
+	TH2F*                   deut_dphi_pos_T;
+	TH2F*                   deut_dphi_pos_A;
+	TH2F*                   deut_dphi_pos_B;
 	TH2F*                   deut_dphi_pos_V;
+	TH2F*                   deut_dphi_neg_T;
+	TH2F*                   deut_dphi_neg_A;
+	TH2F*                   deut_dphi_neg_B;
 	TH2F*                   deut_dphi_neg_V;
 	TH1I*                   deuterons_per_event;
 	TH1I*                   deuterons_per_event_pos;
