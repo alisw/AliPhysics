@@ -65,7 +65,7 @@ AliAnalysisTaskProtonQA::AliAnalysisTaskProtonQA()
     fUsePhysicsSelection(1), fMaxPrimaryVtxPosZ(100.) ,fPhysicsSelection(0),fMultiplicityMode(0), fListHist(),
     gHistPrimaryProtonsDCAxyEtaPt(0), gHistPrimaryAntiProtonsDCAxyEtaPt(0), gHistSecondaryProtonsFromWeakDCAxyEtaPt(0), gHistSecondaryAntiProtonsFromWeakDCAxyEtaPt(0),
     gHistSecondaryProtonsFromHadronicDCAxyEtaPt(0), gHistSecondaryAntiProtonsFromHadronicDCAxyEtaPt(0), gHistdEdxP(0), gHistProtonsdEdxP(0),
-    fPIDMode(kSigma), fDebugMode(kFALSE), fNBinsY(100), fMinY(0), fMaxY(100), fMinTPCClusters(80), fMinITSClusters(2), fMaxChi2PerTPCCluster(3.5), fMaxChi2PerITSCluster(36.), fMaxDCAXY(10.), fMaxDCAZ(1.), fNBoundP(0.7), fNSigma1(3), fNSigma2(3), fNRatio1(0), fNRatio2(0), MAXCent(100), MINCent(0), fMaxDCAXYFlag(kTRUE), fMaxDCAZFlag(kFALSE), fListQA(0), gHistPrimaryProtonsDCAzEtaPt(0), gHistPrimaryAntiProtonsDCAzEtaPt(0), gHistSecondaryProtonsFromWeakDCAzEtaPt(0), gHistSecondaryAntiProtonsFromWeakDCAzEtaPt(0), gHistSecondaryProtonsFromHadronicDCAzEtaPt(0), gHistSecondaryAntiProtonsFromHadronicDCAzEtaPt(0), gHistPrimaryProtonsDCAzCentPt(0), gHistPrimaryAntiProtonsDCAzCentPt(0), gHistSecondaryProtonsFromWeakDCAzCentPt(0), gHistSecondaryAntiProtonsFromWeakDCAzCentPt(0), gHistSecondaryProtonsFromHadronicDCAzCentPt(0), gHistSecondaryAntiProtonsFromHadronicDCAzCentPt(0), fOADBPath(0)
+    fPIDMode(kSigma), fDebugMode(kFALSE), fNBinsY(100), fMinY(0), fMaxY(100), fMinTPCClusters(80), fMinITSClusters(2), fMaxChi2PerTPCCluster(3.5), fMaxChi2PerITSCluster(36.), fMaxDCAXY(10.), fMaxDCAZ(1.), fNBoundP(0.7), fNSigma1(3), fNSigma2(3), fNRatio1(0), fNRatio2(0), MAXCent(100), MINCent(0), fMaxDCAXYFlag(kTRUE), fMaxDCAZFlag(kFALSE), fListQA(0), gHistPrimaryProtonsDCAzEtaPt(0), gHistPrimaryAntiProtonsDCAzEtaPt(0), gHistSecondaryProtonsFromWeakDCAzEtaPt(0), gHistSecondaryAntiProtonsFromWeakDCAzEtaPt(0), gHistSecondaryProtonsFromHadronicDCAzEtaPt(0), gHistSecondaryAntiProtonsFromHadronicDCAzEtaPt(0), gHistPrimaryProtonsDCAzCentPt(0), gHistPrimaryAntiProtonsDCAzCentPt(0), gHistSecondaryProtonsFromWeakDCAzCentPt(0), gHistSecondaryAntiProtonsFromWeakDCAzCentPt(0), gHistSecondaryProtonsFromHadronicDCAzCentPt(0), gHistSecondaryAntiProtonsFromHadronicDCAzCentPt(0)
 {
   // Dummy constructor
 }
@@ -76,7 +76,7 @@ AliAnalysisTaskProtonQA::AliAnalysisTaskProtonQA(const char *name)
     fUsePhysicsSelection(1), fMaxPrimaryVtxPosZ(100.) ,fPhysicsSelection(0),fMultiplicityMode(0), fListHist(),
     gHistPrimaryProtonsDCAxyEtaPt(0), gHistPrimaryAntiProtonsDCAxyEtaPt(0), gHistSecondaryProtonsFromWeakDCAxyEtaPt(0), gHistSecondaryAntiProtonsFromWeakDCAxyEtaPt(0), gHistdEdxP(0), gHistProtonsdEdxP(0),
     gHistSecondaryProtonsFromHadronicDCAxyEtaPt(0), gHistSecondaryAntiProtonsFromHadronicDCAxyEtaPt(0),
-    fPIDMode(kSigma), fDebugMode(kFALSE), fNBinsY(100), fMinY(0), fMaxY(100), fMinTPCClusters(80), fMinITSClusters(2), fMaxChi2PerTPCCluster(3.5), fMaxChi2PerITSCluster(36.), fMaxDCAXY(10.), fMaxDCAZ(1.), fNBoundP(0.7), fNSigma1(3), fNSigma2(3), fNRatio1(0), fNRatio2(0), MAXCent(100), MINCent(0), fMaxDCAXYFlag(kTRUE), fMaxDCAZFlag(kFALSE), fListQA(0), gHistPrimaryProtonsDCAzEtaPt(0), gHistPrimaryAntiProtonsDCAzEtaPt(0), gHistSecondaryProtonsFromWeakDCAzEtaPt(0), gHistSecondaryAntiProtonsFromWeakDCAzEtaPt(0), gHistSecondaryProtonsFromHadronicDCAzEtaPt(0), gHistSecondaryAntiProtonsFromHadronicDCAzEtaPt(0), gHistPrimaryProtonsDCAzCentPt(0), gHistPrimaryAntiProtonsDCAzCentPt(0), gHistSecondaryProtonsFromWeakDCAzCentPt(0), gHistSecondaryAntiProtonsFromWeakDCAzCentPt(0), gHistSecondaryProtonsFromHadronicDCAzCentPt(0), gHistSecondaryAntiProtonsFromHadronicDCAzCentPt(0), fOADBPath(0)
+    fPIDMode(kSigma), fDebugMode(kFALSE), fNBinsY(100), fMinY(0), fMaxY(100), fMinTPCClusters(80), fMinITSClusters(2), fMaxChi2PerTPCCluster(3.5), fMaxChi2PerITSCluster(36.), fMaxDCAXY(10.), fMaxDCAZ(1.), fNBoundP(0.7), fNSigma1(3), fNSigma2(3), fNRatio1(0), fNRatio2(0), MAXCent(100), MINCent(0), fMaxDCAXYFlag(kTRUE), fMaxDCAZFlag(kFALSE), fListQA(0), gHistPrimaryProtonsDCAzEtaPt(0), gHistPrimaryAntiProtonsDCAzEtaPt(0), gHistSecondaryProtonsFromWeakDCAzEtaPt(0), gHistSecondaryAntiProtonsFromWeakDCAzEtaPt(0), gHistSecondaryProtonsFromHadronicDCAzEtaPt(0), gHistSecondaryAntiProtonsFromHadronicDCAzEtaPt(0), gHistPrimaryProtonsDCAzCentPt(0), gHistPrimaryAntiProtonsDCAzCentPt(0), gHistSecondaryProtonsFromWeakDCAzCentPt(0), gHistSecondaryAntiProtonsFromWeakDCAzCentPt(0), gHistSecondaryProtonsFromHadronicDCAzCentPt(0), gHistSecondaryAntiProtonsFromHadronicDCAzCentPt(0)
 {
   // Constructor
   // Define output slots only here
@@ -114,9 +114,6 @@ void AliAnalysisTaskProtonQA::UserCreateOutputObjects()
   inputHandler->CreatePIDResponse(kFALSE);
   fPIDResponse=inputHandler->GetPIDResponse();
   if (!fPIDResponse) AliFatal("PIDResponse object was not created");
-
-  fPIDResponse->SetOADBPath(AliAnalysisManager::GetOADBPath());
-  if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
 
 //  fTPCpid = dynamic_cast<AliTPCPIDResponse&>(fPIDResponse->GetTPCResponse());
 

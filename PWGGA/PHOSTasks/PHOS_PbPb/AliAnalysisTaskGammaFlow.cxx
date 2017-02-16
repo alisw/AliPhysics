@@ -18,6 +18,7 @@
 #include "THashList.h"
 
 #include "AliAnalysisManager.h"
+#include "AliDataFile.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
@@ -515,7 +516,7 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
       
     // TPC Event Plane Weights
     AliOADBContainer *fEPContainer=NULL;
-    TString oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
+    TString oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist.root");
 
     TFile foadb(oadbfilename);
     if(!foadb.IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));

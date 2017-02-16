@@ -50,6 +50,8 @@
 
 #include <AliMultiplicity.h>
 
+#include "AliDataFile.h"
+
 #include "AliTOFTenderSupply.h"
 
 ClassImp(AliTOFTenderSupply)
@@ -1268,9 +1270,9 @@ void AliTOFTenderSupply::LoadTOFPIDParams(Int_t runNumber)
   fTOFPIDParams=0x0;
   
   //  TFile *oadbf = new TFile("$ALICE_PHYSICS/OADB/COMMON/PID/data/TOFPIDParams.root");
-  TFile *oadbf = new TFile(Form("%s/COMMON/PID/data/TOFPIDParams.root",AliAnalysisManager::GetOADBPath()));
+  TFile *oadbf = AliDataFile::OpenOADB("COMMON/PID/data/TOFPIDParams.root");
   if (oadbf && oadbf->IsOpen()) {
-    AliInfo(Form("Tender loading TOF OADB Params from %s/COMMON/PID/data/TOFPIDParams.root",AliAnalysisManager::GetOADBPath()));
+    AliInfo(Form("Tender loading TOF OADB Params from %s",AliDataFile::GetFileNameOADB("COMMON/PID/data/TOFPIDParams.root").c_str()));
     AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("TOFoadb");
     Int_t passNr = fRecoPass;
     if (fIsMC) passNr=2;   // this is because tender on MC is used only for pass2 LHC10
@@ -1282,7 +1284,7 @@ void AliTOFTenderSupply::LoadTOFPIDParams(Int_t runNumber)
   delete oadbf;
 
   if (!fTOFPIDParams) {
-    AliError(Form("TOFPIDParams.root not found in %s/COMMON/PID/data !!",AliAnalysisManager::GetOADBPath()));
+    AliError("TOFPIDParams.root not found");
     fTOFPIDParams = new AliTOFPIDParams;  // the default is set as pp/pPb with kBest_T0
     AliInfo("TOFPIDparams taken from default object"); 
     //    fTOFPIDParams->SetStartTimeMethod(AliESDpid::kTOF_T0);

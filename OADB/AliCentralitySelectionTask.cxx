@@ -37,6 +37,7 @@
 #include <iostream>
 
 #include "AliAnalysisManager.h"
+#include "AliDataFile.h"
 #include "AliHeader.h"
 #include "AliVEvent.h"
 #include "AliESD.h"
@@ -2005,7 +2006,7 @@ Int_t AliCentralitySelectionTask::SetupRun(const AliVEvent* const esd)
   else
     fCurrentRun = esd->GetRunNumber();
 
-  TString fileName =(Form("%s/COMMON/CENTRALITY/data/centrality.root", AliAnalysisManager::GetOADBPath()));
+  TString fileName = AliDataFile::GetFileNameOADB("COMMON/CENTRALITY/data/centrality.root");
   AliInfo(Form("Setup Centrality Selection for run %d with file %s\n",fCurrentRun,fileName.Data()));
 
   AliOADBContainer *con = new AliOADBContainer("OADB");

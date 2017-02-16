@@ -95,7 +95,6 @@ class AliAnalysisTaskProtonAbsorbtion : public AliAnalysisTaskSE {
 Double_t Rapidity(Double_t,Double_t,Double_t,Int_t)const;
 
 private:
-  TString fOADBPath;                   // OADB path to use
   AliPIDResponse *fPIDResponse;        //! PID response Handler
 
 

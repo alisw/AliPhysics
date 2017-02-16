@@ -19,6 +19,7 @@
 #include <AliAnalysisCuts.h>
 #include <TList.h>
 #include "TObjString.h"
+#include "AliDataFile.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
@@ -78,7 +79,9 @@ public:
   void SetBin0CallbackViaPointer( Bin0Callback_t cb) { AliError("This method is deprecated"); }
   void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { AliError("This method is deprecated"); }
   
-  static const char * GetOADBFileName() { static TString filename; filename.Form("%s/COMMON/PHYSICSSELECTION/data/physicsSelection.root", AliAnalysisManager::GetOADBPath()); return filename.Data();};
+  static const char * GetOADBFileName() { 
+    return AliDataFile::GetFileNameOADB("COMMON/PHYSICSSELECTION/data/physicsSelection.root").c_str();
+  }
 
   void SetPassName(const TString passName) { fPassName = passName; }
   void DetectPassName();

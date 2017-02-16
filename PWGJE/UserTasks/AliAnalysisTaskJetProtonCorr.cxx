@@ -11,6 +11,7 @@
 
 // analysis framework
 #include "AliAnalysisManager.h"
+#include "AliDataFile.h"
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
@@ -224,11 +225,9 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
   // create user output objects
 
   // open OADB file and retrieve the OADB container with TOF parameters
-  TString oadbFileName =
-    TString::Format("%s/COMMON/PID/data/TOFPIDParams.root", AliAnalysisManager::GetOADBPath());
-  TFile *oadbFile = TFile::Open(oadbFileName); 
+  TFile *oadbFile = AliDataFile::OpenOADB("COMMON/PID/data/TOFPIDParams.root");
   if(!oadbFile->IsOpen())
-    AliFatal(Form("Cannot open OADB file %s", oadbFileName.Data()));
+    AliFatal("Cannot open OADB file");
   AliOADBContainer *oadbContainer =
     (AliOADBContainer*) oadbFile->Get("TOFoadb");
   if (!oadbContainer)

@@ -1106,7 +1106,6 @@ Bool_t AliTPCcalibResidualPID::ProcessV0Tree(TTree* tree, THnSparseF* h, const I
   //set up the PID response
   if (!fPIDResponse) {
     fPIDResponse=new AliPIDResponse;
-    fPIDResponse->SetOADBPath("$ALICE_PHYSICS/OADB");
     delete fESD;
     fESD = new AliESDEvent;
     fESD->CreateStdContent();

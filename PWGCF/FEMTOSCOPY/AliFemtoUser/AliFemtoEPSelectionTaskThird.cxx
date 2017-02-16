@@ -57,6 +57,7 @@
 #include "AliBackgroundSelection.h"
 #include "AliESDUtils.h"
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 #include "AliAODMCHeader.h"
 #include "AliAODTrack.h"
 #include "AliVTrack.h"
@@ -820,9 +821,9 @@ void AliFemtoEPSelectionTaskThird::SetOADBandPeriod()
         if (!fUserphidist) { // if it's already set and custom class is required, we use the one provided by the user
             
             if (fAnalysisInput.CompareTo("AOD")==0){
-                oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.aod.root", AliAnalysisManager::GetOADBPath()));
+                oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist.aod.root");
             } else if (fAnalysisInput.CompareTo("ESD")==0){
-                oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
+                oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist.root");
             }
             
             TFile foadb(oadbfilename);
@@ -840,7 +841,7 @@ void AliFemtoEPSelectionTaskThird::SetOADBandPeriod()
         if (!fUserphidist) {
             // if it's already set and custom class is required, we use the one provided by the user
             
-            oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist2011.root", AliAnalysisManager::GetOADBPath()));
+            oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist2011.root");
             TFile *foadb = TFile::Open(oadbfilename);
             if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
             

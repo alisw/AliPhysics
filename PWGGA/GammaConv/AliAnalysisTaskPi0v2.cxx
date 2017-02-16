@@ -13,6 +13,7 @@
 
 #include "TFile.h"
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 #include "AliEPSelectionTask.h"
 
@@ -1591,9 +1592,9 @@ void AliAnalysisTaskPi0v2::LoadTPCCalibration(Int_t run){
 	if (fPeriod.CompareTo("LHC10h")==0){
 		// LHC10h
 		if(fIsAOD){
-			oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.aod.root", AliAnalysisManager::GetOADBPath()));
+                  oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist.aod.root");
 		} else{
-			oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
+                  oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist.root");
 		}
 
 		TFile foadb(oadbfilename);
@@ -1630,7 +1631,7 @@ void AliAnalysisTaskPi0v2::LoadTPCCalibration(Int_t run){
 
 	if (fPeriod.CompareTo("LHC11h")==0){
 		// LHC11h
-		oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist2011.root", AliAnalysisManager::GetOADBPath()));
+                oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist2011.root");
 		TFile *foadb = TFile::Open(oadbfilename);
 		if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
 
