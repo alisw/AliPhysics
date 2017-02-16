@@ -23,7 +23,7 @@
 #include <TRandom.h>
 
 #include "AliEMCALTriggerConstants.h"
-#include "AliEMCALTriggerPatchInfoV1.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
@@ -68,10 +68,10 @@ bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls
   AliDebugStream(1) << "Using patch trigger with energy definition " << fEnergyDefinition << std::endl;
   bool isSingleShower = IsSingleShower(trgcls), isDCAL = IsDCAL(trgcls);
   int nfound = 0;
-  AliEMCALTriggerPatchInfoV1 *patch = NULL;
+  AliEMCALTriggerPatchInfo *patch = NULL;
   std::vector<double> patchefficiencies;
   for(auto patchIter : *triggerpatches){
-    patch = static_cast<AliEMCALTriggerPatchInfoV1 *>(patchIter);
+    patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
     if(!patch->IsOfflineSimple()) continue;
     if((isDCAL && !patch->IsDCalPHOS()) || (!isDCAL && patch->IsDCalPHOS())) continue;      // reject patches in opposite detector
     if(isSingleShower){
@@ -79,13 +79,13 @@ bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls
     } else {
       if(!patch->IsJetLowSimple()) continue;
     }
-    AliDebugStream(1) << "Patch energy: " << patch->GetPatchE() << ", smeared " << patch->GetSmearedETV1() << std::endl;
+    AliDebugStream(1) << "Patch energy: " << patch->GetPatchE() << ", smeared " << patch->GetSmearedEnergy() << std::endl;
     double energy(0);
     // No switch as only cases for patches are handled in this class
     if(fEnergyDefinition == kFEEEnergy){
       if(fUseSmearedEnergy){
         AliDebugStream(1) << "Using smeared energy" << std::endl;
-        energy = patch->GetSmearedEnergyV1();
+        energy = patch->GetSmearedEnergy();
       } else {
         AliDebugStream (1) << "Using default energy" << std::endl;
         energy = patch->GetPatchE();
@@ -93,7 +93,9 @@ bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls
     }
     else if(fEnergyDefinition == kFEETransverseEnergy){
       if(fUseSmearedEnergy){
-        energy = patch->GetSmearedETV1();
+        TLorentzVector cm = patch->GetLorentzVectorCM();
+        cm.SetE(patch->GetSmearedEnergy());
+        energy = cm.Et();
       } else {
         energy = patch->GetPatchET();
       }

@@ -13,7 +13,7 @@
 class TClonesArray;
 class THistManager;
 class AliVVZERO;
-class AliEMCALTriggerPatchInfoV1;
+class AliEMCALTriggerPatchInfo;
 
 /**
  * @class AliEmcalTriggerMakerTask
@@ -219,7 +219,7 @@ protected:
    * @param[in] patchtype Patchtype of the histograms to be filled
    * @param[in] recpatch Patch to be monitored
    */
-  void FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfoV1 &recpatch);
+  void FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch);
 
   /**
    * @brief RunChanged method of the trigger maker.

@@ -27,7 +27,7 @@
 
 #include "AliAnalysisUtils.h"
 #include "AliESDEvent.h"
-#include "AliEMCALTriggerPatchInfoV1.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -123,7 +123,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
   Double_t energy, eta, phi, et, smearedenergy;
   Int_t col, row;
   for(auto patchIter : *fTriggerPatchInfo){
-    AliEMCALTriggerPatchInfoV1 *patch = static_cast<AliEMCALTriggerPatchInfoV1 *>(patchIter);
+    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
     if(!patch->IsOfflineSimple()) continue;
 
     bool isDCAL         = patch->IsDCalPHOS(),
@@ -158,7 +158,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
 
     TLorentzVector posvec;
     energy = fUseRecalcPatches ? patch->GetADCAmpGeVRough() : patch->GetPatchE();
-    smearedenergy = patch->GetSmearedEnergyV1();
+    smearedenergy = patch->GetSmearedEnergy();
     eta = patch->GetEtaGeo();
     phi = patch->GetPhiGeo();
     col = patch->GetColStart();

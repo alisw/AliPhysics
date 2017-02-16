@@ -28,7 +28,7 @@
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALTriggerDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
-#include "AliEMCALTriggerPatchInfoV1.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliEmcalTriggerMakerTask.h"
 #include "AliEMCALTriggerMapping.h"
@@ -39,6 +39,7 @@
 #include <bitset>
 #include <cfloat>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -181,13 +182,12 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
   if (!fLocalInitialized) return;
 
   if (!fCaloTriggersOutName.IsNull()) {
-    fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfoV1");
+    fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfo");
     fCaloTriggersOut->SetName(fCaloTriggersOutName);
 
     if (!(InputEvent()->FindListObject(fCaloTriggersOutName))) {
       InputEvent()->AddObject(fCaloTriggersOut);
-    }
-    else {
+    } else {
       fLocalInitialized = kFALSE;
       AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fCaloTriggersOutName.Data()));
       return;
@@ -244,7 +244,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
  * @return True
  */
 Bool_t AliEmcalTriggerMakerTask::Run(){
-  fCaloTriggersOut->Clear();
+  fCaloTriggersOut->Delete(); // Needed to avoid memory leak
   // prepare trigger maker
   fTriggerMaker->Reset();
   fTriggerMaker->ReadCellData(fCaloCells);
@@ -286,38 +286,37 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
     }
   }
 
-  TObjArray *patches = fTriggerMaker->CreateTriggerPatches(InputEvent(), fUseL0Amplitudes);
-  AliEMCALTriggerPatchInfoV1 *recpatch = NULL;
+  std::vector<AliEMCALTriggerPatchInfo> patches;
+  fTriggerMaker->CreateTriggerPatches(InputEvent(), patches, fUseL0Amplitudes);
   Int_t patchcounter = 0;
   TString triggerstring;
-  AliDebugStream(2) << GetName() << ": Found " << patches->GetEntries() << " patches" << std::endl;
-  for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
-    recpatch = dynamic_cast<AliEMCALTriggerPatchInfoV1 *>(*patchIter);
+  AliDebugStream(2) << GetName() << ": Found " << patches.size() << " patches" << std::endl;
+  for(const auto &patchIter : patches){
     if(fDoQA){
-      AliDebugStream(3) <<  GetName() << ": Next patch: size " << recpatch->GetPatchSize() << " , trigger bits " << std::bitset<sizeof(Int_t)*8>(recpatch->GetTriggerBits()) << std::endl;
+      AliDebugStream(3) <<  GetName() << ": Next patch: size " << patchIter.GetPatchSize() << " , trigger bits " << std::bitset<sizeof(Int_t)*8>(patchIter.GetTriggerBits()) << std::endl;
       // Handle types different - online - offline - re
-      if(recpatch->IsJetHigh() || recpatch->IsJetLow())                   FillQAHistos("EJEOnline", *recpatch);
-      if(recpatch->IsGammaHigh() || recpatch->IsGammaLow())               FillQAHistos("EGAOnline", *recpatch);
-      if(recpatch->IsJetHighSimple() || recpatch->IsJetLowSimple())       FillQAHistos("EJEOffline", *recpatch);
-      if(recpatch->IsGammaHighSimple() || recpatch->IsGammaLowSimple())   FillQAHistos("EGAOffline", *recpatch);
-      if(recpatch->IsLevel0())                                            FillQAHistos("EL0Online", *recpatch);
-      if(recpatch->IsRecalcJet())                                         FillQAHistos("EJERecalc", *recpatch);
-      if(recpatch->IsRecalcGamma())                                       FillQAHistos("EGARecalc", *recpatch);
+      if(patchIter.IsJetHigh() || patchIter.IsJetLow())                   FillQAHistos("EJEOnline", patchIter);
+      if(patchIter.IsGammaHigh() || patchIter.IsGammaLow())               FillQAHistos("EGAOnline", patchIter);
+      if(patchIter.IsJetHighSimple() || patchIter.IsJetLowSimple())       FillQAHistos("EJEOffline", patchIter);
+      if(patchIter.IsGammaHighSimple() || patchIter.IsGammaLowSimple())   FillQAHistos("EGAOffline", patchIter);
+      if(patchIter.IsLevel0())                                            FillQAHistos("EL0Online", patchIter);
+      if(patchIter.IsRecalcJet())                                         FillQAHistos("EJERecalc", patchIter);
+      if(patchIter.IsRecalcGamma())                                       FillQAHistos("EGARecalc", patchIter);
       // Redo checking of found trigger bits after masking of unwanted triggers
-      int tBits = recpatch->GetTriggerBits();
+      int tBits = patchIter.GetTriggerBits();
       for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
         if(tBits & (1 << ibit)){
           fQAHistos->FillTH1("triggerBitsSel", ibit);
         }
       }
     }
-    new((*fCaloTriggersOut)[patchcounter++]) AliEMCALTriggerPatchInfoV1(*recpatch);
+    new((*fCaloTriggersOut)[patchcounter++]) AliEMCALTriggerPatchInfo(patchIter);
   }
-  if(patches) delete patches;
   return true;
 }
 
 void AliEmcalTriggerMakerTask::RunChanged(Int_t newrun){
+  AliDebugStream(1) << "Run changed, new run " << newrun << std::endl;
   fTriggerMaker->ClearOfflineBadChannels();
   if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
   fTriggerMaker->ClearFastORBadChannels();
@@ -431,12 +430,12 @@ std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMas
   }
 }
 
-void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfoV1 &recpatch){
+void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch){
   fQAHistos->FillTH2("RCPos" + patchtype, recpatch.GetColStart(), recpatch.GetRowStart());
   fQAHistos->FillTH2("EPCentPos" + patchtype, recpatch.GetEtaGeo(), recpatch.GetPhiGeo());
   fQAHistos->FillTH2("PatchADCvsE" + patchtype, recpatch.GetADCAmp(), recpatch.GetPatchE());
-  fQAHistos->FillTH2("PatchEvsEsmear" + patchtype, recpatch.GetPatchE(), recpatch.GetSmearedEnergyV1());
-  fQAHistos->FillTH2("PatchADCvsEsmear" + patchtype, recpatch.GetADCAmp(), recpatch.GetSmearedEnergyV1());
+  fQAHistos->FillTH2("PatchEvsEsmear" + patchtype, recpatch.GetPatchE(), recpatch.GetSmearedEnergy());
+  fQAHistos->FillTH2("PatchADCvsEsmear" + patchtype, recpatch.GetADCAmp(), recpatch.GetSmearedEnergy());
   fQAHistos->FillTH2("PatchADCOffvsE" + patchtype, recpatch.GetADCOfflineAmp(), recpatch.GetPatchE());
   fQAHistos->FillTH2("PatchEvsADCrough" + patchtype, recpatch.GetPatchE(), recpatch.GetADCAmpGeVRough());
 }

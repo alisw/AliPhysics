@@ -26,7 +26,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerConstants.h"
 #include "AliEMCALTriggerDataGrid.h"
-#include "AliEMCALTriggerPatchInfoV1.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerPatchFinder.h"
 #include "AliEMCALTriggerAlgorithm.h"
 #include "AliEMCALTriggerRawPatch.h"
@@ -455,7 +455,7 @@ void AliEmcalTriggerMakerKernel::BuildL1ThresholdsOffline(const AliVVZERO *vzero
   }
 }
 
-TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent, Bool_t useL0amp){
+void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent, std::vector<AliEMCALTriggerPatchInfo> &outputcont, Bool_t useL0amp){
   //std::cout << "Finding trigger patches" << std::endl;
   //AliEMCALTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
   //AliEMCALTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
@@ -496,8 +496,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
     }
   }
-  TObjArray *result = new TObjArray(1000);
-  result->SetOwner(kTRUE);
+  outputcont.clear();
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
     // Apply offline and recalc selection
     // Remove unwanted bits from the online bits (gamma bits from jet patches and vice versa)
@@ -523,23 +522,24 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       onlinebits &= bkgPatchMask;
     }
     // convert
-    AliEMCALTriggerPatchInfoV1 *fullpatch = AliEMCALTriggerPatchInfoV1::CreateAndInitializeV1(patchit->GetColStart(), patchit->GetRowStart(),
+    AliEMCALTriggerPatchInfo fullpatch;
+    fullpatch.Initialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * fADCtoGeV,
         onlinebits | offlinebits, vertexvec, fGeometry);
-    fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
-    fullpatch->SetOffSet(offset);
+    fullpatch.SetTriggerBitConfig(fTriggerBitConfig);
+    fullpatch.SetOffSet(offset);
     if(fPatchEnergySimpleSmeared){
       // Add smeared energy
       double energysmear = 0;
-      for(int icol = 0; icol < fullpatch->GetPatchSize(); icol++){
-        for(int irow = 0; irow < fullpatch->GetPatchSize(); irow++){
-          energysmear += (*fPatchEnergySimpleSmeared)(fullpatch->GetColStart() + icol, fullpatch->GetRowStart() + irow);
+      for(int icol = 0; icol < fullpatch.GetPatchSize(); icol++){
+        for(int irow = 0; irow < fullpatch.GetPatchSize(); irow++){
+          energysmear += (*fPatchEnergySimpleSmeared)(fullpatch.GetColStart() + icol, fullpatch.GetRowStart() + irow);
         }
       }
-      AliDebugStream(1) << "Patch size(" << fullpatch->GetPatchSize() <<") energy " << fullpatch->GetPatchE() << " smeared " << energysmear << std::endl;
-      fullpatch->SetSmearedEnergyV1(energysmear);
+      AliDebugStream(1) << "Patch size(" << fullpatch.GetPatchSize() <<") energy " << fullpatch.GetPatchE() << " smeared " << energysmear << std::endl;
+      fullpatch.SetSmearedEnergy(energysmear);
     }
-    result->Add(fullpatch);
+    outputcont.push_back(fullpatch);
   }
 
   // Find Level0 patches
@@ -554,24 +554,24 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
     if (patchit->GetADC() > fL0Threshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetLevel0Bit());
     if (patchit->GetOfflineADC() > fL0Threshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
 
-    AliEMCALTriggerPatchInfoV1 *fullpatch = AliEMCALTriggerPatchInfoV1::CreateAndInitializeV1(patchit->GetColStart(), patchit->GetRowStart(),
+    AliEMCALTriggerPatchInfo fullpatch;
+    fullpatch.Initialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * fADCtoGeV,
         onlinebits | offlinebits, vertexvec, fGeometry);
-    fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
+    fullpatch.SetTriggerBitConfig(fTriggerBitConfig);
     if(fPatchEnergySimpleSmeared){
       // Add smeared energy
       double energysmear = 0;
-      for(int icol = 0; icol < fullpatch->GetPatchSize(); icol++){
-        for(int irow = 0; irow < fullpatch->GetPatchSize(); irow++){
-          energysmear += (*fPatchEnergySimpleSmeared)(fullpatch->GetColStart() + icol, fullpatch->GetRowStart() + irow);
+      for(int icol = 0; icol < fullpatch.GetPatchSize(); icol++){
+        for(int irow = 0; irow < fullpatch.GetPatchSize(); irow++){
+          energysmear += (*fPatchEnergySimpleSmeared)(fullpatch.GetColStart() + icol, fullpatch.GetRowStart() + irow);
         }
       }
-      fullpatch->SetSmearedEnergyV1(energysmear);
+      fullpatch.SetSmearedEnergy(energysmear);
     }
-    result->Add(fullpatch);
+    outputcont.push_back(fullpatch);
   }
   // std::cout << "Finished finding trigger patches" << std::endl;
-  return result;
 }
 
 
