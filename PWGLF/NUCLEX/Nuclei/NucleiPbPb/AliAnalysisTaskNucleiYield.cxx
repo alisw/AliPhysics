@@ -360,6 +360,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
     if (fIsMC) {
       AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
+      const int mother_id = part->GetMother();
+      AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)stack->At(mother_id) : 0x0;
+      const int mother_pdg = mother ? TMath::Abs(mother->GetPdgCode()) : 0;
+      const bool isFromHyperNucleus = (mother_pdg > 1000000000 && (mother_pdg / 10000000) % 10 != 0);
       if (!part) continue;
       const int iC = part->Charge() > 0 ? 1 : 0;
       if (std::abs(part->GetPdgCode()) == fPDG) {
@@ -367,7 +371,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           fReconstructed[iR][iC]->Fill(centrality,part->Pt());
           if (part->IsPhysicalPrimary())
             fDCAPrimary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
-          else if (part->IsSecondaryFromMaterial())
+          else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
             fDCASecondary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
           else
             fDCASecondaryWeak[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
