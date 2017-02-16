@@ -409,7 +409,7 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		}
 	}
 
-	if(fESMethod==4) { // di-jet
+	if(fESMethod==5) { // di-jet Asymm
 		// Make a decision for running the analysis or not
 		// analyze the events only if we find a pt > PtHardMin
 		TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(fJetSel); // only selected jet
@@ -419,6 +419,26 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		if(  Ljet && subLjet ) { 
 			double ptt = Ljet->Pt();
 			fHistos->fhJetPt[cBin]->Fill(ptt);
+			double asym = (Ljet->Pt() - subLjet->Pt())/(Ljet->Pt() - subLjet->Pt());
+			double InvM = ( *Ljet + *subLjet).M();
+			fHistos->fhDiJetAsym[cBin]->Fill( asym );
+			fHistos->fhRecoDiJetM[cBin]->Fill( InvM );
+			if( ptt > fPtHardMin && ptt < fPtHardMax && subLjet->Pt()>minSubLeadingJetPt && asym > fDiJetAsymMin ) TagThisEvent = kTRUE;
+		}
+	} else if(fESMethod==4) { // di-jet
+		// Make a decision for running the analysis or not
+		// analyze the events only if we find a pt > PtHardMin
+		TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(fJetSel); // only selected jet
+		AliJJet *Ljet = dynamic_cast<AliJJet*>( fjets->At(0) );
+		AliJJet *subLjet = dynamic_cast<AliJJet*>( fjets->At(1) );
+		double minSubLeadingJetPt = 5.0;
+		if(  Ljet && subLjet ) { 
+			double ptt = Ljet->Pt();
+			fHistos->fhJetPt[cBin]->Fill(ptt);
+			double asym = (Ljet->Pt() - subLjet->Pt())/(Ljet->Pt() - subLjet->Pt());
+			double InvM = ( *Ljet + *subLjet).M();
+			fHistos->fhDiJetAsym[cBin]->Fill( asym );
+			fHistos->fhRecoDiJetM[cBin]->Fill( InvM );
 			if( ptt > fPtHardMin && ptt < fPtHardMax && subLjet->Pt()>minSubLeadingJetPt ) TagThisEvent = kTRUE;
 		}
 	} else if(fESMethod==3) { // Leading jet

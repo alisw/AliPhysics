@@ -208,7 +208,7 @@ public:
   AliJTH1D fhLeadingJetPt; //! comment me
   AliJTH1D fhLeadingJetWLPPt; //! comment me
   
-  AliJTH1D fhJetAssymPTt; //! comment me
+  AliJTH1D fhDiJetAsym; //! dijet asymmetry in cbin
   AliJTH1D fhJetMassPTt; //! comment me
   AliJTH1D fhJetUEPt; //! comment me
   
