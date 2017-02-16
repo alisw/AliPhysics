@@ -1,6 +1,8 @@
 #ifndef ALIANALYSISTASKRECOILJETYIELD_H
 #define ALIANALYSISTASKRECOILJETYIELD_H
 
+#define LOG_NO_WARNING
+
 class TH1;
 class TH2;
 class TH3;
@@ -17,7 +19,7 @@ class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
-const Int_t nBranch = 11;
+const Int_t nBranch = 13;
 class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -81,6 +83,8 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   void SetDoSoftDrop(Bool_t SoftDrop)                       {fDoSoftDrop = SoftDrop;}
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
+  void SetRhoName(const char *r)                              {fRhoName = r;}
+  
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -92,12 +96,10 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
 
   Double_t                            Angularity(AliEmcalJet *Jet, Int_t JetContNb);
   Double_t                            PTD(AliEmcalJet *Jet, Int_t JetContNb);
-  // Float_t                             FJNSubjettiness(fj::PseudoJet Jet, Int_t N, Double_t beta, Double_t R0, Double_t Rcut);
-  AliEmcalJet                         *SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta);
+  void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta);
   Int_t                               SelectTriggerHadron(Float_t PtMin, Float_t PtMax);
   
   
-  // AliAODEvent                           *fEvent;
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetShapeType                        fJetShapeType;               // jet type to be used
@@ -129,6 +131,9 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   Double_t                            fBeta_SD;
   Double_t                            fZCut;
   Bool_t                              fDoSoftDrop;
+  Double_t                            fRho;
+  TString                             fRhoName;
+  AliRhoParameter                     *fRhoParam;
 
   Bool_t                              fNsubMeasure;
   
@@ -146,7 +151,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhPhiTriggerHadronEventPlane;
   TH1F                                *fhPhiTriggerHadronEventPlaneTPC;
   TH1F                                *fhTrackPt;
-  TTree                               *fTreeJetInfo;  //Tree with tagging variables subtracted MC or true MC or raw 
+  TTree                               *fTreeJetInfo;  //Tree with tagging variables subtracted MC or true MC or raw
 
  private:
   AliAnalysisTaskRecoilJetYield(const AliAnalysisTaskRecoilJetYield&);            // not implemented

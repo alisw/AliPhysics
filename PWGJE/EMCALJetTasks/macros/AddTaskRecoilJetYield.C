@@ -1,4 +1,4 @@
-AliAnalysisTaskRecoilJetYield* AddTaskAliAnalysisTaskRecoilJetYield(const char * njetsData, //data jets
+AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //data jets
 								    const char * njetsTrue, //Pyhthia Particle Level
 								    const char * njetsDet,
 								    const char * njetsHybridUs,

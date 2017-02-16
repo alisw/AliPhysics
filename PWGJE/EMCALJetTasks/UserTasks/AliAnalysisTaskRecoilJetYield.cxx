@@ -94,6 +94,8 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fFullTree(kFALSE),
   fBeta_SD(0),
   fZCut(0.1),
+  fRho(1e-6),
+  fRhoParam(0),
   fNsubMeasure(kFALSE),
   fDoSoftDrop(kFALSE),
   fhJetPt(0x0),
@@ -150,6 +152,8 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fFullTree(kFALSE),
   fBeta_SD(0),
   fZCut(0.1),
+  fRho(1e-6),
+  fRhoParam(0),
   fNsubMeasure(kFALSE),
   fDoSoftDrop(kFALSE),
   fhJetPt(0x0),
@@ -198,7 +202,7 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   fTreeJetInfo = new TTree(nameoutput, nameoutput);
   
   if (!fFullTree){
-    const Int_t nVarMin = 11; 
+    const Int_t nVarMin = 13;
     TString *fJetInfoVarNames = new TString [nVarMin];
   
     fJetInfoVarNames[0] = "Pt";
@@ -212,6 +216,8 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fJetInfoVarNames[8] = "JetPtNoCut";
     fJetInfoVarNames[9] = "PTD";
     fJetInfoVarNames[10] = "Angularity";
+    fJetInfoVarNames[11] = "Centrality";
+    fJetInfoVarNames[12] = "DelR";
   
     
     for(Int_t ivar=0; ivar < nVarMin; ivar++){
@@ -219,7 +225,6 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
       fTreeJetInfo->Branch(fJetInfoVarNames[ivar].Data(), &fJetInfoVar[ivar], Form("%s/D", fJetInfoVarNames[ivar].Data()));
     }
   }
-  
 
   if (fJetShapeType==AliAnalysisTaskRecoilJetYield::kData){
     
@@ -289,15 +294,15 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
   if (fCentSelectOn){
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   }
-  
+ 
   AliAODTrack *TriggerHadron = 0x0;
   if (fJetSelection == kRecoil) {
     //you have to set a flag and the limits of the pT interval for your trigger
     Int_t TriggerHadronLabel = SelectTriggerHadron(fPtMinTriggerHadron, fPtMaxTriggerHadron);
     if (TriggerHadronLabel==-99999) return 0;  //Trigger Hadron Not Found
     AliTrackContainer *PartCont =NULL;
-    if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
-    else PartCont = GetTrackContainer(0);
+    if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer("tracksConstSub");
+    else PartCont = GetTrackContainer("tracks");
     TClonesArray *TrackArray = PartCont->GetArray();
     TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
     if (!TriggerHadron) return 0;//No trigger hadron with label found   
@@ -309,7 +314,6 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     fhPhiTriggerHadronEventPlane->Fill(TMath::Abs(RelativePhiEventPlane(fEPV0,TriggerHadron->Phi()))); //fEPV0 is the event plane from AliAnalysisTaskEmcal
     fhPhiTriggerHadronEventPlaneTPC->Fill(TMath::Abs(RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),TriggerHadron->Phi()))); //TPC event plane 
   }
-  
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kData){
     AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                         
     AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
@@ -359,11 +363,13 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[3]=0;
 	    fJetInfoVar[4]=0;
 	    fJetInfoVar[5]=0;
+	    fJetInfoVar[12]=0;
 	  }		    
 	  fJetInfoVar[6]=Jet1->M();
-	  fJetInfoVar[7]=0;
+	  fJetInfoVar[7]=Jet1->GetNumberOfConstituents();
 	  fJetInfoVar[9]=PTD(Jet1,0);
 	  fJetInfoVar[10]=Angularity(Jet1,0);
+	  fJetInfoVar[11]=fCent;
 	  fTreeJetInfo->Fill();
 	}
       }
@@ -444,7 +450,7 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
 }
 
 //_________________________________________________________________________
-AliEmcalJet *AliAnalysisTaskRecoilJetYield::SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta){
+void AliAnalysisTaskRecoilJetYield::SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta){
   std::vector<fastjet::PseudoJet>        fInputVectors;
   Double_t JetInvMass=0, PseudJetInvMass=0, TrackMom = 0, TrackEnergy = 0;
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
@@ -482,17 +488,48 @@ AliEmcalJet *AliAnalysisTaskRecoilJetYield::SoftDrop(AliEmcalJet *fJet,AliJetCon
 
   std::vector<fastjet::PseudoJet>       fOutputJets;
   fOutputJets.clear();
-  fOutputJets=fClustSeqSA->inclusive_jets(fJet->Pt()-0.1);
-  //Float_t tau1NoSD = FJNSubjettiness(fOutputJets[0],1,1,0.4,0.4);
-  //Float_t tau2NoSD = FJNSubjettiness(fOutputJets[0],2,1,0.4,0.4);
-  fastjet::contrib::SoftDrop softdrop(beta, zcut);
-  fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]); 
-  //Float_t tau1SD = FJNSubjettiness(finaljet,1,1,0.4,0.4);
-  //Float_t tau2SD = FJNSubjettiness(finaljet,2,1,0.4,0.4);
-  fJetInfoVar[4]=0;//tau1NoSD;
-  fJetInfoVar[5]=0;//tau2NoSD;
-  AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
+  fOutputJets=fClustSeqSA->inclusive_jets(0);
+ 
 
+  std::vector<fastjet::PseudoJet> jet_constituents = fOutputJets[0].constituents();
+  Float_t NSubjettinessResult1, NSubjettinessResult2, NSubBeta = 1, R0=0.4;
+  std::vector<fastjet::PseudoJet> Subjet_Axes;
+  fastjet::PseudoJet SubJet1_Axis,SubJet2_Axis;
+  if(jet_constituents.size()>=2){
+    fastjet::contrib::Nsubjettiness nSub1(1,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(NSubBeta,R0));
+    fastjet::contrib::Nsubjettiness nSub2(2,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(NSubBeta,R0));
+
+    NSubjettinessResult1 = nSub1.result(fOutputJets[0]);
+    NSubjettinessResult2 = nSub2.result(fOutputJets[0]);
+    Subjet_Axes = nSub2.currentAxes();
+    SubJet1_Axis = Subjet_Axes[0];
+    SubJet2_Axis = Subjet_Axes[1];
+
+    Double_t SubJet1_Eta=SubJet1_Axis.pseudorapidity();
+    Double_t SubJet2_Eta=SubJet2_Axis.pseudorapidity();
+    Double_t SubJet1_Phi=SubJet1_Axis.phi();
+    if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
+    else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
+    Double_t SubJet2_Phi=SubJet2_Axis.phi();
+    if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
+    else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
+
+    Double_t DeltaPhiSubJets,DeltaEtaSubJets;
+    DeltaPhiSubJets=SubJet1_Phi-SubJet2_Phi;
+    DeltaEtaSubJets=SubJet1_Eta-SubJet2_Eta;
+    if(DeltaPhiSubJets < -1*TMath::Pi()) DeltaPhiSubJets += (2*TMath::Pi());
+    else if (DeltaPhiSubJets > TMath::Pi()) DeltaPhiSubJets -= (2*TMath::Pi());
+    Double_t DelR=0;
+    DelR = TMath::Power(TMath::Power(DeltaPhiSubJets,2)+TMath::Power(DeltaEtaSubJets,2),0.5);
+
+    fJetInfoVar[12]=DelR;
+  }
+  
+  fastjet::contrib::SoftDrop softdrop(beta, zcut);
+  fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
+  fJetInfoVar[4]=NSubjettinessResult1;
+  fJetInfoVar[5]=NSubjettinessResult2;
+  AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
   std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
   Double_t FastjetTrackDelR,EmcalTrackDelR;
   for(Int_t i=0;i<fJet->GetNumberOfConstituents();i++){
@@ -514,36 +551,17 @@ AliEmcalJet *AliAnalysisTaskRecoilJetYield::SoftDrop(AliEmcalJet *fJet,AliJetCon
   Mu=(finaljet.structure_of<fastjet::contrib::SoftDrop>().mu());
   DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
   fJetInfoVar[3]=SymParam;
-
-  return jet;
+  return;
 
   
 }
 
 //________________________________________________________________________
-/*Float_t AliAnalysisTaskRecoilJetYield::FJNSubjettiness(fastjet::PseudoJet Jet, Int_t N, Double_t beta, Double_t R0, Double_t Rcut){
-
- 
-  vector<fastjet::PseudoJet> jet_constituents = Jet.constituents();
-  Float_t Result;
-  if(jet_constituents.size()>=N){
-  fastjet::contrib::Nsubjettiness nSub(N,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(beta,R0));
-  Result = nSub.result(Jet);
-  }
-  else Result = -1;
-
-
-  return Result;
-
-}
-*/
-
-//________________________________________________________________________
 Int_t AliAnalysisTaskRecoilJetYield::SelectTriggerHadron(Float_t PtMin, Float_t PtMax){
 
   AliTrackContainer *PartCont = NULL;
-  if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
-  else PartCont = GetTrackContainer(0);
+  if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer("tracksConstSub");
+  else PartCont = GetTrackContainer("tracks");
   TClonesArray *TracksArray = PartCont->GetArray();
   if(!PartCont || !TracksArray) return -99999;
   AliAODTrack *Track = 0x0;
