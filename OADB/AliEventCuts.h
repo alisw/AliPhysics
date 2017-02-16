@@ -77,6 +77,7 @@ class AliEventCuts : public TList {
 
     AliAnalysisUtils fUtils;                      ///< Analysis utils for the pileup rejection
 
+    bool          fMC;                            ///< Set to true by the automatic setup when analysing MC (in manual mode *you* are responsible for it). In MC the correlations cuts are disabled.
     bool          fRequireTrackVertex;            ///< if true all the events with only the SPD vertex are rejected
     float         fMinVtz;                        ///< Min z position for the primary vertex
     float         fMaxVtz;                        ///< Max z position for the primary vertex
@@ -121,7 +122,7 @@ class AliEventCuts : public TList {
     const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
-    void          AutomaticSetup ();
+    void          AutomaticSetup (AliVEvent *ev);
     void          ComputeTrackMultiplicity(AliVEvent *ev);
     template<typename F> F PolN(F x, F* coef, int n);
 
