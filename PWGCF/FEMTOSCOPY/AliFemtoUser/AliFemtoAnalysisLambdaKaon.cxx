@@ -99,7 +99,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   else
   {
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
-    fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
+    if(fAnalysisType!=kXiKchP && fAnalysisType!=kAXiKchP && fAnalysisType!=kXiKchM && fAnalysisType!=kAXiKchM) fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
   }
 
   if(fIsMCRun) fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarModelCfs);
@@ -166,7 +166,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
     KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],200,0.,1.0);
     AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[fAnalysisType],200,0.,20.);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
-    fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
+    if(fAnalysisType!=kXiKchP && fAnalysisType!=kAXiKchP && fAnalysisType!=kXiKchM && fAnalysisType!=kAXiKchM) fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
   }
 
   if(fIsMCRun)
