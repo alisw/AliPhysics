@@ -1156,6 +1156,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDstar(Int_t SEorME, Int_t SorSB,
 
 //___________________________________________________________________________________________
 TH2D* AliDhCorrelationExtraction::GetCorrelHistoDxHFE(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+	
   TH2D* h2D = new TH2D(); //pointer to be returned
 
   TH3D* h3D; //for projecting the TH2Sparse onto
@@ -1240,6 +1241,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t S
     if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
     if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
   } else MergeCorrelPlotsVsPtTTree(h3D,SEorME,SorSB,pool,thrMin,thrMax);
+  if(!h3D) {printf("ERROR! Input histogram not found! Check the macro configuration!\n"); return 0x0;}
   Int_t etaLowBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMin+0.01));
   Int_t etaHighBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMax-0.01));
   if(etaHighBin > h3D->GetYaxis()->GetNbins()) etaHighBin = h3D->GetYaxis()->GetNbins();
@@ -1278,6 +1280,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDplusTTree(Int_t SEorME, Int_t S
     if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
     if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
   } else MergeCorrelPlotsVsPtTTree(h3D,SEorME,SorSB,pool,thrMin,thrMax);
+  if(!h3D) {printf("ERROR! Input histogram not found! Check the macro configuration!\n"); return 0x0;}
   Int_t etaLowBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMin+0.01));
   Int_t etaHighBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMax-0.01));
   if(etaHighBin > h3D->GetYaxis()->GetNbins()) etaHighBin = h3D->GetYaxis()->GetNbins();
@@ -1316,6 +1319,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDstarTTree(Int_t SEorME, Int_t S
     if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
     if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
   } else MergeCorrelPlotsVsPtTTree(h3D,SEorME,SorSB,pool,thrMin,thrMax);
+  if(!h3D) {printf("ERROR! Input histogram not found! Check the macro configuration!\n"); return 0x0;}
   Int_t etaLowBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMin+0.01));
   Int_t etaHighBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMax-0.01));
   if(etaHighBin > h3D->GetYaxis()->GetNbins()) etaHighBin = h3D->GetYaxis()->GetNbins();
