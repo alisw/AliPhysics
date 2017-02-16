@@ -807,11 +807,12 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
   PostData(1, fOutputContainer);
   
   fFlowEvent = new AliFlowEvent*[fnCuts];
-  if (fIsHeavyIon == 1){
-    for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-        fFlowEvent[iCut] = new AliFlowEvent(10000);
+  
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+      fFlowEvent[iCut] = new AliFlowEvent(10000);
+      if (fIsHeavyIon == 1){
         PostData(2+iCut, fFlowEvent[iCut]);
-    }
+      }   
   }
 }
 
