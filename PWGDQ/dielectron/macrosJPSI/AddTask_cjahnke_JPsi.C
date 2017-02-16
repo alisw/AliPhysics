@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index=0, Bool_t isMC){
+AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index=0, Bool_t isMC, TString cfg = "ConfigJpsi_cj_pp", Bool_t alienconf = kFALSE, Bool_t localconf = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -12,24 +12,61 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
 
   //Do we have an MC handler?
   Bool_t hasMC=(mgr->GetMCtruthEventHandler()!=0x0);
-  
-  TString configFile("ConfigJpsi_cj_pp.C");
-		// if (hasMC) configFile="$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigJpsi2eeEff.C";
+
+	
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDie");
   mgr->AddTask(task);
 	
+///======
+// set config file name
+	
+	
+	TString configFile("");
+	if(cfg.IsNull()) cfg="ConfigJpsi_cj_pp";
+	
+	// the different paths
+	TString alienPath("alien:///alice/cern.ch/user/c/cjahnke/MacrosJPsi");
+	TString alirootPath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI");
+	
+	// >>> local config
+	if(localconf){
+		configFile="ConfigJpsi_cj_pp.C";
+	}
+	
+		// >>> aliroot config
+	else if(!alienconf){
+		configFile=alirootPath.Data();
+	}
+		// >>> alien config
+	else{
+		if(!gSystem->Exec(Form("alien_cp %s/%s.C .",alienPath.Data(),cfg.Data()))) {
+			configFile=gSystem->pwd();
+			printf("Not sure if copy or not from alien!!!\n");
+		}
+		else {
+			printf("ERROR: couldn't copy file %s/%s.C from grid \n", alienPath.Data(),cfg.Data() );
+			return;
+		}
+	}
+		// add config to path
+	if(!localconf){
+		configFile+="/";
+		configFile+=cfg.Data();
+		configFile+=".C";
+	}
+	
+		// load dielectron configuration file (only once)
+	if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi_cj_pp")){
+		gROOT->LoadMacro(configFile.Data());
+	}
 
 	
-  //load dielectron configuration file
-  TString checkconfig="ConfigJpsi_cj_pp";
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
-    gROOT->LoadMacro(configFile.Data());
-  
-		//Bool_t hasMC_aod = kFALSE;
-  //add dielectron analysis with different cuts to the task
+	
+	  
+//add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsi_cj_pp(i,isAOD, trigger_index, isMC);
     if (isAOD) jpsi->SetHasMC(isMC);
@@ -39,6 +76,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
 	  }
   }
 
+	
 	
 	 
   //Add event filter
