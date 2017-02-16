@@ -1,13 +1,30 @@
 //______________________________________________________________________________
 
-AliAnalysisTaskCEPAnalysis* AddTaskCEPAnalysis()
+AliAnalysisTaskCEPAnalysis* AddAnalysisTaskCEP(
+  Bool_t  isMC         = kFALSE,
+  Bool_t  isSaveAll    = kFALSE,
+  Int_t   numTracksMax = 100000)
+ 
+  )
 {
 
 	// get the manager and task
 	AliAnalysisManager *aam = AliAnalysisManager::GetAnalysisManager();
 
+  // check for MonteCarlo
+  if (isMC) {
+    AliMCEventHandler* handler = new AliMCEventHandler;
+    handler->SetReadTR(kFALSE);
+    mgr->SetMCtruthEventHandler(handler);
+  }
+
+  // create the analysis task
+  UInt_t taskConfig  = AliCEPBase::kBitConfigurationSet;
+  if (isSaveAll) taskConfig |= AliCEPBase::kBitSaveAllEvents; 
+	taskConfig |= AliCEPBase::kBitConfigurationVersion;
+
   TString name = TString("CEPAnalysis");
-	AliAnalysisTaskCEP *task = new AliAnalysisTaskCEP(
+	AliAnalysisTaskCEP *task = new AliAnalysisTaskCEP (
     name.Data(),taskConfig, numTracksMax);
 
 	// get input and output managers
@@ -17,12 +34,12 @@ AliAnalysisTaskCEPAnalysis* AddTaskCEPAnalysis()
 		Form("CEPHist"),
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
-		Form("%s:CEPHist", AliAnalysisManager::GetCommonFileName())
+		Form("%s:CEP", AliAnalysisManager::GetCommonFileName())
 	);
 
 	AliAnalysisDataContainer *aadco2 = aam->CreateContainer
 	(
-		Form("CEP"),
+		Form("CEPTree"),
 		TTree::Class(),
 		AliAnalysisManager::kOutputContainer,
 		Form("%s:CEP", AliAnalysisManager::GetCommonFileName())
