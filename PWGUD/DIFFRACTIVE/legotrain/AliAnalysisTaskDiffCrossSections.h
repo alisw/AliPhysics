@@ -1,4 +1,4 @@
-// -*- C++ -*-
+// -*- C++ indent-tabs-mode:nil; -*-
 #ifndef ALIANALYSISTASKDIFFCROSSSECTIONS_H
 #define ALIANALYSISTASKDIFFCROSSSECTIONS_H
 
@@ -214,28 +214,26 @@ public:
     PseudoTracks();
     virtual ~PseudoTracks();
 
-    Int_t GetEntries() const;
+    inline Int_t GetEntries() const { return fTracks.GetEntriesFast(); }
     void  AddTrack(const PseudoTrack&);
     virtual void  Clear(Option_t *opt="");
     virtual void  Delete(Option_t *opt="");
     const PseudoTrack& operator[](Int_t ) const;
-    const PseudoTrack& GetTrackAt(Int_t i) const { return this->operator[](i); }
+    inline const PseudoTrack& GetTrackAt(Int_t i) const { return this->operator[](i); }
 
     Int_t RemoveTracks(UInt_t mask); // removes all tracks matching mask; returns number of removed pseudo-tracks
 
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR, const TVector3 &vertexPosition) const;
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR) const;
 
-    void Sort() { fTracks.Sort(); }
+    inline void Sort() { fTracks.Sort(); }
 
     template<typename F> // F is a function (object) of type Bool_t f(const PseudoTrack&)
     Int_t ClassifyEvent(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
 			UInt_t mask, F& f) const {
-      const Int_t nt = fTracks.GetEntriesFast();
-      TBits bits(nt);
-      for (Int_t i=0; i<nt; ++i)
-	if (f(GetTrackAt(i)))
-	  bits.SetBitNumber(i);
+      static TBits bits(10000);
+      for (Int_t i=0, nt=fTracks.GetEntriesFast(); i<nt; ++i)
+	bits.SetBitNumber(i, f(GetTrackAt(i)));
       return ClassifyEventBits(iEtaL, iEtaR, etaGap, etaGapCenter, mask, bits);
     }
   protected:

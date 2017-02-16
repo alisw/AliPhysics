@@ -15,6 +15,11 @@ AliAnalysisTaskDiffCrossSections* AddAnalysisTaskDiffCrossSections(Bool_t isMC,
     mgr->SetMCtruthEventHandler(handler);
   }
 
+  AliAnalysisTaskDiffCrossSections::PseudoTrack::Class()->IgnoreTObjectStreamer();
+  AliAnalysisTaskDiffCrossSections::PseudoTracks::Class()->IgnoreTObjectStreamer();
+  AliAnalysisTaskDiffCrossSections::TreeData::Class()->IgnoreTObjectStreamer();
+  AliAnalysisTaskDiffCrossSections::MCInfo::Class()->IgnoreTObjectStreamer();
+
   AliAnalysisTaskDiffCrossSections* task = new AliAnalysisTaskDiffCrossSections;
   // task->SelectCollisionCandidates(AliVEvent::kMB);
 
