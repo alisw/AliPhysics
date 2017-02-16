@@ -30,6 +30,7 @@
 
 #include "AliFemtoNSigmaFilter.h"
 #include "AliFemtoV0TrackCutNSigmaFilter.h"
+#include "AliFemtoXiTrackCutNSigmaFilter.h"
 #include "AliFemtoESDTrackCutNSigmaFilter.h"
 
 #include "AliFemtoCutMonitorEventPartCollSize.h"
@@ -243,6 +244,8 @@ struct XiCutParams
          maxPtNegV0Daughter;
 
   int minTPCnclsV0Daughters;
+
+  bool useCustomFilter;
 };
 
 struct PairCutParams
@@ -304,7 +307,8 @@ struct PairCutParams
   void AddCustomESDRejectionFilters(ParticlePDGType aESDType, AliFemtoESDTrackCutNSigmaFilter* aCut);
   AliFemtoESDTrackCutNSigmaFilter* CreateESDCut(ESDCutParams &aCutParams);
 
-  AliFemtoXiTrackCut* CreateXiCut(XiCutParams &aCutParams);
+  void AddCustomXiSelectionFilters(ParticlePDGType aXiType, AliFemtoXiTrackCutNSigmaFilter* aCut);
+  AliFemtoXiTrackCutNSigmaFilter* CreateXiCut(XiCutParams &aCutParams);
 
   AliFemtoV0PairCut* CreateV0PairCut(PairCutParams &aPairCutParams);
   AliFemtoV0TrackPairCut* CreateV0TrackPairCut(PairCutParams &aPairCutParams);

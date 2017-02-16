@@ -108,6 +108,7 @@
 
 #pragma link C++ class AliFemtoNSigmaFilter+;
 #pragma link C++ class AliFemtoV0TrackCutNSigmaFilter+;
+#pragma link C++ class AliFemtoXiTrackCutNSigmaFilter+;
 
 #pragma link C++ class AliFemtoCutMonitorEventPartCollSize+;
 

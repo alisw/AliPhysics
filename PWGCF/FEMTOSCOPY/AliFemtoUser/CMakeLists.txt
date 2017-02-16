@@ -114,6 +114,7 @@ set(SRCS
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
   AliFemtoV0TrackCutNSigmaFilter.cxx
+  AliFemtoXiTrackCutNSigmaFilter.cxx
   AliFemtoCutMonitorEventPartCollSize.cxx
   AliFemtoModelCorrFctnWithWeights.cxx
   AliFemtoCutMonitorParticleYPtWithWeights.cxx

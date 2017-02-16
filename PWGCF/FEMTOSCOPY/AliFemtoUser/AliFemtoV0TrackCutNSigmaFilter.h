@@ -24,7 +24,7 @@ class TH1D;
 class AliFemtoV0TrackCutNSigmaFilter : public AliFemtoV0TrackCut {
 public:
 
-  /// Default Constructor - wide ranges and
+  /// Default Constructor
   AliFemtoV0TrackCutNSigmaFilter();
 
   AliFemtoV0TrackCutNSigmaFilter(const AliFemtoV0TrackCutNSigmaFilter& aCut);

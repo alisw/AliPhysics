@@ -224,7 +224,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
 AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, XiCutParams &aXiCutParams1, ESDCutParams &aESDCutParams2, TString aDirNameModifier) :
   AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(aAnParams,aEvCutParams,aDirNameModifier)
 {
-  AliFemtoXiTrackCut* tXiCut1 = CreateXiCut(aXiCutParams1);
+  AliFemtoXiTrackCutNSigmaFilter* tXiCut1 = CreateXiCut(aXiCutParams1);
   AliFemtoESDTrackCutNSigmaFilter* tESDCut2 = CreateESDCut(aESDCutParams2);
   AliFemtoXiTrackPairCut* tXiTrackPairCut = CreateXiTrackPairCut(aPairCutParams);
 
@@ -670,7 +670,7 @@ void AliFemtoAnalysisLambdaKaon::AddCustomV0RejectionFilters(ParticlePDGType aV0
     break;
 
   default:
-    cerr << "E-AliFemtoAnalysisLambdaKaon::AddCustomV0SelectionFilters" << endl;
+    cerr << "E-AliFemtoAnalysisLambdaKaon::AddCustomV0RejectionFilters" << endl;
   }
 }
 
@@ -858,14 +858,71 @@ AliFemtoESDTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateESDCut(ESDCut
   return tESDCut;
 }
 
+
+
 //___________________________________________________________________
-AliFemtoXiTrackCut* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutParams &aCutParams)
+void AliFemtoAnalysisLambdaKaon::AddCustomXiSelectionFilters(ParticlePDGType aXiType, AliFemtoXiTrackCutNSigmaFilter* aCut)
+{
+  switch(aXiType) {
+  case AliFemtoAnalysisLambdaKaon::kPDGXiC:
+    //--Proton(+) daughter of Lambda daughter selection filter
+    aCut->CreateCustomProtonNSigmaFilter();
+    aCut->AddProtonTPCNSigmaCut(0.,0.8,3.);
+    aCut->AddProtonTPCAndTOFNSigmaCut(0.8,1000.,3.,3.);
+    aCut->AddProtonTPCNSigmaCut(0.8,1000.,3.);
+
+    //--Pion(-) daughter of Lambda daughter selection filter
+    //RequireTOFPion
+    aCut->CreateCustomPionNSigmaFilter();
+    aCut->AddPionTPCNSigmaCut(0.,0.5,3.);
+    aCut->AddPionTPCAndTOFNSigmaCut(0.5,1000.,3.,3.);
+    aCut->AddPionTPCNSigmaCut(0.5,1000.,3.);
+
+    //--Bachelor pion daughter
+    aCut->CreateCustomBacPionNSigmaFilter();
+    aCut->AddBacPionTPCNSigmaCut(0.,0.5,3.);
+    aCut->AddBacPionTPCAndTOFNSigmaCut(0.5,1000.,3.,3.);
+    aCut->AddBacPionTPCNSigmaCut(0.5,1000.,3.);
+
+    break;
+
+  case AliFemtoAnalysisLambdaKaon::kPDGAXiC:
+    //--(Anti)Proton(-) daughter of AntiLambda daughter selection filter
+    aCut->CreateCustomProtonNSigmaFilter();
+    aCut->AddProtonTPCNSigmaCut(0.,0.8,3.);
+    aCut->AddProtonTPCAndTOFNSigmaCut(0.8,1000.,3.,3.);
+    aCut->AddProtonTPCNSigmaCut(0.8,1000.,3.);
+
+    //--Pion(-) daughter of AntiLambda daughter selection filter
+    //RequireTOFPion
+    aCut->CreateCustomPionNSigmaFilter();
+    aCut->AddPionTPCNSigmaCut(0.,0.5,3.);
+    aCut->AddPionTPCAndTOFNSigmaCut(0.5,1000.,3.,3.);
+    aCut->AddPionTPCNSigmaCut(0.5,1000.,3.);
+
+    //--Bachelor pion daughter
+    aCut->CreateCustomBacPionNSigmaFilter();
+    aCut->AddBacPionTPCNSigmaCut(0.,0.5,3.);
+    aCut->AddBacPionTPCAndTOFNSigmaCut(0.5,1000.,3.,3.);
+    aCut->AddBacPionTPCNSigmaCut(0.5,1000.,3.);
+
+    break;
+
+  default:
+    cerr << "E-AliFemtoAnalysisLambdaKaon::AddCustomXiSelectionFilters" << endl;
+  }
+}
+
+
+
+//___________________________________________________________________
+AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutParams &aCutParams)
 {
   //NOTE: the SetMass call actually is important
   //      This should be set to the mass of the particle of interest, here the Xi
   //      Be sure to not accidentally set it again in the Lambda cuts (for instance, when copy/pasting the lambda cuts from above!)
 
-  AliFemtoXiTrackCut* tXiCut = new AliFemtoXiTrackCut();
+  AliFemtoXiTrackCutNSigmaFilter* tXiCut = new AliFemtoXiTrackCutNSigmaFilter();
 
   //Xi Cuts
   tXiCut->SetChargeXi(aCutParams.charge);
@@ -906,6 +963,8 @@ AliFemtoXiTrackCut* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutParams &aCutPar
     tXiCut->SetPtNegDaughter(aCutParams.minPtNegV0Daughter,aCutParams.maxPtNegV0Daughter); //0.16 for pions
     tXiCut->SetTPCnclsDaughters(aCutParams.minTPCnclsV0Daughters);
     tXiCut->SetStatusDaughters(AliESDtrack::kTPCrefit);  //yes or no?
+
+  if(aCutParams.useCustomFilter) AddCustomXiSelectionFilters(aCutParams.particlePDGType,tXiCut);
 
   TString tTitleXi, tNameXi;
   TString tTitleLam, tNameLam;
@@ -1657,6 +1716,8 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
 
   tReturnParams.minTPCnclsV0Daughters = 70;
 
+  tReturnParams.useCustomFilter = true;
+
   return tReturnParams;
 }
 
@@ -1709,6 +1770,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.maxPtNegV0Daughter = 99.;
 
   tReturnParams.minTPCnclsV0Daughters = 70;
+
+  tReturnParams.useCustomFilter = true;
 
   return tReturnParams;
 }
