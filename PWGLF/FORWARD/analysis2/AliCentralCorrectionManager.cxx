@@ -6,6 +6,7 @@
 #include "AliCentralCorrAcceptance.h"
 #include "AliForwardUtil.h"
 #include "AliOADBForward.h"
+#include "AliDataFile.h"
 #include <TString.h>
 #include <AliLog.h>
 #include <TFile.h>
@@ -21,7 +22,6 @@ AliCentralCorrectionManager* AliCentralCorrectionManager::fgInstance= 0;
 const char* AliCentralCorrectionManager::fgkSecondaryMapSkel = "secondary";
 const char* AliCentralCorrectionManager::fgkAcceptanceSkel   = "acceptance";
 
-#define PREFIX  "$(ALICE_PHYSICS)/OADB/PWGLF/FORWARD/CORRECTIONS/data/"
 #define DB_NAME "spd_corrections.root"
 
 //____________________________________________________________________
@@ -55,10 +55,10 @@ AliCentralCorrectionManager::AliCentralCorrectionManager(Bool_t d)
   //    Not used
   //
   RegisterCorrection(kIdSecondaryMap, fgkSecondaryMapSkel, 
-		     PREFIX DB_NAME, AliCentralCorrSecondaryMap::Class(), 
+		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliCentralCorrSecondaryMap::Class(), 
 		     kStandard|kSatellite);
   RegisterCorrection(kIdAcceptance, fgkAcceptanceSkel, 
-		     PREFIX DB_NAME, AliCentralCorrAcceptance::Class(),
+		     AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str(), AliCentralCorrAcceptance::Class(),
 		     kStandard|kSatellite);
 }
 //____________________________________________________________________
@@ -133,7 +133,7 @@ AliCentralCorrectionManager::Append(const TString& addition,
 {
   TString dest(destination);
   if (dest.IsNull()) 
-    dest = PREFIX DB_NAME;
+    dest = AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data/" DB_NAME).c_str();
   return AliCorrectionManagerBase::Append(addition, dest);
 }
 
