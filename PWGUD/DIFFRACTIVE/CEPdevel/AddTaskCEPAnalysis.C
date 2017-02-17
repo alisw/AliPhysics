@@ -1,6 +1,6 @@
 //______________________________________________________________________________
 
-AliAnalysisTaskCEPAnalysis* AddAnalysisTaskCEP(
+AliAnalysisTaskCEPAnalysis* AddTaskCEPAnalysis (
   Bool_t  isMC         = kFALSE,
   Bool_t  isSaveAll    = kFALSE,
   Int_t   numTracksMax = 100000)
