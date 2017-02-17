@@ -231,6 +231,32 @@ Double_t AliRsnMiniPair::DeltaCos(Bool_t mc) const
    return cosB-cosA;
 }
 
+
+
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::OpeningAngle() const
+{
+//
+// Opening angle between two tracks/decay particles.
+
+   const TLorentzVector &p1 = fP1[ID(mc)];
+   const TLorentzVector &p2 = fP2[ID(mc)];
+ 
+
+   TVector3 p1Vect = p1.Vect();
+   TVector3 p2Vect = p2.Vect();
+
+   Double_t magP1P2 = TMath::Sqrt(p1Vect.Mag2()*p2Vect.Mag2());
+
+   Double_t cosB = p1Vect.Dot(p2Vect)/magP1P2;
+
+   return cosB;
+}
+
+
+
+
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
 {
