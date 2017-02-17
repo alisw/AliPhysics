@@ -51,9 +51,11 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fSPDpileupNsigmaDiamXY{-1.f},
   fSPDpileupNsigmaDiamZ{-1.f},
   fTrackletBGcut{false},
+  fPileUpCutMV{false},
   fCentralityFramework{0},
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
+  fMultSelectionEvCuts{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fEstimatorsCorrelationCoef{0.,1.},
@@ -148,7 +150,8 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// SPD pile-up rejection
   if (!ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ) &&
-      (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)))
+      (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)) &&
+      (!fPileUpCutMV || !fUtils.IsPileUpMV(ev)))
     fFlag |= BIT(kPileUp);
 
   /// Centrality cuts:
@@ -163,8 +166,8 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
       fCentPercentiles[1] = cent->GetCentralityPercentile(fCentEstimators[1].data());
     } else {
       AliMultSelection* cent = (AliMultSelection*)ev->FindListObject("MultSelection");
-      fCentPercentiles[0] = cent->GetMultiplicityPercentile(fCentEstimators[0].data(), true);
-      fCentPercentiles[1] = cent->GetMultiplicityPercentile(fCentEstimators[1].data(), true);
+      fCentPercentiles[0] = cent->GetMultiplicityPercentile(fCentEstimators[0].data(), fMultSelectionEvCuts);
+      fCentPercentiles[1] = cent->GetMultiplicityPercentile(fCentEstimators[1].data(), fMultSelectionEvCuts);
     }
     const auto& x = fCentPercentiles[1];
     const double center = x * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
@@ -421,6 +424,10 @@ void AliNuclexEventCuts::SetupRun2pp() {
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
+  fUtils.SetMinPlpContribMV(5);
+  fUtils.SetMaxPlpChi2MV(5);
+  fUtils.SetMinWDistMV(15);
+  fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
 }
 
 void AliNuclexEventCuts::SetupLHC15o() {

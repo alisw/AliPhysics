@@ -38,7 +38,7 @@ class AliNuclexEventCutsContainer : public TNamed {
 
 class AliNuclexEventCuts : public TList {
   public:
-    AliNuclexEventCuts(bool savePlots = false)  __attribute__ ((deprecated("Please use AliEventCuts for your analysis.")));
+    AliNuclexEventCuts(bool savePlots = false) __attribute__ ((deprecated("Please use AliEventCuts for your analysis.")));
     virtual ~AliNuclexEventCuts() { if (fMultiplicityV0McorrCut) delete fMultiplicityV0McorrCut; }
     enum CutsBin {
       kNoCuts = 0,
@@ -97,9 +97,12 @@ class AliNuclexEventCuts : public TList {
     double        fSPDpileupNsigmaDiamZ;          ///<
     bool          fTrackletBGcut;                 ///<
 
+    bool          fPileUpCutMV;                   ///< Reject pile-up based on multi-vertexer
+
     unsigned int  fCentralityFramework;           ///< 0: skip centrality checks, 1: multiplicity framework, 2: legacy centrality framework
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised
+    bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
