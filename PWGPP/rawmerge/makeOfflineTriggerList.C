@@ -25,33 +25,44 @@
 #include <iostream>
 #include <iomanip>
 #include "TPad.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TStatToolkit.h"
+#include "AliExternalInfo.h"
+#include "TStopwatch.h"
+
 using namespace std;
 using std::cout;
 using std::setw;
 
 
 
-void TriggerHighMultiplicity( const char * chinput,  const char * filter="ntracks<1000", Long_t ntracksPrim=200000, Float_t fractionTracks=0.8, Long_t nEvents=200000);
-void TriggerHighPt( const char * chinput,  const char * filter="(esdTrack.fFlags&0x4401)>0", Long_t nEvents=200000, Double_t dcaCut=4);
-void TriggerHighPtV0( const char * chinput,  const char * filter, Long_t nEvents, Double_t zCut, Double_t covarQPtCut, Int_t filterMask);
+void TriggerHighMultiplicity( const char * chinput,  const char * filter="ntracks<1000", Long64_t ntracksPrim=200000, Float_t fractionTracks=0.8, Long64_t nEvents=200000);
+void TriggerHighPt( const char * chinput,  const char * filter="(esdTrack.fFlags&0x4401)>0", Long64_t nEvents=200000, Double_t dcaCut=4);
+void TriggerHighPtV0( const char * chinput,  const char * filter, Long64_t nEvents, Double_t zCut, Double_t covarQPtCut, Int_t filterMask);
+void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nEvents, Double_t dcaCut, Double_t multRatioFraction, Double_t multFraction, Int_t maxTracks);
+void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvents, Double_t multRatioFraction, Double_t multFraction, Int_t maxTracks, Double_t zCut, Double_t covarQPtCut, Int_t filterMask);
+
+
 
 
 void makeOfflineTriggerList(const char * chinput){  
   //
   // 
   // Make high mulitplicity event selection for the calibration
-  TString highMultiplicityFilter="ntracks<1000";  
-  Long_t  highMultiplicityNTracksPrim=500000;   // default 500000 tracks for the calibration
+  // TString highMultiplicityFilter="ntracks<1000";  
+  Long64_t  highMultiplicityNTracksPrim=500000;   // default 500000 tracks for the calibration
   Float_t highMultiplicityFractionTracks=0.8;   //
-  Long_t  highMultiplicityNEvents=10000000;
-  if (gSystem->Getenv("highMultiplicityFilter"))        highMultiplicityFilter=gSystem->Getenv("highMultiplicityFilter");
+  Long64_t  highMultiplicityNEvents=10000000;
+  // if (gSystem->Getenv("highMultiplicityFilter"))        highMultiplicityFilter=gSystem->Getenv("highMultiplicityFilter");
   if (gSystem->Getenv("highMultiplicityNTracksPrim"))   highMultiplicityNTracksPrim=TString(gSystem->Getenv("highMultiplicityNTracksPrim")).Atof();
   if (gSystem->Getenv("highMultiplicityFractionTracks"))highMultiplicityFractionTracks=TString(gSystem->Getenv("highMultiplicityFractionTracks")).Atof();
   if (gSystem->Getenv("highMultiplicityNEvents"))       highMultiplicityNEvents=TString(gSystem->Getenv("highMultiplicityNEvents")).Atof();
-  TriggerHighMultiplicity(chinput, highMultiplicityFilter.Data(),highMultiplicityNTracksPrim,  highMultiplicityFractionTracks, highMultiplicityNEvents);
+  // TriggerHighMultiplicity(chinput, highMultiplicityFilter.Data(),highMultiplicityNTracksPrim,  highMultiplicityFractionTracks, highMultiplicityNEvents);
+  //
   // High pt filters
   TString highPtFilter="(esdTrack.fFlags&0x4401)>0&&esdTrack.Pt()>8";
-  Long_t   highPtNEvents=1000000000;
+  Long64_t   highPtNEvents=1000000000;
   Double_t highPtDCAcut=4;  
   if (gSystem->Getenv("highPtFilter"))        highPtFilter=gSystem->Getenv("highPtFilter");
   if (gSystem->Getenv("highPtNEvents"))       highPtNEvents=TString(gSystem->Getenv("highPtNEvents")).Atoi();
@@ -70,9 +81,22 @@ void makeOfflineTriggerList(const char * chinput){
   if (gSystem->Getenv("highPtV0CovarQPtCut"))   highPtV0CovarQPtCut=TString(gSystem->Getenv("highPtV0CovarQPtCut")).Atof();
   if (gSystem->Getenv("highPtV0CovarFilterMask"))   highPtV0FilterMask=TString(gSystem->Getenv("highPtV0FilterMask")).Atoi();
   TriggerHighPtV0(chinput, highPtV0Filter.Data(),  highPtV0NEvents, highPtV0ZCut,  highPtV0CovarQPtCut,  highPtV0FilterMask);  
+  //
+  // calibration trigger && highpt - high multiplicity low backgorund, enhanced high pt
+  TString  calibhighPtFilter="(esdTrack.fFlags&0x4401)>0&&esdTrack.Pt()>2";
+  Long64_t   calibhighPtNEvents=1000000000;
+  Double_t calibhighPtDCAcut=4;  
+  if (gSystem->Getenv("calibhighPtFilter"))        highPtFilter=gSystem->Getenv("calibhighPtFilter");
+  if (gSystem->Getenv("calibhighPtNEvents"))       highPtNEvents=TString(gSystem->Getenv("calibhighPtNEvents")).Atoi();
+  if (gSystem->Getenv("calibhighPtDCAcut"))        highPtDCAcut =TString(gSystem->Getenv("calibhighPtDCAcut")).Atoi();
+  triggerCalibHighPt(chinput, calibhighPtFilter,calibhighPtNEvents, calibhighPtDCAcut, highMultiplicityFractionTracks, 0.5, highMultiplicityNTracksPrim); 
+  // calibration trigger && highpt V0 - high multiplicity low backgorund, enhanced high pt
+  TString  calibhighPtV0Filter="((type==1)*max(track0.Pt(),track1.Pt())>1)||(max(track0.Pt(),track1.Pt())>2)"; 
+  triggerCalibV0(chinput,calibhighPtV0Filter, calibhighPtNEvents, highMultiplicityFractionTracks, 0.5, highMultiplicityNTracksPrim, highPtV0ZCut,  highPtV0CovarQPtCut,  highPtV0FilterMask);
+
 }
 
-void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long_t ntracksPrim, Float_t fractionTracks, Long_t nEvents){
+void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long64_t ntracksPrim, Float_t fractionTracks, Long64_t nEvents){
   /*
     chinput=gSystem->ExpandPathName("$NOTES/JIRA/PWGPP-227/data/2016/LHC16t/000267161/pass1_CENT_wSDD/filtered.list");
     filter="ntracks<10000"; 
@@ -95,8 +119,8 @@ void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long_t
   TTreeSRedirector * pcstream = new TTreeSRedirector("filteredMultQA.root","recreate");
   //
   //  step1 - get cumulat fractionTracks from mult/ntracks 
-  Long_t events = tree->Draw("mult/ntracks",filter,"",nEvents);
-  Float_t fractionTracksCut = TMath::KOrdStat(events, tree->GetV1(), Long_t(Double_t(events)*fractionTracks));
+  Long64_t events = tree->Draw("mult/ntracks",filter,"",nEvents);
+  Float_t fractionTracksCut = TMath::KOrdStat(events, tree->GetV1(), Long64_t(Double_t(events)*fractionTracks));
   tree->GetHistogram()->Write("multNTracks");
   //
   // step 2 select events  
@@ -115,9 +139,9 @@ void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long_t
   }
   // Dump input parameters
   ::Info("KeyValue.TriggerHighMultiplicity.Input.Filter","%s",filter);
-  ::Info("KeyValue.TriggerHighMultiplicity.Input.ntracksPrim","%ld",ntracksPrim);
+  ::Info("KeyValue.TriggerHighMultiplicity.Input.ntracksPrim","%llu",ntracksPrim);
   ::Info("KeyValue.TriggerHighMultiplicity.Input.fractionTracks","%f",fractionTracks);
-  ::Info("KeyValue.TriggerHighMultiplicity.Input.nEvent","%ld",nEvents);
+  ::Info("KeyValue.TriggerHighMultiplicity.Input.nEvent","%llu",nEvents);
   //
   // Dump selected Events
   tree->GetUserInfo()->AddLast(new TObjString("highMult"));
@@ -168,7 +192,7 @@ void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long_t
 
 
 
-void TriggerHighPt( const char * chinput,  const char * filter, Long_t nEvents, Double_t dcaCut){
+void TriggerHighPt( const char * chinput,  const char * filter, Long64_t nEvents, Double_t dcaCut){
   /*
     chinput=gSystem->ExpandPathName("$NOTES/JIRA/PWGPP-227/data/2016/LHC16t/000267161/pass1_CENT_wSDD/filtered.list");
     filter="(esdTrack.fFlags&0x4401)>0&&esdTrack.Pt()>8"; 
@@ -212,7 +236,7 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long_t nEvents, 
   
   ::Info("KeyValue.TriggerHighPt.Input.Filter","%s",filter);
   ::Info("KeyValue.TriggerHighPt.Input.dcaCut","%f",dcaCut);
-  ::Info("KeyValue.TriggerHighPt.Input.nEvents","%ld",nEvents);
+  ::Info("KeyValue.TriggerHighPt.Input.nEvents","%llu",nEvents);
   // Dump counters
   ::Info("KeyValue.TriggerHighPt.Selection","%s",tree->GetAlias("cutHighPt"));
   ::Info("KeyValue.TriggerHighPt.NEventsAll","%d",nEventsAll);
@@ -221,7 +245,7 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long_t nEvents, 
 }
 
 
-void TriggerHighPtV0( const char * chinput,  const char * filter, Long_t nEvents, Double_t zCut, Double_t covarQPtCut, Int_t filterMask){
+void TriggerHighPtV0( const char * chinput,  const char * filter, Long64_t nEvents, Double_t zCut, Double_t covarQPtCut, Int_t filterMask){
   /*
     chinput=gSystem->ExpandPathName("$NOTES/JIRA/PWGPP-227/data/2016/LHC16t/000267161/pass1_CENT_wSDD/filtered.list");
     filter="((type==1)*max(track0.Pt(),track1.Pt())>2)||(max(track0.Pt(),track1.Pt())>4)"; 
@@ -253,7 +277,7 @@ void TriggerHighPtV0( const char * chinput,  const char * filter, Long_t nEvents
   TString cutAll=TString::Format("filterMask&&dcaZcut&&covarQPtCut&&%s",filter);
   // Dump input parameters
   ::Info("KeyValue.TriggerHighPtV0s.Input.filter","%s",filter);
-  ::Info("KeyValue.TriggerHighPtV0s.Input.nEvents","%ld",nEvents);
+  ::Info("KeyValue.TriggerHighPtV0s.Input.nEvents","%llu",nEvents);
   ::Info("KeyValue.TriggerHighPtV0s.Input.zCut","%f",zCut);
   ::Info("KeyValue.TriggerHighPtV0s.Input.covarQPtCut","%f",covarQPtCut);
   ::Info("KeyValue.TriggerHighPtV0s.Input.filterMask","%x",filterMask);
@@ -282,6 +306,242 @@ void TriggerHighPtV0( const char * chinput,  const char * filter, Long_t nEvents
   ::Info("KeyValue.TriggerHighPtV0s.NV0Selected","%d",nV0Selected);
   delete pcstream;
 }
+
+
+
+void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nEvents, Double_t dcaCut, Double_t multRatioFraction, Double_t multFraction, Int_t maxTracks){
+  // Calibration events:
+  //   * multiplicty cumulant cut
+  //   * pilaup ratio cumulant cut
+  //   * pt cumulant cut
+  //
+  /*
+    TString chinput="filtered1.list";
+    filter="(esdTrack.fFlags&0x4401)>0&&esdTrack.Pt()>2&&mult<1000"; 
+    Int_t nEvents=100000; 
+    Double_t dcaCut=3;    
+    Double_t multRatioFraction=0.8;
+    Double_t multFraction=0.5;
+    Int_t maxTracks=100000;   
+    triggerCalibHighPt("filtered1.list", "(esdTrack.fFlags&0x4401)>0&&esdTrack.Pt()>2&&mult<1000", 10000000, 3,0.8,0.5, 10000);
+  */
+
+  TTree *treeHighPt=NULL; 
+  TTree *treeEvent=NULL; 
+  if (TString(chinput).Contains(".root")){
+    TFile * fInputFile = TFile::Open(chinput);
+    treeHighPt               = (TTree*)fInputFile->Get("highPt");
+    treeEvent          = (TTree*)fInputFile->Get("eventInfoV0");
+  } else {
+    treeHighPt=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "highPt", 0, 1000000000,0);
+    treeEvent=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "eventInfoV0", 0, 1000000000,0);
+  }
+  TTreeSRedirector * pcstream = new TTreeSRedirector("filteredCalib.root","recreate");
+  //
+  // fill high pt calibration events
+  //
+  treeHighPt->SetEstimate(treeHighPt->GetEntries());
+  // Dump selected Events
+  Int_t triggerIndex = treeHighPt->GetUserInfo()->GetEntries()-1;  
+  treeHighPt->Draw("mult/ntracks:mult",filter,"goff",nEvents);
+  Double_t fractionCut=TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV1(),Long64_t(treeHighPt->GetSelectedRows()*multRatioFraction));
+  Double_t multCut=TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV2(),Long64_t(treeHighPt->GetSelectedRows()*multFraction));
+  
+  treeHighPt->SetAlias("cutHighPt",TString::Format("abs(esdTrack.fdTPC)<%.3f&&abs(esdTrack.fzTPC)<%.3f&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.01&&%s&&mult/ntracks>%f&&mult>%f",dcaCut,dcaCut, filter,fractionCut, multCut).Data());
+  treeHighPt->Draw("-esdTrack.Pt():mult:ntracks","cutHighPt","goff",nEvents);
+  Double_t meanMult=TMath::Mean(treeHighPt->GetSelectedRows(),treeHighPt->GetV2());
+  Double_t mult95=TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV2(),Long64_t(treeHighPt->GetSelectedRows()*0.95));
+  Double_t ntracks95=TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV3(),Long64_t(treeHighPt->GetSelectedRows()*0.95));
+  Double_t ptQuant95=-TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV1(),Long64_t(treeHighPt->GetSelectedRows()*0.05));
+  Double_t ptQuant=-TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV1(),TMath::Min(treeHighPt->GetSelectedRows(),Long64_t(maxTracks/meanMult)-1));
+  treeHighPt->SetAlias("cutHighPt",TString::Format("abs(esdTrack.fdTPC)<%.3f&&abs(esdTrack.fzTPC)<%.3f&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.01&&%s&&mult/ntracks>%f&&esdTrack.Pt()>%f&&mult>%f",dcaCut,dcaCut, filter,fractionCut,ptQuant,multCut).Data());
+  //
+  TString outputString="";
+  outputString+="fileName.GetString();1;fname;/C:";
+  outputString+="runNumber;1;run;/i:";
+  outputString+="evtNumberInFile;1.20;eventID;/i:";
+  outputString+="evtTimeStamp;1.20;timeStamp;/i:";
+  outputString+="gid;1.30;gid;/l:";
+  outputString+="esdTrack.Pt();1.30;trackPt;/l:";
+  outputString+="mult;1.30;mult;/l:";
+  outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
+  outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
+  AliTreePlayer::selectWhatWhereOrderBy(treeHighPt, outputString.Data(), "cutHighPt","",0,nEvents, "csv","filteredCalibHighPt.list");  
+  //
+  // QA plots
+  TString qaHistograms="";
+  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",2*mult95,2*mult95);
+  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",2*mult95,2*mult95);
+  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("mult/ntracks:#1>>hisMultNtracksAll(100,0,1);");
+  qaHistograms+=TString::Format("mult/ntracks:#cutHighPt>>hisMultNtracksSelected(100,0,1);");
+  qaHistograms+=TString::Format("esdTrack.Pt():#1>>hisPtAll(100,0,%.0f);",2.*ptQuant95);
+  qaHistograms+=TString::Format("esdTrack.Pt():#cutHighPt>>hisPtSelected(100,0,%.0f);",2.*ptQuant95);
+  TStopwatch timer; TObjArray *hisArray = AliTreePlayer::MakeHistograms(treeHighPt, qaHistograms, filter,0,nEvents,nEvents,15); timer.Print();
+  //
+  TString drawExpression="";
+  drawExpression="[1,1,1,1]:";
+  drawExpression+="%Ogridx,gridy;hisMultAll(0,100)(0)(err);hisMultSelected(0,100)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisMultNtracksAll(0,10000)(0)(err);hisMultNtracksSelected(0,10000)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisNtracksAll(0,10000)(0)(err);hisNtracksSelected(0,10000)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisPtAll(0,100)(0)(err);hisPtSelected(0,100)(0)(err):";
+  TObjArray *keepArray = new TObjArray(100);
+  TPad * pad = AliTreePlayer::DrawHistograms(0,hisArray,drawExpression,keepArray, 15); 
+  ((TCanvas*)pad)->SetWindowSize(1800,1000);
+  pad->SaveAs("triggerCalibHighPt.png");
+  pcstream->GetFile()->cd();
+  hisArray->Write("hisArray",TObjArray::kSingleKey);
+  keepArray->Write("keepArray",TObjArray::kSingleKey);
+  //
+  //
+  Int_t nHighPtSelected = treeHighPt->Draw("esdTrack.fTPCncls","cutHighPt","goff",nEvents);
+  Int_t nEventsAll=treeEvent->GetEntries();
+  // Dump input parameters
+  ::Info("SKeyValue.TriggerCalibHighPt.Input.Filter","%s",filter);
+  ::Info("KeyValue.TriggerCalibHighPt.Input.dcaCut","%f",dcaCut);
+  ::Info("KeyValue.TriggerCalibHighPt.Input.nEvents","%llu",nEvents);
+  //
+  ::Info("SKeyValue.TriggerCalibHighPt.Cut.Selection","%s",treeHighPt->GetAlias("cutHighPt"));
+  ::Info("KeyValue.TriggerCalibHighPt.Cut.multCut","%f",multCut);
+  ::Info("KeyValue.TriggerCalibHighPt.Cut.fractionCut","%f",fractionCut);
+  ::Info("KeyValue.TriggerCalibHighPt.Cut.ptQuant","%f",ptQuant);
+  ::Info("KeyValue.TriggerCalibHighPt.Cut.meanMult","%f",meanMult);
+  // Dump counters
+  ::Info("KeyValue.TriggerCalibHighPt.NEventsAll","%d",nEventsAll);
+  ::Info("KeyValue.TriggerCalibHighPt.NHighPtSelected","%d",nHighPtSelected);
+  delete pcstream;
+}
+
+
+
+
+
+
+void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvents, Double_t multRatioFraction, Double_t multFraction, Int_t maxTracks, Double_t zCut, Double_t covarQPtCut, Int_t filterMask){
+  // Calibration events:
+  //   * multiplicty cumulant cut
+  //   * pilaup ratio cumulant cut
+  //   * pt cumulant cut
+  //
+  /*
+    TString chinput="filtered1.list";
+    filter="((type==1)*max(track0.Pt(),track1.Pt())>1)||(max(track0.Pt(),track1.Pt())>2)"; 
+    Int_t nEvents=100000; 
+    Double_t dcaCut=3;    
+    Double_t multRatioFraction=0.8;
+    Double_t multFraction=0.5;
+    Int_t maxTracks=100000;   
+    Double_t zCut=20.;
+    Double_t covarQPtCut=0.03;
+    filterMask=0x4401;
+
+  */
+
+  TTree *treeV0=NULL; 
+  TTree *treeEvent=NULL; 
+  if (TString(chinput).Contains(".root")){
+    TFile * fInputFile = TFile::Open(chinput);
+    treeV0               = (TTree*)fInputFile->Get("V0s");
+    treeEvent          = (TTree*)fInputFile->Get("eventInfoV0");
+  } else {
+    treeV0=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "V0s", 0, 1000000000,0);
+    treeEvent=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "eventInfoV0", 0, 1000000000,0);
+  }
+  treeEvent->BuildIndex("gid");
+  treeV0->BuildIndex("gid");
+  treeV0->AddFriend(treeEvent,"E.");
+  treeV0->SetAlias("filterMask",TString::Format("((track0.fFlags&%x)+(track1.fFlags&%x)>0)",filterMask,filterMask).Data());
+  treeV0->SetAlias("dcaZcut",TString::Format("abs(track0.fzTPC)<%.3f&&abs(track1.fzTPC)<%.3f",zCut,zCut).Data());
+  treeV0->SetAlias("covarQPtCut",TString::Format("sqrt(track0.fC[14])<%.3f&&sqrt(track1.fC[14])<%0.3f",covarQPtCut,covarQPtCut).Data());
+  //
+  TTreeSRedirector * pcstream = new TTreeSRedirector("filteredCalibV0.root","recreate");
+  //
+  // fill high pt calibration events
+  //
+  treeV0->SetEstimate(treeV0->GetEntries());
+  // Dump selected Events
+  Int_t triggerIndex = treeV0->GetUserInfo()->GetEntries()-1;  
+  treeV0->Draw("mult/ntracks:mult",filter,"goff",nEvents);
+  Double_t fractionCut=TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV1(),Long64_t(treeV0->GetSelectedRows()*multRatioFraction));
+  Double_t multCut=TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV2(),Long64_t(treeV0->GetSelectedRows()*multFraction));
+  //
+  treeV0->SetAlias("cutHighPt",TString::Format("filterMask&&dcaZcut&&covarQPtCut&&%s&&mult/ntracks>%f&&mult>%f",filter,fractionCut, multCut).Data());
+  treeV0->Draw("-v0.Pt():mult:ntracks","cutHighPt","goff",nEvents);
+  Double_t meanMult=TMath::Mean(treeV0->GetSelectedRows(),treeV0->GetV2());
+  Double_t mult95=TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV2(),Long64_t(treeV0->GetSelectedRows()*0.95));
+  Double_t ntracks95=TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV3(),Long64_t(treeV0->GetSelectedRows()*0.95));
+  Double_t ptQuant95=-TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV1(),Long64_t(treeV0->GetSelectedRows()*0.05));
+  Double_t ptQuant=-TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV1(),TMath::Min(treeV0->GetSelectedRows(),Long64_t(maxTracks/meanMult))-1);
+  treeV0->SetAlias("cutHighPt",TString::Format("filterMask&&dcaZcut&&covarQPtCut&&%s&&mult/ntracks>%f&&v0.Pt()>%f&&mult>%f",filter,fractionCut,ptQuant,multCut).Data());
+  //
+  TString outputString="";
+  outputString+="fileName.GetString();1;fname;/C:";
+  outputString+="runNumber;1;run;/i:";
+  outputString+="evtNumberInFile;1.20;eventID;/i:";
+  outputString+="evtTimeStamp;1.20;timeStamp;/i:";
+  outputString+="gid;1.30;gid;/l:";
+  outputString+="v0.Pt();1.30;trackPt;/l:";
+  outputString+="mult;1.30;mult;/l:";
+  outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
+  outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
+  AliTreePlayer::selectWhatWhereOrderBy(treeV0, outputString.Data(), "cutHighPt","",0,nEvents, "csv","filteredCalibV0.list");  
+  //
+  // QA plots
+  TString qaHistograms="";
+  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",2*mult95,2*mult95);
+  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",2*mult95,2*mult95);
+  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("mult/ntracks:#1>>hisMultNtracksAll(100,0,1);");
+  qaHistograms+=TString::Format("mult/ntracks:#cutHighPt>>hisMultNtracksSelected(100,0,1);");
+  qaHistograms+=TString::Format("v0.Pt():#1>>hisPtAll(100,0,%.0f);",2.*ptQuant95);
+  qaHistograms+=TString::Format("v0.Pt():#cutHighPt>>hisPtSelected(100,0,%.0f);",2.*ptQuant95);
+  TStopwatch timer; TObjArray *hisArray = AliTreePlayer::MakeHistograms(treeV0, qaHistograms, filter,0,nEvents,nEvents,15); timer.Print();
+  //
+  TString drawExpression="";
+  drawExpression="[1,1,1,1]:";
+  drawExpression+="%Ogridx,gridy;hisMultAll(0,100)(0)(err);hisMultSelected(0,100)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisMultNtracksAll(0,10000)(0)(err);hisMultNtracksSelected(0,10000)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisNtracksAll(0,10000)(0)(err);hisNtracksSelected(0,10000)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisPtAll(0,100)(0)(err);hisPtSelected(0,100)(0)(err):";
+  TObjArray *keepArray = new TObjArray(100);
+  TPad * pad = AliTreePlayer::DrawHistograms(0,hisArray,drawExpression,keepArray, 15); 
+  ((TCanvas*)pad)->SetWindowSize(1400,800);
+  pad->SaveAs("triggerCalibV0.png");
+  pcstream->GetFile()->cd();
+  hisArray->Write("hisArray",TObjArray::kSingleKey);
+  keepArray->Write("keepArray",TObjArray::kSingleKey);
+  //
+  //
+  Int_t nHighPtSelected = treeV0->Draw("track0.fTPCncls","cutHighPt","goff",nEvents);
+  Int_t nEventsAll=treeEvent->GetEntries();
+  // Dump input parameters
+  ::Info("KeyValue.TriggerCalibV0.Input.filter","%s",filter);
+  ::Info("KeyValue.TriggerCalibV0.Input.nEvents","%llu",nEvents);
+  ::Info("KeyValue.TriggerCalibV0.Input.zCut","%f",zCut);
+  ::Info("KeyValue.TriggerCalibV0.Input.covarQPtCut","%f",covarQPtCut);
+  ::Info("KeyValue.TriggerCalibV0.Input.filterMask","%x",filterMask);
+  //
+  ::Info("SKeyValue.TriggerCalibV0.Cut.Selection","%s",treeV0->GetAlias("cutHighPt"));
+  ::Info("KeyValue.TriggerCalibV0.Cut.multCut","%f",multCut);
+  ::Info("KeyValue.TriggerCalibV0.Cut.fractionCut","%f",fractionCut);
+  ::Info("KeyValue.TriggerCalibV0.Cut.ptQuant","%f",ptQuant);
+  ::Info("KeyValue.TriggerCalibV0.Cut.meanMult","%f",meanMult);
+  // Dump counters
+  ::Info("KeyValue.TriggerCalibV0.NEventsAll","%d",nEventsAll);
+  ::Info("KeyValue.TriggerCalibV0.NV0Selected","%d",nHighPtSelected);
+  delete pcstream;
+}
+
+
+
+
+
+
+
+
+
 
 
 void GetRawSummary(){
@@ -327,7 +587,7 @@ void SummarizeLogs(const char * logTreeFile="log.tree"){
   //
   TTree logTree;
   logTree.ReadFile(logTreeFile,"",'\t');  
-  if (logTree->GetEntries()<=0){
+  if (logTree.GetEntries()<=0){
     ::Error("makeOfflineTriggerList.SummarizeLogs","Invalid input file %s. No entries. Exiting",logTreeFile);
     return;
   }
@@ -400,7 +660,7 @@ void checkReconstuctedTrigger(){
   treeHighPt.BuildIndex("gid");
   treeHighPt.AddFriend(esdTree,"E");
   esdTree->Scan("gid%1000","","",3);
-  treeHighPt->Draw("Tracks[].Pt()>>hisPt(100, 2,30)","gid==E.gid&&Tracks[].fFlags&&0x44==0x44&&Tracks[].fTPCncls>100","",10000);
+  treeHighPt.Draw("Tracks[].Pt()>>hisPt(100, 2,30)","gid==E.gid&&Tracks[].fFlags&&0x44==0x44&&Tracks[].fTPCncls>100","",10000);
   gPad->SaveAs("TracksPt.png");
   //
   // High mult
