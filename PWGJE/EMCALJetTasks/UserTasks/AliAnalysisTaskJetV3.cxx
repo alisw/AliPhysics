@@ -288,6 +288,8 @@ Bool_t AliAnalysisTaskJetV3::Notify()
     #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
         printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
     #endif
+        // if not set, estimate the number of cones that would fit into the selected acceptance
+//        if(fMaxCones < 1) fMaxCones = TMath::CeilNint((TMath::Abs(GetJetContainer()->GetJetEtaMax()-GetJetContainer()->GetJetEtaMin())*TMath::Abs(GetJetContainer()->GetJetPhiMax()-GetJetContainer()->GetJetPhiMin()))/(TMath::Pi()*GetJetRadius()*GetJetRadius()));
         // check if this is 10h or 11h data
         switch (fCollisionType) {
             case kPbPb10h : {
@@ -322,11 +324,14 @@ Bool_t AliAnalysisTaskJetV3::Notify()
             } break;
             case kFull: {
                 AliAnalysisTaskEmcalJet::SetJetPhiLimits(1.405 + GetJetRadius(), 3.135 - GetJetRadius());
+    // if not set, estimate the number of cones that would fit into the selected acceptance
+//    if(fMaxCones < 1) fMaxCones = TMath::CeilNint((TMath::Abs(GetJetContainer()->GetJetEtaMax()-GetJetContainer()->GetJetEtaMin())*TMath::Abs(GetJetContainer()->GetJetPhiMax()-GetJetContainer()->GetJetPhiMin()))/(TMath::Pi()*GetJetRadius()*GetJetRadius()));
             } break;
             default: {
                 AliAnalysisTaskEmcal::SetTrackPhiLimits(-10., 10.);
             } break;
         }
+
         if(fCachedRho) {                // if there's a cached rho, it's the default, so switch back
             #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
                 printf("__FUNC__ %s > replacing rho with cached rho \n ", __func__);
@@ -380,8 +385,6 @@ Bool_t AliAnalysisTaskJetV3::InitializeAnalysis()
     #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    // if not set, estimate the number of cones that would fit into the selected acceptance
-    if(fMaxCones <= 0) fMaxCones = TMath::CeilNint((TMath::Abs(GetJetContainer()->GetJetEtaMax()-GetJetContainer()->GetJetEtaMin())*TMath::Abs(GetJetContainer()->GetJetPhiMax()-GetJetContainer()->GetJetPhiMin()))/(TMath::Pi()*GetJetRadius()*GetJetRadius()));
     // manually 'override' the default acceptance cuts of the emcal framework (use with caution) 
     if(fMinDisanceRCtoLJ==0) fMinDisanceRCtoLJ = GetJetRadius();
     if(dynamic_cast<AliAODEvent*>(InputEvent())) fDataType = kAOD; // determine the datatype
@@ -2847,7 +2850,7 @@ void AliAnalysisTaskJetV3::FillAnalysisSummaryHistogram() const
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(5, "fJetPhiMin");
     fHistAnalysisSummary->SetBinContent(5, GetJetContainer()->GetJetPhiMin());
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(6, "fJetPhiMax");
-    fHistAnalysisSummary->SetBinContent(6, GetJetContainer()->GetJetPhiMin());
+    fHistAnalysisSummary->SetBinContent(6, GetJetContainer()->GetJetPhiMax());
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(16, "fForceBeamType");
     fHistAnalysisSummary->SetBinContent(16, fForceBeamType);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(17, "fMinCent");

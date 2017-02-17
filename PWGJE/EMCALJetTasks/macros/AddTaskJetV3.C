@@ -25,7 +25,7 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
   Bool_t     baseClassHistos    = kTRUE,
   Float_t    minEta             = -.7,
   Float_t    maxEta             = .7,
-  UInt_t     acceptance         = AliEmcalJet::kTPCfid,
+  UInt_t     acceptance         = AliEmcalJet::kUser,
   AliJetContainer::EJetType_t jetType = AliJetContainer::kChargedJet,
   AliJetContainer::ERecoScheme_t rscheme = AliJetContainer::pt_scheme)
 {  
@@ -88,10 +88,7 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
 //      jetCont->SetName("Jets");
       jetCont->SetPercAreaCut(jetareacut);
       jetCont->SetRhoName(nrho);
-      if(minEta > -.7 || maxEta < 0.7) {
-          jetCont->SetJetAcceptanceType(AliEmcalJet::kUser);
-          jetCont->SetJetEtaLimits(minEta, maxEta);
-      }
+      jetCont->SetJetEtaLimits(minEta, maxEta);
       if(partCont)      jetCont->ConnectParticleContainer(partCont);
       if(clusterCont)   jetCont->ConnectClusterContainer(clusterCont);
       jetCont->PrintCuts();
@@ -102,6 +99,7 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
   jetTask->SetModulationFitType(fitType);
   jetTask->SetModulationFitOptions(fitOpts);
   jetTask->SetModulationFitMinMaxP(.01, 1);
+  jetTask->SetJetPhiLimits(0., TMath::TwoPi());
   // if centralities haven't been specified use defaults
   if(!centralities) {
       if(LHC10h) {
