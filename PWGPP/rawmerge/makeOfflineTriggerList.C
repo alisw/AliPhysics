@@ -353,7 +353,7 @@ void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nE
   Double_t mult95=TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV2(),Long64_t(treeHighPt->GetSelectedRows()*0.95));
   Double_t ntracks95=TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV3(),Long64_t(treeHighPt->GetSelectedRows()*0.95));
   Double_t ptQuant95=-TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV1(),Long64_t(treeHighPt->GetSelectedRows()*0.05));
-  Double_t ptQuant=-TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV1(),TMath::Min(treeHighPt->GetSelectedRows(),Long64_t(maxTracks/meanMult)-1));
+  Double_t ptQuant=-TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV1(),TMath::Min(treeHighPt->GetSelectedRows()-1,Long64_t(maxTracks/meanMult)-1));
   treeHighPt->SetAlias("cutHighPt",TString::Format("abs(esdTrack.fdTPC)<%.3f&&abs(esdTrack.fzTPC)<%.3f&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.01&&%s&&mult/ntracks>%f&&esdTrack.Pt()>%f&&mult>%f",dcaCut,dcaCut, filter,fractionCut,ptQuant,multCut).Data());
   //
   TString outputString="";
@@ -472,7 +472,7 @@ void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvent
   Double_t mult95=TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV2(),Long64_t(treeV0->GetSelectedRows()*0.95));
   Double_t ntracks95=TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV3(),Long64_t(treeV0->GetSelectedRows()*0.95));
   Double_t ptQuant95=-TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV1(),Long64_t(treeV0->GetSelectedRows()*0.05));
-  Double_t ptQuant=-TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV1(),TMath::Min(treeV0->GetSelectedRows(),Long64_t(maxTracks/meanMult))-1);
+  Double_t ptQuant=-TMath::KOrdStat(treeV0->GetSelectedRows(),treeV0->GetV1(),TMath::Min(treeV0->GetSelectedRows()-1,Long64_t(maxTracks/meanMult))-1);
   treeV0->SetAlias("cutHighPt",TString::Format("filterMask&&dcaZcut&&covarQPtCut&&%s&&mult/ntracks>%f&&v0.Pt()>%f&&mult>%f",filter,fractionCut,ptQuant,multCut).Data());
   //
   TString outputString="";
