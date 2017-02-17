@@ -148,15 +148,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnUEBandSubtractionHistoFill()  { fFillUEBandSubtractHistograms = kTRUE    ; }
   void         SwitchOffUEBandSubtractionHistoFill() { fFillUEBandSubtractHistograms = kFALSE   ; }
 
-  Bool_t       IsUEEtaBandSubtractionOn()      const { return fUseEtaUEBandInIsolation ; }
-  Bool_t       IsUEPhiBandSubtractionOn()      const { return fUsePhiUEBandInIsolation ; }
-
-  void         SwitchOffUEEtaBandSubtractionOn()     { fUseEtaUEBandInIsolation = kFALSE; }
-  void         SwitchOffUEPhiBandSubtractionOn()     { fUsePhiUEBandInIsolation = kFALSE; }
-
-  void         SwitchOnUEEtaBandSubtractionOn()      { fUseEtaUEBandInIsolation = kTRUE ; SwitchOffUEPhiBandSubtractionOn() ; SwitchOnUEBandSubtractionHistoFill() ; }
-  void         SwitchOnUEPhiBandSubtractionOn()      { fUsePhiUEBandInIsolation = kTRUE ; SwitchOffUEEtaBandSubtractionOn() ; SwitchOnUEBandSubtractionHistoFill() ; }
-  
   void         SwitchOnCellHistoFill()               { fFillCellHistograms = kTRUE ; }
   void         SwitchOffCellHistoFill()              { fFillCellHistograms = kFALSE; }
 
@@ -237,8 +228,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
   Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
-  Bool_t   fUseEtaUEBandInIsolation;                  ///<  Use UE eta band in cone sum pT subtraction
-  Bool_t   fUsePhiUEBandInIsolation;                  ///<  Use UE phi band in cone sum pT subtraction
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   Bool_t   fStudyFECCorrelation;                      ///<  Study 4 FEC channels cross correlation

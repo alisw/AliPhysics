@@ -55,9 +55,8 @@ AliAnaParticleIsolation::AliAnaParticleIsolation() :
 AliAnaCaloTrackCorrBaseClass(),
 fIsoDetector(-1),                 fIsoDetectorString(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
-fFillTMHisto(0),                  fFillSSHisto(1),                          fFillEMCALRegionHistograms(0),
-fFillUEBandSubtractHistograms(1), 
-fUseEtaUEBandInIsolation(0),      fUsePhiUEBandInIsolation(0), 
+fFillTMHisto(0),                  fFillSSHisto(1),                          
+fFillEMCALRegionHistograms(0),    fFillUEBandSubtractHistograms(1), 
 fFillCellHistograms(0),
 fFillOverlapHistograms(0),        fStudyFECCorrelation(0),                  
 fStudyTracksInCone(0),            fStudyMCConversionRadius(0),
@@ -2350,7 +2349,7 @@ TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar, buffersize,"Isolation Cand. Detector: %s;",fIsoDetectorString.Data()) ;
   parList+=onePar ;
-  snprintf(onePar, buffersize,"UE cone pT subtraction: eta %d, phi %d; histo UE %d",fUseEtaUEBandInIsolation, fUsePhiUEBandInIsolation, fFillUEBandSubtractHistograms) ;
+  snprintf(onePar, buffersize,"Fill histo UE %d",fFillUEBandSubtractHistograms) ;
   parList+=onePar ;
   snprintf(onePar, buffersize,"fReMakeIC =%d (Flag for reisolation during histogram filling);",fReMakeIC) ;
   parList+=onePar ;
@@ -5895,34 +5894,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     // Normalize phi/eta band per area unit
     //---------------------------------------------------------------
     if(fFillUEBandSubtractHistograms)
-    {
       CalculateNormalizeUEBandPerUnitArea(aod, coneptsumCluster, coneptsumCell, coneptsumTrack, coneptsumSubEtaBand, coneptsumSubPhiBand) ;
-      
-      //---------------------------------------------------------------
-      // Recheck isolation, depending on subtracted energy from UE bands
-      // Think how to move all this to AliIsolationCut
-      //---------------------------------------------------------------
-      if ( fUseEtaUEBandInIsolation || fUsePhiUEBandInIsolation )
-      {
-        isolated = kFALSE; // re-init, think how to de-activate the first isolation checks
-        
-        if ( fUseEtaUEBandInIsolation && coneptsumSubEtaBand < GetIsolationCut()->GetSumPtThreshold() ) isolated = kTRUE;
-        
-        if ( fUsePhiUEBandInIsolation && coneptsumSubPhiBand < GetIsolationCut()->GetSumPtThreshold() ) isolated = kTRUE;
-        
-        AliDebug(1,
-                 Form("cluster pt = %2.2f, cone pt sum = %2.2f (track %2.2f, cluster %2.2f), \n"
-                      "\t cone pt sum - eta band = %f (on? %d), cone pt sum - phi band  %f (on? %d);"
-                      "\t isolation = org %d, new %d\n",
-                      aod->Pt(), coneptsumTrack+coneptsumCluster, coneptsumTrack, coneptsumCluster,
-                      coneptsumSubEtaBand, fUseEtaUEBandInIsolation,
-                      coneptsumSubPhiBand, fUsePhiUEBandInIsolation,
-                      aod->IsIsolated(), isolated)
-                 );
-        
-        aod->SetIsolated(isolated);
-      }
-    }
     
     //---------------------------------------------------------------
     // EMCAL SM regions
@@ -6990,7 +6962,7 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
   printf("Make Several Isolation    = %d \n",  fMakeSeveralIC) ;
   printf("Calorimeter for isolation = %s \n",  GetCalorimeterString().Data()) ;
   printf("Detector for candidate isolation = %s \n", fIsoDetectorString.Data()) ;
-  printf("Subtract UE from cone sum pT = eta %d, phi %d; histo fill %d \n", fUseEtaUEBandInIsolation, fUsePhiUEBandInIsolation, fFillUEBandSubtractHistograms) ;
+  printf("Subtract UE from cone sum pT histo fill %d \n",fFillUEBandSubtractHistograms) ;
   
   if(fMakeSeveralIC)
   {
