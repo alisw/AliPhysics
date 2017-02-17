@@ -19,7 +19,7 @@ const char* GetObjPath(Bool_t correction, Bool_t ref)
 }
 
 //_________________________________________________________________________________________________
-void CreateCorrMapObjRef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+Bool_t CreateCorrMapObjRef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   // create reference maps 
   int nmap = mapArr->GetEntriesFast();
@@ -59,13 +59,15 @@ void CreateCorrMapObjRef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const 
   md->SetResponsible("Ruben Shahoyan");
   md->SetComment(Form("Cheb. %s reference map",isCorrection ? "Correction":"Distortion"));
   AliCDBId id(GetObjPath(isCorrection,kTRUE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  man->Put(arr,id,md); 
-  printf("Created an object with single time independent map\n");
+  Bool_t res = man->Put(arr,id,md); 
+  if (res) printf("Created an object with single time independent map\n");
+  else printf("Failed to put on OCDB an object with single time independent map\n");
+  return res;
   //
 }
 
 //_________________________________________________________________________________________________
-void CreateCorrMapObjDef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+Bool_t CreateCorrMapObjDef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   // create default maps 
   int nmap = mapArr->GetEntriesFast();
@@ -105,13 +107,15 @@ void CreateCorrMapObjDef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const 
   md->SetResponsible("Ruben Shahoyan");
   md->SetComment(Form("Cheb. %s default map",isCorrection ? "Correction":"Distortion"));
   AliCDBId id(GetObjPath(isCorrection,kFALSE), firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  man->Put(arr,id,md); 
-  printf("Created an object with single time independent map\n");
+  Bool_t res = man->Put(arr,id,md); 
+  if (res) printf("Created an object with single time independent map\n");
+  else printf("Failed to put on OCDB an object with single time independent map\n");
+  return res;
   //
 }
 
 //_________________________________________________________________________________________________
-void CreateCorrMapObjDef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+Bool_t CreateCorrMapObjDef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   map->SetTimeStampStart(0);
   map->SetTimeStampEnd(0xffffffff);  
@@ -129,13 +133,15 @@ void CreateCorrMapObjDef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, cons
   md->SetResponsible("Ruben Shahoyan");
   md->SetComment(Form("Cheb. %s default map",isCorrection ? "Correction":"Distortion"));
   AliCDBId id(GetObjPath(isCorrection,kFALSE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  man->Put(arr,id,md); 
-  printf("Created an object with single time independent map\n");
+  Bool_t res = man->Put(arr,id,md); 
+  if (res) printf("Created an object with single time independent map\n");
+  else printf("Failed to put on OCDB an object with single time independent map\n");
+  return res;
   //
 }
 
 //_________________________________________________________________________________________________
-void CreateCorrMapObjRef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+Bool_t CreateCorrMapObjRef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   map->SetTimeStampStart(0);
   map->SetTimeStampEnd(0xffffffff);  
@@ -153,13 +159,15 @@ void CreateCorrMapObjRef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, cons
   md->SetResponsible("Ruben Shahoyan");
   md->SetComment(Form("Cheb. %s reference map",isCorrection ? "Correction":"Distortion"));
   AliCDBId id(GetObjPath(isCorrection,kTRUE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  man->Put(arr,id,md); 
-  printf("Created an object with single time independent map\n");
+  Bool_t res = man->Put(arr,id,md); 
+  if (res) printf("Created an object with single time independent map\n");
+  else printf("Failed to put on OCDB an object with single time independent map\n");
+  return res;
   //
 }
 
 //_________________________________________________________________________________________________
-void CreateCorrMapObj(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+Bool_t CreateCorrMapObj(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   map->SetTimeStampStart(0);
   map->SetTimeStampEnd(0xffffffff);  
@@ -177,22 +185,21 @@ void CreateCorrMapObj(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const c
   md->SetResponsible("Ruben Shahoyan");
   md->SetComment(Form("Cheb. %s map",isCorrection ? "Correction":"Distortion"));
   AliCDBId id(GetObjPath(isCorrection,kFALSE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  man->Put(arr,id,md); 
-  printf("Created an object with single time independent map\n");
+  Bool_t res = man->Put(arr,id,md); 
+  if (res) printf("Created an object with single time independent map\n");
+  else printf("Failed to put on OCDB an object with single time independent map\n");
+  return res;
   //
 }
 
 //_________________________________________________________________________________________________
-void CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+Bool_t CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   // emulate time dependent object
   //
   int nmap = arrMap->GetEntriesFast();
-  if (nmap<1) return;
-  if (nmap==1) {
-    CreateCorrMapObj((AliTPCChebCorr*)arrMap->At(0),firstrun,lastrun,dest);
-    return;
-  }
+  if (nmap<1) return kFALSE;
+  if (nmap==1) return CreateCorrMapObj((AliTPCChebCorr*)arrMap->At(0),firstrun,lastrun,dest);
   //
   int run = -1;
   Bool_t isCorrection = kTRUE;
@@ -245,7 +252,9 @@ void CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const
   md->SetResponsible("Ruben Shahoyan");
   md->SetComment(Form("Cheb. %s maps array",isCorrection ? "Correction":"Distortion"));
   AliCDBId id(GetObjPath(isCorrection,kFALSE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  man->Put(arrMap,id,md); 
-  printf("Created an object with %d time dependent maps\n",nmap);
+  Bool_t res = man->Put(arrMap,id,md);
+  if (res) printf("Created an object with %d time dependent maps\n",nmap);
+  else printf("Failed to put on OCDB an object with %d time dependent maps\n",nmap);
+  return res;
   //
 }
