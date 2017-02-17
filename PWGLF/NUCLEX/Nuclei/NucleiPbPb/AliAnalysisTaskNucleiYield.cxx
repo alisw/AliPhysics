@@ -369,9 +369,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (std::abs(part->GetPdgCode()) == fPDG) {
         for (int iR = iTof; iR >= 0; iR--) {
           fReconstructed[iR][iC]->Fill(centrality,part->Pt());
-          if (part->IsPhysicalPrimary())
+          if (part->IsPhysicalPrimary()) {
             fDCAPrimary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
-          else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
+            fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
+          } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
             fDCASecondary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
           else
             fDCASecondaryWeak[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
@@ -640,7 +641,7 @@ void AliAnalysisTaskNucleiYield::SetParticleType(AliPID::EParticleType part) {
   fParticle = part;
   fPDGMass = AliPID::ParticleMass(part);
   fPDGMassOverZ = AliPID::ParticleMassZ(part);
-  fCharge = AliPID::ParticleCharge(fParticle);
+  fCharge = TMath::Abs(AliPID::ParticleCharge(fParticle));
 }
 
 /// This function provides the flattening of the centrality distribution.
