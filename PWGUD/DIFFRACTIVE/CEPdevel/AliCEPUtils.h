@@ -38,9 +38,11 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
+#include "AliESDFMD.h"
 #include "AliCEPBase.h"
 
 class AliCEPUtils : public TObject {
@@ -75,15 +77,15 @@ class AliCEPUtils : public TObject {
       fTrackCutListPrim->AddLast((TObject*)cut);
     }
 
-  	static Int_t GetEventType(const AliESDEvent *ESDEvent);
+  	static Int_t GetEventType(const AliVEvent *Event);
   	static void SPDLoadGeom(Int_t run);
     static void DetermineMCprocessType (
       AliMCEvent *MCEvent, TString MCgen, Int_t MCproc);
     Int_t AnalyzeTracks(AliESDEvent* ESDEvent,
       TObjArray* fTracks,TArrayI* fTrackStatus);
 
-    UInt_t GetVtxPos(AliESDEvent *ESDEvent, TVector3 *vtxpos);
-
+    UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
+    Bool_t doFMD(AliVEvent* Event, Bool_t isFMDA, Bool_t isFMDC);
     Bool_t checkstatus(UInt_t stat, UInt_t mask, UInt_t pattern);
     Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern);
     Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern, TArrayI *indices);

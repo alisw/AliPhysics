@@ -338,28 +338,26 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 		PostOutputs();
 		return;
 	}
-  // printf("<I - UserExec> Printing ESD event ...\n");
-  // fESDEvent->Print();
   fhStatsFlow->Fill(AliCEPBase::kBinGoodInput);
   if (fMCEvent) fhStatsFlow->Fill(AliCEPBase::kBinMCEvent);
   
   // get event characteristics like ...
   // run number
-  fRun = fESDEvent->GetRunNumber();
+  fRun = fEvent->GetRunNumber();
   // event number
-  Int_t fEvent = fESDEvent->GetEventNumberInFile();
+  Int_t fEventNum = fEvent->GetEventNumberInFile();
   // period
-  UInt_t fPeriod = fESDEvent->GetPeriodNumber();
+  UInt_t fPeriod = fEvent->GetPeriodNumber();
   // orbit number
-  UInt_t fOrbit = fESDEvent->GetOrbitNumber();
+  UInt_t fOrbit = fEvent->GetOrbitNumber();
   // bunch cross number
-  UShort_t fBunchCross = fESDEvent->GetBunchCrossNumber();
+  UShort_t fBunchCross = fEvent->GetBunchCrossNumber();
   // magnetic field strenght
-  Double_t fMagField = fESDEvent->GetMagneticField();
+  Double_t fMagField = fEvent->GetMagneticField();
   // number of tracks
-  Int_t fNumTracks = fESDEvent->GetNumberOfTracks();
+  Int_t fNumTracks = fEvent->GetNumberOfTracks();
   // Number of V0s
-  Int_t fNumV0s = fESDEvent->GetNumberOfV0s();
+  Int_t fNumV0s = fEvent->GetNumberOfV0s();
   
   //printf("Run number:         %i\n",fRun);
   //printf("Event number:       %i\n",fEvent);
@@ -374,28 +372,30 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // E:  CINT1-E-NOPF-ALL, CDG5-E     : no beam
   // I:  CINT1B-ABCE-NOPF-ALL, CDG5-I : beam from both sides
   // AC: CDG5-AC                      : beam from one side, side not specified
-  Int_t fEventType = fCEPUtil->GetEventType(fESDEvent);
+  Int_t fEventType = fCEPUtil->GetEventType(fEvent);
   //printf("<I - UserExec> EventType: %i\n",fEventType);
   Bool_t isPhyEvent =
-    fESDEvent->GetEventType() == AliRawEventHeaderBase::kPhysicsEvent;
+    fEvent->GetEventType() == AliRawEventHeaderBase::kPhysicsEvent;
   if (isPhyEvent) fhStatsFlow->Fill(AliCEPBase::kBinPhysEvent);
   
   // does event pass the PhysicsSelection?
-  if (fMCEvent) fPhysicsSelection->SetAnalyzeMC(kTRUE);
   Bool_t isPhys = kFALSE;
-  if (fPhysicsSelection) isPhys = fPhysicsSelection->IsCollisionCandidate(fESDEvent)>0;
+  if (fPhysicsSelection) {
+    if (fMCEvent) fPhysicsSelection->SetAnalyzeMC(kTRUE);
+    isPhys = fPhysicsSelection->IsCollisionCandidate(fEvent)>0;
+  }
   if (isPhys) fhStatsFlow->Fill(AliCEPBase::kBinPhySel);
 
   // pileup and cluster cut
   // see recommendations at
   // https://twiki.cern.ch/twiki/bin/view/ALICE/PWGPPEvSelRun2pp
   AliAnalysisUtils fAnalysisUtils;
-  Bool_t isPileup = fESDEvent->IsPileupFromSPD();
+  Bool_t isPileup = fEvent->IsPileupFromSPD(3,0.8,3.,2.,5.);
   if (isPileup) fhStatsFlow->Fill(AliCEPBase::kBinPileup);
   
   //fAnalysisUtils.SetBSPDCvsTCut(4);
 	//fAnalysisUtils.SetASPDCvsTCut(65);
-  Bool_t isClusterCut = !fAnalysisUtils.IsSPDClusterVsTrackletBG(fESDEvent);
+  Bool_t isClusterCut = !fAnalysisUtils.IsSPDClusterVsTrackletBG(fEvent);
   if (isClusterCut) fhStatsFlow->Fill(AliCEPBase::kBinClusterCut);
 
   // EventCuts only works with run2 data
@@ -403,7 +403,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // run number > 225000
   Bool_t isEventCutsel = kFALSE;
   if (fRun > 225000) {
-    isEventCutsel = fEventCuts->AcceptEvent((AliVEvent*)fESDEvent);
+    isEventCutsel = fEventCuts->AcceptEvent(fEvent);
   }
   if (isEventCutsel) fhStatsFlow->Fill(AliCEPBase::kBinEventCut);
 
@@ -414,7 +414,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // -1: no vertex
   //  1: from SPD
   //  2: from tracks
-  Int_t kVertexType = fCEPUtil->GetVtxPos(fESDEvent,&fVtxPos);
+  Int_t kVertexType = fCEPUtil->GetVtxPos(fEvent,&fVtxPos);
   
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
   // kSPDGFOBits: SPD (any fired chip)
@@ -427,34 +427,41 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // kZNA, kZNC: ZN
   // printf("<I - UserExec> Doing trigger analysis ...\n");
 	Bool_t isSPD  =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kSPDGFO));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kSPDGFO));
 	// Bool_t isSPD  =
-  //   (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kSPDGFOBits));
+  //   (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kSPDGFOBits));
 	Bool_t isMBOR  =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kMB1));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kMB1));
 	// Bool_t isMBAND  =
-  //   (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kMB2));
+  //   (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kMB2));
   Bool_t isMBAND =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0AND));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kV0AND));
   Bool_t isV0A =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0A));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kV0A));
   Bool_t isV0C =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0C));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kV0C));
   Bool_t isADA =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kADA));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kADA));
   Bool_t isADC =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kADC));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kADC));
 	fTrigger->SetFMDThreshold(0.3,0.5);
+
+  Bool_t isFMDA,isFMDC;
+  Bool_t isFMD = fCEPUtil->doFMD(fEvent,&isFMDA,&isFMDC);
+
+  /*
   Bool_t isFMDA =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kFMDA));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kFMDA));
   Bool_t isFMDC =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kFMDC));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kFMDC));
+  */
+  
 	Bool_t isZDC  =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kZDC));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZDC));
 	Bool_t isZDNA  =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kZNA));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNA));
 	Bool_t isZDNC  =
-    (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kZNC));
+    (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
 
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
@@ -475,7 +482,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // this is relevant for the 2016 data
   // compare with (isSPD  && (!isV0A && !isV0C))
   Bool_t isDGTrigger = kFALSE;
-  TString firedTriggerClasses = fESDEvent->GetFiredTriggerClasses();
+  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
     isDGTrigger = kTRUE;
   }
@@ -509,7 +516,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
   if (nMartinSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
 
-  const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
+  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
   
   
@@ -602,13 +609,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // if the number of accepted tracks is within the limits ...
   Bool_t isToSave = 0 < nTracks && nTracks <= fnumTracksMax;
 
-  // OR if the .AliCEPBase::kBitSaveAllEvents bit is set ..
-  // isToSave = isToSave ||
-  //  fCEPUtil->checkstatus(fAnalysisStatus,
-  //    AliCEPBase::kBitSaveAllEvents,AliCEPBase::kBitSaveAllEvents);
-  
   // AND DGTrigger
-  isToSave = isToSave && isDGTrigger;
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitSaveDGTrigger,AliCEPBase::kBitSaveDGTrigger))
+    isToSave = isToSave && isDGTrigger;
   
   // OR kBitSaveAllEvents is set
   isToSave = isToSave ||
@@ -624,7 +628,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     
     // general event informations
     fCEPEvent->SetRunNumber(fRun);
-    fCEPEvent->SetEventNumber(fEvent);
+    fCEPEvent->SetEventNumber(fEventNum);
     fCEPEvent->SetPeriodNumber(fPeriod);
     fCEPEvent->SetOrbitNumber(fOrbit);
     fCEPEvent->SetBunchCrossNumber(fBunchCross);
@@ -764,24 +768,20 @@ Bool_t AliAnalysisTaskCEP::CheckInput()
 
 	//general protection
 	// are we dealing with an ESD or AOD?
-	if (const AliESDInputHandler *esdH =
-    dynamic_cast<AliESDInputHandler*>(fInputHandler)) {
-    fESDEvent = (AliESDEvent*)esdH->GetEvent();
-	  fESDRun   = (AliESDRun*)fESDEvent->GetESDRun();
-    //fESDRun->Print();
-    
-	} else {
-		printf("<E - CheckInput> No valid event!\n");
-    return kFALSE;
-	}
-  if (!fESDEvent) {
-		printf("<E - CheckInput> No valid event!\n");
+	fEvent = fInputHandler->GetEvent();
+  if (fEvent->GetDataLayoutType()==AliVEvent::kESD) fisESD = kTRUE;
+  if (fEvent->GetDataLayoutType()==AliVEvent::kAOD) fisAOD = kTRUE;
+  
+  if (fisESD) fESDEvent = (AliESDEvent*)fEvent;
+  
+  if (!fisESD) {
+		printf("<E - CheckInput> No valid ESD event!\n");
     return kFALSE;
 	}
     
   // check incomplete DAQ, see recommendation at
   // https://twiki.cern.ch/twiki/bin/view/ALICE/PWGPPEvSelRun2pp
-  if (fESDEvent->IsIncompleteDAQ()) {
+  if (fEvent->IsIncompleteDAQ()) {
 		printf("<E - CheckInput> Incomplete DAQ!\n");
     return kFALSE;
 	}
@@ -799,14 +799,14 @@ Bool_t AliAnalysisTaskCEP::CheckInput()
 	}
 
 	// check magnetic field
-  if (TMath::Abs(fESDEvent->GetMagneticField())<1) {
+  if (TMath::Abs(fEvent->GetMagneticField())<1) {
 		printf("<E - CheckInput> Wrong Bfield value! %f\n",
-      fESDEvent->GetMagneticField());
+      fEvent->GetMagneticField());
 		return kFALSE;
 	}
 
 	// update the run number
-  Int_t tmprun = fESDEvent->GetRunNumber();
+  Int_t tmprun = fEvent->GetRunNumber();
 	if (fRun != tmprun) {
 		fRun = tmprun;
 		fCEPUtil->SPDLoadGeom(fRun);

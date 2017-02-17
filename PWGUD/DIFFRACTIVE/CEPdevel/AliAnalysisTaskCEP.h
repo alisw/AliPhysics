@@ -69,7 +69,11 @@ private:
 	// event information
 	Int_t fRun;                     //  run number
   AliESDRun      *fESDRun;        //! esd run object
+  Bool_t          fisESD;         //!
+  Bool_t          fisAOD;         //!
+  AliVEvent      *fEvent;         //! event object
   AliESDEvent    *fESDEvent;      //! esd event object
+
   CEPEventBuffer *fCEPEvent;      //! event buffer
   TObjArray      *fTracks;        //! array of tracks
   TArrayI        *fTrackStatus;   //! array of TrackStatus

@@ -64,6 +64,7 @@ class AliCEPBase : public TObject {
     kVtxUnknown = 0,
     kVtxSPD,                // from ITS
     kVtxTracks,             // from tracks
+    kVtxAOD,                // On AOD only primary vertex is stored
 
 		// StatsFlow histogram entries
 		// names for the bins are specified in AliCEPUtils.cxx
@@ -115,7 +116,8 @@ class AliCEPBase : public TObject {
 		kBitConfigurationSet      = (1<< 0), // if not set everything is active
     kBitisRun1                = (1<< 1), // save all events
     kBitSaveAllEvents         = (1<< 2), // save all events
-		kBitConfigurationVersion  = (1<< 3)  // always set, last bit
+    kBitSaveDGTrigger         = (1<< 3), // save events with a DG Trigger
+		kBitConfigurationVersion  = (1<< 4)  // always set, last bit
 	
   };
 

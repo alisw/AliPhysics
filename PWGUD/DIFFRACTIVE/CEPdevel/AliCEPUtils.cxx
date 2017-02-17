@@ -83,7 +83,7 @@ TH1F* AliCEPUtils::GetHistStatsFlow()
 }
 
 //------------------------------------------------------------------------------
-Int_t AliCEPUtils::GetEventType(const AliESDEvent *ESDEvent)
+Int_t AliCEPUtils::GetEventType(const AliVEvent *Event)
 {
 	// checks of which type a event is:
   // A:  CINT1A-ABCE-NOPF-ALL         : beam from A-side
@@ -92,7 +92,7 @@ Int_t AliCEPUtils::GetEventType(const AliESDEvent *ESDEvent)
   // I:  CINT1B-ABCE-NOPF-ALL, CDG5-I : beam from both sides
   // AC: CDG5-AC                      : beam from one side, side not specified
 
-	TString firedTriggerClasses = ESDEvent->GetFiredTriggerClasses();
+	TString firedTriggerClasses = Event->GetFiredTriggerClasses();
   // printf("<I - AliCEPUtils::GetEventType> firedTriggerClasses: %s\n",
   //   firedTriggerClasses.Data());
 
@@ -124,45 +124,54 @@ Int_t AliCEPUtils::GetEventType(const AliESDEvent *ESDEvent)
 //------------------------------------------------------------------------------
 // this is a copy of the method described on
 // https://twiki.cern.ch/twiki/bin/view/ALICE/PWGPPEvSelRun2pp
-UInt_t AliCEPUtils::GetVtxPos(AliESDEvent *fESDEvent, TVector3 *fVtxPos)
+UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
 {
     
   // initialize
   UInt_t fVtxType = AliCEPBase::kVtxUnknown;
   fVtxPos->SetXYZ(-999.9,-999.9,-999.9);
 
-  const AliESDVertex *trkVertex = fESDEvent->GetPrimaryVertexTracks();
-  const AliESDVertex *spdVertex = fESDEvent->GetPrimaryVertexSPD();
-  Bool_t hasSPD = spdVertex->GetStatus();
-  Bool_t hasTrk = trkVertex->GetStatus();
-
-  //Note that AliVertex::GetStatus checks that N_contributors is > 0
-  //reject events if both are explicitly requested and none is available
-  if (!(hasSPD && hasTrk)) return AliCEPBase::kVtxUnknown;
-  
-  // check the spd vertex resolution and reject if not satisfied
-  if (hasSPD) {
-    if (spdVertex->IsFromVertexerZ() &&
-      !(spdVertex->GetDispersion()<0.04 &&
-      spdVertex->GetZRes()<0.25)) return AliCEPBase::kVtxUnknown;
-  }
-
-  // reject events if none between the SPD or track verteces are available
-  // if no trk vertex, try to fall back to SPD vertex;
-  if (hasTrk) {
-    fVtxType |= AliCEPBase::kVtxTracks;
-    if (hasSPD) {
-      fVtxType |= AliCEPBase::kVtxSPD;
-      // check the proximity between the spd vertex and trak vertex, and reject if not satisfied
-      if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5) return AliCEPBase::kVtxUnknown;
-    }
+  // On AOD, only one primary vertex is stored: aodEv->GetPrimaryVertex()
+  if (Event->GetDataLayoutType()==AliVEvent::kAOD) {
     
+    fVtxType |= AliCEPBase::kVtxAOD;
+  
   } else {
-    fVtxType |= AliCEPBase::kVtxSPD;
+  
+    const AliESDVertex *trkVertex = ((AliESDEvent*)Event)->GetPrimaryVertexTracks();
+    const AliESDVertex *spdVertex = ((AliESDEvent*)Event)->GetPrimaryVertexSPD();
+    Bool_t hasSPD = spdVertex->GetStatus();
+    Bool_t hasTrk = trkVertex->GetStatus();
+  
+    //Note that AliVertex::GetStatus checks that N_contributors is > 0
+    //reject events if both are explicitly requested and none is available
+    if (!(hasSPD && hasTrk)) return AliCEPBase::kVtxUnknown;
+  
+    // check the spd vertex resolution and reject if not satisfied
+    if (hasSPD) {
+      if (spdVertex->IsFromVertexerZ() &&
+        !(spdVertex->GetDispersion()<0.04 &&
+        spdVertex->GetZRes()<0.25)) return AliCEPBase::kVtxUnknown;
+    }
+  
+    // reject events if none between the SPD or track verteces are available
+    // if no trk vertex, try to fall back to SPD vertex;
+    if (hasTrk) {
+      fVtxType |= AliCEPBase::kVtxTracks;
+      if (hasSPD) {
+        fVtxType |= AliCEPBase::kVtxSPD;
+        // check the proximity between the spd vertex and trak vertex, and reject if not satisfied
+        if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5) return AliCEPBase::kVtxUnknown;
+      }
+      
+    } else {
+      fVtxType |= AliCEPBase::kVtxSPD;
+    }
+  
   }
-
-  //Cut on the vertex z position
-  const AliESDVertex *vertex = fESDEvent->GetPrimaryVertex();
+  
+  // Cut on the vertex z position
+  const AliVVertex *vertex = Event->GetPrimaryVertex();
   if (TMath::Abs(vertex->GetZ())>10) return AliCEPBase::kVtxUnknown;
   
   // set the vertex position fVtxPos
@@ -173,9 +182,26 @@ UInt_t AliCEPUtils::GetVtxPos(AliESDEvent *fESDEvent, TVector3 *fVtxPos)
 }
 
 //------------------------------------------------------------------------------
-// This routine takes an event as input
+Bool_t AliCEPUtils::doFMD(AliVEvent* Event, Bool_t isFMDA, Bool_t isFMDC)
+{
+  
+  // initialisations
+  Bool_t isFMD = kFALSE;
+  
+  AliESDFMD *FMDData = ((AliESDEvent*)Event)->GetFMDData();
+  if (!FMDData) return kFALSE;
+  
+  FMDData->Print();
+
+  return isFMD;
+
+}
+
+//------------------------------------------------------------------------------
+// This routine takes an ESD event as input
 // loops over all tracks and assigns them a status word (fTrackStatus)
 // according to the result of various tests
+// fTracks is at output an array of AliESDTracks
 Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
   TObjArray* fTracks,TArrayI* fTrackStatus)
 {
@@ -217,10 +243,9 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     nFiredChips++;
   }
   fFiredChips->Set(nFiredChips);
-  // printf("<AnalyzeTracks> nFiredChips: %i\n",nFiredChips);
   
   // retrieve main vertex
-  const AliESDVertex *vtxESD = fESDEvent->GetPrimaryVertex();
+  const AliVVertex *vtx = fESDEvent->GetPrimaryVertex();
   
   // prepare magnetic field for propagation to DCA
   Double_t bfield = fESDEvent->GetMagneticField();
@@ -265,9 +290,9 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
       trackstat |=  AliCEPBase::kTTTPCScluster;
     
     // DCA to vertex is < 500
-    if (vtxESD) {
+    if (vtx) {
       Bool_t DCAok =
-        track->PropagateToDCA(vtxESD,bfield,fTrackDCA,dca,cov); 
+        track->PropagateToDCA(vtx,bfield,fTrackDCA,dca,cov); 
        if (DCAok)
         trackstat |=  AliCEPBase::kTTDCA;
     }
@@ -281,8 +306,8 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
       trackstat |=  AliCEPBase::kTTITSpure;
 
     // |Zv-VtxZ| <= fTrackDCAz(6)
-    if (vtxESD) {
-      Bool_t DCAzok = TMath::Abs(track->Zv() - vtxESD->GetZ()) <= fTrackDCAz;
+    if (vtx) {
+      Bool_t DCAzok = TMath::Abs(track->Zv() - vtx->GetZ()) <= fTrackDCAz;
       if (DCAzok) 
         trackstat |= AliCEPBase::kTTZv;
     }
@@ -310,10 +335,8 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     // get the 2 modules associated with the track
     Bool_t retc = track->GetITSModuleIndexInfo(0,idet,statusLay,xloc,zloc);
     if (retc && statusLay!=5) Modules[0] = idet;
-    // printf("modules %i ",idet);
     retc = track->GetITSModuleIndexInfo(1,idet,statusLay,xloc,zloc);
     if (retc && statusLay!=5) Modules[1] = idet;
-    // printf("%i\n",idet);
     
     // check whether both modules are modules of fired chips
     goodtrack = kTRUE;
