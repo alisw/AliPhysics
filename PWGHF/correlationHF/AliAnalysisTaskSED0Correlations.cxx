@@ -2914,43 +2914,49 @@ void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
     //skip D-meson trigger daughters
     Short_t trigID = -1, trigID2 = -1, trigID3 = -1, trigID4 = -1;
     Int_t FoundTrig=0;
+    Bool_t trackIsTrig=kFALSE;
     for(Int_t iID=0; iID<(int)fDaughTrackID.size(); iID++) {
+      trackIsTrig=kFALSE; //reset flag to signal that the track is a trigger
       if(FoundTrig==0 && track->GetID() == fDaughTrackID.at(iID)) {
-		  trigID = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
-		  FoundTrig++;
-	  }
+	trigID = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+	trackIsTrig=kTRUE;
+      }
       if(FoundTrig==1 && track->GetID() == fDaughTrackID.at(iID)) {
-		  trigID2 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
-		  FoundTrig++;
-	  }
+	trigID2 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+	trackIsTrig=kTRUE;
+      }
       if(FoundTrig==2 && track->GetID() == fDaughTrackID.at(iID)) {
-		  trigID3 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
-		  FoundTrig++;
-	  }	  
+	trigID3 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+	trackIsTrig=kTRUE;
+      }	  
       if(FoundTrig==3 && track->GetID() == fDaughTrackID.at(iID)) {
-		  trigID4 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
-		  FoundTrig++;
-	  }		  
+	trigID4 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+	trackIsTrig=kTRUE;
+      }	
+      if(trackIsTrig==kTRUE) FoundTrig++; //if track is a trigger, next track has to be stored in another position, for IDTrig!
     }
-
+    
     //tags soft pions in the same way as daughter tracks (for the corresponding trigger)
+    Bool_t trackIssoftPi=kFALSE;
     for(Int_t iID=0; iID<(int)fSoftPiTrackID.size(); iID++) {
+      trackIssoftPi=kFALSE; //reset flag to signal that the track is a soft pion
       if(FoundTrig==0 && track->GetID() == fSoftPiTrackID.at(iID)) {
-		  trigID = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
-		  FoundTrig++;
-	  }
+	trigID = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
+	trackIssoftPi=kTRUE;
+      }
       if(FoundTrig==1 && track->GetID() == fSoftPiTrackID.at(iID)) {
-		  trigID2 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
-		  FoundTrig++;
-	  }
+	trigID2 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
+	trackIssoftPi=kTRUE;
+      }
       if(FoundTrig==2 && track->GetID() == fSoftPiTrackID.at(iID)) {
-		  trigID3 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
-		  FoundTrig++;
-	  }	 
+	trigID3 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
+	trackIssoftPi=kTRUE;
+      } 
       if(FoundTrig==3 && track->GetID() == fSoftPiTrackID.at(iID)) {
-		  trigID4 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
-		  FoundTrig++;
-	  }	 
+	trigID4 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
+	trackIssoftPi=kTRUE;
+      }	 
+      if(trackIssoftPi==kTRUE) FoundTrig++;	//if track is a soft pion, next track has to be stored in another position, for IDTrig!
     }
     
     if(!AcceptTrackForMEOffline(track->Pt())) continue;
