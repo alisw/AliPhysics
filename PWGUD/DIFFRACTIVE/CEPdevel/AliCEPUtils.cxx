@@ -182,22 +182,6 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
 }
 
 //------------------------------------------------------------------------------
-Bool_t AliCEPUtils::doFMD(AliVEvent* Event, Bool_t isFMDA, Bool_t isFMDC)
-{
-  
-  // initialisations
-  Bool_t isFMD = kFALSE;
-  
-  AliESDFMD *FMDData = ((AliESDEvent*)Event)->GetFMDData();
-  if (!FMDData) return kFALSE;
-  
-  FMDData->Print();
-
-  return isFMD;
-
-}
-
-//------------------------------------------------------------------------------
 // This routine takes an ESD event as input
 // loops over all tracks and assigns them a status word (fTrackStatus)
 // according to the result of various tests

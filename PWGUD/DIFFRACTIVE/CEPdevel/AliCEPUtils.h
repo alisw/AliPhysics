@@ -42,7 +42,6 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
-#include "AliESDFMD.h"
 #include "AliCEPBase.h"
 
 class AliCEPUtils : public TObject {
@@ -85,7 +84,7 @@ class AliCEPUtils : public TObject {
       TObjArray* fTracks,TArrayI* fTrackStatus);
 
     UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
-    Bool_t doFMD(AliVEvent* Event, Bool_t isFMDA, Bool_t isFMDC);
+
     Bool_t checkstatus(UInt_t stat, UInt_t mask, UInt_t pattern);
     Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern);
     Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern, TArrayI *indices);

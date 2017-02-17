@@ -221,8 +221,10 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   
   // fTrigger
   fTrigger = new AliTriggerAnalysis();
+ 	fTrigger->SetDoFMD(kTRUE);
+	fTrigger->SetFMDThreshold(0.3,0.5);
   fTrigger->ApplyPileupCuts(kTRUE);
-  
+ 
 	// fEventCuts
   fEventCuts = new AliEventCuts();
 	// fTrackCuts
@@ -444,17 +446,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kADA));
   Bool_t isADC =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kADC));
-	fTrigger->SetFMDThreshold(0.3,0.5);
-
-  Bool_t isFMDA,isFMDC;
-  Bool_t isFMD = fCEPUtil->doFMD(fEvent,&isFMDA,&isFMDC);
-
-  /*
   Bool_t isFMDA =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kFMDA));
   Bool_t isFMDC =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kFMDC));
-  */
   
 	Bool_t isZDC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZDC));
