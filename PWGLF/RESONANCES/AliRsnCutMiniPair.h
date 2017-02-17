@@ -23,6 +23,7 @@ public:
       kMomentumComparison,
       kDCAproduct,
       kDeltaCosRange,
+      kOpeningAngleRange,
       kTypes
    };
 
