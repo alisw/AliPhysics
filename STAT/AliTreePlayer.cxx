@@ -1119,7 +1119,8 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
       }    
       Int_t ndim=his->GetNdimensions();      
       TString rangeDescription(hisDescription->At(1)->GetName());
-      Int_t ndimRange= (rangeDescription.CountChar(','))/2;
+      Int_t ndimRange= (rangeDescription.CountChar(','));
+      if (ndimRange>0) ndimRange=ndimRange/2+1;
       if (ndimRange>0){
 	TObjArray *rangeArray=rangeDescription.Tokenize(",");
 	for (Int_t iDim=0; iDim<ndimRange; iDim++){
@@ -1188,7 +1189,10 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
 	hProj->SetMarkerStyle(21+ihis);
 	if (keepArray) keepArray->AddLast(hProj);
 	//
-	if (hisMax<hisMin) hisMin=hProj->GetMinimum();  hisMax=hProj->GetMaximum();
+	if (hisMax<hisMin) {
+	  hisMin=hProj->GetMinimum();  
+	  hisMax=hProj->GetMaximum();
+	}
 	if (hisMax<hProj->GetMaximum()) hisMax=hProj->GetMaximum();
 	if (hisMin>hProj->GetMinimum()) hisMin=hProj->GetMinimum();		
 	if (ihis==0)  {
