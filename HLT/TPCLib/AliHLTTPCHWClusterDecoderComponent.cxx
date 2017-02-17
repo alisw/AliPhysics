@@ -519,22 +519,22 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
         }
         if (fSignificantBitsWidth)
         {
-          unsigned int val = clusters->fClusters[j].fSigmaPad2;
+          unsigned int val = (unsigned int) round(clusters->fClusters[j].fSigmaPad2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);
           int ldz = sizeof(unsigned int) * 8 - __builtin_clz(val);
           if (val && ldz > fSignificantBitsWidth)
           {
             if (val & (1 << (ldz - fSignificantBitsWidth - 1))) val += (1 << (ldz - fSignificantBitsWidth - 1));
             val &= ((1 << ldz) - 1) ^ ((1 << (ldz - fSignificantBitsWidth)) - 1);
-            clusters->fClusters[j].fSigmaPad2 = val;
+            clusters->fClusters[j].fSigmaPad2 = (float) val / AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale;
           }
           
-          val = clusters->fClusters[j].fSigmaTime2;
+          val = (unsigned int) round(clusters->fClusters[j].fSigmaTime2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale);
           ldz = sizeof(unsigned int) * 8 - __builtin_clz(val);
           if (val && ldz > fSignificantBitsWidth)
           {
             if (val & (1 << (ldz - fSignificantBitsWidth - 1))) val += (1 << (ldz - fSignificantBitsWidth - 1));
             val &= ((1 << ldz) - 1) ^ ((1 << (ldz - fSignificantBitsWidth)) - 1);
-            clusters->fClusters[j].fSigmaTime2 = val;
+            clusters->fClusters[j].fSigmaTime2 = (float) val / AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale;
           }
         }
       }
