@@ -10,7 +10,7 @@ class AliCaloPhoton ;
 class AliAODTrack ;
 class AliAODEvent ;
 class AliEPFlattener ;
-
+class AliPIDResponse ;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskgg : public AliAnalysisTaskSE {
@@ -54,6 +54,7 @@ protected:
 
   THashList *   fOutputContainer;        //final histogram container
   AliAODEvent * fEvent ;                 //!
+  AliPIDResponse *fPIDResponse;     //! PID response object
   TList *       fPHOSEvents[10][10][11] ; //Containers for events with PHOS photons
   TClonesArray* fPHOSEvent ;      //! PHOS photons in current event
   TClonesArray* fCPVEvent ;       //! CPV event
@@ -72,7 +73,7 @@ protected:
   Bool_t fIsPbPb ;             // Switch to PbPb or pp/pPb mode
   
   Int_t fNCuts ;   //Number of cuts
-  char fCuts[21][10] ;  //Cut names
+  char fCuts[120][20] ;  //Cut names
   Int_t fJetStatus[5] ; //Presence of jets around PHOS
 
   ClassDef(AliAnalysisTaskgg, 1); // PHOS analysis task

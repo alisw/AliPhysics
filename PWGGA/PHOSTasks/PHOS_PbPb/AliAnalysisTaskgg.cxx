@@ -40,6 +40,7 @@
 #include "AliMagF.h"
 #include "AliAODMCParticle.h"
 #include "AliEPFlattener.h"
+#include "AliPIDResponse.h"
 
 // Analysis task to fill histograms with PHOS ESD clusters and cells
 // Authors: Dmitri Peressounko
@@ -53,6 +54,7 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
  // fStack(0x0),
   fOutputContainer(0x0),
   fEvent(0x0),
+  fPIDResponse(0x0),
   fPHOSEvent(0x0),
   fCPVEvent(0x0),
   fV0AFlat(0x0),
@@ -73,30 +75,131 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
 	fPHOSEvents[i][j][k]=0 ;
   }
   
-  fNCuts=21 ;
+  fNCuts=106 ;
   sprintf(fCuts[0], "All") ;   //all clusters
   sprintf(fCuts[1], "Disp") ;  //shower shape
-  sprintf(fCuts[2], "CPV") ;   //neutrality using CPV
-  sprintf(fCuts[3], "Both") ;  //shower shape && neutrality CPV
-  sprintf(fCuts[4], "Disp2") ; //strict shower shape
-  sprintf(fCuts[5], "CPV2") ;  //neutrality using tracks
-  sprintf(fCuts[6], "Both2") ; //shower shape && neutrality from tacks
-  sprintf(fCuts[7], "D10") ;   //all clusters, min distance = 10 cm
-  sprintf(fCuts[8], "D13") ;   //all clusters, min distance = 13 cm
-  sprintf(fCuts[9], "D15") ;   //all clusters, min distance = 15 cm
-  sprintf(fCuts[10],"D18") ;   //all clusters, min distance = 18 cm
-  sprintf(fCuts[11],"D20") ;   //all clusters, min distance = 20 cm
-  sprintf(fCuts[12],"BothD10") ;   //all clusters, min distance = 10 cm
-  sprintf(fCuts[13],"BothD13") ;   //all clusters, min distance = 13 cm
-  sprintf(fCuts[14],"BothD15") ;   //all clusters, min distance = 15 cm
-  sprintf(fCuts[15],"BothD18") ;   //all clusters, min distance = 18 cm
-  sprintf(fCuts[16],"BothD20") ;   //all clusters, min distance = 20 cm
-  sprintf(fCuts[17],"AllJet") ;   //all clusters, min distance = 20 cm
-  sprintf(fCuts[18],"DispJet") ;   //all clusters, min distance = 20 cm
-  sprintf(fCuts[19],"CPVJet") ;   //all clusters, min distance = 20 cm
-  sprintf(fCuts[20],"BothJet") ;   //all clusters, min distance = 20 cm
+  sprintf(fCuts[2], "NarrowDisp") ;  //shower shape
+  sprintf(fCuts[3], "CPVT") ;   //neutrality using tracks
+  sprintf(fCuts[4], "CPVC") ;   //neutrality using CPV
+  sprintf(fCuts[5], "CPVCT") ;   //neutrality using CPV||tracks
+  sprintf(fCuts[6], "BothT") ;  //shower shape && neutrality Tracks
+  sprintf(fCuts[7], "BothC") ;  //shower shape && neutrality CPV
+  sprintf(fCuts[8], "BothCT") ;  //shower shape && neutrality Tracks||CPV
+  sprintf(fCuts[9], "Both2C") ; //shower shape && neutrality from tacks
+  sprintf(fCuts[10], "Both2T") ; //shower shape && neutrality from tacks
+  sprintf(fCuts[11], "Both2CT") ; //shower shape && neutrality from tacks
+  sprintf(fCuts[12], "D5") ;   //all clusters, min distance = 10 cm
+  sprintf(fCuts[13], "D10") ;   //all clusters, min distance = 13 cm
+  sprintf(fCuts[14], "D15") ;   //all clusters, min distance = 15 cm
+  sprintf(fCuts[15], "D20") ;   //all clusters, min distance = 20 cm
+  sprintf(fCuts[16],"BothCTD5") ;   //all clusters, min distance = 10 cm
+  sprintf(fCuts[17],"BothD10") ;   //all clusters, min distance = 13 cm
+  sprintf(fCuts[18],"BothD15") ;   //all clusters, min distance = 15 cm
+  sprintf(fCuts[19],"BothD20") ;   //all clusters, min distance = 20 cm
   
- 
+  //Gamma-hadron
+  sprintf(fCuts[20],"AllPipl") ;
+  sprintf(fCuts[21],"AllPimi") ;
+  sprintf(fCuts[22],"AllKpl") ;
+  sprintf(fCuts[23],"AllKmi") ;
+  sprintf(fCuts[24],"AllPrpl") ;
+  sprintf(fCuts[25],"AllPrmi") ;
+
+  //Both Disp
+  sprintf(fCuts[26],"DispPipl") ;
+  sprintf(fCuts[27],"DispPimi") ;
+  sprintf(fCuts[28],"DispKpl") ;
+  sprintf(fCuts[29],"DispKmi") ;
+  sprintf(fCuts[30],"DispPrpl") ;
+  sprintf(fCuts[31],"DispPrmi") ;
+
+  //BothCT+Disp
+  sprintf(fCuts[32],"BothCTPipl") ;
+  sprintf(fCuts[33],"BothCTPimi") ;
+  sprintf(fCuts[34],"BothCTKpl") ;
+  sprintf(fCuts[35],"BothCTKmi") ;
+  sprintf(fCuts[36],"BothCTPrpl") ;
+  sprintf(fCuts[37],"BothCTPrmi") ;
+  
+  //All, H+H
+  sprintf(fCuts[38],"AllPimiPimi") ;
+  sprintf(fCuts[39],"AllPimiPipl") ;
+  sprintf(fCuts[40],"AllPimiPrmi") ;
+  sprintf(fCuts[41],"AllPimiPrpl") ;
+  sprintf(fCuts[42],"AllPimiKmi") ;
+  sprintf(fCuts[43],"AllPimiKpl") ;
+  sprintf(fCuts[44],"AllPiplPipl") ;
+  sprintf(fCuts[45],"AllPiplPrmi") ;
+  sprintf(fCuts[46],"AllPiplPrpl") ;
+  sprintf(fCuts[47],"AllPiplKmi") ;
+  sprintf(fCuts[48],"AllPiplKpl") ;
+  sprintf(fCuts[49],"AllPrmiPrmi") ;
+  sprintf(fCuts[50],"AllPrmiPrpl") ;
+  sprintf(fCuts[51],"AllPrmiKmi") ;
+  sprintf(fCuts[52],"AllPrmiKpl") ;
+  sprintf(fCuts[53],"AllPrplPrpl") ;
+  sprintf(fCuts[54],"AllPrplKmi") ;
+  sprintf(fCuts[55],"AllPrplKpl") ;
+  sprintf(fCuts[56],"AllKmiKmi") ;
+  sprintf(fCuts[57],"AllKmiKpl") ;
+  sprintf(fCuts[58],"AllKplKpl") ;
+  
+   //Disp, H+H
+  sprintf(fCuts[59],"DispPimiPimi") ;
+  sprintf(fCuts[60],"DispPimiPipl") ;
+  sprintf(fCuts[61],"DispPimiPrmi") ;
+  sprintf(fCuts[62],"DispPimiPrpl") ;
+  sprintf(fCuts[63],"DispPimiKmi") ;
+  sprintf(fCuts[64],"DispPimiKpl") ;
+  sprintf(fCuts[65],"DispPiplPipl") ;
+  sprintf(fCuts[66],"DispPiplPrmi") ;
+  sprintf(fCuts[67],"DispPiplPrpl") ;
+  sprintf(fCuts[68],"DispPiplKmi") ;
+  sprintf(fCuts[69],"DispPiplKpl") ;
+  sprintf(fCuts[70],"DispPrmiPrmi") ;
+  sprintf(fCuts[71],"DispPrmiPrpl") ;
+  sprintf(fCuts[72],"DispPrmiKmi") ;
+  sprintf(fCuts[73],"DispPrmiKpl") ;
+  sprintf(fCuts[74],"DispPrplPrpl") ;
+  sprintf(fCuts[75],"DispPrplKmi") ;
+  sprintf(fCuts[76],"DispPrplKpl") ;
+  sprintf(fCuts[77],"DispKmiKmi") ;
+  sprintf(fCuts[78],"DispKmiKpl") ;
+  sprintf(fCuts[79],"DispKplKpl") ;
+  
+   //Time10 ns, H+H
+  sprintf(fCuts[80],"T10PimiPimi") ;
+  sprintf(fCuts[81],"T10PimiPipl") ;
+  sprintf(fCuts[82],"T10PiplPipl") ;
+  sprintf(fCuts[83],"T10PrmiPrmi") ;
+  sprintf(fCuts[84],"T10PrmiPrpl") ;
+  sprintf(fCuts[85],"T10PrplPrpl") ;
+
+  sprintf(fCuts[86],"T5PimiPimi") ;
+  sprintf(fCuts[87],"T5PimiPipl") ;
+  sprintf(fCuts[88],"T5PiplPipl") ;
+  sprintf(fCuts[89],"T5PrmiPrmi") ;
+  sprintf(fCuts[90],"T5PrmiPrpl") ;
+  sprintf(fCuts[91],"T5PrplPrpl") ;
+
+  sprintf(fCuts[92],"T3PimiPimi") ;
+  sprintf(fCuts[93],"T3PimiPipl") ;
+  sprintf(fCuts[94],"T3PiplPipl") ;
+  sprintf(fCuts[95],"T3PrmiPrmi") ;
+  sprintf(fCuts[96],"T3PrmiPrpl") ;
+  sprintf(fCuts[97],"T3PrplPrpl") ;
+
+  sprintf(fCuts[98],"AllT3") ;
+  sprintf(fCuts[99],"DispT3") ;
+  sprintf(fCuts[100],"BothCTT3") ;
+
+  sprintf(fCuts[101],"AllT5") ;
+  sprintf(fCuts[102],"DispT5") ;
+  sprintf(fCuts[103],"BothCTT5") ;
+
+  sprintf(fCuts[104],"AllT10") ;
+  sprintf(fCuts[105],"DispT10") ;
+  sprintf(fCuts[106],"BothCTT10") ;
   
   
   // Output slots #0 write into a TH1 container
@@ -215,13 +318,21 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
 
   
   const Int_t nCenBin=4;
+  for(Int_t cen=0; cen<2; cen++){  
+//     for(Int_t ikT=0; ikT<6; ikT++){ 
+//       fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_cen%d",kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//       fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_cen%d",kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//     }
+    for(Int_t iCut=0; iCut<12; iCut++){
+      fOutputContainer->Add(new TH3F(Form("hdXdZ_%s_cen%d",fCuts[iCut],cen),"dXdZ",150,-150,150,120,-120.,120.,15,0.,3.));
+      fOutputContainer->Add(new TH3F(Form("hMidXdZ_%s_cen%d",fCuts[iCut],cen),"dXdZ",150,-150,150,120,-120.,120.,15,0.,3.));
+      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_cen%d",fCuts[iCut],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/12.,TMath::Pi()/12.,15,0.,3.));
+      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_cen%d",fCuts[iCut],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/12.,TMath::Pi()/12.,15,0.,3.));
+      
+    }      
+  }
   for(Int_t cen=0; cen<nCenBin; cen++){  
-    for(Int_t ikT=0; ikT<6; ikT++){ 
-      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_cen%d",kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_cen%d",kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-    }
-    for(Int_t mod=1; mod<4; mod++){
-      for(Int_t iCut=0; iCut<fNCuts; iCut++){
+    for(Int_t iCut=0; iCut<fNCuts; iCut++){
 //       for(Int_t ikT=0; ikT<6; ikT++){ 
 //      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",fCuts[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
@@ -254,11 +365,24 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
     
 //     }        
 
-    fOutputContainer->Add(new TH2F(Form("hQinv_%s_mod%d_cen%d",fCuts[iCut],mod,cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinv_%s_mod%d_cen%d",fCuts[iCut],mod,cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hQinvCut_%s_mod%d_cen%d",fCuts[iCut],mod,cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s_mod%d_cen%d",fCuts[iCut],mod,cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-      }
+    fOutputContainer->Add(new TH2F(Form("hQinv_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiQinv_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hQinvCut_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hPhi_%s_cen%d",fCuts[iCut],cen),"Opening angle distribution",200,0.,0.3,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiPhi_%s_cen%d",fCuts[iCut],cen),"Opening angle distribution",200,0.,0.3,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hR_%s_cen%d",fCuts[iCut],cen),"Relative distance distribution",200,0.,100.,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiR_%s_cen%d",fCuts[iCut],cen),"Relative distance distribution",200,0.,100.,100,0.,10.));
+
+    if(iCut>=38 && iCut<59){//hadron combinations
+      fOutputContainer->Add(new TH2F(Form("hQinvPrimH_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+      fOutputContainer->Add(new TH2F(Form("hMiQinvPrimH_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+      fOutputContainer->Add(new TH2F(Form("hQinvHitH_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+      fOutputContainer->Add(new TH2F(Form("hMiQinvHitH_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    }
+        
+    
+    
     }
   }
 
@@ -322,6 +446,10 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     PostData(1, fOutputContainer);
     return;
   }
+  
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
 
   fRunNumber=fEvent->GetRunNumber() ;
 //  FillHistogram("hSelEvents",1.5,fRunNumber-0.5) ;
@@ -572,12 +700,12 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     }
     AliCaloPhoton * ph = new((*fPHOSEvent)[inPHOS]) AliCaloPhoton(pv1.X(),pv1.Py(),pv1.Z(),pv1.E()) ;
     ph->SetModule(mod) ;
-    pv1*= clu->GetCoreEnergy()/pv1.E() ;
-    ph->SetMomV2(&pv1) ;
+//     pv1*= clu->GetCoreEnergy()/pv1.E() ;
+//     ph->SetMomV2(&pv1) ;
     ph->SetNCells(clu->GetNCells());    
     ph->SetDispBit(clu->Chi2()<2.5*2.5) ;
 //  Cut on FullLamdas
-    ph->SetDisp2Bit(clu->GetDispersion()<2.5*2.5) ;
+    ph->SetDisp2Bit(clu->Chi2()<1.5*1.5) ;
     FillHistogram("hCluEvsClu_All",clu->E(),clu->GetNCells()) ;
 
 //    Double_t distBC=clu->GetDistanceToBadChannel();
@@ -598,12 +726,101 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         FillHistogram("hCluEvsClu_Both",clu->E(),clu->GetNCells()) ;    
       }
     }
+    //Mark clusters matched with tracks
+    Int_t hadronBits=0 ; 
+    Int_t trackId=-1;
+    if(clu->GetEmcCpvDistance()<1.){
+      AliAODTrack * track = (AliAODTrack*)clu->GetTrackMatched(0);
+      Double_t ptTrack=track->Pt() ;
+      trackId=track->GetID() ;
+      Bool_t electron=kTRUE ;
+      Bool_t pion=kFALSE, kaon=kFALSE, proton=kFALSE ;
+      Int_t charge=(track->Charge()>0) ;  
+//             if(track->GetNcls(1) <2 ) electron=kFALSE ;
+//             if( !(track->GetStatus() & AliESDtrack::kTPCrefit))electron=kFALSE ; 
+//             if( track->GetKinkIndex(0) > 0) electron=kFALSE ;
+	      
+      //First rough PID
+      const Double_t nSigmaBelowElectronLine=-3. ;
+      const Double_t nSigmaAboveElectronLine= 5. ;
+      if( fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron)<nSigmaBelowElectronLine ||
+          fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron)>nSigmaAboveElectronLine )
+          electron=kFALSE ;
+      const Double_t minPnSigmaAbovePionLine = 1. ;
+      const Double_t maxPnSigmaAbovePionLine = 3. ;
+      const Double_t nSigmaAbovePionLine = 0 ;
+      if(track->P()>minPnSigmaAbovePionLine && track->P()<maxPnSigmaAbovePionLine ){
+        if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)<nSigmaAbovePionLine){
+          electron=kFALSE ;            
+        }
+      }
+	    
+      //Strict dEdx
+      if(track->P()>minPnSigmaAbovePionLine && track->P()<maxPnSigmaAbovePionLine ){
+        if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)<2.){
+          electron=kFALSE ;                           
+        }
+      } 
+      //Kaon rejection
+      const Double_t minPKaonRejection=1.5 ;
+      const Double_t sigmaAroundLine=1. ;
+      if(track->P()<minPKaonRejection ){
+        if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon))<sigmaAroundLine){
+          electron=kFALSE ;                           
+        }
+      }
+      //Proton rejection
+      const Double_t minPProtonRejection=2. ;
+      if(track->P()<minPProtonRejection){
+        if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton))<sigmaAroundLine){
+          electron=kFALSE ;                           
+        }
+      }
+      const Double_t minPPionRejection=0.5 ;
+      if(track->P()<minPPionRejection ){
+        if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion))<sigmaAroundLine){
+          electron=kFALSE ;                           
+        }
+      }
+      //Other hadrons
+      if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)<1){
+        pion=kTRUE ;            
+      }
+      if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon)<1){
+        kaon=kTRUE ;            
+      }
+      if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)<1){
+        proton=kTRUE ;            
+      }
+      if(electron)
+          hadronBits|=1<<(0+charge);
+      if(pion)
+          hadronBits|=1<<(2+charge) ;  
+      if(kaon)
+          hadronBits|=1<<(4+charge) ;  
+      if(proton)
+          hadronBits|=1<<(6+charge) ;  
+  
+      //Set momentum of the parent track
+      TLorentzVector p(track->Px(),track->Py(),track->Pz(),track->E()) ;
+      ph->SetMomV2(&p);
+      //Set position of Track entrance (theta, phi)
+      TVector3 globaPos ;
+      fPHOSGeo->Local2Global(mod, local.X()-clu->GetTrackDx(), local.Z()-clu->GetTrackDz(), globaPos) ;
+      ph->SetLambdas(globaPos.Theta(),globaPos.Phi());
+
+    }   
+    ph->SetTagInfo(hadronBits) ;
+    ph->Pi0Id(trackId+1); 
     
+
+    
+    ph->SetTime(clu->GetTOF());
     ph->SetPrimary(clu->GetLabelAt(0)) ;
     ph->SetEMCx(position[0]) ;
     ph->SetEMCy(position[1]) ;
     ph->SetEMCz(position[2]) ;
-    ph->SetLambdas(clu->GetM20(),clu->GetM02()) ;
+//     ph->SetLambdas(clu->GetM20(),clu->GetM02()) ;
     ph->SetUnfolded(clu->GetNExMax()<2); // Remember, if it is unfolded          
     inPHOS++ ;
     nPHOSclu[mod]++;
@@ -637,6 +854,16 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     track1.SetP(mom1) ;
     AliFemtoParticle part1(&track1,kgMass) ;
     
+    //Momentum of parent hadron if any
+    const TLorentzVector * pHadron1=ph1->GetMomV2() ;
+    TLorentzVector pHitHadron1(1.,1.,1.,1.) ;
+    if(ph1->GetTagInfo()){
+      pHitHadron1.SetE(ph1->E()) ;
+      pHitHadron1.SetRho(ph1->E()) ; //assume massless photon
+      pHitHadron1.SetTheta(ph1->GetLambda1()) ; //assume massless photon
+      pHitHadron1.SetPhi(ph1->GetLambda2()) ; //assume massless photon
+    }
+    
     for (Int_t i2=i1+1; i2<inPHOS; i2++) {
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
       //Cut on pair
@@ -655,6 +882,17 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       track2.SetP(mom2) ;
       AliFemtoParticle part2(&track2,kgMass) ;
       
+      //Momentum of parent hadron if any
+      const TLorentzVector * pHadron2=ph2->GetMomV2() ;
+      TLorentzVector pHitHadron2(1.,1.,1.,1.) ;
+      if(ph2->GetTagInfo()){
+        pHitHadron2.SetE(ph2->E()) ;
+        pHitHadron2.SetRho(ph2->E()) ; //assume massless photon
+        pHitHadron2.SetTheta(ph2->GetLambda1()) ; //assume massless photon
+        pHitHadron2.SetPhi(ph2->GetLambda2()) ; //assume massless photon
+      }
+      
+      
       //Photons are sorted, unsort them
       AliFemtoParticle *a = &part1 ;
       AliFemtoParticle *b = &part2 ;
@@ -664,7 +902,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       Double_t dX = TMath::Power(ph1->EMCx() - ph2->EMCx(),2) + TMath::Power(ph1->EMCy() - ph2->EMCy(),2)  ;
       dX=TMath::Sign(TMath::Sqrt(dX),ph1->EMCx() - ph2->EMCx()) ;
       Double_t dZ = ph1->EMCz() - ph2->EMCz() ;
-
+      Double_t dR = TMath::Sqrt(dX*dX+dZ*dZ) ;
             
       if(gRandom->Uniform()>0.5){
 	    dPhi=-dPhi ;
@@ -681,13 +919,13 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       AliFemtoPair pair(a,b);
       Double_t qinv= pair.QInv();
       Double_t kT = pair.KT() ;
-      TString kTbin="" ;
-      if(kT<0.2) kTbin="Kt00-02";
-      else if(kT<0.4) kTbin="Kt02-04";
-      else if(kT<0.7) kTbin="Kt04-07";
-      else if(kT<1.) kTbin="Kt07-10";
-      else if(kT<1.3) kTbin="Kt10-13";
-      else if(kT<2.) kTbin="Kt13-20";
+//       TString kTbin="" ;
+//       if(kT<0.2) kTbin="Kt00-02";
+//       else if(kT<0.4) kTbin="Kt02-04";
+//       else if(kT<0.7) kTbin="Kt04-07";
+//       else if(kT<1.) kTbin="Kt07-10";
+//       else if(kT<1.3) kTbin="Kt10-13";
+//       else if(kT<2.) kTbin="Kt13-20";
 //       else  continue;
       
 //       Double_t  qo=pair.QOutCMS();
@@ -704,7 +942,26 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //       // source rest frame (usually lab frame)
 //       pair.QYKPCMS(qP, qT, q0);
 
+      
+      Double_t qinvPrim=-1.; //Qinv of primary hadron if any
+      Double_t kTPrim=-1.; 
+      Double_t qinvHit=-1 ;
+      if(ph1->GetTagInfo() && ph2->GetTagInfo()){
+         qinvPrim=(*pHadron1 + *pHadron2).M() ;
+         kTPrim=((*pHadron1 + *pHadron2).Pt())*0.5 ;
+         qinvHit=(pHitHadron1 + pHitHadron2).M();
+      }
+      
+      
+      
 	
+      for(Int_t iCut=0; iCut<12; iCut++){
+	if(!PairCut(ph1,ph2,iCut))
+	    continue ;
+	FillHistogram(Form("hdXdZ_%s_cen%d",fCuts[iCut],fCenBin/3),dX,dZ,kT) ;
+        FillHistogram(Form("hetaphi_%s_cen%d",fCuts[iCut],fCenBin/3),dEta,dPhi,kT) ;
+      }      
+      
       for(Int_t iCut=0; iCut<fNCuts; iCut++){
 	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
@@ -714,6 +971,14 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 	if(ph1->Module()!=ph2->Module())
           continue ;
 	
+        
+        if(iCut>=38 && iCut<59){//hadron combinations
+ 	  FillHistogram(Form("hQinvPrimH_%s_cen%d",fCuts[iCut],fCenBin),qinvPrim,kTPrim) ;
+ 	  FillHistogram(Form("hQinvHitH_%s_cen%d",fCuts[iCut],fCenBin),qinvHit,kT) ;
+        }
+        
+        
+        
 	
 // 	if(iCut>3){
 // 	  if((jetStatus[ph1->Module()])&1<<(iCut-4))
@@ -729,17 +994,24 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
           FillHistogram(Form("hSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
 	}*/
 	  
-	FillHistogram(Form("hQinv_%s_mod%d_cen%d",fCuts[iCut],ph1->Module(),fCenBin),qinv,kT) ;
+	FillHistogram(Form("hQinv_%s_cen%d",fCuts[iCut],fCenBin),qinv,kT) ;
 	if(TMath::Abs(qo) < 0.05)
-	  FillHistogram(Form("hQinvCut_%s_mod%d_cen%d",fCuts[iCut],ph1->Module(),fCenBin),qinv,kT) ;
+	  FillHistogram(Form("hQinvCut_%s_cen%d",fCuts[iCut],fCenBin),qinv,kT) ;
+        
+        //Opening angle
+        Double_t dPsi = ph1->Vect().Angle(ph2->Vect()) ;
+	FillHistogram(Form("hPhi_%s_cen%d",fCuts[iCut],fCenBin),dPsi,kT) ;
+	FillHistogram(Form("hR_%s_cen%d",fCuts[iCut],fCenBin),dR,kT) ;
+        
+        
 
         // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
 //        FillHistogram(Form("hOSLPF_%s_%s",fCuts[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
 
-        if(iCut==6&&kTbin.Length()>0){
-          // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-           FillHistogram(Form("hOSLCMS_%s_cen%d",kTbin.Data(),fCenBin),qs,qo,ql) ;
-        }    
+//         if(iCut==6&&kTbin.Length()>0){
+//           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
+//            FillHistogram(Form("hOSLCMS_%s_cen%d",kTbin.Data(),fCenBin),qs,qo,ql) ;
+//         }    
 //         FillHistogram(Form("hetaphi_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
 // 	if(TMath::Abs(dEta)>0.02)
 //           FillHistogram(Form("hetaphiRP_%s_%s",fCuts[iCut],kTbin.Data()),dPsi,dPhi) ;
@@ -766,6 +1038,16 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     track1.SetP(mom1) ;
     AliFemtoParticle part1(&track1,kgMass) ;
     
+    //Momentum of parent hadron if any
+    const TLorentzVector * pHadron1=ph1->GetMomV2() ;
+    TLorentzVector pHitHadron1(1.,1.,1.,1.) ;
+    if(ph1->GetTagInfo()){
+      pHitHadron1.SetE(ph1->E()) ;
+      pHitHadron1.SetRho(ph1->E()) ; //assume massless photon
+      pHitHadron1.SetTheta(ph1->GetLambda1()) ; //assume massless photon
+      pHitHadron1.SetPhi(ph1->GetLambda2()) ; //assume massless photon
+    }
+    
     for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
       for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
@@ -782,7 +1064,17 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         track2.SetP(mom2) ;
         AliFemtoParticle part2(&track2,kgMass) ;
        
-	AliFemtoParticle *a = &part1 ;
+        //Momentum of parent hadron if any
+        const TLorentzVector * pHadron2=ph2->GetMomV2() ;
+        TLorentzVector pHitHadron2(1.,1.,1.,1.) ;
+        if(ph2->GetTagInfo()){
+          pHitHadron2.SetE(ph2->E()) ;
+          pHitHadron2.SetRho(ph2->E()) ; //assume massless photon
+          pHitHadron2.SetTheta(ph2->GetLambda1()) ; //assume massless photon
+          pHitHadron2.SetPhi(ph2->GetLambda2()) ; //assume massless photon
+        }
+          
+        AliFemtoParticle *a = &part1 ;
         AliFemtoParticle *b = &part2 ;
         Double_t dEta = ph1->Eta()-ph2->Eta() ; 
         Double_t dPhi = ph1->Phi()-ph2->Phi() ; 
@@ -790,6 +1082,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         Double_t dX = TMath::Power(ph1->EMCx() - ph2->EMCx(),2) + TMath::Power(ph1->EMCy() - ph2->EMCy(),2)  ;
         dX=TMath::Sign(TMath::Sqrt(dX),ph1->EMCx() - ph2->EMCx()) ;
         Double_t dZ = ph1->EMCz() - ph2->EMCz() ;
+        Double_t dR = TMath::Sqrt(dX*dX+dZ*dZ) ;
         if(gRandom->Uniform()>0.5){
           a = &part2 ;
           b = &part1 ;
@@ -805,15 +1098,15 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
 	Double_t qinv= pair.QInv();
         Double_t kT = pair.KT() ;
-        TString kTbin ;
-	Int_t ikTbin=0 ;
-        if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
-        else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
-        else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
-        else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
-        else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
-        else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
-        else  continue;
+//         TString kTbin ;
+// 	Int_t ikTbin=0 ;
+//         if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
+//         else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
+//         else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
+//         else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
+//         else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
+//         else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
+//         else  continue;
       
 //       Double_t qo=pair.QOutCMS();
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
@@ -835,6 +1128,23 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //       // longitudinal comoving frame
 //         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 	
+      Double_t qinvPrim=-1.; //Qinv of primary hadron if any
+      Double_t kTPrim=-1.; 
+      Double_t qinvHit=-1 ;
+      if(ph1->GetTagInfo() && ph2->GetTagInfo()){
+         qinvPrim=(*pHadron1 + *pHadron2).M() ;
+         kTPrim=((*pHadron1 + *pHadron2).Pt())*0.5 ;
+         qinvHit=(pHitHadron1 + pHitHadron2).M();
+      }
+     
+      for(Int_t iCut=0; iCut<12; iCut++){
+	if(!PairCut(ph1,ph2,iCut))
+	    continue ;
+	FillHistogram(Form("hMidXdZ_%s_cen%d",fCuts[iCut],fCenBin/3),dX,dZ,kT) ;
+        FillHistogram(Form("hMietaphi_%s_cen%d",fCuts[iCut],fCenBin/3),dEta,dPhi,kT) ;
+      }      
+      
+      
 	for(Int_t iCut=0; iCut<fNCuts; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
@@ -853,20 +1163,31 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
             FillHistogram(Form("hMiSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
 	  }  */
 	  
-	  FillHistogram(Form("hMiQinv_%s_mod%d_cen%d",fCuts[iCut],ph1->Module(),fCenBin),qinv,kT) ;
+	  FillHistogram(Form("hMiQinv_%s_cen%d",fCuts[iCut],fCenBin),qinv,kT) ;
 // 	  FillHistogram(Form("hMi2Qinv_%s",fCuts[iCut]),qinv,kT,wMix) ;
 	   if(TMath::Abs(qo) < 0.05){
-	     FillHistogram(Form("hMiQinvCut_%s_mod%d_cen%d",fCuts[iCut],ph1->Module(),fCenBin),qinv,kT) ;
+	     FillHistogram(Form("hMiQinvCut_%s_cen%d",fCuts[iCut],fCenBin),qinv,kT) ;
 // 	     FillHistogram(Form("hMi2QinvCut_%s",fCuts[iCut]),qinv,kT,wMix) ;
 	   }
+          //Opening angle
+          Double_t dPsi = ph1->Vect().Angle(ph2->Vect()) ;
+   	  FillHistogram(Form("hMiPhi_%s_cen%d",fCuts[iCut],fCenBin),dPsi,kT) ;
+   	  FillHistogram(Form("hMiR_%s_cen%d",fCuts[iCut],fCenBin),dR,kT) ;
+	   
+          if(iCut>=38 && iCut<59){//hadron combinations
+ 	    FillHistogram(Form("hMiQinvPrimH_%s_cen%d",fCuts[iCut],fCenBin),qinvPrim,kTPrim) ;
+ 	    FillHistogram(Form("hMiQinvHitH_%s_cen%d",fCuts[iCut],fCenBin),qinvHit,kT) ;
+          }
+	   
+	   
           // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
 //          FillHistogram(Form("hMiOSLPF_%s_%s",fCuts[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-        if(iCut==6&&kTbin.Length()>0){          
-          FillHistogram(Form("hMiOSLCMS_%s_cen%d",kTbin.Data(),fCenBin),qs,qo,ql) ;
-//           FillHistogram(Form("hMi2OSLCMS_%s_%s",fCuts[iCut],kTbin.Data()),qs,qo,ql,wMix) ;
-        }
+//         if(iCut==6&&kTbin.Length()>0){          
+//           FillHistogram(Form("hMiOSLCMS_%s_cen%d",kTbin.Data(),fCenBin),qs,qo,ql) ;
+// //           FillHistogram(Form("hMi2OSLCMS_%s_%s",fCuts[iCut],kTbin.Data()),qs,qo,ql,wMix) ;
+//         }
 //           FillHistogram(Form("hMietaphi_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
 // 	  if(TMath::Abs(dEta)>0.02)
 //             FillHistogram(Form("hMietaphiRP_%s_%s",fCuts[iCut],kTbin.Data()),dPsi,dPhi) ;
@@ -1138,15 +1459,20 @@ Int_t AliAnalysisTaskgg::ConvertRunNumber(Int_t run){
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t fCuts) const{
+Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const{
   
-   //First distance fCuts based on non-overlapping CPV fCutss
-  
+  const Double_t kTimeCut10=10.e-9 ;
+  const Double_t kTimeCut5=5.e-9 ;
+  const Double_t kTimeCut3=3.e-9 ;
+    
+    
   if(ph1->Module()!=ph2->Module())
     return kFALSE ;   
     
   Double_t dl=999.;  
     
+  Int_t bits1=ph1->GetTagInfo() ;    
+  Int_t bits2=ph2->GetTagInfo() ;    
   
   if(ph1->Module()==ph2->Module()){
     // offset for first photon   
@@ -1191,70 +1517,265 @@ Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton
   } 
   
  // if(fCuts==kDefault){
-  if(fCuts==0){
+  if(cut==0){
     return kTRUE ;
   }
-  if(fCuts==1){
+  if(cut==1){
     return ph1->IsDispOK()&& ph2->IsDispOK() ;  
   }
-  if(fCuts==2){
-    return ph1->IsCPVOK() && ph2->IsCPVOK()  ;  
-  }
-  if(fCuts==3){
-    return ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
-  }
-  if(fCuts==4){
+  if(cut==2){
     return ph1->IsDisp2OK() && ph2->IsDisp2OK()  ;  
   }
-  if(fCuts==5){
-    return ph1->IsCPV2OK() && ph2->IsCPV2OK() ;  
+  if(cut==3){
+    return ph1->IsCPVOK() && ph2->IsCPVOK()  ;  
   }
-  if(fCuts==6){
+  if(cut==4){
+    return ph1->IsCPV2OK() && ph2->IsCPV2OK()  ;  
+  }
+  if(cut==5){
+    return ph1->IsCPVOK()  && ph1->IsCPV2OK() && ph2->IsCPVOK()  && ph2->IsCPV2OK() ;  
+  }
+  if(cut==6){
+    return ph1->IsDispOK()&& ph1->IsCPVOK() && ph2->IsDispOK()&& ph2->IsCPVOK() ;  
+  }
+  if(cut==7){
     return ph1->IsDispOK()&& ph1->IsCPV2OK() && ph2->IsDispOK()&& ph2->IsCPV2OK() ;  
   }
-  if(fCuts==7){
+  if(cut==8){
+    return ph1->IsDisp2OK()&& ph1->IsCPVOK()&& ph1->IsCPV2OK() && ph2->IsDisp2OK()&& ph2->IsCPVOK()&& ph2->IsCPV2OK() ;  
+  }
+  if(cut==9){
+    return ph1->IsDisp2OK()&& ph1->IsCPVOK() && ph2->IsDisp2OK()&& ph2->IsCPVOK() ;  
+  }
+  if(cut==10){
+    return ph1->IsDisp2OK()&& ph1->IsCPV2OK() && ph2->IsDisp2OK()&& ph2->IsCPV2OK() ;  
+  }
+  if(cut==11){
+    return ph1->IsDisp2OK()&& ph1->IsCPVOK()&& ph1->IsCPV2OK() && ph2->IsDisp2OK()&& ph2->IsCPVOK()&& ph2->IsCPV2OK() ;  
+  }
+  if(cut==12){
+    return dl>5. ;
+  }
+  if(cut==13){
     return dl>10. ;
   }
-  if(fCuts==8){
-    return dl>13. ;
-  }
-  if(fCuts==9){
+  if(cut==14){
     return dl>15. ;
   }
-  if(fCuts==10){
-    return dl>18. ;
-  }
-  if(fCuts==11){
+  if(cut==15){
     return dl>20. ;
+  }  
+  if(cut==16){
+    return (dl>5.) && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK() ;  
   }
-  if(fCuts==12){
-    return (dl>10.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  if(cut==17){
+    return (dl>10.)&& ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK() ;  
   }
-  if(fCuts==13){
-    return (dl>13.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  if(cut==18){
+    return (dl>15.)&& ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK();  
   }
-  if(fCuts==14){
-    return (dl>15.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  if(cut==19){
+    return (dl>20.)&& ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK() ;  
   }
-  if(fCuts==15){
-    return (dl>18.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
-  }
-  if(fCuts==16){
-    return (dl>20.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
-  }
-  if(fCuts==17){
-    return (fJetStatus[ph1->Module()]&1<<0) ;  
-  }
- if(fCuts==18){
-    return (fJetStatus[ph1->Module()]&1<<0) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
-  }
- if(fCuts==19){
-    return (fJetStatus[ph1->Module()]&1<<1) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
-  }
- if(fCuts==20){
-    return (fJetStatus[ph1->Module()]&1<<2) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
-  }
-    
+
+  if(cut==20)
+    return (bits1&1<<3)||(bits2&1<<3) ; //Pipl  
+  if(cut==21)
+    return (bits1&1<<2)||(bits2&1<<2) ; //Pimi  
+  if(cut==22)
+      return (bits1&1<<5)||(bits2&1<<5) ; //Kpl  
+  if(cut==23)
+      return (bits1&1<<4)||(bits2&1<<4) ; //Kmi  
+  if(cut==24)
+      return (bits1&1<<7)||(bits2&1<<7) ; //Prpl  
+  if(cut==25)
+      return (bits1&1<<6)||(bits2&1<<6) ; //Prmi  
+  //Disp+hadr
+  if(cut==26)
+      return ((bits1&1<<3)||(bits2&1<<3)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Pipl  
+  if(cut==27)
+      return ((bits1&1<<2)||(bits2&1<<2)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Pimi  
+  if(cut==28)
+      return ((bits1&1<<5)||(bits2&1<<5)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Kpl  
+  if(cut==29)
+      return ((bits1&1<<4)||(bits2&1<<4)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Kmi  
+  if(cut==30)
+      return ((bits1&1<<7)||(bits2&1<<7)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Prpl  
+  if(cut==31)
+      return ((bits1&1<<6)||(bits2&1<<6)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Prmi  
+ 
+ 
+   //Both+hadr
+  if(cut==32)
+      return ((bits1&1<<3) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<3) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Pipl  
+  if(cut==33)
+      return ((bits1&1<<2) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<2) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Pimi  
+  if(cut==34)
+      return ((bits1&1<<5) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<5) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Kpl  
+  if(cut==35)
+      return ((bits1&1<<4) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<4) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Kmi  
+  if(cut==36)
+      return ((bits1&1<<7) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<7) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Prpl  
+  if(cut==37)
+      return ((bits1&1<<6) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<6) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Prmi  
+  
+  
+    if(cut==38)
+      return (bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==39)
+      return ((bits1&1<<2)&&(bits2&1<<3)) ||((bits1&1<<3)&&(bits2&1<<2))  ; //Pipl Pimi  
+    if(cut==40)
+      return ((bits1&1<<2)&&(bits2&1<<6)) || ((bits1&1<<6)&&(bits2&1<<2)) ; //Pimi Prmi  
+    if(cut==41)
+      return ((bits1&1<<2)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<2)) ; //Pimi Prpl 
+    if(cut==42)
+      return ((bits1&1<<2)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<2)) ; //Pimi Kmi  
+    if(cut==43)
+      return ((bits1&1<<2)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<2)) ; //Pimi Kpl  
+    if(cut==44)
+      return (bits1&1<<3)&&(bits2&1<<3) ; //Pipl Pipl  
+    if(cut==45)
+      return ((bits1&1<<3)&&(bits2&1<<6)) || ((bits1&1<<6)&&(bits2&1<<3)) ; //Pipl Prmi  
+    if(cut==46)
+      return ((bits1&1<<3)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<3)) ; //Pipl Prpl  
+    if(cut==47)
+      return ((bits1&1<<3)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<3)) ; //Pipl Kmi  
+    if(cut==48)
+      return ((bits1&1<<3)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<3)) ; //Pipl Kmi  
+   if(cut==49)
+      return ((bits1&1<<6)&&(bits2&1<<6)) ; //Prmi Prmi  
+    if(cut==50)
+      return ((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)) ; //Prmi Prpl 
+    if(cut==51)
+      return ((bits1&1<<6)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<6)) ; //Prmi Kmi 
+    if(cut==52)
+      return ((bits1&1<<6)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<6)) ; //Prmi Kmi 
+    if(cut==53)
+      return ((bits1&1<<7)&&(bits2&1<<7)) ; //Prpl Prpl 
+    if(cut==54)
+      return ((bits1&1<<7)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<7)) ; //Prpl Kmi 
+    if(cut==55)
+      return ((bits1&1<<7)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<7)) ; //Prpl Kpl 
+    if(cut==56)
+      return ((bits1&1<<4)&&(bits2&1<<4)) ; //Kmi Kmi 
+    if(cut==57)
+      return ((bits1&1<<4)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<4)) ; //Kmi Kpl 
+    if(cut==58)
+      return ((bits1&1<<5)&&(bits2&1<<5)) ; //Kpl Kpl 
+ 
+ 
+   if(cut==59)
+      return  ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==60)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<3)) ||((bits1&1<<3)&&(bits2&1<<2))  ; //Pipl Pimi  
+    if(cut==61)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<6)) || ((bits1&1<<6)&&(bits2&1<<2)) ; //Pimi Prmi  
+    if(cut==62)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<2)) ; //Pimi Prpl 
+    if(cut==63)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<2)) ; //Pimi Kmi  
+    if(cut==64)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<2)) ; //Pimi Kpl  
+    if(cut==65)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && (bits1&1<<3)&&(bits2&1<<3) ; //Pipl Pipl  
+    if(cut==66)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<3)&&(bits2&1<<6)) || ((bits1&1<<6)&&(bits2&1<<3)) ; //Pipl Prmi  
+    if(cut==67)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<3)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<3)) ; //Pipl Prpl  
+    if(cut==68)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<3)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<3)) ; //Pipl Kmi  
+    if(cut==69)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<3)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<3)) ; //Pipl Kmi  
+   if(cut==70)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<6)&&(bits2&1<<6)) ; //Prmi Prmi  
+    if(cut==71)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)) ; //Prmi Prpl 
+    if(cut==72)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<6)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<6)) ; //Prmi Kmi 
+    if(cut==73)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<6)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<6)) ; //Prmi Kmi 
+    if(cut==74)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<7)&&(bits2&1<<7)) ; //Prpl Prpl 
+    if(cut==75)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<7)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<7)) ; //Prpl Kmi 
+    if(cut==76)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<7)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<7)) ; //Prpl Kpl 
+    if(cut==77)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<4)&&(bits2&1<<4)) ; //Kmi Kmi 
+    if(cut==78)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<4)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<4)) ; //Kmi Kpl 
+    if(cut==79)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<5)&&(bits2&1<<5)) ; //Kpl Kpl 
+
+   //Time10 ns, H+H
+    if(cut==80)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==81)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<2)&&(bits2&1<<3)) || ((bits1&1<<3)&&(bits2&1<<2)))  ; //PimiPimi  
+    if(cut==82)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<3)&&(bits2&1<<3) ; //PiplPipl  
+    if(cut==83)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<6)&&(bits2&1<<6) ; //PrmiPrmi  
+    if(cut==84)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)))  ; //PrmiPrpl  
+    if(cut==85)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<7)&&(bits2&1<<7) ; //PrplPrpl  
+  
+   //Time5 ns, H+H
+    if(cut==86)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==87)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<2)&&(bits2&1<<3)) || ((bits1&1<<3)&&(bits2&1<<2)))  ; //PimiPimi  
+    if(cut==88)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<3)&&(bits2&1<<3) ; //PiplPipl  
+    if(cut==89)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<6)&&(bits2&1<<6) ; //PrmiPrmi  
+    if(cut==90)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)))  ; //PrmiPrpl  
+    if(cut==91)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<7)&&(bits2&1<<7) ; //PrplPrpl  
+  
+   //Time3 ns, H+H
+    if(cut==92)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==93)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<2)&&(bits2&1<<3)) || ((bits1&1<<3)&&(bits2&1<<2)))  ; //PimiPimi  
+    if(cut==94)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<3)&&(bits2&1<<3) ; //PiplPipl  
+    if(cut==95)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<6)&&(bits2&1<<6) ; //PrmiPrmi  
+    if(cut==96)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)))  ; //PrmiPrpl  
+    if(cut==97)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<7)&&(bits2&1<<7) ; //PrplPrpl  
+  
+   if(cut==98)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) ; //PrplPrpl  
+   if(cut==99)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK()   ; //PrplPrpl  
+   if(cut==100)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsCPVOK() && ph2->IsCPV2OK()  ; //PrplPrpl  
+
+   if(cut==101)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) ; //PrplPrpl  
+   if(cut==102)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK()   ; //PrplPrpl  
+   if(cut==103)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsCPVOK() && ph2->IsCPV2OK()  ; //PrplPrpl  
+
+   if(cut==104)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) ; //PrplPrpl  
+   if(cut==105)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK()   ; //PrplPrpl  
+   if(cut==106)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsCPVOK() && ph2->IsCPV2OK()  ; //PrplPrpl  
+      
   
   return kTRUE ;
   
