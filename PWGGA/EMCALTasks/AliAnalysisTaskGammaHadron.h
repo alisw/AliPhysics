@@ -6,7 +6,7 @@
 #include "AliEventPoolManager.h"
 #include <THn.h>
 #include "AliStaObjects.h"//<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
-//#include "AliPool.h"
+#include "AliEventCuts.h"
 
 class TH1;
 class TH2;
@@ -95,15 +95,18 @@ virtual ~AliAnalysisTaskGammaHadron();
   AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
   // Set which pools will be saved
   void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
+ private:
+  AliEventCuts                fEventCuts;                   ///< event selection utility
 
  protected:
 
   virtual void                ProcessMC()                                                   ;
-  void                        InitArrays()                                                  ;
-  // EMCal framework functions
-  Bool_t                      Run()                                                         ;
-  void                        ExecOnce()         										  ;
-  void                        UserCreateOutputObjects()                                     ;
+  void                        InitArrays()                                                 ;
+  // overwritten EMCal framework functions
+  Bool_t                      Run()                             	                          ;
+  void                        ExecOnce()         									      ;
+  Bool_t                      IsEventSelected()											  ;
+  void                        UserCreateOutputObjects()        		                      ;
 
   //Functions for mixed event purposes
   void                        InitEventMixer()											  ;
@@ -123,8 +126,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
-  Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
-  Double_t                    GetEff(AliTLorentzVector ParticleVec)                            ;
+  Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
+  Double_t                    GetEff(AliTLorentzVector ParticleVec)                         ;
 
   Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
   Bool_t                      fDoMixing;                 ///< This option enables mixed events being used in the analysi
@@ -172,6 +175,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   UInt_t                      fAODfilterBits[2];         ///< AOD track filter bit map
 
   // Other stuff
+  TList                      *fEventCutList;           //!<! Output list for event cut histograms
   TList                      *fOutputList1;            //!<! Output list
   TList                      *fOutputListTrAs;         //!<! Output list
   TList                      *fOutputListGamma;        //!<! Output list

@@ -49,14 +49,14 @@ ClassImp(AliAnalysisTaskGammaHadron)
 AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron():
 AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 
-  fGammaOrPi0(0),fDoMixing(0),fMCorData(0),fDebug(0),fSavePool(0),
-fHistEffGamma(0x0),fHistEffHadron(0x0),
+fGammaOrPi0(0),fDoMixing(0),fMCorData(0),fDebug(0),fSavePool(0),
+fEventCuts(0),fHistEffGamma(0x0),fHistEffHadron(0x0),
 fRtoD(0),
 fClShapeMin(0),fClShapeMax(10),fMaxNLM(10),fRmvMTrack(0),
 fMixBCent(0),fMixBZvtx(),fPoolMgr(0x0),fTrackDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),
-fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
+fEventCutList(0),fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
 
 fHistNoClusPt(0),fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fHistClusPairInvarMasspTMIX(0),fHistClusPairInvarMasspTMIXolap(0),fMAngle(0),fMAngleMIX(0),fPtAngle(0),fPtAngleMIX(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 
@@ -90,13 +90,13 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bo
 AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 
 fGammaOrPi0(0),fDoMixing(0),fMCorData(0),fDebug(0),fSavePool(0),
-fHistEffGamma(0x0),fHistEffHadron(0x0),
+fEventCuts(0),fHistEffGamma(0x0),fHistEffHadron(0x0),
 fRtoD(0),
 fClShapeMin(0),fClShapeMax(10),fMaxNLM(10),fRmvMTrack(0),
 fMixBCent(0),fMixBZvtx(),fPoolMgr(0x0),fTrackDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),
-fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
+fEventCutList(0),fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
 
 fHistNoClusPt(0),fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fHistClusPairInvarMasspTMIX(0),fHistClusPairInvarMasspTMIXolap(0),fMAngle(0),fMAngleMIX(0),fPtAngle(0),fPtAngleMIX(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 
@@ -228,6 +228,48 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
+	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	//   Add output for AliEventCuts
+	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	fEventCutList = new TList();
+	fEventCutList ->SetOwner();
+	fEventCutList ->SetName("EventCutOutput");
+
+	fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
+	Bool_t UseManualEventCuts=0;
+	if(UseManualEventCuts==1)
+	{
+		/*
+	     This is not possible because these are private functions!
+	    //..Enable manual mode.
+		//..this just means that the automatic cut settings
+	    //..are not loaded every time the event is checked
+	    fEventCuts.SetManualMode();
+	//..nevertheless we set now the standard settings
+	    //..for the respective period and then overwrite
+	    //..some cuts with the set values in the Emcal task.
+	    fEventCuts.fCurrentRun = fRunNumber;
+	    fEventCuts.AutomaticSetup();
+		 */
+		//..overwrite the manual set cuts with
+		//..some of our own values
+		fEventCuts.fTriggerMask = fOffTrigger;
+		fEventCuts.fMinVtz = fMinVz;
+		fEventCuts.fMaxVtz = fMaxVz;
+		fEventCuts.fRequireTrackVertex = true;
+		fEventCuts.fMaxDeltaSpdTrackAbsolute=fZvertexDiff;
+		fEventCuts.fTrackletBGcut = fTklVsClusSPDCut; //(false by default for 15o)
+		fEventCuts.fMinCentrality = fMinCent;
+		fEventCuts.fMaxCentrality = fMaxCent;
+		//++fRejectPileup (IsPileupFromSPD)= true (fixed in code)
+		//+remove multi vertexer pile up (false - not activated yet)
+		//+spd vertex resolution etc
+		//+some cent. resolution cuts
+		//+some variable correlatios - fixed to false
+	}
+
+	fEventCuts.AddQAplotsToList(fEventCutList);
+	fOutput->Add(fEventCutList);
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Create mixed event pools
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -649,6 +691,126 @@ void AliAnalysisTaskGammaHadron::ExecOnce()
 	//..This function does...
 	AliAnalysisTaskEmcal::ExecOnce();
 
+}
+///Overwrites the AliAnalysisTaskEmcal::IsEventSelected()
+///function
+///
+//________________________________________________________________________
+Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
+{
+	//..checks: rejects DAQ incompletes, magnetic field selection, offline trigger
+	//..vertex selection, SPD pile-up (if enabled), centrality cuts
+	if (!fEventCuts.AcceptEvent(InputEvent()))
+	{
+		PostData(1, fOutput);
+		return kFALSE;
+	}
+
+	//ELIANE for the moment...
+	//..check that they are the same
+	if(fCent!=fEventCuts.GetCentrality())	  cout<<"Difference in centralities -> classic centr.: "<<fCent<<", new centr from evt cuts: "<<fEventCuts.GetCentrality()<<endl; /// Centrality calculated with the default estimator (V0M for LHC15o)
+	if(fVertex[2]!=fEventCuts.GetPrimaryVertex()->GetZ())  cout<<"Difference in centralities -> classic vtx.: "<<fVertex[2]<<", new vertex from evt cuts: "<<fEventCuts.GetPrimaryVertex()->GetZ()<<endl; /// Centrality calculated with the default estimator (V0M for LHC15o)
+
+
+	//.. .. .. ..
+	//..Start of copy part from AliAnalysisTaskEmcal
+	if (!fTrigClass.IsNull())
+	{
+		TString fired;
+
+		const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
+		if (aev)
+		{
+			fired = aev->GetFiredTriggerClasses();
+		}
+		else cout<<"Error analysis only for AODs"<<endl;
+
+		if (!fired.Contains("-B-"))
+		{
+			if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
+			return kFALSE;
+		}
+
+		std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
+		if (!arr)
+		{
+			if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
+			return kFALSE;
+		}
+		Bool_t match = 0;
+		for (Int_t i=0;i<arr->GetEntriesFast();++i)
+		{
+			TObject *obj = arr->At(i);
+			if (!obj)
+				continue;
+
+			//Check if requested trigger was fired
+			TString objStr = obj->GetName();
+			if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
+					(objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
+				// This is relevant for EMCal triggers with 2 thresholds
+				// If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
+				TString trigType1 = "J1";
+				TString trigType2 = "J2";
+				if(objStr.Contains("G"))
+				{
+					trigType1 = "G1";
+					trigType2 = "G2";
+				}
+				if(objStr.Contains(trigType2) && fired.Contains(trigType2.Data()))
+				{ //requesting low threshold + overlap
+					match = 1;
+					break;
+				}
+				else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
+					match = 1;
+					break;
+				}
+			}
+			else
+			{
+				// If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
+				// simply check that the trigger was fired
+				if (fired.Contains(obj->GetName()))
+				{
+					match = 1;
+					break;
+				}
+			}
+		}
+		if (!match)
+		{
+			if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
+			return kFALSE;
+		}
+	}
+	if (fTriggerTypeSel != kND)
+	{
+		if (!HasTriggerType(fTriggerTypeSel))
+		{
+			if (fGeneralHistograms) fHistEventRejection->Fill("trigTypeSel",1);
+			return kFALSE;
+		}
+	}
+    /*
+	//.. Maybe these two as well .. .. ..
+	if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin)  {
+		if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
+		return kFALSE;
+	}
+
+	// Reject filter for MC data
+	if (!CheckMCOutliers()) return kFALSE;
+    */
+	//..End of copy part from AliAnalysisTaskEmcal
+	//.. .. .. ..
+
+	//..call it explicitly to check
+	//..whether additional event cuts are applied that should be included
+	//..should be DELETED!!! later
+	AliAnalysisTaskEmcal::IsEventSelected();
+
+	return kTRUE;
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskGammaHadron::Run()
