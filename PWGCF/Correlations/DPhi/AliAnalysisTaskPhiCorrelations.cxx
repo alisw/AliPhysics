@@ -52,6 +52,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
+#include "AliGenHepMCEventHeader.h"
 
 #include "AliEventPoolManager.h"
 #include "AliBasicParticle.h"
@@ -1465,13 +1466,17 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       }
       
       AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
-      if (!collGeometry)
+      AliGenHepMCEventHeader* hepMCHeader = dynamic_cast<AliGenHepMCEventHeader*> (eventHeader);
+      if (!collGeometry && !hepMCHeader)
       {
         eventHeader->Dump();
         AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
       }
       
-      centrality = collGeometry->ImpactParameter();
+      if (collGeometry)
+        centrality = collGeometry->ImpactParameter();
+      else if (hepMCHeader)
+        centrality = hepMCHeader->impact_parameter();
     }    
     else if (fCentralityMethod == "MCGen_V0M")
     {
