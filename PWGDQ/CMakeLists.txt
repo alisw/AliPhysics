@@ -14,7 +14,7 @@
 # **************************************************************************
 
 add_subdirectory(base)
-add_subdirectory(dielectron)
+#add_subdirectory(dielectron)
 add_subdirectory(reducedTree)
 
 message(STATUS "PWGDQ enabled")
