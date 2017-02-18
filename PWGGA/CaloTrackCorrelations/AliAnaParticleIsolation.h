@@ -189,6 +189,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyMCConversionRadius()     { fStudyMCConversionRadius = kTRUE  ; }
   void         SwitchOffStudyMCConversionRadius()    { fStudyMCConversionRadius = kFALSE ; }
 
+  void         SwitchOnStudyExoticTrigger()          { fStudyExoticTrigger = kTRUE  ; }
+  void         SwitchOffStudyExoticTrigger()         { fStudyExoticTrigger = kFALSE ; }
+
   // Study of pT cut in cone
   void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
   void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
@@ -239,6 +242,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fStudyFECCorrelation;                      ///<  Study 4 FEC channels cross correlation
   Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
   Bool_t   fStudyMCConversionRadius;                  ///<  Study shower shape depending the conversion radius
+  Bool_t   fStudyExoticTrigger;                       ///<  Fill histograms with track and cluster pT when the trigger is exotic
   
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
@@ -292,7 +296,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
  
   AliVCluster*   fCluster;                            //!<! Temporary vcluster, avoid creation per event.
   TObjArray  *   fClustersArr;                        //!<! Temporary ClustersArray, avoid creation per event.
-
+  Bool_t         fIsExoticTrigger;                    //!<! Trigger cluster considered as exotic
   //Histograms  
   
   TH1F *   fhEIso ;                                    //!<! Number of isolated particles vs energy.
@@ -315,6 +319,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtClusterInCone ;                         //!<! Cluster Pt in the cone.
   TH2F *   fhPtCellInCone ;                            //!<! Cell amplitude in the cone.
   TH2F *   fhPtTrackInCone ;                           //!<! Track Pt in the cone.
+  
+  TH2F *   fhPtInConeExoTrigger ;                      //!<! Cluster and tracks  Pt in the cone. Trigger is exotic
+  TH2F *   fhPtClusterInConeExoTrigger ;               //!<! Clusters Pt in the cone. Trigger is exotic
+  TH2F *   fhPtTrackInConeExoTrigger ;                 //!<! Tracks Pt in the cone. Trigger considered exotic
+  
   TH2F *   fhPtTrackInConeOtherBCPileUpSPD ;           //!<! Track Pt in the cone, tracks out of main BC Time window.
   TH2F *   fhPtTrackInConeVtxBC0 ;                     //!<! Track Pt in the cone, tracks in BC=0.
   TH2F *   fhPtTrackInConeBC0PileUpSPD ;               //!<! Track Pt in the cone, tracks in BC=0.
@@ -349,12 +358,17 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConePtLeadClustervsTrack;                 //!<! Tracks vs Clusters leading pt.
   TH2F *   fhConePtLeadClusterTrackFrac;               //!<! Trigger pt vs cluster/track leading pt.
   
-  TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt Sum Pt in the cone.
+  TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
 //TH3F *   fhPtLambda0Eiso;                            //!<! ABCD TH3F histogram Pt, ShowerShape and sum(ET)+sum(pT) cone
-  TH2F *   fhConeSumPtCellTrack ;                      //!<! Cells and tracks Sum Pt Sum Pt in the cone.
-  TH2F *   fhConeSumPtCell ;                           //!<! Cells Sum Pt Sum Pt in the cone.
-  TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt Sum Pt in the cone.
-  TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt Sum Pt in the cone.
+  TH2F *   fhConeSumPtCellTrack ;                      //!<! Cells and tracks Sum Pt in the cone.
+  TH2F *   fhConeSumPtCell ;                           //!<! Cells Sum Pt in the cone.
+  TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
+  TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
+ 
+  TH2F *   fhConeSumPtExoTrigger ;                     //!<! Cluster and tracks Sum Pt in the cone. Trigger is exotic
+  TH2F *   fhConeSumPtClusterExoTrigger ;              //!<! Clusters Sum Pt  in the cone. Trigger is exotic
+  TH2F *   fhConeSumPtTrackExoTrigger ;                //!<! Tracks Sum Pt  in the cone. Trigger considered exotic
+
   TH2F *   fhConeSumPtEtaBandUECluster;                //!<! Cluster Sum Pt in the eta band for clusters, before normalization.
   TH2F *   fhConeSumPtPhiBandUECluster;                //!<! Cluster Sum Pt in the phi band for clusters, before normalization.
   TH2F *   fhConeSumPtEtaBandUETrack;                  //!<! Track Sum Pt in the eta band for tracks, before normalization.

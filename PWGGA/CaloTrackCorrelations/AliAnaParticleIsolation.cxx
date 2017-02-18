@@ -60,6 +60,7 @@ fFillEMCALRegionHistograms(0),    fFillUEBandSubtractHistograms(1),
 fFillCellHistograms(0),
 fFillOverlapHistograms(0),        fStudyFECCorrelation(0),                  
 fStudyTracksInCone(0),            fStudyMCConversionRadius(0),
+fStudyExoticTrigger(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
 fDecayBits(),                     fDecayTagsM02Cut(0),
 fFillNLMHistograms(0),
@@ -79,7 +80,7 @@ fStudyRCutInCone(0),              fNRCutsInCone(0),                         fRCu
 fMomentum(),                      fMomIso(),
 fMomDaugh1(),                     fMomDaugh2(),
 fTrackVector(),                   fProdVertex(),
-fCluster(0),                      fClustersArr(0),
+fCluster(0),                      fClustersArr(0),                          fIsExoticTrigger(0),
 // Histograms
 fhEIso(0),                        fhPtIso(0),
 fhPtCentralityIso(0),             fhPtEventPlaneIso(0),
@@ -89,6 +90,7 @@ fhEtaPhiNoIso(0),
 fhENoIso(0),                      fhPtNoIso(0),                             fhPtNLocMaxNoIso(0),
 fhPtInCone(0),
 fhPtClusterInCone(0),             fhPtCellInCone(0),                        fhPtTrackInCone(0),
+fhPtInConeExoTrigger(0),          fhPtClusterInConeExoTrigger(0),           fhPtTrackInConeExoTrigger(0),
 fhPtTrackInConeOtherBCPileUpSPD(0), fhPtTrackInConeVtxBC0(0),
 fhPtTrackInConeBC0PileUpSPD(0),
 fhPtInConePileUp(),               fhPtInConeCent(0),
@@ -107,6 +109,8 @@ fhConePtLeadClustervsTrack(0),    fhConePtLeadClusterTrackFrac(0),
 fhConeSumPt(0),                   //fhPtLambda0Eiso(0),                       
 fhConeSumPtCellTrack(0),
 fhConeSumPtCell(0),               fhConeSumPtCluster(0),                    fhConeSumPtTrack(0),
+fhConeSumPtExoTrigger(0),         fhConeSumPtClusterExoTrigger(0),          fhConeSumPtTrackExoTrigger(0),                      
+
 fhConeSumPtEtaBandUECluster(0),             fhConeSumPtPhiBandUECluster(0),
 fhConeSumPtEtaBandUETrack(0),               fhConeSumPtPhiBandUETrack(0),
 fhConeSumPtEtaBandUECell(0),                fhConeSumPtPhiBandUECell(0),
@@ -1105,7 +1109,9 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   {
     fhConeSumPtCluster ->Fill(ptTrig, 0., GetEventWeight());
     fhConePtLeadCluster->Fill(ptTrig, 0., GetEventWeight());
-    
+    if(fStudyExoticTrigger && fIsExoticTrigger)
+      fhConeSumPtClusterExoTrigger->Fill(ptTrig, 0., GetEventWeight());
+
     if(fStudyFECCorrelation)
     {
       fhConeSumPtClusterFECCorrPair     ->Fill(ptTrig, 0., GetEventWeight());
@@ -1169,6 +1175,12 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     
     fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight());
     fhPtClusterInCone->Fill(ptTrig, ptcone, GetEventWeight());
+    
+    if(fStudyExoticTrigger && fIsExoticTrigger)
+    {
+      fhPtInConeExoTrigger        ->Fill(ptTrig , ptcone, GetEventWeight());
+      fhPtClusterInConeExoTrigger ->Fill(ptTrig , ptcone, GetEventWeight());
+    }
     
     if(IsPileUpAnalysisOn())
     {
@@ -1365,6 +1377,8 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   
   fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
   fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster, GetEventWeight());
+  if(fStudyExoticTrigger && fIsExoticTrigger)
+    fhConeSumPtExoTrigger  ->Fill(ptTrig, coneptsumCluster  , GetEventWeight());
   
   aodParticle->SetNeutralLeadPtInCone(coneptLeadCluster);
   aodParticle->SetNeutralPtSumInCone(coneptsumCluster);
@@ -1508,7 +1522,9 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   if(!reftracks)
   {
     fhConeSumPtTrack      ->Fill(ptTrig, 0., GetEventWeight());
-  
+    if(fStudyExoticTrigger && fIsExoticTrigger)
+      fhConeSumPtTrackExoTrigger->Fill(ptTrig, 0., GetEventWeight());
+    
     if(fStudyTracksInCone)
     {
       fhConeSumPtTrackTOFNo ->Fill(ptTrig, 0., GetEventWeight());
@@ -1575,8 +1591,14 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     
     pTtrack  = track->Pt();
     
-    fhPtInCone      ->Fill(ptTrig , pTtrack , GetEventWeight());
-    fhPtTrackInCone ->Fill(ptTrig , pTtrack , GetEventWeight());
+    fhPtInCone      ->Fill(ptTrig , pTtrack, GetEventWeight());
+    fhPtTrackInCone ->Fill(ptTrig , pTtrack, GetEventWeight());
+    
+    if(fStudyExoticTrigger && fIsExoticTrigger)
+    {
+      fhPtInConeExoTrigger      ->Fill(ptTrig , pTtrack, GetEventWeight());
+      fhPtTrackInConeExoTrigger ->Fill(ptTrig , pTtrack, GetEventWeight());
+    }
     
     if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), pTtrack, GetEventWeight());
     
@@ -1732,6 +1754,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
 
   fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight());
   fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, GetEventWeight());
+  if(fStudyExoticTrigger && fIsExoticTrigger)
+    fhConeSumPtTrackExoTrigger  ->Fill(ptTrig, coneptsumTrack  , GetEventWeight());
   
   if(fStudyTracksInCone)
   {
@@ -2717,12 +2741,24 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhConePtLead->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
     outputContainer->Add(fhConePtLead) ;
     
-    fhConeSumPt  = new TH2F("hConePtSum",
-                            Form("Track and Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
-                            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+    fhConeSumPt  = new TH2F
+    ("hConePtSum",
+     Form("Track and Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f",r),
+     nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
     fhConeSumPt->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
     fhConeSumPt->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
     outputContainer->Add(fhConeSumPt) ;
+    
+    if(fStudyExoticTrigger)
+    {
+      fhConeSumPtExoTrigger  = new TH2F
+      ("hConePtSumExoTrigger",
+       Form("#Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, exo trigger",r),
+       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConeSumPtExoTrigger->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtExoTrigger->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtExoTrigger) ;
+    }
     
 //    fhPtLambda0Eiso = new TH3F
 //    (Form("hPtLambda0Eiso"),
@@ -2746,6 +2782,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtInCone->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
     fhPtInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtInCone) ;
+    
+    if(fStudyExoticTrigger)
+    {
+      fhPtInConeExoTrigger  = new TH2F("hPtInConeExoTrigger",
+                                       Form("#it{p}_{T}  in isolation cone for #it{R} = %2.2f, exotic trigger",r),
+                                       nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtInConeExoTrigger->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+      fhPtInConeExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtInConeExoTrigger) ;
+    }
     
     if(fFillBackgroundBinHistograms)
     {
@@ -3032,12 +3078,24 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     // Cluster only histograms
     if(GetIsolationCut()->GetParticleTypeInCone()!=AliIsolationCut::kOnlyCharged)
     {
-      fhConeSumPtCluster  = new TH2F("hConePtSumCluster",
-                                     Form("Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
-                                     nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConeSumPtCluster  = new TH2F
+      ("hConePtSumCluster",
+       Form("Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f",r),
+       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
       fhConeSumPtCluster->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhConeSumPtCluster->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtCluster) ;
+      
+      if(fStudyExoticTrigger)
+      {
+        fhConeSumPtClusterExoTrigger  = new TH2F
+        ("hConePtSumClusterExoTrigger",
+         Form("Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, exo trigger",r),
+         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterExoTrigger->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterExoTrigger->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtClusterExoTrigger) ;
+      }
       
       if(fStudyPtCutInCone)
       {
@@ -3345,6 +3403,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtClusterInCone->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
       fhPtClusterInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtClusterInCone) ;
+
+      if(fStudyExoticTrigger)
+      {
+        fhPtClusterInConeExoTrigger  = new TH2F("hPtClusterInConeExoTrigger",
+                                      Form("#it{p}_{T} of clusters in isolation cone for #it{R} = %2.2f, exotic trigger",r),
+                                      nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+        fhPtClusterInConeExoTrigger->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+        fhPtClusterInConeExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtClusterInConeExoTrigger) ;
+      }
       
       if(fFillCellHistograms)
       {
@@ -3603,6 +3671,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtTrackInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtTrackInCone) ;
 
+      if(fStudyExoticTrigger)
+      {
+        fhPtTrackInConeExoTrigger  = new TH2F("hPtTrackInConeExoTrigger",
+                                                Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, exotic trigger",r),
+                                                nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+        fhPtTrackInConeExoTrigger->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+        fhPtTrackInConeExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtTrackInConeExoTrigger) ;
+      }
+      
       if(fStudyPtCutInCone)
       {
         fhConeSumPtTrackPerMinPtCut = new TH2F
@@ -3706,13 +3784,25 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhPtTrackInConePerRCutLargePtTrig) ;
       }
       
-      fhConeSumPtTrack  = new TH2F("hConePtSumTrack",
-                                   Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
-                                   nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConeSumPtTrack  = new TH2F
+      ("hConePtSumTrack",
+       Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
+       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
       fhConeSumPtTrack->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhConeSumPtTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtTrack) ;
-
+      
+      if(fStudyExoticTrigger)
+      {
+        fhConeSumPtTrackExoTrigger  = new TH2F
+        ("hConePtSumTrackExoTrigger",
+         Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f, exo trigger",r),
+         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtTrackExoTrigger->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtTrackExoTrigger->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtTrackExoTrigger) ;
+      }
+      
       if(fStudyTracksInCone)
       {
         Int_t ntofbins = 1000;
@@ -5986,7 +6076,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     fhConeSumPt              ->Fill(pt,       coneptsumTrack+coneptsumCluster, GetEventWeight());
     fhConeSumPtTrigEtaPhi    ->Fill(eta, phi, coneptsumTrack+coneptsumCluster *GetEventWeight()); // check
-
+    if(fStudyExoticTrigger && fIsExoticTrigger)
+      fhConeSumPtExoTrigger  ->Fill(pt, coneptsumTrack+coneptsumCluster, GetEventWeight());
+    
     Float_t coneptLead = coneptLeadTrack;
     if(coneptLeadCluster > coneptLeadTrack) coneptLead = coneptLeadCluster;
     fhConePtLead->Fill(pt, coneptLead, GetEventWeight());
@@ -6003,23 +6095,49 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     //---------------------------------------------------------------
     // Recover original cluster if requested, needed for some studies
     //---------------------------------------------------------------
-    if(fFillOverlapHistograms     || fFillTMHisto || 
-       fFillEMCALRegionHistograms )
+    if ( fFillOverlapHistograms     || fFillTMHisto || 
+         fFillEMCALRegionHistograms || fStudyExoticTrigger )
     {
       Int_t iclus = -1;
       fCluster = 0;
-
+      fIsExoticTrigger = kFALSE;
+      
       if     (GetCalorimeter() == kEMCAL) fClustersArr = GetEMCALClusters();
       else if(GetCalorimeter() == kPHOS ) fClustersArr = GetPHOSClusters();
-      
-      if(!fClustersArr)
+            
+      if(fClustersArr)
       {
         Int_t  clusterID = aod->GetCaloLabel(0) ;
-        
+       
         if ( clusterID < 0 )
           AliWarning(Form("ID of cluster = %d, not possible!", clusterID));
         else
+        {
           fCluster = FindCluster(fClustersArr,clusterID,iclus);
+          
+          if ( GetCalorimeter() == kEMCAL && fStudyExoticTrigger )
+          {
+            Int_t bc = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+            
+            // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
+            Float_t maxCellFraction = 0.;
+            Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),fCluster,maxCellFraction);
+
+            Float_t  eCellMax = GetEMCALCells()->GetCellAmplitude(absIdMax);  
+            Double_t tCellMax = GetEMCALCells()->GetCellTime(absIdMax);      
+
+            GetCaloUtils()->RecalibrateCellAmplitude(eCellMax, GetCalorimeter(), absIdMax);
+            //GetCaloUtils()->RecalibrateCellTime     (tCellMax, GetCalorimeter(), absIdMax, bc);    
+
+            Float_t exoticity = 1-GetCaloUtils()->GetEMCALRecoUtils()->GetECross(absIdMax,tCellMax,GetEMCALCells(),bc)/eCellMax;
+            
+            if(exoticity > 0.97) fIsExoticTrigger = kTRUE ;
+            //fIsExoticTrigger = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(absIdMax,GetEMCALCells(),bc);
+            //if ( fIsExoticTrigger ) 
+            //printf("Isolation: IsExotic? %d, E %f, ncells %d, exoticity %f\n", 
+            //       fIsExoticTrigger, aod->E(), fCluster->GetNCells(), exoticity);
+          }
+        }
       }
     }
     
