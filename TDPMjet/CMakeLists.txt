@@ -22,7 +22,6 @@ include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/DPMJET
                     ${AliRoot_SOURCE_DIR}/EVGEN
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -31,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 # Sources - alphabetical order
 set(SRCS
   TDPMjet.cxx
+  AliDpmJetRndm.cxx
   AliGenDPMjet.cxx
   AliIonPDGCodes.cxx
 )
@@ -43,13 +43,13 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-# Add a library to the project using the specified source files
-add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-
 if(DPMJET_FOUND)
   # Use external DPMJET if found
-  link_directories($DPMJET_LIBPATH)
+  link_directories(${DPMJET_LIBPATH})
 endif()
+
+# Add a library to the project using the specified source files
+add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
@@ -72,3 +72,5 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+message(STATUS "TDPMjet enabled")

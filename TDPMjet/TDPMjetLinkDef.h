@@ -9,4 +9,6 @@
 #pragma link C++ class AliGenDPMjet+;
 #pragma link C++ class AliIonPDGCodes+;
 
+#pragma link C++ class AliDpmJetRndm+;
+
 #endif
