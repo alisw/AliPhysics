@@ -879,6 +879,8 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   TString name;
   
   name = "eventAccounting";
+
+  int newvar = 7 // this will give a syntax error
   
   _eventAccounting      = createHisto1D(name,name,10, -0.5, 9.5, "event Code", _title_counts);
   
