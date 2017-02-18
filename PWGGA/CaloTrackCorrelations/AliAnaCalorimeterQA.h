@@ -416,11 +416,11 @@ public:
   TH2F *   fhLambda0TCardCorrelOtherTCard[7];            //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard               
   TH2F *   fhNCellsTCardCorrelOtherTCard [7];            //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
 
-  TH2F *   fhTCardCorrECellMaxDiff[10];                  //!<! Cell max energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
-  TH2F *   fhTCardCorrEClusterDiff[10];                  //!<! Cluster energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
-  TH2F *   fhTCardCorrECellMaxRat [10];                  //!<! Secondary cell energy in cluster / cell max energy vs cluster energy, different secondary cell selections depending on TCard
-  TH2F *   fhTCardCorrEClusterRat [10];                  //!<! Secondary cell energy in cluster / cluster energy - vs cluster energy, different secondary cell selections depending on TCard
-  TH2F *   fhTCardCorrTCellMaxDiff[10];                  //!<! Cell max energy - secondary cell time in cell vs cluster energy, different secondary cell selections depending on TCard
+  TH2F *   fhTCardCorrECellMaxDiff[12];                  //!<! Cell max energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
+  TH2F *   fhTCardCorrEClusterDiff[12];                  //!<! Cluster energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
+  TH2F *   fhTCardCorrECellMaxRat [12];                  //!<! Secondary cell energy in cluster / cell max energy vs cluster energy, different secondary cell selections depending on TCard
+  TH2F *   fhTCardCorrEClusterRat [12];                  //!<! Secondary cell energy in cluster / cluster energy - vs cluster energy, different secondary cell selections depending on TCard
+  TH2F *   fhTCardCorrTCellMaxDiff[12];                  //!<! Cell max energy - secondary cell time in cell vs cluster energy, different secondary cell selections depending on TCard
 
   // Bad clusters histograms
   

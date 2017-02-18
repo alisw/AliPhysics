@@ -328,7 +328,7 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     fhNCellsTCardCorrelOtherTCard [i] = 0 ; 
   }
   
-  for(Int_t i = 0; i < 10; i++)
+  for(Int_t i = 0; i < 12; i++)
   {
     fhTCardCorrECellMaxDiff[i] = 0 ;
     fhTCardCorrEClusterDiff[i] = 0 ;      
@@ -1144,9 +1144,10 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   Int_t sameRow  = 0;
   Float_t  eCellMax = cells->GetCellAmplitude(absIdMax);  
   Double_t tCellMax = cells->GetCellTime(absIdMax);      
-
+  //printf("Org E %2.2f, t %2.2f\n",eCellMax,tCellMax*1e9);
   GetCaloUtils()->RecalibrateCellAmplitude(eCellMax, GetCalorimeter(), absIdMax);
   GetCaloUtils()->RecalibrateCellTime(tCellMax, GetCalorimeter(), absIdMax, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
+  //printf("New E %2.2f, t %2.2f\n",eCellMax,tCellMax*1e9);
 
   tCellMax *= 1.0e9;
   tCellMax-=fConstantTimeShift;
@@ -1186,6 +1187,8 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     
     if( absId == absIdMax || weight < 0.01 ) continue;
     
+    if(eCellMax < eCell) printf("Check!!! E max %f (id %d), E sec %f (id %d)\n",eCellMax,absIdMax, eCell,absId);
+    
     nCellWithWeight++;
         
     Int_t rowDiff = -100, colDiff = -100;
@@ -1202,22 +1205,24 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       
       if      ( rowDiff == 0  && colDiff != 0 ) 
       {
-        indexType = 5;
+        if ( TMath::Abs(rowDiff) == 1 ) indexType = 6;         
+        else                            indexType = 7;
+
         sameRow++; 
         /*printf("\t \t E %2.2f, Same row, diff row %d, col %d\n",eCell,rowDiff,colDiff);*/
       }
       else if ( rowDiff != 0  && colDiff == 0 ) 
       {
-        if ( rowDiff == 1 ) indexType = 6;         
-        else                indexType = 7;
+        if ( TMath::Abs(rowDiff) == 1 ) indexType = 8;         
+        else                            indexType = 9;
         
         sameCol++; 
         /*printf("\t \t E %2.2f, Same col, diff row %d, col %d\n",eCell,rowDiff,colDiff);*/
       }
       else                                      
       {
-        if ( rowDiff == 1  || colDiff == 1 ) indexType = 8;
-        else                                 indexType = 9;
+        if ( TMath::Abs(rowDiff) == 1  && TMath::Abs(colDiff) == 1 ) indexType = 10;
+        else                                                         indexType = 11;
 
         otheRow++; 
         /*printf("\t \t E %2.2f, Diff row/col, diff row %d, col %d\n",eCell,rowDiff,colDiff);*/
@@ -1227,17 +1232,19 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     {
       if      ( rowDiff == 0  && colDiff != 0 ) 
       {
-        indexType = 0;
+        if ( TMath::Abs(colDiff) == 1 ) indexType = 0;         
+        else                            indexType = 1;
+
       }
       else if ( rowDiff != 0  && colDiff == 0 ) 
       {
-        if ( rowDiff == 1 ) indexType = 1;
-        else                indexType = 2;
+        if ( TMath::Abs(rowDiff) == 1 ) indexType = 2;
+        else                            indexType = 3;
       }
       else                                      
       {
-        if ( rowDiff == 1  || colDiff == 1 ) indexType = 3;
-        else                                 indexType = 4;
+        if ( TMath::Abs(rowDiff) == 1  && TMath::Abs(colDiff) == 1 ) indexType = 4;
+        else                                                         indexType = 5;
       }
     }  
     
@@ -3054,12 +3061,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhNCellsTCardCorrelOtherTCard[i]);
     }
 
-    for(Int_t i = 0; i < 10; i++)
+    for(Int_t i = 0; i < 12; i++)
     {
       fhTCardCorrECellMaxDiff[i]  = new TH2F 
       (Form("hTCardCorrECellMaxDiff_Case%d",i),
        Form("#it{E}_{cell}^{max}-#it{E}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, case %d",i),
-       nptbins,ptmin,ptmax,200,0,20); 
+       nptbins,ptmin,ptmax,210,-1,20); 
       fhTCardCorrECellMaxDiff[i]->SetXTitle("#it{E} (GeV)");
       fhTCardCorrECellMaxDiff[i]->SetYTitle("#it{E}_{cell}^{max}-#it{E}_{cell} (GeV)");
       outputContainer->Add(fhTCardCorrECellMaxDiff[i]); 
@@ -3067,7 +3074,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhTCardCorrEClusterDiff[i]  = new TH2F 
       (Form("hTCardCorrEClusterDiff_Case%d",i),
        Form("#it{E}_{cluster}-#it{E}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, case %d",i),
-       nptbins,ptmin,ptmax,200,0,20); 
+       nptbins,ptmin,ptmax,210,-1,20); 
       fhTCardCorrEClusterDiff[i]->SetXTitle("#it{E} (GeV)");
       fhTCardCorrEClusterDiff[i]->SetYTitle("#it{E}_{cluster}-#it{E}_{cell} (GeV)");
       outputContainer->Add(fhTCardCorrEClusterDiff[i]); 
@@ -3075,7 +3082,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhTCardCorrECellMaxRat[i]  = new TH2F 
       (Form("hTCardCorrECellMaxRat_Case%d",i),
        Form("#it{E}_{cell}/#it{E}_{cell}^{max} vs #it{E}_{cluster}, for (un)correlated cells in TCard, case %d",i),
-       nptbins,ptmin,ptmax,100,0,1); 
+       nptbins,ptmin,ptmax,110,0,1.1); 
       fhTCardCorrECellMaxRat[i]->SetXTitle("#it{E} (GeV)");
       fhTCardCorrECellMaxRat[i]->SetYTitle("#it{E}_{cell}/#it{E}^{max}_{cell}");
       outputContainer->Add(fhTCardCorrECellMaxRat[i]); 
@@ -3083,7 +3090,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhTCardCorrEClusterRat[i]  = new TH2F 
       (Form("hTCardCorrEClusterRat_Case%d",i),
        Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, for (un)correlated cells in TCard, case %d",i),
-       nptbins,ptmin,ptmax,100,0,1); 
+       nptbins,ptmin,ptmax,110,0,1.1); 
       fhTCardCorrEClusterRat[i]->SetXTitle("#it{E} (GeV)");
       fhTCardCorrEClusterRat[i]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
       outputContainer->Add(fhTCardCorrEClusterRat[i]); 
