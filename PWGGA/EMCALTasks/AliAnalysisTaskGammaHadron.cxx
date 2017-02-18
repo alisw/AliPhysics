@@ -37,6 +37,7 @@
 #include "AliEventPoolManager.h"
 #include "AliMCEvent.h"
 
+#include <memory>
 
 using std::cout;
 using std::endl;
