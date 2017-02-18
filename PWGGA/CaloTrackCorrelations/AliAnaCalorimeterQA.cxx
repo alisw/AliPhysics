@@ -66,7 +66,8 @@ fNModules(12),                         fNRCU(2),
 fNMaxCols(48),                         fNMaxRows(24),  
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fCellAmpMin(0),                        
-fEMCALCellAmpMin(0),                   fPHOSCellAmpMin(0),                    
+fEMCALCellAmpMin(0),                   fPHOSCellAmpMin(0),     
+fEMCALClusterM02Min(0),
 fEMCALClusterNCellMin(0),              fPHOSClusterNCellMin(0),  
 fNEBinCuts(0),
 
@@ -333,6 +334,7 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     fhTCardCorrEClusterDiff[i] = 0 ;      
     fhTCardCorrECellMaxRat [i] = 0 ;
     fhTCardCorrEClusterRat [i] = 0 ;  
+    fhTCardCorrTCellMaxDiff[i] = 0 ;
   }
   
   InitParameters();
@@ -1140,7 +1142,14 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   Int_t sameCol  = 0;
   Int_t otheRow  = 0;
   Int_t sameRow  = 0;
-  Float_t eCellMax = cells->GetCellAmplitude(absIdMax);      
+  Float_t  eCellMax = cells->GetCellAmplitude(absIdMax);  
+  Double_t tCellMax = cells->GetCellTime(absIdMax);      
+
+  GetCaloUtils()->RecalibrateCellAmplitude(eCellMax, GetCalorimeter(), absIdMax);
+  GetCaloUtils()->RecalibrateCellTime(tCellMax, GetCalorimeter(), absIdMax, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
+
+  tCellMax *= 1.0e9;
+  tCellMax-=fConstantTimeShift;
 
   // correlation not max cells
   Int_t nCorr2  = 0;
@@ -1164,7 +1173,14 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   {
     Int_t absId  = clus->GetCellsAbsId()[ipos];   
     
-    Float_t eCell = cells->GetCellAmplitude(absId);      
+    Float_t  eCell = cells->GetCellAmplitude(absId);
+    Double_t tCell = cells->GetCellTime(absId);      
+
+    GetCaloUtils()->RecalibrateCellAmplitude(eCell, GetCalorimeter(), absId);
+    GetCaloUtils()->RecalibrateCellTime(tCell, GetCalorimeter(), absId, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
+    tCell *= 1.0e9;
+    tCell-=fConstantTimeShift;
+    
     // consider cells with enough energy weight and not the reference one
     Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
     
@@ -1217,7 +1233,6 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       {
         if ( rowDiff == 1 ) indexType = 1;
         else                indexType = 2;
-
       }
       else                                      
       {
@@ -1237,6 +1252,9 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       fhTCardCorrEClusterDiff[indexType]->Fill(energy, eClusDiff, GetEventWeight());
       fhTCardCorrECellMaxRat [indexType]->Fill(energy, eCellRat , GetEventWeight());
       fhTCardCorrEClusterRat [indexType]->Fill(energy, eClusRat , GetEventWeight());
+      
+      Float_t tCellDiff = tCellMax - tCell;
+      fhTCardCorrTCellMaxDiff[indexType]->Fill(energy, tCellDiff, GetEventWeight());
     }
     
     if ( eCell > emax ) 
@@ -1292,10 +1310,12 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   //
   // Fill histograms for different cell correlation criteria
   //
-  fhEtaPhiTCardCorrNoSelection   ->Fill(fClusterMomentum.Eta(),GetPhi(fClusterMomentum.Phi()));
+  fhEtaPhiTCardCorrNoSelection ->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()));
   fhLambda0TCardCorrNoSelection->Fill(energy, m02, GetEventWeight());
+  
   fhNCellsTCardCorrNoSelection           ->Fill(energy, ncells, GetEventWeight());
   fhNCellsTCardCorrWithWeightNoSelection ->Fill(energy, nCellWithWeight, GetEventWeight());
+  
   Float_t ratioNcells = nCellWithWeight/(ncells*1.);
   fhNCellsTCardCorrRatioWithWeightNoSelection->Fill(energy, ratioNcells, GetEventWeight());
   //printf("E %2.2f, ncells %d, nCellWithWeight %d, ratio %2.2f\n",energy,ncells,nCellWithWeight,ratioNcells);
@@ -2499,6 +2519,8 @@ TObjString * AliAnaCalorimeterQA::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Cell Amplitude: PHOS > %2.2f GeV, EMCAL > %2.2f GeV;",fPHOSCellAmpMin, fEMCALCellAmpMin) ;
   parList+=onePar ;
+  snprintf(onePar,buffersize,"Cluster M02: EMCAL > %2.2f ;",fEMCALClusterM02Min) ;
+  parList+=onePar ;
   snprintf(onePar,buffersize,"N cells per cluster: PHOS >= %d, EMCAL >= %d;",fPHOSClusterNCellMin, fEMCALClusterNCellMin) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Inv. Mass   %2.1f < E_cl < %2.1f GeV;",fInvMassMinECut, fInvMassMaxECut) ;
@@ -3065,6 +3087,14 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhTCardCorrEClusterRat[i]->SetXTitle("#it{E} (GeV)");
       fhTCardCorrEClusterRat[i]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
       outputContainer->Add(fhTCardCorrEClusterRat[i]); 
+      
+      fhTCardCorrTCellMaxDiff[i]  = new TH2F 
+      (Form("hTCardCorrTCellMaxDiff_Case%d",i),
+       Form("#it{t}_{cell}^{max}-#it{t}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, case %d",i),
+       nptbins,ptmin,ptmax,1000,-100,100); 
+      fhTCardCorrTCellMaxDiff[i]->SetXTitle("#it{E} (GeV)");
+      fhTCardCorrTCellMaxDiff[i]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell} (ns)");
+      outputContainer->Add(fhTCardCorrTCellMaxDiff[i]); 
     }
   } // TCard correlation studies
 
@@ -5136,6 +5166,8 @@ void AliAnaCalorimeterQA::InitParameters()
   fPHOSCellAmpMin  = 0.2; // 200 MeV
   fCellAmpMin      = 0.2; // 200 MeV
 
+  fEMCALClusterM02Min = 0.05; 
+  
   fEMCALClusterNCellMin = 2; // at least 2
   fPHOSClusterNCellMin  = 3; // at least 3
   
@@ -5179,7 +5211,7 @@ Bool_t AliAnaCalorimeterQA::IsGoodCluster(Int_t absIdMax, Float_t m02,
   if(GetCalorimeter() == kEMCAL) 
   {
  
-    if(  m02 < 0.05 || nCellsPerCluster < fEMCALClusterNCellMin ) return kFALSE ; // mild shower shape cut for exotics
+    if(  m02 < fEMCALClusterM02Min || nCellsPerCluster < fEMCALClusterNCellMin ) return kFALSE ; // mild shower shape cut for exotics
 
     if(!GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster())
     {
@@ -5219,6 +5251,7 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   printf("Time Cut: %3.1f < TOF  < %3.1f\n"   , fTimeCutMin, fTimeCutMax);
   printf("EMCAL Min Amplitude : %2.1f GeV/c\n", fEMCALCellAmpMin) ;
   printf("PHOS  Min Amplitude : %2.1f GeV/c\n", fPHOSCellAmpMin) ;
+  printf("EMCAL Min M02   : %2.2f\n"          , fEMCALClusterM02Min) ;
   printf("EMCAL Min n cells   : %d\n"         , fEMCALClusterNCellMin) ;
   printf("PHOS  Min n cells   : %d\n"         , fPHOSClusterNCellMin) ;
   

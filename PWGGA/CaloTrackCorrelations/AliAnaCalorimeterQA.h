@@ -114,6 +114,9 @@ public:
   Float_t      GetPHOSCellAmpMin()       const  { return fPHOSCellAmpMin     ; }
   void         SetPHOSCellAmpMin (Float_t amp)  { fPHOSCellAmpMin  = amp     ; }
 
+  Float_t      GetEMCALM02Min()          const  { return fEMCALClusterM02Min ; }
+  void         SetEMCALM02Min(Float_t m02)      { fEMCALClusterM02Min = m02  ; }
+  
   Int_t        GetEMCALNCellsPerClusterMin() const  { return fEMCALClusterNCellMin ; }
   void         SetEMCALNCellsPerClusterMin(Int_t n) { fEMCALClusterNCellMin = n    ; }
   
@@ -258,6 +261,7 @@ public:
   Float_t  fCellAmpMin;                         ///<  Amplitude Threshold on calorimeter cells, set at execution time
   Float_t  fEMCALCellAmpMin;                    ///<  Amplitude Threshold on EMCal cells
   Float_t  fPHOSCellAmpMin ;                    ///<  Amplitude Threshold on PHOS cells
+  Float_t  fEMCALClusterM02Min;                 ///<  Minimum M02 on EMCal clusters
   Int_t    fEMCALClusterNCellMin;               ///<  Minimum number of cells on EMCal clusters
   Int_t    fPHOSClusterNCellMin ;               ///<  Minimum number of cells on PHOS clusters
   Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut 
@@ -416,7 +420,8 @@ public:
   TH2F *   fhTCardCorrEClusterDiff[10];                  //!<! Cluster energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
   TH2F *   fhTCardCorrECellMaxRat [10];                  //!<! Secondary cell energy in cluster / cell max energy vs cluster energy, different secondary cell selections depending on TCard
   TH2F *   fhTCardCorrEClusterRat [10];                  //!<! Secondary cell energy in cluster / cluster energy - vs cluster energy, different secondary cell selections depending on TCard
-  
+  TH2F *   fhTCardCorrTCellMaxDiff[10];                  //!<! Cell max energy - secondary cell time in cell vs cluster energy, different secondary cell selections depending on TCard
+
   // Bad clusters histograms
   
   TH1F *   fhBadClusterEnergy;                  //!<! Energy of bad cluster
