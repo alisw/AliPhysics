@@ -93,7 +93,7 @@ public:
                                 AliVCluster *clus, AliVCaloCells* cells);
   
   void         ChannelCorrelationInFEC  (AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax) const ;
-  void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax) const ;
+  void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax, Float_t exoticity) const ;
   
   Float_t      GetECross(Int_t absId, AliVCaloCells* cells,Float_t dtcut = 10000);
   
@@ -403,9 +403,15 @@ public:
 
   TH2F *   fhLambda0TCardCorrelN[6];                     //!<! Cluster m02 vs E, max cell correlated with 0 to 5, N cells in TCard                
   TH2F *   fhNCellsTCardCorrelN [6];                     //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
+  
+  TH2F *   fhLambda0TCardCorrelNExotic[6];               //!<! Cluster m02 vs E, max cell correlated with 0 to 5, N cells in TCard, exoticity > 0.97                
+  TH2F *   fhNCellsTCardCorrelNExotic [6];               //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard, exoticity > 0.97
 
   TH2F *   fhLambda0TCardCorrel[7];                      //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard               
   TH2F *   fhNCellsTCardCorrel [7];                      //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
+
+  TH2F *   fhLambda0TCardCorrelExotic[4];                //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard, exoticity > 0.97                
+  TH2F *   fhNCellsTCardCorrelExotic [4];                //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard, exoticity > 0.97 
 
   TH2F *   fhLambda0TCardCorrelNearRow[6];               //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard, one correl. cell is 1 row away               
   TH2F *   fhNCellsTCardCorrelNearRow [6];               //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard, one correl. cell is 1 row away 

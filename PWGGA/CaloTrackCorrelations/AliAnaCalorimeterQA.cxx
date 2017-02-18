@@ -306,7 +306,9 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     fhLambda0FECCorrelLargeNCells   [i] = 0 ;
     fhLambda1FECCorrelLargeNCells   [i] = 0 ;
     fhLambda0TCardCorrelN[i] = 0 ;  
-    fhNCellsTCardCorrelN [i] = 0 ; 
+    fhNCellsTCardCorrelN [i] = 0 ;   
+    fhLambda0TCardCorrelNExotic[i] = 0 ;  
+    fhNCellsTCardCorrelNExotic [i] = 0 ; 
     fhLambda0TCardCorrelNearRow[i] = 0 ; 
     fhNCellsTCardCorrelNearRow [i] = 0 ; 
   }
@@ -318,6 +320,8 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     fhLambda1MaxFECCorrelLargeNCells[i] = 0 ;
     fhLambda0TCardCorrel2ndMax[i] = 0 ; 
     fhNCellsTCardCorrel2ndMax [i] = 0 ; 
+    fhLambda0TCardCorrelExotic[i] = 0 ;  
+    fhNCellsTCardCorrelExotic [i] = 0 ; 
   }
 
   for(Int_t i = 0; i < 7; i++)
@@ -1112,7 +1116,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
 ///
 //___________________________________________________
 void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells* cells, 
-                                                    Bool_t matched, Int_t absIdMax) const 
+                                                    Bool_t matched, Int_t absIdMax, Float_t exoticity) const 
 {
   // Clean the sample
   
@@ -1138,9 +1142,10 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   //
   Int_t nCellWithWeight = 1;
   Bool_t nearRow = kFALSE;
-  Int_t nCorr   = 0;
+  Bool_t nearCol = kFALSE;
+  Int_t nCorr    = 0;
   Int_t sameCol  = 0;
-  Int_t otheRow  = 0;
+  Int_t other    = 0;
   Int_t sameRow  = 0;
   Float_t  eCellMax = cells->GetCellAmplitude(absIdMax);  
   Double_t tCellMax = cells->GetCellTime(absIdMax);      
@@ -1153,9 +1158,9 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   tCellMax-=fConstantTimeShift;
 
   // correlation not max cells
-  Int_t nCorr2  = 0;
+  Int_t nCorr2   = 0;
   Int_t sameCol2 = 0;
-  Int_t otheRow2 = 0;
+  Int_t other2   = 0;
   Int_t sameRow2 = 0;
   
   // Get second highest energy cell
@@ -1202,29 +1207,30 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       nCorr++;
       
       if(TMath::Abs(rowDiff) == 1) nearRow = kTRUE;
+      if(TMath::Abs(colDiff) == 1) nearCol = kTRUE;
       
       if      ( rowDiff == 0  && colDiff != 0 ) 
       {
-        if ( TMath::Abs(rowDiff) == 1 ) indexType = 6;         
-        else                            indexType = 7;
+        if ( nearCol ) indexType = 6;         
+        else           indexType = 7;
 
         sameRow++; 
         /*printf("\t \t E %2.2f, Same row, diff row %d, col %d\n",eCell,rowDiff,colDiff);*/
       }
       else if ( rowDiff != 0  && colDiff == 0 ) 
       {
-        if ( TMath::Abs(rowDiff) == 1 ) indexType = 8;         
-        else                            indexType = 9;
+        if ( nearRow ) indexType = 8;         
+        else           indexType = 9;
         
         sameCol++; 
         /*printf("\t \t E %2.2f, Same col, diff row %d, col %d\n",eCell,rowDiff,colDiff);*/
       }
       else                                      
       {
-        if ( TMath::Abs(rowDiff) == 1  && TMath::Abs(colDiff) == 1 ) indexType = 10;
-        else                                                         indexType = 11;
+        if ( nearRow && nearCol) indexType = 10;
+        else                     indexType = 11;
 
-        otheRow++; 
+        other++; 
         /*printf("\t \t E %2.2f, Diff row/col, diff row %d, col %d\n",eCell,rowDiff,colDiff);*/
       }
     }
@@ -1232,19 +1238,19 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     {
       if      ( rowDiff == 0  && colDiff != 0 ) 
       {
-        if ( TMath::Abs(colDiff) == 1 ) indexType = 0;         
-        else                            indexType = 1;
+        if ( nearCol ) indexType = 0;         
+        else           indexType = 1;
 
       }
       else if ( rowDiff != 0  && colDiff == 0 ) 
       {
-        if ( TMath::Abs(rowDiff) == 1 ) indexType = 2;
-        else                            indexType = 3;
+        if ( nearRow ) indexType = 2;
+        else           indexType = 3;
       }
       else                                      
       {
-        if ( TMath::Abs(rowDiff) == 1  && TMath::Abs(colDiff) == 1 ) indexType = 4;
-        else                                                         indexType = 5;
+        if ( nearCol && nearRow ) indexType = 4;
+        else                      indexType = 5;
       }
     }  
     
@@ -1305,13 +1311,20 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
         nCorr2++;
         if      ( rowDiff == 0  && colDiff != 0 ) sameRow2++; 
         else if ( rowDiff != 0  && colDiff == 0 ) sameCol2++; 
-        else                                      otheRow2++;
+        else                                      other2++;
       }
       //printf("\t cell %d, absId %d, E %2.2f, w %2.2f, tcard %d\n", ipos, absId, eCell, weight, sameTCard);
     } // second cluster cell lopp for secondary TCard correlations
   } // cluster cell loop
   
-  //printf("\t Same col %d, same row %d, diff other %d\n",sameCol,sameRow,otheRow);
+  Float_t ratioNcells = nCellWithWeight/(ncells*1.);
+  fhNCellsTCardCorrRatioWithWeightNoSelection->Fill(energy, ratioNcells, GetEventWeight());
+  //printf("E %2.2f, ncells %d, nCellWithWeight %d, ratio %2.2f\n",energy,ncells,nCellWithWeight,ratioNcells);
+  
+  // If only one relevant cell, it makes no sense to continue
+  if ( nCellWithWeight <= 1 ) return;
+  
+  //printf("\t Same col %d, same row %d, diff other %d\n",sameCol,sameRow,other);
   //printf("\t Second cell: E %2.2f, absId %d, correl %d, rowDiff %d, rowCol %d\n",emax,absId2ndMax,sameTCard2,rowDiff2, colDiff2);
    
   //
@@ -1322,10 +1335,6 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   
   fhNCellsTCardCorrNoSelection           ->Fill(energy, ncells, GetEventWeight());
   fhNCellsTCardCorrWithWeightNoSelection ->Fill(energy, nCellWithWeight, GetEventWeight());
-  
-  Float_t ratioNcells = nCellWithWeight/(ncells*1.);
-  fhNCellsTCardCorrRatioWithWeightNoSelection->Fill(energy, ratioNcells, GetEventWeight());
-  //printf("E %2.2f, ncells %d, nCellWithWeight %d, ratio %2.2f\n",energy,ncells,nCellWithWeight,ratioNcells);
 
   if(nCorr < 5) 
   {
@@ -1338,18 +1347,43 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     fhNCellsTCardCorrelN [5]->Fill(energy, nCellWithWeight, GetEventWeight());
   }
   
+  if ( exoticity > 0.97 )
+  {
+    if(nCorr < 5) 
+    {
+      fhLambda0TCardCorrelNExotic[nCorr]->Fill(energy, m02, GetEventWeight());
+      fhNCellsTCardCorrelNExotic [nCorr]->Fill(energy, nCellWithWeight, GetEventWeight());
+    }
+    else
+    {
+      fhLambda0TCardCorrelNExotic[5]->Fill(energy, m02, GetEventWeight());
+      fhNCellsTCardCorrelNExotic [5]->Fill(energy, nCellWithWeight, GetEventWeight());
+    }
+    
+    Int_t indexExo = -1;
+    if      (!nearRow &&  nearCol ) indexExo = 0;
+    else if (!nearRow && !nearCol ) indexExo = 1;
+    else if ( nearRow &&  nearCol ) indexExo = 2;
+    else if ( nearRow && !nearCol ) indexExo = 3;
+    
+    if(indexExo >= 0)
+    {
+      fhLambda0TCardCorrelExotic[indexExo]->Fill(energy, m02, GetEventWeight());
+      fhNCellsTCardCorrelExotic [indexExo]->Fill(energy, nCellWithWeight, GetEventWeight());
+    }
+  }
+  
   if(nCorr > 0)
   {
     Int_t index = -1;
-
-    if      (!sameRow &&  sameCol && !otheRow ) index = 0;
-    else if (!sameRow && !sameCol &&  otheRow ) index = 1;
-    else if (!sameRow &&  sameCol &&  otheRow ) index = 2;
-    else if ( sameRow &&  sameCol && !otheRow ) index = 3;
-    else if ( sameRow && !sameCol &&  otheRow ) index = 4;
-    else if ( sameRow &&  sameCol &&  otheRow ) index = 5;
-    else if ( sameRow && !sameCol && !otheRow ) index = 6;
-    else printf("case not considered!!!: sameRow %d, sameCol %d, otheRow %d, nearRow %d\n",sameRow,sameCol,otheRow,nearRow); 
+    if      (!sameRow &&  sameCol && !other ) index = 0;
+    else if (!sameRow && !sameCol &&  other ) index = 1;
+    else if (!sameRow &&  sameCol &&  other ) index = 2;
+    else if ( sameRow &&  sameCol && !other ) index = 3;
+    else if ( sameRow && !sameCol &&  other ) index = 4;
+    else if ( sameRow &&  sameCol &&  other ) index = 5;
+    else if ( sameRow && !sameCol && !other ) index = 6;
+    else printf("case not considered!!!: sameRow %d, sameCol %d, other %d, nearRow %d\n",sameRow,sameCol,other,nearRow); 
     
     if(index >= 0)
     {
@@ -1360,13 +1394,13 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     Int_t indexNR = -1; 
     if ( nearRow )
     {
-      if      (!sameRow &&  sameCol && !otheRow ) indexNR = 0;
-      else if (!sameRow && !sameCol &&  otheRow ) indexNR = 1;
-      else if (!sameRow &&  sameCol &&  otheRow ) indexNR = 2;
-      else if ( sameRow &&  sameCol && !otheRow ) indexNR = 3;
-      else if ( sameRow && !sameCol &&  otheRow ) indexNR = 4;
-      else if ( sameRow &&  sameCol &&  otheRow ) indexNR = 5;
-      else printf("\t near row case not considered!!!: sameRow %d, sameCol %d, otheRow %d\n",sameRow,sameCol,otheRow); 
+      if      (!sameRow &&  sameCol && !other ) indexNR = 0;
+      else if (!sameRow && !sameCol &&  other ) indexNR = 1;
+      else if (!sameRow &&  sameCol &&  other ) indexNR = 2;
+      else if ( sameRow &&  sameCol && !other ) indexNR = 3;
+      else if ( sameRow && !sameCol &&  other ) indexNR = 4;
+      else if ( sameRow &&  sameCol &&  other ) indexNR = 5;
+      else printf("\t near row case not considered!!!: sameRow %d, sameCol %d, other %d\n",sameRow,sameCol,other); 
     }
     
     if ( indexNR >= 0 )
@@ -1392,14 +1426,14 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   if      ( nCorr == 0 && nCorr2 == 0 ) indexOtherTCard = 6;
   else if ( nCorr == 0 && nCorr2  > 0 )
   {
-    if      (  sameRow2 && !sameCol2 && !otheRow2) indexOtherTCard = 0; 
-    else if ( !sameRow2 &&  sameCol2 && !otheRow2) indexOtherTCard = 1;
+    if      (  sameRow2 && !sameCol2 && !other2) indexOtherTCard = 0; 
+    else if ( !sameRow2 &&  sameCol2 && !other2) indexOtherTCard = 1;
     else                                           indexOtherTCard = 2;
   }  
   else if ( nCorr  > 0 && nCorr2  > 0 )
   {
-    if      (  sameRow2 && !sameCol2 && !otheRow2) indexOtherTCard = 3; 
-    else if ( !sameRow2 &&  sameCol2 && !otheRow2) indexOtherTCard = 4;
+    if      (  sameRow2 && !sameCol2 && !other2) indexOtherTCard = 3; 
+    else if ( !sameRow2 &&  sameCol2 && !other2) indexOtherTCard = 4;
     else                                           indexOtherTCard = 5;
   }
   
@@ -1814,7 +1848,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     
     //
     if(fStudyFECCorrelation  ) ChannelCorrelationInFEC  (clus, cells, matched, absIdMax);
-    if(fStudyTCardCorrelation) ChannelCorrelationInTCard(clus, cells, matched, absIdMax);
+    if(fStudyTCardCorrelation) ChannelCorrelationInTCard(clus, cells, matched, absIdMax, eCrossFrac);
     
     //
     nModule = GetModuleNumber(clus);
@@ -2983,6 +3017,22 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhNCellsTCardCorrelN[i]->SetXTitle("#it{E} (GeV)");
       fhNCellsTCardCorrelN[i]->SetYTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsTCardCorrelN[i]);
+      
+      fhLambda0TCardCorrelNExotic[i]  = new TH2F 
+      (Form("hLambda0TCardCorrelN_Exotic_Case%d",i),
+       Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with TCard cell, exo > 0.97, N corr = %d",i),
+       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhLambda0TCardCorrelNExotic[i]->SetXTitle("#it{E} (GeV)");
+      fhLambda0TCardCorrelNExotic[i]->SetYTitle("#lambda^{2}_{0}");
+      outputContainer->Add(fhLambda0TCardCorrelNExotic[i]); 
+      
+      fhNCellsTCardCorrelNExotic[i]  = new TH2F 
+      (Form("hNCellsTCardCorrelN_Exotic_Case%d",i),
+       Form("custer # cells vs #it{E}, w > 0.01, max E cell correl with TCard cell, exo > 0.97, N corr = %d", i),
+       nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+      fhNCellsTCardCorrelNExotic[i]->SetXTitle("#it{E} (GeV)");
+      fhNCellsTCardCorrelNExotic[i]->SetYTitle("#it{n}_{cells}");
+      outputContainer->Add(fhNCellsTCardCorrelNExotic[i]);
     }
 
     for(Int_t i = 0; i < 7; i++)
@@ -3002,6 +3052,25 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhNCellsTCardCorrel[i]->SetXTitle("#it{E} (GeV)");
       fhNCellsTCardCorrel[i]->SetYTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsTCardCorrel[i]);
+    }
+
+    for(Int_t i = 0; i < 4; i++)
+    {
+      fhLambda0TCardCorrelExotic[i]  = new TH2F 
+      (Form("hLambda0TCardCorrel_Exotic_Case%d",i),
+       Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with TCard cell, exo>0.97, case %d",i),
+       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhLambda0TCardCorrelExotic[i]->SetXTitle("#it{E} (GeV)");
+      fhLambda0TCardCorrelExotic[i]->SetYTitle("#lambda^{2}_{0}");
+      outputContainer->Add(fhLambda0TCardCorrelExotic[i]); 
+      
+      fhNCellsTCardCorrelExotic[i]  = new TH2F 
+      (Form("hNCellsTCardCorrel_Exotic_Case%d",i),
+       Form("custer # cells vs #it{E}, w > 0.01, max E cell correl with TCard cell, exot > 0.97,case %d", i),
+       nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+      fhNCellsTCardCorrelExotic[i]->SetXTitle("#it{E} (GeV)");
+      fhNCellsTCardCorrelExotic[i]->SetYTitle("#it{n}_{cells}");
+      outputContainer->Add(fhNCellsTCardCorrelExotic[i]);
     }
 
     for(Int_t i = 0; i < 6; i++)
