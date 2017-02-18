@@ -92,7 +92,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         StudyEMCALRegions(Float_t pt, Float_t phi, Float_t eta, Float_t m02, 
                                  Float_t coneptsumTrack, Float_t coneptsumCluster, 
-                                 Bool_t isolated, Int_t clIndex, Int_t iSM) ;
+                                 Bool_t isolated, Int_t iSM) ;
   
   void         StudyMCConversionRadius(Float_t  pt, Bool_t isolated, Int_t iSM, 
                                        Float_t m02, Int_t     mcTag, Int_t label) ;

@@ -1783,30 +1783,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
 //_____________________________________________________________________________
 /// Fill some histograms to understand pile-up.
 //_____________________________________________________________________________
-void AliAnaParticleIsolation::FillPileUpHistograms(Float_t energy, Float_t time)//Int_t clusterID)
-{
-//  if ( clusterID < 0 )
-//  {
-//    AliWarning(Form("ID of cluster = %d, not possible!", clusterID));
-//    return;
-//  }
-  
-//  Int_t iclus = -1;
-//  TObjArray* clusters = 0x0;
-//  if     (GetCalorimeter() == kEMCAL) clusters = GetEMCALClusters();
-//  else if(GetCalorimeter() == kPHOS ) clusters = GetPHOSClusters();
-//  
-//  Float_t energy = 0;
-//  Float_t time   = -1000;
-//  
-//  if(clusters)
-//  {
-//    AliVCluster *cluster = FindCluster(clusters,clusterID,iclus);
-//    energy = cluster->E();
-//    time   = cluster->GetTOF()*1e9;
-//  }
-  
-  //printf("E %f, time %f\n",energy,time);
+void AliAnaParticleIsolation::FillPileUpHistograms(Float_t energy, Float_t time)
+{  
   AliVEvent * event = GetReader()->GetInputEvent();
   
   fhTimeENoCut->Fill(energy, time, GetEventWeight());
@@ -1882,16 +1860,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
 {
   if(!fFillTMHisto && !fFillSSHisto && !fFillBackgroundBinHistograms && !fFillTaggedDecayHistograms) return;
   
-  Int_t  clusterID = pCandidate->GetCaloLabel(0) ;
   Int_t  nMaxima   = pCandidate->GetNLM();
   Int_t  mcTag     = pCandidate->GetTag() ;
   Bool_t isolated  = pCandidate->IsIsolated();
-
-  if ( clusterID < 0 )
-  {
-    AliWarning(Form("ID of cluster = %d, not possible!", clusterID));
-    return;
-  }
 
   Float_t m02    = pCandidate->GetM02() ;
   Float_t energy = pCandidate->E();
@@ -1900,19 +1871,6 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   Float_t phi    = pCandidate->Phi();
   if(phi<0) phi+= TMath::TwoPi();
   
-  // Recover original cluster if requested
-  //
-  if(fFillOverlapHistograms || fFillTMHisto)
-  {
-    Int_t iclus = -1;
-    if     (GetCalorimeter() == kEMCAL) fClustersArr = GetEMCALClusters();
-    else if(GetCalorimeter() == kPHOS ) fClustersArr = GetPHOSClusters();
-    
-    if(!fClustersArr) return;
-    
-    fCluster = FindCluster(fClustersArr,clusterID,iclus);
-  }
-
   // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
   //
   if(fFillTaggedDecayHistograms)
@@ -2212,7 +2170,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
 
       
       Int_t noverlaps = 0;
-      if(fFillOverlapHistograms)
+      if ( fFillOverlapHistograms && fCluster )
       {
         const UInt_t nlabels = fCluster->GetNLabels();
         Int_t overpdg[nlabels];
@@ -2332,7 +2290,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   } // SS histo fill
   
   // Track matching dependent histograms
-  if(fFillTMHisto)
+  if ( fFillTMHisto && fCluster )
   {
     Float_t dZ  = fCluster->GetTrackDz();
     Float_t dR  = fCluster->GetTrackDx();
@@ -5993,7 +5951,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Int_t   iSM        = aod->GetSModNumber();
     
     AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d",pt, eta, phi, isolated));
-            
+        
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone or in UE band
     //---------------------------------------------------------------
@@ -6043,12 +6001,34 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       CalculateNormalizeUEBandPerUnitArea(aod, coneptsumCluster, coneptsumCell, coneptsumTrack, coneptsumSubEtaBand, coneptsumSubPhiBand) ;
     
     //---------------------------------------------------------------
+    // Recover original cluster if requested, needed for some studies
+    //---------------------------------------------------------------
+    if(fFillOverlapHistograms     || fFillTMHisto || 
+       fFillEMCALRegionHistograms )
+    {
+      Int_t iclus = -1;
+      fCluster = 0;
+
+      if     (GetCalorimeter() == kEMCAL) fClustersArr = GetEMCALClusters();
+      else if(GetCalorimeter() == kPHOS ) fClustersArr = GetPHOSClusters();
+      
+      if(!fClustersArr)
+      {
+        Int_t  clusterID = aod->GetCaloLabel(0) ;
+        
+        if ( clusterID < 0 )
+          AliWarning(Form("ID of cluster = %d, not possible!", clusterID));
+        else
+          fCluster = FindCluster(fClustersArr,clusterID,iclus);
+      }
+    }
+    
+    //---------------------------------------------------------------
     // EMCAL SM regions
     //---------------------------------------------------------------
     if(fFillEMCALRegionHistograms && GetCalorimeter() == kEMCAL) 
-      StudyEMCALRegions(pt, phi, eta, 
-                        m02, coneptsumTrack, coneptsumCluster, 
-                        isolated, aod->GetCaloLabel(0), iSM);
+      StudyEMCALRegions(pt, phi, eta, m02, 
+                        coneptsumTrack, coneptsumCluster, isolated, iSM);
         
     //---------------------------------------------------------------
     // Conversion radius in MC
@@ -7185,15 +7165,13 @@ void AliAnaParticleIsolation::SetTriggerDetector(Int_t det)
 void AliAnaParticleIsolation::StudyEMCALRegions
 (Float_t pt,  Float_t phi, Float_t eta, Float_t m02, 
  Float_t coneptsumTrack, Float_t coneptsumCluster, 
- Bool_t isolated, Int_t clIndex, Int_t iSM) 
-{
-  // Get original cluster, needed to feed the subregion selection method
-  Int_t iclus = -1;
-  AliVCluster *cluster = FindCluster(GetEMCALClusters(),clIndex,iclus);
+ Bool_t isolated, Int_t iSM) 
+{  
+  if ( !fCluster ) return;
   
   // Get the predefined regions
   Int_t etaRegion = -1, phiRegion = -1;
-  GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
+  GetCaloUtils()->GetEMCALSubregion(fCluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
   
   if ( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
   {
