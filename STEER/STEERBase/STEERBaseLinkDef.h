@@ -9,7 +9,7 @@
 #pragma link off all functions;
 
 #pragma link C++ enum   AliLog::EType_t;
- 
+
 #pragma link C++ class AliVParticle+;
 #pragma link C++ class AliVTPCseed+;
 #pragma link C++ class AliVTrack+;
@@ -99,7 +99,7 @@
 #pragma link C++ class AliTRDPIDReference+;
 #pragma link C++ class AliTRDPIDParams+;
 /* #if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0) */
-// AliTRDPIDThresholds and Centrality are private 
+// AliTRDPIDThresholds and Centrality are private
 #pragma link C++ class AliTRDPIDParams::AliTRDPIDThresholds+;
 #pragma link C++ class AliTRDPIDParams::AliTRDPIDCentrality+;
 /* #endif */
@@ -157,5 +157,6 @@
 
 #pragma link C++ class AliVersion+;
 
-#endif
+#pragma link C++ class AliDataFile+;
 
+#endif

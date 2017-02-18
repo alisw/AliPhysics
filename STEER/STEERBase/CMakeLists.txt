@@ -37,6 +37,7 @@ set(SRCS
     AliCollisionGeometry.cxx
     AliCounterCollection.cxx
     AliDAQ.cxx
+    AliDataFile.cxx
     AliDetectorEventHeader.cxx
     AliDetectorPID.cxx
     AliDetectorTagCuts.cxx
