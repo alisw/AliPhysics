@@ -88,12 +88,16 @@ fhPtNLocMaxIso(0),
 fhPhiIso(0),                      fhEtaIso(0),                              fhEtaPhiIso(0),
 fhEtaPhiNoIso(0),
 fhENoIso(0),                      fhPtNoIso(0),                             fhPtNLocMaxNoIso(0),
+fhEIsoExoTrigger(0),              fhENoIsoExoTrigger(0),
+fhPtIsoExoTrigger(0),             fhPtNoIsoExoTrigger(0),
+
 fhPtInCone(0),
 fhPtClusterInCone(0),             fhPtCellInCone(0),                        fhPtTrackInCone(0),
 fhPtInConeExoTrigger(0),          fhPtClusterInConeExoTrigger(0),           fhPtTrackInConeExoTrigger(0),
 fhPtTrackInConeOtherBCPileUpSPD(0), fhPtTrackInConeVtxBC0(0),
 fhPtTrackInConeBC0PileUpSPD(0),
 fhPtInConePileUp(),               fhPtInConeCent(0),
+
 fhPerpConeSumPt(0),               fhPerpConeSumPtTOFBC0(0),               
 fhPtInPerpCone(0),                fhPtInPerpConeTOFBC0(0),
 fhEtaPhiInConeCluster(0),         fhEtaPhiCluster(0),
@@ -1378,7 +1382,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
   fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster, GetEventWeight());
   if(fStudyExoticTrigger && fIsExoticTrigger)
-    fhConeSumPtExoTrigger  ->Fill(ptTrig, coneptsumCluster  , GetEventWeight());
+    fhConeSumPtClusterExoTrigger  ->Fill(ptTrig, coneptsumCluster  , GetEventWeight());
   
   aodParticle->SetNeutralLeadPtInCone(coneptLeadCluster);
   aodParticle->SetNeutralPtSumInCone(coneptsumCluster);
@@ -2563,6 +2567,25 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   fhPtNoIso->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNoIso) ;
   
+  if(fStudyExoticTrigger)
+  {
+    fhENoIsoExoTrigger   = new TH1F
+    ("hENoIsoExoTrigger",
+     Form("Number of not isolated particles vs E, %s, exot>0.97",parTitle.Data()),
+     nptbins,ptmin,ptmax);
+    fhENoIsoExoTrigger->SetYTitle("d#it{N} / d#it{E}");
+    fhENoIsoExoTrigger->SetXTitle("#it{E} (GeV/#it{c})");
+    outputContainer->Add(fhENoIsoExoTrigger) ;
+    
+    fhPtNoIsoExoTrigger  = new TH1F
+    ("hPtNoIsoExoTrigger",
+     Form("Number of not isolated particles vs #it{p}_{T}, %s, exot>0.97",parTitle.Data()),
+     nptbins,ptmin,ptmax);
+    fhPtNoIsoExoTrigger->SetYTitle("d#it{N} / #it{p}_{T}");
+    fhPtNoIsoExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNoIsoExoTrigger) ;
+  }
+  
   fhEtaPhiNoIso  = new TH2F("hEtaPhiNoIso",
                             Form("Number of not isolated leading particles #eta vs #varphi, %s",parTitle.Data()),
                             netabins,etamin,etamax,nphibins,phimin,phimax);
@@ -2679,6 +2702,25 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtIso->SetYTitle("d#it{N} / #it{p}_{T}");
     fhPtIso->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtIso) ;
+    
+    if(fStudyExoticTrigger)
+    {
+      fhEIsoExoTrigger   = new TH1F
+      ("hEIsoExoTrigger",
+       Form("Number of isolated particles vs E, %s, exot>0.97",parTitle.Data()),
+       nptbins,ptmin,ptmax);
+      fhEIsoExoTrigger->SetYTitle("d#it{N} / d#it{E}");
+      fhEIsoExoTrigger->SetXTitle("#it{E} (GeV/#it{c})");
+      outputContainer->Add(fhEIsoExoTrigger) ;
+      
+      fhPtIsoExoTrigger  = new TH1F
+      ("hPtIsoExoTrigger",
+       Form("Number of isolated particles vs #it{p}_{T}, %s, exot>0.97",parTitle.Data()),
+       nptbins,ptmin,ptmax);
+      fhPtIsoExoTrigger->SetYTitle("d#it{N} / #it{p}_{T}");
+      fhPtIsoExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtIsoExoTrigger) ;
+    }
     
     fhPhiIso  = new TH2F("hPhi",
                          Form("Number of isolated particles vs #varphi, %s",parTitle.Data()),
@@ -6174,6 +6216,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhEtaIso    ->Fill(pt    , eta, GetEventWeight());
       fhEtaPhiIso ->Fill(eta   , phi, GetEventWeight());
       
+      if(fStudyExoticTrigger && fIsExoticTrigger)
+      {
+        fhEIsoExoTrigger ->Fill(energy,  GetEventWeight());
+        fhPtIsoExoTrigger->Fill(pt,      GetEventWeight());        
+      }
+      
       if(IsDataMC())
       {
         // For histograms in arrays, index in the array, corresponding to any particle origin
@@ -6237,6 +6285,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhENoIso        ->Fill(energy,  GetEventWeight());
       fhPtNoIso       ->Fill(pt,      GetEventWeight());
       fhEtaPhiNoIso   ->Fill(eta,phi, GetEventWeight());
+      
+      if(fStudyExoticTrigger && fIsExoticTrigger)
+      {
+        fhENoIsoExoTrigger ->Fill(energy,  GetEventWeight());
+        fhPtNoIsoExoTrigger->Fill(pt,      GetEventWeight());        
+      }
       
       if(IsDataMC())
       {

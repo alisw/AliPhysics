@@ -311,6 +311,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhENoIso ;                                  //!<! Number of not isolated leading particles vs Energy.
   TH1F *   fhPtNoIso ;                                 //!<! Number of not isolated leading particles vs pT.
   TH2F *   fhPtNLocMaxNoIso ;                          //!<! Number of not isolated particles vs NLM in cluster.
+  TH1F *   fhEIsoExoTrigger;                           //!<! Number of isolated exotic cluster vs E.
+  TH1F *   fhENoIsoExoTrigger;                         //!<! Number of not isolated exotic cluster vs E.
+  TH1F *   fhPtIsoExoTrigger;                          //!<! Number of isolated exotic cluster vs pT.
+  TH1F *   fhPtNoIsoExoTrigger;                        //!<! Number of not isolated exotic cluster vs pT.
+
+  
   TH1F *   fhPtDecay       [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Number of (non) isolated Pi0 decay particles (invariant mass tag).
   TH2F *   fhEtaPhiDecay   [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! eta vs phi of (not) isolated leading Pi0 decay particles.
   TH2F *   fhPtLambda0Decay[2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously).
