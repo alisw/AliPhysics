@@ -3013,6 +3013,9 @@ void AliAnalysisTaskSED0Correlations::ResetBranchTracks() {
   fBranchTr->orbit_Tr = 0;
   fBranchTr->BC_Tr = 0;
   fBranchTr->IDtrig_Tr = 0;
+  fBranchTr->IDtrig2_Tr = 0;
+  fBranchTr->IDtrig3_Tr = 0;
+  fBranchTr->IDtrig4_Tr = 0; 
   fBranchTr->sel_Tr = 0;
 
   return;
