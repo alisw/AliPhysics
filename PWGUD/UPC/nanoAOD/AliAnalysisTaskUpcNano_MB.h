@@ -8,6 +8,7 @@
 class TH1;
 class TTree;
 class TList;
+class TBits;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -56,11 +57,12 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   Double_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime, fZNCtime, fPIDsigma;
   Int_t fChannel, fSign, fRunNumber;
   Bool_t fTriggerInputsMC[10];
+  TBits fFOFiredChips;
   
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 5); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 6); 
 };
 
 #endif

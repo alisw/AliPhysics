@@ -157,7 +157,10 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeJPsi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  if(isMC)fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
+  if(isMC){
+  	fTreeJPsi ->Branch("fFOFiredChips", &fFOFiredChips);
+	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
+	}
   fOutputList->Add(fTreeJPsi);
   
   fTreePhi = new TTree("fTreePhi", "fTreePhi");
@@ -204,7 +207,10 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreePsi2s ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  if(isMC) fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
+  if(isMC){ 
+  	fTreePsi2s ->Branch("fFOFiredChips", &fFOFiredChips);
+  	fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
+	}
   fOutputList->Add(fTreePsi2s);
     
   fTreeGen = new TTree("fTreeGen", "fTreeGen");
@@ -612,6 +618,7 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
   					
   //SPD inputs
   const AliAODTracklets *mult = aod->GetMultiplicity();
+  fFOFiredChips = mult->GetFastOrFiredChips();
   Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
   Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
 
