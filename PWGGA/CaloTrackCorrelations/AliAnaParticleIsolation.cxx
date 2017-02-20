@@ -230,7 +230,7 @@ fhPhiTrackInCone(0), fhEtaTrackInCone(0), fhEtaPhiTrackInCone(0),
 fhPhiTrackInConeTOFBC0(0), fhPhiTrackInConeTOFBCN(0), fhPhiTrackInConeTOFNo(0),
 fhEtaTrackInConeTOFBC0(0), fhEtaTrackInConeTOFBCN(0), fhEtaTrackInConeTOFNo(0),
 fhEtaPhiTrackInConeTOFBC0(0), fhEtaPhiTrackInConeTOFBCN(0), fhEtaPhiTrackInConeTOFNo(0),
-fhTrackTOFInCone(0),       fhTrackTOFInConeBC0(0),
+fhTrackTOFInCone(0),       fhTrackTOFInConeBC0(0),    fhTrackTOFInConeExoTrigger(0),
 
 fhConeSumPtTrackITSRefitOnSPDOn(0),   fhConeSumPtTrackITSRefitOnSPDOff(0),    fhConeSumPtTrackITSRefitOffSPDOff(0),
 fhPtTrackInConeITSRefitOnSPDOn(0),    fhPtTrackInConeITSRefitOnSPDOff(0) ,    fhPtTrackInConeITSRefitOffSPDOff(0),
@@ -1663,6 +1663,9 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
       if(okTOF)
       {
         fhTrackTOFInCone->Fill(pTtrack,tof,GetEventWeight());
+        
+        if(fStudyExoticTrigger && fIsExoticTrigger)
+          fhTrackTOFInConeExoTrigger->Fill(pTtrack,tof,GetEventWeight());
         
         if(trackBC == 0) 
         {
@@ -3851,12 +3854,26 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         Int_t mintof = -500;
         Int_t maxtof =  500;
         
-        fhTrackTOFInCone  = new TH2F ("hTrackTOFInCone","TOF signal vs track #it{p}_{T}", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+        fhTrackTOFInCone  = new TH2F 
+        ("hTrackTOFInCone","TOF signal vs track #it{p}_{T}", 
+         nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
         fhTrackTOFInCone->SetYTitle("TOF signal (ns)");
         fhTrackTOFInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhTrackTOFInCone);
+
+        if(fStudyExoticTrigger)
+        {
+          fhTrackTOFInConeExoTrigger  = new TH2F 
+          ("hTrackTOFInConeExoTrigger","TOF signal vs track #it{p}_{T}, exoticity > 0.97", 
+           nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+          fhTrackTOFInConeExoTrigger->SetYTitle("TOF signal (ns)");
+          fhTrackTOFInConeExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhTrackTOFInConeExoTrigger);
+        }
         
-        fhTrackTOFInConeBC0  = new TH2F ("hTrackTOFInConeBC0","TOF signal vs track #it{p}_{T}, BC=0", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+        fhTrackTOFInConeBC0  = new TH2F 
+        ("hTrackTOFInConeBC0","TOF signal vs track #it{p}_{T}, BC=0", 
+         nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
         fhTrackTOFInConeBC0->SetYTitle("TOF signal (ns)");
         fhTrackTOFInConeBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhTrackTOFInConeBC0);

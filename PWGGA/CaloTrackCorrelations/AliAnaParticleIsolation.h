@@ -739,7 +739,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiTrackInConeTOFNo ;                    //!<! track without TOF hit, eta-phi 
   TH2F *   fhTrackTOFInCone ;                            //!<! track TOF in cone
   TH2F *   fhTrackTOFInConeBC0 ;                         //!<! track TOF in cone and BC0
-  
+  TH2F *   fhTrackTOFInConeExoTrigger ;                  //!<! track TOF in cone, trigger is exotic
+
   TH2F *   fhConeSumPtTrackITSRefitOnSPDOn;              //!<! track with ITS Refit On SPD On 
   TH2F *   fhConeSumPtTrackITSRefitOnSPDOff;             //!<! track with ITS Refit On SPD Off 
   TH2F *   fhConeSumPtTrackITSRefitOffSPDOff ;           //!<! track with ITS Refit Off SPD Off 
