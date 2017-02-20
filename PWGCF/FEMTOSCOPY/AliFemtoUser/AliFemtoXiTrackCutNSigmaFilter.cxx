@@ -31,9 +31,13 @@ AliFemtoXiTrackCutNSigmaFilter::AliFemtoXiTrackCutNSigmaFilter() :
 
   fK0sRejectionFilters(0),
   fLambdaRejectionFilters(0),
-  fAntiLambdaRejectionFilters(0)
+  fAntiLambdaRejectionFilters(0),
+
+  fCTauXi(0)
 {
   // Default constructor
+  fCTauXi = new TH1D("fCTauXi", "CTau of Xi", 500, 0.0, 50.0);
+  fCTauXi->Sumw2();
 }
 
 
@@ -60,6 +64,9 @@ AliFemtoXiTrackCutNSigmaFilter::AliFemtoXiTrackCutNSigmaFilter(const AliFemtoXiT
 
   if(aCut.fMinvPurityAidHistoXi) fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
   else fMinvPurityAidHistoXi = 0;
+
+  if(aCut.fCTauXi) fCTauXi = new TH1D(*aCut.fCTauXi);
+  else fCTauXi = 0;
 }
 
 AliFemtoXiTrackCutNSigmaFilter& AliFemtoXiTrackCutNSigmaFilter::operator=(const AliFemtoXiTrackCutNSigmaFilter& aCut)
@@ -89,6 +96,9 @@ AliFemtoXiTrackCutNSigmaFilter& AliFemtoXiTrackCutNSigmaFilter::operator=(const 
 
   if(aCut.fMinvPurityAidHistoXi) fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
   else fMinvPurityAidHistoXi = 0;
+
+  if(aCut.fCTauXi) fCTauXi = new TH1D(*aCut.fCTauXi);
+  else fCTauXi = 0;
 
   return *this;
 }
@@ -424,6 +434,7 @@ bool AliFemtoXiTrackCutNSigmaFilter::Pass(const AliFemtoXi* aXi)
      return false;
    }  
   
+  fCTauXi->Fill(GetCTauXi(aXi));
   return true;
 }
 
@@ -454,6 +465,8 @@ TList *AliFemtoXiTrackCutNSigmaFilter::GetOutputList()
 
   if(fBuildPurityAidXi) tOutputList->Add(fMinvPurityAidHistoXi);
   if(fBuildPurityAidV0) tOutputList->Add(fMinvPurityAidHistoV0);
+
+  tOutputList->Add(fCTauXi);
 
   return tOutputList;
 }
@@ -830,5 +843,16 @@ bool AliFemtoXiTrackCutNSigmaFilter::IsMisIDAntiLambda(const AliFemtoXi* aXi)
   }
   else return AliFemtoV0TrackCut::IsMisIDAntiLambda(aXi);
 
+}
+
+
+double AliFemtoXiTrackCutNSigmaFilter::GetCTauXi(const AliFemtoXi* aXi)
+{
+  double tPtotXi = aXi->MomXi().Mag();
+  //TODO should I use PDG mass values, or aXi->MassXi()?
+  double tMassXi = 1.32171;
+  double tCTauXi = aXi->DecayLengthXi()*tMassXi/tPtotXi;
+
+  return tCTauXi;
 }
 

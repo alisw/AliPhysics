@@ -35,6 +35,8 @@ AliFemtoV0TrackCutNSigmaFilter::AliFemtoV0TrackCutNSigmaFilter():
   , fLambdaRejectionFilters(0)
   , fAntiLambdaRejectionFilters(0)
 
+  , fCTau(0)
+
 
 {
   /* no-op */
@@ -58,6 +60,9 @@ AliFemtoV0TrackCutNSigmaFilter::AliFemtoV0TrackCutNSigmaFilter(const AliFemtoV0T
   if(aCut.fPionNSigmaFilter) fPionNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fPionNSigmaFilter);
   if(aCut.fKaonNSigmaFilter) fKaonNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fKaonNSigmaFilter);
   if(aCut.fProtonNSigmaFilter) fProtonNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fProtonNSigmaFilter);
+
+  if(aCut.fCTau) fCTau = new TH1D(*aCut.fCTau);
+  else fCTau = 0;
 }
 
 
@@ -82,6 +87,9 @@ AliFemtoV0TrackCutNSigmaFilter& AliFemtoV0TrackCutNSigmaFilter::operator=(const 
   if(aCut.fPionNSigmaFilter) fPionNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fPionNSigmaFilter);
   if(aCut.fKaonNSigmaFilter) fKaonNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fKaonNSigmaFilter);
   if(aCut.fProtonNSigmaFilter) fProtonNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fProtonNSigmaFilter);
+
+  if(aCut.fCTau) fCTau = new TH1D(*aCut.fCTau);
+  else fCTau = 0;
 
   return *this;
 }
@@ -313,6 +321,7 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
   }
 
   if (!pid_check) return false;
+  fCTau->Fill(GetCTau(aV0));
   return true;
 }
 
@@ -698,5 +707,39 @@ bool AliFemtoV0TrackCutNSigmaFilter::IsMisIDAntiLambda(const AliFemtoV0* aV0)
 
 }
 
+void AliFemtoV0TrackCutNSigmaFilter::SetParticleType(short x)
+{
+  fParticleType = x;
+  TString tName = "fCTau";
+  if(x==kLambda || x==kLambdaMC) tName += TString("Lambda");
+  else if(x==kAntiLambda || x==kAntiLambdaMC) tName += TString("AntiLambda");
+  else if(x==kK0s || x==kK0sMC) tName += TString("K0Short");
+  else {}
 
+  fCTau = new TH1D(tName, "CTau of V0", 500, 0.0, 50.0);
+  fCTau->Sumw2();
+}
+
+double AliFemtoV0TrackCutNSigmaFilter::GetCTau(const AliFemtoV0* aV0)
+{
+  double tPtotV0 = aV0->PtotV0();
+  double tMassV0;
+
+  //TODO should I use PDG mass values, or aV0->MassLambda(), MassAntiLambda(), MassK0Short()?
+  if(fParticleType == kLambda || fParticleType == kAntiLambda) tMassV0 = 1.115683;
+  else if(fParticleType == kK0s) tMassV0 = 0.497614;
+  else tMassV0 = 0.;
+
+  double tCTau = aV0->DecayLengthV0()*tMassV0/tPtotV0;
+
+  return tCTau;
+}
+
+TList *AliFemtoV0TrackCutNSigmaFilter::GetOutputList()
+{
+  TList* tOutputList = AliFemtoV0TrackCut::GetOutputList();  //add all of typical objects
+  tOutputList->Add(fCTau);
+
+  return tOutputList;
+}
 
