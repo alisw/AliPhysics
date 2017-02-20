@@ -184,13 +184,10 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
 {
     AliVTrack *track1 = dynamic_cast<AliVTrack*>(Vtrack1);
     AliESDtrack *etrack1 = dynamic_cast<AliESDtrack*>(Vtrack1);
-    AliExternalTrackParam *extTrackParam1=NULL;
-    AliExternalTrackParam *extTrackParam2=NULL;
-    if(fAlgorithm=="DCA")
-    {
-        extTrackParam1 = new AliExternalTrackParam();
-        extTrackParam1->CopyFromVTrack(track1);
-    }
+    
+    AliExternalTrackParam extTrackParam1;
+    extTrackParam1.CopyFromVTrack(track1);
+
     //
     // Find non HFE electrons
     //
@@ -224,12 +221,9 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
         AliVTrack *track2 = dynamic_cast<AliVTrack*>(Vtrack2);
         AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
         AliESDtrack *etrack2 = dynamic_cast<AliESDtrack*>(Vtrack2);
-        
-        if(fAlgorithm=="DCA")
-        {
-            extTrackParam2 = new AliExternalTrackParam();
-            extTrackParam2->CopyFromVTrack(track2);
-        }
+        AliExternalTrackParam extTrackParam2;
+        extTrackParam2.CopyFromVTrack(track2);
+
         
         //Second track cuts
         if(fIsAOD)
@@ -301,13 +295,13 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
             if(fIsAOD)
             {
                 //DCA track1-track2
-                dca12 = extTrackParam2->GetDCA(extTrackParam1,bfield,xt2,xt1);
+                dca12 = extTrackParam2.GetDCA(&extTrackParam1,bfield,xt2,xt1);
                 
                 //Momento of the track extrapolated to DCA track-track
                 //Track1
-                hasdcaT1 = extTrackParam1->GetPxPyPzAt(xt1,bfield,p1);
+                hasdcaT1 = extTrackParam1.GetPxPyPzAt(xt1,bfield,p1);
                 //Track2
-                hasdcaT2 = extTrackParam2->GetPxPyPzAt(xt2,bfield,p2);
+                hasdcaT2 = extTrackParam2.GetPxPyPzAt(xt2,bfield,p2);
             }
             else
             {
@@ -437,12 +431,10 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
             AliError( Form("Error: %s is not a valid algorithm option.",(const char*)fAlgorithm));
             return;
         }
-        if(extTrackParam2) delete extTrackParam2;     
         
     }
     
     
-    if(extTrackParam1) delete extTrackParam1;
     
     
     return;
