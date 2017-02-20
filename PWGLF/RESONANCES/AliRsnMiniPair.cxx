@@ -235,7 +235,7 @@ Double_t AliRsnMiniPair::DeltaCos(Bool_t mc) const
 
 
 //__________________________________________________________________________________________________
-Double_t AliRsnMiniPair::OpeningAngle(Bool_t mc) const
+Double_t AliRsnMiniPair::OpeningAngle(Bool_t mc)
 {
 //
 // Opening angle between two tracks/decay particles.
