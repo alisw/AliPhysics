@@ -36,7 +36,7 @@ AliAnalysisTaskSE* AddTaskCEPAnalysis (
 		Form("CEPHist"),
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
-		Form("%s:CEP", AliAnalysisManager::GetCommonFileName())
+		Form("%s", AliAnalysisManager::GetCommonFileName())
 	);
 
 	AliAnalysisDataContainer *aadco2 = mgr->CreateContainer
@@ -44,7 +44,7 @@ AliAnalysisTaskSE* AddTaskCEPAnalysis (
 		Form("CEPTree"),
 		TTree::Class(),
 		AliAnalysisManager::kOutputContainer,
-		Form("%s:CEP", AliAnalysisManager::GetCommonFileName())
+		Form("%s", AliAnalysisManager::GetCommonFileName())
 	);
 	
 	// add task and connect input and output managers

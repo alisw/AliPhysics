@@ -602,7 +602,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   // decide which events have to be saved
   // if the number of accepted tracks is within the limits ...
-  Bool_t isToSave = 0 < nTracks && nTracks <= fnumTracksMax;
+  Bool_t isToSave = (0 < nTracks) && (nTracks <= fnumTracksMax);
 
   // AND DGTrigger
   if (fCEPUtil->checkstatus(fAnalysisStatus,
