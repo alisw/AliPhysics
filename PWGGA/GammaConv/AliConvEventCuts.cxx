@@ -4058,6 +4058,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   ) {
     fPeriodEnum = kLHC15fm;
     fEnergyEnum = k13TeV;
+  } else if (periodName.CompareTo("LHC16k") == 0 || periodName.CompareTo("LHC16l") == 0 ){
+    fPeriodEnum = kLHC16kl;
+    fEnergyEnum = k13TeV;
   } else if (periodName.CompareTo("LHC15n") == 0 ){
     fPeriodEnum = kLHC15n;
     fEnergyEnum = k5TeV;
@@ -4258,6 +4261,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k13TeV;
   } else if (periodName.CompareTo("LHC16a2c") == 0){
     fPeriodEnum = kLHC16a2c;
+    fEnergyEnum = k13TeV;
+  } else if (periodName.CompareTo("LHC16j2a1") == 0){
+    fPeriodEnum = kLHC16j2a1;
+    fEnergyEnum = k13TeV;
+  } else if (periodName.CompareTo("LHC16j2b1") == 0){
+    fPeriodEnum = kLHC16j2b1;
+    fEnergyEnum = k13TeV;
+  } else if (periodName.CompareTo("LHC16j2a2") == 0){
+    fPeriodEnum = kLHC16j2a2;
+    fEnergyEnum = k13TeV;
+  } else if (periodName.CompareTo("LHC16j2b2") == 0){
+    fPeriodEnum = kLHC16j2b2;
     fEnergyEnum = k13TeV;
   } else if (periodName.CompareTo("LHC15l1a2") == 0){
     fPeriodEnum = kLHC15l1a2;
