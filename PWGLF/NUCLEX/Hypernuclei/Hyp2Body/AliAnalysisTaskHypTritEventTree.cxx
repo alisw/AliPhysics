@@ -27,7 +27,7 @@
 #include "AliMCVertex.h"
 #include "AliStack.h"
 #include "TPDGCode.h"
-#include "Nuclei/NucleiPbPb/AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 #include "AliAnalysisTaskHypTritEventTree.h"
 #include "AliReducedHypTritEvent.h"
 
@@ -480,8 +480,8 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedHe->fPhi = trackP.Phi();
     reducedHe->fGeoLength = GeoLength(trackP);
     reducedPi->fGeoLength = GeoLength(trackN);
-    reducedHe->fPtrack = trackP.GetInnerParam()->GetP(); 
-    reducedPi->fPtrack = trackN.GetInnerParam()->GetP(); 
+    reducedHe->fPtrack = trackP.GetInnerParam()->GetP();
+    reducedPi->fPtrack = trackN.GetInnerParam()->GetP();
     reducedHe->fTpcNClusters = trackP.GetTPCNcls();
     reducedPi->fTpcNClusters = trackN.GetTPCNcls();
   }

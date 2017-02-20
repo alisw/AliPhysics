@@ -24,7 +24,7 @@ class AliReducedHypTritEvent;
 #include "AliReducedHypTritEvent.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliStack.h"
-#include "Nuclei/NucleiPbPb/AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
  public:
@@ -66,7 +66,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Int_t                   fMcGenRecCounter;     //!<! Number of matched particles in one MC event
   Bool_t                  fPidQa;               //< Flag for activating pid qa histogram
   Bool_t                  fMCtrue;              //< Flag for activating MC analysis (set automatically)
-  AliNuclexEventCuts      fEventCuts;           //< 2015 event cuts as advised by PDG (AliNuclexEventCuts)
+  AliEventCuts            fEventCuts;           //< 2015 event cuts as advised by PDG (AliEventCuts)
   Int_t		                fPeriod;              //< Data period for centrality selector
   Bool_t                  fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
   Double_t                fBetheParamsHe[6];    //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
