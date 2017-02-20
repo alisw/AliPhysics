@@ -419,7 +419,7 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		if(  Ljet && subLjet ) { 
 			double ptt = Ljet->Pt();
 			fHistos->fhJetPt[cBin]->Fill(ptt);
-			double asym = (Ljet->Pt() - subLjet->Pt())/(Ljet->Pt() - subLjet->Pt());
+			double asym = (Ljet->Pt() - subLjet->Pt())/(Ljet->Pt() + subLjet->Pt());
 			double InvM = ( *Ljet + *subLjet).M();
 			fHistos->fhDiJetAsym[cBin]->Fill( asym );
 			fHistos->fhRecoDiJetM[cBin]->Fill( InvM );
@@ -435,11 +435,13 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		if(  Ljet && subLjet ) { 
 			double ptt = Ljet->Pt();
 			fHistos->fhJetPt[cBin]->Fill(ptt);
-			double asym = (Ljet->Pt() - subLjet->Pt())/(Ljet->Pt() - subLjet->Pt());
-			double InvM = ( *Ljet + *subLjet).M();
-			fHistos->fhDiJetAsym[cBin]->Fill( asym );
-			fHistos->fhRecoDiJetM[cBin]->Fill( InvM );
 			if( ptt > fPtHardMin && ptt < fPtHardMax && subLjet->Pt()>minSubLeadingJetPt ) TagThisEvent = kTRUE;
+			if( TagThisEvent ) {
+				double asym = (Ljet->Pt() - subLjet->Pt())/(Ljet->Pt() + subLjet->Pt());
+				double InvM = ( *Ljet + *subLjet).M();
+				fHistos->fhDiJetAsym[cBin]->Fill( asym );
+				fHistos->fhRecoDiJetM[cBin]->Fill( InvM );
+			}
 		}
 	} else if(fESMethod==3) { // Leading jet
 		// Make a decision for running the analysis or not
