@@ -18643,7 +18643,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     Double_t AvQAIm = fZDCQHist[3]->GetBinContent(fZDCQHist[3]->FindBin(fCentralityEBE));
     Double_t SDQAIm = fZDCQHist[3]->GetBinError(fZDCQHist[3]->FindBin(fCentralityEBE));
     
-    if(AvQCRe && AvQCIm && QMC>0.) {
+    if(AvQCRe && AvQCIm && QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
       QCReR = QCRe-AvQCRe;
       QCImR = QCIm-AvQCIm;
       if(fDivSigma && SDQCRe>0. && SDQCIm>0.) {
@@ -18653,7 +18653,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
       fZDCFlowVect[0].Set(QCReR,QCImR);
     }
     
-    if(AvQARe && AvQAIm && QMA>0.) {
+    if(AvQARe && AvQAIm && QMA>0. && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
       QAReR = QARe-AvQARe;
       QAImR = QAIm-AvQAIm;
       if(fDivSigma && SDQARe>0. && SDQAIm>0.) {
@@ -19428,7 +19428,7 @@ void AliFlowAnalysisCRC::CalculateVZvsZDC()
   
   // cut on multiplicity
   if( VZCM<1. || VZAM<1. ) return;
-  if( ZDCCM<1. || ZDCAM<1. ) return;
+  if( ZDCCM<0. || ZDCAM<0. ) return;
   
   // Normalize VZ Q-vector
   VZCRe /= VZCM;

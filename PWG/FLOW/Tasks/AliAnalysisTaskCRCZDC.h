@@ -275,8 +275,7 @@ private:
   TH2F *fhZDCvsTracklets;	//! ZDC vs N_tracklets;
   TH2F *fhZDCvsNclu1;		//! ZDC vs N_cluster layer 1;
   TH2F *fhDebunch;		//! Debunch;
-  TH2F *fhZNCcentroid;		//! ZNC centroid
-  TH2F *fhZNAcentroid;		//! ZNA centroid
+  TH3D *fhZNCenDis[2];		//! ZN centroid vs centrality
   //
   TH1F *fhAsymm;		//! ZN asymmetry
   TH2F *fhZNAvsAsymm;		//! ZNA vs asymmetry

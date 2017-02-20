@@ -174,8 +174,6 @@ fhZDCvsVZERO(0x0),
 fhZDCvsTracklets(0x0),
 fhZDCvsNclu1(0x0),
 fhDebunch(0x0),
-fhZNCcentroid(0x0),
-fhZNAcentroid(0x0),
 fhAsymm(0x0),
 fhZNAvsAsymm(0x0),
 fhZNCvsAsymm(0x0),
@@ -242,6 +240,9 @@ fhZNBCCorr(0x0)
       fPtSpecFB128[j][c] = NULL;
       fPtSpecFB768[j][c] = NULL;
     }
+  }
+  for (Int_t c=0; c<2; c++) {
+    fhZNCenDis[c] = NULL;
   }
 }
 
@@ -319,8 +320,6 @@ fhZDCvsVZERO(0x0),
 fhZDCvsTracklets(0x0),
 fhZDCvsNclu1(0x0),
 fhDebunch(0x0),
-fhZNCcentroid(0x0),
-fhZNAcentroid(0x0),
 fhAsymm(0x0),
 fhZNAvsAsymm(0x0),
 fhZNCvsAsymm(0x0),
@@ -401,7 +400,9 @@ fhZNBCCorr(0x0)
       fPtSpecFB768[j][c] = NULL;
     }
   }
-  
+  for (Int_t c=0; c<2; c++) {
+    fhZNCenDis[c] = NULL;
+  }
 }
 
 //________________________________________________________________________
@@ -530,6 +531,11 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
   }
   
+  for (Int_t c=0; c<2; c++) {
+    fhZNCenDis[c] = new TH3D(Form("fhZNCenDis[%d]",c), Form("fhZNCenDis[%d]",c), 100, 0., 100., 100, -2., 2. , 100., -2., 2.);
+    fOutput->Add(fhZNCenDis[c]);
+  }
+  
   fBadTowerStuffList = new TList();
   fBadTowerStuffList->SetOwner(kTRUE);
   fBadTowerStuffList->SetName("BadTowerCalib");
@@ -635,10 +641,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fOutput->Add(fhZDCvsNclu1);
   fhDebunch = new TH2F("hDebunch","hDebunch",240,-100.,-40.,240,-30.,30.);
   fOutput->Add(fhDebunch);
-  fhZNCcentroid = new TH2F("hZNCcentroid","hZNCcentroid",100,-3.5,3.5,100,-3.5,3.5);
-  fOutput->Add(fhZNCcentroid);
-  fhZNAcentroid = new TH2F("hZNAcentroid","hZNAcentroid",100,-3.5,3.5,100,-3.5,3.5);
-  fOutput->Add(fhZNAcentroid);
   
   fhAsymm = new TH1F("hAsymm" , "Asimmetry ",200,-1.,1.);
   fOutput->Add(fhAsymm);
@@ -1404,8 +1406,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       const Double_t x[4] = {-1.75, 1.75, -1.75, 1.75};
       const Double_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-      Double_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC, EZNC;
-      Double_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA, EZNA, BadChOr;
+      Double_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC, EZNC, SumEZNC=0.;
+      Double_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA, EZNA, SumEZNA=0., BadChOr;
       Bool_t fAllChONZNC=kTRUE, fAllChONZNA=kTRUE;
       
       if (fUseMCCen) {
@@ -1419,10 +1421,11 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             Double_t mu2 = SpecCorMu2[i]->Interpolate(centrperc);
             Double_t av = SpecCorAv[i]->Interpolate(centrperc);
             Double_t cor1 = SpecCorSi[i]->Interpolate(centrperc);
-            EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 ) + av;
+            if(i!=0 && i!=2) EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 ) + av;
             fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
           }
           if(EZNC<=0.) fAllChONZNC=kFALSE;
+          SumEZNC += EZNC;
           
           // build centroid
           wZNC = TMath::Power(EZNC, fZDCGainAlpha);
@@ -1450,6 +1453,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             fhZNSpectraCor->Fill(centrperc,i+4.5,EZNA);
           }
           if(EZNA<=0.) fAllChONZNA=kFALSE;
+          SumEZNA += EZNA;
           
           // build centroid
           wZNA = TMath::Power(EZNA, fZDCGainAlpha);
@@ -1465,23 +1469,19 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           fhZNBCCorr->Fill(centrperc,trueE,recoE);
         }
         if(denZNC>0.){
-        // Double_t nSpecnC = zncEnergy/Enucl;
-        // cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
-        // xyZNC[0] = cZNC*numXZNC/denZNC;
-        // xyZNC[1] = cZNC*numYZNC/denZNC;
-          xyZNC[0] = numXZNC/denZNC;
-          xyZNC[1] = numYZNC/denZNC;
+         Double_t nSpecnC = SumEZNC/Enucl;
+         cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
+         xyZNC[0] = cZNC*numXZNC/denZNC;
+         xyZNC[1] = cZNC*numYZNC/denZNC;
         }
         else{
           xyZNC[0] = xyZNC[1] = 0.;
         }
         if(denZNA>0.){
-        // Double_t nSpecnA = znaEnergy/Enucl;
-        // cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
-        // xyZNA[0] = cZNA*numXZNA/denZNA;
-        // xyZNA[1] = cZNA*numYZNA/denZNA;
-          xyZNA[0] = numXZNA/denZNA;
-          xyZNA[1] = numYZNA/denZNA;
+         Double_t nSpecnA = SumEZNA/Enucl;
+         cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
+         xyZNA[0] = cZNA*numXZNA/denZNA;
+         xyZNA[1] = cZNA*numYZNA/denZNA;
         }
         else{
           xyZNA[0] = xyZNA[1] = 0.;
@@ -1519,10 +1519,12 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         }
       }
       
-      fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
-      fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
       if(!fAllChONZNC) denZNC=-1.;
       if(!fAllChONZNA) denZNA=-1.;
+      
+      if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDis[0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
+      if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDis[1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
+      
       fFlowEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA);
       
       // ******************************************************************************
