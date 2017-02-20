@@ -17,7 +17,7 @@ std::string AliDataFile::GetFileName(const std::string &url) {
   std::string buf, ver, year;
   const char *env;
 
-  if (env = gSystem->Getenv("ALIPHYSICS_VERSION")) {
+  if ((env = gSystem->Getenv("ALIPHYSICS_VERSION"))) {
     buf = env;
     if (buf.length() >= 12) {
       ver = buf.substr(0, 12);
@@ -25,7 +25,7 @@ std::string AliDataFile::GetFileName(const std::string &url) {
     }
   }
 
-  if (env = gSystem->Getenv("ALICE_DATA")) {
+  if ((env = gSystem->Getenv("ALICE_DATA"))) {
     buf = std::string(env) + "/" + url;
     if (!gSystem->AccessPathName(buf.c_str())) {
       AliDebugClass(2, TString::Format("Using data file \"%s\" from \"%s\"", url.c_str(), buf.c_str()));
@@ -33,7 +33,7 @@ std::string AliDataFile::GetFileName(const std::string &url) {
     }
   }
 
-  if (env = gSystem->Getenv("ALICE_PHYSICS")) {
+  if ((env = gSystem->Getenv("ALICE_PHYSICS"))) {
     buf = std::string(env) + "/" + url;
     if (!gSystem->AccessPathName(buf.c_str())) {
       AliDebugClass(2, TString::Format("Using data file \"%s\" from \"%s\"", url.c_str(), buf.c_str()));
@@ -41,7 +41,7 @@ std::string AliDataFile::GetFileName(const std::string &url) {
     }
   }
 
-  if (env = gSystem->Getenv("ALICE_ROOT")) {
+  if ((env = gSystem->Getenv("ALICE_ROOT"))) {
     buf = std::string(env) + "/" + url;
     if (!gSystem->AccessPathName(buf.c_str())) {
       AliDebugClass(2, TString::Format("Using data file \"%s\" from \"%s\"", url.c_str(), buf.c_str()));
@@ -50,7 +50,7 @@ std::string AliDataFile::GetFileName(const std::string &url) {
   }
 
   if (!ver.empty() && !year.empty()) {
-    if (env = gSystem->Getenv("ALICE_ROOT")) {
+    if ((env = gSystem->Getenv("ALICE_ROOT"))) {
       buf = std::string(env) + "/../../../../data/analysis/" + year + "/" + ver + "/" + url;
       if (!gSystem->AccessPathName(buf.c_str())) {
         AliDebugClass(2, TString::Format("Using data file \"%s\" from \"%s\"", url.c_str(), buf.c_str()));
@@ -73,7 +73,7 @@ std::string AliDataFile::GetFileNameOADB(const std::string &url) {
   std::string buf;
   const char *env;
 
-  if (env = gSystem->Getenv("OADB_PATH")) {
+  if ((env = gSystem->Getenv("OADB_PATH"))) {
     buf = std::string(env) + "/" + url;
     if (!gSystem->AccessPathName(buf.c_str())) {
       AliDebugClass(2, TString::Format("Using data file \"%s\" from \"%s\"", url.c_str(), buf.c_str()));
