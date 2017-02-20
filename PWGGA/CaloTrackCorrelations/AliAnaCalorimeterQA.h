@@ -413,6 +413,9 @@ public:
   TH2F *   fhLambda0TCardCorrelExotic[4][2];                //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard, exoticity > 0.97                
   TH2F *   fhNCellsTCardCorrelExotic [4][2];                //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard, exoticity > 0.97 
 
+  TH2F *   fhLambda0Exoticity[14][2];                       //!<! Cluster m02 vs exoticy,for different cluster energy bins               
+  TH2F *   fhNCellsExoticity [14][2];                       //!<! Cluster NCells vs exoticy,for different cluster energy bins               
+
   TH2F *   fhLambda0TCardCorrelNearRow[6][2];               //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard, one correl. cell is 1 row away               
   TH2F *   fhNCellsTCardCorrelNearRow [6][2];               //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard, one correl. cell is 1 row away 
   
@@ -421,6 +424,8 @@ public:
 
   TH2F *   fhLambda0TCardCorrelOtherTCard[7][2];            //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard               
   TH2F *   fhNCellsTCardCorrelOtherTCard [7][2];            //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
+  TH2F *   fhEtaPhiTCardCorrelOtherTCardLowE [7][2];        //!<! Cluster eta vs phi, E > 2 GeV select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
+  TH2F *   fhEtaPhiTCardCorrelOtherTCardHighE[7][2];        //!<! Cluster eta vs phi, E > 8 GeV select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
 
   TH2F *   fhTCardCorrECellMaxDiff[12][2];                  //!<! Cell max energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
   TH2F *   fhTCardCorrEClusterDiff[12][2];                  //!<! Cluster energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
