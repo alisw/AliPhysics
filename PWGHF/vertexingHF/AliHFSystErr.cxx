@@ -4955,6 +4955,8 @@ void AliHFSystErr::InitLctopKpi2010pp() {
   // Lc->pKpi syst errors. Responsible: R. Romita
   //  2010 pp sample
   //
+  SetNameTitle("AliHFSystErr","SystErrLctopKpi2010pp");
+
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",6,0,6);
@@ -5004,6 +5006,7 @@ void AliHFSystErr::InitLctopKpi2010ppBDT() {
   // Lc->pKpi using BDTs syst errors. Responsible: Jaime Norman
   //  2010 pp sample
   //
+  SetNameTitle("AliHFSystErr","SystErrLctopKpi2010ppBDT");
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0,12);
@@ -5061,6 +5064,7 @@ void AliHFSystErr::InitLctopKpi2013pPb() {
 	// Lc->pKpi std. cut method syst errors. Responsible: Marcel Figueredo 
 	//  2013 pPb sample
 	//
+    SetNameTitle("AliHFSystErr","SystErrLctopKpi2013pPb");
 
 	// Normalization
 	fNorm = new TH1F("fNorm","fNorm",12,0,12);
@@ -5123,6 +5127,7 @@ void AliHFSystErr::InitLctopKpi2013pPbBDT() {
 	// Lc->pKpi using BDTs syst errors. Responsible: Jaime Norman
 	//  2013 pPb sample
 	//
+    SetNameTitle("AliHFSystErr","SystErrLctopKpi2013pPbBDT");
 
 	// Normalization
 	fNorm = new TH1F("fNorm","fNorm",12,0,12);
@@ -5179,6 +5184,7 @@ void AliHFSystErr::InitLctopK0S2010pp() {
   // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno, P. Pagano
   //  2010 pp sample
   //
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2010pp");
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0.,12.);
@@ -5231,6 +5237,7 @@ void AliHFSystErr::InitLctopK0S2013pPb() {
   // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno, P. Pagano
   //  2013 p-Pb sample
   //
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2013pPb");
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0.,12.);
@@ -5276,8 +5283,9 @@ void AliHFSystErr::InitLctopK0S2013pPbBDT() {
   //
   // Lc->pK0S syst errors. Responsible: A. Alici, C. Zampolli
   //  2013 p-Pb sample
-	//  Using BDTs
+  //  Using BDTs
   //
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2013pPbBDT");
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0.,12.);
