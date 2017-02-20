@@ -1,35 +1,37 @@
 //______________________________________________________________________________
-
-AliAnalysisTaskCEPAnalysis* AddTaskCEPAnalysis (
-  Bool_t  isMC         = kFALSE,
-  Bool_t  isSaveAll    = kFALSE,
-  Int_t   numTracksMax = 100000)
+// creates an AliAnalysisTaskCEP and the output containers
+//
+AliAnalysisTaskSE* AddTaskCEPAnalysis (
+  TString taskname        = TString("CEPAnalysis"),
+  Bool_t  isMC            = kFALSE,
+  Bool_t  isSaveAll       = kFALSE,
+  Bool_t  isSaveDGTrigger = kFALSE,
+  Int_t   numTracksMax    = 100000 )
  
-  )
 {
 
 	// get the manager and task
-	AliAnalysisManager *aam = AliAnalysisManager::GetAnalysisManager();
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   // check for MonteCarlo
   if (isMC) {
-    AliMCEventHandler* handler = new AliMCEventHandler;
-    handler->SetReadTR(kFALSE);
-    mgr->SetMCtruthEventHandler(handler);
+    AliMCEventHandler* MChandler = new AliMCEventHandler;
+    MChandler->SetReadTR(kFALSE);
+    mgr->SetMCtruthEventHandler(MChandler);
   }
 
   // create the analysis task
   UInt_t taskConfig  = AliCEPBase::kBitConfigurationSet;
-  if (isSaveAll) taskConfig |= AliCEPBase::kBitSaveAllEvents; 
+  if (isSaveAll)       taskConfig |= AliCEPBase::kBitSaveAllEvents; 
+  if (isSaveDGTrigger) taskConfig |= AliCEPBase::kBitSaveDGTrigger; 
 	taskConfig |= AliCEPBase::kBitConfigurationVersion;
 
-  TString name = TString("CEPAnalysis");
 	AliAnalysisTaskCEP *task = new AliAnalysisTaskCEP (
-    name.Data(),taskConfig, numTracksMax);
+    taskname.Data(),taskConfig, numTracksMax);
 
 	// get input and output managers
-	AliAnalysisDataContainer *aadci = aam->GetCommonInputContainer();
-	AliAnalysisDataContainer *aadco1 = aam->CreateContainer
+	AliAnalysisDataContainer *aadci = mgr->GetCommonInputContainer();
+	AliAnalysisDataContainer *aadco1 = mgr->CreateContainer
 	(
 		Form("CEPHist"),
 		TList::Class(),
@@ -37,7 +39,7 @@ AliAnalysisTaskCEPAnalysis* AddTaskCEPAnalysis (
 		Form("%s:CEP", AliAnalysisManager::GetCommonFileName())
 	);
 
-	AliAnalysisDataContainer *aadco2 = aam->CreateContainer
+	AliAnalysisDataContainer *aadco2 = mgr->CreateContainer
 	(
 		Form("CEPTree"),
 		TTree::Class(),
@@ -46,10 +48,10 @@ AliAnalysisTaskCEPAnalysis* AddTaskCEPAnalysis (
 	);
 	
 	// add task and connect input and output managers
-	aam->AddTask(task);
-	aam->ConnectInput (task,0,aadci);
-	aam->ConnectOutput(task,1,aadco1);
-	aam->ConnectOutput(task,2,aadco2);
+	mgr->AddTask(task);
+	mgr->ConnectInput (task,0,aadci);
+	mgr->ConnectOutput(task,1,aadco1);
+	mgr->ConnectOutput(task,2,aadco2);
 
 	// return pointer to Task
 	return task;
