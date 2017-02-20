@@ -88,7 +88,7 @@ AliAnalysisTaskEmcalJet("AliAnalysisTaskHJetSpectra", kTRUE),
 fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetArea(0.0),  
 fCentralityType("V0A"), fMinFractionShared(0.5), 
 fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), fInitializedLocal(0),
- fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
+fTTType(0), fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
 fHistEvtSelection(0x0),fhKTAreaPt(0x0),
  fhVertexZ(0x0), fhVertexXAccept(0x0), fhVertexYAccept(0x0), fhVertexZAccept(0x0), 
  fhVertexXAcceptTT(0x0), fhVertexYAcceptTT(0x0), fhVertexZAcceptTT(0x0), 
@@ -240,7 +240,7 @@ fSignalJetRadius(0.4), fSignalJetRadiusSquared(fSignalJetRadius*fSignalJetRadius
 fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetArea(0.0),   
 fCentralityType("V0A"),   fMinFractionShared(0.5), 
 fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), fInitializedLocal(0), 
- fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
+fTTType(0), fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
 fHistEvtSelection(0x0), fhKTAreaPt(0x0), 
  fhVertexZ(0x0), fhVertexXAccept(0x0), fhVertexYAccept(0x0), fhVertexZAccept(0x0), 
  fhVertexXAcceptTT(0x0), fhVertexYAcceptTT(0x0), fhVertexZAcceptTT(0x0), 
@@ -955,27 +955,32 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             trackTTGen[it] = (AliVParticle*) (fTrigTracksGen[it][indexSingleRndTrigGen[it]]);
 
          }else if(ntriggersGen[it]>1){  //more trigger candiates
-            tmpFunc = (it==kRef) ? fTrackPtRef : fTrackPtSig;
-            normprob = 0;                       
-            for(Int_t ik=0; ik<ntriggersGen[it]; ik++){
-               normprob += tmpFunc->Eval(((AliVParticle*) (fTrigTracksGen[it][ik]))->Pt()); 
-            }
-            prob = fRandom->Uniform(0,1);
-            probTT = 0; 
-            if(normprob>0){
-               for(Int_t ik=0; ik<ntriggersGen[it]; ik++){
-                  probTT += tmpFunc->Eval(((AliVParticle*) (fTrigTracksGen[it][ik]))->Pt())/normprob;
-                  if(prob <= probTT){
-                     indexSingleRndTrigGen[it] = ik; 
-                     break;
-                  }
-               }
-            }else{
-               indexSingleRndTrigGen[it] = 0; 
-            }
-            trackTTGen[it] = (AliVParticle*) (fTrigTracksGen[it][indexSingleRndTrigGen[it]]);
-         }
 
+            if(fTTType){ //TT selection weighted according to MB
+               tmpFunc = (it==kRef) ? fTrackPtRef : fTrackPtSig;
+               normprob = 0;
+               for(Int_t ik=0; ik<ntriggersGen[it]; ik++){
+                  normprob += tmpFunc->Eval(((AliVParticle*) (fTrigTracksGen[it][ik]))->Pt());
+               }
+               prob = fRandom->Uniform(0,1);
+               probTT = 0;
+               if(normprob>0){
+                  for(Int_t ik=0; ik<ntriggersGen[it]; ik++){
+                     probTT += tmpFunc->Eval(((AliVParticle*) (fTrigTracksGen[it][ik]))->Pt())/normprob;
+                     if(prob <= probTT){
+                        indexSingleRndTrigGen[it] = ik;
+                        break;
+                     }
+                  }
+               }else{
+                  indexSingleRndTrigGen[it] = 0;
+               }
+               trackTTGen[it] = (AliVParticle*) (fTrigTracksGen[it][indexSingleRndTrigGen[it]]);
+            }else{ //TT selection without weighting
+               indexSingleRndTrigGen[it] = fRandom->Integer(ntriggersGen[it]); //Integer 0 ... ntriggers-1
+               trackTTGen[it] = (AliVParticle*) (fTrigTracksGen[it][indexSingleRndTrigGen[it]]);
+            }
+         }
       }
    }
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1038,34 +1043,40 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             trackTT[it] = (AliVParticle*) (fTrigTracks[it][indexSingleRndTrig[it]]);
 
          }else if(ntriggers[it]>1){  //more trigger candiates pickupt the trigger based on inclusive probabilities
-            tmpFunc = (it==kRef) ? fTrackPtRef : fTrackPtSig;
-            normprob = 0;              
-            for(Int_t ik=0; ik<ntriggers[it]; ik++){
-               normprob += tmpFunc->Eval(((AliVParticle*) (fTrigTracks[it][ik]))->Pt()); 
 
-               if(ik>0){ //azimuthal angle between triggers 
-                  dphiTTTT   =  RelativePhi(((AliVParticle*) (fTrigTracks[it][0]))->Phi(),
-                                          ((AliVParticle*) (fTrigTracks[it][ik]))->Phi());
-                  if(dphiTTTT<-0.5*TMath::Pi()) dphiTTTT += TMath::TwoPi();
-                  if(dphiTTTT> 1.5*TMath::Pi()) dphiTTTT -= TMath::TwoPi();
-
-                  fhDphiTTTT[it]->Fill(dphiTTTT);
-               }
-            }
-            prob = fRandom->Uniform(0,1);
-            probTT = 0; 
-            if(normprob>0){
+            if(fTTType){ //TT selection weighted according to MB
+               tmpFunc = (it==kRef) ? fTrackPtRef : fTrackPtSig;
+               normprob = 0;
                for(Int_t ik=0; ik<ntriggers[it]; ik++){
-                  probTT += tmpFunc->Eval(((AliVParticle*) (fTrigTracks[it][ik]))->Pt())/normprob;
-                  if(prob <= probTT){
-                     indexSingleRndTrig[it] = ik; 
-                     break;
+                  normprob += tmpFunc->Eval(((AliVParticle*) (fTrigTracks[it][ik]))->Pt());
+
+                  if(ik>0){ //azimuthal angle between triggers
+                     dphiTTTT   =  RelativePhi(((AliVParticle*) (fTrigTracks[it][0]))->Phi(),
+                                             ((AliVParticle*) (fTrigTracks[it][ik]))->Phi());
+                     if(dphiTTTT<-0.5*TMath::Pi()) dphiTTTT += TMath::TwoPi();
+                     if(dphiTTTT> 1.5*TMath::Pi()) dphiTTTT -= TMath::TwoPi();
+
+                     fhDphiTTTT[it]->Fill(dphiTTTT);
                   }
                }
-            }else{
-               indexSingleRndTrig[it] = 0; 
+               prob = fRandom->Uniform(0,1);
+               probTT = 0;
+               if(normprob>0){
+                  for(Int_t ik=0; ik<ntriggers[it]; ik++){
+                     probTT += tmpFunc->Eval(((AliVParticle*) (fTrigTracks[it][ik]))->Pt())/normprob;
+                     if(prob <= probTT){
+                        indexSingleRndTrig[it] = ik;
+                        break;
+                     }
+                  }
+               }else{
+                  indexSingleRndTrig[it] = 0;
+               }
+               trackTT[it] = (AliVParticle*) (fTrigTracks[it][indexSingleRndTrig[it]]);
+            }else{ //TT selection without weighting
+               indexSingleRndTrig[it] =  fRandom->Integer(ntriggers[it]);
+               trackTT[it] = (AliVParticle*) (fTrigTracks[it][indexSingleRndTrig[it]]);
             }
-            trackTT[it] = (AliVParticle*) (fTrigTracks[it][indexSingleRndTrig[it]]);
          }
       }
 

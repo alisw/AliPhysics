@@ -48,6 +48,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            ttHighR                 = 7.0,     // trigger hadron high pT
   Double_t            ttLowS                  = 12.0,      // trigger hardron low pT
   Double_t            ttHighS                 = 50.0,     // trigger hadron high pT
+  Int_t               ttType                  = 0,     // TT selection without weighting=0,  min bias weight =1
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
   Double_t            acut                    = 0.6,   //cut on relative jet area
@@ -109,9 +110,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    TString cntype = centralityType;
  
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_%s", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_W%d_%s",
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), cntype.Data());
+      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), ttType, cntype.Data());
 
    myContName.Append(suffix);
    //__________________________________________________________________________________
@@ -172,6 +173,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetDoubleBinPrecision(binning); 
  
    task->SetTT(ttLowR, ttHighR, ttLowS, ttHighS);
+   task->SetTTType(ttType);
    task->SetDphi(dphi); // |Delta phi_jet, trigger|< pi-0.6
 
    task->SetDebugLevel(0); //No debug messages 0
@@ -209,6 +211,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            ttHighR                 = 7.0,     // trigger hadron high pT
   Double_t            ttLowS                  = 12.0,      // trigger hardron low pT
   Double_t            ttHighS                 = 50.0,     // trigger hadron high pT
+  Int_t               ttType                  = 0,     // TT selection without weighting=0,  min bias weight =1
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
   Double_t            acut                    = 0.6,   //cut on relative jet area
@@ -261,9 +264,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    TString cntype = centralityType;
 
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_%s", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_W%d_%s",
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS),cntype.Data());
+      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS),ttType, cntype.Data());
 
    myContName.Append(suffix);
    //_________________________________________________________________
@@ -405,6 +408,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetDoubleBinPrecision(binning); 
  
    task->SetTT(ttLowR, ttHighR, ttLowS, ttHighS);
+   task->SetTTType(ttType);
    task->SetDphi(dphi); // |Delta phi_jet, trigger|< pi-0.6
 
    task->SetDebugLevel(0); //No debug messages 0
@@ -438,6 +442,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            ttHighR                 = 7.0,     // trigger hadron high pT
   Double_t            ttLowS                  = 12.0,      // trigger hardron low pT
   Double_t            ttHighS                 = 50.0,     // trigger hadron high pT
+  Int_t               ttType                  = 0,     // TT selection without weighting=0,  min bias weight =1
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
   Double_t            acut                    = 0.6,   //cut on relative jet area
@@ -503,9 +508,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    TString cntype = centralityType;
 
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_%s", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_W%d_%s",
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), cntype.Data());
+      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), ttType, cntype.Data());
 
    if(trackeff<1.0){
       myContName.Append(Form("_EFF%03d",TMath::Nint(trackeff*100))); 
@@ -539,7 +544,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          ptHardMaxEmb,//ptHardMax
          ecmsGeVEmb,//Double_t        ecms 
          kGenPartices.Data(),//tracksName
-         Form("JetEmbeddingFromGenTask_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix),//taskName
+         Form("JetEmbeddingFromGenTask_TT%d%d_%d%d_W%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),ttType,typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix),//taskName
          0.15, //const Double_t  minPt 
          1000.,//const Double_t  maxPt          
         -0.9, //const Double_t  minEta 
@@ -564,7 +569,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(typeOfAnal == kEmbSingl){ //EMBEDDING SINGLE TRACK  to real data 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
       AliJetEmbeddingTask *embSingle = AddTaskJetEmbedding(kGenPartices.Data(), "", 
-                           Form("SigleTrackEmb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix), 
+                           Form("SigleTrackEmb_TT%d%d_%d%d_W%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),ttType,typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix),
                                        ptHardMinEmb, ptHardMaxEmb, //min pT max pT
                                        -jetEtaRange, jetEtaRange, //min Eta. max Eta  ???????????? What range
                                        0.,TMath::TwoPi(),//min phi max phi
@@ -575,8 +580,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //FK//?// embSingle->SetMasslessParticles(kTRUE);
 
       embSingle->SetCopyArray(kTRUE);
-      embSingle->SetSuffix(Form("TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",
-         TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix));
+      embSingle->SetSuffix(Form("TT%d%d_%d%d_W%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",
+         TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),ttType,typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix));
       kGenPartices = embSingle->GetOutTrackName(); 
    }
  
@@ -585,13 +590,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       // Branch merger  merge reconstructed tracks with embedded pythia generated 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskMergeBranches.C");
       AliJetModelMergeBranches* brmergTask = AddTaskMergeBranches(kTracksName.Data(),kGenPartices.Data(),
-      Form("Emb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal,
+      Form("Emb_TT%d%d_%d%d_W%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),ttType,typeOfData, typeOfAnal,
          TMath::Nint(10*jetRadius), cntype.Data(), ptHardMinEmb,ptHardMaxEmb,suffix),"");
       brmergTask->SetCopyArray(kTRUE);
       brmergTask->SelectCollisionCandidates(trigger);
 
-      recoTracks.Append(Form("Emb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",
-        TMath::Nint(ttLowR), TMath::Nint(ttHighR),  TMath::Nint(ttLowS), TMath::Nint(ttHighS), typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix)); //reconstructed level are  tracks +ebeded tracks
+      recoTracks.Append(Form("Emb_TT%d%d_%d%d_W%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",
+        TMath::Nint(ttLowR), TMath::Nint(ttHighR),  TMath::Nint(ttLowS), TMath::Nint(ttHighS),ttType, typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix)); //reconstructed level are  tracks +ebeded tracks
       mcParticles = kGenPartices.Data(); //generator level are embedded particles
    }
 
@@ -608,7 +613,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       apx.Append(Form("_PT%.0f%.0f",ptHardMinEmb,ptHardMaxEmb));
    } 
 
-   TString note = Form("_TT%d%d_%d%d_AN%d%d_%s%s%s", TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), typeOfData, typeOfAnal, cntype.Data(), apx.Data(), suffix);
+   TString note = Form("_TT%d%d_%d%d_W%d_AN%d%d_%s%s%s", TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS),ttType, typeOfData, typeOfAnal, cntype.Data(), apx.Data(), suffix);
  
    //REAL TRACKS - JET CLUSTERIZER 
    AliEmcalJetTask* jetFinderTask = 0x0;
@@ -855,6 +860,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetDoubleBinPrecision(binning); 
  
    task->SetTT(ttLowR, ttHighR,ttLowS, ttHighS);
+   task->SetTTType(ttType);
    task->SetDphi(dphi); // |Delta phi_jet, trigger|< pi-0.6
 
    task->SetDebugLevel(0); //No debug messages 0

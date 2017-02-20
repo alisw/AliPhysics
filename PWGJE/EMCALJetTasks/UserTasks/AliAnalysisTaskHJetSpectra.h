@@ -124,6 +124,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   void        SetExternalRhoTaskNameMC(const char* name) {fRhoTaskNameMC = name;}
 
   void SetTT(Double_t tlr, Double_t thr,Double_t tls, Double_t ths);
+  void SetTTType(Int_t ttt){ fTTType = ttt;}
   void SetDphi(Double_t dphi){ fDphiCut = TMath::Pi() - dphi;} 
   void SetDoubleBinPrecision(Bool_t db){ fUseDoubleBinPrecision = db;} 
 
@@ -207,6 +208,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
   Double_t            fTTlow[kTT];  //gc trigger particles TT bin lower boundary
   Double_t            fTThigh[kTT]; //gc trigger particles TT bin upper boundary
+  Int_t               fTTType;     // 0=TT selection unscaled, 1=TT scaled according to MB
   Double_t            fDphiCut; //minimal azimuthal angle between trigger and assoc jet 
   Bool_t              fUseDoubleBinPrecision; //use double bin precision
 
@@ -338,7 +340,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 23); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 24); // Charged jet analysis for pA
 
 };
 #endif
