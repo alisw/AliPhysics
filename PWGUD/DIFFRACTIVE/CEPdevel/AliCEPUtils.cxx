@@ -702,7 +702,7 @@ void AliCEPUtils::SPDLoadGeom(Int_t run)
 
 //------------------------------------------------------------------------------
 void AliCEPUtils::DetermineMCprocessType (
-  AliMCEvent *fMCEvent, TString fMCGenerator, Int_t fMCProcess)
+  AliMCEvent *fMCEvent, TString fMCGenerator, Int_t &fMCProcess)
 {
 	//
 	// retrieves the MC process type from the AliGenEventHeader and classifies
@@ -739,20 +739,19 @@ void AliCEPUtils::DetermineMCprocessType (
 		  
       // get the name of this generator
       fMCGenerator = TString(header->GetName());
-      printf("MC generator name: %s\n",fMCGenerator.Data());
+      //printf("MC generator name: %s\n",fMCGenerator.Data());
       Int_t nprod = header->NProduced();
 			// printf("Number of produced particles: %i\n",nprod);
 
       // Pythia
 			if (fMCGenerator == "Pythia") {
 				fMCProcess = ((AliGenPythiaEventHeader*)header)->ProcessType();
-				// printf("Pythia process type: %i\n",fMCProcess);
+				//printf("Pythia process type: %i\n",fMCProcess);
         switch(fMCProcess) {
 				case 92:
 				case 93:
-				case 103:
-				case 104: fMCProcessType = AliCEPBase::kProctypeSD; break;
 				case 94:
+				case 104: fMCProcessType = AliCEPBase::kProctypeSD; break;
 				case 105: fMCProcessType = AliCEPBase::kProctypeDD; break;
 				case 106: fMCProcessType = AliCEPBase::kProctypeCD; break;
 				default:  fMCProcessType = AliCEPBase::kProctypeND; break;
@@ -783,6 +782,7 @@ void AliCEPUtils::DetermineMCprocessType (
     
     // if (fMCProcessType == AliCEPBase::kProctypeCD)
     //   printf("Central Diffractive Event detected!\n");
+    printf("MC process ID %i\n",fMCProcess);
 	}
   
 }

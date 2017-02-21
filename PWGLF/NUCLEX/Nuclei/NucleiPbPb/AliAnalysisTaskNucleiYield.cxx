@@ -18,14 +18,12 @@
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliPDG.h"
-#include "AliPID.h"
 #include "AliMultSelection.h"
 #include "AliTPCPIDResponse.h"
 #include "AliTOFPIDResponse.h"
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 #include "AliVEvent.h"
-#include "AliPIDResponse.h"
 #include "AliVParticle.h"
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
@@ -277,7 +275,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     fTOFfunction->SetParameters(fTOFfunctionPars.GetArray());
 
   fEventCut.AddQAplotsToList(fList);
-
+  AliPDG::AddParticlesToPdgDataBase();
   PostData(1,fList);
 }
 
@@ -338,7 +336,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       AliAODMCParticle *part = (AliAODMCParticle*)stack->UncheckedAt(iMC);
       const int pdg = std::abs(part->GetPdgCode());
       const int iC = part->Charge() > 0 ? 1 : 0;
-      const float mult = part->Charge() > 0 ? 1.f : -1.f;
+      const int mult = -1 + 2 * iC;
       if (pdg != fPDG) continue;
       fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;

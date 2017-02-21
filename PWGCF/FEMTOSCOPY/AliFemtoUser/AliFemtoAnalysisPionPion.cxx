@@ -33,6 +33,7 @@ MultBinning = {30, 0.0f, 10000.0f};
 const bool default_verbose = kFALSE
          , default_enable_pair_monitors = kTRUE
          , default_group_output_objects = kTRUE
+         , default_output_settings = kTRUE
          , default_is_mc_analysis = kFALSE
          ;
 
@@ -206,6 +207,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   , fPionType_1(params.pion_type_1)
   , fPionType_2(params.pion_type_2)
   , fGroupOutputObjects(params.group_output_objects)
+  , fOutputSettings(params.output_settings)
   , fMCAnalysis(params.is_mc_analysis)
 {
   SetVerboseMode(params.verbose);
@@ -254,6 +256,7 @@ AliFemtoAnalysisPionPion::DefaultConfig()
   , default_verbose
   , default_enable_pair_monitors
   , default_group_output_objects
+  , default_output_settings
   , default_is_mc_analysis
   };
 
@@ -602,7 +605,7 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
   }
 
   // get the list of settings from each cut and correlation function
-  {
+  if (fOutputSettings) {
     TString settings("== settings ==\n");
 
     TList *setting_list = ListSettings();

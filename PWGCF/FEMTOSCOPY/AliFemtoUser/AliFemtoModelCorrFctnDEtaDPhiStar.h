@@ -127,12 +127,19 @@ protected:
   /// Output collection name
   TString fTitle;
 
-  /// Numerator of ΔηΔϕ* true function
+  /// Numerator of ΔηΔϕ* - mc weighted
   TH2F *fDPhiStarDEtaNumeratorWeighted;
-  /// Numerator of ΔηΔϕ* fake function
+  /// Numerator of ΔηΔϕ* - no weighting
   TH2F *fDPhiStarDEtaNumeratorUnweighted;
   /// Denominator of ΔηΔϕ* function
   TH2F *fDPhiStarDEtaDenominator;
+
+  /// Numerator of ΔηΔϕ* with MC momentum (and only mc particles) with MC weights
+  TH2F *fDPhiStarDEtaNumeratorIdealWeighted;
+  /// Numerator of ΔηΔϕ* with MC momentum without weights
+  TH2F *fDPhiStarDEtaNumeratorIdealUnweighted;
+  /// Denominator of ΔηΔϕ* function
+  TH2F *fDPhiStarDEtaIdealDenominator;
 
   /// Numerator of colinear ΔηΔϕ* function
   TH2F *fDPhiStarDEtaColNumerator;

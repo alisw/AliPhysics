@@ -179,6 +179,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // MC upgrade
         kLHC13d19,        // upgrade 5.5TeV PbPb
         
+        // 2016
+        kLHC16kl,         // pp 13 TeV
+        // MC's corresponding to 2016 data
+        kLHC16j2a1,       // anchored LHC16k pass 1 - general purpose Pythia8
+        kLHC16j2b1,       // anchored LHC16k pass 1 - general purpose EPOSLHC
+        kLHC16j2a2,       // anchored LHC16l pass 1 - general purpose Pythia8
+        kLHC16j2b2,       // anchored LHC16l pass 1 - general purpose EPOSLHC
+
         // 
         kUnknownPeriod
       };
@@ -522,7 +530,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,24)
+      ClassDef(AliConvEventCuts,25)
 };
 
 

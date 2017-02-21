@@ -103,6 +103,8 @@ public:
   bool IsMisIDLambda(const AliFemtoXi* aXi);
   bool IsMisIDAntiLambda(const AliFemtoXi* aXi);
 
+  double GetCTauXi(const AliFemtoXi* aXi);
+
  protected:
   bool fUseCustomPionNSigmaFilter;
   bool fUseCustomKaonNSigmaFilter;
@@ -122,6 +124,9 @@ public:
   vector<AliFemtoNSigmaFilter> fK0sRejectionFilters;
   vector<AliFemtoNSigmaFilter> fLambdaRejectionFilters;
   vector<AliFemtoNSigmaFilter> fAntiLambdaRejectionFilters;
+
+  TH1D* fCTauXi;  //Currently in development, if useful, will be added to AliFemtoV0TrackCut,
+		  // or to the cut monitor
 
 
 #ifdef __ROOT__

@@ -303,6 +303,26 @@ void AliHFOfflineCorrelator::DefineOutputObjects(){
     massUp = 0.19;  
   }
 
+  //Mass plots for signal yield extraction and sideband normalization
+  fOutputMass = new TList();
+  fOutputMass->SetOwner();
+  fOutputMass->SetName("MassPlots");
+  
+  for(Int_t iBin=0; iBin<fNBinsPt; iBin++) {
+    //Defines 3D (DPhi,DEta,Minv) plots
+    namePlot = Form("histMass_%d",fFirstBinNum+iBin);
+    TH1F* h1D = new TH1F(namePlot.Data(),"Mass plots for triggers",150,1.5648,2.1648);
+    h1D->Sumw2();
+    fOutputMass->Add(h1D);
+    
+    if(fUseEff) {
+	  namePlot = Form("histMass_WeigD0Eff_%d",fFirstBinNum+iBin);
+      TH1F* h1Dw = new TH1F(namePlot.Data(),"Mass plots for triggers",150,1.5648,2.1648);
+      h1Dw->Sumw2();
+      fOutputMass->Add(h1Dw);
+    }
+  }
+
   for(Int_t iBin=0; iBin<fNBinsPt; iBin++) {
     for(Int_t iAssPt=0; iAssPt<(int)fPtBinsTrLow.size(); iAssPt++) {
       for(Int_t iPool=0; iPool<fnPools; iPool++) {
@@ -527,6 +547,11 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
 
     Int_t fillOnce[(int)fPtBinsTrLow.size()]; for(int ii=0;ii<(int)fPtBinsTrLow.size();ii++) fillOnce[ii]=0;
 
+    //Fill mass plots
+    ((TH1F*)(fOutputMass->FindObject(Form("histMass_%d",fFirstBinNum+ptBinD))))->Fill(brD->invMass_D);
+    if(fUseEff) ((TH1F*)(fOutputMass->FindObject(Form("histMass_WeigD0Eff_%d",fFirstBinNum+ptBinD))))->Fill(brD->invMass_D,GetEfficiencyWeightDOnly(brD));
+    
+    //Correlation plots!
     for(Int_t iTr=minTrackLoop; iTr<maxTrackLoop; iTr++) {  //loop on associated tracks in tree
 
       fTreeTr->GetEntry(iTr); 
@@ -639,6 +664,18 @@ Double_t AliHFOfflineCorrelator::GetEfficiencyWeight(AliHFCorrelationBranchD *br
   effTr = fMapEffTr->GetBinContent(binTr);
 
   return 1./(effD*effTr);
+}
+
+//___________________________________________________________________________________________
+Double_t AliHFOfflineCorrelator::GetEfficiencyWeightDOnly(AliHFCorrelationBranchD *brD) {
+
+  Double_t effD = 1;
+   
+  Int_t binD=fMapEffD->FindBin(brD->pT_D,brD->mult_D);
+  if(fMapEffD->IsBinUnderflow(binD)||fMapEffD->IsBinOverflow(binD))return 1.;
+  effD = fMapEffD->GetBinContent(binD);
+
+  return 1./(effD);
 }
 
 //___________________________________________________________________________________________
@@ -786,6 +823,7 @@ void AliHFOfflineCorrelator::SaveOutputPlots() {
 
   TFile *f = new TFile(fOutputFileName.Data(),"RECREATE");
   fOutputDistr->Write();
+  fOutputMass->Write();
   f->Close();
   return;
 }

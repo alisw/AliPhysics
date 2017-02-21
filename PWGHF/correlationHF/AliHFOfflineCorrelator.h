@@ -121,6 +121,7 @@ public:
     Bool_t CorrelateSingleFile(Int_t iFile);
     void GetCorrelationsValue(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr, Double_t &deltaPhi, Double_t &deltaEta);
     Double_t GetEfficiencyWeight(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr);
+    Double_t GetEfficiencyWeightDOnly(AliHFCorrelationBranchD *brD);
     Int_t PtBin(Double_t pt) const;
     Int_t GetPoolBin(Double_t mult, Double_t zVtx) const;
     Bool_t DefinePeriodWeights();
@@ -137,7 +138,8 @@ private:
     TTree *fTreeD;    			//for D Tree allocation
     TTree *fTreeTr;    			//for associated track Tree allocation
     
-    TList *fOutputDistr;		//allocates the output plots
+    TList *fOutputDistr;		//allocates the outputcorrelation plots
+    TList *fOutputMass;			//allocates the mass plots
 
     Int_t fNBinsPt;			//number of D-meson pT bins
     Int_t fnPools;			//number of ME pools (total)
@@ -187,7 +189,7 @@ private:
     Bool_t fMake2DPlots; 		//flag to produce 2D plots for sign.region and SB
     Bool_t fWeightPeriods;		//flag to weight periods in ME analysis with max number of tracks used
 
-    ClassDef(AliHFOfflineCorrelator,1); // class for plotting HF correlations
+    ClassDef(AliHFOfflineCorrelator,2); // class for plotting HF correlations
 
 };
 

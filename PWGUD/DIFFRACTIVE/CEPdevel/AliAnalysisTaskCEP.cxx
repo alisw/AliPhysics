@@ -486,15 +486,16 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   // count the number of tracks
   // apply standard cuts to tracks and count accepted tracks
-  Int_t nmbTrk_ST = 0;
-  for (Int_t ii = 0; ii < fESDEvent->GetNumberOfTracks(); ii++) {
-    AliESDtrack *track = fESDEvent->GetTrack(ii);
-		if (track) {
-      if (fTrackCuts->AcceptTrack(track)) {
-		    nmbTrk_ST++;
-      }
-    }
-	}
+  Int_t nTracksTotal = fESDEvent->GetNumberOfTracks();
+  //Int_t nTracksTPCITS = 0;
+  //for (Int_t ii = 0; ii < nTracksTotal; ii++) {
+  //  AliESDtrack *track = fESDEvent->GetTrack(ii);
+	//	if (track) {
+  //    if (fTrackCuts->AcceptTrack(track)) {
+	//	    nTracksTPCITS++;
+  //    }
+  //  }
+	//}
   
 	// Martin's selection
 	TArrayI Mindices;
@@ -506,6 +507,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // The definition of the TrackStatus bits is given in AliCEPBase.h
   Int_t nTracks = fCEPUtil->AnalyzeTracks(fESDEvent,fTracks,fTrackStatus);
 
+  // get tracks which pass default TPCITS cuts
+  TArrayI *TPCITSindices  = new TArrayI();
+  Int_t nTracksTPCITS = fCEPUtil->countstatus(fTrackStatus,
+    AliCEPBase::kTTAccITSTPC, AliCEPBase::kTTAccITSTPC, TPCITSindices);
+  
   // use the AliCEPUtils::GetCEPTracks method
   TArrayI *Pindices  = new TArrayI();
   Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
@@ -516,7 +522,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   
   // for test purposes -------------------------------------------------------
-  if (kFALSE) {
+  if (kTRUE) {
     
     // now use the fTrackStatus to scrutinize the event and tracks
     // e.g. Martin's selection
@@ -574,10 +580,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     Bool_t fpassedFiredChipsTest =
       fCEPUtil->TestFiredChips(fESDEvent,indices);
 
-    printf("<I - UserExec> nTracks         : %i\n",nTracks);
+    printf("<I - UserExec> nTracksTotal    : %i\n",nTracksTotal);
     printf("<I - UserExec> nTracklets      : %i\n",nTracklets);
     printf("<I - UserExec> npureITSTracks  : %i\n",npureITSTracks);
-    printf("<I - UserExec> nTrackStandard  : %i\n",nmbTrk_ST);
+    printf("<I - UserExec> nTracks         : %i\n",nTracks);
+    printf("<I - UserExec> nTracksTPCITS   : %i\n",nTracksTPCITS);
     printf("<I - UserExec> nBad            : %i\n",nbad);
     printf("<I - UserExec> nTrackSel       : %i\n",nTrackSel);
     printf("<I - UserExec> nTrackFiredChips: %i - event passed test: %i\n",nTracksFiredChips,fpassedFiredChipsTest);
@@ -601,8 +608,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // for test purposes -------------------------------------------------------
   
   // decide which events have to be saved
-  // if the number of accepted tracks is within the limits ...
-  Bool_t isToSave = (0 < nTracks) && (nTracks <= fnumTracksMax);
+  // if the number of considered tracks (nTracksTPCITS) is within the limits ...
+  Bool_t isToSave = (0 < nTracksTPCITS) && (nTracksTPCITS <= fnumTracksMax);
 
   // AND DGTrigger
   if (fCEPUtil->checkstatus(fAnalysisStatus,
@@ -640,6 +647,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetGapCondition(fCurrentGapCondition);
 
     // number of tracklets and residuals, vertex
+    fCEPEvent->SetnTracksTotal(nTracksTotal);
     fCEPEvent->SetnTracklets(nTracklets);
     fCEPEvent->SetnResiduals(fCEPUtil->GetResiduals(fESDEvent));
     fCEPEvent->SetnMSelection(nMartinSel);
@@ -675,15 +683,18 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // all tracks are added, independent of the track status
     Double_t mom[3];
     Double_t stat,nsig,probs[AliPID::kSPECIES];
-    for (Int_t ii=0; ii<nTracks; ii++) {
+    for (Int_t ii=0; ii<nTracksTPCITS; ii++) {
     
+      // proper poiter into fTracks and fTrackStatus
+      Int_t trkIndex = TPCITSindices->At(ii);
+      
       // the original track
-      AliESDtrack *tmptrk = (AliESDtrack*) fTracks->At(ii);
+      AliESDtrack *tmptrk = (AliESDtrack*) fTracks->At(trkIndex);
 
       // create new CEPTrackBuffer and fill it
       CEPTrackBuffer *trk = new CEPTrackBuffer();
       
-      trk->SetTrackStatus(fTrackStatus->At(ii));
+      trk->SetTrackStatus(fTrackStatus->At(trkIndex));
       trk->SetTOFBunchCrossing(tmptrk->GetTOFBunchCrossing());
       trk->SetChargeSign((Int_t)tmptrk->Charge());
       trk->SetITSncls(tmptrk->GetNumberOfITSClusters());
@@ -751,6 +762,15 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     PostOutputs();
   }
     
+  // clean up
+  if (Pindices) {
+    delete Pindices;
+    Pindices = 0x0;
+  }
+  if (TPCITSindices) {
+    delete TPCITSindices;
+    TPCITSindices = 0x0;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -809,7 +829,7 @@ Bool_t AliAnalysisTaskCEP::CheckInput()
 
 	// get MC event
 	fMCEvent = MCEvent();
-  if (fMCEvent){  
+  if (fMCEvent) {  
     // Bug fix 28.05.2016 - do not trust to presence of MC handler, check if the content is valid
     //                    - proper solution (autodetection of MC information) to be implemented 
     if (fMCEvent->Stack()==NULL) fMCEvent=NULL; 

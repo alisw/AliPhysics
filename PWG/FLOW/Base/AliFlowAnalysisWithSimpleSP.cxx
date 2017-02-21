@@ -447,7 +447,6 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
     //Filling QA (for compatibility with previous version)
     if(!fMinimalBook) {
         fHistQaQb->Fill(vQa*vQb/dNa/dNb, fCentralityWeight);
-        double qc = anEvent->GetPsi2();
 
         fHistQaQc->Fill(vQa*vQTPC, fCentralityWeight);
         fHistQbQc->Fill(vQb*vQTPC, fCentralityWeight);
@@ -535,14 +534,13 @@ void AliFlowAnalysisWithSimpleSP::Finish(Bool_t A) {
         return;
     }
     Double_t dEntriesQaQb = fHistQaQb->GetEntries();
-    if( dEntriesQaQb < 1 )
+    if( dEntriesQaQb < 1 ) {
+        printf(" fHistQaQb has less than 1 entry, probably sub-events are misconfigured \n");
         return;
+    }
     //fHistQaQb->GetXaxis()->SetRangeUser(-10.,10.);
     //fHistQaQC->GetXaxis()->SetRangeUser(-1000., 1000.);
     //fHistQbQc->GetXaxis()->SetRangeUser(-1000., 1000.);
-
-
-    
     
     Double_t dQaQb = fHistQaQb->GetMean();
     Double_t dQaQc = fHistQaQc->GetMean();
@@ -552,15 +550,11 @@ void AliFlowAnalysisWithSimpleSP::Finish(Bool_t A) {
       // now it's the resolution of A (which is vzero C) 
       dQaQb = (dQaQb*dQaQc)/dQbQc;
     } else {
-    
       // else we select the resolution of B (which is V0A)
       dQaQb = (dQaQb*dQbQc)/dQaQc;
     }
 
-    if( dQaQb < 0 )
-        return;
     Double_t dSpreadQaQb = fHistQaQb->GetRMS();
-
     // this is the `resolution'
     if(dQaQb <= .0 ) {
         printf(" Panic! the average of QaQb <= 0! Probably you need to run on more events !\n");

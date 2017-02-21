@@ -127,6 +127,9 @@ protected:
   /// Output objects in multiple TObjArrays instead of one TList
   Bool_t fGroupOutputObjects;
 
+  /// If false, will not including settings string in the output list
+  Bool_t fOutputSettings;
+
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
 
@@ -152,6 +155,7 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
   Bool_t verbose;
   Bool_t enable_pair_monitors;
   Bool_t group_output_objects;
+  Bool_t output_settings;
   Bool_t is_mc_analysis;
 /*
   AnalysisParams():

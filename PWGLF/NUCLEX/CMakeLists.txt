@@ -71,6 +71,8 @@ set(SRCS
   Utils/NuclexFilter/AliAnalysisTaskReadNuclexAOD.cxx
   Utils/RecoDecay/AliAODRecoDecayLF.cxx
   Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
+  Utils/CODEX/AliAnalysisCODEX.cxx
+  Utils/CODEX/AliAnalysisCODEXtask.cxx
   )
 
 # Headers from sources

@@ -41,6 +41,9 @@ AliAnaWeights::AliAnaWeights()
   fhCentralityWeight(0),
   fCentrality(0),
   fUseCentralityWeight(0),
+  fDoMCParticlePtWeights(1),
+  fEtaFunction(0), fPi0Function(0), 
+  fMCWeight(1.),
   fCurrFileName(0),
   fCheckMCCrossSection(kFALSE),
   fJustFillCrossSecHist(0),
@@ -49,6 +52,18 @@ AliAnaWeights::AliAnaWeights()
   fPyEventHeader(0),
   fCheckPythiaEventHeader(0)
 {
+}
+
+//______________________________________________________________
+/// Destructor.
+//______________________________________________________________
+AliAnaWeights::~AliAnaWeights() 
+{ 
+  if ( fhCentralityWeight ) delete fhCentralityWeight ; 
+  
+  if ( fEtaFunction ) delete fEtaFunction ;
+ 
+  if ( fPi0Function ) delete fPi0Function ;
 }
 
 //____________________________________________________
@@ -105,6 +120,38 @@ Double_t AliAnaWeights::GetWeight()
     
   AliDebug(1,Form("Event weight %e",weight));
     
+  return weight ;
+}
+
+//_____________________________________________
+//
+/// \return the particle pT weight depending on
+///
+/// \param pt: input particle transverse momentum 
+/// \param pdg: input particle type pdg code
+/// \param genName: TString with generator name
+/// \param igen: index of generator (not used yet).
+///
+/// currently, only pi0 and eta cases are considered. The parametrizations are passed via
+/// SetEtaFunction(TF1* fun) and SetPi0Function(TF1* fun)
+/// ex param: TF1* PowerEta0 = new TF1("PowerEta0","[0]*pow([1]/(([1]*exp(-[3]*x)+x)),[2])",4,25);
+/// Only active when SwitchOnMCParticlePtWeights() 
+//_____________________________________________
+Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen) const 
+{
+  Double_t weight = 1.;
+
+  if ( !fDoMCParticlePtWeights ) return weight ;
+
+  if      (pdg == 111 && fPi0Function && 
+           (genName.Contains("Pi0") || genName.Contains("pi0") || genName.Contains("PARAM") || genName.Contains("BOX")))
+    weight = fPi0Function->Eval(pt);
+  else if (pdg == 221 && fEtaFunction &&
+           (genName.Contains("Eta") || genName.Contains("eta") || genName.Contains("PARAM") || genName.Contains("BOX")))
+    weight = fEtaFunction->Eval(pt);
+  
+  AliDebug(1,Form("MC particle pdg %d, pt %2.2f, generator %s with index %d: weight %f",pdg,pt,genName.Data(),igen, weight));
+  
   return weight ;
 }
 

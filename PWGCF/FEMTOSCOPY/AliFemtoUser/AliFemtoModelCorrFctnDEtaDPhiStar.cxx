@@ -5,8 +5,11 @@
 #include "AliFemtoModelCorrFctnDEtaDPhiStar.h"
 #include "AliFemtoPair.h"
 #include "AliFemtoModelManager.h"
+#include "AliFemtoModelHiddenInfo.h"
+
 
 #include <TObjArray.h>
+#include <cmath>
 
 
 AliFemtoModelCorrFctnDEtaDPhiStar::Parameters
@@ -55,6 +58,22 @@ AliFemtoModelCorrFctnDEtaDPhiStar::AliFemtoModelCorrFctnDEtaDPhiStar(
                                       hist_title("Mixed Pairs"),
                                       p.eta.bin_count, p.eta.low, p.eta.high,
                                       p.phi.bin_count, p.phi.low, p.phi.high);
+
+
+  fDPhiStarDEtaNumeratorIdealWeighted = new TH2F(hist_name("NumDPhiStarDEtaIdealWeighted"),
+                                            hist_title("(Ideal) Weighted Real Pairs"),
+                                            p.eta.bin_count, p.eta.low, p.eta.high,
+                                            p.phi.bin_count, p.phi.low, p.phi.high);
+  fDPhiStarDEtaNumeratorIdealUnweighted = new TH2F(hist_name("NumDPhiStarDEtaUnweighted"),
+                                              hist_title("(Ideal) Unweighted Real Pairs"),
+                                              p.eta.bin_count, p.eta.low, p.eta.high,
+                                              p.phi.bin_count, p.phi.low, p.phi.high);
+
+  fDPhiStarDEtaIdealDenominator = new TH2F(hist_name("DenDPhiStarDEtaIdeal"),
+                                      hist_title("(Ideal) Mixed Pairs"),
+                                      p.eta.bin_count, p.eta.low, p.eta.high,
+                                      p.phi.bin_count, p.phi.low, p.phi.high);
+
 
   fDPhiStarDEtaColNumerator = new TH2F(hist_name("NumDPhiDEtaCol"),
                                        hist_title("Colinear #Delta#Phi* Numerator"),
@@ -129,6 +148,10 @@ AliFemtoModelCorrFctnDEtaDPhiStar::AppendOutputList(TList &output_list)
   output->Add(fDPhiStarDEtaNumeratorUnweighted);
   output->Add(fDPhiStarDEtaDenominator);
 
+  output->Add(fDPhiStarDEtaNumeratorIdealWeighted);
+  output->Add(fDPhiStarDEtaNumeratorIdealUnweighted);
+  output->Add(fDPhiStarDEtaIdealDenominator);
+
   output->Add(fDPhiStarDEtaColNumerator);
   output->Add(fDPhiStarDEtaColDenominator);
 
@@ -150,6 +173,36 @@ static double GetCosPhi(const AliFemtoTrack& t1, const AliFemtoTrack& t2)
   const double cosphi = p1.Dot(p2) / std::sqrt(p1.Mag2() * p2.Mag2());
   return cosphi;
 }
+
+
+inline static
+EtaPhiStar
+ApplyIdealCalculations(const AliFemtoTrack &t1, const AliFemtoTrack &t2, float radius, float magfield)
+{
+  // ideal momentum
+  AliFemtoModelHiddenInfo *mc1 = dynamic_cast<AliFemtoModelHiddenInfo*>(t1.GetHiddenInfo()),
+                          *mc2 = dynamic_cast<AliFemtoModelHiddenInfo*>(t2.GetHiddenInfo());
+
+  if (mc1 == nullptr || mc2 == nullptr) {
+      return {NAN, NAN};
+  }
+
+  const AliFemtoThreeVector &p1 = *mc1->GetTrueMomentum(),
+                            &p2 = *mc2->GetTrueMomentum();
+  const Short_t charge1 = t1.Charge(),
+                charge2 = t2.Charge();
+
+  const Float_t delta_eta = AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2);
+  const Float_t delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(
+    p1, charge1,
+    p2, charge2,
+    radius,
+    magfield
+    );
+  
+  return {delta_eta, delta_phi_star};
+}
+
 
 void AliFemtoModelCorrFctnDEtaDPhiStar::AddRealPair(AliFemtoPair* pair)
 {
@@ -174,7 +227,14 @@ void AliFemtoModelCorrFctnDEtaDPhiStar::AddRealPair(AliFemtoPair* pair)
 
   fDPhiStarPtNumerator->Fill(delta.phi_star, ptmin);
   fDCosPtNumerator->Fill(cosphi, ptmin);
+  
+  auto ideal_delta = ApplyIdealCalculations(track1, track2, fRadius, fCurrentMagneticField);
+  if (!std::isnan(ideal_delta.eta)) { 
+    fDPhiStarDEtaNumeratorIdealWeighted->Fill(ideal_delta.eta, ideal_delta.phi_star, weight);
+    fDPhiStarDEtaNumeratorIdealUnweighted->Fill(ideal_delta.eta, ideal_delta.phi_star);
+  }   
 }
+
 
 void AliFemtoModelCorrFctnDEtaDPhiStar::AddMixedPair(AliFemtoPair* pair)
 {
@@ -190,8 +250,6 @@ void AliFemtoModelCorrFctnDEtaDPhiStar::AddMixedPair(AliFemtoPair* pair)
   const Double_t cosphi = GetCosPhi(track1, track2);
   const Double_t ptmin = std::min(track1.Pt(), track2.Pt());
 
-  const Double_t weight = fManager->GetWeight(pair);
-
   fDPhiStarDEtaDenominator->Fill(delta.eta, delta.phi_star);
 
   auto alt_deta = cosphi > 0 ? -delta.eta : delta.eta - 2.0 * track2.P().PseudoRapidity();
@@ -199,15 +257,24 @@ void AliFemtoModelCorrFctnDEtaDPhiStar::AddMixedPair(AliFemtoPair* pair)
 
   fDPhiStarPtDenominator->Fill(delta.phi_star, ptmin);
   fDCosPtDenominator->Fill(cosphi, ptmin);
+
+  auto ideal_delta = ApplyIdealCalculations(track1, track2, fRadius, fCurrentMagneticField);
+  if (!std::isnan(ideal_delta.eta)) { 
+    fDPhiStarDEtaIdealDenominator->Fill(ideal_delta.eta, ideal_delta.phi_star);
+  }
 }
 
 AliFemtoString
 AliFemtoModelCorrFctnDEtaDPhiStar::Report()
 {
   TString report;
-  report += TString::Format("Number of entries in (weighted) numerator:\t%lu\n", fDPhiStarDEtaNumeratorWeighted->GetEntries());
-  report += TString::Format("Number of entries in (unweighted) numerator:\t%lu\n", fDPhiStarDEtaNumeratorUnweighted->GetEntries());
+  report += TString::Format("Number of entries in weighted numerator:\t%lu\n", fDPhiStarDEtaNumeratorWeighted->GetEntries());
+  report += TString::Format("Number of entries in unweighted numerator:\t%lu\n", fDPhiStarDEtaNumeratorUnweighted->GetEntries());
   report += TString::Format("Number of entries in denominator:\t%lu\n", fDPhiStarDEtaDenominator->GetEntries());
+
+  report += TString::Format("Number of entries in ideal weighted numerator:\t%lu\n", fDPhiStarDEtaNumeratorIdealWeighted->GetEntries());
+  report += TString::Format("Number of entries in ideal unweighted numerator:\t%lu\n", fDPhiStarDEtaNumeratorIdealUnweighted->GetEntries());
+  report += TString::Format("Number of entries in denominator:\t%lu\n", fDPhiStarDEtaIdealDenominator->GetEntries());
 
   return AliFemtoString(report);
 }
