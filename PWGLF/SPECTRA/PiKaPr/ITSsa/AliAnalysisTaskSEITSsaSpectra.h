@@ -87,7 +87,7 @@ public:
 
   //Setters for event selection settings
   void SetITSPidParams(AliITSPidParams* pidParams)     { fITSPidParams = pidParams; }
-  void SetTriggerSel   (UInt_t   tg = AliVEvent::kMB)  { fTriggerSel   = tg;   }
+  void SetTriggerSel   (UInt_t   tg = AliVEvent::kMB)  { fTriggerSel   = tg;        }
   void SetVtxQACheck   (Bool_t chkSPDres = kTRUE, Bool_t chkZsep = kTRUE, Bool_t reqBoth = kFALSE)
   {fChkVtxSPDRes = chkSPDres; fChkVtxZSep = chkZsep; fReqBothVtx = reqBoth;}
   void SetMaxVtxZCut               (Double_t vz = 10)  { fMaxVtxZCut   = vz;   }
