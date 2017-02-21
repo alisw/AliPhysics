@@ -79,7 +79,7 @@ class AliCEPUtils : public TObject {
   	static Int_t GetEventType(const AliVEvent *Event);
   	static void SPDLoadGeom(Int_t run);
     static void DetermineMCprocessType (
-      AliMCEvent *MCEvent, TString MCgen, Int_t MCproc);
+      AliMCEvent *MCEvent, TString MCgen, Int_t &MCproc);
     Int_t AnalyzeTracks(AliESDEvent* ESDEvent,
       TObjArray* fTracks,TArrayI* fTrackStatus);
 

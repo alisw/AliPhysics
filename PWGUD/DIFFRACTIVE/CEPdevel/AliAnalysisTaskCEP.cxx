@@ -809,7 +809,7 @@ Bool_t AliAnalysisTaskCEP::CheckInput()
 
 	// get MC event
 	fMCEvent = MCEvent();
-  if (fMCEvent){  
+  if (fMCEvent) {  
     // Bug fix 28.05.2016 - do not trust to presence of MC handler, check if the content is valid
     //                    - proper solution (autodetection of MC information) to be implemented 
     if (fMCEvent->Stack()==NULL) fMCEvent=NULL; 
