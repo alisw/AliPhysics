@@ -31,7 +31,8 @@ class CEPEventBuffer : public TObject {
 
     // summary track information
     Int_t fnTracklets;      // total number of tracklets
-    Int_t fnTracks;         // total number of tracks
+    Int_t fnTracksTotal;    // total number of tracks
+    Int_t fnTracks;         // number of tracks in fCEPTracks
     Int_t fnTracksCombined; // ITS+TPC
     Int_t fnTracksITSpure;  // ITS only
     Int_t fnResiduals;      // tracklets without associated track
@@ -79,6 +80,7 @@ class CEPEventBuffer : public TObject {
     
     // the number of tracklets and residuals, as well as the enumber
     // of tracks passing Martin's selection have to be set separately
+    void SetnTracksTotal(Int_t ntrks) { fnTracksTotal = ntrks; }
     void SetnTracklets(Int_t ntrklts) { fnTracklets = ntrklts; }
     void SetnResiduals(Int_t nres)    { fnResiduals = nres; }
     void SetnMSelection(Int_t nMsel)  { fnMSelection = nMsel; }
@@ -103,6 +105,7 @@ class CEPEventBuffer : public TObject {
     TString GetFiredTriggerClasses() const { return fFiredTriggerClasses; }
 
     // different ways of retrieving number of tracks
+    Int_t GetnTracksTotal()  const { return fnTracksTotal; }
     Int_t GetnTracks()       const { return fnTracks; }
     Int_t GetnTracks(UInt_t mask, UInt_t pattern);
     Int_t GetnTracks(UInt_t mask, UInt_t pattern, TArrayI *indices);
