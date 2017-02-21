@@ -68,5 +68,10 @@
 #pragma link C++ class AliAODMCNuclExReplicator+;
 #pragma link C++ class AliAnalysisTaskESDNuclExFilterMC+;
 #pragma link C++ class AliAnalysisTaskReadNuclexAOD+;
+/// * CODEX
+#pragma link C++ class AliAnalysisCODEX::Header+;
+#pragma link C++ class AliAnalysisCODEX::Track+;
+#pragma link C++ class std::vector<AliAnalysisCODEX::Track>+;
+#pragma link C++ class AliAnalysisCODEXtask+;
 #endif
 
