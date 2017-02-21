@@ -32,20 +32,15 @@ install(DIRECTORY mapping DESTINATION TPC)
 install(DIRECTORY macros DESTINATION TPC)
 
 # Install root & dat files
-set(ROOTFILES
-    AliTPCprf2dGEM.root
-    AliTPCprf2d.root
-    CovMatrixDB_PbPb6000_B0.4T.root
-    CovMatrixDB_pp_B0.4T.root
-   )
 
-set(DATFILES
-    conn_iroc.dat
-    conn_oroc.dat
-   )
+# The following two data files are required (ALIROOT-7111)
+install(FILES AliTPCprf2dGEM.root AliTPCprf2d.root DESTINATION TPC)
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/AliTPCprf2dGEM.root)
-    install(FILES ${ROOTFILES} ${DATFILES} DESTINATION TPC)
-elseif(FATAL_IF_MISSING)
-    message(FATAL_ERROR "AliTPCprf2dGEM.root is missing")
-endif()
+# The following data files are optional
+foreach(DATA_FILE CovMatrixDB_PbPb6000_B0.4T.root CovMatrixDB_pp_B0.4T.root conn_iroc.dat conn_oroc.dat)
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_FILE})
+    install(FILES ${DATA_FILE} DESTINATION TPC)
+  elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "${DATA_FILE} is missing")
+  endif()
+endforeach()
