@@ -246,6 +246,17 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     // 0 = V0M
     centrality = fEventCuts.GetCentrality(0);
   }
+  if (fPeriod == 2016) {
+    fEventCuts.SetupRun2pp();
+    fEventCuts.SetManualMode();
+    
+    if(!fEventCuts.AcceptEvent(event)) {
+      PostData(1,fHistogramList);
+      return;
+    }
+    // 0 = V0M
+    centrality = fEventCuts.GetCentrality(0);
+  }
   if(!fMCtrue){
     if (centrality < 0.0 || centrality > 100.0 ) {
       return;
