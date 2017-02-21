@@ -34,7 +34,7 @@ class AliNuclexEventCutsContainer : public TNamed {
     int fMultTrkFB32TOF;
     int fMultTrkTPC;
   ClassDef(AliNuclexEventCutsContainer,1)
-};
+}
 
 class AliNuclexEventCuts : public TList {
   public:
