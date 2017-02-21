@@ -64,7 +64,7 @@ AliFemtoModelCorrFctnDEtaDPhiStar::AliFemtoModelCorrFctnDEtaDPhiStar(
                                             hist_title("(Ideal) Weighted Real Pairs"),
                                             p.eta.bin_count, p.eta.low, p.eta.high,
                                             p.phi.bin_count, p.phi.low, p.phi.high);
-  fDPhiStarDEtaNumeratorIdealUnweighted = new TH2F(hist_name("NumDPhiStarDEtaUnweighted"),
+  fDPhiStarDEtaNumeratorIdealUnweighted = new TH2F(hist_name("NumDPhiStarDEtaIdealUnweighted"),
                                               hist_title("(Ideal) Unweighted Real Pairs"),
                                               p.eta.bin_count, p.eta.low, p.eta.high,
                                               p.phi.bin_count, p.phi.low, p.phi.high);
@@ -199,7 +199,7 @@ ApplyIdealCalculations(const AliFemtoTrack &t1, const AliFemtoTrack &t2, float r
     radius,
     magfield
     );
-  
+
   return {delta_eta, delta_phi_star};
 }
 
@@ -227,12 +227,12 @@ void AliFemtoModelCorrFctnDEtaDPhiStar::AddRealPair(AliFemtoPair* pair)
 
   fDPhiStarPtNumerator->Fill(delta.phi_star, ptmin);
   fDCosPtNumerator->Fill(cosphi, ptmin);
-  
+
   auto ideal_delta = ApplyIdealCalculations(track1, track2, fRadius, fCurrentMagneticField);
-  if (!std::isnan(ideal_delta.eta)) { 
+  if (!std::isnan(ideal_delta.eta)) {
     fDPhiStarDEtaNumeratorIdealWeighted->Fill(ideal_delta.eta, ideal_delta.phi_star, weight);
     fDPhiStarDEtaNumeratorIdealUnweighted->Fill(ideal_delta.eta, ideal_delta.phi_star);
-  }   
+  }
 }
 
 
@@ -259,7 +259,7 @@ void AliFemtoModelCorrFctnDEtaDPhiStar::AddMixedPair(AliFemtoPair* pair)
   fDCosPtDenominator->Fill(cosphi, ptmin);
 
   auto ideal_delta = ApplyIdealCalculations(track1, track2, fRadius, fCurrentMagneticField);
-  if (!std::isnan(ideal_delta.eta)) { 
+  if (!std::isnan(ideal_delta.eta)) {
     fDPhiStarDEtaIdealDenominator->Fill(ideal_delta.eta, ideal_delta.phi_star);
   }
 }
