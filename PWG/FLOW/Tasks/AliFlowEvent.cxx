@@ -1481,18 +1481,14 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
   if (centrCode < 0)
     return;
  
-  // the super lazy way of mapping here to members to only locally defined histos
-  // at first iteration i just want to see if all this works, before spending a lot of time
-  // on making it pretty
-  
- TH1D* fQxnmV0A = reinterpret_cast<TH1D*>(fQxavsV0[0]);
- TH1D* fQynmV0A = reinterpret_cast<TH1D*>(fQyavsV0[0]);
- TH1D* fQxnsV0A = reinterpret_cast<TH1D*>(fQxavsV0[1]);
- TH1D* fQynsV0A = reinterpret_cast<TH1D*>(fQyavsV0[1]);
- TH1D* fQxnmV0C = reinterpret_cast<TH1D*>(fQxcvsV0[0]);
- TH1D* fQynmV0C = reinterpret_cast<TH1D*>(fQycvsV0[0]);
- TH1D* fQxnsV0C = reinterpret_cast<TH1D*>(fQxcvsV0[1]);
- TH1D* fQynsV0C = reinterpret_cast<TH1D*>(fQycvsV0[1]);
+ TH1D* fQxnmV0A = reinterpret_cast<TH1D*>(fQxavsV0[0+2*(fNHarm-2)]);
+ TH1D* fQynmV0A = reinterpret_cast<TH1D*>(fQyavsV0[0+2*(fNHarm-2)]);
+ TH1D* fQxnsV0A = reinterpret_cast<TH1D*>(fQxavsV0[1+2*(fNHarm-2)]);
+ TH1D* fQynsV0A = reinterpret_cast<TH1D*>(fQyavsV0[1+2*(fNHarm-2)]);
+ TH1D* fQxnmV0C = reinterpret_cast<TH1D*>(fQxcvsV0[0+2*(fNHarm-2)]);
+ TH1D* fQynmV0C = reinterpret_cast<TH1D*>(fQycvsV0[0+2*(fNHarm-2)]);
+ TH1D* fQxnsV0C = reinterpret_cast<TH1D*>(fQxcvsV0[1+2*(fNHarm-2)]);
+ TH1D* fQynsV0C = reinterpret_cast<TH1D*>(fQycvsV0[1+2*(fNHarm-2)]);
  TH1D* fMultV0 = reinterpret_cast<TH1D*>(fQxavsV0[4]);
 
   //V0 info
@@ -2173,8 +2169,9 @@ void AliFlowEvent::SetKappaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) 
 
 //_____________________________________________________________________________
 void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
- // implementation of delta vzero calibration for LHC2015o Low Intensity Runs
 
+ // V0 calibration for 2015 high interaction rate (IR) data
+ 
  fEvent = cuts->GetEvent();
  if(!fEvent) return; // coverity. we need to know the event to get the runnumber and centrality
  // get the vzero centrality percentile (cc dependent calibration)
@@ -2188,10 +2185,6 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  }else{
 	 fCachedRun = run;
  }
-
- Int_t fNHarm = 2; // note: for now I've only mapped the second harmonic, but using the first index 
-                   // it's trivial to add also 3 or 4, on the agenda (first see if this works)
-                   //
  if (!gGrid) TGrid::Connect("alien");
  TFile* foadb = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
  
@@ -2219,8 +2212,6 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  // the odd one out
  // fQxavsV0[4] = fMultV0                    
 
-
-
  AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
  if(!cont){
      AliFatal("OADB object hMultV0BefCorr is not available in the file\n");
@@ -2232,73 +2223,65 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  }
  fQxavsV0[4] = ((TH1D*) cont->GetObject(run));
  
- 
- 
- AliOADBContainer* contQxnam = 0;
- if (fNHarm == 2.)
+
+ for(Int_t harm = 2; harm < 4; harm++) { 
+  AliOADBContainer* contQxnam = 0;
+  if (harm == 2.)
      contQxnam = (AliOADBContainer*) foadb->Get("fqxa2m");
- //else if (fNHarm == 3.)
- else
+  else if (harm == 3.)
      contQxnam = (AliOADBContainer*) foadb->Get("fqxa3m");
  
- if(!contQxnam){
+  if(!contQxnam){
      printf("OADB object fqxanm is not available in the file\n");
      return;
- }
- if(!(contQxnam->GetObject(run))){
+  }
+  if(!(contQxnam->GetObject(run))){
      printf("OADB object fqxanm is not available for run %i\n", run);
      return;
- }
- fQxavsV0[0] = ((TH1D*) contQxnam->GetObject(run));
+  }
+  fQxavsV0[0+(harm-2)*2] = ((TH1D*) contQxnam->GetObject(run));
  
  
  
- AliOADBContainer* contQynam = 0;
- if (fNHarm == 2.)
+  AliOADBContainer* contQynam = 0;
+  if (harm == 2.)
     contQynam = (AliOADBContainer*) foadb->Get("fqya2m");
- else if (fNHarm == 3.)
+  else if (harm == 3.)
      contQynam = (AliOADBContainer*) foadb->Get("fqya3m");
- else if (fNHarm == 4.)
-     contQynam = (AliOADBContainer*) foadb->Get("fqya4m");
  
- if(!contQynam){
+  if(!contQynam){
      printf("OADB object fqyanm is not available in the file\n");
      return;
- }
- if(!(contQynam->GetObject(run))){
+  }
+  if(!(contQynam->GetObject(run))){
      printf("OADB object fqyanm is not available for run %i\n", run);
      return;
- }
- fQyavsV0[0] = ((TH1D*) contQynam->GetObject(run));
+  }
+  fQyavsV0[0+(harm-2)*2] = ((TH1D*) contQynam->GetObject(run));
  
  
  
- AliOADBContainer* contQxnas = 0;
- if (fNHarm == 2.)
+  AliOADBContainer* contQxnas = 0;
+  if (harm == 2.)
      contQxnas = (AliOADBContainer*) foadb->Get("fqxa2s");
- //else if (fNHarm == 3.)
- else
+  else if (harm == 3.)
      contQxnas = (AliOADBContainer*) foadb->Get("fqxa3s");
  
- if(!contQxnas){
+  if(!contQxnas){
      printf("OADB object fqxans is not available in the file\n");
      return;
- }
- if(!(contQxnas->GetObject(run))){
+  }
+  if(!(contQxnas->GetObject(run))){
      printf("OADB object fqxans is not available for run %i\n", run);
      return;
- }
- fQxavsV0[1] = ((TH1D*) contQxnas->GetObject(run));
+  }
+  fQxavsV0[1+(harm-2)*2] = ((TH1D*) contQxnas->GetObject(run));
  
- 
- 
- AliOADBContainer* contQynas = 0;
- if (fNHarm == 2.)
+  AliOADBContainer* contQynas = 0;
+ if (harm == 2.)
      contQynas = (AliOADBContainer*) foadb->Get("fqya2s");
- else if (fNHarm == 3.)
+ else if (harm == 3.)
      contQynas = (AliOADBContainer*) foadb->Get("fqya3s");
- else if (fNHarm == 4.)
-     contQynas = (AliOADBContainer*) foadb->Get("fqya4s");
  
  if(!contQynas){
      printf("OADB object fqyans is not available in the file\n");
@@ -2308,15 +2291,14 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
      printf("OADB object fqyans is not available for run %i\n", run);
      return;
  }
- fQyavsV0[1] = ((TH1D*) contQynas->GetObject(run));
+ fQyavsV0[1+(harm-2)*2] = ((TH1D*) contQynas->GetObject(run));
  
  
  
  AliOADBContainer* contQxncm = 0;
- if (fNHarm == 2.)
+ if (harm == 2.)
      contQxncm = (AliOADBContainer*) foadb->Get("fqxc2m");
- //else if (fNHarm == 3.)
- else
+ else if (harm == 3.)
      contQxncm = (AliOADBContainer*) foadb->Get("fqxc3m");
  
  if(!contQxncm){
@@ -2327,17 +2309,15 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
      printf("OADB object fqxcnm is not available for run %i\n", run);
      return;
  }
- fQxcvsV0[0] = ((TH1D*) contQxncm->GetObject(run));
+ fQxcvsV0[0+(harm-2)*2] = ((TH1D*) contQxncm->GetObject(run));
  
  
  
  AliOADBContainer* contQyncm = 0;
- if (fNHarm == 2.)
+ if (harm == 2.)
      contQyncm = (AliOADBContainer*) foadb->Get("fqyc2m");
- else if (fNHarm == 3.)
+ else if (harm == 3.)
      contQyncm = (AliOADBContainer*) foadb->Get("fqyc3m");
- else if (fNHarm == 4.)
-     contQyncm = (AliOADBContainer*) foadb->Get("fqyc4m");
  
  if(!contQyncm){
      printf("OADB object fqyc2m is not available in the file\n");
@@ -2347,16 +2327,12 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
      printf("OADB object fqyc2m is not available for run %i\n", run);
      return;
  }
- fQycvsV0[0] = ((TH1D*) contQyncm->GetObject(run));
- 
-
+ fQycvsV0[0+(harm-2)*2] = ((TH1D*) contQyncm->GetObject(run));
 
  AliOADBContainer* contQxncs = 0;
- if (fNHarm == 2.)
+ if (harm == 2.)
      contQxncs = (AliOADBContainer*) foadb->Get("fqxc2s");
- //else if (fNHarm == 3.)
- else
-     contQxncs = (AliOADBContainer*) foadb->Get("fqxc3s");
+ else if (harm == 3.)
  
  if(!contQxncs){
      printf("OADB object fqxc2s is not available in the file\n");
@@ -2366,17 +2342,15 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
      printf("OADB object fqxc2s is not available for run %i\n", run);
      return;
  }
- fQxcvsV0[1] = ((TH1D*) contQxncs->GetObject(run));
+ fQxcvsV0[1+(harm-2)*2] = ((TH1D*) contQxncs->GetObject(run));
  
  
  
  AliOADBContainer* contQyncs = 0;
- if (fNHarm == 2.)
+ if (harm == 2.)
      contQyncs = (AliOADBContainer*) foadb->Get("fqyc2s");
- else if (fNHarm == 3.)
+ else if (harm == 3.)
      contQyncs = (AliOADBContainer*) foadb->Get("fqyc3s");
- else if (fNHarm == 4.)
-     contQyncs = (AliOADBContainer*) foadb->Get("fqyc4s");
  
  if(!contQyncs){
      printf("OADB object fqycnm is not available in the file\n");
@@ -2386,11 +2360,11 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
      printf("OADB object fqycns is not available for run %i\n", run);
      return;
  }
- fQycvsV0[1] = ((TH1D*) contQyncs->GetObject(run));
+ fQycvsV0[1+(harm-2)*2] = ((TH1D*) contQyncs->GetObject(run));
 
  cuts->SetVZEROgainEqualisation(fQxavsV0[4]);
 
-
+ }
 
 
  for(Int_t i(0); i < 4; i++) {
