@@ -477,6 +477,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     printf("fMyMcParts nentries=%d",fMyMcParts->GetEntries());
   
   fTree->Fill();
+  fTracks->Clear();
   fSelTracks->Clear();
   fSelPrimTracks->Clear();
   fPhotConvArray->Clear();
