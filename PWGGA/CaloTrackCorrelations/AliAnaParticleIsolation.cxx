@@ -4457,7 +4457,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhConeSumPtPhiBandUETrack  = new TH2F("hConePtSumPhiBandUETrack",
                                               "#Sigma track #it{p}_{T} in UE Phi Band",
-                                              nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax*8);
+                                              nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtPhiBandUETrack->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtPhiBandUETrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtPhiBandUETrack) ;
