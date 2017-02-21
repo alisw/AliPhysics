@@ -24,6 +24,7 @@ Instructions in AddTask_EPcorrectionsExample.C
 #include "AliQnCorrectionsManager.h"
 #include "AliQnCorrectionsHistos.h"
 #include "AliLog.h"
+#include "AliDataFile.h"
 
 #include "AliAnalysisTaskFlowVectorCorrections.h"
 
@@ -203,7 +204,7 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
     break;
   case CALIBSRC_OADBsingle:
     if (fCalibrationFile.Length() != 0) {
-      calibfile = TFile::Open(Form("%s/COMMON/EVENTPLANE/framework_v2_data/%s", AliAnalysisManager::GetOADBPath(),fCalibrationFile.Data()));
+      calibfile = AliDataFile::OpenOADB(TString::Format("COMMON/EVENTPLANE/framework_v2_data/%s", fCalibrationFile.Data()).Data());
     }
     if (calibfile != NULL && calibfile->IsOpen()) {
       AliInfo(Form("\t Calibration file %s open", fCalibrationFile.Data()));
