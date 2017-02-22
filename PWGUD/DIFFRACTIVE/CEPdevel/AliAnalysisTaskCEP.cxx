@@ -418,6 +418,17 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //  2: from tracks
   Int_t kVertexType = fCEPUtil->GetVtxPos(fEvent,&fVtxPos);
   
+	// did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
+  // this is relevant for the 2016 data
+  // compare with (isSPD  && (!isV0A && !isV0C))
+  Bool_t isDGTrigger = kFALSE;
+  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
+  if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
+    isDGTrigger = kTRUE;
+  }
+  //printf("<I - UserExec> firedTriggerClasses: %s\n",firedTriggerClasses.Data());
+  if (isDGTrigger) fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
+  
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
   // kSPDGFOBits: SPD (any fired chip)
   // kV0A, kV0C: V0
@@ -473,20 +484,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     + isZDC  * AliCEPBase::kBitZDCA
     + isZDNA * AliCEPBase::kBitZDNA + isZDNC  * AliCEPBase::kBitZDNC;
   
-	// did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
-  // this is relevant for the 2016 data
-  // compare with (isSPD  && (!isV0A && !isV0C))
-  Bool_t isDGTrigger = kFALSE;
-  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
-  if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
-    isDGTrigger = kTRUE;
-  }
-  //printf("<I - UserExec> firedTriggerClasses: %s\n",firedTriggerClasses.Data());
-  if (isDGTrigger) fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
-  
+  // update fhStatsFlow
+  if (!isV0A  && !isV0C)  fhStatsFlow->Fill(AliCEPBase::kBinnoV0);
+  if (!isFMDA && !isFMDC) fhStatsFlow->Fill(AliCEPBase::kBinnoFMD);
+  if (!isADA  && !isADC)  fhStatsFlow->Fill(AliCEPBase::kBinnoAD);
+
   // count the number of tracks
   // apply standard cuts to tracks and count accepted tracks
-  Int_t nTracksTotal = fESDEvent->GetNumberOfTracks();
+  //Int_t nTracksTotal = fESDEvent->GetNumberOfTracks();
   //Int_t nTracksTPCITS = 0;
   //for (Int_t ii = 0; ii < nTracksTotal; ii++) {
   //  AliESDtrack *track = fESDEvent->GetTrack(ii);
@@ -497,11 +502,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //  }
 	//}
   
-	// Martin's selection
-	TArrayI Mindices;
-	Int_t nMartinSel = fMartinSel->GetNumberOfITSTPCtracks(fESDEvent,Mindices);
-  // printf("<I - UserExec> nMartinSel: %i\n",nMartinSel);
-    
   // get an TObjArray of tracks with the corresponding TrackStatus
   // The TrackStatus is contained in an array of UInt_t
   // The definition of the TrackStatus bits is given in AliCEPBase.h
@@ -512,17 +512,22 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   Int_t nTracksTPCITS = fCEPUtil->countstatus(fTrackStatus,
     AliCEPBase::kTTAccITSTPC, AliCEPBase::kTTAccITSTPC, TPCITSindices);
   
+	// Martin's selection
+	TArrayI Mindices;
+	Int_t nMartinSel = fMartinSel->GetNumberOfITSTPCtracks(fESDEvent,Mindices);
+  printf("<I - UserExec> nMartinSel: %i\n",nMartinSel);
+    
   // use the AliCEPUtils::GetCEPTracks method
-  TArrayI *Pindices  = new TArrayI();
-  Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
-  if (nMartinSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
+  //TArrayI *Pindices  = new TArrayI();
+  //Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
+  //if (nMartinSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
 
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
   
   
   // for test purposes -------------------------------------------------------
-  if (kTRUE) {
+  if (kFALSE) {
     
     // now use the fTrackStatus to scrutinize the event and tracks
     // e.g. Martin's selection
@@ -580,7 +585,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     Bool_t fpassedFiredChipsTest =
       fCEPUtil->TestFiredChips(fESDEvent,indices);
 
-    printf("<I - UserExec> nTracksTotal    : %i\n",nTracksTotal);
+    //printf("<I - UserExec> nTracksTotal    : %i\n",nTracksTotal);
     printf("<I - UserExec> nTracklets      : %i\n",nTracklets);
     printf("<I - UserExec> npureITSTracks  : %i\n",npureITSTracks);
     printf("<I - UserExec> nTracks         : %i\n",nTracks);
@@ -588,7 +593,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     printf("<I - UserExec> nBad            : %i\n",nbad);
     printf("<I - UserExec> nTrackSel       : %i\n",nTrackSel);
     printf("<I - UserExec> nTrackFiredChips: %i - event passed test: %i\n",nTracksFiredChips,fpassedFiredChipsTest);
-    printf("<I - UserExec> nTrackAccept    : %i %i %i\n",nTrackAccept,nMartinSel,nPaulSel);
+    printf("<I - UserExec> nTrackAccept    : %i\n",nTrackAccept);
+    //printf("<I - UserExec> nTrackAccept    : %i %i %i\n",nTrackAccept,nMartinSel,nPaulSel);
 
     // clean up
     if (masks) {
@@ -647,7 +653,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetGapCondition(fCurrentGapCondition);
 
     // number of tracklets and residuals, vertex
-    fCEPEvent->SetnTracksTotal(nTracksTotal);
+    fCEPEvent->SetnTracksTotal(nTracks);
     fCEPEvent->SetnTracklets(nTracklets);
     fCEPEvent->SetnResiduals(fCEPUtil->GetResiduals(fESDEvent));
     fCEPEvent->SetnMSelection(nMartinSel);
@@ -763,10 +769,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   }
     
   // clean up
-  if (Pindices) {
-    delete Pindices;
-    Pindices = 0x0;
-  }
+  //if (Pindices) {
+  //  delete Pindices;
+  //  Pindices = 0x0;
+  //}
   if (TPCITSindices) {
     delete TPCITSindices;
     TPCITSindices = 0x0;
