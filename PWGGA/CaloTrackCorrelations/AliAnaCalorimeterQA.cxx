@@ -317,7 +317,10 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
   // TCard correl studies
   for(Int_t tm = 0; tm < 2;  tm++)
   {
-    fhEtaPhiTCardCorrNoSelection [tm] = 0 ;       
+    fhEtaPhiTCardCorrNoSelectionLowE [tm] = 0 ;       
+    fhEtaPhiTCardCorrNoSelectionHighE[tm] = 0 ;          
+    fhColRowTCardCorrNoSelectionLowE [tm] = 0 ;       
+    fhColRowTCardCorrNoSelectionHighE[tm] = 0 ;       
     fhLambda0TCardCorrNoSelection[tm] = 0 ;  
     fhNCellsTCardCorrNoSelection [tm] = 0 ;        
     fhNCellsTCardCorrWithWeightNoSelection     [tm] = 0 ;  
@@ -331,6 +334,10 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
       fhNCellsTCardCorrelNExotic [i][tm] = 0 ; 
       fhLambda0TCardCorrelNearRow[i][tm] = 0 ; 
       fhNCellsTCardCorrelNearRow [i][tm] = 0 ; 
+      fhEtaPhiTCardCorrelNLowE [i][tm] = 0 ; 
+      fhEtaPhiTCardCorrelNHighE[i][tm] = 0 ; 
+      fhColRowTCardCorrelNLowE [i][tm] = 0 ; 
+      fhColRowTCardCorrelNHighE[i][tm] = 0 ; 
     }
     
     for(Int_t i = 0; i < 4; i++)
@@ -355,8 +362,9 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
       fhNCellsTCardCorrelOtherTCard [i][tm] = 0 ; 
       fhEtaPhiTCardCorrelOtherTCardLowE [i][tm] = 0 ; 
       fhEtaPhiTCardCorrelOtherTCardHighE[i][tm] = 0 ; 
+      fhColRowTCardCorrelOtherTCardLowE [i][tm] = 0 ; 
+      fhColRowTCardCorrelOtherTCardHighE[i][tm] = 0 ; 
     }
-
   }
   
   InitParameters();
@@ -1168,9 +1176,13 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   GetCaloUtils()->RecalibrateCellAmplitude(eCellMax, GetCalorimeter(), absIdMax);
   GetCaloUtils()->RecalibrateCellTime(tCellMax, GetCalorimeter(), absIdMax, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
   //printf("New E %2.2f, t %2.2f\n",eCellMax,tCellMax*1e9);
-
+  
   tCellMax *= 1.0e9;
   tCellMax-=fConstantTimeShift;
+  
+  // Get the col and row of the leading cluster cell
+  Int_t icol = -1, irow = -1, iRCU = -1, icolAbs = -1, irowAbs = -1;
+  GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
 
   // correlation not max cells
   Int_t nCorr2   = 0;
@@ -1345,22 +1357,39 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   //
   // Fill histograms for different cell correlation criteria
   //
-  fhEtaPhiTCardCorrNoSelection [matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()));
+  if(energy > 2)
+  {
+    fhColRowTCardCorrNoSelectionLowE[matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+    fhEtaPhiTCardCorrNoSelectionLowE[matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()));
+  }  
+  if(energy > 8)
+  {
+    fhColRowTCardCorrNoSelectionHighE[matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+    fhEtaPhiTCardCorrNoSelectionHighE[matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()));
+  }
+  
   fhLambda0TCardCorrNoSelection[matched]->Fill(energy, m02, GetEventWeight());
   
   fhNCellsTCardCorrNoSelection          [matched]->Fill(energy, ncells, GetEventWeight());
   fhNCellsTCardCorrWithWeightNoSelection[matched]->Fill(energy, nCellWithWeight, GetEventWeight());
 
-  if(nCorr < 5) 
+  Int_t nCorrInd = nCorr;
+  if(nCorr > 4) nCorrInd = 5; 
   {
-    fhLambda0TCardCorrelN[nCorr][matched]->Fill(energy, m02, GetEventWeight());
-    fhNCellsTCardCorrelN [nCorr][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
+    fhLambda0TCardCorrelN[nCorrInd][matched]->Fill(energy, m02, GetEventWeight());
+    fhNCellsTCardCorrelN [nCorrInd][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
+    if ( energy > 2 ) 
+    {
+      fhEtaPhiTCardCorrelNLowE[nCorrInd][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+      fhColRowTCardCorrelNLowE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+    }
+    if ( energy > 8 ) 
+    {
+      fhEtaPhiTCardCorrelNHighE[nCorrInd][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+      fhColRowTCardCorrelNHighE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+    }
   }
-  else
-  {
-    fhLambda0TCardCorrelN[5][matched]->Fill(energy, m02, GetEventWeight());
-    fhNCellsTCardCorrelN [5][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
-  }
+ 
   
   if ( exoticity > 0.97 )
   {
@@ -1465,8 +1494,16 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   {
     fhLambda0TCardCorrelOtherTCard[indexOtherTCard][matched]->Fill(energy, m02, GetEventWeight());
     fhNCellsTCardCorrelOtherTCard [indexOtherTCard][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
-    if ( energy > 2 ) fhEtaPhiTCardCorrelOtherTCardLowE [indexOtherTCard][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
-    if ( energy > 8 ) fhEtaPhiTCardCorrelOtherTCardHighE[indexOtherTCard][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+    if ( energy > 2 ) 
+    {
+      fhEtaPhiTCardCorrelOtherTCardLowE[indexOtherTCard][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+      fhColRowTCardCorrelOtherTCardLowE[indexOtherTCard][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+    }
+    if ( energy > 8 ) 
+    {
+      fhEtaPhiTCardCorrelOtherTCardHighE[indexOtherTCard][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+      fhColRowTCardCorrelOtherTCardHighE[indexOtherTCard][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+    }
   }
   
 }
@@ -2999,14 +3036,38 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     TString add[] = {"","TrackMatched"};
     for(Int_t tm = 0; tm < 2; tm++)
     {
-      fhEtaPhiTCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hEtaPhiTCardCorrNoSelection%s",add[tm].Data()),
-       Form("#eta vs #varphi for TCard correlation selected clusters %s",add[tm].Data()),
+      fhEtaPhiTCardCorrNoSelectionLowE[tm]  = new TH2F 
+      (Form("hEtaPhiTCardCorrNoSelectionLowE%s",add[tm].Data()),
+       Form("#eta vs #varphi for TCard correlation selected clusters, E > 2 GeV %s",add[tm].Data()),
        netabins,etamin,etamax,nphibins,phimin,phimax); 
-      fhEtaPhiTCardCorrNoSelection[tm]->SetXTitle("#eta ");
-      fhEtaPhiTCardCorrNoSelection[tm]->SetYTitle("#varphi (rad)");
-      outputContainer->Add(fhEtaPhiTCardCorrNoSelection[tm]);
+      fhEtaPhiTCardCorrNoSelectionLowE[tm]->SetXTitle("#eta ");
+      fhEtaPhiTCardCorrNoSelectionLowE[tm]->SetYTitle("#varphi (rad)");
+      outputContainer->Add(fhEtaPhiTCardCorrNoSelectionLowE[tm]);
+
+      fhEtaPhiTCardCorrNoSelectionHighE[tm]  = new TH2F 
+      (Form("hEtaPhiTCardCorrNoSelectionHighE%s",add[tm].Data()),
+       Form("#eta vs #varphi for TCard correlation selected clusters, E > 8 GeV %s",add[tm].Data()),
+       netabins,etamin,etamax,nphibins,phimin,phimax); 
+      fhEtaPhiTCardCorrNoSelectionHighE[tm]->SetXTitle("#eta ");
+      fhEtaPhiTCardCorrNoSelectionHighE[tm]->SetYTitle("#varphi (rad)");
+      outputContainer->Add(fhEtaPhiTCardCorrNoSelectionHighE[tm]);
       
+      fhColRowTCardCorrNoSelectionLowE[tm] = new TH2F
+      (Form("hColRowTCardCorrNoSelectionLowE%s",add[tm].Data()),
+       Form("column vs row, max E cell for TCard correlation selected clusters, E > 2 GeV %s",add[tm].Data()),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhColRowTCardCorrNoSelectionLowE[tm]->SetYTitle("row");
+      fhColRowTCardCorrNoSelectionLowE[tm]->SetXTitle("column");
+      outputContainer->Add(fhColRowTCardCorrNoSelectionLowE[tm]) ;
+      
+      fhColRowTCardCorrNoSelectionHighE[tm] = new TH2F
+      (Form("hColRowTCardCorrNoSelectionHighE%s",add[tm].Data()),
+       Form("column vs row, max E cell for TCard correlation selected clusters, E > 8 GeV %s",add[tm].Data()),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhColRowTCardCorrNoSelectionHighE[tm]->SetYTitle("row");
+      fhColRowTCardCorrNoSelectionHighE[tm]->SetXTitle("column");
+      outputContainer->Add(fhColRowTCardCorrNoSelectionHighE[tm]) ;
+
       fhNCellsTCardCorrNoSelection[tm]  = new TH2F 
       (Form("hNCellsTCardCorrNoSelection%s",add[tm].Data()),
        Form("# custer # cells vs #it{E} %s",add[tm].Data()),
@@ -3057,6 +3118,38 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhNCellsTCardCorrelN[i][tm]->SetYTitle("#it{n}_{cells}");
         outputContainer->Add(fhNCellsTCardCorrelN[i][tm]);
         
+        fhEtaPhiTCardCorrelNLowE[i][tm]  = new TH2F 
+        (Form("hEtaPhiTCardCorrelNLowE_Case%d%s",i,add[tm].Data()),
+         Form("#eta vs #varphi, max E cell correl with TCard cell, N corr = %d %s",i,add[tm].Data()),
+         netabins,etamin,etamax,nphibins,phimin,phimax); 
+        fhEtaPhiTCardCorrelNLowE[i][tm]->SetXTitle("#eta ");
+        fhEtaPhiTCardCorrelNLowE[i][tm]->SetYTitle("#varphi (rad)");
+        outputContainer->Add(fhEtaPhiTCardCorrelNLowE[i][tm]); 
+        
+        fhEtaPhiTCardCorrelNHighE[i][tm]  = new TH2F 
+        (Form("hEtaPhiTCardCorrelNHighE_Case%d%s",i,add[tm].Data()),
+         Form("#eta vs #varphi, max E cell correl with TCard cell, N corr = %d %s",i,add[tm].Data()),
+         netabins,etamin,etamax,nphibins,phimin,phimax); 
+        fhEtaPhiTCardCorrelNHighE[i][tm]->SetXTitle("#eta ");
+        fhEtaPhiTCardCorrelNHighE[i][tm]->SetYTitle("#varphi (rad)");
+        outputContainer->Add(fhEtaPhiTCardCorrelNHighE[i][tm]);
+        
+        fhColRowTCardCorrelNLowE[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelNLowE_Case%d%s",i,add[tm].Data()),
+         Form("column vs row, max E cell correl with TCard cell, E > 2 GeV, N corr = %d %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelNLowE[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelNLowE[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelNLowE[i][tm]) ;
+        
+        fhColRowTCardCorrelNHighE[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelNHighE_Case%d%s",i,add[tm].Data()),
+         Form("column vs row, max E cell correl with TCard cell, E > 8 GeV, N corr = %d %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelNHighE[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelNHighE[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelNHighE[i][tm]) ;
+
         fhLambda0TCardCorrelNExotic[i][tm]  = new TH2F 
         (Form("hLambda0TCardCorrelN_Exotic_Case%d%s",i,add[tm].Data()),
          Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with TCard cell, exo > 0.97, N corr = %d %s",i,add[tm].Data()),
@@ -3202,6 +3295,22 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhEtaPhiTCardCorrelOtherTCardHighE[i][tm]->SetXTitle("#eta ");
         fhEtaPhiTCardCorrelOtherTCardHighE[i][tm]->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaPhiTCardCorrelOtherTCardHighE[i][tm]);
+        
+        fhColRowTCardCorrelOtherTCardLowE[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelOtherTCardLowE_Case%d%s",i,add[tm].Data()),
+         Form("column vs row for different 2 TCard correlation cases, E > 2 GeV, case %d %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelOtherTCardLowE[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelOtherTCardLowE[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelOtherTCardLowE[i][tm]) ;
+
+        fhColRowTCardCorrelOtherTCardHighE[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelOtherTCardHighE_Case%d%s",i,add[tm].Data()),
+         Form("column vs row for different 2 TCard correlation cases, E > 8 GeV, case %d %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelOtherTCardHighE[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelOtherTCardHighE[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelOtherTCardHighE[i][tm]) ;
       }
       
       for(Int_t i = 0; i < 12; i++)
