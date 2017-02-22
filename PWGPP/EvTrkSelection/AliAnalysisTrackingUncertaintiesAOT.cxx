@@ -284,7 +284,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
   if (IsVertexAccepted(fESD)) {
     histVertexSelection->Fill(fVertex->GetZ(), 0);
   } else {
-    histVertexSelection->Fill(fVertex->GetZ(), 1);
+    if(fVertex) histVertexSelection->Fill(fVertex->GetZ(), 1);
     PostData(1, fListHist);
     return;
   }
