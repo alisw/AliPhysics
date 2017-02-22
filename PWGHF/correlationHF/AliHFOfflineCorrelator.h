@@ -36,6 +36,7 @@
 #include "TTree.h"
 #include "TRandom3.h"
 #include "TStopwatch.h"
+#include "TDatabasePDG.h"
 #include "AliHFAssociatedTrackCuts.h"
 
 using std::vector;
@@ -55,8 +56,15 @@ class AliHFCorrelationBranchD : public TObject
     UShort_t BC_D;
     Short_t  IDtrig_D;
     Short_t  sel_D;
+    Float_t  pXdaug1_D;
+    Float_t  pXdaug2_D;
+    Float_t  pYdaug1_D;
+    Float_t  pYdaug2_D;
+    Float_t  pZdaug1_D;
+    Float_t  pZdaug2_D;
+    UShort_t hyp_D; //1 or 2 (no 3, because double hypotheses are filled as separate entries)
 
-    ClassDef(AliHFCorrelationBranchD,1);
+    ClassDef(AliHFCorrelationBranchD,2);
 };
 
 class AliHFCorrelationBranchTr : public TObject
@@ -77,7 +85,7 @@ class AliHFCorrelationBranchTr : public TObject
     Short_t  IDtrig4_Tr;
     Short_t  sel_Tr;
 
-    ClassDef(AliHFCorrelationBranchTr,1);
+    ClassDef(AliHFCorrelationBranchTr,2);
 };
 
 class AliHFOfflineCorrelator : public TObject
@@ -112,6 +120,7 @@ public:
     void SetNumSelD(Int_t sel) {fNumSelD=sel;}
     void SetNumSelTr(Int_t sel) {fNumSelTr=sel;}
     void SetCentralitySelection(Double_t min, Double_t max) {fMinCent=min; fMaxCent=max;} //activated only if both values are != 0
+    void SetRemoveSoftPionInME(Bool_t remove) {fRemoveSoftPiInME=remove;}
     void SetDebugLevel(Int_t deb=0) {fDebug=deb;}
 
     Bool_t Correlate();
@@ -122,6 +131,7 @@ public:
     void GetCorrelationsValue(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr, Double_t &deltaPhi, Double_t &deltaEta);
     Double_t GetEfficiencyWeight(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr);
     Double_t GetEfficiencyWeightDOnly(AliHFCorrelationBranchD *brD);
+    Bool_t IsSoftPionFromDstar(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr);
     Int_t PtBin(Double_t pt) const;
     Int_t GetPoolBin(Double_t mult, Double_t zVtx) const;
     Bool_t DefinePeriodWeights();
@@ -143,18 +153,18 @@ private:
 
     Int_t fNBinsPt;			//number of D-meson pT bins
     Int_t fnPools;			//number of ME pools (total)
-    Int_t fnMultPools;		//number of ME pools (multiplicity)
-    Int_t fnzVtxPools;		//number of ME pools (z vertex)
-	Int_t fFirstBinNum;		//number of first bin for the name of the output plots
-	Int_t fNumSelD;			//number of selection for D meson (0=default selection; 1,2,3,... = alternate selections)
-	Int_t fNumSelTr;		//number of selection for assoc tracks (0=default selection; 1,2,3,... = alternate selections)
+    Int_t fnMultPools;			//number of ME pools (multiplicity)
+    Int_t fnzVtxPools;			//number of ME pools (z vertex)
+    Int_t fFirstBinNum;			//number of first bin for the name of the output plots
+    Int_t fNumSelD;			//number of selection for D meson (0=default selection; 1,2,3,... = alternate selections)
+    Int_t fNumSelTr;			//number of selection for assoc tracks (0=default selection; 1,2,3,... = alternate selections)
     Int_t fDebug;
 
     Int_t fMinD;			//start of loop on D mesons
     Int_t fMaxD;			//end of loop on D mesons
-    Int_t fMaxTracks;		//maximum number of tracks (of the tree, i.e. integrated over everything) to be used in ME correlations
-    Double_t fMinCent;		//minimum centrality 
-    Double_t fMaxCent;		//maximum centrality 
+    Int_t fMaxTracks;			//maximum number of tracks (of the tree, i.e. integrated over everything) to be used in ME correlations
+    Double_t fMinCent;			//minimum centrality 
+    Double_t fMaxCent;			//maximum centrality 
 
     std::vector<Double_t>  fPtBinsDLow;	//lower edges of D-meson pT bins
     std::vector<Double_t>  fPtBinsDUp; 	//upper edges of D-meson pT bins
@@ -188,6 +198,7 @@ private:
     Bool_t fUseEff;			//flag to use D-meson and track efficiency
     Bool_t fMake2DPlots; 		//flag to produce 2D plots for sign.region and SB
     Bool_t fWeightPeriods;		//flag to weight periods in ME analysis with max number of tracks used
+    Bool_t fRemoveSoftPiInME;		//flag to remove soft pions in ME analysis for D0 meson (SE rejection is done in the task)
 
     ClassDef(AliHFOfflineCorrelator,2); // class for plotting HF correlations
 

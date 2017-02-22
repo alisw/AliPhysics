@@ -112,7 +112,8 @@ fOutputFileName(0),
 fNameCutObj(0),
 fUseEff(0),
 fMake2DPlots(kFALSE),
-fWeightPeriods(kTRUE)
+fWeightPeriods(kTRUE),
+fRemoveSoftPiInME(kTRUE)
 {
 
 }
@@ -167,7 +168,8 @@ fOutputFileName(source.fOutputFileName),
 fNameCutObj(source.fNameCutObj),
 fUseEff(source.fUseEff),
 fMake2DPlots(source.fMake2DPlots),
-fWeightPeriods(source.fWeightPeriods)
+fWeightPeriods(source.fWeightPeriods),
+fRemoveSoftPiInME(source.fRemoveSoftPiInME)
 {
 
 }
@@ -226,6 +228,7 @@ fNameCutObj = orig.fNameCutObj;
 fUseEff = orig.fUseEff;
 fMake2DPlots = orig.fMake2DPlots;
 fWeightPeriods = orig.fWeightPeriods;
+fRemoveSoftPiInME = orig.fRemoveSoftPiInME;
 
 return *this; //returns pointer of the class
 }
@@ -575,6 +578,11 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       Double_t deltaPhi, deltaEta;
       GetCorrelationsValue(brD,brTr,deltaPhi,deltaEta);
 
+      if(fRemoveSoftPiInME && fAnType==kME && deltaPhi > -0.2 && deltaPhi < 0.2 && deltaEta > -0.2 && deltaEta < 0.2) { //ME fake soft pi cut
+		Bool_t reject = IsSoftPionFromDstar(brD,brTr);
+		if(reject) continue;
+	  }
+
       for(Int_t iRng=0; iRng<(int)fPtBinsTrLow.size(); iRng++) {  //loop on associated track ranges
 
         //fill 3D and 2D correlation plots
@@ -829,6 +837,47 @@ void AliHFOfflineCorrelator::SaveOutputPlots() {
 }
 
 //___________________________________________________________________________________________
+Bool_t AliHFOfflineCorrelator::IsSoftPionFromDstar(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr) {
+	//
+	// Calculates invmass of track+D0 and rejects if compatible with D*
+	// (to remove fake pions from D* in ME events - in SE the cut is applied in the main task)
+	// 
+	Double_t nsigma = 3.;
+	
+	Double_t mPi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+	Double_t mK = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+	Double_t pxD = brD->pT_D*TMath::Cos(brD->phi_D);
+	Double_t pyD = brD->pT_D*TMath::Sin(brD->phi_D);
+	Double_t pzD = brD->pT_D*TMath::SinH(brD->eta_D);
+	Double_t pxTr = brTr->pT_Tr*TMath::Cos(brTr->phi_Tr);
+	Double_t pyTr = brTr->pT_Tr*TMath::Sin(brTr->phi_Tr);
+	Double_t pzTr = brTr->pT_Tr*TMath::SinH(brTr->eta_Tr);
+	Double_t invmassDstar1 = 0, invmassDstar2 = 0; 
+	
+	//hyp 1 (pi,K) - D0
+	Double_t e1Pi = TMath::Sqrt(mPi*mPi + TMath::Power(brD->pXdaug1_D,2) + TMath::Power(brD->pYdaug1_D,2) + TMath::Power(brD->pZdaug1_D,2));
+	Double_t e2K = TMath::Sqrt(mK*mK + TMath::Power(brD->pXdaug2_D,2) + TMath::Power(brD->pYdaug2_D,2) + TMath::Power(brD->pZdaug2_D,2));
+	//hyp 2 (K,pi) - D0bar
+	Double_t e1K = TMath::Sqrt(mK*mK + TMath::Power(brD->pXdaug1_D,2) + TMath::Power(brD->pYdaug1_D,2) + TMath::Power(brD->pZdaug1_D,2));
+	Double_t e2Pi = TMath::Sqrt(mPi*mPi + TMath::Power(brD->pXdaug2_D,2) + TMath::Power(brD->pYdaug2_D,2) + TMath::Power(brD->pZdaug2_D,2));
+		
+	Double_t psum2 = TMath::Power(pxD+pxTr,2) + TMath::Power(pyD+pyTr,2) + TMath::Power(pyD+pyTr,2);
+
+	switch(brD->hyp_D) { //there's no 3, since each mass hypothesis is filled separately (and 3's are fileld two times, one as 1 and one as 2)
+		case 1:
+			invmassDstar1 = TMath::Sqrt(pow(e1Pi+e2K+TMath::Sqrt(mPi*mPi + pxTr*pxTr + pyTr*pyTr + pzTr*pzTr),2.)-psum2);
+			if ((TMath::Abs(invmassDstar1-brD->invMass_D)-0.14543) < nsigma*800.*pow(10.,-6.)) return kTRUE;
+			break;
+		case 2:
+			invmassDstar2 = TMath::Sqrt(pow(e2Pi+e1K+TMath::Sqrt(mPi*mPi + pxTr*pxTr + pyTr*pyTr + pzTr*pzTr),2.)-psum2);
+			if ((TMath::Abs(invmassDstar2-brD->invMass_D)-0.14543) < nsigma*800.*pow(10.,-6.)) return kTRUE;
+			break;
+	}
+	
+	return kFALSE;
+}
+
+//___________________________________________________________________________________________
 void AliHFOfflineCorrelator::PrintCfg() const {
 
   std::cout << "*************** Configuration ***************\n";
@@ -872,6 +921,8 @@ void AliHFOfflineCorrelator::PrintCfg() const {
   std::cout << " Produce 2D plots = "<<fMake2DPlots<<"\n";
   std::cout << "----------------------------------------------\n";
   std::cout << " Weight periods (if ME) = "<<fWeightPeriods<<"\n";
+  std::cout << "----------------------------------------------\n";
+  std::cout << " Fake soft pi rejection in Me (D0) = "<<fRemoveSoftPiInME<<"\n";
   std::cout << "----------------------------------------------\n";
 }
 

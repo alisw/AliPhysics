@@ -33,8 +33,9 @@ void CorrelateOffline(
    Int_t numSelD=0, Int_t numSelTr=0, //# of selection for D and tracks (0=default selection; 1,2,3,... = alternate selections)
    Int_t wgtPeriods=kTRUE, //weight periods in ME analysis (keep enabled)
    TString nameOutputFile="OfflineCorrelations.root",
-   Int_t firstBinNum=0, //numbering of pTbin in AnalysisResults.root corresponding to the lowest pTbin to extract (as defined later in the macro) ***PAY ATTENTION TO THIS ARGUMENT***
-   Double_t mincent=0., maxcent=0., //centrality (or multiplicity) selection ***ACTIVE ONLY IF BOTH VALS ARE =! 0***) 
+   Int_t firstBinNum=0, //start of numbering for the pTbins in input file
+   Double_t mincent=0., maxcent=0., //centrality (or multiplicity) selection ***ACTIVE ONLY IF BOTH VALS ARE =! 0*** 
+   Bool_t removeSoftPiInME=kTRUE) //if active, removes 'fake' soft pions in ME (for SE, softpicut flag is in analysis task). No effect on D* and D+ analyses
 {
 
   AliHFOfflineCorrelator *correlator = new AliHFOfflineCorrelator();
@@ -50,7 +51,8 @@ void CorrelateOffline(
   correlator->SetNumSelD(numSelD);
   correlator->SetNumSelTr(numSelTr);
   correlator->SetCentralitySelection(mincent,maxcent);
-
+  correlator->SetRemoveSoftPionInME(removeSoftPiInME);
+ 
   if(!flagSpecie) return;
 
   SetPtRanges(correlator,make2Dplots);
@@ -83,8 +85,6 @@ void SetInputNames(AliHFOfflineCorrelator *correlator) {
 //________________________________________
 void SetPtRanges(AliHFOfflineCorrelator *correlator, Bool_t make2Dplots) {
 
-  //WARNING: pay attention that the pT bin definition matches with firstBinNum argument set in the macro!
-  //firstBinNum has to be the number of the pT bin of the AnalysisResults.root corresponding to the lowest pT edge defined here! Otherwise result will be wrong!
   const Int_t nptbins = 7;
   Double_t ptBinsD[nptbins+1] = {3.,4.,5.,6.,7.,8.,12.,16.};
   correlator->SetDPtBins(nptbins,ptBinsD);  

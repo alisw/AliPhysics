@@ -2850,12 +2850,21 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
     fBranchD->BC_D = (UShort_t)aod->GetBunchCrossNumber();
     fBranchD->IDtrig_D = (Short_t)fNtrigD;
     fBranchD->sel_D = (Short_t)1; //******DUMMY FOR THE MOMENT******* - To be used for multiple selection fills (2^n = 1 if selction n is ok)
+    fBranchD->pXdaug1_D = (Float_t)((AliVTrack*)d->GetDaughter(0))->Px();
+    fBranchD->pXdaug2_D = (Float_t)((AliVTrack*)d->GetDaughter(1))->Px();
+    fBranchD->pYdaug1_D = (Float_t)((AliVTrack*)d->GetDaughter(0))->Py();
+    fBranchD->pYdaug2_D = (Float_t)((AliVTrack*)d->GetDaughter(1))->Py();
+    fBranchD->pZdaug1_D = (Float_t)((AliVTrack*)d->GetDaughter(0))->Pz();
+    fBranchD->pZdaug2_D = (Float_t)((AliVTrack*)d->GetDaughter(1))->Pz();
+    fBranchD->hyp_D = (UShort_t)fIsSelectedCandidate;
     if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) && allowD0) {
       fBranchD->invMass_D = (Float_t)mD0;
+      fBranchD->hyp_D = (UShort_t)1;
       fTreeD->Fill();
     }
     if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) && allowD0bar) {
       fBranchD->invMass_D = (Float_t)mD0bar;
+      fBranchD->hyp_D = (UShort_t)2;
       fTreeD->Fill();
     }
 
@@ -2870,7 +2879,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
       fTrackArrayFilled = kTRUE;
     }
  
-    //soft pion rejection
+    //soft pion rejection (for SE, in ME it's done in the AliHFOfflineCorrelator class
     for(Int_t iTrack = 0; iTrack<fTrackArray->GetEntriesFast(); iTrack++) { // looping on track candidates
       AliReducedParticle* track = (AliReducedParticle*)fTrackArray->At(iTrack);
       if(fSoftPiCut && !track->CheckSoftPi()) {  //identifies soft pions for the trigger under analysis and associate it to the track
@@ -2997,6 +3006,13 @@ void AliAnalysisTaskSED0Correlations::ResetBranchD() {
   fBranchD->BC_D = 0;
   fBranchD->IDtrig_D = 0;
   fBranchD->sel_D = 0;
+  fBranchD->pXdaug1_D = 0.;
+  fBranchD->pXdaug2_D = 0.;
+  fBranchD->pYdaug1_D = 0.;
+  fBranchD->pYdaug2_D = 0.;
+  fBranchD->pZdaug1_D = 0.;
+  fBranchD->pZdaug2_D = 0.;
+  fBranchD->hyp_D = 4;  //it can go from 0 to 2, so if you have a 4 in the TTree something's wrong in the filling...
 
   return;
 }
