@@ -118,6 +118,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFCTPLatency.h"
 #include "AliTOFT0Fill.h"
 #include "AliTOFRunParams.h"
+#include "AliTOFCalibFineSlewing.h"
 #include "AliLHCClockPhase.h"
 #include "AliTOFResponseParams.h"
 #include "AliESDEvent.h"
@@ -125,6 +126,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TRandom.h"
 #include "AliGRPObject.h"
 #include "AliRecoParam.h"
+#include "TGraph.h"
 
 class TROOT;
 class TStyle;
@@ -133,6 +135,8 @@ class TStyle;
 extern TStyle *gStyle;
 
 ClassImp(AliTOFcalib)
+
+Bool_t AliTOFcalib::fgUseFineSlewing = kTRUE;
 
 //_______________________________________________________________________
 AliTOFcalib::AliTOFcalib():
@@ -161,6 +165,7 @@ AliTOFcalib::AliTOFcalib():
   fResponseParams(NULL),
   fReadoutEfficiency(NULL),
   fProblematic(NULL),
+  fFineSlewing(NULL),
   fInitFlag(kFALSE),
   fRemoveMeanT0(kTRUE),
   fUseLHCClockPhase(kFALSE),
@@ -201,6 +206,7 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fResponseParams(NULL),
   fReadoutEfficiency(NULL),
   fProblematic(NULL),
+  fFineSlewing(NULL),
   fInitFlag(calib.fInitFlag),
   fRemoveMeanT0(calib.fRemoveMeanT0),
   fUseLHCClockPhase(calib.fUseLHCClockPhase),
@@ -241,7 +247,8 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   if (calib.fResponseParams) fResponseParams = new AliTOFResponseParams(*calib.fResponseParams);
   if (calib.fReadoutEfficiency) fReadoutEfficiency = new TH1F(*calib.fReadoutEfficiency);
   if (calib.fProblematic) fProblematic = new TH1C(*calib.fProblematic);
-
+  if (calib.fFineSlewing) fFineSlewing = new AliTOFCalibFineSlewing(*calib.fFineSlewing);
+  
   gRandom->SetSeed(123456789);
 }
 
@@ -308,6 +315,10 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
     if (fProblematic) *fProblematic = *calib.fProblematic;
     else fProblematic = new TH1C(*calib.fProblematic);
   }
+  if (calib.fFineSlewing) {
+    if (fFineSlewing) *fFineSlewing = *calib.fFineSlewing;
+    else fFineSlewing = new AliTOFCalibFineSlewing(*calib.fFineSlewing);
+  }
   fInitFlag = calib.fInitFlag;
   fRemoveMeanT0 = calib.fRemoveMeanT0;
   fUseLHCClockPhase = calib.fUseLHCClockPhase;
@@ -355,6 +366,7 @@ AliTOFcalib::~AliTOFcalib()
     if (fResponseParams) delete fResponseParams;
     if (fReadoutEfficiency) delete fReadoutEfficiency;
     if (fProblematic) delete fProblematic;
+    if (fFineSlewing) delete fFineSlewing;
   }
   if (fTree!=0x0) delete fTree;
   if (fChain!=0x0) delete fChain;
@@ -2266,6 +2278,29 @@ AliTOFcalib::ReadProblematicFromCDB(const Char_t *sel , Int_t nrun)
 
 //----------------------------------------------------------------------------
 
+Bool_t
+AliTOFcalib::ReadFineSlewingFromCDB(const Char_t *sel , Int_t nrun)
+{
+  /*
+   * read fine-slewing from CDB
+   */
+  
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry *entry = man->Get(Form("%s/FineSlewing", sel),nrun);
+  if (!entry) { 
+    AliFatal("No FineSlewing entry found in CDB");
+    exit(0);  
+  }
+  fFineSlewing = (AliTOFCalibFineSlewing *)entry->GetObject();
+  if(!fFineSlewing){
+    AliFatal("No FineSlewing object found in CDB entry");
+    exit(0);  
+  }  
+  return kTRUE; 
+}
+
+//----------------------------------------------------------------------------
+
 Bool_t 
 AliTOFcalib::Init(Int_t run)
 {
@@ -2338,6 +2373,16 @@ AliTOFcalib::Init(Int_t run)
   if (fUseLHCClockPhase)
     AliInfo("calibration using BPTX LHC clock-phase");
 
+  /* get fine-slewing obj */
+  if (fgUseFineSlewing) {
+    if (!ReadFineSlewingFromCDB("TOF/Calib", run)) {
+      AliError("cannot get \"FineSlewing\" object from OCDB");
+      return kFALSE;
+    }
+    AliInfo("calibration using FINE SLEWING");
+  }
+
+  
   /* all done */
   fInitFlag = kTRUE;
   return kTRUE;
@@ -2387,6 +2432,9 @@ AliTOFcalib::GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l
   corr += tdcLatencyWindow;
   /* time-zero correction */
   corr += timezero;
+  /* fine-slewing calibration */
+  if (fgUseFineSlewing)
+    corr += fFineSlewing->Eval(index, tot);
   /* time calibration correction */
   if (tot < AliTOFGeometry::SlewTOTMin()) 
     tot = AliTOFGeometry::SlewTOTMin();
@@ -2394,7 +2442,7 @@ AliTOFcalib::GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l
     tot = AliTOFGeometry::SlewTOTMax();
   for (Int_t islew = 0; islew < 6; islew++)
     corr += parOffline->GetSlewPar(islew) * TMath::Power(tot, islew) * 1.e3;
-
+  
   /* return correction */
   return corr;
 }

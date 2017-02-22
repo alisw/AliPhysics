@@ -45,6 +45,7 @@ class AliTOFDeltaBCOffset;
 class AliTOFCTPLatency;
 class AliTOFT0Fill;
 class AliTOFRunParams;
+class AliTOFCalibFineSlewing;
 class AliTOFResponseParams;
 class AliESDEvent;
 class AliLHCClockPhase;
@@ -152,6 +153,7 @@ public:
   Bool_t ReadLHCClockPhaseFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadReadoutEfficiencyFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadProblematicFromCDB(const Char_t *sel, Int_t nrun);
+  Bool_t ReadFineSlewingFromCDB(const Char_t *sel, Int_t nrun);
 
   Bool_t Init(Int_t run = -1); // init
   Double_t GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l0l1, UInt_t timestamp); // get time correction
@@ -169,6 +171,8 @@ public:
 
   void SetRunParamsSpecificVersion(Int_t value) {fRunParamsSpecificVersion = value;}; // setter
 
+  static void SetUseFineSlewing(Bool_t val = kTRUE) {fgUseFineSlewing = val;}; // setter
+  
 private:
   Int_t fNChannels; // number of TOF channels
 
@@ -200,6 +204,7 @@ private:
   AliTOFResponseParams *fResponseParams; // run params
   TH1F *fReadoutEfficiency; // readout efficiency
   TH1C *fProblematic; // problematic
+  AliTOFCalibFineSlewing *fFineSlewing; // fine-slewing
   
   Bool_t fInitFlag; // init flag
   Bool_t fRemoveMeanT0; // remove mean T0
@@ -207,8 +212,10 @@ private:
   Bool_t fCalibrateTOFsignal; // calibrate TOF signal
   Bool_t fCorrectTExp; // correct expected time
 
+  static Bool_t fgUseFineSlewing; // use fine-slewing flag
+  
   Int_t fRunParamsSpecificVersion; // RunParams specific version
-  ClassDef(AliTOFcalib,11);
+  ClassDef(AliTOFcalib,12);
 };
 
 #endif // AliTOFcalib_H

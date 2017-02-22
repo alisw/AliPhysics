@@ -74,6 +74,7 @@ set(SRCS
     AliTOFRecoParam.cxx
     AliTOFResponseParams.cxx
     AliTOFRunParams.cxx
+    AliTOFCalibFineSlewing.cxx
     AliTOFSDigit.cxx
     AliTOFT0Fill.cxx
     AliTOFT0FillOnlineCalib.cxx

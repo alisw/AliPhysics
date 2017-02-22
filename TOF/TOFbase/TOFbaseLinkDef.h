@@ -40,6 +40,7 @@
 #pragma link C++ class  AliTOFCTPLatency+;
 #pragma link C++ class  AliTOFT0Fill+;
 #pragma link C++ class  AliTOFRunParams+;
+#pragma link C++ class  AliTOFCalibFineSlewing+;
 #pragma link C++ class  AliTOFResponseParams+;
 #pragma link C++ class  AliTOFT0FillOnlineCalib+;
 #pragma link C++ class  AliTOFDCSmaps+;
