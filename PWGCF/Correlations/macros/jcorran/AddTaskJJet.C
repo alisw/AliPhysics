@@ -116,7 +116,6 @@ AliJJetTask* AddTaskJJet(
     for(int itype = 0; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
         int iF = iStart + itype*nR + iR;
-        cout << "iF: " << iF << endl;
         //== Variables
         //int iHere = iStart - countJetFinder; // array index based 0 in a block
         int iHere = i-iStart; // array index based 0 in a block
@@ -129,7 +128,8 @@ AliJJetTask* AddTaskJJet(
 
         //== JetFinderTask, JetContainer
         TString _clustersCorrName = ( type == "EMCAL" ? clustersCorrName : "" ); // Check if it is EMCAL
-        jetFinderTask[iF] = AddTaskEmcalJet( tracksName, _clustersCorrName, 1, consize, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
+        jetFinderTask[iF] = AddTaskEmcalJet( tracksName, _clustersCorrName, AliJetContainer::antikt_algorithm, consize, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
+        jetFinderTask[iF]->SelectCollisionCandidates(trigger);
         jtTask->SetTrackOrMCParticle( iF, AliJJetTask::kJRecoTrack ); // TODO: Move this to AddJetContainer
         cout << jetFinderTask[iF]->GetName() << endl;
         jetCont[iF] = jtTask->AddJetContainer( jetFinderTask[iF]->GetName(), type, consize ); // TODO: SetTrackOrMCParticle here
@@ -176,7 +176,6 @@ AliJJetTask* AddTaskJJet(
     for(int itype = 0; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
         int iF = iStart + itype*nR + iR;
-        cout << "iF: " << iF << endl;
         //== Variables
         //int iHere = iStart - countJetFinder; // array index based 0 in a block
         //int iHere = i - iStart; // array index based 0 in a block
@@ -189,7 +188,8 @@ AliJJetTask* AddTaskJJet(
 
         //== JetFinderTask, JetContainer
         TString _clustersCorrName = ( type == "EMCAL" ? clustersCorrName : "" ); // Check if it is EMCAL // FIXME: Good for MC particles also? //No clusters in mc particles?
-        jetFinderTask[iF] = AddTaskEmcalJet( tracksNameMC, "", 1, consizeMC, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
+        jetFinderTask[iF] = AddTaskEmcalJet( tracksNameMC, "", AliJetContainer::antikt_algorithm, consizeMC, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
+        jetFinderTask[iF]->SelectCollisionCandidates(trigger);
         cout << jetFinderTask[iF]->GetName() << endl;
         //jetFinderTask[i]->GetParticleContainer(0)->SelectPhysicalPrimaries(kTRUE); 
         // FIXME: DUPLICATION? not needed here, I think // FIXME: Why before ConnectParticleContainer? //I don't think the order matters
@@ -215,7 +215,6 @@ AliJJetTask* AddTaskJJet(
   //-------------------------------------------------------
   Printf("name: %s",name.Data());
 
-  cout << "Add task" << endl;
   mgr->AddTask(jtTask);
 
   // Create containers for input/output

@@ -203,6 +203,7 @@ class AliJJetJtAnalysis{
     AliJBin fJetMultBinMC;
     AliJBin fdRBinMC;
     AliJBin fiHistMC;
+    AliJBin fBgTypeBin;
     AliJBin fiHist2MC;
     AliJTH1D fhNumber;
     AliJTH1D fhKNumber;
@@ -233,6 +234,12 @@ class AliJJetJtAnalysis{
     AliJTH1D fhLogJtWeightBinLimBin;
     AliJTH1D fhLogJtWeight2BinLimBin;
 
+
+    //Histograms for jt in event
+    AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks
+    AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks
+
+
     //Histograms for jt in cone
     AliJTH1D fhJetConeTrkPt; /// Distribution of track pT in constant cone around jet axis
     AliJTH1D fhJetConeTrkPtBin; /// Distribution of track pT in constant cone around jet axis in jet pT bins
@@ -252,7 +259,13 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJetConeLogJtWithPtCutWeightBinBin; /// log(jT) distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT and track pT bins
     AliJTH1D fhJetConeLogJtWithPtCutWeight2BinBin; /// log(jT) distribution with \f$ \frac{1}{j_T^2} \f$ weight for tracks inside constant cone around jet axis in jet pT and track pT bins
 
+
     //Unfolding Background histograms
+    AliJTH1D fhJtUnfBg; /// jT distribution of jet constituents that have no corresponding track in particle level set
+    AliJTH1D fhJtBinUnfBg; /// jT distribution of jet constituents that have no corresponding track in particle level set in jet pT bins
+    AliJTH1D fhJtWeightBinUnfBg; /// jT distribution with \f$\frac{1}{j_T}\f$ weight of jet constituents that have no corresponding track in particle level set in jet pT bins
+    AliJTH1D fhLogJtWeightBinUnfBg; /// log(jT) distribution with \f$\frac{1}{j_T}\f$ weight of jet constituents that have no corresponding track in particle level set in jet pT bins
+    AliJTH1D fhLogJtWeight2BinUnfBg; /// log(jT) distribution with \f$\frac{1}{j_T^2}\f$ weight of jet constituents that have no corresponding track in particle level set in jet pT bins
     AliJTH1D fhJetConeJtUnfBg; /// jT distribution of tracks inside jet cone that have no corresponding track in particle level set
     AliJTH1D fhJetConeJtBinUnfBg; /// jT distribution of tracks inside jet cone that have no corresponding track in particle level set in jet pT bins
     AliJTH1D fhJetConeJtWeightBinUnfBg; /// jT distribution with \f$\frac{1}{j_T}\f$ weight of tracks inside jet cone that have no corresponding track in particle level set in jet pT bins
@@ -297,7 +310,8 @@ class AliJJetJtAnalysis{
     AliJTH1D fhBgRndmTrkPt;
     AliJTH1D fhBgRndmZ;
     AliJTH1D fhBgRndmRBin; /// R distribution in random background in jet pT bins \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2}
-    AliJTH1D fhBgRndmJt;
+    AliJTH1D fhBgRndmJt; /// Random background jT distribution
+    AliJTH1D fhBgRndmJtBin; /// Random background jT distribution in jet pT bins
     AliJTH1D fhBgRndmLogJt;
     AliJTH1D fhBgRndmJtWithPtCutWeightBin;
     AliJTH1D fhBgRndmLogJtWithPtCutWeight2Bin;
@@ -361,7 +375,9 @@ class AliJJetJtAnalysis{
 
     //Pythia background
     AliJTH1D fhBgJtPythia; /// jT background for Pythia
+    AliJTH1D fhBgJtPythiaTrackType; /// jT background track type for Pythia
     AliJTH1D fhBgJtBinPythia; /// jT background for Pythia in jet pT bins
+    AliJTH1D fhBgJtBinPythiaTypeBin; /// jT background for Pythia in jet pT bins in bg track origin bins, 0 = no mother track found, 1 = mother outside acceptance, 2 = original track, 3 = ijet < 0; 4 = more than 0.4 away from origin
     AliJTH1D fhBgJtWeightBinPythia; /// jT background for Pythia with \f$ \frac{1}{j_T} \f$ weight in jet pT bins
     AliJTH1D fhBgLogJtWeightBinPythia; /// log(jT) background for Pythia with \f$ \frac{1}{j_T} \f$ weight in jet pT bins 
     AliJTH1D fhBgLogJtWeight2BinPythia; /// log(jT) background for Pythia with \f$ \frac{1}{j_T^2} \f$ weight in jet pT bins
