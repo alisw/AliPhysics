@@ -925,7 +925,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	{
 		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,1,1);//correlate with same event
 		else               CorrelatePi0AndTrack(tracks,0,1,1);    //correlate with same event
-	}
+		//	} include gama mixing within this if statement
 
 
 
@@ -997,13 +997,12 @@ Int_t AccClus=0;
 
 
 	 Int_t nclusthis = thisEvent.nHits;
-	 //std::cout<<Form("Summary of Hits: %d, %d", NoOfClustersInEvent, nclusthis)<<std::endl;
-
 
 	Int_t vtxClass = 1;
 	Int_t MulClass = 4;
 
-	//////////GetMulClassPi0(MulClass);
+	GetMulClassPi0(MulClass);
+	//	std::cout<<Form("Summary of Hits: %d, %d, %d, %d,%d,%d; MulClass and Total", AccClus, nclusthis, MulClass, NoOfClustersInEvent,fCurrentEventTrigger,fTriggerType)<<std::endl;
 
 	Float_t phitrig = 0;
 	Float_t thetatrig = 0;
@@ -1017,7 +1016,7 @@ Int_t AccClus=0;
 	  // AliWarning("event outside defined classes");
 	  //	}
 
-                                                    //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
+	}                                           //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 
 	if( fMCorData==0)	ProcessMC();
 
@@ -1231,10 +1230,9 @@ clustersClone = CloneClustersTObjArray(clustersCont);
     nclus = clusters->GetEntries();
 
 //   //const int MultCut[8] = {5, 15, 30, 50, 80, 120, 300, 9999};
-   const int MultCut[nMulClass] = {5, 12, 20 ,50, 9999};
+   const int MultCut[nMulClass] = {5, 12, 20 ,50, 100, 250, 500, 9999};
 
    imcl=0;
-
    for (imcl=0; imcl<nMulClass; imcl++) {
      if (nclus < MultCut[imcl]) break;
    }
@@ -1281,52 +1279,51 @@ clustersClone = CloneClustersTObjArray(clustersCont);
 //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 void AliAnalysisTaskGammaHadron::ProcessMC()
 {
-  std::cout<<" MCWHEEEEEEEEEEEEE! "<<std::endl;
    if (fMCorData==1)
     return;
 
-AliMCEvent *mcEvent = MCEvent();
-  if (!mcEvent){
-    cout << "no MC event" << endl;
-    return;
-  }
+// AliMCEvent *mcEvent = MCEvent();
+//   if (!mcEvent){
+//     cout << "no MC event" << endl;
+//     return;
+//   }
 
   // get vertex
-  const AliVVertex *evtVtx = mcEvent->GetPrimaryVertex();
-  if (!evtVtx)
-    return;
+  // const AliVVertex *evtVtx = mcEvent->GetPrimaryVertex();
+  // if (!evtVtx)
+  //   return;
 
-    // read event
-  mcEvent->PreReadAll();
+  //   // read event
+  // mcEvent->PreReadAll();
 
-   // get number of MC particles
-  Int_t nTracks = mcEvent->GetNumberOfPrimaries();
+  //  // get number of MC particles
+  // Int_t nTracks = mcEvent->GetNumberOfPrimaries();
 
-    std::cout<<" nTracks "<<nTracks<<std::endl;
+  //   std::cout<<" nTracks "<<nTracks<<std::endl;
 
-    // loop through MC particles
-  for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
-    // get particle at index iTrack
-    AliMCParticle *mcP = static_cast<AliMCParticle*>(mcEvent->GetTrack(iTrack));
-    if (!mcP)
-      continue;
+  //   // loop through MC particles
+  // for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
+  //   // get particle at index iTrack
+  //   AliMCParticle *mcP = static_cast<AliMCParticle*>(mcEvent->GetTrack(iTrack));
+  //   if (!mcP)
+  //     continue;
 
-    std::cout<<" pdg "<<mcP->PdgCode()<<std::endl;
+  //   std::cout<<" pdg "<<mcP->PdgCode()<<std::endl;
 
-     // pion or eta meson or direct photon
-    if(mcP->PdgCode() == 111) {
-    } else if(mcP->PdgCode() == 221) {
-    } else if(mcP->PdgCode() == 22 ) {
-    } else
-      continue;
+  //    // pion or eta meson or direct photon
+  //   if(mcP->PdgCode() == 111) {
+  //   } else if(mcP->PdgCode() == 221) {
+  //   } else if(mcP->PdgCode() == 22 ) {
+  //   } else
+  //     continue;
 
-     Double_t dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX())*(mcP->Xv()-evtVtx->GetX()) +
-                              (mcP->Yv()-evtVtx->GetY())*(mcP->Yv()-evtVtx->GetY()));
-    if(dR > 0.1)
-      continue;
+  //    Double_t dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX())*(mcP->Xv()-evtVtx->GetX()) +
+  //                             (mcP->Yv()-evtVtx->GetY())*(mcP->Yv()-evtVtx->GetY()));
+  //   if(dR > 0.1)
+  //     continue;
 
 
-  }
+  // }
 
 
 }
@@ -1363,10 +1360,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	Int_t PtClass=0;
 	Int_t MulClass = 4;
 	Int_t olapswitch=0;
-	//////////GetMulClassPi0(MulClass);
-	//std::cout<<"    "<<MulClass<<std::endl;   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
-
-
+	GetMulClassPi0(MulClass);
+	//std::cout<<"    "<<MulClass<<std::endl;   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<
 	//...........................................
 	//do a small loop to count the triggers in this event
     //** we don't need this loop here any longer because we will
@@ -1374,6 +1369,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	//** total pi0 count beforehand!!!!!
 	if(SameMix==1)
 	{
+	  //cout<<" this: "<<NoOfClustersInEvent<<" MulClass: "<<MulClass<<endl;
+	   //Int_t once =0;//.,.,.,.,.,
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 		{
 			cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
@@ -1385,13 +1382,18 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			clusters->GetMomentum(CaloClusterVec, cluster);
 			//acc if pi0 candidate
 			nAccClusters++;
-
 			for (Int_t iOld=0;iOld<nEvt;iOld++){  //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 			  EmcEventPi0 OldEvent = EmcEventList[MulClass][vtxClass][PtClass][iOld];
 			  Int_t nclusold = OldEvent.nHits;
+
+			  //if(once == 0){
+			  //  cout<<"            old: "<<nclusold<<" MulClass"<<MulClass<<endl;
+			  //}
 			  for (Int_t iii = 0; iii<nclusold; ++iii) {
 			    OldClusterVec = OldEvent.hit[iii].thishit;
-
+			    // if(once == 0){
+			    //  cout<<iii<<endl;
+			    //}
 			    olapswitch = 0;
 			    for(Int_t c = 0; c<cluster->GetNCells(); c++){
 			      for(int n : OldEvent.hit[iii].CellRay){
@@ -1414,7 +1416,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			  }
 			  //if(nAccClusters==1) std::cout<<Form("%d, %d", iOld, nclusold)<<std::endl;
 			}                                      //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
-
+			//	once++; //.,.,.,.,.,,,,,.......
 
 
 			for(Int_t NoCluster2 = 0; NoCluster2 < NoOfClustersInEvent; NoCluster2++ )
