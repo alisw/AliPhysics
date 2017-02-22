@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$  yabba yabba */
+
 //---------------------------------------------------------------------
 // Class for input particles
 // manages the search for jets
