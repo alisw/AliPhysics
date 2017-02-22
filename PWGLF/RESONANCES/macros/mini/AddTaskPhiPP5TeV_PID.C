@@ -17,6 +17,7 @@ enum eventCutSet { kEvtDefault=0,
 		   kMCEvtDefault, //=5                   
 		   kSpecial1, //=6                   
 		   kSpecial2, //=7
+		   kSpecial3, //=9 
 		   kNoEvtSel //=8
                  };
 
@@ -52,7 +53,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask=AliVEvent::kINT7;
-  if(isMC && evtCutSetID==eventCutSet::kNoEvtSel) triggerMask=AliVEvent::kAny;
+  if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
   Int_t       MultBins=aodFilterBit/100;
@@ -132,7 +133,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;
-  if(evtCutSetID!=eventCutSet::kNoEvtSel){
+  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3){
     cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
     if(!MultBins){
       cutEventUtils->SetCheckIncompleteDAQ();
@@ -161,7 +162,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
     }else if(cutEventUtils && !cutVertex){
       eventCuts->AddCut(cutEventUtils);
       eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
-    }else if(!cutEventUtils && !cutVertex){
+    }else if(!cutEventUtils && cutVertex){
       eventCuts->AddCut(cutVertex);
       eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
     }
