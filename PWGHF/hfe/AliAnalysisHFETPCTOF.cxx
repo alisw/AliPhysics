@@ -136,12 +136,22 @@ AliAnalysisHFETPCTOF::AliAnalysisHFETPCTOF(const char *name)
 ,fTpcNclsAsso(80)
 ,fInvMass(0)
 ,fInvMassBack(0)
+,fInvMass1(0)
+,fInvMassBack1(0)
+,fInvMass2(0)
+,fInvMassBack2(0)
+,fInvMass3(0)
+,fInvMassBack3(0)
+,fInvMass4(0)
+,fInvMassBack4(0)
 ,fDCA(0)
 ,fDCABack(0)
 ,fAngle(0)
 ,fAngleBack(0)
 ,fPtElec_ULS(0)
 ,fPtElec_LS(0)
+,fTPCnSigmaPElec_ULS(0)
+,fTPCnSigmaPElec_LS(0)
 ,fPtElec_ULS_MC(0)
 ,fPtElec_LS_MC(0)
 ,fPtElec_ULS_MC_from_pi0(0)
@@ -209,6 +219,11 @@ AliAnalysisHFETPCTOF::AliAnalysisHFETPCTOF(const char *name)
 ,fPt_HFelec_passTOFandTPC_2(0)
 ,fPt_HFelec_passTPC_2(0)
 ,fPt_HFelec_pass_track(0)
+,fPt_HFelec_pass_trackDCA(0)
+,fPt_HFelec_pass_trackITSlayer(0)
+,fPt_HFelec_pass_trackFB(0)
+,fPt_HFelec_pass_trackTPCITS(0)
+,fPt_HFelec_pass_trackKink(0)
 ,fPt_HFelec_pass_trackandTOF(0)
 
 
@@ -303,12 +318,22 @@ AliAnalysisHFETPCTOF::AliAnalysisHFETPCTOF()
 ,fTpcNclsAsso(80)
 ,fInvMass(0)
 ,fInvMassBack(0)
+,fInvMass1(0)
+,fInvMassBack1(0)
+,fInvMass2(0)
+,fInvMassBack2(0)
+,fInvMass3(0)
+,fInvMassBack3(0)
+,fInvMass4(0)
+,fInvMassBack4(0)
 ,fDCA(0)
 ,fDCABack(0)
 ,fAngle(0)
 ,fAngleBack(0)
 ,fPtElec_ULS(0)
 ,fPtElec_LS(0)
+,fTPCnSigmaPElec_ULS(0)
+,fTPCnSigmaPElec_LS(0)
 ,fPtElec_ULS_MC(0)
 ,fPtElec_LS_MC(0)
 ,fPtElec_ULS_MC_from_pi0(0)
@@ -376,6 +401,11 @@ AliAnalysisHFETPCTOF::AliAnalysisHFETPCTOF()
 ,fPt_HFelec_passTOFandTPC_2(0)
 ,fPt_HFelec_passTPC_2(0)
 ,fPt_HFelec_pass_track(0)
+,fPt_HFelec_pass_trackDCA(0)
+,fPt_HFelec_pass_trackITSlayer(0)
+,fPt_HFelec_pass_trackFB(0)
+,fPt_HFelec_pass_trackTPCITS(0)
+,fPt_HFelec_pass_trackKink(0)
 ,fPt_HFelec_pass_trackandTOF(0)
 
 //For the HFE package
@@ -633,8 +663,32 @@ void AliAnalysisHFETPCTOF::UserCreateOutputObjects()
 	fInvMass = new TH1F("fInvMass","",200,0,0.3);
 	fOutputList->Add(fInvMass);
 	
+	fInvMass1 = new TH1F("fInvMass1","",200,0,0.3);
+	fOutputList->Add(fInvMass1);
+	
+	fInvMass2 = new TH1F("fInvMass2","",200,0,0.3);
+	fOutputList->Add(fInvMass2);
+	
+	fInvMass3 = new TH1F("fInvMass3","",200,0,0.3);
+	fOutputList->Add(fInvMass3);
+	
+	fInvMass4 = new TH1F("fInvMass4","",200,0,0.3);
+	fOutputList->Add(fInvMass4);
+	
 	fInvMassBack = new TH1F("fInvMassBack","",200,0,0.3);
 	fOutputList->Add(fInvMassBack);		
+	
+	fInvMassBack1 = new TH1F("fInvMassBack1","",200,0,0.3);
+	fOutputList->Add(fInvMassBack1);
+	
+	fInvMassBack2 = new TH1F("fInvMassBack2","",200,0,0.3);
+	fOutputList->Add(fInvMassBack2);
+	
+	fInvMassBack3 = new TH1F("fInvMassBack3","",200,0,0.3);
+	fOutputList->Add(fInvMassBack3);
+	
+	fInvMassBack4 = new TH1F("fInvMassBack4","",200,0,0.3);
+	fOutputList->Add(fInvMassBack4);
 	
 	fDCA = new TH1F("fDCA","",5000,0,10);
 	fOutputList->Add(fDCA);
@@ -653,6 +707,12 @@ void AliAnalysisHFETPCTOF::UserCreateOutputObjects()
 	
 	fPtElec_LS = new TH1F("fPtElec_LS","LS; p_{T} [GeV/c]; Count",300,0.1,30.1);
     fOutputList->Add(fPtElec_LS);
+    
+    fTPCnSigmaPElec_ULS = new TH2F("fTPCnSigmaPElec_ULS","p (GeV/c);TPC Electron N#sigma",300,0,15,200,-15,10);
+	fOutputList->Add(fTPCnSigmaPElec_ULS);   
+	
+	fTPCnSigmaPElec_LS = new TH2F("fTPCnSigmaPElec_LS","p (GeV/c);TPC Electron N#sigma",300,0,15,200,-15,10);
+	fOutputList->Add(fTPCnSigmaPElec_LS);   
     
     fPtElec = new TH1F("fPtElec","; p_{T} [GeV/c]; Count",300,0,30);
     fOutputList->Add(fPtElec);
@@ -707,6 +767,22 @@ void AliAnalysisHFETPCTOF::UserCreateOutputObjects()
 	
 	fPt_HFelec_pass_track = new TH1F("fPt_HFelec_pass_track","",300,0.1,30.1);
 	fOutputList->Add(fPt_HFelec_pass_track);
+	
+	fPt_HFelec_pass_trackDCA = new TH1F("fPt_HFelec_pass_trackDCA","",300,0.1,30.1);
+	fOutputList->Add(fPt_HFelec_pass_trackDCA);
+	
+	fPt_HFelec_pass_trackITSlayer = new TH1F("fPt_HFelec_pass_trackITSlayer","",300,0.1,30.1);
+	fOutputList->Add(fPt_HFelec_pass_trackITSlayer);
+	
+	fPt_HFelec_pass_trackFB = new TH1F("fPt_HFelec_pass_trackFB","",300,0.1,30.1);
+	fOutputList->Add(fPt_HFelec_pass_trackFB);
+	
+	fPt_HFelec_pass_trackTPCITS = new TH1F("fPt_HFelec_pass_trackTPCITS","",300,0.1,30.1);
+	fOutputList->Add(fPt_HFelec_pass_trackTPCITS);
+	
+	fPt_HFelec_pass_trackKink = new TH1F("fPt_HFelec_pass_trackKink","",300,0.1,30.1);
+	fOutputList->Add(fPt_HFelec_pass_trackKink);
+	
 	
 	fPt_HFelec_pass_trackandTOF = new TH1F("fPt_HFelec_pass_trackandTOF","",300,0.1,30.1);
 	fOutputList->Add(fPt_HFelec_pass_trackandTOF);
@@ -801,6 +877,26 @@ void AliAnalysisHFETPCTOF::UserCreateOutputObjects()
 	
 ///______________________________________________________________________
 }
+
+	Int_t pdg = -99999;
+	Int_t pdg_mother = -99999;
+	Int_t pdg_gmother = -99999;
+	Double_t pt_gmother = -99999;
+	Double_t pt_mother = -99999;
+	Double_t weight = -99999;
+	
+	Double_t fTPCnSigma = -999;
+	Double_t fTOFnSigma = -999;
+	Double_t fITSnSigma = -999;
+	Double_t fTPCnSigma_pion = -999;
+	Double_t fTPCnSigma_proton = -999;
+	Double_t fTPCnSigma_kaon = -999;
+	Double_t fTPCsignal = -999;
+	Double_t fPt = -999;
+	Double_t fEta = -999;
+	Double_t fPhi = -999;
+	Double_t fP = -999;
+
 
 //______________________________________________________________________
 //Main loop
@@ -1006,11 +1102,11 @@ if(fIsMC)
 			 //pt spectra for pi0 and eta
 			 //*********************************************************
 			 
-			 Double_t weight = 1;
+			 weight = 1;
 			 for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
 			 {
 				 fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
-				 Int_t pdg = fMCparticle->GetPdgCode();
+				 pdg = fMCparticle->GetPdgCode();
 				 
 				     if(fMCparticle->Eta()>=-0.8 && fMCparticle->Eta()<=0.8)
 				     {
@@ -1039,7 +1135,7 @@ if(fIsMC)
 							if(TMath::Abs(pdg)==111){ 
 								if(fMCparticle->GetMother()>0){ 
 									fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-									Int_t pdg_mother = TMath::Abs(fMCparticleMother->GetPdgCode());
+									pdg_mother = TMath::Abs(fMCparticleMother->GetPdgCode());
 									///if mother is a pi0, eta, omega, phi, etaprim, or rho
 									if(pdg_mother == 111 || pdg_mother == 221 || pdg_mother == 223 || pdg_mother == 333 || pdg_mother == 331 || pdg_mother == 113){
 										fPtMCpi0_feeddown->Fill(fMCparticle->Pt());
@@ -1063,7 +1159,7 @@ if(fIsMC)
 							if(TMath::Abs(pdg)==221){ 
 								if(fMCparticle->GetMother()>0){ 
 									fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-									Int_t pdg_mother = TMath::Abs(fMCparticleMother->GetPdgCode());
+									pdg_mother = TMath::Abs(fMCparticleMother->GetPdgCode());
 									///if mother is a pi0, eta, omega, phi, etaprim, or rho
 									if(pdg_mother == 111 || pdg_mother == 221 || pdg_mother == 223 || pdg_mother == 333 || pdg_mother == 331 || pdg_mother == 113){
 										fPtMCeta_feeddown->Fill(fMCparticle->Pt());
@@ -1121,17 +1217,11 @@ if(fIsMC)
 		AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
 		AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 		
-		Double_t fTPCnSigma = -999;
-		Double_t fTOFnSigma = -999;
-		Double_t fITSnSigma = -999;
-		Double_t fTPCnSigma_pion = -999;
-		Double_t fTPCnSigma_proton = -999;
-		Double_t fTPCnSigma_kaon = -999;
-		Double_t fTPCsignal = -999;
-		Double_t fPt = -999;
-		Double_t fEta = -999;
-		Double_t fPhi = -999;
-		Double_t fP = -999;
+		
+		
+		if((track->Eta() > -0.8) && (track->Eta() < 0.8)){///********************************************************************************************       
+
+
 		
 		///_____________________________________________________________________________
 		///Fill QA plots without track selection
@@ -1167,7 +1257,6 @@ if(fIsMC)
         
         
         
-              
         
 		
 //=======================================================================
@@ -1175,16 +1264,64 @@ if(fIsMC)
 //=======================================================================
 
 
-//AOD (Test Filter Bit)
+//AOD (Test Filter Bit)---------------------------------------------------------------------
 		if(fIsAOD)
 		{
 						
 			if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; 
 		}
 		
-//RecKine: ITSTPC cuts  
+		///****How many HF electrons pass the cuts (eta and filterbit selection)*******
+		if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
+			fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+			//if(fMCparticle->IsPrimary()){
+				pdg = fMCparticle->GetPdgCode();
+				///Is electron:
+				if(TMath::Abs(pdg) == 11){
+					//printf("pdg = %d\n !!!",pdg);
+				
+					Bool_t MotherFound = FindMother(track->GetLabel());
+					if(MotherFound){
+						if(fIsHFE1){
+							fPt_HFelec_pass_trackFB->Fill(fPt);
+						}
+					}
+						
+					
+				}
+			//}
+		}
+		///*********************************************************
+//-----------------------------------------------------------------------------------
+		
+//RecKine: ITSTPC cuts --------------------------------------------------------------
 		if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-//RecKink
+		
+		///****How many HF electrons pass the cuts (eta and TPCITS selection)*******
+		if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
+			fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+			//if(fMCparticle->IsPrimary()){
+				pdg = fMCparticle->GetPdgCode();
+				///Is electron:
+				if(TMath::Abs(pdg) == 11){
+					//printf("pdg = %d\n !!!",pdg);
+				
+					Bool_t MotherFound = FindMother(track->GetLabel());
+					if(MotherFound){
+						if(fIsHFE1){
+							fPt_HFelec_pass_trackTPCITS->Fill(fPt);
+						}
+					}
+						
+					
+				}
+			//}
+		}
+		///*********************************************************
+//--------------------------------------------------------------------------------	
+		
+		
+//RecKink -------------------------------------------------------------------------
 		if(fRejectKinkMother) 
 		{ 
 			if(fIsAOD)
@@ -1205,15 +1342,87 @@ if(fIsMC)
 				if(etrack->GetKinkIndex(0) != 0) continue;
 			}
 		} 
+		
+		
+		///****How many HF electrons pass the cuts (eta and TPCITS selection)*******
+		if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
+			fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+			//if(fMCparticle->IsPrimary()){
+				pdg = fMCparticle->GetPdgCode();
+				///Is electron:
+				if(TMath::Abs(pdg) == 11){
+					//printf("pdg = %d\n !!!",pdg);
+				
+					Bool_t MotherFound = FindMother(track->GetLabel());
+					if(MotherFound){
+						if(fIsHFE1){
+							fPt_HFelec_pass_trackKink->Fill(fPt);
+						}
+					}
+						
+					
+				}
+			//}
+		}
+		///*********************************************************
+//---------------------------------------------------------------------------------    
     
-//RecPrim
+//RecPrim -------------------------------------------------------------------------
 		//if(!fIsAOD)
 		//{
-			if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
+			if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;				///ProcessCutStep(Int_t cutStep, AliVParticle *track)
 		//}
+		
+		///****How many HF electrons pass the cuts (eta and track DCA selection)*******
+		if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
+			fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+			//if(fMCparticle->IsPrimary()){
+				pdg = fMCparticle->GetPdgCode();
+				///Is electron:
+				if(TMath::Abs(pdg) == 11){
+					//printf("pdg = %d\n !!!",pdg);
+				
+					Bool_t MotherFound = FindMother(track->GetLabel());
+					if(MotherFound){
+						if(fIsHFE1){
+							fPt_HFelec_pass_trackDCA->Fill(fPt);
+						}
+					}
+						
+					
+				}
+			//}
+		}
+		///*************************************************************
+//-------------------------------------------------------------------------------------		
     
-//HFEcuts: ITS layers cuts
+//HFEcuts: ITS layers cuts -------------------------------------------------------------
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+		
+		///****How many HF electrons pass the cuts (eta and track ITS layer selection)*******
+		if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
+			fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+			//if(fMCparticle->IsPrimary()){
+				pdg = fMCparticle->GetPdgCode();
+				///Is electron:
+				if(TMath::Abs(pdg) == 11){
+					//printf("pdg = %d\n !!!",pdg);
+				
+					Bool_t MotherFound = FindMother(track->GetLabel());
+					if(MotherFound){
+						if(fIsHFE1){
+							fPt_HFelec_pass_trackITSlayer->Fill(fPt);
+						}
+					}
+						
+					
+				}
+			//}
+		}
+		///*********************************************************
+//--------------------------------------------------------------------------------------		
+		
+		
     
 //HFE cuts: TPC PID cleanup
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
@@ -1222,7 +1431,7 @@ if(fIsMC)
 // QA plots after track selection
 //=======================================================================
 
-		if((track->Eta() > -0.8) && (track->Eta() < 0.8)){///********************************************************************************************
+		//if((track->Eta() > -0.8) && (track->Eta() < 0.8)){///********************************************************************************************
 		
 		
 		///****How many HF electrons pass the cuts (eta and track selection)*******
@@ -1230,7 +1439,7 @@ if(fIsMC)
 		if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
 			fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
 			//if(fMCparticle->IsPrimary()){
-				Int_t pdg = fMCparticle->GetPdgCode();
+				pdg = fMCparticle->GetPdgCode();
 				///Is electron:
 				if(TMath::Abs(pdg) == 11){
 					//printf("pdg = %d\n !!!",pdg);
@@ -1279,7 +1488,7 @@ if(fIsMC)
 			if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
 				fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
 				//if(fMCparticle->IsPrimary()){
-				Int_t pdg = fMCparticle->GetPdgCode();
+				pdg = fMCparticle->GetPdgCode();
 				///Is electron:
 				if(TMath::Abs(pdg) == 11){
 					//printf("pdg = %d\n !!!",pdg);
@@ -1337,7 +1546,7 @@ if(fIsMC)
 		if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
 			fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
 			//if(fMCparticle->IsPrimary()){
-				Int_t pdg = fMCparticle->GetPdgCode();
+				pdg = fMCparticle->GetPdgCode();
 				///Is electron:
 				if(TMath::Abs(pdg) == 11){
 					//printf("pdg = %d\n !!!",pdg);
@@ -1376,7 +1585,7 @@ if(fIsMC)
 			if(fIsMC && fIsAOD && track->GetLabel()>=0){           	            
 				fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
 				//if(fMCparticle->IsPrimary()){
-					Int_t pdg = fMCparticle->GetPdgCode();
+					pdg = fMCparticle->GetPdgCode();
 					///Is electron:
 					if(TMath::Abs(pdg) == 11){
 						//printf("pdg = %d\n !!!",pdg);
@@ -1425,12 +1634,33 @@ if(fIsMC)
 			fNonHFE->SetAdditionalCuts(fPtMinAsso,fTpcNclsAsso);
 										
 										
-			fNonHFE->SetHistMassBack(fInvMassBack);
-			fNonHFE->SetHistMass(fInvMass);
+			
 			fNonHFE->SetHistDCABack(fDCABack);
 			fNonHFE->SetHistDCA(fDCA);
 			fNonHFE->SetHistAngleBack(fAngleBack);
 			fNonHFE->SetHistAngle(fAngle);
+			           
+			if(fPt>0 && fPt<=1){
+				fNonHFE->SetHistMassBack(fInvMassBack1);
+				fNonHFE->SetHistMass(fInvMass1);
+			}           
+			if(fPt>1 && fPt<=2){
+				fNonHFE->SetHistMassBack(fInvMassBack2);
+				fNonHFE->SetHistMass(fInvMass2);
+			}
+			if(fPt>2 && fPt<=3){
+				fNonHFE->SetHistMassBack(fInvMassBack3);
+				fNonHFE->SetHistMass(fInvMass3);
+			}
+			if(fPt>3 && fPt<=4){
+				fNonHFE->SetHistMassBack(fInvMassBack4);
+				fNonHFE->SetHistMass(fInvMass4);
+			}
+			if(fPt>4){
+				fNonHFE->SetHistMassBack(fInvMassBack);
+				fNonHFE->SetHistMass(fInvMass);
+			}
+			       
 			           
 			fNonHFE->FindNonHFE(iTracks,Vtrack,fVevent); //Calling the function that will fill the histograms above
 			//(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent *fVevent)
@@ -1440,6 +1670,9 @@ if(fIsMC)
 			if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPt,fNonHFE->GetNULS());
 			if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPt,fNonHFE->GetNLS());
 					
+			if(fNonHFE->IsULS()) fTPCnSigmaPElec_ULS->Fill(fP,fTPCnSigma*fNonHFE->GetNULS());
+			if(fNonHFE->IsLS()) fTPCnSigmaPElec_LS->Fill(fP,fTPCnSigma*fNonHFE->GetNLS());
+					
 			///*************************************************************
         
             ///*************Invariant mass efficiency (tagging efficiency)********************
@@ -1448,19 +1681,19 @@ if(fIsMC)
 					            
 				fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
 				//if(fMCparticle->IsPrimary()){
-					Int_t pdg = fMCparticle->GetPdgCode();
+					pdg = fMCparticle->GetPdgCode();
 					///Is electron:
 					if(TMath::Abs(pdg) == 11){
 						//printf("pdg = %d\n !!!",pdg);
 						if(fMCparticle->GetMother()>0){
 							fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-							Int_t pdg_mother = fMCparticleMother->GetPdgCode();
-							Double_t pt_mother = fMCparticleMother->Pt();
+							pdg_mother = fMCparticleMother->GetPdgCode();
+							pt_mother = fMCparticleMother->Pt();
 							
 							
 							
 							//printf("pdg_mother = %d\n ",pdg_mother);
-							Double_t weight=1;
+							weight=1;
 						
 							
 							///Photonic Electrons:
@@ -1470,7 +1703,7 @@ if(fIsMC)
 								if(TMath::Abs(pdg_mother) == 111){
 									///The ones used to calculate the weight
 									if(fMCparticleMother->IsPrimary()){
-										if(fIsPP){
+										
 											if(fMCparticleMother->GetMother() <= 0){
 							   
 												weight = CalculateWeight(pdg_mother,pt_mother);
@@ -1486,17 +1719,7 @@ if(fIsMC)
 										
 										
 											}
-										}
-										if(!fIsPP){
-											fPt_elec_phot->Fill(fPt);  
-											if(fNonHFE->IsULS()) fPtElec_ULS_MC->Fill(fPt,fNonHFE->GetNULS());
-											if(fNonHFE->IsLS()) fPtElec_LS_MC->Fill(fPt,fNonHFE->GetNLS());
-			
-											fPt_elec_from_pi0->Fill(fPt);
-											if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_pi0->Fill(fPt,fNonHFE->GetNULS());
-											if(fNonHFE->IsLS()) fPtElec_LS_MC_from_pi0->Fill(fPt,fNonHFE->GetNLS());
 										
-										}
 										
 										
 									}
@@ -1507,8 +1730,7 @@ if(fIsMC)
 									if(fMCparticleMother->IsPrimary()){
 										
 										
-										if(fIsPP){
-											if(fMCparticleMother->GetMother() <= 0){   
+												if(fMCparticleMother->GetMother() <= 0){   
 					
 												weight = CalculateWeight(pdg_mother,pt_mother);
 									   
@@ -1521,18 +1743,7 @@ if(fIsMC)
 												if(fNonHFE->IsLS()) fPtElec_LS_MC_from_eta->Fill(fPt,fNonHFE->GetNLS()*weight);
 											}
 										
-										}
-										if(!fIsPP){
-											fPt_elec_phot->Fill(fPt); 
-											if(fNonHFE->IsULS()) fPtElec_ULS_MC->Fill(fPt,fNonHFE->GetNULS());
-											if(fNonHFE->IsLS()) fPtElec_LS_MC->Fill(fPt,fNonHFE->GetNLS());
-								
-											fPt_elec_from_eta->Fill(fPt);
-											if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_eta->Fill(fPt,fNonHFE->GetNULS());
-											if(fNonHFE->IsLS()) fPtElec_LS_MC_from_eta->Fill(fPt,fNonHFE->GetNLS());
-										}
-										
-										
+																				
 									}
 			
 								}
@@ -1541,14 +1752,14 @@ if(fIsMC)
 									///when gamma has a mother:
 									if(fMCparticleMother->GetMother()>0){
 										fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
-										Int_t pdg_gmother = fMCparticleGMother->GetPdgCode();
-										Double_t pt_gmother = fMCparticleGMother->Pt();
+										pdg_gmother = fMCparticleGMother->GetPdgCode();
+										pt_gmother = fMCparticleGMother->Pt();
 								
 										///And the mother is a pi0 or an eta
 										if(TMath::Abs(pdg_gmother) == 111 || TMath::Abs(pdg_gmother) == 221){
 											
 											if(fMCparticleGMother->IsPrimary()){
-												if(fIsPP){
+												//if(fIsPP){
 													if(fMCparticleGMother->GetMother() <= 0){ 
 
 														weight = CalculateWeight(pdg_gmother,pt_gmother);
@@ -1561,16 +1772,7 @@ if(fIsMC)
 														if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_gamma->Fill(fPt,fNonHFE->GetNULS()*weight);
 														if(fNonHFE->IsLS()) fPtElec_LS_MC_from_gamma->Fill(fPt,fNonHFE->GetNLS()*weight);
 													}
-												}
-												if(!fIsPP){
-													fPt_elec_phot->Fill(fPt);
-													if(fNonHFE->IsULS()) fPtElec_ULS_MC->Fill(fPt,fNonHFE->GetNULS());
-													if(fNonHFE->IsLS()) fPtElec_LS_MC->Fill(fPt,fNonHFE->GetNLS());
-									
-													fPt_elec_from_gamma->Fill(fPt);
-													if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_gamma->Fill(fPt,fNonHFE->GetNULS());
-													if(fNonHFE->IsLS()) fPtElec_LS_MC_from_gamma->Fill(fPt,fNonHFE->GetNLS());
-												}
+												//}
 												
 												
 												
@@ -1578,6 +1780,7 @@ if(fIsMC)
 	
 										}
 										///And the mother is not a pi0 or an eta:
+										/*
 										else{		   
 											fPt_elec_phot->Fill(fPt);
 											if(fNonHFE->IsULS()) fPtElec_ULS_MC->Fill(fPt,fNonHFE->GetNULS());
@@ -1587,8 +1790,10 @@ if(fIsMC)
 											if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_gamma->Fill(fPt,fNonHFE->GetNULS());
 											if(fNonHFE->IsLS()) fPtElec_LS_MC_from_gamma->Fill(fPt,fNonHFE->GetNLS());
 										}
+										*/
 									}
 									///electron from gamma, when the gamma does not have a mother (direct gamma):	  
+									/*
 									else{		   
 										fPt_elec_phot->Fill(fPt);
 										if(fNonHFE->IsULS()) fPtElec_ULS_MC->Fill(fPt,fNonHFE->GetNULS());
@@ -1598,6 +1803,7 @@ if(fIsMC)
 										if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_gamma->Fill(fPt,fNonHFE->GetNULS());
 										if(fNonHFE->IsLS()) fPtElec_LS_MC_from_gamma->Fill(fPt,fNonHFE->GetNLS());
 									}
+									*/
 								
 								}
 														
@@ -1671,221 +1877,10 @@ void AliAnalysisHFETPCTOF::Terminate(Option_t *)
 Double_t AliAnalysisHFETPCTOF::CalculateWeight(Int_t pdg_particle, Double_t x)
 {
      Double_t weight=1;
-     if(pdg_particle==111){ //pi0
+     
+     if(fIsPP){
+		if(pdg_particle==111){ //pi0
 
-/*
-if(x>=0 && x<0.1) weight = 6.17774;
-if(x>=0.1 && x<0.2) weight = 6.09066;
-if(x>=0.2 && x<0.3) weight = 6.05833;
-if(x>=0.3 && x<0.4) weight = 6.01443;
-if(x>=0.4 && x<0.5) weight = 5.915;
-if(x>=0.5 && x<0.6) weight = 5.78334;
-if(x>=0.6 && x<0.7) weight = 5.62254;
-if(x>=0.7 && x<0.8) weight = 5.43371;
-if(x>=0.8 && x<0.9) weight = 5.22639;
-if(x>=0.9 && x<1) weight = 4.99491;
-if(x>=1 && x<1.1) weight = 4.74214;
-if(x>=1.1 && x<1.2) weight = 4.51025;
-if(x>=1.2 && x<1.3) weight = 4.27333;
-if(x>=1.3 && x<1.4) weight = 4.02051;
-if(x>=1.4 && x<1.5) weight = 3.75231;
-if(x>=1.5 && x<1.6) weight = 3.47071;
-if(x>=1.6 && x<1.7) weight = 3.20788;
-if(x>=1.7 && x<1.8) weight = 2.95203;
-if(x>=1.8 && x<1.9) weight = 2.7184;
-if(x>=1.9 && x<2) weight = 2.45421;
-if(x>=2 && x<2.1) weight = 2.22973;
-if(x>=2.1 && x<2.2) weight = 2.01122;
-if(x>=2.2 && x<2.3) weight = 1.82763;
-if(x>=2.3 && x<2.4) weight = 1.63327;
-if(x>=2.4 && x<2.5) weight = 1.46576;
-if(x>=2.5 && x<2.6) weight = 1.31634;
-if(x>=2.6 && x<2.7) weight = 1.18546;
-if(x>=2.7 && x<2.8) weight = 1.0585;
-if(x>=2.8 && x<2.9) weight = 0.947592;
-if(x>=2.9 && x<3) weight = 0.852737;
-if(x>=3 && x<3.1) weight = 0.766187;
-if(x>=3.1 && x<3.2) weight = 0.678543;
-if(x>=3.2 && x<3.3) weight = 0.611556;
-if(x>=3.3 && x<3.4) weight = 0.553086;
-if(x>=3.4 && x<3.5) weight = 0.494565;
-if(x>=3.5 && x<3.6) weight = 0.447287;
-if(x>=3.6 && x<3.7) weight = 0.405537;
-if(x>=3.7 && x<3.8) weight = 0.357926;
-if(x>=3.8 && x<3.9) weight = 0.32928;
-if(x>=3.9 && x<4) weight = 0.294281;
-if(x>=4 && x<4.1) weight = 0.267998;
-if(x>=4.1 && x<4.2) weight = 0.241377;
-if(x>=4.2 && x<4.3) weight = 0.22274;
-if(x>=4.3 && x<4.4) weight = 0.198057;
-if(x>=4.4 && x<4.5) weight = 0.180873;
-if(x>=4.5 && x<4.6) weight = 0.164104;
-if(x>=4.6 && x<4.7) weight = 0.154449;
-if(x>=4.7 && x<4.8) weight = 0.139585;
-if(x>=4.8 && x<4.9) weight = 0.127579;
-if(x>=4.9 && x<5) weight = 0.117971;
-if(x>=5 && x<5.1) weight = 0.107862;
-if(x>=5.1 && x<5.2) weight = 0.0983376;
-if(x>=5.2 && x<5.3) weight = 0.0906546;
-if(x>=5.3 && x<5.4) weight = 0.0876956;
-if(x>=5.4 && x<5.5) weight = 0.077572;
-if(x>=5.5 && x<5.6) weight = 0.0728296;
-if(x>=5.6 && x<5.7) weight = 0.0680074;
-if(x>=5.7 && x<5.8) weight = 0.0628218;
-if(x>=5.8 && x<5.9) weight = 0.0581696;
-if(x>=5.9 && x<6) weight = 0.0546413;
-if(x>=6 && x<6.1) weight = 0.0495481;
-if(x>=6.1 && x<6.2) weight = 0.0468565;
-if(x>=6.2 && x<6.3) weight = 0.0426733;
-if(x>=6.3 && x<6.4) weight = 0.0400965;
-if(x>=6.4 && x<6.5) weight = 0.0375249;
-if(x>=6.5 && x<6.6) weight = 0.0338697;
-if(x>=6.6 && x<6.7) weight = 0.0346407;
-if(x>=6.7 && x<6.8) weight = 0.0311335;
-if(x>=6.8 && x<6.9) weight = 0.0295999;
-if(x>=6.9 && x<7) weight = 0.0281094;
-if(x>=7 && x<7.1) weight = 0.0253271;
-if(x>=7.1 && x<7.2) weight = 0.0239156;
-if(x>=7.2 && x<7.3) weight = 0.0229437;
-if(x>=7.3 && x<7.4) weight = 0.022491;
-if(x>=7.4 && x<7.5) weight = 0.020082;
-if(x>=7.5 && x<7.6) weight = 0.0195903;
-if(x>=7.6 && x<7.7) weight = 0.0176023;
-if(x>=7.7 && x<7.79999) weight = 0.0172463;
-if(x>=7.79999 && x<7.89999) weight = 0.0172857;
-if(x>=7.89999 && x<7.99999) weight = 0.0152179;
-if(x>=7.99999 && x<8.09999) weight = 0.014839;
-if(x>=8.09999 && x<8.2) weight = 0.0139007;
-if(x>=8.2 && x<8.3) weight = 0.013177;
-if(x>=8.3 && x<8.4) weight = 0.0125858;
-if(x>=8.4 && x<8.5) weight = 0.0120318;
-if(x>=8.5 && x<8.6) weight = 0.0108696;
-if(x>=8.6 && x<8.7) weight = 0.010708;
-if(x>=8.7 && x<8.8) weight = 0.0104939;
-if(x>=8.8 && x<8.9) weight = 0.0100316;
-if(x>=8.9 && x<9) weight = 0.00907713;
-if(x>=9 && x<9.1) weight = 0.00888977;
-if(x>=9.1 && x<9.2) weight = 0.00833168;
-if(x>=9.2 && x<9.3) weight = 0.00778048;
-if(x>=9.3 && x<9.4) weight = 0.00740485;
-if(x>=9.4 && x<9.5) weight = 0.00727769;
-if(x>=9.5 && x<9.6) weight = 0.00712379;
-if(x>=9.6 && x<9.7) weight = 0.00621568;
-if(x>=9.7 && x<9.8) weight = 0.00626036;
-if(x>=9.8 && x<9.9) weight = 0.00610595;
-if(x>=9.9 && x<10) weight = 0.00585181;
-if(x>=10 && x<10.1) weight = 0.00673578;
-if(x>=10.1 && x<10.2) weight = 0.00598309;
-if(x>=10.2 && x<10.3) weight = 0.00503025;
-if(x>=10.3 && x<10.4) weight = 0.00528211;
-if(x>=10.4 && x<10.5) weight = 0.00512413;
-if(x>=10.5 && x<10.6) weight = 0.00482606;
-if(x>=10.6 && x<10.7) weight = 0.0043156;
-if(x>=10.7 && x<10.8) weight = 0.00435367;
-if(x>=10.8 && x<10.9) weight = 0.00390786;
-if(x>=10.9 && x<11) weight = 0.00358208;
-if(x>=11 && x<11.1) weight = 0.00422529;
-if(x>=11.1 && x<11.2) weight = 0.00381446;
-if(x>=11.2 && x<11.3) weight = 0.00361694;
-if(x>=11.3 && x<11.4) weight = 0.00357405;
-if(x>=11.4 && x<11.5) weight = 0.0033879;
-if(x>=11.5 && x<11.6) weight = 0.00314884;
-if(x>=11.6 && x<11.7) weight = 0.00297503;
-if(x>=11.7 && x<11.8) weight = 0.00304354;
-if(x>=11.8 && x<11.9) weight = 0.00308337;
-if(x>=11.9 && x<12) weight = 0.00269128;
-if(x>=12 && x<12.1) weight = 0.00273072;
-if(x>=12.1 && x<12.2) weight = 0.00310849;
-if(x>=12.2 && x<12.3) weight = 0.00293482;
-if(x>=12.3 && x<12.4) weight = 0.00286332;
-if(x>=12.4 && x<12.5) weight = 0.00239378;
-if(x>=12.5 && x<12.6) weight = 0.00270363;
-if(x>=12.6 && x<12.7) weight = 0.00250573;
-if(x>=12.7 && x<12.8) weight = 0.00212548;
-if(x>=12.8 && x<12.9) weight = 0.00207508;
-if(x>=12.9 && x<13) weight = 0.00165932;
-if(x>=13 && x<13.1) weight = 0.00207005;
-if(x>=13.1 && x<13.2) weight = 0.00157419;
-if(x>=13.2 && x<13.3) weight = 0.00158996;
-if(x>=13.3 && x<13.4) weight = 0.00151997;
-if(x>=13.4 && x<13.5) weight = 0.00145863;
-if(x>=13.5 && x<13.6) weight = 0.00213373;
-if(x>=13.6 && x<13.7) weight = 0.00160892;
-if(x>=13.7 && x<13.8) weight = 0.00118755;
-if(x>=13.8 && x<13.9) weight = 0.00169904;
-if(x>=13.9 && x<14) weight = 0.00138852;
-if(x>=14 && x<14.1) weight = 0.0016173;
-if(x>=14.1 && x<14.2) weight = 0.00160179;
-if(x>=14.2 && x<14.3) weight = 0.00149623;
-if(x>=14.3 && x<14.4) weight = 0.00144212;
-if(x>=14.4 && x<14.5) weight = 0.00132137;
-if(x>=14.5 && x<14.6) weight = 0.000963331;
-if(x>=14.6 && x<14.7) weight = 0.00115578;
-if(x>=14.7 && x<14.8) weight = 0.00137021;
-if(x>=14.8 && x<14.9) weight = 0.00114562;
-if(x>=14.9 && x<15) weight = 0.00106579;
-if(x>=15 && x<15.1) weight = 0.00128754;
-if(x>=15.1 && x<15.2) weight = 0.00124607;
-if(x>=15.2 && x<15.3) weight = 0.00108453;
-if(x>=15.3 && x<15.4) weight = 0.00103502;
-if(x>=15.4 && x<15.5) weight = 0.00119657;
-if(x>=15.5 && x<15.6) weight = 0.0011101;
-if(x>=15.6 && x<15.7) weight = 0.00105138;
-if(x>=15.7 && x<15.8) weight = 0.000933933;
-if(x>=15.8 && x<15.9) weight = 0.000835887;
-if(x>=15.9 && x<16) weight = 0.00107673;
-if(x>=16 && x<16.1) weight = 0.00111599;
-if(x>=16.1 && x<16.2) weight = 0.000854975;
-if(x>=16.2 && x<16.3) weight = 0.00100571;
-if(x>=16.3 && x<16.4) weight = 0.000749064;
-if(x>=16.4 && x<16.5) weight = 0.000649913;
-if(x>=16.5 && x<16.6) weight = 0.000692799;
-if(x>=16.6 && x<16.7) weight = 0.000550903;
-if(x>=16.7 && x<16.8) weight = 0.000661692;
-if(x>=16.8 && x<16.9) weight = 0.000636251;
-if(x>=16.9 && x<17) weight = 0.000597193;
-if(x>=17 && x<17.1) weight = 0.000873528;
-if(x>=17.1 && x<17.2) weight = 0.000951547;
-if(x>=17.2 && x<17.3) weight = 0.000229498;
-if(x>=17.3 && x<17.4) weight = 0.000818745;
-if(x>=17.4 && x<17.5) weight = 0.000510585;
-if(x>=17.5 && x<17.6) weight = 0.000550769;
-if(x>=17.6 && x<17.7) weight = 0.000440176;
-if(x>=17.7 && x<17.8) weight = 0.000561325;
-if(x>=17.8 && x<17.9) weight = 0.000809782;
-if(x>=17.9 && x<18) weight = 0.000692126;
-if(x>=18 && x<18.1) weight = 0.000412167;
-if(x>=18.1 && x<18.2) weight = 0.000740101;
-if(x>=18.2 && x<18.3) weight = 0.000672297;
-if(x>=18.3 && x<18.4) weight = 0.000675049;
-if(x>=18.4 && x<18.5) weight = 0.000468404;
-if(x>=18.5 && x<18.6) weight = 0.00042389;
-if(x>=18.6 && x<18.7) weight = 0.000685959;
-if(x>=18.7 && x<18.8) weight = 0.000382312;
-if(x>=18.8 && x<18.9) weight = 0.000345572;
-if(x>=18.9 && x<19) weight = 0.000568679;
-if(x>=19 && x<19.1) weight = 0.000758624;
-if(x>=19.1 && x<19.2) weight = 0.000354972;
-if(x>=19.2 && x<19.3) weight = 0.000497175;
-if(x>=19.3 && x<19.4) weight = 0.000358793;
-if(x>=19.4 && x<19.5) weight = 0.000408719;
-if(x>=19.5 && x<19.6) weight = 0.000773325;
-if(x>=19.6 && x<19.7) weight = 0.000322655;
-if(x>=19.7 && x<19.8) weight = 0.00051294;
-if(x>=19.8 && x<19.9) weight = 0.000370971;
-if(x>=19.9 && x<20) weight = 0.000521673;
-if(x>=20 && x<20.1) weight = 0.00047259;
-if(x>=20.1 && x<20.2) weight = 0.000476009;
-if(x>=20.2 && x<20.3) weight = 9.62649e-05;
-if(x>=20.3 && x<20.4) weight = 0.000146699;
-if(x>=20.4 && x<20.5) weight = 0.000193396;
-if(x>=20.5 && x<20.6) weight = 0.000491715;
-if(x>=20.6 && x<20.7) weight = 0.000295843;
-if(x>=20.7 && x<20.8) weight = 0.000296575;
-if(x>=20.8 && x<20.9) weight = 0.000197941;
-if(x>=20.9 && x<21) weight = 0.00030024;
-if(x>=21) weight = 0.0001;
-*/	 
 
 ///Weight for only enhanced spectra (choosing IsPrimary in both MC)
 
@@ -2192,221 +2187,9 @@ if(x>=29.9001 && x<30.0001) weight = 5.3072e-05;
 if(x>=30.0001 && x<30.1001) weight = 3.54597e-05;
 
 
-	 }
-	 else if(pdg_particle==221){ //eta
+		}
+		else if(pdg_particle==221){ //eta
 		
-/*	 
-if(x>=0 && x<0.1) weight = 5.60534;
-if(x>=0.1 && x<0.2) weight = 6.19427;
-if(x>=0.2 && x<0.3) weight = 6.33757;
-if(x>=0.3 && x<0.4) weight = 6.35619;
-if(x>=0.4 && x<0.5) weight = 6.22493;
-if(x>=0.5 && x<0.6) weight = 6.1037;
-if(x>=0.6 && x<0.7) weight = 5.91577;
-if(x>=0.7 && x<0.8) weight = 5.74188;
-if(x>=0.8 && x<0.9) weight = 5.58933;
-if(x>=0.9 && x<1) weight = 5.37605;
-if(x>=1 && x<1.1) weight = 5.18634;
-if(x>=1.1 && x<1.2) weight = 5.02371;
-if(x>=1.2 && x<1.3) weight = 4.76245;
-if(x>=1.3 && x<1.4) weight = 4.61485;
-if(x>=1.4 && x<1.5) weight = 4.37859;
-if(x>=1.5 && x<1.6) weight = 4.1895;
-if(x>=1.6 && x<1.7) weight = 3.87951;
-if(x>=1.7 && x<1.8) weight = 3.69873;
-if(x>=1.8 && x<1.9) weight = 3.46955;
-if(x>=1.9 && x<2) weight = 3.20455;
-if(x>=2 && x<2.1) weight = 3.0009;
-if(x>=2.1 && x<2.2) weight = 2.75339;
-if(x>=2.2 && x<2.3) weight = 2.55589;
-if(x>=2.3 && x<2.4) weight = 2.29623;
-if(x>=2.4 && x<2.5) weight = 2.12496;
-if(x>=2.5 && x<2.6) weight = 1.91606;
-if(x>=2.6 && x<2.7) weight = 1.76796;
-if(x>=2.7 && x<2.8) weight = 1.58211;
-if(x>=2.8 && x<2.9) weight = 1.46159;
-if(x>=2.9 && x<3) weight = 1.3185;
-if(x>=3 && x<3.1) weight = 1.20855;
-if(x>=3.1 && x<3.2) weight = 1.06208;
-if(x>=3.2 && x<3.3) weight = 0.989778;
-if(x>=3.3 && x<3.4) weight = 0.905973;
-if(x>=3.4 && x<3.5) weight = 0.824863;
-if(x>=3.5 && x<3.6) weight = 0.731381;
-if(x>=3.6 && x<3.7) weight = 0.658768;
-if(x>=3.7 && x<3.8) weight = 0.609325;
-if(x>=3.8 && x<3.9) weight = 0.546468;
-if(x>=3.9 && x<4) weight = 0.509393;
-if(x>=4 && x<4.1) weight = 0.457021;
-if(x>=4.1 && x<4.2) weight = 0.426796;
-if(x>=4.2 && x<4.3) weight = 0.381714;
-if(x>=4.3 && x<4.4) weight = 0.331958;
-if(x>=4.4 && x<4.5) weight = 0.315275;
-if(x>=4.5 && x<4.6) weight = 0.281718;
-if(x>=4.6 && x<4.7) weight = 0.259493;
-if(x>=4.7 && x<4.8) weight = 0.242724;
-if(x>=4.8 && x<4.9) weight = 0.220916;
-if(x>=4.9 && x<5) weight = 0.207365;
-if(x>=5 && x<5.1) weight = 0.189821;
-if(x>=5.1 && x<5.2) weight = 0.167485;
-if(x>=5.2 && x<5.3) weight = 0.16088;
-if(x>=5.3 && x<5.4) weight = 0.143115;
-if(x>=5.4 && x<5.5) weight = 0.136729;
-if(x>=5.5 && x<5.6) weight = 0.130747;
-if(x>=5.6 && x<5.7) weight = 0.113914;
-if(x>=5.7 && x<5.8) weight = 0.103484;
-if(x>=5.8 && x<5.9) weight = 0.103369;
-if(x>=5.9 && x<6) weight = 0.0965167;
-if(x>=6 && x<6.1) weight = 0.0902927;
-if(x>=6.1 && x<6.2) weight = 0.0835513;
-if(x>=6.2 && x<6.3) weight = 0.0743635;
-if(x>=6.3 && x<6.4) weight = 0.0705086;
-if(x>=6.4 && x<6.5) weight = 0.0641742;
-if(x>=6.5 && x<6.6) weight = 0.0580411;
-if(x>=6.6 && x<6.7) weight = 0.0567382;
-if(x>=6.7 && x<6.8) weight = 0.0518918;
-if(x>=6.8 && x<6.9) weight = 0.0477471;
-if(x>=6.9 && x<7) weight = 0.0477123;
-if(x>=7 && x<7.1) weight = 0.0406171;
-if(x>=7.1 && x<7.2) weight = 0.0394929;
-if(x>=7.2 && x<7.3) weight = 0.0377467;
-if(x>=7.3 && x<7.4) weight = 0.0325693;
-if(x>=7.4 && x<7.5) weight = 0.033979;
-if(x>=7.5 && x<7.6) weight = 0.0283217;
-if(x>=7.6 && x<7.7) weight = 0.0288556;
-if(x>=7.7 && x<7.79999) weight = 0.0266446;
-if(x>=7.79999 && x<7.89999) weight = 0.0267864;
-if(x>=7.89999 && x<7.99999) weight = 0.0250917;
-if(x>=7.99999 && x<8.09999) weight = 0.0230663;
-if(x>=8.09999 && x<8.2) weight = 0.0198801;
-if(x>=8.2 && x<8.3) weight = 0.0200178;
-if(x>=8.3 && x<8.4) weight = 0.0177056;
-if(x>=8.4 && x<8.5) weight = 0.0181697;
-if(x>=8.5 && x<8.6) weight = 0.0158615;
-if(x>=8.6 && x<8.7) weight = 0.0153757;
-if(x>=8.7 && x<8.8) weight = 0.0177476;
-if(x>=8.8 && x<8.9) weight = 0.0145695;
-if(x>=8.9 && x<9) weight = 0.0113036;
-if(x>=9 && x<9.1) weight = 0.0128088;
-if(x>=9.1 && x<9.2) weight = 0.0126029;
-if(x>=9.2 && x<9.3) weight = 0.0102403;
-if(x>=9.3 && x<9.4) weight = 0.0109917;
-if(x>=9.4 && x<9.5) weight = 0.0106174;
-if(x>=9.5 && x<9.6) weight = 0.0099149;
-if(x>=9.6 && x<9.7) weight = 0.0105464;
-if(x>=9.7 && x<9.8) weight = 0.00781893;
-if(x>=9.8 && x<9.9) weight = 0.00750125;
-if(x>=9.9 && x<10) weight = 0.00850186;
-if(x>=10 && x<10.1) weight = 0.00725423;
-if(x>=10.1 && x<10.2) weight = 0.00701262;
-if(x>=10.2 && x<10.3) weight = 0.0072896;
-if(x>=10.3 && x<10.4) weight = 0.007672;
-if(x>=10.4 && x<10.5) weight = 0.00551804;
-if(x>=10.5 && x<10.6) weight = 0.00566689;
-if(x>=10.6 && x<10.7) weight = 0.00527053;
-if(x>=10.7 && x<10.8) weight = 0.00417964;
-if(x>=10.8 && x<10.9) weight = 0.0058838;
-if(x>=10.9 && x<11) weight = 0.00569213;
-if(x>=11 && x<11.1) weight = 0.00474802;
-if(x>=11.1 && x<11.2) weight = 0.00381648;
-if(x>=11.2 && x<11.3) weight = 0.0052814;
-if(x>=11.3 && x<11.4) weight = 0.00489911;
-if(x>=11.4 && x<11.5) weight = 0.00373528;
-if(x>=11.5 && x<11.6) weight = 0.00370589;
-if(x>=11.6 && x<11.7) weight = 0.00329979;
-if(x>=11.7 && x<11.8) weight = 0.00244788;
-if(x>=11.8 && x<11.9) weight = 0.003512;
-if(x>=11.9 && x<12) weight = 0.00271025;
-if(x>=12 && x<12.1) weight = 0.00303951;
-if(x>=12.1 && x<12.2) weight = 0.00340136;
-if(x>=12.2 && x<12.3) weight = 0.0025829;
-if(x>=12.3 && x<12.4) weight = 0.00272075;
-if(x>=12.4 && x<12.5) weight = 0.00198495;
-if(x>=12.5 && x<12.6) weight = 0.00213658;
-if(x>=12.6 && x<12.7) weight = 0.00232713;
-if(x>=12.7 && x<12.8) weight = 0.00148209;
-if(x>=12.8 && x<12.9) weight = 0.00224963;
-if(x>=12.9 && x<13) weight = 0.00192051;
-if(x>=13 && x<13.1) weight = 0.00139619;
-if(x>=13.1 && x<13.2) weight = 0.00167126;
-if(x>=13.2 && x<13.3) weight = 0.0020656;
-if(x>=13.3 && x<13.4) weight = 0.001075;
-if(x>=13.4 && x<13.5) weight = 0.0017274;
-if(x>=13.5 && x<13.6) weight = 0.00194833;
-if(x>=13.6 && x<13.7) weight = 0.00182074;
-if(x>=13.7 && x<13.8) weight = 0.00147324;
-if(x>=13.8 && x<13.9) weight = 0.00201478;
-if(x>=13.9 && x<14) weight = 0.00149875;
-if(x>=14 && x<14.1) weight = 0.00132527;
-if(x>=14.1 && x<14.2) weight = 0.00181969;
-if(x>=14.2 && x<14.3) weight = 0.00107252;
-if(x>=14.3 && x<14.4) weight = 0.00116298;
-if(x>=14.4 && x<14.5) weight = 0.00115722;
-if(x>=14.5 && x<14.6) weight = 0.000908265;
-if(x>=14.6 && x<14.7) weight = 0.00123711;
-if(x>=14.7 && x<14.8) weight = 0.00134239;
-if(x>=14.8 && x<14.9) weight = 0.00156019;
-if(x>=14.9 && x<15) weight = 0.000826378;
-if(x>=15 && x<15.1) weight = 0.000744848;
-if(x>=15.1 && x<15.2) weight = 0.0010855;
-if(x>=15.2 && x<15.3) weight = 0.00083626;
-if(x>=15.3 && x<15.4) weight = 0.000919348;
-if(x>=15.4 && x<15.5) weight = 0.000329625;
-if(x>=15.5 && x<15.6) weight = 0.000490316;
-if(x>=15.6 && x<15.7) weight = 0.00106715;
-if(x>=15.7 && x<15.8) weight = 0.000982399;
-if(x>=15.8 && x<15.9) weight = 0.00125618;
-if(x>=15.9 && x<16) weight = 0.000664673;
-if(x>=16 && x<16.1) weight = 0.000586265;
-if(x>=16.1 && x<16.2) weight = 0.000502976;
-if(x>=16.2 && x<16.3) weight = 0.000895765;
-if(x>=16.3 && x<16.4) weight = 0.000672834;
-if(x>=16.4 && x<16.5) weight = 0.000831117;
-if(x>=16.5 && x<16.6) weight = 0.00033066;
-if(x>=16.6 && x<16.7) weight = 0.000407266;
-if(x>=16.7 && x<16.8) weight = 0.000502934;
-if(x>=16.8 && x<16.9) weight = 0.000664066;
-if(x>=16.9 && x<17) weight = 0.000831324;
-if(x>=17 && x<17.1) weight = 0.000414525;
-if(x>=17.1 && x<17.2) weight = 0.000414834;
-if(x>=17.2 && x<17.3) weight = 0.000334197;
-if(x>=17.3 && x<17.4) weight = 0.000827815;
-if(x>=17.4 && x<17.5) weight = 0.000328812;
-if(x>=17.5 && x<17.6) weight = 0.000413223;
-if(x>=17.6 && x<17.7) weight = 0.000336219;
-if(x>=17.7 && x<17.8) weight = 0.000165453;
-if(x>=17.8 && x<17.9) weight = 0.000328407;
-if(x>=17.9 && x<18) weight = 0.000325706;
-if(x>=18 && x<18.1) weight = 0.000326877;
-if(x>=18.1 && x<18.2) weight = 0.000500375;
-if(x>=18.2 && x<18.3) weight = 0.000164596;
-if(x>=18.3 && x<18.4) weight = 0.000331895;
-if(x>=18.4 && x<18.5) weight = 0.000494438;
-if(x>=18.5 && x<18.6) weight = 0.000164447;
-if(x>=18.6 && x<18.7) weight = 0.0003314;
-if(x>=18.7 && x<18.8) weight = 8.12348e-05;
-if(x>=18.8 && x<18.9) weight = 0.000586461;
-if(x>=18.9 && x<19) weight = 0.000166514;
-if(x>=19 && x<19.1) weight = 0.00041088;
-if(x>=19.1 && x<19.2) weight = 0.000248406;
-if(x>=19.2 && x<19.3) weight = 0.000321466;
-if(x>=19.3 && x<19.4) weight = 8.22774e-05;
-if(x>=19.4 && x<19.5) weight = 0.00016465;
-if(x>=19.5 && x<19.6) weight = 0.000248633;
-if(x>=19.6 && x<19.7) weight = 8.29738e-05;
-if(x>=19.7 && x<19.8) weight = 0.000409132;
-if(x>=19.8 && x<19.9) weight = 8.32986e-05;
-if(x>=19.9 && x<20) weight = 0.000413907;
-if(x>=20 && x<20.1) weight = 0.000166348;
-if(x>=20.1 && x<20.2) weight = 8.21693e-05;
-if(x>=20.2 && x<20.3) weight = 0.000162681;
-if(x>=20.3 && x<20.4) weight = 0.00024777;
-if(x>=20.4 && x<20.5) weight = 8.35701e-05;
-if(x>=20.5 && x<20.6) weight = 8.14465e-05;
-if(x>=20.6 && x<20.7) weight = 0.000249605;
-if(x>=20.7 && x<20.8) weight = 8.38223e-05;
-if(x>=20.8 && x<20.9) weight = 0.000165741;
-if(x>=20.9) weight =  0.0001; 	
-*/
 
 ///Weight for only enhanced spectra (choosing IsPrimary in both MC)
 
@@ -2712,10 +2495,329 @@ if(x>=29.8001 && x<29.9001) weight = 5.2843e-05;
 if(x>=29.9001 && x<30.0001) weight = 1.76479e-05;
 if(x>=30.0001 && x<30.1001) weight = 0;
 
-	 }
+		}
 
-return weight;
-
+	return weight;
+	}
+	
+	///Weight for Pb-Pb
+	if(!fIsPP){
+		
+		if(pdg_particle==111){ //pi0
+			
+if(x>=0 && x<0.1) weight = 3.32419;
+if(x>=0.1 && x<0.2) weight = 2.54442;
+if(x>=0.2 && x<0.3) weight = 1.82559;
+if(x>=0.3 && x<0.4) weight = 1.3684;
+if(x>=0.4 && x<0.5) weight = 1.08552;
+if(x>=0.5 && x<0.6) weight = 0.915234;
+if(x>=0.6 && x<0.7) weight = 0.81781;
+if(x>=0.7 && x<0.8) weight = 0.753406;
+if(x>=0.8 && x<0.9) weight = 0.72134;
+if(x>=0.9 && x<1) weight = 0.700434;
+if(x>=1 && x<1.1) weight = 0.690641;
+if(x>=1.1 && x<1.2) weight = 0.681571;
+if(x>=1.2 && x<1.3) weight = 0.672113;
+if(x>=1.3 && x<1.4) weight = 0.661982;
+if(x>=1.4 && x<1.5) weight = 0.654034;
+if(x>=1.5 && x<1.6) weight = 0.641112;
+if(x>=1.6 && x<1.7) weight = 0.630549;
+if(x>=1.7 && x<1.8) weight = 0.613403;
+if(x>=1.8 && x<1.9) weight = 0.595767;
+if(x>=1.9 && x<2) weight = 0.586549;
+if(x>=2 && x<2.1) weight = 0.566889;
+if(x>=2.1 && x<2.2) weight = 0.559352;
+if(x>=2.2 && x<2.3) weight = 0.555745;
+if(x>=2.3 && x<2.4) weight = 0.528827;
+if(x>=2.4 && x<2.5) weight = 0.532158;
+if(x>=2.5 && x<2.6) weight = 0.499868;
+if(x>=2.6 && x<2.7) weight = 0.505048;
+if(x>=2.7 && x<2.8) weight = 0.472686;
+if(x>=2.8 && x<2.9) weight = 0.457234;
+if(x>=2.9 && x<3) weight = 0.442031;
+if(x>=3 && x<3.1) weight = 0.433296;
+if(x>=3.1 && x<3.2) weight = 0.408119;
+if(x>=3.2 && x<3.3) weight = 0.397404;
+if(x>=3.3 && x<3.4) weight = 0.380257;
+if(x>=3.4 && x<3.5) weight = 0.374139;
+if(x>=3.5 && x<3.6) weight = 0.343083;
+if(x>=3.6 && x<3.7) weight = 0.329866;
+if(x>=3.7 && x<3.8) weight = 0.341286;
+if(x>=3.8 && x<3.9) weight = 0.283544;
+if(x>=3.9 && x<4) weight = 0.290994;
+if(x>=4 && x<4.1) weight = 0.280361;
+if(x>=4.1 && x<4.2) weight = 0.265524;
+if(x>=4.2 && x<4.3) weight = 0.261704;
+if(x>=4.3 && x<4.4) weight = 0.227433;
+if(x>=4.4 && x<4.5) weight = 0.23766;
+if(x>=4.5 && x<4.6) weight = 0.219045;
+if(x>=4.6 && x<4.7) weight = 0.211493;
+if(x>=4.7 && x<4.8) weight = 0.188017;
+if(x>=4.8 && x<4.9) weight = 0.191124;
+if(x>=4.9 && x<5) weight = 0.173571;
+if(x>=5 && x<5.1) weight = 0.184366;
+if(x>=5.1 && x<5.2) weight = 0.146323;
+if(x>=5.2 && x<5.3) weight = 0.165052;
+if(x>=5.3 && x<5.4) weight = 0.145557;
+if(x>=5.4 && x<5.5) weight = 0.129918;
+if(x>=5.5 && x<5.6) weight = 0.120794;
+if(x>=5.6 && x<5.7) weight = 0.123121;
+if(x>=5.7 && x<5.8) weight = 0.114557;
+if(x>=5.8 && x<5.9) weight = 0.0999146;
+if(x>=5.9 && x<6) weight = 0.0884551;
+if(x>=6 && x<6.1) weight = 0.0768881;
+if(x>=6.1 && x<6.2) weight = 0.091316;
+if(x>=6.2 && x<6.3) weight = 0.0807397;
+if(x>=6.3 && x<6.4) weight = 0.0838189;
+if(x>=6.4 && x<6.5) weight = 0.0922858;
+if(x>=6.5 && x<6.6) weight = 0.0758401;
+if(x>=6.6 && x<6.7) weight = 0.0607455;
+if(x>=6.7 && x<6.8) weight = 0.0555556;
+if(x>=6.8 && x<6.9) weight = 0.0562771;
+if(x>=6.9 && x<7) weight = 0.0599613;
+if(x>=7 && x<7.1) weight = 0.0525813;
+if(x>=7.1 && x<7.2) weight = 0.044316;
+if(x>=7.2 && x<7.3) weight = 0.0477612;
+if(x>=7.3 && x<7.4) weight = 0.0403789;
+if(x>=7.4 && x<7.5) weight = 0.0400792;
+if(x>=7.5 && x<7.6) weight = 0.0425321;
+if(x>=7.6 && x<7.7) weight = 0.0401587;
+if(x>=7.7 && x<7.79999) weight = 0.0321429;
+if(x>=7.79999 && x<7.89999) weight = 0.0386399;
+if(x>=7.89999 && x<7.99999) weight = 0.0284858;
+if(x>=7.99999 && x<8.09999) weight = 0.0332311;
+if(x>=8.09999 && x<8.2) weight = 0.022761;
+if(x>=8.2 && x<8.3) weight = 0.0233051;
+if(x>=8.3 && x<8.4) weight = 0.020979;
+if(x>=8.4 && x<8.5) weight = 0.0222683;
+if(x>=8.5 && x<8.6) weight = 0.024666;
+if(x>=8.6 && x<8.7) weight = 0.0135065;
+if(x>=8.7 && x<8.8) weight = 0.0167539;
+if(x>=8.8 && x<8.9) weight = 0.0166493;
+if(x>=8.9 && x<9) weight = 0.0129611;
+if(x>=9 && x<9.1) weight = 0.018797;
+if(x>=9.1 && x<9.2) weight = 0.0155233;
+if(x>=9.2 && x<9.3) weight = 0.0119792;
+if(x>=9.3 && x<9.4) weight = 0.0133476;
+if(x>=9.4 && x<9.5) weight = 0.0106952;
+if(x>=9.5 && x<9.6) weight = 0.0106045;
+if(x>=9.6 && x<9.7) weight = 0.0135883;
+if(x>=9.7 && x<9.8) weight = 0.0103734;
+if(x>=9.8 && x<9.9) weight = 0.00968784;
+if(x>=9.9 && x<10) weight = 0.0119177;
+if(x>=10 && x<10.1) weight = 0.0115789;
+if(x>=10.1 && x<10.2) weight = 0.00997899;
+if(x>=10.2 && x<10.3) weight = 0.0060208;
+if(x>=10.3 && x<10.4) weight = 0.00959488;
+if(x>=10.4 && x<10.5) weight = 0.00730689;
+if(x>=10.5 && x<10.6) weight = 0.00498615;
+if(x>=10.6 && x<10.7) weight = 0.00757986;
+if(x>=10.7 && x<10.8) weight = 0.0102987;
+if(x>=10.8 && x<10.9) weight = 0.00477707;
+if(x>=10.9 && x<11) weight = 0.00841662;
+if(x>=11 && x<11.1) weight = 0.00793651;
+if(x>=11.1 && x<11.2) weight = 0.00624675;
+if(x>=11.2 && x<11.3) weight = 0.00513347;
+if(x>=11.3 && x<11.4) weight = 0.00431267;
+if(x>=11.4 && x<11.5) weight = 0.00595883;
+if(x>=11.5 && x<11.6) weight = 0.00485699;
+if(x>=11.6 && x<11.7) weight = 0.00529661;
+if(x>=11.7 && x<11.8) weight = 0.00593952;
+if(x>=11.8 && x<11.9) weight = 0.00546747;
+if(x>=11.9 && x<12) weight = 0.00562114;
+if(x>=12 && x<12.1) weight = 0.00304414;
+if(x>=12.1 && x<12.2) weight = 0.00370566;
+if(x>=12.2 && x<12.3) weight = 0.00271739;
+if(x>=12.3 && x<12.4) weight = 0.00474934;
+if(x>=12.4 && x<12.5) weight = 0.00478723;
+if(x>=12.5 && x<12.6) weight = 0.0032967;
+if(x>=12.6 && x<12.7) weight = 0.00377358;
+if(x>=12.7 && x<12.8) weight = 0.00215633;
+if(x>=12.8 && x<12.9) weight = 0.00309119;
+if(x>=12.9 && x<13) weight = 0.000529661;
+if(x>=13 && x<13.1) weight = 0;
+if(x>=13.1 && x<13.2) weight = 0.00164384;
+if(x>=13.2 && x<13.3) weight = 0;
+if(x>=13.3 && x<13.4) weight = 0.00425306;
+if(x>=13.4 && x<13.5) weight = 0.00101112;
+if(x>=13.5 && x<13.6) weight = 0.00210416;
+if(x>=13.6 && x<13.7) weight = 0.00112549;
+if(x>=13.7 && x<13.8) weight = 0.00165654;
+if(x>=13.8 && x<13.9) weight = 0.000547945;
+if(x>=13.9 && x<14) weight = 0.000541418;
+if(x>=14 && x<14.1) weight = 0.00162866;
+if(x>=14.1 && x<14.2) weight = 0.00108578;
+if(x>=14.2 && x<14.3) weight = 0.00172117;
+if(x>=14.3 && x<14.4) weight = 0;
+if(x>=14.4 && x<14.5) weight = 0.00163488;
+if(x>=14.5 && x<14.6) weight = 0.00107759;
+if(x>=14.6 && x<14.7) weight = 0.00214362;
+if(x>=14.7 && x<14.8) weight = 0.000517063;
+if(x>=14.8 && x<14.9) weight = 0.00209754;
+if(x>=14.9 && x<15) weight = 0.000523013;
+if(x>=15) weight = 0;
+		
+		}
+		
+		else if(pdg_particle==221){ //eta
+			
+if(x>=0 && x<0.1) weight = 0.498069;
+if(x>=0.1 && x<0.2) weight = 0.474634;
+if(x>=0.2 && x<0.3) weight = 0.435564;
+if(x>=0.3 && x<0.4) weight = 0.399732;
+if(x>=0.4 && x<0.5) weight = 0.372838;
+if(x>=0.5 && x<0.6) weight = 0.345814;
+if(x>=0.6 && x<0.7) weight = 0.328843;
+if(x>=0.7 && x<0.8) weight = 0.319475;
+if(x>=0.8 && x<0.9) weight = 0.315264;
+if(x>=0.9 && x<1) weight = 0.317843;
+if(x>=1 && x<1.1) weight = 0.312453;
+if(x>=1.1 && x<1.2) weight = 0.311473;
+if(x>=1.2 && x<1.3) weight = 0.313118;
+if(x>=1.3 && x<1.4) weight = 0.310571;
+if(x>=1.4 && x<1.5) weight = 0.303369;
+if(x>=1.5 && x<1.6) weight = 0.305545;
+if(x>=1.6 && x<1.7) weight = 0.29942;
+if(x>=1.7 && x<1.8) weight = 0.292572;
+if(x>=1.8 && x<1.9) weight = 0.284717;
+if(x>=1.9 && x<2) weight = 0.281138;
+if(x>=2 && x<2.1) weight = 0.280071;
+if(x>=2.1 && x<2.2) weight = 0.278327;
+if(x>=2.2 && x<2.3) weight = 0.258907;
+if(x>=2.3 && x<2.4) weight = 0.264442;
+if(x>=2.4 && x<2.5) weight = 0.250617;
+if(x>=2.5 && x<2.6) weight = 0.24021;
+if(x>=2.6 && x<2.7) weight = 0.231397;
+if(x>=2.7 && x<2.8) weight = 0.232913;
+if(x>=2.8 && x<2.9) weight = 0.221626;
+if(x>=2.9 && x<3) weight = 0.22948;
+if(x>=3 && x<3.1) weight = 0.201028;
+if(x>=3.1 && x<3.2) weight = 0.192935;
+if(x>=3.2 && x<3.3) weight = 0.192692;
+if(x>=3.3 && x<3.4) weight = 0.201646;
+if(x>=3.4 && x<3.5) weight = 0.182323;
+if(x>=3.5 && x<3.6) weight = 0.180809;
+if(x>=3.6 && x<3.7) weight = 0.163413;
+if(x>=3.7 && x<3.8) weight = 0.148758;
+if(x>=3.8 && x<3.9) weight = 0.135414;
+if(x>=3.9 && x<4) weight = 0.142185;
+if(x>=4 && x<4.1) weight = 0.128976;
+if(x>=4.1 && x<4.2) weight = 0.134124;
+if(x>=4.2 && x<4.3) weight = 0.118199;
+if(x>=4.3 && x<4.4) weight = 0.112536;
+if(x>=4.4 && x<4.5) weight = 0.108796;
+if(x>=4.5 && x<4.6) weight = 0.101893;
+if(x>=4.6 && x<4.7) weight = 0.104934;
+if(x>=4.7 && x<4.8) weight = 0.0956955;
+if(x>=4.8 && x<4.9) weight = 0.0751717;
+if(x>=4.9 && x<5) weight = 0.084803;
+if(x>=5 && x<5.1) weight = 0.0730558;
+if(x>=5.1 && x<5.2) weight = 0.0685805;
+if(x>=5.2 && x<5.3) weight = 0.0729927;
+if(x>=5.3 && x<5.4) weight = 0.0604805;
+if(x>=5.4 && x<5.5) weight = 0.0645564;
+if(x>=5.5 && x<5.6) weight = 0.0614574;
+if(x>=5.6 && x<5.7) weight = 0.0449343;
+if(x>=5.7 && x<5.8) weight = 0.0472944;
+if(x>=5.8 && x<5.9) weight = 0.0436474;
+if(x>=5.9 && x<6) weight = 0.0449537;
+if(x>=6 && x<6.1) weight = 0.0556561;
+if(x>=6.1 && x<6.2) weight = 0.0457457;
+if(x>=6.2 && x<6.3) weight = 0.0402778;
+if(x>=6.3 && x<6.4) weight = 0.0355598;
+if(x>=6.4 && x<6.5) weight = 0.0341394;
+if(x>=6.5 && x<6.6) weight = 0.0342169;
+if(x>=6.6 && x<6.7) weight = 0.030784;
+if(x>=6.7 && x<6.8) weight = 0.031;
+if(x>=6.8 && x<6.9) weight = 0.030086;
+if(x>=6.9 && x<7) weight = 0.0221675;
+if(x>=7 && x<7.1) weight = 0.0309735;
+if(x>=7.1 && x<7.2) weight = 0.0273119;
+if(x>=7.2 && x<7.3) weight = 0.0240286;
+if(x>=7.3 && x<7.4) weight = 0.0218718;
+if(x>=7.4 && x<7.5) weight = 0.0142717;
+if(x>=7.5 && x<7.6) weight = 0.0181543;
+if(x>=7.6 && x<7.7) weight = 0.0139032;
+if(x>=7.7 && x<7.79999) weight = 0.0173096;
+if(x>=7.79999 && x<7.89999) weight = 0.0123775;
+if(x>=7.89999 && x<7.99999) weight = 0.0175077;
+if(x>=7.99999 && x<8.09999) weight = 0.0126449;
+if(x>=8.09999 && x<8.2) weight = 0.0163016;
+if(x>=8.2 && x<8.3) weight = 0.0142204;
+if(x>=8.3 && x<8.4) weight = 0.0105152;
+if(x>=8.4 && x<8.5) weight = 0.0102197;
+if(x>=8.5 && x<8.6) weight = 0.0100636;
+if(x>=8.6 && x<8.7) weight = 0.00938478;
+if(x>=8.7 && x<8.8) weight = 0.0120421;
+if(x>=8.8 && x<8.9) weight = 0.00873138;
+if(x>=8.9 && x<9) weight = 0.0123203;
+if(x>=9 && x<9.1) weight = 0.00819672;
+if(x>=9.1 && x<9.2) weight = 0.0100582;
+if(x>=9.2 && x<9.3) weight = 0.00680985;
+if(x>=9.3 && x<9.4) weight = 0.00843882;
+if(x>=9.4 && x<9.5) weight = 0.00854701;
+if(x>=9.5 && x<9.6) weight = 0.00582011;
+if(x>=9.6 && x<9.7) weight = 0.00918919;
+if(x>=9.7 && x<9.8) weight = 0.00591398;
+if(x>=9.8 && x<9.9) weight = 0.00886802;
+if(x>=9.9 && x<10) weight = 0.00475436;
+if(x>=10 && x<10.1) weight = 0.0042735;
+if(x>=10.1 && x<10.2) weight = 0.00632244;
+if(x>=10.2 && x<10.3) weight = 0.00537346;
+if(x>=10.3 && x<10.4) weight = 0.00316289;
+if(x>=10.4 && x<10.5) weight = 0.00656455;
+if(x>=10.5 && x<10.6) weight = 0.00428266;
+if(x>=10.6 && x<10.7) weight = 0.00485699;
+if(x>=10.7 && x<10.8) weight = 0.00428266;
+if(x>=10.8 && x<10.9) weight = 0.00374532;
+if(x>=10.9 && x<11) weight = 0.00221117;
+if(x>=11 && x<11.1) weight = 0.00272331;
+if(x>=11.1 && x<11.2) weight = 0.00279642;
+if(x>=11.2 && x<11.3) weight = 0.00271592;
+if(x>=11.3 && x<11.4) weight = 0.00208877;
+if(x>=11.4 && x<11.5) weight = 0.000517866;
+if(x>=11.5 && x<11.6) weight = 0.00326619;
+if(x>=11.6 && x<11.7) weight = 0.0015748;
+if(x>=11.7 && x<11.8) weight = 0.00170358;
+if(x>=11.8 && x<11.9) weight = 0.00164204;
+if(x>=11.9 && x<12) weight = 0.00286041;
+if(x>=12 && x<12.1) weight = 0.0010929;
+if(x>=12.1 && x<12.2) weight = 0.0021645;
+if(x>=12.2 && x<12.3) weight = 0.000534474;
+if(x>=12.3 && x<12.4) weight = 0.00105932;
+if(x>=12.4 && x<12.5) weight = 0.00105097;
+if(x>=12.5 && x<12.6) weight = 0.000534188;
+if(x>=12.6 && x<12.7) weight = 0.00168919;
+if(x>=12.7 && x<12.8) weight = 0.00108814;
+if(x>=12.8 && x<12.9) weight = 0.00156576;
+if(x>=12.9 && x<13) weight = 0;
+if(x>=13 && x<13.1) weight = 0.00214362;
+if(x>=13.1 && x<13.2) weight = 0.00160858;
+if(x>=13.2 && x<13.3) weight = 0.00161031;
+if(x>=13.3 && x<13.4) weight = 0.00107817;
+if(x>=13.4 && x<13.5) weight = 0.00107066;
+if(x>=13.5 && x<13.6) weight = 0.00168919;
+if(x>=13.6 && x<13.7) weight = 0.00109111;
+if(x>=13.7 && x<13.8) weight = 0.00107411;
+if(x>=13.8 && x<13.9) weight = 0.00165198;
+if(x>=13.9 && x<14) weight = 0.00109589;
+if(x>=14 && x<14.1) weight = 0.000531915;
+if(x>=14.1 && x<14.2) weight = 0.00108578;
+if(x>=14.2 && x<14.3) weight = 0.00221117;
+if(x>=14.3 && x<14.4) weight = 0.000558347;
+if(x>=14.4 && x<14.5) weight = 0.00103306;
+if(x>=14.5 && x<14.6) weight = 0.00108696;
+if(x>=14.6 && x<14.7) weight = 0;
+if(x>=14.7 && x<14.8) weight = 0;
+if(x>=14.8 && x<14.9) weight = 0.00110011;
+if(x>=14.9 && x<15) weight = 0;
+if(x>=15) weight = 0;
+		
+		}
+		
+		return weight;
+	
+	}
 }
 
 //=======================================================================
