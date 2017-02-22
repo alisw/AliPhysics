@@ -155,7 +155,7 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
     if (hasSPD) {
       if (spdVertex->IsFromVertexerZ() &&
         !(spdVertex->GetDispersion()<0.04 &&
-        spdVertex->GetZRes()<0.25)) return AliCEPBase::kVtxUnknown;
+        spdVertex->GetZRes()<0.25)) return AliCEPBase::kVtxErrRes;
     }
   
     // reject events if none between the SPD or track verteces are available
@@ -165,7 +165,7 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
       if (hasSPD) {
         fVtxType |= AliCEPBase::kVtxSPD;
         // check the proximity between the spd vertex and trak vertex, and reject if not satisfied
-        if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5) return AliCEPBase::kVtxUnknown;
+        if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5) return AliCEPBase::kVtxErrDif;
       }
       
     } else {
@@ -176,7 +176,7 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
   
   // Cut on the vertex z position
   const AliVVertex *vertex = Event->GetPrimaryVertex();
-  if (TMath::Abs(vertex->GetZ())>10) return AliCEPBase::kVtxUnknown;
+  if (TMath::Abs(vertex->GetZ())>10) return AliCEPBase::kVtxErrZ;
   
   // set the vertex position fVtxPos
   fVtxPos->SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());

@@ -428,7 +428,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //  1: from SPD
   //  2: from tracks
   Int_t kVertexType = fCEPUtil->GetVtxPos(fEvent,&fVtxPos);
-  if (kVertexType>0) fhStatsFlow->Fill(AliCEPBase::kBinVtx);
+  if (kVertexType!=AliCEPBase::kVtxUnknown)
+    fhStatsFlow->Fill(AliCEPBase::kBinVtx);
   
 	// did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
   // this is relevant for the 2016 data
@@ -495,7 +496,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     + isPileup * AliCEPBase::kBitPileup
     + isClusterCut * AliCEPBase::kBitClusterCut
     + isDGTrigger * AliCEPBase::kBitDGTrigger
-    + (kVertexType>0) * AliCEPBase::kBitVtx
+    + (kVertexType!=AliCEPBase::kVtxUnknown) * AliCEPBase::kBitVtx
     + isMBOR * AliCEPBase::kBitMBOR + isMBAND * AliCEPBase::kBitMBAND
     + isSPD  * AliCEPBase::kBitSPDA
     + isV0A  * AliCEPBase::kBitV0A  + isV0C   * AliCEPBase::kBitV0C

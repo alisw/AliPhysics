@@ -64,6 +64,10 @@ class AliCEPBase : public TObject {
     kVtxUnknown = 0,
     kVtxSPD,                // from ITS
     kVtxTracks,             // from tracks
+    kVtxErrRes,             // z-resolution of SPD vertex is out-of-bounds
+    kVtxErrDif,             // difference in z between SPD and track vertex is
+                            //  out-of-bounds
+    kVtxErrZ,               // z-position of vertex is  out-of-bounds
     kVtxAOD,                // On AOD only primary vertex is stored
 
 		// StatsFlow histogram entries
