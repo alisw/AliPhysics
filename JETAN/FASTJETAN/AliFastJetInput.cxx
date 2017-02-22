@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //---------------------------------------------------------------------
 // Class for input particles
 // manages the search for jets
@@ -115,12 +113,14 @@ void AliFastJetInput::FillInput()
       inputPart.set_user_index(i);      //label the particle into Fastjet algortihm
       fInputParticles.push_back(inputPart);       // back of the inputParticles vector
  
+      // MvL: there should a selection here to select charged particles??
       // only for charged particles (TPC+ITS)
       fastjet::PseudoJet inputPartCh(px,py,pz,en); // create PseudoJet object
       inputPartCh.set_user_index(i);               //label the particle into Fastjet algortihm
       fInputParticlesCh.push_back(inputPartCh);    // back of the inputParticles vector
     } // End loop on CalTrk
 
+  if (debug>1) cout << "Filled " << fInputParticlesCh.size() << " charged particles and " << fInputParticles.size() << " total particles" << endl;
 }
 
 //_____________________________________________________________________
