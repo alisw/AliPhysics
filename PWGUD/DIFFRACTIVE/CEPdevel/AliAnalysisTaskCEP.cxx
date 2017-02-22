@@ -238,11 +238,13 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
  
 	// fEventCuts
   fEventCuts = new AliEventCuts();
-	// fTrackCuts
+	
+  // fTrackCuts
   Bool_t isRun1 = fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitisRun1,AliCEPBase::kBitisRun1);
   Int_t clusterCut = 1;                 // 1 = b and c, 0 = d and e
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,clusterCut);
+  
   // Martin's selection
 	fMartinSel = new AliMultiplicitySelectionCP();
 	fMartinSel->InitDefaultTrackCuts(1);          // 1 = b and c, 0 = d and e
@@ -317,6 +319,9 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 
   fhStatsFlow = fCEPUtil->GetHistStatsFlow();
   fHist->Add(fhStatsFlow);
+  
+  // add QA histograms for event cut
+  fEventCuts->AddQAplotsToList(fHist);
 
 	//CEP tree
 	fCEPtree = new TTree("CEP", "CEP");
