@@ -26,8 +26,8 @@ class CEPEventBuffer : public TObject {
     Bool_t fisClusterCut;
     Bool_t fisDGTrigger;
 
-    // see AliCEPBase.h for the definition of fGapCondition
-    UInt_t fGapCondition;
+    // see AliCEPBase.h for the definition of fEventCondition
+    UInt_t fEventCondition;
 
     // summary track information
     Int_t fnTracklets;      // total number of tracklets
@@ -66,13 +66,7 @@ class CEPEventBuffer : public TObject {
     void SetMagnField(Double_t magnf)   { fMagnField = magnf; }
     void SetFiredTriggerClasses(TString ftc)   { fFiredTriggerClasses = ftc; }
 
-    void SetEventCutsel(Bool_t evcsel)  { fEventCutsel = evcsel; }
-    void SetPhyssel(Bool_t physsel)     { fPhysel = physsel; }
-    void SetPileup(Bool_t isPileup)     { fisPileup = isPileup; }
-    void SetClusterCut(Bool_t isClusterCut) { fisClusterCut = isClusterCut; }
-    void SetDGTrigger(Bool_t isDGTrigger) { fisDGTrigger = isDGTrigger; }
-
-    void SetGapCondition(UInt_t gapcond) { fGapCondition = gapcond; }
+    void SetEventCondition(UInt_t evcond) { fEventCondition = evcond; }
  
     // fnTracks, fnTracksCombined, and fnTracksITSpure are incremented
     // automatically when tracks are added with the method AddTrack
@@ -127,37 +121,38 @@ class CEPEventBuffer : public TObject {
     TVector3 GetMCVtxPos()   const { return fMCVtxPos; }
   
     // readout gap condition
-    UInt_t  GetGapCondition() const { return fGapCondition; }
-    Bool_t isMBOR() const { return fGapCondition & AliCEPBase::kBitMBOR; }
-    Bool_t isMBAND()const { return fGapCondition & AliCEPBase::kBitMBAND; }
-    Bool_t isTPC()  const { return isTPCA() || isTPCC(); }
-    Bool_t isTPCA() const { return fGapCondition & AliCEPBase::kBitTPCA; }
-    Bool_t isTPCC() const { return fGapCondition & AliCEPBase::kBitTPCC; }
-    Bool_t isSPD()  const { return isSPDA() || isSPDC(); }
-    Bool_t isSPDA() const { return fGapCondition & AliCEPBase::kBitSPDA; }
-    Bool_t isSPDC() const { return fGapCondition & AliCEPBase::kBitSPDC; }
-    Bool_t isFMD()  const { return isFMDA() || isFMDC(); }
-    Bool_t isFMDA() const { return fGapCondition & AliCEPBase::kBitFMDA; }
-    Bool_t isFMDC() const { return fGapCondition & AliCEPBase::kBitFMDC; }
-    Bool_t isV0()   const { return isV0A() || isV0C(); }
-    Bool_t isV0A()  const { return fGapCondition & AliCEPBase::kBitV0A;  }
-    Bool_t isV0C()  const { return fGapCondition & AliCEPBase::kBitV0C;  }
-    Bool_t isAD()   const { return isADA() || isADC();  }
-    Bool_t isADA()  const { return fGapCondition & AliCEPBase::kBitADA;  }
-    Bool_t isADC()  const { return fGapCondition & AliCEPBase::kBitADC;  }
-    Bool_t isZDC()  const { return isZDCA() || isZDCC(); }
-    Bool_t isZDCA() const { return fGapCondition & AliCEPBase::kBitZDCA; }
-    Bool_t isZDCC() const { return fGapCondition & AliCEPBase::kBitZDCC; }
-    Bool_t isZDN()  const { return isZDNA() || isZDNC(); }
-    Bool_t isZDNA() const { return fGapCondition & AliCEPBase::kBitZDNA; }
-    Bool_t isZDNC() const { return fGapCondition & AliCEPBase::kBitZDNC; }
-
-    Bool_t isEventCutsel()  const { return fEventCutsel; }
-    Bool_t isPhyssel()      const { return fPhysel; }
-    Bool_t isPileup()     const { return fisPileup; }
-    Bool_t isClusterCut() const { return fisClusterCut; }
-    Bool_t isDGTrigger()  const { return fisDGTrigger; }
+    UInt_t  GetEventCondition() const { return fEventCondition; }
     
+    Bool_t isEventCut()   const { return fEventCondition & AliCEPBase::kBitEventCut; }
+    Bool_t isPhyssel()    const { return fEventCondition & AliCEPBase::kBitPhyssel;   }
+    Bool_t isPileup()     const { return fEventCondition & AliCEPBase::kBitPileup;    }
+    Bool_t isClusterCut() const { return fEventCondition & AliCEPBase::kBitClusterCut;}
+    Bool_t isDGTrigger()  const { return fEventCondition & AliCEPBase::kBitDGTrigger; }
+
+    Bool_t isMBOR() const { return fEventCondition & AliCEPBase::kBitMBOR; }
+    Bool_t isMBAND()const { return fEventCondition & AliCEPBase::kBitMBAND; }
+    Bool_t isTPC()  const { return isTPCA() || isTPCC(); }
+    Bool_t isTPCA() const { return fEventCondition & AliCEPBase::kBitTPCA; }
+    Bool_t isTPCC() const { return fEventCondition & AliCEPBase::kBitTPCC; }
+    Bool_t isSPD()  const { return isSPDA() || isSPDC(); }
+    Bool_t isSPDA() const { return fEventCondition & AliCEPBase::kBitSPDA; }
+    Bool_t isSPDC() const { return fEventCondition & AliCEPBase::kBitSPDC; }
+    Bool_t isFMD()  const { return isFMDA() || isFMDC(); }
+    Bool_t isFMDA() const { return fEventCondition & AliCEPBase::kBitFMDA; }
+    Bool_t isFMDC() const { return fEventCondition & AliCEPBase::kBitFMDC; }
+    Bool_t isV0()   const { return isV0A() || isV0C(); }
+    Bool_t isV0A()  const { return fEventCondition & AliCEPBase::kBitV0A;  }
+    Bool_t isV0C()  const { return fEventCondition & AliCEPBase::kBitV0C;  }
+    Bool_t isAD()   const { return isADA() || isADC();  }
+    Bool_t isADA()  const { return fEventCondition & AliCEPBase::kBitADA;  }
+    Bool_t isADC()  const { return fEventCondition & AliCEPBase::kBitADC;  }
+    Bool_t isZDC()  const { return isZDCA() || isZDCC(); }
+    Bool_t isZDCA() const { return fEventCondition & AliCEPBase::kBitZDCA; }
+    Bool_t isZDCC() const { return fEventCondition & AliCEPBase::kBitZDCC; }
+    Bool_t isZDN()  const { return isZDNA() || isZDNC(); }
+    Bool_t isZDNA() const { return fEventCondition & AliCEPBase::kBitZDNA; }
+    Bool_t isZDNC() const { return fEventCondition & AliCEPBase::kBitZDNC; }
+
     CEPTrackBuffer* GetTrack(Int_t ind);
 
   ClassDef(CEPEventBuffer, 3)     // CEP event buffer

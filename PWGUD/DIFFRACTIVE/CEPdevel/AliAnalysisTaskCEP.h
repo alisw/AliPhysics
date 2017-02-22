@@ -43,7 +43,11 @@ public:
 
   // two  class  constructors
 	AliAnalysisTaskCEP();
-	AliAnalysisTaskCEP(const char* name, Long_t state = 0x0, Int_t numTracksMax = 7);
+	AliAnalysisTaskCEP(const char* name,
+    Long_t state=AliCEPBase::kBitConfigurationSet,
+    Int_t numTracksMax=6,
+    UInt_t ETmask=AliCEPBase::kBitBaseLine, UInt_t ETpattern=AliCEPBase::kBitBaseLine,
+    UInt_t TTmask=AliCEPBase::kTTBaseLine,  UInt_t TTpattern=AliCEPBase::kTTBaseLine);
   // class  destructor
 	virtual ~AliAnalysisTaskCEP();
   // called  once  at  beginning  or  runtime
@@ -63,8 +67,12 @@ private:
 	Bool_t CheckInput();
 	void PostOutputs();
 
-  // events are save if the number of tracks is <= fnumTracksMax
+  // events are saved if  (ET=Event test, TT=Track test)
+  // ET conditions are met
+  // 0 < nTrack='number of tracks meeting the TT conditions' <= fnumTracksMax
   Int_t fnumTracksMax;
+  UInt_t fETmask, fETpattern;
+  UInt_t fTTmask, fTTpattern;
 
 	// event information
 	Int_t fRun;                     //  run number

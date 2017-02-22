@@ -67,15 +67,19 @@ TH1F* AliCEPUtils::GetHistStatsFlow()
 	axis->SetBinLabel(AliCEPBase::kBinTotalInput+1,   "total input");
 	axis->SetBinLabel(AliCEPBase::kBinGoodInput+1,    "good input");
 	axis->SetBinLabel(AliCEPBase::kBinMCEvent+1,      "MC");
-	axis->SetBinLabel(AliCEPBase::kBinDGTrigger+1,    "DG trigger");
-	axis->SetBinLabel(AliCEPBase::kBinPileup+1,       "pileup");
 	axis->SetBinLabel(AliCEPBase::kBinPhysEvent+1,    "physics event");
 	axis->SetBinLabel(AliCEPBase::kBinEventCut+1,     "passed event cut");
-	axis->SetBinLabel(AliCEPBase::kBinPhySel+1,       "Physics selected");
+	axis->SetBinLabel(AliCEPBase::kBinPhysel+1,       "Physics selected");
+	axis->SetBinLabel(AliCEPBase::kBinPileup+1,       "pileup");
+	axis->SetBinLabel(AliCEPBase::kBinClusterCut+1,   "passed cluster cut");
+	axis->SetBinLabel(AliCEPBase::kBinDGTrigger+1,    "DG trigger");
+	axis->SetBinLabel(AliCEPBase::kBinSharedCluster+1,"passed shared cluster test");
+	axis->SetBinLabel(AliCEPBase::kBinVtx+1,          "Vtx ok");
 	axis->SetBinLabel(AliCEPBase::kBinMBOR+1,         "MBOR");
 	axis->SetBinLabel(AliCEPBase::kBinMBAND+1,        "MBAND");
-	axis->SetBinLabel(AliCEPBase::kBinClusterCut+1,   "passed cluster cut");
-	axis->SetBinLabel(AliCEPBase::kBinSharedCluster+1,"passed shared cluster test");
+	axis->SetBinLabel(AliCEPBase::kBinnoV0+1,         "!V0");
+	axis->SetBinLabel(AliCEPBase::kBinnoFMD+1,        "!FMD");
+	axis->SetBinLabel(AliCEPBase::kBinnoAD+1,         "!AD");
 	axis->SetBinLabel(AliCEPBase::kBinSaved+1,        "saved");
 
 	return hist;
@@ -263,7 +267,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     // and update the TrackStatus word trackstat accordingly
     // see AliCEPBase.h for a definition of the TrackStatus word bits
     // initialize trackstat
-    trackstat = AliCEPBase::kTTUnknown;
+    trackstat = AliCEPBase::kTTBaseLine;
     
     // TOFBunchCrossing
     if (track->GetTOFBunchCrossing() ==0) ;

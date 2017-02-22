@@ -5,8 +5,12 @@ AliAnalysisTaskSE* AddTaskCEPAnalysis (
   TString taskname        = TString("CEPAnalysis"),
   Bool_t  isMC            = kFALSE,
   Bool_t  isSaveAll       = kFALSE,
-  Bool_t  isSaveDGTrigger = kFALSE,
-  Int_t   numTracksMax    = 100000 )
+  Int_t   numTracksMax    = 6,
+  UInt_t  ETmask          = AliCEPBase::kBitBaseLine,
+  UInt_t  ETpattern       = AliCEPBase::kBitBaseLine,
+  UInt_t  TTmask          = AliCEPBase::kTTBaseLine,
+  UInt_t  TTpattern       = AliCEPBase::kTTBaseLine
+  )
  
 {
 
@@ -23,14 +27,14 @@ AliAnalysisTaskSE* AddTaskCEPAnalysis (
   // create the analysis task
   UInt_t taskConfig  = AliCEPBase::kBitConfigurationSet;
   if (isSaveAll)       taskConfig |= AliCEPBase::kBitSaveAllEvents; 
-  if (isSaveDGTrigger) taskConfig |= AliCEPBase::kBitSaveDGTrigger; 
 	taskConfig |= AliCEPBase::kBitConfigurationVersion;
 
 	AliAnalysisTaskCEP *task = new AliAnalysisTaskCEP (
-    taskname.Data(),taskConfig, numTracksMax);
+    taskname.Data(),taskConfig,
+    numTracksMax,ETmask,ETpattern,TTmask,TTpattern );
 
 	// get input and output managers
-	AliAnalysisDataContainer *aadci = mgr->GetCommonInputContainer();
+	AliAnalysisDataContainer *aadci  = mgr->GetCommonInputContainer();
 	AliAnalysisDataContainer *aadco1 = mgr->CreateContainer
 	(
 		Form("CEPHist"),
