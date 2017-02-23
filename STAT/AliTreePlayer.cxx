@@ -1081,11 +1081,12 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
   //
   //
   TPRegexp isPadOption("^%O");
+  Bool_t isLogY=kFALSE;
   for (Int_t iPad=0; iPad<nPads; iPad++){
     if (drawList->At(iPad+1)==NULL) break;
     //TVirtualPad  *cPad = 
     pad->cd(iPad+1);
-    TLegend * legend = new TLegend(0.11,0.75, 0.89,0.89, TString::Format("Pad%d",iPad));
+    TLegend * legend = new TLegend(0.11,0.85, 0.89,0.99, TString::Format("Pad%d",iPad));
     legend->SetNColumns(2);
     legend->SetBorderSize(0);
     TString padSetup=drawList->At(iPad+1)->GetName();
@@ -1096,8 +1097,13 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
       padOption=TString(&padSetup[2]);
       padOption.Remove(padOption.First(";"));
       padOption.ToLower();
-      if (padOption.Contains("logy")) pad->cd(iPad+1)->SetLogy();
-      if (padOption.Contains("logx")) pad->cd(iPad+1)->SetLogx();
+      if (padOption.Contains("logy")) {
+	pad->cd(iPad+1)->SetLogy();
+	isLogY=kTRUE;
+      }
+      if (padOption.Contains("logx")) {
+	pad->cd(iPad+1)->SetLogx();
+      }
       if (padOption.Contains("gridy")) pad->cd(iPad+1)->SetGridy();
       if (padOption.Contains("gridx")) pad->cd(iPad+1)->SetGridx();
       if (padOption.Contains("timex")) isTimeX=kTRUE;
@@ -1209,7 +1215,12 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
     pad->cd(iPad+1);
     if (hisToDraw!=NULL){      
       hisToDraw->SetMaximum(hisMax+(hisMax-hisMin)/2.);
+      if (hisMin<=0) hisMin=TMath::Min(0.01, hisMax*0.01);
       hisToDraw->SetMinimum(hisMin);
+      if (isLogY){
+	hisToDraw->SetMaximum(hisMax*TMath::Max(10.,(hisMax/hisMin)/4.));
+      }
+
       if ((verbose&0x8)>0){
 	::Info("AliTreePlayer::DrawHistograms:","Pad %d. %s  SetMinimum(%f). SetMaximum(%f)",iPad,padDrawList->At(0)->GetName(), hisMin,hisMax+(hisMax-hisMin)/2.);
       }
