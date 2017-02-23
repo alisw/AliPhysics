@@ -257,13 +257,12 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   // Output
   TList                      *fOutput;                     //!<!output list
   TH1                        *fHistEventCount;             //!<!incoming and selected events
-  TH1                        *fHistTrialsAfterSel;         //!<!total number of trials per pt hard bin after selection
-  TH1                        *fHistEventsAfterSel;         //!<!total number of events per pt hard bin after selection
-  TProfile                   *fHistXsectionAfterSel;       //!<!x section from pythia header
+  TH1                        *fHistTrialsVsPtHard;         //!<!total number of trials per pt hard bin after selection
+  TH1                        *fHistEventsVsPtHard;         //!<!total number of events per pt hard bin after selection
+  TProfile                   *fHistXsectionVsPtHard;       //!<!x section from pythia header
   TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
   TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
   TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
-  TH1                        *fHistPtHard;                 //!<!pt hard distribution
   TH1                        *fHistCentrality;             //!<!event centrality distribution
   TH1                        *fHistZVertex;                //!<!z vertex position
   TH1                        *fHistEventPlane;             //!<!event plane distribution

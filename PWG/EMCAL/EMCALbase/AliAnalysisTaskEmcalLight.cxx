@@ -111,13 +111,12 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fXsection(0),
   fOutput(0),
   fHistEventCount(0),
-  fHistTrialsAfterSel(0),
-  fHistEventsAfterSel(0),
-  fHistXsectionAfterSel(0),
+  fHistTrialsVsPtHard(0),
+  fHistEventsVsPtHard(0),
+  fHistXsectionVsPtHard(0),
   fHistTrials(0),
   fHistEvents(0),
   fHistXsection(0),
-  fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
   fHistEventPlane(0),
@@ -199,13 +198,12 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fXsection(0),
   fOutput(0),
   fHistEventCount(0),
-  fHistTrialsAfterSel(0),
-  fHistEventsAfterSel(0),
-  fHistXsectionAfterSel(0),
+  fHistTrialsVsPtHard(0),
+  fHistEventsVsPtHard(0),
+  fHistXsectionVsPtHard(0),
   fHistTrials(0),
   fHistEvents(0),
   fHistXsection(0),
-  fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
   fHistEventPlane(0),
@@ -287,56 +285,39 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     return;
 
   if (fIsPythia) {
-    fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", 11, 0, 11);
-    fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
-    fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
-    fOutput->Add(fHistTrialsAfterSel);
+    fHistEventsVsPtHard = new TH1F("fHistEventsVsPtHard", "fHistEventsVsPtHard", 1000, 0, 1000);
+    fHistEventsVsPtHard->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistEventsVsPtHard->GetYaxis()->SetTitle("events");
+    fOutput->Add(fHistEventsVsPtHard);
 
-    fHistEventsAfterSel = new TH1F("fHistEventsAfterSel", "fHistEventsAfterSel", 11, 0, 11);
-    fHistEventsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
-    fHistEventsAfterSel->GetYaxis()->SetTitle("total events");
-    fOutput->Add(fHistEventsAfterSel);
+    fHistTrialsVsPtHard = new TH1F("fHistTrialsVsPtHard", "fHistTrialsVsPtHard", 1000, 0, 1000);
+    fHistTrialsVsPtHard->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistTrialsVsPtHard->GetYaxis()->SetTitle("trials");
+    fOutput->Add(fHistTrialsVsPtHard);
 
-    fHistXsectionAfterSel = new TProfile("fHistXsectionAfterSel", "fHistXsectionAfterSel", 11, 0, 11);
-    fHistXsectionAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
-    fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
-    fOutput->Add(fHistXsectionAfterSel);
+    fHistXsectionVsPtHard = new TProfile("fHistXsectionVsPtHard", "fHistXsectionVsPtHard", 1000, 0, 1000);
+    fHistXsectionVsPtHard->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistXsectionVsPtHard->GetYaxis()->SetTitle("xsection");
+    fOutput->Add(fHistXsectionVsPtHard);
 
-    fHistTrials = new TH1F("fHistTrials", "fHistTrials", 11, 0, 11);
-    fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistTrials = new TH1F("fHistTrials", "fHistTrials", 50, 0, 50);
+    fHistTrials->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
     fOutput->Add(fHistTrials);
 
-    fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0, 11);
-    fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistEvents = new TH1F("fHistEvents", "fHistEvents", 50, 0, 50);
+    fHistEvents->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     fHistEvents->GetYaxis()->SetTitle("total events");
     fOutput->Add(fHistEvents);
 
-    fHistXsection = new TProfile("fHistXsection", "fHistXsection", 11, 0, 11);
-    fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistXsection = new TProfile("fHistXsection", "fHistXsection", 50, 0, 50);
+    fHistXsection->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     fHistXsection->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsection);
-
-    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-
-    for (Int_t i = 1; i < 12; i++) {
-      fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistEventsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-
-      fHistTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-    }
-
-    fHistPtHard = new TH1F("fHistPtHard", "fHistPtHard", 250, 0, 1000);
-    fHistPtHard->GetXaxis()->SetTitle("p_{T,hard} (GeV/c)");
-    fHistPtHard->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistPtHard);
   }
 
   fHistZVertex = new TH1F("fHistZVertex","Z vertex position", 60, -30, 30);
-  fHistZVertex->GetXaxis()->SetTitle("z");
+  fHistZVertex->GetXaxis()->SetTitle("V_{#it{z}}");
   fHistZVertex->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertex);
 
@@ -408,10 +389,9 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms()
 {
   if (fIsPythia) {
-    fHistEventsAfterSel->Fill(fPtHardBin, 1);
-    fHistTrialsAfterSel->Fill(fPtHardBin, fNTrials);
-    fHistXsectionAfterSel->Fill(fPtHardBin, fXsection);
-    fHistPtHard->Fill(fPtHard);
+    fHistEventsVsPtHard->Fill(fPtHard, 1);
+    fHistTrialsVsPtHard->Fill(fPtHard, fNTrials);
+    fHistXsectionVsPtHard->Fill(fPtHard, fXsection);
   }
 
   fHistZVertex->Fill(fVertex[2]);
