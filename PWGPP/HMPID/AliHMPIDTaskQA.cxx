@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-blah
-
 //==============================================================================
 // AliHMPIDTaskQA - Class representing a quality check tool of HMPID 
 // A set of histograms is created.
