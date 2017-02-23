@@ -203,7 +203,7 @@ AliTOFCalibFineSlewing::Eval(Int_t ich, Float_t tot)
   Int_t x = (Int_t)(tot * 1000.);
   
   //linear interpolation
-  //In case x is < fX[0] or > fX[fNpoints-1] return the extrapolated point
+  //In case x is < fX[0] or > fX[fNpoints-1] return the first or last point
   
   //find points in graph around x assuming points are not sorted
   // (if point are sorted could use binary search)
@@ -215,6 +215,11 @@ AliTOFCalibFineSlewing::Eval(Int_t ich, Float_t tot)
   Int_t up  = -1;
   Int_t low2 = -1;
   Int_t up2 = -1;
+
+  if (x < fX[st])
+    return fY[st];
+  if (x > fX[st + npt - 1])
+    return fY[st + npt - 1];
   
   for (Int_t i = st; i < st + npt; ++i) {
     if (fX[i] < x) {
@@ -232,14 +237,14 @@ AliTOFCalibFineSlewing::Eval(Int_t ich, Float_t tot)
   }
   
   // treat cases when x is outside graph min max abscissa
-  if (up == -1)  {
-    up  = low;
-    low = low2;
-  }
-  if (low == -1) {
-    low = up;
-    up  = up2;
-  }
+  //  if (up == -1)  {
+  //    up  = low;
+  //    low = low2;
+  //  }
+  //  if (low == -1) {
+  //    low = up;
+  //    up  = up2;
+  //  }
  
   //  assert(low != -1 && up != -1);
   if (!(low != -1 && up != -1)) return 0.;
