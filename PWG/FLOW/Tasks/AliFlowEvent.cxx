@@ -2193,7 +2193,7 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
      return;
  }
  
- 
+
  // we need to do some mapping because I don't want to add another set of histograms to an already
  // cluttered class
  // so, here goes the mapping of the names
@@ -2222,147 +2222,148 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
      return;
  }
  fQxavsV0[4] = ((TH1D*) cont->GetObject(run));
- 
+
 
  for(Int_t harm = 2; harm < 4; harm++) { 
-  AliOADBContainer* contQxnam = 0;
-  if (harm == 2.)
-     contQxnam = (AliOADBContainer*) foadb->Get("fqxa2m");
-  else if (harm == 3.)
-     contQxnam = (AliOADBContainer*) foadb->Get("fqxa3m");
- 
-  if(!contQxnam){
-     printf("OADB object fqxanm is not available in the file\n");
-     return;
-  }
-  if(!(contQxnam->GetObject(run))){
-     printf("OADB object fqxanm is not available for run %i\n", run);
-     return;
-  }
-  fQxavsV0[0+(harm-2)*2] = ((TH1D*) contQxnam->GetObject(run));
- 
- 
- 
-  AliOADBContainer* contQynam = 0;
-  if (harm == 2.)
-    contQynam = (AliOADBContainer*) foadb->Get("fqya2m");
-  else if (harm == 3.)
-     contQynam = (AliOADBContainer*) foadb->Get("fqya3m");
- 
-  if(!contQynam){
-     printf("OADB object fqyanm is not available in the file\n");
-     return;
-  }
-  if(!(contQynam->GetObject(run))){
-     printf("OADB object fqyanm is not available for run %i\n", run);
-     return;
-  }
-  fQyavsV0[0+(harm-2)*2] = ((TH1D*) contQynam->GetObject(run));
- 
- 
- 
-  AliOADBContainer* contQxnas = 0;
-  if (harm == 2.)
-     contQxnas = (AliOADBContainer*) foadb->Get("fqxa2s");
-  else if (harm == 3.)
-     contQxnas = (AliOADBContainer*) foadb->Get("fqxa3s");
- 
-  if(!contQxnas){
-     printf("OADB object fqxans is not available in the file\n");
-     return;
-  }
-  if(!(contQxnas->GetObject(run))){
-     printf("OADB object fqxans is not available for run %i\n", run);
-     return;
-  }
-  fQxavsV0[1+(harm-2)*2] = ((TH1D*) contQxnas->GetObject(run));
- 
-  AliOADBContainer* contQynas = 0;
- if (harm == 2.)
-     contQynas = (AliOADBContainer*) foadb->Get("fqya2s");
- else if (harm == 3.)
-     contQynas = (AliOADBContainer*) foadb->Get("fqya3s");
- 
- if(!contQynas){
-     printf("OADB object fqyans is not available in the file\n");
-     return;
- }
- if(!(contQynas->GetObject(run))){
-     printf("OADB object fqyans is not available for run %i\n", run);
-     return;
- }
- fQyavsV0[1+(harm-2)*2] = ((TH1D*) contQynas->GetObject(run));
- 
- 
- 
- AliOADBContainer* contQxncm = 0;
- if (harm == 2.)
-     contQxncm = (AliOADBContainer*) foadb->Get("fqxc2m");
- else if (harm == 3.)
-     contQxncm = (AliOADBContainer*) foadb->Get("fqxc3m");
- 
- if(!contQxncm){
-     printf("OADB object fqxcnm is not available in the file\n");
-     return;
- }
- if(!(contQxncm->GetObject(run))){
-     printf("OADB object fqxcnm is not available for run %i\n", run);
-     return;
- }
- fQxcvsV0[0+(harm-2)*2] = ((TH1D*) contQxncm->GetObject(run));
- 
- 
- 
- AliOADBContainer* contQyncm = 0;
- if (harm == 2.)
-     contQyncm = (AliOADBContainer*) foadb->Get("fqyc2m");
- else if (harm == 3.)
-     contQyncm = (AliOADBContainer*) foadb->Get("fqyc3m");
- 
- if(!contQyncm){
-     printf("OADB object fqyc2m is not available in the file\n");
-     return;
- }
- if(!(contQyncm->GetObject(run))){
-     printf("OADB object fqyc2m is not available for run %i\n", run);
-     return;
- }
- fQycvsV0[0+(harm-2)*2] = ((TH1D*) contQyncm->GetObject(run));
+     AliOADBContainer* contQxnam = 0;
+     if (harm == 2)
+         contQxnam = (AliOADBContainer*) foadb->Get("fqxa2m");
+     else if (harm == 3)
+         contQxnam = (AliOADBContainer*) foadb->Get("fqxa3m");
 
- AliOADBContainer* contQxncs = 0;
- if (harm == 2.)
-     contQxncs = (AliOADBContainer*) foadb->Get("fqxc2s");
- else if (harm == 3.)
- 
- if(!contQxncs){
-     printf("OADB object fqxc2s is not available in the file\n");
-     return;
- }
- if(!(contQxncs->GetObject(run))){
-     printf("OADB object fqxc2s is not available for run %i\n", run);
-     return;
- }
- fQxcvsV0[1+(harm-2)*2] = ((TH1D*) contQxncs->GetObject(run));
- 
- 
- 
- AliOADBContainer* contQyncs = 0;
- if (harm == 2.)
-     contQyncs = (AliOADBContainer*) foadb->Get("fqyc2s");
- else if (harm == 3.)
-     contQyncs = (AliOADBContainer*) foadb->Get("fqyc3s");
- 
- if(!contQyncs){
-     printf("OADB object fqycnm is not available in the file\n");
-     return;
- }
- if(!(contQyncs->GetObject(run))){
-     printf("OADB object fqycns is not available for run %i\n", run);
-     return;
- }
- fQycvsV0[1+(harm-2)*2] = ((TH1D*) contQyncs->GetObject(run));
+     if(!contQxnam){
+         printf("OADB object fqxanm is not available in the file\n");
+         return;
+     }
+     if(!(contQxnam->GetObject(run))){
+         printf("OADB object fqxanm is not available for run %i\n", run);
+         return;
+     }
+     fQxavsV0[0+(harm-2)*2] = ((TH1D*) contQxnam->GetObject(run));
 
- cuts->SetVZEROgainEqualisation(fQxavsV0[4]);
+
+
+     AliOADBContainer* contQynam = 0;
+     if (harm == 2)
+         contQynam = (AliOADBContainer*) foadb->Get("fqya2m");
+     else if (harm == 3)
+         contQynam = (AliOADBContainer*) foadb->Get("fqya3m");
+
+     if(!contQynam){
+         printf("OADB object fqyanm is not available in the file\n");
+         return;
+     }
+     if(!(contQynam->GetObject(run))){
+         printf("OADB object fqyanm is not available for run %i\n", run);
+         return;
+     }
+     fQyavsV0[0+(harm-2)*2] = ((TH1D*) contQynam->GetObject(run));
+
+
+
+     AliOADBContainer* contQxnas = 0;
+     if (harm == 2)
+         contQxnas = (AliOADBContainer*) foadb->Get("fqxa2s");
+     else if (harm == 3)
+         contQxnas = (AliOADBContainer*) foadb->Get("fqxa3s");
+
+     if(!contQxnas){
+         printf("OADB object fqxans is not available in the file\n");
+         return;
+     }
+     if(!(contQxnas->GetObject(run))){
+         printf("OADB object fqxans is not available for run %i\n", run);
+         return;
+     }
+     fQxavsV0[1+(harm-2)*2] = ((TH1D*) contQxnas->GetObject(run));
+
+     AliOADBContainer* contQynas = 0;
+     if (harm == 2)
+         contQynas = (AliOADBContainer*) foadb->Get("fqya2s");
+     else if (harm == 3)
+         contQynas = (AliOADBContainer*) foadb->Get("fqya3s");
+
+     if(!contQynas){
+         printf("OADB object fqyans is not available in the file\n");
+         return;
+     }
+     if(!(contQynas->GetObject(run))){
+         printf("OADB object fqyans is not available for run %i\n", run);
+         return;
+     }
+     fQyavsV0[1+(harm-2)*2] = ((TH1D*) contQynas->GetObject(run));
+
+
+
+     AliOADBContainer* contQxncm = 0;
+     if (harm == 2)
+         contQxncm = (AliOADBContainer*) foadb->Get("fqxc2m");
+     else if (harm == 3)
+         contQxncm = (AliOADBContainer*) foadb->Get("fqxc3m");
+
+     if(!contQxncm){
+         printf("OADB object fqxcnm is not available in the file\n");
+         return;
+     }
+     if(!(contQxncm->GetObject(run))){
+         printf("OADB object fqxcnm is not available for run %i\n", run);
+         return;
+     }
+     fQxcvsV0[0+(harm-2)*2] = ((TH1D*) contQxncm->GetObject(run));
+
+
+
+     AliOADBContainer* contQyncm = 0;
+     if (harm == 2)
+         contQyncm = (AliOADBContainer*) foadb->Get("fqyc2m");
+     else if (harm == 3)
+         contQyncm = (AliOADBContainer*) foadb->Get("fqyc3m");
+
+     if(!contQyncm){
+         printf("OADB object fqyc2m is not available in the file\n");
+         return;
+     }
+     if(!(contQyncm->GetObject(run))){
+         printf("OADB object fqyc2m is not available for run %i\n", run);
+         return;
+     }
+     fQycvsV0[0+(harm-2)*2] = ((TH1D*) contQyncm->GetObject(run));
+
+     AliOADBContainer* contQxncs = 0;
+     if (harm == 2)
+         contQxncs = (AliOADBContainer*) foadb->Get("fqxc2s");
+     else if (harm == 3)
+         contQxncs = (AliOADBContainer*) foadb->Get("fqxc3s");
+
+     if(!contQxncs){
+         printf("OADB object fqxc2s is not available in the file\n");
+         return;
+     }
+     if(!(contQxncs->GetObject(run))){
+         printf("OADB object fqxc2s is not available for run %i\n", run);
+         return;
+     }
+     fQxcvsV0[1+(harm-2)*2] = ((TH1D*) contQxncs->GetObject(run));
+
+
+
+     AliOADBContainer* contQyncs = 0;
+     if (harm == 2)
+         contQyncs = (AliOADBContainer*) foadb->Get("fqyc2s");
+     else if (harm == 3)
+         contQyncs = (AliOADBContainer*) foadb->Get("fqyc3s");
+
+     if(!contQyncs){
+         printf("OADB object fqycnm is not available in the file\n");
+         return;
+     }
+     if(!(contQyncs->GetObject(run))){
+         printf("OADB object fqycns is not available for run %i\n", run);
+         return;
+     }
+     fQycvsV0[1+(harm-2)*2] = ((TH1D*) contQyncs->GetObject(run));
+
+     cuts->SetVZEROgainEqualisation(fQxavsV0[4]);
 
  }
 
