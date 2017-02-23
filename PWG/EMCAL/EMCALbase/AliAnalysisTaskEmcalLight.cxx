@@ -84,6 +84,10 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fSelectPtHardBin(-999),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
+  fMCRejectFilter(kFALSE),
+  fPtHardAndJetPtFactor(0.),
+  fPtHardAndClusterPtFactor(0.),
+  fPtHardAndTrackPtFactor(0.),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -168,6 +172,10 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fSelectPtHardBin(-999),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
+  fMCRejectFilter(kFALSE),
+  fPtHardAndJetPtFactor(0.),
+  fPtHardAndClusterPtFactor(0.),
+  fPtHardAndTrackPtFactor(0.),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -1367,3 +1375,72 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::BeamTypeFromRu
   }
   return b;
 }
+
+/**
+ * Filter the mc tails in pt-hard distributions
+ * See https://twiki.cern.ch/twiki/bin/view/ALICE/JetMCProductionsCrossSections#How_to_reject_tails_in_the_pT_ha
+ * @return kTRUE if it is not a MC outlier
+ */
+Bool_t AliAnalysisTaskEmcalLight::CheckMCOutliers()
+{
+  if (!fPythiaHeader || !fMCRejectFilter) return kTRUE;
+
+  // Condition 1: Pythia jet / pT-hard > factor
+  if (fPtHardAndJetPtFactor > 0.) {
+    AliTLorentzVector jet;
+
+    Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
+
+    AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
+
+    Float_t tmpjet[]={0,0,0,0};
+    for (Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
+      fPythiaHeader->TriggerJet(ijet, tmpjet);
+
+      jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
+
+      AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
+
+      //Compare jet pT and pt Hard
+      if (jet.Pt() > fPtHardAndJetPtFactor * fPtHard) {
+        AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", fPtHard, jet.Pt(), fPtHardAndJetPtFactor));
+        return kFALSE;
+      }
+    }
+  }
+  // end condition 1
+
+  // Condition 2 : Reconstructed EMCal cluster pT / pT-hard > factor
+  if (fPtHardAndClusterPtFactor > 0.) {
+    AliClusterContainer* mccluscont = GetClusterContainer(0);
+    if ((Bool_t)mccluscont) {
+      for (auto cluster : mccluscont->all()) {// Not cuts applied ; use accept for cuts
+        Float_t ecluster = cluster->E();
+
+        if (ecluster > (fPtHardAndClusterPtFactor * fPtHard)) {
+          AliInfo(Form("Reject : ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",ecluster,cluster->GetType(),fPtHardAndClusterPtFactor,fPtHard));
+          return kFALSE;
+        }
+      }
+    }
+  }
+  // end condition 2
+
+  // condition 3 : Reconstructed track pT / pT-hard >factor
+  if (fPtHardAndTrackPtFactor > 0.) {
+    AliMCParticleContainer* mcpartcont = dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(0));
+    if ((Bool_t)mcpartcont) {
+      for (auto mctrack : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
+        Float_t trackpt = mctrack->Pt();
+        if (trackpt > (fPtHardAndTrackPtFactor * fPtHard) ) {
+          AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, fPtHard));
+          return kFALSE;
+        }
+      }
+    }
+  }
+  // end condition 3
+
+  return kTRUE;
+}
+

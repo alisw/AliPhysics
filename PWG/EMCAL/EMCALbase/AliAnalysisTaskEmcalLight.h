@@ -137,6 +137,14 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        AddRejectedTriggerClass(const char* trigClass)        { fRejectedTriggerClasses.Add(new TObjString(trigClass)); }
   void                        ClearAcceptedTriggerClasses()                         { fAcceptedTriggerClasses.Clear()                     ; }
   void                        ClearRejectedTriggerClasses()                         { fRejectedTriggerClasses.Clear()                     ; }
+  void                        SetMCFilter()                                         { fMCRejectFilter = kTRUE                             ; }
+  void                        ResetMCFilter()                                       { fMCRejectFilter = kFALSE                            ; }
+  void                        SetJetPtFactor(Float_t f)                             { fPtHardAndJetPtFactor = f                           ; }
+  Float_t                     JetPtFactor()                                         { return fPtHardAndJetPtFactor                        ; }
+  void                        SetClusterPtFactor(Float_t f)                         { fPtHardAndClusterPtFactor = f                       ; }
+  Float_t                     ClusterPtFactor()                                     { return fPtHardAndClusterPtFactor                    ; }
+  void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
+  Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
  protected:  
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -145,6 +153,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   EBeamType_t                 GetBeamType();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
   Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
+  Bool_t                      CheckMCOutliers();
 
   // Overloaded AliAnalysisTaskSE methods
   void                        UserCreateOutputObjects();
@@ -215,6 +224,10 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   TObjArray                   fAcceptedTriggerClasses;     ///< list of accepted trigger classes
   TObjArray                   fRejectedTriggerClasses;     ///< list of accepted trigger classes
+  Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
+  Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
+  Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
+  Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
 
   // Service fields
   Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized
@@ -262,7 +275,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalLight, 1);
+  ClassDef(AliAnalysisTaskEmcalLight, 2);
   /// \endcond
 };
 
