@@ -110,6 +110,11 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
     //mc
   TClonesArray *fGenPart;
   
+  //EVE tree
+  TTree *fEveTree;
+  Double_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fPIDsigma;
+  Int_t fChannel;
+  
   TList *fListTrig;
   TH1D *fHistCcup4TriggersPerRun;
   TH1D *fHistCcup7TriggersPerRun;
@@ -158,7 +163,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcPsi2s, 5); 
+  ClassDef(AliAnalysisTaskUpcPsi2s, 6); 
 };
 
 #endif
