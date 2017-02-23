@@ -139,7 +139,7 @@ class AliEmcalContainer : public TObject {
   Int_t                       GetCurrentID()                  const { return fCurrentID                 ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
   Int_t                       GetIndexFromLabel(Int_t lab)    const;
-  Int_t                       GetNEntries()                   const { return fClArray->GetEntriesFast() ; }
+  Int_t                       GetNEntries()                   const { return fClArray ? fClArray->GetEntriesFast() : 0 ; }
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const = 0;
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) const = 0;
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom) = 0;
