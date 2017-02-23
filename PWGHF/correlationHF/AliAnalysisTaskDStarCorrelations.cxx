@@ -151,6 +151,7 @@ fUseDmesonEfficiencyCorrection(kFALSE),
 fUseCentrality(kFALSE),
 fUseHadronicChannelAtKineLevel(kFALSE),
 fRemoveMoreThanOneDmesonCandidate(kFALSE),
+fLimitAcceptanceForMC(kFALSE),
 fMultiplicityEstimator(kNtrk10),
 fDoVZER0ParamVertexCorr(1), 
 fPhiBins(32),
@@ -2162,14 +2163,14 @@ void AliAnalysisTaskDStarCorrelations::EventMixingChecks(AliAODEvent* AOD){
 	
 	AliEventPool * pool = fCorrelator->GetPool();
 	
-    
-	
-	
+    	
+	/*
 	((TH2D*)fOutput->FindObject("NofPoolBinCalls"))->Fill(MultipOrCent,zvertex); // number of calls of pool
 	((TH2D*)fOutput->FindObject("EventProps"))->Fill(MultipOrCent,zvertex); // event properties
 	
 	((TH3D*)fOutput->FindObject("EventsPerPoolBin"))->Fill(MultipOrCent,zvertex,pool->GetCurrentNEvents()); // number of events in the pool
 	((TH3D*)fOutput->FindObject("NofTracksPerPoolBin"))->Fill(MultipOrCent,zvertex,pool->NTracksInPool()); // number of calls of pool
+	*/
 }
 
 TProfile* AliAnalysisTaskDStarCorrelations::GetEstimatorHistogram(const AliVEvent* event){
