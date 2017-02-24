@@ -1,4 +1,4 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified()
+AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 100, Float_t etaCut = 0.8, Float_t upperPtCut = 50.)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -27,16 +27,17 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified()
   task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetTriggerMask(AliVEvent::kINT7 );
 
-  const Int_t multNbins =100;
+  const Int_t multNbins = nBinsMultiplicity;
   Double_t binsMult[multNbins+1];
-  for (Int_t ii = 0; ii<=multNbins;ii++){binsMult[ii]=ii-0.5;}
+  for (Int_t ii = 0; ii <= multNbins; ii++){binsMult[ii] = ii-0.5;}
   task->SetBinsMultCent(multNbins,binsMult);
 
   /// Acceptance cuts for tracks
 
-  task->SetMinEta(-1.);
-  task->SetMaxEta(1.);
-  task->SetMinPt(0.10);
+  task->SetMinEta(-etaCut);
+  task->SetMaxEta(etaCut);
+  task->SetMinPt(0.15);
+  task->SetMaxPt(upperPtCut);
 
   task->Set2013pA(kFALSE);
   task->Set2015data(kTRUE);
@@ -46,7 +47,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified()
 
   task->SetMeanXYZv(0.0,0.0,0.0);
   task->SetSigmaMeanXYZv(1.0,1.0,10.0);
-  task->SetZvtx(30.);
+  task->SetZvtx(10.); //30
   task->SetEventTriggerRequired(kTRUE);
 
   // Quality cuts for tracks
@@ -69,8 +70,11 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified()
 
   mgr->AddTask(task);
 
+  char containerName[60] = ""; 
+  sprintf(containerName, "mkrueger_dNdPt_mult_%d_eta_%.2f_ptMax_%.2f", nBinsMultiplicity, etaCut, upperPtCut);
+  
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("mkrueger_dNdPt",
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(containerName,
 							   TList::Class(),
 							   AliAnalysisManager::kOutputContainer,
 							   "AnalysisResults.root");

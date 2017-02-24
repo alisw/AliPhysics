@@ -43,7 +43,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t *);
 
     // Getters
-
+    
     // Binning
     TArrayD* GetBinsPt() {return fBinsPt;}
     TArrayD* GetBinsEta(){return fBinsEta;}
@@ -159,6 +159,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
 
     TF1               *fFunTrkEff;
 
+    TH1D* fHistV0Amp;
 
     // Output Histograms
 
