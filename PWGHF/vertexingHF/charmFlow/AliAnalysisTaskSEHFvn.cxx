@@ -120,6 +120,8 @@ AliAnalysisTaskSE(),
   fOnTheFlyTPCEP(kFALSE),
   fEtaGapInTPCHalves(-1.),
   fUsePtWeights(kFALSE),
+  fOnTheFlyTPCq2(kFALSE),
+  fFractionOfTracksForTPCq2(1.1),
   fq2SmearingHisto(0x0),
   fq2Smearing(kFALSE),
   fq2SmearingAxis(1)
@@ -167,6 +169,8 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fOnTheFlyTPCEP(kFALSE),
   fEtaGapInTPCHalves(-1.),
   fUsePtWeights(kFALSE),
+  fOnTheFlyTPCq2(kFALSE),
+  fFractionOfTracksForTPCq2(1.1),
   fq2SmearingHisto(0x0),
   fq2Smearing(kFALSE),
   fq2SmearingAxis(1)
@@ -657,10 +661,14 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   Double_t q2NegTPC=-1;
   Double_t q2FullTPC=-1;
   if(fFlowMethod==kEvShape) {
-    q2 = Getq2(qnlist,fq2Meth);
-    q2PosTPC = Getq2(qnlist,kq2PosTPC);
-    q2NegTPC = Getq2(qnlist,kq2NegTPC);
-    q2FullTPC = Getq2(qnlist,kq2TPC);
+    if(fOnTheFlyTPCq2){
+      q2=ComputeTPCq2(aod,q2FullTPC,q2PosTPC,q2NegTPC);
+    }else{
+      q2 = Getq2(qnlist,fq2Meth);
+      q2PosTPC = Getq2(qnlist,kq2PosTPC);
+      q2NegTPC = Getq2(qnlist,kq2NegTPC);
+      q2FullTPC = Getq2(qnlist,kq2TPC);
+    }
     if(q2<0 || q2PosTPC<0 || q2NegTPC<0 || q2FullTPC<0) return;
     ((TH1F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
     ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
@@ -1879,6 +1887,7 @@ Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist, Int_t q2meth)
   return q2;
 }
 
+//________________________________________________________________________
 void AliAnalysisTaskSEHFvn::Setq2Smearing(TString smearingfilepath, TString histoname, Int_t smearingaxis) {
   fq2Smearing=kTRUE;
   fq2SmearingAxis=smearingaxis;
@@ -1888,6 +1897,65 @@ void AliAnalysisTaskSEHFvn::Setq2Smearing(TString smearingfilepath, TString hist
   if(fq2SmearingHisto) {fq2SmearingHisto->SetDirectory(0);}
   smearingfile->Close();
 }
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg) const {
+  /// Compute the q2 for ESE starting from TPC tracks
+  /// Option to reject a fraction of tracks to emulate resolution effects
+
+  if(fq2Meth==kq2VZERO || fq2Meth==kq2VZEROA || fq2Meth==kq2VZEROC){
+    AliWarning("The recalculation of q2 is implemented only for TPC\n");
+    return 0.;
+  }
+
+  Int_t nTracks=aod->GetNumberOfTracks();
+  Double_t qVec[2]={0.,0.};
+  Double_t qVecPosEta[2]={0.,0.};
+  Double_t qVecNegEta[2]={0.,0.};
+  Double_t nHarmonic=2.;
+  Int_t multQvec=0;
+  Int_t multQvecPosEta=0;
+  Int_t multQvecNegEta=0;
+  for(Int_t it=0; it<nTracks; it++){
+    AliAODTrack* track=(AliAODTrack*)aod->GetTrack(it);
+    if(!track) continue;
+    if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
+      Double_t pt=track->Pt();
+      Double_t pseudoRand=pt*1000.-(Long_t)(pt*1000);
+      Double_t eta=track->Eta();
+      Double_t phi=track->Phi();
+      Double_t qx=TMath::Cos(nHarmonic*phi);
+      Double_t qy=TMath::Sin(nHarmonic*phi);
+      if(pseudoRand>fFractionOfTracksForTPCq2){
+	qVec[0]+=qx;
+	qVec[1]+=qy;
+	multQvec++;
+      }
+      if(eta>0){
+	qVecPosEta[0]+=qx;
+	qVecPosEta[1]+=qy;
+	multQvecPosEta++;
+      }else{
+	qVecNegEta[0]+=qx;
+	qVecNegEta[1]+=qy;
+	multQvecNegEta++;
+      }
+    }
+  }
+
+  q2TPCfull = 0.;
+  if(multQvec>0) q2TPCfull = TMath::Sqrt(qVec[0]*qVec[0]+qVec[1]*qVec[1])/TMath::Sqrt(multQvec);
+  q2TPCpos = 0.;
+  if(multQvecPosEta>0) q2TPCpos = TMath::Sqrt(qVecPosEta[0]*qVecPosEta[0]+qVecPosEta[1]*qVecPosEta[1])/TMath::Sqrt(multQvecPosEta);
+  q2TPCneg = 0.;
+  if(multQvecNegEta>0) q2TPCneg = TMath::Sqrt(qVecNegEta[0]*qVecNegEta[0]+qVecNegEta[1]*qVecNegEta[1])/TMath::Sqrt(multQvecNegEta);
+
+  if(fq2Meth==kq2TPC) return q2TPCfull;
+  else if(fq2Meth==kq2PosTPC) return q2TPCpos;
+  else if(fq2Meth==kq2NegTPC) return q2TPCneg;
+  else return 0.;
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskSEHFvn::Terminate(Option_t */*option*/)

@@ -79,6 +79,10 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1){
+    fOnTheFlyTPCq2=opt;
+    fFractionOfTracksForTPCq2=fracKeep;
+  }
   Float_t GetEventPlanesCompatibility()const {return fEventPlanesComp;}
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
   Float_t GetLowerMassLimit()const {return fLowmasslimit;}
@@ -117,7 +121,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Float_t GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *list);
   //  Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
   void ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const;
-
+  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg) const;
   void CreateSparseForEvShapeAnalysis();
   Double_t Getq2(TList* qnlist, Int_t q2meth);
   
@@ -157,6 +161,8 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fOnTheFlyTPCEP;        // flag to compute the TPC EP in the task
   Double_t fEtaGapInTPCHalves;  // eta gap between two halves of TPC (only if fOnTheFlyTPCEP)
   Bool_t fUsePtWeights;         // use pt weights for TPC EP if fOnTheFlyTPCEP is activated
+  Bool_t  fOnTheFlyTPCq2; /// flag to compute the TPC q2 in the task
+  Double_t  fFractionOfTracksForTPCq2; /// downscaling factor for tracks used in q2
   TH2F* fq2SmearingHisto;       //-> 2D histo for q2smearing
   Bool_t fq2Smearing;           // flag to activate q2 smearing
   Int_t fq2SmearingAxis;        // axis of the smearing histogram corresponding to the q2 used for the analysis
