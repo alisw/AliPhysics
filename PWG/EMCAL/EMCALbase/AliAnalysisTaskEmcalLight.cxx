@@ -322,7 +322,7 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fOutput->Add(fHistZVertex);
 
   if (fForceBeamType != kpp) {
-    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 200, 0, 100);
+    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 101, 0, 101);
     fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentrality->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentrality);
