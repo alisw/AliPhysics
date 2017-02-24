@@ -89,6 +89,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
   void                        SetRmvMatchedTrack(Bool_t input)                      { fRmvMTrack  = input;}
+  void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
 
   //Functions for mixed event purposes
   void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
@@ -134,7 +135,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      fMCorData;                 //<Are we looking at simulations or at the real thing
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
-
+  Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
   //..Input histograms
   THnF                       *fHistEffGamma;             ///< ??input efficiency for trigger particles
   THnF                       *fHistEffHadron;            ///< ??input efficiency for associate particles

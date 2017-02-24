@@ -140,7 +140,7 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 
 	fDebug             =0; //set only 1 for debugging
 	fSavePool          =0; //= 0 do not save the pool by default. Use the set function to do this.
-
+	fUseManualEventCuts=0; //=0 use automatic setting from AliEventCuts. =1 load manual cuts
 	//..These two items are set in AliAnalysisTaskEmcal::RetrieveEventObjects()
 	//fCent, zVertex
 
@@ -237,16 +237,15 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fEventCutList ->SetName("EventCutOutput");
 
 	fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
-	Bool_t UseManualEventCuts=0;
-	if(UseManualEventCuts==1)
+	if(fUseManualEventCuts==1)
 	{
-		/*
-	     This is not possible because these are private functions!
 	    //..Enable manual mode.
 		//..this just means that the automatic cut settings
 	    //..are not loaded every time the event is checked
 	    fEventCuts.SetManualMode();
-	//..nevertheless we set now the standard settings
+		/*
+	     This is not possible because these are private functions!
+	    //..nevertheless we set now the standard settings
 	    //..for the respective period and then overwrite
 	    //..some cuts with the set values in the Emcal task.
 	    fEventCuts.fCurrentRun = fRunNumber;
@@ -254,7 +253,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		 */
 		//..overwrite the manual set cuts with
 		//..some of our own values
-		fEventCuts.fTriggerMask = fOffTrigger;
+	    fEventCuts.fCentralityFramework=2; //..only for Run1!!
+	    fEventCuts.fTriggerMask = fOffTrigger;
 		fEventCuts.fMinVtz = fMinVz;
 		fEventCuts.fMaxVtz = fMaxVz;
 		fEventCuts.fRequireTrackVertex = true;
@@ -709,8 +709,8 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 
 	//ELIANE for the moment...
 	//..check that they are the same
-	if(fCent!=fEventCuts.GetCentrality())	  cout<<"Difference in centralities -> classic centr.: "<<fCent<<", new centr from evt cuts: "<<fEventCuts.GetCentrality()<<endl; /// Centrality calculated with the default estimator (V0M for LHC15o)
-	if(fVertex[2]!=fEventCuts.GetPrimaryVertex()->GetZ())  cout<<"Difference in centralities -> classic vtx.: "<<fVertex[2]<<", new vertex from evt cuts: "<<fEventCuts.GetPrimaryVertex()->GetZ()<<endl; /// Centrality calculated with the default estimator (V0M for LHC15o)
+	//if(fCent!=fEventCuts.GetCentrality())	  cout<<"Difference in centralities -> classic centr.: "<<fCent<<", new centr from evt cuts: "<<fEventCuts.GetCentrality()<<endl; /// Centrality calculated with the default estimator (V0M for LHC15o)
+	//if(fVertex[2]!=fEventCuts.GetPrimaryVertex()->GetZ())  cout<<"Difference in centralities -> classic vtx.: "<<fVertex[2]<<", new vertex from evt cuts: "<<fEventCuts.GetPrimaryVertex()->GetZ()<<endl; /// Centrality calculated with the default estimator (V0M for LHC15o)
 
 
 	//.. .. .. ..
