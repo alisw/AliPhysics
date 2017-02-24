@@ -45,6 +45,7 @@
 
 #include "AliAnalysisTaskSE.h"
 
+#include "THnSparse.h"
 #include "THn.h"
 #include <vector>
 #include "AliAnalysisCuts.h"
@@ -86,6 +87,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
 
   void          SetDoPairing(Bool_t b=kTRUE)                        {fDoPairing=b;}
   void          SetCalcResolution(Bool_t b=kTRUE)                   {fCalcResolution=b;}
+  void          SetMakeResolutionSparse(Bool_t b=kTRUE)             {fMakeResolutionSparse=b;}
   void          SetResolutionCuts(AliAnalysisFilter *cuts)          {fResolutionCuts=cuts;}
   void          SetKineTrackCuts(AliAnalysisFilter *cuts)           { return; } //obsolete.
   //void        SetPairCuts(AliAnalysisFilter *cuts)                {fPairCuts=cuts;}
@@ -283,6 +285,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
 
   // resolutions
   Bool_t                          fCalcResolution;
+  Bool_t                          fMakeResolutionSparse;
+  THnSparseD*                     fTHnResElectrons;
+  THnSparseD*                     fTHnResPositrons;
+  THnSparseD*                     fTHnResNeg;
+  THnSparseD*                     fTHnResPos;
 
   TH1D*                           fDeltaPhiAll;
   TH1D*                           fDeltaPhi;
