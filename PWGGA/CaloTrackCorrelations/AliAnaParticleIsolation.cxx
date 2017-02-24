@@ -1727,7 +1727,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
         }
       }
       
-      if ( partInConeCharge > 0 )
+      if ( partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
       {
         Int_t mcChTag = 3;
         if      ( TMath::Abs(partInConePDG) == 211  )  mcChTag = 0;
@@ -6971,7 +6971,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         // Consider only final state particles, but this depends on generator,
         // status 1 is the usual one, in case of not being ok, leave the possibility
         // to not consider this.
-        if( partInConeStatus != 1 &&
+        if( partInConeStatus > 1 &&
             GetMCAnalysisUtils()->GetMCGenerator()!= AliMCAnalysisUtils::kBoxLike ) continue ;
         
         partInConeMother = mcisopStack->GetMother(0);
@@ -6993,7 +6993,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         // Consider only final state particles, but this depends on generator,
         // status 1 is the usual one, in case of not being ok, leave the possibility
         // to not consider this.
-        if( partInConeStatus != 1 &&
+        if( partInConeStatus > 1 &&
             GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) continue ;
         
         partInConeMother = mcisopAOD->GetMother();
@@ -7045,18 +7045,24 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       if(dR > GetIsolationCut()->GetConeSize())
         continue;
       
-      if ( partInConeCharge > 0 )
+      if ( partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
       {
         Int_t mcChTag = 3;
         if      ( TMath::Abs(partInConePDG) == 211  )  mcChTag = 0;
         else if ( TMath::Abs(partInConePDG) == 321  )  mcChTag = 1; 
         else if ( TMath::Abs(partInConePDG) == 2212 )  mcChTag = 2; 
+        
         if(physPrimary)
           fhPtTrackInConeMCPrimaryGener  [mcChTag]->Fill(photonPt, partInConePt, GetEventWeight());
         else
           fhPtTrackInConeMCSecondaryGener[mcChTag]->Fill(photonPt, partInConePt, GetEventWeight());
-      }
 
+        //printf("Selected particles pdg %d, status %d\n", partInConePDG, partInConeStatus);
+      }
+      
+
+      if ( !physPrimary ) continue ; 
+          
       sumPtInCone += partInConePt;
       if(partInConePt > GetIsolationCut()->GetPtThreshold() &&
          partInConePt < GetIsolationCut()->GetPtThresholdMax()) npart++;
