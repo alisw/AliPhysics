@@ -169,7 +169,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
     
-  ClassDef(AliAnalysisTaskSEHFvn,2); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,3); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
