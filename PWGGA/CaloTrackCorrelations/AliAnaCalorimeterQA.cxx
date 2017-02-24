@@ -326,26 +326,53 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     fhNCellsTCardCorrWithWeightNoSelection     [tm] = 0 ;  
     fhNCellsTCardCorrRatioWithWeightNoSelection[tm] = 0 ; 
     fhExoticTCardCorrNoSelection [tm] = 0 ;        
+    fhNCellsTCardSameAndDiffFraction      [tm] = 0;
+    fhNCellsTCardSameAndDiffFractionExotic[tm] = 0;
+
+    fhSameRowDiffColAndTCardCellsEnergyDiffClusterE[tm] = 0;
+    fhSameRowDiffColAndTCardCellsTimeDiffClusterE  [tm] = 0;
+    fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxE[tm] = 0;
+    fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE  [tm] = 0;    
+    fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm] = 0;
+    fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo  [tm] = 0;
+    fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm] = 0;
+    fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo  [tm] = 0;
 
     for(Int_t i = 0; i < 6; i++)
     {
       fhLambda0TCardCorrelN[i][tm] = 0 ;  
       fhNCellsTCardCorrelN [i][tm] = 0 ;   
       fhExoticTCardCorrelN [i][tm] = 0 ;   
-      fhLambda0TCardCorrelNExotic[i][tm] = 0 ;  
-      fhNCellsTCardCorrelNExotic [i][tm] = 0 ; 
-      fhLambda0TCardCorrelNearRow[i][tm] = 0 ; 
-      fhNCellsTCardCorrelNearRow [i][tm] = 0 ; 
       fhEtaPhiTCardCorrelNLowE [i][tm] = 0 ; 
       fhEtaPhiTCardCorrelNHighE[i][tm] = 0 ; 
       fhColRowTCardCorrelNLowE [i][tm] = 0 ; 
       fhColRowTCardCorrelNHighE[i][tm] = 0 ; 
+      
+      fhLambda0TCardCorrelNAllSameTCard[i][tm] = 0 ;  
+      fhNCellsTCardCorrelNAllSameTCard [i][tm] = 0 ;   
+      fhExoticTCardCorrelNAllSameTCard [i][tm] = 0 ;   
+      fhEtaPhiTCardCorrelNAllSameTCardLowE [i][tm] = 0 ; 
+      fhEtaPhiTCardCorrelNAllSameTCardHighE[i][tm] = 0 ; 
+      fhColRowTCardCorrelNAllSameTCardLowE [i][tm] = 0 ; 
+      fhColRowTCardCorrelNAllSameTCardHighE[i][tm] = 0 ;
+      
+      fhLambda0TCardCorrelNExotic[i][tm] = 0 ;  
+      fhNCellsTCardCorrelNExotic [i][tm] = 0 ; 
+      fhColRowTCardCorrelNLowEExotic [i][tm] = 0 ; 
+      fhColRowTCardCorrelNHighEExotic[i][tm] = 0 ; 
+
+      fhLambda0TCardCorrelNAllSameTCardExotic[i][tm] = 0 ;  
+      fhNCellsTCardCorrelNAllSameTCardExotic [i][tm] = 0 ; 
+      fhColRowTCardCorrelNAllSameTCardLowEExotic [i][tm] = 0 ; 
+      fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm] = 0 ; 
+//    fhLambda0TCardCorrelNearRow[i][tm] = 0 ; 
+//    fhNCellsTCardCorrelNearRow [i][tm] = 0 ; 
     }
     
     for(Int_t i = 0; i < 4; i++)
     {
-      fhLambda0TCardCorrel2ndMax[i][tm] = 0 ; 
-      fhNCellsTCardCorrel2ndMax [i][tm] = 0 ; 
+//    fhLambda0TCardCorrel2ndMax[i][tm] = 0 ; 
+//    fhNCellsTCardCorrel2ndMax [i][tm] = 0 ; 
       fhLambda0TCardCorrelExotic[i][tm] = 0 ;  
       fhNCellsTCardCorrelExotic [i][tm] = 0 ; 
     }
@@ -354,6 +381,10 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     {
       fhLambda0Exoticity[i][tm] = 0;
       fhNCellsExoticity [i][tm] = 0;
+      fhLambda0ExoticityAllSameTCard[i][tm] = 0;
+      fhNCellsExoticityAllSameTCard [i][tm] = 0;
+      fhNCellsTCardSameAndDiff      [i][tm] = 0;
+      fhNCellsTCardSameAndDiffExotic[i][tm] = 0;
     }
     
     for(Int_t i = 0; i < 7; i++)
@@ -361,6 +392,7 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
       fhLambda0TCardCorrel[i][tm] = 0 ; 
       fhNCellsTCardCorrel [i][tm] = 0 ; 
       fhExoticTCardCorrel [i][tm] = 0 ; 
+      
       fhLambda0TCardCorrelOtherTCard[i][tm] = 0 ; 
       fhNCellsTCardCorrelOtherTCard [i][tm] = 0 ; 
       fhExoticTCardCorrelOtherTCard [i][tm] = 0 ; 
@@ -1186,6 +1218,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   Bool_t nearRow = kFALSE;
   Bool_t nearCol = kFALSE;
   Int_t nCorr    = 0;
+  Int_t nCorrNo  = 0;
   Int_t sameCol  = 0;
   Int_t other    = 0;
   Int_t sameRow  = 0;
@@ -1216,6 +1249,11 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   Int_t  rowDiff2 = -100;
   Int_t  colDiff2 = -100;
    
+  Float_t  eCellSameRowSameTCardNearCol = 0.;
+  Float_t  eCellSameRowDiffTCardNearCol = 0.;
+  Double_t tCellSameRowSameTCardNearCol = 0.;
+  Double_t tCellSameRowDiffTCardNearCol = 0.;
+  
   //printf("Cluster E %2.2f, ncells %d, absIdMax %d, eCell Max %2.2f\n", energy, ncells, absIdMax, cells->GetCellAmplitude(absIdMax));
   
   //
@@ -1282,6 +1320,8 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     }
     else
     {
+      nCorrNo++;
+      
       if      ( rowDiff == 0  && colDiff != 0 ) 
       {
         if ( nearCol ) indexType = 0;         
@@ -1299,6 +1339,20 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
         else                      indexType = 5;
       }
     }  
+    
+    if ( rowDiff == 0 && TMath::Abs(colDiff) == 1 )
+    {
+      if(sameTCard) 
+      {
+        eCellSameRowSameTCardNearCol = eCell;
+        tCellSameRowSameTCardNearCol = tCell;
+      }
+      else
+      {
+        eCellSameRowDiffTCardNearCol = eCell;
+        tCellSameRowDiffTCardNearCol = tCell;
+      }
+    }
     
     if( indexType >=0 )
     {
@@ -1401,30 +1455,82 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   fhNCellsTCardCorrNoSelection          [matched]->Fill(energy, ncells, GetEventWeight());
   fhNCellsTCardCorrWithWeightNoSelection[matched]->Fill(energy, nCellWithWeight, GetEventWeight());
 
+  if(eCellSameRowSameTCardNearCol > 0 && eCellSameRowDiffTCardNearCol > 0)
+  { 
+    Float_t eDiff = eCellSameRowSameTCardNearCol - eCellSameRowDiffTCardNearCol ;
+    Float_t tDiff = tCellSameRowSameTCardNearCol - tCellSameRowDiffTCardNearCol ;
+
+    fhSameRowDiffColAndTCardCellsEnergyDiffClusterE[matched]->Fill(energy  , eDiff, GetEventWeight());
+    fhSameRowDiffColAndTCardCellsTimeDiffClusterE  [matched]->Fill(energy  , tDiff, GetEventWeight());
+    fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxE[matched]->Fill(eCellMax, eDiff, GetEventWeight());
+    fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE  [matched]->Fill(eCellMax, tDiff, GetEventWeight());
+    
+    if(exoticity > 0.97)
+    {
+      fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[matched]->Fill(energy  , eDiff, GetEventWeight());
+      fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo  [matched]->Fill(energy  , tDiff, GetEventWeight());
+      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[matched]->Fill(eCellMax, eDiff, GetEventWeight());
+      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo  [matched]->Fill(eCellMax, tDiff, GetEventWeight());
+    }
+  }
+  
+  ///////////////////////////
   Int_t nCorrInd = nCorr;
   if(nCorr > 4) nCorrInd = 5; 
+  
+  fhLambda0TCardCorrelN[nCorrInd][matched]->Fill(energy, m02, GetEventWeight());
+  fhNCellsTCardCorrelN [nCorrInd][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
+  fhExoticTCardCorrelN [nCorrInd][matched]->Fill(energy, exoticity, GetEventWeight());
+  if ( energy > 2 ) 
   {
-    fhLambda0TCardCorrelN[nCorrInd][matched]->Fill(energy, m02, GetEventWeight());
-    fhNCellsTCardCorrelN [nCorrInd][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
-    fhExoticTCardCorrelN [nCorrInd][matched]->Fill(energy, exoticity, GetEventWeight());
+    fhEtaPhiTCardCorrelNLowE[nCorrInd][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+    fhColRowTCardCorrelNLowE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+  }
+  if ( energy > 8 ) 
+  {
+    fhEtaPhiTCardCorrelNHighE[nCorrInd][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+    fhColRowTCardCorrelNHighE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+  }
+  
+  if(nCorrNo == 0)
+  {
+    fhLambda0TCardCorrelNAllSameTCard[nCorrInd][matched]->Fill(energy, m02, GetEventWeight());
+    fhNCellsTCardCorrelNAllSameTCard [nCorrInd][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
+    fhExoticTCardCorrelNAllSameTCard [nCorrInd][matched]->Fill(energy, exoticity, GetEventWeight());
     if ( energy > 2 ) 
     {
-      fhEtaPhiTCardCorrelNLowE[nCorrInd][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
-      fhColRowTCardCorrelNLowE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+      fhEtaPhiTCardCorrelNAllSameTCardLowE[nCorrInd][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+      fhColRowTCardCorrelNAllSameTCardLowE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
     }
     if ( energy > 8 ) 
     {
-      fhEtaPhiTCardCorrelNHighE[nCorrInd][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
-      fhColRowTCardCorrelNHighE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+      fhEtaPhiTCardCorrelNAllSameTCardHighE[nCorrInd][matched]->Fill(fClusterMomentum.Eta(), GetPhi(fClusterMomentum.Phi()), GetEventWeight());
+      fhColRowTCardCorrelNAllSameTCardHighE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
     }
   }
- 
-  
+  ///////////////////////////
+
   if ( exoticity > 0.97 )
   {
     fhLambda0TCardCorrelNExotic[nCorrInd][matched]->Fill(energy, m02, GetEventWeight());
     fhNCellsTCardCorrelNExotic [nCorrInd][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
+    
+    if ( energy > 2 ) 
+      fhColRowTCardCorrelNLowEExotic [nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+    if ( energy > 8 ) 
+      fhColRowTCardCorrelNHighEExotic[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+    
+    if(nCorrNo == 0)
+    {
+      fhLambda0TCardCorrelNAllSameTCardExotic[nCorrInd][matched]->Fill(energy, m02, GetEventWeight());
+      fhNCellsTCardCorrelNAllSameTCardExotic [nCorrInd][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
       
+      if ( energy > 2 ) 
+        fhColRowTCardCorrelNAllSameTCardLowEExotic [nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+      if ( energy > 8 ) 
+        fhColRowTCardCorrelNAllSameTCardHighEExotic[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
+    }
+    
     Int_t indexExo = -1;
     if      (!nearRow &&  nearCol ) indexExo = 0;
     else if (!nearRow && !nearCol ) indexExo = 1;
@@ -1444,9 +1550,22 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     {
       fhLambda0Exoticity[ie][matched]->Fill(exoticity, m02, GetEventWeight());
       fhNCellsExoticity [ie][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
+      if(nCorrNo == 0)
+      {
+        fhLambda0ExoticityAllSameTCard[ie][matched]->Fill(exoticity, m02, GetEventWeight());
+        fhNCellsExoticityAllSameTCard [ie][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
+      }
+        
+      fhNCellsTCardSameAndDiff[ie][matched]->Fill(nCorrNo, nCorr, GetEventWeight());
+      if(exoticity > 0.97 )
+        fhNCellsTCardSameAndDiffExotic[ie][matched]->Fill(nCorrNo, nCorr, GetEventWeight());
     }
   }
 
+  fhNCellsTCardSameAndDiffFraction[matched]->Fill(energy, nCorr*1. / (nCorr+nCorrNo), GetEventWeight());
+  if(exoticity > 0.97 )
+    fhNCellsTCardSameAndDiffFractionExotic[matched]->Fill(energy, nCorr*1. / (nCorr+nCorrNo), GetEventWeight());
+  
   if(nCorr > 0)
   {
     Int_t index = -1;
@@ -1465,36 +1584,37 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       fhNCellsTCardCorrel [index][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
       fhExoticTCardCorrel [index][matched]->Fill(energy, exoticity, GetEventWeight());
     }
-    
-    Int_t indexNR = -1; 
-    if ( nearRow )
-    {
-      if      (!sameRow &&  sameCol && !other ) indexNR = 0;
-      else if (!sameRow && !sameCol &&  other ) indexNR = 1;
-      else if (!sameRow &&  sameCol &&  other ) indexNR = 2;
-      else if ( sameRow &&  sameCol && !other ) indexNR = 3;
-      else if ( sameRow && !sameCol &&  other ) indexNR = 4;
-      else if ( sameRow &&  sameCol &&  other ) indexNR = 5;
-      else printf("\t near row case not considered!!!: sameRow %d, sameCol %d, other %d\n",sameRow,sameCol,other); 
-    }
-    
-    if ( indexNR >= 0 )
-    {
-      fhLambda0TCardCorrelNearRow[indexNR][matched]->Fill(energy, m02, GetEventWeight());
-      fhNCellsTCardCorrelNearRow [indexNR][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
-    }
-    
-    if ( sameTCard2ndMax )
-    {
-      Int_t index2nd = -1;
-      if     ( TMath::Abs(rowDiff2) == 1 && TMath::Abs(colDiff2) != 1 ) index2nd = 0;
-      else if( TMath::Abs(rowDiff2) != 1 && TMath::Abs(colDiff2) == 1 ) index2nd = 1;
-      else if( TMath::Abs(rowDiff2) == 1 && TMath::Abs(colDiff2) == 1 ) index2nd = 2;
-      else                                                              index2nd = 3;
-      
-      fhLambda0TCardCorrel2ndMax[index2nd][matched]->Fill(energy, m02, GetEventWeight());
-      fhNCellsTCardCorrel2ndMax [index2nd][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
-    }
+
+    // Comment out, no special effect observed    
+//    Int_t indexNR = -1; 
+//    if ( nearRow )
+//    {
+//      if      (!sameRow &&  sameCol && !other ) indexNR = 0;
+//      else if (!sameRow && !sameCol &&  other ) indexNR = 1;
+//      else if (!sameRow &&  sameCol &&  other ) indexNR = 2;
+//      else if ( sameRow &&  sameCol && !other ) indexNR = 3;
+//      else if ( sameRow && !sameCol &&  other ) indexNR = 4;
+//      else if ( sameRow &&  sameCol &&  other ) indexNR = 5;
+//      else printf("\t near row case not considered!!!: sameRow %d, sameCol %d, other %d\n",sameRow,sameCol,other); 
+//    }
+//    
+//    if ( indexNR >= 0 )
+//    {
+//      fhLambda0TCardCorrelNearRow[indexNR][matched]->Fill(energy, m02, GetEventWeight());
+//      fhNCellsTCardCorrelNearRow [indexNR][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
+//    }
+//    
+//    if ( sameTCard2ndMax )
+//    {
+//      Int_t index2nd = -1;
+//      if     ( TMath::Abs(rowDiff2) == 1 && TMath::Abs(colDiff2) != 1 ) index2nd = 0;
+//      else if( TMath::Abs(rowDiff2) != 1 && TMath::Abs(colDiff2) == 1 ) index2nd = 1;
+//      else if( TMath::Abs(rowDiff2) == 1 && TMath::Abs(colDiff2) == 1 ) index2nd = 2;
+//      else                                                              index2nd = 3;
+//      
+//      fhLambda0TCardCorrel2ndMax[index2nd][matched]->Fill(energy, m02, GetEventWeight());
+//      fhNCellsTCardCorrel2ndMax [index2nd][matched]->Fill(energy, nCellWithWeight, GetEventWeight());
+//    }
   }
   
   Int_t indexOtherTCard = -1;
@@ -3131,6 +3251,87 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhExoticTCardCorrNoSelection[tm]->SetYTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
       outputContainer->Add(fhExoticTCardCorrNoSelection[tm]); 
       
+      fhNCellsTCardSameAndDiffFraction[tm]  = new TH2F 
+      (Form("fhNCellsTCardSameAndDiff%s",add[tm].Data()),
+       Form("#it{n}_{cells} same TCard vs diff TCard fraction, w > 0.01, %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhNCellsTCardSameAndDiffFraction[tm]->SetXTitle("#it{E} (GeV)");
+      fhNCellsTCardSameAndDiffFraction[tm]->SetYTitle("#it{n}_{cells} - same TCard / #it{n}_{cells} - total");
+      outputContainer->Add(fhNCellsTCardSameAndDiffFraction[tm]);       
+      
+      fhNCellsTCardSameAndDiffFractionExotic[tm]  = new TH2F 
+      (Form("fhNCellsTCardSameAndDiffFraction_Exotic%s",add[tm].Data()),
+       Form("#it{n}_{cells} same TCard vs diff TCard fraction, w > 0.01, exo > 0.97 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1);  
+      fhNCellsTCardSameAndDiffFractionExotic[tm]->SetXTitle("#it{E} (GeV)");
+      fhNCellsTCardSameAndDiffFractionExotic[tm]->SetYTitle("#it{n}_{cells} - same TCard / #it{n}_{cells} - total");
+      outputContainer->Add(fhNCellsTCardSameAndDiffFractionExotic[tm]);       
+      
+      
+      fhSameRowDiffColAndTCardCellsEnergyDiffClusterE[tm] = new TH2F 
+      (Form("hSameRowDiffColAndTCardCellsEnergyDiffClusterE%s",add[tm].Data()),
+       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} vs #it{E}_{cluster} %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,200,-10,10); 
+      fhSameRowDiffColAndTCardCellsEnergyDiffClusterE[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhSameRowDiffColAndTCardCellsEnergyDiffClusterE[tm]->SetYTitle("#it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} (GeV)");
+      outputContainer->Add(fhSameRowDiffColAndTCardCellsEnergyDiffClusterE[tm]); 
+
+      fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm] = new TH2F 
+      (Form("hSameRowDiffColAndTCardCellsTimeDiffClusterE%s",add[tm].Data()),
+       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cluster} %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,200,-50,50); 
+      fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
+      outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]); 
+
+      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxE[tm] = new TH2F 
+      (Form("hSameRowDiffColAndTCardCellsEnergyDiffCellMaxE%s",add[tm].Data()),
+       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} vs #it{E}_{cell max} %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,200,-10,10); 
+      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxE[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
+      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxE[tm]->SetYTitle("#it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} (GeV)");
+      outputContainer->Add(fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxE[tm]); 
+      
+      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm] = new TH2F 
+      (Form("hSameRowDiffColAndTCardCellsTimeDiffCellMaxE%s",add[tm].Data()),
+       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cell max} %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,200,-50,50); 
+      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
+      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
+      outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]); 
+
+      fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm] = new TH2F 
+      (Form("hSameRowDiffColAndTCardCellsEnergyDiffClusterEExo%s",add[tm].Data()),
+       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} vs #it{E}_{cluster}, exo > 0.97 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,200,-10,10); 
+      fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]->SetYTitle("#it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} (GeV)");
+      outputContainer->Add(fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]); 
+      
+      fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm] = new TH2F 
+      (Form("hSameRowDiffColAndTCardCellsTimeDiffClusterEExo%s",add[tm].Data()),
+       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cluster}, exo > 0.97 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,200,-50,50); 
+      fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
+      outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]); 
+      
+      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm] = new TH2F 
+      (Form("hSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo%s",add[tm].Data()),
+       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} vs #it{E}_{cell max}, exo > 0.97 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,200,-10,10); 
+      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
+      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]->SetYTitle("#it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} (GeV)");
+      outputContainer->Add(fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]); 
+      
+      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm] = new TH2F 
+      (Form("hSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo%s",add[tm].Data()),
+       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cell max}, exo > 0.97 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,200,-50,50); 
+      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
+      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
+      outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]); 
+      
       for(Int_t i = 0; i < 6; i++)
       {
         fhLambda0TCardCorrelN[i][tm]  = new TH2F 
@@ -3188,7 +3389,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhColRowTCardCorrelNHighE[i][tm]->SetYTitle("row");
         fhColRowTCardCorrelNHighE[i][tm]->SetXTitle("column");
         outputContainer->Add(fhColRowTCardCorrelNHighE[i][tm]) ;
-
+      
+        ////////
+        
         fhLambda0TCardCorrelNExotic[i][tm]  = new TH2F 
         (Form("hLambda0TCardCorrelN_Exotic_Case%d%s",i,add[tm].Data()),
          Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with TCard cell, exo > 0.97, N corr = %d %s",i,add[tm].Data()),
@@ -3204,6 +3407,115 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhNCellsTCardCorrelNExotic[i][tm]->SetXTitle("#it{E} (GeV)");
         fhNCellsTCardCorrelNExotic[i][tm]->SetYTitle("#it{n}_{cells}");
         outputContainer->Add(fhNCellsTCardCorrelNExotic[i][tm]);
+        
+        fhColRowTCardCorrelNLowEExotic[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelNLowEExotic_Case%d%s",i,add[tm].Data()),
+         Form("column vs row, max E cell correl with TCard cell, exo > 0.97, E > 2 GeV, N corr = %d %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelNLowEExotic[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelNLowEExotic[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelNLowEExotic[i][tm]) ;
+        
+        fhColRowTCardCorrelNHighEExotic[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelNHighEExotic_Case%d%s",i,add[tm].Data()),
+         Form("column vs row, max E cell correl with TCard cell, exo > 0.97, E > 8 GeV, N corr = %d %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelNHighEExotic[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelNHighEExotic[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelNHighEExotic[i][tm]) ;
+
+        ///////////
+        ///////////
+        
+        fhLambda0TCardCorrelNAllSameTCard[i][tm]  = new TH2F 
+        (Form("hLambda0TCardCorrelNAllSameTCard_Case%d%s",i,add[tm].Data()),
+         Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with TCard cell, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhLambda0TCardCorrelNAllSameTCard[i][tm]->SetXTitle("#it{E} (GeV)");
+        fhLambda0TCardCorrelNAllSameTCard[i][tm]->SetYTitle("#lambda^{2}_{0}");
+        outputContainer->Add(fhLambda0TCardCorrelNAllSameTCard[i][tm]); 
+        
+        fhNCellsTCardCorrelNAllSameTCard[i][tm]  = new TH2F 
+        (Form("hNCellsTCardCorrelNAllSameTCard_Case%d%s",i,add[tm].Data()),
+         Form("custer # cells vs #it{E}, w > 0.01, max E cell correl with TCard cell, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+        fhNCellsTCardCorrelNAllSameTCard[i][tm]->SetXTitle("#it{E} (GeV)");
+        fhNCellsTCardCorrelNAllSameTCard[i][tm]->SetYTitle("#it{n}_{cells}");
+        outputContainer->Add(fhNCellsTCardCorrelNAllSameTCard[i][tm]);
+        
+        fhExoticTCardCorrelNAllSameTCard[i][tm]  = new TH2F 
+        (Form("hExoticTCardCorrelNAllSameTCard_Case%d%s",i,add[tm].Data()),
+         Form("exoticity vs #it{E}, max E cell correl with TCard cell, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         nptbins,ptmin,ptmax,200,-1,1); 
+        fhExoticTCardCorrelNAllSameTCard[i][tm]->SetXTitle("#it{E} (GeV)");
+        fhExoticTCardCorrelNAllSameTCard[i][tm]->SetYTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+        outputContainer->Add(fhExoticTCardCorrelNAllSameTCard[i][tm]); 
+        
+        fhEtaPhiTCardCorrelNAllSameTCardLowE[i][tm]  = new TH2F 
+        (Form("hEtaPhiTCardCorrelNAllSameTCardLowE_Case%d%s",i,add[tm].Data()),
+         Form("#eta vs #varphi, max E cell correl with TCard cell, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         netabins,etamin,etamax,nphibins,phimin,phimax); 
+        fhEtaPhiTCardCorrelNAllSameTCardLowE[i][tm]->SetXTitle("#eta ");
+        fhEtaPhiTCardCorrelNAllSameTCardLowE[i][tm]->SetYTitle("#varphi (rad)");
+        outputContainer->Add(fhEtaPhiTCardCorrelNAllSameTCardLowE[i][tm]); 
+        
+        fhEtaPhiTCardCorrelNAllSameTCardHighE[i][tm]  = new TH2F 
+        (Form("hEtaPhiTCardCorrelNAllSameTCardHighE_Case%d%s",i,add[tm].Data()),
+         Form("#eta vs #varphi, max E cell correl with TCard cell, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         netabins,etamin,etamax,nphibins,phimin,phimax); 
+        fhEtaPhiTCardCorrelNAllSameTCardHighE[i][tm]->SetXTitle("#eta ");
+        fhEtaPhiTCardCorrelNAllSameTCardHighE[i][tm]->SetYTitle("#varphi (rad)");
+        outputContainer->Add(fhEtaPhiTCardCorrelNAllSameTCardHighE[i][tm]);
+        
+        fhColRowTCardCorrelNAllSameTCardLowE[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelNAllSameTCardLowE_Case%d%s",i,add[tm].Data()),
+         Form("column vs row, max E cell correl with TCard cell, E > 2 GeV, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelNAllSameTCardLowE[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelNAllSameTCardLowE[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelNAllSameTCardLowE[i][tm]) ;
+        
+        fhColRowTCardCorrelNAllSameTCardHighE[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelNAllSameTCardHighE_Case%d%s",i,add[tm].Data()),
+         Form("column vs row, max E cell correl with TCard cell, E > 8 GeV, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelNAllSameTCardHighE[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelNAllSameTCardHighE[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelNAllSameTCardHighE[i][tm]) ;
+        
+        ////////
+        
+        fhLambda0TCardCorrelNAllSameTCardExotic[i][tm]  = new TH2F 
+        (Form("hLambda0TCardCorrelNAllSameTCard_Exotic_Case%d%s",i,add[tm].Data()),
+         Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with TCard cell, exo > 0.97, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhLambda0TCardCorrelNAllSameTCardExotic[i][tm]->SetXTitle("#it{E} (GeV)");
+        fhLambda0TCardCorrelNAllSameTCardExotic[i][tm]->SetYTitle("#lambda^{2}_{0}");
+        outputContainer->Add(fhLambda0TCardCorrelNAllSameTCardExotic[i][tm]); 
+        
+        fhNCellsTCardCorrelNAllSameTCardExotic[i][tm]  = new TH2F 
+        (Form("hNCellsTCardCorrelNAllSameTCard_Exotic_Case%d%s",i,add[tm].Data()),
+         Form("custer # cells vs #it{E}, w > 0.01, max E cell correl with TCard cell, exo > 0.97, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+        fhNCellsTCardCorrelNAllSameTCardExotic[i][tm]->SetXTitle("#it{E} (GeV)");
+        fhNCellsTCardCorrelNAllSameTCardExotic[i][tm]->SetYTitle("#it{n}_{cells}");
+        outputContainer->Add(fhNCellsTCardCorrelNAllSameTCardExotic[i][tm]);
+        
+        fhColRowTCardCorrelNAllSameTCardLowEExotic[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelNAllSameTCardLowEExotic_Case%d%s",i,add[tm].Data()),
+         Form("column vs row, max E cell correl with TCard cell, exo > 0.97, E > 2 GeV, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelNAllSameTCardLowEExotic[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelNAllSameTCardLowEExotic[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelNAllSameTCardLowEExotic[i][tm]) ;
+        
+        fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm] = new TH2F
+        (Form("hColRowTCardCorrelNAllSameTCardHighEExotic_Case%d%s",i,add[tm].Data()),
+         Form("column vs row, max E cell correl with TCard cell, exo > 0.97, E > 8 GeV, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm]->SetYTitle("row");
+        fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm]) ;
       }
       
       for(Int_t i = 0; i < 7; i++)
@@ -3265,49 +3577,81 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhNCellsExoticity[i][tm]  = new TH2F 
         (Form("hNCellsExoticity_EBin%d%s",i,add[tm].Data()),
          Form("#it{n}_{cells} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         200,-1,1,50,0,50); 
+         200,-1,1,nceclbins,nceclmin,nceclmax); 
         fhNCellsExoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
         fhNCellsExoticity[i][tm]->SetYTitle("#it{n}_{cells}");
         outputContainer->Add(fhNCellsExoticity[i][tm]); 
+ 
+        fhLambda0ExoticityAllSameTCard[i][tm]  = new TH2F 
+        (Form("hLambda0ExoticityAllSameTCard_EBin%d%s",i,add[tm].Data()),
+         Form("#lambda^{2}_{0} vs #it{exoticity}, all cells same TCard as leading, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+         200,-1,1,ssbins,ssmin,ssmax); 
+        fhLambda0ExoticityAllSameTCard[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+        fhLambda0ExoticityAllSameTCard[i][tm]->SetYTitle("#lambda^{2}_{0}");
+        outputContainer->Add(fhLambda0ExoticityAllSameTCard[i][tm]);    
+        
+        fhNCellsExoticityAllSameTCard[i][tm]  = new TH2F 
+        (Form("hNCellsExoticity_EBin%d%s",i,add[tm].Data()),
+         Form("#it{n}_{cells} vs #it{exoticity}, all cells same TCard as leading, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+         200,-1,1,nceclbins,nceclmin,nceclmax); 
+        fhNCellsExoticityAllSameTCard[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+        fhNCellsExoticityAllSameTCard[i][tm]->SetYTitle("#it{n}_{cells}");
+        outputContainer->Add(fhNCellsExoticityAllSameTCard[i][tm]); 
+        
+        fhNCellsTCardSameAndDiff[i][tm]  = new TH2F 
+        (Form("fhNCellsTCardSameAndDiff_EBin%d%s",i,add[tm].Data()),
+         Form("#it{n}_{cells} same TCard vs diff TCard, w > 0.01, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+         nceclbins,nceclmin,nceclmax,nceclbins,nceclmin,nceclmax); 
+        fhNCellsTCardSameAndDiff[i][tm]->SetXTitle("#it{n}_{cells} - diff TCard");
+        fhNCellsTCardSameAndDiff[i][tm]->SetYTitle("#it{n}_{cells} - same TCard");
+        outputContainer->Add(fhNCellsTCardSameAndDiff[i][tm]);       
+        
+        fhNCellsTCardSameAndDiffExotic[i][tm]  = new TH2F 
+        (Form("fhNCellsTCardSameAndDiff_Exotic_EBin%d%s",i,add[tm].Data()),
+         Form("#it{n}_{cells} same TCard vs diff TCard, w > 0.01, %2.2f<#it{E}<%2.2f GeV, exo > 0.97 %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+         nceclbins,nceclmin,nceclmax,nceclbins,nceclmin,nceclmax); 
+        fhNCellsTCardSameAndDiffExotic[i][tm]->SetXTitle("#it{n}_{cells} - diff TCard");
+        fhNCellsTCardSameAndDiffExotic[i][tm]->SetYTitle("#it{n}_{cells} - same TCard");
+        outputContainer->Add(fhNCellsTCardSameAndDiffExotic[i][tm]);       
       }
       
-      for(Int_t i = 0; i < 6; i++)
-      {
-        fhLambda0TCardCorrelNearRow[i][tm]  = new TH2F 
-        (Form("hLambda0TCardCorrelNearRow_Case%d%s",i,add[tm].Data()),
-         Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with TCard cell, one TCard cell is 1 row away, case %d %s",i,add[tm].Data()),
-         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhLambda0TCardCorrelNearRow[i][tm]->SetXTitle("#it{E} (GeV)");
-        fhLambda0TCardCorrelNearRow[i][tm]->SetYTitle("#lambda^{2}_{0}");
-        outputContainer->Add(fhLambda0TCardCorrelNearRow[i][tm]); 
-        
-        fhNCellsTCardCorrelNearRow[i][tm]  = new TH2F 
-        (Form("hNCellsTCardCorrelNearRow_Case%d%s",i,add[tm].Data()),
-         Form("custer # cells vs #it{E}, w > 0.01, max E cell correl with TCard cell, case %d %s",i,add[tm].Data()),
-         nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
-        fhNCellsTCardCorrelNearRow[i][tm]->SetXTitle("#it{E} (GeV)");
-        fhNCellsTCardCorrelNearRow[i][tm]->SetYTitle("#it{n}_{cells}");
-        outputContainer->Add(fhNCellsTCardCorrelNearRow[i][tm]);
-      }
-      
-      for(Int_t i = 0; i < 4; i++)
-      {
-        fhLambda0TCardCorrel2ndMax[i][tm]  = new TH2F 
-        (Form("hLambda0TCardCorrel2ndMax_Case%d%s",i,add[tm].Data()),
-         Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with 2nd max TCard cell, case %d %s",i,add[tm].Data()),
-         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhLambda0TCardCorrel2ndMax[i][tm]->SetXTitle("#it{E} (GeV)");
-        fhLambda0TCardCorrel2ndMax[i][tm]->SetYTitle("#lambda^{2}_{0}");
-        outputContainer->Add(fhLambda0TCardCorrel2ndMax[i][tm]); 
-        
-        fhNCellsTCardCorrel2ndMax[i][tm]  = new TH2F 
-        (Form("hNCellsTCardCorrel2ndMax_Case%d%s",i,add[tm].Data()),
-         Form("custer # cells vs #it{E}, w > 0.01, max E cell correl with 2nd max TCard cell, case %d %s",i,add[tm].Data()),
-         nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
-        fhNCellsTCardCorrel2ndMax[i][tm]->SetXTitle("#it{E} (GeV)");
-        fhNCellsTCardCorrel2ndMax[i][tm]->SetYTitle("#it{n}_{cells}");
-        outputContainer->Add(fhNCellsTCardCorrel2ndMax[i][tm]);
-      }
+//      for(Int_t i = 0; i < 6; i++)
+//      {
+//        fhLambda0TCardCorrelNearRow[i][tm]  = new TH2F 
+//        (Form("hLambda0TCardCorrelNearRow_Case%d%s",i,add[tm].Data()),
+//         Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with TCard cell, one TCard cell is 1 row away, case %d %s",i,add[tm].Data()),
+//         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+//        fhLambda0TCardCorrelNearRow[i][tm]->SetXTitle("#it{E} (GeV)");
+//        fhLambda0TCardCorrelNearRow[i][tm]->SetYTitle("#lambda^{2}_{0}");
+//        outputContainer->Add(fhLambda0TCardCorrelNearRow[i][tm]); 
+//        
+//        fhNCellsTCardCorrelNearRow[i][tm]  = new TH2F 
+//        (Form("hNCellsTCardCorrelNearRow_Case%d%s",i,add[tm].Data()),
+//         Form("custer # cells vs #it{E}, w > 0.01, max E cell correl with TCard cell, case %d %s",i,add[tm].Data()),
+//         nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+//        fhNCellsTCardCorrelNearRow[i][tm]->SetXTitle("#it{E} (GeV)");
+//        fhNCellsTCardCorrelNearRow[i][tm]->SetYTitle("#it{n}_{cells}");
+//        outputContainer->Add(fhNCellsTCardCorrelNearRow[i][tm]);
+//      }
+//      
+//      for(Int_t i = 0; i < 4; i++)
+//      {
+//        fhLambda0TCardCorrel2ndMax[i][tm]  = new TH2F 
+//        (Form("hLambda0TCardCorrel2ndMax_Case%d%s",i,add[tm].Data()),
+//         Form("#lambda^{2}_{0} vs #it{E}, max E cell correl with 2nd max TCard cell, case %d %s",i,add[tm].Data()),
+//         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+//        fhLambda0TCardCorrel2ndMax[i][tm]->SetXTitle("#it{E} (GeV)");
+//        fhLambda0TCardCorrel2ndMax[i][tm]->SetYTitle("#lambda^{2}_{0}");
+//        outputContainer->Add(fhLambda0TCardCorrel2ndMax[i][tm]); 
+//        
+//        fhNCellsTCardCorrel2ndMax[i][tm]  = new TH2F 
+//        (Form("hNCellsTCardCorrel2ndMax_Case%d%s",i,add[tm].Data()),
+//         Form("custer # cells vs #it{E}, w > 0.01, max E cell correl with 2nd max TCard cell, case %d %s",i,add[tm].Data()),
+//         nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+//        fhNCellsTCardCorrel2ndMax[i][tm]->SetXTitle("#it{E} (GeV)");
+//        fhNCellsTCardCorrel2ndMax[i][tm]->SetYTitle("#it{n}_{cells}");
+//        outputContainer->Add(fhNCellsTCardCorrel2ndMax[i][tm]);
+//      }
       
       for(Int_t i = 0; i < 7; i++)
       {
