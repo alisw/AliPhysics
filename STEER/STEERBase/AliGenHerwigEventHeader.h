@@ -21,11 +21,15 @@ class AliGenHerwigEventHeader : public AliGenEventHeader
     void     SetTrials(Int_t trials) {fTrials = trials;}
     Float_t  Weight() const {return fWeight;}
     void     SetWeight(Float_t weight) {fWeight = weight;}
+    Float_t  GetPtHard() const {return fPtHard;}
+    void     SetPtHardGen(Float_t pthard) {fPtHard = pthard;}
+
 protected:
     Int_t    fProcessType;               // HERWIG process id for this event 
     Int_t    fTrials;                    // Number of trials to fulfill trigger condition
     Float_t  fWeight;                    // Event weight (= cross section in nb for unweighted events)
-    ClassDef(AliGenHerwigEventHeader, 2)  // Event header for Herwig event
+    Float_t  fPtHard;                    // Generated pT-hard in the 2-2 process
+    ClassDef(AliGenHerwigEventHeader, 3)  // Event header for Herwig event
 };
 	
 	

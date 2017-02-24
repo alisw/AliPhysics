@@ -102,6 +102,7 @@ class AliGenHerwig : public AliGenMC
     Int_t       fProcess;        // Process number
     Double_t    fPtHardMin;      // higher pT-hard cut
     Double_t    fPtHardMax;      // lower pT-hard cut
+    Double_t    fPtHardGen;      // generated pT-hard 
     Double_t    fWeightPower;   //power of the event weight
     Double_t    fPtRMS;          // intrinsic pt of incoming hadrons
     Int_t       fMaxPr;          // maximum number of events to print out

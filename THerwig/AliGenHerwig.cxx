@@ -60,6 +60,7 @@ ClassImp(AliGenHerwig)
     fProcess(0),
     fPtHardMin(0.),
     fPtHardMax(9999.),
+    fPtHardGen(0), 
     fWeightPower(0),
     fPtRMS(0.),
     fMaxPr(10),
@@ -99,6 +100,7 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fProcess(0),
     fPtHardMin(0.),
     fPtHardMax(9999.),
+    fPtHardGen(0), 
     fWeightPower(0),
     fPtRMS(0.),
     fMaxPr(10),
@@ -306,6 +308,7 @@ void AliGenHerwig::Generate()
 	    TParticle* parton1 = (TParticle *) particles->At(6);
 	    TParticle* parton2 = (TParticle *) particles->At(7);
 	    if (!CheckParton(parton1, parton2))  continue ;
+	     fPtHardGen=TMath::Sqrt(parton1->Px()*parton1->Px()+parton2->Py()*parton2->Py());
 	} 
 
 	Int_t nc = 0;
@@ -383,9 +386,9 @@ Bool_t AliGenHerwig::CheckParton(const TParticle* parton1, const TParticle* part
     Int_t    pdg[2]; 
     pdg[0] = parton1->GetPdgCode();
     pdg[1] = parton2->GetPdgCode();   
-    printf("min %f, max %f\n",fPtHardMin, fPtHardMax);
-    printf("Parton 1: %s, pT= %2.2f, eta = %1.2f, phi = %2.2f\n", parton1->GetName(),parton1->Pt(), eta[0],phi[0]*TMath::RadToDeg());
-    printf("Parton 2: %s, pT= %2.2f, eta = %1.2f, phi = %2.2f\n", parton2->GetName(),parton2->Pt(), eta[1],phi[1]*TMath::RadToDeg());
+    // printf("min %f, max %f\n",fPtHardMin, fPtHardMax);
+    //printf("Parton 1: %s, pT= %2.2f, eta = %1.2f, phi = %2.2f\n", parton1->GetName(),parton1->Pt(), eta[0],phi[0]*TMath::RadToDeg());
+    //printf("Parton 2: %s, pT= %2.2f, eta = %1.2f, phi = %2.2f\n", parton2->GetName(),parton2->Pt(), eta[1],phi[1]*TMath::RadToDeg());
     
     if (fProcess == kHeJets) {
       //Check if one of the 2 outgoing partons are in the eta-phi window
@@ -516,6 +519,10 @@ void AliGenHerwig::MakeHeader()
 //
 // Event weight (cross section)
     ((AliGenHerwigEventHeader*) fHeader)->SetWeight(fHerwig->GetEVWGT());
+
+// Generated pthard 
+    ((AliGenHerwigEventHeader*) fHeader)->SetPtHardGen(fPtHardGen); 
+
 //
 // Event Vertex 
     fHeader->SetPrimaryVertex(fVertex);
