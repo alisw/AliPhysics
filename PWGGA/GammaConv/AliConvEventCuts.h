@@ -182,11 +182,20 @@ class AliConvEventCuts : public AliAnalysisCuts {
         
         // 2016
         kLHC16kl,         // pp 13 TeV
+        kLHC16q,          // pPb 5 TeV
         // MC's corresponding to 2016 data
         kLHC16j2a1,       // anchored LHC16k pass 1 - general purpose Pythia8
         kLHC16j2b1,       // anchored LHC16k pass 1 - general purpose EPOSLHC
         kLHC16j2a2,       // anchored LHC16l pass 1 - general purpose Pythia8
         kLHC16j2b2,       // anchored LHC16l pass 1 - general purpose EPOSLHC
+        kLHC17a2a,            // anchored LHC16qrs pass 1 - general purpose EPOSLHC
+        kLHC17a2a_fast,       // anchored LHC16qrs pass 1 - general purpose EPOSLHC, fast only
+        kLHC17a2a_cent,       // anchored LHC16qrs pass 1 - general purpose EPOSLHC, CENT 
+        kLHC17a2a_cent_woSDD, // anchored LHC16qrs pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17a2b,            // anchored LHC16qrs pass 1 - general purpose DPMJET
+        kLHC17a2b_fast,       // anchored LHC16qrs pass 1 - general purpose DPMJET,  fast only
+        kLHC17a2b_cent,       // anchored LHC16qrs pass 1 - general purpose DPMJET,  CENT
+        kLHC17a2b_cent_woSDD, // anchored LHC16qrs pass 1 - general purpose DPMJET,  CENT woSDD
 
         // 
         kUnknownPeriod
@@ -531,7 +540,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,25)
+      ClassDef(AliConvEventCuts,26)
 };
 
 
