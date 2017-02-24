@@ -14,6 +14,8 @@
 #include "AliMultiplicity.h"
 #include "AliAODVertex.h"
 #include "AliEventplane.h"
+#include "AliMultSelection.h"
+#include <iostream>
 
 #include "AliMixEventCutObj.h"
 
@@ -251,9 +253,18 @@ Double_t AliMixEventCutObj::GetValue(AliAODEvent *ev)
          return ev->GetNumberOfV0s();
       case kCentrality:
       {
-         AliCentrality *c = ev->GetCentrality();
-         if (!c) AliFatal("esd->GetCentrality() is null");
-         return c->GetCentralityPercentile(fCutOpt.Data());
+         //  AliCentrality *c = ev->GetCentrality();
+         //  if (!c) AliFatal("esd->GetCentrality() is null");
+         //  return c->GetCentralityPercentile(fCutOpt.Data());
+         
+         // New centrality framework
+         AliMultSelection *multSelection = (AliMultSelection * ) ev->FindListObject("MultSelection");
+         if(multSelection)
+         {
+            Double_t centralityFromV0 = multSelection->GetMultiplicityPercentile("V0M", false);
+            return centralityFromV0;;
+         }
+         else return -99999;
       }
       case kEventPlane:
       {

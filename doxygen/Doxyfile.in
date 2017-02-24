@@ -799,6 +799,8 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALbase \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtrigger \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtasks \
+                         @CMAKE_SOURCE_DIR@/PWG/muon \
+                         @CMAKE_SOURCE_DIR@/PWG/muondep \
                          @CMAKE_SOURCE_DIR@/PWG/JETFW \
                          @CMAKE_SOURCE_DIR@/PWG/Tools \
                          @CMAKE_SOURCE_DIR@/PWGHF \

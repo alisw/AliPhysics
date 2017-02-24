@@ -22,6 +22,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/EVENTMIX)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                    )
 
 # Sources
@@ -47,12 +48,18 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 set(LIBDEPS ANALYSIS ANALYSISalice AOD ESD STEERBase Core Gpad Hist RIO Tree)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "../OADB/COMMON/MULTIPLICITY") 
+
 # Add a library to the project using the specified source files
 add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} ANALYSIS ANALYSISalice AOD ESD STEERBase Core Gpad Hist RIO Tree)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})

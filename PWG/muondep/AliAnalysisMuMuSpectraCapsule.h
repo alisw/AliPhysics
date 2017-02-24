@@ -8,17 +8,12 @@
 
 // $Id$
 
-/**
- 
-  @ingroup pwg_muondep_mumu
+/// @ingroup pwg_muondep_mumu
+/// @class AliAnalysisMuMuSpectraCapsule
+/// @bried Mother class to all capsule class.
+///
+/// author : Benjamin Audurier (Subatech)
 
-  @class AliAnalysisMuMuSpectraCapsule
-
-  @brief Handle operations on Spectra after fit procedure
-
-  @author Benjamin Audurier (Subatech)
-
-*/
 
 #include <TString.h>
 #include "TObject.h"
@@ -33,13 +28,15 @@ class AliAnalysisMuMuSpectraCapsule : public TObject
 
 public:
   //ctor
-  AliAnalysisMuMuSpectraCapsule();
+  AliAnalysisMuMuSpectraCapsule(
+    const AliAnalysisMuMuSpectra            *  spectra=0x0,
+    const TString                           spectraPath ="",
+    const char                              * externFile="",
+    const char                              * externFile2="");
   //dctor
   virtual ~AliAnalysisMuMuSpectraCapsule();
   // Compute Yield
-  virtual TGraphErrors* ComputeYield(const char* what, const TH1* histo, const char* sResName) = 0;
-  // Draw fit results and save them if wanted
-  virtual void DrawResults(const char* particle,const char* subresults)const = 0 ;
+  virtual TGraphErrors* ComputeYield(const char* what, const TH1* histo, const char* sResName, Double_t MUL) = 0;
   // Print some data members
   virtual void Print(Option_t* opt) const = 0;
   // Print constants used
@@ -61,8 +58,18 @@ public:
   AliAnalysisMuMuSpectraCapsule(const AliAnalysisMuMuSpectraCapsule& rhs);// not implemented on purpose
   AliAnalysisMuMuSpectraCapsule& operator=(const AliAnalysisMuMuSpectraCapsule& rhs);// not implemented on purpose
 
+  protected:
+  const AliAnalysisMuMuSpectra* fSpectra;     // Spectra with result and subresults
+  TString                       fExternFile;  // name of spectra selected
+  TString                       fExternFile2; // name of spectra selected
+  Bool_t                        fPrintFlag;
+  const TString                 fSpectraName; // SpectraName
+
+
+
+
 /// \cond CLASSIMP
-ClassDef(AliAnalysisMuMuSpectraCapsule,1)
+ClassDef(AliAnalysisMuMuSpectraCapsule,2)
 /// \endcond;
 };
 
