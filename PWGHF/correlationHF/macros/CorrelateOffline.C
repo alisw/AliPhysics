@@ -34,7 +34,7 @@ void CorrelateOffline(
    Int_t wgtPeriods=kTRUE, //weight periods in ME analysis (keep enabled)
    TString nameOutputFile="OfflineCorrelations.root",
    Int_t firstBinNum=0, //start of numbering for the pTbins in input file
-   Double_t mincent=0., maxcent=0., //centrality (or multiplicity) selection ***ACTIVE ONLY IF BOTH VALS ARE =! 0*** 
+   Double_t mincent=0., Double_t maxcent=0., //centrality (or multiplicity) selection ***ACTIVE ONLY IF BOTH VALS ARE =! 0*** 
    Bool_t removeSoftPiInME=kTRUE) //if active, removes 'fake' soft pions in ME (for SE, softpicut flag is in analysis task). No effect on D* and D+ analyses
 {
 
