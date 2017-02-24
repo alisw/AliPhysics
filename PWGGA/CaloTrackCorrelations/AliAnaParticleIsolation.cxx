@@ -334,6 +334,14 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     }
   }
   
+  for(Int_t imc = 0; imc < 4; imc++)
+  {
+    fhPtTrackInConeMCPrimary       [imc] = 0;
+    fhPtTrackInConeMCSecondary     [imc] = 0;  
+    fhPtTrackInConeMCPrimaryGener  [imc] = 0;
+    fhPtTrackInConeMCSecondaryGener[imc] = 0;  
+  }
+  
   for(Int_t i = 0; i < 2 ; i++)
   {
     fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;   fhTrackMatchedDEtaDPhi  [i] = 0 ;
@@ -1687,6 +1695,50 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     
     fhPtInCone      ->Fill(ptTrig , pTtrack, GetEventWeight());
     fhPtTrackInCone ->Fill(ptTrig , pTtrack, GetEventWeight());
+    
+    if(IsDataMC())
+    {
+      Int_t partInConeCharge = 0, partInConePDG = 0;
+      Bool_t physPrimary = kFALSE;
+      Int_t trackLabel = TMath::Abs(track->GetLabel());
+      
+      if( GetReader()->ReadStack() && GetMCStack())
+      {
+        TParticle  * mcpartESD = static_cast<TParticle*>(GetMCStack()->Particle(trackLabel));
+        if( mcpartESD ) 
+        {
+          partInConePDG    = mcpartESD->GetPdgCode();
+          partInConeCharge = TMath::Abs((Int_t) TDatabasePDG::Instance()->GetParticle(partInConePDG)->Charge());
+          physPrimary      = mcpartESD->IsPrimary(); // Check?
+        }
+      }
+      else
+      {
+        TClonesArray* mcparticles = GetReader()->GetAODMCParticles();
+        if(mcparticles)
+        {
+          AliAODMCParticle * mcpartAOD = (AliAODMCParticle *) mcparticles->At(trackLabel);
+          if( mcpartAOD )  
+          {
+            partInConeCharge = TMath::Abs(mcpartAOD->Charge());
+            partInConePDG    = mcpartAOD->GetPdgCode();
+            physPrimary      = mcpartAOD->IsPhysicalPrimary();
+          }
+        }
+      }
+      
+      if ( partInConeCharge > 0 )
+      {
+        Int_t mcChTag = 3;
+        if      ( TMath::Abs(partInConePDG) == 211  )  mcChTag = 0;
+        else if ( TMath::Abs(partInConePDG) == 321  )  mcChTag = 1; 
+        else if ( TMath::Abs(partInConePDG) == 2212 )  mcChTag = 2; 
+        if(physPrimary)
+          fhPtTrackInConeMCPrimary  [mcChTag]->Fill(ptTrig , pTtrack, GetEventWeight());
+        else
+          fhPtTrackInConeMCSecondary[mcChTag]->Fill(ptTrig , pTtrack, GetEventWeight());
+      }
+    }
     
     if(fStudyExoticTrigger && fIsExoticTrigger)
     {
@@ -3906,21 +3958,62 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     // Track only histograms
     if(GetIsolationCut()->GetParticleTypeInCone()!=AliIsolationCut::kOnlyNeutral)
     {
-      
-      fhConePtLeadTrack  = new TH2F("hConeLeadPtTrack",
-                                    Form("Track leading in isolation cone for #it{R} = %2.2f",r),
-                                    nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhConePtLeadTrack  = new TH2F
+      ("hConeLeadPtTrack",
+       Form("Track leading in isolation cone for #it{R} = %2.2f",r),
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
       fhConePtLeadTrack->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
       fhConePtLeadTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConePtLeadTrack) ;
       
-      fhPtTrackInCone  = new TH2F("hPtTrackInCone",
-                                  Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f",r),
-                                  nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInCone  = new TH2F
+      ("hPtTrackInCone",
+       Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f",r),
+       nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
       fhPtTrackInCone->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
       fhPtTrackInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtTrackInCone) ;
 
+      if(IsDataMC())
+      {
+        TString mcChPartName[] = {"Pion","Kaon","Proton","Other"};
+        for(Int_t imc = 0; imc < 4; imc++)
+        {
+          fhPtTrackInConeMCPrimary[imc]  = new TH2F
+          (Form("hPtTrackInCone_Primary_%s",mcChPartName[imc].Data()),
+           Form("reconstructed #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, primary MC %s",r,mcChPartName[imc].Data()),
+           nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+          fhPtTrackInConeMCPrimary[imc]->SetYTitle("#it{p}_{T in cone}^{reco} (GeV/#it{c})");
+          fhPtTrackInConeMCPrimary[imc]->SetXTitle("#it{p}_{T}^{reco} (GeV/#it{c})");
+          outputContainer->Add(fhPtTrackInConeMCPrimary[imc]) ;
+          
+          fhPtTrackInConeMCSecondary[imc]  = new TH2F
+          (Form("hPtTrackInCone_Secondary_%s",mcChPartName[imc].Data()),
+           Form("reconstructed #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, primary MC %s",r,mcChPartName[imc].Data()),
+           nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+          fhPtTrackInConeMCSecondary[imc]->SetYTitle("#it{p}_{T in cone}^{reco} (GeV/#it{c})");
+          fhPtTrackInConeMCSecondary[imc]->SetXTitle("#it{p}_{T}^{reco} (GeV/#it{c})");
+          outputContainer->Add(fhPtTrackInConeMCSecondary[imc]) ;
+          
+          fhPtTrackInConeMCPrimaryGener[imc]  = new TH2F
+          (Form("hPtTrackInCone_Gener_Primary_%s",mcChPartName[imc].Data()),
+           Form("generated #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, primary MC %s",r,mcChPartName[imc].Data()),
+           nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+          fhPtTrackInConeMCPrimaryGener[imc]->SetYTitle("#it{p}_{T in cone}^{gener} (GeV/#it{c})");
+          fhPtTrackInConeMCPrimaryGener[imc]->SetXTitle("#it{p}_{T}^{gener} (GeV/#it{c})");
+          outputContainer->Add(fhPtTrackInConeMCPrimaryGener[imc]) ;
+          
+          fhPtTrackInConeMCSecondaryGener[imc]  = new TH2F
+          (Form("hPtTrackInCone_Gener_Secondary_%s",mcChPartName[imc].Data()),
+           Form("generated #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, primary MC %s",r,mcChPartName[imc].Data()),
+           nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+          fhPtTrackInConeMCSecondaryGener[imc]->SetYTitle("#it{p}_{T in cone}^{gener} (GeV/#it{c})");
+          fhPtTrackInConeMCSecondaryGener[imc]->SetXTitle("#it{p}_{T}^{gener} (GeV/#it{c})");
+          outputContainer->Add(fhPtTrackInConeMCSecondaryGener[imc]) ;
+        }
+        
+      }
+      
       if(fStudyExoticTrigger)
       {
         fhPtTrackInConeExoTrigger  = new TH2F("hPtTrackInConeExoTrigger",
@@ -6857,7 +6950,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     AliAODMCParticle * mcisopAOD   = 0;
     Int_t partInConeStatus = -1, partInConeMother = -1;
     Double_t partInConePt = 0, partInConeE = 0, partInConeEta = 0, partInConePhi = 0;
-    Int_t partInConeCharge = 0, npart = 0;
+    Int_t partInConeCharge = 0, npart = 0, partInConePDG = 0;
+    Bool_t physPrimary = kFALSE;
     for(Int_t ip = 0; ip < nprim ; ip++)
     {
       if(ip==i) continue;
@@ -6885,7 +6979,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         partInConeE      = mcisopStack->Energy();
         partInConeEta    = mcisopStack->Eta();
         partInConePhi    = mcisopStack->Phi();
-        partInConeCharge = TMath::Abs((Int_t) TDatabasePDG::Instance()->GetParticle(mcisopStack->GetPdgCode())->Charge());
+        partInConePDG    = mcisopStack->GetPdgCode();
+        partInConeCharge = TMath::Abs((Int_t) TDatabasePDG::Instance()->GetParticle(partInConePDG)->Charge());
+        physPrimary      = mcisopStack->IsPrimary(); // Check?
         mcisopStack->Momentum(fMomIso);
       }
       else
@@ -6906,6 +7002,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         partInConeEta    = mcisopAOD->Eta();
         partInConePhi    = mcisopAOD->Phi();
         partInConeCharge = TMath::Abs(mcisopAOD->Charge());
+        partInConePDG    = mcisopAOD->GetPdgCode();
+        physPrimary      = mcisopAOD->IsPhysicalPrimary();
         fMomIso.SetPxPyPzE(mcisopAOD->Px(),mcisopAOD->Py(),mcisopAOD->Pz(),mcisopAOD->E());
       }
       
@@ -6947,6 +7045,18 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       if(dR > GetIsolationCut()->GetConeSize())
         continue;
       
+      if ( partInConeCharge > 0 )
+      {
+        Int_t mcChTag = 3;
+        if      ( TMath::Abs(partInConePDG) == 211  )  mcChTag = 0;
+        else if ( TMath::Abs(partInConePDG) == 321  )  mcChTag = 1; 
+        else if ( TMath::Abs(partInConePDG) == 2212 )  mcChTag = 2; 
+        if(physPrimary)
+          fhPtTrackInConeMCPrimaryGener  [mcChTag]->Fill(photonPt, partInConePt, GetEventWeight());
+        else
+          fhPtTrackInConeMCSecondaryGener[mcChTag]->Fill(photonPt, partInConePt, GetEventWeight());
+      }
+
       sumPtInCone += partInConePt;
       if(partInConePt > GetIsolationCut()->GetPtThreshold() &&
          partInConePt < GetIsolationCut()->GetPtThresholdMax()) npart++;
