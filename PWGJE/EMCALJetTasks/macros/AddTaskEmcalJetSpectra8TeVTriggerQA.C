@@ -100,7 +100,7 @@ AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA* AddTaskEmcalJetSpectra8TevTriggerQA
     name += suffix;
   }
 
-  AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA* spectraTriggerQA = new AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(name);
+  AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA* SpectraTriggerQA = new AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(name);
   SpectraTriggerQA ->SetCaloCellsName(cellName);
   SpectraTriggerQA ->SetVzRange(-10,10);
 
