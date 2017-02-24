@@ -43,6 +43,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
  private:
   AliESDInputHandler     *fInputHandler;        //!<! Input handler
   AliESDpid              *fPID;                 //!<! ESD pid
+  AliESDEvent            *fESDevent;            //!<! ESD event
   AliReducedHypTritEvent *fReducedEvent;        //<   Reduced event containing he3 and pi
   AliReducedHypTritEvent *fReducedEventMCGen;   //<   Reduced MC event containing he3 and pi
   AliStack               *fStack;               //!<! MC stack

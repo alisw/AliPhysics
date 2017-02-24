@@ -41,6 +41,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   :AliAnalysisTaskSE("AliAnalysisTaskHypTritEventTree"),
   fInputHandler(0),
   fPID(0),
+  fESDevent(0),
   fReducedEvent(0),
   fReducedEventMCGen(0),
   fStack(),
@@ -77,6 +78,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   :AliAnalysisTaskSE(name),
   fInputHandler(0),
   fPID(0),
+  fESDevent(0),
   fReducedEvent(0),
   fReducedEventMCGen(0),
   fStack(),
@@ -209,8 +211,9 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     if (!fStack) return;
   }
   // Data
-  AliESDEvent* event = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!event) {
+
+  fESDevent = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!fESDevent) {
     AliError("Could not get ESD Event.\n");
     return;
   }
@@ -223,10 +226,10 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   }
   fHistNumEvents->Fill(0);
   Float_t centrality = -1;
-  const AliESDVertex *vertex = event->GetPrimaryVertexTracks();
+  const AliESDVertex *vertex = fESDevent->GetPrimaryVertexTracks();
   if (fPeriod == 2010 || fPeriod == 2011) {
       if (vertex->GetNContributors() < 1) {
-        vertex = event->GetPrimaryVertexSPD();
+        vertex = fESDevent->GetPrimaryVertexSPD();
         if (vertex->GetNContributors() < 1) {
           PostData(1,fHistogramList);
           return;
@@ -236,37 +239,43 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       PostData(1, fHistogramList);
       return;
     }
-    centrality = event->GetCentrality()->GetCentralityPercentile("V0M");
+    centrality = fESDevent->GetCentrality()->GetCentralityPercentile("V0M");
+    if(!fMCtrue){
+      if (centrality < 0.0 || centrality > 100.0 ) {
+        return;
+      }
+    }
   }
   if (fPeriod == 2015) {
-    if(!fEventCuts.AcceptEvent(event)) {
+    if(!fEventCuts.AcceptEvent(fESDevent)) {
       PostData(1,fHistogramList);
       return;
     }
     // 0 = V0M
     centrality = fEventCuts.GetCentrality(0);
+    if(!fMCtrue){
+      if (centrality < 0.0 || centrality > 100.0 ) {
+        return;
+      }
+    }
   }
   if (fPeriod == 2016) {
-    fEventCuts.SetupRun2pp();
     fEventCuts.SetManualMode();
-    
-    if(!fEventCuts.AcceptEvent(event)) {
+    fEventCuts.SetupRun2pp();
+
+    if(!fEventCuts.AcceptEvent(fESDevent)) {
       PostData(1,fHistogramList);
       return;
     }
     // 0 = V0M
     centrality = fEventCuts.GetCentrality(0);
   }
-  if(!fMCtrue){
-    if (centrality < 0.0 || centrality > 100.0 ) {
-      return;
-    }
-  }
-  Int_t runNumber = event->GetRunNumber();
+
+  Int_t runNumber = fESDevent->GetRunNumber();
   TriggerSelection();
   fHistNumEvents->Fill(1);
   fReducedEvent->fCentrality = centrality;
-  fMagneticField  = event->GetMagneticField();
+  fMagneticField  = fESDevent->GetMagneticField();
   fPrimaryVertex.SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
   fReducedEvent->fVertexPosition = fPrimaryVertex;
   fReducedEvent->fRunNumber = runNumber;
@@ -286,8 +295,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     AliESDtrackCuts* trackCutsPid = new AliESDtrackCuts("trackCutsPid", "trackCutsPid");
     trackCutsPid = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,0);
     trackCutsPid->SetEtaRange(-0.9,0.9);
-    for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++) {
-      AliESDtrack* track = event->GetTrack(itrack);
+    for (Int_t itrack = 0; itrack < fESDevent->GetNumberOfTracks(); itrack++) {
+      AliESDtrack* track = fESDevent->GetTrack(itrack);
       if (!trackCutsPid->AcceptTrack(track)) continue;
       Double_t momentum = track->GetInnerParam()->GetP();
       fHistdEdx->Fill(momentum * track->GetSign(), track->GetTPCsignal());
@@ -296,15 +305,15 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   }
 
   // V0 loop
-  for (Int_t ivertex = 0; ivertex < event->GetNumberOfV0s(); ivertex++) {
-    fV0 = event->GetV0(ivertex);
+  for (Int_t ivertex = 0; ivertex < fESDevent->GetNumberOfV0s(); ivertex++) {
+    fV0 = fESDevent->GetV0(ivertex);
     Bool_t v0ChargeCorrect = kTRUE;
-    AliESDtrack* trackN = event->GetTrack(fV0->GetIndex(0));
-    AliESDtrack* trackP = event->GetTrack(fV0->GetIndex(1));
+    AliESDtrack* trackN = fESDevent->GetTrack(fV0->GetIndex(0));
+    AliESDtrack* trackP = fESDevent->GetTrack(fV0->GetIndex(1));
     // Checks charge because of bug in V0 interface.
     if (trackN->GetSign() > 0 ) {
-      trackN = event->GetTrack(fV0->GetIndex(1));
-      trackP = event->GetTrack(fV0->GetIndex(0));
+      trackN = fESDevent->GetTrack(fV0->GetIndex(1));
+      trackP = fESDevent->GetTrack(fV0->GetIndex(0));
       v0ChargeCorrect = kFALSE;
     }
     if (!trackCutsV0.AcceptTrack(trackN)) continue;
@@ -596,9 +605,12 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
 /// \return returns kTRUE is successful.
 Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection() {
   fReducedEvent->fTrigger = 0;
+  TString classes = fESDevent->GetFiredTriggerClasses();
+
   if ((fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fReducedEvent->fTrigger = 1;
   if ((fInputHandler->IsEventSelected() & AliVEvent::kCentral)) fReducedEvent->fTrigger = 2;
   if ((fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fReducedEvent->fTrigger =  3;
+  if(classes.Contains("HNU") || classes.Contains("HQU") || classes.Contains("HSE")) fReducedEvent->fTrigger = 4;
   Bool_t isTriggered = kTRUE;
   if (fReducedEvent->fTrigger == 0) isTriggered = kFALSE;
   return isTriggered;
