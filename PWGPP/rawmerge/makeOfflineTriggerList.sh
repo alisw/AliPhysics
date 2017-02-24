@@ -226,7 +226,7 @@ ProcessfilterLog(){
 
 gitRawListFromAlien(){
     #  Example usage 
-    #  ( source $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.sh; gitRawListFromAlien /alice/cern.ch/user/p/pwg_pp/triggeredRaw/alice/data/2015/LHC15n/000244540/ > rawSummary.log )
+    #  ( source $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.sh; gitRawListFromAlien /alice/cern.ch/user/p/pwg_pp/triggeredRaw/alice/data/2015/LHC15n/000244540/ |tee  rawSummary.log )
     # Input:
     #    alien path for run filtered data as stored on 
     # Output:
@@ -242,7 +242,7 @@ gitRawListFromAlien(){
     for a in `alien_ls $alienPath/lists/filtered*.list`; do echo $alienPath/lists/$a; done  > trigger.list
     alilog "gitRawList. Step0. DownloadList. cat trigger.list" |tee  trigger.download.log
     cat trigger.list
-    $ALICE_ROOT/../src/STEER/Utilities/alienSync.sh alienFindCommand="cat trigger.list"
+    $ALICE_PHYSICS/PWGPP/QA/scripts/alienSync.sh alienFindCommand="cat trigger.list"
     alilog "gitRawList. Step0. DownloadList.End"
     #
     # 2.) get raw gids - use ls 0stead of find - (it is faster at minimum find is now working very slow)
@@ -251,7 +251,8 @@ gitRawListFromAlien(){
     for a in `alien_ls $alienPath`; do echo $alienPath/$a/filter.log; done  > filterlog.list
     alilog "gitRawList. Step0. DownloadList. cat filterlog.list"
     cat filterlog.list
-    $ALICE_ROOT/../src/STEER/Utilities/alienSync.sh alienFindCommand="cat filterlog.list" | tee filterlog.download.log
+    #$ALICE_ROOT/../src/STEER/Utilities/alienSync.sh alienFindCommand="cat filterlog.list" | tee filterlog.download.log
+    $ALICE_PHYSICS/PWGPP/QA/scripts/alienSync.sh alienFindCommand="cat filterlog.list" copyMethod=1  | tee filterlog.download.log
     alilog "gitRawList. Step1. DownloadLogs.End"
     #
     # 2.) Extract event information

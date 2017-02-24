@@ -17,7 +17,7 @@ ClassImp(CEPTrackBuffer)
 // ----------------------------------------------------------------------------
 CEPTrackBuffer::CEPTrackBuffer()
   : TObject()
-  , fTrackStatus(AliCEPBase::kTTUnknown)
+  , fTrackStatus(AliCEPBase::kTTBaseLine)
   , fTOFBunchCrossing(CEPTrackBuffer::kdumval)
   , fChargeSign(0)
   , fITSncls(CEPTrackBuffer::kdumval)
@@ -52,7 +52,7 @@ void CEPTrackBuffer::Reset()
 {
 
   // general information
-  fTrackStatus      = AliCEPBase::kTTUnknown;
+  fTrackStatus      = AliCEPBase::kTTBaseLine;
   fTOFBunchCrossing = CEPTrackBuffer::kdumval;
   fChargeSign       = CEPTrackBuffer::kdumval;
   fITSncls          = CEPTrackBuffer::kdumval;

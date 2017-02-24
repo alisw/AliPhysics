@@ -74,7 +74,7 @@ optional arguments:
   --gen_name GEN_NAME  Name of the generator and tune. If not given, deduced
                        from filename
 
-$ aligenqa summary --gen_name "Dipsy 13TeV Ropes" 393_AnalysisResults.root
+$ aligenqa summarize --gen_name "Dipsy 13TeV Ropes" 393_AnalysisResults.root
 ```
 
 the summary slides can now be found in the aptly called folders created in the current directory

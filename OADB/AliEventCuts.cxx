@@ -55,6 +55,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fCentralityFramework{0},
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
+  fMultSelectionEvCuts{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fEstimatorsCorrelationCoef{0.,1.},
@@ -165,8 +166,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       fCentPercentiles[1] = cent->GetCentralityPercentile(fCentEstimators[1].data());
     } else {
       AliMultSelection* cent = (AliMultSelection*)ev->FindListObject("MultSelection");
-      fCentPercentiles[0] = cent->GetMultiplicityPercentile(fCentEstimators[0].data(), true);
-      fCentPercentiles[1] = cent->GetMultiplicityPercentile(fCentEstimators[1].data(), true);
+      fCentPercentiles[0] = cent->GetMultiplicityPercentile(fCentEstimators[0].data(), fMultSelectionEvCuts);
+      fCentPercentiles[1] = cent->GetMultiplicityPercentile(fCentEstimators[1].data(), fMultSelectionEvCuts);
     }
     const auto& x = fCentPercentiles[1];
     const double center = x * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];

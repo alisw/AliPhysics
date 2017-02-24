@@ -151,6 +151,9 @@ declare -i iassocbin=${firstassocbin}
 cd $baseStartingDir
 mkdir PaperFigures
 
+ln -s ${ALICE_PHYSICS} ${ALICE_PHYSICS}/../../git #needed for AliBuild
+ln -s ${ALICE_PHYSICS} ${ALICE_PHYSICS}/../src #needed for AliBuild
+
 ############# GO TO MACRO PATH AND CP CODE ############
 if [ ${cpCode} = 1 ]; then
     mkdir -p ${HFCJlocalCodeDir}
@@ -858,6 +861,9 @@ DoComparison_ppVspPballPanels()
 EOF
 ###### LINK PAPER FIGURE ####
 ln -s ${baseDir}/AllPlots/Averages/ComparisonPPtoPPB/plotComparison_WeightedAverage_pp_pPb_UniqueCanvas*.* $baseStartingDir/PaperFigures    
+
+rm ${ALICE_PHYSICS}/../src #was needed by §AliBuild
+
 fi
 
 

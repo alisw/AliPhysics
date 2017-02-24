@@ -38,6 +38,7 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliHFAODMCParticleContainer.h"
 #include "AliHFTrackContainer.h"
+#include "AliAnalysisVertexingHF.h"
 
 // Aliroot EMCal jet framework
 #include "AliEmcalJetTask.h"
@@ -1412,6 +1413,11 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair AliAnalysisTaskDmes
 /// Run a detector level analysis
 void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 {
+  // Fill the vertex info of the candidates
+  // Needed for reduced delta AOD, where the vertex info has been deleted
+  // to reduce the delta AOD file size
+  AliAnalysisVertexingHF vHF;
+
   const Int_t nD = fCandidateArray->GetEntriesFast();
 
   AliDmesonJetInfo DmesonJet;
@@ -1420,6 +1426,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icharm)); // D candidates
     if (!charmCand) continue;
+    if(!(vHF.FillRecoCand(fAodEvent,charmCand))) continue;
 
     // region of interest + cuts
     if (!fRDHFCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(fCandidatePDG))) continue;
@@ -2193,16 +2200,18 @@ AliRDHFCuts* AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile(TString cutfname,
   AliRDHFCuts* analysiscuts = 0;
   TFile* filecuts = TFile::Open(cutfname);
   if (!filecuts || filecuts->IsZombie()) {
-    ::Warning("AddTaskDmesonJets", "Input file not found: will use std cuts.");
+    ::Warning("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Input file not found: will use std cuts.");
     filecuts = 0;
   }
 
   if (filecuts) {
     analysiscuts = dynamic_cast<AliRDHFCuts*>(filecuts->Get(cutsname));
     if (!analysiscuts) {
-      ::Warning("AddTaskDmesonJetCorr", "Could not find analysis cuts '%s' in '%s'. Using std cuts.", cutsname.Data(), cutfname.Data());
+      ::Warning("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Could not find analysis cuts '%s' in '%s'. Using std cuts.", cutsname.Data(), cutfname.Data());
     }
   }
+
+  ::Info("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Cuts '%s' loaded from file '%s'", cutsname.Data(), cutfname.Data());
 
   return analysiscuts;
 }
@@ -2249,6 +2258,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine* AliAnalysisTaskDmesonJets::AddAnalysi
     }
 
     cuts = LoadDMesonCutsFromFile(cutfname, cutsname);
+    cuts->PrintAll();
   }
 
   AnalysisEngine eng(type, MCmode, cuts);
@@ -2605,6 +2615,12 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
         hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
         fHistManager.FillTH1(hname, "ESDfilterBug");
     }
+    return kFALSE;
+  }
+
+  Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+  if (matchingAODdeltaAODlevel <= 0) {
+    // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
     return kFALSE;
   }
 

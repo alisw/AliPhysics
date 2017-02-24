@@ -410,7 +410,7 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
 {
 
   double kinepointall[3] = {TMath::Abs(pt), etalab, phi}, kinepointcent[3] = {TMath::Abs(pt), etacent, phi};
-  TString chargelabel = posCharge ? "" : "";
+  TString chargelabel = posCharge ? "Pos" : "Neg";
   fHistos->FillTH3("hPtEtaPhiAll" + eventclass, kinepointall, weight);
   fHistos->FillTH3("hPtEtaPhiCent" + eventclass, kinepointcent, weight);
   fHistos->FillTH3("hPtEtaPhiAll" + chargelabel + eventclass, kinepointall, weight);

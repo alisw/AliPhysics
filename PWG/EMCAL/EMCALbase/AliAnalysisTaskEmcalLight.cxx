@@ -84,6 +84,10 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fSelectPtHardBin(-999),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
+  fMCRejectFilter(kFALSE),
+  fPtHardAndJetPtFactor(0.),
+  fPtHardAndClusterPtFactor(0.),
+  fPtHardAndTrackPtFactor(0.),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -107,13 +111,12 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fXsection(0),
   fOutput(0),
   fHistEventCount(0),
-  fHistTrialsAfterSel(0),
-  fHistEventsAfterSel(0),
-  fHistXsectionAfterSel(0),
+  fHistTrialsVsPtHard(0),
+  fHistEventsVsPtHard(0),
+  fHistXsectionVsPtHard(0),
   fHistTrials(0),
   fHistEvents(0),
   fHistXsection(0),
-  fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
   fHistEventPlane(0),
@@ -168,6 +171,10 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fSelectPtHardBin(-999),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
+  fMCRejectFilter(kFALSE),
+  fPtHardAndJetPtFactor(0.),
+  fPtHardAndClusterPtFactor(0.),
+  fPtHardAndTrackPtFactor(0.),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -191,13 +198,12 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fXsection(0),
   fOutput(0),
   fHistEventCount(0),
-  fHistTrialsAfterSel(0),
-  fHistEventsAfterSel(0),
-  fHistXsectionAfterSel(0),
+  fHistTrialsVsPtHard(0),
+  fHistEventsVsPtHard(0),
+  fHistXsectionVsPtHard(0),
   fHistTrials(0),
   fHistEvents(0),
   fHistXsection(0),
-  fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
   fHistEventPlane(0),
@@ -279,61 +285,44 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     return;
 
   if (fIsPythia) {
-    fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", 11, 0, 11);
-    fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
-    fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
-    fOutput->Add(fHistTrialsAfterSel);
+    fHistEventsVsPtHard = new TH1F("fHistEventsVsPtHard", "fHistEventsVsPtHard", 1000, 0, 1000);
+    fHistEventsVsPtHard->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistEventsVsPtHard->GetYaxis()->SetTitle("events");
+    fOutput->Add(fHistEventsVsPtHard);
 
-    fHistEventsAfterSel = new TH1F("fHistEventsAfterSel", "fHistEventsAfterSel", 11, 0, 11);
-    fHistEventsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
-    fHistEventsAfterSel->GetYaxis()->SetTitle("total events");
-    fOutput->Add(fHistEventsAfterSel);
+    fHistTrialsVsPtHard = new TH1F("fHistTrialsVsPtHard", "fHistTrialsVsPtHard", 1000, 0, 1000);
+    fHistTrialsVsPtHard->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistTrialsVsPtHard->GetYaxis()->SetTitle("trials");
+    fOutput->Add(fHistTrialsVsPtHard);
 
-    fHistXsectionAfterSel = new TProfile("fHistXsectionAfterSel", "fHistXsectionAfterSel", 11, 0, 11);
-    fHistXsectionAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
-    fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
-    fOutput->Add(fHistXsectionAfterSel);
+    fHistXsectionVsPtHard = new TProfile("fHistXsectionVsPtHard", "fHistXsectionVsPtHard", 1000, 0, 1000);
+    fHistXsectionVsPtHard->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistXsectionVsPtHard->GetYaxis()->SetTitle("xsection");
+    fOutput->Add(fHistXsectionVsPtHard);
 
-    fHistTrials = new TH1F("fHistTrials", "fHistTrials", 11, 0, 11);
-    fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistTrials = new TH1F("fHistTrials", "fHistTrials", 50, 0, 50);
+    fHistTrials->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
     fOutput->Add(fHistTrials);
 
-    fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0, 11);
-    fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistEvents = new TH1F("fHistEvents", "fHistEvents", 50, 0, 50);
+    fHistEvents->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     fHistEvents->GetYaxis()->SetTitle("total events");
     fOutput->Add(fHistEvents);
 
-    fHistXsection = new TProfile("fHistXsection", "fHistXsection", 11, 0, 11);
-    fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistXsection = new TProfile("fHistXsection", "fHistXsection", 50, 0, 50);
+    fHistXsection->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     fHistXsection->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsection);
-
-    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-
-    for (Int_t i = 1; i < 12; i++) {
-      fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistEventsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-
-      fHistTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-    }
-
-    fHistPtHard = new TH1F("fHistPtHard", "fHistPtHard", 250, 0, 1000);
-    fHistPtHard->GetXaxis()->SetTitle("p_{T,hard} (GeV/c)");
-    fHistPtHard->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistPtHard);
   }
 
   fHistZVertex = new TH1F("fHistZVertex","Z vertex position", 60, -30, 30);
-  fHistZVertex->GetXaxis()->SetTitle("z");
+  fHistZVertex->GetXaxis()->SetTitle("V_{#it{z}}");
   fHistZVertex->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertex);
 
   if (fForceBeamType != kpp) {
-    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 200, 0, 100);
+    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 101, 0, 101);
     fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentrality->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentrality);
@@ -400,10 +389,9 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms()
 {
   if (fIsPythia) {
-    fHistEventsAfterSel->Fill(fPtHardBin, 1);
-    fHistTrialsAfterSel->Fill(fPtHardBin, fNTrials);
-    fHistXsectionAfterSel->Fill(fPtHardBin, fXsection);
-    fHistPtHard->Fill(fPtHard);
+    fHistEventsVsPtHard->Fill(fPtHard, 1);
+    fHistTrialsVsPtHard->Fill(fPtHard, fNTrials);
+    fHistXsectionVsPtHard->Fill(fPtHard, fXsection);
   }
 
   fHistZVertex->Fill(fVertex[2]);
@@ -1367,3 +1355,72 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::BeamTypeFromRu
   }
   return b;
 }
+
+/**
+ * Filter the mc tails in pt-hard distributions
+ * See https://twiki.cern.ch/twiki/bin/view/ALICE/JetMCProductionsCrossSections#How_to_reject_tails_in_the_pT_ha
+ * @return kTRUE if it is not a MC outlier
+ */
+Bool_t AliAnalysisTaskEmcalLight::CheckMCOutliers()
+{
+  if (!fPythiaHeader || !fMCRejectFilter) return kTRUE;
+
+  // Condition 1: Pythia jet / pT-hard > factor
+  if (fPtHardAndJetPtFactor > 0.) {
+    AliTLorentzVector jet;
+
+    Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
+
+    AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
+
+    Float_t tmpjet[]={0,0,0,0};
+    for (Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
+      fPythiaHeader->TriggerJet(ijet, tmpjet);
+
+      jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
+
+      AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
+
+      //Compare jet pT and pt Hard
+      if (jet.Pt() > fPtHardAndJetPtFactor * fPtHard) {
+        AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", fPtHard, jet.Pt(), fPtHardAndJetPtFactor));
+        return kFALSE;
+      }
+    }
+  }
+  // end condition 1
+
+  // Condition 2 : Reconstructed EMCal cluster pT / pT-hard > factor
+  if (fPtHardAndClusterPtFactor > 0.) {
+    AliClusterContainer* mccluscont = GetClusterContainer(0);
+    if ((Bool_t)mccluscont) {
+      for (auto cluster : mccluscont->all()) {// Not cuts applied ; use accept for cuts
+        Float_t ecluster = cluster->E();
+
+        if (ecluster > (fPtHardAndClusterPtFactor * fPtHard)) {
+          AliInfo(Form("Reject : ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",ecluster,cluster->GetType(),fPtHardAndClusterPtFactor,fPtHard));
+          return kFALSE;
+        }
+      }
+    }
+  }
+  // end condition 2
+
+  // condition 3 : Reconstructed track pT / pT-hard >factor
+  if (fPtHardAndTrackPtFactor > 0.) {
+    AliMCParticleContainer* mcpartcont = dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(0));
+    if ((Bool_t)mcpartcont) {
+      for (auto mctrack : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
+        Float_t trackpt = mctrack->Pt();
+        if (trackpt > (fPtHardAndTrackPtFactor * fPtHard) ) {
+          AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, fPtHard));
+          return kFALSE;
+        }
+      }
+    }
+  }
+  // end condition 3
+
+  return kTRUE;
+}
+

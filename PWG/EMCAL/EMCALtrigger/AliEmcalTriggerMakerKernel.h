@@ -5,9 +5,11 @@
 
 #include <set>
 #include <iostream>
+#include <vector>
 
 #include <TObject.h>
 #include <TArrayF.h>
+//#include <AliEMCALTriggerPatchInfoV1.h>
 
 class TF1;
 class TObjArray;
@@ -84,10 +86,11 @@ public:
    * - Gamma patches (2x2 FAST-ors)
    * - Level0 patches (2x2 FAST-ors, using L0 amplitude and L0 times for the selection)
    * @param[in] inputevent Input ESD/AOD event, used for kinematics calculation
+   * @param[out] output container for reconstructed trigger patches
    * @param[in] useL0amp if true the Level0 amplitude is used
    * @return Array of reconstructed trigger patches
    */
-  TObjArray *CreateTriggerPatches(const AliVEvent *inputevent, Bool_t useL0amp=kFALSE);
+  void CreateTriggerPatches(const AliVEvent *inputevent, std::vector<AliEMCALTriggerPatchInfo> &outputcont, Bool_t useL0amp=kFALSE);
 
   /**
    * @brief Get the list of online masked FastOR's used in the trigger maker

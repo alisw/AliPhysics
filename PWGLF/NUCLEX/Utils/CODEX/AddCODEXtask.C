@@ -1,4 +1,4 @@
-AliAnalysisCODEXtask* AddCODEXtask (TString tskname = "AliCODEX", TString suffix = "") {
+AliAnalysisCODEXtask* AddCODEXtask (TString tskname = "AliCODEXfiltering", TString suffix = "") {
 
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -15,18 +15,18 @@ AliAnalysisCODEXtask* AddCODEXtask (TString tskname = "AliCODEX", TString suffix
 
   tskname.Append(suffix.Data());
   AliAnalysisCODEXtask* task = new AliAnalysisCODEXtask(tskname.Data());
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(tskname.Data(), TTree::Class(),
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("AliCODEX%s",suffix.Data()), TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,
-                                                            Form("%s.root",tskname.Data()));
-  coutput2->SetSpecialOutput();
+                                                            "AliCODEX.root");
+  coutput1->SetSpecialOutput();
 
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s_summary%s", tskname.Data(), suffix.Data()), TList::Class(),
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%s_summary", tskname.Data()), TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    "AnalysisResults.root");
 
 
   mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (task,  1, coutput2);
-  mgr->ConnectOutput (task,  2, coutput);
+  mgr->ConnectOutput (task,  1, coutput1);
+  mgr->ConnectOutput (task,  2, coutput2);
   return task;
 }

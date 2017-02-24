@@ -588,7 +588,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     Double_t QARe = fZDCFlowVect[1].X();
     Double_t QAIm = fZDCFlowVect[1].Y();
     Double_t QMA  = fZDCFlowVect[1].GetMult();
-    if(fCentralityEBE>5. && fCentralityEBE<70.) {
+    if(fCentralityEBE>5. && fCentralityEBE<60.) {
       if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
         fCRCZDCQVecVtxPos[fRunBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCRe);
         fCRCZDCQVecVtxPos[fRunBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCIm);
@@ -18664,7 +18664,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     }
   }
   
-  if(fCentralityEBE>5. && fCentralityEBE<70.) {
+  if(fCentralityEBE>5. && fCentralityEBE<60.) {
     if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
       fCRCZDCQVecVtxPos[fRunBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCReR);
       fCRCZDCQVecVtxPos[fRunBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCImR);

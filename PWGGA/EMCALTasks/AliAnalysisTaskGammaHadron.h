@@ -31,12 +31,6 @@ class EmcHitPi0 {
   Int_t NCells;
   std::vector<int> CellRay;
 
-   // UShort_t *CellIDArray;
-  // Int_t GetNCells() {return NCells;}
-
-  //  void SetCellIDArray(const UShort_t *cellid);
-  // UShort_t GetCellIDArray() {return *CellIDArray;}
-
 public:
   //virtual ~EmcHit();
   EmcHitPi0();
@@ -226,7 +220,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   //
 
 
-  const static int nMulClass =   5;  // <<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
+  const static int nMulClass =   8;  // <<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
   const static int nZClass   =   3;
   const static int nPtClass = 1;
   int iEvt[nMulClass][nZClass][nPtClass];

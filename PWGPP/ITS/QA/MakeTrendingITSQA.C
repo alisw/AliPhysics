@@ -25,11 +25,15 @@
 #include <TLatex.h>
 #include <TLegend.h>
 #include <TLegendEntry.h>
+#include <TPaveStats.h>
 #include <Riostream.h>
 #include <iostream>
 #include <fstream>
 //#include <AliITSgeomTGeo.h>
 #endif
+
+// global variables for output filename
+//TString pdfFileNames="";
 
 // global variables for TTree
 ///// SDD Variables (41 variables)
@@ -123,6 +127,8 @@ void FillITSsaBranches(TList * ITSsaList);
 void FillPileupBranches(TList * PileUPList);
 void FillPIDBranches(TList * PIDList);
 void FillDCABranches(TList * DCAList);
+void DrawSPDpileup(TList * VertxList, TList * PileUPList);
+void DrawMatching(TList * SPDList, TList * ITSList);
 Int_t MakeTrendingITSQA(TString qafilename,Int_t runNumber=133505,Bool_t isMC=kFALSE,Bool_t canvasE=kFALSE,Bool_t IsOnGrid=kTRUE,TString ocdbStorage= "raw://");
 
 Double_t LangausFun(Double_t *x, Double_t *par) ;
@@ -628,24 +634,6 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
         }
     }
     
-   ///////////////////////  SSD Part
-    TDirectoryFile * SSDQAdir=(TDirectoryFile*)fin->Get("PWGPPdEdxSSDQA");
-    if(!SSDQAdir) SSDQAdir=(TDirectoryFile*)fin->Get("PWG1dEdxSSDQA");
-    if (SSDQAdir) {
-        Printf("MESSAGE: SSD QA directory found in input file");
-        myfile <<"MESSAGE: SSD QA directory found in input file" << endl;
-
-        TList * SSDList=(TList*)SSDQAdir->Get("SSDdEdxQA");
-        if (SSDList) {
-            printf("MESSAGE: SSD QA TList found\n");
-            myfile <<"MESSAGE: SSD QA TList found" << endl;
-            FillSSDBranches(SSDList);
-            myfile <<"MESSAGE: SSD branches filled" << endl;
-            cout <<"MESSAGE: SSD branches filled" << endl;
-        }
-    
-    }
-
     ///////////////////////  SDD Part
     TDirectoryFile * SDDQAdir=(TDirectoryFile*)fin->Get("SDD_Performance");
     if (SDDQAdir) {
@@ -660,6 +648,24 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
             myfile <<"MESSAGE: SDD branches filled" << endl;
             cout <<"MESSAGE: SDD branches filled" << endl;
         }
+    }
+    
+    ///////////////////////  SSD Part
+    TDirectoryFile * SSDQAdir=(TDirectoryFile*)fin->Get("PWGPPdEdxSSDQA");
+    if(!SSDQAdir) SSDQAdir=(TDirectoryFile*)fin->Get("PWG1dEdxSSDQA");
+    if (SSDQAdir) {
+        Printf("MESSAGE: SSD QA directory found in input file");
+        myfile <<"MESSAGE: SSD QA directory found in input file" << endl;
+        
+        TList * SSDList=(TList*)SSDQAdir->Get("SSDdEdxQA");
+        if (SSDList) {
+            printf("MESSAGE: SSD QA TList found\n");
+            myfile <<"MESSAGE: SSD QA TList found" << endl;
+            FillSSDBranches(SSDList);
+            myfile <<"MESSAGE: SSD branches filled" << endl;
+            cout <<"MESSAGE: SSD branches filled" << endl;
+        }
+        
     }
     
     /////////////////////   SPD Part
@@ -763,7 +769,34 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
     ttree->Write();
     trendFile->Close();
   
-    
+    /////////////////////   SPD Pileup drawings
+    if(VertexQAdir && pileupQAdir) {
+        TList * VertxList=(TList*)VertexQAdir->Get("cOutputVtxESD");
+        TList * PuList=(TList*)pileupQAdir->Get("clistPileupSPDQA");
+        if(VertxList && PuList){
+            DrawSPDpileup(VertxList,PuList);
+        }
+    }
+
+    /////////////////////  Matching Efficiencies drawings
+    if(SPDQAdir && dirMatch) {
+        TList * SPDList=(TList*)SPDQAdir->Get("coutput1");
+        TList * ITSList=(TList*)dirMatch->Get("cOutputITS");
+        if(SPDList && ITSList){
+            DrawMatching(SPDList,ITSList);
+        }
+    }
+
+/*    printf("==============  Merging plots for run %i ===============\n",runNumber);
+    // merge the pdf files
+    char rn[10];
+    sprintf(rn,"%d",runNumber);
+    TString strRN(rn);
+    TString command("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=merged");
+    command=command+strRN+".pdf "+pdfFileNames;
+    gSystem->Exec(command.Data());
+    printf(" Merging the pdf file:  %s \n",command.Data());
+*/
     return  1;
 }
 
@@ -782,6 +815,7 @@ void FillVertexBranches(TList * VertxList){
     TH1F *yVtxSPD = (TH1F*)VertxList->FindObject("fhSPDVertexY");
     TH1F *zVtxSPD = (TH1F*)VertxList->FindObject("fhSPDVertexZ"); // pp runs
     if(zVtxSPD->GetEntries()==0) zVtxSPD = (TH1F*)VertxList->FindObject("fhSPDVertexZonly"); // PbPb runs!!!
+    TH1F *zVtxSPD_Zonly = (TH1F*)VertxList->FindObject("fhSPDVertexZonly");
     TH1F *zVtxSPDpil = (TH1F*)VertxList->FindObject("fhSPDVertexZPile");
     
     if(xVtxTRK){
@@ -880,6 +914,122 @@ void FillVertexBranches(TList * VertxList){
             errpileupSPD=TMath::Sqrt((Float_t)zVtxSPDpil->GetEntries())/(Float_t)zVtxSPD->GetEntries();
             }
         }
+
+    // single run plots
+    TH2F *hntrksSPDvsSPDcls = (TH2F*)VertxList->FindObject("fhntrksSPDvsSPDcls");
+    TH2F *hntrksZvsSPDcls = (TH2F*)VertxList->FindObject("fhntrksZvsSPDcls");
+    
+    Bool_t histoCorelation = kTRUE;
+    
+    if(!hntrksZvsSPDcls){
+        Printf("skipping the second part, no 2D histos available");
+        histoCorelation=kFALSE;
+    }
+
+    TString ctitle="TRKandSPD3DxVtx - DATA";
+    TCanvas *TRK_SPD3D_Vtx = new TCanvas("TRKandSPD3DVtx",ctitle,1000,1000);
+    TRK_SPD3D_Vtx->Divide(3,2);
+    gStyle->SetOptFit(111);
+    
+    TRK_SPD3D_Vtx->cd(1);
+    xVtxSPD->SetMarkerStyle(20);
+    xVtxSPD->SetLineWidth(3);
+    xVtxSPD->SetMarkerColor(kBlue+2);
+    TF1 *fx = new TF1("gaus", "gaus", -1, 1);
+    xVtxTRK->SetMarkerStyle(20);
+    xVtxTRK->SetLineWidth(4);
+    xVtxTRK->SetLineColor(2);
+    xVtxTRK->Draw("PE");
+    xVtxTRK->Fit("gaus", "QM");
+    xVtxSPD->Draw("PE SAME");
+    xVtxTRK->GetXaxis()->SetRangeUser(-0.05, 0.15);
+    xVtxSPD->GetXaxis()->SetRangeUser(-0.05, 0.15);
+    
+    TLatex* tVTX1=new TLatex(0.15,0.85,"VertexSPD - DATA");
+    tVTX1->SetNDC();
+    tVTX1->SetTextColor(kBlue+2);
+    tVTX1->Draw();
+    TLatex* tVTX2=new TLatex(0.15,0.8,"VertexTRK - DATA");
+    tVTX2->SetNDC();
+    tVTX2->SetTextColor(2);
+    tVTX2->Draw();
+    
+    TRK_SPD3D_Vtx->cd(2);
+    yVtxSPD->SetMarkerStyle(20);
+    yVtxSPD->SetLineWidth(3);
+    yVtxSPD->SetMarkerColor(kBlue+2);
+    TF1 *fy = new TF1("gaus", "gaus", -1, 1);
+    yVtxTRK->SetMarkerStyle(20);
+    yVtxTRK->SetLineWidth(3);
+    yVtxTRK->SetLineColor(2);
+    yVtxTRK->Draw("PE");
+    yVtxTRK->Fit("gaus", "QM");
+    yVtxSPD->Draw("PE SAME");
+    yVtxTRK->GetXaxis()->SetRangeUser(-0.2, 0.6);
+    yVtxSPD->GetXaxis()->SetRangeUser(-0.2, 0.6);
+    
+    TLatex* tVTX3=new TLatex(0.15,0.85,"VertexSPD - DATA");
+    tVTX3->SetNDC();
+    tVTX3->SetTextColor(kBlue+2);
+    tVTX3->Draw();
+    TLatex* tVTX4=new TLatex(0.15,0.8,"VertexTRK - DATA");
+    tVTX4->SetNDC();
+    tVTX4->SetTextColor(2);
+    tVTX4->Draw();
+    
+    TRK_SPD3D_Vtx->cd(3);
+    TF1 *fz = new TF1("gaus", "gaus", -20, 20);
+    zVtxTRK->SetMarkerStyle(20);
+    zVtxTRK->SetLineWidth(3);
+    zVtxTRK->SetMarkerColor(2);
+    zVtxTRK->SetLineColor(2);
+    zVtxTRK->Draw("PE");
+    zVtxTRK->Fit("gaus", "QM");
+    zVtxSPD->SetMarkerStyle(20);
+    zVtxSPD->SetLineWidth(1);
+    zVtxSPD->SetLineColor(kBlue+2);
+    zVtxSPD->SetMarkerColor(kBlue+2);
+    zVtxSPD->SetMarkerSize(0.8);
+    zVtxSPD->Draw("PE SAME");
+    TLatex* tVTX5=new TLatex(0.15,0.85,"VertexSPD - DATA");
+    tVTX5->SetNDC();
+    tVTX5->SetTextColor(kBlue+2);
+    tVTX5->Draw();
+    TLatex* tVTX6=new TLatex(0.15,0.8,"VertexTRK - DATA");
+    tVTX6->SetNDC();
+    tVTX6->SetTextColor(2);
+    tVTX6->Draw();
+
+    TRK_SPD3D_Vtx->cd(4);
+    zVtxSPD_Zonly->SetLineWidth(3);
+    zVtxSPD_Zonly->SetLineColor(kBlue+2);
+    zVtxSPD_Zonly->Draw();
+    TLatex* tVTX7=new TLatex(0.15,0.8,"Vertex Z only - DATA");
+    tVTX7->SetNDC();
+    tVTX7->SetTextColor(2);
+    tVTX7->Draw();
+    
+    if(histoCorelation){
+        TRK_SPD3D_Vtx->cd(5);
+        hntrksSPDvsSPDcls->SetMarkerStyle(20);
+        hntrksSPDvsSPDcls->GetXaxis()->SetRangeUser(0.,400);
+        hntrksSPDvsSPDcls->GetYaxis()->SetRangeUser(0.,4500.);
+        hntrksSPDvsSPDcls->SetTitle("ncontributors SPD3D vs number of cluster SPD - DATA");
+        hntrksSPDvsSPDcls->Draw();
+        
+        TRK_SPD3D_Vtx->cd(6);
+        hntrksZvsSPDcls->SetMarkerStyle(20);
+        hntrksZvsSPDcls->GetXaxis()->SetRangeUser(0.,150.);
+        hntrksZvsSPDcls->GetYaxis()->SetRangeUser(0.,1000.);
+        hntrksZvsSPDcls->SetTitle("ncontributors SPDZ vs number of cluster SPD - DATA");
+        hntrksZvsSPDcls->Draw();
+    }	
+    TRK_SPD3D_Vtx->SaveAs("vertexPerformance.pdf");
+    TRK_SPD3D_Vtx->SaveAs("vertexPerformance.png");
+//    pdfFileNames+=" vertexPerformance.pdf";
+    delete fx;
+    delete fy;
+    delete fz;
     
     } /// end void FillVertexBranches(TList * VertxList)
 
@@ -999,6 +1149,138 @@ void FillSSDBranches(TList * SSDList){
         if(FracBadp6 < 0.2) FlagSSD2p=1.0; else FlagSSD2p=0.;
         if(FracBadp6==-999.)FlagSSD2p=-999.;
         
+        // single run plots
+        QAcharge->SetStats(111);
+        QAcharge->SetTitle("SSD Charge vs module number - DATA");
+
+        QAchargeRatio->SetStats(0);
+        QAchargeRatio->SetTitle("SSD Charge Ratio vs module number - DATA");
+
+        TH1F* fHistMPVs=new TH1F("SSD HistMPVS","HistMPVs - DATA;MPV;N",75,70,95);
+        
+        TH1F* fHistCRmean=new TH1F("SSD HistCRmean","HistCRmean - DATA;CRmean;N",200,-1,1);
+        
+        TH1F *fMPVGraph = new TH1F("SSD MPV","MPVgraph - DATA;Module number;MPV",1698,-0.5,1697.5);
+        fMPVGraph->SetMarkerColor(kRed);
+        fMPVGraph->SetMarkerSize(0.5);
+        fMPVGraph->SetMarkerStyle(22);
+        fMPVGraph->SetStats(111111);
+        
+        TH1F *fCRmeanGraph = new TH1F("SSD CRmeangraph","CRmeangraph - DATA;Module number;MPV",1698,-0.5,1697.5);
+        fCRmeanGraph->SetMarkerColor(kBlue);
+        fCRmeanGraph->SetMarkerSize(0.5);
+        fCRmeanGraph->SetMarkerStyle(23);
+        fCRmeanGraph->SetStats(111111);
+        
+        Float_t mpv[1698];
+        Int_t ntofit=200;
+
+        for (int i =0;i<1698;i++)
+        {
+            TString tmpQ("Q");
+            tmpQ+=i;
+            TString tmpCR("CR");
+            tmpCR+=i;
+            TH1D* fHist1DCR= QAchargeRatio->ProjectionY(tmpCR,i+1,i+1);
+            Double_t mean=fHist1DCR->GetMean();
+            if(!(TMath::Abs(mean)<1.0)||fHist1DCR->GetEntries()<10)
+                continue;
+            fHistCRmean->Fill(mean);
+            fCRmeanGraph->SetBinContent(i+1,mean);
+            fCRmeanGraph->SetBinError(i+1,fHist1DCR->GetRMS());
+            fCRmeanGraph->GetYaxis()->SetTitle("CR");
+            TH1D* fHist1DQ=QAcharge->ProjectionY(tmpQ,i+1,i+1);
+            //check bad modules
+            if(fHist1DQ->GetEntries()<ntofit)
+            {
+                //outfiletxtbad<<"Low statistic \t module= "<<i<<" netries="<<fHist1DQ->GetEntries()<<endl;
+                continue;
+            }
+            else
+            {
+                tmpQ+="fit";
+                Float_t range=fHist1DQ->GetBinCenter(fHist1DQ->GetMaximumBin());
+                TF1 *f1 = new TF1(tmpQ,LangausFun,range*0.45,range*3.0,4);
+                f1->SetParameters(7.0,range,1.0,5.5);
+                Float_t normalization=fHist1DQ->GetEntries()*fHist1DQ->GetXaxis()->GetBinWidth(2)/f1->Integral(range*0.45,range*3.0);
+                f1->SetParameters(7.0,range,normalization,5.5);
+                //f1->SetParameters(7.0,range,fHist1DQ->GetMaximum(),5.5);
+                f1->SetParNames("sigma Landau","MPV","N","sigma Gaus");
+                f1->SetParLimits(0,2.0,100.0);
+                f1->SetParLimits(3,0.0,100.0);
+                if(fHist1DQ->Fit(tmpQ,"BRQON")==0)
+                {
+                    mpv[i]=f1->GetParameter(1);
+                    fHistMPVs->Fill(mpv[i]);
+                    fMPVGraph->SetBinContent(i+1,f1->GetParameter(1));
+                    fMPVGraph->SetBinError(i+1,f1->GetParError(1));
+                    if(mpv[i]<75.0)
+                    {
+                        //outfiletxtbad<<"MPV lower than 75 \t module="<<i<<endl;
+                    }	
+                    if(mpv[i]>100.0)
+                    {
+                        // outfiletxtbad<<"MPV higher than 100 \t module="<<i<<endl;		  
+                    }
+                    if(f1->GetParError(1)>1.0)
+                    {
+                        //outfiletxtbad<<"MPV high error on MPV  \t module="<<i<<endl;				
+                    }
+                }
+                else
+                {
+                    mpv[i]=1;
+                    //outfiletxtbad<<"BAD FIT \t module="<<i<<endl;
+                    continue;
+                }	
+            }	
+        }
+        
+        TString ctitle="SSD Calibration 1 - DATA";
+        TCanvas *c1SSD = new TCanvas("c1SSD",ctitle,1000,1000);
+        c1SSD->Divide(2,3);
+        c1SSD->cd(1);
+        QAcharge->DrawCopy("colz");
+        c1SSD->cd(2);
+        QAchargeRatio->DrawCopy("colz");
+        
+        //  TCanvas *c2SSD = new TCanvas("c2SSD","SSD Calibration 2",1000,1000);
+        //clist[1]=c2SSD;
+        //c2SSD->Divide(2,2);
+        c1SSD->cd(3);
+        fMPVGraph->DrawCopy();
+        TLine* tlin0=new TLine(0.,80.,1698.,80.);
+        tlin0->SetLineColor(2);
+        tlin0->SetLineWidth(2);
+        tlin0->Draw("same");
+        TLine* tlin01=new TLine(0.,90.,1698.,90.);
+        tlin01->SetLineColor(2);
+        tlin01->SetLineWidth(2);
+        tlin01->Draw("same");
+        c1SSD->cd(4);
+        fHistMPVs->DrawCopy();
+        c1SSD->cd(5);
+        fCRmeanGraph->DrawCopy();
+        TLine* tlin1=new TLine(0.,0.2,1698.,0.2);
+        tlin1->SetLineColor(2);
+        tlin1->SetLineWidth(2);
+        tlin1->Draw("same");
+        TLine* tlin2=new TLine(0.,-0.2,1698.,-0.2);
+        tlin2->SetLineColor(2);
+        tlin2->SetLineWidth(2);
+        tlin2->Draw("same");
+        TLatex* ta1=new TLatex(0.2,0.8,"SSD Calibration");
+        ta1->SetNDC();
+        ta1->SetTextSize(0.05);
+        ta1->SetTextColor(2);
+        ta1->Draw("same");
+        c1SSD->cd(6);
+        fHistCRmean->DrawCopy();
+        c1SSD->Update();
+        c1SSD->SaveAs("SSDPerformance.pdf");
+        c1SSD->SaveAs("SSDPerformance.png");
+//        pdfFileNames+=" SSDPerformance.pdf";
+        
     } // check on QAcharge and QAchargeRatio
 
 } /// end void FillSSDBranches(TList * SSDList)
@@ -1040,7 +1322,38 @@ void FillSDDBranches(TList * SDDList){
             errfracTrackWithClu5=efracT[4];
             fracTrackWithClu6=fracT[5];
             errfracTrackWithClu6=efracT[5];
+
+            Double_t norm=hcllay->GetBinContent(1);
+            hcllay->Scale(1./norm);
+            hcllay->SetTitle("");
+            hcllay->GetXaxis()->SetRange(2,7);
+            hcllay->SetMinimum(0.);
+            hcllay->SetMaximum(1.1);
+            hcllay->SetMarkerStyle(23);
+            gStyle->SetOptStat(0);
+            TString ctitle="General checks: PointPerLayer - DATA";
+            TCanvas* ceffL=new TCanvas("ceffL",ctitle,1000,800);
+            ceffL->SetGridy();
+            hcllay->Draw();
+            TLatex* tg=new TLatex(0.15,0.2,"Fraction of tracks with point in ITS layer");
+            tg->SetTextSize(0.04);
+            tg->SetNDC();
+            tg->SetTextColor(1);
+            tg->Draw();
+//            TString testo="Run "+GetRunNumber()+" -  DATA";
+//            TLatex* tg2 = new TLatex(0.15,0.85,testo.Data());
+//            tg2->SetTextSize(0.04);
+//            tg2->SetNDC();
+//            tg2->SetTextColor(2);
+//            tg2->Draw();
+            hcllay->GetXaxis()->SetTitle("Layer");
+            hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
+            ceffL->Update();
+            ceffL->SaveAs("frac_track_points_per_layer.pdf");
+            ceffL->SaveAs("frac_track_points_per_layer.png");
+//            pdfFileNames+=" frac_track_points_per_layer.pdf";
         }
+//
     }
     
     
@@ -1087,6 +1400,7 @@ void FillSDDBranches(TList * SDDList){
     
     TH1F* htimT=(TH1F*)SDDList->FindObject("hDrTimTPAll");
     TH1F* htimTe=(TH1F*)SDDList->FindObject("hDrTimTPExtra");
+    TH1F* htimTne=(TH1F*)SDDList->FindObject("hDrTimTPNoExtra");
     if(htimT && htimTe) {
         if(htimT->GetEntries()>0 && htimTe->GetEntries()>0){
             if(htimT->GetEntries()>0){
@@ -1129,6 +1443,7 @@ void FillSDDBranches(TList * SDDList){
             
         }
     }
+    
     
     TH2F* hdedxmod=(TH2F*)SDDList->FindObject("hdEdxVsMod");
     if(hdedxmod){
@@ -1191,6 +1506,134 @@ void FillSDDBranches(TList * SDDList){
         }
     }
 
+    
+    if(htimTne){
+        htimTne->Rebin(4);
+        htimTne->SetLineWidth(2);
+    }
+    
+    TH1F* hSigTim[8];
+    TGraphErrors* gmpv=new TGraphErrors(0);
+    TGraphErrors* gsigg=new TGraphErrors(0);
+    TGraphErrors* gsigl=new TGraphErrors(0);
+    gmpv->SetTitle("");
+    gsigg->SetTitle("");
+    gsigl->SetTitle("");
+    Int_t iPoint=0;
+    TF1 *lfun = new TF1("LangausFun",LangausFun,50.,300.,4);
+    for(Int_t it=0; it<8; it++){
+        hSigTim[it]=(TH1F*)SDDList->FindObject(Form("hSigTimeInt%d",it));
+        if(hSigTim[it]){
+            if(hSigTim[it]->GetEntries()>200){
+                lfun->SetLineWidth(2);
+                lfun->SetParameter(0,5.);
+                lfun->SetParameter(1,80.);
+                lfun->SetParameter(2,hSigTim[it]->GetEntries()/10.);
+                lfun->SetParameter(3,10.);
+                lfun->SetParLimits(3,0.,20);
+                hSigTim[it]->Fit("LangausFun","QON");
+                hSigTim[it]->GetXaxis()->SetTitle(Form("dE/dx, time interval %d",it+1));
+                hSigTim[it]->GetYaxis()->SetTitle("Events");
+                Float_t mpv=lfun->GetParameter(1);
+                Float_t empv=lfun->GetParError(1);
+                Float_t sig=lfun->GetParameter(3);
+                Float_t esig=lfun->GetParError(3);
+                Float_t sigl=lfun->GetParameter(0);
+                Float_t esigl=lfun->GetParError(0);
+                gmpv->SetPoint(iPoint,(Float_t)it,mpv);
+                gmpv->SetPointError(iPoint,0.,empv);
+                gsigg->SetPoint(iPoint,(Float_t)it,sig);
+                gsigg->SetPointError(iPoint,0.,esig);
+                gsigl->SetPoint(iPoint,(Float_t)it,sigl);
+                gsigl->SetPointError(iPoint,0.,esigl);
+                ++iPoint;
+                //printf("Bin %d - MPV=%.3f  \t SigmaLandau=%.3f  \t SigmaGaus=%.3f\n",it,mpv,sigl,sig);
+        }
+      }
+    }
+    gStyle->SetOptStat(0);
+    TString ctitle="SDD: DriftTime - dE/dx - DATA";
+    TCanvas* ctim=new TCanvas("ctim",ctitle,800,1000);
+    ctim->Divide(1,2);
+    ctim->cd(1);
+    // htimT->Draw();
+    // htimTe->SetLineColor(2);
+    // htimTe->Draw("same");
+    htimTne->SetLineColor(4);
+    htimTne->Draw("");
+    htimTne->GetXaxis()->SetTitle("Drift Time (ns)");
+    htimTne->GetYaxis()->SetTitle("TrackPoints");
+    htimTne->GetYaxis()->SetTitleOffset(1.2);
+    htimTne->SetTitle("Drift Time from Track Points (ns) - DATA");
+    // TLatex* ta=new TLatex(0.5,0.85,"All Clusters");
+    // ta->SetNDC();
+    // ta->SetTextColor(1);
+    // ta->Draw();
+    // TLatex* te=new TLatex(0.5,0.8,"Extra Clusters");
+    // te->SetNDC();
+    // te->SetTextColor(2);
+    // te->Draw();
+    //  TLatex* tn=new TLatex(0.3,0.3,"Non-Extra Clusters");
+    TLatex* tn=new TLatex(0.3,0.3,"Clusters on SDD modules");
+    tn->SetNDC();
+    tn->SetTextColor(4);
+    tn->Draw();
+    TLine* tlin3=new TLine(450.,0.,450.,htimTne->GetMaximum());
+    tlin3->SetLineColor(2);
+    tlin3->SetLineWidth(2);
+    tlin3->SetLineStyle(7);
+    tlin3->Draw("same");
+    TLine* tlin4=new TLine(620.,0.,620.,htimTne->GetMaximum());
+    tlin4->SetLineColor(2);
+    tlin4->SetLineWidth(2);
+    tlin4->SetLineStyle(7);
+    tlin4->Draw("same");
+    TLatex* tlimit1=new TLatex(0.2,0.5,"Range for t0");
+    tlimit1->SetNDC();
+    tlimit1->SetTextColor(2);
+    tlimit1->Draw();
+    TLine* tlin5=new TLine(6200.,0.,6200.,htimTne->GetMaximum());
+    tlin5->SetLineColor(2);
+    tlin5->SetLineStyle(7);
+    tlin5->SetLineWidth(2);
+    tlin5->Draw("same");
+    TLine* tlin6=new TLine(5150.,0.,5150.,htimTne->GetMaximum());
+    tlin6->SetLineColor(2);
+    tlin6->SetLineWidth(2);
+    tlin6->SetLineStyle(7);
+    tlin6->Draw("same");
+    TLatex* tlimit2=new TLatex(0.6,0.5,"Range for falling edge");
+    tlimit2->SetNDC();
+    tlimit2->SetTextColor(2);
+    tlimit2->Draw();
+    
+    //  ctim->Update();
+    //  TCanvas* cpars=new TCanvas("cpars","Params",800,600);
+    ctim->cd(2);
+    gPad->SetLeftMargin(0.14);
+    gPad->SetFrameLineWidth(2);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gmpv->SetMarkerStyle(20);
+    gmpv->SetMinimum(75);
+    gmpv->SetMaximum(90);
+    gmpv->GetXaxis()->SetLimits(-0.2,6.8);
+    gmpv->Draw("AP");
+    gmpv->GetXaxis()->SetTitle("Drift Time interval number");
+    gmpv->GetYaxis()->SetTitle("Landau MPV (keV)");
+    gmpv->GetXaxis()->SetTitleSize(0.05);
+    gmpv->GetYaxis()->SetTitleSize(0.05);
+    gmpv->GetYaxis()->SetTitleOffset(1.2);
+    TLatex* tex=new TLatex(0.2,0.75,"dE/dx MPV vs Drift time interval - DATA");
+    tex->SetNDC();
+    tex->SetTextColor(1);
+    tex->Draw();
+    //  cpars->Update();
+    ctim->Update();
+    ctim->SaveAs("SDDPerformance.pdf");
+    ctim->SaveAs("SDDPerformance.png");
+//    pdfFileNames+=" SDDPerformance.pdf";
+    
 } /// end void FillSDDBranches(TList * SDDList)
 
 //
@@ -1220,6 +1663,35 @@ void FillSPDBranches(TList * SPDList){
             if(FracSPD1 > 0.75) FlagSPD1=1.; else FlagSPD1=0.;
             if(FracSPD2 > 0.90) FlagSPD2=1.; else FlagSPD2=0.;
         }
+    }
+    
+    TH2F *trackData = (TH2F*)SPDList->FindObject("hSPDphivsSPDeta");
+    if(trackData){
+        TH1D *trackDataPhi = trackData->ProjectionY();
+        trackDataPhi->SetTitle("Tracklets vs Phi");
+        TH1D *trackDataEta = trackData->ProjectionX();
+        trackDataEta->SetTitle("Tracklets vs eta");
+        TH1F etaData, phiData;
+        trackDataEta->Copy(etaData);
+        trackDataPhi->Copy(phiData);
+
+        gStyle->SetOptStat(0);
+        TString ctitle = "tracklets and ratios vs eta and phi";
+        TCanvas *track = new TCanvas("track",ctitle,1300,600);
+        track->Divide(2,1);
+        track->cd(1);
+        phiData.SetLineColor(kRed);
+        phiData.SetLineWidth(2);
+        phiData.Scale(1./phiData.GetEntries());
+        phiData.DrawCopy();
+        track->cd(2);
+        etaData.SetLineColor(kRed);
+        etaData.SetLineWidth(2);
+        etaData.Scale(1./etaData.GetEntries());
+        etaData.DrawCopy();
+        track->SaveAs("SPDtrackletsEtaPhi.pdf");
+        track->SaveAs("SPDtrackletsEtaPhi.png");
+//        pdfFileNames+=" SPDtrackletsEtaPhi.pdf";
     }
 
 } /// end void FillSPDBranches(TList * SPDList)
@@ -1526,6 +1998,7 @@ void FillITSsaBranches(TList * ITSsaList){
         TH1F *hPtTPCITS=(TH1F*)ITSsaList->FindObject("hPtTPCITS");
         TH1F *hPtITSsa=(TH1F*)ITSsaList->FindObject("hPtITSsa");
         TH1F *hPtITSpureSA=(TH1F*)ITSsaList->FindObject("hPtITSpureSA");
+
         if(hPtTPCITS && hPtITSsa && hPtITSpureSA){
             for(Int_t ibin=0;ibin<=2;ibin++){
                 NTPCITS[ibin]=hPtTPCITS->Integral(hPtTPCITS->FindBin(Lowbin[ibin]),hPtTPCITS->FindBin(Upbin[ibin]))/noEvents;
@@ -1548,7 +2021,142 @@ void FillITSsaBranches(TList * ITSsaList){
             ratioPtBin1=Ratio[1];
             ratioPtBin2=Ratio[2];
         }
-    }
+
+        gStyle->SetOptStat(1111);
+        TString ctitle="ITS standalone: performance vs Pt";
+        TCanvas* cITSsa1=new TCanvas("cITSsa1",ctitle,1200,1200);
+        cITSsa1->Divide(1,3);
+        
+        cITSsa1->cd(1);
+        hPtITSpureSA->Draw();
+        hPtITSpureSA->GetXaxis()->SetTitle("Pt (GeV/c)");
+        gPad->Update();
+        TPaveStats *st1=(TPaveStats*)hPtITSpureSA->GetListOfFunctions()->FindObject("stats");
+        st1->SetY1NDC(0.71);
+        st1->SetY2NDC(0.9);
+        hPtTPCITS->SetLineColor(2);
+        hPtTPCITS->GetXaxis()->SetTitle("Pt (GeV/c)");
+        hPtTPCITS->Draw("sames");
+        gPad->Update();
+        TPaveStats *st2=(TPaveStats*)hPtTPCITS->GetListOfFunctions()->FindObject("stats");
+        st2->SetY1NDC(0.51);
+        st2->SetY2NDC(0.7);
+        st2->SetTextColor(2);
+        hPtITSsa->SetLineColor(4);
+        hPtITSsa->Draw("sames");
+        gPad->Update();
+        TPaveStats *st3=(TPaveStats*)hPtITSsa->GetListOfFunctions()->FindObject("stats");
+        st3->SetY1NDC(0.31);
+        st3->SetY2NDC(0.5);
+        st3->SetTextColor(4);
+        TLegend* leg=new TLegend(0.5,0.5,0.69,0.79);
+        leg->SetFillColor(0);
+//        TLatex* ttype=new TLatex(0.35,0.75,"DATA");
+//        ttype->SetNDC();
+//        ttype->SetTextColor(2);
+//        ttype->SetTextSize(0.1);
+//        ttype->Draw();
+        TLegendEntry* ent=leg->AddEntry(hPtTPCITS,"TPC+ITS","L");
+        ent->SetTextColor(hPtTPCITS->GetLineColor());
+        ent=leg->AddEntry(hPtITSsa,"ITSsa","L");
+        ent->SetTextColor(hPtITSsa->GetLineColor());
+        // to be used only with pp data (ITS pure SA)
+        ent=leg->AddEntry(hPtITSpureSA,"ITS pureSA","L");
+        ent->SetTextColor(hPtITSpureSA->GetLineColor());
+        leg->Draw();
+        
+        TH1F* hRatio=(TH1F*)hPtTPCITS->Clone("hRatio");
+        TH1F* hRatio1=(TH1F*)hPtTPCITS->Clone("hRatio1");
+        hRatio->Add(hPtITSsa);
+        hRatio->Divide(hPtITSpureSA);
+        hRatio->SetStats(0);
+        hRatio1->Divide(hPtITSsa);
+        hRatio1->SetStats(0);
+        TH1F* hChi2TPCITS=(TH1F*)ITSsaList->FindObject("hChi2TPCITS");
+        TH1F* hChi2ITSsa=(TH1F*)ITSsaList->FindObject("hChi2ITSsa");
+        TH1F* hChi2ITSpureSA=(TH1F*)ITSsaList->FindObject("hChi2ITSpureSA");
+
+        cITSsa1->cd(2);
+        gPad->SetGridx();
+        gPad->SetGridy();
+        hRatio1->GetXaxis()->SetTitle("Pt (GeV/c)");
+        hRatio->GetXaxis()->SetTitle("Pt (GeV/c)");
+        hRatio1->GetYaxis()->SetTitle("TPCITS/ITSsa");
+        hRatio->GetYaxis()->SetTitle("(TPCITS+ITSsa)/ITSpureSA");
+        hRatio->DrawCopy();
+        TLatex* tratio=new TLatex(0.2,0.75,"TPCITS+ITSsa/ITSpureSA vs Pt");
+        tratio->SetNDC();
+        tratio->SetTextColor(1);
+        tratio->Draw();
+        
+        cITSsa1->cd(3);
+        hChi2ITSpureSA->Scale(1./hChi2ITSpureSA->GetEntries());
+        hChi2ITSsa->Scale(1./hChi2ITSsa->GetEntries());
+        hChi2TPCITS->Scale(1./hChi2TPCITS->GetEntries());
+        hChi2ITSpureSA->SetLineColor(1);
+        hChi2ITSpureSA->Draw("");
+        hChi2TPCITS->SetLineColor(2);
+        hChi2TPCITS->Draw("sames");
+        TLatex* tchi=new TLatex(0.25,0.85,"chi2 vs Pt");
+        tchi->SetNDC();
+        tchi->SetTextColor(1);
+        tchi->Draw();
+        gPad->Update();
+        TPaveStats *stc1=(TPaveStats*)hChi2ITSpureSA->GetListOfFunctions()->FindObject("stats");
+        stc1->SetY1NDC(0.71);
+        stc1->SetY2NDC(0.9);
+        stc1->SetTextColor(1);
+        TPaveStats *stc2=(TPaveStats*)hChi2TPCITS->GetListOfFunctions()->FindObject("stats");
+        stc2->SetY1NDC(0.51);
+        stc2->SetY2NDC(0.7);
+        stc2->SetTextColor(2);
+        //  c2->Update();
+        hChi2ITSsa->SetLineColor(4);
+        hChi2ITSsa->Draw("sames");
+        gPad->Update();
+        TPaveStats *stc3=(TPaveStats*)hChi2ITSsa->GetListOfFunctions()->FindObject("stats");
+        stc3->SetY1NDC(0.31);
+        stc3->SetY2NDC(0.5);
+        stc3->SetTextColor(4);
+        leg->Draw();
+        
+        cITSsa1->Update();
+        cITSsa1->SaveAs("TrackTypesPerformance.pdf");
+        cITSsa1->SaveAs("TrackTypesPerformance.png");
+//        pdfFileNames+=" TrackTypesPerformance.pdf";
+
+        TH2F* hEtaPhiTPCITS=(TH2F*)ITSsaList->FindObject("hEtaPhiTPCITS");
+        TH2F* hEtaPhiITSsa=(TH2F*)ITSsaList->FindObject("hEtaPhiITSsa");
+        TH2F* hEtaPhiITSpureSA=(TH2F*)ITSsaList->FindObject("hEtaPhiITSpureSA");
+        gStyle->SetPalette(1);
+        hEtaPhiITSpureSA->SetStats(0);
+        hEtaPhiITSpureSA->SetTitle("ITS pureSA - DATA");
+        hEtaPhiITSsa->SetStats(0);
+        hEtaPhiITSsa->SetTitle("ITSsa tracks - DATA");
+        hEtaPhiTPCITS->SetStats(0);
+        hEtaPhiTPCITS->SetTitle("TPC+ITS tracks - DATA");
+        ctitle="Eta-phi distribution for ITSsa and TPC+ITS tracks - DATA";
+        TCanvas* cITSsa2=new TCanvas("cITSsa2",ctitle,1200,800);
+        cITSsa2->Divide(3,1); //for ITSpureSA
+        cITSsa2->cd(1);
+        hEtaPhiITSpureSA->Draw("colz");
+        hEtaPhiITSpureSA->GetXaxis()->SetTitle("Eta");
+        hEtaPhiITSpureSA->GetYaxis()->SetTitle("Phi");
+        cITSsa2->cd(2);
+        hEtaPhiITSsa->Draw("colz");
+        hEtaPhiITSsa->GetXaxis()->SetTitle("Eta");
+        hEtaPhiITSsa->GetYaxis()->SetTitle("Phi");
+        cITSsa2->cd(3);
+        hEtaPhiTPCITS->Draw("colz");
+        hEtaPhiTPCITS->GetXaxis()->SetTitle("Eta");
+        hEtaPhiTPCITS->GetYaxis()->SetTitle("Phi");
+        cITSsa2->SaveAs("TrackTypesEtaPhi.pdf");
+        cITSsa2->SaveAs("TrackTypesEtaPhi.png");
+//        pdfFileNames+=" TrackTypesEtaPhi.pdf";
+
+    
+    } // if(hnev)
+    
     
     TH1F* hNcluITSpSA =(TH1F*)ITSsaList->FindObject("hNcluITSpureSA"); // numero cluster se N>3
     if(hNcluITSpSA){
@@ -1707,6 +2315,122 @@ void FillITSsaBranches(TList * ITSsaList){
         for(Int_t etabin=0;etabin<2;etabin++){
             occ_eta_6[etabin]=clus_eta_6->GetBinContent(etabin+1)/clus_eta_6->GetEntries();
         }
+    }
+
+    TH2F* hPureSAtracksVsTracklets=(TH2F*)ITSsaList->FindObject("hPureSAtracksVsTracklets");
+    TH2F* hITSTPCtracksVsTracklets=(TH2F*)ITSsaList->FindObject("hITSTPCtracksVsTracklets");
+    
+    gStyle->SetOptStat(0);
+    TString ctitle="ITS standalone: tracks vs tracklets";
+    TCanvas* cITSsa0a=new TCanvas("cITSsa0a",ctitle,1200,1200);
+    cITSsa0a->Divide(1,2);
+    cITSsa0a->cd(1);
+    if(hPureSAtracksVsTracklets){hPureSAtracksVsTracklets->GetXaxis()->SetTitle("nTracklets");hPureSAtracksVsTracklets->Draw("colz");}
+    cITSsa0a->Update();
+    cITSsa0a->cd(2);
+    if(hITSTPCtracksVsTracklets){hITSTPCtracksVsTracklets->GetXaxis()->SetTitle("nTracklets");hITSTPCtracksVsTracklets->Draw("colz");}
+    cITSsa0a->Update();
+    cITSsa0a->SaveAs("nTracksvsnTracklets.pdf");
+    cITSsa0a->SaveAs("nTracksvsnTracklets.png");
+//    pdfFileNames+=" nTracksvsnTracklets.pdf";
+    
+    
+    ///// eta-phi ITSpureSA tracks distributions per layer
+    TH2F* hEtaPhiTracksLay1ITSpureSA=(TH2F*)ITSsaList->FindObject("hEtaPhiTracksLay1ITSpureSA");
+    TH2F* hEtaPhiTracksLay2ITSpureSA=(TH2F*)ITSsaList->FindObject("hEtaPhiTracksLay2ITSpureSA");
+    TH2F* hEtaPhiTracksLay3ITSpureSA=(TH2F*)ITSsaList->FindObject("hEtaPhiTracksLay3ITSpureSA");
+    TH2F* hEtaPhiTracksLay4ITSpureSA=(TH2F*)ITSsaList->FindObject("hEtaPhiTracksLay4ITSpureSA");
+    TH2F* hEtaPhiTracksLay5ITSpureSA=(TH2F*)ITSsaList->FindObject("hEtaPhiTracksLay5ITSpureSA");
+    TH2F* hEtaPhiTracksLay6ITSpureSA=(TH2F*)ITSsaList->FindObject("hEtaPhiTracksLay6ITSpureSA");
+
+    TCanvas* cITSsa0b;
+    ctitle="ITS standalone: eta-phi distribution for TPCITS tracks, SPD";
+    if(hEtaPhiTracksLay1TPCITS){
+        cITSsa0b=new TCanvas("cITSsa0b",ctitle,1000,1000);
+        cITSsa0b->Divide(1,2);
+        cITSsa0b->cd(1);
+        if(hEtaPhiTracksLay1TPCITS){hEtaPhiTracksLay1TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay1TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay1TPCITS->Draw("colz");}
+        cITSsa0b->cd(2);
+        if(hEtaPhiTracksLay2TPCITS){hEtaPhiTracksLay2TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay2TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay2TPCITS->Draw("colz");}
+        cITSsa0b->Update();
+        cITSsa0b->SaveAs("TPCITSEtaPhiSPD.pdf");
+        cITSsa0b->SaveAs("TPCITSEtaPhiSPD.png");
+//        pdfFileNames+=" TPCITSEtaPhiSPD.pdf";
+    }
+    
+    TCanvas* cITSsa0c;
+    ctitle="ITS standalone: eta-phi distribution for TPCITS tracks, SDD";
+    if(hEtaPhiTracksLay3TPCITS){
+        cITSsa0c=new TCanvas("cITSsa0c",ctitle,1000,1000);
+        cITSsa0c->Divide(1,2);
+        cITSsa0c->cd(1);
+        if(hEtaPhiTracksLay3TPCITS){hEtaPhiTracksLay3TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay3TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay3TPCITS->Draw("colz");}
+        cITSsa0c->cd(2);
+        if(hEtaPhiTracksLay4TPCITS){hEtaPhiTracksLay4TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay4TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay4TPCITS->Draw("colz");}
+        cITSsa0c->Update();
+        cITSsa0c->SaveAs("TPCITSEtaPhiSDD.pdf");
+        cITSsa0c->SaveAs("TPCITSEtaPhiSDD.png");
+//        pdfFileNames+=" TPCITSEtaPhiSDD.pdf";
+    }
+    
+    TCanvas* cITSsa0d;
+    ctitle="ITS standalone: eta-phi distribution for TPCITS tracks, SSD";
+    if(hEtaPhiTracksLay5TPCITS){
+        cITSsa0d=new TCanvas("cITSsa0d",ctitle,1000,1000);
+        cITSsa0d->Divide(1,2);
+        cITSsa0d->cd(1);
+        if(hEtaPhiTracksLay5TPCITS){hEtaPhiTracksLay5TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay5TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay5TPCITS->Draw("colz");}
+        cITSsa0d->cd(2);
+        if(hEtaPhiTracksLay6TPCITS){hEtaPhiTracksLay6TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay6TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay6TPCITS->Draw("colz");}
+        cITSsa0d->Update();
+        cITSsa0d->SaveAs("TPCITSEtaPhiSSD.pdf");
+        cITSsa0d->SaveAs("TPCITSEtaPhiSSD.png");
+//        pdfFileNames+=" TPCITSEtaPhiSSD.pdf";
+    }
+    
+    TCanvas* cITSsa0e;
+    ctitle="ITS standalone: eta-phi distribution for ITSpureSA tracks, SPD";
+    if(hEtaPhiTracksLay1ITSpureSA){
+        cITSsa0e=new TCanvas("cITSsa0e",ctitle,1000,1000);
+        cITSsa0e->Divide(1,2);
+        cITSsa0e->cd(1);
+        if(hEtaPhiTracksLay1ITSpureSA){hEtaPhiTracksLay1ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay1ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay1ITSpureSA->Draw("colz");}
+        cITSsa0e->cd(2);
+        if(hEtaPhiTracksLay2ITSpureSA){hEtaPhiTracksLay2ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay2ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay2ITSpureSA->Draw("colz");}
+        cITSsa0e->Update();
+        cITSsa0e->SaveAs("ITSpureSAEtaPhiSPD.pdf");
+        cITSsa0e->SaveAs("ITSpureSAEtaPhiSPD.png");
+//        pdfFileNames+=" ITSpureSAEtaPhiSPD.pdf";
+    }
+    
+    TCanvas* cITSsa0f;
+    ctitle="ITS standalone: eta-phi distribution for ITSpureSA tracks, SDD - DATA";
+    if(hEtaPhiTracksLay3ITSpureSA){
+        cITSsa0f=new TCanvas("cITSsa0f",ctitle,1000,1000);
+        cITSsa0f->Divide(1,2);
+        cITSsa0f->cd(1);
+        if(hEtaPhiTracksLay3ITSpureSA){hEtaPhiTracksLay3ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay3ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay3ITSpureSA->Draw("colz");}
+        cITSsa0f->cd(2);
+        if(hEtaPhiTracksLay4ITSpureSA){hEtaPhiTracksLay4ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay4ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay4ITSpureSA->Draw("colz");}
+        cITSsa0f->Update();
+        cITSsa0f->SaveAs("ITSpureSAEtaPhiSDD.pdf");
+        cITSsa0f->SaveAs("ITSpureSAEtaPhiSDD.png");
+//        pdfFileNames+=" ITSpureSAEtaPhiSDD.pdf";
+    }
+    
+    TCanvas* cITSsa0g;
+    ctitle="ITS standalone: eta-phi distribution for ITSpureSA tracks, SSD - DATA";
+    if(hEtaPhiTracksLay5ITSpureSA){
+        cITSsa0g=new TCanvas("cITSsa0g",ctitle,1000,1000);
+        cITSsa0g->Divide(1,2);
+        cITSsa0g->cd(1);
+        if(hEtaPhiTracksLay5ITSpureSA){hEtaPhiTracksLay5ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay5ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay5ITSpureSA->Draw("colz");}
+        cITSsa0g->cd(2);
+        if(hEtaPhiTracksLay6ITSpureSA){hEtaPhiTracksLay6ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay6ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay6ITSpureSA->Draw("colz");}
+        cITSsa0g->Update();
+        cITSsa0g->SaveAs("ITSpureSAEtaPhiSSD.pdf");
+        cITSsa0g->SaveAs("ITSpureSAEtaPhiSSD.png");
+//        pdfFileNames+=" ITSpureSAEtaPhiSSD.pdf";
     }
 
     
@@ -1977,6 +2701,631 @@ void FillDCABranches(TList *DCAList){
 
 } /////////// end of void FillDCABranches(TList *DCAList)
 
+void DrawSPDpileup(TList *VertxList, TList *PileUPList)
+{
+    gROOT->SetStyle("Plain");
+    gStyle->SetPalette(1);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(111);
+
+    TH1F *zVtxSPDData = (TH1F*)VertxList->FindObject("fhSPDVertexZ");
+    TH1F *zVtxSPDpilData = (TH1F*)VertxList->FindObject("fhSPDVertexZPile");
+    TH1F *PilVtxData = (TH1F*)PileUPList->FindObject("hNOfPileupVertSPD");
+
+    Char_t message[50];
+    
+    // da rivedere
+    TString ctitle = "SPD vertex pileup";
+    TCanvas *pileup = new TCanvas("pileup",ctitle,800,500);
+    pileup->SetLogy();
+    pileup->Divide(2,1);
+    pileup->cd(1);
+    if(zVtxSPDpilData){
+        zVtxSPDpilData->Draw();
+        zVtxSPDpilData->SetTitle("SPDVertexPile z");
+        if(zVtxSPDData){
+            if(zVtxSPDData->GetEntries() >0){
+                Double_t ratio=zVtxSPDpilData->GetEntries()/zVtxSPDData->GetEntries();
+                sprintf(message,"pileups/vertices = %f",ratio);
+                TText *txt1 = new TText(0.25,0.85,message);
+                txt1->SetNDC();
+                txt1->Draw();
+          }
+        }
+    }
+    pileup->cd(2);
+    if(PilVtxData){
+    PilVtxData->Draw();
+    PilVtxData->GetXaxis()->SetTitle("pileup vertices");
+    TLatex* tp1=new TLatex(0.25,0.85,"pileup vertices multiplicity");
+    tp1->SetNDC();
+    tp1->Draw();
+    }
+    
+    pileup->SaveAs("SPD_pileup.pdf");
+    pileup->SaveAs("SPD_pileup.png");
+//    pdfFileNames+=" SPD_pileup.pdf";
+    
+}
+
+
+
+void DrawMatching(TList *SPDList, TList *ITSList)
+{
+    TString ctitle = "ITS-TPC and ITS-TOF match ";
+    TString ctitle2 = "ITS-TPC phi&eta match ";
+    TCanvas* cITSTPCmatch = new TCanvas("cITSTPCmatch",ctitle,10,10,1000,900);
+    TCanvas* cITSTPCmatch2 = new TCanvas("cITSTPCmatch2",ctitle2,10,10,1000,900);
+    cITSTPCmatch->Divide(1,2);
+    cITSTPCmatch->cd(1);
+    gPad->SetGridy();
+    gPad->SetLogx();
+    cITSTPCmatch->cd(2);
+    gPad->SetGridy();
+    gPad->SetLogx();
+
+    cITSTPCmatch2->Divide(1,2);
+    cITSTPCmatch2->cd(1);
+    gPad->SetGridy();
+//    gPad->SetLogx();
+    cITSTPCmatch2->cd(2);
+    gPad->SetGridy();
+//    gPad->SetLogx();
+
+    // count active SPD HSs
+    Float_t spdFrac[2]={0.,0.};
+    TH1F *hFiredChip = (TH1F*)SPDList->FindObject("hFiredChip");
+    if(hFiredChip){
+//        TH1F *hnHSsSPD=new TH1F("hnHSsSPD","Active HSs in SPD layers 1 and 2; layer; HSs",2,0.5,2.5);
+        Int_t nHSsInner=0,nHSsOuter=0;
+        for(Int_t i=0;i<400;i++) if(hFiredChip->GetBinContent(i)>0) nHSsInner++;
+        for(Int_t i=400;i<1200;i++) if(hFiredChip->GetBinContent(i)>0) nHSsOuter++;
+        nHSsInner = (Int_t)(nHSsInner/10);
+        nHSsOuter = (Int_t)(nHSsOuter/10);
+//        hnHSsSPD->SetBinContent(1,nHSsInner);
+//        hnHSsSPD->SetBinContent(2,nHSsOuter);
+        spdFrac[0]=(Float_t)nHSsInner/40.;
+        spdFrac[1]=(Float_t)nHSsOuter/80.;
+        TGraph *spdFrac0=new TGraph(1);
+        spdFrac0->SetPoint(0,0.08,spdFrac[0]);
+        spdFrac0->SetMarkerColor(1); spdFrac0->SetMarkerStyle(20);
+        TGraph *spdFrac1=new TGraph(1);
+        spdFrac1->SetPoint(0,0.08,spdFrac[1]);
+        spdFrac1->SetMarkerColor(1); spdFrac1->SetMarkerStyle(24);
+//        TLegend *l2=new TLegend(0.1,0.62,0.5,0.93);
+//        l2->SetBorderSize(1);
+//        l2->AddEntry(spdFrac0,"Frac. active SPD0","p");
+//        l2->AddEntry(spdFrac1,"Frac. active SPD1","p");
+        TGraph *spdFrac0phi=new TGraph(1);
+        spdFrac0phi->SetPoint(0,0.08,spdFrac[0]);
+        spdFrac0phi->SetMarkerColor(1); spdFrac0phi->SetMarkerStyle(20);
+        TGraph *spdFrac1phi=new TGraph(1);
+        spdFrac1phi->SetPoint(0,0.08,spdFrac[1]);
+        spdFrac1phi->SetMarkerColor(1); spdFrac1phi->SetMarkerStyle(24);
+    
+    //
+    // TPCITS vs pt
+    //
+    
+    TH1F *fHistPtTPCInAcc = (TH1F*)ITSList->FindObject("fHistPtTPCInAcc");
+    if(fHistPtTPCInAcc){
+    TH1F *fHistPtITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI6InAcc");
+    TH1F *fHistPtITSMI5InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI5InAcc");
+    TH1F *fHistPtITSMI4InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI4InAcc");
+    TH1F *fHistPtITSMI3InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI3InAcc");
+    TH1F *fHistPtITSMI2InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI2InAcc");
+    TH1F *fHistPtITSMISPDInAcc = (TH1F*)ITSList->FindObject("fHistPtITSMISPDInAcc");
+    TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)ITSList->FindObject("fHistPtITSMIoneSPDInAcc");
+    TH1F *fHistPtITSTPCsel = (TH1F*)ITSList->FindObject("fHistPtITSTPCsel");
+    TH1F *fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
+    fHistPtITSMIge2InAcc->Add(fHistPtITSMI5InAcc);
+    fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
+    fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
+    fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
+    
+    cITSTPCmatch->cd(1);
+    TLegend *l3=new TLegend(0.5,0.62,0.95,0.93);
+    l3->SetBorderSize(1);
+    fHistPtITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points - p_{t} dependence");
+    fHistPtITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
+    fHistPtITSMIge2InAcc->Divide(fHistPtITSMIge2InAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMIge2InAcc->SetMaximum(1.6);
+    fHistPtITSMIge2InAcc->SetMinimum(0);
+    fHistPtITSMIge2InAcc->GetXaxis()->SetRangeUser(0.1,30);
+    fHistPtITSMIge2InAcc->Draw();
+    l3->AddEntry(fHistPtITSMIge2InAcc,">=2 cls","l");
+    fHistPtITSMI6InAcc->Divide(fHistPtITSMI6InAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMI6InAcc->SetLineColor(2);
+    l3->AddEntry(fHistPtITSMI6InAcc,"6 cls","l");
+    fHistPtITSMI6InAcc->Draw("same");
+    fHistPtITSMI5InAcc->Divide(fHistPtITSMI5InAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMI5InAcc->SetLineColor(3);
+    l3->AddEntry(fHistPtITSMI5InAcc,"5 cls","l");
+    fHistPtITSMI5InAcc->Draw("same");
+    fHistPtITSMI4InAcc->Divide(fHistPtITSMI4InAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMI4InAcc->SetLineColor(4);
+    l3->AddEntry(fHistPtITSMI4InAcc,"4 cls","l");
+    fHistPtITSMI4InAcc->Draw("same");
+    fHistPtITSMI3InAcc->Divide(fHistPtITSMI3InAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMI3InAcc->SetLineColor(6);
+    l3->AddEntry(fHistPtITSMI3InAcc,"3 cls","l");
+    fHistPtITSMI3InAcc->Draw("same");
+    fHistPtITSMI2InAcc->Divide(fHistPtITSMI2InAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMI2InAcc->SetLineColor(7);
+    l3->AddEntry(fHistPtITSMI2InAcc,"2 cls","l");
+    fHistPtITSMI2InAcc->Draw("same");
+    fHistPtITSMISPDInAcc->Divide(fHistPtITSMISPDInAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMISPDInAcc->SetLineColor(9);
+    l3->AddEntry(fHistPtITSMISPDInAcc,"2SPD + any","l");
+    fHistPtITSMISPDInAcc->Draw("same");
+    fHistPtITSMIoneSPDInAcc->Divide(fHistPtITSMIoneSPDInAcc,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSMIoneSPDInAcc->SetLineColor(15);
+    l3->AddEntry(fHistPtITSMIoneSPDInAcc,">=1SPD + any","l");
+    fHistPtITSMIoneSPDInAcc->Draw("same");
+    fHistPtITSTPCsel->Divide(fHistPtITSTPCsel,fHistPtTPCInAcc,1,1,"B");
+    fHistPtITSTPCsel->SetLineColor(kAzure+1);
+    l3->AddEntry(fHistPtITSTPCsel,">=1SPD + any + d_{0} cut","l");
+    fHistPtITSTPCsel->Draw("same");
+    fHistPtITSMIge2InAcc->Draw("same");
+    l3->Draw();
+    TLegend *l2=new TLegend(0.1,0.62,0.5,0.93);
+    l2->SetBorderSize(1);
+    l2->AddEntry(spdFrac0,"Frac. active SPD0","p");
+    l2->AddEntry(spdFrac1,"Frac. active SPD1","p");
+    l2->Draw();
+//        if(hFiredChip){
+            spdFrac0->Draw("p");
+            spdFrac1->Draw("p");
+//        }
+    } // if(fHistPtTPCInAcc){
+    
+    // TOFITS vs pt
+    
+    TH1F *fHistPtTPCInAccTOF = (TH1F*)ITSList->FindObject("fHistPtTPCInAccTOFbc0");
+    if(fHistPtTPCInAccTOF){
+    TH1F *fHistPtITSMI6InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI6InAccTOFbc0");
+    TH1F *fHistPtITSMI5InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI5InAccTOFbc0");
+    TH1F *fHistPtITSMI4InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI4InAccTOFbc0");
+    TH1F *fHistPtITSMI3InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI3InAccTOFbc0");
+    TH1F *fHistPtITSMI2InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI2InAccTOFbc0");
+    TH1F *fHistPtITSMISPDInAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMISPDInAccTOFbc0");
+    TH1F *fHistPtITSMIoneSPDInAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMIoneSPDInAccTOFbc0");
+    TH1F *fHistPtITSTPCselTOF = (TH1F*)ITSList->FindObject("fHistPtITSTPCselTOFbc0");
+    TH1F *fHistPtITSMIge2InAccTOF = (TH1F*)fHistPtITSMI6InAccTOF->Clone("fHistPtITSMIge2InAccTOF");
+    fHistPtITSMIge2InAccTOF->Add(fHistPtITSMI5InAccTOF);
+    fHistPtITSMIge2InAccTOF->Add(fHistPtITSMI4InAccTOF);
+    fHistPtITSMIge2InAccTOF->Add(fHistPtITSMI3InAccTOF);
+    fHistPtITSMIge2InAccTOF->Add(fHistPtITSMI2InAccTOF);
+    
+    cITSTPCmatch->cd(2);
+    TLegend *l3t=new TLegend(0.5,0.62,0.95,0.93);
+    l3t->SetBorderSize(1);
+    fHistPtITSMIge2InAccTOF->SetTitle("Fraction of prolonged tracks (TOF) with N ITS points - p_{t} dependence");
+    fHistPtITSMIge2InAccTOF->SetYTitle("ITS+TOF / TPC");
+    fHistPtITSMIge2InAccTOF->Divide(fHistPtITSMIge2InAccTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSMIge2InAccTOF->SetMaximum(1.6);
+    fHistPtITSMIge2InAccTOF->SetMinimum(0);
+    fHistPtITSMIge2InAccTOF->GetXaxis()->SetRangeUser(0.1,30);
+    fHistPtITSMIge2InAccTOF->Draw();
+    l3t->AddEntry(fHistPtITSMIge2InAccTOF,">=2 cls","l");
+    fHistPtITSMI6InAccTOF->Divide(fHistPtITSMI6InAccTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSMI6InAccTOF->SetLineColor(2);
+    l3t->AddEntry(fHistPtITSMI6InAccTOF,"6 cls","l");
+    fHistPtITSMI6InAccTOF->Draw("same");
+    fHistPtITSMI5InAccTOF->Divide(fHistPtITSMI5InAccTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSMI5InAccTOF->SetLineColor(3);
+    l3t->AddEntry(fHistPtITSMI5InAccTOF,"5 cls","l");
+    fHistPtITSMI5InAccTOF->Draw("same");
+    fHistPtITSMI4InAccTOF->Divide(fHistPtITSMI4InAccTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSMI4InAccTOF->SetLineColor(4);
+    l3t->AddEntry(fHistPtITSMI4InAccTOF,"4 cls","l");
+    fHistPtITSMI4InAccTOF->Draw("same");
+    fHistPtITSMI3InAccTOF->Divide(fHistPtITSMI3InAccTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSMI3InAccTOF->SetLineColor(6);
+    l3t->AddEntry(fHistPtITSMI3InAccTOF,"3 cls","l");
+    fHistPtITSMI3InAccTOF->Draw("same");
+    fHistPtITSMI2InAccTOF->Divide(fHistPtITSMI2InAccTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSMI2InAccTOF->SetLineColor(7);
+    l3t->AddEntry(fHistPtITSMI2InAccTOF,"2 cls","l");
+    fHistPtITSMI2InAccTOF->Draw("same");
+    fHistPtITSMISPDInAccTOF->Divide(fHistPtITSMISPDInAccTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSMISPDInAccTOF->SetLineColor(9);
+    l3t->AddEntry(fHistPtITSMISPDInAccTOF,"2SPD + any","l");
+    fHistPtITSMISPDInAccTOF->Draw("same");
+    fHistPtITSMIoneSPDInAccTOF->Divide(fHistPtITSMIoneSPDInAccTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSMIoneSPDInAccTOF->SetLineColor(15);
+    l3t->AddEntry(fHistPtITSMIoneSPDInAccTOF,">=1SPD + any","l");
+    fHistPtITSMIoneSPDInAccTOF->Draw("same");
+    fHistPtITSTPCselTOF->Divide(fHistPtITSTPCselTOF,fHistPtTPCInAccTOF,1,1,"B");
+    fHistPtITSTPCselTOF->SetLineColor(kAzure+1);
+    l3t->AddEntry(fHistPtITSTPCselTOF,">=1SPD + any + d_{0} cut","l");
+    fHistPtITSTPCselTOF->Draw("same");
+    fHistPtITSMIge2InAccTOF->Draw("same");
+    l3t->Draw();
+    TLegend *l2=new TLegend(0.1,0.62,0.5,0.93);
+    l2->SetBorderSize(1);
+    l2->AddEntry(spdFrac0,"Frac. active SPD0","p");
+    l2->AddEntry(spdFrac1,"Frac. active SPD1","p");
+    l2->Draw();
+//        if(hFiredChip){
+            spdFrac0->Draw("p");
+            spdFrac1->Draw("p");
+//        }
+    } // if(fHistPtTPCInAccTOF)
+    
+    if(fHistPtTPCInAcc){
+    cITSTPCmatch->SaveAs("MatchingPerformanceVsPt.pdf");
+    cITSTPCmatch->SaveAs("MatchingPerformanceVsPt.png");
+//    pdfFileNames+=" MatchingPerformanceVsPt.pdf";
+      }
+
+        // TPCITS vs phi
+        
+    TH1F *fHistPhiTPCInAcc = (TH1F*)ITSList->FindObject("fHistPhiTPCInAcc");
+    if(fHistPhiTPCInAcc){
+        fHistPhiTPCInAcc->Rebin(2);
+        TH1F *fHistPhiITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMI6InAcc");
+        fHistPhiITSMI6InAcc->Rebin(2);
+        TH1F *fHistPhiITSMI5InAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMI5InAcc");
+        fHistPhiITSMI5InAcc->Rebin(2);
+        TH1F *fHistPhiITSMI4InAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMI4InAcc");
+        fHistPhiITSMI4InAcc->Rebin(2);
+        TH1F *fHistPhiITSMI3InAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMI3InAcc");
+        fHistPhiITSMI3InAcc->Rebin(2);
+        TH1F *fHistPhiITSMI2InAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMI2InAcc");
+        fHistPhiITSMI2InAcc->Rebin(2);
+        TH1F *fHistPhiITSMISPDInAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMISPDInAcc");
+        fHistPhiITSMISPDInAcc->Rebin(2);
+        TH1F *fHistPhiITSMIoneSPDInAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMIoneSPDInAcc");
+        fHistPhiITSMIoneSPDInAcc->Rebin(2);
+        TH1F *fHistPhiITSMIge2InAcc = (TH1F*)fHistPhiITSMI6InAcc->Clone("fHistPhiITSMIge2InAcc");
+        fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI5InAcc);
+        fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI4InAcc);
+        fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI3InAcc);
+        fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI2InAcc);
+        
+        cITSTPCmatch2->cd(1);
+        TLegend *l3=new TLegend(0.5,0.62,0.95,0.93);
+        l3->SetBorderSize(1);
+        Float_t num=0.0, denom=1.0;
+        Float_t eff=0.0, erreff=0.0;
+        fHistPhiITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points - #phi dependence");
+        fHistPhiITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
+        fHistPhiITSMIge2InAcc->SetXTitle("#phi [7.2 deg/bin]");
+        for(Int_t ic=1;ic<fHistPhiITSMIge2InAcc->GetNbinsX()+1;ic++){
+            num=0.0;
+            denom=1.0;
+            if(fHistPhiTPCInAcc->GetBinContent(ic)>0){
+                num=fHistPhiITSMIge2InAcc->GetBinContent(ic);
+                denom=fHistPhiTPCInAcc->GetBinContent(ic);
+            }
+            eff=num/denom;
+            erreff=TMath::Sqrt(eff*(1-eff)/denom);
+            fHistPhiITSMIge2InAcc->SetBinContent(ic,eff);
+            fHistPhiITSMIge2InAcc->SetBinError(ic,erreff);
+        }
+//        fHistPhiITSMIge2InAcc->Divide(fHistPhiITSMIge2InAcc,fHistPhiTPCInAcc,1,1,"B");
+        fHistPhiITSMIge2InAcc->SetMaximum(1.6);
+        fHistPhiITSMIge2InAcc->SetMinimum(0);
+        fHistPhiITSMIge2InAcc->Draw();
+        l3->AddEntry(fHistPhiITSMIge2InAcc,">=2 cls","l");
+        for(Int_t ic=1;ic<fHistPhiITSMI6InAcc->GetNbinsX()+1;ic++){
+            num=0.0;
+            denom=1.0;
+            if(fHistPhiTPCInAcc->GetBinContent(ic)>0){
+                num=fHistPhiITSMI6InAcc->GetBinContent(ic);
+                denom=fHistPhiTPCInAcc->GetBinContent(ic);
+            }
+            eff=num/denom;
+            erreff=TMath::Sqrt(eff*(1-eff)/denom);
+            fHistPhiITSMI6InAcc->SetBinContent(ic,eff);
+            fHistPhiITSMI6InAcc->SetBinError(ic,erreff);
+        }
+//        fHistPhiITSMI6InAcc->Divide(fHistPhiITSMI6InAcc,fHistPhiTPCInAcc,1,1,"B");
+        fHistPhiITSMI6InAcc->SetLineColor(2);
+        l3->AddEntry(fHistPhiITSMI6InAcc,"6 cls","l");
+        fHistPhiITSMI6InAcc->Draw("same");
+        for(Int_t ic=1;ic<fHistPhiITSMI5InAcc->GetNbinsX()+1;ic++){
+            num=0.0;
+            denom=1.0;
+            if(fHistPhiTPCInAcc->GetBinContent(ic)>0){
+                num=fHistPhiITSMI5InAcc->GetBinContent(ic);
+                denom=fHistPhiTPCInAcc->GetBinContent(ic);
+            }
+            eff=num/denom;
+            erreff=TMath::Sqrt(eff*(1-eff)/denom);
+            fHistPhiITSMI5InAcc->SetBinContent(ic,eff);
+            fHistPhiITSMI5InAcc->SetBinError(ic,erreff);
+        }
+//        fHistPhiITSMI5InAcc->Divide(fHistPhiITSMI5InAcc,fHistPhiTPCInAcc,1,1,"B");
+        fHistPhiITSMI5InAcc->SetLineColor(3);
+        l3->AddEntry(fHistPhiITSMI5InAcc,"5 cls","l");
+        fHistPhiITSMI5InAcc->Draw("same");
+        for(Int_t ic=1;ic<fHistPhiITSMI4InAcc->GetNbinsX()+1;ic++){
+            num=0.0;
+            denom=1.0;
+            if(fHistPhiTPCInAcc->GetBinContent(ic)>0){
+                num=fHistPhiITSMI4InAcc->GetBinContent(ic);
+                denom=fHistPhiTPCInAcc->GetBinContent(ic);
+            }
+            eff=num/denom;
+            erreff=TMath::Sqrt(eff*(1-eff)/denom);
+            fHistPhiITSMI4InAcc->SetBinContent(ic,eff);
+            fHistPhiITSMI4InAcc->SetBinError(ic,erreff);
+        }
+//        fHistPhiITSMI4InAcc->Divide(fHistPhiITSMI4InAcc,fHistPhiTPCInAcc,1,1,"B");
+        fHistPhiITSMI4InAcc->SetLineColor(4);
+        l3->AddEntry(fHistPhiITSMI4InAcc,"4 cls","l");
+        fHistPhiITSMI4InAcc->Draw("same");
+        for(Int_t ic=1;ic<fHistPhiITSMI3InAcc->GetNbinsX()+1;ic++){
+            num=0.0;
+            denom=1.0;
+            if(fHistPhiTPCInAcc->GetBinContent(ic)>0){
+                num=fHistPhiITSMI3InAcc->GetBinContent(ic);
+                denom=fHistPhiTPCInAcc->GetBinContent(ic);
+            }
+            eff=num/denom;
+            erreff=TMath::Sqrt(eff*(1-eff)/denom);
+            fHistPhiITSMI3InAcc->SetBinContent(ic,eff);
+            fHistPhiITSMI3InAcc->SetBinError(ic,erreff);
+        }
+//        fHistPhiITSMI3InAcc->Divide(fHistPhiITSMI3InAcc,fHistPhiTPCInAcc,1,1,"B");
+        fHistPhiITSMI3InAcc->SetLineColor(6);
+        l3->AddEntry(fHistPhiITSMI3InAcc,"3 cls","l");
+        fHistPhiITSMI3InAcc->Draw("same");
+        for(Int_t ic=1;ic<fHistPhiITSMI2InAcc->GetNbinsX()+1;ic++){
+            num=0.0;
+            denom=1.0;
+            if(fHistPhiTPCInAcc->GetBinContent(ic)>0){
+                num=fHistPhiITSMI2InAcc->GetBinContent(ic);
+                denom=fHistPhiTPCInAcc->GetBinContent(ic);
+            }
+            eff=num/denom;
+            erreff=TMath::Sqrt(eff*(1-eff)/denom);
+            fHistPhiITSMI2InAcc->SetBinContent(ic,eff);
+            fHistPhiITSMI2InAcc->SetBinError(ic,erreff);
+        }
+//        fHistPhiITSMI2InAcc->Divide(fHistPhiITSMI2InAcc,fHistPhiTPCInAcc,1,1,"B");
+        fHistPhiITSMI2InAcc->SetLineColor(7);
+        l3->AddEntry(fHistPhiITSMI2InAcc,"2 cls","l");
+        fHistPhiITSMI2InAcc->Draw("same");
+        for(Int_t ic=1;ic<fHistPhiITSMISPDInAcc->GetNbinsX()+1;ic++){
+            num=0.0;
+            denom=1.0;
+            if(fHistPhiTPCInAcc->GetBinContent(ic)>0){
+                num=fHistPhiITSMISPDInAcc->GetBinContent(ic);
+                denom=fHistPhiTPCInAcc->GetBinContent(ic);
+            }
+            eff=num/denom;
+            erreff=TMath::Sqrt(eff*(1-eff)/denom);
+            fHistPhiITSMISPDInAcc->SetBinContent(ic,eff);
+            fHistPhiITSMISPDInAcc->SetBinError(ic,erreff);
+        }
+//        fHistPhiITSMISPDInAcc->Divide(fHistPhiITSMISPDInAcc,fHistPhiTPCInAcc,1,1,"B");
+        fHistPhiITSMISPDInAcc->SetLineColor(9);
+        l3->AddEntry(fHistPhiITSMISPDInAcc,"2SPD + any","l");
+        fHistPhiITSMISPDInAcc->Draw("same");
+        for(Int_t ic=1;ic<fHistPhiITSMIoneSPDInAcc->GetNbinsX()+1;ic++){
+            num=0.0;
+            denom=1.0;
+            if(fHistPhiTPCInAcc->GetBinContent(ic)>0){
+                num=fHistPhiITSMIoneSPDInAcc->GetBinContent(ic);
+                denom=fHistPhiTPCInAcc->GetBinContent(ic);
+            }
+            eff=num/denom;
+            erreff=TMath::Sqrt(eff*(1-eff)/denom);
+            fHistPhiITSMIoneSPDInAcc->SetBinContent(ic,eff);
+            fHistPhiITSMIoneSPDInAcc->SetBinError(ic,erreff);
+        }
+//        fHistPhiITSMIoneSPDInAcc->Divide(fHistPhiITSMIoneSPDInAcc,fHistPhiTPCInAcc,1,1,"B");
+        fHistPhiITSMIoneSPDInAcc->SetLineColor(15);
+        l3->AddEntry(fHistPhiITSMIoneSPDInAcc,">=1SPD + any","l");
+        fHistPhiITSMIoneSPDInAcc->Draw("same");
+        fHistPhiITSMIge2InAcc->Draw("same");
+        l3->Draw();
+//        spdFrac0phi->SetPoint(0,0.08,spdFrac[0]);
+//        spdFrac1phi->SetPoint(0,0.08,spdFrac[1]);
+        //        if(hFiredChip){
+        spdFrac0phi->Draw("p");
+        spdFrac1phi->Draw("p");
+        TLegend *l2phi=new TLegend(0.1,0.62,0.5,0.93);
+        l2phi->SetBorderSize(1);
+        l2phi->AddEntry(spdFrac0phi,"Frac. active SPD0","p");
+        l2phi->AddEntry(spdFrac1phi,"Frac. active SPD1","p");
+        l2phi->Draw();
+        //        }
+    } // if(fHistPhiTPCInAcc){
+
+
+        // TPCITS vs eta
+        
+        TH1F *fHistEtaTPCInAcc = (TH1F*)ITSList->FindObject("fHistEtaTPCInAcc");
+        if(fHistEtaTPCInAcc){
+            fHistEtaTPCInAcc->Rebin(2);
+            TH1F *fHistEtaITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMI6InAcc");
+            fHistEtaITSMI6InAcc->Rebin(2);
+            TH1F *fHistEtaITSMI5InAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMI5InAcc");
+            fHistEtaITSMI5InAcc->Rebin(2);
+            TH1F *fHistEtaITSMI4InAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMI4InAcc");
+            fHistEtaITSMI4InAcc->Rebin(2);
+            TH1F *fHistEtaITSMI3InAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMI3InAcc");
+            fHistEtaITSMI3InAcc->Rebin(2);
+            TH1F *fHistEtaITSMI2InAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMI2InAcc");
+            fHistEtaITSMI2InAcc->Rebin(2);
+            TH1F *fHistEtaITSMISPDInAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMISPDInAcc");
+            fHistEtaITSMISPDInAcc->Rebin(2);
+            TH1F *fHistEtaITSMIoneSPDInAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMIoneSPDInAcc");
+            fHistEtaITSMIoneSPDInAcc->Rebin(2);
+            TH1F *fHistEtaITSMIge2InAcc = (TH1F*)fHistEtaITSMI6InAcc->Clone("fHistEtaITSMIge2InAcc");
+            fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI5InAcc);
+            fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI4InAcc);
+            fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI3InAcc);
+            fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI2InAcc);
+            
+            cITSTPCmatch2->cd(2);
+            TLegend *l3=new TLegend(0.5,0.62,0.95,0.93);
+            l3->SetBorderSize(1);
+            Float_t num=0.0, denom=1.0;
+            Float_t eff=0.0, erreff=0.0;
+            fHistEtaITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points - #eta dependence");
+            fHistEtaITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
+            fHistEtaITSMIge2InAcc->SetXTitle("#eta [0.06/bin]");
+            for(Int_t ic=1;ic<fHistEtaITSMIge2InAcc->GetNbinsX()+1;ic++){
+                num=0.0;
+                denom=1.0;
+                if(fHistEtaTPCInAcc->GetBinContent(ic)>0){
+                    num=fHistEtaITSMIge2InAcc->GetBinContent(ic);
+                    denom=fHistEtaTPCInAcc->GetBinContent(ic);
+                }
+                eff=num/denom;
+                erreff=TMath::Sqrt(eff*(1-eff)/denom);
+                fHistEtaITSMIge2InAcc->SetBinContent(ic,eff);
+                fHistEtaITSMIge2InAcc->SetBinError(ic,erreff);
+            }
+            //        fHistEtaITSMIge2InAcc->Divide(fHistEtaITSMIge2InAcc,fHistEtaTPCInAcc,1,1,"B");
+            fHistEtaITSMIge2InAcc->SetMaximum(1.6);
+            fHistEtaITSMIge2InAcc->SetMinimum(0);
+            fHistEtaITSMIge2InAcc->Draw();
+            l3->AddEntry(fHistEtaITSMIge2InAcc,">=2 cls","l");
+            for(Int_t ic=1;ic<fHistEtaITSMI6InAcc->GetNbinsX()+1;ic++){
+                num=0.0;
+                denom=1.0;
+                if(fHistEtaTPCInAcc->GetBinContent(ic)>0){
+                    num=fHistEtaITSMI6InAcc->GetBinContent(ic);
+                    denom=fHistEtaTPCInAcc->GetBinContent(ic);
+                }
+                eff=num/denom;
+                erreff=TMath::Sqrt(eff*(1-eff)/denom);
+                fHistEtaITSMI6InAcc->SetBinContent(ic,eff);
+                fHistEtaITSMI6InAcc->SetBinError(ic,erreff);
+            }
+            //        fHistEtaITSMI6InAcc->Divide(fHistEtaITSMI6InAcc,fHistEtaTPCInAcc,1,1,"B");
+            fHistEtaITSMI6InAcc->SetLineColor(2);
+            l3->AddEntry(fHistEtaITSMI6InAcc,"6 cls","l");
+            fHistEtaITSMI6InAcc->Draw("same");
+            for(Int_t ic=1;ic<fHistEtaITSMI5InAcc->GetNbinsX()+1;ic++){
+                num=0.0;
+                denom=1.0;
+                if(fHistEtaTPCInAcc->GetBinContent(ic)>0){
+                    num=fHistEtaITSMI5InAcc->GetBinContent(ic);
+                    denom=fHistEtaTPCInAcc->GetBinContent(ic);
+                }
+                eff=num/denom;
+                erreff=TMath::Sqrt(eff*(1-eff)/denom);
+                fHistEtaITSMI5InAcc->SetBinContent(ic,eff);
+                fHistEtaITSMI5InAcc->SetBinError(ic,erreff);
+            }
+            //        fHistEtaITSMI5InAcc->Divide(fHistEtaITSMI5InAcc,fHistEtaTPCInAcc,1,1,"B");
+            fHistEtaITSMI5InAcc->SetLineColor(3);
+            l3->AddEntry(fHistEtaITSMI5InAcc,"5 cls","l");
+            fHistEtaITSMI5InAcc->Draw("same");
+            for(Int_t ic=1;ic<fHistEtaITSMI4InAcc->GetNbinsX()+1;ic++){
+                num=0.0;
+                denom=1.0;
+                if(fHistEtaTPCInAcc->GetBinContent(ic)>0){
+                    num=fHistEtaITSMI4InAcc->GetBinContent(ic);
+                    denom=fHistEtaTPCInAcc->GetBinContent(ic);
+                }
+                eff=num/denom;
+                erreff=TMath::Sqrt(eff*(1-eff)/denom);
+                fHistEtaITSMI4InAcc->SetBinContent(ic,eff);
+                fHistEtaITSMI4InAcc->SetBinError(ic,erreff);
+            }
+            //        fHistEtaITSMI4InAcc->Divide(fHistEtaITSMI4InAcc,fHistEtaTPCInAcc,1,1,"B");
+            fHistEtaITSMI4InAcc->SetLineColor(4);
+            l3->AddEntry(fHistEtaITSMI4InAcc,"4 cls","l");
+            fHistEtaITSMI4InAcc->Draw("same");
+            for(Int_t ic=1;ic<fHistEtaITSMI3InAcc->GetNbinsX()+1;ic++){
+                num=0.0;
+                denom=1.0;
+                if(fHistEtaTPCInAcc->GetBinContent(ic)>0){
+                    num=fHistEtaITSMI3InAcc->GetBinContent(ic);
+                    denom=fHistEtaTPCInAcc->GetBinContent(ic);
+                }
+                eff=num/denom;
+                erreff=TMath::Sqrt(eff*(1-eff)/denom);
+                fHistEtaITSMI3InAcc->SetBinContent(ic,eff);
+                fHistEtaITSMI3InAcc->SetBinError(ic,erreff);
+            }
+            //        fHistEtaITSMI3InAcc->Divide(fHistEtaITSMI3InAcc,fHistEtaTPCInAcc,1,1,"B");
+            fHistEtaITSMI3InAcc->SetLineColor(6);
+            l3->AddEntry(fHistEtaITSMI3InAcc,"3 cls","l");
+            fHistEtaITSMI3InAcc->Draw("same");
+            for(Int_t ic=1;ic<fHistEtaITSMI2InAcc->GetNbinsX()+1;ic++){
+                num=0.0;
+                denom=1.0;
+                if(fHistEtaTPCInAcc->GetBinContent(ic)>0){
+                    num=fHistEtaITSMI2InAcc->GetBinContent(ic);
+                    denom=fHistEtaTPCInAcc->GetBinContent(ic);
+                }
+                eff=num/denom;
+                erreff=TMath::Sqrt(eff*(1-eff)/denom);
+                fHistEtaITSMI2InAcc->SetBinContent(ic,eff);
+                fHistEtaITSMI2InAcc->SetBinError(ic,erreff);
+            }
+            //        fHistEtaITSMI2InAcc->Divide(fHistEtaITSMI2InAcc,fHistEtaTPCInAcc,1,1,"B");
+            fHistEtaITSMI2InAcc->SetLineColor(7);
+            l3->AddEntry(fHistEtaITSMI2InAcc,"2 cls","l");
+            fHistEtaITSMI2InAcc->Draw("same");
+            for(Int_t ic=1;ic<fHistEtaITSMISPDInAcc->GetNbinsX()+1;ic++){
+                num=0.0;
+                denom=1.0;
+                if(fHistEtaTPCInAcc->GetBinContent(ic)>0){
+                    num=fHistEtaITSMISPDInAcc->GetBinContent(ic);
+                    denom=fHistEtaTPCInAcc->GetBinContent(ic);
+                }
+                eff=num/denom;
+                erreff=TMath::Sqrt(eff*(1-eff)/denom);
+                fHistEtaITSMISPDInAcc->SetBinContent(ic,eff);
+                fHistEtaITSMISPDInAcc->SetBinError(ic,erreff);
+            }
+            //        fHistEtaITSMISPDInAcc->Divide(fHistEtaITSMISPDInAcc,fHistEtaTPCInAcc,1,1,"B");
+            fHistEtaITSMISPDInAcc->SetLineColor(9);
+            l3->AddEntry(fHistEtaITSMISPDInAcc,"2SPD + any","l");
+            fHistEtaITSMISPDInAcc->Draw("same");
+            for(Int_t ic=1;ic<fHistEtaITSMIoneSPDInAcc->GetNbinsX()+1;ic++){
+                num=0.0;
+                denom=1.0;
+                if(fHistEtaTPCInAcc->GetBinContent(ic)>0){
+                    num=fHistEtaITSMIoneSPDInAcc->GetBinContent(ic);
+                    denom=fHistEtaTPCInAcc->GetBinContent(ic);
+                }
+                eff=num/denom;
+                erreff=TMath::Sqrt(eff*(1-eff)/denom);
+                fHistEtaITSMIoneSPDInAcc->SetBinContent(ic,eff);
+                fHistEtaITSMIoneSPDInAcc->SetBinError(ic,erreff);
+            }
+            //        fHistEtaITSMIoneSPDInAcc->Divide(fHistEtaITSMIoneSPDInAcc,fHistEtaTPCInAcc,1,1,"B");
+            fHistEtaITSMIoneSPDInAcc->SetLineColor(15);
+            l3->AddEntry(fHistEtaITSMIoneSPDInAcc,">=1SPD + any","l");
+            fHistEtaITSMIoneSPDInAcc->Draw("same");
+            fHistEtaITSMIge2InAcc->Draw("same");
+            l3->Draw();
+            TLegend *l2=new TLegend(0.1,0.62,0.5,0.93);
+            l2->SetBorderSize(1);
+            l2->AddEntry(spdFrac0,"Frac. active SPD0","p");
+            l2->AddEntry(spdFrac1,"Frac. active SPD1","p");
+            l2->Draw();
+            //        if(hFiredChip){
+            cITSTPCmatch2->cd(1);
+            spdFrac0->Draw("p");
+            spdFrac1->Draw("p");
+            spdFrac0->SetPoint(0,-1.42,spdFrac[0]);
+            spdFrac1->SetPoint(0,-1.42,spdFrac[1]);
+            cITSTPCmatch2->cd(2);
+            spdFrac0->Draw("p");
+            spdFrac1->Draw("p");
+            //        }
+        } // if(fHistEtaTPCInAcc){
+        
+        if(fHistEtaTPCInAcc){
+            cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.pdf");
+            cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.png");
+            //    pdfFileNames+=" MatchingPerformanceVsEtaPhi.pdf";
+        }
+    
+    } // hFiredChip
+}
 
 Double_t LangausFun(Double_t *x, Double_t *par) {
     

@@ -31,15 +31,23 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA+;
 #pragma link C++ class AliAnalysisTaskPWGJEQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPP+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding+;
 #pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>+;
 #pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>+;
+#pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged>+;
+#pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged>+;
 #pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>+;
-#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>+;
-#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>+;
-#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPP>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPP>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb>+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;

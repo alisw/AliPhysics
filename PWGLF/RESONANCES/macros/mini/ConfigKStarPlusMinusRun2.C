@@ -31,7 +31,8 @@ Bool_t ConfigKStarPlusMinusRun2
    Float_t                 k0sDaughDCA,
    Int_t                   NTPCcluster,
    const char             *suffix,
-   AliRsnCutSet           *cutsPair
+   AliRsnCutSet           *cutsPair,
+   Bool_t                  ptDep    
 )
 {
    // manage suffix
@@ -64,8 +65,11 @@ Bool_t ConfigKStarPlusMinusRun2
    esdTrackCuts->SetAcceptKinkDaughters(0); //
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+    
+    if(ptDep){
    esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
- //esdTrackCuts->SetMinDCAToVertexXY("0.06"); //Use one of the two - pt dependent or fixed value cut.
+    }else
+   esdTrackCuts->SetMinDCAToVertexXY("0.06"); //Use one of the two - pt dependent or fixed value cut.
   
    //
    /////////////////////////////////////////////////

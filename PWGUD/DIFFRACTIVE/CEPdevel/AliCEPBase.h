@@ -48,7 +48,7 @@ class AliCEPBase : public TObject {
 		kBinEventE,             // no beam (empty event)
 
 		// track status bits
-		kTTUnknown         = 0,
+		kTTBaseLine        = 0,
     kTTTOFBunchCrossing= (1<< 0), // TOFBunchCrossing==0
     kTTTPCScluster     = (1<< 1), // number of TPC shared clusters <= fTPCnclsS(3)
     kTTDCA             = (1<< 2), // DCA to vertex is < 500
@@ -64,6 +64,10 @@ class AliCEPBase : public TObject {
     kVtxUnknown = 0,
     kVtxSPD,                // from ITS
     kVtxTracks,             // from tracks
+    kVtxErrRes,             // z-resolution of SPD vertex is out-of-bounds
+    kVtxErrDif,             // difference in z between SPD and track vertex is
+                            //  out-of-bounds
+    kVtxErrZ,               // z-position of vertex is  out-of-bounds
     kVtxAOD,                // On AOD only primary vertex is stored
 
 		// StatsFlow histogram entries
@@ -71,38 +75,47 @@ class AliCEPBase : public TObject {
 		kBinTotalInput = 0,
 		kBinGoodInput,
 		kBinMCEvent,
-		kBinDGTrigger,
-		kBinPileup,
 		kBinPhysEvent,
 		kBinEventCut,
-		kBinPhySel,
+		kBinPhysel,
+		kBinPileup,
+		kBinClusterCut,
+		kBinDGTrigger,
+		kBinSharedCluster,
+    kBinVtx,
 		kBinMBOR,
 		kBinMBAND,
-		kBinClusterCut,
-		kBinSharedCluster,
+		kBinnoV0,
+		kBinnoFMD,
+		kBinnoAD,
 		kBinSaved,
 		kBinLastValue,        // used to specify the correct histogram width
 
 		// definition of bits in AliAnalysisTaskCEP::fCurrentGapCondition
 		kBitBaseLine       = (1<< 0),
-		kBitMBOR           = (1<< 1),
-    kBitMBAND          = (1<< 2),
-		kBitSPDA           = (1<< 3),
-		kBitSPDC           = (1<< 4),
-		kBitTPCA           = (1<< 5),
-		kBitTPCC           = (1<< 6),
-    kBitV0A            = (1<< 7),
-		kBitV0C            = (1<< 8),
-		kBitFMDA           = (1<< 9),
-		kBitFMDC           = (1<<10),
-		kBitADA            = (1<<11),
-		kBitADC            = (1<<12),
-		kBitZDCA           = (1<<13),
-		kBitZDCC           = (1<<14),
-		kBitZDNA           = (1<<15),
-		kBitZDNC           = (1<<16),
-		kBitDGTrigger      = (1<<17),
-    
+    kBitEventCut       = (1<< 1),
+    kBitPhyssel        = (1<< 2),
+    kBitPileup         = (1<< 3),
+    kBitClusterCut     = (1<< 4),
+		kBitDGTrigger      = (1<< 5),
+    kBitVtx            = (1<< 6),
+		kBitMBOR           = (1<< 7),
+    kBitMBAND          = (1<< 8),
+		kBitSPDA           = (1<< 9),
+		kBitSPDC           = (1<<10),
+		kBitTPCA           = (1<<11),
+		kBitTPCC           = (1<<12),
+    kBitV0A            = (1<<13),
+		kBitV0C            = (1<<14),
+		kBitFMDA           = (1<<15),
+		kBitFMDC           = (1<<16),
+		kBitADA            = (1<<17),
+		kBitADC            = (1<<18), 
+		kBitZDCA           = (1<<19), 
+		kBitZDCC           = (1<<20), 
+		kBitZDNA           = (1<<21),
+		kBitZDNC           = (1<<22),
+
     // MC process types
     kProctypeUnknown = 0,
     kProctypeND,
@@ -114,10 +127,9 @@ class AliCEPBase : public TObject {
 		// do not change the order in order to be backward compatible!
     
 		kBitConfigurationSet      = (1<< 0), // if not set everything is active
-    kBitisRun1                = (1<< 1), // save all events
+    kBitisRun1                = (1<< 1), // is it run1
     kBitSaveAllEvents         = (1<< 2), // save all events
-    kBitSaveDGTrigger         = (1<< 3), // save events with a DG Trigger
-		kBitConfigurationVersion  = (1<< 4)  // always set, last bit
+		kBitConfigurationVersion  = (1<< 3)  // always set, last bit
 	
   };
 

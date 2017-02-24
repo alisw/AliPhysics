@@ -102,6 +102,7 @@ class AliEventCuts : public TList {
     unsigned int  fCentralityFramework;           ///< 0: skip centrality checks, 1: multiplicity framework, 2: legacy centrality framework
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised
+    bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators

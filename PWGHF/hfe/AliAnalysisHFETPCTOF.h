@@ -156,6 +156,8 @@ class AliAnalysisHFETPCTOF : public AliAnalysisTaskSE
 	TH2F                *fITSnsigma_pt1;
 	TH2F                *fITSnsigma_pt2;
 	TH2F                *fITSnsigma_pt3;
+	TH2F				*fTPCnSigmaPElec_ULS;
+	TH2F				*fTPCnSigmaPElec_LS;
 	//TH2F				**fTPCnsigma_EoverP;
 	TH2F                *fTPCnsigma_TOFnsigma1;
 	TH2F                *fTPCnsigma_TOFnsigma2;
@@ -166,6 +168,14 @@ class AliAnalysisHFETPCTOF : public AliAnalysisTaskSE
     //TH2F                **fEtaPhiClusters;
 	TH1F				*fInvMass;
 	TH1F				*fInvMassBack;
+	TH1F				*fInvMass1;
+	TH1F				*fInvMassBack1;
+	TH1F				*fInvMass2;
+	TH1F				*fInvMassBack2;
+	TH1F				*fInvMass3;
+	TH1F				*fInvMassBack3;
+	TH1F				*fInvMass4;
+	TH1F				*fInvMassBack4;
 	TH2F                *fTPCnsigma_p_after_tof;
 	TH2F                *fTPCnsigma_pt_after_tof;
 	TH2F                *fTPCnsigma_p_after_tof_its;
@@ -206,6 +216,11 @@ class AliAnalysisHFETPCTOF : public AliAnalysisTaskSE
     TH1F                *fPt_HFelec_passTOFandTPC_2;	
     TH1F                *fPt_HFelec_passTPC_2;	
     TH1F				*fPt_HFelec_pass_track;
+    TH1F				*fPt_HFelec_pass_trackDCA;
+    TH1F				*fPt_HFelec_pass_trackITSlayer;
+    TH1F				*fPt_HFelec_pass_trackFB;
+    TH1F				*fPt_HFelec_pass_trackTPCITS;
+    TH1F				*fPt_HFelec_pass_trackKink;
     TH1F				*fPt_HFelec_pass_trackandTOF;
     TH1F                *fPtMCpi0;
     TH1F				*fPtMCpi0_feeddown;

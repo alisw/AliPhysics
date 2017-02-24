@@ -81,7 +81,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
  TString     outNameSuffix = "KStarPlusMinus_Traintest",
- Int_t       centr = 0
+ Int_t       centr = 0,
+ Bool_t      ptDep = kTRUE       
  )
 {  
   //-------------------------------------------                                                                                          
@@ -120,7 +121,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    } 
    
    // create the task and configure 
-   TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
+   TString taskName = Form("KStarPlusMinus%s%s_%.1f_%.1f_%.2f_%.3f_%.f_%.f_%.f_%.1f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),piPIDCut,pi_k0s_PIDCut,massTol,massTolVeto,pLife,radiuslow,radiushigh,k0sDCA,k0sCosPoinAn,k0sDaughDCA);
  
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
    
@@ -212,7 +213,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair, ptDep)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
@@ -222,7 +223,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    Printf("AddTaskKStarPlusMinus - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s", outNameSuffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%.1f_%.2f_%.3f_%.f_%.f_%.f_%.1f_%.2f_%.1f", outNameSuffix.Data(),piPIDCut,pi_k0s_PIDCut,massTol,massTolVeto,pLife,radiuslow,radiushigh,k0sDCA,k0sCosPoinAn,k0sDaughDCA), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
    
    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(task, 1, output);

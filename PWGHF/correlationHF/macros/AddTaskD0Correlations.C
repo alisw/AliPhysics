@@ -253,11 +253,11 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
   } else { //use SB ranges from AddTask (following settings)
     if(!pporpPb_lims) { //pp limits
-    
-      Double_t LSBLowLim[15] = {0.,0.,0.,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
-      Double_t LSBUppLim[15] = {0.,0.,0.,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,0.,0.,0.,0.};
-      Double_t RSBLowLim[15] = {0.,0.,0.,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,0.,0.,0.,0.};
-      Double_t RSBUppLim[15] = {0.,0.,0.,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,0.,0.,0.,0.};
+				//      1-2    2-3    3-4    4-5    5-6    6-7    7-8   8-12   12-16  16-20  20-24   24+
+      Double_t LSBLowLim[14] = {0.,0.,1.7688,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,1.7088,1.7088,1.7088}; //to be filled looking at results from invariant mass fits!
+      Double_t LSBUppLim[14] = {0.,0.,1.8168,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,1.7648,1.7648,1.7648};
+      Double_t RSBLowLim[14] = {0.,0.,1.9168,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,1.9768,1.9768,1.9768};
+      Double_t RSBUppLim[14] = {0.,0.,1.9688,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,2.0808,2.0808,2.0808};
  
       massD0Task->SetLSBLowLim(LSBLowLim);
       massD0Task->SetLSBHighLim(LSBUppLim);
@@ -265,11 +265,11 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
       massD0Task->SetRSBHighLim(RSBUppLim);
 
     } else { //pPb limits
-
-      Double_t LSBLowLim[15] = {0.,0.,0.,1.7928,1.7768,1.7728,1.7648,1.7488,1.7448,1.7728,1.7048,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
-      Double_t LSBUppLim[15] = {0.,0.,0.,1.8288,1.8208,1.8208,1.8128,1.8088,1.8048,1.8048,1.7568,0.,0.,0.,0.};
-      Double_t RSBLowLim[15] = {0.,0.,0.,1.9008,1.9088,1.9128,1.9168,1.9288,1.9288,1.9288,1.9728,0.,0.,0.,0.};
-      Double_t RSBUppLim[15] = {0.,0.,0.,1.9408,1.9528,1.9608,1.9688,1.9848,1.9888,1.9928,2.0768,0.,0.,0.,0.}; 
+				//      1-2    2-3    3-4    4-5    5-6    6-7    7-8   8-12   12-16  16-20  20-24   24+
+      Double_t LSBLowLim[14] = {0.,0.,1.7928,1.7928,1.7768,1.7728,1.7648,1.7488,1.7448,1.7728,1.7048,1.7048,1.7048,1.7048}; //to be filled looking at results from invariant mass fits!
+      Double_t LSBUppLim[14] = {0.,0.,1.8288,1.8288,1.8208,1.8208,1.8128,1.8088,1.8048,1.8048,1.7568,1.7568,1.7568,1.7568};
+      Double_t RSBLowLim[14] = {0.,0.,1.9008,1.9008,1.9088,1.9128,1.9168,1.9288,1.9288,1.9288,1.9728,1.9728,1.9728,1.9728};
+      Double_t RSBUppLim[14] = {0.,0.,1.9408,1.9408,1.9528,1.9608,1.9688,1.9848,1.9888,1.9928,2.0768,2.0768,2.0768,2.0768}; 
  
       massD0Task->SetLSBLowLim(LSBLowLim);
       massD0Task->SetLSBHighLim(LSBUppLim);

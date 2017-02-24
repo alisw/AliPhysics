@@ -226,7 +226,7 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 
 	cBin = fCard->GetBin(kCentrType, fcent);;
 
-	if(cBin<0) return;
+	//if(cBin<0) return; //TODO CHECK
 
 	fJJetJtAnalysis->SetCentralityBin( cBin );
 	fJJetJtAnalysis->SetCentrality( fcent );

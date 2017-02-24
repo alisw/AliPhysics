@@ -83,7 +83,6 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   PostData(1,mTree);
 
   OpenFile(2);
-
   if (!mOutput) mOutput = new TList();
   mOutput->SetOwner();
 
@@ -116,7 +115,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!event) return;
   if (!mEventCuts.AcceptEvent(event)) {
-    PostData(1, mOutput);
+    PostData(2, mOutput);
     return;
   }
 
