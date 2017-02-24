@@ -3279,7 +3279,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm] = new TH2F 
       (Form("hSameRowDiffColAndTCardCellsTimeDiffClusterE%s",add[tm].Data()),
        Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cluster} %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-50,50); 
+       nptbins,ptmin,ptmax,200,-100,100); 
       fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
       outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffClusterE[tm]); 
@@ -3295,7 +3295,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm] = new TH2F 
       (Form("hSameRowDiffColAndTCardCellsTimeDiffCellMaxE%s",add[tm].Data()),
        Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cell max} %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-50,50); 
+       nptbins,ptmin,ptmax,200,-100,100); 
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
       outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]); 
@@ -3311,7 +3311,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm] = new TH2F 
       (Form("hSameRowDiffColAndTCardCellsTimeDiffClusterEExo%s",add[tm].Data()),
        Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cluster}, exo > 0.97 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-50,50); 
+       nptbins,ptmin,ptmax,200,-100,100); 
       fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
       outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]); 
@@ -3327,7 +3327,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm] = new TH2F 
       (Form("hSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo%s",add[tm].Data()),
        Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cell max}, exo > 0.97 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-50,50); 
+       nptbins,ptmin,ptmax,200,-100,100); 
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
       outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]); 
