@@ -1,6 +1,7 @@
 
-#ifndef AliAnalysisTaskSEDplusCorrelations_H
-#define AliAnalysisTaskSEDplusCorrelations_H
+#ifndef ALIANALYSISTASKSEDPLUSCORRELATIONS_H
+#define ALIANALYSISTASKSEDPLUSCORRELATIONS_H
+
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -21,6 +22,7 @@
 #include "AliAODMCParticle.h"
 #include "AliHFCorrelator.h"
 #include "AliCentrality.h"
+#include "AliHFOfflineCorrelator.h"
 
 class TParticle ;
 class TClonesArray ;
@@ -66,6 +68,36 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void SetAODMismatchProtection(Int_t sel5=1) {fAODProtection=sel5;}
     //void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
     
+    void SetMinDPt(Double_t minDPt){fMinDPt=minDPt;}
+    Bool_t GetFillTrees() const {return fFillTrees;}
+    void SetFillTrees(Bool_t fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
+    
+    //Setting left sideband bin ranges
+    void SetLSBLowerUpperLim(Double_t* LSBLowLim, Double_t* LSBUppLim){
+        for(int i=0;i<fNPtBins;i++){
+            fLSBLowLim.push_back(LSBLowLim[i]);
+            fLSBUppLim.push_back(LSBUppLim[i]);
+        }
+    }
+    
+    //Setting S+B bin ranges
+    void SetSandBLowerUpperLim(Double_t* SandBLowLim, Double_t* SandBUppLim){
+        for(int i=0;i<fNPtBins;i++){
+            fSandBLowLim.push_back(SandBLowLim[i]);
+            fSandBUppLim.push_back(SandBUppLim[i]);
+        }
+    }
+    
+    //Setting right sideband bin ranges
+    void SetRSBLowerUpperLim(Double_t* RSBLowLim, Double_t* RSBUppLim){
+        for(int i=0;i<fNPtBins;i++){
+            fRSBLowLim.push_back(RSBLowLim[i]);
+            fRSBUppLim.push_back(RSBUppLim[i]);
+        }
+    }
+    
+    
+    
     
     private :
     
@@ -78,7 +110,13 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void HadronCorrelations(AliAODRecoDecayHF3Prong* d, Int_t isDplus);
     void CorrelationNSparsePlots(AliAODRecoDecayHF3Prong *d, AliReducedParticle* track, Int_t iPtBin, Int_t origDplus, Double_t weightEff);
     Int_t CheckOriginPartOfDPlus(TClonesArray* arrayMC, AliAODMCParticle *mcDplus) const;
-
+    
+    //Offline
+    void OfflineDPlusTree(AliAODRecoDecayHF3Prong* d, AliAODEvent* aod);
+    void OfflineAssoTrackTree(AliAODEvent* aod);
+    Bool_t AcceptTrackForMEOffline(Double_t TrackPt);
+    
+    
     //variables..
     Bool_t fSystem; // pp or PbPb
     Bool_t fReadMC; //  MC Switch
@@ -103,6 +141,9 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Int_t fNPtBins; // number of event at different Stages
     TH1F *fHistNEvents; //!hist. for No. of events
     TH1F *fHistNDplus; //!hist. for No. of Dplus
+    TH1F *fHistNDTrkOff; //!hist. for No. of Dplus
+    TH1F *fHistNDDauOnRemoved; //!hist. for No. of Dplus
+    TH1F *fHistNDDauTrigID; //!hist. for No. of Dplus
     AliNormalizationCounter *fCounter; // counter
     Float_t fBinWidth;//width of one bin in output histos
     Bool_t  fPoolByPool;
@@ -113,7 +154,33 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Bool_t fRawCutQA; //if D cut before sel
     TList *fOutput;     //! user output data
     TList *fOutputCorr; //! user output data
-    ClassDef(AliAnalysisTaskSEDplusCorrelations,7); // class for D+ meson correlations
+    
+    //Offline
+    AliHFCorrelationBranchD   *fBranchD; //!
+    AliHFCorrelationBranchTr  *fBranchTr; //!
+    TTree *fTreeD;    //tree for D+ mesons
+    TTree *fTreeTr;   //tree for Assoc tracks
+    Bool_t    fFillTrees;  //Flag to fill ME offline trees
+    Double_t  fFractAccME; //Fraction of tracks to be accepted in the ME offline
+    
+    Int_t fNtrigDplusInR; // # of D+ filled (for association with decay tracks in TTrees)
+    Int_t fNtrigDplusOutR; // # of D+ filled (for association with decay tracks in TTrees)
+    Bool_t    fAlreadyFilled;            // D+ in an event already analyzed (for track distribution plots)
+    Double_t  fMinDPt;                   // Minimum pT of the D+ to allow selection
+    TObjArray *fTrackArray;  // Array with selected tracks for association
+    Bool_t fTrackArrayFilled; // Flag to fill fTrackArray or not (if already filled)
+    Double_t  fzVtx; // event zVtx position (for track eff)
+    
+    std::vector<Int_t> fDaughTrackID;       // ID of tagged daughters
+    std::vector<Int_t> fDaughTrigNum;       // ID of D-trigger for daughters
+    std::vector<Double_t>  fLSBLowLim;      // Left SB lower lim
+    std::vector<Double_t>  fLSBUppLim;      // Left SB lower lim
+    std::vector<Double_t>  fSandBLowLim;    // Signal +Bkg lower lim
+    std::vector<Double_t>  fSandBUppLim;    // Signal _Bkg upper lim
+    std::vector<Double_t>  fRSBLowLim;      // Right SB upper lim
+    std::vector<Double_t>  fRSBUppLim;      // Right SB upper lim
+    
+    ClassDef(AliAnalysisTaskSEDplusCorrelations,8); // class for D+ meson correlations
     
 };
 
