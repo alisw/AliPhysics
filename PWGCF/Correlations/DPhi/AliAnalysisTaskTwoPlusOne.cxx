@@ -20,6 +20,7 @@
 #include "AliMCEventHandler.h"
 #include "AliVParticle.h"
 #include "AliCFContainer.h"
+#include "AliMultSelection.h"
 
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
@@ -262,6 +263,18 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
     centrality = ((AliNanoAODHeader*) fAOD->GetHeader())->GetCentrality();
   }
 
+  if(fIsRun2){    
+    centrality = 300; 
+    AliMultSelection *MultSelection = 0x0; 
+    MultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
+    if( !MultSelection) {
+      //If you get this warning (and centrality 300) please check that the AliMultSelectionTask actually ran (before your task)
+      AliWarning("AliMultSelection object not found!");
+    }else{
+      centrality = MultSelection->GetMultiplicityPercentile("V0M");
+    }
+  }
+
   if(centrality>=0)
     ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)0, centrality);
 
@@ -273,7 +286,6 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
     TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(fMcEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
     tracksMC = CloneAndReduceTrackList(tmpList);
   }
-
 
   AliInfo(Form("Centrality is %f", centrality));
 
@@ -328,7 +340,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
   fHistos->FillParticleDist(centrality, zVtx, tracksClone, 1.0, applyEfficiency);
 
   if(fRunCorrelations){
-      
+     
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
     ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)1, centrality);
 
