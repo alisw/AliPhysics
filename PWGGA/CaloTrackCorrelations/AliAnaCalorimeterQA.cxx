@@ -1245,9 +1245,9 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   // Get second highest energy cell
 //Int_t absId2ndMax = -1;
   Float_t emax = 0;
-  Bool_t sameTCard2ndMax = kFALSE;
-  Int_t  rowDiff2 = -100;
-  Int_t  colDiff2 = -100;
+//Bool_t sameTCard2ndMax = kFALSE;
+//Int_t  rowDiff2 = -100;
+//Int_t  colDiff2 = -100;
    
   Float_t  eCellSameRowSameTCardNearCol = 0.;
   Float_t  eCellSameRowDiffTCardNearCol = 0.;
@@ -1378,23 +1378,23 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       }
     }
     
-    if ( eCell > emax ) 
-    {
-      emax        = eCell;
-      //absId2ndMax = absId;
-      if(sameTCard)
-      {
-        sameTCard2ndMax = kTRUE;
-        rowDiff2 = rowDiff;
-        colDiff2 = colDiff;
-      }
-      else
-      {
-        sameTCard2ndMax = kFALSE;
-        rowDiff2 = -100;
-        colDiff2 = -100;
-      }
-    }
+//    if ( eCell > emax ) 
+//    {
+//      emax        = eCell;
+//      //absId2ndMax = absId;
+//      if(sameTCard)
+//      {
+//        sameTCard2ndMax = kTRUE;
+//        rowDiff2 = rowDiff;
+//        colDiff2 = colDiff;
+//      }
+//      else
+//      {
+//        sameTCard2ndMax = kFALSE;
+//        rowDiff2 = -100;
+//        colDiff2 = -100;
+//      }
+//    }
     
     //
     // Other TCard correlations
