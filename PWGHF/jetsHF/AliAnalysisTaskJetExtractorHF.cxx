@@ -49,6 +49,7 @@
 #include "TRandom3.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliESDtrackCuts.h"
+#include "AliRhoParameter.h"
 
 #include "AliHFJetsTaggingVertex.h"
 #include "AliAnalysisTaskJetExtractorHF.h"
@@ -98,6 +99,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fCurrentInitialParton2(0),
   fCurrentInitialParton1Type(0),
   fCurrentInitialParton2Type(0),
+  fCurrentTrueJetPt(0),
   fFoundIC(kFALSE),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
@@ -109,6 +111,8 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fExtractionListPIDsHM(),
   fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
+  fTruthJetsArrayName(""),
+  fTruthJetsRhoName(""),
   fTruthParticleArrayName("mcparticles"),
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
@@ -140,6 +144,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fCurrentInitialParton2(0),
   fCurrentInitialParton1Type(0),
   fCurrentInitialParton2Type(0),
+  fCurrentTrueJetPt(0),
   fFoundIC(kFALSE),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
@@ -151,6 +156,8 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fExtractionListPIDsHM(),
   fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
+  fTruthJetsArrayName(""),
+  fTruthJetsRhoName(""),
   fTruthParticleArrayName("mcparticles"),
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
@@ -326,8 +333,8 @@ void AliAnalysisTaskJetExtractorHF::AddJetToTree(AliEmcalJet* jet)
   // Add secondary vertices to jet (from AOD.VertexingHF or calculated)
   AddSecondaryVertices(myVertex, jet, basicJet);
 
-  // Field currently misused
-  basicJet.SetTruePt(jet->Pt());
+  // Add here pt from matched jet
+  basicJet.SetTruePt(fCurrentTrueJetPt);
 
   fJetsTreeBuffer = &basicJet;
   fJetsTree->Fill();
@@ -510,6 +517,9 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetProperties(AliEmcalJet* jet)
     CalculateJetType_HFMethod(jet, fCurrentJetTypeIC, fCurrentJetTypeHM);
   else
     CalculateJetType(jet, fCurrentJetTypeIC, fCurrentJetTypeHM);
+  // If fTruthJetsArrayName is set, the true pt field is calculated by searching the matching jet
+  if(fTruthJetsArrayName != "")
+    FindMatchingJet(jet);
 }
 
 //________________________________________________________________________
@@ -641,6 +651,43 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, 
   }
 
 }
+
+
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractorHF::FindMatchingJet(AliEmcalJet* jet)
+{
+  // "True" background
+  AliRhoParameter* rho = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fTruthJetsRhoName.Data()));
+  Double_t trueRho = rho->GetVal();
+
+  TClonesArray* truthArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fTruthJetsArrayName.Data())));
+  Double_t     bestMatchDeltaR = 999.;
+
+  // Loop over all true jets to find the best match
+  fCurrentTrueJetPt = 0;
+  for(Int_t i=0; i<truthArray->GetEntries(); i++)
+  {
+    AliEmcalJet* truthJet = static_cast<AliEmcalJet*>(truthArray->At(i));
+    if(truthJet->Pt() < 1.0)
+      continue;
+
+    Double_t deltaEta = (truthJet->Eta()-jet->Eta());
+    Double_t deltaPhi = TMath::Min(TMath::Abs(truthJet->Phi()-jet->Phi()),TMath::TwoPi() - TMath::Abs(truthJet->Phi()-jet->Phi()));
+    Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
+
+    // Cut jets too far away
+    if (deltaR > 0.6)
+      continue;
+
+    // Search for the best match
+    if(deltaR < bestMatchDeltaR)
+    {
+      bestMatchDeltaR = deltaR;
+      fCurrentTrueJetPt = truthJet->Pt() - truthJet->Area()* trueRho;
+    }
+  }
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractorHF::AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent)

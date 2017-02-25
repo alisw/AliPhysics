@@ -45,6 +45,8 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
 
   void                        SetHadronMatchingRadius(Double_t val) { fHadronMatchingRadius = val; }
   void                        SetInitialCollisionMatchingRadius(Double_t val)     { fInitialCollisionMatchingRadius = val; }
+  void                        SetTrueJetArrayName(const char* val)           { fTruthJetsArrayName = val; }
+  void                        SetTrueRhoName(const char* val)                { fTruthJetsRhoName = val; }
   void                        SetTruthParticleArrayName(const char* val)     { fTruthParticleArrayName = val; }
   void                        SetSecondaryVertexMaxChi2(Double_t val   )     { fSecondaryVertexMaxChi2 = val; }
   void                        SetSecondaryVertexMaxDispersion(Double_t val)  { fSecondaryVertexMaxDispersion = val; }
@@ -98,6 +100,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   void                        CalculateInitialCollisionJets();
   void                        GetLeadingJets(const char* opt, AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading);
 
+  void                        FindMatchingJet(AliEmcalJet* jet);
   void                        CalculateJetProperties(AliEmcalJet* jet);
   void                        CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
   void                        CalculateJetType_HFMethod(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
@@ -124,6 +127,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   AliEmcalJet*                fCurrentInitialParton2;                   //!<! jet that matches the initial parton 2 (PYTHIA)
   Int_t                       fCurrentInitialParton1Type;               ///< type of initial parton 1
   Int_t                       fCurrentInitialParton2Type;               ///< type of initial parton 2
+  Double_t                    fCurrentTrueJetPt;                        ///< truth jet pt buffer
   Bool_t                      fFoundIC;                                 ///< status var showing that IC has been found
 
   // ################## CUTS
@@ -140,6 +144,8 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
 
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
   Double_t                    fInitialCollisionMatchingRadius;          ///< Matching radius to find a jet of the IC
+  TString                     fTruthJetsArrayName;                      ///< Array name for particle-level jets
+  TString                     fTruthJetsRhoName;                        ///< Array name for particle-level rho
   TString                     fTruthParticleArrayName;                  ///< Array name of MC particles in event (mcparticles)
   Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
   Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
@@ -164,7 +170,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractorHF &operator=(const AliAnalysisTaskJetExtractorHF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractorHF, 3) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractorHF, 4) // Jet extraction task
   /// \endcond
 };
 
