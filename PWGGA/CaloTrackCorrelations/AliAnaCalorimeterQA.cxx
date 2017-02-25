@@ -1244,7 +1244,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   
   // Get second highest energy cell
 //Int_t absId2ndMax = -1;
-  Float_t emax = 0;
+//Float_t emax = 0;
 //Bool_t sameTCard2ndMax = kFALSE;
 //Int_t  rowDiff2 = -100;
 //Int_t  colDiff2 = -100;
