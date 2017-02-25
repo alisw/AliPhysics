@@ -742,7 +742,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterPerExoCutLargePtTrig;       //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerExoCut;                    //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis.
   TH2F *   fhConeSumPtTrackPerExoCutLargePtTrig;         //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
-
   
   TH2F *   fhConeSumPtClusterFECCorrPair    ;            //!<! cluster sum pt for pair column cells in correlated FEC
   TH2F *   fhConeSumPtClusterFECCorrOdd     ;            //!<! cluster sum pt for odd column cells in correlated FEC
