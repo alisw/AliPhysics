@@ -6971,8 +6971,14 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         // Consider only final state particles, but this depends on generator,
         // status 1 is the usual one, in case of not being ok, leave the possibility
         // to not consider this.
-        if( partInConeStatus > 1 &&
+        if( partInConeStatus  > 1 &&
             GetMCAnalysisUtils()->GetMCGenerator()!= AliMCAnalysisUtils::kBoxLike ) continue ;
+        
+        // Protection against floating point exception
+        if ( mcisopStack->Energy() == TMath::Abs(mcisopStack->Pz()) ||
+            (mcisopStack->Energy() - mcisopStack->Pz()) < 1e-3      ||
+              mcisopStack->Pt() < 0.01  || mcisopStack->Eta() > 10  || 
+            (mcisopStack->Energy() + mcisopStack->Pz()) < 0           )  continue ; 
         
         partInConeMother = mcisopStack->GetMother(0);
         partInConePt     = mcisopStack->Pt();
@@ -6995,6 +7001,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         // to not consider this.
         if( partInConeStatus > 1 &&
             GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) continue ;
+        
+        // Protection against floating point exception
+        if ( mcisopAOD->E() == TMath::Abs(mcisopAOD->Pz())   || 
+            (mcisopAOD->E() - mcisopAOD->Pz()) < 1e-3        ||
+             mcisopAOD->Pt() < 0.01 || mcisopAOD->Eta() > 10 ||
+            (mcisopAOD->E() + mcisopAOD->Pz()) < 0             )  continue ; 
         
         partInConeMother = mcisopAOD->GetMother();
         partInConePt     = mcisopAOD->Pt();
@@ -7038,7 +7050,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           }
         }
       }
-      //
+      
+      //printf("status %d, E %f, pt %f, pz %f, pdg %d, gamma eta %f, phi %f, par in cone eta %f phi %f\n",
+      //       partInConeStatus, partInConeE, partInConePt, mcisopAOD->Pz(), partInConePDG, photonEta, photonPhi, partInConeEta, partInConePhi);
       
       dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
       
