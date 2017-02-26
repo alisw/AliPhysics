@@ -865,11 +865,11 @@ Bool_t AliHFOfflineCorrelator::IsSoftPionFromDstar(AliHFCorrelationBranchD *brD,
 
 	switch(brD->hyp_D) { //there's no 3, since each mass hypothesis is filled separately (and 3's are fileld two times, one as 1 and one as 2)
 		case 1:
-			invmassDstar1 = TMath::Sqrt(pow(e1Pi+e2K+TMath::Sqrt(mPi*mPi + pxTr*pxTr + pyTr*pyTr + pzTr*pzTr),2.)-psum2);
+			invmassDstar1 = TMath::Sqrt(TMath::Power(e1Pi+e2K+TMath::Sqrt(mPi*mPi + pxTr*pxTr + pyTr*pyTr + pzTr*pzTr),2.)-psum2);
 			if ((TMath::Abs(invmassDstar1-brD->invMass_D)-0.14543) < nsigma*800.*pow(10.,-6.)) return kTRUE;
 			break;
 		case 2:
-			invmassDstar2 = TMath::Sqrt(pow(e2Pi+e1K+TMath::Sqrt(mPi*mPi + pxTr*pxTr + pyTr*pyTr + pzTr*pzTr),2.)-psum2);
+			invmassDstar2 = TMath::Sqrt(TMath::Power(e2Pi+e1K+TMath::Sqrt(mPi*mPi + pxTr*pxTr + pyTr*pyTr + pzTr*pzTr),2.)-psum2);
 			if ((TMath::Abs(invmassDstar2-brD->invMass_D)-0.14543) < nsigma*800.*pow(10.,-6.)) return kTRUE;
 			break;
 	}
