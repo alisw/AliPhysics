@@ -26,7 +26,7 @@ include_directories(${AliRoot_SOURCE_DIR}/FIT/FITbase
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
-add_subdirectory(FITsim)
+
 # Sources in alphabetical order
 set(SRCS
     AliFITv0.cxx
@@ -35,7 +35,8 @@ set(SRCS
     AliFITv3.cxx
     AliFITv4.cxx
     AliFITv5.cxx
-    AliFITv6.cxx
+   AliFITv6.cxx
+
    )
 
 # Headers from sources
