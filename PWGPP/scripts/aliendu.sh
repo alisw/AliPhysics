@@ -10,8 +10,8 @@
 #      source $ALICE_PHYSICS/../src/PWGPP/scripts/aliendu.sh; 
 # 2.) Execute aliendu recursivelly:
 #      aliendu <basedir> <recursiveSize> <verbosity> <maxNuberOfDiretories>
-#      aliendu /alice/cern.ch/user/m/miranov/ 10000000000  1   20
-#      aliendu /alice/cern.ch/user/p/pwg_pp/JIRA/ 10000000000 1 20 
+#      aliendu /alice/cern.ch/user/p/pwg_pp/JIRA/ 1000000000 1 100 
+#      aliendu /alice/cern.ch/user/m/miranov/ 1000000000  1 100
 #  author: marian.ivanov@cern.ch
 
  
@@ -46,7 +46,7 @@ aliendu(){
        echo Empty $prefix	
        return;	
     fi;	
-    echo $prefix $dSize  
+    printf  "$dSize\t$prefix\n"  
     local myPrefix=$prefix
     if [ $dSize -gt $recursiveSize ] ; then
 	#echo $dSize $recursiveSize
@@ -60,10 +60,28 @@ aliendu(){
     fi;
 }
 
+makeDUTree(){
+    input=$1
+    if [ $# -ne 1 ] ; then
+	    printf "\n"
+	    alilog_error "makeDUtree: Illegal number of parameters $# - 1 expected"
+	    alilog_infi 
+	    return
+    fi;
+    echo "dsize/F:hName/C:depth/I:basename/C"
+    cat $input| sort -k1 -r -n | while read CMD; do
+	    line=`echo $CMD | tr -s /`
+	    dName=`echo $line | gawk '{print $2}'`
+	    bName=`basename $dName`
+            nDirs=`echo $line|  awk 'BEGIN{FS="/"} {print NF?NF-1:0}'`
+	    printf "$line\t$nDirs\t$bName\n"
+    done
+}
+
 # example usage:
 #   aliendu /alice/cern.ch/user/p/pwg_pp/JIRA/ 2000000000000 1  100 >   pwg_pp.JIRA.dutree
 #   aliendu /alice/cern.ch/user/p/pwg_pp/triggeredRaw 2000000000000 1  100 >   pwg_pp.triggeredRaw.dutree
 #   aliendu /alice/cern.ch/user/p/pwg_pp/ 2000000000000 1  100 >   pwg_pp.dutree
-#   pwg_pp.dutree | sort -k2 -r -n  > pwg_pp.tree
+#   makeDUTree pwg_pp.dutree  > pwg_pp.tree
 # TTree tree
-# tree.ReadFile("pwg_pp.tree","hname/C:dsize/F",' ')
+# tree.ReadFile("pwg_pp.tree")
