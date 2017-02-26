@@ -42,15 +42,19 @@ void TriggerHighPt( const char * chinput,  const char * filter="(esdTrack.fFlags
 void TriggerHighPtV0( const char * chinput,  const char * filter, Long64_t nEvents, Double_t zCut, Double_t covarQPtCut, Int_t filterMask);
 void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nEvents, Double_t dcaCut, Double_t multRatioFraction, Double_t multFraction, Int_t maxTracks);
 void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvents, Double_t multRatioFraction, Double_t multFraction, Int_t maxTracks, Double_t zCut, Double_t covarQPtCut, Int_t filterMask);
+void GetRawSummary();
 
-
-
+ 
 
 void makeOfflineTriggerList(const char * chinput){  
   //
   // 
   // Make high mulitplicity event selection for the calibration
   // TString highMultiplicityFilter="ntracks<1000";  
+  if (TString(chinput).Contains("GetRawSummary")) {
+    ::Info("makeOfflineTriggerList","makeOfflineTriggerList");
+    return GetRawSummary();
+  }
   Long64_t  highMultiplicityNTracksPrim=500000;   // default 500000 tracks for the calibration
   Float_t highMultiplicityFractionTracks=0.8;   //
   Long64_t  highMultiplicityNEvents=10000000;
@@ -535,20 +539,11 @@ void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvent
 }
 
 
-
-
-
-
-
-
-
-
-
 void GetRawSummary(){
   //
   // Compare content of the raw data files with the raw gids
   // Input:
-  //   gidrawTree.list  - raw 
+  //   gidraw.tree  - raw 
   //   ref.list         - list of files with refernce triggers 
   // Assumption - all files are in local directory
   // 
@@ -556,7 +551,7 @@ void GetRawSummary(){
   //   log file with KeyValue of events summary
   TObjArray *refArray=(gSystem->GetFromPipe("cat ref.list")).Tokenize("\n");
   TTree  *treeRaw = new TTree;
-  treeRaw->ReadFile("gidrawTree.list","",'\t');
+  treeRaw->ReadFile("gidraw.tree","",'\t');
   treeRaw->BuildIndex("gid");
   ::Info("GetRawSummary.KeyValue.RawAll","%d",Int_t(treeRaw->GetEntries()));
   for  (Int_t iRef=0; iRef<refArray->GetEntries(); iRef++){

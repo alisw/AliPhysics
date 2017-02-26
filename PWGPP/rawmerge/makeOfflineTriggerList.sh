@@ -273,8 +273,25 @@ gitRawListFromAlien(){
     alilog   "gitRawList.nFilesProcessed\t$nFilesProcessed"
     alilog   "gitRawList.nFilesEmpty\t$nFilesEmpty"
     alilog   "gitRawList.nEvents\t$nEvents"
-}
+    #
+    for a in `find alice -iname "filtered*list" | grep "/lists/" `; do ln -sf $a .  ; done
+    ls filtered*list > ref.list
+    aliroot -b -q $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.C+(\"GetRawSummary\") | grep KeyValue> GetRawSummary.log
 
+}
+  
+gitRawListFromAlienPeriod(){
+    # this routine for local test purposes in future can be done as part of alien filtering jobs -in merging part
+    # period=/alice/cern.ch/user/p/pwg_pp/triggeredRaw/alice/data/2015/LHC15n/
+    period=$1
+    wdir=`pwd`
+    for run in `alien_ls $period | grep 000`; do
+	mkdir $wdir/$run;
+	alilog "gitRawListFromAlienPeriod.Processing run $run"
+        cd $wdir/$run
+	( source $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.sh; gitRawListFromAlien $period/$run/ |tee  rawSummary.log )
+    done; 
+}
 
 
 
