@@ -465,6 +465,7 @@ TTree * AliSysInfo::MakeDUTree(const char *lname, const char * fout){
   tree->SetAlias("sizeMB","size/(1024)");
   tree->SetAlias("sizeGB","size/(1024*1024)");
   tree->SetAlias("sizeTB","size/(1024*1024*1024)");
+  tree->SetAlias("sizePB","size/(1024*1024*1024*1024)");
   tree->Write();
   ftout->Close();
     ftout=TFile::Open(fout);
