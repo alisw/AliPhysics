@@ -8,9 +8,8 @@
 ////////////////////////////////////////////////
  
 #include "AliFIT.h"
-#include "TGraph.h" 
+#include "TGraph.h"
 #include <sstream>
-
 class AliFITv6 : public AliFIT {
   
 public:
@@ -44,12 +43,12 @@ protected:
 
   //V0+
   Int_t nSectors, nRings;
-  Int_t fIdV0Plus[8][5];//Sensitive volumes [nSectors][nRings], if modified then update the construct in .cxx
+  Int_t fIdV0Plus[16][5];//Sensitive volumes [nSectors][nRings], if modified then update the construct in .cxx
   Int_t fCellId;//Scintillator cell number
   Int_t fSenseless;//Senseless for T0+
 
 private: 
-  // Optical properties reader: e-Energy, abs-AbsorptionLength[cm], n-refractive index
+ // Optical properties reader: e-Energy, abs-AbsorptionLength[cm], n-refractive index
   Int_t ReadOptProperties(const string inputFilePath, Float_t **e,
     Double_t **de, Float_t **abs, Float_t **n, Int_t &kNbins) const;
   void FillOtherOptProperties(Float_t **efficAll, Float_t **rindexAir,
@@ -59,7 +58,7 @@ private:
     Float_t **n, Float_t **efficAll, Float_t **rindexAir, Float_t **absorAir,
     Float_t **rindexCathodeNext, Float_t **absorbCathodeNext,
     Double_t **efficMet, Double_t **aReflMet) const; // should be called at the very end of the simulation to free the memory
-
+  
   //V0+ parameters related to geometry
   Double_t fV0PlusR0, fV0PlusR1, fV0PlusR2, fV0PlusR3, fV0PlusR4, fV0PlusR5, fV0PlusR6;
   Double_t fV0PlusSciWd, fV0PlusFraWd, fV0PlusZposition;

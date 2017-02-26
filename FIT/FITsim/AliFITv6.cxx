@@ -20,12 +20,11 @@
 //
 //Begin Html       
 /*
-<img src="gif/AliFITv5Class.gif">
+<img src="gif/AliFITv6Class.gif">
 */
 //End Html
 // Alla.Maevskaya@cern.ch
-//T0+ optical propreties from Maciej and Noah
-//
+////T0+ optical propreties from Maciej and Noa
 // V0+ part by Lizardo Valencia Palomo    lvalenci@cern.ch          //
 //                                                                  //
 //                                                                  //
@@ -74,7 +73,7 @@ AliFITv6::AliFITv6():  AliFIT(),
   fIdSens2(0),
   fPMTeff(0x0),
 //V0+
-  nSectors(8),
+  nSectors(16),
   nRings(5),
   fSenseless(-1),
   fV0PlusR0(3.97),//Computed for z = 325 cm from IP
@@ -109,7 +108,7 @@ AliFITv6::AliFITv6(const char *name, const char *title):
   fIdSens2(0),
   fPMTeff(0x0),
 //V0+
-  nSectors(8),
+  nSectors(16),
   nRings(5),
   fSenseless(-1),
   fV0PlusR0(3.97),//Computed for z = 325 cm from IP
@@ -176,18 +175,18 @@ void AliFITv6::CreateGeometry()
   //C side
   /*
   Float_t xc[28] = {-8.95, -3.05, 3.05, 8.95, -14.85,
-        -8.95, -3.05, 3.05, 8.95,  14.85,
-        -14.85, -8.95, 8.95, 14.85, -14.85, 
-        -8.95, 8.95, 14.85, -14.85,-8.95,
-        -3.05, 3.05, 8.95, 14.85, -8.95,
-        -3.05, 3.05, 8.95 };
+		    -8.95, -3.05, 3.05, 8.95,  14.85,
+		    -14.85, -8.95, 8.95, 14.85, -14.85, 
+		    -8.95, 8.95, 14.85, -14.85,-8.95,
+		    -3.05, 3.05, 8.95, 14.85, -8.95,
+		    -3.05, 3.05, 8.95 };
   
   Float_t yc[28] = {14.85, 14.85,14.85,14.85,8.95,
-        8.95,8.95,8.95,8.95,8.95, 
-        3.05, 3.05,3.05,3.05,-3.05,
-        -3.05,-3.05,-3.05,-8.95,-8.95,
-        -8.95,-8.95,-8.95,-8.95,-14.85, 
-        -14.85,-14.85,-14.85};
+		    8.95,8.95,8.95,8.95,8.95, 
+		    3.05, 3.05,3.05,3.05,-3.05,
+		    -3.05,-3.05,-3.05,-8.95,-8.95,
+		    -8.95,-8.95,-8.95,-8.95,-14.85, 
+		    -14.85,-14.85,-14.85};
   */ 
   //Alpha, Beta, and Gamma angles for the C side Rotations
  
@@ -236,28 +235,28 @@ void AliFITv6::CreateGeometry()
   //A Side
   /*
   Float_t xa[24] = {-11.8, -5.9, 0, 5.9, 11.8, 
-        -11.8, -5.9, 0, 5.9, 11.8,
-        -11.8, -5.9, 5.9, 11.8, 
-        -11.8, -5.9, 0, 5.9, 11.8,
-        -11.8, -5.9, 0, 5.9, 11.8 };
+		    -11.8, -5.9, 0, 5.9, 11.8,
+		    -11.8, -5.9, 5.9, 11.8, 
+		    -11.8, -5.9, 0, 5.9, 11.8,
+		    -11.8, -5.9, 0, 5.9, 11.8 };
   
   Float_t ya[24] = { 11.9, 11.9, 11.9, 11.9, 11.9,
-         6.0,   6.0,  6.0, 6.0,  6.0,
-        -0.1, -0.1, 0.1, 0.1,
-        -6.0, -6.0, -6.0, -6.0, -6.0,
-         -11.9, -11.9, -11.9,  -11.9, -11.9 };  
+		     6.0,   6.0,  6.0, 6.0,  6.0,
+		    -0.1, -0.1, 0.1, 0.1,
+		    -6.0, -6.0, -6.0, -6.0, -6.0,
+		     -11.9, -11.9, -11.9,  -11.9, -11.9 };  
   */  
  Float_t xa[24] = {-11.8, -5.9, 0, 5.9, 11.8, 
-        -11.8, -5.9, 0, 5.9, 11.8,
-        -12.8, -6.9, 6.9, 12.8, 
-        -11.8, -5.9, 0, 5.9, 11.8,
-        -11.8, -5.9, 0, 5.9, 11.8 };
+		    -11.8, -5.9, 0, 5.9, 11.8,
+		    -12.8, -6.9, 6.9, 12.8, 
+		    -11.8, -5.9, 0, 5.9, 11.8,
+		    -11.8, -5.9, 0, 5.9, 11.8 };
   
   Float_t ya[24] = { 11.9, 11.9, 12.9, 11.9, 11.9,
-         6.0,   6.0,  7.0, 6.0,  6.0,
-        -0.1, -0.1, 0.1, 0.1,
-        -6.0, -6.0, -7.0, -6.0, -6.0,
-         -11.9, -11.9, -12.9,  -11.9, -11.9 }; 
+		     6.0,   6.0,  7.0, 6.0,  6.0,
+		    -0.1, -0.1, 0.1, 0.1,
+		    -6.0, -6.0, -7.0, -6.0, -6.0,
+		     -11.9, -11.9, -12.9,  -11.9, -11.9 }; 
 
   
  
@@ -351,233 +350,418 @@ void AliFITv6::CreateGeometry()
   const int kV0PlusColorSci   = 5;
   TGeoMedium *medV0PlusSci = gGeoManager->GetMedium("FIT_V0PlusSci");
   Double_t Pi = TMath::Pi();
-  Double_t Sin45    = TMath::Sin(Pi/4.); 
-  Double_t Cos45    = TMath::Cos(Pi/4.); 
+  Double_t Sin22p5    = TMath::Sin(Pi/8.); 
+  Double_t Cos22p5    = TMath::Cos(Pi/8.); 
   Double_t v0PlusPts[16];
   
-  //Defining the master volume for V0+
-  TGeoVolume *v0Plus = new TGeoVolumeAssembly("V0PLUS");
-
+    //Defining the master volume for V0Plus
+    TGeoVolume *v0Plus = new TGeoVolumeAssembly("V0LE");
+        
     /// For boolean sustraction
-  for (Int_t i = 0; i < 2; i++) 
-    {
-      v0PlusPts[0+8*i] = fV0PlusR0-fV0PlusFraWd/2.-fV0PlusFraWd;  v0PlusPts[1+8*i] = -fV0PlusFraWd;
-      v0PlusPts[2+8*i] = fV0PlusR0-fV0PlusFraWd/2.-fV0PlusFraWd;  v0PlusPts[3+8*i] = fV0PlusFraWd/2.;
-      v0PlusPts[4+8*i] = fV0PlusR5+fV0PlusFraWd/2.+fV0PlusFraWd;  v0PlusPts[5+8*i] = fV0PlusFraWd/2.;
-      v0PlusPts[6+8*i] = fV0PlusR5+fV0PlusFraWd/2.+fV0PlusFraWd;  v0PlusPts[7+8*i] = -fV0PlusFraWd;
-    }
-  new TGeoArb8("sV0PlusCha1",fV0PlusSciWd/1.5,v0PlusPts);
-  for (Int_t i = 0; i < 2; i++) 
-    {
-      v0PlusPts[0+8*i] = fV0PlusR0*Cos45-fV0PlusFraWd;
-      v0PlusPts[1+8*i] = (fV0PlusR0-fV0PlusFraWd)*Sin45-fV0PlusFraWd;
-      v0PlusPts[2+8*i] = (fV0PlusR0-fV0PlusFraWd/2.)*Cos45-fV0PlusFraWd;
-      v0PlusPts[3+8*i] = (fV0PlusR0-fV0PlusFraWd/2.)*Sin45;
-      v0PlusPts[4+8*i] = (fV0PlusR5+fV0PlusFraWd/2.)*Cos45+fV0PlusFraWd;
-      v0PlusPts[5+8*i] = (fV0PlusR5+fV0PlusFraWd/2.)*Sin45+2.*fV0PlusFraWd;
-      v0PlusPts[6+8*i] = (fV0PlusR5+fV0PlusFraWd)*Cos45+fV0PlusFraWd;
-      v0PlusPts[7+8*i] = fV0PlusR5*Sin45+fV0PlusFraWd;
-    }
-  new TGeoArb8("sV0PlusCha2", fV0PlusSciWd/2.+2.*fV0PlusFraWd, v0PlusPts);
-  new TGeoCompositeShape("sV0PlusCha","sV0PlusCha1+sV0PlusCha2");
+    for (Int_t i = 0; i < 2; i++) 
+      {
+	v0PlusPts[0+8*i] = fV0PlusR0-fV0PlusFraWd/2.-fV0PlusFraWd;  v0PlusPts[1+8*i] = -fV0PlusFraWd;
+	v0PlusPts[2+8*i] = fV0PlusR0-fV0PlusFraWd/2.-fV0PlusFraWd;  v0PlusPts[3+8*i] = fV0PlusFraWd/2.;
+	v0PlusPts[4+8*i] = fV0PlusR5+fV0PlusFraWd/2.+fV0PlusFraWd;  v0PlusPts[5+8*i] = fV0PlusFraWd/2.;
+	v0PlusPts[6+8*i] = fV0PlusR5+fV0PlusFraWd/2.+fV0PlusFraWd;  v0PlusPts[7+8*i] = -fV0PlusFraWd;
+      }
+    new TGeoArb8("sV0PlusCha1",fV0PlusSciWd/1.5,v0PlusPts);
+    for (Int_t i = 0; i < 2; i++) 
+      {
+	v0PlusPts[0+8*i] = fV0PlusR0*Cos22p5-fV0PlusFraWd;
+	v0PlusPts[1+8*i] = (fV0PlusR0-fV0PlusFraWd)*Sin22p5-fV0PlusFraWd;
+	v0PlusPts[2+8*i] = (fV0PlusR0-fV0PlusFraWd/2.)*Cos22p5-fV0PlusFraWd;
+	v0PlusPts[3+8*i] = (fV0PlusR0-fV0PlusFraWd/2.)*Sin22p5;
+	v0PlusPts[4+8*i] = (fV0PlusR5+fV0PlusFraWd/2.)*Cos22p5+fV0PlusFraWd;
+	v0PlusPts[5+8*i] = (fV0PlusR5+fV0PlusFraWd/2.)*Sin22p5+2.*fV0PlusFraWd;
+	v0PlusPts[6+8*i] = (fV0PlusR5+fV0PlusFraWd)*Cos22p5+fV0PlusFraWd;
+	v0PlusPts[7+8*i] = fV0PlusR5*Sin22p5+fV0PlusFraWd;
+      }
+    new TGeoArb8("sV0PlusCha2", fV0PlusSciWd/2.+2.*fV0PlusFraWd, v0PlusPts);
+    new TGeoCompositeShape("sV0PlusCha","sV0PlusCha1+sV0PlusCha2");
 
-  //Sensitive scintillator
-  new TGeoTubeSeg( "sV0PlusR1b", fV0PlusR0+fV0PlusFraWd/2., fV0PlusR1-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 45);
-  new TGeoTubeSeg( "sV0PlusR2b", fV0PlusR1+fV0PlusFraWd/2., fV0PlusR2-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 45);
-  new TGeoTubeSeg( "sV0PlusR3b", fV0PlusR2+fV0PlusFraWd/2., fV0PlusR3-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 45);
-  new TGeoTubeSeg( "sV0PlusR4b", fV0PlusR3+fV0PlusFraWd/2., fV0PlusR4-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 45);
-  new TGeoTubeSeg( "sV0PlusR5b", fV0PlusR4+fV0PlusFraWd/2., fV0PlusR5-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 45);
-  TGeoCompositeShape *sV0PlusR1 = new TGeoCompositeShape("sV0PlusR1","sV0PlusR1b-sV0PlusCha");
-  TGeoCompositeShape *sV0PlusR2 = new TGeoCompositeShape("sV0PlusR2","sV0PlusR2b-sV0PlusCha");
-  TGeoCompositeShape *sV0PlusR3 = new TGeoCompositeShape("sV0PlusR3","sV0PlusR3b-sV0PlusCha");
-  TGeoCompositeShape *sV0PlusR4 = new TGeoCompositeShape("sV0PlusR4","sV0PlusR4b-sV0PlusCha");
-  TGeoCompositeShape *sV0PlusR5 = new TGeoCompositeShape("sV0PlusR5","sV0PlusR5b-sV0PlusCha");
+    //Sensitive scintillator
+    new TGeoTubeSeg( "sV0PlusR1b", fV0PlusR0+fV0PlusFraWd/2., fV0PlusR1-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 22.5);
+    new TGeoTubeSeg( "sV0PlusR2b", fV0PlusR1+fV0PlusFraWd/2., fV0PlusR2-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 22.5);
+    new TGeoTubeSeg( "sV0PlusR3b", fV0PlusR2+fV0PlusFraWd/2., fV0PlusR3-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 22.5);
+    new TGeoTubeSeg( "sV0PlusR4b", fV0PlusR3+fV0PlusFraWd/2., fV0PlusR4-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 22.5);
+    new TGeoTubeSeg( "sV0PlusR5b", fV0PlusR4+fV0PlusFraWd/2., fV0PlusR5-fV0PlusFraWd/2., fV0PlusSciWd/2., 0, 22.5);
+    TGeoCompositeShape *sV0PlusR1 = new TGeoCompositeShape("sV0PlusR1","sV0PlusR1b-sV0PlusCha");
+    TGeoCompositeShape *sV0PlusR2 = new TGeoCompositeShape("sV0PlusR2","sV0PlusR2b-sV0PlusCha");
+    TGeoCompositeShape *sV0PlusR3 = new TGeoCompositeShape("sV0PlusR3","sV0PlusR3b-sV0PlusCha");
+    TGeoCompositeShape *sV0PlusR4 = new TGeoCompositeShape("sV0PlusR4","sV0PlusR4b-sV0PlusCha");
+    TGeoCompositeShape *sV0PlusR5 = new TGeoCompositeShape("sV0PlusR5","sV0PlusR5b-sV0PlusCha");
+    
 
-  //Definition sector 1
-  TGeoVolume *v0Plus1Sec1 = new TGeoVolume("V0Plus1Sec1",sV0PlusR1,medV0PlusSci); 
-  TGeoVolume *v0Plus2Sec1 = new TGeoVolume("V0Plus2Sec1",sV0PlusR2,medV0PlusSci);
-  TGeoVolume *v0Plus3Sec1 = new TGeoVolume("V0Plus3Sec1",sV0PlusR3,medV0PlusSci);
-  TGeoVolume *v0Plus4Sec1 = new TGeoVolume("V0Plus4Sec1",sV0PlusR4,medV0PlusSci);
-  TGeoVolume *v0Plus5Sec1 = new TGeoVolume("V0Plus5Sec1",sV0PlusR5,medV0PlusSci); 
-  v0Plus1Sec1->SetLineColor(kV0PlusColorSci); 
-  v0Plus2Sec1->SetLineColor(kV0PlusColorSci);
-  v0Plus3Sec1->SetLineColor(kV0PlusColorSci); 
-  v0Plus4Sec1->SetLineColor(kV0PlusColorSci);
-  v0Plus5Sec1->SetLineColor(kV0PlusColorSci);
-  TGeoVolume *v0PlusSciSec1 = new TGeoVolumeAssembly("V0PlusSciSec1");
-  v0PlusSciSec1->AddNode(v0Plus1Sec1,1);
-  v0PlusSciSec1->AddNode(v0Plus2Sec1,1);
-  v0PlusSciSec1->AddNode(v0Plus3Sec1,1);
-  v0PlusSciSec1->AddNode(v0Plus4Sec1,1);
-  v0PlusSciSec1->AddNode(v0Plus5Sec1,1);
-  TGeoVolume *v0PlusSec1 = new TGeoVolumeAssembly("V0PlusSec1");
-  v0PlusSec1->AddNode(v0PlusSciSec1,1);
-  
-  TGeoRotation *RotSec1 = new TGeoRotation("RotSec1", 90., 0*45., 90., 90.+0*45., 0., 0.);
-  v0Plus->AddNode(v0PlusSec1,0+1,RotSec1);  
-  
-  /// Definition sector 2
-  TGeoVolume *v0Plus1Sec2 = new TGeoVolume("V0Plus1Sec2",sV0PlusR1,medV0PlusSci); 
-  TGeoVolume *v0Plus2Sec2 = new TGeoVolume("V0Plus2Sec2",sV0PlusR2,medV0PlusSci);
-  TGeoVolume *v0Plus3Sec2 = new TGeoVolume("V0Plus3Sec2",sV0PlusR3,medV0PlusSci);
-  TGeoVolume *v0Plus4Sec2 = new TGeoVolume("V0Plus4Sec2",sV0PlusR4,medV0PlusSci);
-  TGeoVolume *v0Plus5Sec2 = new TGeoVolume("V0Plus5Sec2",sV0PlusR5,medV0PlusSci); 
-  v0Plus1Sec2->SetLineColor(kV0PlusColorSci); 
-  v0Plus2Sec2->SetLineColor(kV0PlusColorSci);
-  v0Plus3Sec2->SetLineColor(kV0PlusColorSci); 
-  v0Plus4Sec2->SetLineColor(kV0PlusColorSci);
-  v0Plus5Sec2->SetLineColor(kV0PlusColorSci);
-  TGeoVolume *v0PlusSciSec2 = new TGeoVolumeAssembly("V0PlusSciSec2");
-  v0PlusSciSec2->AddNode(v0Plus1Sec2,1);
-  v0PlusSciSec2->AddNode(v0Plus2Sec2,1);
-  v0PlusSciSec2->AddNode(v0Plus3Sec2,1);
-  v0PlusSciSec2->AddNode(v0Plus4Sec2,1);      
-  v0PlusSciSec2->AddNode(v0Plus5Sec2,1);
-  TGeoVolume *v0PlusSec2 = new TGeoVolumeAssembly("V0PlusSec2");
-  v0PlusSec2->AddNode(v0PlusSciSec2,1);
-  
-  TGeoRotation *RotSec2 = new TGeoRotation("RotSec2", 90., 1*45., 90., 90.+1*45., 0., 0.);
-  v0Plus->AddNode(v0PlusSec2,1+1,RotSec2);  
-  
-  /// Definition sector 3
-  TGeoVolume *v0Plus1Sec3 = new TGeoVolume("V0Plus1Sec3",sV0PlusR1,medV0PlusSci); 
-  TGeoVolume *v0Plus2Sec3 = new TGeoVolume("V0Plus2Sec3",sV0PlusR2,medV0PlusSci);
-  TGeoVolume *v0Plus3Sec3 = new TGeoVolume("V0Plus3Sec3",sV0PlusR3,medV0PlusSci);
-  TGeoVolume *v0Plus4Sec3 = new TGeoVolume("V0Plus4Sec3",sV0PlusR4,medV0PlusSci);
-  TGeoVolume *v0Plus5Sec3 = new TGeoVolume("V0Plus5Sec3",sV0PlusR5,medV0PlusSci); 
-  v0Plus1Sec3->SetLineColor(kV0PlusColorSci); 
-  v0Plus2Sec3->SetLineColor(kV0PlusColorSci);
-  v0Plus3Sec3->SetLineColor(kV0PlusColorSci); 
-  v0Plus4Sec3->SetLineColor(kV0PlusColorSci);
-  v0Plus5Sec3->SetLineColor(kV0PlusColorSci);
-  TGeoVolume *v0PlusSciSec3 = new TGeoVolumeAssembly("V0PlusSciSec3");
-  v0PlusSciSec3->AddNode(v0Plus1Sec3,1);
-  v0PlusSciSec3->AddNode(v0Plus2Sec3,1);
-  v0PlusSciSec3->AddNode(v0Plus3Sec3,1);
-  v0PlusSciSec3->AddNode(v0Plus4Sec3,1);      
-  v0PlusSciSec3->AddNode(v0Plus5Sec3,1);
-  TGeoVolume *v0PlusSec3 = new TGeoVolumeAssembly("V0PlusSec3");
-  v0PlusSec3->AddNode(v0PlusSciSec3,1);
-  
-  TGeoRotation *RotSec3 = new TGeoRotation("RotSec3", 90., 2*45., 90., 90.+2*45., 0., 0.);
-  v0Plus->AddNode(v0PlusSec3,2+1,RotSec3);
-  
-  /// Definition sector 4
-  TGeoVolume *v0Plus1Sec4 = new TGeoVolume("V0Plus1Sec4",sV0PlusR1,medV0PlusSci); 
-  TGeoVolume *v0Plus2Sec4 = new TGeoVolume("V0Plus2Sec4",sV0PlusR2,medV0PlusSci);
-  TGeoVolume *v0Plus3Sec4 = new TGeoVolume("V0Plus3Sec4",sV0PlusR3,medV0PlusSci);
-  TGeoVolume *v0Plus4Sec4 = new TGeoVolume("V0Plus4Sec4",sV0PlusR4,medV0PlusSci);
-  TGeoVolume *v0Plus5Sec4 = new TGeoVolume("V0Plus5Sec4",sV0PlusR5,medV0PlusSci); 
-  v0Plus1Sec4->SetLineColor(kV0PlusColorSci); 
-  v0Plus2Sec4->SetLineColor(kV0PlusColorSci);
-  v0Plus3Sec4->SetLineColor(kV0PlusColorSci); 
-  v0Plus4Sec4->SetLineColor(kV0PlusColorSci);
-  v0Plus5Sec4->SetLineColor(kV0PlusColorSci);
-  TGeoVolume *v0PlusSciSec4 = new TGeoVolumeAssembly("V0PlusSciSec4");
-  v0PlusSciSec4->AddNode(v0Plus1Sec4,1);
-  v0PlusSciSec4->AddNode(v0Plus2Sec4,1);
-  v0PlusSciSec4->AddNode(v0Plus3Sec4,1);
-  v0PlusSciSec4->AddNode(v0Plus4Sec4,1);      
-  v0PlusSciSec4->AddNode(v0Plus5Sec4,1);
-  TGeoVolume *v0PlusSec4 = new TGeoVolumeAssembly("V0PlusSec4");
-  v0PlusSec4->AddNode(v0PlusSciSec4,1);
-  
-  TGeoRotation *RotSec4 = new TGeoRotation("RotSec4", 90., 3*45., 90., 90.+3*45., 0., 0.);
-  v0Plus->AddNode(v0PlusSec4,3+1,RotSec4);
-  
-  /// Definition sector 5
-  TGeoVolume *v0Plus1Sec5 = new TGeoVolume("V0Plus1Sec5",sV0PlusR1,medV0PlusSci); 
-  TGeoVolume *v0Plus2Sec5 = new TGeoVolume("V0Plus2Sec5",sV0PlusR2,medV0PlusSci);
-  TGeoVolume *v0Plus3Sec5 = new TGeoVolume("V0Plus3Sec5",sV0PlusR3,medV0PlusSci);
-  TGeoVolume *v0Plus4Sec5 = new TGeoVolume("V0Plus4Sec5",sV0PlusR4,medV0PlusSci);
-  TGeoVolume *v0Plus5Sec5 = new TGeoVolume("V0Plus5Sec5",sV0PlusR5,medV0PlusSci); 
-  v0Plus1Sec5->SetLineColor(kV0PlusColorSci); 
-  v0Plus2Sec5->SetLineColor(kV0PlusColorSci);
-  v0Plus3Sec5->SetLineColor(kV0PlusColorSci); 
-  v0Plus4Sec5->SetLineColor(kV0PlusColorSci);
-  v0Plus5Sec5->SetLineColor(kV0PlusColorSci);
-  TGeoVolume *v0PlusSciSec5 = new TGeoVolumeAssembly("V0PlusSciSec5");
-  v0PlusSciSec5->AddNode(v0Plus1Sec5,1);
-  v0PlusSciSec5->AddNode(v0Plus2Sec5,1);
-  v0PlusSciSec5->AddNode(v0Plus3Sec5,1);
-  v0PlusSciSec5->AddNode(v0Plus4Sec5,1);      
-  v0PlusSciSec5->AddNode(v0Plus5Sec5,1);
-  TGeoVolume *v0PlusSec5 = new TGeoVolumeAssembly("V0PlusSec5");
-  v0PlusSec5->AddNode(v0PlusSciSec5,1);
+    /// Definition sector 1
+    TGeoVolume *v0Plus1Sec1 = new TGeoVolume("V0Plus1Sec1",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec1 = new TGeoVolume("V0Plus2Sec1",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec1 = new TGeoVolume("V0Plus3Sec1",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec1 = new TGeoVolume("V0Plus4Sec1",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec1 = new TGeoVolume("V0Plus5Sec1",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec1->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec1->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec1->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec1->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec1->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec1 = new TGeoVolumeAssembly("V0PlusSciSec1");
+    v0PlusSciSec1->AddNode(v0Plus1Sec1,1);
+    v0PlusSciSec1->AddNode(v0Plus2Sec1,1);
+    v0PlusSciSec1->AddNode(v0Plus3Sec1,1);
+    v0PlusSciSec1->AddNode(v0Plus4Sec1,1);
+    v0PlusSciSec1->AddNode(v0Plus5Sec1,1);
+    TGeoVolume *v0PlusSec1 = new TGeoVolumeAssembly("V0PlusSec1");
+    v0PlusSec1->AddNode(v0PlusSciSec1,1);
  
-  TGeoRotation *RotSec5 = new TGeoRotation("RotSec5", 90., 4*45., 90., 90.+4*45., 0., 0.);
-  v0Plus->AddNode(v0PlusSec5,4+1,RotSec5);
-  
-  /// Definition sector 6
-  TGeoVolume *v0Plus1Sec6 = new TGeoVolume("V0Plus1Sec6",sV0PlusR1,medV0PlusSci); 
-  TGeoVolume *v0Plus2Sec6 = new TGeoVolume("V0Plus2Sec6",sV0PlusR2,medV0PlusSci);
-  TGeoVolume *v0Plus3Sec6 = new TGeoVolume("V0Plus3Sec6",sV0PlusR3,medV0PlusSci);
-  TGeoVolume *v0Plus4Sec6 = new TGeoVolume("V0Plus4Sec6",sV0PlusR4,medV0PlusSci);
-  TGeoVolume *v0Plus5Sec6 = new TGeoVolume("V0Plus5Sec6",sV0PlusR5,medV0PlusSci); 
-  v0Plus1Sec6->SetLineColor(kV0PlusColorSci); 
-  v0Plus2Sec6->SetLineColor(kV0PlusColorSci);
-  v0Plus3Sec6->SetLineColor(kV0PlusColorSci); 
-  v0Plus4Sec6->SetLineColor(kV0PlusColorSci);
-  v0Plus5Sec6->SetLineColor(kV0PlusColorSci);
-  TGeoVolume *v0PlusSciSec6 = new TGeoVolumeAssembly("V0PlusSciSec6");
-  v0PlusSciSec6->AddNode(v0Plus1Sec6,1);
-  v0PlusSciSec6->AddNode(v0Plus2Sec6,1);
-  v0PlusSciSec6->AddNode(v0Plus3Sec6,1);
-  v0PlusSciSec6->AddNode(v0Plus4Sec6,1);      
-  v0PlusSciSec6->AddNode(v0Plus5Sec6,1);
-  TGeoVolume *v0PlusSec6 = new TGeoVolumeAssembly("V0PlusSec6");
-  v0PlusSec6->AddNode(v0PlusSciSec6,1);
-  
-  TGeoRotation *RotSec6 = new TGeoRotation("RotSec6", 90., 5*45., 90., 90.+5*45., 0., 0.);
-  v0Plus->AddNode(v0PlusSec6,5+1,RotSec6);
-  
-  /// Definition sector 7
-  TGeoVolume *v0Plus1Sec7 = new TGeoVolume("V0Plus1Sec7",sV0PlusR1,medV0PlusSci); 
-  TGeoVolume *v0Plus2Sec7 = new TGeoVolume("V0Plus2Sec7",sV0PlusR2,medV0PlusSci);
-  TGeoVolume *v0Plus3Sec7 = new TGeoVolume("V0Plus3Sec7",sV0PlusR3,medV0PlusSci);
-  TGeoVolume *v0Plus4Sec7 = new TGeoVolume("V0Plus4Sec7",sV0PlusR4,medV0PlusSci);
-  TGeoVolume *v0Plus5Sec7 = new TGeoVolume("V0Plus5Sec7",sV0PlusR5,medV0PlusSci); 
-  v0Plus1Sec7->SetLineColor(kV0PlusColorSci); 
-  v0Plus2Sec7->SetLineColor(kV0PlusColorSci);
-  v0Plus3Sec7->SetLineColor(kV0PlusColorSci); 
-  v0Plus4Sec7->SetLineColor(kV0PlusColorSci);
-  v0Plus5Sec7->SetLineColor(kV0PlusColorSci);
-  TGeoVolume *v0PlusSciSec7 = new TGeoVolumeAssembly("V0PlusSciSec7");
-  v0PlusSciSec7->AddNode(v0Plus1Sec7,1);
-  v0PlusSciSec7->AddNode(v0Plus2Sec7,1);
-  v0PlusSciSec7->AddNode(v0Plus3Sec7,1);
-  v0PlusSciSec7->AddNode(v0Plus4Sec7,1);      
-  v0PlusSciSec7->AddNode(v0Plus5Sec7,1);
-  TGeoVolume *v0PlusSec7 = new TGeoVolumeAssembly("V0PlusSec7");
-  v0PlusSec7->AddNode(v0PlusSciSec7,1);
- 
-  TGeoRotation *RotSec7 = new TGeoRotation("RotSec7", 90., 6*45., 90., 90.+6*45., 0., 0.);
-  v0Plus->AddNode(v0PlusSec7,6+1,RotSec7);
-  
-  /// Definition sector 8
-  TGeoVolume *v0Plus1Sec8 = new TGeoVolume("V0Plus1Sec8",sV0PlusR1,medV0PlusSci); 
-  TGeoVolume *v0Plus2Sec8 = new TGeoVolume("V0Plus2Sec8",sV0PlusR2,medV0PlusSci);
-  TGeoVolume *v0Plus3Sec8 = new TGeoVolume("V0Plus3Sec8",sV0PlusR3,medV0PlusSci);
-  TGeoVolume *v0Plus4Sec8 = new TGeoVolume("V0Plus4Sec8",sV0PlusR4,medV0PlusSci);
-  TGeoVolume *v0Plus5Sec8 = new TGeoVolume("V0Plus5Sec8",sV0PlusR5,medV0PlusSci); 
-  v0Plus1Sec8->SetLineColor(kV0PlusColorSci); 
-  v0Plus2Sec8->SetLineColor(kV0PlusColorSci);
-  v0Plus3Sec8->SetLineColor(kV0PlusColorSci); 
-  v0Plus4Sec8->SetLineColor(kV0PlusColorSci);
-  v0Plus5Sec8->SetLineColor(kV0PlusColorSci);
-  TGeoVolume *v0PlusSciSec8 = new TGeoVolumeAssembly("V0PlusSciSec8");
-  v0PlusSciSec8->AddNode(v0Plus1Sec8,1);
-  v0PlusSciSec8->AddNode(v0Plus2Sec8,1);
-  v0PlusSciSec8->AddNode(v0Plus3Sec8,1);
-  v0PlusSciSec8->AddNode(v0Plus4Sec8,1);      
-  v0PlusSciSec8->AddNode(v0Plus5Sec8,1);
-  TGeoVolume *v0PlusSec8 = new TGeoVolumeAssembly("V0PlusSec8");
-  v0PlusSec8->AddNode(v0PlusSciSec8,1);
-  
-  TGeoRotation *RotSec8 = new TGeoRotation("RotSec8", 90., 7*45., 90., 90.+7*45., 0., 0.);
-  v0Plus->AddNode(v0PlusSec8,7+1,RotSec8);
+    TGeoRotation *RotSec1 = new TGeoRotation("RotSec1", 90., 0*22.5, 90., 90.+0*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec1,0+1,RotSec1);  
 
-  alice->AddNode(v0Plus,1,new TGeoTranslation(0, 0, fV0PlusZposition));
+    /// Definition sector 2
+    TGeoVolume *v0Plus1Sec2 = new TGeoVolume("V0Plus1Sec2",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec2 = new TGeoVolume("V0Plus2Sec2",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec2 = new TGeoVolume("V0Plus3Sec2",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec2 = new TGeoVolume("V0Plus4Sec2",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec2 = new TGeoVolume("V0Plus5Sec2",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec2->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec2->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec2->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec2->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec2->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec2 = new TGeoVolumeAssembly("V0PlusSciSec2");
+    v0PlusSciSec2->AddNode(v0Plus1Sec2,1);
+    v0PlusSciSec2->AddNode(v0Plus2Sec2,1);
+    v0PlusSciSec2->AddNode(v0Plus3Sec2,1);
+    v0PlusSciSec2->AddNode(v0Plus4Sec2,1);      
+    v0PlusSciSec2->AddNode(v0Plus5Sec2,1);
+    TGeoVolume *v0PlusSec2 = new TGeoVolumeAssembly("V0PlusSec2");
+    v0PlusSec2->AddNode(v0PlusSciSec2,1);
+ 
+    TGeoRotation *RotSec2 = new TGeoRotation("RotSec2", 90., 1*22.5, 90., 90.+1*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec2,1+1,RotSec2);  
+
+    /// Definition sector 3
+    TGeoVolume *v0Plus1Sec3 = new TGeoVolume("V0Plus1Sec3",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec3 = new TGeoVolume("V0Plus2Sec3",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec3 = new TGeoVolume("V0Plus3Sec3",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec3 = new TGeoVolume("V0Plus4Sec3",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec3 = new TGeoVolume("V0Plus5Sec3",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec3->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec3->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec3->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec3->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec3->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec3 = new TGeoVolumeAssembly("V0PlusSciSec3");
+    v0PlusSciSec3->AddNode(v0Plus1Sec3,1);
+    v0PlusSciSec3->AddNode(v0Plus2Sec3,1);
+    v0PlusSciSec3->AddNode(v0Plus3Sec3,1);
+    v0PlusSciSec3->AddNode(v0Plus4Sec3,1);      
+    v0PlusSciSec3->AddNode(v0Plus5Sec3,1);
+    TGeoVolume *v0PlusSec3 = new TGeoVolumeAssembly("V0PlusSec3");
+    v0PlusSec3->AddNode(v0PlusSciSec3,1);
+ 
+    TGeoRotation *RotSec3 = new TGeoRotation("RotSec3", 90., 2*22.5, 90., 90.+2*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec3,2+1,RotSec3);
+
+    /// Definition sector 4
+    TGeoVolume *v0Plus1Sec4 = new TGeoVolume("V0Plus1Sec4",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec4 = new TGeoVolume("V0Plus2Sec4",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec4 = new TGeoVolume("V0Plus3Sec4",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec4 = new TGeoVolume("V0Plus4Sec4",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec4 = new TGeoVolume("V0Plus5Sec4",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec4->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec4->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec4->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec4->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec4->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec4 = new TGeoVolumeAssembly("V0PlusSciSec4");
+    v0PlusSciSec4->AddNode(v0Plus1Sec4,1);
+    v0PlusSciSec4->AddNode(v0Plus2Sec4,1);
+    v0PlusSciSec4->AddNode(v0Plus3Sec4,1);
+    v0PlusSciSec4->AddNode(v0Plus4Sec4,1);      
+    v0PlusSciSec4->AddNode(v0Plus5Sec4,1);
+    TGeoVolume *v0PlusSec4 = new TGeoVolumeAssembly("V0PlusSec4");
+    v0PlusSec4->AddNode(v0PlusSciSec4,1);
+ 
+    TGeoRotation *RotSec4 = new TGeoRotation("RotSec4", 90., 3*22.5, 90., 90.+3*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec4,3+1,RotSec4);
+
+    /// Definition sector 5
+    TGeoVolume *v0Plus1Sec5 = new TGeoVolume("V0Plus1Sec5",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec5 = new TGeoVolume("V0Plus2Sec5",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec5 = new TGeoVolume("V0Plus3Sec5",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec5 = new TGeoVolume("V0Plus4Sec5",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec5 = new TGeoVolume("V0Plus5Sec5",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec5->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec5->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec5->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec5->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec5->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec5 = new TGeoVolumeAssembly("V0PlusSciSec5");
+    v0PlusSciSec5->AddNode(v0Plus1Sec5,1);
+    v0PlusSciSec5->AddNode(v0Plus2Sec5,1);
+    v0PlusSciSec5->AddNode(v0Plus3Sec5,1);
+    v0PlusSciSec5->AddNode(v0Plus4Sec5,1);      
+    v0PlusSciSec5->AddNode(v0Plus5Sec5,1);
+    TGeoVolume *v0PlusSec5 = new TGeoVolumeAssembly("V0PlusSec5");
+    v0PlusSec5->AddNode(v0PlusSciSec5,1);
+ 
+    TGeoRotation *RotSec5 = new TGeoRotation("RotSec5", 90., 4*22.5, 90., 90.+4*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec5,4+1,RotSec5);
+
+    /// Definition sector 6
+    TGeoVolume *v0Plus1Sec6 = new TGeoVolume("V0Plus1Sec6",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec6 = new TGeoVolume("V0Plus2Sec6",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec6 = new TGeoVolume("V0Plus3Sec6",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec6 = new TGeoVolume("V0Plus4Sec6",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec6 = new TGeoVolume("V0Plus5Sec6",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec6->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec6->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec6->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec6->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec6->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec6 = new TGeoVolumeAssembly("V0PlusSciSec6");
+    v0PlusSciSec6->AddNode(v0Plus1Sec6,1);
+    v0PlusSciSec6->AddNode(v0Plus2Sec6,1);
+    v0PlusSciSec6->AddNode(v0Plus3Sec6,1);
+    v0PlusSciSec6->AddNode(v0Plus4Sec6,1);      
+    v0PlusSciSec6->AddNode(v0Plus5Sec6,1);
+    TGeoVolume *v0PlusSec6 = new TGeoVolumeAssembly("V0PlusSec6");
+    v0PlusSec6->AddNode(v0PlusSciSec6,1);
+ 
+    TGeoRotation *RotSec6 = new TGeoRotation("RotSec6", 90., 5*22.5, 90., 90.+5*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec6,5+1,RotSec6);
+
+    /// Definition sector 7
+    TGeoVolume *v0Plus1Sec7 = new TGeoVolume("V0Plus1Sec7",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec7 = new TGeoVolume("V0Plus2Sec7",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec7 = new TGeoVolume("V0Plus3Sec7",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec7 = new TGeoVolume("V0Plus4Sec7",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec7 = new TGeoVolume("V0Plus5Sec7",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec7->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec7->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec7->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec7->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec7->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec7 = new TGeoVolumeAssembly("V0PlusSciSec7");
+    v0PlusSciSec7->AddNode(v0Plus1Sec7,1);
+    v0PlusSciSec7->AddNode(v0Plus2Sec7,1);
+    v0PlusSciSec7->AddNode(v0Plus3Sec7,1);
+    v0PlusSciSec7->AddNode(v0Plus4Sec7,1);      
+    v0PlusSciSec7->AddNode(v0Plus5Sec7,1);
+    TGeoVolume *v0PlusSec7 = new TGeoVolumeAssembly("V0PlusSec7");
+    v0PlusSec7->AddNode(v0PlusSciSec7,1);
+ 
+    TGeoRotation *RotSec7 = new TGeoRotation("RotSec7", 90., 6*22.5, 90., 90.+6*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec7,6+1,RotSec7);
+
+    /// Definition sector 8
+    TGeoVolume *v0Plus1Sec8 = new TGeoVolume("V0Plus1Sec8",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec8 = new TGeoVolume("V0Plus2Sec8",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec8 = new TGeoVolume("V0Plus3Sec8",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec8 = new TGeoVolume("V0Plus4Sec8",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec8 = new TGeoVolume("V0Plus5Sec8",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec8->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec8->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec8->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec8->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec8->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec8 = new TGeoVolumeAssembly("V0PlusSciSec8");
+    v0PlusSciSec8->AddNode(v0Plus1Sec8,1);
+    v0PlusSciSec8->AddNode(v0Plus2Sec8,1);
+    v0PlusSciSec8->AddNode(v0Plus3Sec8,1);
+    v0PlusSciSec8->AddNode(v0Plus4Sec8,1);      
+    v0PlusSciSec8->AddNode(v0Plus5Sec8,1);
+    TGeoVolume *v0PlusSec8 = new TGeoVolumeAssembly("V0PlusSec8");
+    v0PlusSec8->AddNode(v0PlusSciSec8,1);
+ 
+    TGeoRotation *RotSec8 = new TGeoRotation("RotSec8", 90., 7*22.5, 90., 90.+7*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec8,7+1,RotSec8);
+
+    /// Definition sector 9
+    TGeoVolume *v0Plus1Sec9 = new TGeoVolume("V0Plus1Sec9",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec9 = new TGeoVolume("V0Plus2Sec9",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec9 = new TGeoVolume("V0Plus3Sec9",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec9 = new TGeoVolume("V0Plus4Sec9",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec9 = new TGeoVolume("V0Plus5Sec9",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec9->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec9->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec9->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec9->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec9->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec9 = new TGeoVolumeAssembly("V0PlusSciSec9");
+    v0PlusSciSec9->AddNode(v0Plus1Sec9,1);
+    v0PlusSciSec9->AddNode(v0Plus2Sec9,1);
+    v0PlusSciSec9->AddNode(v0Plus3Sec9,1);
+    v0PlusSciSec9->AddNode(v0Plus4Sec9,1);      
+    v0PlusSciSec9->AddNode(v0Plus5Sec9,1);
+    TGeoVolume *v0PlusSec9 = new TGeoVolumeAssembly("V0PlusSec9");
+    v0PlusSec9->AddNode(v0PlusSciSec9,1);
+ 
+    TGeoRotation *RotSec9 = new TGeoRotation("RotSec9", 90., 8*22.5, 90., 90.+8*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec9,8+1,RotSec9);
+
+    /// Definition sector 10
+    TGeoVolume *v0Plus1Sec10 = new TGeoVolume("V0Plus1Sec10",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec10 = new TGeoVolume("V0Plus2Sec10",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec10 = new TGeoVolume("V0Plus3Sec10",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec10 = new TGeoVolume("V0Plus4Sec10",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec10 = new TGeoVolume("V0Plus5Sec10",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec10->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec10->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec10->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec10->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec10->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec10 = new TGeoVolumeAssembly("V0PlusSciSec10");
+    v0PlusSciSec10->AddNode(v0Plus1Sec10,1);
+    v0PlusSciSec10->AddNode(v0Plus2Sec10,1);
+    v0PlusSciSec10->AddNode(v0Plus3Sec10,1);
+    v0PlusSciSec10->AddNode(v0Plus4Sec10,1);      
+    v0PlusSciSec10->AddNode(v0Plus5Sec10,1);
+    TGeoVolume *v0PlusSec10 = new TGeoVolumeAssembly("V0PlusSec10");
+    v0PlusSec10->AddNode(v0PlusSciSec10,1);
+ 
+    TGeoRotation *RotSec10 = new TGeoRotation("RotSec10", 90., 9*22.5, 90., 90.+9*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec10,9+1,RotSec10);
+
+    /// Definition sector 11
+    TGeoVolume *v0Plus1Sec11 = new TGeoVolume("V0Plus1Sec11",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec11 = new TGeoVolume("V0Plus2Sec11",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec11 = new TGeoVolume("V0Plus3Sec11",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec11 = new TGeoVolume("V0Plus4Sec11",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec11 = new TGeoVolume("V0Plus5Sec11",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec11->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec11->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec11->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec11->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec11->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec11 = new TGeoVolumeAssembly("V0PlusSciSec11");
+    v0PlusSciSec11->AddNode(v0Plus1Sec11,1);
+    v0PlusSciSec11->AddNode(v0Plus2Sec11,1);
+    v0PlusSciSec11->AddNode(v0Plus3Sec11,1);
+    v0PlusSciSec11->AddNode(v0Plus4Sec11,1);      
+    v0PlusSciSec11->AddNode(v0Plus5Sec11,1);
+    TGeoVolume *v0PlusSec11 = new TGeoVolumeAssembly("V0PlusSec11");
+    v0PlusSec11->AddNode(v0PlusSciSec11,1);
+ 
+    TGeoRotation *RotSec11 = new TGeoRotation("RotSec11", 90., 10*22.5, 90., 90.+10*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec11,10+1,RotSec11);
+
+    /// Definition sector 12
+    TGeoVolume *v0Plus1Sec12 = new TGeoVolume("V0Plus1Sec12",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec12 = new TGeoVolume("V0Plus2Sec12",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec12 = new TGeoVolume("V0Plus3Sec12",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec12 = new TGeoVolume("V0Plus4Sec12",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec12 = new TGeoVolume("V0Plus5Sec12",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec12->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec12->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec12->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec12->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec12->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec12 = new TGeoVolumeAssembly("V0PlusSciSec12");
+    v0PlusSciSec12->AddNode(v0Plus1Sec12,1);
+    v0PlusSciSec12->AddNode(v0Plus2Sec12,1);
+    v0PlusSciSec12->AddNode(v0Plus3Sec12,1);
+    v0PlusSciSec12->AddNode(v0Plus4Sec12,1);      
+    v0PlusSciSec12->AddNode(v0Plus5Sec12,1);
+    TGeoVolume *v0PlusSec12 = new TGeoVolumeAssembly("V0PlusSec12");
+    v0PlusSec12->AddNode(v0PlusSciSec12,1);
+ 
+    TGeoRotation *RotSec12 = new TGeoRotation("RotSec12", 90., 11*22.5, 90., 90.+11*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec12,11+1,RotSec12);
+
+    /// Definition sector 13
+    TGeoVolume *v0Plus1Sec13 = new TGeoVolume("V0Plus1Sec13",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec13 = new TGeoVolume("V0Plus2Sec13",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec13 = new TGeoVolume("V0Plus3Sec13",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec13 = new TGeoVolume("V0Plus4Sec13",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec13 = new TGeoVolume("V0Plus5Sec13",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec13->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec13->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec13->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec13->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec13->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec13 = new TGeoVolumeAssembly("V0PlusSciSec13");
+    v0PlusSciSec13->AddNode(v0Plus1Sec13,1);
+    v0PlusSciSec13->AddNode(v0Plus2Sec13,1);
+    v0PlusSciSec13->AddNode(v0Plus3Sec13,1);
+    v0PlusSciSec13->AddNode(v0Plus4Sec13,1);      
+    v0PlusSciSec13->AddNode(v0Plus5Sec13,1);
+    TGeoVolume *v0PlusSec13 = new TGeoVolumeAssembly("V0PlusSec13");
+    v0PlusSec13->AddNode(v0PlusSciSec13,1);
+ 
+    TGeoRotation *RotSec13 = new TGeoRotation("RotSec13", 90., 12*22.5, 90., 90.+12*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec13,12+1,RotSec13);
+
+    /// Definition sector 14
+    TGeoVolume *v0Plus1Sec14 = new TGeoVolume("V0Plus1Sec14",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec14 = new TGeoVolume("V0Plus2Sec14",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec14 = new TGeoVolume("V0Plus3Sec14",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec14 = new TGeoVolume("V0Plus4Sec14",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec14 = new TGeoVolume("V0Plus5Sec14",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec14->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec14->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec14->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec14->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec14->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec14 = new TGeoVolumeAssembly("V0PlusSciSec14");
+    v0PlusSciSec14->AddNode(v0Plus1Sec14,1);
+    v0PlusSciSec14->AddNode(v0Plus2Sec14,1);
+    v0PlusSciSec14->AddNode(v0Plus3Sec14,1);
+    v0PlusSciSec14->AddNode(v0Plus4Sec14,1);      
+    v0PlusSciSec14->AddNode(v0Plus5Sec14,1);
+    TGeoVolume *v0PlusSec14 = new TGeoVolumeAssembly("V0PlusSec14");
+    v0PlusSec14->AddNode(v0PlusSciSec14,1);
+ 
+    TGeoRotation *RotSec14 = new TGeoRotation("RotSec14", 90., 13*22.5, 90., 90.+13*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec14,13+1,RotSec14);
+
+    /// Definition sector 15
+    TGeoVolume *v0Plus1Sec15 = new TGeoVolume("V0Plus1Sec15",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec15 = new TGeoVolume("V0Plus2Sec15",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec15 = new TGeoVolume("V0Plus3Sec15",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec15 = new TGeoVolume("V0Plus4Sec15",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec15 = new TGeoVolume("V0Plus5Sec15",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec15->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec15->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec15->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec15->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec15->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec15 = new TGeoVolumeAssembly("V0PlusSciSec15");
+    v0PlusSciSec15->AddNode(v0Plus1Sec15,1);
+    v0PlusSciSec15->AddNode(v0Plus2Sec15,1);
+    v0PlusSciSec15->AddNode(v0Plus3Sec15,1);
+    v0PlusSciSec15->AddNode(v0Plus4Sec15,1);      
+    v0PlusSciSec15->AddNode(v0Plus5Sec15,1);
+    TGeoVolume *v0PlusSec15 = new TGeoVolumeAssembly("V0PlusSec15");
+    v0PlusSec15->AddNode(v0PlusSciSec15,1);
+ 
+    TGeoRotation *RotSec15 = new TGeoRotation("RotSec15", 90., 14*22.5, 90., 90.+14*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec15,14+1,RotSec15);
+
+    /// Definition sector 16
+    TGeoVolume *v0Plus1Sec16 = new TGeoVolume("V0Plus1Sec16",sV0PlusR1,medV0PlusSci); 
+    TGeoVolume *v0Plus2Sec16 = new TGeoVolume("V0Plus2Sec16",sV0PlusR2,medV0PlusSci);
+    TGeoVolume *v0Plus3Sec16 = new TGeoVolume("V0Plus3Sec16",sV0PlusR3,medV0PlusSci);
+    TGeoVolume *v0Plus4Sec16 = new TGeoVolume("V0Plus4Sec16",sV0PlusR4,medV0PlusSci);
+    TGeoVolume *v0Plus5Sec16 = new TGeoVolume("V0Plus5Sec16",sV0PlusR5,medV0PlusSci); 
+    v0Plus1Sec16->SetLineColor(kV0PlusColorSci); 
+    v0Plus2Sec16->SetLineColor(kV0PlusColorSci);
+    v0Plus3Sec16->SetLineColor(kV0PlusColorSci); 
+    v0Plus4Sec16->SetLineColor(kV0PlusColorSci);
+    v0Plus5Sec16->SetLineColor(kV0PlusColorSci);
+    TGeoVolume *v0PlusSciSec16 = new TGeoVolumeAssembly("V0PlusSciSec16");
+    v0PlusSciSec16->AddNode(v0Plus1Sec16,1);
+    v0PlusSciSec16->AddNode(v0Plus2Sec16,1);
+    v0PlusSciSec16->AddNode(v0Plus3Sec16,1);
+    v0PlusSciSec16->AddNode(v0Plus4Sec16,1);      
+    v0PlusSciSec16->AddNode(v0Plus5Sec16,1);
+    TGeoVolume *v0PlusSec16 = new TGeoVolumeAssembly("V0PlusSec16");
+    v0PlusSec16->AddNode(v0PlusSciSec16,1);
+ 
+    TGeoRotation *RotSec16 = new TGeoRotation("RotSec16", 90., 15*22.5, 90., 90.+15*22.5, 0., 0.);
+    v0Plus->AddNode(v0PlusSec16,15+1,RotSec16);
+
+    alice->AddNode(v0Plus,1,new TGeoTranslation(0, 0, fV0PlusZposition));
  
 }    
 //------------------------------------------------------------------------
@@ -657,9 +841,9 @@ void AliFITv6::CreateMaterials()
   Float_t Density, as[4], zs[4], ws[4];
 
 // Parameters for V0Plusscintilator: BC404
-   as[0] = 1.00794;  as[1] = 12.011;
-   zs[0] = 1.;    zs[1] = 6.;
-   ws[0] = 5.21;  ws[1] = 4.74;
+   as[0] = 1.00794;	as[1] = 12.011;
+   zs[0] = 1.;		zs[1] = 6.;
+   ws[0] = 5.21;	ws[1] = 4.74;
    Density      = 1.032;
    Id           = 5;
    AliMixture(Id, "V0PlusSci", as, zs, Density, -2, ws);
@@ -673,6 +857,7 @@ void AliFITv6::CreateMaterials()
 //-------------------------------------------------------------------
 void AliFITv6::DefineOpticalProperties()
 {
+
 // Path of the optical properties input file
   TString optPropPath = "$(ALICE_ROOT)/FIT/sim/quartzOptProperties.txt";
   optPropPath = gSystem->ExpandPathName(optPropPath.Data()); // Expand $(ALICE_ROOT) into real system path
@@ -714,6 +899,7 @@ void AliFITv6::DefineOpticalProperties()
   DeleteOptPropertiesArr(&aPckov, &dPckov, &aAbsSiO2, &rindexSiO2, &efficAll, &rindexAir, &absorAir, &rindexCathodeNext, &absorbCathodeNext, &efficMet, &aReflMet);
 }
 
+
 //-------------------------------------------------------------------
 void AliFITv6::Init()
 {
@@ -726,9 +912,9 @@ void AliFITv6::Init()
   for (Int_t Sec = 0; Sec < nSectors; Sec++)
     {
       for (Int_t Ring = 0; Ring < nRings; Ring++)
-  {
-    fIdV0Plus[Sec][Ring] = TVirtualMC::GetMC()->VolId(Form("V0Plus%dSec%d",Ring+1,Sec+1));
-  }
+	{
+	  fIdV0Plus[Sec][Ring] = TVirtualMC::GetMC()->VolId(Form("V0Plus%dSec%d",Ring+1,Sec+1));
+	}
     }
 
    AliDebug(1,Form("%s: *** FIT version 1 initialized ***\n",ClassName()));
@@ -781,25 +967,25 @@ void AliFITv6::StepManager()
       hits[11] = fSenseless;//Track length is sensless for T0+
       hits[12] = fSenseless;//Photon production for V0+
       if (TVirtualMC::GetMC()->TrackPid() == 50000050)   // If particles is photon then ...
-  {
-    if(RegisterPhotoE(hits[3])) {
-      fIshunt = 2;
-      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
-      // Create a track reference at the exit of photocatode
-    }      
-  }
+	{
+	  if(RegisterPhotoE(hits[3])) {
+	    fIshunt = 2;
+	    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
+	    // Create a track reference at the exit of photocatode
+	  }	    
+	}
       //charge particle HITS
       if ( TVirtualMC::GetMC()->TrackCharge() ) {
-  fIshunt = 0;
-  AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
-  //  printf("T0 :::volumes pmt %i mcp %i vol %i x %f y %f z %f particle %f all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
+	fIshunt = 0;
+	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
+	//	printf("T0 :::volumes pmt %i mcp %i vol %i x %f y %f z %f particle %f all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
       }
             
       //charge particle TrackReference
       if ( TVirtualMC::GetMC()->TrackCharge() )
-  AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
+	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
       
-    }// trck entering    
+    }// trck entering		
   } //sensitive
 
 
@@ -814,13 +1000,13 @@ void AliFITv6::StepManager()
   for (Int_t i = 0; i < nSectors; i++)
     {
       for (Int_t j = 0; j < nRings; j++)
-  {
-    if ( id == fIdV0Plus[i][j] ) 
-      {
-        IsId = kTRUE;
-        break;
-      }
-  }
+	{
+	  if ( id == fIdV0Plus[i][j] ) 
+	    {
+	      IsId = kTRUE;
+	      break;
+	    }
+	}
     }
 
   if ( IsId == kTRUE ) //If yes, then perform the following
@@ -829,67 +1015,67 @@ void AliFITv6::StepManager()
       //Defining V0+ ring numbers using the sensitive volumes
       Int_t RingNumber;      
 
-      if ( (id == fIdV0Plus[0][0]) || (id == fIdV0Plus[1][0]) || (id == fIdV0Plus[2][0]) || (id == fIdV0Plus[3][0]) || (id == fIdV0Plus[4][0]) || (id == fIdV0Plus[5][0]) || (id == fIdV0Plus[6][0]) || (id == fIdV0Plus[7][0]) ) RingNumber = 1;
+      if ( (id == fIdV0Plus[0][0]) || (id == fIdV0Plus[1][0]) || (id == fIdV0Plus[2][0]) || (id == fIdV0Plus[3][0]) || (id == fIdV0Plus[4][0]) || (id == fIdV0Plus[5][0]) || (id == fIdV0Plus[6][0]) || (id == fIdV0Plus[7][0]) || (id == fIdV0Plus[8][0]) || (id == fIdV0Plus[9][0]) || (id == fIdV0Plus[10][0]) || (id == fIdV0Plus[11][0]) || (id == fIdV0Plus[12][0]) || (id == fIdV0Plus[13][0]) || (id == fIdV0Plus[14][0]) || (id == fIdV0Plus[15][0]) ) RingNumber = 1;
 
-      else if ( (id == fIdV0Plus[0][1]) || (id == fIdV0Plus[1][1]) || (id == fIdV0Plus[2][1]) || (id == fIdV0Plus[3][1]) || (id == fIdV0Plus[4][1]) || (id == fIdV0Plus[5][1]) || (id == fIdV0Plus[6][1]) || (id == fIdV0Plus[7][1]) ) RingNumber = 2;
+      else if ( (id == fIdV0Plus[0][1]) || (id == fIdV0Plus[1][1]) || (id == fIdV0Plus[2][1]) || (id == fIdV0Plus[3][1]) || (id == fIdV0Plus[4][1]) || (id == fIdV0Plus[5][1]) || (id == fIdV0Plus[6][1]) || (id == fIdV0Plus[7][1]) || (id == fIdV0Plus[8][1]) || (id == fIdV0Plus[9][1]) || (id == fIdV0Plus[10][1]) || (id == fIdV0Plus[11][1]) || (id == fIdV0Plus[12][1]) || (id == fIdV0Plus[13][1]) || (id == fIdV0Plus[14][1]) || (id == fIdV0Plus[15][1]) ) RingNumber = 2;
 
-      else if ( (id == fIdV0Plus[0][2]) || (id == fIdV0Plus[1][2]) || (id == fIdV0Plus[2][2]) || (id == fIdV0Plus[3][2]) || (id == fIdV0Plus[4][2]) || (id == fIdV0Plus[5][2]) || (id == fIdV0Plus[6][2]) || (id == fIdV0Plus[7][2]) ) RingNumber = 3;
+      else if ( (id == fIdV0Plus[0][2]) || (id == fIdV0Plus[1][2]) || (id == fIdV0Plus[2][2]) || (id == fIdV0Plus[3][2]) || (id == fIdV0Plus[4][2]) || (id == fIdV0Plus[5][2]) || (id == fIdV0Plus[6][2]) || (id == fIdV0Plus[7][2]) || (id == fIdV0Plus[8][2]) || (id == fIdV0Plus[9][2]) || (id == fIdV0Plus[10][2]) || (id == fIdV0Plus[11][2]) || (id == fIdV0Plus[12][2]) || (id == fIdV0Plus[13][2]) || (id == fIdV0Plus[14][2]) || (id == fIdV0Plus[15][2]) ) RingNumber = 3;
 
-      else if ( (id == fIdV0Plus[0][3]) || (id == fIdV0Plus[1][3]) || (id == fIdV0Plus[2][3]) || (id == fIdV0Plus[3][3]) || (id == fIdV0Plus[4][3]) || (id == fIdV0Plus[5][3]) || (id == fIdV0Plus[6][3]) || (id == fIdV0Plus[7][3]) ) RingNumber = 4;
+      else if ( (id == fIdV0Plus[0][3]) || (id == fIdV0Plus[1][3]) || (id == fIdV0Plus[2][3]) || (id == fIdV0Plus[3][3]) || (id == fIdV0Plus[4][3]) || (id == fIdV0Plus[5][3]) || (id == fIdV0Plus[6][3]) || (id == fIdV0Plus[7][3]) || (id == fIdV0Plus[8][3]) || (id == fIdV0Plus[9][3]) || (id == fIdV0Plus[10][3]) || (id == fIdV0Plus[11][3]) || (id == fIdV0Plus[12][3]) || (id == fIdV0Plus[13][3]) || (id == fIdV0Plus[14][3]) || (id == fIdV0Plus[15][3]) ) RingNumber = 4;
 
-      else if ( (id == fIdV0Plus[0][4]) || (id == fIdV0Plus[1][4]) || (id == fIdV0Plus[2][4]) || (id == fIdV0Plus[3][4]) || (id == fIdV0Plus[4][4]) || (id == fIdV0Plus[5][4]) || (id == fIdV0Plus[6][4]) || (id == fIdV0Plus[7][4]) ) RingNumber = 5;
+      else if ( (id == fIdV0Plus[0][4]) || (id == fIdV0Plus[1][4]) || (id == fIdV0Plus[2][4]) || (id == fIdV0Plus[3][4]) || (id == fIdV0Plus[4][4]) || (id == fIdV0Plus[5][4]) || (id == fIdV0Plus[6][4]) || (id == fIdV0Plus[7][4]) || (id == fIdV0Plus[8][4]) || (id == fIdV0Plus[9][4]) || (id == fIdV0Plus[10][4]) || (id == fIdV0Plus[11][4]) || (id == fIdV0Plus[12][4]) || (id == fIdV0Plus[13][4]) || (id == fIdV0Plus[14][4]) || (id == fIdV0Plus[15][4]) ) RingNumber = 5;
 
       else RingNumber = 0;
 
       if ( RingNumber )
-  {
+	{
 
-    if(TVirtualMC::GetMC()->IsTrackEntering()) 
-      {
-        TVirtualMC::GetMC()->TrackPosition(pos);
-        TVirtualMC::GetMC()->TrackMomentum(mom);
-        Float_t Pt  = TMath::Sqrt( mom.Px() * mom.Px() + mom.Py() * mom.Py() );
-        TParticle *Particle = gAlice->GetMCApp()->Particle(gAlice->GetMCApp()->GetCurrentTrackNumber());
-        hits[0] = pos[0];
-        hits[1] = pos[1];
-        hits[2] = pos[2];
-        Float_t etot=TVirtualMC::GetMC()->Etot();
-        hits[3]=etot;
-        Int_t iPart= TVirtualMC::GetMC()->TrackPid();
-        Int_t partID=TVirtualMC::GetMC()->IdFromPDG(iPart);
-        hits[4]=partID;
-        Float_t ttime=TVirtualMC::GetMC()->TrackTime();
-        hits[5]=ttime*1e12;
-        hits[6] = TVirtualMC::GetMC()->TrackCharge();
-        hits[7] = mom.Px();
-        hits[8] = mom.Py();
-        hits[9] = mom.Pz();
-      }//Track entering
-    if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared())
-      {
-        Float_t Eloss, Tlength;    
-        Float_t EnergyDep = TVirtualMC::GetMC()->Edep();
-        Float_t Step   = TVirtualMC::GetMC()->TrackStep();//Energy loss in the current step
-        Int_t nPhotonsInStep = 0;
-        Int_t nPhotons = 0;
-        nPhotonsInStep = Int_t(EnergyDep / (fV0PlusLightYield*1e-9) );
-        nPhotons = nPhotonsInStep - Int_t((Float_t(nPhotonsInStep) * fV0PlusLightAttenuation * fV0PlusnMeters));
-        nPhotons = nPhotons - Int_t( Float_t(nPhotons) * fV0PlusFibToPhot);
-        Eloss += EnergyDep;
-        Tlength += Step;
-        hits[10] = Eloss;
-        hits[11] = Tlength;
-        hits[12] = nPhotons;
-        vol[0] = GetCellId(vol);
-        vol[1] = RingNumber;
-        vol[2] = 2;
-        fIshunt = 0;
-        AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
-        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
-        Tlength = 0.0;
-        Eloss = 0.0;
-      }//Exiting, stopped or disappeared track
-  }//Ring number
+	  if(TVirtualMC::GetMC()->IsTrackEntering()) 
+	    {
+	      TVirtualMC::GetMC()->TrackPosition(pos);
+	      TVirtualMC::GetMC()->TrackMomentum(mom);
+	      Float_t Pt  = TMath::Sqrt( mom.Px() * mom.Px() + mom.Py() * mom.Py() );
+	      TParticle *Particle = gAlice->GetMCApp()->Particle(gAlice->GetMCApp()->GetCurrentTrackNumber());
+	      hits[0] = pos[0];
+	      hits[1] = pos[1];
+	      hits[2] = pos[2];
+	      Float_t etot=TVirtualMC::GetMC()->Etot();
+	      hits[3]=etot;
+	      Int_t iPart= TVirtualMC::GetMC()->TrackPid();
+	      Int_t partID=TVirtualMC::GetMC()->IdFromPDG(iPart);
+	      hits[4]=partID;
+	      Float_t ttime=TVirtualMC::GetMC()->TrackTime();
+	      hits[5]=ttime*1e12;
+	      hits[6] = TVirtualMC::GetMC()->TrackCharge();
+	      hits[7] = mom.Px();
+	      hits[8] = mom.Py();
+	      hits[9] = mom.Pz();
+	    }//Track entering
+	  if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared())
+	    {
+	      Float_t Eloss, Tlength;    
+	      Float_t EnergyDep = TVirtualMC::GetMC()->Edep();
+	      Float_t Step   = TVirtualMC::GetMC()->TrackStep();//Energy loss in the current step
+	      Int_t nPhotonsInStep = 0;
+	      Int_t nPhotons = 0;
+	      nPhotonsInStep = Int_t(EnergyDep / (fV0PlusLightYield*1e-9) );
+	      nPhotons = nPhotonsInStep - Int_t((Float_t(nPhotonsInStep) * fV0PlusLightAttenuation * fV0PlusnMeters));
+	      nPhotons = nPhotons - Int_t( Float_t(nPhotons) * fV0PlusFibToPhot);
+	      Eloss += EnergyDep;
+	      Tlength += Step;
+	      hits[10] = Eloss;
+	      hits[11] = Tlength;
+	      hits[12] = nPhotons;
+	      vol[0] = GetCellId(vol);
+	      vol[1] = RingNumber;
+	      vol[2] = 2;
+	      fIshunt = 0;
+	      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
+	      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
+	      Tlength = 0.0;
+	      Eloss = 0.0;
+	    }//Exiting, stopped or disappeared track
+	}//Ring number
     }
   
 }
@@ -918,15 +1104,15 @@ void AliFITv6::SetPMTeff()
 {
   Float_t lambda[50];
   Float_t eff[50 ] = {0,        0,       0.23619,  0.202909, 0.177913, 
-        0.175667, 0.17856, 0.190769, 0.206667, 0.230286,
-        0.252276, 0.256267,0.26,     0.27125,  0.281818,
-        0.288118, 0.294057,0.296222, 0.301622, 0.290421, 
-        0.276615, 0.2666,  0.248,    0.23619,  0.227814, 
-        0.219818, 0.206667,0.194087, 0.184681, 0.167917, 
-        0.154367, 0.1364,  0.109412, 0.0834615,0.0725283, 
-        0.0642963,0.05861, 0.0465,   0.0413333,0.032069, 
-        0.0252203,0.02066, 0.016262, 0.012,    0.00590476,
-        0.003875, 0.00190, 0,        0,        0          } ;
+		    0.175667, 0.17856, 0.190769, 0.206667, 0.230286,
+		    0.252276, 0.256267,0.26,     0.27125,  0.281818,
+		    0.288118, 0.294057,0.296222, 0.301622, 0.290421, 
+		    0.276615, 0.2666,  0.248,    0.23619,  0.227814, 
+		    0.219818, 0.206667,0.194087, 0.184681, 0.167917, 
+		    0.154367, 0.1364,  0.109412, 0.0834615,0.0725283, 
+		    0.0642963,0.05861, 0.0465,   0.0413333,0.032069, 
+		    0.0252203,0.02066, 0.016262, 0.012,    0.00590476,
+		    0.003875, 0.00190, 0,        0,        0          } ;
   for (Int_t i=0; i<50; i++) lambda[i]=200+10*i; 
 
   fPMTeff = new TGraph(50,lambda,eff);
@@ -947,42 +1133,85 @@ Int_t AliFITv6::GetCellId(Int_t *vol)
   if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec6")) fCellId = 6;
   if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec7")) fCellId = 7;
   if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec8")) fCellId = 8;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec1")) fCellId = 9;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec2")) fCellId = 10;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec3")) fCellId = 11;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec4")) fCellId = 12;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec5")) fCellId = 13;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec6")) fCellId = 14;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec7")) fCellId = 15;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec8")) fCellId = 16;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec1")) fCellId = 17;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec2")) fCellId = 18;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec3")) fCellId = 19;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec4")) fCellId = 20;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec5")) fCellId = 21;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec6")) fCellId = 22;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec7")) fCellId = 23;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec8")) fCellId = 24;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec1")) fCellId = 25;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec2")) fCellId = 26;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec3")) fCellId = 27;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec4")) fCellId = 28;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec5")) fCellId = 29;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec6")) fCellId = 30;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec7")) fCellId = 31;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec8")) fCellId = 32;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec1")) fCellId = 33;  
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec2")) fCellId = 34;  
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec3")) fCellId = 35;  
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec4")) fCellId = 36;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec5")) fCellId = 37;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec6")) fCellId = 38;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec7")) fCellId = 39;
-  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec8")) fCellId = 40;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec9")) fCellId = 9;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec10")) fCellId = 10;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec11")) fCellId = 11;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec12")) fCellId = 12;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec13")) fCellId = 13;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec14")) fCellId = 14;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec15")) fCellId = 15;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus1Sec16")) fCellId = 16;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec1")) fCellId = 17;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec2")) fCellId = 18;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec3")) fCellId = 19;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec4")) fCellId = 20;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec5")) fCellId = 21;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec6")) fCellId = 22;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec7")) fCellId = 23;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec8")) fCellId = 24;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec9")) fCellId = 25;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec10")) fCellId = 26;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec11")) fCellId = 27;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec12")) fCellId = 28;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec13")) fCellId = 29;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec14")) fCellId = 30;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec15")) fCellId = 31;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus2Sec16")) fCellId = 32;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec1")) fCellId = 33;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec2")) fCellId = 34;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec3")) fCellId = 35;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec4")) fCellId = 36;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec5")) fCellId = 37;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec6")) fCellId = 38;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec7")) fCellId = 39;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec8")) fCellId = 40;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec9")) fCellId = 41;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec10")) fCellId = 42;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec11")) fCellId = 43;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec12")) fCellId = 44;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec13")) fCellId = 45;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec14")) fCellId = 46;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec15")) fCellId = 47;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus3Sec16")) fCellId = 48;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec1")) fCellId = 49;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec2")) fCellId = 50;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec3")) fCellId = 51;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec4")) fCellId = 52;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec5")) fCellId = 53;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec6")) fCellId = 54;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec7")) fCellId = 55;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec8")) fCellId = 56;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec9")) fCellId = 57;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec10")) fCellId = 58;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec11")) fCellId = 59;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec12")) fCellId = 60;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec13")) fCellId = 61;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec14")) fCellId = 62;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec15")) fCellId = 63;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus4Sec16")) fCellId = 64;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec1")) fCellId = 65;	
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec2")) fCellId = 66;	
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec3")) fCellId = 67;	
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec4")) fCellId = 68;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec5")) fCellId = 69;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec6")) fCellId = 70;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec7")) fCellId = 71;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec8")) fCellId = 72;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec9")) fCellId = 73;	
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec10")) fCellId = 74;	
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec11")) fCellId = 75;	
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec12")) fCellId = 76;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec13")) fCellId = 77;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec14")) fCellId = 78;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec15")) fCellId = 79;
+  if (gMC->CurrentVolID(vol[2]) == gMC->VolId("V0Plus5Sec16")) fCellId = 80;
  
   return fCellId;
+
 }
 
+
+//-----------------------------------------------------------------
 
 Int_t AliFITv6::ReadOptProperties(const string filePath, Float_t **e, Double_t **de,
     Float_t **abs, Float_t **n, Int_t &kNbins) const{
@@ -1049,6 +1278,9 @@ Int_t AliFITv6::ReadOptProperties(const string filePath, Float_t **e, Double_t *
   return 0;
 }
 
+
+
+
 void AliFITv6::FillOtherOptProperties(Float_t **efficAll, Float_t **rindexAir, Float_t **absorAir,
     Float_t **rindexCathodeNext, Float_t **absorbCathodeNext,
     Double_t **efficMet, Double_t **aReflMet, const Int_t kNbins) const{
@@ -1090,4 +1322,5 @@ void AliFITv6::DeleteOptPropertiesArr(Float_t **e, Double_t **de, Float_t **abs,
   delete [] (*efficMet);
   delete [] (*aReflMet);
 }
+
 
