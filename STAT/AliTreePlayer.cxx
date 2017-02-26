@@ -898,7 +898,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
     Int_t hisIndex=hisDescription.Index(">>"); 
     if (hisIndex<=0) {  
       isOK=kFALSE;
-      ::Error("MakeHistograms","Invalid expression %s",hisDescription.Data());
+      ::Error("AliTreePlayer::MakeHistograms","Invalid expression %s",hisDescription.Data());
       break;
     }else{
       hisDescriptionArray->AddAtAndExpand(new TObjString(((hisDescriptionList->At(iHis)->GetName()))+(hisIndex+2)),iHis);
@@ -908,7 +908,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
     Int_t nDims=hisDimArray->GetEntries();
     if (nDims<=0){
       isOK=kFALSE;
-      ::Error("MakeHistograms","Invalid description %s",hisDescription.Data());
+      ::Error("AliTreePlayer::MakeHistograms","Invalid description %s",hisDescription.Data());
       delete hisDimArray;
       break;
     }
@@ -959,17 +959,21 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
     //  2.2 fill histograms if  not yet done
     if (hisArray->GetEntriesFast()==0){  // book histograms if not yet done
       for (Int_t iHis=0; iHis<nHistograms; iHis++){
+	if (hisDescriptionArray->At(iHis)==NULL){
+	  ::Error("AliTreePlayer::MakeHistograms", "Empty description %d",iHis);
+	  continue;
+	}
 	TString hisDescription= hisDescriptionArray->At(iHis)->GetName();	
 	TString  varDecription=hisDescriptionList->At(iHis)->GetName();	
 	TObjArray * descriptionArray=hisDescription.Tokenize("(,)");
 	TObjArray * varArray= TString(hisDescriptionList->At(iHis)->GetName()).Tokenize(":");
 	Int_t nLength=descriptionArray->GetEntries();
 	if ((nLength-1)/3 < hisDims[iHis]){
-	  ::Error("xxx", "Histogram dimension Mismatch %s", hisDescriptionArray->At(iHis)->GetName());
+	  ::Error("AliTreePlayer::MakeHistograms", "Histogram dimension Mismatch %s", hisDescriptionArray->At(iHis)->GetName());
 	  return NULL; 
 	}
 	if (varArray->GetEntries()<hisDims[iHis]){
-	  ::Error("xxx", "Variable mismatch %s", hisDescriptionArray->At(iHis)->GetName());
+	  ::Error("AliTreePlayer::MakeHistograms", "Variable mismatch %s", hisDescriptionArray->At(iHis)->GetName());
 	  return NULL; 
 	}
 	TString hName(descriptionArray->At(0)->GetName());
