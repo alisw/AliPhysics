@@ -3591,7 +3591,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         outputContainer->Add(fhLambda0ExoticityAllSameTCard[i][tm]);    
         
         fhNCellsExoticityAllSameTCard[i][tm]  = new TH2F 
-        (Form("hNCellsExoticity_EBin%d%s",i,add[tm].Data()),
+        (Form("hNCellsExoticityAllSameTCard_EBin%d%s",i,add[tm].Data()),
          Form("#it{n}_{cells} vs #it{exoticity}, all cells same TCard as leading, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
          200,-1,1,nceclbins,nceclmin,nceclmax); 
         fhNCellsExoticityAllSameTCard[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
