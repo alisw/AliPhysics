@@ -118,7 +118,7 @@ Bool_t ConfigPhiPP5TeV_PID
     else if(yaxisVar==AliRsnMiniValue::kFirstDaughterP) out->AddAxis(fdp,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kSecondDaughterP)  out->AddAxis(sdp,100,0.,10.);
     else if(isMC && (i==5 || i==7)) out->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
-    else out->AddAxis(ptID,200,0.,20.);//default use mother pt
+    else out->AddAxis(ptID,500,0.,50.);//default use mother pt
 
     // axis Z: centrality-multiplicity
     if(!isPP) out->AddAxis(centID,100,0.,100.);
@@ -141,7 +141,7 @@ Bool_t ConfigPhiPP5TeV_PID
     outm->SetMotherMass(1.019461);
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID,215,0.985,1.2);
-    outm->AddAxis(ptID,200,0.,20.);
+    outm->AddAxis(ptID,500,0.,50.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
     else outm->AddAxis(centID,161,-0.5,160.5);
     if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
@@ -171,7 +171,7 @@ Bool_t ConfigPhiPP5TeV_PID
     outps->SetPairCuts(cutsPair);
     outps->AddAxis(fdpt,100,0.,10.);
     outps->AddAxis(sdpt,100,0.,10.);
-    outps->AddAxis(ptID,200,0.,20.);
+    outps->AddAxis(ptID,500,0.,50.);
 
     AliRsnMiniOutput* outpsf=task->CreateOutput(Form("phi_phaseSpaceFine%s", suffix),"HIST","TRUE");
     outpsf->SetDaughter(0,AliRsnDaughter::kKaon);
@@ -196,7 +196,7 @@ Bool_t ConfigPhiPP5TeV_PID
       outreflex->SetMotherMass(1.019461);
       outreflex->SetPairCuts(cutsPair);
       outreflex->AddAxis(imID,215,0.985,1.2);
-      outreflex->AddAxis(ptID,200,0.,20.);
+      outreflex->AddAxis(ptID,500,0.,50.);
       if(!isPP) outreflex->AddAxis(centID,100,0.,100.);
       else outreflex->AddAxis(centID,400,0.5,400.5);
       if (polarizationOpt.Contains("J")) outreflex->AddAxis(ctjID,21,-1.,1.);
