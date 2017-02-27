@@ -91,6 +91,9 @@ public:
     Bool_t                               IsEventSelectedForCentrFlattening_Bis(Double_t centvalue);
     
     void                                 SetCentralityMine(Bool_t CentFlatMine){fCentFlatMine = CentFlatMine;}
+    void                                 SetEtaRange(Double_t etaminimum, Double_t etamaximum);
+    
+    
     
     AliHFEpid *GetPID() const { return fPID; };
     
@@ -213,7 +216,9 @@ private:
     Double_t              fEtaMinimumNegative;//for reso
     TH1F                 *fCentralityAll;//!centall
     Bool_t               fCentFlatMine; //for purity evaluation
-    
+    Double_t             fmineta;  //eta cuts
+    Double_t             fmaxeta;//eta cuts
+
     
     AliAnalysisTaskFlowITSTPCTOFQCSP(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented
     AliAnalysisTaskFlowITSTPCTOFQCSP& operator=(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented

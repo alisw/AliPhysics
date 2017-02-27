@@ -152,6 +152,8 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency(const char *name)
 ,fcentral(0)
 ,fsemicentral(0)
 ,WeightsForHF(0)
+,fmineta(-0.8)
+,fmaxeta(0.8)
 {
     
     fPID = new AliHFEpid("hfePid");
@@ -263,6 +265,8 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 ,fcentral(0)
 ,fsemicentral(0)
 ,WeightsForHF(0)
+,fmineta(-0.8)
+,fmaxeta(0.8)
 {
     
     fPID = new AliHFEpid("hfePid");
@@ -394,7 +398,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
             //            fHFEDenominator->Fill(ForHFEeffGen);
             
             AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)mcArray->At(imcArrayL);
-            if(AODMCtrack->Eta() < -0.8 || AODMCtrack->Eta() > 0.8) continue;
+            if(AODMCtrack->Eta() < fmineta || AODMCtrack->Eta() > fmaxeta) continue;
             
             Int_t from_D_or_B;
             if(TMath::Abs(AODMCtrack->GetPdgCode())==11){
@@ -535,7 +539,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
         
         if(IsAODanalysis()) if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
-        if(track->Eta() < -0.8 || track->Eta() > 0.8) continue;
+        if(track->Eta() < fmineta || track->Eta() > fmaxeta) continue;
         
         // Fill Here after HFE track cuts
         Double_t ForHFEeffRecoFilt[4];
@@ -1907,4 +1911,11 @@ Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtatiltDw2040(Double_t mcEtapT
 }
 //_________________________________________
 
-
+//---------------------------------------------------------------------------
+void AliAnalysisTaskHFEEfficiency::SetEtaRange(Double_t etaminimum, Double_t etamaximum)
+{
+    //Set PID cuts
+    fmineta = etaminimum;
+    fmaxeta = etamaximum;
+}
+//_____________________________________________________________________________

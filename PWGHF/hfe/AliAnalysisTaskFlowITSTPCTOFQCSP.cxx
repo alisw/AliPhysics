@@ -220,6 +220,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP(const char *n
 ,fEtaMinimumNegative(0)
 ,fCentralityAll(0)
 ,fCentFlatMine(0)
+,fmineta(-0.8)
+,fmaxeta(0.8)
 {
     //Named constructor
     
@@ -350,6 +352,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP()
 ,fEtaMinimumNegative(0)
 ,fCentralityAll(0)
 ,fCentFlatMine(0)
+,fmineta(-0.8)
+,fmaxeta(0.8)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -608,7 +612,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         //--------------------------------------hfe begin-----------------------------------------------------------
         //==========================================================================================================
         //======================================track cuts==========================================================
-        if(track->Eta()<-0.8 || track->Eta()>0.8)    continue;    //eta cuts on candidates
+        if(track->Eta()<fmineta || track->Eta()>fmaxeta)    continue;    //eta cuts on candidates
         
         // RecKine: ITSTPC cuts
         if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
@@ -662,10 +666,10 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
             // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
         }
         
- //       if(TMath::Abs(fTOFnSigma) < fmaxTOFnSigma && TMath::Abs(fTPCnSigma) < fmaxTPCnsigmaLowpT && fTPCnSigmaPI > 4)
-       // {
-       //     fITSnsigmaElect->Fill(track->P(),fITSnSigma);
-       // }
+        //       if(TMath::Abs(fTOFnSigma) < fmaxTOFnSigma && TMath::Abs(fTPCnSigma) < fmaxTPCnsigmaLowpT && fTPCnSigmaPI > 4)
+        // {
+        //     fITSnsigmaElect->Fill(track->P(),fITSnSigma);
+        // }
         
         
         fITSnsigma->Fill(track->P(),fITSnSigma);
@@ -1687,6 +1691,12 @@ Bool_t AliAnalysisTaskFlowITSTPCTOFQCSP::IsEventSelectedForCentrFlattening_Bis(D
     
 }
 //---------------------------------------------------------------------------
-
+void AliAnalysisTaskFlowITSTPCTOFQCSP::SetEtaRange(Double_t etaminimum, Double_t etamaximum)
+{
+    //Set PID cuts
+    fmineta = etaminimum;
+    fmaxeta = etamaximum;
+}
+//_____________________________________________________________________________
 //_____________________________________________________________________________
 

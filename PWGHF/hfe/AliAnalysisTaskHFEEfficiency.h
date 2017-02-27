@@ -55,6 +55,8 @@ public:
     //  void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec70,Bool_t &fFlagPhotonicElec100,Bool_t &fFlagPhotonicElec500);
     void SelectPhotonicElectronR(Int_t itrack, AliVTrack *track, Int_t hijing, Double_t weight, Int_t motherindex, Int_t pdg, Int_t source);
     void SelectPhotonicElectronR_ULSLS(Int_t itrack, AliVTrack *track, Int_t hijing, Double_t weight, Int_t pdg, Int_t source);
+    void SetEtaRange(Double_t etaminimum, Double_t etamaximum);
+
     
     Double_t GetMCweightPi0(Double_t mcPi0pT);
     Double_t GetMCweightPi0tiltUp(Double_t mcPi0pT);
@@ -211,7 +213,8 @@ private:
     Bool_t                fcentral;//select weights for 010
     Bool_t                fsemicentral;//select weights for 2040
     Bool_t                WeightsForHF;//set the weigh
-    
+    Double_t             fmineta;  //eta cuts
+    Double_t             fmaxeta;//eta cuts
     
     
     AliAnalysisTaskHFEEfficiency(const AliAnalysisTaskHFEEfficiency&); // not implemented

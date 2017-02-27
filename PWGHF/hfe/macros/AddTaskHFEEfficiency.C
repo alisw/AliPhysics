@@ -18,6 +18,8 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
                                                     TString uniqueID = "",
                                                     Float_t centrMin,
                                                     Float_t centrMax,
+                                                    Double_t etamin = -0.8,
+                                                    Double_t etamax = 0.8,
                                                     Bool_t WeightsHF = kTRUE,
                                                     Bool_t Weights = kTRUE,
                                                     Bool_t CentralWeights = kTRUE,
@@ -92,6 +94,7 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
     
     taskHFE->SetTiltUpWeights(UpWeights);
     taskHFE->SetTiltDwWeights(DwWeights);
+    taskHFE->SetEtaRange(etamin,etamax);//-0.8,0.8
     
     //set RP cuts for flow package analysis
     // TString foutputName = "PbPbPhotonicElecEfficiency010ITSTOFTPCWeights.root";
