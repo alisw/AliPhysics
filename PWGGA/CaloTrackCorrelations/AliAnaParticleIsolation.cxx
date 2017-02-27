@@ -1274,7 +1274,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     {
       for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
       {
-        if (  fNCellsInCandidate[icut] <= fCluster->GetNCells() ) 
+        if ( fCluster->GetNCells() >= fNCellsInCandidate[icut] ) 
         {
           coneptsumClusterPerNCellCut[icut]+=ptcone;
           fhPtClusterInConePerNCellCut->Fill(icut+1, ptcone, GetEventWeight());
@@ -1284,7 +1284,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
       
       for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
       {
-        if ( fExoCutInCandidate[icut] < fClusterExoticity ) 
+        if ( fClusterExoticity < fExoCutInCandidate[icut] ) 
         {
           coneptsumClusterPerExoCut[icut]+=ptcone;
           fhPtClusterInConePerExoCut->Fill(icut+1, ptcone, GetEventWeight());
@@ -1786,7 +1786,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     {
       for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
       {
-        if (  fNCellsInCandidate[icut] <= fCluster->GetNCells() ) 
+        if ( fCluster->GetNCells() >= fNCellsInCandidate[icut] ) 
         {
           coneptsumTrackPerNCellCut[icut]+=pTtrack;
           fhPtTrackInConePerNCellCut->Fill(icut+1, pTtrack, GetEventWeight());
@@ -1796,7 +1796,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
       
       for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
       {
-        if ( fExoCutInCandidate[icut] < fClusterExoticity ) 
+        if ( fClusterExoticity < fExoCutInCandidate[icut] ) 
         {
           coneptsumTrackPerExoCut[icut]+=pTtrack;
           fhPtTrackInConePerExoCut->Fill(icut+1, pTtrack, GetEventWeight());
@@ -4120,7 +4120,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtTrackInConePerRCutLargePtTrig = new TH2F
         ("hPtTrackInConePerRCutLargePtTrig","Track #it{p}_{T}, different #it{R} cuts, #it{p}_{T}^{trig} > 10 GeV",
          fNRCutsInCone,0.5,fNRCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
-        fhPtTrackInConePerRCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T}^{track} (GeV/#it{c})");
+        fhPtTrackInConePerRCutLargePtTrig->SetYTitle("#it{p}_{T}^{track} (GeV/#it{c})");
         fhPtTrackInConePerRCutLargePtTrig->SetXTitle("#it{R}");
         for(Int_t i = 1; i <= fNRCutsInCone; i++)
           fhPtTrackInConePerRCutLargePtTrig->GetXaxis()->SetBinLabel(i, Form("%2.2f",fRCutInCone[i-1]));
