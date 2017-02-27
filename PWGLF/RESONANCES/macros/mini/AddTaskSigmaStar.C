@@ -63,7 +63,8 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
  TString     outNameSuffix = "Sigma1385",
- Int_t       centr = 0
+ Int_t       centr = 0,
+ Float_t    minDCAlambdaDaugh=0.15
  )
 {  
   
@@ -300,7 +301,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    } else 
      Printf("========================== DATA analysis - PID cuts used");
  
-   if (!ConfigSigmaStar(task, collSyst, isMC, piPIDCut, pPIDCut, aodFilterBit, trackDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigSigmaStar(task, collSyst, isMC, piPIDCut, pPIDCut, aodFilterBit, trackDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, NTPCcluster, "", cutsPair, minDCAlambdaDaugh)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
