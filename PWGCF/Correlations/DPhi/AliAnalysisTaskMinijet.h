@@ -28,7 +28,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   
   void         SetUseMC(Bool_t useMC=kTRUE, Bool_t mcOnly=kFALSE)    {fUseMC = useMC; fMcOnly=mcOnly;}
   void         SetAnalyseOnlyPrimaries(Bool_t analysePrimOnly)       {fAnalysePrimOnly = analysePrimOnly;} // not used anymore
-  void         SetPtRange(Float_t ptMin, Float_t ptMax)              {fPtMin = ptMin; fPtMax = ptMax; }
+  void         SetPtRange(Float_t ptMin = 0, Float_t ptMax = 10)              {fPtMin = ptMin; fPtMax = ptMax; }
   void         SetTriggerPtCut(Float_t triggerPtCut)                 {fTriggerPtCut = triggerPtCut;}  
   void         SetAssociatePtCut(Float_t associatePtCut)             {fAssociatePtCut = associatePtCut;} 
   void         SetModeEsdAod(Int_t mode)                             {fMode = mode;}

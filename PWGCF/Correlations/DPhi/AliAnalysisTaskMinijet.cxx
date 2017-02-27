@@ -105,7 +105,7 @@ AliAnalysisTaskMinijet::AliAnalysisTaskMinijet(const char *name)
     fChargedPi0(0),
     fVertexCheck(0),
     fPropagateDca(0),
-    fCentralityMethod("")
+    fCentralityMethod("ABC")
 {
     
     //Constructor
