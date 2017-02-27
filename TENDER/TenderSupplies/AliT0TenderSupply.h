@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <AliTenderSupply.h>
+#include "AliDoesNotExist.h"
 
 class AliT0TenderSupply: public AliTenderSupply {
   
