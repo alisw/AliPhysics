@@ -1449,7 +1449,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             EZNA = towZNA[i+1];
           }
           fhZNSpectra->Fill(centrperc,i+4.5,EZNA);
-          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+4.5,EZNC);
+          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+4.5,EZNA);
           if(fUseZDCSpectraCorr && EZNA>0.) {
             Double_t mu1 = SpecCorMu1[i+4]->Interpolate(centrperc);
             Double_t mu2 = SpecCorMu2[i+4]->Interpolate(centrperc);
