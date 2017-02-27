@@ -358,6 +358,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
     if (fIsMC) {
       AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
+      /// Workaround: if the AOD are filtered with an AliRoot tag before v5-08-18, hyper-nuclei prongs
+      /// are marked as SecondaryFromMaterial.
       const int mother_id = part->GetMother();
       AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)stack->At(mother_id) : 0x0;
       const int mother_pdg = mother ? TMath::Abs(mother->GetPdgCode()) : 0;
@@ -366,10 +368,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int iC = part->Charge() > 0 ? 1 : 0;
       if (std::abs(part->GetPdgCode()) == fPDG) {
         for (int iR = iTof; iR >= 0; iR--) {
-          fReconstructed[iR][iC]->Fill(centrality,part->Pt());
           if (part->IsPhysicalPrimary()) {
+            fReconstructed[iR][iC]->Fill(centrality,part->Pt());
             fDCAPrimary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
-            fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
+            if (!iR) fPtCorrection[iC]->Fill(pT,part->Pt()-pT); // Fill it only once.
           } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
             fDCASecondary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
           else
