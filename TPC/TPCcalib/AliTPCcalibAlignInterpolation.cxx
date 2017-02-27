@@ -2379,7 +2379,7 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   const Double_t pxmin=8.48499984741210938e+01; //param.GetPadRowRadii(0,0)-param.GetPadPitchLength(0,0)/2
   const Double_t pxmax=2.46600006103515625e+02; //2.46600006103515625e+02param.GetPadRowRadii(36,param.GetNRow(36)-1)+param.GetPadPitchLength(36,param.GetNRow(36)-1)/2.
   Int_t     ndim=4;
-  Int_t     nbins[4]= {30,  (Int_t)((sector1-sector0-0.1)*15),     int(abs(theta1-theta0)*10),        3};  // {radius, phi bin, }
+  Int_t     nbins[4]= {30,  (Int_t)((sector1-sector0-0.1)*15),     int(TMath::Abs(theta1-theta0)*10),        3};  // {radius, phi bin, }
   Double_t  xmin[4] = {pxmin,  sector0+0.05,   theta0,                            -2.0};
   Double_t  xmax[4] = {pxmax, sector1-0.05,   theta1,               2.0};
   //
