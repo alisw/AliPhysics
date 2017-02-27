@@ -41,6 +41,7 @@
 #include "AliESDInputHandler.h"
 #include "AliEventplane.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHerwigEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -96,6 +97,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
+  fIsHerwig(kFALSE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
   fMCLabelShift(0),
@@ -131,6 +133,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fNVertSPDCont(0),
   fBeamType(kNA),
   fPythiaHeader(nullptr),
+  fHerwigHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
@@ -207,6 +210,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
+  fIsHerwig(kFALSE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
   fMCLabelShift(0),
@@ -242,6 +246,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fNVertSPDCont(0),
   fBeamType(kNA),
   fPythiaHeader(nullptr),
+  fHerwigHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
@@ -408,7 +413,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   if (!fGeneralHistograms)
     return;
 
-  if (fIsPythia) {
+  if (fIsPythia || fIsHerwig) {
     fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", 11, 0, 11);
     fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
@@ -539,14 +544,15 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
-  if (fIsPythia) {
+  if (fIsPythia || fIsHerwig) {
     fHistEventsAfterSel->Fill(fPtHardBin, 1);
     fHistTrialsAfterSel->Fill(fPtHardBin, fNTrials);
     fHistXsectionAfterSel->Fill(fPtHardBin, fXsection);
     fHistPtHard->Fill(fPtHard);
   }
 
-  fHistZVertex->Fill(fVertex[2]);
+
+    fHistZVertex->Fill(fVertex[2]);
 
   if (fForceBeamType != kpp) {
     fHistCentrality->Fill(fCent);
@@ -1487,6 +1493,43 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     fXsection = fPythiaHeader->GetXsection();
     fNTrials = fPythiaHeader->Trials();
   }
+
+
+
+    if (fIsHerwig) {
+  
+    if (MCEvent()) {
+      fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(MCEvent()->GenEventHeader());
+      
+     
+      if (!fHerwigHeader) {
+        // Check if AOD
+
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+        if (aodMCH) {
+          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(aodMCH->GetCocktailHeader(i));
+            if (fHerwigHeader) break;
+          }
+        }
+      }
+    }
+  }
+
+   if (fHerwigHeader) {
+      fPtHard = fHerwigHeader->GetPtHard();
+
+    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+    for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
+      if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
+        break;
+    }
+    fXsection = fHerwigHeader->Weight();
+    fNTrials = fHerwigHeader->Trials();
+  }
+
 
   fTriggers = GetTriggerList();
 

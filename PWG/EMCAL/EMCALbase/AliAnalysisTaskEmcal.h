@@ -14,6 +14,7 @@ class TH1;
 class TProfile;
 class AliEMCALGeometry;
 class AliGenPythiaEventHeader;
+class AliGenHerwigEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
@@ -156,6 +157,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
+  void                        SetIsHerwig(Bool_t i)                                 { fIsHerwig          = i                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
@@ -304,6 +306,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TString                     fCentEst;                    ///< name of V0 centrality estimator
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
+  Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 ///< minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               ///< if MC label > fMCLabelShift, MC label -= fMCLabelShift
@@ -343,6 +346,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fNVertSPDCont;               //!<!event SPD vertex number of contributors
   BeamType                    fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
+  AliGenHerwigEventHeader    *fHerwigHeader;               //!<!event Herwig header
   Double_t                    fPtHard;                     //!<!event pt hard
   Int_t                       fPtHardBin;                  //!<!event pt hard bin
   Int_t                       fNTrials;                    //!<!event trials
