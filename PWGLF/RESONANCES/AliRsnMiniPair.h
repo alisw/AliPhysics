@@ -9,6 +9,7 @@
 
 #include <TObject.h>
 #include <TLorentzVector.h>
+#include <TRandom.h>
 #include "TClonesArray.h"
 #include "AliRsnListOutput.h"
 

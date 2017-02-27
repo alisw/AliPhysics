@@ -272,15 +272,46 @@ Double_t AliRsnMiniPair::OpeningAngle(Bool_t mc)
    const TLorentzVector &p1 = fP1[ID(mc)];
    const TLorentzVector &p2 = fP2[ID(mc)];
  
-
-   TVector3 p1Vect = p1.Vect();
-   TVector3 p2Vect = p2.Vect();
-
-   Double_t magP1P2 = TMath::Sqrt(p1Vect.Mag2()*p2Vect.Mag2());
-
-   Double_t cosB = p1Vect.Dot(p2Vect)/magP1P2;
-
-   return cosB;
+   TVector3 P1 = p1.Vect();
+   TVector3 P2 = p2.Vect();
+   
+   //   Double_t magP1P2 = TMath::Sqrt(p1Vect.Mag2()*p2Vect.Mag2());
+   //   Double_t cosB = p1Vect.Dot(p2Vect)/magP1P2;
+   //   return cosB;
+   
+   
+   Double_t r(0);
+   
+   //Randomization of pair ordering (Symmetric Peaks)
+   do { r = gRandom -> Uniform (0.0,1.0); } while (r==0.5);
+    
+   //  if (r < 0.5) { P1.SetXYZ (track1->Px(),track1->Py(),track1->Pz()); P2.SetXYZ (track2->Px(),track2->Py(),track2->Pz()); }
+   //    if (r > 0.5) { P1.SetXYZ (track2->Px(),track2->Py(),track2->Pz()); P2.SetXYZ (track1->Px(),track1->Py(),track1->Pz()); }
+   
+   
+   if (r < 0.5) { 
+     P1.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz()); 
+     P2.SetXYZ (fP2[ID(mc)].Px(), fP2[ID(mc)].Py(), fP2[ID(mc)].Pz());
+   }
+   
+   
+   if (r > 0.5) { 
+     P1.SetXYZ (fP2[ID(mc)].Px(), fP2[ID(mc)].Py(), fP2[ID(mc)].Pz());
+     P2.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz()); 
+   }
+   
+   
+   
+   //PhiV Calculation  === as per note
+   
+   TVector3 P = P1 + P2;
+   TVector3 U ( P.X()/P.Mag(),P.Y()/P.Mag(),P.Z()/P.Mag() );
+   TVector3 A ( U.Y()/TMath::Sqrt(U.X()*U.X()+U.Y()*U.Y()),-U.X()/TMath::Sqrt(U.X()*U.X()+ U.Y()*U.Y()),0 );
+   TVector3 Vp = P1.Cross(P2);
+   TVector3 V (Vp.X()/Vp.Mag(),Vp.Y()/Vp.Mag(),Vp.Z()/Vp.Mag());
+   TVector3 W = U.Cross(V);
+   
+   return (180.0/TMath::Pi())*A.Angle(W);
 }
 
 
