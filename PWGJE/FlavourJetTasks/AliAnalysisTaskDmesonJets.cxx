@@ -2618,10 +2618,17 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
     return kFALSE;
   }
 
-  Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
-  if (matchingAODdeltaAODlevel <= 0) {
-    // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
-    return kFALSE;
+  if (fAodEvent) {
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel <= 0) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      for (auto &eng : fAnalysisEngines) {
+          if (eng.fInhibit) continue;
+          hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
+          fHistManager.FillTH1(hname, "MismatchDeltaAOD");
+      }
+      return kFALSE;
+    }
   }
 
   for (auto &eng : fAnalysisEngines) {
