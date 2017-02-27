@@ -38,6 +38,7 @@ public:
       kCosThetaStar,  // polarization angle
       kCosThetaJackson,  // polarization angle in Jackson frame
       kCosThetaTransversity, // polarization angle in transversity frame
+      kCosThetaToEventPlane, // polarization angle with respect to Event Plane
       kAngleLeading,  // angle to leading particle
       kFirstDaughterPt,  //pt of the first daughter of the pair
       kSecondDaughterPt, //pt of the second daughter of the pair

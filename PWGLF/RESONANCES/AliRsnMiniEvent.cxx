@@ -14,6 +14,50 @@
 ClassImp(AliRsnMiniEvent)
 
 //__________________________________________________________________________________________________
+AliRsnMiniEvent::AliRsnMiniEvent(const AliRsnMiniEvent &copy) :
+   TObject(copy),
+   fID(copy.fID),
+   fVz(copy.fVz),
+   fMult(copy.fMult),
+   fRefMult(copy.fRefMult),
+   fTracklets(copy.fTracklets),
+   fAngle(copy.fAngle),
+   fQnVector(copy.fQnVector),
+   fLeading(copy.fLeading),
+   fParticles(copy.fParticles)
+{
+//
+// Copy constructor.
+// Implemented as requested by C++ standards.
+// Can be used in PROOF and by plugins.
+//
+}
+
+//__________________________________________________________________________________________________
+AliRsnMiniEvent &AliRsnMiniEvent::operator=(const AliRsnMiniEvent &copy)
+{
+//
+// Assignment operator.
+// Implemented as requested by C++ standards.
+// Can be used in PROOF and by plugins.
+//
+
+   TObject::operator=(copy);
+   if (this == &copy)
+      return *this;
+   fID = copy.fID;
+   fVz = copy.fVz;
+   fMult = copy.fMult;
+   fRefMult = copy.fRefMult;
+   fTracklets = copy.fTracklets;
+   fAngle = copy.fAngle;
+   fQnVector = copy.fQnVector;
+   fLeading = copy.fLeading;
+   fParticles = copy.fParticles;
+   return (*this);
+}
+
+//__________________________________________________________________________________________________
 void AliRsnMiniEvent::AddParticle(AliRsnMiniParticle copy)
 {
 //

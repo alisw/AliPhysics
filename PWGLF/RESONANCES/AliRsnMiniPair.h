@@ -14,6 +14,7 @@
 
 class AliRsnListOutput;
 class AliRsnMiniParticle;
+class AliRsnMiniEvent;
 
 class AliRsnMiniPair : public TObject {
 public:
@@ -52,6 +53,7 @@ public:
    Double_t        CosThetaStar(Bool_t mc);
    Double_t        CosThetaJackson(Bool_t mc);
    Double_t        CosThetaTransversity(Bool_t mc);
+   Double_t        CosThetaToEventPlane(AliRsnMiniEvent *event, Bool_t mc);
    Double_t        OpeningAngle(Bool_t mc); 
    Double_t        DaughterPt(Int_t daughterId, Bool_t mc);
    Double_t        DaughterDCA(Int_t daughterId); 

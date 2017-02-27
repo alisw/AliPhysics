@@ -28,6 +28,8 @@ class TList;
 class AliTriggerAnalysis;
 class AliRsnMiniEvent;
 class AliRsnCutSet;
+class AliQnCorrectionsManager;
+class AliQnCorrectionsQnVector;
 
 class AliRsnMiniAnalysisTask : public AliAnalysisTaskSE {
 
@@ -46,6 +48,8 @@ public:
    void                UseReferenceMultiplicity(const char *type)    {fRefMultiType = type; fRefMultiType.ToUpper();}
    void                SetUseCentralityPatch(Bool_t isAOD049) {fUseAOD049CentralityPatch = isAOD049;}
    void                SetUseCentralityPatchPbPb2011(Int_t centralityPatchPbPb2011) {fUseCentralityPatchPbPb2011 = centralityPatchPbPb2011;}
+   void                SetFlowQnVectorSubDet(const char *s) { fFlowQnVectorSubDet = s;}
+   void                SetFlowQnVectorExpStep(const char *s) { fFlowQnVectorExpStep = s;}
    void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; if(!fCentralityType.Contains("AliMultSelection")) fCentralityType.ToUpper();}
    void                UseContinuousMix()                 {fContinuousMix = kTRUE;}
    void                UseBinnedMix()                     {fContinuousMix = kFALSE;}
@@ -95,6 +99,9 @@ private:
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
    void     StoreTrueMother(AliRsnMiniPair *pair, AliRsnMiniEvent *event);
    Bool_t   EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2);
+   AliQnCorrectionsQnVector * GetQnVectorFromList(const TList *list,
+                                                        const char *subdetector,
+                                                        const char *expectedstep) const;
 
    Bool_t               fUseMC;           //  use or not MC info
    Int_t                fEvNum;           //! absolute event counter
@@ -105,6 +112,9 @@ private:
    TString              fRefMultiType;    //reference multiplicity to use, TRACKLETS (SPD only) or GLOBAL (ITS+TPC)
    Bool_t               fUseAOD049CentralityPatch; //flag to enable AOD049 centrality patch
    Int_t                fUseCentralityPatchPbPb2011; //for PbPb 2011 centrality flattening
+   AliQnCorrectionsManager *fFlowQnVectorMgr; // Qn vector manager
+   TString              fFlowQnVectorSubDet;
+   TString              fFlowQnVectorExpStep;
 
    Bool_t               fContinuousMix;   //  mixing --> technique chosen (continuous or binned)
    Int_t                fNMix;            //  mixing --> required number of mixes
@@ -144,7 +154,7 @@ private:
    Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
    Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
 
-   ClassDef(AliRsnMiniAnalysisTask, 12);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 13);   // AliRsnMiniAnalysisTask
 };
 
 

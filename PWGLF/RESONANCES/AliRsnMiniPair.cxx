@@ -1,5 +1,8 @@
 #include "AliRsnMiniParticle.h"
+#include "AliRsnMiniEvent.h"
 #include "AliRsnMiniPair.h"
+
+#include <AliQnCorrectionsQnVector.h>
 
 ClassImp(AliRsnMiniPair)
 
@@ -123,6 +126,32 @@ Double_t AliRsnMiniPair::CosThetaTransversity(Bool_t useMC)
 	TVector3 momentumD = daughter.Vect();
 
 	return momentumD.Dot(transFrame) / TMath::Sqrt((momentumD.Mag2() * transFrame.Mag2()));
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::CosThetaToEventPlane(AliRsnMiniEvent *event, Bool_t useMC)
+{
+//
+// Return cosine of angle of one daughter in the resonance rest frame to Quantization axis.
+// Quantization axis - perpendicular between event plane and beam direction
+//
+
+  // Get QnVector
+  AliQnCorrectionsQnVector *qnVect = event->GetQnVector();
+  if (!qnVect) return 0;
+
+  TLorentzVector &mother = fSum[ID(useMC)];
+  TLorentzVector daughter = fP1[ID(useMC)];
+  //    TLorentzVector daughter = fP2[ID(useMC)];
+  daughter.Boost(-mother.BoostVector());
+
+  TVector3 evPlaneVect(qnVect->Qx(1), qnVect->Qy(1), 0);
+  TVector3 beamAxis(0, 0, 1);
+  TVector3 quantizationAxis = beamAxis.Cross(evPlaneVect);
+  TVector3 momentumD = daughter.Vect();
+
+  Double_t cosTheta = momentumD.Dot(quantizationAxis)/TMath::Sqrt(momentumD.Mag2()*quantizationAxis.Mag2());
+  return cosTheta;
 }
 
 //__________________________________________________________________________________________________

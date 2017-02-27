@@ -46,13 +46,16 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
  Bool_t      useMixLS=0,
  Bool_t      checkReflex=0,
  AliRsnMiniValue::EType yaxisvar=AliRsnMiniValue::kPt,
- TString     polarizationOpt="" /* J - Jackson,T - Transversity */
+ TString     polarizationOpt="" /* J - Jackson,T - Transversity */,
+ TString     eventPlaneSubDet="" /* VZEROA*/,
+ TString     eventPlaneExpStep="" /* latest*/
 )
 {  
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask=AliVEvent::kINT7;
+  if (!isPP)  triggerMask=AliVEvent::kAny;
   if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
@@ -201,6 +204,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts",AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
+
+  // -- SETS event plane parameters
+  if (!eventPlaneSubDet.IsNull()&&!eventPlaneExpStep.IsNull()) {
+    task->SetFlowQnVectorSubDet(eventPlaneSubDet.Data());
+    task->SetFlowQnVectorExpStep(eventPlaneExpStep.Data());
+  }
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
