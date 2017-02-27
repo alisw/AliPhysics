@@ -23,7 +23,8 @@ Bool_t ConfigSigmaStar
    Float_t                 lambdaDaughDCA,
    Int_t                   NTPCcluster,
    const char             *suffix,
-   AliRsnCutSet           *cutsPair
+   AliRsnCutSet           *cutsPair,
+   Float_t                minDCAlambdaDaugh=0.15
 )
 {
    // manage suffix
@@ -33,29 +34,31 @@ Bool_t ConfigSigmaStar
    // selections for the pion from the decay of Sigma*
    /////////////////////////////////////////////////////
    //
-   AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForSigmaStar", AliPID::kPion);
-   cutPi->SetPIDCut(piPIDCut);    // fPIDCut used in IsSelected() after the call to cutQuality
-   AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
-   //cutQuality->SetDefaults2011();
-   cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
-   // SetDefaults2010 contains the following selections:
-   //     SetPtRange(0.15, 1E+20);
-   //     SetEtaRange(-0.8, 0.8);
-   //     and from aliroot/master/src/ANALYSIS/ANALYSISalice/AliESDtrackCuts.cxx
-   //     AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(1,0)
-   //         esdTrackCuts->SetMinNClustersTPC(70);
-   //         esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   //         esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   //         esdTrackCuts->SetRequireTPCRefit(kTRUE);
-   //         esdTrackCuts->SetRequireITSRefit(kTRUE);
-   //         esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-   //         esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");    // NB. With pt_min=0.15 (see above) -> DCAxy_max = 0.2560
-   //         esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-   //         esdTrackCuts->SetMaxDCAToVertexZ(2);
-   //         esdTrackCuts->SetDCAToVertex2D(kFALSE);
-   //         esdTrackCuts->SetRequireSigmaToVertex(kFALSE);  
-   //         esdTrackCuts->SetMaxChi2PerClusterITS(36);
-   //  
+  AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForSigmaStar", AliPID::kPion);
+  cutPi->SetPIDCut(piPIDCut);    // fPIDCut used in IsSelected() after the call to cutQuality
+  AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
+  cutQuality->SetDefaults2011(0,1);
+  //cutQuality->SetDefaults2010(0,1);  // 1st par. kTRUE is the default (0 -> use TPC clusters). 2nd par. kTRUE default (-> standard Pt and eta range)
+  // SetDefaults2010 and SetDefaults2011 contain the following selections:
+  //     SetPtRange(0.15, 1E+20);
+  //     SetEtaRange(-0.8, 0.8);
+  //     and from aliroot/master/src/ANALYSIS/ANALYSISalice/AliESDtrackCuts.cxx
+  //     AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(1,0)    or GetStandardITSTPCTrackCuts2011(1,0)
+  //         esdTrackCuts->SetMinNClustersTPC(70);               or esdTrackCuts->SetMinNClustersTPC(50);
+  //         esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  //         esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  //         esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  //         esdTrackCuts->SetRequireITSRefit(kTRUE);
+  //         esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  //         esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");    // NB. With pt_min=0.15 (see above) -> DCAxy_max = 0.2560
+  //              (for 2011 esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");                          // DCAxy_max = 0.2483)
+  //         esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+  //         esdTrackCuts->SetMaxDCAToVertexZ(2);
+  //         esdTrackCuts->SetDCAToVertex2D(kFALSE);
+  //         esdTrackCuts->SetRequireSigmaToVertex(kFALSE);  
+  //         esdTrackCuts->SetMaxChi2PerClusterITS(36);
+  //  
+  //
    AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForSigmaStar", AliRsnTarget::kDaughter);
    cutSetPi->AddCut(cutPi);
    cutSetPi->SetCutScheme(cutPi->GetName());
@@ -73,8 +76,8 @@ Bool_t ConfigSigmaStar
    esdTrackCuts->SetAcceptKinkDaughters(0); //
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   esdTrackCuts->SetMinDCAToVertexXY(0.15);   
-   //
+   esdTrackCuts->SetMinDCAToVertexXY(minDCAlambdaDaugh);    // if minDCAlambdaDaugh>0.25, minDCA of Lambda_daughter pions (and protons) is greater than DCAxy_max of pions (see above) 
+  //
    /////////////////////////////////////////////////
    // selections for Lambda
    AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0, AliPID::kProton, AliPID::kPion);
@@ -167,11 +170,38 @@ Bool_t ConfigSigmaStar
 	  out->AddAxis(ptID, 100, 0.0, 10.0);
 	 //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
 	 
-      if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+      if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
       
     } 
+
+
     
-   AddMonitorOutput_PionPt(cutSetPi->GetMonitorOutput());
+   ///////////////////////////////////////////////////////////
+  // test part: use ROTATE in place of MIX
+  i=0; // test is for SigmaStar+ only
+  if (!use[i]) continue;
+  if (collSyst) output[i] = "SPARSE";
+  AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastar_Rotated_%s%s", name[i].Data(), suffix), output[i].Data(), "ROTATE2");
+  out->SetCutID(0, cutID1[i]);
+  out->SetCutID(1, cutID2[i]);
+  out->SetDaughter(0, AliRsnDaughter::kLambda);
+  out->SetDaughter(1, AliRsnDaughter::kPion);
+  out->SetCharge(0, charge1[i]);
+  out->SetCharge(1, charge2[i]);
+  out->SetMotherPDG(ipdg[i]);
+  out->SetMotherMass(mass[i]);
+  // pair cuts
+  out->SetPairCuts(cutsPair);
+  if (useIM[i]) out->AddAxis(imID, 800, 1.2, 2.0);
+  out->AddAxis(ptID, 100, 0.0, 10.0);
+  if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
+  //
+  // end test part 
+  ///////////////////////////////////////////////////////////
+
+
+
+  AddMonitorOutput_PionPt(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionEta(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionDCAxy(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionDCAz(cutSetPi->GetMonitorOutput());
@@ -191,9 +221,9 @@ Bool_t ConfigSigmaStar
    AddMonitorOutput_LambdaProtonPID(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaPionPID(cutSetLambda->GetMonitorOutput());
    
-   /*
+   
    AddMonitorOutput_LambdaMass(cutSetAntiLambda->GetMonitorOutput());
-   AddMonitorOutput_LambdaP(cutSetAntiLambda->GetMonitorOutput());
+   //AddMonitorOutput_LambdaP(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaPt(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaNegDaughPt(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaPosDaughPt(cutSetAntiLambda->GetMonitorOutput());
@@ -203,7 +233,7 @@ Bool_t ConfigSigmaStar
    AddMonitorOutput_LambdaCosPointAngle(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaAntiProtonPID(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaAntiPionPID(cutSetAntiLambda->GetMonitorOutput());
-   */
+   
 
    if (isMC) {
      
@@ -224,7 +254,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(ptID, 100, 0.0, 10.0);
      //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      // create output
      AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarM_TrueMC%s", suffix), mode.Data(), "MOTHER");
@@ -240,7 +270,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(ptID, 100, 0.0, 10.0);
      //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      // create output
      AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarPBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
@@ -256,7 +286,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(ptID, 100, 0.0, 10.0);
      //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      
      // create output
@@ -273,7 +303,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(ptID, 100, 0.0, 10.0);
      //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      // create output
      AliRsnMiniOutput *out = task->CreateOutput(Form("XiP_TrueMC%s", suffix), mode.Data(), "MOTHER");
@@ -288,7 +318,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(imID, 800, 1.2, 2.0);
      out->AddAxis(ptID, 100, 0.0, 10.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      
      // create output
@@ -304,7 +334,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(imID, 800, 1.2, 2.0);
      out->AddAxis(ptID, 100, 0.0, 10.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      
      AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520P_TrueMC%s", suffix), mode.Data(), "MOTHER");
@@ -321,7 +351,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(imID, 800, 1.2, 2.0);
      out->AddAxis(ptID, 100, 0.0, 10.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520M_TrueMC%s", suffix), mode.Data(), "MOTHER");
      // selection settings
@@ -337,7 +367,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(imID, 800, 1.2, 2.0);
      out->AddAxis(ptID, 100, 0.0, 10.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      
      // create output
@@ -355,7 +385,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(imID, 800, 1.2, 2.0);
      out->AddAxis(ptID, 100, 0.0, 10.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520MBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
      // selection settings
@@ -371,7 +401,7 @@ Bool_t ConfigSigmaStar
      out->AddAxis(imID, 800, 1.2, 2.0);
      out->AddAxis(ptID, 100, 0.0, 10.0);
      
-     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0);
      
      
      
