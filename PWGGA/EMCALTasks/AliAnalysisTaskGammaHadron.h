@@ -117,6 +117,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
     TObjArray*                  CloneClustersTObjArray(AliClusterContainer* clusters)          ;
     void GetMulClassPi0(Int_t&);
+    void GetZVtxClassPi0(Int_t&);
     void AddMixEventPi0(const Int_t, const Int_t, const Int_t, Int_t&, const Float_t&, const Float_t&);
   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 
@@ -221,10 +222,10 @@ virtual ~AliAnalysisTaskGammaHadron();
 
 
   const static int nMulClass =   8;  // <<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
-  const static int nZClass   =   3;
+  const static int nZClass   =   6;
   const static int nPtClass = 1;
   int iEvt[nMulClass][nZClass][nPtClass];
-  const static int nEvt      =   3;//30; // mixing "depth"
+  const static int nEvt      =   10;//30; // mixing "depth"
 
   EmcEventPi0 evt;
   EmcEventPi0 EmcEventList[nMulClass][nZClass][nPtClass][nEvt];

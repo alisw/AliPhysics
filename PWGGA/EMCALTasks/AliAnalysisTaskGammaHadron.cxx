@@ -1002,6 +1002,7 @@ Int_t AccClus=0;
 	Int_t MulClass = 4;
 
 	GetMulClassPi0(MulClass);
+	GetZVtxClassPi0(vtxClass);
 	//	std::cout<<Form("Summary of Hits: %d, %d, %d, %d,%d,%d; MulClass and Total", AccClus, nclusthis, MulClass, NoOfClustersInEvent,fCurrentEventTrigger,fTriggerType)<<std::endl;
 
 	Float_t phitrig = 0;
@@ -1237,7 +1238,20 @@ clustersClone = CloneClustersTObjArray(clustersCont);
      if (nclus < MultCut[imcl]) break;
    }
  }
+//<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
+ void AliAnalysisTaskGammaHadron::GetZVtxClassPi0(Int_t& ivcl)
+ {
 
+   Double_t ZvTx=fEventCuts.GetPrimaryVertex()->GetZ();
+   if (!ZvTx) return;
+
+   const Double_t VtxCut[nZClass] = {-20, -5, -1.5, 2.5, 6, 20};
+
+   ivcl=0;
+   for (ivcl=0; ivcl<nMulClass; ivcl++) {
+     if (ZvTx < VtxCut[ivcl]) break;
+   }
+ }
 //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 void AliAnalysisTaskGammaHadron::AddMixEventPi0(const Int_t MulClass, const Int_t vtxClass, const Int_t PtClass, Int_t& iEvent, const Float_t& phitrig, const Float_t& thetatrig)
 {
@@ -1361,6 +1375,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	Int_t MulClass = 4;
 	Int_t olapswitch=0;
 	GetMulClassPi0(MulClass);
+	GetZVtxClassPi0(vtxClass);
 	//std::cout<<"    "<<MulClass<<std::endl;   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<
 	//...........................................
 	//do a small loop to count the triggers in this event
