@@ -103,7 +103,7 @@ void AliTwoTrackRes::ConnectInputData(Option_t *) {
   Double_t maxChi2PerClusterTPC;         // max. chi2 per cluster per TPC track
   Int_t cutMode = 1;                     // select cut mode
   if (cutMode == 1) {
-  cov1 = 2; cov2 = 2; cov3 = 0.5; cov4 = 0.5; cov5 = 2;
+  cov1 = 3; cov2 = 2; cov3 = 0.5; cov4 = 0.5; cov5 = 2;
   nSigma = 3; minNClustersTPC = 75; maxChi2PerClusterTPC = 3.5;
   fTrackCuts->SetMaxCovDiagonalElements(cov1, cov2, cov3, cov4, cov5);
   fTrackCuts->SetMaxNsigmaToVertex(nSigma);
