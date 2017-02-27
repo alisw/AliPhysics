@@ -54,7 +54,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fZVertex(7.),
   fCentralityMethod("V0M"),
 // track cuts
-  fTrackEtaCut(0.9),
+  fTrackEtaCut(0.7),
   fTrackEtaCutMin(-1.),
   fPtMin(0.5),
   fDCAXYCut(0),
