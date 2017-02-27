@@ -81,7 +81,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fMinPtTrack(0),
   fMinNTrack(0),
   fMinPtTrackInEmcal(0),
-  fSelectPtHardBin(-999),
+  fMinPtHard(-1),
+  fMaxPtHard(-1),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
   fMCRejectFilter(kFALSE),
@@ -106,7 +107,6 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fBeamType(kNA),
   fPythiaHeader(0),
   fPtHard(0),
-  fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
   fOutput(0),
@@ -168,7 +168,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fMinPtTrack(0),
   fMinNTrack(0),
   fMinPtTrackInEmcal(0),
-  fSelectPtHardBin(-999),
+  fMinPtHard(-1),
+  fMaxPtHard(-1),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
   fMCRejectFilter(kFALSE),
@@ -193,7 +194,6 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fBeamType(kNA),
   fPythiaHeader(0),
   fPtHard(0),
-  fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
   fOutput(0),
@@ -353,6 +353,7 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
   fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
   fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
+  fHistEventRejection->GetXaxis()->SetBinLabel(14,"MCOutlier");
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
 
@@ -838,8 +839,19 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
     }
   }
 
-  if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin)  {
+  if (fMinPtHard >= 0 && fPtHard < fMinPtHard)  {
     if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
+    return kFALSE;
+  }
+
+  if (fMaxPtHard >= 0 && fPtHard >= fMaxPtHard)  {
+    if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
+    return kFALSE;
+  }
+
+  // Reject filter for MC data
+  if (!CheckMCOutliers()) {
+    if (fGeneralHistograms) fHistEventRejection->Fill("MCOutlier",1);
     return kFALSE;
   }
 
@@ -1011,14 +1023,6 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
 
     if (fPythiaHeader) {
       fPtHard = fPythiaHeader->GetPtHard();
-
-      const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-      const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-      for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
-        if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
-          break;
-      }
-
       fXsection = fPythiaHeader->GetXsection();
       fNTrials = fPythiaHeader->Trials();
     }

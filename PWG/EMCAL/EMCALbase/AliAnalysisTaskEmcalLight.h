@@ -126,13 +126,13 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
 
   // Event selection
   void                        SetTriggerSelectionBitMap(UInt_t t)                   { fTriggerSelectionBitMap = t                         ; }
-  void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
-  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
+  void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent     = max      ; }
+  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz       = max      ; }
   void                        SetZvertexDiffValue(Double_t cut)                     { fZvertexDiff       = cut                            ; }
   void                        SetMinPtTrack(Double_t min)                           { fMinPtTrack        = min                            ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
-  void                        SetPtHardBin(Int_t pt)                                { fSelectPtHardBin   = pt                             ; }
+  void                        SetPtHardRange(Double_t min, Double_t max)            { fMinPtHard         = min  ; fMaxPtHard   = max      ; }
   void                        AddAcceptedTriggerClass(const char* trigClass)        { fAcceptedTriggerClasses.Add(new TObjString(trigClass)); }
   void                        AddRejectedTriggerClass(const char* trigClass)        { fRejectedTriggerClasses.Add(new TObjString(trigClass)); }
   void                        ClearAcceptedTriggerClasses()                         { fAcceptedTriggerClasses.Clear()                     ; }
@@ -221,7 +221,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Double_t                    fMinPtTrack;                 ///< cut on track pt in event selection
   Int_t                       fMinNTrack;                  ///< minimum nr of tracks in event with pT>fTrackPtCut
   Double_t                    fMinPtTrackInEmcal;          ///< min pt track in emcal
-  Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
+  Int_t                       fMinPtHard;                  ///< select minimum pt hard (MC)
+  Int_t                       fMaxPtHard;                  ///< select maximum pt hard (MC)
   TObjArray                   fAcceptedTriggerClasses;     ///< list of accepted trigger classes
   TObjArray                   fRejectedTriggerClasses;     ///< list of accepted trigger classes
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
@@ -250,7 +251,6 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   EBeamType_t                 fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   Double_t                    fPtHard;                     //!<!event pt hard
-  Int_t                       fPtHardBin;                  //!<!event pt hard bin
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
 
