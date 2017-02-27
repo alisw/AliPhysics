@@ -80,7 +80,7 @@ public:
     double       Distance(const AliFmThreeVector<double>& p, bool scanPeriods = true) const;
 
     /// checks for valid parametrization
-    bool         Valid(double world = 1.e+5) const {return !Bad(world);}
+    bool         Valid(double world = 1.e+7) const {return !Bad(world);}
     int            Bad(double world = 1.e+5) const;
 
     /// move the origin along the helix to s which becomes then s=0
