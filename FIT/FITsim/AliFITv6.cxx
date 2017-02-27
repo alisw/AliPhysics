@@ -66,7 +66,6 @@
 
 ClassImp(AliFITv6)
 
-
 //--------------------------------------------------------------------
 AliFITv6::AliFITv6():  AliFIT(),
   fIdSens1(0),
@@ -1213,9 +1212,9 @@ Int_t AliFITv6::GetCellId(Int_t *vol)
 
 //-----------------------------------------------------------------
 
-Int_t AliFITv6::ReadOptProperties(const string filePath, Float_t **e, Double_t **de,
+Int_t AliFITv6::ReadOptProperties(const std::string filePath, Float_t **e, Double_t **de,
     Float_t **abs, Float_t **n, Int_t &kNbins) const{
-  ifstream infile;
+  std::ifstream infile;
   infile.open(filePath.c_str());
 
   // Check if file is opened correctly
@@ -1224,7 +1223,7 @@ Int_t AliFITv6::ReadOptProperties(const string filePath, Float_t **e, Double_t *
     return -1;
   }
 
-  string comment; // dummy, used just to read 4 first lines and move the cursor to the 5th, otherwise unused
+  std::string comment; // dummy, used just to read 4 first lines and move the cursor to the 5th, otherwise unused
   if(!getline(infile,comment)){ // first comment line
           AliFatal(Form("Error opening ascii file (it is probably a folder!): %s", filePath.c_str()));
     return -2;
@@ -1249,7 +1248,7 @@ Int_t AliFITv6::ReadOptProperties(const string filePath, Float_t **e, Double_t *
 
   // read the main body of the file (table of values: energy, absorption length and refractive index)
   Int_t iLine=0;
-  string sLine;
+  std::string sLine;
   getline(infile, sLine);
   while(!infile.eof()){
     if(iLine >= kNbins){

@@ -49,7 +49,7 @@ protected:
 
 private: 
  // Optical properties reader: e-Energy, abs-AbsorptionLength[cm], n-refractive index
-  Int_t ReadOptProperties(const string inputFilePath, Float_t **e,
+  Int_t ReadOptProperties(const std::string inputFilePath, Float_t **e,
     Double_t **de, Float_t **abs, Float_t **n, Int_t &kNbins) const;
   void FillOtherOptProperties(Float_t **efficAll, Float_t **rindexAir,
     Float_t **absorAir, Float_t **rindexCathodeNext, Float_t **absorbCathodeNext,
