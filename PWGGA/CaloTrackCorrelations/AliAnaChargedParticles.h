@@ -49,16 +49,20 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   
   void    MakeAnalysisFillHistograms() ;
   
-  void    SwitchOnFillTrackBCHistograms()    { fFillTrackBCHistograms   = kTRUE  ; }
-  void    SwitchOffFillTrackBCHistograms()   { fFillTrackBCHistograms   = kFALSE ; }
+  void    SwitchOnFillTrackBCHistograms()        { fFillTrackBCHistograms   = kTRUE  ; }
+  void    SwitchOffFillTrackBCHistograms()       { fFillTrackBCHistograms   = kFALSE ; }
 
-  void    SwitchOnFillVertexBC0Histograms()  { fFillVertexBC0Histograms = kTRUE  ; }
-  void    SwitchOffFillVertexBC0Histograms() { fFillVertexBC0Histograms = kFALSE ; }
+  void    SwitchOnFillVertexBC0Histograms()      { fFillVertexBC0Histograms = kTRUE  ; }
+  void    SwitchOffFillVertexBC0Histograms()     { fFillVertexBC0Histograms = kFALSE ; }
 
+  void    SwitchOnFillEtaPhiRegionsHistograms()  { fFillEtaPhiRegionHistograms = kTRUE  ; }
+  void    SwitchOffFillEtaPhiRegionsHistograms() { fFillEtaPhiRegionHistograms = kFALSE ; }
+  
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
   Bool_t  fFillVertexBC0Histograms;         ///<  Fill histograms for tracks with vertex BC=0 or not related histograms
+  Bool_t  fFillEtaPhiRegionHistograms;      ///<  Fill track pT spectrum histograms in different eta-phi windows
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   
   //Histograms
