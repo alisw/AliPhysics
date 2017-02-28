@@ -41,8 +41,9 @@ def _safe_folder_name(unsafe):
 
 
 class Beamerdoc(object):
-    def __init__(self, author, title):
+    def __init__(self, author, title, subtitle):
         self.title = title
+        self.subtitle = subtitle
         self.author = author
         self.sections = []
         self.output_dir = './{0}/'.format(_safe_folder_name(self.title))
@@ -59,9 +60,10 @@ class Beamerdoc(object):
         % remove navigation symbols
         \setbeamertemplate{{navigation symbols}}{{}}
         \author{{{author}}}
-        \institute[NBI, Copenhagen]{{Niels Bohr Institute, Copenhagen\\HMTF MC benchmark studies\\Supervisor: Michele Floris}}
+        \institute[]{{developed by Christian Bourjau,\\ Niels Bohr Institute, Copenhagen}}
 
         \title{{{title}}}
+        \subtitle{{{subtitle}}}
         \begin{{document}}
 
         \frame[plain]{{\titlepage}}
@@ -154,7 +156,7 @@ class Beamerdoc(object):
 
     def _create_latex_and_save_figures(self):
         body = ''
-        body += self.preamble.format(title=self.title, author=self.author)
+        body += self.preamble.format(title=self.title, subtitle=self.subtitle, author=self.author)
         for sec in self.sections:
             body += sec._make_section_body()
         body += self.postamble

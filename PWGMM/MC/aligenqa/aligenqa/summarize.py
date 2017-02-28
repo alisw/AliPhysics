@@ -22,8 +22,9 @@ def summarize(args):
                 gen_name = args.gen_name
             else:
                 gen_name = utils.get_generator_name_from_filename(args.input_file)
-            latexdoc = roofie.Beamerdoc(author="HMTF (Christian Bourjau)",
-                                        title=r"{0} {1}".format(gen_name, global_trigger))
+            latexdoc = roofie.Beamerdoc(author="PWG-MM",
+                                        title=r"{0} - {1}".format(gen_name, global_trigger),
+                                        subtitle="Generator-level QA")
 
             # Fish the plots we want out of the .root file and if necessary adjust some visual settings
             sec = latexdoc.add_section(r"Highlights")

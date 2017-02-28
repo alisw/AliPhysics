@@ -54,9 +54,10 @@ def compare(args):
             for f, trigger in zip([f1, f2], [args.trigger1, args.trigger2]):
                 results_dirs.append(f.MultEstimators.__getattr__("results_post" + trigger))
 
-            latexdoc = roofie.Beamerdoc(author="HMTF (Christian Bourjau)",
+            latexdoc = roofie.Beamerdoc(author="PWG-MM",
                                         title=r"Comparison of {0} {1} with {2} {3}".format(gen_names[0], args.trigger1,
-                                                                                           gen_names[1], args.trigger2))
+                                                                                           gen_names[1], args.trigger2),
+                                        subtitle="Generator-level QA")
 
             # Fish the plots we want out of the .root file and if necessary adjust some visual settings
             sec = latexdoc.add_section(r'Comparison of "highlight" plots')
