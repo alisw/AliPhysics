@@ -1208,7 +1208,7 @@ void FillSSDBranches(TList * SSDList){
                 f1->SetParNames("sigma Landau","MPV","N","sigma Gaus");
                 f1->SetParLimits(0,2.0,100.0);
                 f1->SetParLimits(3,0.0,100.0);
-                if(fHist1DQ->Fit(tmpQ,"BRQON")==0)
+                if(static_cast<int>(fHist1DQ->Fit(tmpQ,"BRQON"))==0)
                 {
                     mpv[i]=f1->GetParameter(1);
                     fHistMPVs->Fill(mpv[i]);
