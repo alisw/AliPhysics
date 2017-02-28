@@ -30,6 +30,7 @@ public:
     kPairCut_phiv157_mee60,
     kPairCut_phiv157_mee80,
     kPairCut_phiv157_mee100,
+    kPairCut_phiv236_mee30, // < 5% rec. conv. remaining in cent+semi pt400. Fraction diffGamma/ULS reduced by 28% in semi pt400.
     kPairCut_phiv236_mee40,
     kPairCut_phiv236_mee60,
     kPairCut_phiv236_mee80,
@@ -194,7 +195,7 @@ private:
   static enum enHistVars {
     kMee=0, kMee500,
     kPtee, kP2D, kRuns,
-    kPhiV, kOpAng, kOpAng2, kOpAng3,
+    kPhiV, kPhiV3D, kOpAng, kOpAng2, kOpAng3,
     kOpAngCut, kPhiVCut,
     kEta2D, kEta3D, kPhi2D, kY3D,
     kSigmaEle, kSigmaOther, kTPCdEdx,
@@ -860,6 +861,10 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet) {
     case kPairCut_phiv157_mee100:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.10);
       pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.5*TMath::Pi(), 3.2); 
+      break;
+    case kPairCut_phiv236_mee30:
+      pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.03);
+      pairVarCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.75*TMath::Pi(), 3.2); 
       break;
     case kPairCut_phiv236_mee40:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.04);
@@ -2025,8 +2030,9 @@ void LMEECutLib::AddMCSignals(TNamed* task, Int_t cutDefinition) {
   AliDielectronSignalMC* eleFinalState = new AliDielectronSignalMC("eleFinalState","eleFinalState");
   eleFinalState->SetFillPureMCStep(fFillPureMC);
   eleFinalState->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  //eleFinalState2->SetLegPDGs(11,0);  //second leg always MCtrue (~1-2% more tracks in Track_ev1+_ev1-_eleFinalState2)
   eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState); // for leg electrons: kFinalState = kPrimary
+  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState); // for leg electrons: kFinalState = kPrimary (includes injected)
   //mother
   eleFinalState->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary); // has no effect for this leg setting (kFinalState). Still includes injected J/psi.
   
@@ -2040,11 +2046,12 @@ void LMEECutLib::AddMCSignals(TNamed* task, Int_t cutDefinition) {
   eleNoCocktail->SetFillPureMCStep(fFillPureMC);
   eleNoCocktail->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
   eleNoCocktail->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleNoCocktail->SetLegSources(AliDielectronSignalMC::kNoCocktail, AliDielectronSignalMC::kNoCocktail); // for leg electrons: kNoCocktail = kFinalState + kSecondary
+  eleNoCocktail->SetLegSources(AliDielectronSignalMC::kNoCocktail, AliDielectronSignalMC::kNoCocktail); // for leg electrons: kNoCocktail = kFinalState + kSecondary (includes injected)
   
   AliDielectronSignalMC* eleSecondary = new AliDielectronSignalMC("eleSecondary","eleSecondary");
   eleSecondary->SetFillPureMCStep(fFillPureMC);
   eleSecondary->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  //eleSecondary2->SetLegPDGs(11,0);  //second leg always MCtrue (~0.5% more tracks in Track_ev1+_ev1-_eleSecondary2)
   eleSecondary->SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleSecondary->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
 
@@ -2123,16 +2130,52 @@ void LMEECutLib::AddMCSignals(TNamed* task, Int_t cutDefinition) {
   pair_sameMother->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kFinalStateFromBGEvent);
   //mother
   pair_sameMother->SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother->SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons
+  //pair_sameMother->SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. has no effect for final state ele.
   
   AliDielectronSignalMC* pair_diffMother = new AliDielectronSignalMC("MCpair_diffMother","MCpair_diffMother");
   pair_diffMother->SetFillPureMCStep(fFillPureMC);
   pair_diffMother->SetLegPDGs(11,-11);
   pair_diffMother->SetCheckBothChargesLegs(kTRUE,kTRUE);
   pair_diffMother->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kFinalStateFromBGEvent);
+  //pair_diffM_inclInj->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   //mother
   pair_diffMother->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  pair_diffMother->SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons
+  //pair_diffMother->SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. has no effect for final state ele.
+  
+  AliDielectronSignalMC* pair_diffM_oneGamma = new AliDielectronSignalMC("MCpair_diffM_oneGamma","MCpair_diffM_oneGamma");
+  pair_diffM_oneGamma->SetFillPureMCStep(fFillPureMC);
+  pair_diffM_oneGamma->SetLegPDGs(11,-11);
+  pair_diffM_oneGamma->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_diffM_oneGamma->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kSecondary);
+  //mother
+  pair_diffM_oneGamma->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+  
+  AliDielectronSignalMC* pair_diffM_oneGamma_LSmm = new AliDielectronSignalMC("MCpair_diffM_oneGamma_LSmm","MCpair_diffM_oneGamma_LSmm");
+  pair_diffM_oneGamma_LSmm->SetFillPureMCStep(fFillPureMC);
+  pair_diffM_oneGamma_LSmm->SetLegPDGs(11,11);
+  pair_diffM_oneGamma_LSmm->SetCheckBothChargesLegs(kFALSE,kFALSE);
+  pair_diffM_oneGamma_LSmm->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kSecondary);
+  pair_diffM_oneGamma_LSmm->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+  pair_diffM_oneGamma_LSmm->SetCheckLikeSign(kFALSE,kTRUE);
+  pair_diffM_oneGamma_LSmm->SetCheckUnlikeSign(kFALSE); // not needed here but may save a bit of time.
+  
+  AliDielectronSignalMC* pair_diffM_oneGamma_LSpp = new AliDielectronSignalMC("MCpair_diffM_oneGamma_LSpp","MCpair_diffM_oneGamma_LSpp");
+  pair_diffM_oneGamma_LSpp->SetFillPureMCStep(fFillPureMC);
+  pair_diffM_oneGamma_LSpp->SetLegPDGs(-11,-11);
+  pair_diffM_oneGamma_LSpp->SetCheckBothChargesLegs(kFALSE,kFALSE);
+  pair_diffM_oneGamma_LSpp->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kSecondary);
+  pair_diffM_oneGamma_LSpp->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+  pair_diffM_oneGamma_LSpp->SetCheckLikeSign(kTRUE,kFALSE);
+  pair_diffM_oneGamma_LSpp->SetCheckUnlikeSign(kFALSE); // not needed here but may save a bit of time.
+  
+  // useless because it contains injected signals
+  //  AliDielectronSignalMC* pair_diffM_inclGamma = new AliDielectronSignalMC("MCpair_diffM_inclGamma","MCpair_diffM_inclGamma");
+  //  pair_diffM_inclGamma->SetFillPureMCStep(fFillPureMC);
+  //  pair_diffM_inclGamma->SetLegPDGs(11,-11);
+  //  pair_diffM_inclGamma->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  //  pair_diffM_inclGamma->SetLegSources(AliDielectronSignalMC::kNoCocktail, AliDielectronSignalMC::kNoCocktail); // for leg electrons: kNoCocktail = kFinalState + kSecondary (includes injected)
+  //  //mother
+  //  pair_diffM_inclGamma->SetMothersRelation(AliDielectronSignalMC::kDifferent);
   
   AliDielectronSignalMC* pair_sameGamma = new AliDielectronSignalMC("MCpair_sameGamma","MCpair_sameGamma");
   pair_sameGamma->SetFillPureMCStep(fFillPureMC);
@@ -2143,10 +2186,62 @@ void LMEECutLib::AddMCSignals(TNamed* task, Int_t cutDefinition) {
   pair_sameGamma->SetMothersRelation(AliDielectronSignalMC::kSame);
   pair_sameGamma->SetMotherPDGs(22,22);
   
+  AliDielectronSignalMC* pair_diffGamma = new AliDielectronSignalMC("MCpair_diffGamma","MCpair_diffGamma");
+  pair_diffGamma->SetFillPureMCStep(fFillPureMC);
+  pair_diffGamma->SetLegPDGs(11,-11);
+  pair_diffGamma->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_diffGamma->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary); // for e from gamma: kFinalState is empty.
+  //mother
+  pair_diffGamma->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+  pair_diffGamma->SetMotherPDGs(22,22);
+  
+  AliDielectronSignalMC* pair_diffGamma_LSmm = new AliDielectronSignalMC("MCpair_diffGamma_LSmm","MCpair_diffGamma_LSmm");
+  pair_diffGamma_LSmm->SetFillPureMCStep(fFillPureMC);
+  pair_diffGamma_LSmm->SetLegPDGs(11,11);
+  pair_diffGamma_LSmm->SetCheckBothChargesLegs(kFALSE,kFALSE);
+  pair_diffGamma_LSmm->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+  pair_diffGamma_LSmm->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+  pair_diffGamma_LSmm->SetCheckLikeSign(kFALSE,kTRUE);
+  pair_diffGamma_LSmm->SetCheckUnlikeSign(kFALSE); // not needed here but may save a bit of time.
+  pair_diffGamma_LSmm->SetMotherPDGs(22,22);
+  
+  AliDielectronSignalMC* pair_diffGamma_LSpp = new AliDielectronSignalMC("MCpair_diffGamma_LSpp","MCpair_diffGamma_LSpp");
+  pair_diffGamma_LSpp->SetFillPureMCStep(fFillPureMC);
+  pair_diffGamma_LSpp->SetLegPDGs(-11,-11);
+  pair_diffGamma_LSpp->SetCheckBothChargesLegs(kFALSE,kFALSE);
+  pair_diffGamma_LSpp->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+  pair_diffGamma_LSpp->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+  pair_diffGamma_LSpp->SetCheckLikeSign(kTRUE,kFALSE);
+  pair_diffGamma_LSpp->SetCheckUnlikeSign(kFALSE); // not needed here but may save a bit of time.
+  pair_diffGamma_LSpp->SetMotherPDGs(22,22);
+  
+  AliDielectronSignalMC* pair_HadronCont = new AliDielectronSignalMC("MCpair_HadronCont","MCpair_HadronCont");
+  pair_HadronCont->SetFillPureMCStep(fFillPureMC);
+  pair_HadronCont->SetLegPDGs(11,11,kFALSE,kTRUE); // exclude electron for second leg to check contamination.
+  pair_HadronCont->SetCheckBothChargesLegs(kTRUE,kTRUE); // accept e- and e+ for first leg and reject e- and e+ for second leg.
+  pair_HadronCont->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kDontCare);
+  
+  AliDielectronSignalMC* pair_HadronCont_LSmm = new AliDielectronSignalMC("MCpair_HadronCont_LSmm","MCpair_HadronCont_LSmm");
+  pair_HadronCont_LSmm->SetFillPureMCStep(fFillPureMC);
+  pair_HadronCont_LSmm->SetLegPDGs(11,11,kFALSE,kTRUE); // exclude electron for second leg to check contamination. unfortunately hadrons with both charges will be included.
+  pair_HadronCont_LSmm->SetCheckBothChargesLegs(kFALSE,kTRUE); // exclude e- and e+. independent of this setting, hadrons with both charges will be included.
+  pair_HadronCont_LSmm->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kDontCare);
+  pair_HadronCont_LSmm->SetCheckLikeSign(kFALSE,kTRUE); // check LS--
+  pair_HadronCont_LSmm->SetCheckUnlikeSign(kFALSE); // disable ULS check. needed if exclusion is used for one or both legs.
+  
+  AliDielectronSignalMC* pair_HadronCont_LSpp = new AliDielectronSignalMC("MCpair_HadronCont_LSpp","MCpair_HadronCont_LSpp");
+  pair_HadronCont_LSpp->SetFillPureMCStep(fFillPureMC);
+  pair_HadronCont_LSpp->SetLegPDGs(-11,-11,kFALSE,kTRUE); // exclude positron for second leg to check contamination. unfortunately hadrons with both charges will be included.
+  pair_HadronCont_LSpp->SetCheckBothChargesLegs(kFALSE,kTRUE); // exclude e- and e+. independent of this setting, hadrons with both charges will be included.
+  pair_HadronCont_LSpp->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kDontCare);
+  pair_HadronCont_LSpp->SetCheckLikeSign(kTRUE,kFALSE); // check LS++
+  pair_HadronCont_LSpp->SetCheckUnlikeSign(kFALSE); // disable ULS check. needed if exclusion is used for one or both legs.
+  
+  
   if (task->IsA()==AliAnalysisTaskElectronEfficiency::Class()) {
     // selection. only the first signal will be used.
-//    (static_cast<AliAnalysisTaskElectronEfficiency*>task)->AddSignalMC(eleFinalStateFromBGEvent);
-    (static_cast<AliAnalysisTaskElectronEfficiency*>task)->AddSignalMC(eleFinalStateFromBGEvent_mDir);
+    (static_cast<AliAnalysisTaskElectronEfficiency*>task)->AddSignalMC(eleFinalStateFromBGEvent);
+    //    (static_cast<AliAnalysisTaskElectronEfficiency*>task)->AddSignalMC(eleFinalStateFromBGEvent_mDir);
   }
   else if (task->IsA()==AliDielectron::Class()) {
     if (! (static_cast<AliDielectron*>task)->GetHasMC()) return;
@@ -2160,25 +2255,38 @@ void LMEECutLib::AddMCSignals(TNamed* task, Int_t cutDefinition) {
         //die->AddSignalMC(elePrimary);
         //die->AddSignalMC(eleFinalState);    // for leg electrons: kFinalState = kPrimary
         //die->AddSignalMC(eleDirect);        // for leg electrons: kDirect is empty
-        //die->AddSignalMC(eleNoCocktail);    // for leg electrons: kNoCocktail = kFinalState + kSecondary
+        //die->AddSignalMC(eleNoCocktail);    // for leg electrons: kNoCocktail = kFinalState + kSecondary (includes injected)
         //die->AddSignalMC(eleSecondary);     // for leg electrons: kSecondary = number of 'pair_sameGamma'
         //die->AddSignalMC(eleSecondaryWeak); // for leg electrons: kSecondaryFromWeakDecay is empty
         //die->AddSignalMC(pair_sameGamma); //
         break;
         
-//      case 1:
-//        for(Int_t i=0; i<7; i++) (static_cast<AliDielectron*>task)->AddSignalMC(directP[i]);
-//        break;
+        //      case 1:
+        //        for(Int_t i=0; i<7; i++) (static_cast<AliDielectron*>task)->AddSignalMC(directP[i]);
+        //        break;
         
       case 2:
+//        (static_cast<AliDielectron*>task)->AddSignalMC(eleFinalStateFromBGEvent);
+//        (static_cast<AliDielectron*>task)->AddSignalMC(eleFinalStateFromBGEvent_mDir);
+//        (static_cast<AliDielectron*>task)->AddSignalMC(eleSecondary);
         (static_cast<AliDielectron*>task)->AddSignalMC(pair_sameMother);
-        //(static_cast<AliDielectron*>task)->AddSignalMC(pair_diffMother);
         (static_cast<AliDielectron*>task)->AddSignalMC(pair_sameGamma);
+        //(static_cast<AliDielectron*>task)->AddSignalMC(pair_diffMother);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_diffM_oneGamma);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_diffM_oneGamma_LSmm);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_diffM_oneGamma_LSpp);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_diffGamma);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_diffGamma_LSmm);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_diffGamma_LSpp);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_HadronCont);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_HadronCont_LSmm);
+        (static_cast<AliDielectron*>task)->AddSignalMC(pair_HadronCont_LSpp);
         break;
         
       default:
         break;
     }
+    if (! (static_cast<AliDielectron*>task)->GetMCSignals()) return;
     for (Int_t i=0; i<(static_cast<AliDielectron*>task)->GetMCSignals()->GetEntriesFast(); ++i) {
       cout << "added MCsignal: " << (static_cast<AliDielectron*>task)->GetMCSignals()->At(i)->GetName() << endl;
     }
@@ -2229,12 +2337,22 @@ void LMEECutLib::InitHistograms(AliDielectron *die, Int_t cutDefinition) {
 //      }
     }
     
-    //add MC signal histograms to pair class
+    //add track, leg and pair classes for MC signal histograms
     if(die->GetMCSignals()) {
+      TString signame="";
       for (Int_t i=0; i<die->GetMCSignals()->GetEntriesFast(); ++i) {
-        histos->AddClass(Form("Track_Legs_%s",die->GetMCSignals()->At(i)->GetName()));
-        histos->AddClass(Form("Pair_%s",die->GetMCSignals()->At(i)->GetName()));
-        if (fFillPureMC) histos->AddClass(Form("Pair_%s_MCtruth",die->GetMCSignals()->At(i)->GetName()));
+        signame=die->GetMCSignals()->At(i)->GetName();
+        if (signame.BeginsWith("ele")) {
+          // ULS is used for single track MC histograms, see both functions AliDielectron::FillMCHistograms(...).
+          histos->AddClass(Form("Track_%s_%s",AliDielectron::PairClassName(1),die->GetMCSignals()->At(i)->GetName())); // ULS
+          if (fFillPureMC) histos->AddClass(Form("Track_%s_%s_MCtruth",AliDielectron::PairClassName(1),die->GetMCSignals()->At(i)->GetName())); // ULS
+        }
+        if (!(signame.BeginsWith("ele"))) { // pair signals
+          histos->AddClass(Form("Track_Legs_%s",die->GetMCSignals()->At(i)->GetName()));
+          histos->AddClass(Form("Pair_%s",die->GetMCSignals()->At(i)->GetName()));
+          if (fFillPureMC) histos->AddClass(Form("Track_Legs_%s_MCtruth",die->GetMCSignals()->At(i)->GetName()));
+          if (fFillPureMC) histos->AddClass(Form("Pair_%s_MCtruth",die->GetMCSignals()->At(i)->GetName()));
+        }
       }
     }
     
@@ -2301,7 +2419,7 @@ void LMEECutLib::InitHistograms(AliDielectron *die, Int_t cutDefinition) {
 	//add histograms to event class
 	histos->UserHistogram("Event","nEvents","",1,0.,1.,AliDielectronVarManager::kNevents);
   histos->UserHistogram("Event","RunNumber","",AliDielectronHelper::MakeArbitraryBinning("167900, 167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 170027, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593, 170600"),AliDielectronVarManager::kRunNumber);
-	histos->UserHistogram("Event","Centrality","","-1,0,10,20,30,40,50,60,70,80,90,100,101;#events",AliDielectronVarManager::kCentrality);
+	histos->UserHistogram("Event","Centrality","","-1,0,10,20,30,40,50,60,70,80,90,100,101",AliDielectronVarManager::kCentrality);
   histos->UserHistogram("Event","centrality","",100,0,100,AliDielectronVarManager::kCentrality);
   histos->UserHistogram("Event","nESDTracks","",8000,0,80000,AliDielectronVarManager::kNTrk);
   //histos->UserHistogram("Event","Nacc","",8000,0,8000,AliDielectronVarManager::kNacc);
@@ -2311,24 +2429,31 @@ void LMEECutLib::InitHistograms(AliDielectron *die, Int_t cutDefinition) {
   histos->UserHistogram("Event","epV0AC_epTPC","",120,-TMath::PiOver2(),TMath::PiOver2(),120,-TMath::PiOver2(),TMath::PiOver2(),AliDielectronVarManager::kTPCrpH2uc,AliDielectronVarManager::kv0ACrpH2);
   
   
-  //add histograms to Track classes
-  // axis labels are set to the values in 'AliDielectronVarManager.cxx' if the histogram title is empty or starts with ';'! [see AliDielectronHistos::AdaptNameTitle(...)]
-  histos->UserHistogram("Track","Pt",";Pt [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPt);
-//  histos->UserHistogram("Track","Px",";Px [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPx);
-//  histos->UserHistogram("Track","Py",";Py [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPy);
-//  histos->UserHistogram("Track","Pz",";Pz [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPz);
-  histos->UserHistogram("Track","P_PIn",";p (GeV/c);p_{in} (GeV/c)",
-                        GetVector(kP2D), GetVector(kP2D), AliDielectronVarManager::kP,AliDielectronVarManager::kPIn);
+  //-----------------------------------------------
+  // Add histograms to Track classes
+  //-----------------------------------------------
+  // Axis labels are set to the values in 'AliDielectronVarManager.cxx' if the histogram title is empty or starts with ';'! [see AliDielectronHistos::AdaptNameTitle(...)]
+  //-----------------------------------------------
+  histos->UserHistogram("Track","Pt","",200,0,10.,AliDielectronVarManager::kPt);
+//  histos->UserHistogram("Track","Px","",200,0,10.,AliDielectronVarManager::kPx);
+//  histos->UserHistogram("Track","Py","",200,0,10.,AliDielectronVarManager::kPy);
+//  histos->UserHistogram("Track","Pz","",200,0,10.,AliDielectronVarManager::kPz);
+  histos->UserHistogram("Track","P_PIn","", GetVector(kP2D), GetVector(kP2D), AliDielectronVarManager::kP,AliDielectronVarManager::kPIn);
+  
+  // test
+  //histos->UserHistogram("Track","R","R;R [cm];#tracks",200,0.,1.,AliDielectronVarManager::kR);
+  //histos->UserHistogram("Track","ImpParXY","ImpParXY; ImpParXY ;#tracks",100,-5.,5.,AliDielectronVarManager::kImpactParXY);
+  
+  if(die->GetMCSignals()) {
+    histos->UserHistogram("Track","PDGmother","",10000,-5000.5,4999.5,AliDielectronVarManager::kPdgCodeMother);
+  }
   
   // ITS
-  histos->UserHistogram("Track","ITS_dEdx_P",";p (GeV/c);ITS signal (arb units)",
-                        GetVector(kP2D), BinsToVector(700,0.,700.), AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal);
-  histos->UserHistogram("Track","ITSnSigmaEle_P",";p (GeV/c);n#sigma_{ele}^{ITS}",
-                        GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle);
-  histos->UserHistogram("Track","ITSnSigmaEle_Eta",";Eta;n#sigma_{ele}^{ITS}",
-                        GetVector(kEta2D), GetVector(kSigmaEle), AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
-  // 3D
+  histos->UserHistogram("Track","ITSnSigmaEle_P","", GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle);
+  histos->UserHistogram("Track","ITSnSigmaEle_Eta","", GetVector(kEta2D), GetVector(kSigmaEle), AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
   if (fIsQATask) {
+    histos->UserHistogram("Track","ITS_dEdx_P","", GetVector(kP2D), BinsToVector(350,0.,700.), AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal);
+    // 3D
     histos->UserHistogram("Track","ITSnSigmaEle_Eta_P",";Eta;n#sigma_{ele}^{ITS};p (GeV/c)",
                           GetVector(kEta3D), GetVector(kSigmaEle), GetVector(kP2D),
                           AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle,AliDielectronVarManager::kP);
@@ -2372,7 +2497,6 @@ void LMEECutLib::InitHistograms(AliDielectron *die, Int_t cutDefinition) {
     histos->UserHistogram("Track","TPCnSigmaEle_P_dEdx",";p_{in} (GeV/c);n#sigma_{ele}^{TPC};TPC signal (arb units)",
                           GetVector(kP2D), GetVector(kSigmaEle), GetVector(kTPCdEdx),
                           AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kTPCsignal);
-    
     // 3D
     histos->UserHistogram("Track","TPCnSigmaEle_Eta_P",";Eta;n#sigma_{ele}^{TPC};p_{in} (GeV/c)",
                           GetVector(kEta3D), GetVector(kSigmaEle), GetVector(kP2D),
@@ -2478,9 +2602,9 @@ void LMEECutLib::InitHistograms(AliDielectron *die, Int_t cutDefinition) {
     histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Pt",";Pt [GeV];TPC crossed rows over findable",
                           GetVector(kP2D), BinsToVector(120,0.,1.2), AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCfCross);
     histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Eta",";Eta;TPC crossed rows over findable",
-                          100,-1,1, 120,0.,1.2, AliDielectronVarManager::kEta,AliDielectronVarManager::kNFclsTPCfCross);
+                          GetVector(kEta2D), BinsToVector(120,0.,1.2), AliDielectronVarManager::kEta,AliDielectronVarManager::kNFclsTPCfCross);
     histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Phi",";Phi;TPC crossed rows over findable",
-                          120,0.,TMath::TwoPi(), 120,0.,1.2, AliDielectronVarManager::kPhi,AliDielectronVarManager::kNFclsTPCfCross);
+                          GetVector(kPhi2D), BinsToVector(120,0.,1.2), AliDielectronVarManager::kPhi,AliDielectronVarManager::kNFclsTPCfCross);
     //V0
     // these are pair variables, but only internal in the V0-finder...
     //histos->UserHistogram("Track","ArmenterosAlpha_ArmenterosPt",";kArmPt;kArmAlpha",
@@ -2490,32 +2614,35 @@ void LMEECutLib::InitHistograms(AliDielectron *die, Int_t cutDefinition) {
   }
   
   
-  //add histograms to Pair classes
+  //-----------------------------------------------
+  // Add histograms to Pair classes
+  //-----------------------------------------------
+  // Axis labels are set to the values in 'AliDielectronVarManager.cxx' if the histogram title is empty or starts with ';'! [see AliDielectronHistos::AdaptNameTitle(...)]
+  //-----------------------------------------------
   if (!fIsQATask) 
   {
     histos->UserHistogram("Pair","InvMass","",500,0.,5.,AliDielectronVarManager::kM);
     histos->UserHistogram("Pair","PairPt","",160,0.,8., AliDielectronVarManager::kPt);
     histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
     histos->UserHistogram("Pair","OpeningAngle","",315,0.,3.15,AliDielectronVarManager::kOpeningAngle);
+    histos->UserHistogram("Pair","PhivPair","",100,0.,TMath::Pi(),AliDielectronVarManager::kPhivPair);
+//    histos->UserHistogram("Pair","Charge","pCharge;q_{leg 1} + q_{leg 2} (e);#pairs",5,-2.5,2.5,AliDielectronVarManager::kCharge);
     
     // 2D pair histograms
-    histos->UserHistogram("Pair","InvMass_PairPt",";Inv. Mass [GeV];Pair Pt [GeV];#pairs",
-                          GetVector(kMee), GetVector(kPtee),
-                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
-    histos->UserHistogram("Pair","Eta_Phi_Pair",";Eta;Phi;#pairs",
-                          100,-1.,1., 120,0.,TMath::TwoPi(),
-                          AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
+    histos->UserHistogram("Pair","InvMass_PairPt","", GetVector(kMee), GetVector(kPtee), AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
+    histos->UserHistogram("Pair","Eta_Phi_Pair","", GetVector(kEta2D), GetVector(kPhi2D), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
+//    histos->UserHistogram("Pair","InvMass_Charge","", GetVector(kMee500), BinsToVector(5,-2.5,2.5), AliDielectronVarManager::kM, AliDielectronVarManager::kCharge);
     // 3D pair histograms
-//    histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass [GeV];Pair Pt [GeV];PhiV",
-//                          GetVector(kMee), GetVector(kPtee), GetVector(kPhiV), 
+//    histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","",
+//                          GetVector(kMee), GetVector(kPtee), GetVector(kPhiV3D), 
 //                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-//    histos->UserHistogram("Pair","InvMass_PairPt_OpeningAngle",";Inv. Mass [GeV];Pair Pt [GeV];Opening Angle",
+//    histos->UserHistogram("Pair","InvMass_PairPt_OpeningAngle","",
 //                          GetVector(kMee), GetVector(kPtee), GetVector(kOpAng), 
 //                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
-////    histos->UserHistogram("Pair","InvMass_PhivPair_OpeningAngle",";Inv. Mass [GeV];PhiV;Opening Angle",
-////                          GetVector(kMee500), GetVector(kPhiV), GetVector(kOpAng2), 
+////    histos->UserHistogram("Pair","InvMass_PhivPair_OpeningAngle","",
+////                          GetVector(kMee500), GetVector(kPhiV3D), GetVector(kOpAng2), 
 ////                          AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair, AliDielectronVarManager::kOpeningAngle);
-////    histos->UserHistogram("Pair","InvMass_PairPt_Rapidity",";Inv. Mass [GeV];Pair Pt [GeV];Rapidity",
+////    histos->UserHistogram("Pair","InvMass_PairPt_Rapidity","",
 ////                          GetVector(kMee), GetVector(kPtee), GetVector(kY3D), 
 ////                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kY);
     // nD pair histograms
@@ -2524,29 +2651,29 @@ void LMEECutLib::InitHistograms(AliDielectron *die, Int_t cutDefinition) {
     TObjArray* limits4 = new TObjArray();
     limits4->Add( GetVector(kMee) );
     limits4->Add( GetVector(kPtee) );
-    limits4->Add( GetVector(kPhiV) );
+    limits4->Add( GetVector(kPhiV3D) );
     limits4->Add( GetVector(kOpAngCut) );
     histos->UserHistogram("Pair",4, limits4, vars4);
     
     // more pair histograms
     if (die->DoEventProcess()) {
       //opening angle and PhiV
-//      histos->UserHistogram("Pair","InvMass_OpeningAngle",";Inv. Mass [GeV];Opening Angle;#pairs",
+//      histos->UserHistogram("Pair","InvMass_OpeningAngle","",
 //                            GetVector(kMee), GetVector(kOpAng), 
 //                            AliDielectronVarManager::kM, AliDielectronVarManager::kOpeningAngle);
-//      histos->UserHistogram("Pair","InvMass_OpeningAngle_fine",";Inv. Mass [GeV];Opening Angle;#pairs",
+//      histos->UserHistogram("Pair","InvMass_OpeningAngle_fine","",
 //                            BinsToVector(40,0.,0.2), GetVector(kOpAng3), 
 //                            AliDielectronVarManager::kM, AliDielectronVarManager::kOpeningAngle);
-//      histos->UserHistogram("Pair","InvMass_PhivPair",";Inv. Mass [GeV];PhiV;#pairs",
+//      histos->UserHistogram("Pair","InvMass_PhivPair","",
 //                            GetVector(kMee), GetVector(kPhiV), 
 //                            AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair);
-//      histos->UserHistogram("Pair","PairPt_OpeningAngle",";Pair Pt [GeV];Opening Angle;#pairs",
+//      histos->UserHistogram("Pair","PairPt_OpeningAngle","",
 //                            GetVector(kPtee), GetVector(kOpAng), 
 //                            AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
-//      histos->UserHistogram("Pair","PairPt_PhivPair",";Pair Pt [GeV];PhiV;#pairs",
+//      histos->UserHistogram("Pair","PairPt_PhivPair","",
 //                            GetVector(kPtee), GetVector(kPhiV), 
 //                            AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-//      histos->UserHistogram("Pair","OpeningAngle_PhivPair",";Opening Angle;PhiV;#pairs",
+//      histos->UserHistogram("Pair","OpeningAngle_PhivPair","",
 //                            GetVector(kOpAng), GetVector(kPhiV), 
 //                            AliDielectronVarManager::kOpeningAngle, AliDielectronVarManager::kPhivPair);
       
@@ -2594,6 +2721,7 @@ void LMEECutLib::InitHistograms(AliDielectron *die, Int_t cutDefinition) {
 TVectorD* LMEECutLib::GetVector(Int_t var) {
   switch (var) {
     case kPhiV:   return AliDielectronHelper::MakeLinBinning(100, 0., TMath::Pi());
+    case kPhiV3D: return AliDielectronHelper::MakeLinBinning( 20, 0., TMath::Pi());
     case kOpAng:  return AliDielectronHelper::MakeLinBinning(100, 0., TMath::Pi());
     case kOpAng2: return AliDielectronHelper::MakeLinBinning( 50, 0., TMath::Pi()/2.);
     case kOpAng3: return AliDielectronHelper::MakeLinBinning( 50, 0., 0.5);
@@ -2612,7 +2740,7 @@ TVectorD* LMEECutLib::GetVector(Int_t var) {
       if (fIsQATask) return AliDielectronHelper::MakeLinBinning(120,  0.,120.);
       else           return AliDielectronHelper::MakeLinBinning( 50, 50.,100.);
       
-    case kOpAngCut:  return AliDielectronHelper::MakeArbitraryBinning(Form("0.0, 0.05, %f",TMath::Pi()));
+    case kOpAngCut:  return AliDielectronHelper::MakeArbitraryBinning(Form("0.0, 0.02, 0.05, %f",TMath::Pi()));
     case kPhiVCut:   return AliDielectronHelper::MakeArbitraryBinning(Form("0.0, %f, %f",3./4.*TMath::Pi(),TMath::Pi()));
     
     case kMee:    return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
@@ -2620,7 +2748,7 @@ TVectorD* LMEECutLib::GetVector(Int_t var) {
                                                                    0.50, 0.54, 0.58, 0.62, 0.66, 0.70, 0.74, 0.78, 0.82, 0.86, 
                                                                    0.90, 0.94, 0.98, 1.02, 1.06, 
                                                                    1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50, 2.70, 2.90, 
-                                                                   3.10, 3.30, 3.50, 4.00, 4.50, 5.00 
+                                                                   3.00, 3.05, 3.10, 3.15, 3.20, 3.30, 4.00, 5.00 
                                                                    ");
     case kMee500: return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
                                                                    0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46, 
@@ -2629,8 +2757,7 @@ TVectorD* LMEECutLib::GetVector(Int_t var) {
     case kPtee:   return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 
                                                                    0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 
                                                                    1.00, 1.20, 1.40, 1.60, 1.80, 2.00, 2.20, 2.40, 2.60, 2.80, 
-                                                                   3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.20, 4.40, 4.60, 4.80, 
-                                                                   5.00, 6.00, 7.00, 8.00 
+                                                                   3.00, 4.00, 5.00, 6.00, 7.00 
                                                                    ");
     case kP2D:    return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 
                                                                    0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 
