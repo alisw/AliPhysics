@@ -63,9 +63,9 @@ void AliEmcalCorrectionClusterExotics::UserCreateOutputObjects()
   
   // Create my user objects.
   if (fCreateHisto){
-    fEtaPhiDistBefore = new TH2F("hEtaPhiDistBefore","hEtaPhiDistBefore;#eta;#phi",280,-0.7,0.7,800,1.3,3.3);
+    fEtaPhiDistBefore = new TH2F("hEtaPhiDistBefore","hEtaPhiDistBefore;#eta;#phi",280,-0.7,0.7,200*3.14,0,2*3.14);
     fOutput->Add(fEtaPhiDistBefore);
-    fEtaPhiDistAfter = new TH2F("hEtaPhiDistAfter","hEtaPhiDistAfter;#eta;#phi",280,-0.7,0.7,800,1.3,3.3);
+    fEtaPhiDistAfter = new TH2F("hEtaPhiDistAfter","hEtaPhiDistAfter;#eta;#phi",280,-0.7,0.7,200*3.14,0,2*3.14);
     fOutput->Add(fEtaPhiDistAfter);
     fEnergyExoticClusters = new TH1F("fEnergyExoticClusters","fEnergyExoticClusters;E_{ex clus} (GeV)",1500,0,150);
     fOutput->Add(fEnergyExoticClusters);
@@ -94,7 +94,8 @@ Bool_t AliEmcalCorrectionClusterExotics::Run()
       Float_t pos[3] = {0.};
       clus->GetPosition(pos);
       TVector3 vec(pos);
-      fEtaPhiDistBefore->Fill(vec.Eta(),vec.Phi());
+      // Phi needs to be in 0 to 2 Pi
+      fEtaPhiDistBefore->Fill(vec.Eta(), TVector2::Phi_0_2pi(vec.Phi()));
     }
     
     Bool_t exResult = kFALSE;
@@ -118,7 +119,8 @@ Bool_t AliEmcalCorrectionClusterExotics::Run()
         Float_t pos[3] = {0.};
         clus->GetPosition(pos);
         TVector3 vec(pos);
-        fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
+        // Phi needs to be in 0 to 2 Pi
+        fEtaPhiDistAfter->Fill(vec.Eta(), TVector2::Phi_0_2pi(vec.Phi()));
       }
     }
   }

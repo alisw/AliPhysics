@@ -78,13 +78,13 @@ void AliEmcalClusterMaker::UserCreateOutputObjects()
 
   fEnergyDistBefore = new TH1F("hEnergyDistBefore","hEnergyDistBefore;E_{clus} (GeV)",1500,0,150);
   fOutput->Add(fEnergyDistBefore);
-  fEtaPhiDistBefore = new TH2F("hEtaPhiDistBefore","hEtaPhiDistBefore;#eta;#phi",280,-0.7,0.7,800,1.3,3.3);
+  fEtaPhiDistBefore = new TH2F("hEtaPhiDistBefore","hEtaPhiDistBefore;#eta;#phi",280,-0.7,0.7,200*3.14,0,2*3.14);
   fOutput->Add(fEtaPhiDistBefore);
   fEnergyTimeHistBefore = new TH2F("hEnergyTimeDistBefore","hEnergyTimeDistBefore;E_{clus} (GeV);time",1500,0,150,500,0,1e-6);
   fOutput->Add(fEnergyTimeHistBefore);
   fEnergyDistAfter = new TH1F("hEnergyDistAfter","hEnergyDistAfter;E_{clus} (GeV)",1500,0,150);
   fOutput->Add(fEnergyDistAfter);
-  fEtaPhiDistAfter = new TH2F("hEtaPhiDistAfter","hEtaPhiDistAfter;#eta;#phi",280,-0.7,0.7,800,1.3,3.3);
+  fEtaPhiDistAfter = new TH2F("hEtaPhiDistAfter","hEtaPhiDistAfter;#eta;#phi",280,-0.7,0.7,200*3.14,0,2*3.14);
   fOutput->Add(fEtaPhiDistAfter);
   fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time",1500,0,150,500,0,1e-6);
   fOutput->Add(fEnergyTimeHistAfter);
@@ -153,7 +153,8 @@ Bool_t AliEmcalClusterMaker::Run()
       Float_t pos[3] = {0.};
       clus->GetPosition(pos);
       TVector3 vec(pos);
-      fEtaPhiDistBefore->Fill(vec.Eta(),vec.Phi());
+      // Phi needs to be in 0 to 2 Pi
+      fEtaPhiDistBefore->Fill(vec.Eta(), TVector2::Phi_0_2pi(vec.Phi()));
       fEnergyTimeHistBefore->Fill(clus->E(), clus->GetTOF());
     }
 
@@ -183,7 +184,8 @@ Bool_t AliEmcalClusterMaker::Run()
         Float_t pos[3] = {0.};
         clus->GetPosition(pos);
         TVector3 vec(pos);
-        fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
+        // Phi needs to be in 0 to 2 Pi
+        fEtaPhiDistAfter->Fill(vec.Eta(), TVector2::Phi_0_2pi(vec.Phi()));
         fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
       }
     }

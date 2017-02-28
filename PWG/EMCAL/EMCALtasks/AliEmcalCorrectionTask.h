@@ -174,7 +174,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   std::string GetInputFieldNameFromInputObjectType(InputObject_t inputObjectType);
   bool CheckPossibleNamesForComponentName(std::string & name, std::set <std::string> & possibleComponents);
   // General utilities
-  BeamType GetBeamType();
+  BeamType GetBeamType() const;
   void PrintRequestedContainersInformation(InputObject_t inputObjectType);
 
   // Retrieve objects in event

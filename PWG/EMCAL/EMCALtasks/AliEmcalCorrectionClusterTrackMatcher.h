@@ -82,8 +82,8 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   Int_t         fNEmcalClusters;        //!<!number of emcal clusters
   TH1          *fHistMatchEtaAll;       //!<!deta distribution
   TH1          *fHistMatchPhiAll;       //!<!dphi distribution
-  TH1          *fHistMatchEta[8][9][2]; //!<!deta distribution
-  TH1          *fHistMatchPhi[8][9][2]; //!<!dphi distribution
+  TH1          *fHistMatchEta[10][9][2]; //!<!deta distribution
+  TH1          *fHistMatchPhi[10][9][2]; //!<!dphi distribution
 
  private:
   AliEmcalCorrectionClusterTrackMatcher(const AliEmcalCorrectionClusterTrackMatcher &);               // Not implemented
@@ -93,7 +93,7 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterTrackMatcher> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 1); // EMCal cluster track matcher correction component
+  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 2); // EMCal cluster track matcher correction component
   /// \endcond
 };
 

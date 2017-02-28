@@ -712,11 +712,14 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::GetBeamType()
       return kNA;
   } else {
     Int_t runNumber = InputEvent()->GetRunNumber();
-    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-        (runNumber >= 166529 && runNumber <= 170593)) {  // LHC11h
+    // All run number ranges taken from the RCT
+    if ((runNumber >= 136833 && runNumber <= 139517) ||  // LHC10h
+        (runNumber >= 167693 && runNumber <= 170593) || // LHC11h
+        (runNumber >= 244824 && runNumber <= 246994)) { // LHC15o
       return kAA;
-    } else if ((runNumber>=188365 && runNumber <= 188366) ||   // LHC12g
-        (runNumber >= 195344 && runNumber <= 196608)) { // LHC13b-f
+    } else if ((runNumber >= 188356 && runNumber <= 188366) ||   // LHC12g
+               (runNumber >= 195164 && runNumber <= 197388) ||  // LHC13b-f
+               (runNumber >= 265015 && runNumber <= 267166)) {  // LHC16q-t
       return kpA;
     } else {
       return kpp;

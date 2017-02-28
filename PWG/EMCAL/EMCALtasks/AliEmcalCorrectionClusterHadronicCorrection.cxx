@@ -39,12 +39,13 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   // Default constructor
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   
-  for(Int_t i=0; i<8; i++) {
+  for(Int_t i=0; i<10; i++) {
     fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
-    fHistEsubPchRatAll[i] = 0;
     
-    if (i<4) {
+    if (i<5) {
+      fHistEsubPchRatAll[i] = 0;
+
       fHistMatchEvsP[i]    = 0;
       fHistMatchdRvsEP[i]  = 0;
       fHistNMatchEnergy[i] = 0;
@@ -78,9 +79,6 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   // Initialization
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   GetProperty("createHistos", fCreateHisto);
   GetProperty("phiMatch", fPhiMatch);
@@ -135,13 +133,6 @@ void AliEmcalCorrectionClusterHadronicCorrection::UserCreateOutputObjects()
     fHistEsubPchRat[icent]->SetYTitle("E_{sub} / #sum p");
     fOutput->Add(fHistEsubPchRat[icent]);
     
-    name = Form("fHistEsubPchRatAll_%i",icent);
-    temp = Form("%s (all Nmatches)",name.Data());
-    fHistEsubPchRatAll[icent]=new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
-    fHistEsubPchRatAll[icent]->SetXTitle("#Sigma p (GeV)");
-    fHistEsubPchRatAll[icent]->SetYTitle("E_{sub} / #sum p");
-    fOutput->Add(fHistEsubPchRatAll[icent]);
-    
     if (icent<fNcentBins) {
       for(Int_t itrk=0; itrk<4; ++itrk) {
         name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
@@ -149,6 +140,13 @@ void AliEmcalCorrectionClusterHadronicCorrection::UserCreateOutputObjects()
         fHistNCellsEnergy[icent][itrk]  = new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
         fOutput->Add(fHistNCellsEnergy[icent][itrk]);
       }
+
+      name = Form("fHistEsubPchRatAll_%i",icent);
+      temp = Form("%s (all Nmatches)",name.Data());
+      fHistEsubPchRatAll[icent]=new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
+      fHistEsubPchRatAll[icent]->SetXTitle("#Sigma p (GeV)");
+      fHistEsubPchRatAll[icent]->SetYTitle("E_{sub} / #sum p");
+      fOutput->Add(fHistEsubPchRatAll[icent]);
       
       name = Form("fHistMatchEvsP_%i",icent);
       temp = Form("%s (all Nmatches)",name.Data());
