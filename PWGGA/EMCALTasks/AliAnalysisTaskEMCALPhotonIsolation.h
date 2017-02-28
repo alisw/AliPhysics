@@ -81,7 +81,7 @@ public:
   void                     SetEtIsoMethod (Int_t r )                                       { fEtIsoMethod = r ;}
   void                     SetUEMethod (Int_t UE)                                          { fUEMethod = UE;}
   void                     SetOutputFormat (Int_t iOut)                                    { fWho = iOut;}
-  void                     SetQA (Bool_t QA)                                               { fQA = QA;}
+  void                     SetQA (Bool_t bQA)                                              { fQA = bQA;}
   void                     SetMC (Bool_t MC)                                               { fIsMC = MC;}
   void                     SetUSEofTPC (Bool_t TPC)                                        { fTPC4Iso = TPC;}
   void                     SetLCAnalysis (Bool_t LC)                                       { fisLCAnalysis = LC;}
