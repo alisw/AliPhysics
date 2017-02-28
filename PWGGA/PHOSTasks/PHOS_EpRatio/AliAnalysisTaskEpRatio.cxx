@@ -476,7 +476,12 @@ void AliAnalysisTaskEpRatio::SetGeometry()
     AliOADBContainer geomContainer("phosGeo");
     geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
-    fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+
+    if (fRunNumber < 224994)
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+    else
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2") ;
+    
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) {
         if( fDebug )
