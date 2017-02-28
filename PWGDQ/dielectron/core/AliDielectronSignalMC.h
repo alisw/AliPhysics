@@ -32,6 +32,7 @@
     502 - open beauty mesons and baryons             500-549, 5000-5499
     503 - all beauty hadrons                         500-599, 5000-5999
     902 - all open charm open beauty mesons+baryons  400-439, 500-549, 4000-4399, 5000-5499
+    903 - all hadrons in the code range              100-599, 1000-5999
    1000 - light unflavoured baryons in the code range 1000-1999
    2000 -        --"--                                2000-2999
    3000 - strange baryons in the code range           3000-3999
@@ -46,6 +47,7 @@
    3.) If the selection of both charges is switched ON then the PDG codes act on both particles and anti-particles.
 
    4.) Particles sources implemented:
+     (Incomplete list, see AliDielectronMC::CheckParticleSource() for more details.)
      1. Primary   - particle originating in the physics event
      2. FinalState- stable(final state) particles which reach the detector -> according to AliStack::IsPhysicalPrimary() 
      3. Direct    - primary particle which has no mother (e.g. J/psi's added to pythia MC events via generator cocktails,
@@ -92,9 +94,10 @@ class AliDielectronSignalMC : public TNamed {
   void SetFillPureMCStep(Bool_t fill=kTRUE)                        {fFillPureMCStep = fill;}
   void SetCheckMotherGrandmotherRelation(Bool_t CheckMotherIsGrandmother=kTRUE, Bool_t MotherIsGrandmother=kFALSE)
     {fCheckMotherGrandmother = CheckMotherIsGrandmother; fMotherIsGrandmother = MotherIsGrandmother;}
-  void SetCheckStackForPDG(Bool_t checkStack=kTRUE)                        {fCheckStackForPDG    = checkStack;}
-  void SetPDGforStack(Int_t stackPDG)                                      {fStackPDG            = stackPDG;}
-  void SetCheckLikeSign(Bool_t checkLSpp,Bool_t checkLsmm)                 {fCheckLikeSignPP = checkLSpp; fCheckLikeSignMM = checkLsmm;}
+  void SetCheckStackForPDG(Bool_t checkStack=kTRUE)                {fCheckStackForPDG = checkStack;}
+  void SetPDGforStack(Int_t stackPDG)                              {fStackPDG = stackPDG;}
+  void SetCheckUnlikeSign(Bool_t checkULS)                         {fCheckUnlikeSign = checkULS;}
+  void SetCheckLikeSign(Bool_t checkLSpp,Bool_t checkLSmm)         {fCheckLikeSignPP = checkLSpp; fCheckLikeSignMM = checkLSmm;}
 
   Int_t GetLegPDG(Int_t branch)                        const {return (branch==1 ? fLeg1 : fLeg2);}
   Int_t GetMotherPDG(Int_t branch)                     const {return (branch==1 ? fMother1 : fMother2);}
@@ -117,13 +120,15 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t GetMotherIsGrandmother()                      const {return fMotherIsGrandmother;}
   Bool_t GetCheckStackForPDG()                         const {return fCheckStackForPDG;}
   Int_t GetStackPDG()                                  const {return fStackPDG;}
+  Bool_t GetCheckUnlikeSign()                          const {return fCheckUnlikeSign;}
   Bool_t GetCheckLikeSignPP()                          const {return fCheckLikeSignPP;}
   Bool_t GetCheckLikeSignMM()                          const {return fCheckLikeSignMM;}
 
   void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
   EJpsiRadiativ GetJpsiRadiative() const   { return fJpsiRadiative; }
  private:
-  // Switch to compare also like sign pairs against signal
+  // Switches to compare also like sign pairs with the SignalMC definition and to deactivate checking of unlike sign pairs.
+  Bool_t fCheckUnlikeSign; // default usage, true by default.
   Bool_t fCheckLikeSignPP; // ++ pairs
   Bool_t fCheckLikeSignMM; // -- pairs
   
@@ -178,7 +183,7 @@ class AliDielectronSignalMC : public TNamed {
   
   Bool_t fFillPureMCStep;             // check and fill the pure MC step
   
-  ClassDef(AliDielectronSignalMC,3);
+  ClassDef(AliDielectronSignalMC,4);
 };
 
 #endif

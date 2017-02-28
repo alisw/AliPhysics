@@ -1602,26 +1602,27 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
 
     // fill pair and/or their leg variables
     if(pairClass || legClass) {
-      Int_t npairs=PairArray(AliDielectron::kEv1PM)->GetEntriesFast(); // only SE +-
-      for (Int_t ipair=0; ipair<npairs; ++ipair){
-        AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PM)->UncheckedAt(ipair));
-
-        Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
-        if(isMCtruth) {
-          //fill pair information
-          if (pairClass){
-            AliDielectronVarManager::Fill(pair, values);
-            fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
-          }
-          //fill leg information, both + and - in the same histo
-          if (legClass){
-            AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),values);
-            fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
-            AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),values);
-            fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
-          }
-        } //is signal
-      } //loop: pairs
+      if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckUnlikeSign()){
+        Int_t npairs=PairArray(AliDielectron::kEv1PM)->GetEntriesFast(); // SE +-
+        for (Int_t ipair=0; ipair<npairs; ++ipair){
+          AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PM)->UncheckedAt(ipair));
+          Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+          if(isMCtruth) {
+            //fill pair information
+            if (pairClass){
+              AliDielectronVarManager::Fill(pair, values);
+              fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+            }
+            //fill leg information, both + and - in the same histo
+            if (legClass){
+              AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),values);
+              fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+              AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),values);
+              fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+            }
+          } //is signal
+        } //loop: pairs
+      } // fill +- pairs
       if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckLikeSignPP()){
         Int_t npairsLS1=PairArray(AliDielectron::kEv1PP)->GetEntriesFast(); // SE ++
         for (Int_t ipair=0; ipair<npairsLS1; ++ipair){
