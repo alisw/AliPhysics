@@ -30,7 +30,7 @@ First, you must add some additional options to your run macro. In particular, we
 
 ### Configure the EMCal Correction Framework AddTask for side-by-side testing
 
-To enable side-by-side testing, we will need to setup the copy of branches before setting up the EMCal Correction Framework AddTask. This is required to ensure that the two correction frameworks do not interfere with each other. To copy the proper input objects (we only need to copy cells and tracks - clusters will be created automatically), use something like the code below (assuming AOD branch naming):
+To enable side-by-side testing, we will need to setup the copy of branches before setting up the EMCal Correction Framework AddTask (ie. this code must be **executed before the Correction Framework AddTask** in your run macro or LEGO train). This is required to ensure that the two correction frameworks do not interfere with each other. To copy the proper input objects (we only need to copy cells and tracks - clusters will be created automatically), use something like the code below (assuming AOD branch naming):
 
 ~~~{.cxx}
 // Cells

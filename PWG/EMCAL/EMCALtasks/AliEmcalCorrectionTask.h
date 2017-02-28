@@ -105,6 +105,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   // Set
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetRunPeriod(const char* runPeriod)                   { fRunPeriod = runPeriod; fRunPeriod.ToLower(); }
+  void                        SetNeedEmcalGeometry(Bool_t b)                        { fNeedEmcalGeom = b; }
   // Centrality options
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
   virtual void                SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }

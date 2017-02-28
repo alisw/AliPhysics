@@ -141,7 +141,7 @@ Bool_t AliEmcalCorrectionCellEnergy::Run()
   if (fCaloCells->GetNumberOfCells()<=0)
   {
     AliDebug(2, Form("Number of EMCAL cells = %d, returning", fCaloCells->GetNumberOfCells()));
-    return kTRUE;
+    return kFALSE;
   }
   
   // mark the cells not recalibrated

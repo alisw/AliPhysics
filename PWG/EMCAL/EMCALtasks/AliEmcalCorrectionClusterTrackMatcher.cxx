@@ -317,23 +317,13 @@ void AliEmcalCorrectionClusterTrackMatcher::UpdateClusters()
     
     // Copy the matched tracks in the cluster. Note: different methods for ESD/AOD
     if (ac) {
-      // TEMP
-      /*std::cout << "ProcessID for current process: " << TProcessID::GetPID()->GetName() << "/" << TProcessID::GetPID()->GetTitle() << ". Memory Address: " << TProcessID::GetPID() << std::endl;
-      std::cout << "N tracks matched: " << ac->GetNTracksMatched() << std::endl;
-      std::cout << "ProcessID for cluster: " << TProcessID::GetProcessWithUID(ac)->GetName() << "/" << TProcessID::GetProcessWithUID(ac)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(ac) << std::endl;*/
       for (Int_t i=0; i < N; ++i) {
         Int_t id = emcalCluster->GetMatchedObjId(i);
         AliEmcalParticle* emcalTrack = static_cast<AliEmcalParticle*>(fEmcalTracks->At(id));
         
         AliDebug(3, Form("Pt = %.2f, eta = %.2f, phi = %.2f", emcalTrack->Pt(), emcalTrack->Eta(), emcalTrack->Phi()));
-        // TEMP
-        //std::cout << "ProcessID for emcal track: " << TProcessID::GetProcessWithUID(emcalTrack)->GetName() << "/" << TProcessID::GetProcessWithUID(emcalTrack)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(emcalTrack) << std::endl;
         
         TObject *obj = emcalTrack->GetTrack();
-        // TEMP
-        // Superceded by assigning a new process ID earlier
-        //obj->SetBit(TObject::kIsReferenced);
-        //std::cout << "ProcessID for track: " << TProcessID::GetProcessWithUID(obj)->GetName() << "/" << TProcessID::GetProcessWithUID(obj)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(obj) << std::endl;
         ac->AddTrackMatched(obj);
       }
     }

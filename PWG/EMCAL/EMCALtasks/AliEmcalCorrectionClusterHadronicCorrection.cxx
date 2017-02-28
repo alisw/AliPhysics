@@ -27,7 +27,6 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   fEexclCell(0),
   fDoExact(kFALSE),
   fHistMatchEtaPhiAll(0),
-  fHistMatchEtaPhiAllTr(0),
   fHistMatchEtaPhiAllCl(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
@@ -105,9 +104,6 @@ void AliEmcalCorrectionClusterHadronicCorrection::UserCreateOutputObjects()
   
   fHistMatchEtaPhiAll = new TH2F("fHistMatchEtaPhiAll", "fHistMatchEtaPhiAll;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
   fOutput->Add(fHistMatchEtaPhiAll);
-  
-  fHistMatchEtaPhiAllTr = new TH2F("fHistMatchEtaPhiAllTr", "fHistMatchEtaPhiAllTr;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
-  fOutput->Add(fHistMatchEtaPhiAllTr);
   
   fHistMatchEtaPhiAllCl = new TH2F("fHistMatchEtaPhiAllCl", "fHistMatchEtaPhiAllCl;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
   fOutput->Add(fHistMatchEtaPhiAllCl);

@@ -1003,7 +1003,7 @@ void AliEmcalCorrectionTask::UserExec(Option_t *option)
 {
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 
-  // Initialize the event if not intialized
+  // Initialize the event if not initialized
   if (!fEventInitialized)
     ExecOnce();
 
@@ -1061,7 +1061,7 @@ void AliEmcalCorrectionTask::ExecOnce()
     cont->SetArray(InputEvent());
   }
 
-  // Determine the proper pointer for each cell object and save them to the cell contianer
+  // Determine the proper pointer for each cell object and save them to the cell container
   // At this point, they should all be created
   for (auto cellObj : fCellCollArray)
   {
@@ -1070,6 +1070,11 @@ void AliEmcalCorrectionTask::ExecOnce()
 
   fEventInitialized = kTRUE;
 
+  // Print warning to the user that the rest of the configuration information is available in the generation log
+  // when the Analysis Manager was created. At the AliError level to be certain that it is shown on the train!
+  AliError("=== NOTE: Additional EMCal Corrections configuration information can be found when the Analysis Manager is configured. For a run macro, see above, while for a LEGO train, see the generation.log ===");
+
+  // Setup the components
   ExecOnceComponents();
 }
 
