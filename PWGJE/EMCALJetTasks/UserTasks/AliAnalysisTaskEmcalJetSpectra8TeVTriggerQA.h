@@ -17,6 +17,18 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THistManager.h"
+#include <string>
+#include <vector>
+#include "Tracks/AliAnalysisTaskEmcalTriggerBase.h"
+#include "Tracks/AliCutValueRange.h"
+#include <TCustomBinning.h>
+#include <TString.h>
+
+class AliOADBContainer;
+class AliEMCALTriggerPatchInfo;
+class THistManager;
+class TObjArray;
+
 
 /**
  * \class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA
@@ -30,38 +42,42 @@
  * and AllocateJetHistograms().
  */
 class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA : public AliAnalysisTaskEmcalJet {
- public:
+public:
 
-  AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA()                                               ;
-  AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const char *name)                               ;
-  virtual ~AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA()                                      ;
+    AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA()                                               ;
+    AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const char *name)                               ;
+    virtual ~AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA()                                      ;
 
-  void                        UserCreateOutputObjects()                         ;
-  void                        Terminate(Option_t *option)                       ;
+    void                        UserCreateOutputObjects()                         ;
+    void                        Terminate(Option_t *option)                       ;
 
- protected:
-  void                        ExecOnce()                                        ;
-  Bool_t                      FillHistograms()                                  ;
-  Bool_t                      Run()                                             ;
+protected:
+    void                        ExecOnce()                                        ;
+    Bool_t                      FillHistograms()                                  ;
+    Bool_t                      Run()                                             ;
 
-  void                        AllocateJetHistograms()                           ;
-  void                        AllocateTrackHistograms()                         ;
-  void                        AllocateClusterHistograms()                       ;
-  void                        AllocateCellHistograms()                          ;
+    void                        AllocateJetHistograms()                           ;
+    void                        AllocateTrackHistograms()                         ;
+    void                        AllocateClusterHistograms()                       ;
+    void                        AllocateCellHistograms()                          ;
 
-  void                        DoJetLoop()                                       ;
-  void                        DoTrackLoop()                                     ;
-  void                        DoClusterLoop()                                   ;
-  void                        DoCellLoop()                                      ;
+    void                        DoJetLoop()                                       ;
+    void                        DoTrackLoop()                                     ;
+    void                        DoClusterLoop()                                   ;
+    void                        DoCellLoop()                                      ;
 
-  THistManager                fHistManager                                      ;///< Histogram manager
+    THistManager                fHistManager                                      ;///< Histogram manager
 
- private:
-  AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&)           ; // not implemented
-  AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA &operator=(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&); // not implemented
+private:
 
-  /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA, 7);
-  /// \endcond
+    TH1F                          *fHistNumbJets;//!  Numb Jets Per Event
+    TH1F                          *fHistJetPt;//!  Jet Pt Dist
+
+    AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&)           ; // not implemented
+    AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA &operator=(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&); // not implemented
+
+    /// \cond CLASSIMP
+    ClassDef(AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA, 7);
+    /// \endcond
 };
 #endif

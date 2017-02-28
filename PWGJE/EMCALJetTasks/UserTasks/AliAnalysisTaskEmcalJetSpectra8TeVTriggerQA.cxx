@@ -17,6 +17,17 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TList.h>
+#include <array>
+#include <iostream>
+#include <map>
+#include <vector>
+#include <TClonesArray.h>
+#include <TGrid.h>
+#include <THistManager.h>
+#include <THashList.h>
+#include <TLinearBinning.h>
+#include <TObjArray.h>
+#include <TParameter.h>
 
 #include <AliVCluster.h>
 #include <AliVParticle.h>
@@ -28,8 +39,17 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
-#include "AliEmcalTriggerMaker.h"
-#include "AliEmcalTriggerMakerTask.h"
+
+
+#include "AliAnalysisUtils.h"
+#include "AliESDEvent.h"
+#include "AliEMCALTriggerPatchInfo.h"
+#include "Tracks/AliEmcalTriggerOfflineSelection.h"
+#include "AliInputEventHandler.h"
+#include "AliLog.h"
+#include "AliMultSelection.h"
+#include "AliMultEstimator.h"
+#include "AliOADBContainer.h"
 
 #include "AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA.h"
 
@@ -41,8 +61,10 @@ ClassImp(AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA);
  * Default constructor. Needed by ROOT I/O
  */
 AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA() :
-  AliAnalysisTaskEmcalJet(),
-  fHistManager()
+AliAnalysisTaskEmcalJet(),
+fHistManager(),
+fHistNumbJets(),
+fHistJetPt()
 {
 }
 
@@ -52,10 +74,12 @@ AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVT
  * @param[in] name Name of the task
  */
 AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const char *name) :
-  AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name)
+AliAnalysisTaskEmcalJet(name, kTRUE),
+fHistManager(name),
+fHistNumbJets(0),
+fHistJetPt(0)
 {
-  SetMakeGeneralHistograms(kTRUE);
+    SetMakeGeneralHistograms(kTRUE);
 }
 
 /**
@@ -71,20 +95,22 @@ AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::~AliAnalysisTaskEmcalJetSpectra8TeV
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
 {
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+    AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  AllocateClusterHistograms();
-  AllocateTrackHistograms();
-  AllocateJetHistograms();
-  AllocateCellHistograms();
+    AllocateClusterHistograms();
+    AllocateTrackHistograms();
+    AllocateJetHistograms();
+    AllocateCellHistograms();
 
-  TIter next(fHistManager.GetListOfHistograms());
-  TObject* obj = 0;
-  while ((obj = next())) {
-    fOutput->Add(obj);
-  }
+    TIter next(fHistManager.GetListOfHistograms());
+    TObject* obj = 0;
+    while ((obj = next())) {
+        fOutput->Add(obj);
+    }
+    fOutput->Add(fHistNumbJets);
+    fOutput->Add(fHistJetPt);
 
-  PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+    PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
 /*
@@ -94,49 +120,49 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateClusterHistograms()
 {
-  TString histname;
-  TString histtitle;
-  TString groupname;
-  AliClusterContainer* clusCont = 0;
-  TIter next(&fClusterCollArray);
-  while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
-    groupname = clusCont->GetName();
-    fHistManager.CreateHistoGroup(groupname);
-    for (Int_t cent = 0; cent < fNcentBins; cent++) {
-      histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{E}_{cluster} (GeV);counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+    TString histname;
+    TString histtitle;
+    TString groupname;
+    AliClusterContainer* clusCont = 0;
+    TIter next(&fClusterCollArray);
+    while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
+        groupname = clusCont->GetName();
+        fHistManager.CreateHistoGroup(groupname);
+        for (Int_t cent = 0; cent < fNcentBins; cent++) {
+            histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{E}_{cluster} (GeV);counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
 
-      histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{E}_{cluster}^{exotic} (GeV);counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+            histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{E}_{cluster}^{exotic} (GeV);counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
 
-      histname = TString::Format("%s/histClusterNonLinCorrEnergy_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{E}_{cluster}^{non-lin.corr.} (GeV);counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+            histname = TString::Format("%s/histClusterNonLinCorrEnergy_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{E}_{cluster}^{non-lin.corr.} (GeV);counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
 
-      histname = TString::Format("%s/histClusterHadCorrEnergy_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{E}_{cluster}^{had.corr.} (GeV);counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+            histname = TString::Format("%s/histClusterHadCorrEnergy_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{E}_{cluster}^{had.corr.} (GeV);counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
 
-      histname = TString::Format("%s/histClusterPhi_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{#phi}_{custer};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+            histname = TString::Format("%s/histClusterPhi_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{#phi}_{custer};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
 
-      histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{#eta}_{custer};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+            histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{#eta}_{custer};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
 
-      histname = TString::Format("%s/histNClusters_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;number of clusters;events", histname.Data());
-      if (fForceBeamType != kpp) {
-        fHistManager.CreateTH1(histname, histtitle, 500, 0, 3000);
-      }
-      else {
-        fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
-      }
+            histname = TString::Format("%s/histNClusters_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;number of clusters;events", histname.Data());
+            if (fForceBeamType != kpp) {
+                fHistManager.CreateTH1(histname, histtitle, 500, 0, 3000);
+            }
+            else {
+                fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+            }
+        }
     }
-  }
 }
 
 /*
@@ -146,25 +172,25 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateClusterHistograms()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateCellHistograms()
 {
-  TString histname;
-  TString histtitle;
-  TString groupname(fCaloCellsName);
+    TString histname;
+    TString histtitle;
+    TString groupname(fCaloCellsName);
 
-  fHistManager.CreateHistoGroup(groupname);
-  for (Int_t cent = 0; cent < fNcentBins; cent++) {
-    histname = TString::Format("%s/histCellEnergy_%d", groupname.Data(), cent);
-    histtitle = TString::Format("%s;#it{E}_{cell} (GeV);counts", histname.Data());
-    fHistManager.CreateTH1(histname, histtitle, 300, 0, 150);
+    fHistManager.CreateHistoGroup(groupname);
+    for (Int_t cent = 0; cent < fNcentBins; cent++) {
+        histname = TString::Format("%s/histCellEnergy_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{E}_{cell} (GeV);counts", histname.Data());
+        fHistManager.CreateTH1(histname, histtitle, 300, 0, 150);
 
-    histname = TString::Format("%s/histNCells_%d", groupname.Data(), cent);
-    histtitle = TString::Format("%s;number of cells;events", histname.Data());
-    if (fForceBeamType != kpp) {
-      fHistManager.CreateTH1(histname, histtitle, 500, 0, 6000);
+        histname = TString::Format("%s/histNCells_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;number of cells;events", histname.Data());
+        if (fForceBeamType != kpp) {
+            fHistManager.CreateTH1(histname, histtitle, 500, 0, 6000);
+        }
+        else {
+            fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+        }
     }
-    else {
-      fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
-    }
-  }
 }
 
 /*
@@ -175,55 +201,55 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateCellHistograms()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateTrackHistograms()
 {
-  TString histname;
-  TString histtitle;
-  TString groupname;
-  AliParticleContainer* partCont = 0;
-  TIter next(&fParticleCollArray);
-  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
-    groupname = partCont->GetName();
-    fHistManager.CreateHistoGroup(groupname);
-    for (Int_t cent = 0; cent < fNcentBins; cent++) {
-      histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{p}_{T,track} (GeV/#it{c});counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+    TString histname;
+    TString histtitle;
+    TString groupname;
+    AliParticleContainer* partCont = 0;
+    TIter next(&fParticleCollArray);
+    while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+        groupname = partCont->GetName();
+        fHistManager.CreateHistoGroup(groupname);
+        for (Int_t cent = 0; cent < fNcentBins; cent++) {
+            histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{p}_{T,track} (GeV/#it{c});counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
 
-      histname = TString::Format("%s/histTrackPhi_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{#phi}_{track};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+            histname = TString::Format("%s/histTrackPhi_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{#phi}_{track};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
 
-      histname = TString::Format("%s/histTrackEta_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{#eta}_{track};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+            histname = TString::Format("%s/histTrackEta_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{#eta}_{track};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
 
-      if (TClass(partCont->GetClassName()).InheritsFrom("AliVTrack")) {
-        histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), cent);
-        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#eta}_{track}^{vertex} - #it{#eta}_{track}^{EMCal};counts", histname.Data());
-        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
+            if (TClass(partCont->GetClassName()).InheritsFrom("AliVTrack")) {
+                histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), cent);
+                histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#eta}_{track}^{vertex} - #it{#eta}_{track}^{EMCal};counts", histname.Data());
+                fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
 
-        histname = TString::Format("%s/fHistDeltaPhiPt_%d", groupname.Data(), cent);
-        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#phi}_{track}^{vertex} - #it{#phi}_{track}^{EMCal};counts", histname.Data());
-        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 200, -2, 2);
+                histname = TString::Format("%s/fHistDeltaPhiPt_%d", groupname.Data(), cent);
+                histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#phi}_{track}^{vertex} - #it{#phi}_{track}^{EMCal};counts", histname.Data());
+                fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 200, -2, 2);
 
-        histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), cent);
-        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{p}_{T,track}^{vertex} - #it{p}_{T,track}^{EMCal} (GeV/#it{c});counts", histname.Data());
-        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, fNbins / 2, -fMaxBinPt/2, fMaxBinPt/2);
+                histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), cent);
+                histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{p}_{T,track}^{vertex} - #it{p}_{T,track}^{EMCal} (GeV/#it{c});counts", histname.Data());
+                fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, fNbins / 2, -fMaxBinPt/2, fMaxBinPt/2);
 
-        histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), cent);
-        histtitle = TString::Format("%s;#it{P}_{track} (GeV/#it{c});#it{E}_{cluster} / #it{P}_{track} #it{c};counts", histname.Data());
-        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, fNbins / 2, 0, 4);
-      }
+                histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), cent);
+                histtitle = TString::Format("%s;#it{P}_{track} (GeV/#it{c});#it{E}_{cluster} / #it{P}_{track} #it{c};counts", histname.Data());
+                fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, fNbins / 2, 0, 4);
+            }
 
-      histname = TString::Format("%s/histNTracks_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;number of tracks;events", histname.Data());
-      if (fForceBeamType != kpp) {
-        fHistManager.CreateTH1(histname, histtitle, 500, 0, 5000);
-      }
-      else {
-        fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
-      }
+            histname = TString::Format("%s/histNTracks_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;number of tracks;events", histname.Data());
+            if (fForceBeamType != kpp) {
+                fHistManager.CreateTH1(histname, histtitle, 500, 0, 5000);
+            }
+            else {
+                fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+            }
+        }
     }
-  }
 }
 
 /*
@@ -233,47 +259,47 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateTrackHistograms()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
 {
-  TString histname;
-  TString histtitle;
-  TString groupname;
-  AliJetContainer* jetCont = 0;
-  TIter next(&fJetCollArray);
-  while ((jetCont = static_cast<AliJetContainer*>(next()))) {
-    groupname = jetCont->GetName();
-    fHistManager.CreateHistoGroup(groupname);
-    for (Int_t cent = 0; cent < fNcentBins; cent++) {
-      histname = TString::Format("%s/histJetPt_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
+    TString histname;
+    TString histtitle;
+    TString groupname;
+    AliJetContainer* jetCont = 0;
+    TIter next(&fJetCollArray);
+    while ((jetCont = static_cast<AliJetContainer*>(next()))) {
+        groupname = jetCont->GetName();
+        fHistManager.CreateHistoGroup(groupname);
+        for (Int_t cent = 0; cent < fNcentBins; cent++) {
+            histname = TString::Format("%s/histJetPt_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
 
-      histname = TString::Format("%s/histJetArea_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{A}_{jet};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, 3);
+            histname = TString::Format("%s/histJetArea_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{A}_{jet};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, 3);
 
-      histname = TString::Format("%s/histJetPhi_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+            histname = TString::Format("%s/histJetPhi_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
 
-      histname = TString::Format("%s/histJetEta_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+            histname = TString::Format("%s/histJetEta_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
 
-      histname = TString::Format("%s/histNJets_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;number of jets;events", histname.Data());
-      if (fForceBeamType != kpp) {
-        fHistManager.CreateTH1(histname, histtitle, 500, 0, 500);
-      }
-      else {
-        fHistManager.CreateTH1(histname, histtitle, 100, 0, 100);
-      }
+            histname = TString::Format("%s/histNJets_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;number of jets;events", histname.Data());
+            if (fForceBeamType != kpp) {
+                fHistManager.CreateTH1(histname, histtitle, 500, 0, 500);
+            }
+            else {
+                fHistManager.CreateTH1(histname, histtitle, 100, 0, 100);
+            }
 
-      if (!jetCont->GetRhoName().IsNull()) {
-        histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), cent);
-        histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} (GeV/#it{c});counts", histname.Data());
-        fHistManager.CreateTH1(histname, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
-      }
+            if (!jetCont->GetRhoName().IsNull()) {
+                histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), cent);
+                histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} (GeV/#it{c});counts", histname.Data());
+                fHistManager.CreateTH1(histname, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
+            }
+        }
     }
-  }
 }
 
 /**
@@ -284,12 +310,12 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
  */
 Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::FillHistograms()
 {
-  DoJetLoop();
-  DoTrackLoop();
-  DoClusterLoop();
-  DoCellLoop();
+    DoJetLoop();
+    DoTrackLoop();
+    DoClusterLoop();
+    DoCellLoop();
 
-  return kTRUE;
+    return kTRUE;
 }
 
 /**
@@ -298,37 +324,38 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::FillHistograms()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
 {
-  TString histname;
-  TString groupname;
-  AliJetContainer* jetCont = 0;
-  TIter next(&fJetCollArray);
-  while ((jetCont = static_cast<AliJetContainer*>(next()))) {
-    groupname = jetCont->GetName();
-    UInt_t count = 0;
-    for(auto jet : jetCont->accepted()) {
-      if (!jet) continue;
-      count++;
+    TString histname;
+    TString groupname;
+    AliJetContainer* jetCont = 0;
+    TIter next(&fJetCollArray);
+    while ((jetCont = static_cast<AliJetContainer*>(next()))) {
+        groupname = jetCont->GetName();
+        UInt_t count = 0;
+        for(auto jet : jetCont->accepted()) {
+            if (!jet) continue;
+            count++;
+            cout<<"FOUND JET"<<endl;
 
-      histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, jet->Pt());
+            histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, jet->Pt());
 
-      histname = TString::Format("%s/histJetArea_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, jet->Area());
+            histname = TString::Format("%s/histJetArea_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, jet->Area());
 
-      histname = TString::Format("%s/histJetPhi_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, jet->Phi());
+            histname = TString::Format("%s/histJetPhi_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, jet->Phi());
 
-      histname = TString::Format("%s/histJetEta_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, jet->Eta());
+            histname = TString::Format("%s/histJetEta_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, jet->Eta());
 
-      if (jetCont->GetRhoParameter()) {
-        histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
-        fHistManager.FillTH1(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area());
-      }
+            if (jetCont->GetRhoParameter()) {
+                histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
+                fHistManager.FillTH1(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area());
+            }
+        }
+        histname = TString::Format("%s/histNJets_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, count);
     }
-    histname = TString::Format("%s/histNJets_%d", groupname.Data(), fCentBin);
-    fHistManager.FillTH1(histname, count);
-  }
 }
 
 /**
@@ -337,56 +364,56 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
 {
-  AliClusterContainer* clusCont = GetClusterContainer(0);
+    AliClusterContainer* clusCont = GetClusterContainer(0);
 
-  TString histname;
-  TString groupname;
-  AliParticleContainer* partCont = 0;
-  TIter next(&fParticleCollArray);
-  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
-    groupname = partCont->GetName();
-    UInt_t count = 0;
-    for(auto part : partCont->accepted()) {
-      if (!part) continue;
-      count++;
+    TString histname;
+    TString groupname;
+    AliParticleContainer* partCont = 0;
+    TIter next(&fParticleCollArray);
+    while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+        groupname = partCont->GetName();
+        UInt_t count = 0;
+        for(auto part : partCont->accepted()) {
+            if (!part) continue;
+            count++;
 
-      histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, part->Pt());
+            histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, part->Pt());
 
-      histname = TString::Format("%s/histTrackPhi_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, part->Phi());
+            histname = TString::Format("%s/histTrackPhi_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, part->Phi());
 
-      histname = TString::Format("%s/histTrackEta_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, part->Eta());
+            histname = TString::Format("%s/histTrackEta_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, part->Eta());
 
-      if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
-        const AliVTrack* track = static_cast<const AliVTrack*>(part);
+            if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
+                const AliVTrack* track = static_cast<const AliVTrack*>(part);
 
-        histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), fCentBin);
-        fHistManager.FillTH1(histname, track->Pt(), track->Eta() - track->GetTrackEtaOnEMCal());
+                histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), fCentBin);
+                fHistManager.FillTH1(histname, track->Pt(), track->Eta() - track->GetTrackEtaOnEMCal());
 
-        histname = TString::Format("%s/fHistDeltaPhiPt_%d", groupname.Data(), fCentBin);
-        fHistManager.FillTH1(histname, track->Pt(), track->Phi() - track->GetTrackPhiOnEMCal());
+                histname = TString::Format("%s/fHistDeltaPhiPt_%d", groupname.Data(), fCentBin);
+                fHistManager.FillTH1(histname, track->Pt(), track->Phi() - track->GetTrackPhiOnEMCal());
 
-        histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), fCentBin);
-        fHistManager.FillTH1(histname, track->Pt(), track->Pt() - track->GetTrackPtOnEMCal());
+                histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), fCentBin);
+                fHistManager.FillTH1(histname, track->Pt(), track->Pt() - track->GetTrackPtOnEMCal());
 
-        if (clusCont) {
-          Int_t iCluster = track->GetEMCALcluster();
-          if (iCluster >= 0) {
-            AliVCluster* cluster = clusCont->GetAcceptCluster(iCluster);
-            if (cluster) {
-              histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), fCentBin);
-              fHistManager.FillTH2(histname, track->P(), cluster->GetNonLinCorrEnergy() / track->P());
+                if (clusCont) {
+                    Int_t iCluster = track->GetEMCALcluster();
+                    if (iCluster >= 0) {
+                        AliVCluster* cluster = clusCont->GetAcceptCluster(iCluster);
+                        if (cluster) {
+                            histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), fCentBin);
+                            fHistManager.FillTH2(histname, track->P(), cluster->GetNonLinCorrEnergy() / track->P());
+                        }
+                    }
+                }
             }
-          }
         }
-      }
-    }
 
-    histname = TString::Format("%s/histNTracks_%d", groupname.Data(), fCentBin);
-    fHistManager.FillTH1(histname, count);
-  }
+        histname = TString::Format("%s/histNTracks_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, count);
+    }
 }
 
 /**
@@ -395,49 +422,49 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoClusterLoop()
 {
-  TString histname;
-  TString groupname;
-  AliClusterContainer* clusCont = 0;
-  TIter next(&fClusterCollArray);
-  while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
-    groupname = clusCont->GetName();
+    TString histname;
+    TString groupname;
+    AliClusterContainer* clusCont = 0;
+    TIter next(&fClusterCollArray);
+    while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
+        groupname = clusCont->GetName();
 
-    for(auto cluster : clusCont->all()) {
-      if (!cluster) continue;
+        for(auto cluster : clusCont->all()) {
+            if (!cluster) continue;
 
-      if (cluster->GetIsExotic()) {
-        histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), fCentBin);
-        fHistManager.FillTH1(histname, cluster->E());
-      }
+            if (cluster->GetIsExotic()) {
+                histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), fCentBin);
+                fHistManager.FillTH1(histname, cluster->E());
+            }
+        }
+
+        UInt_t count = 0;
+        for(auto cluster : clusCont->accepted()) {
+            if (!cluster) continue;
+            count++;
+
+            AliTLorentzVector nPart;
+            cluster->GetMomentum(nPart, fVertex);
+
+            histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, cluster->E());
+
+            histname = TString::Format("%s/histClusterNonLinCorrEnergy_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, cluster->GetNonLinCorrEnergy());
+
+            histname = TString::Format("%s/histClusterHadCorrEnergy_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, cluster->GetHadCorrEnergy());
+
+            histname = TString::Format("%s/histClusterPhi_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
+
+            histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, nPart.Eta());
+        }
+
+        histname = TString::Format("%s/histNClusters_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, count);
     }
-
-    UInt_t count = 0;
-    for(auto cluster : clusCont->accepted()) {
-      if (!cluster) continue;
-      count++;
-
-      AliTLorentzVector nPart;
-      cluster->GetMomentum(nPart, fVertex);
-
-      histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, cluster->E());
-
-      histname = TString::Format("%s/histClusterNonLinCorrEnergy_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, cluster->GetNonLinCorrEnergy());
-
-      histname = TString::Format("%s/histClusterHadCorrEnergy_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, cluster->GetHadCorrEnergy());
-
-      histname = TString::Format("%s/histClusterPhi_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
-
-      histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, nPart.Eta());
-    }
-
-    histname = TString::Format("%s/histNClusters_%d", groupname.Data(), fCentBin);
-    fHistManager.FillTH1(histname, count);
-  }
 }
 
 /**
@@ -446,21 +473,21 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoClusterLoop()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoCellLoop()
 {
-  if (!fCaloCells) return;
+    if (!fCaloCells) return;
 
-  TString histname;
+    TString histname;
 
-  const Short_t ncells = fCaloCells->GetNumberOfCells();
+    const Short_t ncells = fCaloCells->GetNumberOfCells();
 
-  histname = TString::Format("%s/histNCells_%d", fCaloCellsName.Data(), fCentBin);
-  fHistManager.FillTH1(histname, ncells);
+    histname = TString::Format("%s/histNCells_%d", fCaloCellsName.Data(), fCentBin);
+    fHistManager.FillTH1(histname, ncells);
 
-  histname = TString::Format("%s/histCellEnergy_%d", fCaloCellsName.Data(), fCentBin);
-  for (Short_t pos = 0; pos < ncells; pos++) {
-    Double_t amp   = fCaloCells->GetAmplitude(pos);
+    histname = TString::Format("%s/histCellEnergy_%d", fCaloCellsName.Data(), fCentBin);
+    for (Short_t pos = 0; pos < ncells; pos++) {
+        Double_t amp   = fCaloCells->GetAmplitude(pos);
 
-    fHistManager.FillTH1(histname, amp);
-  }
+        fHistManager.FillTH1(histname, amp);
+    }
 }
 
 /**
@@ -469,7 +496,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoCellLoop()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExecOnce()
 {
-  AliAnalysisTaskEmcalJet::ExecOnce();
+    AliAnalysisTaskEmcalJet::ExecOnce();
 }
 
 /**
@@ -481,7 +508,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
 {
-  return kTRUE;
+    return kTRUE;
 }
 
 /**
