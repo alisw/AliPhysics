@@ -20,6 +20,7 @@
 ###
 ###   Andrea Rossi, andrea.rossi@cern.ch  
 ### 
+### just a test for git hub
 #######################################################################################################
 
 ######## THE FOLLOWING LINES ARE THE ONLY VARIABLES TO BE CHANGED ACCORDING TO YOUR LOCAL PATHS #####
