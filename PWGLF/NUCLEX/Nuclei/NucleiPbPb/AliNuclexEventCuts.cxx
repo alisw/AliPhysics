@@ -45,6 +45,7 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fMaxResolutionSPDvertex{1000.f},
   fRejectDAQincomplete{false},
   fRequiredSolenoidPolarity{0},
+  fUseMultiplicityDependentPileUpCuts{false},
   fSPDpileupMinContributors{1000},
   fSPDpileupMinZdist{-1.f},
   fSPDpileupNsigmaZdist{-1.f},
@@ -148,7 +149,15 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     fFlag |= BIT(kVertexQuality);
   fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 
-  /// SPD pile-up rejection
+  /// Pile-up rejection
+  AliVMultiplicity* mult = ev->GetMultiplicity();
+  const int ntrkl = mult->GetNumberOfTracklets();
+  if (fUseMultiplicityDependentPileUpCuts) {
+    if (ntrkl < 20) fSPDpileupMinContributors = 3;
+    else if (ntrkl < 50) fSPDpileupMinContributors = 4;
+    else fSPDpileupMinContributors = 5;
+  }
+  fUtils.SetMinPlpContribMV(fSPDpileupMinContributors);
   if (!ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ) &&
       (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)) &&
       (!fPileUpCutMV || !fUtils.IsPileUpMV(ev)))
@@ -157,8 +166,6 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
   /// Centrality cuts:
   /// * Check for min and max centrality
   /// * Cross check correlation between two centrality estimators
-  AliVMultiplicity* mult = ev->GetMultiplicity();
-  const int ntrkl = mult->GetNumberOfTracklets();
   if (fCentralityFramework) {
     if (fCentralityFramework == 2) {
       AliCentrality* cent = ev->GetCentrality();
@@ -405,7 +412,7 @@ void AliNuclexEventCuts::SetupRun2pp() {
 
   fRequiredSolenoidPolarity = 0;
 
-  fSPDpileupMinContributors = 3;
+  fUseMultiplicityDependentPileUpCuts = (fSPDpileupMinContributors == 1000); // If user specify a value it is not overwritten
   fSPDpileupMinZdist = 0.8;
   fSPDpileupNsigmaZdist = 3.;
   fSPDpileupNsigmaDiamXY = 2.;
@@ -424,7 +431,6 @@ void AliNuclexEventCuts::SetupRun2pp() {
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
-  fUtils.SetMinPlpContribMV(5);
   fUtils.SetMaxPlpChi2MV(5);
   fUtils.SetMinWDistMV(15);
   fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
@@ -446,7 +452,7 @@ void AliNuclexEventCuts::SetupLHC15o() {
 
   fRequiredSolenoidPolarity = 0;
 
-  fSPDpileupMinContributors = 5;
+  fUseMultiplicityDependentPileUpCuts = (fSPDpileupMinContributors == 1000); // If user specify a value it is not overwritten
   fSPDpileupMinZdist = 0.8;
   fSPDpileupNsigmaZdist = 3.;
   fSPDpileupNsigmaDiamXY = 2.;

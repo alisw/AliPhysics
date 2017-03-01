@@ -90,6 +90,7 @@ class AliNuclexEventCuts : public TList {
 
     int           fRequiredSolenoidPolarity;      ///< 0: does not require any particular polarity. Positive numbers -> positive B field, negative numbers -> negative B field
 
+    bool          fUseMultiplicityDependentPileUpCuts; ///< If true fSPDpileupMinContributors is set according to the event multiplicity (automatic setup set it true only if the user does not specify any custom value)
     int           fSPDpileupMinContributors;      ///< Reject all the events with SPD pile-up vertices with more than fRejectPileupSPD contributors
     double        fSPDpileupMinZdist;             ///<
     double        fSPDpileupNsigmaZdist;          ///<
