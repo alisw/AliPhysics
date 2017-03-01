@@ -24,8 +24,12 @@ Bool_t ConfigSigmaStar
    Int_t                   NTPCcluster,
    const char             *suffix,
    AliRsnCutSet           *cutsPair,
-   Float_t                minDCAlambdaDaugh=0.15
-)
+   Float_t                minDCAlambdaDaugh,
+   Float_t                 pLife, 
+   Float_t                 radiuslow,
+   Float_t                 radiushigh,    
+   Bool_t                  Switch     
+   )
 {
    // manage suffix
    if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
@@ -89,7 +93,11 @@ Bool_t ConfigSigmaStar
    cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
    cutLambda->SetTolerance(massTol);
    cutLambda->SetMaxRapidity(0.5);
-   //
+   cutLambda->SetSwitch(Switch);    
+   cutLambda->SetfLife(pLife); 
+   cutLambda->SetfLowRadius(radiuslow); 
+   cutLambda->SetfHighRadius(radiushigh); 
+       //
    AliRsnCutSet *cutSetLambda = new AliRsnCutSet("setLambda", AliRsnTarget::kDaughter);
    cutSetLambda->AddCut(cutLambda);
    cutSetLambda->SetCutScheme(cutLambda->GetName());
@@ -106,6 +114,10 @@ Bool_t ConfigSigmaStar
    cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
    cutAntiLambda->SetTolerance(massTol);
    cutAntiLambda->SetMaxRapidity(0.5);
+   cutAntiLambda->SetSwitch(Switch);    
+   cutAntiLambda->SetfLife(pLife); 
+   cutAntiLambda->SetfLowRadius(radiuslow); 
+   cutAntiLambda->SetfHighRadius(radiushigh); 
    // 
    AliRsnCutSet *cutSetAntiLambda = new AliRsnCutSet("setAntiLambda", AliRsnTarget::kDaughter);
    cutSetAntiLambda->AddCut(cutAntiLambda);
