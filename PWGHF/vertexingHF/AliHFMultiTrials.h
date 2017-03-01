@@ -8,6 +8,8 @@
 #include <TPad.h>
 #include <set>
 
+class TNtuple;
+
 /// \class AliHFMultiTrials
 
 class AliHFMultiTrials : public TNamed {
@@ -105,7 +107,7 @@ class AliHFMultiTrials : public TNamed {
 			  Int_t theCase);
 
   AliHFMultiTrials(const AliHFMultiTrials &source);
-  AliHFMultiTrials& operator=(const AliHFMultiTrials& source); 
+  AliHFMultiTrials& operator=(const AliHFMultiTrials& source);
 
   std::set<std::string> fInvMassFitSaveAsFormats; /// saves the invariant mass fit canvases in the file formats listed in this vector (if empty, does nothing)
   Int_t fNumOfRebinSteps; /// number of rebin steps
@@ -142,7 +144,7 @@ class AliHFMultiTrials : public TNamed {
   Bool_t fSaveBkgVal;		/// switch for saving bkg values in nsigma
 
   Bool_t fDrawIndividualFits; /// flag for drawing fits
- 
+
   TH1F* fHistoRawYieldDistAll;  /// histo with yield from all trials
   TH1F* fHistoRawYieldTrialAll; /// histo with yield from all trials
   TH1F* fHistoSigmaTrialAll;    /// histo with gauss sigma from all trials
@@ -169,11 +171,11 @@ class AliHFMultiTrials : public TNamed {
   TH1F *fhTemplRefl;        /// template of reflection contribution
   Float_t fFixRefloS;
   TNtuple* fNtupleMultiTrials; /// tree
- 
+
   Double_t fMinYieldGlob;   /// minimum yield
   Double_t fMaxYieldGlob;   /// maximum yield
 
-  /// \cond CLASSIMP    
+  /// \cond CLASSIMP
   ClassDef(AliHFMultiTrials,5); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
