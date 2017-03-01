@@ -433,6 +433,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   Double_t CentralityBins[7];
   if(fCentralityMax == 20)
   {
+    if(!fFlagMEBinChange){
     CentralityBins[0] = 0;
     CentralityBins[1] = 1.5;
     CentralityBins[2] = 3.5;
@@ -440,6 +441,16 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
     CentralityBins[4] = 9;
     CentralityBins[5] = 14;
     CentralityBins[6] = 20;
+    }
+      if(fFlagMEBinChange){
+          CentralityBins[0] = 0;
+          CentralityBins[1] = 2;
+          CentralityBins[2] = 4;
+          CentralityBins[3] = 6.5;
+          CentralityBins[4] = 10;
+          CentralityBins[5] = 15;
+          CentralityBins[6] = 20;
+      }
   }
   if(fCentralityMax == 50)
   {
@@ -464,6 +475,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   }
   if(fCentralityMax > 50)
   {
+   if(!fFlagMEBinChange){
     CentralityBins[0] = 50;
     CentralityBins[1] = 55;
     CentralityBins[2] = 60;
@@ -471,6 +483,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
     CentralityBins[4] = 70;
     CentralityBins[5] = 75;
     CentralityBins[6] = 80;
+   }
   }
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBins, nZvtxBins, (Double_t*) vertexBins);
 
