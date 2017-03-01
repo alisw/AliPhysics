@@ -103,7 +103,7 @@ void DrawEfficiency_2D(TString fileName, TString dirFileName, TString contName, 
   for(Int_t i = 1; i <= hEff->GetNbinsX(); i++) {
     for(Int_t j = 1; j <= hEff->GetNbinsY(); j++) {
       if(hDen->GetBinContent(i,j) == 0) {
-        if (hDen->GetBinContent(i,j) != 0) printf("Warning! Den. set at 1 with non-0 num, in (%d,%d) bin! Values: num = %1.3f, den = %1.3f\n",i,j,hNum->GetBinContent(i,j),hDen->GetBinContent(i,j));
+        if (hNum->GetBinContent(i,j) != 0) printf("Warning! Den. set at 1 with non-0 num, in (%d,%d) bin! Values: num = %1.3f, den = %1.3f\n",i,j,hNum->GetBinContent(i,j),hDen->GetBinContent(i,j));
         hDen->SetBinContent(i,j,1);  //if you have some Inf/NaN propagated...
       }
       printf("Num, den %d,%d = %1.2f, %1.2f\n",i,j,hNum->GetBinContent(i,j),hDen->GetBinContent(i,j));
