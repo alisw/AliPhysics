@@ -43,7 +43,8 @@ public:
 
   void SetCrystalBallParams ( Double_t xChSt1Par1, Double_t xChSt1Par2, Double_t yChSt1Par1, Double_t yChSt1Par2, Double_t yChPar1, Double_t yChPar2 );
 
-  /// Set sistematic shift in alignment
+  /// Set sistematic shift in alignment.
+  /// The shift applies to mu plus. A shift with the opposite sign will be applied to mu minus
   void SetNSigmaShift ( Double_t nSigmaShift ) { fNSigmaShift = nSigmaShift; }
 
   /// Set chamber resolution used during tracking
