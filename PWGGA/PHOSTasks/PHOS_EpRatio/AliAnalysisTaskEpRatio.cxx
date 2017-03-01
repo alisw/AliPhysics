@@ -225,6 +225,8 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
     AliVCluster *c1 = event->GetCaloCluster(iClu);
 
     if( !c1->IsPHOS() ) continue;
+    if ( c1->GetType() !=AliVCluster::kPHOSNeutral ) continue; // reject CPV clusters
+    
     //if( c1->E()<0.3 ) continue;
     FillHistogram("h_EClus_NCell",c1->E(),c1->GetNCells());
     FillHistogram("h_ECluster",c1->E());
