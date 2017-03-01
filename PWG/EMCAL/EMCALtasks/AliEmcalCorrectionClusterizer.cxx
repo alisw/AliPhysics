@@ -158,6 +158,10 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   if (clusterizerType == AliEMCALRecParam::kClusterizerNxN)
     fRecParam->SetNxM(1,1); // -> (1,1) means 3x3!
   
+  // init reco utils
+  if (!fRecoUtils)
+    fRecoUtils = new AliEMCALRecoUtils;
+  
   if(enableFracEMCRecalc){
     fSetCellMCLabelFromEdepFrac = kTRUE;
     fSetCellMCLabelFromCluster  = 0;
@@ -701,6 +705,7 @@ void AliEmcalCorrectionClusterizer::CalibrateClusters()
     // DISTANCE TO BAD CHANNELS -----------------------------------
     if (fRecalDistToBadChannels)
       fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fCaloCells, clust);
+    
   }
   
   fCaloClusters->Compress();
@@ -852,6 +857,24 @@ void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
 void AliEmcalCorrectionClusterizer::Init()
 {
   // Select clusterization/unfolding algorithm and set all the needed parameters.
+  
+  // If distBC option enabled, init and fill bad channel map
+  if (fRecalDistToBadChannels) {
+    fRecoUtils->SwitchOnDistToBadChannelRecalculation();
+    
+    if (RunChanged()) {
+      Int_t fInitBC = InitBadChannels();
+      if (fInitBC==0)
+      AliError("InitBadChannels returned false, returning");
+      if (fInitBC==1)
+      AliWarning("InitBadChannels OK");
+      if (fInitBC>1)
+      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    }
+  }
+  else
+    fRecoUtils->SwitchOffDistToBadChannelRecalculation();
+  
   
   if (fEvent->GetRunNumber()==fRun)
     return;

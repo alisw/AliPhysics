@@ -14,6 +14,7 @@
 #include "AliTrackContainer.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
+#include "AliOADBContainer.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionComponent);
@@ -320,4 +321,82 @@ void AliEmcalCorrectionComponent::FillCellQA(TH1F* h){
     
   }
   
+}
+
+//_____________________________________________________
+Int_t AliEmcalCorrectionComponent::InitBadChannels()
+{
+  // Initialising bad channel maps
+  
+  if (!fEvent)
+  return 0;
+  
+  AliInfo("Initialising Bad channel map");
+  
+  // init default maps first
+  if (!fRecoUtils->GetEMCALBadChannelStatusMapArray())
+  fRecoUtils->InitEMCALBadChannelStatusMap() ;
+  
+  Int_t runBC = fEvent->GetRunNumber();
+  
+  AliOADBContainer *contBC = new AliOADBContainer("");
+  if (fBasePath!="")
+  { //if fBasePath specified in the ->SetBasePath()
+    AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
+    
+    TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
+    if (!fbad || fbad->IsZombie())
+    {
+      AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
+      return 0;
+    }
+    
+    if (fbad) delete fbad;
+    
+    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
+  }
+  else
+  { // Else choose the one in the $ALICE_PHYSICS directory
+    AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
+    
+    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","read");
+    if (!fbad || fbad->IsZombie())
+    {
+      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root was not found");
+      return 0;
+    }
+    
+    if (fbad) delete fbad;
+    
+    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels");
+  }
+  
+  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
+  if (!arrayBC)
+  {
+    AliError(Form("No external hot channel set for run number: %d", runBC));
+    delete contBC;
+    return 2;
+  }
+  
+  Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
+  for (Int_t i=0; i<sms; ++i)
+  {
+    TH2I *h = fRecoUtils->GetEMCALChannelStatusMap(i);
+    if (h)
+    delete h;
+    h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+    
+    if (!h)
+    {
+      AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+      continue;
+    }
+    h->SetDirectory(0);
+    fRecoUtils->SetEMCALChannelStatusMap(i,h);
+  }
+  
+  delete contBC;
+  
+  return 1;
 }

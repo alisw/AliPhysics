@@ -19,9 +19,9 @@ class AliEMCALRecoUtils;
 class AliVCaloCells;
 class AliVTrack;
 class AliVCluster;
-class AliEMCALGeometry;
 class AliVEvent;
 #include "AliLog.h"
+#include "AliEMCALGeometry.h"
 
 /**
  * @class AliEmcalCorrectionComponent
@@ -58,6 +58,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   Bool_t RunChanged();
   void GetPass();
   void FillCellQA(TH1F* h);
+  Int_t InitBadChannels();
 
   AliClusterContainer * GetClusterContainer() { return fClusCont; }
   AliParticleContainer * GetParticleContainer() { return fPartCont; }

@@ -37,7 +37,6 @@ protected:
   TH1F* fCellEnergyDistAfter;               //!<! cell energy distribution, after bad channel correction
   
 private:
-  Int_t      InitBadChannels();
 
   AliEmcalCorrectionCellBadChannel(const AliEmcalCorrectionCellBadChannel &);             // Not implemented
   AliEmcalCorrectionCellBadChannel &operator=(const AliEmcalCorrectionCellBadChannel &);   // Not implemented
