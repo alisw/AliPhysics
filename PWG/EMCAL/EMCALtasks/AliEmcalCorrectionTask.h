@@ -177,7 +177,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   // Input objects (Cells, Clusters, Tracks) functions
   void CreateInputObjects(AliEmcalContainerUtils::InputObject_t inputObjectType);
-  void AddContainersToComponent(AliEmcalCorrectionComponent * component, AliEmcalContainerUtils::InputObject_t inputObjectType);
+  void AddContainersToComponent(AliEmcalCorrectionComponent * component, AliEmcalContainerUtils::InputObject_t inputObjectType, bool checkObjectExists = false);
   
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Hidden from CINT since it cannot handle YAML objects well

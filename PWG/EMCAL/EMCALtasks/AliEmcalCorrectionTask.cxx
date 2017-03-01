@@ -591,8 +591,8 @@ void AliEmcalCorrectionTask::InitializeComponents()
 
     // Add the require containers to the component
     // Cells must be set during UserExec() because we need to add them as a pointer
-    AddContainersToComponent(component, AliEmcalContainerUtils::kCluster);
-    AddContainersToComponent(component, AliEmcalContainerUtils::kTrack);
+    AddContainersToComponent(component, AliEmcalContainerUtils::kCluster, true);
+    AddContainersToComponent(component, AliEmcalContainerUtils::kTrack, true);
 
     // Initialize each component
     component->Initialize();
@@ -666,7 +666,7 @@ void AliEmcalCorrectionTask::CreateInputObjects(AliEmcalContainerUtils::InputObj
  * @param[in] component The correction component to which the input objects will be added
  * @param[in] inputObjectType The type of input object to add to the component
  */
-void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponent * component, AliEmcalContainerUtils::InputObject_t inputObjectType)
+void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponent * component, AliEmcalContainerUtils::InputObject_t inputObjectType, bool checkObjectExists)
 {
   std::string inputObjectName = GetInputFieldNameFromInputObjectType(inputObjectType);
   // Need to be of the form "clusterContainersNames"
@@ -686,12 +686,20 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
     {
       AliEmcalContainer * cont = GetClusterContainer(str.c_str());
       AliDebugStream(2) << "Adding cluster container " << str << " of array " << cont->GetArrayName() << " to component " << component->GetName() << std::endl;
+
+      if (checkObjectExists && !cont) {
+        AliError(TString::Format("%s: Unable to retrieve input object \"%s\" because it is null. Please check your configuration!", GetName(), str.c_str()));
+      }
       component->AdoptClusterContainer(GetClusterContainer(str.c_str()));
     }
     else if (inputObjectType == AliEmcalContainerUtils::kTrack)
     {
       AliEmcalContainer * cont = GetParticleContainer(str.c_str());
       AliDebugStream(2) << "Adding particle container " << str << " of array " << cont->GetArrayName() << " to component " << component->GetName() << std::endl;
+
+      if (checkObjectExists && !cont) {
+        AliFatal(TString::Format("%s: Unable to retrieve input object \"%s\" because it is null. Please check your configuration!", GetName(), str.c_str()));
+      }
       component->AdoptParticleContainer(GetParticleContainer(str.c_str()));
     }
     else if (inputObjectType == AliEmcalContainerUtils::kCaloCells)
@@ -710,6 +718,10 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
         // NOTE: This may not succeed. Adding the container may need to be repeated after the
         // object is created
         SetCellsObjectInCellContainerBasedOnProperties(cellCont);
+      }
+
+      if (checkObjectExists && !(cellCont->GetCells())) {
+        AliFatal(TString::Format("%s: Unable to retrieve input object \"%s\" because it is null. Please check your configuration!", GetName(), str.c_str()));
       }
 
       // Set the calo cells (may be null)
@@ -1209,9 +1221,9 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
 
     // If the cells were created during ExecOnce(), then we need to re-initialize the pointer to ensure
     // that it is not null!
-    if (!component->GetCaloCells()) {
+    if (!(component->GetCaloCells())) {
       AliDebugStream(2) << "Re-initializing cells for component " << component->GetName() << std::endl;
-      AddContainersToComponent(component, AliEmcalContainerUtils::kCaloCells);
+      AddContainersToComponent(component, AliEmcalContainerUtils::kCaloCells, true);
     }
   }
 }
