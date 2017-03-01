@@ -59,7 +59,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
 target_link_libraries(aliraw-generate-entrylist ${MODULE} Core RAWDatarec)
-target_link_libraries(aliraw-apply-entrylist ${MODULE} Core RIO )
+target_link_libraries(aliraw-apply-entrylist ${MODULE} Core RIO Tree )
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
