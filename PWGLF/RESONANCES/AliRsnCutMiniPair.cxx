@@ -60,8 +60,8 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
       case kDeltaCosRange:
          fCutValueD = pair->DeltaCos(kFALSE);
          return OkRangeD();
-       case kOpeningAngleRange:
-          fCutValueD = pair->OpeningAngle(kFALSE);
+       case kPhiVRange:
+          fCutValueD = pair->PhiV(kFALSE);
           return OkRangeD();
    default:
          AliWarning("Undefined enum value");
