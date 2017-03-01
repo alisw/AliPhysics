@@ -18805,7 +18805,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 
     fCRCZDCQVecCCorr[fRunBin][0]->Fill(fCentralityEBE,QCReR,fZDCEPweightEbE[0]);
     fCRCZDCQVecCCorr[fRunBin][1]->Fill(fCentralityEBE,QCImR,fZDCEPweightEbE[0]);
-    if(fCentralityEBE>5. &&  fCentralityEBE<60.) {
+    if(fCentralityEBE>50. &&  fCentralityEBE<60.) {
       fCRCZDCQVecCov[fRunBin][0]->Fill(fVtxPos[0],QCReR,fZDCEPweightEbE[0]);
       fCRCZDCQVecCov[fRunBin][1]->Fill(fVtxPos[1],QCReR,fZDCEPweightEbE[0]);
       fCRCZDCQVecCov[fRunBin][2]->Fill(fVtxPos[2],QCReR,fZDCEPweightEbE[0]);
@@ -18819,7 +18819,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     
     fCRCZDCQVecACorr[fRunBin][0]->Fill(fCentralityEBE,QAReR,fZDCEPweightEbE[1]);
     fCRCZDCQVecACorr[fRunBin][1]->Fill(fCentralityEBE,QAImR,fZDCEPweightEbE[1]);
-    if(fCentralityEBE>5. &&  fCentralityEBE<60.) {
+    if(fCentralityEBE>50. &&  fCentralityEBE<60.) {
       fCRCZDCQVecCov[fRunBin][6]->Fill(fVtxPos[0],QAReR,fZDCEPweightEbE[1]);
       fCRCZDCQVecCov[fRunBin][7]->Fill(fVtxPos[1],QAReR,fZDCEPweightEbE[1]);
       fCRCZDCQVecCov[fRunBin][8]->Fill(fVtxPos[2],QAReR,fZDCEPweightEbE[1]);
@@ -18844,7 +18844,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     fCRCZDCQVecRes[fRunBin][1]->Fill(fCentralityEBE,QCImR*QAImR);
     fCRCZDCQVecRes[fRunBin][2]->Fill(fCentralityEBE,QCReR*QAImR);
     fCRCZDCQVecRes[fRunBin][3]->Fill(fCentralityEBE,QCImR*QAReR);
-    if(fCentralityEBE>5. &&  fCentralityEBE<60.) {
+    if(fCentralityEBE>50. &&  fCentralityEBE<60.) {
       fCRCZDCQVecCov[fRunBin][12]->Fill(fVtxPos[0],QCReR*QAReR);
       fCRCZDCQVecCov[fRunBin][13]->Fill(fVtxPos[1],QCReR*QAReR);
       fCRCZDCQVecCov[fRunBin][14]->Fill(fVtxPos[2],QCReR*QAReR);
