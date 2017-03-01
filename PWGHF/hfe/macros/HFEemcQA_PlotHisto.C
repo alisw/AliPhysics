@@ -21,7 +21,9 @@ void HFEemcQA_PlotHisto()
   
   char dQA0[100];
   char dQA1[100];
-  SetTrigQA(dQA0,dQA1);
+  Bool_t iMC = kFALSE;
+  SetTrigQA(dQA0,dQA1,iMC);
+  cout << "MC = " << iMC << endl;
 
   TString file;
   file.Form("%s.pdf",dQA1);
@@ -82,6 +84,8 @@ void HFEemcQA_PlotHisto()
   TH2F *fEPV0C = QA1->FindObject("fEvPlaneV0C");
   TH2F *fEPTPC = QA1->FindObject("fEvPlaneTPC");
   TH2F *fTrMult = QA1->FindObject("fMult"); 
+  TH2F *fMomInfo = QA1->FindObject("fMCcheckMother");
+  TH2F *fULSmc = QA1->FindObject("fInvmassULS_MCtrue");
 
   cout << "No of events with NTrk > 2, ZVtx < 10 cm = " << NEvents->GetBinContent(3) <<endl;
 
@@ -121,6 +125,7 @@ void HFEemcQA_PlotHisto()
   gPad->SetLogz();
   //c3->Print(file,"pdf");
 
+  /*
   TCanvas *c4 = new TCanvas();
   c4->Divide(2,2);
   c4->cd(1);
@@ -140,6 +145,7 @@ void HFEemcQA_PlotHisto()
   EPTPC->SetMinimum(1);
   EPTPC->Draw();
   c4->Print(file,"pdf");
+  */
 
   TCanvas *c5 = new TCanvas();
   gPad->SetLogz();
@@ -405,7 +411,68 @@ void HFEemcQA_PlotHisto()
   fm02->GetXaxis()->SetRangeUser(0.02,1);
   fm02->Draw();
   //c25->Print(file,"pdf");
-  c25->Print(file + ")","pdf");
+
+  if(!iMC)
+    {
+     c25->Print(file + ")","pdf");
+    }
+  else
+    {
+
+     TCanvas *c99 = new TCanvas();
+     gPad->SetLogy();
+     TH1D *fPDG = fMomInfo->ProjectionX();
+     fPDG->SetTitle("PDG;PDG;Counts");
+     fPDG->Draw();
+     c99->Print(file,"pdf");
+
+     TCanvas *c99_0 = new TCanvas();
+     c99_0->Divide(2,2);
+     c99_0->cd(1);
+     gPad->SetLogy();
+     TH1D *fenPi = fMomInfo->ProjectionY("fenPi",108,114);
+     fenPi->SetMinimum(1);
+     fenPi->SetMaximum(1e+6);
+     fenPi->SetTitle("enhanced #pi^{0};p_{T}(GeV/c);Counts");
+     fenPi->Draw();
+     c99_0->cd(2);
+     gPad->SetLogy();
+     TH1D *fenEta = fMomInfo->ProjectionY("fenEta",200,230);
+     fenEta->SetMinimum(1);
+     fenEta->SetMaximum(1e+6);
+     fenEta->SetTitle("enhanced #eta;p_{T}(GeV/c);Counts");
+     fenEta->Draw();
+     c99_0->cd(3);
+     gPad->SetLogy();
+     TH1D *fenD = fMomInfo->ProjectionY("fenD",400,500);
+     fenD->SetMinimum(1);
+     fenD->SetTitle("enhanced D mesons;p_{T}(GeV/c);Counts");
+     fenD->Draw();
+     c99_0->cd(4);
+     gPad->SetLogy();
+     TH1D *fenB = fMomInfo->ProjectionY("fenB",500,600);
+     fenB->SetMinimum(1);
+     fenB->SetTitle("enhanced B mesons;p_{T}(GeV/c);Counts");
+     fenB->Draw();
+
+     //c99_0->Print(file + ")","pdf");
+     c99_0->Print(file,"pdf");
+
+     TCanvas *c31 = new TCanvas();
+     c31->Divide(2,1);
+     c31->cd(1);
+     gPad->SetLogy();
+     TH1D *fMassDal0 = fULSmc->ProjectionY("fMassDal0",2,2);
+     fMassDal0->SetTitle("e+e- from #pi^{0} Dalitz;mass;Counts");
+     fMassDal0->Draw();
+     c31->cd(2);
+     gPad->SetLogy();
+     TH1D *fMassDal1 = fULSmc->ProjectionY("fMassDal1",3,3);
+     fMassDal1->SetTitle("e+e- from #eta Dalitz;mass;Counts");
+     fMassDal1->Draw();
+     c31->Print(file + ")","pdf");
+
+    }
 
   /*
   TCanvas *c26 = new TCanvas("M02EovP","M02 vs E/p distribution",50,50,700,500);
@@ -475,7 +542,7 @@ void ProcessLegend(TLegend *leg)
   leg->Draw();
 }
 
-void SetTrigQA(char *name0, char *name1)
+void SetTrigQA(char *name0, char *name1, Bool_t &iMC)
 {
 
   int iTender;
@@ -498,12 +565,14 @@ void SetTrigQA(char *name0, char *name1)
   cout << "EMC8 3" << endl;   //HFEemcQAEMC8_woTender
   cout << "TrigGA 4" << endl;   //HFEemcQATrigGA_woTender
   cout << "TrigJE 5" << endl;   //HFEemcQATrigJE_woTender
+  cout << "MC 6" << endl;
   cin >> itrig;
+  if(itrig==6)iMC = kTRUE;
 
 
   if(iEMC==0)
     {
-    if(itrig==0)sprintf(name0,"PWGHF_hfeHFEemcQAINT7_EMC"); //change for different triggers
+    if(itrig==0 || itrig==6)sprintf(name0,"PWGHF_hfeHFEemcQAINT7_EMC"); //change for different triggers
     if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8_EMC");  //HFEemcQAINT8_woTender
     if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7_EMC");  //HFEemcQAEMC7_woTender
     if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_EMC");  //HFEemcQAEMC8_woTender
@@ -512,7 +581,7 @@ void SetTrigQA(char *name0, char *name1)
   
     if(iTender==0)
       {
-       if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_EMC"); //change for different triggers
+       if(itrig==0 || itrig==6)sprintf(name1,"HFEemcQAINT7_woTender_EMC"); //change for different triggers
        if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_EMC");
        if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_EMC");
        if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_EMC");
@@ -521,7 +590,7 @@ void SetTrigQA(char *name0, char *name1)
      }
     else
      {
-       if(itrig==0)sprintf(name1,"HFEemcQAINT7_wTender_EMC"); //change for different triggers
+       if(itrig==0 || itrig==6)sprintf(name1,"HFEemcQAINT7_wTender_EMC"); //change for different triggers
        if(itrig==1)sprintf(name1,"HFEemcQAINT8_wTender_EMC");
        if(itrig==2)sprintf(name1,"HFEemcQAEMC7_wTender_EMC");
        if(itrig==3)sprintf(name1,"HFEemcQAEMC8_wTender_EMC");
@@ -531,7 +600,7 @@ void SetTrigQA(char *name0, char *name1)
    }
  else
    {
-    if(itrig==0)sprintf(name0,"PWGHF_hfeHFEemcQAINT7_DCAL"); //change for different triggers
+    if(itrig==0 || itrig==6)sprintf(name0,"PWGHF_hfeHFEemcQAINT7_DCAL"); //change for different triggers
     if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8_DCAL");  //HFEemcQAINT8_woTender
     if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7_DCAL");  //HFEemcQAEMC7_woTender
     if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_DCAL");  //HFEemcQAEMC8_woTender
