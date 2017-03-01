@@ -194,7 +194,7 @@ void AliMuonTrackSmearing::ComputeRecoTrack ( Double_t pGen, Double_t etaGen,
 
   fRecoCharge = chargeGen;
 
-  Double_t sign = ( chargeSign > 0. ) ? 1. : -1.;
+  Double_t sign = ( chargeGen > 0. ) ? 1. : -1.;
 
   Double_t eLoss02 = ELoss(pGen,1.5); // = 110cm eLoss_Common + 305 cm eLoss_tungsten
   Double_t eLoss23 = ELoss(pGen,2.5); // = 378cm eLoss_Common + 37 cm eLoss_tungsten
