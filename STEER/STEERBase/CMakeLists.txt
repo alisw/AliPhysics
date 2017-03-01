@@ -165,7 +165,7 @@ add_library(STEERBase SHARED $<TARGET_OBJECTS:STEERBase-object>)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS Core EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physics RIO Tree VMC)
+set(LIBDEPS Core EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physics RIO Tree TreePlayer VMC)
 generate_rootmap("STEERBase" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
