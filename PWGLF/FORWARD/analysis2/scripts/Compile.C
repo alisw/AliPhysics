@@ -42,3 +42,4 @@ Compile(const char* script, Option_t* option="g")
 //
 // EOF
 // 
+// null

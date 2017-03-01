@@ -2075,3 +2075,4 @@ void DrawALICELogo(Bool_t prel, Float_t x1, Float_t y1, Float_t x2, Float_t y2)
   myAliceLogo->Draw();
 }
 
+// null

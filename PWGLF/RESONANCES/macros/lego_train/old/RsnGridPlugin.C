@@ -158,3 +158,4 @@ void GetParameterFromConfig(TString &str,TString token="=") {
    else str = "";
 }
 
+// null

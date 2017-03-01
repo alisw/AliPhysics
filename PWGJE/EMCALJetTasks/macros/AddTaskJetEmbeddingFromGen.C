@@ -116,3 +116,4 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
 
   return jetEmb;
 }
+// null

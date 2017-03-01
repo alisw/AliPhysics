@@ -225,3 +225,4 @@ void wSum(double v1,double v2, double err1,double err2, double* wv,double *we)
   if (wv) *wv = sum;
   if (we) *we = err;
 }
+// null

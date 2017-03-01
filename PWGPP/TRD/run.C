@@ -254,3 +254,4 @@ Bool_t UseMC(Char_t *opt){
 Bool_t UseFriends(Char_t *opt){
   return !(Bool_t)strstr(opt, "NOFR");
 }
+// null

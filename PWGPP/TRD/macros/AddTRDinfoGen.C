@@ -51,3 +51,4 @@ void AddTRDinfoGen(AliAnalysisDataContainer **co)
   mgr->ConnectOutput(info, AliTRDpwgppHelper::kNOutSlots-1, mon);
 }
 
+// null

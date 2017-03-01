@@ -58,3 +58,4 @@ TOFsignal_convolution(const Double_t *x, const Double_t *par)
   Double_t integral = fIntegrand->Integral(-5. * par[4], 5. * par[4]);
   return integral;
 }
+// null

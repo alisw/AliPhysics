@@ -33,3 +33,4 @@ AliJetFinder*  ConfigJetAnalysis()
     //
     return jetFinder;
 }
+// null

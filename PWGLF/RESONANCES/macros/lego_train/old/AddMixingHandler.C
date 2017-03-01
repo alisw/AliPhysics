@@ -89,3 +89,4 @@ Bool_t RsnLoadMacroFromMixHandler(TString macro,TString path="") {
 
    return kFALSE;
 }
+// null

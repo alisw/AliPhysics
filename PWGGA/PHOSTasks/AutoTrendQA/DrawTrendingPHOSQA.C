@@ -233,3 +233,4 @@ void DrawTrendingPHOSQA(TString mergedTrendFile = "trending.root")
   list.Write(); // save selected trend histograms to file
   fout->Close();
 }
+// null

@@ -47,3 +47,4 @@ void runQA_period(TString path="/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16
   gSystem->Exec(Form("cd %s; hadd -f trending.root */trending.root",path.Data()));
   gSystem->Exec(Form("cd %s; aliroot -l -b -q periodLevelQA.C",path.Data()));
 }
+// null

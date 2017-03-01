@@ -7,3 +7,4 @@ void includeMacro(){
   return;
 
 }
+// null

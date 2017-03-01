@@ -318,3 +318,4 @@ spectraMaker* _spectraMaker = new spectraMaker;
 //
 // EOF
 // 
+// null

@@ -56,3 +56,4 @@ void testQPt(const char *inputFile){
   a->MakePowerFit(-1);
 }
 
+// null

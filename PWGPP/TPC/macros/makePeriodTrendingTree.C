@@ -11,3 +11,4 @@ makePeriodTrendingTree(const char* inFile = "trending.root", const char* runType
  delete t;
  delete f;
 }
+// null

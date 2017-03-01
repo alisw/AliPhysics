@@ -56,3 +56,4 @@ void MergeCollectionFromGrid(const char * incollection = "test.xml", const char 
   localTask->GetList()->Write();
   fout->Close();
 }
+// null

@@ -7,3 +7,4 @@ void joinTrees( const char* inlist = "trending.list" )
   tree->Write();
   f.Close(); 
 }
+// null

@@ -132,3 +132,4 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMakerJSON(const char *configurationStri
   }
   return eTask;
 }
+// null

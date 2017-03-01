@@ -31,3 +31,4 @@ AddTaskCopyHeader(const char* what="")
 //
 // EOF
 //
+// null

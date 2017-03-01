@@ -9,3 +9,4 @@ DCAmc_std(const Char_t *filename)
   DCAmc(filename);
 
 }
+// null

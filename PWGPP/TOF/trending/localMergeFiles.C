@@ -17,3 +17,4 @@ Int_t localMergeFiles(Char_t * outfile=NULL, Char_t * list=NULL)
   merger.Merge();  
   return 1; 
 }
+// null

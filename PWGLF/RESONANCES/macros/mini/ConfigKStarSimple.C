@@ -87,3 +87,4 @@ Bool_t ConfigKStarSimple
    // axis Y: transverse momentum
    out->AddAxis(ptID, 100, 0.0, 10.0);
 }
+// null

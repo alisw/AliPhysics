@@ -26,3 +26,4 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRef()
 
   return task;
 }
+// null

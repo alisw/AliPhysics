@@ -28,3 +28,4 @@ merger(const Char_t *filelist, const Char_t *output, Bool_t alien = kFALSE)
   /* create dummy file to tell we are done */
   gSystem->Exec("touch done");
 }
+// null

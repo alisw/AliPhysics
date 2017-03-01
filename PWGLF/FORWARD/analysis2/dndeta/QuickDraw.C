@@ -263,3 +263,4 @@ void QuickDraw(const char** args)
   c->SaveAs("QuickDraw.png");
   gPad = c;
 }
+// null

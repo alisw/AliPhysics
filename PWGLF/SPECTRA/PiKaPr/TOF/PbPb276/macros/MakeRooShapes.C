@@ -4,3 +4,4 @@
   gROOT->ProcessLine(".L RooFermiCutoff.cxx++");
   gROOT->ProcessLine(".L RooGaussianTail.cxx++");
 }
+// null

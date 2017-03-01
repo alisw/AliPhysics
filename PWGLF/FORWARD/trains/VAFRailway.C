@@ -209,3 +209,4 @@ struct VAFRailway : public ProofRailway
 //
 // EOF
 //
+// null

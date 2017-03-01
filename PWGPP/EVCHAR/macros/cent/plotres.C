@@ -583,3 +583,4 @@ void plotRes(const char *fname)
   leg->AddEntry(gm25,"25% smearing","p");
   leg->Draw();
 }
+// null

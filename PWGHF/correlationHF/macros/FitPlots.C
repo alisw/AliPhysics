@@ -576,3 +576,4 @@ TF1* FitPlotsObsolete(TH1D *h,Int_t fitFunc=1,Int_t fixBase=0,Int_t fixMean=0,Do
 
   return fitFunction;
 }
+// null

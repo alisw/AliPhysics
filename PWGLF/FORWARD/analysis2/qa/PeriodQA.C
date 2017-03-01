@@ -67,3 +67,4 @@ PeriodQA(const char* input,
 //
 // EOF
 //
+// null

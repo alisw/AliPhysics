@@ -196,3 +196,4 @@ struct AAFPluginRailway : public PluginRailway
 //
 // EOF
 //
+// null

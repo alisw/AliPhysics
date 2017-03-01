@@ -99,3 +99,4 @@ void make_filter(const char *inReco, const char *inTruth)
     delete truthFile;
     delete output_file;
 }
+// null

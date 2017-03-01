@@ -45,3 +45,4 @@ AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* GetAliAnalysisChargedHadron
   	}
 	return task1;
 }
+// null

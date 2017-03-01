@@ -432,3 +432,4 @@ Compare(const char* var)
   if (w.EqualTo("none")) CentPlot(0x3);
   // CompareSubs(0x3,var);
 }
+// null

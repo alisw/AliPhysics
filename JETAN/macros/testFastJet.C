@@ -39,3 +39,4 @@ void testFastJet(const char* file="testdata.dat")
       
       cout << "bye bye " << endl;
 }
+// null

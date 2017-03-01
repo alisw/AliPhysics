@@ -124,3 +124,4 @@ Bool_t ConfigRsnMC(AliRsnMiniAnalysisTask *task,
 
   return kTRUE;
 }
+// null

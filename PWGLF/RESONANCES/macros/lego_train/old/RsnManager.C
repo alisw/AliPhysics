@@ -170,3 +170,4 @@ Bool_t RsnManagerLoadMacro(TString macro,TString path="") {
    return kFALSE;
 }
 
+// null

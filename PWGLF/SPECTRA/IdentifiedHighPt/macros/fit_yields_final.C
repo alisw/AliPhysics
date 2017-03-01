@@ -1370,3 +1370,4 @@ void Compare(Double_t x, const Char_t* baseName)
   
   delete hHelp;
 }
+// null

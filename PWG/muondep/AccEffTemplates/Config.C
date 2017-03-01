@@ -287,3 +287,4 @@ void Config()
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
 }
+// null

@@ -23,3 +23,4 @@ AliGenerator* GenParam()
 
   return generator;
 }
+// null

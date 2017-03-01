@@ -11,3 +11,4 @@ void RunReducedAnalysis(TString outputdir="", TString inputfilename="", Int_t ru
   AliReducedAnalysisTaskSE* task = AddTask_iarsene_testTask(kFALSE)->GetReducedTask();
   RunReducedEventAnalysis(task,outputfiledir,inputfilename,run,howMany,offset);
 }
+// null

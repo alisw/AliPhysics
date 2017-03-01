@@ -30,3 +30,4 @@ AliAnalysisTask* AddTaskTRDtriggerCheck(const char *name = "trd_trgcheck")
 
   return task;
 }
+// null

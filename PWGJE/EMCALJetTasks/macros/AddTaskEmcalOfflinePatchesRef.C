@@ -12,3 +12,4 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef *AddTaskEmcalOffli
 
   return task;
 }
+// null

@@ -71,3 +71,4 @@ void DrawSpectra(const TString& inputFile="spectra.root", const TString& tag="lh
 	grInvDYieldPt->GetYaxis()->SetTitleOffset(1.30);
 	grInvDYieldPt->Draw("zAP");
 }
+// null

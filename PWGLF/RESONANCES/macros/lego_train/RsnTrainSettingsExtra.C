@@ -30,4 +30,4 @@ void RsnTrainSettingsExtra(Double_t primaryVertex,
 
 
    return;
-}
+}// null

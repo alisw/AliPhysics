@@ -964,3 +964,4 @@ void BadChannelAnalysis(TString datapath= "/scratch/alicehp2,germain/QANew2",TSt
 
      BCAnalysis(inputfile,datapath,trigger,period,pass,trial);
 }
+// null

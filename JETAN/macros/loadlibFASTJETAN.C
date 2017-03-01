@@ -34,3 +34,4 @@ void loadlibFASTJETAN()
   gSystem->Load("libJETAN");
   gSystem->Load("libFASTJETAN");
 }
+// null

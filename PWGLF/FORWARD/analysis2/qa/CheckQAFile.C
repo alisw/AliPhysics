@@ -64,3 +64,4 @@ void CheckQAFile(const char* filename, const char* type="")
 //
 // EOF
 //
+// null

@@ -73,3 +73,4 @@ void ana_example()
   if (!mgr->InitAnalysis()) abort();
   mgr->StartAnalysis("local", chain);
 }
+// null

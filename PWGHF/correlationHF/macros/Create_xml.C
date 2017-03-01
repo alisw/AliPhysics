@@ -24,3 +24,4 @@ void Create_xml(TString aliendir, int stage,TString pattern="*root_archive.zip")
   // Write standard output to file
   gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", Form("Stage_%d.xml",stage)));
 }
+// null

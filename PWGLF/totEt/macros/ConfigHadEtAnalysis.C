@@ -8,3 +8,4 @@ AliAnalysisHadEtCorrections * ConfigHadEtAnalysis(){
   cout<<"eta cut is "<<corrections->GetEtaCut()<<endl;
   return corrections;
 }
+// null

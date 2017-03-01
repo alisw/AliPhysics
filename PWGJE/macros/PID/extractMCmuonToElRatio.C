@@ -160,4 +160,4 @@ Int_t extractMCmuonToElRatio(const TString pathNameData, const TString listName,
   hMCmuonToElRatio->Fit(&f, jetHandling ? "+" : "+W", "", 0.15, restrictJetPtAxis ? actualUpperJetPt : 15.0);
   
   return 0;
-}
+}// null

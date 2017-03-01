@@ -56,3 +56,4 @@ void trending_INT7_vs_INT8(TString inputFileName = "trending.root"){
   AddPeriodSeparationLines(hRatio,periods);
   gPad->Print("CINT7to8ratio.png");
 }
+// null

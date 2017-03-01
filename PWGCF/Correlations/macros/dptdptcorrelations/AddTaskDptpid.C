@@ -267,3 +267,4 @@ for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
   }
 return task;
 }
+// null

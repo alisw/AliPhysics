@@ -21,3 +21,4 @@ void makeTrending(const Char_t *fl, Bool_t relative=kFALSE, const Char_t *db = "
   return;
 }
 
+// null

@@ -1548,3 +1548,4 @@ int ProcessCodeTree(TObject* tree, TString& sources, TString& headers, TString& 
 using namespace std;
 
 #endif
+// null

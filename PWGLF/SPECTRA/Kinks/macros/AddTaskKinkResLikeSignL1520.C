@@ -61,3 +61,4 @@ AliResonanceKinkLikeSign *AddTaskKinkResLikeSignL1520(Short_t lCollidingSystems=
    mgr->ConnectOutput(taskkinkreslikesignL1520, 1, coutput1);
    return taskkinkreslikesignL1520;
 }   
+// null

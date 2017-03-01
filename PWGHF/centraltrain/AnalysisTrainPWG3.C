@@ -1005,3 +1005,4 @@ Bool_t LoadConfig(const char *filename)
    ::Info("AnalysisTrainNew.C::LoadConfig", "Train configuration loaded from file %s", filename);
    return kTRUE;
 }
+// null

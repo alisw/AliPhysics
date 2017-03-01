@@ -47,3 +47,4 @@ void AddTRDcheckDET(AliAnalysisDataContainer **ci, Int_t cal)
   mgr->ConnectInput(ctask,  1, ci[0]);
   mgr->ConnectOutput(ctask, 1, mgr->CreateContainer(ctask->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
 }
+// null

@@ -171,3 +171,4 @@ void SetupPar(char* pararchivename)
    printf("Current dir: %s\n", ocwd.Data());
     } 
 }
+// null

@@ -12,3 +12,4 @@ void AddPi0FlowAndDependencies()
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_PbPb/AddTaskPHOSPi0Flow.C") ;
   AliAnalysisTaskPi0Flow * task = AddTaskPHOSPi0Flow("PHOSPi0Flow", "", AliVEvent::kAny, AliAnalysisTaskPi0Flow::kSemiCentralInclusive);
 }
+// null

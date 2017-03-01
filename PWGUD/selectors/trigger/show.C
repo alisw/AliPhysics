@@ -58,3 +58,4 @@ void show(const char* fileName = "trigger.root")
   c->SaveAs("trigger_rates.png");
 }
 
+// null

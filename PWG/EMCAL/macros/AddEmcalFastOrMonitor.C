@@ -12,3 +12,4 @@ AliEmcalFastOrMonitorTask *AddEmcalFastOrMonitor(const char *dummy = "", const c
 
   return mon;
 }
+// null

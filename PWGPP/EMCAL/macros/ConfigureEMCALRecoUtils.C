@@ -89,3 +89,4 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   }
   
 }
+// null

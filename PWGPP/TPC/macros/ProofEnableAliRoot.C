@@ -18,3 +18,4 @@ void ProofEnableAliRoot(const char* location = "/usr/local/grid/AliRoot/v4-05-Re
 }
 
  
+// null

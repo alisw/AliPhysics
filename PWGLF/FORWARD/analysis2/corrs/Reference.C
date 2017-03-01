@@ -191,3 +191,4 @@ struct Reference
     maxFwhm(f, 0, 1);
   }
 };
+// null

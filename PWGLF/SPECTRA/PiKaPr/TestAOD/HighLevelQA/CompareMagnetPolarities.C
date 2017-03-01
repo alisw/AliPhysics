@@ -79,3 +79,4 @@ void CompareMagnetPolarities()
 
 
 }
+// null

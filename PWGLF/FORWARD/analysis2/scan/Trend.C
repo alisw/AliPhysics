@@ -811,3 +811,4 @@ struct Trend : public SummaryDrawer
 };
 
 #endif
+// null

@@ -334,3 +334,4 @@ void integrated_lumi(Bool_t goodOnly=0){
 //  latex->DrawLatex(0.18,y-=0.07,Form("DCAL triggers: %.0fM",gStatDMC->GetY()[gStatDMC->GetN()-1]));
   gPad->Print("stat_mb_triggers.png");
 }
+// null

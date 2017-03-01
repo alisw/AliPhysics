@@ -17,3 +17,4 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
 {
   return AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(triggerPatchesName, cellsName, triggersName, nCentBins, online, "", suffix);
 }
+// null

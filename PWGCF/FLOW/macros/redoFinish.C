@@ -231,3 +231,4 @@ Bool_t CheckForCommonHistResults(TList* list) {
     for(Int_t i(0); i < list->GetEntries(); i++) if(((list->At(i))->IsA())->GetBaseClass("AliFlowCommonHistResults")) return kTRUE;
     return kFALSE;
 }
+// null

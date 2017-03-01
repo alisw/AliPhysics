@@ -161,3 +161,4 @@ struct AAFRailway : public ProofRailway
 //
 // EOF
 //
+// null

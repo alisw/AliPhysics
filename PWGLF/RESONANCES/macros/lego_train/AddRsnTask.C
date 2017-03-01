@@ -150,3 +150,4 @@ Bool_t RsnLoadMacroTask(TString macro,TString path="") {
 
    return kFALSE;
 }
+// null

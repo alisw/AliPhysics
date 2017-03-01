@@ -38,3 +38,4 @@ AliAnalysisEtMonteCarlo * ConfigEtMonteCarlo(Bool_t EMCAL = true, Bool_t DETAIL 
     return totEtMC;
   }
 }
+// null

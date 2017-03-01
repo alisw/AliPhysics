@@ -12,3 +12,4 @@ public:
   ClassDef(CleanGeom,0)
 };
 ClassImp(CleanGeom)
+// null

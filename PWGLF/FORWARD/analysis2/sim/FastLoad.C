@@ -28,3 +28,4 @@ FastLoad()
     ptr++;
   }
 }
+// null

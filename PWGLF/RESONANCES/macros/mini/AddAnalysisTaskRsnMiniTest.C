@@ -131,3 +131,4 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskRsnMiniTest
 
    return task;
 }
+// null

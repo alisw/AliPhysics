@@ -39,3 +39,4 @@
 
   gROOT->LoadMacro("createHijingGlauberTestTree.C+g");
 }
+// null

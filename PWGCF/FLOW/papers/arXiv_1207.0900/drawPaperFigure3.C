@@ -307,3 +307,4 @@ void drawPaperFigure3() {
  c1->SaveAs("figure3.pdf");
  c1->SaveAs("figure3.png");
 }
+// null

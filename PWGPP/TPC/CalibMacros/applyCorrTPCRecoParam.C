@@ -99,3 +99,4 @@ void ModifyObject(TObject* obj)
   //    
   printf("Mod\n"); obj->Print();
 }
+// null

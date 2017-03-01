@@ -447,3 +447,4 @@ void GetRatE(double x,double xe, double y,double ye, double &rat, double &rate)
   rate = rat*TMath::Sqrt( xe*xe/(x*x) + ye*ye/(y*y));
   //  printf("RAT %e %e / %e %e -> %e %e\n",x,xe,y,ye,rat,rate);
 }
+// null

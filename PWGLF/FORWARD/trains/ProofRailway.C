@@ -1163,3 +1163,4 @@ struct ProofRailway : public Railway
 //
 // EOF
 //
+// null

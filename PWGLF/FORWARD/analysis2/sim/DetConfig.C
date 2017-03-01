@@ -37,3 +37,4 @@ void DetConfig()
 // EOF
 //
 
+// null

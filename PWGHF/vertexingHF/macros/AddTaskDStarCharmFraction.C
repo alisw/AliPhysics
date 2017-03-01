@@ -109,4 +109,4 @@ AliAnalysisTaskSEDStarCharmFraction *AddTaskDStarCharmFraction(TString cutsFileN
   mgr->ConnectOutput(task, 9, cOutputTreeCandidate);
 
   return task;
-}
+}// null

@@ -44,3 +44,4 @@ void centua1(char* bin)
   jf->Run();
 }
  
+// null

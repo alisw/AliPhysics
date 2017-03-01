@@ -103,3 +103,4 @@ void runPluginProof
    mgr->PrintStatus();
    mgr->StartAnalysis("proof");
 }
+// null

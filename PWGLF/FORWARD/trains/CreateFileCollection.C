@@ -65,3 +65,4 @@ CreateFileCollection(const TString& dir="/data/alice/data/ppb/LHC12g/pass1/18835
 //
 // EOF
 //
+// null

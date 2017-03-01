@@ -23,3 +23,4 @@ DrawMultCuts(ULong_t       runNo=999,
   MultCutDrawer* mcd = new MultCutDrawer();
   mcd->Run(runNo, sys, sNN, field, mc, local);
 }
+// null

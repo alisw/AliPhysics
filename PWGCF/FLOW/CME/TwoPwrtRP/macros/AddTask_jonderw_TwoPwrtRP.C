@@ -761,3 +761,4 @@ void DefineHistograms(AliHistogramManager* man, Int_t period /*=-1*/, AliAnalysi
 
   }  // end loop over histogram classes
 }
+// null

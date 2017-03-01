@@ -112,3 +112,4 @@ else{cout<<"WARNING:  TURNING OFF NONLINEARITY"<<endl;}
   return ana;
 }
  
+// null

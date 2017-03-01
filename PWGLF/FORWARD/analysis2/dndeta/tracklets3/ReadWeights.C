@@ -32,3 +32,4 @@ void ReadWeights(const char* filename="weights.root")
 //
 // EOF
 // 
+// null

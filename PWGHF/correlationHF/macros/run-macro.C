@@ -139,3 +139,4 @@ void run_macro()
   cerr << "this macro can not be compiled, remove option '+'" << endl;
 }
 #endif
+// null

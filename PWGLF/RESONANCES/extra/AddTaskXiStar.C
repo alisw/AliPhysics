@@ -30,3 +30,4 @@ AliXiStar *AddTaskXiStar(bool MCcase=kFALSE, bool AODcase=kFALSE, int CutList=0)
   // Return the task pointer
   return XiStarTask;
 }
+// null

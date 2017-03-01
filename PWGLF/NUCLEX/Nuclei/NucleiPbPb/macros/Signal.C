@@ -149,3 +149,4 @@ void Signal() {
   output_file.Close();
 }
 
+// null

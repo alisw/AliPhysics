@@ -397,3 +397,4 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    return Manager;// manager glowny program wykonujacy analize
 }
 
+// null

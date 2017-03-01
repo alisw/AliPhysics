@@ -48,3 +48,4 @@ void  readStarEventsSimple()
   delete poiCuts;
   delete starEventCuts;
 }
+// null

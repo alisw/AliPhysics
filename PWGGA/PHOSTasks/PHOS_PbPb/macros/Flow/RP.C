@@ -124,3 +124,4 @@ Double_t GetRes(TH1D* hres){
   return Ollitrault(TMath::Sqrt(2)*chi);
 }
 
+// null

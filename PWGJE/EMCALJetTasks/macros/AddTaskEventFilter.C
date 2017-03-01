@@ -7,3 +7,4 @@ void AddTaskEventFilter() {
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer("eventfilterhists", TList::Class(), AliAnalysisManager::kOutputContainer, outputcont.Data()));
 }
+// null

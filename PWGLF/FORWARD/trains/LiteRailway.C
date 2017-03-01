@@ -232,3 +232,4 @@ struct LiteRailway : public ProofRailway
 // EOF
 //
 
+// null
