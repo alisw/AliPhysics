@@ -1131,6 +1131,7 @@ void AliVertexerTracks::SetSkipTracks(Int_t n,const Int_t *skipped)
 // Mark the tracks not to be used in the vertex reconstruction.
 // Tracks are identified by AliESDtrack::GetID()
 //
+  delete[] fTrksToSkip;
   fNTrksToSkip = n;  fTrksToSkip = new Int_t[n]; 
   for(Int_t i=0;i<n;i++) fTrksToSkip[i] = skipped[i]; 
   return; 
