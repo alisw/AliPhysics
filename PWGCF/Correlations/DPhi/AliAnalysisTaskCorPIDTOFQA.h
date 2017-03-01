@@ -10,7 +10,6 @@
 
 
 class AliAODTrack;
-//class AliEmcalTrackSelection;
 
 
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
@@ -26,7 +25,6 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	virtual Double_t        Beta(AliAODTrack *track);
 	virtual Double_t        tof_minus_tpion(AliAODTrack *track);
 	virtual Double_t        get_mass_squared(AliAODTrack *track);
-
 
 	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
 	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.1, 4.4);
@@ -80,11 +78,11 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                   deut_dphi_deta_p0510;
 	TH2F*                   deut_dphi_deta_p1020;
 	TH2F*                   deut_dphi_deta_p2030;
-	TH2F*                   deut_dphi_deta_p1050;
+	TH2F*                   deut_dphi_deta_p3040;
+	TH2F*                   deut_dphi_deta_p4050;
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
-
         ClassDef(AliAnalysisTaskCorPIDTOFQA, 1);
 };
 

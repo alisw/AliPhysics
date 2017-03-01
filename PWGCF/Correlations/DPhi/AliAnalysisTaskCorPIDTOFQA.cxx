@@ -66,7 +66,6 @@
 
 
 
-
 class AliAnalysisTaskCorPIDTOFQA;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout'
@@ -97,7 +96,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
     deut_dphi_T(0), deut_dphi_pos_T(0), deut_dphi_neg_T(0), deut_dphi_A(0), deut_dphi_pos_A(0), deut_dphi_neg_A(0), deut_dphi_B(0), deut_dphi_pos_B(0), deut_dphi_neg_B(0),
     deut_dphi_V(0), deut_dphi_pos_V(0), deut_dphi_neg_V(0),
     track_phi(0), track_phi_hybrid(0), track_eta(0), track_eta_hybrid(0),
-    deut_dphi_deta_p0510(0), deut_dphi_deta_p1020(0), deut_dphi_deta_p2030(0), deut_dphi_deta_p1050(0)
+    deut_dphi_deta_p0510(0), deut_dphi_deta_p1020(0), deut_dphi_deta_p2030(0), deut_dphi_deta_p3040(0), deut_dphi_deta_p4050(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -112,7 +111,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
     deut_dphi_T(0), deut_dphi_pos_T(0), deut_dphi_neg_T(0), deut_dphi_A(0), deut_dphi_pos_A(0), deut_dphi_neg_A(0), deut_dphi_B(0), deut_dphi_pos_B(0), deut_dphi_neg_B(0),
     deut_dphi_V(0), deut_dphi_pos_V(0), deut_dphi_neg_V(0),
     track_phi(0), track_phi_hybrid(0), track_eta(0), track_eta_hybrid(0),
-    deut_dphi_deta_p0510(0), deut_dphi_deta_p1020(0), deut_dphi_deta_p2030(0), deut_dphi_deta_p1050(0)
+    deut_dphi_deta_p0510(0), deut_dphi_deta_p1020(0), deut_dphi_deta_p2030(0), deut_dphi_deta_p3040(0), deut_dphi_deta_p4050(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -239,7 +238,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     deut_dphi_deta_p0510    = new TH2F("deut_dphi_deta_p0510",   "deut_dphi_deta_p0510",           60, -1.6708,  4.8124, 46, -2.30, 2.30);
     deut_dphi_deta_p1020    = new TH2F("deut_dphi_deta_p1020",   "deut_dphi_deta_p1020",           60, -1.6708,  4.8124, 46, -2.30, 2.30);
     deut_dphi_deta_p2030    = new TH2F("deut_dphi_deta_p2030",   "deut_dphi_deta_p2030",           60, -1.6708,  4.8124, 46, -2.30, 2.30);
-    deut_dphi_deta_p1050    = new TH2F("deut_dphi_deta_p1050",   "deut_dphi_deta_p1050",           60, -1.6708,  4.8124, 46, -2.30, 2.30);
+    deut_dphi_deta_p3040    = new TH2F("deut_dphi_deta_p3040",   "deut_dphi_deta_p3040",           60, -1.6708,  4.8124, 46, -2.30, 2.30);
+    deut_dphi_deta_p4050    = new TH2F("deut_dphi_deta_p4050",   "deut_dphi_deta_p4050",           60, -1.6708,  4.8124, 46, -2.30, 2.30);
     
     
     fOutputList->Add(fHistPt);                                                                      // objects added to output file
@@ -285,7 +285,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_dphi_deta_p0510);
     fOutputList->Add(deut_dphi_deta_p1020);
     fOutputList->Add(deut_dphi_deta_p2030);
-    fOutputList->Add(deut_dphi_deta_p1050);
+    fOutputList->Add(deut_dphi_deta_p3040);
+    fOutputList->Add(deut_dphi_deta_p4050);
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -658,7 +659,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 				if(     mom >= 0.5  &&  mom < 1.0){   deut_dphi_deta_p0510->Fill(dphi, deut_eta - eta);    }
 				else if(mom >= 1.0  &&  mom < 2.0){   deut_dphi_deta_p1020->Fill(dphi, deut_eta - eta);    }
 				else if(mom >= 2.0  &&  mom < 3.0){   deut_dphi_deta_p2030->Fill(dphi, deut_eta - eta);    }
-				if(     mom >= 1.0  &&  mom < 5.0){   deut_dphi_deta_p1050->Fill(dphi, deut_eta - eta);    }
+				else if(mom >= 3.0  &&  mom < 4.0){   deut_dphi_deta_p3040->Fill(dphi, deut_eta - eta);    }
+				else if(mom >= 4.0  &&  mom < 5.0){   deut_dphi_deta_p4050->Fill(dphi, deut_eta - eta);    }
 			    }
 			}
 		    }
@@ -696,7 +698,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			    if(     mom >= 0.5  &&  mom < 1.0){   deut_dphi_deta_p0510->Fill(dphi, deut_eta - eta);    }
 			    else if(mom >= 1.0  &&  mom < 2.0){   deut_dphi_deta_p1020->Fill(dphi, deut_eta - eta);    }
 			    else if(mom >= 2.0  &&  mom < 3.0){   deut_dphi_deta_p2030->Fill(dphi, deut_eta - eta);    }
-			    if(     mom >= 1.0  &&  mom < 5.0){   deut_dphi_deta_p1050->Fill(dphi, deut_eta - eta);    }
+			    else if(mom >= 3.0  &&  mom < 4.0){   deut_dphi_deta_p3040->Fill(dphi, deut_eta - eta);    }
+			    else if(mom >= 4.0  &&  mom < 5.0){   deut_dphi_deta_p4050->Fill(dphi, deut_eta - eta);    }
 			}
 		    }
 		}
@@ -934,8 +937,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file
-
-//    NEvents++;
 
 }
 
