@@ -123,8 +123,8 @@ public:
    */
   class AliHLTDimServiceFloat : public AliHLTDimService {
   public:
-    AliHLTDimServiceFloat();
-    ~AliHLTDimServiceFloat();
+    AliHLTDimServiceFloat(){}
+    ~AliHLTDimServiceFloat(){}
 
     void Update(float f) {
       AliHLTDimServicePoint_t sp; sp.fVal=f; AliHLTDimService::Update(sp);
@@ -136,8 +136,8 @@ public:
    */
   class AliHLTDimServiceInt : public AliHLTDimService {
   public:
-    AliHLTDimServiceInt();
-    ~AliHLTDimServiceInt();
+    AliHLTDimServiceInt(){}
+    ~AliHLTDimServiceInt(){}
 
     void Update(int i) {
       AliHLTDimServicePoint_t sp; sp.iVal=i; AliHLTDimService::Update(sp);
