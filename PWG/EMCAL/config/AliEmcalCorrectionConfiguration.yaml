@@ -1,5 +1,4 @@
 configurationName: "Default configuration"          # Optional - Simply for user convenience
-period: ""                                          # This value in the user configuration must match the value given to the correction add task
 pass: ""                                            # Attempts to automatically retrieve the pass if not specified
 # Look at the documentation for a full explanation of the input objects!
 inputObjects:                                       # Define all of the input objects for the corrections

@@ -63,9 +63,6 @@ To enable the correction task, add the following lines to your run macro:
 ~~~{.cxx}
 AliEmcalCorrectionTask * correctionTask = AddTaskEmcalCorrectionTask();
 correctionTask->SelectCollisionCandidates(kPhysSel);
-// Set the run period, same as the track container
-// If you derived from the file "runEMCalJetSampleTask.C", then it is likely stored under "sRunPeriod.Data()"
-correctionTask->SetRunPeriod("LHC11h");
 // Set the user configuration file, assuming that your file is called "userConfiguration.yaml" and is located in
 // the current directory. This also supports alien:// paths!
 correctionTask->SetUserConfigurationFilename("userConfiguration.yaml");

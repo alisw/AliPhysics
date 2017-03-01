@@ -11,6 +11,8 @@ class AliEmcalCorrectionComponent;
 class AliEMCALGeometry;
 class AliVEvent;
 
+#include <iosfwd>
+
 #include "AliAnalysisTaskSE.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
@@ -18,6 +20,8 @@ class AliVEvent;
 #include "AliClusterContainer.h"
 #include "AliVCluster.h"
 #include "AliEmcalTrackSelection.h"
+// Remove this after permanently removing the run period!
+#include "AliLog.h"
 
 /**
  * @class AliEmcalCorrectionTask
@@ -97,14 +101,19 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   /// Set the path to the default configuration filename (Expert use only! The user should set the user configuration!)
   void SetDefaultConfigurationFilename(std::string name) { fDefaultConfigurationFilename = name; }
   // Write configuration to file
-  bool WriteConfigurationFile(std::string filename, bool userConfig = false);
+  bool WriteConfigurationFile(std::string filename, bool userConfig = false) const;
+  // Print the actual configuration string
+  std::ostream & PrintConfigurationString(std::ostream & in, bool userConfig = false) const;
 
   // Options
-  // Get
-  const TString &             GetRunPeriod()                                  const { return fRunPeriod; }
+  // Printing
+  friend std::ostream & operator<<(std::ostream &in, const AliEmcalCorrectionTask &myTask);
+  void Print(Option_t* opt = "") const;
+  std::ostream & Print(std::ostream &in) const;
+  std::string toString(bool includeYAMLConfigurationInfo = false) const;
   // Set
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
-  void                        SetRunPeriod(const char* runPeriod)                   { fRunPeriod = runPeriod; fRunPeriod.ToLower(); }
+  void                        SetRunPeriod(const char* runPeriod)                   { AliError("SetRunPeriod() is not required anymore! Remove this call!"); }
   void                        SetNeedEmcalGeometry(Bool_t b)                        { fNeedEmcalGeom = b; }
   // Centrality options
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
@@ -175,7 +184,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   bool CheckPossibleNamesForComponentName(std::string & name, std::set <std::string> & possibleComponents);
   // General utilities
   BeamType GetBeamType() const;
-  void PrintRequestedContainersInformation(InputObject_t inputObjectType);
+  void PrintRequestedContainersInformation(InputObject_t inputObjectType, std::ostream & stream) const;
 
   // Retrieve objects in event
   Bool_t RetrieveEventObjects();
@@ -229,7 +238,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   bool                        fConfigurationInitialized;   ///< True if the YAML configuration files are initialized
 
   bool                        fIsEsd;                      ///< File type
-  TString                     fRunPeriod;                  ///< Run period (passed by user)
   bool                        fEventInitialized;           ///< If the event is initialized properly
   Double_t                    fCent;                       //!<! Event centrality
   Int_t                       fCentBin;                    //!<! Event centrality bin
@@ -252,7 +260,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   TList *                     fOutput;                     //!<! Output for histograms
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionTask, 3); // EMCal correction task
+  ClassDef(AliEmcalCorrectionTask, 4); // EMCal correction task
   /// \endcond
 };
 

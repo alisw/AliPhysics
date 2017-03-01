@@ -51,7 +51,6 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fCorrectionComponents(),
   fIsEsd(false),
   fForceBeamType(kNA),
-  fRunPeriod("noSetRunPeriod"),
   fConfigurationInitialized(false),
   fOrderedComponentsToExecute(),
   fEventInitialized(false),
@@ -103,7 +102,6 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fCorrectionComponents(),
   fIsEsd(false),
   fForceBeamType(kNA),
-  fRunPeriod("noSetRunPeriod"),
   fConfigurationInitialized(false),
   fOrderedComponentsToExecute(),
   fEventInitialized(false),
@@ -202,13 +200,13 @@ void AliEmcalCorrectionTask::Initialize()
   // Setup Cells
   // Cannot do this entirely yet because we need input objects
   CreateInputObjects(kCaloCells);
-  PrintRequestedContainersInformation(kCaloCells);
+  PrintRequestedContainersInformation(kCaloCells, AliInfoStream());
   // Create cluster input objects
   CreateInputObjects(kCluster);
-  PrintRequestedContainersInformation(kCluster);
+  PrintRequestedContainersInformation(kCluster, AliInfoStream());
   // Create track input objects
   CreateInputObjects(kTrack);
-  PrintRequestedContainersInformation(kTrack);
+  PrintRequestedContainersInformation(kTrack, AliInfoStream());
 
   // Initialize components
   InitializeComponents();
@@ -216,9 +214,9 @@ void AliEmcalCorrectionTask::Initialize()
 
 /**
  * Initializes and sets up the user and default configuration files.
- * This includes opening the files, checking to ensure that the run period is valid, and
- * storing the contents of the user and default YAML files into strings so that they can
- * be streamed to the grid. (yaml-cpp objects do not work properly with ROOT streamers).
+ * This includes opening the files and storing the contents of the user and default
+ * YAML files into strings so that they can be streamed to the grid.
+ * (yaml-cpp objects do not work properly with ROOT streamers).
  *
  * NOTE: fConfigurationInitialized is set to true if the function is successful.
  */
@@ -263,41 +261,6 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   else
   {
     AliInfo(TString::Format("User file at \"%s\" does not exist! All settings will be from the default file!", fUserConfigurationFilename.c_str()));
-  }
-
-  // Ensure that there is a run period
-  if (fRunPeriod == "noSetRunPeriod")
-  {
-    AliFatal("Must pass a run period to the correction task!");
-  }
-  // Check the user provided run period
-  TString userRunPeriod = "kNoUserFile";
-  // Test if the period exists in the user file
-  if (fUserConfiguration.IsNull() != true)
-  {
-    if (fUserConfiguration["period"])
-    {
-      userRunPeriod = fUserConfiguration["period"].as<std::string>();
-    }
-    else
-    {
-      AliFatal("User must specify a period. Leave the period as an empty string to apply to all periods.");
-    }
-  }
-
-  AliDebug(3, TString::Format("userRunPeriod: %s", userRunPeriod.Data()));
-  // Normalize the user run period to lower case to ensure that we don't miss any matches
-  userRunPeriod.ToLower();
-  if (userRunPeriod != "knouserfile" && userRunPeriod != fRunPeriod)
-  {
-    AliFatal(TString::Format("User run period \"%s\" does not match the run period of \"%s\" passed to the correction task!", userRunPeriod.Data(), fRunPeriod.Data()));
-  }
-
-  // "" means the user wants their settings to apply to all periods
-  // Ensure that the user is aware!
-  if (userRunPeriod == "")
-  {
-    AliWarning("User run period is an empty string. Settings apply to all run periods!");
   }
 
   // Save configuration into strings so that they can be streamed
@@ -409,6 +372,10 @@ void AliEmcalCorrectionTask::DetermineComponentsToExecute(std::vector <std::stri
  * configuration file. The default configuration file should have all possible properties defined, so it can
  * be treated as a reference. Thus, if there is a property that is defined in the user configuration that
  * cannot be found in the default configuration, then it must be a typo and we should alert the user.
+ *
+ * NOTE: This only checks settings in components. __NOT__ variables defined at the root level, such as
+ *       the pass or name! It also leaves the input objects unchecked, due to lacking a definitive list
+ *       of possible settings.
  *
  * Utilizes the stored ordered correction component names.
  */
@@ -1234,13 +1201,30 @@ Bool_t AliEmcalCorrectionTask::UserNotify()
 }
 
 /**
+ * Print configuration string
+ *
+ * @param in Stream to which the configuration string should be added
+ * @param userConfig True if the user configuration should be printed
+ */
+std::ostream & AliEmcalCorrectionTask::PrintConfigurationString(std::ostream & in, bool userConfig) const
+{
+  std::string stringToWrite = userConfig ? fUserConfigurationString : fDefaultConfigurationString;
+  if (stringToWrite == "") {
+    AliWarning(TString::Format("%s configuration is empty!", userConfig ? "User" : "Default"));
+  }
+  in << stringToWrite;
+
+  return in;
+}
+
+/**
  * Write the desired YAML configuration to a file.
  *
  * @param filename The name of the file to write
  * @param userConfig True to write the user configuration
  * @return True when writing the configuration to the file was successful
  */
-bool AliEmcalCorrectionTask::WriteConfigurationFile(std::string filename, bool userConfig)
+bool AliEmcalCorrectionTask::WriteConfigurationFile(std::string filename, bool userConfig) const
 {
   bool returnValue = false;
   if (filename != "")
@@ -1248,11 +1232,7 @@ bool AliEmcalCorrectionTask::WriteConfigurationFile(std::string filename, bool u
     if (fConfigurationInitialized == true)
     {
       std::ofstream outFile(filename);
-      std::string stringToWrite = userConfig ? fUserConfigurationString : fDefaultConfigurationString;
-      if (stringToWrite == "") {
-        AliWarning(TString::Format("%s configuration is empty!", userConfig ? "User" : "Default"));
-      }
-      outFile << stringToWrite;
+      PrintConfigurationString(outFile, userConfig);
       outFile.close();
 
       returnValue = true;
@@ -1562,22 +1542,22 @@ AliEmcalCorrectionTask::BeamType AliEmcalCorrectionTask::GetBeamType() const
 /**
  *
  */
-void AliEmcalCorrectionTask::PrintRequestedContainersInformation(InputObject_t inputObjectType)
+void AliEmcalCorrectionTask::PrintRequestedContainersInformation(InputObject_t inputObjectType, std::ostream & stream) const
 {
   if (inputObjectType == kCaloCells) {
-    AliInfoStream() << "Cells info: " << std::endl;
+    stream << "Cells info: " << std::endl;
     for (auto cellInfo : fCellCollArray) {
-      AliInfoStream() << "\tName: " << cellInfo->GetName() << "\tBranch: " << cellInfo->GetBranchName() << "\tIsEmbedding: " << std::boolalpha << cellInfo->GetIsEmbedding() << std::endl;
+      stream << "\tName: " << cellInfo->GetName() << "\tBranch: " << cellInfo->GetBranchName() << "\tIsEmbedding: " << std::boolalpha << cellInfo->GetIsEmbedding() << std::endl;
     }
   }
   else if (inputObjectType == kCluster || inputObjectType == kTrack) {
-    AliInfoStream() << (inputObjectType == kCluster ? "Cluster" : "Track") << " container info: " << std::endl;
+    stream << (inputObjectType == kCluster ? "Cluster" : "Track") << " container info: " << std::endl;
     AliEmcalContainer * cont = 0;
     for (auto containerInfo : (inputObjectType == kCluster ? fClusterCollArray : fParticleCollArray) ) {
       cont = static_cast<AliEmcalContainer *>(containerInfo);
-      AliInfoStream() << "\tName: " << cont->GetName() << "\tBranch: " << cont->GetArrayName() << "\tTitle: " << cont->GetTitle() << std::endl;
+      stream << "\tName: " << cont->GetName() << "\tBranch: " << cont->GetArrayName() << "\tTitle: " << cont->GetTitle() << std::endl;
       // TODO: Enable in embedding branch
-      //AliInfoStream() << "\tName: " << cont->GetName() << "\tBranch: " << cont->GetArrayName() << "\tTitle: " << cont->GetTitle() << "\tIsEmbedding:" << std::boolalpha << cont->GetIsEmbedding() << std::endl;
+      //stream << "\tName: " << cont->GetName() << "\tBranch: " << cont->GetArrayName() << "\tTitle: " << cont->GetTitle() << "\tIsEmbedding:" << std::boolalpha << cont->GetIsEmbedding() << std::endl;
     }
   }
   else {
@@ -1816,4 +1796,75 @@ AliEmcalCorrectionTask * AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask(TStr
   //TObjArray* cnt = mgr->GetContainers();
 
   return correctionTask;
+}
+
+/**
+ * Prints information about the correction task.
+ *
+ * @return std::string containing information about the task.
+ */
+std::string AliEmcalCorrectionTask::toString(bool includeYAMLConfigurationInfo) const
+{
+  std::stringstream tempSS;
+
+  // Show the correction components
+  tempSS << "Correction components:\n";
+  for (auto component : fOrderedComponentsToExecute) {
+    tempSS << "\t" << component << "\n";
+  }
+  // Input objects
+  tempSS << "\nInput objects:\n";
+  PrintRequestedContainersInformation(kCaloCells, tempSS);
+  PrintRequestedContainersInformation(kCluster, tempSS);
+  PrintRequestedContainersInformation(kTrack, tempSS);
+
+  if (includeYAMLConfigurationInfo == true) {
+    tempSS << "\nUser Configuration:\n";
+    PrintConfigurationString(tempSS, true);
+    tempSS << "\n\nDefault Configuration:\n";
+    PrintConfigurationString(tempSS);
+    tempSS << "\n";
+  }
+
+  return tempSS.str();
+}
+
+/**
+ * Print correction task information on an output stream using the string representation provided by
+ * AliEmcalCorrectionTask::toString. Used by operator<<
+ * @param in output stream stream
+ * @return reference to the output stream
+ */
+std::ostream & AliEmcalCorrectionTask::Print(std::ostream & in) const {
+  in << toString();
+  return in;
+}
+
+/**
+ * Implementation of the output stream operator for AliEmcalCorrectionTask. Printing
+ * basic correction task information provided by function toString
+ * @param in output stream
+ * @param myTask Task which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream & operator<<(std::ostream & in, const AliEmcalCorrectionTask & myTask)
+{
+  std::ostream & result = myTask.Print(in);
+  return result;
+}
+
+/**
+ * Print basic correction task information using the string representation provided by
+ * AliEmcalCorrectionTask::toString
+ *
+ * @param opt If "YAML" is passed, then the YAML configuration is also printed
+ */
+void AliEmcalCorrectionTask::Print(Option_t* opt) const
+{
+  std::string temp(opt);
+  bool includeYAMLConfig = false;
+  if (temp == "YAML") {
+    includeYAMLConfig = true;
+  }
+  Printf("%s", toString(includeYAMLConfig).c_str());
 }
