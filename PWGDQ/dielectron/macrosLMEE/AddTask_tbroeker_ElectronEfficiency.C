@@ -73,6 +73,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
     task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
     task->SetMakeResolutionSparse(MakeResolutionSparse);
   }  
+  task->SetMomBinning(NbinsMom,MomMin,MomMax);
   task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
   task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
   task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);

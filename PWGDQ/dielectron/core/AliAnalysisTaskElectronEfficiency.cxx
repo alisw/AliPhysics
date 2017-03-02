@@ -158,8 +158,6 @@ fCalcResolution(kFALSE),
 fMakeResolutionSparse(kFALSE),
 fTHnResElectrons(0x0),
 fTHnResPositrons(0x0),
-fTHnResNeg(0x0),
-fTHnResPos(0x0),
 fDeltaPhiAll(0x0),
 fDeltaPhi(0x0),
 fDeltaPhi_alpha(0x0),
@@ -170,6 +168,9 @@ fDeltaPhi_charge(0x0),
 fDeltaMomNbins(1200),
 fDeltaMomMin(-10.),
 fDeltaMomMax(2.),
+fMomNbins(1000),
+fMomMin(0.),
+fMomMax(10.),
 fRelMomNbins(400),
 fRelMomMin(0.),
 fRelMomMax(2.),
@@ -362,8 +363,6 @@ fCalcResolution(kFALSE),
 fMakeResolutionSparse(kFALSE),
 fTHnResElectrons(0x0),
 fTHnResPositrons(0x0),
-fTHnResNeg(0x0),
-fTHnResPos(0x0),
 fDeltaPhiAll(0x0),
 fDeltaPhi(0x0),
 fDeltaPhi_alpha(0x0),
@@ -371,6 +370,9 @@ fDeltaPhi_pt(0x0),
 fDeltaPhi_eta(0x0),
 fDeltaPhi_MCcharge(0x0),
 fDeltaPhi_charge(0x0),
+fMomNbins(1000),
+fMomMin(0.),
+fMomMax(10.),
 fDeltaMomNbins(1200),
 fDeltaMomMin(-10.),
 fDeltaMomMax(2.),
@@ -648,37 +650,32 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList->SetOwner();
     
     if(fMakeResolutionSparse){
-      Int_t THnBins[6] = {1000, fRelMomNbins, fDeltaMomNbins, fDeltaThetaNbins, fDeltaEtaNbins, fDeltaPhiNbins};
-      Double_t THnMin[6] = { 0., fRelMomMin, fDeltaMomMin, fDeltaThetaMin, fDeltaEtaMin, fDeltaPhiMin};
-      Double_t THnMax[6] = {10., fRelMomMax, fDeltaMomMax, fDeltaThetaMax, fDeltaEtaMax, fDeltaPhiMax};
-      fTHnResNeg = new THnSparseD("pGen_Res_NegativePions", "pGen_Res_NegativePions", 6, THnBins, THnMin, THnMax);
-      fTHnResNeg->Sumw2();
+      Int_t THnBins[6] = {fMomNbins, fRelMomNbins, fDeltaMomNbins, fDeltaThetaNbins, fDeltaEtaNbins, fDeltaPhiNbins};
+      Double_t THnMin[6] = {fMomMin, fRelMomMin, fDeltaMomMin, fDeltaThetaMin, fDeltaEtaMin, fDeltaPhiMin};
+      Double_t THnMax[6] = {fMomMax, fRelMomMax, fDeltaMomMax, fDeltaThetaMax, fDeltaEtaMax, fDeltaPhiMax};
+      fTHnResElectrons = new THnSparseD("pGen_Res_Electrons", "pGen_Res_Electrons", 6, THnBins, THnMin, THnMax);
+      fTHnResElectrons->Sumw2();
       
-      fTHnResNeg->GetAxis(0)->SetName("pGen");
-      fTHnResNeg->GetAxis(1)->SetName("pGen_Over_pRec");
-      fTHnResNeg->GetAxis(2)->SetName("deltaP");
-      fTHnResNeg->GetAxis(3)->SetName("deltaTheta");
-      fTHnResNeg->GetAxis(4)->SetName("deltaEta");
-      fTHnResNeg->GetAxis(5)->SetName("deltaPhi");
+      fTHnResElectrons->GetAxis(0)->SetName("pGen");
+      fTHnResElectrons->GetAxis(1)->SetName("pGen_Over_pRec");
+      fTHnResElectrons->GetAxis(2)->SetName("deltaP");
+      fTHnResElectrons->GetAxis(3)->SetName("deltaTheta");
+      fTHnResElectrons->GetAxis(4)->SetName("deltaEta");
+      fTHnResElectrons->GetAxis(5)->SetName("deltaPhi");
       
-      fTHnResNeg->GetAxis(0)->SetTitle("p^{gen} (GeV/c)");
-      fTHnResNeg->GetAxis(1)->SetTitle("p^{rec} / p^{gen} (GeV/c)");
-      fTHnResNeg->GetAxis(2)->SetTitle("p^{rec}_{T} - p^{gen}_{T} (GeV/c)");
-      fTHnResNeg->GetAxis(3)->SetTitle("#theta^{rec} - #theta^{gen} (rad)");
-      fTHnResNeg->GetAxis(4)->SetTitle("#eta^{rec} - #eta^{gen}");
-      fTHnResNeg->GetAxis(5)->SetTitle("#varphi^{rec} - #varphi^{gen} (rad)");
+      fTHnResElectrons->GetAxis(0)->SetTitle("p^{gen} (GeV/c)");
+      fTHnResElectrons->GetAxis(1)->SetTitle("p^{rec} / p^{gen} (GeV/c)");
+      fTHnResElectrons->GetAxis(2)->SetTitle("p^{rec}_{T} - p^{gen}_{T} (GeV/c)");
+      fTHnResElectrons->GetAxis(3)->SetTitle("#theta^{rec} - #theta^{gen} (rad)");
+      fTHnResElectrons->GetAxis(4)->SetTitle("#eta^{rec} - #eta^{gen}");
+      fTHnResElectrons->GetAxis(5)->SetTitle("#varphi^{rec} - #varphi^{gen} (rad)");
       
-      fTHnResPos = static_cast<THnSparseD*> (fTHnResNeg->Clone("pGen_Res_PositivePions"));
-      fTHnResPos->SetTitle("pGen_Res_PositivePions");
-      fTHnResElectrons = static_cast<THnSparseD*> (fTHnResNeg->Clone("pGen_Res_Electrons"));
-      fTHnResElectrons->SetTitle("pGen_Res_Electrons");
-      fTHnResPositrons = static_cast<THnSparseD*> (fTHnResNeg->Clone("pGen_Res_Positrons"));
+      fTHnResPositrons = static_cast<THnSparseD*> (fTHnResElectrons->Clone("pGen_Res_Positrons"));
       fTHnResPositrons->SetTitle("pGen_Res_Positrons");
+      fTHnResPositrons->Sumw2();
       
       resolutionList->Add(fTHnResElectrons);
       resolutionList->Add(fTHnResPositrons);
-      resolutionList->Add(fTHnResNeg);
-      resolutionList->Add(fTHnResPos);
     }
     else{
       fDeltaPhiAll = new TH1D("DeltaPhiAll","",320,-0.1,6.4);
@@ -1602,10 +1599,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             if(pdg == 11){
               if(part->Charge()<0) fTHnResElectrons->Fill(thnvals);
               if(part->Charge()>0) fTHnResPositrons->Fill(thnvals);
-            }
-            else if(pdg == 211){
-              if(part->Charge()<0) fTHnResNeg->Fill(thnvals);
-              if(part->Charge()>0) fTHnResPos->Fill(thnvals);
             }
           }
         }
