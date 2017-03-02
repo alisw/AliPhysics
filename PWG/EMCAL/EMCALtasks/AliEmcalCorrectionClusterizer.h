@@ -66,6 +66,7 @@ protected:
   
   void           RemapMCLabelForAODs(Int_t &label);
   void           SetClustersMCLabelFromOriginalClusters();
+  void           ClearEMCalClusters();
   
   TClonesArray          *fDigitsArr;                      //!<!digits array
   TObjArray             *fClusterArr;                     //!<!recpoints array

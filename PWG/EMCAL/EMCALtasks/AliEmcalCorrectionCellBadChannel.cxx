@@ -120,12 +120,15 @@ Bool_t AliEmcalCorrectionCellBadChannel::CheckIfRunChanged()
   if (runChanged) {
     // init bad channels
     Int_t fInitBC = InitBadChannels();
-    if (fInitBC==0)
-    AliError("InitBadChannels returned false, returning");
-    if (fInitBC==1)
-    AliWarning("InitBadChannels OK");
-    if (fInitBC>1)
-    AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    if (fInitBC==0) {
+      AliError("InitBadChannels returned false, returning");
+    }
+    if (fInitBC==1) {
+      AliWarning("InitBadChannels OK");
+    }
+    if (fInitBC>1) {
+      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    }
   }
   return runChanged;
 }

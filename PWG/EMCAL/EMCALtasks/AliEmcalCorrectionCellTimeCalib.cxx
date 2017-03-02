@@ -324,25 +324,29 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
     // init time calibration
     if (needTimecalib && fUseAutomaticTimeCalib) {
       Int_t initTC = InitTimeCalibration();
-      if (!initTC)
-      AliError("InitTimeCalibration returned false, returning");
+      if (!initTC) {
+        AliError("InitTimeCalibration returned false, returning");
+      }
       if (initTC==1) {
         AliWarning("InitTimeCalib OK");
       }
-      if (initTC > 1)
-      AliWarning(Form("No external time calibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      if (initTC > 1) {
+        AliWarning(Form("No external time calibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      }
     }
     
     // init time calibration with L1 phase
     if (needTimecalibL1Phase && fUseAutomaticTimeCalib) {
       Int_t initTCL1Phase = InitTimeCalibrationL1Phase();
-      if (!initTCL1Phase)
-      AliError("InitTimeCalibrationL1Phase returned false, returning");
+      if (!initTCL1Phase) {
+        AliError("InitTimeCalibrationL1Phase returned false, returning");
+      }
       if (initTCL1Phase==1) {
         AliWarning("InitTimeCalibL1Phase OK");
       }
-      if (initTCL1Phase > 1)
-      AliWarning(Form("No external time calibration L1 phase available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      if (initTCL1Phase > 1) {
+        AliWarning(Form("No external time calibration L1 phase available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      }
     }
   }
   return runChanged;

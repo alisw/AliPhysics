@@ -220,6 +220,14 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
   fAod = dynamic_cast<AliAODEvent*>(fEvent);
   
   fCaloClusters = fClusCont->GetArray();
+
+  // If cells are empty, clear clusters and return
+  if (fCaloCells->GetNumberOfCells()<=0)
+  {
+    AliWarning(Form("Number of EMCAL cells = %d, returning", fCaloCells->GetNumberOfCells()));
+    ClearEMCalClusters();
+    return kFALSE;
+  }
   
   UInt_t offtrigger = 0;
   if (fEsd) {
@@ -600,14 +608,7 @@ void AliEmcalCorrectionClusterizer::UpdateClusters()
   if (fSetCellMCLabelFromCluster == 2)
     SetClustersMCLabelFromOriginalClusters() ;
   
-  const Int_t nents = fCaloClusters->GetEntries();
-  for (Int_t i=0;i<nents;++i) {
-    AliVCluster *c = static_cast<AliVCluster*>(fCaloClusters->At(i));
-    if (!c)
-      continue;
-    if (c->IsEMCAL())
-      delete fCaloClusters->RemoveAt(i);
-  }
+  ClearEMCalClusters();
   
   fCaloClusters->Compress();
   
@@ -908,12 +909,30 @@ Bool_t AliEmcalCorrectionClusterizer::CheckIfRunChanged()
   if (runChanged && fRecalDistToBadChannels) {
     // init bad channels
     Int_t fInitBC = InitBadChannels();
-    if (fInitBC==0)
-    AliError("InitBadChannels returned false, returning");
-    if (fInitBC==1)
-    AliWarning("InitBadChannels OK");
-    if (fInitBC>1)
-    AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    if (fInitBC==0) {
+      AliError("InitBadChannels returned false, returning");
+    }
+    if (fInitBC==1) {
+      AliWarning("InitBadChannels OK");
+    }
+    if (fInitBC>1) {
+      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    }
   }
   return runChanged;
+}
+
+//________________________________________________________________________
+void AliEmcalCorrectionClusterizer::ClearEMCalClusters()
+{
+  const Int_t nents = fCaloClusters->GetEntries();
+  for (Int_t i=0;i<nents;++i) {
+    AliVCluster *c = static_cast<AliVCluster*>(fCaloClusters->At(i));
+    if (!c) {
+      continue;
+    }
+    if (c->IsEMCAL()) {
+      delete fCaloClusters->RemoveAt(i);
+    }
+  }
 }

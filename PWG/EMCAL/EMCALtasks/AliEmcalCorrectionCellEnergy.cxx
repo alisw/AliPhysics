@@ -335,23 +335,29 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
     if(fUseAutomaticRecalib)
     {
       Int_t fInitRecalib = InitRecalib();
-      if (fInitRecalib==0)
-      AliError("InitRecalib returned false, returning");
-      if (fInitRecalib==1)
-      AliWarning("InitRecalib OK");
-      if (fInitRecalib>1)
-      AliWarning(Form("No recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      if (fInitRecalib==0) {
+        AliError("InitRecalib returned false, returning");
+      }
+      if (fInitRecalib==1) {
+        AliWarning("InitRecalib OK");
+      }
+      if (fInitRecalib>1) {
+        AliWarning(Form("No recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      }
     }
     
     if(fUseAutomaticRunDepRecalib)
     {
       Int_t fInitRunDepRecalib = InitRunDepRecalib();
-      if (fInitRunDepRecalib==0)
-      AliError("InitrunDepRecalib returned false, returning");
-      if (fInitRunDepRecalib==1)
-      AliWarning("InitRecalib OK");
-      if (fInitRunDepRecalib>1)
-      AliWarning(Form("No Temperature recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      if (fInitRunDepRecalib==0) {
+        AliError("InitrunDepRecalib returned false, returning");
+      }
+      if (fInitRunDepRecalib==1) {
+        AliWarning("InitRecalib OK");
+      }
+      if (fInitRunDepRecalib>1) {
+        AliWarning(Form("No Temperature recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      }
     }
   }
   return runChanged;
