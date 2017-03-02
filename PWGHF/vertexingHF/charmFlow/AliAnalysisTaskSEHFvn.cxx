@@ -1926,7 +1926,7 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
       Double_t phi=track->Phi();
       Double_t qx=TMath::Cos(nHarmonic*phi);
       Double_t qy=TMath::Sin(nHarmonic*phi);
-      if(pseudoRand>fFractionOfTracksForTPCq2){
+      if(pseudoRand<fFractionOfTracksForTPCq2){
 	qVec[0]+=qx;
 	qVec[1]+=qy;
 	multQvec++;
