@@ -53,6 +53,7 @@
 #pragma link C++ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks++;
 #pragma link C++ class AliAnalysisTaskSEXic2eleXifromAODtracks+;
 #pragma link C++ class AliAnalysisTaskSEDvsEventShapes+;
+#pragma link C++ class AliAnalysisTaskSEB0toDminuspi+;
 #pragma link C++ class AliCFVertexingHF+;
 #pragma link C++ class AliCFVertexingHF2Prong+;
 #pragma link C++ class AliCFVertexingHF3Prong+;
