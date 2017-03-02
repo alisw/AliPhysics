@@ -80,3 +80,4 @@ void AliFemtoModelGlobalHiddenInfo::SetGlobalEmissionPoint(Double_t aRx, Double_
   AliFemtoModelGlobalHiddenInfo* tBuf = new AliFemtoModelGlobalHiddenInfo(*this);
   return tBuf;
 }
+// this comment serves no purpose
