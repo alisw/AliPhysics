@@ -140,6 +140,8 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fCorrelationFunctionsIndices(NULL),
  fFill3pCorrelationFunctions(kFALSE),
  fFill4pCorrelationFunctions(kFALSE),
+ fNormalizationOption(0),
+ fnMergedBins(-44),
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
@@ -198,6 +200,12 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fGlobalTrackCutsList(NULL),
  fGlobalTrackCutsFlagsPro(NULL),
  fApplyGlobalTrackCuts(kFALSE),
+ // *.) Testing new ways to calculate correlation functions:
+ fCorrelationFunctionsTESTList(NULL),
+ fCorrelationFunctionsTESTFlagsPro(NULL),
+ // *.) Testing new ways to calculate background:
+ fBackgroundTESTList(NULL),
+ fBackgroundTESTFlagsPro(NULL),
  // *.) Online monitoring:
  fOnlineMonitoring(kFALSE),
  fUpdateOutputFile(kFALSE),
@@ -230,6 +238,8 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
   this->InitializeArraysForBuffers();
   this->InitializeArraysForQA();
   this->InitializeArraysForGlobalTrackCuts();
+  this->InitializeArraysForCorrelationFunctionsTEST();
+  this->InitializeArraysForBackgroundTEST();
 
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
@@ -350,6 +360,8 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fCorrelationFunctionsIndices(NULL),
  fFill3pCorrelationFunctions(kFALSE),
  fFill4pCorrelationFunctions(kFALSE),
+ fNormalizationOption(0),
+ fnMergedBins(-44),
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
@@ -408,6 +420,12 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fGlobalTrackCutsList(NULL),
  fGlobalTrackCutsFlagsPro(NULL),
  fApplyGlobalTrackCuts(kFALSE),
+ // *.) Testing new ways to calculate correlation functions:
+ fCorrelationFunctionsTESTList(NULL),
+ fCorrelationFunctionsTESTFlagsPro(NULL),
+ // *.) Testing new ways to calculate background:
+ fBackgroundTESTList(NULL),
+ fBackgroundTESTFlagsPro(NULL),
  // *.) Online monitoring:
  fOnlineMonitoring(kFALSE),
  fUpdateOutputFile(kFALSE),
@@ -480,6 +498,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::UserCreateOutputObjects()
  this->BookEverythingForBuffers();
  this->BookEverythingForQA();
  this->BookEverythingForGlobalTrackCuts();
+ this->BookEverythingForCorrelationFunctionsTEST();
+ this->BookEverythingForBackgroundTEST();
 
  // f) Trick to avoid name clashes, part 2:
  TH1::AddDirectory(oldHistAddStatus);
@@ -720,6 +740,35 @@ B) EVENT CUTS:
 void AliAnalysisTaskMultiparticleFemtoscopy::NormalizeCorrelationFunctions()
 {
  // Normalize correlation functions with the background.
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::NormalizeCorrelationFunctions()";
+
+ // Say something nice to the audience...
+ cout<<endl;
+ cout<<"=> Normalization option:"<<endl;
+ switch(fNormalizationOption)
+ {
+  case 0:
+   cout<<"\"just scale\""<<endl;
+  break;
+
+  case 1:
+   cout<<Form("   \"use concrete interval\": min = %f, max = %f",fNormalizationInterval[0],fNormalizationInterval[1])<<endl;
+   cout<<"TBI: not implemented yet"<<endl;
+   exit(0);
+  break;
+
+  default:
+   cout<<Form("And the fatal 'fNormalizationOption' value is... %d. Congratulations!!",fNormalizationOption)<<endl;
+   Fatal(sMethodName.Data(),"switch(fNormalizationOption)");
+ } // switch(fNormalizationOption)
+ if(fnMergedBins!=-44)
+ {
+  cout<<Form("=> Histograms will be rebinned: fnMergedBins = %d",fnMergedBins)<<endl;
+ }
+ cout<<endl;
+
+ cout<<"TBI: not finalized yet"<<endl;
 
  for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  {
@@ -1362,6 +1411,84 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
 
 //================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackgroundTEST(AliVEvent *ave)
+{
+ // Estimate background for TEST, using only 'shifting' at the moment.
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackgroundTEST(AliVEvent *ave)";
+
+ // a) Determine Ali{MC,ESD,AOD}Event;
+ // b) ...
+
+ // a) Determine Ali{MC,ESD,AOD}Event:
+ AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ if(aMC)
+ {
+  // TBI
+ } // if(aMC)
+ else if(aESD)
+ {
+  // TBI
+ } // else if(aESD)
+ else if(aAOD)
+ {
+  if(!PassesMixedEventCuts(aAOD)){return;} // TBI returns always true at the moment...
+
+   if(0==fMixedEventsTEST[0]->GetEntries())
+   {
+    if(fGlobalTracksAODTEST[0]) fGlobalTracksAODTEST[0]->Delete();
+    GlobalTracksAODTEST(aAOD,0);
+    if(0 == fGlobalTracksAODTEST[0]->GetSize()){return;}
+    *fMixedEventsTEST[0] = *(aAOD->GetTracks());
+    if(0==fMixedEventsTEST[0]->GetEntries()){return;}
+   }
+   else if(0==fMixedEventsTEST[1]->GetEntries())
+   {
+    if(fGlobalTracksAODTEST[1]) fGlobalTracksAODTEST[1]->Delete();
+    GlobalTracksAODTEST(aAOD,1);
+    if(0 == fGlobalTracksAODTEST[1]->GetSize()){return;}
+    *fMixedEventsTEST[1] = *(aAOD->GetTracks());
+    if(0==fMixedEventsTEST[1]->GetEntries()){return;}
+   }
+   else if(0==fMixedEventsTEST[2]->GetEntries())
+   {
+    if(fGlobalTracksAODTEST[2]) fGlobalTracksAODTEST[2]->Delete();
+    GlobalTracksAODTEST(aAOD,2);
+    if(0 == fGlobalTracksAODTEST[2]->GetSize()){return;}
+    *fMixedEventsTEST[2] = *(aAOD->GetTracks());
+    if(0==fMixedEventsTEST[2]->GetEntries()){return;}
+   }
+   // Shall we do something?
+   if(0!=fMixedEventsTEST[0]->GetEntries() && 0!=fMixedEventsTEST[1]->GetEntries() && 0!=fMixedEventsTEST[2]->GetEntries())
+   {
+
+    if(fEstimate2pBackground) Calculate2pBackgroundTEST(fMixedEventsTEST[0],fMixedEventsTEST[1],fGlobalTracksAODTEST[0],fGlobalTracksAODTEST[1]); // TBI rename
+    if(fEstimate3pBackground) Calculate3pBackgroundTEST(fMixedEventsTEST[0],fMixedEventsTEST[1],fMixedEventsTEST[2],fGlobalTracksAODTEST[0],fGlobalTracksAODTEST[1],fGlobalTracksAODTEST[2]);
+
+    //if(fEstimate4pBackground) Calculate4pBackground(fMixedEventsTEST[0],fMixedEventsTEST[1],fMixedEventsTEST[2],fMixedEventsTEST[3]);
+    // Shift mixed events:
+    // [1] -> [0]
+    fMixedEventsTEST[0]->Delete();
+    *fMixedEventsTEST[0] = *fMixedEventsTEST[1];
+    *fGlobalTracksAODTEST[0] = *fGlobalTracksAODTEST[1];
+    // [2] -> [1]
+    fMixedEventsTEST[1]->Delete();
+    *fMixedEventsTEST[1] = *fMixedEventsTEST[2];
+    *fGlobalTracksAODTEST[1] = *fGlobalTracksAODTEST[2];
+    // Clean [2]:
+    fMixedEventsTEST[2]->Delete();
+    fGlobalTracksAODTEST[2]->Delete();
+   } // if(0!=fMixedEventsTEST[0]->GetEntries() && 0!=fMixedEventsTEST[1]->GetEntries() && 0!=fMixedEventsTEST[2]->GetEntries())
+
+ } // else if(aAOD)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackgroundTEST(AliVEvent *ave)
+
+//================================================================================================================
+
 void AliAnalysisTaskMultiparticleFemtoscopy::DoSomeDebugging(AliVEvent *ave)
 {
  // Do all debugging in this function.
@@ -1669,6 +1796,22 @@ void AliAnalysisTaskMultiparticleFemtoscopy::AOD(AliAODEvent *aAOD)
 
  // g) Calculate background:
  if(fEstimate2pBackground || fEstimate3pBackground || fEstimate4pBackground){this->EstimateBackground(aAOD);}
+
+ // h) Calculate test correlation functions:
+ Bool_t bFillCorrelationFunctionsTEST = kFALSE;
+ for(Int_t t=0;t<10;t++)
+ {
+  bFillCorrelationFunctionsTEST = bFillCorrelationFunctionsTEST || fFillCorrelationFunctionsTEST[t];
+ }
+ if(bFillCorrelationFunctionsTEST){this->CalculateCorrelationFunctionsTEST(aAOD);}
+
+ // i) Calculate test background:
+ Bool_t bFillBackgroundTEST = kFALSE;
+ for(Int_t t=0;t<10;t++)
+ {
+  bFillBackgroundTEST = bFillBackgroundTEST || fFillBackgroundTEST[t];
+ }
+ if(bFillBackgroundTEST){this->EstimateBackgroundTEST(aAOD);}
 
 
  return;
@@ -2087,6 +2230,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForControlHistogram
   }
  }
 
+ // Normalization:
+ fNormalizationInterval[0] = -0.44;
+ fNormalizationInterval[1] = -0.44;
+
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForControlHistograms()
 
 //=======================================================================================================================
@@ -2303,6 +2450,307 @@ Int_t AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksForGlobalTrackCuts()
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunctionsTEST()
+{
+ // Initialize all arrays for test correlation functions.
+
+ const Int_t nTestsMax = 10; // see what is hardwired in .h file
+
+ for(Int_t t=0;t<nTestsMax;t++)
+ {
+  fCorrelationFunctionsTESTSublist[t] = NULL;
+  fFillCorrelationFunctionsTEST[t] = kFALSE;
+ }
+
+ for(Int_t t=0;t<nTestsMax;t++)
+ {
+  for(Int_t q=0;q<2;q++) // Q2 and Q3
+  {
+   for(Int_t tt=0;tt<7;tt++) // 7 distinct terms in the expression of 3p cumulant. TBI for 2p, this is an overkill, but for 4p this will need to be enlarged
+   {
+    for(Int_t d=0;d<10;d++) // differential options, see what is hardwired in .h file
+    {
+     fCorrelationFunctionsTEST[t][q][tt][d] = NULL;
+    }
+   } // for(Int_t t=0;t<nTests;t++)
+  } // for(Int_t q=0;q<2;q++) // Q2 and Q3
+ } // for(Int_t t=0;t<nTests;t++)
+
+ for(Int_t t=0;t<nTestsMax;t++)
+ {
+  for(Int_t q=0;q<2;q++) // Q2 and Q3
+  {
+   for(Int_t tt=0;tt<4;tt++) // 4 distinct cumulants, three 2p and one 3p. TBI for 2p, this is an overkill, but for 4p this will need to be enlarged
+   {
+    for(Int_t d=0;d<10;d++) // differential options, see what is hardwired in .h file
+    {
+     fSignalCumulantsTEST[t][q][tt][d] = NULL;
+    }
+   } // for(Int_t t=0;t<nTests;t++)
+  } // for(Int_t q=0;q<2;q++) // Q2 and Q3
+ } // for(Int_t t=0;t<nTests;t++)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunctionsTEST()
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackgroundTEST()
+{
+ // Initialize all arrays for test background.
+
+ const Int_t nTestsMax = 10; // see what is hardwired in .h file
+
+ for(Int_t t=0;t<nTestsMax;t++)
+ {
+  fBackgroundTESTSublist[t] = NULL;
+  fFillBackgroundTEST[t] = kFALSE;
+ }
+
+ for(Int_t t=0;t<nTestsMax;t++)
+ {
+  for(Int_t q=0;q<2;q++) // Q2 and Q3
+  {
+   for(Int_t tt=0;tt<7;tt++) // 7 distinct terms in the expression of 3p cumulant. TBI for 2p, this is an overkill, but for 4p this will need to be enlarged
+   {
+    for(Int_t d=0;d<10;d++) // differential options, see what is hardwired in .h file
+    {
+     fBackgroundTEST[t][q][tt][d] = NULL;
+    }
+   } // for(Int_t tt=0;tt<7;tt++)
+  } // for(Int_t q=0;q<2;q++) // Q2 and Q3
+ } // for(Int_t t=0;t<nTestsMax;t++)
+
+ for(Int_t me=0;me<3;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
+ {
+  fMixedEventsTEST[me] = NULL;
+  fGlobalTracksAODTEST[me] = NULL;
+ }
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackgroundTEST()
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctionsTEST()
+{
+ // Book everything for test correlation functions.
+
+ // a) Book the profile holding all the flags for test correlation functions;
+ // b) Book correlation functions for all tests:
+
+ // a) Book the profile holding all the flags for test correlation functions:
+ const Int_t nTests = 2;
+ fCorrelationFunctionsTESTFlagsPro = new TProfile("fCorrelationFunctionsTESTFlagsPro","Flags and settings for test correlation functions",nTests,0,nTests);
+ fCorrelationFunctionsTESTFlagsPro->SetTickLength(-0.01,"Y");
+ fCorrelationFunctionsTESTFlagsPro->SetMarkerStyle(25);
+ fCorrelationFunctionsTESTFlagsPro->SetLabelSize(0.04);
+ fCorrelationFunctionsTESTFlagsPro->SetLabelOffset(0.02,"Y");
+ fCorrelationFunctionsTESTFlagsPro->SetStats(kFALSE);
+ fCorrelationFunctionsTESTFlagsPro->SetFillColor(kGray);
+ fCorrelationFunctionsTESTFlagsPro->SetLineColor(kBlack);
+ for(Int_t t=0;t<nTests;t++)
+ {
+  fCorrelationFunctionsTESTFlagsPro->GetXaxis()->SetBinLabel(t+1,Form("fFillCorrelationFunctionsTEST[%d]",t)); fCorrelationFunctionsTESTFlagsPro->Fill(t+0.5,fFillCorrelationFunctionsTEST[t]);
+ }
+ fCorrelationFunctionsTESTList->Add(fCorrelationFunctionsTESTFlagsPro);
+
+ // b) Book correlation functions for all tests:
+ const Int_t nCumulants = 4; // TBI this applies only to vs. Q3
+ const Int_t n3pCumulantTerms = 7;
+ const Int_t nQs = 2; // Q2 and Q3 at the moment, if you change it here, change it also in exprs. like for(Int_t q=0;q<2;q++)
+ const Int_t n2pCumulantTerms = 3;
+ TString s2pCumulantTerms[n2pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{1}X_{2}#GT"};
+ TString s3pCumulantTerms[n3pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{3}#GT","#LTX_{1}X_{2}#GT","#LTX_{1}X_{3}#GT","#LTX_{2}X_{3}#GT","#LTX_{1}X_{2}X_{3}#GT"};
+ TString sCumulants[nCumulants] = {"#LTX_{1}X_{2}#GT_{c}","#LTX_{1}X_{3}#GT_{c}","#LTX_{2}X_{3}#GT_{c}","#LTX_{1}X_{2}X_{3}#GT_{c}"}; // TBI this applies only to vs. Q3
+ TString sXYZ[3] = {"x","y","z"};
+ TString sQs[nQs] = {"Q_{2}","Q_{3}"};
+ for(Int_t t=0;t<nTests;t++)
+ {
+  if(fFillCorrelationFunctionsTEST[t])
+  {
+
+   // Correlations vs. Q2:
+   for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+   {
+    for(Int_t xyz=0;xyz<3;xyz++)
+    {
+     fCorrelationFunctionsTEST[t][0][ct][xyz] = new TProfile(Form("fCorrelationFunctionsTEST[%d][0][%d][%d]",t,ct,xyz),Form("TEST: %d",t),100,0.,10.);
+     fCorrelationFunctionsTEST[t][0][ct][xyz]->SetStats(kFALSE);
+     fCorrelationFunctionsTEST[t][0][ct][xyz]->SetMarkerStyle(kFullSquare);
+     fCorrelationFunctionsTEST[t][0][ct][xyz]->SetMarkerColor(kBlue);
+     fCorrelationFunctionsTEST[t][0][ct][xyz]->SetLineColor(kBlue);
+     fCorrelationFunctionsTEST[t][0][ct][xyz]->GetXaxis()->SetTitle(sQs[0].Data());
+     fCorrelationFunctionsTEST[t][0][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s2pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+     fCorrelationFunctionsTESTSublist[t]->Add(fCorrelationFunctionsTEST[t][0][ct][xyz]);
+    } // for(Int_t xyz=0;xyz<3;xyz++)
+   } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+
+   // Cumulants vs. Q2:
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    fSignalCumulantsTEST[t][0][0][xyz] = new TProfile(Form("fSignalCumulantsTEST[%d][0][%d][%d]",t,0,xyz),Form("TEST: %d",t),100,0.,10.);
+    fSignalCumulantsTEST[t][0][0][xyz]->SetStats(kFALSE);
+    fSignalCumulantsTEST[t][0][0][xyz]->SetMarkerStyle(kFullSquare);
+    fSignalCumulantsTEST[t][0][0][xyz]->SetMarkerColor(kGreen+2);
+    fSignalCumulantsTEST[t][0][0][xyz]->SetLineColor(kGreen+2);
+    fSignalCumulantsTEST[t][0][0][xyz]->GetXaxis()->SetTitle(sQs[0].Data());
+    fSignalCumulantsTEST[t][0][0][xyz]->GetYaxis()->SetTitle(Form("#LTX_{1}X_{2}#GT_{c,%s}",sXYZ[xyz].Data()));
+    fCorrelationFunctionsTESTSublist[t]->Add(fSignalCumulantsTEST[t][0][0][xyz]);
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+
+   // Correlations vs. Q3: TBI this clearly can be unified with the above.
+   for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+   {
+    for(Int_t xyz=0;xyz<3;xyz++)
+    {
+     fCorrelationFunctionsTEST[t][1][ct][xyz] = new TProfile(Form("fCorrelationFunctionsTEST[%d][1][%d][%d]",t,ct,xyz),Form("TEST: %d",t),100,0.,10.);
+     fCorrelationFunctionsTEST[t][1][ct][xyz]->SetStats(kFALSE);
+     fCorrelationFunctionsTEST[t][1][ct][xyz]->SetMarkerStyle(kFullSquare);
+     fCorrelationFunctionsTEST[t][1][ct][xyz]->SetMarkerColor(kBlue);
+     fCorrelationFunctionsTEST[t][1][ct][xyz]->SetLineColor(kBlue);
+     fCorrelationFunctionsTEST[t][1][ct][xyz]->GetXaxis()->SetTitle(sQs[1].Data());
+     fCorrelationFunctionsTEST[t][1][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s3pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+     fCorrelationFunctionsTESTSublist[t]->Add(fCorrelationFunctionsTEST[t][1][ct][xyz]);
+    } // for(Int_t xyz=0;xyz<3;xyz++)
+   } // for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+
+   // Cumulants vs. Q3:
+   for(Int_t ct=0;ct<nCumulants;ct++) // TBI this applies only to vs. Q3
+   {
+    for(Int_t xyz=0;xyz<3;xyz++)
+    {
+     fSignalCumulantsTEST[t][1][ct][xyz] = new TProfile(Form("fSignalCumulantsTEST[%d][1][%d][%d]",t,ct,xyz),Form("TEST: %d",t),100,0.,10.);
+     fSignalCumulantsTEST[t][1][ct][xyz]->SetStats(kFALSE);
+     fSignalCumulantsTEST[t][1][ct][xyz]->SetMarkerStyle(kFullSquare);
+     fSignalCumulantsTEST[t][1][ct][xyz]->SetMarkerColor(kGreen+2);
+     fSignalCumulantsTEST[t][1][ct][xyz]->SetLineColor(kGreen+2);
+     fSignalCumulantsTEST[t][1][ct][xyz]->GetXaxis()->SetTitle(sQs[1].Data());
+     fSignalCumulantsTEST[t][1][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",sCumulants[ct].Data(),sXYZ[xyz].Data()));
+     fCorrelationFunctionsTESTSublist[t]->Add(fSignalCumulantsTEST[t][1][ct][xyz]);
+    } // for(Int_t xyz=0;xyz<3;xyz++)
+   } // for(Int_t ct=0;ct<nCumulants;ct++)
+  } // if(fFillCorrelationFunctionsTEST[t])
+
+ } // for(Int_t t=0;t<nTests;t++)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctionsTEST()
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackgroundTEST()
+{
+ // Book everything for test background.
+
+ // a) Book the profile holding all the flags for test background;
+ // b) Book background objects for all tests;
+ // c) Book fMixedEventsTEST[3] and fGlobalTracksAODTEST[3].
+
+ // a) Book the profile holding all the flags for test background:
+ const Int_t nTests = 2;
+ fBackgroundTESTFlagsPro = new TProfile("fBackgroundTESTFlagsPro","Flags and settings for test background",nTests,0,nTests);
+ fBackgroundTESTFlagsPro->SetTickLength(-0.01,"Y");
+ fBackgroundTESTFlagsPro->SetMarkerStyle(25);
+ fBackgroundTESTFlagsPro->SetLabelSize(0.04);
+ fBackgroundTESTFlagsPro->SetLabelOffset(0.02,"Y");
+ fBackgroundTESTFlagsPro->SetStats(kFALSE);
+ fBackgroundTESTFlagsPro->SetFillColor(kGray);
+ fBackgroundTESTFlagsPro->SetLineColor(kBlack);
+ for(Int_t t=0;t<nTests;t++)
+ {
+  fBackgroundTESTFlagsPro->GetXaxis()->SetBinLabel(t+1,Form("fFillBackgroundTEST[%d]",t)); fBackgroundTESTFlagsPro->Fill(t+0.5,fFillBackgroundTEST[t]);
+ }
+ fBackgroundTESTList->Add(fBackgroundTESTFlagsPro);
+
+ // b) Book background objects for all tests:
+ const Int_t nCumulants = 4; // TBI this applies only to vs. Q3
+ const Int_t n3pCumulantTerms = 7;
+ const Int_t nQs = 2; // Q2 and Q3 at the moment, if you change it here, change it also in exprs. like for(Int_t q=0;q<2;q++)
+ const Int_t n2pCumulantTerms = 3;
+ TString s2pCumulantTerms[n2pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{1}X_{2}#GT"};
+ TString s3pCumulantTerms[n3pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{3}#GT","#LTX_{1}X_{2}#GT","#LTX_{1}X_{3}#GT","#LTX_{2}X_{3}#GT","#LTX_{1}X_{2}X_{3}#GT"};
+ TString sCumulants[nCumulants] = {"#LTX_{1}X_{2}#GT_{c}","#LTX_{1}X_{3}#GT_{c}","#LTX_{2}X_{3}#GT_{c}","#LTX_{1}X_{2}X_{3}#GT_{c}"}; // TBI this applies only to vs. Q3
+ TString sXYZ[3] = {"x","y","z"};
+ TString sQs[nQs] = {"Q_{2}","Q_{3}"};
+ for(Int_t t=0;t<nTests;t++)
+ {
+  if(fFillBackgroundTEST[t])
+  {
+
+   // Background correlations vs. Q2:
+   for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+   {
+    for(Int_t xyz=0;xyz<3;xyz++)
+    {
+     fBackgroundTEST[t][0][ct][xyz] = new TProfile(Form("fBackgroundTEST[%d][0][%d][%d]",t,ct,xyz),Form("TEST: %d",t),100,0.,10.);
+     fBackgroundTEST[t][0][ct][xyz]->SetStats(kFALSE);
+     fBackgroundTEST[t][0][ct][xyz]->SetMarkerStyle(kFullSquare);
+     fBackgroundTEST[t][0][ct][xyz]->SetMarkerColor(kBlue);
+     fBackgroundTEST[t][0][ct][xyz]->SetLineColor(kBlue);
+     fBackgroundTEST[t][0][ct][xyz]->GetXaxis()->SetTitle(sQs[0].Data());
+     fBackgroundTEST[t][0][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s2pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+     fBackgroundTESTSublist[t]->Add(fBackgroundTEST[t][0][ct][xyz]);
+    } // for(Int_t xyz=0;xyz<3;xyz++)
+   } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+
+   // Background cumulants vs. Q2:
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    fBackgroundCumulantsTEST[t][0][0][xyz] = new TProfile(Form("fBackgroundCumulantsTEST[%d][0][%d][%d]",t,0,xyz),Form("TEST: %d",t),100,0.,10.);
+    fBackgroundCumulantsTEST[t][0][0][xyz]->SetStats(kFALSE);
+    fBackgroundCumulantsTEST[t][0][0][xyz]->SetMarkerStyle(kFullSquare);
+    fBackgroundCumulantsTEST[t][0][0][xyz]->SetMarkerColor(kGreen+2);
+    fBackgroundCumulantsTEST[t][0][0][xyz]->SetLineColor(kGreen+2);
+    fBackgroundCumulantsTEST[t][0][0][xyz]->GetXaxis()->SetTitle(sQs[0].Data());
+    fBackgroundCumulantsTEST[t][0][0][xyz]->GetYaxis()->SetTitle(Form("#LTX_{1}X_{2}#GT_{c,%s}",sXYZ[xyz].Data()));
+    fBackgroundTESTSublist[t]->Add(fBackgroundCumulantsTEST[t][0][0][xyz]);
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+
+   // Background correlations vs. Q3: TBI this clearly can be unified with the above.
+   for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+   {
+    for(Int_t xyz=0;xyz<3;xyz++)
+    {
+     fBackgroundTEST[t][1][ct][xyz] = new TProfile(Form("fBackgroundTEST[%d][1][%d][%d]",t,ct,xyz),Form("TEST: %d",t),100,0.,10.);
+     fBackgroundTEST[t][1][ct][xyz]->SetStats(kFALSE);
+     fBackgroundTEST[t][1][ct][xyz]->SetMarkerStyle(kFullSquare);
+     fBackgroundTEST[t][1][ct][xyz]->SetMarkerColor(kBlue);
+     fBackgroundTEST[t][1][ct][xyz]->SetLineColor(kBlue);
+     fBackgroundTEST[t][1][ct][xyz]->GetXaxis()->SetTitle(sQs[1].Data());
+     fBackgroundTEST[t][1][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s3pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+     fBackgroundTESTSublist[t]->Add(fBackgroundTEST[t][1][ct][xyz]);
+    } // for(Int_t xyz=0;xyz<3;xyz++)
+   } // for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+
+   // Background cumulants vs. Q3:
+   for(Int_t ct=0;ct<nCumulants;ct++) // TBI this applies only to vs. Q3
+   {
+    for(Int_t xyz=0;xyz<3;xyz++)
+    {
+     fBackgroundCumulantsTEST[t][1][ct][xyz] = new TProfile(Form("fBackgroundCumulantsTEST[%d][1][%d][%d]",t,ct,xyz),Form("TEST: %d",t),100,0.,10.);
+     fBackgroundCumulantsTEST[t][1][ct][xyz]->SetStats(kFALSE);
+     fBackgroundCumulantsTEST[t][1][ct][xyz]->SetMarkerStyle(kFullSquare);
+     fBackgroundCumulantsTEST[t][1][ct][xyz]->SetMarkerColor(kGreen+2);
+     fBackgroundCumulantsTEST[t][1][ct][xyz]->SetLineColor(kGreen+2);
+     fBackgroundCumulantsTEST[t][1][ct][xyz]->GetXaxis()->SetTitle(sQs[1].Data());
+     fBackgroundCumulantsTEST[t][1][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",sCumulants[ct].Data(),sXYZ[xyz].Data()));
+     fBackgroundTESTSublist[t]->Add(fBackgroundCumulantsTEST[t][1][ct][xyz]);
+    } // for(Int_t xyz=0;xyz<3;xyz++)
+   } // for(Int_t ct=0;ct<nCumulants;ct++)
+  } // if(fFillCorrelationFunctionsTEST[t])
+
+ } // for(Int_t t=0;t<nTests;t++)
+
+
+ // c) Book fMixedEventsTEST[3] and fGlobalTracksAODTEST[3]:
+ for(Int_t me=0;me<3;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
+ {
+  fMixedEventsTEST[me] = new TClonesArray("AliAODTrack",10000);
+  fGlobalTracksAODTEST[me] = new TExMap();
+ }
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackgroundTEST()
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
 {
  // Book and nest all lists nested in the base list fHistList.
@@ -2313,7 +2761,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  // d) Book and nest lists for background;
  // e) Book and nest lists for buffers;
  // f) Book and nest lists for QA;
- // g) Book and nest lists for common global track cuts.
+ // g) Book and nest lists for common global track cuts;
+ // h) Book and nest lists for test correlation functions;
+ // i) Book and nest lists for test background.
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()";
  if(!fHistList){Fatal(sMethodName.Data(),"fHistList is NULL");}
@@ -2409,6 +2859,33 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  fGlobalTrackCutsList->SetName("Global_track_cuts");
  fGlobalTrackCutsList->SetOwner(kTRUE);
  fHistList->Add(fGlobalTrackCutsList);
+
+ // h) Book and nest lists for test correlation functions:
+ fCorrelationFunctionsTESTList = new TList();
+ fCorrelationFunctionsTESTList->SetName("CorrelationFunctionsTEST");
+ fCorrelationFunctionsTESTList->SetOwner(kTRUE);
+ fHistList->Add(fCorrelationFunctionsTESTList);
+ const Int_t nTests = 2;
+ for(Int_t t=0;t<nTests;t++)
+ {
+  fCorrelationFunctionsTESTSublist[t] = new TList();
+  fCorrelationFunctionsTESTSublist[t]->SetName(Form("TEST_%d",t));
+  fCorrelationFunctionsTESTSublist[t]->SetOwner(kTRUE);
+  fCorrelationFunctionsTESTList->Add(fCorrelationFunctionsTESTSublist[t]);
+ } // for(Int_t t=0;t<nTests;t++)
+
+ // i) Book and nest lists for test background:
+ fBackgroundTESTList = new TList();
+ fBackgroundTESTList->SetName("BackgroundTEST");
+ fBackgroundTESTList->SetOwner(kTRUE);
+ fHistList->Add(fBackgroundTESTList);
+ for(Int_t t=0;t<nTests;t++)
+ {
+  fBackgroundTESTSublist[t] = new TList();
+  fBackgroundTESTSublist[t]->SetName(Form("TEST_%d",t));
+  fBackgroundTESTSublist[t]->SetOwner(kTRUE);
+  fBackgroundTESTList->Add(fBackgroundTESTSublist[t]);
+ } // for(Int_t t=0;t<nTests;t++)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
 
@@ -2972,7 +3449,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  // e) Book all 4p correlation functions.
 
  // a) Book the profile holding all the flags for correlation functions objects:
- fCorrelationFunctionsFlagsPro = new TProfile("fCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",4,0,4);
+ fCorrelationFunctionsFlagsPro = new TProfile("fCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",8,0,8);
  fCorrelationFunctionsFlagsPro->SetTickLength(-0.01,"Y");
  fCorrelationFunctionsFlagsPro->SetMarkerStyle(25);
  fCorrelationFunctionsFlagsPro->SetLabelSize(0.04);
@@ -2984,6 +3461,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(2,"fNormalizeCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(1.5,fNormalizeCorrelationFunctions);
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(3,"fFill3pCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(2.5,fFill3pCorrelationFunctions);
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(4,"fFill4pCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(3.5,fFill4pCorrelationFunctions);
+ fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(5,"fNormalizationOption"); fCorrelationFunctionsFlagsPro->Fill(4.5,fNormalizationOption);
+ fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(6,"fNormalizationInterval[0]"); fCorrelationFunctionsFlagsPro->Fill(5.5,fNormalizationInterval[0]);
+ fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(7,"fNormalizationInterval[1]"); fCorrelationFunctionsFlagsPro->Fill(6.5,fNormalizationInterval[1]);
+ fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(8,"fnMergedBins"); fCorrelationFunctionsFlagsPro->Fill(7.5,fnMergedBins);
  fCorrelationFunctionsList->Add(fCorrelationFunctionsFlagsPro);
  // 2p:
  f2pCorrelationFunctionsFlagsPro = new TProfile("f2pCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",1,0,1);
@@ -3474,6 +3955,54 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD, 
  } // for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAODTEST(AliAODEvent *aAOD, Int_t index)
+{
+ // Filter out unique global tracks in AOD and store them in fGlobalTracksAODTEST[index].
+
+ // Remark 0: All global tracks have positive ID, the duplicated TPC-only tracks have -(ID+1);
+ // Remark 1: The issue here is that there are apparently two sets of global tracks: a) "normal" and b) constrained to primary vertex.
+ //           However, only the "normal" global tracks come with positive ID, additionally they can be discriminated simply via: aodTrack->IsGlobalConstrained()
+ //           Global constrained tracks have the same negative ID as the TPC-only tracks, both associated with the same "normal global" tracks. E.g. we can have
+ //            iTrack: atrack->GetID(): atrack->Pt() atrack->Eta() atrack->Phi()
+ //                 1:               0:     2.073798     -0.503640      2.935432
+ //                19:              -1:     2.075537     -0.495988      2.935377 => this is TPC-only
+ //                35:              -1:     2.073740     -0.493576      2.935515 => this is IsGlobalConstrained()
+ //           In fact, this is important, otherwise there is double or even triple counting in some cases.
+ // Remark 2: There are tracks for which: 0 == aodTrack->GetFilterMap()
+ //           a) Basically all of them pass: atrack->GetType() == AliAODTrack::kFromDecayVtx , but few exceptions also pass atrack->GetType() == AliAODTrack::kPrimary
+ //           b) All of them apparently have positive ID, i.e. these are global tracks
+ //           c) Clearly, we cannot use TestFilterBit() on them
+ //           d) None of them apparently satisfies: atrack->IsGlobalConstrained()
+ // Remark 3: There is a performance penalty when fGlobalTracksAODTEST[1] and fGlobalTracksAODTEST[2] needed for mixed events are calculated.
+ //           Yes, I can get them directly from fGlobalTracksAODTEST[0], without calling this method for them again. TBI today
+
+ // a) Insanity checks;
+ // b) Determine the map.
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAODTEST(AliAODEvent *aAOD, Int_t index)";
+ if(!fGlobalTracksAODTEST[index]){Fatal(sMethodName.Data(),"fGlobalTracksAODTEST[%d]",index);}
+ if(0 != fGlobalTracksAODTEST[index]->GetSize()){fGlobalTracksAODTEST[index]->Delete();} // yes, this method determines mapping from scratch each time
+
+ // b) Determine the map:
+ for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
+ {
+  AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
+  if(aodTrack)
+  {
+   Int_t id = aodTrack->GetID();
+   //if(id>=0 && aodTrack->GetFilterMap()>0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this
+   if(id>=0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this, it seems that id>=0 is just enough, the second constraint is most likely just an overkill
+   {
+    fGlobalTracksAODTEST[index]->Add(id,iTrack); // "key" = id, "value" = iTrack
+   } // if(id>=0 && !aodTrack->IsGlobalConstrained())
+  } // if(aodTrack)
+ } // for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAODTEST(AliAODEvent *aAOD)
 
 //=======================================================================================================================
 
@@ -4393,6 +4922,328 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliMC
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(AliAODEvent *aAOD)
+{
+ // Calculate correlation functions.
+
+ // a) Insanity checks;
+ // b) Book local TProfile's to hold single-event averages vs. Q2;
+ // c) Book local TProfile's to hold single-event averages vs. Q3;
+ // d) Nested loops to calculate single-event averages; // Remark: To evaluate 3p loops, enable the flag fFill3pCorrelationFunctions;
+ // e) Build all-event correlations and cumulants from single-event averages;
+ // f) Delete local TProfile's to hold single-event averages.
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(AliAODEvent *aAOD)";
+ if(!aAOD){Fatal(sMethodName.Data(),"!aAOD");}
+ if(0 == fGlobalTracksAOD[0]->GetSize()){Fatal(sMethodName.Data(),"0 == fGlobalTracksAOD[0]->GetSize()");} // this case shall be already treated in UserExec
+
+ // b) Book local TProfile's to hold single-event averages vs. k:
+ TString sXYZ[3] = {"x","y","z"};
+ const Int_t n2pCumulantTerms = 3;
+ TString s2pCumulantTerms[n2pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{1}X_{2}#GT"};
+ TProfile *singleEventAverageCorrelationsVsQ2[n2pCumulantTerms][3] = {{NULL}}; // [x,y,z components]
+ for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   singleEventAverageCorrelationsVsQ2[ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ2[%d][%d]",ct,xyz),"single-event averages",100,0.,10.);
+   singleEventAverageCorrelationsVsQ2[ct][xyz]->GetXaxis()->SetTitle("Q_{2}");
+   singleEventAverageCorrelationsVsQ2[ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s2pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+  } // for(Int_t xyz=0;xyz<3;xyz++)
+ } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+
+ // c) Book local TProfile's to hold single-event averages vs. Q3:
+ const Int_t n3pCumulantTerms = 7;
+ TString s3pCumulantTerms[n3pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{3}#GT","#LTX_{1}X_{2}#GT","#LTX_{1}X_{3}#GT","#LTX_{2}X_{3}#GT","#LTX_{1}X_{2}X_{3}#GT"};
+ TProfile *singleEventAverageCorrelationsVsQ3[n3pCumulantTerms][3] = {{NULL}}; // [x,y,z components]
+ for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ {
+  if(!fFill3pCorrelationFunctions){break;}
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   singleEventAverageCorrelationsVsQ3[ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ3[%d][%d]",ct,xyz),"single-event averages",100,0.,10.);
+   singleEventAverageCorrelationsVsQ3[ct][xyz]->GetXaxis()->SetTitle("Q_{3}");
+   singleEventAverageCorrelationsVsQ3[ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s3pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+  } // for(Int_t xyz=0;xyz<3;xyz++)
+ } // for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+
+ // d) Nested loops to calculate single-event averages:
+ Int_t nTracks = aAOD->GetNumberOfTracks();
+ for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
+ {
+  AliAODTrack *atrack1 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack1));
+  // TBI Temporary track insanity checks:
+  if(!atrack1){Fatal(sMethodName.Data(),"!atrack1");} // TBI keep this for some time, eventually just continue
+  if(atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(atrack1->TestFilterBit(128) && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->TestFiletrBit(128) && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(atrack1)){continue;} // TBI re-think
+  // Corresponding AOD global track:
+  Int_t id1 = atrack1->GetID();
+  AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(id1)) : aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(-(id1+1))));
+  if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
+  Int_t gid1 = (id1>=0 ? id1 : -(id1+1)); // ID of corresponding global track
+  // Common track selection criteria for all "normal" global tracks:
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
+
+  // Loop over the 2nd particle:
+  for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++) // TBI: I can gain in performance if I do not start from 0
+  {
+   if(iTrack2<=iTrack1){continue;} // Eliminate self-evident self-correlations, and permutations as well
+   AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack2));
+   // TBI Temporary track insanity checks:
+   if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
+   if(atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(atrack2->TestFilterBit(128) && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->TestFiletrBit(128) && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(atrack2)){continue;} // TBI re-think
+   // Corresponding AOD global track:
+   Int_t id2 = atrack2->GetID();
+   AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(id2)) : aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(-(id2+1))));
+   if(!gtrack2){Fatal(sMethodName.Data(),"!gtrack2");} // TBI keep this for some time, eventually just continue
+   Int_t gid2 = (id2>=0 ? id2 : -(id2+1)); // ID of corresponding global track
+   if(gid1==gid2){continue;} // Eliminate self-correlations:
+   // Common track selection criteria for all "normal" global tracks:
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
+
+   // Okay, so we have two tracks, let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and fill the single event correlation functions projected onto Q2:
+   AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   if(fFillControlHistogramsWithGlobalTrackInfo)
+   {
+    agtrack1 = gtrack1;
+    agtrack2 = gtrack2;
+   }
+   else
+   {
+    agtrack1 = atrack1;
+    agtrack2 = atrack2;
+   } // if(fFillControlHistogramsWithGlobalTrackInfo)
+   if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+   if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
+
+   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto Q2, for x, y and z components separately"
+   if(fFillCorrelationFunctionsTEST[0])
+   {
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+
+     // x-components:
+     singleEventAverageCorrelationsVsQ2[0][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Px()); // <X1>_x
+     singleEventAverageCorrelationsVsQ2[1][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Px()); // <X2>_x
+     singleEventAverageCorrelationsVsQ2[2][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+
+     // y-components:
+     singleEventAverageCorrelationsVsQ2[0][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Py()); // <X1>_y
+     singleEventAverageCorrelationsVsQ2[1][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Py()); // <X2>_y
+     singleEventAverageCorrelationsVsQ2[2][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+
+     // z-components:
+     singleEventAverageCorrelationsVsQ2[0][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Pz()); // <X1>_z
+     singleEventAverageCorrelationsVsQ2[1][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Pz()); // <X2>_z
+     singleEventAverageCorrelationsVsQ2[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+   } // if(fFillCorrelationFunctionsTEST[0])
+
+   // Test 1: TBI
+   if(fFillCorrelationFunctionsTEST[1])
+   {
+    // fCorrelationFunctionsTEST[1][0][0]->Fill(440.);
+   } // if(fFillCorrelationFunctionsTEST[1])
+
+   // Loop over the 3rd particle:
+   for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
+   {
+    if(!fFill3pCorrelationFunctions){break;}
+    if(iTrack3<=iTrack2 || iTrack3<=iTrack1){continue;} // Eliminate self-evident self-correlations, and permutations as well
+    AliAODTrack *atrack3 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack3));
+    if(!atrack3){Fatal(sMethodName.Data(),"!atrack3");} // TBI keep this for some time, eventually just continue
+    if(atrack3->GetID()>=0 && atrack3->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack3->GetID()>=0 && atrack3->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+    if(atrack3->TestFilterBit(128) && atrack3->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack3->TestFiletrBit(128) && atrack3->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+    if(!PassesCommonTrackCuts(atrack3)){continue;} // TBI re-think
+    // Corresponding AOD global track:
+    Int_t id3 = atrack3->GetID();
+    AliAODTrack *gtrack3 = dynamic_cast<AliAODTrack*>(id3>=0 ? aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(id3)) : aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(-(id3+1))));
+    if(!gtrack3){Fatal(sMethodName.Data(),"!gtrack3");} // TBI keep this for some time, eventually just continue
+    Int_t gid3 = (id3>=0 ? id3 : -(id3+1)); // ID of corresponding global track
+    if(gid3==gid2 || gid3==gid1){continue;} // Eliminate not-so-evident self-correlations
+    // Common track selection criteria for all "normal" global tracks:
+    if(!PassesGlobalTrackCuts(gtrack3)){continue;}
+
+    // Okay, so we have the third track, let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and fill the correlation functions:
+    AliAODTrack *agtrack3 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    if(fFillControlHistogramsWithGlobalTrackInfo)
+    {
+     agtrack3 = gtrack3;
+    }
+    else
+    {
+     agtrack3 = atrack3;
+    } // if(fFillControlHistogramsWithGlobalTrackInfo)
+    if(!agtrack3){Fatal(sMethodName.Data(),"!agtrack3");}
+
+    // Test 0: "Same charge pions, 3p correlations and cumulants projected onto Q3, for x, y and z components separately"
+    if(fFillCorrelationFunctionsTEST[0])
+    {
+     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+     {
+
+      // Q3:
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3);
+
+      // x-components:
+      singleEventAverageCorrelationsVsQ3[0][0]->Fill(dQ3,agtrack1->Px()); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[1][0]->Fill(dQ3,agtrack2->Px()); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[2][0]->Fill(dQ3,agtrack3->Px()); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[3][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[4][0]->Fill(dQ3,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[5][0]->Fill(dQ3,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[6][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
+
+      // y-components:
+      singleEventAverageCorrelationsVsQ3[0][1]->Fill(dQ3,agtrack1->Py()); // <X1>_y
+      singleEventAverageCorrelationsVsQ3[1][1]->Fill(dQ3,agtrack2->Py()); // <X2>_y
+      singleEventAverageCorrelationsVsQ3[2][1]->Fill(dQ3,agtrack3->Py()); // <X3>_y
+      singleEventAverageCorrelationsVsQ3[3][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+      singleEventAverageCorrelationsVsQ3[4][1]->Fill(dQ3,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
+      singleEventAverageCorrelationsVsQ3[5][1]->Fill(dQ3,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
+      singleEventAverageCorrelationsVsQ3[6][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
+
+      // z-components:
+      singleEventAverageCorrelationsVsQ3[0][2]->Fill(dQ3,agtrack1->Pz()); // <X1>_z
+      singleEventAverageCorrelationsVsQ3[1][2]->Fill(dQ3,agtrack2->Pz()); // <X2>_z
+      singleEventAverageCorrelationsVsQ3[2][2]->Fill(dQ3,agtrack3->Pz()); // <X3>_z
+      singleEventAverageCorrelationsVsQ3[3][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+      singleEventAverageCorrelationsVsQ3[4][2]->Fill(dQ3,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
+      singleEventAverageCorrelationsVsQ3[5][2]->Fill(dQ3,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
+      singleEventAverageCorrelationsVsQ3[6][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
+
+     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+    } // if(fFillCorrelationFunctionsTEST[0])
+
+    // Test 1: TBI
+    if(fFillCorrelationFunctionsTEST[1])
+    {
+     // fCorrelationFunctionsTEST[1][0][0]->Fill(440.);
+    } // if(fFillCorrelationFunctionsTEST[1])
+
+   } // for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
+  } // for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++)
+ } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
+
+ // e) Build all-event correlations and cumulants from single-event averages:
+ Int_t nBins = singleEventAverageCorrelationsVsQ2[0][0]->GetXaxis()->GetNbins();
+ for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   Double_t dX1 = 0., dX1Err = 0.; // <X1>
+   Double_t dX2 = 0., dX2Err = 0.; // <X2>
+   Double_t dX3 = 0., dX3Err = 0.; // <X3>
+   Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
+   Double_t dX1X3 = 0., dX1X3Err = 0.; // <X1X3>
+   Double_t dX2X3 = 0., dX2X3Err = 0.; // <X2X3>
+   Double_t dX1X2X3 = 0., dX1X2X3Err = 0.; // <X1X2X3>
+   Double_t dC2 = 0., dC2Err = 0.; // C2 = <X1X2> - <X1><X2> vs. Q2
+   Double_t dC12 = 0., dC12Err = 0.; // C12 = <X1X2> - <X1><X2> vs. Q3
+   Double_t dC13 = 0., dC13Err = 0.; // C13 = <X1X3> - <X1><X3> vs. Q3
+   Double_t dC23 = 0., dC23Err = 0.; // C23 = <X2X3> - <X2><X3> vs. Q3
+   Double_t dC3 = 0., dC3Err = 0.; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
+   Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+   // 2p correlation terms:
+   dX1 = singleEventAverageCorrelationsVsQ2[0][xyz]->GetBinContent(b+1); // <X1> vs. Q2
+   dX1Err = singleEventAverageCorrelationsVsQ2[0][xyz]->GetBinError(b+1);
+   dX2 = singleEventAverageCorrelationsVsQ2[1][xyz]->GetBinContent(b+1); // <X2> vs. Q2
+   dX2Err = singleEventAverageCorrelationsVsQ2[1][xyz]->GetBinError(b+1);
+   dX1X2 = singleEventAverageCorrelationsVsQ2[2][xyz]->GetBinContent(b+1); // <X1X2> vs. Q2
+   dX1X2Err = singleEventAverageCorrelationsVsQ2[2][xyz]->GetBinError(b+1);
+   if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX1X2)>1.e-14) // basically, do calculations only if all terms in the 2p cumulant definition are non-zero
+   {
+    // 2p cumulant:
+    dC2 = dX1X2 - dX1*dX2;
+    dC2Err = 0.; // TBI propagate an error one day
+    // fill 2p:
+    dBinCenter = fCorrelationFunctionsTEST[0][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+    fCorrelationFunctionsTEST[0][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
+    fCorrelationFunctionsTEST[0][0][1][xyz]->Fill(dBinCenter,dX2); // <X2>
+    fCorrelationFunctionsTEST[0][0][2][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
+    fSignalCumulantsTEST[0][0][0][xyz]->Fill(dBinCenter,dC2); // C2 = <X1X2> - <X1><X2>
+   }
+
+   if(!fFill3pCorrelationFunctions){continue;} // TBI is this really safe
+
+   // 3p correlation terms (note that now binning is vs. Q3 TBI yes, fine for the time being, but this is a landmine clearly...):
+   dX1 = singleEventAverageCorrelationsVsQ3[0][xyz]->GetBinContent(b+1); // <X1> vs. Q3
+   dX1Err = singleEventAverageCorrelationsVsQ3[0][xyz]->GetBinError(b+1);
+   dX2 = singleEventAverageCorrelationsVsQ3[1][xyz]->GetBinContent(b+1); // <X2> vs. Q3
+   dX2Err = singleEventAverageCorrelationsVsQ3[1][xyz]->GetBinError(b+1);
+   dX3 = singleEventAverageCorrelationsVsQ3[2][xyz]->GetBinContent(b+1); // <X3> vs. Q3
+   dX3Err = singleEventAverageCorrelationsVsQ3[2][xyz]->GetBinError(b+1);
+   dX1X2 = singleEventAverageCorrelationsVsQ3[3][xyz]->GetBinContent(b+1); // <X1X2> vs. Q3
+   dX1X2Err = singleEventAverageCorrelationsVsQ3[3][xyz]->GetBinError(b+1);
+   dX1X3 = singleEventAverageCorrelationsVsQ3[4][xyz]->GetBinContent(b+1); // <X1X3> vs. Q3
+   dX1X3Err = singleEventAverageCorrelationsVsQ3[4][xyz]->GetBinError(b+1);
+   dX2X3 = singleEventAverageCorrelationsVsQ3[5][xyz]->GetBinContent(b+1); // <X2X3> vs. Q3
+   dX2X3Err = singleEventAverageCorrelationsVsQ3[5][xyz]->GetBinError(b+1);
+   dX1X2X3 = singleEventAverageCorrelationsVsQ3[6][xyz]->GetBinContent(b+1); // <X1X2X3> vs. Q3
+   dX1X2X3Err = singleEventAverageCorrelationsVsQ3[6][xyz]->GetBinError(b+1);
+   if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 &&
+      TMath::Abs(dX1X2)>1.e-14 && TMath::Abs(dX1X3)>1.e-14 && TMath::Abs(dX2X3)>1.e-14 &&
+      TMath::Abs(dX1X2X3)>1.e-14) // basically, do calculations only if all terms in the 3p cumulant definition are non-zero
+   {
+    // three 2p cumulants vs. Q3 (why not!?)
+    dC12 = dX1X2 - dX1*dX2; // C12 = <X1X2> - <X1><X2> vs. Q3
+    dC12Err = 0.; // TBI propagate an error one day
+    dC13 = dX1X3 - dX1*dX3; // C13 = <X1X3> - <X1><X3> vs. Q3
+    dC13Err = 0.; // TBI propagate an error one day
+    dC23 = dX2X3 - dX2*dX3; // C23 = <X2X3> - <X2><X3> vs. Q3
+    dC23Err = 0.; // TBI propagate an error one day
+    // 3p cumulant vs. Q3:
+    dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
+    dC3Err = 0.; // TBI propagate an error one day
+    // fill 3p:
+    dBinCenter = fCorrelationFunctionsTEST[0][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+    fCorrelationFunctionsTEST[0][1][0][xyz]->Fill(dBinCenter,dX1); // <X1>
+    fCorrelationFunctionsTEST[0][1][1][xyz]->Fill(dBinCenter,dX2); // <X2>
+    fCorrelationFunctionsTEST[0][1][2][xyz]->Fill(dBinCenter,dX3); // <X3>
+    fCorrelationFunctionsTEST[0][1][3][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
+    fCorrelationFunctionsTEST[0][1][4][xyz]->Fill(dBinCenter,dX1X3); // <X1X3>
+    fCorrelationFunctionsTEST[0][1][5][xyz]->Fill(dBinCenter,dX2X3); // <X2X3>
+    fCorrelationFunctionsTEST[0][1][6][xyz]->Fill(dBinCenter,dX1X2X3); // <X1X2X3>
+    fSignalCumulantsTEST[0][1][0][xyz]->Fill(dBinCenter,dC12); // <X1X2> - <X1><X2> vs. Q3
+    fSignalCumulantsTEST[0][1][1][xyz]->Fill(dBinCenter,dC13); // <X1X3> - <X1><X3> vs. Q3
+    fSignalCumulantsTEST[0][1][2][xyz]->Fill(dBinCenter,dC23); // <X2X3> - <X2><X3> vs. Q3
+    fSignalCumulantsTEST[0][1][3][xyz]->Fill(dBinCenter,dC3); // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
+   } // if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 && ...
+  } // for(Int_t xyz=0;xyz<3;xyz++)
+ } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+
+ // f) Delete local TProfile's to hold single-event averages:
+ for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   delete singleEventAverageCorrelationsVsQ2[ct][xyz];
+  }
+ }
+ for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   delete singleEventAverageCorrelationsVsQ3[ct][xyz];
+  }
+ }
+
+ // c) Three nested loops to calculate C(Q3), just an example; TBI
+ //if(fFill3pCorrelationFunctions) this->Calculate3pCorrelationFunctions(aAOD);
+
+ // d) Four nested loops to calculate C(Q4), just an example. TBI
+ //if(fFill4pCorrelationFunctions) this->Calculate4pCorrelationFunctions(aAOD);
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(AliAODEvent *aAOD)
+
+//=======================================================================================================================
+
 Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2)
 {
  // Comment the weather here. TBI
@@ -4421,6 +5272,71 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODTrack *ag
  return k;
 
 } // Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2)
+
+//=======================================================================================================================
+
+Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomentaComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component)
+{
+ // Return the component of relative momenta.
+
+ // Supported:
+ // a) "x"|"y"|"z" => Cartesian x,y,z
+ // b) TBI add support for other coordinate systems, e.g. o-s-l, spherical, etc.
+
+ TString sMethodName = "Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomentaComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component)";
+ if(!(TString(component).EqualTo("x")||TString(component).EqualTo("y")||TString(component).EqualTo("z"))){Fatal(sMethodName.Data(),"This value for \"component\" is not supported yet: %s",component);}
+
+ Double_t k = -44.; // relative momenta component
+
+ if(TString(component).EqualTo("x"))
+ {
+  k = agtrack1->Px() - agtrack2->Px();
+ }
+ else if(TString(component).EqualTo("y"))
+ {
+  k = agtrack1->Py() - agtrack2->Py();
+ }
+ else if(TString(component).EqualTo("z"))
+ {
+  k = agtrack1->Pz() - agtrack2->Pz();
+ }
+
+ return k;
+
+} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomentaComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component)
+
+
+//=======================================================================================================================
+
+Double_t AliAnalysisTaskMultiparticleFemtoscopy::PairVectorComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component)
+{
+ // Return the component of pair vector \vec{K} = 1/2 (\vec{p1} + \vec{p2})
+
+ // Supported:
+ // a) "x"|"y"|"z" => Cartesian x,y,z
+ // b) TBI add support for other coordinate systems, e.g. o-s-l, spherical, etc.
+
+ TString sMethodName = "Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomentaComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component)";
+ if(!(TString(component).EqualTo("x")||TString(component).EqualTo("y")||TString(component).EqualTo("z"))){Fatal(sMethodName.Data(),"This value for \"component\" is not supported yet: %s",component);}
+
+ Double_t k = -44.; // pair vector component
+
+ if(TString(component).EqualTo("x"))
+ {
+  k = 0.5*(agtrack1->Px() + agtrack2->Px());
+ }
+ else if(TString(component).EqualTo("y"))
+ {
+  k = 0.5*(agtrack1->Py() + agtrack2->Py());
+ }
+ else if(TString(component).EqualTo("z"))
+ {
+  k = 0.5*(agtrack1->Pz() + agtrack2->Pz());
+ }
+
+ return k;
+
+} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::PairVectorComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component)
 
 //=======================================================================================================================
 
@@ -4880,6 +5796,385 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2)
+{
+ // Calculate 2p TEST background.
+
+ // a) Insanity checks;
+ // b) Book local TProfile's to hold 1x1 event averages vs. Q2;
+ // c) Calculate averages <X1> (1st event), <X2> (2nd event) and <X1X2> (mixed-event), vs. Q2.
+ // d) Build all-event correlations and cumulants from single-event averages.
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2)";
+ if(!ca1){Fatal(sMethodName.Data(),"!ca1");}
+ if(!ca2){Fatal(sMethodName.Data(),"!ca2");}
+ if(!em1){Fatal(sMethodName.Data(),"!em1");}
+ if(!em2){Fatal(sMethodName.Data(),"!em2");}
+
+ // b) Book local TProfile's to hold 1x1 event averages vs. Q2:
+ TString sXYZ[3] = {"x","y","z"};
+ const Int_t n2pCumulantTerms = 3;
+ TString s2pCumulantTerms[n2pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{1}X_{2}#GT"};
+ TProfile *singleEventAverageCorrelationsVsQ2[n2pCumulantTerms][3] = {{NULL}}; // [x,y,z components] TBI rename
+ for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   singleEventAverageCorrelationsVsQ2[ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ2[%d][%d]",ct,xyz),"single-event averages",100,0.,10.);
+   singleEventAverageCorrelationsVsQ2[ct][xyz]->GetXaxis()->SetTitle("Q_{2}");
+   singleEventAverageCorrelationsVsQ2[ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s2pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+  } // for(Int_t xyz=0;xyz<3;xyz++)
+ } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+
+ // c) Calculate averages <X1> (1st event), <X2> (2nd event) and <X1X2> (mixed-event), vs. Q2.
+ Int_t nTracks1 = ca1->GetEntries();
+ Int_t nTracks2 = ca2->GetEntries();
+ for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+ {
+  AliAODTrack *atrack1 = dynamic_cast<AliAODTrack*>(ca1->UncheckedAt(iTrack1)); // TBI cross-check UncheckedAt
+  // TBI Temporary track insanity checks:
+  if(!atrack1){Fatal(sMethodName.Data(),"!atrack1");} // TBI keep this for some time, eventually just continue
+  if(atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(atrack1->TestFilterBit(128) && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->TestFiletrBit(128) && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(atrack1)){continue;} // TBI re-think
+  // Corresponding AOD global track:
+  Int_t id1 = atrack1->GetID();
+  AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? ca1->UncheckedAt(em1->GetValue(id1)) : ca1->UncheckedAt(em1->GetValue(-(id1+1))));
+  if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
+  // Common track selection criteria for all "normal" global tracks:
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
+
+  // Start loop over tracks in the 2nd event:
+  for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+  {
+   AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(ca2->UncheckedAt(iTrack2));
+   // TBI Temporary track insanity checks:
+   if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
+   if(atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(atrack2->TestFilterBit(128) && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->TestFiletrBit(128) && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(atrack2)){continue;} // TBI re-think
+   // Corresponding AOD global track:
+   Int_t id2 = atrack2->GetID();
+   AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? ca2->UncheckedAt(em2->GetValue(id2)) : ca2->UncheckedAt(em2->GetValue(-(id2+1))));
+   if(!gtrack2){Fatal(sMethodName.Data(),"!gtrack2");} // TBI keep this for some time, eventually just continue
+   // Common track selection criteria for all "normal" global tracks:
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
+
+   // Okay... So we have a track from the second event ready. Let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and calculate the background:
+   AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   if(fFillControlHistogramsWithGlobalTrackInfo)
+   {
+    agtrack1 = gtrack1;
+    agtrack2 = gtrack2;
+   }
+   else
+   {
+    agtrack1 = atrack1;
+    agtrack2 = atrack2;
+   } // if(fFillControlHistogramsWithGlobalTrackInfo)
+   if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+   if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
+
+   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto Q2, for x, y and z components separately"
+   if(fFillBackgroundTEST[0])
+   {
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+
+     // x-components:
+     singleEventAverageCorrelationsVsQ2[0][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Px()); // <X1>_x
+     singleEventAverageCorrelationsVsQ2[1][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Px()); // <X2>_x
+     singleEventAverageCorrelationsVsQ2[2][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+
+     // y-components:
+     singleEventAverageCorrelationsVsQ2[0][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Py()); // <X1>_y
+     singleEventAverageCorrelationsVsQ2[1][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Py()); // <X2>_y
+     singleEventAverageCorrelationsVsQ2[2][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+
+     // z-components:
+     singleEventAverageCorrelationsVsQ2[0][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Pz()); // <X1>_z
+     singleEventAverageCorrelationsVsQ2[1][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Pz()); // <X2>_z
+     singleEventAverageCorrelationsVsQ2[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+   } // if(fFillBackgroundTEST[0])
+
+  } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+ } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+
+ // d) Build all-event correlations and cumulants from single-event averages:
+ Int_t nBins = singleEventAverageCorrelationsVsQ2[0][0]->GetXaxis()->GetNbins();
+ for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   Double_t dX1 = 0., dX1Err = 0.; // <X1>
+   Double_t dX2 = 0., dX2Err = 0.; // <X2>
+   Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
+   Double_t dC2 = 0., dC2Err = 0.; // C2 = <X1X2> - <X1><X2>
+   Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same
+   // 2p correlation terms:
+   dX1 = singleEventAverageCorrelationsVsQ2[0][xyz]->GetBinContent(b+1); // <X1> vs. Q2
+   dX1Err = singleEventAverageCorrelationsVsQ2[0][xyz]->GetBinError(b+1);
+   dX2 = singleEventAverageCorrelationsVsQ2[1][xyz]->GetBinContent(b+1); // <X2> vs. Q2
+   dX2Err = singleEventAverageCorrelationsVsQ2[1][xyz]->GetBinError(b+1);
+   dX1X2 = singleEventAverageCorrelationsVsQ2[2][xyz]->GetBinContent(b+1); // <X1X2> vs. Q2
+   dX1X2Err = singleEventAverageCorrelationsVsQ2[2][xyz]->GetBinError(b+1);
+   if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX1X2)>1.e-14) // basically, do calculations only if all terms in the 2p cumulant definition are non-zero
+   {
+    // 2p cumulant:
+    dC2 = dX1X2 - dX1*dX2;
+    dC2Err = 0.; // TBI propagate an error one day
+    // fill 2p:
+    dBinCenter = fBackgroundTEST[0][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+    fBackgroundTEST[0][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
+    fBackgroundTEST[0][0][1][xyz]->Fill(dBinCenter,dX2); // <X2>
+    fBackgroundTEST[0][0][2][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
+    fBackgroundCumulantsTEST[0][0][0][xyz]->Fill(dBinCenter,dC2); // C2 = <X1X2> - <X1><X2>
+    //cout<<Form("bc: %.2f, xyz: %d, dX1: %.16f, dX2: %.16f, dX1dX2: %.16f, dC2: %.16f",dBinCenter,xyz,dX1,dX2,dX1X2,dC2)<<endl;
+   }
+  } // for(Int_t xyz=0;xyz<3;xyz++)
+ } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+
+ // e) Delete local TProfile's to hold single-event averages:
+ for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   delete singleEventAverageCorrelationsVsQ2[ct][xyz];
+  }
+ }
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3)
+{
+ // Calculate 3p TEST background.
+
+ // a) Insanity checks;
+ // b) Book local TProfile's to hold 1x1x1 event averages vs. Q3;
+ // c) Calculate averages all mixed-event averages vs. Q3;
+ // d) Build all-event correlations and cumulants from single-event averages.
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3)";
+ if(!ca1){Fatal(sMethodName.Data(),"!ca1");}
+ if(!ca2){Fatal(sMethodName.Data(),"!ca2");}
+ if(!ca3){Fatal(sMethodName.Data(),"!ca3");}
+ if(!em1){Fatal(sMethodName.Data(),"!em1");}
+ if(!em2){Fatal(sMethodName.Data(),"!em2");}
+ if(!em3){Fatal(sMethodName.Data(),"!em3");}
+
+ // b) Book local TProfile's to hold 1x1x1 event averages vs. Q3:
+ TString sXYZ[3] = {"x","y","z"};
+ const Int_t n3pCumulantTerms = 7;
+ TString s3pCumulantTerms[n3pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{3}#GT","#LTX_{1}X_{2}#GT","#LTX_{1}X_{3}#GT","#LTX_{2}X_{3}#GT","#LTX_{1}X_{2}X_{3}#GT"};
+ TProfile *singleEventAverageCorrelationsVsQ3[n3pCumulantTerms][3] = {{NULL}}; // [x,y,z components]
+ for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   singleEventAverageCorrelationsVsQ3[ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ3[%d][%d]",ct,xyz),"single-event averages",100,0.,10.);
+   singleEventAverageCorrelationsVsQ3[ct][xyz]->GetXaxis()->SetTitle("Q_{3}");
+   singleEventAverageCorrelationsVsQ3[ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s3pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+  } // for(Int_t xyz=0;xyz<3;xyz++)
+ } // for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+
+ // c) Calculate averages <X1> (1st event), <X2> (2nd event) and <X1X2> (mixed-event), vs. Q2.
+ Int_t nTracks1 = ca1->GetEntries();
+ Int_t nTracks2 = ca2->GetEntries();
+ Int_t nTracks3 = ca3->GetEntries();
+ for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+ {
+  AliAODTrack *atrack1 = dynamic_cast<AliAODTrack*>(ca1->UncheckedAt(iTrack1)); // TBI cross-check UncheckedAt
+  // TBI Temporary track insanity checks:
+  if(!atrack1){Fatal(sMethodName.Data(),"!atrack1");} // TBI keep this for some time, eventually just continue
+  if(atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(atrack1->TestFilterBit(128) && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->TestFiletrBit(128) && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(atrack1)){continue;} // TBI re-think
+  // Corresponding AOD global track:
+  Int_t id1 = atrack1->GetID();
+  AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? ca1->UncheckedAt(em1->GetValue(id1)) : ca1->UncheckedAt(em1->GetValue(-(id1+1))));
+  if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
+  // Common track selection criteria for all "normal" global tracks:
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
+
+  // Start loop over tracks in the 2nd event:
+  for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+  {
+   AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(ca2->UncheckedAt(iTrack2));
+   // TBI Temporary track insanity checks:
+   if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
+   if(atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(atrack2->TestFilterBit(128) && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->TestFiletrBit(128) && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(atrack2)){continue;} // TBI re-think
+   // Corresponding AOD global track:
+   Int_t id2 = atrack2->GetID();
+   AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? ca2->UncheckedAt(em2->GetValue(id2)) : ca2->UncheckedAt(em2->GetValue(-(id2+1))));
+   if(!gtrack2){Fatal(sMethodName.Data(),"!gtrack2");} // TBI keep this for some time, eventually just continue
+   // Common track selection criteria for all "normal" global tracks:
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
+
+   // Start loop over tracks in the 3rd event:
+   for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
+   {
+    AliAODTrack *atrack3 = dynamic_cast<AliAODTrack*>(ca3->UncheckedAt(iTrack3));
+    // TBI Temporary track insanity checks:
+    if(!atrack3){Fatal(sMethodName.Data(),"!atrack3");} // TBI keep this for some time, eventually just continue
+    if(atrack3->GetID()>=0 && atrack3->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack3->GetID()>=0 && atrack3->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+    if(atrack3->TestFilterBit(128) && atrack3->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack3->TestFiletrBit(128) && atrack3->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+    if(!PassesCommonTrackCuts(atrack3)){continue;} // TBI re-think
+    // Corresponding AOD global track:
+    Int_t id3 = atrack3->GetID();
+    AliAODTrack *gtrack3 = dynamic_cast<AliAODTrack*>(id3>=0 ? ca3->UncheckedAt(em3->GetValue(id3)) : ca3->UncheckedAt(em3->GetValue(-(id3+1))));
+    if(!gtrack3){Fatal(sMethodName.Data(),"!gtrack3");} // TBI keep this for some time, eventually just continue
+    // Common track selection criteria for all "normal" global tracks:
+    if(!PassesGlobalTrackCuts(gtrack3)){continue;}
+
+    // Okay... So we have three tracks from three different events ready. Let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and calculate the background:
+    AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    AliAODTrack *agtrack3 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    if(fFillControlHistogramsWithGlobalTrackInfo)
+    {
+     agtrack1 = gtrack1;
+     agtrack2 = gtrack2;
+     agtrack3 = gtrack3;
+    }
+    else
+    {
+     agtrack1 = atrack1;
+     agtrack2 = atrack2;
+     agtrack3 = atrack3;
+    } // if(fFillControlHistogramsWithGlobalTrackInfo)
+    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
+    if(!agtrack3){Fatal(sMethodName.Data(),"!agtrack3");}
+
+    // Test 0: "Same charge pions, 2p correlations and cumulants projected onto Q2, for x, y and z components separately"
+    if(fFillBackgroundTEST[0])
+    {
+     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+     {
+      // Q3:
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3);
+
+      // x-components:
+      singleEventAverageCorrelationsVsQ3[0][0]->Fill(dQ3,agtrack1->Px()); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[1][0]->Fill(dQ3,agtrack2->Px()); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[2][0]->Fill(dQ3,agtrack3->Px()); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[3][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[4][0]->Fill(dQ3,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[5][0]->Fill(dQ3,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[6][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
+
+      // y-components:
+      singleEventAverageCorrelationsVsQ3[0][1]->Fill(dQ3,agtrack1->Py()); // <X1>_y
+      singleEventAverageCorrelationsVsQ3[1][1]->Fill(dQ3,agtrack2->Py()); // <X2>_y
+      singleEventAverageCorrelationsVsQ3[2][1]->Fill(dQ3,agtrack3->Py()); // <X3>_y
+      singleEventAverageCorrelationsVsQ3[3][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+      singleEventAverageCorrelationsVsQ3[4][1]->Fill(dQ3,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
+      singleEventAverageCorrelationsVsQ3[5][1]->Fill(dQ3,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
+      singleEventAverageCorrelationsVsQ3[6][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
+
+      // z-components:
+      singleEventAverageCorrelationsVsQ3[0][2]->Fill(dQ3,agtrack1->Pz()); // <X1>_z
+      singleEventAverageCorrelationsVsQ3[1][2]->Fill(dQ3,agtrack2->Pz()); // <X2>_z
+      singleEventAverageCorrelationsVsQ3[2][2]->Fill(dQ3,agtrack3->Pz()); // <X3>_z
+      singleEventAverageCorrelationsVsQ3[3][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+      singleEventAverageCorrelationsVsQ3[4][2]->Fill(dQ3,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
+      singleEventAverageCorrelationsVsQ3[5][2]->Fill(dQ3,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
+      singleEventAverageCorrelationsVsQ3[6][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
+
+     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    } // if(fFillBackgroundTEST[0])
+
+   } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
+  } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+ } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+
+ // d) Build all-event correlations and cumulants from single-event averages:
+ Int_t nBins = singleEventAverageCorrelationsVsQ3[0][0]->GetXaxis()->GetNbins();
+ for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   Double_t dX1 = 0., dX1Err = 0.; // <X1>
+   Double_t dX2 = 0., dX2Err = 0.; // <X2>
+   Double_t dX3 = 0., dX3Err = 0.; // <X3>
+   Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
+   Double_t dX1X3 = 0., dX1X3Err = 0.; // <X1X3>
+   Double_t dX2X3 = 0., dX2X3Err = 0.; // <X2X3>
+   Double_t dX1X2X3 = 0., dX1X2X3Err = 0.; // <X1X2X3>
+   Double_t dC12 = 0., dC12Err = 0.; // C12 = <X1X2> - <X1><X2> vs. Q3
+   Double_t dC13 = 0., dC13Err = 0.; // C13 = <X1X3> - <X1><X3> vs. Q3
+   Double_t dC23 = 0., dC23Err = 0.; // C23 = <X2X3> - <X2><X3> vs. Q3
+   Double_t dC3 = 0., dC3Err = 0.; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3>
+   Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same
+
+   // 3p correlation terms (note that now binning is vs. Q3 TBI yes, fine for the time being, but this is a landmine clearly...):
+   dX1 = singleEventAverageCorrelationsVsQ3[0][xyz]->GetBinContent(b+1); // <X1> vs. Q3
+   dX1Err = singleEventAverageCorrelationsVsQ3[0][xyz]->GetBinError(b+1);
+   dX2 = singleEventAverageCorrelationsVsQ3[1][xyz]->GetBinContent(b+1); // <X2> vs. Q3
+   dX2Err = singleEventAverageCorrelationsVsQ3[1][xyz]->GetBinError(b+1);
+   dX3 = singleEventAverageCorrelationsVsQ3[2][xyz]->GetBinContent(b+1); // <X3> vs. Q3
+   dX3Err = singleEventAverageCorrelationsVsQ3[2][xyz]->GetBinError(b+1);
+   dX1X2 = singleEventAverageCorrelationsVsQ3[3][xyz]->GetBinContent(b+1); // <X1X2> vs. Q3
+   dX1X2Err = singleEventAverageCorrelationsVsQ3[3][xyz]->GetBinError(b+1);
+   dX1X3 = singleEventAverageCorrelationsVsQ3[4][xyz]->GetBinContent(b+1); // <X1X3> vs. Q3
+   dX1X3Err = singleEventAverageCorrelationsVsQ3[4][xyz]->GetBinError(b+1);
+   dX2X3 = singleEventAverageCorrelationsVsQ3[5][xyz]->GetBinContent(b+1); // <X2X3> vs. Q3
+   dX2X3Err = singleEventAverageCorrelationsVsQ3[5][xyz]->GetBinError(b+1);
+   dX1X2X3 = singleEventAverageCorrelationsVsQ3[6][xyz]->GetBinContent(b+1); // <X1X2X3> vs. Q3
+   dX1X2X3Err = singleEventAverageCorrelationsVsQ3[6][xyz]->GetBinError(b+1);
+   if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 &&
+      TMath::Abs(dX1X2)>1.e-14 && TMath::Abs(dX1X3)>1.e-14 && TMath::Abs(dX2X3)>1.e-14 &&
+      TMath::Abs(dX1X2X3)>1.e-14) // basically, do calculations only if all terms in the 3p cumulant definition are non-zero
+   {
+    // 2p cumulants vs. Q3:
+    dC12 = dX1X2 - dX1*dX2; // C12 = <X1X2> - <X1><X2> vs. Q3
+    dC12Err = 0.; // TBI propagate an error one day
+    dC13 = dX1X3 - dX1*dX3; // C13 = <X1X3> - <X1><X3> vs. Q3
+    dC13Err = 0.; // TBI propagate an error one day
+    dC23 = dX2X3 - dX2*dX3; // C23 = <X2X3> - <X2><X3> vs. Q3
+    dC23Err = 0.; // TBI propagate an error one day
+    // 3p cumulant vs. Q3:
+    dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
+    dC3Err = 0.; // TBI propagate an error one day
+    // fill 3p:
+    dBinCenter = fBackgroundTEST[0][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+    fBackgroundTEST[0][1][0][xyz]->Fill(dBinCenter,dX1); // <X1> vs. Q3
+    fBackgroundTEST[0][1][1][xyz]->Fill(dBinCenter,dX2); // <X2> vs. Q3
+    fBackgroundTEST[0][1][2][xyz]->Fill(dBinCenter,dX3); // <X3> vs. Q3
+    fBackgroundTEST[0][1][3][xyz]->Fill(dBinCenter,dX1X2); // <X1X2> vs. Q3
+    fBackgroundTEST[0][1][4][xyz]->Fill(dBinCenter,dX1X3); // <X1X3> vs. Q3
+    fBackgroundTEST[0][1][5][xyz]->Fill(dBinCenter,dX2X3); // <X2X3> vs. Q3
+    fBackgroundTEST[0][1][6][xyz]->Fill(dBinCenter,dX1X2X3); // <X1X2X3> vs. Q3
+    fBackgroundCumulantsTEST[0][1][0][xyz]->Fill(dBinCenter,dC12); // <X1X2> - <X1><X2> vs. Q3
+    fBackgroundCumulantsTEST[0][1][1][xyz]->Fill(dBinCenter,dC13); // <X1X3> - <X1><X3> vs. Q3
+    fBackgroundCumulantsTEST[0][1][2][xyz]->Fill(dBinCenter,dC23); // <X2X3> - <X2><X3> vs. Q3
+    fBackgroundCumulantsTEST[0][1][3][xyz]->Fill(dBinCenter,dC3); // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
+   } // if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 && ...
+  } // for(Int_t xyz=0;xyz<3;xyz++)
+ } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+
+ // e) Delete local TProfile's to hold single-event averages:
+ for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ {
+  for(Int_t xyz=0;xyz<3;xyz++)
+  {
+   delete singleEventAverageCorrelationsVsQ3[ct][xyz];
+  }
+ }
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3)
 
 //=======================================================================================================================
 
@@ -5592,6 +6887,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
  fNormalizeCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(2);
  fFill3pCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(3);
  fFill4pCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(4);
+ fNormalizationOption = (Int_t) fCorrelationFunctionsFlagsPro->GetBinContent(5);
+ fNormalizationInterval[0] = (Float_t) fCorrelationFunctionsFlagsPro->GetBinContent(6);
+ fNormalizationInterval[1] = (Float_t) fCorrelationFunctionsFlagsPro->GetBinContent(7);
+ fnMergedBins = (Int_t) fCorrelationFunctionsFlagsPro->GetBinContent(8);
 
  if(!fFillCorrelationFunctions){return;} // TBI is this safe enough
 

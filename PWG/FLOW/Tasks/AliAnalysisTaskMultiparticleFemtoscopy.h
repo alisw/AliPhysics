@@ -49,6 +49,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void InitializeArraysForBuffers();
   virtual void InitializeArraysForQA();
   virtual void InitializeArraysForGlobalTrackCuts();
+  virtual void InitializeArraysForCorrelationFunctionsTEST();
+  virtual void InitializeArraysForBackgroundTEST();
 
   // 1.) Methods called in UserCreateOutputObjects():
   //  2a) Directly:
@@ -62,6 +64,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void BookEverythingForBuffers();
   virtual void BookEverythingForQA();
   virtual void BookEverythingForGlobalTrackCuts();
+  virtual void BookEverythingForCorrelationFunctionsTEST();
+  virtual void BookEverythingForBackgroundTEST();
   //  2b) Indirectly:
   Int_t InsanityChecksForGlobalTrackCuts(); // insanity checks for global track cuts
 
@@ -75,6 +79,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void OnlineMonitoring();
   //  2b) Indirectly:
   virtual void EstimateBackground(AliVEvent *ave);
+  virtual void EstimateBackgroundTEST(AliVEvent *ave);
   virtual void FillControlHistogramsEvent(AliVEvent *ave);
   virtual void FillControlHistogramsParticle(AliVEvent *ave);
   virtual void FillControlHistogramsNonIdentifiedParticles(AliAODTrack *atrack);
@@ -94,8 +99,11 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t PassesCommonTrackCuts(AliAODTrack *atrack); // common cuts for analysis specific tracks (e.g. TPC-only) TBI make it uniform with MC
   Bool_t PassesCommonTrackCuts(AliAODMCParticle *amcparticle); // common cuts for analysis specific tracks TBI see above two lines
   virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAOD in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAOD
+  virtual void GlobalTracksAODTEST(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAODTEST in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAODTEST
   virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t indexX, Int_t indexY); // fill TExMap *fGlobalTracksAOD1[10][5];
   Double_t RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2);
+  Double_t RelativeMomentaComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component);
+  Double_t PairVectorComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component);
   Double_t RelativeMomenta(AliAODMCParticle *amcparticle1, AliAODMCParticle *amcparticle2);
   Double_t Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3);
   Double_t Q4(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3, AliAODTrack *agtrack4);
@@ -108,10 +116,13 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
    virtual void Calculate3pCorrelationFunctions(AliAODEvent *aAOD);
    virtual void Calculate4pCorrelationFunctions(AliAODEvent *aAOD);
   virtual void CalculateCorrelationFunctions(AliMCEvent *aMC);
+  virtual void CalculateCorrelationFunctionsTEST(AliAODEvent *aAOD);
   virtual void Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2); // TBI soon will become obsolete
   virtual void Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2);
+  virtual void Calculate2pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2);
   virtual void Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3); // TBI soon will become obsolete
   virtual void Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3);
+  virtual void Calculate3pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3);
   virtual void Calculate4pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TClonesArray *ca4);
   virtual void Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC); // TBI unify with the previous function
   // 3.) Methods called in Terminate(Option_t *):
@@ -189,6 +200,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile* GetEBEObjectsFlagsPro() const {return this->fEBEObjectsFlagsPro;}; 
   //void SetFillEBEHistograms(Bool_t feh) {this->fFillEBEHistograms = feh;}; // TBI rethink
   //Bool_t GetFillEBEHistograms() const {return this->fFillEBEHistograms;};
+
   // 3.) Correlation functions:
   void SetCorrelationFunctionsList(TList* const cfl) {this->fCorrelationFunctionsList = cfl;};
   TList* GetCorrelationFunctionsList() const {return this->fCorrelationFunctionsList;}
@@ -208,6 +220,17 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t GetFill3pCorrelationFunctions() const {return this->fFill3pCorrelationFunctions;};
   void SetFill4pCorrelationFunctions(Bool_t f4pcf) {this->fFill4pCorrelationFunctions = f4pcf;};
   Bool_t GetFill4pCorrelationFunctions() const {return this->fFill4pCorrelationFunctions;};
+  void SetNormalizationOption(Int_t fno) {this->fNormalizationOption = fno;};
+  Int_t GetNormalizationOption() const {return this->fNormalizationOption;};
+  void SetNormalizationInterval(Float_t min, Float_t max)
+  {
+   this->fNormalizeCorrelationFunctions = kTRUE;
+   this->fNormalizationOption = 1;
+   this->fNormalizationInterval[0] = min;
+   this->fNormalizationInterval[1] = max;
+  };
+  void SetnMergedBins(Int_t fnmb) {this->fnMergedBins = fnmb;};
+  Int_t GetnMergedBins() const {return this->fnMergedBins;};
 
   // 4.) Background:
   void SetBackgroundList(TList* const bl) {this->fBackgroundList = bl;};
@@ -327,6 +350,20 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
    this->fPhiRange[0] = phiMin;
    this->fPhiRange[1] = phiMax;
   };
+
+  // *.) Testing new ways to calculate correlation functions:
+  void SetCorrelationFunctionsTESTList(TList* const cfTl) {this->fCorrelationFunctionsTESTList = cfTl;};
+  TList* GetCorrelationFunctionsTESTList() const {return this->fCorrelationFunctionsTESTList;}
+  void SetCorrelationFunctionsTESTFlagsPro(TProfile* const cfTfp) {this->fCorrelationFunctionsTESTFlagsPro = cfTfp;};
+  TProfile* GetCorrelationFunctionsTESTFlagsPro() const {return this->fCorrelationFunctionsTESTFlagsPro;};
+  void SetFillCorrelationFunctionsTEST(Int_t const testNO, Bool_t bDoTest) {this->fFillCorrelationFunctionsTEST[testNO] = bDoTest;};
+
+  // *.) Testing new ways to calculate background:
+  void SetBackgroundTESTList(TList* const bTl) {this->fBackgroundTESTList = bTl;};
+  TList* GetBackgroundTESTList() const {return this->fBackgroundTESTList;}
+  void SetBackgroundTESTFlagsPro(TProfile* const bTfp) {this->fBackgroundTESTFlagsPro = bTfp;};
+  TProfile* GetBackgroundTESTFlagsPro() const {return this->fBackgroundTESTFlagsPro;};
+  void SetFillBackgroundTEST(Int_t const testNO, Bool_t bDoTest) {this->fFillBackgroundTEST[testNO] = bDoTest;};
 
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
@@ -488,6 +525,9 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TH1F *f3pCorrelationFunctions[10][10][10];     //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 5=e,6=mu,7=pi,8=K,9=p] x [same] x [same].
   Bool_t fFill4pCorrelationFunctions;            // fill 4-p correlation functions
   TH1F *f4pCorrelationFunctions[10][10][10][10]; //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 5=e,6=mu,7=pi,8=K,9=p] x [same] x [same] x [same].
+  Int_t fNormalizationOption;                    // set here how to normalize the correlation function: 0 = "just scale", 1 = "use concrete interval", 2 = ...
+  Float_t fNormalizationInterval[2];             // concrete example: 0.15 < q < 0.175 GeV/c. Then, fNormalizationInterval[0] is the low edge, etc. See the relevant setter SetNormalizationInterval
+  Int_t fnMergedBins;                            // before normalization, both signal and background will be rebinned with this value
 
   // 4.) Background:
   TList *fBackgroundList;              // list to hold all background objects primary particle
@@ -545,8 +585,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t fCutOnNumberOfCascades;            // cut on the total number of cascades in AOD, i.e. on aAOD->GetNumberOfCascades()
   Int_t fMinNumberOfCascades;               // default values never in effect; if aAOD->GetNumberOfCascades() < fMinNumberOfCascades, event is rejected
   Int_t fMaxNumberOfCascades;               // default values never in effect; if aAOD->GetNumberOfCascades() > fMaxNumberOfCascades, event is rejected
-  //  b) Cuts on AliAODVertex:
 
+  //  b) Cuts on AliAODVertex:
   Bool_t fCutOnVertexX;       // cut on the x position of vertex, i.e. on avtx->GetX()
   Float_t fMinVertexX;        // default values never in effect; if avtx->GetX() < fMinVertexX, event is rejected
   Float_t fMaxVertexX;        // default values never in effect; if avtx->GetX() > fMaxVertexX, event is rejected
@@ -568,6 +608,24 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Float_t fEtaRange[2];               // etaMin = etaRange[0], etaMax = etaRange[1]
   Float_t fPhiRange[2];               // phiMin = phiRange[0], phiMax = phiRange[1]
 
+  // *.) Testing new ways to calculate correlation functions and cumulants:
+  TList *fCorrelationFunctionsTESTList;              // list to hold all TEST correlation functions for primary particle
+  TProfile *fCorrelationFunctionsTESTFlagsPro;       // profile to hold all flags for TEST correlation functions
+  TList *fCorrelationFunctionsTESTSublist[10];       //! lists to hold all TEST correlation functions, they are enumerated in .cxx file
+  Bool_t fFillCorrelationFunctionsTEST[10];          // fill or not particular TEST correlation functions, they are enumerated in .cxx file (by default all are set to FALSE)
+  TProfile *fCorrelationFunctionsTEST[10][2][7][10]; // [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+  TProfile *fSignalCumulantsTEST[10][2][4][10];      // [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+
+  // *.) Testing new ways to calculate background functions:
+  TList *fBackgroundTESTList;                       // list to hold all TEST background for primary particle
+  TProfile *fBackgroundTESTFlagsPro;                // profile to hold all flags for TEST background
+  TList *fBackgroundTESTSublist[10];                //! lists to hold all TEST background, they are enumerated in .cxx file
+  Bool_t fFillBackgroundTEST[10];                   // fill or not particular TEST background, they are enumerated in .cxx file (by default all are set to FALSE)
+  TProfile *fBackgroundTEST[10][2][7][10];          // [testNo][0=vs Q2, 1=vs Q3][correlation][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+  TProfile *fBackgroundCumulantsTEST[10][2][4][10]; // [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+  TClonesArray *fMixedEventsTEST[3];                //! tracks for mixed events, using just 'shifting' for simplicity TBI make it it more sophisticated later
+  TExMap *fGlobalTracksAODTEST[3];                  //! global tracks in AOD
+
   // *.) Online monitoring:
   Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
   Bool_t fUpdateOutputFile;        // update the output file after certain number of analysed events
@@ -583,7 +641,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  // do something only for the specified event
   UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,11);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,12);
 
 };
 
