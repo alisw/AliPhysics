@@ -490,3 +490,4 @@ double AliFemtoCoulomb::CoulombCorrect(const double& mass,
                eta = 2.0 * fZ1Z2 * kReducedMass * fine_structure_const / qInv;
   return CoulombCorrect(eta, fRadius);
 }
+// this comment serves no purpose
