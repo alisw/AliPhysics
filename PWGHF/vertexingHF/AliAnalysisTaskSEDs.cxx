@@ -70,11 +70,16 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fUseSelectionBit(kFALSE),
   fFillSparse(kTRUE),
   fFillSparseDplus(kFALSE),
+  fDoRotBkg(kFALSE),
+  fDoBkgPhiSB(kFALSE),
   fAODProtection(1),
   fNPtBins(0),
   fListCuts(0),
   fMassRange(0.8),
   fMassBinSize(0.002),
+  fminMass(1.6),
+  fmaxMass(2.5),
+  fMaxDeltaPhiMass4Rot(0.010),
   fCounter(0),
   fAnalysisCuts(0),
   fnSparse(0),
@@ -111,6 +116,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   for(Int_t i=0;i<kMaxPtBins;i++){
     fMassHistKK[i]=0;
     fMassHistKpi[i]=0;
+    fMassRotBkgHistPhi[i]=0;
+    fMassLSBkgHistPhi[i]=0;
+    fMassRSBkgHistPhi[i]=0;
   }
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fPtLimits[i]=0;
@@ -139,11 +147,16 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fUseSelectionBit(kFALSE),
   fFillSparse(kTRUE),
   fFillSparseDplus(kFALSE),
+  fDoRotBkg(kTRUE),
+  fDoBkgPhiSB(kTRUE),
   fAODProtection(1),
   fNPtBins(0),
   fListCuts(0),
   fMassRange(0.8),
   fMassBinSize(0.002),
+  fminMass(1.6),
+  fmaxMass(2.5),
+  fMaxDeltaPhiMass4Rot(0.010),
   fCounter(0),
   fAnalysisCuts(analysiscuts),
   fnSparse(0),
@@ -181,6 +194,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   for(Int_t i=0;i<kMaxPtBins;i++){
     fMassHistKK[i]=0;
     fMassHistKpi[i]=0;
+    fMassRotBkgHistPhi[i]=0;
+    fMassLSBkgHistPhi[i]=0;
+    fMassRSBkgHistPhi[i]=0;
   }
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fPtLimits[i]=0;
@@ -260,6 +276,9 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     for(Int_t i=0;i<fNPtBins;i++){
       delete fMassHistKK[i];
       delete fMassHistKpi[i];
+      delete fMassRotBkgHistPhi[i];
+      delete fMassLSBkgHistPhi[i];
+      delete fMassRSBkgHistPhi[i];
     }
     delete fPtVsMass;
     delete fPtVsMassPhi;
@@ -361,6 +380,8 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   Double_t minMass=massDs-0.5*nInvMassBins*fMassBinSize;
   //  Double_t maxMass=massDs+1.0*nInvMassBins*fMassBinSize;
   Double_t maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
+  fminMass = minMass;
+  fmaxMass = maxMass;
     
   TString hisname;
   TString htype;
@@ -478,6 +499,22 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fMassHistKpi[i]=new TH1F(hisname.Data(),hisname.Data(),200,0.7,1.1);
     fMassHistKpi[i]->Sumw2();
     fOutput->Add(fMassHistKpi[i]);
+    if(fDoRotBkg) {
+      hisname.Form("hMassAllPt%dphi_RotBkg",i);
+      fMassRotBkgHistPhi[i]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
+      fMassRotBkgHistPhi[i]->Sumw2();
+      fOutput->Add(fMassRotBkgHistPhi[i]);
+    }
+    if(fDoBkgPhiSB) {
+      hisname.Form("fMassLSBkgHistPhiPt%d",i);
+      fMassLSBkgHistPhi[i]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
+      fMassLSBkgHistPhi[i]->Sumw2();
+      fOutput->Add(fMassLSBkgHistPhi[i]);
+      hisname.Form("fMassRSBkgHistPhiPt%d",i);
+      fMassRSBkgHistPhi[i]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
+      fMassRSBkgHistPhi[i]->Sumw2();
+      fOutput->Add(fMassRSBkgHistPhi[i]);
+    }
   }
     
   fOutput->Add(fPtVsMass);
@@ -534,7 +571,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 	fnSparseMC[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
 	fnSparseMC[i]->GetAxis(1)->SetTitle("y");
 	fOutput->Add(fnSparseMC[i]);
-
+                
 	//Dplus
 	if(fFillSparseDplus) {
 	  fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseAccDplus_%s",label[i].Data()),Form("MC nSparse D^{+} (Acc.Step)- %s",label[i].Data()),
@@ -551,7 +588,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 	  fnSparseMC[i]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
 	}
 	fOutput->Add(fnSparseMC[i]);
-
+                
 	//Dplus
 	if(fFillSparseDplus) {
 	  fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseRecoDplus_%s",label[i-2].Data()),Form("MC nSparse D^{+} (Reco Step)- %s",label[i-2].Data()),
@@ -876,8 +913,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	}
                 
 	Double_t candType = 0.5; //for bkg
-                
+	Double_t massPhi=TDatabasePDG::Instance()->GetParticle(333)->Mass();
+
 	if(isKKpi){
+	  if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,1,iPtBin);
+	  if(fDoBkgPhiSB && 0.010<TMath::Abs(massKK-massPhi)<0.030)GenerateBkgFromPhiSB(d,1,iPtBin,massKK);
+                    
 	  invMass=d->InvMassDsKKpi();
 	  fMassHist[index]->Fill(invMass,weightKKpi);
 	  fPtVsMass->Fill(invMass,ptCand,weightKKpi);
@@ -894,7 +935,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    if(isPhiKKpi) {
 	      fMassHistPhi[indexMCKKpi]->Fill(invMass,weightKKpi);
 	      if(fFillSparse) {
-		if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) {
+		if(indexMCKKpi==GetSignalHistoIndex(iPtBin) || labDplus >= 0) {
 		  AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
 		  Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
 		  if(orig==4) {
@@ -910,6 +951,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	  }
 	}
 	if(ispiKK){
+	  if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,2,iPtBin);
+	  if(fDoBkgPhiSB && 0.010<TMath::Abs(massKK-massPhi)<0.030)GenerateBkgFromPhiSB(d,2,iPtBin,massKK);
+
 	  invMass=d->InvMassDspiKK();
 	  fMassHist[index]->Fill(invMass,weightpiKK);
 	  fPtVsMass->Fill(invMass,ptCand,weightpiKK);
@@ -926,7 +970,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    if(isPhipiKK) {
 	      fMassHistPhi[indexMCpiKK]->Fill(invMass,weightpiKK);
 	      if(fFillSparse) {
-		if(indexMCpiKK==GetSignalHistoIndex(iPtBin)) {
+		if(indexMCpiKK==GetSignalHistoIndex(iPtBin) || labDplus >= 0) {
 		  AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
 		  Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
 		  if(orig==4) {
@@ -992,12 +1036,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    }
 	    else {
 	      if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) {
-		if(candType==1.5) fnSparseMC[2]->Fill(var4nSparse);
-		if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
+		if(candType==1.5) {Printf("CANDITATA Ds, prompt!");fnSparseMC[2]->Fill(var4nSparse);}
+		if(candType==2.5) {Printf("CANDITATA Ds, fd!");fnSparseMC[3]->Fill(var4nSparse);}
 	      }
 	      else if(labDplus>=0 && pdgCode0==321) {
-		if(candType==1.5) fnSparseMCDplus[2]->Fill(var4nSparse);
-		if(candType==2.5) fnSparseMCDplus[3]->Fill(var4nSparse);
+		if(candType==1.5) {Printf("CANDITATA D+, prompt origin!");fnSparseMCDplus[2]->Fill(var4nSparse);}
+		if(candType==2.5) {Printf("CANDITATA D+, fd origin!");fnSparseMCDplus[3]->Fill(var4nSparse);}
 	      }
 	    }
 	  }
@@ -1035,8 +1079,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 		if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
 	      }
 	      else if(labDplus>=0 && pdgCode0==211) {
-		if(candType==1.5) fnSparseMCDplus[2]->Fill(var4nSparse);
-		if(candType==2.5) fnSparseMCDplus[3]->Fill(var4nSparse);
+		if(candType==1.5) {Printf("CANDITATA D+, prompt origin!");fnSparseMCDplus[2]->Fill(var4nSparse);}
+		if(candType==2.5) {Printf("CANDITATA D+, fd origin!");fnSparseMCDplus[3]->Fill(var4nSparse);}
 	      }
 	    }
 	  }
@@ -1260,7 +1304,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 	  }
 	}
       }
-
+            
       if(fFillSparseDplus && TMath::Abs(mcPart->GetPdgCode()) == 411) {
 	Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,kTRUE);//Prompt = 4, FeedDown = 5
                 
@@ -1310,6 +1354,75 @@ Bool_t AliAnalysisTaskSEDs::CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int
   }
   return kTRUE;
 }
+
+//_________________________________________________________________
+
+void AliAnalysisTaskSEDs::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin) {
+    
+  const Int_t nprongs = 3;
+  Double_t PxProng[nprongs], PyProng[nprongs], PtProng[nprongs], PzProng[nprongs], P2Prong[nprongs], mProng[nprongs];
+  Double_t Px, Py, Pz, P2;
+  UInt_t pdg[3]={321,321,211};
+  int idPion = 2;
+  if(dec==2) {
+    pdg[0]=211;
+    pdg[2]=321;
+    idPion = 0;
+  }
+    
+  for (Int_t ip=0; ip<nprongs; ip++) {
+    PxProng[ip] = d->PxProng(ip);
+    PyProng[ip] = d->PxProng(ip);
+    PtProng[ip] = d->PtProng(ip);
+    PzProng[ip] = d->PzProng(ip);
+    P2Prong[ip] = d->P2Prong(ip);
+    mProng[ip]  = TDatabasePDG::Instance()->GetParticle(pdg[ip])->Mass();
+  }
+    
+  for(Int_t i=0; i<9; i++) { //9 rotations implemented for the pion track around Pi
+    Px = 0.;
+    Py = 0.;
+    Pz = 0.;
+    Double_t theta = 0.;
+    theta = TMath::ATan(PyProng[idPion]/PxProng[idPion]);
+    if (PxProng[idPion]<0.) theta += TMath::Pi();
+    theta += TMath::Pi()*(5/6 + 1/27*i);
+        
+    PxProng[idPion] = PtProng[idPion]*TMath::Cos(theta);
+    PyProng[idPion] = PtProng[idPion]*TMath::Sin(theta);
+    P2Prong[idPion] = PtProng[idPion]*PtProng[idPion] + PzProng[idPion]*PzProng[idPion];
+        
+    for (Int_t j=0; j<nprongs; j++) {
+      Px += PxProng[j];
+      Py += PyProng[j];
+      Pz += PzProng[j];
+    }
+    P2 = Px*Px + Py*Py + Pz*Pz;
+        
+    Double_t energysum = 0.;
+    for(Int_t j=0; j<nprongs; j++) {
+      energysum += TMath::Sqrt(mProng[j]*mProng[j]+P2Prong[j]);
+    }
+    Double_t mass = TMath::Sqrt(energysum*energysum-P2);
+    if(fminMass<=mass<fmaxMass) fMassRotBkgHistPhi[iPtBin]->Fill(mass);
+  }
+}
+
+
+//_________________________________________________________________
+
+void AliAnalysisTaskSEDs::GenerateBkgFromPhiSB(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin, Double_t massKK) {
+    
+  Double_t massDs;
+  Double_t massPhi=TDatabasePDG::Instance()->GetParticle(333)->Mass();
+  if(dec==1) massDs = d->InvMassDsKKpi();
+  else if(dec==2) d->InvMassDspiKK();
+  if(massKK<massPhi)fMassLSBkgHistPhi[iPtBin]->Fill(massDs);
+  else fMassRSBkgHistPhi[iPtBin]->Fill(massDs);
+}
+
+
+
 
 
 

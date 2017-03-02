@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKDS_H
-#define ALIANALYSISTASKDS_H
+#ifndef ALIANALYSISTASKDSMY_H
+#define ALIANALYSISTASKDSMY_H
 
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -45,8 +45,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetUseRotBkg(Bool_t flag=kFALSE) {fDoRotBkg=flag;}
+  void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
+  void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+  void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
+  void GenerateBkgFromPhiSB(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin, Double_t massKK);
     
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
@@ -78,6 +83,9 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH1F*   fMassHistK0st[4*kMaxPtBins];    //!<! hist. of mass spectra via K0* (sig,bkg,tot)
   TH1F*   fMassHistKK[kMaxPtBins];    //!<! hist. of mass spectra of KK
   TH1F*   fMassHistKpi[kMaxPtBins];    //!<! hist. of mass spectra of Kpi
+  TH1F*   fMassRotBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from rot. of the pion
+  TH1F*   fMassLSBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from left phi sideband + pion
+  TH1F*   fMassRSBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from right phi sideband + pion
   TH1F*   fCosPHist[4*kMaxPtBins];    //!<! hist. of cos pointing angle (sig,bkg,tot)
   TH1F*   fDLenHist[4*kMaxPtBins];    //!<! hist. of decay length (sig,bkg,tot)
   TH1F*   fSumd02Hist[4*kMaxPtBins];  //!<! hist. for sum d02 (Prod Cuts)
@@ -110,6 +118,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fUseSelectionBit;           /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse;                /// flag for usage of THnSparse
   Bool_t  fFillSparseDplus;           /// flag for usage of THnSparse
+  Bool_t fDoRotBkg;                   ///flag to create rotational bkg (rotating pi track)
+  Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
   Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                   /// number of Pt bins
@@ -117,6 +127,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Float_t fPtLimits[kMaxPtBins+1];    ///  limits for pt bins
   Double_t fMassRange;                /// range for mass histogram
   Double_t fMassBinSize;              /// bin size for inv. mass histo
+  Double_t fminMass;
+  Double_t fmaxMass;
+  Double_t fMaxDeltaPhiMass4Rot;     ///flag to set mass window of phi meson (when using pion rotation to create bkg)
+    
     
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
@@ -131,7 +145,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   THnSparseF *fnSparseMCDplus[4];  ///!<!THnSparse for MC for D+->kkpi
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,19);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,20);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
