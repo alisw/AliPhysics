@@ -220,3 +220,4 @@ Int_t AliEmcalCorrectionCellBadChannel::InitBadChannels()
   
   return 1;
 }
+// this comment serves no purpose
