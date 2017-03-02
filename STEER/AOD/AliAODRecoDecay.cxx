@@ -759,15 +759,15 @@ void AliAODRecoDecay::DeleteRecoD(){
  if(fPx) {delete [] fPx; fPx=NULL;}
  if(fPy) {delete [] fPy; fPy=NULL;}
  if(fPz) {delete [] fPz; fPz=NULL;}
- if(fd0) { delete [] fd0; fd0=NULL; }
- if(fDCA) { delete [] fDCA; fDCA=NULL; }
- delete [] fPID;fPID=NULL;
+ if(fd0) {delete [] fd0; fd0=NULL;}
+ if(fDCA) {delete [] fDCA; fDCA=NULL;}
+ if(fPID) {delete [] fPID; fPID=NULL;}
 
+ fNProngs = 0;
  fNDCA=0;
  fNPID=0;
 
- if(fCharge) fCharge = 0;
+ fCharge = 0;
  delete fOwnSecondaryVtx; fOwnSecondaryVtx=NULL;
- return;
 }
 //--------------------------------------------------------------------------
