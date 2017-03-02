@@ -120,6 +120,7 @@ AliDielectron::AliDielectron() :
   fEventPlanePreFilter("EventPlanePreFilter"),
   fEventPlanePOIPreFilter("EventPlanePOIPreFilter"),
   fQnTPCACcuts(0x0),
+  fQnVectorNorm(""),
   fPdgMother(443),
   fPdgLeg1(11),
   fPdgLeg2(11),
@@ -192,6 +193,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fEventPlanePreFilter("EventPlanePreFilter"),
   fEventPlanePOIPreFilter("EventPlanePOIPreFilter"),
   fQnTPCACcuts(0x0),
+  fQnVectorNorm(""),
   fPdgMother(443),
   fPdgLeg1(11),
   fPdgLeg2(11),
@@ -473,6 +475,7 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if (ev1 && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0))
     EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1);
   // QnFramework est. 2016 auto-correlation removal
+  AliDielectronVarManager::SetQnVectorNormalisation(fQnVectorNorm);
   if(fACremovalIsSetted){
     AliDielectronVarManager::SetTPCEventPlaneACremoval(fQnTPCACcuts);
   }

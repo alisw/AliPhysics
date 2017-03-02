@@ -174,6 +174,7 @@ public:
   void SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SetQnTPCACcuts(AliDielectronQnEPcorrection *acCuts){ fQnTPCACcuts = acCuts; fACremovalIsSetted = kTRUE;}
+  void SetQnVectorNormalisation(TString norm) {fQnVectorNorm = norm;}
   void SaveDebugTree();
   Bool_t DoEventProcess() const { return fEventProcess; }
   void SetEventProcess(Bool_t setValue=kTRUE) { fEventProcess=setValue; }
@@ -205,6 +206,7 @@ private:
   AliAnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts
   AliAnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter
   AliDielectronQnEPcorrection *fQnTPCACcuts; // QnFramework est. 2016 ac removal
+  TString fQnVectorNorm;
 
   Int_t fPdgMother;     // pdg code of mother tracks
   Int_t fPdgLeg1;       // pdg code leg1
