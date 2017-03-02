@@ -304,9 +304,17 @@ Bool_t AliEMCALTenderSupply::RunChanged() const
 void AliEMCALTenderSupply::Init()
 {
   // Initialise EMCAL tender.
-
-  if (fDebugLevel>0) 
-    AliWarning("Init EMCAL Tender supply"); 
+  
+  if (fDebugLevel>0) {
+    AliWarning("Init EMCAL Tender supply");
+    AliWarning("======================================================================================");
+    AliWarning("--------------------------------------------------------------------------------------");
+    AliWarning("============  The EMCal Tender is no longer supported for development!  ==============");
+    AliWarning("=========  It is recommended to use the new EMCal Correction Framework!  =============");
+    AliWarning("===  See http://alidoc.cern.ch/AliPhysics/master/_r_e_a_d_m_eemc_corrections.html  ===");
+    AliWarning("--------------------------------------------------------------------------------------");
+    AliWarning("======================================================================================");
+  }
   
   if (fConfigName.Length()>0 && gROOT->LoadMacro(fConfigName) >=0) {
     AliDebug(1, Form("Loading settings from macro %s", fConfigName.Data()));
@@ -355,7 +363,7 @@ void AliEMCALTenderSupply::Init()
   }
   
   if (fDebugLevel>0){
-    AliInfo("Emcal Tender settings: ======================================"); 
+    AliInfo("Emcal Tender settings:");
     AliInfo("------------ Switches --------------------------"); 
     AliInfo(Form("BadCellRemove : %d", fBadCellRemove)); 
     AliInfo(Form("ExoticCellRemove : %d", fRejectExoticCells)); 
