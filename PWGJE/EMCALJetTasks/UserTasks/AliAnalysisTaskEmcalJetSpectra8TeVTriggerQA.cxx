@@ -57,6 +57,9 @@
 ClassImp(AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA);
 /// \endcond
 
+using std::cout;
+using std::endl;
+
 /**
  * Default constructor. Needed by ROOT I/O
  */
