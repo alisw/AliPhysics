@@ -14,6 +14,23 @@ ClassImp(AliEmcalCorrectionClusterNonLinearity);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterNonLinearity> AliEmcalCorrectionClusterNonLinearity::reg("AliEmcalCorrectionClusterNonLinearity");
 
+const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> AliEmcalCorrectionClusterNonLinearity::fgkNonlinearityFunctionMap = {
+    { "kPi0MC", AliEMCALRecoUtils::kPi0MC },
+    { "kPi0GammaGamma", AliEMCALRecoUtils::kPi0GammaGamma },
+    { "kPi0GammaConversion", AliEMCALRecoUtils::kPi0GammaConversion },
+    { "kNoCorrection", AliEMCALRecoUtils::kNoCorrection },
+    { "kBeamTest", AliEMCALRecoUtils::kBeamTest },
+    { "kBeamTestCorrected", AliEMCALRecoUtils::kBeamTestCorrected },
+    { "kPi0MCv2", AliEMCALRecoUtils::kPi0MCv2 },
+    { "kPi0MCv3", AliEMCALRecoUtils::kPi0MCv3 },
+    { "kBeamTestCorrectedv2", AliEMCALRecoUtils::kBeamTestCorrectedv2 },
+    { "kSDMv5", AliEMCALRecoUtils::kSDMv5 },
+    { "kPi0MCv5", AliEMCALRecoUtils::kPi0MCv5 },
+    { "kSDMv6", AliEMCALRecoUtils::kSDMv6 },
+    { "kPi0MCv6", AliEMCALRecoUtils::kPi0MCv6 },
+    { "kBeamTestCorrectedv3", AliEMCALRecoUtils::kBeamTestCorrectedv3 }
+};
+
 //________________________________________________________________________
 AliEmcalCorrectionClusterNonLinearity::AliEmcalCorrectionClusterNonLinearity() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterNonLinearity"),
@@ -40,15 +57,12 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   // Initialization
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   GetProperty("createHistos", fCreateHisto);
 
   std::string nonLinFunctStr = "";
   GetProperty("nonLinFunct", nonLinFunctStr);
-  UInt_t nonLinFunct = nonlinearityFunctionMap[nonLinFunctStr];
+  UInt_t nonLinFunct = fgkNonlinearityFunctionMap.at(nonLinFunctStr);
 
   // init reco utils
   if (!fRecoUtils)

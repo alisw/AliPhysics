@@ -31,24 +31,21 @@
 
 class AliEmcalCorrectionClusterizer : public AliEmcalCorrectionComponent {
  public:
-  enum InputCellType {
-    kFEEData = 0,
-    kFEEDataMCOnly,
-    kFEEDataExcludeMC,
-    kPattern,
-    kL0FastORs,
-    kL0FastORsTC,
-    kL1FastORs
+  /**
+   * @num EmbeddedCellEnergyType
+   * @brief Select which part of the embedded cell energy to use
+   */
+  enum EmbeddedCellEnergyType {
+    kNonEmbedded = 0,            //!<! Standard mode for all data where no cells are embedded
+    kEmbeddedDataMCOnly,         //!<! Use only MC energy in an embedded cells
+    kEmbeddedDataExcludeMC       //!<! Exclude MC energy in an embedded cells
   };
 
-#if !(defined(__CINT__) || defined(__MAKECINT__))
-  std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> clusterizerTypeMap = {
-    {"kClusterizerv1", AliEMCALRecParam::kClusterizerv1 },
-    {"kClusterizerNxN", AliEMCALRecParam::kClusterizerNxN },
-    {"kClusterizerv2", AliEMCALRecParam::kClusterizerv2 },
-    {"kClusterizerFW", AliEMCALRecParam::kClusterizerFW }
-  };
-#endif
+  /// Relates string to the embedded cell energy type enumeration for YAML configuration
+  static const std::map <std::string, AliEmcalCorrectionClusterizer::EmbeddedCellEnergyType> fgkEmbeddedCellEnergyTypeMap; //!<!
+
+  /// Relates string to the clusterizer type enumeration for YAML configuration
+  static const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> fgkClusterizerTypeMap; //!<!
 
   AliEmcalCorrectionClusterizer();
   virtual ~AliEmcalCorrectionClusterizer();
@@ -90,7 +87,8 @@ protected:
   Int_t                  fShiftPhi;                       ///< shift in phi (for FixedWindowsClusterizer)
   Int_t                  fShiftEta;                       ///< shift in eta (for FixedWindowsClusterizer)
   Bool_t                 fTRUShift;                       ///< shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
-  InputCellType          fInputCellType;                  ///< input cells type to make clusters
+  EmbeddedCellEnergyType fEmbeddedCellEnergyType;         ///< Which selection of energy to use when embedding cells
+  Bool_t                 fTestPatternInput;               ///< Use test pattern as input instead of cells
   
   // MC labels
   static const Int_t     fgkTotalCellNumber = 17664 ;     ///< Maximum number of cells in EMCAL/DCAL: (48*24)*(10+4/3.+6*2/3.)
@@ -122,7 +120,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterizer> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterizer, 1); // EMCal correction clusterizer component
+  ClassDef(AliEmcalCorrectionClusterizer, 2); // EMCal correction clusterizer component
   /// \endcond
 };
 

@@ -70,24 +70,11 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
     kTrack = 2,                    //!< Track container
   };
 
-#if !(defined(__CINT__) || defined(__MAKECINT__))
-  // Hidden from CINT since it cannot handle these maps well
   /// Relates string to the cluster energy enumeration for YAML configuration
-  std::map <std::string, AliVCluster::VCluUserDefEnergy_t> clusterEnergyTypeMap = {
-    {"kNonLinCorr", AliVCluster::kNonLinCorr },
-    {"kHadCorr", AliVCluster::kHadCorr },
-    {"kUserDefEnergy1", AliVCluster::kUserDefEnergy1 },
-    {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
-  };
+  static const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> fgkClusterEnergyTypeMap; //!<!
 
   /// Relates string to the track filter enumeration for YAML configuration
-  std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> trackFilterTypeMap = {
-    {"kNoTrackFilter", AliEmcalTrackSelection::kNoTrackFilter },
-    {"kCustomTrackFilter", AliEmcalTrackSelection::kCustomTrackFilter },
-    {"kHybridTracks",  AliEmcalTrackSelection::kHybridTracks },
-    {"kTPCOnlyTracks", AliEmcalTrackSelection::kTPCOnlyTracks }
-  };
-#endif
+  static const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> fgkTrackFilterTypeMap; //!<!
 
   AliEmcalCorrectionTask();
   AliEmcalCorrectionTask(const char * name);
