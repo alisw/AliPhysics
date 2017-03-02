@@ -67,9 +67,9 @@ private:
 	Bool_t CheckInput();
 	void PostOutputs();
 
-  // events are saved if  (ET=Event test, TT=Track test)
-  // ET conditions are met
-  // 0 < nTrack='number of tracks meeting the TT conditions' <= fnumTracksMax
+  // events are saved if (ET=Event test, TT=Track test)
+  // . ET conditions are met
+  // . 0 < nTrack='number of tracks meeting the TT conditions' <= fnumTracksMax
   Int_t fnumTracksMax;
   UInt_t fETmask, fETpattern;
   UInt_t fTTmask, fTTpattern;
@@ -109,6 +109,9 @@ private:
   AliMultiplicitySelectionCP *fMartinSel; //! Martin's selection
   AliCEPUtils *fCEPUtil;                  //! object of type AliCEPUtils
 
+  TList *flSPDpileup;   //! list of QA histograms for SPD pile-up study
+  TList *flnClunTra;    //! list of QA histograms for nClunTra BG rejection
+  TList *flVtx     ;    //! list of QA histograms for vertex selection
   TH1F *fhStatsFlow;    //! histogram with event selection statistics
   
 	// output objects

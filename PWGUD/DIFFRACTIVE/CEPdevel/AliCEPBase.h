@@ -89,9 +89,9 @@ class AliCEPBase : public TObject {
 		kBinnoFMD,
 		kBinnoAD,
 		kBinSaved,
-		kBinLastValue,        // used to specify the correct histogram width
+		kBinLastValue,
 
-		// definition of bits in AliAnalysisTaskCEP::fCurrentGapCondition
+		// definition of bits in AliAnalysisTaskCEP::fCurrentEventCondition
 		kBitBaseLine       = (1<< 0),
     kBitEventCut       = (1<< 1),
     kBitPhyssel        = (1<< 2),
@@ -115,6 +115,7 @@ class AliCEPBase : public TObject {
 		kBitZDCC           = (1<<20), 
 		kBitZDNA           = (1<<21),
 		kBitZDNC           = (1<<22),
+    kBitSClusterCut    = (1<<23),
 
     // MC process types
     kProctypeUnknown = 0,
@@ -129,7 +130,12 @@ class AliCEPBase : public TObject {
 		kBitConfigurationSet      = (1<< 0), // if not set everything is active
     kBitisRun1                = (1<< 1), // is it run1
     kBitSaveAllEvents         = (1<< 2), // save all events
-		kBitConfigurationVersion  = (1<< 3)  // always set, last bit
+    kBitisMC                  = (1<< 3), // is Monte Carlo
+    kBitSPDPileupStudy        = (1<< 4), // save all events
+    kBitnClunTraStudy         = (1<< 5), // save all events
+    kBitVtxStudy              = (1<< 6), // save all events
+    kBitTrackCutStudy         = (1<< 7), // save all events
+		kBitConfigurationVersion  = (1<< 8)  // always set, last bit
 	
   };
 

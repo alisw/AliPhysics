@@ -83,6 +83,26 @@ class AliCEPUtils : public TObject {
     Int_t AnalyzeTracks(AliESDEvent* ESDEvent,
       TObjArray* fTracks,TArrayI* fTrackStatus);
 
+    // QA studies
+    static TList* GetSPDPileupQAHists();
+    void SPDVtxAnalysis (
+      AliVEvent *Event,
+      Int_t minContributors, 
+      Double_t minZdist, 
+      Double_t nSigmaZdist, 
+      Double_t nSigmaDiamXY, 
+      Double_t nSigmaDiamZ,
+      TList * lhh );
+    static TList* GetnClunTraQAHists();
+    void SPDClusterVsTrackletBGAnalysis (
+      AliVEvent *Event,
+      TList *lhh );
+    static TList* GetVtxQAHists();
+    void VtxAnalysis (
+      AliVEvent *Event,
+      TList *lhh );
+    
+
     UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
 
     Bool_t checkstatus(UInt_t stat, UInt_t mask, UInt_t pattern);

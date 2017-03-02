@@ -75,11 +75,17 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fTrackCuts(0x0)
   , fMartinSel(0x0)
   , fMCCEPSystem(TLorentzVector(0,0,0,0))
+	, flSPDpileup(0x0)
+	, flnClunTra(0x0)
+	, flVtx(0x0)
 	, fhStatsFlow(0x0)
-	, fHist(0x0)
+	, fHist(new TList())
 	, fCEPtree(0x0)
   , fCEPUtil(0x0)
 {
+
+	// ensures that the histograms are all deleted on exit!
+	fHist->SetOwner();
 
 	// slot in TaskSE must start from 1
 	Int_t iOutputSlot = 1;
@@ -115,8 +121,11 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	, fTrackCuts(0x0)
   , fMartinSel(0x0)
   , fMCCEPSystem(TLorentzVector(0,0,0,0))
+	, flSPDpileup(0x0)
+	, flnClunTra(0x0)
+	, flVtx(0x0)
 	, fhStatsFlow(0x0)
-	, fHist(0x0)
+	, fHist(new TList())
 	, fCEPtree(0x0)
   , fCEPUtil(0x0)
 {
@@ -192,6 +201,20 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
     fPIDCombined2 = 0x0;
   }
   
+  // delete lists of QA histograms
+  if (flSPDpileup) {
+    delete flSPDpileup;
+    flSPDpileup = 0x0;
+  }
+  if (flnClunTra) {
+    delete flnClunTra;
+    flnClunTra = 0x0;
+  }
+  if (flVtx) {
+    delete flVtx;
+    flVtx = 0x0;
+  }
+
   // delete fHist and fCEPtree
   if (fHist) {
     delete fHist;
@@ -244,6 +267,10 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
     AliCEPBase::kBitisRun1,AliCEPBase::kBitisRun1);
   Int_t clusterCut = 1;                 // 1 = b and c, 0 = d and e
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,clusterCut);
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitTrackCutStudy,AliCEPBase::kBitTrackCutStudy)) {
+    fTrackCuts->DefineHistograms();
+  }
   
   // Martin's selection
 	fMartinSel = new AliMultiplicitySelectionCP();
@@ -312,11 +339,49 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   fPIDCombined2->SetDetectorMask(Maskin);
   //fPIDCombined3->SetDetectorMask(Maskin);
 
-  // CreateOutputObjects
-	// TList for Histograms
-	fHist = new TList;
-	fHist->SetOwner();    // ensures that the histograms are all deleted on exit!
 
+  // CreateOutputObjects
+  // histograms for various QA tasks
+  // histograms for SPD pile-up study
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitSPDPileupStudy,AliCEPBase::kBitSPDPileupStudy)) {
+    
+    // get list of histograms
+    flSPDpileup = new TList();
+    flSPDpileup = fCEPUtil->GetSPDPileupQAHists();
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flSPDpileup->GetEntries(); ii++)
+      fHist->Add((TObject*)flSPDpileup->At(ii));
+  }
+  
+  // histograms for nClunTra BG rejection study
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitnClunTraStudy,AliCEPBase::kBitnClunTraStudy)) {
+    
+    // get list of histograms
+    flnClunTra = new TList();
+    flnClunTra = fCEPUtil->GetnClunTraQAHists();
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flnClunTra->GetEntries(); ii++)
+      fHist->Add((TObject*)flnClunTra->At(ii));
+  }
+  
+  // histograms for vertex selection study
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitVtxStudy,AliCEPBase::kBitVtxStudy)) {
+    
+    // get list of histograms
+    flVtx = new TList();
+    flVtx = fCEPUtil->GetVtxQAHists();
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flVtx->GetEntries(); ii++)
+      fHist->Add((TObject*)flVtx->At(ii));
+  }
+  
+  // histogram for event statistics
   fhStatsFlow = fCEPUtil->GetHistStatsFlow();
   fHist->Add(fhStatsFlow);
   
@@ -335,6 +400,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   fCEPtree->Branch("CEPEvents","CEPEventBuffer",&fCEPEvent, bsize, split);
   
 	PostOutputs();
+  
 }
 
 
@@ -411,11 +477,19 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   Bool_t isPileup = fEvent->IsPileupFromSPD(3,0.8,3.,2.,5.);
   if (isPileup) fhStatsFlow->Fill(AliCEPBase::kBinPileup);
   
+  if (flSPDpileup) {
+    fCEPUtil->SPDVtxAnalysis(fEvent,3,0.8,3.,2.,5.,flSPDpileup);
+  }
+  
   //fAnalysisUtils.SetBSPDCvsTCut(4);
 	//fAnalysisUtils.SetASPDCvsTCut(65);
   Bool_t isClusterCut = !fAnalysisUtils.IsSPDClusterVsTrackletBG(fEvent);
   if (isClusterCut) fhStatsFlow->Fill(AliCEPBase::kBinClusterCut);
 
+  if (flnClunTra) {
+    fCEPUtil->SPDClusterVsTrackletBGAnalysis(fEvent,flnClunTra);
+  }
+     
   // EventCuts only works with run2 data
   // this is doing a lot more than the physics selection (by default uses kAny)
   // run number > 225000
@@ -435,6 +509,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   Int_t kVertexType = fCEPUtil->GetVtxPos(fEvent,&fVtxPos);
   if (kVertexType!=AliCEPBase::kVtxUnknown)
     fhStatsFlow->Fill(AliCEPBase::kBinVtx);
+
+  if (flVtx) {
+    fCEPUtil->VtxAnalysis(fEvent,flVtx);
+  }
+     
   
 	// did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
   // this is relevant for the 2016 data
@@ -533,6 +612,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // The definition of the TrackStatus bits is given in AliCEPBase.h
   Int_t nTracks = fCEPUtil->AnalyzeTracks(fESDEvent,fTracks,fTrackStatus);
 
+  // nbad track with !kTTTPCScluster
+  UInt_t mask = AliCEPBase::kTTTPCScluster;
+  UInt_t pattern = 0;
+  Int_t nbad = fCEPUtil->countstatus(fTrackStatus,mask,pattern);
+  if (nbad==0) fhStatsFlow->Fill(AliCEPBase::kBinSharedCluster);
+  //fEventCondition += (nbad==0) * AliCEPBase::kBitSClusterCut;
+  fEventCondition += kTRUE * AliCEPBase::kBitSClusterCut;
+  
 	// Martin's selection
 	TArrayI Mindices;
 	Int_t nMartinSel = fMartinSel->GetNumberOfITSTPCtracks(fESDEvent,Mindices);
@@ -569,17 +656,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     //  
     // if all criteria are met the event is accepted and the number of
     // good tracks is nTrackSel = nMartinSel
-    UInt_t mask, pattern;
     TArrayI *masks    = new TArrayI();
     TArrayI *patterns = new TArrayI();
     TArrayI *indices  = new TArrayI();
 
-    // nbad track with !kTTTPCScluster
-    mask = AliCEPBase::kTTTPCScluster;
-    pattern = 0;
-    Int_t nbad = fCEPUtil->countstatus(fTrackStatus,mask,pattern);
-    if (nbad==0) fhStatsFlow->Fill(AliCEPBase::kBinSharedCluster);
-  
     // the number of ITSpure tracks
     mask = AliCEPBase::kTTITSpure;
     pattern = AliCEPBase::kTTITSpure;

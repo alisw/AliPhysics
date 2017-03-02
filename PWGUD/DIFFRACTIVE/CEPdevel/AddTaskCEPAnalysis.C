@@ -3,21 +3,20 @@
 //
 AliAnalysisTaskSE* AddTaskCEPAnalysis (
   TString taskname        = TString("CEPAnalysis"),
-  Bool_t  isMC            = kFALSE,
-  Bool_t  isSaveAll       = kFALSE,
+  UInt_t  taskconfig      = AliCEPBase::kBitConfigurationSet,
   Int_t   numTracksMax    = 6,
   UInt_t  ETmask          = AliCEPBase::kBitBaseLine,
   UInt_t  ETpattern       = AliCEPBase::kBitBaseLine,
   UInt_t  TTmask          = AliCEPBase::kTTBaseLine,
   UInt_t  TTpattern       = AliCEPBase::kTTBaseLine
   )
- 
 {
 
 	// get the manager and task
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   // check for MonteCarlo
+  Bool_t isMC = (taskconfig&AliCEPBase::kBitisMC)==AliCEPBase::kBitisMC;
   if (isMC) {
     AliMCEventHandler* MChandler = new AliMCEventHandler;
     MChandler->SetReadTR(kFALSE);
@@ -25,12 +24,8 @@ AliAnalysisTaskSE* AddTaskCEPAnalysis (
   }
 
   // create the analysis task
-  UInt_t taskConfig  = AliCEPBase::kBitConfigurationSet;
-  if (isSaveAll)       taskConfig |= AliCEPBase::kBitSaveAllEvents; 
-	taskConfig |= AliCEPBase::kBitConfigurationVersion;
-
 	AliAnalysisTaskCEP *task = new AliAnalysisTaskCEP (
-    taskname.Data(),taskConfig,
+    taskname.Data(),taskconfig,
     numTracksMax,ETmask,ETpattern,TTmask,TTpattern );
 
 	// get input and output managers

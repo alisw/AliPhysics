@@ -87,6 +87,111 @@ TH1F* AliCEPUtils::GetHistStatsFlow()
 }
 
 //------------------------------------------------------------------------------
+// definition of QA histograms used in AliCEPUtils::SPDVtxAnalysis
+// the histograms contain distributions of cut parameters
+TList* AliCEPUtils::GetSPDPileupQAHists()
+{
+
+  // initialisations
+  TList *lhh = new TList();
+  
+  // define the histograms and and add them to the list lhh
+  TH1F* fhh01 = new TH1F("nContr","nContr",200,0,200);
+  lhh->Add(fhh01);
+  
+  TH1F* fhh02 = new TH1F("nPileupVtx","nPileupVtx",20,0,20);
+  lhh->Add(fhh02);
+  
+  TH2F* fhh03 = new TH2F(
+    "nPileupVtx vs nContrPileup",
+    "nPileupVtx vs nContrPileup",
+    20,0,20,50,0,50);
+  lhh->Add(fhh03);
+  
+  TH1F* fhh04 = new TH1F("distZ","distZ",50,0.,5.);
+  lhh->Add(fhh04);
+  
+  TH1F* fhh05 = new TH1F("distXdiam","distXdiam",50,0.,5.);
+  lhh->Add(fhh05);
+  
+  TH1F* fhh06 = new TH1F("distYdiam","distYdiam",50,0.,5.);
+  lhh->Add(fhh06);
+  
+  TH1F* fhh07 = new TH1F("distZdiam","distZdiam",50,0.,5.);
+  lhh->Add(fhh07);
+  
+  TH2F* fhh08 = new TH2F(
+    "distXdiam vs errxDist",
+    "distXdiam vs errxDist",
+    50,0,5.,50,0,0.5);
+  lhh->Add(fhh08);
+  
+  TH2F* fhh09 = new TH2F(
+    "distYdiam vs erryDist",
+    "distYdiam vs erryDist",
+    50,0,5.,50,0,0.5);
+  lhh->Add(fhh09);
+  
+  TH2F* fhh10 = new TH2F(
+    "distZdiam vs errzDist",
+    "distZdiam vs errzDist",
+    50,0,5.,50,0,0.5);
+  lhh->Add(fhh10);
+
+  return lhh;
+  
+}
+
+//------------------------------------------------------------------------------
+// definition of QA histograms used in
+// AliCEPUtils::SPDClusterVsTrackletBGAnalysis
+// the histograms contain distributions of cut parameters
+TList* AliCEPUtils::GetnClunTraQAHists()
+{
+
+  // initialisations
+  TList *lhh = new TList();
+  
+  // define the histograms and and add them to the list lhh
+  TH1F* fhh01 = new TH1F("nClusters[0]","nClusters[0]",200,0,200);
+  lhh->Add(fhh01);
+  TH1F* fhh02 = new TH1F("nClusters[1]","nClusters[1]",200,0,200);
+  lhh->Add(fhh02);
+  TH1F* fhh03 = new TH1F("nClusters","nClusters",400,0,400);
+  lhh->Add(fhh03);
+  TH1F* fhh04 = new TH1F("nTracklets","nTracklets",200,0,200);
+  lhh->Add(fhh04);
+  TH2F* fhh05 = new TH2F("nClu vs nTra","nClu vs nTra",
+    400,0,400,200,0,200);
+  lhh->Add(fhh05);
+  
+  return lhh;
+}
+
+//------------------------------------------------------------------------------
+// definition of QA histograms used in
+// AliCEPUtils::VtxAnalysis
+// the histograms contain distributions of cut parameters
+TList* AliCEPUtils::GetVtxQAHists()
+{
+  // initialisations
+  TList *lhh = new TList();
+  
+  // define the histograms and and add them to the list lhh
+  TH1F* fhh01 = new TH1F("SPDVtxDisp","SPDVtxDisp",200,0.,0.5);
+  lhh->Add(fhh01);
+  TH1F* fhh02 = new TH1F("SPDVtxZRes","SPDVtxZRes",200,0.,0.5);
+  lhh->Add(fhh02);
+  TH1F* fhh03 = new TH1F("VtxdZ","VtxdZ",200,0.,0.5);
+  lhh->Add(fhh03);
+  TH1F* fhh04 = new TH1F("VtxZ","VtxZ",200,0.,50.);
+  lhh->Add(fhh04);
+
+  return lhh;
+  
+}
+
+//------------------------------------------------------------------------------
 Int_t AliCEPUtils::GetEventType(const AliVEvent *Event)
 {
 	// checks of which type a event is:
@@ -147,8 +252,8 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
     Bool_t hasSPD = spdVertex->GetStatus();
     Bool_t hasTrk = trkVertex->GetStatus();
   
-    //Note that AliVertex::GetStatus checks that N_contributors is > 0
-    //reject events if both are explicitly requested and none is available
+    // Note that AliVertex::GetStatus checks that N_contributors is > 0
+    // reject events if both are explicitly requested and none is available
     if (!(hasSPD && hasTrk)) return AliCEPBase::kVtxUnknown;
   
     // check the spd vertex resolution and reject if not satisfied
@@ -186,9 +291,167 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
 }
 
 //------------------------------------------------------------------------------
-// This routine takes an ESD event as input
-// loops over all tracks and assigns them a status word (fTrackStatus)
-// according to the result of various tests
+// This function compiles parameters which are relevant in SPD pile-up
+// rejection, see AliESDEvent::IsPileupFromSPD
+// histograms include (see AliCEPUtils::GetSPDPileupQAHists)
+//  . SPVtx->GetNContributors
+//  . ESDEvent->GetNumberOfPileupVerticesSPD()
+//  . ESDEvent->GetNumberOfPileupVerticesSPD() vs pv->GetNContributors();
+//  . distZ - z-distanze between primary and secondary vertex
+//  . dist[X,Y,Z]diam - [x,y,z]-distanze between diamond and secondary vertex
+//  . dist[X,Y,Z]diam vs esd->GetSigma2Diamond[X,Y,Z]()
+void AliCEPUtils::SPDVtxAnalysis (
+  AliVEvent *Event,
+  Int_t minContributors, 
+  Double_t minZdist, 
+  Double_t nSigmaZdist, 
+  Double_t nSigmaDiamXY, 
+  Double_t nSigmaDiamZ,
+  TList *lhh)
+{
+  if (!lhh) return;
+
+  // currently only works with ESDEvent
+  const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(Event);
+  if (!esd) return;
+
+  // get the primary SPD vertex
+  const AliESDVertex *SPVtx = esd->GetPrimaryVertexSPD();
+  
+  // skip events with few tracks
+  Int_t nc1=SPVtx->GetNContributors();
+  ((TH1F*)lhh->At(0))->Fill(nc1);
+    
+  if(nc1<1) return;
+  Int_t nPileVert=esd->GetNumberOfPileupVerticesSPD();
+  ((TH1F*)lhh->At(1))->Fill(nPileVert);
+  //printf("<I - SPDVtxAnalysis> Number of pile-up vertices %i\n",nPileVert);
+  if(nPileVert==0) return;
+  
+  // loop over the pile-up vertices
+  for(Int_t i=0; i<nPileVert;i++){
+    const AliESDVertex* pv=esd->GetPileupVertexSPD(i);
+    Int_t nc2=pv->GetNContributors();
+    ((TH2F*)lhh->At(2))->Fill(nPileVert,nc2);
+
+    Double_t z1=SPVtx->GetZ();
+    Double_t z2=pv->GetZ();
+    Double_t distZ=TMath::Abs(z2-z1);
+    Double_t distZdiam=TMath::Abs(z2-esd->GetDiamondZ());
+    Double_t cutZdiam=nSigmaDiamZ*TMath::Sqrt(esd->GetSigma2DiamondZ());
+    if(esd->GetSigma2DiamondZ()<0.0001)cutZdiam=99999.; //protection for missing z diamond information
+    ((TH1F*)lhh->At(3))->Fill(distZ);
+    ((TH1F*)lhh->At(6))->Fill(distZdiam);
+    
+    //printf("<I - SPDVtxAnalysis> Distances %f %f %f %f\n",
+    //  distZ,minZdist,distZdiam,cutZdiam);
+	  Double_t x2=pv->GetX();
+	  Double_t y2=pv->GetY();
+	  Double_t distXdiam=TMath::Abs(x2-esd->GetDiamondX());
+	  Double_t distYdiam=TMath::Abs(y2-esd->GetDiamondY());
+    ((TH1F*)lhh->At(4))->Fill(distXdiam);
+    ((TH1F*)lhh->At(5))->Fill(distYdiam);
+	  
+    Double_t cov1[6],cov2[6];	
+	  SPVtx->GetCovarianceMatrix(cov1);
+	  pv->GetCovarianceMatrix(cov2);
+	  Double_t errxDist=TMath::Sqrt(cov2[0]+esd->GetSigma2DiamondX());
+	  Double_t erryDist=TMath::Sqrt(cov2[2]+esd->GetSigma2DiamondY());
+	  Double_t errzDist=TMath::Sqrt(cov1[5]+cov2[5]);
+	  Double_t cutXdiam=nSigmaDiamXY*errxDist;
+	  if(esd->GetSigma2DiamondX()<0.0001)cutXdiam=99999.; //protection for missing diamond information
+	  Double_t cutYdiam=nSigmaDiamXY*erryDist;
+	  if(esd->GetSigma2DiamondY()<0.0001)cutYdiam=99999.; //protection for missing diamond information
+    ((TH2F*)lhh->At(7))->Fill(distXdiam,errxDist);
+    ((TH2F*)lhh->At(8))->Fill(distYdiam,erryDist);
+    ((TH2F*)lhh->At(9))->Fill(distZdiam,errzDist);
+    
+    //printf("<I - SPDVtxAnalysis> Resolution %f %f %f %f %f %f\n",
+    //  distXdiam,cutXdiam,distYdiam,cutYdiam,distZ,nSigmaZdist*errzDist);
+
+  }
+  return;
+
+}
+
+//------------------------------------------------------------------------------
+// This function compiles parameters which are relevant fpr the
+// number-of-SPD-clusters-vs-number-of-tracklets BG rejection
+// see e.g. AliAnalysisUtils::IsSPDClusterVsTrackletBG
+// histograms include (see AliCEPUtils::GetnClunTraQAHists)
+//  . GetNumberOfITSClusters()[0,1]
+//  . GetNumberOfTracklets()
+void AliCEPUtils::SPDClusterVsTrackletBGAnalysis (
+  AliVEvent *Event,
+  TList *lhh)
+{
+  if (!lhh) return;
+  
+  // currently only works with ESDEvent
+  const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(Event);
+  if (!esd) return;
+
+  Int_t nClustersLayer0 = esd->GetNumberOfITSClusters(0);
+  Int_t nClustersLayer1 = esd->GetNumberOfITSClusters(1);
+  Int_t nTracklets      = esd->GetMultiplicity()->GetNumberOfTracklets();
+  ((TH1F*)lhh->At(0))->Fill(nClustersLayer0);
+  ((TH1F*)lhh->At(1))->Fill(nClustersLayer1);
+  ((TH1F*)lhh->At(2))->Fill(nClustersLayer0+nClustersLayer1);
+  ((TH1F*)lhh->At(3))->Fill(nTracklets);
+  ((TH2F*)lhh->At(4))->Fill(nClustersLayer0+nClustersLayer1,nTracklets);
+  
+  return;
+
+}
+
+//------------------------------------------------------------------------------
+// This function compiles parameters which are relevant for the
+// vertex selection
+// see e.g. AliCEPUtils::GetVtxPos
+// histograms include (see AliCEPUtils::GetVtxQAHists)
+//  . spdVertex->GetDispersion()
+//  . spdVertex->GetZRes()
+//  . spdVertex->GetZ() - trkVertex->GetZ()
+//  . vertex->GetZ()
+void AliCEPUtils::VtxAnalysis (
+  AliVEvent *Event,
+  TList *lhh)
+{
+  if (!lhh) return;
+  
+  // currently only works with ESDEvent
+  const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(Event);
+  if (!esd) return;
+
+    
+  const AliESDVertex *trkVertex = esd->GetPrimaryVertexTracks();
+  const AliESDVertex *spdVertex = esd->GetPrimaryVertexSPD();
+  
+  // Note that AliVertex::GetStatus checks that N_contributors is > 0
+  Bool_t hasSPD = spdVertex->GetStatus();
+  Bool_t hasTrk = trkVertex->GetStatus();
+
+  // check the spd vertex resolution and reject if not satisfied
+  if (hasSPD) {
+    ((TH1F*)lhh->At(0))->Fill(spdVertex->GetDispersion());
+    ((TH1F*)lhh->At(1))->Fill(spdVertex->GetZRes());
+    
+    if (hasTrk) {
+      ((TH1F*)lhh->At(2))->Fill(
+        TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ()));
+    }
+  }
+  
+  const AliVVertex *vertex = Event->GetPrimaryVertex();
+  ((TH1F*)lhh->At(3))->Fill(TMath::Abs(vertex->GetZ()));
+  
+  return;
+  
+}
+
+//------------------------------------------------------------------------------
+// This routine loops over all tracks of an ESD event and assigns them a
+// status word (fTrackStatus) according to the result of various tests
 // fTracks is at output an array of AliESDTracks
 Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
   TObjArray* fTracks,TArrayI* fTrackStatus)
