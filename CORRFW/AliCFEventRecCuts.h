@@ -39,6 +39,8 @@ class AliCFEventRecCuts: public AliCFCutBase
   Bool_t IsSelected(TObject* obj);
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
+  Bool_t GetTrue() const { return kTRUE; }
+
   void SetNTracksCut(Int_t xMin=-1, Int_t xMax=1000000) {fNTracksMin=xMin; fNTracksMax=xMax;} // cut values setter
 
   void SetRequireVtxCuts(Bool_t vtx=kFALSE) {fRequireVtxCuts=vtx;} // cut values setter
