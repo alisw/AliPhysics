@@ -66,7 +66,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
 
       AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false, 1);
       esdcuts->DefineHistograms(kRed);
-      esdcuts->SetName("Standard Track cuts");
+      esdcuts->SetName(Form("Loose track cuts, ITS chi2 var %.1f", itscut));
       esdcuts->SetMinNCrossedRowsTPC(120);
       esdcuts->SetMaxDCAToVertexXY(2.4);
       esdcuts->SetMaxDCAToVertexZ(3.2);
@@ -83,11 +83,11 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
       int cutvalue = TString(cut(strmin , strmin+4)).Atoi();
       float tpcconstrainedcut = static_cast<float>(cutvalue) / 10.;
 
-      std::cout << "Using TOC chi2 constrained cut variation: " << tpcconstrainedcut << std::endl;
+      std::cout << "Using TPC chi2 constrained cut variation: " << tpcconstrainedcut << std::endl;
 
       AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false, 1);
       esdcuts->DefineHistograms(kRed);
-      esdcuts->SetName("Standard Track cuts");
+      esdcuts->SetName(Form("Loose track cuts, TPC constrained chi2 variation %f", tpcconstrainedcut));
       esdcuts->SetMinNCrossedRowsTPC(120);
       esdcuts->SetMaxDCAToVertexXY(2.4);
       esdcuts->SetMaxDCAToVertexZ(3.2);

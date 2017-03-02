@@ -27,10 +27,6 @@
 ClassImp(AliEmcalTrackSelectionAOD)
 /// \endcond
 
-/**
- * Main constructor, initialises fields with 0 (or NULL). For ROOT I/O, not intended
- * to be used by the users.
- */
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD() :
 	AliEmcalTrackSelection(),
 	fFilterBits(0),
@@ -41,14 +37,6 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD() :
   fHybridFilterBits[1] = -1;
 }
 
-/**
- * Main Constructor, initalising also track cuts and filter bits. In case the initial cuts
- * is a nullpointer, only filter bits are used for the track selection. This constructor is
- * intended to be used by the users.
- *
- * \param cuts Inital track cut object (of type AliESDtrackCuts, can be a nullpointer)
- * \param filterbits Filter bits required
- */
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(AliVCuts* cuts, UInt_t filterbits):
 	AliEmcalTrackSelection(),
 	fFilterBits(filterbits),
@@ -60,12 +48,6 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(AliVCuts* cuts, UInt_t filt
   AddTrackCuts(cuts);
 }
 
-/**
- * Constructor, initalising track cuts depending on the requested type of filtering
- *
- * \param type Track filtering type
- * \param period  Period string (e.g. LHC11h)
- */
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(ETrackFilterType_t type, const char* period):
   AliEmcalTrackSelection(),
   fFilterBits(0),
@@ -77,11 +59,6 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(ETrackFilterType_t type, co
   GenerateTrackCuts(type, period);
 }
 
-/**
- * Automatically generates track cuts depending on the requested type of filtering
- *
- * \param type Track filtering type
- */
 void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const char* period)
 {
   switch (type) {
@@ -108,17 +85,6 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
   }
 }
 
-/**
- * Function checks whether track is accepted under the given track selection cuts.
- * The function can handle AliAODTrack and AliPicoTrack, while for AliPico track an
- * AliAODTrack is expected to be the underlying structure. If it is not possible to
- * access an AOD track from the input track, the object will not be selected. Otherwise
- * first the status bits are checked (if requested), and if further track cuts (of type
- * AliESDtrackCuts) are provided, the track is converted to an ESD track for further checks.
- *
- * \param trk: Track to check
- * \return true if selected, false otherwise
- */
 bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
 {
   AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(trk);
@@ -156,8 +122,8 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
     cutcounter++;
   }
   if (fListOfCuts) {
-    for (TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
-      AliVCuts *trackCuts = static_cast<AliVCuts*>(*cutIter);
+    for (auto cutIter : *fListOfCuts){
+      AliVCuts *trackCuts = static_cast<AliVCuts*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
       if (trackCuts->IsA() == AliESDtrackCuts::Class()) {
         // If track cuts are AliESDtrackCuts, the track needs to be converted to an AliESDtrack before
         AliESDtrack copyTrack(aodt);
@@ -180,13 +146,6 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
   }
 }
 
-/**
- * Returns the hybrid filter bits according to a hard-coded look-up table
- *
- * \param bits: c-array of 2 elements where the bits are returned
- * \param period: data taking period
- * \return true if successful, false otherwise
- */
 Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString period)
 {
   period.ToLower();

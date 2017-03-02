@@ -15,6 +15,7 @@
 #pragma link C++ class AliEmcalPhysicsSelection+;
 #pragma link C++ class AliEmcalPythiaInfo+;
 #pragma link C++ class AliEmcalTrackSelResultPtr+;
+#pragma link C++ class AliEmcalManagedObject+;
 #pragma link C++ class AliEmcalTrackSelection+;
 #pragma link C++ class AliEmcalTrackSelectionESD+;
 #pragma link C++ class AliEmcalTrackSelectionAOD+;
