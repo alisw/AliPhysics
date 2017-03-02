@@ -18,6 +18,7 @@
 // A set of histograms is created.
 //==============================================================================
 
+blah
 
 #ifndef AliHMPIDTASKQA_CXX
 #define AliHMPIDTASKQA_CXX
