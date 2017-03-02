@@ -17,7 +17,9 @@ ClassImp(AliEmcalCorrectionCellTimeCalib);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionCellTimeCalib> AliEmcalCorrectionCellTimeCalib::reg("AliEmcalCorrectionCellTimeCalib");
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionCellTimeCalib::AliEmcalCorrectionCellTimeCalib() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellTimeCalib")
   ,fCalibrateTime(kFALSE)
@@ -26,25 +28,22 @@ AliEmcalCorrectionCellTimeCalib::AliEmcalCorrectionCellTimeCalib() :
   ,fCellTimeDistBefore(0)
   ,fCellTimeDistAfter(0)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionCellTimeCalib::~AliEmcalCorrectionCellTimeCalib()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   AliWarning("Init EMCAL time calibration");
   
@@ -56,16 +55,16 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
     
-  // missalignment function -- TODO: do we need this?
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
 void AliEmcalCorrectionCellTimeCalib::UserCreateOutputObjects()
 {
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
@@ -76,11 +75,11 @@ void AliEmcalCorrectionCellTimeCalib::UserCreateOutputObjects()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionCellTimeCalib::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   if (!fEvent) {
@@ -128,7 +127,9 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Run()
   return kTRUE;
 }
 
-//_____________________________________________________
+/**
+ * Initialize the time calibration.
+ */
 Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
 {
   // Initialising bad channel maps
@@ -219,7 +220,9 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
   return 1;
 }
 
-//_____________________________________________________
+/**
+ * Initialize the L1 phase time calibration.
+ */
 Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
 {
   // Initialising run-by-run L1 phase in time calibration maps
@@ -308,7 +311,10 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
   return 1;
 }
 
-//________________________________________________________________________
+/**
+ * This function is called if the run changes (it inherits from the base component),
+ * to load a new time calibration and fill relevant variables.
+ */
 Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
 {
   Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();

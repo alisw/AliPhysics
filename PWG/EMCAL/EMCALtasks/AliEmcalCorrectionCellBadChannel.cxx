@@ -16,31 +16,30 @@ ClassImp(AliEmcalCorrectionCellBadChannel);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionCellBadChannel> AliEmcalCorrectionCellBadChannel::reg("AliEmcalCorrectionCellBadChannel");
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionCellBadChannel::AliEmcalCorrectionCellBadChannel() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellBadChannel")
   ,fCellEnergyDistBefore(0)
   ,fCellEnergyDistAfter(0)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionCellBadChannel::~AliEmcalCorrectionCellBadChannel()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   AliWarning("Init EMCAL cell bad channel removal");
   
@@ -50,16 +49,16 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
 
-  // missalignment function -- TODO: do we need this?
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
 void AliEmcalCorrectionCellBadChannel::UserCreateOutputObjects()
 {
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
@@ -70,11 +69,11 @@ void AliEmcalCorrectionCellBadChannel::UserCreateOutputObjects()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionCellBadChannel::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   if (!fEvent) {
@@ -112,7 +111,10 @@ Bool_t AliEmcalCorrectionCellBadChannel::Run()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * This function is called if the run changes (it inherits from the base component),
+ * to load a new bad channel and fill relevant variables.
+ */
 Bool_t AliEmcalCorrectionCellBadChannel::CheckIfRunChanged()
 {
   Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();

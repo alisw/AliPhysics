@@ -22,7 +22,9 @@ ClassImp(AliEmcalCorrectionClusterTrackMatcher);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterTrackMatcher> AliEmcalCorrectionClusterTrackMatcher::reg("AliEmcalCorrectionClusterTrackMatcher");
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterTrackMatcher"),
   fPropDist(440),
@@ -39,9 +41,6 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fHistMatchEtaAll(0),
   fHistMatchPhiAll(0)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
   for(Int_t icent=0; icent<8; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
       for(Int_t ieta=0; ieta<2; ++ieta) {
@@ -50,24 +49,22 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
       }
     }
   }
-
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionClusterTrackMatcher::~AliEmcalCorrectionClusterTrackMatcher()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   GetProperty("createHistos", fCreateHisto);
   
@@ -79,10 +76,11 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
 void AliEmcalCorrectionClusterTrackMatcher::UserCreateOutputObjects()
 {   
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   fEmcalTracks = new TClonesArray("AliEmcalParticle");
@@ -116,11 +114,11 @@ void AliEmcalCorrectionClusterTrackMatcher::UserCreateOutputObjects()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionClusterTrackMatcher::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   CheckIfRunChanged();
@@ -134,11 +132,11 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Run()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Get momentum bin.
+ */
 Int_t AliEmcalCorrectionClusterTrackMatcher::GetMomBin(Double_t p) const
 {
-  // Get momenum bin.
-  
   Int_t pbin=-1;
   if (p<0.5)
     pbin=0;
@@ -162,12 +160,12 @@ Int_t AliEmcalCorrectionClusterTrackMatcher::GetMomBin(Double_t p) const
   return pbin;
 }
 
-//________________________________________________________________________
+/**
+ * Create AliEmcalParticle collections to handle the matching efficiently.
+ * At the same time propagates tracks, if requested.
+ */
 void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
 {
-  // Create AliEmcalParticle collections to handle the matching efficiently.
-  // At the same time propagates tracks, if requested.
-
   fEmcalTracks->Delete();
   fEmcalClusters->Delete();
   
@@ -243,10 +241,11 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Set the links between tracks and clusters.
+ */
 void AliEmcalCorrectionClusterTrackMatcher::DoMatching()
 {
-  // Set the links between tracks and clusters.
   const Double_t maxd2 = fMaxDistance*fMaxDistance;
 
   for (Int_t itrack = 0; itrack < fNEmcalTracks; itrack++) {
@@ -290,11 +289,11 @@ void AliEmcalCorrectionClusterTrackMatcher::DoMatching()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Update clusters with matching info.
+ */
 void AliEmcalCorrectionClusterTrackMatcher::UpdateClusters()
 {
-  // Update clusters with matching info.
-  
   for (Int_t icluster = 0; icluster < fNEmcalClusters; icluster++) {
     AliEmcalParticle* emcalCluster = static_cast<AliEmcalParticle*>(fEmcalClusters->At(icluster));
     const Int_t N = emcalCluster->GetNumberOfMatchedObj();
@@ -341,11 +340,11 @@ void AliEmcalCorrectionClusterTrackMatcher::UpdateClusters()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Update tracks with matching info.
+ */
 void AliEmcalCorrectionClusterTrackMatcher::UpdateTracks()
 {
-  // Update tracks with matching info.
-  
   for (Int_t itrack = 0; itrack < fNEmcalTracks; itrack++) {
     AliEmcalParticle* emcalTrack = static_cast<AliEmcalParticle*>(fEmcalTracks->At(itrack));
 

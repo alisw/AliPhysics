@@ -52,7 +52,6 @@ const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> AliEmca
 
 /**
  * Default constructor.
- *
  */
 AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   AliAnalysisTaskSE("AliEmcalCorrectionTask"),
@@ -572,7 +571,6 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
   // If it is not found, then there will be nothing to iterate over, so we don't need to explicitly check the return value
   for (auto const & str : inputObjects)
   {
-    // TODO: Generalize to arrays for clusters and tracks...
     // NOTE: The AliEmcalContainer derived objects operate differently than the cells. The containers should be added during initialization while the cells should be added during ExecOnce()!
     if (inputObjectType == kCluster)
     {
@@ -892,8 +890,6 @@ AliEmcalContainer * AliEmcalCorrectionTask::AddContainer(InputObject_t contType,
  */
 void AliEmcalCorrectionTask::UserCreateOutputObjects()
 {
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-
   // Check that the configuration is initialized
   if (fConfigurationInitialized != true)
   {
@@ -947,7 +943,6 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
 void AliEmcalCorrectionTask::UserCreateOutputObjectsComponents()
 {
   // Run the initialization for all derived classes.
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   for (auto component : fCorrectionComponents)
   {
     // Set cent bins (usually used for hist creation)
@@ -983,8 +978,6 @@ void AliEmcalCorrectionTask::UserCreateOutputObjectsComponents()
  */
 void AliEmcalCorrectionTask::UserExec(Option_t *option)
 {
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-
   // Initialize the event if not initialized
   if (!fEventInitialized)
     ExecOnce();
@@ -996,8 +989,6 @@ void AliEmcalCorrectionTask::UserExec(Option_t *option)
   // Get the objects for each event
   if (!RetrieveEventObjects())
     return;
-
-  // TODO: Consider adding IsEventSelected()??
 
   // Call run for each correction
   if (!Run())
@@ -1074,7 +1065,6 @@ void AliEmcalCorrectionTask::ExecOnce()
 void AliEmcalCorrectionTask::ExecOnceComponents()
 {
   // Run the initialization for all derived classes.
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   for (auto component : fCorrectionComponents)
   {
     // Setup geomertry
@@ -1190,7 +1180,6 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
 Bool_t AliEmcalCorrectionTask::Run()
 {
   // Run the initialization for all derived classes.
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   for (auto component : fCorrectionComponents)
   {
     component->SetEvent(InputEvent());
@@ -1208,12 +1197,10 @@ Bool_t AliEmcalCorrectionTask::Run()
 
 /**
  * Executed when the file is changed. Also calls UserNotify() for each component.
- *
  */
 Bool_t AliEmcalCorrectionTask::UserNotify()
 {
   // Run the initialization for all derived classes.
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   for (auto component : fCorrectionComponents)
   {
     component->UserNotify();

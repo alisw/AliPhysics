@@ -16,32 +16,31 @@ ClassImp(AliEmcalCorrectionClusterExotics);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterExotics> AliEmcalCorrectionClusterExotics::reg("AliEmcalCorrectionClusterExotics");
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionClusterExotics::AliEmcalCorrectionClusterExotics() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterExotics"),
   fEtaPhiDistBefore(0),
   fEtaPhiDistAfter(0),
   fEnergyExoticClusters(0)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionClusterExotics::~AliEmcalCorrectionClusterExotics()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionClusterExotics::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   GetProperty("createHistos", fCreateHisto);
   
@@ -55,10 +54,11 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
 void AliEmcalCorrectionClusterExotics::UserCreateOutputObjects()
 {   
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
   
   // Create my user objects.
@@ -75,11 +75,11 @@ void AliEmcalCorrectionClusterExotics::UserCreateOutputObjects()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionClusterExotics::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   if (!fClusCont) return kFALSE;

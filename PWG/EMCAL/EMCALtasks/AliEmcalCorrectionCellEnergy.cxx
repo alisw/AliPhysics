@@ -17,7 +17,9 @@ ClassImp(AliEmcalCorrectionCellEnergy);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> AliEmcalCorrectionCellEnergy::reg("AliEmcalCorrectionCellEnergy");
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellEnergy")
   ,fUseAutomaticRecalib(1)
@@ -25,25 +27,22 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fCellEnergyDistBefore(0)
   ,fCellEnergyDistAfter(0)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionCellEnergy::~AliEmcalCorrectionCellEnergy()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionCellEnergy::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   AliWarning("Init EMCAL cell recalibration");
   
@@ -54,16 +53,16 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
     
-  // missalignment function -- TODO: not sure if we need this or not
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
 void AliEmcalCorrectionCellEnergy::UserCreateOutputObjects()
 {   
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
@@ -74,11 +73,11 @@ void AliEmcalCorrectionCellEnergy::UserCreateOutputObjects()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionCellEnergy::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   if (!fEvent) {
@@ -121,11 +120,11 @@ Bool_t AliEmcalCorrectionCellEnergy::Run()
   return kTRUE;
 }
 
-//_____________________________________________________
+/**
+ * Initialize the energy calibration.
+ */
 Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
 {
-  // Initialising recalibration factors.
-  
   if (!fEvent)
     return 0;
   
@@ -216,11 +215,11 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   return 1;
 }
 
-//_____________________________________________________
+/**
+ * Initialize the temperature calibration.
+ */
 Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 {
-  // Initialising recalibration factors.
-  
   if (!fEvent)
     return 0;
   
@@ -325,7 +324,10 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   return 1;
 }
 
-//________________________________________________________________________
+/**
+ * This function is called if the run changes (it inherits from the base component),
+ * to load a new energy calibration and fill relevant variables.
+ */
 Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
 {
   Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();

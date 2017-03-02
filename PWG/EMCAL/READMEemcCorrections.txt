@@ -351,6 +351,10 @@ To configure your task in the ``Initialize()`` function with the YAML configurat
 
 Lastly, the task needs to be added to the default YAML configuration file. To do so, add the name of the component (removing "AliEmcalCorrection") to the file, and then set default values for each parameter. Be certain to document what each parameter means! In addition to the component configuration, be certain to add it into the executionOrder node! Otherwise, your task will never be executed!
 
+# Additional Info
+
+You can find an analysis tutorial presentation [here](https://indico.cern.ch/event/586577/).
+
 For more information, contact the developers <james.mulligan@yale.edu> and <raymond.ehlers@yale.edu>.
  
 */

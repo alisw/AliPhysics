@@ -63,7 +63,9 @@ const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcal
   {"kClusterizerFW", AliEMCALRecParam::kClusterizerFW }
 };
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterizer"),
   fDigitsArr(0),
@@ -97,29 +99,27 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fRecalDistToBadChannels(kFALSE),
   fRecalShowerShape(kFALSE)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
   for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fGeomMatrix[i] = 0 ;
   for(Int_t j = 0; j < fgkTotalCellNumber;                 j++)
   { fOrgClusterCellId[j] =-1; fCellLabels[j] =-1 ; }
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionClusterizer::~AliEmcalCorrectionClusterizer()
 {
-  // Destructor
-  
   delete fClusterizer;
   delete fUnfolder;
   delete fRecParam;
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionClusterizer::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
 
   std::string clusterizerTypeStr = "";
@@ -199,22 +199,20 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
 void AliEmcalCorrectionClusterizer::UserCreateOutputObjects()
 {   
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 }
 
-
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionClusterizer::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
-  
-  // Main loop, called for each event
   
   fEsd = dynamic_cast<AliESDEvent*>(fEvent);
   fAod = dynamic_cast<AliAODEvent*>(fEvent);
@@ -272,11 +270,11 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Clusterize digits into clusters.
+ */
 void AliEmcalCorrectionClusterizer::Clusterize()
 {
-  // Clusterize
-  
   if (fSubBackground) {
     fClusterizer->SetInputCalibrated(kTRUE);
     fClusterizer->SetCalibrationParameters(0);
@@ -292,11 +290,11 @@ void AliEmcalCorrectionClusterizer::Clusterize()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Fill digits array from input cell collection.
+ */
 void AliEmcalCorrectionClusterizer::FillDigitsArray()
 {
-  // Fill digits array
-  
   fDigitsArr->Clear("C");
   if (fTestPatternInput) {
     // Fill digits from a pattern
@@ -461,12 +459,12 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
   }
 }
 
-//________________________________________________________________________________________
+/**
+ * Convert AliEMCALRecoPoints to AliESDCaloClusters/AliAODCaloClusters.
+ * Cluster energy, global position, cells and their amplitude fractions are restored.
+ */
 void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
 {
-  // Convert AliEMCALRecoPoints to AliESDCaloClusters/AliAODCaloClusters.
-  // Cluster energy, global position, cells and their amplitude fractions are restored.
-  
   const Int_t Ncls = fClusterArr->GetEntries();
   AliDebug(1, Form("total no of clusters %d", Ncls));
   
@@ -598,11 +596,11 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Clear the old clusters and fill the new clusters.
+ */
 void AliEmcalCorrectionClusterizer::UpdateClusters()
 {
-  // Update cells in case re-calibration was done.
-  
   // Before destroying the orignal list, assign to the rec points the MC labels
   // of the original clusters, if requested
   if (fSetCellMCLabelFromCluster == 2)
@@ -615,11 +613,11 @@ void AliEmcalCorrectionClusterizer::UpdateClusters()
   RecPoints2Clusters(fCaloClusters);
 }
 
-//________________________________________________________________________________________
+/**
+ * Go through clusters one by one and process separate correction.
+ */
 void AliEmcalCorrectionClusterizer::CalibrateClusters()
 {
-  // Go through clusters one by one and process separate correction
-  
   Int_t nclusters = fCaloClusters->GetEntriesFast();
   for (Int_t icluster=0; icluster < nclusters; ++icluster) {
     AliVCluster *clust = static_cast<AliVCluster*>(fCaloClusters->At(icluster));
@@ -639,11 +637,11 @@ void AliEmcalCorrectionClusterizer::CalibrateClusters()
   fCaloClusters->Compress();
 }
 
-//___________________________________________________________
+/**
+ * MC label for Cells not remapped after ESD filtering -- do it here.
+ */
 void AliEmcalCorrectionClusterizer::RemapMCLabelForAODs(Int_t & label)
 {
-  // MC label for Cells not remapped after ESD filtering, do it here.
-  
   if (label < 0) return;
   
   TClonesArray * arr = dynamic_cast<TClonesArray*>(fAod->FindListObject("mcparticles")) ;
@@ -673,16 +671,16 @@ void AliEmcalCorrectionClusterizer::RemapMCLabelForAODs(Int_t & label)
   label = -1;
 }
 
-//_____________________________________________________________________________________________
+/**
+ * Get the original clusters that contribute to the new rec point cluster,
+ * assign the labels of such clusters to the new rec point cluster.
+ * Only approximatedly valid  when output are V1 clusters, or input/output clusterizer
+ * are the same handle with care
+ * Copy from same method in AliAnalysisTaskEMCALClusterize, but here modify the recpoint and
+ * not the output calocluster
+ */
 void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
 {
-  // Get the original clusters that contribute to the new rec point cluster,
-  // assign the labels of such clusters to the new rec point cluster.
-  // Only approximatedly valid  when output are V1 clusters, or input/output clusterizer
-  // are the same handle with care
-  // Copy from same method in AliAnalysisTaskEMCALClusterize, but here modify the recpoint and
-  // not the output calocluster
-  
   Int_t ncls = fClusterArr->GetEntriesFast();
   for(Int_t irp=0; irp < ncls; ++irp)
   {
@@ -781,7 +779,9 @@ void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
   } // rec point array
 }
 
-//________________________________________________________________________________________
+/**
+ * Initialize the clusterizer.
+ */
 void AliEmcalCorrectionClusterizer::Init()
 {
   // Select clusterization/unfolding algorithm and set all the needed parameters.
@@ -901,7 +901,10 @@ void AliEmcalCorrectionClusterizer::Init()
   
 }
 
-//________________________________________________________________________
+/**
+ * This function is called if the run changes (it inherits from the base component),
+ * to load a new time calibration and fill relevant variables.
+ */
 Bool_t AliEmcalCorrectionClusterizer::CheckIfRunChanged()
 {
   Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();
@@ -922,7 +925,9 @@ Bool_t AliEmcalCorrectionClusterizer::CheckIfRunChanged()
   return runChanged;
 }
 
-//________________________________________________________________________
+/**
+ * Clear the EMCal clusters from the cluster TClonesArray.
+ */
 void AliEmcalCorrectionClusterizer::ClearEMCalClusters()
 {
   const Int_t nents = fCaloClusters->GetEntries();

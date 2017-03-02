@@ -54,9 +54,6 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fBasePath("")
 
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
@@ -91,11 +88,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fRecoUtils(0),
   fOutput(0),
   fBasePath("")
-
 {
-  // Standard constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
@@ -114,8 +107,6 @@ AliEmcalCorrectionComponent::~AliEmcalCorrectionComponent()
  */
 Bool_t AliEmcalCorrectionComponent::Initialize()
 {
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
   // Read in pass. If it is empty, set flag to automatically find the pass from the filename.
   std::string tempString = "";
   GetProperty("pass", tempString);
@@ -132,8 +123,6 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
  */
 void AliEmcalCorrectionComponent::UserCreateOutputObjects()
 {
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
   // Setup Output
   fOutput = new AliEmcalList();
   fOutput->SetOwner();
@@ -145,8 +134,6 @@ void AliEmcalCorrectionComponent::UserCreateOutputObjects()
  */
 void AliEmcalCorrectionComponent::ExecOnce()
 {
-  // Initialize using ExecOnce()
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 }
 
 /**
@@ -155,9 +142,6 @@ void AliEmcalCorrectionComponent::ExecOnce()
  */
 Bool_t AliEmcalCorrectionComponent::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
   if(fGetPassFromFileName)
     GetPass();
   
@@ -170,7 +154,6 @@ Bool_t AliEmcalCorrectionComponent::Run()
  */
 Bool_t AliEmcalCorrectionComponent::UserNotify()
 {
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   return kTRUE;
 }
 
