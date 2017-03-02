@@ -82,37 +82,7 @@ Bool_t AliEmcalCorrectionCellBadChannel::Run()
     return kFALSE;
   }
   
-  // Initialising parameters once per run number
-  
-  if (RunChanged())
-  {
-    fRun = fEvent->GetRunNumber();
-    AliWarning(Form("Run changed, initializing parameters for %d", fRun));
-    if (dynamic_cast<AliAODEvent*>(fEvent)) {
-      AliWarning("=============================================================");
-      AliWarning("===  Running on AOD is not equivalent to running on ESD!  ===");
-      AliWarning("=============================================================");
-    }
-    
-    // init geometry if not already done
-    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
-    if (!fGeom)
-    {
-      AliFatal("Can not create geometry");
-      return kFALSE;
-    }
-    
-    // init bad channels
-    Int_t fInitBC = InitBadChannels();
-    if (fInitBC==0)
-      AliError("InitBadChannels returned false, returning");
-    if (fInitBC==1)
-      AliWarning("InitBadChannels OK");
-    if (fInitBC>1)
-      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
-    
-    //AliDebug(1, Form("%s",fRecoUtils->Print("")));
-  }
+  CheckIfRunChanged();
   
   // CONFIGURE THE RECO UTILS -------------------------------------------------
 
@@ -140,4 +110,22 @@ Bool_t AliEmcalCorrectionCellBadChannel::Run()
     FillCellQA(fCellEnergyDistAfter); // "after" QA
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalCorrectionCellBadChannel::CheckIfRunChanged()
+{
+  Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();
+  
+  if (runChanged) {
+    // init bad channels
+    Int_t fInitBC = InitBadChannels();
+    if (fInitBC==0)
+    AliError("InitBadChannels returned false, returning");
+    if (fInitBC==1)
+    AliWarning("InitBadChannels OK");
+    if (fInitBC>1)
+    AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+  }
+  return runChanged;
 }

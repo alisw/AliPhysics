@@ -52,10 +52,10 @@ class AliEmcalCorrectionComponent : public TNamed {
   virtual void ExecOnce();
   virtual Bool_t Run();
   virtual Bool_t UserNotify();
+  virtual Bool_t CheckIfRunChanged();
   
   void GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
   void UpdateCells();
-  Bool_t RunChanged();
   void GetPass();
   void FillCellQA(TH1F* h);
   Int_t InitBadChannels();

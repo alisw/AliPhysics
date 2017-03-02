@@ -31,6 +31,7 @@ class AliEmcalCorrectionCellEnergy : public AliEmcalCorrectionComponent {
   Bool_t Initialize();
   void UserCreateOutputObjects();
   Bool_t Run();
+  Bool_t CheckIfRunChanged();
   
 protected:
   TH1F* fCellEnergyDistBefore;        //!<! cell energy distribution, before energy calibration

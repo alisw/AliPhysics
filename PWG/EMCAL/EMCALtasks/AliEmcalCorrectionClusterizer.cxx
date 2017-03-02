@@ -786,40 +786,17 @@ void AliEmcalCorrectionClusterizer::Init()
   // Select clusterization/unfolding algorithm and set all the needed parameters.
   
   // If distBC option enabled, init and fill bad channel map
-  if (fRecalDistToBadChannels) {
+  if (fRecalDistToBadChannels)
     fRecoUtils->SwitchOnDistToBadChannelRecalculation();
-    
-    if (RunChanged()) {
-      Int_t fInitBC = InitBadChannels();
-      if (fInitBC==0)
-      AliError("InitBadChannels returned false, returning");
-      if (fInitBC==1)
-      AliWarning("InitBadChannels OK");
-      if (fInitBC>1)
-      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
-    }
-  }
   else
     fRecoUtils->SwitchOffDistToBadChannelRecalculation();
   
-  
-  if (fEvent->GetRunNumber()==fRun)
-    return;
-  fRun = fEvent->GetRunNumber();
+  CheckIfRunChanged();
   
   if (fJustUnfold){
     // init the unfolding afterburner
     delete fUnfolder;
     fUnfolder = new AliEMCALAfterBurnerUF(fRecParam->GetW0(),fRecParam->GetLocMaxCut(),fRecParam->GetMinECut());
-    return;
-  }
-  
-  if (fGeomName.Length()>0)
-    fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-  else
-    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
-  if (!fGeom) {
-    AliFatal("Geometry not available!!!");
     return;
   }
   
@@ -921,4 +898,22 @@ void AliEmcalCorrectionClusterizer::Init()
   fClusterizer->SetOutput(0);
   fClusterArr = const_cast<TObjArray *>(fClusterizer->GetRecPoints());
   
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalCorrectionClusterizer::CheckIfRunChanged()
+{
+  Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();
+  
+  if (runChanged && fRecalDistToBadChannels) {
+    // init bad channels
+    Int_t fInitBC = InitBadChannels();
+    if (fInitBC==0)
+    AliError("InitBadChannels returned false, returning");
+    if (fInitBC==1)
+    AliWarning("InitBadChannels OK");
+    if (fInitBC>1)
+    AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+  }
+  return runChanged;
 }

@@ -122,6 +122,8 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Run()
   // Run
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
+  
+  CheckIfRunChanged();
 
   // Run the matching.
   GenerateEmcalParticles();

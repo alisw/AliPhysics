@@ -26,6 +26,7 @@
 #include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliAnalysisManager.h"
+#include "AliAODEvent.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionTask);
@@ -1018,6 +1019,13 @@ void AliEmcalCorrectionTask::ExecOnce()
   if (!InputEvent()) {
     AliError("Could not retrieve event! Returning!");
     return;
+  }
+  
+  // This warning was extracted out from the cell components
+  if (dynamic_cast<AliAODEvent*>(InputEvent())) {
+    AliWarning("=============================================================");
+    AliWarning("===  Running on AOD is not equivalent to running on ESD!  ===");
+    AliWarning("=============================================================");
   }
 
   if (fNeedEmcalGeom) {

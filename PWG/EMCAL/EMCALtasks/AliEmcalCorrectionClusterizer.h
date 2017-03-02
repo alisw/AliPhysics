@@ -54,6 +54,7 @@ class AliEmcalCorrectionClusterizer : public AliEmcalCorrectionComponent {
   Bool_t Initialize();
   void UserCreateOutputObjects();
   Bool_t Run();
+  Bool_t CheckIfRunChanged();
   
 protected:
   void           Clusterize();

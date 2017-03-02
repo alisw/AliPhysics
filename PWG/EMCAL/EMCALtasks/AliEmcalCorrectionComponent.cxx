@@ -221,12 +221,25 @@ void AliEmcalCorrectionComponent::UpdateCells()
 /**
  * Check whether the run changed.
  */
-Bool_t AliEmcalCorrectionComponent::RunChanged()
+Bool_t AliEmcalCorrectionComponent::CheckIfRunChanged()
 {
   // Get run number.
-  return fRun != fEvent->GetRunNumber();
+  Bool_t runChanged = fRun != fEvent->GetRunNumber();
+  
+  if (runChanged) {
+    fRun = fEvent->GetRunNumber();
+    AliWarning(Form("Run changed, initializing parameters for %d", fRun));
+    
+    // init geometry if not already done
+    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
+    if (!fGeom)
+    {
+      AliFatal("Can not create geometry");
+      return kFALSE;
+    }
+  }
+  return runChanged;
 }
-
 
 /**
  * Check if value is a shared parameter, meaning we should look
@@ -323,19 +336,19 @@ void AliEmcalCorrectionComponent::FillCellQA(TH1F* h){
   
 }
 
-//_____________________________________________________
+/**
+ * Initialize the bad channel map.
+ */
 Int_t AliEmcalCorrectionComponent::InitBadChannels()
 {
-  // Initialising bad channel maps
-  
   if (!fEvent)
-  return 0;
+    return 0;
   
   AliInfo("Initialising Bad channel map");
   
   // init default maps first
   if (!fRecoUtils->GetEMCALBadChannelStatusMapArray())
-  fRecoUtils->InitEMCALBadChannelStatusMap() ;
+    fRecoUtils->InitEMCALBadChannelStatusMap() ;
   
   Int_t runBC = fEvent->GetRunNumber();
   
@@ -384,7 +397,7 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   {
     TH2I *h = fRecoUtils->GetEMCALChannelStatusMap(i);
     if (h)
-    delete h;
+      delete h;
     h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
     
     if (!h)

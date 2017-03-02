@@ -86,52 +86,7 @@ Bool_t AliEmcalCorrectionCellEnergy::Run()
     return kFALSE;
   }
   
-  // Initialising parameters once per run number
-  
-  if (RunChanged())
-  {
-    fRun = fEvent->GetRunNumber();
-    AliWarning(Form("Run changed, initializing parameters for %d", fRun));
-    if (dynamic_cast<AliAODEvent*>(fEvent)) {
-      AliWarning("=============================================================");
-      AliWarning("===  Running on AOD is not equivalent to running on ESD!  ===");
-      AliWarning("=============================================================");
-    }
-    
-    // init geometry if not already done
-    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
-    
-    if (!fGeom)
-    {
-      AliFatal("Can not create geometry");
-      return kFALSE;
-    }
-    
-    // init recalibration factors
-    if(fUseAutomaticRecalib)
-    {
-      Int_t fInitRecalib = InitRecalib();
-      if (fInitRecalib==0)
-        AliError("InitRecalib returned false, returning");
-      if (fInitRecalib==1)
-        AliWarning("InitRecalib OK");
-      if (fInitRecalib>1)
-        AliWarning(Form("No recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
-    }
-    
-    if(fUseAutomaticRunDepRecalib)
-    {
-      Int_t fInitRunDepRecalib = InitRunDepRecalib();
-      if (fInitRunDepRecalib==0)
-        AliError("InitrunDepRecalib returned false, returning");
-      if (fInitRunDepRecalib==1)
-        AliWarning("InitRecalib OK");
-      if (fInitRunDepRecalib>1)
-        AliWarning(Form("No Temperature recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
-    }
-    
-    //AliDebug(2, Form("%s", fRecoUtils->Print("")));
-  }
+  CheckIfRunChanged();
   
   // CONFIGURE THE RECO UTILS -------------------------------------------------
   fRecoUtils->SwitchOnRecalibration();
@@ -368,4 +323,36 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   delete contRF;
   
   return 1;
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
+{
+  Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();
+  
+  if (runChanged) {
+    // init recalibration factors
+    if(fUseAutomaticRecalib)
+    {
+      Int_t fInitRecalib = InitRecalib();
+      if (fInitRecalib==0)
+      AliError("InitRecalib returned false, returning");
+      if (fInitRecalib==1)
+      AliWarning("InitRecalib OK");
+      if (fInitRecalib>1)
+      AliWarning(Form("No recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    }
+    
+    if(fUseAutomaticRunDepRecalib)
+    {
+      Int_t fInitRunDepRecalib = InitRunDepRecalib();
+      if (fInitRunDepRecalib==0)
+      AliError("InitrunDepRecalib returned false, returning");
+      if (fInitRunDepRecalib==1)
+      AliWarning("InitRecalib OK");
+      if (fInitRunDepRecalib>1)
+      AliWarning(Form("No Temperature recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    }
+  }
+  return runChanged;
 }

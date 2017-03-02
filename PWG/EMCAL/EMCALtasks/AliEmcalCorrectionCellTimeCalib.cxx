@@ -87,61 +87,10 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Run()
     AliError("Event ptr = 0, returning");
     return kFALSE;
   }
-  
-  // Initialising parameters once per run number
-  
-  if (RunChanged())
-  {
-    fRun = fEvent->GetRunNumber();
-    AliWarning(Form("Run changed, initializing parameters for %d", fRun));
-    if (dynamic_cast<AliAODEvent*>(fEvent)) {
-      AliWarning("=============================================================");
-      AliWarning("===  Running on AOD is not equivalent to running on ESD!  ===");
-      AliWarning("=============================================================");
-    }
-    
-    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
-    if (!fGeom)
-    {
-      AliFatal("Can not create geometry");
-      return kFALSE;
-    }
-    
-    // define what recalib parameters are needed for various switches
-    // this is based on implementation in AliEMCALRecoUtils
-    Bool_t needTimecalib   = fCalibrateTime;
-    if(fRun>209121) fCalibrateTimeL1Phase = kTRUE;
-    Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
-    
-    // init time calibration
-    if (needTimecalib && fUseAutomaticTimeCalib) {
-      Int_t initTC = InitTimeCalibration();
-      if (!initTC)
-        AliError("InitTimeCalibration returned false, returning");
-      if (initTC==1) {
-        AliWarning("InitTimeCalib OK");
-      }
-      if (initTC > 1)
-        AliWarning(Form("No external time calibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
-    }
-    
-    // init time calibration with L1 phase
-    if (needTimecalibL1Phase && fUseAutomaticTimeCalib) {
-      Int_t initTCL1Phase = InitTimeCalibrationL1Phase();
-      if (!initTCL1Phase)
-        AliError("InitTimeCalibrationL1Phase returned false, returning");
-      if (initTCL1Phase==1) {
-        AliWarning("InitTimeCalibL1Phase OK");
-      }
-      if (initTCL1Phase > 1)
-        AliWarning(Form("No external time calibration L1 phase available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
-    }
 
-    //AliDebug(2, fRecoUtils->Print(""));
-  }
+  CheckIfRunChanged();
   
   // CONFIGURE THE RECO UTILS -------------------------------------------------
-  // configure the reco utils
   
   // allows time calibration
   if (fCalibrateTime)
@@ -357,4 +306,44 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
   delete contBC;
   
   return 1;
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
+{
+  Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();
+  
+  if (runChanged) {
+ 
+    // define what recalib parameters are needed for various switches
+    // this is based on implementation in AliEMCALRecoUtils
+    Bool_t needTimecalib   = fCalibrateTime;
+    if(fRun>209121) fCalibrateTimeL1Phase = kTRUE;
+    Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
+    
+    // init time calibration
+    if (needTimecalib && fUseAutomaticTimeCalib) {
+      Int_t initTC = InitTimeCalibration();
+      if (!initTC)
+      AliError("InitTimeCalibration returned false, returning");
+      if (initTC==1) {
+        AliWarning("InitTimeCalib OK");
+      }
+      if (initTC > 1)
+      AliWarning(Form("No external time calibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    }
+    
+    // init time calibration with L1 phase
+    if (needTimecalibL1Phase && fUseAutomaticTimeCalib) {
+      Int_t initTCL1Phase = InitTimeCalibrationL1Phase();
+      if (!initTCL1Phase)
+      AliError("InitTimeCalibrationL1Phase returned false, returning");
+      if (initTCL1Phase==1) {
+        AliWarning("InitTimeCalibL1Phase OK");
+      }
+      if (initTCL1Phase > 1)
+      AliWarning(Form("No external time calibration L1 phase available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+    }
+  }
+  return runChanged;
 }

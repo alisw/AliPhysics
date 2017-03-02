@@ -31,6 +31,7 @@ class AliEmcalCorrectionCellTimeCalib : public AliEmcalCorrectionComponent {
   Bool_t Initialize();
   void UserCreateOutputObjects();
   Bool_t Run();
+  Bool_t CheckIfRunChanged();
   
 protected:
   TH1F* fCellTimeDistBefore;            //!<! cell energy distribution, before time calibration
