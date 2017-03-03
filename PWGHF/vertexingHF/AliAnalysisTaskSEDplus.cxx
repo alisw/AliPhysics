@@ -95,7 +95,10 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fHigherImpPar(1000.),
   fDoLS(0),
   fEtaSelection(0),
-  fSystem(0)
+  fSystem(0),
+  fNtrcklMin(0),
+  fNtrcklMax(10000),
+  fCutOnTrckl(kFALSE)
 {
   /// Default constructor
 
@@ -187,7 +190,10 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fHigherImpPar(1000.),
   fDoLS(0),
   fEtaSelection(0),
-  fSystem(0)
+  fSystem(0),
+  fNtrcklMin(0),
+  fNtrcklMax(10000),
+  fCutOnTrckl(kFALSE)
 {
   //
   /// Standrd constructor
@@ -869,7 +875,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(6);fHistCentrality[2]->Fill(ntracks,evCentr);}
   if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(7);
   if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(8);
-
+  
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
   // load MC particles
@@ -905,8 +911,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   if(!isEvSel)return;
   Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
   // printf("ntracklet===%d\n",tracklets);
+  if(fCutOnTrckl && (tracklets<fNtrcklMin || tracklets>fNtrcklMax)) {return;}
   fSPDMult->Fill(tracklets);
-
+  
   fHistCentrality[1]->Fill(ntracks,evCentr);
   fHistNEvents->Fill(9);
 

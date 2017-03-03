@@ -64,7 +64,13 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetUseOnlyNegativeEta(){fEtaSelection=-1;}
   void SetUseFullEta(){fEtaSelection=0;}
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
-
+  
+  void SetCutOnNtracklets(Bool_t applycut=kTRUE, Int_t Ntrckmin=0, Int_t Ntrckmax=100) {
+    fCutOnTrckl=applycut;
+    fNtrcklMin=Ntrckmin;
+    fNtrcklMax=Ntrckmax;
+  }
+  
   Float_t GetUpperMassLimit(){return fUpmasslimit;}
   Float_t GetLowerMassLimit(){return fLowmasslimit;}
   Int_t GetNBinsPt(){return fNPtBins;}
@@ -176,9 +182,12 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t  fDoLS;        /// flag to do LS analysis
   Int_t fEtaSelection; /// eta region to accept D+ 0=all, -1 = negative, 1 = positive
   Int_t fSystem;   /// 0=pp,1=PbPb
-
+  Int_t fNtrcklMin;   ///minimum number of tracklets
+  Int_t fNtrcklMax;   ///maximum number of tracklets
+  Bool_t fCutOnTrckl;  ///flag to activate the cut on the number of tracklets
+  
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,29); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,30); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 
