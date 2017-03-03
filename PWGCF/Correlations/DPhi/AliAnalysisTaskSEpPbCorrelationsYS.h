@@ -30,6 +30,7 @@ class AliAODv0;
 class AliAnalyseLeadingTrackUE;
 class THnSparse;
 class AliAODcasdade;
+class AliAODVertex;
 
 #ifndef ALIANALYSISTASKSEH
 #include "AliAnalysisTaskSE.h"
@@ -233,10 +234,10 @@ Float_t AliAnalysisTaskSEpPbCorrelationsYS::GetDPhiStar(Float_t phi1, Float_t pt
   return dphistar;
 }
 
-class AssociatedTrack : public AliVParticle
+class AliAssociatedTrackYS : public AliVParticle
 {
 public:
-    AssociatedTrack(
+    AliAssociatedTrackYS(
 							Short_t charge,
 							Float_t eta, 
 							Float_t phi, 
@@ -258,7 +259,7 @@ public:
     fMultiplicity(multiplicity)
     {
     }
-    virtual ~AssociatedTrack(){}
+    virtual ~AliAssociatedTrackYS(){}
 
     virtual Double_t Px()                 const { AliFatal("Not implemented"); return 0;}
     virtual Double_t Py()                 const { AliFatal("Not implemented"); return 0;}
@@ -297,14 +298,14 @@ private:
     Double_t fMultiplicity;
     Int_t fID1;
     Int_t fID2;
-    ClassDef( AssociatedTrack, 1);
+    ClassDef( AliAssociatedTrackYS, 1);
 };
 
 
-class MixTrack : public AliVParticle
+class AliMixTrackYS : public AliVParticle
 {
 public:
-    MixTrack(
+    AliMixTrackYS(
 							Short_t charge,
 							Float_t eta, 
 							Float_t phi, 
@@ -323,7 +324,7 @@ public:
     fpz(pz)
       {
     }
-    virtual ~MixTrack(){}
+    virtual ~AliMixTrackYS(){}
 
     virtual Double_t Px()                 const { return fpx;}
     virtual Double_t Py()                 const { return fpy;}
@@ -361,14 +362,14 @@ private:
     Float_t fpy;
     Float_t fpz;
 
-    ClassDef( MixTrack, 1);
+    ClassDef( AliMixTrackYS, 1);
 };
 //---------------------------------------------------------------------------------------
 
-class AssociatedVZERO : public AliVParticle
+class AliAssociatedVZEROYS : public AliVParticle
 {
  public:
-  AssociatedVZERO(
+  AliAssociatedVZEROYS(
 		  Float_t multiplicity,
 		  //		  Double_t multiplicity,
 		  Float_t eta,
@@ -387,7 +388,7 @@ class AssociatedVZERO : public AliVParticle
     fCandidate(candidate)
     {
     }
-  virtual ~AssociatedVZERO(){}
+  virtual ~AliAssociatedVZEROYS(){}
 
   virtual Double_t Px()                 const { AliFatal("Not implemented"); return 0;}
   virtual Double_t Py()                 const { AliFatal("Not implemented"); return 0;}
@@ -425,7 +426,7 @@ class AssociatedVZERO : public AliVParticle
   Short_t  fCandidate;      // 1-pi,2-K,3-p                                                                                                                                                                                                 
 
 
-  ClassDef( AssociatedVZERO, 1);
+  ClassDef( AliAssociatedVZEROYS, 1);
 };
 
 
