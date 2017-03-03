@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKDSMY_H
-#define ALIANALYSISTASKDSMY_H
+#ifndef ALIANALYSISTASKDS_H
+#define ALIANALYSISTASKDS_H
 
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -48,6 +48,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetUseRotBkg(Bool_t flag=kFALSE) {fDoRotBkg=flag;}
   void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
+  void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
@@ -104,6 +105,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F *fPtVsMassK0st;   //!<! hist. of pt vs. mass (K0* selection)
   TH2F *fYVsPt;       //!<! hist. of Y vs. Pt (prod. cuts)
   TH2F *fYVsPtSig;    //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH2F *fHistAllV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (all)
+  TH2F *fHistSelV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (sel)
   TH1F *fHistCentrality[3];//!<!hist. for cent distr (all,sel ev, )
   TH2F *fHistCentralityMult[3];//!<!hist. for cent distr vs mult (all,sel ev, )
   TNtuple *fNtupleDs; //!<! output ntuple
@@ -120,6 +123,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fFillSparseDplus;           /// flag for usage of THnSparse
   Bool_t fDoRotBkg;                   ///flag to create rotational bkg (rotating pi track)
   Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
+  Bool_t fDoCutV0multTPCout;          ///flag to activate cut on V0mult vs #tracks TPCout
   Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                   /// number of Pt bins
@@ -145,7 +149,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   THnSparseF *fnSparseMCDplus[4];  ///!<!THnSparse for MC for D+->kkpi
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,20);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,21);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

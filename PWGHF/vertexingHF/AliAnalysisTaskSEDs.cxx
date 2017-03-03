@@ -62,6 +62,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fPtVsMassK0st(0),
   fYVsPt(0),
   fYVsPtSig(0),
+  fHistAllV0multNTPCout(0),
+  fHistSelV0multNTPCout(0),
   fNtupleDs(0),
   fFillNtuple(0),
   fReadMC(kFALSE),
@@ -72,6 +74,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fFillSparseDplus(kFALSE),
   fDoRotBkg(kFALSE),
   fDoBkgPhiSB(kFALSE),
+  fDoCutV0multTPCout(kFALSE),
   fAODProtection(1),
   fNPtBins(0),
   fListCuts(0),
@@ -139,6 +142,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fPtVsMassK0st(0),
   fYVsPt(0),
   fYVsPtSig(0),
+  fHistAllV0multNTPCout(0),
+  fHistSelV0multNTPCout(0),
   fNtupleDs(0),
   fFillNtuple(fillNtuple),
   fReadMC(kFALSE),
@@ -149,6 +154,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fFillSparseDplus(kFALSE),
   fDoRotBkg(kTRUE),
   fDoBkgPhiSB(kTRUE),
+  fDoCutV0multTPCout(kFALSE),
   fAODProtection(1),
   fNPtBins(0),
   fListCuts(0),
@@ -252,6 +258,8 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
   // Destructor
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistAllV0multNTPCout;
+    delete fHistSelV0multNTPCout;
     for(Int_t i=0;i<4;i++){
       delete fChanHist[i];
     }
@@ -370,6 +378,14 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fHistCentrality[i]);
     fHistCentralityMult[i]->Sumw2();
     fOutput->Add(fHistCentralityMult[i]);
+  }
+  if(fDoCutV0multTPCout) {
+    fHistAllV0multNTPCout = new TH2F("HistAllV0multNTPCout", "V0mult vs # TPCout (all) ;V0mult ;# TPCout", 1000, 0., 40000, 1000, 0, 30000);
+    fHistSelV0multNTPCout = new TH2F("HistSelV0multNTPCout", "V0mult vs # TPCout (sel) ;V0mult ;# TPCout", 1000, 0., 40000, 1000, 0, 30000);
+    fHistAllV0multNTPCout->Sumw2();
+    fHistSelV0multNTPCout->Sumw2();
+    fOutput->Add(fHistAllV0multNTPCout);
+    fOutput->Add(fHistSelV0multNTPCout);
   }
     
   Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
@@ -755,6 +771,24 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   fHistNEvents->Fill(4);
   fHistCentrality[1]->Fill(evCentr);
   fHistCentralityMult[1]->Fill(ntracks,evCentr);
+    
+  if(fDoCutV0multTPCout) {
+    //cut on V0mult. vs #tracks kTPCout
+    Float_t V0mult=0.;
+    AliAODVZERO *aodVZERO = (AliAODVZERO*)aod->GetVZEROData();
+    if(aodVZERO) {
+      for(int ich=0; ich<64;ich++) V0mult += aodVZERO->GetMultiplicity(ich);
+    }
+    Int_t nTPCout=0;
+    for (Int_t i=0;i<aod->GetNumberOfTracks();++i) {
+      AliVTrack *track = aod->GetTrack(i);
+      if (!track) continue;
+      if((track->GetStatus() & AliVTrack::kTPCout)) nTPCout++;
+    }
+    fHistAllV0multNTPCout->Fill(V0mult,nTPCout);
+    if(nTPCout > (0.32*V0mult+750)) return;
+    else fHistSelV0multNTPCout->Fill(V0mult,nTPCout);
+  }
     
   Int_t n3Prong = array3Prong->GetEntriesFast();
   if(fDebug>1) printf("Number of Ds->KKpi: %d\n",n3Prong);
