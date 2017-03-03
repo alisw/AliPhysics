@@ -287,8 +287,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   // resolutions
   Bool_t                          fCalcResolution;
   Bool_t                          fMakeResolutionSparse;
-  THnSparseD*                     fTHnResElectrons;
-  THnSparseD*                     fTHnResPositrons;
+  THnSparseD*                     fTHnResElectrons1;
+  THnSparseD*                     fTHnResPositrons1;
+  THnSparseD*                     fTHnResElectrons2;
+  THnSparseD*                     fTHnResPositrons2;
 
   TH1D*                           fDeltaPhiAll;
   TH1D*                           fDeltaPhi;
@@ -335,14 +337,6 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH2D*                           fPhiGen_DeltaPhi;
   TH2D*                           fOpeningAngleGen_DeltaOpeningAngleUS;
   TH2D*                           fOpeningAngleGen_DeltaOpeningAngleLS;
-
-  TH2D*                           fPGen_DeltaP_pions;
-  TH2D*                           fPtGen_DeltaPt_pions;
-  TH2D*                           fEtaGen_DeltaEta_pions;
-  TH2D*                           fThetaGen_DeltaTheta_pions;
-  TH2D*                           fPhiGen_DeltaPhi_pions;
-  TH2D*                           fOpeningAngleGen_DeltaOpeningAngleUS_pions;
-  TH2D*                           fOpeningAngleGen_DeltaOpeningAngleLS_pions;
 
   THnSparseF*                     fMgen_PtGen_mRes_ptRes;
 
