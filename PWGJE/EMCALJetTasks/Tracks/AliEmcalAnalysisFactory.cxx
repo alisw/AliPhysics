@@ -74,6 +74,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
       esdcuts->SetMaxChi2PerClusterITS(itscut);
       // Set cut on the TPC global constrained chi2 to very loose
       esdcuts->SetMaxChi2TPCConstrainedGlobal(100);
+      trackcuts.push_back(esdcuts);
     }
     if(cut.Contains("TPCchi2Constrained")){
       // Definition: TPCchi2ConstrainedXXXX
@@ -95,6 +96,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
       esdcuts->SetMaxChi2TPCConstrainedGlobal(tpcconstrainedcut);
       // Set ITS chi2 cut to very loose
       esdcuts->SetMaxChi2PerClusterITS(100);
+      trackcuts.push_back(esdcuts);
     }
     if(cut.Contains("geo")){
       AliEMCalTriggerExtraCuts *geocuts = new AliEMCalTriggerExtraCuts();
