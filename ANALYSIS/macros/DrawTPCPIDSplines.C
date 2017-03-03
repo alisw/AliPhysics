@@ -3,14 +3,14 @@
  // example usage:
  TH2D h2("h2",";p (GeV/#it{c});d#it{E}/d#it{x} (arb. units)",100,0,20,100,0,200);
  h2.Draw();
- .L $ALICE_ROOT/ANALYSIS/macros/DrawSplines.C
- DrawTPCPIDSplines(122374,2);
+ .L $ALICE_ROOT/ANALYSIS/macros/DrawTPCPIDSplines.C
+ DrawTPCPIDSplines(122374,"pass2");
 
 
 
 */
 
-void DrawTPCPIDSplines(Int_t run, Int_t pass, Float_t dEdxMin=0., Float_t dEdxMax=200, Float_t pMin=0.1, Float_t pMax=20.)
+void DrawTPCPIDSplines(Int_t run, TString recoPass, Float_t dEdxMin=0., Float_t dEdxMax=200, Float_t pMin=0.1, Float_t pMax=20.)
 {
   //
   // simple macro to draw splines using the AliPIDResponse class
@@ -22,9 +22,23 @@ void DrawTPCPIDSplines(Int_t run, Int_t pass, Float_t dEdxMin=0., Float_t dEdxMa
   //       For QA purposes the nSigma values with full eta correction
   //         should be used as done e.g. in AliAnalysisTaskPIDqa
   //
+
+  Int_t recoPassNumber = 0;
+  if (recoPass.Contains("pass1") ) {
+    recoPassNumber=1;
+  } else if (recoPass.Contains("pass2") ) {
+    recoPassNumber=2;
+  } else if (recoPass.Contains("pass3") ) {
+    recoPassNumber=3;
+  } else if (recoPass.Contains("pass4") ) {
+    recoPassNumber=4;
+  } else if (recoPass.Contains("pass5") ) {
+    recoPassNumber=5;
+  }
+
   AliPIDResponse *pidres = new AliPIDResponse(kFALSE);
   //
-  pidres->SetOADBPath("$ALICE_ROOT/OADB");
+  pidres->SetOADBPath("$ALICE_PHYSICS/OADB");
   pidres->SetCachePID(kFALSE);
   pidres->SetUseTPCEtaCorrection(kFALSE);
   pidres->SetUseTPCMultiplicityCorrection(kFALSE);
@@ -32,7 +46,7 @@ void DrawTPCPIDSplines(Int_t run, Int_t pass, Float_t dEdxMin=0., Float_t dEdxMa
   pidres->SetCurrentAliRootRev(62720);
 
   AliESDEvent *ev=new AliESDEvent;
-  pidres->InitialiseEvent(ev,pass,run);
+  pidres->InitialiseEvent(ev,recoPassNumber,recoPass,run);
 
   const  Double_t first=pMin;
   const  Double_t last=pMax;
