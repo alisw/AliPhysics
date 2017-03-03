@@ -53,6 +53,7 @@ set(SRCS
     AliAnalysisTaskPythiaMpi.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
+    AliAnalysisTaskSEpPbCorrelationsYS.cxx
     AliAnaTaskMomScan.cxx
     AliAnalysisTaskTwoPlusOne.cxx
     AliDptDptInMC.cxx
