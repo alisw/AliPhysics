@@ -118,6 +118,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos = new THistManager("Ref");
 
   if(!fTrackCuts) InitializeTrackCuts("standard",fInputHandler->IsA() == AliAODInputHandler::Class());
+  fTrackCuts->SaveQAObjects(fOutput);
 
   PtBinning newbinning;
   TString optionstring = fEnableSumw2 ? "s" : "";

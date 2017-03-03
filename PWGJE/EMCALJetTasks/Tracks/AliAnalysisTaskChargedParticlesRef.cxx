@@ -84,6 +84,7 @@ AliAnalysisTaskChargedParticlesRef::~AliAnalysisTaskChargedParticlesRef() {
 
 void AliAnalysisTaskChargedParticlesRef::CreateUserObjects(){
   if(!fTrackCuts) InitializeTrackCuts("standard", fInputHandler->IsA() == AliAODInputHandler::Class());
+  fTrackCuts->SaveQAObjects(fOutput);
 }
 
 void AliAnalysisTaskChargedParticlesRef::CreateUserHistos() {
