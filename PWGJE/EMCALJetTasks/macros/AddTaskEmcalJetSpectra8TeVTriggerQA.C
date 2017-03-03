@@ -115,6 +115,10 @@ AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA* AddTaskEmcalJetSpectra8TeVTriggerQA
     }
     spectraTaskQA->AddClusterContainer(clusName);
 
+
+    TString     kEmcalTriggers      = "EmcalTriggers";
+    spectraTaskQA->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
+
     //-------------------------------------------------------
     // Final settings, pass to manager and set the containers
     //-------------------------------------------------------

@@ -65,6 +65,7 @@ using std::endl;
  */
 AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA() :
 AliAnalysisTaskEmcalJet(),
+fUseRecalcPatches(false),
 fHistManager(),
 fHistNumbJets(),
 fHistJetPt()
@@ -78,11 +79,13 @@ fHistJetPt()
  */
 AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const char *name) :
 AliAnalysisTaskEmcalJet(name, kTRUE),
+fUseRecalcPatches(false),
 fHistManager(name),
 fHistNumbJets(0),
 fHistJetPt(0)
 {
     SetMakeGeneralHistograms(kTRUE);
+    SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 /**
@@ -327,6 +330,27 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::FillHistograms()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
 {
+
+    /*
+    TString firedtriggers(InputEvent()->GetFiredTriggerClasses());
+    if(!firedtriggers.Contains("EG1")){
+       // cout<<"Not EG1 Event"<<endl;
+        //return kFALSE;
+    }
+    */
+    TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("EmcalTriggers"));
+    if(!triggerpatches)
+        AliErrorStream() << "Trigger patch container EmcalTriggers not found in task " << GetName() << std::endl;
+
+    AliEMCALTriggerPatchInfo *currentpatch(nullptr);
+    for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
+        currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
+        if(currentpatch->GetPatchSize() != 2) continue;  // Reject L0 patches
+        //cout<<"PatchSize: " <<currentpatch->GetPatchSize()<<endl;
+        Double_t patchE = currentpatch->GetPatchE();
+        //cout<<"Patch E: "<< patchE <<endl;
+    }
+
     TString histname;
     TString groupname;
     AliJetContainer* jetCont = 0;
@@ -337,7 +361,18 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
         for(auto jet : jetCont->accepted()) {
             if (!jet) continue;
             count++;
-            cout<<"FOUND JET"<<endl;
+
+
+            Double_t dEtaJetTrigger = 0.0, dPhiJetTrigger = 0.0, deltaRpatch = 0.0;  // dEta dPhi between Jet Axis and Trigger Patch
+
+            dEtaJetTrigger = jet->Eta() - currentpatch->GetEtaGeo();
+            dPhiJetTrigger = jet->Phi() - currentpatch->GetPhiGeo();
+            Double_t dphi2 = 0.0, deta2 = 0.0;
+            dphi2 = TMath::Abs(dPhiJetTrigger  * dPhiJetTrigger );
+            deta2 = TMath::Abs(dEtaJetTrigger  * dEtaJetTrigger );
+            deltaRpatch = TMath::Sqrt(dphi2 + deta2);
+
+           // cout <<"dEat: " << dEtaJetTrigger  << "  dPhi: " <<dPhiJetTrigger<<"  delatR: "<< deltaRpatch <<endl;
 
             histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Pt());
@@ -499,6 +534,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoCellLoop()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExecOnce()
 {
+
     AliAnalysisTaskEmcalJet::ExecOnce();
 }
 
@@ -511,7 +547,76 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
 {
+
+    /*
+    TString firedtriggers(InputEvent()->GetFiredTriggerClasses());
+    if(!firedtriggers.Contains("EG1")){
+       cout<<"Not EG1 Event"<<endl;
+        //return kFALSE;
+   }
+
+      TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("EmcalTriggers"));
+    if(!triggerpatches)
+        AliErrorStream() << "Trigger patch container EmcalTriggers not found in task " << GetName() << std::endl;
+
+    AliEMCALTriggerPatchInfo *currentpatch(nullptr);
+    for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
+        currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
+        if(currentpatch->GetPatchSize() != 2) continue;  // Reject L0 patches
+        //cout<<"PatchSize: " <<currentpatch->GetPatchSize()<<endl;
+        Double_t patchE = currentpatch->GetPatchE();
+        //cout<<"Patch E: "<< patchE <<endl;
+      }
+     */
+    //AliEMCALTriggerPatchInfo *patch;
+    /*
+    AliDebugStream(1) << GetName() << ": Number of trigger patches " << fTriggerPatchInfo->GetEntries() << std::endl;
+     for(auto patchIter : *fTriggerPatchInfo){
+     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
+     }
+
+    bool isDCAL         = patch->IsDCalPHOS(),
+    isSingleShower  = SelectSingleShowerPatch(patch),
+    isJetPatch      = SelectJetPatch(patch);
+    */
+    //cout<<"PATCH RENERGY" <<patch->GetPatchE()<<endl;
+
     return kTRUE;
+}
+
+Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const{
+    if(fUseRecalcPatches){
+        if(!patch->IsRecalc()) return false;
+        return patch->IsGammaLowRecalc();
+    } else {
+        if(!patch->IsOfflineSimple()) return false;
+        return patch->IsGammaLowSimple();
+    }
+}
+
+Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::SelectJetPatch(const AliEMCALTriggerPatchInfo *patch) const{
+    if(fUseRecalcPatches){
+        if(!patch->IsRecalc()) return false;
+        return patch->IsJetLowRecalc();
+    } else {
+        if(!patch->IsOfflineSimple()) return false;
+        return patch->IsJetLowSimple();
+    }
+}
+void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExtractMainPatch() {
+
+    //Find main trigger
+    if(!fTriggerPatchInfo)
+        return;
+
+    //number of patches in event
+    Int_t nPatch = fTriggerPatchInfo->GetEntriesFast();
+    //extract main trigger patch
+    Double_t emax = -1.;
+    for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
+        AliEMCALTriggerPatchInfo *patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+        if (!patch) continue;
+    }
 }
 
 /**
@@ -519,4 +624,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Terminate(Option_t *)
 {
+    cout<<"****************************"<<endl;
+    cout<<"**** User Task Finished ****"<<endl;
+    cout<<"****************************"<<endl;
 }

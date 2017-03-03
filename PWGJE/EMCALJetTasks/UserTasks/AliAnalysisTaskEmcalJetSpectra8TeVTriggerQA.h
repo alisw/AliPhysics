@@ -50,6 +50,7 @@ public:
 
     void                        UserCreateOutputObjects()                         ;
     void                        Terminate(Option_t *option)                       ;
+      void                            ExtractMainPatch();
 
 protected:
     void                        ExecOnce()                                        ;
@@ -64,8 +65,10 @@ protected:
     void                        DoJetLoop()                                       ;
     void                        DoTrackLoop()                                     ;
     void                        DoClusterLoop()                                   ;
-    void                        DoCellLoop()                                      ;
-
+    void                        DoCellLoop();
+    Bool_t                      fUseRecalcPatches;          ///< Switch between offline (FEE) and recalc (L1) patches
+    Bool_t                      SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const;
+    Bool_t                      SelectJetPatch(const AliEMCALTriggerPatchInfo  *patch) const;
     THistManager                fHistManager                                      ;///< Histogram manager
 
 private:
