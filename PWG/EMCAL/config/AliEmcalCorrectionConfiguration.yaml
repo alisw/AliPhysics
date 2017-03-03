@@ -64,7 +64,7 @@ Clusterizer:                                        # Clusterizer component
     cellTimeMin: -1                                 # Min cell time (s)
     cellTimeMax: +1                                 # Max cell time (s)
     clusterTimeLength: 1                            # Maximum time difference between the digits inside EMC cluster (s)
-    w0: 4.5                                         # w0
+    w0: 4.5                                         # Weighting factor for determing the cluster position
     recalDistToBadChannels: false                   # True will recalculate the distance to bad channels
     recalShowerShape: false                         # True will recalculate the shower shape
     remapMcAod: false                               # Switch for the remaping for the MC labels in AOD productions
