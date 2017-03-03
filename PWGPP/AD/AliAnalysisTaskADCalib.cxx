@@ -14,6 +14,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// dummy comment
+
 #include <TCutG.h>
 #include <TFile.h>
 #include <THashList.h>
