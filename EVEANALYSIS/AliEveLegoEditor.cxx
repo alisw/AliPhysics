@@ -423,3 +423,4 @@ void AliEveLegoEditor::CollisionCandidatesOnly()
   // Activate collision candidates only
   fM->SetCollisionCandidatesOnly();
 }
+// this comment serves no purpose
