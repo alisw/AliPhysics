@@ -522,7 +522,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *)
   Int_t nTracksPrim= lPrimaryBestVtx->GetNContributors();
   if(nTracksPrim<1) return;
   if ( (TMath::Abs(lPrimaryBestVtx->GetZ())) >= fZVertex) return ;
-  tPrimaryVtxPosition[3];
   tPrimaryVtxPosition[0] = lPrimaryBestVtx->GetX();
   tPrimaryVtxPosition[1] = lPrimaryBestVtx->GetY();
   tPrimaryVtxPosition[2] = lPrimaryBestVtx->GetZ();  
@@ -1102,7 +1101,8 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsYS::IsAcceptedV0(const AliAODv0* aodV0){
   Double_t r2=xyz[0]*xyz[0] + xyz[1]*xyz[1];
   if (r2<fRadiMin*fRadiMin) return kFALSE;
   if (r2>fRadiMax*fRadiMax) return kFALSE;
-  
+
+  return kTRUE;
 }
 
 void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks(Double_t centrality,
