@@ -49,6 +49,9 @@ Float_t AliAnalysisHadEt::fgPtAxis[117]=
    2.0, 2.2, 2.4, 2.6, 2.8, 3.00, 3.20, 3.4, 3.6, 3.8, 4.00, 4.2, 4.4, 4.6, 4.8,
    5.0, 5.5, 6.0, 6.5, 7.0, 7.50, 8.00, 8.5, 9.0, 9.5, 10.0,12.0,14.0,16.0,18.0,
   20.0,25.0,30.0,35.0,40.0, 45.0, 50.0};
+Int_t AliAnalysisHadEt::fgNumOfPtSpectraBins = 81;
+Float_t AliAnalysisHadEt::fgPtSpectraAxis[82]=
+  {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 180, 200};
 Float_t AliAnalysisHadEt::fgResAxis[81] = {-0.150,-0.140,-0.130,-0.120,-0.110,-0.100,-0.090,-0.080,-0.070,-0.060,
 					   -0.050,-0.045,-0.040,-0.035,-0.030,-0.025,-0.024,-0.023,-0.022,-0.021,
 					   -0.020,-0.019,-0.018,-0.017,-0.016,-0.015,-0.014,-0.013,-0.012,-0.011,
@@ -163,6 +166,23 @@ void AliAnalysisHadEt::CreatePtHisto1D(TString name, TString title, TString xtit
   histotitle->Append(title);
 
   TH1F *histo = new TH1F(histoname->Data(),histotitle->Data(),fgNumOfPtBins, fgPtAxis);
+  histo->SetYTitle(ytitle);
+  histo->SetXTitle(xtitle);
+  histo->Sumw2();
+  fhistoList->Add(histo);
+  delete histoname;
+  delete histotitle;
+    
+}
+void AliAnalysisHadEt::CreatePtSpectraHisto1D(TString name, TString title, TString xtitle, TString ytitle)
+{     //creates a 2-d histogram in eta and phi and adds it to the list of histograms to be saved
+  TString *histoname   = new TString();
+  TString *histotitle   = new TString();
+
+  histoname->Append(name);
+  histotitle->Append(title);
+
+  TH1F *histo = new TH1F(histoname->Data(),histotitle->Data(),fgNumOfPtSpectraBins, fgPtSpectraAxis);
   histo->SetYTitle(ytitle);
   histo->SetXTitle(xtitle);
   histo->Sumw2();

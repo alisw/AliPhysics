@@ -249,7 +249,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  if(cutset==1) dEdx = track->GetITSsignal();
 
 	  FillHisto2D(Form("dEdxAll%s",cutName->Data()),track->P(),dEdx,1.0);
-
+	  
 	    TParticle  *simPart  = stack->Particle(label);
 	  if(!simPart) {
 	    Printf("no MC particle\n"); 	 	
@@ -524,6 +524,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sPiPlusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
+		      if(cutset==2){
+			FillHisto1D(Form("SpectraRecoCB%i",fCentBin),pT,1.0); 
+		      }
 		    }
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEt);
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEtP);
@@ -559,6 +562,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sPiMinusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
+		      if(cutset==2){
+			FillHisto1D(Form("SpectraRecoCB%i",fCentBin),pT,1.0); 
+		      }
 		    }
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEt);
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEtP);
@@ -594,6 +600,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sKPlusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
+		      if(cutset==2){
+			FillHisto1D(Form("SpectraRecoCB%i",fCentBin),pT,1.0); 
+		      }
 		    }
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEtPi);
 		    FillHisto2D(Form("EtReconstructed%sKPlusAssumingPion",cutName->Data()),pT,eta,myEtPi);
@@ -630,6 +639,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sKMinusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
+		      if(cutset==2){
+			FillHisto1D(Form("SpectraRecoCB%i",fCentBin),pT,1.0); 
+		      }
 		    }
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEtPi);
 		    FillHisto2D(Form("EtReconstructed%sKMinusAssumingPion",cutName->Data()),pT,eta,myEtPi);
@@ -666,6 +678,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sProtonCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
+		      if(cutset==2){
+			FillHisto1D(Form("SpectraRecoCB%i",fCentBin),pT,1.0); 
+		      }
 		    }
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEtPi);
 		    FillHisto2D(Form("EtReconstructed%sProtonAssumingPion",cutName->Data()),pT,eta,myEtPi);
@@ -712,6 +727,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sAntiProtonCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
+		      if(cutset==2){
+			FillHisto1D(Form("SpectraRecoCB%i",fCentBin),pT,1.0); 
+		      }
 		    }
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEtPi);
 		    FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingPion",cutName->Data()),pT,eta,myEtPi);
@@ -1212,6 +1230,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		if(fCentBin>=0){//if a centrality bin was defined
 		  FillHisto2D(Form("EtNSimulatedPiPlusCB%i",fCentBin),part->Pt(),part->Eta(),1.0);
 		  FillHisto2D(Form("EtNSimulatedChargedHadronCB%i",fCentBin),part->Pt(),part->Eta(),1.0);
+		  FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0);
 		}
 		FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtSimulatedChargedHadronAssumingProton",part->Pt(),part->Eta(),myEtP);
@@ -1237,6 +1256,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoPi += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
+	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      if( !fRunLightweight){
 		FillHisto2D("EtSimulatedPiMinus",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtNSimulatedPiMinus",part->Pt(),part->Eta(),1.0);
@@ -1270,6 +1290,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoK += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
+	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      if( !fRunLightweight){
 		FillHisto2D("EtSimulatedKPlus",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtNSimulatedKPlus",part->Pt(),part->Eta(),1.0);
@@ -1302,6 +1323,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoK += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
+	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      if( !fRunLightweight){
 		FillHisto2D("EtSimulatedKMinus",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtNSimulatedKMinus",part->Pt(),part->Eta(),1.0);
@@ -1334,6 +1356,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoP += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
+	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      if( !fRunLightweight){
 		FillHisto2D("EtSimulatedProton",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtNSimulatedProton",part->Pt(),part->Eta(),1.0);
@@ -1372,6 +1395,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEtK = Et(part,fgKaonMass);
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeReco += myEt;
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoP += myEt;
+	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      if( !fRunLightweight){
@@ -2396,6 +2420,13 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
       CreateHisto1D(Form("SimTotEtCB%i",j),Form("Simulated Total E_{T} for %i-%i central",j*width,(j+1)*width),"Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
       CreateHisto1D(Form("SimHadEtCB%i",j),Form("Simulated Hadronic E_{T} for %i-%i central",j*width,(j+1)*width),"Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
       CreateHisto1D(Form("SimPiKPEtCB%i",j),Form("Simulated #pi,K,p E_{T} for %i-%i central",j*width,(j+1)*width),"Simulated #pi,K,p E_{T}","Number of events",nbinsEt,minEt,maxEt);
+      snprintf(histoname,200,"SpectraSimCB%i",j);
+      snprintf(histotitle,200,"Simulated Spectra in CB %i",j);
+      CreatePtSpectraHisto1D(histoname,histotitle,"p_{T}","Number of particles");
+      snprintf(histoname,200,"SpectraRecoCB%i",j);
+      snprintf(histotitle,200,"Reconstructed Spectra in CB %i",j);
+      CreatePtSpectraHisto1D(histoname,histotitle,"p_{T}","Number of particles");
+
     }
   }
 

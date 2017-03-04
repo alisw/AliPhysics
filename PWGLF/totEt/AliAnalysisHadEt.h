@@ -97,6 +97,7 @@ protected:
     void CreateEtaPtHisto2D(TString name, TString title);
     void CreateResolutionPtHisto2D(TString name, TString title, TString xtitle, TString ytitle);
     void CreatePtHisto1D(TString name, TString title, TString xtitle, TString ytitle);
+    void CreatePtSpectraHisto1D(TString name, TString title, TString xtitle, TString ytitle);
     void CreateEtaHisto1D(TString name, TString title);
     void CreateHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh,Int_t ybins,Float_t ylow,Float_t yhigh);
     void CreateHisto1D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh);
@@ -116,6 +117,8 @@ protected:
     static Int_t fgnumOfEtaBins;//number of eta bins
     static Float_t fgPtAxis[117];//bins for pt axis of histograms
     static Int_t fgNumOfPtBins;//number of pt bins
+    static Float_t fgPtSpectraAxis[82];//bins for pt axis of histograms
+    static Int_t fgNumOfPtSpectraBins;//number of pt bins
     static Float_t fgResAxis[81];//axis for resolution histograms
     static Int_t fgNumOfResBins;//number of bins for resolution axis
     

@@ -201,6 +201,9 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	  }
 	else{
 	  if(TMath::Abs(track->Eta())>fCorrections->GetEtaCut()) continue;
+	  if(fCentBin>=0&&cutset==0){
+	    FillHisto1D(Form("SpectraCB%i",fCentBin),track->Pt(),1.0); 
+	  }
 	  Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
 	  Float_t nSigmaPionUnsigned,nSigmaProtonUnsigned,nSigmaKaonUnsigned,nSigmaElectronUnsigned;
 // 	  pID->MakeTPCPID(track);
@@ -273,6 +276,9 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	  Float_t corrEff = 0.0;
 	  Float_t corrEffNoID = 0.0;
 	  if(cutset!=1){//TPC
+
+	    //if(fCentBin>0){FillHisto1D(Form("SpectraCB%i",fCentBin),track->Pt(),1.0); }
+
 	    corrBkgd = fCorrections->GetBackgroundCorrectionTPC(track->Pt());
 	    corrEffNoID = fCorrections->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin);
 	    corrNotID = fCorrections->GetNotIDConstCorrectionTPC();
@@ -959,6 +965,12 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 		if(pid==1){//only want to make one for each centrality bin
 		  //void CreateHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh,Int_t ybins,Float_t ylow,Float_t yhigh);
 		  CreateHisto2D(Form("ETvsPhiAndEtaCB%i",i),"E_{T} vs #phi and #eta","#phi","#eta",200,0.0,TMath::Pi()*2,200,-0.7,0.7);
+
+		  snprintf(histoname,200,"SpectraCB%i",i);
+		  snprintf(histotitle,200,"Spectra in CB %i",i);
+		  snprintf(xtitle,50,"Spectra %s",etstring->Data());
+		  CreatePtSpectraHisto1D(histoname,histotitle,"p_{T}","Number of particles");
+
 		}
 
 		snprintf(histoname,200,"Reco%s%sAcceptance%s%sNegEtaCB%i",et->Data(),acceptance->Data(),detector->Data(),partid->Data(),i);
