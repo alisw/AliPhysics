@@ -1,12 +1,11 @@
 AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 							     TString  fListName                = "pPbCorrelations",
-							     //TString  fListName                = "ppCorrelations",
 							     TString  fCollisiontype			 = "pPb",
-							     //TString  fCollisiontype			 = "PP",
 							     TString anamode="TPCTPC",
 							     TString anacent="V0A",
-							     TString assomode="hadron",
-							     Bool_t fpid=kFALSE
+							     TString assomode="V0",
+							     Bool_t fpid=kFALSE,
+							     Int_t ffilterbit=5
 							     )
 											    
 {
@@ -42,7 +41,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 	AliAnalysisTaskSEpPbCorrelationsYS *myTask = new AliAnalysisTaskSEpPbCorrelationsYS(fListName.Data());
 	
 	myTask->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
-	
+	myTask->SetFilterBit(ffilterbit);
 	myTask->SetAnalysisMode(anamode); // 0:h-h correlation 1:h-lambda 2:h-k0s 3:h-Antilambda 4:h-pion 5:h-kaon 6:h-proton  7:phimeson, 8: xi 9: omega 10:v0a 11:v0c
 	myTask->SetAssociatedTrack(assomode);
 	myTask->SetPID(fpid);

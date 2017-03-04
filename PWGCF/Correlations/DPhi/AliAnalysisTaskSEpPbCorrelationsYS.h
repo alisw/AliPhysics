@@ -54,7 +54,7 @@ public:
    virtual void SetAnalysisMode(TString mode) {fAnaMode=mode;}
    virtual void SetAssociatedTrack(TString mode) {fasso=mode;}
    virtual void SetPID(Bool_t mode) {fPID=mode;}
-   virtual void SetPID(Int_t mode) {ffilterbit=mode;}
+   virtual void SetFilterBit(Int_t mode) {ffilterbit=mode;}
    
    virtual void SetAnalysisCent(TString mode) {fCentType=mode;}
    virtual void SetAnalysisCollisionType(TString  mode) {fcollisiontype=mode;}
@@ -204,7 +204,7 @@ public:
 	AliTHn   *fHistTriggerTrackMix;
 	AliTHn   *fHistReconstTrackMix;
 	
-	ClassDef(AliAnalysisTaskSEpPbCorrelationsYS, 1); 
+	ClassDef(AliAnalysisTaskSEpPbCorrelationsYS, 2); 
 	
 };
 //---------------------------------------------------------------------------------------
