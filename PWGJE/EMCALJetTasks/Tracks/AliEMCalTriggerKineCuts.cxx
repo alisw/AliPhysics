@@ -47,3 +47,4 @@ bool AliEMCalTriggerKineCuts::IsSelected(const AliVParticle* const track) const 
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
+// this comment serves no purpose

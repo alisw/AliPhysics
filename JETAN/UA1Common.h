@@ -5,6 +5,8 @@
 #include "cfortran.h"
 #endif
 
+break
+
 extern "C" {
 // COMMON /UA1JETS/ NJET, ETJ(100), ETAJ(100,2), PHIJ(100,2), NCELLJ(100)
 

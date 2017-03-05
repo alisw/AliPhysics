@@ -37,7 +37,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName="ConfigFe
 	//gROOT->LoadMacro("AddTaskEventplane.C");
 	//AliEPSelectionTask3* epsel = AddTaskEventplane();
 	AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection4");
-	eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral);
+	eventplaneTask->SelectCollisionCandidates(AliVEvent::kINT7);
 	
     if (inputDataType == "AOD"){
 		eventplaneTask->SetInput("AOD");
@@ -77,7 +77,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName="ConfigFe
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
-  	//taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral) ;
+ 	taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
 
 	mgr->AddTask(taskfemto);
 

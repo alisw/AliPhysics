@@ -141,3 +141,4 @@ Bool_t AliMultiplicityEventSelection::CollectEvent() {
 void AliMultiplicityEventSelection::SetCollectEvent ( Bool_t collect ) {
 	fCollectEvent = collect;
 }
+// this comment serves no purpose

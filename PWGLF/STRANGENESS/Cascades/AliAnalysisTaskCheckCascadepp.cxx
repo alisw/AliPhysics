@@ -58,6 +58,7 @@
 //               - Added the possibility to select events in the class kINT7 for the pp@13TeV analysis through "fkSwitchINT7"
 //               - Revision of the event selections for the pp@13TeV analysis
 //
+//      Just a test
 //             
 //
 //-----------------------------------------------------------------
@@ -122,14 +123,14 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
     fCollidingSystem                (0),
     fkTriggerClass                  (AliVEvent::kINT7),
     fApplyEvSelSDDstatus            (kFALSE),
-    fApplyEvSelDAQincomplete        (kTRUE), 
-    fApplyEvSelSPDclustervstracklet (kTRUE),
-    fApplyEvSelPileup               (kTRUE),
-    fApplyEvSelPhysicsSel           (kTRUE),
-    fApplyEvSelNoTPConlyPrimVtx     (kTRUE),
-    fApplyEvSelSPDvtxres            (kTRUE),
-    fApplyEvSelVtxProximity         (kTRUE),
-    fApplyEvSelZprimVtxPos          (kTRUE),
+    fApplyEvSelDAQincomplete        (kFALSE), 
+    fApplyEvSelSPDclustervstracklet (kFALSE),
+    fApplyEvSelPileup               (kFALSE),
+    fApplyEvSelPhysicsSel           (kFALSE),
+    fApplyEvSelNoTPConlyPrimVtx     (kFALSE),
+    fApplyEvSelSPDvtxres            (kFALSE),
+    fApplyEvSelVtxProximity         (kFALSE),
+    fApplyEvSelZprimVtxPos          (kFALSE),
     fESDtrackCuts                   (0), 
     fUtils                          (0),
     fPIDResponse                    (0),
@@ -225,14 +226,14 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name)
     fCollidingSystem                (0),
     fkTriggerClass                  (AliVEvent::kINT7),
     fApplyEvSelSDDstatus            (kFALSE),
-    fApplyEvSelDAQincomplete        (kTRUE),
-    fApplyEvSelSPDclustervstracklet (kTRUE),
-    fApplyEvSelPileup               (kTRUE),
-    fApplyEvSelPhysicsSel           (kTRUE),
-    fApplyEvSelNoTPConlyPrimVtx     (kTRUE),
-    fApplyEvSelSPDvtxres            (kTRUE),
-    fApplyEvSelVtxProximity         (kTRUE),
-    fApplyEvSelZprimVtxPos          (kTRUE),
+    fApplyEvSelDAQincomplete        (kFALSE),
+    fApplyEvSelSPDclustervstracklet (kFALSE),
+    fApplyEvSelPileup               (kFALSE),
+    fApplyEvSelPhysicsSel           (kFALSE),
+    fApplyEvSelNoTPConlyPrimVtx     (kFALSE),
+    fApplyEvSelSPDvtxres            (kFALSE),
+    fApplyEvSelVtxProximity         (kFALSE),
+    fApplyEvSelZprimVtxPos          (kFALSE),
     fESDtrackCuts                   (0),
     fUtils                          (0),
     fPIDResponse                    (0),
