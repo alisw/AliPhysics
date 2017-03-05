@@ -41,24 +41,24 @@ class AliAnalysisTaskEmcalJetLight : public AliAnalysisTaskEmcalLight {
       UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
   AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
       UInt_t accType, TString tag = "Jet");
-  void                        AdoptJetContainer(AliJetContainer* cont)           { fJetCollArray.Add(cont)  ;}
 
-  void                        RemoveJetContainer(Int_t i)                        { fJetCollArray.RemoveAt(i);} 
-  AliJetContainer            *GetJetContainer(Int_t i=0)                                               const;
-  AliJetContainer            *GetJetContainer(const char* name)                                        const;
+  void                        AdoptJetContainer(AliJetContainer* cont)           { fJetCollArray.insert(std::pair<std::string, AliJetContainer*>(cont->GetName(), cont)); }
+  void                        RemoveJetContainer(std::string name)               { fJetCollArray.erase(name);}
+  AliJetContainer            *GetJetContainer(std::string name)                                        const;
 
  protected:
   void                        ExecOnce()                                                                    ;
   Bool_t                      RetrieveEventObjects()                                                        ;
 
-  TObjArray                   fJetCollArray;               ///< jet collection array
+  std::map<std::string,
+    AliJetContainer*>         fJetCollArray;               ///< jet collection array
 
  private:
   AliAnalysisTaskEmcalJetLight(const AliAnalysisTaskEmcalJetLight&);            // not implemented
   AliAnalysisTaskEmcalJetLight &operator=(const AliAnalysisTaskEmcalJetLight&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetLight, 1);
+  ClassDef(AliAnalysisTaskEmcalJetLight, 2);
   /// \endcond
 };
 #endif

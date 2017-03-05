@@ -57,7 +57,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
  * Named constructor.
  * \param name Name of the trigger QA task
  */
-AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins, Bool_t online) :
+AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, EBeamType_t beamType, Bool_t online) :
   AliAnalysisTaskEmcalLight(name,kTRUE),
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(),
@@ -73,30 +73,24 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins,
   // Constructor.
   SetMakeGeneralHistograms(kTRUE);
 
-  SetNCentBins(nCentBins);
-
-  if (nCentBins == 0) {
+  if (beamType == kpp) {
     AliInfo("Setting up the task for pp collisions.");
     SetForceBeamType(AliAnalysisTaskEmcalLight::kpp);
-    fEMCALTriggerQA.SetLast(0);
     if (online){
-      fEMCALTriggerQA.AddAt(new AliEMCALTriggerOnlineQAPP(name), 0);
+      fEMCALTriggerQA.push_back(new AliEMCALTriggerOnlineQAPP(name));
     }
     else {
-      fEMCALTriggerQA.AddAt(new AliEMCALTriggerOfflineQAPP(name), 0);
+      fEMCALTriggerQA.push_back(new AliEMCALTriggerOfflineQAPP(name));
     }
   }
   else {
     AliInfo("Setting up the task for PbPb collisions.");
     // No offline class for PbPb... yet
     SetForceBeamType(AliAnalysisTaskEmcalLight::kAA);
-    fEMCALTriggerQA.SetLast(nCentBins-1);
-    for (Int_t i = 0; i < nCentBins; i++) {
-      fEMCALTriggerQA.AddAt(new AliEMCALTriggerOnlineQAPbPb(name), i);
+    for (Int_t i = 0; i < GetNCentBins(); i++) {
+      fEMCALTriggerQA.push_back(new AliEMCALTriggerOnlineQAPbPb(name));
     }
   }
-
-  fEMCALTriggerQA.SetOwner(kTRUE);
 }
 
 /**
@@ -104,6 +98,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins,
  */
 AliEmcalTriggerQATask::~AliEmcalTriggerQATask()
 {
+  for (auto triggerQA : fEMCALTriggerQA) delete triggerQA;
 }
 
 /**
@@ -115,7 +110,7 @@ void AliEmcalTriggerQATask::ExecOnce()
 
   fESDEvent = dynamic_cast<AliESDEvent*>(InputEvent());
 
-  if (!fESDEvent){
+  if (!fESDEvent) {
     fMinTimeStamp = 0;
     fMaxTimeStamp = 0;
     fTimeStampBinWidth = 0;
@@ -141,9 +136,7 @@ void AliEmcalTriggerQATask::ExecOnce()
     return;
   }
 
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    GetTriggerQA(i)->ExecOnce();
-  }
+  for (auto triggerQA : fEMCALTriggerQA) triggerQA->ExecOnce();
 }
 
 /**
@@ -153,17 +146,15 @@ void AliEmcalTriggerQATask::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
 
-  if (fOutput) {  
-    for (Int_t i = 0; i < fNcentBins; i++) {
-      GetTriggerQA(i)->EnableHistogramsByTimeStamp(fTimeStampBinWidth);
-      GetTriggerQA(i)->SetDebugLevel(DebugLevel());
-      GetTriggerQA(i)->Init();
-      fOutput->Add(GetTriggerQA(i)->GetListOfHistograms());
+  if (fOutput) {
+    for (auto triggerQA : fEMCALTriggerQA) {
+      triggerQA->EnableHistogramsByTimeStamp(fTimeStampBinWidth);
+      triggerQA->SetDebugLevel(DebugLevel());
+      triggerQA->Init();
+      fOutput->Add(triggerQA->GetListOfHistograms());
 
-      AliEMCALTriggerOfflineQAPP* triggerOffline = dynamic_cast<AliEMCALTriggerOfflineQAPP*>(GetTriggerQA(i));
-      if (triggerOffline) {
-        triggerOffline->EnableDCal(fDCalPlots);
-      }
+      AliEMCALTriggerOfflineQAPP* triggerOffline = dynamic_cast<AliEMCALTriggerOfflineQAPP*>(triggerQA);
+      if (triggerOffline) triggerOffline->EnableDCal(fDCalPlots);
     }
 
     PostData(1, fOutput);
@@ -186,10 +177,13 @@ Bool_t AliEmcalTriggerQATask::Run()
  */
 Bool_t AliEmcalTriggerQATask::FillHistograms()
 {
+  AliEMCALTriggerQA* triggerQA = GetTriggerQA(fCentBin);
+  if (!triggerQA) return kFALSE;
+
   if (fESDEvent) {
     if (fESDEvent->GetTimeStamp() < fMinTimeStamp) return kFALSE;
     if (fMaxTimeStamp > fMinTimeStamp && fESDEvent->GetTimeStamp() > fMaxTimeStamp) return kFALSE;
-    GetTriggerQA(fCentBin)->EventTimeStamp(fESDEvent->GetTimeStamp());
+    triggerQA->EventTimeStamp(fESDEvent->GetTimeStamp());
   }
 
   if (fTriggerPatches) {
@@ -204,10 +198,10 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
       if (!patch) continue;
       if (patch->GetADCAmp() < fMinAmplitude) continue;
 
-      GetTriggerQA(fCentBin)->ProcessBkgPatch(patch);
+      triggerQA->ProcessBkgPatch(patch);
     }
 
-    GetTriggerQA(fCentBin)->ComputeBackground();
+    triggerQA->ComputeBackground();
 
     for (Int_t i = 0; i < nPatches; i++) {
       AliDebug(2, Form("Processing patch %d", i));
@@ -216,7 +210,7 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
       if (!patch) continue;
       if (patch->GetADCAmp() < fMinAmplitude) continue;
 
-      GetTriggerQA(fCentBin)->ProcessPatch(patch);
+      triggerQA->ProcessPatch(patch);
     }
   }
 
@@ -252,7 +246,7 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
 
       fastor.Initialize(L0amp, L1amp, globRow, globCol, time, fGeom);
 
-      GetTriggerQA(fCentBin)->ProcessFastor(&fastor, fCaloCells);
+      triggerQA->ProcessFastor(&fastor, fCaloCells);
     }
   }
 
@@ -263,11 +257,11 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
       Double_t amp = fCaloCells->GetAmplitude(pos);
       Int_t absId = fCaloCells->GetCellNumber(pos);
       cellInfo.Set(absId, amp);
-      GetTriggerQA(fCentBin)->ProcessCell(cellInfo);
+      triggerQA->ProcessCell(cellInfo);
     }
   }
 
-  GetTriggerQA(fCentBin)->EventCompleted();
+  triggerQA->EventCompleted();
 
   return kTRUE;
 }
@@ -280,11 +274,7 @@ void AliEmcalTriggerQATask::SetADCperBin(Int_t n)
 {
   fADCperBin = n;
 
-  TIter next(&fEMCALTriggerQA);
-  AliEMCALTriggerQA* qa = 0;
-  while ((qa = static_cast<AliEMCALTriggerQA*>(next()))) {
-    qa->SetADCperBin(n);
-  }
+  for (auto qa : fEMCALTriggerQA) qa->SetADCperBin(n);
 }
 
 /**
@@ -292,13 +282,13 @@ void AliEmcalTriggerQATask::SetADCperBin(Int_t n)
  * \param triggerPatchesName name of the trigger patch collection
  * \param cellsName name of the EMCal cell collection
  * \param triggersName name of the primitive trigger objects (FastORs)
- * \param nCentBins number of centrality bins
+ * \param beamType beam type
  * \param online switch to use the online (HLT) or offline components
  * \param suffix to be added at the end of the task name
  * \param sudbir directory inside of the root file where the output objects will be stored
  * \return a pointer to the new instance of the class
  */
-AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString triggerPatchesName, TString cellsName, TString triggersName, Int_t nCentBins, Bool_t online, TString subdir, TString suffix)
+AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString triggerPatchesName, TString cellsName, TString triggersName, EBeamType_t beamType, Bool_t online, TString subdir, TString suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -320,7 +310,7 @@ AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString trig
     taskName += "_";
     taskName += suffix;
   }
-  AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName, nCentBins, online);
+  AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName, beamType, online);
   eTask->SetTriggerPatchesName(triggerPatchesName);
   if(triggersName.IsNull()) {
     if (evhand->InheritsFrom("AliESDInputHandler")) {
@@ -371,13 +361,11 @@ AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString trig
 void AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
 {
   EBeamType_t beam = BeamTypeFromRunNumber(runnumber);
-  Int_t nCentBins = 0;
-  if (beam == kpA || beam == kAA) nCentBins = 4;
   std::vector<std::string> triggerClasses = {"CINT7", "CEMC7", "CDMC7", "EG1", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2" };
   for (auto triggerClass : triggerClasses) {
     TString suffix(triggerClass.c_str());
     suffix.ReplaceAll("-", "_");
-    AliEmcalTriggerQATask* task = AddTaskEmcalTriggerQA("EmcalTriggers", "", "", nCentBins, kFALSE, "CaloQA_default", suffix);
+    AliEmcalTriggerQATask* task = AddTaskEmcalTriggerQA("EmcalTriggers", "", "", beam, kFALSE, "CaloQA_default", suffix);
     task->AddAcceptedTriggerClass(triggerClass.c_str());
     task->SetForceBeamType(beam);
   }

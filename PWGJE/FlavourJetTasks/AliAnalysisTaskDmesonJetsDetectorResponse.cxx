@@ -216,7 +216,7 @@ TTree* AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::BuildTree(cons
 ///
 /// \param applyKinCuts Whether kinematic cuts should be applied
 /// \return Always kTRUE.
-Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_t applyKinCuts, Bool_t findNoDMesonRecoJets)
+Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_t applyKinCuts)
 {
   fRecontructed->FillQA(applyKinCuts);
   fGenerated->FillQA(applyKinCuts);
@@ -300,21 +300,6 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
       accGenJets++;
     }
 
-    // Check if a matched reconstructed jet can be found and copy the reconstructed jet information in the tree branch
-    if (findNoDMesonRecoJets) {
-      for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
-        // Reset reconstructed jet tree branch
-        fCurrentJetInfoReco[ij]->Reset();
-        // Look for a matched reconstructed jet
-        AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair jet = fRecontructed->FindJetMacthedToGeneratedDMeson(dmeson_truth.second, fRecontructed->GetJetDefinitions()[ij], fRecontructed->GetJetDefinitions()[ij].GetRadius() * fMaxJetDmesonDistance, applyKinCuts);
-        if (!jet.first) continue;
-        // Copy reconstructed jet information in the tree branch
-        fCurrentJetInfoReco[ij]->Set(*(jet.first));
-        fCurrentJetInfoReco[ij]->fR = jet.second;
-        accRecJets++;
-      }
-    }
-
     // Fill the tree with the current D meson
     if (accRecJets > 0 || accGenJets > 0) fTree->Fill();
   }
@@ -331,7 +316,6 @@ ClassImp(AliAnalysisTaskDmesonJetsDetectorResponse);
 /// This is the default constructor, used for ROOT I/O purposes.
 AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResponse() :
   AliAnalysisTaskDmesonJets(),
-  fFindRecoJetsForLostDMesons(kFALSE),
   fResponseEngines()
 {
   fOutputType = kNoOutput;
@@ -342,7 +326,6 @@ AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResp
 /// \param name Name of the task
 AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResponse(const char* name, Int_t nOutputTrees) :
   AliAnalysisTaskDmesonJets(name, nOutputTrees),
-  fFindRecoJetsForLostDMesons(kFALSE),
   fResponseEngines()
 {
   fOutputType = kNoOutput;
@@ -413,7 +396,7 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::FillHistograms()
   for (auto &resp : fResponseEngines) {
     if (resp.second.IsInhibit()) continue;
 
-    resp.second.FillTree(fApplyKinematicCuts, fFindRecoJetsForLostDMesons);
+    resp.second.FillTree(fApplyKinematicCuts);
 
     PostDataFromResponseEngine(resp.second);
   }
@@ -533,7 +516,7 @@ AliAnalysisTaskDmesonJetsDetectorResponse* AliAnalysisTaskDmesonJetsDetectorResp
     jetTask->AdoptParticleContainer(partCont);
   }
 
-  jetTask->AddClusterContainer(clusName);
+  jetTask->AddClusterContainer(clusName.Data());
 
   // Final settings, pass to manager and set the containers
   mgr->AddTask(jetTask);

@@ -51,7 +51,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
  public:
 
   AliEmcalTriggerQATask();
-  AliEmcalTriggerQATask(const char *name, UInt_t nCentBins=0, Bool_t online=kFALSE);
+  AliEmcalTriggerQATask(const char *name, EBeamType_t beamType = kpp, Bool_t online=kFALSE);
   virtual ~AliEmcalTriggerQATask();
 
   void SetTriggerPatchesName(const char *name)      { fTriggerPatchesName      = name; }
@@ -61,9 +61,9 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   void SetTimeStampRange(UInt_t min, UInt_t max)    { fMinTimeStamp            = min ; fMaxTimeStamp = max; }
   void EnableHistogramsByTimeStamp(UInt_t binWidth = 600){ fTimeStampBinWidth  = binWidth   ; }
 
-  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)    { return i >= 0 && i < fEMCALTriggerQA.GetEntriesFast() ? static_cast<AliEMCALTriggerQA*>(fEMCALTriggerQA.At(i)) : 0; }
+  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)      { return i >= 0 && i < fEMCALTriggerQA.size() ? fEMCALTriggerQA[i] : 0; }
 
-  static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(TString triggerPatchesName = "EmcalTriggers", TString cellsName = "", TString triggersName = "", Int_t nCentBins = 0, Bool_t online = kFALSE, TString subdir = "", TString suffix = "");
+  static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(TString triggerPatchesName = "EmcalTriggers", TString cellsName = "", TString triggersName = "", EBeamType_t beamType = kpp, Bool_t online = kFALSE, TString subdir = "", TString suffix = "");
   static void AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber);
 
  protected:
@@ -74,7 +74,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   void                                      FillEventQA();
 
   TString                                   fTriggerPatchesName;         ///< name of input trigger array
-  TObjArray                                 fEMCALTriggerQA;             ///< produces the QA histograms
+  std::vector<AliEMCALTriggerQA*>           fEMCALTriggerQA;             ///< produces the QA histograms
   Int_t                                     fADCperBin;                  ///< ADC counts per bin
   Int_t                                     fMinAmplitude;               ///< Minimum trigger patch amplitude
   Bool_t                                    fDCalPlots;                  ///< Whether to add DCal QA plots
@@ -90,7 +90,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   AliEmcalTriggerQATask &operator=(const AliEmcalTriggerQATask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQATask, 5);
+  ClassDef(AliEmcalTriggerQATask, 6);
   /// \endcond
 };
 

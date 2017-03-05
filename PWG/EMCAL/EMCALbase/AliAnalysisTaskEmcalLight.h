@@ -21,6 +21,10 @@ class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
 class AliAODTrack;
 
+#include <map>
+#include <set>
+#include <string>
+
 #include "Rtypes.h"
 
 #include "AliParticleContainer.h"
@@ -91,24 +95,16 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskEmcalLight();
 
   // Containers
-  AliParticleContainer       *AddParticleContainer(const char *n);
-  AliTrackContainer          *AddTrackContainer(const char *n);
-  AliMCParticleContainer     *AddMCParticleContainer(const char *n);
-  AliClusterContainer        *AddClusterContainer(const char *n);
-  void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray.Add(cont)                        ; }
-  void                        AdoptTrackContainer(AliTrackContainer* cont)          { AdoptParticleContainer(cont)                        ; }
-  void                        AdoptMCParticleContainer(AliMCParticleContainer* cont){ AdoptParticleContainer(cont)                        ; }
-  void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.Add(cont)                         ; }
-  AliParticleContainer       *GetParticleContainer(Int_t i=0)         const;
-  AliParticleContainer       *GetParticleContainer(const char* name)  const;
-  AliClusterContainer        *GetClusterContainer(Int_t i=0)          const;
-  AliClusterContainer        *GetClusterContainer(const char* name)   const;
-  AliMCParticleContainer     *GetMCParticleContainer(Int_t i=0)               const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(i))   ; }
-  AliMCParticleContainer     *GetMCParticleContainer(const char* name)        const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(name)); }
-  AliTrackContainer          *GetTrackContainer(Int_t i=0)                    const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(i))        ; }
-  AliTrackContainer          *GetTrackContainer(const char* name)             const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
-  void                        RemoveParticleContainer(Int_t i=0)                    { fParticleCollArray.RemoveAt(i)                      ; } 
-  void                        RemoveClusterContainer(Int_t i=0)                     { fClusterCollArray.RemoveAt(i)                       ; } 
+  AliParticleContainer       *AddParticleContainer(std::string branchName, std::string contName="");
+  AliClusterContainer        *AddClusterContainer(std::string branchName, std::string contName="");
+  void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray.insert(std::pair<std::string, AliParticleContainer*>(cont->GetName(), cont)); }
+  void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.insert(std::pair<std::string, AliClusterContainer*>(cont->GetName(), cont))  ; }
+  AliParticleContainer       *GetParticleContainer(std::string name)          const;
+  AliClusterContainer        *GetClusterContainer(std::string name)           const;
+  AliMCParticleContainer     *GetMCParticleContainer(std::string name)        const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(name)); }
+  AliTrackContainer          *GetTrackContainer(std::string name)             const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
+  void                        RemoveParticleContainer(std::string name)             { fParticleCollArray.erase(name)                      ; }
+  void                        RemoveClusterContainer(std::string name)              { fClusterCollArray.erase(name)                       ; }
 
   // Other input data
   void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
@@ -122,21 +118,20 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
-  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }
+  void                        SetCentBins(const std::vector<double>& bins)          { fCentBins = std::vector<double>(bins)               ; }
+  Int_t                       GetNCentBins()                                  const { return fCentBins.size() > 1 ? fCentBins.size() - 1 : 1; }
 
   // Event selection
   void                        SetTriggerSelectionBitMap(UInt_t t)                   { fTriggerSelectionBitMap = t                         ; }
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent     = max      ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz       = max      ; }
-  void                        SetZvertexDiffValue(Double_t cut)                     { fZvertexDiff       = cut                            ; }
-  void                        SetMinPtTrack(Double_t min)                           { fMinPtTrack        = min                            ; }
-  void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
-  void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
+  void                        SetZvertexDiffValue(Double_t cut)                     { fMaxVzDiff         = cut                            ; }
+  void                        SetMinNVertCont(Int_t cut)                            { fMinNVertCont      = cut                            ; }
   void                        SetPtHardRange(Double_t min, Double_t max)            { fMinPtHard         = min  ; fMaxPtHard   = max      ; }
-  void                        AddAcceptedTriggerClass(const char* trigClass)        { fAcceptedTriggerClasses.Add(new TObjString(trigClass)); }
-  void                        AddRejectedTriggerClass(const char* trigClass)        { fRejectedTriggerClasses.Add(new TObjString(trigClass)); }
-  void                        ClearAcceptedTriggerClasses()                         { fAcceptedTriggerClasses.Clear()                     ; }
-  void                        ClearRejectedTriggerClasses()                         { fRejectedTriggerClasses.Clear()                     ; }
+  void                        AddAcceptedTriggerClass(const char* trigClass)        { fAcceptedTriggerClasses.insert(trigClass)           ; }
+  void                        AddRejectedTriggerClass(const char* trigClass)        { fRejectedTriggerClasses.insert(trigClass)           ; }
+  void                        ClearAcceptedTriggerClasses()                         { fAcceptedTriggerClasses.clear()                     ; }
+  void                        ClearRejectedTriggerClasses()                         { fRejectedTriggerClasses.clear()                     ; }
   void                        SetMCFilter()                                         { fMCRejectFilter = kTRUE                             ; }
   void                        ResetMCFilter()                                       { fMCRejectFilter = kFALSE                            ; }
   void                        SetJetPtFactor(Float_t f)                             { fPtHardAndJetPtFactor = f                           ; }
@@ -146,7 +141,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
- protected:  
+ protected:
   void                        SetRejectionReasonLabels(TAxis* axis);
   void                        AddObjectToEvent(TObject *obj, Bool_t attempt = kFALSE);
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
@@ -179,7 +174,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
    * @return True if event is selected, false otherwise
    */
   virtual Bool_t              Run()                             { return kTRUE                 ; }
-    
+
   // Static utilities
   static void                 GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
   static Byte_t               GetTrackType(const AliVTrack *t);
@@ -198,7 +193,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Bool_t                      fGeneralHistograms;          ///< whether or not it should fill some general histograms
   Bool_t                      fCreateHisto;                ///< whether or not create histograms
   Bool_t                      fNeedEmcalGeom;              ///< whether or not the task needs the emcal geometry
-  Int_t                       fNcentBins;                  ///< how many centrality bins
+  std::vector<double>         fCentBins;                   ///< how many centrality bins
   Bool_t                      fUseNewCentralityEstimation; ///< Use new centrality estimation (for 2015 data)
 
   // Input data
@@ -208,8 +203,10 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   TString                     fCaloTriggerPatchInfoName;   ///< trigger patch info array name
   TString                     fCentEst;                    ///< name of the centrality estimator
 
-  TObjArray                   fParticleCollArray;          ///< particle/track collection array
-  TObjArray                   fClusterCollArray;           ///< cluster collection array
+  std::map<std::string,
+  AliParticleContainer*>      fParticleCollArray;          ///< particle/track collection array
+  std::map<std::string,
+  AliClusterContainer*>       fClusterCollArray;          ///< cluster collection array
 
   // Event selection
   UInt_t                      fTriggerSelectionBitMap;     ///< trigger selection bit map
@@ -217,14 +214,12 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Double_t                    fMaxCent;                    ///< max centrality for event selection
   Double_t                    fMinVz;                      ///< min vertex for event selection
   Double_t                    fMaxVz;                      ///< max vertex for event selection
-  Double_t                    fZvertexDiff;                ///< upper limit for distance between primary and SPD vertex
-  Double_t                    fMinPtTrack;                 ///< cut on track pt in event selection
-  Int_t                       fMinNTrack;                  ///< minimum nr of tracks in event with pT>fTrackPtCut
-  Double_t                    fMinPtTrackInEmcal;          ///< min pt track in emcal
-  Int_t                       fMinPtHard;                  ///< select minimum pt hard (MC)
-  Int_t                       fMaxPtHard;                  ///< select maximum pt hard (MC)
-  TObjArray                   fAcceptedTriggerClasses;     ///< list of accepted trigger classes
-  TObjArray                   fRejectedTriggerClasses;     ///< list of accepted trigger classes
+  Double_t                    fMaxVzDiff;                  ///< upper limit for distance between primary and SPD vertex
+  Double_t                    fMinNVertCont;               ///< minumum number of vertex contributors
+  Double_t                    fMinPtHard;                  ///< select minimum pt hard (MC)
+  Double_t                    fMaxPtHard;                  ///< select maximum pt hard (MC)
+  std::set<std::string>       fAcceptedTriggerClasses;     ///< list of accepted trigger classes
+  std::set<std::string>       fRejectedTriggerClasses;     ///< list of accepted trigger classes
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
@@ -250,6 +245,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   TString                     fFiredTriggerClasses;        //!<!trigger classes fired by the current event
   EBeamType_t                 fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
+  Int_t                       fPtHardBin;                  //!<!event pt hard
   Double_t                    fPtHard;                     //!<!event pt hard
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
@@ -274,7 +270,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalLight, 2);
+  ClassDef(AliAnalysisTaskEmcalLight, 3);
   /// \endcond
 };
 
@@ -290,7 +286,7 @@ inline Double_t AliAnalysisTaskEmcalLight::DeltaPhi(Double_t phia, Double_t phib
 {
   Double_t dphi = -999;
   const Double_t tpi = TMath::TwoPi();
-  
+
   if (phia < 0)         phia += tpi;
   else if (phia > tpi) phia -= tpi;
   if (phib < 0)         phib += tpi;
@@ -298,7 +294,7 @@ inline Double_t AliAnalysisTaskEmcalLight::DeltaPhi(Double_t phia, Double_t phib
   dphi = phib - phia;
   if (dphi < rangeMin)      dphi += tpi;
   else if (dphi > rangeMax) dphi -= tpi;
-  
+
   return dphi;
 }
 

@@ -6,7 +6,7 @@ AliAnalysisTaskEmcalRun2QA* AddTaskEmcalRun2QA(
   const char* ncells             = "usedefault",
   const char* suffix             = ""
 )
-{  
+{
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -14,8 +14,8 @@ AliAnalysisTaskEmcalRun2QA* AddTaskEmcalRun2QA(
   {
     ::Error("AddTaskEmcalRun2QA", "No analysis manager to connect to.");
     return 0;
-  }  
-  
+  }
+
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   AliVEventHandler* handler = mgr->GetInputEventHandler();
@@ -24,7 +24,7 @@ AliAnalysisTaskEmcalRun2QA* AddTaskEmcalRun2QA(
     ::Error("AddTaskEmcalRun2QA", "This task requires an input event handler");
     return 0;
   }
-  
+
   enum EDataType_t {
     kUnknown,
     kESD,
@@ -43,7 +43,7 @@ AliAnalysisTaskEmcalRun2QA* AddTaskEmcalRun2QA(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  
+
   TString clusName(nclusters);
   TString cellName(ncells);
 
@@ -90,20 +90,20 @@ AliAnalysisTaskEmcalRun2QA* AddTaskEmcalRun2QA(
   qaTask->SetVzRange(-10,10);
 
   //no track container needed
-  qaTask->AddClusterContainer(clusName);
+  qaTask->AddClusterContainer(clusName.Data());
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
 
   mgr->AddTask(qaTask);
-  
+
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
 
   TString contName(name);
   contName += "_histos";
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), 
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(),
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput  (qaTask, 0,  cinput1 );

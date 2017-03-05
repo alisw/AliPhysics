@@ -423,8 +423,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     Bool_t IsInhibit() const { return fInhibit; }
 
-    jet_distance_pair FindJetMacthedToGeneratedDMeson(const AliDmesonJetInfo& dmeson, AliHFJetDefinition& jetDef, Double_t dMax, Bool_t applyKinCuts);
-
     friend bool        operator< (const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator> (const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return rhs < lhs    ; }
     friend inline bool operator<=(const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return !(lhs > rhs) ; }
@@ -438,7 +436,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   protected:
     void RunAnalysis();
-    void FindJets(AliHFJetDefinition& jetDef);
 
     ECandidateType_t                   fCandidateType         ; ///<  Candidate type
     TString                            fCandidateName         ; ///<  Candidate name
@@ -465,9 +462,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
     std::map<int, AliDmesonJetInfo>    fDmesonJets            ; //!<! Array containing the D meson jets
     TClonesArray                      *fCandidateArray        ; //!<! D meson candidate array
-    AliHFAODMCParticleContainer       *fMCContainer           ; //!<! MC particle container
-    AliHFTrackContainer               *fTrackContainer        ; //!<! Track container
-    AliClusterContainer               *fClusterContainer      ; //!<! Cluster container
+    AliHFAODMCParticleContainer*       fMCContainer           ; //!<! MC particle container
+    std::vector<AliTrackContainer*>    fTrackContainers       ; //!<! Track containers
+    std::vector<AliClusterContainer*>  fClusterContainers     ; //!<! Cluster containers
     AliAODEvent                       *fAodEvent              ; //!<! AOD event
     AliFJWrapper                      *fFastJetWrapper        ; //!<! Fastjet wrapper
     THistManager                      *fHistManager           ; //!<! Histograms
@@ -526,7 +523,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   virtual void SetOutputTypeInternal(EOutputType_t b)             { fOutputType         = b; }
 
   AliRDHFCuts*         LoadDMesonCutsFromFile(TString cutfname, TString cutsname);
-  
+
   static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
@@ -542,13 +539,12 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   Bool_t               fApplyKinematicCuts        ; ///<  Apply jet kinematic cuts
   Int_t                fNOutputTrees              ; ///<  Maximum number of output trees
   Double_t             fTrackEfficiency           ; ///<  Artificial tracking inefficiency (0...1)
+  AliHFAODMCParticleContainer* fMCContainer       ; //!<! MC particle container
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
-  AliHFAODMCParticleContainer
-                      *fMCContainer               ; //!<! MC particle container
 
  private:
-   
+
   AliAnalysisTaskDmesonJets(const AliAnalysisTaskDmesonJets &source);
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 

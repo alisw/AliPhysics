@@ -547,23 +547,10 @@ AliAnalysisTaskEmcalJetTreeBase* AliAnalysisTaskEmcalJetTreeBase::AddTaskEmcalJe
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  if (ntracks == "mcparticles") {
-    AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer(ntracks);
-    mcpartCont->SelectPhysicalPrimaries(kTRUE);
-  }
-  else if (ntracks == "tracks" || ntracks == "Tracks") {
-    AliTrackContainer* trackCont = jetTask->AddTrackContainer(ntracks);
-  }
-  else if (!ntracks.IsNull()) {
-    jetTask->AddParticleContainer(ntracks);
-  }
+  AliParticleContainer *partCont = jetTask->AddParticleContainer(ntracks.Data());
+  if (partCont) partCont->SetParticlePtCut(trackPtCut);
 
-  AliParticleContainer *partCont = jetTask->GetParticleContainer(0);
-  if (partCont) {
-    partCont->SetParticlePtCut(trackPtCut);
-  }
-
-  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters.Data());
   if (clusterCont) {
     clusterCont->SetClusECut(0.);
     clusterCont->SetClusPtCut(0.);

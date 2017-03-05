@@ -11,9 +11,9 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
     const char* triggerPatchesName  = "EmcalTriggers",
     const char* cellsName           = 0,
     const char* triggersName        = 0,
-    Int_t       nCentBins           = 0,
+    AliEmcalTriggerQATask::EBeamType_t beamType = AliEmcalTriggerQATask::kpp,
     Bool_t      online              = kFALSE,
     const char* suffix              = "")
 {
-  return AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(triggerPatchesName, cellsName, triggersName, nCentBins, online, "", suffix);
+  return AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(triggerPatchesName, cellsName, triggersName, beamType, online, "", suffix);
 }
