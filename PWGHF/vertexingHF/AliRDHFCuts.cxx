@@ -1299,23 +1299,18 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
 
   if(estimator==kCentV0M){
     cent=multSelection->GetMultiplicityPercentile("V0M");
-    Int_t qual = multSelection->GetEvSelCode();
-    if(qual == 199 ) cent=-999;
   }else if(estimator==kCentV0A){
     cent=multSelection->GetMultiplicityPercentile("V0A");
-    Int_t qual = multSelection->GetEvSelCode();
-    if(qual == 199 ) cent=-999;
   }else if(estimator==kCentZNA){
     cent=multSelection->GetMultiplicityPercentile("ZNA");
-    Int_t qual = multSelection->GetEvSelCode();
-    if(qual == 199 ) cent=-999;
   }else if(estimator==kCentCL1){
     cent=multSelection->GetMultiplicityPercentile("CL1");
-    Int_t qual = multSelection->GetEvSelCode();
-    if(qual == 199 ) cent=-999;
   }else {
     AliWarning(Form("CENTRALITY ESTIMATE WITH ESTIMATEOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)estimator));
+    return cent;
   }
+  Int_t qual = multSelection->GetEvSelCode();
+  if(qual == 199 ) cent=-999;
   return cent;
 }
 //-------------------------------------------------------------------
