@@ -395,41 +395,37 @@ public:
 
   
   // TCard correlation
-  TH2F *   fhEtaPhiTCardCorrNoSelectionLowE[2];             //!<! eta-phi cluster for those selected for TCard correlation studies, E > 2 GeV
-  TH2F *   fhEtaPhiTCardCorrNoSelectionHighE[2];            //!<! eta-phi cluster for those selected for TCard correlation studies, E > 8 GeV
   TH2F *   fhColRowTCardCorrNoSelectionLowE[2];             //!<! col-row cluster cell max for those selected for TCard correlation studies, E > 2 GeV
   TH2F *   fhColRowTCardCorrNoSelectionHighE[2];            //!<! col-row cluster cell max for those selected for TCard correlation studies, E > 8 GeV
   TH2F *   fhLambda0TCardCorrNoSelection[2];                //!<! Cluster m02 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhLambda1TCardCorrNoSelection[2];                //!<! Cluster m20 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhLambdaRTCardCorrNoSelection[2];                //!<! Cluster m20/m02 vs E for clusters selected for TCard correlation studies
   TH2F *   fhNCellsTCardCorrNoSelection[2];                 //!<! Ncells per cluster vs cluster energy, clusters selected for TCard correlation studies
   TH2F *   fhNCellsTCardCorrWithWeightNoSelection[2];       //!<! Ncells per cluster vs cluster energy, select cells with w>0.01, clusters selected for TCard correlation studies
   TH2F *   fhNCellsTCardCorrRatioWithWeightNoSelection[2];  //!<! Ncells per cluster/Ncells per cluster with w>0.01 vs cl. energy, clusters selected for TCard correlation studies
   TH2F *   fhExoticTCardCorrNoSelection[2];                 //!<! exoticity per cluster vs cluster energy, clusters selected for TCard correlation studies
 
-  TH2F *   fhLambda0TCardCorrelN[6][2];                     //!<! Cluster m02 vs E, max cell correlated with 0 to 5, N cells in TCard                
-  TH2F *   fhNCellsTCardCorrelN [6][2];                     //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhExoticTCardCorrelN [6][2];                     //!<! Cluster exoticity vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhEtaPhiTCardCorrelNLowE [6][2];                 //!<! Cluster eta vs phi, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhEtaPhiTCardCorrelNHighE[6][2];                 //!<! Cluster eta vs phi, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhColRowTCardCorrelNLowE [6][2];                 //!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhColRowTCardCorrelNHighE[6][2];                 //!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-
-  TH2F *   fhLambda0TCardCorrelNAllSameTCard[6][2];         //!<! Cluster m02 vs E, max cell correlated with 0 to 5, N cells in TCard                
-  TH2F *   fhNCellsTCardCorrelNAllSameTCard [6][2];         //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhExoticTCardCorrelNAllSameTCard [6][2];         //!<! Cluster exoticity vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhEtaPhiTCardCorrelNAllSameTCardLowE [6][2];     //!<! Cluster eta vs phi, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhEtaPhiTCardCorrelNAllSameTCardHighE[6][2];     //!<! Cluster eta vs phi, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhColRowTCardCorrelNAllSameTCardLowE [6][2];     //!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhColRowTCardCorrelNAllSameTCardHighE[6][2];     //!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
+  TH2F *   fhLambda0TCardCorrelN[8][2];                     //!<! Cluster m02 vs E, max cell correlated with 0 to >6 cells in TCard                
+  TH2F *   fhNCellsTCardCorrelN [8][2];                     //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
+  TH2F *   fhExoticTCardCorrelN [8][2];                     //!<! Cluster exoticity vs E, select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
+  TH2F *   fhColRowTCardCorrelNLowE [8][2];                 //!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
+  TH2F *   fhColRowTCardCorrelNHighE[8][2];                 //!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
   
-  TH2F *   fhLambda0TCardCorrelNExotic[6][2];               //!<! Cluster m02 vs E, max cell correlated with 0 to 5, N cells in TCard, exoticity > 0.97                
-  TH2F *   fhNCellsTCardCorrelNExotic [6][2];               //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard, exoticity > 0.97
-  TH2F *   fhColRowTCardCorrelNLowEExotic [6][2];           //!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
-  TH2F *   fhColRowTCardCorrelNHighEExotic[6][2];           //!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
+  TH2F *   fhLambda0TCardCorrelNAllSameTCard[8][2];         //!<! Cluster m02 vs E, max cell correlated with 0 to >6 cells in TCard                
+  TH2F *   fhNCellsTCardCorrelNAllSameTCard [8][2];         //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
+  TH2F *   fhExoticTCardCorrelNAllSameTCard [8][2];         //!<! Cluster exoticity vs E, select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
+  TH2F *   fhColRowTCardCorrelNAllSameTCardLowE [8][2];     //!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
+  TH2F *   fhColRowTCardCorrelNAllSameTCardHighE[8][2];     //!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
+  
+  TH2F *   fhLambda0TCardCorrelNExotic[8][2];               //!<! Cluster m02 vs E, max cell correlated with 0 to >6 cells in TCard, exoticity > 0.97                
+  TH2F *   fhNCellsTCardCorrelNExotic [8][2];               //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with >6 cells in TCard, exoticity > 0.97
+  TH2F *   fhColRowTCardCorrelNLowEExotic [8][2];           //!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
+  TH2F *   fhColRowTCardCorrelNHighEExotic[8][2];           //!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard
 
-  TH2F *   fhLambda0TCardCorrelNAllSameTCardExotic[6][2];   //!<! Cluster m02 vs E, max cell correlated with 0 to 5, N cells in TCard, exoticity > 0.97                
-  TH2F *   fhNCellsTCardCorrelNAllSameTCardExotic [6][2];   //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard, exoticity > 0.97
-  TH2F *   fhColRowTCardCorrelNAllSameTCardLowEExotic[6][2];//!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard, exoticity > 0.97  
-  TH2F *   fhColRowTCardCorrelNAllSameTCardHighEExotic[6][2];//!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard, exoticity > 0.97  
+  TH2F *   fhLambda0TCardCorrelNAllSameTCardExotic[8][2];   //!<! Cluster m02 vs E, max cell correlated with 0 to >6 cells in TCard, exoticity > 0.97                
+  TH2F *   fhNCellsTCardCorrelNAllSameTCardExotic [8][2];   //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to >6 cells in TCard, exoticity > 0.97
+  TH2F *   fhColRowTCardCorrelNAllSameTCardLowEExotic[8][2];//!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with >6 cells cells in TCard, exoticity > 0.97  
+  TH2F *   fhColRowTCardCorrelNAllSameTCardHighEExotic[8][2];//!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with >6 cells in TCard, exoticity > 0.97  
   
   TH2F *   fhLambda0TCardCorrel[7][2];                      //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard               
   TH2F *   fhNCellsTCardCorrel [7][2];                      //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard, exoticity > 0.97  
@@ -438,12 +434,36 @@ public:
   TH2F *   fhLambda0TCardCorrelExotic[4][2];                //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard, exoticity > 0.97                
   TH2F *   fhNCellsTCardCorrelExotic [4][2];                //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard, exoticity > 0.97 
 
-  TH2F *   fhLambda0Exoticity[14][2];                       //!<! Cluster m02 vs exoticy,for different cluster energy bins               
-  TH2F *   fhNCellsExoticity [14][2];                       //!<! Cluster NCells vs exoticy,for different cluster energy bins               
-  TH2F *   fhLambda0ExoticityAllSameTCard[14][2];           //!<! Cluster m02 vs exoticy,for different cluster energy bins               
-  TH2F *   fhNCellsExoticityAllSameTCard [14][2];           //!<! Cluster NCells vs exoticy,for different cluster energy bins            
+  TH2F *   fhLambda0Exoticity[14][2];                       //!<! Cluster m02 vs exoticy, for different cluster energy bins               
+  TH2F *   fhLambda1Exoticity[14][2];                       //!<! Cluster m02 vs exoticy, for different cluster energy bins               
+  TH2F *   fhLambdaRExoticity[14][2];                       //!<! Cluster m02 vs exoticy, for different cluster energy bins               
+  TH2F *   fhNCellsExoticity [14][2];                       //!<! Cluster NCells vs exoticy, for different cluster energy bins
+  TH2F *   fhLambda0Lambda1  [14][2];                       //!<! Cluster m02 vs m20,for different cluster energy bins               
+
+  TH2F *   fhLambda0ExoticityAllSameTCard[14][2];           //!<! Cluster m02 vs exoticy, for different cluster energy bins, all cells in same TCard as leading               
+  TH2F *   fhLambda1ExoticityAllSameTCard[14][2];           //!<! Cluster m02 vs exoticy, for different cluster energy bins, all cells in same TCard as leading               
+  TH2F *   fhLambdaRExoticityAllSameTCard[14][2];           //!<! Cluster m02 vs exoticy, for different cluster energy bins, all cells in same TCard as leading               
+  TH2F *   fhNCellsExoticityAllSameTCard [14][2];           //!<! Cluster NCells vs exoticy, for different cluster energy bins, all cells in same TCard as leading 
+  TH2F *   fhLambda0Lambda1AllSameTCard  [14][2];           //!<! Cluster m02 vs m20,for different cluster energy bins, all cells in same TCard as leading               
+  
   TH2F *   fhNCellsTCardSameAndDiff      [14][2];           //!<! Cluster NCells in same TCard as leading vs NCells on different TCard               
   TH2F *   fhNCellsTCardSameAndDiffExotic[14][2];           //!<! Cluster NCells in same TCard as leading vs NCells on different TCard, exoticity > 0.97              
+
+  TH2F *   fhTMPhiResidualExoticity[14];                    //!<! Cluster-track matching residual in phi vs exoticity              
+  TH2F *   fhTMEtaResidualExoticity[14];                    //!<! Cluster-track matching residual in phi vs exoticity             
+  TH2F *   fhTMPhiResidualExoticityAllSameTCard[14];        //!<! Cluster-track matching residual in phi vs exoticity, all cells in same TCard as leading                
+  TH2F *   fhTMEtaResidualExoticityAllSameTCard[14];        //!<! Cluster-track matching residual in phi vs exoticity, all cells in same TCard as leading                
+
+  TH2F *   fhLambda0TCardCorrelNCell[6][6][2];              //!<! Cluster m02 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
+  TH2F *   fhLambda1TCardCorrelNCell[6][6][2];              //!<! Cluster m20 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
+  TH2F *   fhLambdaRTCardCorrelNCell[6][6][2];              //!<! Cluster m20/m02 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
+  TH2F *   fhExoticTCardCorrelNCell [6][6][2];              //!<! Cluster exoticity vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard  
+  TH2F *   fhColRowTCardCorrelNCellLowE [8][8][2];          //!<! Cluster max cell col vs row, E > 2 GeV, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard
+  TH2F *   fhColRowTCardCorrelNCellHighE[8][8][2];          //!<! Cluster max cell col vs row, E > 8 GeV, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard
+
+  TH2F *   fhLambda0ExoticityPerNCell[6][6][2];             //!<! Cluster m02 vs exoticy,for E > 8 and n cell bins with w>0.01, in same TCard or diff TCard              
+  TH2F *   fhLambda1ExoticityPerNCell[6][6][2];             //!<! Cluster m20 vs exoticy,for E > 8 and n cell bins with w>0.01, in same TCard or diff TCard              
+  TH2F *   fhLambdaRExoticityPerNCell[6][6][2];             //!<! Cluster m20/m02 vs exoticy,for E > 8 and n cell bins with w>0.01, in same TCard or diff TCard              
 
   TH2F *   fhNCellsTCardSameAndDiffFraction      [2];       //!<! Cluster fraction of NCells in same TCard as leading vs energy               
   TH2F *   fhNCellsTCardSameAndDiffFractionExotic[2];       //!<! Cluster fraction of NCells in same TCard as leading vs energy, exoticity > 0.97      
@@ -457,8 +477,6 @@ public:
   TH2F *   fhLambda0TCardCorrelOtherTCard[7][2];            //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard               
   TH2F *   fhNCellsTCardCorrelOtherTCard [7][2];            //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
   TH2F *   fhExoticTCardCorrelOtherTCard [7][2];            //!<! Cluster exoticity vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
-  TH2F *   fhEtaPhiTCardCorrelOtherTCardLowE [7][2];        //!<! Cluster eta vs phi, E > 2 GeV select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
-  TH2F *   fhEtaPhiTCardCorrelOtherTCardHighE[7][2];        //!<! Cluster eta vs phi, E > 8 GeV select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
   TH2F *   fhColRowTCardCorrelOtherTCardLowE [7][2];        //!<! Cluster max cell col vs row, E > 2 GeV select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
   TH2F *   fhColRowTCardCorrelOtherTCardHighE[7][2];        //!<! Cluster max cell col vs row, E > 8 GeV select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
 
