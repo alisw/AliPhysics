@@ -50,6 +50,7 @@ public:
       kNSisters,    // number of daughters (only for MC)
       kPairPtRes,       // pair pT resolution
       kPairYRes,        // pair rapidity resolution
+      kPhiV,   // PhiV calculation
       kTypes          // -- general limit ----------------------------------------------------------
    };
 
