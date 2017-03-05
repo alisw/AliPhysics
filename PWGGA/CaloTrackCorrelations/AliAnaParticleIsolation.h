@@ -701,9 +701,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 //TH2F *   fhLam0EMCALRegionMCConvRcut   [2][4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, MC photon conversions, depending on conversion vertex
 //TH2F *   fhLam0EMCALRegionTRDMCConvRcut[2][4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
 
-  TH2F *   fhLam0EMCALRegionPerSM            [2][4][3][20]; //!<! Cluster lambda0 vs  E, in different EMCal regions
-  TH2F *   fhConeSumPtTrackEMCALRegionPerSM  [2][4][3][20]; //!<! Track pT sum in cone vs  trigger pT, in different EMCal regions
-  TH2F *   fhConeSumPtClusterEMCALRegionPerSM[2][4][3][20]; //!<! Cluster pT sum in cone vs  trigger pT, in different EMCal regions
+  TH2F *   fhLam0EMCALRegionPerSM         [2][4][3][20]; //!<! Cluster lambda0 vs  E, in different EMCal regions
+  TH2F *   fhConeSumPtTrackEMCALRegionPerSM  [4][3][20]; //!<! Track pT sum in cone vs  trigger pT, in different EMCal regions
+  TH2F *   fhConeSumPtClusterEMCALRegionPerSM[4][3][20]; //!<! Cluster pT sum in cone vs  trigger pT, in different EMCal regions
   TH2F *   fhEtaPhiLam0BinPtBin[2][7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different E bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
 
   TH2F *   fhPtClusterInConePerRCut;                     //!<! Clusters Pt in the cone for different cone sizes, x axis.

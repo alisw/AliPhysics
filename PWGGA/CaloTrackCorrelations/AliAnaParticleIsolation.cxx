@@ -383,8 +383,8 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
         for(Int_t ism =0; ism < 20; ism++)
         {
           fhLam0EMCALRegionPerSM            [i][ieta][iphi][ism] = 0; 
-          fhConeSumPtTrackEMCALRegionPerSM  [i][ieta][iphi][ism] = 0; 
-          fhConeSumPtClusterEMCALRegionPerSM[i][ieta][iphi][ism] = 0; 
+          fhConeSumPtTrackEMCALRegionPerSM     [ieta][iphi][ism] = 0; 
+          fhConeSumPtClusterEMCALRegionPerSM   [ieta][iphi][ism] = 0; 
         }
       }
     }
@@ -5325,21 +5325,24 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]->SetXTitle("#it{p}_{T} (GeV)");
               outputContainer->Add(fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]) ;
               
-              fhConeSumPtTrackEMCALRegionPerSM[iso][ieta][iphi][ism]  = new TH2F
-              (Form("hConePtSumTrack_%s_eta%d_phi%d_sm%d",isoName[iso].Data(),ieta,iphi,ism),
-               Form("%s, track #Sigma #it{p}_{T}, sm %d, region #eta %d, #varphi %d",isoTitle[iso].Data(),ism,ieta,iphi),
-               nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
-              fhConeSumPtTrackEMCALRegionPerSM[iso][ieta][iphi][ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-              fhConeSumPtTrackEMCALRegionPerSM[iso][ieta][iphi][ism]->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
-              outputContainer->Add(fhConeSumPtTrackEMCALRegionPerSM[iso][ieta][iphi][ism]) ;
-
-              fhConeSumPtClusterEMCALRegionPerSM[iso][ieta][iphi][ism]  = new TH2F
-              (Form("hConePtSumCluster_%s_eta%d_phi%d_sm%d",isoName[iso].Data(),ieta,iphi,ism),
-               Form("%s, track #Sigma #it{p}_{T}, sm %d, region #eta %d, #varphi %d",isoTitle[iso].Data(),ism,ieta,iphi),
-               nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
-              fhConeSumPtClusterEMCALRegionPerSM[iso][ieta][iphi][ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-              fhConeSumPtClusterEMCALRegionPerSM[iso][ieta][iphi][ism]->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
-              outputContainer->Add(fhConeSumPtClusterEMCALRegionPerSM[iso][ieta][iphi][ism]) ;
+              if(iso==0)
+              {
+                fhConeSumPtTrackEMCALRegionPerSM[ieta][iphi][ism]  = new TH2F
+                (Form("hConePtSumTrack_eta%d_phi%d_sm%d",ieta,iphi,ism),
+                 Form("Track #Sigma #it{p}_{T}, sm %d, region #eta %d, #varphi %d",ism,ieta,iphi),
+                 nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+                fhConeSumPtTrackEMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+                fhConeSumPtTrackEMCALRegionPerSM[ieta][iphi][ism]->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+                outputContainer->Add(fhConeSumPtTrackEMCALRegionPerSM[ieta][iphi][ism]) ;
+                
+                fhConeSumPtClusterEMCALRegionPerSM[ieta][iphi][ism]  = new TH2F
+                (Form("hConePtSumCluster_eta%d_phi%d_sm%d",ieta,iphi,ism),
+                 Form("Track #Sigma #it{p}_{T}, sm %d, region #eta %d, #varphi %d",ism,ieta,iphi),
+                 nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+                fhConeSumPtClusterEMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+                fhConeSumPtClusterEMCALRegionPerSM[ieta][iphi][ism]->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+                outputContainer->Add(fhConeSumPtClusterEMCALRegionPerSM[ieta][iphi][ism]) ;
+              }
             } // ism
           } // iphi 
         } // ieta
@@ -7784,8 +7787,8 @@ void AliAnaParticleIsolation::StudyEMCALRegions
   if ( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
   {
     fhLam0EMCALRegionPerSM            [isolated][etaRegion][phiRegion][iSM]->Fill(pt, m02, GetEventWeight());
-    fhConeSumPtTrackEMCALRegionPerSM  [isolated][etaRegion][phiRegion][iSM]->Fill(pt, coneptsumTrack  , GetEventWeight());
-    fhConeSumPtClusterEMCALRegionPerSM[isolated][etaRegion][phiRegion][iSM]->Fill(pt, coneptsumCluster, GetEventWeight());
+    fhConeSumPtTrackEMCALRegionPerSM            [etaRegion][phiRegion][iSM]->Fill(pt, coneptsumTrack  , GetEventWeight());
+    fhConeSumPtClusterEMCALRegionPerSM          [etaRegion][phiRegion][iSM]->Fill(pt, coneptsumCluster, GetEventWeight());
   }
   
   // Check eta-phi distribution for shower shape tail region
