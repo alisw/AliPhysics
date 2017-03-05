@@ -128,6 +128,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetZvertexDiffValue(Double_t cut)                     { fMaxVzDiff         = cut                            ; }
   void                        SetMinNVertCont(Int_t cut)                            { fMinNVertCont      = cut                            ; }
   void                        SetPtHardRange(Double_t min, Double_t max)            { fMinPtHard         = min  ; fMaxPtHard   = max      ; }
+  void                        SetMaxMinimumBiasPtHard(Int_t max)                    { fMaxMinimumBiasPtHard = max                         ; }
   void                        AddAcceptedTriggerClass(const char* trigClass)        { fAcceptedTriggerClasses.insert(trigClass)           ; }
   void                        AddRejectedTriggerClass(const char* trigClass)        { fRejectedTriggerClasses.insert(trigClass)           ; }
   void                        ClearAcceptedTriggerClasses()                         { fAcceptedTriggerClasses.clear()                     ; }
@@ -218,6 +219,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Double_t                    fMinNVertCont;               ///< minumum number of vertex contributors
   Double_t                    fMinPtHard;                  ///< select minimum pt hard (MC)
   Double_t                    fMaxPtHard;                  ///< select maximum pt hard (MC)
+  Double_t                    fMaxMinimumBiasPtHard;       ///< maximum pt hard for the minimum bias pt hard bin (MC)
   std::set<std::string>       fAcceptedTriggerClasses;     ///< list of accepted trigger classes
   std::set<std::string>       fRejectedTriggerClasses;     ///< list of accepted trigger classes
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection

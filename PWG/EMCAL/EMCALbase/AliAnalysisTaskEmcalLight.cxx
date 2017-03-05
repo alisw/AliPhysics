@@ -81,6 +81,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fMinNVertCont(0),
   fMinPtHard(-1),
   fMaxPtHard(-1),
+  fMaxMinimumBiasPtHard(-1),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
   fMCRejectFilter(kFALSE),
@@ -164,6 +165,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fMinNVertCont(0),
   fMinPtHard(-1),
   fMaxPtHard(-1),
+  fMaxMinimumBiasPtHard(-1),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
   fMCRejectFilter(kFALSE),
@@ -793,6 +795,11 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
   }
 
   if (fMaxPtHard >= 0 && fPtHard >= fMaxPtHard)  {
+    if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
+    return kFALSE;
+  }
+
+  if (fPtHardBin == 0 && fMaxMinimumBiasPtHard >= 0 && fPtHard > fMaxMinimumBiasPtHard) {
     if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
     return kFALSE;
   }
