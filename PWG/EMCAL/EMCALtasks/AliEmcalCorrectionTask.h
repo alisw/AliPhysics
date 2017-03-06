@@ -78,6 +78,11 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   AliEmcalCorrectionTask();
   AliEmcalCorrectionTask(const char * name);
+  // Implemented using copy-and-swap mechanism
+  AliEmcalCorrectionTask(const AliEmcalCorrectionTask & task);
+  AliEmcalCorrectionTask &operator=(AliEmcalCorrectionTask other);
+  friend void swap(AliEmcalCorrectionTask & first, AliEmcalCorrectionTask & second);
+  AliEmcalCorrectionTask(AliEmcalCorrectionTask && other);
   virtual ~AliEmcalCorrectionTask();
 
   // YAML
@@ -155,9 +160,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   static AliEmcalCorrectionTask* AddTaskEmcalCorrectionTask(TString suffix = "");
 
  private:
-  AliEmcalCorrectionTask(const AliEmcalCorrectionTask &);             // Not implemented
-  AliEmcalCorrectionTask &operator=(const AliEmcalCorrectionTask &);  // Not implemented
-
   // Utility functions
   // File utilities
   static inline bool DoesFileExist(const std::string & filename);

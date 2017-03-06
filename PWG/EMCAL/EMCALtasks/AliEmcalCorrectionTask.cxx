@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 #include <TChain.h>
 #include <TSystem.h>
@@ -75,6 +76,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fNcentBins(4),
   fCentEst("V0M"),
   fUseNewCentralityEstimation(kFALSE),
+  fVertex{0},
   fNVertCont(0),
   fBeamType(kNA),
   fNeedEmcalGeom(kTRUE),
@@ -86,10 +88,6 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
 {
   // Default constructor
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-
-  fVertex[0] = 0;
-  fVertex[1] = 0;
-  fVertex[2] = 0;
 
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
@@ -126,6 +124,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fNcentBins(4),
   fCentEst("V0M"),
   fUseNewCentralityEstimation(kFALSE),
+  fVertex{0},
   fNVertCont(0),
   fBeamType(kNA),
   fNeedEmcalGeom(kTRUE),
@@ -138,15 +137,116 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   // Standard constructor
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 
-  fVertex[0] = 0;
-  fVertex[1] = 0;
-  fVertex[2] = 0;
-
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+}
+
+/**
+ * Copy constructor.
+ *
+ * Note that it currently takes just the pointer to the correction
+ * components and their output. More care including copy constructors for the components
+ * would be required for this to be more fully copied!
+ */
+AliEmcalCorrectionTask::AliEmcalCorrectionTask(const AliEmcalCorrectionTask & task):
+  fUserConfiguration(task.fUserConfiguration),
+  fDefaultConfiguration(task.fDefaultConfiguration),
+  fSuffix(task.fSuffix),
+  fUserConfigurationString(task.fUserConfigurationString),
+  fDefaultConfigurationString(task.fDefaultConfigurationString),
+  fUserConfigurationFilename(task.fUserConfigurationFilename),
+  fDefaultConfigurationFilename(task.fDefaultConfigurationFilename),
+  fOrderedComponentsToExecute(task.fOrderedComponentsToExecute),
+  fCorrectionComponents(task.fCorrectionComponents),  // TODO: These should be copied!
+  fConfigurationInitialized(task.fConfigurationInitialized),
+  fIsEsd(task.fIsEsd),
+  fEventInitialized(task.fEventInitialized),
+  fCent(task.fCent),
+  fCentBin(task.fCentBin),
+  fMinCent(task.fMinCent),
+  fMaxCent(task.fMaxCent),
+  fNcentBins(task.fNcentBins),
+  fCentEst(task.fCentEst),
+  fUseNewCentralityEstimation(task.fUseNewCentralityEstimation),
+  fVertex{0.},
+  fNVertCont(task.fNVertCont),
+  fBeamType(task.fBeamType),
+  fForceBeamType(task.fForceBeamType),
+  fNeedEmcalGeom(task.fNeedEmcalGeom),
+  fGeom(task.fGeom),
+  fParticleCollArray(*(static_cast<TObjArray *>(task.fParticleCollArray.Clone()))),
+  fClusterCollArray(*(static_cast<TObjArray *>(task.fClusterCollArray.Clone()))),
+  fOutput(task.fOutput)                           // TODO: More care is needed here!
+{
+  // Vertex position
+  std::copy(std::begin(task.fVertex), std::end(task.fVertex), std::begin(fVertex));
+
+  // Cell Collections
+  for (auto cellCont : task.fCellCollArray)
+  {
+    fCellCollArray.push_back(new AliEmcalCorrectionCellContainer(*cellCont));
+  }
+}
+
+/**
+ * Move constructor
+ */
+AliEmcalCorrectionTask::AliEmcalCorrectionTask(AliEmcalCorrectionTask && other):
+  AliEmcalCorrectionTask()
+{
+  swap(*this, other);
+}
+
+/**
+ * Assignment operator. Note that we pass by _value_, so a copy is created and it is
+ * fine to swap the values with the created object!
+ */
+AliEmcalCorrectionTask & AliEmcalCorrectionTask::operator=(AliEmcalCorrectionTask other)
+{
+  swap(*this, other);
+
+  return *this;
+}
+
+/**
+ * Swap function. Created using guide described here: https://stackoverflow.com/a/3279550
+ */
+void swap(AliEmcalCorrectionTask & first, AliEmcalCorrectionTask & second)
+{
+  using std::swap;
+
+  swap(first.fUserConfiguration, second.fUserConfiguration);
+  swap(first.fDefaultConfiguration, second.fDefaultConfiguration);
+  swap(first.fSuffix, second.fSuffix);
+  swap(first.fUserConfigurationString, second.fUserConfigurationString);
+  swap(first.fDefaultConfigurationString, second.fDefaultConfigurationString);
+  swap(first.fUserConfigurationFilename, second.fUserConfigurationFilename);
+  swap(first.fDefaultConfigurationFilename, second.fDefaultConfigurationFilename);
+  swap(first.fOrderedComponentsToExecute, second.fOrderedComponentsToExecute);
+  swap(first.fCorrectionComponents, second.fCorrectionComponents);
+  swap(first.fConfigurationInitialized, second.fConfigurationInitialized);
+  swap(first.fIsEsd, second.fIsEsd);
+  swap(first.fEventInitialized, second.fEventInitialized);
+  swap(first.fCent, second.fCent);
+  swap(first.fCentBin, second.fCentBin);
+  swap(first.fMinCent, second.fMinCent);
+  swap(first.fMaxCent, second.fMaxCent);
+  swap(first.fNcentBins, second.fNcentBins);
+  swap(first.fCentEst, second.fCentEst);
+  swap(first.fUseNewCentralityEstimation, second.fUseNewCentralityEstimation);
+  swap(first.fVertex, second.fVertex);
+  swap(first.fNVertCont, second.fNVertCont);
+  swap(first.fBeamType, second.fBeamType);
+  swap(first.fForceBeamType, second.fForceBeamType);
+  swap(first.fNeedEmcalGeom, second.fNeedEmcalGeom);
+  swap(first.fGeom, second.fGeom);
+  swap(first.fParticleCollArray, second.fParticleCollArray);
+  swap(first.fClusterCollArray, second.fClusterCollArray);
+  swap(first.fCellCollArray, second.fCellCollArray);
+  swap(first.fOutput, second.fOutput);
 }
 
 /**
