@@ -191,22 +191,22 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
      */
     fCanvas->cd(1);
     SetupPadStyle();
-    hLikeP_TRD_3tls_electron->Draw("colz");
+    if(hLikeP_TRD_3tls_electron) hLikeP_TRD_3tls_electron->Draw("colz");
     fCanvas->cd(2);
     SetupPadStyle();
-    hLikeP_TRD_3tls_pion->Draw("colz");
+    if(hLikeP_TRD_3tls_pion) hLikeP_TRD_3tls_pion->Draw("colz");
     fCanvas->cd(3);
     SetupPadStyle();
-    hLikeP_TRD_4tls_electron->Draw("colz");
+    if(hLikeP_TRD_4tls_electron) hLikeP_TRD_4tls_electron->Draw("colz");
     fCanvas->cd(4);
     SetupPadStyle();
-    hLikeP_TRD_4tls_pion->Draw("colz");
+    if(hLikeP_TRD_4tls_pion) hLikeP_TRD_4tls_pion->Draw("colz");
     fCanvas->cd(5);
     SetupPadStyle();
-    hLikeP_TRD_5tls_electron->Draw("colz");
+    if(hLikeP_TRD_5tls_electron) hLikeP_TRD_5tls_electron->Draw("colz");
     fCanvas->cd(6);
     SetupPadStyle();
-    hLikeP_TRD_5tls_pion->Draw("colz");
+    if(hLikeP_TRD_5tls_pion) hLikeP_TRD_5tls_pion->Draw("colz");
     
     fCanvas->Update();
     fCanvas->Clear();
