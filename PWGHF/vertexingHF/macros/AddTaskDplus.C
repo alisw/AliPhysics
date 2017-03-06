@@ -91,7 +91,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
     dplusTask->SetDoTrackVarHistos(kTRUE);
   if(etaRange==1) dplusTask->SetUseOnlyPositiveEta();
   if(etaRange==-1) dplusTask->SetUseOnlyNegativeEta();
-  if(trackletsmin>=0 && trackletsmax>=0 && trackletsmax>trackletsmin) dplusTask->SetCutOnTracklets(kTRUE,trackletsmin,trackletsmax);
+  if(trackletsmin>=0 && trackletsmax>=0 && trackletsmax>trackletsmin) dplusTask->SetCutOnNtracklets(kTRUE,trackletsmin,trackletsmax);
   mgr->AddTask(dplusTask);
 
   // Create containers for input/output
