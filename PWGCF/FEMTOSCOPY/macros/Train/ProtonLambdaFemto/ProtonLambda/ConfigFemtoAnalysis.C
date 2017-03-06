@@ -12,6 +12,7 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoESDTrackCut.h"
@@ -72,9 +73,10 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
     double minK0Cut = 0.48;
     double maxK0Cut = 0.515;
     
-    AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
+    AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
     Reader->SetFilterBit(7);
     Reader->SetReadV0(1); //Read V0
+    Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
     Reader->SetEPVZERO(kTRUE);
     Reader->SetCentralityFlattening(kTRUE);
     //Reader->SetReadMC(kTRUE);
