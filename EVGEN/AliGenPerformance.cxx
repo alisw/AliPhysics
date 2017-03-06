@@ -41,7 +41,7 @@
   gSystem->Load("liblhapdf");
   gSystem->Load("libAliPythia6");
   //
-  AliGenPerformance::TestAliGenPerformance(5000,0);
+  AliGenPerformance::TestAliGenPerformance(5000,0,0);
   TFile * f = TFile::Open("testAliGenPerformance.root");
   testGener.Draw("pt>>his(100,10,100)","charge!=0&&abs(fKF)<2000","");
   f1pt = new TF1("f1pt","1/(0.01+x)",0,0.1);  
@@ -56,6 +56,7 @@
 #include <TF1.h>
 #include <TF3.h>
 #include <TDatabasePDG.h>
+#include <TParticlePDG.h>
 
 #include "AliRun.h"
 #include "AliLog.h"
@@ -66,6 +67,7 @@
 #include "TMCParticle.h"
 #include <AliPythia.h>
 #include <TTreeStream.h>
+#include <TChain.h>
 
 ClassImp(AliGenPerformance)
 
@@ -136,7 +138,7 @@ void AliGenPerformance::Generate()
     if (fF1Momentum){
       ptot     = 1./fF1Momentum->GetRandom();
     }else{
-      ptot     = 0.001+fF1Momentum->GetRandom()*0.2;
+      ptot     = 0.001+gRandom->Rndm()*0.2;
       ptot/=ptot;
     }
     if (fFPhi){
@@ -155,7 +157,7 @@ void AliGenPerformance::Generate()
     mom[2] = ptot*TMath::Cos(theta);
     pos[0]=fOrigin[0]; pos[1]=fOrigin[1]; pos[2]=fOrigin[2];
     //
-    if (fFPosition) fFPosition->GetRandom3(pos[0],pos[1],pos[2]); // ????
+    if (fFPosition) fFPosition->GetRandom3(pos[0],pos[1],pos[2]); // ???? should be taken from "primary" coctail
     //
     posf[0]=pos[0];
     posf[1]=pos[1];
@@ -166,25 +168,50 @@ void AliGenPerformance::Generate()
       pdg = 1+TMath::Nint(gRandom->Rndm()*5.);
     }    
     Float_t polarization[3]= {0,0,0};
-    Int_t nt;
+    Int_t nPart;
     //
     AliPythia *py=AliPythia::Instance();
-    py->Py1ent(-1, -pdg, ptot, theta, phi);
-    py->Py1ent( 2,  pdg, ptot, theta, phi+TMath::Pi());
+    TParticlePDG *mParticle=databasePDG->GetParticle(pdg);
+    if (mParticle==NULL) continue;
+    Double_t mass=mParticle->Mass();
+    Double_t energy=TMath::Sqrt(ptot*ptot+mass*mass);
+    py->Py1ent(-1, -pdg, energy, theta, phi);
+    py->Py1ent( 2,  pdg, energy, theta, phi+TMath::Pi());
     py->Pyexec();
     TObjArray * array = py->GetPrimaries();
     Int_t nParticles=array->GetEntries();
-    //array->Print();
-    for (Int_t iparticle=2; iparticle<nParticles;  iparticle++){
+    //array->Print();    
+    Int_t pLabel  [nParticles];
+    for (Int_t iparticle=0; iparticle<nParticles;  iparticle++){
       TMCParticle * mcParticle= (TMCParticle*)array->At(iparticle);
       Int_t flavour = mcParticle->GetKF();
       mom[0]=mcParticle->GetPx();
       mom[1]=mcParticle->GetPy();
-      mom[2]=mcParticle->GetPz();
+      mom[2]=mcParticle->GetPz(); 
+      posf[0]+=mcParticle->GetVx();
+      posf[1]+=mcParticle->GetVy();
+      posf[2]+=mcParticle->GetVz();
+      TParticlePDG * pdgParticle=databasePDG->GetParticle(flavour);
+      Int_t decayFlag=(iparticle<2)?1:11;
+      pLabel[iparticle]=-1;
+      Int_t pythiaParent=mcParticle->GetParent();
+      Int_t stackParent=(pythiaParent>0&&pythiaParent<nParticles)?pLabel[pythiaParent]:-1;
       //
-      if (!fTestStream) PushTrack(fTrackIt,-1,flavour,mom, posf, polarization,0,kPPrimary,nt);
+      if (!fTestStream &&pdgParticle!=NULL) {
+	if (mcParticle->GetEnergy()<=mcParticle->GetMass()){
+	  //::Error("AliGenPerformance::Generate","Unphysical particle %d",flavour); // MI to check Energy definition
+	  continue;
+	}
+	// Missing info in roder to apply reweighting
+	// 1.) mother track missing - all particles considered primary
+	//        how to obtain mother ID ?
+	// 2.)  
+	//
+	PushTrack(fTrackIt,stackParent,flavour,mom, posf, polarization,0,kPPrimary,nPart,1.,decayFlag);
+	pLabel[iparticle]=nPart; 
+	if (stackParent>0) KeepTrack(stackParent);
+      }
       if (fTestStream){
-	TParticlePDG * pdgParticle=databasePDG->GetParticle(mcParticle->GetKF());
 	if (pdgParticle){
 	  Double_t charge=pdgParticle->Charge();
 	  Double_t mass=pdgParticle->Mass();
@@ -271,3 +298,47 @@ void AliGenPerformance::TestAliGenPerformance(Int_t nEvents, TF1 *f1pt, TF1 *fpd
   delete pcstream;
 }
 
+
+
+TChain *  AliGenPerformance::MakeKineChain(){
+  //
+  // Make chain of Kinematic trees
+  // input list should be provided as a text files kinematics.list
+  //
+  TChain *chain = new TChain("xxx","xxx");
+  TObjArray *kineArray = gSystem->GetFromPipe("cat kinematics.list").Tokenize("\n");
+  Int_t nFiles=kineArray->GetEntries();
+  for (Int_t iFile=0; iFile<nFiles; iFile++){
+    TFile * fkine = TFile::Open(kineArray->At(iFile)->GetName());
+    TList * kineList = fkine->GetListOfKeys();
+    for (Int_t iKey=0; iKey<kineList->GetEntries();iKey++){
+      chain->AddFile(kineArray->At(iFile)->GetName(), TChain::kBigNumber, TString::Format("%s/TreeK",kineList->At(iKey)->GetName()).Data());
+    }    
+  }
+  return chain;
+  /*
+    TChain * chainMother = AliGenPerformance::MakeKineChain();
+    TChain * chainDaughter = AliGenPerformance::MakeKineChain();
+    TChain * chainDaughter2 = AliGenPerformance::MakeKineChain();
+    chainMother->SetAlias("tNumber","This->GetTreeNumber()");
+    chainMother->SetAlias("eNumber","This.GetTree().GetReadEntry()");
+    chainMother->SetAlias("mP","Particles.P()");
+
+    chainMother->BuildIndex("This->GetTreeNumber()","This.GetTree().GetReadEntry()");
+    chainDaughter->BuildIndex("This->GetTreeNumber()","Particles.GetMother(0)");
+    chainDaughter2->BuildIndex("This->GetTreeNumber()","Particles.GetMother(0)");
+    chainDaughter->AddFriend(chainMother,"M");
+    chainDaughter->AddFriend(chainDaughter2,"D");
+
+
+    TChain * chainMother = AliGenPerformance::MakeKineChain();
+    TChain * chainDaughter = AliGenPerformance::MakeKineChain();
+    chainMother->SetAlias("index0","(Particles.GetDaughter(0)+1000000*This->GetTreeNumber()+0)");
+    chainDaughter->SetAlias("index0","(This.GetTree().GetReadEntry()+1000000*This->GetTreeNumber()+0)");
+    //
+    chainMother->BuildIndex("Particles.GetDaughter(0)+1000000*This->GetTreeNumber()");
+    chainDaughter->BuildIndex("This.GetTree().GetReadEntry()+1000000*This->GetTreeNumber()");
+    chainMother->AddFriend(chainDaughter,"D");
+    
+  */
+}

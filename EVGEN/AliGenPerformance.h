@@ -18,9 +18,9 @@
 #include "AliGenerator.h"
 class TF3;
 class TTreeSRedirector;
+class TChain;
 
-class AliGenPerformance : public AliGenerator
-{
+class AliGenPerformance : public AliGenerator{
 public:
 
   AliGenPerformance();
@@ -35,6 +35,7 @@ public:
   void SetStreamer(TTreeSRedirector *pcstream){fTestStream=pcstream;}
   TTreeSRedirector * GetStreamer(){return fTestStream;}
   static void TestAliGenPerformance(Int_t nEvents, TF1 *f1pt, TF1 *fpdg);
+  static TChain *  MakeKineChain();
 private:
   Float_t fNJets;                 // mean number of jets
   TF1 *   fF1Momentum;            // momentum distribution function
