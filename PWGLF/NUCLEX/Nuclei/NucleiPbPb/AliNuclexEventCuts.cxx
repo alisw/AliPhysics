@@ -81,6 +81,7 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fPrimaryVertex{nullptr},
   fNewEvent{true},
   fOverrideAutoTriggerMask{false},
+  fOverrideAutoPileUpCuts{false},
   fCutStats{nullptr},
   fVtz{nullptr},
   fDeltaTrackSPDvtz{nullptr},
@@ -412,12 +413,14 @@ void AliNuclexEventCuts::SetupRun2pp() {
 
   fRequiredSolenoidPolarity = 0;
 
-  fUseMultiplicityDependentPileUpCuts = (fSPDpileupMinContributors == 1000); // If user specify a value it is not overwritten
-  fSPDpileupMinZdist = 0.8;
-  fSPDpileupNsigmaZdist = 3.;
-  fSPDpileupNsigmaDiamXY = 2.;
-  fSPDpileupNsigmaDiamZ = 5.;
-  fTrackletBGcut = true;
+  if (!fOverrideAutoPileUpCuts) {
+    fUseMultiplicityDependentPileUpCuts = true; // If user specify a value it is not overwritten
+    fSPDpileupMinZdist = 0.8;
+    fSPDpileupNsigmaZdist = 3.;
+    fSPDpileupNsigmaDiamXY = 2.;
+    fSPDpileupNsigmaDiamZ = 5.;
+    fTrackletBGcut = true;
+  }
 
   if (fCentralityFramework > 1)
     ::Fatal("AliNuclexEventCutsSetupRun2pp","You cannot use the legacy centrality framework in pp. Please set the fCentralityFramework to 0 to disable the multiplicity selection or to 1 to use AliMultSelection.");
@@ -452,12 +455,14 @@ void AliNuclexEventCuts::SetupLHC15o() {
 
   fRequiredSolenoidPolarity = 0;
 
-  fUseMultiplicityDependentPileUpCuts = (fSPDpileupMinContributors == 1000); // If user specify a value it is not overwritten
-  fSPDpileupMinZdist = 0.8;
-  fSPDpileupNsigmaZdist = 3.;
-  fSPDpileupNsigmaDiamXY = 2.;
-  fSPDpileupNsigmaDiamZ = 5.;
-  fTrackletBGcut = false;
+  if (!fOverrideAutoPileUpCuts) {
+    fUseMultiplicityDependentPileUpCuts = true; // If user specify a value it is not overwritten
+    fSPDpileupMinZdist = 0.8;
+    fSPDpileupNsigmaZdist = 3.;
+    fSPDpileupNsigmaDiamXY = 2.;
+    fSPDpileupNsigmaDiamZ = 5.;
+    fTrackletBGcut = false;
+  }
 
   fCentralityFramework = 1;
   fCentEstimators[0] = "V0M";
@@ -506,4 +511,13 @@ void AliNuclexEventCuts::SetupLHC11h() {
   fUseEstimatorsCorrelationCut = false;
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+}
+
+void  AliNuclexEventCuts::OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov) {
+  fSPDpileupMinContributors = minContrib;
+  fSPDpileupMinZdist = minZdist;
+  fSPDpileupNsigmaZdist = nSigmaZdist;
+  fSPDpileupNsigmaDiamXY = nSigmaDiamXY;
+  fSPDpileupNsigmaDiamZ = nSigmaDiamZ;
+  fOverrideAutoPileUpCuts = ov;
 }
