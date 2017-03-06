@@ -28,6 +28,7 @@
 #include <vector>
 
 bool gSTARBinning = false;
+bool newVar = false;
 
 void AddPoint(TGraphErrors* graph, Float_t x, Float_t y, Float_t xe, Float_t ye)
 {
