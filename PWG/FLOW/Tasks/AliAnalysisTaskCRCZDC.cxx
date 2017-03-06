@@ -1429,7 +1429,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 ) + av;
             fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
           }
-          if(EZNC<=0.) fAllChONZNC=kFALSE;
+          if(fUseZDCSpectraCorr && EZNC<=0.) fAllChONZNC=kFALSE;
           SumEZNC += EZNC;
           
           // build centroid
@@ -1458,7 +1458,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             EZNA = exp( (log(EZNA) - mu1 + mu2*cor1)/cor1 ) + av;
             fhZNSpectraCor->Fill(centrperc,i+4.5,EZNA);
           }
-          if(EZNA<=0.) fAllChONZNA=kFALSE;
+          if(fUseZDCSpectraCorr && EZNA<=0.) fAllChONZNA=kFALSE;
           SumEZNA += EZNA;
           
           // build centroid
