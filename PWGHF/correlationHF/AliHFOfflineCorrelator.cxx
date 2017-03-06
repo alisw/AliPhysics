@@ -861,7 +861,7 @@ Bool_t AliHFOfflineCorrelator::IsSoftPionFromDstar(AliHFCorrelationBranchD *brD,
 	Double_t e1K = TMath::Sqrt(mK*mK + TMath::Power(brD->pXdaug1_D,2) + TMath::Power(brD->pYdaug1_D,2) + TMath::Power(brD->pZdaug1_D,2));
 	Double_t e2Pi = TMath::Sqrt(mPi*mPi + TMath::Power(brD->pXdaug2_D,2) + TMath::Power(brD->pYdaug2_D,2) + TMath::Power(brD->pZdaug2_D,2));
 		
-	Double_t psum2 = TMath::Power(pxD+pxTr,2) + TMath::Power(pyD+pyTr,2) + TMath::Power(pyD+pyTr,2);
+	Double_t psum2 = TMath::Power(pxD+pxTr,2) + TMath::Power(pyD+pyTr,2) + TMath::Power(pzD+pzTr,2);
 
 	switch(brD->hyp_D) { //there's no 3, since each mass hypothesis is filled separately (and 3's are fileld two times, one as 1 and one as 2)
 		case 1:
