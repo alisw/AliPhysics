@@ -88,6 +88,8 @@ class AliCEPBase : public TObject {
 		kBinnoV0,
 		kBinnoFMD,
 		kBinnoAD,
+		kBinDG,
+		kBinNDG,
 		kBinSaved,
 		kBinLastValue,
 

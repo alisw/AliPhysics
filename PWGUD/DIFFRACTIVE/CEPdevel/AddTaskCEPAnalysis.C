@@ -5,8 +5,12 @@ AliAnalysisTaskSE* AddTaskCEPAnalysis (
   TString taskname        = TString("CEPAnalysis"),
   UInt_t  taskconfig      = AliCEPBase::kBitConfigurationSet,
   Int_t   numTracksMax    = 6,
-  UInt_t  ETmask          = AliCEPBase::kBitBaseLine,
-  UInt_t  ETpattern       = AliCEPBase::kBitBaseLine,
+  Double_t fracDG         = 1.0,
+  Double_t fracNDG        = 0.0,
+  UInt_t  ETmaskDG        = AliCEPBase::kBitBaseLine,
+  UInt_t  ETpatternDG     = AliCEPBase::kBitBaseLine,
+  UInt_t  ETmaskNDG       = AliCEPBase::kBitBaseLine,
+  UInt_t  ETpatternNDG    = AliCEPBase::kBitBaseLine,
   UInt_t  TTmask          = AliCEPBase::kTTBaseLine,
   UInt_t  TTpattern       = AliCEPBase::kTTBaseLine
   )
@@ -26,7 +30,10 @@ AliAnalysisTaskSE* AddTaskCEPAnalysis (
   // create the analysis task
 	AliAnalysisTaskCEP *task = new AliAnalysisTaskCEP (
     taskname.Data(),taskconfig,
-    numTracksMax,ETmask,ETpattern,TTmask,TTpattern );
+    numTracksMax,
+    fracDG,fracNDG,
+    ETmaskDG,ETpatternDG,ETmaskNDG,ETpatternNDG,TTmask,TTpattern
+  );
 
 	// get input and output managers
 	AliAnalysisDataContainer *aadci  = mgr->GetCommonInputContainer();

@@ -46,7 +46,9 @@ public:
 	AliAnalysisTaskCEP(const char* name,
     Long_t state=AliCEPBase::kBitConfigurationSet,
     Int_t numTracksMax=6,
-    UInt_t ETmask=AliCEPBase::kBitBaseLine, UInt_t ETpattern=AliCEPBase::kBitBaseLine,
+    Double_t fracDG=1.0, Double_t fracNDG=0.0,
+    UInt_t ETmaskDG=AliCEPBase::kBitBaseLine, UInt_t ETpatternDG=AliCEPBase::kBitBaseLine,
+    UInt_t ETmaskNDG=AliCEPBase::kBitBaseLine, UInt_t ETpatternNDG=AliCEPBase::kBitBaseLine,
     UInt_t TTmask=AliCEPBase::kTTBaseLine,  UInt_t TTpattern=AliCEPBase::kTTBaseLine);
   // class  destructor
 	virtual ~AliAnalysisTaskCEP();
@@ -68,10 +70,12 @@ private:
 	void PostOutputs();
 
   // events are saved if (ET=Event test, TT=Track test)
-  // . ET conditions are met
+  // . ET conditions are met (conditions for DG and NDG)
   // . 0 < nTrack='number of tracks meeting the TT conditions' <= fnumTracksMax
   Int_t fnumTracksMax;
-  UInt_t fETmask, fETpattern;
+  Double_t ffracDG, ffracNDG;
+  UInt_t fETmaskDG,  fETpatternDG;
+  UInt_t fETmaskNDG, fETpatternNDG;
   UInt_t fTTmask, fTTpattern;
 
 	// event information

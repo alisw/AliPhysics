@@ -23,6 +23,7 @@
 #include <TH2.h>
 #include <TList.h>
 #include <TObject.h>
+#include <TRandom3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliProdInfo.h"
@@ -48,13 +49,19 @@
 AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   Long_t state,
   Int_t numTracksMax,
-  UInt_t ETmask, UInt_t ETpattern,
+  Double_t fracDG, Double_t fracNDG,
+  UInt_t ETmaskDG, UInt_t ETpatternDG,
+  UInt_t ETmaskNDG, UInt_t ETpatternNDG,
   UInt_t TTmask, UInt_t TTpattern):
 	AliAnalysisTaskSE(name)
 	, fAnalysisStatus(state)
   , fnumTracksMax(numTracksMax)
-  , fETmask(ETmask)
-  , fETpattern(ETpattern)
+  , ffracDG(fracDG)
+  , ffracNDG(fracNDG)
+  , fETmaskDG(ETmaskDG)
+  , fETpatternDG(ETpatternDG)
+  , fETmaskNDG(ETmaskNDG)
+  , fETpatternNDG(ETpatternNDG)
   , fTTmask(TTmask)
   , fTTpattern(TTpattern)
   , fLHCPeriod(TString(""))
@@ -100,8 +107,12 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	AliAnalysisTaskSE()
 	, fAnalysisStatus(AliCEPBase::kBitConfigurationSet)
   , fnumTracksMax(6)
-  , fETmask(AliCEPBase::kBitBaseLine)
-  , fETpattern(AliCEPBase::kBitBaseLine)
+  , ffracDG(1.0)
+  , ffracNDG(0.0)
+  , fETmaskDG(AliCEPBase::kBitBaseLine)
+  , fETpatternDG(AliCEPBase::kBitBaseLine)
+  , fETmaskNDG(AliCEPBase::kBitBaseLine)
+  , fETpatternNDG(AliCEPBase::kBitBaseLine)
   , fTTmask(AliCEPBase::kTTBaseLine)
   , fTTpattern(AliCEPBase::kTTBaseLine)
   , fLHCPeriod(TString(""))
@@ -729,18 +740,30 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // if the number of considered tracks (nTracksTT) is within the limits ...
   Bool_t isToSave = (0 < nTracksTT) && (nTracksTT <= fnumTracksMax);
 
-  // AND ET conditions are met ...
-  isToSave = isToSave &&
-    fCEPUtil->checkstatus(fEventCondition,fETmask,fETpattern);
+  // consider in addition that only a fraction (ffracDG, ffracNDG) of the
+  // accepted events is saved
+  TRandom3 rnd(0);
+  
+  // AND DG ET conditions are met ...
+  Bool_t isToSaveDG =
+    fCEPUtil->checkstatus(fEventCondition,fETmaskDG,fETpatternDG);
+  if (rnd.Rndm() < (1. - ffracDG)) isToSaveDG = kFALSE;
+    
+  // AND NDG ET conditions are met ...
+  Bool_t isToSaveNDG =
+    fCEPUtil->checkstatus(fEventCondition,fETmaskNDG,fETpatternNDG);
+  if (rnd.Rndm() < (1. - ffracNDG)) isToSaveNDG = kFALSE;
     
   // OR kBitSaveAllEvents is set
-  isToSave = isToSave ||
+  isToSave = ( isToSave && (isToSaveDG || isToSaveNDG) ) ||
     fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitSaveAllEvents,AliCEPBase::kBitSaveAllEvents);
   
   if ( isToSave ) {
     
     // update fhStatsFlow
+    if (isToSaveDG)  fhStatsFlow->Fill(AliCEPBase::kBinDG);
+    if (isToSaveNDG) fhStatsFlow->Fill(AliCEPBase::kBinNDG);
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
 
     // fill the CEPEventBuffer

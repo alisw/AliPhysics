@@ -80,6 +80,8 @@ TH1F* AliCEPUtils::GetHistStatsFlow()
 	axis->SetBinLabel(AliCEPBase::kBinnoV0+1,         "!V0");
 	axis->SetBinLabel(AliCEPBase::kBinnoFMD+1,        "!FMD");
 	axis->SetBinLabel(AliCEPBase::kBinnoAD+1,         "!AD");
+	axis->SetBinLabel(AliCEPBase::kBinDG+1,           "ETDG");
+	axis->SetBinLabel(AliCEPBase::kBinNDG+1,          "ETNDG");
 	axis->SetBinLabel(AliCEPBase::kBinSaved+1,        "saved");
 
 	return hist;
