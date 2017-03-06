@@ -68,12 +68,15 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fHistMC(0x0),
   fHistMCTPConly(0x0),
   fHistData(0x0),
+  fHistAllV0multNTPCout(0),
+  fHistSelV0multNTPCout(0),
   fMC(0),
   fRequireVtxTracks(kTRUE),
+  fUsePtLogAxis(kFALSE),
+  fDoCutV0multTPCout(kFALSE),
   fListHist(0x0),
   fESDtrackCuts(0x0),
-  fVertex(0x0),
-  fUsePtLogAxis(kFALSE)
+  fVertex(0x0)
 {
     
 }
@@ -93,12 +96,15 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fHistMC(0x0),
     fHistMCTPConly(0x0),
     fHistData(0x0),
+    fHistAllV0multNTPCout(0),
+    fHistSelV0multNTPCout(0),
     fMC(0),
     fRequireVtxTracks(kTRUE),
+    fUsePtLogAxis(kFALSE),
+    fDoCutV0multTPCout(kFALSE),
     fListHist(0x0),
     fESDtrackCuts(0x0),
-    fVertex(0x0),
-    fUsePtLogAxis(kFALSE)
+    fVertex(0x0)
 {
   //
   // standard constructur
@@ -118,7 +124,10 @@ AliAnalysisTrackingUncertaintiesAOT::~AliAnalysisTrackingUncertaintiesAOT()
     delete fHistMC;
     delete fHistMCTPConly;
     delete fHistData;
-        
+      
+    delete fHistAllV0multNTPCout;
+    delete fHistSelV0multNTPCout;
+
     delete fListHist;
     fListHist = 0;
   }
@@ -164,6 +173,16 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   fListHist->Add(histTPCITS);
   fListHist->Add(histTPCCL1);
   fListHist->Add(histTPCntrkl);
+    
+  if(fDoCutV0multTPCout) {
+    fHistAllV0multNTPCout = new TH2F("HistAllV0multNTPCout", "V0mult vs # TPCout (all) ;V0mult ;# TPCout", 1000, 0., 40000, 1000, 0, 30000);
+    fHistSelV0multNTPCout = new TH2F("HistSelV0multNTPCout", "V0mult vs # TPCout (sel) ;V0mult ;# TPCout", 1000, 0., 40000, 1000, 0, 30000);
+    fHistAllV0multNTPCout->Sumw2();
+    fHistSelV0multNTPCout->Sumw2();
+    fListHist->Add(fHistAllV0multNTPCout);
+    fListHist->Add(fHistSelV0multNTPCout);
+  }
+
   //
   // (2.) track cut variation histograms
   //
@@ -326,6 +345,26 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     ntracklets = mult->GetNumberOfTracklets();
     ncl1 = mult->GetNumberOfITSClusters(1);
   }
+    
+  if(fDoCutV0multTPCout) { //cut on #tracks kTPCout and V0mult
+    Float_t V0mult=0.;
+    AliESDVZERO *esdVZERO = (AliESDVZERO*)fESD->GetVZEROData();
+    if(esdVZERO) {
+      for(int ich=0; ich<64;ich++) V0mult += esdVZERO->GetMultiplicity(ich);
+    }
+    Int_t nTPCout=0;
+    for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
+      AliESDtrack *track =fESD->GetTrack(i);
+      if (!track) continue;
+      track->SetESDEvent(fESD);
+      if(!track->RelateToVertex(fVertex,fESD->GetMagneticField(),100)) continue;
+      if((track->GetStatus() & AliESDtrack::kTPCout)) nTPCout++;
+    }
+    fHistAllV0multNTPCout->Fill(V0mult,nTPCout);
+    if(nTPCout > (0.32*V0mult+750)) return;
+    else fHistSelV0multNTPCout->Fill(V0mult,nTPCout);
+  }
+    
   for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
         
     isph=-1;

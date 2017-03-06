@@ -147,26 +147,40 @@ void CalculateMatchingEfficiency(TString inFileNameData,
             hITSTPCtracks[is]->SetLineColor(colors[is]);
             hITSTPCtracks[is]->SetMarkerColor(colors[is]);
             
-            if(is == 0)hITSTPCtracks[is]->Draw();
-            else hITSTPCtracks[is]->Draw("same");
+            //            if(is == 0)hITSTPCtracks[is]->Draw();
+            //            else hITSTPCtracks[is]->Draw("same");
+            //
+            //            to be adapted if you have log axis
+            //            if(variable == kPt) {
+            //                if(fitFunc[is]) {
+            //                    fitFunc[is] = 0x0;
+            //                    delete fitFunc[is];
+            //                }
+            //                fitFunc[is] = new TF1(Form("fitFunc%d",is), "pol0",Ptarray[ibin], Ptarray[ibin+1]);
+            //                hITSTPCtracks[is]->Fit(fitFunc[is], "0 R W");
+            //                coeff[ibin][is]  = TMath::Abs(fitFunc[is]->GetParameter(0));
+            //            } else {coeff[ibin][is]  = hITSTPCtracks[is]->GetBinContent(1);Printf("ME: %f",coeff[ibin][is]);}
+            //
+            //            err[ibin][is] = hITSTPCtracks[is]->GetBinError(ibin+1);
+            //        }
+            //
+            //        canvEff->cd(ibin+1);
+            //        hITSTPCtracks[2]->DrawCopy();
+            //        hITSTPCtracks[3]->DrawCopy("sames");
             
-            if(variable == kPt) {
-                if(fitFunc[is]) {
-                    fitFunc[is] = 0x0;
-                    delete fitFunc[is];
-                }
-                fitFunc[is] = new TF1(Form("fitFunc%d",is), "pol0",Ptarray[ibin], Ptarray[ibin+1]);
-                hITSTPCtracks[is]->Fit(fitFunc[is], "0 R W");
-                coeff[ibin][is]  = TMath::Abs(fitFunc[is]->GetParameter(0));
-            } else {coeff[ibin][is]  = hITSTPCtracks[is]->GetBinContent(1);Printf("ME: %f",coeff[ibin][is]);}
+            double averME  = 0;
+            double eaverME = 0;
+            for(int ib = 1; ib <= hITSTPCtracks[is]->GetNbinsX(); ib++) {
+                averME  += hITSTPCtracks[is]->GetBinContent(ib);
+                eaverME += hITSTPCtracks[is]->GetBinError(ib);
+            }
+            averME /= hITSTPCtracks[is]->GetNbinsX();
+            eaverME /= hITSTPCtracks[is]->GetNbinsX();
             
-            err[ibin][is] = hITSTPCtracks[is]->GetBinError(ibin+1);
+            coeff[ibin][is]  = averME;
+            err[ibin][is] = eaverME;
         }
-        
-        canvEff->cd(ibin+1);
-        hITSTPCtracks[2]->DrawCopy();
-        hITSTPCtracks[3]->DrawCopy("sames");
-        
+
         gStyle->SetOptStat(0);
         gStyle->SetOptFit(1);
         

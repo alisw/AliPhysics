@@ -2,6 +2,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           TString trigClass = "CINT1B",
                                           AliVEvent::EOfflineTriggerTypes trigMask = AliVEvent::kMB,
                                           AliAnalysisTrackingUncertaintiesAOT::ESpecies_t specie=(AliAnalysisTrackingUncertaintiesAOT::kSpecPion|AliAnalysisTrackingUncertaintiesAOT::kSpecKaon),
+                                          Bool_t doCutV0multTPCout = kFALSE,
                                           Double_t MaxDCAxy = 2.4,
                                           Double_t MaxDCAz  = 3.2,
                                           Double_t MaxEta   = 0.8,
@@ -42,6 +43,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
     task->SetMaxDCAz(MaxDCAz);
     task->SetEtaRange(MaxEta);
     task->SetCrossRowsOverFndCltTPC(CrossRowsOverFndCltTPC);
+    task->SetUseCutV0multVsTPCout(doCutV0multTPCout);
     
     mgr->AddTask(task);
     ULong64_t SPeciee = task->GetSpecie();

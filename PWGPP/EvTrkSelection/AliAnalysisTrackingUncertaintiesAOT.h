@@ -55,12 +55,13 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetMaxDCAz(Double_t maxDCA)  {fMaxDCAz  = maxDCA;}
   void           SetEtaRange(Double_t maxEta) {fMaxEta   = maxEta;}
   void           SetCrossRowsOverFndCltTPC(Double_t CrossRowsOverFndClt) {fCrossRowsOverFndCltTPC = CrossRowsOverFndClt;}
-  void           SetTriggerClass(TString trigClass) {fTriggerClass = trigClass;}
-  void           SetTriggerMask(ULong64_t mask=0)   {fTriggerMask  = mask;}
-  void           SetSpecie(ULong64_t specie=0)      {fspecie = specie;}
-  void           SetRequireTrackVtx(Bool_t flag)    {fRequireVtxTracks = flag;}
-  void           SetUsePtLogScale(Bool_t flag)      {fUsePtLogAxis = flag;}
-    
+  void           SetTriggerClass(TString trigClass)   {fTriggerClass = trigClass;}
+  void           SetTriggerMask(ULong64_t mask=0)     {fTriggerMask  = mask;}
+  void           SetSpecie(ULong64_t specie=0)        {fspecie = specie;}
+  void           SetRequireTrackVtx(Bool_t flag)      {fRequireVtxTracks = flag;}
+  void           SetUsePtLogScale(Bool_t flag)        {fUsePtLogAxis = flag;}
+  void           SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
+
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
  private:
@@ -89,11 +90,14 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   THnSparse *fHistMC;               //! sparse of the tracks on MC and ITS-TOC matching
   THnSparse *fHistMCTPConly;        //! sparse of the tracks on MC and only TPC request
   THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
-    
+  TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
+  TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
+
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
-  Bool_t   fUsePtLogAxis;           //flage to use log scale on pt axis in match. eff. sparse
-    
+  Bool_t   fUsePtLogAxis;           //flag to use log scale on pt axis in match. eff. sparse
+  Bool_t fDoCutV0multTPCout;        //flag to activate cut on V0mult vs #tracks TPCout
+
   TList           * fListHist;      //! output list for histograms
   AliESDtrackCuts * fESDtrackCuts;  //! cut set which is under study
   AliESDVertex    * fVertex;        //! pointer to ESD vertex
@@ -101,7 +105,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 2);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 3);
 };
 
 #endif
