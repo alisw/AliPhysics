@@ -100,6 +100,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/EMCAL)
                     PWGLF
                     PWGJE
                     PWGLF
+                    PWGUD
           DESTINATION OADB)
 endif()
 
