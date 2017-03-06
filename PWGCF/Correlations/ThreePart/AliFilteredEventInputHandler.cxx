@@ -122,3 +122,4 @@ Option_t *AliFilteredEventInputHandler::GetDataType() const
    return gFilteredEventDataType;
 }
 
+// this comment serves no purpose
