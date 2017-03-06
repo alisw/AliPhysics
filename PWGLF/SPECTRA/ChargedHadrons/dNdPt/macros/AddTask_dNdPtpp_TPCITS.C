@@ -54,6 +54,13 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   if(stEventTrigger.Contains("kINT7")) fdNdPtAnalysispp->SetTriggerMask(AliVEvent::kINT7);
   else if(stEventTrigger.Contains("kMB")) fdNdPtAnalysispp->SetTriggerMask(AliVEvent::kMB);
 
+ if(hasMC) 
+  {
+    fdNdPtAnalysispp->SetUseMCInfo(kTRUE);
+    fdNdPtAnalysispp->SetHistogramsOn(kTRUE);
+    fdNdPtAnalysispp->SetIsPythia(kTRUE);
+    //fdNdPtAnalysis->SetHistogramsOn(kFALSE);
+  }
   
   // SetParticleMode
   if(stParticleMode.Contains("Pion")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCPion);}
