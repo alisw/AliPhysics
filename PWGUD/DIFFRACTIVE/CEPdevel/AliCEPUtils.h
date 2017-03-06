@@ -101,7 +101,9 @@ class AliCEPUtils : public TObject {
     void VtxAnalysis (
       AliVEvent *Event,
       TList *lhh );
-    
+    void TrackCutAnalysis (
+      AliVEvent *Event,
+      TList *lhh );
 
     UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
 

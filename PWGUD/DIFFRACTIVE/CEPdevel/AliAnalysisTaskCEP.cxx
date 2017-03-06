@@ -269,7 +269,9 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,clusterCut);
   if (fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitTrackCutStudy,AliCEPBase::kBitTrackCutStudy)) {
+    printf("Switching TrackCuts Histograms on ...\n");
     fTrackCuts->DefineHistograms();
+    fHist->Add(fTrackCuts);
   }
   
   // Martin's selection
@@ -596,16 +598,16 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 
   // count the number of tracks
   // apply standard cuts to tracks and count accepted tracks
-  //Int_t nTracksTotal = fESDEvent->GetNumberOfTracks();
-  //Int_t nTracksTPCITS = 0;
-  //for (Int_t ii = 0; ii < nTracksTotal; ii++) {
-  //  AliESDtrack *track = fESDEvent->GetTrack(ii);
-	//	if (track) {
-  //    if (fTrackCuts->AcceptTrack(track)) {
-	//	    nTracksTPCITS++;
-  //    }
-  //  }
-	//}
+  // and fill the trackcut QA histograms
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitTrackCutStudy,AliCEPBase::kBitTrackCutStudy)) {
+    Int_t nTracksTotal = fESDEvent->GetNumberOfTracks();
+    Int_t nTracksTPCITS = 0;
+    for (Int_t ii = 0; ii < nTracksTotal; ii++) {
+      AliESDtrack *track = fESDEvent->GetTrack(ii);
+	  	if (track) if (fTrackCuts->AcceptTrack(track)) nTracksTPCITS++;
+	  }
+  }
   
   // get an TObjArray of tracks with the corresponding TrackStatus
   // The TrackStatus is contained in an array of UInt_t
@@ -958,7 +960,6 @@ Bool_t AliAnalysisTaskCEP::CheckInput()
 void AliAnalysisTaskCEP::PostOutputs()
 {
 	// PostData
-
 	Int_t iOutputSlot = 1;
 	PostData(iOutputSlot++, fHist);
   PostData(iOutputSlot++, fCEPtree);

@@ -297,7 +297,7 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
 //  . SPVtx->GetNContributors
 //  . ESDEvent->GetNumberOfPileupVerticesSPD()
 //  . ESDEvent->GetNumberOfPileupVerticesSPD() vs pv->GetNContributors();
-//  . distZ - z-distanze between primary and secondary vertex
+//  . distZ - z-distance between primary and secondary vertex
 //  . dist[X,Y,Z]diam - [x,y,z]-distanze between diamond and secondary vertex
 //  . dist[X,Y,Z]diam vs esd->GetSigma2Diamond[X,Y,Z]()
 void AliCEPUtils::SPDVtxAnalysis (
@@ -447,6 +447,77 @@ void AliCEPUtils::VtxAnalysis (
   
   return;
   
+}
+
+//------------------------------------------------------------------------------
+// This function compiles parameters which are relevant for the
+// track selection
+// see AliESDtrackCuts::AcceptTrack
+// histograms include (see AliCEPUtils::GetTrackCutQAHists)
+//  . spdVertex->GetDispersion()
+//  . spdVertex->GetZRes()
+//  . spdVertex->GetZ() - trkVertex->GetZ()
+//  . vertex->GetZ()
+void AliCEPUtils::TrackCutAnalysis (
+  AliVEvent *Event,
+  TList *lhh )
+{
+  
+  // currently only works with ESDEvent
+  const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(Event);
+  if (!esd) return;
+
+  // loop over all tracks
+  Int_t nTracks = esd->GetNumberOfTracks();
+  
+  AliESDtrack* track = NULL;
+  for (Int_t ii=0; ii<nTracks; ii++) {
+    track = (AliESDtrack*) esd->GetTrack(ii);
+    
+    // getting quality parameters from the ESD track
+    UInt_t status = track->GetStatus();
+    Int_t nClustersITS = track->GetITSclusters(0);
+    Int_t nClustersTPC = track->GetTPCclusters(0);
+    
+    Float_t nCrossedRowsTPC = track->GetTPCCrossedRows();
+    Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+    if (track->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / track->GetTPCNclsF();
+    }
+    
+    Int_t nClustersTPCShared = track->GetTPCnclsS();
+    Float_t fracClustersTPCShared = -1.;
+
+    Float_t chi2PerClusterITS = -1;
+    Float_t chi2PerClusterTPC = -1;
+    if (nClustersITS!=0)
+      chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
+    if (nClustersTPC!=0) {
+      chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
+      }
+    fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
+    
+    Float_t b[2];
+    Float_t bCov[3];
+    track->GetImpactParameters(b,bCov);
+    Float_t dcaToVertexXY = b[0];
+    Float_t dcaToVertexZ  = b[1];
+    Float_t dcaToVertex =
+      TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
+  
+    Double_t p[3];
+    track->GetPxPyPz(p);
+    Double_t momentum = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+    Double_t pt       = TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
+    Double_t mass     = track->GetMass();
+    Double_t energy   = TMath::Sqrt(mass*mass + momentum*momentum);
+
+    Int_t KinkIndex = track->GetKinkIndex(0);
+  
+  }
+
+  return;
+
 }
 
 //------------------------------------------------------------------------------
