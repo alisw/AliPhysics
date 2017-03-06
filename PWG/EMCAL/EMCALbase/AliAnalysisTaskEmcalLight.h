@@ -120,6 +120,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
   void                        SetCentBins(const std::vector<double>& bins)          { fCentBins = std::vector<double>(bins)               ; }
   Int_t                       GetNCentBins()                                  const { return fCentBins.size() > 1 ? fCentBins.size() - 1 : 1; }
+  void                        SetSwitchOffLHC15oFaultyBranches(Bool_t b)            { fSwitchOffLHC15oFaultyBranches = b                  ; }
 
   // Event selection
   void                        SetTriggerSelectionBitMap(UInt_t t)                   { fTriggerSelectionBitMap = t                         ; }
@@ -226,6 +227,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
+  Bool_t                      fSwitchOffLHC15oFaultyBranches; ///< Switch off faulty tree branches in LHC15o AOD trees
 
   // Service fields
   Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized

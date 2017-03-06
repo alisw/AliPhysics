@@ -88,6 +88,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
+  fSwitchOffLHC15oFaultyBranches(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -172,6 +173,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
+  fSwitchOffLHC15oFaultyBranches(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -634,6 +636,22 @@ void AliAnalysisTaskEmcalLight::ExecOnce()
       AliFatal(Form("%s: Can not get EMCal geometry instance. If you do not need the EMCal geometry, disable it by setting task->SetNeedEmcalGeometry(kFALSE).", GetName()));
       return;
     }
+  }
+
+  if (fSwitchOffLHC15oFaultyBranches && dynamic_cast<AliAODEvent*>(InputEvent())) {
+    TTree *aodTree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+    aodTree->SetBranchStatus("D0toKpi.fPx", 0);
+    aodTree->SetBranchStatus("D0toKpi.fPy", 0);
+    aodTree->SetBranchStatus("D0toKpi.fPz", 0);
+    aodTree->SetBranchStatus("D0toKpi.fd0", 0);
+    aodTree->SetBranchStatus("Charm3Prong.fPx", 0);
+    aodTree->SetBranchStatus("Charm3Prong.fPy", 0);
+    aodTree->SetBranchStatus("Charm3Prong.fPz", 0);
+    aodTree->SetBranchStatus("Charm3Prong.fd0", 0);
+    aodTree->SetBranchStatus("Dstar.fPx", 0);
+    aodTree->SetBranchStatus("Dstar.fPy", 0);
+    aodTree->SetBranchStatus("Dstar.fPz", 0);
+    aodTree->SetBranchStatus("Dstar.fd0", 0);
   }
 
   //Load all requested track branches - each container knows name already
