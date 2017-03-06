@@ -88,6 +88,8 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fDoEventQA(kTRUE),
   fRejectOutlierEvents(kFALSE),
   fIsPtHard(kFALSE),
+  fPhosMinNcells(0),
+  fPhosMinM02(0),
   fPHOSGeo(nullptr)
 {
   // Default constructor.
@@ -131,6 +133,8 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fDoEventQA(kTRUE),
   fRejectOutlierEvents(kFALSE),
   fIsPtHard(kFALSE),
+  fPhosMinNcells(0),
+  fPhosMinM02(0),
   fPHOSGeo(nullptr)
 {
   // Standard
@@ -228,6 +232,18 @@ void AliAnalysisTaskPWGJEQA::AllocateClusterHistograms() {
     TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 50, 0, 250);
     SetRejectionReasonLabels(hist->GetXaxis());
     
+    histname = TString::Format("%s/hPhosNCellsVsEnergy", cont->GetArrayName().Data());
+    title = histname + ";N cells;#it{E}_{clus} (GeV/);counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 40, 0, 40, nPtBins, 0, fMaxPt);
+    
+    histname = TString::Format("%s/hPhosM02VsEnergy", cont->GetArrayName().Data());
+    title = histname + ";M02 (cm);#it{E}_{clus} (GeV/);counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 20, nPtBins, 0, fMaxPt);
+    
+    histname = TString::Format("%s/hPhosCellIdVsEnergy", cont->GetArrayName().Data());
+    title = histname + ";Cell ID;#it{E}_{clus} (GeV/);counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 20000, 0, 20000, nPtBins, 0, fMaxPt);
+    
     const Int_t nEmcalSM = 20;
     for (Int_t sm = 0; sm < nEmcalSM; sm++) {
       histname = TString::Format("%s/BySM/hEmcalClusEnergy_SM%d", cont->GetArrayName().Data(), sm);
@@ -235,7 +251,7 @@ void AliAnalysisTaskPWGJEQA::AllocateClusterHistograms() {
       fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
     }
     
-    for (Int_t sm = 0; sm < 6; sm++) {
+    for (Int_t sm = 1; sm < 5; sm++) {
       histname = TString::Format("%s/BySM/hPhosClusEnergy_SM%d", cont->GetArrayName().Data(), sm);
       title = histname + ";#it{E}_{cluster} (GeV);counts";
       fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
@@ -900,9 +916,6 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
       }
       
       Int_t label = TMath::Abs(track->GetLabel());
-      Int_t mcGen = 1;
-      // reject particles generated from other generators in the cocktail but keep fake tracks (label == 0)
-      if (label==0 || track->GetGeneratorIndex() == 0) mcGen = 0;
       
       FillDetectorLevelTHnSparse(fCent, track->Eta(), track->Phi(), track->Pt(), sigma, type);
       
@@ -929,10 +942,7 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
     for (auto partIterator : fGeneratorLevel->accepted_momentum() ) {
       part = partIterator.second;
       
-      Int_t mcGen = 1;
       Byte_t findable = 0;
-      
-      if (part->GetGeneratorIndex() == 0) mcGen = 0;
       
       Int_t pdg = TMath::Abs(part->PdgCode());
       // select charged pions, protons, kaons, electrons, muons
@@ -1017,6 +1027,21 @@ void AliAnalysisTaskPWGJEQA::FillClusterHistograms() {
         }
         
       } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
+        
+        Int_t nCells = it->second->GetNCells();
+        Double_t M02 = it->second->GetM02();
+        Double_t energy = it->second->E();
+        
+        histname = TString::Format("%s/hPhosNCellsVsEnergy", clusters->GetArrayName().Data());
+        fHistManager.FillTH2(histname, nCells, energy);
+        
+        histname = TString::Format("%s/hPhosM02VsEnergy", clusters->GetArrayName().Data());
+        fHistManager.FillTH2(histname, M02, energy);
+        
+        // Apply recommended exotic cuts
+        if (nCells < fPhosMinNcells) continue;
+        if (M02 < fPhosMinM02) continue;
+        
         clusType = kPHOS;
         fNTotClusters[2]++;
         if (fLeadingCluster[2].E() < it->first.E()) fLeadingCluster[2] = it->first;
@@ -1026,14 +1051,21 @@ void AliAnalysisTaskPWGJEQA::FillClusterHistograms() {
         if (fPHOSGeo) {
           fPHOSGeo->AbsToRelNumbering(it->second->GetCellAbsId(0), relid);
           Int_t sm = relid[0];
-          if (sm >=0 && sm < 6) {
+          if (sm >=1 && sm < 5) {
             histname = TString::Format("%s/BySM/hPhosClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
-            fHistManager.FillTH1(histname, it->second->E());
+            fHistManager.FillTH1(histname, energy);
           }
           else {
             AliError(Form("Supermodule %d does not exist!", sm));
           }
         }
+        
+        // Loop through cells in the cluster, and histogram their energy
+        histname = TString::Format("%s/hPhosCellIdVsEnergy", clusters->GetArrayName().Data());
+        for (Int_t i=0; i < nCells; i++) {
+          fHistManager.FillTH2(histname, it->second->GetCellAbsId(i), energy);
+        }
+      
       }
       
       Double_t contents[30]={0};
