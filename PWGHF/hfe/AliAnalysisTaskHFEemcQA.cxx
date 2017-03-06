@@ -65,8 +65,8 @@ using std::endl;
 
 ClassImp(AliAnalysisTaskHFEemcQA)
   //________________________________________________________________________
-  AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA(const char *name)
-: AliAnalysisTaskSE(name),
+AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA(const char *name)
+  : AliAnalysisTaskSE(name),
   fVevent(0),
   fESD(0),
   fAOD(0),
@@ -77,6 +77,8 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
+fDCalDG1(kFALSE),
+fDCalDG2(kFALSE),
   fTracks_tender(0),
   fCaloClusters_tender(0),
   fMCparticle(0),
@@ -198,6 +200,8 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
+fDCalDG1(kFALSE),
+fDCalDG2(kFALSE),
   fTracks_tender(0),
   fCaloClusters_tender(0),
   fMCparticle(0),
@@ -356,22 +360,22 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fCent = new TH1F("fCent","Centrality",100,0,100);
   fOutputList->Add(fCent);
-    
+
   fMult = new TH2F("fMult","Track multiplicity",100,0,100,20000,0,20000);
   fOutputList->Add(fMult);
-    
+
   fEvPlaneV0 = new TH2F("fEvPlaneV0","V0 EP",100,0,100,100,0,TMath::Pi());
   fOutputList->Add(fEvPlaneV0);
-  
+
   fEvPlaneV0A = new TH2F("fEvPlaneV0A","V0A EP",100,0,100,100,0,TMath::Pi());
   fOutputList->Add(fEvPlaneV0A);
-  
+
   fEvPlaneV0C = new TH2F("fEvPlaneV0C","V0C EP",100,0,100,100,0,TMath::Pi());
   fOutputList->Add(fEvPlaneV0C);
-    
+
   fEvPlaneTPC = new TH2F("fEvPlaneTPC","TPC EP",100,0,100,100,0,TMath::Pi());
   fOutputList->Add(fEvPlaneTPC);
-  
+
   fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
   fOutputList->Add(fVtxZ);
 
@@ -597,12 +601,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fOutputList->Add(fInvmassULS_MCtrue);
 
   /*
-  Int_t binsDal[6] =      {3,300,200,200,3,100};
-  Double_t mimDal[6] = {-0.5,0,0,0,-0.5,-5}; 
-  Double_t maxDal[6] = {2.5,0.3,40.0,40.0,2.5,5}; 
-  fInvmassPi0Dalitz = new THnSparseD("Pi0DalitzMC","Inv mass Dal;feed;mass;epT;pi0pT;prim;eta",6,binsDal,mimDal,maxDal);
-  fOutputList->Add(fInvmassPi0Dalitz);
-  */
+     Int_t binsDal[6] =      {3,300,200,200,3,100};
+     Double_t mimDal[6] = {-0.5,0,0,0,-0.5,-5}; 
+     Double_t maxDal[6] = {2.5,0.3,40.0,40.0,2.5,5}; 
+     fInvmassPi0Dalitz = new THnSparseD("Pi0DalitzMC","Inv mass Dal;feed;mass;epT;pi0pT;prim;eta",6,binsDal,mimDal,maxDal);
+     fOutputList->Add(fInvmassPi0Dalitz);
+   */
   fMCcheckMother = new TH2F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5,50,0,50);
   fOutputList->Add(fMCcheckMother);
 
@@ -738,6 +742,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   TString firedTrigger;
   TString TriggerEG1("EG1");
   TString TriggerEG2("EG2");
+    TString TriggerDG1("DG1");
+    TString TriggerDG2("DG2");
   fVevent->GetFiredTriggerClasses();
   if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
 
@@ -749,6 +755,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
   if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
   if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
+    if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
+    if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
 
   Int_t trigger = -1;
   if (fAOD){
@@ -788,60 +796,60 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   ///////////////////
   // event plane
   /////////////////////
-    
+
   Double_t epV0A = 0, epV0C = 0, epV0 = 0, epTPC = 0, qxV0A = 0, qyV0A = 0, qxV0C = 0, qyV0C = 0, qxV0 = 0, qyV0 = 0,  qxTPC = 0, qyTPC = 0;
   TVector2 *qTPC = 0x0;
   TVector2 qVectorfortrack;
-    
+
   // V0
   if(fESD){
     epV0 = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0",fESD,2));
     epV0A = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0A",fESD,2));
     epV0C = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0C",fESD,2));
   }
-    
+
   if (fAOD){
     epV0 = TVector2::Phi_0_2pi(fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxV0,qyV0));
     epV0A = TVector2::Phi_0_2pi(fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,8,2,qxV0A,qyV0A));
     epV0C = TVector2::Phi_0_2pi(fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,9,2,qxV0C,qyV0C));
   }
-  
+
   if(epV0 > TMath::Pi())  epV0 = epV0 - TMath::Pi();
   if(epV0A > TMath::Pi()) epV0A = epV0A - TMath::Pi();
   if(epV0C > TMath::Pi()) epV0C = epV0C - TMath::Pi();
-    
+
   //TPC
-    
+
   if (fAOD){
     AliEventplane* Eventplane=  fAOD->GetEventplane();
     if (Eventplane && Eventplane->GetQVector()) {
       qTPC = Eventplane->GetQVector();
       qxTPC = qTPC->X();
       qyTPC = qTPC->Y();
-          
+
       qVectorfortrack.Set(qxTPC,qyTPC);
       epTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
     }
   }
-    
+
   else{
     AliEventplane* Eventplane =  fESD->GetEventplane();
     if (Eventplane && Eventplane->GetQVector()) {
       qTPC = Eventplane->GetQVector();
       qxTPC = qTPC->X();
       qyTPC = qTPC->Y();
-          
+
       qVectorfortrack.Set(qxTPC,qyTPC);
       epTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
     }
   }
-    
-    
+
+
   fEvPlaneV0->Fill(centrality,epV0);  // cent. vs V0 EP
   fEvPlaneV0A->Fill(centrality,epV0A);// cent. vs V0A EP
   fEvPlaneV0C->Fill(centrality,epV0C);// cent. vs V0C EP
   fEvPlaneTPC->Fill(centrality,epTPC);// cent. vs TPC EP
-  
+
   /////////////////////////////
   //EMCAL cluster information//
   /////////////////////////////
@@ -1014,10 +1022,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       if(atrack->GetITSNcls() < 3) continue;
       if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
-  
-         double phiMatchIts = atrack->Phi();
-         if(atrack->HasPointOnITSLayer(0))fITShitPhi->Fill(0.0,phiMatchIts);
-         if(atrack->HasPointOnITSLayer(1))fITShitPhi->Fill(1.0,phiMatchIts);
+
+      double phiMatchIts = atrack->Phi();
+      if(atrack->HasPointOnITSLayer(0))fITShitPhi->Fill(0.0,phiMatchIts);
+      if(atrack->HasPointOnITSLayer(1))fITShitPhi->Fill(1.0,phiMatchIts);
 
       if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
@@ -1041,21 +1049,21 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       Int_t ilabelM = -1;
       if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM);
       //cout << "labelM =" << ilabelM << endl; 
-  
+
       //if(TMath::Abs(ilabelM)>0)
       if(ilabelM>0)
-        {
-         AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+      {
+        AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
 
-         if(pidM==22) // from pi0 & eta
-           {
-            AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
-            FindMother(fMCparticleM, ilabelM, pidM);
-            }
-      
-            Double_t pTmom = fMCparticleM->Pt();
-            //fMCcheckMother->Fill(abs(pidM),pTmom);
-          }
+        if(pidM==22) // from pi0 & eta
+        {
+          AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+          FindMother(fMCparticleM, ilabelM, pidM);
+        }
+
+        Double_t pTmom = fMCparticleM->Pt();
+        //fMCcheckMother->Fill(abs(pidM),pTmom);
+      }
     }
 
     ////////////////////
@@ -1079,13 +1087,13 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     fTPCNpts->Fill(TrkP,track->GetTPCsignalN());
     fTPCnsig->Fill(TrkP,fTPCnSigma);
     if(pid_ele==1.0)
-      {
-       fTPCnsigMcEle->Fill(TrkP,fTPCnSigma);
-      }
+    {
+      fTPCnsigMcEle->Fill(TrkP,fTPCnSigma);
+    }
     else
-      {
-       fTPCnsigMcHad->Fill(TrkP,fTPCnSigma);
-      }
+    {
+      fTPCnsigMcHad->Fill(TrkP,fTPCnSigma);
+    }
 
     fTPCnsig_Pi->Fill(TrkP,fTPCnSigma_Pi);
 
@@ -1110,16 +1118,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     int iSM = -1;
     //cout << "NcellsInCluster = " << NcellsInCluster << endl;
     for(int icl=0; icl<NcellsInCluster; icl++)
-       {
-        int icell = clustMatch->GetCellAbsId(icl); 
-        //cout << "icell = " << icell << endl;
-        //cout << "fEMCALGeo = " << fEMCALGeo << endl;
-        if(fEMCALGeo)
-          {
-           iSM = fEMCALGeo->GetSuperModuleNumber(icell);
-          }
-        //cout << "iSM = " << iSM << endl;
-       }
+    {
+      int icell = clustMatch->GetCellAbsId(icl); 
+      //cout << "icell = " << icell << endl;
+      //cout << "fEMCALGeo = " << fEMCALGeo << endl;
+      if(fEMCALGeo)
+      {
+        iSM = fEMCALGeo->GetSuperModuleNumber(icell);
+      }
+      //cout << "iSM = " << iSM << endl;
+    }
 
     Double_t emcphi = -999, emceta=-999;
     fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
@@ -1158,10 +1166,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       /////////////////////////////////////////////
       fEMCTrkPt->Fill(TrkPt);
       if(TrkPt>1.0)
-        { 
-         fEMCTrketa->Fill(TrkEta);
-         fEMCTrkphi->Fill(TrkPhi);
-        }
+      { 
+        fEMCTrketa->Fill(TrkEta);
+        fEMCTrkphi->Fill(TrkPhi);
+      }
       fEMCdEdx->Fill(TrkP,dEdx);
       fEMCTPCnsig->Fill(TrkP,fTPCnSigma);
       fEMCTPCNpts->Fill(TrkP,track->GetTPCsignalN());
@@ -1229,18 +1237,18 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       ////////////////////////////////////////////////
       //Track properties of EMCAL electron cadidates//
       ////////////////////////////////////////////////
- 
+
       if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
       if(pid_ele==1.0)
-        {
-         fHistMcEopEle->Fill(track->Pt(),eop);
-        }
+      {
+        fHistMcEopEle->Fill(track->Pt(),eop);
+      }
       else
-        {
-         fHistMcEopHad->Fill(track->Pt(),eop);
-        }
- 
-     if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.35){ //rough cuts
+      {
+        fHistMcEopHad->Fill(track->Pt(),eop);
+      }
+
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.35){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM);
 
@@ -1355,23 +1363,23 @@ void AliAnalysisTaskHFEemcQA::SelectPhotonicElectron(Int_t itrack, AliVTrack *tr
       if(track->Pt()>1) fInvmassULS->Fill(mass);
 
     if(iMC>0)
+    {
+      Int_t iMCbin = -999;
+      if(iMC == 111) 
       {
-       Int_t iMCbin = -999;
-       if(iMC == 111) 
-          {
-           iMCbin = 1;
-          }
-        else if(iMC == 221)
-          {
-           iMCbin = 2;
-          }
-        else
-          {
-           iMCbin = -999;
-          }  
-
-       //if(fFlagULS && track->Pt()>1.5 && iMCbin!=-999)fInvmassULS_MCtrue->Fill(iMCbin,mass);  
+        iMCbin = 1;
       }
+      else if(iMC == 221)
+      {
+        iMCbin = 2;
+      }
+      else
+      {
+        iMCbin = -999;
+      }  
+
+      //if(fFlagULS && track->Pt()>1.5 && iMCbin!=-999)fInvmassULS_MCtrue->Fill(iMCbin,mass);  
+    }
 
     if(mass<100 && fFlagULS && !flagPhotonicElec)
       flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
@@ -1415,124 +1423,124 @@ void AliAnalysisTaskHFEemcQA::FindMother(AliAODMCParticle* part, Int_t &label, I
   }
   else
   {
-   pid = -1;
+    pid = -1;
   }
 }
 
 void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
 {
- TList *lh=fMCheader->GetCocktailHeaders();
- Int_t NpureMC = 0;
- Int_t NpureMCproc = 0; 
- if(lh)
-    {     
-     //cout << "<------- lh = " << lh << " ; NproAll = "<<  lh->GetEntries() << endl; 
+  TList *lh=fMCheader->GetCocktailHeaders();
+  Int_t NpureMC = 0;
+  Int_t NpureMCproc = 0; 
+  if(lh)
+  {     
+    //cout << "<------- lh = " << lh << " ; NproAll = "<<  lh->GetEntries() << endl; 
 
-     for(int igene=0; igene<lh->GetEntries(); igene++)
-        {
-         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
-         if(gh)
-           {
-            //cout << "<------- imc = "<< gh->GetName() << endl;     
-            //cout << "<-------- Ncont = " << gh->NProduced() << endl;
-            if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
-            NpureMCproc += gh->NProduced();
-           }
-        }
+    for(int igene=0; igene<lh->GetEntries(); igene++)
+    {
+      AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+      if(gh)
+      {
+        //cout << "<------- imc = "<< gh->GetName() << endl;     
+        //cout << "<-------- Ncont = " << gh->NProduced() << endl;
+        if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
+        NpureMCproc += gh->NProduced();
+      }
+    }
+  }
+
+  //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+  for(int imc=0; imc<NpureMCproc; imc++)
+  {
+    Bool_t iEnhance = kFALSE;
+    if(imc>=NpureMC)iEnhance = kTRUE;
+    Int_t iHijing = 1;  // select particles from Hijing or PYTHIA
+
+    fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+    Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
+
+
+    Int_t phyprim = 0;
+    if(fMCparticle->IsPrimary())phyprim = 1;
+
+    Double_t PtPi0 = 0.0;
+    Int_t pdgMom = -99;
+
+    Int_t labelMpi = -1;
+    FindMother(fMCparticle,labelMpi,pdgMom);
+    if(pdgMom==-1 && iEnhance)iHijing = 0;  // select particles orogonally from enhance
+
+    if(iHijing ==0)
+    {
+      if(pdgGen==411 || pdgGen==421 || pdgGen==413 || pdgGen==423 || pdgGen==431 || pdgGen==433)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
+      if(pdgGen==511 || pdgGen==521 || pdgGen==513 || pdgGen==523 || pdgGen==531 || pdgGen==533)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
+      if(pdgGen==111)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
+      if(pdgGen==221)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
     }
 
- //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
- for(int imc=0; imc<NpureMCproc; imc++)
-     {
-      Bool_t iEnhance = kFALSE;
-      if(imc>=NpureMC)iEnhance = kTRUE;
-      Int_t iHijing = 1;  // select particles from Hijing or PYTHIA
+    if(pdgGen==111 || pdgGen==221)
+    {
+      PtPi0 = fMCparticle->Pt();
+      if(pdgGen==111 && iHijing==0)fMCneutral->Fill(0.0,fMCparticle->Pt());
+      if(pdgGen==111 && iHijing==1)fMCneutral->Fill(1.0,fMCparticle->Pt());
+      if(pdgGen==221 && iHijing==0)fMCneutral->Fill(2.0,fMCparticle->Pt());
+      if(pdgGen==221 && iHijing==1)fMCneutral->Fill(3.0,fMCparticle->Pt());
 
-      fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
-      Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
+      Int_t Ndecay = fMCparticle->GetNDaughters();
+      if(Ndecay==3)
+      {
+        Int_t firstCh = fMCparticle->GetDaughter(0);
+        Int_t lastCh = fMCparticle->GetDaughter(1);
+        //cout << "firstCh = " << firstCh << " ; lastCh = " << lastCh << endl;
 
-     
-      Int_t phyprim = 0;
-      if(fMCparticle->IsPrimary())phyprim = 1;
+        AliAODMCParticle* fMCpar0 = (AliAODMCParticle*) fMCarray->At(firstCh);
+        AliAODMCParticle* fMCpar1 = (AliAODMCParticle*) fMCarray->At(firstCh+1);
+        AliAODMCParticle* fMCpar2 = (AliAODMCParticle*) fMCarray->At(firstCh+2);
 
-      Double_t PtPi0 = 0.0;
-      Int_t pdgMom = -99;
+        Int_t pdgCh0 = fMCpar0->GetPdgCode();
+        Int_t pdgCh1 = fMCpar1->GetPdgCode();
+        Int_t pdgCh2 = fMCpar2->GetPdgCode();
+        //cout << "pdg = " << pdgCh0  << " ;  " << pdgCh1 << " ; " << pdgCh2 << endl;
 
-      Int_t labelMpi = -1;
-      FindMother(fMCparticle,labelMpi,pdgMom);
-      if(pdgMom==-1 && iEnhance)iHijing = 0;  // select particles orogonally from enhance
-
-      if(iHijing ==0)
+        if(pdgCh0==22 && TMath::Abs(pdgCh1)==11 && TMath::Abs(pdgCh2)==11)
         {
-         if(pdgGen==411 || pdgGen==421 || pdgGen==413 || pdgGen==423 || pdgGen==431 || pdgGen==433)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
-         if(pdgGen==511 || pdgGen==521 || pdgGen==513 || pdgGen==523 || pdgGen==531 || pdgGen==533)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
-         if(pdgGen==111)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
-         if(pdgGen==221)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
-        }
+          TLorentzVector chele1;
+          chele1.SetPxPyPzE(fMCpar1->Px(),fMCpar1->Py(),fMCpar1->Pz(),fMCpar1->E());
+          TLorentzVector chele2;
+          chele2.SetPxPyPzE(fMCpar2->Px(),fMCpar2->Py(),fMCpar2->Pz(),fMCpar2->E());
 
-      if(pdgGen==111 || pdgGen==221)
-        {
-         PtPi0 = fMCparticle->Pt();
-         if(pdgGen==111 && iHijing==0)fMCneutral->Fill(0.0,fMCparticle->Pt());
-         if(pdgGen==111 && iHijing==1)fMCneutral->Fill(1.0,fMCparticle->Pt());
-         if(pdgGen==221 && iHijing==0)fMCneutral->Fill(2.0,fMCparticle->Pt());
-         if(pdgGen==221 && iHijing==1)fMCneutral->Fill(3.0,fMCparticle->Pt());
+          TLorentzVector Sumchele;
+          Sumchele = chele1 + chele2;
+          if(fMCpar1->Pt()>0.5)
+          {
+            if(pdgGen==111 && iHijing==0)fInvmassULS_MCtrue->Fill(1,Sumchele.M());  
+            if(pdgGen==221 && iHijing==0)fInvmassULS_MCtrue->Fill(2,Sumchele.M());  
+            if(pdgGen==111 && iHijing==1) fInvmassULS_MCtrue->Fill(3,Sumchele.M());  
+            if(pdgGen==221 && iHijing==1) fInvmassULS_MCtrue->Fill(4,Sumchele.M());  
 
-         Int_t Ndecay = fMCparticle->GetNDaughters();
-         if(Ndecay==3)
-           {
-            Int_t firstCh = fMCparticle->GetDaughter(0);
-            Int_t lastCh = fMCparticle->GetDaughter(1);
-           //cout << "firstCh = " << firstCh << " ; lastCh = " << lastCh << endl;
- 
-           AliAODMCParticle* fMCpar0 = (AliAODMCParticle*) fMCarray->At(firstCh);
-           AliAODMCParticle* fMCpar1 = (AliAODMCParticle*) fMCarray->At(firstCh+1);
-           AliAODMCParticle* fMCpar2 = (AliAODMCParticle*) fMCarray->At(firstCh+2);
-            
-           Int_t pdgCh0 = fMCpar0->GetPdgCode();
-           Int_t pdgCh1 = fMCpar1->GetPdgCode();
-           Int_t pdgCh2 = fMCpar2->GetPdgCode();
-           //cout << "pdg = " << pdgCh0  << " ;  " << pdgCh1 << " ; " << pdgCh2 << endl;
+            /* 
+               if(pdgGen==111)
+               {
+               Double_t par[6];
+               if(iHijing==0)cout << "pi0 Dalitz ; "<< imc << " ; pdgMpi = " << pdgMom << " ; Enhance = " << iEnhance << " ; pi0 eta = " << fMCparticle->Eta() << endl;
+               par[0] = iHijing;
+               par[1] = Sumchele.M();
+               par[2] = fMCpar1->Pt();
+               par[3] = PtPi0;
+               par[4] = phyprim;
+               par[5] = fMCparticle->Eta();
+               fInvmassPi0Dalitz->Fill(par);
+               }
+             */
+          }
+        } 
 
-           if(pdgCh0==22 && TMath::Abs(pdgCh1)==11 && TMath::Abs(pdgCh2)==11)
-              {
-                TLorentzVector chele1;
-                chele1.SetPxPyPzE(fMCpar1->Px(),fMCpar1->Py(),fMCpar1->Pz(),fMCpar1->E());
-                TLorentzVector chele2;
-                chele2.SetPxPyPzE(fMCpar2->Px(),fMCpar2->Py(),fMCpar2->Pz(),fMCpar2->E());
- 
-                TLorentzVector Sumchele;
-                Sumchele = chele1 + chele2;
-               if(fMCpar1->Pt()>0.5)
-                 {
-                  if(pdgGen==111 && iHijing==0)fInvmassULS_MCtrue->Fill(1,Sumchele.M());  
-                  if(pdgGen==221 && iHijing==0)fInvmassULS_MCtrue->Fill(2,Sumchele.M());  
-                  if(pdgGen==111 && iHijing==1) fInvmassULS_MCtrue->Fill(3,Sumchele.M());  
-                  if(pdgGen==221 && iHijing==1) fInvmassULS_MCtrue->Fill(4,Sumchele.M());  
+      } 
+    }
 
-                  /* 
-                  if(pdgGen==111)
-                     {
-                      Double_t par[6];
-                      if(iHijing==0)cout << "pi0 Dalitz ; "<< imc << " ; pdgMpi = " << pdgMom << " ; Enhance = " << iEnhance << " ; pi0 eta = " << fMCparticle->Eta() << endl;
-                      par[0] = iHijing;
-                      par[1] = Sumchele.M();
-                      par[2] = fMCpar1->Pt();
-                      par[3] = PtPi0;
-                      par[4] = phyprim;
-                      par[5] = fMCparticle->Eta();
-                      fInvmassPi0Dalitz->Fill(par);
-                     }
-                    */
-                 }
-              } 
+  }
 
-           } 
-        }
-
-     }
-
- return;
+  return;
 }
 
 //________________________________________________________________________

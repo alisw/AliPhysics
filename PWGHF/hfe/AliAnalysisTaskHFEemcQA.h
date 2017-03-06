@@ -42,6 +42,10 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
     void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
     void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
+    Bool_t GetEMCalTriggerDG1() { return fDCalDG1; };
+    Bool_t GetEMCalTriggerDG2() { return fDCalDG2; };
+    void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
+    void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
 
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
@@ -72,8 +76,10 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
 
-    Bool_t  fEMCEG1;//EMcal Threshold EG1
+    Bool_t    fEMCEG1;//EMcal Threshold EG1
     Bool_t    fEMCEG2;//EMcal Threshold EG2
+    Bool_t    fDCalDG1;//DCal Threshold DG1
+    Bool_t    fDCalDG2;//DCal Threshold DG2
 
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster

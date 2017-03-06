@@ -3,7 +3,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
                                  Bool_t FillElecSparse=kFALSE,
                                  Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
                                  Bool_t ispPb=kFALSE,
-                                 Int_t MimCent = -1, Int_t MaxCent = -1, 
+                                 Int_t MimCent = -1, Int_t MaxCent = -1,
                                  Int_t thEG1ADC=140, Int_t thEG2ADC=89,
                                  TString ContNameExt = "", TString centrality="V0M")
 {
@@ -63,7 +63,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     eventplaneTask->SetUsePhiWeight();
     eventplaneTask->SetSaveTrackContribution();
     mgr->AddTask(eventplaneTask);
-
+    
     
     TString containerNameTPCEP = mgr->GetCommonFileName();
     containerNameTPCEP += ":PWGHF_hfeHFEemcQAEventPlane";
@@ -71,14 +71,14 @@ AliAnalysisTask *AddTaskHFEemcQA(
     //TString SubcontainerNameTPCEP = Form("HFEemcQAINT8_%s",calib);
     TString SubcontainerNameTPCEP = Form("HFEemcQAINT8EventPlane_%s",calib);
     SubcontainerNameTPCEP += ContNameExt;
-
+    
     AliAnalysisDataContainer *cinputTPCEP = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutputTPCEP = mgr->CreateContainer(SubcontainerNameTPCEP,TList::Class(), AliAnalysisManager::kOutputContainer,
-                 containerNameTPCEP.Data());
+                                                                  containerNameTPCEP.Data());
     
     mgr->ConnectInput(eventplaneTask, 0,cinputTPCEP);
     mgr->ConnectOutput(eventplaneTask,1,coutputTPCEP);
-    
+
     
     // +++ EMCal MB
     // INT8
@@ -196,7 +196,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig01->SetCentralityMim(MimCent);
         hfecalqaTrig01->SetCentralityMax(MaxCent);
         hfecalqaTrig01->SetCentralityEstimator(centrality.Data());
-	
+        
         TString containerName01 = mgr->GetCommonFileName();
         containerName01 += ":PWGHF_hfeHFEemcQATrigGAEG1";
         containerName01 += ContNameExt;
@@ -221,7 +221,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig02->SetCentralityMim(MimCent);
         hfecalqaTrig02->SetCentralityMax(MaxCent);
         hfecalqaTrig02->SetCentralityEstimator(centrality.Data());
-	
+        
         TString containerName02 = mgr->GetCommonFileName();
         containerName02 += ":PWGHF_hfeHFEemcQATrigGAEG2";
         containerName02 += ContNameExt;
@@ -231,6 +231,56 @@ AliAnalysisTask *AddTaskHFEemcQA(
         AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
         mgr->ConnectInput(hfecalqaTrig02, 0, cinput);
         mgr->ConnectOutput(hfecalqaTrig02, 1, coutput1);
+        
+        // DCal EGA DG1
+        AliAnalysisTaskHFEemcQA *hfdcalqaTrig01 = new AliAnalysisTaskHFEemcQA("emcqa");
+        mgr->AddTask(hfdcalqaTrig01);
+        hfdcalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+        hfdcalqaTrig01->SetEMCalTriggerDG1(kTRUE);
+        hfdcalqaTrig01->SetElecIDsparse(FillElecSparse);
+        hfdcalqaTrig01->SetTenderSwitch(UseTender);
+        hfdcalqaTrig01->SetThresholdEG1(thEG1ADC);
+        hfdcalqaTrig01->SetThresholdEG2(thEG2ADC);
+        hfdcalqaTrig01->SetClusterTypeEMC(ClsTypeEMC);
+        hfdcalqaTrig01->SetClusterTypeDCAL(ClsTypeDCAL);
+        hfdcalqaTrig01->SetCentralityMim(MimCent);
+        hfdcalqaTrig01->SetCentralityMax(MaxCent);
+        hfdcalqaTrig01->SetCentralityEstimator(centrality.Data());
+        
+        TString containerName03 = mgr->GetCommonFileName();
+        containerName03 += ":PWGHF_hfeHFEemcQATrigGADG1";
+        containerName03 += ContNameExt;
+        TString SubcontainerName03 = Form("HFEemcQATrigGADG1_%s",calib);
+        SubcontainerName03 += ContNameExt;
+        AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName03, TList::Class(),AliAnalysisManager::kOutputContainer, containerName03.Data());
+        mgr->ConnectInput(hfdcalqaTrig01, 0, cinput);
+        mgr->ConnectOutput(hfdcalqaTrig01, 1, coutput1);
+        
+        // DCal EGA DG2
+        AliAnalysisTaskHFEemcQA *hfdcalqaTrig02 = new AliAnalysisTaskHFEemcQA("emcqa");
+        mgr->AddTask(hfdcalqaTrig02);
+        hfdcalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+        hfdcalqaTrig02->SetEMCalTriggerDG1(kTRUE);
+        hfdcalqaTrig02->SetElecIDsparse(FillElecSparse);
+        hfdcalqaTrig02->SetTenderSwitch(UseTender);
+        hfdcalqaTrig02->SetThresholdEG1(thEG1ADC);
+        hfdcalqaTrig02->SetThresholdEG2(thEG2ADC);
+        hfdcalqaTrig02->SetClusterTypeEMC(ClsTypeEMC);
+        hfdcalqaTrig02->SetClusterTypeDCAL(ClsTypeDCAL);
+        hfdcalqaTrig02->SetCentralityMim(MimCent);
+        hfdcalqaTrig02->SetCentralityMax(MaxCent);
+        hfdcalqaTrig02->SetCentralityEstimator(centrality.Data());
+        
+        TString containerName04 = mgr->GetCommonFileName();
+        containerName04 += ":PWGHF_hfeHFEemcQATrigGADG2";
+        containerName04 += ContNameExt;
+        TString SubcontainerName04 = Form("HFEemcQATrigGADG2_%s",calib);
+        SubcontainerName04 += ContNameExt;
+        AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName04, TList::Class(),AliAnalysisManager::kOutputContainer, containerName04.Data());
+        mgr->ConnectInput(hfdcalqaTrig02, 0, cinput);
+        mgr->ConnectOutput(hfdcalqaTrig02, 1, coutput1);
     }
     if(!ispPb)
     {
@@ -247,7 +297,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig0->SetCentralityMim(MimCent);
         hfecalqaTrig0->SetCentralityMax(MaxCent);
         hfecalqaTrig0->SetCentralityEstimator(centrality.Data());
-	
+        
         TString containerName1 = mgr->GetCommonFileName();
         containerName1 += ":PWGHF_hfeHFEemcQATrigGA";
         containerName1 += ContNameExt;
@@ -281,7 +331,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName2, TList::Class(),AliAnalysisManager::kOutputContainer, containerName2.Data());
     mgr->ConnectInput(hfecalqaTrig1, 0, cinput);
-    mgr->ConnectOutput(hfecalqaTrig1, 1, coutput1); 
+    mgr->ConnectOutput(hfecalqaTrig1, 1, coutput1);
     
     //return hfecalqa;
     return NULL;
