@@ -2415,10 +2415,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                                             AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
 											Pi0tmp->SetPxPyPzE(EventPiZeroGoodMeson.Px(), EventPiZeroGoodMeson.Py(), EventPiZeroGoodMeson.Pz(), EventPiZeroGoodMeson.Energy());
 											FixPzToMatchPDGInvMassPi0(Pi0tmp);
-											AliAODConversionMother *mesontmp = new AliAODConversionMother(PiPlPiMiBackgroundCandidate,Pi0tmp);
-											fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp->M(),mesontmp->Pt());
+                                            AliAODConversionMother *mesontmp = new AliAODConversionMother(&EventPiMiGoodMeson,Pi0tmp);
+                                            AliAODConversionMother *mesontmp2 = new AliAODConversionMother(&EventPiPlGoodMeson,mesontmp);
+                                            fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp2->M(),mesontmp2->Pt());
 											delete Pi0tmp;
-											delete mesontmp;
+                                            delete mesontmp2;
+                                            delete mesontmp;
                                         }
                                     }
 									delete backgroundCandidate;
@@ -2434,9 +2436,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                                             AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
             								Pi0tmp->SetPxPyPzE(EventPiZeroGoodMeson.Px(), EventPiZeroGoodMeson.Py(), EventPiZeroGoodMeson.Pz(), EventPiZeroGoodMeson.Energy());
             								FixPzToMatchPDGInvMassPi0(Pi0tmp);
-            								AliAODConversionMother *mesontmp = new AliAODConversionMother(PiPlPiMiBackgroundCandidate,Pi0tmp);
-            								fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp->M(),mesontmp->Pt());
+                                            AliAODConversionMother *mesontmp = new AliAODConversionMother(&EventPiMiGoodMeson,Pi0tmp);
+                                            AliAODConversionMother *mesontmp2 = new AliAODConversionMother(&EventPiPlGoodMeson,mesontmp);
+                                            fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp2->M(),mesontmp2->Pt());
             								delete Pi0tmp;
+                                            delete mesontmp2;
             								delete mesontmp;
                                         }
                                     }
@@ -2486,9 +2490,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                                 AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
 								Pi0tmp->SetPxPyPzE(EventPiZeroGoodMeson.Px(), EventPiZeroGoodMeson.Py(), EventPiZeroGoodMeson.Pz(), EventPiZeroGoodMeson.Energy());
 								FixPzToMatchPDGInvMassPi0(Pi0tmp);
-								AliAODConversionMother *mesontmp = new AliAODConversionMother(PiPlPiMiBackgroundCandidate,Pi0tmp);
-								fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp->M(),mesontmp->Pt());
+                                AliAODConversionMother *mesontmp = new AliAODConversionMother(&EventPiNegGoodMeson,Pi0tmp);
+                                AliAODConversionMother *mesontmp2 = new AliAODConversionMother(&EventPiPlGoodMeson,mesontmp);
+                                fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp2->M(),mesontmp2->Pt());
 								delete Pi0tmp;
+                                delete mesontmp2;
 								delete mesontmp;
 
                             }
@@ -2536,9 +2542,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                                 AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
 								Pi0tmp->SetPxPyPzE(EventPiZeroGoodMeson.Px(), EventPiZeroGoodMeson.Py(), EventPiZeroGoodMeson.Pz(), EventPiZeroGoodMeson.Energy());
 								FixPzToMatchPDGInvMassPi0(Pi0tmp);
-            					AliAODConversionMother *mesontmp = new AliAODConversionMother(PiPlPiMiBackgroundCandidate,Pi0tmp);
-								fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp->M(),mesontmp->Pt());
+                                AliAODConversionMother *mesontmp = new AliAODConversionMother(&EventPiPosGoodMeson,Pi0tmp);
+                                AliAODConversionMother *mesontmp2 = new AliAODConversionMother(&EventPiMiGoodMeson,mesontmp);
+                                fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp2->M(),mesontmp2->Pt());
 								delete Pi0tmp;
+                                delete mesontmp2;
 								delete mesontmp;
                             }
                         }
@@ -2602,9 +2610,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                                             AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
 											Pi0tmp->SetPxPyPzE(EventPiZeroGoodMeson.Px(), EventPiZeroGoodMeson.Py(), EventPiZeroGoodMeson.Pz(), EventPiZeroGoodMeson.Energy());
 											FixPzToMatchPDGInvMassPi0(Pi0tmp);
-            								AliAODConversionMother *mesontmp = new AliAODConversionMother(PiPlPiMiBackgroundCandidate,Pi0tmp);
-											fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp->M(),mesontmp->Pt());
+                                            AliAODConversionMother *mesontmp = new AliAODConversionMother(&EventPiPlGoodMeson,Pi0tmp);
+                                            AliAODConversionMother *mesontmp2 = new AliAODConversionMother(&EventPiMiGoodMeson,mesontmp);
+                                            fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp2->M(),mesontmp2->Pt());
 											delete Pi0tmp;
+                                            delete mesontmp2;
 											delete mesontmp;
                                         }
                                     }
@@ -2620,9 +2630,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                                             AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
 											Pi0tmp->SetPxPyPzE(EventPiZeroGoodMeson.Px(), EventPiZeroGoodMeson.Py(), EventPiZeroGoodMeson.Pz(), EventPiZeroGoodMeson.Energy());
 											FixPzToMatchPDGInvMassPi0(Pi0tmp);
-            								AliAODConversionMother *mesontmp = new AliAODConversionMother(PiPlPiMiBackgroundCandidate,Pi0tmp);
-											fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp->M(),mesontmp->Pt());
+                                            AliAODConversionMother *mesontmp = new AliAODConversionMother(&EventPiPlGoodMeson,Pi0tmp);
+                                            AliAODConversionMother *mesontmp2 = new AliAODConversionMother(&EventPiMiGoodMeson,mesontmp);
+                                            fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp2->M(),mesontmp2->Pt());
 											delete Pi0tmp;
+                                            delete mesontmp2;
 											delete mesontmp;
                                         }
                                     }
@@ -2670,9 +2682,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                                 AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
 								Pi0tmp->SetPxPyPzE(EventPiZeroGoodMeson.Px(), EventPiZeroGoodMeson.Py(), EventPiZeroGoodMeson.Pz(), EventPiZeroGoodMeson.Energy());
 								FixPzToMatchPDGInvMassPi0(Pi0tmp);
-            					AliAODConversionMother *mesontmp = new AliAODConversionMother(PiPlPiMiBackgroundCandidate,Pi0tmp);
-								fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp->M(),mesontmp->Pt());
+                                AliAODConversionMother *mesontmp = new AliAODConversionMother(&EventPiPlGoodMeson,Pi0tmp);
+                                AliAODConversionMother *mesontmp2 = new AliAODConversionMother(&EventPiNegGoodMeson,mesontmp);
+                                fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp2->M(),mesontmp2->Pt());
 								delete Pi0tmp;
+                                delete mesontmp2;
 								delete mesontmp;
                             }
                         }
@@ -2718,9 +2732,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
                                 AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
 								Pi0tmp->SetPxPyPzE(EventPiZeroGoodMeson.Px(), EventPiZeroGoodMeson.Py(), EventPiZeroGoodMeson.Pz(), EventPiZeroGoodMeson.Energy());
 								FixPzToMatchPDGInvMassPi0(Pi0tmp);
-          						AliAODConversionMother *mesontmp = new AliAODConversionMother(PiPlPiMiBackgroundCandidate,Pi0tmp);
-								fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp->M(),mesontmp->Pt());
+                                AliAODConversionMother *mesontmp = new AliAODConversionMother(&EventPiPosGoodMeson,Pi0tmp);
+                                AliAODConversionMother *mesontmp2 = new AliAODConversionMother(&EventPiMiGoodMeson,mesontmp);
+                                fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt[fiCut]->Fill(mesontmp2->M(),mesontmp2->Pt());
 								delete Pi0tmp;
+                                delete mesontmp2;
 								delete mesontmp;
                             }
                         }
@@ -2904,21 +2920,21 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::MoveParticleAccordingToVertex(
    particle->SetProductionPoint(movedPlace);
 }
 
-
+//________________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::FixPzToMatchPDGInvMassPi0(AliAODConversionMother* particle){
 
  TParticle pi0;
  pi0.SetPdgCode(111);
- Double_t PdgMass= pi0.GetMass();
+ Double_t PdgMass = pi0.GetMass();
 
- Double_t px=particle->Px();
- Double_t py=particle->Py();
- Int_t signPz=particle->Pz()<0?-1:1;
- Double_t energy=particle->Energy();
- Double_t pz= signPz*TMath::Sqrt(TMath::Abs(pow(PdgMass,2)-pow(energy,2)+pow(px,2)+pow(py,2)));
+ Double_t px = particle->Px();
+ Double_t py = particle->Py();
+ Int_t signPz = particle->Pz()<0?-1:1;
+ Double_t energy = particle->Energy();
+ Double_t pz = signPz*TMath::Sqrt(TMath::Abs(pow(PdgMass,2)-pow(energy,2)+pow(px,2)+pow(py,2)));
  particle->SetPxPyPzE(px,py,pz,energy);
 
-
+ return;
 }
 
 //_____________________________________________________________________________________
