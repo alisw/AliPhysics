@@ -54,11 +54,28 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fOutput(0),
   fHistNEvents(0),
   fHistNCandidates(0),
+  fMassHist(0x0),
+  fMassHistPlus(0x0),
+  fMassHistMinus(0x0),
+  fMassHistNoPid(0x0),
+  fCosPHist(0x0),
+  fDLenHist(0x0),
+  fSumd02Hist(0x0),
+  fSigVertHist(0x0),
+  fPtMaxHist(0x0),
+  fPtKHist(0x0),
+  fPtpi1Hist(0x0),
+  fPtpi2Hist(0x0),
+  fDCAHist(0x0),
+  fDLxy(0x0),
+  fCosxy(0x0), 
   fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
   fPtVsMassNoPid(0),
   fPtVsMass(0),
+  fPtVsMassPlus(0),
+  fPtVsMassMinus(0),
   fPtVsMassBadDaus(0),
   fPtVsMassGoodDaus(0),
   fYVsPtNoPid(0),
@@ -71,10 +88,17 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fDaughterClass(0),
   fDeltaID(0),
   fIDDauVsIDTra(0),
+  fMassHistLS(0x0),
+  fCosPHistLS(0x0),
+  fDLenHistLS(0x0),
+  fSumd02HistLS(0x0),
+  fSigVertHistLS(0x0),
+  fPtMaxHistLS(0x0),
+  fDCAHistLS(0x0),
   fNtupleDplus(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
-  fNPtBins(0),
+  fNPtBins(1),
   fBinWidth(0.002),
   fListCuts(0),
   fRDCutsAnalysis(0),
@@ -109,38 +133,6 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
 
   for(Int_t i=0; i<5; i++)fHistMassPtImpPar[i]=0;
   for(Int_t i=0; i<3; i++)fSparseCutVars[i]=0;
-
-  for(Int_t i=0;i<3*kMaxPtBins;i++){
-    fMassHistNoPid[i]=0;
-    fCosPHist[i]=0;
-    fDLenHist[i]=0;
-    fSumd02Hist[i]=0;
-    fSigVertHist[i]=0;
-    fPtMaxHist[i]=0;
-    fPtKHist[i]=0;
-    fPtpi1Hist[i]=0;
-    fPtpi2Hist[i]=0;
-    fDCAHist[i]=0;
-    fMassHist[i]=0;
-    fMassHistPlus[i]=0;
-    fMassHistMinus[i]=0;
-
-    fDLxy[i]=0;
-    fCosxy[i]=0;
-    fCosPHistLS[i]=0;
-    fDLenHistLS[i]=0;
-    fSumd02HistLS[i]=0;
-    fSigVertHistLS[i]=0;
-    fPtMaxHistLS[i]=0;
-    fDCAHistLS[i]=0;
-  }
-  for(Int_t i=0;i<5*kMaxPtBins;i++){
-    fMassHistLS[i]=0;
-  }
-  for(Int_t i=0;i<kMaxPtBins+1;i++){
-    fArrayBinLimits[i]=0;
-  }
-
 }
 
 //________________________________________________________________________
@@ -149,11 +141,28 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fOutput(0),
   fHistNEvents(0),
   fHistNCandidates(0),
+  fMassHist(0x0),
+  fMassHistPlus(0x0),
+  fMassHistMinus(0x0),
+  fMassHistNoPid(0x0),
+  fCosPHist(0x0),
+  fDLenHist(0x0),
+  fSumd02Hist(0x0),
+  fSigVertHist(0x0),
+  fPtMaxHist(0x0),
+  fPtKHist(0x0),
+  fPtpi1Hist(0x0),
+  fPtpi2Hist(0x0),
+  fDCAHist(0x0),
+  fDLxy(0x0),
+  fCosxy(0x0), 
   fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
   fPtVsMassNoPid(0),
   fPtVsMass(0),
+  fPtVsMassPlus(0),
+  fPtVsMassMinus(0),
   fPtVsMassBadDaus(0),
   fPtVsMassGoodDaus(0),
   fYVsPtNoPid(0),
@@ -166,10 +175,17 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fDaughterClass(0),
   fDeltaID(0),
   fIDDauVsIDTra(0),
+  fMassHistLS(0x0),
+  fCosPHistLS(0x0),
+  fDLenHistLS(0x0),
+  fSumd02HistLS(0x0),
+  fSigVertHistLS(0x0),
+  fPtMaxHistLS(0x0),
+  fDCAHistLS(0x0),
   fNtupleDplus(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
-  fNPtBins(0),
+  fNPtBins(1),
   fBinWidth(0.002),
   fListCuts(0),
   fRDCutsAnalysis(dpluscutsana),
@@ -208,38 +224,6 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   for(Int_t i=0; i<5; i++)fHistMassPtImpPar[i]=0;
   for(Int_t i=0; i<3; i++)fSparseCutVars[i]=0;
 
-  for(Int_t i=0;i<3*kMaxPtBins;i++){
-    fMassHistNoPid[i]=0;
-    fCosPHist[i]=0;
-    fDLenHist[i]=0;
-    fSumd02Hist[i]=0;
-    fSigVertHist[i]=0;
-    fPtMaxHist[i]=0;
-    fPtKHist[i]=0;
-    fPtpi1Hist[i]=0;
-    fPtpi2Hist[i]=0;
-    fDCAHist[i]=0;
-    fMassHist[i]=0;
-    fMassHistPlus[i]=0;
-    fMassHistMinus[i]=0;
-
-    fDLxy[i]=0;
-    fCosxy[i]=0;
-    fCosPHistLS[i]=0;
-    fDLenHistLS[i]=0;
-    fSumd02HistLS[i]=0;
-    fSigVertHistLS[i]=0;
-    fPtMaxHistLS[i]=0;
-    fDCAHistLS[i]=0;
-  }
-  for(Int_t i=0;i<5*kMaxPtBins;i++){
-    fMassHistLS[i]=0;
-  }
-  for(Int_t i=0;i<kMaxPtBins+1;i++){
-    fArrayBinLimits[i]=0;
-  }
-
-
   // Default constructor
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -265,6 +249,9 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     delete fHistNEvents;
     delete fHistNCandidates;
     for(Int_t i=0;i<3*fNPtBins;i++){
+      delete fMassHist[i];
+      delete fMassHistPlus[i];
+      delete fMassHistMinus[i];
       delete fMassHistNoPid[i];
       delete fCosPHist[i];
       delete fDLenHist[i];
@@ -277,9 +264,6 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
       delete fDCAHist[i];
       delete fDLxy[i];
       delete fCosxy[i];
-      delete fMassHist[i];
-      delete fMassHistPlus[i];
-      delete fMassHistMinus[i];
       delete fCosPHistLS[i];
       delete fDLenHistLS[i];
       delete fSumd02HistLS[i];
@@ -287,9 +271,34 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
       delete fPtMaxHistLS[i];
       delete fDCAHistLS[i];
     }
+    delete [] fMassHist;
+    delete [] fMassHistPlus;
+    delete [] fMassHistMinus;
+    delete [] fMassHistNoPid;
+    delete [] fCosPHist;
+    delete [] fDLenHist;
+    delete [] fSumd02Hist;
+    delete [] fSigVertHist;
+    delete [] fPtMaxHist;
+    delete [] fPtKHist;
+    delete [] fPtpi1Hist;
+    delete [] fPtpi2Hist;
+    delete [] fDCAHist;
+    delete [] fDLxy;
+    delete [] fCosxy;
+
     for(Int_t i=0;i<5*fNPtBins;i++){
       delete fMassHistLS[i];
     }
+
+    delete [] fMassHistLS;
+    delete [] fCosPHistLS;
+    delete [] fDLenHistLS;
+    delete [] fSumd02HistLS;
+    delete [] fSigVertHistLS;
+    delete [] fPtMaxHistLS;
+    delete [] fDCAHistLS;
+
     for(Int_t i=0;i<3;i++){
       delete fCorreld0Kd0pi[i];
       delete fHistCentrality[i];
@@ -302,6 +311,8 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     }
     delete fPtVsMassNoPid;
     delete fPtVsMass;
+    delete fPtVsMassPlus;
+    delete fPtVsMassMinus;
     delete fPtVsMassBadDaus;
     delete fPtVsMassGoodDaus;
     delete fYVsPtNoPid;
@@ -523,6 +534,21 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNCandidates->SetMinimum(0);
   fOutput->Add(fHistNCandidates);
 
+  fMassHist = new TH1F*[3*fNPtBins];
+  fMassHistPlus = new TH1F*[3*fNPtBins];
+  fMassHistMinus  = new TH1F*[3*fNPtBins];
+  fMassHistNoPid = new TH1F*[3*fNPtBins];
+  fCosPHist = new TH1F*[3*fNPtBins];
+  fDLenHist = new TH1F*[3*fNPtBins];
+  fSumd02Hist = new TH1F*[3*fNPtBins];
+  fSigVertHist = new TH1F*[3*fNPtBins];
+  fPtMaxHist = new TH1F*[3*fNPtBins];
+  fPtKHist = new TH1F*[3*fNPtBins];
+  fPtpi1Hist = new TH1F*[3*fNPtBins];
+  fPtpi2Hist = new TH1F*[3*fNPtBins];
+  fDCAHist = new TH1F*[3*fNPtBins];
+  fDLxy = new TH1F*[3*fNPtBins];
+  fCosxy = new TH1F*[3*fNPtBins];
 
   TString hisname;
   Int_t index=0;
@@ -720,10 +746,18 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   }
 
 
-  fPtVsMassNoPid=new TH2F("hPtVsMassNoPid","PtVsMass (no PID)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
-  fPtVsMass=new TH2F("hPtVsMass","PtVsMass",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
-  fPtVsMassGoodDaus=new TH2F("hPtVsMassGoodDaus","PtVsMassGoodDaus",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
-  fPtVsMassBadDaus=new TH2F("hPtVsMassBadDaus","PtVsMassBadDaus",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
+  const Int_t nPtBins=440;
+  Double_t ptBinLims[nPtBins+1];
+  for(Int_t jb=0; jb<=300; jb++) ptBinLims[jb]=0.1*(Double_t)jb; // 100 MeV bins in 0<pt<30
+  for(Int_t jb=301; jb<=440; jb++) ptBinLims[jb]=ptBinLims[300]+0.5*(Double_t)(jb-300); // 500 MeV bins in 30<pt<100
+
+  fPtVsMassNoPid=new TH2F("hPtVsMassNoPid","PtVsMass (no PID)",nbins,fLowmasslimit,fUpmasslimit,nPtBins,ptBinLims);
+  fPtVsMass=new TH2F("hPtVsMass","PtVsMass",nbins,fLowmasslimit,fUpmasslimit,nPtBins,ptBinLims);
+  fPtVsMassPlus=new TH2F("hPtVsMassPlus","PtVsMass",nbins,fLowmasslimit,fUpmasslimit,nPtBins,ptBinLims);
+  fPtVsMassMinus=new TH2F("hPtVsMassMinus","PtVsMass",nbins,fLowmasslimit,fUpmasslimit,nPtBins,ptBinLims);
+  fPtVsMassGoodDaus=new TH2F("hPtVsMassGoodDaus","PtVsMassGoodDaus",nbins,fLowmasslimit,fUpmasslimit,nPtBins,ptBinLims);
+  fPtVsMassBadDaus=new TH2F("hPtVsMassBadDaus","PtVsMassBadDaus",nbins,fLowmasslimit,fUpmasslimit,nPtBins,ptBinLims);
+
   fYVsPtNoPid=new TH3F("hYVsPtNoPid","YvsPt (no PID)",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
   fYVsPt=new TH3F("hYVsPt","YvsPt",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
   fYVsPtSigNoPid=new TH2F("hYVsPtSigNoPid","YvsPt (MC, only sig., no PID)",40,0.,20.,80,-2.,2.);
@@ -737,6 +771,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries",200,0.,maxmult);
   fOutput->Add(fPtVsMassNoPid);
   fOutput->Add(fPtVsMass);
+  fOutput->Add(fPtVsMassPlus);
+  fOutput->Add(fPtVsMassMinus);
   fOutput->Add(fPtVsMassGoodDaus);
   fOutput->Add(fPtVsMassBadDaus);
   fOutput->Add(fYVsPtNoPid);
@@ -1161,8 +1197,14 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  nSelected++;
 	  fPtVsMass->Fill(invMass,ptCand);
 	  fMassHist[index]->Fill(invMass);
-	  if(d->GetCharge()>0) fMassHistPlus[index]->Fill(invMass);
-	  else if(d->GetCharge()<0) fMassHistMinus[index]->Fill(invMass);
+	  if(d->GetCharge()>0){
+	    fPtVsMassPlus->Fill(invMass,ptCand);
+	    fMassHistPlus[index]->Fill(invMass);
+	  }
+	  else if(d->GetCharge()<0){
+	    fPtVsMassMinus->Fill(invMass,ptCand);
+	    fMassHistMinus[index]->Fill(invMass);
+	  }
 	  fPhiEtaCand->Fill(etaD,phiD);
 	  if(TMath::Abs(invMass-1.8696)<0.05) fPhiEtaCandSigReg->Fill(etaD,phiD);
 	  if(fCutsDistr){
@@ -1315,6 +1357,15 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
   Int_t indexLS=0;
   Int_t index=0;
   Int_t nbins=GetNBinsHistos();
+
+  fMassHistLS = new TH1F*[5*fNPtBins];
+  fCosPHistLS = new TH1F*[3*fNPtBins];
+  fDLenHistLS = new TH1F*[3*fNPtBins];
+  fSumd02HistLS = new TH1F*[3*fNPtBins];
+  fSigVertHistLS = new TH1F*[3*fNPtBins];
+  fPtMaxHistLS = new TH1F*[3*fNPtBins];
+  fDCAHistLS = new TH1F*[3*fNPtBins];
+
   for(Int_t i=0;i<fNPtBins;i++){
 
     index=GetHistoIndex(i);
