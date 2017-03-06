@@ -202,11 +202,10 @@ void AliGenPerformance::Generate()
 	  //::Error("AliGenPerformance::Generate","Unphysical particle %d",flavour); // MI to check Energy definition
 	  continue;
 	}
-	// Missing info in roder to apply reweighting
-	// 1.) mother track missing - all particles considered primary
-	//        how to obtain mother ID ?
-	// 2.)  
-	//
+	// Missing info in order to apply reweighting
+	// 1.) validate mother/daughter relationship 
+	// 2.) validate position distribution 
+	// 3.) add decay mode
 	PushTrack(fTrackIt,stackParent,flavour,mom, posf, polarization,0,kPPrimary,nPart,1.,decayFlag);
 	pLabel[iparticle]=nPart; 
 	if (stackParent>0) KeepTrack(stackParent);
@@ -317,28 +316,17 @@ TChain *  AliGenPerformance::MakeKineChain(){
   }
   return chain;
   /*
-    TChain * chainMother = AliGenPerformance::MakeKineChain();
-    TChain * chainDaughter = AliGenPerformance::MakeKineChain();
-    TChain * chainDaughter2 = AliGenPerformance::MakeKineChain();
-    chainMother->SetAlias("tNumber","This->GetTreeNumber()");
-    chainMother->SetAlias("eNumber","This.GetTree().GetReadEntry()");
-    chainMother->SetAlias("mP","Particles.P()");
-
-    chainMother->BuildIndex("This->GetTreeNumber()","This.GetTree().GetReadEntry()");
-    chainDaughter->BuildIndex("This->GetTreeNumber()","Particles.GetMother(0)");
-    chainDaughter2->BuildIndex("This->GetTreeNumber()","Particles.GetMother(0)");
-    chainDaughter->AddFriend(chainMother,"M");
-    chainDaughter->AddFriend(chainDaughter2,"D");
-
-
+    // using following lines properties of mother particles and daughter particles can be correlated
+    // Unfortuantelly to do it fix in the TChain needed. 
+    //    1.) problem with aliases (fix prepared)
+    //    2.) 
     TChain * chainMother = AliGenPerformance::MakeKineChain();
     TChain * chainDaughter = AliGenPerformance::MakeKineChain();
     chainMother->SetAlias("index0","(Particles.GetDaughter(0)+1000000*This->GetTreeNumber()+0)");
     chainDaughter->SetAlias("index0","(This.GetTree().GetReadEntry()+1000000*This->GetTreeNumber()+0)");
     //
-    chainMother->BuildIndex("Particles.GetDaughter(0)+1000000*This->GetTreeNumber()");
-    chainDaughter->BuildIndex("This.GetTree().GetReadEntry()+1000000*This->GetTreeNumber()");
-    chainMother->AddFriend(chainDaughter,"D");
-    
+    chainMother->BuildIndex("index0");
+    chainDaughter->BuildIndex("index0");
+    chainMother->AddFriend(chainDaughter,"D");    
   */
 }
