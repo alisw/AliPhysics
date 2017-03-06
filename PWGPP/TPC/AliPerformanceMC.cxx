@@ -779,3 +779,4 @@ TFolder *folder = 0;
 
   return folder;
 }
+// this comment serves no purpose
