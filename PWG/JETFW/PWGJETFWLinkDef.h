@@ -14,5 +14,6 @@
 #pragma link C++ class AliRhoParameter+;
 #pragma link C++ class std::map<std::string, AliJetContainer*>+;
 #pragma link C++ class std::pair<std::string, AliJetContainer*>+;
+#pragma link C++ class AliDJetVReader+;
 
 #endif

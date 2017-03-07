@@ -1,5 +1,5 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -43,6 +43,8 @@
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse+;
 #pragma link C++ class AliHFAODMCParticleContainer+;
 #pragma link C++ class AliHFTrackContainer+;
+#pragma link C++ class AliDJetTTreeReader+;
+#pragma link C++ class AliDJetTHnReader+;
 #endif
 
 #endif
