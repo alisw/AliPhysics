@@ -856,20 +856,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   /////////////////
   //trigger check//
   /////////////////
-  TString firedTrigger;
-  TString TriggerEG1("EG1");
-  TString TriggerEG2("EG2");
-  fVevent->GetFiredTriggerClasses();
-  if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
-
-  Bool_t EG1tr = kFALSE;
-  Bool_t EG2tr = kFALSE;
-
-  if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
-  if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
-
-  if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
-  if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
 
   Int_t trigger = -1;
   if (fAOD){
@@ -888,6 +874,21 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     if(evSelMask & AliVEvent::kEMCEGA) trigger =7;
   }
 
+  TString firedTrigger;
+  TString TriggerEG1("EG1");
+  TString TriggerEG2("EG2");
+  fVevent->GetFiredTriggerClasses();
+  if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
+
+  Bool_t EG1tr = kFALSE;
+  Bool_t EG2tr = kFALSE;
+
+  if(trigger==7)fEMCEG1 = kTRUE;
+  //if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
+  //if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
+
+  if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
+  //if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
 
   ////////////////////////
   // Mag. field
@@ -1101,7 +1102,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
       //To be done : Add cuts to apply Chi2PerITSCls < 6 and N shared Cls ITS < 4
-      if(atrack->P()<2.0)continue;
+      if(atrack->Pt()<2.0)continue;
     }
  
       Double_t Chi2TPCcontGlobal = atrack->GetChi2TPCConstrainedVsGlobal();
