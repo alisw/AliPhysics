@@ -943,9 +943,14 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    indexMCpiKK=GetBackgroundHistoIndex(iPtBin);
 	    indexMCKKpi=GetBackgroundHistoIndex(iPtBin);
 	    fChanHist[2]->Fill(retCodeAnalysisCuts);
+	    if(labDplus>=0) {
+              Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
+              AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
+              pdgCode0=TMath::Abs(p->GetPdgCode());
+	    }
 	  }
 	}
-                
+          
 	Double_t candType = 0.5; //for bkg
 	Double_t massPhi=TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
@@ -970,7 +975,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      fMassHistPhi[indexMCKKpi]->Fill(invMass,weightKKpi);
 	      if(fFillSparse) {
 		if(indexMCKKpi==GetSignalHistoIndex(iPtBin) || labDplus >= 0) {
-		  AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
+		  AliAODMCParticle *partDs;
+		  if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) partDs = (AliAODMCParticle*)arrayMC->At(labDs);
+		  if(labDplus >= 0) partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
 		  Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
 		  if(orig==4) {
 		    candType = 1.5;
@@ -1005,7 +1012,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      fMassHistPhi[indexMCpiKK]->Fill(invMass,weightpiKK);
 	      if(fFillSparse) {
 		if(indexMCpiKK==GetSignalHistoIndex(iPtBin) || labDplus >= 0) {
-		  AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
+		  AliAODMCParticle *partDs;
+		  if(indexMCpiKK==GetSignalHistoIndex(iPtBin)) partDs = (AliAODMCParticle*)arrayMC->At(labDs);
+		  if(labDplus >= 0) partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
 		  Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
 		  if(orig==4) {
 		    candType = 1.5;
@@ -1070,12 +1079,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    }
 	    else {
 	      if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) {
-		if(candType==1.5) {Printf("CANDITATA Ds, prompt!");fnSparseMC[2]->Fill(var4nSparse);}
-		if(candType==2.5) {Printf("CANDITATA Ds, fd!");fnSparseMC[3]->Fill(var4nSparse);}
+		if(candType==1.5) fnSparseMC[2]->Fill(var4nSparse);
+		if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
 	      }
 	      else if(labDplus>=0 && pdgCode0==321) {
-		if(candType==1.5) {Printf("CANDITATA D+, prompt origin!");fnSparseMCDplus[2]->Fill(var4nSparse);}
-		if(candType==2.5) {Printf("CANDITATA D+, fd origin!");fnSparseMCDplus[3]->Fill(var4nSparse);}
+		if(candType==1.5) fnSparseMCDplus[2]->Fill(var4nSparse);
+		if(candType==2.5) fnSparseMCDplus[3]->Fill(var4nSparse);
 	      }
 	    }
 	  }
@@ -1113,8 +1122,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 		if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
 	      }
 	      else if(labDplus>=0 && pdgCode0==211) {
-		if(candType==1.5) {Printf("CANDITATA D+, prompt origin!");fnSparseMCDplus[2]->Fill(var4nSparse);}
-		if(candType==2.5) {Printf("CANDITATA D+, fd origin!");fnSparseMCDplus[3]->Fill(var4nSparse);}
+		if(candType==1.5) fnSparseMCDplus[2]->Fill(var4nSparse);
+		if(candType==2.5) fnSparseMCDplus[3]->Fill(var4nSparse);
 	      }
 	    }
 	  }
