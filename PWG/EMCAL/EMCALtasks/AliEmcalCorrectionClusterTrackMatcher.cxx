@@ -14,6 +14,7 @@
 #include "AliVParticle.h"
 #include "AliEmcalParticle.h"
 #include "AliEMCALGeometry.h"
+#include "AliMCEvent.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionClusterTrackMatcher);
@@ -41,7 +42,9 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fNEmcalTracks(0),
   fNEmcalClusters(0),
   fHistMatchEtaAll(0),
-  fHistMatchPhiAll(0)
+  fHistMatchPhiAll(0),
+  fMCGenerToAcceptForTrack(1),
+  fNMCGenerToAccept(0)
 {
   for(Int_t icent=0; icent<8; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
@@ -51,6 +54,8 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
       }
     }
   }
+  
+  for(Int_t j = 0; j <  5;    j++)  fMCGenerToAccept[j] =  "";
 }
 
 /**
@@ -75,6 +80,28 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   GetProperty("updateClusters", fUpdateClusters);
   GetProperty("updateTracks", fUpdateTracks);
   fDoPropagation = fEsdMode;
+  
+  Bool_t enableFracEMCRecalc = kFALSE;
+  GetProperty("enableFracEMCRecalc", enableFracEMCRecalc);
+  Int_t removeNMCGenerators = 0;
+  GetProperty("removeNMCGenerators", removeNMCGenerators);
+  GetProperty("enableMCGenRemovTrack", fMCGenerToAcceptForTrack);
+  std::string removeMcGen1 = "";
+  GetProperty("removeMCGen1", removeMcGen1);
+  TString removeMCGen1 = removeMcGen1.c_str();
+  std::string removeMcGen2 = "";
+  GetProperty("removeMCGen2", removeMcGen2);
+  TString removeMCGen2 = removeMcGen2.c_str();
+  
+  if(enableFracEMCRecalc){
+    if(removeNMCGenerators > 0)
+    {
+      printf("\t gen1 <%s>, gen2 <%s>, remove tracks %d\n",removeMCGen1.Data(),removeMCGen2.Data(),fMCGenerToAcceptForTrack);
+      SetNumberOfMCGeneratorsToAccept(removeNMCGenerators) ;
+      SetNameOfMCGeneratorsToAccept(0,removeMCGen1);
+      SetNameOfMCGeneratorsToAccept(1,removeMCGen2);
+    }
+  }
 
   return kTRUE;
 }
@@ -239,6 +266,24 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
       }
     }
     if (propthistrack) {
+      
+      // Check if track comes from a particular MC generator, do not include it if it is not a selected one
+      Int_t mcLabel = TMath::Abs(track->GetLabel());
+      TString genName;
+      if( fMCEvent && fMCGenerToAcceptForTrack && fNMCGenerToAccept > 0 )
+      {
+        fMCEvent->GetCocktailGenerator(mcLabel,genName);
+        
+        Bool_t generOK = kFALSE;
+        for(Int_t ig = 0; ig < fNMCGenerToAccept; ig++)
+        {
+          if ( genName.Contains(fMCGenerToAccept[ig]) ) generOK = kTRUE;
+        }
+        
+        if ( !generOK ) continue;
+      }
+      
+      // Propagate the track
       AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA);
     }
     

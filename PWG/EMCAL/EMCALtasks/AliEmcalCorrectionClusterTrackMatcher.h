@@ -68,6 +68,11 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   void          UpdateClusters();
   Bool_t        IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
   
+  void          SetNumberOfMCGeneratorsToAccept(Int_t nGen){ fNMCGenerToAccept = nGen ;
+                    if      ( nGen > 5 ) fNMCGenerToAccept = 5 ;
+                    else if ( nGen < 0 ) fNMCGenerToAccept = 0 ; }
+  void          SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }
+  
   Double_t      fPropDist;              ///< distance to surface (440cm default)
   Bool_t        fDoPropagation;         ///< if true then propagate all hybrid tracks to EMCal surface
   Bool_t        fAttemptProp;           ///< if true then attempt to propagate if not done yet
@@ -86,8 +91,12 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   TH1          *fHistMatchPhiAll;       //!<!dphi distribution
   TH1          *fHistMatchEta[10][9][2]; //!<!deta distribution
   TH1          *fHistMatchPhi[10][9][2]; //!<!dphi distribution
-
- private:
+  
+  Int_t      fNMCGenerToAccept;          ///<  Number of MC generators that should not be included in analysis
+  TString    fMCGenerToAccept[5];        ///<  List with name of generators that should not be included
+  Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
+  
+private:
   AliEmcalCorrectionClusterTrackMatcher(const AliEmcalCorrectionClusterTrackMatcher &);               // Not implemented
   AliEmcalCorrectionClusterTrackMatcher &operator=(const AliEmcalCorrectionClusterTrackMatcher &);    // Not implemented
 
@@ -95,7 +104,7 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterTrackMatcher> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 2); // EMCal cluster track matcher correction component
+  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 3); // EMCal cluster track matcher correction component
   /// \endcond
 };
 
