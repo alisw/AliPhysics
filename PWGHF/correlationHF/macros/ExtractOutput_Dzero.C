@@ -31,7 +31,7 @@ void ExtractOutput(
    Int_t npools=9, //number of pools for the event-mixing
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions  
-   Bool_t subtractSoftPiME=kFALSE) //***NOTE: AVAILABLE ONLY FOR ONLINE CORRELATION APPROACH*** remove likely soft pions (via inv.mass cut) also in ME distributions ***NOTE
+   Bool_t subtractSoftPiME=kTRUE) //***NOTE: ONLY FOR ONLINE APPROACH*** remove likely soft pions (via inv.mass cut) also in ME distributions (for OFFLINE, is done via CorrelateOffline.C)
 {
 
   //Create and set the correlation plotter class
@@ -62,6 +62,11 @@ void ExtractOutput(
     printf("Error in reading the input file! Exiting...\n");
     return;
   }
+
+  gSystem->Exec(Form("rm -r Output_Root"));
+  gSystem->Exec(Form("rm -r Output_png")); 
+  gSystem->Exec(Form("mkdir Output_Root"));
+  gSystem->Exec(Form("mkdir Output_png"));
 
   ExtractLowPt(plotter);
   ExtractMidPt(plotter);
