@@ -1,9 +1,7 @@
 #--------------------------------------------------------------------------#
 # Set Basic CMake Configuration                                            #
 #--------------------------------------------------------------------------#
-#useless
-#more uselessness
-#a game-changing comment
+
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
 project(AliPhysics CXX C)
