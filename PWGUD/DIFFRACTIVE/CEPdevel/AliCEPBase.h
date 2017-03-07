@@ -133,11 +133,12 @@ class AliCEPBase : public TObject {
     kBitisRun1                = (1<< 1), // is it run1
     kBitSaveAllEvents         = (1<< 2), // save all events
     kBitisMC                  = (1<< 3), // is Monte Carlo
-    kBitSPDPileupStudy        = (1<< 4), // SPD pileup study
-    kBitnClunTraStudy         = (1<< 5), // cluster vs tracklet study
-    kBitVtxStudy              = (1<< 6), // Vtx study
-    kBitTrackCutStudy         = (1<< 7), // track cut study
-		kBitConfigurationVersion  = (1<< 8)  // always set, last bit
+    kBitQArnumStudy           = (1<< 4), // QA as function of rnum
+    kBitSPDPileupStudy        = (1<< 5), // SPD pileup study
+    kBitnClunTraStudy         = (1<< 6), // cluster vs tracklet study
+    kBitVtxStudy              = (1<< 7), // Vtx study
+    kBitTrackCutStudy         = (1<< 8), // track cut study
+		kBitConfigurationVersion  = (1<< 9)  // always set, last bit
 	
   };
 

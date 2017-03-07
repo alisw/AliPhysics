@@ -48,6 +48,7 @@
 // standard constructor (the one which should be used)
 AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   Long_t state,
+  Int_t rnummin, Int_t rnummax,
   Int_t numTracksMax,
   Double_t fracDG, Double_t fracNDG,
   UInt_t ETmaskDG, UInt_t ETpatternDG,
@@ -55,6 +56,8 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   UInt_t TTmask, UInt_t TTpattern):
 	AliAnalysisTaskSE(name)
 	, fAnalysisStatus(state)
+  , frnummin(rnummin)
+  , frnummax(rnummax)
   , fnumTracksMax(numTracksMax)
   , ffracDG(fracDG)
   , ffracNDG(fracNDG)
@@ -106,6 +109,8 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
 AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	AliAnalysisTaskSE()
 	, fAnalysisStatus(AliCEPBase::kBitConfigurationSet)
+  , frnummin(100000)
+  , frnummax(300000)
   , fnumTracksMax(6)
   , ffracDG(1.0)
   , ffracNDG(0.0)
@@ -213,6 +218,10 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
   }
   
   // delete lists of QA histograms
+  if (flQArnum) {
+    delete flQArnum;
+    flQArnum = 0x0;
+  }
   if (flSPDpileup) {
     delete flSPDpileup;
     flSPDpileup = 0x0;
@@ -355,6 +364,19 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 
   // CreateOutputObjects
   // histograms for various QA tasks
+  // histograms for QA versus rnum study
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitQArnumStudy,AliCEPBase::kBitQArnumStudy)) {
+    
+    // get list of histograms
+    flQArnum = new TList();
+    flQArnum = fCEPUtil->GetQArnumHists(frnummin,frnummax);
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flQArnum->GetEntries(); ii++)
+      fHist->Add((TObject*)flQArnum->At(ii));
+  }
+  
   // histograms for SPD pile-up study
   if (fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitSPDPileupStudy,AliCEPBase::kBitSPDPileupStudy)) {
@@ -436,6 +458,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 		return;
 	}
   fhStatsFlow->Fill(AliCEPBase::kBinGoodInput);
+  ((TH1F*)flQArnum->At(0))->Fill(fRun);
   if (fMCEvent) fhStatsFlow->Fill(AliCEPBase::kBinMCEvent);
   
   // get event characteristics like ...
@@ -538,6 +561,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   }
   //printf("<I - UserExec> firedTriggerClasses: %s\n",firedTriggerClasses.Data());
   if (isDGTrigger) fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
+  if (isDGTrigger) ((TH1F*)flQArnum->At(1))->Fill(fRun);
   
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
@@ -582,6 +606,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
 
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
+  if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
   
   // determine the gap condition using
@@ -764,6 +789,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // update fhStatsFlow
     if (isToSaveDG)  fhStatsFlow->Fill(AliCEPBase::kBinDG);
     if (isToSaveNDG) fhStatsFlow->Fill(AliCEPBase::kBinNDG);
+    ((TH1F*)flQArnum->At(3))->Fill(fRun);
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
 
     // fill the CEPEventBuffer
