@@ -261,7 +261,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         AliAnalysisTaskHFEemcQA *hfdcalqaTrig02 = new AliAnalysisTaskHFEemcQA("emcqa");
         mgr->AddTask(hfdcalqaTrig02);
         hfdcalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-        hfdcalqaTrig02->SetEMCalTriggerDG1(kTRUE);
+        hfdcalqaTrig02->SetEMCalTriggerDG2(kTRUE);
         hfdcalqaTrig02->SetElecIDsparse(FillElecSparse);
         hfdcalqaTrig02->SetTenderSwitch(UseTender);
         hfdcalqaTrig02->SetThresholdEG1(thEG1ADC);
