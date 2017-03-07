@@ -502,6 +502,7 @@ public:
     kQnDiffTPCa_V0,
     kQnDiffTPCa_V0A,
     kQnDiffTPCa_V0C,
+    kQnDiffTPCa_TPCc,
     kQnDiffTPCc_V0,
     kQnDiffTPCc_V0A,
     kQnDiffTPCc_V0C,
@@ -583,10 +584,12 @@ public:
     kQnDeltaPhiTPCrpH2,
     kQnDeltaPhiV0ArpH2,
     kQnDeltaPhiV0CrpH2,
+    kQnDeltaPhiV0rpH2,
     kQnDeltaPhiSPDrpH2,
     kQnTPCrpH2FlowV2,
     kQnV0ArpH2FlowV2,
     kQnV0CrpH2FlowV2,
+    kQnV0rpH2FlowV2,
     kQnSPDrpH2FlowV2,
 
     // End of Eventplane variables from Qn Framework
@@ -2110,10 +2113,12 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kQnDeltaPhiTPCrpH2) || Req(kQnTPCrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiTPCrpH2]  = TVector2::Phi_mpi_pi(phi - qnTPCeventplane);
   if(Req(kQnDeltaPhiV0ArpH2) || Req(kQnV0ArpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0ArpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0ArpH2]);
   if(Req(kQnDeltaPhiV0CrpH2) || Req(kQnV0CrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0CrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0CrpH2]);
+  if(Req(kQnDeltaPhiV0rpH2) || Req(kQnV0rpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0rpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0rpH2]);
   if(Req(kQnDeltaPhiSPDrpH2) || Req(kQnSPDrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiSPDrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnSPDrpH2]);
   if(Req(kQnTPCrpH2FlowV2)) values[AliDielectronVarManager::kQnTPCrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiTPCrpH2] );
   if(Req(kQnV0ArpH2FlowV2)) values[AliDielectronVarManager::kQnV0ArpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0ArpH2] );
   if(Req(kQnV0CrpH2FlowV2)) values[AliDielectronVarManager::kQnV0CrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0CrpH2] );
+  if(Req(kQnV0rpH2FlowV2)) values[AliDielectronVarManager::kQnV0rpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0rpH2] );
   if(Req(kQnSPDrpH2FlowV2)) values[AliDielectronVarManager::kQnSPDrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiSPDrpH2] );
 
   AliDielectronMC *mc=AliDielectronMC::Instance();
@@ -3693,6 +3698,9 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
 
   // TPC A-Side diff
   if(bTPCaSideqVector){
+    if(bTPCcSideqVector){
+      values[AliDielectronVarManager::kQnDiffTPCa_TPCc] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCaSiderpH2],values[AliDielectronVarManager::kQnTPCcSiderpH2]);
+    }
     if(bV0qVector){
       values[AliDielectronVarManager::kQnDiffTPCa_V0] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCaSiderpH2],values[AliDielectronVarManager::kQnV0rpH2]);
     }
@@ -3707,13 +3715,13 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   // TPC C-Side diff
   if(bTPCcSideqVector){
     if(bV0qVector){
-      values[AliDielectronVarManager::kQnDiffTPCa_V0] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCcSiderpH2],values[AliDielectronVarManager::kQnV0rpH2]);
+      values[AliDielectronVarManager::kQnDiffTPCc_V0] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCcSiderpH2],values[AliDielectronVarManager::kQnV0rpH2]);
     }
     if(bV0AqVector){
-      values[AliDielectronVarManager::kQnDiffTPCa_V0A] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCcSiderpH2],values[AliDielectronVarManager::kQnV0ArpH2]);
+      values[AliDielectronVarManager::kQnDiffTPCc_V0A] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCcSiderpH2],values[AliDielectronVarManager::kQnV0ArpH2]);
     }
     if(bV0CqVector){
-      values[AliDielectronVarManager::kQnDiffTPCa_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCcSiderpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
+      values[AliDielectronVarManager::kQnDiffTPCc_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCcSiderpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
     }
   }
 
