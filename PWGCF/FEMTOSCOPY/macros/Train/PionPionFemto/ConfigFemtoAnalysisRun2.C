@@ -390,3 +390,4 @@ BuildConfiguration(const TString &text,
     gROOT->ProcessLineFast(cmd);
   }
 }
+// null

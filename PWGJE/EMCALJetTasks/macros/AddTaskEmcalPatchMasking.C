@@ -12,3 +12,4 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking *AddTaskEmcalPatchMaski
 
   return maskingtask;
 }
+// null

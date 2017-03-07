@@ -298,4 +298,4 @@ Int_t compareSplines(TString pathNameSplines1, TString pathNameSplines2,
   c->Update();
   
   return 0;
-}
+}// null

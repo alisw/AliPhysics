@@ -92,3 +92,4 @@ MakeStrange()
 //
 // EOF
 //
+// null

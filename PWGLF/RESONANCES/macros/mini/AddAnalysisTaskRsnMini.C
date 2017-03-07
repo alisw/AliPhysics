@@ -150,3 +150,4 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskRsnMini
 
    return task;
 }
+// null

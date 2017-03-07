@@ -558,3 +558,4 @@ void SetTrigQA(char *name0, char *name1)
       }
    }
 }
+// null

@@ -91,3 +91,4 @@ void runFilteringTask( const char* esdList,
 
     delete mgr;
 }
+// null

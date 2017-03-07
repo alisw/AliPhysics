@@ -1354,3 +1354,4 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
   //Chi2_c3 = SumChi2_test;
   
 }
+// null

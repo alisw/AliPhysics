@@ -141,4 +141,4 @@ TChain *CreateChain(const char *fileName)
     }
     inputstream.close();
     return chainGood;
-}
+}// null

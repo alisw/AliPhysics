@@ -175,3 +175,4 @@ AliRsnMiniAnalysisTask * AddTaskDelta
 
   return task;
 }
+// null

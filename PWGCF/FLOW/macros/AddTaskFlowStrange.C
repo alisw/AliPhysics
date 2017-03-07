@@ -737,3 +737,4 @@ void SFT_ResetVars() {
   SFT_gbDauSPDany=kFALSE;
   SFT_gbDauITSrefit=kFALSE;
 }
+// null

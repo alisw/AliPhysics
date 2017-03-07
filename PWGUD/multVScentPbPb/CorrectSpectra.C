@@ -1298,3 +1298,4 @@ void GetRealMinMax(TH1* histo, double &vmn, double &vmx)
   }
   //
 }
+// null

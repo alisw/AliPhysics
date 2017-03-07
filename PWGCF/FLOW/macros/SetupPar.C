@@ -38,3 +38,4 @@ void SetupPar(char* pararchivename)
   gSystem->ChangeDirectory(ocwd.Data());
   printf("Current dir: %s\n", ocwd.Data());
 }
+// null

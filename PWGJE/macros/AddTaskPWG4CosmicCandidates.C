@@ -65,3 +65,4 @@ AliPWG4CosmicCandidates* AddTaskPWG4CosmicCandidates(int cuts=1)
   // Return task pointer at the end
   return taskPWG4CC;
 }
+// null

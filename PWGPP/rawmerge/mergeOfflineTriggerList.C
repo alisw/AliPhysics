@@ -15,3 +15,4 @@ void mergeOfflineTriggerList(const char * inputList){
 }
 
 
+// null

@@ -766,3 +766,4 @@ void SFT_ResetVars() {
   SFT_gbmaxITSclusterShared=6;
   SFT_gbmaxITSChi2=36.;
 }
+// null

@@ -67,3 +67,4 @@ AliAnalysisTaskEmcalJetMassStructure* AddTaskEmcalJetMassStructure(const char * 
 
   return task;  
 }
+// null

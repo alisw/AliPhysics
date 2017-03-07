@@ -286,3 +286,4 @@ void Load(Bool_t useGrid) {
   gSystem->AddIncludePath("-I$ALICE_ROOT/PWG2/RESONANCES");
   gROOT->LoadMacro("./AliCFRsnTask.cxx+");
 }
+// null

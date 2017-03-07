@@ -74,3 +74,4 @@ void runCentrality(const char * type = "a", const char *mode="grid")
   mgr->StartAnalysis(mode);
 
 };
+// null

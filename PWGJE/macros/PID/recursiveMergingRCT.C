@@ -70,3 +70,4 @@ void recursiveMergingRCT(TString pathNameRCT, TString pathNameWithWildCards, TSt
   }
 }
 
+// null

@@ -77,3 +77,4 @@ Bool_t RsnLoadMacroTrain(TString macro,TString path="") {
 
    return kFALSE;
 }
+// null

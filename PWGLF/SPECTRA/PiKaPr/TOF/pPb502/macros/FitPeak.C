@@ -65,3 +65,4 @@ FitPeak(TH1 *h, Float_t startSigma, Float_t nSigmaMin, Float_t nSigmaMax, TF1 *f
   }
   return fitFunc;
 }
+// null

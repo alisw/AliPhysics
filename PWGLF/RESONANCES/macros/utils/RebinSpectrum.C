@@ -142,3 +142,4 @@ void RebinSpectrum(TH1** hi,TH1** hf,TF1* f,int n=1,int dofit=0,TH1* ht=0){
 
   return;
 }
+// null

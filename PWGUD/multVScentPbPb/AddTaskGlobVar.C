@@ -17,3 +17,4 @@ AliTaskGlobVar* AddTaskGlobVar(const char* outName="tt.root")
   //
   return task;
 }
+// null

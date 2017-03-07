@@ -70,3 +70,4 @@ mgr->ConnectInput(taskresonanceL1520MC, 0, mgr->GetCommonInputContainer());
 mgr->ConnectOutput(taskresonanceL1520MC, 1, coutput1);
 return taskresonanceL1520MC;
 } 
+// null

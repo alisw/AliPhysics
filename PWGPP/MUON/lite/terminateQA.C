@@ -170,3 +170,4 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE, 
   mgr->PrintStatus();
   mgr->StartAnalysis("grid terminate");
 }
+// null

@@ -315,3 +315,4 @@ AliRsnMiniAnalysisTask  * AddAnalysisTask
    cout<<" taskname  =  "<<taskName.Data()<<endl;
    return task;
 }
+// null

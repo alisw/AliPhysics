@@ -95,3 +95,4 @@ CompELossFits(const char* fname1, const char* fname2)
 //
 // EOF
 //
+// null

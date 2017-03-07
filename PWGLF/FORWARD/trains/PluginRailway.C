@@ -358,3 +358,4 @@ struct PluginRailway : public Railway
 //
 // EOF
 //
+// null

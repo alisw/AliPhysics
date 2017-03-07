@@ -5,3 +5,4 @@
   gROOT->ProcessLine(".L RooGaussianTail.cxx++");
   gROOT->ProcessLine(".L RooInverseGaussianTail.cxx++");
 }
+// null

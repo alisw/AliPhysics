@@ -739,3 +739,4 @@ void InitCF(AliDielectron* die)
   cf->SetStepsForSignal();
   die->SetCFManagerPair(cf);
 }
+// null

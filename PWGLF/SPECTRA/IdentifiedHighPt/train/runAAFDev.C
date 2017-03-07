@@ -426,4 +426,4 @@ TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)
   in.close();
 
   return chain;
-}
+}// null

@@ -62,3 +62,4 @@ AliResonanceKinkLikeSign *AddTaskKinkResLikeSignPhi(Short_t lCollidingSystems=0 
    mgr->ConnectOutput(taskkinkreslikesignPhi, 1, coutput1);
    return taskkinkreslikesignPhi;
 }   
+// null

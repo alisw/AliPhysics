@@ -69,3 +69,4 @@ AliJetEmbeddingTask* AddTaskJetEmbedding(
   
   return jetEmb;
 }
+// null

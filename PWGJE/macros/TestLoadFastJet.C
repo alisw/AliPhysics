@@ -12,3 +12,4 @@ void TestLoadFastJet() {
   cout << "All libraries loaded" << endl;
   gSystem->Exit(0);
 }
+// null

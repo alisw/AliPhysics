@@ -38,3 +38,4 @@ RunFileQA(const char* input, const char* output=0,
 //
 // EOF
 //
+// null

@@ -579,3 +579,4 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
   // Return task pointer at the end
   return taskPWG4TrackQA;
 }
+// null

@@ -13,3 +13,4 @@ void rootlogon() {
    gStyle->SetPalette(1);	
    gROOT->SetStyle("Plain");
 }
+// null

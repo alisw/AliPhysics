@@ -479,3 +479,4 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
   // *** End of analysis
   return Manager;
 }
+// null

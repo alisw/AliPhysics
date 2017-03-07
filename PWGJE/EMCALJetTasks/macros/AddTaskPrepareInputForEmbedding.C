@@ -54,3 +54,4 @@ AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
 
     return task;
 }
+// null

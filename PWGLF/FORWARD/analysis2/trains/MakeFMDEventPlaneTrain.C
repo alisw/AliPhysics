@@ -70,3 +70,4 @@ protected:
 //
 // EOF
 //
+// null

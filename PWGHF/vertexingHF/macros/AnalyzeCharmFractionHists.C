@@ -608,4 +608,4 @@ void TestChi2(){
   Double_t chi2=GetChi2(h1,h2,hchi2,ndof);
   hchi2->Draw();
   cout<<"The chi2 is "<<chi2;
-}
+}// null

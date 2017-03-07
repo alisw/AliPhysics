@@ -37,3 +37,4 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation *AddTaskEmcalTrigge
 
   return trgtask;
 }
+// null

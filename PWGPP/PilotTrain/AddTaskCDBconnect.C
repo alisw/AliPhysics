@@ -16,3 +16,4 @@ AliTaskCDBconnect* AddTaskCDBconnect()
 {
   return AddTaskCDBconnect("cvmfs://");
 }
+// null

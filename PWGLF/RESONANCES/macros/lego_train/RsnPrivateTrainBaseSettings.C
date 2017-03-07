@@ -63,3 +63,4 @@ TList *RsnPrivateTrainBaseSettings() {
    AliAnalysisManager::SetGlobalStr("rsnLegoTrainAliROOTversion",alirootver.Data());
 
 }
+// null

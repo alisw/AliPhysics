@@ -483,3 +483,4 @@ void QAMerge(const char* inputfilelist, const char* mergedFile)
   out.close();
 }
 
+// null

@@ -285,4 +285,4 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                         AliDielectronVarManager::kY);
 
   die->SetHistogramManager(histos);
-}
+}// null

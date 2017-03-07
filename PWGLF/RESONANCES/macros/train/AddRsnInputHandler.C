@@ -192,3 +192,4 @@ void AddRsnInputHandler(Bool_t isMC, AliMultiInputEventHandler *multi)
    sel->Init();
    multi->AddInputEventHandler(rsnIH);
 }
+// null

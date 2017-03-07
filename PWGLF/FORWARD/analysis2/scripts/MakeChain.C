@@ -193,3 +193,4 @@ MakeChain(const char* what, const char* datadir, bool recursive=false)
 //
 // EOF
 //
+// null

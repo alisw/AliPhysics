@@ -301,3 +301,4 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
 // EOF
 //
 
+// null

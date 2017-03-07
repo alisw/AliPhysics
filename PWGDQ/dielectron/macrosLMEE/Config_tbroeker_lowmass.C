@@ -767,4 +767,4 @@ const AliDielectronEventCuts *GetEventCuts(){
   eventCuts->SetMinVtxContributors(1); 
   
   return eventCuts;
-}
+}// null

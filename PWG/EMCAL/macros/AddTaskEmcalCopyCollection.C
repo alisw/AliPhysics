@@ -5,3 +5,4 @@ AliEmcalCopyCollection* AddTaskEmcalCopyCollection(AliEmcalCorrectionTask::Input
 {  
   return AliEmcalCopyCollection::AddTaskEmcalCopyCollection(inputObjectType, collectionToCopyName, newCollectionName, isEmbedding);
 }
+// null

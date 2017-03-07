@@ -37,3 +37,4 @@ AliAnalysisTaskCorPIDTOFQA* AddMyTaskCorPIDTOFQA(TString name = "name")
     // when you will run your analysis in an analysis train on grid
     return task;
 }
+// null

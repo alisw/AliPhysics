@@ -43,3 +43,4 @@ MakeDeltas(const char* realFileName,
 //
 // EOF
 // 
+// null

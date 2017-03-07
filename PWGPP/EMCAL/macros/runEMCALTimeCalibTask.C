@@ -215,3 +215,4 @@ TChain *CreateChainFromCollection(const char* xmlfile, const char *treeName="esd
 }
 
 // End of macro
+// null

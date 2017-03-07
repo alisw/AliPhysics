@@ -12,3 +12,4 @@ void mergeResults(Char_t *files, Char_t *file="QAresults.root")
   AliTRDpwgppHelper::MergeProd(file, files, 5);
   gSystem->Exec("rm -rfv merge");
 }
+// null

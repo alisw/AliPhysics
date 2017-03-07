@@ -76,3 +76,4 @@ void  readStarEvents()
   delete starReader ;
   starReader = NULL ;                              // Prepare to exit
 }
+// null

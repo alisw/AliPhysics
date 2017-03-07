@@ -499,3 +499,4 @@ void CleanOptions() {
   listOfRuns.Clear();
   listOfActiveRuns.Clear();
 }
+// null

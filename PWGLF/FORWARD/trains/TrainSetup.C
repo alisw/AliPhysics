@@ -1666,3 +1666,4 @@ protected:
   Railway*     fRailway;
 };
 #endif
+// null

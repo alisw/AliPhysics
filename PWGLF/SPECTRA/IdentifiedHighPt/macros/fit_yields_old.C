@@ -1457,3 +1457,4 @@ void Compare(Double_t x)
   
   delete hHelp;
 }
+// null

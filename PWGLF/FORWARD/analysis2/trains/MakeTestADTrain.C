@@ -69,3 +69,4 @@ protected:
 //
 // EOF
 //
+// null

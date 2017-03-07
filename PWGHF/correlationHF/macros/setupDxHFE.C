@@ -132,3 +132,4 @@ void setupDxHFE(const char* localAodDirectory, int nofDirectories)
   // local mode for AOD data
   setupDxHFE(localAodDirectory, nofDirectories, NULL);
 }
+// null

@@ -31,3 +31,4 @@ AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7,
   mgr->ConnectOutput(task, 3, coutput3);
   return task;
 }
+// null

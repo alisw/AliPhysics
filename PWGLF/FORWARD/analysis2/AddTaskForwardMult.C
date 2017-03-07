@@ -123,3 +123,4 @@ AddTaskForwardMult(const Char_t* type,
 //
 // EOF
 //
+// null

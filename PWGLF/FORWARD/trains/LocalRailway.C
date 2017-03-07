@@ -187,3 +187,4 @@ struct LocalRailway : public Railway
 //
 // EOF
 //
+// null

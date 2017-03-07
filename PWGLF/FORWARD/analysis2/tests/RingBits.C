@@ -98,3 +98,4 @@ void RingBits()
 
   TestEnums();
 }
+// null

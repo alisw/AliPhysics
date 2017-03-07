@@ -157,3 +157,4 @@ TObject* GetHistogram(TFile* file,
   THashList* qaHistList = (THashList*)qaCutClass->FindObject(histList);
   return qaHistList->FindObject(histName);
 }
+// null

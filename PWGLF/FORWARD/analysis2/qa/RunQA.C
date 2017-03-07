@@ -72,3 +72,4 @@ RunQA(const char* input,
 //
 // EOF
 //
+// null

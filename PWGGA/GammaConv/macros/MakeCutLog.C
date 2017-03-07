@@ -58,3 +58,4 @@ void MakeCutLog(const char *inputRootFile = "AnalysisResults",const char *path =
   }
   outputFile.close();
 }
+// null

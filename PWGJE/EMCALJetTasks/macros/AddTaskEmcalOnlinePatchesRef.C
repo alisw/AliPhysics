@@ -12,3 +12,4 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOnlinePatchesRef *AddTaskEmcalOnline
 
   return task;
 }
+// null

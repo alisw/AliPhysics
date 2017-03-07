@@ -10,3 +10,4 @@ makePeriodPlots( const char* mergedQAfile, const char *periodName ){
     a->SetMakeFitPerfomancePlots(kTRUE);
     a->RunPeriod();
 }
+// null

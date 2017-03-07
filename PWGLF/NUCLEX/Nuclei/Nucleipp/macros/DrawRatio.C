@@ -69,3 +69,4 @@ void DrawRatio(const TString& inputFile="pt.root", const TString& tag="test", co
 	hRatioPt->SetYTitle(ytitle);
 	hRatioPt->DrawCopy();
 }
+// null

@@ -12,3 +12,4 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor *AddTaskEGAMonitor() {
 
   return egamonitor;
 }
+// null

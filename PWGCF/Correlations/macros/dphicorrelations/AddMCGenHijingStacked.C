@@ -50,4 +50,4 @@ AliGenerator *AddMCGenHijingStacked(Int_t stackEvents = 1)
   else
     return GetHIJING();
 }
- 
+ // null

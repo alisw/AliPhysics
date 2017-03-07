@@ -26,4 +26,4 @@ AliAnalysisTaskCaloFilter * ConfigCaloFilter()
   filter->PrintInfo();   
 
   return filter;
-}
+}// null

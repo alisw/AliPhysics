@@ -194,3 +194,4 @@ CompareSecMaps(const char* fn1,   const char* fn2,
 //
 // EOF
 // 
+// null

@@ -1042,3 +1042,4 @@ struct AliceLogo
 //
 // EOF
 //
+// null

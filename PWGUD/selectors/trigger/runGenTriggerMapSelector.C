@@ -44,3 +44,4 @@ void generateTriggerMap(Bool_t clean = kFALSE)
   selector.ReadHistograms();
   selector.GenerateTriggerMap(clean);
 }
+// null

@@ -620,3 +620,4 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
     }   // end if for Pair classes of histograms
   }  // end loop over histogram classes
 }
+// null

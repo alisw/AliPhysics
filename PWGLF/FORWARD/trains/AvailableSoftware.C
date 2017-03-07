@@ -300,3 +300,4 @@ struct AvailableSoftware
   }
 };
 #endif
+// null

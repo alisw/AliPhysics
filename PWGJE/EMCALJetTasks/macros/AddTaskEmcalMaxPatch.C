@@ -13,3 +13,4 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalMaxPatch *AddTaskEmcalMaxPatch(const
 
   return patchtask;
 }
+// null

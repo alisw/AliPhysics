@@ -17,3 +17,4 @@ void runNew(TString fileList="runlist.txt"){
   gSystem->Exec("hadd -f trending.root all/*/trending.root");
   gSystem->Exec("aliroot -l -b -q periodLevelQA.C");
 }
+// null

@@ -185,3 +185,4 @@ AliDhcTask *AddTaskDhc(
   
   return dhcTask;
 }
+// null

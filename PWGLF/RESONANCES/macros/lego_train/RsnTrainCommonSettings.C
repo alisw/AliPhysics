@@ -59,3 +59,4 @@ void RsnTrainCommonSettings(TString type,TString rsnPart,TString extraMacro="",T
    AliRsnTrainManager::SetGlobalInt("RsnMixPrintRefresh",-1,kFALSE);
 
 }
+// null

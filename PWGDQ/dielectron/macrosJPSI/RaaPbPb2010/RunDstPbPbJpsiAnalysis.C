@@ -926,3 +926,4 @@ void DefineHistograms(const Char_t* histClasses, const Char_t* output) {
     
   }   // end loop over histogram classes
 }
+// null

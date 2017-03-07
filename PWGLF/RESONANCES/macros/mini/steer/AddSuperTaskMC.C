@@ -462,3 +462,4 @@ Bool_t ConfigSuperOutput(AliRsnMiniAnalysisTask *task,
 
   return kTRUE;
 }
+// null

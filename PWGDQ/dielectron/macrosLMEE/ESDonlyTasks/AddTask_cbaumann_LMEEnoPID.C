@@ -98,3 +98,4 @@ if (enableCF)  mgr->ConnectOutput(task, 2, cOutputHist2);
 
   return task;
 }
+// null

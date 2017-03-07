@@ -132,4 +132,4 @@ void SetupStyle()
   
   TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
   
-}
+}// null

@@ -244,3 +244,4 @@ GetObjects(UShort_t    what,
 //
 // EOF
 //
+// null

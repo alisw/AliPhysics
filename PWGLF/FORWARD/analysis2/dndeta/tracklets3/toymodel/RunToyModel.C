@@ -36,3 +36,4 @@ ToyModel* RunToyModel(const char* opts="help",
 //
 // EOF
 //
+// null

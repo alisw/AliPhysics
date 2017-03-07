@@ -58,3 +58,4 @@ RunFast(const char* url="local:///",
   }
   FastSim::Run(url, opt);
 }
+// null

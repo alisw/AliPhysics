@@ -27,3 +27,4 @@ SPDAcceptance(Int_t runNo=118560, Int_t year=2010)
 	   i, glb[0], glb[1], glb[2], r, p);
   }
 }
+// null

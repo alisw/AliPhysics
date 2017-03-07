@@ -65,3 +65,4 @@ void PlotMinEtFromSim(Bool_t isPhos = kFALSE){
     TString outfile = "/tmp/MinEtFromSim"+detname+".png";
     c1->SaveAs(outfile.Data());
 }
+// null

@@ -80,3 +80,4 @@ AliAnalysisTaskThermalGAFlow* AddTaskThermalGAFlow(
 }
 
 //Note: Order of global variables matter!  They must match header, addtask, and cxx.
+// null

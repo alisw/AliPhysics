@@ -222,3 +222,4 @@ void SetupPar(char* pararchivename) {
   printf("Current dir: %s\n", ocwd.Data());
 
 } // end of void SetupPar(char* pararchivename) 
+// null

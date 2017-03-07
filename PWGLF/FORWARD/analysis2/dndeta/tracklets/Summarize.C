@@ -184,3 +184,4 @@ void Summarize(const char* name)
 //
 // EOF
 // 
+// null

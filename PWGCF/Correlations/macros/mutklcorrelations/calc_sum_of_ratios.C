@@ -236,3 +236,4 @@ void calc_sum_of_ratios(
   fout->Close();
   delete fout;
 }
+// null

@@ -75,3 +75,4 @@ void AddTaskPIDflowQA( Float_t centrMin=0.,
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutputQAtask);
 }
+// null
