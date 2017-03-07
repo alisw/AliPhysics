@@ -42,6 +42,7 @@ ClassImp(AliAnalysisTaskHadEt)
 //________________________________________________________________________
   AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name, Bool_t isMc, TString recoConfigFile, TString mcConfigFile) :
         AliAnalysisTaskTransverseEnergy(name, isMc)
+	,trackcutoption(0)
 	,fPIDResponse(0)
 	,fRecAnalysis(0)
 	,fMCAnalysis(0)
@@ -192,8 +193,31 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     cout<<"Setting track cuts for the 2010 Pb+Pb collisions at 2.76 TeV"<<endl;
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
     //if(!fEsdtrackCutsITSTPC){
+    if(trackcutoption<=2){
       fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
       fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    }
+    else{
+      fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selectPrimaries);
+      fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    }
+    cout<<"Selected track cut option "<<trackcutoption<<endl;
+      if(trackcutoption==1){
+	fEsdtrackCutsITSTPC->SetMinNClustersTPC(60);
+	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(6.0);
+      }
+      if(trackcutoption==2){
+	fEsdtrackCutsITSTPC->SetMinNClustersTPC(85);
+	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(2.0);
+      }
+      if(trackcutoption==3){
+	fEsdtrackCutsITSTPC->SetMinNClustersTPC(60);
+	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(6.0);
+      }
+      if(trackcutoption==4){
+	fEsdtrackCutsITSTPC->SetMinNClustersTPC(85);
+	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(3.0);
+      }
       //}
       //else{cout<<"ITS+TPC Track cuts already exist.  Not resetting track cuts."<<endl;}
       //if(!fEsdtrackCutsTPC){
