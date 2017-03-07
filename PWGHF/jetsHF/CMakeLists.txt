@@ -60,7 +60,8 @@ set(SRCS
     AliRDHFJetsCutsVertex.cxx
     AliHFJetsTaggingVertex.cxx
     AliHFJetsContainer.cxx
-    AliHFJetsContainerVertex.cxx    
+    AliHFJetsContainerVertex.cxx
+    AliDJetRawYieldUncertainty.cxx
 )
 
 if(FASTJET_FOUND)

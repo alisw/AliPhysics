@@ -1,7 +1,7 @@
 // $Id$
 
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -29,4 +29,5 @@
 #pragma link C++ class AliAnalysisTaskEmcalHFCJQA+;
 #pragma link C++ class AliAnalysisTaskEmcalHFeJetCorrel+;
 #pragma link C++ class AliAnalysisTaskHFJetIPQA+;
+#pragma link C++ class AliDJetRawYieldUncertainty+;
 #endif
