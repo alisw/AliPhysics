@@ -43,7 +43,7 @@ AliAnalysisTask *AddTask_mmarquar_MatrixPbPb_ZDC(){
   esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
   esdTrackCuts->SetMaxChi2PerClusterITS(36.);
 
-  Double_t ptmin = 0.15;
+  Double_t ptmin = 0.16;
   Double_t ptmax = 1.e10;
   Double_t etamax = 1.0;
   Double_t etamin = -1.0;

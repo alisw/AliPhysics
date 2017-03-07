@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEMCALIsolation_cxx
-#define AliAnalysisTaskEMCALIsolation_cxx
+#ifndef ALIANALYSISTASKEMCALISOLATION_H
+#define ALIANALYSISTASKEMCALISOLATION_H
 
 // Task for isolating gammas with EMCAL
 // Author: Marco Marquard
