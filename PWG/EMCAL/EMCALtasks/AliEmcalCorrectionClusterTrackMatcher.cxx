@@ -32,6 +32,8 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fAttemptProp(kTRUE),
   fAttemptPropMatch(kFALSE),
   fMaxDistance(0.1),
+  fUsePIDmass(kTRUE),
+  fUseDCA(kTRUE),
   fUpdateTracks(kTRUE),
   fUpdateClusters(kTRUE),
   fEmcalTracks(0),
@@ -67,12 +69,13 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   AliEmcalCorrectionComponent::Initialize();
   
   GetProperty("createHistos", fCreateHisto);
-  
+  GetProperty("usePIDmass", fUsePIDmass);
+  GetProperty("useDCA", fUseDCA);
   GetProperty("maxDist", fMaxDistance);
   GetProperty("updateClusters", fUpdateClusters);
   GetProperty("updateTracks", fUpdateTracks);
   fDoPropagation = fEsdMode;
-  
+
   return kTRUE;
 }
 
@@ -206,6 +209,15 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
     fNEmcalClusters++;
   }
   
+  Double_t mass;
+  if (fUsePIDmass) {
+    // use PID-based mass, and fUseDCA to determine starting point of propagation
+    mass = -1;
+  }
+  else {
+    // use pion mass, and fUseDCA to determine starting point of propagation
+    mass = 0.1396;
+  }
   fPartCont->ResetCurrentID();
   while ((track = static_cast<AliVTrack*>(fPartCont->GetNextAcceptParticle()))) {
 
@@ -226,7 +238,9 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
         propthistrack = kTRUE;
       }
     }
-    if (propthistrack) AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist);
+    if (propthistrack) {
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA);
+    }
     
     // Create AliEmcalParticle objects to handle the matching
     AliEmcalParticle* emcalTrack = new ((*fEmcalTracks)[fNEmcalTracks]) AliEmcalParticle(track, fPartCont->GetCurrentID());

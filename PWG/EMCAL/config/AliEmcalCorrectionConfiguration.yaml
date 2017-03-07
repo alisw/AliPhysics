@@ -100,6 +100,8 @@ ClusterTrackMatcher:                                # Cluster-track matcher comp
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     maxDist: 0.1                                    # Max distance between a matched cluster and track
+    useDCA: true                                    # Use DCA as starting point for track propagation, rather than primary vertex
+    usePIDmass: true                                # Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
     updateClusters: true                            # Update the matching information in the cluster
     updateTracks: true                              # Update the matching information in the track
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction

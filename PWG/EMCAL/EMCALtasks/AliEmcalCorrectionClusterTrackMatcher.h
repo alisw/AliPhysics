@@ -73,6 +73,8 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   Bool_t        fAttemptProp;           ///< if true then attempt to propagate if not done yet
   Bool_t        fAttemptPropMatch;      ///< if true then attempt to propagate if not done yet but IsEMCAL is true
   Double_t      fMaxDistance;           ///< maximum distance to match clusters and tracks
+  Bool_t        fUsePIDmass;            ///< Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
+  Bool_t        fUseDCA;                ///< Use DCA as starting point for track propagation, rather than primary vertex
   Bool_t        fUpdateTracks;          ///< update tracks with matching info
   Bool_t        fUpdateClusters;        ///< update clusters with matching info
   
