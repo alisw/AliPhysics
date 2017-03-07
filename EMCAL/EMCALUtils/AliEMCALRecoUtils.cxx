@@ -2743,7 +2743,7 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackP
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
                                                          Double_t emcalR, Double_t mass,
                                                          Double_t step, Double_t minpt,
-                                                         Bool_t useMassForTracking)
+                                                         Bool_t useMassForTracking, Bool_t useDCA)
 { 
   track->SetTrackPhiEtaPtOnEMCal(-999, -999, -999);
   
@@ -2805,8 +2805,14 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
   else 
   {
     Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
-    aodt->PxPyPz(pxpypz);  
-    aodt->XvYvZv(xyz);
+    aodt->PxPyPz(pxpypz);
+    if (useDCA) {
+      // Note: useDCA is by default false in this function only for backwards compatibility
+      aodt->GetXYZ(xyz);
+    }
+    else {
+      aodt->XvYvZv(xyz);
+    }
     aodt->GetCovarianceXYZPxPyPz(cv);  
     trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
   }

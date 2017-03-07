@@ -296,7 +296,7 @@ public:
   static Bool_t ExtrapolateTrackToEMCalSurface(AliVTrack *track, /*note, on success the call will change the track*/
                                                Double_t emcalR=440, Double_t mass=0.1396,
                                                Double_t step=20, Double_t minpT=0.35,
-                                               Bool_t useMassForTracking = kFALSE);
+                                               Bool_t useMassForTracking = kFALSE, Bool_t useDCA = kFALSE);
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                Double_t emcalR, Double_t mass, Double_t step, 
                                                Float_t &eta, Float_t &phi, Float_t &pt);
