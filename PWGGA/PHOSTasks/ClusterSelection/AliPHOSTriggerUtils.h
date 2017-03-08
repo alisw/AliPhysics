@@ -32,10 +32,10 @@ public:
 
   void SetEvent(AliVEvent * event); //sets ref. to current event; inits class for new run if necessary
   
-  Bool_t IsFiredTrigger(AliVCluster * clu) ; //Returns true if this cluster fired PHOS trigger in event
+  Int_t IsFiredTrigger(AliVCluster * clu) ; //Returns bits if this cluster fired PHOS trigger in event: L0, L1low, L1med, L1high
   
-  Bool_t IsFiredTriggerMC(AliVCluster * clu) ;  //For MC simulations without detailed PHOS trigger
-                                                    //Returns true if this cluster should fire PHOS trigger
+  Int_t IsFiredTriggerMC(AliVCluster * clu) ;  //For MC simulations without detailed PHOS trigger 
+                                                    //Returns (L0, L1low, L1med, L1high) if this cluster should fire PHOS trigger
                                                     //according to parameterization of turn-on curve and trigger bad map
                                                     
   void ReadTriggerParams(const char * filename); //Read trigger info (bad map, parameterizations) from specific file, ignore OADB        
@@ -49,6 +49,7 @@ protected:
   void InitForRun(Int_t run) ; //read trigger bad map for this run from OADB. Should be called once per run
   Int_t FindBranch(Int_t nX, Int_t nZ) ; //Calculate number of PHOS branch
   Double_t TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t module) ; //Parameterization of turn-on curve in LHC13bcdef
+  Double_t TriggerProbability(Double_t eClu, Int_t module, Int_t triggerBit) ; //Parameterization of turn-on curves
   
   
 private:
@@ -63,15 +64,19 @@ private:
   AliPHOSGeoUtils* fGeom ;  //! PHOS geometry
   
   //Parameterization of turn-on curves
-  TF1 * fTOC[5][8];     //parameterization of turn-on curves for 5 modules and 8 branches/module
+  TF1 * fTOCL0[5][8];       //parameterization of turn-on curves for 5 modules and 8 branches/module
+  TF1 * fTOCL1low[5][8];    //parameterization of turn-on curves for 5 modules and 8 branches/module
+  TF1 * fTOCL1med[5][8];    //parameterization of turn-on curves for 5 modules and 8 branches/module
+  TF1 * fTOCL1high[5][8];   //parameterization of turn-on curves for 5 modules and 8 branches/module
   
   Int_t fNtrg4x4 ;       //! Number of triggers in current event
   Int_t fTrMod4x4[1000]; //! trigger modules
   Int_t fTrX4x4[1000] ;  //! trigger X coordinates
   Int_t fTrZ4x4[1000] ;  //! trigger Z coordinates
+  Int_t fTrK4x4[1000] ;  //! trigger Kind,bits for L0, L1low, L1med, L1high
   
   
-  ClassDef(AliPHOSTriggerUtils,1)       // PHOS trigger analysis class 
+  ClassDef(AliPHOSTriggerUtils,2)       // PHOS trigger analysis class 
 
 } ;
 

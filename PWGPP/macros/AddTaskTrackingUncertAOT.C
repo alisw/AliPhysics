@@ -2,6 +2,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           TString trigClass = "CINT1B",
                                           AliVEvent::EOfflineTriggerTypes trigMask = AliVEvent::kMB,
                                           AliAnalysisTrackingUncertaintiesAOT::ESpecies_t specie=(AliAnalysisTrackingUncertaintiesAOT::kSpecPion|AliAnalysisTrackingUncertaintiesAOT::kSpecKaon),
+                                          TString outputSuffix = "",
                                           Bool_t doCutV0multTPCout = kFALSE,
                                           Double_t MaxDCAxy = 2.4,
                                           Double_t MaxDCAz  = 3.2,
@@ -53,6 +54,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
     if(SPeciee&AliAnalysisTrackingUncertaintiesAOT::kSpecKaon)     suffix += "K";
     if(SPeciee&AliAnalysisTrackingUncertaintiesAOT::kSpecProton)   suffix += "p";
     if(SPeciee&AliAnalysisTrackingUncertaintiesAOT::kAll)          suffix  = "_All";
+    suffix += outputSuffix;
     //
     //
     //======================================================================

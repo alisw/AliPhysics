@@ -84,6 +84,8 @@ class AliCEPUtils : public TObject {
       TObjArray* fTracks,TArrayI* fTrackStatus);
 
     // QA studies
+    static TList* GetQArnumHists(Int_t rnummin, Int_t rnummax);
+    
     static TList* GetSPDPileupQAHists();
     void SPDVtxAnalysis (
       AliVEvent *Event,
@@ -99,9 +101,6 @@ class AliCEPUtils : public TObject {
       TList *lhh );
     static TList* GetVtxQAHists();
     void VtxAnalysis (
-      AliVEvent *Event,
-      TList *lhh );
-    void TrackCutAnalysis (
       AliVEvent *Event,
       TList *lhh );
 

@@ -827,13 +827,6 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     fPDGdaughters[1] = 321;  // K
     fBranchName = "D0toKpi";
     fAcceptedDecay = kDecayD0toKpi;
-    if (!fRDHFCuts) {
-      fRDHFCuts = new AliRDHFCutsD0toKpi();
-      fRDHFCuts->SetStandardCutsPP2010();
-      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
-      fRDHFCuts->SetUsePhysicsSelection(kFALSE);
-      fRDHFCuts->SetTriggerClass("","");
-    }
     break;
   case kD0toKpiLikeSign:
     fCandidatePDG = 421;
@@ -844,13 +837,6 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     fPDGdaughters[0] = 211;  // pi
     fPDGdaughters[1] = 321;  // K
     fBranchName = "LikeSign2Prong";
-    if (!fRDHFCuts) {
-      fRDHFCuts = new AliRDHFCutsD0toKpi();
-      fRDHFCuts->SetStandardCutsPP2010();
-      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
-      fRDHFCuts->SetUsePhysicsSelection(kFALSE);
-      fRDHFCuts->SetTriggerClass("","");
-    }
     break;
   case kDstartoKpipi:
     fCandidatePDG = 413;
@@ -863,13 +849,6 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     fPDGdaughters[2] = 321; // K from D0
     fBranchName = "Dstar";
     fAcceptedDecay = kDecayDStartoKpipi;
-    if (!fRDHFCuts) {
-      fRDHFCuts = new AliRDHFCutsDStartoKpipi();
-      fRDHFCuts->SetStandardCutsPP2010();
-      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
-      fRDHFCuts->SetUsePhysicsSelection(kFALSE);
-      fRDHFCuts->SetTriggerClass("","");
-    }
     break;
   default:
     ::Error("AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties","Candidate %d unknown!", fCandidateType);
@@ -2115,18 +2094,21 @@ AliRDHFCuts* AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile(TString cutfname,
   AliRDHFCuts* analysiscuts = 0;
   TFile* filecuts = TFile::Open(cutfname);
   if (!filecuts || filecuts->IsZombie()) {
-    ::Warning("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Input file not found: will use std cuts.");
+    ::Error("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Input file not found: will use std cuts.");
     filecuts = 0;
   }
 
-  if (filecuts) {
-    analysiscuts = dynamic_cast<AliRDHFCuts*>(filecuts->Get(cutsname));
-    if (!analysiscuts) {
-      ::Warning("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Could not find analysis cuts '%s' in '%s'. Using std cuts.", cutsname.Data(), cutfname.Data());
+  if (filecuts) analysiscuts = dynamic_cast<AliRDHFCuts*>(filecuts->Get(cutsname));
+
+  if (!analysiscuts) {
+    ::Error("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Could not find analysis cuts '%s' in '%s'.", cutsname.Data(), cutfname.Data());
+    if (filecuts) {
+      filecuts->ls();
     }
   }
-
-  ::Info("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Cuts '%s' loaded from file '%s'", cutsname.Data(), cutfname.Data());
+  else {
+    ::Info("AliAnalysisTaskDmesonJets::LoadDMesonCutsFromFile", "Cuts '%s' loaded from file '%s'", cutsname.Data(), cutfname.Data());
+  }
 
   return analysiscuts;
 }
@@ -2173,7 +2155,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine* AliAnalysisTaskDmesonJets::AddAnalysi
     }
 
     cuts = LoadDMesonCutsFromFile(cutfname, cutsname);
-    cuts->PrintAll();
+    if (cuts) cuts->PrintAll();
   }
 
   AnalysisEngine eng(type, MCmode, cuts);
@@ -2460,6 +2442,13 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
     params.fFastJetWrapper = fFastJetWrapper;
     params.fTrackEfficiency = fTrackEfficiency;
     params.fRandomGen = rnd;
+
+    if (!params.fRDHFCuts) {
+      ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
+          "%s: RDHF cuts not provided. Engine '%s' will be disabled!",
+          GetName(), params.GetName());
+      params.fInhibit = kTRUE;
+    }
 
     params.fMCContainer = fMCContainer;
 

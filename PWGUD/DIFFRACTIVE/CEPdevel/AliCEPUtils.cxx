@@ -89,6 +89,34 @@ TH1F* AliCEPUtils::GetHistStatsFlow()
 }
 
 //------------------------------------------------------------------------------
+// definition of QA histograms used in AliCEPUtils::QArnumAnalysis
+// the histograms contain QA parameters as function of run number
+TList* AliCEPUtils::GetQArnumHists(Int_t rnummin, Int_t rnummax)
+{
+
+  // initialisations
+  Int_t nch = rnummax-rnummin;
+  if (nch <= 0) nch=1;
+  TList *lhh = new TList();
+  lhh->SetOwner();
+  
+  // define the histograms and and add them to the list lhh
+  printf("Preparing QArnum histograms %i - %i\n",rnummin,rnummax);
+  // number of input events
+  TH1F* fhh01 = new TH1F("nGood","nGood",nch,rnummin,rnummax);
+  lhh->Add(fhh01);
+  TH1F* fhh02 = new TH1F("nDGtrigger","nDGtrigger",nch,rnummin,rnummax);
+  lhh->Add(fhh02);
+  TH1F* fhh03 = new TH1F("nMBOR","nMBOR",nch,rnummin,rnummax);
+  lhh->Add(fhh03);
+  TH1F* fhh04 = new TH1F("nSaved","nSaved",nch,rnummin,rnummax);
+  lhh->Add(fhh04);
+  
+  return lhh;
+  
+}
+
+//------------------------------------------------------------------------------
 // definition of QA histograms used in AliCEPUtils::SPDVtxAnalysis
 // the histograms contain distributions of cut parameters
 TList* AliCEPUtils::GetSPDPileupQAHists()
@@ -96,6 +124,7 @@ TList* AliCEPUtils::GetSPDPileupQAHists()
 
   // initialisations
   TList *lhh = new TList();
+  lhh->SetOwner();
   
   // define the histograms and and add them to the list lhh
   TH1F* fhh01 = new TH1F("nContr","nContr",200,0,200);
@@ -153,6 +182,7 @@ TList* AliCEPUtils::GetnClunTraQAHists()
 
   // initialisations
   TList *lhh = new TList();
+  lhh->SetOwner();
   
   // define the histograms and and add them to the list lhh
   TH1F* fhh01 = new TH1F("nClusters[0]","nClusters[0]",200,0,200);
@@ -166,7 +196,7 @@ TList* AliCEPUtils::GetnClunTraQAHists()
   TH2F* fhh05 = new TH2F("nClu vs nTra","nClu vs nTra",
     400,0,400,200,0,200);
   lhh->Add(fhh05);
-  
+
   return lhh;
 }
 
@@ -178,6 +208,7 @@ TList* AliCEPUtils::GetVtxQAHists()
 {
   // initialisations
   TList *lhh = new TList();
+  lhh->SetOwner();
   
   // define the histograms and and add them to the list lhh
   TH1F* fhh01 = new TH1F("SPDVtxDisp","SPDVtxDisp",200,0.,0.5);
@@ -449,77 +480,6 @@ void AliCEPUtils::VtxAnalysis (
   
   return;
   
-}
-
-//------------------------------------------------------------------------------
-// This function compiles parameters which are relevant for the
-// track selection
-// see AliESDtrackCuts::AcceptTrack
-// histograms include (see AliCEPUtils::GetTrackCutQAHists)
-//  . spdVertex->GetDispersion()
-//  . spdVertex->GetZRes()
-//  . spdVertex->GetZ() - trkVertex->GetZ()
-//  . vertex->GetZ()
-void AliCEPUtils::TrackCutAnalysis (
-  AliVEvent *Event,
-  TList *lhh )
-{
-  
-  // currently only works with ESDEvent
-  const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(Event);
-  if (!esd) return;
-
-  // loop over all tracks
-  Int_t nTracks = esd->GetNumberOfTracks();
-  
-  AliESDtrack* track = NULL;
-  for (Int_t ii=0; ii<nTracks; ii++) {
-    track = (AliESDtrack*) esd->GetTrack(ii);
-    
-    // getting quality parameters from the ESD track
-    UInt_t status = track->GetStatus();
-    Int_t nClustersITS = track->GetITSclusters(0);
-    Int_t nClustersTPC = track->GetTPCclusters(0);
-    
-    Float_t nCrossedRowsTPC = track->GetTPCCrossedRows();
-    Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
-    if (track->GetTPCNclsF()>0) {
-      ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / track->GetTPCNclsF();
-    }
-    
-    Int_t nClustersTPCShared = track->GetTPCnclsS();
-    Float_t fracClustersTPCShared = -1.;
-
-    Float_t chi2PerClusterITS = -1;
-    Float_t chi2PerClusterTPC = -1;
-    if (nClustersITS!=0)
-      chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
-    if (nClustersTPC!=0) {
-      chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
-      }
-    fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
-    
-    Float_t b[2];
-    Float_t bCov[3];
-    track->GetImpactParameters(b,bCov);
-    Float_t dcaToVertexXY = b[0];
-    Float_t dcaToVertexZ  = b[1];
-    Float_t dcaToVertex =
-      TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
-  
-    Double_t p[3];
-    track->GetPxPyPz(p);
-    Double_t momentum = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
-    Double_t pt       = TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
-    Double_t mass     = track->GetMass();
-    Double_t energy   = TMath::Sqrt(mass*mass + momentum*momentum);
-
-    Int_t KinkIndex = track->GetKinkIndex(0);
-  
-  }
-
-  return;
-
 }
 
 //------------------------------------------------------------------------------

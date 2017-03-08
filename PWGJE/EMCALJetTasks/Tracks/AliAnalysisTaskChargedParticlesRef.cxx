@@ -126,7 +126,6 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
   Bool_t hasPIDresponse = fInputHandler->GetPIDResponse() != nullptr;
   if(fStudyPID && !hasPIDresponse) AliErrorStream() << "PID requested but PID response not available" << std::endl;
 
-
   // Loop over tracks, fill select particles
   // Histograms
   // - Full eta_{lab} (-0.8, 0.8), new binning

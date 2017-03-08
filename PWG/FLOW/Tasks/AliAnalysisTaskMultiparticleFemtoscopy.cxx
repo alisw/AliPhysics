@@ -2628,6 +2628,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
      fCorrelationFunctionsTESTSublist[t]->Add(fSignalCumulantsTEST[t][1][ct][xyz]);
     } // for(Int_t xyz=0;xyz<3;xyz++)
    } // for(Int_t ct=0;ct<nCumulants;ct++)
+
   } // if(fFillCorrelationFunctionsTEST[t])
 
  } // for(Int_t t=0;t<nTests;t++)
@@ -4989,7 +4990,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
   // Loop over the 2nd particle:
   for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++) // TBI: I can gain in performance if I do not start from 0
   {
-   if(iTrack2<=iTrack1){continue;} // Eliminate self-evident self-correlations, and permutations as well
+   //if(iTrack2<=iTrack1){continue;} // Eliminate self-evident self-correlations, and permutations as well
+   if(iTrack2==iTrack1){continue;} // Eliminate self-evident self-correlations
    AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack2));
    // TBI Temporary track insanity checks:
    if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
@@ -5055,7 +5057,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
    {
     if(!fFill3pCorrelationFunctions){break;}
-    if(iTrack3<=iTrack2 || iTrack3<=iTrack1){continue;} // Eliminate self-evident self-correlations, and permutations as well
+    //if(iTrack3<=iTrack2 || iTrack3<=iTrack1){continue;} // Eliminate self-evident self-correlations, and permutations as well
+    if(iTrack3==iTrack2 || iTrack3==iTrack1){continue;} // Eliminate self-evident self-correlations
     AliAODTrack *atrack3 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack3));
     if(!atrack3){Fatal(sMethodName.Data(),"!atrack3");} // TBI keep this for some time, eventually just continue
     if(atrack3->GetID()>=0 && atrack3->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack3->GetID()>=0 && atrack3->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue

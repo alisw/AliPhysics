@@ -22,13 +22,22 @@ class AliPHOSGeometry;
 
 #include "THistManager.h"
 #include "AliTLorentzVector.h"
-//#include "AliAnalysisTaskEmcalJetLight.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
 /**
  * \class AliAnalysisTaskPWGJEQA
  * \brief This is a task used to do basic PWGJE QA on tracks, clusters, and jets.
- * Based on code from Salvatore Aiola: See the tasks AliAnalysisTaskEmcalJetQA (clusters),
+ *
+ * Set the names of the tracks/clusters/cells in the AddTask, as well as "mcparticles" if MC production
+ * (or "" if not). Set also flags for whether to perform track/calo/jet/event QA.
+ *
+ * For Pt-hard productions, you should further call the function SetIsPtHard(kTRUE), and you can
+ * reject outliers with SetRejectOutlierEvents(kTRUE).
+ *
+ * There exist post-processing scripts to efficiently plot the QA: 
+ * see http://alidoc.cern.ch/AliPhysics/master/_r_e_a_d_m_ejetfw.html
+ *
+ * This task is based on code from Salvatore Aiola: See the tasks AliAnalysisTaskEmcalJetQA (clusters),
  * AliAnalysisTaskEmcalJetSpectraQA (jets), and AliEmcalTrackingQATask (tracks) for more detailed histograms.
  */
 class AliAnalysisTaskPWGJEQA : public AliAnalysisTaskEmcalJet {
@@ -67,6 +76,8 @@ public:
   void                        SetDoEventQA(Bool_t b) { fDoEventQA = b; }
   void                        SetRejectOutlierEvents(Bool_t b) {fRejectOutlierEvents = b; }
   void                        SetIsPtHard(Bool_t b)            {fIsPtHard = b; }
+  void                        SetPhosMinNcells(Int_t n)        {fPhosMinNcells = n; }
+  void                        SetPhosMinM02(Double_t m)        {fPhosMinM02 = m; }
   
 protected:
   
@@ -111,6 +122,8 @@ protected:
   TString                     fDetectorLevelName;        ///< detector level container name
   Bool_t                      fRejectOutlierEvents;      ///< flag to reject pythia pt-hard jet outlier events
   Bool_t                      fIsPtHard;                 ///< flag to enable pt-hard histos and make available outlier cut
+  Int_t                       fPhosMinNcells;            ///< min number of phos cells per cluster
+  Double_t                    fPhosMinM02;               ///< min value of M02 for phos clusters
   
   // Service fields (non-streamed)
   AliMCParticleContainer* fGeneratorLevel      ; //!<! generator level container
@@ -138,7 +151,7 @@ private:
   AliAnalysisTaskPWGJEQA &operator=(const AliAnalysisTaskPWGJEQA&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPWGJEQA, 3);
+  ClassDef(AliAnalysisTaskPWGJEQA, 4);
   /// \endcond
 };
 #endif

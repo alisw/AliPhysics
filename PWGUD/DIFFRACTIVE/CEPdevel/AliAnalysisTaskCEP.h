@@ -45,6 +45,7 @@ public:
 	AliAnalysisTaskCEP();
 	AliAnalysisTaskCEP(const char* name,
     Long_t state=AliCEPBase::kBitConfigurationSet,
+    Int_t rnummin=100000, Int_t rnummax=300000,
     Int_t numTracksMax=6,
     Double_t fracDG=1.0, Double_t fracNDG=0.0,
     UInt_t ETmaskDG=AliCEPBase::kBitBaseLine, UInt_t ETpatternDG=AliCEPBase::kBitBaseLine,
@@ -72,6 +73,7 @@ private:
   // events are saved if (ET=Event test, TT=Track test)
   // . ET conditions are met (conditions for DG and NDG)
   // . 0 < nTrack='number of tracks meeting the TT conditions' <= fnumTracksMax
+  Int_t frnummin, frnummax;
   Int_t fnumTracksMax;
   Double_t ffracDG, ffracNDG;
   UInt_t fETmaskDG,  fETpatternDG;
@@ -113,6 +115,7 @@ private:
   AliMultiplicitySelectionCP *fMartinSel; //! Martin's selection
   AliCEPUtils *fCEPUtil;                  //! object of type AliCEPUtils
 
+  TList *flQArnum;      //! list of QA histograms for QA vs rnum study
   TList *flSPDpileup;   //! list of QA histograms for SPD pile-up study
   TList *flnClunTra;    //! list of QA histograms for nClunTra BG rejection
   TList *flVtx     ;    //! list of QA histograms for vertex selection

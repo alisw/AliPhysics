@@ -314,16 +314,20 @@ void AliEmcalCorrectionTask::Initialize()
   // Setup Cells
   // Cannot do this entirely yet because we need input objects
   CreateInputObjects(kCaloCells);
-  PrintRequestedContainersInformation(kCaloCells, AliInfoStream());
+  PrintRequestedContainersInformation(kCaloCells, AliDebugStream(1));
   // Create cluster input objects
   CreateInputObjects(kCluster);
-  PrintRequestedContainersInformation(kCluster, AliInfoStream());
+  PrintRequestedContainersInformation(kCluster, AliDebugStream(1));
   // Create track input objects
   CreateInputObjects(kTrack);
-  PrintRequestedContainersInformation(kTrack, AliInfoStream());
+  PrintRequestedContainersInformation(kTrack, AliDebugStream(1));
 
   // Initialize components
   InitializeComponents();
+
+  // Print the results of the initialization
+  // Print outside of the ALICE Log system to ensure that it is always available!
+  std::cout << GetName() << " Settings:\n" << *this;
 }
 
 /**
@@ -1151,8 +1155,8 @@ void AliEmcalCorrectionTask::ExecOnce()
   fEventInitialized = kTRUE;
 
   // Print warning to the user that the rest of the configuration information is available in the generation log
-  // when the Analysis Manager was created. At the AliError level to be certain that it is shown on the train!
-  AliError("=== NOTE: Additional EMCal Corrections configuration information can be found when the Analysis Manager is configured. For a run macro, see above, while for a LEGO train, see the generation.log ===");
+  // when the Analysis Manager was created. Using cout to be certain that it is shown on the train!
+  std::cout << "=== NOTE: Additional EMCal Corrections configuration information can be found when the Analysis Manager is configured. For a run macro, see above, while for a LEGO train, see the generation.log ===\n";
 
   // Setup the components
   ExecOnceComponents();

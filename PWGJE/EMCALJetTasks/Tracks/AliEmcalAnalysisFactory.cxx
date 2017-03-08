@@ -39,14 +39,16 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
     if(cut.Contains("standard")){
       AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
       esdcuts->DefineHistograms(kRed);
-      esdcuts->SetName("Standard Track cuts");
+      esdcuts->SetName("standardRAA");
+      esdcuts->SetTitle("Standard Track cuts");
       esdcuts->SetMinNCrossedRowsTPC(120);
       esdcuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
       trackcuts.push_back(esdcuts);
     }
     if(cut.Contains("hybrid")){
       AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-      esdcuts->SetName("Global Hybrid tracks, loose DCA");
+      esdcuts->SetTitle("hybridglobal");
+      esdcuts->SetTitle("Global Hybrid tracks, loose DCA");
       esdcuts->SetMaxDCAToVertexXY(2.4);
       esdcuts->SetMaxDCAToVertexZ(3.2);
       esdcuts->SetDCAToVertex2D(kTRUE);
@@ -66,14 +68,38 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
 
       AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false, 1);
       esdcuts->DefineHistograms(kRed);
-      esdcuts->SetName(Form("Loose track cuts, ITS chi2 var %.1f", itscut));
+      esdcuts->SetName(Form("VarITSchi2%d", int(itscut*10.)));
+      esdcuts->SetTitle(Form("Loose track cuts, ITS chi2 var %.1f", itscut));
       esdcuts->SetMinNCrossedRowsTPC(120);
       esdcuts->SetMaxDCAToVertexXY(2.4);
       esdcuts->SetMaxDCAToVertexZ(3.2);
       esdcuts->SetDCAToVertex2D(kTRUE);
+      // Do the variation
       esdcuts->SetMaxChi2PerClusterITS(itscut);
       // Set cut on the TPC global constrained chi2 to very loose
       esdcuts->SetMaxChi2TPCConstrainedGlobal(100);
+      trackcuts.push_back(esdcuts);
+    }
+    if(cut.Contains("TPCchi2")){
+      // Definition: ITSchi2XXXX
+      // - 3 Digits before . (to be filled with 0)
+      // - 1 Digit after .
+      int strmin = cut.Index("TPCchi2") + 7;
+      int cutvalue = TString(cut(strmin , strmin+4)).Atoi();
+      float tpccut = static_cast<float>(cutvalue)/10.;
+
+      std::cout << "Using TPC chi2 cut variation: " << tpccut << std::endl;
+
+      AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false, 1);
+      esdcuts->DefineHistograms(kRed);
+      esdcuts->SetName(Form("VarTPCchi2%d", int(tpccut * 10.)));
+      esdcuts->SetTitle(Form("Loose track cuts, TPC chi2 var %.1f", tpccut));
+      esdcuts->SetMinNCrossedRowsTPC(120);
+      esdcuts->SetMaxDCAToVertexXY(2.4);
+      esdcuts->SetMaxDCAToVertexZ(3.2);
+      esdcuts->SetDCAToVertex2D(kTRUE);
+      // Do the variation
+      esdcuts->SetMaxChi2PerClusterTPC(tpccut);
       trackcuts.push_back(esdcuts);
     }
     if(cut.Contains("TPCchi2Constrained")){
@@ -88,11 +114,13 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
 
       AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false, 1);
       esdcuts->DefineHistograms(kRed);
-      esdcuts->SetName(Form("Loose track cuts, TPC constrained chi2 variation %f", tpcconstrainedcut));
+      esdcuts->SetName(Form("VarTPCchi2constrained%d", int(tpcconstrainedcut * 10.)));
+      esdcuts->SetTitle(Form("Loose track cuts, TPC constrained chi2 variation %f", tpcconstrainedcut));
       esdcuts->SetMinNCrossedRowsTPC(120);
       esdcuts->SetMaxDCAToVertexXY(2.4);
       esdcuts->SetMaxDCAToVertexZ(3.2);
       esdcuts->SetDCAToVertex2D(kTRUE);
+      // Do the variation
       esdcuts->SetMaxChi2TPCConstrainedGlobal(tpcconstrainedcut);
       // Set ITS chi2 cut to very loose
       esdcuts->SetMaxChi2PerClusterITS(100);
@@ -100,6 +128,8 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
     }
     if(cut.Contains("geo")){
       AliEMCalTriggerExtraCuts *geocuts = new AliEMCalTriggerExtraCuts();
+      geocuts->SetName("geocuts");
+      geocuts->SetTitle("TPC track length cut");
       geocuts->SetMinTPCTrackLengthCut();
       trackcuts.push_back(geocuts);
     }

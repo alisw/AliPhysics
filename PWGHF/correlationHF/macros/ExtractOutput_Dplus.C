@@ -62,6 +62,11 @@ void ExtractOutput(
     return;
   }
 
+  gSystem->Exec(Form("rm -r Output_Root"));
+  gSystem->Exec(Form("rm -r Output_png")); 
+  gSystem->Exec(Form("mkdir Output_Root"));
+  gSystem->Exec(Form("mkdir Output_png"));
+  
   ExtractLowPt(plotter);
   ExtractMidPt(plotter);
   ExtractHighPt(plotter);

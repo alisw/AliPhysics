@@ -45,7 +45,7 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(AliVCuts* cuts, UInt_t filt
 {
   fHybridFilterBits[0] = -1;
   fHybridFilterBits[1] = -1;
-  AddTrackCuts(cuts);
+  if(cuts) AddTrackCuts(cuts);
 }
 
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(ETrackFilterType_t type, const char* period):
