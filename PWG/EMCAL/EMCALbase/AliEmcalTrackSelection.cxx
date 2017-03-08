@@ -15,9 +15,10 @@
 #include <AliEmcalTrackSelection.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <AliLog.h>
+#include <AliVCuts.h>
 #include <AliVTrack.h>
 #include <AliVEvent.h>
-#include "AliVCuts.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalManagedObject)
@@ -79,13 +80,17 @@ void AliEmcalTrackSelection::AddTrackCuts(AliVCuts *cuts){
     fListOfCuts = new TObjArray;
     fListOfCuts->SetOwner(true);
   }
-  fListOfCuts->Add(new AliEmcalManagedObject(cuts, true));
+  if(cuts) fListOfCuts->Add(new AliEmcalManagedObject(cuts, true));
 }
 
 void AliEmcalTrackSelection::AddTrackCuts(TObjArray *cuts){
   for(auto c : *cuts){
     AliVCuts *cuts = dynamic_cast<AliVCuts*>(c);
-    if(cuts) AddTrackCuts(cuts);
+    if(cuts){
+      AddTrackCuts(cuts);
+    } else {
+      AliErrorStream() << "Object not inheriting from AliVCuts - not added to track selection" << std::endl;
+    }
   }
 }
 
@@ -172,6 +177,7 @@ AliEmcalManagedObject::AliEmcalManagedObject():
     fOwner(false),
     fManagedObject(nullptr)
 {
+
 }
 
 AliEmcalManagedObject::AliEmcalManagedObject(TObject *managedObject, Bool_t owner):

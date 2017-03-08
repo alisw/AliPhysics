@@ -110,8 +110,8 @@ protected:
   void Cleanup();
 
 private:
-  Bool_t            fOwner;             ///! Switch defining ownership over object
-  TObject           *fManagedObject;    ///! Pointer to object handled by the smart pointer
+  Bool_t            fOwner;             ///< Switch defining ownership over object
+  TObject           *fManagedObject;    ///< Pointer to object handled by the smart pointer
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalManagedObject, 1);

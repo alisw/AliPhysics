@@ -39,7 +39,7 @@ AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD():
 AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(AliVCuts* cuts):
 		AliEmcalTrackSelection()
 {
-  this->AddTrackCuts(cuts);
+  if(cuts) this->AddTrackCuts(cuts);
 }
 
 AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(ETrackFilterType_t type, const char* period):
