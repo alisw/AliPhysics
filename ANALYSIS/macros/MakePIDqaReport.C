@@ -15,7 +15,7 @@
 #include "TPDF.h"
 #include "TColor.h"
 
-#include "AliPID.h"
+#include "../../STEER/STEERBase/AliPID.h"
 
 void SetupStyle();
 TH2* Get2DHistogramfromList(TList *pidqalist, const char* listname, const char* histoname);
@@ -99,43 +99,153 @@ void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.
   PublishCanvas(qaList,"TOF","hNsigmaP_TOF_%s");
 
   // TRD PID
-  fCanvas->Divide(2,3);
-  TH2 *hLikeP_TRD_3tls_electron=Get2DHistogramfromList(qaList,"TRD","hLikeP_TRD_3tls_electron");
-  TH2 *hLikeP_TRD_3tls_pion=Get2DHistogramfromList(qaList,"TRD","hLikeP_TRD_3tls_pion");
-  TH2 *hLikeP_TRD_4tls_electron=Get2DHistogramfromList(qaList,"TRD","hLikeP_TRD_4tls_electron");
-  TH2 *hLikeP_TRD_4tls_pion=Get2DHistogramfromList(qaList,"TRD","hLikeP_TRD_4tls_pion");
-  TH2 *hLikeP_TRD_5tls_electron=Get2DHistogramfromList(qaList,"TRD","hLikeP_TRD_5tls_electron");
-  TH2 *hLikeP_TRD_5tls_pion=Get2DHistogramfromList(qaList,"TRD","hLikeP_TRD_5tls_pion");
+  TList *qaListTRD = (TList*)qaList->FindObject("TRD");
+  if (qaListTRD) PublishCanvas(qaListTRD,"TRDTruncatedMean","hNsigmaP_TOFTPC_TRD_TruncatedMean_%s");
+  TList *qaListTRDV0 = (TList*)qaListTRD->FindObject("TRDV0");
+  if (qaListTRDV0) PublishCanvas(qaListTRDV0,"TRDTruncatedMeanV0","hNsigmaP_TOFTPC_TRD_TruncatedMeanV0_%s");
 
-  /*
-   *  cTRDnsigma[countcanvas]->cd(1);
-   *  TPaveText pt3TRD(.02,.02,.49,.52);
-   *  pt3TRD.SetTextAlign(11);
-   *  pt3TRD.SetTextSizePixels(16);
-   *  pt3TRD.AddText(Form(" TRD PID QA %s.%s.%d", first.Data(), man->GetCurrentPeriod().Data(), pass));
-   *  pt3TRD.Draw();
-   */
-  fCanvas->cd(1);
-  SetupPadStyle();
-  hLikeP_TRD_3tls_electron->Draw("colz");
-  fCanvas->cd(2);
-  SetupPadStyle();
-  hLikeP_TRD_3tls_pion->Draw("colz");
-  fCanvas->cd(3);
-  SetupPadStyle();
-  hLikeP_TRD_4tls_electron->Draw("colz");
-  fCanvas->cd(4);
-  SetupPadStyle();
-  hLikeP_TRD_4tls_pion->Draw("colz");
-  fCanvas->cd(5);
-  SetupPadStyle();
-  hLikeP_TRD_5tls_electron->Draw("colz");
-  fCanvas->cd(6);
-  SetupPadStyle();
-  hLikeP_TRD_5tls_pion->Draw("colz");
+  if (qaListTRD){
 
-  fCanvas->Update();
-  fCanvas->Clear();
+      
+      TH2 *hLikeP_TRD_4tls_electron=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hLike1DP_TRD_4tls_electron_Likelihood");
+      TH2 *hLikeP_TRD_4tls_pion=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hLike1DP_TRD_4tls_pion_Likelihood");
+      TH2 *hLikeP_TRD_5tls_electron=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hLike1DP_TRD_5tls_electron_Likelihood");
+      TH2 *hLikeP_TRD_5tls_pion=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hLike1DP_TRD_5tls_pion_Likelihood");
+      TH2 *hLikeP_TRD_6tls_electron=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hLike1DP_TRD_6tls_electron_Likelihood");
+      TH2 *hLikeP_TRD_6tls_pion=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hLike1DP_TRD_6tls_pion_Likelihood");
+
+      fCanvas->Divide(2,3);
+      fCanvas->cd(1);
+      gPad->SetLogz();
+      if(hLikeP_TRD_4tls_electron) hLikeP_TRD_4tls_electron->Draw("colz");
+      fCanvas->cd(2);
+      gPad->SetLogz();
+      if(hLikeP_TRD_4tls_pion) hLikeP_TRD_4tls_pion->Draw("colz");
+      fCanvas->cd(3);
+      gPad->SetLogz();
+      if(hLikeP_TRD_5tls_electron) hLikeP_TRD_5tls_electron->Draw("colz");
+      fCanvas->cd(4);
+      gPad->SetLogz();
+      if(hLikeP_TRD_5tls_pion) hLikeP_TRD_5tls_pion->Draw("colz");
+      fCanvas->cd(5);
+      gPad->SetLogz();
+      if(hLikeP_TRD_6tls_electron) hLikeP_TRD_6tls_electron->Draw("colz");
+      fCanvas->cd(6);
+      gPad->SetLogz();
+      if(hLikeP_TRD_6tls_pion) hLikeP_TRD_6tls_pion->Draw("colz");
+
+      fCanvas->Update();
+      fCanvas->Clear();
+
+      TCanvas* fCanvas=new TCanvas;
+      fCanvas->Divide(2,3);
+      TH2 *hTPCnsigmaPnoTRD=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hTPCnsigmaPnoTRD_Likelihood");
+      TH2 *hTPCnsigmaPTRD1D_5tls=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hTPCnsigmaPLQ1D_5tls_Likelihood");
+      TH2 *hTPCnsigmaPTRD1D_6tls=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hTPCnsigmaPLQ1D_6tls_Likelihood");
+      TH2 *hTPCnsigmaPTRD2D_5tls=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hTPCnsigmaPLQ2D_5tls_Likelihood");
+      TH2 *hTPCnsigmaPTRD2D_6tls=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hTPCnsigmaPLQ2D_6tls_Likelihood");
+
+      if(hTPCnsigmaPnoTRD && hTPCnsigmaPTRD1D_5tls && hTPCnsigmaPTRD1D_6tls && hTPCnsigmaPTRD2D_5tls && hTPCnsigmaPTRD2D_6tls){
+	  fCanvas->cd(1);
+	  TPaveText pt(.1,.1,.9,.9,"NDC");
+	  pt.SetBorderSize(1);
+	  pt.SetFillColor(0);
+	  pt.SetTextSizePixels(10);
+	  pt.AddText("ratio TPC nsigma before/after TRD PID");
+          pt.Draw();
+	  fCanvas->cd(2);
+	  gPad->SetLogz();
+	  hTPCnsigmaPTRD1D_5tls->Divide(hTPCnsigmaPnoTRD);
+	  hTPCnsigmaPTRD1D_5tls->Draw("colz");
+	  fCanvas->cd(3);
+	  gPad->SetLogz();
+	  hTPCnsigmaPTRD1D_6tls->Divide(hTPCnsigmaPnoTRD);
+	  hTPCnsigmaPTRD1D_6tls->Draw("colz");
+	  fCanvas->cd(4);
+	  gPad->SetLogz();
+	  hTPCnsigmaPTRD2D_5tls->Divide(hTPCnsigmaPnoTRD);
+	  hTPCnsigmaPTRD2D_5tls->Draw("colz");
+	  fCanvas->cd(5);
+	  gPad->SetLogz();
+	  hTPCnsigmaPTRD2D_6tls->Divide(hTPCnsigmaPnoTRD);
+	  hTPCnsigmaPTRD2D_6tls->Draw("colz");
+	  fCanvas->Update();
+	  fCanvas->Clear();
+      }
+
+  }
+
+  if (qaListTRDV0){
+
+      TCanvas* fCanvas=new TCanvas;
+      fCanvas->Divide(2,3);
+      TH2 *hLikeP_TRDV0_4tls_electron=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hLike1DP_TRD_4tls_electron_LikelihoodV0");
+      TH2 *hLikeP_TRDV0_4tls_pion=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hLike1DP_TRD_4tls_pion_LikelihoodV0");
+      TH2 *hLikeP_TRDV0_5tls_electron=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hLike1DP_TRD_5tls_electron_LikelihoodV0");
+      TH2 *hLikeP_TRDV0_5tls_pion=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hLike1DP_TRD_5tls_pion_LikelihoodV0");
+      TH2 *hLikeP_TRDV0_6tls_electron=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hLike1DP_TRD_6tls_electron_LikelihoodV0");
+      TH2 *hLikeP_TRDV0_6tls_pion=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hLike1DP_TRD_6tls_pion_LikelihoodV0");
+
+      fCanvas->cd(1);
+      gPad->SetLogz();
+      if(hLikeP_TRDV0_4tls_electron) hLikeP_TRDV0_4tls_electron->Draw("colz");
+      fCanvas->cd(2);
+      gPad->SetLogz();
+      if(hLikeP_TRDV0_4tls_pion) hLikeP_TRDV0_4tls_pion->Draw("colz");
+      fCanvas->cd(3);
+      gPad->SetLogz();
+      if(hLikeP_TRDV0_5tls_electron) hLikeP_TRDV0_5tls_electron->Draw("colz");
+      fCanvas->cd(4);
+      gPad->SetLogz();
+      if(hLikeP_TRDV0_5tls_pion) hLikeP_TRDV0_5tls_pion->Draw("colz");
+      fCanvas->cd(5);
+      gPad->SetLogz();
+      if(hLikeP_TRDV0_6tls_electron) hLikeP_TRDV0_6tls_electron->Draw("colz");
+      fCanvas->cd(6);
+      gPad->SetLogz();
+      if(hLikeP_TRDV0_6tls_pion) hLikeP_TRDV0_6tls_pion->Draw("colz");
+
+      fCanvas->Update();
+      fCanvas->Clear();
+
+      TCanvas* fCanvas=new TCanvas;
+      fCanvas->Divide(2,3);
+      TH2 *hTPCnsigmaPnoTRDV0=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hTPCnsigmaPnoTRD_LikelihoodV0");
+      TH2 *hTPCnsigmaPTRD1DV0_5tls=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hTPCnsigmaPLQ1D_5tls_LikelihoodV0");
+      TH2 *hTPCnsigmaPTRD1DV0_6tls=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hTPCnsigmaPLQ1D_6tls_LikelihoodV0");
+      TH2 *hTPCnsigmaPTRD2DV0_5tls=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hTPCnsigmaPLQ2D_5tls_LikelihoodV0");
+      TH2 *hTPCnsigmaPTRD2DV0_6tls=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hTPCnsigmaPLQ2D_6tls_LikelihoodV0");
+
+      if(hTPCnsigmaPnoTRDV0 && hTPCnsigmaPTRD1DV0_5tls && hTPCnsigmaPTRD1DV0_6tls && hTPCnsigmaPTRD2DV0_5tls && hTPCnsigmaPTRD2DV0_6tls){
+	  fCanvas->cd(1);
+	  TPaveText pt(.1,.1,.9,.9,"NDC");
+	  pt.SetBorderSize(1);
+	  pt.SetFillColor(0);
+	  pt.SetTextSizePixels(10);
+	  pt.AddText("V0 ratio TPC nsigma before/after TRD PID");
+          pt.Draw();
+	  fCanvas->cd(2);
+	  gPad->SetLogz();
+	  hTPCnsigmaPTRD1DV0_5tls->Divide(hTPCnsigmaPnoTRDV0);
+	  hTPCnsigmaPTRD1DV0_5tls->Draw("colz");
+	  fCanvas->cd(3);
+	  gPad->SetLogz();
+	  hTPCnsigmaPTRD1DV0_6tls->Divide(hTPCnsigmaPnoTRDV0);
+	  hTPCnsigmaPTRD1DV0_6tls->Draw("colz");
+	  fCanvas->cd(4);
+	  gPad->SetLogz();
+	  hTPCnsigmaPTRD2DV0_5tls->Divide(hTPCnsigmaPnoTRDV0);
+	  hTPCnsigmaPTRD2DV0_5tls->Draw("colz");
+	  fCanvas->cd(5);
+	  gPad->SetLogz();
+	  hTPCnsigmaPTRD2DV0_6tls->Divide(hTPCnsigmaPnoTRDV0);
+	  hTPCnsigmaPTRD2DV0_6tls->Draw("colz");
+	  fCanvas->Update();
+	  fCanvas->Clear();
+      }
+  }
+ 
+
 
   // TPC Response info
   TObjArray *qaInfo=(TObjArray*)qaList->FindObject("QAinfo");
