@@ -140,7 +140,7 @@ fResponseMatrix()
    fCuts=cuts;
    fCandidateType=candtype;
    const Int_t nptbins=fCuts->GetNPtBins();
-   Float_t defaultSigmaD013[13]={0.012, 0.012, 0.012, 0.015, 0.015,0.018,0.018,0.020,0.020,0.030,0.030,0.037,0.040};
+   Float_t defaultSigmaD013[20]={0.012, 0.012, 0.012, 0.015, 0.015,0.018,0.018,0.020,0.020,0.030,0.030,0.037,0.040,0.040,0.040,0.040,0.040,0.040,0.040,0.040};
    
    switch(fCandidateType){
    case 0:
@@ -161,7 +161,7 @@ fResponseMatrix()
       fPDGdaughters[3]=321; // K from D0
       fBranchName="Dstar";
       
-      if(nptbins<=13){
+      if(nptbins<20){
       	 for(Int_t ipt=0;ipt<nptbins;ipt++) fSigmaD0[ipt]= defaultSigmaD013[ipt];
       } else {
       	 AliFatal(Form("Default sigma D0 not enough for %d pt bins, use SetSigmaD0ForDStar to set them",nptbins));
@@ -771,13 +771,13 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    //binning for THnSparse
    const Int_t nbinsSpsmass=120;
    const Int_t nbinsSpsptjet=200;
-   const Int_t nbinsSpsptD=50;
-   const Int_t nbinsSpsz=144;
+   const Int_t nbinsSpsptD=100;
+   const Int_t nbinsSpsz=160;
     
    const Float_t pttracklims[2]={0.,200.};
    Float_t ptjetlims[2]={-50.,150.};
    const Float_t ptDlims[2]={0.,50.};
-   const Float_t zlims[2]={-1.2,1.2};
+   const Float_t zlims[2]={-1.2,2};
    const Float_t philims[2]={0.,6.3};
    const Float_t etalims[2]={-1.5,1.5};
    

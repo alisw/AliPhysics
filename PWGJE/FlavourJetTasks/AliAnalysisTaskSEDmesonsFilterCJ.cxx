@@ -196,7 +196,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   for (Int_t i=30; i--;) fSigmaD0[i] = 0.;
 
   const Int_t nptbins = fCuts->GetNPtBins();
-  Float_t defaultSigmaD013[13] = { 0.012, 0.012, 0.012, 0.015, 0.015, 0.018, 0.018, 0.020, 0.020, 0.030, 0.030, 0.037, 0.040 };
+  Float_t defaultSigmaD013[20]={0.012, 0.012, 0.012, 0.015, 0.015,0.018,0.018,0.020,0.020,0.030,0.030,0.037,0.040,0.040,0.040,0.040,0.040,0.040,0.040,0.040};
 
   switch (fCandidateType) {
     case 0 :
@@ -219,7 +219,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
       fPDGdaughters[3] = 321; // K from D0
       fBranchName = "Dstar";
 
-      if (nptbins<=13) {
+      if (nptbins<20) {
       	 for (Int_t ipt=0; ipt<nptbins;ipt++) fSigmaD0[ipt] = defaultSigmaD013[ipt];
       }
       else {
