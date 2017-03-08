@@ -103,7 +103,6 @@ AliEmcalCorrectionComponent::~AliEmcalCorrectionComponent()
 
 /**
  * Initialize basic variables in the correction component from the configuration file.
- * 
  */
 Bool_t AliEmcalCorrectionComponent::Initialize()
 {
@@ -111,8 +110,14 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
   std::string tempString = "";
   GetProperty("pass", tempString);
   fFilepass = tempString.c_str();
-  if(fFilepass != "")
+  if (fFilepass != "") {
     fGetPassFromFileName = kFALSE;
+    // Handle the "default" value used in MC
+    if (fFilepass == "default") {
+      AliError("Received \"default\" as pass value. Defaulting to \"pass1\"! In the case of MC, the user should set the proper pass value in their configuration file! For data, empty quotes should be set so that the pass is automatically set.");
+      fFilepass = "pass1";
+    }
+  }
 
   return kTRUE;
 }
@@ -248,7 +253,6 @@ bool AliEmcalCorrectionComponent::IsSharedValue(std::string & value)
 
 /**
  * Get pass from filename. Sets pass in fFilepass.
- *
  */
 void AliEmcalCorrectionComponent::GetPass()
 {
@@ -268,17 +272,18 @@ void AliEmcalCorrectionComponent::GetPass()
   }
   
   TString fname(inputFile->GetName());
-  if      (fname.Contains("pass1")) fFilepass = TString("pass1");
+  if      (fname.Contains("pass1_pidfix"))                fFilepass = TString("pass1_pidfix");
+  else if (fname.Contains("pass3_lowIR_pidfix"))          fFilepass = TString("pass3_lowIR_pidfix");
+  else if (fname.Contains("pass4_lowIR_pidfix_cookdedx")) fFilepass = TString("pass4_lowIR_pidfix_cookdedx");
+  else if (fname.Contains("pass1")) fFilepass = TString("pass1");
   else if (fname.Contains("pass2")) fFilepass = TString("pass2");
   else if (fname.Contains("pass3")) fFilepass = TString("pass3");
   else if (fname.Contains("pass4")) fFilepass = TString("pass4");
   else if (fname.Contains("pass5")) fFilepass = TString("pass5");
-  else if (fname.Contains("LHC11c") &&
-           fname.Contains("spc_calo")) fFilepass = TString("spc_calo");
+  else if (fname.Contains("LHC11c") && fname.Contains("spc_calo")) fFilepass = TString("spc_calo");
   else if (fname.Contains("calo") || fname.Contains("high_lumi"))
-    
   {
-    //printf("AliEMCALTenderSupply::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
+    Printf("%s: Path contains <calo> or <high-lumi>, set as <pass1>", GetName());
     fFilepass = TString("pass1");
   }
   else if (fname.Contains("LHC14a1a"))
