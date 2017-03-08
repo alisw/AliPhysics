@@ -1,3 +1,4 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
@@ -14,8 +15,8 @@
 #include "TF1.h"
 #include "TPDF.h"
 #include "TColor.h"
-
-#include "../../STEER/STEERBase/AliPID.h"
+#include "AliPID.h"
+#endif
 
 void SetupStyle();
 TH2* Get2DHistogramfromList(TList *pidqalist, const char* listname, const char* histoname);
@@ -137,7 +138,6 @@ void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.
       fCanvas->Update();
       fCanvas->Clear();
 
-      TCanvas* fCanvas=new TCanvas;
       fCanvas->Divide(2,3);
       TH2 *hTPCnsigmaPnoTRD=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hTPCnsigmaPnoTRD_Likelihood");
       TH2 *hTPCnsigmaPTRD1D_5tls=Get2DHistogramfromList(qaListTRD,"TRDLikelihood","hTPCnsigmaPLQ1D_5tls_Likelihood");
@@ -177,7 +177,6 @@ void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.
 
   if (qaListTRDV0){
 
-      TCanvas* fCanvas=new TCanvas;
       fCanvas->Divide(2,3);
       TH2 *hLikeP_TRDV0_4tls_electron=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hLike1DP_TRD_4tls_electron_LikelihoodV0");
       TH2 *hLikeP_TRDV0_4tls_pion=Get2DHistogramfromList(qaListTRDV0,"TRDLikelihoodV0","hLike1DP_TRD_4tls_pion_LikelihoodV0");
