@@ -19,6 +19,7 @@
 #include <AliVCuts.h>
 #include <AliVTrack.h>
 #include <AliVEvent.h>
+#include <iostream>
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalManagedObject)
