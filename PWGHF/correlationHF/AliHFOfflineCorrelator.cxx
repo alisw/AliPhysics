@@ -33,6 +33,7 @@ eta_D(0),
 pT_D(0),
 mult_D(0),
 zVtx_D(0),
+cent_D(0),
 invMass_D(0),
 period_D(0),
 orbit_D(0),
@@ -51,6 +52,7 @@ eta_Tr(0),
 pT_Tr(0),
 mult_Tr(0),
 zVtx_Tr(0),
+cent_Tr(0),
 period_Tr(0),
 orbit_Tr(0),
 BC_Tr(0),
@@ -536,7 +538,7 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
     Int_t ptBinD = PtBin(brD->pT_D);
     if(ptBinD<0) continue;  
     if(fNumSelD>=0 && (brD->sel_D>>fNumSelD)%2!=1) continue; //important in case of multiple selection (default selection is 0)
-    if(fMinCent!=0 && fMaxCent!=0) {if(brD->mult_D < fMinCent || brD->mult_D > fMaxCent) continue;} //skip triggers outside centrality range
+    if(fMinCent!=0 && fMaxCent!=0) {if(brD->cent_D < fMinCent || brD->cent_D > fMaxCent) continue;} //skip triggers outside centrality range
     
     poolD = GetPoolBin(brD->mult_D,brD->zVtx_D); 
 
@@ -567,7 +569,7 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig4_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
 
       if(fNumSelTr>=0 && (brTr->sel_Tr>>fNumSelTr)%2!=1) continue; //important in case of multiple selection (default selection is 0)
-	  if(fMinCent!=0 && fMaxCent!=0) {if(brTr->mult_Tr < fMinCent || brTr->mult_Tr > fMaxCent) continue;} //skip tracks outside centrality range
+	  if(fMinCent!=0 && fMaxCent!=0) {if(brTr->cent_Tr < fMinCent || brTr->cent_Tr > fMaxCent) continue;} //skip tracks outside centrality range
 
       poolTr = GetPoolBin(brTr->mult_Tr,brTr->zVtx_Tr);
       if(poolD<0 || poolTr<0 || poolD!=poolTr) continue;  //skips if pools of D and tracks do not match, or if pool number is wrong

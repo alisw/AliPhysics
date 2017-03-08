@@ -2818,6 +2818,9 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
   d->InvMassD0(mD0,mD0bar);
   fBranchD->invMass_D = 0;
 
+  Float_t centEv = -9;
+  if(fCutsD0->GetUseCentrality()) centEv = fCutsD0->GetCentrality(aod); //get event centrality with current estimator
+
   if(fSpeed) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
     if(ptbin<9) {	    
       if(mD0 > fSignLeft_LowPt && mD0 < fSignRight_LowPt) allowD0 = 1;
@@ -2845,6 +2848,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
     fBranchD->pT_D = (Float_t)d->Pt();
     fBranchD->mult_D = (Float_t)fMultEv;
     fBranchD->zVtx_D = (Float_t)fzVtx;
+    fBranchD->cent_D = (Float_t)centEv;
     fBranchD->period_D = (UInt_t)aod->GetPeriodNumber();
     fBranchD->orbit_D = (UInt_t)aod->GetOrbitNumber();
     fBranchD->BC_D = (UShort_t)aod->GetBunchCrossNumber();
@@ -2906,6 +2910,9 @@ void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
     fTrackArrayFilled = kTRUE;
   }
 
+  Float_t centEv = -9;
+  if(fCutsD0->GetUseCentrality()) centEv = fCutsD0->GetCentrality(aod); //get event centrality with current estimator
+  
   for(Int_t iTrack = 0; iTrack<fTrackArray->GetEntriesFast(); iTrack++){ // looping on track candidates
       
     AliReducedParticle* track = (AliReducedParticle*)fTrackArray->At(iTrack);
@@ -2977,6 +2984,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
     fBranchTr->pT_Tr = (Float_t)track->Pt();
     fBranchTr->mult_Tr = (Float_t)fMultEv;
     fBranchTr->zVtx_Tr = (Float_t)fzVtx;
+    fBranchTr->cent_Tr = (Float_t)centEv;
     fBranchTr->period_Tr = (UInt_t)aod->GetPeriodNumber();
     fBranchTr->orbit_Tr = (UInt_t)aod->GetOrbitNumber();
     fBranchTr->BC_Tr = (UShort_t)aod->GetBunchCrossNumber();
@@ -3001,6 +3009,7 @@ void AliAnalysisTaskSED0Correlations::ResetBranchD() {
   fBranchD->invMass_D = 0.;
   fBranchD->mult_D = 0.;
   fBranchD->zVtx_D = 0.;
+  fBranchD->cent_D = 0.;
   fBranchD->period_D = 0;
   fBranchD->orbit_D = 0;
   fBranchD->BC_D = 0;
@@ -3025,6 +3034,7 @@ void AliAnalysisTaskSED0Correlations::ResetBranchTracks() {
   fBranchTr->pT_Tr = 0.;
   fBranchTr->mult_Tr = 0.;
   fBranchTr->zVtx_Tr = 0.;
+  fBranchTr->cent_Tr = 0.;
   fBranchTr->period_Tr = 0;
   fBranchTr->orbit_Tr = 0;
   fBranchTr->BC_Tr = 0;

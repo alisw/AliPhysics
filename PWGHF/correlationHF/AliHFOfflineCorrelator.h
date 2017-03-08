@@ -50,6 +50,7 @@ class AliHFCorrelationBranchD : public TObject
     Float_t  pT_D;
     Float_t  mult_D;
     Float_t  zVtx_D;
+    Float_t  cent_D;
     Float_t  invMass_D;
     UInt_t   period_D;
     UInt_t   orbit_D;
@@ -76,6 +77,7 @@ class AliHFCorrelationBranchTr : public TObject
     Float_t  pT_Tr;
     Float_t  mult_Tr;
     Float_t  zVtx_Tr;
+    Float_t  cent_Tr;
     UInt_t   period_Tr;
     UInt_t   orbit_Tr;
     UShort_t BC_Tr;
@@ -85,7 +87,7 @@ class AliHFCorrelationBranchTr : public TObject
     Short_t  IDtrig4_Tr;
     Short_t  sel_Tr;
 
-    ClassDef(AliHFCorrelationBranchTr,2);
+    ClassDef(AliHFCorrelationBranchTr,3);
 };
 
 class AliHFOfflineCorrelator : public TObject
