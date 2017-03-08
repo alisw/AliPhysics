@@ -76,8 +76,6 @@ public:
   void                        SetDoEventQA(Bool_t b) { fDoEventQA = b; }
   void                        SetRejectOutlierEvents(Bool_t b) {fRejectOutlierEvents = b; }
   void                        SetIsPtHard(Bool_t b)            {fIsPtHard = b; }
-  void                        SetPhosMinNcells(Int_t n)        {fPhosMinNcells = n; }
-  void                        SetPhosMinM02(Double_t m)        {fPhosMinM02 = m; }
   
 protected:
   
@@ -122,8 +120,6 @@ protected:
   TString                     fDetectorLevelName;        ///< detector level container name
   Bool_t                      fRejectOutlierEvents;      ///< flag to reject pythia pt-hard jet outlier events
   Bool_t                      fIsPtHard;                 ///< flag to enable pt-hard histos and make available outlier cut
-  Int_t                       fPhosMinNcells;            ///< min number of phos cells per cluster
-  Double_t                    fPhosMinM02;               ///< min value of M02 for phos clusters
   
   // Service fields (non-streamed)
   AliMCParticleContainer* fGeneratorLevel      ; //!<! generator level container
@@ -151,7 +147,7 @@ private:
   AliAnalysisTaskPWGJEQA &operator=(const AliAnalysisTaskPWGJEQA&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPWGJEQA, 4);
+  ClassDef(AliAnalysisTaskPWGJEQA, 5);
   /// \endcond
 };
 #endif

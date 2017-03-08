@@ -88,8 +88,6 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fDoEventQA(kTRUE),
   fRejectOutlierEvents(kFALSE),
   fIsPtHard(kFALSE),
-  fPhosMinNcells(0),
-  fPhosMinM02(0),
   fPHOSGeo(nullptr)
 {
   // Default constructor.
@@ -133,8 +131,6 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fDoEventQA(kTRUE),
   fRejectOutlierEvents(kFALSE),
   fIsPtHard(kFALSE),
-  fPhosMinNcells(0),
-  fPhosMinM02(0),
   fPHOSGeo(nullptr)
 {
   // Standard
@@ -1037,10 +1033,6 @@ void AliAnalysisTaskPWGJEQA::FillClusterHistograms() {
         
         histname = TString::Format("%s/hPhosM02VsEnergy", clusters->GetArrayName().Data());
         fHistManager.FillTH2(histname, M02, energy);
-        
-        // Apply recommended exotic cuts
-        if (nCells < fPhosMinNcells) continue;
-        if (M02 < fPhosMinM02) continue;
         
         clusType = kPHOS;
         fNTotClusters[2]++;
