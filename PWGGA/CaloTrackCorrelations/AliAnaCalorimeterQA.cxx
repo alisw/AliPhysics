@@ -32,6 +32,7 @@
 #include "AliVEventHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliMCAnalysisUtils.h"
+#include "TCustomBinning.h"
 
 // --- Detectors --- 
 #include "AliPHOSGeoUtils.h"
@@ -150,7 +151,7 @@ fhNCells(0),                           fhNCellsCutAmpMin(0),
 fhAmplitude(0),                        fhAmpId(0),                             
 fhEtaPhiAmpCell(0),                    fhEtaPhiCell(0),
 fhTime(0),                             //fhTimeVz(0),
-fhTimeId(0),                           fhTimeAmp(0), 
+fhTimeId(0),                           fhTimeL1CorrId(0),                      fhTimeAmp(0),
 fhAmpIdLowGain(0),                     fhTimeIdLowGain(0),                     fhTimeAmpLowGain(0),
 
 fhCellECross(0),
@@ -639,6 +640,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Int_t    iRCU   = -1;
   Float_t  amp    = 0.;
   Double_t time   = 0.;
+  Double_t timeL1Corr= 0.;
   Int_t    id     = -1;
   Bool_t   highG  = kFALSE;
   Float_t  recalF = 1.;  
@@ -683,10 +685,19 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       // Time recalibration if set
       GetCaloUtils()->RecalibrateCellTime     (time, GetCalorimeter(), id, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
       
+      // Time & L1 recalibration if set
+      timeL1Corr=time;
+      GetCaloUtils()->SwitchOnL1PhaseInTimeRecalibration();
+      GetCaloUtils()->RecalibrateCellTimeL1Phase(timeL1Corr,0 , nModule, GetReader()->GetInputEvent()->GetBunchCrossNumber());
+      GetCaloUtils()->SwitchOffL1PhaseInTimeRecalibration();
+
       // Transform time to ns
       time *= 1.0e9;
       time-=fConstantTimeShift;
+      timeL1Corr *= 1.0e9;
+      timeL1Corr-=fConstantTimeShift;
 
+      //Question : should be cut on L1 phase corrected time??
       if(time < fTimeCutMin || time > fTimeCutMax)
       {
         AliDebug(1,Form("Remove cell with Time %f",time));
@@ -696,10 +707,13 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       // Remove exotic cells, defined only for EMCAL
       if(GetCalorimeter()==kEMCAL && 
          GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
-      
-      fhAmplitude->Fill(amp,          GetEventWeight());
-      fhAmpId    ->Fill(amp, id     , GetEventWeight());
-      fhAmpMod   ->Fill(amp, nModule, GetEventWeight());
+
+      Double_t binWidthCorrection=1;
+      if(amp>=10)binWidthCorrection=1.0/4;
+      if(amp>=20)binWidthCorrection=1.0/10;
+      fhAmplitude  ->Fill(amp,          GetEventWeight());
+      fhAmpId      ->Fill(amp, id     , GetEventWeight()*binWidthCorrection);
+      fhAmpMod     ->Fill(amp, nModule, GetEventWeight());
       fhAmpWeirdMod->Fill(amp, nModule, GetEventWeight());
       if(!highG) fhAmpIdLowGain->Fill(amp, id, GetEventWeight());
         
@@ -746,9 +760,10 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 //          GetReader()->GetVertex(v);          
 //          if(amp > 0.5) fhTimeVz   ->Fill(TMath::Abs(v[2]), time, GetEventWeight());
           
-          fhTime   ->Fill(time,       GetEventWeight());
-          fhTimeId ->Fill(time, id  , GetEventWeight());
-          fhTimeAmp->Fill(amp , time, GetEventWeight());
+          fhTime         ->Fill(time,             GetEventWeight());
+          fhTimeId       ->Fill(time,       id  , GetEventWeight());
+          fhTimeL1CorrId ->Fill(timeL1Corr, id  , GetEventWeight());
+          fhTimeAmp      ->Fill(amp ,       time, GetEventWeight());
 
           Int_t bc = (GetReader()->GetInputEvent()->GetBunchCrossNumber())%4;
           fhTimePerSMPerBC[bc]->Fill(time, nModule, GetEventWeight());
@@ -4900,7 +4915,25 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhAmplitude->SetXTitle("#it{E}_{cell} (GeV)");
   outputContainer->Add(fhAmplitude);
   
-  fhAmpId  = new TH2F ("hAmpId","#it{E}_{cell}", nfineptbins,ptfinemin,ptfinemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules); 
+  //..Create the fhAmpId TH2D with increasing binwidth
+  //..0-10 GeV (0.05), 10-20 GeV (0.2), 20-30 GeV (0.5)
+  Double_t binWidth=(ptfinemax-ptfinemin)/nfineptbins;
+  TCustomBinning xBinning;
+  xBinning.SetMinimum(ptfinemin);
+  xBinning.AddStep(ptfinemax,binWidth);     //..first entries of the array are the set ranges and bins
+  xBinning.AddStep(ptfinemax*2,binWidth*4); //..expand the previously defined range by 2 but increase the bin width
+  xBinning.AddStep(ptfinemax*4,binWidth*10);//..expand the previously defined range by 4 but increase the bin width
+
+  TCustomBinning yBinning;
+  yBinning.SetMinimum(0);
+  yBinning.AddStep(fNMaxRows*fNMaxCols*fNModules,1); //..add cells with binwidth 1
+
+  TArrayD xbinsArray;
+  xBinning.CreateBinEdges(xbinsArray);
+  TArrayD ybinsArray;
+  yBinning.CreateBinEdges(ybinsArray);
+
+  fhAmpId  = new TH2F ("hAmpId","#it{E}_{cell}", xbinsArray.GetSize() - 1, xbinsArray.GetArray(), ybinsArray.GetSize() - 1, ybinsArray.GetArray());
   fhAmpId->SetXTitle("#it{E}_{cell} (GeV)");
   outputContainer->Add(fhAmpId);
 
@@ -4944,7 +4977,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTimeId->SetXTitle("#it{t}_{cell} (ns)");
     fhTimeId->SetYTitle("Cell Absolute Id");
     outputContainer->Add(fhTimeId);
-    
+
+    fhTimeL1CorrId  = new TH2F ("hTimeL1CorrId","#it{t}_{cell} vs Absolute Id",
+                          ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+    fhTimeL1CorrId->SetXTitle("#it{t}_{cell} (ns)");
+    fhTimeL1CorrId->SetYTitle("Cell Absolute Id");
+    outputContainer->Add(fhTimeL1CorrId);
+
     fhTimeAmp  = new TH2F ("hTimeAmp","#it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
     fhTimeAmp->SetYTitle("#it{t}_{cell} (ns)");
     fhTimeAmp->SetXTitle("#it{E}_{cell} (GeV)");
