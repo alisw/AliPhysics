@@ -742,9 +742,9 @@ void AliHFInvMassFitter::Signal(Double_t nOfSigma,Double_t &signal,Double_t &err
   /// Return signal integral in mean +- n sigma
   ///
 
-  Double_t min=fMass-nOfSigma*fSigmaSgn;
-  Double_t max=fMass+nOfSigma*fSigmaSgn;
-  Signal(min,max,signal,errsignal);
+  Double_t minMass=fMass-nOfSigma*fSigmaSgn;
+  Double_t maxMass=fMass+nOfSigma*fSigmaSgn;
+  Signal(minMass,maxMass,signal,errsignal);
   return;
 }
 
@@ -763,9 +763,9 @@ void AliHFInvMassFitter::Background(Double_t nOfSigma,Double_t &background,Doubl
   /// Return background integral in mean +- n sigma
   ///
 
-  Double_t min=fMass-nOfSigma*fSigmaSgn;
-  Double_t max=fMass+nOfSigma*fSigmaSgn;
-  Background(min,max,background,errbackground);
+  Double_t minMass=fMass-nOfSigma*fSigmaSgn;
+  Double_t maxMass=fMass+nOfSigma*fSigmaSgn;
+  Background(minMass,maxMass,background,errbackground);
   return;
   
 }
@@ -812,9 +812,9 @@ void AliHFInvMassFitter::Significance(Double_t nOfSigma,Double_t &significance,D
   /// Return significance in mean +- n sigma
   ///
 
-  Double_t min=fMass-nOfSigma*fSigmaSgn;
-  Double_t max=fMass+nOfSigma*fSigmaSgn;
-  Significance(min, max, significance, errsignificance);
+  Double_t minMass=fMass-nOfSigma*fSigmaSgn;
+  Double_t maxMass=fMass+nOfSigma*fSigmaSgn;
+  Significance(minMass, maxMass, significance, errsignificance);
 
   return;
 }
@@ -1007,6 +1007,50 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
   }
   return 0x0;
 }
+// _______________________________________________________________________
+Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t nOfSigma, Int_t option) const{
+  /// Method to compute the signal using inv. mass histo bin counting 
+  /// -> interface method to compute yield in nsigma range around peak
+  Double_t minMass=fMass-nOfSigma*fSigmaSgn;
+  Double_t maxMass=fMass+nOfSigma*fSigmaSgn;
+  return GetRawYieldBinCounting(errRyBC,minMass,maxMass,option);
+}
+// _______________________________________________________________________
+Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option) const{
+  /// Method to compute the signal using inv. mass histo bin counting 
+  /// after background subtraction from background fit function
+  ///   option=0: background fit function from 1st fit step (only side bands)
+  ///   option=1: background fit function from 2nd fit step (S+B)
+
+  Int_t minBinSum=fHistoInvMass->FindBin(minMass);
+  Int_t maxBinSum=fHistoInvMass->FindBin(maxMass);
+  if(minBinSum<1){
+    printf("Left range for bin counting smaller than allowed by histogram axis, setting it to the lower edge of the first histo bin\n");
+    minBinSum=1;
+  }
+  if(maxBinSum>fHistoInvMass->GetNbinsX()){
+    printf("Right range for bin counting larger than allowed by histogram axis, setting it to the upper edge of the last histo bin\n");
+    maxBinSum=fHistoInvMass->GetNbinsX();
+  }
+  Double_t cntSig=0.;
+  Double_t cntErr=0.;
+  errRyBC=0;
+  TF1* fbackground=fBkgFunc;
+  if(option==1) fbackground=fBkgFuncRefit;
+  if(!fbackground) return 0.;
+
+  for(Int_t jb=minBinSum; jb<=maxBinSum; jb++){
+    Double_t cntTot=fHistoInvMass->GetBinContent(jb);
+    Double_t cntBkg=fbackground->Integral(fHistoInvMass->GetBinLowEdge(jb),fHistoInvMass->GetBinLowEdge(jb)+fHistoInvMass->GetBinWidth(jb))/fHistoInvMass->GetBinWidth(jb);
+    //Double_t cntBkg=fbackground->Eval(fHistoInvMass->GetBinCenter(jb));
+    cntSig+=(cntTot-cntBkg);
+    cntErr+=(fHistoInvMass->GetBinError(jb)*fHistoInvMass->GetBinError(jb));
+  }
+  errRyBC=TMath::Sqrt(cntErr);
+  return cntSig;
+}
+
+
 // _______________________________________________________________________
 void AliHFInvMassFitter::PrintFunctions(){
   /// dump the function parameters
