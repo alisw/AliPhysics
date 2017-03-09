@@ -6,7 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-
+Something which breaks
 #include "AliEveBeamsInfo.h"
 #include "AliEveBeamsInfoEditor.h"
 
