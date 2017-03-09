@@ -7,7 +7,7 @@ AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7,
   AliAnalysisTaskHypTritEventTree *task = new AliAnalysisTaskHypTritEventTree("lkreisTaskHypTritEventTree");
   task->SelectCollisionCandidates(triggerMask);
   task->SetPidQa(pidQa);
-  task->SetPeriod(period);
+  //task->SetPeriod(period);
   task->SetBetheSplines(betheSplines);
   // MC LHC12d3
 //  Double_t he3Params[6] = {1.79043,18.0066,0.00212257,2.24677,4.25945,0.06892};
