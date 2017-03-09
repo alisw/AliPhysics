@@ -41,6 +41,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
   void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
   void SetFillNSparseDplus(Bool_t fill=kTRUE){fFillSparseDplus=fill;if(fill)fFillSparse=fill;}
+  void SetFillNSparseImpPar(Bool_t fill=kTRUE){fFillImpParSparse=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
@@ -121,6 +122,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fUseSelectionBit;           /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse;                /// flag for usage of THnSparse
   Bool_t  fFillSparseDplus;           /// flag for usage of THnSparse
+  Bool_t  fFillImpParSparse;          /// flag for usage of sparse for imp. parameter
   Bool_t fDoRotBkg;                   ///flag to create rotational bkg (rotating pi track)
   Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
   Bool_t fDoCutV0multTPCout;          ///flag to activate cut on V0mult vs #tracks TPCout
@@ -147,9 +149,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   ///[2]: Selected prompt Ds
   ///[3]: Selected FD Ds
   THnSparseF *fnSparseMCDplus[4];  ///!<!THnSparse for MC for D+->kkpi
+  THnSparseF *fImpParSparse;       ///!<!THnSparse for imp. par. on data
+  THnSparseF *fImpParSparseMC;     ///!<!THnSparse for imp. par. on MC
+    
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,21);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,22);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

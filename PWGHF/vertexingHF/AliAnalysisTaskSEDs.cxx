@@ -72,6 +72,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fUseSelectionBit(kFALSE),
   fFillSparse(kTRUE),
   fFillSparseDplus(kFALSE),
+  fFillImpParSparse(kFALSE),
   fDoRotBkg(kFALSE),
   fDoBkgPhiSB(kFALSE),
   fDoCutV0multTPCout(kFALSE),
@@ -87,6 +88,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fAnalysisCuts(0),
   fnSparse(0),
   fnSparseIP(0),
+  fImpParSparse(0),
+  fImpParSparseMC(0),
   fSystem(0)
 {
   /// Default constructor
@@ -152,6 +155,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fUseSelectionBit(kFALSE),
   fFillSparse(kTRUE),
   fFillSparseDplus(kFALSE),
+  fFillImpParSparse(kFALSE),
   fDoRotBkg(kTRUE),
   fDoBkgPhiSB(kTRUE),
   fDoCutV0multTPCout(kFALSE),
@@ -167,6 +171,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fAnalysisCuts(analysiscuts),
   fnSparse(0),
   fnSparseIP(0),
+  fImpParSparse(0),
+  fImpParSparseMC(0),
   fSystem(0)
 {
   /// Default constructor
@@ -300,6 +306,10 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
         
     delete fnSparse;
     delete fnSparseIP;
+    if(fFillImpParSparse) {
+      delete fImpParSparse;
+      delete fImpParSparse;
+    }
     for (Int_t i=0; i<4; i++) {
       delete fnSparseMC[i];
       if(fFillSparseDplus)delete fnSparseMCDplus[i];
@@ -629,6 +639,31 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 	fnSparse->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
       }
       fOutput->Add(fnSparse);
+    }
+  }
+    
+  if(fFillImpParSparse) {
+    Int_t nBinsImpPar[3]   = { 20,   200,  350};
+    Double_t xminImpPar[3] = { 0.,    0.,  1.6};
+    Double_t xmaxImpPar[3] = {20., 1000.,  2.3};
+    TString axisImpPar[3]  = {"Pt","imp.par. (#mum)","invMassDsAllPhi"};
+    if(!fReadMC) {
+      fImpParSparse = new THnSparseF("fImpParSparse","ImpParSparse", 3, nBinsImpPar, xminImpPar, xmaxImpPar);
+      for (Int_t j=0; j<3; j++) {
+	fImpParSparse->GetAxis(j)->SetTitle(Form("%s",axisImpPar[j].Data()));
+      }
+      fOutput->Add(fImpParSparse);
+    }
+    else {
+      nBinsImpPar[2] = 3;
+      xminImpPar[2]  = 0.;
+      xmaxImpPar[2]  = 3.;
+      axisImpPar[2]  = "candType (0.5=bkg; 1.5=prompt; 2.5=FD)";
+      fImpParSparseMC  = new THnSparseF("fImpParSparseMC","ImpParSparseMC", 3, nBinsImpPar, xminImpPar, xmaxImpPar);
+      for (Int_t j=0; j<3; j++) {
+	fImpParSparseMC->GetAxis(j)->SetTitle(Form("%s",axisImpPar[j].Data()));
+      }
+      fOutput->Add(fImpParSparseMC);
     }
   }
     
@@ -990,6 +1025,17 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    }
 	    if(isK0starKKpi) fMassHistK0st[indexMCKKpi]->Fill(invMass,weightKKpi);
 	  }
+	  if(isPhiKKpi && fFillImpParSparse) {
+            Double_t impParxy = d->ImpParXY()*10000.;
+            if(!fReadMC) {
+	      Double_t array4ImpPar[3] = {ptCand,impParxy,invMass};
+	      fImpParSparse->Fill(array4ImpPar);
+            }
+            else {
+	      Double_t array4ImpPar[3] = {ptCand,impParxy,candType};
+	      fImpParSparseMC->Fill(array4ImpPar);
+            }
+	  }
 	}
 	if(ispiKK){
 	  if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,2,iPtBin);
@@ -1026,6 +1072,17 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      }
 	    }
 	    if(isK0starpiKK) fMassHistK0st[indexMCpiKK]->Fill(invMass,weightpiKK);
+	  }
+	  if(isPhipiKK && fFillImpParSparse) {
+            Double_t impParxy = d->ImpParXY()*10000.;
+            if(!fReadMC) {
+	      Double_t array4ImpPar[3] = {ptCand,impParxy,invMass};
+	      fImpParSparse->Fill(array4ImpPar);
+            }
+            else {
+	      Double_t array4ImpPar[3] = {ptCand,impParxy,candType};
+	      fImpParSparseMC->Fill(array4ImpPar);
+            }
 	  }
 	}
                 
@@ -1082,7 +1139,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 		if(candType==1.5) fnSparseMC[2]->Fill(var4nSparse);
 		if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
 	      }
-	      else if(labDplus>=0 && pdgCode0==321) {
+	      else if(fFillSparseDplus && labDplus>=0 && pdgCode0==321) {
 		if(candType==1.5) fnSparseMCDplus[2]->Fill(var4nSparse);
 		if(candType==2.5) fnSparseMCDplus[3]->Fill(var4nSparse);
 	      }
@@ -1121,7 +1178,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 		if(candType==1.5) fnSparseMC[2]->Fill(var4nSparse);
 		if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
 	      }
-	      else if(labDplus>=0 && pdgCode0==211) {
+	      else if(fFillSparseDplus && labDplus>=0 && pdgCode0==211) {
 		if(candType==1.5) fnSparseMCDplus[2]->Fill(var4nSparse);
 		if(candType==2.5) fnSparseMCDplus[3]->Fill(var4nSparse);
 	      }
