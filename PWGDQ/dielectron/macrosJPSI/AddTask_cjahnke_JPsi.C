@@ -117,14 +117,36 @@ if(!isMC){
 		task->SetTriggerMask(AliVEvent::kEMCEGA);
 		task->SetFiredTriggerName("EG1");
    }
-	
-	
-	//to do event mixing using MB trigger, but the cuts will be same as in the trigger EGA
-	if(trigger_index == 30 || trigger_index == 40 )
-	{
-		task->SetTriggerMask(AliVEvent::kINT7);
 
+//=============================================================================
+//=============================================================================
+//=============================================================================
+//DCal triggers
+	
+    if(trigger_index == 30 )
+	{
+		task->SetTriggerMask(AliVEvent::kEMCEGA);
+		task->SetFiredTriggerName("DG1");
 	}
+	if(trigger_index == 40 )
+	{
+		task->SetTriggerMask(AliVEvent::kEMCEGA);
+		task->SetFiredTriggerName("DG2");
+	}
+	
+	//for 16k which has a different threshold:
+	if(trigger_index == 60 )
+	{
+		task->SetTriggerMask(AliVEvent::kEMCEGA);
+		task->SetFiredTriggerName("DG1");
+	}
+
+//=============================================================================
+//=============================================================================
+//=============================================================================
+	
+	
+	
 	
 	if(trigger_index == 5 ){
 		 task->SetTriggerMask(AliVEvent::kAny);
