@@ -10,8 +10,8 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
 
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
 
-  TString configBasePath("/home/aaron/analyses/LHC16q/eeFrameworkQA/"); //Local
-  //TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
+  //TString configBasePath("/home/aaron/analyses/LHC16q/eeFrameworkQA/"); //Local
+  TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
   TString configFile("Config_acapon.C");
   TString configLMEECutLib("LMEECutLib_acapon.C");
     
