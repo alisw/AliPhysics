@@ -886,6 +886,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   AliFmPhysicalHelixD helix(ktP, kOrigin, (double)(fEvent->GetMagneticField())*kilogauss, (double)(tFemtoTrack->Charge()));
   tFemtoTrack->SetHelix(helix);
 
+
   // Flags
   tFemtoTrack->SetTrackId(tAodTrack->GetID());
   tFemtoTrack->SetFlags(tAodTrack->GetFlags());
@@ -899,6 +900,10 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
 
     tFemtoTrack->SetImpactD(tAodTrack->DCA());
     tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
+
+    tFemtoTrack->SetXatDCA(tAodTrack->XAtDCA());
+    tFemtoTrack->SetYatDCA(tAodTrack->YAtDCA());
+    tFemtoTrack->SetZatDCA(tAodTrack->ZAtDCA());
   }
 
   tFemtoTrack->SetCdd(covmat[0]);
@@ -1043,6 +1048,7 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   AliFemtoThreeVector momneg(tAODv0->MomNegX(), tAODv0->MomNegY(), tAODv0->MomNegZ());
   tFemtoV0->SetmomNeg(momneg);
   tFemtoV0->SetradiusV0(tAODv0->RadiusV0());
+  tFemtoV0->SetprimaryVertex(fV1);
 
   //jest cos takiego w AliFemtoV0.h czego nie ma w AliAODv0.h
   //void SettpcHitsPos(const int& i);
@@ -1561,6 +1567,10 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
 
     tFemtoTrack->SetImpactD(DCAXY);
     tFemtoTrack->SetImpactZ(DCAZ);
+
+    tFemtoTrack->SetXatDCA(pos[0]);
+    tFemtoTrack->SetYatDCA(pos[1]);
+    tFemtoTrack->SetZatDCA(pos[2]);
 
 
   }
