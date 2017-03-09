@@ -126,6 +126,7 @@ set(SRCS
   AliFemtoModelCorrFctnDEtaDPhiRM.cxx
   AliFemtoCutMonitorPairKT.cxx
   AliFemtoPairCutMInv.cxx
+  AliFemtoV0PurityBgdEstimator.cxx
   )
 
 

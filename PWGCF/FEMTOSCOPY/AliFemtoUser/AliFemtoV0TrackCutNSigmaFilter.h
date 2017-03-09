@@ -93,6 +93,7 @@ public:
   bool IsMisIDAntiLambda(const AliFemtoV0* aV0);
 
   void SetParticleType(short x);
+  short GetParticleType();
   double GetCTau(const AliFemtoV0* aV0);
 
   virtual TList *GetOutputList();
@@ -212,7 +213,7 @@ inline void AliFemtoV0TrackCutNSigmaFilter::AddProtonTOFNSigmaCut(double aMomMin
   AddTOFNSigmaCut(kProton, aMomMin, aMomMax, aNSigmaValueTOF);
 }
 
-
+inline short AliFemtoV0TrackCutNSigmaFilter::GetParticleType() {return fParticleType;}
 
 
 #endif

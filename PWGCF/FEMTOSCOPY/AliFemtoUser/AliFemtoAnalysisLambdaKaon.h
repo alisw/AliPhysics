@@ -27,6 +27,8 @@
 #include "AliFemtoCorrFctnKStar.h"
 #include "AliFemtoAvgSepCorrFctn.h"
 
+#include "AliFemtoDummyPairCut.h"
+#include "AliFemtoV0PurityBgdEstimator.h"
 
 #include "AliFemtoNSigmaFilter.h"
 #include "AliFemtoV0TrackCutNSigmaFilter.h"
@@ -52,9 +54,10 @@ public:
                      kLamKchP=2, kALamKchP=3, kLamKchM=4, kALamKchM=5, 
                      kLamLam=6, kALamALam=7, kLamALam=8, 
                      kLamPiP=9, kALamPiP=10, kLamPiM=11, kALamPiM=12, 
-                     kXiKchP=13, kAXiKchP=14, kXiKchM=15, kAXiKchM=16};
+                     kXiKchP=13, kAXiKchP=14, kXiKchM=15, kAXiKchM=16,
+                     kProtPiM=17, kAProtPiP=18, kPiPPiM=19};
 
-  enum GeneralAnalysisType {kV0V0=0, kV0Track=1, kXiTrack=2};
+  enum GeneralAnalysisType {kV0V0=0, kV0Track=1, kXiTrack=2, kTrackTrack=3};
 
   enum ParticlePDGType {kPDGProt   = 2212,  kPDGAntiProt = -2212, 
 		        kPDGPiP    = 211,   kPDGPiM      = -211, 
@@ -277,6 +280,7 @@ struct PairCutParams
   AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, V0CutParams &aV0CutParams1, V0CutParams &aV0CutParams2, TString aDirNameModifier="");
   AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, V0CutParams &aV0CutParams1, ESDCutParams &aESDCutParams2, TString aDirNameModifier="");
   AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, XiCutParams &aXiCutParams1, ESDCutParams &aESDCutParams2, TString aDirNameModifier="");
+  AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, ESDCutParams &aESDCutParams1, ESDCutParams &aESDCutParams2, TString aDirNameModifier="");
 
     //Since I am using rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality), 
       // in AliFemtoEventReaderAOD.cxx this causes tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0A"))), i.e. fNormalizedMult in [0,1000]
@@ -317,6 +321,7 @@ struct PairCutParams
   AliFemtoCorrFctnKStar* CreateCorrFctnKStar(const char* name, unsigned int bins, double min, double max);
   AliFemtoAvgSepCorrFctn* CreateAvgSepCorrFctn(const char* name, unsigned int bins, double min, double max);
   AliFemtoModelCorrFctnKStarFull* CreateModelCorrFctnKStarFull(const char* name, unsigned int bins, double min, double max);    //TODO check that enum to int is working
+  AliFemtoV0PurityBgdEstimator* CreateV0PurityBgdEstimator();
 
   void AddCutMonitors(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut);
   void SetAnalysis(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut);
@@ -337,6 +342,12 @@ struct PairCutParams
   static XiCutParams DefaultAXiCutParams();
 
   static PairCutParams DefaultPairParams();
+
+  static ESDCutParams LambdaPurityPiCutParams(int aCharge);
+  static ESDCutParams K0ShortPurityPiCutParams(int aCharge);
+  static ESDCutParams LambdaPurityProtonCutParams(int aCharge);
+
+
   //----------------------------------------
 
 
