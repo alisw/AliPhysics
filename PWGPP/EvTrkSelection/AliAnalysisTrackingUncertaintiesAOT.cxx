@@ -58,6 +58,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fMaxDCAxy(2.4),
   fMaxDCAz(3.2),
   fMaxEta(0.8),
+  fSPDlayerReq(AliESDtrackCuts::kAny),
   fCrossRowsOverFndCltTPC(0.8),
   fTriggerClass("CINT1B"),
   fTriggerMask(AliVEvent::kMB),
@@ -86,6 +87,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fMaxDCAxy(2.4),
     fMaxDCAz(3.2),
     fMaxEta(0.8),
+    fSPDlayerReq(AliESDtrackCuts::kAny),
     fCrossRowsOverFndCltTPC(0.8),
     fTriggerClass("CINT1B"),
     fTriggerMask(AliVEvent::kMB),
@@ -143,6 +145,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
   fESDtrackCuts->SetEtaRange(-fMaxEta, fMaxEta);
   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
+  
     
   //
   // Create histograms
@@ -493,9 +496,8 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     fESDtrackCuts->SetRequireITSRefit(refit);
     fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(chi2tpc);
     fESDtrackCuts->SetMaxChi2PerClusterITS(chi2its);
-    //
-    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-        
+    //set the SPD cluster requirement
+    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,fSPDlayerReq);
     //set is matched
     isMatched=kTRUE;
     Int_t bcTOF_n=0;

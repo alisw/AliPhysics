@@ -7,7 +7,8 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           Double_t MaxDCAxy = 2.4,
                                           Double_t MaxDCAz  = 3.2,
                                           Double_t MaxEta   = 0.8,
-                                          Double_t CrossRowsOverFndCltTPC = 0.8) {
+                                          Double_t CrossRowsOverFndCltTPC = 0.8,
+                                          AliESDtrackCuts::ITSClusterRequirement spdReq=AliESDtrackCuts::kAny) {
     
     //
     // add task of tracking uncertainty
@@ -30,7 +31,6 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
         ::Error("AddTaskImpParDistrib", "This task requires to run on ESD");
         return NULL;
     }
-    
     //
     //========= Add task for standard analysis to the ANALYSIS manager ====
     //
@@ -45,6 +45,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
     task->SetEtaRange(MaxEta);
     task->SetCrossRowsOverFndCltTPC(CrossRowsOverFndCltTPC);
     task->SetUseCutV0multVsTPCout(doCutV0multTPCout);
+    task->SetSPDRequirement(spdReq);
     
     mgr->AddTask(task);
     ULong64_t SPeciee = task->GetSpecie();

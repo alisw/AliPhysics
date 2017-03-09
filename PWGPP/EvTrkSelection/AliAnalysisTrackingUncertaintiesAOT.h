@@ -61,6 +61,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetRequireTrackVtx(Bool_t flag)      {fRequireVtxTracks = flag;}
   void           SetUsePtLogScale(Bool_t flag)        {fUsePtLogAxis = flag;}
   void           SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
+  void           SetSPDRequirement(AliESDtrackCuts::ITSClusterRequirement  spdlayreq)   {fSPDlayerReq = spdlayreq;}                   
 
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
@@ -78,6 +79,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Double_t fMaxDCAz;
   Double_t fMaxEta;
   Double_t fCrossRowsOverFndCltTPC;
+  AliESDtrackCuts::ITSClusterRequirement fSPDlayerReq; // SPD layers requirement 
     
   TString  fTriggerClass;           /// trigger class
   ULong64_t fTriggerMask;           /// trigger mask
@@ -105,7 +107,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 3);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 4);
 };
 
 #endif
