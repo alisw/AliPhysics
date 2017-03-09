@@ -104,16 +104,15 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
   tMacroConfig.multiplicity = AliFemtoEventReaderAOD::kCentrality;
   tMacroConfig.dca_global_track = 0;
 
+  // Read parameter string and update configurations
+  BuildConfiguration(aParamString,tAnalysisConfig,tEventCutConfig,tPairCutConfig,tMacroConfig);
+
   if(tAnalysisConfig.analysisType==AFALK::kProtPiM || tAnalysisConfig.analysisType==AFALK::kAProtPiP ||
             tAnalysisConfig.analysisType==AFALK::kPiPPiM)
   {
     tMacroConfig.dca_global_track = 1;
     tMacroConfig.filter_bit = 0;
   }
-
-
-  // Read parameter string and update configurations
-  BuildConfiguration(aParamString,tAnalysisConfig,tEventCutConfig,tPairCutConfig,tMacroConfig);
 
   // Begin to build the manager and analyses
   AliFemtoManager *tManager = new AliFemtoManager();

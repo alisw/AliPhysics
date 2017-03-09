@@ -114,13 +114,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
   tMacroConfig.multiplicity = AliFemtoEventReaderAOD::kCentrality;
   tMacroConfig.dca_global_track = 0;
 
-  if(tAnalysisConfig.analysisType==AFALK::kProtPiM || tAnalysisConfig.analysisType==AFALK::kAProtPiP ||
-            tAnalysisConfig.analysisType==AFALK::kPiPPiM)
-  {
-    tMacroConfig.dca_global_track = 1;
-    tMacroConfig.filter_bit = 0;
-  }
-
   //
   CutVariations tCutVariationsMin;
   CutVariations tCutVariationsMax;
@@ -129,6 +122,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
   //Initial call to BuildConfiguration
   BuildConfiguration(aParamString,tAnalysisConfig,tEventCutConfig,tPairCutConfig,tMacroConfig,tCutVariationsMin, tCutVariationsMax);
   TString tParticleCuts = GetParticleCuts(aParamString);
+
+  if(tAnalysisConfig.analysisType==AFALK::kProtPiM || tAnalysisConfig.analysisType==AFALK::kAProtPiP ||
+            tAnalysisConfig.analysisType==AFALK::kPiPPiM)
+  {
+    tMacroConfig.dca_global_track = 1;
+    tMacroConfig.filter_bit = 0;
+  }
+
 
   // Begin to build the manager and analyses
   AliFemtoManager *tManager = new AliFemtoManager();
