@@ -1,5 +1,5 @@
 /***************************************************************************
-//            Modified by Pragati Sahoo - 24/11/2016
+//            Modified by Pragati Sahoo - 8/3/2017
 //            Modified by Enrico Fragiacomo - 15/01/2014
 //            Based on AddAnalysisTaskRsnMini
 //
@@ -28,6 +28,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
 (
  Bool_t      isMC,
  Bool_t      isPP,
+ UInt_t      triggerMask=AliVEvent::kINT7,
  Float_t     cutV = 10.0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
@@ -38,6 +39,11 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Float_t     piPIDCut = 3.0,
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
+ Float_t     massTolVeto = 0.006,//here
+ Float_t     pLife = 20,  
+ Float_t     radiuslow = 0.5,
+ Float_t     radiushigh = 200,    
+ Bool_t      Switch = kFALSE,//here
  Float_t     k0sDCA = 0.3,
  Float_t     k0sCosPoinAn = 0.97,
  Float_t     k0sDaughDCA = 1.0,
@@ -54,7 +60,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
   //-------------------------------------------                                                                                          
   // event cuts                                                                                                                             
   //-------------------------------------------                                                                                               
-  UInt_t      triggerMask=AliVEvent::kINT7;
+  //  UInt_t      triggerMask=AliVEvent::kINT7;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z                                                   
   if(isMC) rejectPileUp=kFALSE;
@@ -83,8 +89,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    TString taskName = Form("KStarPlusMinus%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pi_k0s_PIDCut,massTol,k0sDCA,k0sCosPoinAn,k0sDaughDCA);
    //TString taskName=Form("TOFKstar%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);                   
-   task->SelectCollisionCandidates(triggerMask);                                                                                        
-
+   //   task->SelectCollisionCandidates(triggerMask);                                                                       
+   task->UseESDTriggerMask(triggerMask);
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
    //else task->UseCentrality("V0M");
@@ -163,14 +169,14 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinus5TeVpp.C");
-   // gROOT->LoadMacro("ConfigKStarPlusMinus5TeVpp.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinus5TeVpp.C");
+   //gROOT->LoadMacro("ConfigKStarPlusMinus5TeVpp.C");
    if (isMC) {
      Printf("========================== MC analysis - PID cuts not used"); 
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

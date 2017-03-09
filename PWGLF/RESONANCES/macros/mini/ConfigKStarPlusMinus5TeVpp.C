@@ -21,6 +21,11 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Bool_t                  enableMonitor,
    TString                 monitorOpt,
    Float_t                 massTol,
+   Float_t                 massTolVeto, 
+   Float_t                 pLife, 
+   Float_t                 radiuslow,
+   Float_t                 radiushigh,    
+   Bool_t                  Switch,
    Float_t                 k0sDCA,
    Float_t                 k0sCosPoinAn,
    Float_t                 k0sDaughDCA,
@@ -110,6 +115,11 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
    cutK0s->SetMaxRapidity(0.5);
    cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
+   cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
+   cutK0s->SetSwitch(Switch);    
+   cutK0s->SetfLife(pLife); 
+   cutK0s->SetfLowRadius(radiuslow); 
+   cutK0s->SetfHighRadius(radiushigh);
    //
    AliRsnCutSet *cutSetK0s = new AliRsnCutSet("setK0s", AliRsnTarget::kDaughter);
    cutSetK0s->AddCut(cutK0s);
@@ -120,7 +130,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
     Printf("======== Cut monitoring enabled");
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
-    //    AddMonitorOutput(isMC, cutSetK0s->GetMonitorOutput()), monitorOpt.Data();
+    AddMonitorOutput(isMC, cutSetK0s->GetMonitorOutput()), monitorOpt.Data();
   }
    
    // #############################################################################################
@@ -195,7 +205,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AddMonitorOutput_PionNTPC(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionTPCchi2(cutSetPi->GetMonitorOutput());
    
-   // AddMonitorOutput_K0sP(cutSetK0s->GetMonitorOutput());
+
    AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
    AddMonitorOutput_K0sNegDaughPt(cutSetK0s->GetMonitorOutput());
    AddMonitorOutput_K0sPosDaughPt(cutSetK0s->GetMonitorOutput());
@@ -204,9 +214,12 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AddMonitorOutput_K0sRadius(cutSetK0s->GetMonitorOutput());
    AddMonitorOutput_K0sDaughterDCA(cutSetK0s->GetMonitorOutput());
    AddMonitorOutput_K0sCosPointAngle(cutSetK0s->GetMonitorOutput());
-   // AddMonitorOutput_K0sProtonPID(cutSetK0s->GetMonitorOutput());
    AddMonitorOutput_K0sPionPID(cutSetK0s->GetMonitorOutput());
-   
+   AddMonitorOutput_K0sfpLife(cutSetK0s->GetMonitorOutput());   
+
+   AddMonitorOutput_MinDCAToVertexXYPtDep(cutSetK0s->GetMonitorOutput());
+
+
    if (isMC) {
      
      TString mode = "SPARSE";
@@ -554,140 +567,55 @@ void AddMonitorOutput_K0sAntiPionPID(TObjArray *mon=0,TString opt="",AliRsnLoopD
    if (lapiPID) lpiPID->AddOutput(outMonitorK0sAntiPionPID);
   
 }
-// Psahoo for systematics.......................
-//-------------------------------------------------------  
-/*Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0)
+void AddMonitorOutput_MinDCAToVertexXYPtDep(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *trackDCAXY=0)
 {
-  //Sets configuration for track quality object different from std quality cuts.
-  //Returns kTRUE if track quality cut object is successfully defined,
-  //returns kFALSE if an invalid set of cuts (customQualityCutsID) is chosen or if the
-  //object to be configured does not exist.
+    
+  // DCAXY of Tracks
+  AliRsnValueDaughter *axisDCATracks = new AliRsnValueDaughter("dcaXY_tracks", AliRsnValueDaughter::kV0DCAXY);
+  axisDCATracks->SetBins(0.0,2,0.001);
 
-  if ((!trkQualityCut)){
-    Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
-    return kFALSE;
-  }
-
-  if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
-    trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-    Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
-
-    if(!customFilterBit){//ESD
-      if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
-      else if(customQualityCutsID==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
-      else if(customQualityCutsID==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
-      else if(customQualityCutsID==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
-      else if(customQualityCutsID==7){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(5.);}
-      else if(customQualityCutsID==8){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.3);}
-      else if(customQualityCutsID==9){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
-      else if(customQualityCutsID==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
-      else if(customQualityCutsID==11){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
-      else if(customQualityCutsID==12){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
-      else if(customQualityCutsID==13){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(49.);}
-      else if(customQualityCutsID==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4.);}
-      else if(customQualityCutsID==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
-      else if(customQualityCutsID==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
-      else if(customQualityCutsID==17){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
-      else if(customQualityCutsID==56){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
-      else if(customQualityCutsID==58){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
-      else if(customQualityCutsID==60){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
-      else if(customQualityCutsID==64){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
-    }else{//AOD
-      trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
-      if(customQualityCutsID==4){trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");}
-      else if(customQualityCutsID==6){trkQualityCut->SetDCAZmax(0.2);}
-      else if(customQualityCutsID==8){trkQualityCut->SetTrackMaxChi2(2.3);}
-      else if(customQualityCutsID==10){trkQualityCut->SetMinNCrossedRowsTPC(100,kTRUE);}
-      else if(customQualityCutsID==12){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9,kTRUE);}
-      else if(customQualityCutsID==56){trkQualityCut->SetDCAZmax(1.);}
-      else if(customQualityCutsID==58){trkQualityCut->SetTrackMaxChi2(3.5);}
-      else if(customQualityCutsID==60){trkQualityCut->SetMinNCrossedRowsTPC(80,kTRUE);}
-    } 
-    trkQualityCut->Print();
-    return kTRUE;
-    }else if(customQualityCutsID==2 || (customQualityCutsID>=100 && customQualityCutsID<200)){
-      trkQualityCut->SetDefaultsTPCOnly(kTRUE);
-      Printf(Form("::::: SetCustomQualityCut:: using TPC-only track quality cuts"));
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorDCATracks = new AliRsnListOutput("DCAXY_Tracks", AliRsnListOutput::kHistoDefault);
+  outMonitorDCATracks->AddValue(axisDCATracks);
+  cout<<"THIS LOOP IS RUNNING"<<endl;
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorDCATracks);
+  if (trackDCAXY) trackDCAXY->AddOutput(outMonitorDCATracks);
       
-      if(customQualityCutsID==103){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXY(3.);}
-      else if(customQualityCutsID==104){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXY(1.);}
-      else if(customQualityCutsID==105){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(4.);}
-      else if(customQualityCutsID==106){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
-      else if(customQualityCutsID==107){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(7.);}
-      else if(customQualityCutsID==108){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.5);}
-      else if(customQualityCutsID==109){trkQualityCut->GetESDtrackCuts()->SetMinNClustersTPC(30);}
-      else if(customQualityCutsID==110){trkQualityCut->GetESDtrackCuts()->SetMinNClustersTPC(85);}
-      
-      trkQualityCut->Print();
-      return kTRUE;
-  }else{
-    Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
-    return kFALSE;
-  }
-  
-  //for pA 2013
-  //trkQualityCut->SetDefaults2011();//with filter bit=10
-  //reset filter bit to very loose cuts 
-  trkQualityCut->SetAODTestFilterBit(customFilterBit); 
-  //apply all other cuts "by hand"
-  trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
-  trkQualityCut->SetMinNCrossedRowsTPC(70, kTRUE);
-  trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.8, kTRUE);
-  trkQualityCut->SetMaxChi2TPCConstrainedGlobal(36);//used for ESD only - for AOD does not correspond to any cut
-  trkQualityCut->SetTPCmaxChi2(4.0); //already in filter bit 0
-  trkQualityCut->SetRejectKinkDaughters(kTRUE); //already in filter bit 0
-  trkQualityCut->SetSPDminNClusters(AliESDtrackCuts::kAny);
-  trkQualityCut->SetITSmaxChi2(36);
-  trkQualityCut->AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);//already in defaults 2011
-  trkQualityCut->AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);//already in defaults 2011
-  trkQualityCut->AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);//already in defaults 2011
+    
+} 
 
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kFilterBitCustom) {
-    trkQualityCut->SetCheckOnlyFilterBit(kTRUE);
-  } 
-  
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdLooserDCAXY){
-    trkQualityCut->SetDCARmax(2.4);
-  } else {
-    trkQualityCut->SetDCARPtFormula("0.0105+0.0350/pt^1.1");
-  }
-  
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdLooserDCAZ){
-    trkQualityCut->SetDCAZmax(3.2);
-  } else {
-    trkQualityCut->SetDCAZmax(2.0); 
-  }
-  
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCrossedRows60){
-    trkQualityCut->SetMinNCrossedRowsTPC(60, kTRUE);
-  }
-  
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCrossedRows80){
-    trkQualityCut->SetMinNCrossedRowsTPC(80, kTRUE);
-  }
-  
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdRowsToCls075){
-    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.75, kTRUE);
-  }
-  
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdRowsToCls085){
-    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.85, kTRUE);
-  }
-  
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCls70){
-    trkQualityCut->SetAODTestFilterBit(10);
-    trkQualityCut->SetTPCminNClusters(70);
-  }
-  
-  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdChi2TPCCls35){
-    trkQualityCut->SetTPCmaxChi2(3.5);
-  }
-  
-  trkQualityCut->SetPtRange(0.15, 20.0);
-  trkQualityCut->SetEtaRange(-0.8, 0.8);
-  
-  Printf(Form("::::: SetCustomQualityCut:: using custom track quality cuts #%i",customQualityCutsID));
-  trkQualityCut->Print();
-  return kTRUE;
+//  DCA V0 Secondary Tracks to Primary Vertex
+void AddMonitorOutput_MinDCAToVertexXY(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *trackDCAXY=0)
+{
+    
+  // DCAXY of Tracks
+  AliRsnValueDaughter *axisDCATracks = new AliRsnValueDaughter("dcaXY_tracks", AliRsnValueDaughter::kV0DCAXY);
+  axisDCATracks->SetBins(0.0,2,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorDCATracks = new AliRsnListOutput("DCAXY_Tracks", AliRsnListOutput::kHistoDefault);
+  outMonitorDCATracks->AddValue(axisDCATracks);
+  cout<<"THIS LOOP IS RUNNING"<<endl;
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorDCATracks);
+  if (trackDCAXY) trackDCAXY->AddOutput(outMonitorDCATracks);
+      
+    
+} 
+// Lifetime of V0 particle.
+
+void AddMonitorOutput_K0sfpLife(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *llifetime=0)
+{
+  AliRsnValueDaughter *k0slifetime = new AliRsnValueDaughter("lifetime", AliRsnValueDaughter::kV0Lifetime);
+  k0slifetime->SetBins(0.0,200,0.1);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitork0sLifetime = new AliRsnListOutput("k0s", AliRsnListOutput::kHistoDefault);
+  outMonitork0sLifetime->AddValue(k0slifetime);
+  cout<<"THIS LOOP IS RUNNING"<<endl;
+  // add outputs to loop
+  if (mon) mon->Add(outMonitork0sLifetime);
+  if (llifetime) llifetime->AddOutput(outMonitork0sLifetime);    
+    
 }
-*/
