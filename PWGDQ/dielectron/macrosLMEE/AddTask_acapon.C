@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "acapon", Bool_t SDDstatus = kFALSE, Bool_t getFromAlien = kFALSE){
+AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", Bool_t SDDstatus = kFALSE, Bool_t getFromAlien = kFALSE){
 
 
   //get the current analysis manager
@@ -49,12 +49,11 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
   }
   
   //create task and add it to the manager
-  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("LHC15qQA_acapon_test");
+  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("DielectronTask");
   if (!hasMC) task->UsePhysicsSelection();
 
   //Add event filter
-  //Trigger name: kFastOnly, 
-  Int_t triggerNames=(AliVEvent::kAny);
+  Int_t triggerNames=(AliVEvent::kINT7);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies));
   task->SelectCollisionCandidates(triggerNames);
   task->SetTriggerMask(triggerNames);
@@ -76,25 +75,25 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("%s_tree",directoryBaseName.Data()),
+    mgr->CreateContainer("acapon_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("%s_out",directoryBaseName.Data()),
+    mgr->CreateContainer("acapon_out",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("%s_CF",directoryBaseName.Data()),
+    mgr->CreateContainer("acapon_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("%s_EventStat",directoryBaseName.Data()),
+    mgr->CreateContainer("acapon_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
