@@ -107,7 +107,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
-  Int_t                  GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub);
 
   Bool_t                 IsLocked() const;
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);

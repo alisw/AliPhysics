@@ -427,7 +427,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         uid=-1;
       }
       else {
-        uid = GetIndexSub(constituents[ic].phi(), constituents_unsub);
+        uid = constituents[ic].user_index();
       }
       if (uid==0) {
         AliError("correspondence between un/subtracted constituent not found");
@@ -572,30 +572,6 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
   jet->SetMCPt(mcpt);
   jet->SetPtEmc(emcpt);
   jet->SortConstituents();
-}
-
-/**
- * Search for the index of the unsubtracted constituents by comparing the azimuthal angles
- * @param phi_sub Azimuthal angle of the subtracted constituent
- * @param constituents_unsub Vector containing the list of unsubtracted constituents
- * @return Index of the subtracted constituent
- */
-Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub) 
-{
-  Double_t dphi=0;
-  Double_t phimin=100;
-  Int_t index=0;
-  for (UInt_t ii = 0; ii < constituents_unsub.size(); ii++) {
-    dphi=0;
-    Double_t phi_unsub = constituents_unsub[ii].phi();
-    dphi=phi_unsub-phi_sub;
-    if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
-    else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
-    if(TMath::Abs(dphi)<phimin){ phimin=TMath::Abs(dphi);
-      index=ii;} }
-    if (constituents_unsub[index].user_index()!=-1)  return constituents_unsub[index].user_index();
-
-  return 0;
 }
 
 /**
