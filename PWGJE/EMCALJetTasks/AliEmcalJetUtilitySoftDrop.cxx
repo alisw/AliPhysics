@@ -130,6 +130,14 @@ void AliEmcalJetUtilitySoftDrop::Init()
   fInit = kTRUE;
 }
 
+
+//______________________________________________________________________________
+void AliEmcalJetUtilitySoftDrop::InitEvent(AliFJWrapper& /*fjw*/)
+{
+  // Prepare the utility.
+
+}
+
 //______________________________________________________________________________
 void AliEmcalJetUtilitySoftDrop::Prepare(AliFJWrapper& fjw)
 {

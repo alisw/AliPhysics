@@ -204,6 +204,7 @@ if(FASTJET_FOUND)
         AliEmcalJetUtility.cxx
         AliEmcalJetUtilityGenSubtractor.cxx
         AliEmcalJetUtilityConstSubtractor.cxx
+	AliEmcalJetUtilityEventSubtractor.cxx
         AliEmcalJetUtilitySoftDrop.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx

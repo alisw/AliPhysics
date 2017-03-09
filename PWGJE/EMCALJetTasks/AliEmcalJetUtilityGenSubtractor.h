@@ -22,6 +22,7 @@ class AliEmcalJetUtilityGenSubtractor : public AliEmcalJetUtility
   ~AliEmcalJetUtilityGenSubtractor() {;}
 
   void Init();
+  void InitEvent(AliFJWrapper& fjw);
   void Prepare(AliFJWrapper& fjw);
   void ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWrapper& fjw);
   void Terminate(AliFJWrapper& fjw);

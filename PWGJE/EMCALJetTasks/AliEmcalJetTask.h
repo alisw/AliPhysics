@@ -138,6 +138,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Int_t                  FindJets();
   void                   FillJetBranch();
   void                   ExecOnce();
+  void                   InitEvent();
   void                   InitUtilities();
   void                   PrepareUtilities();
   void                   ExecuteUtilities(AliEmcalJet* jet, Int_t ij);

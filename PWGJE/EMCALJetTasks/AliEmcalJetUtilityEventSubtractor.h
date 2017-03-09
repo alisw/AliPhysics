@@ -1,5 +1,5 @@
-#ifndef ALIEMCALJETUTILITYCONSTSUBTRACTOR_H
-#define ALIEMCALJETUTILITYCONSTSUBTRACTOR_H
+#ifndef ALIEMCALJETUTILITYEVENTSUBTRACTOR_H
+#define ALIEMCALJETUTILITYEVENTSUBTRACTOR_H
 
 #include <TNamed.h>
 
@@ -12,19 +12,20 @@ class AliEmcalJet;
 class AliFJWrapper;
 class AliRhoParameter;
 
-class AliEmcalJetUtilityConstSubtractor : public AliEmcalJetUtility
+class AliEmcalJetUtilityEventSubtractor : public AliEmcalJetUtility
 {
  public:
 
-  AliEmcalJetUtilityConstSubtractor();
-  AliEmcalJetUtilityConstSubtractor(const char* name);
-  AliEmcalJetUtilityConstSubtractor(const AliEmcalJetUtilityConstSubtractor &jet);
-  AliEmcalJetUtilityConstSubtractor& operator=(const AliEmcalJetUtilityConstSubtractor &jet);
-  ~AliEmcalJetUtilityConstSubtractor() {;}
+  AliEmcalJetUtilityEventSubtractor();
+  AliEmcalJetUtilityEventSubtractor(const char* name);
+  AliEmcalJetUtilityEventSubtractor(const AliEmcalJetUtilityEventSubtractor &jet);
+  AliEmcalJetUtilityEventSubtractor& operator=(const AliEmcalJetUtilityEventSubtractor &jet);
+  ~AliEmcalJetUtilityEventSubtractor() {;}
 
   void                   SetRhoName(const char *n)           { fRhoName      = n         ; }
   void                   SetRhomName(const char *n)          { fRhomName     = n         ; }
   void                   SetUseExternalBkg(Bool_t b)         { fUseExternalBkg   = b     ; }
+  void                   SetMaxDelR(Double_t r)                { fMaxDelR      = r         ; }
 
   void                   SetJetsSubName(const char *n)       { fJetsSubName      = n     ; }
   void                   SetParticlesSubName(const char *n)  { fParticlesSubName = n     ; }
@@ -44,12 +45,13 @@ class AliEmcalJetUtilityConstSubtractor : public AliEmcalJetUtility
   TString                fRhomName;                           // name of rhom
   Double_t               fRho;                                // pT background density
   Double_t               fRhom;                               // mT background density
+  Double_t               fMaxDelR;
 
   TClonesArray          *fJetsSub;                            //!subtracted jet collection
   TClonesArray          *fParticlesSub;                       //!subtracted particle collection
   AliRhoParameter       *fRhoParam;                           //!event rho
   AliRhoParameter       *fRhomParam;                          //!event rhom
 
-  ClassDef(AliEmcalJetUtilityConstSubtractor, 1) // Emcal jet utility that implements the constituent subtractor form the fastjet contrib
+  ClassDef(AliEmcalJetUtilityEventSubtractor, 1) // Emcal jet utility that implements the constituent subtractor form the fastjet contrib
 };
 #endif

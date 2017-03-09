@@ -1,12 +1,12 @@
-#include "AliEmcalJetUtilityConstSubtractor.h"
+#include "AliEmcalJetUtilityEventSubtractor.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliEmcalJetTask.h"
 
-ClassImp(AliEmcalJetUtilityConstSubtractor)
+ClassImp(AliEmcalJetUtilityEventSubtractor)
 
 //______________________________________________________________________________
-AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor() :
+AliEmcalJetUtilityEventSubtractor::AliEmcalJetUtilityEventSubtractor() :
   AliEmcalJetUtility(),
   fJetsSubName(""),
   fParticlesSubName(""),
@@ -25,7 +25,7 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor() :
 }
 
 //______________________________________________________________________________
-AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const char* name) :
+AliEmcalJetUtilityEventSubtractor::AliEmcalJetUtilityEventSubtractor(const char* name) :
   AliEmcalJetUtility(name),
   fJetsSubName(""),
   fParticlesSubName(""),
@@ -43,7 +43,7 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const char*
 }
 
 //______________________________________________________________________________
-AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const AliEmcalJetUtilityConstSubtractor &other) :
+AliEmcalJetUtilityEventSubtractor::AliEmcalJetUtilityEventSubtractor(const AliEmcalJetUtilityEventSubtractor &other) :
   AliEmcalJetUtility(other),
   fJetsSubName(other.fJetsSubName),
   fParticlesSubName(other.fParticlesSubName),
@@ -61,7 +61,7 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const AliEm
 }
 
 //______________________________________________________________________________
-AliEmcalJetUtilityConstSubtractor& AliEmcalJetUtilityConstSubtractor::operator=(const AliEmcalJetUtilityConstSubtractor &other)
+AliEmcalJetUtilityEventSubtractor& AliEmcalJetUtilityEventSubtractor::operator=(const AliEmcalJetUtilityEventSubtractor &other)
 {
   // Assignment.
 
@@ -82,7 +82,7 @@ AliEmcalJetUtilityConstSubtractor& AliEmcalJetUtilityConstSubtractor::operator=(
 }
 
 //______________________________________________________________________________
-void AliEmcalJetUtilityConstSubtractor::Init()
+void AliEmcalJetUtilityEventSubtractor::Init()
 {
   // Initialize the utility.
   // Add constituent subtracted jets to event
@@ -130,43 +130,40 @@ void AliEmcalJetUtilityConstSubtractor::Init()
 }
 
 //______________________________________________________________________________
-void AliEmcalJetUtilityConstSubtractor::InitEvent(AliFJWrapper& /*fjw*/)
+void AliEmcalJetUtilityEventSubtractor::InitEvent(AliFJWrapper& fjw)
 {
   // Prepare the utility.
-
-}
-
-//______________________________________________________________________________
-void AliEmcalJetUtilityConstSubtractor::Prepare(AliFJWrapper& fjw)
-{
-  // Prepare the utility.
-
   if (!fInit) return;
-
   if (fRhoParam) fRho = fRhoParam->GetVal();
   if (fRhomParam) fRhom = fRhomParam->GetVal();
-  
   if(fRho < 1e-6) {
-     fRho = 1e-6;
+    fRho = 1e-6;
   }
   if(fRhom < 1e-6) {
-     fRhom = 1e-6;
+    fRhom = 1e-6;
   }
- 
-  if (fJetsSub) fJetsSub->Delete();
 
+  if (fJetsSub) fJetsSub->Delete();
+  fjw.SetEventSub(kTRUE);
+  fjw.SetMaxDelR(fMaxDelR);
   fjw.SetUseExternalBkg(fUseExternalBkg, fRho, fRhom);
-  fjw.DoConstituentSubtraction();
 }
 
 //______________________________________________________________________________
-void AliEmcalJetUtilityConstSubtractor::ProcessJet(AliEmcalJet* /*jet*/, Int_t /*ij*/, AliFJWrapper& /*fjw*/)
+void AliEmcalJetUtilityEventSubtractor::Prepare(AliFJWrapper& /*fjw*/)
+{
+  // Prepare the utility.
+
+}
+
+//______________________________________________________________________________
+void AliEmcalJetUtilityEventSubtractor::ProcessJet(AliEmcalJet* /*jet*/, Int_t /*ij*/, AliFJWrapper& /*fjw*/)
 {
   // Process each jet.
 }
 
 //______________________________________________________________________________
-void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
+void AliEmcalJetUtilityEventSubtractor::Terminate(AliFJWrapper& fjw)
 {
   // Run termination of the utility (after each event).
 
@@ -178,27 +175,27 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
   }
 
 #ifdef FASTJET_VERSION
-  std::vector<fastjet::PseudoJet> jets_sub;
-  jets_sub = fjw.GetConstituentSubtrJets();
-  AliDebug(1,Form("%d constituent subtracted jets found", (Int_t)jets_sub.size()));
-  for (UInt_t ijet = 0, jetCount = 0; ijet < jets_sub.size(); ++ijet) {
+  std::vector<fastjet::PseudoJet> jets_event_sub;
+  jets_event_sub = fjw.GetEventSubJets();
+  AliDebug(1,Form("%d event constituent subtracted jets found", (Int_t)jets_event_sub.size()));
+  for (UInt_t ijet = 0, jetCount = 0; ijet < jets_event_sub.size(); ++ijet) {
+    //printf("Jet pt = %f, area = %f", jets_event_sub[ijet].perp(), fjw.GetEventSubJetArea(ijet));
     //Only storing 4-vector and jet area of unsubtracted jet
-    if(jets_sub[ijet].E()>0.) {
-      AliEmcalJet *jet_sub = new ((*fJetsSub)[ijet])
-        AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
-      jet_sub->SetLabel(ijet);
-      jet_sub->SetJetAcceptanceType(fJetTask->FindJetAcceptanceType(jet_sub->Eta(), jet_sub->Phi_0_2pi(), fJetTask->GetRadius()));
+    if(jets_event_sub[ijet].E()>0.) {
+      AliEmcalJet *jet_event_sub = new ((*fJetsSub)[ijet])
+        AliEmcalJet(jets_event_sub[ijet].perp(), jets_event_sub[ijet].eta(), jets_event_sub[ijet].phi(), jets_event_sub[ijet].m());
+      jet_event_sub->SetLabel(ijet);
+      jet_event_sub->SetJetAcceptanceType(fJetTask->FindJetAcceptanceType(jet_event_sub->Eta(), jet_event_sub->Phi_0_2pi(), fJetTask->GetRadius()));
 
-      fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
-      jet_sub->SetArea(area.perp());
-      jet_sub->SetAreaEta(area.eta());
-      jet_sub->SetAreaPhi(area.phi());
-      jet_sub->SetAreaEmc(area.perp());
+      fastjet::PseudoJet area(fjw.GetEventSubJetAreaVector(ijet));
+      jet_event_sub->SetArea(area.perp()); //changed from area.perp()
+      jet_event_sub->SetAreaEta(area.eta());
+      jet_event_sub->SetAreaPhi(area.phi());
+      jet_event_sub->SetAreaEmc(area.perp());
       
       // Fill constituent info
-      std::vector<fastjet::PseudoJet> constituents_unsub(fjw.GetJetConstituents(ijet));
-      std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents();
-      fJetTask->FillJetConstituents(jet_sub, constituents_sub, constituents_unsub, 1, fParticlesSub);
+      std::vector<fastjet::PseudoJet> constituents_sub = jets_event_sub[ijet].constituents();
+      fJetTask->FillJetConstituents(jet_event_sub, constituents_sub, constituents_sub, 1, fParticlesSub);
       jetCount++;
     }
   }

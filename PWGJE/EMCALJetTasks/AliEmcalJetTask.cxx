@@ -146,6 +146,16 @@ void AliEmcalJetTask::InitUtilities()
   AliEmcalJetUtility *utility = 0;
   while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->Init();
 }
+/**
+ * This method is called before analyzing each event. It executes
+ * the InitEvent() method of all utilities (if any).
+ */
+void AliEmcalJetTask::InitEvent()
+{
+  TIter next(fUtilities);
+  AliEmcalJetUtility *utility = 0;
+  while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->InitEvent(fFastJetWrapper);
+}
 
 /**
  * This method is called in the event loop after jet finding but before filling
@@ -187,9 +197,9 @@ void AliEmcalJetTask::TerminateUtilities()
  */
 Bool_t AliEmcalJetTask::Run()
 {
+  InitEvent();
   // clear the jet array (normally a null operation)
   fJets->Delete();
-
   Int_t n = FindJets();
 
   if (n == 0) return kFALSE;
@@ -376,6 +386,7 @@ void AliEmcalJetTask::ExecOnce()
   fFastJetWrapper.SetAlgorithm(ConvertToFJAlgo(fJetAlgo));
   fFastJetWrapper.SetRecombScheme(ConvertToFJRecoScheme(fRecombScheme));
   fFastJetWrapper.SetMaxRap(1);
+ 
 
   // setting legacy mode
   if (fLegacyMode) {
@@ -383,6 +394,7 @@ void AliEmcalJetTask::ExecOnce()
   }
 
   InitUtilities();
+
 
   AliAnalysisTaskEmcal::ExecOnce();
 }

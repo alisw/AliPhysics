@@ -29,16 +29,21 @@ class AliFJWrapper
   fastjet::ClusterSequence*               GetClusterSequenceSA() const { return fClustSeqSA;               }
   fastjet::ClusterSequenceActiveAreaExplicitGhosts* GetClusterSequenceGhosts() const { return fClustSeqActGhosts; }
   const std::vector<fastjet::PseudoJet>&  GetInputVectors()    const { return fInputVectors;               }
+  const std::vector<fastjet::PseudoJet>&  GetEventSubInputVectors()    const { return fEventSubInputVectors;               }
   const std::vector<fastjet::PseudoJet>&  GetInputGhosts()     const { return fInputGhosts;                }
   const std::vector<fastjet::PseudoJet>&  GetInclusiveJets()   const { return fInclusiveJets;              }
+  const std::vector<fastjet::PseudoJet>&  GetEventSubJets()   const { return fEventSubJets;              }
   const std::vector<fastjet::PseudoJet>&  GetFilteredJets()    const { return fFilteredJets;               }
   std::vector<fastjet::PseudoJet>         GetJetConstituents(UInt_t idx) const;
+  std::vector<fastjet::PseudoJet>         GetEventSubJetConstituents(UInt_t idx) const;
   std::vector<fastjet::PseudoJet>         GetFilteredJetConstituents(UInt_t idx) const;
   Double_t                                GetMedianUsedForBgSubtraction() const { return fMedUsedForBgSub; }
   const char*                             GetName()            const { return fName;                       }
   const char*                             GetTitle()           const { return fTitle;                      }
   Double_t                                GetJetArea         (UInt_t idx) const;
+  Double_t                                GetEventSubJetArea         (UInt_t idx) const;
   fastjet::PseudoJet                      GetJetAreaVector   (UInt_t idx) const;
+  fastjet::PseudoJet                      GetEventSubJetAreaVector   (UInt_t idx) const;
   Double_t                                GetFilteredJetArea (UInt_t idx) const;
   fastjet::PseudoJet                      GetFilteredJetAreaVector(UInt_t idx) const;
   Double_t                                GetJetSubtractedPt (UInt_t idx) const;
@@ -63,6 +68,7 @@ class AliFJWrapper
   const std::vector<fastjet::PseudoJet>                      GetGroomedJets()            const {return fGroomedJets            ; }
   Int_t CreateGenSub();          // fastjet::contrib::GenericSubtractor
   Int_t CreateConstituentSub();  // fastjet::contrib::ConstituentSubtractor
+  Int_t CreateEventConstituentSub(); //fastjet::contrib::ConstituentSubtractor
   Int_t CreateSoftDrop();
 #endif
   virtual std::vector<double>                                GetGRNumerator()                     const { return fGRNumerator                    ; }
@@ -87,6 +93,7 @@ class AliFJWrapper
   virtual Int_t DoGenericSubtractionJet3subjettiness_kt();
   virtual Int_t DoGenericSubtractionJetOpeningAngle_kt();
   virtual Int_t DoConstituentSubtraction();
+  virtual Int_t DoEventConstituentSubtraction();
   virtual Int_t DoSoftDrop();
   
   void SetName(const char* name)        { fName           = name;    }
@@ -114,13 +121,18 @@ class AliFJWrapper
   void SetRMaxAndStep(Double_t rmax, Double_t dr) {fRMax = rmax; fDRStep = dr; }
   void SetRhoRhom (Double_t rho, Double_t rhom) { fUseExternalBkg = kTRUE; fRho = rho; fRhom = rhom;} // if using rho,rhom then fUseExternalBkg is true
   void SetMinJetPt(Double_t MinPt) {fMinJetPt=MinPt;}
+  void SetEventSub(Bool_t b) {fEventSub = b;}
+  void SetMaxDelR(Double_t r)  {fUseMaxDelR = kTRUE; fMaxDelR = r;}
 
  protected:
   TString                                fName;               //!
   TString                                fTitle;              //!
   std::vector<fastjet::PseudoJet>        fInputVectors;       //!
+  std::vector<fastjet::PseudoJet>        fEventSubInputVectors;       //!
+  std::vector<fastjet::PseudoJet>        fEventSubCorrectedVectors;       //!
   std::vector<fastjet::PseudoJet>        fInputGhosts;        //!
   std::vector<fastjet::PseudoJet>        fInclusiveJets;      //!
+  std::vector<fastjet::PseudoJet>        fEventSubJets;      //!
   std::vector<fastjet::PseudoJet>        fFilteredJets;       //!
   std::vector<double>                    fSubtractedJetsPt;   //!
   std::vector<fastjet::PseudoJet>        fConstituentSubtrJets; //!
@@ -136,6 +148,7 @@ class AliFJWrapper
   fastjet::Selector                     *fRange;              //!
 #endif
   fastjet::ClusterSequenceArea          *fClustSeq;           //!
+  fastjet::ClusterSequenceArea          *fClustSeqES;           //!
   fastjet::ClusterSequence              *fClustSeqSA;                //!
   fastjet::ClusterSequenceActiveAreaExplicitGhosts *fClustSeqActGhosts; //!
   fastjet::Strategy                      fStrategy;           //!
@@ -158,11 +171,15 @@ class AliFJWrapper
   // condition to stop the grooming (rejection of soft splitting) z > fZcut theta^fBeta
   Double_t                               fZcut;               // fZcut = 0.1                
   Double_t                               fBeta;               // fBeta = 0
+  Bool_t                                 fEventSub;
+  Bool_t                                 fUseMaxDelR;
+  Double_t                               fMaxDelR;
 #ifdef FASTJET_VERSION
   fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;    //!
   //from contrib package
   fastjet::contrib::GenericSubtractor     *fGenSubtractor;    //!
   fastjet::contrib::ConstituentSubtractor *fConstituentSubtractor;    //!
+  fastjet::contrib::ConstituentSubtractor *fEventConstituentSubtractor;    //!
   fastjet::contrib::SoftDrop              *fSoftDrop;        //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetMass;        //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRNum;          //!
@@ -215,8 +232,11 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
     fName              (name)
   , fTitle             (title)
   , fInputVectors      ( )
+  , fEventSubInputVectors      ( )
+  , fEventSubCorrectedVectors      ( )
   , fInputGhosts       ( )
   , fInclusiveJets     ( )
+  , fEventSubJets     ( )
   , fFilteredJets      ( )
   , fSubtractedJetsPt  ( )
   , fConstituentSubtrJets ( )
@@ -228,6 +248,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fPlugin            (0)
   , fRange             (0)
   , fClustSeq          (0)
+  , fClustSeqES        (0)
   , fClustSeqSA        (0)
   , fClustSeqActGhosts (0)
   , fStrategy          (fj::Best)
@@ -246,10 +267,14 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fUseArea4Vector    (kFALSE)
   , fZcut(0.1)
   , fBeta(0)
+  , fEventSub          (kFALSE)
+  , fUseMaxDelR        (kFALSE)
+  , fMaxDelR           (0.4)
 #ifdef FASTJET_VERSION
   , fBkrdEstimator     (0)
   , fGenSubtractor     (0)
   , fConstituentSubtractor (0)
+  , fEventConstituentSubtractor (0)    
   , fGenSubtractorInfoJetMass ( )
   , fGenSubtractorInfoGRNum ( )
   , fGenSubtractorInfoGRDen ( )
@@ -266,7 +291,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
 #endif
   , fDoFilterArea      (false)
   , fLegacyMode        (false)
-  , fUseExternalBkg    (false)
+  , fUseExternalBkg    (false) 
   , fRho               (0)
   , fRhom              (0)
   , fRMax(2.)
@@ -297,6 +322,7 @@ void AliFJWrapper::ClearMemory()
   if (fPlugin)            { delete fPlugin;            fPlugin          = NULL; }
   if (fRange)             { delete fRange;             fRange           = NULL; }
   if (fClustSeq)          { delete fClustSeq;          fClustSeq        = NULL; }
+  if (fClustSeqES)          { delete fClustSeqES;        fClustSeqES        = NULL; }
   if (fClustSeqSA)        { delete fClustSeqSA;        fClustSeqSA        = NULL; }
   if (fClustSeqActGhosts) { delete fClustSeqActGhosts; fClustSeqActGhosts = NULL; }
   #ifdef FASTJET_VERSION
@@ -343,6 +369,7 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
   // Reset the median to zero.
 
   fInputVectors.clear();
+  fEventSubInputVectors.clear();
   fInputGhosts.clear();
   fMedUsedForBgSub = 0;
 
@@ -356,6 +383,7 @@ void AliFJWrapper::RemoveLastInputVector()
   // Remove last input vector
 
   fInputVectors.pop_back();
+  fEventSubInputVectors.pop_back();
 }
 
 //_________________________________________________________________________________________________
@@ -374,6 +402,8 @@ void AliFJWrapper::AddInputVector(Double_t px, Double_t py, Double_t pz, Double_
 
   // add to the fj container of input vectors
   fInputVectors.push_back(inVec);
+  if(fEventSub)   fEventSubInputVectors.push_back(inVec);
+  
 }
 
 //_________________________________________________________________________________________________
@@ -392,6 +422,7 @@ void AliFJWrapper::AddInputVector(const fj::PseudoJet& vec, Int_t index)
 
   // add to the fj container of input vectors
   fInputVectors.push_back(inVec);
+  //if(fEventSub) fEventSubInputVectors.push_back(inVec);
 }
 
 //_________________________________________________________________________________________________
@@ -406,6 +437,16 @@ void AliFJWrapper::AddInputVectors(const std::vector<fj::PseudoJet>& vecs, Int_t
     // add to the fj container of input vectors
     fInputVectors.push_back(inVec);
   }
+  //Is this correct?
+  /* if(fEventSub){
+    for (UInt_t i = 0; i < vecs.size(); ++i) {
+    fj::PseudoJet inVec = vecs[i];
+    if (offsetIndex > -99999)
+      inVec.set_user_index(fEventSubInputVectors.size() + offsetIndex);
+    // add to the fj container of input vectors
+    fEventSubInputVectors.push_back(inVec);
+  }
+  }*/
 }
 
 //_________________________________________________________________________________________________
@@ -441,6 +482,19 @@ Double_t AliFJWrapper::GetJetArea(UInt_t idx) const
 }
 
 //_________________________________________________________________________________________________
+Double_t AliFJWrapper::GetEventSubJetArea(UInt_t idx) const
+{
+  // Get the jet area.
+
+  Double_t retval = -1; // really wrong area..
+  if ( idx < fEventSubJets.size() ) {
+    retval = fClustSeqES->area(fEventSubJets[idx]);
+  } else {
+    AliError(Form("[e] ::GetJetArea wrong index: %d",idx));
+  }
+  return retval;
+}
+//_________________________________________________________________________________________________
 Double_t AliFJWrapper::GetFilteredJetArea(UInt_t idx) const
 {
   // Get the filtered jet area.
@@ -461,6 +515,19 @@ fastjet::PseudoJet AliFJWrapper::GetJetAreaVector(UInt_t idx) const
   fastjet::PseudoJet retval;
   if ( idx < fInclusiveJets.size() ) {
     retval = fClustSeq->area_4vector(fInclusiveJets[idx]);
+  } else {
+    AliError(Form("[e] ::GetJetArea wrong index: %d",idx));
+  }
+  return retval;
+}
+
+//_________________________________________________________________________________________________
+fastjet::PseudoJet AliFJWrapper::GetEventSubJetAreaVector(UInt_t idx) const
+{
+  // Get the jet area as vector.
+  fastjet::PseudoJet retval;
+  if ( idx < fEventSubJets.size() ) {
+    retval = fClustSeqES->area_4vector(fEventSubJets[idx]);
   } else {
     AliError(Form("[e] ::GetJetArea wrong index: %d",idx));
   }
@@ -515,6 +582,23 @@ AliFJWrapper::GetJetConstituents(UInt_t idx) const
 
   if ( idx < fInclusiveJets.size() ) {
     retval = fClustSeq->constituents(fInclusiveJets[idx]);
+  } else {
+    AliError(Form("[e] ::GetJetConstituents wrong index: %d",idx));
+  }
+
+  return retval;
+}
+
+//_________________________________________________________________________________________________
+std::vector<fastjet::PseudoJet>
+AliFJWrapper::GetEventSubJetConstituents(UInt_t idx) const
+{
+  // Get jets constituents.
+
+  std::vector<fastjet::PseudoJet> retval;
+
+  if ( idx < fEventSubJets.size() ) {
+    retval = fClustSeqES->constituents(fEventSubJets[idx]);
   } else {
     AliError(Form("[e] ::GetJetConstituents wrong index: %d",idx));
   }
@@ -624,6 +708,10 @@ Int_t AliFJWrapper::Run()
 
   try {
     fClustSeq = new fj::ClusterSequenceArea(fInputVectors, *fJetDef, *fAreaDef);
+    if(fEventSub){
+      DoEventConstituentSubtraction();
+      fClustSeqES = new fj::ClusterSequenceArea(fEventSubCorrectedVectors, *fJetDef, *fAreaDef);
+    }
   } catch (fj::Error) {
     AliError(" [w] FJ Exception caught.");
     return -1;
@@ -638,7 +726,9 @@ Int_t AliFJWrapper::Run()
 
   // inclusive jets:
   fInclusiveJets.clear();
+  fEventSubJets.clear();
   fInclusiveJets = fClustSeq->inclusive_jets(0.0);
+  if(fEventSub) fEventSubJets  = fClustSeqES->inclusive_jets(0.0);
 
   return 0;
 }
@@ -1043,6 +1133,20 @@ Int_t AliFJWrapper::DoConstituentSubtraction() {
 }
 
 //_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoEventConstituentSubtraction() {
+  //Do constituent subtraction
+#ifdef FASTJET_VERSION
+  CreateEventConstituentSub();
+  if(fUseMaxDelR) fEventConstituentSubtractor->set_max_standardDeltaR(fMaxDelR);
+  fEventSubCorrectedVectors = fEventConstituentSubtractor->subtract_event(fEventSubInputVectors,fMaxRap); //second argument max rap?
+  //clear constituent subtracted jets
+  if(fEventConstituentSubtractor) { delete fEventConstituentSubtractor; fEventConstituentSubtractor = NULL; }
+  
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
 Int_t AliFJWrapper::DoSoftDrop() {
   //Do grooming
 #ifdef FASTJET_VERSION
@@ -1113,6 +1217,20 @@ Int_t AliFJWrapper::CreateConstituentSub() {
   // ConstituentSubtractor(double rho, double rhom=0, double alpha=0, double maxDeltaR=-1)
   if (fUseExternalBkg) { fConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fRho,fRhom); }
   else                 { fConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fBkrdEstimator); }
+
+  #endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::CreateEventConstituentSub() {
+  //Do generic subtraction for jet mass
+  #ifdef FASTJET_VERSION
+  if (fEventConstituentSubtractor) { delete fEventConstituentSubtractor; } // protect against memory leaks
+  // see ConstituentSubtractor.hh signatures
+  // ConstituentSubtractor(double rho, double rhom=0, double alpha=0, double maxDeltaR=-1)
+  if (fUseExternalBkg)  fEventConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fRho,fRhom); 
+  else                  fEventConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fBkrdEstimator); 
 
   #endif
   return 0;

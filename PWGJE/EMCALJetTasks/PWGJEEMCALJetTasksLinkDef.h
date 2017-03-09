@@ -207,6 +207,7 @@
 #pragma link C++ class AliEmcalJetUtility+;
 #pragma link C++ class AliEmcalJetUtilityGenSubtractor+;
 #pragma link C++ class AliEmcalJetUtilityConstSubtractor+;
+#pragma link C++ class AliEmcalJetUtilityEventSubtractor+;
 #pragma link C++ class AliEmcalJetUtilitySoftDrop+;
 #pragma link C++ class AliEmcalJetTask+;
 #pragma link C++ class AliEmcalJetFinder+;
