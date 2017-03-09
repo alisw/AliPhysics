@@ -70,40 +70,6 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
       if(filecorrectionfactors) filecorrectionfactors->Close();
     }
 
-  Printf ("Loading Runwise Parameters from file");
-
-  TFile * filecorrectionfactors =TFile::Open(PathToRunwiseCorrectionParameters.Data());
-  AliOADBContainer * tmp_container = (AliOADBContainer*) (filecorrectionfactors->Get("MeanSigmaImpParFactors"));
-  jetTask->SetAODBContainer(tmp_container);
-  if(filecorrectionfactors) filecorrectionfactors->Close();
-  Printf("Loading udg Resolution function for jet probability tagger");
-  TFile * fileResFunction =TFile::Open(PathToJetProbabilityInput.Data(),"READ");
-  if(!fileResFunction) {Printf("ERRORfile");return 0x0;}
-  TGraph * fct =0x0;
-  fct=(TGraph*)(fileResFunction->Get("ITS6;1"));
-  if(!fct) {Printf("ERROR1");return 0x0;}
-  jetTask->SetResFunction(fct,0);
-  fct=(TGraph*)(fileResFunction->Get("ITS5b"));
-  if(!fct) {Printf("ERROR2");return 0x0;}
-  jetTask->SetResFunction(fct,1);
-  fct=(TGraph*)(fileResFunction->Get("ITS4b"));
-  if(!fct) {Printf("ERROR3");return 0x0;}
-  jetTask->SetResFunction(fct,2);
-  fct=(TGraph*)(fileResFunction->Get("ITS5a"));
-  if(!fct) {Printf("ERROR4");return 0x0;}
-  jetTask->SetResFunction(fct,3);
-  fct=(TGraph*)(fileResFunction->Get("ITS4a"));
-  if(!fct) {Printf("ERROR5");return 0x0;}
-  jetTask->SetResFunction(fct,4);
-
-
-
-  Printf("DONE");
-
-  if(fileResFunction) fileResFunction->Close();
-
-  jetTask->setN_ITSClusters_Input_global(nITSReq);
-  jetTask->EnableCorrectionSamplingMode(GenerateMeanSigmaCorrectionTable);
   AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
 
@@ -136,12 +102,26 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
   DefineCutsTaskpp(jetTask,-1.,100);
   if(IsESD) {
       jetTask->SetRunESD();
-      AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
-      esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
-      esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
-      esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+      AliESDtrackCuts * trackCuts = new AliESDtrackCuts();
+      // trackCuts->SetMaxFractionSharedTPCClusters(0.4);
+      // TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
+    //trackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep, 100);
+      trackCuts->SetMinNClustersTPC(100);
+      trackCuts->SetMaxChi2PerClusterTPC(20);
+    //  trackCuts->SetRequireITSStandAlone(kTRUE);
+     // trackCuts->SetRequireITSPureStandAlone(kTRUE);
 
-      jetTask->SetESDCuts(new AliESDtrackCuts(*esdTrackCutsH));
+      trackCuts->SetAcceptKinkDaughters(kFALSE);
+      trackCuts->SetRequireTPCRefit(kTRUE);
+      trackCuts->SetRequireITSRefit(kTRUE);
+      trackCuts->SetMaxChi2PerClusterITS(4);
+      trackCuts->SetEtaRange(-0.9, 0.9);
+      //trackCuts->SetMaxRel1PtUncertainty(100.);
+      trackCuts->SetPtRange(1., 1000000.0);
+     // trackCuts->SetDCAToVertex2D(kTRUE);
+     // trackCuts->SetMaxDCAToVertexZ(1E10);
+     // trackCuts->SetMaxDCAToVertexXY(1E10);
+      jetTask->SetESDCuts(new AliESDtrackCuts(*trackCuts));
     }
 
   //-------------------------------------------------------
@@ -155,14 +135,14 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
 
   TString contname(combinedName);
   contname += "_histos";
+
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                             TList::Class(),AliAnalysisManager::kOutputContainer,
                                                             Form("%s", AliAnalysisManager::GetCommonFileName()));
-
-  mgr->ConnectInput  (jetTask, 0,  cinput1 );
-
-  mgr->ConnectOutput (jetTask, 1, coutput1 );
-
+    
+    mgr->ConnectInput  (jetTask, 0,  cinput1 );
+    
+    mgr->ConnectOutput (jetTask, 1, coutput1 );
 
 
   return jetTask;
