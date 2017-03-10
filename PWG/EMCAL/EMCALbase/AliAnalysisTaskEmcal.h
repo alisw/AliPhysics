@@ -24,6 +24,7 @@ class AliAODInputHandler;
 class AliESDInputHandler;
 
 #include "Rtypes.h"
+#include "TArrayI.h"
 
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
@@ -159,6 +160,24 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
   void                        SetIsHerwig(Bool_t i)                                 { fIsHerwig          = i                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
+
+  /**
+   * @brief Set the number of \f$ p_{t}\$-hard bins
+   * @param[in] nbins Number of \f$ p_{t}\$-hard bins
+   */
+  void                        SetNumberOfPtHardBins(Int_t nbins)                    { fNPtHardBins = nbins; }
+
+  /**
+   * @brief Set a non-standard \f$ p_{t}\$-hard binning
+   *
+   * The array reflects the bin limits, therefore the size must
+   * match the number of \f$ p_{t}\$-hard bins + 1, otherwise
+   * the binning is not used in order to create the bin labels
+   *
+   * @param[in] binning Non-standard binning to be applied
+   */
+  void                        SetUserPtHardBinning(const TArrayI &binning)          { fPtHardBinning = binning; }
+
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
@@ -347,8 +366,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   BeamType                    fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   AliGenHerwigEventHeader    *fHerwigHeader;               //!<!event Herwig header
-  Double_t                    fPtHard;                     //!<!event pt hard
-  Int_t                       fPtHardBin;                  //!<!event pt hard bin
+  Double_t                    fPtHard;                     //!<!event \f$ p_{t}\f$-hard
+  Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
+  Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
+  TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
   AliEmcalPythiaInfo         *fPythiaInfo;                 //!<!event parton info

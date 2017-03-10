@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <RVersion.h>
+#include <iostream>
 #include <memory>
 
 #include <TClonesArray.h>
@@ -136,6 +137,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHerwigHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
+  fNPtHardBins(11),
+  fPtHardBinning(),
   fNTrials(0),
   fXsection(0),
   fPythiaInfo(nullptr),
@@ -249,6 +252,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHerwigHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
+  fNPtHardBins(11),
+  fPtHardBinning(),
   fNTrials(0),
   fXsection(0),
   fPythiaInfo(0),
@@ -414,47 +419,68 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     return;
 
   if (fIsPythia || fIsHerwig) {
-    fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", 11, 0, 11);
+    fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", fNPtHardBins, 0, fNPtHardBins);
     fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
     fOutput->Add(fHistTrialsAfterSel);
 
-    fHistEventsAfterSel = new TH1F("fHistEventsAfterSel", "fHistEventsAfterSel", 11, 0, 11);
+    fHistEventsAfterSel = new TH1F("fHistEventsAfterSel", "fHistEventsAfterSel", fNPtHardBins, 0, fNPtHardBins);
     fHistEventsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistEventsAfterSel->GetYaxis()->SetTitle("total events");
     fOutput->Add(fHistEventsAfterSel);
 
-    fHistXsectionAfterSel = new TProfile("fHistXsectionAfterSel", "fHistXsectionAfterSel", 11, 0, 11);
+    fHistXsectionAfterSel = new TProfile("fHistXsectionAfterSel", "fHistXsectionAfterSel", fNPtHardBins, 0, fNPtHardBins);
     fHistXsectionAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionAfterSel);
 
-    fHistTrials = new TH1F("fHistTrials", "fHistTrials", 11, 0, 11);
+    fHistTrials = new TH1F("fHistTrials", "fHistTrials", fNPtHardBins, 0, fNPtHardBins);
     fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
     fOutput->Add(fHistTrials);
 
-    fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0, 11);
+    fHistEvents = new TH1F("fHistEvents", "fHistEvents", fNPtHardBins, 0, fNPtHardBins);
     fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistEvents->GetYaxis()->SetTitle("total events");
     fOutput->Add(fHistEvents);
 
-    fHistXsection = new TProfile("fHistXsection", "fHistXsection", 11, 0, 11);
+    fHistXsection = new TProfile("fHistXsection", "fHistXsection", fNPtHardBins, 0, fNPtHardBins);
     fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistXsection->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsection);
 
-    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-
-    for (Int_t i = 1; i < 12; i++) {
-      fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistEventsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-
-      fHistTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+    // Set the bin labels
+    Bool_t binningAvailable = false;
+    if(fPtHardBinning.GetSize() > 0) {
+      AliInfoStream() << "Using custom pt-hard binning" << std::endl;
+      if(fPtHardBinning.GetSize() == fNPtHardBins + 1) binningAvailable = true;
+      else AliErrorStream() << "Pt-hard binning (" << fPtHardBinning.GetSize() -1 << ") does not match the amount of bins (" << fNPtHardBins << ")" << std::endl;
+    } else {
+      // Check if we fall back to the default binning
+      if(fNPtHardBins == 11) {
+        AliInfoStream() << "11 pt-hard bins - fall back to default binning for bin labels" << std::endl;
+        const Int_t kDefaultPtHardBinning[12] = {0,5,11,21,36,57, 84,117,152,191,234,1000000};
+        fPtHardBinning.Set(12);
+        for(Int_t ib = 0; ib < 12; ib++) fPtHardBinning[ib] = kDefaultPtHardBinning[ib];
+        binningAvailable = true;
+      } else {
+        AliErrorStream() << "No default binning available for " << fNPtHardBins << " pt-hard bins - bin labels will not be set." << std::endl;
+      }
     }
+
+    if(binningAvailable){
+      for (Int_t i = 0; i < fNPtHardBins; i++) {
+        fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistEventsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+
+        fHistTrials->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistXsection->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistEvents->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+      }
+    } else {
+      AliErrorStream() << "No suitable binning available - skipping bin labels" << std::endl;
+    }
+
 
     fHistPtHard = new TH1F("fHistPtHard", "fHistPtHard", fNbins*2, fMinBinPt, fMaxBinPt*4);
     fHistPtHard->GetXaxis()->SetTitle("p_{T,hard} (GeV/c)");
@@ -805,9 +831,7 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
 
-  // TODO: Workaround
-  if ((pthardbin < 0) || (pthardbin > 10)) pthardbin = 0;
-
+  if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)) pthardbin = 0;
   fHistTrials->Fill(pthardbin, trials);
   fHistXsection->Fill(pthardbin, xsection);
   fHistEvents->Fill(pthardbin, nevents);
@@ -1486,28 +1510,27 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   if (fPythiaHeader) {
     fPtHard = fPythiaHeader->GetPtHard();
 
-    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-    for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
-      if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
-        break;
+    if(fPtHardBinning.GetSize()){
+      // pt-hard binning defined for the corresponding dataset - automatically determine the bin
+      for (fPtHardBin = 0; fPtHardBin < fNPtHardBins; fPtHardBin++) {
+        if (fPtHard >= fPtHardBinning[fPtHardBin] && fPtHard < fPtHardBinning[fPtHardBin+1])
+          break;
+      }
+    } else {
+      // No pt-hard binning defined for the dataset - leaving the bin to 0
+      fPtHardBin = 0;
     }
 
     fXsection = fPythiaHeader->GetXsection();
     fNTrials = fPythiaHeader->Trials();
   }
 
-
-
-    if (fIsHerwig) {
-  
+  if (fIsHerwig) {
     if (MCEvent()) {
       fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(MCEvent()->GenEventHeader());
-      
      
       if (!fHerwigHeader) {
         // Check if AOD
-
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
@@ -1521,13 +1544,17 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   }
 
    if (fHerwigHeader) {
-      fPtHard = fHerwigHeader->GetPtHard();
+    fPtHard = fHerwigHeader->GetPtHard();
 
-    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-    for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
-      if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
-        break;
+    if(fPtHardBinning.GetSize()){
+      // pt-hard binning defined for the corresponding dataset - automatically determine the bin
+      for (fPtHardBin = 0; fPtHardBin < fNPtHardBins; fPtHardBin++) {
+        if (fPtHard >= fPtHardBinning[fPtHardBin] && fPtHard < fPtHardBinning[fPtHardBin+1])
+          break;
+      }
+    } else {
+      // No pt-hard binning defined for the dataset - leaving the bin to 0
+      fPtHardBin = 0;
     }
     fXsection = fHerwigHeader->Weight();
     fNTrials = fHerwigHeader->Trials();
