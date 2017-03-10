@@ -1716,6 +1716,20 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
 
   fTPCParam->SetZeroSup(0);
 
+  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParamFromGRP(); // RS event specie will be selected according to GRP
+  //  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
+  //
+  if (tpcrecoparam->GetUseCorrectionMap()) {
+    AliTPCTransform* transform = (AliTPCTransform*) calib->GetTransform();
+    transform->SetCurrentRecoParam(tpcrecoparam);
+    transform->SetCorrectionMapMode(kFALSE); // set distortion mode
+    transform->SetCurrentTimeStamp(fLoader->GetRunLoader()->GetHeader()->GetTimeStamp()); // force to upload time dependent maps
+    float strFluct = tpcrecoparam->GetDistortionFluctMCAmp() *gRandom->Gaus(); // RSTMP
+    AliInfoF("Impose %+.2f fluctuation for distortion map in event %d",strFluct,eventnumber);
+    transform->SetCurrentMapFluctStrenght(strFluct);
+  }
+  
   for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
     if (IsSectorActive(isec)) {
       Hits2DigitsSector(isec);
