@@ -4,6 +4,8 @@
 
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
+# I am tired of adding useless comments here and there!
+
 project(AliPhysics CXX C)
 enable_testing()
 
