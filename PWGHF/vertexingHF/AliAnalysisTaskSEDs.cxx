@@ -66,6 +66,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fHistSelV0multNTPCout(0),
   fNtupleDs(0),
   fFillNtuple(0),
+  fSystem(0),
   fReadMC(kFALSE),
   fWriteOnlySignal(kFALSE),
   fDoCutVarHistos(kTRUE),
@@ -88,9 +89,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fAnalysisCuts(0),
   fnSparse(0),
   fnSparseIP(0),
-  fImpParSparse(0),
-  fImpParSparseMC(0),
-  fSystem(0)
+  fImpParSparse(0x0),
+  fImpParSparseMC(0x0)
 {
   /// Default constructor
     
@@ -149,6 +149,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fHistSelV0multNTPCout(0),
   fNtupleDs(0),
   fFillNtuple(fillNtuple),
+  fSystem(0),
   fReadMC(kFALSE),
   fWriteOnlySignal(kFALSE),
   fDoCutVarHistos(kTRUE),
@@ -171,9 +172,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fAnalysisCuts(analysiscuts),
   fnSparse(0),
   fnSparseIP(0),
-  fImpParSparse(0),
-  fImpParSparseMC(0),
-  fSystem(0)
+  fImpParSparse(0x0),
+  fImpParSparseMC(0x0)
 {
   /// Default constructor
   /// Output slot #1 writes into a TList container
@@ -306,10 +306,6 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
         
     delete fnSparse;
     delete fnSparseIP;
-    if(fFillImpParSparse) {
-      delete fImpParSparse;
-      delete fImpParSparse;
-    }
     for (Int_t i=0; i<4; i++) {
       delete fnSparseMC[i];
       if(fFillSparseDplus)delete fnSparseMCDplus[i];
@@ -639,31 +635,6 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 	fnSparse->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
       }
       fOutput->Add(fnSparse);
-    }
-  }
-    
-  if(fFillImpParSparse) {
-    Int_t nBinsImpPar[3]   = { 20,   200,  350};
-    Double_t xminImpPar[3] = { 0.,    0.,  1.6};
-    Double_t xmaxImpPar[3] = {20., 1000.,  2.3};
-    TString axisImpPar[3]  = {"Pt","imp.par. (#mum)","invMassDsAllPhi"};
-    if(!fReadMC) {
-      fImpParSparse = new THnSparseF("fImpParSparse","ImpParSparse", 3, nBinsImpPar, xminImpPar, xmaxImpPar);
-      for (Int_t j=0; j<3; j++) {
-	fImpParSparse->GetAxis(j)->SetTitle(Form("%s",axisImpPar[j].Data()));
-      }
-      fOutput->Add(fImpParSparse);
-    }
-    else {
-      nBinsImpPar[2] = 3;
-      xminImpPar[2]  = 0.;
-      xmaxImpPar[2]  = 3.;
-      axisImpPar[2]  = "candType (0.5=bkg; 1.5=prompt; 2.5=FD)";
-      fImpParSparseMC  = new THnSparseF("fImpParSparseMC","ImpParSparseMC", 3, nBinsImpPar, xminImpPar, xmaxImpPar);
-      for (Int_t j=0; j<3; j++) {
-	fImpParSparseMC->GetAxis(j)->SetTitle(Form("%s",axisImpPar[j].Data()));
-      }
-      fOutput->Add(fImpParSparseMC);
     }
   }
     
@@ -1025,17 +996,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    }
 	    if(isK0starKKpi) fMassHistK0st[indexMCKKpi]->Fill(invMass,weightKKpi);
 	  }
-	  if(isPhiKKpi && fFillImpParSparse) {
-            Double_t impParxy = d->ImpParXY()*10000.;
-            if(!fReadMC) {
-	      Double_t array4ImpPar[3] = {ptCand,impParxy,invMass};
-	      fImpParSparse->Fill(array4ImpPar);
-            }
-            else {
-	      Double_t array4ImpPar[3] = {ptCand,impParxy,candType};
-	      fImpParSparseMC->Fill(array4ImpPar);
-            }
-	  }
 	}
 	if(ispiKK){
 	  if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,2,iPtBin);
@@ -1072,17 +1032,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      }
 	    }
 	    if(isK0starpiKK) fMassHistK0st[indexMCpiKK]->Fill(invMass,weightpiKK);
-	  }
-	  if(isPhipiKK && fFillImpParSparse) {
-            Double_t impParxy = d->ImpParXY()*10000.;
-            if(!fReadMC) {
-	      Double_t array4ImpPar[3] = {ptCand,impParxy,invMass};
-	      fImpParSparse->Fill(array4ImpPar);
-            }
-            else {
-	      Double_t array4ImpPar[3] = {ptCand,impParxy,candType};
-	      fImpParSparseMC->Fill(array4ImpPar);
-            }
 	  }
 	}
                 
@@ -1139,7 +1088,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 		if(candType==1.5) fnSparseMC[2]->Fill(var4nSparse);
 		if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
 	      }
-	      else if(fFillSparseDplus && labDplus>=0 && pdgCode0==321) {
+	      else if(labDplus>=0 && pdgCode0==321) {
 		if(candType==1.5) fnSparseMCDplus[2]->Fill(var4nSparse);
 		if(candType==2.5) fnSparseMCDplus[3]->Fill(var4nSparse);
 	      }
@@ -1178,7 +1127,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 		if(candType==1.5) fnSparseMC[2]->Fill(var4nSparse);
 		if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
 	      }
-	      else if(fFillSparseDplus && labDplus>=0 && pdgCode0==211) {
+	      else if(labDplus>=0 && pdgCode0==211) {
 		if(candType==1.5) fnSparseMCDplus[2]->Fill(var4nSparse);
 		if(candType==2.5) fnSparseMCDplus[3]->Fill(var4nSparse);
 	      }
@@ -1483,15 +1432,12 @@ void AliAnalysisTaskSEDs::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, 
     Px = 0.;
     Py = 0.;
     Pz = 0.;
-    Double_t theta = 0.;
-    theta = TMath::ATan(PyProng[idPion]/PxProng[idPion]);
-    if (PxProng[idPion]<0.) theta += TMath::Pi();
-    theta += TMath::Pi()*(5/6 + 1/27*i);
-        
-    PxProng[idPion] = PtProng[idPion]*TMath::Cos(theta);
-    PyProng[idPion] = PtProng[idPion]*TMath::Sin(theta);
-    P2Prong[idPion] = PtProng[idPion]*PtProng[idPion] + PzProng[idPion]*PzProng[idPion];
-        
+      
+    Double_t phirot=TMath::Pi()*(5/6.+1/27.*i);
+
+    PxProng[idPion] = PxProng[idPion]*TMath::Cos(phirot)-PyProng[idPion]*TMath::Sin(phirot);
+    PyProng[idPion] = PxProng[idPion]*TMath::Sin(phirot)+PyProng[idPion]*TMath::Cos(phirot);
+
     for (Int_t j=0; j<nprongs; j++) {
       Px += PxProng[j];
       Py += PyProng[j];
