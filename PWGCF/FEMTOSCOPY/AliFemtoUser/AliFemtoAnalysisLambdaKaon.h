@@ -193,6 +193,7 @@ struct ESDCutParams
   double maxITSChiNdof;
   double maxTPCChiNdof;
   double maxSigmaToVertex;
+  double minImpactXY;
   double maxImpactXY;
   double maxImpactZ;
 

@@ -901,6 +901,7 @@ AliFemtoESDTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateESDCut(ESDCut
   tESDCut->SetMaxITSChiNdof(aCutParams.maxITSChiNdof);
   tESDCut->SetMaxTPCChiNdof(aCutParams.maxTPCChiNdof);
   tESDCut->SetMaxSigmaToVertex(aCutParams.maxSigmaToVertex);
+  tESDCut->SetMinImpactXY(aCutParams.minImpactXY);
   tESDCut->SetMaxImpactXY(aCutParams.maxImpactXY);
   tESDCut->SetMaxImpactZ(aCutParams.maxImpactZ);
 
@@ -1746,6 +1747,7 @@ AliFemtoAnalysisLambdaKaon::DefaultKchCutParams(int aCharge)
   tReturnParams.maxITSChiNdof = 3.0;
   tReturnParams.maxTPCChiNdof = 4.0;
   tReturnParams.maxSigmaToVertex = 3.0;
+  tReturnParams.minImpactXY = -1000.0;
   tReturnParams.maxImpactXY = 2.4;
   tReturnParams.maxImpactZ = 3.0;
 
@@ -1791,6 +1793,7 @@ AliFemtoAnalysisLambdaKaon::DefaultPiCutParams(int aCharge)
   tReturnParams.maxITSChiNdof = 3.0;
   tReturnParams.maxTPCChiNdof = 2.0;
   tReturnParams.maxSigmaToVertex = 3.0;
+  tReturnParams.minImpactXY = -1000.0;
   tReturnParams.maxImpactXY = 2.4;
   tReturnParams.maxImpactZ = 3.2;
 
@@ -1991,6 +1994,7 @@ AliFemtoAnalysisLambdaKaon::LambdaPurityPiCutParams(int aCharge)
   tReturnParams.maxITSChiNdof = 1000;
   tReturnParams.maxTPCChiNdof = 1000;
   tReturnParams.maxSigmaToVertex = 1000;
+  tReturnParams.minImpactXY = 0.3;
   tReturnParams.maxImpactXY = 1000;  //TODO may need adjusted
   tReturnParams.maxImpactZ = 1000;  //TODO may need adjusted
 
@@ -2050,6 +2054,7 @@ AliFemtoAnalysisLambdaKaon::K0ShortPurityPiCutParams(int aCharge)
   tReturnParams.maxITSChiNdof = 1000;
   tReturnParams.maxTPCChiNdof = 1000;
   tReturnParams.maxSigmaToVertex = 1000;
+  tReturnParams.minImpactXY = 0.3;
   tReturnParams.maxImpactXY = 1000;  //TODO may need adjusted
   tReturnParams.maxImpactZ = 1000;  //TODO may need adjusted
 
@@ -2113,6 +2118,7 @@ AliFemtoAnalysisLambdaKaon::LambdaPurityProtonCutParams(int aCharge)
   tReturnParams.maxITSChiNdof = 1000;
   tReturnParams.maxTPCChiNdof = 1000;
   tReturnParams.maxSigmaToVertex = 1000;
+  tReturnParams.minImpactXY = 0.1;
   tReturnParams.maxImpactXY = 1000;  //TODO may need adjusted
   tReturnParams.maxImpactZ = 1000;  //TODO may need adjusted
 
