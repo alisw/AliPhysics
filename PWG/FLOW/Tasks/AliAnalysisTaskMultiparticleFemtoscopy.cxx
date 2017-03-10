@@ -2490,6 +2490,11 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunct
   } // for(Int_t q=0;q<2;q++) // Q2 and Q3
  } // for(Int_t t=0;t<nTests;t++)
 
+ for(Int_t t=0;t<2;t++)
+ {
+  fSignalYieldTEST[t] = NULL;
+ }
+
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunctionsTEST()
 
 //=======================================================================================================================
@@ -2526,6 +2531,11 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackgroundTEST()
   fGlobalTracksAODTEST[me] = NULL;
  }
 
+ for(Int_t t=0;t<2;t++)
+ {
+  fBackgroundYieldTEST[t] = NULL;
+ }
+
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackgroundTEST()
 
 //=======================================================================================================================
@@ -2535,7 +2545,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  // Book everything for test correlation functions.
 
  // a) Book the profile holding all the flags for test correlation functions;
- // b) Book correlation functions for all tests:
+ // b) Book correlation functions for all tests;
+ // c) Store temporarely also the yield.
 
  // a) Book the profile holding all the flags for test correlation functions:
  const Int_t nTests = 2;
@@ -2633,6 +2644,24 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
 
  } // for(Int_t t=0;t<nTests;t++)
 
+ // c) Store temporarely also the yield:
+ // vs. Q2:
+ fSignalYieldTEST[0] = new TH1F("fSignalYieldTEST[0]","dN(X_{1}X_{2})/Q_{2} for signal (TEST_0)",1000,0.,10.);
+ fSignalYieldTEST[0]->SetStats(kFALSE);
+ fSignalYieldTEST[0]->SetLineColor(kBlue);
+ fSignalYieldTEST[0]->SetFillColor(kBlue-10);
+ fSignalYieldTEST[0]->GetXaxis()->SetTitle("Q_{2}");
+ fSignalYieldTEST[0]->GetYaxis()->SetTitle("counts");
+ fCorrelationFunctionsTESTList->Add(fSignalYieldTEST[0]);
+ // vs. Q3:
+ fSignalYieldTEST[1] = new TH1F("fSignalYieldTEST[1]","dN(X_{1}X_{2}X_{3})/Q_{3} for signal (TEST_0)",1000,0.,10.);
+ fSignalYieldTEST[1]->SetStats(kFALSE);
+ fSignalYieldTEST[1]->SetLineColor(kBlue);
+ fSignalYieldTEST[1]->SetFillColor(kBlue-10);
+ fSignalYieldTEST[1]->GetXaxis()->SetTitle("Q_{3}");
+ fSignalYieldTEST[1]->GetYaxis()->SetTitle("counts");
+ fCorrelationFunctionsTESTList->Add(fSignalYieldTEST[1]);
+
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctionsTEST()
 
 //=======================================================================================================================
@@ -2643,7 +2672,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackgroundTEST()
 
  // a) Book the profile holding all the flags for test background;
  // b) Book background objects for all tests;
- // c) Book fMixedEventsTEST[3] and fGlobalTracksAODTEST[3].
+ // c) Book fMixedEventsTEST[3] and fGlobalTracksAODTEST[3];
+ // d) Store temporary the yield as well.
 
  // a) Book the profile holding all the flags for test background:
  const Int_t nTests = 2;
@@ -2747,6 +2777,24 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackgroundTEST()
   fMixedEventsTEST[me] = new TClonesArray("AliAODTrack",10000);
   fGlobalTracksAODTEST[me] = new TExMap();
  }
+
+ // d) Store temporary the yield as well:
+ // vs. Q2:
+ fBackgroundYieldTEST[0] = new TH1F("fBackgroundYieldTEST[0]","dN(X_{1}X_{2})/Q_{2} for mixed-events (TEST_0)",1000,0.,10.);
+ fBackgroundYieldTEST[0]->SetStats(kFALSE);
+ fBackgroundYieldTEST[0]->SetLineColor(kRed);
+ fBackgroundYieldTEST[0]->SetFillColor(kRed-10);
+ fBackgroundYieldTEST[0]->GetXaxis()->SetTitle("Q_{2}");
+ fBackgroundYieldTEST[0]->GetYaxis()->SetTitle("counts");
+ fBackgroundTESTList->Add(fBackgroundYieldTEST[0]);
+ // vs. Q3:
+ fBackgroundYieldTEST[1] = new TH1F("fBackgroundYieldTEST[1]","dN(X_{1}X_{2}X_{3})/Q_{3} for mixed-events (TEST_0)",1000,0.,10.);
+ fBackgroundYieldTEST[1]->SetStats(kFALSE);
+ fBackgroundYieldTEST[1]->SetLineColor(kRed);
+ fBackgroundYieldTEST[1]->SetFillColor(kRed-10);
+ fBackgroundYieldTEST[1]->GetXaxis()->SetTitle("Q_{3}");
+ fBackgroundYieldTEST[1]->GetYaxis()->SetTitle("counts");
+ fBackgroundTESTList->Add(fBackgroundYieldTEST[1]);
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackgroundTEST()
 
@@ -4940,34 +4988,43 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
  if(0 == fGlobalTracksAOD[0]->GetSize()){Fatal(sMethodName.Data(),"0 == fGlobalTracksAOD[0]->GetSize()");} // this case shall be already treated in UserExec
 
  // b) Book local TProfile's to hold single-event averages vs. k:
+ const Int_t nTestsMax = 10; // see what is hardwired in .h file
  TString sXYZ[3] = {"x","y","z"};
  const Int_t n2pCumulantTerms = 3;
  TString s2pCumulantTerms[n2pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{1}X_{2}#GT"};
- TProfile *singleEventAverageCorrelationsVsQ2[n2pCumulantTerms][3] = {{NULL}}; // [x,y,z components]
- for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ TProfile *singleEventAverageCorrelationsVsQ2[nTestsMax][n2pCumulantTerms][3] = {{{NULL}}}; // [3 = x,y,z components]
+ for(Int_t t=0;t<nTestsMax;t++) // test No
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillCorrelationFunctionsTEST[t]){continue;}
+  for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
   {
-   singleEventAverageCorrelationsVsQ2[ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ2[%d][%d]",ct,xyz),"single-event averages",100,0.,10.);
-   singleEventAverageCorrelationsVsQ2[ct][xyz]->GetXaxis()->SetTitle("Q_{2}");
-   singleEventAverageCorrelationsVsQ2[ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s2pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
-  } // for(Int_t xyz=0;xyz<3;xyz++)
- } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    singleEventAverageCorrelationsVsQ2[t][ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ2[%d][%d][%d]",t,ct,xyz),"single-event averages",100,0.,10.);
+    singleEventAverageCorrelationsVsQ2[t][ct][xyz]->GetXaxis()->SetTitle("Q_{2}");
+    singleEventAverageCorrelationsVsQ2[t][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s2pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+  } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ } // for(Int_t t=0;t<nTestsMax;t++) // test No
 
  // c) Book local TProfile's to hold single-event averages vs. Q3:
  const Int_t n3pCumulantTerms = 7;
  TString s3pCumulantTerms[n3pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{3}#GT","#LTX_{1}X_{2}#GT","#LTX_{1}X_{3}#GT","#LTX_{2}X_{3}#GT","#LTX_{1}X_{2}X_{3}#GT"};
- TProfile *singleEventAverageCorrelationsVsQ3[n3pCumulantTerms][3] = {{NULL}}; // [x,y,z components]
- for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ TProfile *singleEventAverageCorrelationsVsQ3[nTestsMax][n3pCumulantTerms][3] = {{{NULL}}}; // [3 = x,y,z components]
+ for(Int_t t=0;t<nTestsMax;t++) // test No
  {
-  if(!fFill3pCorrelationFunctions){break;}
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillCorrelationFunctionsTEST[t]){continue;}
+  for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
   {
-   singleEventAverageCorrelationsVsQ3[ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ3[%d][%d]",ct,xyz),"single-event averages",100,0.,10.);
-   singleEventAverageCorrelationsVsQ3[ct][xyz]->GetXaxis()->SetTitle("Q_{3}");
-   singleEventAverageCorrelationsVsQ3[ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s3pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
-  } // for(Int_t xyz=0;xyz<3;xyz++)
- } // for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+   if(!fFill3pCorrelationFunctions){break;}
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    singleEventAverageCorrelationsVsQ3[t][ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ3[%d][%d][%d]",t,ct,xyz),"single-event averages",100,0.,10.);
+    singleEventAverageCorrelationsVsQ3[t][ct][xyz]->GetXaxis()->SetTitle("Q_{3}");
+    singleEventAverageCorrelationsVsQ3[t][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s3pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+  } // for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ } // for(Int_t t=0;t<nTestsMax;t++) // test No
 
  // d) Nested loops to calculate single-event averages:
  Int_t nTracks = aAOD->GetNumberOfTracks();
@@ -5023,34 +5080,56 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
 
-   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto Q2, for x, y and z components separately"
+   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto l, for x, y and z components separately"
    if(fFillCorrelationFunctionsTEST[0])
    {
     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
     {
+     Double_t dk = RelativeMomenta(agtrack1,agtrack2); // relative momenta k = \frac{1}{2}|\vec{p_1}-\vec{p_2}|
+
+     fSignalYieldTEST[0]->Fill(dk); // TBI temporarily hardwired here
 
      // x-components:
-     singleEventAverageCorrelationsVsQ2[0][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Px()); // <X1>_x
-     singleEventAverageCorrelationsVsQ2[1][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Px()); // <X2>_x
-     singleEventAverageCorrelationsVsQ2[2][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+     singleEventAverageCorrelationsVsQ2[0][0][0]->Fill(dk,agtrack1->Px()); // <X1>_x
+     singleEventAverageCorrelationsVsQ2[0][1][0]->Fill(dk,agtrack2->Px()); // <X2>_x
+     singleEventAverageCorrelationsVsQ2[0][2][0]->Fill(dk,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
 
      // y-components:
-     singleEventAverageCorrelationsVsQ2[0][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Py()); // <X1>_y
-     singleEventAverageCorrelationsVsQ2[1][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Py()); // <X2>_y
-     singleEventAverageCorrelationsVsQ2[2][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+     singleEventAverageCorrelationsVsQ2[0][0][1]->Fill(dk,agtrack1->Py()); // <X1>_y
+     singleEventAverageCorrelationsVsQ2[0][1][1]->Fill(dk,agtrack2->Py()); // <X2>_y
+     singleEventAverageCorrelationsVsQ2[0][2][1]->Fill(dk,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
 
      // z-components:
-     singleEventAverageCorrelationsVsQ2[0][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Pz()); // <X1>_z
-     singleEventAverageCorrelationsVsQ2[1][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Pz()); // <X2>_z
-     singleEventAverageCorrelationsVsQ2[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+     singleEventAverageCorrelationsVsQ2[0][0][2]->Fill(dk,agtrack1->Pz()); // <X1>_z
+     singleEventAverageCorrelationsVsQ2[0][1][2]->Fill(dk,agtrack2->Pz()); // <X2>_z
+     singleEventAverageCorrelationsVsQ2[0][2][2]->Fill(dk,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
 
     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
    } // if(fFillCorrelationFunctionsTEST[0])
 
-   // Test 1: TBI
+   // Test 1: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q2"
    if(fFillCorrelationFunctionsTEST[1])
    {
-    // fCorrelationFunctionsTEST[1][0][0]->Fill(440.);
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     singleEventAverageCorrelationsVsQ2[1][0][0]->Fill(dQ2,agtrack1->Px()); // <X1>_x
+     singleEventAverageCorrelationsVsQ2[1][1][0]->Fill(dQ2,agtrack2->Px()); // <X2>_x
+     singleEventAverageCorrelationsVsQ2[1][2][0]->Fill(dQ2,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+
+     // y-components:
+     singleEventAverageCorrelationsVsQ2[1][0][1]->Fill(dQ2,agtrack1->Py()); // <X1>_y
+     singleEventAverageCorrelationsVsQ2[1][1][1]->Fill(dQ2,agtrack2->Py()); // <X2>_y
+     singleEventAverageCorrelationsVsQ2[1][2][1]->Fill(dQ2,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+
+     // z-components:
+     singleEventAverageCorrelationsVsQ2[1][0][2]->Fill(dQ2,agtrack1->Pz()); // <X1>_z
+     singleEventAverageCorrelationsVsQ2[1][1][2]->Fill(dQ2,agtrack2->Pz()); // <X2>_z
+     singleEventAverageCorrelationsVsQ2[1][2][2]->Fill(dQ2,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
    } // if(fFillCorrelationFunctionsTEST[1])
 
    // Loop over the 3rd particle:
@@ -5090,44 +5169,78 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
     {
      if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
      {
-
       // Q3:
-      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3);
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // TBI this is NOT Lorentz invariant, use Q3_NEW instead
+
+      fSignalYieldTEST[1]->Fill(dQ3); // TBI temporarily hardwired here
 
       // x-components:
-      singleEventAverageCorrelationsVsQ3[0][0]->Fill(dQ3,agtrack1->Px()); // <X1>_x
-      singleEventAverageCorrelationsVsQ3[1][0]->Fill(dQ3,agtrack2->Px()); // <X2>_x
-      singleEventAverageCorrelationsVsQ3[2][0]->Fill(dQ3,agtrack3->Px()); // <X3>_x
-      singleEventAverageCorrelationsVsQ3[3][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
-      singleEventAverageCorrelationsVsQ3[4][0]->Fill(dQ3,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
-      singleEventAverageCorrelationsVsQ3[5][0]->Fill(dQ3,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
-      singleEventAverageCorrelationsVsQ3[6][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
+      singleEventAverageCorrelationsVsQ3[0][0][0]->Fill(dQ3,agtrack1->Px()); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[0][1][0]->Fill(dQ3,agtrack2->Px()); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[0][2][0]->Fill(dQ3,agtrack3->Px()); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[0][3][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[0][4][0]->Fill(dQ3,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[0][5][0]->Fill(dQ3,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[0][6][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
 
       // y-components:
-      singleEventAverageCorrelationsVsQ3[0][1]->Fill(dQ3,agtrack1->Py()); // <X1>_y
-      singleEventAverageCorrelationsVsQ3[1][1]->Fill(dQ3,agtrack2->Py()); // <X2>_y
-      singleEventAverageCorrelationsVsQ3[2][1]->Fill(dQ3,agtrack3->Py()); // <X3>_y
-      singleEventAverageCorrelationsVsQ3[3][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
-      singleEventAverageCorrelationsVsQ3[4][1]->Fill(dQ3,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
-      singleEventAverageCorrelationsVsQ3[5][1]->Fill(dQ3,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
-      singleEventAverageCorrelationsVsQ3[6][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
+      singleEventAverageCorrelationsVsQ3[0][0][1]->Fill(dQ3,agtrack1->Py()); // <X1>_y
+      singleEventAverageCorrelationsVsQ3[0][1][1]->Fill(dQ3,agtrack2->Py()); // <X2>_y
+      singleEventAverageCorrelationsVsQ3[0][2][1]->Fill(dQ3,agtrack3->Py()); // <X3>_y
+      singleEventAverageCorrelationsVsQ3[0][3][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+      singleEventAverageCorrelationsVsQ3[0][4][1]->Fill(dQ3,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
+      singleEventAverageCorrelationsVsQ3[0][5][1]->Fill(dQ3,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
+      singleEventAverageCorrelationsVsQ3[0][6][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
 
       // z-components:
-      singleEventAverageCorrelationsVsQ3[0][2]->Fill(dQ3,agtrack1->Pz()); // <X1>_z
-      singleEventAverageCorrelationsVsQ3[1][2]->Fill(dQ3,agtrack2->Pz()); // <X2>_z
-      singleEventAverageCorrelationsVsQ3[2][2]->Fill(dQ3,agtrack3->Pz()); // <X3>_z
-      singleEventAverageCorrelationsVsQ3[3][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
-      singleEventAverageCorrelationsVsQ3[4][2]->Fill(dQ3,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
-      singleEventAverageCorrelationsVsQ3[5][2]->Fill(dQ3,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
-      singleEventAverageCorrelationsVsQ3[6][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
+      singleEventAverageCorrelationsVsQ3[0][0][2]->Fill(dQ3,agtrack1->Pz()); // <X1>_z
+      singleEventAverageCorrelationsVsQ3[0][1][2]->Fill(dQ3,agtrack2->Pz()); // <X2>_z
+      singleEventAverageCorrelationsVsQ3[0][2][2]->Fill(dQ3,agtrack3->Pz()); // <X3>_z
+      singleEventAverageCorrelationsVsQ3[0][3][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+      singleEventAverageCorrelationsVsQ3[0][4][2]->Fill(dQ3,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
+      singleEventAverageCorrelationsVsQ3[0][5][2]->Fill(dQ3,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
+      singleEventAverageCorrelationsVsQ3[0][6][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
 
      } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
     } // if(fFillCorrelationFunctionsTEST[0])
 
-    // Test 1: TBI
+    // Test 1: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q3""
     if(fFillCorrelationFunctionsTEST[1])
     {
-     // fCorrelationFunctionsTEST[1][0][0]->Fill(440.);
+     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+     {
+
+      // Q3:
+      Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
+
+      // x-components:
+      singleEventAverageCorrelationsVsQ3[1][0][0]->Fill(dQ3_NEW,agtrack1->Px()); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[1][1][0]->Fill(dQ3_NEW,agtrack2->Px()); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[1][2][0]->Fill(dQ3_NEW,agtrack3->Px()); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[1][3][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[1][4][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[1][5][0]->Fill(dQ3_NEW,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[1][6][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
+
+      // y-components:
+      singleEventAverageCorrelationsVsQ3[1][0][1]->Fill(dQ3_NEW,agtrack1->Py()); // <X1>_y
+      singleEventAverageCorrelationsVsQ3[1][1][1]->Fill(dQ3_NEW,agtrack2->Py()); // <X2>_y
+      singleEventAverageCorrelationsVsQ3[1][2][1]->Fill(dQ3_NEW,agtrack3->Py()); // <X3>_y
+      singleEventAverageCorrelationsVsQ3[1][3][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+      singleEventAverageCorrelationsVsQ3[1][4][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
+      singleEventAverageCorrelationsVsQ3[1][5][1]->Fill(dQ3_NEW,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
+      singleEventAverageCorrelationsVsQ3[1][6][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
+
+      // z-components:
+      singleEventAverageCorrelationsVsQ3[1][0][2]->Fill(dQ3_NEW,agtrack1->Pz()); // <X1>_z
+      singleEventAverageCorrelationsVsQ3[1][1][2]->Fill(dQ3_NEW,agtrack2->Pz()); // <X2>_z
+      singleEventAverageCorrelationsVsQ3[1][2][2]->Fill(dQ3_NEW,agtrack3->Pz()); // <X3>_z
+      singleEventAverageCorrelationsVsQ3[1][3][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+      singleEventAverageCorrelationsVsQ3[1][4][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
+      singleEventAverageCorrelationsVsQ3[1][5][2]->Fill(dQ3_NEW,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
+      singleEventAverageCorrelationsVsQ3[1][6][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
+
+     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
     } // if(fFillCorrelationFunctionsTEST[1])
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -5135,105 +5248,118 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
  } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
 
  // e) Build all-event correlations and cumulants from single-event averages:
- Int_t nBins = singleEventAverageCorrelationsVsQ2[0][0]->GetXaxis()->GetNbins();
- for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ for(Int_t t=0;t<nTestsMax;t++) // test No
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillCorrelationFunctionsTEST[t]){continue;}
+  Int_t nBins = singleEventAverageCorrelationsVsQ2[t][0][0]->GetXaxis()->GetNbins();
+  for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
   {
-   Double_t dX1 = 0., dX1Err = 0.; // <X1>
-   Double_t dX2 = 0., dX2Err = 0.; // <X2>
-   Double_t dX3 = 0., dX3Err = 0.; // <X3>
-   Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
-   Double_t dX1X3 = 0., dX1X3Err = 0.; // <X1X3>
-   Double_t dX2X3 = 0., dX2X3Err = 0.; // <X2X3>
-   Double_t dX1X2X3 = 0., dX1X2X3Err = 0.; // <X1X2X3>
-   Double_t dC2 = 0., dC2Err = 0.; // C2 = <X1X2> - <X1><X2> vs. Q2
-   Double_t dC12 = 0., dC12Err = 0.; // C12 = <X1X2> - <X1><X2> vs. Q3
-   Double_t dC13 = 0., dC13Err = 0.; // C13 = <X1X3> - <X1><X3> vs. Q3
-   Double_t dC23 = 0., dC23Err = 0.; // C23 = <X2X3> - <X2><X3> vs. Q3
-   Double_t dC3 = 0., dC3Err = 0.; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
-   Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
-   // 2p correlation terms:
-   dX1 = singleEventAverageCorrelationsVsQ2[0][xyz]->GetBinContent(b+1); // <X1> vs. Q2
-   dX1Err = singleEventAverageCorrelationsVsQ2[0][xyz]->GetBinError(b+1);
-   dX2 = singleEventAverageCorrelationsVsQ2[1][xyz]->GetBinContent(b+1); // <X2> vs. Q2
-   dX2Err = singleEventAverageCorrelationsVsQ2[1][xyz]->GetBinError(b+1);
-   dX1X2 = singleEventAverageCorrelationsVsQ2[2][xyz]->GetBinContent(b+1); // <X1X2> vs. Q2
-   dX1X2Err = singleEventAverageCorrelationsVsQ2[2][xyz]->GetBinError(b+1);
-   if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX1X2)>1.e-14) // basically, do calculations only if all terms in the 2p cumulant definition are non-zero
+   for(Int_t xyz=0;xyz<3;xyz++)
    {
-    // 2p cumulant:
-    dC2 = dX1X2 - dX1*dX2;
-    dC2Err = 0.; // TBI propagate an error one day
-    // fill 2p:
-    dBinCenter = fCorrelationFunctionsTEST[0][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
-    fCorrelationFunctionsTEST[0][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
-    fCorrelationFunctionsTEST[0][0][1][xyz]->Fill(dBinCenter,dX2); // <X2>
-    fCorrelationFunctionsTEST[0][0][2][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
-    fSignalCumulantsTEST[0][0][0][xyz]->Fill(dBinCenter,dC2); // C2 = <X1X2> - <X1><X2>
-   }
+    Double_t dX1 = 0., dX1Err = 0.; // <X1>
+    Double_t dX2 = 0., dX2Err = 0.; // <X2>
+    Double_t dX3 = 0., dX3Err = 0.; // <X3>
+    Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
+    Double_t dX1X3 = 0., dX1X3Err = 0.; // <X1X3>
+    Double_t dX2X3 = 0., dX2X3Err = 0.; // <X2X3>
+    Double_t dX1X2X3 = 0., dX1X2X3Err = 0.; // <X1X2X3>
+    Double_t dC2 = 0., dC2Err = 0.; // C2 = <X1X2> - <X1><X2> vs. Q2
+    Double_t dC12 = 0., dC12Err = 0.; // C12 = <X1X2> - <X1><X2> vs. Q3
+    Double_t dC13 = 0., dC13Err = 0.; // C13 = <X1X3> - <X1><X3> vs. Q3
+    Double_t dC23 = 0., dC23Err = 0.; // C23 = <X2X3> - <X2><X3> vs. Q3
+    Double_t dC3 = 0., dC3Err = 0.; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
+    Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+    // 2p correlation terms:
+    dX1 = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinContent(b+1); // <X1> vs. Q2
+    dX1Err = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinError(b+1);
+    dX2 = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinContent(b+1); // <X2> vs. Q2
+    dX2Err = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinError(b+1);
+    dX1X2 = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinContent(b+1); // <X1X2> vs. Q2
+    dX1X2Err = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinError(b+1);
+    if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX1X2)>1.e-14) // basically, do calculations only if all terms in the 2p cumulant definition are non-zero
+    {
+     // 2p cumulant:
+     dC2 = dX1X2 - dX1*dX2;
+     dC2Err = 0.; // TBI propagate an error one day
+     // fill 2p:
+     dBinCenter = fCorrelationFunctionsTEST[t][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+     fCorrelationFunctionsTEST[t][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
+     fCorrelationFunctionsTEST[t][0][1][xyz]->Fill(dBinCenter,dX2); // <X2>
+     fCorrelationFunctionsTEST[t][0][2][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
+     fSignalCumulantsTEST[t][0][0][xyz]->Fill(dBinCenter,dC2); // C2 = <X1X2> - <X1><X2>
+    }
 
-   if(!fFill3pCorrelationFunctions){continue;} // TBI is this really safe
+    if(!fFill3pCorrelationFunctions){continue;} // TBI is this really safe
 
-   // 3p correlation terms (note that now binning is vs. Q3 TBI yes, fine for the time being, but this is a landmine clearly...):
-   dX1 = singleEventAverageCorrelationsVsQ3[0][xyz]->GetBinContent(b+1); // <X1> vs. Q3
-   dX1Err = singleEventAverageCorrelationsVsQ3[0][xyz]->GetBinError(b+1);
-   dX2 = singleEventAverageCorrelationsVsQ3[1][xyz]->GetBinContent(b+1); // <X2> vs. Q3
-   dX2Err = singleEventAverageCorrelationsVsQ3[1][xyz]->GetBinError(b+1);
-   dX3 = singleEventAverageCorrelationsVsQ3[2][xyz]->GetBinContent(b+1); // <X3> vs. Q3
-   dX3Err = singleEventAverageCorrelationsVsQ3[2][xyz]->GetBinError(b+1);
-   dX1X2 = singleEventAverageCorrelationsVsQ3[3][xyz]->GetBinContent(b+1); // <X1X2> vs. Q3
-   dX1X2Err = singleEventAverageCorrelationsVsQ3[3][xyz]->GetBinError(b+1);
-   dX1X3 = singleEventAverageCorrelationsVsQ3[4][xyz]->GetBinContent(b+1); // <X1X3> vs. Q3
-   dX1X3Err = singleEventAverageCorrelationsVsQ3[4][xyz]->GetBinError(b+1);
-   dX2X3 = singleEventAverageCorrelationsVsQ3[5][xyz]->GetBinContent(b+1); // <X2X3> vs. Q3
-   dX2X3Err = singleEventAverageCorrelationsVsQ3[5][xyz]->GetBinError(b+1);
-   dX1X2X3 = singleEventAverageCorrelationsVsQ3[6][xyz]->GetBinContent(b+1); // <X1X2X3> vs. Q3
-   dX1X2X3Err = singleEventAverageCorrelationsVsQ3[6][xyz]->GetBinError(b+1);
-   if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 &&
-      TMath::Abs(dX1X2)>1.e-14 && TMath::Abs(dX1X3)>1.e-14 && TMath::Abs(dX2X3)>1.e-14 &&
-      TMath::Abs(dX1X2X3)>1.e-14) // basically, do calculations only if all terms in the 3p cumulant definition are non-zero
-   {
-    // three 2p cumulants vs. Q3 (why not!?)
-    dC12 = dX1X2 - dX1*dX2; // C12 = <X1X2> - <X1><X2> vs. Q3
-    dC12Err = 0.; // TBI propagate an error one day
-    dC13 = dX1X3 - dX1*dX3; // C13 = <X1X3> - <X1><X3> vs. Q3
-    dC13Err = 0.; // TBI propagate an error one day
-    dC23 = dX2X3 - dX2*dX3; // C23 = <X2X3> - <X2><X3> vs. Q3
-    dC23Err = 0.; // TBI propagate an error one day
-    // 3p cumulant vs. Q3:
-    dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
-    dC3Err = 0.; // TBI propagate an error one day
-    // fill 3p:
-    dBinCenter = fCorrelationFunctionsTEST[0][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
-    fCorrelationFunctionsTEST[0][1][0][xyz]->Fill(dBinCenter,dX1); // <X1>
-    fCorrelationFunctionsTEST[0][1][1][xyz]->Fill(dBinCenter,dX2); // <X2>
-    fCorrelationFunctionsTEST[0][1][2][xyz]->Fill(dBinCenter,dX3); // <X3>
-    fCorrelationFunctionsTEST[0][1][3][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
-    fCorrelationFunctionsTEST[0][1][4][xyz]->Fill(dBinCenter,dX1X3); // <X1X3>
-    fCorrelationFunctionsTEST[0][1][5][xyz]->Fill(dBinCenter,dX2X3); // <X2X3>
-    fCorrelationFunctionsTEST[0][1][6][xyz]->Fill(dBinCenter,dX1X2X3); // <X1X2X3>
-    fSignalCumulantsTEST[0][1][0][xyz]->Fill(dBinCenter,dC12); // <X1X2> - <X1><X2> vs. Q3
-    fSignalCumulantsTEST[0][1][1][xyz]->Fill(dBinCenter,dC13); // <X1X3> - <X1><X3> vs. Q3
-    fSignalCumulantsTEST[0][1][2][xyz]->Fill(dBinCenter,dC23); // <X2X3> - <X2><X3> vs. Q3
-    fSignalCumulantsTEST[0][1][3][xyz]->Fill(dBinCenter,dC3); // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
-   } // if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 && ...
-  } // for(Int_t xyz=0;xyz<3;xyz++)
- } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+    // 3p correlation terms (note that now binning is vs. Q3 TBI yes, fine for the time being, but this is a landmine clearly...):
+    dX1 = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinContent(b+1); // <X1> vs. Q3
+    dX1Err = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinError(b+1);
+    dX2 = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinContent(b+1); // <X2> vs. Q3
+    dX2Err = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinError(b+1);
+    dX3 = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinContent(b+1); // <X3> vs. Q3
+    dX3Err = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinError(b+1);
+    dX1X2 = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinContent(b+1); // <X1X2> vs. Q3
+    dX1X2Err = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinError(b+1);
+    dX1X3 = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinContent(b+1); // <X1X3> vs. Q3
+    dX1X3Err = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinError(b+1);
+    dX2X3 = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinContent(b+1); // <X2X3> vs. Q3
+    dX2X3Err = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinError(b+1);
+    dX1X2X3 = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinContent(b+1); // <X1X2X3> vs. Q3
+    dX1X2X3Err = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinError(b+1);
+    if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 &&
+       TMath::Abs(dX1X2)>1.e-14 && TMath::Abs(dX1X3)>1.e-14 && TMath::Abs(dX2X3)>1.e-14 &&
+       TMath::Abs(dX1X2X3)>1.e-14) // basically, do calculations only if all terms in the 3p cumulant definition are non-zero
+    {
+     // three 2p cumulants vs. Q3 (why not!?)
+     dC12 = dX1X2 - dX1*dX2; // C12 = <X1X2> - <X1><X2> vs. Q3
+     dC12Err = 0.; // TBI propagate an error one day
+     dC13 = dX1X3 - dX1*dX3; // C13 = <X1X3> - <X1><X3> vs. Q3
+     dC13Err = 0.; // TBI propagate an error one day
+     dC23 = dX2X3 - dX2*dX3; // C23 = <X2X3> - <X2><X3> vs. Q3
+     dC23Err = 0.; // TBI propagate an error one day
+     // 3p cumulant vs. Q3:
+     dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
+     dC3Err = 0.; // TBI propagate an error one day
+     // fill 3p:
+     dBinCenter = fCorrelationFunctionsTEST[t][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+     fCorrelationFunctionsTEST[t][1][0][xyz]->Fill(dBinCenter,dX1); // <X1>
+     fCorrelationFunctionsTEST[t][1][1][xyz]->Fill(dBinCenter,dX2); // <X2>
+     fCorrelationFunctionsTEST[t][1][2][xyz]->Fill(dBinCenter,dX3); // <X3>
+     fCorrelationFunctionsTEST[t][1][3][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
+     fCorrelationFunctionsTEST[t][1][4][xyz]->Fill(dBinCenter,dX1X3); // <X1X3>
+     fCorrelationFunctionsTEST[t][1][5][xyz]->Fill(dBinCenter,dX2X3); // <X2X3>
+     fCorrelationFunctionsTEST[t][1][6][xyz]->Fill(dBinCenter,dX1X2X3); // <X1X2X3>
+     fSignalCumulantsTEST[t][1][0][xyz]->Fill(dBinCenter,dC12); // <X1X2> - <X1><X2> vs. Q3
+     fSignalCumulantsTEST[t][1][1][xyz]->Fill(dBinCenter,dC13); // <X1X3> - <X1><X3> vs. Q3
+     fSignalCumulantsTEST[t][1][2][xyz]->Fill(dBinCenter,dC23); // <X2X3> - <X2><X3> vs. Q3
+     fSignalCumulantsTEST[t][1][3][xyz]->Fill(dBinCenter,dC3); // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
+    } // if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 && ...
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+  } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ } // for(Int_t t=0;t<nTestsMax;t++) // test No
 
  // f) Delete local TProfile's to hold single-event averages:
- for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ for(Int_t t=0;t<nTestsMax;t++) // test No
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillCorrelationFunctionsTEST[t]){continue;}
+  for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
   {
-   delete singleEventAverageCorrelationsVsQ2[ct][xyz];
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    delete singleEventAverageCorrelationsVsQ2[t][ct][xyz];
+   }
   }
  }
- for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+
+ for(Int_t t=0;t<nTestsMax;t++) // test No
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
   {
-   delete singleEventAverageCorrelationsVsQ3[ct][xyz];
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    if(!fFillCorrelationFunctionsTEST[t]){continue;}
+    delete singleEventAverageCorrelationsVsQ3[t][ct][xyz];
+   }
   }
  }
 
@@ -5374,9 +5500,51 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODMCParticl
 
 //=======================================================================================================================
 
+Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q2(AliAODTrack *agtrack1, AliAODTrack *agtrack2)
+{
+ // Lorentz invariant Q2. Credits: Sir Oliver.
+
+ // p_1:
+ Double_t p1x = agtrack1->Px();
+ Double_t p1y = agtrack1->Py();
+ Double_t p1z = agtrack1->Pz();
+ Double_t e1  = agtrack1->E();
+
+ // p_2:
+ Double_t p2x = agtrack2->Px();
+ Double_t p2y = agtrack2->Py();
+ Double_t p2z = agtrack2->Pz();
+ Double_t e2  = agtrack2->E();
+
+ // Corresponding energy-momentum four-vectors:
+ TLorentzVector track1(p1x,p1y,p1z,e1);
+ TLorentzVector track2(p2x,p2y,p2z,e2);
+
+ // Standard gym. to get k*:
+ TLorentzVector trackSum = track1 + track2;
+ Double_t beta = trackSum.Beta();
+ Double_t beta_x = beta*cos(trackSum.Phi())*sin(trackSum.Theta());
+ Double_t beta_y = beta*sin(trackSum.Phi())*sin(trackSum.Theta());
+ Double_t beta_z = beta*cos(trackSum.Theta());
+ TLorentzVector track1_cms = track1;
+ TLorentzVector track2_cms = track2;
+ track1_cms.Boost(-beta_x,-beta_y,-beta_z);
+ track2_cms.Boost(-beta_x,-beta_y,-beta_z);
+
+ TLorentzVector track_relK = track1_cms - track2_cms;
+ Double_t Q2 = track_relK.P();
+
+ return Q2;
+
+} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q2(AliAODTrack *agtrack1, AliAODTrack *agtrack2)
+
+//=======================================================================================================================
+
 Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
 {
  // Comment the weather here. TBI
+
+ // Remark: This is NOT Lorentz invariant, see Q3_NEW()
 
  Double_t Q3 = -44.; // Q3 = \sqrt{q_{12}^2 + q_{13}^2 + q_{23}^2}
 
@@ -5391,9 +5559,26 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3(AliAODTrack *agtrack1, AliAO
 
 //=======================================================================================================================
 
+Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3_NEW(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
+{
+ // This shall be Lorentz invariant Q3. TBI validate
+
+ Double_t q12 = Q2(agtrack1,agtrack2);
+ Double_t q13 = Q2(agtrack1,agtrack3);
+ Double_t q23 = Q2(agtrack2,agtrack3);
+ Double_t Q3 = pow(pow(q12,2.)+pow(q13,2.)+pow(q23,2.),0.5);
+
+ return Q3;
+
+} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3_NEW(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
+
+//=======================================================================================================================
+
 Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q4(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3, AliAODTrack *agtrack4)
 {
  // Comment the weather here. TBI
+
+ // Remark: This is NOT Lorentz invariant, see Q4_NEW()
 
  Double_t Q4 = -44.; // Q4 = \sqrt{q_{12}^2 + q_{13}^2 + q_{14}^2 + q_{23}^2 + q_{24}^2 + q_{34}^2}
 
@@ -5819,19 +6004,24 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
  if(!em2){Fatal(sMethodName.Data(),"!em2");}
 
  // b) Book local TProfile's to hold 1x1 event averages vs. Q2:
+ const Int_t nTestsMax = 10; // see what is hardwired in .h file
  TString sXYZ[3] = {"x","y","z"};
  const Int_t n2pCumulantTerms = 3;
  TString s2pCumulantTerms[n2pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{1}X_{2}#GT"};
- TProfile *singleEventAverageCorrelationsVsQ2[n2pCumulantTerms][3] = {{NULL}}; // [x,y,z components] TBI rename
- for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ TProfile *singleEventAverageCorrelationsVsQ2[nTestsMax][n2pCumulantTerms][3] = {{{NULL}}}; // [x,y,z components] TBI rename
+ for(Int_t t=0;t<nTestsMax;t++)
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillBackgroundTEST[t]){continue;}
+  for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
   {
-   singleEventAverageCorrelationsVsQ2[ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ2[%d][%d]",ct,xyz),"single-event averages",100,0.,10.);
-   singleEventAverageCorrelationsVsQ2[ct][xyz]->GetXaxis()->SetTitle("Q_{2}");
-   singleEventAverageCorrelationsVsQ2[ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s2pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
-  } // for(Int_t xyz=0;xyz<3;xyz++)
- } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    singleEventAverageCorrelationsVsQ2[t][ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ2[%d][%d][%d]",t,ct,xyz),"single-event averages",100,0.,10.);
+    singleEventAverageCorrelationsVsQ2[t][ct][xyz]->GetXaxis()->SetTitle("Q_{2}");
+    singleEventAverageCorrelationsVsQ2[t][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s2pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+  } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ } // for(Int_t t=0;t<nTestsMax;t++)
 
  // c) Calculate averages <X1> (1st event), <X2> (2nd event) and <X1X2> (mixed-event), vs. Q2.
  Int_t nTracks1 = ca1->GetEntries();
@@ -5883,73 +6073,111 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
 
-   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto Q2, for x, y and z components separately"
+   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto k, for x, y and z components separately"
    if(fFillBackgroundTEST[0])
    {
     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
     {
 
+     Double_t dk = RelativeMomenta(agtrack1,agtrack2); // relative momenta k = \frac{1}{2}|\vec{p_1}-\vec{p_2}|
+
+     fBackgroundYieldTEST[0]->Fill(dk);
+
      // x-components:
-     singleEventAverageCorrelationsVsQ2[0][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Px()); // <X1>_x
-     singleEventAverageCorrelationsVsQ2[1][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Px()); // <X2>_x
-     singleEventAverageCorrelationsVsQ2[2][0]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+     singleEventAverageCorrelationsVsQ2[0][0][0]->Fill(dk,agtrack1->Px()); // <X1>_x
+     singleEventAverageCorrelationsVsQ2[0][1][0]->Fill(dk,agtrack2->Px()); // <X2>_x
+     singleEventAverageCorrelationsVsQ2[0][2][0]->Fill(dk,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
 
      // y-components:
-     singleEventAverageCorrelationsVsQ2[0][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Py()); // <X1>_y
-     singleEventAverageCorrelationsVsQ2[1][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Py()); // <X2>_y
-     singleEventAverageCorrelationsVsQ2[2][1]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+     singleEventAverageCorrelationsVsQ2[0][0][1]->Fill(dk,agtrack1->Py()); // <X1>_y
+     singleEventAverageCorrelationsVsQ2[0][1][1]->Fill(dk,agtrack2->Py()); // <X2>_y
+     singleEventAverageCorrelationsVsQ2[0][2][1]->Fill(dk,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
 
      // z-components:
-     singleEventAverageCorrelationsVsQ2[0][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Pz()); // <X1>_z
-     singleEventAverageCorrelationsVsQ2[1][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack2->Pz()); // <X2>_z
-     singleEventAverageCorrelationsVsQ2[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2),agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+     singleEventAverageCorrelationsVsQ2[0][0][2]->Fill(dk,agtrack1->Pz()); // <X1>_z
+     singleEventAverageCorrelationsVsQ2[0][1][2]->Fill(dk,agtrack2->Pz()); // <X2>_z
+     singleEventAverageCorrelationsVsQ2[0][2][2]->Fill(dk,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
 
     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
    } // if(fFillBackgroundTEST[0])
+
+   // Test 1: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q2"
+   if(fFillBackgroundTEST[1])
+   {
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     // x-components:
+     singleEventAverageCorrelationsVsQ2[1][0][0]->Fill(dQ2,agtrack1->Px()); // <X1>_x
+     singleEventAverageCorrelationsVsQ2[1][1][0]->Fill(dQ2,agtrack2->Px()); // <X2>_x
+     singleEventAverageCorrelationsVsQ2[1][2][0]->Fill(dQ2,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+
+     // y-components:
+     singleEventAverageCorrelationsVsQ2[1][0][1]->Fill(dQ2,agtrack1->Py()); // <X1>_y
+     singleEventAverageCorrelationsVsQ2[1][1][1]->Fill(dQ2,agtrack2->Py()); // <X2>_y
+     singleEventAverageCorrelationsVsQ2[1][2][1]->Fill(dQ2,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+
+     // z-components:
+     singleEventAverageCorrelationsVsQ2[1][0][2]->Fill(dQ2,agtrack1->Pz()); // <X1>_z
+     singleEventAverageCorrelationsVsQ2[1][1][2]->Fill(dQ2,agtrack2->Pz()); // <X2>_z
+     singleEventAverageCorrelationsVsQ2[1][2][2]->Fill(dQ2,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+   } // if(fFillBackgroundTEST[1])
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
  // d) Build all-event correlations and cumulants from single-event averages:
- Int_t nBins = singleEventAverageCorrelationsVsQ2[0][0]->GetXaxis()->GetNbins();
- for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ for(Int_t t=0;t<nTestsMax;t++)
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillBackgroundTEST[t]){continue;}
+  Int_t nBins = singleEventAverageCorrelationsVsQ2[t][0][0]->GetXaxis()->GetNbins();
+  for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
   {
-   Double_t dX1 = 0., dX1Err = 0.; // <X1>
-   Double_t dX2 = 0., dX2Err = 0.; // <X2>
-   Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
-   Double_t dC2 = 0., dC2Err = 0.; // C2 = <X1X2> - <X1><X2>
-   Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same
-   // 2p correlation terms:
-   dX1 = singleEventAverageCorrelationsVsQ2[0][xyz]->GetBinContent(b+1); // <X1> vs. Q2
-   dX1Err = singleEventAverageCorrelationsVsQ2[0][xyz]->GetBinError(b+1);
-   dX2 = singleEventAverageCorrelationsVsQ2[1][xyz]->GetBinContent(b+1); // <X2> vs. Q2
-   dX2Err = singleEventAverageCorrelationsVsQ2[1][xyz]->GetBinError(b+1);
-   dX1X2 = singleEventAverageCorrelationsVsQ2[2][xyz]->GetBinContent(b+1); // <X1X2> vs. Q2
-   dX1X2Err = singleEventAverageCorrelationsVsQ2[2][xyz]->GetBinError(b+1);
-   if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX1X2)>1.e-14) // basically, do calculations only if all terms in the 2p cumulant definition are non-zero
+   for(Int_t xyz=0;xyz<3;xyz++)
    {
-    // 2p cumulant:
-    dC2 = dX1X2 - dX1*dX2;
-    dC2Err = 0.; // TBI propagate an error one day
-    // fill 2p:
-    dBinCenter = fBackgroundTEST[0][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
-    fBackgroundTEST[0][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
-    fBackgroundTEST[0][0][1][xyz]->Fill(dBinCenter,dX2); // <X2>
-    fBackgroundTEST[0][0][2][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
-    fBackgroundCumulantsTEST[0][0][0][xyz]->Fill(dBinCenter,dC2); // C2 = <X1X2> - <X1><X2>
-    //cout<<Form("bc: %.2f, xyz: %d, dX1: %.16f, dX2: %.16f, dX1dX2: %.16f, dC2: %.16f",dBinCenter,xyz,dX1,dX2,dX1X2,dC2)<<endl;
-   }
-  } // for(Int_t xyz=0;xyz<3;xyz++)
- } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+    Double_t dX1 = 0., dX1Err = 0.; // <X1>
+    Double_t dX2 = 0., dX2Err = 0.; // <X2>
+    Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
+    Double_t dC2 = 0., dC2Err = 0.; // C2 = <X1X2> - <X1><X2>
+    Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same
+    // 2p correlation terms:
+    dX1 = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinContent(b+1); // <X1> vs. Q2
+    dX1Err = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinError(b+1);
+    dX2 = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinContent(b+1); // <X2> vs. Q2
+    dX2Err = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinError(b+1);
+    dX1X2 = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinContent(b+1); // <X1X2> vs. Q2
+    dX1X2Err = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinError(b+1);
+    if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX1X2)>1.e-14) // basically, do calculations only if all terms in the 2p cumulant definition are non-zero
+    {
+     // 2p cumulant:
+     dC2 = dX1X2 - dX1*dX2;
+     dC2Err = 0.; // TBI propagate an error one day
+     // fill 2p:
+     dBinCenter = fBackgroundTEST[t][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+     fBackgroundTEST[t][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
+     fBackgroundTEST[t][0][1][xyz]->Fill(dBinCenter,dX2); // <X2>
+     fBackgroundTEST[t][0][2][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
+     fBackgroundCumulantsTEST[t][0][0][xyz]->Fill(dBinCenter,dC2); // C2 = <X1X2> - <X1><X2>
+     //cout<<Form("bc: %.2f, xyz: %d, dX1: %.16f, dX2: %.16f, dX1dX2: %.16f, dC2: %.16f",dBinCenter,xyz,dX1,dX2,dX1X2,dC2)<<endl;
+    }
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+  } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ } // for(Int_t t=0;t<nTestsMax;t++)
 
  // e) Delete local TProfile's to hold single-event averages:
- for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
+ for(Int_t t=0;t<nTestsMax;t++)
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillBackgroundTEST[t]){continue;}
+  for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
   {
-   delete singleEventAverageCorrelationsVsQ2[ct][xyz];
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    delete singleEventAverageCorrelationsVsQ2[t][ct][xyz];
+   }
   }
  }
 
@@ -5976,19 +6204,24 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
  if(!em3){Fatal(sMethodName.Data(),"!em3");}
 
  // b) Book local TProfile's to hold 1x1x1 event averages vs. Q3:
+ const Int_t nTestsMax = 10; // see what is hardwired in .h file
  TString sXYZ[3] = {"x","y","z"};
  const Int_t n3pCumulantTerms = 7;
  TString s3pCumulantTerms[n3pCumulantTerms] = {"#LTX_{1}#GT","#LTX_{2}#GT","#LTX_{3}#GT","#LTX_{1}X_{2}#GT","#LTX_{1}X_{3}#GT","#LTX_{2}X_{3}#GT","#LTX_{1}X_{2}X_{3}#GT"};
- TProfile *singleEventAverageCorrelationsVsQ3[n3pCumulantTerms][3] = {{NULL}}; // [x,y,z components]
- for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ TProfile *singleEventAverageCorrelationsVsQ3[nTestsMax][n3pCumulantTerms][3] = {{{NULL}}}; // [x,y,z components]
+ for(Int_t t=0;t<nTestsMax;t++)
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillBackgroundTEST[t]){continue;}
+  for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
   {
-   singleEventAverageCorrelationsVsQ3[ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ3[%d][%d]",ct,xyz),"single-event averages",100,0.,10.);
-   singleEventAverageCorrelationsVsQ3[ct][xyz]->GetXaxis()->SetTitle("Q_{3}");
-   singleEventAverageCorrelationsVsQ3[ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s3pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
-  } // for(Int_t xyz=0;xyz<3;xyz++)
- } // for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    singleEventAverageCorrelationsVsQ3[t][ct][xyz] = new TProfile(Form("singleEventAverageCorrelationsVsQ3[%d][%d][%d]",t,ct,xyz),"single-event averages",100,0.,10.);
+    singleEventAverageCorrelationsVsQ3[t][ct][xyz]->GetXaxis()->SetTitle("Q_{3}");
+    singleEventAverageCorrelationsVsQ3[t][ct][xyz]->GetYaxis()->SetTitle(Form("%s_{%s}",s3pCumulantTerms[ct].Data(),sXYZ[xyz].Data()));
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+  } // for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ }
 
  // c) Calculate averages <X1> (1st event), <X2> (2nd event) and <X1X2> (mixed-event), vs. Q2.
  Int_t nTracks1 = ca1->GetEntries();
@@ -6067,115 +6300,163 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
      if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
      {
       // Q3:
-      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3);
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // TBI this is NOT Lorentz invariant, see Q3_NEW()
+
+      fBackgroundYieldTEST[1]->Fill(dQ3);
 
       // x-components:
-      singleEventAverageCorrelationsVsQ3[0][0]->Fill(dQ3,agtrack1->Px()); // <X1>_x
-      singleEventAverageCorrelationsVsQ3[1][0]->Fill(dQ3,agtrack2->Px()); // <X2>_x
-      singleEventAverageCorrelationsVsQ3[2][0]->Fill(dQ3,agtrack3->Px()); // <X3>_x
-      singleEventAverageCorrelationsVsQ3[3][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
-      singleEventAverageCorrelationsVsQ3[4][0]->Fill(dQ3,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
-      singleEventAverageCorrelationsVsQ3[5][0]->Fill(dQ3,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
-      singleEventAverageCorrelationsVsQ3[6][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
+      singleEventAverageCorrelationsVsQ3[0][0][0]->Fill(dQ3,agtrack1->Px()); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[0][1][0]->Fill(dQ3,agtrack2->Px()); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[0][2][0]->Fill(dQ3,agtrack3->Px()); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[0][3][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[0][4][0]->Fill(dQ3,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[0][5][0]->Fill(dQ3,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[0][6][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
 
       // y-components:
-      singleEventAverageCorrelationsVsQ3[0][1]->Fill(dQ3,agtrack1->Py()); // <X1>_y
-      singleEventAverageCorrelationsVsQ3[1][1]->Fill(dQ3,agtrack2->Py()); // <X2>_y
-      singleEventAverageCorrelationsVsQ3[2][1]->Fill(dQ3,agtrack3->Py()); // <X3>_y
-      singleEventAverageCorrelationsVsQ3[3][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
-      singleEventAverageCorrelationsVsQ3[4][1]->Fill(dQ3,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
-      singleEventAverageCorrelationsVsQ3[5][1]->Fill(dQ3,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
-      singleEventAverageCorrelationsVsQ3[6][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
+      singleEventAverageCorrelationsVsQ3[0][0][1]->Fill(dQ3,agtrack1->Py()); // <X1>_y
+      singleEventAverageCorrelationsVsQ3[0][1][1]->Fill(dQ3,agtrack2->Py()); // <X2>_y
+      singleEventAverageCorrelationsVsQ3[0][2][1]->Fill(dQ3,agtrack3->Py()); // <X3>_y
+      singleEventAverageCorrelationsVsQ3[0][3][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+      singleEventAverageCorrelationsVsQ3[0][4][1]->Fill(dQ3,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
+      singleEventAverageCorrelationsVsQ3[0][5][1]->Fill(dQ3,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
+      singleEventAverageCorrelationsVsQ3[0][6][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
 
       // z-components:
-      singleEventAverageCorrelationsVsQ3[0][2]->Fill(dQ3,agtrack1->Pz()); // <X1>_z
-      singleEventAverageCorrelationsVsQ3[1][2]->Fill(dQ3,agtrack2->Pz()); // <X2>_z
-      singleEventAverageCorrelationsVsQ3[2][2]->Fill(dQ3,agtrack3->Pz()); // <X3>_z
-      singleEventAverageCorrelationsVsQ3[3][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
-      singleEventAverageCorrelationsVsQ3[4][2]->Fill(dQ3,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
-      singleEventAverageCorrelationsVsQ3[5][2]->Fill(dQ3,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
-      singleEventAverageCorrelationsVsQ3[6][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
+      singleEventAverageCorrelationsVsQ3[0][0][2]->Fill(dQ3,agtrack1->Pz()); // <X1>_z
+      singleEventAverageCorrelationsVsQ3[0][1][2]->Fill(dQ3,agtrack2->Pz()); // <X2>_z
+      singleEventAverageCorrelationsVsQ3[0][2][2]->Fill(dQ3,agtrack3->Pz()); // <X3>_z
+      singleEventAverageCorrelationsVsQ3[0][3][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+      singleEventAverageCorrelationsVsQ3[0][4][2]->Fill(dQ3,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
+      singleEventAverageCorrelationsVsQ3[0][5][2]->Fill(dQ3,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
+      singleEventAverageCorrelationsVsQ3[0][6][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
 
      } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
     } // if(fFillBackgroundTEST[0])
+
+    // Test 1: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q3"
+    if(fFillBackgroundTEST[1])
+    {
+     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+     {
+      // Q3:
+      Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
+
+      // x-components:
+      singleEventAverageCorrelationsVsQ3[1][0][0]->Fill(dQ3_NEW,agtrack1->Px()); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[1][1][0]->Fill(dQ3_NEW,agtrack2->Px()); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[1][2][0]->Fill(dQ3_NEW,agtrack3->Px()); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[1][3][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[1][4][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[1][5][0]->Fill(dQ3_NEW,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[1][6][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
+
+      // y-components:
+      singleEventAverageCorrelationsVsQ3[1][0][1]->Fill(dQ3_NEW,agtrack1->Py()); // <X1>_y
+      singleEventAverageCorrelationsVsQ3[1][1][1]->Fill(dQ3_NEW,agtrack2->Py()); // <X2>_y
+      singleEventAverageCorrelationsVsQ3[1][2][1]->Fill(dQ3_NEW,agtrack3->Py()); // <X3>_y
+      singleEventAverageCorrelationsVsQ3[1][3][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+      singleEventAverageCorrelationsVsQ3[1][4][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
+      singleEventAverageCorrelationsVsQ3[1][5][1]->Fill(dQ3_NEW,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
+      singleEventAverageCorrelationsVsQ3[1][6][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
+
+      // z-components:
+      singleEventAverageCorrelationsVsQ3[1][0][2]->Fill(dQ3_NEW,agtrack1->Pz()); // <X1>_z
+      singleEventAverageCorrelationsVsQ3[1][1][2]->Fill(dQ3_NEW,agtrack2->Pz()); // <X2>_z
+      singleEventAverageCorrelationsVsQ3[1][2][2]->Fill(dQ3_NEW,agtrack3->Pz()); // <X3>_z
+      singleEventAverageCorrelationsVsQ3[1][3][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+      singleEventAverageCorrelationsVsQ3[1][4][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
+      singleEventAverageCorrelationsVsQ3[1][5][2]->Fill(dQ3_NEW,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
+      singleEventAverageCorrelationsVsQ3[1][6][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
+
+     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    } // if(fFillBackgroundTEST[1])
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
  // d) Build all-event correlations and cumulants from single-event averages:
- Int_t nBins = singleEventAverageCorrelationsVsQ3[0][0]->GetXaxis()->GetNbins();
- for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ for(Int_t t=0;t<nTestsMax;t++)
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillBackgroundTEST[t]){continue;}
+  Int_t nBins = singleEventAverageCorrelationsVsQ3[t][0][0]->GetXaxis()->GetNbins();
+  for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
   {
-   Double_t dX1 = 0., dX1Err = 0.; // <X1>
-   Double_t dX2 = 0., dX2Err = 0.; // <X2>
-   Double_t dX3 = 0., dX3Err = 0.; // <X3>
-   Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
-   Double_t dX1X3 = 0., dX1X3Err = 0.; // <X1X3>
-   Double_t dX2X3 = 0., dX2X3Err = 0.; // <X2X3>
-   Double_t dX1X2X3 = 0., dX1X2X3Err = 0.; // <X1X2X3>
-   Double_t dC12 = 0., dC12Err = 0.; // C12 = <X1X2> - <X1><X2> vs. Q3
-   Double_t dC13 = 0., dC13Err = 0.; // C13 = <X1X3> - <X1><X3> vs. Q3
-   Double_t dC23 = 0., dC23Err = 0.; // C23 = <X2X3> - <X2><X3> vs. Q3
-   Double_t dC3 = 0., dC3Err = 0.; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3>
-   Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same
-
-   // 3p correlation terms (note that now binning is vs. Q3 TBI yes, fine for the time being, but this is a landmine clearly...):
-   dX1 = singleEventAverageCorrelationsVsQ3[0][xyz]->GetBinContent(b+1); // <X1> vs. Q3
-   dX1Err = singleEventAverageCorrelationsVsQ3[0][xyz]->GetBinError(b+1);
-   dX2 = singleEventAverageCorrelationsVsQ3[1][xyz]->GetBinContent(b+1); // <X2> vs. Q3
-   dX2Err = singleEventAverageCorrelationsVsQ3[1][xyz]->GetBinError(b+1);
-   dX3 = singleEventAverageCorrelationsVsQ3[2][xyz]->GetBinContent(b+1); // <X3> vs. Q3
-   dX3Err = singleEventAverageCorrelationsVsQ3[2][xyz]->GetBinError(b+1);
-   dX1X2 = singleEventAverageCorrelationsVsQ3[3][xyz]->GetBinContent(b+1); // <X1X2> vs. Q3
-   dX1X2Err = singleEventAverageCorrelationsVsQ3[3][xyz]->GetBinError(b+1);
-   dX1X3 = singleEventAverageCorrelationsVsQ3[4][xyz]->GetBinContent(b+1); // <X1X3> vs. Q3
-   dX1X3Err = singleEventAverageCorrelationsVsQ3[4][xyz]->GetBinError(b+1);
-   dX2X3 = singleEventAverageCorrelationsVsQ3[5][xyz]->GetBinContent(b+1); // <X2X3> vs. Q3
-   dX2X3Err = singleEventAverageCorrelationsVsQ3[5][xyz]->GetBinError(b+1);
-   dX1X2X3 = singleEventAverageCorrelationsVsQ3[6][xyz]->GetBinContent(b+1); // <X1X2X3> vs. Q3
-   dX1X2X3Err = singleEventAverageCorrelationsVsQ3[6][xyz]->GetBinError(b+1);
-   if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 &&
-      TMath::Abs(dX1X2)>1.e-14 && TMath::Abs(dX1X3)>1.e-14 && TMath::Abs(dX2X3)>1.e-14 &&
-      TMath::Abs(dX1X2X3)>1.e-14) // basically, do calculations only if all terms in the 3p cumulant definition are non-zero
+   for(Int_t xyz=0;xyz<3;xyz++)
    {
-    // 2p cumulants vs. Q3:
-    dC12 = dX1X2 - dX1*dX2; // C12 = <X1X2> - <X1><X2> vs. Q3
-    dC12Err = 0.; // TBI propagate an error one day
-    dC13 = dX1X3 - dX1*dX3; // C13 = <X1X3> - <X1><X3> vs. Q3
-    dC13Err = 0.; // TBI propagate an error one day
-    dC23 = dX2X3 - dX2*dX3; // C23 = <X2X3> - <X2><X3> vs. Q3
-    dC23Err = 0.; // TBI propagate an error one day
-    // 3p cumulant vs. Q3:
-    dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
-    dC3Err = 0.; // TBI propagate an error one day
-    // fill 3p:
-    dBinCenter = fBackgroundTEST[0][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
-    fBackgroundTEST[0][1][0][xyz]->Fill(dBinCenter,dX1); // <X1> vs. Q3
-    fBackgroundTEST[0][1][1][xyz]->Fill(dBinCenter,dX2); // <X2> vs. Q3
-    fBackgroundTEST[0][1][2][xyz]->Fill(dBinCenter,dX3); // <X3> vs. Q3
-    fBackgroundTEST[0][1][3][xyz]->Fill(dBinCenter,dX1X2); // <X1X2> vs. Q3
-    fBackgroundTEST[0][1][4][xyz]->Fill(dBinCenter,dX1X3); // <X1X3> vs. Q3
-    fBackgroundTEST[0][1][5][xyz]->Fill(dBinCenter,dX2X3); // <X2X3> vs. Q3
-    fBackgroundTEST[0][1][6][xyz]->Fill(dBinCenter,dX1X2X3); // <X1X2X3> vs. Q3
-    fBackgroundCumulantsTEST[0][1][0][xyz]->Fill(dBinCenter,dC12); // <X1X2> - <X1><X2> vs. Q3
-    fBackgroundCumulantsTEST[0][1][1][xyz]->Fill(dBinCenter,dC13); // <X1X3> - <X1><X3> vs. Q3
-    fBackgroundCumulantsTEST[0][1][2][xyz]->Fill(dBinCenter,dC23); // <X2X3> - <X2><X3> vs. Q3
-    fBackgroundCumulantsTEST[0][1][3][xyz]->Fill(dBinCenter,dC3); // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
-   } // if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 && ...
-  } // for(Int_t xyz=0;xyz<3;xyz++)
- } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+    Double_t dX1 = 0., dX1Err = 0.; // <X1>
+    Double_t dX2 = 0., dX2Err = 0.; // <X2>
+    Double_t dX3 = 0., dX3Err = 0.; // <X3>
+    Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
+    Double_t dX1X3 = 0., dX1X3Err = 0.; // <X1X3>
+    Double_t dX2X3 = 0., dX2X3Err = 0.; // <X2X3>
+    Double_t dX1X2X3 = 0., dX1X2X3Err = 0.; // <X1X2X3>
+    Double_t dC12 = 0., dC12Err = 0.; // C12 = <X1X2> - <X1><X2> vs. Q3
+    Double_t dC13 = 0., dC13Err = 0.; // C13 = <X1X3> - <X1><X3> vs. Q3
+    Double_t dC23 = 0., dC23Err = 0.; // C23 = <X2X3> - <X2><X3> vs. Q3
+    Double_t dC3 = 0., dC3Err = 0.; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3>
+    Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same
+
+    // 3p correlation terms (note that now binning is vs. Q3 TBI yes, fine for the time being, but this is a landmine clearly...):
+    dX1 = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinContent(b+1); // <X1> vs. Q3
+    dX1Err = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinError(b+1);
+    dX2 = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinContent(b+1); // <X2> vs. Q3
+    dX2Err = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinError(b+1);
+    dX3 = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinContent(b+1); // <X3> vs. Q3
+    dX3Err = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinError(b+1);
+    dX1X2 = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinContent(b+1); // <X1X2> vs. Q3
+    dX1X2Err = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinError(b+1);
+    dX1X3 = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinContent(b+1); // <X1X3> vs. Q3
+    dX1X3Err = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinError(b+1);
+    dX2X3 = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinContent(b+1); // <X2X3> vs. Q3
+    dX2X3Err = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinError(b+1);
+    dX1X2X3 = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinContent(b+1); // <X1X2X3> vs. Q3
+    dX1X2X3Err = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinError(b+1);
+    if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 &&
+       TMath::Abs(dX1X2)>1.e-14 && TMath::Abs(dX1X3)>1.e-14 && TMath::Abs(dX2X3)>1.e-14 &&
+       TMath::Abs(dX1X2X3)>1.e-14) // basically, do calculations only if all terms in the 3p cumulant definition are non-zero
+    {
+     // 2p cumulants vs. Q3:
+     dC12 = dX1X2 - dX1*dX2; // C12 = <X1X2> - <X1><X2> vs. Q3
+     dC12Err = 0.; // TBI propagate an error one day
+     dC13 = dX1X3 - dX1*dX3; // C13 = <X1X3> - <X1><X3> vs. Q3
+     dC13Err = 0.; // TBI propagate an error one day
+     dC23 = dX2X3 - dX2*dX3; // C23 = <X2X3> - <X2><X3> vs. Q3
+     dC23Err = 0.; // TBI propagate an error one day
+     // 3p cumulant vs. Q3:
+     dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
+     dC3Err = 0.; // TBI propagate an error one day
+     // fill 3p:
+     dBinCenter = fBackgroundTEST[0][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+     fBackgroundTEST[0][1][0][xyz]->Fill(dBinCenter,dX1); // <X1> vs. Q3
+     fBackgroundTEST[0][1][1][xyz]->Fill(dBinCenter,dX2); // <X2> vs. Q3
+     fBackgroundTEST[0][1][2][xyz]->Fill(dBinCenter,dX3); // <X3> vs. Q3
+     fBackgroundTEST[0][1][3][xyz]->Fill(dBinCenter,dX1X2); // <X1X2> vs. Q3
+     fBackgroundTEST[0][1][4][xyz]->Fill(dBinCenter,dX1X3); // <X1X3> vs. Q3
+     fBackgroundTEST[0][1][5][xyz]->Fill(dBinCenter,dX2X3); // <X2X3> vs. Q3
+     fBackgroundTEST[0][1][6][xyz]->Fill(dBinCenter,dX1X2X3); // <X1X2X3> vs. Q3
+     fBackgroundCumulantsTEST[0][1][0][xyz]->Fill(dBinCenter,dC12); // <X1X2> - <X1><X2> vs. Q3
+     fBackgroundCumulantsTEST[0][1][1][xyz]->Fill(dBinCenter,dC13); // <X1X3> - <X1><X3> vs. Q3
+     fBackgroundCumulantsTEST[0][1][2][xyz]->Fill(dBinCenter,dC23); // <X2X3> - <X2><X3> vs. Q3
+     fBackgroundCumulantsTEST[0][1][3][xyz]->Fill(dBinCenter,dC3); // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
+    } // if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 && ...
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+  } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+ } // for(Int_t t=0;t<nTestsMax;t++)
 
  // e) Delete local TProfile's to hold single-event averages:
- for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
+ for(Int_t t=0;t<nTestsMax;t++)
  {
-  for(Int_t xyz=0;xyz<3;xyz++)
+  if(!fFillBackgroundTEST[t]){continue;}
+  for(Int_t ct=0;ct<n3pCumulantTerms;ct++)
   {
-   delete singleEventAverageCorrelationsVsQ3[ct][xyz];
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    delete singleEventAverageCorrelationsVsQ3[t][ct][xyz];
+   }
   }
- }
+ } // for(Int_t t=0;t<nTestsMax;t++)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3)
 
