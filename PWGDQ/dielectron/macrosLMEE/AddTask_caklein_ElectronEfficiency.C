@@ -100,7 +100,7 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
   task->SetCalcEfficiencyRec(CalcEfficiencyRec);
   if (resolutionfile.Contains("CENTRALITY")) resolutionfile.ReplaceAll("CENTRALITY",Form("%02.0f%02.0f",centMin,centMax));
   if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
-     (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/supportFiles/%s .",resolutionfile.Data()))) ){
+     (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/c/cklein/data/%s .",resolutionfile.Data()))) ){
     std::cout << "using resolution file: " << resolutionfile.Data() << std::endl;
     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
     if(bUseRelPResolution) task->SetResolutionP ((TObjArray*) fRes->Get("RelPResArr"),  kTRUE);
