@@ -347,4 +347,27 @@ void AliPDG::AddParticlesToPdgDataBase()
 		       0.185, 0, "Resonance", ionCode);
   }
 
+
+  // Ps - hidden strange (s-sbar) pentaquarks
+
+  ionCode = 9322134;
+  if(!pdgDB->GetParticle(ionCode)) {
+    pdgDB->AddParticle("ps_2100","ps_2100", 2.100, kFALSE,
+                       0.040, 3, "Resonance", ionCode);
+  }
+  if(!pdgDB->GetParticle(-ionCode)) {
+    pdgDB->AddParticle("anti-ps_2100","anti-ps_2100", 2.100, kFALSE,
+                       0.040, -3, "Resonance", -ionCode);
+  }
+
+  ionCode = 9322136;
+  if(!pdgDB->GetParticle(ionCode)) {
+    pdgDB->AddParticle("ps_2500","ps_2500", 2.500, kFALSE,
+                       0.040, 3, "Resonance", ionCode);
+  }
+  if(!pdgDB->GetParticle(-ionCode)) {
+    pdgDB->AddParticle("anti-ps_2500","anti-ps_2500", 2.500, kFALSE,
+                       0.040, -3, "Resonance", -ionCode);
+  }
+
 }
