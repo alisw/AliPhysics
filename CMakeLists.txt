@@ -256,3 +256,4 @@ foreach(TEST_LIB ${ALILIBSTESTED})
     DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
     root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
 endforeach()
+## useless ##
