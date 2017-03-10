@@ -76,18 +76,6 @@ AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(
     }
   }
 
-  if (cellName == "usedefault") {
-    if (dataType == kESD) {
-      cellName = "EMCALCells";
-    }
-    else if (dataType == kAOD) {
-      cellName = "emcalCells";
-    }
-    else {
-      cellName = "";
-    }
-  }
-
   TString name("AliAnalysisTaskEmcalDijetImbalance");
   if (!trackName.IsNull()) {
     name += "_";
@@ -97,10 +85,6 @@ AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(
     name += "_";
     name += clusName;
   }
-  if (!cellName.IsNull()) {
-    name += "_";
-    name += cellName;
-  }
   if (strcmp(suffix,"") != 0) {
     name += "_";
     name += suffix;
@@ -109,7 +93,6 @@ AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(
   /////////////////////////////////////////////////////////////
   // Configure di-jet task
   AliAnalysisTaskEmcalDijetImbalance* dijetTask = new AliAnalysisTaskEmcalDijetImbalance(name);
-  dijetTask->SetCaloCellsName(cellName);
   dijetTask->SetVzRange(-10,10);
   dijetTask->SetDeltaPhiCut(deltaPhiMin);
   if (doGeomMatching) dijetTask->SetDoGeometricalMatching(doGeomMatching, jetR, minTrPtHardCore, minClPtHardCore);
@@ -137,7 +120,11 @@ AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(
     clusCont->SetClusNonLinCorrEnergyCut(0.);
     clusCont->SetClusHadCorrEnergyCut(minClPt);
     clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-    if (includePHOS) clusCont->SetIncludePHOS(kTRUE);
+    if (includePHOS) {
+      clusCont->SetIncludePHOS(kTRUE);
+      clusCont->SetPhosMinNcells(3);
+      clusCont->SetPhosMinM02(0.2);
+    }
   }
   if (clusCont) dijetTask->AdoptClusterContainer(clusCont);
   
@@ -169,7 +156,11 @@ AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(
       clusContThresh->SetClusNonLinCorrEnergyCut(0.);
       clusContThresh->SetClusHadCorrEnergyCut(minClPtHardCore);
       clusContThresh->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-      if (includePHOS) clusContThresh->SetIncludePHOS(kTRUE);
+      if (includePHOS) {
+        clusContThresh->SetIncludePHOS(kTRUE);
+        clusContThresh->SetPhosMinNcells(3);
+        clusContThresh->SetPhosMinM02(0.2);
+      }
     }
     if (clusContThresh) dijetTask->AdoptClusterContainer(clusContThresh);
   }

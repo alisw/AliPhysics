@@ -233,7 +233,7 @@ void AliAnalysisTaskPWGJEQA::AllocateClusterHistograms() {
     fHistManager.CreateTH2(histname.Data(), title.Data(), 40, 0, 40, nPtBins, 0, fMaxPt);
     
     histname = TString::Format("%s/hPhosM02VsEnergy", cont->GetArrayName().Data());
-    title = histname + ";M02 (cm);#it{E}_{clus} (GeV/);counts";
+    title = histname + ";M02;#it{E}_{clus} (GeV/);counts";
     fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 20, nPtBins, 0, fMaxPt);
     
     histname = TString::Format("%s/hPhosCellIdVsEnergy", cont->GetArrayName().Data());

@@ -16,6 +16,7 @@
 
 #include "THistManager.h"
 
+#include "AliEventCuts.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
 class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
@@ -71,11 +72,13 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void SetMinTrigJetPt(Double_t* arr)                       { fMinTrigJetPt = arr; }
   void SetMinAssJetPt(Double_t* arr)                        { fMinAssJetPt = arr; }
   void SetDijetLeadingHadronPt(Double_t pt)                 { fDijetLeadingHadronPt = pt; }
+  void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
 
  protected:
   void                        ExecOnce()                                        ;
   Bool_t                      FillHistograms()                                  ;
   Bool_t                      Run()                                             ;
+  Bool_t                      IsEventSelected()                                 ;
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
@@ -123,6 +126,12 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Int_t                       fNCentHistBins;                       //!<! number of cent bins
   Double_t*                   fCentHistBins;                        //!<! cent bins
   
+  // Event selection
+  AliEventCuts                fEventCuts;                           ///< event selection utility
+  TList                      *fEventCutList;                        //!<! Output list for event cut histograms
+  Bool_t                      fUseManualEventCuts;                  ///< Flag to use manual event cuts
+  
+  // Hist manager
   THistManager                fHistManager;                         ///< Histogram manager
 
  private:

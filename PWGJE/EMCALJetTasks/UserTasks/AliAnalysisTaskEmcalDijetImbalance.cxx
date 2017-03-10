@@ -42,6 +42,9 @@ ClassImp(AliAnalysisTaskEmcalDijetImbalance);
 AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() : 
   AliAnalysisTaskEmcalJet(),
   fHistManager(),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
   fDeltaPhiMin(0),
   fNDijetPtThresholds(1),
   fMinTrigJetPt(0),
@@ -59,7 +62,6 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fTrackConstituentThreshold(0),
   fClusterConstituentThreshold(0)
 {
-  SetMakeGeneralHistograms(kTRUE);
   GenerateHistoBins();
   Dijet_t fDijet;
   Dijet_t fMatchingDijet;
@@ -73,6 +75,9 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
 AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistManager(name),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
   fDeltaPhiMin(0),
   fNDijetPtThresholds(1),
   fMinTrigJetPt(0),
@@ -90,7 +95,6 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fTrackConstituentThreshold(0),
   fClusterConstituentThreshold(0)
 {
-  SetMakeGeneralHistograms(kTRUE);
   GenerateHistoBins();
   Dijet_t fDijet;
   Dijet_t fMatchingDijet;
@@ -136,6 +140,21 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   while ((obj = next())) {
     fOutput->Add(obj);
   }
+  
+  // Intialize AliEventCuts
+  fEventCutList = new TList();
+  fEventCutList ->SetOwner();
+  fEventCutList ->SetName("EventCutOutput");
+  
+  fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
+  if(fUseManualEventCuts==1)
+  {
+    fEventCuts.SetManualMode();
+    // Configure manual settings here
+    // ...
+  }
+  fEventCuts.AddQAplotsToList(fEventCutList);
+  fOutput->Add(fEventCutList);
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
@@ -671,6 +690,19 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
   AliInfo(Form("Momentum balance study: %d", fDoMomentumBalance));
   AliInfo(Form("Geometrical matching study: %d", fDoGeometricalMatching));
   
+}
+
+/**
+ * This function (overloading the base class) uses AliEventCuts to perform event selection.
+ */
+Bool_t AliAnalysisTaskEmcalDijetImbalance::IsEventSelected()
+{
+  if (!fEventCuts.AcceptEvent(InputEvent()))
+  {
+    PostData(1, fOutput);
+    return kFALSE;
+  }
+  return kTRUE;
 }
 
 /**
