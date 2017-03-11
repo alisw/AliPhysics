@@ -101,6 +101,7 @@ time_t AliVertexGenFile::GetHeaderTimeStamp() const
   // get the timestamp of the last header used for the vertex
   if (fHeader) return fHeader->GetTimeStamp();
   else AliFatal("No header was loaded yet");
+  return 0;
 }
 
 //_____________________________________________________________________________
