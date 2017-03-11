@@ -65,6 +65,7 @@ class AliGenerator : public TNamed, public AliRndm
     {fVertex[0] = vx; fVertex[1] = vy; fVertex[2] = vz; fTime = t;}
     void SetVertexGenerator(AliVertexGenerator* vertexGenerator)
       {fVertexGenerator = vertexGenerator; fVertexSource = kExternal; fVertexSmear = kPerEvent;}
+    AliVertexGenerator* GetVertexGenerator() const {return fVertexGenerator;}
     void SetPileUpTimeWindow(Float_t pileUpTimeW) {fPileUpTimeWindow = pileUpTimeW;}
     virtual void SetTime(Float_t time)
 	{fTime = time;}

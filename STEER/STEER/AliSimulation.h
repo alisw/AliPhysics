@@ -144,7 +144,7 @@ public:
   void UseMagFieldFromGRP() {fUseMagFieldFromGRP = kTRUE;} 
   void SetGRPWriteLocation(char* loc) {fGRPWriteLocation = loc;}
 
-  Bool_t GetUseTimeStampFromCDB()  const {return fUseTimeStampFromCDB;}
+  Int_t GetUseTimeStampFromCDB()  const {return fUseTimeStampFromCDB;}
   void UseTimeStampFromCDB(Double_t decayTimeHours=-1);
   time_t GenerateTimeStamp() const;
   //
@@ -211,7 +211,7 @@ private:
   
   Bool_t          fUseDetectorsFromGRP; // do not simulate detectors absent in the GRP
 
-  Bool_t          fUseTimeStampFromCDB;// Flag to generate event time-stamps according to SOR/EOR from GRP
+  Int_t           fUseTimeStampFromCDB;// Flag to generate event time-stamps: see GenerateTimeStamp() 
   time_t          fTimeStart;          // SOR time-stamp
   time_t          fTimeEnd;            // EOR time-stamp
   Float_t         fLumiDecayH;         // luminosity decay time in hours

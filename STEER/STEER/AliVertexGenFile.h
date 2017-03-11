@@ -9,6 +9,7 @@
 // The file name of the galice file is passed as argument
 // to the constructor.
 
+#include <time.h>
 #include "AliVertexGenerator.h"
 
 class TFile;
@@ -23,7 +24,8 @@ class AliVertexGenFile: public AliVertexGenerator {
   virtual ~AliVertexGenFile();
 
   virtual TVector3 GetVertex();
-
+  time_t GetHeaderTimeStamp() const;
+  
  private:
   AliVertexGenFile(const AliVertexGenFile &vgf);
   //:     AliVertexGenerator(vgf)    {Fatal("copy ctor","Not implemented\n");}

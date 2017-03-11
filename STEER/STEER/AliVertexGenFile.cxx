@@ -95,6 +95,13 @@ AliVertexGenFile::~AliVertexGenFile()
   delete fHeader;
 }
 
+//_____________________________________________________________________________
+time_t AliVertexGenFile::GetHeaderTimeStamp() const
+{
+  // get the timestamp of the last header used for the vertex
+  if (fHeader) return fHeader->GetTimeStamp();
+  else AliFatal("No header was loaded yet");
+}
 
 //_____________________________________________________________________________
 TVector3 AliVertexGenFile::GetVertex()

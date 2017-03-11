@@ -222,7 +222,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fUseMagFieldFromGRP(0),
   fGRPWriteLocation(Form("local://%s", gSystem->pwd())),
   fUseDetectorsFromGRP(kTRUE),
-  fUseTimeStampFromCDB(kFALSE),
+  fUseTimeStampFromCDB(0),
   fTimeStart(0),
   fTimeEnd(0),
   fLumiDecayH(-1.), // by default, use lumi from CTP
@@ -1145,14 +1145,14 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   // If requested we take the SOR and EOR time-stamps from the GRP and use them
   // in order to generate the event time-stamps
-  if (fUseTimeStampFromCDB) {
+  if (fUseTimeStampFromCDB>0) {
     AliGRPManager grpM;
     grpM.ReadGRPEntry();
     const AliGRPObject *grpObj = grpM.GetGRPData();
     if (!grpObj || (grpObj->GetTimeEnd() <= grpObj->GetTimeStart())) {
       AliFatal("Missing GRP or bad SOR/EOR time-stamps! Switching off the time-stamp generation from GRP!");
       fTimeStart = fTimeEnd = 0;
-      fUseTimeStampFromCDB = kFALSE;
+      fUseTimeStampFromCDB = 0;
     }
     else {
       fTimeStart = grpObj->GetTimeStart();
@@ -1295,6 +1295,8 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
                  fileName, signalPerBkgrd));
     AliVertexGenFile* vtxGen = new AliVertexGenFile(fileName, signalPerBkgrd);
     gAlice->GetMCApp()->Generator()->SetVertexGenerator(vtxGen);
+    fUseTimeStampFromCDB = -1;
+    AliInfo("TimeStamp generation is overriden: will be taken from background event");
   }
 
   if (!fRunSimulation) {
@@ -2739,16 +2741,24 @@ void AliSimulation::WriteGRPEntry()
 time_t AliSimulation::GenerateTimeStamp() const
 {
   // Generate event time-stamp according to
-  // SOR/EOR time from GRP
+  // 1) SOR/EOR time from GRP if fUseTimeStampFromCDB>0
+  // 2) set it to 0 if fUseTimeStampFromCDB = 0
+  // 3) in special mode of embedding take it from underlaying event fUseTimeStampFromCDB<0
+  
   static int counter=0;
-  if (fUseTimeStampFromCDB)
+  if (fUseTimeStampFromCDB==0) return 0;
+  //
+  if (fUseTimeStampFromCDB>0)
     if (fOrderedTimeStamps.size()) {
       if (counter>=fOrderedTimeStamps.size()) counter = 0; // in case of overflow, restart
       return fOrderedTimeStamps[counter++];
     }
     else return fTimeStart + gRandom->Integer(fTimeEnd-fTimeStart);
-  else
-    return 0;
+  else { // special mode of embedded event, take if from the AliVertexGenFile header
+    const AliVertexGenFile* vtxGen =  (AliVertexGenFile*)gAlice->GetMCApp()->Generator()->GetVertexGenerator();
+    if (!vtxGen) AliFatal("Failed to fetch AliVertexGenFile generator for timeStamp extraction");
+    return vtxGen->GetHeaderTimeStamp();
+  }
 }
 
 //_____________________________________________________________________________
@@ -2806,6 +2816,6 @@ void AliSimulation::UseTimeStampFromCDB(Double_t decayTimeHours)
 {
   // Request event time stamp generated within GRP start/end
   // If decayTimeHours>0, then exponential decay is generated, otherwhise, generated according to lumi from CTP
-  fUseTimeStampFromCDB = kTRUE;
+  fUseTimeStampFromCDB = 1;
   fLumiDecayH = decayTimeHours;
 }
