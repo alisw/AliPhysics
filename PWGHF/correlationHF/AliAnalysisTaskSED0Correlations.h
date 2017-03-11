@@ -27,6 +27,7 @@
 #include "AliHFCorrelator.h"
 #include "AliNormalizationCounter.h"
 #include "AliHFOfflineCorrelator.h"
+#include "AliD0hCutOptim.h"
 
 using std::vector;
 
@@ -46,6 +47,10 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+
+  enum PartType {kTrack,kKCharg,kK0};
+  enum FillType {kSE, kME}; //for single event or event mixing histos fill
+  enum TreeFill {kNoTrees, kFillTrees, kFillCutOptTree};
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetMCReconstructedTracks(Bool_t recoTrMC=kTRUE){fRecoTr=recoTrMC;}
@@ -100,11 +105,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetUseDeff(Bool_t useDeff) {fUseDeff=useDeff;}
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
   void SetMinDPt(Double_t minDPt) {fMinDPt=minDPt;}
-  void SetFillTrees(Bool_t fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
+  void SetFillTrees(TreeFill fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
  
-  enum PartType {kTrack,kKCharg,kK0};
-  enum FillType {kSE, kME}; //for single event or event mixing histos fill
-
  private:
 
   AliAnalysisTaskSED0Correlations(const AliAnalysisTaskSED0Correlations &source);
@@ -122,8 +124,10 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t IsSoftPion_MCKine(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* arrayMC) const;
   void FillTreeD0(AliAODRecoDecayHF2Prong* d, AliAODEvent* aod);  
   void FillTreeTracks(AliAODEvent* aod);  
+  void FillTreeD0ForCutOptim(AliAODRecoDecayHF2Prong* d, AliAODEvent* aod);  
   void ResetBranchD();
   void ResetBranchTracks();
+  void ResetBranchDForCutOptim();
   Bool_t AcceptTrackForMEOffline(Double_t pt);
   
   Int_t             	 fNPtBinsCorr;        // number of pt bins per correlations
@@ -182,19 +186,20 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t  fPtAssocLimit;   		// Maximum value for associated pT
   Double_t  fMinDPt;			// Minimum pT of the D0 to allow selection
 
-  Bool_t    fFillTrees;			// Flag to fill ME offline trees
+  TreeFill  fFillTrees;			// Flag to fill ME offline trees
   Double_t  fFractAccME;		// Fraction of tracks to be accepted in the ME offline
   Int_t     fAODProtection;  	        // flag to activate protection against AOD-dAOD mismatch.
 
   AliHFCorrelationBranchD   *fBranchD;
   AliHFCorrelationBranchTr  *fBranchTr;
+  AliD0hCutOptim	    *fBranchDCutVars; //for cut optimization!
 
   TTree	    *fTreeD;			// TTree for ME offline - D0 mesons
   TTree	    *fTreeTr;			// TTree for ME offline - Assoc tracks
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,12); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,13); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif

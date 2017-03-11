@@ -118,11 +118,12 @@ AliAnalysisTaskSE(),
   fUseTrackeff(kTRUE),
   fPtAssocLimit(1.),
   fMinDPt(2.),
-  fFillTrees(kFALSE),
+  fFillTrees(kNoTrees),
   fFractAccME(100),
   fAODProtection(1),
   fBranchD(),
   fBranchTr(),
+  fBranchDCutVars(),
   fTreeD(0x0),
   fTreeTr(0x0),
   fTrackArray(0x0),
@@ -189,11 +190,12 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fUseTrackeff(kTRUE),
   fPtAssocLimit(1.),
   fMinDPt(2.),
-  fFillTrees(kFALSE),
+  fFillTrees(kNoTrees),
   fFractAccME(100),
   fAODProtection(1),
   fBranchD(),
   fBranchTr(),
+  fBranchDCutVars(),
   fTreeD(0x0),
   fTreeTr(0x0),
   fTrackArray(0x0),
@@ -287,8 +289,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fAODProtection(source.fAODProtection),
   fBranchD(source.fBranchD),
   fBranchTr(source.fBranchTr),
+  fBranchDCutVars(source.fBranchDCutVars), 
   fTreeD(source.fTreeD),
-  fTreeTr(source.fTreeTr),   
+  fTreeTr(source.fTreeTr),  
   fTrackArray(source.fTrackArray),
   fTrackArrayFilled(source.fTrackArrayFilled)   
 {
@@ -402,6 +405,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fAODProtection = orig.fAODProtection;
   fBranchD = orig.fBranchD;
   fBranchTr = orig.fBranchTr;
+  fBranchDCutVars = orig.fBranchDCutVars;
   fTreeD = orig.fTreeD;
   fTreeTr = orig.fTreeTr;
   fTrackArray = orig.fTrackArray;      
@@ -436,7 +440,7 @@ void AliAnalysisTaskSED0Correlations::Init()
 void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
 {
 
-  if(fFillTrees) {
+  if(fFillTrees==kFillTrees) {
 
     fBranchD = new AliHFCorrelationBranchD();
     fBranchTr = new AliHFCorrelationBranchTr();
@@ -450,6 +454,16 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
     PostData(8,fTreeD);
     PostData(9,fTreeTr);
   }
+  
+  if(fFillTrees==kFillCutOptTree) {
+
+    fBranchDCutVars = new AliD0hCutOptim();
+
+    fTreeD = new TTree("fTreeD","TTree for D0 mesons - Vars for Cut Optimization");
+    fTreeD->Branch("branchD",&fBranchDCutVars);
+
+    PostData(8,fTreeD);
+  }  
 
   // Create the output container
   //
@@ -942,8 +956,9 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
  	      ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
 	      ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
             }
-	    if(fFillTrees) FillTreeD0(d,aod); //only for offline correlations
-	    else CalculateCorrelations(d); //correlations on real data
+	    if(fFillTrees==kNoTrees) CalculateCorrelations(d); //correlations on real data
+	    if(fFillTrees==kFillTrees) FillTreeD0(d,aod); //only for offline correlations
+	    if(fFillTrees==kFillCutOptTree) FillTreeD0ForCutOptim(d,aod); //only for offline correlations to optimize D0 cut variables
 	  }
         } else { //correlations on MC -> association of selected D0 to MCinfo with MCtruth
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
@@ -1038,13 +1053,13 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   }
   //End MCKineD0 case ************************************************
 
-  if(fMixing && !fFillTrees /* && fAlreadyFilled*/) { // update the pool for Event Mixing, if: enabled,  event is ok, at least a SelD0 found! (fAlreadyFilled's role!)
+  if(fMixing && fFillTrees!=kFillTrees /* && fAlreadyFilled*/) { // update the pool for Event Mixing, if: enabled,  event is ok, at least a SelD0 found! (fAlreadyFilled's role!)
     Bool_t updatedTr = fCorrelatorTr->PoolUpdate();
     Bool_t updatedKc = fCorrelatorKc->PoolUpdate();
     Bool_t updatedK0 = fCorrelatorK0->PoolUpdate();
     if(!updatedTr || !updatedKc || !updatedK0) AliInfo("Pool was not updated");
   }
-  if(fFillTrees && fAlreadyFilled) FillTreeTracks(aod);
+  if(fFillTrees==kFillTrees && fAlreadyFilled) FillTreeTracks(aod);
   
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
@@ -1056,8 +1071,8 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   PostData(4,fCounter);
   PostData(5,fOutputCorr);
   PostData(6,fOutputStudy);
-  if(fFillTrees) PostData(8,fTreeD);
-  if(fFillTrees) PostData(9,fTreeTr);
+  if(fFillTrees!=kNoTrees) PostData(8,fTreeD); //fill in case kFillTrees or kFillCutOptTree
+  if(fFillTrees==kFillTrees) PostData(9,fTreeTr); //fill only in case kFillTrees
   
   return;
 }
@@ -3001,6 +3016,85 @@ void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskSED0Correlations::FillTreeD0ForCutOptim(AliAODRecoDecayHF2Prong* d, AliAODEvent* aod) {
+
+  Int_t ptbin = PtBinCorr(d->Pt());
+  if(ptbin < 0) return;
+
+  Float_t centEv = -9;
+  if(fCutsD0->GetUseCentrality()) centEv = fCutsD0->GetCentrality(aod); //get event centrality with current estimator
+
+  //recalculate vertex w/o daughters
+  AliAODVertex *origownvtx=0x0;
+  if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+  if(!fCutsD0->RecalcOwnPrimaryVtx(d,aod)) {
+     fCutsD0->CleanOwnPrimaryVtx(d,aod,origownvtx);
+     return;
+  }
+
+  //Preliminary vars
+  Double_t mD0, mD0bar;
+  d->InvMassD0(mD0,mD0bar);
+  fBranchDCutVars->invMass = 0;
+  Double_t ctsD0, ctsD0bar;
+  d->CosThetaStarD0(ctsD0,ctsD0bar);
+
+  //Topomatic
+  Double_t dd0max=0.;
+  for(Int_t ipr=0; ipr<2; ipr++) {
+    Double_t diffIP, errdiffIP;
+    d->Getd0MeasMinusExpProng(ipr,aod->GetMagneticField(),diffIP,errdiffIP);
+    Double_t normdd0=0.;
+    if(errdiffIP>0.) normdd0=diffIP/errdiffIP;
+    if(ipr==0) dd0max=normdd0;
+    else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
+  }
+
+// printf("Centralità = %f, %f (ZNA), %f (V0M)\n",fCutsD0->GetCentrality(aod),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentZNA),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentV0M)); getchar();
+
+  //Fill TTree for accepted candidates
+  //if both hypotheses are ok, the TTree is filled 2 times, with the different cut values
+  if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) {
+    ResetBranchDForCutOptim();
+    fBranchDCutVars->invMass = (Float_t)mD0;
+    fBranchDCutVars->cent = (Float_t)centEv;
+    fBranchDCutVars->pt = (Float_t)d->Pt();
+    fBranchDCutVars->dca = (Float_t)d->GetDCA();
+    fBranchDCutVars->cosThSt = (Float_t)TMath::Abs(ctsD0);
+    fBranchDCutVars->pTk = (Float_t)d->Pt2Prong(1);
+    fBranchDCutVars->pTpi = (Float_t)d->Pt2Prong(0);
+    fBranchDCutVars->d0k = (Float_t)TMath::Abs(d->Getd0Prong(1)); 
+    fBranchDCutVars->d0pi = (Float_t)TMath::Abs(d->Getd0Prong(0));
+    fBranchDCutVars->d0xd0 = (Float_t)d->Prodd0d0();
+    fBranchDCutVars->cosThPt = (Float_t)d->CosPointingAngle();
+    fBranchDCutVars->topom = (Float_t)TMath::Abs(dd0max);
+    fTreeD->Fill();
+  } //end of if for tree filling
+
+  if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) {
+    ResetBranchDForCutOptim();
+    fBranchDCutVars->invMass = (Float_t)mD0bar;
+    fBranchDCutVars->cent = (Float_t)centEv;
+    fBranchDCutVars->pt = (Float_t)d->Pt();
+    fBranchDCutVars->dca = (Float_t)d->GetDCA();
+    fBranchDCutVars->cosThSt = (Float_t)TMath::Abs(ctsD0bar);
+    fBranchDCutVars->pTk = (Float_t)d->Pt2Prong(0);
+    fBranchDCutVars->pTpi = (Float_t)d->Pt2Prong(1);
+    fBranchDCutVars->d0k = (Float_t)TMath::Abs(d->Getd0Prong(0)); 
+    fBranchDCutVars->d0pi = (Float_t)TMath::Abs(d->Getd0Prong(1));
+    fBranchDCutVars->d0xd0 = (Float_t)d->Prodd0d0();
+    fBranchDCutVars->cosThPt = (Float_t)d->CosPointingAngle();
+    fBranchDCutVars->topom = (Float_t)TMath::Abs(dd0max);
+    fTreeD->Fill();
+  } //end of if for tree filling
+
+  // unset recalculated primary vertex when not needed any more
+  fCutsD0->CleanOwnPrimaryVtx(d,aod,origownvtx);
+
+  return;
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskSED0Correlations::ResetBranchD() {
 
   fBranchD->phi_D = 0.;
@@ -3044,6 +3138,25 @@ void AliAnalysisTaskSED0Correlations::ResetBranchTracks() {
   fBranchTr->IDtrig4_Tr = 0; 
   fBranchTr->sel_Tr = 0;
 
+  return;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSED0Correlations::ResetBranchDForCutOptim() {
+
+  fBranchDCutVars->invMass = 0.;
+  fBranchDCutVars->cent = 0.;
+  fBranchDCutVars->pt = 0.;
+  fBranchDCutVars->dca = 0.;
+  fBranchDCutVars->cosThSt = 0.;
+  fBranchDCutVars->pTk = 0.;
+  fBranchDCutVars->pTpi = 0.;
+  fBranchDCutVars->d0k = 0.;
+  fBranchDCutVars->d0pi = 0.;
+  fBranchDCutVars->d0xd0 = 0.;
+  fBranchDCutVars->cosThPt = 0.;
+  fBranchDCutVars->topom = 0.;
+  
   return;
 }
 
