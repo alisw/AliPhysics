@@ -349,6 +349,22 @@ void  AliMC::AddParticles()
   TVirtualMC::GetMC()->SetDecayMode(-9322134,psratio,psmode);
   TVirtualMC::GetMC()->SetDecayMode(-9322136,psratio,psmode);
 
+  // d*(2380) - dibaryon resonance
+  TVirtualMC::GetMC()->DefineParticle( 900010020, "d*_2380", kPTHadron, 2.38, 1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, 2, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle( -900010020, "d*_2380_bar", kPTHadron, 2.38, 1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, -2, kTRUE);
+
+  Int_t dstmode[6][3] = {0};
+  Float_t dstratio[6] = {0.f};
+  dstratio[0] = 100; // For now we implement only the mode of interest
+                     // d* -> d pi+ pi-
+  dstmode[0][0] = 1000010020; // deuteron
+  dstmode[0][1] = -211; // negative pion
+  dstmode[0][2] = 211; // positive pion
+  TVirtualMC::GetMC()->SetDecayMode(900010020,dstratio,dstmode);
+
+  dstmode[0][0] = -1000010020; // anti-deuteron
+  TVirtualMC::GetMC()->SetDecayMode(-900010020,dstratio,dstmode);
+
 
   // Heavy vector mesons
   // D*+

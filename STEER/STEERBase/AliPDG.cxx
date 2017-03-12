@@ -370,4 +370,12 @@ void AliPDG::AddParticlesToPdgDataBase()
                        0.040, -3, "Resonance", -ionCode);
   }
 
+  // d*(2380) - dibaryon resonance
+
+  ionCode = 900010020; //Arbitrary choice - as deuteron but with leading 9 instead of 10
+  if(!pdgDB->GetParticle(ionCode)) {
+    pdgDB->AddParticle("d*_2380","d*_2380", 2.38, kFALSE,
+                       0.070, 3, "Resonance", ionCode);
+  }
+  pdgDB->AddAntiParticle("d*_2380_bar", - ionCode);
 }
