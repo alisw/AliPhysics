@@ -12,6 +12,8 @@
 #include "AliFemtoV0.h"
 #include "AliFemtoV0TrackCut.h"
 #include "AliFemtoV0TrackCutNSigmaFilter.h"
+#include "AliFemtoV0Collection.h"
+#include "AliFemtoV0SharedDaughterCut.h"
 
 #include "AliFmPhysicalHelixD.h"
 #include "TVector3.h"
@@ -79,6 +81,10 @@ public:
 
   virtual ~AliFemtoV0PurityBgdEstimator();
 
+  void ClearV0Collections();
+  void FillHistograms();
+  void IsSameEvent();  //not great, but should work for now
+
   AliFmThreeVector<double> ShiftMomentumToDCA(const AliFmHelix& tHelix, const AliFmThreeVector<double>& tMomentum, double tPathLengthToDCA);
   void UseCorrectedDaughterHelices(const AliFemtoTrack* tTrackPos, const AliFemtoTrack* tTrackNeg);
   void BuildV0(AliFemtoPair* aPair);
@@ -102,12 +108,19 @@ protected:
   TString fTitle;
   int fNbinsMinv;
   double fMinvLow, fMinvHigh;
+  TH1D* fNumeratorWithoutSharedDaughterCut;          // numerator - real pairs
+  TH1D* fDenominatorWithoutSharedDaughterCut;        // denominator - mixed pairs
+  TH1D* fRatioWithoutSharedDaughterCut;              // unnormalized ratio num/den
   TH1D* fNumerator;          // numerator - real pairs
   TH1D* fDenominator;        // denominator - mixed pairs
   TH1D* fRatio;              // unnormalized ratio num/den
 
   AliFemtoV0 *fFemtoV0;
   AliFemtoV0TrackCutNSigmaFilter* fFemtoV0TrackCut;
+
+  AliFmThreeVector<double> fCurrentPrimVtx;
+  AliFemtoV0Collection* fRealV0Collection;
+  AliFemtoV0Collection* fMixedV0Collection;
 
 };
 

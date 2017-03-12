@@ -28,12 +28,27 @@ AliFemtoV0PurityBgdEstimator::AliFemtoV0PurityBgdEstimator(const char* title,
   fNbinsMinv(nbins),
   fMinvLow(MinvLo),
   fMinvHigh(MinvHi),
+  fNumeratorWithoutSharedDaughterCut(nullptr),
+  fDenominatorWithoutSharedDaughterCut(nullptr),
+  fRatioWithoutSharedDaughterCut(nullptr),
   fNumerator(nullptr),
   fDenominator(nullptr),
   fRatio(nullptr),
   fFemtoV0(nullptr),
-  fFemtoV0TrackCut(nullptr)
+  fFemtoV0TrackCut(nullptr),
+  fCurrentPrimVtx(),
+  fRealV0Collection(nullptr),
+  fMixedV0Collection(nullptr)
 {
+  fNumeratorWithoutSharedDaughterCut = new TH1D(TString::Format("NumWithoutSharedDaughterCut%s", fTitle.Data()),
+                        "V0Purity - Sig+Bgd; M_{inv}(GeV/c^{2});",
+                        nbins, MinvLo, MinvHi);
+  fDenominatorWithoutSharedDaughterCut = new TH1D(TString::Format("DenWithoutSharedDaughterCut%s", fTitle.Data()),
+                          "V0Purity - Bgd; M_{inv}(GeV/c^{2});",
+                          nbins, MinvLo, MinvHi);
+  fRatioWithoutSharedDaughterCut = new TH1D(TString::Format("RatWithoutSharedDaughterCut%s", fTitle.Data()),
+                    "V0Purity - Ratio; M_{inv}(GeV/c^{2});",
+                    nbins, MinvLo, MinvHi);
   fNumerator = new TH1D(TString::Format("Num%s", fTitle.Data()),
                         "V0Purity - Sig+Bgd; M_{inv}(GeV/c^{2});",
                         nbins, MinvLo, MinvHi);
@@ -45,12 +60,21 @@ AliFemtoV0PurityBgdEstimator::AliFemtoV0PurityBgdEstimator(const char* title,
                     nbins, MinvLo, MinvHi);
 
   // to enable error bar calculation...
+  fNumeratorWithoutSharedDaughterCut->Sumw2();
+  fDenominatorWithoutSharedDaughterCut->Sumw2();
+  fRatioWithoutSharedDaughterCut->Sumw2();
   fNumerator->Sumw2();
   fDenominator->Sumw2();
   fRatio->Sumw2();
 
+
   fFemtoV0 = new AliFemtoV0();
   fFemtoV0TrackCut = new AliFemtoV0TrackCutNSigmaFilter();
+
+  fCurrentPrimVtx = AliFmThreeVector<double>(0.,0.,0.);
+
+  fRealV0Collection = new AliFemtoV0Collection();
+  fMixedV0Collection = new AliFemtoV0Collection();
 }
 
 //____________________________
@@ -59,16 +83,22 @@ AliFemtoV0PurityBgdEstimator::AliFemtoV0PurityBgdEstimator(const AliFemtoV0Purit
   fTitle(aCorrFctn.fTitle),
   fNbinsMinv(aCorrFctn.fNbinsMinv),
 
+  fNumeratorWithoutSharedDaughterCut(aCorrFctn.fNumeratorWithoutSharedDaughterCut ? new TH1D(*aCorrFctn.fNumeratorWithoutSharedDaughterCut) : nullptr),
+  fDenominatorWithoutSharedDaughterCut(aCorrFctn.fDenominatorWithoutSharedDaughterCut ? new TH1D(*aCorrFctn.fDenominatorWithoutSharedDaughterCut) : nullptr),
   fNumerator(aCorrFctn.fNumerator ? new TH1D(*aCorrFctn.fNumerator) : nullptr),
   fDenominator(aCorrFctn.fDenominator ? new TH1D(*aCorrFctn.fDenominator) : nullptr),
 
   fFemtoV0(aCorrFctn.fFemtoV0 ? new AliFemtoV0(*aCorrFctn.fFemtoV0) : nullptr),
   fFemtoV0TrackCut(aCorrFctn.fFemtoV0TrackCut ? new AliFemtoV0TrackCutNSigmaFilter(*aCorrFctn.fFemtoV0TrackCut) : nullptr),
 
+  fRealV0Collection(aCorrFctn.fRealV0Collection ? new AliFemtoV0Collection(*aCorrFctn.fRealV0Collection) : nullptr),
+  fMixedV0Collection(aCorrFctn.fMixedV0Collection ? new AliFemtoV0Collection(*aCorrFctn.fMixedV0Collection) : nullptr),
+
   fMinvLow(aCorrFctn.fMinvLow),
   fMinvHigh(aCorrFctn.fMinvHigh)
 {
   // copy constructor
+  fRatioWithoutSharedDaughterCut = (aCorrFctn.fRatioWithoutSharedDaughterCut) ? new TH1D(*aCorrFctn.fRatioWithoutSharedDaughterCut) : nullptr;
   fRatio = (aCorrFctn.fRatio) ? new TH1D(*aCorrFctn.fRatio) : nullptr;
 }
 
@@ -88,6 +118,12 @@ AliFemtoV0PurityBgdEstimator& AliFemtoV0PurityBgdEstimator::operator=(const AliF
 
   fTitle = aCorrFctn.fTitle;
 
+  if(fNumeratorWithoutSharedDaughterCut) delete fNumeratorWithoutSharedDaughterCut;
+    fNumeratorWithoutSharedDaughterCut = new TH1D(*aCorrFctn.fNumeratorWithoutSharedDaughterCut);
+  if(fDenominatorWithoutSharedDaughterCut) delete fDenominatorWithoutSharedDaughterCut;
+    fDenominatorWithoutSharedDaughterCut = new TH1D(*aCorrFctn.fDenominatorWithoutSharedDaughterCut);
+  if(fRatioWithoutSharedDaughterCut) delete fRatioWithoutSharedDaughterCut;
+    fRatioWithoutSharedDaughterCut = new TH1D(*aCorrFctn.fRatioWithoutSharedDaughterCut);
   if(fNumerator) delete fNumerator;
     fNumerator = new TH1D(*aCorrFctn.fNumerator);
   if(fDenominator) delete fDenominator;
@@ -100,6 +136,12 @@ AliFemtoV0PurityBgdEstimator& AliFemtoV0PurityBgdEstimator::operator=(const AliF
 
   if(fFemtoV0TrackCut) delete fFemtoV0TrackCut;
     fFemtoV0TrackCut = new AliFemtoV0TrackCutNSigmaFilter(*aCorrFctn.fFemtoV0TrackCut);
+
+  if(fRealV0Collection) delete fRealV0Collection;
+    fRealV0Collection = new AliFemtoV0Collection(*aCorrFctn.fRealV0Collection);
+
+  if(fMixedV0Collection) delete fMixedV0Collection;
+    fMixedV0Collection = new AliFemtoV0Collection(*aCorrFctn.fMixedV0Collection);
 
   return *this;
 }
@@ -114,9 +156,72 @@ AliFemtoV0PurityBgdEstimator* AliFemtoV0PurityBgdEstimator::Clone()
 AliFemtoV0PurityBgdEstimator::~AliFemtoV0PurityBgdEstimator()
 {
   // destructor
+  delete fNumeratorWithoutSharedDaughterCut;
+  delete fDenominatorWithoutSharedDaughterCut;
+  delete fRatioWithoutSharedDaughterCut;
   delete fNumerator;
   delete fDenominator;
   delete fRatio;
+}
+
+//____________________________
+void AliFemtoV0PurityBgdEstimator::ClearV0Collections()
+{
+  for(AliFemtoV0Iterator iter = fRealV0Collection->begin(); iter != fRealV0Collection->end(); iter++) delete *iter;
+  fRealV0Collection->clear();
+  for(AliFemtoV0Iterator iter = fMixedV0Collection->begin(); iter != fMixedV0Collection->end(); iter++) delete *iter;
+  fMixedV0Collection->clear();
+}
+
+//____________________________
+void AliFemtoV0PurityBgdEstimator::FillHistograms()
+{
+  double weight = 1.0;
+  double tMinv;
+  short tV0Type = fFemtoV0TrackCut->GetParticleType();
+
+  AliFemtoV0SharedDaughterCut shared_daughter_cut;
+  AliFemtoV0Collection tCorrectedRealV0Collection = shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(fRealV0Collection, (AliFemtoV0Cut*)fFemtoV0TrackCut);
+  AliFemtoV0Collection tCorrectedMixedV0Collection = shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(fMixedV0Collection, (AliFemtoV0Cut*)fFemtoV0TrackCut);
+
+  AliFemtoV0* tV0 = NULL;
+  for(AliFemtoV0Iterator iter = tCorrectedRealV0Collection.begin(); iter != tCorrectedRealV0Collection.end(); iter++)
+  {
+    tV0 = *iter;
+    if(tV0Type==AliFemtoV0TrackCut::kLambda || tV0Type==AliFemtoV0TrackCut::kLambdaMC) tMinv = tV0->MassLambda();
+    else if(tV0Type==AliFemtoV0TrackCut::kAntiLambda || tV0Type==AliFemtoV0TrackCut::kAntiLambdaMC) tMinv = tV0->MassAntiLambda();
+    else if(tV0Type==AliFemtoV0TrackCut::kK0s || tV0Type==AliFemtoV0TrackCut::kK0sMC) tMinv = tV0->MassK0Short();
+    else tMinv = 0.;
+
+    fNumerator->Fill(tMinv);
+  }
+  for(AliFemtoV0Iterator iter = tCorrectedMixedV0Collection.begin(); iter != tCorrectedMixedV0Collection.end(); iter++)
+  {
+    tV0 = *iter;
+    if(tV0Type==AliFemtoV0TrackCut::kLambda || tV0Type==AliFemtoV0TrackCut::kLambdaMC) tMinv = tV0->MassLambda();
+    else if(tV0Type==AliFemtoV0TrackCut::kAntiLambda || tV0Type==AliFemtoV0TrackCut::kAntiLambdaMC) tMinv = tV0->MassAntiLambda();
+    else if(tV0Type==AliFemtoV0TrackCut::kK0s || tV0Type==AliFemtoV0TrackCut::kK0sMC) tMinv = tV0->MassK0Short();
+    else tMinv = 0.;
+
+    fDenominator->Fill(tMinv,weight);
+  }
+}
+
+//____________________________
+void AliFemtoV0PurityBgdEstimator::IsSameEvent()
+{
+  AliFmThreeVector<double> tPrimVtx = fFemtoV0->PrimaryVertex();
+  if(tPrimVtx.x() != fCurrentPrimVtx.x() ||
+     tPrimVtx.y() != fCurrentPrimVtx.y() ||
+     tPrimVtx.z() != fCurrentPrimVtx.z())
+  {
+    fCurrentPrimVtx.SetX(tPrimVtx.x());
+    fCurrentPrimVtx.SetY(tPrimVtx.y());
+    fCurrentPrimVtx.SetZ(tPrimVtx.z());
+
+    FillHistograms();
+    ClearV0Collections();
+  }
 }
 
 //____________________________
@@ -259,6 +364,8 @@ AliFemtoString AliFemtoV0PurityBgdEstimator::Report()
 {
   // construct report
   TString report = "V0 Purity Background Estimator Report:\n";
+  report += TString::Format("Number of entries in numeratorWithoutSharedDaughterCut:\t%E\n", fNumeratorWithoutSharedDaughterCut->GetEntries());
+  report += TString::Format("Number of entries in denominatorWithoutSharedDaughterCut:\t%E\n", fDenominatorWithoutSharedDaughterCut->GetEntries());
   report += TString::Format("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
   report += TString::Format("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
   return AliFemtoString(report);
@@ -270,6 +377,9 @@ TList* AliFemtoV0PurityBgdEstimator::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
+  tOutputList->Add(fNumeratorWithoutSharedDaughterCut);
+  tOutputList->Add(fDenominatorWithoutSharedDaughterCut);
+  tOutputList->Add(fRatioWithoutSharedDaughterCut);
   tOutputList->Add(fNumerator);
   tOutputList->Add(fDenominator);
   tOutputList->Add(fRatio);
@@ -280,6 +390,7 @@ TList* AliFemtoV0PurityBgdEstimator::GetOutputList()
 //_________________________
 void AliFemtoV0PurityBgdEstimator::Finish()
 {
+  fRatioWithoutSharedDaughterCut->Divide(fNumeratorWithoutSharedDaughterCut, fDenominatorWithoutSharedDaughterCut, 1.0, 1.0);
   fRatio->Divide(fNumerator, fDenominator, 1.0, 1.0);
 }
 
@@ -287,6 +398,9 @@ void AliFemtoV0PurityBgdEstimator::Finish()
 void AliFemtoV0PurityBgdEstimator::Write()
 {
   // Write out neccessary objects
+  fNumeratorWithoutSharedDaughterCut->Write();
+  fDenominatorWithoutSharedDaughterCut->Write();
+  fRatioWithoutSharedDaughterCut->Write();
   fNumerator->Write();
   fDenominator->Write();
   fRatio->Write();
@@ -300,6 +414,7 @@ void AliFemtoV0PurityBgdEstimator::AddRealPair(AliFemtoPair* aPair)
   BuildV0(aPair);
   if (!fFemtoV0TrackCut->Pass(fFemtoV0)) return;
 
+  IsSameEvent();
   double tMinv;
   short tV0Type = fFemtoV0TrackCut->GetParticleType();
   if(tV0Type==AliFemtoV0TrackCut::kLambda || tV0Type==AliFemtoV0TrackCut::kLambdaMC) tMinv = fFemtoV0->MassLambda();
@@ -307,7 +422,8 @@ void AliFemtoV0PurityBgdEstimator::AddRealPair(AliFemtoPair* aPair)
   else if(tV0Type==AliFemtoV0TrackCut::kK0s || tV0Type==AliFemtoV0TrackCut::kK0sMC) tMinv = fFemtoV0->MassK0Short();
   else tMinv = 0.;
 
-  fNumerator->Fill(tMinv);
+  fRealV0Collection->push_back(new AliFemtoV0(*fFemtoV0));
+  fNumeratorWithoutSharedDaughterCut->Fill(tMinv);
 }
 
 //____________________________
@@ -317,6 +433,7 @@ void AliFemtoV0PurityBgdEstimator::AddMixedPair(AliFemtoPair* aPair)
   BuildV0(aPair);
   if (!fFemtoV0TrackCut->Pass(fFemtoV0)) return;
 
+  IsSameEvent();
   double weight = 1.0;
   double tMinv;
   short tV0Type = fFemtoV0TrackCut->GetParticleType();
@@ -325,7 +442,8 @@ void AliFemtoV0PurityBgdEstimator::AddMixedPair(AliFemtoPair* aPair)
   else if(tV0Type==AliFemtoV0TrackCut::kK0s || tV0Type==AliFemtoV0TrackCut::kK0sMC) tMinv = fFemtoV0->MassK0Short();
   else tMinv = 0.;
 
-  fDenominator->Fill(tMinv,weight);
+  fMixedV0Collection->push_back(new AliFemtoV0(*fFemtoV0));
+  fDenominatorWithoutSharedDaughterCut->Fill(tMinv,weight);
 
 }
 
