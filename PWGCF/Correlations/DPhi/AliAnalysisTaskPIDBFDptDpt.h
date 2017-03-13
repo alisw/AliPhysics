@@ -126,10 +126,14 @@ public:
     virtual     void    SetRequestedCharge_2(int v)     { _requestedCharge_2 = v; }
     virtual     void    SetPtMin1( double v)            { _min_pt_1          = v; }
     virtual     void    SetPtMax1( double v)            { _max_pt_1          = v; }
+    virtual     void    SetPtBinWidth1( double v)       { _width_pt_1        = v; }
+    virtual     void    SetNPhiBins1( int v)            { _nBins_phi_1       = v; }
     virtual     void    SetEtaMin1(double v)            { _min_eta_1         = v; } // SetYMin1 acturally 
     virtual     void    SetEtaMax1(double v)            { _max_eta_1         = v; } // SetYMax1 acturally
     virtual     void    SetPtMin2( double v)            { _min_pt_2          = v; }
     virtual     void    SetPtMax2( double v)            { _max_pt_2          = v; }
+    virtual     void    SetPtBinWidth2( double v)       { _width_pt_2        = v; }
+    virtual     void    SetNPhiBins2( int v)            { _nBins_phi_2       = v; }
     virtual     void    SetEtaMin2(double v)            { _min_eta_2         = v; } // SetYMin2 acturally
     virtual     void    SetEtaMax2(double v)            { _max_eta_2         = v; } // SetYMax2 acturally
     virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; }
@@ -275,6 +279,7 @@ protected:
     int _nBins_M4;       double _min_M4;       double _max_M4;       double _width_M4;
     int _nBins_M5;       double _min_M5;       double _max_M5;       double _width_M5;
     int _nBins_M6;       double _min_M6;       double _max_M6;       double _width_M6;
+    int _nBins_M7;       double _min_M7;       double _max_M7;       double _width_M7;
     
     int _nBins_vertexZ;  double _min_vertexZ;  double _max_vertexZ;  double _width_vertexZ;
     
@@ -344,6 +349,7 @@ protected:
     TH1D * _m4;
     TH1D * _m5;
     TH1D * _m6;
+    TH1D * _m7;
     TH1D * _vertexZ;
     
     TH1F * _Ncluster1;
@@ -511,6 +517,7 @@ protected:
     TString _title_m4;
     TString _title_m5;
     TString _title_m6;
+    TString _title_m7;
     
     TString _title_eta_1;
     TString _title_phi_1;

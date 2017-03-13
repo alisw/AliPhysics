@@ -159,6 +159,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
   _nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
   _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
+  _nBins_M7(100),       _min_M7(0),        _max_M7(1),              _width_M7(0.01),
   _nBins_vertexZ(120),   _min_vertexZ(-6), _max_vertexZ(6),        _width_vertexZ(0.1),
 
   _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
@@ -216,6 +217,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _m4 ( 0),
   _m5 ( 0),
   _m6 ( 0),
+  _m7 ( 0),
   _vertexZ ( 0),
 
   _Ncluster1  ( 0),
@@ -370,6 +372,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _title_m4("NA"),
   _title_m5("NA"),
   _title_m6("NA"),
+  _title_m7("NA"),
 
   _title_eta_1("NA"),
   _title_phi_1("NA"),
@@ -499,6 +502,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
   _nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
   _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
+  _nBins_M7(100),       _min_M7(0),        _max_M7(1),              _width_M7(0.01),
   _nBins_vertexZ(120),   _min_vertexZ(-6), _max_vertexZ(6),        _width_vertexZ(0.1),
 
   _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
@@ -556,6 +560,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _m4 ( 0),
   _m5 ( 0),
   _m6 ( 0),
+  _m7 ( 0),
   _vertexZ ( 0),
   _Ncluster1  ( 0),
   _Ncluster2  ( 0),
@@ -709,6 +714,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _title_m4("NA"),
   _title_m5("NA"),
   _title_m6("NA"),
+  _title_m7("NA"),
 
   _title_eta_1("NA"),
   _title_phi_1("NA"),
@@ -775,6 +781,7 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     _nBins_M4 = 100; _min_M4   = 0.;    _max_M4    = 100.;   _width_M4 = (_max_M4-_min_M4)/_nBins_M4;
     _nBins_M5 = 100; _min_M5   = 0.;    _max_M5    = 100.;   _width_M5 = (_max_M5-_min_M5)/_nBins_M5;
     _nBins_M6 = 100; _min_M6   = 0.;    _max_M6    = 100.;   _width_M6 = (_max_M6-_min_M6)/_nBins_M6;
+    _nBins_M7 = 100; _min_M7   = 0.;    _max_M7    = 100.;   _width_M7 = (_max_M7-_min_M7)/_nBins_M7;
     
     _min_vertexZ       = _vertexZMin;
     _max_vertexZ       = _vertexZMax;
@@ -897,6 +904,7 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     _title_m4     = "V0Centrality";
     _title_m5     = "TrkCentrality";
     _title_m6     = "SpdCentrality";
+    _title_m7     = "V0ACentrality";
     
     _title_eta_1       = "#eta_{1}";
     _title_phi_1       = "#varphi_{1} (radian)";
@@ -1009,6 +1017,7 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     name = "m4"; _m4      = createHisto1D(name,name,_nBins_M4, _min_M4, _max_M4, _title_m4, _title_counts);
     name = "m5"; _m5      = createHisto1D(name,name,_nBins_M5, _min_M5, _max_M5, _title_m5, _title_counts);
     name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
+    name = "m7"; _m7      = createHisto1D(name,name,_nBins_M7, _min_M7, _max_M7, _title_m7, _title_counts);
     name = "zV"; _vertexZ = createHisto1D(name,name,_nBins_vertexZ, _min_vertexZ, _max_vertexZ, "z-Vertex (cm)", _title_counts);
 
     // histos for tracks:
@@ -1901,6 +1910,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     _m4->Fill(_mult4);
     _m5->Fill(_mult5);
     _m6->Fill(_mult6);
+    _m7->Fill(_mult4a);
     _vertexZ->Fill(vertexZ);
     
     if ( _singlesOnly )

@@ -1,18 +1,20 @@
 //  Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
 //  Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
 //
-//   PbPb 10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
-//   pPb  13:     centralityMethod = 7 (V0A),       trigger = kTRUE (AliVEvent::kINT7).     
-//   pp   10:     centralityMethod = 3 (nTracks),   trigger = kFALSE (AliVEvent::kMB).
+//   PbPb         10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
+//   pPb          13:     centralityMethod = 7 (V0A),       trigger = kTRUE (AliVEvent::kINT7).     
+//   pp           10:     centralityMethod = 3 (nTracks),   trigger = kFALSE (AliVEvent::kMB).
+//   pp_V0A_kMB   10:     centralityMethod = 7 (V0A),       trigger = kFALSE (AliVEvent::kMB).
+//   pp_V0A_kINT7 10:     centralityMethod = 7 (V0A),       trigger = kTRUE (AliVEvent::kINT7).
 /////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
 (
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- TString System                 = "pPb",     // "PbPb", "pPb", "pp"
+ TString System                 = "pp_V0A_kINT7",      // "PbPb", "pPb", "pp", "pp_V0A_kMB", "pp_V0A_kINT7"
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
- int    CentralityGroup         =  19,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    CentralityGroup         =  9,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
@@ -30,12 +32,16 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  9,
+ int nCentrality                =  4,
  int particleID                 =  0,   // Pion=0, Kaon=1, Proton=2
  double nSigmaCut               =  2.0,
  double ElectronVetoCut         =  1.0,
- double ptCUTupperMax           =  2.0,
- double ptTOFlowerMin           =  0.6,
+ double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
+ double ptCUTupperMax           =  2.0, // pt range upper limit cut
+ double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
+ double ptWidthBin              =  0.1, // pt bin width in histos
+ double ptTOFlowerMin           =  0.6, // boundary between TPC & TOF region
+ int nBinsPhi                   =  36,  // 36 is default value
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
@@ -52,12 +58,13 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   Bool_t trigger                = kFALSE;
   Bool_t remove_Tracks_T0       = 1;
   bool   PurePIDinMC            = 0;   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
-  double ptMin                  = 0.2; // set pt range lower limit ( same for pt histos )
-  double ptMax                  = 3.0; // set pt range for histos; NOT pt cut!!! 
+   
   
-  if      ( System == "PbPb" )    { centralityMethod = 4; trigger = kFALSE; }
-  else if ( System == "pPb" )     { centralityMethod = 7; trigger = kTRUE;  }
-  else if ( System == "pp" )      { centralityMethod = 3; trigger = kFALSE; }
+  if      ( System == "PbPb" )          { centralityMethod = 4; trigger = kFALSE; }
+  else if ( System == "pPb" )           { centralityMethod = 7; trigger = kTRUE;  }
+  else if ( System == "pp" )            { centralityMethod = 3; trigger = kFALSE; }
+  else if ( System == "pp_V0A_kMB" )    { centralityMethod = 7; trigger = kFALSE; }
+  else if ( System == "pp_V0A_kINT7" )  { centralityMethod = 7; trigger = kTRUE;  }
   else    return 0;
   
   double minCentrality[10];
@@ -141,6 +148,10 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       minCentrality[6] = 50.;     maxCentrality[6]  = 60.;
       minCentrality[7] = 60.;     maxCentrality[7]  = 70.;
       minCentrality[8] = 70.;     maxCentrality[8]  = 90.;  }
+  else if ( CentralityGroup == 20 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+      minCentrality[1] = 30.;     maxCentrality[1]  = 40.;
+      minCentrality[2] = 70.;     maxCentrality[2]  = 80.; }
   else    return 0;
   
   double dedxMin                =  0.0;
@@ -313,10 +324,14 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetCentrality(          minCentrality[iCentrality], maxCentrality[iCentrality]);
       task->SetPtMin1(              ptMin           );
       task->SetPtMax1(              ptMax           );
+      task->SetPtBinWidth1(         ptWidthBin      );
+      task->SetNPhiBins1(           nBinsPhi        );
       task->SetEtaMin1(             eta1Min         ); // SetYMin1 acturally
       task->SetEtaMax1(             eta1Max         ); // SetYMax1 acturally
       task->SetPtMin2(              ptMin           );
       task->SetPtMax2(              ptMax           );
+      task->SetPtBinWidth2(         ptWidthBin      );
+      task->SetNPhiBins2(           nBinsPhi        );
       task->SetEtaMin2(             eta2Min         ); // SetYMin2 acturally
       task->SetEtaMax2(             eta2Max         ); // SetYMax2 acturally
       task->SetDcaZMin(             dcaZMin         );
