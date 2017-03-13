@@ -158,12 +158,12 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     }else if(fSys=="pPb" || fSys=="p-Pb" || fSys=="PPb"){
         finDirname+="pPb";
         //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
-        Double_t LSBLowLim[15]   = {0.,0.,0.,1.797,1.775,1.791,1.759,1.767,1.767,1.767,1.767,1.767,1.767,1.767,1.767};
-        Double_t LSBUppLim[15]   = {0.,0.,0.,1.837,1.829,1.837,1.821,1.821,1.821,1.821,1.821,1.821,1.821,1.821,1.821};
-        Double_t SandBLowLim[15] = {0.,0.,0.,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843};
-        Double_t SandBUppLim[15] = {0.,0.,0.,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885};
-        Double_t RSBLowLim[15]   = {0.,0.,0.,1.901,1.907,1.901,1.917,1.917,1.917,1.917,1.917,1.917,1.917,1.917,1.917};
-        Double_t RSBUppLim[15]   = {0.,0.,0.,1.939,1.963,1.947,1.979,1.971,1.971,1.971,1.971,1.971,1.971,1.971,1.971};
+        Double_t LSBLowLim[15]   = {0.,0.,0.,1.7930,1.7930,1.7850,1.7850,1.7770,1.7770,1.7690,1.7690,1.7530,1.7610,0.,0.};
+        Double_t LSBUppLim[15]   = {0.,0.,0.,1.8410,1.8410,1.8330,1.8330,1.8330,1.8330,1.8250,1.8250,1.8170,1.8250,0.,0.};
+        Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8490,1.8490,1.8490,1.8490,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
+        Double_t SandBUppLim[15] = {0.,0.,0.,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.9050,1.8970,0.,0.};
+        Double_t RSBLowLim[15]   = {0.,0.,0.,1.9050,1.9050,1.9050,1.9050,1.9130,1.9130,1.9130,1.9130,1.9210,1.9130,0.,0.};
+        Double_t RSBUppLim[15]   = {0.,0.,0.,1.9530,1.9530,1.9610,1.9530,1.9610,1.9610,1.9690,1.9770,1.9850,1.9770,0.,0.};
         
     }else if(fSys=="PbPb" || fSys=="Pb-Pb" || fSys=="PbPb"){
         finDirname+="PbPb";
@@ -249,8 +249,8 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     mgr->ConnectOutput(dpluscorrTask,3,coutputCorrDplus3);
     mgr->ConnectOutput(dpluscorrTask,4,coutputCorrDplus4);
     mgr->ConnectOutput(dpluscorrTask,5,coutputCorrDplus5);
-    mgr->ConnectOutput(dpluscorrTask,6,coutputCorrDplus6);
-    mgr->ConnectOutput(dpluscorrTask,7,coutputCorrDplus7);
+    if(IsfillTrees) mgr->ConnectOutput(dpluscorrTask,6,coutputCorrDplus6);
+    if(IsfillTrees) mgr->ConnectOutput(dpluscorrTask,7,coutputCorrDplus7);
     
     return dpluscorrTask;
 }
