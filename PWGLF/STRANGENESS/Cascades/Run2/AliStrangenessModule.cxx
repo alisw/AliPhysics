@@ -36,8 +36,6 @@ AliStrangenessModule::AliStrangenessModule() :
 TNamed(),
 lDataInput(0x0),
 lDataCountersInput(0x0),
-lLSDataInput(0x0),
-lLSDataCountersInput(0x0),
 lMCInput(0x0),
 lMCCountersInput(0x0),
 lLoMult(0.0),
@@ -54,16 +52,11 @@ lLoPeak(-3),
 lHiPeak(3),
 lLoRightBg(4),
 lHiRightBg(7),
-lLSLoMass(1.34),
-lLSHiMass(1.36),
-lObjectToUseForLS(""),
-lVerbose(kFALSE),
-lDoOnlyData(kFALSE)
+lVerbose(kFALSE)
 {
     // Dummy Constructor - not to be used!
     for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0;
     for(Long_t ibin = 0; ibin<100; ibin++) lSigExtTech[ibin] = "linear";
-    for(Long_t ibin = 0; ibin<100; ibin++) lSigExtSubLS[ibin] = kFALSE;
 }
 
 //________________________________________________________________
@@ -71,8 +64,6 @@ AliStrangenessModule::AliStrangenessModule(const char * name, const char * title
 TNamed(name,title),
 lDataInput(0x0),
 lDataCountersInput(0x0),
-lLSDataInput(0x0),
-lLSDataCountersInput(0x0),
 lMCInput(0x0),
 lMCCountersInput(0x0),
 lLoMult(0.0),
@@ -89,16 +80,11 @@ lLoPeak(-3),
 lHiPeak(3),
 lLoRightBg(4),
 lHiRightBg(7),
-lLSLoMass(1.34),
-lLSHiMass(1.36),
-lObjectToUseForLS(""),
-lVerbose(kFALSE),
-lDoOnlyData(kFALSE)
+lVerbose(kFALSE)
 {
     // Main constructor
     for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0;
     for(Long_t ibin = 0; ibin<100; ibin++) lSigExtTech[ibin] = "linear";
-    for(Long_t ibin = 0; ibin<100; ibin++) lSigExtSubLS[ibin] = kFALSE;
 }
 
 //________________________________________________________________
@@ -177,13 +163,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     cout<<"AliStrangenessModule -> Requested to process config: "<<lConfiguration.Data()<<endl;
     
     //"Die hard" fitting, please
-    TVirtualFitter::SetMaxIterations( 50000 );
-    
-    //Check if any LS subtraction requested
-    Bool_t lRequestLSSub = kFALSE;
-    for( Long_t ibin = 0; ibin<lNPtBins; ibin++){
-        if ( lSigExtSubLS[ibin] == kTRUE ) lRequestLSSub = kTRUE;
-    }
+    TVirtualFitter::SetMaxIterations( 50000 ); 
     
     //Check if input has been provied
     if( !lDataInput ) {
@@ -192,16 +172,10 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     if( !lDataCountersInput ) {
         AliWarning("Data counters list not defined!"); return 0x0;
     }
-    if( !lLSDataInput && lRequestLSSub ) {
-        AliWarning("Like-sign data input not defined!"); return 0x0;
-    }
-    if( !lLSDataCountersInput && lRequestLSSub ) {
-        AliWarning("Like-sign data counters list not defined!"); return 0x0;
-    }
-    if( !lMCInput && !lDoOnlyData ) {
+    if( !lMCInput ) {
         AliWarning("MC input not defined!"); return 0x0;
     }
-    if( !lMCCountersInput && !lDoOnlyData  ) {
+    if( !lMCCountersInput ) {
         AliWarning("MC counters list not defined!"); return 0x0;
     }
     
@@ -229,13 +203,10 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     cout<<"AliStrangenessModule -> Number of events in multiplicity class "<<lLoMult<<" to "<<lHiMult<<": "<<lNEvents<<endl;
     
     //In preparation bis: get number of events from MC data
-    Double_t lNEventsMC = 0;
-    if ( !lDoOnlyData ) {
-        TH1D *fHistCentralityMC = (TH1D*) lMCCountersInput->FindObject( "fHistCentrality" )->Clone("fHistCentralityCloneMC");
-        fHistCentralityMC->SetDirectory(0);
-        lNEventsMC = fHistCentralityMC->Integral( fHistCentralityMC->GetXaxis()->FindBin( lLoMult+1e-5 ),
-                                                 fHistCentralityMC->GetXaxis()->FindBin( lHiMult-1e-5 ) );
-    }
+    TH1D *fHistCentralityMC = (TH1D*) lMCCountersInput->FindObject( "fHistCentrality" )->Clone("fHistCentralityCloneMC");
+    fHistCentralityMC->SetDirectory(0);
+    Double_t lNEventsMC = fHistCentralityMC->Integral( fHistCentralityMC->GetXaxis()->FindBin( lLoMult+1e-5 ),
+                                                  fHistCentralityMC->GetXaxis()->FindBin( lHiMult-1e-5 ) );
     
     //Save number of events to output
     TH1D *fHistEventCounter = new TH1D("fHistEventCounter", "", 2,0,2);
@@ -262,18 +233,18 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     //Check if multiplicity interval requested is possible
     Bool_t lCheckMult = CheckCompatibleMultiplicity ( f3dHistData );
     if ( !lCheckMult ){
-        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-        AliWarning(" LS: Requested mult interval is inconsistent with the data provided!");
-        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning("Requested mult interval is inconsistent with the data provided!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         return 0x0;
     }
     
     //Check if pt interval requested is possible
     Bool_t lCheckPt = CheckCompatiblePt ( f3dHistData );
     if ( !lCheckPt ){
-        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-        AliWarning(" LS: Requested pt binning is inconsistent with the data provided!");
-        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning(" Requested pt binning is inconsistent with the data provided!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         return 0x0;
     }
     
@@ -306,68 +277,6 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
             fListData->Add(lHistoDataIntegrated[ibin]);
         }
     }
-    
-    //If requested, do like-sign subtraction here
-    if( lRequestLSSub ){
-        //_________________________________________________
-        //Project into relevant invariant mass histograms
-        TH1D *lHistoLSData[100];
-        //_________________________________________________
-        // Basic I/O
-        if(lVerbose) cout<<"AliStrangenessModule -> Like-sign BG subtraction requested for some bins, doing now..."<<endl; 
-        AliVWeakResult *lLSDataResult = (AliVWeakResult*) lLSDataInput->FindObject(lObjectToUseForLS.Data())->Clone( "LikeSignObject" );
-        if(lVerbose) lLSDataResult->Print();
-        //Compatibility check zero: check if generated with the same cuts
-        if( !lLSDataResult->HasSameCuts(lDataResult) ){
-            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            AliWarning(" You are attempting to correct data with LS results obtained");
-            AliWarning(" with different selection criteria! Will stop here. Please ");
-            AliWarning(" check your input files!");
-            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            return 0x0;
-        }
-        //_________________________________________________
-        // Process TH3Fs and expand into histograms of interest
-        TH3F *f3dHistLSData = (TH3F*) lLSDataResult->GetHistogram()->Clone("f3dHistLSData");
-        //Check if multiplicity interval requested is possible
-        Bool_t lCheckMult = CheckCompatibleMultiplicity ( f3dHistLSData );
-        if ( !lCheckMult ){
-            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            AliWarning(" LS: Requested mult interval is inconsistent with the data provided!");
-            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            return 0x0;
-        }
-        
-        //Check if pt interval requested is possible
-        Bool_t lCheckPt = CheckCompatiblePt ( f3dHistLSData );
-        if ( !lCheckPt ){
-            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            AliWarning(" LS: Requested pt binning is inconsistent with the data provided!");
-            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            return 0x0;
-        }
-        for( Long_t ibin = 0; ibin<lNPtBins; ibin++){
-            lHistoLSData[ibin] = f3dHistLSData->ProjectionZ( Form("lHistoLSData_%.1f_%.1f", lPtBins[ibin], lPtBins[ibin+1]),
-                                                        f3dHistLSData->GetXaxis()->FindBin( lLoMult+1e-5 ),
-                                                        f3dHistLSData->GetXaxis()->FindBin( lHiMult-1e-5 ),
-                                                        f3dHistLSData->GetYaxis()->FindBin( lPtBins[ibin  ]+1e-5 ),
-                                                        f3dHistLSData->GetYaxis()->FindBin( lPtBins[ibin+1]-1e-5 )
-                                                        );
-            lHistoLSData[ibin]->SetDirectory(0);
-            fListData->Add(lHistoLSData[ibin]);
-        }
-        //_________________________________________________
-        // Renormalize such that we get similar yields in a specific (settable) region
-        
-        //_________________________________________________
-        // Subtract stuff, please
-        for( Long_t ibin = 0; ibin<lNPtBins; ibin++){
-            if(lSigExtSubLS[ibin] ) {
-                lHistoData[ibin]->Add( lHistoLSData[ibin], -1 );
-            }
-        }
-    }
-    
     
     //Perform early fit with gaussian+linear for acquisition of fit range
     Double_t lMeanVsPt[100], lMeanErrVsPt[100];
@@ -440,19 +349,6 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     
     //Add raw spectra as main analysis output
     fListOutput->Add(fHistRawVsPt);
-    
-    if(lDoOnlyData){
-        fFileOut->cd();
-        //Save all objects owned by the TLists
-        fListData  ->Write("cListData",       TObject::kSingleKey);
-        fFileOut->Write();
-        fFileOut->Close();
-        
-        timer->Stop();
-        cout<<"AliStrangenessModule -> Done! Total time: "<<timer->RealTime()<<"s (real), "<< timer->CpuTime() <<"s (cpu) (processed data only!)"<<endl;
-        delete timer;
-        return 0x0;
-    }
     
     //Step N: Open MC data object
     TString lMCName = lConfiguration.Data();

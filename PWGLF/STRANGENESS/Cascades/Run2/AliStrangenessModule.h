@@ -34,8 +34,6 @@ public:
     //Set Input
     void SetDataInput         ( TList *lDataIn ) { lDataInput         = lDataIn; }
     void SetDataInputCounters ( TList *lDataIn ) { lDataCountersInput = lDataIn; }
-    void SetLSDataInput         ( TList *lLSDataIn ) { lLSDataInput         = lLSDataIn; }
-    void SetLSDataInputCounters ( TList *lLSDataIn ) { lLSDataCountersInput = lLSDataIn; }
     void SetMCInput           ( TList *lMCIn   ) { lMCInput           = lMCIn;   }
     void SetMCInputCounters   ( TList *lMCIn   ) { lMCCountersInput   = lMCIn; }
     
@@ -44,13 +42,9 @@ public:
     void SetMultBinning ( Double_t lRecLoMult, Double_t lRecHiMult ){ lLoMult = lRecLoMult; lHiMult = lRecHiMult; }
     void SetSigExtRanges (Double_t lRLoLeftBg, Double_t lRHiLeftBg,  Double_t lRLoPeak,
                           Double_t lRHiPeak,   Double_t lRLoRightBg, Double_t lRHiRightBg);
-    void SetSigExtTech  ( TString lRecSigExtTech );
+    void SetSigExtTech ( TString lRecSigExtTech );
     void SetVariableSigExtTech ( Long_t lRecNPtBins, TString* lRecSigExtTech );
-    void SetDoLSSubtraction ( Long_t lIndBin, Bool_t lOpt = kTRUE ) { lSigExtSubLS [lIndBin] = lOpt; }
-    void SetLSObjectName ( TString lObjName ) { lObjectToUseForLS = lObjName.Data(); } 
-    
-    void SetVerbose     ( Bool_t lVerb = kTRUE ) { lVerbose = lVerb; }
-    void SetDoOnlyData  ( Bool_t lDoOnlyDataRec = kTRUE ) { lDoOnlyData = lDoOnlyDataRec; }
+    void SetVerbose ( Bool_t lVerb = kTRUE ) { lVerbose = lVerb; }
     
     //Option to use integrated multiplicity for very first fit (to get mean, sigma)  
     void SetUseIntegratedMultForFirstFit( Bool_t lOpt = kTRUE ) { lUseIntegratedMultForFirstFit = lOpt; }
@@ -77,8 +71,6 @@ private:
     //Data holders (set via setters)
     TList *lDataInput;
     TList *lDataCountersInput;
-    TList *lLSDataInput;
-    TList *lLSDataCountersInput;
     TList *lMCInput;
     TList *lMCCountersInput;
     
@@ -109,17 +101,9 @@ private:
     
     //Signal Extraction technique to use
     TString lSigExtTech[100];
-    Bool_t lSigExtSubLS[100];
-    Double_t lLSLoMass, lLSHiMass; 
-    TString lObjectToUseForLS; //name of object to use for the LS subtraction 
-    
-    //Signal extraction: control of like-sign subtraction
     
     //Verbosity boolean
-    Bool_t lVerbose;
-    
-    //Other control booleans
-    Bool_t lDoOnlyData; //process only the data part and break without using MC 
+    Bool_t lVerbose; 
     
     ClassDef(AliStrangenessModule, 1)
     // 1 - original implementation
