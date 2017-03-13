@@ -276,7 +276,7 @@ void AliAnalysisTaskFlowVectorCorrections::NotifyRun() {
       TString runCalibrationFile = fCalibrationFile;
       if (fCalibrationFile.Length() != 0) {
         runCalibrationFile.Insert(runCalibrationFile.Index(".root"), Form("_%d", this->fCurrentRunNumber));
-        calibfile = TFile::Open(Form("%s/%s", AliAnalysisManager::GetOADBPath(),runCalibrationFile.Data()));
+        calibfile = AliDataFile::OpenOADB(runCalibrationFile.Data());
       }
       if (calibfile != NULL && calibfile->IsOpen()) {
         AliInfo(Form("\t Calibration file %s open", Form("OADB/%s", runCalibrationFile.Data())));
