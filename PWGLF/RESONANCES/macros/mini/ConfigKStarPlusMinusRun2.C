@@ -15,6 +15,7 @@ Bool_t ConfigKStarPlusMinusRun2
    //Int_t		           collSyst, 
    Bool_t                  isMC,
    Float_t                 piPIDCut,
+   AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,    
    Float_t                 pi_k0s_PIDCut,
    Int_t                   aodFilterBit,
    //Float_t               trackDCAcut,
@@ -32,8 +33,12 @@ Bool_t ConfigKStarPlusMinusRun2
    Int_t                   NTPCcluster,
    const char             *suffix,
    AliRsnCutSet           *cutsPair,
-   Bool_t                  ptDep    
+   Bool_t                  ptDep,
+   Float_t                 DCAxy,
+    Bool_t                 enableSys,
+   Int_t                   Sys
 )
+    //kTPCpidphipp2015
 {
    // manage suffix
    if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
@@ -42,16 +47,29 @@ Bool_t ConfigKStarPlusMinusRun2
    // selections for the pion from the decay of KStarPlusMinus*
    /////////////////////////////////////////////////////
    //
-   AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForKStarPlusMinus", AliPID::kPion);
-   cutPi->SetPIDCut(piPIDCut);    // fPIDCut used in IsSelected() after the call to cutQuality
-   AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
-   //cutQuality->SetDefaults2011();
-   cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
+    
+    
+    
+  
+ 
+ 
+ 
+        
+    AliRsnCutSetDaughterParticle * cutQ = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit, kTRUE);
+    cutQ->SetUse2011StdQualityCuts(kTRUE);
+
+    
+    AliRsnCutSetDaughterParticle * cutPi = new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutPiCandidate, piPIDCut), cutPiCandidate, AliPID::kPion, piPIDCut, aodFilterBit,kTRUE);
+    cutPi->SetUse2011StdQualityCuts(kTRUE);
      
-   AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForKStarPlusMinus", AliRsnTarget::kDaughter);
-   cutSetPi->AddCut(cutPi);
-   cutSetPi->SetCutScheme(cutPi->GetName());
-   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
+   //AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForKStarPlusMinus", AliRsnTarget::kDaughter);
+   //cutSetPi->AddCut(cutPi);
+   //cutSetPi->SetCutScheme(cutPi->GetName());
+
+
+
+    Int_t iCutPi = task->AddTrackCuts(cutPi);
+    Int_t iCutQ = task->AddTrackCuts(cutQ);
    //
    /////////////////////////////////////////////////////////////
    // selections for K0s and for the daughters of K0s
@@ -69,15 +87,14 @@ Bool_t ConfigKStarPlusMinusRun2
     if(ptDep){
    esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     }else
-   esdTrackCuts->SetMinDCAToVertexXY("0.06"); //Use one of the two - pt dependent or fixed value cut.
+   esdTrackCuts->SetMinDCAToVertexXY(dcaxy); //Use one of the two - pt dependent or fixed value cut.
   
    //
    /////////////////////////////////////////////////
    // selections for K0s
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
-   //cutK0s->SetPIDCutProton(pPIDCut);       // PID for the proton daughter of K0s
-   cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s
-   cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
+    cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s
+   cutK0s->SetESDtrackCuts(esdTrackCuts); 
    cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);
    cutK0s->SetMaxDCAVertex(k0sDCA);
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
@@ -88,6 +105,39 @@ Bool_t ConfigKStarPlusMinusRun2
    cutK0s->SetfLowRadius(radiuslow); 
    cutK0s->SetfHighRadius(radiushigh); 
    cutK0s->SetMaxRapidity(2.0);
+    
+    if(enableSys)
+     {
+       
+       if(Sys==1){cutK0s->SetPIDCutPion(pi_k0s_PIDCut-1);}
+       else if(Sys==2){cutK0s->SetPIDCutPion(pi_k0s_PIDCut+1);}
+       else if(Sys==3){cutK0s->SetMaxDaughtersDCA(k0sDaughDCA-0.1);}
+       else if(Sys==4){cutK0s->SetMaxDaughtersDCA(k0sDaughDCA+0.1);}
+       else if(Sys==5){cutK0s->SetMaxDCAVertex(k0sDCA-0.25);}
+       else if(Sys==6){cutK0s->SetMaxDCAVertex(k0sDCA-0.5);}
+       else if(Sys==7){cutK0s->SetMaxDCAVertex(k0sDCA+0.25);}
+       else if(Sys==8){cutK0s->SetMaxDCAVertex(k0sDCA+0.5);}
+       else if(Sys==9){SetMinCosPointingAngle(k0sCosPoinAn-0.01);}
+       else if(Sys==10){SetMinCosPointingAngle(k0sCosPoinAn-0.02);}
+       else if(Sys==11){SetMinCosPointingAngle(k0sCosPoinAn+0.01);}
+       else if(Sys==12){SetMinCosPointingAngle(k0sCosPoinAn+0.02);}
+       else if(Sys==13){SetTolerance(massTol-0.01);}
+       else if(Sys==14){SetTolerance(massTol-0.02);}
+       else if(Sys==15){SetTolerance(massTol+0.01);}
+       else if(Sys==16){SetTolerance(massTol+0.02);}
+       else if(Sys==17){SetfLife(pLife-8);}
+       else if(Sys==18){SetfLife(pLife+10);}
+       else if(Sys==19){SetfLife(pLife+20);}
+       else if(Sys==20){SetfLowRadius(radiuslow-0.1);}
+       else if(Sys==21){SetfLowRadius(radiuslow-0.2);}
+       else if(Sys==22){SetfLowRadius(radiuslow+0.1);}
+       else if(Sys==23){SetfLowRadius(radiuslow+0.2);}
+       else if(Sys==24){SetfHighRadius(100);}    
+    }
+  
+    
+    
+    
    //
    AliRsnCutSet *cutSetK0s = new AliRsnCutSet("setK0s", AliRsnTarget::kDaughter);
    cutSetK0s->AddCut(cutK0s);
@@ -100,7 +150,8 @@ Bool_t ConfigKStarPlusMinusRun2
   if(enableMonitor){
     Printf("======== Cut monitoring enabled");
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
-    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutPi->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutQ->GetMonitorOutput(), monitorOpt.Data());
   } 
     
    //
@@ -549,7 +600,6 @@ void AddMonitorOutput_MinDCAToVertexXYPtDep(TObjArray *mon=0, TString opt="", Al
    // output: 2D histogram
    AliRsnListOutput *outMonitorDCATracks = new AliRsnListOutput("DCAXY_Tracks", AliRsnListOutput::kHistoDefault);
    outMonitorDCATracks->AddValue(axisDCATracks);
-    cout<<"THIS LOOP IS RUNNING"<<endl;
    // add outputs to loop
    if (mon) mon->Add(outMonitorDCATracks);
    if (trackDCAXY) trackDCAXY->AddOutput(outMonitorDCATracks);
@@ -568,7 +618,6 @@ void AddMonitorOutput_MinDCAToVertexXY(TObjArray *mon=0, TString opt="", AliRsnL
    // output: 2D histogram
    AliRsnListOutput *outMonitorDCATracks = new AliRsnListOutput("DCAXY_Tracks", AliRsnListOutput::kHistoDefault);
    outMonitorDCATracks->AddValue(axisDCATracks);
-    cout<<"THIS LOOP IS RUNNING"<<endl;
    // add outputs to loop
    if (mon) mon->Add(outMonitorDCATracks);
    if (trackDCAXY) trackDCAXY->AddOutput(outMonitorDCATracks);
@@ -586,7 +635,7 @@ void AddMonitorOutput_K0sfpLife(TObjArray *mon=0, TString opt="", AliRsnLoopDaug
    // output: 2D histogram
    AliRsnListOutput *outMonitork0sLifetime = new AliRsnListOutput("k0s", AliRsnListOutput::kHistoDefault);
    outMonitork0sLifetime->AddValue(k0slifetime);
-    cout<<"THIS LOOP IS RUNNING"<<endl;
+
    // add outputs to loop
    if (mon) mon->Add(outMonitork0sLifetime);
    if (llifetime) llifetime->AddOutput(outMonitork0sLifetime);    
