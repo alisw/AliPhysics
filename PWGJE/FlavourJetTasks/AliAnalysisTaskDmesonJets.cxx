@@ -1381,7 +1381,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
 
   if (jetDef.fJetType != AliJetContainer::kNeutralJet) {
     for (auto track_cont : fTrackContainers) {
-      AliHFTrackContainer* hftrack_cont = dynamic_cast<AliHFTrackContainer*>(hftrack_cont);
+      AliHFTrackContainer* hftrack_cont = dynamic_cast<AliHFTrackContainer*>(track_cont);
       if (hftrack_cont) hftrack_cont->SetDMesonCandidate(Dcand);
       hname = TString::Format("%s/%s/fHistTrackRejectionReason", GetName(), jetDef.GetName());
       AddInputVectors(track_cont, 100, static_cast<TH2*>(fHistManager->FindObject(hname)), fTrackEfficiency);
