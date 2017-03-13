@@ -472,6 +472,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
       for (Int_t i = 0; i < fNPtHardBins; i++) {
         fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEventsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistXsectionAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
 
         fHistTrials->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsection->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
