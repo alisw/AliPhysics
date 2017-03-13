@@ -55,6 +55,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fTrackCuts(nullptr),
     fYshift(0.465),
     fEtaSign(1),
+    fMinPt(0.1),
     fEtaLabCut(-0.5, 0.5),
     fEtaCmsCut(-2., 2.),
     fPhiCut(0., TMath::TwoPi()),
@@ -68,6 +69,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fTrackCuts(nullptr),
     fYshift(0.465),
     fEtaSign(1),
+    fMinPt(0.1),
     fEtaLabCut(-0.5, 0.5),
     fEtaCmsCut(-2., 2.),
     fPhiCut(0., TMath::TwoPi()),
@@ -144,7 +146,7 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
     if(!checktrack) continue;
     if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;
     if(!fPhiCut.IsInRange(checktrack->Phi())) continue;
-    if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
+    if(TMath::Abs(checktrack->Pt()) < fMinPt) continue;
     if(checktrack->IsA() == AliESDtrack::Class()){
       AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
       AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);

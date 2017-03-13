@@ -132,6 +132,12 @@ public:
   void SetTrackPhiCut(double phimin, double phimax) { fPhiCut.SetLimits(phimin, phimax); }
 
   /**
+   * @brief Set minimum \f$ p_{t}\f$ used to select track candidate
+   * @param[in] minpt Minimum \f$ p_{t}\f$
+   */
+  void SetMinPtTracks(Double_t minpt) { fMinPt = minpt; }
+
+  /**
    * @brief Set offline trigger selection.
    *
    * The trigger selection will be used to select events for the given trigger class given the presence
@@ -326,6 +332,7 @@ private:
 
   Double_t                              fYshift;                    ///< Rapidity shift
   Double_t                              fEtaSign;                   ///< Sign of the \f$\eta\f$-distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
+  Double_t                              fMinPt;                     ///< Minimum \f$ p_{t}\f$-used to select tracks
   AliCutValueRange<double>              fEtaLabCut;                 ///< Cut applied in \f$\eta_{Lab}\f$-frame
   AliCutValueRange<double>              fEtaCmsCut;                 ///< Cut applied in \f$\eta_{centre-of-mass}\f$ frame
   AliCutValueRange<double>              fPhiCut;                    ///< Track \f$\phi\f$ cut

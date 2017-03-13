@@ -43,31 +43,35 @@ public:
   };
 
   /**
-   * Dummy constructor
+   * @brief Dummy constructor
    */
   AliAnalysisTaskChargedParticlesRef();
 
   /**
-   * Main constructor
+   * @brief Main constructor
    * @param[in] name Name of the task
    */
   AliAnalysisTaskChargedParticlesRef(const char *name);
 
   /**
-   * Destuctor
+   * @brief Destuctor
    */
   virtual ~AliAnalysisTaskChargedParticlesRef();
 
   /**
-   * Enable Sumw2 when creating the histograms. Attention: Enabling Sumw2
-   * will increase memory consumption significantly. Option should only be
-   * used in case histograms are filled with a weight.
+   * @brief Enable Sumw2 when creating the histograms.
+   *
+   * Attention: Enabling Sumw2 will increase memory consumption
+   * significantly. Option should only be used in case histograms
+   * are filled with a weight.
    * @param[in] doEnable If true Sumw2 is enabled for all histograms
    */
   void EnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
 
   /**
-   * Set the track selection: The track cuts are generated according to predefined
+   * @brief Set the track selection.
+   *
+   * The track cuts are generated according to predefined
    * recipes in the AliEmcalAnalysisFactory track cuts factory
    * @param[in] cutname Name of the track cuts
    * @param[in] isAOD check whether we run on ESDs or AODs
@@ -75,61 +79,68 @@ public:
   void InitializeTrackCuts(TString cutname, bool isAOD);
 
   /**
-   * Define rapidity shift applied to convert \f$ \eta_{lab} \f$
+   * @brief Define rapidity shift applied to convert \f$ \eta_{lab} \f$
    * to \f$ \eta_{cms} \f$
    * @param[in] yshift Rapidity shift
    */
   void SetRapidityShift(Double_t yshift) { fYshift = yshift; }
 
   /**
-   * Specify directions of the incoming beams (p-Pb or Pb-p)
+   * @brief Specify directions of the incoming beams (p-Pb or Pb-p)
    * @param[in] beamdir Directions of the incoming beams
    */
   void SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
 
   /**
-   * Enable PID-related plots (THnSparses, might be big)
+   * @brief Enable PID-related plots (THnSparses, might be big)
    * @param[in] plotPID If true then PID-related plots are enabled
    */
   void SetPlotPID(Bool_t plotPID) { fStudyPID = plotPID; }
 
   /**
-   * Set the virtual track selection. Assumes that the track selection object
-   * is already fully configured
+   * @brief Set the virtual track selection.
+   *
+   * Assumes that the track selection object is already fully configured
    * @param[in] sel Virtual track selection
    */
   void SetEMCALTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
 
   /**
-   * Define cut on \f$ \eta_{lab} \f$ used to select tracks
+   * @brief Define cut on \f$ \eta_{lab} \f$ used to select tracks
    * @param[in] etamin Minimum allowed \f$ \eta \f$
    * @param[in] etamax Maximum allowed \f$ \eta \f$
    */
   void SetEtaLabCut(double etamin, double etamax) { fEtaLabCut.SetLimits(etamin, etamax); }
 
   /**
-   * Define cut on \f$ \eta_{cms} \f$ used to select tracks
+   * @brief Define cut on \f$ \eta_{cms} \f$ used to select tracks
    * @param etamin[in] Minimum allowed \f$ \eta \f$
    * @param etamax[in] Maximum allowed \f$ \eta \f$
    */
   void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
 
   /**
-   * Define cut on \f$ \phi \f$ used to select tracks
+   * @brief Define cut on \f$ \phi \f$ used to select tracks
    * @param[in] phimin Minimum allowed \f$ \phi \f$
    * @param[in] phimax Maximum allowed \f$ \phi \f$
    */
   void SetTrackPhiCut(double phimin, double phimax) { fPhiCut.SetLimits(phimin, phimax); }
 
   /**
-   * Preconfigure task so that it can be used in subwagons
+   * @brief Set minimum \f$ p_{t}\f$ used to select track candidate
+   * @param[in] minpt Minimum \f$ p_{t}\f$
+   */
+  void SetMinPtTracks(Double_t minpt) { fMinPt = minpt; }
+
+  /**
+   * @brief Pre-configure task so that it can be used in subwagons
    * @param[in] suffix Suffix of the subwagon
    * @return Preconfigured task
    */
   static AliAnalysisTaskChargedParticlesRef *AddTaskChargedParticlesRef(const TString &suffix);
 
   /**
-   * Fully configure task, not intended for subwagons. Using a default cut configuration.
+   * @brief Fully configure task, not intended for subwagons. Using a default cut configuration.
    * @param[in] cutname Name of the track cuts
    * @return Fully configured task
    */
@@ -138,21 +149,23 @@ public:
 protected:
 
   /**
-   * Create the output histograms
+   * @brief Create the output histograms
    */
   virtual void CreateUserHistos();
 
   /**
-   * Creating user objects: In case no track selection
-   * is applied from outside, the default track selection
-   * (RAA standard cuts is created in this class)
+   * @brief Creating user objects.
+   *
+   * In case no track selection is applied from outside,
+   * the default track selection (RAA standard cuts is
+   * created in this class)
    */
   virtual void CreateUserObjects();
 
   /**
-   * Simple task testing particle spectra in triggered events
+   * @brief Simple task testing particle spectra in triggered events
    * - Select event using AliAnalysisUtil (in IsEventSelected)
-   * - Assing trigger type (Request INT7, EJ*, EG*)
+   * - Assigning trigger type (Request INT7, EJ*, EG*)
    * - Loop over tracks, select particles
    * - Fill distributions
    * @param option Not used
@@ -160,19 +173,21 @@ protected:
   virtual bool Run();
 
   /**
-   * Implementation of framework function UserFillHistosBeforeEventSelection.
+   * @brief Implementation of framework function UserFillHistosBeforeEventSelection.
+   *
    * Filling event counter histograms before vertex selection
    */
   virtual void UserFillHistosBeforeEventSelection();
 
   /**
-   * Implementation of framework function UserFillHistosAfterEventSelection.
+   * @brief Implementation of framework function UserFillHistosAfterEventSelection.
+   *
    * Filling event counter histograms after vertex selection
    */
   virtual void UserFillHistosAfterEventSelection();
 
   /**
-   * Fill track (kinematic) histograms
+   * @brief Fill track (kinematic) histograms
    * @param[in] eventclass Trigger class fired
    * @param[in] posCharge True if charge is positive, false if charge is negative
    * @param[in] pt track \f$ p_{t} \f$
@@ -184,7 +199,7 @@ protected:
   void FillTrackHistos(const TString &eventclass, Bool_t posCharge, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal);
 
   /**
-   * Fill PID-related histograms
+   * @brief Fill PID-related histograms
    * @param[in] eventclass Trigger class of the event
    * @param[in] track Track containing PID information
    */
@@ -195,6 +210,7 @@ protected:
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
 
+  Double_t                        fMinPt;                     ///< Minimum \f$ p_{t}\f$-used to select tracks
   AliCutValueRange<double>        fEtaLabCut;                 ///< Cut applied in \f$\eta_{lab}\f$ frame
   AliCutValueRange<double>        fEtaCmsCut;                 ///< Cut applied in \f$\eta_{centre-of-mass}\f$ frame
   AliCutValueRange<double>        fPhiCut;                    ///< Cut applied in \f$\phi_{track}\f$
