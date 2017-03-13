@@ -111,6 +111,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fUseNewCentralityEstimation(kFALSE),
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
+  fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fPtHardAndJetPtFactor(0.),
@@ -226,6 +227,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fUseNewCentralityEstimation(kFALSE),
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
+  fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fPtHardAndJetPtFactor(0.),
@@ -647,6 +649,23 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     if(fCountDownscaleCorrectedEvents) AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
   }
 
+  // Apply fallback for pythia cross section if needed
+  if(fIsPythia && fUsePtHardBinScaling && fPythiaHeader){
+    AliDebugStream(1) << "Fallback to cross section from pythia header required" << std::endl;
+    // Get the pthard bin
+    Float_t pthard = fPythiaHeader->GetPtHard();
+    int pthardbin = 0;
+    if(fPtHardBinning.GetSize()){
+      for(int ib = 0; ib < fNPtHardBins; ib++){
+        if(pthard >= fPtHardBinning[ib] && pthard < fPtHardBinning[ib+1]) {
+          pthardbin = ib;
+          break;
+        }
+      }
+    }
+    fHistXsection->Fill(pthardbin, fPythiaHeader->GetXsection());
+  }
+
   if (IsEventSelected()) {
     if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
   }
@@ -767,14 +786,27 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   if (!fxsec) {
     // next trial fetch the histgram file
     fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
-    if (!fxsec) return kFALSE; // not a severe condition but inciate that we have no information
+    if (!fxsec){
+      fUseXsecFromHeader = true;
+      return kFALSE; // not a severe condition but inciate that we have no information
+    }
     else {
       // find the tlist we want to be independtent of the name so use the Tkey
       TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
       if (!key) return kFALSE;
       TList *list = dynamic_cast<TList*>(key->ReadObj());
       if (!list) return kFALSE;
-      fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
+      TProfile *xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
+      // check for failure
+      if(!xSecHist->GetEntries()) {
+        // No cross seciton information available - fall back to raw
+        AliErrorStream() << "No cross section information available in file " << fxsec->GetName() <<" - fall back to cross section in PYTHIA header" << std::endl;
+        fUseXsecFromHeader = true;
+      } else {
+        // Cross section histogram filled - take it from there
+        fXsec = xSecHist->GetBinContent(1);
+        fUseXsecFromHeader = false;
+      }
       fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
     }
   } else { // no tree pyxsec.root
@@ -834,7 +866,10 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)) pthardbin = 0;
   fHistTrials->Fill(pthardbin, trials);
-  fHistXsection->Fill(pthardbin, xsection);
+  if(!fUsePtHardBinScaling){
+    AliDebugStream(1) << "Using cross section from file pyxsec.root" << std::endl;
+    fHistXsection->Fill(pthardbin, xsection);
+  }
   fHistEvents->Fill(pthardbin, nevents);
 
   return kTRUE;

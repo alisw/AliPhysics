@@ -337,7 +337,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   EMCalTriggerMode_t          fEMCalTriggerMode;           ///< EMCal trigger selection mode
   Bool_t                      fUseNewCentralityEstimation; ///< Use new centrality estimation (for 2015 data)
   Bool_t                      fGeneratePythiaInfoObject;   ///< Generate Pythia info object
-  Bool_t                      fUsePtHardBinScaling;        ///< Use pt hard bin scaling in merging
+  Bool_t                      fUsePtHardBinScaling;        ///< Use \f$ p_{t}\f$-hard bin scaling in merging
+  Bool_t                      fUseXsecFromHeader;          //!<! Use cross section from header instead of pyxsec.root (purely transient)
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
   Bool_t                      fCountDownscaleCorrectedEvents; ///< Count event number corrected for downscaling
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
