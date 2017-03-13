@@ -53,7 +53,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
-  void GenerateBkgFromPhiSB(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin, Double_t massKK);
     
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);

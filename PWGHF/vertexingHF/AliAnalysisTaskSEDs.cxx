@@ -962,11 +962,16 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 
 	if(isKKpi){
 	  if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,1,iPtBin);
-	  if(fDoBkgPhiSB && 0.010<TMath::Abs(massKK-massPhi)<0.030)GenerateBkgFromPhiSB(d,1,iPtBin,massKK);
-                    
+        
 	  invMass=d->InvMassDsKKpi();
 	  fMassHist[index]->Fill(invMass,weightKKpi);
 	  fPtVsMass->Fill(invMass,ptCand,weightKKpi);
+        
+	  if(fDoBkgPhiSB && 0.010<TMath::Abs(massKK-massPhi)<0.030) {
+            if(massKK<massPhi)fMassLSBkgHistPhi[iPtBin]->Fill(invMass);
+            else fMassRSBkgHistPhi[iPtBin]->Fill(invMass);
+	  }
+        
 	  if(isPhiKKpi){
 	    fMassHistPhi[index]->Fill(invMass,weightKKpi);
 	    fPtVsMassPhi->Fill(invMass,ptCand,weightKKpi);
@@ -999,11 +1004,16 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	}
 	if(ispiKK){
 	  if(fDoRotBkg && TMath::Abs(massKK-massPhi)<=fMaxDeltaPhiMass4Rot)GenerateRotBkg(d,2,iPtBin);
-	  if(fDoBkgPhiSB && 0.010<TMath::Abs(massKK-massPhi)<0.030)GenerateBkgFromPhiSB(d,2,iPtBin,massKK);
 
 	  invMass=d->InvMassDspiKK();
 	  fMassHist[index]->Fill(invMass,weightpiKK);
 	  fPtVsMass->Fill(invMass,ptCand,weightpiKK);
+
+	  if(fDoBkgPhiSB && 0.010<TMath::Abs(massKK-massPhi)<0.030) {
+            if(massKK<massPhi)fMassLSBkgHistPhi[iPtBin]->Fill(invMass);
+            else fMassRSBkgHistPhi[iPtBin]->Fill(invMass);
+	  }
+
 	  if(isPhipiKK){
 	    fMassHistPhi[index]->Fill(invMass,weightpiKK);
 	    fPtVsMassPhi->Fill(invMass,ptCand,weightpiKK);
@@ -1454,18 +1464,6 @@ void AliAnalysisTaskSEDs::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, 
   }
 }
 
-
-//_________________________________________________________________
-
-void AliAnalysisTaskSEDs::GenerateBkgFromPhiSB(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin, Double_t massKK) {
-    
-  Double_t massDs;
-  Double_t massPhi=TDatabasePDG::Instance()->GetParticle(333)->Mass();
-  if(dec==1) massDs = d->InvMassDsKKpi();
-  else if(dec==2) d->InvMassDspiKK();
-  if(massKK<massPhi)fMassLSBkgHistPhi[iPtBin]->Fill(massDs);
-  else fMassRSBkgHistPhi[iPtBin]->Fill(massDs);
-}
 
 
 
