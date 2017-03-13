@@ -19,7 +19,7 @@ class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
-const Int_t nBranch = 13;
+const Int_t nBranch = 26;
 class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -34,7 +34,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   enum JetShapeSub {
     kNoSub = 0, 
     kConstSub = 1,
-    kDerivSub = 2 
+    kDerivSub = 2
   };
   enum JetSelectionType {
     kInclusive = 0,
@@ -96,7 +96,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
 
   Double_t                            Angularity(AliEmcalJet *Jet, Int_t JetContNb);
   Double_t                            PTD(AliEmcalJet *Jet, Int_t JetContNb);
-  void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta);
+  void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, Bool_t fTruthJet);
   Int_t                               SelectTriggerHadron(Float_t PtMin, Float_t PtMax);
   
   
@@ -151,6 +151,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhPhiTriggerHadronEventPlane;
   TH1F                                *fhPhiTriggerHadronEventPlaneTPC;
   TH1F                                *fhTrackPt;
+  TH2F                                *fhGroomedPtvJetPt;
   TTree                               *fTreeJetInfo;  //Tree with tagging variables subtracted MC or true MC or raw
 
  private:
