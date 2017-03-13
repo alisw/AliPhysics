@@ -31,7 +31,8 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTRUE,
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false,
+                                     Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTRUE,
                                      Bool_t fDCAdaughters=kTRUE, Bool_t fDCAXYprotons=kTRUE,
                                      Bool_t fDCAZprotons=kTRUE, Bool_t fMaxDCAdaughters=kTRUE,
                                      Bool_t fMaxDCAV0=kTRUE, Bool_t fDecayLength=kTRUE,
@@ -79,10 +80,14 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
     Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
     Reader->SetEPVZERO(kTRUE);
     Reader->SetCentralityFlattening(kTRUE);
-    //Reader->SetReadMC(kTRUE);
-    
+    if(mcAnalysis) Reader->SetReadMC(kTRUE);
+
     AliFemtoManager* Manager=new AliFemtoManager();
     Manager->SetEventReader(Reader);
+    
+    AliFemtoModelManager *modelMgr = new AliFemtoModelManager();
+    AliFemtoModelWeightGeneratorBasic *tWeight = new AliFemtoModelWeightGeneratorBasic();
+//    modelMgr->AcceptWeightGenerator(tWeight);
     
     AliFemtoVertexMultAnalysis    *anetaphitpc[320];
     AliFemtoBasicEventCut         *mecetaphitpc[320];
@@ -125,6 +130,8 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
     AliFemtoShareQualityCorrFctn  *cqinvsqtpc[320];
     AliFemtoTPCInnerCorrFctn      *cqinvtitpc[320];
     AliFemtoQinvCorrFctn          *cqinvtpc[100*3];
+    
+    AliFemtoModelCorrFctn         *cQinvModel[320];
     
     // *** Third QA task - HBT analysis with all pair cuts off, TPC only ***
     // *** Begin pion-pion (positive) analysis ***
@@ -471,6 +478,12 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
                             
                             //anetaphitpc[aniter]->AddCorrFctn(avgsepcorr[aniter]);
                             
+                            if(mcAnalysis)
+                            {
+                                cQinvModel[aniter] = new AliFemtoModelCorrFctn(Form("cQinv_Model_%s_M%i", chrgs[ichg],imult), 400, 0, 2);
+                                cQinvModel[aniter]->ConnectToManager(modelMgr);
+                                anetaphitpc[aniter]->AddCorrFctn(cQinvModel[aniter]);
+                            }
                             Manager->AddAnalysis(anetaphitpc[aniter]);
                         }
                     }
