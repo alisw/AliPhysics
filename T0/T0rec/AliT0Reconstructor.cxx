@@ -147,7 +147,7 @@ ClassImp(AliT0Reconstructor)
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry6->GetObject());
   if (!grpData) {printf("Failed to get GRP data for run"); return;}
   TString LHCperiod = grpData->GetLHCPeriod();
-  if(LHCperiod.Contains("LHC15")|| LHCperiod.Contains("LHC16")) fLHCperiod=kTRUE;
+  if(LHCperiod.Contains("LHC15")|| LHCperiod.Contains("LHC16")|| LHCperiod.Contains("LHC17") ) fLHCperiod=kTRUE;
   printf(" LHCperiod %i\n",fLHCperiod);
 }
 
