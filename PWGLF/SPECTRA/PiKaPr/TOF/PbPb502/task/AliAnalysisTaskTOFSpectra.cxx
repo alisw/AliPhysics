@@ -31,6 +31,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TH3I.h"
 #include "TList.h"
 #include "TMath.h"
 #include "TCanvas.h"
@@ -430,6 +431,9 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     hNumMatch[charge] = 0x0;
     hDenMatch[charge] = 0x0;
     
+    hNumMatchPtEtaPhiout[charge] = 0x0;
+    hDenMatchPtEtaPhiout[charge] = 0x0;
+    
     hNumMatchEta[charge] = 0x0;
     hDenMatchEta[charge] = 0x0;
     
@@ -548,7 +552,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
   
   if (!fListHist) fListHist = new TList();
   fListHist->SetOwner();
-
+  
   //Object for the event selection
   if(fHImode) fEventCut.SetupLHC15o();
   else{
@@ -556,12 +560,12 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     fEventCut.fCentralityFramework = 0;
   }
   fEventCut.SetManualMode();
-
+  
   //Histograms for event Selection
   fEventCut.AddQAplotsToList(fListHist);
-
+  
   DefineTimePerformance();
-
+  
   if(fChannelmode){
     hChannelTime = new TH2I("hChannelTime", "Histogram with Channel/Time correlation;Channel;TOF (ps)", kChannelBins, fChannelFirst -.5, fChannelLast -.5, kTimeBins, fTOFmin, fTOFmax);
     fListHist->AddLast(hChannelTime);
@@ -775,7 +779,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     
     hPadDist = new TH2F("hPadDist", "Distribution in the pads;#DeltaX_{pad} (cm);#DeltaZ_{pad} (cm)", 400, -10, 10, 400, -10, 10);
     fListHist->AddLast(hPadDist);
-
+    
     hTOFDist = new TH2F("hTOFDist", "Distribution in the TOF;Sector;Strip", 18, 0, 18, 91, 0, 91);
     fListHist->AddLast(hTOFDist);
     
@@ -990,6 +994,22 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       hDenMatchNoTRDOut[charge] = new TH1F(Form("hDenMatch%sNoTRDOut", pC[charge].Data()), Form("Matching Denominator with NO TRD;%s", ptstring.Data()), kPtBins, fBinPt);
       hDenMatchNoTRDOut[charge]->Sumw2();
       fListHist->AddLast(hDenMatchNoTRDOut[charge]);
+      
+      //*****
+      //PT, ETA and PHI
+      //*****
+      
+      //Numerator
+      hNumMatchPtEtaPhiout[charge] = new TH3I(Form("hNumMatchPtEtaPhiout%s", pC[charge].Data()), Form("Matching Numerator %s;%s;%s", pCharge[charge].Data(), ptstring.Data(), etastring.Data()), kPtBins, 0, kPtBins, kEtaBins, -fEtaRange, fEtaRange, kPhiBins, 0, TMath::TwoPi());
+      hNumMatchPtEtaPhiout[charge]->Sumw2();
+      hNumMatchPtEtaPhiout[charge]->GetXaxis()->Set(kPtBins, fBinPt);
+      fListHist->AddLast(hNumMatchPtEtaPhiout[charge]);
+      
+      //Denominator
+      hDenMatchPtEtaPhiout[charge] = new TH3I(Form("hDenMatchPtEtaPhiout%s", pC[charge].Data()), Form("Matching Denominator %s;%s;%s", pCharge[charge].Data(), ptstring.Data(), etastring.Data()), kPtBins, 0, kPtBins, kEtaBins, -fEtaRange, fEtaRange, kPhiBins, 0, TMath::TwoPi());
+      hDenMatchPtEtaPhiout[charge]->Sumw2();
+      hDenMatchPtEtaPhiout[charge]->GetXaxis()->Set(kPtBins, fBinPt);
+      fListHist->AddLast(hDenMatchPtEtaPhiout[charge]);
       
       for(Int_t species = 0; charge < 2 && species < 3; species++){//Species loop Pi/Ka/Pr
         
@@ -1403,11 +1423,11 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     
   }
   StopTimePerformance(1);
-
+  
   StartTimePerformance(2);
   fEvtSelected = SelectEvents(EvtStart);
   StopTimePerformance(2);
-    
+  
   StartTimePerformance(3);
   ComputeEvtMultiplicityBin();//Calculate in the handy binning the Multiplicity bin of the event
   StopTimePerformance(3);
@@ -1671,7 +1691,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         if(track->GetChi2TPCConstrainedVsGlobal(vertex) < fESDtrackCutsPrm->GetMaxChi2TPCConstrainedGlobal()){
           hDCAxyGoldenChi2[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
         }
-          
+        
       }
       
       if(fPdgIndex != -999 && TMath::Abs(fRapidity[fPdgIndex]) < fRapidityCut){//MC info If the track is a Pion or a Kaon or a Proton
@@ -1749,16 +1769,17 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     //
     //All Reconstructed tracks
     //
-    hDenMatch[fSign]->Fill(fPt);                  //-> transverse momentum
-    hDenMatchEta[fSign]->Fill(fEta);              //-> eta
-    hDenMatchphiOut[fSign]->Fill(fPhiout);        //-> Phi
+    hDenMatch[fSign]->Fill(fPt);                           //-> transverse momentum
+    hDenMatchEta[fSign]->Fill(fEta);                       //-> eta
+    hDenMatchphiOut[fSign]->Fill(fPhiout);                 //-> Phi
+    hDenMatchPtEtaPhiout[fSign]->Fill(fPt, fEta, fPhiout); //-> transverse momentum, eta and phi
     
-    if(fPt > 0.5){                                //Lower cut on the transver momentum
-      hDenMatchEtaPtMa[fSign]->Fill(fEta);        //-> eta
-      hDenMatchphiOutPtMa[fSign]->Fill(fPhiout);  //-> Phi
+    if(fPt > 0.5){                                         //Lower cut on the transver momentum
+      hDenMatchEtaPtMa[fSign]->Fill(fEta);                 //-> eta
+      hDenMatchphiOutPtMa[fSign]->Fill(fPhiout);           //-> Phi
     }
-    if(fTRDout) hDenMatchTRDOut[fSign]->Fill(fPt);//Tracks with TRDout
-    else hDenMatchNoTRDOut[fSign]->Fill(fPt);     //Tracks without TRDout
+    if(fTRDout) hDenMatchTRDOut[fSign]->Fill(fPt);         //Tracks with TRDout
+    else hDenMatchNoTRDOut[fSign]->Fill(fPt);              //Tracks without TRDout
     
     
     if(fMCmode){//start to take MC data
@@ -1816,16 +1837,16 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     // "TOF.and.T0C" -> 5
     // "T0AC;        -> 6
     // "TOF.and.T0AC"-> 7
-
+    
     // cout<< "T0 used: ["<<fT0UsedMask<<"]"<<endl;
     if(fT0UsedMask == 1 || fT0UsedMask == 3 || fT0UsedMask == 5 || fT0UsedMask == 7){
       SetTrkMaskBit(kT0_0, 1);//Set the used T0
       // cout<<"Is one"<<endl;
-    } 
+    }
     if(fT0UsedMask == 2 || fT0UsedMask == 3 || fT0UsedMask == 6 || fT0UsedMask == 7){
       SetTrkMaskBit(kT0_1, 1);
       // cout<<"Is two"<<endl;
-    } 
+    }
     if(fT0UsedMask == 4 || fT0UsedMask == 5 || fT0UsedMask == 6 || fT0UsedMask == 7){
       SetTrkMaskBit(kT0_2, 1);
       // cout<<"Is three"<<endl;
@@ -1901,7 +1922,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         for(Int_t j = 0; j < 3; j++){
           if(i == j){
             if(TMath::Abs(fTPCSigma[kpi + j]) > 3) pass = kFALSE;
-          } 
+          }
           else if(TMath::Abs(fTPCSigma[kpi + j]) < 3) pass = kFALSE;
         }
         if(pass) hNumMatchTPC[fSign][i]->Fill(fPt);
@@ -1932,16 +1953,17 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       //
       //All trakcs matched to TOF
       //
-      hNumMatch[fSign]->Fill(fPt);                  //-> transverse momentum
-      hNumMatchEta[fSign]->Fill(fEta);              //-> eta
-      hNumMatchphiOut[fSign]->Fill(fPhiout);        //-> Phi
+      hNumMatch[fSign]->Fill(fPt);                           //-> transverse momentum
+      hNumMatchEta[fSign]->Fill(fEta);                       //-> eta
+      hNumMatchphiOut[fSign]->Fill(fPhiout);                 //-> Phi
+      hNumMatchPtEtaPhiout[fSign]->Fill(fPt, fEta, fPhiout); //-> transverse momentum, eta and phi
       
-      if(fPt > 0.5){                                //Lower cut on the transver momentum
-        hNumMatchEtaPtMa[fSign]->Fill(fEta);        //-> eta
-        hNumMatchphiOutPtMa[fSign]->Fill(fPhiout);  //-> Phi
+      if(fPt > 0.5){                                         //Lower cut on the transver momentum
+        hNumMatchEtaPtMa[fSign]->Fill(fEta);                 //-> eta
+        hNumMatchphiOutPtMa[fSign]->Fill(fPhiout);           //-> Phi
       }
-      if(fTRDout) hNumMatchTRDOut[fSign]->Fill(fPt);//Tracks with TRDout
-      else hNumMatchNoTRDOut[fSign]->Fill(fPt);     //Tracks without TRDout
+      if(fTRDout) hNumMatchTRDOut[fSign]->Fill(fPt);         //Tracks with TRDout
+      else hNumMatchNoTRDOut[fSign]->Fill(fPt);              //Tracks without TRDout
       
       
       //Performance plots
@@ -1988,7 +2010,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
           if(TMath::Abs(fTPCSigma[kpi+i]) < 5 && TMath::Abs(fTOFSigma[kpi+i]) < 5){
             hTimeOfFlightResNoMismatch->Fill(fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion]);
             break;
-          } 
+          }
         }
         if(fT0TrkTime != 0){//No T0 Fill
           hTimeOfFlightTOFRes->Fill(deltat);
@@ -2397,14 +2419,14 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(AliESDtrack * trk){
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
-
+  
   if (!fEventCut.AcceptEvent(fESD)) {
     return kFALSE;
   }
   else return kTRUE;
-
-
-
+  
+  
+  
   if(fHImode){//Heavy Ion
     if(fEvtMult == -999){//Multiplicity estimator not initialized
       return kFALSE;
@@ -2676,7 +2698,6 @@ void AliAnalysisTaskTOFSpectra::SetTrackCuts(){
   if(!primstring.IsNull()) AliFatal(Form("The track cuts inserted contains a DCAxy cut (%s)! Please set it via SetESDtrackCutsPrm!!!", primstring.Data()));
   
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::SetSimpleCutVar(){

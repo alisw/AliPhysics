@@ -12,6 +12,7 @@ class TH1;
 class TH1F;
 class TH2F;
 class TH3F;
+class TH3I;
 class TList;
 class TObjArray;
 class AliESDEvent;
@@ -757,6 +758,8 @@ private:
   TH1F* hDenMatchTRDOut[2];       ///<  Matching efficiency denominator Pt Distribution with TRD out
   TH1F* hNumMatchNoTRDOut[2];     ///<  Matching efficiency numerator Pt Distribution without TRD out
   TH1F* hDenMatchNoTRDOut[2];     ///<  Matching efficiency denominator Pt Distribution without TRD out
+  TH3I* hNumMatchPtEtaPhiout[2];  ///<  Matching efficiency numerator Pt, Eta and Phi out Distribution
+  TH3I* hDenMatchPtEtaPhiout[2];  ///<  Matching efficiency denominator Pt, Eta and Phi out Distribution
   
   //Positive / Negative
   //Pion / Kaon / Proton
