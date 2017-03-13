@@ -730,30 +730,32 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     Int_t hadronBits=0 ; 
     Int_t trackId=-1;
     if(clu->GetEmcCpvDistance()<1.){
-      AliAODTrack * track = (AliAODTrack*)clu->GetTrackMatched(0);
-      Double_t ptTrack=track->Pt() ;
-      trackId=track->GetID() ;
-      Bool_t electron=kTRUE ;
-      Bool_t pion=kFALSE, kaon=kFALSE, proton=kFALSE ;
-      Int_t charge=(track->Charge()>0) ;  
+      trackId=FindTrackMatching(mod,&local) ;
+      if(trackId>=0){
+        AliAODTrack * track = (AliAODTrack*)fEvent->GetTrack(trackId);
+        Double_t ptTrack=track->Pt() ;
+        trackId=track->GetID() ;
+        Bool_t electron=kTRUE ;
+        Bool_t pion=kFALSE, kaon=kFALSE, proton=kFALSE ;
+        Int_t charge=(track->Charge()>0) ;  
 //             if(track->GetNcls(1) <2 ) electron=kFALSE ;
 //             if( !(track->GetStatus() & AliESDtrack::kTPCrefit))electron=kFALSE ; 
 //             if( track->GetKinkIndex(0) > 0) electron=kFALSE ;
 	      
-      //First rough PID
-      const Double_t nSigmaBelowElectronLine=-3. ;
-      const Double_t nSigmaAboveElectronLine= 5. ;
-      if( fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron)<nSigmaBelowElectronLine ||
+        //First rough PID
+        const Double_t nSigmaBelowElectronLine=-3. ;
+        const Double_t nSigmaAboveElectronLine= 5. ;
+        if( fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron)<nSigmaBelowElectronLine ||
           fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron)>nSigmaAboveElectronLine )
           electron=kFALSE ;
-      const Double_t minPnSigmaAbovePionLine = 1. ;
-      const Double_t maxPnSigmaAbovePionLine = 3. ;
-      const Double_t nSigmaAbovePionLine = 0 ;
-      if(track->P()>minPnSigmaAbovePionLine && track->P()<maxPnSigmaAbovePionLine ){
-        if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)<nSigmaAbovePionLine){
-          electron=kFALSE ;            
+        const Double_t minPnSigmaAbovePionLine = 1. ;
+        const Double_t maxPnSigmaAbovePionLine = 3. ;
+        const Double_t nSigmaAbovePionLine = 0 ;
+        if(track->P()>minPnSigmaAbovePionLine && track->P()<maxPnSigmaAbovePionLine ){
+          if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)<nSigmaAbovePionLine){
+            electron=kFALSE ;            
+          }
         }
-      }
 	    
       //Strict dEdx
       if(track->P()>minPnSigmaAbovePionLine && track->P()<maxPnSigmaAbovePionLine ){
@@ -808,7 +810,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       TVector3 globaPos ;
       fPHOSGeo->Local2Global(mod, local.X()-clu->GetTrackDx(), local.Z()-clu->GetTrackDz(), globaPos) ;
       ph->SetLambdas(globaPos.Theta(),globaPos.Phi());
-
+      }
     }   
     ph->SetTagInfo(hadronBits) ;
     ph->Pi0Id(trackId+1); 
@@ -1474,47 +1476,47 @@ Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton
   Int_t bits1=ph1->GetTagInfo() ;    
   Int_t bits2=ph2->GetTagInfo() ;    
   
-  if(ph1->Module()==ph2->Module()){
-    // offset for first photon   
-    Double_t dxMax1= 3.36783/ph1->E()-11.5189/TMath::Sqrt(ph1->E())+3.08283;
-    Double_t dxMin1=-4.01590/ph1->E()+13.2841/TMath::Sqrt(ph1->E())-4.31161;
-    Double_t sigmaX1=TMath::Max(1.5,-2.07124/ph1->E()+6.69554/TMath::Sqrt(ph1->E())-1.70062);
-    Double_t sigmaZ1=1.24859122035152259;
-    if(ph1->E()>0.4) 
-      sigmaZ1=5.58984e-01*TMath::Exp(-ph1->E()*ph1->E()/2.20543/2.20543)+7.07696e-01 ;
-  
-    Double_t dxMax2= 3.36783/ph2->E()-11.5189/TMath::Sqrt(ph2->E())+3.08283;
-    Double_t dxMin2=-4.01590/ph2->E()+13.2841/TMath::Sqrt(ph2->E())-4.31161;
-    Double_t sigmaX2=TMath::Max(1.5,-2.07124/ph2->E()+6.69554/TMath::Sqrt(ph2->E())-1.70062);
-    Double_t sigmaZ2=1.24859122035152259;
-    if(ph2->E()>0.4) 
-      sigmaZ2=5.58984e-01*TMath::Exp(-ph2->E()*ph2->E()/2.20543/2.20543)+7.07696e-01 ;
-
-    //use the largest excentricity
-    Double_t eps=TMath::Max(sigmaX1/sigmaZ1,sigmaX2/sigmaZ2) ;
-    //use this excentricity in distance calculation
-    Double_t dxC=ph1->EMCx() - ph2->EMCx() ;
-    Double_t dzC=ph1->EMCz() - ph2->EMCz() ;
-    dl=TMath::Sqrt(dxC*dxC + dzC*dzC) ;
-        //rough fCuts 
-    if(TMath::Abs(dzC)<6. && TMath::Abs(dxC)<25.){
-
-      //distance fCuts: too close if ellipses overlap
-      Double_t dx=dxC+dxMin1+dxMin2 ;
-      Double_t dz=dzC ;
-      if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
-        return kFALSE ;  
-      dx=dxC+dxMax1+dxMin2 ;
-      if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
-        return kFALSE ;  
-      dx=dxC+dxMax1+dxMax2 ;
-      if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
-        return kFALSE ;  
-      dx=dxC+dxMin1+dxMax2 ;
-      if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
-        return kFALSE ;  
-    }
-  } 
+//   if(ph1->Module()==ph2->Module()){
+//     // offset for first photon   
+//     Double_t dxMax1= 3.36783/ph1->E()-11.5189/TMath::Sqrt(ph1->E())+3.08283;
+//     Double_t dxMin1=-4.01590/ph1->E()+13.2841/TMath::Sqrt(ph1->E())-4.31161;
+//     Double_t sigmaX1=TMath::Max(1.5,-2.07124/ph1->E()+6.69554/TMath::Sqrt(ph1->E())-1.70062);
+//     Double_t sigmaZ1=1.24859122035152259;
+//     if(ph1->E()>0.4) 
+//       sigmaZ1=5.58984e-01*TMath::Exp(-ph1->E()*ph1->E()/2.20543/2.20543)+7.07696e-01 ;
+//   
+//     Double_t dxMax2= 3.36783/ph2->E()-11.5189/TMath::Sqrt(ph2->E())+3.08283;
+//     Double_t dxMin2=-4.01590/ph2->E()+13.2841/TMath::Sqrt(ph2->E())-4.31161;
+//     Double_t sigmaX2=TMath::Max(1.5,-2.07124/ph2->E()+6.69554/TMath::Sqrt(ph2->E())-1.70062);
+//     Double_t sigmaZ2=1.24859122035152259;
+//     if(ph2->E()>0.4) 
+//       sigmaZ2=5.58984e-01*TMath::Exp(-ph2->E()*ph2->E()/2.20543/2.20543)+7.07696e-01 ;
+// 
+//     //use the largest excentricity
+//     Double_t eps=TMath::Max(sigmaX1/sigmaZ1,sigmaX2/sigmaZ2) ;
+//     //use this excentricity in distance calculation
+//     Double_t dxC=ph1->EMCx() - ph2->EMCx() ;
+//     Double_t dzC=ph1->EMCz() - ph2->EMCz() ;
+//     dl=TMath::Sqrt(dxC*dxC + dzC*dzC) ;
+//         //rough fCuts 
+//     if(TMath::Abs(dzC)<6. && TMath::Abs(dxC)<25.){
+// 
+//       //distance fCuts: too close if ellipses overlap
+//       Double_t dx=dxC+dxMin1+dxMin2 ;
+//       Double_t dz=dzC ;
+//       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
+//         return kFALSE ;  
+//       dx=dxC+dxMax1+dxMin2 ;
+//       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
+//         return kFALSE ;  
+//       dx=dxC+dxMax1+dxMax2 ;
+//       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
+//         return kFALSE ;  
+//       dx=dxC+dxMin1+dxMax2 ;
+//       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
+//         return kFALSE ;  
+//     }
+//   } 
   
  // if(fCuts==kDefault){
   if(cut==0){
@@ -2008,5 +2010,92 @@ Bool_t AliAnalysisTaskgg::TestCPVCluster(Double_t cpvX, Double_t cpvZ, Double_t 
   Double_t r2=dxMin*dxMin/sigmaX/sigmaX + dz*dz/sigmaZ/sigmaZ;
 
   return (r1>2.5*2.5) && (r2>2.5*2.5) ;
+}
+//___________________________________________________________________________________________________
+Int_t AliAnalysisTaskgg::FindTrackMatching(Int_t mod,TVector3 *locpos){
+
+    
+  Double_t  magF =fEvent->GetMagneticField();
+ 
+  Double_t magSign = 1.0;
+  if(magF<0)magSign = -1.0;
+  
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+     AliError("Margnetic filed was not initialized, use default") ;
+     AliMagF* field = new AliMagF("Maps","Maps", magSign, magSign, AliMagF::k5kG);
+     TGeoGlobalMagField::Instance()->SetField(field);
+  }
+
+  // *** Start the matching
+  Int_t nt = fEvent->GetNumberOfTracks();
+      
+  //Calculate actual distance to PHOS module
+  TVector3 globaPos ;
+  fPHOSGeo->Local2Global(mod, 0.,0., globaPos) ;
+  const Double_t rPHOS = globaPos.Pt() ; //Distance to center of  PHOS module
+  const Double_t kYmax = 72.+10. ; //Size of the module (with some reserve) in phi direction
+  const Double_t kZmax = 64.+10. ; //Size of the module (with some reserve) in z direction
+  const Double_t kAlpha0=330./180.*TMath::Pi() ; //First PHOS module angular direction
+  const Double_t kAlpha= 20./180.*TMath::Pi() ; //PHOS module angular size
+  Double_t minDistance = 1.e6;
+
+
+  Double_t gposTrack[3] ; 
+
+  Double_t bz = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField();
+  bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
+
+  Double_t b[3]; 
+  Int_t itr=-1 ;
+  AliAODTrack *aodTrack=0x0 ;
+  Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+  for (Int_t i=0; i<nt; i++) {
+      aodTrack=(AliAODTrack*)fEvent->GetTrack(i);
+
+      // Skip the tracks having "wrong" status (has to be checked/tuned)
+      if(!aodTrack->IsHybridGlobalConstrainedGlobal())
+        continue ;  
+      
+      //Continue extrapolation from TPC outer surface
+      AliExternalTrackParam outerParam;
+      aodTrack->GetPxPyPz(pxpypz);
+      aodTrack->GetXYZ(xyz);
+      aodTrack->GetCovarianceXYZPxPyPz(cv);
+      outerParam.Set(xyz,pxpypz,cv,aodTrack->Charge());
+      
+      Double_t z; 
+      if(!outerParam.GetZAt(rPHOS,bz,z))
+        continue ;
+
+      if (TMath::Abs(z) > kZmax) 
+        continue; // Some tracks miss the PHOS in Z
+
+     
+      //Direction to the current PHOS module
+      Double_t phiMod=kAlpha0-kAlpha*mod ;
+      if(!outerParam.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
+    
+      Double_t y;                       // Some tracks do not reach the PHOS
+      if (!outerParam.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
+      
+      if(TMath::Abs(y) < kYmax){
+        outerParam.GetBxByBz(b) ;
+        outerParam.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
+        //outerParam.CorrectForMaterial(...); // Correct for the TOF material, if needed
+        outerParam.GetXYZ(gposTrack) ;
+        TVector3 globalPositionTr(gposTrack) ;
+        TVector3 localPositionTr ;
+        fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod) ;
+        Double_t ddx = locpos->X()-localPositionTr.X();
+        Double_t ddz = locpos->Z()-localPositionTr.Z();
+        Double_t d2 = ddx*ddx + ddz*ddz;
+        if(d2 < minDistance) {
+	  minDistance=d2 ;
+	  itr=i ;
+         }
+      }
+    }//Scanned all tracks
+ 
+   return itr ;
 }
 

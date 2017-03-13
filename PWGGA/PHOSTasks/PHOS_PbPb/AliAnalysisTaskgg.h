@@ -15,9 +15,7 @@ class AliPIDResponse ;
 
 class AliAnalysisTaskgg : public AliAnalysisTaskSE {
 public:
-  
-  enum CutList {kDefault, kDisp, kCPV, kBoth, kDistance1, kDistance2, kDistance3} ;  
-  
+    
   
   AliAnalysisTaskgg(const char *name = "AliAnalysisTaskgg");
   virtual ~AliAnalysisTaskgg() {}
@@ -35,13 +33,15 @@ protected:
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z, Double_t w) const ; //Fill 3D histogram witn name key
 
   
-  Int_t ConvertRunNumber(Int_t run) ; 
+  Int_t  ConvertRunNumber(Int_t run) ; 
+  Int_t  FindTrackMatching(Int_t mod,TVector3 *locpos); 
+  Int_t  JetRejection(Int_t module) const; //Looks is there is a jet around
   Bool_t PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const ; 
   Bool_t PHOSCut(const AliCaloPhoton * ph1, Int_t cut) const ;   
-  Int_t JetRejection(Int_t module) const; //Looks is there is a jet around
+  void   ReclusterizeCPV();
   Bool_t TestCPV(Double_t emcX, Double_t emcZ, Double_t e) ;
   Bool_t TestCPVCluster(Double_t cpvX, Double_t cpvZ, Double_t emcX, Double_t emcZ, Double_t e) ; //return true if neutral
-  void ReclusterizeCPV();
+
 
   Double_t EtaPhiWeight(Int_t kTbin, Double_t x) const ;
   
