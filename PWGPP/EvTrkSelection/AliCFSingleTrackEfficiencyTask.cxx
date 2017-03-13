@@ -4,6 +4,7 @@
 #include <TDatabasePDG.h>
 
 #include "AliAnalysisDataSlot.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
@@ -720,7 +721,26 @@ Double_t AliCFSingleTrackEfficiencyTask::GetCentrality()
   //
   // Get centrality
   //
+  if(fInputEvent->GetRunNumber()<244824) return GetCentralityOldFramework();
+  Double_t cent=-1;
+  AliMultSelection *multSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  if(!multSelection){
+    AliWarning("AliMultSelection could not be found in the aod event list of objects");
+    return cent;
+  }
+  cent=multSelection->GetMultiplicityPercentile(fCentralityEstimator.Data());
+  Int_t qual = multSelection->GetEvSelCode();
+  if(qual == 199 ) cent=-1;
+  return cent;
 
+}
+
+//______________________________________________________________________
+Double_t AliCFSingleTrackEfficiencyTask::GetCentralityOldFramework()
+{
+  //
+  // Get centrality, Run1 framework
+  //
   Bool_t isAOD = fInputEvent->IsA()->InheritsFrom("AliAODEvent");
   Double_t cent = -1;
 

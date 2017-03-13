@@ -106,6 +106,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Int_t GetNumberOfTrackletsInEtaRange(Double_t mineta, Double_t maxeta);
   // Evaluate the event centrality
   Double_t GetCentrality();
+  Double_t GetCentralityOldFramework();
 
   Bool_t fReadAODData;       // flag for AOD/ESD input files
   AliCFManager *fCFManager;  // pointer to the CF manager slot 2
