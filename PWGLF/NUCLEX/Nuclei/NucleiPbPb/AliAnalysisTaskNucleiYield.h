@@ -98,10 +98,11 @@ private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
 
-  Bool_t  AcceptTrack(AliAODTrack *t, Double_t dca[2]);
-  Bool_t  PassesPIDSelection(AliAODTrack *t);
-  Float_t HasTOF(AliAODTrack *t);
-  float   GetTPCsigmas(AliVTrack *t);
+  bool   AcceptTrack(AliAODTrack *t, Double_t dca[2]);
+  bool   PassesPIDSelection(AliAODTrack *t);
+  float  HasTOF(AliAODTrack *t);
+  float  GetTPCsigmas(AliVTrack *t);
+  int    GetNumberOfITSclustersPerLayer(AliVTrack *track, unsigned int &nSPD, unsigned int &nSDD, unsigned int &nSSD);
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
@@ -181,9 +182,11 @@ private:
   TH3F                 *fDCASecondaryWeak[2][2]; //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from Weak Decay
 
   // Data histograms
-  TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for anti-matter
-  TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for anti-matter
-  TH2F                 *fTPCeLoss[2];            //!<! *(Data only)* TPC dE/dx for anti-matter
+  TH2F                 *fITSeLoss[2];            //!<! *(Data only)* ITS dE/dx for (anti)-matter
+  TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
+  TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
+  TH2F                 *fTPCeLoss[2];            //!<! *(Data only)* TPC dE/dx for (anti-)matter
+  TH2F                 *fTPCeLossSelected[2];    //!<! *(Data only)* TPC dE/dx for (anti-)matter selected by the TPCnSigma cut
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
   TH3F                 *fTOFtemplates[5];        //!<! *(Data only)* TOF signal templates for pi/k/p/d/t

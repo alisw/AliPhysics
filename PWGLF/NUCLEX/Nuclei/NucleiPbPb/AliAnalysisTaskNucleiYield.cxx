@@ -86,7 +86,7 @@ static void BinLogAxis(const TH1 *h) {
 ///
 AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
-  ,fEventCut{false}
+   ,fEventCut{false}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -145,9 +145,11 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCAPrimary{{nullptr}}
    ,fDCASecondary{{nullptr}}
    ,fDCASecondaryWeak{{nullptr}}
+   ,fITSeLoss{nullptr}
    ,fTOFsignal{nullptr}
    ,fTPCcounts{nullptr}
    ,fTPCeLoss{nullptr}
+   ,fTPCeLossSelected{nullptr}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
    ,fTOFtemplates{nullptr}
@@ -245,12 +247,23 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
       fTPCeLoss[iC] = new TH2F(Form("f%cTPCeLoss",letter[iC]),";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
           2400,0,2400);
-      if (fEnableLogAxisInPerformancePlots)
+      fTPCeLossSelected[iC] = new TH2F(Form("f%cTPCeLossSelected",letter[iC]),";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
+          2400,0,2400);
+      if (fEnableLogAxisInPerformancePlots) {
         BinLogAxis(fTPCeLoss[iC]);
+        BinLogAxis(fTPCeLossSelected[iC]);
+      }
 
       fList->Add(fTOFsignal[iC]);
       fList->Add(fTPCeLoss[iC]);
+      fList->Add(fTPCeLossSelected[iC]);
       fList->Add(fTPCcounts[iC]);
+
+      fITSeLoss[iC] = new TH2F(Form("f%cITSeLoss",letter[iC]),";p (GeV/c);ITS dE/dx (keV/300#mum);Entries",196 * 2,0.2,10.,
+          1400,0,1400);
+      if (fEnableLogAxisInPerformancePlots)
+        BinLogAxis(fITSeLoss[iC]);
+      fList->Add(fITSeLoss[iC]);
 
       for (int iT = 0; iT < 2; ++iT) {
         fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
@@ -382,7 +395,14 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int iC = (track->Charge() > 0) ? 1 : 0;
       fTPCeLoss[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
 
+      unsigned int nSPD = 0u, nSDD = 0u, nSSD = 0u;
+      int nITS = GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
+      if (nITS - nSPD >= 3)
+        fITSeLoss[iC]->Fill(track->P(), track->GetITSsignal());
+
       if (!PassesPIDSelection(track)) continue;
+      fTPCeLossSelected[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+
       float tpc_n_sigma = GetTPCsigmas(track);
       float tof_n_sigma = iTof ? fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, fParticle) : -999.f;
 
@@ -436,7 +456,7 @@ void AliAnalysisTaskNucleiYield::Terminate(Option_t *) {
 ///               of the track to the primary vertex
 /// \return Boolean value: true means that the track has passed all the cuts.
 ///
-Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]) {
+bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]) {
   ULong_t status = track->GetStatus();
   fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
   if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return kFALSE;
@@ -452,14 +472,8 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
   dca[0] = 0.;
   dca[1] = 0.;
   if (track->Pt() < fDisableITSatHighPt) {
-    unsigned int nSPD = 0, nITS = 0, nSDD = 0;
-    for (int i = 0; i < 6; ++i) {
-      if (track->HasPointOnITSLayer(i)) {
-        if (i < 2) nSPD++;
-        else if (i < 4) nSDD++;
-        nITS++;
-      }
-    }
+    unsigned int nSPD = 0u, nSDD = 0u, nSSD = 0u;
+    int nITS = GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
     if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return kFALSE;
     if (nITS < fRequireITSrecPoints) return kFALSE;
     if (nSPD < fRequireSPDrecPoints) return kFALSE;
@@ -479,11 +493,11 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
 /// \param track Track that has to be checked
 /// \return \f$\beta\f$ of the particle, -1 means that there is no correct prolongation in TOF.
 ///
-Float_t AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track) {
-  Bool_t hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
-  Bool_t hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+float AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track) {
+  bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
   const float len = track->GetIntegratedLength();
-  Bool_t hasTOF = Bool_t(hasTOFout & hasTOFtime) && (len > fRequireTrackLength);
+  bool hasTOF = Bool_t(hasTOFout & hasTOFtime) && (len > fRequireTrackLength);
 
   if (!hasTOF) return -1.;
   const float p = track->GetTPCmomentum();
@@ -581,7 +595,7 @@ float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
 /// \param sigmas Number of sigmas
 /// \return Boolean value: true means that the track passes the PID selection
 ///
-Bool_t AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
+bool AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
   bool tofPID = true, itsPID = true, tpcPID = true;
   if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
     AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
@@ -688,4 +702,27 @@ void AliAnalysisTaskNucleiYield::PtCorrection(float &pt, bool positiveCharge) {
   Float_t *par = (positiveCharge) ? fPtCorrectionM.GetArray() : fPtCorrectionA.GetArray();
   const Float_t correction = par[0] + par[1] * TMath::Exp(par[2] * pt);
   pt -= correction;
+}
+
+/// This function returns the number of clusters for each ITS subdetector
+///
+/// \param track
+/// \param nSPD number of clusters in SPD
+//  \param nSDD number of clusters in SDD
+//  \param nSSD number of clusters in SSD
+/// \return int number of clusters in ITS
+///
+int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track, unsigned int &nSPD, unsigned int &nSDD, unsigned int &nSSD) {
+  if (!track) return -1;
+  nSPD = 0u;
+  nSDD = 0u;
+  nSSD = 0u;
+  for (int i = 0; i < 6; ++i) {
+    if (track->HasPointOnITSLayer(i)) {
+      if (i < 2) nSPD++;
+      else if (i < 4) nSDD++;
+      else nSSD++;
+    }
+  }
+  return nSPD + nSDD + nSSD;
 }

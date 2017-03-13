@@ -44,9 +44,9 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield_LHC15o(Bool_t isMC = kFALSE,
   deu->SetIsMC(isMC);
   deu->SetDCABins(80,-0.5,0.5);
 
-  float p[5] = {7.25105e-01,4.99820e+01,2.35714e-10,2.49196e+00,1.41570e+01};
-  deu->SetCustomTPCpid(p,0.08f);
-  deu->SetRequireTPCpidSigmas(4.f);
+  //float p[5] = {7.25105e-01,4.99820e+01,2.35714e-10,2.49196e+00,1.41570e+01};
+  //deu->SetCustomTPCpid(p,0.08f);
+  deu->SetRequireTPCpidSigmas(4.5f);
   float cent[11] = {0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f};
   deu->SetCentBins(10, cent);
   deu->SetUseFlattening(false);
