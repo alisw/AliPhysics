@@ -3375,7 +3375,7 @@ TCanvas* cpu;
     // ---------------------- Draw TPCITS tracks DCA histos
     
     TCanvas* cDCA;
-    if(hmDCA05->GetEntries()>0 && hmDCA05->GetBinContent(1)>-500.){
+    if(hmDCA05->GetEntries()>0){
         cDCA=new TCanvas("cDCA"," DCA for TPCITS tracks w/ 6 cls in ITS",800,1200);
         cDCA->Divide(1,2);
         cDCA->cd(1);
@@ -3451,7 +3451,7 @@ TCanvas* cpu;
     // ---------------------- Draw TPCITS tracks DCAz histos
     
     TCanvas* cDCAz;
-    if(hmDCAz05->GetEntries()>0 && hmDCAz05->GetBinContent(1)>-500.){
+    if(hmDCAz05->GetEntries()>0){
         cDCAz=new TCanvas("cDCAz"," DCAz for TPCITS tracks w/ 6 cls in ITS",800,1200);
         cDCAz->Divide(1,2);
         cDCAz->cd(1);
@@ -3548,8 +3548,8 @@ TCanvas* cpu;
     if(h10->GetEntries()>0 && h10->GetBinContent(1)>0.) pdfFileNames+=" dedx4_3_SA_trend.pdf";
     if(h11->GetEntries()>0 && h11->GetBinContent(1)>0.) pdfFileNames+=" piPt_SA_trend.pdf";
     if(hchi2->GetEntries()>0 && hchi2->GetBinContent(1)>0.) pdfFileNames+=" Chi2_tracks_trend.pdf";
-    if(hmDCA05->GetEntries()>0 && hmDCA05->GetBinContent(1)>-500.) pdfFileNames+=" DCAtracks_trend.pdf";
-    if(hmDCAz05->GetEntries()>0 && hmDCAz05->GetBinContent(1)>-500.) pdfFileNames+=" DCAztracks_trend.pdf";
+    if(hmDCA05->GetEntries()>0) pdfFileNames+=" DCAtracks_trend.pdf";
+    if(hmDCAz05->GetEntries()>0) pdfFileNames+=" DCAztracks_trend.pdf";
 //    if(hOccEta1->GetEntries()>0 && hOccEta1->GetMean()>0) pdfFileNames+=" Layer1_eta_phi_trend.pdf";
 //    if(hOccEta2->GetEntries()>0 && hOccEta2->GetMean()>0) pdfFileNames+=" Layer2_eta_phi_trend.pdf";
 //    if(hOccEta3->GetEntries()>0 && hOccEta3->GetMean()>0) pdfFileNames+=" Layer3_eta_phi_trend.pdf";
@@ -3592,8 +3592,8 @@ TCanvas* cpu;
     if(h11->GetEntries()>0 && h11->GetBinContent(1)>0.) cSA3->Write();
     if(h12->GetEntries()>0 && h12->GetBinContent(1)>0.) cSA4->Write();
     if(hchi2->GetEntries()>0 && hchi2->GetBinContent(1)>0.) cChi2->Write();
-    if(hmDCA05->GetEntries()>0 && hmDCA05->GetBinContent(1)>-500.) cDCA->Write();
-    if(hmDCAz05->GetEntries()>0 && hmDCAz05->GetBinContent(1)>-500.) cDCAz->Write();
+    if(hmDCA05->GetEntries()>0) cDCA->Write();
+    if(hmDCAz05->GetEntries()>0) cDCAz->Write();
 //    if(hOccEta1->GetEntries()>0 && hOccEta1->GetMean()>0) cEtaPhi1->Write();
 //    if(hOccEta2->GetEntries()>0 && hOccEta2->GetMean()>0) cEtaPhi2->Write();
 //    if(hOccEta3->GetEntries()>0 && hOccEta3->GetMean()>0) cEtaPhi3->Write();
