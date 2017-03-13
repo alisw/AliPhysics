@@ -39,7 +39,8 @@ public:
   //
   static TObjArray  * MakeHistograms(TTree * tree, TString hisString, TString defaultCut, Int_t firstEntry, Int_t lastEntry, Int_t chunkSize=-1, Int_t verbose=1);
   static TPad *  DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression, TObjArray *keepArray=0, Int_t verbose=0);
-  
+  static void MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection);
+
   template <typename T> static Long64_t BinarySearchSmaller(Long64_t n, const T *array, T value);
   enum TStatType {kUndef=-1,kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS, kMedianLeft,kMedianRight}; 
   static Int_t GetStatType(const TString &stat);

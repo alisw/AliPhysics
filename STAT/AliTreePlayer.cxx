@@ -1256,6 +1256,40 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
 
 
 
+void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection){
+  //
+  // Fill tree with information specified in varList of TTreeFormulas
+  // In case input tree is "flat" - not array output tree can be used as a friend ....
+  // Input:
+  //    tree      - TTree with input
+  //    varList   - list of TTreeFormulas
+  //    selection - tree selection
+  // Output: tree
+  //    outFile  - output file name
+  //    outTree  - output tree name
+  TTreeSRedirector *pcstream = new TTreeSRedirector(outFile,"recreate");
+  if (tree->GetEstimate()<tree->GetEntries()) tree->SetEstimate(tree->GetEntries());
+  Int_t entries=tree->Draw(varList.Data(),selection,"goffpara");
+  TObjArray * varName=varList.Tokenize(":");
+  const Int_t nVars=varName->GetEntries();
+  Double_t vars[nVars];
+  TTree *treeOut=NULL;
+  for (Int_t iPoint=0; iPoint <entries; iPoint++){
+    for (Int_t iVar=0; iVar<nVars; iVar++){
+      vars[iVar]=tree->GetVal(iVar)[iPoint];
+      if (iPoint==0) (*pcstream)<<outTree.Data()<<TString::Format("%s=",varName->At(iVar)->GetName()).Data()<<vars[iVar];
+    }
+    if (iPoint==0) {
+       (*pcstream)<<outTree.Data()<<"\n";
+       treeOut=((*pcstream)<<outTree.Data()).GetTree();
+    }else{
+      treeOut->Fill();
+    }
+  }
+  delete pcstream;
+}
+
+
 
 
 
