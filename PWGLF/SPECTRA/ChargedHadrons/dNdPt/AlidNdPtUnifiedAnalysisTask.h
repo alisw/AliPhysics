@@ -126,7 +126,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     void Set2015data(Bool_t is2015) {fIs2015data = is2015;}
 
     Bool_t IsTrackAcceptedKinematics(AliVTrack *track);
-    Bool_t IsTrackAcceptedKinematics(TParticle *mcTrack);
+    Bool_t IsTrackAcceptedKinematics(TParticle *mcTrack, Bool_t useLowerPtCut = kTRUE);
     Bool_t IsTrackAcceptedQuality(AliVTrack *track);
     Bool_t IsEventAcceptedGeometrics(AliVEvent *event);
     Bool_t IsEventAcceptedQuality(AliVEvent *event);

@@ -27,8 +27,6 @@
 
 #include "AlidNdPtUnifiedAnalysisTask.h"
 
-#include <iostream>
-using namespace std;
 
 /// \cond CLASSIMP
 ClassImp(AlidNdPtUnifiedAnalysisTask);
@@ -660,8 +658,8 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
 
       /// \li Acceptance cuts for generated particles
-      if(!IsTrackAcceptedKinematics(mcGenParticle)) continue;
-      // for meanPt: do we leave out lower pt cut like in paper?
+      // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
+      if(!IsTrackAcceptedKinematics(mcGenParticle, kFALSE)) continue;
 
       if(IsChargedPrimary(iParticle)){
 
@@ -732,7 +730,7 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedKinematics(AliVTrack *track)
 /// \param TParticle Input particle
 ///
 /// \return Is particle accepted: kTRUE, else kFALSE
-Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedKinematics(TParticle *mcTrack)
+Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedKinematics(TParticle *mcTrack, Bool_t useLowerPtCut)
 {
   if(!mcTrack) return kFALSE;
 
@@ -741,7 +739,7 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedKinematics(TParticle *mcTrack
 
   if(eta < fMinEta) return kFALSE;
   if(eta > fMaxEta) return kFALSE;
-  if(pt < fMinPt) return kFALSE;
+  if((pt < fMinPt) && useLowerPtCut) return kFALSE;
   if(pt > fMaxPt) return kFALSE;
   return kTRUE;
 }

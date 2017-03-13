@@ -1,4 +1,4 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 100, Float_t etaCut = 0.8, Float_t upperPtCut = 50.)
+AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 100, Float_t etaCut = 0.8, Float_t upperPtCut = 10., Bool_t is2015Data = kTRUE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -40,7 +40,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 
   task->SetMaxPt(upperPtCut);
 
   task->Set2013pA(kFALSE);
-  task->Set2015data(kTRUE);
+  task->Set2015data(is2015Data);
 
   ///TOF pileup, kTRUE only for Matching efficiency studies
   task->SetTOFbunchCrossing(kFALSE);
