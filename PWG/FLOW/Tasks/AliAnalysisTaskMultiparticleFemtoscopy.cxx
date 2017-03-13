@@ -6428,18 +6428,19 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
      dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
      dC3Err = 0.; // TBI propagate an error one day
      // fill 3p:
-     dBinCenter = fBackgroundTEST[0][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
-     fBackgroundTEST[0][1][0][xyz]->Fill(dBinCenter,dX1); // <X1> vs. Q3
-     fBackgroundTEST[0][1][1][xyz]->Fill(dBinCenter,dX2); // <X2> vs. Q3
-     fBackgroundTEST[0][1][2][xyz]->Fill(dBinCenter,dX3); // <X3> vs. Q3
-     fBackgroundTEST[0][1][3][xyz]->Fill(dBinCenter,dX1X2); // <X1X2> vs. Q3
-     fBackgroundTEST[0][1][4][xyz]->Fill(dBinCenter,dX1X3); // <X1X3> vs. Q3
-     fBackgroundTEST[0][1][5][xyz]->Fill(dBinCenter,dX2X3); // <X2X3> vs. Q3
-     fBackgroundTEST[0][1][6][xyz]->Fill(dBinCenter,dX1X2X3); // <X1X2X3> vs. Q3
-     fBackgroundCumulantsTEST[0][1][0][xyz]->Fill(dBinCenter,dC12); // <X1X2> - <X1><X2> vs. Q3
-     fBackgroundCumulantsTEST[0][1][1][xyz]->Fill(dBinCenter,dC13); // <X1X3> - <X1><X3> vs. Q3
-     fBackgroundCumulantsTEST[0][1][2][xyz]->Fill(dBinCenter,dC23); // <X2X3> - <X2><X3> vs. Q3
-     fBackgroundCumulantsTEST[0][1][3][xyz]->Fill(dBinCenter,dC3); // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
+
+     dBinCenter = fBackgroundTEST[t][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+     fBackgroundTEST[t][1][0][xyz]->Fill(dBinCenter,dX1); // <X1> vs. Q3
+     fBackgroundTEST[t][1][1][xyz]->Fill(dBinCenter,dX2); // <X2> vs. Q3
+     fBackgroundTEST[t][1][2][xyz]->Fill(dBinCenter,dX3); // <X3> vs. Q3
+     fBackgroundTEST[t][1][3][xyz]->Fill(dBinCenter,dX1X2); // <X1X2> vs. Q3
+     fBackgroundTEST[t][1][4][xyz]->Fill(dBinCenter,dX1X3); // <X1X3> vs. Q3
+     fBackgroundTEST[t][1][5][xyz]->Fill(dBinCenter,dX2X3); // <X2X3> vs. Q3
+     fBackgroundTEST[t][1][6][xyz]->Fill(dBinCenter,dX1X2X3); // <X1X2X3> vs. Q3
+     fBackgroundCumulantsTEST[t][1][0][xyz]->Fill(dBinCenter,dC12); // <X1X2> - <X1><X2> vs. Q3
+     fBackgroundCumulantsTEST[t][1][1][xyz]->Fill(dBinCenter,dC13); // <X1X3> - <X1><X3> vs. Q3
+     fBackgroundCumulantsTEST[t][1][2][xyz]->Fill(dBinCenter,dC23); // <X2X3> - <X2><X3> vs. Q3
+     fBackgroundCumulantsTEST[t][1][3][xyz]->Fill(dBinCenter,dC3); // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
     } // if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 && ...
    } // for(Int_t xyz=0;xyz<3;xyz++)
   } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
