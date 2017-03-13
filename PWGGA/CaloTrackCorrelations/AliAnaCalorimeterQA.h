@@ -576,7 +576,7 @@ public:
   TH1F *   fhTime;                              //!<! Time measured in towers/crystals
 //TH2F *   fhTimeVz;                            //!<! Time measured in towers/crystals vs vertex z component, for E > 0.5
   TH2F *   fhTimeId;                            //!<! Time vs Absolute cell Id
-  TH2F *   fhTimeL1CorrId;                      //!<! Time (corrected for L1 phase) vs Absolute cell Id
+  TH2F *   fhTimeL1UnCorrId;                    //!<! Time (not corrected for L1 phase) vs Absolute cell Id
   TH2F *   fhTimeAmp;                           //!<! Time vs Amplitude
   TH2F *   fhTimePerSMPerBC[4];                 //!<! Time vs SM number for BC%4=0,1,2,3
   

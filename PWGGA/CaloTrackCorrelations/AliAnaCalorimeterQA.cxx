@@ -151,7 +151,7 @@ fhNCells(0),                           fhNCellsCutAmpMin(0),
 fhAmplitude(0),                        fhAmpId(0),                             
 fhEtaPhiAmpCell(0),                    fhEtaPhiCell(0),
 fhTime(0),                             //fhTimeVz(0),
-fhTimeId(0),                           fhTimeL1CorrId(0),                      fhTimeAmp(0),
+fhTimeId(0),                           fhTimeL1UnCorrId(0),                    fhTimeAmp(0),
 fhAmpIdLowGain(0),                     fhTimeIdLowGain(0),                     fhTimeAmpLowGain(0),
 
 fhCellECross(0),
@@ -640,7 +640,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Int_t    iRCU   = -1;
   Float_t  amp    = 0.;
   Double_t time   = 0.;
-  Double_t timeL1Corr= 0.;
+  Double_t timeL1UnCorr= 0.;
   Int_t    id     = -1;
   Bool_t   highG  = kFALSE;
   Float_t  recalF = 1.;  
@@ -678,26 +678,21 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       id      = cells->GetCellNumber(iCell);
       highG   = cells->GetCellHighGain(id);
       if(IsDataMC()) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
-      
+
       // Amplitude recalibration if set
       GetCaloUtils()->RecalibrateCellAmplitude(amp,  GetCalorimeter(), id);
-      
+
       // Time recalibration if set
       GetCaloUtils()->RecalibrateCellTime     (time, GetCalorimeter(), id, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
-      
-      // Time & L1 recalibration if set
-      timeL1Corr=time;
-      GetCaloUtils()->SwitchOnL1PhaseInTimeRecalibration();
-      GetCaloUtils()->RecalibrateCellTimeL1Phase(timeL1Corr,0 , nModule, GetReader()->GetInputEvent()->GetBunchCrossNumber());
-      GetCaloUtils()->SwitchOffL1PhaseInTimeRecalibration();
-
+      timeL1UnCorr=time;
+      // Correction of L1 phase if set
+      GetCaloUtils()->RecalibrateCellTimeL1Phase(time,0 , nModule, GetReader()->GetInputEvent()->GetBunchCrossNumber());
       // Transform time to ns
       time *= 1.0e9;
       time-=fConstantTimeShift;
-      timeL1Corr *= 1.0e9;
-      timeL1Corr-=fConstantTimeShift;
+      timeL1UnCorr *= 1.0e9;
+      timeL1UnCorr-=fConstantTimeShift;
 
-      //Question : should be cut on L1 phase corrected time??
       if(time < fTimeCutMin || time > fTimeCutMax)
       {
         AliDebug(1,Form("Remove cell with Time %f",time));
@@ -762,8 +757,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           
           fhTime         ->Fill(time,             GetEventWeight());
           fhTimeId       ->Fill(time,       id  , GetEventWeight());
-          fhTimeL1CorrId ->Fill(timeL1Corr, id  , GetEventWeight());
           fhTimeAmp      ->Fill(amp ,       time, GetEventWeight());
+          if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)fhTimeL1UnCorrId ->Fill(timeL1UnCorr, id  , GetEventWeight());
 
           Int_t bc = (GetReader()->GetInputEvent()->GetBunchCrossNumber())%4;
           fhTimePerSMPerBC[bc]->Fill(time, nModule, GetEventWeight());
@@ -4978,11 +4973,14 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTimeId->SetYTitle("Cell Absolute Id");
     outputContainer->Add(fhTimeId);
 
-    fhTimeL1CorrId  = new TH2F ("hTimeL1CorrId","#it{t}_{cell} vs Absolute Id",
+    if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)
+    {
+      fhTimeL1UnCorrId  = new TH2F ("hTimeL1UnCorrId","#it{t}_{cell} vs Absolute Id",
                           ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
-    fhTimeL1CorrId->SetXTitle("#it{t}_{cell} (ns)");
-    fhTimeL1CorrId->SetYTitle("Cell Absolute Id");
-    outputContainer->Add(fhTimeL1CorrId);
+      fhTimeL1UnCorrId->SetXTitle("#it{t}_{cell} (ns)");
+      fhTimeL1UnCorrId->SetYTitle("Cell Absolute Id");
+      outputContainer->Add(fhTimeL1UnCorrId);
+    }
 
     fhTimeAmp  = new TH2F ("hTimeAmp","#it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
     fhTimeAmp->SetYTitle("#it{t}_{cell} (ns)");
