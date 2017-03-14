@@ -93,11 +93,6 @@ Int_t AliCascadeVertexerUncheckedCharges::V0sTracks2CascadeVertices(AliESDEvent 
     for (i=0; i<nentr; i++) {
         AliESDtrack *esdtr=event->GetTrack(i);
         
-        if( fRotateBachelor ){
-            //Highly experimental... is expected to screw everything up.
-            esdtr->Rotate( lPRNG.Uniform( 0.3333*TMath::Pi(), 1.6667*TMath::Pi() ) );
-        }
-        
         ULong_t status=esdtr->GetStatus();
         
         if ((status&AliESDtrack::kITSrefit)==0)

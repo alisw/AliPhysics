@@ -43,6 +43,7 @@ fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
 fSwapBachCharge(kFALSE),
 fSwapBaryon(kFALSE),
+fSwapV0MesonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
@@ -98,6 +99,7 @@ fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
 fSwapBachCharge(kFALSE),
 fSwapBaryon(kFALSE),
+fSwapV0MesonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
@@ -155,6 +157,7 @@ fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
 fSwapBachCharge(kFALSE),
 fSwapBaryon(kFALSE),
+fSwapV0MesonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
@@ -221,6 +224,7 @@ fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
 fSwapBachCharge(kFALSE),
 fSwapBaryon(kFALSE),
+fSwapV0MesonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
@@ -286,6 +290,7 @@ fCutMCSelectBump(lCopyMe.fCutMCSelectBump),
 //Rsn-like bg subtraction
 fSwapBachCharge(lCopyMe.fSwapBachCharge),
 fSwapBaryon(lCopyMe.fSwapBaryon),
+fSwapV0MesonCharge(lCopyMe.fSwapV0MesonCharge),
 //Track selections
 fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
@@ -355,6 +360,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     //Rsn-like bg subtraction (experimental)
     fSwapBachCharge = lCopyMe -> GetSwapBachelorCharge();
     fSwapBaryon     = lCopyMe -> GetSwapBaryon();
+    fSwapV0MesonCharge     = lCopyMe -> GetSwapV0MesonCharge();
     
     //Track cuts
     fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
@@ -434,7 +440,8 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     
     //Rsn-like bg subtraction (experimental)
     fSwapBachCharge = lCopyMe.GetSwapBachelorCharge();
-    fSwapBaryon     = lCopyMe.GetSwapBaryon();
+    fSwapBaryon          = lCopyMe.GetSwapBaryon();
+    fSwapV0MesonCharge     = lCopyMe.GetSwapV0MesonCharge();
     
     //Track cuts
     fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
@@ -630,6 +637,7 @@ void AliCascadeResult::Print()
     
     cout<<" Swap bach charge...: "<<fSwapBachCharge<<endl;
     cout<<" Swap lam/lambar....: "<<fSwapBaryon<<endl; 
+    cout<<" Swap v0 mes charge.: "<<fSwapV0MesonCharge<<endl;
     cout<<"========================================"<<endl;
     return;
 }

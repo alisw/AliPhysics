@@ -1517,6 +1517,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
         fTreeCascVarBachPy = lBMom[1];
         fTreeCascVarBachPz = lBMom[2];
         
+        Int_t lNegTrackSign = 1;
+        Int_t lPosTrackSign = 1;
+        Int_t lBachTrackSign = 1;
+        
+        if( nTrackXi->GetSign() < 0 ) lNegTrackSign = -1;
+        if( nTrackXi->GetSign() > 0 ) lNegTrackSign = +1;
+        
+        if( pTrackXi->GetSign() < 0 ) lPosTrackSign = -1;
+        if( pTrackXi->GetSign() > 0 ) lPosTrackSign = +1;
+    
+        if( bachTrackXi->GetSign() < 0 ) lBachTrackSign = -1;
+        if( bachTrackXi->GetSign() > 0 ) lBachTrackSign = +1;
+        
         //------------------------------------------------
         // TPC dEdx information
         //------------------------------------------------
@@ -1953,6 +1966,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
             Float_t lBachdEdx = 100;
             Float_t lV0Mass = 100;
             Short_t  lCharge = -2;
+            Int_t lChargePos =  1;
+            Int_t lChargeNeg = -1;
             Float_t lprpx, lprpy, lprpz, lpipx, lpipy, lpipz;
             lpipx = fTreeCascVarBachPx;
             lpipy = fTreeCascVarBachPy;
@@ -2009,6 +2024,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lprpy = fTreeCascVarPosPy;
                 lprpz = fTreeCascVarPosPz;
                 lV0Mass = fTreeCascVarV0MassLambda;
+                if (lCascadeResult->GetSwapV0MesonCharge() ){
+                    lChargeNeg = +1;
+                }
                 if (lCascadeResult->GetSwapBaryon() ){
                     lV0Mass = fTreeCascVarV0MassAntiLambda;
                     lNegdEdx = fTreeCascVarNegNSigmaProton;
@@ -2029,6 +2047,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
                 lV0Mass = fTreeCascVarV0MassAntiLambda;
+                if (lCascadeResult->GetSwapV0MesonCharge() ){
+                    lChargePos = -1;
+                }
                 if (lCascadeResult->GetSwapBaryon() ){
                     lV0Mass = fTreeCascVarV0MassLambda;
                     lNegdEdx = fTreeCascVarNegNSigmaPion;
@@ -2048,6 +2069,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lprpy = fTreeCascVarPosPy;
                 lprpz = fTreeCascVarPosPz;
                 lV0Mass = fTreeCascVarV0MassLambda;
+                if (lCascadeResult->GetSwapV0MesonCharge() ){
+                    lChargeNeg = +1;
+                }
                 if (lCascadeResult->GetSwapBaryon() ){
                     lV0Mass = fTreeCascVarV0MassAntiLambda;
                     lNegdEdx = fTreeCascVarNegNSigmaProton;
@@ -2067,6 +2091,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
                 lV0Mass = fTreeCascVarV0MassAntiLambda;
+                if (lCascadeResult->GetSwapV0MesonCharge() ){
+                    lChargePos = -1;
+                }
                 if (lCascadeResult->GetSwapBaryon() ){
                     lV0Mass = fTreeCascVarV0MassLambda;
                     lNegdEdx = fTreeCascVarNegNSigmaPion;
@@ -2077,6 +2104,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
             if (
                 //Check 1: Charge consistent with expectations
                 fTreeCascVarCharge == lCharge &&
+                
+                //Check 1 bis: daughter track charge consistent with expectations
+                lNegTrackSign == lChargeNeg &&
+                lPosTrackSign == lChargePos &&
                 
                 //Check 2: Basic Acceptance cuts
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarPosEta && fTreeCascVarPosEta < lCascadeResult->GetCutMaxEtaTracks() &&

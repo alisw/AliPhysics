@@ -356,12 +356,30 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
             lHistoLSData[ibin]->SetDirectory(0);
             fListData->Add(lHistoLSData[ibin]);
         }
-        //_________________________________________________
-        // Renormalize such that we get similar yields in a specific (settable) region
+
+        
         
         //_________________________________________________
         // Subtract stuff, please
         for( Long_t ibin = 0; ibin<lNPtBins; ibin++){
+            //_____________________________________________
+            // Renormalize such that we get similar yields in a specific (settable) region
+            Int_t lLoBinForNorm = lHistoData[ibin] -> FindBin( lLSLoMass+1e-5 );
+            Int_t lHiBinForNorm = lHistoData[ibin] -> FindBin( lLSHiMass-1e-5 );
+            
+            Int_t lLoLSBinForNorm = lHistoLSData[ibin] -> FindBin( lLSLoMass+1e-5 );
+            Int_t lHiLSBinForNorm = lHistoLSData[ibin] -> FindBin( lLSHiMass-1e-5 );
+            
+            Double_t lLSScalingRatio = -100;
+            Double_t lIntegralData   = lHistoData[ibin]  ->Integral(lLoBinForNorm,  lHiBinForNorm  );
+            Double_t lIntegralLSData = lHistoLSData[ibin]->Integral(lLoLSBinForNorm,lHiLSBinForNorm);
+            
+            if ( TMath::Abs(lIntegralLSData) > 1e-5 ) lLSScalingRatio = lIntegralData/lIntegralLSData;
+            
+            lHistoLSData[ibin] -> Scale( lLSScalingRatio );
+            
+            //_____________________________________________
+            // Proceed with subtraction
             if(lSigExtSubLS[ibin] ) {
                 lHistoData[ibin]->Add( lHistoLSData[ibin], -1 );
             }
@@ -445,6 +463,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         fFileOut->cd();
         //Save all objects owned by the TLists
         fListData  ->Write("cListData",       TObject::kSingleKey);
+        fListOutput->Write("cAnalysisOutput", TObject::kSingleKey);
         fFileOut->Write();
         fFileOut->Close();
         
@@ -759,7 +778,8 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         
         lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
         lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
-        lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
+        //lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
+        lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
     }
     
     if ( lOption.Contains("quadratic") ){
@@ -790,7 +810,8 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         
         lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
         lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
-        lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
+        //lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
+        lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
     }
     
     if ( lOption.Contains("bincounting") || lOption.Contains("MC") ){
@@ -815,7 +836,15 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
             lBgEstimate += lHisto->GetBinContent(ibin);
         
         //Error: sqrt(counts)
-        lBgEstimateError = TMath::Sqrt(lBgEstimate);
+        //lBgEstimateError = TMath::Sqrt(lBgEstimate);
+        
+        //Error: Sum of errors
+        lBgEstimateError = 0;
+        for( Long_t ibin=lBinLeftBgLo; ibin<lBinLeftBgHi+1; ibin++)
+            lBgEstimateError += lHisto->GetBinError(ibin)*lHisto->GetBinError(ibin);
+        for( Long_t ibin=lBinRightBgLo; ibin<lBinRightBgHi+1; ibin++)
+            lBgEstimateError += lHisto->GetBinError(ibin)*lHisto->GetBinError(ibin);
+        lBgEstimateError = TMath::Sqrt(lBgEstimateError);
         
         //Scale according to number of bins
         Double_t lNBinsSummed = lBinLeftBgHi - lBinLeftBgLo + lBinRightBgHi - lBinRightBgLo + 2;
@@ -834,7 +863,7 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     Double_t lPeakPlusBg      = 0;
     Double_t lPeakPlusBgError = 0;
     lPeakPlusBg = lHisto->IntegralAndError(lBinPeakLo,lBinPeakHi,lPeakPlusBgError);
-    lPeakPlusBgError = TMath::Sqrt(lPeakPlusBg);
+    //lPeakPlusBgError = TMath::Sqrt(lPeakPlusBg);
     
     lSignal = lPeakPlusBg - lBgEstimate;
     lSignalErr = TMath::Sqrt( lPeakPlusBgError*lPeakPlusBgError + lBgEstimateError*lBgEstimateError );

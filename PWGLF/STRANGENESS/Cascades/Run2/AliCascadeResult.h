@@ -75,7 +75,8 @@ public:
     
     //Rsn-like bg subtraction (experimental
     void SetSwapBachelorCharge         ( Bool_t lCut ) { fSwapBachCharge = lCut; }
-    void SetSwapBaryon                 ( Bool_t lCut ) { fSwapBaryon     = lCut; }
+    void SetSwapBaryon                 ( Bool_t lCut ) { fSwapBaryon        = lCut; }
+    void SetSwapV0MesonCharge          ( Bool_t lCut ) { fSwapV0MesonCharge = lCut; }
     
     //Track Quality
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
@@ -153,6 +154,7 @@ public:
     //Rsn-like bg subtraction (experimental
     Bool_t GetSwapBachelorCharge         () const { return fSwapBachCharge; }
     Bool_t GetSwapBaryon                 () const { return fSwapBaryon;     }
+    Bool_t GetSwapV0MesonCharge          () const { return fSwapV0MesonCharge;     }
     
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
@@ -224,6 +226,7 @@ private:
     
     Bool_t fSwapBachCharge; //select bachelor with improper signal for desired particle (bg)
     Bool_t fSwapBaryon; //select lambda/antilambda improperly for desired particle (bg)
+    Bool_t fSwapV0MesonCharge; //swap V0 meson daughter charge
     
     //Track selections
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
@@ -253,7 +256,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 20)
+    ClassDef(AliCascadeResult, 21)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -273,6 +276,7 @@ private:
     // 17 - Addition of eta window selection
     // 18 - Max chi2/clusters, min track length added for cross-checking
     // 19 - Settable invariant mass binning constructor
-    // 20 - Configuration flags for rsn-like bg estimation (experimental) 
+    // 20 - Configuration flags for rsn-like bg estimation (experimental)
+    // 21 - swap v0 meson charge addition
 };
 #endif
