@@ -333,13 +333,12 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(13,"no. of Ds after filtering cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(14,"no. of Ds after selection cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(15,"no. of not on-the-fly rec Ds");
-    
+  
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
-    
-  fHistNEvents->Sumw2();
+  
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
-    
+  
   fHistCentrality[0]=new TH1F("hCentr","centrality",10000,0.,100.);
   fHistCentrality[1]=new TH1F("hCentr(selectedCent)","centrality(selectedCent)",10000,0.,100.);
   fHistCentrality[2]=new TH1F("hCentr(OutofCent)","centrality(OutofCent)",10000,0.,100.);
@@ -347,12 +346,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fHistCentralityMult[1]=new TH2F("hCentrMult(selectedCent)","centrality vs mult(selectedCent)",100,0.5,30000.5,40,0.,100.);
   fHistCentralityMult[2]=new TH2F("hCentrMult(OutofCent)","centrality vs mult(OutofCent)",100,0.5,30000.5,40,0.,100.);
   for(Int_t i=0;i<3;i++){
-    fHistCentrality[i]->Sumw2();
     fOutput->Add(fHistCentrality[i]);
-    fHistCentralityMult[i]->Sumw2();
     fOutput->Add(fHistCentralityMult[i]);
   }
-    
+  
   Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
     
   Int_t nInvMassBins=(Int_t)(fMassRange/fMassBinSize+0.5);
@@ -391,43 +388,30 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       fMassHistK0st[index]->Sumw2();
       hisname.Form("hCosP%sPt%d",htype.Data(),i);
       fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
-      fCosPHist[index]->Sumw2();
       hisname.Form("hDLen%sPt%d",htype.Data(),i);
       fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
-      fDLenHist[index]->Sumw2();
       hisname.Form("hSumd02%sPt%d",htype.Data(),i);
       fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
-      fSumd02Hist[index]->Sumw2();
       hisname.Form("hSigVert%sPt%d",htype.Data(),i);
       fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-      fSigVertHist[index]->Sumw2();
       hisname.Form("hPtMax%sPt%d",htype.Data(),i);
       fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,20.);
-      fPtMaxHist[index]->Sumw2();
       hisname.Form("hPtCand%sPt%d",htype.Data(),i);
       fPtCandHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,20.);
-      fPtCandHist[index]->Sumw2();
       hisname.Form("hDCA%sPt%d",htype.Data(),i);
       fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-      fDCAHist[index]->Sumw2();
       hisname.Form("hPtProng0%sPt%d",htype.Data(),i);
       fPtProng0Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-      fPtProng0Hist[index]->Sumw2();
       hisname.Form("hPtProng1%sPt%d",htype.Data(),i);
       fPtProng1Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-      fPtProng1Hist[index]->Sumw2();
       hisname.Form("hPtProng2%sPt%d",htype.Data(),i);
       fPtProng2Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-      fPtProng2Hist[index]->Sumw2();
       hisname.Form("hDalitz%sPt%d",htype.Data(),i);
       fDalitz[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
-      fDalitz[index]->Sumw2();
       hisname.Form("hDalitz%sPt%dphi",htype.Data(),i);
       fDalitzPhi[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
-      fDalitzPhi[index]->Sumw2();
       hisname.Form("hDalitz%sPt%dk0st",htype.Data(),i);
       fDalitzK0st[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
-      fDalitzK0st[index]->Sumw2();
     }
   }
     
@@ -457,7 +441,6 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fChanHist[2] = new TH1F("hChanBkg", "KKpi and piKK candidates",64,-0.5,63.5);
   fChanHist[3] = new TH1F("hChanReflSig", "KKpi and piKK candidates",64,-0.5,63.5);
   for(Int_t i=0;i<4;i++){
-    fChanHist[i]->Sumw2();
     fChanHist[i]->SetMinimum(0);
     fOutput->Add(fChanHist[i]);
   }
