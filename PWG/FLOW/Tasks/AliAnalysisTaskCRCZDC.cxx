@@ -433,6 +433,7 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
       fZNCTower[r][k] = NULL;
       fZNATower[r][k] = NULL;
     }
+//    fhZNSpectraRbR[r] = NULL;
   }
   //   for(Int_t i=0;i<fnCen;i++) {
   //     fPtPhiEtaRbRFB128[r][i] = NULL;
@@ -703,6 +704,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
         fCRCQVecListRun[r]->Add(fZNATower[r][k]);
       }
     }
+    
+//    fhZNSpectraRbR[r] = new TH3D(Form("fhZNSpectraRbR[%d]",fRunList[r]),Form("fhZNSpectraRbR[%d]",fRunList[r]),50,0.,100.,8,0.,8.,100,0.,1.E5);
+//    fCRCQVecListRun[r]->Add(fhZNSpectraRbR[r]);
     
     //   for(Int_t i=0;i<fnCen;i++) {
     //     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
@@ -1416,15 +1420,16 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           // get energy
           EZNC = towZNC[i+1];
           fhZNSpectra->Fill(centrperc,i+0.5,EZNC);
+//          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+0.5,EZNC);
           if(fUseZDCSpectraCorr && EZNC>0.) {
             Double_t mu1 = SpecCorMu1[i]->Interpolate(centrperc);
             Double_t mu2 = SpecCorMu2[i]->Interpolate(centrperc);
             Double_t av = SpecCorAv[i]->Interpolate(centrperc);
             Double_t cor1 = SpecCorSi[i]->Interpolate(centrperc);
-            if(i!=0 && i!=2) EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 ) + av;
+            EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 ) + av;
             fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
           }
-          if(EZNC<=0.) fAllChONZNC=kFALSE;
+          if(fUseZDCSpectraCorr && EZNC<=0.) fAllChONZNC=kFALSE;
           SumEZNC += EZNC;
           
           // build centroid
@@ -1444,6 +1449,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             EZNA = towZNA[i+1];
           }
           fhZNSpectra->Fill(centrperc,i+4.5,EZNA);
+//          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+4.5,EZNA);
           if(fUseZDCSpectraCorr && EZNA>0.) {
             Double_t mu1 = SpecCorMu1[i+4]->Interpolate(centrperc);
             Double_t mu2 = SpecCorMu2[i+4]->Interpolate(centrperc);
@@ -1452,7 +1458,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             EZNA = exp( (log(EZNA) - mu1 + mu2*cor1)/cor1 ) + av;
             fhZNSpectraCor->Fill(centrperc,i+4.5,EZNA);
           }
-          if(EZNA<=0.) fAllChONZNA=kFALSE;
+          if(fUseZDCSpectraCorr && EZNA<=0.) fAllChONZNA=kFALSE;
           SumEZNA += EZNA;
           
           // build centroid
