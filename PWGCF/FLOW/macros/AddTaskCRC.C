@@ -197,7 +197,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
   if(bCorrSpecZDC) {
     TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-    if(bCorrectForBadChannel) ZDCRecFileName += "15o_ZDCSpectraCorr_BadCh.root";
+    if(bCorrectForBadChannel) ZDCRecFileName += "15o_ZDCSpectraCorr_BadCh_3.root";
     TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
     if(!ZDCRecFile) {
       cout << "ERROR: ZDC Spectra Calibration not found!" << endl;
@@ -264,6 +264,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   // vertex-z cut
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
+  if (sDataSet.Contains("2015")) cutsEvent->SetPrimaryVertexZrange(-dVertexRange+3.596504e-01,dVertexRange+3.596504e-01);
   // enable the qa plots
   cutsEvent->SetQA(bCutsQA);
   // explicit multiplicity outlier cut
@@ -462,6 +463,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetQAZDCCuts(bSetQAZDC);
  taskQC->SetMinMulZN(MinMulZN);
  taskQC->SetMaxDevZN(MaxDevZN);
+ taskQC->SetZDCGainAlpha(ZDCGainAlpha);
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();

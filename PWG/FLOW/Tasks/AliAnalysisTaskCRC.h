@@ -243,6 +243,7 @@ public:
   Int_t GetMinMulZN() const {return this->fMinMulZN;};
   void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
   Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
+  void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -352,6 +353,7 @@ private:
   Bool_t fQAZDCCuts;
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
+  Float_t fZDCGainAlpha;
   
   ClassDef(AliAnalysisTaskCRC, 9);
 };

@@ -821,6 +821,8 @@ public:
   // void SetCRCVZvsZDCCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCVZvsZDCCov[r][i] = TH;};
   // TProfile* GetCRCVZvsZDCCov(Int_t const r, Int_t const i) const {return this->fCRCVZvsZDCCov[r][i];};
   
+  void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
+  
   // CRC VZERO:
   // 12.a) EbE Corr:
   void SetCRCVZCorrPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCVZCorrPro[r][c][eg][h] = TP;};
@@ -1507,6 +1509,9 @@ private:
   InteractionRate fInteractionRate;
   SelectCharge fSelectCharge;
   TArrayI fRunList;    // Run list
+  TArrayD fAvVtxPosX;    // Run list
+  TArrayD fAvVtxPosY;    // Run list
+  TArrayD fAvVtxPosZ;    // Run list
   TList *fCRCQVecList; //! Q Vectors list
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
@@ -1564,13 +1569,18 @@ private:
   const static Int_t fkCRCnCQVecVtxPos = 4;
   Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
-  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
   Double_t fEvPlZDCAflat;
   Double_t fEvPlDPsiC;
   Double_t fEvPlDPsiA;
+  
+  // test
+  TProfile2D *fCRCZDCQVecResvsEAsym; //!
+  TProfile2D *fCRCZDCQVecResvsETot; //!
+  TProfile2D *fCRCZDCQVecResvsESum; //!
   
   // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
   
@@ -1873,6 +1883,7 @@ private:
   Bool_t fQAZDCCutsFlag;
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
+  Float_t fZDCGainAlpha;
   
   ClassDef(AliFlowAnalysisCRC, 44);
   

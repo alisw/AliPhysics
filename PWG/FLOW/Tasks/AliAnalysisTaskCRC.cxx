@@ -132,7 +132,8 @@ fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
-fMaxDevZN(5.)
+fMaxDevZN(5.),
+fZDCGainAlpha(0.395)
 {
   // constructor
   AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -283,7 +284,8 @@ fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
-fMaxDevZN(5.)
+fMaxDevZN(5.),
+fZDCGainAlpha(0.395)
 {
   // Dummy constructor
   AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC()");
@@ -476,7 +478,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
       if(fZDCESESpecWeightsHist[k]) fQC->SetZDCESESpecWeightsHist(fZDCESESpecWeightsHist[k],k);
     }
   }
-  
+  fQC->SetZDCGainAlpha(fZDCGainAlpha);
   fQC->SetMultiplicityIs(fMultiplicityIs);
   fQC->SetnBinsForCorrelations(fnBinsForCorrelations);
   fQC->SetUse2DHistograms(fUse2DHistograms);

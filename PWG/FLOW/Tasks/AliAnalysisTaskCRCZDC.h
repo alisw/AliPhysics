@@ -293,6 +293,9 @@ private:
   TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
   
   const static Int_t fCRCMaxnRun = 211;
+  
+//  TH3D *fhZNSpectraRbR[fCRCMaxnRun]; //! ZNA vs. centrality
+  
   const static Int_t fCRCnTow = 5;
   const static Int_t fnCen = 10;
   Int_t fCRCnRun;
