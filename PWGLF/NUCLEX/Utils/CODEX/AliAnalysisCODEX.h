@@ -138,9 +138,9 @@ namespace AliAnalysisCODEX {
       void  SetTOFmomentum(float ptof)       { pTOF = ptof; }
       void  SetTOFsignal(float signal)       { TOFsignal = signal; }
       void  SetTOFNcls(int tofcls)           { TOFnClusters = tofcls; }
-      float TOFbeta()                  const { return (TOFsignal < 1.e-24) ? -1. : length / (TOFsignal * kCtof); }
-      float TOFgamma()                 const { return (TOFsignal < 1.e-24) ? -1. : 1. / sqrt(1. - TOFbeta() * TOFbeta()); }
-      float TOFmass()                  const { return (TOFsignal < 1.e-24) ? TOFsignal : pTPC / (TOFbeta() * TOFgamma()); }
+      float TOFbeta()                  const { return (TOFsignal < 1.e-16) ? -1.f : length / (TOFsignal * kCtof); }
+      float TOFgamma()                 const { return (TOFsignal < 1.e-16) ? -1.f : (TOFbeta() > 1. - 1.e-16) ? 1.e16 : 1. / sqrt(1. - TOFbeta() * TOFbeta()); }
+      float TOFmass()                  const { return (TOFsignal < 1.e-16) ? -1.f : pTPC / (TOFbeta() * TOFgamma()); }
 
       bool  Is(BitMask bit)            const { return mask & bit; }
       bool  TPCrefit()                 const { return Is(kTPCrefit); }
