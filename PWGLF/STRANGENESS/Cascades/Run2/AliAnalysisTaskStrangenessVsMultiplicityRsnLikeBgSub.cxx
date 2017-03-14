@@ -85,6 +85,7 @@ class AliAODv0;
 #include "AliLightV0vertexer.h"
 #include "AliLightCascadeVertexer.h"
 #include "AliCascadeVertexerUncheckedCharges.h"
+#include "AliV0vertexerUncheckedCharges.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -951,7 +952,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
             lV0vtxer.Tracks2V0vertices(lESDevent);
         } else {
             //Instantiate vertexer object
-            AliLightV0vertexer lV0vtxer;
+            AliV0vertexerUncheckedCharges lV0vtxer;
             //Set do or don't do V0 refit for improved precision 
             lV0vtxer.SetDoRefit( kFALSE );
             if (fkDoV0Refit) lV0vtxer.SetDoRefit(kTRUE);

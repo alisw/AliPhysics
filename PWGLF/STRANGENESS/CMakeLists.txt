@@ -69,6 +69,7 @@ set(SRCS
   Cascades/lightvertexers/AliLightV0vertexer.cxx
   Cascades/lightvertexers/AliLightCascadeVertexer.cxx
   Cascades/lightvertexers/AliCascadeVertexerUncheckedCharges.cxx
+  Cascades/lightvertexers/AliV0vertexerUncheckedCharges.cxx
   Cascades/Run2/AliVWeakResult.cxx
   Cascades/Run2/AliV0Result.cxx
   Cascades/Run2/AliCascadeResult.cxx
