@@ -103,7 +103,7 @@ class AliClusterContainer : public AliEmcalContainer {
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,6);
+  ClassDef(AliClusterContainer,7);
   /// \endcond
 };
 
