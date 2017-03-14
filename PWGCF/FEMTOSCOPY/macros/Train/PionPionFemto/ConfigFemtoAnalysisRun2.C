@@ -41,6 +41,9 @@ struct MacroParams {
   Float_t delta_eta_min;
   Float_t delta_eta_max;
 
+  UInt_t q3d_bin_count;
+  Float_t q3d_maxq;
+
   bool do_qinv_cf;
   bool do_q3d_cf;
   bool do_deltaeta_deltaphi_cf;
@@ -91,6 +94,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.delta_eta_min = -0.1;
   macro_config.delta_eta_max =  0.1;
 
+  macro_config.q3d_bin_count = 120;
+  macro_config.q3d_maxq = 0.30;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -184,13 +189,10 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_deltaeta_deltaphi_cf && !analysis_config.is_mc_analysis) {
-        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", cut_config.pair_phi_star_radius,
-              // 100, 0.0, 1.6,
-              // 100, 0.0, 2.0
-              // 200, 0.0, 0.5,
-              // 200, 0.0, 0.5
-              macro_config.delta_phi_bin_count, macro_config.delta_phi_min, macro_config.delta_phi_max,
-	      macro_config.delta_eta_bin_count, macro_config.delta_eta_min, macro_config.delta_eta_max
+        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_",
+          cut_config.pair_phi_star_radius,
+          macro_config.delta_phi_bin_count, macro_config.delta_phi_min, macro_config.delta_phi_max,
+      	  macro_config.delta_eta_bin_count, macro_config.delta_eta_min, macro_config.delta_eta_max
         );
         deta_dphi_cf->SetMagneticFieldSign(1);
         analysis->AddCorrFctn(deta_dphi_cf);
@@ -236,8 +238,9 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_q3d_cf) {
         cf_title = TString("_q3D_") + pair_type_str;
-        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, 72, 0.25));
+        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, macro_config.q3d_bin_count, 0.25));
       }
+
 
       if (macro_config.do_kt_qinv) {
         AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));
@@ -245,20 +248,20 @@ ConfigFemtoAnalysis(const TString& param_str="")
         binned->AddKtRange(0.3, 0.4);
         binned->AddKtRange(0.4, 0.5);
         binned->AddKtRange(0.5, 0.6);
-        binned->AddKtRange(0.6, 0.7);
-        binned->AddKtRange(0.7, 0.8);
+        binned->AddKtRange(0.6, 0.8);
         binned->AddKtRange(0.8, 1.0);
         analysis->AddCorrFctn(binned);
       }
 
       if (macro_config.do_kt_q3d) {
-        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D", new AliFemtoCorrFctn3DLCMSSym(TString("q3D_") + pair_type_str, 72, 1.1));
+        TString q3d_cf_name = TString("q3D_") + pair_type_str;
+        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
+          new AliFemtoCorrFctn3DLCMSSym(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
         kt_q3d->AddKtRange(0.2, 0.3);
         kt_q3d->AddKtRange(0.3, 0.4);
         kt_q3d->AddKtRange(0.4, 0.5);
         kt_q3d->AddKtRange(0.5, 0.6);
-        kt_q3d->AddKtRange(0.6, 0.7);
-        kt_q3d->AddKtRange(0.7, 0.8);
+        kt_q3d->AddKtRange(0.6, 0.8);
         kt_q3d->AddKtRange(0.8, 1.0);
         analysis->AddCorrFctn(kt_q3d);
       }
