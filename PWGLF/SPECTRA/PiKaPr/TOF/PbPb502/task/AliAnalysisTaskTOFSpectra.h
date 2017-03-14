@@ -131,7 +131,7 @@ public:
   
   ///
   /// Method to get the information of the MC truth of the reconstructed tracks
-  Bool_t GatherTrackMCInfo(AliESDtrack * trk);
+  Bool_t GatherTrackMCInfo(const AliESDtrack * trk);
   
   ///
   /// Method to decide if the event selection is selected or not
@@ -231,7 +231,7 @@ public:
   
   ///
   /// Method to check which are the track cuts of the cut variation parameters which are passed
-  Bool_t AnalyseCutVariation(AliESDtrack *track);
+  Bool_t AnalyseCutVariation(const AliESDtrack *track);
   
   ///
   /// Method to fill the histograms containing the values of the variables under cut, the flag is to fill the ones before and after the flag
@@ -499,7 +499,7 @@ private:
   
   //Masks to store the event and track information in the Tree
   UChar_t fEvtMask;      ///< Event information mask
-  UChar_t fTrkMask;      ///< Track information mask
+  UShort_t fTrkMask;     ///< Track information mask
   UChar_t fTPCPIDMask;   ///< TPC PID information mask
   UShort_t fTrkCutMask;  ///< Mask with the information for the cut variation
   UChar_t fMCTrkMask;    ///< MC information mask
@@ -549,12 +549,13 @@ private:
   //Track flags
   ///
   ///Method to set the flags of the track
-  void SetTrackFlags(AliESDtrack * track);
+  void SetTrackFlags(const AliESDtrack * track);
   Bool_t fTOFout;        ///<  Track has the TOFout
   Bool_t fTRDout;        ///<  Track has the TRDout
   Bool_t fTime;          ///<  Track has the Time
   Bool_t fSign;          ///<  Track charge sign kTRUE (1) for negative and kFALSE (0) for positive
   Bool_t fMismatch;      ///<  Track is flagged as Mismatch (i.e. track in the TPC wrongly matched to TOF time)
+  Bool_t fPassGoldenChi2;///<  Track pass the Golden Chi2 cut
   Bool_t fPassDCAxy;     ///<  Track pass the DCAxy cut
   Bool_t fPassDCAz;      ///<  Track pass the DCAz cut
   Bool_t fITSTPCMatch;   ///<  Track is matched to the TPC
@@ -562,7 +563,7 @@ private:
   //Track values
   ///
   ///Method to set the values of the track
-  void SetTrackValues(AliESDtrack *track);
+  void SetTrackValues(const AliESDtrack *track, const AliESDVertex* vertex);
   UShort_t fTPCClusters;           ///<  Track clusters in the TPC
   UShort_t fTPCFindClusters;       ///<  Track findable clusters in the TPC
   UChar_t fITSClusters;            ///<  Track clusters in the ITS
@@ -571,6 +572,7 @@ private:
   Double_t fTPCChi2PerNDF;         ///<  Track chi2 per NDF in TPC
   Double_t fITSChi2;               ///<  Track chi2 in ITS
   Double_t fITSChi2PerNDF;         ///<  Track chi2 per NDF in ITS
+  Double_t fGoldenChi2;            ///<  Track chi2 constrained to the vertex
   Double_t fLengthActiveZone;      ///<  Track length in active zone
   Double_t fLength;                ///<  Track length
   Float_t fLengthRatio;            ///<  Track length ratio between the matched track length and the one coming from another cluster
@@ -779,7 +781,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 5);
+  ClassDef(AliAnalysisTaskTOFSpectra, 6);
 };
 
 #endif

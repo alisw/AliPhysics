@@ -23,7 +23,7 @@ public:
   virtual ~AliAnTOFtrack();
   
   //Masks
-  UChar_t         fTrkMask;                 //Mask for track information
+  UShort_t        fTrkMask;                 //Mask for track information
   UChar_t         fTPCPIDMask;              //Mask for TPC PID information
   UShort_t        fTrkCutMask;              //Mask for Track cuts information
   UShort_t        fDCAXYIndex;              //Binned version of the XY impact parameters
@@ -274,7 +274,7 @@ public:
   /// Method to get the particle momentum
   Double_t GetMomentum() const { return fPt/TMath::Sin(GetTheta()); }
   
-  ClassDef(AliAnTOFtrack, 4);
+  ClassDef(AliAnTOFtrack, 5);
 };
 
 #endif

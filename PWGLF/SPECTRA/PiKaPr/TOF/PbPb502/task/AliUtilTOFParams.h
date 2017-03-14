@@ -14,7 +14,7 @@ namespace AliUtilTOFParams {
   enum {kExpSpecies = 6, ke = 0, kmu, kpi, kK, kp, kd};
   //Indexes to store event
   //Track info
-  enum fTrkMaskIndex {kNegTrk, kIsMismatch, kT0_0, kT0_1, kT0_2, kIsTOFout, kIsTOFTime, kIsTRDout, kLimitfTrkMask};//Track information bitmask fTrkMask - kT0_0 (T0 TOF) kT0_1 (T0 T0A) kT0_2 (T0C)
+  enum fTrkMaskIndex {kNegTrk, kIsMismatch, kT0_0, kT0_1, kT0_2, kIsTOFout, kIsTOFTime, kIsTRDout, kPassGoldenChi2, kLimitfTrkMask};//Track information bitmask fTrkMask - kT0_0 (T0 TOF) kT0_1 (T0 T0A) kT0_2 (T0C)
   //Track cuts
   enum fTrkCutMaskIndex {kTPCSetL, kTPCSetT, kTPCChi2SetL, kTPCChi2SetT, kDCAzSetL, kDCAzSetT, kPrimSetL, kPrimSetL01, kPrimSetT01, kPrimSetT, kGeoCutSet1, kGeoCutSet2, kLimitfTrkCutMask};//Track cut information bitmask fTrkCutMask
   //Track PID
@@ -139,6 +139,9 @@ namespace AliUtilTOFParams {
   const TString CutVarsName[nCutVars + 1] = {"TPCRows_60", "TPCRows_80", "TrkChi2_5", "TrkChi2_3", "DCAz_3", "DCAz_1", "DCAxy_10", "DCAxy_11", "DCAxy_09", "DCAxy_0", "GeoCut_0", "GeoCut_1", ""};
   const TString CutVarsTitle[nCutVars + 1] = {"TPCRows 60", "TPCRows 80", "Chi2 5", "Chi2 3", "DCAz 3", "DCAz 1", "DCAxy x10", "DCAxy x0.9", "DCAxy x1.1", "DCAxy x0.1", "GeoCut 0", "GeoCut 1", "Std"};
   const TString primfunct = "0.0105+0.0350/pt^1.1";//Standard pt dependence of the DCAxy cut
+  
+  //Golden Chis cut
+  const Double_t primchi2 = 36;
   
   const UInt_t nMCs_Hi = 2;//Number of different MC productions for PbPb
   const UInt_t nMCs_pp = 2;//Number of different MC productions for pp

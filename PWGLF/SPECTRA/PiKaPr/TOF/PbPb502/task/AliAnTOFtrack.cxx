@@ -108,32 +108,38 @@ Bool_t AliAnTOFtrack::PassCut(const Int_t cut){
   
 }
 
+//________________________________________________________________________
 Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id){
   if(id > kExpSpecies) AliFatal("Index required is out of bound");
   return fTOFTime - fTOFExpTime[id] - fT0TrkTime;
 }
 
+//________________________________________________________________________
 Float_t AliAnTOFtrack::GetDeltaSigma(const UInt_t id, const UInt_t hypo) {
   if(id > kExpSpecies || hypo > kExpSpecies) AliFatal("Index required is out of bound");
   return GetDeltaT(hypo)/fTOFExpSigma[id];
 }
 
+//________________________________________________________________________
 Bool_t AliAnTOFtrack::IsTPCElectron(){
   if(GetMaskBit(fTPCPIDMask, kIsTPCElectron)) return kTRUE; //1.5 sigma cut for Electrons in TPC
   return kFALSE;
 }
 
+//________________________________________________________________________
 Bool_t AliAnTOFtrack::IsTPCPiKP(const UInt_t i){
   if(i > 3) AliFatal("Wrong index required");
   if(GetMaskBit(fTPCPIDMask, kIsTPCPion + i)) return kTRUE; //5 sigma cut for Pi/K/P in TPC
   return kFALSE;
 }
 
+//________________________________________________________________________
 Bool_t AliAnTOFtrack::IsTPCPiKP(){
   for(Int_t i = 0; i < 3; i++) if(IsTPCPiKP(i)) return kTRUE; //5 sigma cut for Pi/K/P in TPC
   return kFALSE;
 }
 
+//________________________________________________________________________
 Bool_t AliAnTOFtrack::ConsistentTPCTOF(){
   if(!IsTPCPiKP()) return kFALSE;
   for (Int_t i = 0; i < 3; i++) {
@@ -142,6 +148,7 @@ Bool_t AliAnTOFtrack::ConsistentTPCTOF(){
   return kFALSE;
 }
 
+//________________________________________________________________________
 Bool_t AliAnTOFtrack::IsNegative(){
   if(GetMaskBit(fTrkMask, kNegTrk)) return kTRUE;
   return kFALSE;

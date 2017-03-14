@@ -98,6 +98,7 @@ fTOFout(kFALSE),
 fTRDout(kFALSE),
 fTime(kFALSE),
 fMismatch(kFALSE),
+fPassGoldenChi2(kFALSE),
 fPassDCAxy(kFALSE),
 fPassDCAz(kFALSE),
 fITSTPCMatch(kFALSE),
@@ -111,6 +112,7 @@ fTPCChi2(-999),
 fTPCChi2PerNDF(-999),
 fITSChi2(-999),
 fITSChi2PerNDF(-999),
+fGoldenChi2(-999),
 fLengthActiveZone(-999),
 fLength(-999),
 fLengthRatio(-999),
@@ -1493,7 +1495,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     else if(iTrack == 1) SetEvtMaskBit(kIsNewEvent, 0);
     
     
-    AliESDtrack *track = fESD->GetTrack(iTrack);
+    const AliESDtrack *track = fESD->GetTrack(iTrack);
     if (!track){continue;}
     hNTrk->Fill(0);// --> Tracks in Input
     
@@ -1503,7 +1505,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     
     //
     // Get the information on the track variables
-    SetTrackValues(track);//Get the information on the track values
+    SetTrackValues(track, vertex);//Get the information on the track values
     
     //
     // Get the information on the track flags relative to the TOF but not only
@@ -1687,11 +1689,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         //
         //DCA - with golden chi2 cut
         //
-        if(!fBuilDCAchi2) continue;
-        if(track->GetChi2TPCConstrainedVsGlobal(vertex) < fESDtrackCutsPrm->GetMaxChi2TPCConstrainedGlobal()){
-          hDCAxyGoldenChi2[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
-        }
-        
+        if(!fBuilDCAchi2 || !fPassGoldenChi2) continue;
+        hDCAxyGoldenChi2[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
       }
       
       if(fPdgIndex != -999 && TMath::Abs(fRapidity[fPdgIndex]) < fRapidityCut){//MC info If the track is a Pion or a Kaon or a Proton
@@ -1853,11 +1852,12 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     }
     
     
-    SetTrkMaskBit(kIsTOFout, fTOFout);//Set the TOFout
-    SetTrkMaskBit(kIsTOFTime, fTime);//Set the Time
-    SetTrkMaskBit(kIsTRDout, fTRDout);//Set the TRDout
+    SetTrkMaskBit(kIsTOFout, fTOFout);              //Set the flag for TOFout
+    SetTrkMaskBit(kIsTOFTime, fTime);               //Set the flag for Time
+    SetTrkMaskBit(kIsTRDout, fTRDout);              //Set the flag for TRDout
+    SetTrkMaskBit(kPassGoldenChi2, fPassGoldenChi2);//Set the flag for GoldenChi2
     
-    //Fill tree
+    //Fill tree or storing the information in the TClonesArray, depending on the Flags
     if(fTOFout && fTime && fTreemode){
       if(fCutmode) AnalyseCutVariation(track);
       #ifdef USETREECLASS
@@ -2068,6 +2068,7 @@ void AliAnalysisTaskTOFSpectra::InitializeTrackVar(){
   fTPCChi2PerNDF = -999;
   fITSChi2 = -999;
   fITSChi2PerNDF = -999;
+  fGoldenChi2 = -999;
   fLengthActiveZone = -999;
   fLength = -999;
   fLengthRatio = -999;
@@ -2102,6 +2103,7 @@ void AliAnalysisTaskTOFSpectra::InitializeTrackVar(){
   fZout = -999;
   fPhiout = -999;
   fMismatch = kFALSE;
+  fPassGoldenChi2 = kFALSE;
   fPassDCAxy = kFALSE;
   fPassDCAz = kFALSE;
   fITSTPCMatch = kFALSE;
@@ -2360,7 +2362,7 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseMCTracks(){//Returns kTRUE if it reache
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(AliESDtrack * trk){
+Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack * trk){
   //       AliDebug(2, "Gathering the track MC Info");
   const Int_t TrkLabel = trk->GetLabel(); /*The Get*Label() getters return the label of the associated MC particle. The absolute value of this label is the index of the particle within the MC fMCStack. If the label is negative, this track was assigned a certain number of clusters that did not in fact belong to this track. */
   const Int_t AbsTrkLabel = TMath::Abs(TrkLabel);
@@ -2549,7 +2551,7 @@ void AliAnalysisTaskTOFSpectra::RunTOFChannel(){
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskTOFSpectra::AnalyseCutVariation(AliESDtrack *track){
+Bool_t AliAnalysisTaskTOFSpectra::AnalyseCutVariation(const AliESDtrack *track){
   AliInfo("Checking cut variation for track");
   if(fMCmode || !fTreemode) AliFatal("The cut variation should be called only for Tree analysis in data!");
   //Check on all the demanded cuts and fill the mask accordingly
@@ -2683,11 +2685,9 @@ void AliAnalysisTaskTOFSpectra::SetTrackCuts(){
   
   //THIS WILL BE USED TO CUT ON THE PRIMARIES
   //Taken directly from the GetStandardITSTPCTrackCuts2011
-  const Double_t primchi2 = 36;
   if(!fESDtrackCutsPrm){
     fESDtrackCutsPrm = new AliESDtrackCuts("fESDtrackCutsPrm", "Cut For Primaries");
     fESDtrackCutsPrm->SetMaxDCAToVertexXYPtDep(primfunct);
-    fESDtrackCutsPrm->SetMaxChi2TPCConstrainedGlobal(primchi2);
     fESDtrackCutsPrm->SetName("PrimaryCuts");
   }
   else AliWarning("fESDtrackCutsPrm already exists!");
@@ -2822,7 +2822,7 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFSpectra::SetTrackFlags(AliESDtrack *track){
+void AliAnalysisTaskTOFSpectra::SetTrackFlags(const AliESDtrack *track){
   
   //
   //Track is both ITS and TPC refit
@@ -2850,10 +2850,18 @@ void AliAnalysisTaskTOFSpectra::SetTrackFlags(AliESDtrack *track){
     fTRDout = kTRUE;
   }
   else {fTRDout = kFALSE;}
+  
+  //
+  //Check the Golden Chi2 and set the flag
+  //
+  if (fGoldenChi2 < primchi2) {//Track passed the Golden Chi2 cut
+    fPassGoldenChi2 = kTRUE;
+  }
+  else {fPassGoldenChi2 = kFALSE;}
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFSpectra::SetTrackValues(AliESDtrack *track){
+void AliAnalysisTaskTOFSpectra::SetTrackValues(const AliESDtrack *track, const AliESDVertex *vertex){
   
   //
   //Track eta
@@ -2919,5 +2927,8 @@ void AliAnalysisTaskTOFSpectra::SetTrackValues(AliESDtrack *track){
   //ITS chi2 per NDF
   fITSChi2PerNDF = fITSChi2/static_cast<Float_t>(fITSClusters);
   
+  //
+  //Golden Chi2
+  fGoldenChi2 = track->GetChi2TPCConstrainedVsGlobal(vertex);
   
 }
