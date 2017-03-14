@@ -109,6 +109,7 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fhJetArea(0x0),
   fhTrackPt(0x0),
   fhGroomedPtvJetPt(0x0),
+  fhDroppedBranches(0x0),
   fhPtTriggerHadron(0x0), 
   fh2PtTriggerHadronJet(0x0),
   fhPhiTriggerHadronJet(0x0),
@@ -168,6 +169,7 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fhJetArea(0x0),
   fhTrackPt(0x0),
   fhGroomedPtvJetPt(0x0),
+  fhDroppedBranches(0x0),
   fhPtTriggerHadron(0x0), 
   fh2PtTriggerHadronJet(0x0),
   fhPhiTriggerHadronJet(0x0),
@@ -264,6 +266,8 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fOutput->Add(fhTrackPt);
     fhGroomedPtvJetPt= new TH2F("fhGroomedPtvJetPt","Groomed Jet p_{T} v Original Jet p_{T}",150,0,150,150,0,150);
     fOutput->Add(fhGroomedPtvJetPt);
+    fhDroppedBranches= new TH1F("fhDroppedBranches","Number of Softdropped branches",50,0,50);
+    fOutput->Add(fhDroppedBranches);
 
     if(fJetSelection == kRecoil){
       fhPtTriggerHadron= new TH1F("fhPtTriggerHadron", "fhPtTriggerHadron",1500,-0.5,149.5);  
@@ -427,7 +431,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 
     Bool_t JetsMatched = kFALSE;
     Double_t JetPtThreshold;
-
+    JetContHybridS->ResetCurrentID();
     if(fJetShapeSub==kConstSub){
       while((JetHybridS = JetContHybridS->GetNextAcceptJet())){
 	fJetInfoVar[16]=JetHybridS->Pt();
@@ -641,6 +645,7 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   }
   
   fastjet::contrib::SoftDrop softdrop(beta, zcut);
+  softdrop.set_verbose_structure(kTRUE);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
   if(!fTruthJet){
     fJetInfoVar[8]=NSubjettinessResult1;
@@ -672,6 +677,7 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   Mu=(finaljet.structure_of<fastjet::contrib::SoftDrop>().mu());
   DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
   fhGroomedPtvJetPt->Fill(finaljet.perp(),fJet->Pt());
+  fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
   if(!fTruthJet) fJetInfoVar[6]=SymParam;
   else fJetInfoVar[7]=SymParam;
   return;

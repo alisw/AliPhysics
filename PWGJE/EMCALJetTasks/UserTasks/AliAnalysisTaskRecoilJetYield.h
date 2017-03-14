@@ -152,6 +152,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhPhiTriggerHadronEventPlaneTPC;
   TH1F                                *fhTrackPt;
   TH2F                                *fhGroomedPtvJetPt;
+  TH1F                                *fhDroppedBranches;
   TTree                               *fTreeJetInfo;  //Tree with tagging variables subtracted MC or true MC or raw
 
  private:
