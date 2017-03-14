@@ -12,7 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <algorithm>
 #include <array>
+#include <cfloat>
 #include <functional>
 #include <iostream>
 
@@ -26,6 +28,7 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerMapping.h"
@@ -46,6 +49,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fTriggerSelection(nullptr),
   fUseTriggerBits(kTRUE),
   fRequireBunchCrossing(kTRUE),
+  fUseDownscaleCorrectionFormOCDB(kTRUE),
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
@@ -75,6 +79,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fTriggerSelection(nullptr),
   fUseTriggerBits(kTRUE),
   fRequireBunchCrossing(kTRUE),
+  fUseDownscaleCorrectionFormOCDB(kTRUE),
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
@@ -378,6 +383,7 @@ void AliAnalysisTaskEmcalTriggerBase::RunChanged(Int_t runnumber){
   if(fDownscaleOADB){
     fDownscaleFactors = static_cast<TObjArray *>(fDownscaleOADB->GetObject(runnumber));
   }
+  if(fUseDownscaleCorrectionFormOCDB) PrepareDownscaleFactorsFormOCDB();
   if(!fExclusiveMinBias){
     if(fMaskedFastorOADB){
       fMaskedFastors.clear();
@@ -425,11 +431,49 @@ Double_t AliAnalysisTaskEmcalTriggerBase::GetTriggerWeight(const TString &trigge
     // Downscaling only done on MB, L0 and the low threshold triggers
     if(triggerclass.Contains("MB")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("INT7"));
     else if(triggerclass.Contains("EMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
+    else if(triggerclass.Contains("DMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DMC7"));
     else if(triggerclass.Contains("EJ2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
+    else if(triggerclass.Contains("EJ1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ1"));
     else if(triggerclass.Contains("EG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
-    if(result) return 1./result->GetVal();
+    else if(triggerclass.Contains("EG1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG1"));
+    else if(triggerclass.Contains("DG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG2"));
+    else if(triggerclass.Contains("DG1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG1"));
+    double triggerweight = 1.;
+    if(result) triggerweight = 1./result->GetVal();
+    AliDebugStream(1) << "Using trigger weight " << triggerweight << " for trigger " << triggerclass << std::endl;
+    return triggerweight;
+  } else {
+    AliDebugStream(1) << "No downscale factors loaded - using trigger weight 1" << std::endl;
   }
   return 1.;
+}
+
+void AliAnalysisTaskEmcalTriggerBase::PrepareDownscaleFactorsFormOCDB(){
+  AliInfoStream() << "Reading downscale factors from OCDB for run " << fInputEvent->GetRunNumber() << std::endl;
+  if(!fDownscaleFactors){
+    fDownscaleFactors = new TObjArray;
+    fDownscaleFactors->SetOwner(true);
+  }
+  fDownscaleFactors->Clear();
+  AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
+  if(downscaleOCDB->GetCurrentRun() != fInputEvent->GetRunNumber()) downscaleOCDB->SetRun(fInputEvent->GetRunNumber());
+  const std::array<TString, 11> khwtriggers = {"INT7", "EMC7", "DMC7", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"};
+  std::vector<TString> runtriggers = downscaleOCDB->GetTriggerClasses();
+  for(const auto &t : khwtriggers){
+    std::function<bool (TString)> triggerfinder = [t](const TString &test) -> bool {
+      if(!test.Contains(t + "-B-")) return false;
+      return true;
+    };
+    auto entry = std::find_if(runtriggers.begin(), runtriggers.end(), triggerfinder);
+    if(entry  != runtriggers.end()){
+      TString triggername = *entry;
+      double downscalefactor = downscaleOCDB->GetDownscaleFactorForTriggerClass(triggername);
+      AliInfoStream() << "Applying downscale factor " << downscalefactor << " for trigger " << t << " (" << triggername << ") for run " << fInputEvent->GetRunNumber() << std::endl;
+      fDownscaleFactors->Add(new TParameter<double>(t, TMath::Abs(downscalefactor) < DBL_EPSILON ? 1 : downscalefactor));
+    } else {
+      AliErrorStream() << "No downscale factor found for trigger " << t << " for run " << fInputEvent->GetRunNumber() << std::endl;
+    }
+  }
 }
 
 void AliAnalysisTaskEmcalTriggerBase::SetOnlineTriggerThreshold(const TString &triggerclass, Int_t threshold){

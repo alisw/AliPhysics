@@ -78,46 +78,57 @@ public:
   virtual ~AliAnalysisTaskEmcalTriggerBase();
 
   /**
-   * Enable / Disable histograms for the DCAL triggers. If true, DCAL trigger
-   * classes are added to the list of supported triggers and the online/offline
-   * trigger decision for DCAL triggers is evaluated.
+   * @brief Enable / Disable histograms for the DCAL triggers.
+   *
+   * If true, DCAL trigger classes are added to the list of
+   * supported triggers and the online/offline trigger decision
+   * for DCAL triggers is evaluated.
+   *
    * @param[in] doEnable If true DCAL triggers are enabled
    */
   void EnableDCALTriggers(Bool_t doEnable) { fEnableDCALTriggers = doEnable; }
 
   /**
-   * Set the name of the OADB container with the downscale factors.
+   * @brief Set the name of the OADB container with the downscale factors.
+   *
    * Once it is available, downscale weights can be obtained via
    * ~~~{.cxx}
    * // Get the weight of the EG2 trigger for the given run
    * this->GetTriggerWeight("EG2");
    * ~~~
+   *
    * @param[in] oadbname Name of the OADB container with the trigger downscale factors
    */
   void SetDownscaleOADB(TString oadbname) { fNameDownscaleOADB = oadbname; }
 
   /**
-   * If true then noise events (events without recalc trigger patch above threshold) are
+   * @brief Load the downscale factors run-by-run from the OCDB
+   * @param[in] doApply
+   */
+  void SetApplyDownscaleCorrectionFromOCDB(Bool_t doApply) { fUseDownscaleCorrectionFormOCDB = true; }
+
+  /**
+   * @brief If true then noise events (events without recalc trigger patch above threshold) are
    * excluded from the analysis.
    * @param[in] doExclude If true then noise events are excluded from the analysis
    */
   void SetExcludeNoiseEvents(Bool_t doExclude = true) { fRejectNoiseEvents = doExclude; }
 
   /**
-   * If true then noise events (events without recalc trigger patch above threshold) are
+   * @brief If true then noise events (events without recalc trigger patch above threshold) are
    * explicitly selected for the analysis.
    * @param[in] doSelect If true only noise events are used in the analysis
    */
   void SetSelectNoiseEvents(Bool_t doSelect = true) { fSelectNoiseEvents = doSelect; }
 
   /**
-   * Add absolute ID of a FastOR to be masked (excluded from trigger patches)
+   * @brief Add absolute ID of a FastOR to be masked (excluded from trigger patches)
    * @param[in] fastorID Absolute ID of a fastor to be masked
    */
   void AddMaskedFastor(int fastorID) { fMaskedFastors.push_back(fastorID); }
 
   /**
-   * Set the name of the file with the OADB container containing the masked FastORs
+   * @brief Set the name of the file with the OADB container containing the masked FastORs
    * @param[in] oadbname Name of the OADB container file
    */
   void SetMaskedFastorOADB(TString oadbname) { fNameMaskedFastorOADB = oadbname; }
@@ -144,44 +155,49 @@ public:
   AliEmcalTriggerOfflineSelection *GetOfflineTriggerSelection() const { return fTriggerSelection; }
 
   /**
-   * Set z-range of the primary vertex which is selected
+   * @brief Set z-range of the primary vertex which is selected
    * @param[in] zmin Min. allowed z-value
    * @param[in] zmax Max. allowed z-value
    */
   void SetVertexCut(double zmin, double zmax) { fVertexCut.SetLimits(zmin, zmax); }
 
   /**
-   * Specify whether the trigger decision should be done from trigger patches
+   * @brief Specify whether the trigger decision should be done from trigger patches
    * @param doUse If true the trigger string is rebuilt from recalc patches
    */
   void UseTriggerPatches(Bool_t doUse) { fTriggerStringFromPatches = doUse; }
 
   /**
-   * Setting trigger threshold for online trigger selection
+   * @brief Setting trigger threshold for online trigger selection
    * @param[in] triggerclass Name of the trigger class
    * @param[in] threshold Online trigger threshold
    */
   void SetOnlineTriggerThreshold(const TString &triggerclass, Int_t threshold);
 
   /**
-   * Defining whether to require trigger bits. Attention: Relies on the presence
-   * of the physics selection - to be switched off in case of new data. By default
-   * trigger bits are required.
+   * @brief Defining whether to require trigger bits.
+   *
+   * Attention: Relies on the presence of the physics selection - to be
+   * switched off in case of new data. By default trigger bits are required.
+   *
    * @param[in] doUse If true trigger bits are required, if false not
    */
   void SetUseTriggerBits(Bool_t doUse) { fUseTriggerBits = doUse; }
 
   /**
-   * Defining whether to require bunch crossing events. To be switch off in case of
-   * noise studies (i.e. beam-empty or empty-empty events). By default bunch crossing
-   * is required
+   * @brief Defining whether to require bunch crossing events.
+   *
+   * To be switch off in case of noise studies (i.e. beam-empty
+   * or empty-empty events). By default bunch crossing is required.
+   *
    * @param[in] doRequire If true bunch-bunch crossing is required.
    */
   void SetRequireBunchCrossing(Bool_t doRequire) { fRequireBunchCrossing = doRequire; }
 
   /**
-   * Define whether cuts in AliAnalysisUtils are used in the event selection. Not to be
-   * applied on new data or data from muon_calo_pass1
+   * @brief Define whether cuts in AliAnalysisUtils are used in the event selection.
+   *
+   * Not to be applied on new data or data from muon_calo_pass1
    * @param[in] doRequire If true AliAnalysisUtils are used in addition for the event selection
    */
   void SetRequireAnalysisUtils(Bool_t doRequire) { fRequireAnalysisUtils = doRequire; }
@@ -196,8 +212,9 @@ public:
   void SetTriggerAcceptanceOADB(const TString &nameAcceptanceOADB) { fNameAcceptanceOADB = nameAcceptanceOADB; }
 
   /**
-   * Run event loop only on min. bias events. In this case EMCAL triggers
-   * are ignored, and the trigger selection code is not run.
+   * @brief Run event loop only on min. bias events.
+   *
+   * In this case EMCAL triggers are ignored, and the trigger selection code is not run.
    * @param[in] exclusivemb If true only min. bias events are analyzed
    */
   void SetExclusiveMinBias(Bool_t exclusivemb) { fExclusiveMinBias = exclusivemb; }
@@ -205,7 +222,9 @@ public:
 protected:
 
   /**
-   * Steering of object creation. Handles general objects (histogram manager
+   * @brief Steering of object creation.
+   *
+   * Handles general objects (histogram manager
    * and analysis utils) and steers user objects
    * - CreateUserHistos
    * - CreateUserObjects
@@ -352,11 +371,17 @@ protected:
    */
   Bool_t SelectFiredPatch(const TString &triggerclass, Int_t adc) const;
 
+  /**
+   * @brief Read the downscale factors from the OCDB
+   */
+  void PrepareDownscaleFactorsFormOCDB();
+
 
   THistManager                    *fHistos;                   ///< Task Histogram container
 
   Bool_t                          fUseTriggerBits;            ///< Switch whether using trigger bits (relies on physics selection)
   Bool_t                          fRequireBunchCrossing;      ///< Require bunch-bunch events (tag -B- in trigger string)
+  Bool_t                          fUseDownscaleCorrectionFormOCDB; ///< Use downscale factors from OCDB
   AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
   Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   std::vector<TString>            fSelectedTriggers;          //!<! Triggers selected for given event
