@@ -525,6 +525,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      FillHisto2D(Form("EtNReconstructedSimPt%sPiPlusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
 		      FillHisto2D(Form("EtNReconstructedSimPt%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),1.0);
 		      if(cutset==2){
+			//cout<<"Filling "<<Form("SpectraRecoCB%i",fCentBin)<<" in cent bin "<<fCentBin<<endl;
 			FillHisto1D(Form("SpectraRecoCB%i",fCentBin),pT,1.0); 
 		      }
 		    }
@@ -1256,7 +1257,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoPi += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
+	      if(fCentBin>=0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      if( !fRunLightweight){
 		FillHisto2D("EtSimulatedPiMinus",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtNSimulatedPiMinus",part->Pt(),part->Eta(),1.0);
@@ -1290,7 +1291,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoK += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
+	      if(fCentBin>=0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      if( !fRunLightweight){
 		FillHisto2D("EtSimulatedKPlus",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtNSimulatedKPlus",part->Pt(),part->Eta(),1.0);
@@ -1323,7 +1324,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoK += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
+	      if(fCentBin>=0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      if( !fRunLightweight){
 		FillHisto2D("EtSimulatedKMinus",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtNSimulatedKMinus",part->Pt(),part->Eta(),1.0);
@@ -1356,7 +1357,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoP += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
+	      if(fCentBin>=0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      if( !fRunLightweight){
 		FillHisto2D("EtSimulatedProton",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtNSimulatedProton",part->Pt(),part->Eta(),1.0);
@@ -1395,7 +1396,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEtK = Et(part,fgKaonMass);
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeReco += myEt;
 	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoP += myEt;
-	      if(fCentBin>0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
+	      if(fCentBin>=0){FillHisto1D(Form("SpectraSimCB%i",fCentBin),part->Pt(),1.0); }
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      if( !fRunLightweight){
