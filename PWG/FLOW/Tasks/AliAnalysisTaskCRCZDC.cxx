@@ -36,6 +36,7 @@
 #include <TString.h>
 #include <TCanvas.h>
 #include <TParticle.h>
+#include "TProfile2D.h"
 #include "TProfile3D.h"
 
 #include "AliAnalysisManager.h"
@@ -185,6 +186,7 @@ fDataSet(kAny),
 fStack(0x0),
 fCutTPC(kFALSE),
 fCenDis(0x0),
+fVZEROMult(0x0),
 fMultSelection(0x0),
 fPileUpCount(0x0),
 fPileUpMultSelCount(0x0),
@@ -336,6 +338,7 @@ fAnalysisUtil(NULL),
 fStack(0x0),
 fCutTPC(kFALSE),
 fCenDis(0x0),
+fVZEROMult(0x0),
 fMultSelection(0x0),
 fPileUpCount(0x0),
 fPileUpMultSelCount(0x0),
@@ -683,6 +686,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     if(fDataSet==kAny) fRunList[d] = 1;
     d++;
   }
+  
+  fVZEROMult = new TProfile2D("fVZEROMult","fVZEROMult",fCRCnRun,0.,1.*fCRCnRun,64,0.,64.);
+  for (Int_t i=0; i<fCRCnRun; i++) {
+    fVZEROMult->GetXaxis()->SetBinLabel(i+1,Form("%d",fRunList[i]));
+  }
+  fOutput->Add(fVZEROMult);
   
   Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
   Double_t phimin[] = {0.,TMath::Pi()/8.,2*TMath::Pi()/8.,3*TMath::Pi()/8.,4*TMath::Pi()/8.,5*TMath::Pi()/8.,6*TMath::Pi()/8.,7*TMath::Pi()/8.,8*TMath::Pi()/8.,9*TMath::Pi()/8.,10*TMath::Pi()/8.,11*TMath::Pi()/8.,12*TMath::Pi()/8.,13*TMath::Pi()/8.,14*TMath::Pi()/8.,15*TMath::Pi()/8.,16*TMath::Pi()/8.};
@@ -1358,6 +1367,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       AliAODVZERO *vzeroAOD = aod->GetVZEROData();
       Double_t multV0A = vzeroAOD->GetMTotV0A();
       Double_t multV0C = vzeroAOD->GetMTotV0C();
+      for(Int_t i=0; i<64; i++) {
+        Double_t mult = vzeroAOD->GetMultiplicity(i);
+        fVZEROMult->Fill(RunBin+0.5,i+0.5,mult);
+      }
       
       AliAODZDC *aodZDC = aod->GetZDCData();
       
@@ -1479,6 +1492,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
          cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
          xyZNC[0] = cZNC*numXZNC/denZNC;
          xyZNC[1] = cZNC*numYZNC/denZNC;
+          denZNC *= cZNC;
         }
         else{
           xyZNC[0] = xyZNC[1] = 0.;
@@ -1488,6 +1502,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
          cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
          xyZNA[0] = cZNA*numXZNA/denZNA;
          xyZNA[1] = cZNA*numYZNA/denZNA;
+          denZNA *= cZNA;
         }
         else{
           xyZNA[0] = xyZNA[1] = 0.;

@@ -40,6 +40,7 @@ class TFile;
 class TH1F;
 class TH2F;
 class TProfile;
+class TProfile2D;
 class TProfile3D;
 class TH3D;
 class TH3F;
@@ -319,6 +320,7 @@ private:
   TH1F *fPileUpMultSelCount; //! centrality distribution
   TF1 *fMultTOFLowCut; //!
   TF1 *fMultTOFHighCut; //!
+  TProfile2D *fVZEROMult; //!
   
   AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
   Bool_t fUseTowerEq; //
