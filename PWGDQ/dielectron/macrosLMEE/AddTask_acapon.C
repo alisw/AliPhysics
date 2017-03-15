@@ -50,7 +50,9 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
   
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("DielectronTask");
-  if (!hasMC) task->UsePhysicsSelection();
+  //if (!hasMC) 
+  
+  task->UsePhysicsSelection();
 
   //Add event filter
   Int_t triggerNames=(AliVEvent::kINT7);
