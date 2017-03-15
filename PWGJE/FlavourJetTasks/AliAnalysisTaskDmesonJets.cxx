@@ -2444,10 +2444,17 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
     params.fRandomGen = rnd;
 
     if (!params.fRDHFCuts) {
-      ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
-          "%s: RDHF cuts not provided. Engine '%s' will be disabled!",
+      if (params.fMCMode == kMCTruth) {
+      ::Warning("AliAnalysisTaskDmesonJets::ExecOnce",
+          "%s: RDHF cuts not provided for engine '%s'.",
           GetName(), params.GetName());
-      params.fInhibit = kTRUE;
+      }
+      else {
+        ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
+            "%s: RDHF cuts not provided. Engine '%s' disabled.",
+            GetName(), params.GetName());
+        params.fInhibit = kTRUE;
+      }
     }
 
     params.fMCContainer = fMCContainer;
@@ -2547,7 +2554,8 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
     //Event selection
     hname = TString::Format("%s/fHistNEvents", eng.GetName());
     if (fAodEvent) {
-      Bool_t iseventselected = eng.fRDHFCuts->IsEventSelected(fAodEvent);
+      Bool_t iseventselected = kTRUE;
+      if (eng.fRDHFCuts) iseventselected = eng.fRDHFCuts->IsEventSelected(fAodEvent);
       if (!iseventselected) {
         fHistManager.FillTH1(hname, "Rejected");
         hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
