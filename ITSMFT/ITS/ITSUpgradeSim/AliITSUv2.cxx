@@ -80,9 +80,9 @@ AliITSUv2::AliITSUv2()
   ,fUpGeom(0)
   ,fStaveModelIB(kIBModel0)
   ,fStaveModelOB(kOBModel0)
-  ,fAddGammaConv(0)
+  ,fAddGammaConv(kFALSE)
   ,fGammaConvDiam(0)
-  ,fGammaConvXPos(0)
+  ,fNRodGammaConv(0)
 {
   //    Standard default constructor
   // Inputs:
@@ -116,9 +116,9 @@ AliITSUv2::AliITSUv2(const char *title, Int_t nlay)
   ,fUpGeom(0)
   ,fStaveModelIB(kIBModel0)
   ,fStaveModelOB(kOBModel0)
-  ,fAddGammaConv(0)
+  ,fAddGammaConv(kFALSE)
   ,fGammaConvDiam(0)
-  ,fGammaConvXPos(0)
+  ,fNRodGammaConv(0)
 {
   //    Standard constructor for the Upgrade geometry.
   // Inputs:
@@ -143,9 +143,6 @@ AliITSUv2::AliITSUv2(const char *title, Int_t nlay)
   fSensThick     = new Double_t[fNLayers];
   fChipTypeID    = new UInt_t[fNLayers];
   fBuildLevel    = new Int_t[fNLayers];
-  fAddGammaConv  = new Bool_t[fNLayers];
-  fGammaConvDiam = new Double_t[fNLayers];
-  fGammaConvXPos = new Double_t[fNLayers];
 
 
   fUpGeom = new AliITSUv2Layer*[fNLayers];
@@ -162,9 +159,6 @@ AliITSUv2::AliITSUv2(const char *title, Int_t nlay)
       fChipTypeID[j]    = 0;
       fBuildLevel[j]    = 0;
       fUpGeom[j]        = 0;
-      fAddGammaConv[j]  = kFALSE;
-      fGammaConvDiam[j] = 0.;
-      fGammaConvXPos[j] = 0.;
     }
   }
 }
@@ -195,9 +189,6 @@ AliITSUv2::~AliITSUv2() {
   delete [] fWrapRMax;
   delete [] fWrapZSpan;
   delete [] fLay2WrapV;
-  delete [] fAddGammaConv;
-  delete [] fGammaConvDiam;
-  delete [] fGammaConvXPos;
 }
 
 //______________________________________________________________________
@@ -345,28 +336,27 @@ void AliITSUv2::DefineWrapVolume(Int_t id, Double_t rmin,Double_t rmax, Double_t
 }
 
 //______________________________________________________________________
-void AliITSUv2::AddGammaConversionRods(const Int_t nlay,
-				       const Double_t diam,
-				       const Double_t xPos) {
+void AliITSUv2::AddGammaConversionRods(const Double_t diam,
+				       const Int_t num) {
   //     Define whether to put the Gamma Conversion Rods
-  //     (not in the Inner Barrel)
+  //     New version: now the Rods are outside any layer
+  //     (see PWG1&2 meeting Mar. 13th 2017) M.Sitta - 14 Mar 2017
   // Inputs:
-  //          nlay    layer number
   //          diam    rod diameter
-  //          xPos    X position in Half Ladder Reference System
+  //          num     number of rods to be put in place
   // Outputs:
   //   none.
   // Return:
   //   none.
 
-  if (nlay >= fNLayers || nlay < 0) {
-    AliError(Form("Wrong layer number (%d)",nlay));
+  if (diam <= 0. || num <= 0) {
+    AliError(Form("Wrong parameters: diam %f num %d",diam,num));
     return;
   }
 
-  fAddGammaConv[nlay] = kTRUE;
-  fGammaConvDiam[nlay] = diam;
-  fGammaConvXPos[nlay] = xPos;
+  fAddGammaConv = kTRUE;
+  fGammaConvDiam = diam;
+  fNRodGammaConv = num;
 
 }
 
@@ -441,9 +431,6 @@ void AliITSUv2::CreateGeometry() {
     fUpGeom[j]->SetChipType(fChipTypeID[j]);
     fUpGeom[j]->SetBuildLevel(fBuildLevel[j]);
     //
-    if (fAddGammaConv[j])
-      fUpGeom[j]->AddGammaConversionRods(fGammaConvDiam[j],fGammaConvXPos[j]);
-    //
     if (j < 3)
       fUpGeom[j]->SetStaveModel(fStaveModelIB);
     else
@@ -470,6 +457,10 @@ void AliITSUv2::CreateGeometry() {
   // CreateSuppCyl(kTRUE,wrapVols[0]);		// Disabled by pnamwong
   // CreateSuppCyl(kFALSE,wrapVols[2]);		// Disabled by pnamwong
 
+  if (fAddGammaConv)
+    CreateGammaConversionRods(fGammaConvDiam,fNRodGammaConv,geoManager);
+
+
   delete[] wrapVols; // delete pointer only, not the volumes
   //
   ((TGeoVolumeAssembly*)vITSV)->GetShape()->ComputeBBox(); // RS enforce recomputing BBox
@@ -484,6 +475,75 @@ void AliITSUv2::CreateGeometry() {
 	//vALIC->AddNode(new TGeoVolumeAssembly("ITSVBarrelV3"), 1, 0);
 
   //--------------------------------------------------------------------
+
+}
+
+//______________________________________________________________________
+void AliITSUv2::CreateGammaConversionRods(const Double_t diam,
+					  const Int_t num,
+					  const TGeoManager *mgr) {
+  //     Create the Gamma Conversion Rods outside any layer
+  //     (see PWG1&2 meeting Mar. 13th 2017) M.Sitta - 14 Mar 2017
+  // Inputs:
+  //          diam    rod diameter
+  //          num     number of rods to be put in place
+  //          mgr     the TGeoManager pointer
+  // Outputs:
+  //   none.
+  // Return:
+  //   none.
+
+
+  const Double_t kGammaConvRodRPos = 12.2;  // R position of Rods in cm
+
+  // Local variables
+  char volnam[30];
+  Double_t zLength;
+  Double_t xpos, ypos, alpha, beta;
+  Int_t kWrapVol = 0;
+
+
+  // Find the mother volume where to put the rods (default ITSV)
+  TGeoVolume* dest = mgr->GetVolume(AliITSUGeomTGeo::GetITSVolPattern());
+
+  for (int iw = 0; iw < fNWrapVol; iw++)
+    if (kGammaConvRodRPos>fWrapRMin[iw] && kGammaConvRodRPos<fWrapRMax[iw]) {
+      snprintf(volnam, 29, "%s%d", AliITSUGeomTGeo::GetITSWrapVolPattern(),iw);
+      dest = mgr->GetVolume(volnam);
+      kWrapVol = iw;
+    }
+  AliInfo(Form("Will embed layer Gamma Conversion Rods in volume %s",
+	       dest->GetName()));
+
+  if (kWrapVol == 0)
+    snprintf(volnam, 29, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(),0);
+  else if (kWrapVol == 1)
+    snprintf(volnam, 29, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(),3);
+  else
+    snprintf(volnam, 29, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(),5);
+
+  zLength = ((TGeoBBox*)mgr->GetVolume(volnam)->GetShape())->GetDZ();
+
+  // Now create the shape and the volume
+  TGeoTube *gammaConvRod = new TGeoTube("GammaConver", 0, 0.5*fGammaConvDiam,
+				zLength);
+
+  TGeoMedium *medInox = mgr->GetMedium("ITS_INOX304$");
+
+  TGeoVolume *gammaConvRodVol = new TGeoVolume("GammaConversionRod",
+					      gammaConvRod, medInox);
+  gammaConvRodVol->SetLineColor(kBlack);
+  gammaConvRodVol->SetFillColor(gammaConvRodVol->GetLineColor());
+  gammaConvRodVol->SetFillStyle(4000); // 0% transparent
+
+  // Finally place it in the mother volune
+  alpha = 2*TMath::Pi()/fNRodGammaConv;
+  for (Int_t irod = 0; irod < fNRodGammaConv; irod++) {
+    beta = alpha*irod;
+    xpos =  kGammaConvRodRPos*TMath::Sin(beta);
+    ypos = -kGammaConvRodRPos*TMath::Cos(beta);
+    dest->AddNode(gammaConvRodVol, irod+1, new TGeoTranslation(xpos, ypos, 0));
+  }
 
 }
 
@@ -783,7 +843,6 @@ void AliITSUv2::DefineLayer(Int_t nlay, double phi0, Double_t r,
   fSensThick[nlay] = dthick;
   fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
-  fAddGammaConv[nlay] = kFALSE;
     
 }
 
@@ -834,7 +893,6 @@ void AliITSUv2::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
   fSensThick[nlay] = dthick;
   fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
-  fAddGammaConv[nlay] = kFALSE;
 
 }
 

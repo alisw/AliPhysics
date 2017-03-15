@@ -52,7 +52,7 @@ class AliITSUv2 : public AliITSU {
   void           AddAlignableVolumesModule(int lr, int st, int sst, int md, TString& parent,Int_t &lastUID) const;
   void           AddAlignableVolumesChip(int lr, int st, int sst, int md, int ch, TString& parent,Int_t &lastUID) const;
 
-          void   AddGammaConversionRods(const Int_t nlay, const Double_t diam, const Double_t xPos);
+          void   AddGammaConversionRods(const Double_t diam, const Int_t num);
   virtual void   CreateGeometry();
   	  void   CreateSuppCyl(const Bool_t innerBarrel,TGeoVolume *dest,const TGeoManager *mgr=gGeoManager);
   virtual void   CreateMaterials();
@@ -83,6 +83,8 @@ class AliITSUv2 : public AliITSU {
   AliITSUv2(const AliITSUv2 &source); // copy constructor
   AliITSUv2& operator=(const AliITSUv2 &source); // assignment operator
 
+  void        CreateGammaConversionRods(const Double_t diam, const Int_t num,
+					const TGeoManager *mgr=gGeoManager);
   TGeoVolume* CreateWrapperVolume(Int_t nLay);
 
   //
@@ -108,9 +110,9 @@ class AliITSUv2 : public AliITSU {
   AliITSUModel_t fStaveModelIB; // The stave model for the Inner Barrel
   AliITSUModel_t fStaveModelOB; // The stave model for the Outer Barrel
   //
-  Bool_t   *fAddGammaConv;   // True to add Gamma Conversion Rods
-  Double_t *fGammaConvDiam;  // Vector of Gamma Conversion Rod Diameters
-  Double_t *fGammaConvXPos;  // Vector of Gamma Conversion Rod X Position
+  Bool_t    fAddGammaConv;   // True to add Gamma Conversion Rods
+  Double_t  fGammaConvDiam;  // Gamma Conversion Rod Diameter
+  Int_t     fNRodGammaConv;  // Number of Gamma Conversion Rods
 
   // Parameters for the Upgrade geometry
   
