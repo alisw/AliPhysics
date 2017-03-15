@@ -49,7 +49,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fTriggerSelection(nullptr),
   fUseTriggerBits(kTRUE),
   fRequireBunchCrossing(kTRUE),
-  fUseDownscaleCorrectionFormOCDB(kTRUE),
+  fUseDownscaleCorrectionFormOCDB(kFALSE),
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
@@ -79,7 +79,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fTriggerSelection(nullptr),
   fUseTriggerBits(kTRUE),
   fRequireBunchCrossing(kTRUE),
-  fUseDownscaleCorrectionFormOCDB(kTRUE),
+  fUseDownscaleCorrectionFormOCDB(kFALSE),
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
@@ -384,6 +384,18 @@ void AliAnalysisTaskEmcalTriggerBase::RunChanged(Int_t runnumber){
     fDownscaleFactors = static_cast<TObjArray *>(fDownscaleOADB->GetObject(runnumber));
   }
   if(fUseDownscaleCorrectionFormOCDB) PrepareDownscaleFactorsFormOCDB();
+
+  // Log info for downscale factors
+  if(!fDownscaleFactors || !fDownscaleFactors->GetEntries()){
+    AliInfoStream() << GetName() << ": No downscale factors provided for run " << runnumber << std::endl;
+  } else {
+    AliInfoStream() << GetName() << ": Downscale factors used for run " << runnumber << std::endl;
+    for(auto e : *fDownscaleFactors){
+      TParameter<double> *dfactor = static_cast<TParameter<double> *>(e);
+      AliInfoStream() << GetName() << ": Trigger " << dfactor->GetName() << ", downscale factor " << dfactor->GetVal() << std::endl;
+    }
+  }
+
   if(!fExclusiveMinBias){
     if(fMaskedFastorOADB){
       fMaskedFastors.clear();
