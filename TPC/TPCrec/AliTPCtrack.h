@@ -32,7 +32,7 @@ public:
   AliTPCtrack();
   AliTPCtrack(Double_t x, Double_t alpha, const Double_t p[5], 
               const Double_t cov[15], Int_t index); 
-  AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream=0);
+  AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream);
   AliTPCtrack(const AliTPCtrack& t);
   AliTPCtrack& operator=(const AliTPCtrack& o);
   virtual ~AliTPCtrack() {}

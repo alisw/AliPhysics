@@ -3989,11 +3989,12 @@ void AliTPCtracker::ReadSeeds(const AliESDEvent *const event, Int_t direction)
   //
   UnsignClusters();
   //  Int_t ntrk=0;  
+  TTreeSRedirector * pcstreamF=(AliTPCReconstructor::StreamLevel()&kStreamOuterDet) ? fDebugStreamer:NULL;
   for (Int_t i=0; i<nentr; i++) {
     AliESDtrack *esd=event->GetTrack(i);
     ULong_t status=esd->GetStatus();
     if (!(status&AliESDtrack::kTPCin)) continue;
-    AliTPCtrack t(*esd);
+    AliTPCtrack t(*esd,pcstreamF);
     t.SetNumberOfClusters(0);
     //    AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
     AliTPCseed *seed = new( NextFreeSeed() ) AliTPCseed(t/*,t.GetAlpha()*/);
