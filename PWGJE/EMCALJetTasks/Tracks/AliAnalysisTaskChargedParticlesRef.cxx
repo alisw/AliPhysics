@@ -94,27 +94,22 @@ void AliAnalysisTaskChargedParticlesRef::CreateUserHistos() {
   PtBinning newbinning;
   TString optionstring = fEnableSumw2 ? "s" : "";
 
+  TLinearBinning etabinning(64, -0.8, 0.8), phibinning(100, 0., 2*TMath::Pi()), chargebinning(2, -1.5, 1.5);
+  const TBinning *binning4D[4] = {&newbinning, &etabinning, &phibinning, &chargebinning};
+
   // Binning for the PID histogram
   const int kdimPID = 3;
   const int knbinsPID[kdimPID] = {1000, 200, 300};
   const double kminPID[kdimPID] = {-100., 0.,  0.}, kmaxPID[kdimPID] = {100., 200., 1.5};
-  std::array<TString, 2> charges = {"Pos", "Neg"};
   for(auto trg : GetSupportedTriggers()){
     fHistos->CreateTH1("hEventCount" + trg, "Event Counter for trigger class " + trg, 1, 0.5, 1.5, optionstring);
     fHistos->CreateTH1("hVertexBefore" + trg, "Vertex distribution before z-cut for trigger class " + trg, 500, -50, 50, optionstring);
     fHistos->CreateTH1("hVertexAfter" + trg, "Vertex distribution after z-cut for trigger class " + trg, 100, -10, 10, optionstring);
 
-    fHistos->CreateTH3("hPtEtaPhiAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + " ; p_{t} (GeV/c); #eta; #phi", newbinning, TLinearBinning(64, -0.8, 0.8), TLinearBinning(100, 0., 2*TMath::Pi()), optionstring);
-    fHistos->CreateTH3("hPtEtaPhiEMCALAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi", newbinning, TLinearBinning(64, -0.8, 0.8), TLinearBinning(100, 0., 2*TMath::Pi()), optionstring);
-    fHistos->CreateTH3("hPtEtaPhiCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi", newbinning, TLinearBinning(64, -0.8, 0.8), TLinearBinning(100, 0., 2*TMath::Pi()), optionstring);
-    fHistos->CreateTH3("hPtEtaPhiEMCALCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi", newbinning, TLinearBinning(64, -0.8, 0.8), TLinearBinning(100, 0., 2*TMath::Pi()), optionstring);
-
-    for(const auto c : charges){
-      fHistos->CreateTH3("hPtEtaPhiAll" + c + trg, "p_{t}-#eta-#phi distribution of " + c + " accepted tracks for trigger " + trg + " ; p_{t} (GeV/c); #eta; #phi", newbinning, TLinearBinning(64, -0.8, 0.8), TLinearBinning(100, 0., 2*TMath::Pi()), optionstring);
-      fHistos->CreateTH3("hPtEtaPhiEMCALAll" + c + trg, "p_{t}-#eta-#phi distribution of " + c + " accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi", newbinning, TLinearBinning(64, -0.8, 0.8), TLinearBinning(100, 0., 2*TMath::Pi()), optionstring);
-      fHistos->CreateTH3("hPtEtaPhiCent" + c + trg, "p_{t}-#eta-#phi distribution of " + c + " accepted tracks for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi", newbinning, TLinearBinning(64, -0.8, 0.8), TLinearBinning(100, 0., 2*TMath::Pi()), optionstring);
-      fHistos->CreateTH3("hPtEtaPhiEMCALCent" + c + trg, "p_{t}-#eta-#phi distribution of " + c + " accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi", newbinning, TLinearBinning(64, -0.8, 0.8), TLinearBinning(100, 0., 2*TMath::Pi()), optionstring);
-    }
+    fHistos->CreateTHnSparse("hPtEtaPhiAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + " ; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
+    fHistos->CreateTHnSparse("hPtEtaPhiEMCALAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
+    fHistos->CreateTHnSparse("hPtEtaPhiCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
+    fHistos->CreateTHnSparse("hPtEtaPhiEMCALCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
 
     if(fStudyPID){
       fHistos->CreateTH2(Form("hTPCdEdxEMCAL%s", trg.Data()), Form("TPC dE/dx of charged particles in the EMCAL region for trigger %s", trg.Data()), 400, -20., 20., 200, 0., 200., optionstring);
@@ -212,18 +207,13 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
     )
 {
   Double_t weight = GetTriggerWeight(eventclass);
-  TString chargelabel = posCharge ? "Pos" : "Neg";
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in particle histograms." << std::endl;
-  double kinepointall[3] = {TMath::Abs(pt), etalab, phi}, kinepointcent[3] = {TMath::Abs(pt), etacent, phi};
-  fHistos->FillTH3("hPtEtaPhiAll" + eventclass, kinepointall, weight);
-  fHistos->FillTH3("hPtEtaPhiCent" + eventclass, kinepointcent, weight);
-  fHistos->FillTH3("hPtEtaPhiAll" + chargelabel + eventclass, kinepointall, weight);
-  fHistos->FillTH3("hPtEtaPhiCent" + chargelabel + eventclass, kinepointcent, weight);
+  double kinepointall[4] = {TMath::Abs(pt), etalab, phi, posCharge ? 1. : -1.}, kinepointcent[4] = {TMath::Abs(pt), etacent, phi, posCharge ? 1. : -1.};
+  fHistos->FillTHnSparse("hPtEtaPhiAll" + eventclass, kinepointall, weight);
+  fHistos->FillTHnSparse("hPtEtaPhiCent" + eventclass, kinepointcent, weight);
   if(inEmcal){
-    fHistos->FillTH3("hPtEtaPhiEMCALAll" + eventclass, kinepointall, weight);
-    fHistos->FillTH3("hPtEtaPhiEMCALCent" + eventclass, kinepointall, weight);
-    fHistos->FillTH3("hPtEtaPhiEMCALAll" + chargelabel + eventclass, kinepointall, weight);
-    fHistos->FillTH3("hPtEtaPhiEMCALCent" + chargelabel + eventclass, kinepointall, weight);
+    fHistos->FillTHnSparse("hPtEtaPhiEMCALAll" + eventclass, kinepointall, weight);
+    fHistos->FillTHnSparse("hPtEtaPhiEMCALCent" + eventclass, kinepointall, weight);
   }
 }
 
