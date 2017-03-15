@@ -29,7 +29,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
   // ==========================================================================
   // user customization part
 
-  taskESD->SelectCollisionCandidates(AliVEvent::kMB);
+  taskESD->SelectCollisionCandidates(AliVEvent::kINT7);
   
   // ==========================================================================
   mgr->AddTask(taskESD);
