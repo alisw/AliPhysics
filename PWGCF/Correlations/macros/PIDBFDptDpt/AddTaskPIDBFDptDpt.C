@@ -6,12 +6,13 @@
 //   pp           10:     centralityMethod = 3 (nTracks),   trigger = kFALSE (AliVEvent::kMB).
 //   pp_V0A_kMB   10:     centralityMethod = 7 (V0A),       trigger = kFALSE (AliVEvent::kMB).
 //   pp_V0A_kINT7 10:     centralityMethod = 7 (V0A),       trigger = kTRUE (AliVEvent::kINT7).
+//   pp_V0_kMB    10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
 /////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
 (
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- TString System                 = "pp_V0A_kINT7",      // "PbPb", "pPb", "pp", "pp_V0A_kMB", "pp_V0A_kINT7"
+ TString System                 = "pp_V0A_kMB",      // "PbPb", "pPb", "pp", "pp_V0A_kMB", "pp_V0A_kINT7", "pp_V0_kMB"
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
  int    CentralityGroup         =  9,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
@@ -65,7 +66,9 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   else if ( System == "pp" )            { centralityMethod = 3; trigger = kFALSE; }
   else if ( System == "pp_V0A_kMB" )    { centralityMethod = 7; trigger = kFALSE; }
   else if ( System == "pp_V0A_kINT7" )  { centralityMethod = 7; trigger = kTRUE;  }
+  else if ( System == "pp_V0_kMB" )     { centralityMethod = 4; trigger = kFALSE; }
   else    return 0;
+
   
   double minCentrality[10];
   double maxCentrality[10];

@@ -234,6 +234,8 @@ protected:
     double _mult4a;
     double _mult5;
     double _mult6;
+    double _mult7;
+    double _mult8;
     
     //particle 1
     int     arraySize;
@@ -280,6 +282,7 @@ protected:
     int _nBins_M5;       double _min_M5;       double _max_M5;       double _width_M5;
     int _nBins_M6;       double _min_M6;       double _max_M6;       double _width_M6;
     int _nBins_M7;       double _min_M7;       double _max_M7;       double _width_M7;
+    int _nBins_M8;       double _min_M8;       double _max_M8;       double _width_M8;
     
     int _nBins_vertexZ;  double _min_vertexZ;  double _max_vertexZ;  double _width_vertexZ;
     
@@ -350,6 +353,7 @@ protected:
     TH1D * _m5;
     TH1D * _m6;
     TH1D * _m7;
+    TH1D * _m8;
     TH1D * _vertexZ;
     
     TH1F * _Ncluster1;
@@ -518,6 +522,7 @@ protected:
     TString _title_m5;
     TString _title_m6;
     TString _title_m7;
+    TString _title_m8;
     
     TString _title_eta_1;
     TString _title_phi_1;
