@@ -12,6 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <sstream>
+
 #include <RVersion.h>
 #include <TClonesArray.h>
 #include <TList.h>
@@ -111,18 +113,25 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fNTrials(0),
   fXsection(0),
   fOutput(0),
-  fHistEventCount(0),
+  fHistTrialsVsPtHardNoSel(0),
+  fHistEventsVsPtHardNoSel(0),
+  fHistXsectionVsPtHardNoSel(0),
+  fHistTriggerClassesNoSel(0),
+  fHistZVertexNoSel(0),
+  fHistCentralityNoSel(0),
+  fHistEventPlaneNoSel(0),
   fHistTrialsVsPtHard(0),
   fHistEventsVsPtHard(0),
   fHistXsectionVsPtHard(0),
+  fHistTriggerClasses(0),
+  fHistZVertex(0),
+  fHistCentrality(0),
+  fHistEventPlane(0),
+  fHistEventCount(0),
+  fHistEventRejection(0),
   fHistTrials(0),
   fHistEvents(0),
-  fHistXsection(0),
-  fHistCentrality(0),
-  fHistZVertex(0),
-  fHistEventPlane(0),
-  fHistEventRejection(0),
-  fHistTriggerClasses(0)
+  fHistXsection(0)
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -196,18 +205,25 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fNTrials(0),
   fXsection(0),
   fOutput(0),
-  fHistEventCount(0),
+  fHistTrialsVsPtHardNoSel(0),
+  fHistEventsVsPtHardNoSel(0),
+  fHistXsectionVsPtHardNoSel(0),
+  fHistTriggerClassesNoSel(0),
+  fHistZVertexNoSel(0),
+  fHistCentralityNoSel(0),
+  fHistEventPlaneNoSel(0),
   fHistTrialsVsPtHard(0),
   fHistEventsVsPtHard(0),
   fHistXsectionVsPtHard(0),
+  fHistTriggerClasses(0),
+  fHistZVertex(0),
+  fHistCentrality(0),
+  fHistEventPlane(0),
+  fHistEventCount(0),
+  fHistEventRejection(0),
   fHistTrials(0),
   fHistEvents(0),
-  fHistXsection(0),
-  fHistCentrality(0),
-  fHistZVertex(0),
-  fHistEventPlane(0),
-  fHistEventRejection(0),
-  fHistTriggerClasses(0)
+  fHistXsection(0)
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -303,6 +319,21 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fHistXsectionVsPtHard->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionVsPtHard);
 
+    fHistEventsVsPtHardNoSel = new TH1F("fHistEventsVsPtHardNoSel", "fHistEventsVsPtHardNoSel", 1000, 0, 1000);
+    fHistEventsVsPtHardNoSel->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistEventsVsPtHardNoSel->GetYaxis()->SetTitle("events");
+    fOutput->Add(fHistEventsVsPtHardNoSel);
+
+    fHistTrialsVsPtHardNoSel = new TH1F("fHistTrialsVsPtHardNoSel", "fHistTrialsVsPtHardNoSel", 1000, 0, 1000);
+    fHistTrialsVsPtHardNoSel->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistTrialsVsPtHardNoSel->GetYaxis()->SetTitle("trials");
+    fOutput->Add(fHistTrialsVsPtHardNoSel);
+
+    fHistXsectionVsPtHardNoSel = new TProfile("fHistXsectionVsPtHardNoSel", "fHistXsectionVsPtHardNoSel", 1000, 0, 1000);
+    fHistXsectionVsPtHardNoSel->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    fHistXsectionVsPtHardNoSel->GetYaxis()->SetTitle("xsection");
+    fOutput->Add(fHistXsectionVsPtHardNoSel);
+
     fHistTrials = new TH1F("fHistTrials", "fHistTrials", 50, 0, 50);
     fHistTrials->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
@@ -324,16 +355,31 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   fHistZVertex->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertex);
 
+  fHistZVertexNoSel = new TH1F("fHistZVertexNoSel","Z vertex position (no event selection)", 60, -30, 30);
+  fHistZVertexNoSel->GetXaxis()->SetTitle("V_{#it{z}}");
+  fHistZVertexNoSel->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistZVertexNoSel);
+
   if (fForceBeamType != kpp) {
     fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 101, 0, 101);
     fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentrality->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentrality);
 
+    fHistCentralityNoSel = new TH1F("fHistCentralityNoSel","Event centrality distribution (no event selection)", 101, 0, 101);
+    fHistCentralityNoSel->GetXaxis()->SetTitle("Centrality (%)");
+    fHistCentralityNoSel->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistCentralityNoSel);
+
     fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
     fHistEventPlane->GetXaxis()->SetTitle("event plane");
     fHistEventPlane->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistEventPlane);
+
+    fHistEventPlaneNoSel = new TH1F("fHistEventPlaneNoSel","Event plane (no event selection)", 120, -TMath::Pi(), TMath::Pi());
+    fHistEventPlaneNoSel->GetXaxis()->SetTitle("event plane");
+    fHistEventPlaneNoSel->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistEventPlaneNoSel);
   }
 
   fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
@@ -368,6 +414,14 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
 #endif
   fOutput->Add(fHistTriggerClasses);
 
+  fHistTriggerClassesNoSel = new TH1F("fHistTriggerClassesNoSel","fHistTriggerClassesNoSel",3,0,3);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
+  fHistTriggerClassesNoSel->SetBit(TH1::kCanRebin);
+#else
+  fHistTriggerClassesNoSel->SetCanExtend(TH1::kAllAxes);
+#endif
+  fOutput->Add(fHistTriggerClassesNoSel);
+
   fHistEventCount = new TH1F("fHistEventCount","fHistEventCount",2,0,2);
   fHistEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
   fHistEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
@@ -388,31 +442,43 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
  * In any case the vertex distribution is filled as general
  * histograms. For heavy ion collisions also the centrality
  * distribution and the event plane distribution are filled.
+ * @param[in] eventSelected flag that tells the method whether event selection has been performed already (a different set of histograms is filled)
  * @return Always true
  */
-Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms()
+Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 {
-  if (fIsPythia) {
-    fHistEventsVsPtHard->Fill(fPtHard, 1);
-    fHistTrialsVsPtHard->Fill(fPtHard, fNTrials);
-    fHistXsectionVsPtHard->Fill(fPtHard, fXsection);
-  }
+  if (eventSelected) {
+    if (fIsPythia) {
+      fHistEventsVsPtHard->Fill(fPtHard, 1);
+      fHistTrialsVsPtHard->Fill(fPtHard, fNTrials);
+      fHistXsectionVsPtHard->Fill(fPtHard, fXsection);
+    }
 
-  fHistZVertex->Fill(fVertex[2]);
+    fHistZVertex->Fill(fVertex[2]);
 
-  if (fForceBeamType != kpp) {
-    fHistCentrality->Fill(fCent);
-    fHistEventPlane->Fill(fEPV0);
-  }
+    if (fForceBeamType != kpp) {
+      fHistCentrality->Fill(fCent);
+      fHistEventPlane->Fill(fEPV0);
+    }
 
-  TObjArray* triggerClasses = InputEvent()->GetFiredTriggerClasses().Tokenize(" ");
-  TIter next(triggerClasses);
-  TObjString* triggerClass = 0;
-  while ((triggerClass = static_cast<TObjString*>(next()))) {
-    fHistTriggerClasses->Fill(triggerClass->GetString(), 1);
+    for (auto fired_trg : fFiredTriggerClasses) fHistTriggerClasses->Fill(fired_trg.c_str(), 1);
   }
-  delete triggerClasses;
-  triggerClasses = 0;
+  else {
+    if (fIsPythia) {
+      fHistEventsVsPtHardNoSel->Fill(fPtHard, 1);
+      fHistTrialsVsPtHardNoSel->Fill(fPtHard, fNTrials);
+      fHistXsectionVsPtHardNoSel->Fill(fPtHard, fXsection);
+    }
+
+    fHistZVertexNoSel->Fill(fVertex[2]);
+
+    if (fForceBeamType != kpp) {
+      fHistCentralityNoSel->Fill(fCent);
+      fHistEventPlaneNoSel->Fill(fEPV0);
+    }
+
+    for (auto fired_trg : fFiredTriggerClasses) fHistTriggerClassesNoSel->Fill(fired_trg.c_str(), 1);
+  }
 
   return kTRUE;
 }
@@ -447,6 +513,8 @@ void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
   if (!RetrieveEventObjects())
     return;
 
+  FillGeneralHistograms(kFALSE);
+
   if (IsEventSelected()) {
     if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
   }
@@ -456,7 +524,7 @@ void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
   }
 
   if (fGeneralHistograms && fCreateHisto) {
-    if (!FillGeneralHistograms())
+    if (!FillGeneralHistograms(kTRUE))
       return;
   }
 
@@ -757,11 +825,14 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
 
   Bool_t acceptedTrgClassFound = kFALSE;
   if (fAcceptedTriggerClasses.size() > 0) {
-    for (auto trg_it : fAcceptedTriggerClasses) {
-      if (fFiredTriggerClasses.Contains(trg_it.c_str())) {
-        acceptedTrgClassFound = kTRUE;
-        break;
+    for (auto acc_trg : fAcceptedTriggerClasses) {
+      for (auto fired_trg : fFiredTriggerClasses) {
+        if (fired_trg.find(acc_trg) != std::string::npos) {
+          acceptedTrgClassFound = kTRUE;
+          break;
+        }
       }
+      if (acceptedTrgClassFound) break;
     }
 
     if (!acceptedTrgClassFound) {
@@ -771,10 +842,12 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
   }
 
   if (fRejectedTriggerClasses.size() > 0) {
-    for (auto trg_it : fRejectedTriggerClasses) {
-      if (fFiredTriggerClasses.Contains(trg_it.c_str())) {
-        if (fGeneralHistograms) fHistEventRejection->Fill("Trg class (rej)",1);
-        return kFALSE;
+    for (auto rej_trg : fRejectedTriggerClasses) {
+      for (auto fired_trg : fFiredTriggerClasses) {
+        if (fired_trg.find(rej_trg) != std::string::npos) {
+          if (fGeneralHistograms) fHistEventRejection->Fill("Trg class (rej)",1);
+          return kFALSE;
+        }
       }
     }
   }
@@ -885,7 +958,13 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
   fVertexSPD[2] = 0;
   fNVertSPDCont = 0;
 
-  fFiredTriggerClasses = InputEvent()->GetFiredTriggerClasses();
+  fFiredTriggerClasses.clear();
+  std::stringstream firedClasses(InputEvent()->GetFiredTriggerClasses().Data());
+  while (firedClasses.good()) {
+    std::string trgClass;
+    firedClasses >> trgClass;
+    if (!trgClass.empty()) fFiredTriggerClasses.push_back(trgClass);
+  }
 
   if (fDataType == kESD) {
     fFiredTriggerBitMap = static_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected();

@@ -159,7 +159,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
 
   // Virtual functions, to be overloaded in derived classes
   virtual void                ExecOnce();
-  virtual Bool_t              FillGeneralHistograms();
+  virtual Bool_t              FillGeneralHistograms(Bool_t eventSelected);
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
   /**
@@ -246,7 +246,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Int_t                       fNVertCont;                  //!<!event vertex number of contributors
   Int_t                       fNVertSPDCont;               //!<!event SPD vertex number of contributors
   ULong_t                     fFiredTriggerBitMap;         //!<!bit map of fired triggers
-  TString                     fFiredTriggerClasses;        //!<!trigger classes fired by the current event
+  std::vector<std::string>    fFiredTriggerClasses;        //!<!trigger classes fired by the current event
   EBeamType_t                 fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   Int_t                       fPtHardBin;                  //!<!event pt hard
@@ -256,18 +256,25 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
 
   // Output
   TList                      *fOutput;                     //!<!output list
-  TH1                        *fHistEventCount;             //!<!incoming and selected events
+  TH1                        *fHistTrialsVsPtHardNoSel;    //!<!total number of trials per pt hard bin after selection (no event selection)
+  TH1                        *fHistEventsVsPtHardNoSel;    //!<!total number of events per pt hard bin after selection (no event selection)
+  TProfile                   *fHistXsectionVsPtHardNoSel;  //!<!x section from pythia header (no event selection)
+  TH1                        *fHistTriggerClassesNoSel;    //!<!number of events in each trigger class (no event selection)
+  TH1                        *fHistZVertexNoSel;           //!<!z vertex position (no event selection)
+  TH1                        *fHistCentralityNoSel;        //!<!event centrality distribution (no event selection)
+  TH1                        *fHistEventPlaneNoSel;        //!<!event plane distribution (no event selection)
   TH1                        *fHistTrialsVsPtHard;         //!<!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsVsPtHard;         //!<!total number of events per pt hard bin after selection
   TProfile                   *fHistXsectionVsPtHard;       //!<!x section from pythia header
+  TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
+  TH1                        *fHistZVertex;                //!<!z vertex position
+  TH1                        *fHistCentrality;             //!<!event centrality distribution
+  TH1                        *fHistEventPlane;             //!<!event plane distribution
+  TH1                        *fHistEventCount;             //!<!incoming and selected events
+  TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
   TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
   TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
   TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
-  TH1                        *fHistCentrality;             //!<!event centrality distribution
-  TH1                        *fHistZVertex;                //!<!z vertex position
-  TH1                        *fHistEventPlane;             //!<!event plane distribution
-  TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
-  TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
 
  private:
   AliAnalysisTaskEmcalLight(const AliAnalysisTaskEmcalLight&);            // not implemented
