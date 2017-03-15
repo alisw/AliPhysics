@@ -26,6 +26,7 @@
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include <TPaveStats.h>
+#include <TFitResultPtr.h>
 #include <Riostream.h>
 #include <iostream>
 #include <fstream>
@@ -932,82 +933,91 @@ void FillVertexBranches(TList * VertxList){
     gStyle->SetOptFit(111);
     
     TRK_SPD3D_Vtx->cd(1);
-    xVtxSPD->SetMarkerStyle(20);
-    xVtxSPD->SetLineWidth(3);
-    xVtxSPD->SetMarkerColor(kBlue+2);
-    TF1 *fx = new TF1("gaus", "gaus", -1, 1);
-    xVtxTRK->SetMarkerStyle(20);
-    xVtxTRK->SetLineWidth(4);
-    xVtxTRK->SetLineColor(2);
-    xVtxTRK->Draw("PE");
-    xVtxTRK->Fit("gaus", "QM");
-    xVtxSPD->Draw("PE SAME");
-    xVtxTRK->GetXaxis()->SetRangeUser(-0.05, 0.15);
-    xVtxSPD->GetXaxis()->SetRangeUser(-0.05, 0.15);
-    
-    TLatex* tVTX1=new TLatex(0.15,0.85,"VertexSPD - DATA");
-    tVTX1->SetNDC();
-    tVTX1->SetTextColor(kBlue+2);
-    tVTX1->Draw();
-    TLatex* tVTX2=new TLatex(0.15,0.8,"VertexTRK - DATA");
-    tVTX2->SetNDC();
-    tVTX2->SetTextColor(2);
-    tVTX2->Draw();
+    if(xVtxSPD->GetEntries()>0){
+        xVtxSPD->SetMarkerStyle(20);
+        xVtxSPD->SetLineWidth(3);
+        xVtxSPD->SetMarkerColor(kBlue+2);
+        TF1 *fx = new TF1("gaus", "gaus", -1, 1);
+        xVtxTRK->SetMarkerStyle(20);
+        xVtxTRK->SetLineWidth(4);
+        xVtxTRK->SetLineColor(2);
+        xVtxTRK->Draw("PE");
+        xVtxTRK->Fit("gaus", "QM");
+        xVtxSPD->Draw("PE SAME");
+        xVtxTRK->GetXaxis()->SetRangeUser(-0.05, 0.15);
+        xVtxSPD->GetXaxis()->SetRangeUser(-0.05, 0.15);
+        delete fx;
+        TLatex* tVTX1=new TLatex(0.15,0.85,"VertexSPD - DATA");
+        tVTX1->SetNDC();
+        tVTX1->SetTextColor(kBlue+2);
+        tVTX1->Draw();
+        TLatex* tVTX2=new TLatex(0.15,0.8,"VertexTRK - DATA");
+        tVTX2->SetNDC();
+        tVTX2->SetTextColor(2);
+        tVTX2->Draw();
+    }
     
     TRK_SPD3D_Vtx->cd(2);
-    yVtxSPD->SetMarkerStyle(20);
-    yVtxSPD->SetLineWidth(3);
-    yVtxSPD->SetMarkerColor(kBlue+2);
-    TF1 *fy = new TF1("gaus", "gaus", -1, 1);
-    yVtxTRK->SetMarkerStyle(20);
-    yVtxTRK->SetLineWidth(3);
-    yVtxTRK->SetLineColor(2);
-    yVtxTRK->Draw("PE");
-    yVtxTRK->Fit("gaus", "QM");
-    yVtxSPD->Draw("PE SAME");
-    yVtxTRK->GetXaxis()->SetRangeUser(-0.2, 0.6);
-    yVtxSPD->GetXaxis()->SetRangeUser(-0.2, 0.6);
-    
-    TLatex* tVTX3=new TLatex(0.15,0.85,"VertexSPD - DATA");
-    tVTX3->SetNDC();
-    tVTX3->SetTextColor(kBlue+2);
-    tVTX3->Draw();
-    TLatex* tVTX4=new TLatex(0.15,0.8,"VertexTRK - DATA");
-    tVTX4->SetNDC();
-    tVTX4->SetTextColor(2);
-    tVTX4->Draw();
+    if(yVtxSPD->GetEntries()>0){
+        yVtxSPD->SetMarkerStyle(20);
+        yVtxSPD->SetLineWidth(3);
+        yVtxSPD->SetMarkerColor(kBlue+2);
+        TF1 *fy = new TF1("gaus", "gaus", -1, 1);
+        yVtxTRK->SetMarkerStyle(20);
+        yVtxTRK->SetLineWidth(3);
+        yVtxTRK->SetLineColor(2);
+        yVtxTRK->Draw("PE");
+        yVtxTRK->Fit("gaus", "QM");
+        yVtxSPD->Draw("PE SAME");
+        yVtxTRK->GetXaxis()->SetRangeUser(-0.2, 0.6);
+        yVtxSPD->GetXaxis()->SetRangeUser(-0.2, 0.6);
+        delete fy;
+        TLatex* tVTX3=new TLatex(0.15,0.85,"VertexSPD - DATA");
+        tVTX3->SetNDC();
+        tVTX3->SetTextColor(kBlue+2);
+        tVTX3->Draw();
+        TLatex* tVTX4=new TLatex(0.15,0.8,"VertexTRK - DATA");
+        tVTX4->SetNDC();
+        tVTX4->SetTextColor(2);
+        tVTX4->Draw();
+    }
     
     TRK_SPD3D_Vtx->cd(3);
-    TF1 *fz = new TF1("gaus", "gaus", -20, 20);
-    zVtxTRK->SetMarkerStyle(20);
-    zVtxTRK->SetLineWidth(3);
-    zVtxTRK->SetMarkerColor(2);
-    zVtxTRK->SetLineColor(2);
-    zVtxTRK->Draw("PE");
-    zVtxTRK->Fit("gaus", "QM");
-    zVtxSPD->SetMarkerStyle(20);
-    zVtxSPD->SetLineWidth(1);
-    zVtxSPD->SetLineColor(kBlue+2);
-    zVtxSPD->SetMarkerColor(kBlue+2);
-    zVtxSPD->SetMarkerSize(0.8);
-    zVtxSPD->Draw("PE SAME");
-    TLatex* tVTX5=new TLatex(0.15,0.85,"VertexSPD - DATA");
-    tVTX5->SetNDC();
-    tVTX5->SetTextColor(kBlue+2);
-    tVTX5->Draw();
-    TLatex* tVTX6=new TLatex(0.15,0.8,"VertexTRK - DATA");
-    tVTX6->SetNDC();
-    tVTX6->SetTextColor(2);
-    tVTX6->Draw();
-
+    if(zVtxSPD->GetEntries()>0){
+        TF1 *fz = new TF1("gaus", "gaus", -20, 20);
+        zVtxTRK->SetMarkerStyle(20);
+        zVtxTRK->SetLineWidth(3);
+        zVtxTRK->SetMarkerColor(2);
+        zVtxTRK->SetLineColor(2);
+        zVtxTRK->Draw("PE");
+        zVtxTRK->Fit("gaus", "QM");
+        zVtxSPD->SetMarkerStyle(20);
+        zVtxSPD->SetLineWidth(1);
+        zVtxSPD->SetLineColor(kBlue+2);
+        zVtxSPD->SetMarkerColor(kBlue+2);
+        zVtxSPD->SetMarkerSize(0.8);
+        zVtxSPD->Draw("PE SAME");
+        delete fz;
+        TLatex* tVTX5=new TLatex(0.15,0.85,"VertexSPD - DATA");
+        tVTX5->SetNDC();
+        tVTX5->SetTextColor(kBlue+2);
+        tVTX5->Draw();
+        TLatex* tVTX6=new TLatex(0.15,0.8,"VertexTRK - DATA");
+        tVTX6->SetNDC();
+        tVTX6->SetTextColor(2);
+        tVTX6->Draw();
+    }
+    
     TRK_SPD3D_Vtx->cd(4);
-    zVtxSPD_Zonly->SetLineWidth(3);
-    zVtxSPD_Zonly->SetLineColor(kBlue+2);
-    zVtxSPD_Zonly->Draw();
-    TLatex* tVTX7=new TLatex(0.15,0.8,"Vertex Z only - DATA");
-    tVTX7->SetNDC();
-    tVTX7->SetTextColor(2);
-    tVTX7->Draw();
+    if(zVtxSPD_Zonly->GetEntries()>0){
+        zVtxSPD_Zonly->SetLineWidth(3);
+        zVtxSPD_Zonly->SetLineColor(kBlue+2);
+        zVtxSPD_Zonly->Draw();
+        TLatex* tVTX7=new TLatex(0.15,0.8,"Vertex Z only - DATA");
+        tVTX7->SetNDC();
+        tVTX7->SetTextColor(2);
+        tVTX7->Draw();
+    }
     
     if(histoCorelation){
         TRK_SPD3D_Vtx->cd(5);
@@ -1027,9 +1037,9 @@ void FillVertexBranches(TList * VertxList){
     TRK_SPD3D_Vtx->SaveAs("vertexPerformance.pdf");
     TRK_SPD3D_Vtx->SaveAs("vertexPerformance.png");
 //    pdfFileNames+=" vertexPerformance.pdf";
-    delete fx;
-    delete fy;
-    delete fz;
+//    delete fx;
+//    delete fy;
+//    delete fz;
     
     } /// end void FillVertexBranches(TList * VertxList)
 
@@ -1037,7 +1047,7 @@ void FillVertexBranches(TList * VertxList){
    ///////////////////////  SSD
 
 void FillSSDBranches(TList * SSDList){
- 
+
     Printf("SSD - QA");
     myfile << "SSD - QA" << endl;
     
@@ -1053,8 +1063,8 @@ void FillSSDBranches(TList * SSDList){
         myfile <<"QAcharge EMPTY" << endl;
         
     }
-    
-    if((QAcharge)&&(QAchargeRatio)&&(QAcharge->GetEntries()>10)&&(QAchargeRatio->GetEntries()>10)){
+
+    if((QAcharge)&&(QAchargeRatio)&&(QAcharge->GetEntries()>10)&&(QAchargeRatio->GetEntries()>10)){   // check on QAcharge and QAchargeRatio
 
         Int_t biny = QAcharge->GetXaxis()->FindBin(747);
         Int_t maxy = QAcharge->GetXaxis()->GetXmax();
@@ -1100,10 +1110,12 @@ void FillSSDBranches(TList * SSDList){
         hChargeL6->Fit(lfunLay6,"NQLR");
         if(hChargeL5->GetEntries()>0){
             MPVL5=(Float_t)lfunLay5->GetParameter(1);
-            MPVErrL5=(Float_t)lfunLay5->GetParError(1);}
+            MPVErrL5=(Float_t)lfunLay5->GetParError(1);
+        }
         if(hChargeL5->GetEntries()>0){
             MPVL6=(Float_t)lfunLay6->GetParameter(1);
-            MPVErrL6=(Float_t)lfunLay6->GetParError(1);}
+            MPVErrL6=(Float_t)lfunLay6->GetParError(1);
+        }
         ChargeRatioL5=(Float_t)hChargeRatioL5->GetMean();
         ChargeRatioErrL5=(Float_t)hChargeRatioL5->GetMeanError();
         ChargeRatioL6=(Float_t)hChargeRatioL6->GetMean();
@@ -1135,7 +1147,7 @@ void FillSSDBranches(TList * SSDList){
             FracBadp6=(Float_t)bad_p6/729600.;
             errFracBadp6=TMath::Sqrt((Float_t)bad_p6)/729600.;
             }
-        
+
         if(TMath::Abs(ChargeRatioL5)<0.01) FlagChR5=1.; else FlagChR5=0.;
         if(TMath::Abs(ChargeRatioL6)<0.01) FlagChR6=1.; else FlagChR6=0.;
         if(MPVL5>80. && MPVL5<85.) FlagdEdx5=1.; else FlagdEdx5=0.;
@@ -1148,7 +1160,7 @@ void FillSSDBranches(TList * SSDList){
         if(FracBadn6==-999.)FlagSSD2n=-999.;
         if(FracBadp6 < 0.2) FlagSSD2p=1.0; else FlagSSD2p=0.;
         if(FracBadp6==-999.)FlagSSD2p=-999.;
-        
+ 
         // single run plots
         QAcharge->SetStats(111);
         QAcharge->SetTitle("SSD Charge vs module number - DATA");
@@ -1197,7 +1209,33 @@ void FillSSDBranches(TList * SSDList){
                 continue;
             }
             else
+//
             {
+                tmpQ+="fit";
+                //                Float_t range=fHist1DQ->GetBinCenter(fHist1DQ->GetMaximumBin());
+                TF1 *f1 = new TF1(tmpQ,"[0]*TMath::Landau(x,[1],[2])",40.,160.);
+                f1->SetParameters(fHist1DQ->Integral(50.,150.),80.,2.0);
+                //f1->SetParameters(7.0,range,fHist1DQ->GetMaximum(),5.5);
+                f1->SetParNames("N","MPV","sigma");
+                f1->SetParLimits(1,0,160.0);
+                f1->SetParLimits(2,1.0,100.0);
+                //                f1->SetParLimits(3,0.0,100.0);
+                if(static_cast<int>(fHist1DQ->Fit(tmpQ,"BRQON"))==0)
+                {
+                    mpv[i]=f1->GetParameter(1);
+                    if(f1->GetParError(1)<20.){
+                        fHistMPVs->Fill(mpv[i]);
+                        fMPVGraph->SetBinContent(i+1,f1->GetParameter(1));
+                        fMPVGraph->SetBinError(i+1,f1->GetParError(1));
+                    }
+                }
+                else
+                {
+                    mpv[i]=1;
+                }	
+            }
+/*            //
+                {
                 tmpQ+="fit";
                 Float_t range=fHist1DQ->GetBinCenter(fHist1DQ->GetMaximumBin());
                 TF1 *f1 = new TF1(tmpQ,LangausFun,range*0.45,range*3.0,4);
@@ -1208,7 +1246,10 @@ void FillSSDBranches(TList * SSDList){
                 f1->SetParNames("sigma Landau","MPV","N","sigma Gaus");
                 f1->SetParLimits(0,2.0,100.0);
                 f1->SetParLimits(3,0.0,100.0);
-                if(static_cast<int>(fHist1DQ->Fit(tmpQ,"BRQON"))==0)
+//                if(fHist1DQ->Fit(tmpQ,"BRQON")==0)
+                TFitResultPtr r = fHist1DQ->Fit(tmpQ,"BRQON");
+                Int_t fitStatus = (Int_t)r;
+                if(fitStatus==0)
                 {
                     mpv[i]=f1->GetParameter(1);
                     fHistMPVs->Fill(mpv[i]);
@@ -1233,49 +1274,51 @@ void FillSSDBranches(TList * SSDList){
                     //outfiletxtbad<<"BAD FIT \t module="<<i<<endl;
                     continue;
                 }	
-            }	
-        }
-        
+            }
+//*/
+        }   // for 1698
+ 
+
         TString ctitle="SSD Calibration 1 - DATA";
         TCanvas *c1SSD = new TCanvas("c1SSD",ctitle,1000,1000);
         c1SSD->Divide(2,3);
         c1SSD->cd(1);
-        QAcharge->DrawCopy("colz");
+        if(QAcharge->GetEntries()>0) QAcharge->DrawCopy("colz");
         c1SSD->cd(2);
-        QAchargeRatio->DrawCopy("colz");
-        
-        //  TCanvas *c2SSD = new TCanvas("c2SSD","SSD Calibration 2",1000,1000);
-        //clist[1]=c2SSD;
-        //c2SSD->Divide(2,2);
+        if(QAchargeRatio->GetEntries()>0) QAchargeRatio->DrawCopy("colz");
         c1SSD->cd(3);
-        fMPVGraph->DrawCopy();
-        TLine* tlin0=new TLine(0.,80.,1698.,80.);
-        tlin0->SetLineColor(2);
-        tlin0->SetLineWidth(2);
-        tlin0->Draw("same");
-        TLine* tlin01=new TLine(0.,90.,1698.,90.);
-        tlin01->SetLineColor(2);
-        tlin01->SetLineWidth(2);
-        tlin01->Draw("same");
+        if(fMPVGraph->GetEntries()>0){
+            fMPVGraph->DrawCopy();
+            TLine* tlin0=new TLine(0.,80.,1698.,80.);
+            tlin0->SetLineColor(2);
+            tlin0->SetLineWidth(2);
+            tlin0->Draw("same");
+            TLine* tlin01=new TLine(0.,90.,1698.,90.);
+            tlin01->SetLineColor(2);
+            tlin01->SetLineWidth(2);
+            tlin01->Draw("same");
+        }
         c1SSD->cd(4);
-        fHistMPVs->DrawCopy();
+        if(fHistMPVs->GetEntries()>0)fHistMPVs->DrawCopy();
         c1SSD->cd(5);
-        fCRmeanGraph->DrawCopy();
-        TLine* tlin1=new TLine(0.,0.2,1698.,0.2);
-        tlin1->SetLineColor(2);
-        tlin1->SetLineWidth(2);
-        tlin1->Draw("same");
-        TLine* tlin2=new TLine(0.,-0.2,1698.,-0.2);
-        tlin2->SetLineColor(2);
-        tlin2->SetLineWidth(2);
-        tlin2->Draw("same");
-        TLatex* ta1=new TLatex(0.2,0.8,"SSD Calibration");
-        ta1->SetNDC();
-        ta1->SetTextSize(0.05);
-        ta1->SetTextColor(2);
-        ta1->Draw("same");
+        if(fCRmeanGraph->GetEntries()>0){
+            fCRmeanGraph->DrawCopy();
+            TLine* tlin1=new TLine(0.,0.2,1698.,0.2);
+            tlin1->SetLineColor(2);
+            tlin1->SetLineWidth(2);
+            tlin1->Draw("same");
+            TLine* tlin2=new TLine(0.,-0.2,1698.,-0.2);
+            tlin2->SetLineColor(2);
+            tlin2->SetLineWidth(2);
+            tlin2->Draw("same");
+            TLatex* ta1=new TLatex(0.2,0.8,"SSD Calibration");
+            ta1->SetNDC();
+            ta1->SetTextSize(0.05);
+            ta1->SetTextColor(2);
+            ta1->Draw("same");
+        }
         c1SSD->cd(6);
-        fHistCRmean->DrawCopy();
+        if(fHistCRmean->GetEntries()>0) fHistCRmean->DrawCopy();
         c1SSD->Update();
         c1SSD->SaveAs("SSDPerformance.pdf");
         c1SSD->SaveAs("SSDPerformance.png");
@@ -1334,20 +1377,22 @@ void FillSDDBranches(TList * SDDList){
             TString ctitle="General checks: PointPerLayer - DATA";
             TCanvas* ceffL=new TCanvas("ceffL",ctitle,1000,800);
             ceffL->SetGridy();
-            hcllay->Draw();
-            TLatex* tg=new TLatex(0.15,0.2,"Fraction of tracks with point in ITS layer");
-            tg->SetTextSize(0.04);
-            tg->SetNDC();
-            tg->SetTextColor(1);
-            tg->Draw();
+            if(hcllay->GetEntries()>0){
+                hcllay->Draw();
+                TLatex* tg=new TLatex(0.15,0.2,"Fraction of tracks with point in ITS layer");
+                tg->SetTextSize(0.04);
+                tg->SetNDC();
+                tg->SetTextColor(1);
+                tg->Draw();
 //            TString testo="Run "+GetRunNumber()+" -  DATA";
 //            TLatex* tg2 = new TLatex(0.15,0.85,testo.Data());
 //            tg2->SetTextSize(0.04);
 //            tg2->SetNDC();
 //            tg2->SetTextColor(2);
 //            tg2->Draw();
-            hcllay->GetXaxis()->SetTitle("Layer");
-            hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
+                hcllay->GetXaxis()->SetTitle("Layer");
+                hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
+            }
             ceffL->Update();
             ceffL->SaveAs("frac_track_points_per_layer.pdf");
             ceffL->SaveAs("frac_track_points_per_layer.png");
@@ -1556,78 +1601,67 @@ void FillSDDBranches(TList * SDDList){
     TCanvas* ctim=new TCanvas("ctim",ctitle,800,1000);
     ctim->Divide(1,2);
     ctim->cd(1);
-    // htimT->Draw();
-    // htimTe->SetLineColor(2);
-    // htimTe->Draw("same");
-    htimTne->SetLineColor(4);
-    htimTne->Draw("");
-    htimTne->GetXaxis()->SetTitle("Drift Time (ns)");
-    htimTne->GetYaxis()->SetTitle("TrackPoints");
-    htimTne->GetYaxis()->SetTitleOffset(1.2);
-    htimTne->SetTitle("Drift Time from Track Points (ns) - DATA");
-    // TLatex* ta=new TLatex(0.5,0.85,"All Clusters");
-    // ta->SetNDC();
-    // ta->SetTextColor(1);
-    // ta->Draw();
-    // TLatex* te=new TLatex(0.5,0.8,"Extra Clusters");
-    // te->SetNDC();
-    // te->SetTextColor(2);
-    // te->Draw();
-    //  TLatex* tn=new TLatex(0.3,0.3,"Non-Extra Clusters");
-    TLatex* tn=new TLatex(0.3,0.3,"Clusters on SDD modules");
-    tn->SetNDC();
-    tn->SetTextColor(4);
-    tn->Draw();
-    TLine* tlin3=new TLine(450.,0.,450.,htimTne->GetMaximum());
-    tlin3->SetLineColor(2);
-    tlin3->SetLineWidth(2);
-    tlin3->SetLineStyle(7);
-    tlin3->Draw("same");
-    TLine* tlin4=new TLine(620.,0.,620.,htimTne->GetMaximum());
-    tlin4->SetLineColor(2);
-    tlin4->SetLineWidth(2);
-    tlin4->SetLineStyle(7);
-    tlin4->Draw("same");
-    TLatex* tlimit1=new TLatex(0.2,0.5,"Range for t0");
-    tlimit1->SetNDC();
-    tlimit1->SetTextColor(2);
-    tlimit1->Draw();
-    TLine* tlin5=new TLine(6200.,0.,6200.,htimTne->GetMaximum());
-    tlin5->SetLineColor(2);
-    tlin5->SetLineStyle(7);
-    tlin5->SetLineWidth(2);
-    tlin5->Draw("same");
-    TLine* tlin6=new TLine(5150.,0.,5150.,htimTne->GetMaximum());
-    tlin6->SetLineColor(2);
-    tlin6->SetLineWidth(2);
-    tlin6->SetLineStyle(7);
-    tlin6->Draw("same");
-    TLatex* tlimit2=new TLatex(0.6,0.5,"Range for falling edge");
-    tlimit2->SetNDC();
-    tlimit2->SetTextColor(2);
-    tlimit2->Draw();
-    
-    //  ctim->Update();
-    //  TCanvas* cpars=new TCanvas("cpars","Params",800,600);
+    if(htimTne->GetEntries()>0){
+        htimTne->SetLineColor(4);
+        htimTne->Draw("");
+        htimTne->GetXaxis()->SetTitle("Drift Time (ns)");
+        htimTne->GetYaxis()->SetTitle("TrackPoints");
+        htimTne->GetYaxis()->SetTitleOffset(1.2);
+        htimTne->SetTitle("Drift Time from Track Points (ns) - DATA");
+        TLatex* tn=new TLatex(0.3,0.3,"Clusters on SDD modules");
+        tn->SetNDC();
+        tn->SetTextColor(4);
+        tn->Draw();
+        TLine* tlin3=new TLine(450.,0.,450.,htimTne->GetMaximum());
+        tlin3->SetLineColor(2);
+        tlin3->SetLineWidth(2);
+        tlin3->SetLineStyle(7);
+        tlin3->Draw("same");
+        TLine* tlin4=new TLine(620.,0.,620.,htimTne->GetMaximum());
+        tlin4->SetLineColor(2);
+        tlin4->SetLineWidth(2);
+        tlin4->SetLineStyle(7);
+        tlin4->Draw("same");
+        TLatex* tlimit1=new TLatex(0.2,0.5,"Range for t0");
+        tlimit1->SetNDC();
+        tlimit1->SetTextColor(2);
+        tlimit1->Draw();
+        TLine* tlin5=new TLine(6200.,0.,6200.,htimTne->GetMaximum());
+        tlin5->SetLineColor(2);
+        tlin5->SetLineStyle(7);
+        tlin5->SetLineWidth(2);
+        tlin5->Draw("same");
+        TLine* tlin6=new TLine(5150.,0.,5150.,htimTne->GetMaximum());
+        tlin6->SetLineColor(2);
+        tlin6->SetLineWidth(2);
+        tlin6->SetLineStyle(7);
+        tlin6->Draw("same");
+        TLatex* tlimit2=new TLatex(0.6,0.5,"Range for falling edge");
+        tlimit2->SetNDC();
+        tlimit2->SetTextColor(2);
+        tlimit2->Draw();
+    }
     ctim->cd(2);
     gPad->SetLeftMargin(0.14);
     gPad->SetFrameLineWidth(2);
     gPad->SetTickx();
     gPad->SetTicky();
-    gmpv->SetMarkerStyle(20);
-    gmpv->SetMinimum(75);
-    gmpv->SetMaximum(90);
-    gmpv->GetXaxis()->SetLimits(-0.2,6.8);
-    gmpv->Draw("AP");
-    gmpv->GetXaxis()->SetTitle("Drift Time interval number");
-    gmpv->GetYaxis()->SetTitle("Landau MPV (keV)");
-    gmpv->GetXaxis()->SetTitleSize(0.05);
-    gmpv->GetYaxis()->SetTitleSize(0.05);
-    gmpv->GetYaxis()->SetTitleOffset(1.2);
-    TLatex* tex=new TLatex(0.2,0.75,"dE/dx MPV vs Drift time interval - DATA");
-    tex->SetNDC();
-    tex->SetTextColor(1);
-    tex->Draw();
+    if(gmpv->GetN()>0){
+        gmpv->SetMarkerStyle(20);
+        gmpv->SetMinimum(75);
+        gmpv->SetMaximum(90);
+        gmpv->GetXaxis()->SetLimits(-0.2,6.8);
+        gmpv->Draw("AP");
+        gmpv->GetXaxis()->SetTitle("Drift Time interval number");
+        gmpv->GetYaxis()->SetTitle("Landau MPV (keV)");
+        gmpv->GetXaxis()->SetTitleSize(0.05);
+        gmpv->GetYaxis()->SetTitleSize(0.05);
+        gmpv->GetYaxis()->SetTitleOffset(1.2);
+        TLatex* tex=new TLatex(0.2,0.75,"dE/dx MPV vs Drift time interval - DATA");
+        tex->SetNDC();
+        tex->SetTextColor(1);
+        tex->Draw();
+    }
     //  cpars->Update();
     ctim->Update();
     ctim->SaveAs("SDDPerformance.pdf");
@@ -1680,15 +1714,19 @@ void FillSPDBranches(TList * SPDList){
         TCanvas *track = new TCanvas("track",ctitle,1300,600);
         track->Divide(2,1);
         track->cd(1);
-        phiData.SetLineColor(kRed);
-        phiData.SetLineWidth(2);
-        phiData.Scale(1./phiData.GetEntries());
-        phiData.DrawCopy();
+        if(phiData.GetEntries()>0){
+            phiData.SetLineColor(kRed);
+            phiData.SetLineWidth(2);
+            phiData.Scale(1./phiData.GetEntries());
+            phiData.DrawCopy();
+        }
         track->cd(2);
-        etaData.SetLineColor(kRed);
-        etaData.SetLineWidth(2);
-        etaData.Scale(1./etaData.GetEntries());
-        etaData.DrawCopy();
+        if(etaData.GetEntries()>0){
+            etaData.SetLineColor(kRed);
+            etaData.SetLineWidth(2);
+            etaData.Scale(1./etaData.GetEntries());
+            etaData.DrawCopy();
+        }
         track->SaveAs("SPDtrackletsEtaPhi.pdf");
         track->SaveAs("SPDtrackletsEtaPhi.png");
 //        pdfFileNames+=" SPDtrackletsEtaPhi.pdf";
@@ -2028,43 +2066,39 @@ void FillITSsaBranches(TList * ITSsaList){
         cITSsa1->Divide(1,3);
         
         cITSsa1->cd(1);
-        hPtITSpureSA->Draw();
-        hPtITSpureSA->GetXaxis()->SetTitle("Pt (GeV/c)");
-        gPad->Update();
-        TPaveStats *st1=(TPaveStats*)hPtITSpureSA->GetListOfFunctions()->FindObject("stats");
-        st1->SetY1NDC(0.71);
-        st1->SetY2NDC(0.9);
-        hPtTPCITS->SetLineColor(2);
-        hPtTPCITS->GetXaxis()->SetTitle("Pt (GeV/c)");
-        hPtTPCITS->Draw("sames");
-        gPad->Update();
-        TPaveStats *st2=(TPaveStats*)hPtTPCITS->GetListOfFunctions()->FindObject("stats");
-        st2->SetY1NDC(0.51);
-        st2->SetY2NDC(0.7);
-        st2->SetTextColor(2);
-        hPtITSsa->SetLineColor(4);
-        hPtITSsa->Draw("sames");
-        gPad->Update();
-        TPaveStats *st3=(TPaveStats*)hPtITSsa->GetListOfFunctions()->FindObject("stats");
-        st3->SetY1NDC(0.31);
-        st3->SetY2NDC(0.5);
-        st3->SetTextColor(4);
-        TLegend* leg=new TLegend(0.5,0.5,0.69,0.79);
-        leg->SetFillColor(0);
-//        TLatex* ttype=new TLatex(0.35,0.75,"DATA");
-//        ttype->SetNDC();
-//        ttype->SetTextColor(2);
-//        ttype->SetTextSize(0.1);
-//        ttype->Draw();
-        TLegendEntry* ent=leg->AddEntry(hPtTPCITS,"TPC+ITS","L");
-        ent->SetTextColor(hPtTPCITS->GetLineColor());
-        ent=leg->AddEntry(hPtITSsa,"ITSsa","L");
-        ent->SetTextColor(hPtITSsa->GetLineColor());
+        if(hPtITSpureSA->GetEntries()>0){
+            hPtITSpureSA->Draw();
+            hPtITSpureSA->GetXaxis()->SetTitle("Pt (GeV/c)");
+            gPad->Update();
+            TPaveStats *st1=(TPaveStats*)hPtITSpureSA->GetListOfFunctions()->FindObject("stats");
+            st1->SetY1NDC(0.71);
+            st1->SetY2NDC(0.9);
+            hPtTPCITS->SetLineColor(2);
+            hPtTPCITS->GetXaxis()->SetTitle("Pt (GeV/c)");
+            hPtTPCITS->Draw("sames");
+            gPad->Update();
+            TPaveStats *st2=(TPaveStats*)hPtTPCITS->GetListOfFunctions()->FindObject("stats");
+            st2->SetY1NDC(0.51);
+            st2->SetY2NDC(0.7);
+            st2->SetTextColor(2);
+            hPtITSsa->SetLineColor(4);
+            hPtITSsa->Draw("sames");
+            gPad->Update();
+            TPaveStats *st3=(TPaveStats*)hPtITSsa->GetListOfFunctions()->FindObject("stats");
+            st3->SetY1NDC(0.31);
+            st3->SetY2NDC(0.5);
+            st3->SetTextColor(4);
+            TLegend* leg=new TLegend(0.5,0.5,0.69,0.79);
+            leg->SetFillColor(0);
+            TLegendEntry* ent=leg->AddEntry(hPtTPCITS,"TPC+ITS","L");
+            ent->SetTextColor(hPtTPCITS->GetLineColor());
+            ent=leg->AddEntry(hPtITSsa,"ITSsa","L");
+            ent->SetTextColor(hPtITSsa->GetLineColor());
         // to be used only with pp data (ITS pure SA)
-        ent=leg->AddEntry(hPtITSpureSA,"ITS pureSA","L");
-        ent->SetTextColor(hPtITSpureSA->GetLineColor());
-        leg->Draw();
-        
+            ent=leg->AddEntry(hPtITSpureSA,"ITS pureSA","L");
+            ent->SetTextColor(hPtITSpureSA->GetLineColor());
+            leg->Draw();
+        }
         TH1F* hRatio=(TH1F*)hPtTPCITS->Clone("hRatio");
         TH1F* hRatio1=(TH1F*)hPtTPCITS->Clone("hRatio1");
         hRatio->Add(hPtITSsa);
@@ -2072,58 +2106,70 @@ void FillITSsaBranches(TList * ITSsaList){
         hRatio->SetStats(0);
         hRatio1->Divide(hPtITSsa);
         hRatio1->SetStats(0);
-        TH1F* hChi2TPCITS=(TH1F*)ITSsaList->FindObject("hChi2TPCITS");
-        TH1F* hChi2ITSsa=(TH1F*)ITSsaList->FindObject("hChi2ITSsa");
-        TH1F* hChi2ITSpureSA=(TH1F*)ITSsaList->FindObject("hChi2ITSpureSA");
 
         cITSsa1->cd(2);
         gPad->SetGridx();
         gPad->SetGridy();
-        hRatio1->GetXaxis()->SetTitle("Pt (GeV/c)");
-        hRatio->GetXaxis()->SetTitle("Pt (GeV/c)");
-        hRatio1->GetYaxis()->SetTitle("TPCITS/ITSsa");
-        hRatio->GetYaxis()->SetTitle("(TPCITS+ITSsa)/ITSpureSA");
-        hRatio->DrawCopy();
-        TLatex* tratio=new TLatex(0.2,0.75,"TPCITS+ITSsa/ITSpureSA vs Pt");
-        tratio->SetNDC();
-        tratio->SetTextColor(1);
-        tratio->Draw();
+        if(hRatio1->GetEntries()>0){
+            hRatio1->GetXaxis()->SetTitle("Pt (GeV/c)");
+            hRatio->GetXaxis()->SetTitle("Pt (GeV/c)");
+            hRatio1->GetYaxis()->SetTitle("TPCITS/ITSsa");
+            hRatio->GetYaxis()->SetTitle("(TPCITS+ITSsa)/ITSpureSA");
+            hRatio->DrawCopy();
+            TLatex* tratio=new TLatex(0.2,0.75,"TPCITS+ITSsa/ITSpureSA vs Pt");
+            tratio->SetNDC();
+            tratio->SetTextColor(1);
+            tratio->Draw();
+        }
         
+        TH1F* hChi2TPCITS=(TH1F*)ITSsaList->FindObject("hChi2TPCITS");
+        TH1F* hChi2ITSsa=(TH1F*)ITSsaList->FindObject("hChi2ITSsa");
+        TH1F* hChi2ITSpureSA=(TH1F*)ITSsaList->FindObject("hChi2ITSpureSA");
+
         cITSsa1->cd(3);
-        hChi2ITSpureSA->Scale(1./hChi2ITSpureSA->GetEntries());
-        hChi2ITSsa->Scale(1./hChi2ITSsa->GetEntries());
-        hChi2TPCITS->Scale(1./hChi2TPCITS->GetEntries());
+        if(hChi2ITSpureSA->GetEntries()>0) hChi2ITSpureSA->Scale(1./hChi2ITSpureSA->GetEntries());
+        if(hChi2ITSsa->GetEntries()>0)hChi2ITSsa->Scale(1./hChi2ITSsa->GetEntries());
+        if(hChi2TPCITS->GetEntries()>0)hChi2TPCITS->Scale(1./hChi2TPCITS->GetEntries());
         hChi2ITSpureSA->SetLineColor(1);
-        hChi2ITSpureSA->Draw("");
-        hChi2TPCITS->SetLineColor(2);
-        hChi2TPCITS->Draw("sames");
-        TLatex* tchi=new TLatex(0.25,0.85,"chi2 vs Pt");
-        tchi->SetNDC();
-        tchi->SetTextColor(1);
-        tchi->Draw();
-        gPad->Update();
-        TPaveStats *stc1=(TPaveStats*)hChi2ITSpureSA->GetListOfFunctions()->FindObject("stats");
-        stc1->SetY1NDC(0.71);
-        stc1->SetY2NDC(0.9);
-        stc1->SetTextColor(1);
-        TPaveStats *stc2=(TPaveStats*)hChi2TPCITS->GetListOfFunctions()->FindObject("stats");
-        stc2->SetY1NDC(0.51);
-        stc2->SetY2NDC(0.7);
-        stc2->SetTextColor(2);
-        //  c2->Update();
-        hChi2ITSsa->SetLineColor(4);
-        hChi2ITSsa->Draw("sames");
-        gPad->Update();
-        TPaveStats *stc3=(TPaveStats*)hChi2ITSsa->GetListOfFunctions()->FindObject("stats");
-        stc3->SetY1NDC(0.31);
-        stc3->SetY2NDC(0.5);
-        stc3->SetTextColor(4);
-        leg->Draw();
+        if(hChi2ITSpureSA->GetEntries()>0 && hChi2ITSsa->GetEntries()>0 && hChi2TPCITS->GetEntries()>0){
+            hChi2ITSpureSA->Draw("");
+            hChi2TPCITS->SetLineColor(2);
+            hChi2TPCITS->Draw("sames");
+            TLatex* tchi=new TLatex(0.25,0.85,"chi2 vs Pt");
+            tchi->SetNDC();
+            tchi->SetTextColor(1);
+            tchi->Draw();
+            gPad->Update();
+            TPaveStats *stc1=(TPaveStats*)hChi2ITSpureSA->GetListOfFunctions()->FindObject("stats");
+            stc1->SetY1NDC(0.71);
+            stc1->SetY2NDC(0.9);
+            stc1->SetTextColor(1);
+            TPaveStats *stc2=(TPaveStats*)hChi2TPCITS->GetListOfFunctions()->FindObject("stats");
+            stc2->SetY1NDC(0.51);
+            stc2->SetY2NDC(0.7);
+            stc2->SetTextColor(2);
+            hChi2ITSsa->SetLineColor(4);
+            hChi2ITSsa->Draw("sames");
+            gPad->Update();
+            TPaveStats *stc3=(TPaveStats*)hChi2ITSsa->GetListOfFunctions()->FindObject("stats");
+            stc3->SetY1NDC(0.31);
+            stc3->SetY2NDC(0.5);
+            stc3->SetTextColor(4);
+            TLegend* leg=new TLegend(0.5,0.5,0.69,0.79);
+            leg->SetFillColor(0);
+            TLegendEntry* ent=leg->AddEntry(hPtTPCITS,"TPC+ITS","L");
+            ent->SetTextColor(hPtTPCITS->GetLineColor());
+            ent=leg->AddEntry(hPtITSsa,"ITSsa","L");
+            ent->SetTextColor(hPtITSsa->GetLineColor());
+            // to be used only with pp data (ITS pure SA)
+            ent=leg->AddEntry(hPtITSpureSA,"ITS pureSA","L");
+            ent->SetTextColor(hPtITSpureSA->GetLineColor());
+            leg->Draw();
+        }
         
         cITSsa1->Update();
         cITSsa1->SaveAs("TrackTypesPerformance.pdf");
         cITSsa1->SaveAs("TrackTypesPerformance.png");
-//        pdfFileNames+=" TrackTypesPerformance.pdf";
 
         TH2F* hEtaPhiTPCITS=(TH2F*)ITSsaList->FindObject("hEtaPhiTPCITS");
         TH2F* hEtaPhiITSsa=(TH2F*)ITSsaList->FindObject("hEtaPhiITSsa");
@@ -2139,17 +2185,23 @@ void FillITSsaBranches(TList * ITSsaList){
         TCanvas* cITSsa2=new TCanvas("cITSsa2",ctitle,1200,800);
         cITSsa2->Divide(3,1); //for ITSpureSA
         cITSsa2->cd(1);
-        hEtaPhiITSpureSA->Draw("colz");
-        hEtaPhiITSpureSA->GetXaxis()->SetTitle("Eta");
-        hEtaPhiITSpureSA->GetYaxis()->SetTitle("Phi");
+        if(hEtaPhiITSpureSA->GetEntries()>0){
+            hEtaPhiITSpureSA->Draw("colz");
+            hEtaPhiITSpureSA->GetXaxis()->SetTitle("Eta");
+            hEtaPhiITSpureSA->GetYaxis()->SetTitle("Phi");
+        }
         cITSsa2->cd(2);
-        hEtaPhiITSsa->Draw("colz");
-        hEtaPhiITSsa->GetXaxis()->SetTitle("Eta");
-        hEtaPhiITSsa->GetYaxis()->SetTitle("Phi");
+        if(hEtaPhiITSsa->GetEntries()>0){
+            hEtaPhiITSsa->Draw("colz");
+            hEtaPhiITSsa->GetXaxis()->SetTitle("Eta");
+            hEtaPhiITSsa->GetYaxis()->SetTitle("Phi");
+        }
         cITSsa2->cd(3);
-        hEtaPhiTPCITS->Draw("colz");
-        hEtaPhiTPCITS->GetXaxis()->SetTitle("Eta");
-        hEtaPhiTPCITS->GetYaxis()->SetTitle("Phi");
+        if(hEtaPhiTPCITS->GetEntries()>0){
+            hEtaPhiTPCITS->Draw("colz");
+            hEtaPhiTPCITS->GetXaxis()->SetTitle("Eta");
+            hEtaPhiTPCITS->GetYaxis()->SetTitle("Phi");
+        }
         cITSsa2->SaveAs("TrackTypesEtaPhi.pdf");
         cITSsa2->SaveAs("TrackTypesEtaPhi.png");
 //        pdfFileNames+=" TrackTypesEtaPhi.pdf";
@@ -2808,7 +2860,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
     //
     
     TH1F *fHistPtTPCInAcc = (TH1F*)ITSList->FindObject("fHistPtTPCInAcc");
-    if(fHistPtTPCInAcc){
+    if(fHistPtTPCInAcc->GetEntries()>0){
     TH1F *fHistPtITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI6InAcc");
     TH1F *fHistPtITSMI5InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI5InAcc");
     TH1F *fHistPtITSMI4InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI4InAcc");
@@ -2882,7 +2934,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
     // TOFITS vs pt
     
     TH1F *fHistPtTPCInAccTOF = (TH1F*)ITSList->FindObject("fHistPtTPCInAccTOFbc0");
-    if(fHistPtTPCInAccTOF){
+    if(fHistPtTPCInAccTOF->GetEntries()>0){
     TH1F *fHistPtITSMI6InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI6InAccTOFbc0");
     TH1F *fHistPtITSMI5InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI5InAccTOFbc0");
     TH1F *fHistPtITSMI4InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI4InAccTOFbc0");
@@ -2962,7 +3014,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
         // TPCITS vs phi
         
     TH1F *fHistPhiTPCInAcc = (TH1F*)ITSList->FindObject("fHistPhiTPCInAcc");
-    if(fHistPhiTPCInAcc){
+    if(fHistPhiTPCInAcc->GetEntries()>0){
         fHistPhiTPCInAcc->Rebin(2);
         TH1F *fHistPhiITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMI6InAcc");
         fHistPhiITSMI6InAcc->Rebin(2);
@@ -3140,7 +3192,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
         // TPCITS vs eta
         
         TH1F *fHistEtaTPCInAcc = (TH1F*)ITSList->FindObject("fHistEtaTPCInAcc");
-        if(fHistEtaTPCInAcc){
+        if(fHistEtaTPCInAcc->GetEntries()>0){
             fHistEtaTPCInAcc->Rebin(2);
             TH1F *fHistEtaITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMI6InAcc");
             fHistEtaITSMI6InAcc->Rebin(2);
