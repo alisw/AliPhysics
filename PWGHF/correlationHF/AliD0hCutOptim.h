@@ -38,6 +38,7 @@ class AliD0hCutOptim : public TObject
     Float_t  d0pi;
     Float_t  d0xd0;
     Float_t  cosThPt;
+    Float_t  normLxy;
     Float_t  topom;
     
     ClassDef(AliD0hCutOptim,1);

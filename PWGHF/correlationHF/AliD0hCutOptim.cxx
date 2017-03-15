@@ -36,6 +36,7 @@ d0k(0),
 d0pi(0),
 d0xd0(0),
 cosThPt(0),
+normLxy(0),
 topom(0)
 {
 
