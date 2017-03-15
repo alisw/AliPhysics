@@ -2028,6 +2028,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 if (lCascadeResult->GetSwapV0MesonCharge() ){
                     lChargeNeg = +1;
                 }
+                if (lCascadeResult->GetSwapV0BaryonCharge() ){
+                    lChargePos = -1;
+                }
                 if (lCascadeResult->GetSwapBaryon() ){
                     lV0Mass = fTreeCascVarV0MassAntiLambda;
                     lNegdEdx = fTreeCascVarNegNSigmaProton;
@@ -2051,6 +2054,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 if (lCascadeResult->GetSwapV0MesonCharge() ){
                     lChargePos = -1;
                 }
+                if (lCascadeResult->GetSwapV0BaryonCharge() ){
+                    lChargeNeg = +1;
+                }
                 if (lCascadeResult->GetSwapBaryon() ){
                     lV0Mass = fTreeCascVarV0MassLambda;
                     lNegdEdx = fTreeCascVarNegNSigmaPion;
@@ -2073,6 +2079,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 if (lCascadeResult->GetSwapV0MesonCharge() ){
                     lChargeNeg = +1;
                 }
+                if (lCascadeResult->GetSwapV0BaryonCharge() ){
+                    lChargePos = -1;
+                }
                 if (lCascadeResult->GetSwapBaryon() ){
                     lV0Mass = fTreeCascVarV0MassAntiLambda;
                     lNegdEdx = fTreeCascVarNegNSigmaProton;
@@ -2094,6 +2103,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lV0Mass = fTreeCascVarV0MassAntiLambda;
                 if (lCascadeResult->GetSwapV0MesonCharge() ){
                     lChargePos = -1;
+                }
+                if (lCascadeResult->GetSwapV0BaryonCharge() ){
+                    lChargeNeg = +1;
                 }
                 if (lCascadeResult->GetSwapBaryon() ){
                     lV0Mass = fTreeCascVarV0MassLambda;
