@@ -293,7 +293,9 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig0->SetThresholdEG1(thEG1ADC);
         hfecalqaTrig0->SetThresholdEG2(thEG2ADC);
         hfecalqaTrig0->SetClusterTypeEMC(ClsTypeEMC);
+        if(ClsTypeEMC)hfecalqaTrig0->SetEMCalTriggerEG1(kTRUE);
         hfecalqaTrig0->SetClusterTypeDCAL(ClsTypeDCAL);
+        if(ClsTypeDCAL)hfecalqaTrig0->SetEMCalTriggerDG1(kTRUE);
         hfecalqaTrig0->SetCentralityMim(MimCent);
         hfecalqaTrig0->SetCentralityMax(MaxCent);
         hfecalqaTrig0->SetCentralityEstimator(centrality.Data());

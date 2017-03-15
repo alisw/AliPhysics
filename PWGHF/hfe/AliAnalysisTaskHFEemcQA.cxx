@@ -77,8 +77,8 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA(const char *name)
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
-fDCalDG1(kFALSE),
-fDCalDG2(kFALSE),
+  fDCalDG1(kFALSE),
+  fDCalDG2(kFALSE),
   fTracks_tender(0),
   fCaloClusters_tender(0),
   fMCparticle(0),
@@ -200,8 +200,8 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
-fDCalDG1(kFALSE),
-fDCalDG2(kFALSE),
+  fDCalDG1(kFALSE),
+  fDCalDG2(kFALSE),
   fTracks_tender(0),
   fCaloClusters_tender(0),
   fMCparticle(0),
@@ -742,8 +742,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   TString firedTrigger;
   TString TriggerEG1("EG1");
   TString TriggerEG2("EG2");
-    TString TriggerDG1("DG1");
-    TString TriggerDG2("DG2");
+  TString TriggerDG1("DG1");
+  TString TriggerDG2("DG2");
   fVevent->GetFiredTriggerClasses();
   if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
 
@@ -755,8 +755,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
   if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
   if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
-    if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
-    if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
+  if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
+  if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
 
   Int_t trigger = -1;
   if (fAOD){
