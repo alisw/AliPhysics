@@ -321,6 +321,39 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 	return hsparse;
 }
 
+THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const TBinning **axes, Option_t *opt){
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname));
+  if(!parent) parent = CreateHistoGroup(dirname);
+  if(parent->FindObject(hname)){
+    Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
+    return 0;
+  }
+  TArrayD xmin(ndim), xmax(ndim);
+  TArrayI nbins(ndim);
+  std::vector<TArrayD> binnings;
+  for(int idim = 0; idim < ndim; ++idim){
+    const TBinning &myaxis = *(axes[idim]);
+    TArrayD binEdges;
+    myaxis.CreateBinEdges(binEdges);
+    nbins[idim] = binEdges.GetSize()-1;
+    xmin[idim] = binEdges[0];
+    xmax[idim] = binEdges[binEdges.GetSize()-1];
+    binnings.push_back(binEdges);
+  }
+  THnSparseD *hsparse = new THnSparseD(hname, title, ndim, nbins.GetArray(), xmin.GetArray(), xmax.GetArray());
+  for(int id = 0; id < ndim; ++id){
+    TArrayD &binEdges = binnings[id];
+    hsparse->GetAxis(id)->Set(binEdges.GetSize()-1, binEdges.GetArray());
+  }
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    hsparse->Sumw2();
+  parent->Add(hsparse);
+  return hsparse;
+}
+
 void THistManager::CreateTProfile(const char* name, const char* title, int nbinsX, double xmin, double xmax, Option_t *opt) {
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname));
