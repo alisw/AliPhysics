@@ -158,6 +158,8 @@
 
 ClassImp(AliESDtrack)
 
+Bool_t AliESDtrack::fgTrackEMuAsPi = kTRUE;
+
 void SetPIDValues(Double_t * dest, const Double_t * src, Int_t n) {
   // This function copies "n" PID weights from "scr" to "dest"
   // and normalizes their sum to 1 thus producing conditional probabilities.
@@ -3298,7 +3300,7 @@ Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT
 Double_t AliESDtrack::GetMassForTracking() const
 {
   int pid = fPIDForTracking;
-  if (pid<AliPID::kPion) pid = AliPID::kPion;
+  if (pid<AliPID::kPion && fgTrackEMuAsPi) pid = AliPID::kPion;
   double m = AliPID::ParticleMass(pid);
   return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
 }
@@ -3843,4 +3845,11 @@ void AliESDtrack::SetImpactParametersTPC( const Float_t p[2], const Float_t cov[
   fCdzTPC = cov[1];
   fCzzTPC = cov[2];
   fCchi2TPC = chi2;
+}
+
+void  AliESDtrack::SetTrackEMuAsPi(Bool_t val)
+{
+  // when true, track mu and e with pion mass (run 2)
+  fgTrackEMuAsPi = val;
+  AliInfoClassF("Track e and mu with pion mass: %d",fgTrackEMuAsPi);
 }

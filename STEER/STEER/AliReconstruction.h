@@ -108,6 +108,7 @@ public:
   void           SetLoadAlignData(const char* detectors) 
     {fLoadAlignData = detectors;};
 
+  void           SetRun1PIDforTracking(Bool_t val=kTRUE);
   void           SetTreeBuffSize(Long64_t sz=30000000) {fTreeBuffSize = sz;}
   //*** Global reconstruction flag setters
   void SetRunMultFinder(Bool_t flag=kTRUE) {fRunMultFinder=flag;};

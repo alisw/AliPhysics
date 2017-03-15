@@ -5142,3 +5142,13 @@ Bool_t AliReconstruction::DecideFriendsStorage()
   //
   return isSelected;
 }
+
+//___________________________________________________
+void AliReconstruction::SetRun1PIDforTracking(Bool_t val)
+{
+  // set/unset pid for tracking as in Run1
+  AliInfoF("impose run1-like PID for tracking: %d",val);
+  AliESDpid::SetUseElectronExclusionBands(val); // true in run1
+  AliESDpid::SetNSpeciesForTracking(val ? AliPID::kSPECIES : AliPID::kSPECIESC); // 5/9 in run1/run2
+  AliESDtrack::SetTrackEMuAsPi(!val); // false/true in run1/run2
+}

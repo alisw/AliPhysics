@@ -51,7 +51,14 @@ AliESDpid& operator=(const AliESDpid& a){if (this==&a) return *this; AliPIDRespo
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
 
   void SetEventHandler(AliVEventHandler *event){fEventHandler=event;};
-protected:
+  
+  static void       SetUseElectronExclusionBands(Bool_t val);
+  static Bool_t     GetUseElectronExclusionBands()           {return fgUseElectronExclusionBands;}
+  static void       SetNSpeciesForTracking(Int_t n);
+  static Int_t      GetNSpeciesForTracking()                 {return fgNSpeciesForTracking;}
+
+
+ protected:
   virtual Float_t GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio=kFALSE) const;
   virtual Float_t GetNumberOfSigmasTOFold(const AliVParticle *track, AliPID::EParticleType type) const;
 
@@ -60,6 +67,9 @@ private:
   Float_t           fRangeTOFMismatch; // nSigma max for TOF matching with TPC
   AliVEventHandler *fEventHandler; //! MC event handler
 
+  static Bool_t     fgUseElectronExclusionBands; // if true, exclude electron tag in e/K and e/p crossing (a la Run1)
+  static Int_t      fgNSpeciesForTracking;       // number of species to consider for tracking PID
+  
   ClassDef(AliESDpid,7)  // PID calculation class
 };
 

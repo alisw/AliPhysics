@@ -39,6 +39,9 @@
 
 ClassImp(AliESDpid)
 
+Bool_t AliESDpid::fgUseElectronExclusionBands = kFALSE;
+Int_t  AliESDpid::fgNSpeciesForTracking = AliPID::kSPECIESC;
+
 Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t /*timeZeroTOF*/) const {
   //
   //  Calculate probabilities for all detectors, except if TPConly==kTRUE
@@ -407,7 +410,8 @@ void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
   // find max probability
   Float_t max=0.,min=1.e9;
   Int_t pid=-1;
-  for (Int_t i=0; i<AliPID::kSPECIESC; ++i) {
+  //  for (Int_t i=0; i<AliPID::kSPECIESC; ++i) {
+  for (Int_t i=0; i<fgNSpeciesForTracking; ++i) {  // ignore nuclei
     if (prob[i]>max) {pid=i; max=prob[i];}
     if (prob[i]<min) min=prob[i];
   }
@@ -417,6 +421,16 @@ void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
   //
   if (pid>AliPID::kSPECIESC-1 || (min>=max)) pid = AliPID::kPion;
   //
+  if (pid==0 && fgUseElectronExclusionBands) { // dE/dx "crossing points" in the TPC 
+    Double_t p = esdtr->GetP();
+    if ((p>0.38)&&(p<0.48)) {
+      if (prob[0]<prob[3]*10.) pid = AliPID::kKaon;
+    }
+    else if ((p>0.75)&&(p<0.85)) {
+      if (prob[0]<prob[4]*10.) pid = AliPID::kProton;
+    } 
+  }
+
   esdtr->SetPIDForTracking( pid );
   //
 }
@@ -431,5 +445,20 @@ void AliESDpid::MakePIDForTracking(AliESDEvent *event) const
     AliESDtrack *track = event->GetTrack(iTrk);
     SetPIDForTracking(track);
   }
+}
 
+//_________________________________________________________________________
+void AliESDpid::SetUseElectronExclusionBands(Bool_t val)
+{
+  // disable electron tag in e/K and e/p crossing (a la Run1)
+  fgUseElectronExclusionBands=val;
+  AliInfoClassF("Exclude electron tag in e/K and e/p crossings: %d",fgUseElectronExclusionBands);
+}
+
+//_________________________________________________________________________
+void AliESDpid::SetNSpeciesForTracking(Int_t n)
+{
+  // set max number of species to consider for tracking
+  fgNSpeciesForTracking = n>0 ? n : AliPID::kSPECIESC;
+  AliInfoClassF("First %d species will be considered for tracking PID",fgNSpeciesForTracking);
 }

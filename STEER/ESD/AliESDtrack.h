@@ -537,6 +537,9 @@ public:
   void   SetFriendTrackID(int id)      {fFrTrackID = UShort_t(id+1);}
   Int_t  GetFriendTrackID()      const {return Int_t(fFrTrackID)-1;}
 
+  static void   SetTrackEMuAsPi(Bool_t val);
+  static Bool_t GetTrackEMuAsPi()           {return fgTrackEMuAsPi;}
+  
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
@@ -678,11 +681,10 @@ protected:
   Int_t fNtofClusters;              // number of matchable TOF clusters 
   Int_t *fTOFcluster;               //[fNtofClusters]
                                     // TOF clusters matchable with the track
-
   //
  private:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
-
+  static Bool_t fgTrackEMuAsPi; // when true, track mu and e with pion mass (run 2)
   AliESDtrack & operator=(const AliESDtrack & );
   ClassDef(AliESDtrack,73)  //ESDtrack 
 };
