@@ -318,7 +318,7 @@ void AliHFInvMassFitter::DrawFit(){
   DrawHere(c0);
 }
 //______________________________________________________________________________
-void AliHFInvMassFitter::DrawHere(TVirtualPad* c){
+void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFitInfo){
   /// Core method to draw the fit output
   ///
 
@@ -336,31 +336,33 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c){
   if(fRflFunc) fRflFunc->Draw("same");
   if(fSecFunc) fSecFunc->Draw("same");
   if(fTotFunc) fTotFunc->Draw("same");
-  TPaveText *pinfos=new TPaveText(0.12,0.65,0.47,0.89,"NDC");
-  TPaveText *pinfom=new TPaveText(0.6,0.7,1.,.87,"NDC");
-  pinfos->SetBorderSize(0);
-  pinfos->SetFillStyle(0);
-  pinfom->SetBorderSize(0);
-  pinfom->SetFillStyle(0);
-  if(fTotFunc){
-    pinfom->SetTextColor(kBlue);
-    for(Int_t ipar=1; ipar<fNParsSig; ipar++){
-      pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
-    }
-    pinfom->Draw();
- 
-    Double_t nsigma=3;
-    Double_t bkg,errbkg;
-    Background(nsigma,bkg,errbkg);
-    Double_t signif,errsignif;
-    Significance(nsigma,signif,errsignif);
 
-    pinfos->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
-    pinfos->AddText(Form("B (%.0f#sigma) = %.0f #pm %.0f",nsigma,bkg,errbkg));
-    pinfos->AddText(Form("S/B = (%.0f#sigma) %.4f ",nsigma,fRawYield/bkg));
-    if(fRflFunc)  pinfos->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
-    pinfos->AddText(Form("Signif (%.0f#sigma) = %.1f #pm %.1f ",nsigma,signif,errsignif));
-    pinfos->Draw();
+  if(writeFitInfo > 0){
+    TPaveText *pinfos=new TPaveText(0.12,0.65,0.47,0.89,"NDC");
+    TPaveText *pinfom=new TPaveText(0.6,0.7,1.,.87,"NDC");
+    pinfos->SetBorderSize(0);
+    pinfos->SetFillStyle(0);
+    pinfom->SetBorderSize(0);
+    pinfom->SetFillStyle(0);
+    if(fTotFunc){
+      pinfom->SetTextColor(kBlue);
+      for(Int_t ipar=1; ipar<fNParsSig; ipar++){
+	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
+      }
+      pinfom->Draw();
+      
+      Double_t bkg,errbkg;
+      Background(nsigma,bkg,errbkg);
+      Double_t signif,errsignif;
+      Significance(nsigma,signif,errsignif);
+      
+      pinfos->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
+      pinfos->AddText(Form("B (%.0f#sigma) = %.0f #pm %.0f",nsigma,bkg,errbkg));
+      pinfos->AddText(Form("S/B = (%.0f#sigma) %.4f ",nsigma,fRawYield/bkg));
+      if(fRflFunc)  pinfos->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
+      pinfos->AddText(Form("Signif (%.0f#sigma) = %.1f #pm %.1f ",nsigma,signif,errsignif));
+      pinfos->Draw();
+    }
   }
   c->Update();
   return;
@@ -1051,6 +1053,86 @@ Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t 
 }
 
 
+// _______________________________________________________________________
+TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+
+  /// fill and return the residual and pull histos
+
+  Int_t binmi=fHistoInvMass->FindBin(fMinMass*1.001);
+  Int_t binma=fHistoInvMass->FindBin(fMaxMass*0.9999);
+  if(maxrange>minrange){
+    binmi=fHistoInvMass->FindBin(minrange*1.001);
+    binma=fHistoInvMass->FindBin(maxrange*0.9999);
+  }
+  if(hResidualTrend){
+    //fHistoInvMass->Copy(hResidualTrend);
+    hResidualTrend->SetBins(fHistoInvMass->GetNbinsX(),fHistoInvMass->GetXaxis()->GetXmin(),fHistoInvMass->GetXaxis()->GetXmax());
+    hResidualTrend->SetName(Form("%s_residualTrend",fHistoInvMass->GetName()));
+    hResidualTrend->SetTitle(Form("%s  (Residuals)",fHistoInvMass->GetTitle()));
+    hResidualTrend->SetMarkerStyle(20);
+    hResidualTrend->SetMarkerSize(1.0);
+    hResidualTrend->Reset();
+  }
+  if(hPullsTrend){
+    hPullsTrend->SetBins(fHistoInvMass->GetNbinsX(),fHistoInvMass->GetXaxis()->GetXmin(),fHistoInvMass->GetXaxis()->GetXmax());
+    hPullsTrend->Reset();
+    hPullsTrend->SetName(Form("%s_pullTrend",fHistoInvMass->GetName()));
+    hPullsTrend->SetTitle(Form("%s (Pulls)",fHistoInvMass->GetTitle()));
+    hPullsTrend->SetMarkerStyle(20);
+    hPullsTrend->SetMarkerSize(1.0);
+  }
+  if(hPulls){
+    hPulls->SetName(Form("%s_pulls",fHistoInvMass->GetName()));
+    hPulls->SetTitle(Form("%s ; Pulls",fHistoInvMass->GetTitle()));
+    hPulls->SetBins(40,-10,10);
+    hPulls->Reset();
+  }
+
+  Double_t res=-1.e-6,min=1.e+12,max=-1.e+12;
+  TArrayD *arval=new TArrayD(binma-binmi+1);
+  for(Int_t jst=1;jst<=fHistoInvMass->GetNbinsX();jst++){      
+    
+    res=fHistoInvMass->GetBinContent(jst)-fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst))/fHistoInvMass->GetBinWidth(jst);
+    if(jst>=binmi&&jst<=binma){
+      arval->AddAt(res,jst-binmi);
+      if(res<min)min=res;
+      if(res>max)max=res;
+    }
+    //      Printf("Res = %f from %f - %f",res,fHistoInvMass->GetBinContent(jst),fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst))/fHistoInvMass->GetBinWidth(jst));
+    if(hResidualTrend){
+      hResidualTrend->SetBinContent(jst,res);
+      hResidualTrend->SetBinError(jst,fHistoInvMass->GetBinError(jst));
+    }
+    if(hPulls){
+      if(jst>=binmi&&jst<=binma)hPulls->Fill(res/fHistoInvMass->GetBinError(jst));
+    }    
+    if(hPullsTrend){
+      hPullsTrend->SetBinContent(jst,res/fHistoInvMass->GetBinError(jst));
+      hPullsTrend->SetBinError(jst,0.0001);
+    }
+  }
+  if(hResidualTrend)hResidualTrend->GetXaxis()->SetRange(binmi,binma);
+  if(hPullsTrend){
+    hPullsTrend->GetXaxis()->SetRange(binmi,binma);
+    hPullsTrend->SetMinimum(-7);
+    hPullsTrend->SetMaximum(+7);
+  }
+  if(TMath::Abs(min)>TMath::Abs(max))max=min;
+
+  TH1F *hout=new TH1F(Form("%s_residuals",fHistoInvMass->GetName()),Form("%s ; residuals",fHistoInvMass->GetTitle()),25,-TMath::Abs(max)*1.5,TMath::Abs(max)*1.5);
+  for(Int_t j=0;j<binma-binmi+1;j++){
+    hout->Fill(arval->At(j));
+  }
+  hout->Sumw2();
+  hout->Fit("gaus","LEM","",-TMath::Abs(max)*1.2,TMath::Abs(max)*1.2);
+
+  if(hPulls){
+    hPulls->Sumw2();
+    hPulls->Fit("gaus","LEM","",-3,3);
+  }
+  delete arval;
+  return hout;
+}
 // _______________________________________________________________________
 void AliHFInvMassFitter::PrintFunctions(){
   /// dump the function parameters

@@ -103,9 +103,9 @@ public:
 
   /**
    * @brief Load the downscale factors run-by-run from the OCDB
-   * @param[in] doApply
+   * @param[in] doApply If true downscale factors are loaded from the OCDB
    */
-  void SetApplyDownscaleCorrectionFromOCDB(Bool_t doApply) { fUseDownscaleCorrectionFormOCDB = true; }
+  void SetApplyDownscaleCorrectionFromOCDB(Bool_t doApply) { fUseDownscaleCorrectionFormOCDB = doApply; }
 
   /**
    * @brief If true then noise events (events without recalc trigger patch above threshold) are

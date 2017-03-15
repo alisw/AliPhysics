@@ -3067,6 +3067,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0ForCutOptim(AliAODRecoDecayHF2Pr
     fBranchDCutVars->d0pi = (Float_t)TMath::Abs(d->Getd0Prong(0));
     fBranchDCutVars->d0xd0 = (Float_t)d->Prodd0d0();
     fBranchDCutVars->cosThPt = (Float_t)d->CosPointingAngle();
+    fBranchDCutVars->normLxy = (Float_t)d->NormalizedDecayLengthXY();
     fBranchDCutVars->topom = (Float_t)TMath::Abs(dd0max);
     fTreeD->Fill();
   } //end of if for tree filling
@@ -3084,6 +3085,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0ForCutOptim(AliAODRecoDecayHF2Pr
     fBranchDCutVars->d0pi = (Float_t)TMath::Abs(d->Getd0Prong(1));
     fBranchDCutVars->d0xd0 = (Float_t)d->Prodd0d0();
     fBranchDCutVars->cosThPt = (Float_t)d->CosPointingAngle();
+    fBranchDCutVars->normLxy = (Float_t)d->NormalizedDecayLengthXY();
     fBranchDCutVars->topom = (Float_t)TMath::Abs(dd0max);
     fTreeD->Fill();
   } //end of if for tree filling
@@ -3155,6 +3157,7 @@ void AliAnalysisTaskSED0Correlations::ResetBranchDForCutOptim() {
   fBranchDCutVars->d0pi = 0.;
   fBranchDCutVars->d0xd0 = 0.;
   fBranchDCutVars->cosThPt = 0.;
+  fBranchDCutVars->normLxy = 0;
   fBranchDCutVars->topom = 0.;
   
   return;
