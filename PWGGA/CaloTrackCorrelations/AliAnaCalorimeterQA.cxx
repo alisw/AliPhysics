@@ -3687,7 +3687,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhLambda0Lambda1[i][tm]  = new TH2F 
         (Form("hLambda0Lambda1_EBin%d%s",i,add[tm].Data()),
          Form("#lambda^{2}_{0} vs #lambda^{2}_{1}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         200,-1,1,ssbins,ssmin,ssmax); 
+         ssbins,ssmin,ssmax,ssbins,ssmin,ssmax); 
         fhLambda0Lambda1[i][tm]->SetXTitle("#lambda^{2}_{1}");
         fhLambda0Lambda1[i][tm]->SetYTitle("#lambda^{2}_{0}");
         outputContainer->Add(fhLambda0Lambda1[i][tm]);   
@@ -3725,9 +3725,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         outputContainer->Add(fhNCellsExoticityAllSameTCard[i][tm]); 
         
         fhLambda0Lambda1AllSameTCard[i][tm]  = new TH2F 
-        (Form("hLambda0Lambda1_EBin%d%s",i,add[tm].Data()),
+        (Form("hLambda0Lambda1AllSameTCard_EBin%d%s",i,add[tm].Data()),
          Form("#lambda^{2}_{0} vs #lambda^{2}_{1}, , all cells same TCard as leading, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         200,-1,1,ssbins,ssmin,ssmax); 
+         ssbins,ssmin,ssmax,ssbins,ssmin,ssmax); 
         fhLambda0Lambda1AllSameTCard[i][tm]->SetXTitle("#lambda^{2}_{1}");
         fhLambda0Lambda1AllSameTCard[i][tm]->SetYTitle("#lambda^{2}_{0}");
         outputContainer->Add(fhLambda0Lambda1AllSameTCard[i][tm]);   
