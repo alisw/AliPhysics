@@ -149,6 +149,8 @@ protected:
     
     AliAnalysisUtils* GetAnalysisUtils();
 
+public:
+  static Double_t kMinBCDistance;  //distance to nearest bad channel
 
 protected:
     // transient constants
@@ -162,7 +164,6 @@ protected:
 
     // cluster cut variables:
     static const Double_t kMinClusterEnergy;
-    static const Double_t kMinBCDistance;  //distance to nearest bad channel
     static const Int_t    kMinNCells;
     static const Double_t kMinM02;
 

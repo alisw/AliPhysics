@@ -69,7 +69,6 @@ const Double_t AliAnalysisTaskPi0Flow::kLogWeight         = 4.5 ;
 const Double_t AliAnalysisTaskPi0Flow::kAlphaCut          = 0.1 ;
 const Bool_t   AliAnalysisTaskPi0Flow::doESDReCalibration = kTRUE;
 const Double_t AliAnalysisTaskPi0Flow::kMinClusterEnergy  = 0.3;
-const Double_t AliAnalysisTaskPi0Flow::kMinBCDistance     = 2.5;
 const Int_t    AliAnalysisTaskPi0Flow::kMinNCells         = 3;
 const Double_t AliAnalysisTaskPi0Flow::kMinM02            = 0.2;
 const Int_t    AliAnalysisTaskPi0Flow::kNVtxZBins         = 1;
@@ -163,8 +162,9 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   // Initialize non-linrarity correction
   fNonLinCorr = new TF1("nonlib",rnlin,0.,40.,0);
 
-
-
+  // Initialize distance to bad channel
+  AliAnalysisTaskPi0Flow::kMinBCDistance     = 2.5;
+  
 }
 //___________________________________________________________________________
 AliAnalysisTaskPi0Flow::~AliAnalysisTaskPi0Flow()
