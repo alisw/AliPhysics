@@ -1372,6 +1372,22 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         fVZEROMult->Fill(RunBin+0.5,i+0.5,mult);
       }
       
+//      AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(aodEvent->FindListObject("Forward"));
+//      const TH2D& d2Ndetadphi = aodForward->GetHistogram();
+//      Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
+//      Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
+//      Double_t ret = 0.;
+//      // Loop over eta
+//      for (Int_t iEta = 1; iEta <= nEta; iEta++) {
+//        Int_t valid = d2Ndetadphi.GetBinContent(iEta, 0);
+//        if (!valid) continue; // No data expected for this eta
+//        // Loop over phi
+//        for (Int_t iPhi = 1; i <= nPhi; i++) {
+//          ret = d2Ndetadphi.GetBinContent(iEta, iPhi);
+//          printf("eta %e phi %e : %e \n",d2Ndetadphi.GetXaxis()->GetBinCenter(iEta),d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi),ret);
+//        }
+//      }
+      
       AliAODZDC *aodZDC = aod->GetZDCData();
       
       Double_t energyZNC  = (Double_t) (aodZDC->GetZNCEnergy());
