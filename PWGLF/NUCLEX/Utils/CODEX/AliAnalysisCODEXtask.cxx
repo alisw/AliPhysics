@@ -126,44 +126,17 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     mHeader.mT0mask[iB] = tofPID.GetT0binMask(iB);
   }
 
-  const AliESDVertex *vertex = event->GetPrimaryVertex();
-  if (!vertex) return;
-  if (fabs(vertex->GetZ()) > 10.f) return;
-  if (vertex->GetNContributors() < 1) return;
+  const AliESDVertex *vertex = static_cast<const AliESDVertex*>(mEventCuts.GetPrimaryVertex());
   mHeader.SetVertexZposition(vertex->GetZ());
 
   const unsigned short standard_mask = (Cuts.GetRequireTPCRefit()) ? kTPCrefit : 0;
 
-  float cent = -1.f;
-  switch (mCentralityMode) {
-    case 0:
-      {
-        AliCentrality *centrality = event->GetCentrality();
-        if (!centrality)  AliFatal(Form("Missing centrality object for mCentralityMode %i.", mCentralityMode));
-        cent = centrality->GetCentralityPercentile("V0A");
-        break;
-      }
-    case 1:
-      {
-        AliMultSelection *centrality = (AliMultSelection * ) event->FindListObject("MultSelection");
-        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        if (!centrality)  AliFatal(Form("Missing centrality object for mCentralityMode %i.", mCentralityMode));
-        cent = centrality->GetMultiplicityPercentile("V0M", kTRUE);//Event selection can be embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
-        break;
-      }
-    default:
-      AliFatal(Form("Centrality mode is not defined: %i.", mCentralityMode));
-      break;
-  }
-  if (cent < 0 || cent > 100) return;
+  float cent = mEventCuts.GetCentrality(0);
   mHeader.SetCentrality(cent);
 
   if (event->GetMagneticField() < 0) mHeader.mEventMask |= kNegativeB;
 
-  //
-  // Check Monte Carlo information and other access first:
-  //
-  //
+  /// Check Monte Carlo information and other access first:
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) {
     if (mMCtrue)
