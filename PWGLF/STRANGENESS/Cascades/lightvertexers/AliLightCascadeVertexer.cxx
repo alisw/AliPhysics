@@ -76,7 +76,13 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
        if (!v->GetOnFlyStatus() &&  fUseOnTheFlyV0) continue;
        
        //Fix incorrect storing of charges in on-the-fly V0s
-       if( fUseOnTheFlyV0 ) CheckChargeV0( v );
+       if( fUseOnTheFlyV0 ){
+           //Fix charge ordering
+           CheckChargeV0( v );
+           //Remove like-sign
+           if( v->GetParamN()->Charge() > 0 && v->GetParamP()->Charge() > 0 ) continue;
+           if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ) continue;
+       }
        
        if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fDV0min) continue;
        vtcs.AddLast(v);
