@@ -83,9 +83,9 @@ Int_t AliCascadeVertexerUncheckedCharges::V0sTracks2CascadeVertices(AliESDEvent 
         if( fUseOnTheFlyV0 ){
             //Fix charge ordering
             CheckChargeV0( v );
-            //Remove like-sign
-            if( v->GetParamN()->Charge() > 0 && v->GetParamP()->Charge() > 0 ) continue;
-            if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ) continue;
+            //Remove like-sign --- COMMENTED: THIS IS UNCHECKED CHARGES VERSION, user must check himself later! 
+            //if( v->GetParamN()->Charge() > 0 && v->GetParamP()->Charge() > 0 ) continue;
+            //if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ) continue;
         }
         
         if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fDV0min) continue;
