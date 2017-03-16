@@ -323,6 +323,13 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fEtaCutElectronBKLSMainSources_WithMotherW_NW(0)
 ,fUseGlobalTracksHadron(kTRUE)
 ,fCentralityValue(-1)
+,fPtMCpi0_all(0)
+,fPtMCeta_all(0)
+,fPtMCpi0_PhysicalPrimary(0)
+,fPtMCeta_PhysicalPrimary(0)
+,fPtMCpi0_Primary(0)
+,fPtMCeta_Primary(0)
+
 {
     //Named constructor
     // Define input and output slots here
@@ -551,6 +558,13 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fEtaCutElectronBKLSMainSources_WithMotherW_NW(0)
 ,fUseGlobalTracksHadron(kTRUE)
 ,fCentralityValue(-1)
+,fPtMCpi0_all(0)
+,fPtMCeta_all(0)
+,fPtMCpi0_PhysicalPrimary(0)
+,fPtMCeta_PhysicalPrimary(0)
+,fPtMCpi0_Primary(0)
+,fPtMCeta_Primary(0)
+
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -720,8 +734,8 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     
     for(Int_t i = 0; i < 3; i++)
     {
-        fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",100,0.3,15,100,-20,200);
-        fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",100,0.3,15,100,-15,10);
+        fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
+        fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
         
         fOutputList->Add(fTPC_p[i]);
         fOutputList->Add(fTPCnsigma_p[i]);
@@ -734,9 +748,9 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fOutputList->Add(fEtad[i]);
         fOutputList->Add(fNTracks[i]);
         
-        fNTracks_pt[i]= new  TH2F(Form("fNTracks_pt%d",i),"NTracks vs. pt",100, 0,5000, 100, 0, 10);
-        fNTracks_eta[i]= new  TH2F(Form("fNTracks_eta%d",i),"NTracks vs. pt",100, 0,5000, 100, -1.0, 1.0);
-        fNTracks_phi[i]= new  TH2F(Form("fNTracks_phi%d",i),"NTracks vs. pt",100, 0,5000, 100, 0, 5.0);
+        fNTracks_pt[i]= new  TH2F(Form("fNTracks_pt%d",i),"NTracks vs. p_{T}; NTracks; p_{T}",100, 0,5000, 100, 0, 10);
+        fNTracks_eta[i]= new  TH2F(Form("fNTracks_eta%d",i),"NTracks vs. #eta; NTracks; #eta",100, 0,5000, 100, -1.0, 1.0);
+        fNTracks_phi[i]= new  TH2F(Form("fNTracks_phi%d",i),"NTracks vs. #varph; NTracks; #varphi",100, 0,5000, 100, 0, TMath::Pi());
         
         
         fOutputList->Add(fNTracks_pt[i]);
@@ -884,6 +898,14 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fOutputList->Add(fHadronsRecoPP);
         fOutputList->Add(fHadronsGenerated);
         
+        
+        //Add MC pT of Pi0, eta
+        fPtMCpi0_all = new TH1F("fPtMCpi0_all","#pi^{0} distribution from MC using all particles;p_{t} (GeV/c);Count",2000,0,100);
+        fPtMCeta_all = new TH1F("fPtMCeta_all","#eta distribution from MC using all particle;p_{T} (GeV/c);Count",2000,0,100);
+        fPtMCpi0_PhysicalPrimary = new TH1F("fPtMCpi0_PhysicalPrimary","#pi^{0} distribution from MC using physical primary particles;p_{t} (GeV/c);Count",2000,0,100);
+        fPtMCeta_PhysicalPrimary = new TH1F("fPtMCeta_PhysicalPrimary","#eta distribution from MC using physical primary particles;p_{T} (GeV/c);Count",2000,0,100);
+        fPtMCpi0_Primary = new TH1F("fPtMCpi0_Primary","#pi^{0} distribution from MC using primary particles;p_{t} (GeV/c);Count",2000,0,100);
+        fPtMCeta_Primary = new TH1F("fPtMCeta_Primary","#eta distribution from MC using primary particles;p_{T} (GeV/c);Count",2000,0,100);
         
         
     }
@@ -1126,6 +1148,19 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
     //total event before event selection
     fNevent->Fill(1);
     
+    //Physics Selection + Pileup rejection from Task
+    
+    if (fAOD->GetRunNumber()>200000 && !fIsMC)
+    {
+        UInt_t fSelectMask = fInputHandler->IsEventSelected();
+        Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
+        
+        if (!isINT7selected){
+            fNevent2->Fill(25);
+            return;
+        }
+    }
+
     //______________________________________________________________________
     //Vertex Selection
     if(!fIspp){
@@ -1331,6 +1366,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         Int_t fNOtrks2 =  fAOD->GetNumberOfTracks();
         if(fNOtrks2<2) return;
     }
+    
     fNevent->Fill(12);
     
     
@@ -1428,19 +1464,40 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             
             
             fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
-            
+            Int_t ParticlePDG = TMath::Abs(fMCparticle->GetPdgCode());
             Double_t EtaMC = fMCparticle->Eta();
-            if (fMCparticle->Charge() == 0) continue;
             
+            //Check Pi0 and eta spectra in MC
+            
+            if(EtaMC>=-0.8 && EtaMC<=0.8)
+            {
+                if(fMCparticle->IsPrimary())
+                {
+                    if(ParticlePDG==111) fPtMCpi0_Primary->Fill(fMCparticle->Pt());
+                    if(ParticlePDG==221) fPtMCeta_Primary->Fill(fMCparticle->Pt());
+                }
+                
+                if(fMCparticle->IsPhysicalPrimary())
+                {
+                    if(ParticlePDG==111) fPtMCpi0_PhysicalPrimary->Fill(fMCparticle->Pt());
+                    if(ParticlePDG==221) fPtMCeta_PhysicalPrimary->Fill(fMCparticle->Pt());
+                }
+                
+                if(ParticlePDG==111) fPtMCpi0_all->Fill(fMCparticle->Pt());
+                if(ParticlePDG==221) fPtMCeta_all->Fill(fMCparticle->Pt());
+            }
+            
+            if (fMCparticle->Charge() == 0) continue;
             //Save the pT of all Charged hadrons in the acceptance (This is the denominator of the efficiency)
             if (fMCparticle->IsPhysicalPrimary())
                 fHadronsGenerated->Fill(fMCparticle->Pt(),EtaMC, fZvtx);
             
             if(fMCparticle->Pt() < fMinpTElec || fMCparticle->Pt() > fMaxpTElec) continue;
             
-            Int_t ParticlePDG = TMath::Abs(fMCparticle->GetPdgCode());
+            
             Int_t MotherPDG = -999;
             
+            //electron correlation
             if (ParticlePDG == 11)
             {
                 if (fMCparticle->IsPhysicalPrimary())
@@ -1615,7 +1672,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fTPC_momentum->Fill(fP,fTPCsignal);
         fTPC_eta->Fill(EtaTrig,fTPCsignal);
         
-        
         fTPC_p[0]->Fill(fPt,fTPCsignal);
         fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
         Float_t TPCNcls = track->GetTPCNcls();
@@ -1667,7 +1723,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         }
         
         
-        if(track->Pt()< fMinpTElec || EtaTrig> fMaxpTElec) continue;
         
         
         //RecKine: ITSTPC cuts
@@ -1708,7 +1763,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fTPC_p[1]->Fill(fPt,fTPCsignal);
         fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
         TPCNcls = track->GetTPCNcls();
-        Float_t pos2[3]={0,0,0};
         
         //______________________________________________________________
         // Vertex
@@ -1736,9 +1790,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             }
         }
         
-        ///QA plots after track selection
-        ///_____________________________________________________________
-        
         //_______________________________________________________
         //Correlation Analysis - DiHadron
         if(fTPCnSigma < 3.5 && fCorrelationFlag)
@@ -1747,10 +1798,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             DiHadronCorrelation(track, iTracks);
         }
         
-        
-        //if(fPt>1 && fPt<2) fTOF01->Fill(fTOFnSigma,fTPCnSigma);
-        //if(fPt>2 && fPt<4) fTOF02->Fill(fTOFnSigma,fTPCnSigma);
-        //if(fPt>4 && fPt<6) fTOF03->Fill(fTOFnSigma,fTPCnSigma);
         
         ///________________________________________________________________________
         ///PID
@@ -1766,10 +1813,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fpid->Fill(pidpassed);
         
         if(pidpassed==0) continue;
-        
-        
-        ///________________________________________________________________________
-        
+
         
         //______________________________________________________________
         // Vertex
@@ -1785,7 +1829,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         
         //_______________________________________________________
         //Correlation Analysis
-        
         
         
         fPtElec_Inc->Fill(fPt);
@@ -1804,7 +1847,11 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fDCAElectronXY[0]->Fill(DCAxy);
         fDCAElectronZ[0]->Fill(DCAz);
         
+        fEtad[2]->Fill(EtaTrig);
+        fTPC_p[2]->Fill(fPt,fTPCsignal);
+        fTPCnsigma_p[2]->Fill(fP,fTPCnSigma);
         
+        if(track->Pt()< fMinpTElec || track->Pt() > fMaxpTElec) continue;
         
         ElectronHadronCorrelation(track, iTracks, Vtrack);
         
@@ -1917,7 +1964,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     fNonHFE->SetAlgorithm("DCA"); //KF
     
     fNonHFE->SetUseGlobalTracks();
-    //fNonHFE->SetNClustITS(2); Remove ITS cut from the partner. It generates aditional problems for NonID Background subtraction. 
+    //fNonHFE->SetNClustITS(2); Remove ITS cut from the partner. It generates aditional problems for NonID Background subtraction.
     fNonHFE->SetDCAPartnerCuts(fDCAcutr, fDCAcutz);
     fNonHFE->SetEtaCutForPart(fEtaCutMin, fEtaCutMax);
     fNonHFE->SetTPCNclsForPID(60);

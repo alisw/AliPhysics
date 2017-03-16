@@ -397,6 +397,13 @@ private:
     TH1F                *fEtaCutElectronBKULSMainSources_WithMotherW_NW; //!
     TH1F                *fEtaCutElectronBKLSMainSources_WithMotherW; //!
     TH1F                *fEtaCutElectronBKLSMainSources_WithMotherW_NW; //!
+    //Background weight calculation
+    TH1F                *fPtMCpi0_all; //!
+    TH1F                *fPtMCeta_all; //!
+    TH1F                *fPtMCpi0_PhysicalPrimary; //!
+    TH1F                *fPtMCeta_PhysicalPrimary; //!
+    TH1F                *fPtMCpi0_Primary; //!
+    TH1F                *fPtMCeta_Primary; //!
     
     //DPhi MC
     TH2F                **fCEtaPhiNoEtaCutInclusive;  //!
@@ -427,7 +434,7 @@ private:
     AliAnalysisTaskHFEpACorrelation(const AliAnalysisTaskHFEpACorrelation&); 			// not implemented
     AliAnalysisTaskHFEpACorrelation& operator=(const AliAnalysisTaskHFEpACorrelation&); 		// not implemented
     
-    ClassDef(AliAnalysisTaskHFEpACorrelation, 1); 								// example of analysis
+    ClassDef(AliAnalysisTaskHFEpACorrelation, 2); 								// example of analysis
     //______________________________________________________________________
 };
 
