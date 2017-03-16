@@ -4162,7 +4162,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         else if( fCurrentMC == k15h2 )
           energy /= FunctionNL_kSDM(energy, 0.969703*0.989*0.9969*0.9991, -3.80387, -0.200546);
 
-        else if( fCurrentMC == k16c2 )
+        else if( fCurrentMC == k16c2 || fCurrentMC == k16c2_plus )
           energy /= FunctionNL_kSDM(energy, 0.974859*0.987*0.996, -3.85842, -0.405277);
 
         // 2.76TeV LHC11a/LHC13g
@@ -4202,7 +4202,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         else if( fCurrentMC == k15h2 )
           energy /= FunctionNL_kSDM(energy, 0.96105*0.999*0.9996, -3.62239, -0.556256);
 
-        else if( fCurrentMC == k16c2 )
+        else if( fCurrentMC == k16c2 || fCurrentMC == k16c2_plus )
           energy /= FunctionNL_kSDM(energy, 0.960596*0.999*0.999, -3.48444, -0.766862);
 
         // 2.76TeV LHC11a/LHC13g
@@ -4238,7 +4238,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     // NonLinearity ConvCalo - kPi0MC + kSDM
     case 15:
       // 8TeV LHC12x
-      if ( fCurrentMC==k14e2a || fCurrentMC==k14e2b  || fCurrentMC==k14e2c || fCurrentMC == k15h1 || fCurrentMC == k15h2  || fCurrentMC == k12pp8TeV || fCurrentMC == k16c2 ){
+      if ( fCurrentMC==k14e2a || fCurrentMC==k14e2b  || fCurrentMC==k14e2c || fCurrentMC == k15h1 || fCurrentMC == k15h2  || fCurrentMC == k12pp8TeV || fCurrentMC == k16c2 || fCurrentMC == k16c2_plus ){
         energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04979, 1.3, 0.0967998, 219.381, 63.1604, 1.011);
         if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9846, -3.319, -2.033);
       
@@ -4256,7 +4256,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     // NonLinearity Calo - kPi0MC + kSDM
     case 16:
       // 8TeV LHC12x
-      if ( fCurrentMC==k14e2a || fCurrentMC==k14e2b  || fCurrentMC==k14e2c || fCurrentMC == k15h1 || fCurrentMC == k15h2  || fCurrentMC == k12pp8TeV || fCurrentMC == k16c2 ){
+      if ( fCurrentMC==k14e2a || fCurrentMC==k14e2b  || fCurrentMC==k14e2c || fCurrentMC == k15h1 || fCurrentMC == k15h2  || fCurrentMC == k12pp8TeV || fCurrentMC == k16c2 || fCurrentMC == k16c2_plus ){
         energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06539, 1.121, 0.0967998, 219.381, 63.1604, 1.011);
         if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9676, -3.216, -0.6828);
       
@@ -4292,7 +4292,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
           energy /= (FunctionNL_DPOW(energy, 1.0654169768, -0.0935785719, -0.1137883054, 1.1814766150, -0.1980098061, -0.0854569214) - 0.0138);
         else if( fCurrentMC == k15h2 )
           energy /= (FunctionNL_DPOW(energy, 1.0652493513, -0.0929276101, -0.1113762695, 1.1837801885, -0.1999914832, -0.0854569214) - 0.0145);
-        else if( fCurrentMC == k16c2 )
+        else if( fCurrentMC == k16c2 || fCurrentMC == k16c2_plus )
           energy /= (FunctionNL_DPOW(energy, 1.0489259285, -0.0759079646, -0.1239772934, 1.1835846739, -0.1998987993, -0.0854186691) - 0.014);
         // 7 TeV
         else if( fCurrentMC == k14j4 )
@@ -4321,7 +4321,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
           energy /= (FunctionNL_DPOW(energy, 1.1389201636, -0.1999994717, -0.1622237979, 1.1603460704, -0.1999999989, -0.2194447313) - 0.0025);
         else if( fCurrentMC == k15h2 )
           energy /= (FunctionNL_DPOW(energy, 1.0105301622, -0.0732424689, -0.5000000000, 1.0689250170, -0.1082682369, -0.4388156470) - 0.001);
-        else if( fCurrentMC == k16c2 )
+        else if( fCurrentMC == k16c2 || fCurrentMC == k16c2_plus )
           energy /= (FunctionNL_DPOW(energy, 0.9922456908, -0.0551212559, -0.5000000000, 1.0513459039, -0.0894163252, -0.5000000000) + 0.002);
         // 7 TeV
         else if( fCurrentMC == k14j4 )
@@ -4627,6 +4627,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC14j4e")==0 ||
             namePeriod.CompareTo("LHC14j4f")==0)        return k14j4;
   else if ( namePeriod.CompareTo("LHC16c2") == 0 )      return k16c2;
+  else if ( namePeriod.CompareTo("LHC16c2_plus") == 0 ) return k16c2_plus;
   else if ( namePeriod.CompareTo("LHC16c3a") == 0 )     return k16c3a;
   else if ( namePeriod.CompareTo("LHC16c3b") == 0 )     return k16c3b;
   else if ( namePeriod.CompareTo("LHC16c3c") == 0 )     return k16c3c;

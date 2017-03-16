@@ -115,6 +115,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15h1,         // anchored LHC12[a-h] pass 2
         kLHC15h2,         // anchored LHC12[a-h] pass 2
         kLHC16c2,         // anchored LHC12[a-h] pass 2 - JJ
+        kLHC16c2_plus,    // anchored LHC12[a-h] pass 2 - JJ - additional stat
         
         // 2013
         kLHC13bc,         // pPb 5.023TeV
@@ -540,7 +541,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,26)
+      ClassDef(AliConvEventCuts,27)
 };
 
 
