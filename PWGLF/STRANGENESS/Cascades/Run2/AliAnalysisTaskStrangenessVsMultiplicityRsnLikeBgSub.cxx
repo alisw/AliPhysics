@@ -1368,7 +1368,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
 
     Long_t ncascades = 0;
     ncascades = lESDevent->GetNumberOfCascades();
-
+    Long_t lNumberOfLikeSignV0s = 0;
+    
     for (Int_t iXi = 0; iXi < ncascades; iXi++) {
         //------------------------------------------------
         // Initializations
@@ -1530,6 +1531,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
     
         if( bachTrackXi->GetSign() < 0 ) lBachTrackSign = -1;
         if( bachTrackXi->GetSign() > 0 ) lBachTrackSign = +1;
+        
+        if ( lNegTrackSign == lPosTrackSign ) lNumberOfLikeSignV0s++;
         
         //------------------------------------------------
         // TPC dEdx information
@@ -2195,6 +2198,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
     }// end of the Cascade loop (ESD or AOD)
+    
+    Info("StrVsMultRsnLikeBgSub","Number of like-sign V0s found: %d",lNumberOfLikeSignV0s);
 
     // Post output data.
     PostData(1, fListHist    );

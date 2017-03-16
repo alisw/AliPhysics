@@ -74,6 +74,7 @@ Int_t AliCascadeVertexerUncheckedCharges::V0sTracks2CascadeVertices(AliESDEvent 
     //stores relevant V0s in an array
     TObjArray vtcs(nV0);
     Int_t i;
+    Long_t lNumberOfLikeSignV0s = 0;
     for (i=0; i<nV0; i++) {
         AliESDv0 *v=event->GetV0(i);
         if ( v->GetOnFlyStatus() && !fUseOnTheFlyV0) continue;
@@ -84,13 +85,14 @@ Int_t AliCascadeVertexerUncheckedCharges::V0sTracks2CascadeVertices(AliESDEvent 
             //Fix charge ordering
             CheckChargeV0( v );
             //Remove like-sign --- COMMENTED: THIS IS UNCHECKED CHARGES VERSION, user must check himself later! 
-            //if( v->GetParamN()->Charge() > 0 && v->GetParamP()->Charge() > 0 ) continue;
-            //if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ) continue;
+            if( v->GetParamN()->Charge() > 0 && v->GetParamP()->Charge() > 0 ) lNumberOfLikeSignV0s++;
+            if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ) lNumberOfLikeSignV0s++;
         }
         
         if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fDV0min) continue;
         vtcs.AddLast(v);
     }
+    Info("V0sTracks2CascadeVertices","Number of like-sign V0s used: %d",lNumberOfLikeSignV0s);
     nV0=vtcs.GetEntriesFast();
     
     // stores relevant tracks in another array
