@@ -128,7 +128,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireMinEnergyLoss{0.}
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}
-   ,fRequireTrackLength{350.f}
    ,fFixForLHC14a6{true}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
@@ -145,16 +144,12 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCAPrimary{{nullptr}}
    ,fDCASecondary{{nullptr}}
    ,fDCASecondaryWeak{{nullptr}}
-   ,fITSeLoss{nullptr}
    ,fTOFsignal{nullptr}
    ,fTPCcounts{nullptr}
-   ,fTPCeLoss{nullptr}
-   ,fTPCeLossSelected{nullptr}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
    ,fTOFtemplates{nullptr}
-   ,fEnableFlattening{true}
-   ,fEnableLogAxisInPerformancePlots{true} {
+   ,fEnableFlattening{true} {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
@@ -245,25 +240,9 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
       fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);p_{T} (GeV/c); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
-      fTPCeLoss[iC] = new TH2F(Form("f%cTPCeLoss",letter[iC]),";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
-          2400,0,2400);
-      fTPCeLossSelected[iC] = new TH2F(Form("f%cTPCeLossSelected",letter[iC]),";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
-          2400,0,2400);
-      if (fEnableLogAxisInPerformancePlots) {
-        BinLogAxis(fTPCeLoss[iC]);
-        BinLogAxis(fTPCeLossSelected[iC]);
-      }
 
       fList->Add(fTOFsignal[iC]);
-      fList->Add(fTPCeLoss[iC]);
-      fList->Add(fTPCeLossSelected[iC]);
       fList->Add(fTPCcounts[iC]);
-
-      fITSeLoss[iC] = new TH2F(Form("f%cITSeLoss",letter[iC]),";p (GeV/c);ITS dE/dx (keV/300#mum);Entries",196 * 2,0.2,10.,
-          1400,0,1400);
-      if (fEnableLogAxisInPerformancePlots)
-        BinLogAxis(fITSeLoss[iC]);
-      fList->Add(fITSeLoss[iC]);
 
       for (int iT = 0; iT < 2; ++iT) {
         fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
@@ -287,7 +266,6 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   if (fTOFfunctionPars.GetSize() == 4)
     fTOFfunction->SetParameters(fTOFfunctionPars.GetArray());
 
-  fEventCut.AddQAplotsToList(fList);
   AliPDG::AddParticlesToPdgDataBase();
   PostData(1,fList);
 }
@@ -364,7 +342,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (track->GetID() <= 0) continue;
     Double_t dca[2];
     if (!AcceptTrack(track,dca)) continue;
-    const float beta = HasTOF(track);
+    const float beta = HasTOF(track,fPID);
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
     if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
@@ -392,16 +370,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
     } else {
-      const int iC = (track->Charge() > 0) ? 1 : 0;
-      fTPCeLoss[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
-
-      unsigned int nSPD = 0u, nSDD = 0u, nSSD = 0u;
-      int nITS = GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
-      if (nITS - nSPD >= 3)
-        fITSeLoss[iC]->Fill(track->P(), track->GetITSsignal());
-
       if (!PassesPIDSelection(track)) continue;
-      fTPCeLossSelected[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      const int iC = (track->Charge() > 0) ? 1 : 0;
 
       float tpc_n_sigma = GetTPCsigmas(track);
       float tof_n_sigma = iTof ? fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, fParticle) : -999.f;
@@ -493,21 +463,18 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
 /// \param track Track that has to be checked
 /// \return \f$\beta\f$ of the particle, -1 means that there is no correct prolongation in TOF.
 ///
-float AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track) {
+float AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track, AliPIDResponse *pid) {
   bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
   bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
   const float len = track->GetIntegratedLength();
-  bool hasTOF = Bool_t(hasTOFout & hasTOFtime) && (len > fRequireTrackLength);
+  bool hasTOF = Bool_t(hasTOFout & hasTOFtime) && (len > 350.);
 
   if (!hasTOF) return -1.;
   const float p = track->GetTPCmomentum();
-  const float tim = track->GetTOFsignal() - fPID->GetTOFResponse().GetStartTime(p);
+  const float tim = track->GetTOFsignal() - pid->GetTOFResponse().GetStartTime(p);
   if (tim < len / LIGHT_SPEED) return -1.;
   else {
     const float beta = len / (tim * LIGHT_SPEED);
-    //if (beta < EPS || beta > (1. - EPS))
-    //  return -1.f;
-    //else
     return beta;
   }
 }
