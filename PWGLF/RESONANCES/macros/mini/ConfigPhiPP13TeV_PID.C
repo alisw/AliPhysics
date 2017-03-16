@@ -76,8 +76,8 @@ Bool_t ConfigPhiPP13TeV_PID
   /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
   /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
   /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
-  /* cos(theta) E     */ Int_t cteID  = task->CreateValue(AliRsnMiniValue::kCosThetaToEventPlane,kFALSE);
-  /* cos(theta) E (MC)*/ Int_t ctemID  = task->CreateValue(AliRsnMiniValue::kCosThetaToEventPlane,kTRUE);
+
+  Int_t phiv = task->CreateValue(AliRsnMiniValue::kPhiV,kFALSE);
 
   
   // -- Create all needed outputs -----------------------------------------------------------------
@@ -130,9 +130,8 @@ Bool_t ConfigPhiPP13TeV_PID
     // axis J: rapidity
     // out->AddAxis(yID, 10, -0.5, 0.5);
 
-    if (polarizationOpt.Contains("J")) out->AddAxis(ctjID,20,-1.,1);
-    if (polarizationOpt.Contains("T")) out->AddAxis(cttID,20,-1.,1);
-    if (polarizationOpt.Contains("E")) out->AddAxis(cteID,20,-1.,1);
+    if (polarizationOpt.Contains("J")) out->AddAxis(ctjID,21,-1.,1);
+    if (polarizationOpt.Contains("T")) out->AddAxis(cttID,21,-1.,1);
   }
 
   if(isMC){   
@@ -147,9 +146,8 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->AddAxis(ptID,200,0.,20.);
     if(!isPP || MultBins) outm->AddAxis(centID,100,0.,100.);
     else outm->AddAxis(centID,161,-0.5,160.5);
-    if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,20,-1.,1.);
-    if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,20,-1.,1.);
-    if (polarizationOpt.Contains("E")) outm->AddAxis(ctemID,20,-1.,1.);
+    if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
+    if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
 
     AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"SPARSE","MOTHER");
     outmf->SetDaughter(0,AliRsnDaughter::kKaon);
@@ -161,10 +159,8 @@ Bool_t ConfigPhiPP13TeV_PID
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
     if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
     else outmf->AddAxis(centID,161,-0.5,160.5);
-    if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,20,-1.,1.);
-    if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,20,-1.,1.);
-    if (polarizationOpt.Contains("E")) outmf->AddAxis(ctemID,20,-1.,1.);
-
+    if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);
+    if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,21,-1.,1.);
 
     //get phase space of the decay from mothers
     AliRsnMiniOutput* outps=task->CreateOutput(Form("phi_phaseSpace%s", suffix),"HIST","TRUE");
@@ -205,9 +201,8 @@ Bool_t ConfigPhiPP13TeV_PID
       outreflex->AddAxis(ptID,200,0.,20.);
       if(!isPP) outreflex->AddAxis(centID,100,0.,100.);
       else outreflex->AddAxis(centID,400,0.5,400.5);
-      if (polarizationOpt.Contains("J")) outreflex->AddAxis(ctjID,20,-1.,1.);
-      if (polarizationOpt.Contains("T")) outreflex->AddAxis(cttID,20,-1.,1.);
-      if (polarizationOpt.Contains("E")) outreflex->AddAxis(cteID,20,-1.,1.);
+      if (polarizationOpt.Contains("J")) outreflex->AddAxis(ctjID,21,-1.,1.);
+      if (polarizationOpt.Contains("T")) outreflex->AddAxis(cttID,21,-1.,1.);
     }//end reflections
   }//end MC
 
