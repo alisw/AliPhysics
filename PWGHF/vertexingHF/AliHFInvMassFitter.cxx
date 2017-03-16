@@ -280,10 +280,19 @@ Bool_t AliHFInvMassFitter::MassFitter(Bool_t draw){
     printf("   ---> Failed fit with signal+background, minuit status = %d\n",status);
     return kFALSE;
   }
-  for(Int_t ipar=0; ipar<fNParsBkg; ipar++) fBkgFuncRefit->SetParameter(ipar,fTotFunc->GetParameter(ipar));
-  for(Int_t ipar=0; ipar<fNParsSig; ipar++) fSigFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar+fNParsBkg));
+  for(Int_t ipar=0; ipar<fNParsBkg; ipar++){
+    fBkgFuncRefit->SetParameter(ipar,fTotFunc->GetParameter(ipar));
+    fBkgFuncRefit->SetParError(ipar,fTotFunc->GetParError(ipar));
+  }
+  for(Int_t ipar=0; ipar<fNParsSig; ipar++){
+    fSigFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar+fNParsBkg));
+    fSigFunc->SetParError(ipar,fTotFunc->GetParError(ipar+fNParsBkg));
+  }
   if(fSecondPeak){
-    for(Int_t ipar=0; ipar<fNParsSec; ipar++)fSecFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar+fNParsBkg+fNParsSig));
+    for(Int_t ipar=0; ipar<fNParsSec; ipar++){
+      fSecFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar+fNParsBkg+fNParsSig));
+      fSecFunc->SetParError(ipar,fTotFunc->GetParError(ipar+fNParsBkg+fNParsSig));
+    }
     fSecFunc->SetLineColor(kMagenta+1);
     fSecFunc->SetLineStyle(3);
   }
@@ -292,8 +301,12 @@ Bool_t AliHFInvMassFitter::MassFitter(Bool_t draw){
       fRflFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar+fNParsBkg+fNParsSig+fNParsSec));
       fRflFunc->SetParError(ipar,fTotFunc->GetParError(ipar+fNParsBkg+fNParsSig+fNParsSec));
       fBkRFunc->SetParameter(ipar+fNParsBkg,fTotFunc->GetParameter(ipar+fNParsBkg+fNParsSig+fNParsSec));
+      fBkRFunc->SetParError(ipar+fNParsBkg,fTotFunc->GetParError(ipar+fNParsBkg+fNParsSig+fNParsSec));
     }
-    for(Int_t ipar=0; ipar<fNParsBkg; ipar++) fBkRFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar));
+    for(Int_t ipar=0; ipar<fNParsBkg; ipar++){
+      fBkRFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar));
+      fBkRFunc->SetParError(ipar,fTotFunc->GetParError(ipar));
+    }
     fRflFunc->SetLineColor(kGreen+1);
     fBkRFunc->SetLineColor(kRed+1);
     fBkRFunc->SetLineStyle(7);
