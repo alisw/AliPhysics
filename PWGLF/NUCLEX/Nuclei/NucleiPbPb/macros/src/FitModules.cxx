@@ -224,3 +224,4 @@ FitExpPolTailGaus::~FitExpPolTailGaus() {
   delete mSigCounts;
   delete mTemplate;
 }
+// this comment serves no purpose
