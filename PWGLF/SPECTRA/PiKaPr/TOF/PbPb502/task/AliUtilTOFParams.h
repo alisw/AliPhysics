@@ -27,7 +27,7 @@ namespace AliUtilTOFParams {
   const Double_t fDCAXYRange = 3.;
   const Double_t fDCAZRange = 3.;
   //DCA binning in histograms 
-  const Int_t fDCAXYbins = 1000;
+  const Int_t fDCAXYbins = 2000;
   
   //Dimensions of the screen
   const Double_t screendim[2] = {1366, 768};

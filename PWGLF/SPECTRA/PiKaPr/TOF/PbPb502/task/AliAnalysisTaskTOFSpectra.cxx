@@ -614,12 +614,12 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     
     hEvtMult = new TH1D("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
     if(hEvtMult->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMult->GetXaxis()->GetBinWidth(100)));
-    if(hEvtMult->GetXaxis()->GetBinCenter(1) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMult->GetXaxis()->GetBinCenter(1)));
+    if(hEvtMult->GetXaxis()->GetBinCenter(hEvtMult->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMult->GetXaxis()->GetBinCenter(1)));
     fListHist->AddLast(hEvtMult);
     
     hEvtMultAftEvSel = new TH1D("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
     if(hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100)));
-    if(hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1)));
+    if(hEvtMultAftEvSel->GetXaxis()->GetBinCenter(hEvtMultAftEvSel->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1)));
     fListHist->AddLast(hEvtMultAftEvSel);
     
     hEvtVtxXY = new TH1F("hEvtVtxXY", "XY primary vertex distance;(x^2+y^2)^(1/2) (cm);Counts", 100, -5., 5.);
@@ -1034,12 +1034,12 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
         //*****
         for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
           for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
-            hDCAxy[charge][species][ptbin][mult] = new TH1F(Form("hDCAxy%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1], mult), fDCAXYbins, DCAXYbin);
+            hDCAxy[charge][species][ptbin][mult] = new TH1F(Form("hDCAxy%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1], mult), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
             hDCAxy[charge][species][ptbin][mult]->Sumw2();
             fListHist->AddLast(hDCAxy[charge][species][ptbin][mult]);
             
             if(!fBuilDCAchi2) continue;
-            hDCAxyGoldenChi2[charge][species][ptbin][mult] = new TH1F(Form("hDCAxyGoldenChi2%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy w Golden Chi2 Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1], mult), fDCAXYbins, DCAXYbin);
+            hDCAxyGoldenChi2[charge][species][ptbin][mult] = new TH1F(Form("hDCAxyGoldenChi2%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy w Golden Chi2 Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1], mult), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
             hDCAxyGoldenChi2[charge][species][ptbin][mult]->Sumw2();
             fListHist->AddLast(hDCAxyGoldenChi2[charge][species][ptbin][mult]);
           }
@@ -1084,15 +1084,15 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
           //*****
           
           for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
-            hDCAxyPrimMC[charge][species][ptbin] = new TH1F(Form("hDCAxyPrimMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, DCAXYbin);
+            hDCAxyPrimMC[charge][species][ptbin] = new TH1F(Form("hDCAxyPrimMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
             hDCAxyPrimMC[charge][species][ptbin]->Sumw2();
             fListHist->AddLast(hDCAxyPrimMC[charge][species][ptbin]);
             
-            hDCAxySecStMC[charge][species][ptbin] = new TH1F(Form("hDCAxySecStMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, DCAXYbin);
+            hDCAxySecStMC[charge][species][ptbin] = new TH1F(Form("hDCAxySecStMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
             hDCAxySecStMC[charge][species][ptbin]->Sumw2();
             fListHist->AddLast(hDCAxySecStMC[charge][species][ptbin]);
             
-            hDCAxySecMatMC[charge][species][ptbin] = new TH1F(Form("hDCAxySecMatMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, DCAXYbin);
+            hDCAxySecMatMC[charge][species][ptbin] = new TH1F(Form("hDCAxySecMatMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
             hDCAxySecMatMC[charge][species][ptbin]->Sumw2();
             fListHist->AddLast(hDCAxySecMatMC[charge][species][ptbin]);
           }
