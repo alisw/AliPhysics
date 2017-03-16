@@ -38,6 +38,8 @@ AliAnalysisTaskNucleiPIDqa::AliAnalysisTaskNucleiPIDqa(TString taskname) :  AliA
   fNsigmaITS{3.5f},
   fNsigmaTPC{3.5f},
   fNsigmaTOF{3.5f},
+  fITSsignalN{3},
+  fTPCsignalN{50},
   fList{nullptr},
   fPID{nullptr},
   fITSsignal{nullptr},
@@ -132,13 +134,14 @@ void AliAnalysisTaskNucleiPIDqa::UserExec(Option_t *) {
 
     if (track->GetID() <= 0) continue;
     if (!track->TestFilterBit(4)) continue;
+    if (track->GetTPCsignalN() < fTPCsignalN) continue;
     const float beta = AliAnalysisTaskNucleiYield::HasTOF(track,fPID);
     const int hasTOF = beta > 1.e-24 ? 1 : 0;
     const int iC = (track->Charge() > 0) ? 1 : 0;
 
     unsigned int nSPD = 0u, nSDD = 0u, nSSD = 0u;
     int nITS = AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
-    const int hasITS = int(nITS - nSPD >= 3);
+    const int hasITS = int(nITS - nSPD >= fITSsignalN);
 
     if (hasITS) fITSsignal[iC]->Fill(track->P(), track->GetITSsignal());
     fTPCsignal[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());

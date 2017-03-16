@@ -114,7 +114,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireSDDrecPoints{0u}
    ,fRequireSPDrecPoints{1u}
    ,fRequireTPCrecPoints{70u}
-   ,fRequireTPCsignal{70u}
+   ,fRequireTPCsignal{50u}
    ,fRequireEtaMin{-0.8f}
    ,fRequireEtaMax{0.8f}
    ,fRequireYmin{-0.5f}
@@ -172,7 +172,7 @@ AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
 void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
 
   fList = new TList();
-  fList->SetOwner(kTRUE);
+  fList->SetOwner(true);
 
   const Int_t nPtBins = fPtBins.GetSize() - 1;
   const Int_t nCentBins = fCentBins.GetSize() - 1;
@@ -429,14 +429,15 @@ void AliAnalysisTaskNucleiYield::Terminate(Option_t *) {
 bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]) {
   ULong_t status = track->GetStatus();
   fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
-  if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return kFALSE;
-  if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return kFALSE;
-  if (fCutVec.Rapidity() < fRequireYmin || fCutVec.Rapidity() > fRequireYmax) return kFALSE;
+  if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return false;
+  if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return false;
+  if (fCutVec.Rapidity() < fRequireYmin || fCutVec.Rapidity() > fRequireYmax) return false;
   AliAODVertex *vtx1 = (AliAODVertex*)track->GetProdVertex();
-  if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return kFALSE;
-  if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
-  if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
-  if (fRequireMaxMomentum > 0 && track->P() > fRequireMaxMomentum) return kFALSE;
+  if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return false;
+  if (track->Chi2perNDF() > fRequireMaxChi2) return false;
+  if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
+  if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
+  if (fRequireMaxMomentum > 0 && track->P() > fRequireMaxMomentum) return false;
 
   /// ITS related cuts
   dca[0] = 0.;
@@ -444,18 +445,18 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   if (track->Pt() < fDisableITSatHighPt) {
     unsigned int nSPD = 0u, nSDD = 0u, nSSD = 0u;
     int nITS = GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
-    if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return kFALSE;
-    if (nITS < fRequireITSrecPoints) return kFALSE;
-    if (nSPD < fRequireSPDrecPoints) return kFALSE;
-    if (nSDD < fRequireSDDrecPoints) return kFALSE;
-    if (fRequireVetoSPD && nSPD > 0) return kFALSE;
+    if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return false;
+    if (nITS < fRequireITSrecPoints) return false;
+    if (nSPD < fRequireSPDrecPoints) return false;
+    if (nSDD < fRequireSDDrecPoints) return false;
+    if (fRequireVetoSPD && nSPD > 0) return false;
     Double_t cov[3];
-    if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return kFALSE;
-    if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
-    //if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
+    if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return false;
+    if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return false;
+    //if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return false;
   }
 
-  return kTRUE;
+  return true;
 }
 
 /// This function checks whether a track has or has not a prolongation in TOF.
@@ -644,7 +645,7 @@ Bool_t AliAnalysisTaskNucleiYield::Flatten(float cent) {
     fFlatteningProbs.Set(13, prob);
   }
   if (!fIsMC) {
-    if (cent >= fFlatteningProbs.GetSize()) return kFALSE;
+    if (cent >= fFlatteningProbs.GetSize()) return false;
     else return gRandom->Rndm() > fFlatteningProbs[int(cent)];
   } else {
     // This flattening is required since a strange peak in VOM distribution is observed in MC

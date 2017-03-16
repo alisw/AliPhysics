@@ -25,10 +25,11 @@ public:
 
   AliNuclexEventCuts  fEventCut;
 
-  float fNsigmaITS; ///< Number of sigma ITS
-  float fNsigmaTPC; ///< Number of sigma TPC
-  float fNsigmaTOF; ///< Number of sigma TOF
-
+  float fNsigmaITS;  ///< Number of sigma ITS
+  float fNsigmaTPC;  ///< Number of sigma TPC
+  float fNsigmaTOF;  ///< Number of sigma TOF
+  int   fITSsignalN; ///< Number of cluster with PID information in ITS
+  int   fTPCsignalN; ///< Number of cluster with PID information in TPC
 private:
   AliAnalysisTaskNucleiPIDqa (const AliAnalysisTaskNucleiPIDqa &source);
   AliAnalysisTaskNucleiPIDqa &operator=(const AliAnalysisTaskNucleiPIDqa &source);
