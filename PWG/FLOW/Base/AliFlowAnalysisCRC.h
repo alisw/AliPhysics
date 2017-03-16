@@ -1513,6 +1513,7 @@ private:
   TArrayD fAvVtxPosY;    // Run list
   TArrayD fAvVtxPosZ;    // Run list
   TList *fCRCQVecList; //! Q Vectors list
+  TList *fCRCQVecListTPC; //! Q Vectors list TPC
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
   TList *fCRCZDCCalibList; //! ZDC calibration
@@ -1581,6 +1582,7 @@ private:
   TProfile2D *fCRCZDCQVecResvsEAsym; //!
   TProfile2D *fCRCZDCQVecResvsETot; //!
   TProfile2D *fCRCZDCQVecResvsESum; //!
+  TProfile3D *fCRCZDCQVecResvsETotvsVtx; //!
   
   // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
   
@@ -1727,6 +1729,10 @@ private:
   const static Int_t fkNHistQVecCorrv1eta = 10;
 //  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
+  TProfile3D *fCRCTPCQVecVtxPosCenRe[fCRCMaxnCen][fCRCZDCnEtaBin]; //!
+  TProfile3D *fCRCTPCQVecVtxPosCenIm[fCRCMaxnCen][fCRCZDCnEtaBin]; //!
+  TProfile3D *fTProTempRe[fCRCMaxnCen][fCRCZDCnEtaBin]; //!
+  TProfile3D *fTProTempIm[fCRCMaxnCen][fCRCZDCnEtaBin]; //!
   
   // Flow QC
   TList *fFlowQCList;    //! QC List
@@ -1778,13 +1784,11 @@ private:
   TH1D *fFlowQCRefCorFinal[fFlowNHarm][3]; //!
   
   TH2D *fFlowQCSpectra; //!
+  TH2D *fFlowQCSpectraCharge[2]; //!
   TH2D *fFlowQCSpectraPubBin; //!
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCMetricCent; //!
-  
-  TProfile* fTProTempInt[fFlowNHarm][6]; //!
-  TProfile* fTProTempDif[fCRCMaxnCen][fFlowNHarm][6]; //!
   
   // flow QC high order
   TList *fFlowQCHOList;    //! QC high order List
