@@ -811,7 +811,7 @@ Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b, Bool_t) const
   const double kSpacing = 25e3; // min interbanch spacing
   const double kShift = 0;
   Int_t bcid = kTOFBCNA; // defualt one
-  if (!IsOn(kTOFout) || !IsOn(kESDpid)) return bcid; // no info
+  if (!IsOn(kTOFout)/* || !IsOn(kESDpid)*/) return bcid; // no info
   //
   double tdif = GetTOFsignal();
   if (IsOn(kTIME)) { // integrated time info is there
