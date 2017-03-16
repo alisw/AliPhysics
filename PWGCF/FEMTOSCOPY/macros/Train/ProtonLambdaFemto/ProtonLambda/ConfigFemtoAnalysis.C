@@ -476,7 +476,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false,
                                 anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
                             }
                             
-                            //anetaphitpc[aniter]->AddCorrFctn(avgsepcorr[aniter]);
+                            anetaphitpc[aniter]->AddCorrFctn(avgsepcorr[aniter]);
                             
                             if(mcAnalysis)
                             {
