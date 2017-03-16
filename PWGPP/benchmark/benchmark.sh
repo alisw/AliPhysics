@@ -530,7 +530,7 @@ goCPass()
     ;;
     2) 
       # Check if previous pass has produced calibration.
-      if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
+      if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]] && [ $runCPass1MergeMakeOCDB -eq 1 ] ; then
         touch $doneFileTmp
         echo "CPass$(($cpass-1)) produced no calibration! Exiting..." >> $doneFileTmp
         copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
@@ -1858,9 +1858,13 @@ goSubmitBatch()
     JOBID4wait="w1_${JOBpostfix}"
     JOBID5="m1_${JOBpostfix}"
     JOBID5wait="wm1_${JOBpostfix}"
-    JOBID6="s1_${JOBpostfix}"
-    JOBID6wait="ws1_${JOBpostfix}"
-    JOBID7="QA_${JOBpostfix}"
+    JOBID6="p2_${JOBpostfix}"
+    JOBID6wait="w2_${JOBpostfix}"
+    JOBID7="m2_${JOBpostfix}"
+    JOBID7wait="wm2_${JOBpostfix}"
+    JOBID8="s1_${JOBpostfix}"
+    JOBID8wait="ws1_${JOBpostfix}"
+    JOBID9="QA_${JOBpostfix}"
     JOBmakeESDlistCPass1="lp1_${JOBpostfix}"
     JOBfilterESDcpass1="fp1_${JOBpostfix}"
     LASTJOB="000"
@@ -2131,6 +2135,137 @@ goSubmitBatch()
       echo
     fi
 
+
+    ################################################################################
+    ################################################################################
+    # run the CPass2 if requested
+
+    if [ ${runCPass2reco} -eq 1 ]; then
+
+      targetDirectory="${commonOutputPath}/${year}/${period}/000${runNumber}/cpass2"
+      rm -f ${commonOutputPath}/meta/cpass2.job*.run${runNumber}.done
+
+      # safety feature: if we are re-running for any reason we want to delete the previous output first.
+      [[ -d ${targetDirectory} ]] && rm -rf ${targetDirectory}/* && echo "removed old output at ${targetDirectory}/*"
+
+      echo
+      echo "starting CPass2... for run ${runNumber}"
+      echo
+
+      # create directory and copy all files that are needed
+      mkdir -p ${targetDirectory}
+      
+      filesCPass2=( 
+                    "${configPath}/runPPass_pp.sh"
+                    "${configPath}/runPPass_pbpb.sh"
+                    "${configPath}/rec.C"
+                    "${configPath}/runCalibTrain.C"
+                    "${configPath}/QAtrain_duo.C"
+                    "${configPath}/mergeQAgroups.C"
+                    "${configPath}/localOCDBaccessConfig.C"
+                    "${configPath}/OCDB.root"
+      )
+      for file in ${filesCPass2[*]}; do
+        [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
+      done
+
+      if [[ -n ${generateMC} ]]; then
+        localInputList=${commonOutputPath}/meta/sim.run${runNumber}.list
+      else
+        localInputList=${targetDirectory}/${inputList##*/}
+        [[ ! -f ${localInputList} ]] && egrep "\/000${runNumber}\/" ${inputList} > ${localInputList}
+      fi
+      # limit nFiles to nMaxChunks
+      nFiles=$(wc -l < ${localInputList})
+      [[ ${nFiles} -eq 0 ]] && echo "list contains ZERO files! continuing..." && continue
+      echo "raw files in list:    ${nFiles}"
+      if [[ ${nMaxChunks} -gt 0 && ${nMaxChunks} -le ${nFiles} ]]; then
+        nFiles=${nMaxChunks}
+      fi
+      echo "raw files to process: ${nFiles}"
+      [[ -z "${percentProcessedFilesToContinue}" ]] && percentProcessedFilesToContinue=100
+      if [[ ${percentProcessedFilesToContinue} -eq 100 ]]; then
+        nFilesToWaitFor=${nFiles}
+      else
+        nFilesToWaitFor=$(( ${nFiles}-${nFiles}/(100/(100-${percentProcessedFilesToContinue})) ))
+      fi
+      echo "requested success rate is ${percentProcessedFilesToContinue}%"
+      echo "merging will start after ${nFilesToWaitFor} jobs are done"
+
+      submit ${JOBID6} 1 ${nFiles} "${LASTJOB}" "${alirootEnv} ${self}" CPass2 ${targetDirectory} ${localInputList} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} -1 "${extraOpts[@]}"
+
+      ################################################################################
+      ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
+      submit "${JOBID6wait}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass2.job\*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
+      # ---| set last job id used to submit dependency jobs |-------------------
+      LASTJOB=${JOBID6wait}
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
+      ################################################################################
+
+      echo
+    fi #end running CPass2
+
+    ################################################################################
+    # submit merging of CPass2, depends on the reconstruction
+    if [ ${runCPass2MergeMakeOCDB} -eq 1 ]; then
+
+      echo
+      echo "submit CPass2 merging for run ${runNumber}"
+      echo
+
+      targetDirectory="${commonOutputPath}/${year}/${period}/000${runNumber}/cpass2"
+      rm -f ${commonOutputPath}/meta/merge.cpass2.run${runNumber}.done
+      mkdir -p ${targetDirectory}
+
+      # copy files 
+      filesMergeCPass2=(
+                        "${configPath}/OCDB.root"
+                        "${configPath}/localOCDBaccessConfig.C"
+                        "${configPath}/mergeMakeOCDB.byComponent.perStage.sh"
+                        "${configPath}/mergeMakeOCDB.byComponent.sh"
+                        "${configPath}/mergeByComponent.C"
+                        "${configPath}/makeOCDB.C"
+                        "${configPath}/merge.C"
+                        "${configPath}/mergeMakeOCDB.sh"
+                        "${configPath}/QAtrain_duo.C"
+			"${configPath}/mergeQAgroups.C"
+      )
+      for file in ${filesMergeCPass2[*]}; do
+        [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
+      done
+
+      submit "calibListCPass2" 1 1 "$LASTJOB" "${alirootEnv} ${self}"  PrintValues calibfile ${commonOutputPath}/meta/cpass2.calib.run${runNumber}.list "${commonOutputPath}/meta/cpass2.job\*.run${runNumber}.done"
+      # ---| set last job id used to submit dependency jobs |-------------------
+      LASTJOB="calibListCPass2"
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
+
+      submit "qaListCPass2" 1 1 "$LASTJOB" "${alirootEnv} ${self}" PrintValues qafile ${commonOutputPath}/meta/cpass2.QA.run${runNumber}.lastMergingStage.txt.list "${commonOutputPath}/meta/cpass2.job\*.run${runNumber}.done"
+      # ---| set last job id used to submit dependency jobs |-------------------
+      LASTJOB="qaListCPass2"
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
+
+      submit "filteredListCPass2" 1 1 "$LASTJOB" "${alirootEnv} ${self}" PrintValues filteredTree ${commonOutputPath}/meta/cpass2.filtered.run${runNumber}.lastMergingStage.txt.list "${commonOutputPath}/meta/cpass2.job\*.run${runNumber}.done"
+      # ---| set last job id used to submit dependency jobs |-------------------
+      LASTJOB="filteredListCPass2"
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
+
+      submit "${JOBID7}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass2 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} calibrationFilesToMerge=${commonOutputPath}/meta/cpass2.calib.run${runNumber}.list qaFilesToMerge=${commonOutputPath}/meta/cpass2.QA.run${runNumber}.lastMergingStage.txt.list filteredFilesToMerge=${commonOutputPath}/meta/cpass2.filtered.run${runNumber}.list "${extraOpts[@]}"
+      # ---| set last job id used to submit dependency jobs |-------------------
+      LASTJOB=${JOBID7}
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
+      echo
+    fi
+
     ###############################
     #if [ ${runESDfiltering} -eq 1 ]; then
     #  rm -f ${commonOutputPath}/cpass1.ESD.run${runNumber}.list
@@ -2146,14 +2281,16 @@ goSubmitBatch()
   done
 
   #################################################################################
+  ### final summary
   #################################################################################
   #if [ ${runESDfiltering} -eq 1 ]; then
-  #  submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/filtering.cpass1.run/\*.done" "${#listOfRuns[@]}" ${maxSecondsToWait}
+  #  submit "${JOBID7wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/filtering.cpass2.run/\*.done" "${#listOfRuns[@]}" ${maxSecondsToWait}
   #else
-    submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/merge.cpass1.run\*.done" ${#listOfRuns[@]} ${maxSecondsToWait}
+  # TODO: most probably the file for the job 'meta/merge.cpass2.run\*.done' need to be adapted depending on the reconstrucion settings
+    submit "${JOBID7wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/merge.cpass2.run\*.done" ${#listOfRuns[@]} ${maxSecondsToWait}
   #fi
   # ---| set last job id used to submit dependency jobs |-------------------
-  LASTJOB=${JOBID5wait}
+  LASTJOB=${JOBID7wait}
   # treat the slurm case which uses the id number not the name
   # lastJobID is set in 'submit'
   if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
@@ -2164,9 +2301,9 @@ goSubmitBatch()
   echo
 
   [[ -z ${alirootEnvQA} ]] && alirootEnvQA=$(encSpaces "${alirootEnv}")
-  submit "${JOBID6}" 1 1 "${LASTJOB}" "${alirootEnvQA} ${self}" MakeSummary ${configFile} "commonOutputPath=${commonOutputPath}"
+  submit "${JOBID8}" 1 1 "${LASTJOB}" "${alirootEnvQA} ${self}" MakeSummary ${configFile} "commonOutputPath=${commonOutputPath}"
   # ---| set last job id used to submit dependency jobs |-------------------
-  LASTJOB=${JOBID6}
+  LASTJOB=${JOBID8}
   # treat the slurm case which uses the id number not the name
   # lastJobID is set in 'submit'
   if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
