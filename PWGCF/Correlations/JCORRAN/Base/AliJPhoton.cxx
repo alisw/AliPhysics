@@ -349,3 +349,4 @@ particleType AliJPhoton::GetParticleType() {
 }
 
 
+// this comment serves no purpose
