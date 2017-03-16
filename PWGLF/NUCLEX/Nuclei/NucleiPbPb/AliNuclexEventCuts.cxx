@@ -300,6 +300,18 @@ void AliNuclexEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
+  /// Run 2 p-Pb
+  if ((fCurrentRun >= 265525 && fCurrentRun <= 265309) || /// LHC16q: p-Pb 5 TeV
+      (fCurrentRun >= 266318 && fCurrentRun <= 265594) || /// LHC16r: p-Pb 8 TeV
+      (fCurrentRun >= 267166 && fCurrentRun <= 267163)) { /// LHC16t: p-Pb 5 TeV
+    SetupRun2pA(0);
+    return;
+  }
+  if (fCurrentRun >= 267110 && fCurrentRun <= 266437) {   /// LHC16s: p-Pb 5 TeV
+    SetupRun2pA(1);
+    return;
+  }
+
   ::Fatal("AliNuclexEventCuts::AutomaticSetup","Automatic period detection failed, please use the manual mode. If you need this period in AliNuclexEventCuts send an email to the DPG event selection mailing list.");
 }
 
@@ -424,10 +436,12 @@ void AliNuclexEventCuts::SetupRun2pp() {
 
   if (fCentralityFramework > 1)
     ::Fatal("AliNuclexEventCutsSetupRun2pp","You cannot use the legacy centrality framework in pp. Please set the fCentralityFramework to 0 to disable the multiplicity selection or to 1 to use AliMultSelection.");
-  fCentEstimators[0] = "V0M";
-  fCentEstimators[1] = "CL0";
-  fMinCentrality = 0.f;
-  fMaxCentrality = 100.f;
+  else if (fCentralityFramework == 1) {
+    fCentEstimators[0] = "V0M";
+    fCentEstimators[1] = "CL0";
+    fMinCentrality = 0.f;
+    fMaxCentrality = 100.f;
+  }
 
   fFB128vsTrklLinearCut[0] = 32.077;
   fFB128vsTrklLinearCut[1] = 0.932;
@@ -511,6 +525,17 @@ void AliNuclexEventCuts::SetupLHC11h() {
   fUseEstimatorsCorrelationCut = false;
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+}
+
+void AliNuclexEventCuts::SetupRun2pA(int iPeriod) {
+  /// iPeriod: 0 p-Pb 5&8 TeV, 1 Pb-p 8 TeV
+  SetupRun2pp();
+  /// No centrality cuts by default
+  fCentralityFramework = 1;
+  fUseEstimatorsCorrelationCut = false;
+
+  fCentEstimators[0] = iPeriod ? "ZNC" : "ZNA";
+  fCentEstimators[1] = iPeriod ? "V0C" : "V0A";
 }
 
 void  AliNuclexEventCuts::OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov) {

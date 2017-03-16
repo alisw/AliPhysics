@@ -63,6 +63,7 @@ class AliNuclexEventCuts : public TList {
     void   SetupLHC11h();
     void   SetupLHC15o();
     void   SetupRun2pp();
+    void   SetupRun2pA(int iPeriod);
 
     /// While the general philosophy here is to avoid setters and getters (this is not an API we expose)
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
