@@ -65,6 +65,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   void                   SetGhostArea(Double_t gharea)              { if (IsLocked()) return; fGhostArea        = gharea; }
   void                   SetJetsName(const char *n)                 { if (IsLocked()) return; fJetsTag          = n     ; }
+  void                   SetJetsTag(const char *n)                  { if (IsLocked()) return; fJetsTag          = n     ; }
   void                   SetJetEtaRange(Double_t emi, Double_t ema) { if (IsLocked()) return; fJetEtaMin        = emi   ; fJetEtaMax = ema; }
   void                   SetJetPhiRange(Double_t pmi, Double_t pma) { if (IsLocked()) return; fJetPhiMin        = pmi   ; fJetPhiMax = pma; }
   void                   SetJetAlgo(EJetAlgo_t a)                   { if (IsLocked()) return; fJetAlgo          = a     ; }
@@ -89,6 +90,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   Double_t               GetGhostArea()                   { return fGhostArea         ; }
   const char*            GetJetsName()                    { return fJetsName.Data()   ; }
+  const char*            GetJetsTag()                     { return fJetsTag.Data()    ; }
   Double_t               GetJetEtaMin()                   { return fJetEtaMin         ; }
   Double_t               GetJetEtaMax()                   { return fJetEtaMax         ; }
   Double_t               GetJetPhiMin()                   { return fJetPhiMin         ; }

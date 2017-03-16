@@ -99,6 +99,11 @@ void AliAnalysisTaskEmcalJetSample::AllocateClusterHistograms()
   TIter next(&fClusterCollArray);
   while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
     groupname = clusCont->GetName();
+    // Protect against creating the histograms twice
+    if (fHistManager.FindObject(groupname)) {
+      AliWarning(TString::Format("%s: Found groupname %s in hist manager. The cluster containers will be filled into the same histograms.", GetName(), groupname.Data()));
+      continue;
+    }
     fHistManager.CreateHistoGroup(groupname);
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
       histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
@@ -180,6 +185,11 @@ void AliAnalysisTaskEmcalJetSample::AllocateTrackHistograms()
   TIter next(&fParticleCollArray);
   while ((partCont = static_cast<AliParticleContainer*>(next()))) {
     groupname = partCont->GetName();
+    // Protect against creating the histograms twice
+    if (fHistManager.FindObject(groupname)) {
+      AliWarning(TString::Format("%s: Found groupname %s in hist manager. The track containers will be filled into the same histograms.", GetName(), groupname.Data()));
+      continue;
+    }
     fHistManager.CreateHistoGroup(groupname);
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
       histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), cent);
@@ -238,6 +248,11 @@ void AliAnalysisTaskEmcalJetSample::AllocateJetHistograms()
   TIter next(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     groupname = jetCont->GetName();
+    // Protect against creating the histograms twice
+    if (fHistManager.FindObject(groupname)) {
+      AliWarning(TString::Format("%s: Found groupname %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), groupname.Data()));
+      continue;
+    }
     fHistManager.CreateHistoGroup(groupname);
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
       histname = TString::Format("%s/histJetPt_%d", groupname.Data(), cent);
