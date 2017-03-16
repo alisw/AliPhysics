@@ -11,7 +11,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bCorrectForBadChannel=kFALSE,
-                             Bool_t bMimicGlobalCuts=kFALSE,
+                             Bool_t bUseCRCRecenter=kFALSE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
                              TString sCentrEstimator="V0",
@@ -86,7 +86,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bCalculateCME=kFALSE;
   Bool_t bUseVZERO=kFALSE;
   Int_t nHarmonic=2;
-  Bool_t bUseCRCRecenter=kFALSE;
+  Bool_t bMimicGlobalCuts=kFALSE;
   Bool_t bZDCMCCen=kTRUE;
   Bool_t bRequireTOFSignal=kFALSE;
   Int_t bCutTPCbound=0;
@@ -583,9 +583,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  
   if(bUseCRCRecenter) {
     TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-    if(AODfilterBit==768) QVecWeightsFileName += "15oHI_QnVarCalib_FB768.root";
-    if(AODfilterBit==96) QVecWeightsFileName += "15oHI_QnVarCalib_FB96.root";
-    if(AODfilterBit==32) QVecWeightsFileName += "15oHI_QnVarCalib_FB32.root";
+//    if(AODfilterBit==768) QVecWeightsFileName += "15oHI_QnVarCalib_FB768.root";
+//    if(AODfilterBit==96) QVecWeightsFileName += "15oHI_QnVarCalib_FB96.root";
+//    if(AODfilterBit==32) QVecWeightsFileName += "15oHI_QnVarCalib_FB32.root";
+    QVecWeightsFileName += "15oHI_Q1VtxCalib_FB768.root";
     TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
     if(!QVecWeightsFile) {
       cout << "ERROR: QVecWeightsFile not found!" << endl;
