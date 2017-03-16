@@ -98,7 +98,11 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   void SetSeparateD0D0bar(Bool_t separate) {fSeparateD0D0bar=separate;}
   void Setq2Method(Int_t q2method) {fq2Meth=q2method;}
   void Setq2Smearing(TString smearingfilepath, TString histoname, Int_t smearingaxis);
-
+  void SetScalProdLimit(Double_t limit=0.3) {
+    if(limit<1) fScalProdLimit=limit;
+    else fScalProdLimit=1;
+  }
+  
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -112,10 +116,10 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     
   void CalculateInvMasses(AliAODRecoDecayHF* d,Float_t* &masses,Int_t& nmasses);
     
-  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Float_t dphi2);
-  void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses, Int_t isSel,Int_t icentr, Double_t phiD, Float_t dphi2);
-  void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Float_t dphi2);
-  void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Float_t dphi2);
+  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
+  void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses, Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
+  void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
+  void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
   Float_t GetEventPlane(AliAODEvent* aod, AliEventplane *pl, Double_t eventplaneqncorrTPC[3], Double_t eventplaneqncorrVZERO[3], Double_t q2);
   Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, AliEventplane *pl);
   Float_t GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *list);
@@ -166,10 +170,11 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   TH2F* fq2SmearingHisto;       //-> 2D histo for q2smearing
   Bool_t fq2Smearing;           // flag to activate q2 smearing
   Int_t fq2SmearingAxis;        // axis of the smearing histogram corresponding to the q2 used for the analysis
-
+  Double_t fScalProdLimit;      // max value for the scalar product histograms
+  
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
     
-  ClassDef(AliAnalysisTaskSEHFvn,3); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,4); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

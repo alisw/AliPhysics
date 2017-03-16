@@ -124,7 +124,8 @@ AliAnalysisTaskSE(),
   fFractionOfTracksForTPCq2(1.1),
   fq2SmearingHisto(0x0),
   fq2Smearing(kFALSE),
-  fq2SmearingAxis(1)
+  fq2SmearingAxis(1),
+  fScalProdLimit(0.3)
 {
   // Default constructor
   for(int i = 0; i < 3; i++) {
@@ -173,7 +174,8 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fFractionOfTracksForTPCq2(1.1),
   fq2SmearingHisto(0x0),
   fq2Smearing(kFALSE),
-  fq2SmearingAxis(1)
+  fq2SmearingAxis(1),
+  fScalProdLimit(0.3)
 {
   // standard constructor
   for(int i = 0; i < 3; i++) {
@@ -364,33 +366,30 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(fHistEvPlaneQncorrTPC[iDet]);
     fOutput->Add(fHistEvPlaneQncorrVZERO[iDet]);
   }
-  
+  if(fFlowMethod==kSP) {
+    TH1F* hNormQA = new TH1F("hNormQA","hNormQA;QAx;QAy",100,0.,1);
+    fOutput->Add(hNormQA);
+    TH1F* hNormQB = new TH1F("hNormQB","hNormQB;QBx;QBy",100,0.,1);
+    fOutput->Add(hNormQB);
+  }
+
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
     if(fFlowMethod!=kEvShape) {
       TH2F* hMPtCand=new TH2F(Form("hMPtCand%s",centrname.Data()),Form("Mass vs pt %s;p_{t} (GeV/c);M (GeV/c^{2})",centrname.Data()),500,0.,50.,fNMassBins,fLowmasslimit,fUpmasslimit);
       fOutput->Add(hMPtCand);//For <pt> calculation
-
+    }
+    if(fFlowMethod==kEP) {
       //Candidate distributions
-      TString suffAB_SP="";
-      TString suffBA_SP="";
-
       for(Int_t i=0;i<fNPtBins;i++){
         // Delta Phi histograms
         Double_t maxphi = TMath::Pi();
         if (fDecChannel == 2) maxphi = TMath::PiOver2();
         TH2F* hMdeltaphi=new TH2F(Form("hMdeltaphi_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi %s;#Delta#phi;M (GeV/c^{2})",centrname.Data()),96,0,maxphi,fNMassBins,fLowmasslimit,fUpmasslimit);
         fOutput->Add(hMdeltaphi);//for phi bins analysis
-        if(fFlowMethod==kSP) {
-          suffAB_SP = "AB";
-          suffBA_SP = "BA";
-        }
-        TH2F* hMc2deltaphi=new TH2F(Form("hMc2deltaphi%s_pt%d%s",suffAB_SP.Data(),i,centrname.Data()),Form("Mass vs cos2#Delta#phi (%s) (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",suffAB_SP.Data(),i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+        TH2F* hMc2deltaphi=new TH2F(Form("hMc2deltaphi_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
         fOutput->Add(hMc2deltaphi);
-        TH2F* hMc2deltaphi_2=0x0;
-        if(fFlowMethod==kSP)hMc2deltaphi_2=new TH2F(Form("hMc2deltaphi%s_pt%d%s",suffBA_SP.Data(),i,centrname.Data()),Form("Mass vs cos2#Delta#phi (%s) (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",suffBA_SP.Data(),i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-        fOutput->Add(hMc2deltaphi_2);
         TH2F* hMs2deltaphi=new TH2F(Form("hMs2deltaphi_pt%d%s",i,centrname.Data()),Form("Mass vs sin2#Delta#phi (p_{t} bin %d %s);sin2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
         fOutput->Add(hMs2deltaphi);
       
@@ -418,6 +417,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
           }
         }
       }
+
       // Event Plane
       TH2F* hEvPlane=new TH2F(Form("hEvPlane%s",centrname.Data()),Form("VZERO/TPC Event plane angle %s;#phi Ev Plane (TPC);#phi Ev Plane (VZERO);Entries",centrname.Data()),200,0.,TMath::Pi(),200,0.,TMath::Pi());
       fOutput->Add(hEvPlane);
@@ -429,7 +429,6 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
       fOutput->Add(hEvPlaneB);
       TH1F* hEvPlaneCand=new TH1F(Form("hEvPlaneCand%s",centrname.Data()),Form("Event plane angle - Event plane angle per candidate %s;#phi(Ev Plane Candidate);Entries",centrname.Data()),200,-TMath::Pi(),TMath::Pi());
       fOutput->Add(hEvPlaneCand);
-      
       
       // histos for EP resolution
       TH1F* hEvPlaneReso=new TH1F(Form("hEvPlaneReso1%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
@@ -445,7 +444,29 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
       TH1F *hSin2EP=new TH1F(Form("hSin2EP%s",centrname.Data()),Form("sin(2PsiEP) %s;sin2(#psi_{EP});Entries",centrname.Data()),100,-1.,1.);
       fOutput->Add(hSin2EP);
     }
-    else {
+    //Scalar Product Histograms
+    else if(fFlowMethod==kSP) {
+      TString SPsuffix1="";
+      TString SPsuffix2="";
+      TString SPsuffix3="QAQB";
+      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) { //two sub-event formula
+        SPsuffix1="uAQB";
+        SPsuffix2="uBQA";
+      }
+      else { // three sub-event formula A,B -> sub-events for Q-vetors C -> sub-event for D-mesons
+        SPsuffix1="uCQA";
+        SPsuffix2="uCQB";
+      }
+      for(Int_t i=0;i<fNPtBins;i++){
+        TH2F* hMassScalProd1=new TH2F(Form("hMassScalProd%s_pt%d%s",SPsuffix1.Data(),i,centrname.Data()),Form("Mass vs hScalProd%s (p_{t} bin %d %s);%s;M (GeV/c^{2})",SPsuffix1.Data(),i,centrname.Data(),SPsuffix1.Data()),100,-fScalProdLimit,fScalProdLimit,fNMassBins,fLowmasslimit,fUpmasslimit);
+        fOutput->Add(hMassScalProd1);
+        TH2F* hMassScalProd2=new TH2F(Form("hMassScalProd%s_pt%d%s",SPsuffix2.Data(),i,centrname.Data()),Form("Mass vs hScalProd%s (p_{t} bin %d %s);%s;M (GeV/c^{2})",SPsuffix2.Data(),i,centrname.Data(),SPsuffix2.Data()),100,-fScalProdLimit,fScalProdLimit,fNMassBins,fLowmasslimit,fUpmasslimit);
+        fOutput->Add(hMassScalProd2);
+      }
+      TH1F* hScalProdDenom=new TH1F(Form("hScalProd%s_%s",SPsuffix3.Data(),centrname.Data()),Form("hScalProd%s (%s);%s",SPsuffix3.Data(),centrname.Data(),SPsuffix3.Data()),100,-fScalProdLimit*fScalProdLimit,fScalProdLimit*fScalProdLimit);
+      fOutput->Add(hScalProdDenom);
+    }
+    else if (fFlowMethod==kEvShape){
       TString q2axisname="q_{2}^{TPC}";
       if(fq2Meth==kq2PosTPC) {q2axisname="q_{2}^{pos TPC}";}
       else if(fq2Meth==kq2NegTPC) {q2axisname="q_{2}^{neg TPC}";}
@@ -619,7 +640,9 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   Double_t eventplaneqncorrTPC[3];
   Double_t eventplaneqncorrVZERO[3];
   TList *qnlist = 0x0;
-  
+  Double_t QA[2]={-2.-2};
+  Double_t QB[2]={-2.-2};
+ 
   if(fUseNewQnCorrFw) {
     /////////////////////////////////////////////////////////////
     //////////////          GET Qn vectors         //////////////
@@ -652,9 +675,24 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       fHistEvPlaneQncorrTPC[iDet]->Fill(eventplaneqncorrTPC[iDet]);
       fHistEvPlaneQncorrVZERO[iDet]->Fill(eventplaneqncorrVZERO[iDet]);
     }
+    
+    //get Qx and Qy for SP analysis
+    if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) {
+      QA[0]=qnVectTPC[1]->Qx(fHarmonic);//NegTPC
+      QA[1]=qnVectTPC[1]->Qy(fHarmonic);//NegTPC
+      QB[0]=qnVectTPC[2]->Qx(fHarmonic);//PosTPC
+      QB[1]=qnVectTPC[2]->Qy(fHarmonic);//PosTPC
+    }
+    else {
+      QA[0]=qnVectV0[1]->Qx(fHarmonic);//V0A
+      QA[1]=qnVectV0[1]->Qy(fHarmonic);//V0A
+      QB[0]=qnVectV0[2]->Qx(fHarmonic);//V0C
+      QB[1]=qnVectV0[2]->Qy(fHarmonic);//V0C
+    }
+    ((TH1F*)fOutput->FindObject("hNormQA"))->Fill(TMath::Sqrt(QA[0]*QA[0]+QA[1]*QA[1]));
+    ((TH1F*)fOutput->FindObject("hNormQB"))->Fill(TMath::Sqrt(QB[0]*QB[0]+QB[1]*QB[1]));
   }
-
-  //get q2 for event shape anaylsis
+  
   //get q2 for event shape anaylsis
   Double_t q2=-1;
   Double_t q2PosTPC=-1;
@@ -685,14 +723,13 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     if(hq2Slice->GetEntries()>10) {q2 = hq2Slice->GetRandom();}
     delete hq2Slice;
   }
-
+  
   AliEventplane *pl=aod->GetEventplane();
   if(!pl){
     Printf("AliAnalysisTaskSEHFvn::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
     fhEventsInfo->Fill(11);
     return;
   }
-  
 
   //determine centrality bin
   Float_t centr=fRDCuts->GetCentrality(aod);
@@ -715,15 +752,22 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     delete g;g=0x0;
     if(fUseAfterBurner)fAfterBurner->SetEventPlane((Double_t)eventplane);
   }else{
-    eventplane=GetEventPlane(aod,pl,eventplaneqncorrTPC,eventplaneqncorrVZERO,q2);
-    if(eventplane<-999){
-      Printf("Bad event plane calculation\n");
-      fhEventsInfo->Fill(12);
-      return;
+    if(fFlowMethod!=kSP) {
+      eventplane=GetEventPlane(aod,pl,eventplaneqncorrTPC,eventplaneqncorrVZERO,q2);
+      if(eventplane<-999){
+        Printf("Bad event plane calculation\n");
+        fhEventsInfo->Fill(12);
+        return;
+      }
+    }
+    else {
+      //fill histograms for denominator in SP formula
+      Double_t scalprod=QA[0]*QB[0]+QA[1]*QB[1];
+      ((TH1F*)fOutput->FindObject(Form("hScalProdQAQB_%s",fCentrBinName.Data())))->Fill(scalprod);
     }
   }
   if(fDebug>2)printf("Loop on D candidates\n");
-
+  
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
 
   //Loop on D candidates
@@ -746,8 +790,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     else if(fDecChannel == 2) {
       if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue; 
     }
-      
-      
+    
     Int_t ptbin=fRDCuts->PtBin(d->Pt());
     if(ptbin<0) {
       fhEventsInfo->Fill(14);
@@ -772,48 +815,34 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     
     if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
       Float_t eventplaneOld=eventplane;
-       if(fUseNewQnCorrFw) {
-	Float_t eventplaneOld=eventplane;
+      if(fUseNewQnCorrFw) {
+        Float_t eventplaneOld=eventplane;
         eventplane = GetEventPlaneForCandidateNewQnFw(d,qnlist); // remove autocorrelations for new Qn fw
         if(eventplane==-999) eventplane = eventplaneOld;
       }
       else eventplane = GetEventPlaneForCandidate(d,pl); // remove autocorrelations
-      if(fFlowMethod!=kEvShape) ((TH1F*)fOutput->FindObject(Form("hEvPlaneCand%s",fCentrBinName.Data())))->Fill(eventplaneOld-eventplane);
+      if(fFlowMethod==kEP) ((TH1F*)fOutput->FindObject(Form("hEvPlaneCand%s",fCentrBinName.Data())))->Fill(eventplaneOld-eventplane);
     }
     
     Double_t phi=d->Phi();
+    Double_t eta=d->Eta();
     if(fReadMC&&fUseAfterBurner)phi=fAfterBurner->GetNewAngle(d,arrayMC);
     Float_t deltaphi  = GetPhiInRange(phi-eventplane);
-    Float_t deltaphi2 = -1.;
-    if(fFlowMethod == kSP) {
-      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
-        if(d->Eta()<0.)
-          deltaphi = GetPhiInRange(phi-eventplaneqncorrTPC[2]); //TPCPosEta
-        else {
-          deltaphi = GetPhiInRange(phi-eventplaneqncorrTPC[1]); //TPCNegEta
-          deltaphi2 = 1.;
-        }
-      }
-      else {
-        deltaphi  = GetPhiInRange(phi-eventplaneqncorrVZERO[1]); //V0A
-        deltaphi2 = GetPhiInRange(phi-eventplaneqncorrVZERO[2]); //V0C
-      }
-    }
-
+    
     //fill the histograms with the appropriate method
     if(fFlowMethod!=kEvShape) {
-      if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
-      else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
-      else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
-      else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
+      if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,QA,QB);
+      else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,QA,QB);
+      else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,QA,QB);
+      else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,QA,QB);
     }
     else {      
       if(!fUseNewQnCorrFw){
-	printf("ERROR: event shape analysis implemented only with new Qn correction framework\n"); 
-	return;
+        printf("ERROR: event shape analysis implemented only with new Qn correction framework\n");
+        return;
       }
       
-      //fill the THnSparseF
+      //fill the THnSparseF for event-shape engineering
       if((fDecChannel==0 || fDecChannel==2) && isSelected) {
         Double_t sparsearray[5] = {invMass[0],d->Pt(),deltaphi,q2,centr};
         fHistMassPtPhiq2Centr->Fill(sparsearray);
@@ -971,7 +1000,7 @@ void AliAnalysisTaskSEHFvn::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& ma
 //NB: the implementation for each candidate is responsibility of the corresponding developer
 
 //******************************************************************************
-void AliAnalysisTaskSEHFvn::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Float_t deltaphi2){
+void AliAnalysisTaskSEHFvn::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
   //D+ channel
   if(!isSel){
     if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -983,26 +1012,36 @@ void AliAnalysisTaskSEHFvn::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC
   }
   Int_t icentrmin=icentr-fCentBinSizePerMil;
   if(fFlowMethod==kSP) {
-    if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
-      if(deltaphi2<0.) ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-      else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+    Double_t scalprod[2]={-2.,-2.};
+    if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) {
+      if(etaD>0) {
+        scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduAQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[0]);
+      }
+      else {
+        scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduBQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[0]);
+      }
     }
     else {
-      ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-      ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi2),masses[0]);
+      scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+      scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+      ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[0]);
     }
   }
-  else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+  else {
+    ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
+  }
   ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
-
 
   Int_t pdgdaughters[3] = {211,321,211};
 
-  if(fReadMC){
+  if(fReadMC && fFlowMethod==kEP){
     Int_t lab=-1;
     if(fUseAfterBurner){
       Bool_t isSignal=fAfterBurner->GetIsSignal();
@@ -1021,7 +1060,7 @@ void AliAnalysisTaskSEHFvn::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC
 }
 
 //******************************************************************************
-void AliAnalysisTaskSEHFvn::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr,Double_t phiD, Float_t deltaphi2){
+void AliAnalysisTaskSEHFvn::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr,Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
 
   //D0->Kpi channel
 
@@ -1031,45 +1070,66 @@ void AliAnalysisTaskSEHFvn::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,
     return;
   }
   Int_t icentrmin=icentr-fCentBinSizePerMil;
+  Double_t scalprod[2]={-2.,-2.};
   if(isSel==1 || isSel==3) {
     if(fFlowMethod==kSP) {
-      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
-	if(deltaphi2<0.) ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) {
+        if(etaD>0) {
+          scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+          ((TH2F*)fOutput->FindObject(Form("hMassScalProduAQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[0]);
+        }
+        else {
+          scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+          ((TH2F*)fOutput->FindObject(Form("hMassScalProduBQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[0]);
+        }
       }
       else {
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi2),masses[0]);
+        scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+        scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[0]);
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[0]);
       }
     }
-    else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
-    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+    else {
+      ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
+    }
     ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[0]);
-    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
-    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
   }
   if(isSel>=2) {
     if(fFlowMethod==kSP) {
-      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
-	if(deltaphi2<0.) ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) {
+        if(etaD>0) {
+          scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+          ((TH2F*)fOutput->FindObject(Form("hMassScalProduAQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[1]);
+        }
+        else {
+          scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+          ((TH2F*)fOutput->FindObject(Form("hMassScalProduBQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[1]);
+        }
       }
       else {
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi2),masses[1]);
+        scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+        scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[1]);
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[1]);
       }
     }
-    else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[1]);
-    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+    else {
+      ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+      ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[1]);
+      ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+      ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[1]);
+      ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[1]);
+    }
     ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[1]);
-    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[1]);
-    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[1]);
   }
-
+  
   //MC histograms
-  if(fReadMC){
+  if(fReadMC && fFlowMethod==kEP){
 
     Int_t matchtoMC=-1;
 
@@ -1085,44 +1145,45 @@ void AliAnalysisTaskSEHFvn::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,
     Int_t prongPdgPlus=421,prongPdgMinus=(-1)*421;
     if((isSel==1 || isSel==3)){ //D0
       if(matchtoMC>=0){
-	AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
-	Int_t pdgMC = dMC->GetPdgCode();
+        AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
+        Int_t pdgMC = dMC->GetPdgCode();
 	
-	if(pdgMC==prongPdgPlus) {
-	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
-	}
-	else {
-	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
-	}
+        if(pdgMC==prongPdgPlus) {
+          ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+          ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+        }
+        else {
+          ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+          ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+        }
       } else {
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+        ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+        ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
       }
     }
     if(isSel>=2){ //D0bar
       if(matchtoMC>=0){
-	AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
-	Int_t pdgMC = dMC->GetPdgCode();
+        AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
+        Int_t pdgMC = dMC->GetPdgCode();
 	
-	if(pdgMC==prongPdgMinus) {
-	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
-	}
-	else {
-	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
-	}
+        if(pdgMC==prongPdgMinus) {
+          ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+          ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+        }
+        else {
+          ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+          ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+        }
       } else {
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+        ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+        ((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
       }
     }
   }
 }
+
 //******************************************************************************
-void AliAnalysisTaskSEHFvn::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Float_t deltaphi2){
+void AliAnalysisTaskSEHFvn::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
   //D* channel
   if(!isSel){
     if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -1137,25 +1198,37 @@ void AliAnalysisTaskSEHFvn::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC
   if(deltaphi1 > TMath::PiOver2()) deltaphi1 = TMath::Pi() - deltaphi1; 
   Int_t icentrmin=icentr-fCentBinSizePerMil;
   if(fFlowMethod==kSP) {
-    if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
-      if(deltaphi2<0.) ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-      else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+    Double_t scalprod[2]={-2.,-2.};
+    if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) {
+      if(etaD>0) {
+        scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduAQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[0]);
+      }
+      else {
+        scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduBQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[0]);
+      }
     }
     else {
-      ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-      ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi2),masses[0]);
+      scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+      scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+      ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[0]);
     }
   }
-  else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi1,masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[0]); 
-  ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
-  ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
+  else {
+    ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi1,masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
+  }
+  ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[0]);
+
   Int_t pdgDgDStartoD0pi[2]={421,211};
   Int_t pdgDgD0toKpi[2]={321,211};
   
-  if(fReadMC){
+  if(fReadMC && fFlowMethod==kEP){
     Int_t lab=-1;
     lab = ((AliAODRecoCascadeHF*)d)->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,arrayMC);
     if(lab>=0){ //signal
@@ -1167,8 +1240,9 @@ void AliAnalysisTaskSEHFvn::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC
     } 
   }
 }
+
 //******************************************************************************
-void AliAnalysisTaskSEHFvn::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Float_t deltaphi2){
+void AliAnalysisTaskSEHFvn::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
 
   //Ds channel
   if(!isSel){
@@ -1182,45 +1256,66 @@ void AliAnalysisTaskSEHFvn::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
   Int_t icentrmin=icentr-fCentBinSizePerMil;
   Int_t isDsPhiKKpi = isSel&4;
   Int_t isDsPhipiKK = isSel&8;
+  Double_t scalprod[2]={-2.,-2.};
 
   if(isDsPhiKKpi){
     if(fFlowMethod==kSP) {
-      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
-	if(deltaphi2<0.) ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) {
+        if(etaD>0) {
+          scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+          ((TH2F*)fOutput->FindObject(Form("hMassScalProduAQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[0]);
+        }
+        else {
+          scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+          ((TH2F*)fOutput->FindObject(Form("hMassScalProduBQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[0]);
+        }
       }
       else {
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi2),masses[0]);
+        scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+        scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[0]);
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[0]);
       }
     }
-    else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
-    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+    else {
+      ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
+      ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
+    }
     ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[0]);
-    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
-    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
   }
   if(isDsPhipiKK){
     if(fFlowMethod==kSP) {
-      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
-	if(deltaphi2<0.) ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+      if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) {
+        if(etaD>0) {
+          scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+          ((TH2F*)fOutput->FindObject(Form("hMassScalProduAQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[1]);
+        }
+        else {
+          scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+          ((TH2F*)fOutput->FindObject(Form("hMassScalProduBQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[1]);
+        }
       }
       else {
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiAB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiBA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi2),masses[1]);
+        scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+        scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[0],masses[1]);
+        ((TH2F*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(scalprod[1],masses[1]);
       }
     }
-    else ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[1]);
-    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+    else {
+      ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+      ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[1]);
+      ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+      ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[1]);
+      ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[1]);
+    }
     ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[1]);
-    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[1]);
-    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[1]);
   }
 
-  if(fReadMC){
+  if(fReadMC && fFlowMethod==kEP){
 
     Int_t pdgdaughters[3] = {321,321,211};
 
@@ -1236,30 +1331,30 @@ void AliAnalysisTaskSEHFvn::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
     }
     if(isDsPhiKKpi){
       if(lab>=0){
-	if(pdgCode0==321){
-	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
-	}else{
-	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
-	}
+        if(pdgCode0==321){
+          ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+          ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+        }else{
+          ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+          ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+        }
       }else{
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-	((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+        ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+        ((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
       }
     }
     if(isDsPhipiKK){
       if(lab>=0){
-	if(pdgCode0==211){
-	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
-	}else{
-	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
-	}
+        if(pdgCode0==211){
+          ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+          ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+        }else{
+          ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+          ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+        }
       }else{
-	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
-	((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+        ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+        ((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
       }
     }
   }
