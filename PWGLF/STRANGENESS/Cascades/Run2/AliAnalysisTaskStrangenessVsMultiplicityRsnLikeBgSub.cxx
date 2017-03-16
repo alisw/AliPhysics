@@ -1369,6 +1369,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
     Long_t ncascades = 0;
     ncascades = lESDevent->GetNumberOfCascades();
     Long_t lNumberOfLikeSignV0s = 0;
+    Long_t lNumberOfLikeSignV0sMakingItIntoTTree = 0;
     
     for (Int_t iXi = 0; iXi < ncascades; iXi++) {
         //------------------------------------------------
@@ -1943,6 +1944,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
             )
            )
         {
+            if ( lNegTrackSign == lPosTrackSign ) lNumberOfLikeSignV0sMakingItIntoTTree++;
             fTreeCascade->Fill();
         }
         //------------------------------------------------
@@ -2200,7 +2202,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
     }// end of the Cascade loop (ESD or AOD)
     
     Info("StrVsMultRsnLikeBgSub","Number of like-sign V0s found: %d",lNumberOfLikeSignV0s);
-
+    Info("StrVsMultRsnLikeBgSub","Number of like-sign V0s entering TTree object: %d",lNumberOfLikeSignV0sMakingItIntoTTree);
+    
     // Post output data.
     PostData(1, fListHist    );
     PostData(2, fListV0      );
