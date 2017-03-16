@@ -81,11 +81,9 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
            CheckChargeV0( v );
            //Remove like-sign
            if( v->GetParamN()->Charge() > 0 && v->GetParamP()->Charge() > 0 ){
-               Info("V0sTracks2CascadeVertices","Like-sign V0 found");
                continue;
            }
            if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ){
-               Info("V0sTracks2CascadeVertices","Like-sign V0 found");
                continue;
            }
        }
