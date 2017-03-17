@@ -689,8 +689,10 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       QB[0]=qnVectV0[2]->Qx(fHarmonic);//V0C
       QB[1]=qnVectV0[2]->Qy(fHarmonic);//V0C
     }
-    ((TH1F*)fOutput->FindObject("hNormQA"))->Fill(TMath::Sqrt(QA[0]*QA[0]+QA[1]*QA[1]));
-    ((TH1F*)fOutput->FindObject("hNormQB"))->Fill(TMath::Sqrt(QB[0]*QB[0]+QB[1]*QB[1]));
+    if(fFlowMethod==kSP) {
+      ((TH1F*)fOutput->FindObject("hNormQA"))->Fill(TMath::Sqrt(QA[0]*QA[0]+QA[1]*QA[1]));
+      ((TH1F*)fOutput->FindObject("hNormQB"))->Fill(TMath::Sqrt(QB[0]*QB[0]+QB[1]*QB[1]));
+    }
   }
   
   //get q2 for event shape anaylsis
