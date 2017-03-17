@@ -292,7 +292,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Int_t                             fDoPhotonQA;                                //
     Bool_t                            fDoChargedPrimary;                          //
     Bool_t                            fDoPlotVsCentrality;                        //
-    Bool_t                            fIsFromMBHeader;                            //
+    Bool_t                            fIsFromSelectedHeader;                      //
     Int_t                             fIsMC;                                      //
     Bool_t                            fDoTHnSparse;                               // flag for using THnSparses for background estimation
     Int_t                             fDoCentralityFlat;                          //flag for centrality flattening
@@ -305,7 +305,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 39);
+    ClassDef(AliAnalysisTaskGammaConvV1, 40);
 };
 
 #endif
