@@ -72,9 +72,12 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
                                 Bool_t    runTHnSparse                = kTRUE,                          // switch on THNsparse
                                 Int_t     enableMatBudWeightsPi0      = 0,                              // 1 = three radial bins, 2 = 10 radial bins
                                 TString   filenameMatBudWeights       = "MCInputFileMaterialBudgetWeights.root",
+                                Int_t     debugLevel                  = 0,                              // introducing debug levels for grid running
                                 TString   additionalTrainConfig       = "0"                             // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
+
+  
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -88,15 +91,15 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
       
       if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
         TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
-	if(fileNameMatBudWeightsArr->GetEntries()<1 ){cout<<"ERROR: AddTask_GammaConvV1_pPb when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl; return;}  
-	 TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
-	 TString  oldfileName  = oldMatObjStr->GetString();
-	 TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
-	 cout<<newFileName.Data()<<endl;
-	 if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
-	 filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
-	 cout << "INFO: AddTask_GammaConvV1_pPb the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
-	 }
+        if(fileNameMatBudWeightsArr->GetEntries()<1 ){cout<<"ERROR: AddTask_GammaConvV1_pPb when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl; return;}  
+        TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
+        TString  oldfileName  = oldMatObjStr->GetString();
+        TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
+        cout<<newFileName.Data()<<endl;
+        if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
+          filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
+          cout << "INFO: AddTask_GammaConvV1_pPb the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+        }
       }
     }
   }
@@ -107,10 +110,19 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
+
+  cout << endl << endl;
+  cout << "************************************************************************" << endl;
+  cout << "************************************************************************" << endl;
+  cout << "INFO: Initializing GammaConvV1 for pPb - config: " <<  trainConfig << endl;
+  cout << "************************************************************************" << endl;
+  cout << "************************************************************************" << endl;
   
   Int_t isHeavyIon = 2;
   
-
+  if (debugLevel > 0){
+    cout << "enabled debugging for trainconfig: " << debugLevel << endl;
+  } 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -155,6 +167,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (debugLevel > 0) fEventCuts->SetDebugLevel(debugLevel);
       if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
@@ -680,7 +693,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
       }
       
     }   
-    
+    if (debugLevel > 0) analysisEventCuts[i]->SetDebugLevel(debugLevel);
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);

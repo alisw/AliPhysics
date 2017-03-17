@@ -312,6 +312,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetMaxFacPtHard(Float_t value)                                        { fMaxFacPtHard = value                                     ; 
                                                                                       AliInfo(Form("maximum factor between pt hard and jet put to: %2.2f",fMaxFacPtHard));
                                                                                     }  
+      void    SetDebugLevel( Int_t value)                                           { fDebugLevel = value                                       ; }
       
       // Geters
       TString   GetCutNumber();
@@ -436,7 +437,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t     SecondaryClassificationPhotonAOD( AliAODMCParticle *particle,
                                                   TClonesArray *aodmcArray, 
                                                   Bool_t isConversion );
-
+      
       
     protected:
       TList*                      fHistograms;
@@ -538,10 +539,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameHistoReweightingMultMC;            // Histogram name for reweighting Eta
       TH1D*                       hReweightMultData;                      // histogram input for reweighting Eta
       TH1D*                       hReweightMultMC;                        // histogram input for reweighting Pi0
+      Int_t                       fDebugLevel;                             // debug level for interactive debugging
      
   private:
 
-      ClassDef(AliConvEventCuts,28)
+      ClassDef(AliConvEventCuts,29)
 };
 
 

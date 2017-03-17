@@ -164,7 +164,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNameHistoReweightingMultData(""),
   fNameHistoReweightingMultMC(""), 
   hReweightMultData(NULL),
-  hReweightMultMC(NULL)
+  hReweightMultMC(NULL),
+  fDebugLevel(0)
 
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -271,8 +272,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNameHistoReweightingMultData(ref.fNameHistoReweightingMultData),
   fNameHistoReweightingMultMC(ref.fNameHistoReweightingMultMC), 
   hReweightMultData(ref.hReweightMultData),
-  hReweightMultMC(ref.hReweightMultMC)
-
+  hReweightMultMC(ref.hReweightMultMC),
+  fDebugLevel(ref.fDebugLevel)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -2925,7 +2926,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     if(cHeaderAOD) headerFound     = kTRUE;
   }
 
-//   cout << "event starts here" << endl;
+  if (fDebugLevel > 0 ) cout << "event starts here" << endl;
   if(headerFound){
     TList *genHeaders         = 0x0;
     if(cHeader) genHeaders       = cHeader->GetHeaders();
@@ -2946,25 +2947,25 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
         gh             = (AliGenEventHeader*)genHeaders->At(i);
         TString GeneratorName   = gh->GetName();
         lastindexA         = lastindexA + gh->NProduced();
-//         cout << i << "\t" << GeneratorName.Data() << endl;
+        if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
           TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-//           cout << GeneratorInList.Data() << endl;
+          if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
           if(GeneratorName.CompareTo(GeneratorInList) == 0){
-//             cout << "accepted" << endl;
+            if (fDebugLevel > 0 ) cout << "accepted" << endl;
             if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
               if(fMCStack){
                 if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
                   if (fMCStack->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {  
                     if (gh->NProduced() > 10 && fMCStack->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode ){
-//                       cout << "cond 1: "<< fnHeaders << endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
                       fnHeaders++;
                       continue;
                     }
                     continue;
                   }
                 } else {
-//                   cout << "cond 2: " << fnHeaders << endl;
+                  if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
                   
@@ -2977,7 +2978,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                     if (gh->NProduced() > 10){
                       AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA+10));
                       if (  aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
-//                         cout << "cond 1: " << fnHeaders << endl;
+                        if (fDebugLevel > 0 ) cout << "cond 1: " << fnHeaders << endl;
                         fnHeaders++;
                         continue;
                       } 
@@ -2985,14 +2986,14 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                     continue;
                   }
                 } else {
-//                   cout << "cond 2: " << fnHeaders << endl;
+                  if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
                 } 
               }
               continue;
             }
-//             cout << "cond 3: "<< fnHeaders << endl;
+            if (fDebugLevel > 0 ) cout << "cond 3: "<< fnHeaders << endl;
             fnHeaders++;
             continue;
           }
@@ -3000,7 +3001,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
         firstindexA       = firstindexA + gh->NProduced();
       }
     }
-//     cout << "number of headers: " <<fnHeaders << endl;
+    if (fDebugLevel > 0 ) cout << "number of headers: " <<fnHeaders << endl;
     
     fNotRejectedStart         = new Int_t[fnHeaders];
     fNotRejectedEnd         = new Int_t[fnHeaders];
@@ -3010,6 +3011,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       fNotRejectedStart[0]     = 0;
       fNotRejectedEnd[0]       = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
       fGeneratorNames[0]       = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+      cout << 0 << "\t" <<fGeneratorNames[0] << "\t" << fNotRejectedStart[0] << "\t" <<fNotRejectedEnd[0] << endl;
       return;
     }
 
@@ -3023,20 +3025,20 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       lastindex           = lastindex + gh->NProduced();
       for(Int_t j = 0; j<HeaderList->GetEntries();j++){
         TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-//         cout << i << "\t" << GeneratorName.Data() << endl;
+        if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
         if(GeneratorName.CompareTo(GeneratorInList) == 0){
           if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
             if(fMCStack){
               if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
                 if (fMCStack->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
-//                   cout << "produced " << gh->NProduced() << " with box generator" << endl;
+                  if (fDebugLevel > 0 ) cout << "produced " << gh->NProduced() << " with box generator" << endl;
                   if (gh->NProduced() > 10 && fMCStack->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
-//                     cout << "one of them was a pi0 or eta" <<  endl;
+                    if (fDebugLevel > 0 ) cout << "one of them was a pi0 or eta" <<  endl;
                     fNotRejectedStart[number] = firstindex;
                     fNotRejectedEnd[number] = lastindex;
                     fGeneratorNames[number] = GeneratorName;
                     number++;
-//                     cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                    if (fDebugLevel > 0 ) cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
                     continue;
                   }
                 }
@@ -3076,7 +3078,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
             fNotRejectedStart[number] = firstindex;
             fNotRejectedEnd[number] = lastindex;
             fGeneratorNames[number] = GeneratorName;
-//             cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+            if (fDebugLevel > 0 )  cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
             number++;
             continue;
           }
@@ -3085,10 +3087,11 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       }
       firstindex           = firstindex + gh->NProduced();
     }
-//     for (Int_t i = 0; i < number; i++){
-//       cout << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << endl;
-//     }
-  
+    if (fDebugLevel > 0 ) {
+      for (Int_t i = 0; i < number; i++){
+        cout << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << endl;
+      }
+    }
   } else { // No Cocktail Header Found
     fNotRejectedStart         = new Int_t[1];
     fNotRejectedEnd         = new Int_t[1];
@@ -3111,7 +3114,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 //_________________________________________________________________________
 Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
 
-//   cout << index << endl;
+  if (fDebugLevel > 1 ) cout << index << endl;
   if(index < 0) return 0; // No Particle
 
   Int_t accepted = 0;
@@ -3122,9 +3125,9 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
       return IsParticleFromBGEvent(((TParticle*)MCStack->Particle(index))->GetMother(0),MCStack,InputEvent);
     }
     for(Int_t i = 0;i<fnHeaders;i++){
-//       cout << "header " << i << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
+      if (fDebugLevel > 1 ) cout << "header " << i << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
       if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
-//         cout << "accepted" << endl;
+        if (fDebugLevel > 1 ) cout << "accepted" << endl;
         accepted = 1;
         if(i == 0) accepted = 2; // MB Header
       }
