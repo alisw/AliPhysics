@@ -51,6 +51,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void InitializeArraysForGlobalTrackCuts();
   virtual void InitializeArraysForCorrelationFunctionsTEST();
   virtual void InitializeArraysForBackgroundTEST();
+  virtual void InitializeArraysForHybridApproach();
 
   // 1.) Methods called in UserCreateOutputObjects():
   //  2a) Directly:
@@ -66,6 +67,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void BookEverythingForGlobalTrackCuts();
   virtual void BookEverythingForCorrelationFunctionsTEST();
   virtual void BookEverythingForBackgroundTEST();
+  virtual void BookEverythingForHybridApproach();
   //  2b) Indirectly:
   Int_t InsanityChecksForGlobalTrackCuts(); // insanity checks for global track cuts
 
@@ -80,6 +82,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   //  2b) Indirectly:
   virtual void EstimateBackground(AliVEvent *ave);
   virtual void EstimateBackgroundTEST(AliVEvent *ave);
+  virtual void DoHybridApproach(AliVEvent *ave);
   virtual void FillControlHistogramsEvent(AliVEvent *ave);
   virtual void FillControlHistogramsParticle(AliVEvent *ave);
   virtual void FillControlHistogramsNonIdentifiedParticles(AliAODTrack *atrack);
@@ -100,6 +103,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t PassesCommonTrackCuts(AliAODMCParticle *amcparticle); // common cuts for analysis specific tracks TBI see above two lines
   virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAOD in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAOD
   virtual void GlobalTracksAODTEST(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAODTEST in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAODTEST
+  virtual void GlobalTracksAODHA(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAODHA in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAODHA
   virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t indexX, Int_t indexY); // fill TExMap *fGlobalTracksAOD1[10][5];
   Double_t RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2);
   Double_t RelativeMomentaComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component);
@@ -127,6 +131,12 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void Calculate3pBackgroundTEST(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3);
   virtual void Calculate4pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TClonesArray *ca4);
   virtual void Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC); // TBI unify with the previous function
+  virtual void HybridApproach1stTerm(AliAODEvent *aAOD);
+  virtual void HybridApproach2ndTerm(AliAODEvent *aAOD, TClonesArray *ca3, TExMap *em3);
+  //virtual void HybridApproach3rdTerm(AliAODEvent *aAOD); // TBI not needed for the time being
+  //virtual void HybridApproach4thTerm(AliAODEvent *aAOD); // TBI not needed for the time being
+  virtual void HybridApproach5thTerm(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3);
+
   // 3.) Methods called in Terminate(Option_t *):
   virtual void GetOutputHistograms(TList *histList);
    // TBI implement the rest as well
@@ -134,6 +144,9 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
    virtual void GetPointersForBackground();
    virtual void GetPointersForBuffers();
   virtual void NormalizeCorrelationFunctions();
+  // 4.) Utility:
+  Int_t BinNoForSpecifiedValue(TH1F *hist, Double_t value);
+  Int_t BinNoForSpecifiedValue(TProfile *pro, Double_t value);
 
   // Setters and getters:
   // 0.) Not classified yet;
@@ -358,6 +371,18 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList* GetCorrelationFunctionsTESTList() const {return this->fCorrelationFunctionsTESTList;}
   void SetCorrelationFunctionsTESTFlagsPro(TProfile* const cfTfp) {this->fCorrelationFunctionsTESTFlagsPro = cfTfp;};
   TProfile* GetCorrelationFunctionsTESTFlagsPro() const {return this->fCorrelationFunctionsTESTFlagsPro;};
+  void SetQ2binning(const Int_t nBins, const Double_t min, const Double_t max)
+  {
+   this->fnQ2bins = nBins;
+   this->fnQ2min = min;
+   this->fnQ2max = max;
+  };
+  void SetQ3binning(const Int_t nBins, const Double_t min, const Double_t max)
+  {
+   this->fnQ3bins = nBins;
+   this->fnQ3min = min;
+   this->fnQ3max = max;
+  };
   void SetFillCorrelationFunctionsTEST(Int_t const testNO, Bool_t bDoTest) {this->fFillCorrelationFunctionsTEST[testNO] = bDoTest;};
 
   // *.) Testing new ways to calculate background:
@@ -366,6 +391,13 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   void SetBackgroundTESTFlagsPro(TProfile* const bTfp) {this->fBackgroundTESTFlagsPro = bTfp;};
   TProfile* GetBackgroundTESTFlagsPro() const {return this->fBackgroundTESTFlagsPro;};
   void SetFillBackgroundTEST(Int_t const testNO, Bool_t bDoTest) {this->fFillBackgroundTEST[testNO] = bDoTest;};
+
+  // *) 'hybrid approach':
+  void SetHybridApproachList(TList* const hal) {this->fHybridApproachList = hal;};
+  TList* GetHybridApproachList() const {return this->fHybridApproachList;}
+  void SetHybridApproachFlagsPro(TProfile* const hafp) {this->fHybridApproachFlagsPro = hafp;};
+  TProfile* GetHybridApproachFlagsPro() const {return this->fHybridApproachFlagsPro;};
+  void SetDoHybridApproach(Bool_t bhap) {this->fDoHybridApproach = bhap;};
 
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
@@ -474,6 +506,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile2D *fExclusiveSigmaCutsPro;                      // holds the values of fExclusiveSigmaCuts[5][5];
   TH1F *fMassPIDHist[5][2][2];                             //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPtPIDHist[5][2][2];                               //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
+  TH1F *fPPIDHist[5][2][2][3];                             //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx][xyz]
   TH1F *fEtaPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPhiPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   Bool_t fUseDefaultInclusiveSigmaCuts;                    // if the setter SetInclusiveSigmaCuts(...) (see above) is not called explicitly, the default hardwired values will be used
@@ -613,6 +646,12 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // *.) Testing new ways to calculate correlation functions and cumulants:
   TList *fCorrelationFunctionsTESTList;              // list to hold all TEST correlation functions for primary particle
   TProfile *fCorrelationFunctionsTESTFlagsPro;       // profile to hold all flags for TEST correlation functions
+  Int_t fnQ2bins;                                    // number of bins for all histos and profiles vs. Q2 (both for signal and background)
+  Double_t fnQ2min;                                  // min bin for all histos and profiles vs. Q2 (both for signal and background)
+  Double_t fnQ2max;                                  // max bin for all histos and profiles vs. Q2 (both for signal and background)
+  Int_t fnQ3bins;                                    // number of bins for all histos and profiles vs. Q3 (both for signal and background)
+  Double_t fnQ3min;                                  // min bin for all histos and profiles vs. Q3 (both for signal and background)
+  Double_t fnQ3max;                                  // max bin for all histos and profiles vs. Q3 (both for signal and background)
   TList *fCorrelationFunctionsTESTSublist[10];       //! lists to hold all TEST correlation functions, they are enumerated in .cxx file
   Bool_t fFillCorrelationFunctionsTEST[10];          // fill or not particular TEST correlation functions, they are enumerated in .cxx file (by default all are set to FALSE)
   TProfile *fCorrelationFunctionsTEST[10][2][7][10]; // [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
@@ -630,6 +669,14 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TExMap *fGlobalTracksAODTEST[3];                  //! global tracks in AOD
   TH1F *fBackgroundYieldTEST[2];                    // [0=for <X1X2> and Q2, 1=for <X1X2X3> and Q3]
 
+  // *.) 'hybrid approach':
+  TList *fHybridApproachList;        // list to hold all histos for 'hybrid approach' a la UH
+  TProfile *fHybridApproachFlagsPro; // profile to hold all flags for 'hybrid approach' a la UH
+  Bool_t fDoHybridApproach;          // do or not the correlations via the 'hybrid approach' a la UH
+  TH1F *fDistributionsVsQ3[5];       // five distinct distributions in the numerator of Eq. (18)
+  TClonesArray *fMixedEventsHA[3];   //! tracks for mixed events, using just 'shifting' for simplicity TBI make it it more sophisticated later
+  TExMap *fGlobalTracksAODHA[3];     //! global tracks in AOD
+
   // *.) Online monitoring:
   Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
   Bool_t fUpdateOutputFile;        // update the output file after certain number of analysed events
@@ -645,7 +692,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  // do something only for the specified event
   UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,15);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,16);
 
 };
 
