@@ -1701,7 +1701,6 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3P
   // and fill on-the-fly the data member of rd
   if(rd->GetIsFilled()!=0)return kTRUE;//if 0: reduced dAOD. skip if rd is already filled (1: standard dAOD, 2 already refilled)
   if(!fAODMap)MapAODtracks(event);//fill the AOD index map if it is not yet done
-
   TObjArray *threeTrackArray   = new TObjArray(3);
 
   AliAODTrack *track1 =(AliAODTrack*)event->GetTrack(fAODMap[rd->GetProngID(0)]);//retrieve daughter from the trackID through the AOD index map
@@ -1751,6 +1750,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3P
     return kFALSE;
   }
 
+  rd->SetNProngs();
   Double_t vtxRec=rd->GetDist12toPrim();
   Double_t vertexp2n1=rd->GetDist23toPrim();
   rd= Make3Prong(threeTrackArray, event, secVert3PrAOD,dispersion, vtxRec, vertexp2n1, dca12, dca2, dca3, rd);
@@ -1813,6 +1813,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2P
   Bool_t okJPSI=kFALSE;
   Bool_t okD0FromDstar=kFALSE;
   Bool_t refill =kTRUE;
+  rd->SetNProngs();
   rd= Make2Prong(twoTrackArray1, event, vtxRec, dca12, okD0, okJPSI, okD0FromDstar,refill,rd);
   rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
   rd->SetIsFilled(2);
@@ -1837,6 +1838,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
   AliNeutralTrackParam *trackV0=NULL;
   AliAODv0 *v0 =NULL;
   AliAODRecoDecayHF2Prong *trackD0=NULL;
+  rCasc->SetNProngs();
 
   if(DStar){
   TClonesArray *inputArrayD0=(TClonesArray*)event->GetList()->FindObject("D0toKpi");
