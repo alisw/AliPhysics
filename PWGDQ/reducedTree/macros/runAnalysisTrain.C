@@ -1,17 +1,18 @@
 // Grid running parameters
 TString gGridRunMode = "full";
-TString gRootVersion = "v5-34-30-alice7-1";
-TString gAlirootVersion = "v5-08-18c-1";
-TString gAliphysicsVersion = "vAN-20161208-1";
-TString gGridDataDir = "/alice/data/2015/LHC15o";
+TString gRootVersion = "v5-34-30-alice7-2";
+TString gAlirootVersion = "v5-08-22-1";
+TString gAliphysicsVersion = "vAN-20170228-1";
+TString gGridDataDir = "/alice/data/2016/LHC16r";
 //TString gGridDataDir = "/alice/data/2016/LHC16l";
 //TString gGridDataDir = "/alice/cern.ch/user/i/iarsene/work/outputDst";
 //TString gGridDataPattern = "*/pass1/*/AliESDs.root";
 //TString gGridDataPattern = "*/pass1/PWGDQ/DQ_PbPb/231_20161009-2048/*/dstTree.root";
-TString gGridDataPattern = "*/pass1/*/AliESDs.root";
+TString gGridDataPattern = "*/pass1_CENT_wSDD/*/AliESDs.root";
+//TString gGridDataPattern = "*/pass1_CENT_wSDD/AOD/*/AliAOD.root";
 TString gGridWorkingDir = "work";
-TString gGridOutputDir = "testTrees_run246037";
-Int_t gGridMaxInputFileNumber = 40;
+TString gGridOutputDir = "testTrees2_LHC16r_run265742";
+Int_t gGridMaxInputFileNumber = 20;
 
 //______________________________________________________________________________________________________________________________________
 void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD", Bool_t hasMC = kFALSE,
@@ -97,10 +98,11 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
         AddTaskCentrality();
       }
-      if(!prod.CompareTo("LHC15o") || !prod.CompareTo("LHC16l") || !prod.CompareTo("mcPbPb")) {         // Run-2 Pb-Pb
+      //if(!prod.CompareTo("LHC15o") || !prod.CompareTo("LHC16l") || !prod.CompareTo("LHC16r")) {         // Run-2 Pb-Pb, pp or p-Pb
+      if(!prod.CompareTo("LHC15o") || !prod.CompareTo("LHC16l")) {         // Run-2 Pb-Pb, pp
          gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
          AliMultSelectionTask* multTask = AddTaskMultSelection();
-         if(!prod.CompareTo("mcPbPb"))
+         if(hasMC)
            multTask->SetAlternateOADBforEstimators("LHC15o-DefaultMC-HIJING");
       }      
 
@@ -110,6 +112,11 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
       Int_t recoPass = 1;
       if(hasMC) AddTaskPIDResponse(hasMC, kTRUE, tuneOnData, recoPass);
       else AddTaskPIDResponse();
+      
+      //====== ADD EVENT PLANE ===========
+      //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrectionsToLegoTrain.C");
+      //AddTaskFlowQnVectorCorrectionsToLegoTrain("alien:///alice/cern.ch/user/p/pdillens/QnFramework/hIRFull");
+      //AddTaskFlowQnVectorCorrectionsToLegoTrain("/home/iarsene/work/ALICE/treeAnalysis/newdst/development/test/evPlanePascal");
    }
    
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_TrainTreeAnalysis.C");
