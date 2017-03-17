@@ -18,7 +18,7 @@ AliAnalysisTaskSEB0toDminuspi *AddTaskB0Dminuspi(Int_t system=0/*0=pp,1=PbPb*/,
 
 						   TString cutsfile="", TString usercomment = "username",
 
-						 Bool_t theMCon=kFALSE,  Double_t TopomaticDdaughter=0.,Double_t pTD=0.,Double_t pTpi=0.,Double_t prodd0=999., Double_t cosB=-999.,Double_t dlB=0.,Double_t NdlBXY=0., Double_t TopomaticD=999.,Double_t Topomaticpi=999., Double_t cosoaDpi=-999.)
+						 Bool_t theMCon=kFALSE,  Double_t TopomaticDdaughter=0.,Double_t pTD=0.,Double_t pTpi=0.,Double_t prodd0=999., Double_t cosB=-999.,Double_t cosBXY=-999.,Double_t dlB=0.,Double_t NdlBXY=0., Double_t TopomaticD=999.,Double_t Topomaticpi=999., Double_t cosoaDpi=-999.)
 
 {
 
@@ -135,6 +135,7 @@ AliAnalysisTaskSEB0toDminuspi *AddTaskB0Dminuspi(Int_t system=0/*0=pp,1=PbPb*/,
   task->SetpipTCut(pTpi); 
   task->Setprodd0Cut(prodd0); 
   task->SetCosBCut(cosB); 
+  task->SetCosXYBCut(cosBXY); 
   task->SetdlBCut(dlB); 
   task->SetNdlXYBCut(NdlBXY); 
   task->SetTopomaticD(TopomaticD); 

@@ -64,6 +64,7 @@ class AliAnalysisTaskSEB0toDminuspi : public AliAnalysisTaskSE
   void SetpipTCut(Double_t pTpi){fpTpi=pTpi;} 
   void Setprodd0Cut(Double_t prodd0){fprodd0=prodd0;} 
   void SetCosBCut(Double_t cosB){fcosB=cosB;} 
+  void SetCosXYBCut(Double_t cosBXY){fcosBXY=cosBXY;} 
   void SetdlBCut(Double_t dlB){fdlB=dlB;} 
   void SetNdlXYBCut(Double_t NdlBXY){fNdlBXY=NdlBXY;} 
   void SetTopomaticD(Double_t TopomaticD){fTopomaticD=TopomaticD;} 
@@ -130,10 +131,12 @@ class AliAnalysisTaskSEB0toDminuspi : public AliAnalysisTaskSE
   TH1F* fDplusPointing;       //!<!hist. for D cos pointing (after cut)
   TH1F* fDplusDecayLength;    //!<!hist. for D decay length (after cut)
   TH1F* fDplusNormalizedDecayLength; //!<!hist. for D norm decay lengthXY (after cut)
+  TH1F* fDplusSigmaVert;      //!<!hist. for D sigma vertex (after cut)
   TH1F* fBPt;                 //!<!hist. for B Pt (after cut)
   TH1F* fBEta;                //!<!hist. for B eta (after cut)
   TH1F* fBPhi;                //!<!hist. for B phi  (after cut)
   TH1F* fBPointing;           //!<!hist. for B cos poining (after cut)
+  TH1F* fBPointingXY;         //!<!hist. for B cos poining XY (after cut)
   TH1F* fBDecayLength;        //!<!hist. for B decay length (after cut)
   TH1F* fBNormalizedDecayLength; //!<!hist. for B norm decay lengthXY  (after cut)
   TH1F* fDplusd0;             //!<!hist. for D d0 (after cut)
@@ -148,10 +151,12 @@ class AliAnalysisTaskSEB0toDminuspi : public AliAnalysisTaskSE
   TH1F* fDplusPointing_MCmatch; //!<!hist. for D cos pointing (after cut) matched to B0 in MC
   TH1F* fDplusDecayLength_MCmatch; //!<!hist. for D decay length (after cut) matched to B0 in MC
   TH1F* fDplusNormalizedDecayLength_MCmatch;             //!<!hist. for D norm dec length XY(after cut) matched to B0 in MC
+  TH1F* fDplusSigmaVert_MCmatch;  //!<!hist. for D sigma vertex (after cut) matched to B0 in MC
   TH1F* fBPt_MCmatch;             //!<!hist. for B pt (after cut) matched to B0 in MC
   TH1F* fBEta_MCmatch;            //!<!hist. for B eta (after cut) matched to B0 in MC
   TH1F* fBPhi_MCmatch;            //!<!hist. for B phi (after cut) matched to B0 in MC
   TH1F* fBPointing_MCmatch;       //!<!hist. for B pointing (after cut) matched to B0 in MC
+  TH1F* fBPointingXY_MCmatch;     //!<!hist. for B pointing XY (after cut) matched to B0 in MC
   TH1F* fBDecayLength_MCmatch;    //!<!hist. for B decay length (after cut) matched to B0 in MC
   TH1F* fBNormalizedDecayLength_MCmatch; //!<!hist. for B norm dec length XY (after cut) matched to B0 in MC
   TH1F* fDplusd0_MCmatch;         //!<!hist. for D d0 (after cut) matched to B0 in MC
@@ -171,6 +176,7 @@ class AliAnalysisTaskSEB0toDminuspi : public AliAnalysisTaskSE
   TH1F* fBDecayLengthBin[kMaxPtBins];                     //!<!hist. for B decay length (after cut) in pT bins
   TH1F* fBNormalizedDecayLengthBin[kMaxPtBins];           //!<!hist. for B norm decay length XY (after cut) in pT bins
   TH1F* fBPointingBin[kMaxPtBins];                        //!<!hist. for B cos pointing (after cut) in pT bins
+  TH1F* fBPointingXYBin[kMaxPtBins];                       //!<!hist. for B cos pointing XY (after cut) in pT bins
   TH1F* fDplusd0Bin[kMaxPtBins];                          //!<!hist. for D d0  (after cut) in pT bins
   TH1F* fBpTBin[kMaxPtBins];                              //!<!hist. for B pT (after cut) in pT bins
   TH1F* fDpluspTBin[kMaxPtBins];                          //!<!hist. for D pT (after cut) in pT bins
@@ -178,9 +184,11 @@ class AliAnalysisTaskSEB0toDminuspi : public AliAnalysisTaskSE
   TH1F* fDplusPointingBin[kMaxPtBins];                    //!<!hist. for D cos pointing (after cut) in pT bins
   TH1F* fDplusDecayLengthBin[kMaxPtBins];                 //!<!hist. for D decay length (after cut) in pT bins
   TH1F* fDplusNormalizedDecayLengthBin[kMaxPtBins];       //!<!hist. for D norm decay length XY (after cut) in pT bins
+  TH1F* fDplusSigmaVertBin[kMaxPtBins];                   //!<!hist. for D sigma vertex (after cut) in pT bins
   TH1F* fBDecayLengthBin_MCmatch[kMaxPtBins];             //!<!hist. for B decay length (after cut) in pT bins
   TH1F* fBNormalizedDecayLengthBin_MCmatch[kMaxPtBins];   //!<!hist. for B norm decay length XY (after cut) in pT bins
   TH1F* fBPointingBin_MCmatch[kMaxPtBins];                //!<!hist. for B cos pointnig (after cut) matched to B0 in MC in pT bins
+  TH1F* fBPointingXYBin_MCmatch[kMaxPtBins];              //!<!hist. for B cos pointnig XY (after cut) matched to B0 in MC in pT bins
   TH1F* fDplusd0Bin_MCmatch[kMaxPtBins];                  //!<!hist. for D d0 (after cut) matched to B0 in MC in pT bins
   TH1F* fBpTBin_MCmatch[kMaxPtBins];                      //!<!hist. for B pT (after cut) matched to B0 in MC in pT bins
   TH1F* fDpluspTBin_MCmatch[kMaxPtBins];                  //!<!hist. for D pT (after cut) matched to B0 in MC in pT bins
@@ -188,6 +196,7 @@ class AliAnalysisTaskSEB0toDminuspi : public AliAnalysisTaskSE
   TH1F* fDplusPointingBin_MCmatch[kMaxPtBins];            //!<!hist. for D pointing (after cut) matched to B0 in MC in pT bins
   TH1F* fDplusDecayLengthBin_MCmatch[kMaxPtBins];         //!<!hist. for D decay length (after cut) matched to B0 in MC in pT bins
   TH1F* fDplusNormalizedDecayLengthBin_MCmatch[kMaxPtBins];//!<!hist. for D norm dec length XY (after cut) matched to B0 in MC in pT bins
+  TH1F* fDplusSigmaVertBin_MCmatch[kMaxPtBins];      //!<!hist. for D sigma vertex (after cut) matched to B0 in MC in pT bins
 
   TH1F* fd0MMExpD;                                  //!<!hist. for D topomatic (after cut)
   TH1F* fd0MMExpDMCmatch;                           //!<!hist. for D topomatic (after cut) matched to B0 in MC 
@@ -237,6 +246,7 @@ class AliAnalysisTaskSEB0toDminuspi : public AliAnalysisTaskSE
   Double_t fpTpi;  ///cut to applied on B selection: pT pion
   Double_t fprodd0;///cut to applied on B selection: product d0
   Double_t fcosB;  ///cut to applied on B selection: B cos pointing 
+  Double_t fcosBXY;  ///cut to applied on B selection: B cos pointing XY
   Double_t fdlB;   ///cut to applied on B selection: B decay length
   Double_t fNdlBXY; ///cut to applied on B selection: B norm decay length XY
   Double_t fTopomaticD; ///cut to applied on B selection: D topomatic
@@ -245,7 +255,7 @@ class AliAnalysisTaskSEB0toDminuspi : public AliAnalysisTaskSE
   
   
 
-  ClassDef(AliAnalysisTaskSEB0toDminuspi,1); /// class for B spectra
+  ClassDef(AliAnalysisTaskSEB0toDminuspi,2); /// class for B spectra
 };
 
 #endif

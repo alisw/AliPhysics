@@ -89,10 +89,12 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi():
   fDplusPointing(0),
   fDplusDecayLength(0),
   fDplusNormalizedDecayLength(0),
+  fDplusSigmaVert(0),
   fBPt(0),
   fBEta(0),
   fBPhi(0),
   fBPointing(0),
+  fBPointingXY(0),
   fBDecayLength(0),
   fBNormalizedDecayLength(0),
   fDplusd0(0),
@@ -107,10 +109,12 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi():
   fDplusPointing_MCmatch(0),
   fDplusDecayLength_MCmatch(0),
   fDplusNormalizedDecayLength_MCmatch(0),
+  fDplusSigmaVert_MCmatch(0),
   fBPt_MCmatch(0),
   fBEta_MCmatch(0),
   fBPhi_MCmatch(0),
   fBPointing_MCmatch(0),
+  fBPointingXY_MCmatch(0),
   fBDecayLength_MCmatch(0),
   fBNormalizedDecayLength_MCmatch(0),
   fDplusd0_MCmatch(0),
@@ -147,6 +151,7 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi():
   fpTpi(0), 
   fprodd0(999), 
   fcosB(0),
+  fcosBXY(0),
   fdlB(0),
   fNdlBXY(0),
   fTopomaticD(999),
@@ -184,6 +189,7 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi():
     fBDecayLengthBin[i]=0;
     fBNormalizedDecayLengthBin[i]=0;
     fBPointingBin[i]=0;
+    fBPointingXYBin[i]=0;
     fDplusd0Bin[i]=0;
     fBpTBin[i]=0;
     fDpluspTBin[i]=0;
@@ -191,10 +197,12 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi():
     fDplusPointingBin[i]=0;
     fDplusDecayLengthBin[i]=0;
     fDplusNormalizedDecayLengthBin[i]=0;
-    
+    fDplusSigmaVertBin[i]=0;
+      
     fBDecayLengthBin_MCmatch[i]=0;
     fBNormalizedDecayLengthBin_MCmatch[i]=0;
     fBPointingBin_MCmatch[i]=0;
+    fBPointingXYBin_MCmatch[i]=0;
     fDplusd0Bin_MCmatch[i]=0;
     fBpTBin_MCmatch[i]=0;
     fDpluspTBin_MCmatch[i]=0;
@@ -202,7 +210,8 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi():
     fDplusPointingBin_MCmatch[i]=0;
     fDplusDecayLengthBin_MCmatch[i]=0;
     fDplusNormalizedDecayLengthBin_MCmatch[i]=0;
-
+    fDplusSigmaVertBin_MCmatch[i]=0;
+    
     fd0MMExpDBin[i]=0;               
     fd0MMExpDBin_MCmatch[i]=0;              
     fd0MMExppiBin[i]=0;            
@@ -252,10 +261,12 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi(const Char_t* name,
   fDplusPointing(0),
   fDplusDecayLength(0),
   fDplusNormalizedDecayLength(0),
+  fDplusSigmaVert(0),
   fBPt(0),
   fBEta(0),
   fBPhi(0),
   fBPointing(0),
+  fBPointingXY(0),
   fBDecayLength(0),
   fBNormalizedDecayLength(0),
   fDplusd0(0),
@@ -270,10 +281,12 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi(const Char_t* name,
   fDplusPointing_MCmatch(0),
   fDplusDecayLength_MCmatch(0),
   fDplusNormalizedDecayLength_MCmatch(0),
+  fDplusSigmaVert_MCmatch(0),
   fBPt_MCmatch(0),
   fBEta_MCmatch(0),
   fBPhi_MCmatch(0),
   fBPointing_MCmatch(0),
+  fBPointingXY_MCmatch(0),
   fBDecayLength_MCmatch(0),
   fBNormalizedDecayLength_MCmatch(0),
   fDplusd0_MCmatch(0),
@@ -310,6 +323,7 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi(const Char_t* name,
   fpTpi(0), 
   fprodd0(999), 
   fcosB(0),
+  fcosBXY(0),
   fdlB(0),
   fNdlBXY(0),
   fTopomaticD(999),
@@ -341,6 +355,7 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi(const Char_t* name,
     fBDecayLengthBin[i]=0;
     fBNormalizedDecayLengthBin[i]=0;
     fBPointingBin[i]=0;
+    fBPointingXYBin[i]=0;
     fDplusd0Bin[i]=0;
     fBpTBin[i]=0;
     fDpluspTBin[i]=0;
@@ -348,10 +363,12 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi(const Char_t* name,
     fDplusPointingBin[i]=0;
     fDplusDecayLengthBin[i]=0;
     fDplusNormalizedDecayLengthBin[i]=0;
-    
+    fDplusSigmaVertBin[i]=0;
+      
     fBDecayLengthBin_MCmatch[i]=0;
     fBNormalizedDecayLengthBin_MCmatch[i]=0;
     fBPointingBin_MCmatch[i]=0;
+    fBPointingXYBin_MCmatch[i]=0;
     fDplusd0Bin_MCmatch[i]=0;
     fBpTBin_MCmatch[i]=0;
     fDpluspTBin_MCmatch[i]=0;
@@ -359,7 +376,8 @@ AliAnalysisTaskSEB0toDminuspi::AliAnalysisTaskSEB0toDminuspi(const Char_t* name,
     fDplusPointingBin_MCmatch[i]=0;
     fDplusDecayLengthBin_MCmatch[i]=0;
     fDplusNormalizedDecayLengthBin_MCmatch[i]=0;
-
+    fDplusSigmaVertBin_MCmatch[i]=0;
+    
     fd0MMExpDBin[i]=0;               
     fd0MMExpDBin_MCmatch[i]=0;              
     fd0MMExppiBin[i]=0;            
@@ -452,10 +470,12 @@ AliAnalysisTaskSEB0toDminuspi::~AliAnalysisTaskSEB0toDminuspi() {
   delete fDplusPointing;
   delete fDplusDecayLength;
   delete fDplusNormalizedDecayLength;
+  delete fDplusSigmaVert;
   delete fBPt;
   delete fBEta;
   delete fBPhi;
   delete fBPointing;
+  delete fBPointingXY;
   delete fBDecayLength;
   delete fBNormalizedDecayLength;
   delete fDplusd0;
@@ -470,10 +490,12 @@ AliAnalysisTaskSEB0toDminuspi::~AliAnalysisTaskSEB0toDminuspi() {
   delete fDplusPointing_MCmatch;
   delete fDplusDecayLength_MCmatch;
   delete fDplusNormalizedDecayLength_MCmatch;
+  delete fDplusSigmaVert_MCmatch;  
   delete fBPt_MCmatch;
   delete fBEta_MCmatch;
   delete fBPhi_MCmatch;
   delete fBPointing_MCmatch;
+  delete fBPointingXY_MCmatch;
   delete fBDecayLength_MCmatch;
   delete fBNormalizedDecayLength_MCmatch;
   delete fDplusd0_MCmatch;
@@ -510,6 +532,7 @@ AliAnalysisTaskSEB0toDminuspi::~AliAnalysisTaskSEB0toDminuspi() {
     delete fBDecayLengthBin[i];
     delete fBNormalizedDecayLengthBin[i];
     delete fBPointingBin[i];
+    delete fBPointingXYBin[i];   
     delete fDplusd0Bin[i];
     delete fBpTBin[i];
     delete fDpluspTBin[i];
@@ -517,10 +540,12 @@ AliAnalysisTaskSEB0toDminuspi::~AliAnalysisTaskSEB0toDminuspi() {
     delete fDplusPointingBin[i];
     delete fDplusDecayLengthBin[i];
     delete fDplusNormalizedDecayLengthBin[i];
+    delete fDplusSigmaVertBin[i];
 
     delete fBDecayLengthBin_MCmatch[i];
     delete fBNormalizedDecayLengthBin_MCmatch[i];
     delete fBPointingBin_MCmatch[i];
+    delete fBPointingXYBin_MCmatch[i];
     delete fDplusd0Bin_MCmatch[i];
     delete fBpTBin_MCmatch[i];
     delete fDpluspTBin_MCmatch[i];
@@ -528,6 +553,8 @@ AliAnalysisTaskSEB0toDminuspi::~AliAnalysisTaskSEB0toDminuspi() {
     delete fDplusPointingBin_MCmatch[i];
     delete fDplusDecayLengthBin_MCmatch[i];
     delete fDplusNormalizedDecayLengthBin_MCmatch[i];
+    delete fDplusSigmaVertBin_MCmatch[i];
+
 
     delete fd0MMExpDBin[i];
     delete fd0MMExpDBin_MCmatch[i];
@@ -607,7 +634,7 @@ void AliAnalysisTaskSEB0toDminuspi::UserExec(Option_t *)
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
    fCEvents->Fill(2);
-  fCounter->StoreEvent(aodEvent,fRDCutsAnalysis,fReadMC);
+ 
   
   if (array3Prong->GetEntriesFast()==0) return;
   
@@ -636,7 +663,8 @@ void AliAnalysisTaskSEB0toDminuspi::UserExec(Option_t *)
 
   
   if(!isEvSel) return;
- 
+  fCounter->StoreEvent(aodEvent,fRDCutsAnalysis,fReadMC);
+   
   fCEvents->Fill(3);
   // counters for efficiencies
   //Int_t icountReco = 0;
@@ -1101,10 +1129,12 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
   fDplusPointing = new TH1F("fDplusPointing", "CosPointingAngle of Dplus (from B0 selected)", 200, 0., 1.);
   fDplusDecayLength = new TH1F("fDplusDecayLength", "Decay Length of D+ (B0 selected)", 200, 0, 0.5); 
   fDplusNormalizedDecayLength = new TH1F("fDplusNormalizedDecayLength", "Normalized Decay Length of D+ (B0 selected)", 200, 0, 20);
+  fDplusSigmaVert = new TH1F("fDplusSigmaVert", "Sigma vertex of D+ (B0 selected)", 200, 0, 0.5); 
   fBPt = new TH1F("fBPt", "Pt of B0 (B0 selected)", 100, 0, 50);
   fBEta = new TH1F("fBEta", "Eta of B0 (B0 selected)", 200, -1, 1);
    fBPhi = new TH1F("fBPhi", "Phi of B0 (B0 selected)", 200, 0, 7);
   fBPointing = new TH1F("fBPointing", "CosPointingAngle of B0 (B0 selected)", 200, 0., 1.);
+  fBPointingXY = new TH1F("fBPointingXY", "CosPointingAngleXY of B0 (B0 selected)", 200, 0., 1.);
   fBDecayLength = new TH1F("fBDecayLength", "Decay Length of B0 (B0 selected)", 200, 0, 0.5);
   fBNormalizedDecayLength = new TH1F("fBNormalizedDecayLength", "Normalized Decay Length of B0 (B0 selected)", 200, 0, 20);
   fDplusd0 = new TH1F("fDplusd0", "|d0| Dplus to prim vtx(B0 selected)", 200, 0, 0.25);
@@ -1119,10 +1149,12 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
   fDplusPointing_MCmatch = new TH1F("fDplusPointing_MCmatch", "CosPointingAngle of Dplus (MCmatched B0)", 200, 0., 1.);
   fDplusDecayLength_MCmatch = new TH1F("fDplusDecayLength_MCmatch", "Decay Length of D+ (MCmatched B0)", 200, 0, 0.5);
   fDplusNormalizedDecayLength_MCmatch = new TH1F("fDplusNormalizedDecayLength_MCmatch", "Normalized Decay Length of D+ (MCmatched B0)", 200, 0, 20);
+  fDplusSigmaVert_MCmatch = new TH1F("fDplusSigmaVert_MCmatch", "Sigma vertex of D+ (MC matched B0)", 200, 0, 0.5); 
   fBPt_MCmatch = new TH1F("fBPt_MCmatch", "Pt of B0 (MCmatched B0)", 100, 0, 50);
   fBEta_MCmatch = new TH1F("fBEta_MCmatch", "Eta of B0 (MCmatched B0)", 200, -1, 1);
   fBPhi_MCmatch = new TH1F("fBPhi_MCmatch", "Phi of B0 (MCmatched B0)", 200, 0, 7);
   fBPointing_MCmatch = new TH1F("fBPointing_MCmatch", "CosPointingAngle of B0 (MCmatched B0)", 200, 0., 1.);
+  fBPointingXY_MCmatch = new TH1F("fBPointingXY_MCmatch", "CosPointingAngleXY of B0 (MC matched B0)", 200, 0., 1.);
   fBDecayLength_MCmatch = new TH1F("fBDecayLength_MCmatch", "Decay Length of B0 (MCmatched B0)", 200, 0, 0.5);
   fBNormalizedDecayLength_MCmatch = new TH1F("fBNormalizedDecayLength_MCmatch", "Normalized Decay Length of B0 (MCmatched B0)", 200, 0, 20);
   fDplusd0_MCmatch = new TH1F("fDplusd0_MCmatch", "|d0| Dplus to prim vtx(MCmatched B0)", 200, 0, 0.25);
@@ -1166,10 +1198,12 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
   fOutput->Add(fDplusPointing);
   fOutput->Add(fDplusDecayLength);
   fOutput->Add(fDplusNormalizedDecayLength);
+  fOutput->Add(fDplusSigmaVert);
   fOutput->Add(fBPt);
   fOutput->Add(fBEta);
   fOutput->Add(fBPhi);
   fOutput->Add(fBPointing);
+  fOutput->Add(fBPointingXY);
   fOutput->Add(fBDecayLength);
   fOutput->Add(fBNormalizedDecayLength);
   fOutput->Add(fDplusd0);
@@ -1199,10 +1233,12 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
     fOutput->Add(fDplusPointing_MCmatch);
     fOutput->Add(fDplusDecayLength_MCmatch);
     fOutput->Add(fDplusNormalizedDecayLength_MCmatch);
+    fOutput->Add(fDplusSigmaVert_MCmatch);  
     fOutput->Add(fBPt_MCmatch);
     fOutput->Add(fBEta_MCmatch);
     fOutput->Add(fBPhi_MCmatch);
     fOutput->Add(fBPointing_MCmatch);
+    fOutput->Add(fBPointingXY_MCmatch);
     fOutput->Add(fBDecayLength_MCmatch);
     fOutput->Add(fBNormalizedDecayLength_MCmatch);
     fOutput->Add(fDplusd0_MCmatch);
@@ -1261,6 +1297,8 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
     fBNormalizedDecayLengthBin[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 20);
     HistName.Form("fBPointingBin_bin%d",i);
     fBPointingBin[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 1.);
+    HistName.Form("fBPointingXYBin_bin%d",i);
+    fBPointingXYBin[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 1.);
     HistName.Form("fDplusd0Bin_bin%d",i);
     fDplusd0Bin[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 0.25);
     HistName.Form("fBpTBin_bin%d",i);
@@ -1275,6 +1313,8 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
     fDplusDecayLengthBin[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 0.5);
     HistName.Form("fDplusNormalizedDecayLengthBin_bin%d",i);
     fDplusNormalizedDecayLengthBin[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 20);
+    HistName.Form("fDplusSigmaVertBin_bin%d",i);
+    fDplusSigmaVertBin[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 0.5);
     
     HistName.Form("fBDecayLengthBin_MCmatch_bin%d",i);
     fBDecayLengthBin_MCmatch[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 0.5);
@@ -1282,6 +1322,8 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
     fBNormalizedDecayLengthBin_MCmatch[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 20);
     HistName.Form("fBPointingBin_MCmatch_bin%d",i);
     fBPointingBin_MCmatch[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 1.);
+    HistName.Form("fBPointingXYBin_MCmatch_bin%d",i);
+    fBPointingXYBin_MCmatch[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 1.);
     HistName.Form("fDplusd0Bin_MCmatch_bin%d",i);
     fDplusd0Bin_MCmatch[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 0.25);
     HistName.Form("fBpTBin_MCmatch_bin%d",i);
@@ -1296,7 +1338,9 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
     fDplusDecayLengthBin_MCmatch[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 0.5);
     HistName.Form("fDplusNormalizedDecayLengthBin_MCmatch_bin%d",i);
     fDplusNormalizedDecayLengthBin_MCmatch[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 20);
-    
+    HistName.Form("fDplusSigmaVertBin_MCmatch_bin%d",i);
+    fDplusSigmaVertBin_MCmatch[i]= new TH1F(HistName.Data(), HistName.Data(), 200, 0, 0.5);
+   
     HistName.Form("fd0MMExpD_bin%d",i);
     fd0MMExpDBin[i] = new TH1F(HistName.Data(), HistName.Data(), 200, -10.0,10.);
     HistName.Form("fd0MMExpD_MCmatch_bin%d",i);
@@ -1333,6 +1377,7 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
     fOutputBins->Add(fBDecayLengthBin[i]);
     fOutputBins->Add(fBNormalizedDecayLengthBin[i]);
     fOutputBins->Add(fBPointingBin[i]);
+    fOutputBins->Add(fBPointingXYBin[i]);
     fOutputBins->Add(fDplusd0Bin[i]);
     fOutputBins->Add(fBpTBin[i]);
     fOutputBins->Add(fDpluspTBin[i]);
@@ -1340,6 +1385,7 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
     fOutputBins->Add(fDplusPointingBin[i]);
     fOutputBins->Add(fDplusDecayLengthBin[i]);
     fOutputBins->Add(fDplusNormalizedDecayLengthBin[i]);
+    fOutputBins->Add(fDplusSigmaVertBin[i]);
 
     fOutputBins->Add(fd0MMExpDBin[i]);
     fOutputBins->Add(fd0MMExppiBin[i]);
@@ -1354,6 +1400,7 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
       fOutputBins->Add(fBDecayLengthBin_MCmatch[i]);
       fOutputBins->Add(fBNormalizedDecayLengthBin_MCmatch[i]);
       fOutputBins->Add(fBPointingBin_MCmatch[i]);
+      fOutputBins->Add(fBPointingXYBin_MCmatch[i]);
       fOutputBins->Add(fDplusd0Bin_MCmatch[i]);
       fOutputBins->Add(fBpTBin_MCmatch[i]);
       fOutputBins->Add(fDpluspTBin_MCmatch[i]);
@@ -1361,6 +1408,7 @@ void  AliAnalysisTaskSEB0toDminuspi::DefineHistograms(){
       fOutputBins->Add(fDplusPointingBin_MCmatch[i]);
       fOutputBins->Add(fDplusDecayLengthBin_MCmatch[i]);
       fOutputBins->Add(fDplusNormalizedDecayLengthBin_MCmatch[i]);
+      fOutputBins->Add(fDplusSigmaVertBin_MCmatch[i]);
       fOutputBins->Add(fd0MMExpDBin_MCmatch[i]);
       fOutputBins->Add(fd0MMExppiBin_MCmatch[i]);
       fOutputBins->Add(fd0MMExpDDaughtersBin_MCmatch[i]);
@@ -1401,7 +1449,6 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
     else if(TMath::Abs(normdd0)<TMath::Abs(dd0min)) dd0min=normdd0;
     
       }
-  fd0MMExpDDaughters->Fill(dd0min);
   
   //if(TMath::Abs(dd0min)<fInvertedTopomaticCutOnDDaughters)continue;
       
@@ -1434,26 +1481,22 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
 
      fB0InvMass->Fill(B0InvMass);
      if(arrayMClabel[iB0] > (-1)){
-       fBInvMass_MCmatch->Fill(B0InvMass);
-       fd0MMExpDDaughters_MCmatch->Fill(dd0min);}
+       fBInvMass_MCmatch->Fill(B0InvMass);}
 	 
        if(kbins){
        Int_t index = fRDCutsAnalysis->PtBin(fArrayB0[iB0]->Pt());
        fB0InvMassBin[index]->Fill(B0InvMass);
        fDplusInvMassBin[index]->Fill(Dmeson->InvMassDplus());
-       fd0MMExpDDaughtersBin[index]->Fill(dd0min);
        if(arrayMClabel[iB0] > (-1))   {
-	 
-	 fB0InvMassBin_MCmatch[index]->Fill(B0InvMass);
-	 fd0MMExpDDaughtersBin_MCmatch[index]->Fill(dd0min);
+	 	 fB0InvMassBin_MCmatch[index]->Fill(B0InvMass);
        }
      }
      
        
      Bool_t PassCut1=0; 
-    //Cuts array: 0= D pT,1= pi pT, 2= prod d0, 3= cos_point B, 4= decl B, 5=NdlXY B, 6= Topomatic D, 7= topmatico pi, 8=cos opening angle 
+    //Cuts array: 0= D pT,1= pi pT, 2= prod d0, 3= cos_point B, 4= cos_pointXY B, 5= decl B, 6=NdlXY B,7= Topomatic D, 8= topmatico pi, 9=cos opening angle 
      
-     if(Dmeson->Pt()>fpTD &&  aodTrack->Pt()>fpTpi &&productd0 < fprodd0 && fArrayB0[iB0]->CosPointingAngle()>fcosB &&
+     if(Dmeson->Pt()>fpTD &&  aodTrack->Pt()>fpTpi &&productd0 < fprodd0 && fArrayB0[iB0]->CosPointingAngle()>fcosB && fArrayB0[iB0]->CosPointingAngleXY()>fcosBXY &&
 	 fArrayB0[iB0]->DecayLength()>fdlB && fArrayB0[iB0]->NormalizedDecayLengthXY()> fNdlBXY  && TMath::Abs(normdd0MCpi)<fTopomaticpi && TMath::Abs(normdd0MCD)<fTopomaticD && cosoa>fcosoaDpi  && TMath::Abs(dd0min)>fInvertedTopomaticCutOnDDaughters) PassCut1=1;
    
 	
@@ -1473,6 +1516,7 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
       fDplusPointing->Fill(Dmeson->CosPointingAngle());
       fDplusDecayLength->Fill(Dmeson->DecayLength());
       fDplusNormalizedDecayLength->Fill(Dmeson->NormalizedDecayLengthXY());
+      fDplusSigmaVert->Fill(Dmeson->GetSigmaVert());
       fDplusd0->Fill(d01);
    
       
@@ -1486,10 +1530,13 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
       fBDecayLength->Fill(fArrayB0[iB0]->DecayLength());
       fBNormalizedDecayLength->Fill(fArrayB0[iB0]->NormalizedDecayLengthXY());
       fBPointing->Fill(fArrayB0[iB0]->CosPointingAngle());
+      fBPointingXY->Fill(fArrayB0[iB0]->CosPointingAngleXY());
       fpid0->Fill(d02);
       fproductd0->Fill(productd0);
       fd0MMExpD->Fill(normdd0MCD);
       fd0MMExppi->Fill(normdd0MCpi);
+      fd0MMExpDDaughters->Fill(dd0min);
+
       fcosoa->Fill(cosoa); 
     
       
@@ -1511,6 +1558,7 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
       fBDecayLength_MCmatch->Fill(fArrayB0[iB0]->DecayLength());
       fBNormalizedDecayLength_MCmatch->Fill(fArrayB0[iB0]->NormalizedDecayLengthXY());
       fBPointing_MCmatch->Fill(fArrayB0[iB0]->CosPointingAngle());
+      fBPointingXY_MCmatch->Fill(fArrayB0[iB0]->CosPointingAngleXY());
       fDplusd0_MCmatch->Fill(d01);
       fpid0_MCmatch->Fill(d02);
       fproductd0_MCmatch->Fill(productd0);
@@ -1520,9 +1568,11 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
       fDplusPointing_MCmatch->Fill(Dmeson->CosPointingAngle());
       fDplusDecayLength_MCmatch->Fill(Dmeson->DecayLength());
       fDplusNormalizedDecayLength_MCmatch->Fill(Dmeson->NormalizedDecayLengthXY());
+      fDplusSigmaVert_MCmatch->Fill(Dmeson->GetSigmaVert());
       fDplusInvMass_MCmatch->Fill(Dmeson->InvMassDplus());
       fd0MMExpDMCmatch->Fill(normdd0MCD);
       fd0MMExppiMCmatch->Fill(normdd0MCpi);
+      fd0MMExpDDaughters_MCmatch->Fill(dd0min);
       fcosoa_MCmatch->Fill(cosoa); 
    
     }
@@ -1538,6 +1588,7 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
       fBDecayLengthBin[index]->Fill(fArrayB0[iB0]->DecayLength());
       fBNormalizedDecayLengthBin[index]->Fill(fArrayB0[iB0]->NormalizedDecayLengthXY());
       fBPointingBin[index]->Fill(fArrayB0[iB0]->CosPointingAngle());
+      fBPointingXYBin[index]->Fill(fArrayB0[iB0]->CosPointingAngleXY());
       fDplusd0Bin[index]->Fill(d01);
       fBpTBin[index]->Fill(fArrayB0[iB0]->Pt());
       fDpluspTBin[index]->Fill(Dmeson->Pt());
@@ -1545,8 +1596,11 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
       fDplusPointingBin[index]->Fill(Dmeson->CosPointingAngle());
       fDplusDecayLengthBin[index]->Fill(Dmeson->DecayLength());
       fDplusNormalizedDecayLengthBin[index]->Fill(Dmeson->NormalizedDecayLengthXY());    
+      fDplusSigmaVertBin[index]->Fill(Dmeson->GetSigmaVert());
       fd0MMExpDBin[index]->Fill(normdd0MCD);
       fd0MMExppiBin[index]->Fill(normdd0MCpi);
+      fd0MMExpDDaughtersBin[index]->Fill(dd0min);
+
       
       fBDplusPtBin[index]->Fill(fArrayB0[iB0]->Pt(),Dmeson->Pt());
       fBpiPtBin[index]->Fill(fArrayB0[iB0]->Pt(),aodTrack->Pt());
@@ -1559,6 +1613,7 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
 	fBDecayLengthBin_MCmatch[index]->Fill(fArrayB0[iB0]->DecayLength());
 	fBNormalizedDecayLengthBin_MCmatch[index]->Fill(fArrayB0[iB0]->NormalizedDecayLengthXY());
 	fBPointingBin_MCmatch[index]->Fill(fArrayB0[iB0]->CosPointingAngle());
+	fBPointingXYBin_MCmatch[index]->Fill(fArrayB0[iB0]->CosPointingAngleXY());
 	fDplusd0Bin_MCmatch[index]->Fill(d01);
 	fBpTBin_MCmatch[index]->Fill(fArrayB0[iB0]->Pt());
 	fDpluspTBin_MCmatch[index]->Fill(Dmeson->Pt());
@@ -1566,19 +1621,18 @@ void AliAnalysisTaskSEB0toDminuspi::FillSpectrum(Int_t nB0, Int_t* arrayMClabel,
 	fDplusPointingBin_MCmatch[index]->Fill(Dmeson->CosPointingAngle());
 	fDplusDecayLengthBin_MCmatch[index]->Fill(Dmeson->DecayLength());
 	fDplusNormalizedDecayLengthBin_MCmatch[index]->Fill(Dmeson->NormalizedDecayLengthXY());
-	fd0MMExpDBin_MCmatch[index]->Fill(normdd0MCD);
+	fDplusSigmaVertBin_MCmatch[index]->Fill(Dmeson->GetSigmaVert());
+    	fd0MMExpDBin_MCmatch[index]->Fill(normdd0MCD);
 	fd0MMExppiBin_MCmatch[index]->Fill(normdd0MCpi);
+	fd0MMExpDDaughtersBin_MCmatch[index]->Fill(dd0min);
 	fBDplusPtBin_MCmatch[index]->Fill(fArrayB0[iB0]->Pt(),Dmeson->Pt());
 	fBpiPtBin_MCmatch[index]->Fill(fArrayB0[iB0]->Pt(),aodTrack->Pt());
 	    
 	    
-      }
-    
-     
+      }   
     }
-           }
-	
-    }
+   }	
+  }
   
 
   return;
