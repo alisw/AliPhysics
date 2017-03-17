@@ -1290,6 +1290,11 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
 
   } else if (trainConfig == 221){ // EMCAL clusters pp 7 TeV, std matching
     cuts.AddCut("00000113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
+
+  } else if (trainConfig == 222){ // EMCAL clusters pp 7 TeV, no SPD pileup
+    cuts.AddCut("00000113","00200009327000008250400000","1111111067032230000","0163103100000010"); // std
+    cuts.AddCut("00000013","00200009327000008250400000","1111111067032230000","0163103100000010"); // std - no SPD pileup
+
   // ************************************* PHOS cuts ****************************************************
   // LHC11a  
   } else if (trainConfig == 301) { //PHOS clusters

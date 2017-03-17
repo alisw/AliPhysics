@@ -916,18 +916,18 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111111067032220000","0163103100000040"); // min open angle - 0.0152
     cuts.AddCut("00000113","1111111067032220000","0163103100000030"); // min open angle - 0.01
     cuts.AddCut("00000113","1111111067032220000","0163103100000010"); // min open angle - 0.005
-  } else if (trainConfig == 208){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
+  } else if (trainConfig == 208){ // EMCAL clusters pp 7 TeV, Different DistanceToBadChannels
     cuts.AddCut("00000113","1111111067032220000","0163103100000050"); //
     cuts.AddCut("00000113","1111111167032220000","0163103100000050"); //
     cuts.AddCut("00000113","1111111267032220000","0163103100000050"); //
     cuts.AddCut("00000113","1111111367032220000","0163103100000050"); //
     cuts.AddCut("00000113","1111111567032220000","0163103100000050"); //
     cuts.AddCut("00000113","1111111667032220000","0163103100000050"); //
-  } else if (trainConfig == 209){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+  } else if (trainConfig == 209){ // EMCAL clusters pp 7 TeV, Different NonLinearities
     cuts.AddCut("00000113","1111101067032220000","0163103100000050"); // NonLinearity kSDMv5
     cuts.AddCut("00000113","1111113067032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 ConvCalo
     cuts.AddCut("00000113","1111114067032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 Calo
-  } else if (trainConfig == 210){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+  } else if (trainConfig == 210){ // EMCAL clusters pp 7 TeV, Different NonLinearities
     cuts.AddCut("00000113","1111111067032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo
     cuts.AddCut("00000113","1111112067032220000","0163103100000050"); // NonLinearity LHC12 Calo
     cuts.AddCut("00000113","1111121067032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
@@ -944,6 +944,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
 
   } else if (trainConfig == 221){ // EMCAL clusters pp 7 TeV, std matching
     cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // std
+  } else if (trainConfig == 222){ // EMCAL clusters pp 7 TeV, no SPD pileup
+    cuts.AddCut("00000113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00000013","1111111067032220000","0163103100000050"); // std - no SPD pileup
+
     // pp7TeV EMCal direct photons
   } else if (trainConfig == 251) {
     cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // pt const track matching, M02 < 0.7
