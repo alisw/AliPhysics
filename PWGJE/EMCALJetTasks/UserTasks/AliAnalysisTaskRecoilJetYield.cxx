@@ -206,36 +206,27 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   fTreeJetInfo = new TTree(nameoutput, nameoutput);
   
   if (!fFullTree){
-    const Int_t nVarMin = 27;
+    const Int_t nVarMin = 18;
     TString *fJetInfoVarNames = new TString [nVarMin];
   
     fJetInfoVarNames[0] = "Pt";
     fJetInfoVarNames[1] = "Pt_Truth";
-    fJetInfoVarNames[2] = "Phi";
-    fJetInfoVarNames[3] = "Phi_Truth";
-    fJetInfoVarNames[4] = "Eta";
-    fJetInfoVarNames[5] = "Eta_Truth";
-    fJetInfoVarNames[6] = "SymParam";
-    fJetInfoVarNames[7] = "SymParam_Truth";
-    fJetInfoVarNames[8] = "Tau1";
-    fJetInfoVarNames[9] = "Tau1_Truth";
-    fJetInfoVarNames[10] = "Tau2";
-    fJetInfoVarNames[11] = "Tau2_Truth";
-    fJetInfoVarNames[12] = "Mass";
-    fJetInfoVarNames[13] = "Mass_Truth";
-    fJetInfoVarNames[14] = "NTracks";
-    fJetInfoVarNames[15] = "NTracks_Truth";
-    fJetInfoVarNames[16] = "PTD";
-    fJetInfoVarNames[17] = "PTD_Truth";
-    fJetInfoVarNames[18] = "Angularity";
-    fJetInfoVarNames[19] = "Angularity_Truth";
-    fJetInfoVarNames[20] = "Centrality";
-    fJetInfoVarNames[21] = "DelR";
-    fJetInfoVarNames[22] = "DelR_Truth";
-    fJetInfoVarNames[23] = "N_Groomed_Branches";
-    fJetInfoVarNames[24] = "N_Groomed_Branches_Truth";
-    fJetInfoVarNames[25] = "Groomed_Jet_Pt";
-    fJetInfoVarNames[26] = "Groomed_Jet_Pt_Truth";
+    fJetInfoVarNames[2] = "SymParam";
+    fJetInfoVarNames[3] = "SymParam_Truth";
+    fJetInfoVarNames[4] = "Tau1";
+    fJetInfoVarNames[5] = "Tau1_Truth";
+    fJetInfoVarNames[6] = "Tau2";
+    fJetInfoVarNames[7] = "Tau2_Truth";
+    fJetInfoVarNames[8] = "PTD";
+    fJetInfoVarNames[9] = "PTD_Truth";
+    fJetInfoVarNames[10] = "Angularity";
+    fJetInfoVarNames[11] = "Angularity_Truth";
+    fJetInfoVarNames[12] = "DelR";
+    fJetInfoVarNames[13] = "DelR_Truth";
+    fJetInfoVarNames[14] = "N_Groomed_Branches";
+    fJetInfoVarNames[15] = "N_Groomed_Branches_Truth";
+    fJetInfoVarNames[16] = "Groomed_Jet_Pt";
+    fJetInfoVarNames[17] = "Groomed_Jet_Pt_Truth";
 
   
     
@@ -383,32 +374,28 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fJetInfoVar[0]=Jet1->Pt();
 	  fJetInfoVar[1]=0;
-	  fJetInfoVar[2]=JetPhi;
-	  fJetInfoVar[3]=0;
-	  fJetInfoVar[4]=Jet1->Eta();
 	  if(fDoSoftDrop) {
 	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kFALSE);
 	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kTRUE);
 	  }
 	  else{
+	    fJetInfoVar[2]=0;
+	    fJetInfoVar[3]=0;
+	    fJetInfoVar[4]=0;
+	    fJetInfoVar[5]=0;
 	    fJetInfoVar[6]=0;
 	    fJetInfoVar[7]=0;
-	    fJetInfoVar[8]=0;
-	    fJetInfoVar[9]=0;
-	    fJetInfoVar[10]=0;
-	    fJetInfoVar[11]=0;
-	    fJetInfoVar[21]=0;
-	    fJetInfoVar[22]=0;
+	    fJetInfoVar[12]=0;
+	    fJetInfoVar[13]=0;
+	    fJetInfoVar[14]=0;
+	    fJetInfoVar[15]=0;
+	    fJetInfoVar[16]=0;
+	    fJetInfoVar[17]=0;
 	  }		    
-	  fJetInfoVar[12]=Jet1->M();
-	  fJetInfoVar[13]=0;
-	  fJetInfoVar[14]=Jet1->GetNumberOfConstituents();
-	  fJetInfoVar[15]=0;
-	  fJetInfoVar[16]=PTD(Jet1,0);
-	  fJetInfoVar[17]=0;
-	  fJetInfoVar[18]=Angularity(Jet1,0);
-	  fJetInfoVar[19]=0;
-	  fJetInfoVar[20]=fCent;
+	  fJetInfoVar[8]=PTD(Jet1,0);
+	  fJetInfoVar[9]=0;
+	  fJetInfoVar[10]=Angularity(Jet1,0);
+	  fJetInfoVar[11]=0;
 	  fTreeJetInfo->Fill();
 	}
       }
@@ -459,33 +446,28 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 
 	fJetInfoVar[0]=JetHybridS->Pt();
 	fJetInfoVar[1]=JetPythTrue->Pt();
-	fJetInfoVar[2]=JetHybridS->Phi();
-	fJetInfoVar[3]=JetPythTrue->Phi();
-	fJetInfoVar[4]=JetHybridS->Eta();
-	fJetInfoVar[5]=JetPythTrue->Eta();
 	if(fDoSoftDrop) {
 	  SoftDrop(JetHybridS,JetContHybridS,fZCut,fBeta_SD,kFALSE);
 	  SoftDrop(JetPythTrue,JetContPythTrue,fZCut,fBeta_SD,kTRUE);
 	}
 	else{
-	  fJetInfoVar[6]=0;
-	  fJetInfoVar[7]=0;
-	  fJetInfoVar[8]=0;
-	  fJetInfoVar[9]=0;
-	  fJetInfoVar[10]=0;
-	  fJetInfoVar[11]=0;
-	  fJetInfoVar[21]=0;
-	  fJetInfoVar[22]=0;
+	    fJetInfoVar[2]=0;
+	    fJetInfoVar[3]=0;
+	    fJetInfoVar[4]=0;
+	    fJetInfoVar[5]=0;
+	    fJetInfoVar[6]=0;
+	    fJetInfoVar[7]=0;
+	    fJetInfoVar[12]=0;
+	    fJetInfoVar[13]=0;
+	    fJetInfoVar[14]=0;
+	    fJetInfoVar[15]=0;
+	    fJetInfoVar[16]=0;
+	    fJetInfoVar[17]=0;
 	}		    
-	fJetInfoVar[12]=JetHybridS->M();
-	fJetInfoVar[13]=JetPythTrue->M();
-	fJetInfoVar[14]=JetHybridS->GetNumberOfConstituents();
-	fJetInfoVar[15]=JetPythTrue->GetNumberOfConstituents();
-	fJetInfoVar[16]=PTD(JetHybridS,0);
-	fJetInfoVar[17]=PTD(JetPythTrue,0);
-	fJetInfoVar[18]=Angularity(JetHybridS,0);
-	fJetInfoVar[19]=Angularity(JetPythTrue,0);
-	fJetInfoVar[20]=fCent;
+	fJetInfoVar[8]=PTD(JetHybridS,0);
+	fJetInfoVar[9]=PTD(JetPythTrue,0);
+	fJetInfoVar[10]=Angularity(JetHybridS,0);
+	fJetInfoVar[11]=Angularity(JetPythTrue,0);
 	fTreeJetInfo->Fill();
       }
     }
@@ -635,20 +617,20 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     Double_t DelR=0;
     DelR = TMath::Power(TMath::Power(DeltaPhiSubJets,2)+TMath::Power(DeltaEtaSubJets,2),0.5);
 
-    if(!fTruthJet) fJetInfoVar[21]=DelR;
-    else fJetInfoVar[22]=DelR;
+    if(!fTruthJet) fJetInfoVar[12]=DelR;
+    else fJetInfoVar[13]=DelR;
   }
   
   fastjet::contrib::SoftDrop softdrop(beta, zcut);
   softdrop.set_verbose_structure(kTRUE);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
   if(!fTruthJet){
-    fJetInfoVar[8]=NSubjettinessResult1;
-    fJetInfoVar[10]=NSubjettinessResult2;
+    fJetInfoVar[4]=NSubjettinessResult1;
+    fJetInfoVar[6]=NSubjettinessResult2;
   }
   else {
-    fJetInfoVar[9]=NSubjettinessResult1;
-    fJetInfoVar[11]=NSubjettinessResult2;
+    fJetInfoVar[5]=NSubjettinessResult1;
+    fJetInfoVar[7]=NSubjettinessResult2;
   }
   AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
   std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
@@ -673,8 +655,13 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
   fhGroomedPtvJetPt->Fill(finaljet.perp(),fJet->Pt());
   fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
-  if(!fTruthJet) fJetInfoVar[6]=SymParam;
-  else fJetInfoVar[7]=SymParam;
+  if(!fTruthJet) fJetInfoVar[2]=SymParam;
+  else fJetInfoVar[3]=SymParam;
+  if(!fTruthJet) fJetInfoVar[14]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+  else fJetInfoVar[15]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+  if(!fTruthJet) fJetInfoVar[16]=finaljet.perp();
+  else fJetInfoVar[17]=finaljet.perp();
+  
   return;
 
   
