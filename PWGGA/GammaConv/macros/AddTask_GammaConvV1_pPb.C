@@ -334,7 +334,10 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     cuts.AddCut("80000123", "00200009217000008260400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //no MCP smearing
     cuts.AddCut("80000123", "00200009317200003290000000", "0162103500900000");  //old standard eta=0.9 y=0.8
     cuts.AddCut("80000123", "00200009217000008260400000", "0162103500800000");  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
-
+  } else if (trainConfig == 23){
+    cuts.AddCut("80000113", "00200009217000008260400000", "0162103500900000"); // standard cut
+    cuts.AddCut("80000123", "00200009217000008260400000", "0162103500900000"); // standard cut + added signals
+    
   } else if (trainConfig == 120) {
     cuts.AddCut("80200113", "00200009300000008260400000", "0162103500000000"); // -3 < kappa <  5
     cuts.AddCut("80200113", "00200009500000008260400000", "0162103500000000"); // -5 < kappa < 10
