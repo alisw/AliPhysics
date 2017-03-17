@@ -397,7 +397,8 @@ void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
   //pidProb.SetDefaultTPCPriors();                 // load default priors
 
   Double_t prob[AliPID::kSPECIESC]={0.};
-  EDetPidStatus pidStatus=ComputePIDProbability(kTPC, esdtr, AliPID::kSPECIESC, prob);
+  //  EDetPidStatus pidStatus=ComputePIDProbability(kTPC, esdtr, AliPID::kSPECIESC, prob);
+  EDetPidStatus pidStatus=ComputePIDProbability(kTPC, esdtr, fgNSpeciesForTracking, prob);
   // check if a valid signal was found, otherwise return pion mass
   if (pidStatus==kDetNoSignal) { //kDetPidOk) {
     esdtr->SetPIDForTracking(AliPID::kPion);
