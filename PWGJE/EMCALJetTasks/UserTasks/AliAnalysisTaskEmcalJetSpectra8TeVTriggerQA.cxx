@@ -278,6 +278,30 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
             histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
 
+			   histname = TString::Format("%s/histJetClusterEnergy_%d", groupname.Data(), cent);
+			   histtitle = TString::Format("%s;#it{E}_{cluster} (GeV);counts", histname.Data());
+			   fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+            histname = TString::Format("%s/histJetTrkPt_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{p}_{T,JetTrk} (GeV/#it{c});counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
+
+            histname = TString::Format("%s/fHistDeltaEtaDeltaPhiJE_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{#phi}_{jet} - #it{#phi}_{JE,patch};#it{#eta}_{Jet} - #it{#eta}_{JE,patch};counts", histname.Data());
+            fHistManager.CreateTH2(histname, histtitle, 70, -0.7, 0.7, 70, -0.7, 0.7);
+
+            histname = TString::Format("%s/fHistDeltaEtaDeltaPhiGA_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{#phi}_{jet} - #it{#phi}_{GA,patch};#it{#eta}_{Jet} - #it{#eta}_{GA,patch};counts", histname.Data());
+            fHistManager.CreateTH2(histname, histtitle, 70, -0.7, 0.7, 70, -0.7, 0.7);
+
+			   histname = TString::Format("%s/fHistJetEPatchEJE_%d", groupname.Data(), cent);
+			   histtitle = TString::Format("%s;#it{E_{JE,patch}};#it{E_{Jet}^{UnCorr}};counts", histname.Data());
+			   fHistManager.CreateTH2(histname, histtitle, 1000, 0, 100, 1000, 0, 100);
+
+			   histname = TString::Format("%s/fHistJetEPatchEGA_%d", groupname.Data(), cent);
+			   histtitle = TString::Format("%s;#it{E_{GA,patch}};#it{E_{Jet,UnCorr}};counts", histname.Data());
+			   fHistManager.CreateTH2(histname, histtitle, 1000, 0, 100, 1000, 0, 100);
+
             histname = TString::Format("%s/histJetArea_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{A}_{jet};counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, 3);
@@ -289,6 +313,14 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
             histname = TString::Format("%s/histJetEta_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+
+			   histname = TString::Format("%s/histJetClusterPhi_%d", groupname.Data(), cent);
+			   histtitle = TString::Format("%s;#it{#phi}_{jet}^{cluster};counts", histname.Data());
+			   fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+
+			   histname = TString::Format("%s/histJetClusterEta_%d", groupname.Data(), cent);
+			   histtitle = TString::Format("%s;#it{#eta}_{jet}^{cluster};counts", histname.Data());
+			   fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
 
             histname = TString::Format("%s/histNJets_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;number of jets;events", histname.Data());
@@ -317,9 +349,9 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
 Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::FillHistograms()
 {
     DoJetLoop();
-    DoTrackLoop();
-    DoClusterLoop();
-    DoCellLoop();
+    //DoTrackLoop();
+    //DoClusterLoop();
+    //DoCellLoop();
 
     return kTRUE;
 }
@@ -330,52 +362,27 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::FillHistograms()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
 {
-
-    /*
-    TString firedtriggers(InputEvent()->GetFiredTriggerClasses());
-    if(!firedtriggers.Contains("EG1")){
-       // cout<<"Not EG1 Event"<<endl;
-        //return kFALSE;
-    }
-    */
-    TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("EmcalTriggers"));
-    if(!triggerpatches)
-        AliErrorStream() << "Trigger patch container EmcalTriggers not found in task " << GetName() << std::endl;
-
-    AliEMCALTriggerPatchInfo *currentpatch(nullptr);
-    for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
-        currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
-        if(currentpatch->GetPatchSize() != 2) continue;  // Reject L0 patches
-        //cout<<"PatchSize: " <<currentpatch->GetPatchSize()<<endl;
-        Double_t patchE = currentpatch->GetPatchE();
-        //cout<<"Patch E: "<< patchE <<endl;
-    }
-
     TString histname;
     TString groupname;
     AliJetContainer* jetCont = 0;
     TIter next(&fJetCollArray);
+
+	TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("EmcalTriggers"));
+	if(!triggerpatches)
+		AliErrorStream() << "Trigger patch container EmcalTriggers not found in task " << GetName() << std::endl;
+
     while ((jetCont = static_cast<AliJetContainer*>(next()))) {
         groupname = jetCont->GetName();
         UInt_t count = 0;
         for(auto jet : jetCont->accepted()) {
-            if (!jet) continue;
+           if (!jet) continue;
             count++;
-
-
-            Double_t dEtaJetTrigger = 0.0, dPhiJetTrigger = 0.0, deltaRpatch = 0.0;  // dEta dPhi between Jet Axis and Trigger Patch
-
-            dEtaJetTrigger = jet->Eta() - currentpatch->GetEtaGeo();
-            dPhiJetTrigger = jet->Phi() - currentpatch->GetPhiGeo();
-            Double_t dphi2 = 0.0, deta2 = 0.0;
-            dphi2 = TMath::Abs(dPhiJetTrigger  * dPhiJetTrigger );
-            deta2 = TMath::Abs(dEtaJetTrigger  * dEtaJetTrigger );
-            deltaRpatch = TMath::Sqrt(dphi2 + deta2);
-
-           // cout <<"dEat: " << dEtaJetTrigger  << "  dPhi: " <<dPhiJetTrigger<<"  delatR: "<< deltaRpatch <<endl;
 
             histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Pt());
+
+			   histname = TString::Format("%s/histJetClusterEnergy_%d", groupname.Data(), fCentBin);
+			   fHistManager.FillTH1(histname, jet->E());
 
             histname = TString::Format("%s/histJetArea_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Area());
@@ -386,11 +393,64 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             histname = TString::Format("%s/histJetEta_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Eta());
 
+			  //Look at  emcal trigger patches in event and associate with jet
+			  AliEMCALTriggerPatchInfo *currentpatch(nullptr);
+			  for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
+				  currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
+				  if(currentpatch->GetPatchSize() != 2) continue;  // Reject L0 patches
+
+				  //Select Single Shower Patch
+				  if(currentpatch->IsGammaLowRecalc() || currentpatch->IsGammaLowSimple()){
+					  histname = TString::Format("%s/fHistDeltaEtaDeltaPhiGA_%d", groupname.Data(), fCentBin);
+					  fHistManager.FillTH2(histname, jet->Phi() - currentpatch->GetPhiGeo(), jet->Eta() - currentpatch->GetEtaGeo());
+					  histname = TString::Format("%s/fHistJetEPatchEGA_%d", groupname.Data(), fCentBin);
+					  fHistManager.FillTH2(histname,jet->E(),currentpatch->GetPatchE());
+				  }
+
+				  //Select Jet Patch
+				  if(currentpatch->IsJetLowRecalc() || currentpatch->IsJetLowSimple()){
+				    histname = TString::Format("%s/fHistDeltaEtaDeltaPhiJE_%d", groupname.Data(), fCentBin);
+				    fHistManager.FillTH2(histname, jet->Phi() - currentpatch->GetPhiGeo(), jet->Eta() - currentpatch->GetEtaGeo());
+				    histname = TString::Format("%s/fHistJetEPatchEJE_%d", groupname.Data(), fCentBin);
+				    fHistManager.FillTH2(histname,jet->E(),currentpatch->GetPatchE());
+				  }
+
+			  }
+
+           //Look at assoc tracks of a given jet
+            AliParticleContainer* tracks = jetCont->GetParticleContainer();
+            if (tracks) {
+               for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
+						AliVParticle *JetTrk = jet->TrackAt(it, tracks->GetArray());
+						if (JetTrk) {
+							//AliVTrack *Vtrack = dynamic_cast<AliVTrack*>(track);
+						   histname = TString::Format("%s/histJetTrkPt_%d", groupname.Data(), fCentBin);
+							fHistManager.FillTH1(histname, JetTrk->Pt());
+						}
+               }
+            }
+			  //Loop over Clusters in Jet
+			  AliClusterContainer* JetCluster = 0;
+			  JetCluster = jetCont->GetClusterContainer();
+			  if(JetCluster) {
+			     for(auto cluster : JetCluster->accepted()) {
+					  AliTLorentzVector nPart;
+					  cluster->GetMomentum(nPart, fVertex);
+					  histname = TString::Format("%s/histJetClusterEnergy_%d", groupname.Data(), fCentBin);
+					  fHistManager.FillTH1(histname, cluster->E());
+					  histname = TString::Format("%s/histJetClusterPhi_%d", groupname.Data(), fCentBin);
+					  fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
+					  histname = TString::Format("%s/histJetClusterEta_%d", groupname.Data(), fCentBin);
+					  fHistManager.FillTH1(histname, nPart.Eta());
+				  }
+			  }
+
+
             if (jetCont->GetRhoParameter()) {
                 histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
                 fHistManager.FillTH1(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area());
-            }
-        }
+            }//Background Subtaction in PbPb
+        }// Loop over each jet in a event
         histname = TString::Format("%s/histNJets_%d", groupname.Data(), fCentBin);
         fHistManager.FillTH1(histname, count);
     }
@@ -548,26 +608,15 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExecOnce()
 Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
 {
 
-    /*
+
     TString firedtriggers(InputEvent()->GetFiredTriggerClasses());
     if(!firedtriggers.Contains("EG1")){
-       cout<<"Not EG1 Event"<<endl;
+
         //return kFALSE;
    }
 
-      TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("EmcalTriggers"));
-    if(!triggerpatches)
-        AliErrorStream() << "Trigger patch container EmcalTriggers not found in task " << GetName() << std::endl;
 
-    AliEMCALTriggerPatchInfo *currentpatch(nullptr);
-    for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
-        currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
-        if(currentpatch->GetPatchSize() != 2) continue;  // Reject L0 patches
-        //cout<<"PatchSize: " <<currentpatch->GetPatchSize()<<endl;
-        Double_t patchE = currentpatch->GetPatchE();
-        //cout<<"Patch E: "<< patchE <<endl;
-      }
-     */
+
     //AliEMCALTriggerPatchInfo *patch;
     /*
     AliDebugStream(1) << GetName() << ": Number of trigger patches " << fTriggerPatchInfo->GetEntries() << std::endl;
@@ -579,30 +628,10 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
     isSingleShower  = SelectSingleShowerPatch(patch),
     isJetPatch      = SelectJetPatch(patch);
     */
-    //cout<<"PATCH RENERGY" <<patch->GetPatchE()<<endl;
 
     return kTRUE;
 }
 
-Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const{
-    if(fUseRecalcPatches){
-        if(!patch->IsRecalc()) return false;
-        return patch->IsGammaLowRecalc();
-    } else {
-        if(!patch->IsOfflineSimple()) return false;
-        return patch->IsGammaLowSimple();
-    }
-}
-
-Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::SelectJetPatch(const AliEMCALTriggerPatchInfo *patch) const{
-    if(fUseRecalcPatches){
-        if(!patch->IsRecalc()) return false;
-        return patch->IsJetLowRecalc();
-    } else {
-        if(!patch->IsOfflineSimple()) return false;
-        return patch->IsJetLowSimple();
-    }
-}
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExtractMainPatch() {
 
     //Find main trigger
@@ -624,7 +653,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExtractMainPatch() {
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Terminate(Option_t *)
 {
-    cout<<"****************************"<<endl;
-    cout<<"**** User Task Finished ****"<<endl;
-    cout<<"****************************"<<endl;
+    cout<<"*****************************"<<endl;
+    cout<<"******* Task Finished *******"<<endl;
+    cout<<"*****************************"<<endl;
 }
