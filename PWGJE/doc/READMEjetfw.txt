@@ -195,8 +195,11 @@ See \subpage READMEtagging for more details.
 ## User tasks
 \subpage READMEJEtasks
 
+## Jet QA				{#jetQA}
+\subpage READMEjetQA
+
 ### Appendix
 
-For clarifications, corrections or improvements, please contact [Chiara Bianchin](mailto:chiara.bianchin@cern.ch) and [Raymond Ehlers](mailto:raymond.ehlers@cern.ch).
+For clarifications, corrections or improvements, please contact [Raymond Ehlers](mailto:raymond.ehlers@cern.ch).
 
 */
