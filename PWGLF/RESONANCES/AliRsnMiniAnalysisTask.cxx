@@ -867,6 +867,8 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    // assign event-related values
    if (fMiniEvent) delete fMiniEvent;
    fMiniEvent = new AliRsnMiniEvent;
+   fMiniEvent->SetRef(fRsnEvent.GetRef());
+   fMiniEvent->SetRefMC(fRsnEvent.GetRefMC());
    fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));

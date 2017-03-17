@@ -10,6 +10,7 @@
 
 #include <TArrayI.h>
 #include <TClonesArray.h>
+#include "AliVEvent.h"
 
 class AliRsnMiniParticle;
 class AliQnCorrectionsQnVector;
@@ -17,7 +18,7 @@ class AliQnCorrectionsQnVector;
 class AliRsnMiniEvent : public TObject {
 public:
 
-   AliRsnMiniEvent() : fID(-1), fVz(0.0), fMult(0.0), fRefMult(0.0),  fTracklets(0.0), fAngle(0.0), fQnVector(0), fLeading(-1), fParticles("AliRsnMiniParticle", 0) {}
+ AliRsnMiniEvent() : fID(-1), fVz(0.0), fMult(0.0), fRefMult(0.0),  fTracklets(0.0), fAngle(0.0), fQnVector(0), fLeading(-1), fParticles("AliRsnMiniParticle", 0), fRef(0x0), fRefMC(0x0) {}
    ~AliRsnMiniEvent() {fParticles.Delete();}
    AliRsnMiniEvent(const AliRsnMiniEvent &copy);
    AliRsnMiniEvent &operator=(const AliRsnMiniEvent &copy);
@@ -39,6 +40,11 @@ public:
    void                SetQnVector(AliQnCorrectionsQnVector *v) { fQnVector = v; }
    AliQnCorrectionsQnVector *GetQnVector() { return fQnVector; }
 
+   void             SetRef(AliVEvent *ref)            {fRef = ref; return;}
+   void             SetRefMC(AliVEvent * mcref)       {fRefMC = mcref; return;}
+   AliVEvent        *GetRef()                         {return fRef;}
+   AliVEvent        *GetRefMC()                       {return fRefMC;}   
+
 private:
 
    Int_t         fID;         // ID number
@@ -51,8 +57,10 @@ private:
 
    Int_t         fLeading;    // index of leading particle
    TClonesArray  fParticles;  // list of selected particles
+   AliVEvent    *fRef;      //  pointer to input event
+   AliVEvent    *fRefMC;    //  pointer to reference MC event (if any)
 
-   ClassDef(AliRsnMiniEvent, 6)
+   ClassDef(AliRsnMiniEvent, 7)
 };
 
 #endif

@@ -24,7 +24,9 @@ AliRsnMiniEvent::AliRsnMiniEvent(const AliRsnMiniEvent &copy) :
    fAngle(copy.fAngle),
    fQnVector(copy.fQnVector),
    fLeading(copy.fLeading),
-   fParticles(copy.fParticles)
+   fParticles(copy.fParticles),
+   fRef(copy.fRef),
+   fRefMC(copy.fRefMC)
 {
 //
 // Copy constructor.
@@ -54,6 +56,8 @@ AliRsnMiniEvent &AliRsnMiniEvent::operator=(const AliRsnMiniEvent &copy)
    fQnVector = copy.fQnVector;
    fLeading = copy.fLeading;
    fParticles = copy.fParticles;
+   fRef = copy.fRef;
+   fRefMC = copy.fRefMC;
    return (*this);
 }
 
