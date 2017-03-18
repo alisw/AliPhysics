@@ -180,9 +180,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnOverlapHistograms()           { fFillOverlapHistograms = kTRUE ; }
   void         SwitchOffOverlapHistograms()          { fFillOverlapHistograms = kFALSE; }
   
-  void         SwitchOnStudyFECCorrelation()         { fStudyFECCorrelation = kTRUE  ; }
-  void         SwitchOffStudyFECCorrelation()        { fStudyFECCorrelation = kFALSE ; }
-
   void         SwitchOnStudyTracksInCone()           { fStudyTracksInCone = kTRUE  ; }
   void         SwitchOffStudyTracksInCone()          { fStudyTracksInCone = kFALSE ; }
 
@@ -245,7 +242,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
-  Bool_t   fStudyFECCorrelation;                      ///<  Study 4 FEC channels cross correlation
   Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
   Bool_t   fStudyMCConversionRadius;                  ///<  Study shower shape depending the conversion radius
   Bool_t   fStudyExoticTrigger;                       ///<  Fill histograms with track and cluster pT when the trigger is exotic
@@ -742,19 +738,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterPerExoCutLargePtTrig;       //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerExoCut;                    //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis.
   TH2F *   fhConeSumPtTrackPerExoCutLargePtTrig;         //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
-  
-  TH2F *   fhConeSumPtClusterFECCorrPair    ;            //!<! cluster sum pt for pair column cells in correlated FEC
-  TH2F *   fhConeSumPtClusterFECCorrOdd     ;            //!<! cluster sum pt for odd column cells in correlated FEC
-  TH2F *   fhConeSumPtClusterFECCorrPair2Max;            //!<! cluster sum pt for pair column cells in correlated FEC, and both cells are max
-  TH2F *   fhConeSumPtClusterFECCorrOdd2Max ;            //!<! cluster sum pt for pair column cells in correlated FEC, and both cells are max
-  
-  TH2F *   fhConeSumPtClusterFECCorrPairHighCut    ;     //!<! cluster sum pt for pair column cells in correlated FEC, pT > 0.7 GeV
-  TH2F *   fhConeSumPtClusterFECCorrOddHighCut     ;     //!<! cluster sum pt for odd column cells in correlated FEC, pT > 0.7 GeV   
-  TH2F *   fhConeSumPtClusterFECCorrPair2MaxHighCut;     //!<! cluster sum pt for pair column cells in correlated FEC, and both cells are max, pT > 0.7 GeV
-  TH2F *   fhConeSumPtClusterFECCorrOdd2MaxHighCut ;     //!<! cluster sum pt for odd column cells in correlated FEC, and both cells are max, pT > 0.7 GeV
-
-  TH2F *   fhConeSumPtClusterFECCorrMax[4];              //!<! cluster sum pt for pair column cells in correlated FEC Max, 4 cases
-  TH2F *   fhConeSumPtClusterFECCorr[6]   ;              //!<! cluster sum pt for odd column cells in correlated FEC, 6 cases  
 
   TH2F *   fhConeSumPtTrackTOFBC0;                       //!<! track with TOF hit sum pt, tof in BC0 
   TH2F *   fhConeSumPtTrackTOFBCN;                       //!<! track with TOF hit sum pt, tof not in BC0 
