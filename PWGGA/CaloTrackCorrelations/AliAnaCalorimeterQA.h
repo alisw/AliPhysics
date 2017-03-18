@@ -92,7 +92,7 @@ public:
   void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
                                 AliVCluster *clus, AliVCaloCells* cells);
   
-  void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax, Float_t exoticity) const ;
+  void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax, Float_t exoticity) ;
   
   Float_t      GetECross(Int_t absId, AliVCaloCells* cells,Float_t dtcut = 10000);
   
@@ -392,6 +392,7 @@ public:
   TH2F *   fhLambda1Exoticity[14][2];                       //!<! Cluster m02 vs exoticy, for different cluster energy bins               
   TH2F *   fhLambdaRExoticity[14][2];                       //!<! Cluster m02 vs exoticy, for different cluster energy bins               
   TH2F *   fhNCellsExoticity [14][2];                       //!<! Cluster NCells vs exoticy, for different cluster energy bins
+  TH2F *   fhTimeExoticity   [14][2];                       //!<! Cluster time vs exoticy, for different cluster energy bins
   TH2F *   fhLambda0Lambda1  [14][2];                       //!<! Cluster m02 vs m20,for different cluster energy bins               
 
   TH2F *   fhLambda0ExoticityAllSameTCard[14][2];           //!<! Cluster m02 vs exoticy, for different cluster energy bins, all cells in same TCard as leading               
@@ -412,9 +413,11 @@ public:
   TH2F *   fhLambda1TCardCorrelNCell[6][6][2];              //!<! Cluster m20 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
   TH2F *   fhLambdaRTCardCorrelNCell[6][6][2];              //!<! Cluster m20/m02 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
   TH2F *   fhNLocMaxTCardCorrelNCell[6][6][2];              //!<! Cluster nlocmax vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
+  TH2F *   fhMassEClusTCardCorrelNCell[6][6][2];            //!<! Cluster invariant mass vs E cluster, one of clusters  0.1<m02<0.4 contains 0 to more than 6 cells with w > 0.01, in same TCard or diff TCard            
+  TH2F *   fhMassEPairTCardCorrelNCell[6][6][2];            //!<! Cluster invariant mass vs E pair, one of clusters  0.1<m02<0.4 contains 0 to more than 6 cells with w > 0.01, in same TCard or diff TCard            
   TH2F *   fhExoticTCardCorrelNCell [6][6][2];              //!<! Cluster exoticity vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard  
-  TH2F *   fhColRowTCardCorrelNCellLowE [8][8][2];          //!<! Cluster max cell col vs row, E > 2 GeV, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard
-  TH2F *   fhColRowTCardCorrelNCellHighE[8][8][2];          //!<! Cluster max cell col vs row, E > 8 GeV, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard
+  TH2F *   fhColRowTCardCorrelNCellLowE [6][6][2];          //!<! Cluster max cell col vs row, E > 2 GeV, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard
+  TH2F *   fhColRowTCardCorrelNCellHighE[6][6][2];          //!<! Cluster max cell col vs row, E > 8 GeV, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard
 
   TH2F *   fhLambda0ExoticityPerNCell[6][6][2];             //!<! Cluster m02 vs exoticy,for E > 8 and n cell bins with w>0.01, in same TCard or diff TCard              
   TH2F *   fhLambda1ExoticityPerNCell[6][6][2];             //!<! Cluster m20 vs exoticy,for E > 8 and n cell bins with w>0.01, in same TCard or diff TCard              

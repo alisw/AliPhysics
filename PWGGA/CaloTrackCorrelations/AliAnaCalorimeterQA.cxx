@@ -319,6 +319,8 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
         fhLambda1TCardCorrelNCell[i][j][tm] = 0 ;  
         fhLambdaRTCardCorrelNCell[i][j][tm] = 0 ;  
         fhNLocMaxTCardCorrelNCell[i][j][tm] = 0 ;  
+        fhMassEClusTCardCorrelNCell[i][j][tm] = 0 ;  
+        fhMassEPairTCardCorrelNCell[i][j][tm] = 0 ;  
         fhExoticTCardCorrelNCell [i][j][tm] = 0 ;  
         fhColRowTCardCorrelNCellLowE [i][j][tm] = 0 ; 
         fhColRowTCardCorrelNCellHighE[i][j][tm] = 0 ; 
@@ -363,6 +365,7 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
       fhLambda1Exoticity[i][tm] = 0;
       fhLambdaRExoticity[i][tm] = 0;
       fhNCellsExoticity [i][tm] = 0;
+      fhTimeExoticity   [i][tm] = 0;
       fhLambda0Lambda1  [i][tm] = 0;
 
       fhLambda0ExoticityAllSameTCard[i][tm] = 0;
@@ -974,7 +977,7 @@ void AliAnaCalorimeterQA::CellInClusterPositionHistograms(AliVCluster* clus)
 ///
 //___________________________________________________
 void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells* cells, 
-                                                    Bool_t matched, Int_t absIdMax, Float_t exoticity) const 
+                                                    Bool_t matched, Int_t absIdMax, Float_t exoticity) 
 {
   // Clean the sample
   
@@ -1274,6 +1277,56 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   fhNLocMaxTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, nlm, GetEventWeight());
   fhExoticTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, exoticity, GetEventWeight());
   
+  // Invariant mass for clusters looking like photons, depending number of cells
+  if(m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut)
+  {
+    for(Int_t jclus = 0 ; jclus < GetEMCALClusters()->GetEntriesFast() ; jclus++) 
+    {
+      AliVCluster* clus2 =  (AliVCluster*) GetEMCALClusters()->At(jclus);
+      
+      Float_t maxCellFraction = 0.;
+      Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(cells, clus2, maxCellFraction);
+      
+      Double_t tof2 =  clus2->GetTOF()*1.e9;
+      if(tof2>400) tof2-=fConstantTimeShift;
+      
+      Double_t diffTof = tCellMax-tof2;
+      
+      // Try to reduce background with a mild shower shape cut and no more 
+      // than 1 local maximum in cluster and remove low energy clusters
+      
+      if(   absIdMax == absIdMax2   
+         || !IsGoodCluster(absIdMax2, clus2->GetM02(), clus2->GetNCells(), cells) 
+         || GetCaloUtils()->GetNumberOfLocalMaxima(clus2,cells) > 1 
+         || clus2->GetM02() > fInvMassMaxM02Cut
+         || clus2->GetM02() < fInvMassMinM02Cut
+         || clus2->E() < fInvMassMinECut 
+         || clus2->E() > fInvMassMaxECut  
+         || TMath::Abs(diffTof) > fInvMassMaxTimeDifference
+         ) continue;
+      
+      // Get cluster kinematics
+      Double_t v[3] = {0,0,0}; //vertex ;
+      clus2->GetMomentum(fClusterMomentum2,v);
+      
+      // Check only certain regions
+      Bool_t in2 = kTRUE;
+      if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(fClusterMomentum2.Eta(),fClusterMomentum2.Phi(),GetCalorimeter()) ;
+      if(!in2) continue;	
+      
+      Float_t  pairE = (fClusterMomentum+fClusterMomentum2).E();
+      
+      // Opening angle cut, avoid combination of DCal and EMCal clusters
+      Double_t angle  = fClusterMomentum.Angle(fClusterMomentum2.Vect());
+      
+      if( angle > fInvMassMaxOpenAngle ) continue;
+      
+      // Fill histograms
+      Float_t mass   = (fClusterMomentum+fClusterMomentum2).M ();
+      fhMassEClusTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, mass, GetEventWeight());
+      fhMassEPairTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(pairE , mass, GetEventWeight());
+    }
+  }
   if ( energy >= 2 && energy < 8) 
     fhColRowTCardCorrelNCellLowE [nCorrInd][nCorrNoInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
   else if ( energy >= 8 ) 
@@ -1333,6 +1386,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       fhLambda1Exoticity[ie][matched]->Fill(exoticity, m20, GetEventWeight());
       fhLambdaRExoticity[ie][matched]->Fill(exoticity, m20/m02, GetEventWeight());
       fhNCellsExoticity [ie][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
+      fhTimeExoticity   [ie][matched]->Fill(exoticity, tCellMax, GetEventWeight());
       fhLambda0Lambda1  [ie][matched]->Fill(m20, m02, GetEventWeight());
 
       if(energy > 8)
@@ -3005,6 +3059,22 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhNLocMaxTCardCorrelNCell[i][j][tm]->SetYTitle("#it{n}_{LM}");
           outputContainer->Add(fhNLocMaxTCardCorrelNCell[i][j][tm]); 
           
+          fhMassEClusTCardCorrelNCell[i][j][tm]  = new TH2F 
+          (Form("hMassEClusTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+           Form("#it{M}_{#gamma #gamma} vs #it{E}_{cluster}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+           nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+          fhMassEClusTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+          fhMassEClusTCardCorrelNCell[i][j][tm]->SetYTitle("#it{M}_{#gamma #gamma}");
+          outputContainer->Add(fhMassEClusTCardCorrelNCell[i][j][tm]);         
+          
+          fhMassEPairTCardCorrelNCell[i][j][tm]  = new TH2F 
+          (Form("hMassEPairTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+           Form("#it{M}_{#gamma #gamma} vs #it{E}_{pair}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+           nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+          fhMassEPairTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{pair} (GeV)");
+          fhMassEPairTCardCorrelNCell[i][j][tm]->SetYTitle("#it{M}_{#gamma #gamma}");
+          outputContainer->Add(fhMassEPairTCardCorrelNCell[i][j][tm]); 
+
           fhExoticTCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hExoticTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("exoticity vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
@@ -3265,7 +3335,15 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhNCellsExoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
         fhNCellsExoticity[i][tm]->SetYTitle("#it{n}_{cells}");
         outputContainer->Add(fhNCellsExoticity[i][tm]); 
- 
+
+        fhTimeExoticity[i][tm]  = new TH2F 
+        (Form("hTimeExoticity_EBin%d%s",i,add[tm].Data()),
+         Form("#it{t} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+         200,-1,1,100,-25,25); 
+        fhTimeExoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+        fhTimeExoticity[i][tm]->SetYTitle("#it{t} (ns)");
+        outputContainer->Add(fhTimeExoticity[i][tm]); 
+        
         fhLambda0Lambda1[i][tm]  = new TH2F 
         (Form("hLambda0Lambda1_EBin%d%s",i,add[tm].Data()),
          Form("#lambda^{2}_{0} vs #lambda^{2}_{1}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
