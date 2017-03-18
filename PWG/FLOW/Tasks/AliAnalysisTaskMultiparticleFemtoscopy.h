@@ -692,7 +692,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  // do something only for the specified event
   UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,16);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,17);
 
 };
 
