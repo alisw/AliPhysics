@@ -189,19 +189,19 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
      fListHistMultistrangeQA->Add(fHistMassOmegaPlus);                                                                                                    
   }
   if(! fHistCascadeMultiplicityXiMinus) {
-     fHistCascadeMultiplicityXiMinus = new TH1F("fHistCascadeMultiplicityXiMinus","Xi Minus per event;Nbr of Xi Minus/Evt;Events", 50, 0, 50);
+     fHistCascadeMultiplicityXiMinus = new TH1F("fHistCascadeMultiplicityXiMinusForMC","Xi Minus per event;Nbr of Xi Minus/Evt;Events", 50, 0, 50);
      fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiMinus);
   } 
   if(! fHistCascadeMultiplicityXiPlus) {
-     fHistCascadeMultiplicityXiPlus = new TH1F("fHistCascadeMultiplicityXiPlus","Xi Plus per event;Nbr of Xi Plus/Evt;Events", 50, 0, 50);
+     fHistCascadeMultiplicityXiPlus = new TH1F("fHistCascadeMultiplicityXiPlusForMC","Xi Plus per event;Nbr of Xi Plus/Evt;Events", 50, 0, 50);
      fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiPlus);
   }
   if(! fHistCascadeMultiplicityOmegaMinus) {
-     fHistCascadeMultiplicityOmegaMinus = new TH1F("fHistCascadeMultiplicityOmegaMinus","Omega Minus per event;Nbr of Omega Minus/Evt;Events", 50, 0, 50);
+     fHistCascadeMultiplicityOmegaMinus = new TH1F("fHistCascadeMultiplicityOmegaMinusForMC","Omega Minus per event;Nbr of Omega Minus/Evt;Events", 50, 0, 50);
      fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaMinus);
   }
   if(! fHistCascadeMultiplicityOmegaPlus) {
-     fHistCascadeMultiplicityOmegaPlus = new TH1F("fHistCascadeMultiplicityOmegaPlus","Omega Plus per event;Nbr of Omega Plus/Evt;Events", 50, 0, 50);
+     fHistCascadeMultiplicityOmegaPlus = new TH1F("fHistCascadeMultiplicityOmegaPlusForMC","Omega Plus per event;Nbr of Omega Plus/Evt;Events", 50, 0, 50);
      fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaPlus);
   }
 
@@ -210,8 +210,8 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
   // Define the container for the topological variables
   if(! fCFContCascadeCuts) {
       // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
-      const Int_t  lNbSteps      =  4 ;
-      const Int_t  lNbVariables  =  20; 
+      const Int_t  lNbSteps      =  4;
+      const Int_t  lNbVariables  =  19; 
       //Array for the number of bins in each dimension :
       Int_t lNbBinsPerVar[lNbVariables] = {0};
       lNbBinsPerVar[0]  = 25;     //DcaCascDaughters             :  [0.0,2.4,3.0]       -> Rec.Cut = 2.0;
@@ -233,7 +233,6 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       lNbBinsPerVar[16] = 112;    //Proper lenght of cascade       
       lNbBinsPerVar[17] = 112;    //Proper lenght of V0
       lNbBinsPerVar[18] = 201;    //V0CosineOfPointingAngleToXiV
-      lNbBinsPerVar[19] = 11;     //Centrality
       //define the container
       fCFContCascadeCuts = new AliCFContainer("fCFContCascadeCuts","Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar );
       //Setting the bin limits 
@@ -306,14 +305,6 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       fCFContCascadeCuts->SetBinLimits(17, lBinLim16);
        //18 - V0CosineOfPointingAngleToXiV
       fCFContCascadeCuts -> SetBinLimits(18, 0.8, 1.001);
-       //19 - Centrality
-      Double_t *lBinLim19  = new Double_t[ lNbBinsPerVar[19]+1 ];
-         for(Int_t i=3; i< lNbBinsPerVar[19]+1;i++)   lBinLim19[i]  = (Double_t)(i-1)*10.;
-         lBinLim19[0] = 0.0; 
-         lBinLim19[1] = 5.0; 
-         lBinLim19[2] = 10.0;
-      fCFContCascadeCuts->SetBinLimits(19,  lBinLim19 );     
-      delete [] lBinLim19;
       // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
       fCFContCascadeCuts->SetStepTitle(0, "#Xi^{-} candidates");
       fCFContCascadeCuts->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
@@ -339,7 +330,6 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       fCFContCascadeCuts->SetVarTitle(16, "mL/p (cascade) (cm)");
       fCFContCascadeCuts->SetVarTitle(17, "mL/p (V0) (cm)");
       fCFContCascadeCuts->SetVarTitle(18, "cos(V0 PA) in cascade to XiV");
-      fCFContCascadeCuts->SetVarTitle(19, "Centrality");
   }
 
 
@@ -347,8 +337,8 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
   // Define the Container for the MC generated info
   if(! fCFContCascadeMCgen) {
       // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
-      const Int_t  lNbStepsMC      =  4 ; 
-      const Int_t  lNbVariablesMC  =  7; 
+      const Int_t  lNbStepsMC      =  4; 
+      const Int_t  lNbVariablesMC  =  6;  
       //Array for the number of bins in each dimension :
       Int_t lNbBinsPerVarMC[lNbVariablesMC] = {0};
       lNbBinsPerVarMC[0] = 200;    //Total momentum        : [0.0,20.0]
@@ -357,7 +347,6 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       lNbBinsPerVarMC[3] = 200;    //eta                   : [-10, 10]
       lNbBinsPerVarMC[4] = 200;    //theta                 : [-10, 190] 
       lNbBinsPerVarMC[5] = 360;    //Phi                   : [0., 360.]
-      lNbBinsPerVarMC[6] = 11;     //Centrality
       //define the container
       fCFContCascadeMCgen = new AliCFContainer("fCFContCascadeMCgen","Container for MC gen cascade ", lNbStepsMC, lNbVariablesMC, lNbBinsPerVarMC );
       //Setting the bin limits 
@@ -373,14 +362,6 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       fCFContCascadeMCgen->SetBinLimits(4, -10, 190);
        //5 - Phi
       fCFContCascadeMCgen->SetBinLimits(5, 0.0, 360.0);
-       //6 - Centrality
-      Double_t *lBinLim6MC  = new Double_t[ lNbBinsPerVarMC[6]+1 ];
-         for(Int_t i=3; i< lNbBinsPerVarMC[6]+1;i++)   lBinLim6MC[i]  = (Double_t)(i-1)*10.;
-         lBinLim6MC[0] = 0.0;
-         lBinLim6MC[1] = 5.0;
-         lBinLim6MC[2] = 10.0;
-      fCFContCascadeMCgen->SetBinLimits(6,  lBinLim6MC);
-      delete [] lBinLim6MC;
       // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
       fCFContCascadeMCgen->SetStepTitle(0, "#Xi^{-} candidates");
       fCFContCascadeMCgen->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
@@ -393,7 +374,6 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       fCFContCascadeMCgen->SetVarTitle(3,  "MC gen Pseudo-rapidity");
       fCFContCascadeMCgen->SetVarTitle(4,  "MC gen Theta");
       fCFContCascadeMCgen->SetVarTitle(5,  "MC gen Phi");
-      fCFContCascadeMCgen->SetVarTitle(6,  "MC gen Centrality");
   }
  
   PostData(1, fListHistMultistrangeQA);
@@ -455,8 +435,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
 
    //______________________________________________________________________________________________
    // - Perform the event selection (via AliPPVsMultUtils) and acquire the multiplicity information
-   Float_t lPercentile = 500;
-   Float_t lPercentileEmbeddedSelection = 500;
    Int_t lEvSelCode = 100;
    AliMultSelection *MultSelection = 0x0;
    if      (fAnalysisType == "ESD")  MultSelection = (AliMultSelection*) lESDevent->FindListObject("MultSelection");
@@ -469,8 +447,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
           return;
    } else {
           AliWarning("AliMultSelection object found!");
-          lPercentile = MultSelection->GetMultiplicityPercentile("V0M"); //V0M Multiplicity Percentile
-          lPercentileEmbeddedSelection = MultSelection->GetMultiplicityPercentile("V0M", kTRUE );
           lEvSelCode = MultSelection->GetEvSelCode();  //Event Selection Code
    }
    // - Remove events
@@ -587,14 +563,13 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
            }
            partRap = 0.5*TMath::Log((partEnergy + partPz) / (partEnergy - partPz + 1.e-13));
 
-           Double_t lContainerCutVarsMC[7] = {0.0};
+           Double_t lContainerCutVarsMC[6] = {0.0};
            lContainerCutVarsMC[0]  = partP;
            lContainerCutVarsMC[1]  = partPt;
            lContainerCutVarsMC[2]  = partRap;
            lContainerCutVarsMC[3]  = partEta;
            lContainerCutVarsMC[4]  = partTheta;
            lContainerCutVarsMC[5]  = partPhi;
-           lContainerCutVarsMC[6]  = lPercentileEmbeddedSelection;
            if (PDGcode == 3312)  {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,0); ngenximinus++;} // for Xi-
            if (PDGcode == -3312) {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,1); ngenxiplus++;} // for Xi+
            if (PDGcode == 3334)  {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,2); ngenomegaminus++;} // for Omega-
@@ -962,7 +937,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
       fHistMassOmegaPlus->Fill( lInvMassOmegaPlus );
     }
     // Fill the AliCFContainer (optimisation of topological selections)
-    Double_t lContainerCutVars[21] = {0.0};
+    Double_t lContainerCutVars[20] = {0.0};
     lContainerCutVars[0]  = lDcaXiDaughters;
     lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
     lContainerCutVars[2]  = lXiCosineOfPointingAngle;
@@ -978,8 +953,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
     lContainerCutVars[16] = lctau;
     lContainerCutVars[17] = lctauV0;
     lContainerCutVars[18] = lV0toXiCosineOfPointingAngle;
-    if (fisMC) lContainerCutVars[19] = lPercentileEmbeddedSelection;
-    else       lContainerCutVars[19] = lPercentile;
     if ( lChargeXi < 0 ) {
          lContainerCutVars[11] = lInvMassXiMinus;
          lContainerCutVars[12] = lInvMassOmegaMinus;
