@@ -502,8 +502,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile *fControlHistogramsIdentifiedParticlesFlagsPro; // profile to hold all flags for control histograms for identified particles
   Bool_t fFillControlHistogramsIdentifiedParticles;        // fill or not control histograms for identified particles (by default they are not filled)
   Bool_t fFillControlHistogramsWithGlobalTrackInfo;        // by default, control histograms are filled with info from 'atrack'. If this flag is TRUE, then instead info from 'gtrack' is used. This then also applies to info used to get correlation functions and background as well
-  TProfile *fInclusiveSigmaCutsPro;                        // holds the values of fInclusiveSigmaCuts[5];
-  TProfile2D *fExclusiveSigmaCutsPro;                      // holds the values of fExclusiveSigmaCuts[5][5];
+  TProfile *fInclusiveSigmaCutsPro;                        //! holds the values of fInclusiveSigmaCuts[5];
+  TProfile2D *fExclusiveSigmaCutsPro;                      //! holds the values of fExclusiveSigmaCuts[5][5];
   TH1F *fMassPIDHist[5][2][2];                             //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPtPIDHist[5][2][2];                               //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPPIDHist[5][2][2][3];                             //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx][xyz]
@@ -548,9 +548,9 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // 3.) Correlation functions:
   TList *fCorrelationFunctionsList;              // list to hold all correlation functions for primary particle
   TProfile *fCorrelationFunctionsFlagsPro;       // profile to hold all flags for correlation functions
-  TProfile *f2pCorrelationFunctionsFlagsPro;     // profile to hold all flags for 2p correlation functions (placed in fCorrelationFunctionsSublist[0])
-  TProfile *f3pCorrelationFunctionsFlagsPro;     // profile to hold all flags for 3p correlation functions (placed in fCorrelationFunctionsSublist[1])
-  TProfile *f4pCorrelationFunctionsFlagsPro;     // profile to hold all flags for 4p correlation functions (placed in fCorrelationFunctionsSublist[2])
+  TProfile *f2pCorrelationFunctionsFlagsPro;     //! profile to hold all flags for 2p correlation functions (placed in fCorrelationFunctionsSublist[0])
+  TProfile *f3pCorrelationFunctionsFlagsPro;     //! profile to hold all flags for 3p correlation functions (placed in fCorrelationFunctionsSublist[1])
+  TProfile *f4pCorrelationFunctionsFlagsPro;     //! profile to hold all flags for 4p correlation functions (placed in fCorrelationFunctionsSublist[2])
   TList *fCorrelationFunctionsSublist[3];        //! lists to hold all correlation functions, for 2p [0], 3p [1], 4p [2], etc., separately
   Bool_t fFillCorrelationFunctions;              // fill or not correlation functions (by default they are not filled)
   Bool_t fNormalizeCorrelationFunctions;         // normalize correlation functions with the background
@@ -567,9 +567,9 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // 4.) Background:
   TList *fBackgroundList;              // list to hold all background objects primary particle
   TProfile *fBackgroundFlagsPro;       // profile to hold all flags for background
-  TProfile *f2pBackgroundFlagsPro;     // profile to hold all flags for 2p background (placed in fBackgroundSublist[0])
-  TProfile *f3pBackgroundFlagsPro;     // profile to hold all flags for 3p background (placed in fBackgroundSublist[1])
-  TProfile *f4pBackgroundFlagsPro;     // profile to hold all flags for 4p background (placed in fBackgroundSublist[2])
+  TProfile *f2pBackgroundFlagsPro;     //! profile to hold all flags for 2p background (placed in fBackgroundSublist[0])
+  TProfile *f3pBackgroundFlagsPro;     //! profile to hold all flags for 3p background (placed in fBackgroundSublist[1])
+  TProfile *f4pBackgroundFlagsPro;     //! profile to hold all flags for 4p background (placed in fBackgroundSublist[2])
   TList *fBackgroundSublist[3];        //! lists to hold all background correlations, for 2p [0], 3p [1], 4p [2], etc., separately
   Int_t fBackgroundOption;             // set how to estimate background: 0 = "shifting", 1 = "permutations", etc. (see .cxx for further explanation). By default, it is "shifting"
   Bool_t fEstimate2pBackground;        // enable or not 2p background estimation
@@ -653,27 +653,27 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Double_t fnQ3min;                                  // min bin for all histos and profiles vs. Q3 (both for signal and background)
   Double_t fnQ3max;                                  // max bin for all histos and profiles vs. Q3 (both for signal and background)
   TList *fCorrelationFunctionsTESTSublist[10];       //! lists to hold all TEST correlation functions, they are enumerated in .cxx file
-  Bool_t fFillCorrelationFunctionsTEST[10];          // fill or not particular TEST correlation functions, they are enumerated in .cxx file (by default all are set to FALSE)
-  TProfile *fCorrelationFunctionsTEST[10][2][7][10]; // [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
-  TProfile *fSignalCumulantsTEST[10][2][4][10];      // [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
-  TH1F *fSignalYieldTEST[2];                         // [0=for <X1X2> and Q2, 1=for <X1X2X3> and Q3]
+  Bool_t fFillCorrelationFunctionsTEST[10];          //! fill or not particular TEST correlation functions, they are enumerated in .cxx file (by default all are set to FALSE)
+  TProfile *fCorrelationFunctionsTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+  TProfile *fSignalCumulantsTEST[10][2][4][10];      //! [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+  TH1F *fSignalYieldTEST[2];                         //! [0=for <X1X2> and Q2, 1=for <X1X2X3> and Q3]
 
   // *.) Testing new ways to calculate background functions:
   TList *fBackgroundTESTList;                       // list to hold all TEST background for primary particle
   TProfile *fBackgroundTESTFlagsPro;                // profile to hold all flags for TEST background
   TList *fBackgroundTESTSublist[10];                //! lists to hold all TEST background, they are enumerated in .cxx file
-  Bool_t fFillBackgroundTEST[10];                   // fill or not particular TEST background, they are enumerated in .cxx file (by default all are set to FALSE)
-  TProfile *fBackgroundTEST[10][2][7][10];          // [testNo][0=vs Q2, 1=vs Q3][correlation][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
-  TProfile *fBackgroundCumulantsTEST[10][2][4][10]; // [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+  Bool_t fFillBackgroundTEST[10];                   //! fill or not particular TEST background, they are enumerated in .cxx file (by default all are set to FALSE)
+  TProfile *fBackgroundTEST[10][2][7][10];          //! [testNo][0=vs Q2, 1=vs Q3][correlation][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+  TProfile *fBackgroundCumulantsTEST[10][2][4][10]; //! [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
   TClonesArray *fMixedEventsTEST[3];                //! tracks for mixed events, using just 'shifting' for simplicity TBI make it it more sophisticated later
   TExMap *fGlobalTracksAODTEST[3];                  //! global tracks in AOD
-  TH1F *fBackgroundYieldTEST[2];                    // [0=for <X1X2> and Q2, 1=for <X1X2X3> and Q3]
+  TH1F *fBackgroundYieldTEST[2];                    //! [0=for <X1X2> and Q2, 1=for <X1X2X3> and Q3]
 
   // *.) 'hybrid approach':
   TList *fHybridApproachList;        // list to hold all histos for 'hybrid approach' a la UH
   TProfile *fHybridApproachFlagsPro; // profile to hold all flags for 'hybrid approach' a la UH
   Bool_t fDoHybridApproach;          // do or not the correlations via the 'hybrid approach' a la UH
-  TH1F *fDistributionsVsQ3[5];       // five distinct distributions in the numerator of Eq. (18)
+  TH1F *fDistributionsVsQ3[5];       //! five distinct distributions in the numerator of Eq. (18)
   TClonesArray *fMixedEventsHA[3];   //! tracks for mixed events, using just 'shifting' for simplicity TBI make it it more sophisticated later
   TExMap *fGlobalTracksAODHA[3];     //! global tracks in AOD
 
