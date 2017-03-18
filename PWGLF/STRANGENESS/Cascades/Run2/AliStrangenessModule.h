@@ -47,7 +47,11 @@ public:
     void SetSigExtTech  ( TString lRecSigExtTech );
     void SetVariableSigExtTech ( Long_t lRecNPtBins, TString* lRecSigExtTech );
     void SetDoLSSubtraction ( Long_t lIndBin, Bool_t lOpt = kTRUE ) { lSigExtSubLS [lIndBin] = lOpt; }
-    void SetLSObjectName ( TString lObjName ) { lObjectToUseForLS = lObjName.Data(); } 
+    void SetLSObjectName ( TString lObjName ) { lObjectToUseForLS = lObjName.Data(); }
+    
+    //Signal extraction: smooth functions
+    void SetMassMeanFunction  (TF1 *fMeanFunc ) { fF1Mean  = fMeanFunc;  }
+    void SetMassSigmaFunction (TF1 *fSigmaFunc) { fF1Sigma = fSigmaFunc; }
     
     void SetVerbose     ( Bool_t lVerb = kTRUE ) { lVerbose = lVerb; }
     void SetDoOnlyData  ( Bool_t lDoOnlyDataRec = kTRUE ) { lDoOnlyData = lDoOnlyDataRec; }
@@ -109,12 +113,16 @@ private:
     
     //Signal Extraction technique to use
     TString lSigExtTech[100];
-    Bool_t lSigExtSubLS[100];
-    Double_t lLSLoMass, lLSHiMass; 
-    TString lObjectToUseForLS; //name of object to use for the LS subtraction 
     
     //Signal extraction: control of like-sign subtraction
+    Bool_t lSigExtSubLS[100];
+    Double_t lLSLoMass, lLSHiMass;
+    TString lObjectToUseForLS; //name of object to use for the LS subtraction
     
+    //Signal extraction: smooth functions (user-settable) for mean, sigma
+    TF1* fF1Mean;
+    TF1* fF1Sigma;
+
     //Verbosity boolean
     Bool_t lVerbose;
     

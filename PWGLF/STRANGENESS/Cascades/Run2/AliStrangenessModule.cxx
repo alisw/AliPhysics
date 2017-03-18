@@ -57,6 +57,8 @@ lHiRightBg(7),
 lLSLoMass(1.34),
 lLSHiMass(1.36),
 lObjectToUseForLS(""),
+fF1Mean(0x0),
+fF1Sigma(0x0),
 lVerbose(kFALSE),
 lDoOnlyData(kFALSE)
 {
@@ -92,6 +94,8 @@ lHiRightBg(7),
 lLSLoMass(1.34),
 lLSHiMass(1.36),
 lObjectToUseForLS(""),
+fF1Mean(0x0),
+fF1Sigma(0x0),
 lVerbose(kFALSE),
 lDoOnlyData(kFALSE)
 {
@@ -99,6 +103,7 @@ lDoOnlyData(kFALSE)
     for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0;
     for(Long_t ibin = 0; ibin<100; ibin++) lSigExtTech[ibin] = "linear";
     for(Long_t ibin = 0; ibin<100; ibin++) lSigExtSubLS[ibin] = kFALSE;
+
 }
 
 //________________________________________________________________
@@ -401,6 +406,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
         lMeanVsPt[ibin] = lDataResult->GetMass(); //Initial guess
         
+        //This is the procedure in case mean, sigma functions haven't been set
+        if ( fF1Mean==0x0 || fF1Sigma==0x0 ){
         lPointerToRelevantHisto = lHistoData[ibin];
         if ( lUseIntegratedMultForFirstFit ) lPointerToRelevantHisto = lHistoDataIntegrated[ibin];
         
@@ -408,6 +415,14 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         lExtStatus = PerformInitialFit( lPointerToRelevantHisto, lMeanVsPt[ibin], lMeanErrVsPt[ibin], lSigmaVsPt[ibin], lSigmaErrVsPt[ibin], fListData );
         if( !lVerbose ){
             if( lExtStatus ){ cout<<"="<<flush; } else { cout<<"!"<<flush; }
+        }
+        }else{
+            lMeanVsPt[ibin]  = fF1Mean ->Eval(0.5*(lPtBins[ibin+1]+lPtBins[ibin]));
+            lSigmaVsPt[ibin] = fF1Sigma->Eval(0.5*(lPtBins[ibin+1]+lPtBins[ibin]));
+            lMeanErrVsPt[ibin]  = 0.0;
+            lSigmaErrVsPt[ibin] = 0.0;
+            if(lVerbose) AliWarning(Form("Received input mass/mean for %s: mass = %.3f, mean = %.3f ",lHistoData[ibin]->GetName(),
+                                         lMeanVsPt[ibin],lSigmaVsPt[ibin]));
         }
         fHistMeanVsPt->SetBinContent(ibin+1, lMeanVsPt[ibin] );
         fHistMeanVsPt->SetBinError(ibin+1, lMeanErrVsPt[ibin] );
