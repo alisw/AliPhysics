@@ -435,9 +435,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                     if(fIsPythia){
                                             for (Int_t ost = 0 ; ost <4 ;++ost){
                                                     TString hname = Form("%s%s%s",stype[ost],subtype[jetflavour],subord[ot]);
-                                                    FillHist(hname.Data(),jetpt,params[ost],weights[ost] );
-                                                    TString hname2 = Form("%s%s%suw",stype[ost],subtype[jetflavour],subord[ot]);
-                                                    FillHist(hname2.Data(),jetpt,params[ost],1);
+                                                    FillHist(hname.Data(),jetpt,params[ost],weights[ost] );           
                                                 }
                                         }
                                 }
@@ -1820,7 +1818,7 @@ Int_t  AliAnalysisTaskHFJetIPQA::IsMCJetPartonFast(const AliEmcalJet *jet, Doubl
  */
 void AliAnalysisTaskHFJetIPQA::FillHist(const char *name, Double_t x, Double_t w){
     TH1D * h1 =GetHist1D(name);
-    h1->Fill(x,w);
+   if(h1)  h1->Fill(x,w);
 }
 /*! \brief FillHist
  *
@@ -1828,7 +1826,7 @@ void AliAnalysisTaskHFJetIPQA::FillHist(const char *name, Double_t x, Double_t w
  */
 void AliAnalysisTaskHFJetIPQA::FillHist(const char *name, Double_t x, Double_t y, Double_t w){
     TH2D * h2 =GetHist2D(name);
-    h2->Fill(x,y,w);
+    if(h2) h2->Fill(x,y,w);
 }
 /*! \brief IncHist
  *

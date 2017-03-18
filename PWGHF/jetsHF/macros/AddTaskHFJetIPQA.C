@@ -2,7 +2,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *ntracks            = "Tracks",
                                            const char *nclusters           = "",
                                            const char *njets              = "Jets",
-                                           const char *nrho               = "			",
+                                           const char *nrho               = "",
                                            Double_t jetradius =0.4,
                                            Bool_t isMC = kFALSE,
                                            const char * type = "TPC",
@@ -19,8 +19,6 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
 {
     
     Bool_t IsESD = kFALSE;
-    
-    
     // Get the pointer to the existing analysis manager via the static access method.
     //==============================================================================
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

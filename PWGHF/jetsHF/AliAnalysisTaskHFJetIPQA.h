@@ -191,7 +191,7 @@ private:
     Double_t fAnalysisCuts[11]; ///Additional (to ESD track cut or AOD filter bits) analysis cuts.
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 19)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 20)
 };
 #endif
 
