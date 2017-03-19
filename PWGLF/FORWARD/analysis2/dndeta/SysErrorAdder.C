@@ -23,7 +23,9 @@ struct SysErrorAdder
     kDensityFill   = 3002, // 0, // 3002,
     kEmpiricalFill = 3144, // 0, // 3244
     kHadronFill    = 3244, // 0,
-    kEMFill        = 3344, 
+    kEMFill        = 3344,
+    kDiffRatFill   = 3001,
+    kDiffMassFill  = 3002,
     kOtherFill     = 0
   };
   /** System */
@@ -422,7 +424,17 @@ struct INELAdder : public SysErrorAdder
   Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
   {
     gse->AddQualifier("TRIGGER", "INEL");
-    return SysErrorAdder::MakeTrigger(gse, l);
+    Int_t id = SysErrorAdder::MakeTrigger(gse, l);
+
+    if (fSNN == 5023) {
+      Int_t rId = gse->DefineCommon("Diff. ratio",true,
+				    0.023,0.034,GraphSysErr::kBox);
+      Int_t mId = gse->DefineCommon("Diff. mass",true,
+				    0,0.065,GraphSysErr::kBox);
+      ModError(gse, rId, kDiffRatFill, l);
+      ModError(gse, mId, kDiffMassFill, l);
+    }
+    return id;
   }
 };
 /**
@@ -460,7 +472,16 @@ struct INELGt0Adder : public SysErrorAdder
   {
     gse->AddQualifier("TRIGGER", "INEL>0");
     gse->AddQualifier("N", ">0");
-    return SysErrorAdder::MakeTrigger(gse, l);
+    Int_t id = SysErrorAdder::MakeTrigger(gse, l);
+    if (fSNN == 5023) {
+      Int_t rId = gse->DefineCommon("Diff. ratio",true,
+				    0.005,0.005,GraphSysErr::kBox);
+      Int_t mId = gse->DefineCommon("Diff. mass",true,
+				    0.005,0,GraphSysErr::kBox);
+      ModError(gse, rId, kDiffRatFill, l);
+      ModError(gse, mId, kDiffMassFill, l);
+    }
+    return id;
   }
   Double_t fLow;
   Double_t fHigh;
@@ -517,7 +538,16 @@ struct NSDAdder : public SysErrorAdder
       return -1;
     }
     gse->AddQualifier("TRIGGER", "NSD");
-    return SysErrorAdder::MakeTrigger(gse, l);
+    Int_t id = SysErrorAdder::MakeTrigger(gse, l);
+    if (fSNN == 5023) {
+      Int_t rId = gse->DefineCommon("Diff. ratio",true,
+				    0.008,0.014,GraphSysErr::kBox);
+      Int_t mId = gse->DefineCommon("Diff. mass",true,
+				    0,0.043,GraphSysErr::kBox);
+      ModError(gse, rId, kDiffRatFill, l);
+      ModError(gse, mId, kDiffMassFill, l);
+    }
+    return id;
   }
   
 };
