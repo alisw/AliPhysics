@@ -22,6 +22,9 @@
 #include <THnSparse.h>
 #include <THashList.h>
 
+#include <AliVEventHandler.h>
+#include <AliAnalysisManager.h>
+
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
@@ -67,7 +70,7 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA() :
 {
   // Default constructor.
 
-  memset(fNTotClusters, 0, sizeof(Int_t)*2);
+  memset(fNTotClusters, 0, sizeof(Int_t)*3);
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -97,9 +100,9 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA(const char *name) :
   fLeadingTrack(),
   fHistManager(name)
 {
-  // Standard 
+  // Standard
 
-  memset(fNTotClusters, 0, sizeof(Int_t)*2);
+  memset(fNTotClusters, 0, sizeof(Int_t)*3);
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -117,18 +120,15 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
 
-  AliEmcalContainer* cont = 0;
-
   TString histname;
   TString title;
 
   Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
 
-  TIter nextPartColl(&fParticleCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) {
-    fHistManager.CreateHistoGroup(cont->GetArrayName());
+  for (auto cont_it : fParticleCollArray) {
+    AliParticleContainer* cont = cont_it.second;
     if (!fParticleLevel && fIsMC) {
-      for (Int_t i = 0; i < fNcentBins; i++) {
+      for (Int_t i = 0; i < GetNCentBins(); i++) {
         histname = TString::Format("%s/fHistTrNegativeLabels_%d", cont->GetArrayName().Data(), i);
         title = histname + ";% of negative labels;counts";
         fHistManager.CreateTH1(histname.Data(), title.Data(), 500, 0, 1);
@@ -142,7 +142,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     Int_t nlabels = 4;
     if (fParticleLevel) nlabels = 1;
 
-    for (Int_t i = 0; i < fNcentBins; i++) {
+    for (Int_t i = 0; i < GetNCentBins(); i++) {
       histname = TString::Format("%s/fHistRejectionReason_%d", cont->GetArrayName().Data(), i);
       title = histname + ";Rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
       TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 40, 0, 100);
@@ -196,12 +196,9 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     }
   }
 
-  TIter nextClusColl(&fClusterCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
-    fHistManager.CreateHistoGroup(cont->GetArrayName());
-    for (Int_t i = 0; i < fNcentBins; i++) {
-      fHistManager.CreateHistoGroup("BySM", cont->GetArrayName());
-
+  for (auto cont_it : fClusterCollArray) {
+    AliClusterContainer* cont = cont_it.second;
+    for (Int_t i = 0; i < GetNCentBins(); i++) {
       const Int_t nSM = 20;
 
       for (Int_t sm = 0; sm < nSM; sm++) {
@@ -221,7 +218,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
       histname = TString::Format("%s/fHistClusPhiEtaEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#eta;#phi;#it{E}_{cluster} (GeV)";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -1, 1, 50, 0, TMath::TwoPi(), nPtBins, 0, fMaxPt);
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 100, -1, 1, 100, 0, TMath::TwoPi(), nPtBins, 0, fMaxPt);
 
       if (fForceBeamType != kpp) {
         histname = TString::Format("%s/fHistClusDeltaPhiEPEnergy_%d", cont->GetArrayName().Data(), i);
@@ -237,7 +234,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
       histname = TString::Format("%s/fHistClusTimeEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{E}_{cluster} (GeV);time (s);counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, -1e-6, 1e-6);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, -5e-6, 5e-6);
 
       Int_t nbins = fMaxCellsInCluster;
       while (nbins > nPtBins) nbins /= 2;
@@ -264,11 +261,14 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   }
 
   if (!fCaloCellsName.IsNull()) {
-    fHistManager.CreateHistoGroup(fCaloCellsName);
-    for (Int_t i = 0; i < fNcentBins; i++) {
+    for (Int_t i = 0; i < GetNCentBins(); i++) {
       histname = TString::Format("%s/fHistCellsAbsIdEnergy_%d", fCaloCellsName.Data(), i);
       title = histname + ";cell abs. Id;#it{E}_{cell} (GeV);counts";
       fHistManager.CreateTH2(histname.Data(), title.Data(), 20000,0,20000,(Int_t)(nPtBins / 2), 0, fMaxPt / 2);
+
+      histname = TString::Format("%s/fHistCellsAbsIdTime_%d", fCaloCellsName.Data(), i);
+      title = histname + ";cell abs. Id;#it{time}_{cell} (s);counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 20000,0,20000,(Int_t)(nPtBins / 2), -5e-6, 5e-6);
     }
   }
 
@@ -331,7 +331,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     }
   }
 
-  if (fParticleCollArray.GetEntriesFast()>0) {
+  if (fParticleCollArray.size() > 0) {
     axistitle[dim] = "No. of tracks";
     if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
       nbins[dim] = 3000;
@@ -366,7 +366,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     }
   }
 
-  if (fClusterCollArray.GetEntriesFast()>0) {
+  if (fClusterCollArray.size() > 0) {
     axistitle[dim] = "No. of clusters";
 
     if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
@@ -394,6 +394,12 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
       max[dim] = fMaxPt;
       dim++;
 
+      axistitle[dim] = "#it{E}_{PHOS cluster}^{leading} (GeV)";
+      nbins[dim] = nPtBins;
+      min[dim] = 0;
+      max[dim] = fMaxPt;
+      dim++;
+
       if (fDoLeadingObjectPosition) {
         axistitle[dim] = "#eta_{EMCal cluster}^{leading}";
         nbins[dim] = 100;
@@ -414,6 +420,18 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
         dim++;
 
         axistitle[dim] = "#phi_{DCal cluster}^{leading}";
+        nbins[dim] = 100;
+        min[dim] = 0;
+        max[dim] = TMath::TwoPi();
+        dim++;
+
+        axistitle[dim] = "#eta_{PHOS cluster}^{leading}";
+        nbins[dim] = 100;
+        min[dim] = -1;
+        max[dim] = 1;
+        dim++;
+
+        axistitle[dim] = "#phi_{PHOS cluster}^{leading}";
         nbins[dim] = 100;
         min[dim] = 0;
         max[dim] = TMath::TwoPi();
@@ -472,7 +490,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetQA::ExecOnce()
 {
-  if (fClusterCollArray.GetEntriesFast() == 0  && fCaloCellsName.IsNull()) {
+  if (fClusterCollArray.size() == 0  && fCaloCellsName.IsNull()) {
     fNeedEmcalGeom = kFALSE;
   }
   else {
@@ -528,8 +546,8 @@ Bool_t AliAnalysisTaskEmcalJetQA::FillHistograms()
   eventQA.fMaxTrack = fLeadingTrack;
 
   DoClusterLoop();
-  AliDebug(2,Form("%d clusters found in EMCal and %d in DCal", fNTotClusters[0], fNTotClusters[1]));
-  for (Int_t i = 0; i < 2; i++) {
+  AliDebug(2,Form("%d clusters found in EMCal, %d in DCal and %d in PHOS", fNTotClusters[0], fNTotClusters[1], fNTotClusters[2]));
+  for (Int_t i = 0; i < 3; i++) {
     eventQA.fMaxCluster[i] = fLeadingCluster[i];
   }
 
@@ -547,6 +565,7 @@ Bool_t AliAnalysisTaskEmcalJetQA::FillHistograms()
   eventQA.fNTracks = fNTotTracks;
   eventQA.fNClusters[0] = fNTotClusters[0];
   eventQA.fNClusters[1] = fNTotClusters[1];
+  eventQA.fNClusters[2] = fNTotClusters[2];
 
   FillEventQAHisto(eventQA);
 
@@ -558,10 +577,12 @@ void AliAnalysisTaskEmcalJetQA::FillEventQAHisto(const EventQA_t& eventQA)
 {
   Double_t contents[40]={0};
 
-  Int_t globalNclusters = eventQA.fNClusters[0] + eventQA.fNClusters[1];
+  Int_t globalNclusters = eventQA.fNClusters[0] + eventQA.fNClusters[1] + eventQA.fNClusters[2];
 
-  AliTLorentzVector globalMaxCluster = eventQA.fMaxCluster[0].E() > eventQA.fMaxCluster[1].E() ?
-      eventQA.fMaxCluster[0] : eventQA.fMaxCluster[1];
+  AliTLorentzVector globalMaxCluster;
+  for (Int_t i = 0; i < 3; i++) {
+    if (globalMaxCluster.E() < eventQA.fMaxCluster[i].E())  globalMaxCluster = eventQA.fMaxCluster[i];
+  }
 
   THnSparse* histEventQA = static_cast<THnSparse*>(fHistManager.FindObject("fHistEventQA"));
 
@@ -611,7 +632,13 @@ void AliAnalysisTaskEmcalJetQA::FillEventQAHisto(const EventQA_t& eventQA)
       contents[i] = eventQA.fMaxCluster[1].Phi_0_2pi();
     else if (title=="#eta_{DCal cluster}^{leading}")
       contents[i] = eventQA.fMaxCluster[1].Eta();
-    else 
+    else if (title=="#it{E}_{PHOS cluster}^{leading} (GeV)")
+      contents[i] = eventQA.fMaxCluster[2].E();
+    else if (title=="#phi_{PHOS cluster}^{leading}")
+      contents[i] = eventQA.fMaxCluster[2].Phi_0_2pi();
+    else if (title=="#eta_{PHOS cluster}^{leading}")
+      contents[i] = eventQA.fMaxCluster[2].Eta();
+    else
       AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
 
@@ -625,20 +652,23 @@ Int_t AliAnalysisTaskEmcalJetQA::DoCellLoop()
 
   if (!fCaloCells) return 0;
 
-  TString histname = TString::Format("%s/fHistCellsAbsIdEnergy_%d", fCaloCellsName.Data(), fCentBin);
+  TString histname_en = TString::Format("%s/fHistCellsAbsIdEnergy_%d", fCaloCellsName.Data(), fCentBin);
+  TString histname_tm = TString::Format("%s/fHistCellsAbsIdTime_%d", fCaloCellsName.Data(), fCentBin);
 
   const Int_t ncells = fCaloCells->GetNumberOfCells();
   Int_t nAccCells = 0;
 
   for (Int_t pos = 0; pos < ncells; pos++) {
     Float_t amp   = fCaloCells->GetAmplitude(pos);
+    Float_t time   = fCaloCells->GetTime(pos);
     Int_t   absId = fCaloCells->GetCellNumber(pos);
 
     if (amp < fCellEnergyCut) continue;
 
-    fHistManager.FillTH2(histname, absId,amp);
+    fHistManager.FillTH2(histname_en, absId, amp);
+    fHistManager.FillTH2(histname_tm, absId, time);
     nAccCells++;
-  } 
+  }
 
   return nAccCells;
 }
@@ -658,9 +688,9 @@ Double_t AliAnalysisTaskEmcalJetQA::GetFcross(AliVCluster *cluster, AliVCaloCell
   if (Eseed < 1e-9)
     return 100;
 
-  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
-  fGeom->GetCellIndex(AbsIdseed,imod,iTower,iIphi,iIeta); 
-  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,iphi,ieta);  
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+  fGeom->GetCellIndex(AbsIdseed,imod,iTower,iIphi,iIeta);
+  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,iphi,ieta);
 
   //Get close cells index and energy, not in corners
 
@@ -677,17 +707,17 @@ Double_t AliAnalysisTaskEmcalJetQA::GetFcross(AliVCluster *cluster, AliVCaloCell
 
   if (ieta == AliEMCALGeoParams::fgkEMCALCols-1 && !(imod%2)) {
     absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod+1, iphi, 0);
-    absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod,   iphi, ieta-1); 
+    absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod,   iphi, ieta-1);
   }
   else if (ieta == 0 && imod%2) {
     absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod,   iphi, ieta+1);
-    absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod-1, iphi, AliEMCALGeoParams::fgkEMCALCols-1); 
+    absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod-1, iphi, AliEMCALGeoParams::fgkEMCALCols-1);
   }
   else {
-    if (ieta < AliEMCALGeoParams::fgkEMCALCols-1) 
+    if (ieta < AliEMCALGeoParams::fgkEMCALCols-1)
       absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
-    if (ieta > 0)                                 
-      absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
+    if (ieta > 0)
+      absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
   }
 
   Double_t  ecell1 = cells->GetCellAmplitude(absID1);
@@ -709,16 +739,14 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
 
   TString histname;
 
-  memset(fNTotClusters, 0, sizeof(Int_t)*2);
-  for (Int_t i = 0; i < 2; i++) fLeadingCluster[i].SetPxPyPzE(0,0,0,0);
+  memset(fNTotClusters, 0, sizeof(Int_t)*3);
+  for (Int_t i = 0; i < 3; i++) fLeadingCluster[i].SetPxPyPzE(0,0,0,0);
 
-  AliClusterContainer* clusters = 0;
-  TIter nextClusColl(&fClusterCollArray);
-  while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
-    // Cluster loop
+  for (auto cont_it : fClusterCollArray) {
+    AliClusterContainer* clusters = cont_it.second;
+    // Cluster loop (EMCal, DCal, PHOS)
     AliClusterIterableMomentumContainer itcont = clusters->all_momentum();
     for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
-
       UInt_t rejectionReason = 0;
       if (!clusters->AcceptCluster(it.current_index(), rejectionReason)) {
         histname = TString::Format("%s/fHistRejectionReason_%d", clusters->GetArrayName().Data(), fCentBin);
@@ -731,14 +759,8 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
       histname = TString::Format("%s/fHistClusPosition_%d", clusters->GetArrayName().Data(), fCentBin);
       fHistManager.FillTH3(histname, pos[0], pos[1], pos[2]);
 
-      Double_t phi = it->first.Phi_0_2pi();
-
-      Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
-
       histname = TString::Format("%s/fHistClusPhiEtaEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
       fHistManager.FillTH3(histname, it->first.Eta(), it->first.Phi_0_2pi(), it->first.E());
-
-      if (fLeadingCluster[isDcal].E() < it->first.E()) fLeadingCluster[isDcal] = it->first;
 
       histname = TString::Format("%s/fHistClusDeltaPhiEPEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
       if (fHistManager.FindObject(histname)) {
@@ -753,11 +775,6 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
 
       histname = TString::Format("%s/fHistClusTimeEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
       fHistManager.FillTH2(histname, it->first.E(), it->second->GetTOF());
-
-      if (fCaloCells) {
-        histname = TString::Format("%s/fHistFcrossEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname, it->first.E(), GetFcross(it->second, fCaloCells));
-      }
 
       histname = TString::Format("%s/fHistClusMCEnergyFraction_%d", clusters->GetArrayName().Data(), fCentBin);
       if (fHistManager.FindObject(histname)) {
@@ -777,16 +794,31 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
         fHistManager.FillTH1(histname, it->second->GetHadCorrEnergy());
       }
 
-      Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
-      if (sm >=0 && sm < 20) {
-        histname = TString::Format("%s/BySM/fHistClusEnergy_SM%d_%d", clusters->GetArrayName().Data(), sm, fCentBin);
-        fHistManager.FillTH1(histname, it->second->E());
-      }
-      else {
-        AliError(Form("Supermodule %d does not exist!", sm));
-      }
+      // The following histograms are filled only for EMCal/DCal
+      if (it->second->IsEMCAL()) {
+        Double_t phi = it->first.Phi_0_2pi();
+        Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
+        if (fLeadingCluster[isDcal].E() < it->first.E()) fLeadingCluster[isDcal] = it->first;
+        fNTotClusters[isDcal]++;
 
-      fNTotClusters[isDcal]++;
+        if (fCaloCells) {
+          histname = TString::Format("%s/fHistFcrossEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+          fHistManager.FillTH2(histname, it->first.E(), GetFcross(it->second, fCaloCells));
+        }
+
+        Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
+        if (sm >=0 && sm < 20) {
+          histname = TString::Format("%s/BySM/fHistClusEnergy_SM%d_%d", clusters->GetArrayName().Data(), sm, fCentBin);
+          fHistManager.FillTH1(histname, it->second->E());
+        }
+        else {
+          AliError(Form("Supermodule %d does not exist!", sm));
+        }
+      }
+      else if (it->second->IsPHOS()) {
+        fNTotClusters[2]++;
+        if (fLeadingCluster[2].E() < it->first.E()) fLeadingCluster[2] = it->first;
+      }
     }
   }
 }
@@ -804,10 +836,8 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
 
   TString histname;
 
-  AliParticleContainer* particles = 0;
-  TIter nextPartColl(&fParticleCollArray);
-
-  while ((particles = static_cast<AliParticleContainer*>(nextPartColl()))) {
+  for (auto cont_it : fParticleCollArray) {
+    AliParticleContainer* particles = cont_it.second;
     AliParticleIterableMomentumContainer itcont = particles->all_momentum();
     for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
 
@@ -823,8 +853,8 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
       if (fLeadingTrack.Pt() < it->first.Pt()) fLeadingTrack = it->first;
 
       if (fParticleLevel) {
-        histname = TString::Format("%s/fHistTrPhiEtaPt_%d", particles->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname, it->first.Eta(), it->first.Phi_0_2pi(),it->first.Pt());
+        histname = TString::Format("%s/fHistTrPhiEtaPt_%d_0", particles->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH3(histname, it->first.Eta(), it->first.Phi_0_2pi(), it->first.Pt());
       }
       else {
         if (it->second->GetLabel() == 0) {
@@ -905,5 +935,139 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
     histname = TString::Format("%s/fHistTrZeroLabels_%d", particles->GetArrayName().Data(), fCentBin);
     if (fHistManager.FindObject(histname))
       fHistManager.FillTH1(histname, 1. * zero / fNTotTracks);
+  }
+}
+
+//________________________________________________________________________
+AliAnalysisTaskEmcalJetQA* AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(TString ntracks, TString nclusters, TString ncells, TString subdir, TString suffix)
+{
+  // Get the pointer to the existing analysis manager via the static access method
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskEmcalJetQA", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler) {
+    ::Error("AddTaskEmcalJetQA", "This task requires an input event handler");
+    return NULL;
+  }
+
+  EDataType_t dataType = kUnknownDataType;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  // Init the task and do settings
+
+  if (ntracks == "usedefault") {
+    if (dataType == kESD) {
+      ntracks = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      ntracks = "tracks";
+    }
+    else {
+      ntracks = "";
+    }
+  }
+
+  if (nclusters == "usedefault") {
+    if (dataType == kESD) {
+      nclusters = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      nclusters = "caloClusters";
+    }
+    else {
+      nclusters = "";
+    }
+  }
+
+  if (ncells == "usedefault") {
+    if (dataType == kESD) {
+      ncells = "EMCALCells";
+    }
+    else if (dataType == kAOD) {
+      ncells = "emcalCells";
+    }
+    else {
+      ncells = "";
+    }
+  }
+
+  TString name("AliAnalysisTaskEmcalJetQA");
+  if (!ntracks.IsNull()) {
+    name += "_";
+    name += ntracks;
+  }
+  if (!nclusters.IsNull()) {
+    name += "_";
+    name += nclusters;
+  }
+  if (!ncells.IsNull()) {
+    name += "_";
+    name += ncells;
+  }
+  if (!suffix.IsNull() != 0) {
+    name += "_";
+    name += suffix;
+  }
+
+  AliAnalysisTaskEmcalJetQA* qaTask = new AliAnalysisTaskEmcalJetQA(name);
+  qaTask->SetCaloCellsName(ncells);
+  qaTask->SetVzRange(-10,10);
+  qaTask->AddParticleContainer(ntracks.Data());
+  qaTask->AddClusterContainer(nclusters.Data());
+
+  // Final settings, pass to manager and set the containers
+  mgr->AddTask(qaTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+
+  TString contName = TString::Format("%s_histos", name.Data());
+  TString commonoutput;
+  if (subdir.IsNull()) {
+    commonoutput = mgr->GetCommonFileName();
+  }
+  else {
+    commonoutput = TString::Format("%s:%s", mgr->GetCommonFileName(), subdir.Data());
+  }
+
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(),
+                  TList::Class(),AliAnalysisManager::kOutputContainer,
+                  commonoutput);
+  mgr->ConnectInput  (qaTask, 0,  cinput1 );
+  mgr->ConnectOutput (qaTask, 1, coutput1 );
+
+  return qaTask;
+}
+
+/**
+ * Add this task to the QA train
+ * \param runnumber Run number
+ */
+void AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA_QAtrain(Int_t runnumber)
+{
+  EBeamType_t beam = BeamTypeFromRunNumber(runnumber);
+  Int_t nCentBins = 0;
+  if (beam == kpA || beam == kAA) nCentBins = 4;
+  std::vector<std::string> triggerClasses = {"CINT7", "CEMC7", "CDMC7", "EG1", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2" };
+  for (auto triggerClass : triggerClasses) {
+    TString suffix(triggerClass.c_str());
+    suffix.ReplaceAll("-", "_");
+    AliAnalysisTaskEmcalJetQA* task = AddTaskEmcalJetQA("", "usedefault", "usedefault", "CaloQA_default", suffix);
+    task->AddAcceptedTriggerClass(triggerClass.c_str());
+    task->SetForceBeamType(beam);
+    if (runnumber == 0 || (runnumber >= 265077 && runnumber <= 999999)) { // Run-2 p-Pb (LHC16q): disabling vertex cut
+      task->SetVzRange(-999,999);
+    }
   }
 }

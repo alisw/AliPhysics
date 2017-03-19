@@ -52,7 +52,7 @@ AliCFEventGenCuts::AliCFEventGenCuts() :
   fBitMap=new TBits(0);
 }
 //____________________________________________________________________
-AliCFEventGenCuts::AliCFEventGenCuts(Char_t* name, Char_t* title) : 
+AliCFEventGenCuts::AliCFEventGenCuts(const Char_t* name, const Char_t* title) : 
   AliCFCutBase(name,title),
   fMBProcType(-1),
   fNTracksMin(-1),

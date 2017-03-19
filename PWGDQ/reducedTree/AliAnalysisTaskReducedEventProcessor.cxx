@@ -46,6 +46,7 @@ AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
   //fContainerType(),
   //fNoutputSlots(),
   fRunningMode(kUseEventsFromTree),
+  fEventNumber(0),
   fReducedEvent()
 {
   //
@@ -61,6 +62,7 @@ AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor(const
   //fContainerType(),
   //fNoutputSlots(0),
   fRunningMode(runningMode),
+  fEventNumber(0),
   fReducedEvent()
 {
   //
@@ -137,9 +139,13 @@ void AliAnalysisTaskReducedEventProcessor::UserExec(Option_t *){
   
   if(!event) return;
   
+  
+  //cout << "event number / vtxZ=" << fEventNumber << "/" << event->Vertex(2) << endl;
+  
   fReducedTask->SetEvent(event);
   fReducedTask->Process();
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
+  ++fEventNumber;
   //for(Int_t i=0; i<fNoutputSlots; i++)   if(fContainerType[i]==1) PostData(i, fOutputSlot[i]);
 } 
 

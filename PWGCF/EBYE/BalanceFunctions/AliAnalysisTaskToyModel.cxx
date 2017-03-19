@@ -76,7 +76,7 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fPhiMinForCorrections(0.),
   fPhiMaxForCorrections(360.),
   fPhiBinForCorrections(100),
-  fUseAllCharges(kFALSE), fParticleMass(0.0),
+  fUseAllCharges(kFALSE), fSelectParticle (-1), fParticleMass(0.0),
   fPtSpectraAllCharges(0), fTemperatureAllCharges(100.),
   fReactionPlane(0.0),
   fAzimuthalAngleAllCharges(0), fDirectedFlowAllCharges(0.0), 
@@ -99,7 +99,7 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fQuandrangularFlowProtons(0.0), fPentangularFlowProtons(0.0),
   fUseDynamicalCorrelations(kFALSE), fDynamicalCorrelationsPercentage(0.1),
   fDynamicalCorrelationsDeltaEta(0.1), fDynamicalCorrelationsDeltaPhi(0.1),
-  fUseRapidityShift(kFALSE), fRapidityShift(0.0),
+  fUseRapidityShift(kFALSE), fRapidityShift(0.0), fUseRapidity(0),
   vTmp(NULL),vShift(NULL),vBeam_p(NULL),vBeam_Pb(NULL),
   fUseJets(kFALSE), fPtAssoc(0),
   fUseLCC(kFALSE),
@@ -825,14 +825,12 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 
       //Fill QA histograms (acceptance);
       if(vCharge > 0) {
-	gNumberOfAcceptedPositiveParticles += 1;
 	if(vPhi > 3.*TMath::Pi()/2.)
 	  fHistEtaPhiPos->Fill(vEta,vPhi-2.*TMath::Pi());
 	else
 	  fHistEtaPhiPos->Fill(vEta,vPhi);
       }
       else {
-	gNumberOfAcceptedNegativeParticles += 1;
 	if(vPhi > 3.*TMath::Pi()/2.)
 	  fHistEtaPhiNeg->Fill(vEta,vPhi-2.*TMath::Pi());
 	else
@@ -858,14 +856,37 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	fHistPhiProtons->Fill(vPhi);
 	fHistPtProtons->Fill(vPt);
       }
-      gNumberOfAcceptedParticles += 1;
 
-      // add the track to the TObjArray
-      tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
-      if(fRunMixing) 
-	tracksMixing->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
-    
+      //particle selection (if switched on, i.e. > -1)
+      if( fSelectParticle == -1 || ( fSelectParticle == 0 && isPion ) || ( fSelectParticle == 1 && isKaon ) || ( fSelectParticle == 2 && isProton ) ){
 
+	gNumberOfAcceptedParticles += 1;
+	if(vCharge > 0) {
+	  gNumberOfAcceptedPositiveParticles += 1;
+	}
+	else{
+	  gNumberOfAcceptedNegativeParticles += 1;
+	}
+	
+	// add the track to the TObjArray
+	if(fUseRapidity){
+	  tracksMain->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, 1.0));
+	}
+	else{
+	  tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));
+	}
+	
+	// add the track to the mixing TObjArray 
+	if(fRunMixing){
+	  if(fUseRapidity){
+	    tracksMixing->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, 1.0));  
+	  }
+	  else{
+	    tracksMixing->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
+	  }
+	}
+      }
+      
       // Local Charge Conservation usage (Still not perfect since only for accepted particles so far and then realistic efficiencies!!!)
       // only for charged so far
       if(fUseLCC && fUseAllCharges) {
@@ -922,14 +943,12 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	
 	//Fill QA histograms (acceptance);
 	if(vCharge_LCC > 0) {
-	  gNumberOfAcceptedPositiveParticles += 1;
 	  if(vPhi_LCC > 3.*TMath::Pi()/2.)
 	    fHistEtaPhiPos->Fill(vEta_LCC,vPhi_LCC-2.*TMath::Pi());
 	  else
 	    fHistEtaPhiPos->Fill(vEta_LCC,vPhi_LCC);
 	}
 	else {
-	  gNumberOfAcceptedNegativeParticles += 1;
 	  if(vPhi_LCC > 3.*TMath::Pi()/2.)
 	    fHistEtaPhiNeg->Fill(vEta_LCC,vPhi_LCC-2.*TMath::Pi());
 	  else
@@ -942,12 +961,37 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	fHistPt->Fill(vPt_LCC);
 
 	iParticleCount += 1;
-	gNumberOfAcceptedParticles += 1;
-	
-	// add the track to the TObjArray
-	tracksMain->Add(new AliBFBasicParticle(vEta_LCC, vPhi_LCC, vPt_LCC, vCharge_LCC, 1.0));  
-	if(fRunMixing) 
-	  tracksMixing->Add(new AliBFBasicParticle(vEta_LCC, vPhi_LCC, vPt_LCC, vCharge_LCC, 1.0));  
+
+	//particle selection (if switched on, i.e. > -1)
+	if( fSelectParticle == -1 || ( fSelectParticle == 0 && isPion ) || ( fSelectParticle == 1 && isKaon ) || ( fSelectParticle == 2 && isProton ) ){
+
+	  gNumberOfAcceptedParticles += 1;
+	  if(vCharge_LCC > 0) {
+	    gNumberOfAcceptedPositiveParticles += 1;
+	  }
+	  else {
+	    gNumberOfAcceptedNegativeParticles += 1;
+	  }
+
+	  
+	  // add the track to the TObjArray
+	  if(fUseRapidity){
+	    tracksMain->Add(new AliBFBasicParticle(vY, vPhi_LCC, vPt_LCC, vCharge_LCC, 1.0));
+	  }
+	  else{
+	    tracksMain->Add(new AliBFBasicParticle(vEta_LCC, vPhi_LCC, vPt_LCC, vCharge_LCC, 1.0));
+	  }
+	  
+	  // add the track to the mixing TObjArray 
+	  if(fRunMixing){
+	    if(fUseRapidity){
+	      tracksMixing->Add(new AliBFBasicParticle(vY, vPhi_LCC, vPt_LCC, vCharge_LCC, 1.0));  
+	    }
+	    else{
+	      tracksMixing->Add(new AliBFBasicParticle(vEta_LCC, vPhi_LCC, vPt_LCC, vCharge_LCC, 1.0));  
+	    }
+	  }
+	}
 	
       }//Local charge conservation usage
 
@@ -999,19 +1043,38 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       //Detector effects as for correction of data
       if(fSimulateDetectorEffectsCorrection) {
 	Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
-	Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(gEtaTrig1,gPtTrig1,gPhiTrig1, gChargeTrig1, gCentrality);   
 	Double_t randomNumber = gRandom->Rndm(); 
 	if(randomNumber > efficiency)
 	  continue;
       }
 
-      gNumberOfAcceptedParticles += 1;
+      //particle selection (if switched on, i.e. > -1)
+      if( fSelectParticle == -1 || ( fSelectParticle == 0 && isPion ) || ( fSelectParticle == 1 && isKaon ) || ( fSelectParticle == 2 && isProton ) ){
 
-      // add the track to the TObjArray
-      tracksMain->Add(new AliBFBasicParticle(gEtaTrig1, gPhiTrig1, gPtTrig1, gChargeTrig1, 1.0));  
-      if(fRunMixing) 
-	tracksMixing->Add(new AliBFBasicParticle(gEtaTrig1, gPhiTrig1, gPtTrig1, gChargeTrig1, 1.0));  
+	gNumberOfAcceptedParticles += 1;
 
+	// add the track to the TObjArray
+	if(fUseRapidity){
+	  AliWarning("Request rapidity usage, but vY was not recalculated");
+	  tracksMain->Add(new AliBFBasicParticle(vY, gPhiTrig1, gPtTrig1, gChargeTrig1, 1.0));
+	}
+	else{
+	  tracksMain->Add(new AliBFBasicParticle(gEtaTrig1, gPhiTrig1, gPtTrig1, gChargeTrig1, 1.0));
+	}
+      
+	// add the track to the mixing TObjArray 
+	if(fRunMixing){
+	  if(fUseRapidity){
+	    AliWarning("Request rapidity usage, but vY was not recalculated");
+	    tracksMixing->Add(new AliBFBasicParticle(vY, gPhiTrig1, gPtTrig1, gChargeTrig1, 1.0));  
+	  }
+	  else{
+	    tracksMixing->Add(new AliBFBasicParticle(gEtaTrig1, gPhiTrig1, gPtTrig1, gChargeTrig1, 1.0));  
+	  }
+	}
+      }
+      
       Int_t iAssociated = 0; 
       while(iAssociated < nAssociated) {
 	gPtAssoc = fPtAssoc->GetRandom();
@@ -1052,18 +1115,38 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	  //Detector effects as for correction of data
 	  if(fSimulateDetectorEffectsCorrection) {
 	    Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
-	    Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	    Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(gEtaAssoc,gPtAssoc,gPhiAssoc, gChargeAssoc, gCentrality);   
 	    Double_t randomNumber = gRandom->Rndm(); 
 	    if(randomNumber > efficiency)
 	      continue;
 	  }
 
-	  gNumberOfAcceptedParticles += 1;
+	  //particle selection (if switched on, i.e. > -1)
+	  if( fSelectParticle == -1 || ( fSelectParticle == 0 && isPion ) || ( fSelectParticle == 1 && isKaon ) || ( fSelectParticle == 2 && isProton ) ){
 
-	  // add the track to the TObjArray
-	  tracksMain->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
-	  if(fRunMixing) 
-	    tracksMixing->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	    gNumberOfAcceptedParticles += 1;
+	    
+	    // add the track to the TObjArray
+	    if(fUseRapidity){
+	      AliWarning("Request rapidity usage, but vY was not recalculated");
+	      tracksMain->Add(new AliBFBasicParticle(vY, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));
+	    }
+	    else{
+	      tracksMain->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));
+	    }
+	  
+	    // add the track to the mixing TObjArray 
+	    if(fRunMixing){
+	      if(fUseRapidity){
+		AliWarning("Request rapidity usage, but vY was not recalculated");
+		tracksMixing->Add(new AliBFBasicParticle(vY, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	      }
+	      else{
+		tracksMixing->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	      }
+	    }
+	  }
+	    
 	}//pt,assoc < pt,trig
       }//associated
       
@@ -1104,19 +1187,38 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       //Detector effects as for correction of data
       if(fSimulateDetectorEffectsCorrection) {
 	Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
-	Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(gEtaTrig2,gPtTrig2,gPhiTrig2, gChargeTrig2, gCentrality);   
 	Double_t randomNumber = gRandom->Rndm(); 
 	if(randomNumber > efficiency)
 	  continue;
       }
 
-      gNumberOfAcceptedParticles += 1;
+      //particle selection (if switched on, i.e. > -1)
+      if( fSelectParticle == -1 || ( fSelectParticle == 0 && isPion ) || ( fSelectParticle == 1 && isKaon ) || ( fSelectParticle == 2 && isProton ) ){
 
+	gNumberOfAcceptedParticles += 1;
+	
       // add the track to the TObjArray
-      tracksMain->Add(new AliBFBasicParticle(gEtaTrig2, gPhiTrig2, gPtTrig2, gChargeTrig2, 1.0));  
-      if(fRunMixing) 
-	tracksMixing->Add(new AliBFBasicParticle(gEtaTrig2, gPhiTrig2, gPtTrig2, gChargeTrig2, 1.0));  
-
+	if(fUseRapidity){
+	  AliWarning("Request rapidity usage, but vY was not recalculated");
+	  tracksMain->Add(new AliBFBasicParticle(vY, gPhiTrig2, gPtTrig2, gChargeTrig2, 1.0));
+	}
+	else{
+	  tracksMain->Add(new AliBFBasicParticle(gEtaTrig2, gPhiTrig2, gPtTrig2, gChargeTrig2, 1.0));
+	}
+	
+	// add the track to the mixing TObjArray 
+	if(fRunMixing){
+	  if(fUseRapidity){
+	    AliWarning("Request rapidity usage, but vY was not recalculated");
+	    tracksMixing->Add(new AliBFBasicParticle(vY, gPhiTrig2, gPtTrig2, gChargeTrig2, 1.0));  
+	  }
+	  else{
+	    tracksMixing->Add(new AliBFBasicParticle(gEtaTrig2, gPhiTrig2, gPtTrig2, gChargeTrig2, 1.0));  
+	  }
+	} 
+      }
+      
       iAssociated = 0; 
       while(iAssociated < nAssociated) {
 	gPtAssoc = fPtAssoc->GetRandom();
@@ -1157,18 +1259,37 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	  //Detector effects as for correction of data
 	  if(fSimulateDetectorEffectsCorrection) {
 	    Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
-	    Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	    Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(gEtaAssoc,gPtAssoc,gPhiAssoc, gChargeAssoc, gCentrality);   
 	    Double_t randomNumber = gRandom->Rndm(); 
 	    if(randomNumber > efficiency)
 	      continue;
 	  }
 
-	  gNumberOfAcceptedParticles += 1;
-
-	  // add the track to the TObjArray
-	  tracksMain->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
-	  if(fRunMixing) 
-	    tracksMixing->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	  //particle selection (if switched on, i.e. > -1)
+	  if( fSelectParticle == -1 || ( fSelectParticle == 0 && isPion ) || ( fSelectParticle == 1 && isKaon ) || ( fSelectParticle == 2 && isProton ) ){
+	    
+	    // add the track to the TObjArray
+	    if(fUseRapidity){
+	      AliWarning("Request rapidity usage, but vY was not recalculated");
+	      tracksMain->Add(new AliBFBasicParticle(vY, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));
+	    }
+	    else{
+	      tracksMain->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));
+	    }
+	    
+	    // add the track to the mixing TObjArray 
+	    if(fRunMixing){
+	      if(fUseRapidity){
+		AliWarning("Request rapidity usage, but vY was not recalculated");
+		tracksMixing->Add(new AliBFBasicParticle(vY, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	      }
+	      else{
+		tracksMixing->Add(new AliBFBasicParticle(gEtaAssoc, gPhiAssoc, gPtAssoc, gChargeAssoc, 1.0));  
+	      }
+	    }
+	    gNumberOfAcceptedParticles += 1;
+	  }
+	  
 	}//pt,assoc < pt,trig
       }//associated
     }//Jet usage
@@ -1186,7 +1307,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     Double_t vEPrime = 0.0;
     //Generate "correlated" particles 
     if(fUseDynamicalCorrelations) {
-      Int_t gNumberOfDynamicalCorrelations = (Int_t)(0.5*gNumberOfAcceptedParticles*fDynamicalCorrelationsPercentage);
+      Int_t gNumberOfDynamicalCorrelations = (Int_t)(0.5*nMultiplicity*fDynamicalCorrelationsPercentage);
       for(Int_t iDynamicalCorrelations = 0; iDynamicalCorrelations < gNumberOfDynamicalCorrelations; iDynamicalCorrelations++) {
 	isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
 	
@@ -1331,13 +1452,29 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	      fHistPhiProtons->Fill(vPhi);
 	      fHistPtProtons->Fill(vPt);
 	    }
-	    
-	    // add the track to the TObjArray (positive)
-	    tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
-	    if(fRunMixing) 
-	      tracksMixing->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
 
-	    gNumberOfAcceptedParticles += 1;
+	    //particle selection (if switched on, i.e. > -1)
+	    if( fSelectParticle == -1 || ( fSelectParticle == 0 && isPion ) || ( fSelectParticle == 1 && isKaon ) || ( fSelectParticle == 2 && isProton ) ){
+
+	      // add the track to the TObjArray
+	      if(fUseRapidity){
+		tracksMain->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, 1.0));
+	      }
+	      else{
+		tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));
+	      }
+	      
+	    // add the track to the mixing TObjArray 
+	      if(fRunMixing){
+		if(fUseRapidity){
+		  tracksMixing->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, 1.0));  
+		}
+		else{
+		  tracksMixing->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
+		}
+	      }
+	      gNumberOfAcceptedParticles += 1;
+	    }
 	  }
 	}
 
@@ -1364,13 +1501,30 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	      fHistPhiProtons->Fill(vPhiPrime);
 	      fHistPtProtons->Fill(vPtPrime);
 	    }
-  
-	    // add the track to the TObjArray (positive)
-	    tracksMain->Add(new AliBFBasicParticle(vEtaPrime, vPhiPrime, vPtPrime, vChargePrime, 1.0));  
-	    if(fRunMixing) 
-	      tracksMixing->Add(new AliBFBasicParticle(vEtaPrime, vPhiPrime, vPtPrime, vChargePrime, 1.0));  
-	    
-    	    gNumberOfAcceptedParticles += 1;
+
+	    //particle selection (if switched on, i.e. > -1)
+	    if( fSelectParticle == -1 || ( fSelectParticle == 0 && isPion ) || ( fSelectParticle == 1 && isKaon ) || ( fSelectParticle == 2 && isProton ) ){
+	      
+	      // add the track to the TObjArray
+	      if(fUseRapidity){
+		tracksMain->Add(new AliBFBasicParticle(vYPrime, vPhiPrime, vPtPrime, vChargePrime, 1.0));
+	      }
+	      else{
+		tracksMain->Add(new AliBFBasicParticle(vEtaPrime, vPhiPrime, vPtPrime, vChargePrime, 1.0));
+	      }
+	      
+	      // add the track to the mixing TObjArray 
+	      if(fRunMixing){
+		if(fUseRapidity){
+		  tracksMixing->Add(new AliBFBasicParticle(vYPrime, vPhiPrime, vPtPrime, vChargePrime, 1.0));  
+		}
+		else{
+		  tracksMixing->Add(new AliBFBasicParticle(vEtaPrime, vPhiPrime, vPtPrime, vChargePrime, 1.0));  
+		}
+	      }  
+	      
+	      gNumberOfAcceptedParticles += 1;
+	    }
 	  }
 	}      
       }//loop over the dynamical correlations

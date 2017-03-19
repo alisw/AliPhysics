@@ -1,6 +1,5 @@
 // AliEmcalCorrectionClusterExotics
 //
-// Author: C.Loizides, S.Aiola
 
 #include "AliEmcalCorrectionClusterExotics.h"
 
@@ -17,44 +16,33 @@ ClassImp(AliEmcalCorrectionClusterExotics);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterExotics> AliEmcalCorrectionClusterExotics::reg("AliEmcalCorrectionClusterExotics");
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionClusterExotics::AliEmcalCorrectionClusterExotics() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterExotics"),
   fEtaPhiDistBefore(0),
   fEtaPhiDistAfter(0),
   fEnergyExoticClusters(0)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionClusterExotics::~AliEmcalCorrectionClusterExotics()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionClusterExotics::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   GetProperty("createHistos", fCreateHisto);
-
-  AddContainer(kCluster);
-  Double_t minE = 0.;
-  GetProperty("clusterEMin", minE);
-  Double_t minPt = 0.;
-  GetProperty("clusterPtMin", minPt);
-  
-  // Settings from sample run macro
-  fClusCont->SetClusECut(minE);
-  fClusCont->SetClusPtCut(minPt);
   
   // init reco utils
   if (!fRecoUtils)
@@ -62,12 +50,22 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   fRecoUtils->SwitchOnRejectExoticCluster();
   if (fRecoUtils)
     fRecoUtils->Print("");
+
+  return kTRUE;
+}
+
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
+void AliEmcalCorrectionClusterExotics::UserCreateOutputObjects()
+{   
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
   
   // Create my user objects.
   if (fCreateHisto){
-    fEtaPhiDistBefore = new TH2F("hEtaPhiDistBefore","hEtaPhiDistBefore;#eta;#phi",280,-0.7,0.7,800,1.3,3.3);
+    fEtaPhiDistBefore = new TH2F("hEtaPhiDistBefore","hEtaPhiDistBefore;#eta;#phi",280,-0.7,0.7,200*3.14,0,2*3.14);
     fOutput->Add(fEtaPhiDistBefore);
-    fEtaPhiDistAfter = new TH2F("hEtaPhiDistAfter","hEtaPhiDistAfter;#eta;#phi",280,-0.7,0.7,800,1.3,3.3);
+    fEtaPhiDistAfter = new TH2F("hEtaPhiDistAfter","hEtaPhiDistAfter;#eta;#phi",280,-0.7,0.7,200*3.14,0,2*3.14);
     fOutput->Add(fEtaPhiDistAfter);
     fEnergyExoticClusters = new TH1F("fEnergyExoticClusters","fEnergyExoticClusters;E_{ex clus} (GeV)",1500,0,150);
     fOutput->Add(fEnergyExoticClusters);
@@ -75,15 +73,13 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
     // Take ownership of output list
     fOutput->SetOwner(kTRUE);
   }
-  
-  return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionClusterExotics::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   if (!fClusCont) return kFALSE;
@@ -98,7 +94,8 @@ Bool_t AliEmcalCorrectionClusterExotics::Run()
       Float_t pos[3] = {0.};
       clus->GetPosition(pos);
       TVector3 vec(pos);
-      fEtaPhiDistBefore->Fill(vec.Eta(),vec.Phi());
+      // Phi needs to be in 0 to 2 Pi
+      fEtaPhiDistBefore->Fill(vec.Eta(), TVector2::Phi_0_2pi(vec.Phi()));
     }
     
     Bool_t exResult = kFALSE;
@@ -122,7 +119,8 @@ Bool_t AliEmcalCorrectionClusterExotics::Run()
         Float_t pos[3] = {0.};
         clus->GetPosition(pos);
         TVector3 vec(pos);
-        fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
+        // Phi needs to be in 0 to 2 Pi
+        fEtaPhiDistAfter->Fill(vec.Eta(), TVector2::Phi_0_2pi(vec.Phi()));
       }
     }
   }

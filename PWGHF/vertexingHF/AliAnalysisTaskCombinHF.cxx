@@ -1032,7 +1032,9 @@ Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
   
   if(track->Charge()==0) return kFALSE;
   if(track->GetID()<0&&!fKeepNegID)return kFALSE;
-  if(!(track->TestFilterMask(fFilterMask))) return kFALSE;
+  if(fFilterMask>=0){
+    if(!(track->TestFilterMask(fFilterMask))) return kFALSE;
+  }
   if(!SelectAODTrack(track,fTrackCutsAll)) return kFALSE;
   return kTRUE;
 }

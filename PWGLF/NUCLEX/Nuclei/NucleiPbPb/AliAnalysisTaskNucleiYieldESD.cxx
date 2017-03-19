@@ -85,7 +85,8 @@ AliAnalysisTaskNucleiYieldESD::AliAnalysisTaskNucleiYieldESD(TString taskname) :
   fTOFfunction(0x0),   
   fTOFtail(75.f),
   fList(0x0),  
-  fYregion(0.5f),  
+  fYregion(0.5f),
+  fTPCnSigmaCut(4.f),
   fParticle(AliPID::kDeuteron),   
   fPDG(AliPID::ParticleCode(AliPID::kDeuteron)),
   fPDGMass(AliPID::ParticleMass(AliPID::kDeuteron)),
@@ -104,7 +105,7 @@ AliAnalysisTaskNucleiYieldESD::AliAnalysisTaskNucleiYieldESD(TString taskname) :
   fDCABins(),       
   fPtBins(),        
   fFlatteningProbs(),   
-  fCentralityClasses(0x0), 
+  fCentralityClasses(0x0),
   fProduction(),
   fITS_TPC(),   
   fITS_TPC_TOF(),    
@@ -117,6 +118,8 @@ AliAnalysisTaskNucleiYieldESD::AliAnalysisTaskNucleiYieldESD(TString taskname) :
   fTOFsignal(),
   fTPCcounts(),
   fTPCdEdx(),
+  fTPCdEdxTpcCut(),
+  fTPCdEdxTofCut(),
   fDCAxyTPC(),      
   fDCAzTPC(),     
   fDCAxyTOF(),      
@@ -156,25 +159,25 @@ void AliAnalysisTaskNucleiYieldESD::UserCreateOutputObjects() {
   const float *centBins = fCentBins.GetArray();
   const float *dcaBins = fDCABins.GetArray();
 
-  fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%);Events / Class;",nCentBins,centBins);
+  fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%%);Events / Class;",nCentBins,centBins);
   fList->Add(fCentralityClasses);
 
   if (fIsMC) {
     for (int iS = 0; iS < 2; ++iS) {
       fProduction[iS] = new TH1F(Form("f%cProduction",kLetters[iS]),";p (GeV/c);Entries",100,0.,10.);
-      fTotal[iS] = new TH2F(Form("f%cTotal",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); Counts",
+      fTotal[iS] = new TH2F(Form("f%cTotal",kLetters[iS]),";Centrality (%%);p_{T} (GeV/c); Counts",
           nCentBins,centBins,nPtBins,pTbins);
-      fITS_TPC[iS] = new TH2F(Form("f%cITS_TPC",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); Counts",
+      fITS_TPC[iS] = new TH2F(Form("f%cITS_TPC",kLetters[iS]),";Centrality (%%);p_{T} (GeV/c); Counts",
           nCentBins,centBins,nPtBins,pTbins);
-      fITS_TPC_TOF[iS] = new TH2F(Form("f%cITS_TPC_TOF",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); Counts",
+      fITS_TPC_TOF[iS] = new TH2F(Form("f%cITS_TPC_TOF",kLetters[iS]),";Centrality (%%);p_{T} (GeV/c); Counts",
           nCentBins,centBins,nPtBins,pTbins);
-      fDCAPrimaryTPC[iS] = new TH3F(Form("f%cDCAPrimaryTPC",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+      fDCAPrimaryTPC[iS] = new TH3F(Form("f%cDCAPrimaryTPC",kLetters[iS]),";Centrality (%%);p_{T} (GeV/c); DCA_{xy} (cm)",
           nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-      fDCASecondaryTPC[iS] = new TH3F(Form("f%cDCASecondaryTPC",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+      fDCASecondaryTPC[iS] = new TH3F(Form("f%cDCASecondaryTPC",kLetters[iS]),";Centrality (%%);p_{T} (GeV/c); DCA_{xy} (cm)",
           nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-      fDCAPrimaryTOF[iS] = new TH3F(Form("f%cDCAPrimaryTOF",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+      fDCAPrimaryTOF[iS] = new TH3F(Form("f%cDCAPrimaryTOF",kLetters[iS]),";Centrality (%%);p_{T} (GeV/c); DCA_{xy} (cm)",
           nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-      fDCASecondaryTOF[iS] = new TH3F(Form("f%cDCASecondaryTOF",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+      fDCASecondaryTOF[iS] = new TH3F(Form("f%cDCASecondaryTOF",kLetters[iS]),";Centrality (%%);p_{T} (GeV/c); DCA_{xy} (cm)",
           nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
       fPtCorrection[iS] = new TH2F(Form("f%cPtCorrection",kLetters[iS]),
           ";p_{T}^{rec} (GeV/c);p_{T}^{MC}-p_{T}^{rec} (GeV/c);Entries",
@@ -223,17 +226,21 @@ void AliAnalysisTaskNucleiYieldESD::UserCreateOutputObjects() {
       fTOFsignal[iS] = new TH3F(Form("f%cTOFsignal",kLetters[iS]),
           ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-      fTPCcounts[iS] = new TH3F(Form("f%cTPCcounts",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); n_{#sigma} d",
+      fTPCcounts[iS] = new TH3F(Form("f%cTPCcounts",kLetters[iS]),";Centrality (%%);#it{p}_{T} (GeV/c); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
-      fDCAxyTPC[iS] = new TH3F(Form("f%cDCAxyTPC",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+      fDCAxyTPC[iS] = new TH3F(Form("f%cDCAxyTPC",kLetters[iS]),";Centrality (%%);#it{p}_{T} (GeV/c); DCA_{xy} (cm)",
           nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-      fDCAzTPC[iS] = new TH3F(Form("f%cDCAzTPC",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
+      fDCAzTPC[iS] = new TH3F(Form("f%cDCAzTPC",kLetters[iS]),";Centrality (%%);#it{p}_{T} (GeV/c); DCA_{z} (cm)",
           nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
-      fDCAxyTOF[iS] = new TH3F(Form("f%cDCAxyTOF",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+      fDCAxyTOF[iS] = new TH3F(Form("f%cDCAxyTOF",kLetters[iS]),";Centrality (%%);#it{p}_{T} (GeV/c); DCA_{xy} (cm)",
           nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-      fDCAzTOF[iS] = new TH3F(Form("f%cDCAzTOF",kLetters[iS]),";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
+      fDCAzTOF[iS] = new TH3F(Form("f%cDCAzTOF",kLetters[iS]),";Centrality (%%);#it{p}_{T} (GeV/c); DCA_{z} (cm)",
           nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
-      fTPCdEdx[iS] = new TH2F(Form("f%cTPCdEdx",kLetters[iS]),";p (GeV/c);TPC dE/dx (a.u.);Entries",
+      fTPCdEdx[iS] = new TH2F(Form("f%cTPCdEdx",kLetters[iS]),";#it{p} (GeV/c);TPC dE/dx (a.u.);Entries",
+          196 * 2,0.2,10.,2400,0,2400);
+      fTPCdEdxTpcCut[iS] = new TH2F(Form("f%cTPCdEdxTpcCut",kLetters[iS]),";#it{p} (GeV/c);TPC dE/dx (a.u.);Entries",
+          196 * 2,0.2,10.,2400,0,2400);
+      fTPCdEdxTofCut[iS] = new TH2F(Form("f%cTPCdEdxTofCut",kLetters[iS]),";#it{p} (GeV/c);TPC dE/dx (a.u.);Entries",
           196 * 2,0.2,10.,2400,0,2400);
 
       fList->Add(fTOFsignal[iS]);
@@ -243,18 +250,19 @@ void AliAnalysisTaskNucleiYieldESD::UserCreateOutputObjects() {
       fList->Add(fDCAxyTOF[iS]);
       fList->Add(fDCAzTOF[iS]);
       fList->Add(fTPCdEdx[iS]);
+      fList->Add(fTPCdEdxTpcCut[iS]);
+      fList->Add(fTPCdEdxTofCut[iS]);
     }
 
     for (int iS = 0; iS < 5; ++iS) {
       fTOFtemplates[iS] = new TH3F(Form("fTOFtemplates%i",iS),
-          Form("%s;Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",kNames[iS].Data()),
+          Form("%s;Centrality (%%);#it{p}_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",kNames[iS].Data()),
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
       fList->Add(fTOFtemplates[iS]);
     }
   }
 
-  fList->Add(&fEventCuts);
-  fList->Add(&fTrackCuts);
+  fEventCuts.AddQAplotsToList(fList);
 
   fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
 
@@ -334,7 +342,6 @@ void AliAnalysisTaskNucleiYieldESD::UserExec(Option_t *){
     int iC = track->Charge() > 0 ? 1 : 0;
 
     if (!fTrackCuts.AcceptTrack(track)) continue;
-    fTPCdEdx[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
 
     const float energy = sqrt(track->P() * track->P() + fPDGMassOverZ * fPDGMassOverZ);
     const float pz = track->Pz();
@@ -375,10 +382,15 @@ void AliAnalysisTaskNucleiYieldESD::UserExec(Option_t *){
       fDCAxyTPC[iC]->Fill(centrality, pT, dca[0]);
       fDCAzTPC[iC]->Fill(centrality, pT, dca[1]);
       fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
-
       if (beta < 1.e-10) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
+      fTPCdEdx[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      if (fabs(fPID->NumberOfSigmasTOF(track,fParticle)) < 3)
+        fTPCdEdxTofCut[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      if (fabs(tpc_n_sigma) > fTPCnSigmaCut) continue;
+      fTPCdEdxTpcCut[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+        
       fDCAxyTOF[iC]->Fill(centrality, pT, dca[0]);
       fDCAzTOF[iC]->Fill(centrality, pT, dca[1]);
       fTOFsignal[iC]->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);

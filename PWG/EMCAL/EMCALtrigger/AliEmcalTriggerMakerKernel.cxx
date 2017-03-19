@@ -18,7 +18,9 @@
 #include <fstream>
 
 #include <TArrayI.h>
+#include <TF1.h>
 #include <TObjArray.h>
+#include <TRandom.h>
 
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
@@ -45,9 +47,9 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fBadChannels(),
   fOfflineBadChannels(),
   fFastORPedestal(5000),
-  fTriggerBitConfig(NULL),
-  fPatchFinder(NULL),
-  fLevel0PatchFinder(NULL),
+  fTriggerBitConfig(nullptr),
+  fPatchFinder(nullptr),
+  fLevel0PatchFinder(nullptr),
   fL0MinTime(7),
   fL0MaxTime(10),
   fMinCellAmp(0),
@@ -57,26 +59,32 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fL0Threshold(0),
   fIsMC(kFALSE),
   fDebugLevel(0),
-  fMaxAbsCellTime(1.),
   fMinCellAmplitude(0.),
   fApplyOnlineBadChannelsToOffline(kFALSE),
   fConfigured(kFALSE),
-  fGeometry(NULL),
-  fPatchAmplitudes(NULL),
-  fPatchADCSimple(NULL),
-  fPatchADC(NULL),
-  fLevel0TimeMap(NULL),
-  fTriggerBitMap(NULL),
+  fSmearModelMean(nullptr),
+  fSmearModelSigma(nullptr),
+  fSmearThreshold(0.1),
+  fGeometry(nullptr),
+  fPatchAmplitudes(nullptr),
+  fPatchADCSimple(nullptr),
+  fPatchADC(nullptr),
+  fPatchEnergySimpleSmeared(nullptr),
+  fLevel0TimeMap(nullptr),
+  fTriggerBitMap(nullptr),
   fADCtoGeV(1.)
 {
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fL1ThresholdsOffline, 0, sizeof(ULong64_t) * 4);
+  fCellTimeLimits[0] = -10000.;
+  fCellTimeLimits[1] = 10000.;
 }
 
 AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
   delete fPatchAmplitudes;
   delete fPatchADCSimple;
   delete fPatchADC;
+  delete fPatchEnergySimpleSmeared;
   delete fLevel0TimeMap;
   delete fTriggerBitMap;
   delete fPatchFinder;
@@ -105,6 +113,12 @@ void AliEmcalTriggerMakerKernel::Init(){
   fPatchADCSimple->Allocate(48, nrows);
   fLevel0TimeMap->Allocate(48, nrows);
   fTriggerBitMap->Allocate(48, nrows);
+
+  if(fSmearModelMean && fSmearModelSigma){
+    // Allocate container for energy smearing (if enabled)
+    fPatchEnergySimpleSmeared = new AliEMCALTriggerDataGrid<double>;
+    fPatchEnergySimpleSmeared->Allocate(48, nrows);
+  }
 }
 
 void AliEmcalTriggerMakerKernel::AddL1TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize)
@@ -154,7 +168,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2015()
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
-  AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 8, 4);
+  AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
   fConfigured = true;
 }
 
@@ -280,6 +294,7 @@ void AliEmcalTriggerMakerKernel::Reset(){
   fPatchADCSimple->Reset();
   fLevel0TimeMap->Reset();
   fTriggerBitMap->Reset();
+  if(fPatchEnergySimpleSmeared) fPatchEnergySimpleSmeared->Reset();
   memset(fL1ThresholdsOffline, 0, sizeof(ULong64_t) * 4);
 }
 
@@ -383,7 +398,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
 
     Double_t amp = cells->GetAmplitude(iCell),
              celltime = cells->GetTime(iCell);
-    if(TMath::Abs(celltime) > fMaxAbsCellTime) continue;
+    if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
     if(amp < fMinCellAmplitude) continue;
     // get position
     Int_t absId=-1;
@@ -407,6 +422,25 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
     }
   }
+
+  // Apply energy smearing (if enabled)
+  if(fPatchEnergySimpleSmeared){
+    AliDebugStream(1) << "Trigger Maker: Apply energy smearing" << std::endl;
+    for(int icol = 0; icol < fPatchADCSimple->GetNumberOfCols(); icol++){
+      for(int irow = 0; irow < fPatchADCSimple->GetNumberOfRows(); irow++){
+        double energyorig = (*fPatchADCSimple)(icol, irow) * fADCtoGeV;          // Apply smearing in GeV
+        double energysmear = energyorig;
+        if(energyorig > fSmearThreshold){
+          double mean = fSmearModelMean->Eval(energyorig), sigma = fSmearModelSigma->Eval(energyorig);
+          energysmear =  gRandom->Gaus(mean, sigma);
+          if(energysmear < 0) energysmear = 0;      // only accept positive or 0 energy values
+          AliDebugStream(1) << "Original energy " << energyorig << ", mean " << mean << ", sigma " << sigma << ", smeared " << energysmear << std::endl;
+        }
+        (*fPatchEnergySimpleSmeared)(icol, irow) = energysmear;
+      }
+    }
+    AliDebugStream(1) << "Smearing done" << std::endl;
+  }
 }
 
 void AliEmcalTriggerMakerKernel::BuildL1ThresholdsOffline(const AliVVZERO *vzerodata){
@@ -421,7 +455,7 @@ void AliEmcalTriggerMakerKernel::BuildL1ThresholdsOffline(const AliVVZERO *vzero
   }
 }
 
-TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent, Bool_t useL0amp){
+void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent, std::vector<AliEMCALTriggerPatchInfo> &outputcont, Bool_t useL0amp){
   //std::cout << "Finding trigger patches" << std::endl;
   //AliEMCALTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
   //AliEMCALTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
@@ -462,8 +496,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
     }
   }
-  TObjArray *result = new TObjArray(1000);
-  result->SetOwner(kTRUE);
+  outputcont.clear();
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
     // Apply offline and recalc selection
     // Remove unwanted bits from the online bits (gamma bits from jet patches and vice versa)
@@ -489,12 +522,24 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       onlinebits &= bkgPatchMask;
     }
     // convert
-    AliEMCALTriggerPatchInfo *fullpatch = AliEMCALTriggerPatchInfo::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
+    AliEMCALTriggerPatchInfo fullpatch;
+    fullpatch.Initialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * fADCtoGeV,
         onlinebits | offlinebits, vertexvec, fGeometry);
-    fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
-    fullpatch->SetOffSet(offset);
-    result->Add(fullpatch);
+    fullpatch.SetTriggerBitConfig(fTriggerBitConfig);
+    fullpatch.SetOffSet(offset);
+    if(fPatchEnergySimpleSmeared){
+      // Add smeared energy
+      double energysmear = 0;
+      for(int icol = 0; icol < fullpatch.GetPatchSize(); icol++){
+        for(int irow = 0; irow < fullpatch.GetPatchSize(); irow++){
+          energysmear += (*fPatchEnergySimpleSmeared)(fullpatch.GetColStart() + icol, fullpatch.GetRowStart() + irow);
+        }
+      }
+      AliDebugStream(1) << "Patch size(" << fullpatch.GetPatchSize() <<") energy " << fullpatch.GetPatchE() << " smeared " << energysmear << std::endl;
+      fullpatch.SetSmearedEnergy(energysmear);
+    }
+    outputcont.push_back(fullpatch);
   }
 
   // Find Level0 patches
@@ -509,14 +554,81 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
     if (patchit->GetADC() > fL0Threshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetLevel0Bit());
     if (patchit->GetOfflineADC() > fL0Threshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
 
-    AliEMCALTriggerPatchInfo *fullpatch = AliEMCALTriggerPatchInfo::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
+    AliEMCALTriggerPatchInfo fullpatch;
+    fullpatch.Initialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * fADCtoGeV,
         onlinebits | offlinebits, vertexvec, fGeometry);
-    fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
-    result->Add(fullpatch);
+    fullpatch.SetTriggerBitConfig(fTriggerBitConfig);
+    if(fPatchEnergySimpleSmeared){
+      // Add smeared energy
+      double energysmear = 0;
+      for(int icol = 0; icol < fullpatch.GetPatchSize(); icol++){
+        for(int irow = 0; irow < fullpatch.GetPatchSize(); irow++){
+          energysmear += (*fPatchEnergySimpleSmeared)(fullpatch.GetColStart() + icol, fullpatch.GetRowStart() + irow);
+        }
+      }
+      fullpatch.SetSmearedEnergy(energysmear);
+    }
+    outputcont.push_back(fullpatch);
   }
   // std::cout << "Finished finding trigger patches" << std::endl;
-  return result;
+}
+
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelADC(Int_t col, Int_t row) const{
+  double adc = 0;
+  try {
+    adc = (*fPatchADC)(col, row);
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelEnergyRough(Int_t col, Int_t row) const{
+  double adc = 0;
+  try {
+    adc = (*fPatchADC)(col, row) * EMCALTrigger::kEMCL1ADCtoGeV;
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelADCSimple(Int_t col, Int_t row) const{
+  double adc = 0;
+  try {
+    adc = (*fPatchADCSimple)(col, row);
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelEnergy(Int_t col, Int_t row) const {
+  double adc = 0;
+  try {
+    adc = (*fPatchADCSimple)(col, row) * fADCtoGeV;
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelEnergySmeared(Int_t col, Int_t row) const {
+  double adc = 0;
+  if(fPatchEnergySimpleSmeared){
+	  try {
+		  adc = (*fPatchEnergySimpleSmeared)(col, row);
+	  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+	  }
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetDataGridDimensionRows() const{
+  return fPatchADC->GetNumberOfRows();
 }
 
 AliEmcalTriggerMakerKernel::ELevel0TriggerStatus_t AliEmcalTriggerMakerKernel::CheckForL0(Int_t col, Int_t row) const {

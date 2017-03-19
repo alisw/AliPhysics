@@ -36,6 +36,9 @@ class AliAnalysisC2Utils : public TObject {
   // idx = \sum_{i=1}^{pt2} i + (pt1 - pt2) - 1
   // Returns -1 if either of the bins is 0 (ie underflow bins)
   static Int_t ComputePtPairBin(Int_t pt1Bin, Int_t pt2Bin);
+
+  // Function to check if the current event fits a given trigger (ig AliVEvent::kMB)
+  static Bool_t EventFitsTrigger(UInt_t trig);
  private:
   ClassDef(AliAnalysisC2Utils,1);
 };

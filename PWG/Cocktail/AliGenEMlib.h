@@ -30,7 +30,7 @@ public:
 
   
   enum Centrality_t{ kpp = 0x0, k0005=0x1, k0510=0x2, k1020=0x3, k2030=0x4, k3040=0x5, k4050=0x6, k5060=0x7,
-         k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
+         k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, k2050=0x10, kCentralities=0x11};
   
   enum PtParamSetPi0_t{ kPizeroParam, kPizeroParamlow, kPizeroParamhigh, kPichargedParam,
       kPichargedParamlow, kPichargedParamhigh, kPizeroParamAlter,
@@ -298,7 +298,7 @@ public:
   static const Double_t fgkParamSetPi02760GeV[kNPi0Param][7];              // parameters for pi0 in 2.76 TeV
   static const Double_t fgkParamSetPi0900GeV[kNPi0Param][7];               // parameters for pi0 in 0.9 TeV
 
-  ClassDef(AliGenEMlib,2)
+  ClassDef(AliGenEMlib,3)
 
 };
 

@@ -51,6 +51,9 @@ public:
     void SetTPCITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITSTPC = (AliESDtrackCuts *) cuts;}
     void SetTPCOnlyTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsTPC = (AliESDtrackCuts *) cuts;}
     void SetITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITS = (AliESDtrackCuts *) cuts;}
+    AliESDtrackCuts *GetTPCITSTrackCuts(){return fEsdtrackCutsITSTPC;}
+    AliESDtrackCuts *GetTPCOnlyTrackCuts(){ return fEsdtrackCutsTPC;}
+    AliESDtrackCuts *GetITSTrackCuts(){ return fEsdtrackCutsITS;}
     void SetCentralityMethod(char *method){ fCentralityMethod = TString(method);}
     void SetNumberOfCentralityBins(Int_t bins){fNCentBins = bins;}
     void SetDataSet(Int_t val){fDataSet = val;fV0ScaleDataSet=val;}//defaults to using the same data sets

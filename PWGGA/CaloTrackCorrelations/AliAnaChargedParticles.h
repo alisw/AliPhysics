@@ -36,6 +36,9 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   
   TList * GetCreateOutputObjects();
     
+  Bool_t  GetTrackSide  (Float_t trackEta) const { if ( trackEta >=0 ) return kTRUE ; else return kFALSE ; }
+  Int_t   GetTrackSector(Float_t trackPhi) const { return Int_t (trackPhi / 0.349065850398865896) ; } // 20*pi/180
+  
   void    Init();
   
   void    InitParameters();
@@ -46,16 +49,20 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   
   void    MakeAnalysisFillHistograms() ;
   
-  void    SwitchOnFillTrackBCHistograms()    { fFillTrackBCHistograms   = kTRUE  ; }
-  void    SwitchOffFillTrackBCHistograms()   { fFillTrackBCHistograms   = kFALSE ; }
+  void    SwitchOnFillTrackBCHistograms()        { fFillTrackBCHistograms   = kTRUE  ; }
+  void    SwitchOffFillTrackBCHistograms()       { fFillTrackBCHistograms   = kFALSE ; }
 
-  void    SwitchOnFillVertexBC0Histograms()  { fFillVertexBC0Histograms = kTRUE  ; }
-  void    SwitchOffFillVertexBC0Histograms() { fFillVertexBC0Histograms = kFALSE ; }
+  void    SwitchOnFillVertexBC0Histograms()      { fFillVertexBC0Histograms = kTRUE  ; }
+  void    SwitchOffFillVertexBC0Histograms()     { fFillVertexBC0Histograms = kFALSE ; }
 
+  void    SwitchOnFillEtaPhiRegionsHistograms()  { fFillEtaPhiRegionHistograms = kTRUE  ; }
+  void    SwitchOffFillEtaPhiRegionsHistograms() { fFillEtaPhiRegionHistograms = kFALSE ; }
+  
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
   Bool_t  fFillVertexBC0Histograms;         ///<  Fill histograms for tracks with vertex BC=0 or not related histograms
+  Bool_t  fFillEtaPhiRegionHistograms;      ///<  Fill track pT spectrum histograms in different eta-phi windows
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   
   //Histograms
@@ -65,6 +72,9 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtCutDCA;                        //!<! pT distribution, Apply DCA cut
   TH1F * fhPtCutDCABCOK;                    //!<! pT distribution, Apply DCA cut, BC=0 or -100
 
+  TH1F * fhPtPerRegion   [18][2];           //!<! pT distribution in TPC regions
+  TH1F * fhSumPtPerRegion[18][2];           //!<! pT distribution in TPC regions
+  
   TH1F * fhPtNotPrimary;                    //!<! pT spectra of tracks not declared as primary (AOD)
   TH1F * fhPtNotSharedClusterCut;           //!<! pT spectra of tracks not passing the shared clusters cut (AOD)
   

@@ -8,5 +8,6 @@
 #pragma link C++ class AliAnalysisC2Utils+;
 #pragma link C++ class AliAnalysisTaskC2+;
 #pragma link C++ class AliAnalysisTaskC2Base+;
+#pragma link C++ class AliAnalysisTaskMCSmearing+;
 
 #endif /* __CINT__ */

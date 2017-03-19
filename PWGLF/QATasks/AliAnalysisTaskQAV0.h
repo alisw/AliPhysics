@@ -62,6 +62,7 @@ class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
   //Task Configuration: Meant to enable quick re-execution of vertexer if needed
   void SetRunV0Vertexer ( Bool_t lRunV0Vertexer = kTRUE) { fkRunV0Vertexer = lRunV0Vertexer; }
+  void SetUseLightV0Vertexer ( Bool_t lGoLightV0Vertexer = kTRUE) { fkUseLightV0Vertexer = lGoLightV0Vertexer; }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
   void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
@@ -83,8 +84,10 @@ class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
 //Setters for dE/dx selection
   void SetTPCdEdxSelection ( Double_t lParameter ) { fdEdxCut = lParameter; }
-//---------------------------------------------------------------------------------------  
-
+//---------------------------------------------------------------------------------------
+  void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
+//---------------------------------------------------------------------------------------
+    
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
 				// your data member object is created on the worker nodes and streaming is not needed.
@@ -136,11 +139,14 @@ class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {
   TH2D *f2dHistdEdxSignalProtonFromLambda; //! 
   TH2D *f2dHistResponsePionFromLambda;     //! 
   TH2D *f2dHistResponseProtonFromLambda;   //!
+    
+    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
   AliPIDResponse *fPIDResponse;     // PID response object
 
   //Objects Controlling Task Behaviour: has to be streamed! 
   Bool_t    fkRunV0Vertexer;      //if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
+  Bool_t    fkUseLightV0Vertexer;  //if true, use light vertexers
   Double_t  fV0VertexerSels[7];     // Array to store the 7 values for the different selections V0 related
   Double_t  fV0Sels[7];           // Array to store the 7 values for the different selections V0 related
 

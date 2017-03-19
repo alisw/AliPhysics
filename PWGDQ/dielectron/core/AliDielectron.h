@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 //#####################################################
-//#                                                   # 
+//#                                                   #
 //#             Class AliDielectron                   #
 //#         Main Class for e+e- analysis              #
 //#                                                   #
@@ -50,7 +50,7 @@ public:
       kEv1PEv2M, kEv1MEv2M, kEv2PM,
       kEv2MM, kEv1PMRot };
   enum ELegType  { kEv1P, kEv1M, kEv2P, kEv2M };
-  
+
   AliDielectron();
   AliDielectron(const char* name, const char* title);
   virtual ~AliDielectron();
@@ -73,6 +73,7 @@ public:
   AliAnalysisFilter& GetPairPreFilterLegs2() { return fPairPreFilterLegs2; }
   AliAnalysisFilter& GetEventPlanePreFilter(){ return fEventPlanePreFilter; }
   AliAnalysisFilter& GetEventPlanePOIPreFilter(){ return fEventPlanePOIPreFilter; }
+  AliDielectronQnEPcorrection* GetQnTPCACcuts(){ return fQnTPCACcuts; }
 
   void  SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
   void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2) { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
@@ -102,8 +103,8 @@ public:
   Bool_t HasCandidatesLikeSign() const {
     return (GetPairArray(0)&&GetPairArray(2)) ? (GetPairArray(0)->GetEntriesFast()>0 || GetPairArray(2)->GetEntriesFast()>0) : 0;
   }
-  
-  Bool_t HasCandidatesTR() const {return GetPairArray(10)?GetPairArray(10)->GetEntriesFast()>0:0;} 
+
+  Bool_t HasCandidatesTR() const {return GetPairArray(10)?GetPairArray(10)->GetEntriesFast()>0:0;}
   void SetCFManagerPair(AliDielectronCF * const cf) { fCfManagerPair=cf; }
   AliDielectronCF* GetCFManagerPair() const { return fCfManagerPair; }
 
@@ -143,7 +144,7 @@ public:
   void SetDontClearArrays(Bool_t dontClearArrays=kTRUE) { fDontClearArrays=dontClearArrays; }
   Bool_t DontClearArrays() const { return fDontClearArrays; }
 
-  void AddSignalMC(AliDielectronSignalMC* signal);  
+  void AddSignalMC(AliDielectronSignalMC* signal);
 
   void SetDebugTree(AliDielectronDebugTree * const tree) { fDebugTree=tree; }
 
@@ -157,9 +158,11 @@ public:
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
   void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
-  void InitLegEffMap(TString filename)  { fLegEffMap=InitEffMap(filename)  ;}
-  void InitPairEffMap(TString filename) { fPairEffMap=InitEffMap(filename) ;}
+  void InitLegEffMap(TString filename, TString generatedname="hGenerated", TString foundname="hFound")  { fLegEffMap=InitEffMap(filename,generatedname,foundname)  ;}
+  void InitPairEffMap(TString filename, TString generatedname="hGenerated", TString foundname="hFound") { fPairEffMap=InitEffMap(filename,generatedname,foundname) ;}
 
+  void SetCentroidCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -170,15 +173,22 @@ public:
   void SetCentroidCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
+  void SetQnTPCACcuts(AliDielectronQnEPcorrection *acCuts){ fQnTPCACcuts = acCuts; fACremovalIsSetted = kTRUE;}
+  void SetQnVectorNormalisation(TString norm) {fQnVectorNorm = norm;}
   void SaveDebugTree();
   Bool_t DoEventProcess() const { return fEventProcess; }
   void SetEventProcess(Bool_t setValue=kTRUE) { fEventProcess=setValue; }
+  Bool_t GammaTracksUsed() const { return fUseGammaTracks; }
+  void SetUseGammaTracks(Bool_t setValue=kTRUE) { fUseGammaTracks=setValue; }
   void  FillHistogramsFromPairArray(Bool_t pairInfoOnly=kFALSE);
 
 private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
+
+  TObjArray *fPostPIDCntrdCorrArr;   // post pid correction array containing the run-wise objects for electron sigma centroids in TPC
+  TObjArray *fPostPIDWdthCorrArr;    // post pid correction array containing the run-wise objects for electron sigma widths in TPC
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
   TH1 *fPostPIDWdthCorr;    // post pid correction object for electron sigma widths in TPC
   TH1 *fPostPIDCntrdCorrITS;// post pid correction object for electron sigma centroids in ITS
@@ -193,8 +203,10 @@ private:
   AliAnalysisFilter fPairPreFilterLegs1; // Leg filter after the pair prefilter cuts
   AliAnalysisFilter fPairPreFilterLegs2; // Leg filter after the pair prefilter cuts
   AliAnalysisFilter fPairFilter;     // pair cuts
-  AliAnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts  
-  AliAnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter  
+  AliAnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts
+  AliAnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter
+  AliDielectronQnEPcorrection *fQnTPCACcuts; // QnFramework est. 2016 ac removal
+  TString fQnVectorNorm;
 
   Int_t fPdgMother;     // pdg code of mother tracks
   Int_t fPdgLeg1;       // pdg code leg1
@@ -229,6 +241,7 @@ private:
   AliDielectronMixingHandler *fMixing; // handler for event mixing
 
   Bool_t fPreFilterEventPlane;  //Filter for the Eventplane determination in TPC
+  Bool_t fACremovalIsSetted;
   Bool_t fLikeSignSubEvents;    //Option for dividing into subevents, sub1 ++ sub2 --
   Bool_t fPreFilterUnlikeOnly1;  //Apply PreFilter either in +- or to ++/--/+- individually
   Bool_t fPreFilterLikeOnly1;    //Apply PreFilter either in -- and ++ or to ++/--/+- individually
@@ -244,21 +257,22 @@ private:
   Bool_t fStoreRotatedPairs;    //It the rotated pairs should be stored in the pair array
   Bool_t fDontClearArrays;      //Don't clear the arrays at the end of the Process function, needed for external use of pair and tracks
   Bool_t fEventProcess;         //Process event (or pair array)
+  Bool_t fUseGammaTracks;       // use function SetGammaTracks for MCtruth photons
 
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTracks1, TObjArray arrTracks2, const AliVEvent *ev);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, const AliVEvent *ev, Int_t prefilterN);
   void FillPairArrays(Int_t arr1, Int_t arr2, const AliVEvent *ev = 0x0);
   void FillPairArrayTR();
-  
+
   Int_t GetPairIndex(Int_t arr1, Int_t arr2) const {return arr1>=arr2?arr1*(arr1+1)/2+arr2:arr2*(arr2+1)/2+arr1;}
 
   void InitPairCandidateArrays();
   void ClearArrays();
-  
+
   TObjArray* PairArray(Int_t i);
-  TObject* InitEffMap(TString filename);
-  
+  TObject* InitEffMap(TString filename, TString generatedname, TString foundname);
+
   static const char* fgkTrackClassNames[4];   //Names for track arrays
   static const char* fgkPairClassNames[11];   //Names for pair arrays
 
@@ -270,7 +284,7 @@ private:
   TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
 
   void ProcessMC(AliVEvent *ev1);
-  
+
   void  FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly=kFALSE);
   void  FillMCHistograms(const AliVEvent *ev);
   void  FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal);
@@ -282,8 +296,8 @@ private:
 
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
-  
-  ClassDef(AliDielectron,16);
+
+  ClassDef(AliDielectron,17);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

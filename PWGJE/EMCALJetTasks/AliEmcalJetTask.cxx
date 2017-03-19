@@ -24,6 +24,10 @@
 #include <AliVParticle.h>
 #include <AliEMCALGeometry.h>
 
+#include <AliAnalysisManager.h>
+#include <AliVEventHandler.h>
+#include <AliMultiInputEventHandler.h>
+
 #include "AliTLorentzVector.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalParticle.h"
@@ -142,6 +146,16 @@ void AliEmcalJetTask::InitUtilities()
   AliEmcalJetUtility *utility = 0;
   while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->Init();
 }
+/**
+ * This method is called before analyzing each event. It executes
+ * the InitEvent() method of all utilities (if any).
+ */
+void AliEmcalJetTask::InitEvent()
+{
+  TIter next(fUtilities);
+  AliEmcalJetUtility *utility = 0;
+  while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->InitEvent(fFastJetWrapper);
+}
 
 /**
  * This method is called in the event loop after jet finding but before filling
@@ -183,9 +197,9 @@ void AliEmcalJetTask::TerminateUtilities()
  */
 Bool_t AliEmcalJetTask::Run()
 {
+  InitEvent();
   // clear the jet array (normally a null operation)
   fJets->Delete();
-
   Int_t n = FindJets();
 
   if (n == 0) return kFALSE;
@@ -372,6 +386,7 @@ void AliEmcalJetTask::ExecOnce()
   fFastJetWrapper.SetAlgorithm(ConvertToFJAlgo(fJetAlgo));
   fFastJetWrapper.SetRecombScheme(ConvertToFJRecoScheme(fRecombScheme));
   fFastJetWrapper.SetMaxRap(1);
+ 
 
   // setting legacy mode
   if (fLegacyMode) {
@@ -379,6 +394,7 @@ void AliEmcalJetTask::ExecOnce()
   }
 
   InitUtilities();
+
 
   AliAnalysisTaskEmcal::ExecOnce();
 }
@@ -423,7 +439,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         uid=-1;
       }
       else {
-        uid = GetIndexSub(constituents[ic].phi(), constituents_unsub);
+        uid = constituents[ic].user_index();
       }
       if (uid==0) {
         AliError("correspondence between un/subtracted constituent not found");
@@ -568,30 +584,6 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
   jet->SetMCPt(mcpt);
   jet->SetPtEmc(emcpt);
   jet->SortConstituents();
-}
-
-/**
- * Search for the index of the unsubtracted constituents by comparing the azimuthal angles
- * @param phi_sub Azimuthal angle of the subtracted constituent
- * @param constituents_unsub Vector containing the list of unsubtracted constituents
- * @return Index of the subtracted constituent
- */
-Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub) 
-{
-  Double_t dphi=0;
-  Double_t phimin=100;
-  Int_t index=0;
-  for (UInt_t ii = 0; ii < constituents_unsub.size(); ii++) {
-    dphi=0;
-    Double_t phi_unsub = constituents_unsub[ii].phi();
-    dphi=phi_unsub-phi_sub;
-    if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
-    else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
-    if(TMath::Abs(dphi)<phimin){ phimin=TMath::Abs(dphi);
-      index=ii;} }
-    if (constituents_unsub[index].user_index()!=-1)  return constituents_unsub[index].user_index();
-
-  return 0;
 }
 
 /**
@@ -803,12 +795,28 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
       jetAcceptanceType |= AliEmcalJet::kEMCALfid;
   }
   
-  // Check if DCAL
+  // Check if DCAL (i.e. eta-phi rectangle spanning DCal, which includes most of PHOS)
   if( IsJetInDcal(eta, phi, 0) ) {
     jetAcceptanceType |= AliEmcalJet::kDCAL;
     // Check if DCALfid
     if( IsJetInDcal(eta, phi, r) )
       jetAcceptanceType |= AliEmcalJet::kDCALfid;
+  }
+  
+  // Check if DCALonly (i.e. ONLY DCal, does not include any of PHOS region)
+  if( IsJetInDcalOnly(eta, phi, 0) ) {
+    jetAcceptanceType |= AliEmcalJet::kDCALonly;
+    // Check if DCALonlyfid
+    if( IsJetInDcalOnly(eta, phi, r) )
+      jetAcceptanceType |= AliEmcalJet::kDCALonlyfid;
+  }
+  
+  // Check if PHOS
+  if( IsJetInPhos(eta, phi, 0) ) {
+    jetAcceptanceType |= AliEmcalJet::kPHOS;
+    // Check if PHOSfid
+    if( IsJetInPhos(eta, phi, r) )
+      jetAcceptanceType |= AliEmcalJet::kPHOSfid;
   }
  
   return jetAcceptanceType;
@@ -836,7 +844,7 @@ Bool_t AliEmcalJetTask::IsJetInEmcal(Double_t eta, Double_t phi, Double_t r)
 }
 
 /**
- * Returns whether or not jet with given eta, phi, R is in DCal.
+ * Returns whether or not jet with given eta, phi, R is in DCal region (note: spans most of PHOS as well).
  */
 Bool_t AliEmcalJetTask::IsJetInDcal(Double_t eta, Double_t phi, Double_t r)
 {
@@ -846,4 +854,198 @@ Bool_t AliEmcalJetTask::IsJetInDcal(Double_t eta, Double_t phi, Double_t r)
       return kTRUE;
   }
   return kFALSE;
+}
+
+/**
+ * Returns whether or not jet with given eta, phi, R is in DCal (note: ONLY DCal -- none of PHOS included).
+ * Assumes DCAL_8SM geometry.
+ * For r=0, use the entire DCal acceptance, including both of the connecting 1/3 SMs.
+ * For r>0, use only the two "disjoint" fiducial regions of the DCal (i.e. ignore the connecting portions of the 1/3 SMs)
+ */
+Bool_t AliEmcalJetTask::IsJetInDcalOnly(Double_t eta, Double_t phi, Double_t r)
+{
+  if (!fGeom) return kFALSE;
+  
+  if (eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r) {
+    if ( phi < fGeom->GetDCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetDCALPhiMin() * TMath::DegToRad() + r) {
+      
+      if (TMath::Abs(eta) > fGeom->GetDCALInnerExtandedEta() + r) {
+        return kTRUE;
+      }
+      if (r < 1e-6) {
+        if (phi > fGeom->GetEMCGeometry()->GetDCALStandardPhiMax() * TMath::DegToRad())
+          return kTRUE;
+      }
+      
+    }
+  }
+  
+  return kFALSE;
+}
+
+/**
+ * Returns whether or not jet with given eta, phi, R is in PHOS.
+ */
+Bool_t AliEmcalJetTask::IsJetInPhos(Double_t eta, Double_t phi, Double_t r)
+{
+  Double_t etaMax = 0.130;
+  Double_t etaMin = -0.130;
+  Double_t phiMax = 320;
+  Double_t phiMin = 260; // Run 1
+  if (fRunNumber > 209121)
+    phiMin = 250; // Run 2
+  
+  if (eta < etaMax - r && eta > etaMin + r ) {
+    if (phi < phiMax * TMath::DegToRad() - r && phi > phiMin * TMath::DegToRad() + r)
+      return kTRUE;
+  }
+  return kFALSE;
+}
+
+/**
+ * Add an instance of this class to the analysis manager
+ * @param nTracks name of the track collection
+ * @param nClusters name of the calorimeter cluster collection
+ * @param jetAlgo jet finding algorithm (anti-kt, kt, etc.)
+ * @param radius jet resolution parameter (0.2, 0.4, tyc.)
+ * @param jetType full, charged or neutral
+ * @param minTrPt cut on the minimum transverse momentum of tracks
+ * @param minClPt cut on the minimum transverse momentum of calorimeter clusters
+ * @param ghostArea area of ghost particles (determines the jet area resolution)
+ * @param reco recombination scheme
+ * @param tag addtional information to be appended at the end of the output jet collection name
+ * @param minJetPt cut on the minimum jet pt
+ * @param lockTask lock the task - no further changes are possible if kTRUE
+ * @param bFillGhosts add ghosts particles among the jet constituents in the output
+ * @return a pointer to the new AliEmcalJetTask instance
+ */
+AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
+  const TString nTracks, const TString nClusters,
+  const AliJetContainer::EJetAlgo_t jetAlgo, const Double_t radius, const AliJetContainer::EJetType_t jetType,
+  const Double_t minTrPt, const Double_t minClPt,
+  const Double_t ghostArea, const AliJetContainer::ERecoScheme_t reco,
+  const TString tag, const Double_t minJetPt,
+  const Bool_t lockTask, const Bool_t bFillGhosts
+)
+{
+  // Get the pointer to the existing analysis manager via the static access method
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskEmcalJet", "No analysis manager to connect to.");
+    return 0;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler) {
+    ::Error("AddTaskEmcalJet", "This task requires an input event handler");
+    return 0;
+  }
+
+  EDataType_t dataType = kUnknownDataType;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString trackName(nTracks);
+  TString clusName(nClusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  AliParticleContainer* partCont = 0;
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
+    partCont = mcpartCont;
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+    partCont = trackCont;
+  }
+  else if (!trackName.IsNull()) {
+    partCont = new AliParticleContainer(trackName);
+  }
+  if (partCont) partCont->SetParticlePtCut(minTrPt);
+
+  AliClusterContainer* clusCont = 0;
+  if (!clusName.IsNull()) {
+    clusCont = new AliClusterContainer(clusName);
+    clusCont->SetClusECut(0.);
+    clusCont->SetClusPtCut(0.);
+    clusCont->SetClusHadCorrEnergyCut(minClPt);
+    clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
+
+  switch (jetType) {
+  case AliJetContainer::kChargedJet:
+    if (partCont) partCont->SetCharge(AliParticleContainer::kCharged);
+    break;
+  case AliJetContainer::kNeutralJet:
+    if (partCont) partCont->SetCharge(AliParticleContainer::kNeutral);
+    break;
+  default:
+    break;
+  }
+
+  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag);
+
+  Printf("Jet task name: %s", name.Data());
+
+  AliEmcalJetTask* mgrTask = static_cast<AliEmcalJetTask *>(mgr->GetTask(name.Data()));
+  if (mgrTask) return mgrTask;
+
+  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);
+  jetTask->SetJetType(jetType);
+  jetTask->SetJetAlgo(jetAlgo);
+  jetTask->SetRecombScheme(reco);
+  jetTask->SetRadius(radius);
+  if (partCont) jetTask->AdoptParticleContainer(partCont);
+  if (clusCont) jetTask->AdoptClusterContainer(clusCont);
+  jetTask->SetJetsName(tag);
+  jetTask->SetMinJetPt(minJetPt);
+  jetTask->SetGhostArea(ghostArea);
+
+  if (bFillGhosts) jetTask->SetFillGhost();
+  if (lockTask) jetTask->SetLocked();
+
+  // Final settings, pass to manager and set the containers
+
+  mgr->AddTask(jetTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(jetTask, 0, cinput);
+
+  TObjArray* cnt = mgr->GetContainers();
+
+  return jetTask;
 }

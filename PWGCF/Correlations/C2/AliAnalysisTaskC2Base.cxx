@@ -1,27 +1,22 @@
-#include <iostream>
-#include <vector>
 #include <algorithm>
+#include <iostream>
+#include <random>
+#include <vector>
 
 #include "TH1F.h"
-#include "TH2F.h"
-#include "TAxis.h"
 #include "THn.h"
-#include "TList.h"
 #include "TMath.h"
-#include "TRandom3.h"
-#include "TVectorF.h"
 
 #include "AliAODEvent.h"
 #include "AliAODForwardMult.h"
-#include "AliAODITSsaTrackCuts.h"
+#include "AliAODHandler.h"
 #include "AliAODMCParticle.h"
+#include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
 #include "AliGenEventHeader.h"
 #include "AliHeader.h"
-#include "AliLog.h"
-#include "AliMCEvent.h"
+#include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
-#include "AliStack.h"
 #include "AliVEvent.h"
 #include "AliVVZERO.h"
 
@@ -41,9 +36,8 @@ AliAnalysisTaskC2Base::AliAnalysisTaskC2Base()
     fOutputList(0),
     fSettings(),
     fValidTracks(0),
-    fitssatrackcuts(0),
     fmultDistribution(0),
-    fetaVsZvtx(0)
+    fEtaPhiZvtx_max_res(0)
 {
 }
 
@@ -56,9 +50,8 @@ AliAnalysisTaskC2Base::AliAnalysisTaskC2Base(const char *name)
     fOutputList(0),
     fSettings(),
     fValidTracks(0),
-    fitssatrackcuts(0),
     fmultDistribution(0),
-    fetaVsZvtx(0)
+    fEtaPhiZvtx_max_res(0)
 {
   DefineOutput(1, TList::Class());
 }
@@ -78,6 +71,7 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::invalidxVertex + 1, "invalid vertex");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::isIncomplete + 1, "incomplete");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::isOutOfBunchPileup + 1, "out of bunch PU");
+  discardedEvtsAx->SetBinLabel(cDiscardEventReasons::SPDClusterVsTrackletBG + 1, "SPDClstrs vs trkl BG");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::multEstimatorNotAvailable + 1, "!multEstimator");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noMultSelectionObject + 1, "!multSelection");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noForwardMultObj + 1, "!ForwardMult");
@@ -93,6 +87,7 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::tklClusterCut + 1, "tkl cluster cut");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::v0asymmetryCut + 1, "V0 asymmetry cut");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::zvtxPosition + 1, "zvtx position");
+  discardedEvtsAx->SetBinLabel(cDiscardEventReasons::isMB + 1, "IsMB");
   this->fOutputList->Add(this->fDiscardedEvents);
 
   this->fDiscardedTracks = new TH1F("discardedTracks", "discardedTracks",
@@ -104,9 +99,7 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::dca + 1, "DCA");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::etaAcceptance + 1, "#eta acceptance");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::failedFilterBits + 1, "failed filter bits");
-  discardedTracksAx->SetBinLabel(cDiscardTrackReasons::failedITSCut + 1, "failed ITS cut");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::neutralCharge + 1, "neutral");
-  discardedTracksAx->SetBinLabel(cDiscardTrackReasons::notAODPrimary + 1, "not aod kPrimary");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::notHybridGCG + 1, "!HybridGCG");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::notMCPrimary + 1, "not MC PhysicalPrimary");
   this->fOutputList->Add(this->fDiscardedTracks);
@@ -114,35 +107,58 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
   this->fmultDistribution = new TH1F("multDistribution", "multDistribution", 210, 0, 210);
   this->fOutputList->Add(this->fmultDistribution);
 
-  this->fetaVsZvtx = new TH2F("etaVsZvtx", "etaVsZvtx",
-  			      200,
-  			      -4,
-  			      6,
-			      100,
-  			      this->fSettings.fZVtxAcceptanceLowEdge,
-  			      this->fSettings.fZVtxAcceptanceUpEdge
-			      );
-  this->fOutputList->Add(this->fetaVsZvtx);
-  
-  this->fitssatrackcuts = AliAODITSsaTrackCuts::GetStandardAODITSsaTrackCuts2015();
-
+  {
+    const Int_t ndims = 3;
+    const Int_t nbins[ndims] = {200, 20, 100};
+    const Double_t lowerBounds[ndims] = {-4.0, 0, -10.0};
+    const Double_t upperBounds[ndims] = {6.0, 2*TMath::Pi(), 10.0};
+    this->fEtaPhiZvtx_max_res = new THnF("etaPhiZvtx_max_res",
+					 "etaPhiZvtx_max_res;#eta;#phi;#zvtx;",
+					 ndims,
+					 nbins,
+					 lowerBounds,
+					 upperBounds
+					 );
+    this->fOutputList->Add(this->fEtaPhiZvtx_max_res);
+  }
   AliLog::SetGlobalLogLevel(AliLog::kError);
   PostData(1, fOutputList);
 }
 
 Bool_t AliAnalysisTaskC2Base::IsValidEvent()
 {
-  AliAODForwardMult* aodForward =
-    dynamic_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
-  if (!aodForward) {
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::noForwardMultObj);
-    return false;
+  // if (AliAnalysisC2Utils::EventFitsTrigger(AliVEvent::kINT7)) {
+  //   this->fDiscardedEvents->Fill(cDiscardEventReasons::isMB);
+  //   return false;
+  // }
+  //trigger check; TODO: ask Katarina about "fMBtrigger" in her code!
+  if (TString firedTrigger = InputEvent()->GetFiredTriggerClasses()) {
+    // Make choice base on type of MB trigger?
+    if (!firedTrigger.Contains(this->fSettings.fTrigger_str)) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::noTrigger);
+      return false;
+    }
+    // Fish the trigger mask of this event out of the input handler and compare it to the
+    // desired one
+    UInt_t fSelectMask= fInputHandler->IsEventSelected();
+    if (fSelectMask & this->fSettings.fTriggerMask) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::noTrigger);
+      return false;
+    }
   }
-  if (aodForward->GetHistogram().GetEntries() == 0) {
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::noEntriesInFMD);
-    return false;
+
+  if (this->fSettings.fUseFMD) {
+    AliAODForwardMult* aodForward =
+      dynamic_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
+    if (!aodForward) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::noForwardMultObj);
+      return false;
+    }
+    if (aodForward->GetHistogram().GetIntegral() <= 0) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::noEntriesInFMD);
+      return false;
+    }
   }
-  
   if (!this->InputEvent()->GetPrimaryVertex() || !this->InputEvent()->GetPrimaryVertex()->GetZ()) {
     this->fDiscardedEvents->Fill(cDiscardEventReasons::invalidxVertex);
     return false;
@@ -175,70 +191,52 @@ Bool_t AliAnalysisTaskC2Base::IsValidEvent()
       return false;
     }
   }
-
-  // ITSsa specific checks
-  if (this->fSettings.fIsITSsa) {
-    if ((InputEvent()->GetVZEROData()->GetV0CDecision() != 1) ||
-	(InputEvent()->GetVZEROData()->GetV0ADecision() != 1)) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::notV0AND);
+  if ((InputEvent()->GetVZEROData()->GetV0CDecision() != 1) ||
+      (InputEvent()->GetVZEROData()->GetV0ADecision() != 1)) {
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::notV0AND);
+    return false;
+  }
+  //incomplete events
+  if (InputEvent()->GetHeader()->GetL0TriggerInputs() == 0 && !fMCEvent) {
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::isIncomplete);
+    return false;
+  }
+  //V0 asymmetry cut
+  // if (this->IsAsymmetricV0()) {
+  //   this->fDiscardedEvents->Fill(cDiscardEventReasons::v0asymmetryCut);
+  //   return false;
+  // }
+  //SPD vtx contributors (only aod events)
+  if (AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent)) {
+    if (aodEvent->GetPrimaryVertexSPD()->GetNContributors() < 1) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::spdVertexContributors);
       return false;
     }
-    //incomplete events
-    if (InputEvent()->GetHeader()->GetL0TriggerInputs() == 0 && !fMCEvent) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::isIncomplete);
+  }
+  // Aliphysics Analysis utils as it it used by several checks below
+  AliAnalysisUtils utils;
+  //out-of-bunch 11 BC
+  if (utils.IsOutOfBunchPileUp(this->InputEvent())) {
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::isOutOfBunchPileup);
+    return false;
+  }
+  if (utils.IsSPDClusterVsTrackletBG(this->InputEvent())) {
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::SPDClusterVsTrackletBG);
+    return false;
+  }
+  // SPD pileup
+  if (utils.IsPileUpSPD(InputEvent())) {
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::spdPipeup);
+    return false;
+  }
+  // Online-offline SPD fastor
+  // Taken from Leonardo/Katarina; TODO: Cross-check and understand these values!
+  if (AliVMultiplicity* mult = fInputEvent->GetMultiplicity()) {
+    if(mult->GetFastOrFiredChipMap().CountBits(400)
+       <= -20.589 + 0.73664 * mult->GetFiredChipMap().CountBits(400)) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::spdFastOr);
       return false;
     }
-    //V0 asymmetry cut
-    if (this->IsAsymmetricV0()) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::v0asymmetryCut);
-      return false;
-    }
-    //trigger check; TODO: ask Katarina about "fMBtrigger" in her code!
-    if (TString firedTrigger = InputEvent()->GetFiredTriggerClasses()) {
-      // Make choice base on type of MB trigger?
-      if (!firedTrigger.Contains(this->fSettings.fTrigger)) {
-	this->fDiscardedEvents->Fill(cDiscardEventReasons::noTrigger);
-	return false;
-      }
-    }
-    //SPD vtx contributors (only aod events)
-    if (AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent)) {
-      if (aodEvent->GetPrimaryVertexSPD()->GetNContributors() < 1) {
-	this->fDiscardedEvents->Fill(cDiscardEventReasons::spdVertexContributors);
-	return false;
-      }
-    }
-    //out-of-bunch 11 BC
-    if (IsOutOfBunchPileup()) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::isOutOfBunchPileup);
-      return false;
-    }
-    // Online-offline SPD fastor
-    // Taken from Leonardo/Katarina; TODO: Cross-check and understand these values!
-    if (AliVMultiplicity* mult = fInputEvent->GetMultiplicity()) {
-      if(mult->GetFastOrFiredChipMap().CountBits(400)
-	 <= -20.589 + 0.73664 * mult->GetFiredChipMap().CountBits(400)) {
-	this->fDiscardedEvents->Fill(cDiscardEventReasons::spdFastOr);
-	return false;
-      }
-    }
-    // SPD pileup
-    if (AliAnalysisUtils* utils = new AliAnalysisUtils()) {
-      utils->SetMinPlpContribSPD(3);
-      utils->SetMinPlpContribMV(3);
-      if (utils->IsPileUpSPD(InputEvent())) {
-	this->fDiscardedEvents->Fill(cDiscardEventReasons::spdPipeup);
-	return false;
-      }
-    }
-    // tkl-cluster cut
-    // Float_t multTKL = multSel->GetEstimator("SPDTracklets")->GetValue();
-    // Int_t nITScluster = (InputEvent()->GetNumberOfITSClusters(0)
-    // 			 + InputEvent()->GetNumberOfITSClusters(1));
-    // if (nITScluster > 64+4*multTKL) {
-    //   this->fDiscardedEvents->Fill(cDiscardEventReasons::tklClusterCut);
-    //   return false;
-    // }
   }
   this->fDiscardedEvents->Fill(cDiscardEventReasons::_eventIsValid);
   return true;
@@ -265,29 +263,14 @@ Bool_t AliAnalysisTaskC2Base::IsValidParticle(AliVParticle *particle) {
   // Reconstruction specific cuts
   if (this->fSettings.kRECON == this->fSettings.fDataType) {
     AliAODTrack* aodTrack = dynamic_cast< AliAODTrack* >(particle);
-    // ITSsa specific cuts
-    if(this->fSettings.fIsITSsa) {
-      if (!this->fitssatrackcuts->AcceptTrack(aodTrack)) {
-	this->fDiscardedTracks->Fill(cDiscardTrackReasons::failedITSCut);
-	return false;
-      }
-    }
-    // Normal (ie., not ITSsa cuts)
-    if (!this->fSettings.fIsITSsa) {
-      // IsHybridGlobalConstrainedGlobal() seems to be equivalent to TestFilterBit(768) == false
-      // at least on LHC10h AOD160
-      // if (!aodTrack->IsHybridGlobalConstrainedGlobal()) {
-      //   this->fDiscardedTracks->Fill(cDiscardTrackReasons::notHybridGCG);
-      //   return false;
-      // }
-      if (aodTrack->TestFilterBit(768) == false) {
-	this->fDiscardedTracks->Fill(cDiscardTrackReasons::failedFilterBits);
-	return false;
-      }
-    }
-
-    if (aodTrack->GetType() != aodTrack->kPrimary) {
-      this->fDiscardedTracks->Fill(cDiscardTrackReasons::notAODPrimary);
+    // IsHybridGlobalConstrainedGlobal() seems to be equivalent to TestFilterBit(768) == false
+    // at least on LHC10h AOD160
+    // if (!aodTrack->IsHybridGlobalConstrainedGlobal()) {
+    //   this->fDiscardedTracks->Fill(cDiscardTrackReasons::notHybridGCG);
+    //   return false;
+    // }
+    if (aodTrack->TestFilterBit(768) == false) {
+      this->fDiscardedTracks->Fill(cDiscardTrackReasons::failedFilterBits);
       return false;
     }
     {
@@ -310,14 +293,14 @@ void AliAnalysisTaskC2Base::SetupEventForBase() {
   for (Int_t i = 0; i < cCachedValues::nCachedValues; i++) {
     this->fCachedValues[i] = false;
   }
-
-  // Pass the current event's vertext to the ITS cut class
-  fitssatrackcuts->ExtractAndSetPrimaryVertex(this->InputEvent());
 }
 
 TClonesArray* AliAnalysisTaskC2Base::GetAllTracks() {
-  // Yes, the following is realy "aodEvent" not mcEvent :P
+  // If we are dealing with an ESD event, we have to have an AOD handler as well!
+  // We get all the particles/tracks from this AOD handler. This function makes no asumptions
+  // If a track is valid (ie. caused a hit on the FMD) or not. We have to check that later!
   AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
+  // Yes, the following is realy "aodEvent" not mcEvent :P
   TClonesArray* tracksArray = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
     ? dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()))
     : aodEvent->GetTracks();
@@ -330,10 +313,13 @@ std::vector< AliAnalysisC2NanoTrack > AliAnalysisTaskC2Base::GetFMDhits() {
     static_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
   // Shape of d2Ndetadphi: 200, -4, 6, 20, 0, 2pi
   const TH2D& d2Ndetadphi = aodForward->GetHistogram();
-  Double_t fmdSignalThreshold = 0.01;
   Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
   Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
   std::vector< AliAnalysisC2NanoTrack > ret_vector;
+  // minimum pt value for this analysis. This pt value is used for the FMD tracks
+  // The reason being that otherwise a pt bin with pt<0 has to exist which is a wast of memory
+  // if we want to also use ITS tracks with real pt values
+  Double_t analysis_pt_min = this->fSettings.fPtBinEdges.at(0);
   for (Int_t iEta = 1; iEta <= nEta; iEta++) {
     Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));
     if (!valid) {
@@ -342,21 +328,45 @@ std::vector< AliAnalysisC2NanoTrack > AliAnalysisTaskC2Base::GetFMDhits() {
     }
     Float_t eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta);
     for (Int_t iPhi = 1; iPhi <= nPhi; iPhi++) {
-      Float_t signal = d2Ndetadphi.GetBinContent(iEta, iPhi);
-      if(signal > fmdSignalThreshold) {
+      // Bin content is most likely number of particles!
+      Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
+      if (mostProbableN > 0) {
 	Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
-	ret_vector.push_back(AliAnalysisC2NanoTrack(eta, phi, 0/*pt*/));
+	ret_vector.push_back(AliAnalysisC2NanoTrack(eta, phi, analysis_pt_min, mostProbableN));
       }
     }
+  }
+  // Above, we looped through the histogram in an orderly
+  // fashion. This means that the eta and phi values are in increasing
+  // orders. For eta this is not an issue. We will just always have
+  // the trigger (or associated) with a larger eta. In a eta1, eta2
+  // plots, this will show by all values being in one triangle. That
+  // is ok. However, for phi this is not ok if we require
+  // eta1==eta2. In that case, phi2 > phi1. This leads to a very
+  // shifted correlation function. Especially if the eta bin width is
+  // larger than the resolution. Bottom line, I suffle this vector
+  // here to avoid this mess.
+  std::random_device rd;
+  std::default_random_engine engine{rd()};
+  std::shuffle(std::begin(ret_vector), std::end(ret_vector), engine);
+  return ret_vector;
+}
+
+std::vector< AliAnalysisC2NanoTrack > AliAnalysisTaskC2Base::GetSPDhits() {
+  AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
+  AliAODTracklets* aodTracklets = aodEvent->GetTracklets();
+  Double_t analysis_pt_min = this->fSettings.fPtBinEdges.at(0);
+  std::vector< AliAnalysisC2NanoTrack > ret_vector;
+  for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
+    auto eta = aodTracklets->GetEta(i);
+    auto phi = aodTracklets->GetPhi(i);
+    ret_vector.push_back(AliAnalysisC2NanoTrack(eta, phi, analysis_pt_min, 1));
   }
   return ret_vector;
 }
 
-std::vector< AliAnalysisC2NanoTrack > &AliAnalysisTaskC2Base::GetValidTracks() {
-  if (this->fCachedValues[cCachedValues::validTracks]) {
-    return this->fValidTracks;
-  }
-  this->fValidTracks.clear();
+std::vector< AliAnalysisC2NanoTrack > AliAnalysisTaskC2Base::GetValidCentralTracks() {
+  std::vector< AliAnalysisC2NanoTrack > ret_vector;
   TIter nextTrack(this->GetAllTracks());
   while (TObject* obj = nextTrack()){
     // The naming around VTrack, VParticle, AODTrack mcParticle is a mess!
@@ -368,30 +378,46 @@ std::vector< AliAnalysisC2NanoTrack > &AliAnalysisTaskC2Base::GetValidTracks() {
     AliAnalysisC2NanoTrack tmp_track = {
       particle->Eta(),
       particle->Phi(),
-      particle->Pt()
+      particle->Pt(),
+      1 /* track weight; tracks in FMD have a probability assigned */ 
     };
-
-    // The following is a bit ugly. We do not have the pt information
-    // available in the reconstructed data. In order to compare apples
-    // with apples in a MC colsure test, it is necessary to blind the
-    // pt value in for MC truth in the FMD region. TODO: create a
-    // switch for this in the settings; rewrite this nicer...
-    if (this->fSettings.kMCTRUTH == this->fSettings.fDataType &&
-	std::abs(tmp_track.eta) > 1.5) { // 1.5 is between its and fmd1/2
-      tmp_track.pt = 0;
-    }
-    this->fValidTracks.push_back(tmp_track);
+    ret_vector.push_back(tmp_track);
   }
-  // Append the fmd hits to this vector if we are looking at reconstructed data,
-  // All hits on the FMD (above the internally used threshold) are "valid"
+  return ret_vector;
+}
+
+
+std::vector< AliAnalysisC2NanoTrack > &AliAnalysisTaskC2Base::GetValidTracks() {
+  if (this->fCachedValues[cCachedValues::validTracks]) {
+    return this->fValidTracks;
+  }
+  this->fValidTracks.clear();
+
+  // Append central tracks
+  // auto centralTracks = this->GetValidCentralTracks();
+  // this->fValidTracks.insert(this->fValidTracks.end(), centralTracks.begin(), centralTracks.end());
+
+  // Append central tracklets
   if (this->fSettings.kRECON == this->fSettings.fDataType) {
-    auto fmdhits = this->GetFMDhits();
-    this->fValidTracks.insert(this->fValidTracks.end(), fmdhits.begin(), fmdhits.end());
+    auto spdhits = this->GetSPDhits();
+    this->fValidTracks.insert(this->fValidTracks.end(), spdhits.begin(), spdhits.end());
+  
+    // Append the fmd hits to this vector if we are looking at reconstructed data,
+    // All hits on the FMD (above the internally used threshold) are "valid"
+    if (this->fSettings.fUseFMD) {
+      auto fmdhits = this->GetFMDhits();
+      this->fValidTracks.insert(this->fValidTracks.end(), fmdhits.begin(), fmdhits.end());
+    }
+  } else {
+    // Sorry future me: GetValidCentralTracks returns all tracks in case of MC truth :P
+    auto allMCtracks = this->GetValidCentralTracks();
+    this->fValidTracks.insert(this->fValidTracks.end(), allMCtracks.begin(), allMCtracks.end());
   }
   // fill the valid tracks into the appropriate QA histograms
   Float_t zvtx = this->InputEvent()->GetPrimaryVertex()->GetZ();
   for (auto &t: this->fValidTracks) {
-    this->fetaVsZvtx->Fill(t.eta, zvtx);
+    const Double_t stuffing[] = {t.eta, t.phi, zvtx};
+    this->fEtaPhiZvtx_max_res->Fill(stuffing, t.weight);
   }
   // Mark the valid tracks as cached:
   this->fCachedValues[cCachedValues::validTracks] = true;
@@ -400,15 +426,14 @@ std::vector< AliAnalysisC2NanoTrack > &AliAnalysisTaskC2Base::GetValidTracks() {
 
 Float_t AliAnalysisTaskC2Base::GetEventClassifierValue() {
   if (this->fSettings.fMultEstimator == this->fSettings.fMultEstimatorValidTracks){
-    // 7.049 seems to be the mean for 16j; this is an ugly hack!
-    return this->GetValidTracks().size() / 7.049;
+    return this->GetValidTracks().size();
   }
   else {
     // Event is invalid if no multselection is present; ie. tested in IsValidEvent() already
     AliMultEstimator *multEstimator =
       (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
       ->GetEstimator(this->fSettings.fMultEstimator);
-    const Float_t multiplicity = multEstimator->GetValue() / multEstimator->GetMean();
+    const Float_t multiplicity = ((Float_t)multEstimator->GetValue()) / multEstimator->GetMean();
     return multiplicity;
   }
 }
@@ -439,16 +464,13 @@ Bool_t AliAnalysisTaskC2Base::IsAsymmetricV0() {
   return true;
 }
 
-Bool_t AliAnalysisTaskC2Base::IsOutOfBunchPileup(){
-   // do not apply this cut in LHC15f - use spdOnline-spdOffline cut instead
-  if(InputEvent()->GetRunNumber() < 227730)
-    return false;
-
-  std::vector< Int_t > irInt1BitNumbers = {87, 88, 89, 93, 94, 95, 96, 97, 98, 99, 100, 101};
-  for(auto const& bitNumber: irInt1BitNumbers) {
-    if (InputEvent()->GetHeader()->GetIRInt1InteractionMap().TestBitNumber(bitNumber)) {
-      return true;
-    }
+Bool_t AliAnalysisTaskC2Base::IsAODdataset() {
+  AliAODHandler *aodHandler =
+    dynamic_cast< AliAODHandler* >(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (aodHandler) {
+    return true;
   }
-  return false;
+  else {
+    return false;
+  }
 }

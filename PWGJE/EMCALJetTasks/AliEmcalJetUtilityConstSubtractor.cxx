@@ -85,7 +85,6 @@ AliEmcalJetUtilityConstSubtractor& AliEmcalJetUtilityConstSubtractor::operator=(
 void AliEmcalJetUtilityConstSubtractor::Init()
 {
   // Initialize the utility.
-
   // Add constituent subtracted jets to event
   if (!fJetsSubName.IsNull()) {
     if (!(fJetTask->InputEvent()->FindListObject(fJetsSubName)) ) {
@@ -128,6 +127,13 @@ void AliEmcalJetUtilityConstSubtractor::Init()
   }
 
   fInit = kTRUE;
+}
+
+//______________________________________________________________________________
+void AliEmcalJetUtilityConstSubtractor::InitEvent(AliFJWrapper& /*fjw*/)
+{
+  // Prepare the utility.
+
 }
 
 //______________________________________________________________________________

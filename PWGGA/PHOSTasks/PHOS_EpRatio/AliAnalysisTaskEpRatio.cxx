@@ -95,14 +95,17 @@ void AliAnalysisTaskEpRatio::UserCreateOutputObjects()
   fOutputContainer->Add( new TH2F("hEp_mod1","E/p All charged particles in Module1 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
   fOutputContainer->Add( new TH2F("hEp_mod2","E/p All charged particles in Module2 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
   fOutputContainer->Add( new TH2F("hEp_mod3","E/p All charged particles in Module3 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
+  fOutputContainer->Add( new TH2F("hEp_mod4","E/p All charged particles in Module4 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
 
   fOutputContainer->Add( new TH2F("hEp_ele_mod1","E/p electron & positron in Module1 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
   fOutputContainer->Add( new TH2F("hEp_ele_mod2","E/p electron & positron in Module2 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
   fOutputContainer->Add( new TH2F("hEp_ele_mod3","E/p electron & positron in Module3 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
+  fOutputContainer->Add( new TH2F("hEp_ele_mod4","E/p electron & positron in Module4 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
 
   fOutputContainer->Add( new TH2F("hEp_other_mod1","E/p other in Module1 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
   fOutputContainer->Add( new TH2F("hEp_other_mod2","E/p other in Module2 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
   fOutputContainer->Add( new TH2F("hEp_other_mod3","E/p other in Module3 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
+  fOutputContainer->Add( new TH2F("hEp_other_mod4","E/p other in Module4 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
 
   fOutputContainer->Add( new TH2F("h_dedx_PHOS","dE/dx in PHOS via TPC",1000,0,10,2200,0,220.) );
   fOutputContainer->Add( new TH2F("h_dedx_ele_PHOS","dE/dx electron in PHOS via TPC",1000,0,10,2200,0,220.) );
@@ -115,9 +118,11 @@ void AliAnalysisTaskEpRatio::UserCreateOutputObjects()
   fOutputContainer->Add( new TH2F("h_ClusNXZM1","Cluster (X,Z) Module1",   64,0.5,64.5, 56,0.5,56.5) );
   fOutputContainer->Add( new TH2F("h_ClusNXZM2","Cluster (X,Z) Module2",   64,0.5,64.5, 56,0.5,56.5) );
   fOutputContainer->Add( new TH2F("h_ClusNXZM3","Cluster (X,Z) Module3",   64,0.5,64.5, 56,0.5,56.5) );
+  fOutputContainer->Add( new TH2F("h_ClusNXZM4","Cluster (X,Z) Module4",   64,0.5,64.5, 56,0.5,56.5) );
   fOutputContainer->Add( new TH2F("h_ClusNXZM1_ele","Electron Cluster (X,Z) Module1", 64,0.5,64.5, 56,0.5,56.5) );
   fOutputContainer->Add( new TH2F("h_ClusNXZM2_ele","Electron Cluster (X,Z) Module2", 64,0.5,64.5, 56,0.5,56.5) );
   fOutputContainer->Add( new TH2F("h_ClusNXZM3_ele","Electron Cluster (X,Z) Module3", 64,0.5,64.5, 56,0.5,56.5) );
+  fOutputContainer->Add( new TH2F("h_ClusNXZM4_ele","Electron Cluster (X,Z) Module4", 64,0.5,64.5, 56,0.5,56.5) );
 
   fOutputContainer->Add( new TH2F("h_EClus_NCell","Energy VS. NCell in PHOS",1000,0,10,30,0,30.) );
   fOutputContainer->Add( new TH1F("h_ECluster","Energy of Cluster in PHOS",1000,0,10.) );
@@ -130,20 +135,24 @@ void AliAnalysisTaskEpRatio::UserCreateOutputObjects()
   fOutputContainer->Add( new TH2F("h_ClusNXZM1_had","Hadron Cluster (X,Z) Module1", 64,0.5,64.5, 56,0.5,56.5) );
   fOutputContainer->Add( new TH2F("h_ClusNXZM2_had","Hadron Cluster (X,Z) Module2", 64,0.5,64.5, 56,0.5,56.5) );
   fOutputContainer->Add( new TH2F("h_ClusNXZM3_had","Hadron Cluster (X,Z) Module3", 64,0.5,64.5, 56,0.5,56.5) );
+  fOutputContainer->Add( new TH2F("h_ClusNXZM4_had","Hadron Cluster (X,Z) Module4", 64,0.5,64.5, 56,0.5,56.5) );
   fOutputContainer->Add( new TH2F("hEp_had_mod1","E/p Hadron in Module1 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
   fOutputContainer->Add( new TH2F("hEp_had_mod2","E/p Hadron in Module2 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
   fOutputContainer->Add( new TH2F("hEp_had_mod3","E/p Hadron in Module3 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
+  fOutputContainer->Add( new TH2F("hEp_had_mod4","E/p Hadron in Module4 (E/p VS. p_{T})",1000,0,2,1000,0,10.) );
 
   // =====================================================================================================
   fOutputContainer->Add( new TH1F("h_NClusEvent","Number PHOS Clusters per Event in All Modules",31,-0.5,30.5) );
   fOutputContainer->Add( new TH1F("h_NClusEventmod1","Number PHOS Clusters per Event in Module1",21,-0.5,20.5) );
   fOutputContainer->Add( new TH1F("h_NClusEventmod2","Number PHOS Clusters per Event in Module2",21,-0.5,20.5) );
   fOutputContainer->Add( new TH1F("h_NClusEventmod3","Number PHOS Clusters per Event in Module3",21,-0.5,20.5) );
+  fOutputContainer->Add( new TH1F("h_NClusEventmod4","Number PHOS Clusters per Event in Module4",21,-0.5,20.5) );
 
   fOutputContainer->Add( new TH1F("h_EClusEvent","PHOS Cluster Energy per Event in All Modules",2010,-0.5,20.5) );
   fOutputContainer->Add( new TH1F("h_EClusEventmod1","PHOS Cluster Energy per Event in Module1",2010,-0.5,20.5) );
   fOutputContainer->Add( new TH1F("h_EClusEventmod2","PHOS Cluster Energy per Event in Module2",2010,-0.5,20.5) );
   fOutputContainer->Add( new TH1F("h_EClusEventmod3","PHOS Cluster Energy per Event in Module3",2010,-0.5,20.5) );
+  fOutputContainer->Add( new TH1F("h_EClusEventmod4","PHOS Cluster Energy per Event in Module4",2010,-0.5,20.5) );
 
   fOutputContainer->Add( new TH1F("h_NTrackEvent","Number of TPC Tracks per Event",1001,-0.5,1000.5) );
   fOutputContainer->Add( new TH1F("h_PTrackEvent","TPC Momentum per Event",2010,-0.5,20.5) );
@@ -209,13 +218,15 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
   // ================
   Float_t position[3];
   Int_t mod1, relId[4], cellAbsId, cellX, cellZ;
-  Int_t nPHOSCluster = 0, inMod1 = 0, inMod2 = 0, inMod3 = 0;
+  Int_t nPHOSCluster = 0, inMod1 = 0, inMod2 = 0, inMod3 = 0,inMod4 = 0 ;
   
   for(Int_t iClu=0; iClu<kNumberOfCaloClusters; iClu++){
     
     AliVCluster *c1 = event->GetCaloCluster(iClu);
 
     if( !c1->IsPHOS() ) continue;
+    if ( c1->GetType() !=AliVCluster::kPHOSNeutral ) continue; // reject CPV clusters
+    
     //if( c1->E()<0.3 ) continue;
     FillHistogram("h_EClus_NCell",c1->E(),c1->GetNCells());
     FillHistogram("h_ECluster",c1->E());
@@ -246,6 +257,10 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
     else if( mod1 == 3 ){
       inMod3++; nPHOSCluster++;
       FillHistogram("h_EClusEventmod3",c1->E());
+    }
+    else if( mod1 == 4 ){
+      inMod4++; nPHOSCluster++;
+      FillHistogram("h_EClusEventmod4",c1->E());
     }
 
     Int_t nMatched = c1->GetNTracksMatched();
@@ -278,8 +293,12 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
 	FillHistogram("h_ClusNXZM2",cellX,cellZ,1.);
       }
       else if( mod1 == 3 ){
-	FillHistogram("hEp_mod3",c1->E()/esdTrack->P(),esdTrack->Pt());
+        FillHistogram("hEp_mod3",c1->E()/esdTrack->P(),esdTrack->Pt());
 	FillHistogram("h_ClusNXZM3",cellX,cellZ,1.);
+      }
+      else if( mod1 == 4 ){
+	FillHistogram("hEp_mod4",c1->E()/esdTrack->P(),esdTrack->Pt());
+	FillHistogram("h_ClusNXZM4",cellX,cellZ,1.);
       }
 
 
@@ -338,6 +357,10 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
 	  FillHistogram("h_ClusNXZM3_ele",cellX,cellZ,1.);
 	  FillHistogram("hEp_ele_mod3",c1->E()/esdTrack->P(),esdTrack->Pt());
 	}
+	else if( mod1 == 4 ){
+	  FillHistogram("h_ClusNXZM4_ele",cellX,cellZ,1.);
+	  FillHistogram("hEp_ele_mod4",c1->E()/esdTrack->P(),esdTrack->Pt());
+	}
       }
       else{
 	FillHistogram("hEp_other",c1->E()/esdTrack->P(),esdTrack->Pt());
@@ -351,6 +374,9 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
 	}
 	else if( mod1 == 3 ){
 	  FillHistogram("hEp_other_mod3",c1->E()/esdTrack->P(),esdTrack->Pt());
+	}
+	else if( mod1 == 4 ){
+	  FillHistogram("hEp_other_mod4",c1->E()/esdTrack->P(),esdTrack->Pt());
 	}
 
       }
@@ -374,6 +400,10 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
 	  FillHistogram("h_ClusNXZM3_had",cellX,cellZ,1.);
 	  FillHistogram("hEp_had_mod3",c1->E()/esdTrack->P(),esdTrack->Pt());
 	}
+	else if( mod1 == 4 ){
+	  FillHistogram("h_ClusNXZM4_had",cellX,cellZ,1.);
+	  FillHistogram("hEp_had_mod4",c1->E()/esdTrack->P(),esdTrack->Pt());
+	}
       }
       
     }
@@ -386,11 +416,13 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
   FillHistogram("h_NClusEventmod1",inMod1);
   FillHistogram("h_NClusEventmod2",inMod2);
   FillHistogram("h_NClusEventmod3",inMod3);
+  FillHistogram("h_NClusEventmod4",inMod4);
 
   nPHOSCluster = 0;
   inMod1 = 0;
   inMod2 = 0;
   inMod3 = 0;
+  inMod4 = 0;
  
   //delete caloClustersArr;
   PostData(1,fOutputContainer);
@@ -444,9 +476,14 @@ void AliAnalysisTaskEpRatio::SetGeometry()
   if(!fPHOSGeo){
     
     AliOADBContainer geomContainer("phosGeo");
-    geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+    geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
-    fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+
+    if (fRunNumber < 224994)
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+    else
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2") ;
+    
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) {
         if( fDebug )

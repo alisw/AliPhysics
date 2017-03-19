@@ -90,7 +90,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   f1DcorrectionsProtonsMinus(0),
   f1DcorrectionsAll(0),
   f1DcorrectionsLambdas(0),
-  f1DcorrectionsLambdasMinus(0)
+  f1DcorrectionsLambdasMinus(0),
+  fIsKaonAnalysis(kFALSE),
+  fIsProtonAnalysis(kFALSE),
+  fIsPionAnalysis(kFALSE),
+  fIsElectronAnalysis(kFALSE)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -140,7 +144,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   f1DcorrectionsProtonsMinus(aReader.f1DcorrectionsProtonsMinus),
   f1DcorrectionsAll(aReader.f1DcorrectionsAll),
   f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
-  f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus)
+  f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus),
+  fIsKaonAnalysis(aReader.fIsKaonAnalysis),
+  fIsProtonAnalysis(aReader.fIsProtonAnalysis),
+  fIsPionAnalysis(aReader.fIsPionAnalysis),
+  fIsElectronAnalysis(aReader.fIsElectronAnalysis)
 
 {
   // copy constructor
@@ -211,6 +219,10 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   f1DcorrectionsAll = aReader.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
   f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
+  fIsKaonAnalysis = aReader.fIsKaonAnalysis;
+  fIsProtonAnalysis = aReader.fIsProtonAnalysis;
+  fIsPionAnalysis = aReader.fIsPionAnalysis;
+  fIsElectronAnalysis = aReader.fIsElectronAnalysis;
 
   return *this;
 }
@@ -380,7 +392,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   int nofTracks = 0; //number of reconstructed tracks in event
 
   nofTracks = fEvent->GetNumberOfTracks();
-
+  //cout<<"NEW: ======> nofTracks "<<nofTracks<<endl;
   AliEventplane *ep = fEvent->GetEventplane();
   if (ep) {
     const float event_plane_angle = (fisEPVZ)
@@ -616,10 +628,36 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     //AliExternalTrackParam *param = new AliExternalTrackParam(*aodtrack->GetInnerParam());
     trackCopy->SetInnerMomentum(aodtrack->GetTPCmomentum());
 
-    tEvent->TrackCollection()->push_back(trackCopy);  // Adding track to analysis
-    realnofTracks++; // Real number of tracks
-  }
+    //Special MC analysis for pi,K,p,e slected by PDG code -->
+    if(fIsKaonAnalysis || fIsProtonAnalysis || fIsPionAnalysis || fIsElectronAnalysis) {
+      Int_t pdg = ((AliFemtoModelHiddenInfo*)trackCopy->GetHiddenInfo())->GetPDGPid();
+      Double_t ptrue = ((AliFemtoModelHiddenInfo*)trackCopy->GetHiddenInfo())->GetTrueMomentum()->Mag();
+  
+      //if(fIsKaonAnalysis&&TMath::Abs(pdg) == 321)cout<<"AOD REader pdg cod "<<pdg<<" ptrue "<<ptrue<< endl;
+      
+      Bool_t trackAccept = true;
 
+      if (fIsKaonAnalysis == true && TMath::Abs(pdg) != 321) 	trackAccept = false;
+      if (fIsProtonAnalysis == true && TMath::Abs(pdg) != 2212) trackAccept = false;
+      if (fIsPionAnalysis == true && TMath::Abs(pdg) != 211)    trackAccept = false;
+      if (fIsElectronAnalysis == true && TMath::Abs(pdg) != 11) trackAccept = false;
+
+      if (trackAccept == true && ptrue > 0) {    
+	tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
+	realnofTracks++;//real number of tracks
+      }
+      else {
+	// cout<<"bad track : AOD REader pdg cod"<<pdg<<" ptrue "<<ptrue<<endl;
+	delete  trackCopy;
+      }
+      //Special MC analysis for pi,K,p,e slected by PDG code <--
+    }
+    else {
+      tEvent->TrackCollection()->push_back(trackCopy);  // Adding track to analysis
+      realnofTracks++; // Real number of tracks
+    }
+  }
+  //cout<<"======================> realnofTracks"<<realnofTracks<<endl;
   tEvent->SetNumberOfTracks(realnofTracks); // Setting number of track which we read in event
 
   if (cent) {
@@ -848,6 +886,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   AliFmPhysicalHelixD helix(ktP, kOrigin, (double)(fEvent->GetMagneticField())*kilogauss, (double)(tFemtoTrack->Charge()));
   tFemtoTrack->SetHelix(helix);
 
+
   // Flags
   tFemtoTrack->SetTrackId(tAodTrack->GetID());
   tFemtoTrack->SetFlags(tAodTrack->GetFlags());
@@ -861,6 +900,10 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
 
     tFemtoTrack->SetImpactD(tAodTrack->DCA());
     tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
+
+    tFemtoTrack->SetXatDCA(tAodTrack->XAtDCA());
+    tFemtoTrack->SetYatDCA(tAodTrack->YAtDCA());
+    tFemtoTrack->SetZatDCA(tAodTrack->ZAtDCA());
   }
 
   tFemtoTrack->SetCdd(covmat[0]);
@@ -1005,6 +1048,7 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   AliFemtoThreeVector momneg(tAODv0->MomNegX(), tAODv0->MomNegY(), tAODv0->MomNegZ());
   tFemtoV0->SetmomNeg(momneg);
   tFemtoV0->SetradiusV0(tAODv0->RadiusV0());
+  tFemtoV0->SetprimaryVertex(fV1);
 
   //jest cos takiego w AliFemtoV0.h czego nie ma w AliAODv0.h
   //void SettpcHitsPos(const int& i);
@@ -1524,6 +1568,10 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     tFemtoTrack->SetImpactD(DCAXY);
     tFemtoTrack->SetImpactZ(DCAZ);
 
+    tFemtoTrack->SetXatDCA(pos[0]);
+    tFemtoTrack->SetYatDCA(pos[1]);
+    tFemtoTrack->SetZatDCA(pos[2]);
+
 
   }
   else if(fDCAglobalTrack==2)
@@ -1911,3 +1959,21 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsLambdasMinus(TH1D *h1)
   f1DcorrectionsLambdasMinus = h1;
 }
 
+//Special MC analysis for pi,K,p,e selected by PDG code -->
+void AliFemtoEventReaderAOD::SetPionAnalysis(Bool_t aSetPionAna)
+{
+  fIsPionAnalysis = aSetPionAna;
+}
+void AliFemtoEventReaderAOD::SetKaonAnalysis(Bool_t aSetKaonAna)
+{
+  fIsKaonAnalysis = aSetKaonAna;
+}
+void AliFemtoEventReaderAOD::SetProtonAnalysis(Bool_t aSetProtonAna)
+{
+  fIsProtonAnalysis = aSetProtonAna;
+}
+void AliFemtoEventReaderAOD::SetElectronAnalysis(Bool_t aSetElectronAna)
+{
+  fIsElectronAnalysis = aSetElectronAna;
+}
+//Special MC analysis for pi,K,p,e selected by PDG code <--

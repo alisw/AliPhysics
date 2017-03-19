@@ -34,7 +34,7 @@ private:
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
 
-  void   MaxEnergyCellPos(AliESDCaloCells *cells, AliESDCaloCluster* clu, Int_t& maxId);
+  void   MaxEnergyCellPos(AliVCaloCells *cells, AliVCluster* clu, Int_t& maxId);
   Bool_t Matched(Int_t *trig_relid,Int_t *cluster_relid); //is cluster position coincides with 4x4 position?
 
   Int_t GetTRUNum(Int_t cellX, Int_t cellZ);

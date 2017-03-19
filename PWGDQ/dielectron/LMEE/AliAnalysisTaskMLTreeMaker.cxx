@@ -50,6 +50,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 
 // Authors: Sebastian Lehner (SMI Vienna) - selehner@cern.ch
 
@@ -86,7 +87,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   KsigTOF(0),
   KsigITS(0),
   fESigITSMin(-100.),
-  fESigITSMax(1.),
+  fESigITSMax(3.),
   fESigTPCMin(-3.),
   fESigTPCMax(3.),
   fESigTOFMin(-3),
@@ -117,14 +118,21 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   motherlabel(0),
   charge(0.),      
   runn(0),      
-  IsHij(kFALSE),
-  IsBG(kFALSE),
+  Rej(kFALSE),
   fPIDResponse(0),
   n(0),
   cent(0),
   vertx(0),
   verty(0),
-  vertz(0)
+  vertz(0),
+  mcTrackIndex(0),
+  NCrossedRowsTPC(0),
+  NClustersTPC(0),
+  HasSPDfirstHit(0), 
+  RatioCrossedRowsFindableClusters(0), 
+  NTPCSignal(0),
+  loCuts(kTRUE),
+  enh(0)      
 {
 
 }
@@ -155,7 +163,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   KsigTOF(0),
   KsigITS(0),
   fESigITSMin(-100.),
-  fESigITSMax(1.),
+  fESigITSMax(3.),
   fESigTPCMin(-3.),
   fESigTPCMax(3.),
   fESigTOFMin(-3),
@@ -186,22 +194,33 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   motherlabel(0),
   charge(0.),      
   runn(0),      
-  IsHij(kFALSE),
-  IsBG(kFALSE),
+  Rej(kFALSE),
   fPIDResponse(0),
   n(0),
   cent(0),
   vertx(0),
   verty(0),
-  vertz(0)
+  vertz(0),
+  mcTrackIndex(0),
+  NCrossedRowsTPC(0),
+  NClustersTPC(0),
+  HasSPDfirstHit(0), 
+  RatioCrossedRowsFindableClusters(0), 
+  NTPCSignal(0),
+  loCuts(kTRUE),
+  enh(0)          
 {
 
-
-  //Alberto Style ESD track cuts - according to analysis note v.6  
+  if(loCuts){
+  AliInfo(Form("Loose cuts!!"));
+  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,0);
+  cutonTPCsignalN = kFALSE; 
+  }
+    else{  
+  //Alberto Style ESD track cuts - according to analysis note v.6   
+  AliInfo(Form("Alberto cuts!!"));
   fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
-  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					 AliESDtrackCuts::kFirst);
-  
+  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
   fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.00515869+0.0101668/pt^1.34489");
   fESDTrackCuts->SetMaxDCAToVertexZ(0.1);
   fESDTrackCuts->SetMinNClustersITS(4);
@@ -209,6 +228,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   fESDTrackCuts->SetMinNClustersTPC(70);
   fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
   cutonTPCsignalN = kTRUE;
+  }
   
   DefineOutput(1, TList::Class());
 }
@@ -244,7 +264,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   if (man->GetMCtruthEventHandler()!=0x0) hasMC=kTRUE;
   else hasMC = kFALSE; 
-   
+
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -266,7 +286,14 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigTPC", &EsigTPC);
   fTree->Branch("EsigITS", &EsigITS);
   fTree->Branch("EsigTOF", &EsigTOF);
-
+  
+//  fTree->Branch("NClustersITS", &NClustersITS);
+  fTree->Branch("NCrossedRowsTPC", &NCrossedRowsTPC);
+  fTree->Branch("NClustersTPC", &NClustersTPC);
+  fTree->Branch("RatioCrossedRowsFindableClusters", &RatioCrossedRowsFindableClusters);
+  fTree->Branch("HasSPDfirstHit", &HasSPDfirstHit);   
+  fTree->Branch("NTPCSignal", &NTPCSignal); 
+  
   if(fPionSigmas){
     fTree->Branch("PsigTPC", &PsigTPC);
     fTree->Branch("PsigITS", &PsigITS);
@@ -296,7 +323,8 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     fTree->Branch("Pdg", &pdg);
     fTree->Branch("Pdg_Mother", &pdgmother);
     fTree->Branch("Mother_label", &motherlabel);
-    fTree->Branch("Has_Mother", &hasmother); 
+    fTree->Branch("Has_Mother", &hasmother);
+    fTree->Branch("IsEnh", &enh);
   
     fTree->Branch("MCpt", &MCpt);
     fTree->Branch("MCeta", &MCeta);
@@ -345,10 +373,26 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
   //fHistTrackStats->Fill(acceptedTracks,lMultiplicityVar);
 
-  AliCentrality *centrality = esdevent->GetCentrality();
-  if (!centrality) AliError(Form("Could not receive Centrality"));  
-            
-  cent = centrality->GetCentralityPercentile("V0M");
+//  AliCentrality *centrality = esdevent->GetCentrality();
+//  if (!centrality) AliError(Form("Could not receive Centrality"));  
+//            
+//  cent = centrality->GetCentralityPercentile("V0M");
+
+  AliMultSelection *MultSelection = 0x0; 
+  MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
+  
+  if( !MultSelection) {
+   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+   AliWarning("AliMultSelection object not found!");
+  }
+  
+  else cent = MultSelection->GetMultiplicityPercentile("V0M");
+//  cout<<"cent: "<<cent<<endl; 
+  
+  
+ runn = event->GetRunNumber();
+
+  
   n= acceptedTracks;
   if(acceptedTracks){
     fTree->Fill();
@@ -401,7 +445,13 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
   eta.clear();
   phi.clear();
-  pt.clear();  
+  pt.clear(); 
+//  NClustersITS.clear();
+  NCrossedRowsTPC.clear();
+  NClustersTPC.clear();
+  HasSPDfirstHit.clear(); 
+  RatioCrossedRowsFindableClusters.clear(); 
+  NTPCSignal.clear(); 
   EsigTPC.clear();
   EsigTOF.clear();
   EsigITS.clear();
@@ -427,10 +477,14 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   hasmother.clear();
   motherlabel.clear();
   charge.clear();
+  enh.clear();
   
   // Loop over tracks in event
   AliGenCocktailEventHeader* coHeader;
   AliMCEvent *mcEvent;
+  Int_t temppdg;
+  Int_t tempmpdg;
+  AliMCParticle* mcMTrack;
   
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
       AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(event->GetTrack(iTracks));
@@ -450,33 +504,40 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
         else{
           fQAHist->Fill("After MC check, bef. Hij",1); 
-      
-          if(!iTracks){                             //check for first track if Hijing was the event gen
-            IsHij=kFALSE;
-            coHeader = dynamic_cast<AliGenCocktailEventHeader*> (mcEvent->GenEventHeader());
-            if (!coHeader){
-              AliError(Form("Could not receive coHeader -> IsHij set to kFALSE!! no rejection of enhanced sources!!"));
-              //continue;
-            }
-            else{
-                TList* list = coHeader->GetHeaders();
-                if(list->FindObject("Hijing")) IsHij = kTRUE;
-            }
+
+          Rej=kFALSE;
+
+                mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
+                temppdg = mcMTrack->PdgCode(); 
+                
+                if(!(mcMTrack->GetMother() < 0)){       //get direct mother
+                    mcTrackIndex = mcMTrack->GetMother(); 
+                    mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
+                    tempmpdg= mcMTrack->PdgCode(); 
+                }
+                else tempmpdg=-9999;
+                    
+                while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
+                    mcTrackIndex = mcMTrack->GetMother(); 
+                    mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
+                }
+
+                if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
+
           }
-          //Reject non-Hijing BG tracks    
-          if (IsHij && !(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))){
-            AliError(Form("Reject non-Hijing BG tracks!!"));
-            continue;
+
+          if (Rej){
+//            continue;
           }
         }
-      }
+
       fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
       
       
       if(!fESDTrackCuts->AcceptTrack(esdTrack))   continue;
-
       
-      //Alberto Cut on TPC signal N (number of TPC clusters used for dE/dx)
+      
+//      Alberto Cut on TPC signal N (number of TPC clusters used for dE/dx)
       if(cutonTPCsignalN && esdTrack->GetTPCsignalN()<50) continue; 
       
       
@@ -499,18 +560,24 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       if (tempEsigITS < fESigITSMin || tempEsigITS > fESigITSMax) continue;  
       if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) continue;
       
-      fQAHist->Fill("Selected tracks",1);  
+      
+      fQAHist->Fill("Selected tracks",1); 
+
+//      printf("Found %d with Mother %d originated from %d generated by %s  \n",temppdg,tempmpdg,mcMTrack->PdgCode(),(mcEvent->GetGenerator(mcTrackIndex)).Data()); 
       //Fill Tree with MC data
       if(hasMC){ 
         AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
 
         pdg.push_back( mcTrack->PdgCode());
-
+        if(Rej) enh.push_back(1);
+        else enh.push_back(0);
+        
+        
         MCpt.push_back(mcTrack->Pt());
         MCeta.push_back(mcTrack->Eta());
         MCphi.push_back(mcTrack->Phi());
         
-        runn.push_back(event->GetRunNumber());
+
         //Get vertex only for first track in event
         if(!acceptedTracks){     
           Double_t vert[3] = {0};
@@ -526,7 +593,8 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           hasmother.push_back(1);
           AliMCParticle* mcmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
 	        pdgmother.push_back( mcmother->PdgCode());
-          motherlabel.push_back(mcmother->GetLabel());
+
+          motherlabel.push_back(abs(mcmother->GetLabel()));
         }
         else{
           hasmother.push_back(0);  
@@ -535,6 +603,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
       } //End if hasMC 
       
+
       //Fill Tree with non MC data
       EsigTPC.push_back(tempEsigTPC);
       EsigITS.push_back(tempEsigITS);
@@ -558,8 +627,14 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       eta.push_back(etatemp);
       phi.push_back(esdTrack->Phi());
       pt.push_back(pttemp);
-      charge.push_back(esdTrack->Charge());         
+      charge.push_back(esdTrack->Charge());   
 
+      NCrossedRowsTPC.push_back(esdTrack->GetTPCCrossedRows());
+      NClustersTPC.push_back(esdTrack->GetNumberOfTPCClusters());
+      HasSPDfirstHit.push_back(esdTrack->HasPointOnITSLayer(0)); 
+      RatioCrossedRowsFindableClusters.push_back((Double_t) esdTrack->GetTPCCrossedRows()/ (Double_t) esdTrack->GetTPCNclsF());       
+      NTPCSignal.push_back(esdTrack->GetTPCsignalN());
+      
        //Get DCA position
       //cout<<num<<"  track:  "<<iTracks<<"  "<<" pt "<<pttemp;
       Float_t tempdca[2] = {0};

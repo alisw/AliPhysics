@@ -15,18 +15,17 @@
 #include <AliEmcalTrackSelection.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <AliLog.h>
+#include <AliVCuts.h>
 #include <AliVTrack.h>
 #include <AliVEvent.h>
-#include "AliVCuts.h"
+#include <iostream>
 
 /// \cond CLASSIMP
+ClassImp(AliEmcalManagedObject)
 ClassImp(AliEmcalTrackSelection)
 /// \endcond
 
-/**
- * Default consturctor, initialising objects with NULL,
- * sets acception mode to ALL
- */
 AliEmcalTrackSelection::AliEmcalTrackSelection() :
 	TObject(),
 	fListOfTracks(NULL),
@@ -37,10 +36,6 @@ AliEmcalTrackSelection::AliEmcalTrackSelection() :
 {
 }
 
-/**
- * Copy constructor, performing a flat copy
- * \param ref
- */
 AliEmcalTrackSelection::AliEmcalTrackSelection(const AliEmcalTrackSelection& ref):
 	TObject(ref),
 	fListOfTracks(NULL),
@@ -53,17 +48,12 @@ AliEmcalTrackSelection::AliEmcalTrackSelection(const AliEmcalTrackSelection& ref
 	if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TClonesArray(*(ref.fListOfTrackBitmaps));
 	if(ref.fListOfCuts){
 	  fListOfCuts = new TObjArray;
-	  fListOfCuts->SetOwner(false);
-	  for(TIter cutIter = TIter(ref.fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter)
-	    fListOfCuts->Add(*cutIter);
+	  fListOfCuts->SetOwner(true); // Ownership handled object-by-object by the smart pointer
+	  for(auto cutIter : *(ref.fListOfCuts))
+	    fListOfCuts->Add(new AliEmcalManagedObject(*(static_cast<AliEmcalManagedObject *>(cutIter))));
 	}
 }
 
-/**
- * Assingment operator, makes a flat copy
- * \param ref Reference for the copy
- * \return Result of the copy
- */
 AliEmcalTrackSelection& AliEmcalTrackSelection::operator=(const AliEmcalTrackSelection& ref) {
 	TObject::operator=(ref);
 	if(this != &ref){
@@ -72,76 +62,54 @@ AliEmcalTrackSelection& AliEmcalTrackSelection::operator=(const AliEmcalTrackSel
 		if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TClonesArray(*(ref.fListOfTrackBitmaps));
 		if(ref.fListOfCuts){
 		  fListOfCuts = new TObjArray;
-		  fListOfCuts->SetOwner(false);
-		  for(TIter cutIter = TIter(ref.fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter)
-		    fListOfCuts->Add(*cutIter);
+		  fListOfCuts->SetOwner(true);  // Ownership handled object-by-object by the smart pointer
+		  for(auto cutIter : *(ref.fListOfCuts))
+		    fListOfCuts->Add(new AliEmcalManagedObject(*(static_cast<AliEmcalManagedObject *>(cutIter))));
 		} else fListOfCuts = NULL;
 	}
 	return *this;
 }
 
-/**
- * Destructor, deletes track and track cut arrays
- * In case the object has ownership over the track cuts itself, it also deletes those
- */
 AliEmcalTrackSelection::~AliEmcalTrackSelection() {
 	if(fListOfTracks) delete fListOfTracks;
 	if(fListOfTrackBitmaps) delete fListOfTrackBitmaps;
 	if(fListOfCuts) delete fListOfCuts;
 }
 
-/**
- * Add new track cuts to the list of cuts. Takes ownership over the cuts
- * \param cuts New cuts to add
- */
 void AliEmcalTrackSelection::AddTrackCuts(AliVCuts *cuts){
   if(!fListOfCuts){
     fListOfCuts = new TObjArray;
     fListOfCuts->SetOwner(true);
   }
-  fListOfCuts->Add(cuts);
+  if(cuts) fListOfCuts->Add(new AliEmcalManagedObject(cuts, true));
 }
 
-/**
- * Add new track cuts to the list of cuts. Takes ownership over the cuts
- * \param cuts New cuts to add
- */
 void AliEmcalTrackSelection::AddTrackCuts(TObjArray *cuts){
-  TIter next(cuts);
-  AliVCuts* item = 0;
-  while ((item = static_cast<AliVCuts*>(next())))
-  {
-    AddTrackCuts(item);
+  for(auto c : *cuts){
+    AliVCuts *cuts = dynamic_cast<AliVCuts*>(c);
+    if(cuts){
+      AddTrackCuts(cuts);
+    } else {
+      AliErrorStream() << "Object not inheriting from AliVCuts - not added to track selection" << std::endl;
+    }
   }
 }
 
-/**
- * Get the number of cut objects assigned.
- * \return The number of cut objects
- */
 Int_t AliEmcalTrackSelection::GetNumberOfCutObjects() const {
   if(!fListOfCuts) return 0;
   return fListOfCuts->GetEntries();
 }
 
-/**
- * Access to track cuts at a given position
- * \param icut Cut at position in array
- * \return The cuts (NULL for invalid positions)
- */
 AliVCuts* AliEmcalTrackSelection::GetTrackCuts(Int_t icut) {
   if(!fListOfCuts) return NULL;
-  if(icut < fListOfCuts->GetEntries())
-    return static_cast<AliVCuts *>(fListOfCuts->At(icut));
+  if(icut < fListOfCuts->GetEntries()){
+    AliEmcalManagedObject *ptr = static_cast<AliEmcalManagedObject *>(fListOfCuts->At(icut));
+    return static_cast<AliVCuts *>(ptr->GetObject());
+  }
+
   return NULL;
 }
 
-/**
- * Select tracks from a TClonesArray of input tracks
- *
- * \param tracks TClonesArray of tracks (must not be null)
- * \return: TObjArray of selected tracks
- */
 TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const tracks)
 {
   if (!fListOfTracks) {
@@ -175,12 +143,6 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
   return fListOfTracks;
 }
 
-/**
- * Select tracks from a virtual event. Delegates selection process to function IsTrackAccepted
- *
- * \param event AliESDEvent, via interface of virtual event (must not be null)
- * \return TObjArray of selected tracks
- */
 TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const event)
 {
   if (!fListOfTracks) {
@@ -209,4 +171,42 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
     new ((*fListOfTrackBitmaps)[itrk]) TBits(fTrackBitmap);
   }
   return fListOfTracks;
+}
+
+AliEmcalManagedObject::AliEmcalManagedObject():
+    TObject(),
+    fOwner(false),
+    fManagedObject(nullptr)
+{
+
+}
+
+AliEmcalManagedObject::AliEmcalManagedObject(TObject *managedObject, Bool_t owner):
+    TObject(),
+    fOwner(owner),
+    fManagedObject(managedObject)
+{
+}
+
+AliEmcalManagedObject::AliEmcalManagedObject(const AliEmcalManagedObject &ref):
+    TObject(ref),
+    fOwner(false),
+    fManagedObject(ref.fManagedObject)
+{
+}
+
+AliEmcalManagedObject &AliEmcalManagedObject::operator=(const AliEmcalManagedObject &ref){
+  TObject::operator=(ref);
+
+  if(this != &ref){
+    Cleanup();
+    fOwner = false;
+    fManagedObject = ref.fManagedObject;
+  }
+  return *this;
+}
+
+void AliEmcalManagedObject::Cleanup(){
+  if(fManagedObject && fOwner) delete fManagedObject;
+  fManagedObject = nullptr;
 }

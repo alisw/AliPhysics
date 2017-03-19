@@ -55,6 +55,7 @@ AliAnalysisTaskSE(),
   fIsUsingVariableAvgSepCut(kFALSE),
   fMaxV0Mult(700),
   fNumberVariableAvgSepCuts(3),
+  fTestNoTTC(kFALSE),
   fCutProcessor(NULL),
   fSysStudyType(kNoStudy),
   fNumberOfTopologicalCutValues(1),
@@ -97,12 +98,18 @@ AliAnalysisTaskSE(),
   fMCTruthPtLam(NULL), fMCTruthPtALam(NULL),
   fMCTruthPhiLam(NULL), fMCTruthPhiALam(NULL),
   fMCTruthEtaLam(NULL), fMCTruthEtaALam(NULL),
-  fKtLamLamSig(NULL), fKtALamALamSig(NULL),
-  fKtLamALamSig(NULL), fKtLamLamBkg(NULL),
-  fKtALamALamBkg(NULL), fKtLamALamBkg(NULL),
   fSignalLamLam(NULL), fBkgLamLam(NULL),
   fSignalALamALam(NULL), fBkgALamALam(NULL),
   fSignalLamALam(NULL), fBkgLamALam(NULL),
+  fSignalKtVsKstarLamLam(NULL), fBkgKtVsKstarLamLam(NULL),
+  fSignalKtVsKstarALamALam(NULL), fBkgKtVsKstarALamALam(NULL),
+  fSignalKtVsKstarLamALam(NULL), fBkgKtVsKstarLamALam(NULL),
+  fHistSignalProperDecayLengthDiffLamLam(NULL),
+  fHistSignalProperDecayLengthDiffALamALam(NULL),
+  fHistSignalProperDecayLengthDiffLamALam(NULL),
+  fHistBkgProperDecayLengthDiffLamLam(NULL),
+  fHistBkgProperDecayLengthDiffALamALam(NULL),
+  fHistBkgProperDecayLengthDiffLamALam(NULL),
   fSignalLamLamProtSep(NULL), fSignalLamLamPiMinusSep(NULL),
   fSignalALamALamAntiProtSep(NULL), fSignalALamALamPiPlusSep(NULL),
   fSignalLamALamProtPiPlusSep(NULL), fSignalLamALamAntiProtPiMinusSep(NULL),
@@ -117,7 +124,7 @@ AliAnalysisTaskSE(),
 }
 //________________________________________________________________________
 
-AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents):
+AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents, Bool_t testNoTwoTrackCuts):
   AliAnalysisTaskSE(name), 
   nEventsToMix(nMixingEvents),
   fAOD(0), 
@@ -139,6 +146,7 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_
   fIsUsingVariableAvgSepCut(kFALSE),
   fMaxV0Mult(700),
   fNumberVariableAvgSepCuts(3),
+  fTestNoTTC(testNoTwoTrackCuts),
   fCutProcessor(NULL),
   fSysStudyType(sysStudyType),
   fNumberOfTopologicalCutValues(1),
@@ -181,12 +189,18 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_
   fMCTruthPtLam(NULL), fMCTruthPtALam(NULL),
   fMCTruthPhiLam(NULL), fMCTruthPhiALam(NULL),
   fMCTruthEtaLam(NULL), fMCTruthEtaALam(NULL),
-  fKtLamLamSig(NULL), fKtALamALamSig(NULL),
-  fKtLamALamSig(NULL), fKtLamLamBkg(NULL),
-  fKtALamALamBkg(NULL), fKtLamALamBkg(NULL),
   fSignalLamLam(NULL), fBkgLamLam(NULL),
   fSignalALamALam(NULL), fBkgALamALam(NULL),
   fSignalLamALam(NULL), fBkgLamALam(NULL),
+  fSignalKtVsKstarLamLam(NULL), fBkgKtVsKstarLamLam(NULL),
+  fSignalKtVsKstarALamALam(NULL), fBkgKtVsKstarALamALam(NULL),
+  fSignalKtVsKstarLamALam(NULL), fBkgKtVsKstarLamALam(NULL),
+  fHistSignalProperDecayLengthDiffLamLam(NULL),
+  fHistSignalProperDecayLengthDiffALamALam(NULL),
+  fHistSignalProperDecayLengthDiffLamALam(NULL),
+  fHistBkgProperDecayLengthDiffLamLam(NULL),
+  fHistBkgProperDecayLengthDiffALamALam(NULL),
+  fHistBkgProperDecayLengthDiffLamALam(NULL),
   fSignalLamLamProtSep(NULL), fSignalLamLamPiMinusSep(NULL),
   fSignalALamALamAntiProtSep(NULL), fSignalALamALamPiPlusSep(NULL),
   fSignalLamALamProtPiPlusSep(NULL), fSignalLamALamAntiProtPiMinusSep(NULL),
@@ -358,23 +372,28 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fMCOtherV0Identity->GetXaxis()->SetBinLabel(1,"Fake Lambda");
   fMCOtherV0Identity->GetXaxis()->SetBinLabel(2,"Fake AntiLambda");
   fMCOtherV0Identity->GetXaxis()->SetBinLabel(3,"Fake K0Short");
-  int kTBins = 200;
-  double maxKtBin = 10.;
+  int kTBins = 20;
+  double maxKtBin = 4.;
   int kStarBins = 800;
-  double maxKStar = 2.;
-  //Pair kT Tracking: Centrality bins, kT bins, k* bins
-  fKtLamLamSig = new TH3F("fKtLamLamSig", "LamLam Pair Kt Same Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
-  fOutputList->Add(fKtLamLamSig);
-  fKtALamALamSig = new TH3F("fKtALamALamSig", "ALamALam Pair Kt Same Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
-  fOutputList->Add(fKtALamALamSig);
-  fKtLamALamSig = new TH3F("fKtLamALamSig", "LamALam Pair Kt Same Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
-  fOutputList->Add(fKtLamALamSig);
-    fKtLamLamBkg = new TH3F("fKtLamLamBkg", "LamLam Pair Kt Mixed Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
-  fOutputList->Add(fKtLamLamBkg);
-  fKtALamALamBkg = new TH3F("fKtALamALamBkg", "ALamALam Pair Kt Mixed Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
-  fOutputList->Add(fKtALamALamBkg);
-  fKtLamALamBkg = new TH3F("fKtLamALamBkg", "LamALam Pair Kt Mixed Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
-  fOutputList->Add(fKtLamALamBkg);
+  double maxKStar = 2.; 
+  //Pair kT Tracking: kT bins, centrality bins, k* bins
+  fSignalKtVsKstarLamLam = new TH3F("fSignalKtVsKstarLamLam", "LamLam Pair Kt Same Event;k_T;CentBin;k*", kTBins, 0., maxKtBin, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fOutputList->Add(fSignalKtVsKstarLamLam);
+  fSignalKtVsKstarALamALam = new TH3F("fSignalKtVsKstarALamALam", "ALamALam Pair Kt Same Event;k_T;CentBin;k*", kTBins, 0., maxKtBin, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fOutputList->Add(fSignalKtVsKstarALamALam);
+  fSignalKtVsKstarLamALam = new TH3F("fSignalKtVsKstarLamALam", "LamALam Pair Kt Same Event;k_T;CentBin;k*", kTBins, 0., maxKtBin, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fOutputList->Add(fSignalKtVsKstarLamALam);
+
+  fBkgKtVsKstarLamLam = new TH3F("fBkgKtVsKstarLamLam", "LamLam Pair Kt Mixed Event;k_T;CentBin;k*", kTBins, 0., maxKtBin, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fOutputList->Add(fBkgKtVsKstarLamLam);
+  fBkgKtVsKstarALamALam = new TH3F("fBkgKtVsKstarALamALam", "ALamALam Pair Kt Mixed Event;k_T;CentBin;k*", kTBins, 0., maxKtBin, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fOutputList->Add(fBkgKtVsKstarALamALam);
+  fBkgKtVsKstarLamALam = new TH3F("fBkgKtVsKstarLamALam", "LamALam Pair Kt Mixed Event;k_T;CentBin;k*", kTBins, 0., maxKtBin, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fOutputList->Add(fBkgKtVsKstarLamALam);
+
+
+  
+
   
   /////////Signal Distributions///////////////////
   //First bin is variable cut value, second bin is centrality, third bin is Kstar
@@ -396,6 +415,27 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fBkgLamALam = new TH3F("fBkgLamALam","Mixed Event Pair Distribution;VarBin;CentBin;k*", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
   fOutputList->Add(fBkgLamALam);
 
+
+  // Distributions of difference in proper decaylength
+  TObjArray *dlDiffDir = new TObjArray();
+  dlDiffDir->SetName("ProperDecayLengthDiff");
+  fOutputList->Add(dlDiffDir);
+
+  Int_t dlDiffBins = 500;
+  Double_t dlDiffMaxValue = 50.;
+  fHistSignalProperDecayLengthDiffLamLam = new TH1F ("fHistSignalProperDecayLengthDiffLamLam", "Difference in proper decay length of #Lambda#Lambda pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
+  dlDiffDir->Add(fHistSignalProperDecayLengthDiffLamLam);
+  fHistSignalProperDecayLengthDiffALamALam = new TH1F ("fHistSignalProperDecayLengthDiffALamALam", "Difference in proper decay length of #bar{#Lambda}#bar{#Lambda} pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
+  dlDiffDir->Add(fHistSignalProperDecayLengthDiffALamALam);
+  fHistSignalProperDecayLengthDiffLamALam = new TH1F ("fHistSignalProperDecayLengthDiffLamALam", "Difference in proper decay length of #Lambda#bar{#Lambda} pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
+  dlDiffDir->Add(fHistSignalProperDecayLengthDiffLamALam);
+  
+  fHistBkgProperDecayLengthDiffLamLam = new TH1F ("fHistBkgProperDecayLengthDiffLamLam", "Difference in proper decay length of #Lambda#Lambda pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
+  dlDiffDir->Add(fHistBkgProperDecayLengthDiffLamLam);
+  fHistBkgProperDecayLengthDiffALamALam = new TH1F ("fHistBkgProperDecayLengthDiffALamALam", "Difference in proper decay length of #bar{#Lambda}#bar{#Lambda} pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
+  dlDiffDir->Add(fHistBkgProperDecayLengthDiffALamALam);
+  fHistBkgProperDecayLengthDiffLamALam = new TH1F ("fHistBkgProperDecayLengthDiffLamALam", "Difference in proper decay length of #Lambda#bar{#Lambda} pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
+  dlDiffDir->Add(fHistBkgProperDecayLengthDiffLamALam);
   // Daughter pair separation distributions
   // Binned according to (average separation, pT1, pT2)
   TObjArray *sepDirNew = new TObjArray();
@@ -1579,6 +1619,7 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, 
 	  vector<Bool_t> avgSepCutResults = CheckAvgSepCut(pairType, v01, v02);
 	  
 	  if (topCutIndex == fNominalTopCutIndex) {
+	    FillDecayLengthDiffHists(pairType, v01, v02, eventNumber);
 	    FillAvgSepHists(pairType, v01, v02, eventNumber);
 	  }
 
@@ -1597,8 +1638,10 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, 
 	      // want to fill this once, so make sure that there is
 	      // no systematic cut study going on, or that we are
 	      // using the default cut index (1)
+	      // Do the same for the k* vs kT histograms
 	      if (kNoStudy == fSysStudyType || cutBin == 1) {
 		FillMomentumResolutionMatrix(pairType, v01, v02, eventNumber);
+		FillKtVsKstarHists(pairType, v01, v02, eventNumber, centralityBin);
 	      }
 	    }
 	  }
@@ -1608,7 +1651,41 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, 
   }//end variable cut loop
 }//end DoPairStudies()
 
-void AliAnalysisV0Lam::FillAvgSepHists(PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent)
+
+void AliAnalysisV0Lam::FillDecayLengthDiffHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent)
+{
+  // Fill histograms with the difference in proper decay lengths of the two particles
+
+  if (v01.lorentzGammaLam <= 0) return; // Avoid divide by zero errors if something is wrong
+  if (v02.lorentzGammaLam <= 0) return;
+  
+  Double_t properLength1 = v01.decayLength/v01.lorentzGammaLam;
+  Double_t properLength2 = v02.decayLength/v02.lorentzGammaLam;
+
+  Double_t difference = fabs(properLength1 - properLength2);
+
+  if (kLamLam == pairType) {
+    if (!isMixedEvent) {
+      fHistSignalProperDecayLengthDiffLamLam->Fill(difference);
+    } else {
+      fHistBkgProperDecayLengthDiffLamLam->Fill(difference);
+    }
+  } else if (kALamALam == pairType) {
+    if (!isMixedEvent) {
+      fHistSignalProperDecayLengthDiffALamALam->Fill(difference);
+    } else {
+      fHistBkgProperDecayLengthDiffALamALam->Fill(difference);
+    }
+  } else if ((kLamALam == pairType) || (kALamLam == pairType)) {
+    if (!isMixedEvent) {
+      fHistSignalProperDecayLengthDiffLamALam->Fill(difference);
+    } else {
+      fHistBkgProperDecayLengthDiffLamALam->Fill(difference);
+    }
+  }
+}
+
+void AliAnalysisV0Lam::FillAvgSepHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent)
 {
   // Calculate avg sep for all pairs of daughters
   Double_t avgSepPos = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
@@ -1698,15 +1775,48 @@ void AliAnalysisV0Lam::FillCorrelationHists(const PairType pairType, const AliRe
   }
 }
 
+void AliAnalysisV0Lam::FillKtVsKstarHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, const Bool_t isMixedEvent, const Int_t centralityBin)
+{
+  // Fill kT vs k* for same and mixed event pairs
+  Double_t pairKstarLam = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda,fPDGLambda);
+  Double_t pairKtLam = (v01.v0Pt + v02.v0Pt) / 2;
+  if (kLamLam == pairType) {
+    if(!isMixedEvent) {
+      fSignalKtVsKstarLamLam->Fill(pairKtLam, centralityBin+1, pairKstarLam);
+    } else {
+      fBkgKtVsKstarLamLam->Fill(pairKtLam, centralityBin+1, pairKstarLam);
+    }
+  } else if (kALamALam == pairType) {
+    if(!isMixedEvent) {
+      fSignalKtVsKstarALamALam->Fill(pairKtLam, centralityBin+1, pairKstarLam);
+    } else {
+      fBkgKtVsKstarALamALam->Fill(pairKtLam, centralityBin+1, pairKstarLam);
+    }
+  } else if ((kLamALam == pairType) || (kALamLam == pairType)) {
+    if(!isMixedEvent) {
+      fSignalKtVsKstarLamALam->Fill(pairKtLam, centralityBin+1, pairKstarLam);
+    } else {
+      fBkgKtVsKstarLamALam->Fill(pairKtLam, centralityBin+1, pairKstarLam);
+    }
+  }
+}
+
 vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02)
 {
-  // Calculate avg sep for all pairs of daughters
+  // Calculate avg sep for all pairs of daughters and check if they pass cuts
+
+  vector<Bool_t> cutResults;
+  if (fTestNoTTC) { // In case we are running with cuts turned off
+    cutResults.push_back(kTRUE);
+    return cutResults;
+  }
+
   Double_t avgSepPos = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
   Double_t avgSepNeg = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
   Double_t avgSepNegPos = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
   Double_t avgSepPosNeg = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
 
-  vector<Bool_t> cutResults;
+
   Int_t nVariableCuts = 1;
   if (kTwoTrackStudy == fSysStudyType) {
     nVariableCuts = 3;
@@ -1722,6 +1832,7 @@ vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliRe
     nominalCutValues[kDiffProtProt] = 10.; // Diff sign prot-prot
     nominalCutValues[kDiffPiPi]     = 25.; // Diff sign pi-pi
     nominalCutValues[kDiffProtPi]   = 15.; // Diff sign prot-pi
+
 
     // Vary one of the cut values
     if ((kTwoTrackStudy == fSysStudyType) && (iVar == 0)) {

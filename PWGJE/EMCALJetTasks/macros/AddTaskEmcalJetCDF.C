@@ -1,5 +1,4 @@
 #ifndef __CINT__
-#include "TSystem.h"
 #include "AliAnalysisTaskEmcalJetCDF.h"
 #endif
 
@@ -11,26 +10,15 @@
 /// \author Adrian SEVCENCO <Adrian.Sevcenco@cern.ch>, Institute of Space Science, Romania
 /// \date Mar 19, 2015
 
-/// Add a AliAnalysisTaskEmcalJetCDF task - detailed signature
-/// \param const char* ntracks : name of tracks collection
-/// \param const char* nclusters : name of clusters collection
-/// \param const char* ncells : name of EMCAL cell collection
-/// \param const char* tag
-/// \return AliAnalysisTaskEmcalJetCDF* task
-AliAnalysisTaskEmcalJetCDF* AddTaskEmcalJetCDF (
-  const char* ntracks                      = "usedefault",
-  const char* nclusters                    = "usedefault",
-  const char* ncells                       = "usedefault",
-  const char* tag                          = "CDF"
-)
-
-{
-gSystem->Load ("libPWGJEEMCALJetTasks");
-
 // definition in AliAnalysisTaskEmcalJetCDF.h - namespace NS_AliAnalysisTaskEmcalJetCDF
-AliAnalysisTaskEmcalJetCDF* cdfTask = dynamic_cast<AliAnalysisTaskEmcalJetCDF*>NS_AliAnalysisTaskEmcalJetCDF::AddTaskEmcalJetCDF ( ntracks, nclusters, ncells, tag);
 
-return cdfTask;
-}
+/// Add a AliAnalysisTaskEmcalJetCDF task - detailed signature
+/// \param ntracks name of tracks collection
+/// \param nclusters name of clusters collection
+/// \param ncells name of EMCAL cell collection
+/// \param tag tag name of analysis task
+/// \return AliAnalysisTaskEmcalJetCDF* task
+AliAnalysisTaskEmcalJetCDF* AddTaskEmcalJetCDF ( const char* ntracks = "usedefault", const char* nclusters = "usedefault", const char* ncells = "usedefault", const char* tag = "CDF" )
+{ return NS_AliAnalysisTaskEmcalJetCDF::AddTaskEmcalJetCDF ( ntracks, nclusters, ncells, tag); }
 
 // kate: indent-mode none; indent-width 2; replace-tabs on;

@@ -1,11 +1,5 @@
 // AliEmcalCorrectionCellEnergy
 //
-//  Based on elements of AliEMCALTenderSupply:
-/// \author Deepa Thomas (Utrecht University)
-/// \author Jiri Kral (University of Jyvaskyla), mods/rewrite
-/// \author Salvatore Aiola, make it work for AODs
-/// \author C. Loizides, make it work for AODs
-/// \author Gustavo Conesa, LPSC-Grenoble, several mods.
 
 #include <TObjArray.h>
 #include <TFile.h>
@@ -23,7 +17,9 @@ ClassImp(AliEmcalCorrectionCellEnergy);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> AliEmcalCorrectionCellEnergy::reg("AliEmcalCorrectionCellEnergy");
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellEnergy")
   ,fUseAutomaticRecalib(1)
@@ -31,53 +27,57 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fCellEnergyDistBefore(0)
   ,fCellEnergyDistAfter(0)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionCellEnergy::~AliEmcalCorrectionCellEnergy()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionCellEnergy::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   AliWarning("Init EMCAL cell recalibration");
   
   GetProperty("createHistos", fCreateHisto);
-  
-  if (fCreateHisto){
-    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_cell",1000,0,10);
-    fOutput->Add(fCellEnergyDistBefore);
-    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_cell",1000,0,10);
-    fOutput->Add(fCellEnergyDistAfter);
-  }
 
   if(fFilepass.Contains("LHC14a1a")) fUseAutomaticRecalib = kTRUE;
   
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
     
-  // missalignment function -- TO DO: not sure if we need this or not
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
-  
+
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
+void AliEmcalCorrectionCellEnergy::UserCreateOutputObjects()
+{   
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
+
+  if (fCreateHisto){
+    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_cell",1000,0,10);
+    fOutput->Add(fCellEnergyDistBefore);
+    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_cell",1000,0,10);
+    fOutput->Add(fCellEnergyDistAfter);
+  }
+}
+
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionCellEnergy::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   if (!fEvent) {
@@ -85,52 +85,7 @@ Bool_t AliEmcalCorrectionCellEnergy::Run()
     return kFALSE;
   }
   
-  // Initialising parameters once per run number
-  
-  if (RunChanged())
-  {
-    fRun = fEvent->GetRunNumber();
-    AliWarning(Form("Run changed, initializing parameters for %d", fRun));
-    if (dynamic_cast<AliAODEvent*>(fEvent)) {
-      AliWarning("=============================================================");
-      AliWarning("===  Running on AOD is not equivalent to running on ESD!  ===");
-      AliWarning("=============================================================");
-    }
-    
-    // init geometry if not already done
-    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
-    
-    if (!fGeom)
-    {
-      AliFatal("Can not create geometry");
-      return kFALSE;
-    }
-    
-    // init recalibration factors
-    if(fUseAutomaticRecalib)
-    {
-      Int_t fInitRecalib = InitRecalib();
-      if (fInitRecalib==0)
-        AliError("InitRecalib returned false, returning");
-      if (fInitRecalib==1)
-        AliWarning("InitRecalib OK");
-      if (fInitRecalib>1)
-        AliWarning(Form("No recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
-    }
-    
-    if(fUseAutomaticRunDepRecalib)
-    {
-      Int_t fInitRunDepRecalib = InitRunDepRecalib();
-      if (fInitRunDepRecalib==0)
-        AliError("InitrunDepRecalib returned false, returning");
-      if (fInitRunDepRecalib==1)
-        AliWarning("InitRecalib OK");
-      if (fInitRunDepRecalib>1)
-        AliWarning(Form("No Temperature recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
-    }
-    
-    //AliDebug(2, Form("%s", fRecoUtils->Print("")));
-  }
+  CheckIfRunChanged();
   
   // CONFIGURE THE RECO UTILS -------------------------------------------------
   fRecoUtils->SwitchOnRecalibration();
@@ -140,7 +95,7 @@ Bool_t AliEmcalCorrectionCellEnergy::Run()
   if (fCaloCells->GetNumberOfCells()<=0)
   {
     AliDebug(2, Form("Number of EMCAL cells = %d, returning", fCaloCells->GetNumberOfCells()));
-    return kTRUE;
+    return kFALSE;
   }
   
   // mark the cells not recalibrated
@@ -165,11 +120,11 @@ Bool_t AliEmcalCorrectionCellEnergy::Run()
   return kTRUE;
 }
 
-//_____________________________________________________
+/**
+ * Initialize the energy calibration.
+ */
 Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
 {
-  // Initialising recalibration factors.
-  
   if (!fEvent)
     return 0;
   
@@ -260,11 +215,11 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   return 1;
 }
 
-//_____________________________________________________
+/**
+ * Initialize the temperature calibration.
+ */
 Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 {
-  // Initialising recalibration factors.
-  
   if (!fEvent)
     return 0;
   
@@ -367,4 +322,45 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   delete contRF;
   
   return 1;
+}
+
+/**
+ * This function is called if the run changes (it inherits from the base component),
+ * to load a new energy calibration and fill relevant variables.
+ */
+Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
+{
+  Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();
+  
+  if (runChanged) {
+    // init recalibration factors
+    if(fUseAutomaticRecalib)
+    {
+      Int_t fInitRecalib = InitRecalib();
+      if (fInitRecalib==0) {
+        AliError("InitRecalib returned false, returning");
+      }
+      if (fInitRecalib==1) {
+        AliWarning("InitRecalib OK");
+      }
+      if (fInitRecalib>1) {
+        AliWarning(Form("No recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      }
+    }
+    
+    if(fUseAutomaticRunDepRecalib)
+    {
+      Int_t fInitRunDepRecalib = InitRunDepRecalib();
+      if (fInitRunDepRecalib==0) {
+        AliError("InitrunDepRecalib returned false, returning");
+      }
+      if (fInitRunDepRecalib==1) {
+        AliWarning("InitRecalib OK");
+      }
+      if (fInitRunDepRecalib>1) {
+        AliWarning(Form("No Temperature recalibration available: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      }
+    }
+  }
+  return runChanged;
 }

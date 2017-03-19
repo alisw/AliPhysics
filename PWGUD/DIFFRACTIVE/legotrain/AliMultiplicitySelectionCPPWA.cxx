@@ -110,7 +110,7 @@ void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_
 			fcutITSTPC_P -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
 			fcutITSTPC_P -> SetMinNCrossedRowsTPC(120);
 			fcutITSTPC_P -> SetMaxDCAToVertexZ(2);
-			fcutITSTPC_P -> SetEtaRange(-0.9,0.9);
+			fcutITSTPC_P -> SetEtaRange(-2.0,2.0);
 			fcutITSTPC_P -> SetMaxChi2PerClusterTPC(4);
 			fcutITSTPC_P -> SetRequireTPCRefit(kTRUE);
 			fcutITSTPC_P -> SetRequireITSRefit(kTRUE);
@@ -166,7 +166,7 @@ void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_
 			else if (nSys == 10) SetTrackDCAz(5);
 			else SetTrackDCAz(6);
 
-			SetTrackEtaRange(-0.9,0.9);
+			SetTrackEtaRange(-2.0,2.0);
 
 			fcutITSTPC_P->SetName("ITSTPC");
 			AddPrimaryTrackCut(fcutITSTPC_P);
@@ -314,11 +314,12 @@ Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, T
 	for(Int_t i = 0; i < NtracksSel; i++)
 	{
 		AliESDtrack* tr = esd->GetTrack(indices.At(i));
-		if(tr->Eta() < fTrackEtaMin || tr->Eta() > fTrackEtaMax)
-			return -2;
+//		if(tr->Eta() < fTrackEtaMin || tr->Eta() > fTrackEtaMax)
+//			return -2;
 		if(!AcceptTrack(tr, kTRUE))
 			return -3;
 	}
+	if (isSave) hMult[4]->Fill(NtracksSel);
 
 	const AliMultiplicity *mult = esd->GetMultiplicity();
 

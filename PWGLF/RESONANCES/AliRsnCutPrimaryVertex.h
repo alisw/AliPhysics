@@ -24,6 +24,12 @@ public:
    virtual Bool_t IsSelected(TObject *object);
    virtual void   Print(const Option_t *option = "") const;
 
+   Int_t          GetCheckGeneratedVertexZ(){return fCheckGeneratedVertexZ;}
+   void           SetCheckGeneratedVertexZ(Int_t doit=2){fCheckGeneratedVertexZ=doit;}
+   Float_t        GetCutGeneratedVertexZ(){return fCutGeneratedVertexZ;}
+   void           SetCutGeneratedVertexZ(Float_t cut=10.){fCutGeneratedVertexZ=cut;}
+   Bool_t         GoodGeneratedVertexZ();
+
    Bool_t         GetCheckZResolutionSPD(){return fCheckZResolutionSPD;}
    void           SetCheckZResolutionSPD(Bool_t doit=kTRUE){fCheckZResolutionSPD=doit;}
    Float_t        GetMaxZResolutionSPD(){return fMaxZResolutionSPD;}
@@ -54,6 +60,8 @@ protected:
    Bool_t         fAcceptTPC;   // if kTRUE, the TPC primary vertexes are accepted
    Bool_t         fAcceptSPD;   // if kTRUE, the SPD primary vertexes are accepted
    Bool_t         fCheckPileUp; // check and reject pileupped events (pp)
+   Int_t          fCheckGeneratedVertexZ;// check the z position of the generated vertex for MC events; 0=do not check; 1=check this and other cuts; 2=check only this
+   Float_t        fCutGeneratedVertexZ;// cut (symmetric) on the z position of the generated vertex for MC events
    Bool_t         fCheckZResolutionSPD;// check the z resolution of SPD vertex
    Float_t        fMaxZResolutionSPD;// maximum z resolution of SPD vertex (ESD only)
    Bool_t         fCheckDispersionSPD;// check the dispersion of SPD vertex

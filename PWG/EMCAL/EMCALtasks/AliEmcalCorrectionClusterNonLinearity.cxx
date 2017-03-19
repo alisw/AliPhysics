@@ -1,6 +1,5 @@
 // AliEmcalCorrectionClusterNonLinearity
 //
-// Author: C.Loizides, S.Aiola
 
 #include "AliEmcalCorrectionClusterNonLinearity.h"
 
@@ -15,7 +14,26 @@ ClassImp(AliEmcalCorrectionClusterNonLinearity);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterNonLinearity> AliEmcalCorrectionClusterNonLinearity::reg("AliEmcalCorrectionClusterNonLinearity");
 
-//________________________________________________________________________
+const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> AliEmcalCorrectionClusterNonLinearity::fgkNonlinearityFunctionMap = {
+    { "kPi0MC", AliEMCALRecoUtils::kPi0MC },
+    { "kPi0GammaGamma", AliEMCALRecoUtils::kPi0GammaGamma },
+    { "kPi0GammaConversion", AliEMCALRecoUtils::kPi0GammaConversion },
+    { "kNoCorrection", AliEMCALRecoUtils::kNoCorrection },
+    { "kBeamTest", AliEMCALRecoUtils::kBeamTest },
+    { "kBeamTestCorrected", AliEMCALRecoUtils::kBeamTestCorrected },
+    { "kPi0MCv2", AliEMCALRecoUtils::kPi0MCv2 },
+    { "kPi0MCv3", AliEMCALRecoUtils::kPi0MCv3 },
+    { "kBeamTestCorrectedv2", AliEMCALRecoUtils::kBeamTestCorrectedv2 },
+    { "kSDMv5", AliEMCALRecoUtils::kSDMv5 },
+    { "kPi0MCv5", AliEMCALRecoUtils::kPi0MCv5 },
+    { "kSDMv6", AliEMCALRecoUtils::kSDMv6 },
+    { "kPi0MCv6", AliEMCALRecoUtils::kPi0MCv6 },
+    { "kBeamTestCorrectedv3", AliEMCALRecoUtils::kBeamTestCorrectedv3 }
+};
+
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionClusterNonLinearity::AliEmcalCorrectionClusterNonLinearity() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterNonLinearity"),
   fEnergyDistBefore(0),
@@ -24,43 +42,29 @@ AliEmcalCorrectionClusterNonLinearity::AliEmcalCorrectionClusterNonLinearity() :
   fEnergyTimeHistAfter(0)
 
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionClusterNonLinearity::~AliEmcalCorrectionClusterNonLinearity()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   GetProperty("createHistos", fCreateHisto);
 
   std::string nonLinFunctStr = "";
   GetProperty("nonLinFunct", nonLinFunctStr);
-  UInt_t nonLinFunct = nonlinearityFunctionMap[nonLinFunctStr];
+  UInt_t nonLinFunct = fgkNonlinearityFunctionMap.at(nonLinFunctStr);
 
-  AddContainer(kCluster);
-  Double_t minE = 0.;
-  GetProperty("clusterEMin", minE);
-  Double_t minPt = 0.;
-  GetProperty("clusterPtMin", minPt);
-  
-  // Settings from sample run macro
-  fClusCont->SetClusECut(minE);
-  fClusCont->SetClusPtCut(minPt);
-  
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
@@ -70,6 +74,16 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
     fRecoUtils->InitNonLinearityParam();
     fRecoUtils->Print("");
   }
+
+  return kTRUE;
+}
+
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
+void AliEmcalCorrectionClusterNonLinearity::UserCreateOutputObjects()
+{   
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
   
   // Create my user objects.
   if (fCreateHisto){
@@ -85,15 +99,13 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
     // Take ownership of output list
     fOutput->SetOwner(kTRUE);
   }
-    
-  return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   if (!fClusCont) return kFALSE;

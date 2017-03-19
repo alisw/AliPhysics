@@ -66,6 +66,7 @@ set(SRCS
     AliAODConversionParticle.cxx
     AliAODConversionPhoton.cxx
     AliCaloPhotonCuts.cxx
+    AliCaloTrackMatcher.cxx
     AliConversionAODBGHandlerRP.cxx
     AliConversionCuts.cxx
     AliConversionMesonCuts.cxx
@@ -82,6 +83,9 @@ set(SRCS
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
     AliV0ReaderV1.cxx
+    AliV0ReaderStrange.cxx
+    AliV0CutsStrange.cxx
+    AliV0ParticleStrange.cxx
    )
 
 # Headers from sources

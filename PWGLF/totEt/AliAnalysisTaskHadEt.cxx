@@ -42,6 +42,7 @@ ClassImp(AliAnalysisTaskHadEt)
 //________________________________________________________________________
   AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name, Bool_t isMc, TString recoConfigFile, TString mcConfigFile) :
         AliAnalysisTaskTransverseEnergy(name, isMc)
+	,trackcutoption(0)
 	,fPIDResponse(0)
 	,fRecAnalysis(0)
 	,fMCAnalysis(0)
@@ -171,67 +172,117 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
       }
     }
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
-    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
-    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
-    fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
-    //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
-    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+    //if(!fEsdtrackCutsITSTPC){
+      fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+      fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+      //}
+      //else{cout<<"ITS+TPC Track cuts already exist.  Not resetting track cuts."<<endl;}
+      //if(!fEsdtrackCutsTPC){
+      fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+      //}
+      //else{cout<<"TPC Track cuts already exist.  Not resetting track cuts."<<endl;}
+      //if(!fEsdtrackCutsITS){
+      //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
+      fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+      fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+      //}
+      //else{cout<<"ITS Track cuts already exist.  Not resetting track cuts."<<endl;}
   }
   if(fRecAnalysis->DataSet()==20100 || fRecAnalysis->DataSet()==2011){
     cout<<"Setting track cuts for the 2010 Pb+Pb collisions at 2.76 TeV"<<endl;
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
-    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
-    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
-    fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
-    //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
-    // fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
-   fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+    //if(!fEsdtrackCutsITSTPC){
+    if(trackcutoption<=2){
+      fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+      fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    }
+    else{
+      fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selectPrimaries);
+      fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    }
+    cout<<"Selected track cut option "<<trackcutoption<<endl;
+      if(trackcutoption==1){
+	fEsdtrackCutsITSTPC->SetMinNClustersTPC(60);
+	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(6.0);
+      }
+      if(trackcutoption==2){
+	fEsdtrackCutsITSTPC->SetMinNClustersTPC(85);
+	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(2.0);
+      }
+      if(trackcutoption==3){
+	fEsdtrackCutsITSTPC->SetMinNClustersTPC(60);
+	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(6.0);
+      }
+      if(trackcutoption==4){
+	fEsdtrackCutsITSTPC->SetMinNClustersTPC(85);
+	fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(3.0);
+      }
+      //}
+      //else{cout<<"ITS+TPC Track cuts already exist.  Not resetting track cuts."<<endl;}
+      //if(!fEsdtrackCutsTPC){
+      fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+      //}
+      //else{cout<<"TPC Track cuts already exist.  Not resetting track cuts."<<endl;}
+      //if(!fEsdtrackCutsITS){
+      //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
+      fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+      // fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+      fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+      //}
+      //else{cout<<"ITS Track cuts already exist.  Not resetting track cuts."<<endl;}
   }
   if(fRecAnalysis->DataSet()==2015){
     cout<<"Setting track cuts for the 2015 Pb+Pb collisions at 2.76 TeV"<<endl;
-    fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
-    //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
-    // fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
-   fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+    //if(!fEsdtrackCutsTPC){
+      fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+      //}
+      //else{cout<<"TPC Track cuts already exist.  Not resetting track cuts."<<endl;}
+      //if(!fEsdtrackCutsITS){
+      //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
+      fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+      // fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+      fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+      //}
+      //else{cout<<"ITS Track cuts already exist.  Not resetting track cuts."<<endl;}
 
 
-//     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(selectPrimaries,1,kTRUE,kTRUE);//extra arguments in 2015: replace cluster cut by number of crossed rows, cut acceptance edges, and remove distorted TPC regions
-//     fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
-//     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
-
-    fEsdtrackCutsITSTPC = new AliESDtrackCuts();
-    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
-
-    fEsdtrackCutsITSTPC->SetRequireTPCRefit(kTRUE);
-    fEsdtrackCutsITSTPC->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(4);
-    fEsdtrackCutsITSTPC->SetMaxFractionSharedTPCClusters(0.4); 
-    //
-    // ITS
-    //
-    fEsdtrackCutsITSTPC->SetRequireITSRefit(kTRUE);
-    fEsdtrackCutsITSTPC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-    fEsdtrackCutsITSTPC->SetMaxChi2PerClusterITS(36.);
-    //
-    // primary selection
-    //
-    fEsdtrackCutsITSTPC->SetDCAToVertex2D(kFALSE);
-    fEsdtrackCutsITSTPC->SetRequireSigmaToVertex(kFALSE);
-    fEsdtrackCutsITSTPC->SetMaxDCAToVertexZ(2.0);
-    // 7*(0.0026+0.0050/pt^1.01)
-    fEsdtrackCutsITSTPC->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    fEsdtrackCutsITSTPC->SetAcceptKinkDaughters(kFALSE);
-    fEsdtrackCutsITSTPC->SetMaxChi2TPCConstrainedGlobal(36.);
+      //if(!fEsdtrackCutsITSTPC){
+      //     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(selectPrimaries,1,kTRUE,kTRUE);//extra arguments in 2015: replace cluster cut by number of crossed rows, cut acceptance edges, and remove distorted TPC regions
+      //     fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+      //     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+      
+      fEsdtrackCutsITSTPC = new AliESDtrackCuts();
+      fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+      
+      fEsdtrackCutsITSTPC->SetRequireTPCRefit(kTRUE);
+      fEsdtrackCutsITSTPC->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(4);
+      fEsdtrackCutsITSTPC->SetMaxFractionSharedTPCClusters(0.4); 
+      //
+      // ITS
+      //
+      fEsdtrackCutsITSTPC->SetRequireITSRefit(kTRUE);
+      fEsdtrackCutsITSTPC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      fEsdtrackCutsITSTPC->SetMaxChi2PerClusterITS(36.);
+      //
+      // primary selection
+      //
+      fEsdtrackCutsITSTPC->SetDCAToVertex2D(kFALSE);
+      fEsdtrackCutsITSTPC->SetRequireSigmaToVertex(kFALSE);
+      fEsdtrackCutsITSTPC->SetMaxDCAToVertexZ(2.0);
+      // 7*(0.0026+0.0050/pt^1.01)
+      fEsdtrackCutsITSTPC->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+      fEsdtrackCutsITSTPC->SetAcceptKinkDaughters(kFALSE);
+      fEsdtrackCutsITSTPC->SetMaxChi2TPCConstrainedGlobal(36.);
    
-    // Geometrical-Length Cut
-    fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
+      // Geometrical-Length Cut
+      fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
 
+      //}
+      //else{cout<<"ITS+TPC Track cuts already exist.  Not resetting track cuts."<<endl;}
   }
 
   fOutputList->Add(fEsdtrackCutsITSTPC);

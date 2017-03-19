@@ -31,7 +31,58 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
   enum EAnalisysType_t {
     kJetPP,
     kJetPbPb,
-    kJetEmbedding
+    kJetEmbedding,
+    kJetPPCharged,
+    kJetPbPbCharged
+  };
+
+  /**
+   * \class AliEmcalJetEventInfoSummaryPP
+   * \brief Class that encapsulates event properties in a very compact structure (pp analysis)
+   *
+   * Class that encapsulates event properties in a very compact structure
+   * for pp analysis. For the moment, a dummy class (0 bits)
+   */
+  class AliEmcalJetEventInfoSummaryPP {
+  public:
+    AliEmcalJetEventInfoSummaryPP() {;}
+    AliEmcalJetEventInfoSummaryPP(Double_t, Double_t) {;}
+
+    virtual ~AliEmcalJetEventInfoSummaryPP() {;}
+
+    void Reset() {;}
+    void Set(Double_t, Double_t) {;}
+
+    /// \cond CLASSIMP
+    ClassDef(AliEmcalJetEventInfoSummaryPP, 1);
+    /// \endcond
+  };
+
+  /**
+   * \class AliEmcalJetEventInfoSummaryPbPb
+   * \brief Class that encapsulates event properties in a very compact structure (PbPb analysis)
+   *
+   * Class that encapsulates event properties in a very compact structure
+   * for PbPb analysis (16 bits)
+   */
+  class AliEmcalJetEventInfoSummaryPbPb {
+  public:
+    AliEmcalJetEventInfoSummaryPbPb() : fCent(0), fEP(0) {;}
+    AliEmcalJetEventInfoSummaryPbPb(Double_t cent, Double_t ep);
+
+    virtual ~AliEmcalJetEventInfoSummaryPbPb() {;}
+
+    void Reset();
+    void Set(Double_t cent, Double_t ep);
+
+    /// Eta of the jet
+    Double32_t  fCent          ; //[0,128,7]
+    /// Phi of the jet
+    Double32_t  fEP            ; //[0,2*pi,9]
+
+    /// \cond CLASSIMP
+    ClassDef(AliEmcalJetEventInfoSummaryPbPb, 1);
+    /// \endcond
   };
 
   /**
@@ -39,11 +90,11 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
    * \brief Class that encapsulates jets in a very compact structure (pp analysis)
    *
    * Class that encapsulates jets in a very compact structure
-   * for pp analysis (49 bits)
+   * for pp analysis (52 bits)
    */
   class AliEmcalJetInfoSummaryPP {
   public:
-    AliEmcalJetInfoSummaryPP() : fPt(0), fEta(0), fPhi(0), fNEF(0), fZLeading(0), fNConstituents(0)  {;}
+    AliEmcalJetInfoSummaryPP() : fPt(0), fEta(0), fPhi(0), fNEF(0), fLeadingPt(0), fNConstituents(0)  {;}
     AliEmcalJetInfoSummaryPP(const AliEmcalJetInfo& source);
 
     virtual ~AliEmcalJetInfoSummaryPP() {;}
@@ -59,29 +110,29 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     Double32_t  fPhi           ; //[0,2*pi,9]
     // Fraction of neutral energy
     Double32_t  fNEF           ; //[0,1.28,7]
-    // Momentum fraction of the leading particle
-    Double32_t  fZLeading      ; //[0,1.28,7]
+    // Momentum of leading particle
+    Double32_t  fLeadingPt     ; //[0,512,10]
     /// Number of constituents
     Double32_t  fNConstituents ; //[0,256,8]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetInfoSummaryPP, 3);
+    ClassDef(AliEmcalJetInfoSummaryPP, 4);
     /// \endcond
   };
 
   /**
-   * \class AliEmcalJetInfoSummaryPbPb
-   * \brief Class that encapsulates jets in a very compact structure (Pb-Pb analysis)
+   * \class AliEmcalJetInfoSummaryPPCharged
+   * \brief Class that encapsulates jets in a very compact structure (pp analysis)
    *
    * Class that encapsulates jets in a very compact structure
-   * for Pb-Pb analysis (86 bits)
+   * for pp analysis (45 bits)
    */
-  class AliEmcalJetInfoSummaryPbPb {
+  class AliEmcalJetInfoSummaryPPCharged {
   public:
-    AliEmcalJetInfoSummaryPbPb() : fPt(0), fEta(0), fPhi(0), fNEF(0), fZLeading(0), fCent(0), fEP(0), fArea(0), fNConstituents(0), fCorrPt(0) {;}
-    AliEmcalJetInfoSummaryPbPb(const AliEmcalJetInfo& source);
+    AliEmcalJetInfoSummaryPPCharged() : fPt(0), fEta(0), fPhi(0), fLeadingPt(0), fNConstituents(0)  {;}
+    AliEmcalJetInfoSummaryPPCharged(const AliEmcalJetInfo& source);
 
-    virtual ~AliEmcalJetInfoSummaryPbPb() {;}
+    virtual ~AliEmcalJetInfoSummaryPPCharged() {;}
 
     void Reset();
     void Set(const AliEmcalJetInfo& source);
@@ -92,23 +143,88 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     Double32_t  fEta           ; //[-1.28,1.28,8]
     /// Phi of the jet
     Double32_t  fPhi           ; //[0,2*pi,9]
-    // Fraction of neutral energy
-    Double32_t  fNEF           ; //[0,1.28,7]
-    // Momentum fraction of the leading particle
-    Double32_t  fZLeading      ; //[0,1.28,7]
-    ///< Centrality
-    Double32_t  fCent          ; //[0,128,8]
-    /// Angle between the jet axis and the event plane
-    Double32_t  fEP            ; //[0,pi,8]
-    /// Jet area
-    Double32_t  fArea          ; //[0,5.12,9]
+    // Momentum of leading particle
+    Double32_t  fLeadingPt     ; //[0,512,10]
     /// Number of constituents
-    Double32_t  fNConstituents ; //[0,1024,9]
-    /// Jet corrected pt
-    Double32_t  fCorrPt        ; //[-512,512,11]
+    Double32_t  fNConstituents ; //[0,256,8]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetInfoSummaryPbPb, 3);
+    ClassDef(AliEmcalJetInfoSummaryPPCharged, 1);
+    /// \endcond
+  };
+
+  /**
+   * \class AliEmcalJetInfoSummaryPbPb
+   * \brief Class that encapsulates jets in a very compact structure (Pb-Pb analysis)
+   *
+   * Class that encapsulates jets in a very compact structure
+   * for Pb-Pb analysis (60 bits)
+   */
+  class AliEmcalJetInfoSummaryPbPb {
+  public:
+    AliEmcalJetInfoSummaryPbPb() : fPt(0), fEta(0), fPhi(0), fNEF(0), fLeadingPt(0), fArea(0), fNConstituents(0), fCorrPt(0) {;}
+    AliEmcalJetInfoSummaryPbPb(const AliEmcalJetInfo& source);
+
+    virtual ~AliEmcalJetInfoSummaryPbPb() {;}
+
+    void Reset();
+    void Set(const AliEmcalJetInfo& source);
+
+    /// Transverse momentum of the jet in GeV/c
+    Double32_t  fPt            ; //[0,512,9]
+    /// Eta of the jet
+    Double32_t  fEta           ; //[-1.28,1.28,5]
+    /// Phi of the jet
+    Double32_t  fPhi           ; //[0,2*pi,7]
+    // Fraction of neutral energy
+    Double32_t  fNEF           ; //[0,1.28,5]
+    // Momentum of leading particle
+    Double32_t  fLeadingPt     ; //[0,512,9]
+    /// Jet area
+    Double32_t  fArea          ; //[0,5.12,8]
+    /// Number of constituents
+    Double32_t  fNConstituents ; //[0,1024,7]
+    /// Jet corrected pt
+    Double32_t  fCorrPt        ; //[-512,512,10]
+
+    /// \cond CLASSIMP
+    ClassDef(AliEmcalJetInfoSummaryPbPb, 4);
+    /// \endcond
+  };
+
+  /**
+   * \class AliEmcalJetInfoSummaryPbPbCharged
+   * \brief Class that encapsulates jets in a very compact structure (Pb-Pb analysis)
+   *
+   * Class that encapsulates jets in a very compact structure
+   * for Pb-Pb analysis (55 bits)
+   */
+  class AliEmcalJetInfoSummaryPbPbCharged {
+  public:
+    AliEmcalJetInfoSummaryPbPbCharged() : fPt(0), fEta(0), fPhi(0), fLeadingPt(0), fArea(0), fNConstituents(0), fCorrPt(0) {;}
+    AliEmcalJetInfoSummaryPbPbCharged(const AliEmcalJetInfo& source);
+
+    virtual ~AliEmcalJetInfoSummaryPbPbCharged() {;}
+
+    void Reset();
+    void Set(const AliEmcalJetInfo& source);
+
+    Double32_t  fPt            ; //[0,512,9]
+    /// Eta of the jet
+    Double32_t  fEta           ; //[-1.28,1.28,5]
+    /// Phi of the jet
+    Double32_t  fPhi           ; //[0,2*pi,7]
+    // Momentum of leading particle
+    Double32_t  fLeadingPt     ; //[0,512,9]
+    /// Jet area
+    Double32_t  fArea          ; //[0,5.12,8]
+    /// Number of constituents
+    Double32_t  fNConstituents ; //[0,1024,7]
+    /// Jet corrected pt
+    Double32_t  fCorrPt        ; //[-512,512,10]
+
+    /// \cond CLASSIMP
+    ClassDef(AliEmcalJetInfoSummaryPbPbCharged, 1);
     /// \endcond
   };
 
@@ -117,11 +233,11 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
    * \brief Class that encapsulates jets in a very compact structure (embedding analysis)
    *
    * Class that encapsulates jets in a very compact structure
-   * for embedding analysis (96 bits)
+   * for embedding analysis (82 bits)
    */
   class AliEmcalJetInfoSummaryEmbedding {
   public:
-    AliEmcalJetInfoSummaryEmbedding() : fPt(0), fEta(0), fPhi(0), fNEF(0), fZLeading(0), fCent(0), fEP(0), fArea(0), fNConstituents(0), fCorrPt(0), fMCPt(0) {;}
+    AliEmcalJetInfoSummaryEmbedding() : fPt(0), fEta(0), fPhi(0), fNEF(0), fLeadingPt(0), fArea(0), fNConstituents(0), fCorrPt(0), fMCPt(0) {;}
     AliEmcalJetInfoSummaryEmbedding(const AliEmcalJetInfo& source);
 
     virtual ~AliEmcalJetInfoSummaryEmbedding() {;}
@@ -137,12 +253,8 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     Double32_t  fPhi           ; //[0,2*pi,9]
     // Fraction of neutral energy
     Double32_t  fNEF           ; //[0,1.28,7]
-    // Momentum fraction of the leading particle
-    Double32_t  fZLeading      ; //[0,1.28,7]
-    ///< Centrality
-    Double32_t  fCent          ; //[0,128,8]
-    /// Angle between the jet axis and the event plane
-    Double32_t  fEP            ; //[0,pi,8]
+    // Momentum of leading particle
+    Double32_t  fLeadingPt     ; //[0,512,9]
     /// Jet area
     Double32_t  fArea          ; //[0,5.12,9]
     /// Number of constituents
@@ -153,7 +265,7 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     Double32_t  fMCPt          ; //[0,512,10]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetInfoSummaryEmbedding, 3);
+    ClassDef(AliEmcalJetInfoSummaryEmbedding, 4);
     /// \endcond
   };
 
@@ -162,12 +274,17 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
   virtual ~AliAnalysisTaskEmcalJetTreeBase() {;}
 
   static AliAnalysisTaskEmcalJetTreeBase* CreateInstance(const char* name, EAnalisysType_t type = kJetPP);
+  static AliAnalysisTaskEmcalJetTreeBase* AddTaskEmcalJetTree(TString ntracks = "usedefault", TString nclusters = "usedefault", Double_t trackPtCut = 0.15, Double_t clusECut = 0.30, EAnalisysType_t type = kJetPP, TString suffix = "");
 
  protected:
   void AllocateTTree(const AliJetContainer* jets) = 0;
   void FillTTree(const AliEmcalJetInfo& jetInfo, const AliJetContainer* jets) = 0;
 
   TTree   *fTree;    //!<! Output tree
+
+private:
+  AliAnalysisTaskEmcalJetTreeBase(const AliAnalysisTaskEmcalJetTreeBase&);            // not implemented
+  AliAnalysisTaskEmcalJetTreeBase &operator=(const AliAnalysisTaskEmcalJetTreeBase&); // not implemented
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalJetTreeBase, 1)
@@ -181,7 +298,7 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
  * Implementation of a task that generates a tree with all jets
  * for EMCal jet analysis.
  */
-template <class T>
+template <class T, class U>
 class AliAnalysisTaskEmcalJetTree : public AliAnalysisTaskEmcalJetTreeBase {
  public:
 
@@ -197,7 +314,8 @@ class AliAnalysisTaskEmcalJetTree : public AliAnalysisTaskEmcalJetTreeBase {
   void                        AllocateTTree(const AliJetContainer* jets);
   void                        FillTTree(const AliEmcalJetInfo& jetInfo, const AliJetContainer* jets);
 
-  std::map<std::string, std::vector<T> > *fCurrentOutput;  //!<! This vector contains the pointers of the tree branch objects
+  std::map<std::string, std::vector<T> > *fCurrentOutput;  //!<! This map contains the pointers of the tree branch objects
+  U                                      *fCurrentEvent ;  //!<! This pointer holds the event object branch
 
  private:
   AliAnalysisTaskEmcalJetTree(const AliAnalysisTaskEmcalJetTree&);            // not implemented

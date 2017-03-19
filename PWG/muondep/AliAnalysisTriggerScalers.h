@@ -26,6 +26,60 @@ class AliTriggerRunScalers;
 class AliLHCData;
 class AliTriggerScalersRecordESD;
 
+/** 
+
+  @ingroup pwg_muondep_misc
+
+  @class AliAnalysisTriggerScalers
+  
+  @brief utility class to play with OCDB scalers.
+
+ Can use it to e.g. :
+
+ - get the integrated luminosity for a given period
+   (see IntegratedLuminosity method)
+
+ - plot the trigger rates (see PlotTriggerEvolution)
+
+ Please note that this class is doing an OCDB "scan" (for as many run
+ as you put in the SetRunList method), so it can be really long
+ if you're using the raw:// OCDB. If you're planning on using this
+ class for anything more than a brief test, you'd better think
+ or making a local copy of the OCDB objects required by this class :
+
+ GRP/CTP/Config
+ GRP/CTP/Scalers
+
+ and also (to get the fill and period ranges, mainly for drawing)
+
+ GRP/GRP/Data
+ GRP/GRP/LHCData
+
+
+ Please note also that this class evolved from a set a quick macros to
+ follow the luminosity and trigger rates during data taking to this stage.
+
+ Now (Feb 2013) would probably be a good time to regroup a bit, think about it and
+ make it more general, more robust and just less "had-hoc"...
+
+ Ideas for improvement :
+
+ - make sure the "what" parameter mean the same thing in all methods
+   and so can take the same values in all methods
+
+ - get the lumi trigger name and cross-section from e.g. OADB instead of
+   hard-coding them ?
+
+ - organize the class so that the CTP Scalers and Config can be fetched
+   from elsewhere (e.g. from a run based container available in some
+   distant future in the ESDs/AODs ?)
+
+ - robustify the PAC fraction computation
+
+
+ @author Laurent Aphecetche (Subatech)
+ */
+
 class AliAnalysisTriggerScalers : public TObject
 {
 public:
@@ -124,13 +178,6 @@ public:
   Bool_t ShouldCorrectForPileUp() const { return fShouldCorrectForPileUp; }
 
   TString GetOCDBPath() { return fOCDBPath; }
-  
-  /// static methods -----
-  
-  static void ReadIntegers(const char* filename, std::vector<int>& integers, Bool_t resetVector=kTRUE);
-  
-  static void PrintIntegers(const std::vector<int>& integers, char sep = '\n',
-                            std::ostream& out = std::cout);
   
   void GetTriggerClassesForRun(Int_t runNumber, TString& classes) const;
   

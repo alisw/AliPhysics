@@ -44,13 +44,13 @@ class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcal {
   Int_t         fNEmcalClusters;        //!number of emcal clusters
   TH1          *fHistMatchEtaAll;       //!deta distribution
   TH1          *fHistMatchPhiAll;       //!dphi distribution
-  TH1          *fHistMatchEta[8][9][2]; //!deta distribution
-  TH1          *fHistMatchPhi[8][9][2]; //!dphi distribution
+  TH1          *fHistMatchEta[10][9][2]; //!deta distribution
+  TH1          *fHistMatchPhi[10][9][2]; //!dphi distribution
   
  private:
   AliEmcalClusTrackMatcherTask(const AliEmcalClusTrackMatcherTask&);            // not implemented
   AliEmcalClusTrackMatcherTask &operator=(const AliEmcalClusTrackMatcherTask&); // not implemented
 
-  ClassDef(AliEmcalClusTrackMatcherTask, 7) // Cluster-Track matching task
+  ClassDef(AliEmcalClusTrackMatcherTask, 8) // Cluster-Track matching task
 };
 #endif

@@ -52,6 +52,8 @@ public:
       kV0Pt,       // V0 transverse momentum
       kV0NPt,       // transverse momentum of negative V0 daughter
       kV0PPt,       // transverse momentum of positive V0 daughter
+      kV0DCAXY,     // DCA for Secondary Tracks to Primary Vertex  
+      kV0Lifetime,   //Lifetime for V0 particles
       kDaughterDCA, // DCA of V0 Daughters
       kCosPointAng, // V0 Cosing of Pointing Angle
       kLambdaProtonPIDCut,         //V0 - Lambda number of sigmas proton	   

@@ -56,42 +56,51 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
   task->SetReconstructPrimVert(reconstructPrimVert);
   task->SetWriteEachVariableTree(writeEachVariableTree);
   task->SetWriteMCVariableTree(writeMCVariableTree);
-  if(domixing>0)
-    task->SetEventMixingWithPools();
-  else
-    task->SetEventMixingOff();
 
 	if(iscoltype==0){
-		Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
-		Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
-		task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+		if(domixing==0){
+			task->SetEventMixingOff();
+		}else{
+			task->SetEventMixingWithPools();
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
 
-		Double_t cent_mult_binlimitspp[] = { 0,100};
-		Int_t cent_mult_bin_numbpp = sizeof(cent_mult_binlimitspp)/sizeof(Double_t) - 1;
-		task->SetPoolCentBinLimits(cent_mult_bin_numbpp,cent_mult_binlimitspp);
+			Double_t cent_mult_binlimitspp[] = { 0,100};
+			Int_t cent_mult_bin_numbpp = sizeof(cent_mult_binlimitspp)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbpp,cent_mult_binlimitspp);
 
-		Int_t nrpbin = 1.;
-		Double_t rpbinlimits[2] = {-3.2,3.2};
-		task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+			Int_t nrpbin = 1.;
+			Double_t rpbinlimits[2] = {-3.2,3.2};
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
 
-		task->SetNumberOfEventsForMixing(10);//pp
+			task->SetNumberOfEventsForMixing(10);//pp
+		}
 	}else if(iscoltype==1){
-		Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
-		Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
-		task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+		if(domixing==0){
+			task->SetEventMixingOff();
+		}else{
+			task->SetEventMixingWithPools();
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
 
-		Double_t cent_mult_binlimitspPb[] = { 0,10,20,30,40,50,60,70,80,90,100};
-		Int_t cent_mult_bin_numbpPb = sizeof(cent_mult_binlimitspPb)/sizeof(Double_t) - 1;
-		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
+			Double_t cent_mult_binlimitspPb[] = { 0,10,20,30,40,50,60,70,80,90,100};
+			Int_t cent_mult_bin_numbpPb = sizeof(cent_mult_binlimitspPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
 
-		Int_t nrpbin = 1.;
-		Double_t rpbinlimits[2] = {-3.2,3.2};
-		task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+			Int_t nrpbin = 1.;
+			Double_t rpbinlimits[2] = {-3.2,3.2};
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
 
-		task->SetNumberOfEventsForMixing(10);//pPb
+			task->SetNumberOfEventsForMixing(10);//pPb
+		}
 	}else if(iscoltype==2){
-		if(domixing==1){
+		if(domixing==0){
+			task->SetEventMixingOff();
+		}else if(domixing==1){
 			//Standard
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
@@ -111,6 +120,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 			task->SetNumberOfEventsForMixing(10);//PbPb
 		}else if(domixing==2){
 			//Depth x 1/2
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
@@ -130,6 +140,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 			task->SetNumberOfEventsForMixing(5);//PbPb
 		}else if(domixing==3){
 			//Depth x 2
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
@@ -149,6 +160,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 			task->SetNumberOfEventsForMixing(20);//PbPb
 		}else if(domixing==4){
 			//z binning x1/2
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-6,-2,2,6,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
@@ -168,6 +180,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 			task->SetNumberOfEventsForMixing(10);//PbPb
 		}else if(domixing==5){
 			//z binning  x2
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
@@ -187,6 +200,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 			task->SetNumberOfEventsForMixing(10);//PbPb
 		}else if(domixing==6){
 			//Cent x 2
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
@@ -206,6 +220,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 			task->SetNumberOfEventsForMixing(10);//PbPb
 		}else if(domixing==7){
 			//Cent x 1/2
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
@@ -225,6 +240,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 			task->SetNumberOfEventsForMixing(10);//PbPb
 		}else if(domixing==8){
 			//RP x 2
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
@@ -244,6 +260,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 			task->SetNumberOfEventsForMixing(10);//PbPb
 		}else if(domixing==9){
 			//RP x 2
+			task->SetEventMixingWithPools();
 			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
 			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);

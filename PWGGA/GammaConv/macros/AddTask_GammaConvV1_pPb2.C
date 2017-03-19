@@ -71,10 +71,14 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
                                 Bool_t        doMultiplicityWeighting       = kFALSE,                           //
                                 TString       fileNameInputForMultWeighing  = "Multiplicity.root",              //
                                 TString       periodNameAnchor              = "",
-                                Bool_t        runLightOutput                = kFALSE                            // switch to run light output (only essential histograms for afterburner)
+                                Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
+                                TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
     
   Int_t isHeavyIon = 2;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
     
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -221,6 +225,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     cuts.AddCut("80000113", "00200009217000008260404000", "0162103500000000");   //standard Eta
   } else if (trainConfig == 23) {
     cuts.AddCut("80000123", "00200009217000008260404000", "0162103500000000");   //standard Eta
+  } else if (trainConfig == 24) {  
+    cuts.AddCut("80000113", "00200009217000008260400000", "0162103500000000");
+    
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

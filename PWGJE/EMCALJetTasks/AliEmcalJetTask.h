@@ -107,11 +107,26 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
-  Int_t                  GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub);
 
   Bool_t                 IsLocked() const;
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
   void                   SetType(Int_t t);
+
+  static AliEmcalJetTask* AddTaskEmcalJet(
+      const TString nTracks                      = "usedefault",
+      const TString nClusters                    = "usedefault",
+      const AliJetContainer::EJetAlgo_t jetAlgo  = AliJetContainer::antikt_algorithm,
+      const Double_t radius                      = 0.4,
+      const AliJetContainer::EJetType_t jetType  = AliJetContainer::kFullJet,
+      const Double_t minTrPt                     = 0.15,
+      const Double_t minClPt                     = 0.30,
+      const Double_t ghostArea                   = 0.005,
+      const AliJetContainer::ERecoScheme_t reco  = AliJetContainer::pt_scheme,
+      const TString tag                          = "Jet",
+      const Double_t minJetPt                    = 0.,
+      const Bool_t lockTask                      = kTRUE,
+      const Bool_t bFillGhosts                   = kFALSE
+    );
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
   static FJJetAlgo       ConvertToFJAlgo(EJetAlgo_t algo);
@@ -123,6 +138,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Int_t                  FindJets();
   void                   FillJetBranch();
   void                   ExecOnce();
+  void                   InitEvent();
   void                   InitUtilities();
   void                   PrepareUtilities();
   void                   ExecuteUtilities(AliEmcalJet* jet, Int_t ij);
@@ -130,6 +146,8 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Bool_t                 GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
   Bool_t                 IsJetInEmcal(Double_t eta, Double_t phi, Double_t r);
   Bool_t                 IsJetInDcal(Double_t eta, Double_t phi, Double_t r);
+  Bool_t                 IsJetInDcalOnly(Double_t eta, Double_t phi, Double_t r);
+  Bool_t                 IsJetInPhos(Double_t eta, Double_t phi, Double_t r);
 
   TString                fJetsTag;                // tag of jet collection (usually = "Jets")
 

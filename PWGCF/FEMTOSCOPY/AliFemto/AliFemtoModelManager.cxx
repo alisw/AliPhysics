@@ -71,8 +71,9 @@ void AliFemtoModelManager::AcceptWeightGenerator(AliFemtoModelWeightGenerator *a
 Double_t AliFemtoModelManager::GetWeight(AliFemtoPair *aPair)
 {
   if (!fWeightGenerator) {
-    cout << "No weight generator set! Cannot calculate weight" << endl;
-    exit(0);
+//    cout << "No weight generator set! Cannot calculate weight" << endl;
+      return 1.0;
+//    exit(0);
   }
   // Return femtoscopic weight for a given pair
   if (fCreateCopyHiddenInfo) {

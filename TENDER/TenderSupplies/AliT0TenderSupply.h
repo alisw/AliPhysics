@@ -25,6 +25,7 @@ class AliT0TenderSupply: public AliTenderSupply {
   void SetCorrectMeanTime (Bool_t flag=kFALSE){fCorrectMeanTime=flag;};
   void SetAmplutudeCorrection (Bool_t flag=kFALSE){fCorrectStartTimeOnAmplSatur=flag;};
   void SetPass4LHC11aCorrection (Bool_t flag=kFALSE){fPass4LHC11aCorrection=flag;};
+  void SetLHC16jMC (const Double32_t* time, Float_t shift);
 
  private:
   
@@ -37,8 +38,13 @@ class AliT0TenderSupply: public AliTenderSupply {
   Bool_t  fCorrectStartTimeOnAmplSatur; //!  fix start times suffering from saturated amplitude in pmts
   Float_t fAmplitudeThreshold; //! above this value pmt suffer from saturation
   Bool_t fPass4LHC11aCorrection; //! above this value pmt suffer from saturation
-
-  ClassDef(AliT0TenderSupply, 2);  // T0 tender supply
+  Bool_t fLHC16j;  //  MC production to be fix
+  Float_t fFixMeanCFD[24];  // mean CFD in MC
+  AliESDEvent *fEvent;   //ESD event
+  
+  Int_t fnEvent; //event number
+  
+  ClassDef(AliT0TenderSupply, 3);  // T0 tender supply
 };
 
 #endif

@@ -1171,6 +1171,93 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliStack* stack, Int_t label, Int
   
 }
 //____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  /// Checks the D+ decay channel. Returns 1 for D+->phipi->KKpi, 2 for D+->K0*K->KKpi, 3 for the non-resonant case
+    
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=411) return -1;
+    
+  Int_t nDau=mcPart->GetNDaughters();
+  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundKpi=0;
+  Bool_t isPhi=kFALSE;
+  Bool_t isk0st=kFALSE;
+    
+  if(nDau==3 || nDau==2){
+    for(Int_t iDau=0; iDau<nDau; iDau++){
+      Int_t indDau = labelFirstDau+iDau;
+      if(indDau<0) return -1;
+      AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+      if(!dau) return -1;
+      Int_t pdgdau=dau->GetPdgCode();
+      if(TMath::Abs(pdgdau)==321){
+	nKaons++;
+	sumPxDau+=dau->Px();
+	sumPyDau+=dau->Py();
+	sumPzDau+=dau->Pz();
+	arrayDauLab[nFoundKpi++]=indDau;
+	if(nFoundKpi>3) return -1;
+      }else if(TMath::Abs(pdgdau)==211){
+	nPions++;
+	sumPxDau+=dau->Px();
+	sumPyDau+=dau->Py();
+	sumPzDau+=dau->Pz();
+	arrayDauLab[nFoundKpi++]=indDau;
+	if(nFoundKpi>3) return -1;
+      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==333){
+	if(TMath::Abs(pdgdau)==313) isk0st=kTRUE;
+	if(TMath::Abs(pdgdau)==333) isPhi=kTRUE;
+	Int_t nResDau=dau->GetNDaughters();
+	if(nResDau!=2) return -1;
+	Int_t indFirstResDau=dau->GetDaughter(0);
+	for(Int_t resDau=0; resDau<2; resDau++){
+	  Int_t indResDau=indFirstResDau+resDau;
+	  if(indResDau<0) return -1;
+	  AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau));
+	  if(!resdau) return -1;
+	  Int_t pdgresdau=resdau->GetPdgCode();
+	  if(TMath::Abs(pdgresdau)==321){
+	    sumPxDau+=resdau->Px();
+	    sumPyDau+=resdau->Py();
+	    sumPzDau+=resdau->Pz();
+	    nKaons++;
+	    arrayDauLab[nFoundKpi++]=indResDau;
+	    if(nFoundKpi>3) return -1;
+	  }
+	  if(TMath::Abs(pdgresdau)==211){
+	    sumPxDau+=resdau->Px();
+	    sumPyDau+=resdau->Py();
+	    sumPzDau+=resdau->Pz();
+	    nPions++;
+	    arrayDauLab[nFoundKpi++]=indResDau;
+	    if(nFoundKpi>3) return -1;
+	  }
+	}
+      }else{
+	return -1;
+      }
+    }
+    if(nPions!=1) return -1;
+    if(nKaons!=2) return -1;
+    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(nDau==3) return 3;
+    else if(nDau==2){
+      if(isk0st) return 2;
+      if(isPhi) return 1;
+    }
+  }
+    
+  return -1;
+    
+}
+//____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
   /// Checks the Dplus->V0+pion decay channel. Returns 1 if success, -1 otherwise
 
@@ -1939,6 +2026,9 @@ Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod, Double_t etaMin, D
     if(pt<ptMin || pt>ptMax) continue;
     Bool_t fb1 = tr->TestFilterBit(filtbit1);
     Bool_t fb2 = tr->TestFilterBit(filtbit2);
+    Bool_t tpcRefit=tr->GetStatus() & AliAODTrack::kTPCrefit;
+    if(filtbit1==1 && !tpcRefit) fb1=kFALSE;
+    if(filtbit2==1 && !tpcRefit) fb2=kFALSE;
     if( !(fb1 || fb2) ) continue;    
     Double_t px=pt*TMath::Cos(phi);
     Double_t py=pt*TMath::Sin(phi);
@@ -2001,6 +2091,9 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
     }
     Bool_t fb1 = tr->TestFilterBit(filtbit1);
     Bool_t fb2 = tr->TestFilterBit(filtbit2);
+    Bool_t tpcRefit=tr->GetStatus() & AliAODTrack::kTPCrefit;
+    if(filtbit1==1 && !tpcRefit) fb1=kFALSE;
+    if(filtbit2==1 && !tpcRefit) fb2=kFALSE;
     if( !(fb1 || fb2) ) continue;    
     ptArr[nSelTracks]=pt;
     phiArr[nSelTracks]=phi;
@@ -2018,6 +2111,65 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
     Double_t ny=TMath::Sin(phistep);
     Double_t numer=0.;
     for(Int_t j=0; j<nSelTracks; ++j){
+      Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
+      Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
+      numer+=TMath::Abs(ny*pxA - nx*pyA);  
+    }
+    Double_t pFull=numer*numer/(sumpt*sumpt);
+    if(pFull<spherocity) spherocity=pFull; // minimization;
+  }
+
+  delete [] ptArr;
+  delete [] phiArr;
+
+  spherocity*=(TMath::Pi()*TMath::Pi()/4.);
+  return spherocity;
+
+}
+//________________________________________________________________________
+Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC, 
+						     Double_t etaMin, Double_t etaMax, 
+						     Double_t ptMin, Double_t ptMax,
+						     Int_t minMult, Double_t phiStepSizeDeg){
+
+  /// compute generated spherocity
+
+  Int_t nParticles=arrayMC->GetEntriesFast();
+  Int_t nSelParticles=0;
+
+  Double_t* ptArr=new Double_t[nParticles];
+  Double_t* phiArr=new Double_t[nParticles];
+  Double_t sumpt=0.;
+
+  for(Int_t ip=0; ip<nParticles; ip++) {
+    AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(ip);
+    if(!part) continue;
+    Float_t eta = part->Eta();
+    Float_t pt  = part->Pt();
+    Float_t phi  = part->Phi();
+    Int_t charge = part->Charge();
+    Bool_t isPhysPrim = part->IsPhysicalPrimary();
+    if(!isPhysPrim) continue;
+    if(charge==0) continue;
+    if(eta<etaMin || eta>etaMax) continue;
+    if(pt<ptMin || pt>ptMax) continue;    
+
+    ptArr[nSelParticles]=pt;
+    phiArr[nSelParticles]=phi;
+    nSelParticles++;
+    sumpt+=pt;
+  }
+
+  if(nSelParticles<minMult) return -0.5;
+
+  //Getting thrust
+  Double_t spherocity=2.;
+  for(Int_t i=0; i<360/phiStepSizeDeg; ++i){
+    Double_t phistep=TMath::Pi()*(Double_t)i*phiStepSizeDeg/180.;
+    Double_t nx=TMath::Cos(phistep);
+    Double_t ny=TMath::Sin(phistep);
+    Double_t numer=0.;
+    for(Int_t j=0; j<nSelParticles; ++j){
       Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
       Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
       numer+=TMath::Abs(ny*pxA - nx*pyA);  

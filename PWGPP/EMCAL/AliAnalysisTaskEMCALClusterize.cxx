@@ -430,12 +430,12 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     }
     else
     {
-      // Here, it looks for a specific pass
-      TString pass2 = pass;
-      if (pass=="calo_spc") pass2 ="pass1";
-      if (pass=="muon_calo_pass1") pass2 ="pass0";
-      if (pass=="muon_calo_pass2" || pass=="pass2" || pass=="pass3" || pass=="pass4") pass2 ="pass1";
+      // Only 1 L1 phase correction possible, except special cases
+      TString pass2 =  "pass1"; 
       
+      if ( pass=="muon_calo_pass1" && runnumber > 209121 && runnumber < 244284 ) 
+        pass2 = "pass0"; // period LHC15a-m
+
       TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass2);
       if (!arrayBCpass)
       {
@@ -1654,7 +1654,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       Float_t *parentListDE = recPoint->GetParentsDE();         // deposited energy
       
       clus->SetLabel(parentList, parentMult);
-      clus->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+      if(fSetCellMCLabelFromEdepFrac)
+        clus->SetClusterMCEdepFractionFromEdepArray(parentListDE);
       
       //
       // Set the cell energy deposition fraction map:

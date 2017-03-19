@@ -118,6 +118,14 @@ void AliEmcalJetUtilityGenSubtractor::Init()
   fInit = kTRUE;
 }
 
+
+//______________________________________________________________________________
+void AliEmcalJetUtilityGenSubtractor::InitEvent(AliFJWrapper& /*fjw*/)
+{
+  // Prepare the utility.
+
+}
+
 //______________________________________________________________________________
 void AliEmcalJetUtilityGenSubtractor::Prepare(AliFJWrapper& fjw)
 {

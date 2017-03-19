@@ -61,57 +61,58 @@ public:
   };
 
   /**
-   * Dummy constructor
+   * @brief Dummy constructor
    */
   AliEmcalTriggerMakerTask();
 
   /**
-   * Main constructor, initializing also AliAnalysisTaskEmcal and Create
-   * the Kernel.
+   * @brief Main constructor
+   *
+   * Initializing also AliAnalysisTaskEmcal and create the Kernel.
    * @param name Name of the task
    * @param doQA If true we switch on QA
    */
   AliEmcalTriggerMakerTask(const char *name, Bool_t doQA = kFALSE);
 
   /**
-   * Destructor
+   * @brief Destructor
    */
   virtual ~AliEmcalTriggerMakerTask();
 
   /**
-   * Initializing output objects. Kernel is initialized in
-   * ExecOnce as geometry - which depends on the run number -
+   * @brief Initializing output objects.
+   *
+   * Kernel is initialized in ExecOnce as geometry - which depends on the run number -
    * is needed for this.
    */
   virtual void      UserCreateOutputObjects();
 
   /**
-   * Initialize the trigger maker kernel. This function is called
-   * for the first event in order to obtain the run number from it.
-   * Also initialises AliAnalysisTaskEmcal.
+   * @brief Initialize the trigger maker kernel.
+   *
+   * Initializations performed:
+   * - auto-configure patch finder (if not configured from outside)
+   * - connect output container (TClonesArray) for reconstructed trigger patches
+   *
+   * This function is called for the first event in order
+   * to obtain the run number from it. Also initializes
+   * AliAnalysisTaskEmcal.
    */
   virtual void      ExecOnce();
 
   /**
-   * Run trigger patch finding.
+   * @brief Run trigger patch finding.
    *
    * As the patch finding is implemented in the class AliEmcalTriggerMakerKernel,
    * the analysis task only takes care about propagating necessary information to
    * the kernel (ADCs, cell energy, V0 amplitudes), steering the patch finder, and
    * appending the output to the ESD event.
-   *
    * @return Always true.
    */
   virtual Bool_t    Run();
 
   /**
-   * Switch on basic QA of the trigger maker
-   * @param[in] doQA If true QA is switched on.
-   */
-  void SetRunQA(Bool_t doQA = kTRUE) { fDoQA = doQA; }
-
-  /**
-   * Set range for L0 time
+   * @brief Set range for L0 time
    * @param[in] min Minimum L0 time (default is 7)
    * @param[in] max Maximum L0 time (default is 10)
    */
@@ -119,44 +120,51 @@ public:
 
 
   /**
-   * Set the name of the output container
+   * @brief Set the name of the output container
    * @param[in] name Name of the output container
    */
   void SetCaloTriggersOutName(const char *name)     { fCaloTriggersOutName      = name; }
 
   /**
-   * Set the name of the V0 input object
+   * @brief Set the name of the V0 input object
    * @param[in] name Name of the V0 input object
    */
   void SetV0InName(const char *name) { fV0InName      = name; }
 
   /**
-   * Set the name of the OADB container providing a list of absolute IDs of FEE channels to
+   * @brief Set the name of the OADB container providing a list of absolute IDs of FEE channels to
    * be masked (TObjArray of TParameter<int>)
    * @param[in] name Name of the container providing masked channel abs IDs
    */
   void SetMaskedFEEChannelOADBContainer(const TString &name) { fBadFEEChannelOADB = name; }
 
   /**
-   * Trigger bit configuration to be used in the trigger patch maker.
+   * @brief Trigger bit configuration to be used in the trigger patch maker.
    * @param[in] bitConfig Type of the trigger bit config (old - 3 bit, new - 5 bit)
    */
   void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig);
 
   /**
-   * Defining whether to use the FastOR masking from the OCDB. Attention:
+   * @brief Defining whether to use the FastOR masking from the OCDB.
+   *
+   * Attention:
    * In case the option is set to true the CDBconnect task is required to
    * run before the trigger maker task.
    * @param[in] doLoad If true the FastOR masking is obtained from the OCDB
    */
   void SetLoadFastORMaskingFromOCDB(Bool_t doLoad = kTRUE) { fLoadFastORMaskingFromOCDB = doLoad; }
 
+  /**
+   * @brief Specify nane of the OADB container with masked FastOR absolute IDs.
+   * @param[in] name Name of the OADB container
+   */
   void SetMaskedFastorOADBContainer(const TString &name) { fMaskedFastorOADB = name; }
 
   /**
-   * Apply online bad channels (FastOR masking) to offline FEE energies. Using this
-   * the same acceptance which was available online can be applied to offline patches.
-   * The masking is handled inside the trigger maker kernel.
+   * @brief Apply online bad channels (FastOR masking) to offline FEE energies.
+   *
+   * With this setting the same acceptance which was available online can be applied
+   * to offline patches. The masking is handled inside the trigger maker kernel.
    * @param[in] doApply If true the online FastOR masking is applied to offline energies
    */
   void SetApplyTRUMaskingToFEE(Bool_t doApply = kTRUE) {
@@ -176,8 +184,18 @@ public:
     if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdGammaHigh(a, b, c);
   }
 
+  /**
+   * @brief Getter providing external access to the trigger maker kernel.
+   *
+   * Attention: Settings can be overwritten. Use this function with care!
+   * @return Trigger maker kernel
+   */
   AliEmcalTriggerMakerKernel* GetTriggerMaker() const { return fTriggerMaker; }
 
+  /**
+   * @brief Switch whether to use L0 or L1 amplitudes in the patch finder
+   * @param[in] b If true L0 amplitudes are used instead of L1 ADC counts
+   */
   void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
 protected:
@@ -192,6 +210,8 @@ protected:
 #endif
 
   /**
+   * @brief Internal QA handler for trigger pathches of given type
+   *
    * Filling basic QA histograms implemented in the trigger maker task for
    * a given trigger patch which is of a certain patch type. Note that the
    * patchtype provided here defines the histograms to be filled (a trigger
@@ -202,7 +222,8 @@ protected:
   void FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch);
 
   /**
-   * RunChanged method of the trigger maker:
+   * @brief RunChanged method of the trigger maker.
+   *
    * In case of a bad channel container provided, initialize bad channel map
    * for the new run.
    * @param[in] newrun New run number
@@ -210,17 +231,19 @@ protected:
   virtual void RunChanged(Int_t newrun);
 
   /**
-   * Initialize bad channels from the OADB container. Called by the RunChanged() method.
+   * @brief Initialize bad channels from the OADB container.
+   *
+   * Called by the RunChanged() method.
    */
   void InitializeBadFEEChannels();
 
   /**
-   * Initialize the FastOR masking from the OCDB
+   * @brief Initialize the FastOR masking from the OCDB
    */
   void InitializeFastORMaskingFromOCDB();
 
   /**
-   * Initialize the FastOR masking from the OADB
+   * @brief Initialize the FastOR masking from the OADB
    */
   void InitializeFastORMaskingFromOADB();
 

@@ -14,7 +14,14 @@
 //
 // authors: Massimo Venaruzzo (massimo.venaruzzo@ts.infn.it)
 // modified: Enrico Fragiacomo (enrico.fragiacomo@ts.infn.it)
-//
+
+// modified: Kunal Garg (kgarg@cern.ch) 
+//  Modifications: Added Competing V0 Rejection, Lifetime cut and a switch for using or not using Competing V0 Rejection
+
+/* Note: Competing V0 Rejection
+For selection of V0 particle, we typically set a wide range around the mass of the particle. With Competing V0 rejection, we reject the other V0 particle in the same region with a small range. 
+Lifetime cut should be quite intuitive. Set the value to a high value if not needed in the analysis. 
+*/
 
 #include <Riostream.h>
 #include <TFormula.h>
@@ -35,6 +42,11 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fHypothesis(0),
    fMass(0.0),
    fTolerance(0.01),
+   fToleranceVeto(0.01),
+   fSwitch(0),
+   fLife(0),
+   fLowRadius(0),
+   fHighRadius(0),
    fMaxDCAVertex(0.3),
    fMinCosPointAngle(0.95),
    fMaxDaughtersDCA(0.5),
@@ -62,6 +74,11 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fHypothesis(copy.fHypothesis),
    fMass(copy.fMass),
    fTolerance(copy.fTolerance),
+   fToleranceVeto(copy.fToleranceVeto),
+   fSwitch(copy.fSwitch),
+   fLife(copy.fLife),
+   fLowRadius(copy.fLowRadius),
+   fHighRadius(copy.fHighRadius),
    fMaxDCAVertex(copy.fMaxDCAVertex),
    fMinCosPointAngle(copy.fMinCosPointAngle),
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
@@ -104,6 +121,11 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fHypothesis = copy.fHypothesis;
    fMass = copy.fMass;
    fTolerance = copy.fTolerance;
+   fToleranceVeto = copy.fToleranceVeto;
+   fSwitch = copy.fSwitch;
+   fLife  = copy.fLife;
+   fLowRadius = copy.fLowRadius;
+   fHighRadius  = copy.fHighRadius;
    fMaxDCAVertex = copy.fMaxDCAVertex;
    fMinCosPointAngle = copy.fMinCosPointAngle;
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
@@ -178,7 +200,10 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0->GetNindex());
    AliESDtrack *pTrack = lESDEvent->GetTrack(lIdxPos);
    AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
-
+    
+    
+    
+   
     // filter like-sign V0
    if ( TMath::Abs( ((pTrack->GetSign()) - (nTrack->GetSign())) ) < 0.1) {
       AliDebugClass(2, "Failed like-sign V0 check");
@@ -220,18 +245,87 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    Double_t v0Position[3]; // from $ALICE_ROOT/ANALYSIS/AliESDV0Cuts.cxx
    v0->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
    Double_t radius = TMath::Sqrt(TMath::Power(v0Position[0],2) + TMath::Power(v0Position[1],2));
-   if ( ( radius < 0.8 ) || ( radius > 100 ) ) {
+   if ( ( radius < fLowRadius ) || ( radius > fHighRadius ) ) {
      AliDebugClass(2, "Failed fiducial volume");
      return kFALSE;   
    }
     
+    
+
+   
+    
+    // Lifetime cut for negative and positive track
+    
+    // Total Momentum
+  Double_t tV0mom[3];
+  v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
+  Double_t lV0TotalMomentum = 
+      TMath::Sqrt(tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
+    
+    
+   Double_t fLength = TMath::Sqrt(TMath::Power(v0Position[0]- xPrimaryVertex,2) + TMath::Power(v0Position[1] - yPrimaryVertex,2)+ TMath::Power(v0Position[2]- zPrimaryVertex,2));
+   
+   if( TMath::Abs(fMass*fLength/lV0TotalMomentum) > fLife)
+   { 
+       AliDebugClass(2, "Failed Lifetime Cut on positive track V0");
+       return kFALSE;
+    }
+    
+   
+
+    
     // check compatibility with expected species hypothesis
-   v0->ChangeMassHypothesis(fHypothesis);
+    v0->ChangeMassHypothesis(fHypothesis);
    if ((TMath::Abs(v0->GetEffMass() - fMass)) > fTolerance) {
       AliDebugClass(2, "V0 is not in the expected inv mass range");
       return kFALSE;
-   }
-
+   }   
+   
+    //Set Switch to kTRUE to use Competing V0 Rejection
+    if(fSwitch){
+        
+    if(fHypothesis == kK0Short)
+    {v0->ChangeMassHypothesis(kLambda0);
+     if ((TMath::Abs(v0->GetEffMass() - 1.115683)) < fToleranceVeto) {
+         v0->ChangeMassHypothesis(kK0Short);
+      return kFALSE;
+   
+     }
+      v0->ChangeMassHypothesis(kK0Short);
+    
+    }
+    
+        
+        
+        if(fHypothesis == kLambda0)
+    {v0->ChangeMassHypothesis(kK0Short);
+     if ((TMath::Abs(v0->GetEffMass() - 0.497614)) < fToleranceVeto) {
+         v0->ChangeMassHypothesis(kLambda0);
+      return kFALSE;
+   
+     }
+      v0->ChangeMassHypothesis(kLambda0);
+    
+    }
+        
+        if(fHypothesis == kLambda0Bar)
+    {v0->ChangeMassHypothesis(kK0Short);
+     if ((TMath::Abs(v0->GetEffMass() - 0.497614)) < fToleranceVeto) {
+         v0->ChangeMassHypothesis(kLambda0Bar);
+      return kFALSE;
+   
+     }
+      v0->ChangeMassHypothesis(kLambda0Bar);
+    
+    }
+        
+    }
+      
+ 
+   
+    
+    
+ 
   // check PID on proton or antiproton from V0
 
    // check initialization of PID object
@@ -445,7 +539,7 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
    }
 
    Double_t radius = v0->RadiusV0();
-   if ( ( radius < 0.8 ) || ( radius > 100 ) ) {
+   if ( ( radius < fLowRadius ) || ( radius > fHighRadius ) ){
      AliDebugClass(2, "Failed fiducial volume");
      return kFALSE;   
    }

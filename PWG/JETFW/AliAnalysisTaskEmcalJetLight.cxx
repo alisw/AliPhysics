@@ -40,7 +40,6 @@ AliAnalysisTaskEmcalJetLight::AliAnalysisTaskEmcalJetLight() :
   AliAnalysisTaskEmcalLight(),
   fJetCollArray()
 {
-  fJetCollArray.SetOwner(kTRUE);
 }
 
 /**
@@ -57,7 +56,6 @@ AliAnalysisTaskEmcalJetLight::AliAnalysisTaskEmcalJetLight(const char *name, Boo
   AliAnalysisTaskEmcalLight(name, histo),
   fJetCollArray()
 {
-  fJetCollArray.SetOwner(kTRUE);
 }
 
 /**
@@ -65,6 +63,7 @@ AliAnalysisTaskEmcalJetLight::AliAnalysisTaskEmcalJetLight(const char *name, Boo
  */
 AliAnalysisTaskEmcalJetLight::~AliAnalysisTaskEmcalJetLight()
 {
+  for (auto cont_it : fJetCollArray) delete cont_it.second;
 }
 
 /**
@@ -82,16 +81,16 @@ void AliAnalysisTaskEmcalJetLight::ExecOnce()
   AliAnalysisTaskEmcalLight::ExecOnce();
 
   //Load all requested jet branches - each container knows name already
-  if(fJetCollArray.GetEntriesFast()==0) {
+  if (fJetCollArray.size() == 0) {
     AliWarning("There are no jet collections");
     return;
   }
 
-  for(Int_t i =0; i<fJetCollArray.GetEntriesFast(); i++) {
-    AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
+  for (auto cont_it : fJetCollArray) {
+    AliJetContainer *cont = cont_it.second;
     cont->SetRunNumber(InputEvent()->GetRunNumber());
     cont->SetArray(InputEvent());
-    cont->LoadRho(InputEvent()); 
+    cont->LoadRho(InputEvent());
   }
 }
 
@@ -102,13 +101,9 @@ void AliAnalysisTaskEmcalJetLight::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalJetLight::RetrieveEventObjects()
 {
-  if (!AliAnalysisTaskEmcalLight::RetrieveEventObjects())
-    return kFALSE;
+  if (!AliAnalysisTaskEmcalLight::RetrieveEventObjects()) return kFALSE;
 
-  AliEmcalContainer* cont = 0;
-
-  TIter nextJetColl(&fJetCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent();
+  for (auto cont_it : fJetCollArray) cont_it.second->NextEvent();
 
   return kTRUE;
 }
@@ -126,8 +121,8 @@ Bool_t AliAnalysisTaskEmcalJetLight::RetrieveEventObjects()
 AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     UInt_t accType, TString tag)
 {
-  AliParticleContainer* partCont = GetParticleContainer(0);
-  AliClusterContainer* clusCont = GetClusterContainer(0);
+  AliParticleContainer* partCont = fParticleCollArray.size() > 0 ? fParticleCollArray.begin()->second : nullptr;
+  AliClusterContainer* clusCont = fClusterCollArray.size() > 0 ? fClusterCollArray.begin()->second : nullptr;
 
   return AddJetContainer(jetType, jetAlgo, recoScheme, radius, accType, partCont, clusCont, tag);
 }
@@ -149,20 +144,8 @@ AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetTyp
 {
   AliJetContainer *cont = new AliJetContainer(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag);
   cont->SetJetAcceptanceType(accType);
-  fJetCollArray.Add(cont);
+  AdoptJetContainer(cont);
 
-  return cont;
-}
-
-/**
- * Get \f$ i^{th} \f$ jet container attached to this task
- * @param[in] i Index of the jet container
- * @return Jet container found for the given index (NULL if no jet container exists for that index)
- */
-AliJetContainer* AliAnalysisTaskEmcalJetLight::GetJetContainer(Int_t i) const
-{
-  if (i < 0 || i >= fJetCollArray.GetEntriesFast()) return 0;
-  AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
   return cont;
 }
 
@@ -171,9 +154,9 @@ AliJetContainer* AliAnalysisTaskEmcalJetLight::GetJetContainer(Int_t i) const
  * @param[in] name Name of the jet container
  * @return Jet container found under the given name
  */
-AliJetContainer* AliAnalysisTaskEmcalJetLight::GetJetContainer(const char* name) const{
-  // Get the jet container with name
-  
-  AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.FindObject(name));
-  return cont;
+AliJetContainer* AliAnalysisTaskEmcalJetLight::GetJetContainer(std::string name) const
+{
+  std::map<std::string, AliJetContainer*>::const_iterator cont_it = fJetCollArray.find(name);
+  if (cont_it != fJetCollArray.end()) return cont_it->second;
+  else return nullptr;
 }

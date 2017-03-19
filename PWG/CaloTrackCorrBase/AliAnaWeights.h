@@ -26,6 +26,7 @@
 class TH1F;
 class TList;
 class AliGenPythiaEventHeader;
+#include <TF1.h>
 
 #include <TObject.h>
 
@@ -36,12 +37,20 @@ class AliAnaWeights : public TObject {
   AliAnaWeights();  
     
   /// Destructor
-  virtual         ~AliAnaWeights() { if ( fhCentralityWeight ) delete fhCentralityWeight; }
+  virtual         ~AliAnaWeights() ;
+  
+  //
+  // General 
+  //  
+  TList *          GetCreateOutputHistograms();
+  
+  Int_t            GetDebug()                        const { return fDebug                 ; }
+  
+  void             SetDebug(Int_t d)                       { fDebug = d                    ; }
   
   //
   // Centrality weights
   //
-    
   void             InitCentralityWeightsHistogram(Int_t nbins = 100, Int_t minCen = 0, Int_t maxCen = 100) ;
     
   TH1F *           GetCentralityWeightsHistogram() ;
@@ -57,42 +66,40 @@ class AliAnaWeights : public TObject {
   void             SwitchOffCentralityWeight()             { fUseCentralityWeight = kFALSE ; }
     
   //
-  // MC weights
+  // Pythia pT hard weights
   //
-    
-  TList *          GetCreateOutputHistograms();
-
   virtual Double_t GetPythiaCrossSection() ;
 
   static  Bool_t   GetPythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
     
   virtual Double_t GetWeight() ;
     
+  Bool_t           IsWeightSettingOn()               const { return ( fUseCentralityWeight || fCheckMCCrossSection ) ; }
+  
   Bool_t           IsMCCrossSectionCalculationOn()   const { return fCheckMCCrossSection   ; }
   Bool_t           IsMCCrossSectionJustHistoFillOn() const { return fJustFillCrossSecHist  ; }
-    
+
+  void             SetPythiaEventHeader(AliGenPythiaEventHeader* py) { fPyEventHeader = py    ; }
+  
   void             SwitchOnMCCrossSectionCalculation()     { fCheckMCCrossSection = kTRUE  ; }
   void             SwitchOffMCCrossSectionCalculation()    { fCheckMCCrossSection = kFALSE ; }
 
   void             SwitchOnMCCrossSectionHistoFill()       { fCheckMCCrossSection = kTRUE  ;  fJustFillCrossSecHist = kTRUE ; }
-  
-  void             SetPythiaEventHeader(AliGenPythiaEventHeader* py) { fPyEventHeader = py    ; }
 
   void             SwitchOnMCCrossSectionFromEventHeader() { fCheckPythiaEventHeader = kTRUE  ; }
   void             SwitchOffMCCrossSectionFromEventHeader(){ fCheckPythiaEventHeader = kFALSE ; }
 
+  //
+  // Pt weights
+  //
+  Double_t         GetParticlePtWeight ( Float_t pt, Int_t pdg, TString genName, Int_t igen ) const ;
   
-  //
-  // General
-  //
-    
-  Bool_t           IsWeightSettingOn()               const { return ( fUseCentralityWeight || fCheckMCCrossSection ) ; }
+  void             SetEtaFunction(TF1* fun)                { if ( fEtaFunction ) delete fEtaFunction ; fEtaFunction = fun ; }
+  void             SetPi0Function(TF1* fun)                { if ( fPi0Function ) delete fPi0Function ; fPi0Function = fun ; }
+  
+  void             SwitchOnMCParticlePtWeights ()          { fDoMCParticlePtWeights = kTRUE  ; }
+  void             SwitchOffMCParticlePtWeights()          { fDoMCParticlePtWeights = kFALSE ; }
 
-  Int_t            GetDebug()                        const { return fDebug                 ; }
-    
-  void             SetDebug(Int_t d)                       { fDebug = d                    ; }
-
-    
  private:
     
   Int_t            fDebug ;               ///< Debug level.
@@ -108,9 +115,19 @@ class AliAnaWeights : public TObject {
   Bool_t           fUseCentralityWeight ; ///<  Return the centratlity weight.
     
   //
-  // MC weights
+  // MC weights for particles
   //
     
+  Bool_t           fDoMCParticlePtWeights;///<  activate the generation of a pT weight depending on MC particle pdg and generator
+  
+  TF1 *            fEtaFunction;          //!<!  eta spectrum parametrization
+  
+  TF1 *            fPi0Function;          //!<!  pi0 spectrum parametrization
+  
+  //
+  // MC weights, pT hard pythia
+  //
+  
   Double_t         fMCWeight ;            ///<  pT-hard bin MC weight. It is used only internally.
 
   TString          fCurrFileName ;        ///<  Current file path name.
@@ -134,7 +151,7 @@ class AliAnaWeights : public TObject {
   AliAnaWeights& operator=(const AliAnaWeights&); 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaWeights, 2) ;
+  ClassDef(AliAnaWeights, 3) ;
   /// \endcond
   
 } ;

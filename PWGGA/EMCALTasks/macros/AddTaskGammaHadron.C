@@ -1,14 +1,18 @@
 // $Id$
 
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
-  Bool_t      InputGammaOrPi0        = 0,      //gamma analysis=0, pi0 analyis=1
-  Bool_t      InputDoMixing          = 0,      //same event=0 mixed event =1
+  Bool_t      InputGammaOrPi0        = 0,                 //..gamma analysis=0, pi0 analyis=1
+  Bool_t      InputDoMixing          = 0,                 //..same event=0 mixed event =1 (currenlty used to init the pool=1, throw out events without clusters=0)
+  Bool_t      InputMCorData          = 0,                 // 0->MC, 1->Data
+  Double_t    trackEta               = 0.9,               //..+- eta range for track acceptance
+  Double_t    clusterEta             = 0.7,               //..+- eta range for cluster acceptance
+  UInt_t      evtTriggerType         = AliVEvent::kEMCEGA,//..use this type of events to combine gammas(trigger) with hadrons
+  UInt_t      evtMixingType          = AliVEvent::kAnyINT,//..use only this type of events to fill your mixed event pool with tracks
+  Double_t    trackptcut             = 0.15,              //..
+  Double_t    clusptcut              = 0.30,              //..
+  Bool_t      SavePool               = 0,                 //..saves a mixed event pool to the output event
   const char *trackName              = "usedefault",
   const char *clusName               = "usedefault",
-  const char *cellName               = "usedefault",   //probably delete this this is nowhere used
-  Double_t    trackptcut             = 0.15,
-  Double_t    clusptcut              = 0.30,
-  Bool_t      SavePool               = 0,              //saves a mixed event pool to the output event
   const char *taskname               = "AliAnalysisTask",
   const char *suffix                 = ""
 )
@@ -37,10 +41,9 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  return 0;
    }
 
-  //in case of AOD the default names are:
-  if(trackName=="usedefault")trackName = "tracks";   //could be hybrid tracks
+  //..in case of AOD the default names are:
+  if(trackName=="usedefault")trackName = "tracks";
   if(clusName =="usedefault")clusName  = "caloClusters";
-  if(cellName =="usedefault")cellName  = "emcalCells";
 
   //-------------------------------------------------------
   // Built the name of the Task together
@@ -72,14 +75,15 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  combinedName += suffix;
   }
   cout<<"combinedName: "<<combinedName<<endl;
+  TString contName(combinedName);
+  contName += "_histos";
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputDoMixing);
+  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputDoMixing, InputMCorData);
 
   //..Add the containers and set the names
-  AnalysisTask->SetCaloCellsName(cellName);
   AnalysisTask->AddClusterContainer(clusName);
 
   if (trackName == "mcparticles")
@@ -92,6 +96,11 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer(trackName);
 	  trackCont->SetFilterHybridTracks(kTRUE); //gives me Hyprid tracks
   }
+  else  //implemented for testing correction framework
+  {
+	  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer(trackName);
+	  trackCont->SetFilterHybridTracks(kTRUE); //gives me Hyprid tracks
+  }
   //..check that condition!! maybe for mixed events its different!!!!!!
   if(!AnalysisTask->GetTrackContainer(trackName) || !AnalysisTask->GetClusterContainer(clusName))
   {
@@ -99,33 +108,49 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	 return 0;
   }
 
-  //..Add some selection criteria
-  AnalysisTask->SetVzRange(-10,10);
+  //-------------------------------------------------------
+  // Add some selection criteria
+  //-------------------------------------------------------
+  AnalysisTask->SetOffTrigger(evtTriggerType|evtMixingType); //..select only evets of type evtTriggerType and evtMixingType
+  //..for Run1 pPb
+  //AnalysisTask->SetUseManualEvtCuts(kTRUE);
+  //AnalysisTask->SetUseAliAnaUtils(kTRUE);
+  //AnalysisTask->SetVzRange(-10,10);
+  //AnalysisTask->SetCentRange(0.0,100.0);
+
+  //..new task for run2
+  //AnalysisTask->SetNCentBins(5);
+  //AnalysisTask->SetUseNewCentralityEstimation(kTRUE);
+
   if(AnalysisTask->GetTrackContainer(trackName))
   {
 	  AnalysisTask->GetTrackContainer(trackName)->SetParticlePtCut(trackptcut);
+	  AnalysisTask->GetTrackContainer(trackName)->SetParticleEtaLimits(-trackEta,trackEta); //..Eta limits (-0.8,0.8 as in Pi0-h publication)
   }
+  Double_t phiToR=TMath::Pi()/180.0;
   if(AnalysisTask->GetClusterContainer(clusName))
   {
-	  AnalysisTask->GetClusterContainer(clusName)->SetClusECut(0);     //by default set to 0
-	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(0.3);  //by default set to 0.15
-	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,clusptcut);
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusECut(0);                 //by default set to 0
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(clusptcut);        //by default set to 0.15
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,0);
 	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-	  //AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr,clusptcut);
-	  //AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
+//    AnalysisTask->GetClusterContainer(clusName)->SetClusTimeCut(,);
+//	  AnalysisTask->GetClusterContainer(clusName)->SetEtaLimits(-clusterEta,clusterEta);
+//	  AnalysisTask->GetClusterContainer(clusName)->SetPhiLimits(68*phiToR,174*phiToR);
   }
-
-  /*
-  // Used for physics selection
-  task->SetUseAliAnaUtils(kTRUE);
-  task->DoVertexRCut(doVertexRCut);
-  */
-
-
 
   //..some additional input for the analysis
   AnalysisTask->SetNeedEmcalGeom(kTRUE);
   AnalysisTask->SetSavePool(SavePool);
+  AnalysisTask->SetEvtTriggerType(evtTriggerType);   //..Trigger to be used for filling same event histograms
+  AnalysisTask->SetEvtMixType(evtMixingType);        //..Trigger to be used to fill tracks into the pool (no GA trigger!!)
+  AnalysisTask->SetNLM(1);                           //..Maximum of number of local maxima
+  if(InputGammaOrPi0==0)
+  {
+	  AnalysisTask->SetM02(0.1,0.4);                 //..Ranges of allowed cluster shapes in the analysis
+	  AnalysisTask->SetRmvMatchedTrack(1);           //..Removes all clusters that have a matched track
+  }
+
   //for later AnalysisTask->SetEffHistGamma(THnF *h);
   //for later AnalysisTask->SetEffHistHadron(THnF *h);
 
@@ -136,12 +161,9 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-
-  TString contName(combinedName);
-  contName += "_histos";
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), 
-							    TList::Class(),AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(),TList::Class(),
+		  	  	  	  	  	  	  	  	  	  	  	  	   AliAnalysisManager::kOutputContainer,
+		  	  	  	  	  	  	  	  	  	  	  	  	   Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput  (AnalysisTask, 0,  cinput1 );
   mgr->ConnectOutput (AnalysisTask, 1, coutput1 );
 

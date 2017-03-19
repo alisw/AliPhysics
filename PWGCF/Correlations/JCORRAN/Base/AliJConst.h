@@ -76,7 +76,7 @@ const int kRangeTriggerTableJCorran = 16;
 //==================================================================================
 enum fillType { kReal, kMixed, kEtaGap };
 enum corrFillType {kAzimuthFill=0,kPionFill=1};
-enum corrType { kTriggType, kAssocType, kXeType, kLongType, kCentrType, kZVertType, kMassType, kEtaGapType, kDiJetType, kRGapType, kNoType, kNcorrType };
+enum corrType { kTriggType, kAssocType, kXeType, kLongType, kCentrType, kZVertType, kMassType, kEtaGapType,  kPhiGapType, kDiJetType, kRGapType, kNoType, kNcorrType };
 enum TriggerParticleType { kTriggParticles, kLeadingParticle, kIsolatedParticle };
 
 const char* const kTriggerParticleTypeName[] =

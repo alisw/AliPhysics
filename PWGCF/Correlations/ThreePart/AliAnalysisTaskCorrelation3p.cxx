@@ -57,9 +57,6 @@ ClassImp(AliAnalysisTaskCorrelation3p)
 // Paul Baetzing || pbatzing@cern.ch
 //
 
-// using std::string;
-// using std::cin;
-// using std::stringstream;
 
 AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   : AliAnalysisTaskSE("AliAnalysisTaskCorrelation3p")
@@ -84,6 +81,8 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fQA(kFALSE)
   , fqatask(kFALSE)
   , fMoreOutputs(kFALSE)
+  , fExtraMixed(kTRUE)
+  , fLeading(kTRUE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -161,6 +160,8 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fQA(kFALSE)  
   , fqatask(kFALSE)
   , fMoreOutputs(kFALSE)
+  , fExtraMixed(kTRUE)
+  , fLeading(kTRUE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -245,7 +246,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 {
   // create result objects and add to output list
   MakeRunNumbers();//Needs to be done once in the beginning
-  
+
   TTimeStamp now;
   fRandom = new TRandom3();
   fRandom->SetSeed(now.GetNanoSec());
@@ -279,6 +280,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     poolMgr->SetTargetValues(MinNofTracks,1.0E-4,1.0);
     correlator->InitEventMixing(poolMgr);
     correlator->SetNMaxMixed(fMaxTracksperEvent);
+    correlator->SetLeading(fLeading);
     
     //initialize track worker and add to the output if appropriate
     TString tracksname;
@@ -293,7 +295,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     workertracktrigger->SetAcceptanceCut(fAcceptancecut);
     workertracktrigger->SetBinningVersion(fBinVer);
     workertracktrigger->Init(triggerinit);
-    correlator->Add(workertracktrigger);
+    correlator->Add(workertracktrigger,fExtraMixed);
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 0));
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 1));
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
@@ -353,8 +355,6 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
 {
   if(fgenerate){execgenerate();return;}//Toy MC generator, skips all data processing.
   fNEventsParsed +=1;
-//   if(fNEventsParsed<fStartAtEvent) return;
-//   if(fNEventsToProcess>0&&fNEventsProcessed>=fNEventsToProcess)return;
   // process the event
   TObject* pInput=InputEvent();
   if (!pInput) {AliError("failed to get input");return;}
@@ -478,6 +478,20 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
   }
   nofTracks=pEvent->GetNumberOfTracks();
   FillHistogram("trackCount",nofTracks);
+  //find the leading pT track of the event that passes the cuts, set triggerid to this:
+  int triggerid = -1;
+  Double_t maxpt = 0.0;
+  for(int j=0;j<nofTracks;j++){
+    AliVParticle* t=pEvent->GetTrack(j);
+    if(t->IsA()==AliESDtrack::Class())if(!IsSelectedTrackESD(t))continue;
+    if(t->IsA()==AliAODTrack::Class())if(!IsSelectedTrackAOD(t))continue;
+    if(t->IsA()==AliFilteredTrack::Class()){dynamic_cast<AliFilteredTrack*>(t)->Calculate();if(!IsSelectedTrackFiltered(t))continue;}
+    if(t->Pt()>maxpt){
+      triggerid = j;
+      maxpt = t->Pt();
+    }
+  }
+  FillHistogram("trackPt_leading",maxpt);
   for (int i=0; i<nofTracks; i++) {
     Double_t Weight = 1.0;
     AliVParticle* t=pEvent->GetTrack(i);
@@ -489,6 +503,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     FillHistogram("trackUnselectedPhi",t->Phi(),1.0);
     FillHistogram("trackUnselectedTheta",t->Theta(),1.0);
     if (!IsSelected(t)) continue;
+    //In the case where we only want leading triggers, cut away all non associated that are not the leading:
     if(fWeights){
       Int_t etabin = fWeights->GetXaxis()->FindBin(t->Eta());
       if(t->Pt()<2.0){
@@ -502,6 +517,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     if(allrelevantParticles){
 	AliFilteredTrack * filp = new AliFilteredTrack(*t);
 	filp->SetEff(Weight);
+	if(fLeading&&(i==triggerid))filp->SetLeading();
       allrelevantParticles->Add(filp);
     }
     if(fQA){
@@ -525,7 +541,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     }
     FillHistogram("trackPhi",t->Phi(),Weight);
     FillHistogram("trackTheta",t->Theta(),Weight);
-    if(IsSelectedTrigger(t)){
+    if(IsSelectedTrigger(t)&&(i==triggerid||!fLeading)){
       fNTriggers+=1;
       FillHistogram("trackTriggerPt",t->Pt(),Weight);
       FillHistogram("trackTriggerPhi",t->Phi(),Weight);
@@ -789,20 +805,14 @@ void AliAnalysisTaskCorrelation3p::GetCentralityAndVertex(AliVEvent* pEvent)
 Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
 {//This function provides the event cuts for this class.
   if(fisDstTree){
-    if(fCollisionType == pp){
-    FillHistogram("multiplicity",fMultiplicity,0.75);
-    }
-    if(fCollisionType == PbPb){
-      FillHistogram("centrality",fCentralityPercentile,0.75);
-    }
-    FillHistogram("vertex",fVertex[2],0.75);
+    return kTRUE;
   }
   if(fCollisionType==pp&&!fisDstTree){//With pp, the following cuts are applied:
     FillHistogram("multiplicity",fMultiplicity,0.25);
     FillHistogram("vertex",fVertex[2],0.25);    
     if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
     if(fVertexobj->GetNContributors()<1) return kFALSE; // no tracks go into reconstructed vertex
-    if(abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
+    if(TMath::Abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
     if(fMultiplicity>fMaxNumberOfTracksInPPConsidered) return kFALSE;//Out of multiplicity bounds in pp, no histograms will be filled.
     if(InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.))return kFALSE;  //reject for pileup.
     FillHistogram("multiplicity",fMultiplicity,0.75);
@@ -814,7 +824,7 @@ Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
     FillHistogram("vertex",fVertex[2],0.25);    
     if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
     if(fVertexobj->GetNContributors()<1) return kFALSE; // no tracks go into reconstructed vertex
-    if(abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
+    if(TMath::Abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
     if(!fCentrality){AliError("Centrality object not found.");return kFALSE;}//Centrality must be defined in the PbPb case.
     if(fCentrality->GetQuality()!=0)return kFALSE;//bad centrality.
     if(fCentralityPercentile<0) return kFALSE;//centrality is not defined
@@ -851,15 +861,14 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   
   if (!fOutput) return;
   //QA histograms
-//   fOutput->Add(new TH3D("TrackDCAandonITS","DCA tangential vs DCA longitudinal vs Is in the first two ITS layers",50,-2,2,50,-5,5,2,-0.5,1.5));
-//   fOutput->Add(new TH3D("TrackDCAandonITSselected","DCA tangential vs DCA longitudinal vs Is in the first two ITS layers for selected events",50,-2,2,50,-5,5,2,-0.5,1.5));
-//   fOutput->Add(new TH3D("Eventbeforeselection","Vertex vs Multiplicity vs Centrality before event selection.", 50,-15,15,50,0,4000,50,0,100));
-//   fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,4000,50,0,100));
-  fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 15000));
-  fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 20));
-  fOutput->Add(new TH1D("trackPt"   			, "trackPt"   				, 1000,  0, 20));
-  fOutput->Add(new TH1D("trackPtconstrained"	   	, "trackPt for tracks constrained to the vertex"   , 1000,  0, 20));
-  fOutput->Add(new TH1D("trackPtnotconstrained"  	, "trackPt for tracks not constrained to the vertex"   , 1000,  0, 20));
+  fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 1000));
+  fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 200));
+  fOutput->Add(new TH1D("trackPt"   			, "trackPt"   				, 1000,  0, 200));
+  fOutput->Add(new TH1D("trackPt_leading"		, "trackPt_leading_track"		, 1000,  0, 200));
+  if(fisAOD){
+    fOutput->Add(new TH1D("trackPtconstrained"	   	, "trackPt for tracks constrained to the vertex"   , 1000,  0, 200));
+    fOutput->Add(new TH1D("trackPtnotconstrained"  	, "trackPt for tracks not constrained to the vertex"   , 1000,  0, 200));
+  }
   fOutput->Add(new TH1D("trackAssociatedPt" , "Pt of associated Tracks", 1000, fMinAssociatedPt, fMaxAssociatedPt));
   fOutput->Add(new TH1D("trackTriggerPt" , "Pt of Trigger Tracks", 1000, fMinTriggerPt, fMaxTriggerPt));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
@@ -870,38 +879,16 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   fOutput->Add(new TH1D("trackTheta", "trackTheta",  180, 0.0, TMath::Pi()));
   fOutput->Add(new TH1D("trackTriggerTheta", "trackTheta",  180, 0.0, TMath::Pi()));
   fOutput->Add(new TH1D("trackAssociatedTheta", "trackTheta",  180, 0.0, TMath::Pi()));
-  fOutput->Add(new TH1D("Ntriggers","Number of triggers per event",50,-0.5,49.5));
-  fOutput->Add(new TH1D("NAssociated","Number of Associated per event",200,-0.5,199.5));
-  fOutput->Add(new TH1D("NAssociatedETriggered","Number of Associated per event that contains a trigger.",200,-0.5,199.5));
-  if(fWeights)fOutput->Add(fWeights);
-  if(fWeightshpt)fOutput->Add(fWeightshpt);
-  if(fpTfunction)fOutput->Add(fpTfunction);
+  fOutput->Add(new TH1D("Ntriggers","Number of triggers per event",10,-0.5,9.5));
+  fOutput->Add(new TH1D("NAssociated","Number of Associated per event",20,-0.5,19.5));
+  fOutput->Add(new TH1D("NAssociatedETriggered","Number of Associated per event that contains a trigger.",20,-0.5,19.5));
 
-  //   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
-//     fOutput->Add(new TH1D("clusterCount", "clusterCount", 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterCountphos", "clusterCountphos", 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterCountemcal", "clusterCountemcal", 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterPtPHOS"   , "clusterPtPHOS"   , 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterPtEMCAL"   , "clusterPtEMCAL"   , 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterPhiPHOS"  , "clusterPhiPHOS"  ,  180,  0., 2*TMath::Pi()));
-//     fOutput->Add(new TH1D("clusterPhiEMCAL"  , "clusterPhiEMCAL"  ,  180,  0., 2*TMath::Pi()));
-//     fOutput->Add(new TH1D("clusterThetaPHOS", "clusterThetaPHOS",  180, -1.*TMath::Pi(), TMath::Pi()));
-//     fOutput->Add(new TH1D("clusterThetaEMCAL", "clusterThetaEMCAL",  180, -1.*TMath::Pi(), TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0count", "pi0count", 1000, 0, 2000));
-//     fOutput->Add(new TH1D("pi0countPHOS", "pi0countPHOS", 1000, 0, 2000));
-//     fOutput->Add(new TH1D("pi0countEMCAL", "pi0countEMCAL", 1000, 0, 2000));
-//     fOutput->Add(new TH1D("pi0ptphos","pi0ptphos", 1000, 0, 2000));  
-//     fOutput->Add(new TH1D("pi0phiphos","pi0phiphos",180, 0.,2*TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0ThetaPHOS", "pi0ThetaPHOS",180, -1.*TMath::Pi(), TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0ptemcal", "pi0ptemcal", 1000,0,2000));  
-//     fOutput->Add(new TH1D("pi0phiemcal", "pi0phiemcal", 180, 0., 2*TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0thetaemcal", "pi0thetaemcal",180,-1.*TMath::Pi(), TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0TriggerPt","Pt of Trigger pi0s", 1000, fMinTriggerPt,fMaxTriggerPt));
-//   }
 //   fOutput->Add(new TH1D("vzeroMult" , "V0 Multiplicity",  200,  0, 30000));
-  if(fCollisionType==PbPb)fOutput->Add(new TH2D("centrality", "Centrality before and after selection",  100,  0, 100,2,0,1));
-  if(!fisDstTree||(fCollisionType==pp))fOutput->Add(new TH2D("multiplicity", "Multiplicity of tracks,  before and after selection",  100,  0, fMaxNumberOfTracksInPPConsidered,2,0,1));
-  fOutput->Add(new TH2D("vertex", "Vertex of tracks,selected vs unselected",  100,  -15.0, 15.0,2,0,1));
+  if(!fisDstTree){
+    if(fCollisionType==PbPb)fOutput->Add(new TH2D("centrality", "Centrality before and after selection",  100,  0, 100,2,0,1));
+    if(fCollisionType==pp)fOutput->Add(new TH2D("multiplicity", "Multiplicity of tracks,  before and after selection",  100,  0, fMaxNumberOfTracksInPPConsidered,2,0,1));
+    fOutput->Add(new TH2D("vertex", "Vertex of tracks,selected vs unselected",  100,  -15.0, 15.0,2,0,1));
+  }
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, 100, 100, -10, 10));
   if(fCollisionType==pp)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, fMaxNumberOfTracksInPPConsidered, 100, -10, 10));
 
@@ -948,45 +935,6 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
     fOutput->Add(NTracksCent);
     fOutput->Add(NEventsCent);
   }
-  if(fQA&&fWeights&&fWeightshpt){
-    TH3D * histtrackslpt = (TH3D*)(fWeights->Clone("Track_Cent_Vertex_lpT"));
-    histtrackslpt->Reset();
-    histtrackslpt->SetTitle("Tracks in Centrality vs Vertex vs pT");
-    fOutput->Add(histtrackslpt);
-    TH2D * histtrackshpt = (TH2D*)(fWeightshpt->Clone("Track_Cent_Vertex_eta"));
-    histtrackshpt->Reset();    
-    histtrackshpt->SetTitle("Tracks in Centrality vs Vertex");
-    fOutput->Add(histtrackshpt);    
-  }
-//   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
-//     TH1D * PhosClustersperRun = new TH1D("PhosClustersperRun", "# clusters in Phos per Run", fNruns, 0, 1);
-//     TH1D * PhosPionsperRun = new TH1D("PhosPionsperRun", "# Pi0s in Phos per Run.", fNruns, 0, 1);
-//     TH1D * PhosSelectedPionsperRun = new TH1D("PhosSelectedPionsperRun", "# selected Pi0 triggers in Phos per Run.", fNruns, 0, 1);
-//     TH1D * EmcalClustersperRun = new TH1D("EmcalClustersperRun", "# clusters in Emcal per Run.", fNruns, 0,1);
-//     TH1D * EmcalPionsperRun = new TH1D("EmcalPionsperRun", "# Pi0s in Emcal per Run.", fNruns, 0,1);
-//     TH1D * EmcalSelectedPionsperRun = new TH1D("EmcalSelectedPionsperRun", "# selected Pi0 triggers in Emcal per Run.", fNruns, 0,1);
-//     for(int i=0; i<fNruns; i++){
-//       TString lable = Form("%i",fRunNumberList[i]);
-// 
-//       PhosClustersperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       PhosClustersperRun->GetXaxis()->LabelsOption("v");
-//       PhosPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       PhosPionsperRun->GetXaxis()->LabelsOption("v");
-//       PhosSelectedPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       PhosSelectedPionsperRun->GetXaxis()->LabelsOption("v");
-//       EmcalClustersperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       EmcalClustersperRun->GetXaxis()->LabelsOption("v");
-//       EmcalPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       EmcalPionsperRun->GetXaxis()->LabelsOption("v");
-//       EmcalSelectedPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       EmcalSelectedPionsperRun->GetXaxis()->LabelsOption("v");
-//       }
-//     fOutput->Add(PhosClustersperRun);
-//     fOutput->Add(PhosPionsperRun);
-//     fOutput->Add(PhosSelectedPionsperRun);
-//     fOutput->Add(EmcalClustersperRun);
-//     fOutput->Add(EmcalPionsperRun);
-//     fOutput->Add(EmcalSelectedPionsperRun);}
 }
 
 void AliAnalysisTaskCorrelation3p::InitializeEffHistograms()
@@ -1088,7 +1036,7 @@ void AliAnalysisTaskCorrelation3p::MakeRunNumbers()
 }
 
 void AliAnalysisTaskCorrelation3p::SetMixingScheme(Int_t MaxNEventMix, Int_t MinNofTracksMix, TArrayD MBinEdges, TArrayD ZBinEdges)
-{
+    {
   fMaxNEventMix= MaxNEventMix;
   fMinNofTracksMix = MinNofTracksMix;
   for(int i=0; i<MBinEdges.GetSize()-1; ++i)

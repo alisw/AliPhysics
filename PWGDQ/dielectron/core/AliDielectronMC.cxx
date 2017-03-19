@@ -959,9 +959,9 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
   case 902:      // // open charm,beauty  mesons and baryons together
     if(checkBothCharges)
       result = (TMath::Abs(particlePDG)>=400 && TMath::Abs(particlePDG)<=439) ||
-	(TMath::Abs(particlePDG)>=4000 && TMath::Abs(particlePDG)<=4399) ||
-	(TMath::Abs(particlePDG)>=500 && TMath::Abs(particlePDG)<=549) ||
-	(TMath::Abs(particlePDG)>=5000 && TMath::Abs(particlePDG)<=5499);
+      (TMath::Abs(particlePDG)>=4000 && TMath::Abs(particlePDG)<=4399) ||
+      (TMath::Abs(particlePDG)>=500 && TMath::Abs(particlePDG)<=549) ||
+      (TMath::Abs(particlePDG)>=5000 && TMath::Abs(particlePDG)<=5499);
     else {
       if(requiredPDG>0) result = (particlePDG>=400 && particlePDG<=439) ||
 			  (particlePDG>=4000 && particlePDG<=4399)      ||
@@ -971,6 +971,17 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
 			  (particlePDG>=-4399 && particlePDG<=-4000)      ||
 			  (particlePDG>=-549 && particlePDG<=-500)        ||
 			  (particlePDG>=-5499 && particlePDG<=-5000);
+    }
+    break;
+  case 903:      // // all hadrons in the code range 100-599, 1000-5999
+    if(checkBothCharges)
+      result = (TMath::Abs(particlePDG)>=100 && TMath::Abs(particlePDG)<=599) ||
+      (TMath::Abs(particlePDG)>=1000 && TMath::Abs(particlePDG)<=5999);
+    else {
+      if(requiredPDG>0) result = (particlePDG>=100 && particlePDG<=599) ||
+        (particlePDG>=1000 && particlePDG<=5999);
+      if(requiredPDG<0) result = (particlePDG>=-599 && particlePDG<=-100) ||
+        (particlePDG>=-5999 && particlePDG<=-1000);
     }
     break;
   default:          // all specific cases

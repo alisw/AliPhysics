@@ -233,7 +233,7 @@ private:
     
   AliVCaloCells     * fEMCALCells;       //!<! List of cells.
   
-//  TList             * fCuts ;            //!<! List with analysis cuts.
+//TList             * fCuts ;            //!<! List with analysis cuts.
     
   TList             * fOutputContainer;  //!<! Histogram container.
     
@@ -256,11 +256,11 @@ private:
   Float_t             fL0min;            ///<  Minimum cluster L0.
   Float_t             fL0max;            ///<  Maximum cluster L0.
   
-  Float_t             fL0Bkgmin;            ///<  Minimum cluster L0 for bkg shape study.
-  Float_t             fL0Bkgmax;            ///<  Maximum cluster L0 for bkg shape study.
+  Float_t             fL0Bkgmin;         ///<  Minimum cluster L0 for bkg shape study.
+  Float_t             fL0Bkgmax;         ///<  Maximum cluster L0 for bkg shape study.
     
-  Float_t             fOpAnglemin;            ///<  Minimum cluster opening angle for bkg shape study.
-  Float_t             fOpAnglemax;            ///<  Maximum cluster opening angle for bkg shape study.
+  Float_t             fOpAnglemin;       ///<  Minimum cluster opening angle for bkg shape study.
+  Float_t             fOpAnglemax;       ///<  Maximum cluster opening angle for bkg shape study.
 
   Float_t             fDTimeCut;         ///<  Maximum difference between time of cluster pairs (ns).
   Float_t             fTimeMax;          ///<  Maximum cluster time (ns).
@@ -276,6 +276,9 @@ private:
   Bool_t              fSameSM;           ///<  Combine clusters in channels on same SM.
 
   Int_t               fNMaskCellColumns; ///<  Number of masked columns.
+
+  ///< List the masked columns.
+  Int_t*              fMaskCellColumns;  //[fNMaskCellColumns]
   
   Bool_t              fSelectOnlyCellSignalOutOfCollision; ///< Select cells / clusters that are due to noise, i.e. signal in EMCal that happens not during collisions
   
@@ -285,10 +288,8 @@ private:
   
   Bool_t              fSelectOnlyPhotonsInDifferentSM; ///<Select only pairs of photons that are not in the same SM
   
-  Bool_t              fChangeBkgShape;  ///< Select clusters with nominal M02 cuts (fL0min,fL0max) plus high M02 clusters (fL0Bkgmin,fL0Bkgmax)
+  Bool_t              fChangeBkgShape;   ///< Select clusters with nominal M02 cuts (fL0min,fL0max) plus high M02 clusters (fL0Bkgmin,fL0Bkgmax)
   
-  ///< List the masked columns.
-  Int_t*              fMaskCellColumns;  //[fNMaskCellColumns]
     
   Float_t             fInvMassCutMin;    ///<  Minimum mass cut for clusters to fill time or other histograms.
   Float_t             fInvMassCutMax;    ///< Maximum mass cut for clusters to fill time or other histograms.
@@ -303,9 +304,9 @@ private:
   Float_t             fMinTimeBin;       ///<  Minimum time bins of invariant mass histograms.
   Float_t             fMaxTimeBin;       ///<  Maximum time bins of invariant mass histograms.
   
-  Int_t               fNEnergybins;            ///<  N       energy bins of cell energy histograms.
-  Float_t             fMinEnergyBin;           ///<  Minimum energy bins of cell energy histograms.
-  Float_t             fMaxEnergyBin;           ///<  Maximum energy bins of cell energy histograms.
+  Int_t               fNEnergybins;      ///<  N       energy bins of cell energy histograms.
+  Float_t             fMinEnergyBin;     ///<  Minimum energy bins of cell energy histograms.
+  Float_t             fMaxEnergyBin;     ///<  Maximum energy bins of cell energy histograms.
   
   // Temporal TLorentzVectors, avoir recreation per event 
     

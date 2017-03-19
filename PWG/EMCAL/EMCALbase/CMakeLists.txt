@@ -35,10 +35,13 @@ set(SRCS
   AliAnalysisTaskEmcalLight.cxx
   AliClusterContainer.cxx
   AliEmcalContainer.cxx
+  AliEmcalDownscaleFactorsOCDB.cxx
+  AliEmcalAODFilterBitCuts.cxx
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
   AliEmcalPythiaInfo.cxx
+  AliEmcalTrackSelResultPtr.cxx
   AliEmcalTrackSelection.cxx
   AliEmcalTrackSelectionESD.cxx
   AliEmcalTrackSelectionAOD.cxx

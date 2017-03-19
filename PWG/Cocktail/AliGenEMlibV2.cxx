@@ -75,6 +75,7 @@ const Double_t AliGenEMlibV2::fgkV2param[kCentralities][16] = {
   ,{ 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000, 10 }  // 0-40
   ,{ 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000, 10 }  // 20-80
   ,{ 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000, 10 }  // 40-80
+  ,{ 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000, 10 }  // 20-50
 };
 
 const Double_t AliGenEMlibV2::fgkRawPtOfV2Param[kCentralities][10] = {
@@ -94,6 +95,7 @@ const Double_t AliGenEMlibV2::fgkRawPtOfV2Param[kCentralities][10] = {
   ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 0-40
   ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 20-80
   ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 40-80
+  ,{ 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000 } // 20-50
 };
 
 const Double_t AliGenEMlibV2::fgkThermPtParam[kCentralities][2] = {
@@ -114,6 +116,7 @@ const Double_t AliGenEMlibV2::fgkThermPtParam[kCentralities][2] = {
   ,{ 4.351422e+01, 3.267624e+00 } // 0-40  //based on: https://aliceinfo.cern.ch/Figure/node/2866
   ,{ 0.0000000000, 0.0000000000 } // 20-80
   ,{ 0.0000000000, 0.0000000000 } // 40-80
+  ,{ 8.088291e-01, 2.013231e+00 } // 20-50
 };
 
 // MASS   0=>PIZERO, 1=>ETA, 2=>RHO0, 3=>OMEGA, 4=>ETAPRIME, 5=>PHI, 6=>JPSI, 7=>SIGMA, 8=>K0s, 9=>DELTA++, 10=>DELTA+, 11=>DELTA-, 12=>DELTA0, 13=>Rho+, 14=>Rho-, 15=>K0*, 16=>K0l, 17=>Lambda
@@ -958,7 +961,7 @@ Double_t AliGenEMlibV2::V2Flat(const Double_t */*px*/, const Double_t */*param*/
 //
 //--------------------------------------------------------------------------
 Double_t AliGenEMlibV2::GetTAA(Int_t cent){
-  const static Double_t taa[16] = { 1.0,    // pp
+  const static Double_t taa[17] = { 1.0,    // pp
     26.32,  // 0-5
     20.56,  // 5-10
     14.39,  // 10-20
@@ -973,7 +976,8 @@ Double_t AliGenEMlibV2::GetTAA(Int_t cent){
     18.91,  // 0-20
     12.88,  // 0-40
     3.088,  // 20-80
-    1.207}; // 40-80
+    1.207, // 40-80
+    6.85};   // 20-50
   return taa[cent];
 }
 
@@ -983,20 +987,22 @@ Double_t AliGenEMlibV2::GetTAA(Int_t cent){
 //                        set pt parametrizations
 //
 //--------------------------------------------------------------------------
-Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
+Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
   
   // open parametrizations file
   TFile* fParametrizationFile = TFile::Open(fileName.Data());
   if (!fParametrizationFile) AliFatalClass(Form("File %s not found",fileName.Data()));
+  TDirectory* fParametrizationDir = (TDirectory*)fParametrizationFile->Get(dirName.Data());
+  if (!fParametrizationDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
   
   // check for pi0 parametrization
-  TF1* fPtParametrizationTemp = (TF1*)fParametrizationFile->Get("111_pt");
+  TF1* fPtParametrizationTemp = (TF1*)fParametrizationDir->Get("111_pt");
   if (!fPtParametrizationTemp) AliFatalClass(Form("File %s doesn't contain pi0 parametrization",fileName.Data()));
   fPtParametrization[0] = new TF1(*fPtParametrizationTemp);
   fPtParametrization[0]->SetName("111_pt");
 
   // check for proton parametrization (base for baryon mt scaling)
-  TF1* fPtParametrizationProtonTemp = (TF1*)fParametrizationFile->Get("2212_pt");
+  TF1* fPtParametrizationProtonTemp = (TF1*)fParametrizationDir->Get("2212_pt");
   if (!fPtParametrizationProtonTemp) {
     AliWarningClass(Form("File %s doesn't contain proton parametrization, scaling baryons from pi0.", fileName.Data()));
     fPtParametrizationProton = NULL;
@@ -1011,7 +1017,7 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
   // get parametrizations from file
   for (Int_t i=1; i<18; i++) {
     Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
-    fPtParametrizationTemp = (TF1*)fParametrizationFile->Get(Form("%d_pt", ip));
+    fPtParametrizationTemp = (TF1*)fParametrizationDir->Get(Form("%d_pt", ip));
     if (fPtParametrizationTemp) {
       fPtParametrization[i] = new TF1(*fPtParametrizationTemp);
       fPtParametrization[i]->SetName(Form("%d_pt", ip));
@@ -1050,7 +1056,7 @@ TF1* AliGenEMlibV2::GetPtParametrization(Int_t np) {
 //                     set mt scaling factor histo
 //
 //--------------------------------------------------------------------------
-void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
+void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
   
   // set collision system
   Int_t selectedCol;
@@ -1077,10 +1083,11 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
   
   // open file
   TFile* fMtFactorFile = TFile::Open(fileName.Data());
+  TDirectory* fMtFactorDir = (TDirectory*)fMtFactorFile->Get(dirName.Data());
   
   // check for mt scaling factor histo
   TH1D* fMtFactorHistoTemp              = NULL;
-  if (fMtFactorFile) fMtFactorHistoTemp = (TH1D*)fMtFactorFile->Get("histoMtScaleFactor");
+  if (fMtFactorDir) fMtFactorHistoTemp = (TH1D*)fMtFactorDir->Get("histoMtScaleFactor");
   if (fMtFactorHistoTemp) {
     fMtFactorHisto                      = new TH1D(*fMtFactorHistoTemp);
     for (Int_t i=1; i<19; i++) {
@@ -1113,6 +1120,10 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
     for (Int_t i=1; i<19; i++)
       fMtFactorHisto->SetBinContent(i, fgkMtFactor[selectedCol][i-1]);
   }
+  fMtFactorHisto->SetDirectory(0);
+
+  fMtFactorFile->Close();
+  delete fMtFactorFile;
 }
 
 

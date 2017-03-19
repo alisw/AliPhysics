@@ -104,7 +104,7 @@ AliEmcalMCTrackSelector* AddTaskMCTrackSelector(
 
 When this task is executed at the beginning of an analysis train running on ESD, the MC particles can be filtered using the AliMCParticleContainer class as done for AOD.
 
-## Using virtual track selection     {#EMCALVirtualTrackSelection}
+# Using virtual track selection     {#EMCALVirtualTrackSelection}
 
 In case a more strict track selection needs to be applied, users 
 should use the virtual track selection. The virtual track selection provides

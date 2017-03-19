@@ -111,14 +111,21 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void SetMaxSharedITSCluster(Int_t b){fCutITSclusterShared = kTRUE; fMaxITSclusterShared = b;}
   void SetMaxChi2perITSCluster(Double_t b){fCutITSChi2 = kTRUE; fMaxITSChi2 = b;}
-  void SetCutTPCSecbound( Bool_t a ) {fCutTPCSecbound = a;}
+  void SetCutTPCSecbound( Bool_t a, Double_t ptmin=0.2 ) {fCutTPCSecbound = a; fCutTPCSecboundMinpt=ptmin;}
+  void SetCutTPCSecboundVar( Bool_t a ) {fCutTPCSecboundVar = a;}
   void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
   void SetMinNClustersITS( Int_t a ) {fCutNClustersITS=kTRUE; fNClustersITSMin=a;}
   void SetClusterRequirementITS( AliESDtrackCuts::Detector det,
                                  AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff )
-                                 { InitESDcuts(); fAliESDtrackCuts->SetClusterRequirementITS(det,req); } 
+                                 { InitESDcuts(); fAliESDtrackCuts->SetClusterRequirementITS(det,req); }
+  void SetCutChi2PerClusterITS( Float_t a ) {fCutChi2PerClusterITS=kTRUE; fMaxChi2PerClusterITS=a;}
+  void SetCutITSClusterGlobal( Bool_t a ) {fCutITSClusterGlobal=a;}
   void SetMaxChi2PerClusterTPC( Float_t a ) {fMaxChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
   void SetMinChi2PerClusterTPC( Float_t a ) {fMinChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
+  void SetMaxFracSharedTPCCluster( Float_t a ) {fMaxFracSharedTPCCluster=a;fCutFracSharedTPCCluster=kTRUE;}
+  void SetCutCrossedTPCRows( Int_t a, Float_t b) {fCutCrossedTPCRows=kTRUE; fMinNCrossedRows=a; fMinCrossedRowsOverFindableClusters=b;}
+  void SetCutGoldenChi2( Double_t m ) {fCutGoldenChi2=kTRUE; fMaxGoldenChi2=m;}
+  void SetRequireTOFSignal( Bool_t a ) {fRequireTOFSignal=a;}
   void SetMaxChi2PerClusterITS( Float_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxChi2PerClusterITS(a);}
   void SetRequireTPCRefit( Bool_t a ) {InitESDcuts(); fAliESDtrackCuts->SetRequireTPCRefit(a);}
   void SetRequireTPCStandAlone( Bool_t a) {InitESDcuts(); fAliESDtrackCuts->SetRequireTPCStandAlone(a);}
@@ -128,6 +135,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetMaxDCAToVertexZ( Float_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxDCAToVertexZ(a);fCutDCAToVertexZ=kTRUE;}
   void SetMaxDCAToVertexXY( Float_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxDCAToVertexXY(a);fCutDCAToVertexXY=kTRUE;}
   void SetMaxDCAToVertexXYPtDep( const char* a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxDCAToVertexXYPtDep(a);}
+  void SetMaxDCAToVertexXYPtDepAOD( Bool_t a ) {fCutDCAToVertexXYPtDepAOD=a;}
+  void SetMaxDCAToVertexXYAOD( Float_t a ) {fCutDCAToVertexXYAOD=kTRUE; fMaxDCAxyAOD=a;}
+  void SetMaxDCAToVertexZAOD( Float_t a ) {fCutDCAToVertexZAOD=kTRUE; fMaxDCAzAOD=a;}
   void SetRequireSigmaToVertex(Bool_t a) {InitESDcuts(); fAliESDtrackCuts->SetRequireSigmaToVertex(a);}
   void SetMaxNsigmaToVertex(Float_t sigma=1e10) {InitESDcuts(); fAliESDtrackCuts->SetMaxNsigmaToVertex(sigma); }
   void SetDCAToVertex2D( Bool_t a ) {InitESDcuts(); fAliESDtrackCuts->SetDCAToVertex2D(a);}
@@ -394,8 +404,19 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutChi2PerClusterTPC; //cut on tpc chi2
   Float_t fMaxChi2PerClusterTPC; //max chi2 tpc/cluster
   Float_t fMinChi2PerClusterTPC; //min chi2 tpc/cluster
+  Bool_t fCutFracSharedTPCCluster; //cut on fraction of shared TPC clusters
+  Float_t fMaxFracSharedTPCCluster; //max fraction of shared TPC clusters
+  Bool_t fCutCrossedTPCRows;     //cut on number crossed TPC rows
+  Int_t fMinNCrossedRows;        //minimum number of crossed rows
+  Float_t fMinCrossedRowsOverFindableClusters; //min. number of crossed rows / findable clusters
+  Bool_t fCutGoldenChi2;         //cut on golden chi2 (Chi2TPCConstrainedVsGlobal)
+  Float_t fMaxGoldenChi2;        //max golden chi2 (Chi2TPCConstrainedVsGlobal)
+  Bool_t fRequireTOFSignal;      //require TOF signal
   Bool_t fCutNClustersTPC;       //cut on clusters?
   Int_t fNClustersTPCMax;        //max tpc ncls
+  Bool_t fCutChi2PerClusterITS;  //cut on chi2 per ITS cluster
+  Bool_t fCutITSClusterGlobal;   //cut on ITS clusters: either any hit on SPD or no hit on SPD and hit on first layer SDD (like global tracks)
+  Float_t fMaxChi2PerClusterITS; //max chi2 per ITS cluster
   Int_t fNClustersTPCMin;        //min tpc clusters  
   Bool_t fCutNClustersITS;       //cut on clusters?
   Int_t fNClustersITSMax;        //max tpc ncls
@@ -404,9 +425,18 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   UInt_t fAODFilterBit;          //AOD filter bit to select
   Bool_t fCutDCAToVertexXY;      //dca xy cut
   Bool_t fCutDCAToVertexZ;       //dca z cut
-  Bool_t fCutMinimalTPCdedx;    //cut on minimal dedx in TPC to reject noise tracks
+  Bool_t fCutDCAToVertexXYPtDepAOD; //dca xy cut pt dep (AOD only)
+  Bool_t fCutDCAToVertexXYAOD;   //dca xy cut (AOD only)
+  Float_t fMaxDCAxyAOD;          //max dca xy (AOD only)
+  Bool_t fCutDCAToVertexZAOD;    //dca z cut (AOD only)
+  Float_t fMaxDCAzAOD;           //max dca z (AOD only)
+  Bool_t fCutMinimalTPCdedx;     //cut on minimal dedx in TPC to reject noise tracks
   Double_t fMinimalTPCdedx;       //value for minimal TPC dedx
   Bool_t fCutTPCSecbound;         // cut tracks entering TPC close to TPC sector boundaries
+  Double_t fCutTPCSecboundMinpt;  // minimum pT for previous cut
+  Bool_t fCutTPCSecboundVar;      // cut tracks entering TPC close to TPC sector boundaries
+  TF1* fPhiCutLow; //!
+  TF1* fPhiCutHigh; //!
   Bool_t fLinearizeVZEROresponse; //linearize VZERO response using AliESDUtil
  
   Int_t fCentralityPercentileMin; //centrality min
@@ -497,7 +527,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t  fMaxITSChi2;                // fMaxITSChi2
   Int_t         fRun;                   // run number
   
-  ClassDef(AliFlowTrackCuts,19)
+  ClassDef(AliFlowTrackCuts,20)
 };
 
 #endif

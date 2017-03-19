@@ -8,12 +8,17 @@
 
 // $Id$
 
-///
-/// AliAnalysisMuMuSpectraCapsulePbP : helper class to deal with results stored in a spectra with pPb methods.
-///
-/// author : Benjamin Audurier (Subatech)
+/**
+ 
+  @ingroup pwg_muondep_mumu
 
+  @class AliAnalysisMuMuSpectraCapsulePP
 
+  @brief Handle operations on Spectra after fit procedure
+
+  @author Benjamin Audurier (Subatech)
+
+*/
 
 #include "TNamed.h"
 #include "TMath.h"

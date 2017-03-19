@@ -61,6 +61,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   void SetFilterBit(Int_t filterBit){
     fFilterBit = filterBit;
   }
+  
+    void SetLoCuts(Bool_t x){       //use loose cuts?
+    loCuts = x;
+  }
 
   void SetESigRangeITS(Double_t min, Double_t max){
     fESigITSMin = min;
@@ -115,10 +119,20 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> phi;
   std::vector<Double_t> pt;
   std::vector<Int_t> charge;
+  std::vector<Int_t> enh;  
+
+//  std::vector<Int_t> NClustersITS;
+  std::vector<Float_t> NCrossedRowsTPC;
+  std::vector<Int_t> NClustersTPC;
+  std::vector<Bool_t> HasSPDfirstHit; 
+  std::vector<Double_t> RatioCrossedRowsFindableClusters;  
+  std::vector<Int_t> NTPCSignal; 
   
-  std::vector<Int_t> IsBG;
-  std::vector<Int_t> runn;
+  Bool_t loCuts;        //loose cuts?
   
+//  std::vector<Int_t> IsBG;
+  
+  Int_t runn;
   Int_t n;
   Double_t cent;
   
@@ -162,7 +176,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   AliESDtrackCuts* fESDTrackCuts;
   
   Int_t gMultiplicity;
-  
+  Int_t mcTrackIndex;
   AliMCEvent* fMcArray; 
 
   std::vector<Double_t> EsigTPC;
@@ -178,7 +192,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> KsigITS;
 
   Bool_t hasMC;
-  Bool_t IsHij;
+  Bool_t Rej;
  
   std::vector<Double_t> MCpt;
   std::vector<Double_t> MCeta;

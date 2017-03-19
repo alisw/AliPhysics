@@ -30,4 +30,11 @@
 #pragma link C++ class AliJSONString+;
 #pragma link C++ class AliAnalysisTaskDummy+;
 #pragma link C++ class AliTLorentzVector+;
+#pragma link C++ namespace TestTHistManager;
+#pragma link C++ class TestTHistManager::THistManagerTestSuite;
+#pragma link C++ function TestTHistManager::TestRunAll();
+#pragma link C++ function TestTHistManager::TestRunBuildSimple();
+#pragma link C++ function TestTHistManager::TestRunBuildGrouped();
+#pragma link C++ function TestTHistManager::TestRunFillSimple();
+#pragma link C++ function TestTHistManager::TestRunFillGrouped();
 #endif

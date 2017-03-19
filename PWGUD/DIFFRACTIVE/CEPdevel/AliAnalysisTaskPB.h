@@ -57,10 +57,10 @@ class AliAnalysisTaskPB : public AliAnalysisTaskSE
 public:
   const static Int_t kTrackInfo = 6;
 
-	AliAnalysisTaskPB(const char* name, Long_t state = 0x0);
+	AliAnalysisTaskPB(const char* name, Long_t state = 0x0, Int_t numTracksMax = 7);
 	AliAnalysisTaskPB();
 	virtual ~AliAnalysisTaskPB();
-
+  
 	virtual void UserCreateOutputObjects();
 	virtual void UserExec(Option_t *);
 
@@ -132,9 +132,9 @@ private:
 	//------------------
 	AliESDEvent *fESDEvent;     // esd event object
 	AliAODEvent *fAODEvent;     // esd event object
-
+  
   TClonesArray *fCEPEvents;
-//  TClonesArray &fevb;
+  Int_t fnumTracksMax;
   
 	AliPIDResponse *fPIDResponse; // esd pid object
   AliPIDCombined *fPIDCombined1; //! PID Combined object with priors
@@ -152,14 +152,15 @@ private:
 	TString fMCGenerator;   // MC generator
 	Int_t fMCprocessType;   // MC process type, 0 for data
 	Int_t fMCprocess;       // detailed MC sub process information
+  TLorentzVector fMCCDSystem;
 
 	// information about the trackpair which is currently processed
 	AliVTrack* fTrkPair[2]; // track objects
 
 	Int_t fRun;     // number of the run which is about to be processed
+  Long_t fEvent;  // number of event
 	Int_t fPIDmode; // selects set of PID cuts, 0 for 3sigma standard cuts,
 	                //1 for LHC11f
-  Long_t fEvent;
 
 	// information stored for the PWA (addresses needed for the tree)
   Float_t fPIDnSigmaTPC[2][AliPID::kSPECIES+1];
@@ -169,7 +170,7 @@ private:
   Float_t fPIDBayesWP[2][AliPID::kSPECIES+1];
   Float_t fPIDBayesNP[2][AliPID::kSPECIES+1];
   
-  // tracj information
+  // track information
   // [0] Charge
   // [1] E
   // [2] Px
@@ -188,6 +189,7 @@ private:
 	                                  // requiring central act. from SPD FastOR
 	Int_t fGapInformation[kMax]; // same as above, without the requirement
 	                             // on central activity
+                               
 
 	// output objects
 	//---------------

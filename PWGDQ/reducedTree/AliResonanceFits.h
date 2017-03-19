@@ -56,9 +56,10 @@ class AliResonanceFits : public TObject {
   void SetEffHistogram(TH2D* eff)  {fEffVsPtCent = eff;}
   void SetWeightHistogram(TH1D* weights)  {fWeightVsCent = weights;}
   void SetEventsHistogram(TH1F* events) {fEventVsCent = events;}
-  void SetSignalMCshape(TH1D* shape) {fSignalMCshape = shape;}
+  void SetSignalMCshape(TH1* shape) {fSignalMCshape = shape;}
   // User options
   void SetFitRange(Float_t min, Float_t max)   {fFitRange[0]=min; fFitRange[1]=max;}
+  void SetFitPtRange(Float_t min, Float_t max)  {fPtFitRange[0]=min; fPtFitRange[1]=max;}
   void SetExclusionRange(Float_t min, Float_t max)  {fExclusionRange[0]=min; fExclusionRange[1]=max;}
   void SetMassRange(Float_t min, Float_t max)  {fMassRange[0]=min; fMassRange[1]=max;}
   void SetSignalRange(Float_t min, Float_t max)   {fSignalRange[0]=min; fSignalRange[1]=max;}
@@ -89,8 +90,9 @@ class AliResonanceFits : public TObject {
   void Process();
   void Process(Int_t bkgMethod, Int_t matchOption, Float_t waPower, Float_t minuitOption, Float_t fixBkgScale, 
 	       Int_t meMatchBkg, Int_t lsMethod);
+  void ProcessRunWise(const Char_t* path, const Char_t* cutSetting, Int_t* runList, const Int_t nRuns, const Char_t* saveFilename =  "jpsiSignal.root");
   void ExtractSignal(TH1* signal, TH1* bkg, Bool_t fixScale=kFALSE);
-  void DrawSignalExtraction(Bool_t save=kFALSE, const Char_t* name="", const Char_t* outputDir="",
+  TH1D* DrawSignalExtraction(Bool_t save=kFALSE, const Char_t* name="", const Char_t* outputDir="",
                             Bool_t makeNicePlot=kFALSE, 
                             TVirtualPad* externalPad=0x0, Bool_t noYlabels=kFALSE, Bool_t noLegends=kFALSE);
   
@@ -111,10 +113,11 @@ class AliResonanceFits : public TObject {
   TH1D*    fWeightVsCent;            // Weights vs centrality to be applied to the invariant mass spectrum
                                      // Needed for example when the centrality distribution in data is not flat
   TH1F*    fEventVsCent;             // Distribution of events over centrality                                   
-  TH1D*    fSignalMCshape;           // Signal shape from MC
+  TH1*    fSignalMCshape;           // Signal shape from MC
   
   // User options --------------------------------------------------------------------------------------------------
   static Float_t  fFitRange[2];             // mass range used for the sig extraction procedure
+  static Float_t  fPtFitRange[2];          // pt range used for bkg matching
   static Float_t  fExclusionRange[2];       // mass range excluded from matching (e.g. range around resonance peak)
   Float_t  fMassRange[2];            // mass range used for plotting
   Float_t  fSignalRange[2];          // mass range used to count the signal

@@ -735,7 +735,7 @@ void AliHFJetsContainerVertex::GetBinningVertex(TString     var,
   else if (var.EqualTo("mass1")) {
     
       axistitle="mass_{1} (GeV/c^{2})";
-      nBins = 20; binmin= 0.; binmax= 5.;
+      nBins = 40; binmin= 0.; binmax= 5.;
   }
   else if (var.EqualTo("mass2")) {
     

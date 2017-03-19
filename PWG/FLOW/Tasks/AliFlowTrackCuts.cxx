@@ -110,19 +110,39 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutChi2PerClusterTPC(kFALSE),
   fMaxChi2PerClusterTPC(FLT_MAX),
   fMinChi2PerClusterTPC(-FLT_MAX),
+  fCutFracSharedTPCCluster(kFALSE),
+  fMaxFracSharedTPCCluster(FLT_MAX),
+  fCutCrossedTPCRows(kFALSE),
+  fMinNCrossedRows(0),
+  fMinCrossedRowsOverFindableClusters(2.),
+  fCutGoldenChi2(kFALSE),
+  fMaxGoldenChi2(FLT_MAX),
+  fRequireTOFSignal(kFALSE),
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
-  fNClustersITSMin(INT_MIN),  
+  fNClustersITSMin(INT_MIN),
+  fCutChi2PerClusterITS(kFALSE),
+  fCutITSClusterGlobal(kFALSE),
+  fMaxChi2PerClusterITS(FLT_MAX),
   fUseAODFilterBit(kTRUE),
   fAODFilterBit(1),
   fCutDCAToVertexXY(kFALSE),
+  fCutDCAToVertexXYPtDepAOD(kFALSE),
+  fCutDCAToVertexXYAOD(kFALSE),
+  fMaxDCAxyAOD(FLT_MAX),
+  fCutDCAToVertexZAOD(kFALSE),
+  fMaxDCAzAOD(FLT_MAX),
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
   fCutTPCSecbound(kFALSE),
+  fCutTPCSecboundMinpt(0.2),
+  fCutTPCSecboundVar(kFALSE),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -207,6 +227,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
      fPurityFunction[i]=NULL;
   }
 
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -238,19 +260,39 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutChi2PerClusterTPC(kFALSE),
   fMaxChi2PerClusterTPC(FLT_MAX),
   fMinChi2PerClusterTPC(-FLT_MAX),
+  fCutFracSharedTPCCluster(kFALSE),
+  fMaxFracSharedTPCCluster(FLT_MAX),
+  fCutCrossedTPCRows(kFALSE),
+  fMinNCrossedRows(0),
+  fMinCrossedRowsOverFindableClusters(2.),
+  fCutGoldenChi2(kFALSE),
+  fMaxGoldenChi2(FLT_MAX),
+  fRequireTOFSignal(kFALSE),
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
   fNClustersITSMin(INT_MIN),
+  fCutChi2PerClusterITS(kFALSE),
+  fCutITSClusterGlobal(kFALSE),
+  fMaxChi2PerClusterITS(FLT_MAX),
   fUseAODFilterBit(kTRUE),
   fAODFilterBit(1),
   fCutDCAToVertexXY(kFALSE),
+  fCutDCAToVertexXYPtDepAOD(kFALSE),
+  fCutDCAToVertexXYAOD(kFALSE),
+  fMaxDCAxyAOD(FLT_MAX),
+  fCutDCAToVertexZAOD(kFALSE),
+  fMaxDCAzAOD(FLT_MAX),
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
   fCutTPCSecbound(kFALSE),
+  fCutTPCSecboundMinpt(0.2),
+  fCutTPCSecboundVar(kFALSE),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -338,6 +380,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
      fPurityFunction[i]=NULL;
   }
 
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -369,19 +413,39 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutChi2PerClusterTPC(that.fCutChi2PerClusterTPC),
   fMaxChi2PerClusterTPC(that.fMaxChi2PerClusterTPC),
   fMinChi2PerClusterTPC(that.fMinChi2PerClusterTPC),
+  fCutFracSharedTPCCluster(that.fCutFracSharedTPCCluster),
+  fMaxFracSharedTPCCluster(that.fMaxFracSharedTPCCluster),
+  fCutCrossedTPCRows(that.fCutCrossedTPCRows),
+  fMinNCrossedRows(that.fMinNCrossedRows),
+  fMinCrossedRowsOverFindableClusters(that.fMinCrossedRowsOverFindableClusters),
+  fCutGoldenChi2(that.fCutGoldenChi2),
+  fMaxGoldenChi2(that.fMaxGoldenChi2),
+  fRequireTOFSignal(that.fRequireTOFSignal),
   fCutNClustersTPC(that.fCutNClustersTPC),
   fNClustersTPCMax(that.fNClustersTPCMax),
   fNClustersTPCMin(that.fNClustersTPCMin),
   fCutNClustersITS(that.fCutNClustersITS),
   fNClustersITSMax(that.fNClustersITSMax),
   fNClustersITSMin(that.fNClustersITSMin),
+  fCutChi2PerClusterITS(that.fCutChi2PerClusterITS),
+  fCutITSClusterGlobal(that.fCutITSClusterGlobal),
+  fMaxChi2PerClusterITS(that.fMaxChi2PerClusterITS),
   fUseAODFilterBit(that.fUseAODFilterBit),
   fAODFilterBit(that.fAODFilterBit),
   fCutDCAToVertexXY(that.fCutDCAToVertexXY),
+  fCutDCAToVertexXYPtDepAOD(that.fCutDCAToVertexXYPtDepAOD),
+  fCutDCAToVertexXYAOD(that.fCutDCAToVertexXYAOD),
+  fMaxDCAxyAOD(that.fMaxDCAxyAOD),
+  fCutDCAToVertexZAOD(that.fCutDCAToVertexZAOD),
+  fMaxDCAzAOD(that.fMaxDCAzAOD),
   fCutDCAToVertexZ(that.fCutDCAToVertexZ),
   fCutMinimalTPCdedx(that.fCutMinimalTPCdedx),
   fMinimalTPCdedx(that.fMinimalTPCdedx),
   fCutTPCSecbound(that.fCutTPCSecbound),
+  fCutTPCSecboundMinpt(that.fCutTPCSecboundMinpt),
+  fCutTPCSecboundVar(that.fCutTPCSecboundVar),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(that.fLinearizeVZEROresponse),
   fCentralityPercentileMin(that.fCentralityPercentileMin),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
@@ -477,7 +541,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   for(Int_t i(0); i < 180; i++) {
      fPurityFunction[i]=that.fPurityFunction[i];
   }
-    
+  
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -522,19 +588,39 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutChi2PerClusterTPC=that.fCutChi2PerClusterTPC;
   fMaxChi2PerClusterTPC=that.fMaxChi2PerClusterTPC;
   fMinChi2PerClusterTPC=that.fMinChi2PerClusterTPC;
+  fCutFracSharedTPCCluster=that.fCutFracSharedTPCCluster;
+  fMaxFracSharedTPCCluster=that.fMaxFracSharedTPCCluster;
+  fCutCrossedTPCRows=that.fCutCrossedTPCRows;
+  fMinNCrossedRows=that.fMinNCrossedRows;
+  fMinCrossedRowsOverFindableClusters=that.fMinCrossedRowsOverFindableClusters;
+  fCutGoldenChi2=that.fCutGoldenChi2;
+  fMaxGoldenChi2=that.fMaxGoldenChi2;
+  fRequireTOFSignal=that.fRequireTOFSignal;
   fCutNClustersTPC=that.fCutNClustersTPC;
   fNClustersTPCMax=that.fNClustersTPCMax;
   fNClustersTPCMin=that.fNClustersTPCMin;  
   fCutNClustersITS=that.fCutNClustersITS;
   fNClustersITSMax=that.fNClustersITSMax;
-  fNClustersITSMin=that.fNClustersITSMin;  
+  fNClustersITSMin=that.fNClustersITSMin;
+  fCutChi2PerClusterITS=that.fCutChi2PerClusterITS;
+  fCutITSClusterGlobal=that.fCutITSClusterGlobal;
+  fMaxChi2PerClusterITS=that.fMaxChi2PerClusterITS;
   fUseAODFilterBit=that.fUseAODFilterBit;
   fAODFilterBit=that.fAODFilterBit;
   fCutDCAToVertexXY=that.fCutDCAToVertexXY;
+  fCutDCAToVertexXYPtDepAOD=that.fCutDCAToVertexXYPtDepAOD;
+  fCutDCAToVertexXYAOD=that.fCutDCAToVertexXYAOD;
+  fMaxDCAxyAOD=that.fMaxDCAxyAOD;
+  fCutDCAToVertexZAOD=that.fCutDCAToVertexZAOD;
+  fMaxDCAzAOD=that.fMaxDCAzAOD;
   fCutDCAToVertexZ=that.fCutDCAToVertexZ;
   fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
   fMinimalTPCdedx=that.fMinimalTPCdedx;
   fCutTPCSecbound=that.fCutTPCSecbound;
+  fCutTPCSecboundMinpt=that.fCutTPCSecboundMinpt;
+  fCutTPCSecboundVar=that.fCutTPCSecboundVar;
+  fPhiCutLow=NULL;
+  fPhiCutHigh=NULL;
   fPtTOFPIDoff=that.fPtTOFPIDoff;
   fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
@@ -616,6 +702,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
  
   fRun = that.fRun;
   
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
+  
   return *this;
 }
 
@@ -662,8 +751,8 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
         fPurityFunction[i] = 0;
     }
   }
-
-  
+  if(fPhiCutLow) delete fPhiCutLow;
+  if(fPhiCutHigh) delete fPhiCutHigh;
 }
 
 //-----------------------------------------------------------------------
@@ -1309,21 +1398,95 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
   }
   
-   if (fCutChi2PerClusterTPC)
+  if (fCutChi2PerClusterTPC)
   {
     Double_t chi2tpc = track->Chi2perNDF();
     if (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC) pass=kFALSE;
+  }
+  
+  if (fCutChi2PerClusterITS)
+  {
+    Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
+    if (chi2TIS >= fMaxChi2PerClusterITS) pass=kFALSE;
+  }
+  
+  if (fCutITSClusterGlobal)
+  {
+    Bool_t bSPDCl = kFALSE;
+    for (Int_t i=0; i<2; i++) {
+      if(track->HasPointOnITSLayer(i)) bSPDCl = kTRUE;
+    }
+    Bool_t bSDDCl = track->HasPointOnITSLayer(2);
+    Bool_t temppass = kTRUE;
+    if (bSPDCl || (!bSPDCl && bSDDCl)) temppass = kTRUE;
+    else temppass = kFALSE;
+    if(!temppass) pass=kFALSE;
+  }
+  
+  if (fCutFracSharedTPCCluster)
+  {
+    Int_t ntpccls = track->GetTPCncls();
+    if(ntpccls>0) {
+      Int_t ntpcclsS = track->GetTPCnclsS();
+      Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
+      if (fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
+    }
+  }
+  
+  if (fCutCrossedTPCRows)
+  {
+    Int_t nCrossedRows = track->GetTPCNCrossedRows();
+    if (nCrossedRows <= fMinNCrossedRows) pass=kFALSE;
+    Float_t CrossedRowsOverFindableClusters = track->GetTPCFoundFraction();
+    if (CrossedRowsOverFindableClusters < fMinCrossedRowsOverFindableClusters) pass=kFALSE;
+  }
+  
+  if (fCutGoldenChi2)
+  {
+    Double_t GoldenChi2 = track->GetChi2TPCConstrainedVsGlobal();
+    if (GoldenChi2 >= fMaxGoldenChi2) pass=kFALSE;
+  }
+  
+  if (fRequireTOFSignal)
+  {
+    if(TMath::Abs(track->GetTOFsignalDz())>10.)  pass=kFALSE;
+    if(track->GetTOFsignal() < 12000.)  pass=kFALSE;
+    if(track->GetTOFsignal() > 25000.)  pass=kFALSE;
   }
   
   if (GetRequireTPCRefit() && !(track->GetStatus() & AliESDtrack::kTPCrefit) ) pass=kFALSE;
   if (GetRequireITSRefit() && !(track->GetStatus() & AliESDtrack::kITSrefit) ) pass=kFALSE;
   
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
-
-  if (fCutDCAToVertexXY && TMath::Abs(track->DCA())>GetMaxDCAToVertexXY()) pass=kFALSE;
-
-  if (fCutDCAToVertexZ && TMath::Abs(track->ZAtDCA())>GetMaxDCAToVertexZ()) pass=kFALSE;
-
+  Double_t DCAxy = track->DCA();
+  Double_t DCAz = track->ZAtDCA();
+  if(fCutDCAToVertexXYAOD || fCutDCAToVertexZAOD || fCutDCAToVertexXYPtDepAOD) {
+    if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
+      // re-evaluate the dca as it seems to not be natively present
+      // allowed only for tracks inside the beam pipe
+      Double_t pos[3] = {-99., -99., -99.};
+      track->GetPosition(pos);
+      if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
+        AliAODTrack copy(*track);       // stack copy
+        Double_t b[2] = {-99., -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
+          DCAxy = b[0];
+          DCAz = b[1];
+        }
+      }
+    }
+    if (fCutDCAToVertexXYAOD) {
+      if (TMath::Abs(DCAxy)>fMaxDCAxyAOD) pass=kFALSE;
+    }
+    if (fCutDCAToVertexXYPtDepAOD) {
+      Double_t MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
+      if (TMath::Abs(DCAxy)>MaxDCAPtDep) pass=kFALSE;
+    }
+    if (fCutDCAToVertexZAOD) {
+      if (TMath::Abs(DCAz)>fMaxDCAzAOD) pass=kFALSE;
+    }
+  }
   Double_t dedx = track->GetTPCsignal();
   if(fCutMinimalTPCdedx) {
     if (dedx < fMinimalTPCdedx) pass=kFALSE;
@@ -1331,16 +1494,30 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   Double_t time[9];
   track->GetIntegratedTimes(time);
   
-  if(fCutTPCSecbound) {
+  if(fCutTPCSecbound && track->Pt()>fCutTPCSecboundMinpt) {
     Double_t xyz[3]={-9999.,-9999.,-9999.};
     const double r = 84.; // TPC IROC radius
     if (!track->GetXYZatR(r, fEvent->GetMagneticField(), xyz, NULL)) pass=kFALSE;
     Double_t cra = TMath::ATan2(xyz[1],xyz[0]); // crossing angle
-    Double_t dpe = TMath::TwoPi()/360.;// excluded region (\pm 1 degree)
+    Double_t dpe = 3.*TMath::TwoPi()/360.;// excluded region (\pm 3 degree)
     for(Int_t nb=-9; nb<=9; nb++) {
       Double_t bnp = nb*TMath::Pi()/9.; // TPC boundaries azimuthal angle
       if(cra<bnp+dpe && cra>bnp-dpe) pass=kFALSE;
     }
+  }
+  if(fCutTPCSecboundVar) {
+    Double_t phimod = track->Phi();
+    if(fEvent->GetMagneticField() < 0)   // for negative polarity field
+      phimod = TMath::TwoPi() - phimod;
+    if(track->Charge() < 0) // for negative charge
+      phimod = TMath::TwoPi() - phimod;
+    if(phimod < 0)
+      cout << "Warning!!!!! phi < 0: " << phimod << endl;
+    
+    phimod += TMath::Pi()/18.0; // to center gap in the middle
+    phimod = fmod(phimod, TMath::Pi()/9.0);
+    if(phimod < fPhiCutHigh->Eval(track->Pt()) && phimod > fPhiCutLow->Eval(track->Pt()))
+      pass=kFALSE; // reject track
   }
 
   if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
@@ -1354,22 +1531,11 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     QAbefore( 0)->Fill(momTPC,GetBeta(track, kTRUE));
     if(pass) QAafter( 0)->Fill(momTPC, GetBeta(track, kTRUE));
     QAbefore( 1)->Fill(momTPC,dedx);
-    QAbefore( 5)->Fill(track->Pt(),track->DCA());
-    QAbefore( 6)->Fill(track->Pt(),track->ZAtDCA());
+    QAbefore( 5)->Fill(track->Pt(),DCAxy);
+    QAbefore( 6)->Fill(track->Pt(),DCAz);
     if (pass) QAafter( 1)->Fill(momTPC,dedx);
-    if (pass && fUseAODFilterBit && (fAODFilterBit == 1 || fAODFilterBit == 32)) {
-        // re-evaluate the dca as it seems to not be natively present
-        AliAODTrack copy(*track);       // stack copy
-        Double_t b[2] = {-99. -99.};
-        Double_t bCov[3] = {-99., -99., -99.};
-        if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
-        QAafter( 5)->Fill(track->Pt(),b[0]);
-        QAafter( 6)->Fill(track->Pt(),b[1]);
-        }
-    } else {
-      if (pass) QAafter( 5)->Fill(track->Pt(),track->DCA());
-      if (pass) QAafter( 6)->Fill(track->Pt(),track->ZAtDCA());
-    }
+    if (pass) QAafter( 5)->Fill(track->Pt(),DCAxy);
+    if (pass) QAafter( 6)->Fill(track->Pt(),DCAz);
     QAbefore( 8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
     if (pass) QAafter(  8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
     QAbefore( 9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
@@ -1380,6 +1546,15 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
     QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
+    QAbefore(18)->Fill(track->P(),track->Chi2perNDF());
+    if (pass) QAafter( 18)->Fill(track->P(),track->Chi2perNDF());
+    Int_t ntpccls = track->GetTPCncls();
+    if(ntpccls>0) {
+      Int_t ntpcclsS = track->GetTPCnclsS();
+      Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
+      QAbefore(19)->Fill(track->P(),fshtpccls);
+      if (pass) QAafter( 19)->Fill(track->P(),fshtpccls);
+    }
   }
 
 
@@ -2640,6 +2815,12 @@ void AliFlowTrackCuts::DefineHistograms()
 
   before->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   after->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
+  
+  before->Add(new TH2F("Chi2 per TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
+  after->Add(new TH2F("Chi2 per TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
+  
+  before->Add(new TH2F("Shared TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
+  after->Add(new TH2F("Shared TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
 
   TH1::AddDirectory(adddirstatus);
 }

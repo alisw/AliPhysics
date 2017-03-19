@@ -76,6 +76,8 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void SetQA(){fQA=kTRUE;}
   void SetQAtask(bool qatask){fqatask=qatask;}
   void SetBinVer(int binver){fBinVer=binver;}
+  void SetExtraMixed(bool extramixed){fExtraMixed=extramixed;}
+  void SetLeading(bool leading){fLeading=leading;}
   void SetWeights(const char* file){
     TFile* wfile = TFile::Open(file,"OLD");
     if(wfile){
@@ -179,6 +181,8 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fQA;//if true, correlations are not build.
   Bool_t 	    fqatask;//if true AliCorrelation3p_noQA is used.
   Bool_t	    fMoreOutputs;//If true, more outputs are given.
+  Bool_t	    fExtraMixed;//If true, META META2 and METrigger are explicitly correlated.
+  Bool_t	    fLeading;//If true only the leading pT track is considered for trigger.
   TH3D *            fWeights;//TH3D to hold the correction weights Axis: 0 = centrality, 1 = vertex,2 = pT. for pT<4GeV/c
   TH2D * 	    fWeightshpt;//TH2D to hold the correction weights for high pT>4GeV/c: 0 = centrality, 1 = vertex
   TF1  * 	    fpTfunction;//TF1 to hold the pT dependence over pT = 4GeV/c.

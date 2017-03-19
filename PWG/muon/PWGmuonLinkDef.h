@@ -47,6 +47,7 @@
 #pragma link C++ class AliAnalysisTaskAOD2MuonAOD+;
 #pragma link C++ class AliAnalysisNonMuonTrackCuts+;
 #pragma link C++ class AliAnalysisNonPrimaryVertices+;
+#pragma link C++ class AliAnalysisTaskGenTuner+;
 
 #pragma link C++ class AliAnalysisTaskMuMu+;
 #pragma link C++ class AliAnalysisMuMuBinning+;
@@ -76,5 +77,8 @@
 #pragma link C++ class AliAnalysisTaskLMREventFilter+;
 #pragma link C++ class AliLMREvent+;
 #pragma link C++ class AliLMRMuon+;
+
+#pragma link C++ class AliMuonTrackSmearing+;
+#pragma link C++ class AliTaskMuonTrackSmearing+;
 #endif
 

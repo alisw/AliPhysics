@@ -91,6 +91,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fDeltaAODBranchName("GammaConv"),
   fDeltaAODFilename("AliAODGammaConversion.root"),
   fRelabelAODs(kFALSE),
+  fPreviousV0ReaderPerformsAODRelabeling(0),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
   fPeriodName(""),
@@ -382,7 +383,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     if(fHistograms==NULL){
       fHistograms = new TList();
       fHistograms->SetOwner(kTRUE);
-      fHistograms->SetName(Form("V0FindingEfficiencyInput_%s",fEventCuts->GetCutNumber().Data()));
+      fHistograms->SetName(Form("V0FindingEfficiencyInput_%s_%s",fEventCuts->GetCutNumber().Data(),fConversionCuts->GetCutNumber().Data()));
     }
 
     fHistoMCGammaPtvsR         = new TH2F("MCconvGamma_Pt_R","MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);
@@ -507,7 +508,7 @@ Bool_t AliV0ReaderV1::Notify()
     }  
   }  
   if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus   || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3b   ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c){
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     if(man) {
@@ -650,7 +651,6 @@ const AliExternalTrackParam *AliV0ReaderV1::GetExternalTrackParam(AliESDv0 *fCur
     }
   }else if(fConversionCuts->GetV0FinderSameSign()==2){
     if(fCurrentV0){
-      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()==(fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge()){
         if(charge==1){
           tracklabel=fCurrentV0->GetPindex();
           return fCurrentV0->GetParamP();
@@ -658,7 +658,6 @@ const AliExternalTrackParam *AliV0ReaderV1::GetExternalTrackParam(AliESDv0 *fCur
           tracklabel=fCurrentV0->GetNindex();
           return fCurrentV0->GetParamN();
         }
-      }
     }
   }else{
     // Check for sign flip
@@ -935,7 +934,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
   // wc[2] = (u[0]*z[1]) - (u[1]*z[0]);
 
   // Double_t PhiV = TMath::ACos((w[0]*wc[0]) + (w[1]*wc[1]) + (w[2]*wc[2]));
-  //return fabs(PhiV);
+  //return TMath::Abs(PhiV);
 
 
   // TVector3 pPlus(pt.Px(),pt.Py(),pt.Pz());
@@ -1171,6 +1170,34 @@ void AliV0ReaderV1::FindDeltaAODBranchName(){
 //________________________________________________________________________
 void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
 
+  if(fPreviousV0ReaderPerformsAODRelabeling == 2) return;
+  else if(fPreviousV0ReaderPerformsAODRelabeling == 0){
+    printf("Running AODs! Determine if V0Reader '%s' should perform relabeling\n",this->GetName());
+    TObjArray* obj = (TObjArray*)AliAnalysisManager::GetAnalysisManager()->GetTasks();
+    Int_t iPosition = obj->IndexOf(this);
+    Bool_t prevV0ReaderRunningButNotRelabeling = kFALSE;
+    for(Int_t i=iPosition-1; i>=0; i--){
+     if( (obj->At(i))->IsA() == AliV0ReaderV1::Class()){
+       AliV0ReaderV1* tempReader = (AliV0ReaderV1*) obj->At(i);
+       if( tempReader->AreAODsRelabeled() && tempReader->IsReaderPerformingRelabeling() == 1){
+         fPreviousV0ReaderPerformsAODRelabeling = 2;
+         prevV0ReaderRunningButNotRelabeling = kFALSE;
+         printf("V0Reader '%s' is running before this V0Reader '%s': do _NOT_ relabel AODs by current reader!\n",tempReader->GetName(),this->GetName());
+         break;
+       }else prevV0ReaderRunningButNotRelabeling = kTRUE;
+     }
+    }
+    if(prevV0ReaderRunningButNotRelabeling) AliFatal(Form("There are V0Readers before '%s', but none of them is relabeling!",this->GetName()));
+
+    if(fPreviousV0ReaderPerformsAODRelabeling == 2) return;
+    else{
+      printf("This V0Reader '%s' is first to be processed: do relabel AODs by current reader!\n",this->GetName());
+      fPreviousV0ReaderPerformsAODRelabeling = 1;
+    }
+  }
+
+  if(fPreviousV0ReaderPerformsAODRelabeling != 1) AliFatal(Form("In %s: fPreviousV0ReaderPerformsAODRelabeling = '%i' - while it should be impossible it is something different than '1'!",this->GetName(),fPreviousV0ReaderPerformsAODRelabeling));
+
   // Relabeling For AOD Event
   // ESDiD -> AODiD
   // MCLabel -> AODMCLabel
@@ -1181,14 +1208,14 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
     AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
     if(!AODLabelPos){
       if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
-        PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+        PhotonCandidate->SetMCLabelPositive(TMath::Abs(tempDaughter->GetLabel()));
         PhotonCandidate->SetLabelPositive(i);
         AODLabelPos = kTRUE;
       }
     }
     if(!AODLabelNeg){
       if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
-        PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+        PhotonCandidate->SetMCLabelNegative(TMath::Abs(tempDaughter->GetLabel()));
         PhotonCandidate->SetLabelNegative(i);
         AODLabelNeg = kTRUE;
       }
@@ -1231,32 +1258,39 @@ void AliV0ReaderV1::CountTracks(){
   // }
 
   if(fInputEvent->IsA()==AliESDEvent::Class()){
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
     // Using standard function for setting Cuts
     Int_t runNumber = fInputEvent->GetRunNumber();
-    AliESDtrackCuts *EsdTrackCuts = 0x0;
-    // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
-    if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-    // else if run2 data use 2015 PbPb cuts
-    }else if (runNumber>=209122){
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
-    // else use 2011 version of track cuts
-    }else{
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
     }
-    EsdTrackCuts->SetMaxDCAToVertexZ(2);
-    EsdTrackCuts->SetEtaRange(-0.8, 0.8);
-    EsdTrackCuts->SetPtRange(0.15);
+    if (!EsdTrackCuts) {
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+	// else if run2 data use 2015 PbPb cuts
+      }else if (runNumber>=209122){
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	// else use 2011 version of track cuts
+      }else{
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      EsdTrackCuts->SetPtRange(0.15);
+    }
     fNumberOfPrimaryTracks = 0;
     for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
       AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
       if(!curTrack) continue;
       if(!EsdTrackCuts->AcceptTrack(curTrack)) continue;
-      //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()),fMCEvent->Stack(),fInputEvent))) continue;
+      //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()),fMCEvent->Stack(),fInputEvent))) continue;
       fNumberOfPrimaryTracks++;
     }
-    delete EsdTrackCuts;
-    EsdTrackCuts=0x0;
   }
   else if(fInputEvent->IsA()==AliAODEvent::Class()){
     fNumberOfPrimaryTracks = 0;
@@ -1264,10 +1298,10 @@ void AliV0ReaderV1::CountTracks(){
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
       if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
-      if(fabs(curTrack->Eta())>0.8) continue;
+      if(TMath::Abs(curTrack->Eta())>0.8) continue;
       if(curTrack->Pt()<0.15) continue;
-      //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()),NULL,fInputEvent))) continue;
-      //if(fabs(curTrack->ZAtDCA())>2) continue; // Only Set For TPCOnly tracks
+      //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()),NULL,fInputEvent))) continue;
+      //if(TMath::Abs(curTrack->ZAtDCA())>2) continue; // Only Set For TPCOnly tracks
       fNumberOfPrimaryTracks++;
     }
   }
@@ -1282,7 +1316,7 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
 
   if (particle->GetPdgCode() == 22){
     // check whether particle is within eta range
-    if( fabs(particle->Eta()) > etaMax ) return kFALSE;
+    if( TMath::Abs(particle->Eta()) > etaMax ) return kFALSE;
     // check if particle doesn't have a photon as mother
     if(particle->GetMother(0) >-1 && MCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
       return kFALSE; // no photon as mothers!
@@ -1307,28 +1341,28 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
       return kFALSE;
     }
     // check if electrons are in correct eta window
-    if( fabs(ePos->Eta()) > etaMax ||
-      fabs(eNeg->Eta()) > etaMax )
+    if( TMath::Abs(ePos->Eta()) > etaMax ||
+      TMath::Abs(eNeg->Eta()) > etaMax )
       return kFALSE;
 
     // check if photons have converted in reconstructable range
     if(ePos->R() > rMax){
       return kFALSE; // cuts on distance from collision point
     }
-    if(fabs(ePos->Vz()) > zMax){
+    if(TMath::Abs(ePos->Vz()) > zMax){
       return kFALSE;  // outside material
     }
-    if(fabs(eNeg->Vz()) > zMax){
+    if(TMath::Abs(eNeg->Vz()) > zMax){
       return kFALSE;  // outside material
     }
 
 
     Double_t lineCutZRSlope = tan(2*atan(exp(-etaMax)));
     Double_t lineCutZValue = 7.;
-    if( ePos->R() <= ((fabs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( ePos->R() <= ((TMath::Abs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
     }
-    if( eNeg->R() <= ((fabs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
     }
     if (ePos->Pt() < 0.05 || eNeg->Pt() < 0.05){

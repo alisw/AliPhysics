@@ -10,9 +10,9 @@
 #include "TObject.h"
 #include "TString.h"
 
-typedef std::vector< Double_t > edgeContainer;
-
 class AliAnalysisC2Settings : public TObject {
+  typedef std::vector< Double_t > edgeContainer;
+
  public:
   AliAnalysisC2Settings();
 
@@ -20,8 +20,12 @@ class AliAnalysisC2Settings : public TObject {
   enum {kMCTRUTH, kRECON};
   // The type of data this task is accessing
   Int_t fDataType;
-  // Vector holding the bin edges along eta
-  edgeContainer fEtaBinEdges;
+  // Vector holding the bin edges along eta in the backward region
+  edgeContainer fEtaEdgesBwd;
+  // Vector holding the bin edges along eta in the central region
+  edgeContainer fEtaEdgesIts;
+  // Vector holding the bin edges along eta in the forward region
+  edgeContainer fEtaEdgesFwd;
   // Lower bound phi acceptance (should always be 0)
   Double_t fPhiAcceptanceLowEdge;
   // Upper bound phi acceptance (should always be 2pi)
@@ -56,14 +60,16 @@ class AliAnalysisC2Settings : public TObject {
   // Require this trigger in the event selection. This is needed to
   // mitigate the missing physics selection in the ITS stand alone
   // runs (eg. 15j, at the time of writing)
-  TString fTrigger;
+  TString fTrigger_str;
   // Predefined strings of triggers. Use these to set the trigger for this analysis like:
   //     fTrigger = fTriggerCint7;
   TString fTriggerCint7;
   TString fTriggerVhmV0M;
-  // ITS specific options needed for ITSsa runs
-  Bool_t fIsITSsa;
 
+  // If availible, trigger selection should be done throught the physics selection trigger mass
+  UInt_t fTriggerMask;
+  // Is the AliAODForwardMult object needed (ie., is the fmd needed?)
+  Bool_t fUseFMD;
  private:
   ClassDef(AliAnalysisC2Settings, 1);
 };

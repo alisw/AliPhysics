@@ -123,7 +123,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SetAsymCutsAt (Int_t p,Float_t v){ if(p < 10)fAsymCuts[p] = v    ; }
   void         SetNCellCutsAt(Int_t p,Int_t v)  { if(p < 10)fCellNCuts[p]= v    ; }
   void         SetPIDBitsAt  (Int_t p,Int_t v)  { if(p < 10)fPIDBits[p]  = v    ; }
-  void         SetAngleCutBin(Int_t p,Int_t v)  { if(p < 10)fAngleCutBinsArray[p]= v; }
+  void         SetAngleCutBin(Int_t p,Float_t v){ if(p < 10)fAngleCutBinsArray[p]= v; }
   
   void         SwitchOnFillSSCombinations()     { fFillSSCombinations  = kTRUE  ; }
   void         SwitchOffFillSSCombinations()    { fFillSSCombinations  = kFALSE ; }
@@ -165,11 +165,17 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
     
-  void         FillMCVersusRecDataHistograms(Int_t    index1,  Int_t    index2,
+  void         FillMCVersusRecDataHistograms(Int_t ancLabel ,  Int_t    ancPDG, 
+                                             Int_t ancStatus,  Double_t weightPt,
+                                             Int_t    iclus1,  Int_t    iclus2,
+                                             Int_t    mctag1,  Int_t    mctag2,
                                              Float_t  pt1,     Float_t  pt2,
                                              Int_t    ncells1, Int_t    ncells2,
                                              Double_t mass,    Double_t pt,     Double_t asym,
-                                             Double_t deta,    Double_t dphi);
+                                             Double_t deta,    Double_t dphi,   Double_t angle);
+  
+  void         SetPi0MassSelectionWindow(Float_t min, Float_t max) { fPi0MassWindow[0] = min ; fPi0MassWindow[1] = max ; }
+  void         SetEtaMassSelectionWindow(Float_t min, Float_t max) { fEtaMassWindow[0] = min ; fEtaMassWindow[1] = max ; }
   
   void         FillArmenterosThetaStar(Int_t pdg);
 
@@ -184,6 +190,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fUseAngleEDepCut ;          ///<  Select pairs depending on their opening angle
   Float_t  fAngleCut ;                 ///<  Select pairs with opening angle larger than a threshold
   Float_t  fAngleMaxCut ;              ///<  Select pairs with opening angle smaller than a threshold
+  
+  Float_t  fPi0MassWindow[2];          ///<  Pi0 mass selection window
+  Float_t  fEtaMassWindow[2];          ///<  Eta mass selection window
   
   // Multiple cuts analysis
   Bool_t   fMultiCutAna;               ///<  Do analysis with several or fixed cut
@@ -225,22 +234,13 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fPhotonMom1;          //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom1Boost;     //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom2;          //!<! Photon cluster momentum, temporary array
-  TLorentzVector fPi0Mom;              //!<! Pi0 cluster momentum, temporary array
-  TVector3       fProdVertex;          //!<! Production vertex, temporary array
+  TLorentzVector fMCPrimMesonMom;      //!<! Pi0/Eta MC primary momentum, temporary array
+  TVector3       fMCProdVertex;        //!<! Pi0/Eta MC Production vertex, temporary array
     
   // ----------
   // Histograms
   // ----------
-    
-  // Event characterization
-    
-  TH1F *   fhAverTotECluster;          //!<! Average number of clusters in SM
-  TH1F *   fhAverTotECell;             //!<! Average number of cells    in SM
-  TH2F *   fhAverTotECellvsCluster;    //!<! Average number of cells    in SM
-  TH1F *   fhEDensityCluster;          //!<! Deposited energy in event per cluster
-  TH1F *   fhEDensityCell;             //!<! Deposited energy in event per cell vs cluster
-  TH2F *   fhEDensityCellvsCluster;    //!<! Deposited energy in event per cell vs cluster
-
+        
   /// REAL two-photon invariant mass distribution for different calorimeter modules.
   TH2F **  fhReMod ;                   //![fNModules]
     
@@ -350,13 +350,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// REAL two-photon opening angle distribution for different pt cut, n cell cuts and assymetry for each module.
   TH2F **  fhRePtNCellAsymCutsSMOpAngle[20] ; //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
-  
-//  /// REAL two-photon invariant mass distribution for different PID bits.
-//  TH2F **  fhRePIDBits ;               //![fNPIDBits]
-    
-//  /// REAL two-photon invariant mass distribution for different track multiplicity and assymetry cuts.
-//  TH3F **  fhRePtMult ;                //![fNAsymCuts]
-    
   TH2F *   fhReSS[3] ;                 //!<! Combine clusters with 3 different cuts on shower shape
     
   // Asymmetry vs pt, in pi0/eta regions
@@ -392,9 +385,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   TH1F *   fhPrimPi0E ;                //!<! Spectrum of Primary
   TH1F *   fhPrimPi0Pt ;               //!<! Spectrum of Primary
+  TH1F *   fhPrimPi0PtInCalo ;         //!<! Spectrum of Primary, meson in calo acceptance
   TH1F *   fhPrimPi0AccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH1F *   fhPrimPi0AccPtOpAngCuts[10];//!<! Spectrum of primary with accepted daughters, different opening angles
   TH2F *   fhPrimPi0Y ;                //!<! Rapidity distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccY ;             //!<! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0Yeta ;             //!<! PseudoRapidity distribution of primary particles  vs pT
@@ -415,9 +410,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   TH1F *   fhPrimEtaE ;                //!<! Spectrum of Primary
   TH1F *   fhPrimEtaPt ;               //!<! Spectrum of Primary
+  TH1F *   fhPrimEtaPtInCalo ;         //!<! Spectrum of Primary, meson in calo acceptance
   TH1F *   fhPrimEtaAccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH1F *   fhPrimEtaAccPtOpAngCuts[10];//!<! Spectrum of primary with accepted daughters, different opening angles
   TH2F *   fhPrimEtaY ;                //!<! Rapidity distribution of primary particles vs pT
   TH2F *   fhPrimEtaAccY ;             //!<! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimEtaYeta ;             //!<! PseudoRapidity distribution of primary particles vs pT
@@ -441,6 +438,21 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimNotResonancePi0PtOrigin ; //!<! Spectrum of generated pi0 vs mother
   TH2F *   fhPrimPi0PtStatus ;         //!<! Spectrum of generated pi0 vs pi0 status
 
+  // Per Generator in Cocktail
+  TH1F *   fhPrimPi0PtPerGenerator[10] ;               //!<! Spectrum of primary with |y| < 1
+  TH1F *   fhPrimPi0PtInCaloPerGenerator[10] ;         //!<! Spectrum of primary with pi0 in calo
+  TH1F *   fhPrimPi0AccPtPerGenerator[10] ;            //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimPi0AccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH2F *   fhPrimPi0PhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
+  TH2F *   fhPrimPi0YPerGenerator[10] ;                //!<! Rapidity distribution of primary particles  vs pT
+
+  TH1F *   fhPrimEtaPtPerGenerator[10] ;               //!<! Spectrum of primary with |y| < 1
+  TH1F *   fhPrimEtaPtInCaloPerGenerator[10] ;         //!<! Spectrum of primary with eta in calo
+  TH1F *   fhPrimEtaAccPtPerGenerator[10] ;            //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimEtaAccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH2F *   fhPrimEtaPhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
+  TH2F *   fhPrimEtaYPerGenerator[10] ;                //!<! Rapidity distribution of primary particles  vs pT
+  
   // Pair origin
   // Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles,
   // 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 12-unrelated
@@ -461,6 +473,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// Real pi0 pairs, reconstructed pt vs generated pt of pair.
   TH2F **  fhMCPi0PtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts]
   
+  /// Real pi0 pairs, reconstructed pt vs generated pt of pair, apply cut on pi0 mass
+  TH2F **  fhMCPi0PtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+  
   /// Real eta pairs, reconstructed mass vs reconstructed pt of original pair.
   TH2F **  fhMCEtaMassPtRec;           //![fNPtCuts*fNAsymCuts*fNCellNCuts]
   
@@ -470,6 +485,30 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// Real eta pairs, reconstructed pt vs generated pt of pair.
   TH2F **  fhMCEtaPtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
+  /// Real eta pairs, reconstructed pt vs generated pt of pair, apply cut on eta mass
+  TH2F **  fhMCEtaPtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+
+  TH2F *   fhMCPi0PerCentrality;       //!<! Real pi0 pairs, reco pT vs centrality 
+  TH2F *   fhMCPi0PerCentralityMassCut;//!<! Real pi0 pairs, reco pT vs centrality, mass cut around pi0 
+  TH2F *   fhMCEtaPerCentrality;       //!<! Real eta pairs, reco pT vs centrality  
+  TH2F *   fhMCEtaPerCentralityMassCut;//!<! Real eta pairs, reco pT vs centrality, mass cut around eta 
+  
+  TH2F *   fhMCPi0PtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
+  TH2F *   fhMCPi0PtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
+  TH2F *   fhMCPi0PtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
+  
+  TH2F *   fhMCEtaPtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
+  TH2F *   fhMCEtaPtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
+  TH2F *   fhMCEtaPtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
+
+  TH2F *   fhMCPi0PtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
+  TH2F *   fhMCPi0PtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
+  TH2F *   fhMCPi0PtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  
+  TH2F *   fhMCEtaPtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
+  TH2F *   fhMCEtaPtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
+  TH2F *   fhMCEtaPtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  
   TH2F *   fhMCPi0PtOrigin ;           //!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCEtaPtOrigin ;           //!<! Mass of reconstructed eta pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCNotResonancePi0PtOrigin;//!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID, pi0 status 1.
@@ -513,6 +552,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhReOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number  
 //  TH2F *  fhReOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other 
 
+  TH2F *  fhReOpAngleBinPairClusterMassMCTruePi0[10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, true pi0 decay pairs from MC 
+  TH2F *  fhReOpAngleBinPairClusterMassMCTrueEta[10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, true eta decay pairs from MC
+  
   TH2F *  fhMiOpAngleBinMinClusterEtaPhi       [10] ; //!<! Eta-Phi location of lowest energy cluster in pair, depending on opening angle cut, mixed event
   TH2F *  fhMiOpAngleBinMaxClusterEtaPhi       [10] ; //!<! Eta-Phi location of highest energy cluster in pair, depending on opening angle cut, mixed event
 //TH2F *  fhMiOpAngleBinMinClusterColRow       [10] ; //!<! Column and row location of main cell of lowest energy cluster in pair, depending on opening angle cut, mixed event
@@ -527,10 +569,27 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhMiOpAngleBinPairClusterMass        [10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, mixed event  
   TH2F *  fhMiOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number, mixed event  
 //TH2F *  fhMiOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other, mixed event 
-
+  
   TH2F *  fhPtBinClusterEtaPhi                 [10] ; //!<! Eta-Phi location of cluster in different energy bins.
   TH2F *  fhPtBinClusterColRow                 [10] ; //!<! Column and row location of cluster in different energy bins.
 
+  TH2F *  fhPairGeneratorsBkgMass               [10][10]; //!<! Mass for a pair of clusters depending bkg type
+  TH2F *  fhPairGeneratorsBkgMassMCPi0          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCPi0          [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCPi0MassCut   [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, pi0 true pairs, mass cut
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs  
+  TH2F *  fhPairGeneratorsBkgMassMCEta          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCEta          [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCEtaMassCut   [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, eta true pairs, mass cut
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEta[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEta [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, eta true pairs
+  
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, eta true pairs, eta mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, eta true pairs, eta mass window
+  
   /// Copy constructor not implemented.
   AliAnaPi0(              const AliAnaPi0 & api0) ;
    
@@ -538,7 +597,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,33) ;
+  ClassDef(AliAnaPi0,35) ;
   /// \endcond
   
 } ;

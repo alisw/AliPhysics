@@ -33,12 +33,15 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection() :
     fDEtaNearAcceptance(),
     fDEtaDPhiNearAcceptance(),
     fDEtaDPhi3DNearAcceptance(),
+    fDEtaDPhiTrackMerge(),
     fMinCountsPerBinInclusive(1000),
     fDEtaNearLoaded(false),
     fDEtaDPhiNearLoaded(false),
     fDEtaDPhi3DNearLoaded(false),
+    fDEtaDPhiTrackMergeLoaded(false),
     fLeadingParticleCorrelation(true),
-    fTestMode(false)
+    fTestMode(false),
+    fUseSafeRadius(false)
 {
   // default constructor
   Generate3DAcceptanceCorrection();
@@ -53,12 +56,15 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(AliJCard *inputCard) :
     fDEtaNearAcceptance(),
     fDEtaDPhiNearAcceptance(),
     fDEtaDPhi3DNearAcceptance(),
+    fDEtaDPhiTrackMerge(),
     fMinCountsPerBinInclusive(1000),
     fDEtaNearLoaded(false),
     fDEtaDPhiNearLoaded(false),
     fDEtaDPhi3DNearLoaded(false),
+    fDEtaDPhiTrackMergeLoaded(false),
     fLeadingParticleCorrelation(true),
-    fTestMode(false)
+    fTestMode(false),
+    fUseSafeRadius(false)
 {
   // Constructor with JCard
   Generate3DAcceptanceCorrection();
@@ -72,13 +78,16 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(const AliJAcceptanceCorrectio
     fDEtaNearAcceptance(a.fDEtaNearAcceptance),
     fDEtaDPhiNearAcceptance(a.fDEtaDPhiNearAcceptance),
     fDEtaDPhi3DNearAcceptance(a.fDEtaDPhi3DNearAcceptance),
+    fDEtaDPhiTrackMerge(a.fDEtaDPhiTrackMerge),
     fDEtaDPhi3DNearAcceptanceCalculation(a.fDEtaDPhi3DNearAcceptanceCalculation),
     fMinCountsPerBinInclusive(a.fMinCountsPerBinInclusive),
     fDEtaNearLoaded(a.fDEtaNearLoaded),
     fDEtaDPhiNearLoaded(a.fDEtaDPhiNearLoaded),
     fDEtaDPhi3DNearLoaded(a.fDEtaDPhi3DNearLoaded),
+    fDEtaDPhiTrackMergeLoaded(a.fDEtaDPhiTrackMergeLoaded),
     fLeadingParticleCorrelation(a.fLeadingParticleCorrelation),
-    fTestMode(a.fTestMode)
+    fTestMode(a.fTestMode),
+    fUseSafeRadius(a.fUseSafeRadius)
 {
   //copy constructor
 }
@@ -103,13 +112,16 @@ AliJAcceptanceCorrection&  AliJAcceptanceCorrection::operator=(const AliJAccepta
     fDEtaNearAcceptance = a.fDEtaNearAcceptance;
     fDEtaDPhiNearAcceptance = a.fDEtaDPhiNearAcceptance;
     fDEtaDPhi3DNearAcceptance = a.fDEtaDPhi3DNearAcceptance;
+    fDEtaDPhiTrackMerge = a.fDEtaDPhiTrackMerge;
     fDEtaDPhi3DNearAcceptanceCalculation = a.fDEtaDPhi3DNearAcceptanceCalculation;
     fMinCountsPerBinInclusive = a.fMinCountsPerBinInclusive;
     fDEtaNearLoaded = a.fDEtaNearLoaded;
     fDEtaDPhiNearLoaded = a.fDEtaDPhiNearLoaded;
     fDEtaDPhi3DNearLoaded = a.fDEtaDPhi3DNearLoaded;
+    fDEtaDPhiTrackMergeLoaded = a.fDEtaDPhiTrackMergeLoaded;
     fLeadingParticleCorrelation = a.fLeadingParticleCorrelation;
     fTestMode = a.fTestMode;
+    fUseSafeRadius = a.fUseSafeRadius;
   }
   return *this;
 }
@@ -214,6 +226,26 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
     std::cout << "Could not find histogram: hDphiDetaXlong" << std::endl;
     std::cout << "Inclusive histograms for 3D near side acceptance correction are not loaded! " << std::endl;
   }
+  
+  // Only read track merge histograms if track merge correction is applied
+  if(fCard->Get("TrackMergeSystematics")==1){
+    
+    // Load the mixed event deltaPhi deltaEta histogram in the 3D near side
+    if(histogramReader->HistogramExists("hDphiDetaXlong")){
+      if(histogramReader->HistogramExists("hDphiDetaTrackMerge")){
+        fDEtaDPhiTrackMerge = histogramReader->GetTH2D("hDphiDetaTrackMerge");
+        NormalizeTrackMerge(fDEtaDPhiTrackMerge, kXeType);
+        fDEtaDPhiTrackMergeLoaded = true;
+      } else {
+        std::cout << "Could not find histogram: hDphiDetaTrackMerge" << std::endl;
+        std::cout << "Track merge correction not possible without these! " << std::endl;
+      }
+    } else {
+      std::cout << "Could not find histogram: hDphiDetaXlong" << std::endl;
+      std::cout << "Track merge correction not possible without these! " << std::endl;
+    }
+  }
+
   
   delete histogramReader;
   
@@ -340,6 +372,102 @@ void AliJAcceptanceCorrection::NormalizeAcceptance3DNearSideInclusive(AliJTH2D &
   const double peakValue = 2*sqrt(2)*etaRange;
   NormalizeAcceptanceInclusive(acceptanceHisto,assocType,peakValue);
   
+}
+
+/*
+ * Calculate and do a proper normalization for track merging histograms
+ * The correction must be done bin by bin, since different xlong bins have sligthly
+ * different track merging effect.
+ * Minimum rebin of 4 is required not to bias the distribution too much at the very center
+ * of deltaEta-deltaPhi plane from where all the pairs are removed.
+ *
+ *  AliJTH2D &trackMergeHisto = Custom histogram array containing pairs removed by track merge cut
+ *  corrType assocType = Associated particle binning type, mainly pTa or xLong
+ */
+void AliJAcceptanceCorrection::NormalizeTrackMerge(AliJTH2D &trackMergeHisto, corrType assocType){
+  // Method for normalizing and rebinning the track merge correction histograms
+  
+  // Find the correct binning
+  const int numCent    = fCard->GetNoOfBins(kCentrType);
+  const int numPtt     = fCard->GetNoOfBins(kTriggType);
+  const int numAssoc   = fCard->GetNoOfBins(assocType);
+  const int numZvertex = fCard->GetNoOfBins(kZVertType);
+  
+  // Temporary histogram to help in calculation
+  TH2D *calculationHelper;
+  TH2D *histogramReader;
+  
+  // Bin rebin values found by trial and error. Should be good enough for a check.
+  // Minimum rebin is 4, so that the region from where all the particles are removed
+  // does not affect the correction too much (division by zero).
+  int rebinValues[4][9] = {{4,4,4,4,4,4,4,4,4},
+                           {4,4,4,4,4,4,4,8,8},
+                           {4,4,4,4,4,4,8,16,16},
+                           {4,4,4,4,8,16,16,16,16}};
+  
+  // Loop over the input histograms and find the correct normalization
+  for (int iCent = 0; iCent < numCent; iCent++) {
+    for (int iPtt = 0; iPtt < numPtt; iPtt++){
+      for (int iZVertex = 0; iZVertex < numZvertex; iZVertex++){
+        for (int iAssoc = 0; iAssoc < numAssoc; iAssoc++){
+          
+          // Note: iAssoc == 0 bin contains integrated distribution
+          // This bin should not be used in the analysis, but in order to avoid problems
+          // in other parts of the code the correction histogram is filled also for zeroth bin
+          histogramReader = fDEtaDPhi3DNearAcceptance[1][iCent][iZVertex][iPtt][iAssoc];
+          calculationHelper = (TH2D*) histogramReader->Clone();
+          
+          // Note: Rebinning must be done before the calculation. Otherwise we run into
+          // problems in case of low statistics. When there is a good fraction of bins that
+          // are zero, if we rebin these after division gives too little content in the new
+          // bins. Rebinning before division solves this problem.
+          calculationHelper->Rebin2D(rebinValues[iAssoc][iPtt],rebinValues[iAssoc][iPtt]);
+          trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->Rebin2D(rebinValues[iAssoc][iPtt],rebinValues[iAssoc][iPtt]);
+          histogramReader->Rebin2D(rebinValues[iAssoc][iPtt],rebinValues[iAssoc][iPtt]);
+          
+          
+          calculationHelper->Add(trackMergeHisto[iCent][iZVertex][iPtt][iAssoc],-1);
+          calculationHelper->Divide(histogramReader);
+          trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->Reset();
+          trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->Add(calculationHelper);
+          
+          // Normalize the rebinned histogram. GetMaximum is probably good enough for finding maximum value.
+          const double maxValue = trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->GetMaximum();
+          if(maxValue > 0) trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->Scale(1/maxValue);
+        }
+      } // z-vertex bins
+    } // Trigger pT bins
+  } // Centrality bins
+}
+
+/*
+ * Return the track merge correction
+ *
+ *  double deltaEta = deltaEta for the particle pair
+ *  double deltaPhi = deltaPhi for the particle pair
+ *  int iCent = Centrality bin for the correction
+ *  int iZVertex = z-vertex bin for the correction
+ *  int iPtt = pTt bin for the correction
+ *  int iXlong = xLong bin for the correction
+ *
+ *  return = Track merge correction based on input deltaEta and deltaPhi
+ */
+double AliJAcceptanceCorrection::GetTrackMergeCorrection(double deltaEta, double deltaPhi, int iCent, int iZVertex, int iPtt, int iXlong){
+  // return the track merge correction
+  
+  // If track merge histograms are not loaded, no reliable track merge correction can be done
+  if(!fDEtaDPhiTrackMergeLoaded) return 1;
+  
+  // Track merging is only problem when two tracks are close to each other. In order to avoid rebinning effects
+  // in the edges, do not correct if we are far away from the middle of deltaEta-deltaPhi plane
+  if(TMath::Abs(deltaEta) > 0.2 || TMath::Abs(deltaPhi) > 0.6) return 1;
+  
+  double denominator = fDEtaDPhiTrackMerge[iCent][iZVertex][iPtt][iXlong]->GetBinContent(fDEtaDPhiTrackMerge[iCent][iZVertex][iPtt][iXlong]->FindBin(deltaEta,deltaPhi));
+  
+  if(denominator > 1e-6)
+    return 1.0/denominator;
+  else
+    return 0;
 }
 
 /*
@@ -526,7 +654,8 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusiveBin(d
   double denominator = nearSideLength / (nearSideLength + outsideAcceptance);
   
   // For the test mode, do not do the proper correction here. Just normalize to interval [0,1]
-  if(fTestMode){
+  // This can be done also inside radius of Pi/2, since 3D near side distortions need to be taken into account only in the edges
+  if(fTestMode || ( fUseSafeRadius && (deltaEta*deltaEta+deltaPhi*deltaPhi < TMath::Pi()*TMath::Pi()/4))){
     double etaRange = fCard->Get("EtaRange");
     denominator = nearSideLength / (2*sqrt(2)*etaRange);
   }

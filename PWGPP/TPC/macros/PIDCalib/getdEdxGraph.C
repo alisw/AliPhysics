@@ -17,8 +17,8 @@ AliPIDResponse *p=0x0;
   hDummy.SetMaximum(1000);
   hDummy.Draw();
 
-  TGraph *grPio=getdEdxGraph(165772,2,AliPID::kPion);
-  TGraph *grPro=getdEdxGraph(165772,2,AliPID::kProton);
+  TGraph *grPio=getdEdxGraph(165772,"pass2",AliPID::kPion);
+  TGraph *grPro=getdEdxGraph(165772,"pass2",AliPID::kProton);
 
   grPio->SetLineColor(kRed);
   grPro->SetLineColor(kBlue);
@@ -34,9 +34,9 @@ AliPIDResponse *p=0x0;
   hDummy.SetMaximum(1000);
   hDummy.Draw();
 
-  TGraph *grDeuteron     = getdEdxGraph(165772,2,AliPID::kDeuteron);
-  TGraph *grDeuteron_p3s = getdEdxGraph(165772,2,AliPID::kDeuteron, kFALSE, +3);
-  TGraph *grDeuteron_m3s = getdEdxGraph(165772,2,AliPID::kDeuteron, kFALSE, -3);
+  TGraph *grDeuteron     = getdEdxGraph(165772,"pass2",AliPID::kDeuteron);
+  TGraph *grDeuteron_p3s = getdEdxGraph(165772,"pass2",AliPID::kDeuteron, kFALSE, +3);
+  TGraph *grDeuteron_m3s = getdEdxGraph(165772,"pass2",AliPID::kDeuteron, kFALSE, -3);
 
   grDeuteron    ->SetLineColor(kRed);
   grDeuteron_m3s->SetLineColor(kRed);
@@ -84,17 +84,31 @@ AliPIDResponse *p=0x0;
 
  */
 
-TGraph* getdEdxGraph(Int_t run, Int_t pass, AliPID::EParticleType particle, 
+TGraph* getdEdxGraph(Int_t run, TString recoPass, AliPID::EParticleType particle, 
                      Bool_t isMC=kFALSE, Double_t nSigma=0, 
                      Double_t xmin=0.1, Double_t xmax=20., Double_t dEdxMax=1000)
 {
   AliESDEvent ev;
+
+  Int_t recoPassNumber = 0;
+  if (recoPass.Contains("pass1") ) {
+    recoPassNumber=1;
+  } else if (recoPass.Contains("pass2") ) {
+    recoPassNumber=2;
+  } else if (recoPass.Contains("pass3") ) {
+    recoPassNumber=3;
+  } else if (recoPass.Contains("pass4") ) {
+    recoPassNumber=4;
+  } else if (recoPass.Contains("pass5") ) {
+    recoPassNumber=5;
+  }
+
   if (run!=lastRun) {
     delete p;
     p=new AliPIDResponse(isMC);
     p->SetUseTPCMultiplicityCorrection();
     p->SetOADBPath("$ALICE_PHYSICS/OADB");
-    p->InitialiseEvent(&ev,pass,run);
+    p->InitialiseEvent(&ev,recoPassNumber, recoPass, run);
     lastRun=run;
   }
   AliTPCPIDResponse &tpcpid=p->GetTPCResponse();
@@ -114,7 +128,7 @@ TGraph* getdEdxGraph(Int_t run, Int_t pass, AliPID::EParticleType particle,
     //const Double_t sigma = tpcpid.GetExpectedSigma(p,100,particle);
     Double_t dEdx  = tpcpid.GetExpectedSignal(&tr,particle,AliTPCPIDResponse::kdEdxDefault,kFALSE,kTRUE);
     const Double_t sigma = tpcpid.GetExpectedSigma(&tr,particle,AliTPCPIDResponse::kdEdxDefault,kFALSE,kTRUE);
-    printf("%.2f +- %.2f (%.2f)\n", dEdx, sigma, sigma/dEdx);
+    //printf("%.2f +- %.2f (%.2f)\n", dEdx, sigma, sigma/dEdx);
     dEdx += nSigma*sigma;
     if (dEdx>dEdxMax) continue;
     gr->SetPoint(gr->GetN(), p, dEdx);
@@ -155,7 +169,7 @@ TGraph* getdEdxGraphPIDReco(Int_t run, AliPID::EParticleType particle, Double_t 
     lastRun=run;
   }
 
-  return getdEdxGraph(run, 0, particle, kFALSE, nSigma, xmin, xmax, dEdxMax);
+  return getdEdxGraph(run, "0", particle, kFALSE, nSigma, xmin, xmax, dEdxMax);
 }
 
 //______________________________________________________________________________

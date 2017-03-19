@@ -56,7 +56,7 @@ enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
-enum particularity{ kTopological, kLowPt };
+enum particularity{ kTopological, kLowPt, kPP7TeVPass4 };
 
 
 Bool_t printout = false;
@@ -127,7 +127,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }
   // Values from Alberica's twiki:
   //   https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
-  if( ccestimator == kV0M ) {
+  if( (ccestimator == kV0M) && (Energy==k276) ) {
     if ( cc == k07half ) {
       Tab = 24.81; TabSyst = 0.8037;
     } else if ( cc == k010 ) {
@@ -160,6 +160,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       Tab = 0.0690; TabSyst = 0.0062;
     }
   }
+  if( (ccestimator == kV0M) && (Energy==k5dot023) ) {
+      if ( cc == k3050 ) {
+          Tab = 3.76; TabSyst = 0.13;
+      }
+  }
+
 
   // pPb Glauber (A. Toia)
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
@@ -210,8 +216,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   TGraphAsymmErrors * gSigmaPPSystData = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystData");
   TGraphAsymmErrors * gSigmaPPSystTheory = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystExtrap");
   TGraphAsymmErrors * gSigmaPPSystFeedDown = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystFeedDown");
-  TH1I * hCombinedReferenceFlag;
-  TGraphAsymmErrors * gReferenceFdSyst;
+  TH1I * hCombinedReferenceFlag=0x0;
+  TGraphAsymmErrors * gReferenceFdSyst=0x0;
   if(isScaledAndExtrapRef){
     hCombinedReferenceFlag = (TH1I*)ppf->Get("hCombinedReferenceFlag");
     hSigmaPP = (TH1D*)ppf->Get("hReference");
@@ -225,12 +231,21 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 
   
   // Call the systematics uncertainty class for a given decay
-  AliHFSystErr *systematicsPP = new AliHFSystErr();
-  if(analysisSpeciality==kLowPt){
-     systematicsPP->SetIsLowPtAnalysis(true);
+  AliHFSystErr *systematicsPP = 0x0;
+  if(ppf->Get("AliHFSystErr")){
+    systematicsPP = (AliHFSystErr*)ppf->Get("AliHFSystErr");
+    printf("   --> AliHFSystErr object for pp reference read from file. Object title = %s\n",systematicsPP->GetTitle());
+  }else{
+    systematicsPP = new AliHFSystErr();
+    if(analysisSpeciality==kLowPt){
+      systematicsPP->SetIsLowPtAnalysis(true);
+    }
+    if(analysisSpeciality==kPP7TeVPass4){
+      systematicsPP->SetIsPass4Analysis(true);
+    }
+    systematicsPP->Init(decay);
+    printf("   --> AliHFSystErr object for pp reference created based on macro arguments. Object title = %s\n",systematicsPP->GetTitle());
   }
-  systematicsPP->Init(decay);
-
   //
   // Reading the AB collisions file
   // 
@@ -266,76 +281,89 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 
   //
   // Call the systematics uncertainty class for a given decay
-  AliHFSystErr *systematicsAB = new AliHFSystErr();
-  systematicsAB->SetCollisionType(1);
-  if ( cc == k07half ) systematicsAB->SetCentrality("07half");
-  else if ( cc == k010 ) systematicsAB->SetCentrality("010");
-  else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
-  else if ( cc == k020 ) systematicsAB->SetCentrality("020");
-  else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
-    systematicsAB->SetCentrality("2040");
-    systematicsAB->SetIsPbPb2010EnergyScan(true);
-  }
-  else if ( cc == k4060 || cc == k4050 || cc == k5060 ) systematicsAB->SetCentrality("4060");
-  else if ( cc == k6080 || cc == k5080 ) systematicsAB->SetCentrality("6080");
-  else if ( cc == k4080 ) systematicsAB->SetCentrality("4080");
-  else if ( cc == k3050 ) {
-    if (isRaavsEP == kPhiIntegrated) systematicsAB->SetCentrality("4080");
-    else if (isRaavsEP == kInPlane) systematicsAB->SetCentrality("3050InPlane");
-    else if (isRaavsEP == kOutOfPlane) systematicsAB->SetCentrality("3050OutOfPlane");
-  }
-  //
-  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
-    systematicsAB->SetCollisionType(2);
-    // Rapidity slices
-    if(rapiditySlice!=kdefault){
-      systematicsAB->SetIspPb2011RapidityScan(true);
-      TString rapidity="";
-      switch(rapiditySlice) {
-           case k08to04: rapidity="0804"; scalePPRefToMatchRapidityBin=(0.093+0.280)/1.0; break;
-           case k07to04: rapidity="0804"; scalePPRefToMatchRapidityBin=0.280/1.0; break;
-           case k04to01: rapidity="0401"; scalePPRefToMatchRapidityBin=0.284/1.0; break;
-           case k01to01: rapidity="0101"; scalePPRefToMatchRapidityBin=0.191/1.0; break;
-           case k01to04: rapidity="0104"; scalePPRefToMatchRapidityBin=0.288/1.0; break;
-           case k04to07: rapidity="0408"; scalePPRefToMatchRapidityBin=0.288/1.0; break;
-           case k04to08: rapidity="0408"; scalePPRefToMatchRapidityBin=(0.288+0.096)/1.0; break;
-           case k01to05: rapidity="0401"; scalePPRefToMatchRapidityBin=0.4; break;
+  AliHFSystErr *systematicsAB = 0x0;
+  if(ABf->Get("AliHFSystErr")){
+    systematicsAB=(AliHFSystErr*)ABf->Get("AliHFSystErr");
+    printf("   --> AliHFSystErr object for A-A read from HFPtSpectrum file. Object title = %s\n",systematicsAB->GetTitle());
+  }else{
+    systematicsAB = new AliHFSystErr();
+    systematicsAB->SetCollisionType(1);
+    if(Energy==k276){
+      if ( cc == k07half ) systematicsAB->SetCentrality("07half");
+      else if ( cc == k010 ) systematicsAB->SetCentrality("010");
+      else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
+      else if ( cc == k020 ) systematicsAB->SetCentrality("020");
+      else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
+	systematicsAB->SetCentrality("2040");
+	systematicsAB->SetIsPbPb2010EnergyScan(true);
       }
-      systematicsAB->SetRapidity(rapidity);
-    }
-    // Centrality slices
-    if(ccestimator==kV0A) {
-      if(cc == kpPb020) systematicsAB->SetCentrality("020V0A");
-      else if(cc == kpPb2040) systematicsAB->SetCentrality("2040V0A");
-      else if(cc == kpPb4060) systematicsAB->SetCentrality("4060V0A");
-      else if(cc == kpPb60100) systematicsAB->SetCentrality("60100V0A");
-    } else if (ccestimator==kZNA) {
-      if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
-      else if(cc == kpPb2040) systematicsAB->SetCentrality("2040ZNA");
-      else if(cc == kpPb4060) systematicsAB->SetCentrality("4060ZNA");
-      else if(cc == kpPb60100) systematicsAB->SetCentrality("60100ZNA");
-    } else if (ccestimator==kCL1) {
-      if(cc == kpPb020) systematicsAB->SetCentrality("020CL1");
-      else if(cc == kpPb2040) systematicsAB->SetCentrality("2040CL1");
-      else if(cc == kpPb4060) systematicsAB->SetCentrality("4060CL1");
-      else if(cc == kpPb60100) systematicsAB->SetCentrality("60100CL1");
-    }else {
-      if(!(cc == kpPb0100)) {
-	cout <<" Error on the pPb options"<<endl;
-	return;
+      else if ( cc == k4060 || cc == k4050 || cc == k5060 ) systematicsAB->SetCentrality("4060");
+      else if ( cc == k6080 || cc == k5080 ) systematicsAB->SetCentrality("6080");
+      else if ( cc == k4080 ) systematicsAB->SetCentrality("4080");
+      else if ( cc == k3050 ) {
+	if (isRaavsEP == kPhiIntegrated) systematicsAB->SetCentrality("4080");
+	else if (isRaavsEP == kInPlane) systematicsAB->SetCentrality("3050InPlane");
+	else if (isRaavsEP == kOutOfPlane) systematicsAB->SetCentrality("3050OutOfPlane");
+      }
+    } else if (Energy==k5dot023){
+      if ( cc == k3050 ){
+	systematicsAB->SetRunNumber(15);
+	systematicsAB->SetCentrality("3050");
       }
     }
+    //
+    else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+      systematicsAB->SetCollisionType(2);
+      // Rapidity slices
+      if(rapiditySlice!=kdefault){
+	systematicsAB->SetIspPb2011RapidityScan(true);
+	TString rapidity="";
+	switch(rapiditySlice) {
+	case k08to04: rapidity="0804"; scalePPRefToMatchRapidityBin=(0.093+0.280)/1.0; break;
+	case k07to04: rapidity="0804"; scalePPRefToMatchRapidityBin=0.280/1.0; break;
+	case k04to01: rapidity="0401"; scalePPRefToMatchRapidityBin=0.284/1.0; break;
+	case k01to01: rapidity="0101"; scalePPRefToMatchRapidityBin=0.191/1.0; break;
+	case k01to04: rapidity="0104"; scalePPRefToMatchRapidityBin=0.288/1.0; break;
+	case k04to07: rapidity="0408"; scalePPRefToMatchRapidityBin=0.288/1.0; break;
+	case k04to08: rapidity="0408"; scalePPRefToMatchRapidityBin=(0.288+0.096)/1.0; break;
+	case k01to05: rapidity="0401"; scalePPRefToMatchRapidityBin=0.4; break;
+	}
+	systematicsAB->SetRapidity(rapidity);
+      }
+      // Centrality slices
+      if(ccestimator==kV0A) {
+	if(cc == kpPb020) systematicsAB->SetCentrality("020V0A");
+	else if(cc == kpPb2040) systematicsAB->SetCentrality("2040V0A");
+	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060V0A");
+	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100V0A");
+      } else if (ccestimator==kZNA) {
+	if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
+	else if(cc == kpPb2040) systematicsAB->SetCentrality("2040ZNA");
+	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060ZNA");
+	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100ZNA");
+      } else if (ccestimator==kCL1) {
+	if(cc == kpPb020) systematicsAB->SetCentrality("020CL1");
+	else if(cc == kpPb2040) systematicsAB->SetCentrality("2040CL1");
+	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060CL1");
+	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100CL1");
+      }else {
+	if(!(cc == kpPb0100)) {
+	  cout <<" Error on the pPb options"<<endl;
+	  return;
+	}
+      }
+    }
+    else { 
+      cout << " Systematics not yet implemented " << endl;
+      return;
+    }
+    if(analysisSpeciality==kLowPt){
+      systematicsAB->SetIsLowPtAnalysis(true);
+    }
+    //
+    systematicsAB->Init(decay);
+    printf("   --> AliHFSystErr object for A-A created based on macro arguments. Object title = %s\n",systematicsAB->GetTitle());
   }
-  else { 
-    cout << " Systematics not yet implemented " << endl;
-    return;
-  }
-  if(analysisSpeciality==kLowPt){
-     systematicsAB->SetIsLowPtAnalysis(true);
-  }
-  //
-  systematicsAB->Init(decay);
-
   //
   Int_t entries = nSigmaAB->GetEntries();
   Float_t pt=0., signal=0., Rb=0., Rcb=0., fcAB=0., yieldAB=0., sigmaAB=0., statUncSigmaAB=0., sigmaABMin=0.,sigmaABMax=0.;
@@ -565,7 +593,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 
     // Flag to know if it is an scaled or extrapolated point of the pp reference
     Bool_t isExtrapolatedBin = kFALSE;
-    if(isScaledAndExtrapRef) isExtrapolatedBin = hCombinedReferenceFlag->GetBinContent( hppbin );
+    if(isScaledAndExtrapRef && hCombinedReferenceFlag) isExtrapolatedBin = hCombinedReferenceFlag->GetBinContent( hppbin );
     istartPPsyst = -1;
     istartPPsyst = FindGraphBin(gSigmaPPSyst,pt);
 
@@ -579,9 +607,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 
     //      cout << " Starting bin for pp is "<< istartPPfd <<", for AA is "<<istartABfd << endl;
     if(isExtrapolatedBin){
-      Int_t ibinfd = FindGraphBin(gReferenceFdSyst,pt);
-      yPPh = gReferenceFdSyst->GetErrorYhigh(ibinfd);
-      yPPl = gReferenceFdSyst->GetErrorYlow(ibinfd);
+      if(gReferenceFdSyst){
+	Int_t ibinfd = FindGraphBin(gReferenceFdSyst,pt);
+	yPPh = gReferenceFdSyst->GetErrorYhigh(ibinfd);
+	yPPl = gReferenceFdSyst->GetErrorYlow(ibinfd);
+      }
     } else { 
       yPPh = gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd);
       yPPl = gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd);
@@ -941,6 +971,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     cout<<" Global syst  +"<< systgbhUnc <<" - "<<  systgblUnc << " = + "<< systgbhUnc/value <<" - "<<  systgblUnc/value << " %" <<endl; 
     //
   }
+    
+  cout<<endl<<"  Calculation finished, now drawing"<<endl<<endl;
 
 
   gROOT->SetStyle("Plain");
@@ -952,11 +984,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   hRABvsRb->Draw("colz");
   cRABvsRb->Update();
 
-  TCanvas *cRABvsRbvsPt = new TCanvas("cRABvsRbvsPt","RAB vs Rb vs pt");
-  hRABCharmVsRBeautyVsPt->Draw("lego3z");
-  cRABvsRbvsPt->Update();
+//  TCanvas *cRABvsRbvsPt = new TCanvas("cRABvsRbvsPt","RAB vs Rb vs pt");
+//  hRABCharmVsRBeautyVsPt->Draw("lego3z");
+//  cRABvsRbvsPt->Update();
 
-
+    
+  cout<< "    Drawing feed-down contribution"<<endl;
   TCanvas *cRABvsRbFDl = new TCanvas("RABvsRbFDl","RAB vs Rb (FD low)");
   hRABvsRbFDlow->Draw("cont4z");
   cRABvsRbFDl->Update();
@@ -1070,7 +1103,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   legrcb->Draw();
   cRABptEloss->Update();
 
-
+    
+  cout<< "    Drawing summary results"<<endl;
   TCanvas * cRABpt = new TCanvas("cRABpt","RAB vs pt, no hypothesis");
   hRABEloss10->Draw("");
   cRABpt->Update();
@@ -1275,6 +1309,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   // Write the information to a file
   //
+  cout<<endl<< "  Save results in the output file"<<endl<<endl;
   TFile * out = new TFile(outfile,"recreate");
 
   ntupleRAB->Write();
@@ -1295,7 +1330,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   gRAB_Norm->Write();
   gRAB_FeedDownSystematicsElossHypothesis->Write();
   gRAB_GlobalSystematics->Write();
-  if(isScaledAndExtrapRef) hCombinedReferenceFlag->Write();
+  if(isScaledAndExtrapRef && hCombinedReferenceFlag) hCombinedReferenceFlag->Write();
 
   out->Write();
 

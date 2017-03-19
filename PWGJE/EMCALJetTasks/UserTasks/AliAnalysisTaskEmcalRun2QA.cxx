@@ -210,11 +210,11 @@ void AliAnalysisTaskEmcalRun2QA::UserCreateOutputObjects()
 	//   Cluster Histograms
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	TIter nextClusColl(&fClusterCollArray);
-	while ((cont = static_cast<AliEmcalContainer*>(nextClusColl())))
-	{
+	for (auto cont_it : fClusterCollArray) {
+	  cont = cont_it.second;
+
 		fHistManager.CreateHistoGroup(cont->GetArrayName());
-		for (Int_t i = 0; i < fNcentBins; i++)
+		for (Int_t i = 0; i < GetNCentBins(); i++)
 		{
 			histname = TString::Format("%s/fHistRejectionReason_%d", cont->GetArrayName().Data(), i);
 			title = histname + ";Rejection reason;#it{E}_{cluster} (GeV);counts";
@@ -399,7 +399,7 @@ void AliAnalysisTaskEmcalRun2QA::UserCreateOutputObjects()
 		}
 	}
 
-	if (fParticleCollArray.GetEntriesFast()>0)
+	if (fParticleCollArray.size() > 0)
 	{
 		axistitle[dim] = "No. of tracks";
 		if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp)
@@ -437,7 +437,7 @@ void AliAnalysisTaskEmcalRun2QA::UserCreateOutputObjects()
 		}
 	}
 
-	if (fClusterCollArray.GetEntriesFast()>0)
+	if (fClusterCollArray.size() > 0)
 	{
 		axistitle[dim] = "No. of clusters";
 
@@ -555,7 +555,7 @@ void AliAnalysisTaskEmcalRun2QA::ExecOnce()
 {
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskEmcalRun2QA::ExecOnce()"<<endl;
 
-	if (fClusterCollArray.GetEntriesFast() == 0  && fCaloCellsName.IsNull())
+	if (fClusterCollArray.size() == 0  && fCaloCellsName.IsNull())
 	{
 		fNeedEmcalGeom = kFALSE;
 	}
@@ -815,10 +815,8 @@ void AliAnalysisTaskEmcalRun2QA::DoClusterLoop()
 	memset(fNTotClusters, 0, sizeof(Int_t)*2);
 	for (Int_t i = 0; i < 2; i++) fLeadingCluster[i].SetPxPyPzE(0,0,0,0);
 
-	AliClusterContainer* clusters = 0;
-	TIter nextClusColl(&fClusterCollArray);
-	while ((clusters = static_cast<AliClusterContainer*>(nextClusColl())))
-	{
+	for (auto cont_it : fClusterCollArray) {
+	  AliClusterContainer* clusters = cont_it.second;
 		// Cluster loop
 		AliClusterIterableMomentumContainer itcont = clusters->all_momentum();
 		//will be set by GetModuleNumberCellIndexesAbsCaloMap

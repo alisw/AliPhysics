@@ -1,6 +1,5 @@
 // AliEmcalCorrectionClusterHadronicCorrection
 //
-// Author: R.Reed, C.Loizides, S.Aiola
 
 #include "AliEmcalCorrectionClusterHadronicCorrection.h"
 
@@ -18,7 +17,9 @@ ClassImp(AliEmcalCorrectionClusterHadronicCorrection);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterHadronicCorrection> AliEmcalCorrectionClusterHadronicCorrection::reg("AliEmcalCorrectionClusterHadronicCorrection");
 
-//________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCorrection() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterHadronicCorrection"),
   fPhiMatch(0.05),
@@ -28,7 +29,6 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   fEexclCell(0),
   fDoExact(kFALSE),
   fHistMatchEtaPhiAll(0),
-  fHistMatchEtaPhiAllTr(0),
   fHistMatchEtaPhiAllCl(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
@@ -38,15 +38,13 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   fHistNMatchCent(0),
   fHistNClusMatchCent(0)
 {
-  // Default constructor
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
-  
-  for(Int_t i=0; i<8; i++) {
+  for(Int_t i=0; i<10; i++) {
     fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
-    fHistEsubPchRatAll[i] = 0;
     
-    if (i<4) {
+    if (i<5) {
+      fHistEsubPchRatAll[i] = 0;
+
       fHistMatchEvsP[i]    = 0;
       fHistMatchdRvsEP[i]  = 0;
       fHistNMatchEnergy[i] = 0;
@@ -68,21 +66,20 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   }
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalCorrectionClusterHadronicCorrection::~AliEmcalCorrectionClusterHadronicCorrection()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Initialize and configure the component.
+ */
 Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
 {
   // Initialization
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Initialize();
-  // Do base class initializations and if it fails -> bail out
-  //AliAnalysisTaskEmcal::ExecOnce();
-  //if (!fInitialized) return;
   
   GetProperty("createHistos", fCreateHisto);
   GetProperty("phiMatch", fPhiMatch);
@@ -90,31 +87,23 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("hadCorr", fHadCorr);
   GetProperty("Eexcl", fEexclCell);
   GetProperty("doTrackClus", fDoTrackClus);
-  Double_t trackPtMin = 0.15;
-  GetProperty("trackPtMin", trackPtMin);
-  Double_t clusterNonLinCorrEnergyMin = 0.15;
-  GetProperty("clusterNonLinCorrEnergyMin", clusterNonLinCorrEnergyMin);
-  Double_t clusterECut = 0.0;
-  GetProperty("clusterEMin", clusterECut);
-  Double_t clusterPtCut = 0.0;
-  GetProperty("clusterPtMin", clusterPtCut);
-  
-  AddContainer(kTrack);
-  fPartCont->SetParticlePtCut(trackPtMin);
-  AddContainer(kCluster);
-  fClusCont->SetClusNonLinCorrEnergyCut(clusterNonLinCorrEnergyMin);
-  fClusCont->SetClusECut(clusterECut);
-  fClusCont->SetClusPtCut(clusterPtCut);
-  
+
+  return kTRUE;
+}
+
+/**
+ * Create run-independent objects for output. Called before running over events.
+ */
+void AliEmcalCorrectionClusterHadronicCorrection::UserCreateOutputObjects()
+{   
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
+ 
   // Create my user objects.
   
-  if (!fCreateHisto) return kTRUE;
+  if (!fCreateHisto) return;
   
   fHistMatchEtaPhiAll = new TH2F("fHistMatchEtaPhiAll", "fHistMatchEtaPhiAll;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
   fOutput->Add(fHistMatchEtaPhiAll);
-  
-  fHistMatchEtaPhiAllTr = new TH2F("fHistMatchEtaPhiAllTr", "fHistMatchEtaPhiAllTr;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
-  fOutput->Add(fHistMatchEtaPhiAllTr);
   
   fHistMatchEtaPhiAllCl = new TH2F("fHistMatchEtaPhiAllCl", "fHistMatchEtaPhiAllCl;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
   fOutput->Add(fHistMatchEtaPhiAllCl);
@@ -146,13 +135,6 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
     fHistEsubPchRat[icent]->SetYTitle("E_{sub} / #sum p");
     fOutput->Add(fHistEsubPchRat[icent]);
     
-    name = Form("fHistEsubPchRatAll_%i",icent);
-    temp = Form("%s (all Nmatches)",name.Data());
-    fHistEsubPchRatAll[icent]=new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
-    fHistEsubPchRatAll[icent]->SetXTitle("#Sigma p (GeV)");
-    fHistEsubPchRatAll[icent]->SetYTitle("E_{sub} / #sum p");
-    fOutput->Add(fHistEsubPchRatAll[icent]);
-    
     if (icent<fNcentBins) {
       for(Int_t itrk=0; itrk<4; ++itrk) {
         name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
@@ -160,6 +142,13 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
         fHistNCellsEnergy[icent][itrk]  = new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
         fOutput->Add(fHistNCellsEnergy[icent][itrk]);
       }
+
+      name = Form("fHistEsubPchRatAll_%i",icent);
+      temp = Form("%s (all Nmatches)",name.Data());
+      fHistEsubPchRatAll[icent]=new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
+      fHistEsubPchRatAll[icent]->SetXTitle("#Sigma p (GeV)");
+      fHistEsubPchRatAll[icent]->SetYTitle("E_{sub} / #sum p");
+      fOutput->Add(fHistEsubPchRatAll[icent]);
       
       name = Form("fHistMatchEvsP_%i",icent);
       temp = Form("%s (all Nmatches)",name.Data());
@@ -233,19 +222,16 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
     }
   }
   fOutput->SetOwner(kTRUE);
-  
-  return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Called for each event to process the event data.
+ */
 Bool_t AliEmcalCorrectionClusterHadronicCorrection::Run()
 {
-  // Run
-  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
   // Run the hadronic correction
-  
   // loop over all clusters
   fClusCont->ResetCurrentID();
   AliVCluster *cluster = 0;
@@ -282,11 +268,11 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Run()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Get momentum bin.
+ */
 UInt_t AliEmcalCorrectionClusterHadronicCorrection::GetMomBin(Double_t p) const
 {
-  // Get momenum bin.
-  
   UInt_t pbin=0;
   if (p<0.5)
     pbin=0;
@@ -310,20 +296,20 @@ UInt_t AliEmcalCorrectionClusterHadronicCorrection::GetMomBin(Double_t p) const
   return pbin;
 }
 
-//________________________________________________________________________
+/**
+ * Get sigma in eta.
+ */
 Double_t AliEmcalCorrectionClusterHadronicCorrection::GetEtaSigma(Int_t pbin) const
 {
-  // Get sigma in eta.
-  
   Double_t EtaSigma[9]={0.0097,0.0075,0.0059,0.0055,0.0053,0.005,0.005,0.0045,0.0042};
   return 2.0*EtaSigma[pbin];
 }
 
-//________________________________________________________________________
+/**
+ * Get phi mean.
+ */
 Double_t AliEmcalCorrectionClusterHadronicCorrection::GetPhiMean(Int_t pbin, Int_t centbin) const
 {
-  // Get phi mean.
-  
   if (centbin==0) {
     Double_t PhiMean[9]={0.036,
       0.021,
@@ -417,11 +403,11 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::GetPhiMean(Int_t pbin, Int
   return 0;
 }
 
-//________________________________________________________________________
+/**
+ * Get phi sigma.
+ */
 Double_t AliEmcalCorrectionClusterHadronicCorrection::GetPhiSigma(Int_t pbin, Int_t centbin) const
 {
-  // Get phi sigma.
-  
   if (centbin==0) {
     Double_t PhiSigma[9]={0.0221,
       0.0128,
@@ -515,12 +501,12 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::GetPhiSigma(Int_t pbin, In
   return 0;
 }
 
-//________________________________________________________________________
+/**
+ * Do the loop over matched tracks for the cluster.
+ */
 void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t icluster,
                                          Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches)
 {
-  // Do the loop over matched tracks for the cluster.
-  
   AliVCluster* cluster = fClusCont->GetCluster(icluster);
   
   if (!cluster) return;
@@ -607,11 +593,11 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
   if (totalTrkP > 0) trkPMCfrac /= totalTrkP;
 }
 
-//________________________________________________________________________
+/**
+ * Apply the hadronic correction with one track only.
+ */
 Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrOneTrack(Int_t icluster, Double_t hadCorr)
 {
-  // Apply the hadronic correction with one track only.
-  
   AliVCluster* cluster = fClusCont->GetCluster(icluster);
   
   Double_t energyclus = cluster->GetNonLinCorrEnergy();
@@ -694,11 +680,11 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrOneTrack(Int_t
   return energyclus;
 }
 
-//________________________________________________________________________
+/**
+ * Apply the hadronic correction with all tracks.
+ */
 Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_t icluster, Double_t hadCorr)
 {
-  // Apply the hadronic correction with all tracks.
-  
   AliVCluster* cluster = fClusCont->GetCluster(icluster);
   
   Double_t energyclus = cluster->GetNonLinCorrEnergy();

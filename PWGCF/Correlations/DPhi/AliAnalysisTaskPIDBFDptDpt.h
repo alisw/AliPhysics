@@ -35,6 +35,7 @@ public:
   //User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
   Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method.
   void CalculateNSigmas( AliVTrack * trk );   //Calcuate nsigma[ipart][idet], fill NSigma histos
+  void CalculateTPCNSigmasElectron( AliVTrack * trk );
   void CheckTOF( AliVTrack * trk );   //check the TOF matching and set fHasTOFPID
   Double_t TOFBetaCalculation( AliVTrack * track ) const;
   Double_t massSquareCalculation( AliVTrack * track ) const;
@@ -43,6 +44,9 @@ private:
     Double_t fnsigmas[4][2]; //nsigma values
     Bool_t fHasTOFPID;
     Double_t fNSigmaPID; // number of sigma for PID cut
+    Double_t ptUpperLimit; //pt cut upper limit
+    Double_t ptTOFlowerBoundary; // pt value which is the boundary between TPC & TOF.
+    Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
     
     AliAnalysisTaskPIDBFDptDpt(const  AliAnalysisTaskPIDBFDptDpt&);
@@ -94,12 +98,11 @@ public:
     void fillHistoWithArray(TH1 * h, float * array, int size);
     void fillHistoWithArray(TH2 * h, float * array, int size1, int size2);
     void fillHistoWithArray(TH3 * h, float * array, int size1, int size2, int size3);
-    
-    
-    
-    
+      
     virtual     void    SetDebugLevel( int v )              { _debugLevel   = v; }
     virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
+    virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
+    virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
     virtual     void    SetSameFilter(int v)                { _sameFilter   = v; }
@@ -123,10 +126,14 @@ public:
     virtual     void    SetRequestedCharge_2(int v)     { _requestedCharge_2 = v; }
     virtual     void    SetPtMin1( double v)            { _min_pt_1          = v; }
     virtual     void    SetPtMax1( double v)            { _max_pt_1          = v; }
+    virtual     void    SetPtBinWidth1( double v)       { _width_pt_1        = v; }
+    virtual     void    SetNPhiBins1( int v)            { _nBins_phi_1       = v; }
     virtual     void    SetEtaMin1(double v)            { _min_eta_1         = v; } // SetYMin1 acturally 
     virtual     void    SetEtaMax1(double v)            { _max_eta_1         = v; } // SetYMax1 acturally
     virtual     void    SetPtMin2( double v)            { _min_pt_2          = v; }
     virtual     void    SetPtMax2( double v)            { _max_pt_2          = v; }
+    virtual     void    SetPtBinWidth2( double v)       { _width_pt_2        = v; }
+    virtual     void    SetNPhiBins2( int v)            { _nBins_phi_2       = v; }
     virtual     void    SetEtaMin2(double v)            { _min_eta_2         = v; } // SetYMin2 acturally
     virtual     void    SetEtaMax2(double v)            { _max_eta_2         = v; } // SetYMax2 acturally
     virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; }
@@ -151,7 +158,10 @@ public:
     void SetResonancesCut( Bool_t NoResonances )      { fExcludeResonancesInMC = NoResonances; }
     void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
 
-    void SetNSigmaCut( double nsigma )          { fNSigmaPID = nsigma; }
+    void SetNSigmaCut( double nsigma )             { fNSigmaPID = nsigma; }
+    void SetPtCutUpperLimit( double ptUpper )      { ptUpperLimit = ptUpper; }
+    void SetPtTOFlowerBoundary( double ptTPCTOFboundary )   { ptTOFlowerBoundary = ptTPCTOFboundary; }
+    void SetElectronNSigmaVetoCut( double electronVeto )   { electronNSigmaVeto = electronVeto; }
     void SetfRemoveTracksT0Fill( bool tof )     { fRemoveTracksT0Fill = tof; }    //fRemoveTracksT0Fill
     
 protected:
@@ -175,6 +185,8 @@ protected:
     //configuration variables and filters
     int      _debugLevel;
     int      _singlesOnly;
+    bool      PIDparticle;
+    bool      NoContamination;
     int      _useWeights;
     int      _useRapidity;
     int      _sameFilter;
@@ -222,6 +234,8 @@ protected:
     double _mult4a;
     double _mult5;
     double _mult6;
+    double _mult7;
+    double _mult8;
     
     //particle 1
     int     arraySize;
@@ -267,6 +281,8 @@ protected:
     int _nBins_M4;       double _min_M4;       double _max_M4;       double _width_M4;
     int _nBins_M5;       double _min_M5;       double _max_M5;       double _width_M5;
     int _nBins_M6;       double _min_M6;       double _max_M6;       double _width_M6;
+    int _nBins_M7;       double _min_M7;       double _max_M7;       double _width_M7;
+    int _nBins_M8;       double _min_M8;       double _max_M8;       double _width_M8;
     
     int _nBins_vertexZ;  double _min_vertexZ;  double _max_vertexZ;  double _width_vertexZ;
     
@@ -336,14 +352,24 @@ protected:
     TH1D * _m4;
     TH1D * _m5;
     TH1D * _m6;
+    TH1D * _m7;
+    TH1D * _m8;
     TH1D * _vertexZ;
     
     TH1F * _Ncluster1;
     TH1F * _Ncluster2;
+
     TH1F * _t0_1d;
     TH1F * _trackLength;
+    TH1F * _trackLength_GetIntegratedLength;
     TH1F * _timeTOF_1d;
-
+    TH1F * _realTOF_1d;
+    TH1F * _t0_1d_POI;
+    TH1F * _trackLength_POI;
+    TH1F * _trackLength_GetIntegratedLength_POI;
+    TH1F * _timeTOF_1d_POI;
+    TH1F * _realTOF_1d_POI;
+    
     TH1F * _nsigmakaon_1d;
     TH1F * _nsigmaTOFkaon_1d;
     
@@ -371,6 +397,8 @@ protected:
     TH2F *  _beta_p;
     TH2F *  _beta_p_POI_AliHelperPID;
     TH2F *  _beta_p_AliHelperPID_no_Undefined;
+    TH2F *  _nSigmaTOF_p_POI;
+    TH2F *  _nSigmaTOF_p;
     
     TH2F *  _inverse_beta_p;
     TH2F *  _inverse_beta_p_POI_AliHelperPID;
@@ -493,6 +521,8 @@ protected:
     TString _title_m4;
     TString _title_m5;
     TString _title_m6;
+    TString _title_m7;
+    TString _title_m8;
     
     TString _title_eta_1;
     TString _title_phi_1;

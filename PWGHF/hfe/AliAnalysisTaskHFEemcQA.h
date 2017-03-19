@@ -42,6 +42,10 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
     void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
     void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
+    Bool_t GetEMCalTriggerDG1() { return fDCalDG1; };
+    Bool_t GetEMCalTriggerDG2() { return fDCalDG2; };
+    void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
+    void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
 
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
@@ -50,7 +54,8 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
     void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
 
-    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+    void CheckMCgen(AliAODMCHeader* mcHeader);
+    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
@@ -64,14 +69,17 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     AliVEvent   *fVevent;  //!event object
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
+    AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
     AliEMCALGeometry *fEMCALGeo;
 
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
 
-    Bool_t  fEMCEG1;//EMcal Threshold EG1
+    Bool_t    fEMCEG1;//EMcal Threshold EG1
     Bool_t    fEMCEG2;//EMcal Threshold EG2
+    Bool_t    fDCalDG1;//DCal Threshold DG1
+    Bool_t    fDCalDG2;//DCal Threshold DG2
 
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster
@@ -120,6 +128,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH1F        *fHistoNClsE3;//! No of clusters per event
     //TH1F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoNCells;//! No of cells per cluster
+    TH2F        *fHistoEperCell; 
     TH2F        *fHistoCalCell;//! No of cells per cluster
     TH2F        *fHistoTimeEMC;//! No of cells per cluster
     THnSparse   *fHistoTimeEMCcorr;//! No of cells per cluster
@@ -130,6 +139,8 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fdEdx;//!dedx vs pt
     TH2F        *fTPCNpts;//!TPC Npoints used for dedx
     TH2F        *fTPCnsig;//!TPC Nsigma
+    TH2F        *fTPCnsigMcEle;//!TPC Nsigma
+    TH2F        *fTPCnsigMcHad;//!TPC Nsigma
     TH2F        *fTPCnsig_Pi;//!TPC Nsigma wrt pion
     TH2F        *fTPCnsigEta0;//!TPC Nsigma
     TH2F        *fTPCnsigEta1;//!TPC Nsigma
@@ -152,6 +163,8 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fHistNsigEop_Semi;//!pt vs E/p
     TH2F        *fHistNsigEop_Peri;//!pt vs E/p
     TH2F        *fHistEop;//!pt vs E/p
+    TH2F        *fHistMcEopEle;//!pt vs E/p
+    TH2F        *fHistMcEopHad;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
     TH2F        *fM20EovP;//!M20 vs E/p
@@ -167,7 +180,10 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fITShitPhi;//!ele cand SPD or
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
-    TH1F        *fMCcheckMother;
+    TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
+    THnSparse        *fInvmassPi0Dalitz;//!Invmass of ULS
+    TH2F        *fMCcheckMother;
+    TH2F        *fMCneutral;
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info

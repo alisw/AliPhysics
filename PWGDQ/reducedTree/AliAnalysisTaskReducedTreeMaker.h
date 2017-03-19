@@ -51,6 +51,7 @@ public:
   void ConfigAnalysisUtils(Int_t minVtxContrib=1, Double_t maxVtxZ=10.0, Bool_t cutOnSPDVtxZ=kTRUE) {
     fMinVtxContributors = minVtxContrib; fMaxVtxZ=maxVtxZ; fCutOnSPDVtxZ=cutOnSPDVtxZ;
   }
+  void SetRejectPileup(Bool_t flag=kTRUE) {fRejectPileup = flag;}
   
   // Cuts for selection of event to be written to tree
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
@@ -93,6 +94,7 @@ public:
   //void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
   void SetFillEventPlaneInfo(Bool_t flag=kTRUE)    {fFillEventPlaneInfo = flag;}
   void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
+  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE)   {fWriteEventsWithNoSelectedTracks = flag;}
   
  private:
 
@@ -111,7 +113,8 @@ public:
   
   Int_t    fTreeWritingOption;     // one of the options described by ETreeWritingOptions
   Bool_t fWriteTree;                   // if kFALSE don't write the tree, use task only to produce on the fly reduced events
-
+  Bool_t fWriteEventsWithNoSelectedTracks;   // write events without any selected tracks
+  
   Bool_t fFillTrackInfo;             // fill track information
   Bool_t fFillV0Info;                // fill the V0 information
   Bool_t fFillGammaConversions;      // fill gamma conversions
@@ -159,6 +162,7 @@ public:
 
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information
+  void FillMCTruthInfo();                // fill MC truth particles
   void FillV0PairInfo();                    // fill V0 reduced pair information
   AliReducedPairInfo* FillV0PairInfo(AliESDv0* v0, Int_t id, AliESDtrack* legPos, AliESDtrack* legNeg, AliKFVertex* vtxKF, Bool_t chargesAreCorrect);
   UChar_t EncodeTPCClusterMap(AliVParticle* track, Bool_t isAOD);
@@ -170,6 +174,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 2); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 3); //Analysis Task for creating a reduced event information tree 
 };
 #endif

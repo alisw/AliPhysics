@@ -17,6 +17,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                            Float_t centrMin ,
                                                            Float_t centrMax ,
                                                            Bool_t CentFlatMine,
+                                                           Double_t etamin = -0.8,
+                                                           Double_t etamax = 0.8,
                                                            Double_t InvmassCut,
                                                            Int_t Trigger,
                                                            Bool_t multCorrcut,
@@ -36,13 +38,13 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                            Int_t TPCS,
                                                            AliHFEextraCuts::ITSPixel_t pixel,
                                                            Int_t TPCClusterforAsso = 80,
-                                                           Bool_t AssoITSref = kTRUE,
+                                                         //  Bool_t AssoITSref = kTRUE,
                                                            Double_t ptminassocut = 0.0,
                                                            Bool_t Weight = kFALSE,
                                                            Bool_t withmultetacorrection=kFALSE,
                                                            Double_t etaminpos = 0,
                                                            Double_t etaminneg = 0,
-                                                           Bool_t PhiCut = kFALSE,
+                                                     //      Bool_t PhiCut = kFALSE,
                                                            Bool_t PhotonicElectronDCA = kFALSE,
                                                            // Bool_t QaPidSparse = kFALSE,
                                                            const char *Cent = "V0M",
@@ -109,7 +111,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
         }
     }
     taskHFE->SetCentralityMine(CentFlatMine);
-
+    
     
     TString histoflatnameEP;
     if(centrMax == 10.) histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
@@ -139,10 +141,11 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
     taskHFE->SetMultCorrelationCut(multCorrcut);
     taskHFE->SetPtMinAssoCut(ptminassocut);
     taskHFE->SetAssoTPCCluster(TPCClusterforAsso);
-    taskHFE->SetAssoITSRefit(AssoITSref);
-    taskHFE->SetPhiCut(PhiCut);
+    taskHFE->SetAssoITSRefit(kTRUE);
+    taskHFE->SetPhiCut(kFALSE);
     taskHFE->SetEtaMinPos(etaminpos); //0.2
     taskHFE->SetEtaMinNeg(etaminneg);//-0.2
+    taskHFE->SetEtaRange(etamin,etamax);//-0.8,0.8
     
     
     

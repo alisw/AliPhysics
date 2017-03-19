@@ -4,189 +4,160 @@
 /*  See cxx source for full Copyright notice */
 
 //-----------------------------------------------------------------
-//                 AliAnalysisTaskNucleiv2 class
+//        AliAnalysisTaskNucleivn class for 2015 data
 //-----------------------------------------------------------------
 
 class TList;
 class TH1F;
 class TH2F;
-class TH3F;
-class TNtuple;
-class AliESDcascade;
-//class AliCascadeVertexer; 
+
 #include <AliPIDResponse.h>
 #include "TString.h"
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
+#include "AliQnCorrectionsQnVector.h"
+
 
 class AliAnalysisTaskNucleiv2 : public AliAnalysisTaskSE {
  public:
-  //  AliAnalysisTaskNucleiv2(const char *datatype);
+ 
   AliAnalysisTaskNucleiv2();
-  AliAnalysisTaskNucleiv2(const char *name,const char *datatype,Bool_t filltree);
+  AliAnalysisTaskNucleiv2(const char *name);
   virtual ~AliAnalysisTaskNucleiv2() {}
   
-  virtual void  UserCreateOutputObjects();
+  virtual void  UserCreateOutputObjects(); 
+  virtual void  Initialize();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
   
-  void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
-  void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
-  void SetDataType    (const char* dataType = "REAL") {fDataType = dataType;}
-  void SetFillTree    (Bool_t ifFill = kFALSE) {fFillNtuple = ifFill;}
-  //  void SetDataType    (const char* dataTypeS = datatype) {fDataType = dataTypeS;}
-  // void SetDataType    (const char* dataType) {fDataType = dataType;}
- 
-  //Double_t BetheBloch(Double_t bg,Double_t Charge,Bool_t optMC);
-  //  Double_t BetheBloch(Double_t bg,Double_t Charge,Bool_t isPbPb);
-  //  Bool_t IsTrackAccepted(AliESDtrack * const track);
+  void SetIsPrimCut(Bool_t  isPrimCut)           {fisPrimCut   = isPrimCut; }; 
+  void SetParticle(Int_t ptc)                    {fptc         = ptc;       };
+  void SetVzMax(Float_t Vzmax)                   {fVzmax       = Vzmax;     };
+  void SetCentralityEstimator( TString centEst)  {fCentrality  = centEst;   };
+  void SetAnalysisType (const char* analysisType = "ESD")   { fAnalysisType = analysisType; }
+  void SetYear(Int_t  year)                      {fYear  = year; }
+  void SetHarmonic(Int_t  harmonic)              {fHarmonic  = harmonic; }
+  
   Float_t GetPhi0Pi(Float_t phi);
-  void    Initialize();
+
+  const AliQnCorrectionsQnVector *GetQnVectorFromList( const TList *list,
+						       const char *subdetector,
+						       const char *expectedstep,
+						       const char *altstep);
+
+  AliEventCuts fEventCuts;
+
+
  private:
-  
-  TString fAnalysisType;	      //! "ESD" or "AOD" analysis type	
-  
-  Short_t fCollidingSystems;	      //! 0 = pp collisions or 1 = AA collisions
-  TString fDataType;		      //! "REAL" or "SIM" data type	
-  Bool_t  fFillNtuple;		      //! fill or not the tree	
+
+  AliESDEvent *fESDevent;                         // 
+  AliAODEvent *fAODevent;                         // 
+  AliVEvent   *fevent;                            // 
+
+  TString        fAnalysisType;                  //
+  Bool_t         fisPrimCut;                     // Boolean : kTRUE = isprimarycut 
+  Int_t          fptc;                           // Selected ptc 1 = d; 2 = t; 3 =3He 
+  Float_t        fVzmax;                         // Selected vz max
+  TString        fCentrality;                    //
+  Bool_t         fApplyFlatten;                  //
+  Int_t          fYear;                          // Year of data tacking
+  Int_t          fHarmonic;                      // Flow Harmonic
+
+  TList	*fListHist;	           // List of  histograms
  
-  TList	*fListHistCascade;	           //! List of Cascade histograms
-  TH1F  *fHistEventMultiplicity;           //! event multiplicity
-  TH2F  *fHistTrackMultiplicity;           //! track multiplicity
-  TH2F  *fHistTrackMultiplicityCentral;    //! track multiplicity
-  TH2F  *fHistTrackMultiplicitySemiCentral;//! track multiplicity
-  TH2F  *fHistTrackMultiplicityMB;         //! track multiplicity
-  TH2F  *fhBB;                             //! ScatterPlot Total
-  TH2F  *fhBBDeu;                          //! ScatterPlot Total
-  TH2F  *fhPtDeu;                          //! correctet vs non correcter d pt
-  TH2F  *fhTOF;                            //! ScatterPlot Total TOF
-  TH1F  *fhMassTOF;                        //! Mass Distribution TOF
+  TH1F  *fHistEventMultiplicity;           // event multiplicity
+  TH2F  *fHistTrackMultiplicity;           // track multiplicity
+  TH2F  *fHistTrackMultiplicityCentral;    // track multiplicity
+  TH2F  *fHistTrackMultiplicitySemiCentral;// track multiplicity
+  TH2F  *fHistTrackMultiplicityMB;         // track multiplicity
+  TH2F  *fHistTrackMultiplicityINT7;       // track multiplicity
 
-  TH2F *hRPangleTPCvsCentrality;           //RESOLUTION Histrograms
-  TH2F *hPlaneResoTPCvsCentrality;
-  TH2F *hRPangleVZEROvsCentrality;
-  TH2F *hRPangleVZEROAvsCentrality;
-  TH2F *hRPangleVZEROCvsCentrality;
-  TH2F *hPlaneResoVZEROvsCentrality;
-  TH2F *hPlaneResoVZEROAvsCentrality;
-  TH2F *hPlaneResoVZEROCvsCentrality;
-  TH2F *hCosPhivsPt;                         
-  TH2F *hSinPhivsPt;                         
-  TH2F *hPhivsPt;                         
-  TH2F *hAntiCosPhivsPt;                     
-  TH2F *hAntiSinPhivsPt;                     
-  TH2F *hAntiPhivsPt;                     
-  TH2F *hCosDeltaPhivsPt075;                      
-  TH2F *hSinDeltaPhivsPt075;                      
-  TH2F *hDeltaPhivsPt075;                      
-  TH2F *hCosDeltaPhiVZEROvsPt075;                 	      
-  TH2F *hSinDeltaPhiVZEROvsPt075;                 	      
-  TH2F *hDeltaPhiVZEROvsPt075;                 
-  TH2F *hCosDeltaPhivsPt1530;                     
-  TH2F *hSinDeltaPhivsPt1530;                     
-  TH2F *hDeltaPhivsPt1530;                     
-  TH2F *hCosDeltaPhiVZEROvsPt1530;                
-  TH2F *hSinDeltaPhiVZEROvsPt1530;                
-  TH2F *hDeltaPhiVZEROvsPt1530;                
-  TH2F *hCosDeltaPhivsPt3050;                     
-  TH2F *hSinDeltaPhivsPt3050;                     
-  TH2F *hDeltaPhivsPt3050;                     
-  TH2F *hCosDeltaPhiVZEROvsPt3050;                
-  TH2F *hSinDeltaPhiVZEROvsPt3050;                
-  TH2F *hDeltaPhiVZEROvsPt3050;                
-  TH2F *hCosDeltaPhivsPt1550;                     
-  TH2F *hSinDeltaPhivsPt1550;                     
-  TH2F *hDeltaPhivsPt1550;                     
-  TH2F *hCosDeltaPhiVZEROvsPt1550;                
-  TH2F *hSinDeltaPhiVZEROvsPt1550;                
-  TH2F *hDeltaPhiVZEROvsPt1550;                
-  TH2F *hAntiCosDeltaPhivsPt075;                  
-  TH2F *hAntiSinDeltaPhivsPt075;                  
-  TH2F *hAntiDeltaPhivsPt075;                  
-  TH2F *hAntiCosDeltaPhiVZEROvsPt075;             
-  TH2F *hAntiSinDeltaPhiVZEROvsPt075;             
-  TH2F *hAntiDeltaPhiVZEROvsPt075;             
-  TH2F *hAntiCosDeltaPhivsPt1530;                 
-  TH2F *hAntiSinDeltaPhivsPt1530;                 
-  TH2F *hAntiDeltaPhivsPt1530;                 
-  TH2F *hAntiCosDeltaPhiVZEROvsPt1530;            
-  TH2F *hAntiSinDeltaPhiVZEROvsPt1530;            
-  TH2F *hAntiDeltaPhiVZEROvsPt1530;            
-  TH2F *hAntiCosDeltaPhivsPt3050;                 
-  TH2F *hAntiSinDeltaPhivsPt3050;                 
-  TH2F *hAntiDeltaPhivsPt3050;                 
-  TH2F *hAntiCosDeltaPhiVZEROvsPt3050;            
-  TH2F *hAntiSinDeltaPhiVZEROvsPt3050;            
-  TH2F *hAntiDeltaPhiVZEROvsPt3050;            
-  TH2F *hAntiCosDeltaPhivsPt1550;                 
-  TH2F *hAntiSinDeltaPhivsPt1550;                 
-  TH2F *hAntiDeltaPhivsPt1550;                 
-  TH2F *hAntiCosDeltaPhiVZEROvsPt1550;            
-  TH2F *hAntiSinDeltaPhiVZEROvsPt1550;            
-  TH2F *hAntiDeltaPhiVZEROvsPt1550;     
-
-  AliESDtrackCuts * fESDtrackCuts; 
-  AliPIDResponse *fPIDResponse;   //! pointer to PID response
-
-  //_______________________________________________________________________
-
-  TTree *fNtuple1;                //! Some Information on the tracks
-    
-  Double_t tEventNumber[7];       //ev number; run number; Bunch Cross - Orbit -  Period Number; #tracks; event type
-  Double_t tCentrality ;
-  Double_t tVertexCoord[3];
+  TH2F  *fhBB;                             // ScatterPlot Total
+  TH2F  *fhBBDeu;                          // ScatterPlot Total
+  TH2F  *fhTOF;                            // ScatterPlot Total TOF
+  TH1F  *fhMassTOF;                        // Mass Distribution TOF
   
-  //TRACKS
-  Double_t tPIDITS[9];            //n-signas different particle species ITS
-  Double_t tPIDTPC[9];            //n-signas different particle species TPC
-  Double_t tPIDTOF[9];            //n-signas different particle species TOF
-  Double_t tPulls[3];          //Pulls
- 
-  Double_t tMomentum[3];          //pxpypz of the tracks
-  Double_t tTPCMomentum;          //momentum at theh TPC inner wall
-  Double_t tdEdx;                 //dEdx of the tracks
-  Double_t tEta;                  //eta of the tracks
-  Double_t tDCA[2];               //dcaXY and dcaZ of the track
-  Double_t tTracksTPC[2];         //chi^2 and #TPCcluster
-  Double_t tITSclustermap;        //ITS cluster map
-  Double_t tITSsample[4];         //ITS samples 
-  Int_t    tisTOF[2];             //isTOF, isOuterTPCwall   
-  Double_t tTOFtrack[3];          //poutTPC,timeTOF,trackLenghtTOF;
-  Int_t    tCharge;               //Charge of the Track
-  Double_t tPtCorr;               //Corrected Momentum 
-  Double_t tPhi;                  //Phi 
-  Double_t trpangleTPC;           //rpangleTPC
-  Double_t trpangleVZERO[3];      //rpangleVZERO: V0M, V0A, V0C
-  
- 
-  Double_t tPDGCode;              //PDG code ptc
-  Double_t tPDGCodeMum;           //PDG code mother ptc
-  Double_t tIsPrimaryTr;
-  Double_t tIsSecondaryTr[2];     //from material ; from weak deacy 
-  
-  //_______________________________________________________________________
-  
-  TTree *fNtuple2;                  //! MC tree
+   // Event Plane vs Centrality
 
-  Double_t tEventNumberMC[6];       //ev number; run number; Bunch Cross - Orbit -  Period Number; #tracks
-  Double_t tCentralityMC;
-  Double_t tVertexCoordMC[3];
-  Double_t tMomentumMC[3];          //pxpypz of the tracks
+  TH2D *EPVzAvsCentrality  ; 
+  TH2D *EPVzCvsCentrality  ; 
+  TH2D *EPTPCvsCentrality  ; 
+  TH2D *EPVzvsCentrality   ; 
+  TH2D *EPTPCpvsCentrality ; 
+  TH2D *EPTPCnvsCentrality ; 
+  
+  // EP TPC vs EP VZ for different centralities 
 
-  Double_t tPDGCodeMC      ;
-  Double_t tPDGCodeMumMC   ;
-  Double_t tIsPrimary      ;
-  Double_t tIsSecondary[2] ;      //from material ; from weak deacy 
-  Double_t tEtaMC          ;
-  Double_t tPtMC           ;
-  Double_t tYMC            ;
+  TH2F *hEvPlaneTPCvsEvPVz05;                      
+  TH2F *hEvPlaneTPCvsEvPVz075; 
+  TH2F *hEvPlaneTPCvsEvPVz1530;
+  TH2F *hEvPlaneTPCvsEvPVz3050;                      
+  TH2F *hEvPlaneTPCvsEvPVz2040;                      
+  TH2F *hEvPlaneTPCvsEvPVz4060;                      
 
+  // For EP Resolution
+
+  TH2F *hCos2DeltaTPCVzAvsCentrality;
+  TH2F *hCos2DeltaTPCVzCvsCentrality;
+  TH2F *hCos2DeltaVzAVzCvsCentrality;
+  TH2F *hCos2DeltaVzMVzAvsCentrality;
+  TH2F *hCos2DeltaVzMVzCvsCentrality;
+  TH2F *hCos2DeltaVzATPCvsCentrality;
+  TH2F *hCos2DeltaVzCTPCvsCentrality;
+  TH2F *hCos2DeltaVzCVzAvsCentrality;
+  TH2F *hCos2DeltaVzMTPCpvsCentrality;
+  TH2F *hCos2DeltaVzMTPCnvsCentrality;
+  TH2F *hCos2DeltaTPCpTPCnvsCentrality;
+
+  // For SP resolution
+
+  TH2F *hQVzAQVzCvsCentrality;
+
+  // For NUA correction
+
+  TH2F *hQxVzAvsCentrality;
+  TH2F *hQyVzAvsCentrality;
+  TH2F *hQxVzCvsCentrality;
+  TH2F *hQyVzCvsCentrality;
+  TH2F *hQxVzMvsCentrality;
+  TH2F *hQyVzMvsCentrality;
+  
+  // Flattness
+
+  TH2F *hqEPCvsCentrality; 
+  TH2F *hqEPAvsCentrality;
+  TH2F *hqEPvsCentrality;
+  // TTree
+
+  TTree *ftree;                //! Some Information on the tracks
+  Double_t tCentrality      ;
+  Double_t tType            ;
+  Double_t tHasTOF          ;
+  Double_t tpT              ;
+  Double_t tMassTOF         ;
+  Double_t tuqV0A           ;
+  Double_t tuqV0C           ;
+  Double_t tCharge          ;
+  Double_t tCosdeltaphiTPC  ;
+  Double_t tCosdeltaphiV0M  ;
+  Double_t tCosdeltaphiV0A  ;
+  Double_t tCosdeltaphiV0C  ;
+  Double_t timpactXY        ;
+  Double_t timpactZ         ;
+  Double_t tpull            ;
+  Double_t tphi             ;
+
+  //---------------------------------------------------------------------------
+  AliESDtrackCuts *fESDtrackCuts; 
+  AliESDtrackCuts *fESDtrackCutsEP;
+  AliPIDResponse  *fPIDResponse;   //! pointer to PID response
   //_______________________________________________________________________
  
   AliAnalysisTaskNucleiv2(const AliAnalysisTaskNucleiv2&);            // not implemented
   AliAnalysisTaskNucleiv2& operator=(const AliAnalysisTaskNucleiv2&); // not implemented
   
-  ClassDef(AliAnalysisTaskNucleiv2, 0);
+  ClassDef(AliAnalysisTaskNucleiv2, 1);
 };
 
 #endif

@@ -19,6 +19,7 @@
  *   Author: Markus Fasel
  */
 #include <TAxis.h>
+#include <TBinning.h>
 #include <TMath.h>
 #include <THistManager.h>
 
@@ -64,16 +65,16 @@ void AliEMCalTriggerMCParticleAnalysisComponent::CreateHistos() {
    * Create histograms for the MC truth analysis component
    */
 
-  const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
+  const TBinning *ptbinning = fBinning->GetBinning("pt"),
       *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi"),
       *vertexbinning = fBinning->GetBinning("zvertex");
   AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
   const TAxis *trackaxes[4] = {
-      DefineAxis("pt", ptbinning),
-      DefineAxis("eta", etabinning),
-      DefineAxis("phi", phibinning),
-      DefineAxis("zvertex", vertexbinning)
+      DefineAxis("pt", *ptbinning),
+      DefineAxis("eta", *etabinning),
+      DefineAxis("phi", *phibinning),
+      DefineAxis("zvertex", *vertexbinning)
   };
   fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 4, trackaxes, "s");
 }

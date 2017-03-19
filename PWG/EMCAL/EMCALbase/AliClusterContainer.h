@@ -65,6 +65,8 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetMCLabelRange(Int_t min, Int_t max)        { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
   void                        SetExoticCut(Bool_t e)                       { fExoticCut       = e   ; }
   void                        SetIncludePHOS(Bool_t b)                     { fIncludePHOS = b       ; }
+  void                        SetPhosMinNcells(Int_t n)                    { fPhosMinNcells = n; }
+  void                        SetPhosMinM02(Double_t m)                    { fPhosMinM02 = m; }
   void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
   Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
 
@@ -93,13 +95,15 @@ class AliClusterContainer : public AliEmcalContainer {
   Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; ///< cut on the energy of the cluster after higher level corrections (see AliVCluster.h)
   Int_t            fDefaultClusterEnergy;       ///< default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
   Bool_t           fIncludePHOS;                ///< whether or not to include PHOS clusters in addition to EMCal clusters
+  Int_t            fPhosMinNcells;              ///< min number of phos cells per cluster
+  Double_t         fPhosMinM02;                 ///< min value of M02 for phos clusters
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,6);
+  ClassDef(AliClusterContainer,7);
   /// \endcond
 };
 

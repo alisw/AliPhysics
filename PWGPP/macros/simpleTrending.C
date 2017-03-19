@@ -160,10 +160,9 @@ void loadLibraries()
   gSystem->Load("libPHOSUtils");
   gSystem->Load("libPWGCaloTrackCorrBase");
   gSystem->Load("libPWGGACaloTrackCorrelations");
-  gSystem->Load("libPWGGACaloTasks");
   gSystem->Load("libPWGGAPHOSTasks");
   gSystem->Load("libPWGTools");
-  gSystem->Load("libPWGEMCAL");
+  gSystem->Load("libPWGEMCALbase");
   gSystem->Load("libPWGGAEMCALTasks");
   gSystem->Load("libPWGmuon");
   gSystem->Load("libPWGPPMUONlite");

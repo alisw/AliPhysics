@@ -232,7 +232,8 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   , fYPt(nullptr)
   , fPtPhi(nullptr)
   , fEtaPhi(nullptr)
-  , fChiTpcIts(nullptr)
+  , fChi2Tpc(nullptr)
+//  , fChiTpcIts(nullptr)
   , fdEdX(nullptr)
   , fMC_mass(nullptr)
   , fMC_pt(nullptr)
@@ -246,94 +247,95 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                                                (passing ? "(PASS)" : "(FAIL)"));
   const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
+  const auto hist_name = [&] (const TString &name) { return name + pf; };
+  const auto hist_title = [&] (const char *title, const char *axes) {
+    return TString::Format(title_format, title, axes);
+  };
+
   fYPt = new TH2F(
-    "eta_Pt" + pf,
-    TString::Format(title_format,
-                    "#eta  vs  p_{T}",
-             /*X*/  "#eta;"
-             /*Y*/  "p_{T} (GeV);"
-             /*Z*/  "dN/(p_{T} $\\cdot$ \\eta)"),
+    hist_name("eta_Pt"),
+    hist_title("#eta  vs  p_{T}",
+                /*X*/  "#eta;"
+                /*Y*/  "p_{T} (GeV);"
+                /*Z*/  "dN/(p_{T} $\\cdot$ \\eta)"),
     140, -1.4, 1.4,
     100, 0, 3.0);
-  fYPt->Sumw2();
 
   fPtPhi = new TH2F(
-    "PtPhi" + pf,
-    TString::Format(title_format,
-                    "Pt vs Phi",
-                    "#phi (rads);"
-                    "p_{T} (GeV);"),
+    hist_name("PtPhi"),
+    hist_title("Pt vs Phi",
+               "#phi (rads);"
+               "p_{T} (GeV);"),
     144, -TMath::Pi(), TMath::Pi(),
     144,  0.0, 3.0);
-  fPtPhi->Sumw2();
 
   fEtaPhi = new TH2F(
-    "EtaPhi" + pf,
-    TString::Format(title_format,
-                    "#eta vs Phi",
-                    "#phi (rads);"
-                    "#eta;"),
+    hist_name("EtaPhi"),
+    hist_title("#eta vs Phi",
+              "#phi (rads);"
+              "#eta;"),
     144, -TMath::Pi(), TMath::Pi(),
     144, -1.4, 1.4);
-  fEtaPhi->Sumw2();
 
-  fChiTpcIts = new TH2F(
-    "ChiTpcIts" + pf,
-    TString::Format(title_format,
-                    "#chi^{2} / N_{cls} TPC vs ITS",
-                    "TPC; ITS;"),
-    144, 0.0, 0.1,
-    144, 0.0, 0.1);
-  fChiTpcIts->Sumw2();
+  fChi2Tpc = new TH1F(
+    hist_name("Chi2Tpc"),
+    hist_title("#chi^{2} / N_{cls} TPC", "TPC"),
+    144, 0.0, 0.1
+  );
+  // fChiTpcIts = new TH2F(
+  //   "ChiTpcIts" + pf,
+  //   TString::Format(title_format,
+  //                   "#chi^{2} / N_{cls} TPC vs ITS",
+  //                   "TPC; ITS;"),
+  //   144, 0.0, 0.1,
+  //   144, 0.0, 0.1);
 
   fdEdX = new TH2F(
-    "dEdX" + pf,
-    Form(title_format, "dE/dx vs p",
-                       "p (GeV);"
-                       "dE/dx;"
-                       "N_{tracks}"),
+    hist_name("dEdX"),
+    hist_title("dE/dx vs p",
+               "p (GeV);"
+               "dE/dx;"
+               "N_{tracks}"),
     128, 0, 6.0,
     128, 0, 500.0
   );
-  fdEdX->Sumw2();
 
   fImpact = new TH2F(
-    "impact" + pf,
-    Form(title_format, "Track impact parameter components",
-                       "z (cm); "
-                       "r (cm); "
-                       "N_{#pi}  "),
+    hist_name("impact"),
+    hist_title("Track impact parameter components",
+                "z (cm); "
+                "r (cm); "
+                "N_{#pi}  "),
     256, -0.25, 0.25,
-    256, -0.01, 0.25
+    128, 0, 0.25
   );
-  fImpact->Sumw2();
 
   if (is_mc_analysis) {
     fMC_mass = new TH1F(
-      "mc_Mass" + pf,
-      TString::Format(title_format, "M_{inv}",
-                                    "M_{inv} (GeV);"
-                                    "N_{#pi}"),
+      hist_name("mc_Mass"),
+      hist_title("M_{inv}",
+                "M_{inv} (GeV);"
+                "N_{#pi}"),
       144, 0.0, 1.5
       // 144, 0.0120, 0.5,
     );
     fMC_mass->Sumw2();
 
     fMC_pt = new TH2F(
-      "mc_Pt" + pf,
-      TString::Format(title_format, "p_{T}",
-                                    "p_{T}^{reconstrcted};"
-                                    "p_{T}^{true}"),
+      hist_name("mc_Pt"),
+      hist_title("p_{T}",
+                 "p_{T}^{reconstrcted};"
+                 "p_{T}^{true}"),
       144,  0.0, 3.0,
       144,  0.0, 3.0
     );
     fMC_pt->Sumw2();
 
     fMC_type = new TH1I(
-      "mc_pdg",
-      TString::Format(title_format, "PDG Code",
-                                    "Code;"
-                                    "N_{code};"),
+      hist_name("mc_pdg"),
+      hist_title("PDG Code",
+                 "Code;"
+                 "N_{code};"),
       codes.size(), -0.5, codes.size() - 0.5
     );
 
@@ -345,9 +347,10 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     fMC_type->GetXaxis()->CenterLabels();
 
     fMC_parent = new TH2I(
-      "mc_parent_pdg",
-      TString::Format(title_format, "Parent PDG Code",
-                                    "Daughter PID; Parent;"),
+      hist_name("mc_parent_pdg"),
+      hist_title("Parent PDG Code",
+                 "Daughter PID;"
+                 "Parent;"),
       codes.size(), -0.5, codes.size() - 0.5,
       parent_codes.size(), -0.5, parent_codes.size() - 0.5
     );
@@ -380,7 +383,8 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fYPt);
   output->Add(fPtPhi);
   output->Add(fEtaPhi);
-  output->Add(fChiTpcIts);
+  output->Add(fChi2Tpc);
+  // output->Add(fChiTpcIts);
   output->Add(fdEdX);
   output->Add(fImpact);
   if (fMC_type) {
@@ -439,8 +443,10 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fEtaPhi->Fill(phi, eta);
   fdEdX->Fill(p, track->TPCsignal());
 
-  fChiTpcIts->Fill( (TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0,
-                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
+  fChi2Tpc->Fill((TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0);
+
+  // fChiTpcIts->Fill( (TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0,
+  //                   (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
 
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
@@ -467,70 +473,63 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
                                                (passing ? "(PASS)" : "(FAIL)"));
   const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
+  auto hist_name = [&] (const TString &name) { return name + pf; };
+  auto hist_title = [&] (const char *title, const char *axes) {
+    return TString::Format(title_format, title, axes);
+  };
+
   fMinv = new TH1F(
-    "Pair_Minv" + pf,
-    TString::Format(title_format, "M_{inv}", "M_{inv} (GeV); N_{pairs}"),
+    hist_name("Pair_Minv"),
+    hist_title("M_{inv}",
+               "M_{inv} (GeV); N_{pairs}"),
     288, 0.0, 8.0);
-  fMinv->Sumw2();
 
   fKt = new TH1F(
-    "kt" + pf,
-    TString::Format(title_format,
-                    "k_{T} Distribution",
-                    "k_{T} (GeV); N_{pairs}"),
+    hist_name("kt"),
+    hist_title("k_{T} Distribution",
+               "k_{T} (GeV); N_{pairs}"),
     144, 0.0, 4.0);
-  fKt->Sumw2();
 
   fDetaDphi = new TH2F(
-    "DetaDphi" + pf,
-    TString::Format(title_format,
-                    "#Delta #eta vs #Delta #phi*",
-                    "#Delta #eta; #Delta #phi*"),
+    hist_name("DetaDphi"),
+    hist_title("#Delta #eta vs #Delta #phi*",
+               "#Delta #eta; #Delta #phi*"),
     145, -0.2, 0.2,
     145, -0.2, 0.2
   );
-  fDetaDphi->Sumw2();
 
   fQinvDeta = new TH2F(
-    "QinvDeta" + pf,
-    TString::Format(title_format,
-                    "Q_{inv} vs #Delta #eta",
-                    "Q_{inv} (GeV); #Delta #eta"),
+    hist_name("QinvDeta"),
+    hist_title("Q_{inv} vs #Delta #eta",
+               "Q_{inv} (GeV); #Delta #eta"),
     100, 0.0, 1.2,
     75, -0.1, 0.1
   );
-  fDetaDphi->Sumw2();
 
   fQinvDphiStar = new TH2F(
-    "QinvDphiStar" + pf,
-    TString::Format(title_format,
-                    "Q_{inv} vs #Delta #phi*",
-                    "Q_{inv} (GeV); #Delta #phi*"),
+    hist_name("QinvDphiStar"),
+    hist_title("Q_{inv} vs #Delta #phi*",
+               "Q_{inv} (GeV); #Delta #phi*"),
     100, 0.0, 1.2,
     75, -0.1, 0.1
   );
-  fQinvDphiStar->Sumw2();
 
   if (is_mc_analysis) {
     fMCTrue_minv = new TH2F(
-      "mc_Minv" + pf,
-      TString::Format(title_format,
-        "Minv True vs Reconstructed",
-        "M_{inv}^{r} (GeV);"
-        "M_{inv}^{t} (Gev);"),
+      hist_name("mc_Minv"),
+      hist_title("Minv True vs Reconstructed",
+                 "M_{inv}^{r} (GeV);"
+                 "M_{inv}^{t} (Gev);"),
       144, 0.0, 4.5,
       144, 0.0, 4.5);
-    fMCTrue_minv->Sumw2();
 
     fMCTrue_qinv = new TH2F(
-      "mc_Qinv" + pf,
-      TString::Format(title_format,
-        "q_{inv} True vs Reconstructed",
-        "q_{inv}^{r} (GeV);"
-        "q_{inv}^{t} (Gev);"),
+      hist_name("mc_Qinv"),
+      hist_title("q_{inv} True vs Reconstructed",
+                 "q_{inv}^{r} (GeV);"
+                 "q_{inv}^{t} (Gev);"),
       400, 0.0, 1.0,
       400, 0.0, 1.0);
-    fMCTrue_qinv->Sumw2();
   }
 }
 

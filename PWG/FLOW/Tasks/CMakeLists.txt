@@ -39,6 +39,7 @@ set(SRCS
   AliFlowCandidateTrack.cxx 
   AliFlowTrackCuts.cxx 
   AliAnalysisTaskScalarProduct.cxx 
+  AliAnalysisTaskSimpleSP.cxx
   AliAnalysisTaskMCEventPlane.cxx 
   AliAnalysisTaskLYZEventPlane.cxx
   AliAnalysisTaskCRC.cxx
@@ -66,6 +67,7 @@ set(SRCS
   AliAnalysisTaskMultiparticleCorrelations.cxx
   AliAnalysisTaskPIDconfig.cxx
   AliAnalysisTaskMultiparticleFemtoscopy.cxx
+  AliAnalysisTaskVnZDC.cxx
   )
 
 # Headers from sources

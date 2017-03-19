@@ -32,6 +32,7 @@
 #include "AliMixedEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliMCEvent.h"
 
 // --- Detectors ---
 #include "AliPHOSGeoUtils.h"
@@ -56,9 +57,10 @@ fFillSSHistograms(0),         fFillEMCALRegionSSHistograms(0),
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
 fFillSSNLocMaxHisto(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
-fMomentum(),                  fPrimaryMom(),               fProdVertex(),
+fMomentum(),                  fMomentum2(),
+fPrimaryMom(),                fProdVertex(),
 fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
-
+fStudyActivityNearCluster(0), 
 // Histograms
 
 // Control histograms
@@ -111,7 +113,16 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
 
 fhEClusterSM(0),                      fhEPhotonSM(0),
 fhPtClusterSM(0),                     fhPtPhotonSM(0),
-fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)                         
+fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
+//fhDistanceAddedPhotonAddedPrimarySignal  (0), fhDistanceHijingPhotonAddedPrimarySignal  (0),
+//fhDistanceAddedPhotonAddedSecondarySignal(0), fhDistanceHijingPhotonAddedSecondarySignal(0),
+//fhDistanceAddedPhotonHijingSecondary(0)
+fhLocalRegionClusterEnergySumHijing2(0), 
+fhLocalRegionClusterMultiplicityHijing2(0),
+fhLocalRegionClusterEnergySumPerCentralityHijing2(0),
+fhLocalRegionClusterMultiplicityPerCentralityHijing2(0), 
+fhDistance2AddedSignals(0),           fhDistanceAddedSignalsHijing(0),
+fhDistance2Hijing(0)
 {
   for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
@@ -306,9 +317,489 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
     fhEBinClusterColRowPID[i] = 0 ;
   }
   
+  for(Int_t igen = 0; igen < 10; igen++)
+  { 
+    for(Int_t ip = 0; ip < fgkNGenTypes; ip++)
+    {
+      fhMergeGeneratorCluster                 [igen][ip] = 0; 
+      fhMergeGeneratorClusterNotHijingBkg     [igen][ip] = 0;        
+      fhMergeGeneratorClusterHijingAndOtherBkg[igen][ip] = 0;
+      fhMergeGeneratorClusterHijingBkg        [igen][ip] = 0;  
+      fhCleanGeneratorCluster                 [igen][ip] = 0;
+      
+      fhMergeGeneratorClusterEPrimRecoRatio                 [igen][ip] = 0;
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio     [igen][ip] = 0;        
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][ip] = 0;
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio        [igen][ip] = 0;  
+      fhCleanGeneratorClusterEPrimRecoRatio                 [igen][ip] = 0;  
+      
+      fhMergeGeneratorClusterEPrimRecoDiff                 [igen][ip] = 0; 
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff     [igen][ip] = 0;        
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][ip] = 0;
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff        [igen][ip] = 0;  
+      fhCleanGeneratorClusterEPrimRecoDiff                 [igen][ip] = 0;  
+    }
+  }
+  
+  for(Int_t icase = 0; icase < 6; icase++)
+  { 
+    fhLocalRegionClusterEtaPhi                         [icase] = 0; 
+    fhLocalRegionClusterEnergySum                      [icase] = 0;     
+    fhLocalRegionClusterMultiplicity                   [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentrality         [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentrality      [icase] = 0;
+    fhLocalRegionClusterEnergySumHijing                [icase] = 0;
+    fhLocalRegionClusterMultiplicityHijing             [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityHijing   [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityHijing[icase] = 0; 
+    fhLocalRegionClusterEnergySumAdded                 [icase] = 0;     
+    fhLocalRegionClusterMultiplicityAdded              [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityAdded    [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityAdded [icase] = 0;
+    
+    fhLocalRegionClusterEnergySumMCPi0Decay                      [icase] = 0;     
+    fhLocalRegionClusterMultiplicityMCPi0Decay                   [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay         [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay      [icase] = 0;
+    fhLocalRegionClusterEnergySumHijingMCPi0Decay                [icase] = 0;
+    fhLocalRegionClusterMultiplicityHijingMCPi0Decay             [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay   [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase] = 0; 
+    fhLocalRegionClusterEnergySumAddedMCPi0Decay                 [icase] = 0;     
+    fhLocalRegionClusterMultiplicityAddedMCPi0Decay              [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay    [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay [icase] = 0;
+  }
+  
   // Initialize parameters
   InitParameters();
 }
+
+//_____________________________________________________________________
+/// Check the cluster activity, total energy and multiplicity around 
+/// a selected cluster on EMCal acceptance within a cone of R=0.2
+///
+/// \param icalo: cluster index in array
+/// \param en  : selected cluster energy
+/// \param eta : cluster pseudo-rapidity
+/// \param phi : cluster azimuthal angle (0-360 deg)
+/// \param clusterList: clusters array
+//__________________________________________________________________________
+void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, 
+                                       Float_t eta, Float_t phi, 
+                                       Int_t mctag, TObjArray *clusterList)
+{
+  Float_t radius = 0.2; // Hardcoded unless real use.
+  
+  // Accept cluster on EMCal limits - radius
+  // CAREFUL if used for Run2 with DCal.
+  if(phi < 3.15 - radius && phi > 1.4 + radius && TMath::Abs(eta) < 0.7-radius)
+  {
+    TString genName , genNameBkg ;
+    Int_t   genIndex, genIndexBkg;
+    Int_t genBkgTag = -1;
+    
+    TString genName2 , genNameBkg2 ;
+    Int_t   genIndex2, genIndexBkg2;
+    Int_t genBkgTag2 = -1;
+
+    if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
+    {
+      AliVCluster * calo = (AliVCluster*) (clusterList->At(icalo));
+      
+      genBkgTag = GetCocktailGeneratorBackgroundTag(calo, mctag, genName, genIndex, genNameBkg, genIndexBkg);
+      
+     }
+    
+    Bool_t mcDecay = kFALSE;
+    if( IsDataMC() && !genName.Contains("ijing") &&
+       GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0Decay) && 
+       !GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0)        )  
+      mcDecay = kTRUE;
+    
+    fhLocalRegionClusterEtaPhi[0] ->Fill(eta,phi, GetEventWeight());
+    
+    Float_t sumE   = 0;
+    Int_t   sumM   = 0;
+    Float_t sumEHi = 0;
+    Int_t   sumMHi = 0;
+    Float_t sumEHi2 = 0;
+    Int_t   sumMHi2 = 0;
+
+    for(Int_t icalo2 = 0; icalo2 < clusterList->GetEntriesFast(); icalo2++)
+    {
+      if ( icalo2 == icalo ) continue;
+      
+      AliVCluster * calo2 =  (AliVCluster*) (clusterList->At(icalo2));
+      
+      // Select clusters in a radius of R=0.2
+      calo2->GetMomentum(fMomentum2,GetVertex(0)) ;
+      
+      Float_t dEta = eta-fMomentum2.Eta();
+      Float_t dPhi = phi-GetPhi(fMomentum2.Phi());
+      
+      if(TMath::Abs(dPhi) >= TMath::Pi())
+        dPhi = TMath::TwoPi()-TMath::Abs(dPhi);
+            
+      Float_t distance = TMath::Sqrt( dEta*dEta + dPhi*dPhi );
+      
+      genNameBkg2  = "";
+      genName2     = "";
+      genIndexBkg2 = -1;
+      genIndex2    = -1;
+      genBkgTag2   = -1;
+      if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() && calo2->GetNLabels() > 0 && distance < 0.4)
+      {
+        genBkgTag2 = GetCocktailGeneratorBackgroundTag(calo2, -1, genName2, genIndex2, genNameBkg2, genIndexBkg2);
+
+        if( !genName.Contains("ijing") && !genName2.Contains("ijing")) fhDistance2AddedSignals     ->Fill(en,distance,GetEventWeight());
+        if( !genName.Contains("ijing") &&  genName2.Contains("ijing")) fhDistanceAddedSignalsHijing->Fill(en,distance,GetEventWeight());
+        if(  genName.Contains("ijing") &&  genName2.Contains("ijing")) fhDistance2Hijing           ->Fill(en,distance,GetEventWeight());
+      }
+      
+      if ( distance > radius) continue;
+      
+      sumM++;
+      sumE += calo2->E();
+      
+      if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() && calo2->GetNLabels() > 0)
+      {        
+        if(genName2.Contains("ijing"))
+        {
+          sumMHi++;
+          sumEHi += calo2->E();
+        }
+      
+        if(genName2.Contains("ijing") || genBkgTag2 == 1 || genBkgTag2 == 3)
+        {
+          sumMHi2++;
+          sumEHi2 += calo2->E();
+        }
+
+      }
+    }
+    
+    Float_t sumMAdd = sumM-sumMHi;
+    Float_t sumEAdd = sumE-sumEHi;
+        
+    fhLocalRegionClusterEnergySum   [0]->Fill(en,sumE,GetEventWeight());
+    fhLocalRegionClusterMultiplicity[0]->Fill(en,sumM,GetEventWeight());
+    
+    if(mcDecay)
+    {
+      fhLocalRegionClusterEnergySumMCPi0Decay   [0]->Fill(en,sumE,GetEventWeight());
+      fhLocalRegionClusterMultiplicityMCPi0Decay[0]->Fill(en,sumM,GetEventWeight());
+    }
+    
+    if(IsHighMultiplicityAnalysisOn())
+    {
+      fhLocalRegionClusterEnergySumPerCentrality   [0]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+      fhLocalRegionClusterMultiplicityPerCentrality[0]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+      
+      if(mcDecay)
+      {
+        fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay   [0]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[0]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+      }
+    }
+    
+    if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn())
+    {
+      fhLocalRegionClusterEnergySumHijing   [0]->Fill(en,sumEHi ,GetEventWeight());
+      fhLocalRegionClusterMultiplicityHijing[0]->Fill(en,sumMHi ,GetEventWeight());
+
+      fhLocalRegionClusterEnergySumHijing2   ->Fill(en,sumEHi2 ,GetEventWeight());
+      fhLocalRegionClusterMultiplicityHijing2->Fill(en,sumMHi2 ,GetEventWeight());
+      
+      fhLocalRegionClusterEnergySumAdded    [0]->Fill(en,sumEAdd,GetEventWeight());
+      fhLocalRegionClusterMultiplicityAdded [0]->Fill(en,sumMAdd,GetEventWeight());
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhLocalRegionClusterEnergySumPerCentralityHijing   [0]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityHijing[0]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+
+        fhLocalRegionClusterEnergySumPerCentralityHijing2   ->Fill(GetEventCentrality(),sumEHi2 ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityHijing2->Fill(GetEventCentrality(),sumMHi2 ,GetEventWeight());    
+        
+        fhLocalRegionClusterEnergySumPerCentralityAdded    [0]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityAdded [0]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+      }
+      
+      if(mcDecay)
+      {
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay   [0]->Fill(en,sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[0]->Fill(en,sumMHi ,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay    [0]->Fill(en,sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay [0]->Fill(en,sumMAdd,GetEventWeight());
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay   [0]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[0]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+          
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay    [0]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay [0]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+        }
+      }
+      
+      if(genBkgTag < 0) return;
+      
+      fhLocalRegionClusterEtaPhi            [genBkgTag+1] ->Fill(eta,phi, GetEventWeight());
+      
+      fhLocalRegionClusterEnergySum         [genBkgTag+1]->Fill(en,sumE,GetEventWeight());
+      fhLocalRegionClusterMultiplicity      [genBkgTag+1]->Fill(en,sumM,GetEventWeight());
+      
+      fhLocalRegionClusterEnergySumHijing   [genBkgTag+1]->Fill(en,sumEHi ,GetEventWeight());
+      fhLocalRegionClusterMultiplicityHijing[genBkgTag+1]->Fill(en,sumMHi ,GetEventWeight());
+      
+      fhLocalRegionClusterEnergySumAdded    [genBkgTag+1]->Fill(en,sumEAdd,GetEventWeight());
+      fhLocalRegionClusterMultiplicityAdded [genBkgTag+1]->Fill(en,sumMAdd,GetEventWeight());
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhLocalRegionClusterEnergySumPerCentrality         [genBkgTag+1]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentrality      [genBkgTag+1]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumPerCentralityHijing   [genBkgTag+1]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityHijing[genBkgTag+1]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+        
+        fhLocalRegionClusterEnergySumPerCentralityAdded    [genBkgTag+1]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityAdded [genBkgTag+1]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+      }
+      
+      if(mcDecay)
+      {        
+        fhLocalRegionClusterEnergySumMCPi0Decay         [genBkgTag+1]->Fill(en,sumE,GetEventWeight());
+        fhLocalRegionClusterMultiplicityMCPi0Decay      [genBkgTag+1]->Fill(en,sumM,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay   [genBkgTag+1]->Fill(en,sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[genBkgTag+1]->Fill(en,sumMHi ,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay    [genBkgTag+1]->Fill(en,sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay [genBkgTag+1]->Fill(en,sumMAdd,GetEventWeight());
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay         [genBkgTag+1]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay      [genBkgTag+1]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+          
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay   [genBkgTag+1]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[genBkgTag+1]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+          
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay    [genBkgTag+1]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay [genBkgTag+1]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+        }
+      }
+      
+      if(genBkgTag > 0) // Not clean, all merged
+      {
+        fhLocalRegionClusterEtaPhi            [5] ->Fill(eta,phi, GetEventWeight());
+        
+        fhLocalRegionClusterEnergySum         [5]->Fill(en,sumE,GetEventWeight());
+        fhLocalRegionClusterMultiplicity      [5]->Fill(en,sumM,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumHijing   [5]->Fill(en,sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityHijing[5]->Fill(en,sumMHi ,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumAdded    [5]->Fill(en,sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityAdded [5]->Fill(en,sumMAdd,GetEventWeight());
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentrality         [5]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentrality      [5]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+          
+          fhLocalRegionClusterEnergySumPerCentralityHijing   [5]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityHijing[5]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+          
+          fhLocalRegionClusterEnergySumPerCentralityAdded    [5]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityAdded [5]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+        }
+
+        if(mcDecay)
+        {          
+          fhLocalRegionClusterEnergySumMCPi0Decay         [5]->Fill(en,sumE,GetEventWeight());
+          fhLocalRegionClusterMultiplicityMCPi0Decay      [5]->Fill(en,sumM,GetEventWeight());
+          
+          fhLocalRegionClusterEnergySumHijingMCPi0Decay   [5]->Fill(en,sumEHi ,GetEventWeight());
+          fhLocalRegionClusterMultiplicityHijingMCPi0Decay[5]->Fill(en,sumMHi ,GetEventWeight());
+          
+          fhLocalRegionClusterEnergySumAddedMCPi0Decay    [5]->Fill(en,sumEAdd,GetEventWeight());
+          fhLocalRegionClusterMultiplicityAddedMCPi0Decay [5]->Fill(en,sumMAdd,GetEventWeight());
+          
+          if(IsHighMultiplicityAnalysisOn())
+          {
+            fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay         [5]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+            fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay      [5]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+            
+            fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay   [5]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+            fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[5]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+            
+            fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay    [5]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+            fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay [5]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+          }
+        }
+        
+      } // not clean, all merged
+      
+    } // check generator overlaps
+    
+  } // EMCal acceptance
+}
+
+//_____________________________________________________________________
+/// Check the particle overlaps into a cluster when originated by 
+/// different generators
+///
+/// \param calo: cluster pointer
+/// \param mctag  : mc tag label, of the originating particle
+//__________________________________________________________________________
+void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag)
+{
+  //
+  // Check the generators inside the cluster
+  TString genName  = "", genNameBkg  = "";
+  Int_t   genIndex = -1, genIndexBkg = -1;
+  Int_t genBkgTag = GetCocktailGeneratorBackgroundTag(calo, mctag, genName, genIndex, genNameBkg, genIndexBkg);
+  if     (genBkgTag == -1) return;
+  else if(genBkgTag  >  3) printf("Bkg generator tag larger than 3\n");
+  
+  //
+  // Get primary particle info of main particle contributing to the cluster
+  Float_t eprim   = 0;
+  //Float_t ptprim  = 0;
+  Bool_t ok = kFALSE;
+  Int_t pdg = 0, status = 0, momLabel = -1;
+  
+  //fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+  fPrimaryMom = GetMCAnalysisUtils()->GetMother(calo->GetLabel(),GetReader(), pdg, status, ok, momLabel);     
+  
+  if(ok)
+  {
+    eprim   = fPrimaryMom.Energy();
+    //ptprim  = fPrimaryMom.Pt();
+  }
+  
+  //
+  Float_t en = calo->E();
+
+  if ( eprim < 0.1 || en < 0.5 ) return;
+  
+  //
+  Int_t partType = -1;
+  if     ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0)      ) partType = kmcGenPi0Merged;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0Decay) ) partType = kmcGenPi0Decay;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEtaDecay) ) partType = kmcGenEtaDecay;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPhoton)   ) partType = kmcGenPhoton;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCElectron) ) partType = kmcGenElectron;
+  else                                                                                partType = kmcGenOther;
+
+  Int_t genType = GetNCocktailGenNamesToCheck()-1;
+  for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
+  {
+    if ( GetCocktailGenNameToCheck(igen).Contains(genName) && 
+        ( GetCocktailGenIndexToCheck(igen) < 0 || genIndex == GetCocktailGenIndexToCheck(igen)) )
+    {
+      genType = igen;
+      break;
+    }
+  }
+  
+  Float_t ratio = en / eprim;
+  Float_t diff  = en - eprim;
+    
+  if ( genBkgTag > 0 ) 
+  {
+    fhMergeGeneratorCluster[0]      [0]        ->Fill(en,GetEventWeight());
+    fhMergeGeneratorCluster[0]      [partType] ->Fill(en,GetEventWeight());
+    fhMergeGeneratorCluster[genType][0]        ->Fill(en,GetEventWeight());
+    fhMergeGeneratorCluster[genType][partType] ->Fill(en,GetEventWeight());
+
+    fhMergeGeneratorClusterEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
+    fhMergeGeneratorClusterEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
+    fhMergeGeneratorClusterEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
+    fhMergeGeneratorClusterEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
+    
+    fhMergeGeneratorClusterEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
+    fhMergeGeneratorClusterEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
+    fhMergeGeneratorClusterEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
+    fhMergeGeneratorClusterEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
+    
+    if(genBkgTag == 2) 
+    {
+      fhMergeGeneratorClusterNotHijingBkg[0]      [0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkg[0]      [partType] ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkg[genType][0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkg[genType][partType] ->Fill(en,GetEventWeight());
+      
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
+      
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
+    }
+    
+    if(genBkgTag == 1)
+    {
+      fhMergeGeneratorClusterHijingBkg[0]      [0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkg[0]      [partType] ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkg[genType][0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkg[genType][partType] ->Fill(en,GetEventWeight());
+      
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
+      
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
+    }
+    
+    if ( genBkgTag == 3 )
+    {      
+      fhMergeGeneratorClusterHijingAndOtherBkg[0]      [0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkg[0]      [partType] ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkg[genType][0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkg[genType][partType] ->Fill(en,GetEventWeight());
+      
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
+      
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
+    }
+  }
+  else    
+  {
+    fhCleanGeneratorCluster[0]      [0]        ->Fill(en,GetEventWeight());
+    fhCleanGeneratorCluster[0]      [partType] ->Fill(en,GetEventWeight());
+    fhCleanGeneratorCluster[genType][0]        ->Fill(en,GetEventWeight());
+    fhCleanGeneratorCluster[genType][partType] ->Fill(en,GetEventWeight());
+    
+    fhCleanGeneratorClusterEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
+    fhCleanGeneratorClusterEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
+    fhCleanGeneratorClusterEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
+    fhCleanGeneratorClusterEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
+    
+    fhCleanGeneratorClusterEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
+    fhCleanGeneratorClusterEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
+    fhCleanGeneratorClusterEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
+    fhCleanGeneratorClusterEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
+  }
+}
+
 
 //_____________________________________________________________________
 /// Select calorimeter clusters if they pass different cuts:
@@ -574,7 +1065,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       if(GetReader()->ReadAODMCParticles() &&
          !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primAOD  )) inacceptance = kFALSE ;
     }
-    
+  
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
     tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(),GetCalorimeter());
@@ -587,6 +1078,9 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       
       continue;
     }
+  
+    //if(fStudyActivityNearCluster  && photonE > 5) // cut at 5 GeV to avoid too many iterations
+     // DistanceToAddedSignalAtGeneratorLevel(i,nprim, stack, mcparticles, photonE,photonEta,photonPhi);
     
     // Consider only final state particles, but this depends on generator,
     // status 1 is the usual one, in case of not being ok, leave the possibility
@@ -676,6 +1170,176 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   } // loop on primaries
 }
 
+//________________________________________________________________________________
+/// Calculate distance between a generated photon and a particle from an added
+/// cocktail generator. Fill histograms.
+///
+///
+//________________________________________________________________________________
+//void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim, 
+//                                         AliStack * stack, TClonesArray*  mcparticles,
+//                                         Float_t photonE, Float_t photonEta, Float_t photonPhi)
+//{
+//  //Double_t addedY   = -100 ;
+//  //Double_t addedE   = -1 ;
+//  Double_t addedPt  = -1 ;
+//  Double_t addedPhi =  100 ;
+//  Double_t addedEta = -1 ;
+//  
+//  //Int_t    pdg       =  0 ;
+//  Int_t    status    =  0 ;
+//  Bool_t   inacceptance = kFALSE ;
+//    
+//  Int_t pdgMomOrg = 0, statusMomOrg = -1, momLabelOrg = -1;
+//  Bool_t okMomOrg = kFALSE;
+//  GetMCAnalysisUtils()->GetMother(label,GetReader(), pdgMomOrg, statusMomOrg, okMomOrg, momLabelOrg);     
+//  
+//  TParticle        * primStack = 0;
+//  AliAODMCParticle * primAOD   = 0;
+//
+//  TParticle        * primStackMom = 0;
+//  AliAODMCParticle * primAODMom   = 0;
+//
+//  TString genName;
+//  (GetReader()->GetMC())->GetCocktailGenerator(label,genName);
+//  
+//  for(Int_t i=0 ; i < nprim; i++)
+//  {
+//    if( i == label ) continue ;
+//    
+//    if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
+//    
+//    //printf("particle %d\n",i);
+//    
+//    Int_t pdgMom = 0, statusMom = -1, momLabel = -1;
+//    Bool_t okMom = kFALSE;
+//    GetMCAnalysisUtils()->GetMother(i,GetReader(), pdgMom, statusMom, okMom, momLabel);    
+//    //printf("\t mom label %d\n",momLabel);
+//
+//    if(momLabel < 0) continue;
+//    
+//    Int_t grandMomLabel = -1;
+//    if(GetReader()->ReadStack())
+//    {
+//      primStack = stack->Particle(i) ;
+//      if(!primStack)
+//      {
+//        AliWarning("ESD primaries pointer not available!!");
+//        continue;
+//      }
+//      
+//      //pdg    = primStack->GetPdgCode();
+//      status = primStack->GetStatusCode();
+//      
+//      // Protection against floating point exception
+//      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
+//          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
+//          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
+//      
+//      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+//      //       prim->GetName(), prim->GetPdgCode());
+//      
+//      // Photon kinematics
+//      primStack->Momentum(fMomentum);
+//      
+//      //addedY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
+//      
+//      if(momLabel >= 0)
+//      {
+//        primStackMom = stack->Particle(momLabel) ;
+//        grandMomLabel = primStackMom->GetFirstMother();      
+//      }
+//    }
+//    else
+//    {
+//      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+//      if(!primAOD)
+//      {
+//        AliWarning("AOD primaries pointer not available!!");
+//        continue;
+//      }
+//      //pdg    = primAOD->GetPdgCode();
+//      status = primAOD->GetStatus();
+//      
+//      //printf("\t pdg %d, status %d, E %f, pz %f\n",pdg,status,primAOD->E(),primAOD->Pz());
+//
+//      // Protection against floating point exception
+//      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
+//          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
+//          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
+//      
+//      // Photon kinematics
+//      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+//
+//      //addedY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
+//      
+//      if(momLabel >= 0)
+//      {
+//        primAODMom = (AliAODMCParticle *) mcparticles->At(momLabel);
+//        grandMomLabel = primAODMom->GetMother();
+//      }
+//    }
+//    //printf("\t grandmom %d\n",grandMomLabel);
+//   
+//    // Select only photons in the final state
+//    //if(pdg != 22 ) continue ;
+//    
+//    // If too small or too large pt, skip, same cut as for data analysis
+//    addedPt  = fMomentum.Pt () ;
+//    
+//    if(addedPt < GetMinPt() || addedPt > GetMaxPt() ) continue ;
+//    
+//    //addedE   = fMomentum.E  () ;
+//    addedEta = fMomentum.Eta() ;
+//    addedPhi = fMomentum.Phi() ;
+//    
+//    if(addedPhi < 0) addedPhi+=TMath::TwoPi();
+//    
+//    // Check if photons hit desired acceptance
+//    inacceptance = kTRUE;
+//    
+//    // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
+//    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter())) inacceptance = kFALSE ;
+//    
+//    // Check if photons hit the Calorimeter acceptance
+//    if(IsRealCaloAcceptanceOn()) // defined on base class
+//    {
+//      if(GetReader()->ReadStack()          &&
+//         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primStack)) inacceptance = kFALSE ;
+//      if(GetReader()->ReadAODMCParticles() &&
+//         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primAOD  )) inacceptance = kFALSE ;
+//    }
+//    //printf("\t in acceptance %d", inacceptance);
+//    if(!inacceptance) continue;
+//    
+//    TString genName2;
+//    (GetReader()->GetMC())->GetCocktailGenerator(i,genName2);
+//    
+//    Float_t dEta = photonEta-addedEta;
+//    Float_t dPhi = photonPhi-addedPhi;
+//    Float_t distance = TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+//    
+//    if (( momLabel != momLabelOrg && momLabelOrg >= 0) || momLabelOrg < 0)
+//    {
+//      if(!genName2.Contains("ijing"))
+//      {
+//        if(grandMomLabel < 0)
+//        {
+//          if ( !genName.Contains("ijing") ) fhDistanceAddedPhotonAddedPrimarySignal  ->Fill(photonE,distance,GetEventWeight());
+//          if (  genName.Contains("ijing") ) fhDistanceHijingPhotonAddedPrimarySignal ->Fill(photonE,distance,GetEventWeight());
+//        }
+//        else
+//        {
+//          if ( !genName.Contains("ijing") ) fhDistanceAddedPhotonAddedSecondarySignal ->Fill(photonE,distance,GetEventWeight());
+//          if (  genName.Contains("ijing") ) fhDistanceHijingPhotonAddedSecondarySignal->Fill(photonE,distance,GetEventWeight());
+//        }
+//      }
+//    }
+//    
+//    if(!genName.Contains("ijing") &&  genName2.Contains("ijing") && status == 0) fhDistanceAddedPhotonHijingSecondary->Fill(photonE,distance,GetEventWeight());
+//  }
+//}
+//
 //________________________________________________________________________________
 /// Fill some histograms to understand effect of pile-up.
 //________________________________________________________________________________
@@ -1184,7 +1848,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
         // if no photon/electron as comon ancestor (conversions), count as other particle
         const UInt_t nlabels = cluster->GetNLabels();
         Int_t overpdg[nlabels];
-        Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg);
+        Int_t overlab[nlabels];
+        Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg,overlab);
 
         //printf("N overlaps %d \n",noverlaps);
         
@@ -1529,6 +2194,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Int_t   nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();
   Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();
   Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
+  
+  Int_t   nratbins = GetHistogramRanges()->GetHistoRatioBins();
+  Float_t ratmin   = GetHistogramRanges()->GetHistoRatioMin() ;
+  Float_t ratmax   = GetHistogramRanges()->GetHistoRatioMax() ;  
+  Int_t   ndifbins = GetHistogramRanges()->GetHistoEDiffBins();
+  Float_t difmin   = GetHistogramRanges()->GetHistoEDiffMin() ;
+  Float_t difmax   = GetHistogramRanges()->GetHistoEDiffMax() ;
+
   
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies
   
@@ -3107,6 +3780,484 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }
   }
 
+  if(fStudyActivityNearCluster)
+  {
+    TString caseTitle[] = {"","CleanCluster","MergedClusterHijingBkg","MergedClusterNotHijingBkg","MergedClusterHijingAndOtherBkg","MergedCluster"};
+    Int_t ncases = 1;
+    if ( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() ) ncases = 6;
+    
+    for(Int_t icase = 0; icase < ncases; icase++)
+    {
+      fhLocalRegionClusterEtaPhi[icase]  = new TH2F
+      (Form("hLocalRegionClusterEtaPhi%s",caseTitle[icase].Data()),
+       "cluster,#it{E} > 0.5 GeV, #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhLocalRegionClusterEtaPhi[icase]->SetYTitle("#phi (rad)");
+      fhLocalRegionClusterEtaPhi[icase]->SetXTitle("#eta");
+      outputContainer->Add(fhLocalRegionClusterEtaPhi[icase]) ;
+      
+      fhLocalRegionClusterEnergySum[icase] = new TH2F 
+      (Form("hLocalRegionClusterEnergySum%s",caseTitle[icase].Data()),
+       "Sum of cluster energy around trigger cluster #it{E} with R=0.2", 
+       nptbins,ptmin,ptmax, 200,0,100);
+      fhLocalRegionClusterEnergySum[icase]->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterEnergySum[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+      outputContainer->Add(fhLocalRegionClusterEnergySum[icase]);    
+      
+      fhLocalRegionClusterMultiplicity[icase] = new TH2F 
+      (Form("hLocalRegionClusterMultiplicity%s",caseTitle[icase].Data()),
+       "Cluster multiplicity around trigger cluster #it{E} with R=0.2", 
+       nptbins,ptmin,ptmax, 200,0,200);
+      fhLocalRegionClusterMultiplicity[icase]->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterMultiplicity[icase]->SetYTitle("Multiplicity");
+      outputContainer->Add(fhLocalRegionClusterMultiplicity[icase]);    
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhLocalRegionClusterEnergySumPerCentrality[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumPerCentrality%s",caseTitle[icase].Data()),
+         "Sum of cluster energy around trigger cluster vs centrality with R=0.2", 
+         100,0,100, 200,0,100);
+        fhLocalRegionClusterEnergySumPerCentrality[icase]->SetXTitle("Centrality");
+        fhLocalRegionClusterEnergySumPerCentrality[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumPerCentrality[icase]);    
+        
+        fhLocalRegionClusterMultiplicityPerCentrality[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityPerCentrality%s",caseTitle[icase].Data()),
+         "Cluster multiplicity around trigger cluster vs centrality with R=0.2", 
+         100,0,100, 200,0,200);
+        fhLocalRegionClusterMultiplicityPerCentrality[icase]->SetXTitle("Centrality");
+        fhLocalRegionClusterMultiplicityPerCentrality[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentrality[icase]);        
+      }
+      
+      //
+      // Select only single pi0 decay clusters from non hijing generator
+      //
+      if(IsDataMC())
+      {
+        fhLocalRegionClusterEnergySumMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySum%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Sum of cluster energy around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumMCPi0Decay[icase]);    
+        
+        fhLocalRegionClusterMultiplicityMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicity%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Cluster multiplicity around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityMCPi0Decay[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityMCPi0Decay[icase]);    
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentrality%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Sum of cluster energy around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentrality%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Cluster multiplicity around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]);        
+        }
+      }
+      
+      if(IsStudyClusterOverlapsPerGeneratorOn() && IsDataMC())
+      {
+        fhLocalRegionClusterEnergySumHijing[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumHijing%s",caseTitle[icase].Data()),
+         "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumHijing[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumHijing[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumHijing[icase]);    
+        
+        fhLocalRegionClusterMultiplicityHijing[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityHijing%s",caseTitle[icase].Data()),
+         "Cluster multiplicity (HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityHijing[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityHijing[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityHijing[icase]);    
+        
+        fhLocalRegionClusterEnergySumAdded[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumAdded%s",caseTitle[icase].Data()),
+         "Sum of cluster energy (not HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumAdded[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumAdded[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumAdded[icase]);    
+        
+        fhLocalRegionClusterMultiplicityAdded[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityAdded%s",caseTitle[icase].Data()),
+         "Cluster multiplicity (not HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityAdded[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityAdded[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityAdded[icase]);    
+        
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityHijing[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentralityHijing%s",caseTitle[icase].Data()),
+           "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityHijing[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityHijing[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijing[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityHijing[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentralityHijing%s",caseTitle[icase].Data()),
+           "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]);        
+          
+          
+          fhLocalRegionClusterEnergySumPerCentralityAdded[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentralityAdded%s",caseTitle[icase].Data()),
+           "Sum of cluster energy (not HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityAdded[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityAdded[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityAdded[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityAdded[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentralityAdded%s",caseTitle[icase].Data()),
+           "Cluster multiplicity (not HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]);        
+        }
+        
+        //
+        // Select only single pi0 decay clusters from non hijing generator
+        //
+        
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumHijing%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumHijingMCPi0Decay[icase]);    
+        
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityHijing%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Cluster multiplicity (HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityHijingMCPi0Decay[icase]);    
+        
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumAdded%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Sum of cluster energy (not HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumAddedMCPi0Decay[icase]);    
+        
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityAdded%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Cluster multiplicity (not HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityAddedMCPi0Decay[icase]);    
+        
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentralityHijing%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentralityHijing%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]);        
+          
+          
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentralityAdded%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Sum of cluster energy (not HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentralityAdded%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Cluster multiplicity (not HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]);        
+        }
+        
+      }
+    }
+    
+    if(IsDataMC())
+    {
+      fhLocalRegionClusterEnergySumHijing2 = new TH2F 
+      ("hLocalRegionClusterEnergySumHijing2",
+       "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
+       nptbins,ptmin,ptmax, 200,0,100);
+      fhLocalRegionClusterEnergySumHijing2->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterEnergySumHijing2->SetYTitle("#Sigma #it{E} (GeV)");
+      outputContainer->Add(fhLocalRegionClusterEnergySumHijing2);    
+      
+      fhLocalRegionClusterMultiplicityHijing2 = new TH2F 
+      ("hLocalRegionClusterMultiplicityHijing2",
+       "Cluster multiplicity (HIJING) around trigger cluster #it{E} with R=0.2", 
+       nptbins,ptmin,ptmax, 200,0,200);
+      fhLocalRegionClusterMultiplicityHijing2->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterMultiplicityHijing2->SetYTitle("Multiplicity");
+      outputContainer->Add(fhLocalRegionClusterMultiplicityHijing2); 
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhLocalRegionClusterEnergySumPerCentralityHijing2 = new TH2F 
+        ("hLocalRegionClusterEnergySumPerCentralityHijing2",
+         "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
+         100,0,100, 200,0,100);
+        fhLocalRegionClusterEnergySumPerCentralityHijing2->SetXTitle("Centrality");
+        fhLocalRegionClusterEnergySumPerCentralityHijing2->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijing2);    
+        
+        fhLocalRegionClusterMultiplicityPerCentralityHijing2 = new TH2F 
+        ("hLocalRegionClusterMultiplicityPerCentralityHijing2",
+         "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
+         100,0,100, 200,0,200);
+        fhLocalRegionClusterMultiplicityPerCentralityHijing2->SetXTitle("Centrality");
+        fhLocalRegionClusterMultiplicityPerCentralityHijing2->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijing2);     
+      }
+    }
+    //    fhDistanceAddedPhotonAddedPrimarySignal = new TH2F
+    //    ("hDistanceAddedPhotonAddedPrimarySignal", "Distance added #gamma to primary particle from added generator"
+    //    ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceAddedPhotonAddedPrimarySignal->SetYTitle("#it{R}");
+    //    fhDistanceAddedPhotonAddedPrimarySignal->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceAddedPhotonAddedPrimarySignal) ;
+    //    
+    //    fhDistanceHijingPhotonAddedPrimarySignal = new TH2F
+    //    ("hDistanceHijingPhotonAddedPrimarySignal", "Distance Hijing #gamma to primary particle from added generator"
+    //     ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceHijingPhotonAddedPrimarySignal->SetYTitle("#it{R}");
+    //    fhDistanceHijingPhotonAddedPrimarySignal->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceHijingPhotonAddedPrimarySignal) ;
+    //
+    //    fhDistanceAddedPhotonAddedSecondarySignal = new TH2F
+    //    ("hDistanceAddedPhotonAddedSecondarySignal", "Distance added #gamma to secondary particle from added generator"
+    //     ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceAddedPhotonAddedSecondarySignal->SetYTitle("#it{R}");
+    //    fhDistanceAddedPhotonAddedSecondarySignal->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceAddedPhotonAddedSecondarySignal) ;
+    //    
+    //    fhDistanceHijingPhotonAddedSecondarySignal = new TH2F
+    //    ("hDistanceHijingPhotonAddedSecondarySignal", "Distance Hijing #gamma to secondary particle from added generator"
+    //     ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceHijingPhotonAddedSecondarySignal->SetYTitle("#it{R}");
+    //    fhDistanceHijingPhotonAddedSecondarySignal->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceHijingPhotonAddedSecondarySignal) ;
+    //
+    //    fhDistanceAddedPhotonHijingSecondary = new TH2F
+    //    ("hDistanceAddedPhotonHijingSecondary", "Distance added #gamma to secondary particle from hijing"
+    //     ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceAddedPhotonHijingSecondary->SetYTitle("#it{R}");
+    //    fhDistanceAddedPhotonHijingSecondary->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceAddedPhotonHijingSecondary) ;
+    
+    
+    fhDistance2AddedSignals = new TH2F
+    ("hDistance2AddedSignals", "Distance added signals"
+     ,nptbins,ptmin,ptmax,100,0,0.4);
+    fhDistance2AddedSignals->SetYTitle("#it{R}");
+    fhDistance2AddedSignals->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhDistance2AddedSignals) ;
+    
+    fhDistance2Hijing = new TH2F
+    ("hDistance2Hijing", "Distance 2 hijing clusters"
+     ,nptbins,ptmin,ptmax,100,0,0.4);
+    fhDistance2Hijing->SetYTitle("#it{R}");
+    fhDistance2Hijing->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhDistance2Hijing) ;
+    
+    fhDistanceAddedSignalsHijing = new TH2F
+    ("hDistanceAddedSignalsHijing", "Distance added signals to hijing"
+     ,nptbins,ptmin,ptmax,100,0,0.4);
+    fhDistanceAddedSignalsHijing->SetYTitle("#it{R}");
+    fhDistanceAddedSignalsHijing->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhDistanceAddedSignalsHijing) ;
+  }
+
+  if(IsStudyClusterOverlapsPerGeneratorOn() && IsDataMC())
+  {
+     
+    TString mcGenNames[] = {"","_MC_Pi0Merged","_MC_Pi0Decay","_MC_EtaDecay","_MC_PhotonOther","_MC_Electron","_MC_Other"};
+    TString mcGenTitle[] = {"",",MC Pi0-Merged",",MC Pi0-Decay",", MC Eta-Decay",", MC Photon other sources",", MC Electron",", MC other sources"};
+    for(Int_t igen = 0; igen < GetNCocktailGenNamesToCheck(); igen++)
+    {
+      TString add = "_MainGener_";
+      if(igen==0) add = "";
+      for(Int_t imc = 0; imc < fgkNGenTypes; imc++)
+      {
+        fhCleanGeneratorCluster[igen][imc] = new TH1F(Form("hCleanGeneratorCluster%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                      Form("Number of selected clusters with contribution of %s generator%s, no overlap",
+                                                           GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                      nptbins,ptmin,ptmax);
+        fhCleanGeneratorCluster[igen][imc]->SetYTitle("#it{counts}");
+        fhCleanGeneratorCluster[igen][imc]->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhCleanGeneratorCluster[igen][imc]) ;
+        
+        fhCleanGeneratorClusterEPrimRecoRatio[igen][imc] = new TH2F(Form("hCleanGeneratorClusterEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                    Form("#it{E}_{reco}/#it{E}_{gen} clusters with contribution of %s generator%s, no overlap",
+                                                                         GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                    nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhCleanGeneratorClusterEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhCleanGeneratorClusterEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhCleanGeneratorClusterEPrimRecoRatio[igen][imc]) ;
+        
+        fhCleanGeneratorClusterEPrimRecoDiff[igen][imc] = new TH2F(Form("hCleanGeneratorClusterEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                   Form("#it{E}_{reco}-#it{E}_{gen} clusters with contribution of %s generator%s, no overlap",
+                                                                        GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                   nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhCleanGeneratorClusterEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhCleanGeneratorClusterEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhCleanGeneratorClusterEPrimRecoDiff[igen][imc]) ;
+     
+        //
+        
+        fhMergeGeneratorCluster[igen][imc] = new TH1F(Form("hMergeGeneratorCluster%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                      Form("Number of selected clusters with contribution of >=2 generators, main %s%s",
+                                                           GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                      nptbins,ptmin,ptmax);
+        fhMergeGeneratorCluster[igen][imc]->SetYTitle("#it{counts}");
+        fhMergeGeneratorCluster[igen][imc]->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhMergeGeneratorCluster[igen][imc]) ;
+        
+        fhMergeGeneratorClusterEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                    Form("#it{E}_{reco}/#it{E}_{gen}clusters with contribution of >=2 generators, main %s%s",
+                                                                         GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                    nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhMergeGeneratorClusterEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhMergeGeneratorClusterEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterEPrimRecoRatio[igen][imc]) ;
+        
+        fhMergeGeneratorClusterEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                   Form("#it{E}_{reco}-#it{E}_{gen}clusters with contribution of >=2 generators, main %s%s",
+                                                                        GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                   nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhMergeGeneratorClusterEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhMergeGeneratorClusterEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterEPrimRecoDiff[igen][imc]) ;
+        
+        //if(GetCocktailGenNameToCheck(igen).Contains("ijing")) continue;
+        
+        //
+        
+        fhMergeGeneratorClusterNotHijingBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterNotHijingBkg%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                  Form("Number of selected clusters with contribution of >=2 generators, , none is HIJING, main %s%s",
+                                                                       GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                  nptbins,ptmin,ptmax);
+        fhMergeGeneratorClusterNotHijingBkg[igen][imc]->SetYTitle("#it{counts}");
+        fhMergeGeneratorClusterNotHijingBkg[igen][imc]->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterNotHijingBkg[igen][imc]) ;
+        
+        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterNotHijingBkgEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                                Form("#it{E}_{reco}/#it{E}_{gen} clusters with contribution of >=2 generators, , none is HIJING, main %s%s",
+                                                                                     GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                                nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc]) ;
+        
+        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterNotHijingBkgEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                               Form("#it{E}_{reco}-#it{E}_{gen} clusters with contribution of >=2 generators, , none is HIJING, main %s%s",
+                                                                                    GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                               nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[igen][imc]) ;
+
+        //
+        
+        fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterHijingAndOtherBkg%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                       Form("Number of selected clusters with contribution of >=3 generators, none is HIJING, main %s%s",
+                                                                            GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                       nptbins,ptmin,ptmax);
+        fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc]->SetYTitle("#it{counts}");
+        fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc]->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc]) ;
+        
+        
+        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                                     Form("#it{E}_{reco}/#it{E}_{gen} clusters with contribution of >=3 generators, none is HIJING, main %s%s",
+                                                                                          GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                                     nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc]) ;
+        
+        
+        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                                    Form("#it{E}_{reco}-#it{E}_{gen} clusters with contribution of >=3 generators, none is HIJING, main %s%s",
+                                                                                         GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                                    nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][imc]) ;
+
+        //
+        
+        fhMergeGeneratorClusterHijingBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterHijingBkg%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                               Form("Number of selected clusters with contribution of >=3 generators, none is HIJING, main %s%s",
+                                                                    GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                               nptbins,ptmin,ptmax);
+        fhMergeGeneratorClusterHijingBkg[igen][imc]->SetYTitle("#it{counts}");
+        fhMergeGeneratorClusterHijingBkg[igen][imc]->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterHijingBkg[igen][imc]) ;
+        
+        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingBkgEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                             Form("#it{E}_{reco}/#it{E}_{gen} clusters with contribution of >=3 generators, none is HIJING, main %s%s",
+                                                                                  GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                             nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc]) ;
+       
+        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingBkgEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
+                                                                             Form("#it{E}_{reco}-#it{E}_{gen} clusters with contribution of >=3 generators, none is HIJING, main %s%s",
+                                                                                  GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
+                                                                             nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[igen][imc]) ;
+       }
+    }
+  }
   
   return outputContainer ;
 }
@@ -3148,7 +4299,7 @@ void AliAnaPhoton::InitParameters()
   fEBinCuts[6] = 4.;  fEBinCuts[7] = 5. ;  fEBinCuts[8] = 7. ;
   fEBinCuts[9] = 9.;  fEBinCuts[10]= 12.;  fEBinCuts[11]= 15.;
   fEBinCuts[12]= 20.; fEBinCuts[13]= 50.;  fEBinCuts[14]= 100.;
-  for(Int_t i = fNEBinCuts; i < 15; i++) fEBinCuts[i] = 1000.;
+  for(Int_t i = fNEBinCuts; i < 15; i++) fEBinCuts[i] = 1000.;  
 }
 
 //_______________________________________
@@ -3395,6 +4546,19 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     fhClusterCutsE [9]->Fill(en, GetEventWeight());
     fhClusterCutsPt[9]->Fill(pt, GetEventWeight());
+    
+    //
+    // Check local cluster activity around the current cluster
+    //
+    if(fStudyActivityNearCluster && en > 1.5) // 1.5 GeV cut used on Pb-Pb analysis
+      ActivityNearCluster(icalo,en,eta,phi,tag,pl);
+
+    //
+    // Check if other generators contributed to the cluster
+    //
+    if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
+      CocktailGeneratorsClusterOverlaps(calo,tag);
+
     
     if(fFillEBinAcceptanceHisto)
     {  

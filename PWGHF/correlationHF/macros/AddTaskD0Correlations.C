@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1., Bool_t fillTrees=kFALSE, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=1)
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=1)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -17,8 +17,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
   TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",out8name="",out9name="",inname="";
   filename = AliAnalysisManager::GetCommonFileName();
-  filename += ":PWG3_D2H_";
-  filename+="D0InvMass";
+  filename += ":";
+  filename+="D0hCorrel";
   if(flagD0D0bar==1)filename+="D0";
   if(flagD0D0bar==2)filename+="D0bar";
   //list mass
@@ -42,7 +42,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   if(flagD0D0bar==1)out5name+="D0";
   if(flagD0D0bar==2)out5name+="D0bar";
   //correlation further studies
-  out6name ="MCStudyPlots";
+  out6name ="debugPlots";
   if(flagD0D0bar==1)out6name+="D0";
   if(flagD0D0bar==2)out6name+="D0bar";
   //correlated trk cuts
@@ -106,7 +106,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     if(system==0) RDHFD0Corrs->SetStandardCutsPP2010();
     else {
       RDHFD0Corrs->SetStandardCutsPbPb2010();
-      if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
+      if(minC!=0 || maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
 	RDHFD0Corrs->SetMinCentrality(minC);
 	RDHFD0Corrs->SetMaxCentrality(maxC);
       }
@@ -121,7 +121,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
       return;
     }
     if(flagAOD049)RDHFD0Corrs->SetUseAOD049(kTRUE);
-    if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
+    if(minC!=0 || maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
       RDHFD0Corrs->SetMinCentrality(minC);
       RDHFD0Corrs->SetMaxCentrality(maxC);
     } 
@@ -176,8 +176,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   corrCuts->PrintAll();
 
   TString centr="";
-  if(minC!=0 && maxC!=0) centr = Form("%.0f%.0f",minC,maxC);
-  else centr = Form("%.0f%.0f",RDHFD0Corrs->GetMinCentrality(),RDHFD0Corrs->GetMaxCentrality());
+  if(minC!=0 || maxC!=0) centr = Form("_%.0f%.0f",minC,maxC);
+  else centr = Form("_%.0f%.0f",RDHFD0Corrs->GetMinCentrality(),RDHFD0Corrs->GetMaxCentrality());
   out1name+=centr;
   out2name+=centr;
   out3name+=centr;
@@ -253,11 +253,11 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
   } else { //use SB ranges from AddTask (following settings)
     if(!pporpPb_lims) { //pp limits
-    
-      Double_t LSBLowLim[15] = {0.,0.,0.,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
-      Double_t LSBUppLim[15] = {0.,0.,0.,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,0.,0.,0.,0.};
-      Double_t RSBLowLim[15] = {0.,0.,0.,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,0.,0.,0.,0.};
-      Double_t RSBUppLim[15] = {0.,0.,0.,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,0.,0.,0.,0.};
+				//      1-2    2-3    3-4    4-5    5-6    6-7    7-8   8-12   12-16  16-20  20-24   24+
+      Double_t LSBLowLim[14] = {0.,0.,1.7688,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,1.7088,1.7088,1.7088}; //to be filled looking at results from invariant mass fits!
+      Double_t LSBUppLim[14] = {0.,0.,1.8168,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,1.7648,1.7648,1.7648};
+      Double_t RSBLowLim[14] = {0.,0.,1.9168,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,1.9768,1.9768,1.9768};
+      Double_t RSBUppLim[14] = {0.,0.,1.9688,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,2.0808,2.0808,2.0808};
  
       massD0Task->SetLSBLowLim(LSBLowLim);
       massD0Task->SetLSBHighLim(LSBUppLim);
@@ -265,11 +265,11 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
       massD0Task->SetRSBHighLim(RSBUppLim);
 
     } else { //pPb limits
-
-      Double_t LSBLowLim[15] = {0.,0.,0.,1.7928,1.7768,1.7728,1.7648,1.7488,1.7448,1.7728,1.7048,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
-      Double_t LSBUppLim[15] = {0.,0.,0.,1.8288,1.8208,1.8208,1.8128,1.8088,1.8048,1.8048,1.7568,0.,0.,0.,0.};
-      Double_t RSBLowLim[15] = {0.,0.,0.,1.9008,1.9088,1.9128,1.9168,1.9288,1.9288,1.9288,1.9728,0.,0.,0.,0.};
-      Double_t RSBUppLim[15] = {0.,0.,0.,1.9408,1.9528,1.9608,1.9688,1.9848,1.9888,1.9928,2.0768,0.,0.,0.,0.}; 
+				//      1-2    2-3    3-4    4-5    5-6    6-7    7-8   8-12   12-16  16-20  20-24   24+
+      Double_t LSBLowLim[14] = {0.,0.,1.7928,1.7928,1.7768,1.7728,1.7648,1.7488,1.7448,1.7728,1.7048,1.7048,1.7048,1.7048}; //to be filled looking at results from invariant mass fits!
+      Double_t LSBUppLim[14] = {0.,0.,1.8288,1.8288,1.8208,1.8208,1.8128,1.8088,1.8048,1.8048,1.7568,1.7568,1.7568,1.7568};
+      Double_t RSBLowLim[14] = {0.,0.,1.9008,1.9008,1.9088,1.9128,1.9168,1.9288,1.9288,1.9288,1.9728,1.9728,1.9728,1.9728};
+      Double_t RSBUppLim[14] = {0.,0.,1.9408,1.9408,1.9528,1.9608,1.9688,1.9848,1.9888,1.9928,2.0768,2.0768,2.0768,2.0768}; 
  
       massD0Task->SetLSBLowLim(LSBLowLim);
       massD0Task->SetLSBHighLim(LSBUppLim);

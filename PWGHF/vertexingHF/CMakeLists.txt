@@ -73,6 +73,7 @@ set(SRCS
   AliAnalysisTaskSELambdacTMVA.cxx
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx
+  AliAnalysisTaskSED0MassNonPromptFraction.cxx
   AliAnalysisTaskSELc2V0bachelor.cxx
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
@@ -95,6 +96,7 @@ set(SRCS
   AliSignificanceCalculator.cxx
   AliHFMassFitter.cxx
   AliHFMassFitterVAR.cxx
+  AliHFInvMassFitter.cxx
   AliHFMultiTrials.cxx
   AliHFPtSpectrum.cxx
   AliHFsubtractBFDcuts.cxx
@@ -105,6 +107,7 @@ set(SRCS
   AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
   charmFlow/AliAnalysisTaskSEHFv2.cxx
+  charmFlow/AliAnalysisTaskSEHFvn.cxx
   charmFlow/AliHFAfterBurner.cxx
   charmFlow/AliAnalysisTaskFlowD2H.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
@@ -123,6 +126,7 @@ set(SRCS
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
   AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
   AliAnalysisTaskSEDvsEventShapes.cxx
+  AliAnalysisTaskSEB0toDminuspi.cxx
   )
 
 # Headers from sources
@@ -175,6 +179,8 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent.C
             ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc.C
 	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP_Central.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP_SemiCentral.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar_16var.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar.C
             ConfigVertexingHF_Pb_AllCent_NoLS_16var.C

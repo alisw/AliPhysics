@@ -968,7 +968,7 @@ void AliAnalysisTaskPi0FlowMCAOD::FillMCHist(){
     
     FillHistogram(hkey,pt,weight) ;
     
-    if(TMath::Abs(particle->Y())<0.135 && phig>260. && phig<320.){
+    if(TMath::Abs(particle->Y())<0.135 && phig>240. && phig<320.){
       snprintf(hkey,55,"hMC_unitEta_%s_cen%d",partName,fCentBin) ;
       FillHistogram(hkey,pt,weight) ;
       

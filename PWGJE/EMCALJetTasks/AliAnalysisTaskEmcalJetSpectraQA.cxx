@@ -185,7 +185,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(const AliJetContainer* 
     dim++;
   }
 
-  if (fClusterCollArray.GetEntriesFast() > 0 && fParticleCollArray.GetEntriesFast() > 0) {
+  if (fClusterCollArray.size() > 0 && fParticleCollArray.size() > 0) {
     title[dim] = "NEF";
     nbins[dim] = nPtBins/5;
     min[dim] = 0;
@@ -237,7 +237,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHX(const AliJetContainer* jets)
 
   Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
 
-  for (Int_t i = 0; i < fNcentBins; i++) {
+  for (Int_t i = 0; i < GetNCentBins(); i++) {
     histname = TString::Format("%s/fHistJetPtEtaPhi_%d", jets->GetArrayName().Data(), i);
     title = histname + ";#it{p}_{T} (GeV/#it{c});#eta;#phi (rad)";
     fHistManager.CreateTH3(histname.Data(), title.Data(), 20, -1, 1, 41, 0, 2*TMath::Pi()*41/40, nPtBins, 0, fMaxPt);
@@ -324,9 +324,8 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
   TString histname;
   TString title;
 
-  AliJetContainer* jets = 0;
-  TIter nextJetColl(&fJetCollArray);
-  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+  for (auto cont_it : fJetCollArray) {
+    AliJetContainer* jets = cont_it.second;
     fHistManager.CreateHistoGroup(jets->GetArrayName());
 
     switch (fHistoType) {
@@ -343,7 +342,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
 
     TString histname;
 
-    for (Int_t i = 0; i < fNcentBins; i++) {
+    for (Int_t i = 0; i < GetNCentBins(); i++) {
       if (jets->GetParticleContainer()) {
         histname = TString::Format("%s/fHistTracksJetPt_%d", jets->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T,track} (GeV/#it{c});#it{p}_{T,jet} (GeV/#it{c});counts";
@@ -398,9 +397,8 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
 {
   TString histname;
 
-  AliJetContainer* jets = 0;
-  TIter nextJetColl(&fJetCollArray);
-  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+  for (auto cont_it : fJetCollArray) {
+    AliJetContainer* jets = cont_it.second;
     Double_t rhoVal = 0;
     if (jets->GetRhoParameter()) {
       rhoVal = jets->GetRhoVal();

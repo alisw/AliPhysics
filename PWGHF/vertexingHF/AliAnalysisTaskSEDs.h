@@ -29,24 +29,31 @@ class AliNormalizationCounter;
 class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {
  public:
- 
+    
   AliAnalysisTaskSEDs();
   AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
   virtual ~AliAnalysisTaskSEDs();
-  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}	
+  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetWriteOnlySignalInNtuple(Bool_t opt=kTRUE){
     if(fReadMC) fWriteOnlySignal=opt;
     else AliError("fReadMC has to be kTRUE");
   }
   void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
   void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
+  void SetFillNSparseDplus(Bool_t fill=kTRUE){fFillSparseDplus=fill;if(fill)fFillSparse=fill;}
+  void SetFillNSparseImpPar(Bool_t fill=kTRUE){fFillImpParSparse=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetUseRotBkg(Bool_t flag=kFALSE) {fDoRotBkg=flag;}
+  void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
+  void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
+  void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
-  
+  void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
+    
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
@@ -63,20 +70,23 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
-
-  enum {kMaxPtBins=20,knVarForSparse=13,knVarForSparseAcc=2,knVarForSparseIP=6};
-
+    
+  enum {kMaxPtBins=20,knVarForSparse=12,knVarForSparseAcc=2,knVarForSparseIP=6};
+    
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
-  AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source); 
-
+  AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
+    
   TList*  fOutput;                    //!<! list send on output slot 0
-  TH1F*   fHistNEvents;               //!<! hist. for No. of events  
+  TH1F*   fHistNEvents;               //!<! hist. for No. of events
   TH1F*   fChanHist[4];               //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
   TH1F*   fMassHist[4*kMaxPtBins];    //!<! hist. of mass spectra (sig,bkg,tot)
   TH1F*   fMassHistPhi[4*kMaxPtBins];    //!<! hist. of mass spectra via phi (sig,bkg,tot)
   TH1F*   fMassHistK0st[4*kMaxPtBins];    //!<! hist. of mass spectra via K0* (sig,bkg,tot)
   TH1F*   fMassHistKK[kMaxPtBins];    //!<! hist. of mass spectra of KK
   TH1F*   fMassHistKpi[kMaxPtBins];    //!<! hist. of mass spectra of Kpi
+  TH1F*   fMassRotBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from rot. of the pion
+  TH1F*   fMassLSBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from left phi sideband + pion
+  TH1F*   fMassRSBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from right phi sideband + pion
   TH1F*   fCosPHist[4*kMaxPtBins];    //!<! hist. of cos pointing angle (sig,bkg,tot)
   TH1F*   fDLenHist[4*kMaxPtBins];    //!<! hist. of decay length (sig,bkg,tot)
   TH1F*   fSumd02Hist[4*kMaxPtBins];  //!<! hist. for sum d02 (Prod Cuts)
@@ -95,30 +105,41 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F *fPtVsMassK0st;   //!<! hist. of pt vs. mass (K0* selection)
   TH2F *fYVsPt;       //!<! hist. of Y vs. Pt (prod. cuts)
   TH2F *fYVsPtSig;    //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH2F *fHistAllV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (all)
+  TH2F *fHistSelV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (sel)
   TH1F *fHistCentrality[3];//!<!hist. for cent distr (all,sel ev, )
   TH2F *fHistCentralityMult[3];//!<!hist. for cent distr vs mult (all,sel ev, )
   TNtuple *fNtupleDs; //!<! output ntuple
   Int_t fFillNtuple;                 /// 0 not to fill ntuple
-                                     /// 1 for filling ntuple for events through Phi
-                                     /// 2 for filling ntuple for events through K0Star
-                                     /// 3 for filling all
+  /// 1 for filling ntuple for events through Phi
+  /// 2 for filling ntuple for events through K0Star
+  /// 3 for filling all
   Int_t   fSystem;                    /// 0 = pp, 1 = pPb,PbPb
   Bool_t  fReadMC;                    ///  flag for access to MC
   Bool_t  fWriteOnlySignal;           ///  flag to control ntuple writing in MC
   Bool_t  fDoCutVarHistos;            ///  flag to create and fill histos with distributions of cut variables
   Bool_t  fUseSelectionBit;           /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse;                /// flag for usage of THnSparse
+  Bool_t  fFillSparseDplus;           /// flag for usage of THnSparse
+  Bool_t  fFillImpParSparse;          /// flag for usage of sparse for imp. parameter
+  Bool_t fDoRotBkg;                   ///flag to create rotational bkg (rotating pi track)
+  Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
+  Bool_t fDoCutV0multTPCout;          ///flag to activate cut on V0mult vs #tracks TPCout
   Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
-                                      /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                   /// number of Pt bins
   TList *fListCuts; //list of cuts
   Float_t fPtLimits[kMaxPtBins+1];    ///  limits for pt bins
   Double_t fMassRange;                /// range for mass histogram
   Double_t fMassBinSize;              /// bin size for inv. mass histo
-
+  Double_t fminMass;
+  Double_t fmaxMass;
+  Double_t fMaxDeltaPhiMass4Rot;     ///flag to set mass window of phi meson (when using pion rotation to create bkg)
+    
+    
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
-  
+    
   THnSparseF *fnSparse;       ///!<!THnSparse for candidates on data
   THnSparseF *fnSparseIP;       ///!<!THnSparse for topomatic variable
   THnSparseF *fnSparseMC[4];  ///!<!THnSparse for MC
@@ -126,9 +147,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   ///[1]: Acc step FD Ds
   ///[2]: Selected prompt Ds
   ///[3]: Selected FD Ds
-  
+  THnSparseF *fnSparseMCDplus[4];  ///!<!THnSparse for MC for D+->kkpi
+  THnSparseF *fImpParSparse;       ///!<!THnSparse for imp. par. on data
+  THnSparseF *fImpParSparseMC;     ///!<!THnSparse for imp. par. on MC
+    
+    
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,18);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,22);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

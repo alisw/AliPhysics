@@ -32,7 +32,7 @@ public:
 
   AliAnalysisTaskDG(const char *name="AliAnalysisTaskDG");
   virtual ~AliAnalysisTaskDG();
-  
+
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t *);
@@ -42,7 +42,8 @@ public:
   void SetBranchNames(TString options) { fTreeBranchNames = options; }
   void SetTrackCutType(TString tc) { fTrackCutType = tc; }
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
-  void SetCDBStorage(TString s) { fCDBStorage = s; }
+  void SetTriggerSelectionSPD(TString ts) { fTriggerSelectionSPD = ts; }
+  void SetMaxTracksSave(Int_t m);
 
   TString GetListName() const { return fTrackCutType+"_TL"; }
   TString GetTreeName() const { return fTrackCutType+"_TE"; }
@@ -80,7 +81,7 @@ public:
     UShort_t  fnTrklet[4]; // all, C,cent,A
     Char_t    fCharge;
     UShort_t  fL2Inputs;
-    UShort_t  fOrbitID;  
+    UShort_t  fOrbitID;
 
   } ;
 
@@ -106,7 +107,7 @@ public:
     void FillInvalid();
 
     Float_t    fTime[2];            //
-    Char_t     fBB[2];              // 
+    Char_t     fBB[2];              //
     Char_t     fBG[2];              //
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
@@ -129,7 +130,7 @@ public:
 
   class TreeData : public TObject {
   public:
-    TreeData() 
+    TreeData()
       : TObject()
       , fEventInfo()
       , fV0Info()
@@ -164,6 +165,7 @@ public:
 	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
       }
       fChipKey[0] = fChipKey[1] = -1;
+      fStatus[0]  = fStatus[1]  = -1;
       Fill(tr, pidResponse);
     }
 
@@ -176,20 +178,31 @@ public:
     Double32_t fNumSigmaTPC[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fNumSigmaTOF[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fPIDStatus[3];                  //[0,4,2] ITS,TPC,TOF
-    Short_t    fChipKey[2];                    //
-    ClassDef(TrackData, 3);
+    Short_t    fChipKey[2];                    // L0,L1 (SPD)
+    Int_t      fStatus[2];                     // L0,L1 (SPD)
+    ClassDef(TrackData, 4);
   } ;
 
 
 protected:
   void SetBranches(TTree* t);
+  void SetClassMask(TString triggerSel, ULong64_t &mask, ULong64_t &maskNext50);
+  static void FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]);
+
+  void FillTH3(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t w=1);
 
   enum {
     kHistTrig,
+    kHistSPDFiredTrk,
+    kHistSPDFOTrk,
+    kHistSPDFiredTrkVsMult,
+    kHistSPDFOTrkVsMult,
+    kHistSPDFiredVsMult,
+    kHistSPDFOVsMult,
     kNHist
   };
 
-private:  
+private:
   AliAnalysisTaskDG(const AliAnalysisTaskDG&); // not implemented
   AliAnalysisTaskDG& operator=(const AliAnalysisTaskDG&); // not implemented
 
@@ -197,8 +210,8 @@ private:
   TString          fTreeBranchNames;     //
   TString          fTrackCutType;        //
   TString          fTriggerSelection;    //
-  TString          fCDBStorage;          //
-  Int_t            fMaxTrackSave;        //
+  TString          fTriggerSelectionSPD; //
+  Int_t            fMaxTracksSave;       //
 
   AliTriggerAnalysis fTriggerAnalysis;   //!
   AliAnalysisUtils   fAnalysisUtils;     //!
@@ -220,11 +233,8 @@ private:
   TClonesArray     fTrackData;           //!
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
-  Bool_t           fUseTriggerMask;      //!
-  ULong64_t        fClassMask;           //!
-  ULong64_t        fClassMaskNext50;     //!
-  
-  ClassDef(AliAnalysisTaskDG, 7);
+
+  ClassDef(AliAnalysisTaskDG, 9);
 } ;
 
 #endif // ALIANALYSISTASKDG_H

@@ -14,6 +14,16 @@ class AliESDtrackCuts;
 #ifndef ALIANALYSISTASKSE_H
 #endif
 
+/*************** Tree Maker Class **********************
+*Designed to create simple trees for use in training   *
+*MVA methods                                           *
+*                                                      *
+* Created: 05.10.2016                                  *
+* Authors: Aaron Capon      (aaron.capon@cern.ch)      *
+*          Sebastian Lehner (sebastian.lehner@cern.ch) *
+*                                                      *
+*******************************************************/
+
 
 class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
  public:
@@ -30,38 +40,104 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;
-
-    Printf("Set: cent = %f - %f",fCentralityPercentileMin,fCentralityPercentileMax);
   }
 
   void SetPtRange(Double_t min, Double_t max){
     fPtMin = min;
     fPtMax = max;
-
-    Printf("Set: pT = %f - %f",fPtMin,fPtMax);
   }
 
   void SetEtaRange(Double_t min, Double_t max){
     fEtaMin = min;
     fEtaMax = max;
-
-    Printf("Set: eta = %f - %f",fEtaMin,fEtaMax);
   }
-
-
-
+  
+  //Set inclusive electron PID cuts
+  void SetESigRangeITS(Double_t min, Double_t max){
+    fPIDcutITS = kTRUE;
+    fESigITSMin = min;
+    fESigITSMax = max;
+  }
+  
   void SetESigRangeTPC(Double_t min, Double_t max){
     fESigTPCMin = min;
     fESigTPCMax = max;
-    Printf("TPC electron nSigma values (inclusive)");
-    Printf(" Min = %f, Max = %f", fESigTPCMin, fESigTPCMax);
+  }
+  
+  void SetESigRangeTOF(Double_t min, Double_t max){
+    fPIDcutTOF = kTRUE;
+    fESigTOFMin = min;
+    fESigTOFMax = max;
+  }
+
+  //Set pion PID exclusion cut
+  void SetPSigRangeTPC(Double_t min, Double_t max){
+    fPionPIDcutTPC = kTRUE;
+    fPSigTPCMin = min;
+    fPSigTPCMax = max;
   }
 
   void SetMC(Bool_t answer){ fIsMC = answer; }
+
+  //Set to request centrality value for events
+  void SetIsIonColl(Bool_t answer){ fIsIonColl = answer; }
+    
+    //Track cut setters. StandardITSTPC2011 cuts used if nothing specified
+  void SetTPCminClusters(Int_t number){
+    fESDtrackCuts->SetMinNClustersTPC(number);
+  }
+
+  void SetTPCminCrossedRows(Int_t number){
+    fESDtrackCuts->SetMinNCrossedRowsTPC(number);
+  }
+
+  void SetTPCRatio(Double_t number){
+    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(number);
+  }
+
+  void SetTPCChi2PerCluster(Float_t number){
+    fESDtrackCuts->SetMaxChi2PerClusterTPC(number);
+  }
+
+  void SetITSclusterRequirements(AliESDtrackCuts::Detector detector, AliESDtrackCuts::ITSClusterRequirement requirement){
+    fESDtrackCuts->SetClusterRequirementITS(detector, requirement);
+  }
+
+  void SetITSChi2PerCluster(Float_t number){
+    fESDtrackCuts->SetMaxChi2PerClusterITS(number);
+  }
+
+  void SetMaxDCAxy(Float_t number){
+    fESDtrackCuts->SetMaxDCAToVertexXY(number);
+  }
+
+  void SetMaxDCAPtDep(const char* dist){
+    fESDtrackCuts->SetMaxDCAToVertexXYPtDep(dist);
+  }
+
+  void SetMaxDCAz(Double_t number){
+    fESDtrackCuts->SetMaxDCAToVertexZ(number);
+  }
+
+  void SetTPCconstrainedGlobalChi2(Double_t number){
+    fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(number);
+  }
+
+  void SetGridPID(std::string string){
+    fGridPID = std::stoi(string);
+  }
+  void GRIDanalysis(Bool_t answer){
+    fIsGRIDanalysis = answer;
+  }
+  void createV0tree( Bool_t answer ){
+    fIsV0tree = answer;
+  }
+  Bool_t isV0daughterAccepted(AliESDtrack* track);
+
   
  private:
  
-  Double_t IsEventAccepted(AliESDEvent *event);
+  Int_t IsEventAccepted(AliESDEvent *event);
   //Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   
   AliAnalysisTaskSimpleTreeMaker(const AliAnalysisTaskSimpleTreeMaker&); // not implemented
@@ -85,14 +161,36 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   Bool_t fIsMC;
   
   Double_t fPtMin;// minimum pT threshold (default = 0)
-  Double_t fPtMax;// maximum pT threshold (default = 1000)
-  Double_t fEtaMin;// minimum eta threshold (default = -10)
-  Double_t fEtaMax;// maximum eta threshold (default = 10)
+  Double_t fPtMax;// maximum pT threshold (default = 10)
+  Double_t fEtaMin;// minimum eta threshold (default = -0.8)
+  Double_t fEtaMax;// maximum eta threshold (default = 0.8)
 
-  //Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
  
   Double_t fESigTPCMin; 
   Double_t fESigTPCMax; 
+
+  //Values and flags for PID cuts in ITS and TOF
+  Double_t fESigITSMin;
+  Double_t fESigITSMax;
+  Double_t fESigTOFMin;
+  Double_t fESigTOFMax;
+
+  Bool_t fPIDcutITS;
+  Bool_t fPIDcutTOF;
+
+  //Values and flag for pion PID cuts in TPC
+  Double_t fPSigTPCMin;
+  Double_t fPSigTPCMax;
+
+  Bool_t fPionPIDcutTPC;
+  Bool_t fIsIonColl;
+
+  Bool_t fIsV0tree;
+  TH2F* fArmPlot;
+
+  //Grid PID
+  Bool_t fIsGRIDanalysis;
+  Int_t fGridPID;
 
   ClassDef(AliAnalysisTaskSimpleTreeMaker, 1); //
 

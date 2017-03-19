@@ -24,6 +24,7 @@ class AliReducedHypTritEvent;
 #include "AliReducedHypTritEvent.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliStack.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
  public:
@@ -34,18 +35,25 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(const Option_t*);
   void SetPidQa(Bool_t pidQa = kTRUE) {fPidQa = pidQa;};
+  void SetPeriod(Int_t period = 2015) {fPeriod = period;};
+  void SetBetheSplines(Bool_t betheSplines = kTRUE ) {fBetheSplines = betheSplines;};
+  void SetParamsHe(Double_t params[6]) { for(Int_t i; i < 6; i++) fBetheParamsHe[i] = params[i];};
+  void SetParamsT(Double_t params[6]) { for(Int_t i; i < 6; i++) fBetheParamsT[i] = params[i];};
 
  private:
-  AliESDEvent            *fEvent;               //!<! ESD event
   AliESDInputHandler     *fInputHandler;        //!<! Input handler
   AliESDpid              *fPID;                 //!<! ESD pid
+  AliESDEvent            *fESDevent;            //!<! ESD event
   AliReducedHypTritEvent *fReducedEvent;        //<   Reduced event containing he3 and pi
   AliReducedHypTritEvent *fReducedEventMCGen;   //<   Reduced MC event containing he3 and pi
   AliStack               *fStack;               //!<! MC stack
   AliESDv0               *fV0;                  //!<! ESD v0
   TClonesArray           *fV0Array;             //<   Array of v0s in a event
   TH2F                   *fHistdEdx;            //<   Histogram of Tpc dEdx for pid qa
+  TH2F                   *fHistdEdxV0;          //<   Histogram of Tpc dEdx for pid qa
   TH1F                   *fHistNumEvents;       //<   Histogram of number of events
+  TH1F                   *fHistMcGen;           //<   Histogram of generated Hypertriton
+  TH1F                   *fHistMcRec;           //<   Histogram of reconstructed Hypertriton
   TTree                  *fTree;                //<   Tree containing reduced events
   TTree                  *fTreeMCGen;           //<   Tree containing reduced MC events
   TObjArray              *fMCGenRecArray;       //<   Array used for matching reconstructed MC with generated MC particles in one event
@@ -59,16 +67,24 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Int_t                   fMcGenRecCounter;     //!<! Number of matched particles in one MC event
   Bool_t                  fPidQa;               //< Flag for activating pid qa histogram
   Bool_t                  fMCtrue;              //< Flag for activating MC analysis (set automatically)
+  AliEventCuts            fEventCuts;           //< 2015 event cuts as advised by PDG (AliEventCuts)
+  Int_t		                fPeriod;              //< Data period for centrality selector
+  Bool_t                  fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
+  Double_t                fBetheParamsHe[6];    //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
+  Double_t                fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
 
   void MCStackLoop(AliStack *stack);
   void SetMomentum(Int_t charge, Bool_t v0Charge);
   void CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos);
   Bool_t TriggerSelection();
-
+  Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
+  Bool_t McCuts(const AliReducedHypTritV0& v0, const AliReducedHypTritTrack& he, const AliReducedHypTritTrack& pi);
+  Double_t GeoLength(const AliESDtrack& track);
   AliAnalysisTaskHypTritEventTree(const AliAnalysisTaskHypTritEventTree&);
   AliAnalysisTaskHypTritEventTree &operator=(const AliAnalysisTaskHypTritEventTree&);
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskHypTritEventTree, 2);
+  ClassDef(AliAnalysisTaskHypTritEventTree, 3);
   /// \endcond
 };
 #endif

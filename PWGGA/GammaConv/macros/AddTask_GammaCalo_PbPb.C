@@ -60,7 +60,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
                               Int_t     isMC                            = 0,                    // run MC
                               Int_t     enableQAMesonTask               = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
                               Int_t     enableQAClusterTask             = 0,                    // enable additional QA task
-                              TString   fileNameInputForWeighting       = "MCSpectraInput.root",// path to file for weigting input
+                              TString   fileNameInputForWeighting       = "MCSpectraInput.root",// path to file for weigting input / modified acceptance
                               Int_t     headerSelectionInt              = 0,                    // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
                               TString   cutnumberAODBranch              = "111110006008400000001500000",
                               TString   periodName                      = "LHC13d2",            // name of the period for added signals and weighting
@@ -71,9 +71,44 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
                               Bool_t    enableSortingMCLabels           = kTRUE,                // enable sorting for MC cluster labels
                               Bool_t    runLightOutput                  = kFALSE,               // switch to run light output (only essential histograms for afterburner)
                               Bool_t    doFlattening                    = kFALSE,               // switch on centrality flattening for LHC11h
-                              TString   fileNameInputForCentFlattening  = ""                    // file name for centrality flattening  
-                              
+                              TString   fileNameInputForCentFlattening  = "",                   // file name for centrality flattening
+                              TString   additionalTrainConfig           = "0"                   // additional counter for trainconfig
                 ) {
+
+  Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
+  TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCalo_PbPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      if(tempStr.CompareTo("EPCLUSTree") == 0){
+        cout << "INFO: AddTask_GammaCalo_PbPb activating 'EPCLUSTree'" << endl;
+        doTreeEOverP = kTRUE;
+      }else if(tempStr.BeginsWith("MODIFYACC")){
+        cout << "INFO: AddTask_GammaCalo_PbPb activating 'MODIFYACC'" << endl;
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        cout << "INFO: connecting to alien..." << endl;
+        TGrid::Connect("alien://");
+        cout << "done!" << endl;
+        TFile *w = TFile::Open(fileNameInputForWeighting.Data());
+        if(!w){cout << "ERROR: Could not open file: " << fileNameInputForWeighting.Data() << endl;return;}
+        histoAcc = (TH1S*) w->Get(tempType.Data());
+        if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
+        cout << "found: " << histoAcc << endl;
+      }
+    }
+  }
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaCalo_PbPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
 
   Int_t isHeavyIon = 1;
   
@@ -283,25 +318,25 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("54800013","2444400040033200000","0163103100000030"); // 40-80%
     cuts.AddCut("52500013","2444400040033200000","0163103100000030"); // 20-50%
   } else if (trainConfig == 104){ // PHOS clusters with TM
-    cuts.AddCut("60100013","2444400048033200000","0163103100000030"); // 0-5%
-    cuts.AddCut("61200013","2444400048033200000","0163103100000030"); // 5-10%
-    cuts.AddCut("50100013","2444400048033200000","0163103100000030"); // 0-10%
-    cuts.AddCut("52400013","2444400048033200000","0163103100000030"); // 20-40%
-    cuts.AddCut("52500013","2444400048033200000","0163103100000030"); // 20-50%
+    cuts.AddCut("60100013","2444400042033200000","0163103100000030"); // 0-5%
+    cuts.AddCut("61200013","2444400042033200000","0163103100000030"); // 5-10%
+    cuts.AddCut("50100013","2444400042033200000","0163103100000030"); // 0-10%
+    cuts.AddCut("52400013","2444400042033200000","0163103100000030"); // 20-40%
+    cuts.AddCut("52500013","2444400042033200000","0163103100000030"); // 20-50%
   } else if (trainConfig == 105){ // PHOS clusters with TM
-    cuts.AddCut("60100013","2444400048033200000","0163103100000030"); // 0-5%
-    cuts.AddCut("61200013","2444400048033200000","0163103100000030"); // 5-10%
-    cuts.AddCut("50100013","2444400048033200000","0163103100000030"); // 0-10%
-    cuts.AddCut("51200013","2444400048033200000","0163103100000030"); // 10-20%
-    cuts.AddCut("52400013","2444400048033200000","0163103100000030"); // 20-40%
+    cuts.AddCut("60100013","2444400042033200000","0163103100000030"); // 0-5%
+    cuts.AddCut("61200013","2444400042033200000","0163103100000030"); // 5-10%
+    cuts.AddCut("50100013","2444400042033200000","0163103100000030"); // 0-10%
+    cuts.AddCut("51200013","2444400042033200000","0163103100000030"); // 10-20%
+    cuts.AddCut("52400013","2444400042033200000","0163103100000030"); // 20-40%
   } else if (trainConfig == 106){ // PHOS clusters with TM
-    cuts.AddCut("54600013","2444400048033200000","0163103100000030"); // 40-60%
-    cuts.AddCut("56800013","2444400048033200000","0163103100000030"); // 60-80%
-    cuts.AddCut("52600013","2444400048033200000","0163103100000030"); // 20-60%
-    cuts.AddCut("54800013","2444400048033200000","0163103100000030"); // 40-80%
-    cuts.AddCut("52500013","2444400048033200000","0163103100000030"); // 20-50%
+    cuts.AddCut("54600013","2444400042033200000","0163103100000030"); // 40-60%
+    cuts.AddCut("56800013","2444400042033200000","0163103100000030"); // 60-80%
+    cuts.AddCut("52600013","2444400042033200000","0163103100000030"); // 20-60%
+    cuts.AddCut("54800013","2444400042033200000","0163103100000030"); // 40-80%
+    cuts.AddCut("52500013","2444400042033200000","0163103100000030"); // 20-50%
   } else if (trainConfig == 107){ // PHOS clusters with TM
-    cuts.AddCut("50900013","2444400008033200000","0163103100000030"); // 0-90%
+    cuts.AddCut("50900013","2444400002033200000","0163103100000030"); // 0-90%
     
 
   // run 2 configs
@@ -418,6 +453,17 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
   AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
+    //create AliCaloTrackMatcher instance, if there is none present
+    TString caloCutPos = cuts.GetClusterCut(i);
+    caloCutPos.Resize(1);
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      mgr->AddTask(fTrackMatcher);
+      mgr->ConnectInput(fTrackMatcher,0,cinput);
+    }
+
     analysisEventCuts[i]    = new AliConvEventCuts();   
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
@@ -440,9 +486,10 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
       
-    analysisClusterCuts[i]  = new AliCaloPhotonCuts((isMC==2));
-    analysisClusterCuts[i]->SetIsPureCaloCut(2);
+    analysisClusterCuts[i]  = new AliCaloPhotonCuts(isMC);
+    analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
@@ -464,6 +511,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
   task->SetDoMesonQA(enableQAMesonTask);        //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);    //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 

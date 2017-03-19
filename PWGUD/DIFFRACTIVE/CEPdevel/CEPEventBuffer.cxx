@@ -17,18 +17,33 @@ ClassImp(CEPEventBuffer)
 CEPEventBuffer::CEPEventBuffer()
   : TObject()
   , fRunNumber(CEPTrackBuffer::kdumval)
-  , fEventNumber(0)
-  , fnumTracks(0)
-  , fnumSoftTracks(0)
-  , fnumResiduals(0)
-  , fGapCondition(0)
-  , fCEPTracks(new TClonesArray("CEPTrackBuffer"))
-  , ftrb(*fCEPTracks)
-  , fMCProcessType(-1)
+  , fEventNumber(CEPTrackBuffer::kdumval)
+  , fPeriodNumber(AliCEPBase::kdumval)
+  , fOrbitNumber(AliCEPBase::kdumval)
+  , fBunchCrossNumber(AliCEPBase::kdumval)
+  , fCollissionType(AliCEPBase::kBinEventUnknown)
+  , fMagnField(AliCEPBase::kdumval)
+  , fFiredTriggerClasses(TString(""))
+  , fEventCutsel(kFALSE)
+  , fPhysel(kFALSE)
+  , fisPileup(kFALSE)
+  , fisClusterCut(kFALSE)
+  , fisDGTrigger(kFALSE)
+  , fEventCondition(AliCEPBase::kBitBaseLine)
+  , fnTracklets(0)
+  , fnTracks(0)
+  , fnTracksCombined(0)
+  , fnTracksITSpure(0)
+  , fnResiduals(0)
+  , fnMSelection(0)
+  , fnV0(0)
+  , fVtxType(-1)
+  , fVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
+  , fMCProcessType(AliCEPBase::kdumval)
   , fMCGenerator("")
+  , fMCVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
+  , fCEPTracks(new TObjArray())
 {
-
-  // printf("A CEPEventBuffer was created...\n");
 
 }
 
@@ -36,42 +51,71 @@ CEPEventBuffer::CEPEventBuffer()
 CEPEventBuffer::~CEPEventBuffer()
 {
 
-  this->Reset();
-  // printf("A CEPEventBuffer was reset...\n");
-  
+	// delete fCEPTracks and all the tracks it contains
+  if (fCEPTracks) {
+		fCEPTracks->SetOwner(kTRUE);
+		fCEPTracks->Clear();
+		delete fCEPTracks;
+		fCEPTracks = 0x0;
+	}
+
 }
 
 // ----------------------------------------------------------------------------
 void CEPEventBuffer::Reset()
 {
 
-  // reset all counters
-  fRunNumber     = CEPTrackBuffer::kdumval;
-  fEventNumber   = 0;
-  fnumResiduals  = 0;
-  fGapCondition  = 0;  
-  fMCProcessType = -1;
+  // reset all private variables
+  // event header information
+  fRunNumber       = AliCEPBase::kdumval;
+  fEventNumber     = AliCEPBase::kdumval;
+  fPeriodNumber    = AliCEPBase::kdumval;
+  fOrbitNumber     = AliCEPBase::kdumval;
+  fBunchCrossNumber= AliCEPBase::kdumval;
+  fCollissionType  = AliCEPBase::kBinEventUnknown;
+  fMagnField       = AliCEPBase::kdumval;
+  fFiredTriggerClasses = TString("");
+
+  // general event features
+  fEventCutsel     = kFALSE;
+  fPhysel          = kFALSE;
+  fisPileup        = kFALSE;
+  fisClusterCut    = kFALSE;
+  fisDGTrigger     = kFALSE;
+
+  fnTracklets     = 0;
+  fnTracks        = 0;
+  fnTracksCombined= 0;
+  fnTracksITSpure = 0;
+  fnResiduals     = 0;
+  fnMSelection    = 0;
+  fnV0            = 0;
+  fVtxType        = -1;
+  fVtxPos         = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
+
+  // Monte Carlo information
+  fMCProcessType = AliCEPBase::kdumval;
   fMCGenerator   = "";
-
+  fMCVtxPos      = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
+    
   // clear the track list
-  //ftrb.Clear();
-  fnumTracks     = 0;
-  fnumSoftTracks = 0;
-
-}
+  fCEPTracks->SetOwner(kTRUE);
+  fCEPTracks->Clear();
+ }
 
 // ----------------------------------------------------------------------------
 void CEPEventBuffer::AddTrack(CEPTrackBuffer* trk)
 {
   
   // add track to next element
-  ftrb[ftrb.GetEntries()] = trk;
+  fCEPTracks->Add(trk);
+  fnTracks++;
   
-  // update track counter
-  if (trk->GetisSoft()) {
-    fnumSoftTracks++;
+  // update track counters
+  if (trk->GetTrackStatus() & AliCEPBase::kTTITSpure) {
+    fnTracksITSpure++;
   } else {
-    fnumTracks++;
+    fnTracksCombined++;
   }
   
 }
@@ -92,3 +136,125 @@ CEPTrackBuffer* CEPEventBuffer::GetTrack(Int_t ind)
 }
 
 // ----------------------------------------------------------------------------
+Int_t CEPEventBuffer::GetnTracks(UInt_t mask, UInt_t pattern)
+{
+  
+  // initialisations
+  Int_t ngood = 0;
+  
+  for (Int_t ii=0; ii<GetnTracks(); ii++) {
+    if ((GetTrack(ii)->GetTrackStatus() & mask) == pattern) ngood++;
+  }
+  
+  return ngood;
+
+}
+
+// ----------------------------------------------------------------------------
+Int_t CEPEventBuffer::GetnTracks(UInt_t mask, UInt_t pattern, TArrayI *indices)
+{
+  
+  // initialisations
+  Int_t ngood = 0;
+  indices->Reset(0);
+  indices->Set(GetnTracks());
+  
+  for (Int_t ii=0; ii<GetnTracks(); ii++) {
+    if ((GetTrack(ii)->GetTrackStatus() & mask) == pattern) {
+    
+      // increment the counter
+      ngood++;
+      
+      // update the indices
+      indices->SetAt(ii,ngood-1);
+      
+    }
+  }
+  indices->Set(ngood);
+  
+  return ngood;
+
+}
+
+// ----------------------------------------------------------------------------
+Int_t CEPEventBuffer::GetnTracks(TArrayI *masks, TArrayI *patterns)
+{
+
+  // checks status words with masks and patterns
+  // makes logical OR of all tests
+  
+  // initialisations
+  Bool_t ktmp;
+  Int_t ngood = 0;
+
+  // number of masks and patterns must agree
+  Int_t ntests = masks->GetSize();
+  if (ntests != patterns->GetSize()) return ngood;
+
+  for (Int_t ii=0; ii<GetnTracks(); ii++) {
+    
+    ktmp = kFALSE;
+    for (Int_t jj=0; jj<ntests;jj++) {
+      
+      if ((GetTrack(ii)->GetTrackStatus() & masks->At(jj)) ==
+        patterns->At(jj)) {
+        ktmp = kTRUE;
+        break;
+      }
+    }
+      
+    if (ktmp) ngood++;
+
+  }
+  
+  return ngood;
+
+}
+
+// ------------------------------------------------------------------------------
+Int_t CEPEventBuffer::GetnTracks(TArrayI *masks, TArrayI *patterns,
+  TArrayI* indices)
+{
+
+  // checks status words with masks and patterns
+  // makes logical OR of all tests
+  
+  // initialisations
+  Bool_t ktmp;
+  Int_t ngood = 0;
+  indices->Reset(0);
+
+  // number of masks and patterns must agree
+  Int_t ntests = masks->GetSize();
+  if (ntests != patterns->GetSize()) return ngood;
+  indices->Set(GetnTracks());
+
+  for (Int_t ii=0; ii<GetnTracks(); ii++) {
+    
+    ktmp = kFALSE;
+    for (Int_t jj=0; jj<ntests;jj++) {
+      
+      if ((GetTrack(ii)->GetTrackStatus() & masks->At(jj)) ==
+        patterns->At(jj)) {
+        ktmp = kTRUE;
+        break;
+      }
+    }
+      
+    if (ktmp) {
+      // increment the counter
+      ngood++;
+    
+      // update the indices
+      indices->SetAt(ii,ngood-1);
+      
+    }
+
+  }
+  indices->Set(ngood);
+  
+  return ngood;
+
+}
+
+// ------------------------------------------------------------------------------

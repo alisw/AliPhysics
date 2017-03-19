@@ -240,7 +240,9 @@ public:
   virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const;
   
   virtual Double_t       GetEventWeight()                  const { return GetReader()->GetEventWeight()      ; }
-    
+  virtual Double_t       GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen) 
+    const { return (GetReader()->GetWeightUtils())->GetParticlePtWeight(pt, pdg, genName, igen)  ; }
+  
   virtual void           SetNZvertBin(Int_t n = 1 )              { fNZvertBin = n ; if(n < 1) fNZvertBin = 1 ; } /// Number of bins for vertex position
   virtual void           SetNRPBin   (Int_t n = 1 )              { fNrpBin    = n ; if(n < 1) fNrpBin    = 1 ; } /// Number of bins in reaction plain
   virtual void           SetNCentrBin(Int_t n = 1 )              { fNCentrBin = n ; if(n < 1) fNCentrBin = 1 ; } /// Number of bins in centrality
@@ -357,6 +359,25 @@ public:
   
   virtual void                       SetReader(AliCaloTrackReader * reader)                         { fReader = reader                    ; }
   
+  // Cocktail generator studies
+  
+  void                               SwitchOnStudyClusterOverlapsPerGenerator()   { fStudyClusterOverlapsPerGenerator = kTRUE  ; }
+  void                               SwitchOffStudyClusterOverlapsPerGenerator()  { fStudyClusterOverlapsPerGenerator = kFALSE ; }  
+  Bool_t                             IsStudyClusterOverlapsPerGeneratorOn() const {  return fStudyClusterOverlapsPerGenerator  ; }  
+  
+  void                               SetNCocktailGenNamesToCheck(Int_t nb)        { fNCocktailGenNames = nb   ; }
+  Int_t                              GetNCocktailGenNamesToCheck()          const { return fNCocktailGenNames ; }
+  
+  void                               SetCocktailGenNameToCheck(Int_t i, TString v){ if(i < 10) fCocktailGenNames[i] = v   ; }
+  TString                            GetCocktailGenNameToCheck(Int_t i)     const { if(i < 10) return fCocktailGenNames[i]; 
+    else       return ""                  ; }
+  void                               SetCocktailGenIndexToCheck(Int_t i, Int_t v) { if(i < 10) fCocktailGenIndeces[i] = v ; }
+  Int_t                              GetCocktailGenIndexToCheck(Int_t i)    const { if(i < 10) return fCocktailGenIndeces[i]; 
+    else       return -1                  ; }
+  
+  Int_t                              GetCocktailGeneratorBackgroundTag(AliVCluster * clus, Int_t mctag,
+                                                                       TString & genName   , Int_t & index,
+                                                                       TString & genNameBkg, Int_t & indexBkg);
   
 private:    
   
@@ -403,6 +424,12 @@ private:
   AliNeutralMesonSelection * fNMS;                 ///< Neutral Meson Selection utities.
   AliCaloTrackReader       * fReader;              ///< Access to ESD/AOD/MC data and other utilities.
 
+  // Cocktail generator studies
+  Bool_t                     fStudyClusterOverlapsPerGenerator; ///<  In case of coctail generators, check the content of the cluster
+  Int_t                      fNCocktailGenNames;                ///<  Number of generators to study
+  TString                    fCocktailGenNames[10];             ///<  Array with name of generators to study, first must be always empty
+  Int_t                      fCocktailGenIndeces[10];           ///<  Array with indeces of generators to study
+  
   /// Copy constructor not implemented.
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
@@ -410,7 +437,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,27) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,28) ;
   /// \endcond
 
 } ;

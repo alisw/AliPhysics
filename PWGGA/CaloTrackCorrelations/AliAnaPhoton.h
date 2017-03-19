@@ -63,6 +63,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
   
+//  void         DistanceToAddedSignalAtGeneratorLevel(Int_t label, Int_t nprim, 
+//                                     AliStack * stack, TClonesArray*  mcparticles,
+//                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
+  
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t nlm,
                                          Float_t maxCellEFraction, Int_t & largeTimeInside) ;
   
@@ -90,6 +94,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
  
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
+  // Cocktail generator studies
+  void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
+  
+  void         ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta, Float_t phi, Int_t mctag, TObjArray *clusterList) ;
+  void         SwitchOnStudyClusterLocalActivity()        { fStudyActivityNearCluster = kTRUE  ; }
+  void         SwitchOffStudyClusterLocalActivity()       { fStudyActivityNearCluster = kFALSE ; }  
+    
   // Analysis parameters setters getters
     
   // ** Cluster selection methods **
@@ -145,10 +156,18 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
   enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,
-                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
+                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5  };  
   
   /// Total number of MC histograms for shower shape studies.
   static const Int_t fgkNssTypes = 6 ;
+
+  /// For MC histograms with cocktail generator checks in arrays, index in the array corresponds to a MC originating particle type
+  enum mcGenTypes { kmcGenPi0Merged = 1,  kmcGenPi0Decay = 2,   kmcGenEtaDecay = 3,
+                    kmcGenPhoton    = 4,  kmcGenElectron = 5,   kmcGenOther    = 6 };  
+  
+  /// Total number of MC histograms for cocktail generator checks.
+  static const Int_t fgkNGenTypes = 7 ;
+
   
   private:
  
@@ -182,6 +201,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
   TLorentzVector fMomentum;                         //!<! Cluster momentum, temporary container
+  TLorentzVector fMomentum2;                        //!<! Cluster momentum, temporary container
   TLorentzVector fPrimaryMom;                       //!<! Primary MC momentum, temporary container
   TVector3       fProdVertex;                       //!<! Primary MC production vertex, temporary container
   
@@ -191,6 +211,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fEBinCuts[15] ;                          ///<  Energy bins cut 
   Int_t    fNEBinCuts;                              ///<  Number of energy bin cuts
 
+  Bool_t   fStudyActivityNearCluster;               ///<  Activate analysis of multiplicity and energy deposit near the cluster
   
   //
   // Histograms
@@ -458,7 +479,74 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhEBinClusterEtaPhiPID[14] ;              //!<! Eta-Phi location of cluster in different energy bins, after PID cut
   TH2F *  fhEBinClusterColRowPID[14] ;              //!<! Column and row location of cluster max E cell in different energy bins, after PID cut
 
+  TH2F *  fhLocalRegionClusterEtaPhi[6]  ;                       //!<! Pseudorapidity vs Phi of clusters with cone R within the EMCal, for different cocktail merging cases 
+  TH2F *  fhLocalRegionClusterEnergySum[6] ;                     //!<! Sum of energy near the cluster, R<0.2, vs cluster E, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicity[6];                   //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterEnergySumPerCentrality[6] ;        //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentrality[6];      //!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, for different cocktail merging cases
+
+  TH2F *  fhLocalRegionClusterEnergySumHijing[6] ;               //!<! Sum of energy near the cluster, R<0.2, vs cluster E, hijing tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityHijing[6];             //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, hijing tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterEnergySumPerCentralityHijing[6] ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentralityHijing[6];//!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters, for different cocktail merging cases
+
+  TH2F *  fhLocalRegionClusterEnergySumHijing2 ;               //!<! Sum of energy near the cluster, R<0.2, vs cluster E, hijing tagged mc clusters, 
+  TH2F *  fhLocalRegionClusterMultiplicityHijing2;             //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, hijing tagged mc clusters, 
+  TH2F *  fhLocalRegionClusterEnergySumPerCentralityHijing2 ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters, 
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentralityHijing2;//!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters, for different cocktail merging cases
   
+  TH2F *  fhLocalRegionClusterEnergySumAdded[6] ;                //!<! Sum of energy near the cluster, R<0.2, vs cluster E, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityAdded[6];             //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterEnergySumPerCentralityAdded[6] ;   //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentralityAdded[6]; //!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  
+  TH2F *  fhLocalRegionClusterEnergySumMCPi0Decay[6] ;                     //!<! Sum of energy near the cluster, R<0.2, vs cluster E, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityMCPi0Decay[6];                   //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[6] ;        //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[6];      //!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, for different cocktail merging cases
+  
+  TH2F *  fhLocalRegionClusterEnergySumHijingMCPi0Decay[6] ;               //!<! Sum of energy near the cluster, R<0.2, vs cluster E, hijing tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityHijingMCPi0Decay[6];             //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, hijing tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[6] ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[6];//!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters, for different cocktail merging cases
+  
+  TH2F *  fhLocalRegionClusterEnergySumAddedMCPi0Decay[6] ;                //!<! Sum of energy near the cluster, R<0.2, vs cluster E, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityAddedMCPi0Decay[6];             //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[6] ;   //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[6]; //!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  
+
+  
+  TH1F *  fhMergeGeneratorCluster                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generator origins and different particles.  
+  TH1F *  fhMergeGeneratorClusterNotHijingBkg     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
+  TH1F *  fhMergeGeneratorClusterHijingAndOtherBkg[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH1F *  fhMergeGeneratorClusterHijingBkg        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH1F *  fhCleanGeneratorCluster                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
+
+  
+  TH2F *  fhMergeGeneratorClusterEPrimRecoRatio                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generator origins and different particles.  
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoRatio        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhCleanGeneratorClusterEPrimRecoRatio                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
+  
+  TH2F *  fhMergeGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generatororigins and different particles.  
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoDiff        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhCleanGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
+  
+//  
+//  TH2F *  fhDistanceAddedPhotonAddedPrimarySignal   ; //!<! Generated added cocktail photon vs distance to other generator primary particle.
+//  TH2F *  fhDistanceHijingPhotonAddedPrimarySignal  ; //!<! Generated hijing photon vs distance to other generator primary particle.
+//  TH2F *  fhDistanceAddedPhotonAddedSecondarySignal ; //!<! Generated added cocktail photon vs distance to other generator secondary particle.
+//  TH2F *  fhDistanceHijingPhotonAddedSecondarySignal; //!<! Generated hijing photon vs distance to other generator secondary particle.
+//  TH2F *  fhDistanceAddedPhotonHijingSecondary      ; //!<! Generated added cocktail photon vs distance to hijing secondary particle.
+
+  TH2F *  fhDistance2AddedSignals     ;   //!<! Distance between 2 clusters generated by added cocktails 
+  TH2F *  fhDistanceAddedSignalsHijing;   //!<! Distance between 2 clusters generated by added cocktails and hijing
+  TH2F *  fhDistance2Hijing           ;   //!<! Distance between 2 clusters generated by hijing
+
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
     
@@ -466,7 +554,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,43) ;
+  ClassDef(AliAnaPhoton,45) ;
   /// \endcond
 
 } ;

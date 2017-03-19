@@ -129,8 +129,7 @@ public:
   void SetComponentDebugLevel(int debuglevel) { fComponentDebugLevel = debuglevel; }
 
 protected:
-  TAxis *DefineAxis(const char *name, const AliEMCalTriggerBinningDimension *binning);
-  TAxis *DefineAxis(const char *name, int nbins, double min, double max);
+  TAxis *DefineAxis(const char *name, const TBinning &binning);
   void GetMachingTriggerNames(std::vector<std::string> &triggernames) const;
   void GetAllTriggerNamesAndTitles(std::map<std::string, std::string> &triggers) const;
   void PrintTriggerNames(const std::vector<std::string> &, const std::string &componentName) const;

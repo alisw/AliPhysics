@@ -28,6 +28,7 @@
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicity+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMC+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2+;
 #pragma link C++ class AliAnalysisTaskPPVsMultCrossCheckMC+;
 #pragma link C++ class AliAnalysisTaskpANormalizationCheckMC+;
@@ -39,6 +40,10 @@
 #pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp+;
 #pragma link C++ class AliLightV0vertexer+;
 #pragma link C++ class AliLightCascadeVertexer+;
+#pragma link C++ class AliCascadeVertexerUncheckedCharges+;
+#pragma link C++ class AliV0vertexerUncheckedCharges+;
+#pragma link C++ class AliVWeakResult+;
 #pragma link C++ class AliV0Result+;
 #pragma link C++ class AliCascadeResult+;
+#pragma link C++ class AliStrangenessModule+;
 #endif

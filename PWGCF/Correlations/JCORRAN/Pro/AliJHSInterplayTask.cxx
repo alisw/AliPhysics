@@ -42,6 +42,7 @@
 
 #include "AliJHistos.h"
 #include "AliJEbeHistos.h"
+#include "AliJJet.h"
 
 
 ClassImp(AliJHSInterplayTask)
@@ -50,6 +51,9 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	: AliAnalysisTaskSE(), fOutput(0x0),
 	fAnaUtils(NULL),
 	fFFlucAna(NULL),
+	fJetTask(NULL),
+	fJetTaskName(""),
+	fJetSel(0),
 	fCard(NULL),
 	fHistos(NULL),
 	fEfficiency(NULL),
@@ -74,11 +78,14 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	// Constructor
 }
 //________________________________________________________________________
-AliJHSInterplayTask::AliJHSInterplayTask(const char *name) 
-	: AliAnalysisTaskSE(name), 
+	AliJHSInterplayTask::AliJHSInterplayTask(const char *name) 
+: AliAnalysisTaskSE(name), 
 	fOutput(0x0), 
 	fAnaUtils(0x0),
 	fFFlucAna(0x0),
+	fJetTask(0x0),
+	fJetTaskName(""),
+	fJetSel(0),
 	fCard(0x0),
 	fHistos(0x0),
 	fEfficiency(0x0),
@@ -101,7 +108,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const char *name)
 	IsKinematicOnly(kFALSE),
 	fPtHardMin(0),
 	fPtHardMax(0),
-        TagThisEvent(kFALSE)
+	TagThisEvent(kFALSE)
 {
 
 	// Constructor
@@ -120,6 +127,8 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	fOutput(a.fOutput),
 	fAnaUtils(a.fAnaUtils),
 	fFFlucAna(a.fFFlucAna),
+	fJetTask(a.fJetTask),
+	fJetTaskName(a.fJetTaskName),
 	fCard(a.fCard),
 	fHistos(a.fHistos),
 	fEfficiency(a.fEfficiency),
@@ -142,7 +151,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	IsKinematicOnly(a.IsKinematicOnly),
 	fPtHardMin(a.fPtHardMin),
 	fPtHardMax(a.fPtHardMax),
-        TagThisEvent(a.TagThisEvent)
+	TagThisEvent(a.TagThisEvent)
 {
 	//copy constructor
 }
@@ -193,6 +202,7 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 
 	fHistos = new AliJHistos(fCard);
 	fHistos->CreateEventTrackHistos();
+	fHistos->CreateJetHistos();
 	fHistos->fHMG->Print();
 
 	fEfficiency = new AliJEfficiency();	
@@ -204,7 +214,12 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	trkfilterBit	= Int_t ( fCard->Get("AODTrackFilterBit"));
 	//fVnMethod 	= int (fCard->Get("VnMethod"));
 	fESMethod 	= int (fCard->Get("ESMethod"));
+	fJetSel		= int (fCard->Get("JetSel"));
 
+	//=== Get AnalysisManager
+	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	// Add JJet
+	fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
 	fFFlucAna->SetDebugLevel(1);
@@ -394,7 +409,61 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		}
 	}
 
-	if(fESMethod==1) { // Leading particle
+	if(fESMethod==5) { // di-jet Asymm
+		// Make a decision for running the analysis or not
+		// analyze the events only if we find a pt > PtHardMin
+		TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(fJetSel); // only selected jet
+		AliJJet *Ljet = dynamic_cast<AliJJet*>( fjets->At(0) );
+		AliJJet *subLjet = dynamic_cast<AliJJet*>( fjets->At(1) );
+		double minSubLeadingJetPt = 5.0;
+		if(  Ljet && subLjet ) { 
+			double ptt = Ljet->Pt();
+			fHistos->fhJetPt[cBin]->Fill(ptt);
+			double asym = (Ljet->Pt() - subLjet->Pt())/(Ljet->Pt() + subLjet->Pt());
+			double InvM = ( *Ljet + *subLjet).M();
+			fHistos->fhDiJetAsym[cBin]->Fill( asym );
+			fHistos->fhRecoDiJetM[cBin]->Fill( InvM );
+			if( ptt > fPtHardMin && ptt < fPtHardMax && subLjet->Pt()>minSubLeadingJetPt && asym > fDiJetAsymMin ) TagThisEvent = kTRUE;
+		}
+	} else if(fESMethod==4) { // di-jet
+		// Make a decision for running the analysis or not
+		// analyze the events only if we find a pt > PtHardMin
+		TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(fJetSel); // only selected jet
+		AliJJet *Ljet = dynamic_cast<AliJJet*>( fjets->At(0) );
+		AliJJet *subLjet = dynamic_cast<AliJJet*>( fjets->At(1) );
+		double minSubLeadingJetPt = 5.0;
+		if(  Ljet && subLjet ) { 
+			double ptt = Ljet->Pt();
+			fHistos->fhJetPt[cBin]->Fill(ptt);
+			if( ptt > fPtHardMin && ptt < fPtHardMax && subLjet->Pt()>minSubLeadingJetPt ) TagThisEvent = kTRUE;
+			if( TagThisEvent ) {
+				double asym = (Ljet->Pt() - subLjet->Pt())/(Ljet->Pt() + subLjet->Pt());
+				double InvM = ( *Ljet + *subLjet).M();
+				fHistos->fhDiJetAsym[cBin]->Fill( asym );
+				fHistos->fhRecoDiJetM[cBin]->Fill( InvM );
+			}
+		}
+	} else if(fESMethod==3) { // Leading jet
+		// Make a decision for running the analysis or not
+		// analyze the events only if we find a pt > PtHardMin
+		TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(fJetSel); // only selected jet
+		AliJJet *Ljet = dynamic_cast<AliJJet*>( fjets->At(0) );
+		if (Ljet) {
+			double ptt = Ljet->Pt();
+			fHistos->fhJetPt[cBin]->Fill(ptt);
+			if( ptt > fPtHardMin && ptt < fPtHardMax ) TagThisEvent = kTRUE;
+		}
+	} else if(fESMethod==2) { // jet
+		// Make a decision for running the analysis or not
+		// analyze the events only if we find a pt > PtHardMin
+		TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(fJetSel); // only selected jet
+		for (int ijet = 0; ijet<fjets->GetEntriesFast(); ijet++){
+			AliJJet *jet = dynamic_cast<AliJJet*>( fjets->At(ijet) );
+			double ptt = jet->Pt();
+			fHistos->fhJetPt[cBin]->Fill(ptt);
+			if( ptt > fPtHardMin && ptt < fPtHardMax ) TagThisEvent = kTRUE;
+		}
+	} else if(fESMethod==1) { // Leading particle
 		// Make a decision for running the analysis or not
 		// analyze the events only if we find a pt > PtHardMin
 		if( pT_max > fPtHardMin && pT_max < fPtHardMax ) TagThisEvent = kTRUE;

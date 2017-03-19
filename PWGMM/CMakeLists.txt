@@ -20,5 +20,6 @@ add_definitions(-D_MODULE_="${MODULE}")
 add_subdirectory(Lumi)
 add_subdirectory(Mult)
 add_subdirectory(UE)
+add_subdirectory(MC)
 
 message(STATUS "PWGMM enabled")

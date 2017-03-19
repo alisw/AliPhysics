@@ -43,6 +43,8 @@
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHerwigEventHeader.h"
+#include "AliInputEventHandler.h"
 #include "AliAODMCHeader.h"
 #ifndef __CINT__
 #include "fastjet/PseudoJet.hh"
@@ -127,6 +129,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fRef(0x0),
   fkIsPbPb(kFALSE),
   fkEventSelection(kTRUE),
+  fkRejectFastOnly(kFALSE),
   fkRequireVZEROAC(kFALSE),
   fkRequireTZEROvtx(kFALSE),
   fCentCutUp(0),
@@ -321,6 +324,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fRef(new TRefArray),
   fkIsPbPb(kFALSE),
   fkEventSelection(kTRUE),
+  fkRejectFastOnly(kFALSE),
   fkRequireVZEROAC(kFALSE),
   fkRequireTZEROvtx(kFALSE),
   fCentCutUp(0),
@@ -746,6 +750,15 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
   Bool_t selectEvent =  false;
   Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
 
+   // Trigger selection
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
+   ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+   if( fkRejectFastOnly && ((inputHandler->IsEventSelected() & AliVEvent::kFastOnly) == AliVEvent::kFastOnly)){
+   if (fDebug > 10) std::cout<<fAOD->GetFiredTriggerClasses()<<std::endl;
+   physicsSelection = false;
+   return;
+   }
+
   Float_t cent = 0;
   Float_t zVtx  = 0;
   Int_t cenClass = -1;
@@ -828,13 +841,33 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
 
  // Kinematics
  AliGenPythiaEventHeader *pythiaHeader = GetPythiaHeader();
+ AliGenHerwigEventHeader *HerwigHeader = GetHerwigHeader();
  if(pythiaHeader) {
    TArrayF t;
    pythiaHeader->PrimaryVertex(t);
+   Float_t xvtx = t.GetAt(0);
+   Float_t yvtx = t.GetAt(1);
+   Float_t zvtx = t.GetAt(2);
+   Float_t r2   = yvtx*yvtx+xvtx*xvtx;
+   if(!(TMath::Abs(zvtx)<fVtxZMax&&r2<fVtxR2Max)) return;
+   if((fPtHardAndPythiaJetPtFactor || fPtHardAndTrackPtFactor) && IsOutlier(GetPythiaHeader()))  return;
    fh1vZSelect->Fill(t.GetAt(2));
    fh1Xsec->Fill("<#sigma>",  pythiaHeader->GetXsection());
    fh1Trials->Fill("#sum{ntrials}",pythiaHeader->Trials());
+  } else if(HerwigHeader) {
+   TArrayF t;
+   HerwigHeader->PrimaryVertex(t);
+   Float_t xvtx = t.GetAt(0);
+   Float_t yvtx = t.GetAt(1);
+   Float_t zvtx = t.GetAt(2);
+   Float_t r2   = yvtx*yvtx+xvtx*xvtx;
+   if(!(TMath::Abs(zvtx)<fVtxZMax&&r2<fVtxR2Max)) return;
+   fh1vZSelect->Fill(t.GetAt(2));
+   fh1Xsec->Fill("<#sigma>",  HerwigHeader->Weight());
+   fh1Trials->Fill("#sum{ntrials}",HerwigHeader->Trials());
   }
+
+
   else  fh1vZSelect->Fill(0);
 
 }
@@ -1542,6 +1575,7 @@ Int_t  AliAnalysisTaskJetFFMoments::GetListOfTracks(TList *list,Int_t type)
                 || part->Phi() < fTrackPhiMin
                 || part->Phi() > fTrackPhiMax
                 || part->Pt()  < fTrackPtMin)) continue;
+
         if(type == kTrackKineChargedAcceptanceDet || type == kTrackKineAcceptanceDet)
           {
 
@@ -1584,18 +1618,42 @@ Int_t  AliAnalysisTaskJetFFMoments::GetListOfTracks(TList *list,Int_t type)
             newpart = TLorentzVector(px, py, pz,e);
             Float_t ptSmeared= pt * gRandom->Gaus(1.0,fResol*(1+fResolvar/100.));
             newpart.SetPerp(ptSmeared);
+
+       } else if(fResolMeth == 3) {
+
+            Float_t px = part->Px();
+            Float_t py = part->Py();
+            Float_t pz = part->Pz();
+            Float_t e  = part->E();
+            Float_t pt = part->Pt();
+            newpart = TLorentzVector(px, py, pz,e);
+            Float_t ptSmeared= 1./pt * gRandom->Gaus(1.0,fResol*(1+fResolvar/100.));
+            newpart.SetPerp(1./ptSmeared);
        }
             fh2TrackResPt->Fill(part->Pt(),100*(TMath::Abs(part->Pt()-newpart.Pt())/part->Pt()));
             fh1TrackResPtInv->Fill(100. * (TMath::Abs(1/newpart.Pt()) - 1./part->Pt()) * part->Pt());
             part->Particle()->SetMomentum(newpart);
            }
 
-          if (fEffi &&  (gRandom->Rndm()  > (1+fEffivar/100.)*(fEffi->Eval(part->Pt())))) continue;
+          if (fEffi &&  fEffi->InheritsFrom("TF1") &&  (gRandom->Rndm()  > (1+fEffivar/100.)*(((TF1*) fEffi)->Eval(part->Pt())))) continue;
+          if (fEffi &&  fEffi->InheritsFrom("TH1") &&  (gRandom->Rndm()  > (1+fEffivar/100.)*(((TH1*) fEffi)->GetBinContent(((TH1*)fEffi)->FindBin(part->Pt()))))) continue;
+          if (fEffi &&  fEffi->InheritsFrom("TF1") &&  (((1+fEffivar/100.)*(((TF1*) fEffi)->Eval(part->Pt()))) > 1) ) continue;
+          if (fEffi &&  fEffi->InheritsFrom("TH1") &&  (((1+fEffivar/100.)*(((TH1*) fEffi)->GetBinContent(((TH1*)fEffi)->FindBin(part->Pt())))) > 1)) continue;
+
+        
+        if (       part->Eta() < fTrackEtaMin
+                || part->Eta() > fTrackEtaMax
+                || part->Phi() < fTrackPhiMin
+                || part->Phi() > fTrackPhiMax
+                || part->Pt()  < fTrackPtMin) continue;
+
 
          fh1TrackEffPtRec->Fill(part->Pt());
          fh2TrackEffEtaPhiRec->Fill(part->Eta(),TVector2::Phi_0_2pi(part->Phi()));
 
+
          }
+
 	list->Add(part);
 	iCount++;
       }
@@ -1854,6 +1912,8 @@ void AliAnalysisTaskJetFFMoments::AssociateGenRec(TList* tracksAODMCCharged, TLi
 	if(listIndex>=0){
 	  indexAODTr[listIndex] = iRec;
 	  indexMCTr[iRec] = listIndex;
+          fh2TrackResPt->Fill(gentrack->Pt(),100*(TMath::Abs(gentrack->Pt()-rectrack->Pt())/gentrack->Pt()));
+          fh1TrackResPtInv->Fill(100. * (TMath::Abs(1/rectrack->Pt()) - 1./gentrack->Pt()) * gentrack->Pt());
 	}
   } // End loop on rec tracks
 
@@ -2512,6 +2572,7 @@ Bool_t AliAnalysisTaskJetFFMoments::SelectJet(AliAODJet * jet, TList * tracksAft
   //tracks in jet should be in list of tracksAftercut
   TRefArray * tracks = jet->GetRefTracks();
   Int_t ntracks = tracks -> GetEntriesFast();
+  if (ntracks < fJetMinnTracks) return kFALSE;
   for(Int_t i=0; i < ntracks; i++) { 
 	AliVParticle* track = (AliVParticle*) (jet->GetTrack(i));
 	Int_t track_inlist = tracksAfterCut->IndexOf(track);
@@ -3233,6 +3294,7 @@ AliGenPythiaEventHeader *AliAnalysisTaskJetFFMoments::GetPythiaHeader()  {
      if(fDebug>10) pythiaHeader->Dump();
      if (!pythiaHeader) {
        // Check if AOD
+       if(fAOD) {
        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
        if (aodMCH) {
          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
@@ -3241,5 +3303,26 @@ AliGenPythiaEventHeader *AliAnalysisTaskJetFFMoments::GetPythiaHeader()  {
         }
        }
      }
+    }
     return pythiaHeader;
+}
+
+// __________________________________________________________________________________________________________________________________________________________$
+AliGenHerwigEventHeader *AliAnalysisTaskJetFFMoments::GetHerwigHeader()  {
+     if(!MCEvent()) return 0x0;
+     AliGenHerwigEventHeader *HerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(MCEvent()->GenEventHeader());
+     if(fDebug>10) HerwigHeader->Dump();
+     if (!HerwigHeader) {
+       // Check if AOD
+       if(fAOD) {
+       AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
+       if (aodMCH) {
+         for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+           HerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(aodMCH->GetCocktailHeader(i));
+           if (HerwigHeader) break;
+        }
+       }
+     }
+    }
+    return HerwigHeader;
 }

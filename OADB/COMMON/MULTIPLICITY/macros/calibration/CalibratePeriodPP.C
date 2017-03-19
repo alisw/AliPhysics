@@ -64,6 +64,13 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
 
+    if ( lPeriodName.Contains("LHC15f") ) {
+        cout<<"Extra cleanup in LHC15f"<<endl;
+        lCalib->GetEventCuts()->SetIsNotAsymmetricInVZERO (kTRUE );
+        lCalib->GetEventCuts()->SetIsNotIncompleteDAQ     (kTRUE );
+    }
+
+    
     if ( lPeriodName.Contains("LHC15m") || lPeriodName.Contains("LHC15o") ) {
         cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
         lCalib->GetEventCuts()->SetVzCut(10.0);
@@ -74,6 +81,10 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
         lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
+
+    //Additional selections for pp: incompleteDAQ and asymmetric vzero 
+
+
 
     //============================================================
     // --- Definition of Input Variables ---
@@ -131,8 +142,20 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
     //Integer estimators
     AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPDClusters", "", "(fnSPDClusters)");
     fEstnSPDClusters->SetIsInteger(kTRUE);
+    AliMultEstimator *fEstCL0 = new AliMultEstimator("CL0", "", "(fnSPDClusters0)");
+    fEstCL0->SetIsInteger(kTRUE);
+    AliMultEstimator *fEstCL1 = new AliMultEstimator("CL1", "", "(fnSPDClusters1)");
+    fEstCL1->SetIsInteger(kTRUE);
+    
+    //Tracklet-based
     AliMultEstimator *fEstnSPDTracklets = new AliMultEstimator("SPDTracklets", "", "(fnTracklets)");
     fEstnSPDTracklets->SetIsInteger(kTRUE);
+    AliMultEstimator *fEstnSPDTracklets08 = new AliMultEstimator("SPDTracklets08", "", "(fnTracklets08)");
+    fEstnSPDTracklets08->SetIsInteger(kTRUE);
+    AliMultEstimator *fEstnSPDTracklets08to15 = new AliMultEstimator("SPD08to15", "", "(fnTracklets08)<-0.5?(fnTracklets08):(fnTracklets15)-(fnTracklets08)");
+    fEstnSPDTracklets08to15->SetIsInteger(kTRUE);
+    
+    //Ref-mult-based
     AliMultEstimator *fEstRefMultEta5 = new AliMultEstimator("RefMult05", "", "(fRefMultEta5)");
     fEstRefMultEta5->SetIsInteger(kTRUE);
     AliMultEstimator *fEstRefMultEta8 = new AliMultEstimator("RefMult08", "", "(fRefMultEta8)");
@@ -172,6 +195,10 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
     //Universal: Tracking, etc
     lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClusters  );
     lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets );
+    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets08 );
+    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets08to15 );
+    lCalib->GetMultSelection() -> AddEstimator( fEstCL0 );
+    lCalib->GetMultSelection() -> AddEstimator( fEstCL1 );
     lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
     lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
 

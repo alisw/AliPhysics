@@ -51,6 +51,7 @@ public:
  // Int_t fNoutputSlots;
   
   Int_t fRunningMode;                               // Running mode, as specified in options 1 and 2 from Constants
+  Long_t fEventNumber;                  // event number
   
   AliReducedBaseEvent* fReducedEvent;   //! reduced event
   

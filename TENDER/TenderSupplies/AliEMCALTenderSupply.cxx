@@ -304,9 +304,17 @@ Bool_t AliEMCALTenderSupply::RunChanged() const
 void AliEMCALTenderSupply::Init()
 {
   // Initialise EMCAL tender.
-
-  if (fDebugLevel>0) 
-    AliWarning("Init EMCAL Tender supply"); 
+  
+  if (fDebugLevel>0) {
+    AliWarning("Init EMCAL Tender supply");
+    AliWarning("======================================================================================");
+    AliWarning("--------------------------------------------------------------------------------------");
+    AliWarning("============  The EMCal Tender is no longer supported for development!  ==============");
+    AliWarning("=========  It is recommended to use the new EMCal Correction Framework!  =============");
+    AliWarning("===  See http://alidoc.cern.ch/AliPhysics/master/_r_e_a_d_m_eemc_corrections.html  ===");
+    AliWarning("--------------------------------------------------------------------------------------");
+    AliWarning("======================================================================================");
+  }
   
   if (fConfigName.Length()>0 && gROOT->LoadMacro(fConfigName) >=0) {
     AliDebug(1, Form("Loading settings from macro %s", fConfigName.Data()));
@@ -355,7 +363,7 @@ void AliEMCALTenderSupply::Init()
   }
   
   if (fDebugLevel>0){
-    AliInfo("Emcal Tender settings: ======================================"); 
+    AliInfo("Emcal Tender settings:");
     AliInfo("------------ Switches --------------------------"); 
     AliInfo(Form("BadCellRemove : %d", fBadCellRemove)); 
     AliInfo(Form("ExoticCellRemove : %d", fRejectExoticCells)); 
@@ -526,7 +534,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     Bool_t needMisalign    = fRecalClusPos    | fReClusterize;
     Bool_t needClusterizer = fReClusterize;
     
-    if(fRun>209121) fCalibrateTimeL1Phase = kTRUE;
+    if ( fRun > 209121 && fCalibrateTime ) fCalibrateTimeL1Phase = kTRUE;
     Bool_t needTimecalibL1Phase = (fCalibrateTime | fReClusterize) & fCalibrateTimeL1Phase;
 
     // init bad channels
@@ -1407,11 +1415,12 @@ Int_t AliEMCALTenderSupply::InitTimeCalibrationL1Phase()
     return 2; 
   }
   
-  // Here, it looks for a specific pass
-  TString pass = fFilepass;
-  if (fFilepass=="calo_spc") pass ="pass1";
-  if (fFilepass=="muon_calo_pass1") pass ="pass0";
-  if (fFilepass=="muon_calo_pass2" || fFilepass=="pass2" || fFilepass=="pass3" || fFilepass=="pass4") pass ="pass1";
+  // Only 1 L1 phase correction possible, except special cases
+  TString pass = "pass1";
+  
+  if ( fFilepass=="muon_calo_pass1" && fRun > 209121 && fRun < 244284 ) 
+    pass = "pass0";//period LHC15a-m
+
   TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
   if (!arrayBCpass)
   {
@@ -1870,7 +1879,8 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     if (parentMult > 0)
     {
       c->SetLabel(parentList, parentMult);
-      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+      if(fSetCellMCLabelFromEdepFrac)
+        c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     }
     
     //

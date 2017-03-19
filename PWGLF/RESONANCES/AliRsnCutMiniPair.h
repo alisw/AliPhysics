@@ -23,6 +23,7 @@ public:
       kMomentumComparison,
       kDCAproduct,
       kDeltaCosRange,
+      kPhiVRange,
       kTypes
    };
 

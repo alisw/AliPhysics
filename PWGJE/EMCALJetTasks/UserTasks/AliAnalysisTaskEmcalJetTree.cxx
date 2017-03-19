@@ -16,6 +16,43 @@
 #include "AliLog.h"
 #include "AliAnalysisTaskEmcalJetTree.h"
 
+#include "AliAnalysisManager.h"
+#include "AliVEventHandler.h"
+
+// Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb);
+/// \endcond
+
+/// Constructor that sets the object with the provided event information
+///
+/// \param cent Event centrality
+/// \param ep Event plane
+AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb::AliEmcalJetEventInfoSummaryPbPb(Double_t cent, Double_t ep) :
+  fCent(0),
+  fEP(0)
+{
+  Set(cent, ep);
+}
+
+/// Reset the object
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb::Reset()
+{
+  fCent = 0;
+  fEP = 0;
+}
+
+/// Set the object with the provided event information
+///
+/// \param cent Event centrality
+/// \param ep Event plane
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb::Set(Double_t cent, Double_t ep)
+{
+  fCent = cent;
+  fEP = ep;
+}
+
 // Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP
 
 /// \cond CLASSIMP
@@ -30,7 +67,7 @@ AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP::AliEmcalJetInfoSummar
   fEta(0),
   fPhi(0),
   fNEF(0),
-  fZLeading(0),
+  fLeadingPt(0),
   fNConstituents(0)
 {
   Set(source);
@@ -43,7 +80,7 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP::Reset()
   fEta = 0;
   fPhi = 0;
   fNEF = 0;
-  fZLeading = 0;
+  fLeadingPt = 0;
   fNConstituents = 0;
 }
 
@@ -56,7 +93,7 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP::Set(const AliEmc
   fEta = source.Eta();
   fPhi = source.Phi_0_2pi();
   fNEF = source.fNEF;
-  fZLeading = source.fZ;
+  fLeadingPt = source.fLeadingPt;
   fNConstituents = Char_t(source.fNConstituents);
 }
 
@@ -74,9 +111,7 @@ AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb::AliEmcalJetInfoSumm
   fEta(0),
   fPhi(0),
   fNEF(0),
-  fZLeading(0),
-  fCent(0),
-  fEP(0),
+  fLeadingPt(0),
   fArea(0),
   fNConstituents(0),
   fCorrPt(0)
@@ -91,10 +126,8 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb::Reset()
   fEta = 0;
   fPhi = 0;
   fNEF = 0;
-  fZLeading = 0;
+  fLeadingPt = 0;
   fNConstituents = 0;
-  fCent = 0;
-  fEP = 0;
   fArea = 0;
   fNConstituents = 0;
   fCorrPt = 0;
@@ -109,15 +142,102 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb::Set(const AliE
   fEta = source.Eta();
   fPhi = source.Phi_0_2pi();
   fNEF = source.fNEF;
-  fZLeading = source.fZ;
-  fCent = Char_t(source.fCent);
-  fEP = source.fEP;
+  fLeadingPt = source.fLeadingPt;
   fArea = source.fArea;
   fNConstituents = Short_t(source.fNConstituents);
   fCorrPt = source.fCorrPt;
 }
 
-// Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb
+// Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged);
+/// \endcond
+
+/// Constructor that sets the object copying information from an AliEmcalJetInfo object
+///
+/// \param source Const reference to an AliEmcalJetInfo object to copy from
+AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged::AliEmcalJetInfoSummaryPPCharged(const AliEmcalJetInfo& source) :
+  fPt(0),
+  fEta(0),
+  fPhi(0),
+  fLeadingPt(0),
+  fNConstituents(0)
+{
+  Set(source);
+}
+
+/// Reset the object
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged::Reset()
+{
+  fPt = 0;
+  fEta = 0;
+  fPhi = 0;
+  fLeadingPt = 0;
+  fNConstituents = 0;
+}
+
+/// Set the object copying information from an AliEmcalJetInfo object
+///
+/// \param source Const reference to an AliEmcalJetInfo object to copy from
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged::Set(const AliEmcalJetInfo& source)
+{
+  fPt = source.Pt();
+  fEta = source.Eta();
+  fPhi = source.Phi_0_2pi();
+  fLeadingPt = source.fLeadingPt;
+  fNConstituents = Char_t(source.fNConstituents);
+}
+
+// Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged)
+/// \endcond
+
+/// Constructor that sets the object copying information from an AliEmcalJetInfo object
+///
+/// \param source Const reference to an AliEmcalJetInfo object to copy from
+AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged::AliEmcalJetInfoSummaryPbPbCharged(const AliEmcalJetInfo& source) :
+  fPt(0),
+  fEta(0),
+  fPhi(0),
+  fLeadingPt(0),
+  fArea(0),
+  fNConstituents(0),
+  fCorrPt(0)
+{
+  Set(source);
+}
+
+/// Reset the object
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged::Reset()
+{
+  fPt = 0;
+  fEta = 0;
+  fPhi = 0;
+  fLeadingPt = 0;
+  fNConstituents = 0;
+  fArea = 0;
+  fNConstituents = 0;
+  fCorrPt = 0;
+}
+
+/// Set the object copying information from an AliEmcalJetInfo object
+///
+/// \param source Const reference to an AliEmcalJetInfo object to copy from
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged::Set(const AliEmcalJetInfo& source)
+{
+  fPt = source.Pt();
+  fEta = source.Eta();
+  fPhi = source.Phi_0_2pi();
+  fLeadingPt = source.fLeadingPt;
+  fArea = source.fArea;
+  fNConstituents = Short_t(source.fNConstituents);
+  fCorrPt = source.fCorrPt;
+}
+
+// Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding)
@@ -131,9 +251,7 @@ AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding::AliEmcalJetInf
   fEta(0),
   fPhi(0),
   fNEF(0),
-  fZLeading(0),
-  fCent(0),
-  fEP(0),
+  fLeadingPt(0),
   fArea(0),
   fNConstituents(0),
   fCorrPt(0),
@@ -149,10 +267,8 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding::Reset()
   fEta = 0;
   fPhi = 0;
   fNEF = 0;
-  fZLeading = 0;
+  fLeadingPt = 0;
   fNConstituents = 0;
-  fCent = 0;
-  fEP = 0;
   fArea = 0;
   fNConstituents = 0;
   fCorrPt = 0;
@@ -168,9 +284,7 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding::Set(const
   fEta = source.Eta();
   fPhi = source.Phi_0_2pi();
   fNEF = source.fNEF;
-  fZLeading = source.fZ;
-  fCent = Char_t(source.fCent);
-  fEP = source.fEP;
+  fLeadingPt = source.fLeadingPt;
   fArea = source.fArea;
   fNConstituents = Short_t(source.fNConstituents);
   fCorrPt = source.fCorrPt;
@@ -201,15 +315,23 @@ AliAnalysisTaskEmcalJetTreeBase* AliAnalysisTaskEmcalJetTreeBase::CreateInstance
   switch (type) {
   case kJetPP:
     ::Info("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Created an instance of AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPP>");
-    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPP>(name);
+    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPP, AliEmcalJetEventInfoSummaryPP>(name);
     break;
   case kJetPbPb:
     ::Info("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Created an instance of AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPbPb>");
-    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPbPb>(name);
+    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPbPb, AliEmcalJetEventInfoSummaryPbPb>(name);
     break;
   case kJetEmbedding:
     ::Info("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Created an instance of AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryEmbedding>");
-    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryEmbedding>(name);
+    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryEmbedding, AliEmcalJetEventInfoSummaryPbPb>(name);
+    break;
+  case kJetPPCharged:
+    ::Info("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Created an instance of AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPPCharged>");
+    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPPCharged, AliEmcalJetEventInfoSummaryPP>(name);
+    break;
+  case kJetPbPbCharged:
+    ::Info("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Created an instance of AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPbPbCharged>");
+    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPbPbCharged, AliEmcalJetEventInfoSummaryPbPb>(name);
     break;
   default:
     ::Error("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Type %d not implemented!", type);
@@ -224,67 +346,94 @@ templateClassImp(AliAnalysisTaskEmcalJetTree)
 /// \endcond
 
 /// Default constructor for ROOT I/O purposes
-template <class T>
-AliAnalysisTaskEmcalJetTree<T>::AliAnalysisTaskEmcalJetTree() :
+template <class T, class U>
+AliAnalysisTaskEmcalJetTree<T,U>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
-  fCurrentOutput(0)
+  fCurrentOutput(0),
+  fCurrentEvent(0)
 {
 }
 
 /// Specialized default constructor (AliEmcalJetInfoSummaryPP) for ROOT I/O purposes
 /// This is needed to address a "feature" (aka bug) of ROOT CINT, to be checked (maybe fixed in newer versions of ROOT)
 template <>
-AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>::AliAnalysisTaskEmcalJetTree() :
+AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPP>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
-  fCurrentOutput(0)
+  fCurrentOutput(0),
+  fCurrentEvent(0)
 {
 }
 
 /// Specialized default constructor (AliEmcalJetInfoSummaryPbPb) for ROOT I/O purposes
 /// This is needed to address a "feature" (aka bug) of ROOT CINT, to be checked (maybe fixed in newer versions of ROOT)
 template <>
-AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>::AliAnalysisTaskEmcalJetTree() :
+AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
-  fCurrentOutput(0)
+  fCurrentOutput(0),
+  fCurrentEvent(0)
 {
 }
 
 /// Specialized default constructor (AliEmcalJetInfoSummaryEmbedding) for ROOT I/O purposes
 /// This is needed to address a "feature" (aka bug) of ROOT CINT, to be checked (maybe fixed in newer versions of ROOT)
 template <>
-AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>::AliAnalysisTaskEmcalJetTree() :
+AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
-  fCurrentOutput(0)
+  fCurrentOutput(0),
+  fCurrentEvent(0)
+{
+}
+
+/// Specialized default constructor (AliEmcalJetInfoSummaryPP) for ROOT I/O purposes
+/// This is needed to address a "feature" (aka bug) of ROOT CINT, to be checked (maybe fixed in newer versions of ROOT)
+template <>
+AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPP>::AliAnalysisTaskEmcalJetTree() :
+  AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
+  fCurrentOutput(0),
+  fCurrentEvent(0)
+{
+}
+
+/// Specialized default constructor (AliEmcalJetInfoSummaryPbPb) for ROOT I/O purposes
+/// This is needed to address a "feature" (aka bug) of ROOT CINT, to be checked (maybe fixed in newer versions of ROOT)
+template <>
+AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPbCharged, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb>::AliAnalysisTaskEmcalJetTree() :
+  AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
+  fCurrentOutput(0),
+  fCurrentEvent(0)
 {
 }
 
 /// Standard named constructor
 ///
 /// \param name Name of the task
-template <class T>
-AliAnalysisTaskEmcalJetTree<T>::AliAnalysisTaskEmcalJetTree(const char *name) :
+template <class T, class U>
+AliAnalysisTaskEmcalJetTree<T, U>::AliAnalysisTaskEmcalJetTree(const char *name) :
   AliAnalysisTaskEmcalJetTreeBase(name),
-  fCurrentOutput(0)
+  fCurrentOutput(0),
+  fCurrentEvent(0)
 {
 }
 
 /// Allocate output TTree for a jet container
 ///
 /// \param jets Valid pointer to an AliJetContainer object
-template <class T>
-void AliAnalysisTaskEmcalJetTree<T>::AllocateTTree(const AliJetContainer* jets)
+template <class T, class U>
+void AliAnalysisTaskEmcalJetTree<T, U>::AllocateTTree(const AliJetContainer* jets)
 {
   typename std::map<std::string,std::vector<T> >::iterator it = (fCurrentOutput->insert(std::pair<std::string,std::vector<T> >(jets->GetName(), std::vector<T>()))).first;
   fTree->Branch(jets->GetName(), &((*it).second));
 }
 
 /// Overloads base class method. Creates output objects
-template <class T>
-void AliAnalysisTaskEmcalJetTree<T>::UserCreateOutputObjects()
+template <class T, class U>
+void AliAnalysisTaskEmcalJetTree<T, U>::UserCreateOutputObjects()
 {
   fCurrentOutput = new std::map<std::string, std::vector<T> >();
+  fCurrentEvent = new U();
   TString treeName = TString::Format("%s_jets", GetName());
   fTree = new TTree(treeName, treeName);
+  fTree->Branch("Event", &fCurrentEvent);
 
   AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects();
 
@@ -294,8 +443,8 @@ void AliAnalysisTaskEmcalJetTree<T>::UserCreateOutputObjects()
 /// Fill tree with jet info
 ///
 /// \param jet  Jet containing the information to be sent to the tree/histograms
-template <class T>
-void AliAnalysisTaskEmcalJetTree<T>::FillTTree(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
+template <class T, class U>
+void AliAnalysisTaskEmcalJetTree<T, U>::FillTTree(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
 {
   static typename std::map<std::string, std::vector<T> >::iterator it = fCurrentOutput->end();
 
@@ -310,8 +459,8 @@ void AliAnalysisTaskEmcalJetTree<T>::FillTTree(const AliEmcalJetInfo& jet, const
 /// Overloads base class method. Fills the output histograms
 ///
 /// \return kTRUE if successful
-template <class T>
-Bool_t AliAnalysisTaskEmcalJetTree<T>::FillHistograms()
+template <class T, class U>
+Bool_t AliAnalysisTaskEmcalJetTree<T, U>::FillHistograms()
 {
   typedef typename std::map<std::string, std::vector<T> >::iterator iterator_type;
 
@@ -319,9 +468,115 @@ Bool_t AliAnalysisTaskEmcalJetTree<T>::FillHistograms()
     it->second.clear();
   }
 
+  fCurrentEvent->Set(fCent, fEPV0);
+
   Bool_t r = AliAnalysisTaskEmcalJetSpectraQA::FillHistograms();
   if (!r) return kFALSE;
   fTree->Fill();
   PostData(2, fTree);
   return kTRUE;
 }
+
+/// Create an instance of this class and add it to the analysis manager
+///
+/// \param ntracks name of the track collection
+/// \param nclusters name of the calorimeter cluster collection
+/// \param trackPtCut minimum transverse momentum of tracks
+/// \param clusECut minimum energy of calorimeter clusters
+/// \param type analysis type (pp, PbPb, etc.)
+/// \param suffix additional suffix that can be added at the end of the task name
+/// \return pointer to the new AliAnalysisTaskEmcalJetTreeBase task
+AliAnalysisTaskEmcalJetTreeBase* AliAnalysisTaskEmcalJetTreeBase::AddTaskEmcalJetTree(TString ntracks, TString nclusters, Double_t trackPtCut, Double_t clusECut, EAnalisysType_t type, TString suffix)
+{
+  // Get the pointer to the existing analysis manager via the static access method
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskEmcalJetTree", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler) {
+    ::Error("AddTaskEmcalJetTree", "This task requires an input event handler");
+    return NULL;
+  }
+
+  EDataType_t dataType = kUnknownDataType;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  // Init the task and do settings
+
+  if (ntracks == "usedefault") {
+    if (dataType == kESD) {
+      ntracks = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      ntracks = "tracks";
+    }
+    else {
+      ntracks = "";
+    }
+  }
+
+  if (nclusters == "usedefault") {
+    if (dataType == kESD) {
+      nclusters = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      nclusters = "caloClusters";
+    }
+    else {
+      nclusters = "";
+    }
+  }
+
+  TString name("AliAnalysisTaskEmcalJetTree");
+  if (strcmp(suffix,"")) {
+    name += "_";
+    name += suffix;
+  }
+
+  AliAnalysisTaskEmcalJetTreeBase* jetTask = AliAnalysisTaskEmcalJetTreeBase::CreateInstance(name, type);
+  jetTask->SetVzRange(-10,10);
+  jetTask->SetNeedEmcalGeom(kFALSE);
+
+  AliParticleContainer *partCont = jetTask->AddParticleContainer(ntracks.Data());
+  if (partCont) partCont->SetParticlePtCut(trackPtCut);
+
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters.Data());
+  if (clusterCont) {
+    clusterCont->SetClusECut(0.);
+    clusterCont->SetClusPtCut(0.);
+    clusterCont->SetClusHadCorrEnergyCut(clusECut);
+    clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
+
+  // Final settings, pass to manager and set the containers
+  mgr->AddTask(jetTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+  TString contname0(name);
+  contname0 += "_jets";
+  TString contname1(name);
+  contname1 += "_histos";
+  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer(contname0.Data(),
+                  TTree::Class(),AliAnalysisManager::kOutputContainer,
+                  Form("%s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname1.Data(),
+                  TList::Class(),AliAnalysisManager::kOutputContainer,
+                  Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput  (jetTask, 0,  cinput1 );
+  mgr->ConnectOutput (jetTask, 1, coutput1 );
+  mgr->ConnectOutput (jetTask, 2, coutput0 );
+
+  return jetTask;
+}
+

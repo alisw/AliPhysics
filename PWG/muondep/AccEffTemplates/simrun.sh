@@ -133,6 +133,21 @@ fi
 
 echo "SIMRUN:: Run $DC_RUN Event $DC_EVENT Generator $CONFIG_RUN_TYPE Field $CONFIG_FIELD Energy $CONFIG_ENERGY Physicslist $CONFIG_PHYSICSLIST"
 
+if [ -e "VAR_POWHEG_INPUT" ]; then
+  echo  "  >>> Run POWHEG <<<"
+  nevts=10
+  if [ ! -z $EVENTS_PER_JOB ]; then
+    nevts=$EVENTS_PER_JOB
+  fi
+  nevts=$(expr $nevts \* VAR_POWHEG_SCALE_EVENTS)
+  awk -v lseed="$CONFIG_SEED" -v lnumevts="$nevts" '{
+    if ( index($0,"seed") ) gsub("12345",lseed);
+    if ( index($0,"numevts") ) gsub("12345",lnumevts);
+    print $0; }' VAR_POWHEG_INPUT > powheg.input
+
+  VAR_POWHEG_EXEC > powheg.log 2>&1
+fi
+
 simCommand="sim.C"
 if [ ! -z $EVENTS_PER_JOB ]; then
   simCommand="sim.C($EVENTS_PER_JOB)"

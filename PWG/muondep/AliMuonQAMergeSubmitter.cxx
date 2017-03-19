@@ -12,7 +12,10 @@ namespace {
   const Int_t kFinal(999);
 }
 
+
+/// \cond CLASSIMP
 ClassImp(AliMuonQAMergeSubmitter)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMuonQAMergeSubmitter::AliMuonQAMergeSubmitter(const char* period, const char* pass) :

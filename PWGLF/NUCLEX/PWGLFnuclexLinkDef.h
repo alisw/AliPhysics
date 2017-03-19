@@ -18,7 +18,6 @@
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
-#pragma link C++ class AliAnalysisMCNuclMult+;
 /// * DeuteronpA
 #pragma link C++ class AliAnalysisDeuteronpA+;
 #pragma link C++ class AliAnalysisDeuteronTree+;
@@ -27,8 +26,12 @@
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
+#pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
 /// * EventCuts
 #pragma link C++ class AliNuclexEventCuts+;
+#pragma link C++ class AliNuclexEventCutsContainer+;
+/// * EventCutsValidation
+#pragma link C++ class AliAnalysisTaskEventCutsValidation+;
 /// * Nucleipp
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
@@ -50,6 +53,7 @@
 #pragma link C++ class AliReducedHypTritV0+;
 #pragma link C++ class AliReducedHypTritTrack+;
 #pragma link C++ class AliReducedHypTritEvent+;
+#pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
@@ -65,5 +69,10 @@
 #pragma link C++ class AliAODMCNuclExReplicator+;
 #pragma link C++ class AliAnalysisTaskESDNuclExFilterMC+;
 #pragma link C++ class AliAnalysisTaskReadNuclexAOD+;
+/// * CODEX
+#pragma link C++ class AliAnalysisCODEX::Header+;
+#pragma link C++ class AliAnalysisCODEX::Track+;
+#pragma link C++ class std::vector<AliAnalysisCODEX::Track>+;
+#pragma link C++ class AliAnalysisCODEXtask+;
 #endif
 

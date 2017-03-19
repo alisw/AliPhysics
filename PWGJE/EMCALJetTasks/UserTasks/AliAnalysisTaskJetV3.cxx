@@ -21,6 +21,7 @@
  */
 
 // root includes
+#include <TGrid.h>
 #include <TStyle.h>
 #include <TRandom3.h>
 #include <TChain.h>
@@ -287,6 +288,8 @@ Bool_t AliAnalysisTaskJetV3::Notify()
     #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
         printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
     #endif
+        // if not set, estimate the number of cones that would fit into the selected acceptance
+//        if(fMaxCones < 1) fMaxCones = TMath::CeilNint((TMath::Abs(GetJetContainer()->GetJetEtaMax()-GetJetContainer()->GetJetEtaMin())*TMath::Abs(GetJetContainer()->GetJetPhiMax()-GetJetContainer()->GetJetPhiMin()))/(TMath::Pi()*GetJetRadius()*GetJetRadius()));
         // check if this is 10h or 11h data
         switch (fCollisionType) {
             case kPbPb10h : {
@@ -321,11 +324,14 @@ Bool_t AliAnalysisTaskJetV3::Notify()
             } break;
             case kFull: {
                 AliAnalysisTaskEmcalJet::SetJetPhiLimits(1.405 + GetJetRadius(), 3.135 - GetJetRadius());
+    // if not set, estimate the number of cones that would fit into the selected acceptance
+//    if(fMaxCones < 1) fMaxCones = TMath::CeilNint((TMath::Abs(GetJetContainer()->GetJetEtaMax()-GetJetContainer()->GetJetEtaMin())*TMath::Abs(GetJetContainer()->GetJetPhiMax()-GetJetContainer()->GetJetPhiMin()))/(TMath::Pi()*GetJetRadius()*GetJetRadius()));
             } break;
             default: {
                 AliAnalysisTaskEmcal::SetTrackPhiLimits(-10., 10.);
             } break;
         }
+
         if(fCachedRho) {                // if there's a cached rho, it's the default, so switch back
             #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
                 printf("__FUNC__ %s > replacing rho with cached rho \n ", __func__);
@@ -379,8 +385,6 @@ Bool_t AliAnalysisTaskJetV3::InitializeAnalysis()
     #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    // if not set, estimate the number of cones that would fit into the selected acceptance
-    if(fMaxCones <= 0) fMaxCones = TMath::CeilNint((TMath::Abs(GetJetContainer()->GetJetEtaMax()-GetJetContainer()->GetJetEtaMin())*TMath::Abs(GetJetContainer()->GetJetPhiMax()-GetJetContainer()->GetJetPhiMin()))/(TMath::Pi()*GetJetRadius()*GetJetRadius()));
     // manually 'override' the default acceptance cuts of the emcal framework (use with caution) 
     if(fMinDisanceRCtoLJ==0) fMinDisanceRCtoLJ = GetJetRadius();
     if(dynamic_cast<AliAODEvent*>(InputEvent())) fDataType = kAOD; // determine the datatype
@@ -2314,7 +2318,7 @@ Bool_t AliAnalysisTaskJetV3::PassesCuts(AliVEvent* event)
     #endif
     switch (fCollisionType) {
         case kPbPb15o : {
-            return PassesExperimentalHighLumiCuts(static_cast<AliAODEvent*>(event));
+             if(!PassesExperimentalHighLumiCuts(static_cast<AliAODEvent*>(event))) return kFALSE;
         } break;
         case kJetFlowMC : {
             fInCentralitySelection = 0;
@@ -2348,12 +2352,13 @@ Bool_t AliAnalysisTaskJetV3::PassesCuts(AliVEvent* event)
     switch (fCollisionType) {
         case kPbPb15o :  { 
             fCent = GetCentrality("V0M");
+            if(fCent <= fCentralityClasses->At(0) || fCent >= fCentralityClasses->At(fCentralityClasses->GetSize()-1)) return kFALSE;
         } break;
         default: {    
             fCent = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+            if(fCent <= fCentralityClasses->At(0) || fCent >= fCentralityClasses->At(fCentralityClasses->GetSize()-1) || TMath::Abs(fCent-InputEvent()->GetCentrality()->GetCentralityPercentile("TRK")) > 5.) return kFALSE;
         } break;
     }
-    if(fCent <= fCentralityClasses->At(0) || fCent >= fCentralityClasses->At(fCentralityClasses->GetSize()-1) || TMath::Abs(fCent-InputEvent()->GetCentrality()->GetCentralityPercentile("TRK")) > 5.) return kFALSE;
     // determine centrality class
     fInCentralitySelection = -1;
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) {
@@ -2578,6 +2583,10 @@ void AliAnalysisTaskJetV3::FillWeightedEventPlaneHistograms(Double_t vzero[2][2]
     #endif
     Double_t TRK(InputEvent()->GetCentrality()->GetCentralityPercentile("TRK"));
     Double_t V0M(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+    if(fCollisionType == kPbPb15o) {
+        TRK = GetCentrality("CL1");
+        V0M = GetCentrality("V0M");
+    }
     fHistPsiVZEROAV0M->Fill(V0M, vzero[0][0], fEventPlaneWeight);
     fHistPsiVZEROCV0M->Fill(V0M, vzero[1][0], fEventPlaneWeight);
     fHistPsiVZEROVV0M->Fill(V0M, vzeroComb[0], fEventPlaneWeight);
@@ -2841,7 +2850,7 @@ void AliAnalysisTaskJetV3::FillAnalysisSummaryHistogram() const
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(5, "fJetPhiMin");
     fHistAnalysisSummary->SetBinContent(5, GetJetContainer()->GetJetPhiMin());
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(6, "fJetPhiMax");
-    fHistAnalysisSummary->SetBinContent(6, GetJetContainer()->GetJetPhiMin());
+    fHistAnalysisSummary->SetBinContent(6, GetJetContainer()->GetJetPhiMax());
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(16, "fForceBeamType");
     fHistAnalysisSummary->SetBinContent(16, fForceBeamType);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(17, "fMinCent");
@@ -3197,7 +3206,10 @@ void AliAnalysisTaskJetV3::ReadVZEROCalibration2015o() {
      #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    if(!fOADB || fOADB->IsZombie()) fOADB = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+    if(!fOADB || fOADB->IsZombie()) {
+        if (!gGrid) TGrid::Connect("alien");
+        fOADB = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+    }
     if(fOADB->IsZombie()) {
 	printf("OADB file could not be opened CALIBRATION FAILED !");
 	return;
@@ -3325,7 +3337,8 @@ AliEmcalJet* AliAnalysisTaskJetV3::GetLeadingJet(AliLocalRhoParameter* localRho)
     if(!localRho) {
         for(Int_t i(0); i < iJets; i++) {
             AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
-            if(!PassesSimpleCuts(jet)) continue;
+            //if(!PassesSimpleCuts(jet)) continue;
+            if(!PassesCuts(jet)) continue;
             if(jet->Pt() > pt) {
                leadingJet = jet;
                pt = leadingJet->Pt();
@@ -3337,7 +3350,8 @@ AliEmcalJet* AliAnalysisTaskJetV3::GetLeadingJet(AliLocalRhoParameter* localRho)
         Double_t rho(0);
         for(Int_t i(0); i < iJets; i++) {
             AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
-            if(!PassesSimpleCuts(jet)) continue;
+            //if(!PassesSimpleCuts(jet)) continue;
+            if(!PassesCuts(jet)) continue;
             rho = localRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), localRho->GetVal());
             if(fUse2DIntegration) rho = localRho->GetLocalValInEtaPhi(jet->Phi(), GetJetContainer()->GetJetRadius(), localRho->GetVal());
             if((jet->Pt()-jet->Area()*rho) > pt) {
@@ -3548,6 +3562,6 @@ Float_t AliAnalysisTaskJetV3::GetCentrality(const char* estimator) const
     AliMultSelection *multSelection = 0x0; 
     if(!InputEvent()) return -1.;
     multSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-    if(multSelection) multSelection->GetMultiplicityPercentile(estimator);
+    if(multSelection) return multSelection->GetMultiplicityPercentile(estimator);
     return -1.;
 }

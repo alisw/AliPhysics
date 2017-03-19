@@ -633,20 +633,22 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             hScaleFactor[iEst]->GetXaxis()->SetBinLabel(iRun+1, Form("%i",lRunNumbers[iRun]) );
             lScaleFactors[iEst][iRun] = -1;
             lScaleFactorsError[iEst][iRun] = -1e-6;
-            if( TMath::Abs(fitdata[iRun][iEst]->GetParameter(0))>1e-6 ){
-                Float_t lkAerr = fitmc[iRun][iEst]->GetParError(0);
-                Float_t lkBerr = fitdata[iRun][iEst]->GetParError(0);
-                Float_t lkA = fitmc[iRun][iEst]->GetParameter(0);
-                Float_t lkB = fitdata[iRun][iEst]->GetParameter(0);
-                
-                //Central value 
-                lScaleFactors[iEst][iRun] = lkA / lkB;
-                
-                //Standard Error Propagation
-                Float_t errorfromtop = lkAerr*lkAerr / (lkB*lkB) ;
-                Float_t errorfrombottom = ((lkA*lkA)/(lkB*lkB*lkB*lkB)) * lkBerr * lkBerr;
-                lScaleFactorsError[iEst][iRun] = TMath::Sqrt( errorfromtop + errorfrombottom );
-                
+            if ( sTreeMC[iRun]->GetEntries() > 10 && sTree[iRun]->GetEntries() > 10 ){
+                if( TMath::Abs(fitdata[iRun][iEst]->GetParameter(0))>1e-6 ){
+                    Float_t lkAerr = fitmc[iRun][iEst]->GetParError(0);
+                    Float_t lkBerr = fitdata[iRun][iEst]->GetParError(0);
+                    Float_t lkA = fitmc[iRun][iEst]->GetParameter(0);
+                    Float_t lkB = fitdata[iRun][iEst]->GetParameter(0);
+                    
+                    //Central value
+                    lScaleFactors[iEst][iRun] = lkA / lkB;
+                    
+                    //Standard Error Propagation
+                    Float_t errorfromtop = lkAerr*lkAerr / (lkB*lkB) ;
+                    Float_t errorfrombottom = ((lkA*lkA)/(lkB*lkB*lkB*lkB)) * lkBerr * lkBerr;
+                    lScaleFactorsError[iEst][iRun] = TMath::Sqrt( errorfromtop + errorfrombottom );
+                    
+                }
             }
             hScaleFactor[iEst]->SetBinContent(iRun+1, lScaleFactors[iEst][iRun]);
             hScaleFactor[iEst]->SetBinError(iRun+1, lScaleFactorsError[iEst][iRun]);

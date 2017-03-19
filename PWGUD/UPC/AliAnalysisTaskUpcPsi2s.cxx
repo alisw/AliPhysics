@@ -74,9 +74,11 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
+    fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
-    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),
+    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),
+    fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),fHistZDCCuts(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListPsi2sLoose(0),fListPsi2sTight(0)
@@ -98,9 +100,11 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
+    fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
-    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),
+    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),
+    fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),fHistZDCCuts(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListPsi2sLoose(0),fListPsi2sTight(0)
@@ -328,61 +332,72 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
     fPsi2sTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
     fPsi2sTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/D");
   }
-
   
   fListTrig = new TList();
   fListTrig ->SetOwner();
   
-  fHistCcup4TriggersPerRun = new TH1D("fHistCcup4TriggersPerRun", "fHistCcup4TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCcup4TriggersPerRun = new TH1D("fHistCcup4TriggersPerRun", "fHistCcup4TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCcup4TriggersPerRun);
   
-  fHistCcup7TriggersPerRun = new TH1D("fHistCcup7TriggersPerRun", "fHistCcup7TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCcup7TriggersPerRun = new TH1D("fHistCcup7TriggersPerRun", "fHistCcup7TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCcup7TriggersPerRun);
     
-  fHistCcup2TriggersPerRun = new TH1D("fHistCcup2TriggersPerRun", "fHistCcup2TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCcup2TriggersPerRun = new TH1D("fHistCcup2TriggersPerRun", "fHistCcup2TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCcup2TriggersPerRun);
   
-  fHistCint1TriggersPerRun = new TH1D("fHistCint1TriggersPerRun", "fHistCint1TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCint1TriggersPerRun = new TH1D("fHistCint1TriggersPerRun", "fHistCint1TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCint1TriggersPerRun);
   
-  fHistCint6TriggersPerRun = new TH1D("fHistCint6TriggersPerRun", "fHistCint6TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCint6TriggersPerRun = new TH1D("fHistCint6TriggersPerRun", "fHistCint6TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCint6TriggersPerRun);
   
-  fHistC0tvxAndCint1TriggersPerRun = new TH1D("fHistC0tvxAndCint1TriggersPerRun", "fHistC0tvxAndCint1TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistC0tvxAndCint1TriggersPerRun = new TH1D("fHistC0tvxAndCint1TriggersPerRun", "fHistC0tvxAndCint1TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistC0tvxAndCint1TriggersPerRun);
   
-  fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistZedTriggersPerRun);
 
-  fHistCvlnTriggersPerRun = new TH1D("fHistCvlnTriggersPerRun", "fHistCvlnTriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCvlnTriggersPerRun = new TH1D("fHistCvlnTriggersPerRun", "fHistCvlnTriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCvlnTriggersPerRun);
   
-  fHistMBTriggersPerRun = new TH1D("fHistMBTriggersPerRun", "fHistMBTriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistMBTriggersPerRun = new TH1D("fHistMBTriggersPerRun", "fHistMBTriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistMBTriggersPerRun);
   
-  fHistCentralTriggersPerRun = new TH1D("fHistCentralTriggersPerRun", "fHistCentralTriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCentralTriggersPerRun = new TH1D("fHistCentralTriggersPerRun", "fHistCentralTriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCentralTriggersPerRun);
   
-  fHistSemiCentralTriggersPerRun = new TH1D("fHistSemiCentralTriggersPerRun", "fHistSemiCentralTriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistSemiCentralTriggersPerRun = new TH1D("fHistSemiCentralTriggersPerRun", "fHistSemiCentralTriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistSemiCentralTriggersPerRun);
   
-  fHistCTest58TriggersPerRun = new TH1D("fHistCTest58TriggersPerRun", "fHistCTest58TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCTest58TriggersPerRun = new TH1D("fHistCTest58TriggersPerRun", "fHistCTest58TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCTest58TriggersPerRun);
   
-  fHistCTest59TriggersPerRun = new TH1D("fHistCTest59TriggersPerRun", "fHistCTest59TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCTest59TriggersPerRun = new TH1D("fHistCTest59TriggersPerRun", "fHistCTest59TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCTest59TriggersPerRun);
   
-  fHistCTest60TriggersPerRun = new TH1D("fHistCTest60TriggersPerRun", "fHistCTest60TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCTest60TriggersPerRun = new TH1D("fHistCTest60TriggersPerRun", "fHistCTest60TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCTest60TriggersPerRun);
   
-  fHistCTest61TriggersPerRun = new TH1D("fHistCTest61TriggersPerRun", "fHistCTest61TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCTest61TriggersPerRun = new TH1D("fHistCTest61TriggersPerRun", "fHistCTest61TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCTest61TriggersPerRun);
   
-  fHistCcup8TriggersPerRun = new TH1D("fHistCcup8TriggersPerRun", "fHistCcup8TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCcup8TriggersPerRun = new TH1D("fHistCcup8TriggersPerRun", "fHistCcup8TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCcup8TriggersPerRun);
   
-  fHistCcup9TriggersPerRun = new TH1D("fHistCcup9TriggersPerRun", "fHistCcup9TriggersPerRun", 33000, 167000.5, 200000.5);
+  fHistCcup9TriggersPerRun = new TH1D("fHistCcup9TriggersPerRun", "fHistCcup9TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCcup9TriggersPerRun);
+  
+  fHistCcup10TriggersPerRun = new TH1D("fHistCcup10TriggersPerRun", "fHistCcup10TriggersPerRun", 40000, 240000.5, 280000.5);
+  fListTrig->Add(fHistCcup10TriggersPerRun);
+  
+  fHistCcup11TriggersPerRun = new TH1D("fHistCcup11TriggersPerRun", "fHistCcup11TriggersPerRun", 40000, 240000.5, 280000.5);
+  fListTrig->Add(fHistCcup11TriggersPerRun);
+  
+  fHistCcup12TriggersPerRun = new TH1D("fHistCcup12TriggersPerRun", "fHistCcup12TriggersPerRun", 40000, 240000.5, 280000.5);
+  fListTrig->Add(fHistCcup12TriggersPerRun);
+  
+  fHistCtrueTriggersPerRun = new TH1D("fHistCtrueTriggersPerRun", "fHistCtrueTriggersPerRun", 40000, 240000.5, 280000.5);
+  fListTrig->Add(fHistCtrueTriggersPerRun);
   
   fListHist = new TList();
   fListHist ->SetOwner();
@@ -431,6 +446,20 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fHistZDCCuts = new TH1D("fHistZDCCuts","fHistZDCCuts",4,0.5,4.5);
   for (Int_t i = 0; i<4; i++) fHistZDCCuts->GetXaxis()->SetBinLabel(i+1,CutNameZDC[i].Data());
   fListHist->Add(fHistZDCCuts);
+  
+  fEveTree = new TTree("fEveTree", "fEveTree");
+  fEveTree ->Branch("fPt", &fPt, "fPt/D");
+  fEveTree ->Branch("fY", &fY, "fY/D");
+  fEveTree ->Branch("fM", &fM, "fM/D");
+  fEveTree ->Branch("fChannel", &fChannel, "fChannel/I");
+  fEveTree ->Branch("fDiLeptonM", &fDiLeptonM, "fDiLeptonM/D");
+  fEveTree ->Branch("fDiLeptonPt", &fDiLeptonPt, "fDiLeptonPt/D");
+  fEveTree ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
+  fEveTree ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
+  fEveTree ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fEveTree ->Branch("fDataFilnam", &fDataFilnam);
+  fEveTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L"); 
+  fListHist->Add(fEveTree);
   
   
   fListSystematics = new TList();
@@ -575,6 +604,11 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   
   if(trigger.Contains("CCUP8-B")) fHistCcup8TriggersPerRun->Fill(fRunNum); //CCUP8 triggers
   if(trigger.Contains("CCUP9-B")) fHistCcup9TriggersPerRun->Fill(fRunNum); //CCUP9 triggers
+  if(trigger.Contains("CCUP10-B")) fHistCcup10TriggersPerRun->Fill(fRunNum); //CCUP10 triggers
+  if(trigger.Contains("CCUP11-B")) fHistCcup11TriggersPerRun->Fill(fRunNum); //CCUP11 triggers
+  if(trigger.Contains("CCUP12-B")) fHistCcup12TriggersPerRun->Fill(fRunNum); //CCUP12 triggers
+  
+  if(trigger.Contains("CTRUE-B")) fHistCtrueTriggersPerRun->Fill(fRunNum); //CTRUE triggers
   
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
   if(trigger.Contains("CINT1-B") && (fL0inputs & (1 << 3))) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //0TVX triggers in CINT1 events
@@ -880,18 +914,34 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
-  
-  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
-  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
-  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
-  fTrigger[3]  = trigger.Contains("CINT1-B"); // MB trigger
-  fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
-  fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
-  fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
-  fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-  fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
-  
+  if(fTracking == 0){ 
+  	fTrigger[0]  = trigger.Contains("CCUP4-B"); // *0VBA *0VBC 0SM2 0OMU
+  	fTrigger[1]  = trigger.Contains("CCUP2-B"); // *0VBA *0VBC 0SM2 0OM2
+  	fTrigger[2]  = trigger.Contains("CCUP7-B"); // *0VBA *0VBC 0STP 0OMU
+  	fTrigger[3]  = trigger.Contains("CINT1-B"); //  0VBA || 0VBC || 0SMB
+  	fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
+  	fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
+  	fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
+  	fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
+  	fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  	fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
+  	fTrigger[10]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
+  	fTrigger[11]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
+  	fTrigger[12]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
+  	fTrigger[13]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
+	}
+   if(fTracking == 8){ 
+  	fTrigger[0]  = trigger.Contains("CMUP10-B");	// *0VBA *0UBA *0UBC 0MSL			
+  	fTrigger[1]  = trigger.Contains("CMUP11-B");	// !0VBA & !0UBA & !0UBC & 0MUL 		
+  	fTrigger[2]  = trigger.Contains("CMUP12-B");	// !0VBA & !0UBA & !0UBC & 0MSL & 0SMB
+  	fTrigger[3]  = trigger.Contains("CMUP14-B");   // 0MSL & !0VBA & !0UBA
+  	fTrigger[4]  = trigger.Contains("CMUP15-B");   // *0VBA *0UBA *0VC5 0SMB *0SH2 0MSL
+  	fTrigger[5]  = trigger.Contains("CMUP16-B");   // 0MSL *0VBA *0UBA *0UGC *0VGA
+  	fTrigger[6]  = trigger.Contains("CMUP17-B");   // *0VBA *0UBA *0VC5 0SMB *0SH2 0MSL *0UGC *0VGA
+  	fTrigger[7]  = trigger.Contains("CMUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
+  	fTrigger[8]  = trigger.Contains("CMUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MSL 0SMB
+  	fTrigger[9]  = trigger.Contains("CMUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MUL
+	}
   Bool_t isTriggered = kFALSE;
   for(Int_t i=0; i<ntrg; i++) {
     if( fTrigger[i] ) isTriggered = kTRUE;
@@ -968,17 +1018,15 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     if( !trk ) continue;
     if(fTracking == 0){
       if(!(trk->TestFilterBit(1<<0))) continue;
-
-      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 20)continue;
+      if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
+      
       fNLooseTracks++;
       }
     if(fTracking == 1){
       if(!(trk->TestFilterBit(1<<1))) continue;
       
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      fNLooseTracks++;
+      //fNLooseTracks++;
       }  
   }//Track loop -loose cuts
   
@@ -991,34 +1039,22 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     if( !trk ) continue;
     
     if(fTracking == 0){
-      if(!(trk->TestFilterBit(1<<0))) continue;
-      /*/
-      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 70)continue;
-      if(trk->Chi2perNDF() > 4)continue;
-      /*/
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
-      /*/
-      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
-      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      delete trk_clone;
-      if(TMath::Abs(dca[1]) > 2) continue;
-      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
-      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
-      /*/
+      if(!(trk->TestFilterBit(1<<4))) continue;
+      //if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
       }
     if(fTracking == 1){
       if(!(trk->TestFilterBit(1<<1))) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetITSNcls() < 4)continue;
-      if(trk->Chi2perNDF() > 2.5)continue;
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
       
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+      }
+    if(fTracking == 8){  
+      if(!trk->IsMuonTrack())continue;
+      if( trk->GetRAtAbsorberEnd() < 17.5 || trk->GetRAtAbsorberEnd() > 89.5 ) continue;
+      if( trk->Eta() < -4.0 || trk->Eta() > -2.5 ) continue;
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
       }
@@ -1105,28 +1141,20 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     
     if(fTracking == 0){
       if(!(trk->TestFilterBit(1<<0))) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 50)continue;
-      if(trk->Chi2perNDF() > 4)continue;
-      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
-      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      delete trk_clone;
-      if(TMath::Abs(dca[1]) > 2) continue;
-      Double_t cut_DCAxy = 4*(0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
-      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
-
+  
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
       }
     if(fTracking == 1){
       if(!(trk->TestFilterBit(1<<1))) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetITSNcls() < 4)continue;
-      if(trk->Chi2perNDF() > 2.5)continue;
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
-      
+       
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+      }
+    if(fTracking == 8){  
+      if(!trk->IsMuonTrack())continue;
+      if( trk->GetRAtAbsorberEnd() < 17.5 || trk->GetRAtAbsorberEnd() > 89.5 ) continue;
+      if( trk->Eta() < -4.0 || trk->Eta() > -2.5 ) continue;
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
       }
@@ -1135,7 +1163,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }//Track loop
       
   fPsi2sAODTracks->Clear("C");  
-  if(nGoodTracks == 4){
+  //if(nGoodTracks == 4){
+  if(0){
 
   	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
 	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
@@ -1221,13 +1250,19 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
 {
 
-  for(Int_t i=0; i<ntrg; i++) fTriggerInputsMC[i] = kFALSE;
-  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fTriggerInputsMC[0] = fL0inputs & (1 << 0);   //0VBA VZERO A
-  fTriggerInputsMC[1] = fL0inputs & (1 << 1);   //0VBC VZERO C
-  fTriggerInputsMC[2] = fL0inputs & (1 << 11);  //0OMU TOF two hits with topology
-  fTriggerInputsMC[3] = fL0inputs & (1 << 23);	//0OM2 TOF two hits
-						
+  for(Int_t i=0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
+  
+  UShort_t fTriggerAD = aod->GetADData()->GetTriggerBits();
+  UShort_t fTriggerVZERO = aod->GetVZEROData()->GetTriggerBits();
+  UInt_t fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
+  
+  fTriggerInputsMC[0] = fTriggerVZERO & (1 << 12); //0VBA VZERO A
+  fTriggerInputsMC[1] = fTriggerVZERO & (1 << 13); //0VBC VZERO C
+  fTriggerInputsMC[2] = fTriggerAD & (1 << 12);   //0UBA ADA
+  fTriggerInputsMC[3] = fTriggerAD & (1 << 13);   //0UBC ADC
+  fTriggerInputsMC[4] = fL0inputs & (1 << 22);  //0OMU TOF two hits with topology
+  fTriggerInputsMC[5] = fL0inputs & (1 << 19);	//0OM2 TOF two hits
+  					
   //SPD inputs
   const AliAODTracklets *mult = aod->GetMultiplicity();
   Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
@@ -1245,7 +1280,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
     }
   }
  
-  Int_t fired(0);
+  Int_t fired = 0;
   for (Int_t i(0); i<10; ++i) {
     for (Int_t j(0); j<2; ++j) {
       const Int_t k(2*i+j);
@@ -1258,13 +1293,13 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
     }
   }
   //0SMB - At least one hit in SPD
-  if (nOuter > 0 || nInner > 0) fTriggerInputsMC[4] = kTRUE;
+  if (nOuter > 0 || nInner > 0) fTriggerInputsMC[6] = kTRUE;
   //0SM2 - Two hits on outer layer
-  if (nOuter > 1) fTriggerInputsMC[5] = kTRUE;
+  if (nOuter > 1) fTriggerInputsMC[7] = kTRUE;
   //0STP - Topological SPD trigger (two pairs)
-  if (fired != 0) fTriggerInputsMC[6] = kTRUE;
+  if (fired != 0) fTriggerInputsMC[8] = kTRUE;
   //0SH1 - More then 6 hits on outer layer
-  if (nOuter >= 7) fTriggerInputsMC[7] = kTRUE;
+  if (nOuter >= 7) fTriggerInputsMC[9] = kTRUE;
   
 
   fGenPart->Clear("C");
@@ -1361,10 +1396,19 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
   
   TParticlePDG *partPion = pdgdat->GetParticle( 211 );
   Double_t pionMass = partPion->Mass();
+  
+  TParticlePDG *partProton = pdgdat->GetParticle( 2212 );
+  Float_t protonMass = partProton->Mass();
 
   //input event
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
   if(!esd) return;
+  
+    //input data
+  const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
+  fDataFilnam->Clear();
+  fDataFilnam->SetString(filnam);
+  fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
 
   fHistNeventsJPsi->Fill(1);
   fHistNeventsPsi2s->Fill(1);
@@ -1381,15 +1425,6 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
   AliESDZDC *fZDCdata = esd->GetESDZDC();
   fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  if(fZDCdata->IsZNAhit()) fZDCAtime= fZDCdata->GetZDCTDCCorrected(12,0);
-  else fZDCAtime=-666;
-  if(fZDCdata->IsZNChit()) fZDCCtime= fZDCdata->GetZDCTDCCorrected(10,0);
-  else fZDCCtime=-666;
-  
-  if(trigger.Contains("CCUP4-B"))fHistZDCCuts->Fill(1);
-  if(fZNAenergy < 8200 && fZNCenergy < 8200) fHistZDCCuts->Fill(2);
-  if(fZNAenergy < 683 && fZNCenergy < 683) fHistZDCCuts->Fill(3);
-  if(fZDCAtime == -666 && fZDCCtime == -666) fHistZDCCuts->Fill(4);
 
   //primary vertex
   AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();
@@ -1399,27 +1434,36 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
   fHistNeventsJPsi->Fill(3);
   fHistNeventsPsi2s->Fill(3);
 
-  //VZERO, ZDC
+  //VZERO, AD
   AliESDVZERO *fV0data = esd->GetVZEROData();
-  
+  AliESDAD *fADdata = esd->GetADData();
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
+  if(fADdata){
+  	fADAdecision = fADdata->GetADADecision();
+  	fADCdecision = fADdata->GetADCDecision();
+	}
+ 
   if(fV0Adecision != AliESDVZERO::kV0Empty || fV0Cdecision != AliESDVZERO::kV0Empty) return;
-
-  if( fZNAenergy > 8200 || fZNCenergy > 8200) return;
-  
+  if(fADAdecision != AliESDAD::kADEmpty || fADCdecision != AliESDAD::kADEmpty) return;
+   
   fHistNeventsJPsi->Fill(4);
   fHistNeventsPsi2s->Fill(4);
 
    Int_t nGoodTracks=0;
   //Two tracks loop
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
+  Double_t TrackPt[5]={0,0,0,0,0};
   
-  TLorentzVector vLepton[4], vPion[4], vCandidate, vDilepton;
-  Short_t qLepton[4], qPion[4];
-  UInt_t nLepton=0, nPion=0, nHighPt=0;
-  Double_t fRecTPCsignal[5];
-  Int_t mass[3]={-1,-1,-1};
+  Short_t qTrack[5];
+  TLorentzVector vMuon[5],vElectron[5],vProton[5],vPion[5], vJPsiCandidate;
+
+  Float_t nSigmaMuon[5], nSigmaElectron[5], nSigmaPion[5], nSigmaProton[5],MeanPt;
+  Short_t qPion[5];
+  TLorentzVector vLepton[5], vDilepton, vPsi2sCandidate;
+  Short_t qLepton[5];
+  UInt_t nPion = 0, nElectron = 0, nMuon = 0, nLepton = 0, nProton = 0;
+
 
  //Two Track loop
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
@@ -1434,124 +1478,146 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
       Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
       if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
       trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
-      if(TMath::Abs(dca[1]) > 0.2) continue;
+      if(TMath::Abs(dca[0]) > 2.4) continue;
+      if(TMath::Abs(dca[1]) > 3.2) continue;
       
       TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-      if(nGoodTracks > 2) break;   
-  }//Track loop
-
-  
-  if(nGoodTracks == 2){
-  	  fHistNeventsJPsi->Fill(5);
-  	  for(Int_t i=0; i<2; i++){
-	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);		
-      		if(trk->Pt() > 1) nHighPt++;     
-      		fRecTPCsignal[nLepton] = trk->GetTPCsignal();     
-      		qLepton[nLepton] = trk->Charge();
-      		if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
-      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
-				mass[nLepton] = 0;
-				}
-      		if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
-      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
-				mass[nLepton] = 1;
-				}
-       		nLepton++;		
-  		}		
-  	if(nLepton == 2){
-	 	if(qLepton[0]*qLepton[1] > 0) fHistNeventsJPsi->Fill(6);
-		if(qLepton[0]*qLepton[1] < 0){
-			fHistNeventsJPsi->Fill(7);
-			if(nHighPt > 0){
-				fHistNeventsJPsi->Fill(8);
-				fHistTPCsignalJPsi->Fill(fRecTPCsignal[0],fRecTPCsignal[1]);
-				if(nHighPt == 2) fHistNeventsJPsi->Fill(9);
-				if(mass[0] == mass[1] && mass[0] != -1) {
-					fHistNeventsJPsi->Fill(10);
-					vCandidate = vLepton[0]+vLepton[1];
-					if( vCandidate.M() > 2.8 && vCandidate.M() < 3.2) fHistDiLeptonPtJPsi->Fill(vLepton[0].Pt(),vLepton[1].Pt());
-					if(mass[0] == 0) {
-						fHistDiMuonMass->Fill(vCandidate.M());
-						fHistNeventsJPsi->Fill(11);
-						}
-  					if(mass[0] == 1) {
-						fHistDiElectronMass->Fill(vCandidate.M());
-						fHistNeventsJPsi->Fill(12);
-   						}
-					}
-				}
-			}
-		}
-  }
-  nGoodTracks = 0; nLepton=0; nPion=0; nHighPt=0;
-  mass[0]= -1; mass[1]= -1, mass[2]= -1;
-  
-    //Four Track loop
-  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
-    AliESDtrack *trk = esd->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 50)continue;
-      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
-      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
-      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
-      trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
-      
-      TrackIndex[nGoodTracks] = itr;
+      TrackPt[nGoodTracks] = trk->Pt();
       nGoodTracks++;
       if(nGoodTracks > 4) break;   
   }//Track loop
-  
-  if(nGoodTracks == 4){
-  	  fHistNeventsPsi2s->Fill(5);
-  	  for(Int_t i=0; i<4; i++){
-	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
+
+  if(nGoodTracks == 2){
+  	  fHistNeventsJPsi->Fill(5);
+  	  for(Int_t iTrack=0; iTrack<2; iTrack++){
+	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[iTrack]);
+				   
+      		Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+    		Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		Float_t fPIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		Float_t fPIDTOFProton = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
 		
-      		if(trk->Pt() > 1){   
-      			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
+		vElectron[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+    		vMuon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+    		nSigmaMuon[iTrack] = fPIDTPCMuon;
+    		nSigmaElectron[iTrack] = fPIDTPCElectron;
+    
+    		vPion[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
+    		nSigmaPion[iTrack] = fPIDTPCPion;
+	
+    		vProton[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), protonMass);
+		nSigmaProton[iTrack] = fPIDTOFProton;
+		
+		qLepton[iTrack] = trk->Charge();
+				
+  		}		
+  	  if(qLepton[0]*qLepton[1] > 0) fHistNeventsJPsi->Fill(6);
+	  if(qLepton[0]*qLepton[1] < 0){
+		fHistNeventsJPsi->Fill(7);
+		Float_t nSigmaDistMuon = TMath::Sqrt(TMath::Power(nSigmaMuon[0],2) + TMath::Power(nSigmaMuon[1],2));
+  		Float_t nSigmaDistElectron = TMath::Sqrt(TMath::Power(nSigmaElectron[0],2) + TMath::Power(nSigmaElectron[1],2));
+  		Float_t nSigmaDistProton = TMath::Sqrt(TMath::Power(nSigmaProton[0],2) + TMath::Power(nSigmaProton[1],2));
+		
+		fDiLeptonM = -999; 
+		fDiLeptonPt = -999;
+
+ 		if(nSigmaDistProton < 5){ 
+  	  		fPIDsigma = nSigmaDistProton;
+  	  		vJPsiCandidate = vProton[0]+vProton[1];
+  	  		fChannel = 2;
+			fPt = vJPsiCandidate.Pt();
+  			fY = vJPsiCandidate.Rapidity();
+  			fM = vJPsiCandidate.M();
+  	  		fEveTree->Fill();
+  	  		}
+  		if(nSigmaDistMuon < nSigmaDistElectron){
+  	  		fPIDsigma = nSigmaDistMuon; 
+  	  		vJPsiCandidate = vMuon[0]+vMuon[1];
+  	  		fChannel = 1;
+  	 		fPt = vJPsiCandidate.Pt();
+  			fY = vJPsiCandidate.Rapidity();
+  			fM = vJPsiCandidate.M();
+  	  		fEveTree->Fill();
+			fHistDiMuonMass->Fill(fM);
+			fHistDiLeptonMass->Fill(fM);
+  	 		}
+  		if(nSigmaDistMuon > nSigmaDistElectron){ 
+  	  		fPIDsigma = nSigmaDistElectron;
+  	  		vJPsiCandidate = vElectron[0]+vElectron[1];
+  	  		fChannel = -1;
+  	  		fPt = vJPsiCandidate.Pt();
+  			fY = vJPsiCandidate.Rapidity();
+  			fM = vJPsiCandidate.M();
+  	  		fEveTree->Fill();
+			fHistDiElectronMass->Fill(fM);
+			fHistDiLeptonMass->Fill(fM);
+  	  		}
+		}
+
+  }
+  if(nGoodTracks == 4){
+    	  MeanPt = GetMedian(TrackPt);
+  	  fHistNeventsPsi2s->Fill(6);
+  	  for(Int_t iTrack=0; iTrack<4; iTrack++){
+	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[iTrack]);
+
+		if(trk->Pt() > MeanPt){
       			qLepton[nLepton] = trk->Charge();
-      			if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
-      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
-					mass[nLepton] = 0;
-					}
-      			if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
-      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
-					mass[nLepton] = 1;
-					}
-			nLepton++;
+			Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+    			Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+
+			nSigmaMuon[nLepton] = fPIDTPCMuon;
+    			nSigmaElectron[nLepton] = fPIDTPCElectron;
+			
+			if(TMath::Abs(fPIDTPCMuon) < TMath::Abs(fPIDTPCElectron)){	
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+				nLepton++;
+				}
+      			if(TMath::Abs(fPIDTPCMuon) > TMath::Abs(fPIDTPCElectron)){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+				nLepton++;
+				}
 			}
 		else{
 			qPion[nPion] = trk->Charge();
 			vPion[nPion].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
 			nPion++;
 			}
-				      
-      		if(nLepton > 2 || nPion > 2) break;
-    		}
+	}
 	if((nLepton == 2) && (nPion == 2)){
-		fHistNeventsPsi2s->Fill(6);
-		if(qLepton[0]*qLepton[1] > 0) fHistNeventsPsi2s->Fill(7);
-		if(qPion[0]*qPion[1] > 0) fHistNeventsPsi2s->Fill(8);
-		if((qLepton[0]*qLepton[1] > 0) && (qPion[0]*qPion[1] > 0)) fHistNeventsPsi2s->Fill(9);
+		fHistNeventsPsi2s->Fill(7);
+		if(qLepton[0]*qLepton[1] > 0) fHistNeventsPsi2s->Fill(8);
+		if(qPion[0]*qPion[1] > 0) fHistNeventsPsi2s->Fill(9);
+		if((qLepton[0]*qLepton[1] > 0) && (qPion[0]*qPion[1] > 0)) fHistNeventsPsi2s->Fill(10);
 		if((qLepton[0]*qLepton[1] < 0) && (qPion[0]*qPion[1] < 0)){
-			fHistNeventsPsi2s->Fill(10);
-	 		if(mass[0] == mass[1]) {
-				fHistNeventsPsi2s->Fill(11); 
-  				vCandidate = vLepton[0]+vLepton[1]+vPion[0]+vPion[1];
-  				vDilepton = vLepton[0]+vLepton[1];
-				fHistPsi2sMassVsPt->Fill(vCandidate.M(),vCandidate.Pt());
-				if(vCandidate.Pt() < 0.15) fHistPsi2sMassCoherent->Fill(vCandidate.M());
-				if(mass[0] == 0) fHistNeventsPsi2s->Fill(12);	
-  				if(mass[0] == 1) fHistNeventsPsi2s->Fill(13);
+			fHistNeventsPsi2s->Fill(11);
+			fHistNeventsPsi2s->Fill(12); 
+  			vPsi2sCandidate = vLepton[0]+vLepton[1]+vPion[0]+vPion[1];
+  			vDilepton = vLepton[0]+vLepton[1];
+			fHistPsi2sMassVsPt->Fill(vPsi2sCandidate.M(),vPsi2sCandidate.Pt());
+			
+			Float_t nSigmaDistMuon = TMath::Sqrt(TMath::Power(nSigmaMuon[0],2) + TMath::Power(nSigmaMuon[1],2));
+			Float_t nSigmaDistElectron = TMath::Sqrt(TMath::Power(nSigmaElectron[0],2) + TMath::Power(nSigmaElectron[1],2));
+			fChannel = 0;
+			fPt = vPsi2sCandidate.Pt();
+  			fY = vPsi2sCandidate.Rapidity();
+  			fM = vPsi2sCandidate.M();
+			fDiLeptonM = vDilepton.M();
+			fDiLeptonPt = vDilepton.Pt();
+			if((nSigmaDistMuon < nSigmaDistElectron)){
+				fPIDsigma = nSigmaDistMuon; 
+				fChannel = 1;
+				fEveTree->Fill();
+				}
+			if((nSigmaDistMuon > nSigmaDistElectron)){
+				fPIDsigma = nSigmaDistElectron;
+				fChannel = -1;
+				fEveTree->Fill();
 				}
 			}
 		}
   }
+
   
   PostData(4, fListHist);
 
@@ -1621,8 +1687,8 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   Double_t CovMatx[6];
   fESDVertex->GetCovarianceMatrix(CovMatx); 
   fVtxErr[0] = CovMatx[0];
-  fVtxErr[1] = CovMatx[1];
-  fVtxErr[2] = CovMatx[2];
+  fVtxErr[1] = CovMatx[2];
+  fVtxErr[2] = CovMatx[5];
   fVtxChi2 = fESDVertex->GetChi2();
   fVtxNDF = fESDVertex->GetNDF();
     
@@ -1842,7 +1908,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 
   	  for(Int_t i=0; i<4; i++){
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
-		
+
 		if(fESDVertex->UsesTrack(TrackIndex[i]))fIsVtxContributor[i] = kTRUE;
 		else fIsVtxContributor[i] = kFALSE;
 		
@@ -1861,31 +1927,9 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 		fPIDTOFElectron[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
 		fPIDTOFPion[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
 		fPIDTOFKaon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
-		fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
-		
-		trk->GetXYZ(KFpar);
-    		trk->PxPyPz(KFpar+3);
-    		trk->GetCovarianceXYZPxPyPz(KFcov);
-		
-		if(trk->Pt() > 1){   
-      			fRecTPCsignal = trk->GetTPCsignal();      
-      			if(fRecTPCsignal > 40 && fRecTPCsignal < 70) KFmass = muonMass;
-      			if(fRecTPCsignal > 70 && fRecTPCsignal < 100)KFmass = electronMass;
-			}
-		else KFmass = pionMass;
-		
-		KFpart[i] = new AliKFParticle();
-    		KFpart[i]->SetField(esd->GetMagneticField());
-    		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
-		KFvtx->AddDaughter(*KFpart[i]); 		
+		fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);		
   		}
 		
-  fKfVtxPos[0]= KFvtx->GetX();
-  fKfVtxPos[1]= KFvtx->GetY();
-  fKfVtxPos[2]= KFvtx->GetZ();
-  for(UInt_t i=0; i<2; i++)delete KFpart[i];
-  delete KFvtx; 
-  
   if(!isMC) fPsi2sTree ->Fill();
   }
   

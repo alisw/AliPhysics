@@ -75,10 +75,10 @@ AliQnCorrectionsProfileChannelizedIngress::~AliQnCorrectionsProfileChannelizedIn
   if (fChannelGroup != NULL) delete [] fChannelGroup;
   if (fChannelMap != NULL) delete [] fChannelMap;
   if (fValues != NULL) delete fValues;
-  if (fGroupValues != NULL) delete [] fGroupValues;
+  if (fGroupValues != NULL) delete fGroupValues;
   if (fValidated != NULL) delete fValidated;
-  if (fUsedGroup != NULL) delete [] fUsedChannel;
-  if (fGroupMap != NULL) delete [] fChannelMap;
+  if (fUsedGroup != NULL) delete [] fUsedGroup;
+  if (fGroupMap != NULL) delete [] fGroupMap;
 }
 
 

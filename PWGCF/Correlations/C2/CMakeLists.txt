@@ -33,6 +33,7 @@ set(SRCS
   AliAnalysisC2Utils.cxx
   AliAnalysisTaskC2.cxx
   AliAnalysisTaskC2Base.cxx
+  AliAnalysisTaskMCSmearing.cxx
   )
 
 # Headers from sources

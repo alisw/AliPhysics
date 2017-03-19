@@ -12,6 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <algorithm>
+#include <array>
+#include <cfloat>
 #include <functional>
 #include <iostream>
 
@@ -22,10 +25,13 @@
 
 #include "AliAnalysisTaskEmcalTriggerBase.h"
 #include "AliAnalysisUtils.h"
+#include "AliAODEvent.h"
+#include "AliAODInputHandler.h"
+#include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerMapping.h"
-#include "AliEmcalTriggerOfflineSelection.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -41,9 +47,14 @@ namespace EMCalTriggerPtAnalysis {
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   AliAnalysisTaskEmcal(),
   fTriggerSelection(nullptr),
+  fUseTriggerBits(kTRUE),
+  fRequireBunchCrossing(kTRUE),
+  fUseDownscaleCorrectionFormOCDB(kFALSE),
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
+  fNameClusterContainer(""),
+  fRequireAnalysisUtils(kTRUE),
   fVertexCut(-10., 10.),
   fNameDownscaleOADB(""),
   fDownscaleOADB(nullptr),
@@ -51,20 +62,29 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fNameMaskedFastorOADB(),
   fMaskedFastorOADB(nullptr),
   fMaskedFastors(),
+  fOnlineTriggerThresholds(),
+  fNameAcceptanceOADB(),
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
-  fUseOnlineTriggerSelectorV1(false)
+  fEnableDCALTriggers(true),
+  fExclusiveMinBias(false)
 {
   SetNeedEmcalGeom(true);
+  SetMakeGeneralHistograms(kTRUE);
   SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *name):
   AliAnalysisTaskEmcal(name, true),
   fTriggerSelection(nullptr),
+  fUseTriggerBits(kTRUE),
+  fRequireBunchCrossing(kTRUE),
+  fUseDownscaleCorrectionFormOCDB(kFALSE),
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
+  fNameClusterContainer(""),
+  fRequireAnalysisUtils(kTRUE),
   fVertexCut(-10., 10.),
   fNameDownscaleOADB(""),
   fDownscaleOADB(nullptr),
@@ -72,11 +92,15 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fNameMaskedFastorOADB(),
   fMaskedFastorOADB(nullptr),
   fMaskedFastors(),
+  fOnlineTriggerThresholds(),
+  fNameAcceptanceOADB(),
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
-  fUseOnlineTriggerSelectorV1(false)
+  fEnableDCALTriggers(true),
+  fExclusiveMinBias(false)
 {
   SetNeedEmcalGeom(true);
+  SetMakeGeneralHistograms(kTRUE);
   SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
@@ -86,12 +110,14 @@ AliAnalysisTaskEmcalTriggerBase::~AliAnalysisTaskEmcalTriggerBase() {
   if(fDownscaleOADB) delete fDownscaleOADB;
 }
 
-/**
- * Create the output histograms
- */
 void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  if(!fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
+  if(fRequireAnalysisUtils && !fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
+
+  if(!fNameClusterContainer.Length()) fNameClusterContainer = AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputHandler->IsA() == AliAODInputHandler::Class());
+  if(fTriggerSelection && !fTriggerSelection->GetNameClusterContainer().Length()){
+    fTriggerSelection->SetClusterContainer(fNameClusterContainer);
+  }
 
   fHistos = new THistManager(Form("Histos_%s", GetName()));
 
@@ -113,10 +139,13 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return false;
-  if(fInputEvent->IsA() == AliESDEvent::Class() && fAliAnalysisUtils->IsFirstEventInChunk(fInputEvent)) return false;
-  if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;       // Apply new vertex cut
 
-  if(!fAliAnalysisUtils->IsVertexSelected2013pA(fInputEvent))return false;       // Apply new vertex cut
+  if(fRequireAnalysisUtils){
+    if(fInputEvent->IsA() == AliESDEvent::Class() && fAliAnalysisUtils->IsFirstEventInChunk(fInputEvent)) return false;
+    if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;       // Apply new vertex cut
+    if(!fAliAnalysisUtils->IsVertexSelected2013pA(fInputEvent))return false;       // Apply new vertex cut
+  }
+
   if(!fVertexCut.IsInRange(fVertex[2])) return false;
   if(!IsUserEventSelected()) return false;
 
@@ -135,6 +164,7 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
 
 void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   fSelectedTriggers.clear();
+  Bool_t isMC = MCEvent() != nullptr;
 
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
@@ -142,100 +172,121 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   } else {
     triggerstring = fInputEvent->GetFiredTriggerClasses();
   }
+
+
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
-      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
-      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7"),
-      isDJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1"),
-      isDJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2"),
-      isDG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1"),
-      isDG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2"),
-      isDMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("DMC7");
-  if(fTriggerPatchInfo && fTriggerSelection){
-      isEJ1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatchInfo);
-      isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatchInfo);
-      isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatchInfo);
-      isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatchInfo);
-      isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatchInfo);
-      isDJ1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ1, fTriggerPatchInfo);
-      isDJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ2, fTriggerPatchInfo);
-      isDG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG1, fTriggerPatchInfo);
-      isDG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG2, fTriggerPatchInfo);
-      isDMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDL0, fTriggerPatchInfo);
+      emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
+
+  if(fExclusiveMinBias){
+    // do not perform EMCAL trigger selection in case only
+    // min. bias trigger is requested:w
+    if(isMinBias) fSelectedTriggers.push_back("MB");
+    return;
   }
-  // Online selection / rejection
-  if(fRejectNoiseEvents || fSelectNoiseEvents){
-    std::function<bool (OnlineTrigger_t)> selector;
-    if(fUseOnlineTriggerSelectorV1){
-        selector = [this](OnlineTrigger_t t) -> bool { return this->SelectOnlineTriggerV1(t); } ;
-    } else{
-        selector = [this](OnlineTrigger_t t) -> bool { return this->SelectOnlineTrigger(t); };
+
+  for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcalTriggers[itrg] = true;
+  if(!isMC){
+    // In case of data select events as bunch-bunch (-B-) events.
+    // Cut not applied in simulations
+    if(fRequireBunchCrossing && ! triggerstring.Contains("-B-")) return;
+
+    // In case of data use information from the physics selection and event record
+    // Further cleanup of trigger events can be performed depending on the presence
+    // of recalc patches (after masking hot fastors in the trigger maker) above
+    // threshold
+    if(fUseTriggerBits){
+      const std::array<ULong_t, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerBits = {
+    	  AliVEvent::kEMC7, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE,
+		  AliVEvent::kEMC7, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE,
+      };
+      for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++)
+        emcalTriggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
     }
-    if(fRejectNoiseEvents){
-      if(isEJ1) isEJ1 &= selector(kCPREJ1);
-      if(isEJ2) isEJ2 &= selector(kCPREJ2);
-      if(isEG1) isEG1 &= selector(kCPREG1);
-      if(isEG2) isEG2 &= selector(kCPREG2);
-      if(isEMC7) isEMC7 &= selector(kCPREL0);
-    } else {
-      if(isEJ1) isEJ1 &= !selector(kCPREJ1);
-      if(isEJ1) isEJ2 &= !selector(kCPREJ2);
-      if(isEG1) isEG1 &= !selector(kCPREG1);
-      if(isEG2) isEG2 &= !selector(kCPREG2);
-      if(isEMC7) isEMC7 &= !selector(kCPREL0);
+
+    // Apply cut on the trigger string - this basically discriminates high- and low-threshold
+    // triggers
+    const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
+    		"CEMC7", "EG1", "EG2", "EJ1", "EJ2", "CDMC7", "DG1", "DG2", "DJ1", "DJ2"
+    };
+    if(triggerstring.Contains("EMC")) AliDebugStream(1) << GetName() << ": Trigger string " << triggerstring << std::endl;
+    for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
+      emcalTriggers[iclass] &= triggerstring.Contains(kSelectTriggerStrings[iclass]);
+      if(emcalTriggers[iclass])
+        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << std::endl;
     }
+
+    // Online selection / rejection
+    if(fRejectNoiseEvents || fSelectNoiseEvents){
+      if(fRejectNoiseEvents){
+        for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
+          if(emcalTriggers[itrg])
+            emcalTriggers[itrg] &= SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));
+        }
+      } else {
+        for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
+          if(emcalTriggers[itrg])
+            emcalTriggers[itrg] &= !SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));
+        }
+      }
+    }
+  }
+  // Apply offline trigger selection: In this case cuts are performed on the
+  // patch energy from EMCAL cells after calibration. This method is most relevant
+  // for simulations. It can have a special use case in data in case a stronger
+  // offline selection is applied in addition to the online selection.
+  if(fTriggerPatchInfo && fTriggerSelection){
+    for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++)
+      emcalTriggers[itrg] &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg), fInputEvent);
   }
   if(isMinBias) fSelectedTriggers.push_back("MB");
-  if(isEMC7){
+  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]){
     fSelectedTriggers.push_back("EMC7");
     if(!isMinBias) fSelectedTriggers.push_back("EMC7excl");
   }
-  if(isDMC7){
-    fSelectedTriggers.push_back("DMC7");
-    if(!isMinBias) fSelectedTriggers.push_back("DMC7excl");
-  }
-  if(isEJ2){
+  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2]){
     fSelectedTriggers.push_back("EJ2");
-    if(!(isMinBias || isEMC7)) fSelectedTriggers.push_back("EJ2excl");
+    if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0])) fSelectedTriggers.push_back("EJ2excl");
   }
-  if(isEJ1){
+  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ1]){
     fSelectedTriggers.push_back("EJ1");
-    if(!(isMinBias || isEMC7 || isEJ2)) fSelectedTriggers.push_back("EJ1excl");
+    if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2])) fSelectedTriggers.push_back("EJ1excl");
   }
-  if(isDJ2){
-    fSelectedTriggers.push_back("DJ2");
-    if(!(isMinBias || isDMC7)) fSelectedTriggers.push_back("DJ2excl");
-  }
-  if(isDJ1){
-    fSelectedTriggers.push_back("DJ1");
-    if(!(isMinBias || isDMC7 || isDJ2)) fSelectedTriggers.push_back("DJ1excl");
-  }
-  if(isEG2){
+  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2]){
     fSelectedTriggers.push_back("EG2");
-    if(!(isMinBias || isEMC7)) fSelectedTriggers.push_back("EG2excl");
+    if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0])) fSelectedTriggers.push_back("EG2excl");
   }
-  if(isEG1){
+  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG1]){
     fSelectedTriggers.push_back("EG1");
-    if(!(isMinBias || isEMC7 || isEG2)) fSelectedTriggers.push_back("EG1excl");
+    if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2])) fSelectedTriggers.push_back("EG1excl");
   }
-  if(isDG2){
-    fSelectedTriggers.push_back("DG2");
-    if(!(isMinBias || isDMC7)) fSelectedTriggers.push_back("DG2excl");
-  }
-  if(isDG1){
-    fSelectedTriggers.push_back("DG1");
-    if(!(isMinBias || isDMC7 || isDG2)) fSelectedTriggers.push_back("DG1excl");
+
+  if(fEnableDCALTriggers){
+    // Handle DCAL triggers only in case DCAL triggers are enabled,
+    // otherwise ignore results of the online/offline trigger selection
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0]){
+      fSelectedTriggers.push_back("DMC7");
+      if(!isMinBias) fSelectedTriggers.push_back("DMC7excl");
+    }
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2]){
+      fSelectedTriggers.push_back("DJ2");
+      if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0])) fSelectedTriggers.push_back("DJ2excl");
+    }
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ1]){
+      fSelectedTriggers.push_back("DJ1");
+      if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2])) fSelectedTriggers.push_back("DJ1excl");
+    }
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2]){
+      fSelectedTriggers.push_back("DG2");
+      if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0])) fSelectedTriggers.push_back("DG2excl");
+    }
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1]){
+      fSelectedTriggers.push_back("DG1");
+      if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2])) fSelectedTriggers.push_back("DG1excl");
+    }
   }
 }
 
-/**
- * Perform gloabl initializations
- * Used for the moment for
- * - Initialize OADB container with downscaling factors
- */
 void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
   AliAnalysisTaskEmcal::ExecOnce();
 
@@ -249,156 +300,251 @@ void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
     fDownscaleOADB = new AliOADBContainer("AliEmcalDownscaleFactors");
     fDownscaleOADB->InitFromFile(fNameDownscaleOADB.Data(), "AliEmcalDownscaleFactors");
   }
-  // Load OADB container with masked fastors (in case fastor masking is switched on)
-  if(fNameMaskedFastorOADB.Length() && (fRejectNoiseEvents || fSelectNoiseEvents)){
-    if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
-    fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
-    fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
+
+  if(!fExclusiveMinBias){
+    // Load EMCAL trigger OADB in case EMCAL triggers
+    // are enabled
+
+    // Load OADB container with masked fastors (in case fastor masking is switched on)
+    if(fNameMaskedFastorOADB.Length() && (fRejectNoiseEvents || fSelectNoiseEvents)){
+      if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
+      fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
+      fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
+    }
+
+    // Setting online threshold for trigger
+    if(!OnlineThresholdsInitialized()){
+      if(fInputEvent->GetRunNumber() >= 15344 && fInputEvent->GetRunNumber() <= 197388){
+        if(!GetOnlineTriggerThresholdByName("EG1")) SetOnlineTriggerThreshold("EG1", 140);
+        if(!GetOnlineTriggerThresholdByName("EG2")) SetOnlineTriggerThreshold("EG2", 89);
+        if(!GetOnlineTriggerThresholdByName("EJ1")) SetOnlineTriggerThreshold("EJ1", 260);
+        if(!GetOnlineTriggerThresholdByName("EJ2")) SetOnlineTriggerThreshold("EJ2", 127);
+        SetOnlineTriggerThreshold("DG1", 0);
+        SetOnlineTriggerThreshold("DG2", 0);
+        SetOnlineTriggerThreshold("DJ1", 0);
+        SetOnlineTriggerThreshold("DJ2", 0);
+        SetOnlineTriggerThreshold("EMC7", 0);
+        SetOnlineTriggerThreshold("DMC7", 0);
+      }
+    }
+
+    // Load acceptance OADB
+    if(fNameAcceptanceOADB.Length() && fTriggerSelection){
+      AliDebugStream(1) << GetName() << ": Loading acceptance map from OADB file " <<  fNameAcceptanceOADB << std::endl;
+      AliOADBContainer acceptanceCont("AliEmcalTriggerAcceptance");
+      acceptanceCont.InitFromFile(fNameAcceptanceOADB.Data(), "AliEmcalTriggerAcceptance");
+      TObjArray *acceptanceMaps = dynamic_cast<TObjArray *>(acceptanceCont.GetObject(fInputEvent->GetRunNumber()));
+      TH2 *map(nullptr);
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG1")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG1" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG2")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG2" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG2, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG1")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG1" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG2")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG2" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ1")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ1" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ2")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ2" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ2, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ1")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ1" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ2")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ2" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+      }
+    }
   }
 }
 
-/**
- * Run change method. Called when the run number of the new event
- * is different compared to the run number of the previous event.
- * Used for loading of the downscale factor for a given
- * run from the downscale OADB.
- * @param[in] runnumber Number of the new run.
- */
 void AliAnalysisTaskEmcalTriggerBase::RunChanged(Int_t runnumber){
   if(fDownscaleOADB){
     fDownscaleFactors = static_cast<TObjArray *>(fDownscaleOADB->GetObject(runnumber));
   }
-  if(fMaskedFastorOADB){
-   fMaskedFastors.clear();
-   TObjArray *ids = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber));
-   for(auto m : *ids){
-     TParameter<int> *id = static_cast<TParameter<int> *>(m);
-     fMaskedFastors.push_back(id->GetVal());
-   }
- }
+  if(fUseDownscaleCorrectionFormOCDB) PrepareDownscaleFactorsFormOCDB();
+
+  // Log info for downscale factors
+  if(!fDownscaleFactors || !fDownscaleFactors->GetEntries()){
+    AliInfoStream() << GetName() << ": No downscale factors provided for run " << runnumber << std::endl;
+  } else {
+    AliInfoStream() << GetName() << ": Downscale factors used for run " << runnumber << std::endl;
+    for(auto e : *fDownscaleFactors){
+      TParameter<double> *dfactor = static_cast<TParameter<double> *>(e);
+      AliInfoStream() << GetName() << ": Trigger " << dfactor->GetName() << ", downscale factor " << dfactor->GetVal() << std::endl;
+    }
+  }
+
+  if(!fExclusiveMinBias){
+    if(fMaskedFastorOADB){
+      fMaskedFastors.clear();
+      TObjArray *ids = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber));
+      for(auto m : *ids){
+        TParameter<int> *id = static_cast<TParameter<int> *>(m);
+        fMaskedFastors.push_back(id->GetVal());
+      }
+    }
+  }
 }
 
 std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(){
   // Exclusive means classes without lower trigger classes (which are downscaled) -
   // in order to make samples statistically independent: MBExcl means MinBias && !EMCAL trigger
-  std::vector<TString> triggers = {
-    "MB", "EMC7", "DMC7",
-    "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
-    "EMC7excl", "DMC7excl", "EG2excl", "EJ2excl", "DG2excl", "DJ2excl",
-    "EJ1excl", "DJ1excl", "EG1excl", "DG1excl"
-  };
+  std::vector<TString> triggers = {"MB"}; // Min. Bias always enabled
+  const std::array<TString, 10> emcaltriggers = {"EMC7", "EJ1", "EJ2", "EG1", "EG2", "EMC7excl", "EG2excl", "EJ2excl", "EJ1excl", "EG1excl"},
+                                dcaltriggers = {"DMC7", "DJ1", "DJ2", "DG1", "DG2", "DMC7excl", "DG2excl", "DJ2excl", "DJ1excl", "DG1excl"};
+  if(!fExclusiveMinBias){
+    for(const auto &t : emcaltriggers) triggers.push_back(t);
+  }
+  if(fEnableDCALTriggers){
+    for(const auto &t : dcaltriggers) triggers.push_back(t);
+  }
   return triggers;
 }
 
-
-/**
- * Select events which contain good patches (at least one patch without noisy fastor).
- * @param trg L0/L1 trigger class to be checked
- * @return True if the event has at least one good patch, false otherwise
- */
-bool AliAnalysisTaskEmcalTriggerBase::SelectOnlineTrigger(OnlineTrigger_t trg){
-  AliDebugStream(1) << "Using nominal online trigger selector" << std::endl;
-  int ngood(0);
-  const int kEJ1threshold = 223, kEJ2threshold = 140;
-  std::function<bool(const AliEMCALTriggerPatchInfo *)> PatchSelector[5] = {
-      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsGammaHigh();
-      },
-      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsGammaLow();
-      },
-      [kEJ1threshold](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsJetLowRecalc() && patch->GetADCAmp() > kEJ1threshold;
-      },
-      [kEJ2threshold](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsJetLowRecalc() && patch->GetADCAmp() > kEJ2threshold;
-      },
-      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsLevel0();
-      }
-  };
-  for(auto p : *fTriggerPatchInfo){
-    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
-    if(PatchSelector[trg](patch)){
-      bool patchMasked(false);
-      for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++){
-        for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++){
-          int fastorAbs(-1);
-          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastorAbs);
-          if(std::find(fMaskedFastors.begin(), fMaskedFastors.end(), fastorAbs) != fMaskedFastors.end()){
-            patchMasked = true;
-            break;
-          }
-        }
-      }
-      if(!patchMasked) ngood++;
-    }
-  }
-  return ngood > 0;
-}
-
-/**
- * Second approach: We assume masked fastors are already handled in the
- * trigger maker. In this case we treat masked fastors similarly to online
- * masked fastors and apply online cuts on the recalc ADC value. Implemented
- * for the moment only for L1 triggers.
- * @return True if the event has at least 1 recalc patch above threshold
- */
-bool AliAnalysisTaskEmcalTriggerBase::SelectOnlineTriggerV1(OnlineTrigger_t trigger){
+bool AliAnalysisTaskEmcalTriggerBase::SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass trigger) const{
   AliDebugStream(1) << "Using V1 online trigger selector" << std::endl;
-  if(trigger == kCPREL0) return true;
-  double onlinethresholds[5] = {140., 89., 260., 127., 0.};
+  if(trigger == AliEmcalTriggerOfflineSelection::kTrgEL0 || trigger == AliEmcalTriggerOfflineSelection::kTrgDL0) return true;
   int ngood(0);
   for(auto p : *fTriggerPatchInfo){
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
-    if(((trigger == kCPREG1 || trigger == kCPREG2) && patch->IsGammaLowRecalc()) ||
-        ((trigger == kCPREJ1 || trigger == kCPREJ2) && patch->IsJetLowRecalc())){
-      if(patch->GetADCAmp() > onlinethresholds[trigger]) ngood++;
+    if((AliEmcalTriggerOfflineSelection::IsSingleShower(trigger) && patch->IsGammaLowRecalc()) ||
+        (!AliEmcalTriggerOfflineSelection::IsSingleShower(trigger) && patch->IsJetLowRecalc())){
+      if(patch->GetADCAmp() >= GetOnlineTriggerThresholdByIndex(trigger)) ngood++;
     }
   }
   return ngood > 0;
 }
 
-/**
- * Get a trigger class dependent event weight. The weight
- * is defined as 1/downscalefactor. The downscale factor
- * is taken from the OADB. For triggers which are not downscaled
- * the weight is always 1.
- * @param[in] triggerclass Class for which to obtain the trigger.
- * @return Downscale facror for the trigger class (1 if trigger is not downscaled or no OADB container is available)
- */
 Double_t AliAnalysisTaskEmcalTriggerBase::GetTriggerWeight(const TString &triggerclass) const {
   if(fDownscaleFactors){
     TParameter<double> *result(nullptr);
     // Downscaling only done on MB, L0 and the low threshold triggers
     if(triggerclass.Contains("MB")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("INT7"));
     else if(triggerclass.Contains("EMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
+    else if(triggerclass.Contains("DMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DMC7"));
     else if(triggerclass.Contains("EJ2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
+    else if(triggerclass.Contains("EJ1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ1"));
     else if(triggerclass.Contains("EG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
-    if(result) return 1./result->GetVal();
+    else if(triggerclass.Contains("EG1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG1"));
+    else if(triggerclass.Contains("DG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG2"));
+    else if(triggerclass.Contains("DG1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG1"));
+    double triggerweight = 1.;
+    if(result) triggerweight = 1./result->GetVal();
+    AliDebugStream(1) << "Using trigger weight " << triggerweight << " for trigger " << triggerclass << std::endl;
+    return triggerweight;
+  } else {
+    AliDebugStream(1) << "No downscale factors loaded - using trigger weight 1" << std::endl;
   }
   return 1.;
 }
 
-/**
- * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
- * @param triggerpatches Trigger patches found by the trigger maker
- * @return String with EMCAL trigger decision
- */
+void AliAnalysisTaskEmcalTriggerBase::PrepareDownscaleFactorsFormOCDB(){
+  AliInfoStream() << "Reading downscale factors from OCDB for run " << fInputEvent->GetRunNumber() << std::endl;
+  if(!fDownscaleFactors){
+    fDownscaleFactors = new TObjArray;
+    fDownscaleFactors->SetOwner(true);
+  }
+  fDownscaleFactors->Clear();
+  AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
+  if(downscaleOCDB->GetCurrentRun() != fInputEvent->GetRunNumber()) downscaleOCDB->SetRun(fInputEvent->GetRunNumber());
+  const std::array<TString, 11> khwtriggers = {"INT7", "EMC7", "DMC7", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"};
+  std::vector<TString> runtriggers = downscaleOCDB->GetTriggerClasses();
+  for(const auto &t : khwtriggers){
+    std::function<bool (TString)> triggerfinder = [t](const TString &test) -> bool {
+      if(!test.Contains(t + "-B-")) return false;
+      return true;
+    };
+    auto entry = std::find_if(runtriggers.begin(), runtriggers.end(), triggerfinder);
+    if(entry  != runtriggers.end()){
+      TString triggername = *entry;
+      double downscalefactor = downscaleOCDB->GetDownscaleFactorForTriggerClass(triggername);
+      AliInfoStream() << "Applying downscale factor " << downscalefactor << " for trigger " << t << " (" << triggername << ") for run " << fInputEvent->GetRunNumber() << std::endl;
+      fDownscaleFactors->Add(new TParameter<double>(t, TMath::Abs(downscalefactor) < DBL_EPSILON ? 1 : downscalefactor));
+    } else {
+      AliErrorStream() << "No downscale factor found for trigger " << t << " for run " << fInputEvent->GetRunNumber() << std::endl;
+    }
+  }
+}
+
+void AliAnalysisTaskEmcalTriggerBase::SetOnlineTriggerThreshold(const TString &triggerclass, Int_t threshold){
+  TParameter<int> *threshpar(nullptr);
+  if((threshpar = static_cast<TParameter<int> *>(fOnlineTriggerThresholds.FindObject(triggerclass.Data())))){
+    threshpar->SetVal(threshold);
+  } else {
+    fOnlineTriggerThresholds.Add(new TParameter<int>(triggerclass.Data(), threshold));
+  }
+}
+
+Int_t AliAnalysisTaskEmcalTriggerBase::GetOnlineTriggerThresholdByName(const TString &name) const {
+  Int_t threshold(0);
+  TParameter<int> *val(nullptr);
+  if((val = static_cast<TParameter<int> *>(fOnlineTriggerThresholds.FindObject(name))))
+    threshold = val->GetVal();
+  return threshold;
+}
+
+Int_t AliAnalysisTaskEmcalTriggerBase::GetOnlineTriggerThresholdByIndex(AliEmcalTriggerOfflineSelection::EmcalTriggerClass trigger) const {
+  const TString triggernames[AliEmcalTriggerOfflineSelection::kTrgn] = {"EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7",
+      "DG1", "DG2", "DJ1", "DJ2"};
+  return GetOnlineTriggerThresholdByName(triggernames[trigger]);
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerBase::OnlineThresholdsInitialized() const {
+  const TString triggernames[AliEmcalTriggerOfflineSelection::kTrgn] = {"EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7",
+      "DG1", "DG2", "DJ1", "DJ2"};
+  bool isInitialized = true;
+  for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
+    if(!fOnlineTriggerThresholds.FindObject(triggernames[itrg].Data())) {
+      isInitialized = false;
+      break;
+    }
+  }
+  return isInitialized;
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerBase::SelectFiredPatch(const TString &triggerclass, Int_t adc) const {
+  return adc > GetOnlineTriggerThresholdByName(triggerclass);
+}
+
 TString AliAnalysisTaskEmcalTriggerBase::GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const {
   TString triggerstring = "";
-  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
-  double  minADC_EJ1 = 260.,
-          minADC_EJ2 = 127.,
-          minADC_EG1 = 140.,
-          minADC_EG2 = 89.;
+  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0, nDJ1 = 0, nDJ2 = 0, nDG1 = 0, nDG2 = 0;
   for(auto patchIter : *triggerpatches){
     AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter);
-    if(!patch->IsOfflineSimple()) continue;
-    if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_EJ1) nEJ1++;
-    if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_EJ2) nEJ2++;
-    if(patch->IsGammaHighSimple() && patch->GetADCOfflineAmp() > minADC_EG1) nEG1++;
-    if(patch->IsGammaLowSimple() && patch->GetADCOfflineAmp() > minADC_EG2) nEG2++;
+    if(!patch->IsRecalc()) continue;
+    if(patch->IsEMCal()){
+      if(patch->IsGammaLowRecalc() && SelectFiredPatch("EG1", patch->GetADCAmp())) nEG1++;
+      if(patch->IsGammaLowRecalc() && SelectFiredPatch("EG2", patch->GetADCAmp())) nEG2++;
+      if(patch->IsJetLowRecalc() && SelectFiredPatch("EJ1", patch->GetADCAmp())) nEJ1++;
+      if(patch->IsJetLowRecalc() && SelectFiredPatch("EJ2", patch->GetADCAmp())) nEJ2++;
+    } else {
+      if(patch->IsGammaLowRecalc() && SelectFiredPatch("DG1", patch->GetADCAmp())) nDG1++;
+      if(patch->IsGammaLowRecalc() && SelectFiredPatch("DG2", patch->GetADCAmp())) nDG2++;
+      if(patch->IsJetLowRecalc() && SelectFiredPatch("DJ1", patch->GetADCAmp())) nDJ1++;
+      if(patch->IsJetLowRecalc() && SelectFiredPatch("DJ2", patch->GetADCAmp())) nDJ2++;
+    }
   }
   if(nEJ1) triggerstring += "EJ1";
   if(nEJ2){
@@ -412,6 +558,22 @@ TString AliAnalysisTaskEmcalTriggerBase::GetFiredTriggerClassesFromPatches(const
   if(nEG2){
     if(triggerstring.Length()) triggerstring += ",";
     triggerstring += "EG2";
+  }
+  if(nDJ1){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DJ2";
+  }
+  if(nDJ2){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DJ2";
+  }
+  if(nDG1){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DG1";
+  }
+  if(nDG2){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DG2";
   }
   return triggerstring;
 }

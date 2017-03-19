@@ -78,7 +78,7 @@ const Double_t AliAnalysisTaskPi0FlowMC::kRCut = 1.;
 
 AliAnalysisTaskPi0FlowMC::AliAnalysisTaskPi0FlowMC(const char* name, AliAnalysisTaskPi0Flow::Period period)
 : AliAnalysisTaskPi0Flow(name, period),
-  fStack(0x0),kOffVertexCutSet(kTRUE)
+  fStack(0x0),kOffVertexCutSet(kTRUE),fWeights(0x0)
 {
 }
 
@@ -980,7 +980,7 @@ void AliAnalysisTaskPi0FlowMC::FillMCHist(){
  
     FillHistogram(hkey,pt,weight) ;
     
-    if(TMath::Abs(particle->Y())<0.135 && phig>260. && phig<320.){
+    if(TMath::Abs(particle->Y())<0.135 && phig>240. && phig<320.){
       snprintf(hkey,55,"hMC_unitEta_%s_cen%d",partName,fCentBin) ;
       FillHistogram(hkey,pt,weight) ;
       

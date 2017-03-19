@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
             		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+            		    ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Nuclei/NucleiPbPb
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
 		    ${AliPhysics_SOURCE_DIR}/PWG/TRD
@@ -68,6 +69,9 @@ set(SRCS
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
   PiKaPr/TOF/pp7/AliAnalysisCombinedHadronSpectra2MC.cxx
+  PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx
+  PiKaPr/TOF/PbPb502/task/AliAnTOFtrack.cxx
+  PiKaPr/TOF/PbPb502/task/AliAnalysisTaskTOFSpectra.cxx
   ParticleEfficiency/AliAnalysisTaskParticleEfficiencyLF.cxx
   PiKaPr/TestAOD/AliSpectraAODTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraAODEventCuts.cxx
@@ -127,7 +131,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN)
+set(ALIROOT_DEPENDENCIES ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN PWGLFnuclex)
 
 # Generate the ROOT map
 # Dependecies
@@ -185,10 +189,15 @@ install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
+install(FILES PiKaPr/TOF/PbPb502/task/AddTaskTOFSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
+install(FILES PiKaPr/TOF/PbPb502/macros/AliTOFTemplateFitter.h DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
+install(FILES PiKaPr/TOF/PbPb502/macros/PrepareRawSpectra.h DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TPCTOF/AddTaskCombinedHadronSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOF)
 install(FILES PiKaPr/TPCTOFpA/AddTaskTPCTOFpA.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOFpA)
 install(DIRECTORY XtAnalysis/macros DESTINATION PWGLF/SPECTRA/XtAnalysis)
 install(DIRECTORY MultEvShape DESTINATION PWGLF/SPECTRA FILES_MATCHING PATTERN "*.C")
-install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION  PWGLF/SPECTRA/MultEvShape)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/MultEvShape/priorsDist_data_LHC10d_newAliroot.root)
+  install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION PWGLF/SPECTRA/MultEvShape)
+endif()
 install(FILES Spherocity/macros/AddTaskEventShape.C DESTINATION  PWGLF/SPECTRA/Spherocity/macros)
 install(DIRECTORY AntiprotonToProton/train DESTINATION PWGLF/SPECTRA/AntiprotonToProton)

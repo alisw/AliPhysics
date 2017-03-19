@@ -37,6 +37,10 @@
 
 #include "AliMultSelection.h"
 
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliQnCorrectionsManager.h"
+#include "AliQnCorrectionsQnVector.h"
+
 #include "AliRsnCutSet.h"
 #include "AliRsnMiniPair.h"
 #include "AliRsnMiniEvent.h"
@@ -59,6 +63,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fRefMultiType("GLOBAL"),
    fUseAOD049CentralityPatch(kFALSE),
    fUseCentralityPatchPbPb2011(0),
+   fFlowQnVectorMgr(0),
+   fFlowQnVectorSubDet("VZEROA"),
+   fFlowQnVectorExpStep("latest"),
    fContinuousMix(kTRUE),
    fNMix(0),
    fMaxDiffMult(10),
@@ -111,6 +118,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fRefMultiType("GLOBAL"),
    fUseAOD049CentralityPatch(kFALSE),
    fUseCentralityPatchPbPb2011(0),
+   fFlowQnVectorMgr(0),
+   fFlowQnVectorSubDet("VZEROA"),
+   fFlowQnVectorExpStep("latest"),
    fContinuousMix(kTRUE),
    fNMix(0),
    fMaxDiffMult(10),
@@ -168,6 +178,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fRefMultiType(copy.fRefMultiType),
    fUseAOD049CentralityPatch(copy.fUseAOD049CentralityPatch),
    fUseCentralityPatchPbPb2011(copy.fUseCentralityPatchPbPb2011),
+   fFlowQnVectorMgr(copy.fFlowQnVectorMgr),
+   fFlowQnVectorSubDet(copy.fFlowQnVectorSubDet),
+   fFlowQnVectorExpStep(copy.fFlowQnVectorExpStep),
    fContinuousMix(copy.fContinuousMix),
    fNMix(copy.fNMix),
    fMaxDiffMult(copy.fMaxDiffMult),
@@ -231,6 +244,9 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fRefMultiType = copy.fRefMultiType;
    fUseAOD049CentralityPatch = copy.fUseAOD049CentralityPatch;
    fUseCentralityPatchPbPb2011 = copy.fUseCentralityPatchPbPb2011;
+   fFlowQnVectorMgr = copy.fFlowQnVectorMgr;
+   fFlowQnVectorSubDet = copy.fFlowQnVectorSubDet;
+   fFlowQnVectorExpStep = copy.fFlowQnVectorExpStep;
    fContinuousMix = copy.fContinuousMix;
    fNMix = copy.fNMix;
    fMaxDiffMult = copy.fMaxDiffMult;
@@ -365,6 +381,12 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    if(fHAEventMultiCent) fOutput->Add(fHAEventMultiCent);
    if(fHAEventRefMultiCent) fOutput->Add(fHAEventRefMultiCent);
    if(fHAEventPlane) fOutput->Add(fHAEventPlane);
+
+   AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+   if (flowQnVectorTask) {
+     AliInfo("Using Flow Qn vector corrections framework task ...");
+     fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+   }
 
    TIter next(&fTrackCuts);
    AliRsnCutSet *cs;
@@ -845,12 +867,21 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    // assign event-related values
    if (fMiniEvent) delete fMiniEvent;
    fMiniEvent = new AliRsnMiniEvent;
+   fMiniEvent->SetRef(fRsnEvent.GetRef());
+   fMiniEvent->SetRefMC(fRsnEvent.GetRefMC());
    fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
    fMiniEvent->RefMult()  = ComputeReferenceMultiplicity((evType == 'E'), fRefMultiType.Data());
    fMiniEvent->Tracklets() = ComputeTracklets();
    AliDebugClass(2, Form("Event %d: type = %c -- vz = %f -- mult = %f -- angle = %f", fEvNum, evType, fMiniEvent->Vz(), fMiniEvent->Mult(), fMiniEvent->Angle()));
+
+   if (fFlowQnVectorMgr) {
+      TList *qnlist = fFlowQnVectorMgr->GetQnVectorList();
+      if (qnlist) {
+         fMiniEvent->SetQnVector(GetQnVectorFromList(qnlist, fFlowQnVectorSubDet.Data(), fFlowQnVectorExpStep.Data()));
+      }
+  }
 
    // loop on daughters and assign track-related values
    Int_t ic, ncuts = fTrackCuts.GetEntries();
@@ -976,6 +1007,11 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
 	 if (!MultSelection) {
             AliWarning("Could not find MultSelection object");
             return 1E20;
+	 }
+
+	 if (s.EqualTo("TEST")) {
+	   MultSelection->PrintInfo();
+	   return 50.;
 	 }
 
 	 return MultSelection->GetMultiplicityPercentile(s.Data());
@@ -1639,4 +1675,28 @@ AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput(const char *name, const c
    AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, outType, compType);
 
    return newDef;
+}
+
+AliQnCorrectionsQnVector *AliRsnMiniAnalysisTask::GetQnVectorFromList(
+  const TList *list, const char *subdetector, const char *expectedstep) const {
+
+  AliQnCorrectionsQnVector *theQnVector = NULL;
+
+  // TList *pQvecList = dynamic_cast<TList *>(list->FindObject(subdetector));
+  TList *pQvecList = (TList*)list->FindObject(subdetector);
+  if (pQvecList != NULL) {
+    /* the detector is present */
+    if (TString(expectedstep).EqualTo("latest"))
+      theQnVector = (AliQnCorrectionsQnVector *)pQvecList->First();
+    else
+      theQnVector =
+        (AliQnCorrectionsQnVector *)pQvecList->FindObject(expectedstep);
+  }
+  if (theQnVector != NULL) {
+    /* check the Qn vector quality */
+    if (!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0))
+      /* not good quality, discarded */
+      theQnVector = NULL;
+  }
+  return theQnVector;
 }

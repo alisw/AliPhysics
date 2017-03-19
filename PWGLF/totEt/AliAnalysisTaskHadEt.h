@@ -28,11 +28,16 @@ public:
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
+
+    AliAnalysisHadEtReconstructed *GetHadEtReconstructed(){return fRecAnalysis;} // Rec
+    AliAnalysisHadEtMonteCarlo *GetHadEtMonteCarlo(){return fMCAnalysis;} // MC
+    void SetTrackCutOption(Int_t opt){trackcutoption = opt;}
     void IsSim(){fIsSim = kTRUE;}
     AliPIDResponse *fPIDResponse;//!
 
 private:
 
+    Int_t trackcutoption;//integer to set track cut options
   //Declare it private to avoid compilation warning
     AliAnalysisTaskHadEt & operator = (const AliAnalysisTaskHadEt & g) ;//cpy assignment
     AliAnalysisTaskHadEt(const AliAnalysisTaskHadEt & g) ; // cpy ctor

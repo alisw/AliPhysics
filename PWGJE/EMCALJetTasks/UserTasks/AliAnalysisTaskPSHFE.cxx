@@ -78,6 +78,11 @@ UseNonSignalEvents(0),
 
 fHistPIDRejection(0),
 fHistNElecPerEvent(0),
+fHistTestDCA(0),
+fHistTestEMCEnergy(0),
+fHistTestTPCdEdx(0),
+fHistTestEOP(0),
+fHistTestOGDPhi(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -304,6 +309,11 @@ UseNonSignalEvents(0),
 
 fHistPIDRejection(0),
 fHistNElecPerEvent(0),
+fHistTestDCA(0),
+fHistTestEMCEnergy(0),
+fHistTestTPCdEdx(0),
+fHistTestEOP(0),
+fHistTestOGDPhi(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -1584,10 +1594,37 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistPtTag_EMCJet = new TH1F("fHistPtTag_EMCJet", "Pt distribution for electron candidates", 100,0, 15);
     fHistPtTag_EMCJet->GetXaxis()->SetTitle("Pt(Gev)");
     fHistPtTag_EMCJet->GetYaxis()->SetTitle("Count");
-
+    
+    //test histos
+    fHistTestDCA = new TH1F("fHistTestDCA", "DCA distribution for all tracks with DPhi to any candidate electron <0.1 rad", 100,-15, 15);
+    fHistTestDCA->GetXaxis()->SetTitle("DCA(cm)");
+    fHistTestDCA->GetYaxis()->SetTitle("Count");
+    
+    fHistTestEMCEnergy = new TH1F("fHistTestEMCEnergy", "Energy from EMCal for all tracks with DPhi to any candidate electron <0.1 rad", 100, 0, 10);
+    fHistTestEMCEnergy->GetXaxis()->SetTitle("EMC Energy[GeV]");
+    fHistTestEMCEnergy->GetYaxis()->SetTitle("Counts");
+    
+    fHistTestTPCdEdx = new TH2F("fHistTestTPCdEdx", "TPC dE/dx for all tracks with DPhi to any candidate electron <0.1 rad", 300, -30, 180, 100, 0,8);
+    fHistTestTPCdEdx->GetXaxis()->SetTitle("TPC dE/dx[a.u.]");
+    fHistTestTPCdEdx->GetYaxis()->SetTitle("pT[GeV/c]");
+    
+    fHistTestEOP = new TH1F("fHistTestEOP", "E/p for all tracks with DPhi to any candidate electron <0.1 rad", 30, 0, 1.5);
+    fHistTestEOP->GetXaxis()->SetTitle("E/p[c]");
+    fHistTestEOP->GetYaxis()->SetTitle("Counts");
+    
+    fHistTestOGDPhi = new TH1F("fHistTestOGDPhi", "Original DPhi before periodicity correction", 100, -2*TMath::Pi(), 2*TMath::Pi());
+    fHistTestOGDPhi->GetXaxis()->SetTitle("DPhi[rad]");
+    fHistTestOGDPhi->GetYaxis()->SetTitle("Counts");
+    
     //Add rejection plots to MB plots since it is the easiest place
     fOutputMB->Add(fHistPIDRejection);
     fOutputMB->Add(fHistNElecPerEvent);
+    //samesies for the test plots
+    fOutputMB->Add(fHistTestDCA);
+    fOutputMB->Add(fHistTestEMCEnergy);
+    fOutputMB->Add(fHistTestTPCdEdx);
+    fOutputMB->Add(fHistTestEOP);
+    fOutputMB->Add(fHistTestOGDPhi);
 
     fOutputMB->Add(fHistPhotoMismatch_MB);
     fOutputMB->Add(fHistPtAssoc_MB);
@@ -2495,6 +2532,18 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
 
         Double_t DEta=aodtrackassoc->Eta()-aodtrack->Eta();
+        
+        if(DPhi<0.2&&DPhi>-0.2&&DEta<0.1&&DEta>-0.1){
+            Int_t cid = aodtrackassoc->GetEMCALcluster();
+            if(cid > 0){
+                AliAODCaloCluster *aodcl = aod->GetCaloCluster(cid);
+                fHistTestOGDPhi->Fill(aodtrackassoc->Phi()-aodtrack->Phi());
+                fHistTestDCA->Fill(aodtrackassoc->DCA());
+                fHistTestEMCEnergy->Fill(aodcl->E());
+                fHistTestEOP->Fill(aodcl->E()/aodtrackassoc->Pt());
+                fHistTestTPCdEdx->Fill(aodtrackassoc->Pt(), aodtrackassoc->GetTPCsignal());
+            }
+        }
 
         Int_t PID=0;
         cout<<"most probPID"<<AliAODTrack::kElectron<<":"<<aodtrackassoc->GetMostProbablePID()<<'\n';
@@ -3108,7 +3157,7 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *ao
         Double_t InvMass=(elec1+elec2).M();
         Double_t OpAng=elec1.Angle(elec2.Vect());
 
-        if(aodtrack->Charge()==aodtrackassoc->Charge()){
+        if(aodtrack->Charge()==aodtrackassoc->Charge()&&aodtrack->Charge()!=0){
 
             if(MBtrg){
                 fHistInvMassElecLike_MB->Fill(InvMass);
@@ -3131,7 +3180,7 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *ao
                 break;
             }
 
-        }else{
+        }else if(aodtrack->Charge()!=aodtrackassoc->Charge()&&aodtrack->Charge()!=0&&aodtrackassoc->Charge()!=0){
             if(InvMass<0.1&&OpAng<0.1){tagPhot=kTRUE;}
             if(MBtrg){
                 fHistInvMassElecUnLike_MB->Fill(InvMass);

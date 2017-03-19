@@ -25,6 +25,7 @@ class AliReducedTrackCut : public AliReducedVarCut {
   void SetRequestSPDfirst() {fCutOnITShitMap |= (1<<0); fUseANDonITShitMap = kFALSE; fRequestCutOnITShitMap = kTRUE;}
   void SetRequestSPDany() {fCutOnITShitMap |= (1<<0); fCutOnITShitMap |= (1<<1); fUseANDonITShitMap = kFALSE; fRequestCutOnITShitMap = kTRUE;}
   void SetRequestSPDboth() {fCutOnITShitMap |= (1<<0); fCutOnITShitMap |= (1<<1); fUseANDonITShitMap = kTRUE; fRequestCutOnITShitMap = kTRUE;}
+  void SetRequestTOFout(Bool_t flag = kTRUE) {fRequestTOFout = flag;}  
   
   Bool_t GetRejectKinks() const {return fRejectKinks;}
   Bool_t GetRejectTaggedGamma() const {return fRejectTaggedGamma;}
@@ -34,6 +35,7 @@ class AliReducedTrackCut : public AliReducedVarCut {
   UChar_t GetITShitMapRequest() const {return fCutOnITShitMap;}
   Bool_t GetUseANDonITShitMap() const {return fUseANDonITShitMap;}
   Bool_t GetUseCutOnITShitMap() const {return fRequestCutOnITShitMap;}
+  Bool_t GetRequestTOFout() const {return fRequestTOFout;}
   
   virtual Bool_t IsSelected(TObject* obj);
   virtual Bool_t IsSelected(TObject* obj, Float_t* values);
@@ -59,6 +61,10 @@ class AliReducedTrackCut : public AliReducedVarCut {
    
    // TPC quantities
    Bool_t   fRequestTPCrefit;               // if true, request TPC refit      
+   
+   // TOF quantities
+   Bool_t   fRequestTOFout;               // if true, request TOF out
+   
    
   AliReducedTrackCut(const AliReducedTrackCut &c);
   AliReducedTrackCut& operator= (const AliReducedTrackCut &c);

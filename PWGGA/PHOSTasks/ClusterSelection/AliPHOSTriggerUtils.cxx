@@ -96,19 +96,44 @@ void AliPHOSTriggerUtils::SetEvent(AliVEvent * event){
     Int_t trelid[4] ;
     fGeom->AbsToRelNumbering(tabsId,trelid);     
      
-    fTrMod4x4[fNtrg4x4] = trelid[0];
-    fTrX4x4[fNtrg4x4]  = trelid[2];
-    fTrZ4x4[fNtrg4x4]  = trelid[3];
-    if ( fNtrg4x4<999 ) fNtrg4x4++;
-    else AliFatal("PHOS trigger capacity exceeded, increase size of fTrMod4x4[],fTrX4x4[],fTrZ4x4[] arrays") ;
+    Int_t l1Threshold=trgESD->GetL1TimeSum() ; // tdig->GetL1Threshold()  // L1 threshold: 0-High, 1-Medium, 2-Low
+    Int_t trType=0; // 0-L0, 1-L1
+    trgESD->GetTriggerBits(trType) ;
+    Int_t trBits=0;
+    if(trType==0) trBits=1 ; 
+    else trBits=1<<(3-l1Threshold) ;  //Bits: 0: L0,  1:L1low, 2:L1med, 3:L1high 
+  
+    
+    //Check if already exist
+    Bool_t isNew=kTRUE ;
+    for(Int_t i=0;i<fNtrg4x4; i++){
+      if(fTrMod4x4[i] != trelid[0]) continue;
+      if(fTrX4x4[i] != trelid[2]) continue;
+      if(fTrZ4x4[i] != trelid[3])continue;
+      //exist  
+      fTrK4x4[i]|= trBits ;
+      isNew=kFALSE ;
+      break ;
+    }
+    if(isNew){
+      fTrMod4x4[fNtrg4x4] = trelid[0];
+      fTrX4x4[fNtrg4x4]  = trelid[2];
+      fTrZ4x4[fNtrg4x4]  = trelid[3];
+      fTrK4x4[fNtrg4x4] = trBits; // L0, L1low, L1med, L1high
+      if ( fNtrg4x4<999 ) fNtrg4x4++;
+      else AliError("PHOS trigger capacity exceeded, increase size of fTrMod4x4[],fTrX4x4[],fTrZ4x4[] arrays") ;
+    }
+    
   }  
 }
 
 //-----------------------------------------------------------------------    
-Bool_t AliPHOSTriggerUtils::IsFiredTrigger(AliVCluster * clu){  
+Int_t AliPHOSTriggerUtils::IsFiredTrigger(AliVCluster * clu){ 
+//Returns which trigger fired cluster:
+//Bits: 0: L0,  1:L1low, 2:L1med, 3:L1high     
   
    if(!fEvent)
-     return kFALSE ;
+     return 0 ;
   
    //Maximum energy tower
    Int_t maxId, relid[4];
@@ -132,25 +157,26 @@ Bool_t AliPHOSTriggerUtils::IsFiredTrigger(AliVCluster * clu){
     Int_t iz = relid[3];
         
     if(!TestBadMap(mod,ix,iz))
-      return kFALSE ;
+      return 0 ;
         
     for (Int_t itr=0; itr < fNtrg4x4; itr++ ){
       if(fTrMod4x4[itr] != mod ) continue; //trigger fired in other module
       if( (ix - fTrX4x4[itr] ) > fbdrL && (ix - fTrX4x4[itr] ) < fbdrR &&
           (iz - fTrZ4x4[itr] ) > fbdrL && (iz - fTrZ4x4[itr] ) < fbdrR  ){ //this is trigger
-	return kTRUE ; 
+	return fTrK4x4[itr] ; 
 //	    Int_t branch = FindBranch(tnX4x4[n4x4], tnZ4x4[n4x4]); //tru, gde srabotal trigger
       }
     }//tr44
     
-    return kFALSE ;
+    return 0 ;
 }
 //-----------------------------------------------------------------------  
-Bool_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
+Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
    //Estimate probability to fire PHOS trigger 
+   //Bits: 0: L0,  1:L1low, 2:L1med, 3:L1high     
   
    if(!fEvent)
-     return kFALSE ;
+     return 0 ;
   
    //Maximum energy tower
    Int_t maxId, relid[4];
@@ -174,11 +200,21 @@ Bool_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
     Int_t iz = relid[3];
         
     if(!TestBadMap(mod,ix,iz)){
-      return kFALSE ;
+      return 0 ;
     }
   
     //Now etimate probability from the parameterization
-    Bool_t result = (gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) ;
+    
+    Int_t result = 0;
+    if(fRun<209122){ //Run1 Only L0
+      if(gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) result=1 ;
+    }
+    else{
+      for(Int_t bit=0; bit<4; bit++){
+        if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
+            result|=1<<bit ;
+      }
+    }
     return result ;
 
 }
@@ -212,6 +248,12 @@ Bool_t AliPHOSTriggerUtils::TestBadMap(Int_t mod, Int_t ix,Int_t iz){
     return kTRUE ;
   
   
+}
+//-----------------------------------------------------------------------  
+Double_t AliPHOSTriggerUtils::TriggerProbability(Double_t eClu, Int_t module,Int_t bit){
+ //Placeholder for turn-on curves parametrization
+    
+ return 1;    
 }
 //-----------------------------------------------------------------------  
 Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t module){

@@ -27,6 +27,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
 
   AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut);
   AliFemtoXiTrackCut& operator=(const AliFemtoXiTrackCut& aCut);
+  virtual AliFemtoXiTrackCut* Clone();
 
   virtual bool Pass(const AliFemtoXi* aXi);
 
@@ -58,7 +59,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   //--If initiated, fMinvPurityAidHistoXi will be in the output list after all other Xi cut monitors (pass and fail)
   virtual TList *GetOutputList();  //include fMinvPurityAidHistoXi and fMinvPurityAidHistoV0 in the output list if they exist
 
- private:   // here are the quantities I want to cut on...
+ protected:   // here are the quantities I want to cut on...
 
   double fMaxEtaXi;
   double fMinPtXi;

@@ -13,9 +13,11 @@
  *
  * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
  * \date May 05, 2016
+ * \ingroup EMCALCOREFW
  */
 //
 
+class TH1;
 class TList;
 
 #include "TList.h"

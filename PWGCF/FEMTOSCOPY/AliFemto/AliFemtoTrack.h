@@ -10,6 +10,8 @@
 /// it was created from, so we do not copy the information.
 ///
 
+#pragma once
+
 #ifndef ALIFEMTOTRACK_H
 #define ALIFEMTOTRACK_H
 
@@ -17,6 +19,7 @@
 #include "AliFmPhysicalHelixD.h"
 #include "TBits.h"
 #include "AliFemtoHiddenInfo.h"
+
 
 class AliFemtoTrack {
 public:
@@ -274,10 +277,10 @@ public:
   TBits fClusters;        ///< Cluster per padrow map
   TBits fShared;          ///< Sharing per padrow map
 
-  AliFemtoThreeVector fNominalTpcEntrancePoint; ///< Nominal track entrance point into TPC
-  AliFemtoThreeVector fNominalTpcPoints[9];     ///< Nominal track points in TCP
-  AliFemtoThreeVector fNominalTpcExitPoint;     ///< Nominal track exit point from TPC
-  AliFemtoThreeVector fNominalTpcPointShifted;     ///< Nominal track at given point from TPC
+  AliFemtoThreeVector fNominalTpcEntrancePoint;  ///< Nominal track entrance point into TPC
+  AliFemtoThreeVector fNominalTpcPoints[9];      ///< Nominal track points in TCP
+  AliFemtoThreeVector fNominalTpcExitPoint;      ///< Nominal track exit point from TPC
+  AliFemtoThreeVector fNominalTpcPointShifted;   ///< Nominal track at given point from TPC
 
   int   fKinkIndexes[3];    ///< Kink Index list
   bool  fHasPointOnITS[6];  ///< if track has hit on the ITS layer (6 layers: 2 x 3 (SPD, SSD, SDD))
@@ -304,7 +307,7 @@ public:
   float fCorrPiMinus;     //corrections for pion hypothesis
   float fCorrKMinus;      //corrections for kaon hypothesis
   float fCorrPMinus;      //corrections for proton hypothesis
-  
+
   float fCorrAll;    //corrections for particles without PID
 
 };
@@ -316,9 +319,5 @@ inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
 inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
 inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
-
-
-
-
 
 #endif

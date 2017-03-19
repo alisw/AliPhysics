@@ -458,6 +458,12 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(particle,valuesPair);
 
+  // make MC truth information avaiable also in non-MCtruth steps
+  AliDielectronMC* dieMC = AliDielectronMC::Instance();
+  if(dieMC && dieMC->GetMCEvent()){
+    AliDielectronVarManager::Fill(dieMC->GetMCEvent(), valuesPair);
+  }
+  
   for (Int_t iVar=0; iVar<fNVars; ++iVar){
     Int_t var=fVariables[iVar];
     fValues[iVar]=valuesPair[var];
@@ -728,8 +734,8 @@ void AliDielectronCF::FillMC(Int_t label1, Int_t label2, Int_t nSignal) {
   }
 
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
-  AliDielectronVarManager::Fill(dieMC->GetMCEvent(), valuesPair);
   AliDielectronVarManager::FillVarMCParticle2(part1,part2,valuesPair);
+  AliDielectronVarManager::Fill(dieMC->GetMCEvent(), valuesPair);
 
   if(part1->Charge()*part2->Charge()<0)
     valuesPair[AliDielectronVarManager::kPairType]=1;

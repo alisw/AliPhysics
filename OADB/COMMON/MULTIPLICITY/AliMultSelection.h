@@ -2,11 +2,12 @@
 #define AliMultSelection_H
 #include <TNamed.h>
 #include <TList.h>
+#include "AliMultSelectionBase.h"
 #include "AliMultEstimator.h"
 
 class AliMultInput;
 
-class AliMultSelection : public TNamed {
+class AliMultSelection : public AliMultSelectionBase {
     
 public:
     AliMultSelection();
@@ -89,11 +90,12 @@ private:
     Bool_t fThisEvent_IsNotIncompleteDAQ;       //!
     Bool_t fThisEvent_HasGoodVertex2016;         //!
     
-    ClassDef(AliMultSelection, 5)
+    ClassDef(AliMultSelection, 6)
     // 1 - original implementation
     // 2 - added fEvSelCode for EvSel bypass + getter changed
     // 3 - added booleans to classify which event criteria are satisfied
     // 4 - added IsEventSelected
     // 5 - added Good vertex, adjustments
+    // 6 - changed to inherit from AliMultSelectionBase
 };
 #endif

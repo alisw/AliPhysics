@@ -71,10 +71,15 @@ void AddTask_GammaConvV1_pPb3(  Int_t         trainConfig                   = 1,
                                 Bool_t        doMultiplicityWeighting       = kFALSE,                           //
                                 TString       fileNameInputForMultWeighing  = "Multiplicity.root",              //
                                 TString       periodNameAnchor              = "",
-                                Bool_t        runLightOutput                = kFALSE                            // switch to run light output (only essential histograms for afterburner)
+                                Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
+                                TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
   Int_t isHeavyIon = 2;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
+  
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {

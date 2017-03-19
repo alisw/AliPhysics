@@ -107,11 +107,11 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
     // These MUST be last one: this is just beginning of many histos (one per bin)
     kHZVEtaPrimMC,                        // Zv gen vs eta for all primary tracks (true MC multiplicity) in all events
     kHZVrEtaPrimMC=kHZVEtaPrimMC+50,      // Zv rec vs eta for all primary tracks (true MC multiplicity) in sel. events
-    kHZVResMC=kHZVrEtaPrimMC+50,      // zv resolution
+   kHZVResMC=kHZVrEtaPrimMC+50,      // zv resolution
 
-    kHCorrMatrix=kHZVResMC+50 // correlation matrix
+    kHCorrMatrix=kHZVResMC+50, // correlation matrix
 
-//kHPtEtaPrimMC = kHCorrMatrix+50 // pT gen vs eta
+   kHCorrMatrixSel = kHCorrMatrix+50 // correlation matrix with events sel
 
   }; // custom histos
 
@@ -225,7 +225,7 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   void   SetUseSpecialOutput(Bool_t v=kTRUE)    {fUseSpecialOutput=v;}
   void       SetUseBCMod(Bool_t bc = kFALSE)              {fUseBCMod = bc;}
   void       SetBCMod(Int_t mod=2)        {fBCMod4 = mod;}
-
+  void       SetCutOnPhi(Bool_t p=kFALSE)   {fCutOnPhi = p;}
 
   //
  protected:
@@ -310,6 +310,7 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   Bool_t fUseSpecialOutput;                // flag to open special output
   Bool_t fUseBCMod;                         // flag to use bunch crossing mod 4 events
   Int_t      fBCMod4;                        // Select BC Mod4
+  Bool_t fCutOnPhi;                          // Set cut on affected phi regions
 
 
   //

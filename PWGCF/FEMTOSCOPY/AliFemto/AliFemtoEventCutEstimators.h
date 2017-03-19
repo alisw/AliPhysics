@@ -43,7 +43,10 @@ public:
 
   AliFemtoEventCutEstimators* Clone();
 
+  void SetVerboseMode(bool aVerbose);
+
 private:   // here are the quantities I want to cut on...
+  bool fVerbose;
 
   unsigned short fEventMultEst1[2];      // range of multiplicity
   unsigned short fEventMultEst2[2];      // range of multiplicity
@@ -84,8 +87,11 @@ inline void AliFemtoEventCutEstimators::SetVertZPos(const float& lo, const float
 inline int  AliFemtoEventCutEstimators::NEventsPassed() const {return fNEventsPassed;}
 inline int  AliFemtoEventCutEstimators::NEventsFailed() const {return fNEventsFailed;}
 inline AliFemtoEventCutEstimators* AliFemtoEventCutEstimators::Clone() { AliFemtoEventCutEstimators* c = new AliFemtoEventCutEstimators(*this); return c;}
+inline void AliFemtoEventCutEstimators::SetVerboseMode(bool aVerbose) {fVerbose = aVerbose;}
+
 inline AliFemtoEventCutEstimators::AliFemtoEventCutEstimators(AliFemtoEventCutEstimators& c) : 
   AliFemtoEventCut(c), 
+  fVerbose(c.fVerbose),
   fUseMultEst1(c.fUseMultEst1), fUseMultEst2(c.fUseMultEst2), fUseMultEst3(c.fUseMultEst3), 
   fUseCentEst1(c.fUseCentEst1), fUseCentEst2(c.fUseCentEst2), fUseCentEst3(c.fUseCentEst3), fUseCentEst4(c.fUseCentEst4),
   fNEventsPassed(0), fNEventsFailed(0) {

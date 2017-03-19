@@ -49,16 +49,15 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1, Bool_t b
   if(kMix){
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
-    mixingHandler = new AliDielectronMixingHandler();
-      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
-      mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,30,50,80");
-      mixingHandler->SetDepth(15);
-      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
-
-      // using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
-      // mixingHandler->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.);
-
-      die->SetMixingHandler(mix);
+    mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
+    mix->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,30,50,80");
+    mix->SetDepth(15);
+    mix->SetMixType(AliDielectronMixingHandler::kAll);
+    
+    // using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
+    // mix->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.);
+    
+    die->SetMixingHandler(mix);
   }//kMix
 
 
@@ -437,7 +436,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   //add histograms to pair classes
   histos->UserHistogram("Pair",
-                        "InvMass_pPt","Inv.Mass;PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
+                        "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
                         500,0.,5.,250,0.,5.,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
 

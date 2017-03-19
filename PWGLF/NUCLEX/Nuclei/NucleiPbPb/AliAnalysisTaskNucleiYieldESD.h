@@ -19,6 +19,7 @@ class TH3F;
 class TList;
 class AliESDtrackCuts;
 class AliEventCuts;
+class TDirectory;
 
 class AliAnalysisTaskNucleiYieldESD : public AliAnalysisTaskSE {
 public:
@@ -35,7 +36,7 @@ public:
   void SetTOFBins (int nbins, float min, float max);
   void SetDCAzBins (int nbins, float limit);
   void SetYcut (float y) { fYregion = y; }
-
+  void SetTPCpidNsigmaCut (float nSig) { fTPCnSigmaCut = nSig; }
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
@@ -57,6 +58,7 @@ private:
 
   TList              *fList;                  ///<  Output list
   float               fYregion;               ///<  Symmetric rapidity cut (|y| < fYregion)
+  float               fTPCnSigmaCut;          ///<  TPC pid cut
   AliPID::EParticleType fParticle;            ///<  Particle specie
   int                 fPDG;                   ///<  PDG code of the particle of interest
   float               fPDGMass;               ///<  PDG mass
@@ -99,6 +101,8 @@ private:
   TH3F               *fTOFsignal[2];          //!<!
   TH3F               *fTPCcounts[2];          //!<!
   TH2F               *fTPCdEdx[2];            //!<!
+  TH2F               *fTPCdEdxTpcCut[2];      //!<!
+  TH2F               *fTPCdEdxTofCut[2];      //!<!
   TH3F               *fDCAxyTPC[2];           //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F               *fDCAzTPC[2];            //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
   TH3F               *fDCAxyTOF[2];           //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC+TOF tracks
@@ -106,7 +110,7 @@ private:
   TH3F               *fTOFtemplates[5];       //!<! *(Data only)* TOF signal templates for pi/k/p/d/t
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskNucleiYieldESD, 1);
+  ClassDef(AliAnalysisTaskNucleiYieldESD, 2);
   /// \endcond
 };
 

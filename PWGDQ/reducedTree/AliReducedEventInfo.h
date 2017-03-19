@@ -42,6 +42,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
   Float_t   VertexSPD(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxSPD[axis] : 0);}
   Int_t     VertexSPDContributors()           const {return fNVtxSPDContributors;}
+  Int_t     NTPCClusters()                      const {return fNTPCclusters;}
   Float_t   VertexTZERO()                     const {return fT0zVertex;}
   Int_t     NpileupSPD()                      const {return fNpileupSPD;}
   Int_t     NpileupTracks()                   const {return fNpileupTracks;}
@@ -54,6 +55,27 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    ITSClusters(Int_t layer)          const {return (layer>=1 && layer<=6 ? fITSClusters[layer-1] : 0);}
   Int_t     SPDnSingleClusters()              const {return fSPDnSingle;}
   Int_t     TracksPerTrackingFlag(Int_t flag) const {return (flag>=0 && flag<32 ? fNtracksPerTrackingFlag[flag] : -999);}
+  
+  Float_t   MultEstimatorOnlineV0M()   const {return fMultiplicityEstimators[0];}
+  Float_t   MultEstimatorOnlineV0A()   const {return fMultiplicityEstimators[1];}
+  Float_t   MultEstimatorOnlineV0C()   const {return fMultiplicityEstimators[2];}
+  Float_t   MultEstimatorADM()   const {return fMultiplicityEstimators[3];}
+  Float_t   MultEstimatorADA()   const {return fMultiplicityEstimators[4];}
+  Float_t   MultEstimatorADC()   const {return fMultiplicityEstimators[5];}
+  Float_t   MultEstimatorSPDClusters()   const {return fMultiplicityEstimators[6];}
+  Float_t   MultEstimatorSPDTracklets()   const {return fMultiplicityEstimators[7];}
+  Float_t   MultEstimatorRefMult05()   const {return fMultiplicityEstimators[8];}
+  Float_t   MultEstimatorRefMult08()   const {return fMultiplicityEstimators[9];}
+  Float_t   MultEstimatorPercentileOnlineV0M()   const {return fMultiplicityEstimatorPercentiles[0];}
+  Float_t   MultEstimatorPercentileOnlineV0A()   const {return fMultiplicityEstimatorPercentiles[1];}
+  Float_t   MultEstimatorPercentileOnlineV0C()   const {return fMultiplicityEstimatorPercentiles[2];}
+  Float_t   MultEstimatorPercentileADM()   const {return fMultiplicityEstimatorPercentiles[3];}
+  Float_t   MultEstimatorPercentileADA()   const {return fMultiplicityEstimatorPercentiles[4];}
+  Float_t   MultEstimatorPercentileADC()   const {return fMultiplicityEstimatorPercentiles[5];}
+  Float_t   MultEstimatorPercentileSPDClusters()   const {return fMultiplicityEstimatorPercentiles[6];}
+  Float_t   MultEstimatorPercentileSPDTracklets()   const {return fMultiplicityEstimatorPercentiles[7];}
+  Float_t   MultEstimatorPercentileRefMult05()   const {return fMultiplicityEstimatorPercentiles[8];}
+  Float_t   MultEstimatorPercentileRefMult08()   const {return fMultiplicityEstimatorPercentiles[9];}
   
   Float_t   MultChannelVZERO(Int_t channel)   const {return (channel>=0 && channel<=63 ? fVZEROMult[channel] : -999.);}
   Float_t   MultVZEROA()                      const;
@@ -126,6 +148,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fTimeStamp;             // time stamp of the event                
   UInt_t    fEventType;             // event type                             
   ULong64_t fTriggerMask;           // trigger mask
+  Float_t   fMultiplicityEstimators[10];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
+  Float_t   fMultiplicityEstimatorPercentiles[10];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
   Bool_t    fIsSPDPileupMultBins;   // identified as pileup event by SPD in multiplicity bins
@@ -136,6 +160,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     fNVtxSPDContributors;  // SPD only event vertex contributors
   Int_t     fNpileupSPD;            // number of pileup vertices from SPD     
   Int_t     fNpileupTracks;         // number of pileup vertices from tracks  
+  Int_t     fNTPCclusters;          // number of TPC clusters
   Int_t     fNPMDtracks;            // number of PMD tracks                   
   Int_t     fNTRDtracks;            // number of TRD tracks                   
   Int_t     fNTRDtracklets;         // number of TRD tracklets                
@@ -171,7 +196,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo(const AliReducedEventInfo &c);
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 4);
+  ClassDef(AliReducedEventInfo, 6);
 };
 
 #endif

@@ -5,7 +5,7 @@
 
 /* $Id$ */
 
-/// \ingroup muondep
+/// \ingroup pwg_muondep_misc
 /// \class AliAnalysisTaskMuonRefitVtx
 /// \brief intermediate task to extrapolate tracks to another vertex
 //Author: Philippe Pillot - SUBATECH Nantes

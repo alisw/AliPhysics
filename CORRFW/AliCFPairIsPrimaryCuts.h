@@ -31,7 +31,7 @@ class AliCFPairIsPrimaryCuts : public AliCFCutBase
 {
  public :
   AliCFPairIsPrimaryCuts() ;
-  AliCFPairIsPrimaryCuts(Char_t* name, Char_t* title) ;
+  AliCFPairIsPrimaryCuts(const Char_t* name, const Char_t* title) ;
   AliCFPairIsPrimaryCuts(const AliCFPairIsPrimaryCuts& c) ;
   AliCFPairIsPrimaryCuts& operator=(const AliCFPairIsPrimaryCuts& c) ;
   virtual ~AliCFPairIsPrimaryCuts() {delete fCutNeg; delete fCutPos; }

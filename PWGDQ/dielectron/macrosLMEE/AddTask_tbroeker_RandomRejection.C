@@ -2,7 +2,8 @@ AliAnalysisTask *AddTask_tbroeker_RandomRejection(Bool_t getFromAlien=kFALSE,
                                                   Bool_t configsPreloaded=kFALSE,
                                                   TString cFileName = "Config_tbroeker_lowmasspPb.C", 
                                                   Char_t* outputFileName="LMEE.root",
-                                                  ULong64_t triggerMask = AliVEvent::kINT7
+                                                  ULong64_t triggerMask = AliVEvent::kINT7,
+                                                  Bool_t rejectPileup = kFALSE
                                                  )
 {
 
@@ -34,7 +35,7 @@ AliAnalysisTask *AddTask_tbroeker_RandomRejection(Bool_t getFromAlien=kFALSE,
   AliAnalysisTaskRandomRejection *task=new AliAnalysisTaskRandomRejection("RandomRejection");
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(triggerMask);
-//  taskMB->SetRejectPileup();
+  if(rejectPileup) task->SetRejectPileup(); //default kFALSE
   task->SetRandomizeDaughters(randomizeDau); //default kFALSE
 
   //Add event filter
@@ -50,7 +51,7 @@ AliAnalysisTask *AddTask_tbroeker_RandomRejection(Bool_t getFromAlien=kFALSE,
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     //MB
-    AliDielectron *diel_low = Config_tbroeker_lowmass(i, kTRUE); //kTRUE -> "isRandomRejTask"
+    AliDielectron *diel_low = Config_tbroeker_randomRejection(i, kTRUE); //kTRUE -> "isRandomRejTask"
     if(!diel_low)continue;
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());

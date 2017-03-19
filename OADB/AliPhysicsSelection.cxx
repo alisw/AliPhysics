@@ -135,14 +135,39 @@ fCashedTokens(NULL)
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
   fHistList.SetOwner(1);
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-  fHistStat = new TH2F("fHistStat",";;",1,0,1,1,0,1);
-  fHistList.Add(fHistStat);
-  TH1::AddDirectory(oldStatus);
   
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
+
+ AliPhysicsSelection::AliPhysicsSelection(const char *name) :
+ AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
+ fPassName(""),
+ fCurrentRun(-1),
+ fMC(kFALSE),
+ fPileupCutsEnabled(kFALSE),
+ fIsPP(kFALSE),
+ fReadOCDB(kFALSE),
+ fUseBXNumbers(0),
+ fUsingCustomClasses(0),
+ fCollTrigClasses(),
+ fBGTrigClasses(),
+ fTriggerAnalysis(),
+ fHistList(),
+ fHistStat(0),
+ fPSOADB(0),
+ fFillOADB(0),
+ fTriggerOADB(0),
+ fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
+ fCashedTokens(NULL)
+ {
+   // constructor
+   fCollTrigClasses.SetOwner(1);
+   fBGTrigClasses.SetOwner(1);
+   fTriggerAnalysis.SetOwner(1);
+   fHistList.SetOwner(1);
+
+   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
+ }
 
 AliPhysicsSelection::~AliPhysicsSelection(){
   if (fPSOADB)       delete fPSOADB;
@@ -497,6 +522,15 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
 }
 
 void AliPhysicsSelection::FillStatistics(){
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  fHistStat = new TH2F("fHistStat",";;",1,0,1,1,0,1);
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
+  fHistStat->SetCanExtend(TH1::kAllAxes);
+#endif
+  fHistList.Add(fHistStat);
+  TH1::AddDirectory(oldStatus);
+
   Int_t nColl = fCollTrigClasses.GetEntries();
   for (Int_t i=0; i<nColl; i++) {
     const char* trigger = fCollTrigClasses.At(i)->GetName();

@@ -18,5 +18,6 @@
 #pragma link C++ class AliEventClassifierQ2+;
 #pragma link C++ class AliAnalysisTaskHMTFMC+;
 #pragma link C++ class AliAnalysisTaskHMTFMCMultEst+;
+#pragma link C++ class AliAnalysisTrackingUncertaintiesHMTF+;
 
 #endif

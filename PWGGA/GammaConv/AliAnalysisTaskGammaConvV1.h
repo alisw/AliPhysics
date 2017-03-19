@@ -71,7 +71,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
-    void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Int_t fDoPhotonQA, Double_t PhiParticle[]);
+    void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Double_t PhiParticle[]);
+    void FillPhotonCombinatorialMothersHistESD(TParticle *daughter,TParticle *mother);
+    void FillPhotonCombinatorialMothersHistAOD(AliAODMCParticle *daughter, AliAODMCParticle* motherCombPart);
     void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     void UpdateEventByEventData();
     void SetLogBinningXTH2(TH2* histoRebin);
@@ -108,6 +110,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TList*                            fMesonCutArray;                             //
     TList*                            fClusterCutArray;                           //
     TH1F**                            fHistoCaloGammaPt;                          //!
+    TH1F**                            fHistoCaloGammaE;                           //!
     TH1F**                            fHistoConvGammaPt;                          //!
     TH1F**                            fHistoConvGammaR;                           //!
     TH1F**                            fHistoConvGammaEta;                         //!
@@ -128,9 +131,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                       // 5: dalitz
                                       // 6: primary gamma
     TH2F**                            fHistoMotherInvMassPt;                        //!
-    THnSparseF**                      sESDMotherInvMassPtZM;                      //!
+    THnSparseF**                      sESDMotherInvMassPtZM;                        //!
     TH2F**                            fHistoMotherBackInvMassPt;                    //!
-    THnSparseF**                      sESDMotherBackInvMassPtZM;                  //!
+    THnSparseF**                      sESDMotherBackInvMassPtZM;                    //!
     TH2F**                            fHistoMotherInvMassEalpha;                    //!
     TH2F**                            fHistoMotherPi0PtY;                           //!
     TH2F**                            fHistoMotherEtaPtY;                           //!
@@ -138,9 +141,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoMotherEtaPtAlpha;                       //!
     TH2F**                            fHistoMotherPi0PtOpenAngle;                   //!
     TH2F**                            fHistoMotherEtaPtOpenAngle;                   //!
-    THnSparseF**                      sPtRDeltaROpenAngle;                        //!
+    THnSparseF**                      sPtRDeltaROpenAngle;                          //!
     TH1I**                            fHistoMCHeaders;                                 //!
     TH1F**                            fHistoMCAllGammaPt;                              //!
+    TH2F**                            fHistoMCAllSecondaryGammaPt;                     //!
     TH1F**                            fHistoMCDecayGammaPi0Pt;                         //!
     TH1F**                            fHistoMCDecayGammaRhoPt;                         //!
     TH1F**                            fHistoMCDecayGammaEtaPt;                         //!
@@ -149,6 +153,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoMCDecayGammaPhiPt;                         //!
     TH1F**                            fHistoMCDecayGammaSigmaPt;                       //!
     TH1F**                            fHistoMCConvGammaPt;                             //!
+    TH2F**                            fHistoMCSecondaryConvGammaPt;                    //!
     TH1F**                            fHistoMCConvGammaR;                              //!
     TH1F**                            fHistoMCConvGammaEta;                            //!
     TH1F**                            fHistoMCPi0Pt;                                   //!
@@ -176,11 +181,11 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoMCSecEtaSource;                            //!
     TH2F**                            fHistoMCPi0PtJetPt;                              //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                            fHistoMCEtaPtJetPt;                              //! array of histos with weighted eta, pT, hardest jet pt
-    TH1F**                            fHistoMCPhysicalPrimariesPt;                     //!
+    TH1F**                            fHistoMCPhysicalPrimariesPt;                  //!
     TH2F**                            fHistoTrueMotherInvMassPt;                    //!
     TH2F**                            fHistoTruePrimaryMotherInvMassPt;             //!
     TH2F**                            fHistoTruePrimaryMotherW0WeightingInvMassPt;  //!
-    TProfile2D**                      pESDTruePrimaryMotherWeightsInvMassPt;      //!
+    TProfile2D**                      pESDTruePrimaryMotherWeightsInvMassPt;        //!
     TH2F**                            fHistoTruePrimaryPi0MCPtResolPt;              //!
     TH2F**                            fHistoTruePrimaryEtaMCPtResolPt;              //!
     TH2F**                            fHistoTrueSecondaryMotherInvMassPt;           //!
@@ -208,19 +213,21 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoTrueConvGammaEta;                       //!
     TH2F**                            fHistoTrueConvGammaPsiPairPt;                 //!
     TH2F**                            fHistoCombinatorialPt;                        //!
+    TH3F**                            fHistoCombinatorialMothersPt;                 //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_ek;             //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_ep;             //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_epi;            //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_pik;            //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_pip;            //!
     TH1F**                            fHistoTruePrimaryConvGammaPt;                 //!
-    TH2F**                            fHistoTruePrimaryConvGammaESDPtMCPt;          //!
-    TH1F**                            fHistoTrueSecondaryConvGammaPt;               //!
-    TH1F**                            fHistoTrueSecondaryConvGammaFromXFromK0sPt;   //!
-    TH1F**                            fHistoTrueSecondaryConvGammaFromXFromK0lPt;   //!
-    TH1F**                            fHistoTrueSecondaryConvGammaFromXFromLambdaPt;//!
-    TH2F**                            fHistoTrueDalitzPsiPairDeltaPhi;              //!
-    TH2F**                            fHistoTrueGammaPsiPairDeltaPhi;               //!
+    TH2F**                            fHistoTrueSecondaryConvGammaPt;                       //!
+    TH2F**                            fHistoTrueSecondaryConvGammaMCPt;                     //!
+    TH2F**                            fHistoTruePrimaryConvGammaESDPtMCPt;                  //!
+    TH2F**                            fHistoTrueSecondaryConvGammaFromXFromK0sMCPtESDPt;    //!
+    TH2F**                            fHistoTrueSecondaryConvGammaFromXFromK0lMCPtESDPt;    //!
+    TH2F**                            fHistoTrueSecondaryConvGammaFromXFromLambdaMCPtESDPt; //!
+    TH2F**                            fHistoTrueDalitzPsiPairDeltaPhi;                      //!
+    TH2F**                            fHistoTrueGammaPsiPairDeltaPhi;                       //!
     TH2F**                            fHistoDoubleCountTruePi0InvMassPt;               //! array of histos with double counted pi0s, invMass, pT
     TH2F**                            fHistoDoubleCountTrueEtaInvMassPt;               //! array of histos with double counted etas, invMass, pT
     TH2F**                            fHistoDoubleCountTrueConvGammaRPt;               //! array of histos with double counted photons, R, pT
@@ -246,11 +253,11 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoNGammaCandidates;                          //!
     TH2F**                            fHistoNGoodESDTracksVsNGammaCandidates;          //!
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
-    TH1F**                            fHistoNV0Tracks;                                 //!
+    TH1F**                            fHistoNV0Tracks;                            //!
     TProfile**                        fProfileEtaShift;                           //! array of profiles with eta shift
     TProfile**                        fProfileJetJetXSection;                     //! array of profiles with xsection for jetjet
     TH1F**                            fhJetJetNTrials;                            //! array of histos with ntrials for jetjet
-    TProfile**                        fHistoEtaShift;                                  //!
+    TProfile**                        fHistoEtaShift;                             //!
     TTree**                           tESDMesonsInvMassPtDcazMinDcazMaxFlag;      //!
     Float_t                           fInvMass;                                   //!
     Float_t                           fPt;                                        //!
@@ -285,7 +292,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Int_t                             fDoPhotonQA;                                //
     Bool_t                            fDoChargedPrimary;                          //
     Bool_t                            fDoPlotVsCentrality;                        //
-    Bool_t                            fIsFromMBHeader;                            //
+    Bool_t                            fIsFromSelectedHeader;                      //
     Int_t                             fIsMC;                                      //
     Bool_t                            fDoTHnSparse;                               // flag for using THnSparses for background estimation
     Int_t                             fDoCentralityFlat;                          //flag for centrality flattening
@@ -298,7 +305,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 36);
+    ClassDef(AliAnalysisTaskGammaConvV1, 40);
 };
 
 #endif

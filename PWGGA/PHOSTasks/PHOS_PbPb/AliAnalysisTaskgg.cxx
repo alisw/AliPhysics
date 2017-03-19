@@ -33,12 +33,14 @@
 #include "AliAODVertex.h"
 #include "AliLog.h"
 #include "AliCentrality.h" 
+#include "AliMultSelection.h" 
 #include "AliEventplane.h"
 #include "TProfile.h"
 #include "AliOADBContainer.h"
 #include "AliMagF.h"
 #include "AliAODMCParticle.h"
 #include "AliEPFlattener.h"
+#include "AliPIDResponse.h"
 
 // Analysis task to fill histograms with PHOS ESD clusters and cells
 // Authors: Dmitri Peressounko
@@ -52,15 +54,19 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
  // fStack(0x0),
   fOutputContainer(0x0),
   fEvent(0x0),
+  fPIDResponse(0x0),
   fPHOSEvent(0x0),
+  fCPVEvent(0x0),
   fV0AFlat(0x0),
   fV0CFlat(0x0),
   fRunNumber(0),
   fCentrality(0.),
   fCenBin(0),
+  fRP(0.),
   fPHOSGeo(0x0),
   fEventCounter(0),
   fIsPbPb(kTRUE)
+  
 {
   // Constructor
   for(Int_t i=0;i<10;i++){
@@ -69,15 +75,135 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
 	fPHOSEvents[i][j][k]=0 ;
   }
   
+  fNCuts=106 ;
+  sprintf(fCuts[0], "All") ;   //all clusters
+  sprintf(fCuts[1], "Disp") ;  //shower shape
+  sprintf(fCuts[2], "NarrowDisp") ;  //shower shape
+  sprintf(fCuts[3], "CPVT") ;   //neutrality using tracks
+  sprintf(fCuts[4], "CPVC") ;   //neutrality using CPV
+  sprintf(fCuts[5], "CPVCT") ;   //neutrality using CPV||tracks
+  sprintf(fCuts[6], "BothT") ;  //shower shape && neutrality Tracks
+  sprintf(fCuts[7], "BothC") ;  //shower shape && neutrality CPV
+  sprintf(fCuts[8], "BothCT") ;  //shower shape && neutrality Tracks||CPV
+  sprintf(fCuts[9], "Both2C") ; //shower shape && neutrality from tacks
+  sprintf(fCuts[10], "Both2T") ; //shower shape && neutrality from tacks
+  sprintf(fCuts[11], "Both2CT") ; //shower shape && neutrality from tacks
+  sprintf(fCuts[12], "D5") ;   //all clusters, min distance = 10 cm
+  sprintf(fCuts[13], "D10") ;   //all clusters, min distance = 13 cm
+  sprintf(fCuts[14], "D15") ;   //all clusters, min distance = 15 cm
+  sprintf(fCuts[15], "D20") ;   //all clusters, min distance = 20 cm
+  sprintf(fCuts[16],"BothCTD5") ;   //all clusters, min distance = 10 cm
+  sprintf(fCuts[17],"BothD10") ;   //all clusters, min distance = 13 cm
+  sprintf(fCuts[18],"BothD15") ;   //all clusters, min distance = 15 cm
+  sprintf(fCuts[19],"BothD20") ;   //all clusters, min distance = 20 cm
+  
+  //Gamma-hadron
+  sprintf(fCuts[20],"AllPipl") ;
+  sprintf(fCuts[21],"AllPimi") ;
+  sprintf(fCuts[22],"AllKpl") ;
+  sprintf(fCuts[23],"AllKmi") ;
+  sprintf(fCuts[24],"AllPrpl") ;
+  sprintf(fCuts[25],"AllPrmi") ;
+
+  //Both Disp
+  sprintf(fCuts[26],"DispPipl") ;
+  sprintf(fCuts[27],"DispPimi") ;
+  sprintf(fCuts[28],"DispKpl") ;
+  sprintf(fCuts[29],"DispKmi") ;
+  sprintf(fCuts[30],"DispPrpl") ;
+  sprintf(fCuts[31],"DispPrmi") ;
+
+  //BothCT+Disp
+  sprintf(fCuts[32],"BothCTPipl") ;
+  sprintf(fCuts[33],"BothCTPimi") ;
+  sprintf(fCuts[34],"BothCTKpl") ;
+  sprintf(fCuts[35],"BothCTKmi") ;
+  sprintf(fCuts[36],"BothCTPrpl") ;
+  sprintf(fCuts[37],"BothCTPrmi") ;
+  
+  //All, H+H
+  sprintf(fCuts[38],"AllPimiPimi") ;
+  sprintf(fCuts[39],"AllPimiPipl") ;
+  sprintf(fCuts[40],"AllPimiPrmi") ;
+  sprintf(fCuts[41],"AllPimiPrpl") ;
+  sprintf(fCuts[42],"AllPimiKmi") ;
+  sprintf(fCuts[43],"AllPimiKpl") ;
+  sprintf(fCuts[44],"AllPiplPipl") ;
+  sprintf(fCuts[45],"AllPiplPrmi") ;
+  sprintf(fCuts[46],"AllPiplPrpl") ;
+  sprintf(fCuts[47],"AllPiplKmi") ;
+  sprintf(fCuts[48],"AllPiplKpl") ;
+  sprintf(fCuts[49],"AllPrmiPrmi") ;
+  sprintf(fCuts[50],"AllPrmiPrpl") ;
+  sprintf(fCuts[51],"AllPrmiKmi") ;
+  sprintf(fCuts[52],"AllPrmiKpl") ;
+  sprintf(fCuts[53],"AllPrplPrpl") ;
+  sprintf(fCuts[54],"AllPrplKmi") ;
+  sprintf(fCuts[55],"AllPrplKpl") ;
+  sprintf(fCuts[56],"AllKmiKmi") ;
+  sprintf(fCuts[57],"AllKmiKpl") ;
+  sprintf(fCuts[58],"AllKplKpl") ;
+  
+   //Disp, H+H
+  sprintf(fCuts[59],"DispPimiPimi") ;
+  sprintf(fCuts[60],"DispPimiPipl") ;
+  sprintf(fCuts[61],"DispPimiPrmi") ;
+  sprintf(fCuts[62],"DispPimiPrpl") ;
+  sprintf(fCuts[63],"DispPimiKmi") ;
+  sprintf(fCuts[64],"DispPimiKpl") ;
+  sprintf(fCuts[65],"DispPiplPipl") ;
+  sprintf(fCuts[66],"DispPiplPrmi") ;
+  sprintf(fCuts[67],"DispPiplPrpl") ;
+  sprintf(fCuts[68],"DispPiplKmi") ;
+  sprintf(fCuts[69],"DispPiplKpl") ;
+  sprintf(fCuts[70],"DispPrmiPrmi") ;
+  sprintf(fCuts[71],"DispPrmiPrpl") ;
+  sprintf(fCuts[72],"DispPrmiKmi") ;
+  sprintf(fCuts[73],"DispPrmiKpl") ;
+  sprintf(fCuts[74],"DispPrplPrpl") ;
+  sprintf(fCuts[75],"DispPrplKmi") ;
+  sprintf(fCuts[76],"DispPrplKpl") ;
+  sprintf(fCuts[77],"DispKmiKmi") ;
+  sprintf(fCuts[78],"DispKmiKpl") ;
+  sprintf(fCuts[79],"DispKplKpl") ;
+  
+   //Time10 ns, H+H
+  sprintf(fCuts[80],"T10PimiPimi") ;
+  sprintf(fCuts[81],"T10PimiPipl") ;
+  sprintf(fCuts[82],"T10PiplPipl") ;
+  sprintf(fCuts[83],"T10PrmiPrmi") ;
+  sprintf(fCuts[84],"T10PrmiPrpl") ;
+  sprintf(fCuts[85],"T10PrplPrpl") ;
+
+  sprintf(fCuts[86],"T5PimiPimi") ;
+  sprintf(fCuts[87],"T5PimiPipl") ;
+  sprintf(fCuts[88],"T5PiplPipl") ;
+  sprintf(fCuts[89],"T5PrmiPrmi") ;
+  sprintf(fCuts[90],"T5PrmiPrpl") ;
+  sprintf(fCuts[91],"T5PrplPrpl") ;
+
+  sprintf(fCuts[92],"T3PimiPimi") ;
+  sprintf(fCuts[93],"T3PimiPipl") ;
+  sprintf(fCuts[94],"T3PiplPipl") ;
+  sprintf(fCuts[95],"T3PrmiPrmi") ;
+  sprintf(fCuts[96],"T3PrmiPrpl") ;
+  sprintf(fCuts[97],"T3PrplPrpl") ;
+
+  sprintf(fCuts[98],"AllT3") ;
+  sprintf(fCuts[99],"DispT3") ;
+  sprintf(fCuts[100],"BothCTT3") ;
+
+  sprintf(fCuts[101],"AllT5") ;
+  sprintf(fCuts[102],"DispT5") ;
+  sprintf(fCuts[103],"BothCTT5") ;
+
+  sprintf(fCuts[104],"AllT10") ;
+  sprintf(fCuts[105],"DispT10") ;
+  sprintf(fCuts[106],"BothCTT10") ;
+  
+  
   // Output slots #0 write into a TH1 container
-  DefineOutput(1,TList::Class());
-
-  // Initialize the PHOS geometry
-  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
-
-  //We have to apply re-calibration for pass1 LCH10h
-  // Initialize decalibration factors in the form of the OCDB object
-
+ DefineOutput(1,TList::Class());
 
 }
 
@@ -89,7 +215,6 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   // Called once
   const Int_t nRuns=200 ;
   
-  // ESD histograms
   if(fOutputContainer != NULL){
     delete fOutputContainer;
   }
@@ -99,48 +224,58 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   //========QA histograms=======
 
   //Event selection
-  fOutputContainer->Add(new TH2F("hSelEvents","Event selection", 10,0.,10.,nRuns,0.,float(nRuns))) ;
+//   fOutputContainer->Add(new TH2F("hSelEvents","Event selection", 10,0.,10.,nRuns,0.,float(nRuns))) ;
   fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", 10,0.,10.)) ;
  
   fOutputContainer->Add(new TH2F("phiRP","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
-  fOutputContainer->Add(new TH2F("phiRPflat","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
+//   fOutputContainer->Add(new TH2F("phiRPflat","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
  
  
   //vertex distribution
-  fOutputContainer->Add(new TH2F("hZvertex","Z vertex position", 50,-25.,25.,nRuns,0.,float(nRuns))) ;
+  fOutputContainer->Add(new TH1F("hZvertex","Z vertex position", 50,-25.,25.)) ;
   
   //Centrality
-  fOutputContainer->Add(new TH2F("hCentrality","Event centrality", 100,0.,100.,nRuns,0.,float(nRuns))) ;
-  fOutputContainer->Add(new TH2F("hCenPHOS","Centrality vs PHOSclusters", 100,0.,100.,200,0.,200.)) ;
+  fOutputContainer->Add(new TH1F("hCentrality","Event centrality", 100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("hCenPHOS","Centrality vs PHOSclusters", 100,0.,100.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("hCenPHOSm1","Centrality vs PHOSclusters in mod1 ", 100,0.,100.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("hCenPHOSm2","Centrality vs PHOSclusters in mod2 ", 100,0.,100.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("hCenPHOSm3","Centrality vs PHOSclusters in mod3 ", 100,0.,100.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("hCenPHOSm4","Centrality vs PHOSclusters in mod4 ", 100,0.,100.,100,0.,100.)) ;
   fOutputContainer->Add(new TH2F("hCenPHOSCells","Centrality vs PHOS cells", 100,0.,100.,100,0.,1000.)) ;
   fOutputContainer->Add(new TH2F("hCenTrack","Centrality vs tracks", 100,0.,100.,100,0.,15000.)) ;  
   fOutputContainer->Add(new TH2F("hCluEvsClu_All","ClusterMult vs E",20,0.,2.,50,0.,50.)) ;
   fOutputContainer->Add(new TH2F("hCluEvsClu_CPV","ClusterMult vs E",20,0.,2.,50,0.,50.)) ;
   fOutputContainer->Add(new TH2F("hCluEvsClu_Disp","ClusterMult vs E",20,0.,2.,50,0.,50.)) ;
   fOutputContainer->Add(new TH2F("hCluEvsClu_Both","ClusterMult vs E",20,0.,2.,50,0.,50.)) ;
-  fOutputContainer->Add(new TH2F("hCluEvsCluM","ClusterMult vs E",200,0.,20.,100,0.,20.)) ;
+//   fOutputContainer->Add(new TH2F("hCluEvsCluM","ClusterMult vs E",200,0.,20.,100,0.,20.)) ;
   fOutputContainer->Add(new TH2F("hCenTOF","Centrality vs PHOS TOF", 100,0.,100.,600,-6.e-6,6.e-6)) ;
+  for(Int_t mod=1; mod<5; mod++){
+    fOutputContainer->Add(new TH2F(Form("hJetEMod%d_th1",mod),"Cone Energy vs Centrality ", 100,0.,50.,20,0.,100.)) ;
+    fOutputContainer->Add(new TH2F(Form("hJetEMod%d_th2",mod),"Cone Energy vs Centrality ", 100,0.,50.,20,0.,100.)) ;
+    fOutputContainer->Add(new TH2F(Form("hJetEMod%d_th3",mod),"Cone Energy vs Centrality ", 100,0.,50.,20,0.,100.)) ;  
+  }
+  
     
   //PHOS QA
-  fOutputContainer->Add(new TH1I("hCellMultEvent"  ,"PHOS cell multiplicity per event"    ,2000,0,2000));
-  fOutputContainer->Add(new TH1I("hCellMultEventM1","PHOS cell multiplicity per event, M1",2000,0,2000));
-  fOutputContainer->Add(new TH1I("hCellMultEventM2","PHOS cell multiplicity per event, M2",2000,0,2000));
-  fOutputContainer->Add(new TH1I("hCellMultEventM3","PHOS cell multiplicity per event, M3",2000,0,2000));
-
-  fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,3000,0.,30.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM1","Cell energy in module 1",3000,0.,30.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM2","Cell energy in module 2",3000,0.,30.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM3","Cell energy in module 3",3000,0.,30.));
-
-  fOutputContainer->Add(new TH2F("hCellNXZM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellNXZM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellNXZM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellEXZM1","Cell E(X,Z), M1",64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellEXZM2","Cell E(X,Z), M2",64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellEXZM3","Cell E(X,Z), M3",64,0.5,64.5, 56,0.5,56.5));
+//   fOutputContainer->Add(new TH1I("hCellMultEvent"  ,"PHOS cell multiplicity per event"    ,2000,0,2000));
+//   fOutputContainer->Add(new TH1I("hCellMultEventM1","PHOS cell multiplicity per event, M1",2000,0,2000));
+//   fOutputContainer->Add(new TH1I("hCellMultEventM2","PHOS cell multiplicity per event, M2",2000,0,2000));
+//   fOutputContainer->Add(new TH1I("hCellMultEventM3","PHOS cell multiplicity per event, M3",2000,0,2000));
+// 
+//   fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,3000,0.,30.));
+//   fOutputContainer->Add(new TH1F("hCellEnergyM1","Cell energy in module 1",3000,0.,30.));
+//   fOutputContainer->Add(new TH1F("hCellEnergyM2","Cell energy in module 2",3000,0.,30.));
+//   fOutputContainer->Add(new TH1F("hCellEnergyM3","Cell energy in module 3",3000,0.,30.));
+// 
+//   fOutputContainer->Add(new TH2F("hCellNXZM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
+//   fOutputContainer->Add(new TH2F("hCellNXZM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
+//   fOutputContainer->Add(new TH2F("hCellNXZM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+//   fOutputContainer->Add(new TH2F("hCellEXZM1","Cell E(X,Z), M1",64,0.5,64.5, 56,0.5,56.5));
+//   fOutputContainer->Add(new TH2F("hCellEXZM2","Cell E(X,Z), M2",64,0.5,64.5, 56,0.5,56.5));
+//   fOutputContainer->Add(new TH2F("hCellEXZM3","Cell E(X,Z), M3",64,0.5,64.5, 56,0.5,56.5));
  			
-  fOutputContainer->Add(new TH2F("hCPVr","CPV radius",100,0.,20.,100,0.,2.));
-  fOutputContainer->Add(new TH3F("hLambda","Lambdas for all clusters",150,0.,30.,150,0.,30.,200,0.,2.));
+//   fOutputContainer->Add(new TH2F("hCPVr","CPV radius",100,0.,20.,100,0.,2.));
+//   fOutputContainer->Add(new TH3F("hLambda","Lambdas for all clusters",150,0.,30.,150,0.,30.,200,0.,2.));
   
   //Bad Map
   fOutputContainer->Add(new TH2F("hCluLowM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
@@ -181,52 +316,74 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   sprintf(kTbins[4],"Kt10-13") ;
   sprintf(kTbins[5],"Kt13-20") ;
 
-  const Int_t nCuts=4 ;
-  char cut[7][20] ;
-  sprintf(cut[0],"All") ;
-  sprintf(cut[1],"Disp") ;
-  sprintf(cut[2],"CPV") ;
-  sprintf(cut[3],"Both") ;
-  sprintf(cut[4],"Dist1") ;
-  sprintf(cut[5],"Dist2") ;
-  sprintf(cut[6],"Dist3") ;
   
-    
-  for(Int_t iCut=0; iCut<nCuts; iCut++){
-    for(Int_t ikT=0; ikT<6; ikT++){ 
-//      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+  const Int_t nCenBin=4;
+  for(Int_t cen=0; cen<2; cen++){  
+//     for(Int_t ikT=0; ikT<6; ikT++){ 
+//       fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_cen%d",kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//       fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_cen%d",kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//     }
+    for(Int_t iCut=0; iCut<12; iCut++){
+      fOutputContainer->Add(new TH3F(Form("hdXdZ_%s_cen%d",fCuts[iCut],cen),"dXdZ",150,-150,150,120,-120.,120.,15,0.,3.));
+      fOutputContainer->Add(new TH3F(Form("hMidXdZ_%s_cen%d",fCuts[iCut],cen),"dXdZ",150,-150,150,120,-120.,120.,15,0.,3.));
+      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_cen%d",fCuts[iCut],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/12.,TMath::Pi()/12.,15,0.,3.));
+      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_cen%d",fCuts[iCut],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/12.,TMath::Pi()/12.,15,0.,3.));
+      
+    }      
+  }
+  for(Int_t cen=0; cen<nCenBin; cen++){  
+    for(Int_t iCut=0; iCut<fNCuts; iCut++){
+//       for(Int_t ikT=0; ikT<6; ikT++){ 
+//      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",fCuts[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
  
-      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+          
+//       fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s_cen%d",fCuts[iCut],kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH2F(Form("hetaphi2D_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
-      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
-      fOutputContainer->Add(new TH2F(Form("hetaphiRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
-//      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+//       fOutputContainer->Add(new TH2F(Form("hetaphi2D_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
+//       fOutputContainer->Add(new TH2F(Form("hetaphiRP_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
+//      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",fCuts[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+
+//       fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s_cen%d",fCuts[iCut],kTbins[ikT],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,5,0.,2.));
       
       
-//      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",fCuts[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-      fOutputContainer->Add(new TH3F(Form("hMi2OSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//       fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s_cen%d",fCuts[iCut],kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//       fOutputContainer->Add(new TH3F(Form("hMi2OSLCMS_%s_%s",fCuts[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH2F(Form("hMietaphi2D_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
-      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
-      fOutputContainer->Add(new TH2F(Form("hMietaphiRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
-      fOutputContainer->Add(new TH3F(Form("hMi2etaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
-//      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+      
+      
+//       fOutputContainer->Add(new TH2F(Form("hMietaphi2D_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
+//       fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s_cen%d",fCuts[iCut],kTbins[ikT],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,5,0.,2.));
+//       fOutputContainer->Add(new TH2F(Form("hMietaphiRP_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
+//       fOutputContainer->Add(new TH3F(Form("hMi2etaphi_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+//      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",fCuts[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
     
-    }        
+//     }        
 
-    fOutputContainer->Add(new TH2F(Form("hQinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMi2Qinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMi2QinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiQinv_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hQinvCut_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hPhi_%s_cen%d",fCuts[iCut],cen),"Opening angle distribution",200,0.,0.3,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiPhi_%s_cen%d",fCuts[iCut],cen),"Opening angle distribution",200,0.,0.3,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hR_%s_cen%d",fCuts[iCut],cen),"Relative distance distribution",200,0.,100.,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiR_%s_cen%d",fCuts[iCut],cen),"Relative distance distribution",200,0.,100.,100,0.,10.));
+
+    if(iCut>=38 && iCut<59){//hadron combinations
+      fOutputContainer->Add(new TH2F(Form("hQinvPrimH_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+      fOutputContainer->Add(new TH2F(Form("hMiQinvPrimH_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+      fOutputContainer->Add(new TH2F(Form("hQinvHitH_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+      fOutputContainer->Add(new TH2F(Form("hMiQinvHitH_%s_cen%d",fCuts[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    }
+        
+    
+    
+    }
   }
 
 //   for(Int_t ikT=0; ikT<6; ikT++){ 
@@ -289,40 +446,51 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     PostData(1, fOutputContainer);
     return;
   }
+  
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
 
-  fRunNumber=ConvertRunNumber(fEvent->GetRunNumber()) ;
-  FillHistogram("hSelEvents",1.5,fRunNumber-0.5) ;
+  fRunNumber=fEvent->GetRunNumber() ;
+//  FillHistogram("hSelEvents",1.5,fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",1.5) ;
   
  
-  if(fEventCounter == 0 && fIsPbPb) {
-    //Get Event Plane flattening
-    Int_t run = fEvent->GetRunNumber() ;
-    AliOADBContainer flatContainer("phosFlat");
-    flatContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root","phosFlat");
-    TObjArray *arr = (TObjArray*)flatContainer.GetObject(run,"phosFlat");
-    if(!arr){
-      AliError(Form("Can not read Flattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
-      arr = (TObjArray*)flatContainer.GetObject(1,"phosFlat"); //default
-    }
-        
-    AliInfo(Form("Setting PHOS flattening with name %s \n",arr->GetName())) ;
-//    AliEPFlattener * h = (AliEPFlattener*)arr->At(0) ;  
-//      if(fTPCFlat) delete fTPCFlat ;
-//      fTPCFlat = new AliEPFlattener() ;
-//      fTPCFlat = h ;
-    AliEPFlattener * h = (AliEPFlattener*)arr->At(1) ;  
-    if(fV0AFlat) delete fV0AFlat ;
-    fV0AFlat = new AliEPFlattener() ;
-    fV0AFlat = h ;
-    h = (AliEPFlattener*)arr->At(2) ;  
-    if(fV0CFlat) delete fV0CFlat ;
-    fV0CFlat = new AliEPFlattener() ;
-    fV0CFlat = h ;
-   
-    fEventCounter++ ;
-  }
+//   if(fEventCounter == 0) {
+//     //Get Event Plane flattening
+//     Int_t run = fEvent->GetRunNumber() ;
+//     AliOADBContainer flatContainer("phosFlat");
+//     flatContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root","phosFlat");
+//     TObjArray *arr = (TObjArray*)flatContainer.GetObject(run,"phosFlat");
+//     if(!arr){
+//       AliError(Form("Can not read Flattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
+//       arr = (TObjArray*)flatContainer.GetObject(170593,"phosFlat"); //default
+//     }
+//         
+//     AliInfo(Form("Setting PHOS flattening with name %s \n",arr->GetName())) ;
+// //    AliEPFlattener * h = (AliEPFlattener*)arr->At(0) ;  
+// //      if(fTPCFlat) delete fTPCFlat ;
+// //      fTPCFlat = new AliEPFlattener() ;
+// //      fTPCFlat = h ;
+//     AliEPFlattener * h = (AliEPFlattener*)arr->At(1) ;  
+//     if(fV0AFlat) delete fV0AFlat ;
+//     fV0AFlat = new AliEPFlattener() ;
+//     fV0AFlat = h ;
+//     h = (AliEPFlattener*)arr->At(2) ;  
+//     if(fV0CFlat) delete fV0CFlat ;
+//     fV0CFlat = new AliEPFlattener() ;
+//     fV0CFlat = h ;
+//    
+//     
+//     fEMCALgeo = AliEMCALGeometry::GetInstance();
+//     
+//     
+//     fEventCounter++ ;
+//   }
 
+  //Take Geometry from Tender
+  if(!fPHOSGeo)
+    fPHOSGeo = AliPHOSGeometry::GetInstance() ;
   
   // Checks if we have a primary vertex
   // Get primary vertices form AOD
@@ -335,91 +503,96 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   vtx5[2] = esdVertex5->GetZ();
   
   
-  FillHistogram("hZvertex",esdVertex5->GetZ(),fRunNumber-0.5);
+  FillHistogram("hZvertex",esdVertex5->GetZ());
   if (TMath::Abs(esdVertex5->GetZ()) > 10. ){
     PostData(1, fOutputContainer);
     return;
   }
-  FillHistogram("hSelEvents",2.5,fRunNumber-0.5) ;
+//   FillHistogram("hSelEvents",2.5,fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",2.5) ;
 
-/*  
+  
   if(fEvent->IsPileupFromSPD()){
-    PostData(1, fOutputContainer);
+   PostData(1, fOutputContainer);
     return;
   } 
-*/
-  FillHistogram("hSelEvents",3.5,fRunNumber-0.5) ;
+
+//   FillHistogram("hSelEvents",3.5,fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",3.5) ;  
-  
-  
   
   //Vtx class z-bin
   Int_t zvtx = (Int_t)((vtx5[2]+10.)/2.) ;
   if(zvtx<0)zvtx=0 ;
   if(zvtx>9)zvtx=9 ;
- 
-  AliCentrality *centrality = fEvent->GetCentrality(); 
-  fCentrality=centrality->GetCentralityPercentile("V0M");
 
+  fCentrality = 300; 
+  if(fRunNumber<209122){ //Run1
+    AliCentrality * centrality = fEvent->GetCentrality() ; 
+    fCentrality=centrality->GetCentralityPercentile("V0M");
+  }
+  else{
+    AliMultSelection * MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
+    if( !MultSelection) {
+       //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+       AliWarning("AliMultSelection object not found!");
+    }else{
+       fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+    }
+  }
+  
+//   FillHistogram("hSelEvents",3.5,fRunNumber-0.5) ;
+  FillHistogram("hTotSelEvents",4.5) ;  
+
+  FillHistogram("hCentrality",fCentrality) ;
+ 
   if( fCentrality <= 0. || fCentrality>80. ){
     PostData(1, fOutputContainer);
     return;
   }
 
-  FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",4.5) ;
+//   FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
+  FillHistogram("hTotSelEvents",5.5) ;
 
-  if(fCentrality<5.)
+  if(fCentrality<10.)
     fCenBin=0 ;
-  else if(fCentrality<10.)
-    fCenBin=1 ;
   else if(fCentrality<20.)
-    fCenBin=2 ;
+    fCenBin=1 ;
   else if(fCentrality<40.)
-    fCenBin=3 ;
+    fCenBin=2 ;
   else 
-    fCenBin=4 ;
+    fCenBin=3 ;
 
 
   //reaction plane
   Int_t irp=0 ;
-    AliEventplane *eventPlane = fEvent->GetEventplane();
-    if( ! eventPlane ) { //Event has no event plane
+  AliEventplane *eventPlane = fEvent->GetEventplane();
+  if( ! eventPlane ) { //Event has no event plane
       PostData(1, fOutputContainer);
       return;
-    }
-    //V0A
-    const Int_t harmonics = 2; 
-    Double_t qx=0., qy=0.;  
-    Double_t rpV0A = eventPlane->CalculateVZEROEventPlane(fEvent,8, harmonics,qx,qy);
-    //V0C
-    Double_t rpV0C = eventPlane->CalculateVZEROEventPlane(fEvent,9, harmonics,qx,qy);
+  }
+  const Int_t harmonics = 2; 
+  Double_t qx=0., qy=0.;  
+//   Double_t rpV0A = eventPlane->CalculateVZEROEventPlane(fEvent,8, harmonics,qx,qy);
+//   //V0C
+//   Double_t rpV0C = eventPlane->CalculateVZEROEventPlane(fEvent,9, harmonics,qx,qy);
+// 
+  //Whole V0
+  fRP = eventPlane->CalculateVZEROEventPlane(fEvent,10, harmonics,qx,qy);
+  while(fRP<0)fRP+=TMath::TwoPi()/harmonics ;
+  while(fRP>TMath::TwoPi()/harmonics)fRP-=TMath::TwoPi()/harmonics ;
+    
+  FillHistogram("phiRP",fRP,fCentrality) ;  
+//   FillHistogram("phiRPflat",fRP,fCentrality) ;  
 
-    while(rpV0A<0)rpV0A+=TMath::TwoPi()/harmonics ;
-    while(rpV0A>TMath::TwoPi()/harmonics)rpV0A-=TMath::TwoPi()/harmonics ;
-    if(fIsPbPb)
-      rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
-  
-    while(rpV0C<0)rpV0C+=TMath::TwoPi()/harmonics ;
-    while(rpV0C>TMath::TwoPi()/harmonics)rpV0C-=TMath::TwoPi()/harmonics ;
-    if(fIsPbPb)
-      rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
-  
-    Double_t rpFull=0.5*(rpV0A+rpV0C) ;  
-    FillHistogram("phiRPflat",rpFull,fCentrality) ;  
-
-    //Reaction plane is defined in the range (0;pi)
-    //We have 10 bins
-    irp=Int_t(10.*(rpFull)/TMath::Pi());
-    if(irp>9)irp=9 ;
+  //Reaction plane is defined in the range (0;pi)
+  //We have 10 bins
+  irp=Int_t(10.*(fRP)/TMath::Pi());
+  if(irp>9)irp=9 ;
     
   
  
-  FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",5.5) ;
-  //All event selections done
-  FillHistogram("hCentrality",fCentrality,fRunNumber-0.5) ;
+//   FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
+  FillHistogram("hTotSelEvents",6.5) ;
   
 
   if(!fPHOSEvents[zvtx][fCenBin][irp]) 
@@ -430,13 +603,20 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     fPHOSEvent->Clear() ;
   else
     fPHOSEvent = new TClonesArray("AliCaloPhoton",200) ;
+    
+  if(fCPVEvent)
+     fCPVEvent->Clear() ;
+  else
+     fCPVEvent= new TClonesArray("TVector3",100) ; 
 
+  ReclusterizeCPV() ;
 
   TVector3 vertex(vtx5);
   
   Int_t multClust = fEvent->GetNumberOfCaloClusters();
   Int_t inPHOS=0; 
-
+  Int_t nPHOSclu[5]={0} ;
+  
   AliAODCaloCells * cells = fEvent->GetPHOSCells() ;
   FillHistogram("hCenPHOSCells",fCentrality,cells->GetNumberOfCells()) ;
   FillHistogram("hCenTrack",fCentrality,fEvent->GetNumberOfTracks()) ;
@@ -469,7 +649,8 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   TVector3 localPos ;
   for (Int_t i=0; i<multClust; i++) {
     AliAODCaloCluster *clu = fEvent->GetCaloCluster(i);
-    if ( !clu->IsPHOS() || clu->E()<0.1) continue;
+    if (clu->GetType() !=AliVCluster::kPHOSNeutral ) continue;
+    if (clu->E()<0.1) continue;
     
 //    if(clu->GetDistanceToBadChannel()<2.5)
 //      continue ;
@@ -483,23 +664,23 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3] ;
     
+    if(mod==4)
+      continue ;  
     //Remove 6 noisy channels in run 139036
     if(fEvent->GetRunNumber()==139036 && mod==1 && 
        (cellX==9||cellX==10||cellX==11) && (cellZ==45 || cellZ==46))
       continue ;
-    
-    FillHistogram("hCluEvsCluM",clu->E(),clu->GetM02()) ;
 
     FillHistogram(Form("hTofM%d",mod),clu->E(),clu->GetTOF()) ;
     if(clu->E()>1.)
       FillHistogram("hCenTOF",fCentrality,clu->GetTOF()) ;
-    if((clu->GetTOF()>1.5e-7) || (clu->GetTOF() <-2.5e-7) )
+    if((clu->GetTOF()>25.e-9) || (clu->GetTOF() <-25.e-9) )
       continue ;
     
     
     if(clu->GetNCells()<3) continue ;
     if(clu->GetM02()<0.2)   continue ;    
-    if(clu->GetMCEnergyFraction()>0.98) //Ecross cut, should be filled with Tender
+    if(clu->GetMCEnergyFraction()>0.98) //Ecross fCuts, should be filled with Tender
      continue ;    
            
     TLorentzVector pv1 ;
@@ -510,22 +691,21 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       FillHistogram(Form("hCluHighM%d",mod),cellX,cellZ,1.);
     }
  
-    FillHistogram(Form("hLambda"),clu->GetM02(),clu->GetM20(),clu->E());
-    FillHistogram("hCPVr",clu->Chi2(),clu->E());
+//     FillHistogram(Form("hLambda"),clu->GetM02(),clu->GetM20(),clu->E());
+//     FillHistogram("hCPVr",clu->Chi2(),clu->E());
     
  
     if(inPHOS>=fPHOSEvent->GetSize()){
       fPHOSEvent->Expand(inPHOS+50) ;
     }
-    new((*fPHOSEvent)[inPHOS]) AliCaloPhoton(pv1.X(),pv1.Py(),pv1.Z(),pv1.E()) ;
-    AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSEvent->At(inPHOS) ;
+    AliCaloPhoton * ph = new((*fPHOSEvent)[inPHOS]) AliCaloPhoton(pv1.X(),pv1.Py(),pv1.Z(),pv1.E()) ;
     ph->SetModule(mod) ;
-    pv1*= clu->GetCoreEnergy()/pv1.E() ;
-    ph->SetMomV2(&pv1) ;
+//     pv1*= clu->GetCoreEnergy()/pv1.E() ;
+//     ph->SetMomV2(&pv1) ;
     ph->SetNCells(clu->GetNCells());    
     ph->SetDispBit(clu->Chi2()<2.5*2.5) ;
 //  Cut on FullLamdas
-    ph->SetDisp2Bit(clu->GetDispersion()<2.5*2.5) ;
+    ph->SetDisp2Bit(clu->Chi2()<1.5*1.5) ;
     FillHistogram("hCluEvsClu_All",clu->E(),clu->GetNCells()) ;
 
 //    Double_t distBC=clu->GetDistanceToBadChannel();
@@ -533,7 +713,12 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       FillHistogram(Form("hCluDispM%d",mod),cellX,cellZ,1.);
       FillHistogram("hCluEvsClu_Disp",clu->E(),clu->GetNCells()) ;    
     }
-    ph->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;
+    TVector3 local ;
+    fPHOSGeo->Global2Local(local,global,mod);
+    Bool_t trackCPV=(clu->GetEmcCpvDistance()>2.5) ;
+    Bool_t cpvCPV=TestCPV(local.X(),local.Z(),clu->E()) ;
+    ph->SetCPVBit(cpvCPV) ;
+    ph->SetCPV2Bit(trackCPV) ;
     if(ph->IsCPVOK()){
       FillHistogram(Form("hCluVetoM%d",mod),cellX,cellZ,1.);
       FillHistogram("hCluEvsClu_CPV",clu->E(),clu->GetNCells()) ;
@@ -541,37 +726,123 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         FillHistogram("hCluEvsClu_Both",clu->E(),clu->GetNCells()) ;    
       }
     }
+    //Mark clusters matched with tracks
+    Int_t hadronBits=0 ; 
+    Int_t trackId=-1;
+    if(clu->GetEmcCpvDistance()<1.){
+      trackId=FindTrackMatching(mod,&local) ;
+      if(trackId>=0){
+        AliAODTrack * track = (AliAODTrack*)fEvent->GetTrack(trackId);
+        Double_t ptTrack=track->Pt() ;
+        trackId=track->GetID() ;
+        Bool_t electron=kTRUE ;
+        Bool_t pion=kFALSE, kaon=kFALSE, proton=kFALSE ;
+        Int_t charge=(track->Charge()>0) ;  
+//             if(track->GetNcls(1) <2 ) electron=kFALSE ;
+//             if( !(track->GetStatus() & AliESDtrack::kTPCrefit))electron=kFALSE ; 
+//             if( track->GetKinkIndex(0) > 0) electron=kFALSE ;
+	      
+        //First rough PID
+        const Double_t nSigmaBelowElectronLine=-3. ;
+        const Double_t nSigmaAboveElectronLine= 5. ;
+        if( fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron)<nSigmaBelowElectronLine ||
+          fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron)>nSigmaAboveElectronLine )
+          electron=kFALSE ;
+        const Double_t minPnSigmaAbovePionLine = 1. ;
+        const Double_t maxPnSigmaAbovePionLine = 3. ;
+        const Double_t nSigmaAbovePionLine = 0 ;
+        if(track->P()>minPnSigmaAbovePionLine && track->P()<maxPnSigmaAbovePionLine ){
+          if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)<nSigmaAbovePionLine){
+            electron=kFALSE ;            
+          }
+        }
+	    
+      //Strict dEdx
+      if(track->P()>minPnSigmaAbovePionLine && track->P()<maxPnSigmaAbovePionLine ){
+        if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)<2.){
+          electron=kFALSE ;                           
+        }
+      } 
+      //Kaon rejection
+      const Double_t minPKaonRejection=1.5 ;
+      const Double_t sigmaAroundLine=1. ;
+      if(track->P()<minPKaonRejection ){
+        if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon))<sigmaAroundLine){
+          electron=kFALSE ;                           
+        }
+      }
+      //Proton rejection
+      const Double_t minPProtonRejection=2. ;
+      if(track->P()<minPProtonRejection){
+        if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton))<sigmaAroundLine){
+          electron=kFALSE ;                           
+        }
+      }
+      const Double_t minPPionRejection=0.5 ;
+      if(track->P()<minPPionRejection ){
+        if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion))<sigmaAroundLine){
+          electron=kFALSE ;                           
+        }
+      }
+      //Other hadrons
+      if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)<1){
+        pion=kTRUE ;            
+      }
+      if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon)<1){
+        kaon=kTRUE ;            
+      }
+      if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)<1){
+        proton=kTRUE ;            
+      }
+      if(electron)
+          hadronBits|=1<<(0+charge);
+      if(pion)
+          hadronBits|=1<<(2+charge) ;  
+      if(kaon)
+          hadronBits|=1<<(4+charge) ;  
+      if(proton)
+          hadronBits|=1<<(6+charge) ;  
+  
+      //Set momentum of the parent track
+      TLorentzVector p(track->Px(),track->Py(),track->Pz(),track->E()) ;
+      ph->SetMomV2(&p);
+      //Set position of Track entrance (theta, phi)
+      TVector3 globaPos ;
+      fPHOSGeo->Local2Global(mod, local.X()-clu->GetTrackDx(), local.Z()-clu->GetTrackDz(), globaPos) ;
+      ph->SetLambdas(globaPos.Theta(),globaPos.Phi());
+      }
+    }   
+    ph->SetTagInfo(hadronBits) ;
+    ph->Pi0Id(trackId+1); 
     
+
+    
+    ph->SetTime(clu->GetTOF());
     ph->SetPrimary(clu->GetLabelAt(0)) ;
     ph->SetEMCx(position[0]) ;
     ph->SetEMCy(position[1]) ;
     ph->SetEMCz(position[2]) ;
-    ph->SetLambdas(clu->GetM20(),clu->GetM02()) ;
+//     ph->SetLambdas(clu->GetM20(),clu->GetM02()) ;
     ph->SetUnfolded(clu->GetNExMax()<2); // Remember, if it is unfolded          
     inPHOS++ ;
+    nPHOSclu[mod]++;
   }
   
+
   FillHistogram("hCenPHOS",fCentrality,inPHOS) ;
+  for(Int_t mod=1; mod<5; mod++)
+     FillHistogram(Form("hCenPHOSm%d",mod),fCentrality,nPHOSclu[mod]) ;
   if(inPHOS==0){
     PostData(1, fOutputContainer);
     fEventCounter++;
     return ; 
   }
   
-  Int_t jetStatus[5]; 
   for(Int_t mod=1; mod<5; mod++)
-    jetStatus[mod]=JetRejection(mod) ;
+    fJetStatus[mod]=JetRejection(mod) ;
 
   const Double_t kgMass=0. ;
 	
-  char cut[7][20] ;
-  sprintf(cut[0],"All") ;
-  sprintf(cut[1],"Disp") ;
-  sprintf(cut[2],"CPV") ;
-  sprintf(cut[3],"Both") ;
-  sprintf(cut[4],"Dist1") ;
-  sprintf(cut[5],"Dist2") ;
-  sprintf(cut[6],"Dist3") ;
 
   //Real
   for (Int_t i1=0; i1<inPHOS-1; i1++) {
@@ -585,12 +856,22 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     track1.SetP(mom1) ;
     AliFemtoParticle part1(&track1,kgMass) ;
     
+    //Momentum of parent hadron if any
+    const TLorentzVector * pHadron1=ph1->GetMomV2() ;
+    TLorentzVector pHitHadron1(1.,1.,1.,1.) ;
+    if(ph1->GetTagInfo()){
+      pHitHadron1.SetE(ph1->E()) ;
+      pHitHadron1.SetRho(ph1->E()) ; //assume massless photon
+      pHitHadron1.SetTheta(ph1->GetLambda1()) ; //assume massless photon
+      pHitHadron1.SetPhi(ph1->GetLambda2()) ; //assume massless photon
+    }
+    
     for (Int_t i2=i1+1; i2<inPHOS; i2++) {
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
       //Cut on pair
 // 	if(!PairCut(ph1,ph2,kDefault))
-//	if(!PairCut(ph1,ph2,kBoth))
-//	  continue;
+	if(!PairCut(ph1,ph2,0)) //Distance fCuts
+	  continue;
      
 //      if(!SecondaryPi0Cut(ph1,ph2))
 //        continue ;
@@ -603,7 +884,18 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       track2.SetP(mom2) ;
       AliFemtoParticle part2(&track2,kgMass) ;
       
-      //Photons are sorted, try to remove it
+      //Momentum of parent hadron if any
+      const TLorentzVector * pHadron2=ph2->GetMomV2() ;
+      TLorentzVector pHitHadron2(1.,1.,1.,1.) ;
+      if(ph2->GetTagInfo()){
+        pHitHadron2.SetE(ph2->E()) ;
+        pHitHadron2.SetRho(ph2->E()) ; //assume massless photon
+        pHitHadron2.SetTheta(ph2->GetLambda1()) ; //assume massless photon
+        pHitHadron2.SetPhi(ph2->GetLambda2()) ; //assume massless photon
+      }
+      
+      
+      //Photons are sorted, unsort them
       AliFemtoParticle *a = &part1 ;
       AliFemtoParticle *b = &part2 ;
       Double_t dEta = ph1->Eta()-ph2->Eta() ; 
@@ -612,14 +904,16 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       Double_t dX = TMath::Power(ph1->EMCx() - ph2->EMCx(),2) + TMath::Power(ph1->EMCy() - ph2->EMCy(),2)  ;
       dX=TMath::Sign(TMath::Sqrt(dX),ph1->EMCx() - ph2->EMCx()) ;
       Double_t dZ = ph1->EMCz() - ph2->EMCz() ;
+      Double_t dR = TMath::Sqrt(dX*dX+dZ*dZ) ;
+            
       if(gRandom->Uniform()>0.5){
-        a = &part2 ;
-        b = &part1 ;
-	dEta=-dEta ;
-	dPhi=-dPhi;
-	dE=-dE ;
-	dX=-dX ; 
-	dZ=-dZ ;
+	    dPhi=-dPhi ;
+	    dEta=-dEta ;
+            a = &part2 ;
+            b = &part1 ;
+	    dE=-dE ;
+	    dX=-dX ; 
+	    dZ=-dZ ;
       }
       while(dPhi<-TMath::PiOver2())dPhi+=TMath::TwoPi() ;
       while(dPhi>TMath::PiOver2()) dPhi-=TMath::TwoPi() ;
@@ -627,42 +921,66 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       AliFemtoPair pair(a,b);
       Double_t qinv= pair.QInv();
       Double_t kT = pair.KT() ;
-      TString kTbin="15" ;
-      if(kT<0.2) kTbin="Kt00-02";
-      else if(kT<0.4) kTbin="Kt02-04";
-      else if(kT<0.7) kTbin="Kt04-07";
-      else if(kT<1.) kTbin="Kt07-10";
-      else if(kT<1.3) kTbin="Kt10-13";
-      else if(kT<2.) kTbin="Kt13-20";
-      else  continue;
+//       TString kTbin="" ;
+//       if(kT<0.2) kTbin="Kt00-02";
+//       else if(kT<0.4) kTbin="Kt02-04";
+//       else if(kT<0.7) kTbin="Kt04-07";
+//       else if(kT<1.) kTbin="Kt07-10";
+//       else if(kT<1.3) kTbin="Kt10-13";
+//       else if(kT<2.) kTbin="Kt13-20";
+//       else  continue;
       
+//       Double_t  qo=pair.QOutCMS();
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
-      Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
+//       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
+//       
+//       Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
+//       Double_t dPsi = fRP-pairPhi ;
+//       while(dPsi<0)dPsi+=TMath::Pi() ;
+//       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
       
-      Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
-      Double_t dPsi = rpFull-pairPhi ;
-      while(dPsi<0)dPsi+=TMath::Pi() ;
-      while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
+//       // Yano-Koonin-Podgoretskii Parametrisation 
+//       Double_t qP=0., qT=0., q0=0. ;
+//       // source rest frame (usually lab frame)
+//       pair.QYKPCMS(qP, qT, q0);
+
       
-      // Yano-Koonin-Podgoretskii Parametrisation 
-      Double_t qP=0., qT=0., q0=0. ;
-      // source rest frame (usually lab frame)
-      pair.QYKPCMS(qP, qT, q0);
-
-      Double_t qPpf=0., qTpf=0., q0pf=0. ;
-      // longitudinal comoving frame
-        pair.QYKPPF(qPpf,qTpf,q0pf) ;
-
+      Double_t qinvPrim=-1.; //Qinv of primary hadron if any
+      Double_t kTPrim=-1.; 
+      Double_t qinvHit=-1 ;
+      if(ph1->GetTagInfo() && ph2->GetTagInfo()){
+         qinvPrim=(*pHadron1 + *pHadron2).M() ;
+         kTPrim=((*pHadron1 + *pHadron2).Pt())*0.5 ;
+         qinvHit=(pHitHadron1 + pHitHadron2).M();
+      }
+      
+      
+      
 	
-      for(Int_t iCut=0; iCut<4; iCut++){
+      for(Int_t iCut=0; iCut<12; iCut++){
+	if(!PairCut(ph1,ph2,iCut))
+	    continue ;
+	FillHistogram(Form("hdXdZ_%s_cen%d",fCuts[iCut],fCenBin/3),dX,dZ,kT) ;
+        FillHistogram(Form("hetaphi_%s_cen%d",fCuts[iCut],fCenBin/3),dEta,dPhi,kT) ;
+      }      
+      
+      for(Int_t iCut=0; iCut<fNCuts; iCut++){
 	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
-        FillHistogram(Form("hetaphi2D_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi) ;
+//         FillHistogram(Form("hetaphi2D_%s_%s",fCuts[iCut],kTbin.Data()),dEta,dPhi) ;
  
 	if(ph1->Module()!=ph2->Module())
           continue ;
 	
+        
+        if(iCut>=38 && iCut<59){//hadron combinations
+ 	  FillHistogram(Form("hQinvPrimH_%s_cen%d",fCuts[iCut],fCenBin),qinvPrim,kTPrim) ;
+ 	  FillHistogram(Form("hQinvHitH_%s_cen%d",fCuts[iCut],fCenBin),qinvHit,kT) ;
+        }
+        
+        
+        
 	
 // 	if(iCut>3){
 // 	  if((jetStatus[ph1->Module()])&1<<(iCut-4))
@@ -678,25 +996,34 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
           FillHistogram(Form("hSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
 	}*/
 	  
-	FillHistogram(Form("hQinv_%s",cut[iCut]),qinv,kT) ;
+	FillHistogram(Form("hQinv_%s_cen%d",fCuts[iCut],fCenBin),qinv,kT) ;
 	if(TMath::Abs(qo) < 0.05)
-	  FillHistogram(Form("hQinvCut_%s",cut[iCut]),qinv,kT) ;
+	  FillHistogram(Form("hQinvCut_%s_cen%d",fCuts[iCut],fCenBin),qinv,kT) ;
+        
+        //Opening angle
+        Double_t dPsi = ph1->Vect().Angle(ph2->Vect()) ;
+	FillHistogram(Form("hPhi_%s_cen%d",fCuts[iCut],fCenBin),dPsi,kT) ;
+	FillHistogram(Form("hR_%s_cen%d",fCuts[iCut],fCenBin),dR,kT) ;
+        
+        
 
         // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-//        FillHistogram(Form("hOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
-   
-        // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-        FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
-        FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
-	if(TMath::Abs(dEta)>0.02)
-          FillHistogram(Form("hetaphiRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi) ;
+//        FillHistogram(Form("hOSLPF_%s_%s",fCuts[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
+
+//         if(iCut==6&&kTbin.Length()>0){
+//           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
+//            FillHistogram(Form("hOSLCMS_%s_cen%d",kTbin.Data(),fCenBin),qs,qo,ql) ;
+//         }    
+//         FillHistogram(Form("hetaphi_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
+// 	if(TMath::Abs(dEta)>0.02)
+//           FillHistogram(Form("hetaphiRP_%s_%s",fCuts[iCut],kTbin.Data()),dPsi,dPhi) ;
 	
-//        FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
+//        FillHistogram(Form("hdXdZ_%s_%s",fCuts[iCut],kTbin.Data()),dX,dZ) ;
 
 
-//        FillHistogram(Form("hYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
+//        FillHistogram(Form("hYKPCMS_%s_%s",fCuts[iCut],kTbin.Data()),qP, qT, q0);       
       
-//        FillHistogram(Form("hYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
+//        FillHistogram(Form("hYKPPF_%s_%s",fCuts[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
         
       }          
     } // end of loop i2
@@ -713,13 +1040,23 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     track1.SetP(mom1) ;
     AliFemtoParticle part1(&track1,kgMass) ;
     
+    //Momentum of parent hadron if any
+    const TLorentzVector * pHadron1=ph1->GetMomV2() ;
+    TLorentzVector pHitHadron1(1.,1.,1.,1.) ;
+    if(ph1->GetTagInfo()){
+      pHitHadron1.SetE(ph1->E()) ;
+      pHitHadron1.SetRho(ph1->E()) ; //assume massless photon
+      pHitHadron1.SetTheta(ph1->GetLambda1()) ; //assume massless photon
+      pHitHadron1.SetPhi(ph1->GetLambda2()) ; //assume massless photon
+    }
+    
     for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
       for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
 	AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
 	
-//	if(!PairCut(ph1,ph2,kDefault))
-//	  continue;
+	if(!PairCut(ph1,ph2,0))
+	  continue;
 	
         AliFemtoTrack track2;
         AliFemtoThreeVector mom2;
@@ -729,7 +1066,17 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         track2.SetP(mom2) ;
         AliFemtoParticle part2(&track2,kgMass) ;
        
-	AliFemtoParticle *a = &part1 ;
+        //Momentum of parent hadron if any
+        const TLorentzVector * pHadron2=ph2->GetMomV2() ;
+        TLorentzVector pHitHadron2(1.,1.,1.,1.) ;
+        if(ph2->GetTagInfo()){
+          pHitHadron2.SetE(ph2->E()) ;
+          pHitHadron2.SetRho(ph2->E()) ; //assume massless photon
+          pHitHadron2.SetTheta(ph2->GetLambda1()) ; //assume massless photon
+          pHitHadron2.SetPhi(ph2->GetLambda2()) ; //assume massless photon
+        }
+          
+        AliFemtoParticle *a = &part1 ;
         AliFemtoParticle *b = &part2 ;
         Double_t dEta = ph1->Eta()-ph2->Eta() ; 
         Double_t dPhi = ph1->Phi()-ph2->Phi() ; 
@@ -737,6 +1084,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         Double_t dX = TMath::Power(ph1->EMCx() - ph2->EMCx(),2) + TMath::Power(ph1->EMCy() - ph2->EMCy(),2)  ;
         dX=TMath::Sign(TMath::Sqrt(dX),ph1->EMCx() - ph2->EMCx()) ;
         Double_t dZ = ph1->EMCz() - ph2->EMCz() ;
+        Double_t dR = TMath::Sqrt(dX*dX+dZ*dZ) ;
         if(gRandom->Uniform()>0.5){
           a = &part2 ;
           b = &part1 ;
@@ -752,40 +1100,58 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
 	Double_t qinv= pair.QInv();
         Double_t kT = pair.KT() ;
-        TString kTbin ;
-	Int_t ikTbin=0 ;
-        if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
-        else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
-        else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
-        else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
-        else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
-        else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
-        else  continue;
+//         TString kTbin ;
+// 	Int_t ikTbin=0 ;
+//         if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
+//         else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
+//         else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
+//         else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
+//         else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
+//         else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
+//         else  continue;
       
+//       Double_t qo=pair.QOutCMS();
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
-      Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
+//       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
       
-      Double_t wMix = EtaPhiWeight(ikTbin,dPhi );
+//       Double_t wMix = EtaPhiWeight(ikTbin,dPhi );
 
-      Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
-      Double_t dPsi = rpFull-pairPhi ;
-      while(dPsi<0)dPsi+=TMath::Pi() ;
-      while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
+//       Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
+//       Double_t dPsi = fRP-pairPhi ;
+//       while(dPsi<0)dPsi+=TMath::Pi() ;
+//       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
       
-      // Yano-Koonin-Podgoretskii Parametrisation 
-      Double_t qP=0., qT=0., q0=0. ;
-      // source rest frame (usually lab frame)
-      pair.QYKPCMS(qP, qT, q0);
+//       // Yano-Koonin-Podgoretskii Parametrisation 
+//       Double_t qP=0., qT=0., q0=0. ;
+//       // source rest frame (usually lab frame)
+//       pair.QYKPCMS(qP, qT, q0);
 
-      Double_t qPpf=0., qTpf=0., q0pf=0. ;
-      // longitudinal comoving frame
-        pair.QYKPPF(qPpf,qTpf,q0pf) ;
+//       Double_t qPpf=0., qTpf=0., q0pf=0. ;
+//       // longitudinal comoving frame
+//         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 	
-	for(Int_t iCut=0; iCut<4; iCut++){
+      Double_t qinvPrim=-1.; //Qinv of primary hadron if any
+      Double_t kTPrim=-1.; 
+      Double_t qinvHit=-1 ;
+      if(ph1->GetTagInfo() && ph2->GetTagInfo()){
+         qinvPrim=(*pHadron1 + *pHadron2).M() ;
+         kTPrim=((*pHadron1 + *pHadron2).Pt())*0.5 ;
+         qinvHit=(pHitHadron1 + pHitHadron2).M();
+      }
+     
+      for(Int_t iCut=0; iCut<12; iCut++){
+	if(!PairCut(ph1,ph2,iCut))
+	    continue ;
+	FillHistogram(Form("hMidXdZ_%s_cen%d",fCuts[iCut],fCenBin/3),dX,dZ,kT) ;
+        FillHistogram(Form("hMietaphi_%s_cen%d",fCuts[iCut],fCenBin/3),dEta,dPhi,kT) ;
+      }      
+      
+      
+	for(Int_t iCut=0; iCut<fNCuts; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	  
-          FillHistogram(Form("hMietaphi2D_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi) ;
+//           FillHistogram(Form("hMietaphi2D_%s_%s",fCuts[iCut],kTbin.Data()),dEta,dPhi) ;
  
 	  if(ph1->Module()!=ph2->Module())
             continue ;
@@ -799,28 +1165,40 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
             FillHistogram(Form("hMiSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
 	  }  */
 	  
-	  FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
-	  FillHistogram(Form("hMi2Qinv_%s",cut[iCut]),qinv,kT,wMix) ;
+	  FillHistogram(Form("hMiQinv_%s_cen%d",fCuts[iCut],fCenBin),qinv,kT) ;
+// 	  FillHistogram(Form("hMi2Qinv_%s",fCuts[iCut]),qinv,kT,wMix) ;
 	   if(TMath::Abs(qo) < 0.05){
-	     FillHistogram(Form("hMiQinvCut_%s",cut[iCut]),qinv,kT) ;
-	     FillHistogram(Form("hMi2QinvCut_%s",cut[iCut]),qinv,kT,wMix) ;
+	     FillHistogram(Form("hMiQinvCut_%s_cen%d",fCuts[iCut],fCenBin),qinv,kT) ;
+// 	     FillHistogram(Form("hMi2QinvCut_%s",fCuts[iCut]),qinv,kT,wMix) ;
 	   }
+          //Opening angle
+          Double_t dPsi = ph1->Vect().Angle(ph2->Vect()) ;
+   	  FillHistogram(Form("hMiPhi_%s_cen%d",fCuts[iCut],fCenBin),dPsi,kT) ;
+   	  FillHistogram(Form("hMiR_%s_cen%d",fCuts[iCut],fCenBin),dR,kT) ;
+	   
+          if(iCut>=38 && iCut<59){//hadron combinations
+ 	    FillHistogram(Form("hMiQinvPrimH_%s_cen%d",fCuts[iCut],fCenBin),qinvPrim,kTPrim) ;
+ 	    FillHistogram(Form("hMiQinvHitH_%s_cen%d",fCuts[iCut],fCenBin),qinvHit,kT) ;
+          }
+	   
+	   
           // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-//          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
+//          FillHistogram(Form("hMiOSLPF_%s_%s",fCuts[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-          FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
-          FillHistogram(Form("hMi2OSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql,wMix) ;
-
-          FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
-	  if(TMath::Abs(dEta)>0.02)
-            FillHistogram(Form("hMietaphiRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi) ;
-          FillHistogram(Form("hMi2etaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE,wMix) ;
-//          FillHistogram(Form("hMidXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
+//         if(iCut==6&&kTbin.Length()>0){          
+//           FillHistogram(Form("hMiOSLCMS_%s_cen%d",kTbin.Data(),fCenBin),qs,qo,ql) ;
+// //           FillHistogram(Form("hMi2OSLCMS_%s_%s",fCuts[iCut],kTbin.Data()),qs,qo,ql,wMix) ;
+//         }
+//           FillHistogram(Form("hMietaphi_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
+// 	  if(TMath::Abs(dEta)>0.02)
+//             FillHistogram(Form("hMietaphiRP_%s_%s",fCuts[iCut],kTbin.Data()),dPsi,dPhi) ;
+//           FillHistogram(Form("hMi2etaphi_%s_%s",fCuts[iCut],kTbin.Data()),dEta,dPhi,dE,wMix) ;
+//          FillHistogram(Form("hMidXdZ_%s_%s",fCuts[iCut],kTbin.Data()),dX,dZ) ;
 	  
-//          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
+//          FillHistogram(Form("hMiYKPCMS_%s_%s",fCuts[iCut],kTbin.Data()),qP, qT, q0);       
       
-//          FillHistogram(Form("hMiYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
+//          FillHistogram(Form("hMiYKPPF_%s_%s",fCuts[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
 	}
 	
       } // end of loop i2
@@ -848,8 +1226,19 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskgg::Terminate(Option_t *)
 {
-  // Draw result to the screen
+  if(!fOutputContainer)
+    return ;
+  
+  TFile fout("histos.root","recreate") ;  
+    // Draw result to the screen
   // Called once at the end of the query
+  for(Int_t i=0; i<fOutputContainer->GetSize();i++){  
+     fOutputContainer->At(i)->Write() ;
+      
+  }
+  fout.Close() ;
+//   fOutputContainer->Delete() ;
+  
   
 }
 
@@ -1074,40 +1463,351 @@ Int_t AliAnalysisTaskgg::ConvertRunNumber(Int_t run){
 //___________________________________________________________________________
 Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const{
   
- // if(cut==kDefault){
-  //Consider only pairs from same mudule
-//  if(ph1->Module()!=ph2->Module())
-//    return kFALSE ;
+  const Double_t kTimeCut10=10.e-9 ;
+  const Double_t kTimeCut5=5.e-9 ;
+  const Double_t kTimeCut3=3.e-9 ;
+    
+    
+  if(ph1->Module()!=ph2->Module())
+    return kFALSE ;   
+    
+  Double_t dl=999.;  
+    
+  Int_t bits1=ph1->GetTagInfo() ;    
+  Int_t bits2=ph2->GetTagInfo() ;    
   
+//   if(ph1->Module()==ph2->Module()){
+//     // offset for first photon   
+//     Double_t dxMax1= 3.36783/ph1->E()-11.5189/TMath::Sqrt(ph1->E())+3.08283;
+//     Double_t dxMin1=-4.01590/ph1->E()+13.2841/TMath::Sqrt(ph1->E())-4.31161;
+//     Double_t sigmaX1=TMath::Max(1.5,-2.07124/ph1->E()+6.69554/TMath::Sqrt(ph1->E())-1.70062);
+//     Double_t sigmaZ1=1.24859122035152259;
+//     if(ph1->E()>0.4) 
+//       sigmaZ1=5.58984e-01*TMath::Exp(-ph1->E()*ph1->E()/2.20543/2.20543)+7.07696e-01 ;
+//   
+//     Double_t dxMax2= 3.36783/ph2->E()-11.5189/TMath::Sqrt(ph2->E())+3.08283;
+//     Double_t dxMin2=-4.01590/ph2->E()+13.2841/TMath::Sqrt(ph2->E())-4.31161;
+//     Double_t sigmaX2=TMath::Max(1.5,-2.07124/ph2->E()+6.69554/TMath::Sqrt(ph2->E())-1.70062);
+//     Double_t sigmaZ2=1.24859122035152259;
+//     if(ph2->E()>0.4) 
+//       sigmaZ2=5.58984e-01*TMath::Exp(-ph2->E()*ph2->E()/2.20543/2.20543)+7.07696e-01 ;
+// 
+//     //use the largest excentricity
+//     Double_t eps=TMath::Max(sigmaX1/sigmaZ1,sigmaX2/sigmaZ2) ;
+//     //use this excentricity in distance calculation
+//     Double_t dxC=ph1->EMCx() - ph2->EMCx() ;
+//     Double_t dzC=ph1->EMCz() - ph2->EMCz() ;
+//     dl=TMath::Sqrt(dxC*dxC + dzC*dzC) ;
+//         //rough fCuts 
+//     if(TMath::Abs(dzC)<6. && TMath::Abs(dxC)<25.){
+// 
+//       //distance fCuts: too close if ellipses overlap
+//       Double_t dx=dxC+dxMin1+dxMin2 ;
+//       Double_t dz=dzC ;
+//       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
+//         return kFALSE ;  
+//       dx=dxC+dxMax1+dxMin2 ;
+//       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
+//         return kFALSE ;  
+//       dx=dxC+dxMax1+dxMax2 ;
+//       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
+//         return kFALSE ;  
+//       dx=dxC+dxMin1+dxMax2 ;
+//       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
+//         return kFALSE ;  
+//     }
+//   } 
+  
+ // if(fCuts==kDefault){
   if(cut==0){
     return kTRUE ;
   }
   if(cut==1){
-    return ph1->IsDispOK() && ph2->IsDispOK() ;  
+    return ph1->IsDispOK()&& ph2->IsDispOK() ;  
   }
   if(cut==2){
-    return ph1->IsCPVOK() && ph2->IsCPVOK() ;  
+    return ph1->IsDisp2OK() && ph2->IsDisp2OK()  ;  
   }
   if(cut==3){
-    return ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph2->IsCPVOK() ;  
+    return ph1->IsCPVOK() && ph2->IsCPVOK()  ;  
   }
+  if(cut==4){
+    return ph1->IsCPV2OK() && ph2->IsCPV2OK()  ;  
+  }
+  if(cut==5){
+    return ph1->IsCPVOK()  && ph1->IsCPV2OK() && ph2->IsCPVOK()  && ph2->IsCPV2OK() ;  
+  }
+  if(cut==6){
+    return ph1->IsDispOK()&& ph1->IsCPVOK() && ph2->IsDispOK()&& ph2->IsCPVOK() ;  
+  }
+  if(cut==7){
+    return ph1->IsDispOK()&& ph1->IsCPV2OK() && ph2->IsDispOK()&& ph2->IsCPV2OK() ;  
+  }
+  if(cut==8){
+    return ph1->IsDisp2OK()&& ph1->IsCPVOK()&& ph1->IsCPV2OK() && ph2->IsDisp2OK()&& ph2->IsCPVOK()&& ph2->IsCPV2OK() ;  
+  }
+  if(cut==9){
+    return ph1->IsDisp2OK()&& ph1->IsCPVOK() && ph2->IsDisp2OK()&& ph2->IsCPVOK() ;  
+  }
+  if(cut==10){
+    return ph1->IsDisp2OK()&& ph1->IsCPV2OK() && ph2->IsDisp2OK()&& ph2->IsCPV2OK() ;  
+  }
+  if(cut==11){
+    return ph1->IsDisp2OK()&& ph1->IsCPVOK()&& ph1->IsCPV2OK() && ph2->IsDisp2OK()&& ph2->IsCPVOK()&& ph2->IsCPV2OK() ;  
+  }
+  if(cut==12){
+    return dl>5. ;
+  }
+  if(cut==13){
+    return dl>10. ;
+  }
+  if(cut==14){
+    return dl>15. ;
+  }
+  if(cut==15){
+    return dl>20. ;
+  }  
+  if(cut==16){
+    return (dl>5.) && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK() ;  
+  }
+  if(cut==17){
+    return (dl>10.)&& ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK() ;  
+  }
+  if(cut==18){
+    return (dl>15.)&& ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK();  
+  }
+  if(cut==19){
+    return (dl>20.)&& ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK() ;  
+  }
+
+  if(cut==20)
+    return (bits1&1<<3)||(bits2&1<<3) ; //Pipl  
+  if(cut==21)
+    return (bits1&1<<2)||(bits2&1<<2) ; //Pimi  
+  if(cut==22)
+      return (bits1&1<<5)||(bits2&1<<5) ; //Kpl  
+  if(cut==23)
+      return (bits1&1<<4)||(bits2&1<<4) ; //Kmi  
+  if(cut==24)
+      return (bits1&1<<7)||(bits2&1<<7) ; //Prpl  
+  if(cut==25)
+      return (bits1&1<<6)||(bits2&1<<6) ; //Prmi  
+  //Disp+hadr
+  if(cut==26)
+      return ((bits1&1<<3)||(bits2&1<<3)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Pipl  
+  if(cut==27)
+      return ((bits1&1<<2)||(bits2&1<<2)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Pimi  
+  if(cut==28)
+      return ((bits1&1<<5)||(bits2&1<<5)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Kpl  
+  if(cut==29)
+      return ((bits1&1<<4)||(bits2&1<<4)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Kmi  
+  if(cut==30)
+      return ((bits1&1<<7)||(bits2&1<<7)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Prpl  
+  if(cut==31)
+      return ((bits1&1<<6)||(bits2&1<<6)) && ph1->IsDispOK()&& ph2->IsDispOK() ; //Prmi  
+ 
+ 
+   //Both+hadr
+  if(cut==32)
+      return ((bits1&1<<3) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<3) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Pipl  
+  if(cut==33)
+      return ((bits1&1<<2) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<2) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Pimi  
+  if(cut==34)
+      return ((bits1&1<<5) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<5) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Kpl  
+  if(cut==35)
+      return ((bits1&1<<4) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<4) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Kmi  
+  if(cut==36)
+      return ((bits1&1<<7) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<7) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Prpl  
+  if(cut==37)
+      return ((bits1&1<<6) && ph1->IsDispOK() && ph2->IsDispOK() && ph2->IsCPVOK() && ph2->IsCPV2OK()) ||
+             ((bits2&1<<6) && ph2->IsDispOK() && ph1->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK())  ; //Prmi  
   
   
-  //Distance between clusters in PHOS plane
-  if(cut==4 ||cut==5 || cut==6 ){
-    if(!(ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph2->IsCPVOK()))
-      return kFALSE ;
-/*
-    Double_t dx = ph1->EMCx()-ph2->EMCx() ;
-    Double_t dz = ph1->EMCz()-ph2->EMCz() ;
-    if(cut==4)
-      return (dx*dx+dz*dz > 5.*5.) ;
-    if(cut==5)
-      return (dx*dx+dz*dz > 10.*10.) ;
-    if(cut==6)
-      return (dx*dx+dz*dz > 15.*15.) ;
-    */
-  }
+    if(cut==38)
+      return (bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==39)
+      return ((bits1&1<<2)&&(bits2&1<<3)) ||((bits1&1<<3)&&(bits2&1<<2))  ; //Pipl Pimi  
+    if(cut==40)
+      return ((bits1&1<<2)&&(bits2&1<<6)) || ((bits1&1<<6)&&(bits2&1<<2)) ; //Pimi Prmi  
+    if(cut==41)
+      return ((bits1&1<<2)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<2)) ; //Pimi Prpl 
+    if(cut==42)
+      return ((bits1&1<<2)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<2)) ; //Pimi Kmi  
+    if(cut==43)
+      return ((bits1&1<<2)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<2)) ; //Pimi Kpl  
+    if(cut==44)
+      return (bits1&1<<3)&&(bits2&1<<3) ; //Pipl Pipl  
+    if(cut==45)
+      return ((bits1&1<<3)&&(bits2&1<<6)) || ((bits1&1<<6)&&(bits2&1<<3)) ; //Pipl Prmi  
+    if(cut==46)
+      return ((bits1&1<<3)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<3)) ; //Pipl Prpl  
+    if(cut==47)
+      return ((bits1&1<<3)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<3)) ; //Pipl Kmi  
+    if(cut==48)
+      return ((bits1&1<<3)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<3)) ; //Pipl Kmi  
+   if(cut==49)
+      return ((bits1&1<<6)&&(bits2&1<<6)) ; //Prmi Prmi  
+    if(cut==50)
+      return ((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)) ; //Prmi Prpl 
+    if(cut==51)
+      return ((bits1&1<<6)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<6)) ; //Prmi Kmi 
+    if(cut==52)
+      return ((bits1&1<<6)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<6)) ; //Prmi Kmi 
+    if(cut==53)
+      return ((bits1&1<<7)&&(bits2&1<<7)) ; //Prpl Prpl 
+    if(cut==54)
+      return ((bits1&1<<7)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<7)) ; //Prpl Kmi 
+    if(cut==55)
+      return ((bits1&1<<7)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<7)) ; //Prpl Kpl 
+    if(cut==56)
+      return ((bits1&1<<4)&&(bits2&1<<4)) ; //Kmi Kmi 
+    if(cut==57)
+      return ((bits1&1<<4)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<4)) ; //Kmi Kpl 
+    if(cut==58)
+      return ((bits1&1<<5)&&(bits2&1<<5)) ; //Kpl Kpl 
+ 
+ 
+   if(cut==59)
+      return  ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==60)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<3)) ||((bits1&1<<3)&&(bits2&1<<2))  ; //Pipl Pimi  
+    if(cut==61)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<6)) || ((bits1&1<<6)&&(bits2&1<<2)) ; //Pimi Prmi  
+    if(cut==62)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<2)) ; //Pimi Prpl 
+    if(cut==63)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<2)) ; //Pimi Kmi  
+    if(cut==64)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<2)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<2)) ; //Pimi Kpl  
+    if(cut==65)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && (bits1&1<<3)&&(bits2&1<<3) ; //Pipl Pipl  
+    if(cut==66)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<3)&&(bits2&1<<6)) || ((bits1&1<<6)&&(bits2&1<<3)) ; //Pipl Prmi  
+    if(cut==67)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<3)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<3)) ; //Pipl Prpl  
+    if(cut==68)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<3)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<3)) ; //Pipl Kmi  
+    if(cut==69)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<3)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<3)) ; //Pipl Kmi  
+   if(cut==70)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<6)&&(bits2&1<<6)) ; //Prmi Prmi  
+    if(cut==71)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)) ; //Prmi Prpl 
+    if(cut==72)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<6)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<6)) ; //Prmi Kmi 
+    if(cut==73)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<6)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<6)) ; //Prmi Kmi 
+    if(cut==74)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<7)&&(bits2&1<<7)) ; //Prpl Prpl 
+    if(cut==75)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<7)&&(bits2&1<<4)) || ((bits1&1<<4)&&(bits2&1<<7)) ; //Prpl Kmi 
+    if(cut==76)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<7)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<7)) ; //Prpl Kpl 
+    if(cut==77)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<4)&&(bits2&1<<4)) ; //Kmi Kmi 
+    if(cut==78)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<4)&&(bits2&1<<5)) || ((bits1&1<<5)&&(bits2&1<<4)) ; //Kmi Kpl 
+    if(cut==79)
+      return  ph1->IsDispOK() && ph2->IsDispOK() && ((bits1&1<<5)&&(bits2&1<<5)) ; //Kpl Kpl 
+
+   //Time10 ns, H+H
+    if(cut==80)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==81)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<2)&&(bits2&1<<3)) || ((bits1&1<<3)&&(bits2&1<<2)))  ; //PimiPimi  
+    if(cut==82)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<3)&&(bits2&1<<3) ; //PiplPipl  
+    if(cut==83)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<6)&&(bits2&1<<6) ; //PrmiPrmi  
+    if(cut==84)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)))  ; //PrmiPrpl  
+    if(cut==85)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<7)&&(bits2&1<<7) ; //PrplPrpl  
+  
+   //Time5 ns, H+H
+    if(cut==86)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==87)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<2)&&(bits2&1<<3)) || ((bits1&1<<3)&&(bits2&1<<2)))  ; //PimiPimi  
+    if(cut==88)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<3)&&(bits2&1<<3) ; //PiplPipl  
+    if(cut==89)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<6)&&(bits2&1<<6) ; //PrmiPrmi  
+    if(cut==90)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)))  ; //PrmiPrpl  
+    if(cut==91)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<7)&&(bits2&1<<7) ; //PrplPrpl  
+  
+   //Time3 ns, H+H
+    if(cut==92)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<2)&&(bits2&1<<2) ; //PimiPimi  
+    if(cut==93)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<2)&&(bits2&1<<3)) || ((bits1&1<<3)&&(bits2&1<<2)))  ; //PimiPimi  
+    if(cut==94)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<3)&&(bits2&1<<3) ; //PiplPipl  
+    if(cut==95)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<6)&&(bits2&1<<6) ; //PrmiPrmi  
+    if(cut==96)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(((bits1&1<<6)&&(bits2&1<<7)) || ((bits1&1<<7)&&(bits2&1<<6)))  ; //PrmiPrpl  
+    if(cut==97)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() &&(bits1&1<<7)&&(bits2&1<<7) ; //PrplPrpl  
+  
+   if(cut==98)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) ; //PrplPrpl  
+   if(cut==99)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK()   ; //PrplPrpl  
+   if(cut==100)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut3)&& (TMath::Abs(ph2->GetTime())<kTimeCut3) && ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsCPVOK() && ph2->IsCPV2OK()  ; //PrplPrpl  
+
+   if(cut==101)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) ; //PrplPrpl  
+   if(cut==102)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK()   ; //PrplPrpl  
+   if(cut==103)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut5)&& (TMath::Abs(ph2->GetTime())<kTimeCut5) && ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsCPVOK() && ph2->IsCPV2OK()  ; //PrplPrpl  
+
+   if(cut==104)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) ; //PrplPrpl  
+   if(cut==105)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK()   ; //PrplPrpl  
+   if(cut==106)
+      return (TMath::Abs(ph1->GetTime())<kTimeCut10)&& (TMath::Abs(ph2->GetTime())<kTimeCut10) && ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph1->IsCPV2OK() && ph2->IsCPVOK() && ph2->IsCPV2OK()  ; //PrplPrpl  
+      
+  
+  return kTRUE ;
+  
+}
+//___________________________________________________________________________
+Bool_t AliAnalysisTaskgg::PHOSCut(const AliCaloPhoton * ph1, Int_t fCuts) const{
+  
+//  // if(fCuts==kDefault){
+//   if(fCuts==0){
+//     return kTRUE ;
+//   }
+//   if(fCuts==1){
+//     return ph1->IsDispOK()  ;  
+//   }
+//   if(fCuts==2){
+//     return ph1->IsCPVOK()  ;  
+//   }
+//   if(fCuts==3){
+//     return ph1->IsDispOK()  && ph1->IsCPVOK()  ;  
+//   }
+//   if(fCuts==4){
+//     return ph1->IsDisp2OK()  ;  
+//   }
+//   if(fCuts==5){
+//     return ph1->IsCPV2OK()  ;  
+//   }
+//   if(fCuts==6){
+//     return ph1->IsDispOK()&& ph1->IsCPV2OK()  ;  
+//   }
+    
   return kTRUE ;
   
 }
@@ -1123,7 +1823,7 @@ Int_t AliAnalysisTaskgg::JetRejection(Int_t module) const{
   const Double_t cutR=0.5*0.5 ; //Cone radius squared
   
   Int_t result=0 ;
-  
+  Double_t sumE=0.;
   //azimuthal angle of PHOS module
   Double_t phiPHOS = TMath::DegToRad()*(270.+fPHOSGeo->GetPHOSAngle(module)); // (40,20,0,-20,-40) degrees
   
@@ -1140,17 +1840,21 @@ Int_t AliAnalysisTaskgg::JetRejection(Int_t module) const{
     Double_t deta=aodTrack->Eta() ;
     Double_t r=dphi*dphi+deta*deta;
     if(r<cutR){
+      sumE+= aodTrack->Pt() ; 
       result=result|1<<0 ;
       if(aodTrack->Pt()>cutPt2)
 	result=result|1<<1 ;
         if(aodTrack->Pt()>cutPt1){
 	  result=result|1<<2 ;
-	  return result ;
-	}
-      
+        }
     }
 
   }
+  if(result&1<<2)
+    FillHistogram(Form("hJetEMod%d_th3",module),sumE,fCentrality) ;
+  if(result&1<<1)
+    FillHistogram(Form("hJetEMod%d_th2",module),sumE,fCentrality) ;
+  FillHistogram(Form("hJetEMod%d_th1",module),sumE,fCentrality) ;
   return result ;
 }
 //___________________________________________________________________________
@@ -1165,5 +1869,233 @@ Double_t AliAnalysisTaskgg::EtaPhiWeight(Int_t kTbin, Double_t x) const{
     default: return 1.+0.031776*exp(-(x-0.086296)*(x-0.086296)/2./0.023534/0.023534)+0.031776*exp(-(x+0.086296)*(x+0.086296)/2./0.023534/0.023534)+0.064104*exp(-x*x/2./0.087234/0.087234) ;
   }
   
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskgg::ReclusterizeCPV(){
+  //Jet-finder like algorithm:
+  //find the highest cell, add m*n cells around it, 
+  //next highest cell, etc. while there will be no cells above the threshold
+  typedef std::pair <double, int> pairs;
+ 
+  const double kSeedAmp=10. ; //Threshold for cluster seed  
+  
+  const Double_t logWeight=4.5 ;
+        
+  //CPV geometry
+  const Int_t nCPVPadsZ=60 ;
+  const Int_t nCPVPadsX=128 ;
+  
+  //CPV cluster parameters
+  const Int_t nCluX=5 ; //cluster size  
+  const Int_t nCluZ=3 ; //cluster size
+  
+  Double_t cpvAmp[nCPVPadsX+1][nCPVPadsZ+1]={0};   
+    
+  Int_t nCpvClu=0; 
+  
+  //Copy CPV digits to 2D matrix
+  AliAODEvent *event = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODCaloCells * cells = event->GetPHOSCells() ;
+  const Int_t nCells=cells->GetNumberOfCells();
+  Int_t relId[4] ;
+  pairs arr[nCPVPadsZ*nCPVPadsX];
+  Int_t nCPV=0 ;
+  for (Int_t iCell=0; iCell<nCells; iCell++) {
+    Int_t cellAbsId = cells->GetCellNumber(iCell);
+    if(cellAbsId>0) continue; //Select CPV cells
+    cellAbsId=-cellAbsId+56*64*5;    
+    
+    fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
+    Double_t amp=cells->GetAmplitude(iCell);
+    cpvAmp[relId[2]][relId[3]]=amp ; 
+    if(amp>kSeedAmp){
+      arr[nCPV].first=amp;
+      arr[nCPV].second=cellAbsId;
+      nCPV++;
+    }
+  }  
+  
+  //Sort in increasing energy
+  std::sort(arr, arr + nCPV);  
+    
+  //Find cell with highest amplitude and if it is above threshold, combine cluster n*m and remove cells from the matrix   
+  for(Int_t iCPV=nCPV-1; iCPV>=0; iCPV--){
+    fPHOSGeo->AbsToRelNumbering(arr[iCPV].second,relId);
+    if(cpvAmp[relId[2]][relId[3]] >0){ 
+      //Create CPV cluster with seed in this seed  
+      Int_t xMin=TMath::Max(relId[2]-(nCluX-1)/2,1) ;  
+      Int_t xMax=TMath::Min(relId[2]+(nCluX-1)/2,nCPVPadsX) ;  
+      Int_t zMin=TMath::Max(relId[3]-(nCluZ-1)/2,1) ;  
+      Int_t zMax=TMath::Min(relId[3]+(nCluZ-1)/2,nCPVPadsZ) ;  
+      Double_t wtot = 0. ;
+      Double_t x = 0.,z=0. ;
+      Double_t totE=0.;
+      for(Int_t ix=xMin; ix<=xMax; ix++) {
+        for(Int_t iz=zMin; iz<=zMax; iz++) {
+          totE+=cpvAmp[ix][iz];
+        }
+      }
+      for(Int_t ix=xMin; ix<=xMax; ix++) {
+        for(Int_t iz=zMin; iz<=zMax; iz++) {
+            
+          Float_t xi=0.,zi=0. ;
+          relId[0]=3;
+          relId[1]=1;
+          relId[2]=ix;
+          relId[3]=iz;
+          fPHOSGeo->RelPosInModule(relId,xi,zi); 
+
+          if (cpvAmp[ix][iz]>0) {
+            Double_t w = TMath::Max( 0., logWeight + TMath::Log( cpvAmp[ix][iz] / totE ) ) ;
+            x += xi * w ;
+            z += zi * w ;
+            wtot += w ;
+            
+            cpvAmp[ix][iz]=0; //remove cells 
+          }
+        }
+      }
+      if(wtot != 0) {
+        x /= wtot ;
+        z /= wtot ;
+      } else {
+        x = 999 ;
+        z = 999 ;
+      }
+      //Account mis-alignment
+      TVector3 globaPos ;
+      fPHOSGeo->Local2Global(3, x, z, globaPos) ;
+
+      Double_t glZ=globaPos.Z()-3.25-5.21+0.067*globaPos.Z() ;
+      Double_t glX=globaPos.X()-0.6-0.48+0.067*globaPos.X();
+      
+      if(fCPVEvent->GetSize()<=nCpvClu)
+        fCPVEvent->Expand(nCpvClu*2) ;  
+      new((*fCPVEvent)[nCpvClu++]) TVector3(glX,arr[iCPV].first,glZ) ; 
+    }
+  }
+}
+//_________________________________________________________________________
+Bool_t AliAnalysisTaskgg::TestCPV(Double_t emcX, Double_t emcZ, Double_t e){
+   
+   //Return true if neutral 
+   for (Int_t j=0; j<fCPVEvent->GetEntriesFast(); j++) {
+     TVector3 * cpv = (TVector3*)fCPVEvent->At(j) ; 
+     if(!TestCPVCluster(cpv->X(), cpv->Z(), emcX, emcZ, e))
+        return kFALSE ;
+   }
+   return kTRUE;  
+}    
+//_________________________________________________________________________
+Bool_t AliAnalysisTaskgg::TestCPVCluster(Double_t cpvX, Double_t cpvZ, Double_t emcX, Double_t emcZ, Double_t e){  //return true if neutral
+  
+  //Return true if neutral
+  Double_t dz=cpvZ - emcZ ;
+  Double_t dx=cpvX - emcX ;
+
+  
+  Double_t dxMax= 3.36783/e-11.5189/TMath::Sqrt(e)+3.08283;
+  Double_t dxMin=-4.01590/e+13.2841/TMath::Sqrt(e)-4.31161;
+  dxMax=dx-dxMax ;
+  dxMin=dx-dxMin ;
+  Double_t sigmaX=TMath::Max(1.5,-2.07124/e+6.69554/TMath::Sqrt(e)-1.70062);
+ 
+  
+  Double_t sigmaZ=1.24859122035152259;
+  if(e>0.4) 
+    sigmaZ=5.58984e-01*TMath::Exp(-e*e/2.20543/2.20543)+7.07696e-01 ;
+  
+
+  Double_t r1=dxMax*dxMax/sigmaX/sigmaX + dz*dz/sigmaZ/sigmaZ;
+  Double_t r2=dxMin*dxMin/sigmaX/sigmaX + dz*dz/sigmaZ/sigmaZ;
+
+  return (r1>2.5*2.5) && (r2>2.5*2.5) ;
+}
+//___________________________________________________________________________________________________
+Int_t AliAnalysisTaskgg::FindTrackMatching(Int_t mod,TVector3 *locpos){
+
+    
+  Double_t  magF =fEvent->GetMagneticField();
+ 
+  Double_t magSign = 1.0;
+  if(magF<0)magSign = -1.0;
+  
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+     AliError("Margnetic filed was not initialized, use default") ;
+     AliMagF* field = new AliMagF("Maps","Maps", magSign, magSign, AliMagF::k5kG);
+     TGeoGlobalMagField::Instance()->SetField(field);
+  }
+
+  // *** Start the matching
+  Int_t nt = fEvent->GetNumberOfTracks();
+      
+  //Calculate actual distance to PHOS module
+  TVector3 globaPos ;
+  fPHOSGeo->Local2Global(mod, 0.,0., globaPos) ;
+  const Double_t rPHOS = globaPos.Pt() ; //Distance to center of  PHOS module
+  const Double_t kYmax = 72.+10. ; //Size of the module (with some reserve) in phi direction
+  const Double_t kZmax = 64.+10. ; //Size of the module (with some reserve) in z direction
+  const Double_t kAlpha0=330./180.*TMath::Pi() ; //First PHOS module angular direction
+  const Double_t kAlpha= 20./180.*TMath::Pi() ; //PHOS module angular size
+  Double_t minDistance = 1.e6;
+
+
+  Double_t gposTrack[3] ; 
+
+  Double_t bz = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField();
+  bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
+
+  Double_t b[3]; 
+  Int_t itr=-1 ;
+  AliAODTrack *aodTrack=0x0 ;
+  Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+  for (Int_t i=0; i<nt; i++) {
+      aodTrack=(AliAODTrack*)fEvent->GetTrack(i);
+
+      // Skip the tracks having "wrong" status (has to be checked/tuned)
+      if(!aodTrack->IsHybridGlobalConstrainedGlobal())
+        continue ;  
+      
+      //Continue extrapolation from TPC outer surface
+      AliExternalTrackParam outerParam;
+      aodTrack->GetPxPyPz(pxpypz);
+      aodTrack->GetXYZ(xyz);
+      aodTrack->GetCovarianceXYZPxPyPz(cv);
+      outerParam.Set(xyz,pxpypz,cv,aodTrack->Charge());
+      
+      Double_t z; 
+      if(!outerParam.GetZAt(rPHOS,bz,z))
+        continue ;
+
+      if (TMath::Abs(z) > kZmax) 
+        continue; // Some tracks miss the PHOS in Z
+
+     
+      //Direction to the current PHOS module
+      Double_t phiMod=kAlpha0-kAlpha*mod ;
+      if(!outerParam.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
+    
+      Double_t y;                       // Some tracks do not reach the PHOS
+      if (!outerParam.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
+      
+      if(TMath::Abs(y) < kYmax){
+        outerParam.GetBxByBz(b) ;
+        outerParam.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
+        //outerParam.CorrectForMaterial(...); // Correct for the TOF material, if needed
+        outerParam.GetXYZ(gposTrack) ;
+        TVector3 globalPositionTr(gposTrack) ;
+        TVector3 localPositionTr ;
+        fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod) ;
+        Double_t ddx = locpos->X()-localPositionTr.X();
+        Double_t ddz = locpos->Z()-localPositionTr.Z();
+        Double_t d2 = ddx*ddx + ddz*ddz;
+        if(d2 < minDistance) {
+	  minDistance=d2 ;
+	  itr=i ;
+         }
+      }
+    }//Scanned all tracks
+ 
+   return itr ;
 }
 

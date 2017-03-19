@@ -57,19 +57,19 @@
 ClassImp(AliGenEMCocktailV2)
 
 //________________________________________________________________________
-AliGenEMCocktailV2::AliGenEMCocktailV2()
-:AliGenCocktail(),
-fDecayer(0),
-fDecayMode(kAll),
-fWeightingMode(kNonAnalog),
-fNPart(1000),
-fParametrizationFile(""),
-fYieldArray(),
-fCollisionSystem(AliGenEMlibV2::kpp7TeV),
-fCentrality(AliGenEMlibV2::kpp),
-fV2Systematic(AliGenEMlibV2::kNoV2Sys),
-fForceConv(kFALSE),
-fSelectedParticles(kGenHadrons)
+AliGenEMCocktailV2::AliGenEMCocktailV2():AliGenCocktail(),
+  fDecayer(0),
+  fDecayMode(kAll),
+  fWeightingMode(kNonAnalog),
+  fNPart(1000),
+  fParametrizationFile(""),
+  fParametrizationDir(""),
+  fYieldArray(),
+  fCollisionSystem(AliGenEMlibV2::kpp7TeV),
+  fCentrality(AliGenEMlibV2::kpp),
+  fV2Systematic(AliGenEMlibV2::kNoV2Sys),
+  fForceConv(kFALSE),
+  fSelectedParticles(kGenHadrons)
 {
   // Constructor
 }
@@ -137,9 +137,9 @@ void AliGenEMCocktailV2::CreateCocktail()
   AliInfo(Form("Selected Params:collision system - %d , centrality - %d",fCollisionSystem, fCentrality));
   //Initialize user selection for Pt Parameterization and centrality:
   AliGenEMlibV2::SelectParams(fCollisionSystem, fCentrality,fV2Systematic);
-  AliGenEMlibV2::SetMtScalingFactors(fParametrizationFile);
+  AliGenEMlibV2::SetMtScalingFactors(fParametrizationFile, fParametrizationDir);
   SetMtScalingFactors();
-  AliGenEMlibV2::SetPtParametrizations(fParametrizationFile);
+  AliGenEMlibV2::SetPtParametrizations(fParametrizationFile, fParametrizationDir);
   SetPtParametrizations();
   
   // Create and add electron sources to the generator
@@ -521,6 +521,8 @@ void AliGenEMCocktailV2::Init()
   if (fStack) {
     while((entry = (AliGenCocktailEntry*)next())) {
       entry->Generator()->SetStack(fStack);
+      ((AliGenParam*)entry->Generator())->SetDecayer(fDecayer);
+      ((AliGenParam*)entry->Generator())->SetParamsExplicitly(new AliGenEMlibV2(), ((AliGenParam*)entry->Generator())->GetParam(), "DUMMY");
     }
   }
 }
@@ -590,8 +592,9 @@ void AliGenEMCocktailV2::Generate()
   next.Reset();
   
   // Setting weights for proper absolute normalization
-  Int_t iPart, iMother;
+  Int_t iPart, iMother, iGrandMother;
   Int_t pdgMother = 0;
+  Int_t pdgGrandMother = 0;
   Double_t weight = 0.;
   Double_t dNdy = 0.;
   Int_t maxPart = partArray->GetEntriesFast();
@@ -599,9 +602,15 @@ void AliGenEMCocktailV2::Generate()
     TParticle *part = gAlice->GetMCApp()->Particle(iPart);
     iMother = part->GetFirstMother();
     TParticle *mother = 0;
+    TParticle *grandmother = 0;
     if (iMother>=0){
       mother = gAlice->GetMCApp()->Particle(iMother);
       pdgMother = mother->GetPdgCode();
+      iGrandMother = mother->GetFirstMother();
+      if (iGrandMother>=0){
+        grandmother = gAlice->GetMCApp()->Particle(iGrandMother);
+        pdgGrandMother = grandmother->GetPdgCode();
+      }
       if(abs(part->GetPdgCode())==220011){
         // handle electrons from forced conversion
         part->SetPdgCode(TMath::Sign(abs(part->GetPdgCode())-220000,part->GetPdgCode()));
@@ -610,9 +619,11 @@ void AliGenEMCocktailV2::Generate()
           TParticle *grandmother = gAlice->GetMCApp()->Particle(iGrandMother);
           pdgMother = grandmother->GetPdgCode();
         }
+      } else if (part->GetPdgCode()==22 && iMother>=0 && iGrandMother>=0){
+          pdgMother = grandmother->GetPdgCode();
       }
     } else pdgMother = part->GetPdgCode();
-    
+
     switch (pdgMother){
       case 111:
         dNdy = fYieldArray[kPizero];

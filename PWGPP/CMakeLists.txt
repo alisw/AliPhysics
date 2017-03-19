@@ -55,6 +55,7 @@ set ( SRCS1
   AliTaskCDBconnect.cxx
   AliTrackComparison.cxx
   AliTrackComparisonESD.cxx
+  AliOfflineTrigger.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
@@ -86,6 +87,7 @@ set ( SRCS6
   ITS/AliAnalysisTaskITSTrackingCheck.cxx
   ITS/AliAnalysisTaskSDDRP.cxx
   ITS/AliAnalysisTaskSEImpParRes.cxx
+  ITS/AliAnalysisTaskSEImpParResSparse.cxx
   ITS/AliAnalysisTaskSPD.cxx
   ITS/AliMeanVertexCalibTask.cxx
   ITS/AliMeanVertexPreprocessorOffline.cxx
@@ -101,6 +103,7 @@ set ( SRCS7
   TRD/AliTRDcheckPID.cxx
   TRD/AliTRDcheckTRK.cxx
   TRD/AliTRDclusterResolution.cxx
+  TRD/AliTRDdigitsFilter.cxx
   TRD/AliTRDefficiency.cxx
   TRD/AliTRDefficiencyMC.cxx
   TRD/AliTRDinfoGen.cxx
@@ -204,6 +207,7 @@ set (SRCS15
 #file ( GLOB SRCS16 "EvTrkSelection/*.cxx" )
 set ( SRCS16
   EvTrkSelection/AliAnalysisTrackingUncertainties.cxx
+  EvTrkSelection/AliAnalysisTrackingUncertaintiesAOT.cxx
   EvTrkSelection/AliCFSingleTrackEfficiencyTask.cxx
   EvTrkSelection/AliSingleTrackEffCuts.cxx
   )
@@ -325,13 +329,18 @@ install(FILES TOF/AddTaskTOFQA.C DESTINATION PWGPP/TOF)
 install(DIRECTORY TPC/macros DESTINATION PWGPP/TPC PATTERN ".C")
 install(DIRECTORY TPC/CalibMacros DESTINATION PWGPP/TPC PATTERN ".C")
 install(DIRECTORY TPC/CalibMacros USE_SOURCE_PERMISSIONS DESTINATION PWGPP/TPC PATTERN ".sh")
+install(DIRECTORY rawmerge  USE_SOURCE_PERMISSIONS DESTINATION PWGPP PATTERN ".sh")
 install(DIRECTORY TRD/macros DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.C")
 install(FILES TRD/run.C TRD/runQAesds.C TRD/cacheOCDB.C DESTINATION PWGPP/TRD)
 install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
               TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
 DESTINATION PWGPP/TRD/TRDPID/macros)
 install(DIRECTORY TRD/data DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.root")
-install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
+install(FILES ZDC/AddTaskZDCQA.C
+              ZDC/AddTaskZDCQApp.C
+              ZDC/AddTaskZDCQAPbPb.C
+              ZDC/AddTaskZDCQApA.C
+              DESTINATION PWGPP/ZDC)
 install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C
 	      ZDC/macros/DrawPerformanceZDCQAMatchTrends.C
 	      ZDC/macros/MakeTrendZDC.C

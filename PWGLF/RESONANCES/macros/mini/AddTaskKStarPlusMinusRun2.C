@@ -1,7 +1,7 @@
 /***************************************************************************
-//            Modified by Kunal Garg  - 2/09/2016
-              Modified by Kishora Nayak - 14/06/2016
+//            Modified by Kishora Nayak - 14/06/2016
 //            Modified by Enrico Fragiacomo - 15/01/2014
+//            Modified by Kunal Garg - 04/02/2017  
 //            Based on AddAnalysisTaskRsnMini
 //            pPb specific settings from AddTaskKStarPPB.C
 //
@@ -56,27 +56,36 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Bool_t      isMC,
  Bool_t      isPP,
  // Int_t     collSyst,
- Float_t     cutV ,
- Int_t       evtCutSetID,
- Int_t       pairCutSetID,
- Int_t       mixingConfigID,
- Int_t       aodFilterBit,
+ Float_t     cutV = 10.0,
+ Int_t       evtCutSetID = 0,
+ Int_t       pairCutSetID = 0,
+ Int_t       mixingConfigID = 0,
+ Int_t       aodFilterBit = 5,
  Bool_t      enableMonitor=kTRUE,
- TString     monitorOpt= "", 
- Float_t     piPIDCut  ,
- Float_t     pi_k0s_PIDCut,
- //Float_t     trackDCAcut = 7.0,
- Float_t     massTol,
- Float_t     k0sDCA,
- Float_t     k0sCosPoinAn,
- Float_t     k0sDaughDCA,
- Int_t       NTPCcluster,
- Float_t     maxDiffVzMix,
- Float_t     maxDiffMultMix,
- Float_t     maxDiffAngleMixDeg,
+ TString     monitorOpt="pp", 
+ Float_t     piPIDCut = 3.0,
+ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,    
+ Float_t     pi_k0s_PIDCut = 5.0,
+ Float_t     massTol = 0.03,
+ Float_t     massTolVeto = 0.004,
+ Float_t     pLife = 20,  
+ Float_t     radiuslow = 0.5,
+ Float_t     radiushigh = 200,    
+ Bool_t      Switch = kFALSE,
+ Float_t     k0sDCA = 0.3,
+ Float_t     k0sCosPoinAn = 0.97,
+ Float_t     k0sDaughDCA = 1.0,
+ Int_t       NTPCcluster = 70,
+ Float_t     maxDiffVzMix = 1.0,
+ Float_t     maxDiffMultMix = 10.0,
+ Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
- TString     outNameSuffix = "KStarPlusMinusRun2",
- Int_t       centr = 0
+ TString     outNameSuffix = "KStarPlusMinus_TestPID",
+ Int_t       centr = 0,
+ Bool_t      ptDep = kTRUE,
+ Float_t     DCAxy = 0.06,
+ Bool_t      enableSys = kTRUE,
+ Int_t       Sys= 1
  )
 {  
   //-------------------------------------------                                                                                          
@@ -110,13 +119,13 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskKStarPlusMinusRun2", "No analysis manager to connect to.");
+      ::Error("AddTaskKStarPlusMinus", "No analysis manager to connect to.");
       return NULL;
    } 
    
    // create the task and configure 
-   TString taskName = Form("KStarPlusMinus%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pi_k0s_PIDCut,massTol,k0sDCA,k0sCosPoinAn,k0sDaughDCA);
-   //TString taskName=Form("TOFKstar%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
+    TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
+ 
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
    
    //task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
@@ -200,24 +209,24 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusRun2.C");
    //gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
    if (isMC) {
      Printf("========================== MC analysis - PID cuts not used"); 
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, piPIDCut, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair, ptDep, DCAxy, enableSys, Sys)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
    //
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //  outputFileName += ":Rsn";
-   Printf("AddTaskKStarPlusMinusRun2 - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   Printf("AddTaskKStarPlusMinus - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s", outNameSuffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%.1f_%.2f_%.3f_%.f_%.f_%.f_%.1f_%.2f_%.1f_%.3f_%.1f", outNameSuffix.Data(),piPIDCut,pi_k0s_PIDCut,massTol,massTolVeto,pLife,radiuslow,radiushigh,k0sDCA,k0sCosPoinAn,k0sDaughDCA, DCAxy, Sys), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
    
    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(task, 1, output);

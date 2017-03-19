@@ -59,6 +59,7 @@ fAOD(0),
 fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
+fmcHeader(0),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -73,6 +74,8 @@ fEtIsoMethod(0),
 fEtIsoThreshold(2),
 fdetacut(0.025),
 fdphicut(0.03),
+fdetacutIso(0.025),
+fdphicutIso(0.03),
 fM02mincut(0.1),
 fM02maxcut(0.3),
 fExtraIsoCuts(kFALSE),
@@ -87,6 +90,7 @@ fMCQAdim(0),
 fisLCAnalysis(0),
 fIsNLMCut(kFALSE),
 fNLMCut(0),
+fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
 fRejectionEventWithoutTracks(kFALSE),
@@ -186,6 +190,14 @@ fTracksConeEtaPt(0),
 fTracksConeEtaM02(0),
 fHistXsection(0),
 fHistTrials(0),
+fPtTracksVSpTNC(0),
+fCTdistVSpTNC(0),
+fPtTracksVSpTNC_MC(0),
+fpi0VSclusterVSIsolation(0),
+fpi0VSclusterVSM02(0),
+fpi0VSM02VSIsolation(0),
+fPhiTracksVSclustPt(0),
+fEtaTracksVSclustPt(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -214,6 +226,7 @@ fAOD(0),
 fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
+fmcHeader(0),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -228,6 +241,8 @@ fEtIsoMethod(0),
 fEtIsoThreshold(2),
 fdetacut(0.025),
 fdphicut(0.03),
+fdetacutIso(0.025),
+fdphicutIso(0.03),
 fM02mincut(0.1),
 fM02maxcut(0.3),
 fExtraIsoCuts(kFALSE),
@@ -242,6 +257,7 @@ fMCQAdim(0),
 fisLCAnalysis(0),
 fIsNLMCut(kFALSE),
 fNLMCut(0),
+fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
 fRejectionEventWithoutTracks(kFALSE),
@@ -341,6 +357,14 @@ fTracksConeEtaPt(0),
 fTracksConeEtaM02(0),
 fHistXsection(0),
 fHistTrials(0),
+fPtTracksVSpTNC(0),
+fCTdistVSpTNC(0),
+fPtTracksVSpTNC_MC(0),
+fpi0VSclusterVSIsolation(0),
+fpi0VSclusterVSM02(0),
+fpi0VSM02VSIsolation(0),
+fPhiTracksVSclustPt(0),
+fEtaTracksVSclustPt(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -719,7 +743,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     //Common histograms QA initialization
   if(fQA){
       //Include QA plots to the OutputList //DEFINE BETTER THE BINNING AND THE AXES LIMITS
-    fTrackMult = new TH1D ("hTrackMult","Tracks multiplicity Distribution",250,0.,1000.);
+    fTrackMult = new TH1D ("hTrackMult","Tracks multiplicity Distribution",100,0.,100.);
     fTrackMult->Sumw2();
     fOutput->Add(fTrackMult);
     
@@ -731,11 +755,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       //  fEtaPhiClus->Sumw2();
     fOutput->Add(fEtaPhiClus);
     
-    fDeltaETAClusTrack = new TH1D("h_Dz","Track-Cluster Dz ",100,-0.05,0.05);
+    fDeltaETAClusTrack = new TH1D("h_Dz","Track-Cluster Dz ",1000,-0.5,0.5);
     fDeltaETAClusTrack->Sumw2();
     fOutput->Add(fDeltaETAClusTrack);
     
-    fDeltaPHIClusTrack = new TH1D("h_Dx","Track-Cluster Dx",100,-0.05,0.05);
+    fDeltaPHIClusTrack = new TH1D("h_Dx","Track-Cluster Dx",1000,-0.5,0.5);
     fDeltaPHIClusTrack->Sumw2();
     fOutput->Add(fDeltaPHIClusTrack);
     
@@ -777,7 +801,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fTestLocalIndexE->Sumw2();
     fOutput->Add(fTestLocalIndexE);
 
-    fTestEtaPhiCone= new TH2D("hTestEtatPhiCone","Test eta phi neutral clusters candidates",200,0.,100.,200,0.,100.);
+    fTestEtaPhiCone= new TH2D("hTestEtatPhiCone","Test eta phi neutral clusters candidates",200,0,TMath::TwoPi(),140,-.7,.7);
     fTestEtaPhiCone->SetXTitle("phi");
     fTestEtaPhiCone->SetYTitle("eta");
     fTestEtaPhiCone->Sumw2();
@@ -846,6 +870,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // fphietaOthers = new TH3D("hphietaOthers","Test eta phi others",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
     // fOutput->Add(fphietaOthers);
   
+  fPtTracksVSpTNC = new TH2F ("hTrackPtSpecVSpT","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
+  fPtTracksVSpTNC->Sumw2();
+  fOutput->Add(fPtTracksVSpTNC);
+  
+  fPhiTracksVSclustPt  = new TH2F("hPhiTracks_vs_clustPT","Tracks phi distr vs pT Candidate",70, 0.,70., 200,0.,TMath::TwoPi());
+  fPhiTracksVSclustPt->Sumw2();
+  fOutput->Add(fPhiTracksVSclustPt);
+  
+  fEtaTracksVSclustPt  = new TH2F("hEtaTracks_vs_clustPT","Tracks eta distr vs pT Candidate",70, 0.,70., 90,-0.9,0.9);
+  fEtaTracksVSclustPt->Sumw2();
+  fOutput->Add(fEtaTracksVSclustPt);
+  
+  fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,210,-0.1,2.);
+  fCTdistVSpTNC->Sumw2();
+  fOutput->Add(fCTdistVSpTNC);
+  
+  
   if(fIsMC){
       //CREATE THE TH2 specific for the MC Analysis Maybe to be added in the THNSparse, or cloning two or three axes and add the specific MC Truth info
     fHistXsection = new TH1F("fHistXsection", "fHistXsection", 1, 0, 1);
@@ -856,8 +897,34 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fHistTrials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
     fOutput->Add(fHistTrials);
   
+    fPtTracksVSpTNC_MC = new TH2F ("hChargedptSpecVSpT_MC","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,50.);
+    fPtTracksVSpTNC_MC->Sumw2();
+    fOutput->Add(fPtTracksVSpTNC_MC);
+    
+    fpi0VSclusterVSIsolation = new TH3F ("hpi0VSclusterVSisolation","Energy pi0 vs cluster Energy vs Isolation",95,5.,100.,95,5.,100.,400,0.,100.);
+    fpi0VSclusterVSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
+    fpi0VSclusterVSIsolation->SetYTitle("cluster E");
+    fpi0VSclusterVSIsolation->SetZTitle("Isolation");
+    fpi0VSclusterVSIsolation->Sumw2();
+    fOutput->Add(fpi0VSclusterVSIsolation);
+    
+    fpi0VSM02VSIsolation = new TH3F ("fpi0VSM02VSIsolation","Energy pi0 vs cluster M02 vs Isolation",95,5.,100.,500,0.,5.,400,0.,100.);
+    fpi0VSM02VSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
+    fpi0VSM02VSIsolation->SetYTitle("cluster M02");
+    fpi0VSM02VSIsolation->SetZTitle("Isolation");
+    fpi0VSM02VSIsolation->Sumw2();
+    fOutput->Add(fpi0VSM02VSIsolation);
+    
+    fpi0VSclusterVSM02 = new TH3F ("fpi0VSclusterVSM02","Energy pi0 vs Energy cluster vs cluster M02 ",95,5.,100.,100,0.,100.,500,0.,5.);
+    fpi0VSclusterVSM02->SetXTitle("particle (#pi^{0} or #eta) E");
+    fpi0VSclusterVSM02->SetYTitle("cluster E");
+    fpi0VSclusterVSM02->SetZTitle("cluster M02");
+    fpi0VSclusterVSM02->Sumw2();
+    fOutput->Add(fpi0VSclusterVSM02);
   }
 
+  
+  
   PostData(1, fOutput);
     //     //   return;
 }
@@ -987,28 +1054,36 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     // delete output USEFUL LATER FOR CONTAINER CREATION !!
     //fOutClusters->Delete();
   Int_t index=0;
-  
+
   if(fIsMC){
     AliAODMCHeader *mcHeader;
     
     fAODMCParticles = static_cast <TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
     
-    mcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindObject(AliAODMCHeader::StdBranchName()));
-      //AliError(Form("Passe analyze MC"));
+    fmcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+//    Printf("%d",fmcHeader->GetEventType());
     if (!fIsMC)
-      return kTRUE;
+      return kFALSE;
       //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
-    if(!fStack && !fAODMCParticles)
-    {cout<<"no stack saved\n"; return kTRUE;}
+    if(!fStack && !fAODMCParticles){
+        AliError("no MC stack saved\n");
+        return kFALSE;
+    }
     
       //cout<<"there's a List of particles"<<endl;
       //DO THIS ALSO FOR ESDs
-    
+
     if(fAODMCParticles->GetEntries() < 1){
-      AliError("number of tracks insufficient");
-      return kTRUE;
+      AliError("number of MC particles insufficient");
+      return kFALSE;
     }
-    AnalyzeMC();
+//    Printf("%d",fMCtruth);
+//    Printf("Passe analyze MC");
+
+    if(fMCtruth || (fmcHeader->GetEventType()==14 || fmcHeader->GetEventType()==29)){
+//      Printf("Analysing mc");
+      AnalyzeMC();
+    }
   }
   
   if (fisLCAnalysis) {
@@ -1042,7 +1117,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       return kFALSE;
     
     
-    if(ClustTrackMatching(coi))
+    if(ClustTrackMatching(coi,kTRUE))
       return kFALSE;
     
     if(!CheckBoundaries(vecCOI))
@@ -1092,10 +1167,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         AliDebug(1,Form("NLM = %d",nlm));
         
           // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
-        
-        if(fIsNLMCut && fNLMCut>0)
-          if(nlm > fNLMCut)
+        if(coi->E()>=5. && coi->E()<70. && fQA)
+          fNLM->Fill(nlm,coi->E());
+        if(fIsNLMCut && fNLMCut>0 && fNLMmin>0)
+          if(nlm > fNLMCut || nlm < fNLMmin ){
+            //AliWarning(Form("NLM = %d --- NLM min = %d --- NLMcut = %d",nlm,fNLMmin,fNLMCut));
             continue;
+          }
       }
       else
         AliDebug(1,Form("Can't retrieve EMCAL cells"));
@@ -1103,7 +1181,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       fPtaftNLM->Fill(vecCOI.Pt());
       if(fTMClusterRejected)
       {
-        if(ClustTrackMatching(coi)){
+        if(ClustTrackMatching(coi,kTRUE)){
           continue;
         }
       }
@@ -1113,8 +1191,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       
       fPtaftDTBC->Fill(vecCOI.Pt());
       
-      if(coi->E()>=5. && coi->E()<70. && fQA)
-        fNLM->Fill(nlm,coi->E());
+      
       
       if(!CheckBoundaries(vecCOI))
         continue;
@@ -1127,6 +1204,17 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       if(vecCOI.Pt()<5.) continue;
       
         //      Printf("Inside Run: Passing to FillGeneralHistograms for cluster with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",index,vecCOI.Pt(),vecCOI.Eta(),vecCOI.Phi());
+      for (auto it : tracksANA->accepted()){
+        AliVTrack *tr = static_cast<AliVTrack*>(it);
+        if(!tr) {
+          AliError("No track found");
+          return kFALSE;
+        }
+        fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
+        fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+        fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+      }
+      
       FillGeneralHistograms(coi,vecCOI,index);
     }
     
@@ -1172,9 +1260,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
   fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
   
   Double_t checktof = coi->GetTOF()*1e9;
-  
+  fClusTime->Fill(checktof);
+
   if(checktof>-30. && checktof<30. && !fIsMC){
-    fClusTime->Fill(checktof);
       // fPtaftTime->Fill(vecCOI.Pt());
       //  if(!ClustTrackMatching(coi)){
       //  fPtaftTM->Fill(vecCOI.Pt());
@@ -1256,15 +1344,18 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::MCSimTrigger(AliVEvent *eventIn, Int
 
 
   //__________________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clust) {
+Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clust, Bool_t candidate) {
     // Check if the cluster match to a track
   
   AliTrackContainer* tracks = GetTrackContainer(0);
   AliVTrack* mt = 0;
+  TLorentzVector vecClust;
+  clust->GetMomentum(vecClust,fVertex);
   
   Int_t nbMObj = clust -> GetNTracksMatched();
-  
   if(tracks->GetTrackFilterType()!=AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
+  
+  Double_t distCT=0.;
   
   if (nbMObj == 0) return kFALSE;
   
@@ -1285,7 +1376,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     
       //    printf("Cluster ID %d matched with track ID %d with pT %.3f",clust->GetID(),mt->GetID(),mt->Pt());
     
-    
+    Double_t deltaEta,deltaPhi;
     Double_t deta = 999;
     Double_t dphi = 999;
     
@@ -1300,12 +1391,25 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     deta=veta-ceta;
     dphi=TVector2::Phi_mpi_pi(vphi-cphi);
       //    printf("distant deta %.3f and dphi %.3f from the cluster",deta, dphi);
-    if(fQA){
+    if(fQA && candidate){
       fDeltaETAClusTrack->Fill(deta);
       fDeltaPHIClusTrack->Fill(dphi);
     }
-    if(TMath::Abs(dphi)<fdphicut && TMath::Abs(deta)<fdetacut){
-      if(fQA){
+    distCT=TMath::Sqrt(deta*deta+dphi*dphi);
+    fCTdistVSpTNC->Fill(vecClust.Pt(),distCT);
+    
+      //      Printf("dphimin %g dphi %g   i %d  matchidx %d",dphimin,dphi,i, matchidxphi);
+    if(candidate){
+      deltaEta=fdetacut;
+      deltaPhi=fdphicut;
+    }
+    else{
+      deltaEta=fdetacutIso;
+      deltaPhi=fdphicutIso;
+    }
+   
+    if(TMath::Abs(dphi)<deltaPhi && TMath::Abs(deta)<deltaEta){
+      if(fQA && candidate){
         fDeltaETAClusTrackMatch->Fill(deta);
         fDeltaPHIClusTrackMatch->Fill(dphi);
       }
@@ -1783,7 +1887,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       if(clustTOF<-30. || clustTOF>30.) continue;
     
     if(fTMClusterInConeRejected)
-      if(ClustTrackMatching(coi)) continue;
+      if(ClustTrackMatching(coi,kFALSE)) continue;
     
     if(nClust.E()<0.3) continue;
       //redefine phi/c.Eta() from the cluster we passed to the function
@@ -1927,7 +2031,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       if(clustTOF<-30. || clustTOF>30.) continue;
     
     if(fTMClusterInConeRejected)
-      if(ClustTrackMatching(coi)) continue;
+      if(ClustTrackMatching(coi,kFALSE)) continue;
     
     if(nClust.E()<0.3) continue;
       //redefine phi/c.Eta() from the cluster we passed to the function
@@ -2394,15 +2498,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
     //cout<<"\n\n\n\n\n\n\nInside Look4Particle \n For Cluster "<<clusterlabel<<"\t\t"<<energyCLS<<"\t\t"<<etaCLS<<"\t\t"<<phiCLS<<"\t\t"<<ss<<"\t\t"<<isolation<<"\n\n\n\n"<<endl;
   
   if (!fIsMC){
-    cout<<"not a montecarlo run!!!!!!"<<endl;
+    AliWarning("not a montecarlo run!!!!!!");
     return;
   } //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
   if(!fStack && !fAODMCParticles){
-    cout<<"No Particle Stack !!!!!"<<endl;
+    AliWarning("No Particle Stack !!!!!");
+    //cout<<"No Particle Stack !!!!!"<<endl;
     return;
   }
   if(fAODMCParticles->GetEntries() < 1){
-    cout<<"number of tracks insufficient"<<endl;
+    AliWarning("number of tracks insufficient!!!!");
     return;
   }
   
@@ -2416,7 +2521,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   
   AliAODMCParticle *particle2Check, *momP2Check;
   
-  Int_t clustPDG, p2clabel;
+  Int_t clustPDG, p2clabel, p2ccharge;
   Double_t enTrue,phiTrue, etaTrue;
   Double_t dPhi,dEta ;
   Int_t clusterFromPromptPhoton=-1;
@@ -2426,12 +2531,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   int mom2checkidx = particle2Check->GetMother();
   momP2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mom2checkidx));
   
-    //Direct Photon or e+/e- coming from Photon Conversion
-  if(clustPDG==22 || (TMath::Abs(clustPDG) == 11 && momP2Check->GetPdgCode() == 22)){
-    phiTrue = particle2Check->Phi(); //
-    etaTrue = particle2Check->Eta(); //Basic quantities from MCtruth.
-    enTrue  = particle2Check->E()*TMath::Sin(particle2Check->Theta()); // Now let's check if we need corrections to the Energy.
+  phiTrue = particle2Check->Phi(); //
+  etaTrue = particle2Check->Eta(); //Basic quantities from MCtruth.
+  enTrue  = particle2Check->E()*TMath::Sin(particle2Check->Theta()); // Now let's check if we need corrections to the Energy.
+  dPhi = phiCLS-phiTrue;
+  dEta = etaCLS-etaTrue;
+  p2ccharge = particle2Check->Charge();
     
+  if(clustPDG==22 || (TMath::Abs(clustPDG) == 11 && momP2Check->GetPdgCode() == 22)){
+    //Direct Photon or e+/e- coming from Photon Conversion
       //Checking if the Photon is a decay product of pi0 or eta meson. //Maybe include omega?
       //printf("Cluster Label: %d Asso. with a MCpar w/ PDG %d",clusterlabel,clustPDG);
     if(clustPDG==22){
@@ -2466,6 +2574,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7;//contribution from one daughter
           }
+          fpi0VSclusterVSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, isolation);
+          fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS,ss);
+          fpi0VSM02VSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), ss, isolation);
         }
         else{
             //printf("  of a non considered meson/baryon");
@@ -2539,39 +2650,54 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             AliAODMCParticle *aunt=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxaunt1));
             if(( aunt->Phi() - phiTrue ) < 0.01 && ( aunt->Eta() - etaTrue ) < 0.01 ){
               enTrue += aunt->E()*TMath::Sin(aunt->Theta());
-              clusterFromPromptPhoton=7;//contribution from both daughters
+              clusterFromPromptPhoton=6;//contribution from both daughters
             }
             else
-              clusterFromPromptPhoton=6;//contribution from one daughter
+              clusterFromPromptPhoton=7;//contribution from one daughter
           }
+          fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
+          fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, ss);
+          fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
+
         }
         else
           clusterFromPromptPhoton=8;//Undefined
       }
     }
     
-    dPhi = phiCLS-phiTrue;
-    dEta = etaCLS-etaTrue;
       //printf("\nCluster %d  PDG: %d  (Mom is a %d) with pT: %f  ",clusterlabel,clustPDG,momP2Check->GetPdgCode(),energyCLS);
       //printf(" with clusterFromPromptPhoton stored: %d for cluster w/label %d\n",clusterFromPromptPhoton,clusterlabel);
-    outputvalueMCmix[0] = energyCLS;
-    outputvalueMCmix[1] = ss;
-    outputvalueMCmix[2] = clustPDG;
-    outputvalueMCmix[3] = momP2Check->GetPdgCode();
-    outputvalueMCmix[4] = enTrue;
-    outputvalueMCmix[5] = dPhi;
-    outputvalueMCmix[6] = dEta;
-    outputvalueMCmix[7] = isolation;
-    outputvalueMCmix[8] = clusterFromPromptPhoton;
-      //clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
-      //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
-      //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
-      //clusterFromPP=6 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with contribution from max 2 electrons to the Energy;
-      //clusterFromPP=7 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with 4 contribution to the energy;
-      //clusterFromPP=8 -> clusterlabel= Gamma decay NOT from pi0/eta decay.
-    
-    if(fWho==1) fOutClustMC->Fill(outputvalueMCmix);
+   
   }
+  else{
+      if(p2ccharge==0){
+        clusterFromPromptPhoton=10;
+      }
+      else{
+          clusterFromPromptPhoton=11;
+      }
+      //AliWarning(Form("Hadronic cluster with energy: %f, M02: %f, cluster PDG: %d, mother PDG: %d, truth energy: %f, dphi: %f, deta %f, isolation energy: %f, cluster label: %d, charge: %d",energyCLS, ss, clustPDG, momP2Check->GetPdgCode(), enTrue, dPhi, dEta, isolation, clusterFromPromptPhoton, p2ccharge ));
+  }
+  outputvalueMCmix[0] = energyCLS;
+  outputvalueMCmix[1] = ss;
+  outputvalueMCmix[2] = clustPDG;
+  outputvalueMCmix[3] = momP2Check->GetPdgCode();
+  outputvalueMCmix[4] = enTrue;
+  outputvalueMCmix[5] = dPhi;
+  outputvalueMCmix[6] = dEta;
+  outputvalueMCmix[7] = isolation;
+  outputvalueMCmix[8] = clusterFromPromptPhoton;
+    //clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
+    //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
+    //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
+    //clusterFromPP=6 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with contribution from max 2 electrons to the Energy;
+    //clusterFromPP=7 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with 4 contribution to the energy;
+    //clusterFromPP=8 -> clusterlabel= Gamma decay NOT from pi0/eta decay.
+    //clusterFromPP=10 -> clusterlabel= Neutral hadronic particle.
+    //clusterFromPP=11 -> clusterlabel= Charged hadronic particle.
+  
+  if(fWho==1) fOutClustMC->Fill(outputvalueMCmix);
+  
   return;
 }
   //__________________________________________________________________________________________________________________________
@@ -3023,45 +3149,39 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   if(fCaloCells)
     nlm = GetNLM(coi,fCaloCells);
   
-//  Printf("cluster ID %d with nlm %d . M02 BEFORE possible smearing %.4lf . Do we set the smearing ? %s ",coi->GetID(),nlm, m02COI = coi->GetM02(), fSSsmearing? "Yes":"No");
+    //  Printf("cluster ID %d with nlm %d . M02 BEFORE possible smearing %.4lf . Do we set the smearing ? %s ",coi->GetID(),nlm, m02COI = coi->GetM02(), fSSsmearing? "Yes":"No");
   
   if(fSSsmearing){
-    if(coi->GetID()%3==0 && coi->GetM02()>0.1 && fSSsmear_mean!=0){
-      
-      if(fWhich==0){
-          //      Printf("Smearing for all clusters");
+    if(coi->GetM02()>0.1){
+        //      Printf("Smearing for only clusters with nlm = %d" ,fWhich);
+      if(nlm==1){
         if((fSSsmearwidth != 0.)){
           TRandom3 *ran=new TRandom3(0);
-          Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-          m02COI = coi->GetM02() + smear;
+          if(fWhich==0){//Landau Smearing
+            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean==0 || (fSSsmear_mean!=0 && coi->GetID()%3==0))
+              m02COI = coi->GetM02() + smear;
+          }
+          else{//Gaussian Smearing
+            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean==0 || (fSSsmear_mean!=0 && coi->GetID()%3==0))
+              m02COI = coi->GetM02() + smear;
+          }
         }
         else {
           AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
           m02COI = coi->GetM02();
         }
       }
-      else{
-          //      Printf("Smearing for only clusters with nlm = %d" ,fWhich);
-        if(nlm==fWhich){
-          if((fSSsmearwidth != 0.)){
-            TRandom3 *ran=new TRandom3(0);
-            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-            m02COI = coi->GetM02() + smear;
-          }
-          else {
-            AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
-            m02COI = coi->GetM02();
-          }
-        }
-        else
-          m02COI = coi->GetM02();
-      }
+      else
+        m02COI = coi->GetM02();
     }
   }
   else{
     AliWarning("Smearing not SET!");
     m02COI = coi->GetM02();
   }
+
   
     //  Printf("M02 AFTER possible smearing: %.4lf",m02COI);
   
@@ -3098,7 +3218,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
     IsolationAndUEinTPC(coi,isolation,ue,eTThreshold,index);
   
   if(fIsMC)
-    LookforParticle(coi->GetLabel(),vecCOI.Et(),vecCOI.Phi(),vecCOI.Eta(),coi->GetTOF()*1e9, coi->GetM02(),isolation);
+    LookforParticle(coi->GetLabel(),vecCOI.Et(),vecCOI.Phi(),vecCOI.Eta(),coi->GetTOF()*1e9,m02COI,isolation);
   
   /*  Here we should call something to know the number of tracks...
    Soon I'll put in this version the "old way"; please let me know if
@@ -3324,7 +3444,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       
         //check photons in EMCAL //to be redefined with fIsoConeR
       if(!fTPC4Iso){
-      if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.798 || phi>(TMath::Pi()-fIsoConeRadius)))
+      if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.398 + fIsoConeRadius || phi>(TMath::Pi()-fIsoConeRadius-0.03)))
         continue;
       }
       else{
@@ -3380,12 +3500,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         
         if(!mcpp) {continue;}
         
-        if(fTPC4Iso)
-          if((mcpp->GetPdgCode())==22) {continue;}
+        if(mcpp->Charge()!=0 && mcpp->GetStatus()>10)
+          fPtTracksVSpTNC_MC->Fill(eT,mcpp->Pt());
+        
+        if(fIsoMethod==2)
+          if((mcpp->Charge())==0) {continue;}
         
         if(mcpp->GetStatus()>10) {continue;}
         
         int mumidx=mcpp->GetMother();
+        if (mumidx<0 || mumidx>nTracks) continue;
+        
         mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
         if(mumidx == photonlabel || mum->GetPdgCode()==22) continue;
         

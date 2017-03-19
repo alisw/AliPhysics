@@ -48,12 +48,13 @@ AliHadCorrTask::AliHadCorrTask() :
 {
   // Default constructor.
 
-  for(Int_t i=0; i<8; i++) {
+  for(Int_t i=0; i<10; i++) {
     fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
-    fHistEsubPchRatAll[i] = 0;
 
-    if (i<4) {
+    if (i<5) {
+      fHistEsubPchRatAll[i] = 0;
+
       fHistMatchEvsP[i]    = 0;
       fHistMatchdRvsEP[i]  = 0;
       fHistNMatchEnergy[i] = 0;
@@ -65,12 +66,12 @@ AliHadCorrTask::AliHadCorrTask() :
       fHistOversub[i] = 0;
 
       for(Int_t j=0; j<4; j++)
-	fHistNCellsEnergy[i][j] = 0;
+        fHistNCellsEnergy[i][j] = 0;
     }
     
     for(Int_t j=0; j<9; j++) {
       for(Int_t k=0; k<2; k++) 
-	fHistMatchEtaPhi[i][j][k] = 0;
+        fHistMatchEtaPhi[i][j][k] = 0;
     }
   } 
 }
@@ -100,12 +101,13 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
 {
   // Standard constructor.
 
-  for(Int_t i=0; i<8; i++) {
+  for(Int_t i=0; i<10; i++) {
     fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
-    fHistEsubPchRatAll[i] = 0;
 
-    if (i<4) {
+    if (i<5) {
+      fHistEsubPchRatAll[i] = 0;
+
       fHistMatchEvsP[i]    = 0;
       fHistMatchdRvsEP[i]  = 0;
       fHistNMatchEnergy[i] = 0;
@@ -117,12 +119,12 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
       fHistOversub[i] = 0;
 
       for(Int_t j=0; j<4; j++)
-	fHistNCellsEnergy[i][j] = 0;
+        fHistNCellsEnergy[i][j] = 0;
     }
     
     for(Int_t j=0; j<9; j++) {
       for(Int_t k=0; k<2; k++) 
-	fHistMatchEtaPhi[i][j][k] = 0;
+        fHistMatchEtaPhi[i][j][k] = 0;
     }
   } 
   
@@ -396,11 +398,11 @@ void AliHadCorrTask::UserCreateOutputObjects()
   for(Int_t icent=0; icent<nCentChBins; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
       for(Int_t ieta=0; ieta<2; ++ieta) {
-	name = Form("fHistMatchEtaPhi_%i_%i_%i",icent,ipt,ieta);
-	fHistMatchEtaPhi[icent][ipt][ieta] = new TH2F(name, name, fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
-	fHistMatchEtaPhi[icent][ipt][ieta]->SetXTitle("#Delta#eta");
-	fHistMatchEtaPhi[icent][ipt][ieta]->SetYTitle("#Delta#phi");
-	fOutput->Add(fHistMatchEtaPhi[icent][ipt][ieta]);
+        name = Form("fHistMatchEtaPhi_%i_%i_%i",icent,ipt,ieta);
+        fHistMatchEtaPhi[icent][ipt][ieta] = new TH2F(name, name, fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+        fHistMatchEtaPhi[icent][ipt][ieta]->SetXTitle("#Delta#eta");
+        fHistMatchEtaPhi[icent][ipt][ieta]->SetYTitle("#Delta#phi");
+        fOutput->Add(fHistMatchEtaPhi[icent][ipt][ieta]);
       }
     }
 
@@ -417,20 +419,20 @@ void AliHadCorrTask::UserCreateOutputObjects()
     fHistEsubPchRat[icent]->SetYTitle("E_{sub} / #sum p");
     fOutput->Add(fHistEsubPchRat[icent]);
 
-    name = Form("fHistEsubPchRatAll_%i",icent);
-    temp = Form("%s (all Nmatches)",name.Data());
-    fHistEsubPchRatAll[icent]=new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
-    fHistEsubPchRatAll[icent]->SetXTitle("#Sigma p (GeV)");
-    fHistEsubPchRatAll[icent]->SetYTitle("E_{sub} / #sum p");
-    fOutput->Add(fHistEsubPchRatAll[icent]);
-    
     if (icent<fNcentBins) {
       for(Int_t itrk=0; itrk<4; ++itrk) {
-	name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
-	temp = Form("%s (Nmatches==%d);N_{cells};E_{clus} (GeV)",name.Data(),itrk);
-	fHistNCellsEnergy[icent][itrk]  = new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
-	fOutput->Add(fHistNCellsEnergy[icent][itrk]);
+        name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
+        temp = Form("%s (Nmatches==%d);N_{cells};E_{clus} (GeV)",name.Data(),itrk);
+        fHistNCellsEnergy[icent][itrk]  = new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
+        fOutput->Add(fHistNCellsEnergy[icent][itrk]);
       }
+
+      name = Form("fHistEsubPchRatAll_%i",icent);
+      temp = Form("%s (all Nmatches)",name.Data());
+      fHistEsubPchRatAll[icent]=new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
+      fHistEsubPchRatAll[icent]->SetXTitle("#Sigma p (GeV)");
+      fHistEsubPchRatAll[icent]->SetYTitle("E_{sub} / #sum p");
+      fOutput->Add(fHistEsubPchRatAll[icent]);
 
       name = Form("fHistMatchEvsP_%i",icent);
       temp = Form("%s (all Nmatches)",name.Data());

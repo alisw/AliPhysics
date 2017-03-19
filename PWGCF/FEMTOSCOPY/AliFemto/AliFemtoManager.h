@@ -19,6 +19,30 @@
 #include "AliFemtoEventReader.h"
 #include "AliFemtoEventWriter.h"
 
+
+/// \class AliFemtoManager
+/// \brief Main class for managing femtoscopic analyses
+///
+/// The Manager is the top-level object containing an EventReader
+/// (the input), and collections of EventWriters and AliFemtoAnalyses
+/// (the outputs).
+///
+/// A manager object is owned by an AliAnalysistaskFemto object which
+/// calls the `ProcessEvent()` method, which reads an AliFemtoEvent
+/// from the input files, and forwards it to the `ProcessEvent` method
+/// in each output analysis, which is responsible for carrying out the
+/// actual cuts & computation.
+///
+/// AliFemtoManager objects "own" the EventReader, Analyses, and
+/// EventWriters added to them, and is responsible for deleting them
+/// upon its own destruction.
+///
+/// AliFemtoManager objects are not copyable, as the AliFemtoAnalysis
+/// objects they contain have no means of copying/cloning.
+/// Denying copyability by making the copy constructor and assignment
+/// operator private prevents potential dangling pointer (segfault)
+/// errors.
+///
 class AliFemtoManager {
 
 private:
@@ -46,8 +70,15 @@ public:
   AliFemtoEventReader* EventReader();
   void SetEventReader(AliFemtoEventReader* r);
 
+  /// Calls `Init()` on all owned EventWriters
+  ///
+  /// Returns 0 for success, 1 for failure.
+  ///
   int Init();
+
   int ProcessEvent();   ///< a "0" return value means success - otherwise quit
+
+  /// Calls `Finish()` on the EventReader, EventWriters, and the Analyses.
   void Finish();
 
   AliFemtoString Report(); //!<

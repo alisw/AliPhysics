@@ -24,7 +24,7 @@ AliPhysicsSelectionTask::AliPhysicsSelectionTask(const char* opt) :
   fOutput(0),
   fOption(opt),
   fUseSpecialOutput(kFALSE),
-  fPhysicsSelection(new AliPhysicsSelection())
+  fPhysicsSelection(new AliPhysicsSelection("blablabla"))
 {
   //
   // Constructor. Initialization of pointers

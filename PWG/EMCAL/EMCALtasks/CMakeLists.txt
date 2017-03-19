@@ -49,7 +49,6 @@ set(SRCS
   AliEmcalPatchFromCellMaker.cxx
   AliEmcalPhysicsSelectionTask.cxx
   AliEmcalPicoTrackMaker.cxx
-  AliEmcalSetupTask.cxx
   AliEmcalTenderTask.cxx
   AliEmcalTrackingQATask.cxx
   AliEmcalTrackPropagatorTask.cxx
@@ -63,6 +62,7 @@ set(SRCS
   AliEMCALConfigurationMatcher.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
   AliAnalysisTaskEmcalIteratorTest.cxx
+  AliEmcalCopyCollection.cxx
   AliEmcalCorrectionTask.cxx
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx

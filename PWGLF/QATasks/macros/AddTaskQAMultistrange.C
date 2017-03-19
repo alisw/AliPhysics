@@ -1,13 +1,4 @@
-AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Bool_t   isMC                   = kFALSE,
-                                                      Int_t    minnTPCcls             = 70,
-                                                      Float_t  centrlowlim            = 0.,
-                                                      Float_t  centruplim             = 90.,
-                                                      TString  centrest               = "V0M",
-                                                      Bool_t   kusecleaning           = kTRUE, 
-                                                      Float_t  vtxlim                 = 10.,
-                                                      TString  collidingSystem        = "PbPb",
-                                                      Float_t  minptondaughtertracks  = 0.,
-                                                      Float_t  etacutondaughtertracks = 0.8) {
+AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange(Bool_t isMC = kFALSE) {
 
    // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -28,23 +19,8 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Bool_t   isMC             
 
    // Create and configure the task
    AliAnalysisTaskQAMultistrange *taskcheckcascade = new AliAnalysisTaskQAMultistrange("TaskCheckCascade");
-
-   taskcheckcascade->SetIsMC                       (isMC);
-   taskcheckcascade->SetAnalysisType               (type);
-   taskcheckcascade->SetCollidingSystem            (collidingSystem);
-   taskcheckcascade->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
-   taskcheckcascade->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex
-   taskcheckcascade->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
-   taskcheckcascade->SetQualityCutnTPCcls          (kTRUE);             // rejects tracks that have less than n clusters in the TPC
-   taskcheckcascade->SetQualityCutMinnTPCcls       (minnTPCcls);        // minimum number of TPC clusters to accept daughter tracks
-   taskcheckcascade->SetQualityCutPileup           (kFALSE);
-   taskcheckcascade->SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
-   taskcheckcascade->SetCentralityUpLim            (centruplim);
-   taskcheckcascade->SetCentralityEst              (centrest);
-   taskcheckcascade->SetUseCleaning                (kusecleaning);
-   taskcheckcascade->SetVertexRange                (vtxlim);
-   taskcheckcascade->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  
-   taskcheckcascade->SetEtaCutOnDaughterTracks     (etacutondaughtertracks);
+     taskcheckcascade->SetIsMC                       (isMC);
+     taskcheckcascade->SetAnalysisType               (type);
 
    mgr->AddTask(taskcheckcascade);
 
@@ -76,4 +52,3 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Bool_t   isMC             
  
    return taskcheckcascade;
 }   
-

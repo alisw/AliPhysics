@@ -13,13 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///
-/// Base class to hold a set of results for the same quantity,
-/// computed using various methods, each with their errors
-///
-/// author: Laurent Aphecetche (Subatech)
-///
-
 #include "AliAnalysisMuMuResult.h"
 
 ClassImp(AliAnalysisMuMuResult)

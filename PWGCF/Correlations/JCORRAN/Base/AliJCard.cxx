@@ -100,6 +100,7 @@ TString AliJCard::GetKeyWord(corrType ctype){
         case kZVertType:  kw = "zVertBins"; break;
         case kMassType:   kw = "PairInvariantMassBins"; break;
         case kEtaGapType: kw = "EtaGapThresholds"; break;
+        case kPhiGapType: kw = "PhiGapThresholds"; break;
         case kDiJetType:  kw = "DiJetMassBorders"; break;
         case kRGapType:   kw = "RGapThresholds"; break;
                           //case kEPType:  kw = "EPBorders"; break;

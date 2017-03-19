@@ -42,6 +42,7 @@ set(SRCS
     AliOADBTrackFix.cxx
     AliOADBTriggerAnalysis.cxx
     AliPPVsMultUtils.cxx
+    AliEventCuts.cxx
     COMMON/MULTIPLICITY/AliMultVariable.cxx
     COMMON/MULTIPLICITY/AliMultEstimator.cxx
     COMMON/MULTIPLICITY/AliMultInput.cxx
@@ -63,7 +64,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase AOD ESD STEER ANALYSIS ANALYSISalice CDB ITSrec)
+set(LIBDEPS STEERBase AOD ESD STEER ANALYSIS ANALYSISalice CDB ITSrec VZERObase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -90,17 +91,21 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
-install(DIRECTORY COMMON
-                  EMCAL
-                  PHOS
-                  PWG
-                  PWGCF
-                  PWGPP
-                  PWGLF
-                  PWGJE
-                  PWGLF
-        DESTINATION OADB)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/EMCAL)
+  install(DIRECTORY EMCAL
+                    PHOS
+                    PWG
+                    PWGCF
+                    PWGPP
+                    PWGLF
+                    PWGJE
+                    PWGLF
+                    PWGUD
+          DESTINATION OADB)
+endif()
 
-install(DIRECTORY macros DESTINATION OADB)
+install(DIRECTORY COMMON
+                  macros
+        DESTINATION OADB)
 
 message(STATUS "${MODULE} enabled")

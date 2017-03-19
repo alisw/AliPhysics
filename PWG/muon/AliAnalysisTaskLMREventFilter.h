@@ -26,7 +26,7 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   Bool_t IsSelectedTrigger(AliAODEvent *fAOD, Bool_t fillHisto,UShort_t &evtTrigSelect);
-
+  virtual void NotifyRun();
 private:
   
   AliAnalysisTaskLMREventFilter(const AliAnalysisTaskLMREventFilter&); // not implemented

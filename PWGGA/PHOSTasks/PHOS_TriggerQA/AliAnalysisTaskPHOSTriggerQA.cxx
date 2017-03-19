@@ -140,7 +140,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   // Main loop, called for each event
   // Analyze ESD/AOD  
   
-  AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+  AliVEvent *event = InputEvent();
   
   if (!event) {
     Printf("ERROR: Could not retrieve event");
@@ -151,7 +151,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   FillHistogram("hNev",0.); // all events
   fEventCounter++;
   
-  AliESDCaloTrigger* trgESD = event->GetCaloTrigger("PHOS");
+  AliVCaloTrigger* trgESD = event->GetCaloTrigger("PHOS");
   trgESD->Reset();
   
   if(trgESD->GetEntries())
@@ -172,7 +172,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   }
   
   Int_t multClu = event->GetNumberOfCaloClusters();
-  AliESDCaloCells *phsCells = event->GetPHOSCells();
+  AliVCaloCells *phsCells = event->GetPHOSCells();
  
   Int_t inPHOS[4] = {};
   Int_t ntr = 0;
@@ -199,11 +199,11 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
     
     for (Int_t i=0; i<multClu; i++) {
       
-      AliESDCaloCluster *c1 = event->GetCaloCluster(i);
+      AliVCluster *c1 = event->GetCaloCluster(i);
       if(kUsedCluster[i]) continue; // already matched to some trigger patch
       
       if(!c1->IsPHOS()) continue;
-      if(c1->GetType() == AliESDCaloCluster::kPHOSCharged) continue; // reject CPV cluster
+      if(c1->GetType() == AliVCluster::kPHOSCharged) continue; // reject CPV cluster
       
       if(c1->E()<0.3) continue; 
       if(c1->GetNCells()<3) continue ; 
@@ -296,7 +296,7 @@ void AliAnalysisTaskPHOSTriggerQA::FillHistogram(const char * key,Double_t x,Dou
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPHOSTriggerQA::MaxEnergyCellPos(AliESDCaloCells *cells, AliESDCaloCluster* clu, Int_t& maxId)
+void AliAnalysisTaskPHOSTriggerQA::MaxEnergyCellPos(AliVCaloCells *cells, AliVCluster* clu, Int_t& maxId)
 {  
   Double_t eMax = -111;
   

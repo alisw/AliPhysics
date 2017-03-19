@@ -4,12 +4,14 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliAnalysisTaskEMCALClusterTurnOn+;
 #pragma link C++ class AliAnalysisTaskEMCALIsoPhoton+;
 #pragma link C++ class AliAnalysisTaskEMCALPhoton+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
 #pragma link C++ class AliAnalysisTaskPi0V2+;
 #pragma link C++ class AliAnalysisTaskSATR+;
 #pragma link C++ class AliAnalysisTaskTrgContam+;
+#pragma link C++ class AliAnalysisTaskShoShaTests+;
 #pragma link C++ class AliPhotonCellObj+;
 #pragma link C++ class AliPhotonClusterObj+;
 #pragma link C++ class AliPhotonConvObj+;

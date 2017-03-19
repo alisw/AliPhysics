@@ -12,6 +12,7 @@
 #pragma link C++ class AliFlowEventSimpleMaker+;
 
 #pragma link C++ class AliAnalysisTaskScalarProduct+;
+#pragma link C++ class AliAnalysisTaskSimpleSP+;
 #pragma link C++ class AliAnalysisTaskMCEventPlane+;
 #pragma link C++ class AliAnalysisTaskLYZEventPlane+;
 #pragma link C++ class AliAnalysisTaskLeeYangZeros+;
@@ -40,6 +41,6 @@
 #pragma link C++ class AliAnalysisTaskMultiparticleCorrelations+;
 #pragma link C++ class AliAnalysisTaskPIDconfig+;
 #pragma link C++ class AliAnalysisTaskMultiparticleFemtoscopy+;
-
+#pragma link C++ class AliAnalysisTaskVnZDC+;
 #endif
 

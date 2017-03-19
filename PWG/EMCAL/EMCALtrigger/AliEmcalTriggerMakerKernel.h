@@ -5,10 +5,13 @@
 
 #include <set>
 #include <iostream>
+#include <vector>
 
 #include <TObject.h>
 #include <TArrayF.h>
+//#include <AliEMCALTriggerPatchInfoV1.h>
 
+class TF1;
 class TObjArray;
 class AliEMCALTriggerPatchInfo;
 class AliEMCALTriggerRawPatch;
@@ -49,17 +52,18 @@ public:
   enum ELevel0TriggerStatus_t { kNotLevel0, kLevel0Candidate, kLevel0Fired };
 
   /**
-   * Constructor
+   * @brief Constructor
    */
   AliEmcalTriggerMakerKernel();
 
   /**
-   * Destructor
+   * @brief Destructor
    */
   virtual ~AliEmcalTriggerMakerKernel();
 
   /**
-   * Initialize the trigger maker Kernel:
+   * @brief Initialize the trigger maker Kernel
+   *
    * - Allocates the data grids according to the EMCAL setup for
    *   the given run (obtained from the geometry)
    * - Initialize patch finders: Different patch finders are created
@@ -69,31 +73,36 @@ public:
   void Init();
 
   /**
-   * Run patch finders on input data. Patches are converted from raw patches into AliEMCALTriggerPatchInfo data.
+   * @brief Run patch finders on input data.
+   *
+   * Patches are converted from raw patches into AliEMCALTriggerPatchInfo data.
    * Trigger patches contain all information of the given category;
    * - Bit selection map from the STU (bits for non-matching patch types are removed)
    * - Offline trigger selection status
    * - Recalculation trigger selection status
-   * There are no more several patches for the three categories. The only difference left over is the distinction of
-   * patch types according to
+   * There are no more several patches for the three categories. The only difference left
+   * over is the distinction of patch types according to
    * - Jet patches (16x16 FAST-ors)
    * - Gamma patches (2x2 FAST-ors)
    * - Level0 patches (2x2 FAST-ors, using L0 amplitude and L0 times for the selection)
-   * @param inputevent Input ESD/AOD event, used for kinematics calculation
+   * @param[in] inputevent Input ESD/AOD event, used for kinematics calculation
+   * @param[out] output container for reconstructed trigger patches
+   * @param[in] useL0amp if true the Level0 amplitude is used
    * @return Array of reconstructed trigger patches
    */
-  TObjArray *CreateTriggerPatches(const AliVEvent *inputevent, Bool_t useL0amp=kFALSE);
+  void CreateTriggerPatches(const AliVEvent *inputevent, std::vector<AliEMCALTriggerPatchInfo> &outputcont, Bool_t useL0amp=kFALSE);
 
   /**
-   * Get the list of online masked FastOR's used in the trigger maker
+   * @brief Get the list of online masked FastOR's used in the trigger maker
    * @return Absolute FastOR IDs (full EMCAL + DCAL in run2+) of masked channels
    */
   const std::set<Short_t> &GetListOfBadFastORAbsIDs() const { return fBadChannels; }
 
   /**
-   * Get the list of bad cells used when calculating offline patch energy. These
-   * cells were not masked at online level, instead they were determined by a calibration
-   * algorithm.
+   * @brief Get the list of bad cells used when calculating offline patch energy.
+   *
+   * Bad cells were not masked at online level, instead they were determined
+   * by a calibration algorithm.
    * @return Absolute Cell IDs (full EMCAL + DCAL in run2+) of bad cells
    */
   const std::set<Short_t> &GetListOfOfflineBadCellAbsIDs() const { return fOfflineBadChannels; }
@@ -106,175 +115,269 @@ public:
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
 
   /**
-   * Define whether running on MC or not (for offset)
+   * @brief Get ADC value of a given trigger channel (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return ADC value of the given trigger channel (0 for invalid channel IDs)
+   */
+  double GetTriggerChannelADC(Int_t col, Int_t row) const;
+
+  /**
+   * @brief Get estimated energy of the trigger channel based on ADC measurement (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return Estimated trigger energy of the given channel (0 for invalid channel IDs)
+   */
+  double GetTriggerChannelEnergyRough(Int_t col, Int_t row) const;
+
+  /**
+   * @brief Get ADC value of trigger channel estimated from cell energies
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return ADC value of the trigger channel from cell energies (0 for invalid channel IDs)
+   */
+  double GetTriggerChannelADCSimple(Int_t col, Int_t row) const;
+
+   /**
+    * @brief Get energy of the trigger channel estimated from cells (in col-row space)
+    * @param[in] col Column of the trigger channel
+    * @param[in] row Row of the trigger channel
+    * @return Energy of the trigger channel (0 for invalid channel IDs)
+    */
+  double GetTriggerChannelEnergy(Int_t col, Int_t row) const;
+
+  /**
+   * @brief Get (simulated) smeared energy of a trigger channel estimated based on the measured energy from cells (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return Smeared fastor energy (0 for invalid channel IDs)
+   */
+  double GetTriggerChannelEnergySmeared(Int_t col, Int_t row) const;
+
+  /**
+   * @brief Get the dimension of the underlying data grids in row direction
+   * @return Number of rows
+   */
+  double GetDataGridDimensionRows() const;
+
+  /**
+   * @brief Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
    */
   void SetIsMC(Bool_t isMC) { fIsMC = isMC; }
 
   /**
-   * Provide the EMCAL geometry to the trigger maker Kernel
-   * @param geo
+   * @brief Provide the EMCAL geometry to the trigger maker Kernel
+   * @param[in] geo EMCAL geometry
    */
   void SetGeometry(const AliEMCALGeometry *const geo) { fGeometry = geo; }
 
   /**
-   * Set the trigger bit configuration applied for the given data set
-   * @param config Trigger bit config applied
+   * @brief Set the trigger bit configuration applied for the given data set
+   * @param[in] config Trigger bit config applied
    */
   void SetTriggerBitConfig(const AliEMCALTriggerBitConfig *const config);
 
   /**
-   * Set range for L0 time
+   * @brief Set range for L0 time
    * @param min Minimum L0 time (default is 7)
    * @param max Maximum L0 time (default is 10)
    */
   void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
 
   /**
-   * Set thresholds applied to FastORs and offline cells before patch reconstruction
-   * @param l0 Threshold for L0 FastOR amplitudes
-   * @param l1 Threshold for L1 FastOR amplitudes
-   * @param cell Threshold for cell amplitudes
+   * @brief Set thresholds applied to FastORs and offline cells before patch reconstruction
+   * @param[in] l0 Threshold for L0 FastOR amplitudes
+   * @param[in] l1 Threshold for L1 FastOR amplitudes
+   * @param[in] cell Threshold for cell amplitudes
    */
   void SetFastORandCellThresholds(Int_t l0, Int_t l1, Int_t cell) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; fMinCellAmp = cell; }
 
   /**
-   * Add a FastOR bad channel to the list
-   * @param absId Absolute ID of the bad channel
+   * @brief Set conversion between ADC counts and energy in GeV
+   * @param[in] conversionfactor Conversion between ADC counts and energy
+   */
+  void SetL1ADCtoGeVConversion(Double_t conversionfactor) { fADCtoGeV = conversionfactor; }
+
+  /**
+   * @brief Add a FastOR bad channel to the list
+   * @param[in] absId Absolute ID of the bad channel
    */
   void AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
 
   /**
-   * Read the FastOR bad channel map from a standard stream
-   * @param stream A reference to a standard stream to read from (can be a file stream)
+   * @brief Read the FastOR bad channel map from a standard stream
+   * @param[in] stream A reference to a standard stream to read from (can be a file stream)
    */
   void ReadFastORBadChannelFromStream(std::istream& stream);
 
   /**
-   * Clear FastOR bad channel list
+   * @brief Clear FastOR bad channel list
    */
   void ClearFastORBadChannels();
 
   /**
-   * Read the FastOR bad channel map from a text file
-   * @param fname Path and name of the file
+   * @brief Read the FastOR bad channel map from a text file
+   * @param[in] fname Path and name of the file
    */
   void ReadFastORBadChannelFromFile(const char* fname);
 
   /**
-   * Add an offline bad channel to the set
-   * @param absId Absolute ID of the bad channel
+   * @brief Add an offline bad channel to the set
+   * @param[in] absId Absolute ID of the bad channel
    */
   void AddOfflineBadChannel(Short_t absId) { fOfflineBadChannels.insert(absId); }
 
   /**
-   * Read the offline bad channel map from a standard stream
-   * @param stream A reference to a standard stream to read from (can be a file stream)
+   * @brief Read the offline bad channel map from a standard stream
+   * @param[in] stream A reference to a standard stream to read from (can be a file stream)
    */
   void ReadOfflineBadChannelFromStream(std::istream& stream);
 
   /**
-   * Read the offline bad channel map from a text file
-   * @param fname Path and name of the file
+   * @brief Read the offline bad channel map from a text file
+   * @param[in] fname Path and name of the file
    */
   void ReadOfflineBadChannelFromFile(const char* fname);
 
   /**
-   * Clear offline bad channel list.
+   * @brief Clear offline bad channel list.
    */
   void ClearOfflineBadChannels();
 
   /**
-   * Read the FastOR pedestals from a standard stream
-   * @param stream A reference to a standard stream to read from (can be a file stream)
+   * @brief Read the FastOR pedestals from a standard stream
+   * @param[in] stream A reference to a standard stream to read from (can be a file stream)
    */
   void ReadFastORPedestalFromStream(std::istream& stream);
 
   /**
-   * Read the FastOR pedestals from a text file
-   * @param fname Path and name of the file
+   * @brief Read the FastOR pedestals from a text file
+   * @param[in] fname Path and name of the file
    */
   void ReadFastORPedestalFromFile(const char* fname);
 
   /**
-   * Set the pedestal value for a FastOR
-   * @param absId Absolute ID of a FastOR
-   * @param ped   Pedestal value
+   * @brief Set the pedestal value for a FastOR
+   * @param[in] absId Absolute ID of a FastOR
+   * @param[in] ped   Pedestal value
    */
   void SetFastORPedestal(Short_t absId, Float_t ped);
 
   /**
-   * Reset the FastOR pedestal array
+   * @brief Reset the FastOR pedestal array
    */
   void ResetFastORPedestal() { fFastORPedestal.Reset(); }
 
   /**
-   * Set the maximum time of the cell allowed to contribute to an offline
-   * trigger patch.
+   * @brief Set symmmetric limit of the cell time allowed to accept the cell contributing to cell offline energy / offline patches.
    * @param[in] maxCellTime Maximum accepted value of the absolute cell time
    */
-  void SetMaxAbsCellTime(Double_t maxCellTime) { fMaxAbsCellTime = maxCellTime; }
+  void SetMaxAbsCellTime(Double_t maxCellTime) { fCellTimeLimits[0] = -maxCellTime; fCellTimeLimits[1] = maxCellTime; }
 
   /**
-   * Set cut on the minimum cell amplitude
-   * @param minamp Min cell amplitude accepted
+   * @brief Set symmmetric limit of the cell time allowed to accept the cell contributing to cell offline energy / offline patches.
+   * @param[in] minCellTime Minimum allowed cell time
+   * @param[in] maxCellTime Maximum allowed cell time
+   */
+  void SetAcceptCellTimeRange(Double_t minCellTime, Double_t maxCellTime) { fCellTimeLimits[0] = minCellTime; fCellTimeLimits[1] = maxCellTime; }
+
+  /**
+   * @brief Set lower cut on the cell time allowed to accept the cell contributing to cell offline energy / offline patches.
+   * @param[in] minCellTime Minimum allowed cell time
+   */
+  void SetLowerCellTimeCut(Double_t minCellTime) { fCellTimeLimits[0] = minCellTime; }
+
+  /**
+   * @brief Set upper cut on the cell time allowed to accept the cell contributing to cell offline energy / offline patches.
+   * @param[in] minCellTime Minimum allowed cell time
+   */
+  void SetUpperCellTimeCut(Double_t maxCellTime) { fCellTimeLimits[1] = maxCellTime; }
+
+  /**
+   * @brief Set cut on the minimum cell amplitude
+   * @param[in] minamp Min cell amplitude accepted
    */
   void SetMinFEEAmplitude(Double_t minamp) { fMinCellAmplitude = minamp; }
 
   /**
-   * Apply online bad channel masking to offline channel energies. This means that
-   * cell energies in cells within FastOrs that are masked online are ignored. By
-   * applying this the online trigger acceptance can be applied to offline patches
-   * as well.
+   * @brief Apply online bad channel masking to offline channel energies.
+   * This means that cell energies in cells within FastOrs that are masked online are
+   * ignored. By applying this the online trigger acceptance can be applied to offline
+   * patches as well.
    * @param[in] doApply If true the online masking is applied to offline patch energies
    */
-  void SetApplyOnlineBadChannelMaskingToOffline(Bool_t doApply = kTRUE);
+  void SetApplyOnlineBadChannelMaskingToOffline(Bool_t doApply = kTRUE) { fApplyOnlineBadChannelsToOffline = doApply; }
 
   /**
-   * Reset data grids
+   * @brief Reset all data grids and VZERO-dependent L1 thresholds
    */
   void Reset();
 
   /**
-   * Read the calo trigger data
-   * @param trigger Input calo trigger data
-   * @param timeMin Minimum L0 time
-   * @param timeMax Maximum L0 time
-   * @param applyTimeCut If true, only L0 amoplitudes in the range timeMin, timeMax are considered
+   * @brief Read the calo trigger data
+   *
+   * Filling the data grids for L0 and L1 amplitude. Amplitudes from
+   * FastORs which are masked are ignored.
+   * @param[in] trigger Input calo trigger data
    */
   void ReadTriggerData(AliVCaloTrigger *trigger);
 
   /**
-   * Read the EMCAL cell data
-   * @param cells EMCAL cell data
+   * @brief Read the EMCAL cell data
+   *
+   * Cell data are converted into ADC values and summed per
+   * FastOR. Cell data can be rejected
+   * - In case a cell time cut is set and the cell time is out of range
+   * - In case a minimum amplitude cut is set and the cell data is below threshold
+   * Cells which are masked, or which belong to masked FastORs are rejected as well.
+   * @param[in] cells EMCAL cell data
    */
   void ReadCellData(AliVCaloCells *cells);
 
   /**
-   * Build VZERO-dependent thresholds for the offline trigger
+   * @brief Build VZERO-dependent thresholds for the offline trigger
    * @param vzdata VERO charges
    */
   void BuildL1ThresholdsOffline(const AliVVZERO *vzdata);
 
   /**
    * Add a L1 trigger algorithm
-   * @param rowmin Minimum row value
-   * @param rowmax Maximum row value
-   * @param bitmask Offline bit mask to be applied to the patches
-   * @param patchSize Size of the patches
-   * @param subregionSize Size of the sliding sub region
+   * @param[in] rowmin Minimum row value
+   * @param[in] rowmax Maximum row value
+   * @param[in] bitmask Offline bit mask to be applied to the patches
+   * @param[in] patchSize Size of the patches
+   * @param[in] subregionSize Size of the sliding sub region
    */
   void AddL1TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
 
   /**
-   * Set the L0 algorithm
-   * @param rowmin Minimum row value
-   * @param rowmax Maximum row value
-   * @param bitmask Offline bit mask to be applied to the patches
-   * @param patchSize Size of the patches
-   * @param subregionSize Size of the sliding sub region
+   * @brief Set the L0 algorithm
+   * @param[in] rowmin Minimum row value
+   * @param[in] rowmax Maximum row value
+   * @param[in] bitmask Offline bit mask to be applied to the patches
+   * @param[in] patchSize Size of the patches
+   * @param[in] subregionSize Size of the sliding sub region
    */
   void SetL0TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
+
+  /**
+   * @brief Set energy-dependent models for gaussian energy smearing
+   * @param[in] mean Parameterization of the mean
+   * @param[in] width Parameterization of the width
+   */
+  void SetSmearModel(TF1 *mean, TF1 *width) {
+    fSmearModelMean = mean;
+    fSmearModelSigma = width;
+  }
+
+  /**
+   * @brief Set the energy threshold for smearing
+   *
+   * Only summed energies above this threshold are smeared
+   * @param[in] threshold Smear threshold
+   */
+  void SetSmearThreshold(Double_t threshold) { fSmearThreshold = threshold; }
 
   /**
    * Check whether the trigger maker has been specially configured. Status has to
@@ -284,32 +387,32 @@ public:
   Bool_t IsConfigured() const { return fConfigured; }
 
   /**
-   * Configure the class for 2015 PbPb
+   * @brief Configure the class for 2015 PbPb
    */
   void ConfigureForPbPb2015();
 
   /**
-   * Configure the class for 2015 pp
+   * @brief Configure the class for 2015 pp
    */
   void ConfigureForPP2015();
 
   /**
-   * Configure the class for 2013 pPb
+   * @brief Configure the class for 2013 pPb
    */
   void ConfigureForPPb2013();
 
   /**
-   * Configure the class for 2012 pp
+   * @brief Configure the class for 2012 pp
    */
   void ConfigureForPP2012();
 
   /**
-   * Configure the class for 2011 PbPb
+   * @brief Configure the class for 2011 PbPb
    */
   void ConfigureForPbPb2011();
 
   /**
-   * Configure the class for 2011 pp
+   * @brief Configure the class for 2011 pp
    */
   void ConfigureForPP2011();
 
@@ -319,28 +422,30 @@ protected:
   };
 
   /**
-   * Accept trigger patch as Level0 patch. Level0 patches are identified as 2x2 FASTOR patches
-   * in the same TRU
-   * @param trg Triggers object with the pointer set to the patch to inspect
+   * @brief Accept trigger patch as Level0 patch.
+   *
+   * Level0 patches are identified as 2x2 FASTOR patches in the same TRU
+   * @param[in] col Starting coloumn of the patch
+   * @param[in] row Starting row of the patch
    * @return the status of the patch (not L0, candidate, fired)
    */
   ELevel0TriggerStatus_t CheckForL0(Int_t col, Int_t row) const;
 
   /**
-   * Check from the bitmask whether the patch is a gamma patch
-   * @param patch Patch to check
+   * @brief Check from the bitmask whether the patch is a gamma patch
+   * @param[in] patch Patch to check
    * @return True if patch is a gamma patch
    */
   Bool_t IsGammaPatch(const AliEMCALTriggerRawPatch &patch) const;
   /**
-   * Check from the bitmask whether the patch is a jet patch
-   * @param patch Patch to check
+   * @brief Check from the bitmask whether the patch is a jet patch
+   * @param[in] patch Patch to check
    * @return True if patch is a jet patch
    */
   Bool_t IsJetPatch(const AliEMCALTriggerRawPatch &patch) const;
   /**
-   * Check from the bitmask whether the patch is a background patch
-   * @param patch Patch to check
+   * @brief Check from the bitmask whether the patch is a background patch
+   * @param[in] patch Patch to check
    * @return True if patch is a background patch
    */
   Bool_t IsBkgPatch(const AliEMCALTriggerRawPatch &patch) const;
@@ -372,15 +477,19 @@ protected:
   Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
   Bool_t                                    fIsMC;                        ///< Set MC offset
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
-  Double_t                                  fMaxAbsCellTime;              ///< Maximum allowed abs cell time (default - 1)
+  Double_t                                  fCellTimeLimits[2];           ///< Maximum allowed abs cell time (default [0] = - 10000, [1] = 10000)
   Double_t                                  fMinCellAmplitude;            ///< Minimum amplitude in cell required to be considered for filling the data grid
   Bool_t                                    fApplyOnlineBadChannelsToOffline;   ///< Apply online bad channels to offline ADC values
   Bool_t                                    fConfigured;                  ///< Switch specifying whether the trigger maker kernel has been configured for a given data set
+  TF1                                       *fSmearModelMean;             ///< Smearing parameterization for the mean
+  TF1                                       *fSmearModelSigma;            ///< Smearing parameterization for the width
+  Double_t                                  fSmearThreshold;              ///< Smear threshold: Only cell energies above threshold are smeared
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
   AliEMCALTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
   AliEMCALTriggerDataGrid<double>           *fPatchADC;                   //!<! ADC values map
+  AliEMCALTriggerDataGrid<double>           *fPatchEnergySimpleSmeared;   //!<! Data grid for smeared energy values from cell energies
   AliEMCALTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
   AliEMCALTriggerDataGrid<int>              *fTriggerBitMap;              //!<! Map of trigger bits
 

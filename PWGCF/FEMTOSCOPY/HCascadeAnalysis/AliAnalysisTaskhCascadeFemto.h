@@ -191,7 +191,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   TH2F              *fHistpTOFnsigmavsp;                    //!
   TH2F              *fHistpTOFsignalvsp;                    //!
   TH3F              *fHistpnsigTOFnsigTPC;                  //!
-  TH3F              *fHistpsignalTOFsignalTPC;              //!
+  TH2F              *fHistptsignalTPC;              //!
   TH2F              *fHistProtonMultvsCent;                 //!
   TH2F              *fHistMCPrimProtons;                    //!
   TH2F              *fHistMCFromWdecayProtons;              //!
@@ -226,7 +226,8 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   TH2F              *fHistInvMassAntiL;                     //!
   TH2F              *fHistInvMassXiInPairs;                 //!
   TH2F              *fHistXiMultvsCent;                     //!
-  TH2F              *fHistIPtoPVxyGlobalvspt;               //!
+  TH2F              *fHistProtonsIPtoPVxyGlobalvspt;        //!
+  TH2F              *fHistAProtonsIPtoPVxyGlobalvspt;       //!
 //  AliCFContainer    *fCFContCascadeCuts;                    //!
 
   TH2D              *fHistpXiSignalRealKstar;               //!

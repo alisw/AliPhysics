@@ -65,3 +65,7 @@ void TCustomBinning::CreateBinEdges(TArrayD &binedges) const {
   int bincounter = 0;
   for(auto binedge : tmpedges) binedges[bincounter++] = binedge;
 }
+
+TBinning *TCustomBinning::MakeCopy() const {
+  return new TCustomBinning(*this);
+}

@@ -5,7 +5,7 @@
 
 /* $Id$ */
 
-/// \ingroup muondep
+/// \ingroup pwg_muondep_misc
 /// \class AliAnalysisTaskMuonCDBConnect
 /// \brief task to setup OCDB path and load OCDB data
 //Author: Philippe Pillot - SUBATECH Nantes

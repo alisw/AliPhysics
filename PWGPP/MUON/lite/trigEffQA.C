@@ -285,6 +285,23 @@ Int_t GetEffIndex ( Int_t iel, Int_t icount, Int_t ich = -1 )
 }
 
 //_____________________________________________________________________________
+Bool_t CheckOCDBFile ( TString cdbDir, Int_t runNum )
+{
+  /// Check if (run-by-run) CDB object is there
+  /// This is needed for example for the scalers
+  /// when the default storage is cvmfs.
+  /// Indeed, the cvmfs OCDB has sometimes synchro problem
+  /// and the latest files are not copied
+  if ( runNum >= 0 ) AliCDBManager::Instance()->SetRun(runNum);
+  TList* list = AliCDBManager::Instance()->GetAll(cdbDir.Data());
+  if ( list->GetEntries() == 0 ) {
+    printf("Warning: no entry found in %s for run %i\n",cdbDir.Data(),runNum);
+    return kFALSE;
+  }
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 TList* GetOCDBList ( TString ocdbDirs )
 {
   /// Get list of CDB objetcs
@@ -798,7 +815,7 @@ TString FindCorrespondingTrigger ( TString checkTrigger, TObjArray* triggerArray
 
   return foundName;
 }
-  
+
 //_____________________________________________________________________________
 void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString defaultStorage, TList& outCanList, TList& outList )
 {
@@ -823,6 +840,8 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
   TObjArray hFromQA;
   TObjArray hFromScalers; 
   TObjArray hOutput;
+
+  TString cdbDir = "GRP/CTP/Config";
   
   
   TString sHistName, sHistNameFull, sTitleName;
@@ -836,8 +855,9 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
     
     TString sRunNr = ((TObjString*)runNumArray.At(iRun))->GetString();
     Int_t runNr = sRunNr.Atoi();
+    if ( ! CheckOCDBFile(cdbDir, runNr)) continue;
     AliAnalysisTriggerScalers triggerScaler(runNr);
-    AliTriggerConfiguration* tc = static_cast<AliTriggerConfiguration*>(triggerScaler.GetOCDBObject("GRP/CTP/Config",runNr));
+    AliTriggerConfiguration* tc = static_cast<AliTriggerConfiguration*>(triggerScaler.GetOCDBObject(cdbDir.Data(),runNr));
     const TObjArray& trClasses = tc->GetClasses();
     
     Int_t ibin = iRun+1;

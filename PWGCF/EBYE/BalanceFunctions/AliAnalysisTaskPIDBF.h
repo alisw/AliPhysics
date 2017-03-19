@@ -3,7 +3,8 @@
 
 // Analysis task for the PID BF code:
 // Base Class : AliBalancePsi.cxx
-// Noor Alam(VECC, Kolkata) : sk.noor.alam@cern.ch
+// Noor Alam(VECC, Kolkata) : sk.noor.alam@cern.ch, noor1989phyalam@gmail.com
+// Supervisor: Subhasis Chattopadhyay: sub.chattopadhyay@gmail.com
 //[Special thanks to Michael Weber(m.weber@cern.ch) and Panos Christakoglou(panos.christakoglou@cern.ch)] 
 
 
@@ -160,6 +161,7 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
   //pid
   enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
+  enum kDetectorPID_ { kTPCTOFpid_, kTogether_, kTPC_,kTOF_}; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
   enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
   enum kParticleType_ { kPion_, kKaon_, kProton_ };
 
@@ -176,6 +178,8 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
   void SetParticleType(kParticleType_ particletype_) {
     fParticleType_ = particletype_; } 
+  void SetDetectorPID(kDetectorPID_ detectorpid_) {
+    fDetectorPID_ = detectorpid_; } 
 
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
     fPidDetectorConfig = detConfig;}
@@ -220,20 +224,12 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
   void SetQACorrection(Bool_t qacorrection) {fQACorrection = qacorrection;}  
 
+  void SetMisMatchTOFProb(Double_t fmistmatchTOF,Bool_t ftofMisMatch){
+       fMistMatchTOFProb=fmistmatchTOF;
+       fTOFMisMatch=ftofMisMatch;
+    }
 
-// Noor Alam: BF for raw Particle without reconstruction   On 16.06.2016
-  void SetRawType(Bool_t rawType) {fRawType = rawType;}  
-
-
-// Added on 15/08/2016 
-
-
-  void SetSigmaIndividually(Bool_t sigmaIndividually){fSigmaIndividually=sigmaIndividually;}
-  void SetSigmaCutMethodOne(Bool_t SigmaCutMethodOne){fSigmaCutMethodOne=SigmaCutMethodOne;}
-
-
-
-
+  void SetRapidityUse(Bool_t rapidityUse) {fRapidityInsteadOfEta=rapidityUse;}
 
 
 
@@ -252,12 +248,20 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
   TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
 
+  Double_t GetNsigmas(AliPIDResponse* fPIDResponse , AliAODTrack* track , Int_t specie);
+
+
   Double_t GetChannelEqualizationFactor(Int_t run, Int_t channel);
   Double_t GetEqualizationFactor(Int_t run, const char *side);
 
+
+// Add On 17.11.2016 For Finding Min sigma between Pion , Koan and Proton
+
+   Int_t MinNsigma(Int_t n, const Double_t *a);
+
 // Add By N.Alam on 13/12/2015
-   void IsTOF(AliAODTrack *track); // Here we use TOF Track Pt .6 to 2.0 GeV
-   void IsTPC(AliAODTrack *track);  // For TPC Track Pt .2 to .6 GeV
+   Bool_t IsTOF(AliAODTrack *track) const; // Here we use TOF Track Pt .6 to 2.0 GeV
+   Bool_t IsTPC(AliAODTrack *track) const;  // For TPC Track Pt .2 to .6 GeV
    Double_t Beta(AliAODTrack *track); // Particle v/c=Beta calculation
 
 
@@ -288,10 +292,6 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH2F *fHistVz; //z coordinate of the primary vertex
-  TH1F *HistEtaTest; // For Eta Distribution 
-  TH1F *HistNSigmaBeforeCut; // NSigma before cut
-  TH1F *HistNSigmaAfterCut;  // NSigma after Cut
-
 
 
   TH2F *fHistMixEvents; //number of events that is mixed with in the current pool
@@ -311,6 +311,11 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2F *fHistPhi;//phi (QA histogram)
   TH3F *fHistEtaPhiPos;//eta-phi pos particles (QA histogram) 		 	 
   TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
+
+  TH1F *fHistEta1D;
+  TH1F *fHistPhi1D;
+
+
 //  TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
 //  TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
@@ -335,6 +340,10 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction  Changed it from TH3F to TH3D
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
+  
+  // For Nsigma value :
+  Double_t fNsigmaTPC[6];
+  Double_t fNsigmaTOF[6];
 
   TH1* fCentralityWeights;		     // for centrality flattening
 
@@ -343,6 +352,7 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   
   kParticleOfInterest  fParticleOfInterest;//analyzed particle
   kParticleType_ fParticleType_; // particle type for analysis
+  kDetectorPID_ fDetectorPID_; // particle type for analysis
   kDetectorUsedForPID   fPidDetectorConfig;//used detector for PID
 
   Bool_t fUsePID; //flag to use PID 
@@ -351,8 +361,9 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
 // For TPC and TOF Pt cut variables 
 
-  Bool_t fHasTOFPID;  //TOF PID is or not
-  Bool_t fHasTPCPID;  // TPC PID is or not
+//  Bool_t fHasTOFPID;  //TOF PID is or not
+// Bool_t fHasTPCPID;  // TPC PID is or not
+
   Double_t fPtTOFMin;  // TOF Min Pt
   Double_t fPtTOFMax;  // TOF Max Pt
   Double_t fPtTPCMin;  // TPC Min Pt
@@ -433,7 +444,6 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
    
   // For QA  after and before correction
   Bool_t fQACorrection; 
-  Bool_t fRawType; 
   TH1D  *fHistQAPtBeforeCorrection;
   TH2D  *fHistQAPtBeforeCorrectionWithCentrality;
   TH1D  *fHistQAPtBeforeCorrectionPos;
@@ -470,17 +480,45 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2D  *fHistQAPhiAfterCorrectionWithCentralityPos;
   TH1D  *fHistQAPhiAfterCorrectionNeg;
   TH2D  *fHistQAPhiAfterCorrectionWithCentralityNeg;
-  TH2F *fHistNsigmaTPCBeforePIDCut;
-  TH2F *fHistNsigmaTOFBeforePIDCut;
-  TH2F *fHistNsigmaTPCTOFBeforePIDCut;
-  TH2F *fHistdEdxTPCAfterPIDCut;
-  TH2F *fHistBetaTOFAfterPIDCut;
-  TH2F *fHistNsigmaTPCTOFAfterPIDCut;
+
+  // Histogram for Species 
+
+   TH1D *fPIDSpeciesHisto;
+
+// Histogram for NSigma Plot before and after Cut......
+
+  TH2F  *fHistNsigmaTPCPionBeforePIDCut;
+  TH2F  *fHistNsigmaTPCKaonBeforePIDCut;
+  TH2F  *fHistNsigmaTPCProtonBeforePIDCut;
+
+  TH2F  *fHistNsigmaTOFPionBeforePIDCut;
+  TH2F  *fHistNsigmaTOFKaonBeforePIDCut;
+  TH2F  *fHistNsigmaTOFProtonBeforePIDCut;
+
+  TH2F  *fHistNsigmaTPCTOFPionBeforePIDCut;
+  TH2F  *fHistNsigmaTPCTOFKaonBeforePIDCut;
+  TH2F  *fHistNsigmaTPCTOFProtonBeforePIDCut;
+
+  TH2F  *fHistdEdxTPCAfterPIDCut;
+  TH2F  *fHistBetaTOFAfterPIDCut;
+  TH2F  *fHistNsigmaTPCTOFAfterPIDCut;
+
+  TH1D  *fHistMostProbableNsigma;
 
 
-// Added on 15.08.2016
-  Bool_t fSigmaIndividually;
-  Bool_t fSigmaCutMethodOne;
+  TH2F *fHistNsigmaTPCPionAfterPIDCut;
+  TH2F *fHistNsigmaTPCKaonAfterPIDCut;
+  TH2F *fHistNsigmaTPCProtonAfterPIDCut;
+  TH2F *fHistNsigmaTOFPionAfterPIDCut;
+  TH2F *fHistNsigmaTOFKaonAfterPIDCut;
+  TH2F *fHistNsigmaTOFProtonAfterPIDCut;
+
+
+// TOF Mismatch: 
+Double_t fMistMatchTOFProb;
+Bool_t fTOFMisMatch;
+Bool_t fRapidityInsteadOfEta;
+
 
 
   //AliAnalysisUtils

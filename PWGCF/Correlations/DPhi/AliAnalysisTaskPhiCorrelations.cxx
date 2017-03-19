@@ -52,6 +52,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
+#include "AliGenHepMCEventHeader.h"
 
 #include "AliEventPoolManager.h"
 #include "AliBasicParticle.h"
@@ -387,15 +388,15 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
   
   if (fFillYieldRapidity) {
-    const Int_t nPtBins = 400;
+    const Int_t nPtBins = 200;
     Double_t ptBins[nPtBins+1];
     for (int i=0; i<=nPtBins; i++)
       ptBins[i] = 20.0 / nPtBins * i;
     
-    const Int_t nyBins = 20;
+    const Int_t nyBins = 200;
     Double_t yBins[nyBins+1];
     for (int i=0; i<=nyBins; i++)
-      yBins[i] = -1.0 + 2.0 / nyBins * i;
+      yBins[i] = -10.0 + 20.0 / nyBins * i;
 
     fListOfHistos->Add(new TH3F("yieldsRapidity", ";centrality;pT;y", nCentralityBins, centralityBins, nPtBins, ptBins, nyBins, yBins));
   }
@@ -1465,13 +1466,17 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       }
       
       AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
-      if (!collGeometry)
+      AliGenHepMCEventHeader* hepMCHeader = dynamic_cast<AliGenHepMCEventHeader*> (eventHeader);
+      if (!collGeometry && !hepMCHeader)
       {
         eventHeader->Dump();
         AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
       }
       
-      centrality = collGeometry->ImpactParameter();
+      if (collGeometry)
+        centrality = collGeometry->ImpactParameter();
+      else if (hepMCHeader)
+        centrality = hepMCHeader->impact_parameter();
     }    
     else if (fCentralityMethod == "MCGen_V0M")
     {

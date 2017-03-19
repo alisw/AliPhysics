@@ -154,8 +154,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   
   if (cutDefinition==ConfDef::kDefaultAny){
     //pt->AddCut(AliDielectronVarManager::kP,1.,1.e30);
-    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
+    pt->AddCut(AliDielectronVarManager::kPt,0.85,8.); // same as Ionut's cuts
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8); // same as Ionut's cuts
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-2.,3.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.); //3.5, 1000.
@@ -165,8 +165,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   }  else if(cutDefinition==ConfDef::kDefaultFirst) {
-    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
+    pt->AddCut(AliDielectronVarManager::kPt,0.85,8.);
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-2.,3.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.);
@@ -176,8 +176,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   } else if (cutDefinition==ConfDef::kITSNcluster3){
-    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
+    pt->AddCut(AliDielectronVarManager::kPt,0.85,8.);
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-2.,3.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.);
@@ -188,8 +188,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   } else if (cutDefinition==ConfDef::kITSNcluster4){
-    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
+    pt->AddCut(AliDielectronVarManager::kPt,0.85,8.);
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-2.,3.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.);
@@ -506,13 +506,13 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->AddVariable(AliDielectronVarManager::kY,"-1,-0.9,-0.8,-0.3,0,0.3,0.9,1.0");
   cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
   cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-5.0,-4.5,-4.0,-3.5,-3.0,-2.5,-2.0,-1.5,3.0,5.0");
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4.0,-3.0,-2.5,-2.25, -2.0,-1.75,-1.5, -1.25, -1.0, 0.0, 1.0, 3.0,5.0");
   
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"4.5, 5.0, 5.5, 6.0, 1000.");
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"4.5, 5.0, 5.5, 6.0, 1000.");
+  // cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"4.5, 5.0, 5.5, 6.0, 1000.");
+  // cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"4.5, 5.0, 5.5, 6.0, 1000.");
   
   //leg variables
-  cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.2, 1.3, 1.4, 1.5, 1.6, 2.0, 5.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.0, 1.2, 1.3, 1.4, 1.5, 1.6, 2.0, 5.0",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kEta,"-1.,-0.9,-0.8,0,0.8,0.9,1.0",kTRUE);
 
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
@@ -596,15 +596,13 @@ void SetEtaCorrection(AliDielectron *die) {
     fCntrdCorr = new TF2("fCntrdCorr", 
     			 "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*x",
     			 40.0, 90.0, -0.9, +0.9);
-    fCntrdCorr->SetParameters(0.402308+0.213, +0.0662174 , -1.56518, -0.451915, +3.54694, +0.442897,  +0.00161659); 
+    fCntrdCorr->SetParameters(0.402308+0.213, +0.0662174 , -1.56518, -0.451915, +3.54694, +0.442897,  +0.00161659); // 0.213 is the offset to the centroid correction
         
     // 2-dimensional eta correction for the width of electron sigmas
     //Fit width  pol6 for eta and linear for centrality
     fWdthCorr = new TF2("fWdthCorr", "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*TMath::Power(y,6)  + [7]*x", 40.0, 90.0, -0.9, +0.9);
     fWdthCorr->SetParameters(1.03565, -0.0225206, -0.678966, +0.0813398, +1.59697, -0.0679809, -1.13399, -0.00121459); // pol6*linear
 
-    // apply corrections
-    //AliDielectronPID::SetCorrVal(0.213);
     die->SetCentroidCorrFunction(fCntrdCorr,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kEta);
     die->SetWidthCorrFunction(fWdthCorr,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kEta);
 

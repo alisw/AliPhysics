@@ -20,6 +20,7 @@ class AliEmcalJetUtility : public TNamed
   ~AliEmcalJetUtility() {;}
 
   virtual void Init() = 0;                                                        // Executed only once at the end of AliEmcalJetTask::DoInit()
+  virtual void InitEvent(AliFJWrapper& fjw) = 0;                                  //
   virtual void Prepare(AliFJWrapper& fjw) = 0;                                    // Executed for each event at the beginning of AliEmcalJetTask::FillJetBranch()
   virtual void ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWrapper& fjw) = 0;     // Executed for each jet in the loop in AliEmcalJetTask::FillJetBranch()
   virtual void Terminate(AliFJWrapper& fjw) = 0;                                  // Executed for each event at the end of AliEmcalJetTask::FillJetBranch()

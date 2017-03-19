@@ -50,6 +50,7 @@ set(SRCS
   AliFemtoModelCorrFctn3DSpherical.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
+  AliFemtoModelCorrFctnDEtaDPhiStar.cxx
   AliFemtoCorrFctnDEtaDPhiWithWeights.cxx
   AliFemtoQinvCorrFctnWithWeights.cxx
   AliFemtoModelCorrFctnDEtaDPhiWithWeights.cxx
@@ -113,6 +114,7 @@ set(SRCS
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
   AliFemtoV0TrackCutNSigmaFilter.cxx
+  AliFemtoXiTrackCutNSigmaFilter.cxx
   AliFemtoCutMonitorEventPartCollSize.cxx
   AliFemtoModelCorrFctnWithWeights.cxx
   AliFemtoCutMonitorParticleYPtWithWeights.cxx
@@ -121,6 +123,10 @@ set(SRCS
   AliFemtoModelCorrFctnKStarFull.cxx
   AliFemtoModelWeightGeneratorBasicLednicky.cxx
   AliFemtoAnalysisLambdaKaon.cxx
+  AliFemtoModelCorrFctnDEtaDPhiRM.cxx
+  AliFemtoCutMonitorPairKT.cxx
+  AliFemtoPairCutMInv.cxx
+  AliFemtoV0PurityBgdEstimator.cxx
   )
 
 

@@ -55,6 +55,7 @@ class AliAODMCParticle;
 class AliAODJetEventBackground;
 class AliAnalysisHelperJetTasks;
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHerwigEventHeader.h"
 
 class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
 {
@@ -90,6 +91,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   // Setters for detector level effects
   void SetRequireT0vtx(Bool_t b = true)                {fkRequireTZEROvtx = b;} 			   // Set to require T0 vtx 
   void SetRequireV0AC(Bool_t b = true)                 {fkRequireVZEROAC = b;} 			           // Set to require V0 AC 
+  void SetRejectFastCluster(Bool_t b = false)          {fkRejectFastOnly = b;}                             // Reject fast cluster
   void SetPtHardCuts(Double_t jetpt = 0, Double_t trackpt = 0) {fPtHardAndPythiaJetPtFactor = jetpt; fPtHardAndTrackPtFactor = trackpt;}
 
   // Tracks
@@ -106,11 +108,11 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   void SetExtTrackCutType(Int_t x)                     {fExtTrackCutType = x;} 			           // Temporary setter to select track qa cuts 
   void SetRequireITSRefit(Int_t i)                     {fkRequireITSRefit=i;}
   void SetSharedClusterCut(Int_t docut)                {fkApplySharedClusterCut=docut;}
-  void SetTrackEfficiency(TF1* effi)               {fEffi=effi;}
+  void SetTrackEfficiency(TObject* effi)               {fEffi=effi;}
   void SetTrackEfficiencyVarPercent(Double_t effivar) {fEffivar=effivar;}
   void SetTrackResolution(Double_t resol)              {fResol=resol;}
   void SetTrackResolutionVarPercent(Double_t resolvar) {fResolvar=resolvar;}
-  void SetTrackFastSimParams(TF1* effi,Double_t resol, Int_t resolmeth = 0 ,Double_t effivar = 0, Double_t resolvar = 0) {fEffi=effi; fResol=resol; fResolMeth=resolmeth; fEffivar=effivar; fResolvar=resolvar;}
+  void SetTrackFastSimParams(TObject* effi,Double_t resol, Int_t resolmeth = 0 ,Double_t effivar = 0, Double_t resolvar = 0) {fEffi=effi; fResol=resol; fResolMeth=resolmeth; fEffivar=effivar; fResolvar=resolvar;}
 
   // Jets
   void SetJetBranches(Int_t i, TString name)           {fJetBranch[i] = name;} 			           // Set the name of the jet branches  
@@ -275,6 +277,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   bool       IsBMeson(int pc);
   bool       IsDMeson(int pc);
   AliGenPythiaEventHeader* GetPythiaHeader();
+  AliGenHerwigEventHeader* GetHerwigHeader();
   Bool_t IsOutlier(AliGenPythiaEventHeader * const header);
   bool       IsProof() {return AliAnalysisManager::GetAnalysisManager()->IsProofMode();}  
   const char* ProofClearOpt() { if(IsProof()) {return "nodelete";} else { return "";}} 
@@ -292,6 +295,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   TRefArray*         fRef;			    //! TRefArray for track references within the jet
   Bool_t             fkIsPbPb;                      // PbPb case
   Bool_t 	     fkEventSelection;		    // Use to bypass event selection?
+  Bool_t             fkRejectFastOnly;              // Switch to reject FastCluster
   Bool_t 	     fkRequireVZEROAC;		    // Switch to require V0 AC
   Bool_t 	     fkRequireTZEROvtx;		    // Switch to require T0 vtx
   Float_t 	     fCentCutUp;		    // Upper limit on centrality
@@ -413,7 +417,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   TH2D*         fh2TrackEffEtaPhiGen;                            //! Single track efficiency (eta,phi Gen)
   TH1D*         fh1TrackEffPtRec;                                //! Single track efficiency (pT Rec)
   TH2D*         fh2TrackEffEtaPhiRec;                            //! Single track efficiency (eta,phi Rec)
-  TF1*          fEffi;                                           // Efficiency parametrisation (fast mc)
+  TObject*          fEffi;                                           // Efficiency parametrisation (fast mc)
   Double_t      fResol;                                          // Track resolution
   Int_t         fResolMeth;                                      // Track resolution smearing method
   Double_t      fEffivar;                                        // Efficiency shift (%)

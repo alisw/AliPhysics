@@ -105,7 +105,10 @@ AliRDHFCuts(name),
 	fSigmaElectronTPCMax(9999.),
 	fSigmaElectronTOFMin(-9999.),
 	fSigmaElectronTOFMax(9999.),
+	fSigmaElectronITSMin(-9999.),
+	fSigmaElectronITSMax(9999.),
 	fConversionMassMax(-1.),
+	fConversionUseStrongerCut(kFALSE),
 	fEleLambdaMassMax(2.3)
 {
   //
@@ -198,7 +201,10 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
 	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
 	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
 	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax),
+	fSigmaElectronITSMin(source.fSigmaElectronITSMin),
+	fSigmaElectronITSMax(source.fSigmaElectronITSMax),
 	fConversionMassMax(source.fConversionMassMax),
+	fConversionUseStrongerCut(source.fConversionUseStrongerCut),
 	fEleLambdaMassMax(source.fEleLambdaMassMax)
 {
   //
@@ -272,7 +278,10 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
 	fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
 	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
+	fSigmaElectronITSMin = source.fSigmaElectronITSMin;
+	fSigmaElectronITSMax = source.fSigmaElectronITSMax;
 	fConversionMassMax = source.fConversionMassMax;
+	fConversionUseStrongerCut = source.fConversionUseStrongerCut;
 	fEleLambdaMassMax = source.fEleLambdaMassMax;
 
   for(Int_t i=0;i<3;i++){
@@ -681,11 +690,14 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedeID(AliAODTrac
 
 	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
 	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
+	Double_t nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trk,AliPID::kElectron);
 
 	if(nSigmaTPCele<fSigmaElectronTPCMin) return kFALSE;
 	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
 	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
 	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+	if(nSigmaITSele<fSigmaElectronITSMin) return kFALSE;
+	if(nSigmaITSele>fSigmaElectronITSMax) return kFALSE;
 
 	return kTRUE;
 }
@@ -719,11 +731,18 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedPtDepeID(AliAO
 
 	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
 	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
+	Double_t nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trkpid,AliPID::kElectron);
 
   if(fabs(fSigmaElectronTOFMin)<999.|| fabs(fSigmaElectronTOFMax)<999.)
   {
     if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
     if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+  }
+
+  if(fabs(fSigmaElectronITSMin)<999.|| fabs(fSigmaElectronITSMax)<999.)
+  {
+    if(nSigmaITSele<fSigmaElectronITSMin) return kFALSE;
+    if(nSigmaITSele>fSigmaElectronITSMax) return kFALSE;
   }
 
 	Double_t pte = trk->Pt();
@@ -1014,16 +1033,32 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::TagConversions(AliAODTrack *etrk, 
     }
 
     Double_t nSigmaTPCele = 9999.;
+    Double_t nSigmaITSele = 9999.;
     if(fProdAODFilterBit==7){
       if(-trkid2-1>=19000) continue;
       if(-trkid2-1<0) continue;
       Int_t index = id2index[-trkid2-1];
       AliAODTrack *partpid = (AliAODTrack*)evt->GetTrack(index);
       nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(partpid,AliPID::kElectron);
+      nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(partpid,AliPID::kElectron);
     }else{
       nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk2,AliPID::kElectron);
+      nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trk2,AliPID::kElectron);
     }
     if(fabs(nSigmaTPCele)>5.) continue;
+
+		if(fConversionUseStrongerCut){
+			Double_t pte = trk2->Pt();
+			Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
+			if(pte>5.) nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*5.+fSigmaElectronTPCPtDepPar2*25.;
+			if(nSigmaTPCele<nsigmamin) continue;
+			if(nSigmaTPCele<-3.) continue;
+			if(nSigmaTPCele>fSigmaElectronTPCMax) continue;
+			//if(nSigmaITSele<fSigmaElectronITSMin) continue;
+			//if(nSigmaITSele>fSigmaElectronITSMax) continue;
+			if(nSigmaITSele<-2.) continue;
+			if(nSigmaITSele>2.) continue;
+		}
 
 		Double_t px2 = trk2->Px();
 		Double_t py2 = trk2->Py();
@@ -1070,16 +1105,32 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::TagConversionsSameSign(AliAODTrack
     }
 
     Double_t nSigmaTPCele = 9999.;
+    Double_t nSigmaITSele = 9999.;
     if(fProdAODFilterBit==7){
       if(-trkid2-1>=19000) continue;
       if(-trkid2-1<0) continue;
       Int_t index = id2index[-trkid2-1];
       AliAODTrack *partpid = (AliAODTrack*)evt->GetTrack(index);
       nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(partpid,AliPID::kElectron);
+      nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(partpid,AliPID::kElectron);
     }else{
       nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk2,AliPID::kElectron);
+      nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trk2,AliPID::kElectron);
     }
     if(fabs(nSigmaTPCele)>5.) continue;
+
+		if(fConversionUseStrongerCut){
+			Double_t pte = trk2->Pt();
+			Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
+			if(pte>5.) nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*5.+fSigmaElectronTPCPtDepPar2*25.;
+			if(nSigmaTPCele<nsigmamin) continue;
+			if(nSigmaTPCele<-3.) continue;
+			if(nSigmaTPCele>fSigmaElectronTPCMax) continue;
+			//if(nSigmaITSele<fSigmaElectronITSMin) continue;
+			//if(nSigmaITSele>fSigmaElectronITSMax) continue;
+			if(nSigmaITSele<-2.) continue;
+			if(nSigmaITSele>2.) continue;
+		}
 
 		Double_t px2 = trk2->Px();
 		Double_t py2 = trk2->Py();

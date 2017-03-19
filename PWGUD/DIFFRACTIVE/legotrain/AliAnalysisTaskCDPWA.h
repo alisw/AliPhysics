@@ -84,7 +84,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 				 ,fZDCGap(0)
 				 ,fNtrk_ST(0)
 				 ,fNtrk_MS(0)
-		       		 ,fProcessType(0){
+		       		 ,fProcessType(0)
+				 ,fCDType(0){
 					 for (Int_t i = 0; i < 11; i++) {
 						 if (i < 3) {
 							 fVertexSPD[i] = 0; 
@@ -123,6 +124,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			Bool_t fSysPileUp[5];//
 			Bool_t fSysCluster[5];//
 			Int_t fProcessType;//for MC
+			Int_t fCDType;//
 
 			ClassDef(EventInfo, 1);
 		};
@@ -274,6 +276,15 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kTri_CDG7_SPD2,
 			kTriAll
 		};
+		enum {
+			kEvt2pi = 0,
+			kEvt4pi,
+			kEvtnpi,
+			kEvt2ka,
+			kEvtnka,
+			kEvtelse,
+			kEvtAll
+		};
 
 		AliAnalysisTaskCDPWA(const AliAnalysisTaskCDPWA  &p);
 		AliAnalysisTaskCDPWA& operator=(const AliAnalysisTaskCDPWA  &p);
@@ -350,6 +361,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fMultDG_MS;//!
 		TH1D *fMassNG_ST_2t;//!
 		TH1D *fMassNG_MS_2t;//!
+		TH1D *fpTNG_MS_2t;//!
+		TH2D *fMasspTNG_MS_2t;//!
 		TH1D *fMassDG_ST_2t;//!
 		TH1D *fMassDG_MS_2t;//!
 		TH1D *fMassNG_ST_4t;//!
@@ -385,6 +398,13 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *hMultNG_Test[6];//!
 		TH1D *hMC_PassEta[14];//!
 		TH1D *hMC_PassType[2];//!
+		TH1D *hMult_Ref[3];//!
+		TH1D *hMC_GenMass;//!
+		TH1D *hMC_GenpT;//!
+		TH1D *hMC_CDEvtType;//!
+		TH1D *hMC_CDGenMass[7];//!
+		TH1D *hMC_CDGenpT[7];//!
+//		TH2D *hMC_CDGenMasspT[7];//!
 		// -------------------------------------------------------------------
 
 		ClassDef(AliAnalysisTaskCDPWA, 1);

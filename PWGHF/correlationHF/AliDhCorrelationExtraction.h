@@ -81,6 +81,7 @@ public:
     void SetMECorrelHistoNameSuffix(TString suffix) {fMEsuffix=suffix;}
     void IntegratePtBins(Bool_t intPt=kFALSE) {fIntegratePtBins=intPt;}
     void ReadTTreeOutputFiles(Bool_t treeSE, Bool_t treeME) {fReadTreeSE=treeSE; fReadTreeME=treeME;}
+    void SetSubtractSoftPiInMEdistr(Bool_t subtractSoftPiME) {fSubtractSoftPiME=subtractSoftPiME;}
 
     void SetRebinMassPlots(Int_t rebinMassPlots) {fRebinMassPlots=rebinMassPlots;}
     void SetNpTbins(Int_t npt) {fNpTbins=npt;}
@@ -104,15 +105,15 @@ public:
     void PrintSandBForNormal();
     void GetSignalAndBackgroundForNorm(Int_t i, TH1F* &histo);  //evaluates signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling
     void GetSBScalingFactor(Int_t i, TH1F* &histo); //estract sideband scaling factor
-    TH2D* GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
-    TH2D* GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
+    TH2D* GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME=1);
+    TH2D* GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME=1);
     TH2D* GetCorrelHistoDplus(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDstar(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDxHFE(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDplusTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDstarTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
-    void NormalizeMEplot(TH2D* &histoME); //normalize ME plots to the average value of the 4 'central' bins
+    void NormalizeMEplot(TH2D* &histoME, TH2D* &histoMEsoftPi); //normalize ME plots to the average value of the 4 'central' bins
     void RescaleSidebandsInMassBinEdges(Int_t i); //readjust SB scaling factor if single bin is used & ranges passed from outside & ranges don't match bin edges
     void MergeMassPlotsVsPt(); //merge spectra from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
     void MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t SEorME, Int_t SorSB=0, Int_t pool=0); //merge THnSparse from mass-pT bins in correlation-pT bins (as if you have 1 pT bin)
@@ -174,6 +175,7 @@ private:
     Int_t fNpools;
     Bool_t fReadTreeSE;
     Bool_t fReadTreeME;
+    Bool_t fSubtractSoftPiME;
 
     Double_t *fDmesonFitterSignal;
     Double_t *fDmesonFitterSignalError;

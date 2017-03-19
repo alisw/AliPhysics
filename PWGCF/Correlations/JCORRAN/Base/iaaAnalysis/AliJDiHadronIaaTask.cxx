@@ -35,60 +35,60 @@
 
 //______________________________________________________________________________
 AliJDiHadronIaaTask::AliJDiHadronIaaTask() :
-  AliAnalysisTaskSE("AliJDiHadronIaaTaskTask"),
-  fFilterTask(NULL),
-  fFilterTaskName(""),
-  fJtAnalysis(0x0),
-  fOutput(NULL)
+	AliAnalysisTaskSE("AliJDiHadronIaaTaskTask"),
+	fFilterTask(NULL),
+	fFilterTaskName(""),
+	fIaaAnalysis(0x0),
+	fOutput(NULL)
 {
-  DefineOutput (1, TDirectory::Class());
+	DefineOutput (1, TDirectory::Class());
 }
 
 //______________________________________________________________________________
 AliJDiHadronIaaTask::AliJDiHadronIaaTask(const char *name, TString inputformat):
-  AliAnalysisTaskSE(name),
-  fFilterTask(NULL),
-  fFilterTaskName(""),
-  fJtAnalysis(0x0),
-  fOutput(NULL)
+	AliAnalysisTaskSE(name),
+	fFilterTask(NULL),
+	fFilterTaskName(""),
+	fIaaAnalysis(0x0),
+	fOutput(NULL)
 {
-  // Constructor
-  AliInfo("---- AliJDiHadronIaaTask Constructor ----");
+	// Constructor
+	AliInfo("---- AliJDiHadronIaaTask Constructor ----");
 
-  JUNUSED(inputformat);
-  DefineOutput (1, TDirectory::Class());
+	JUNUSED(inputformat);
+	DefineOutput (1, TDirectory::Class());
 }
 
 //____________________________________________________________________________
 AliJDiHadronIaaTask::AliJDiHadronIaaTask(const AliJDiHadronIaaTask& ap) :
-  AliAnalysisTaskSE(ap.GetName()),
-  fFilterTask(ap.fFilterTask),
-  fFilterTaskName(ap.fFilterTaskName),
-  fJtAnalysis( ap.fJtAnalysis ),
-  fOutput( ap.fOutput )
+	AliAnalysisTaskSE(ap.GetName()),
+	fFilterTask(ap.fFilterTask),
+	fFilterTaskName(ap.fFilterTaskName),
+	fIaaAnalysis( ap.fIaaAnalysis ),
+	fOutput( ap.fOutput )
 { 
 
-  AliInfo("----DEBUG AliJDiHadronIaaTask COPY ----");
+	AliInfo("----DEBUG AliJDiHadronIaaTask COPY ----");
 
 }
 
 //_____________________________________________________________________________
 AliJDiHadronIaaTask& AliJDiHadronIaaTask::operator = (const AliJDiHadronIaaTask& ap)
 {
-  // assignment operator
+	// assignment operator
 
-  AliInfo("----DEBUG AliJDiHadronIaaTask operator= ----");
-  this->~AliJDiHadronIaaTask();
-  new(this) AliJDiHadronIaaTask(ap);
-  return *this;
+	AliInfo("----DEBUG AliJDiHadronIaaTask operator= ----");
+	this->~AliJDiHadronIaaTask();
+	new(this) AliJDiHadronIaaTask(ap);
+	return *this;
 }
 
 //______________________________________________________________________________
 AliJDiHadronIaaTask::~AliJDiHadronIaaTask()
 {
-  // destructor 
+	// destructor
 
-   delete fJtAnalysis;
+	delete fIaaAnalysis;
 
 }
 
@@ -96,33 +96,33 @@ AliJDiHadronIaaTask::~AliJDiHadronIaaTask()
 
 void AliJDiHadronIaaTask::UserCreateOutputObjects()
 {  
-  //=== create the jcorran outputs objects
-  if(fDebug > 1) printf("AliJDiHadronIaaTask::UserCreateOutPutData() \n");
-  
-  //=== Get AnalysisManager
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  if(!man->GetOutputEventHandler()) {
-    Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
-    return;
-  }
+	//=== create the jcorran outputs objects
+	if(fDebug > 1) printf("AliJDiHadronIaaTask::UserCreateOutPutData() \n");
 
-   fFilterTask = (AliJCORRANTask*)(man->GetTask( fFilterTaskName ));
+	//=== Get AnalysisManager
+	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	if(!man->GetOutputEventHandler()) {
+		Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
+		return;
+	}
 
-   OpenFile(1);
-   fOutput = gDirectory;
-   fOutput->cd();
+	fFilterTask = (AliJCORRANTask*)(man->GetTask( fFilterTaskName ));
+
+	OpenFile(1);
+	fOutput = gDirectory;
+	fOutput->cd();
 
 	// Order should be kept for correct functionality
-   fJtAnalysis->SetRunHeader(fFilterTask->GetJRunHeader());
-   fJtAnalysis->UserCreateOutputObjects();
-   fJtAnalysis->SetHeaderList(fFilterTask->GetFilter()->GetHeaderList());
-   fJtAnalysis->SetTrackList(fFilterTask->GetFilter()->GetTrackList());
-   fJtAnalysis->SetMCTrackList(fFilterTask->GetFilter()->GetMCTrackList());
-   fJtAnalysis->GetCard()->WriteCard(fOutput);
+	fIaaAnalysis->SetRunHeader(fFilterTask->GetJRunHeader());
+	fIaaAnalysis->UserCreateOutputObjects();
+	fIaaAnalysis->SetHeaderList(fFilterTask->GetFilter()->GetHeaderList());
+	fIaaAnalysis->SetTrackList(fFilterTask->GetFilter()->GetTrackList());
+	fIaaAnalysis->SetMCTrackList(fFilterTask->GetFilter()->GetMCTrackList());
+	fIaaAnalysis->GetCard()->WriteCard(fOutput);
 
-   PostData(1, fOutput);
+	PostData(1, fOutput);
 
-   cout << "Add(fAliRunHeader) in UserCreateObject() ======= " << endl;
+	cout << "Add(fAliRunHeader) in UserCreateObject() ======= " << endl;
 
 }
 
@@ -136,7 +136,7 @@ void AliJDiHadronIaaTask::UserExec(Option_t* /*option*/)
 	if( fFilterTask->GetFilterEntry() != fEntry ) return;
 
 	if( fFilterTask->GetFilter()->GetEventSuccess() ){
-		fJtAnalysis->UserExec();
+		fIaaAnalysis->UserExec();
 		PostData(1, fOutput );
 	}
 
@@ -148,8 +148,8 @@ void AliJDiHadronIaaTask::UserExec(Option_t* /*option*/)
 void AliJDiHadronIaaTask::Init()
 {
 	// Intialisation of parameters
-	AliInfo("Doing initialization") ; 
-	fJtAnalysis->Init();
+	AliInfo("Doing initialization") ;
+	fIaaAnalysis->Init();
 }
 
 //______________________________________________________________________________

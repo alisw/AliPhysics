@@ -1,12 +1,32 @@
 #ifndef ALIMUONGRIDSUBMITTER_H
 #define ALIMUONGRIDSUBMITTER_H
 
-//
-// AliMuonGridSubmitter : a base class to help submit some
-// mini-productions for muon studies (e.g. Acc x Eff, qa merging, etc...)
-//
-// author: Laurent Aphecetche (Subatech)
-//
+/**
+ \ingroup pwg_muondep_submitter
+ \class AliMuonGridSubmitter
+ \brief Base class for a grid submission helper
+
+ This class was meant to be a base class for a Grid submission helper. Currently two classes derive from it : AliMuonAccEffSubmitter which is actually quite used and AliMuonQAMergeSubmitter which has not been fully debugged up to now...
+
+The class is dealing with three different directories :
+
+- template directory, containing the basic template files to be used for the grid production for a particular job type (XXX). A
+  template file is a normal text file with some (optional) variables that will be replaced during the copy from the
+  template directory to the local directory. Unless you have special needs (or a new generator), the existing files located in
+  the default template directory (PWG/muondep/XXXTemplates, can be changed with \ref
+  AliMuonGridSubmitter::SetTemplateDir) should be
+  enough.
+
+- local directory, where the files from the template directory are copied once the class has been configured properly
+  (using the various Set, Use, etc... methods). Some other files (e.g. the JDL) are generated from scratch into that
+  directory. At this point the local files should (could) be checked, as they are the ones that will be uploaded to the
+  remote directory for the Grid production.
+
+- remote directory, the alien directory where the local files are uploaded before the actual submission of the job(s).
+ 
+\author Laurent Aphecetche, Subatech
+
+*/
 
 #include "TObject.h"
 #include "TString.h"
@@ -63,6 +83,8 @@ public:
   
   virtual void Print(Option_t* opt="") const;
 
+  void PrintVariables(Bool_t all=kFALSE) const;
+
   Bool_t CopyLocalFilesToRemote();
 
   Bool_t CopyTemplateFilesToLocal();
@@ -107,6 +129,7 @@ public:
   Bool_t ReplaceVars(const char* file) const;
   
   Bool_t HasVars(const char* localFile) const;
+  Bool_t HasVar(const char* templateFile, const char* var) const;
 
   Bool_t SetVar(const char* varname, const char* value);
   
@@ -118,9 +141,9 @@ public:
   
   TObjArray* TemplateFileList() const;
   
-  void AddToTemplateFileList(const char* filename);
+  void AddToTemplateFileList(const char* filename, Bool_t alsoForMerging = kFALSE);
 
-  void AddToLocalFileList(const char* filename);
+  void AddToLocalFileList(const char* filename, Bool_t alsoForMerging = kFALSE);
 
   void AddIncludePath(const char* pathList) const;
 
@@ -158,7 +181,9 @@ private:
   mutable TObjArray* fLocalFileList; // list of local files
   std::vector<Int_t> fRunList; // run list to process
 
-  ClassDef(AliMuonGridSubmitter,0) // Helper class to submit some muon jobs
+/// \cond CLASSIMP
+  ClassDef(AliMuonGridSubmitter,0); // Helper class to submit some muon jobs
+/// \endcond
 };
 
 #endif

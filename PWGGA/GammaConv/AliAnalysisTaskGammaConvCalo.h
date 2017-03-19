@@ -65,6 +65,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void ProcessConversionPhotonsForMissingTagsAOD  ();
     
     // switches for additional analysis streams or outputs
+    void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
     void SetLightOutput                 ( Bool_t flag )                                     { fDoLightOutput = flag                       ;}
     void SetDoMesonAnalysis             ( Bool_t flag )                                     { fDoMesonAnalysis = flag                     ;}
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
@@ -72,7 +73,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void SetDoClusterQA                 ( Int_t flag )                                      { fDoClusterQA = flag                         ;}
     void SetUseTHnSparse                ( Bool_t flag )                                     { fDoTHnSparse = flag                         ;}
     void SetPlotHistsExtQA              ( Bool_t flag )                                     { fSetPlotHistsExtQA = flag                   ;}
-    void SetDoTreeConvGammaShowerShape  ( Bool_t flag )                                     { doConvGammaShowerShapeTree = flag           ;}
+    void SetDoTreeConvGammaShowerShape  ( Bool_t flag )                                     { fDoConvGammaShowerShapeTree = flag          ;}
+    void SetDoTreeInvMassShowerShape    ( Bool_t flag )                                     { fDoInvMassShowerShapeTree = flag            ;}
+
 
     // Setting the cut lists for the conversion photons
     void SetEventCutList                ( Int_t nCuts, 
@@ -151,6 +154,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList**                             fMotherList;            // Array of lists with Signal THnSparseF
     TList**                             fPhotonDCAList;         // Array of lists with photon dca trees
     TList**                             fGammaERM02;            // Array of lists with conv photon shower shape trees
+    TList**                             fInvMassShowerShape;    // Array of lists with invMass shower shape trees
     TList**                             fTrueList;              // Array of lists with histograms with MC validated reconstructed properties
     TList**                             fMCList;                // Array of lists with histograms with pure MC information
     TList**                             fClusterOutputList;     //!Array of lists of output histograms for cluster photons
@@ -196,6 +200,21 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Float_t                 tESDClusterMaxECell;                //! MaxEnergyCell of matched cluster for tree
     Float_t                 tESDClusterNLM;                     //! NLM of matched cluster for tree
 
+    TTree**                 tESDInvMassShowerShape;             //! tree with cluster shower shape for meson cand
+    Float_t                 tESDIMMesonInvMass;                 //! invMass of meson cand
+    Float_t                 tESDIMMesonPt;                      //! pT of meson cand
+    Float_t                 tESDIMClusE;                        //! energy of clus gamma for tree
+    Float_t                 tESDIMClusterM02;                   //! M02 of cluster for tree
+    Float_t                 tESDIMClusterM20;                   //! M20 of cluster for tree
+    Int_t                   tESDIMClusterLeadCellID;            //! leading cellID of cluster
+    Int_t                   tESDIMClusterClassification;        //! classification of cluster in MC
+    Float_t                 tESDIMClusMatchedTrackPt;           //! pT of closest matched track
+    Float_t                 tESDIMClusTrackDeltaEta;            //! matching residual closest track <-> cluster
+    Float_t                 tESDIMClusTrackDeltaPhi;            //! matching residual closest track <-> cluster
+    Float_t                 tESDIMClusterIsoSumClusterEt;       //! sum of Et of clusters within R<0.2
+    Float_t                 tESDIMClusterIsoSumTrackEt;         //! sum of Et of tracks within R<0.2
+    map<Long_t,Int_t>       tESDmapIsClusterAcceptedWithoutTrackMatch; //! needed for filling of tree -> compute cluster isolation
+
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                  fHistoMotherMatchedInvMassPt;       //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -219,6 +238,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoPhotonPairMixedEventPtconv;   //! array of histo for pairs vs. pt of converted photon
     // histograms for rec photon clusters
     TH1F**                  fHistoClusGammaPt;                  //! array of histos with cluster, pt
+    TH1F**                  fHistoClusGammaE;                   //! array of histos with cluster, E
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
                     
     //histograms for pure MC quantities
@@ -419,15 +439,17 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Bool_t                  fDoTHnSparse;                                       // flag for using THnSparses for background estimation
     Bool_t                  fSetPlotHistsExtQA;                                 // flag for extended QA hists
     Double_t                fWeightJetJetMC;                                    // weight for Jet-Jet MC 
-    Bool_t                  doConvGammaShowerShapeTree;                         // flag for tree with conv gamma R vs energy vs shower shape
+    Bool_t                  fDoConvGammaShowerShapeTree;                        // flag for tree with conv gamma R vs energy vs shower shape
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
+    Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries
+    Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
     
     
   private:
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 32);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 37);
 };
 
 #endif

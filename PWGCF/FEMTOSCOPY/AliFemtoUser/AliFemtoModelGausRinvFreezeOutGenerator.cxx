@@ -59,7 +59,8 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
 
   if ((!inf1) || (!inf2)) { cout << "Hidden info not created! "  << endl; exit(kFALSE); }
 
-  if (fSelectPrimary) {
+  if (fSelectPrimary) 
+  {
     const AliFemtoTrack *infg1 = dynamic_cast<const AliFemtoTrack *>(aPair->Track1()->Track());
     const AliFemtoTrack *infg2 = dynamic_cast<const AliFemtoTrack *>(aPair->Track2()->Track());
     
@@ -75,18 +76,29 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
 
       if ((dist1 > 0.05) && (dist2 > 0.05)) {
 	// At least one particle is non primary
-	if (!(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint())) {
+	if (!(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint())) 
+  {
 	  AliFemtoLorentzVector tPos(-1000,1000,-500,0);
 	  inf1->SetEmissionPoint(&tPos);
+    ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->SetEmissionPoint(&tPos);
+
 	}
 	else
-	  inf1->SetEmissionPoint(-1000,1000,-500,0);
+	{
+    inf1->SetEmissionPoint(-1000,1000,-500,0);
+    ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->SetEmissionPoint(-1000,1000,-500,0);
+  }
 	if (!(((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint())) {
 	  AliFemtoLorentzVector tPos(fRandom->Gaus(0,1000.0),fRandom->Gaus(0,1000),fRandom->Gaus(0,1000),0.0);
 	  inf2->SetEmissionPoint(&tPos);
+    ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->SetEmissionPoint(&tPos);
 	}
 	else
-	  inf2->SetEmissionPoint(fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), 0.0);
+	{
+    inf2->SetEmissionPoint(fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), 0.0);
+    ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->SetEmissionPoint(fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), fRandom->Gaus(0,1000), 0.0);
+
+  }
 	
 	return;
       }
@@ -150,18 +162,29 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   Double_t tXlong = tRLong;
   Double_t tXtime = tDt;
   
-  if (!(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint())) {
+  if (!(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint())) 
+  {
     AliFemtoLorentzVector tPos(0,0,0,0);
     inf1->SetEmissionPoint(&tPos);
+    ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->SetEmissionPoint(&tPos);
   }
   else
-    inf1->SetEmissionPoint(0,0,0,0);
-  if (!(((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint())) {
+    {
+      inf1->SetEmissionPoint(0,0,0,0);
+      ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->SetEmissionPoint(0,0,0,0);
+    }
+
+  if (!(((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint())) 
+  {
     AliFemtoLorentzVector tPos(tXout,tXside,tXlong,tXtime);
     inf2->SetEmissionPoint(&tPos);
+    ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->SetEmissionPoint(&tPos);
   }
   else
+  {
     inf2->SetEmissionPoint(tXout, tXside, tXlong, tXtime);
+    ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->SetEmissionPoint(tXout, tXside, tXlong, tXtime);
+  }
 
   }
 }

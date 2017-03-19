@@ -1,5 +1,5 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -26,6 +26,7 @@
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfo+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonJetInfo+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliD0InfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDStarInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;
@@ -42,6 +43,8 @@
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse+;
 #pragma link C++ class AliHFAODMCParticleContainer+;
 #pragma link C++ class AliHFTrackContainer+;
+#pragma link C++ class AliDJetTTreeReader+;
+#pragma link C++ class AliDJetTHnReader+;
 #endif
 
 #endif

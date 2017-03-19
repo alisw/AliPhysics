@@ -17,7 +17,8 @@ enum eventCutSet { kEvtDefault=0,
 		   kMCEvtDefault, //=5                   
 		   kSpecial1, //=6                   
 		   kSpecial2, //=7
-		   kNoEvtSel //=8
+		   kNoEvtSel, //=8
+		   kSpecial3 //=9
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -45,14 +46,17 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
  Bool_t      useMixLS=0,
  Bool_t      checkReflex=0,
  AliRsnMiniValue::EType yaxisvar=AliRsnMiniValue::kPt,
- TString     polarizationOpt="" /* J - Jackson,T - Transversity */
+ TString     polarizationOpt="" /* J - Jackson,T - Transversity */,
+ TString     eventPlaneSubDet="" /* VZEROA*/,
+ TString     eventPlaneExpStep="" /* latest*/
 )
 {  
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask=AliVEvent::kINT7;
-  if(isMC && evtCutSetID==eventCutSet::kNoEvtSel) triggerMask=AliVEvent::kAny;
+  if (!isPP)  triggerMask=AliVEvent::kAny;
+  if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
   Int_t       MultBins=aodFilterBit/100;
@@ -124,15 +128,18 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
   AliRsnCutPrimaryVertex* cutVertex=0;
-  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && !MultBins){
+  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && (!MultBins || fabs(vtxZcut-10.)>1.e-10)){
     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
-    cutVertex->SetCheckZResolutionSPD();
-    cutVertex->SetCheckDispersionSPD();
-    cutVertex->SetCheckZDifferenceSPDTrack();
+    if(!MultBins && evtCutSetID!=eventCutSet::kSpecial3){
+      cutVertex->SetCheckZResolutionSPD();
+      cutVertex->SetCheckDispersionSPD();
+      cutVertex->SetCheckZDifferenceSPDTrack();
+    }
+    if(evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;
-  if(evtCutSetID!=eventCutSet::kNoEvtSel){
+  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3){
     cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
     if(!MultBins){
       cutEventUtils->SetCheckIncompleteDAQ();
@@ -161,7 +168,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
     }else if(cutEventUtils && !cutVertex){
       eventCuts->AddCut(cutEventUtils);
       eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
-    }else if(!cutEventUtils && !cutVertex){
+    }else if(!cutEventUtils && cutVertex){
       eventCuts->AddCut(cutVertex);
       eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
     }
@@ -197,6 +204,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts",AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
+
+  // -- SETS event plane parameters
+  if (!eventPlaneSubDet.IsNull()&&!eventPlaneExpStep.IsNull()) {
+    task->SetFlowQnVectorSubDet(eventPlaneSubDet.Data());
+    task->SetFlowQnVectorExpStep(eventPlaneExpStep.Data());
+  }
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 

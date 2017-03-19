@@ -23,10 +23,14 @@
 #include "AliAnalysisTaskSE.h"
 #include <Rtypes.h>
 #include <TString.h>
+#include <TArrayD.h>
 #include <TArrayF.h>
 #include <AliPIDResponse.h>
 #include <AliPID.h>
+#include <TLorentzVector.h>
+#include "AliNuclexEventCuts.h"
 
+class TF1;
 class TH2F;
 class TH3F;
 class AliFlowTrackCuts;
@@ -63,18 +67,13 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireTOFpidSigmas (float sig) { fRequireTOFpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
-  void SetRequireMagneticField (int cut) { fRequireMagneticField = cut; }
   void SetRequireVetoSPD (bool veto) { fRequireVetoSPD = veto; }
   void SetRequireMaxMomentum (float p) { fRequireMaxMomentum = p; }
-  void SetEnablePerformancePlot (bool cut) { fEnablePerformance = cut; }
   void SetEnablePtCorrection (bool cut) { fEnablePtCorrection = cut; }
   void SetDisableITSatHighPt (float pt) { fDisableITSatHighPt = pt; }
   void SetDisableTPCpidAtHighPt (float pt) { fDisableTPCpidAtHighPt = pt; }
   void SetFixForLHC14a6 (bool fix) { fFixForLHC14a6 = fix; }
-  void SetRequireTrackLength(float len) { fRequireTrackLength = len; }
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
-
-  void SetCentralityLimits(float min, float max) { fRequireMinCentrality = min; fRequireMaxCentrality = max; }
 
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
@@ -84,38 +83,41 @@ public:
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
-  void SetPhiRegions (bool pos,int n, float *regions) { fPhiRegions[int(pos)].Set(n,regions); }
-  void SetUseNewCentralityFramework (bool useIt) { fNewCentralityFramework = useIt; }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
-  void SetTriggerMask (ULong_t mask) { fTriggerMask = mask; }
-  
-  void SetEnableLogarithmicBinning (bool useit) { fEnableLogAxisInPerformancePlots = useit; }
+
+  static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, unsigned int &nSPD, unsigned int &nSDD, unsigned int &nSSD);
+  static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
+  AliNuclexEventCuts  fEventCut;
+  TArrayD             fTOFfunctionPars;
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
 
-  Bool_t AcceptTrack(AliAODTrack *t, Double_t dca[2]);
-  Bool_t PassesPIDSelection(AliAODTrack *t);
-  Float_t HasTOF(AliAODTrack *t);
+  bool   AcceptTrack(AliAODTrack *t, Double_t dca[2]);
+  bool   PassesPIDSelection(AliAODTrack *t);
+  float  GetTPCsigmas(AliVTrack *t);
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
 
+  TF1                  *fTOFfunction;           //!<! TOF signal function
+
   TList                *fList;                  ///<  Output list
+  TLorentzVector        fCutVec;                ///<  Vector used to perform some cuts
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
   Float_t               fPDGMass;               ///<  PDG mass
   Float_t               fPDGMassOverZ;          ///<  PDG mass over z
+  float                 fCharge;                ///<  Charge of the particle of interest (absolute value)
   Bool_t                fIsMC;                  ///<  Switch between MC and data
   Bool_t                fFillOnlyEventHistos;   ///<  Set treu to fill only event related histograms
 
   AliPIDResponse       *fPID;                   //!<! PID response class
   Float_t               fMagField;              ///<  Magnetic field value for the current event
-  AliVVertex           *fPrimaryVertex;         //!<! Primary vertex of the current event
 
   Float_t               fDCAzLimit;             ///<  Limits of the \f$DCA_{z}\f$ histograms
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
@@ -128,7 +130,6 @@ private:
   Int_t                 fTOFnBins;              ///<  Number of bins used for the TOF mass spectra
   Float_t               fDisableITSatHighPt;    ///<  \f$p_{T}\f$ threshold for ITS cuts
   Float_t               fDisableTPCpidAtHighPt; ///<  \f$p_{T}\f$ threshold for TPC pid cut
-  Bool_t                fEnablePerformance;     ///<  If true enables the task saves in the output the performance plots
   Bool_t                fEnablePtCorrection;    ///<  If true enables the MC based \f$p_{T}\f$ correction
   Bool_t                fRequireITSrefit;       ///<  Cut on tracks: set true to require ITS refit
   Bool_t                fRequireTPCrefit;       ///<  Cut on tracks: set true to require TPC refit
@@ -150,18 +151,11 @@ private:
   Float_t               fRequireITSpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireTOFpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
-  Int_t                 fRequireMagneticField;  ///<  {0 : any magnetic field is fine, -1 : only negative magnetic field, 1 : only positive}
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
-  Float_t               fRequireTrackLength;    ///<  Cut on the track length
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
-  Bool_t                fNewCentralityFramework;///<  Use the new centrality framework
 
-  Float_t               fRequireMinCentrality;  ///<  Max centrality
-  Float_t               fRequireMaxCentrality;  ///<  Min centrality
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
-  ULong_t               fTriggerMask;           ///<  Mask of the accepted triggers
-  Bool_t               fEnableLogAxisInPerformancePlots; ///< Switch on/off logarithmic bins
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins
@@ -169,43 +163,26 @@ private:
   TArrayF               fPtBins;                ///<  Transverse momentum bins
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
-  TArrayF               fPhiRegions[2];            ///<  Azimuthal angle region where the analysis is performed
 
   // Event related histograms
-  TH1F                 *fCentrality;            //!<! Events centrality distribution
   TH1F                 *fFlattenedCentrality;   //!<! Events centrality distribution after the flattening
   TH1F                 *fCentralityClasses;     //!<! Events statistics per centrality classes
 
   // MC only histograms
-  TH1F                 *fProduction;            //!<! *(MC only)* Total number of produced particles
-  TH2F                 *fAITS_TPC;              //!<! *(MC only)* Tracks reconstructed in ITS-TPC acceptance (anti-matter)
-  TH2F                 *fAITS_TPC_TOF;          //!<! *(MC only)* Tracks reconstructed in ITS-TPC-TOF acceptance (anti-matter)
-  TH2F                 *fATotal;                //!<! *(MC only)* Particles in acceptance (anti-matter)
-  TH2F                 *fAPtCorrection;         //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for anti-matter
-  TH2F                 *fMITS_TPC;              //!<! *(MC only)* Tracks reconstructed in ITS-TPC acceptance (matter)
-  TH2F                 *fMITS_TPC_TOF;          //!<! *(MC only)* Tracks reconstructed in ITS-TPC-TOF acceptance (matter)
-  TH2F                 *fMTotal;                //!<! *(MC only)* Particles in acceptance (matter)
-  TH2F                 *fMPtCorrection;         //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for matter
-  TH3F                 *fMDCAPrimaryTPC;        //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries for ITS+TPC tracks
-  TH3F                 *fMDCASecondaryTPC;      //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries for ITS+TPC tracks
-  TH3F                 *fMDCAPrimaryTOF;        //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries for ITS+TPC+TOF tracks
-  TH3F                 *fMDCASecondaryTOF;      //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries for ITS+TPC+TOF tracks
+  TH1F                 *fProduction;             //!<! *(MC only)* Total number of produced particles
+  TH2F                 *fReconstructed[2][2];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF)
+  TH2F                 *fTotal[2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance
+  TH2F                 *fPtCorrection[2];        //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for positive and negative tracks
+  TH3F                 *fDCAPrimary[2][2];       //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries
+  TH3F                 *fDCASecondary[2][2];     //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from material
+  TH3F                 *fDCASecondaryWeak[2][2]; //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from Weak Decay
 
   // Data histograms
-  TH3F                 *fATOFsignal;            //!<! *(Data only)* TOF signal for anti-matter
-  TH3F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
-  TH3F                 *fATOFphiSignal;         //!<! *(Data only)* TOF signal for anti-matter as a function of \f$\phi\f$
-  TH2F                 *fATPCphiCounts;         //!<! *(Data only)* TPC counts for anti-matter as a function of \f$\phi\f$
-  TH2F                 *fATPCeLoss;             //!<! *(Data only)* TPC dE/dx for anti-matter
-  TH3F                 *fMDCAxyTPC;             //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
-  TH3F                 *fMDCAzTPC;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
-  TH3F                 *fMDCAxyTOF;             //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC+TOF tracks
-  TH3F                 *fMDCAzTOF;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC+TOF tracks
-  TH3F                 *fMTOFsignal;            //!<! *(Data only)* TOF signal for matter
-  TH3F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
-  TH3F                 *fMTOFphiSignal;         //!<! *(Data only)* TOF signal for matter as a function of \f$\phi\f$
-  TH2F                 *fMTPCphiCounts;         //!<! *(Data only)* TPC counts for matter as a function of \f$\phi\f$
-  TH2F                 *fMTPCeLoss;             //!<! *(Data only)* TPC dE/dx for matter
+  TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
+  TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
+  TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
+  TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
+  TH3F                 *fTOFtemplates[5];        //!<! *(Data only)* TOF signal templates for pi/k/p/d/t
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);

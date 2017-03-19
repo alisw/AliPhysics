@@ -649,6 +649,7 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
   for (Int_t i=0; i<fEvent->GetNumberOfCaloClusters(); i++) {
     AliVCluster *clu = fEvent->GetCaloCluster(i);
 
+    if ( clu->GetType() !=AliVCluster::kPHOSNeutral ) continue; // reject CPV clusters
     if ( !clu->IsPHOS() || clu->E()< kMinClusterEnergy) continue; // reject cluster
 
 

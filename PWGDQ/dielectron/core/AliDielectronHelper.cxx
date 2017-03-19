@@ -146,7 +146,7 @@ void AliDielectronHelper::GetMaxPtAndPhi(const AliVEvent *ev, Double_t &ptMax, D
 }
 
 //_____________________________________________________________________________
-Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange){
+Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange, Bool_t excludeJpsiDaughters){
   // determination of Nch
   if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
 
@@ -165,6 +165,13 @@ Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange){
     if (!particle) continue;
     if (particle->GetPDG()->Charge() == 0) continue;
 
+    if(excludeJpsiDaughters){
+      Int_t iMother = particle->GetMother(0);
+      if( ! (iMother < 0) ) {
+        TParticle* mother = stack->Particle(iMother);
+        if( mother && TMath::Abs( mother->GetPdgCode() ) == 443  ) continue;
+      }
+    }
     Float_t eta = particle->Eta();
     if (TMath::Abs(eta) < TMath::Abs(etaRange)) nCh++;
   }

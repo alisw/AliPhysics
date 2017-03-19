@@ -24,7 +24,7 @@ class TH1D;
 class AliFemtoV0TrackCutNSigmaFilter : public AliFemtoV0TrackCut {
 public:
 
-  /// Default Constructor - wide ranges and
+  /// Default Constructor
   AliFemtoV0TrackCutNSigmaFilter();
 
   AliFemtoV0TrackCutNSigmaFilter(const AliFemtoV0TrackCutNSigmaFilter& aCut);
@@ -92,6 +92,12 @@ public:
   bool IsMisIDLambda(const AliFemtoV0* aV0);
   bool IsMisIDAntiLambda(const AliFemtoV0* aV0);
 
+  void SetParticleType(short x);
+  short GetParticleType();
+  double GetCTau(const AliFemtoV0* aV0);
+
+  virtual TList *GetOutputList();
+
 protected:
 
   bool fUseCustomPionNSigmaFilter;
@@ -110,6 +116,9 @@ protected:
   vector<AliFemtoNSigmaFilter> fK0sRejectionFilters;
   vector<AliFemtoNSigmaFilter> fLambdaRejectionFilters;
   vector<AliFemtoNSigmaFilter> fAntiLambdaRejectionFilters;
+
+  TH1D* fCTau;  //Currently in development, if useful, will be added to AliFemtoV0TrackCut,
+		// or to the cut monitor
 
 
 #ifdef __ROOT__
@@ -204,7 +213,7 @@ inline void AliFemtoV0TrackCutNSigmaFilter::AddProtonTOFNSigmaCut(double aMomMin
   AddTOFNSigmaCut(kProton, aMomMin, aMomMax, aNSigmaValueTOF);
 }
 
-
+inline short AliFemtoV0TrackCutNSigmaFilter::GetParticleType() {return fParticleType;}
 
 
 #endif

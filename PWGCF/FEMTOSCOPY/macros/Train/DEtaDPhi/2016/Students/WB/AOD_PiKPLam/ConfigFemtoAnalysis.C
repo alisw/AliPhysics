@@ -65,14 +65,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double ProtonMass = 0.938272013;
 	double LambdaMass = 1.115683;
 	
-	const int numOfMultBins = 1;	
+	const int numOfMultBins = 4;	
 	const int numOfChTypes = 16; //13
 	const int numOfkTbins = 1;
 
 	bool performSharedDaughterCut = false;
 	bool enablePairMonitors = true;
 
-	char *parameter[31];
+	char *parameter[35];
 	if(strlen(params)!=0)
 	  {
 	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
@@ -127,6 +127,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 		parameter[28] = strtok(NULL, ","); //PImPIm
 		parameter[29] = strtok(NULL, ","); //PIpPIm
 		parameter[30] = strtok(NULL, ","); //all
+		parameter[31] = strtok(NULL, ","); //cent 0-10%
+		parameter[32] = strtok(NULL, ","); //cent 10-20%
+		parameter[33] = strtok(NULL, ","); //cent 20-50%
+		parameter[34] = strtok(NULL, ","); //cent 50-80%
 	  }
 	int PP = atoi(parameter[21]);
 	int aPaP = atoi(parameter[22]);
@@ -137,15 +141,22 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int PIpPIp = atoi(parameter[27]);
 	int PImPIm = atoi(parameter[28]);
 	int PIpPIm = atoi(parameter[29]);
-
 	int all = atoi(parameter[30]);
 	int runch[numOfChTypes] = {PP, aPaP, PaP, KpKp, KmKm, KpKm, PIpPIp, PImPIm, PIpPIm, 0, 0, 0, all, 0, 0, 0};
+	
+	int cent_0_10 = atoi(parameter[31]);
+	int cent_10_20 = atoi(parameter[32]);
+	int cent_20_50 = atoi(parameter[33]);
+	int cent_50_80 = atoi(parameter[34]);
+	
+	int runmults[numOfMultBins] = {cent_0_10, cent_10_20, cent_20_50, cent_50_80};
+	int multbins[numOfMultBins+1] = {0, 100, 200, 500, 800};//10%-20-50-80
 	 
 	int filterbit = atoi(parameter[0]); //128  (768 / 128) 
 	int runktdep = atoi(parameter[1]); //0
 	int runmultdep = atoi(parameter[2]); //0
 	int minPlpContribSPD = atoi(parameter[3]); //3
-	int multbino = atoi(parameter[4]); //200
+	int multbino = atoi(parameter[4]); //20
 	int zvertbino = atoi(parameter[5]); //10
 	Bool_t ifGlobalTracks=kFALSE; if(atoi(parameter[6]))ifGlobalTracks=kTRUE;//kFALSE 
 	double shareQuality = atof(parameter[7]); //0.00
@@ -168,8 +179,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	printf("*** Connect to AliEn ***\n");
 	TGrid::Connect("alien://");
 
-	int runmults[numOfMultBins] = {1};
-	int multbins[numOfMultBins+1] = {0, 100};
+	
 	
 	
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "V0LL", "V0aLaL", "V0LaL", "all", "plus", "minus", "mixed"};

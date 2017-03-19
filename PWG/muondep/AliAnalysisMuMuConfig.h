@@ -6,11 +6,25 @@
 
 // $Id$
 
-///
-/// AliAnalysisMuMuConfig : helper class to store steering options
-/// for the AliAnalysisMuMu and AliAnalysisMuMuEvolution classes
-///
-/// author : Laurent Aphecetche (Subatech)
+/**
+ 
+  @ingroup pwg_muondep_mumu
+
+  @class AliAnalysisMuMuConfig
+  
+  @brief helper class to store steering options for other MuMu classes
+  
+ Holds some options (e.g. for the AliAnalysisMuMu and AliAnalysisMuMuEvolution classesi)
+ like the list of triggers to consider, the fit to be performed, etc...
+ both for real data and for simulations (which might differ in e.g.
+ the naming of the triggers)
+
+ \author Laurent Aphecetche, Subatech
+ 
+ @todo : make it readeable/writeable from/to a simple ASCII file ?
+
+ */
+
 
 #include "TObject.h"
 #include "TString.h"
@@ -129,8 +143,6 @@ public:
   ///@}
 
   TObjArray* GetListElements(const char* type, Bool_t simulation) const;
-
-  void DefineDefaultsFromFile(const char* configfile);
 
 private:
 

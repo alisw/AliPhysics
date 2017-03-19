@@ -139,6 +139,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
 
     void SetV0ReaderName(TString name){fV0ReaderName = name; return;}
+    void SetProcessAODCheck(Bool_t flag){fProcessAODCheck = flag; return;}
 
     AliVTrack * GetTrack(AliVEvent * event, Int_t label);
     AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
@@ -341,11 +342,12 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH1F*             fHistoCutIndex;                       // bookkeeping for cuts
     TH1F*             fHistoEventPlanePhi;                  // EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           // Flag for preselection cut used in V0Reader
+    Bool_t            fProcessAODCheck;                     // Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     TProfile*         fProfileContainingMaterialBudgetWeights;      
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,12)
+    ClassDef(AliConversionPhotonCuts,13)
 };
 
 #endif

@@ -59,7 +59,8 @@ set(SRCS
   AliAnalysisTaskDimuonCFContainerBuilder.cxx 
   AliAnalysisTaskESDMuonFilter.cxx 
   AliAnalysisTaskFlowSingleMu.cxx 
-  AliAnalysisTaskFromStandardToMuonAOD.cxx 
+  AliAnalysisTaskFromStandardToMuonAOD.cxx
+  AliAnalysisTaskGenTuner.cxx
   AliAnalysisTaskLinkToMC.cxx 
   AliAnalysisTaskLUT.cxx
   AliAnalysisTaskMTRResponse.cxx
@@ -93,8 +94,10 @@ set(SRCS
   AliMuonPairCuts.cxx 
   AliMuonsHFHeader.cxx
   AliMuonTrackCuts.cxx
+  AliMuonTrackSmearing.cxx
   AliMuonTriggerCombo.cxx
   AliOADBMuonTrackCutsParam.cxx
+  AliTaskMuonTrackSmearing.cxx
   AliUtilityMuonAncestor.cxx
   AliVAnalysisMuon.cxx 
   AliAnalysisTaskLMREventFilter.cxx

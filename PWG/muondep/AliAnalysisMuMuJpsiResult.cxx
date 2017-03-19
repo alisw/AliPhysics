@@ -13,21 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///
-/// Class to hold results about J/psi
-/// like number of of J/psi (before and after Acc x Eff correction),
-/// Acc x Eff correction, Yield, RAB, etc...
-///
-/// A note on "naming conventions"
-///
-/// FitFunctionXY : denotes a function with a prototype double func(double*,double*)
-/// which can be used in a fit. X = Background, Signal or Total for Background+Signal
-/// Y is the functio name
-///
-///
-/// author: Laurent Aphecetche (Subatech)
-///
-
 #include "AliAnalysisMuMuJpsiResult.h"
 
 ClassImp(AliAnalysisMuMuJpsiResult)

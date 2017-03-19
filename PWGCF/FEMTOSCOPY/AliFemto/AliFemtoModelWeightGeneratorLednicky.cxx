@@ -85,6 +85,10 @@ extern "C" {void type_of_call F77_NAME(fsiw,FSIW)(const int &i,double &weif,
 #define ltran12 F77_NAME(ltran12,LTRAN12)
 extern "C" {void type_of_call ltran12_();}
 
+//K+K- model type
+#define setkpkmmodel F77_NAME(setkpkmmodel,SETKPKMMODEL)
+extern "C" {void type_of_call F77_NAME(setkpkmmodel,SETKPKMMODEL)(const int &i_model,const int &i_PhiOffOn);}
+
 // Test function for Lambda potential
 //#define printlam F77_NAME(printlam,PRINTLAM)
 //extern "C" {void type_of_call printlam_();}
@@ -109,7 +113,8 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky() :
   fNuclMass(1.),fNuclCharge(0.),
   fSphereApp(false),fT0App(false) ,
   fLL(0), fNuclChargeSign(1), fSwap(0), fLLMax(30), fLLName(0), 
-  fNumProcessPair(0), fNumbNonId(0)
+  fNumProcessPair(0), fNumbNonId(0),
+  fKpKmModel(14),fPhi_OffOn(1)
 {
   // default constructor
   fLLName=new char*[fLLMax+1];
@@ -157,7 +162,8 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky(const
   fNuclMass(1.),fNuclCharge(0.),
   fSphereApp(false),fT0App(false) ,
   fLL(0), fNuclChargeSign(1), fSwap(0), fLLMax(30), fLLName(0), 
-  fNumProcessPair(0), fNumbNonId(0)
+  fNumProcessPair(0), fNumbNonId(0),
+  fKpKmModel(14),fPhi_OffOn(1)
 {
   // copy constructor
   fWei = aWeight.fWei; 
@@ -182,6 +188,8 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky(const
   fNumbNonId = aWeight.fNumbNonId;
   fLLName=new char*[fLLMax+1];
   fNumProcessPair=new int[fLLMax+1];
+  fKpKmModel = aWeight.fKpKmModel;
+  fPhi_OffOn = aWeight.fPhi_OffOn;
   int i;
   for (i=1;i<=fLLMax;i++) {fLLName[i]=new char[40];fNumProcessPair[i]=0;}
   strncpy( fLLName[1],"neutron neutron",40);
@@ -248,6 +256,8 @@ AliFemtoModelWeightGeneratorLednicky& AliFemtoModelWeightGeneratorLednicky::oper
   fLLName=new char*[fLLMax+1];
   if (fNumProcessPair) free(fNumProcessPair);
   fNumProcessPair=new int[fLLMax+1];
+  fKpKmModel = aWeight.fKpKmModel;
+  fPhi_OffOn = aWeight.fPhi_OffOn;
   int i;
   for (i=1;i<=fLLMax;i++) {fLLName[i]=new char[40];fNumProcessPair[i]=0;}
   strncpy( fLLName[1],"neutron neutron",40);
@@ -344,6 +354,7 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   tBetat = tPt/tMt;
   
   //Double_t tDX = inf1->GetEmissionPoint()->x()-inf2->GetEmissionPoint()->x();
+  /*
   Double_t tDX =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->x()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->x();
   
   Double_t tDY =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->y()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->y();
@@ -351,19 +362,33 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
  Double_t tRLong =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->z()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->z();
 
 Double_t tDTime =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->t()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->t();
+*/
+
+
+Double_t tDX =inf1->GetEmissionPoint()->x()  - inf2->GetEmissionPoint()->x();
+Double_t tDY =inf1->GetEmissionPoint()->y()  - inf2->GetEmissionPoint()->y();
+Double_t tRLong =inf1->GetEmissionPoint()->z()  - inf2->GetEmissionPoint()->z();
+Double_t tDTime =inf1->GetEmissionPoint()->t()  - inf2->GetEmissionPoint()->t();
+
 
 
   Double_t tROut = (tDX*tPx + tDY*tPy)/tPt;
   Double_t tRSide = (-tDX*tPy + tDY*tPx)/tPt;
 
 
+//cout<<"Weight generator"<<" tDX "<<tDX<<" tDY "<<tDY<<"tRLong "<<tRLong<<endl;
   
-   //cout << "Got points 1 " << ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->x()
-//    << "  " <<  ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->y() << " "  << 
-//    ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->z()
-//     << "  " << ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->t()<< endl;
+ /*
+   cout << "Got points 1 " << inf1->GetEmissionPoint()->x()
+   << "  " <<  inf1->GetEmissionPoint()->y() << " "  << 
+    inf1->GetEmissionPoint()->z()
+     << "  " << inf1->GetEmissionPoint()->t()<< endl;
 
-//   cout << "Got points 2 " << inf2->GetEmissionPoint()->x() << "  " << inf2->GetEmissionPoint()->y() << " " << inf2->GetEmissionPoint()->z() << "  " << inf2->GetEmissionPoint()->t() << endl;
+ cout << "Got points 2 " << inf2->GetEmissionPoint()->x()
+   << "  " <<  inf2->GetEmissionPoint()->y() << " "  << 
+    inf2->GetEmissionPoint()->z()
+     << "  " << inf2->GetEmissionPoint()->t()<< endl;
+*/
 
   fRStarSide = tRSide;
 
@@ -378,13 +403,15 @@ Double_t tDTime =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionP
 			   fRStarLong*fRStarLong);
   fKStar = ::sqrt(fKStarOut*fKStarOut + fKStarSide*fKStarSide + fKStarLong*fKStarLong);
 
-  // cout << "-- weights generator : Got out side " << fRStarOut << " " << fRStarSide << endl;
+  //cout << "-- weights generator : Got out side " << fRStarOut << " " << fRStarSide << endl;
 
   if (!SetPid(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid(),((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid())) {
     fWeightDen=1.;
-    return 1;    
+//    cout<<" bad PID weight generator pdg1 "<<((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid()<<" pdg2 "<<((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid()<<endl;
+    return 1; //non-correlated
   } 
   else { // Good Pid
+//    cout<<" good PID weight generator pdg1 "<<((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid()<<" pdg2 "<<((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid()<<endl;
     AliFemtoThreeVector*  p;
     p=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
     double p1[]={p->x(),p->y(),p->z()};
@@ -400,13 +427,18 @@ Double_t tDTime =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionP
       fsimomentum(*p1,*p2);
     }
     AliFemtoLorentzVector* tPoint;
-    tPoint=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint();
-    // cout << "Pid1:dans GetWeight = " << aThPair->GetPid1() << endl;
-    // cout << "Pid2:dans GetWeight = " << aThPair->GetPid2() << endl;
+//    tPoint=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint();
+    tPoint=inf1->GetEmissionPoint();
+    
+    int pdg1=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
+    int pdg2=((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
+    
+//    if(pdg1==!211||pdg2!=211)cout << "Weight pdg1 pdg2 = " << pdg1<<" "<<pdg2<< endl;
+    
 //     cout << "LL:in GetWeight = " << mLL << endl;
-
     double x1[]={tPoint->x(),tPoint->y(),tPoint->z(),tPoint->t()};
-    tPoint=((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint();
+//    tPoint=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint();
+    tPoint=inf2->GetEmissionPoint();
     double x2[]={tPoint->x(),tPoint->y(),tPoint->z(),tPoint->t()};
     if ((x1[0]==x2[0])&&(x1[1]==x2[1])&&(x1[2]==x2[2])&&(x1[3]==x2[3])) {
       fWeightDen=0.;
@@ -430,6 +462,7 @@ Double_t tDTime =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionP
 
 
 }
+
 
 AliFemtoString AliFemtoModelWeightGeneratorLednicky::Report() {
   // create report
@@ -456,13 +489,20 @@ AliFemtoString AliFemtoModelWeightGeneratorLednicky::Report() {
 
 void AliFemtoModelWeightGeneratorLednicky::FsiInit(){
   // Initialize weight generation module
-//   cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiInit ************" << endl;
-//   cout <<"mItest dans FsiInit() = " << fItest << endl;
-//   cout <<"mIch dans FsiInit() = " << fIch << endl;
-//   cout <<"mIqs dans FsiInit() = " << fIqs << endl;
-//   cout <<"mIsi dans FsiInit() = " << fIsi << endl;
-//   cout <<"mI3c dans FsiInit() = " << fI3c << endl;
+   cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiInit ************" << endl;
+   cout <<"mItest dans FsiInit() = " << fItest << endl;
+   cout <<"mIch dans FsiInit() = " << fIch << endl;
+   cout <<"mIqs dans FsiInit() = " << fIqs << endl;
+   cout <<"mIsi dans FsiInit() = " << fIsi << endl;
+   cout <<"mI3c dans FsiInit() = " << fI3c << endl;
   fsiin(fItest,fIch,fIqs,fIsi,fI3c);
+}
+
+void AliFemtoModelWeightGeneratorLednicky::FsiSetKpKmModelType(){
+  // initialize K+K- model type
+  cout<<"******************* AliFemtoModelWeightGeneratorLednicky check FsiInit initialize K+K- model type with FsiSetKpKmModelType(), type= "<<fKpKmModel<<" PhiOffON= "<<fPhi_OffOn<<" *************"<< endl;
+   setkpkmmodel(fKpKmModel,fPhi_OffOn);
+   cout<<"-----------------END FsiSetKpKmModelType-------"<<endl;
 }
 
 void AliFemtoModelWeightGeneratorLednicky::FsiNucl(){
@@ -481,11 +521,11 @@ void AliFemtoModelWeightGeneratorLednicky::FsiSetLL(){
     if (fT0App) { tNS=4;} 
     else {tNS=2;}
   } else { tNS=1;}
-   //cout <<"fLL dans FsiSetLL() = "<< fLL << endl;
+  //cout <<"fLL dans FsiSetLL() = "<< fLL << endl;
    //cout <<"tNS dans FsiSetLL() = "<< tNS << endl;
-   //cout <<"fItest dans FsiSetLL() = "<< fItest << endl;
+  // cout <<"fItest dans FsiSetLL() = "<< fItest << endl;
   llini(fLL,tNS,fItest);
-  //cout<<" end of FsiSetLL"<<endl;
+ // cout<<" end of FsiSetLL"<<endl;
 }
          
 bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid2) {
@@ -499,7 +539,7 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
   static const int ksLamPid=3122;
   //  static const int sLamLamPid=3122;
 
-   // cout << "Setting PID to " << aPid1 << " " << aPid2 << endl;
+//    cout << "in SetPiD Setting PID to " << aPid1 << " " << aPid2 << endl;
 
   int tPidl,tPidh;
   int tChargeFactor=1;
@@ -586,8 +626,8 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
     return false;
   }
 //   cout << "*******************AliFemtoModelWeightGeneratorLednicky check SetPid ************" << endl;
-//   cout << "fLL=="<< fLL << endl;
-//   cout << "fNuclCharge=="<< fNuclCharge << endl;
+ //  cout << "fLL=="<< fLL << endl;
+ //  cout << "fNuclCharge=="<< fNuclCharge << endl;
 
 }    
 AliFemtoModelWeightGeneratorLednicky::~AliFemtoModelWeightGeneratorLednicky() 
@@ -671,6 +711,9 @@ void     AliFemtoModelWeightGeneratorLednicky::SetPairTypeFromPair(AliFemtoPair 
     fPairType = fgkKaonPlusAntiproton;
   SetPid(ktPid1, ktPid2);
 }
+
+//K+K- model type
+void AliFemtoModelWeightGeneratorLednicky::SetKpKmModelType(const int aModelType, const int aPhi_OffOn) {fKpKmModel=aModelType; fPhi_OffOn=aPhi_OffOn; FsiSetKpKmModelType();}
 
 void AliFemtoModelWeightGeneratorLednicky::SetNuclCharge(const double aNuclCharge) {fNuclCharge=aNuclCharge;FsiNucl();}
 void AliFemtoModelWeightGeneratorLednicky::SetNuclMass(const double aNuclMass){fNuclMass=aNuclMass;FsiNucl();}

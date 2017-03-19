@@ -5,7 +5,6 @@
 
 class TClonesArray;
 class TString;
-class AliEmcalParticle;
 class AliMCParticle;
 class AliVCluster;
 class AliVTrack;
@@ -15,13 +14,17 @@ class TH1;
 class TProfile;
 class AliEMCALGeometry;
 class AliGenPythiaEventHeader;
+class AliGenHerwigEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
 class AliAODTrack;
 class AliEmcalPythiaInfo;
+class AliAODInputHandler;
+class AliESDInputHandler;
 
 #include "Rtypes.h"
+#include "TArrayI.h"
 
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
@@ -65,6 +68,16 @@ class AliEmcalPythiaInfo;
  */
 class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  public:
+
+  /**
+   * @enum EDataType_t
+   * @brief Switch for the data type
+   */
+  enum EDataType_t {
+    kUnknownDataType,
+    kESD,
+    kAOD
+  };
 
   /**
    * @enum BeamType
@@ -145,7 +158,26 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
+  void                        SetIsHerwig(Bool_t i)                                 { fIsHerwig          = i                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
+
+  /**
+   * @brief Set the number of \f$ p_{t}\$-hard bins
+   * @param[in] nbins Number of \f$ p_{t}\$-hard bins
+   */
+  void                        SetNumberOfPtHardBins(Int_t nbins)                    { fNPtHardBins = nbins; }
+
+  /**
+   * @brief Set a non-standard \f$ p_{t}\$-hard binning
+   *
+   * The array reflects the bin limits, therefore the size must
+   * match the number of \f$ p_{t}\$-hard bins + 1, otherwise
+   * the binning is not used in order to create the bin labels
+   *
+   * @param[in] binning Non-standard binning to be applied
+   */
+  void                        SetUserPtHardBinning(const TArrayI &binning)          { fPtHardBinning = binning; }
+
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
@@ -153,11 +185,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
   virtual void                SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }
   void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
+  void                        SetCountDownscaleCorrectedEvents(Bool_t d)            { fCountDownscaleCorrectedEvents =  d                 ; }
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPhiLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPtCut(Double_t cut, Int_t c=0);
-  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
+  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; }
+  void                        SetMinBiasTriggerClassName(const char *n)             { fMinBiasRefTrigger = n                              ; }
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
@@ -178,6 +212,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
+  // Static Utilities
+  static AliAODInputHandler*  AddAODHandler();
+  static AliESDInputHandler*  AddESDHandler();
+
  protected:
   void                        LoadPythiaInfo(AliVEvent *event);
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -187,7 +225,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0)     const;
   AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0)     const;
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
-  BeamType                    GetBeamType();
+  BeamType                    GetBeamType()                                      const;
   TClonesArray               *GetParticleArray(Int_t i=0)                        const;
   TClonesArray               *GetClusterArray(Int_t i=0)                         const;
   Int_t                       GetNParticles(Int_t i=0)                           const;
@@ -217,7 +255,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * from old run number). Can be used for run-dependent initializations (i.e.
    * setting parameters from the OADB)
    */
-  virtual void                RunChanged(Int_t newrun)          {}
+  virtual void                RunChanged(Int_t /*newrun*/)          {}
 
   /**
    * Interface for user code executed when the first event is called.
@@ -275,6 +313,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fTklVsClusSPDCut;            ///< Apply tracklet-vs-cluster SPD cut to reject background events in pp
   UInt_t                      fOffTrigger;                 ///< offline trigger for event selection
   TString                     fTrigClass;                  ///< trigger class name for event selection
+  TString                     fMinBiasRefTrigger;          ///< Name of the minmum bias reference trigger, used in the calculation of downscale-corrected event numbers
   TriggerType                 fTriggerTypeSel;             ///< trigger type to select based on trigger patches
   Int_t                       fNbins;                      ///< no. of pt bins
   Double_t                    fMinBinPt;                   ///< min pt in histograms
@@ -286,6 +325,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TString                     fCentEst;                    ///< name of V0 centrality estimator
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
+  Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 ///< minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               ///< if MC label > fMCLabelShift, MC label -= fMCLabelShift
@@ -297,8 +337,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   EMCalTriggerMode_t          fEMCalTriggerMode;           ///< EMCal trigger selection mode
   Bool_t                      fUseNewCentralityEstimation; ///< Use new centrality estimation (for 2015 data)
   Bool_t                      fGeneratePythiaInfoObject;   ///< Generate Pythia info object
-  Bool_t                      fUsePtHardBinScaling;        ///< Use pt hard bin scaling in merging
+  Bool_t                      fUsePtHardBinScaling;        ///< Use \f$ p_{t}\f$-hard bin scaling in merging
+  Bool_t                      fUseXsecFromHeader;          //!<! Use cross section from header instead of pyxsec.root (purely transient)
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
+  Bool_t                      fCountDownscaleCorrectedEvents; ///< Count event number corrected for downscaling
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
@@ -324,8 +366,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fNVertSPDCont;               //!<!event SPD vertex number of contributors
   BeamType                    fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
-  Double_t                    fPtHard;                     //!<!event pt hard
-  Int_t                       fPtHardBin;                  //!<!event pt hard bin
+  AliGenHerwigEventHeader    *fHerwigHeader;               //!<!event Herwig header
+  Double_t                    fPtHard;                     //!<!event \f$ p_{t}\f$-hard
+  Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
+  Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
+  TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
   AliEmcalPythiaInfo         *fPythiaInfo;                 //!<!event parton info
@@ -345,13 +390,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TH1                        *fHistEventPlane;             //!<!event plane distribution
   TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
   TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
+  TH1                        *fHistTriggerClassesCorr;     //!<!corrected number of events in each trigger class
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 15) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 16) // EMCAL base analysis task
   /// \endcond
 };
 

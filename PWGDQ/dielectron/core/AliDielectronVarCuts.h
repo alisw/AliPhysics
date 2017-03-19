@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 //#############################################################
-//#                                                           # 
+//#                                                           #
 //#         Class AliDielectronVarCuts                        #
 //#         Provide cuts for all variables handled in         #
 //#           AliDielectronVarManager                         #
@@ -32,6 +32,12 @@ class AliDielectronVarCuts : public AliAnalysisCuts {
 public:
   // Whether all cut criteria have to be fulfilled of just any
   enum CutType { kAll=0, kAny };
+  enum EVarCutsOperation{ kNone = 0,
+                          kAdd,
+                          kSubtract,
+                          kMutliply,
+                          kDivide
+                        };
 
   AliDielectronVarCuts();
   AliDielectronVarCuts(const char* name, const char* title);
@@ -41,7 +47,7 @@ public:
   void AddCut(AliDielectronVarManager::ValueTypes type, Double_t value, Bool_t excludeRange=kFALSE);
   void AddBitCut(AliDielectronVarManager::ValueTypes type, UInt_t bit, Bool_t excludeRange=kFALSE);
   void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, THnBase * const max,  Bool_t excludeRange=kFALSE);
-
+  void AddCut(AliDielectronVarManager::ValueTypes typeA, AliDielectronVarManager::ValueTypes typeB, Double_t min, Double_t max, EVarCutsOperation operation, Bool_t excludeRange=kFALSE);
   void InvertCuts();
 
   // setters
@@ -72,7 +78,7 @@ public:
   const char*  GetCutName(Int_t iCut) const;
   Bool_t       IsCutOnVariableX(Int_t iCut, Int_t varNumber) const;
   Int_t        GetCutLimits(Int_t iCut, Double_t &cutMin, Double_t &cutMax) const;
-  
+
 
  private:
 
@@ -92,6 +98,7 @@ public:
   Bool_t fCutExclude[AliDielectronVarManager::kNMaxValues];         // inverse cut logic?
   Bool_t fBitCut[AliDielectronVarManager::kNMaxValues];             // bit cut
   THnBase  *fUpperCut[AliDielectronVarManager::kNMaxValues];        // use object as upper cut
+  EVarCutsOperation fVarOperation[AliDielectronVarManager::kNMaxValues]; // operation between two vars, attention in principle kNMaxValues could be exceeded by the cut logic use with care
 
   AliDielectronVarCuts(const AliDielectronVarCuts &c);
   AliDielectronVarCuts &operator=(const AliDielectronVarCuts &c);
@@ -113,4 +120,3 @@ inline void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes typ
 }
 
 #endif
-

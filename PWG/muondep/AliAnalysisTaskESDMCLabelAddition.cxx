@@ -47,6 +47,8 @@
 
 #include "AliAnalysisTaskESDMCLabelAddition.h"
 
+/// \ingroup utils
+
 ClassImp(AliAnalysisTaskESDMCLabelAddition)
 
 //----------------------------------------------------------------------

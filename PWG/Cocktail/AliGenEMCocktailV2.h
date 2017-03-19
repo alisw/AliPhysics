@@ -48,27 +48,29 @@ public:
   virtual void Generate();
   
   // setters
-  void    SetParametrizationFile(TString paramFile)                 { fParametrizationFile = paramFile; }
-  void    SetDecayer(AliDecayer* const decayer)                     { fDecayer = decayer;               }
-  void    SetDecayMode(Decay_t decay)                               { fDecayMode = decay;               }
-  void    SetWeightingMode(Weighting_t weight)                      { fWeightingMode = weight;          }
-  void    SetNPart(Int_t npart)                                     { fNPart = npart;                   }
-  void    SetCollisionSystem(AliGenEMlibV2::CollisionSystem_t col)  { fCollisionSystem = col;           }
-  void    SetCentrality(AliGenEMlibV2::Centrality_t cent)           { fCentrality = cent;               }
-  void    SetV2Systematic(AliGenEMlibV2::v2Sys_t v2sys)             { fV2Systematic = v2sys;            }
-  void    SetForceGammaConversion(Bool_t force=kTRUE)               { fForceConv=force;                 }
+  void    SetParametrizationFile(TString paramFile)                   { fParametrizationFile = paramFile; }
+  void    SetParametrizationFileDirectory(TString paramDir)           { fParametrizationDir = paramDir;   }
+  void    SetDecayer(AliDecayer* const decayer)                       { fDecayer = decayer;               }
+  void    SetDecayMode(Decay_t decay)                                 { fDecayMode = decay;               }
+  void    SetWeightingMode(Weighting_t weight)                        { fWeightingMode = weight;          }
+  void    SetNPart(Int_t npart)                                       { fNPart = npart;                   }
+  void    SetCollisionSystem(AliGenEMlibV2::CollisionSystem_t col)    { fCollisionSystem = col;           }
+  void    SetCentrality(AliGenEMlibV2::Centrality_t cent)             { fCentrality = cent;               }
+  void    SetV2Systematic(AliGenEMlibV2::v2Sys_t v2sys)               { fV2Systematic = v2sys;            }
+  void    SetForceGammaConversion(Bool_t force=kTRUE)                 { fForceConv=force;                 }
   void    SetHeaviestHadron(ParticleGenerator_t part);
   static  Bool_t  SetPtParametrizations();
   static  void    SetMtScalingFactors();
  
   // getters
-  Float_t GetDecayMode()              const                         { return fDecayMode;                }
-  Float_t GetWeightingMode()          const                         { return fWeightingMode;            }
-  AliGenEMlibV2::CollisionSystem_t  GetCollisionSystem()  const     { return fCollisionSystem;          }
-  AliGenEMlibV2::Centrality_t       GetCentrality()       const     { return fCentrality;               }
-  UInt_t  GetSelectedMothers()        const                         { return fSelectedParticles;        }
-  TString GetParametrizationFile()    const                         { return fParametrizationFile;      }
-  Int_t   GetNumberOfParticles()      const                         { return fNPart;                    }
+  Float_t GetDecayMode()                    const                     { return fDecayMode;                }
+  Float_t GetWeightingMode()                const                     { return fWeightingMode;            }
+  AliGenEMlibV2::CollisionSystem_t  GetCollisionSystem()  const       { return fCollisionSystem;          }
+  AliGenEMlibV2::Centrality_t       GetCentrality()       const       { return fCentrality;               }
+  UInt_t  GetSelectedMothers()              const                     { return fSelectedParticles;        }
+  TString GetParametrizationFile()          const                     { return fParametrizationFile;      }
+  TString GetParametrizationFileDirectory() const                     { return fParametrizationDir;       }
+  Int_t   GetNumberOfParticles()            const                     { return fNPart;                    }
   void    GetPtRange(Double_t &ptMin, Double_t &ptMax);
   static TF1*   GetPtParametrization(Int_t np);
   static TH1D*  GetMtScalingFactors();
@@ -103,11 +105,12 @@ private:
   Weighting_t     fWeightingMode;                       // weighting mode: kAnalog or kNonAnalog
   
   TString         fParametrizationFile;                 // parametrization file
+  TString         fParametrizationDir;                  // parametrization file directory
   Int_t           fNPart;                               // multiplicity of each source per event
   Double_t        fYieldArray[kGENs];                   // array of dN/dy for each source
-  static TF1*     fPtParametrization[18];               //! pt paramtrizations
-  static TF1*     fParametrizationProton;               //!
-  static TH1D*    fMtScalingFactorHisto;                //! mt scaling factors
+  static TF1*     fPtParametrization[18];               // pt paramtrizations
+  static TF1*     fParametrizationProton;               //
+  static TH1D*    fMtScalingFactorHisto;                // mt scaling factors
   
   AliGenEMlibV2::CollisionSystem_t  fCollisionSystem;   // selected collision system
   AliGenEMlibV2::Centrality_t       fCentrality;        // selected centrality
@@ -116,7 +119,7 @@ private:
   Bool_t        fForceConv;                             // select whether you want to force all gammas to convert imidediately
   UInt_t        fSelectedParticles;                     // which particles to simulate, allows to switch on and off 32 different particles
   
-  ClassDef(AliGenEMCocktailV2,3)       // cocktail for EM physics
+  ClassDef(AliGenEMCocktailV2,5)       // cocktail for EM physics
 };
 
 #endif

@@ -44,6 +44,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF() :
   fOwnPrimaryVtx(0x0),
   fEventPrimaryVtx(),
   fListOfCuts(),
+  fNProngsHF(),
   fd0err(0x0), 
   fProngID(0x0),
   fSelectionMap(0),
@@ -61,6 +62,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   fOwnPrimaryVtx(0x0),
   fEventPrimaryVtx(),
   fListOfCuts(),
+  fNProngsHF(nprongs),
   fd0err(0x0),
   fProngID(0x0),
   fSelectionMap(0),
@@ -79,6 +81,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   fOwnPrimaryVtx(0x0),
   fEventPrimaryVtx(),
   fListOfCuts(),
+  fNProngsHF(nprongs),
   fd0err(0x0),
   fProngID(0x0),
   fSelectionMap(0),
@@ -99,6 +102,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
   fOwnPrimaryVtx(0x0),
   fEventPrimaryVtx(),
   fListOfCuts(),
+  fNProngsHF(nprongs),
   fd0err(0x0),
   fProngID(0x0), 
   fSelectionMap(0),
@@ -120,6 +124,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(const AliAODRecoDecayHF &source) :
   fOwnPrimaryVtx(0x0),
   fEventPrimaryVtx(source.fEventPrimaryVtx),
   fListOfCuts(source.fListOfCuts),
+  fNProngsHF(source.fNProngsHF),
   fd0err(0x0),
   fProngID(0x0),
   fSelectionMap(source.fSelectionMap),
@@ -148,6 +153,8 @@ AliAODRecoDecayHF &AliAODRecoDecayHF::operator=(const AliAODRecoDecayHF &source)
   if(&source == this) return *this;
 
   AliAODRecoDecay::operator=(source);
+ 
+  fNProngsHF = source.fNProngsHF;
 
   fEventPrimaryVtx = source.fEventPrimaryVtx;
   fListOfCuts = source.fListOfCuts;

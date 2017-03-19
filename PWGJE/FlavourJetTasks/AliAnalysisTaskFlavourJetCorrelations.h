@@ -16,7 +16,8 @@
 **************************************************************************/
 
 //-----------------------------------------------------------------------
-// Author : A. Grelli,  Utrecht University
+// Author : S. Antônio (University of São Paulo) antonio.silva@cern.ch
+//          A. Grelli,  Utrecht University
 //          C. Bianchin, Utrecht University
 //          X. Zhang, LBNL
 //-----------------------------------------------------------------------
@@ -84,17 +85,20 @@ public:
    Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
    void ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent);
    void AngularCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent);
-   void CreateResponseMatrix();
+   void CreateResponseMatrix(AliEmcalJet* jet);
    void FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent);
    void GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg);
-   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t phij, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent);
-   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t z, Double_t ptD, Double_t ptj, Double_t phij, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
-   void FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Double_t phij, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent);
+   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t z, Double_t ptD, Double_t ptj, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FindMCJet(AliEmcalJet*& mcjet);
    Int_t IsDzeroSideBand(AliAODRecoCascadeHF *candDstar);
    Bool_t InEMCalAcceptance(AliVParticle *vpart);
 
    void SetAnalyseDBackground(Bool_t b){ fAnalyseDBkg=b; }
    Bool_t GetAnalyseDBackground() const {return fAnalyseDBkg;}
+   void SetBuildResponseMatrix(Bool_t b){ fBuildRM=b; }
+   Bool_t GetBuildResponseMatrix() const {return fBuildRM;}
    
    
 private:
@@ -127,6 +131,7 @@ private:
    TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
    TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
    Bool_t fAnalyseDBkg;             // flag to switch off/on the SB analysis (default is off)
+   Bool_t fBuildRM;                 // flag to switch on/off the Response Matrix (Needs MC)
     
    Int_t fNAxesBigSparse;           // number of axis
    Bool_t fUseCandArray;            //! Use D meson candidates array

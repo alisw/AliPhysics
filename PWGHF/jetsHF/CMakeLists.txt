@@ -55,11 +55,13 @@ set(SRCS
     AliAnalysisTaskEmcalHFeJetCorrel.cxx		    
     AliAnalysisTaskEmcalJetBJetTaggingIP.cxx
     AliAnalysisTaskEmcalJetBtagSV.cxx          
+    AliAnalysisTaskJetExtractorHF.cxx
     AliRDHFJetsCuts.cxx
     AliRDHFJetsCutsVertex.cxx
     AliHFJetsTaggingVertex.cxx
     AliHFJetsContainer.cxx
-    AliHFJetsContainerVertex.cxx    
+    AliHFJetsContainerVertex.cxx
+    AliDJetRawYieldUncertainty.cxx
 )
 
 if(FASTJET_FOUND)

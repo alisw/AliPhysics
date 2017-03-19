@@ -144,8 +144,14 @@ public:
     momentum_object_pair                     fCurrentElement; ///< current element pair (momentum, pointer object)
 
     inline void update_current_element() {
-      this->fCurrentElement.second = (*fkData)[fCurrent];
-      fkData->GetContainer()->GetMomentum(this->fCurrentElement.first, fkData->GetInternalIndex(fCurrent));
+      if (fCurrent < 0 || fCurrent >= fkData->GetContainer()->GetNEntries()) {
+        this->fCurrentElement.first.SetPxPyPzE(0,0,0,0);
+        this->fCurrentElement.second = 0;
+      }
+      else {
+        this->fCurrentElement.second = (*fkData)[fCurrent];
+        fkData->GetContainer()->GetMomentum(this->fCurrentElement.first, fkData->GetInternalIndex(fCurrent));
+      }
     }
   };
 

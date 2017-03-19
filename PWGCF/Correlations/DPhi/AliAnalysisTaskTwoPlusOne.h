@@ -47,6 +47,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
   void   SetfMode( Int_t val ){ fMode = val; }
   void   SetfIsNano( Int_t val ){ fIsNano = val; }
+  void   SetfIsRun2( Int_t val ){ fIsRun2 = val; }
   void   SetZVertex( Double_t val )    { fZVertex = val; }
   
   // track cuts
@@ -97,6 +98,8 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
 
   Int_t                 fIsNano; //fIsNano = 0; normal mode
                                  //fIsNano = 1; use nano AODs as input
+  Int_t                 fIsRun2; //fIsRun2 = 0; normal mode
+                                 //fIsRun2 = 1; for the centrality of run 2015o
 
   // Pointers to external UE classes
   AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms

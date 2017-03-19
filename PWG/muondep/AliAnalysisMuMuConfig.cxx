@@ -16,18 +16,6 @@
 
 // $Id$
 
-// AliAnalysisMuMuConfig : class to hold various configuration
-// options for the AliAnalysisMuMu and AliAnalysisMuMuEvolution classes
-// like the list of triggers to consider, the fit to be performed, etc...
-// both for real data and for simulations (which might differ in e.g.
-// the naming of the triggers)
-//
-// author: Laurent Aphecetche, Subatech
-//
-//
-// TODO : make it readeable/writeable from/to a simple ASCII file ?
-//
-
 #include "AliAnalysisMuMuConfig.h"
 #include "TObjArray.h"
 #include "TObjString.h"

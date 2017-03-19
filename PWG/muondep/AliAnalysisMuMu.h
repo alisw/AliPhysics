@@ -6,11 +6,19 @@
 
 // $Id$
 
-///
-/// AliAnalysisMuMu : Facade class of all subclass called to digest/plot/massage results from
-/// AliAnalysisTaskMuMu
-///
-/// author : Laurent Aphecetche (Subatech), Javier Martin Blanco, Benjamin Audurier
+
+/**
+ 
+  @ingroup pwg_muondep_mumu
+
+  @class AliAnalysisMuMu
+
+  @brief Facade class of classes called to  digest/plot/massage results from AliAnalysisTaskMuMu
+ 
+  @author Laurent Aphecetche (Subatech)
+  @author Javier Martin Blanco (Subatech)
+  @author Benjamin Audurier (Subatech)
+*/
 
 #include "AliAnalysisMuMuBinning.h"
 #include "AliAnalysisMuMuFnorm.h"
@@ -304,8 +312,6 @@ public:
 
     void ExecuteCanvasEvent(Int_t event, Int_t px, Int_t py, TObject *sel);
 
-    std::vector<Double_t> GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const;
-
     AliAnalysisMuMu* SIM() const { return fAssociatedSimulation; }
 
     AliAnalysisMuMu* SIM2() const { return fAssociatedSimulation2; }
@@ -323,8 +329,6 @@ public:
     AliAnalysisMuMuConfig* Config() const { return fConfig; }
 
     void SetConfig(const AliAnalysisMuMuConfig& config);
-
-    void SetCentralitySelectionList(const char* centralitySelectionList);
 
 private:
     AliAnalysisMuMu(const AliAnalysisMuMu& rhs); // not implemented on purpose

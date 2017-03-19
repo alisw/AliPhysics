@@ -35,6 +35,7 @@ ClassImp(AliDielectronSignalMC)
 //_________________________________________________________________________
 AliDielectronSignalMC::AliDielectronSignalMC() :
   TNamed("AliDielectronSignalMC", "AliDielectronSignalMC"),
+  fCheckUnlikeSign(kTRUE),
   fCheckLikeSignPP(kFALSE),
   fCheckLikeSignMM(kFALSE),
   fLeg1(0),
@@ -81,6 +82,7 @@ AliDielectronSignalMC::AliDielectronSignalMC() :
 //_________________________________________________________________________
 AliDielectronSignalMC::AliDielectronSignalMC(const Char_t* name, const Char_t* title) :
   TNamed(name, title),
+  fCheckUnlikeSign(kTRUE),
   fCheckLikeSignPP(kFALSE),
   fCheckLikeSignMM(kFALSE),
   fLeg1(0),

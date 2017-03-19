@@ -128,6 +128,7 @@ public:
 //   Double_t DeltaPhi()             const { Double_t dphi=TMath::Abs(fD1.GetPhi()-fD2.GetPhi());
 //                                           return (dphi>TMath::Pi())?dphi-TMath::Pi():dphi;      }
   Double_t DeltaPhi()             const { return fD1.GetAngleXY(fD2);     }
+  Double_t DeltaCotTheta()        const;
 
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;

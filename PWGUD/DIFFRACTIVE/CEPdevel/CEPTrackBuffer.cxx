@@ -9,6 +9,7 @@
 //
 //
 // ----------------------------------------------------------------------------
+#include "AliCEPBase.h"
 #include "CEPTrackBuffer.h"
 
 ClassImp(CEPTrackBuffer)
@@ -16,8 +17,14 @@ ClassImp(CEPTrackBuffer)
 // ----------------------------------------------------------------------------
 CEPTrackBuffer::CEPTrackBuffer()
   : TObject()
-  , fisSoft(-1)
+  , fTrackStatus(AliCEPBase::kTTBaseLine)
+  , fTOFBunchCrossing(CEPTrackBuffer::kdumval)
   , fChargeSign(0)
+  , fITSncls(CEPTrackBuffer::kdumval)
+  , fTPCncls(CEPTrackBuffer::kdumval)
+  , fTRDncls(CEPTrackBuffer::kdumval)
+  , fTPCnclsS(CEPTrackBuffer::kdumval)
+  , fZv(CEPTrackBuffer::kdumval)
   , fMomentum(TVector3(0,0,0))
   , fPID(0)
   , fPIDTPCStatus(CEPTrackBuffer::kdumval)
@@ -45,9 +52,15 @@ void CEPTrackBuffer::Reset()
 {
 
   // general information
-  fisSoft = 0;   // 0: is not, 1: is soft, -1: undefined
-  fChargeSign = CEPTrackBuffer::kdumval;
-  fMomentum = TVector3(0,0,0);
+  fTrackStatus      = AliCEPBase::kTTBaseLine;
+  fTOFBunchCrossing = CEPTrackBuffer::kdumval;
+  fChargeSign       = CEPTrackBuffer::kdumval;
+  fITSncls          = CEPTrackBuffer::kdumval;
+  fTPCncls          = CEPTrackBuffer::kdumval;
+  fTRDncls          = CEPTrackBuffer::kdumval;
+  fTPCnclsS         = CEPTrackBuffer::kdumval;
+  fZv               = CEPTrackBuffer::kdumval;
+  fMomentum         = TVector3(0,0,0);
   
   // PID information
   fPID = CEPTrackBuffer::kdumval;
@@ -75,8 +88,8 @@ void CEPTrackBuffer::Reset()
   }
   
   // MC truth
-  fMCPID = CEPTrackBuffer::kdumval;
-  fMCMass = CEPTrackBuffer::kdumval;
+  fMCPID      = CEPTrackBuffer::kdumval;
+  fMCMass     = CEPTrackBuffer::kdumval;
   fMCMomentum = TVector3(0,0,0);
 
 }

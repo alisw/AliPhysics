@@ -60,7 +60,7 @@ AliAnalysisTaskCheckAODTracks *AddTaskCheckAODTracks(TString suffix="",
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName.Data() );
   
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ctreeAODTracks",
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("ctreeAODTracks%s",suffix.Data()),
 							    TTree::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    treeFileName.Data() );

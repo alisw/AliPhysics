@@ -33,7 +33,9 @@ void CorrelateOffline(
    Int_t numSelD=0, Int_t numSelTr=0, //# of selection for D and tracks (0=default selection; 1,2,3,... = alternate selections)
    Int_t wgtPeriods=kTRUE, //weight periods in ME analysis (keep enabled)
    TString nameOutputFile="OfflineCorrelations.root",
-   Int_t firstBinNum=0) 
+   Int_t firstBinNum=0, //start of numbering for the pTbins in input file
+   Double_t mincent=0., Double_t maxcent=0., //centrality (or multiplicity) selection ***ACTIVE ONLY IF BOTH VALS ARE =! 0*** 
+   Bool_t removeSoftPiInME=kTRUE) //if active, removes 'fake' soft pions in ME (for SE, softpicut flag is in analysis task). No effect on D* and D+ analyses
 {
 
   AliHFOfflineCorrelator *correlator = new AliHFOfflineCorrelator();
@@ -48,7 +50,9 @@ void CorrelateOffline(
   correlator->SetFirstBinNum(firstBinNum);
   correlator->SetNumSelD(numSelD);
   correlator->SetNumSelTr(numSelTr);
-
+  correlator->SetCentralitySelection(mincent,maxcent);
+  correlator->SetRemoveSoftPionInME(removeSoftPiInME);
+ 
   if(!flagSpecie) return;
 
   SetPtRanges(correlator,make2Dplots);

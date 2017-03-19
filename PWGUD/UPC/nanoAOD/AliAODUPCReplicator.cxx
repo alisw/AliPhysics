@@ -152,11 +152,13 @@ void AliAODUPCReplicator::ReplicateAndFilter(const AliAODEvent& source)
   AliAODTrack* trk;
   Int_t nGlobalTracks=0;
   Int_t nITSsaTracks=0;
+  Int_t nMuonTracks=0;
   
   while (( trk = static_cast<AliAODTrack*>(next()) )) {
 
     if(IsGoodGlobalTrack(trk)) new ((*fTracks)[nGlobalTracks++]) AliAODTrack(*trk);
     if(IsGoodITSsaTrack(trk)) new ((*fTracks)[nITSsaTracks++]) AliAODTrack(*trk);
+    if(IsGoodMuonTrack(trk)) new ((*fTracks)[nMuonTracks++]) AliAODTrack(*trk);
 
   }
   
@@ -187,12 +189,7 @@ void AliAODUPCReplicator::ReplicateAndFilter(const AliAODEvent& source)
 Bool_t AliAODUPCReplicator::IsGoodGlobalTrack(const AliAODTrack *trk)
 {
 
-  if(!(trk->TestFilterBit(1<<0))) return kFALSE;
-  //if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) return kFALSE;
-  //if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) return kFALSE;
-  //if(trk->GetTPCNcls() < 70) return kFALSE;
-  //if(trk->Chi2perNDF() > 4) return kFALSE;
-  
+  if(!(trk->TestFilterBit(1<<0))) return kFALSE;  
   return kTRUE;
 }
 
@@ -201,11 +198,17 @@ Bool_t AliAODUPCReplicator::IsGoodITSsaTrack(const AliAODTrack *trk)
 {
 
   if(!(trk->TestFilterBit(1<<1))) return kFALSE;
-  //if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) return kFALSE;
-  //if(trk->GetITSNcls() < 4) return kFALSE;
-  //if(trk->Chi2perNDF() > 2.5) return kFALSE;
-  //if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) return kFALSE;
-
   return kTRUE;
-}    
+} 
+
+//_____________________________________________________________________________
+Bool_t AliAODUPCReplicator::IsGoodMuonTrack(const AliAODTrack *trk)
+{
+
+  if(!trk->IsMuonTrack())return kFALSE;
+  if( trk->GetRAtAbsorberEnd() < 17.5 || trk->GetRAtAbsorberEnd() > 89.5 ) return kFALSE;
+  if( trk->Eta() < -4.0 || trk->Eta() > -2.5 ) return kFALSE;
+  
+  return kTRUE;
+}   
       

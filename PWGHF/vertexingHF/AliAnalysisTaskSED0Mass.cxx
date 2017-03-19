@@ -98,10 +98,14 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
+  fFillSparses(0),
   fhStudyImpParSingleTrackSign(0), 
   fhStudyImpParSingleTrackCand(0), 
   fhStudyImpParSingleTrackFd(0), 
-  fDetSignal(0)
+  fDetSignal(0),
+  fhMultVZEROTPCoutTrackCorrNoCut(0x0),
+  fhMultVZEROTPCoutTrackCorr(0x0),
+  fEnablePileupRejVZEROTPCout(kFALSE)
 {
   /// Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
@@ -144,10 +148,14 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
+  fFillSparses(0),
   fhStudyImpParSingleTrackSign(0),
   fhStudyImpParSingleTrackCand(0),
   fhStudyImpParSingleTrackFd(0),
-  fDetSignal(0)
+  fDetSignal(0),
+  fhMultVZEROTPCoutTrackCorrNoCut(0x0),
+  fhMultVZEROTPCoutTrackCorr(0x0),
+  fEnablePileupRejVZEROTPCout(kFALSE)
 {
   /// Default constructor
 
@@ -223,6 +231,15 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
   delete fhStudyImpParSingleTrackSign;
   delete fhStudyImpParSingleTrackCand;
   delete fhStudyImpParSingleTrackFd;
+
+  if(fhMultVZEROTPCoutTrackCorrNoCut){
+    delete fhMultVZEROTPCoutTrackCorrNoCut;
+    fhMultVZEROTPCoutTrackCorrNoCut = 0;
+  }
+  if (fhMultVZEROTPCoutTrackCorr) {
+    delete fhMultVZEROTPCoutTrackCorr;
+    fhMultVZEROTPCoutTrackCorr = 0;
+  }
  
 }  
 
@@ -824,28 +841,33 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   }
   //create THnSparse for impact parameter analysis in DATA sample.
   //pt, normImpParTrk1, normImpParTrk2,    decLXY, normDecLXY, massd0, cut, pid, D0D0bar
-  Int_t nbinsImpParStudy[9]=      {50, 40, 40, 20, 15, 600,  3,4,2};
-  Double_t limitLowImpParStudy[9]={0,  -5, -5,  0,  0,1.6248,1,0,0};
-  Double_t limitUpImpParStudy[9]= {50., 5,  5, 0.2,15,2.2248,4,4,2};
-  TString axTit[9]={"#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","MassD0_{k#pi} (GeV/#it{c}^{2})", "cutSel","PIDinfo","D0D0bar"};
-  fhStudyImpParSingleTrackCand=new THnSparseF("fhStudyImpParSingleTrackCand","fhStudyImpParSingleTrackCand",9,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-  for(Int_t iax=0; iax<9; iax++) fhStudyImpParSingleTrackCand->GetAxis(iax)->SetTitle(axTit[iax].Data());
-  fOutputMass->Add(fhStudyImpParSingleTrackCand);
+  if(fFillSparses){
+    Int_t nbinsImpParStudy[9]=      {50, 40, 40, 20, 15, 600,  3,4,2};
+    Double_t limitLowImpParStudy[9]={0,  -5, -5,  0,  0,1.6248,1,0,0};
+    Double_t limitUpImpParStudy[9]= {50., 5,  5, 0.2,15,2.2248,4,4,2};
+    TString axTit[9]={"#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","MassD0_{k#pi} (GeV/#it{c}^{2})", "cutSel","PIDinfo","D0D0bar"};
+    fhStudyImpParSingleTrackCand=new THnSparseF("fhStudyImpParSingleTrackCand","fhStudyImpParSingleTrackCand",9,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+    for(Int_t iax=0; iax<9; iax++) fhStudyImpParSingleTrackCand->GetAxis(iax)->SetTitle(axTit[iax].Data());
+    fOutputMass->Add(fhStudyImpParSingleTrackCand);
+  }
   if(fReadMC){
-    //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
-    Int_t nbinsImpParStudy[8]=      {50,50,40, 40, 20,  15,  3, 4};
-    Double_t limitLowImpParStudy[8]={0, 0, -5,-5., 0.,  0.,  1.,0.};
-    Double_t limitUpImpParStudy[8]= {50.,50., 5, 5,  0.2, 15,  3.,4.};
 
-    fhStudyImpParSingleTrackSign=new THnSparseF("fhStudyImpParSingleTrackSign","fhStudyImpParSingleTrackSign",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-    TString axTitMC[8]={"#it{p}_{T} (GeV/c)","#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","cutSel","PIDinfo"};
-    for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackSign->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
-    fOutputMass->Add(fhStudyImpParSingleTrackSign);
-
-
-    fhStudyImpParSingleTrackFd=new THnSparseF("fhStudyImpParSingleTrackFd","fhStudyImpParSingleTrackFd",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-    for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackFd->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
-    fOutputMass->Add(fhStudyImpParSingleTrackFd);
+    if(fFillSparses){
+      //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
+      Int_t nbinsImpParStudy[8]=      {50,50,40, 40, 20,  15,  3, 4};
+      Double_t limitLowImpParStudy[8]={0, 0, -5,-5., 0.,  0.,  1.,0.};
+      Double_t limitUpImpParStudy[8]= {50.,50., 5, 5,  0.2, 15,  3.,4.};
+      
+      fhStudyImpParSingleTrackSign=new THnSparseF("fhStudyImpParSingleTrackSign","fhStudyImpParSingleTrackSign",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+      TString axTitMC[8]={"#it{p}_{T} (GeV/c)","#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","cutSel","PIDinfo"};
+      for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackSign->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
+      fOutputMass->Add(fhStudyImpParSingleTrackSign);
+      
+      
+      fhStudyImpParSingleTrackFd=new THnSparseF("fhStudyImpParSingleTrackFd","fhStudyImpParSingleTrackFd",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+      for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackFd->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
+      fOutputMass->Add(fhStudyImpParSingleTrackFd);
+    }
   
     if(fStepMCAcc) CreateMCAcceptanceHistos();
   }
@@ -1016,6 +1038,16 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     fDetSignal->Add(TPCSigAftPID);
   }
 
+  
+  fhMultVZEROTPCoutTrackCorrNoCut = new TH2F("hMultVZEROTPCoutTrackCorrNoCut", ";Tracks with kTPCout on;VZERO multiplicity", 1000, 0., 30000., 1000, 0., 40000.);
+  fhMultVZEROTPCoutTrackCorr = new TH2F("hMultVZEROTPCoutTrackCorr", ";Tracks with kTPCout on;VZERO multiplicity", 1000, 0., 30000., 1000, 0., 40000.);
+  fDistr->Add(fhMultVZEROTPCoutTrackCorrNoCut);
+  fDistr->Add(fhMultVZEROTPCoutTrackCorr);
+  
+
+
+  
+
   // Post the data
   PostData(1,fOutputMass);
   PostData(2,fDistr);
@@ -1048,6 +1080,18 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fNentries->Fill(21);
+      return;
+    }
+    fNentries->Fill(22);
+  }
 
   TString bname;
   if(fArray==0){ //D0 candidates
@@ -1105,20 +1149,31 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     }
   }
   //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
+
+  Int_t nTPCout=0;
+  Float_t mTotV0=0;
+  AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)aod)->GetVZEROData();
+  Float_t mTotV0A=v0data->GetMTotV0A();
+  Float_t mTotV0C=v0data->GetMTotV0C();
+  mTotV0=mTotV0A+mTotV0C;
+  Int_t ntracksEv = aod->GetNumberOfTracks();
+  for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+    //    ... get the track
+    AliAODTrack * track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrack));
+    if(!track) {AliFatal("Not a standard AOD");}
+    if(track->GetID()<0)continue;
+    if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
+    else continue;
+  }
+  if(fhMultVZEROTPCoutTrackCorrNoCut) fhMultVZEROTPCoutTrackCorrNoCut->Fill(nTPCout,mTotV0);
+  Float_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout);
+  if(fEnablePileupRejVZEROTPCout){
+    if(mTotV0<mV0Cut) return;	
+  }
   
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
-  if(fAODProtection>=0){
-    //   Protection against different number of events in the AOD and deltaAOD
-    //   In case of discrepancy the event is rejected.
-    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
-    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
-      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
-      fNentries->Fill(21);
-      return;
-    }
-    fNentries->Fill(22);
-  }
+
 
   fCounter->StoreEvent(aod,fCuts,fReadMC); 
   //fCounter->StoreEvent(aod,fReadMC); 
@@ -1153,7 +1208,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     }
     if (skipEvent) return;
   }
+
   
+  if(fhMultVZEROTPCoutTrackCorr)fhMultVZEROTPCoutTrackCorr->Fill(nTPCout,mTotV0);
+  
+
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
 
@@ -1221,7 +1280,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	DrawDetSignal(d, fDetSignal);
       }
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
-      NormIPvar(aod, d,mcArray);
+      if(fFillSparses) NormIPvar(aod, d,mcArray);
       if (fPIDCheck) {
 	Int_t isSelectedPIDfill = 3;
 	if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both

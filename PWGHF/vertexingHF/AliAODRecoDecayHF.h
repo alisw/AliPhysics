@@ -10,7 +10,6 @@
 /// \brief base class for AOD reconstructed heavy-flavour decays
 /// \author Author: A.Dainese, andrea.dainese@lnl.infn.it
 ///***********************************************************
-
 #include <TRef.h>
 #include <TList.h>
 #include "AliAODTrack.h"
@@ -95,7 +94,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
     {return Getd0Prong(ip)/Getd0errProng(ip);}
   void Getd0MeasMinusExpProng(Int_t ip, Double_t magf, Double_t& d0diff, Double_t& errd0diff) const;
 
-
+  void SetNProngs();
   void SetProngIDs(Int_t nIDs,UShort_t *id);
   UShort_t GetProngID(Int_t ip) const 
     {if(fProngID) {return fProngID[ip];} else {return 9999;}}
@@ -127,24 +126,30 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   Int_t   NumberOfFakeDaughters() const;
 
   Bool_t  HasBadDaughters() const; /// TPC+ITS tracks not passing the StandardCuts2010 with loose DCA
+  
 
  protected:
 
   AliAODVertex *fOwnPrimaryVtx; /// primary vertex for this candidate
   TRef          fEventPrimaryVtx; /// ref to primary vertex of the event
   TRef          fListOfCuts;  /// ref to the list of analysis cuts
+  Int_t         fNProngsHF; 
   /// error on prongs rphi impact param [cm]
   Double_t     *fd0err;  //[fNProngs] error on prongs rphi impact param [cm]
   /// track ID of daughters
-  UShort_t     *fProngID;  //[fNProngs] track ID of daughters
+  UShort_t     *fProngID;  //[fNProngsHF] track ID of daughters 
   ULong_t       fSelectionMap; /// used to store outcome of selection in AliAnalysisVertexingHF
   Int_t         fIsFilled;  // 0 if standard refiltering; 1 if data members of candidates are empty, 2 if data members are refilled in analysis task 
 
   /// \cond CLASSIMP
-  ClassDef(AliAODRecoDecayHF,6)  // base class for AOD reconstructed heavy-flavour decays
+  ClassDef(AliAODRecoDecayHF,7)  // base class for AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 
+
+inline void AliAODRecoDecayHF::SetNProngs(){
+if(!GetNProngs())fNProngs=fNProngsHF;
+}
 inline void AliAODRecoDecayHF::SetProngIDs(Int_t nIDs,UShort_t *id) 
 {
   if(nIDs!=GetNProngs()) { 

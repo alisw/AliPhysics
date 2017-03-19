@@ -63,10 +63,15 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
  TString     outNameSuffix = "Sigma1385",
- Int_t       centr = 0
+ Int_t       centr = 0,
+ Float_t    minDCAlambdaDaugh=0.15,
+ Float_t     pLife = 50,  
+ Float_t     radiuslow = 0.5,
+ Float_t     radiushigh = 100,    
+ Bool_t      Switch = kFALSE
  )
 {  
-  
+ 
   //-------------------------------------------
   // event cuts
   // Note that some default values refer to pPb data 2013
@@ -161,8 +166,8 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    else if(collSyst==kPPb) collSystName="pPb";
    else collSystName="PbPb";
 
-   TString taskName = Form("SigmaStar%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", 
-			   collSystName.Data(), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA);
+   TString taskName = Form("SigmaStar%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.3f_%.1f_%.2f", 
+			   collSystName.Data(), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA,minDCAlambdaDaugh);
 
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && (collSyst==kPP) ){
@@ -300,7 +305,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    } else 
      Printf("========================== DATA analysis - PID cuts used");
  
-   if (!ConfigSigmaStar(task, collSyst, isMC, piPIDCut, pPIDCut, aodFilterBit, trackDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigSigmaStar(task, collSyst, isMC, piPIDCut, pPIDCut, aodFilterBit, trackDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, NTPCcluster, "", cutsPair, minDCAlambdaDaugh,pLife,radiuslow,radiushigh,Switch)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

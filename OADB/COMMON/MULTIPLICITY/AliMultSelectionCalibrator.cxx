@@ -289,6 +289,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Double_t lMaxEst[lNEstimators][lMax];
     Double_t lMinEst[lNEstimators][lMax];
     
+    //Sanity check. If insane, add kNoCalib histogram
+    Bool_t lInsane[lNEstimators][lMax];
+    
     //Index of first value above anchor point threshold
     Long64_t lAnchorEst[lNEstimators][lMax];
     
@@ -297,6 +300,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         for(Long_t iRun=0; iRun<lMax; iRun++) lMaxEst[iEst][iRun] = -1e+3;
         for(Long_t iRun=0; iRun<lMax; iRun++) lMinEst[iEst][iRun] = 1e+6; //not more than a million, I hope?
         for(Long_t iRun=0; iRun<lMax; iRun++) lAnchorEst[iEst][iRun] = -1; //invalid index
+        for(Long_t iRun=0; iRun<lMax; iRun++) lInsane[iEst][iRun] = kFALSE; //we're nice people. We assume no insanity unless there's proof otherwise
     }
 
     //Add Timer
@@ -449,6 +453,11 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 lAvEst[iEst][iRun] /= ( (Double_t) (sTree[iRun]->GetEntries()) );
             }
             cout<<" Min = "<<lMinEst[iEst][iRun]<<", Max = "<<lMaxEst[iEst][iRun]<<", Av = "<<lAvEst[iEst][iRun]<<endl;
+            
+            if ( TMath::Abs( lMinEst[iEst][iRun] - lMaxEst[iEst][iRun] ) < 1e-6 ){
+                lInsane[iEst][iRun] = kTRUE; //No valid information to do calibration, please be careful !
+            }
+            
         }
     }
     //might be needed
@@ -495,7 +504,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 //==== Floating Point Calibration Engine ====
                 lRunStats[iRun] = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),"","goff");
                 cout<<"--- Sorting estimator "<<fSelection->GetEstimator(iEst)->GetName()<<"..."<<flush;
-
+                
                 TMath::Sort(ntot,sTree[iRun]->GetV1(),index);
                 cout<<" Done! Getting Boundaries... "<<flush;
                 
@@ -507,14 +516,14 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     TString lCondition = fSelection->GetEstimator(iEst)->GetDefinition();
                     lCondition.Append(Form("> %.10f",fSelection->GetEstimator(iEst)->GetAnchorPoint() ) );
                     lAcceptedEvents = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),lCondition.Data(),"goff");
+                    lRunStats[iRun] = lAcceptedEvents;
                 }
                 lNrawBoundaries[0] = 0.0; //Defined OK even if anchored
                 //Overwrite lower boundary in case this has a negative minimum...
                 if ( lMinEst[iEst][iRun] < 0 ) {
-		  lNrawBoundaries[0] = lMinEst[iEst][iRun]; 
-		  cout<<"Min Value Override, Negative..."<<flush;
-		}
-                
+                    lNrawBoundaries[0] = lMinEst[iEst][iRun];
+                    cout<<"Min Value Override, Negative..."<<flush;
+                }
                 
                 for( Long_t lB=1; lB<lNDesiredBoundaries; lB++) {
                     Long64_t position = (Long64_t) ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) );
@@ -525,7 +534,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                         Double_t lFractionAccepted = (((Double_t) lAcceptedEvents )/((Double_t) ntot));
                         Double_t lScalingFactor    = lFractionAccepted/((0.01)*lAnchorPercentile);
                         //Make sure: if AnchorPercentile requested, cut at AnchorPoint
-                        position = (Long64_t) ( ((Double_t)(position)) * lScalingFactor );
+                        position = (Long64_t) ( ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) ) * lScalingFactor );
                         if(position > ntot-1 ) position = ntot-1; //protection !
                     }
                     //cout<<"Position requested: "<<position<<flush;
@@ -545,25 +554,36 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                             }
                         }
                     }
-                }                
+                }
                 
-                cout<<" Done! Saving... "<<endl; 
-                //Should not be the source of excessive memory consumption...
-                //...but can be rearranged if needed!
-                hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNDesiredBoundaries-1,lNrawBoundaries);
-                hCalib[iRun][iEst]->SetDirectory(0);
-		hCalib[iRun][iEst]->SetBinContent(0,100.5); //Just in case correction functions screw up the values ... 
-                for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++){
-                    hCalib[iRun][iEst] -> SetBinContent(ibin, lMiddleOfBins[ibin-1]);
-                    
-                    //override in case anchored!
-                    if( fSelection->GetEstimator(iEst)->GetUseAnchor() ){
-                        if ( hCalib[iRun][iEst]->GetBinCenter(ibin) < fSelection->GetEstimator(iEst)->GetAnchorPoint() ){
-                            //Override, this is useless!
-                            //Alberica's recommendation: outside of user range to be sure!
-                            hCalib[iRun][iEst] -> SetBinContent(ibin, 100.5);
+                cout<<" Done! Saving... "<<endl;
+                
+                if( lInsane[iEst][iRun] == kFALSE) {
+                    //Create a sane calibration histogram
+                    //Should not be the source of excessive memory consumption...
+                    //...but can be rearranged if needed!
+                    hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNDesiredBoundaries-1,lNrawBoundaries);
+                    hCalib[iRun][iEst]->SetDirectory(0);
+                    hCalib[iRun][iEst]->SetBinContent(0,100.5); //Just in case correction functions screw up the values ...
+                    for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++){
+                        hCalib[iRun][iEst] -> SetBinContent(ibin, lMiddleOfBins[ibin-1]);
+                        
+                        //override in case anchored!
+                        if( fSelection->GetEstimator(iEst)->GetUseAnchor() ){
+                            if ( hCalib[iRun][iEst]->GetBinCenter(ibin) < fSelection->GetEstimator(iEst)->GetAnchorPoint() ){
+                                //Override, this is useless!
+                                //Alberica's recommendation: outside of user range to be sure!
+                                hCalib[iRun][iEst] -> SetBinContent(ibin, 100.5);
+                            }
                         }
                     }
+                }else{
+                    hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",1,0,1);
+                    hCalib[iRun][iEst]->SetDirectory(0);
+                    //There was insufficient information to generate a meaningful calibration for this estimator! 
+                    hCalib[iRun][iEst]->SetBinContent(0,AliMultSelectionCuts::kNoCalib);
+                    hCalib[iRun][iEst]->SetBinContent(1,AliMultSelectionCuts::kNoCalib);
+                    hCalib[iRun][iEst]->SetBinContent(2,AliMultSelectionCuts::kNoCalib);
                 }
                 //==== End Floating Point Calibration Engine ====
             } else {
@@ -633,10 +653,14 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         fsels->PrintInfo();
         cuts->Print(); 
         cout<<"=================================================================================="<<endl;
-        if ( !lAutoDiscover ) {
-            oadbContMS->AppendObject(oadbMultSelection, fFirstRun[iRun], fLastRun[iRun] );
-        }else{
-            oadbContMS->AppendObject(oadbMultSelection, lRunNumbers[iRun], lRunNumbers[iRun] );
+        //Protection against saving a calibration object that has been acquired
+        //with insufficient statistics
+        if ( lRunStats[iRun] > 1000){
+            if ( !lAutoDiscover ) {
+                oadbContMS->AppendObject(oadbMultSelection, fFirstRun[iRun], fLastRun[iRun] );
+            }else{
+                oadbContMS->AppendObject(oadbMultSelection, lRunNumbers[iRun], lRunNumbers[iRun] );
+            }
         }
         
         Bool_t lThisIsReference = kFALSE;
@@ -770,6 +794,10 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fRefMultEta8->SetIsInteger( kTRUE );
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
+    AliMultVariable *fnTracklets08     = new AliMultVariable("fnTracklets08");
+    fnTracklets08->SetIsInteger( kTRUE );
+    AliMultVariable *fnTracklets15     = new AliMultVariable("fnTracklets15");
+    fnTracklets15->SetIsInteger( kTRUE );
     
     //ZDC Related
     AliMultVariable *fZncEnergy = new AliMultVariable("fZncEnergy");
@@ -793,6 +821,16 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fZpaFired->SetIsInteger(kTRUE);  
     AliMultVariable *fZpcFired = new AliMultVariable("fZpcFired"); 
     fZpcFired->SetIsInteger(kTRUE); 
+    
+    //Track counters (now useable as AliMultVariables as well)
+    AliMultVariable *fNTracks =                  new AliMultVariable("fNTracks");
+    fNTracks->SetIsInteger(kTRUE);
+    AliMultVariable *fNTracksGlobal2015 =        new AliMultVariable("fNTracksGlobal2015");
+    fNTracksGlobal2015->SetIsInteger(kTRUE);
+    AliMultVariable *fNTracksGlobal2015Trigger = new AliMultVariable("fNTracksGlobal2015Trigger");
+    fNTracksGlobal2015Trigger->SetIsInteger(kTRUE);
+    AliMultVariable *fNTracksITSsa2010 =         new AliMultVariable("fNTracksITSsa2010");
+    fNTracksITSsa2010->SetIsInteger(kTRUE);
     
     //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
@@ -820,6 +858,8 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fnSPDClusters0 );
     fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets   );
+    fInput->AddVariable( fnTracklets08   );
+    fInput->AddVariable( fnTracklets15   );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
     fInput->AddVariable( fZncEnergy );
@@ -835,7 +875,11 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fZnaFired ); 
     fInput->AddVariable( fZncFired ); 
     fInput->AddVariable( fZpaFired ); 
-    fInput->AddVariable( fZpcFired );   
+    fInput->AddVariable( fZpcFired );
+    fInput->AddVariable( fNTracks                  );
+    fInput->AddVariable( fNTracksGlobal2015        );
+    fInput->AddVariable( fNTracksGlobal2015Trigger );
+    fInput->AddVariable( fNTracksITSsa2010         );
     fInput->AddVariable( fEvSel_VtxZ  );
     //============================================================
     

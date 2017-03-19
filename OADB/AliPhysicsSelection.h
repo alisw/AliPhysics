@@ -43,6 +43,7 @@ public:
   typedef Bool_t (*Bin0Callback_t)(const AliESDEvent *);
 
   AliPhysicsSelection();
+  AliPhysicsSelection(const char *name);
   virtual ~AliPhysicsSelection();
     
   virtual UInt_t GetSelectionMask(const TObject* obj) { return IsCollisionCandidate((const AliVEvent*) obj); }

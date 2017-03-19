@@ -56,3 +56,7 @@ void TLinearBinning::CreateBinEdges(TArrayD &binedges) const {
   int bincounter = 0;
   for(auto binedge : tmpedges) binedges[bincounter++] = binedge;
 }
+
+TBinning *TLinearBinning::MakeCopy() const {
+  return new TLinearBinning(*this);
+}

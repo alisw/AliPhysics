@@ -1,4 +1,5 @@
 TString names=("cut_resolution");
+//TString names=("cut01_SPD1_PID1;cut02_SPD2_PID2;cut03_SPD3_PID3;cut04_SPD4_PID4;cut05_SPD5_PID1;cut06_SPD6_PID6;cut07_SPD7_PID7;cut08_SPD8_PID8;cut09_SPD9_PID9;cut10_SPD1_PID10;cut11_SPD11_PID11;cut12_SPD11_PID12;cut13_SPD6_PID13;cut14_SPDorSDD14_PID14;cut15_SPDorSDD15_PID13;cut16_SPDorSDD14_PID16;cut17_SPDorSDD17_PID16;cut18_SPDorSDD15_PID1;cut19_SPDorSDD17_PID6;cut20_SPDorSDD17_PID10");
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
@@ -20,6 +21,7 @@ const Int_t nDie=arrNames->GetEntriesFast();
 // main task settings
 // fill resolutions for one cutInstance (step 1).
 const Bool_t CalcResolution   = kTRUE;
+Bool_t CalcEfficiencyGen      = kTRUE; // can be turned off to save memory (especially in step 2).
 // use previously extracted resolutions (step 2).
 TString resolutionfile = "resolution_PbPb2011_CENTRALITY_deltaXvsP.root";
 Bool_t CalcEfficiencyRec      = kFALSE;  // use given resolution file to smear the kinematics.
@@ -72,11 +74,11 @@ Double_t DeltaPhiMax   =  0.4;
 // mee bins
 const Double_t MeeMin    = 0.;
 const Double_t MeeMax    = 5.;
-const Int_t    nBinsMee  = 500;
+const Int_t    nBinsMee  = 250;
 // ptee bins
 const Double_t PteeMin   = 0.;
-const Double_t PteeMax   = 6.;
-const Int_t    nBinsPtee = 600;
+const Double_t PteeMax   = 5.;
+const Int_t    nBinsPtee = 100;
 // run dependency (currently only "TPC_dEdx_P_run")
 // run string must be sorted in increasing order!
 //AOD_115_goodPID //TString sRuns("167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 170027, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593");
@@ -201,11 +203,14 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
     //    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
     // ana settings:
     LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
-    LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_theta50;
+    //LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_theta50;
+    // ESD cuts:
+    //LMcutlib->SetUseITScutsESD(kTRUE);
     //
     // --------------------------------------------------
     // specific settings for each cutset:
     // --------------------------------------------------
+    /*** step 1 ***/
     if (cutInstance==0+nCutsUsingConfigFunctions) {
       LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_p50inf_eta150; // maximum acceptance
       LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_TPCITS_3;  // ITS+TPC, 100% efficiency
@@ -217,11 +222,87 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
       LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_TPCITS_3;  // ITS+TPC, 100% efficiency
       LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;                 // combined tracks SPDorSDD
     }
-    else if (cutInstance==100) {
-      // kinematic cuts for the legs during pair efficiency determination:
-      anaFilter->AddCuts( LMcutlib->GetKineCutsAna() );
-      return anaFilter; // return here because we dont want any other cuts.
-    }
+    /*** step 2 ***/
+//    if (cutInstance==0+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut01;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut01;
+//    }
+//    else if (cutInstance==1+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut02;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut02;
+//    }
+//    else if (cutInstance==2+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut03;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut03;
+//    }
+//    else if (cutInstance==3+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut04;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut04;
+//    }
+//    else if (cutInstance==4+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut05;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut05;
+//    }
+//    else if (cutInstance==5+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut06;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut06;
+//    }
+//    else if (cutInstance==6+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut07;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut07;
+//    }
+//    else if (cutInstance==7+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut08;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut08;
+//    }
+//    else if (cutInstance==8+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut09;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut09;
+//    }
+//    else if (cutInstance==9+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut10;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut10;
+//    }
+//    else if (cutInstance==10+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut11;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut11;
+//    }
+//    else if (cutInstance==11+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut12;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut12;
+//    }
+//    else if (cutInstance==12+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut13;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut13;
+//    }
+//    else if (cutInstance==13+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut14;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut14;
+//    }
+//    else if (cutInstance==14+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut15;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut15;
+//    }
+//    else if (cutInstance==15+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut16;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;
+//    }
+//    else if (cutInstance==16+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut17;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut17;
+//    }
+//    else if (cutInstance==17+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut18;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut18;
+//    }
+//    else if (cutInstance==18+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut19;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut19;
+//    }
+//    else if (cutInstance==19+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut20;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut20;
+//    }
     else if (cutInstance==101) {
       // pair cuts during pair efficiency determination:
       SetupPairCutsAna( LMcutlib->selectedPairCutsAna ); // class member is public...

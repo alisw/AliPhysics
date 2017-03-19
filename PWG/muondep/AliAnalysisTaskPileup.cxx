@@ -86,6 +86,7 @@
 #include "AliCDBPath.h"
 #endif
 
+/// \ingroup utils
 
 ClassImp(AliAnalysisTaskPileup)
 

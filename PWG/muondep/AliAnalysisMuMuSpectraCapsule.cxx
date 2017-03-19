@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///
-/// Mother class to deal with Spectra after the fitting procedure.
-///
-/// author: Benjamin Audurier (Subatech)
-///
-
 #include "AliAnalysisMuMuSpectraCapsule.h"
 
 ClassImp(AliAnalysisMuMuSpectraCapsule)

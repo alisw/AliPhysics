@@ -25,6 +25,7 @@
 #include <TDatabasePDG.h>
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODRecoDecayHF3Prong.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAODRecoDecayHF2Prong);
@@ -179,3 +180,54 @@ Bool_t AliAODRecoDecayHF2Prong::SelectBtoJPSI(const Double_t *cuts,Int_t &okB)
   return kTRUE;
 }
 //-----------------------------------------------------------------------------
+Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs,Int_t pdgabs3prong, Int_t *pdgBDg,Int_t *pdgDg3prong, TClonesArray *mcArray) const
+{
+  //std::cout<<"MCmatch 1"<<std::endl;
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+  Int_t ndg=GetNDaughters();
+  if(ndg==0) {
+    AliError("No daughters available");
+    return -1;
+  }
+  if(ndg>10){
+    AliError("Only decays with <10 daughters supported");
+    return -1;
+  }
+  
+
+ 
+
+  AliAODRecoDecayHF3Prong *DDaughter = (AliAODRecoDecayHF3Prong*)GetDaughter(0);
+  if(!DDaughter)return -1;
+  Int_t DLabel = DDaughter->MatchToMC(pdgabs3prong,mcArray,3,pdgDg3prong);
+  if(DLabel<0) return -1;
+
+  Int_t dgLabels[10]={0};
+
+
+  // loop on daughters and write labels
+  for(Int_t i=0; i<ndg; i++) {
+    AliVTrack *trk = (AliVTrack*)GetDaughter(i);
+    Int_t lab = trk->GetLabel();
+    if(lab==-1) { // this daughter is the 3prong
+      lab=DLabel;
+    } else if(lab<-1) {
+      printf("daughter with negative label\n");
+      continue;
+    }
+    dgLabels[i] = lab;
+    
+  }
+ 
+  
+  Int_t label = MatchToMC(pdgabs,mcArray,dgLabels,ndg,2,pdgBDg);
+  
+
+
+  return label;
+
+}

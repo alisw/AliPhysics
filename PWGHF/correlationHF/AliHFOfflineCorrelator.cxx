@@ -33,6 +33,7 @@ eta_D(0),
 pT_D(0),
 mult_D(0),
 zVtx_D(0),
+cent_D(0),
 invMass_D(0),
 period_D(0),
 orbit_D(0),
@@ -51,10 +52,14 @@ eta_Tr(0),
 pT_Tr(0),
 mult_Tr(0),
 zVtx_Tr(0),
+cent_Tr(0),
 period_Tr(0),
 orbit_Tr(0),
 BC_Tr(0),
 IDtrig_Tr(0),
+IDtrig2_Tr(0),
+IDtrig3_Tr(0),
+IDtrig4_Tr(0),
 sel_Tr(0)
 {
 
@@ -75,6 +80,8 @@ fnMultPools(0),
 fnzVtxPools(0),
 fFirstBinNum(0),
 fMaxTracks(-1),
+fMinCent(0.),
+fMaxCent(0.),
 fNumSelD(-1),
 fNumSelTr(-1),
 fDebug(0),
@@ -107,7 +114,8 @@ fOutputFileName(0),
 fNameCutObj(0),
 fUseEff(0),
 fMake2DPlots(kFALSE),
-fWeightPeriods(kTRUE)
+fWeightPeriods(kTRUE),
+fRemoveSoftPiInME(kTRUE)
 {
 
 }
@@ -128,6 +136,8 @@ fnMultPools(source.fnMultPools),
 fnzVtxPools(source.fnzVtxPools),
 fFirstBinNum(source.fFirstBinNum),
 fMaxTracks(source.fMaxTracks),
+fMinCent(source.fMinCent),
+fMaxCent(source.fMaxCent),
 fNumSelD(source.fNumSelD),
 fNumSelTr(source.fNumSelTr),
 fDebug(source.fDebug),
@@ -160,7 +170,8 @@ fOutputFileName(source.fOutputFileName),
 fNameCutObj(source.fNameCutObj),
 fUseEff(source.fUseEff),
 fMake2DPlots(source.fMake2DPlots),
-fWeightPeriods(source.fWeightPeriods)
+fWeightPeriods(source.fWeightPeriods),
+fRemoveSoftPiInME(source.fRemoveSoftPiInME)
 {
 
 }
@@ -184,6 +195,8 @@ fnMultPools = orig.fnMultPools;
 fnzVtxPools = orig.fnzVtxPools;
 fFirstBinNum = orig.fFirstBinNum;
 fMaxTracks = orig.fMaxTracks;
+fMinCent = orig.fMinCent;
+fMaxCent = orig.fMaxCent;
 fNumSelD = orig.fNumSelD;
 fNumSelTr = orig.fNumSelTr;
 fDebug = orig.fDebug;
@@ -217,6 +230,7 @@ fNameCutObj = orig.fNameCutObj;
 fUseEff = orig.fUseEff;
 fMake2DPlots = orig.fMake2DPlots;
 fWeightPeriods = orig.fWeightPeriods;
+fRemoveSoftPiInME = orig.fRemoveSoftPiInME;
 
 return *this; //returns pointer of the class
 }
@@ -292,6 +306,26 @@ void AliHFOfflineCorrelator::DefineOutputObjects(){
     massBins = 400;
     massLow = 0.13;
     massUp = 0.19;  
+  }
+
+  //Mass plots for signal yield extraction and sideband normalization
+  fOutputMass = new TList();
+  fOutputMass->SetOwner();
+  fOutputMass->SetName("MassPlots");
+  
+  for(Int_t iBin=0; iBin<fNBinsPt; iBin++) {
+    //Defines 3D (DPhi,DEta,Minv) plots
+    namePlot = Form("histMass_%d",fFirstBinNum+iBin);
+    TH1F* h1D = new TH1F(namePlot.Data(),"Mass plots for triggers",150,1.5648,2.1648);
+    h1D->Sumw2();
+    fOutputMass->Add(h1D);
+    
+    if(fUseEff) {
+	  namePlot = Form("histMass_WeigD0Eff_%d",fFirstBinNum+iBin);
+      TH1F* h1Dw = new TH1F(namePlot.Data(),"Mass plots for triggers",150,1.5648,2.1648);
+      h1Dw->Sumw2();
+      fOutputMass->Add(h1Dw);
+    }
   }
 
   for(Int_t iBin=0; iBin<fNBinsPt; iBin++) {
@@ -504,6 +538,7 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
     Int_t ptBinD = PtBin(brD->pT_D);
     if(ptBinD<0) continue;  
     if(fNumSelD>=0 && (brD->sel_D>>fNumSelD)%2!=1) continue; //important in case of multiple selection (default selection is 0)
+    if(fMinCent!=0 && fMaxCent!=0) {if(brD->cent_D < fMinCent || brD->cent_D > fMaxCent) continue;} //skip triggers outside centrality range
     
     poolD = GetPoolBin(brD->mult_D,brD->zVtx_D); 
 
@@ -517,6 +552,11 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
 
     Int_t fillOnce[(int)fPtBinsTrLow.size()]; for(int ii=0;ii<(int)fPtBinsTrLow.size();ii++) fillOnce[ii]=0;
 
+    //Fill mass plots
+    ((TH1F*)(fOutputMass->FindObject(Form("histMass_%d",fFirstBinNum+ptBinD))))->Fill(brD->invMass_D);
+    if(fUseEff) ((TH1F*)(fOutputMass->FindObject(Form("histMass_WeigD0Eff_%d",fFirstBinNum+ptBinD))))->Fill(brD->invMass_D,GetEfficiencyWeightDOnly(brD));
+    
+    //Correlation plots!
     for(Int_t iTr=minTrackLoop; iTr<maxTrackLoop; iTr++) {  //loop on associated tracks in tree
 
       fTreeTr->GetEntry(iTr); 
@@ -524,8 +564,12 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       if(fAnType==kME && (brD->period_D==brTr->period_Tr && brD->orbit_D==brTr->orbit_Tr && brD->BC_D==brTr->BC_Tr)) continue; //skips D and tracks from same event in SE 
 
       if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
+      if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig2_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
+      if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig3_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
+      if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig4_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
 
       if(fNumSelTr>=0 && (brTr->sel_Tr>>fNumSelTr)%2!=1) continue; //important in case of multiple selection (default selection is 0)
+	  if(fMinCent!=0 && fMaxCent!=0) {if(brTr->cent_Tr < fMinCent || brTr->cent_Tr > fMaxCent) continue;} //skip tracks outside centrality range
 
       poolTr = GetPoolBin(brTr->mult_Tr,brTr->zVtx_Tr);
       if(poolD<0 || poolTr<0 || poolD!=poolTr) continue;  //skips if pools of D and tracks do not match, or if pool number is wrong
@@ -535,6 +579,11 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       if(fWeightPeriods && fAnType==kME) weight*=fPrdWeights.at(iFile); //period-by-period weighting
       Double_t deltaPhi, deltaEta;
       GetCorrelationsValue(brD,brTr,deltaPhi,deltaEta);
+
+      if(fRemoveSoftPiInME && fAnType==kME && deltaPhi > -0.2 && deltaPhi < 0.2 && deltaEta > -0.2 && deltaEta < 0.2) { //ME fake soft pi cut
+		Bool_t reject = IsSoftPionFromDstar(brD,brTr);
+		if(reject) continue;
+	  }
 
       for(Int_t iRng=0; iRng<(int)fPtBinsTrLow.size(); iRng++) {  //loop on associated track ranges
 
@@ -625,6 +674,18 @@ Double_t AliHFOfflineCorrelator::GetEfficiencyWeight(AliHFCorrelationBranchD *br
   effTr = fMapEffTr->GetBinContent(binTr);
 
   return 1./(effD*effTr);
+}
+
+//___________________________________________________________________________________________
+Double_t AliHFOfflineCorrelator::GetEfficiencyWeightDOnly(AliHFCorrelationBranchD *brD) {
+
+  Double_t effD = 1;
+   
+  Int_t binD=fMapEffD->FindBin(brD->pT_D,brD->mult_D);
+  if(fMapEffD->IsBinUnderflow(binD)||fMapEffD->IsBinOverflow(binD))return 1.;
+  effD = fMapEffD->GetBinContent(binD);
+
+  return 1./(effD);
 }
 
 //___________________________________________________________________________________________
@@ -772,8 +833,50 @@ void AliHFOfflineCorrelator::SaveOutputPlots() {
 
   TFile *f = new TFile(fOutputFileName.Data(),"RECREATE");
   fOutputDistr->Write();
+  fOutputMass->Write();
   f->Close();
   return;
+}
+
+//___________________________________________________________________________________________
+Bool_t AliHFOfflineCorrelator::IsSoftPionFromDstar(AliHFCorrelationBranchD *brD, AliHFCorrelationBranchTr *brTr) {
+	//
+	// Calculates invmass of track+D0 and rejects if compatible with D*
+	// (to remove fake pions from D* in ME events - in SE the cut is applied in the main task)
+	// 
+	Double_t nsigma = 3.;
+	
+	Double_t mPi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+	Double_t mK = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+	Double_t pxD = brD->pT_D*TMath::Cos(brD->phi_D);
+	Double_t pyD = brD->pT_D*TMath::Sin(brD->phi_D);
+	Double_t pzD = brD->pT_D*TMath::SinH(brD->eta_D);
+	Double_t pxTr = brTr->pT_Tr*TMath::Cos(brTr->phi_Tr);
+	Double_t pyTr = brTr->pT_Tr*TMath::Sin(brTr->phi_Tr);
+	Double_t pzTr = brTr->pT_Tr*TMath::SinH(brTr->eta_Tr);
+	Double_t invmassDstar1 = 0, invmassDstar2 = 0; 
+	
+	//hyp 1 (pi,K) - D0
+	Double_t e1Pi = TMath::Sqrt(mPi*mPi + TMath::Power(brD->pXdaug1_D,2) + TMath::Power(brD->pYdaug1_D,2) + TMath::Power(brD->pZdaug1_D,2));
+	Double_t e2K = TMath::Sqrt(mK*mK + TMath::Power(brD->pXdaug2_D,2) + TMath::Power(brD->pYdaug2_D,2) + TMath::Power(brD->pZdaug2_D,2));
+	//hyp 2 (K,pi) - D0bar
+	Double_t e1K = TMath::Sqrt(mK*mK + TMath::Power(brD->pXdaug1_D,2) + TMath::Power(brD->pYdaug1_D,2) + TMath::Power(brD->pZdaug1_D,2));
+	Double_t e2Pi = TMath::Sqrt(mPi*mPi + TMath::Power(brD->pXdaug2_D,2) + TMath::Power(brD->pYdaug2_D,2) + TMath::Power(brD->pZdaug2_D,2));
+		
+	Double_t psum2 = TMath::Power(pxD+pxTr,2) + TMath::Power(pyD+pyTr,2) + TMath::Power(pzD+pzTr,2);
+
+	switch(brD->hyp_D) { //there's no 3, since each mass hypothesis is filled separately (and 3's are fileld two times, one as 1 and one as 2)
+		case 1:
+			invmassDstar1 = TMath::Sqrt(TMath::Power(e1Pi+e2K+TMath::Sqrt(mPi*mPi + pxTr*pxTr + pyTr*pyTr + pzTr*pzTr),2.)-psum2);
+			if ((TMath::Abs(invmassDstar1-brD->invMass_D)-0.14543) < nsigma*800.*pow(10.,-6.)) return kTRUE;
+			break;
+		case 2:
+			invmassDstar2 = TMath::Sqrt(TMath::Power(e2Pi+e1K+TMath::Sqrt(mPi*mPi + pxTr*pxTr + pyTr*pyTr + pzTr*pzTr),2.)-psum2);
+			if ((TMath::Abs(invmassDstar2-brD->invMass_D)-0.14543) < nsigma*800.*pow(10.,-6.)) return kTRUE;
+			break;
+	}
+	
+	return kFALSE;
 }
 
 //___________________________________________________________________________________________
@@ -820,6 +923,8 @@ void AliHFOfflineCorrelator::PrintCfg() const {
   std::cout << " Produce 2D plots = "<<fMake2DPlots<<"\n";
   std::cout << "----------------------------------------------\n";
   std::cout << " Weight periods (if ME) = "<<fWeightPeriods<<"\n";
+  std::cout << "----------------------------------------------\n";
+  std::cout << " Fake soft pi rejection in Me (D0) = "<<fRemoveSoftPiInME<<"\n";
   std::cout << "----------------------------------------------\n";
 }
 

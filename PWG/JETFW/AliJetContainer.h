@@ -71,17 +71,21 @@ class AliJetContainer : public AliParticleContainer {
    * removed. Please use AliEmcalJet::JetAcceptanceType in your code.
    */
   enum JetAcceptanceType {
-    kTPC              = AliEmcalJet::kTPC,        ///< TPC acceptance
-    kTPCfid           = AliEmcalJet::kTPCfid,     ///< TPC fiducial acceptance (each eta edge narrowed by jet R)
-    kEMCAL            = AliEmcalJet::kEMCAL,      ///< EMCal acceptance
-    kEMCALfid         = AliEmcalJet::kEMCALfid,   ///< EMCal fiducial acceptance (each eta, phi edge narrowed by jet R)
-    kDCAL             = AliEmcalJet::kDCAL,       ///< DCal acceptance
-    kDCALfid          = AliEmcalJet::kDCALfid,    ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
-    kUser             = AliEmcalJet::kUser        ///< Full acceptance, i.e. no acceptance cut applied -- left to user
+    kTPC              = AliEmcalJet::kTPC,          ///< TPC acceptance
+    kTPCfid           = AliEmcalJet::kTPCfid,       ///< TPC fiducial acceptance (each eta edge narrowed by jet R)
+    kEMCAL            = AliEmcalJet::kEMCAL,        ///< EMCal acceptance
+    kEMCALfid         = AliEmcalJet::kEMCALfid,     ///< EMCal fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kDCAL             = AliEmcalJet::kDCAL,         ///< DCal acceptance -- spans entire rectangular region in eta-phi (including most of PHOS)
+    kDCALfid          = AliEmcalJet::kDCALfid,      ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kDCALonly         = AliEmcalJet::kDCALonly,     ///< DCal acceptance -- spans ONLY DCal (no PHOS or gap)
+    kDCALonlyfid      = AliEmcalJet::kDCALonlyfid,  ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kPHOS             = AliEmcalJet::kPHOS,         ///< PHOS acceptance
+    kPHOSfid          = AliEmcalJet::kPHOSfid,      ///< PHOS fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kUser             = AliEmcalJet::kUser          ///< Full acceptance, i.e. no acceptance cut applied -- left to user
   };
 
   AliJetContainer();
-  AliJetContainer(const char *name); 
+  AliJetContainer(const char *name);
   AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);
   virtual ~AliJetContainer() {;}
   
@@ -224,7 +228,7 @@ class AliJetContainer : public AliParticleContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer, 17);
+  ClassDef(AliJetContainer, 18);
 };
 
 #endif

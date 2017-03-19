@@ -139,7 +139,6 @@ public:
 	                       Float_t momentum[]);
 	static void FillSPDtrkltMap(const AliVEvent *event, TH2 *hitMapSPDtrklt);
 
-private:
 	// ESD only
 	//---------
 
@@ -154,6 +153,8 @@ private:
 	static Int_t GetTPC(const AliESDEvent *ESDEvent, TH2 *TPCGapDCAaSide,
 	                    TH2 *TPCGapDCAcSide);
 	static Int_t GetZDC(const AliESDEvent *ESDEvent); // not used so far
+
+private:
 
 #ifdef STD_ALIROOT
 	// helpers for the FMD gap determination

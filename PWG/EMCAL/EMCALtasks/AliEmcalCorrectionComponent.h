@@ -1,9 +1,6 @@
 #ifndef ALIEMCALCORRECTIONCOMPONENT_H
 #define ALIEMCALCORRECTIONCOMPONENT_H
 
-// AliEmcalCorrectionComponent
-//
-
 #include <map>
 #include <string>
 
@@ -22,33 +19,46 @@ class AliEMCALRecoUtils;
 class AliVCaloCells;
 class AliVTrack;
 class AliVCluster;
-class AliEMCALGeometry;
 class AliVEvent;
 #include "AliLog.h"
+#include "AliEMCALGeometry.h"
+
+/**
+ * @class AliEmcalCorrectionComponent
+ * @ingroup EMCALCOREFW
+ * @brief Base class for correction components in the EMCal correction framework
+ *
+ * Base class for all correction components in the EMCal Correction Framework. Each correction
+ * component corresponds to a correction needed for the EMCal. Creation, configuration, and execution
+ * of all of the components is handled by AliEmcalCorrectionTask. Each new component is automatically
+ * registered through the AliEmcalCorrectionComponentFactory class, and is thus automatically available
+ * to execute. Components are configured through a set of YAML configuration files. For more information
+ * about the steering, see AliEmcalCorrectionTask.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University
+ * @author James Mulligan <james.mulligan@yale.edu>, Yale University
+ * @date Jul 8, 2016
+ */
 
 class AliEmcalCorrectionComponent : public TNamed {
  public:
-  enum inputObjectType {
-    kCaloCells = 0,    //!< Calo cells
-    kCluster = 1,  //!< Cluster container
-    kTrack = 2,    //!< Track container
-  };
-
   AliEmcalCorrectionComponent();
   AliEmcalCorrectionComponent(const char * name);
   virtual ~AliEmcalCorrectionComponent();
 
   // Virtual functions to be overloaded 
   virtual Bool_t Initialize();
+  virtual void UserCreateOutputObjects();
   virtual void ExecOnce();
   virtual Bool_t Run();
   virtual Bool_t UserNotify();
+  virtual Bool_t CheckIfRunChanged();
   
   void GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
   void UpdateCells();
-  Bool_t RunChanged();
   void GetPass();
   void FillCellQA(TH1F* h);
+  Int_t InitBadChannels();
 
   AliClusterContainer * GetClusterContainer() { return fClusCont; }
   AliParticleContainer * GetParticleContainer() { return fPartCont; }
@@ -75,82 +85,102 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetDefaultConfiguration(YAML::Node & node) { fDefaultConfiguration = node; }
   
   /// Retrieve property
-  template<typename T> void GetProperty(std::string propertyName, T & property, bool requiredProperty = true, std::string correctionName = "");
+  template<typename T> bool GetProperty(std::string propertyName, T & property, bool requiredProperty = true, std::string correctionName = "");
 
   /// Retrieve property driver function. It is static so that it can be used by other classes
-  template<typename T> static void GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty = true, std::string correctionName = "");
+  template<typename T> static bool GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty = true, std::string correctionName = "");
 #endif
   static bool IsSharedValue(std::string & value);
 
-  // Determine branch name using the "usedefault" pattern
-  static std::string DetermineUseDefaultName(inputObjectType contType, Bool_t esdMode);
-
  protected:
-
-  void AddContainer(inputObjectType type);
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   template<typename T> static bool GetPropertyFromNodes(const YAML::Node & node, const YAML::Node & sharedParametersNode, std::string propertyName, T & property, const std::string correctionName, const std::string configurationType, int nodesDeep = 0);
   template<typename T> static bool GetPropertyFromNode(const YAML::Node & node, std::string propertyName, T & property);
 
-  YAML::Node              fUserConfiguration;
-  YAML::Node              fDefaultConfiguration;
+  template<typename T> static typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_same<T, std::string>::value && !std::is_same<T, bool>::value>::type PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage);
+  template<typename T> static typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, std::string>::value || std::is_same<T, bool>::value>::type PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage);
+
+  YAML::Node              fUserConfiguration;             //!<! User YAML configuration
+  YAML::Node              fDefaultConfiguration;          //!<! Default YAML configuration
 #endif
 
-  Bool_t                  fCreateHisto;                   // flag to make some basic histograms
-  Int_t                   fRun;                           //!run number
-  TString                 fFilepass;                      // input data pass number
-  Bool_t                  fGetPassFromFileName;           // get fFilepass from file name
-  AliVEvent              *fEvent;                         // pointer to event
-  Bool_t                  fEsdMode;                       // flag for ESD
-  AliMCEvent             *fMCEvent;                       // MC
-  Double_t                fCent;                          //!<!event centrality
-  Int_t                   fNcentBins;                     ///< how many centrality bins (this member copied from AliAnalysisTaskEmcal)
-  Int_t                   fCentBin;                       //!<!event centrality bin
-  Int_t                   fNbins;                         ///< no. of pt bins
-  Double_t                fMinBinPt;                      ///< min pt in histograms
-  Double_t                fMaxBinPt;                      ///< max pt in histograms
-  Double_t                fVertex[3];                     //!<!event vertex
-  AliEMCALGeometry       *fGeom;                          //!<!geometry object
-  Bool_t                  fIsEmbedded;                    ///< trigger, embedded signal
-  Int_t                   fMinMCLabel;                    ///< minimum MC label value for the tracks/clusters being considered MC particles
-  AliClusterContainer    *fClusCont;                      //!<! pointer to the cluster container
-  AliParticleContainer   *fPartCont;                      //!<! pointer to the track/particle container
-  AliVCaloCells          *fCaloCells;                     //!<! pointer to calo cells
-  AliEMCALRecoUtils      *fRecoUtils;                     //!<! pointer to reco utils
-  TList                  *fOutput;                        //!<! list of output histograms
+  Bool_t                  fCreateHisto;                   ///< Flag to make some basic histograms
+  Int_t                   fRun;                           //!<! Run number
+  TString                 fFilepass;                      ///< Input data pass number
+  Bool_t                  fGetPassFromFileName;           ///< Get fFilepass from file name
+  AliVEvent              *fEvent;                         //!<! Pointer to event
+  Bool_t                  fEsdMode;                       ///< flag for ESD
+  AliMCEvent             *fMCEvent;                       //!<! MC
+  Double_t                fCent;                          //!<! Event centrality
+  Int_t                   fNcentBins;                     ///< How many centrality bins (this member copied from AliAnalysisTaskEmcal)
+  Int_t                   fCentBin;                       //!<! Event centrality bin
+  Int_t                   fNbins;                         ///< No. of pt bins
+  Double_t                fMinBinPt;                      ///< Min pt in histograms
+  Double_t                fMaxBinPt;                      ///< Max pt in histograms
+  Double_t                fVertex[3];                     //!<! Event vertex
+  AliEMCALGeometry       *fGeom;                          //!<! Geometry object
+  Bool_t                  fIsEmbedded;                    ///< Trigger, embedded signal
+  Int_t                   fMinMCLabel;                    ///< Minimum MC label value for the tracks/clusters being considered MC particles
+  AliClusterContainer    *fClusCont;                      ///< Pointer to the cluster container
+  AliParticleContainer   *fPartCont;                      ///< Pointer to the track/particle container
+  AliVCaloCells          *fCaloCells;                     //!<! Pointer to CaloCells
+  AliEMCALRecoUtils      *fRecoUtils;                     ///<  Pointer to RecoUtils
+  TList                  *fOutput;                        //!<! List of output histograms
   
-  TString                fBasePath;                       // base folder path to get root files
+  TString                fBasePath;                       ///< Base folder path to get root files
 
  private:
   AliEmcalCorrectionComponent(const AliEmcalCorrectionComponent &);               // Not implemented
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
-  ClassDef(AliEmcalCorrectionComponent, 1) // EMCal correction component
+  /// \cond CLASSIMP
+  ClassDef(AliEmcalCorrectionComponent, 1); // EMCal correction component
+  /// \endcond
 };
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
 /**
+ * Get the requested property from the YAML configuration. This function is generally used by
+ * AliEmcalCorrectionComponent derived tasks as a wrapper around the more complicated functions to
+ * retrieve properties.
  *
+ * @param[in] propertyName Name of the property to retrieve
+ * @param[out] property Containers the retrieved property
+ * @param[in] requiredProperty True if the property is required
+ * @param[in] correctionName Name of the correction from where the property should be retrieved
  *
+ * @return True if the property was set successfully
  */
 template<typename T>
-void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & property, bool requiredProperty, std::string correctionName)
+bool AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & property, bool requiredProperty, std::string correctionName)
 {
   // Get proper correction name
   if (correctionName == "")
   {
     correctionName = GetName();
   }
-  GetProperty(propertyName, property, fUserConfiguration, fDefaultConfiguration, requiredProperty, correctionName);
+  bool result = GetProperty(propertyName, property, fUserConfiguration, fDefaultConfiguration, requiredProperty, correctionName);
+
+  return result;
 }
 
 /**
+ * General function to get a property from a set of YAML configuration files. It first calls checks
+ * the user configuration, and then if the property is not found, it then checks the default configuration.
+ * If the property is required but it is not found, a fatal error is thrown.
  *
+ * @param[in] propertyName Name of the property to retrieve
+ * @param[out] property Contains the retrieved property
+ * @param[in] userConfiguration YAML user configuration node
+ * @param[in] defaultConfiguration YAML default configuration node
+ * @param[in] requiredProperty True if the property is required
+ * @param[in] correctionName Name of the correction from where the property should be retrieved
  *
+ * @return True if the property was set successfully
  */
 template<typename T>
-void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty, std::string correctionName)
+bool AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty, std::string correctionName)
 {
   // Remove AliEmcalCorrection if in name
   std::size_t prefixStringLocation = correctionName.find("AliEmcalCorrection");
@@ -174,7 +204,7 @@ void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
 
   if (setProperty != true)
   {
-    AliDebugClass(2, "Looking for parameter in defulat configuration");
+    AliDebugClass(2, "Looking for parameter in default configuration");
     YAML::Node sharedParameters = defaultConfiguration["sharedParameters"];
     //std::cout << std::endl << "Default Node: " << fDefaultConfiguration << std::endl;
     setProperty = AliEmcalCorrectionComponent::GetPropertyFromNodes(defaultConfiguration, sharedParameters, propertyName, property, correctionName, "default");
@@ -188,11 +218,35 @@ void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
         << propertyName << "\" from default config!" << std::endl;
     AliFatalClass(message.str().c_str());
   }
+
+  // Return whether the value was actually set
+  return setProperty;
 }
 
 /**
+ * Actually handles retrieving parameters from YAML nodes.
  *
+ * The retrieval procedure is as follows:
+ *  - Check if the property is defined in the base of the node
+ *  - If the property is found:
+ *     - Check whether it requests a shared parameter
+ *        - If so, attempt to retrieve the property from the shared parameter.
+ *     - If not, attempt to retrieve the parameter from the correction name
+ *     - In either case, through a warning (or fatal if requested) if it is not found
+ *  - If not found, attempt to find a node named by the correction name:
+ *     - If it exists, recurse in this function. It will not go more than two levels deep!
+ *     - If it does not exist, attempt to find a substring name by removing all characters after the first "_"
+ *         - Recurse if found
  *
+ * @param[in] node Main YAML node containing the properties
+ * @param[in] sharedParametersNode YAML node containing the shared parameters
+ * @param[in] propertyName Name of the property to retrieve
+ * @param[out] property Contains the retrieved property
+ * @param[in] correctionName Name of the correction from where the property should be retrieved
+ * @param[in] configurationType Name of the configuration type. Either "user" or "default"
+ * @param[in] nodesDeep Keeps track of how many nodes deep we have recursed. Optional parameter that the user does not need to set.
+ *
+ * @return True if the property was set successfully
  */
 template<typename T>
 bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, const YAML::Node & sharedParametersNode, std::string propertyName, T & property, const std::string correctionName, const std::string configurationType, int nodesDeep)
@@ -230,7 +284,7 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
       // if it is requested through the user configuration.
       std::string sharedValueName = "";
       // Necessary because it fails on vectors and other complex objects that are YAML sequences.
-      if (std::is_arithmetic<T>::value || std::is_same<T, std::string>::value)
+      if (std::is_arithmetic<T>::value || std::is_same<T, std::string>::value || std::is_same<T, bool>::value)
       {
         // Retrieve value as string to check for shared value
         sharedValueName = node[propertyName].as<std::string>();
@@ -261,7 +315,9 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
       // Inform about the result
       if (retrievalResult == true)
       {
-        AliDebugClass(2, TString::Format("Succeeded in retrieveing %s", tempMessage.str().c_str()));
+        // Add the retrieved value to the message (only if trivially printable)
+        PrintRetrievedPropertyValue(property, tempMessage);
+        AliDebugClassStream(2) << "Succeeded in retrieveing " << tempMessage.str() << std::endl;
         returnValue = true;
       }
       else
@@ -322,8 +378,45 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
 }
 
 /**
+ * Prints the retrieved property value if the type is easily printable. This function handles arithmetic
+ * values, strings, and bools. Further types could be handled by other functions that are selectively enabled
+ * by std::enable_if<>.
  *
+ * NOTE: This function retunrs void! See: https://stackoverflow.com/a/29044828
  *
+ * @param[in] property Property to be printed
+ * @param[in, out] tempMessage Stringstream into which the property should be streamed
+ */
+template<typename T>
+typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, std::string>::value || std::is_same<T, bool>::value>::type
+AliEmcalCorrectionComponent::PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage)
+{
+  //AliDebugClassStream(2) << " with value " << property;
+  tempMessage << " with value \"" << property << "\"";
+}
+
+/**
+ * Handles all other cases where the property cannot be printed.
+ *
+ * NOTE: This function retunrs void! See: https://stackoverflow.com/a/29044828
+ *
+ * @param[in] property Property to be printed
+ * @param[in, out] tempMessage Stringstream into which the property should be streamed
+ */
+template<typename T>
+typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_same<T, std::string>::value && !std::is_same<T, bool>::value>::type
+AliEmcalCorrectionComponent::PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage)
+{
+  // Cannot easily print these types, so just note that is the case!
+  tempMessage << " with a value that cannot be trivially printed";
+}
+
+/**
+ * Utility function to retrieve the property from a already selected YAML node.
+ *
+ * @param[in] node YAML node from which the property should be retrieved
+ * @param[in] propertyName Name of the property to retrieve
+ * @param[out] property Contains the retrieved property
  */
 template<typename T>
 bool AliEmcalCorrectionComponent::GetPropertyFromNode(const YAML::Node & node, std::string propertyName, T & property)
@@ -338,9 +431,25 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNode(const YAML::Node & node, s
 
 #endif /* Hide yaml from CINT */
 
-// Below is based on: https://stackoverflow.com/a/582456 , and editted for our purposes.
-// 
-// Template for creating a new component. Used to register the component.
+/**
+ * @class AliEmcalCorrectionComponentFactory
+ * @ingroup EMCALCOREFW
+ * @brief Factory for correction components in the EMCal correction framework
+ *
+ * This class maintains a map between the name of the correction component and a function to create the
+ * component. This map can be then be used to create each desired component by passing the name in a string.
+ * The benefit of this approach is new components can be automatically registered without changing any of the
+ * correction classes. Only the YAML configuration needs to be changed!
+ *
+ * The class and associated functions are based on: https://stackoverflow.com/a/582456 , and edited
+ * for our purposes.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University
+ * @author James Mulligan <james.mulligan@yale.edu>, Yale University
+ * @date Jul 8, 2016
+ */
+
+/// Template function for creating a new component. Used to register the component.
 template<typename T> AliEmcalCorrectionComponent * createT() { return new T; }
 
 // Factory to create and keep track of new components
@@ -351,7 +460,7 @@ class AliEmcalCorrectionComponentFactory
 
   typedef std::map<std::string, AliEmcalCorrectionComponent*(*)()> map_type;
 
-  // Creates an instance of an object based on the name if the name is registered in the map.
+  /// Creates an instance of an object based on the name if the name is registered in the map.
   static AliEmcalCorrectionComponent * createInstance(std::string const& s)
   {
     map_type::iterator it = getMap()->find(s);
@@ -362,7 +471,7 @@ class AliEmcalCorrectionComponentFactory
   }
 
  protected:
-  // Creates and access the component map
+  /// Creates and access the component map
   static map_type * getMap() {
     // We never delete the map (until program termination) because we cannot guarantee
     // correct destruction order
@@ -371,15 +480,27 @@ class AliEmcalCorrectionComponentFactory
   }
 
  private:
-  // Contains the map to all of the components
+  /// Contains the map to all of the components
   static map_type * componentMap;
 };
 
-// Allows registration of new components into the factory map.
+/**
+ * @class RegisterCorrectionComponent
+ * @ingroup EMCALCOREFW
+ * @brief Registers EMCal correction components in the factory map
+ *
+ * This class allows EMCal correction components to automatically register in a map, such that new components
+ * are automatically available in the correction framework.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University
+ * @author James Mulligan <james.mulligan@yale.edu>, Yale University
+ * @date Jul 8, 2016
+ */
 template<typename T>
 class RegisterCorrectionComponent : public AliEmcalCorrectionComponentFactory
 { 
  public:
+  /// Registers the name of the component to map to a function that can create the component
   RegisterCorrectionComponent(std::string const& s)
   { 
     getMap()->insert(std::make_pair(s, &createT<T>));

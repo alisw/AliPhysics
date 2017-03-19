@@ -9,7 +9,9 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     TString filename="",
 				     TString finAnObjname="AnalysisCuts",
 				     Int_t etaRange=0,
-				     Bool_t cutsDistr=kFALSE)
+             Bool_t cutsDistr=kFALSE,
+             Int_t trackletsmin=-1,
+             Int_t trackletsmax=-1)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D+ candidates
@@ -89,7 +91,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
     dplusTask->SetDoTrackVarHistos(kTRUE);
   if(etaRange==1) dplusTask->SetUseOnlyPositiveEta();
   if(etaRange==-1) dplusTask->SetUseOnlyNegativeEta();
-
+  if(trackletsmin>=0 && trackletsmax>=0 && trackletsmax>trackletsmin) dplusTask->SetCutOnNtracklets(kTRUE,trackletsmin,trackletsmax);
   mgr->AddTask(dplusTask);
 
   // Create containers for input/output

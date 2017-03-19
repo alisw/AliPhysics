@@ -19,7 +19,6 @@
 #pragma link C++ class  AliEmcalPatchFromCellMaker+;
 #pragma link C++ class  AliEmcalPhysicsSelectionTask+;
 #pragma link C++ class  AliEmcalPicoTrackMaker+;
-#pragma link C++ class  AliEmcalSetupTask+;
 #pragma link C++ class  AliEmcalTenderTask+;
 #pragma link C++ class  AliEmcalTrackingQATask+;
 #pragma link C++ class  AliEmcalTrackPropagatorTask+;
@@ -33,7 +32,10 @@
 #pragma link C++ class  AliEMCALConfigurationMatcher+;
 #pragma link C++ class  AliAnalysisTaskEmcalTriggerSelection+;
 #pragma link C++ class  AliAnalysisTaskEmcalIteratorTest+;
+#pragma link C++ class  AliEmcalCopyCollection+;
 #pragma link C++ class  AliEmcalCorrectionTask+;
+#pragma link C++ class  AliEmcalCorrectionCellContainer+;
+#pragma link C++ class  std::vector<AliEmcalCorrectionCellContainer *>+;
 #pragma link C++ class  AliEmcalCorrectionComponent+;
 #pragma link C++ class  AliEmcalCorrectionCellBadChannel+;
 #pragma link C++ class  AliEmcalCorrectionCellEnergy+;

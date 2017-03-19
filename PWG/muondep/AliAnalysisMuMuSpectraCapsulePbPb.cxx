@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///
-/// Class to deal with Spectra after the fitting procedure.
-///
-/// author: Benjamin Audurier (Subatech)
-///
-
 #include "AliAnalysisMuMuSpectraCapsulePbPb.h"
 
 ClassImp(AliAnalysisMuMuSpectraCapsulePbPb)

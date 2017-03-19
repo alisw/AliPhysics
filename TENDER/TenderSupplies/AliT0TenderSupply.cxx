@@ -37,12 +37,17 @@ AliT0TenderSupply::AliT0TenderSupply():
   fCorrectMeanTime(kFALSE),
   fCorrectStartTimeOnAmplSatur(kFALSE),
   fAmplitudeThreshold(100), 
-  fPass4LHC11aCorrection(kFALSE)
+  fPass4LHC11aCorrection(kFALSE),
+  fLHC16j(kFALSE),
+  fEvent(0),
+  fnEvent(0)
 {
   //
   // default constructor
   //
   for(int i=0; i<4; i++) fTimeOffset[i]=0;
+  for(int i=0; i<24; i++) fFixMeanCFD[i]=0;
+  
 }
 
 //________________________________________________________________________
@@ -51,12 +56,16 @@ AliT0TenderSupply::AliT0TenderSupply(const char *name, const AliTender *tender):
   fCorrectMeanTime(kFALSE),
   fCorrectStartTimeOnAmplSatur(kFALSE),
   fAmplitudeThreshold(100),
-  fPass4LHC11aCorrection(kFALSE)
+  fPass4LHC11aCorrection(kFALSE),
+  fLHC16j(kFALSE),
+  fEvent(0)  ,
+  fnEvent(0)
 {
   //
   // constructor
   //
   for(int i=0; i<4; i++) fTimeOffset[i]=0;
+  for(int i=0; i<24; i++) fFixMeanCFD[i]=0;
 
 }
 
@@ -110,13 +119,37 @@ void AliT0TenderSupply::Init(){
               }
     }
 
-   if ( fileName.Contains("LHC16d3") || fileName.Contains("LHC16a2d2") ) {
-   	 fCorrectMeanTime=kTRUE;
-         fTimeOffset[0]=35; fTimeOffset[1]=25; fTimeOffset[2]=40; 
+    if ( fileName.Contains("LHC16d3") || fileName.Contains("LHC16a2d2") ) {
+      fCorrectMeanTime=kTRUE;
+      fTimeOffset[0]=35; fTimeOffset[1]=25; fTimeOffset[2]=40; 
 	 }
-    Printf("fCorrectMeanTime %i \n", fCorrectMeanTime);
-    // }  
-
+    
+    fnEvent=0;
+    if (fileName.Contains("LHC16j2a") ) {
+      fLHC16j=kTRUE;
+      Float_t corr[24] = {1.5, 3.4, 8.4, -2.5, -5, 1.8, 0.6, 2.0, -19, -11, -7, 7,
+			  -4, 2., -5, 0, 2.5, 3.2, 3.2, 2.2, -2, 3.8, 3.1, 6};
+      for(int i=0; i<24; i++) 	 fFixMeanCFD[i]=corr[i];
+      fTimeOffset[0]=-57; fTimeOffset[1]=-34; fTimeOffset[2]=-72;
+    }
+    
+    if (fileName.Contains("LHC16j2b") ) {
+      fLHC16j=kTRUE;
+      Float_t corr[24] = {2.6, 5.6, 8.2, -0.3, -6., 3.7,
+			  0., 5., -17., -11, -7, 8.5,
+			  -0.8, 8., -0., 2, 6., 7.,
+			  6., 4.4, 2., 6.38, 6., 8.98};
+      for(int i=0; i<24; i++) fFixMeanCFD[i]=corr[i];     
+      fTimeOffset[0]=-76; fTimeOffset[1]=-80; fTimeOffset[2]=-67;
+    }
+    
+    if (fileName.Contains("LHC16j4") ) {
+      fLHC16j=kTRUE;
+      Float_t corr[24] = {1.5, 1.9, 7, -1.8, -6, 2, -1, 1.3, -17, -8.6, -7.8,5.5,
+			  -4, 3, -4.6, 0, 3.6, 3.4, 3, 2.4, 0, 4.2, 3, 6};
+      for(int i=0; i<24; i++) fFixMeanCFD[i]=corr[i];     
+      fTimeOffset[0]=-36; fTimeOffset[1]=-31; fTimeOffset[2]=-42;
+    }
 }
 
 //________________________________________________________________________
@@ -127,8 +160,8 @@ void AliT0TenderSupply::ProcessEvent(){
     // selected daughter tracks using the status bis of the TObject
     //
 
-    AliESDEvent *event=fTender->GetEvent();
-    if (!event) return;
+    fEvent=fTender->GetEvent();
+    if (!fEvent) return;
      //...........................................
    //Do something when the run number changed, like loading OCDB entries etc.
      if(fTender->RunChanged()) Init();
@@ -149,16 +182,16 @@ void AliT0TenderSupply::ProcessEvent(){
     }
     
     if(fPass4LHC11aCorrection) {
-      const Double32_t* mean = event->GetT0TOF();
-      event->SetT0TOF(0, (mean[1]+mean[2])/2.);
+      const Double32_t* mean = fEvent->GetT0TOF();
+      fEvent->SetT0TOF(0, (mean[1]+mean[2])/2.);
  
     }
     //...........................................
     if(fCorrectStartTimeOnAmplSatur){
         //correct A side ORA on amplitude saturation
  	printf(" correct A side ORA on amplitude saturation\n");
-       const Double32_t* time = event->GetT0time();
-        const Double32_t* amplitude = event->GetT0amplitude();
+       const Double32_t* time = fEvent->GetT0time();
+        const Double32_t* amplitude = fEvent->GetT0amplitude();
 
         Int_t idxOfFirstPmtA = -1;
         Double32_t timeOrA   = 99999;
@@ -172,25 +205,64 @@ void AliT0TenderSupply::ProcessEvent(){
         }
 
         if(idxOfFirstPmtA>-1){ //a hit in aside with less than 40 mips
-            const Double32_t* mean = event->GetT0TOF();
+            const Double32_t* mean = fEvent->GetT0TOF();
             Double32_t timeOrC = mean[2];
             Double32_t timeOrAplusOrC = (timeOrA+timeOrC)/2;
-            event->SetT0TOF(0, timeOrAplusOrC);
+            fEvent->SetT0TOF(0, timeOrAplusOrC);
          }
     }
 
     //...........................................
     if(fCorrectMeanTime) {
       // correct mean time offsets  
-      const Double32_t* mean = event->GetT0TOF();
+      const Double32_t* mean = fEvent->GetT0TOF();
       for(int it0=0; it0<3; it0++){
 	if( mean[it0] > -2000  && mean[it0]<2000 ) {
-	  event->SetT0TOF(it0, mean[it0] - fTimeOffset[it0]);
+	  fEvent->SetT0TOF(it0, mean[it0] - fTimeOffset[it0]);
 	  }
       }
     }
     //...........................................
-       
+    if( fLHC16j) {
+      const Double32_t* time=fEvent->GetT0time();
+      Float_t c = 0.0299792458; // cm/ps
+      Float_t currentVertex=fEvent->GetPrimaryVertex()->GetZ();
+      Float_t shift=currentVertex/c;
+      SetLHC16jMC(time, shift);
+      fnEvent++;
+     }
+}
+
+//-------------------------------------------------------
+void  AliT0TenderSupply::SetLHC16jMC(const Double32_t* time, Float_t shift)
+{
+
+  Float_t besttimeA=999999; Float_t besttimeC=999999;
+  Float_t t0A, t0C, timecorr[24];
+  for (int i=0; i<12; i++) {
+    if ( time[i]!=0) {
+      timecorr[i] = time[i]- fFixMeanCFD[i];
+      if(timecorr[i]<besttimeC)  besttimeC=timecorr[i];
+    }
+  }
+  for (int i=12; i<24; i++) {
+    if( time[i]!=0) {
+       timecorr[i] = time[i]- fFixMeanCFD[i];
+      if(timecorr[i]<besttimeA)  besttimeA=timecorr[i];
+    }
+  }
+  if(besttimeC<1000 && besttimeC>-1000) {
+    t0C=24.4*besttimeC - shift - fTimeOffset[2];
+    fEvent->SetT0TOF(2, t0C);
+  }	    
+  if(besttimeA<1000 && besttimeA>-1000) {
+    t0A=24.4*besttimeA + shift - fTimeOffset[1];
+    fEvent->SetT0TOF(1, t0A);
+  }	    
+  if(besttimeC<1000 && besttimeC>-1000
+     && besttimeA<1000 && besttimeA>-1000) 
+    fEvent->SetT0TOF(0, 24.4*(besttimeC+besttimeA)/2. - fTimeOffset[0]);
+
 }
 
 

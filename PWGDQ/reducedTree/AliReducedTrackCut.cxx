@@ -25,7 +25,8 @@ AliReducedTrackCut::AliReducedTrackCut() :
   fCutOnITShitMap(0),
   fUseANDonITShitMap(kFALSE),
   fRequestCutOnITShitMap(kFALSE),  
-  fRequestTPCrefit(kFALSE)
+  fRequestTPCrefit(kFALSE),
+  fRequestTOFout(kFALSE)
 {
   //
   // default constructor
@@ -41,7 +42,8 @@ AliReducedTrackCut::AliReducedTrackCut(const Char_t* name, const Char_t* title) 
   fCutOnITShitMap(0),
   fUseANDonITShitMap(kFALSE),
   fRequestCutOnITShitMap(kFALSE),  
-  fRequestTPCrefit(kFALSE)
+  fRequestTPCrefit(kFALSE),
+  fRequestTOFout(kFALSE)
 {
   //
   // named constructor
@@ -81,6 +83,7 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
       AliReducedTrackInfo* track = (AliReducedTrackInfo*)obj;
       if(fRequestITSrefit && !track->CheckTrackStatus(AliReducedVarManager::kITSrefit)) return kFALSE;
       if(fRequestTPCrefit && !track->CheckTrackStatus(AliReducedVarManager::kTPCrefit)) return kFALSE;
+      if(fRequestTOFout && !track->CheckTrackStatus(AliReducedVarManager::kTOFout)) return kFALSE;
       if(fRequestCutOnITShitMap) {
          UChar_t itsHitMap = track->ITSclusterMap();
          UChar_t eval = itsHitMap & fCutOnITShitMap;

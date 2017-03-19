@@ -1,20 +1,22 @@
 // Grid running parameters
 TString gGridRunMode = "full";
-TString gRootVersion = "v5-34-30-alice5-2";
-TString gAlirootVersion = "v5-08-16-1";
-TString gAliphysicsVersion = "vAN-20160921-1";
+TString gRootVersion = "v5-34-30-alice7-1";
+TString gAlirootVersion = "v5-08-18c-1";
+TString gAliphysicsVersion = "vAN-20161208-1";
 TString gGridDataDir = "/alice/data/2015/LHC15o";
+//TString gGridDataDir = "/alice/data/2016/LHC16l";
 //TString gGridDataDir = "/alice/cern.ch/user/i/iarsene/work/outputDst";
+//TString gGridDataPattern = "*/pass1/*/AliESDs.root";
+//TString gGridDataPattern = "*/pass1/PWGDQ/DQ_PbPb/231_20161009-2048/*/dstTree.root";
 TString gGridDataPattern = "*/pass1/*/AliESDs.root";
-//TString gGridDataPattern = "*/*/dstTree.root";
 TString gGridWorkingDir = "work";
-TString gGridOutputDir = "outputTestNew6";
+TString gGridOutputDir = "testTrees_run246037";
 Int_t gGridMaxInputFileNumber = 40;
 
 //______________________________________________________________________________________________________________________________________
 void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD", Bool_t hasMC = kFALSE,
                                      Int_t reducedEventType = -1, Bool_t writeTree = kFALSE, TString tasks="dst", TString prod = "LHC10h",
-                                     Int_t nEntries=1234567890, Int_t firstEntry=0)
+                      Int_t nEntries=1234567890, Int_t firstEntry=0, TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros")
 {
    //
    // infile: list of input files if mode is local, or list of runs for job submission if mode is grid
@@ -75,7 +77,7 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    
    // Add the MC handler if needed
    AliMCEventHandler *mc = NULL;
-   if(hasMC) {
+   if(hasMC && (inputTypeStr.Contains("esd") || inputTypeStr.Contains("aod"))) {
       mc = new AliMCEventHandler();
       mgr->SetMCtruthEventHandler(mc);
    }
@@ -87,25 +89,31 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    if(inputTypeStr.Contains("esd") || inputTypeStr.Contains("aod")) {         // no need if we run over reduced events
       //==== Physics Selection ====
       gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+      Bool_t applyPileupCuts = kTRUE;
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(hasMC, applyPileupCuts);
 
       //===== ADD CENTRALITY: ===
       if(!prod.CompareTo("LHC10h") || !prod.CompareTo("LHC11h")) {         // Run-1 Pb-Pb
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
         AddTaskCentrality();
       }
-      if(!prod.CompareTo("LHC15o")) {         // Run-2 Pb-Pb
+      if(!prod.CompareTo("LHC15o") || !prod.CompareTo("LHC16l") || !prod.CompareTo("mcPbPb")) {         // Run-2 Pb-Pb
          gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
-         AddTaskMultSelection();
+         AliMultSelectionTask* multTask = AddTaskMultSelection();
+         if(!prod.CompareTo("mcPbPb"))
+           multTask->SetAlternateOADBforEstimators("LHC15o-DefaultMC-HIJING");
       }      
 
       //===== ADD PID RESPONSE: ===
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-      AddTaskPIDResponse();
+      Bool_t tuneOnData = kTRUE;
+      Int_t recoPass = 1;
+      if(hasMC) AddTaskPIDResponse(hasMC, kTRUE, tuneOnData, recoPass);
+      else AddTaskPIDResponse();
    }
    
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_TrainTreeAnalysis.C");
-   AddTask_iarsene_TrainTreeAnalysis((!runmodestr.CompareTo("grid") ? kTRUE : kFALSE), prod, reducedEventType, writeTree, tasks);
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_TrainTreeAnalysis.C");
+   AddTask_TrainTreeAnalysis((!runmodestr.CompareTo("grid") ? kTRUE : kFALSE), prod, reducedEventType, writeTree, tasks, pathForMacros);
    
    // Enable debug printouts
    //mgr->SetDebugLevel(10);
@@ -158,5 +166,6 @@ TChain* makeChain(const Char_t* filename, const Char_t* inputType) {
       chain->AddFile(line);
     }
   }
+  cout << "Number of events in chain: " << chain->GetEntries() << endl;
   return chain;
 }

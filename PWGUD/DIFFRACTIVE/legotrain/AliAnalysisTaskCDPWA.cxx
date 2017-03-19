@@ -148,9 +148,10 @@ void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidR
 	if (fMC) {
 		AliStack *stack = fMCevt->Stack();
 		if (!stack) return;
-		TParticle *cu_pt = (TParticle*)stack->Particle(tr->GetID());
+		TParticle *cu_pt = (TParticle*)stack->Particle(TMath::Abs(tr->GetLabel()));
 		if (!cu_pt) return;
 		if (cu_pt->GetFirstMother() == -1) {
+			fMotherID = -1;
 			fMotherPDGCode = -1;
 			return;
 		}
@@ -218,6 +219,8 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMultDG_MS(0x0)
 	, fMassNG_ST_2t(0x0)
 	, fMassNG_MS_2t(0x0)
+	, fpTNG_MS_2t(0x0)
+	, fMasspTNG_MS_2t(0x0)
 	, fMassDG_ST_2t(0x0)
 	, fMassDG_MS_2t(0x0)
 	, fMassNG_ST_4t(0x0)
@@ -245,8 +248,16 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
 	, hDCAz_MS(0)
+	, hMC_GenMass(0)
+	, hMC_GenpT(0)
+	, hMC_CDEvtType(0)
 {
 	for (Int_t i = 0; i < 10; i++) {
+		if (i < 7) {
+			hMC_CDGenMass[i] = 0x0;
+			hMC_CDGenpT[i] = 0x0;
+//			hMC_CDGenMasspT[i] = 0x0;
+		}
 		if (i < 2) {
 			fV0Time[i] = 0x0;
 			fADTime[i] = 0x0;
@@ -258,6 +269,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 		}
 		if (i < 6) {
 			hMultNG_Test[i] = 0x0;
+		}
+		if (i < 3) {
+			hMult_Ref[i] = 0x0;
 		}
 	}
 	for (Int_t i = 0; i < 14; i++) {
@@ -329,6 +343,8 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMultDG_MS(0x0)
 	, fMassNG_ST_2t(0x0)
 	, fMassNG_MS_2t(0x0)
+	, fpTNG_MS_2t(0x0)
+	, fMasspTNG_MS_2t(0x0)
 	, fMassDG_ST_2t(0x0)
 	, fMassDG_MS_2t(0x0)
 	, fMassNG_ST_4t(0x0)
@@ -356,8 +372,16 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
 	, hDCAz_MS(0)
+	, hMC_GenMass(0)
+	, hMC_GenpT(0)
+	, hMC_CDEvtType(0)
 {
 	for (Int_t i = 0; i < 10; i++) {
+		if (i < 7) {
+			hMC_CDGenMass[i] = 0x0;
+			hMC_CDGenpT[i] = 0x0;
+//			hMC_CDGenMasspT[i] = 0x0;
+		}
 		if (i < 2) {
 			fV0Time[i] = 0x0;
 			fADTime[i] = 0x0;
@@ -369,6 +393,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 		}
 		if (i < 6) {
 			hMultNG_Test[i] = 0x0;
+		}
+		if (i < 3) {
+			hMult_Ref[i] = 0x0;
 		}
 	}
 	for (Int_t i = 0; i < 14; i++) {
@@ -414,6 +441,8 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fMultDG_MS) delete fMultDG_MS;
 	if (fMassNG_ST_2t) delete fMassNG_ST_2t;
 	if (fMassNG_MS_2t) delete fMassNG_MS_2t;
+	if (fpTNG_MS_2t) delete fpTNG_MS_2t;
+	if (fMasspTNG_MS_2t) delete fMasspTNG_MS_2t;
 	if (fMassDG_ST_2t) delete fMassDG_ST_2t;
 	if (fMassDG_MS_2t) delete fMassDG_MS_2t;
 	if (fMassNG_ST_4t) delete fMassNG_ST_4t;
@@ -440,12 +469,21 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fMult_Rec_DG_Process) delete fMult_Rec_DG_Process;
 	if (fMult_Rec_NG_Process) delete fMult_Rec_NG_Process;
 	if (hDCAz_MS) delete hDCAz_MS;
+	if (hMC_GenMass) delete hMC_GenMass;
+	if (hMC_GenpT) delete hMC_GenpT;
+	if (hMC_CDEvtType) delete hMC_CDEvtType;
 	for (Int_t i = 0; i < 10; i++) {
+		if (i<7) {
+			if (hMC_CDGenMass[i]) delete hMC_CDGenMass[i];
+			if (hMC_CDGenpT[i]) delete hMC_CDGenpT[i];
+//			if (hMC_CDGenMasspT[i]) delete hMC_CDGenMasspT[i];
+		}
 		if (i<2) {
 			if (fV0Time[i]) delete fV0Time[i];
 			if (fADTime[i]) delete fADTime[i];
 		}
-		if (i < 5) delete hMultNG_Test[i];
+		if (i < 5) if (hMultNG_Test[i]) delete hMultNG_Test[i];
+		if (i < 3) if (hMult_Ref[i]) delete hMult_Ref[i];
 		
 	}
 	for (Int_t i = 0; i < 12; i++) {
@@ -653,6 +691,14 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fMassNG_MS_2t = new TH1D("fMassNG_MS_2t","",100,0,2);
 		fList->Add(fMassNG_MS_2t);
 	}
+	if (!fpTNG_MS_2t) {
+		fpTNG_MS_2t = new TH1D("fpTNG_MS_2t","",100,0,2);
+		fList->Add(fpTNG_MS_2t);
+	}
+	if (!fMasspTNG_MS_2t) {
+		fMasspTNG_MS_2t = new TH2D("fMasspTNG_MS_2t","",100,0,2,100,0,2);
+		fList->Add(fMasspTNG_MS_2t);
+	}
 	if (!fMassDG_ST_2t) {
 		fMassDG_ST_2t = new TH1D("fMassDG_ST_2t","",100,0,2);
 		fList->Add(fMassDG_ST_2t);
@@ -788,6 +834,34 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 				}
 			}
 		}
+		if (!hMC_GenMass) {
+			hMC_GenMass = new TH1D("hMC_GenMass","",100000,0,1000);
+			fList->Add(hMC_GenMass);
+		}
+		if (!hMC_GenpT) {
+			hMC_GenpT = new TH1D("hMC_GenpT","",1000,0,10);
+			fList->Add(hMC_GenpT);
+		}
+		if (!hMC_CDEvtType) {
+			hMC_CDEvtType = new TH1D("hMC_CDEvtType","",kEvtAll,0,kEvtAll);
+			fList->Add(hMC_CDEvtType);
+		}
+		for (Int_t i = 0; i < 7; i++) {
+			if (!hMC_CDGenMass[i]) {
+				hMC_CDGenMass[i] = new TH1D(Form("hMC_CDGenMass_%d",i),"",100000,0,1000);
+				fList->Add(hMC_CDGenMass[i]);
+			}
+			if (!hMC_CDGenpT[i]) {
+				hMC_CDGenpT[i] = new TH1D(Form("hMC_CDGenpT_%d",i),"",100000,0,1000);
+				fList->Add(hMC_CDGenpT[i]);
+			}
+			/*
+			if (!hMC_CDGenMasspT[i]) {
+				hMC_CDGenMasspT[i] = new TH2D(Form("hMC_CDGenMasspT_%d",i),"",100000,0,1000,100000,0,1000);
+				fList->Add(hMC_CDGenMasspT[i]);
+			}
+			*/
+		}
 	}
 	for (Int_t i = 0; i < 2; i++) {
 		if (!fV0Time[i]) {
@@ -808,6 +882,12 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		if (!hMultNG_Test[i]) {
 			hMultNG_Test[i] = new TH1D(Form("hMultNG_Test_%d",i),Form("hMultNG_Test_%d",i),110,-10,100);
 			fList->Add(hMultNG_Test[i]);
+		}
+	}
+	for (Int_t i = 0; i < 3; i++) {
+		if (!hMult_Ref[i]) {
+			hMult_Ref[i] = new TH1D(Form("hMult_Ref_%d",i),"",200,0,200);
+			fList->Add(hMult_Ref[i]);
 		}
 	}
 
@@ -1068,6 +1148,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 				fRunVsDG[i]->Fill(fRunNumber);
 			}
 		}
+		if (fDG_Det[7]) {
+			hMult_Ref[0]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC, 0.9));
+			hMult_Ref[1]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSSA, 0.9));
+			hMult_Ref[2]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTracklets, 0.9));
+		}
 	}
 	if (fIsMC) {
 		FillPassMCInfo(fDG_Det[0], fDG_Det[5]);
@@ -1163,7 +1248,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	if (normalCut && fDG_Det[7]) {//NG
 		fMultNG_MS->Fill(Nsel);
 		fTrackCutsInfo_NG->Fill(Nsel);
-		if (Nsel == 2 && trkCharge == 0) fMassNG_MS_2t->Fill(lv_sum_2t.M());
+		if (Nsel == 2 && trkCharge == 0) {
+			fMassNG_MS_2t->Fill(lv_sum_2t.M());
+			fpTNG_MS_2t->Fill(lv_sum_2t.Pt());
+			fMasspTNG_MS_2t->Fill(lv_sum_2t.M(),lv_sum_2t.Pt());
+		}
 		if (Nsel == 4 && trkCharge == 0) fMassNG_MS_4t->Fill(lv_sum_4t.M());
 	}
 	if (normalCut && fDG_Det[0]) {//DG_V0SPD
@@ -1485,10 +1574,45 @@ Bool_t AliAnalysisTaskCDPWA::DoMCPWA()
 	Int_t gapCv0fmd = 0;
 	Int_t gapCad = 0;
 	Int_t central = 0;
+	Int_t tmpCha_Pi = 0;
+	Int_t tmpCha_Ka = 0;
+	Int_t tmpN_Pi = 0;
+	Int_t tmpN_Ka = 0;
+	Int_t fMCEvtType = kEvtelse;
+	TLorentzVector tmp2piSum(0,0,0,0);
+	TLorentzVector tmpSum(0,0,0,0);
+	TLorentzVector tmplv(0,0,0,0);
+	TLorentzVector eta_max, eta_min;
+	Double_t dmax=-999., dmin=999.;
 	for (Int_t iTracks = 0; iTracks <  nPrimaries; ++iTracks) {
 		TParticle *part = (TParticle*)stack->Particle(iTracks);
 		if (!part) continue;
 		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) && part->GetStatusCode() == 1) {
+//			hMC_GenMass->Fill(part->GetCalcMass());
+//			hMC_GenpT->Fill(part->Pt());
+
+			tmplv.SetPxPyPzE(part->Px(),part->Py(),part->Pz(),part->Energy());
+			//Pion
+			if (TMath::Abs(part->GetPdgCode()) == 211) {
+				tmpCha_Pi += part->GetPdgCode();
+				tmpN_Pi++;
+				tmp2piSum += tmplv;
+			}
+			//Kaon
+			if (TMath::Abs(part->GetPdgCode()) == 321) {
+				tmpCha_Ka += part->GetPdgCode();
+				tmpN_Ka++;
+			}
+			if (iTracks != 0 && iTracks != 1) tmpSum += tmplv;
+			if (part->Eta() > dmax) {
+				eta_max = tmplv;
+				dmax = part->Eta();
+			}
+			if (part->Eta() < dmin) {
+				eta_min = tmplv;
+				dmin = part->Eta();
+			}
+
 			for (Int_t i = 0; i < kBinMCAll; i++) {
 				if (i == fMCProcessType) fMC_Eta[i]->Fill(part->Eta());
 			}
@@ -1502,6 +1626,37 @@ Bool_t AliAnalysisTaskCDPWA::DoMCPWA()
 			if (part->Eta() < -1.9 && part->Eta() > -3.7) gapCv0fmd++;
 			if (part->Eta() < -4.92 && part->Eta() > -6.96) gapCad++;
 		}
+	}
+
+	tmpSum = tmpSum - eta_max - eta_min;
+	hMC_GenMass->Fill(tmpSum.M());
+	hMC_GenpT->Fill(tmpSum.Pt());
+
+	//Only for CD
+	if (fMCProcessType == kBinCD) {
+		if (tmpCha_Pi == 0 && tmpN_Pi == 2) {
+			fMCEvtType = kEvt2pi;//2pi
+		}
+		else if (tmpCha_Pi == 0 && tmpN_Pi == 2) fMCEvtType = kEvt4pi;//4pi
+		else if (tmpCha_Pi == 0 && tmpN_Pi >= 1) fMCEvtType = kEvtnpi;//npi - 2pi - 4pi
+
+		if (tmpCha_Ka == 0 && tmpN_Ka == 2) fMCEvtType = kEvt2ka;//2ki
+		else if (tmpCha_Ka == 0 && tmpN_Ka >=1) fMCEvtType = kEvtnka;//nki-2ki
+
+		fEventInfo.fCDType = fMCEvtType;
+
+		for (Int_t i = 0; i < 6; i++) {
+			if (i == fMCEvtType) {
+				hMC_CDGenMass[i]->Fill(tmpSum.M());
+				hMC_CDGenpT[i]->Fill(tmpSum.Pt());
+//				hMC_CDGenMasspT[i]->Fill(tmpSum.M(),tmpSum.Pt());
+			}
+		}
+		hMC_CDGenMass[6]->Fill(tmpSum.M());
+		hMC_CDGenpT[6]->Fill(tmpSum.Pt());
+//		hMC_CDGenMasspT[6]->Fill(tmpSum.M(),tmpSum.Pt());
+
+		hMC_CDEvtType->Fill(fMCEvtType);
 	}
 
 	if (fMultRegionsMC) {
@@ -1582,6 +1737,7 @@ void AliAnalysisTaskCDPWA::DetermineProcessType() {
 			}
 		}
 		else if (st_header == "AliGenDPMjetEventHeader") {//Phojet
+			fIsPhojet = kTRUE;
 			fMCprocess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
 			switch(fMCprocess) {
 				case 2: fMCProcessType = kBinEL; break;

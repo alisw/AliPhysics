@@ -14,6 +14,7 @@
  **************************************************************************/
 #include <TBits.h>
 #include <TClonesArray.h>
+#include <TList.h>
 #include <TObjArray.h>
 #include <memory>
 
@@ -30,41 +31,23 @@
 ClassImp(AliEmcalTrackSelectionESD)
 /// \endcond
 
-/**
- * Default constructor
- */
 AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD():
 		AliEmcalTrackSelection()
 {
 }
 
-/**
- * Constructor with cuts
- */
 AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(AliVCuts* cuts):
 		AliEmcalTrackSelection()
 {
-  this->AddTrackCuts(cuts);
+  if(cuts) this->AddTrackCuts(cuts);
 }
 
-/**
- * Constructor, initalising track cuts depending on the requested type of filtering
- *
- * \param type Track filtering type
- * \param period  Period string (e.g. LHC11h)
- */
 AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(ETrackFilterType_t type, const char* period):
   AliEmcalTrackSelection()
 {
   GenerateTrackCuts(type, period);
 }
 
-/**
- * Automatically generates track cuts depending on the requested type of filtering
- *
- * \param type    Track filtering type
- * \param period  Period string (e.g. LHC11h)
- */
 void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const char* period)
 {
   if (fListOfCuts) fListOfCuts->Clear();
@@ -84,12 +67,6 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
   }
 }
 
-/**
- * Check whether track is accepted. Iterates over all cuts assigned to the track selection.
- *
- * \param trk: Track to check
- * \return: true if selected, false otherwise
- */
 bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
   if (!fListOfCuts) return kTRUE;
   AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(trk);
@@ -106,8 +83,8 @@ bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
 
   fTrackBitmap.ResetAllBits();
   Int_t cutcounter = 0;
-  for (TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
-    if((static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt)) fTrackBitmap.SetBitNumber(cutcounter);
+  for(auto cutIter : *fListOfCuts){
+    if((static_cast<AliVCuts *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject()))->IsSelected(esdt)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
   }
   // In case of ANY at least one bit has to be set, while in case of ALL all bits have to be set
@@ -115,5 +92,16 @@ bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
     return fTrackBitmap.CountBits() > 0 || cutcounter == 0;
   } else {
     return fTrackBitmap.CountBits() == cutcounter;
+  }
+}
+
+void AliEmcalTrackSelectionESD::SaveQAObjects(TList* outputList) {
+  for(auto cutIter : *fListOfCuts){
+    AliEmcalManagedObject *ptr = static_cast<AliEmcalManagedObject *>(cutIter);
+    if(ptr->GetObject()->IsA() == AliESDtrackCuts::Class()){
+      outputList->Add(ptr->GetObject());
+      // Remove ownership - taken over by output list
+      ptr->SetOwner(false);
+    }
   }
 }

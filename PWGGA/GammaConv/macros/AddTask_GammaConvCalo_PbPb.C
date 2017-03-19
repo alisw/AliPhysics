@@ -62,7 +62,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
                                   Int_t     isMC                            = 0,                      // run MC 
                                   Int_t     enableQAMesonTask               = 0,                      // enable QA in AliAnalysisTaskGammaConvV1
                                   Int_t     enableQAPhotonTask              = 0,                      // enable additional QA task
-                                  TString   fileNameInputForWeighting       = "MCSpectraInput.root",  // path to file for weigting input
+                                  TString   fileNameInputForWeighting       = "MCSpectraInput.root",  // path to file for weigting input / modified acceptance
                                   Int_t     headerSelectionInt              = 0,                      // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
                                   TString   cutnumberAODBranch              = "100000006008400000001500000",
                                   TString   periodName                      = "LHC13d2",              // name of the period for added signals and weighting
@@ -74,9 +74,45 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
                                   Bool_t    enableSortingMCLabels           = kTRUE,                  // enable sorting for MC cluster labels
                                   Bool_t    runLightOutput                  = kFALSE,                 // switch to run light output (only essential histograms for afterburner)
                                   Bool_t    doFlattening                    = kFALSE,                 // switch on centrality flattening for LHC11h
-                                  TString   fileNameInputForCentFlattening  = ""                      // file name for centrality flattening  
-
+                                  TString   fileNameInputForCentFlattening  = "",                     // file name for centrality flattening
+                                  Bool_t    doPrimaryTrackMatching          = kTRUE,                  // enable basic track matching for all primary tracks to cluster
+                                  TString   additionalTrainConfig           = "0"                     // additional counter for trainconfig
                                 ) {
+
+  Bool_t doTreeClusterShowerShape = kFALSE; // enable tree for meson cand EMCal shower shape studies
+  TH1S* histoAcc = 0x0;                     // histo for modified acceptance
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvCalo_PbPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      if(tempStr.CompareTo("INVMASSCLUSTree") == 0){
+        cout << "INFO: AddTask_GammaConvCalo_PbPb activating 'INVMASSCLUSTree'" << endl;
+        doTreeClusterShowerShape = kTRUE;
+      }else if(tempStr.BeginsWith("MODIFYACC")){
+        cout << "INFO: AddTask_GammaConvCalo_PbPb activating 'MODIFYACC'" << endl;
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        cout << "INFO: connecting to alien..." << endl;
+        TGrid::Connect("alien://");
+        cout << "done!" << endl;
+        TFile *w = TFile::Open(fileNameInputForWeighting.Data());
+        if(!w){cout << "ERROR: Could not open file: " << fileNameInputForWeighting.Data() << endl;return;}
+        histoAcc = (TH1S*) w->Get(tempType.Data());
+        if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
+        cout << "found: " << histoAcc << endl;
+      }
+    }
+  }
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaConvCalo_PbPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
 
   Int_t isHeavyIon = 1;
   
@@ -168,6 +204,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
+  task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
 
   //create cut handler
   CutHandlerConvCalo cuts;
@@ -273,43 +310,43 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     
 
   } else if (trainConfig == 101){ // PHOS clusters
-    cuts.AddCut("60100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-5%
-    cuts.AddCut("61200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 5-10%
-    cuts.AddCut("50100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-10%
-    cuts.AddCut("52400013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-40%
-    cuts.AddCut("52500013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-50%
+    cuts.AddCut("60100013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 0-10%
+    cuts.AddCut("52400013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 20-40%
+    cuts.AddCut("52500013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 20-50%
   } else if (trainConfig == 102){ // PHOS clusters
-    cuts.AddCut("60100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-5%
-    cuts.AddCut("61200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 5-10%
-    cuts.AddCut("50100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-10%
-    cuts.AddCut("51200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 10-20%
-    cuts.AddCut("52400013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-40%
+    cuts.AddCut("60100013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 0-10%
+    cuts.AddCut("51200013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 10-20%
+    cuts.AddCut("52400013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 20-40%
   } else if (trainConfig == 103){ // PHOS clusters
-    cuts.AddCut("54600013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 40-60%
-    cuts.AddCut("56800013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 60-80%
-    cuts.AddCut("52600013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-60%
-    cuts.AddCut("54800013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 40-80%
-    cuts.AddCut("52500013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-50%
+    cuts.AddCut("54600013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 40-60%
+    cuts.AddCut("56800013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 60-80%
+    cuts.AddCut("52600013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 20-60%
+    cuts.AddCut("54800013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 40-80%
+    cuts.AddCut("52500013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 20-50%
   } else if (trainConfig == 104){ // PHOS clusters no timing
-    cuts.AddCut("60100013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 0-5%
-    cuts.AddCut("61200013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 5-10%
-    cuts.AddCut("50100013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 0-10%
-    cuts.AddCut("52400013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 20-40%
-    cuts.AddCut("52500013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 20-50%
+    cuts.AddCut("60100013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 0-10%
+    cuts.AddCut("52400013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 20-40%
+    cuts.AddCut("52500013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 20-50%
   } else if (trainConfig == 105){ // PHOS clusters no timing
-    cuts.AddCut("60100013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 0-5%
-    cuts.AddCut("61200013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 5-10%
-    cuts.AddCut("50100013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 0-10%
-    cuts.AddCut("51200013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 10-20%
-    cuts.AddCut("52400013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 20-40%
+    cuts.AddCut("60100013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 0-10%
+    cuts.AddCut("51200013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 10-20%
+    cuts.AddCut("52400013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 20-40%
   } else if (trainConfig == 106){ // PHOS clusters no timing
-    cuts.AddCut("54600013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 40-60%
-    cuts.AddCut("56800013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 60-80%
-    cuts.AddCut("52600013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 20-60%
-    cuts.AddCut("54800013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 40-80%
-    cuts.AddCut("52500013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 20-50%
+    cuts.AddCut("54600013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 40-60%
+    cuts.AddCut("56800013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 60-80%
+    cuts.AddCut("52600013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 20-60%
+    cuts.AddCut("54800013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 40-80%
+    cuts.AddCut("52500013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 20-50%
   } else if (trainConfig == 107){ // PHOS clusters no timing
-    cuts.AddCut("50900013","00200009297002008250400000","2444400008033200000","0163103100000010"); // 0-90%
+    cuts.AddCut("50900013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 0-90%
     
     
    } else if (trainConfig == 201){ // EMCAL clusters
@@ -412,6 +449,16 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
+    //create AliCaloTrackMatcher instance, if there is none present
+    TString caloCutPos = cuts.GetClusterCut(i);
+    caloCutPos.Resize(1);
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      mgr->AddTask(fTrackMatcher);
+      mgr->ConnectInput(fTrackMatcher,0,cinput);
+    }
     
     analysisEventCuts[i] = new AliConvEventCuts();
 //     if ( trainConfig == 1){
@@ -455,8 +502,10 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
         
-    analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
+    analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
+    analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
@@ -483,7 +532,8 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-    task->SetUseTHnSparse(isUsingTHnSparse);
+  task->SetDoTreeInvMassShowerShape(doTreeClusterShowerShape);
+  task->SetUseTHnSparse(isUsingTHnSparse);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   
   //connect containers

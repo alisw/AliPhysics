@@ -98,6 +98,12 @@ class AliVertexingHFUtils : public TObject{
 				Int_t minMult=3, Double_t phiStepSizeDeg=0.1,
 				Int_t nTrksToSkip=0, Int_t* idToSkip=0x0);
 
+  static Double_t GetGeneratedSpherocity(TClonesArray *arrayMC,
+					 Double_t etaMin=-0.8, Double_t etaMax=0.8, 
+					 Double_t ptMin=0.15, Double_t ptMax=10.,				
+					 Int_t minMult=3, Double_t phiStepSizeDeg=0.1);
+
+
   static Double_t GetSphericity(AliAODEvent* aod, Double_t etaMin=-0.8, Double_t etaMax=0.8, 
 				Double_t ptMin=0.15, Double_t ptMax=10.,
 				Int_t filtbit1=256, Int_t filtbit2=512, 
@@ -127,6 +133,7 @@ class AliVertexingHFUtils : public TObject{
   static Int_t CheckDplusDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
   static Int_t CheckDplusKKpiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDplusKKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
   static Int_t CheckDplusK0spiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDsDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);

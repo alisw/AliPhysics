@@ -102,8 +102,13 @@
 #pragma link C++ class AliFemtoCutMonitorPionPion::Pion+;
 #pragma link C++ class AliFemtoCutMonitorPionPion::Pair+;
 
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar+;
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar::Parameters+;
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar::Builder+;
+
 #pragma link C++ class AliFemtoNSigmaFilter+;
 #pragma link C++ class AliFemtoV0TrackCutNSigmaFilter+;
+#pragma link C++ class AliFemtoXiTrackCutNSigmaFilter+;
 
 #pragma link C++ class AliFemtoCutMonitorEventPartCollSize+;
 
@@ -112,6 +117,7 @@
 #pragma link C++ class AliFemtoESDTrackCutNSigmaFilter+;
 #pragma link C++ class AliFemtoModelCorrFctnKStarFull+;
 #pragma link C++ class AliFemtoModelWeightGeneratorBasicLednicky+;
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiRM;
 
 #pragma link C++ class AliFemtoAnalysisLambdaKaon+;
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::AnalysisParams+;
@@ -120,3 +126,8 @@
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::ESDCutParams+;
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::XiCutParams+;
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::PairCutParams+;
+
+#pragma link C++ class AliFemtoCutMonitorPairKT;
+#pragma link C++ class AliFemtoPairCutMInv;
+
+#pragma link C++ class AliFemtoV0PurityBgdEstimator;

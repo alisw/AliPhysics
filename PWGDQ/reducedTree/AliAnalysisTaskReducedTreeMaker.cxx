@@ -57,6 +57,7 @@
 #include <AliAODMCParticle.h>
 #include "AliAnalysisUtils.h"
 #include <AliMultSelection.h>
+#include <AliMultEstimator.h>
 #include <AliCentrality.h>
 #include "AliDielectronVarManager.h"
 //#include "AliFlowTrackCuts.h"
@@ -87,6 +88,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(kTRUE),
+  fWriteEventsWithNoSelectedTracks(kTRUE),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -141,6 +143,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(writeTree),
+  fWriteEventsWithNoSelectedTracks(kTRUE),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -324,13 +327,14 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   FillEventInfo();
   
   // NOTE: It is important that FillV0PairInfo() is called before FillTrackInfo()
+  if(fFillMCInfo) FillMCTruthInfo();
   if(fFillV0Info && isESD) FillV0PairInfo();
   if(fFillTrackInfo) FillTrackInfo();
-  
-  // Retrieve FMD histogram
-  //
-  if(fWriteTree)
-    fTree->Fill();
+ 
+  if(fWriteTree) {
+    if(fWriteEventsWithNoSelectedTracks) fTree->Fill();
+    if(!fWriteEventsWithNoSelectedTracks && fReducedEvent->fNtracks[1]>0) fTree->Fill();
+  }
         
   // if there are candidate pairs, add the information to the reduced tree
   //if(fFillFriendInfo) PostData(3, fFriendTree);
@@ -367,6 +371,9 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     }
   }
   
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::Fill(event, values);
+  
   if(fUseAnalysisUtils) {
     if(fAnalysisUtils->IsVertexSelected2013pA(event))  // 2013 p-Pb event selection    
       fReducedEvent->fEventTag |= (ULong64_t(1)<<0);
@@ -395,7 +402,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   if(event->IsPileupFromSPD(4,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<10);
   if(event->IsPileupFromSPD(5,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<11);
   if(event->IsPileupFromSPD(6,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<12);
-    
+  
   fReducedEvent->fRunNo       = event->GetRunNumber();
   AliVVertex* eventVtx = 0x0;
   if(isESD) eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
@@ -444,6 +451,30 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   AliReducedEventInfo* eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
   if(!eventInfo) return;
   
+  if(multSelection) {
+     eventInfo->fMultiplicityEstimatorPercentiles[0] = multSelection->GetMultiplicityPercentile("OnlineV0M");
+     eventInfo->fMultiplicityEstimatorPercentiles[1] = multSelection->GetMultiplicityPercentile("OnlineV0A");
+     eventInfo->fMultiplicityEstimatorPercentiles[2] = multSelection->GetMultiplicityPercentile("OnlineV0C");
+     eventInfo->fMultiplicityEstimatorPercentiles[3] = multSelection->GetMultiplicityPercentile("ADM");
+     eventInfo->fMultiplicityEstimatorPercentiles[4] = multSelection->GetMultiplicityPercentile("ADA");
+     eventInfo->fMultiplicityEstimatorPercentiles[5] = multSelection->GetMultiplicityPercentile("ADC");
+     eventInfo->fMultiplicityEstimatorPercentiles[6] = multSelection->GetMultiplicityPercentile("SPDClusters");
+     eventInfo->fMultiplicityEstimatorPercentiles[7] = multSelection->GetMultiplicityPercentile("SPDTracklets");
+     eventInfo->fMultiplicityEstimatorPercentiles[8] = multSelection->GetMultiplicityPercentile("RefMult05");
+     eventInfo->fMultiplicityEstimatorPercentiles[9] = multSelection->GetMultiplicityPercentile("RefMult08");
+     AliMultEstimator* estimator = 0x0;
+     estimator = multSelection->GetEstimator("OnlineV0M"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("OnlineV0A"); if(estimator) eventInfo->fMultiplicityEstimators[1] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("OnlineV0C"); if(estimator) eventInfo->fMultiplicityEstimators[2] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("ADM"); if(estimator) eventInfo->fMultiplicityEstimators[3] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("ADA"); if(estimator) eventInfo->fMultiplicityEstimators[4] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("ADC"); if(estimator) eventInfo->fMultiplicityEstimators[5] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("SPDClusters"); if(estimator) eventInfo->fMultiplicityEstimators[6] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("SPDTracklets"); if(estimator) eventInfo->fMultiplicityEstimators[7] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("RefMult05"); if(estimator) eventInfo->fMultiplicityEstimators[8] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[9] = estimator->GetValue();     
+  }
+  
   AliVVertex* eventVtxSPD = 0x0;
   if(isESD) eventVtxSPD = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexSPD());
   if(isAOD) eventVtxSPD = const_cast<AliAODVertex*>(aodEvent->GetPrimaryVertexSPD());
@@ -489,11 +520,11 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   
   if(isESD) {
     eventInfo->fEventNumberInFile = esdEvent->GetEventNumberInFile();
-    eventInfo->fL0TriggerInputs = esdEvent->GetHeader()->GetL0TriggerInputs();
+    /*eventInfo->fL0TriggerInputs = esdEvent->GetHeader()->GetL0TriggerInputs();
     eventInfo->fL1TriggerInputs = esdEvent->GetHeader()->GetL1TriggerInputs();
     eventInfo->fL2TriggerInputs = esdEvent->GetHeader()->GetL2TriggerInputs();
     eventInfo->fIRIntClosestIntMap[0] = esdEvent->GetHeader()->GetIRInt1ClosestInteractionMap();
-    eventInfo->fIRIntClosestIntMap[1] = esdEvent->GetHeader()->GetIRInt2ClosestInteractionMap();
+    eventInfo->fIRIntClosestIntMap[1] = esdEvent->GetHeader()->GetIRInt2ClosestInteractionMap(); */
     eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTPC());
     if(eventVtx) {
       eventInfo->fVtxTPC[0] = ((AliESDVertex*)eventVtx)->GetX();
@@ -507,6 +538,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fNPMDtracks    = esdEvent->GetNumberOfPmdTracks();
     eventInfo->fNTRDtracks    = esdEvent->GetNumberOfTrdTracks();
     eventInfo->fNTRDtracklets = esdEvent->GetNumberOfTrdTracklets();
+    eventInfo->fNTPCclusters  = esdEvent->GetNumberOfTPCClusters();
     
     for(Int_t ilayer=0; ilayer<2; ++ilayer)
       eventInfo->fSPDFiredChips[ilayer] = esdEvent->GetMultiplicity()->GetNumberOfFiredChips(ilayer);
@@ -613,9 +645,16 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   
   if(fFillEventPlaneInfo) {
     AliReducedEventPlaneInfo* ep=new AliReducedEventPlaneInfo();     
-    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][0] = 1.0;
-    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][1] = 1.0;
-    ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPC][1] = AliReducedEventPlaneInfo::kCalibrated;
+    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][0] = values[AliDielectronVarManager::kQnTPCxH2];
+    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][1] = values[AliDielectronVarManager::kQnTPCyH2];
+    ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPC][1] = AliReducedEventPlaneInfo::kRecentered;
+    ep->fQvector[AliReducedEventPlaneInfo::kVZEROA][1][0] = values[AliDielectronVarManager::kQnV0AxH2];
+    ep->fQvector[AliReducedEventPlaneInfo::kVZEROA][1][1] = values[AliDielectronVarManager::kQnV0AyH2];
+    ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kVZEROA][1] = AliReducedEventPlaneInfo::kRecentered;
+    ep->fQvector[AliReducedEventPlaneInfo::kVZEROC][1][0] = values[AliDielectronVarManager::kQnV0CxH2];
+    ep->fQvector[AliReducedEventPlaneInfo::kVZEROC][1][1] = values[AliDielectronVarManager::kQnV0CyH2];
+    ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kVZEROC][1] = AliReducedEventPlaneInfo::kRecentered;
+    eventInfo->SetEventPlane(ep);
   }
   
   // EMCAL/PHOS clusters
@@ -755,6 +794,93 @@ Double_t AliAnalysisTaskReducedTreeMaker::Radius(Double_t eta, Double_t z){
 
 
 //_________________________________________________________________________________
+void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo() 
+{
+   //
+   // fill MC truth info
+   //
+   Bool_t hasMC = AliDielectronMC::Instance()->HasMC();
+   if(!hasMC) return;
+   
+   AliDielectronMC* mcHandler = AliDielectronMC::Instance();
+   
+   Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
+   
+   //cout << "Event+++++++++++++++++++++++++" << endl;
+   
+   for(Int_t i=0; i<nPrimary; ++i) {
+      AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
+      
+      // write J/psi's and electrons from J/psi decays
+      // TODO: Create a dynamical way to define which particles from the MC stack will be written
+      if(!particle) continue;
+      Bool_t acceptParticle = kFALSE;
+      if(particle->PdgCode()==443) acceptParticle = kTRUE;
+      if(TMath::Abs(particle->PdgCode())==411) acceptParticle = kTRUE;
+      if(TMath::Abs(particle->PdgCode())==421) acceptParticle = kTRUE;
+      if(TMath::Abs(particle->PdgCode())==431) acceptParticle = kTRUE;
+      if(TMath::Abs(particle->PdgCode())==4122) acceptParticle = kTRUE;
+      AliVParticle* mother = mcHandler->GetMCTrackFromMCEvent(particle->GetMother());
+      if(mother && mother->PdgCode()==443) acceptParticle = kTRUE;
+      if(mother && TMath::Abs(mother->PdgCode())==411) acceptParticle = kTRUE;
+      if(mother && TMath::Abs(mother->PdgCode())==421) acceptParticle = kTRUE;
+      if(mother && TMath::Abs(mother->PdgCode())==431) acceptParticle = kTRUE;
+      if(mother && TMath::Abs(mother->PdgCode())==4122) acceptParticle = kTRUE;      
+      if(!acceptParticle) continue;
+      
+      TClonesArray& tracks = *(fReducedEvent->fTracks);
+      AliReducedBaseTrack* reducedParticle=NULL;
+      if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks)
+         reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedBaseTrack();
+      if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
+         reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
+      
+      reducedParticle->PxPyPz(particle->Px(), particle->Py(), particle->Pz());
+      reducedParticle->fQualityFlags |= (ULong_t(1)<<63);               // this means that this is a pure MC track
+      
+      Int_t nDaughters = (particle->PdgCode()==443 ? particle->GetLastDaughter() - particle->GetFirstDaughter() + 1 : 0);
+      if(nDaughters==2) reducedParticle->fQualityFlags |= (ULong_t(1)<<62);    // J/psi -> e+e-
+      if(nDaughters>2) reducedParticle->fQualityFlags |= (ULong_t(1)<<61);       // J/psi -> e+e- + X 
+      
+      AliReducedTrackInfo* trackInfo = dynamic_cast<AliReducedTrackInfo*>(reducedParticle);
+      if(!trackInfo) continue;
+      
+      trackInfo->fMCLabels[0] = particle->GetLabel();
+      trackInfo->fMCPdg[0] = particle->PdgCode();
+      trackInfo->fMCMom[0] = particle->Px();
+      trackInfo->fMCMom[1] = particle->Py();
+      trackInfo->fMCMom[2] = particle->Pz();
+      
+      if(mother) {
+        trackInfo->fMCLabels[1] = mother->GetLabel();
+        trackInfo->fMCPdg[1] = mother->PdgCode();
+        if(particle->PdgCode()==443)
+          reducedParticle->fQualityFlags |= (ULong_t(1)<<60);    // secondary J/psi
+        
+        AliVParticle* grandmother = mcHandler->GetMCTrackFromMCEvent(mother->GetMother());
+        if(grandmother) {
+           trackInfo->fMCLabels[2] = grandmother->GetLabel();
+           trackInfo->fMCPdg[2] = grandmother->PdgCode();
+           
+           AliVParticle* grandgrandmother = mcHandler->GetMCTrackFromMCEvent(grandmother->GetMother());
+           if(grandgrandmother) {
+              trackInfo->fMCLabels[3] = grandgrandmother->GetLabel();
+              trackInfo->fMCPdg[3] = grandgrandmother->PdgCode();
+           }
+        }
+      }
+      
+      /*cout << "particle label/pdg/mlabel/mpdg/px/py/pz/ndaughters/first/last :: " << trackInfo->fMCLabels[0] << "/" << trackInfo->fMCPdg[0] << "/"
+        << trackInfo->fMCLabels[1] << "/" << trackInfo->fMCPdg[1] << "/" << reducedParticle->Px() << "/"
+        << reducedParticle->Py() << "/" << reducedParticle->Pz() << "/" << nDaughters << "/" << particle->GetFirstDaughter() << "/"
+        << particle->GetLastDaughter() << endl; */
+        
+      fReducedEvent->fNtracks[1] += 1;  
+   }
+}
+
+
+//_________________________________________________________________________________
 void AliAnalysisTaskReducedTreeMaker::FillTrackInfo() 
 {
   //
@@ -887,16 +1013,16 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     
     if(fFlowTrackFilter) {
        // switch on the first bit if this particle should be used for the event plane
-       if(fFlowTrackFilter->IsSelected(particle)) reducedParticle->fQualityFlags |= (UShort_t(1)<<0);
+       if(fFlowTrackFilter->IsSelected(particle)) reducedParticle->fQualityFlags |= (ULong_t(1)<<0);
     }
     for(Int_t iV0type=0;iV0type<4;++iV0type) {
-       if(usedForV0[iV0type]) reducedParticle->fQualityFlags |= (UShort_t(1)<<(iV0type+1));
-       if(usedForPureV0[iV0type]) reducedParticle->fQualityFlags |= (UShort_t(1)<<(iV0type+8));
+       if(usedForV0[iV0type]) reducedParticle->fQualityFlags |= (ULong_t(1)<<(iV0type+1));
+       if(usedForPureV0[iV0type]) reducedParticle->fQualityFlags |= (ULong_t(1)<<(iV0type+8));
     }
         
     if(isESD) {
-       for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (1<<(5+idx));
-       for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (1<<(12+idx));
+       for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(5+idx));
+       for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(12+idx));
        
        //check is track passes bayesian combined TOF+TPC pid cut
        //Bool_t goodtrack = (esdTrack->GetStatus() & AliESDtrack::kTOFout) &&
@@ -913,15 +1039,15 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             //Int_t kTPC = fAliFlowTrackCuts->GetBayesianResponse()->GetCurrentMask(0); // is TPC on
             //Float_t *probabilities = fAliFlowTrackCuts->GetBayesianResponse()->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mismatch parameterization
             Float_t *probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mismatch parameterization
-            if(probabilities[AliPID::kElectron]>0.5) reducedParticle->fQualityFlags |= (UShort_t(1)<<15);
-            if(probabilities[AliPID::kPion    ]>0.5) reducedParticle->fQualityFlags |= (UShort_t(1)<<16);
-            if(probabilities[AliPID::kKaon    ]>0.5) reducedParticle->fQualityFlags |= (UShort_t(1)<<17);
-            if(probabilities[AliPID::kProton  ]>0.5) reducedParticle->fQualityFlags |= (UShort_t(1)<<18);
+            if(probabilities[AliPID::kElectron]>0.5) reducedParticle->fQualityFlags |= (ULong_t(1)<<15);
+            if(probabilities[AliPID::kPion    ]>0.5) reducedParticle->fQualityFlags |= (ULong_t(1)<<16);
+            if(probabilities[AliPID::kKaon    ]>0.5) reducedParticle->fQualityFlags |= (ULong_t(1)<<17);
+            if(probabilities[AliPID::kProton  ]>0.5) reducedParticle->fQualityFlags |= (ULong_t(1)<<18);
           
             for(Int_t ipid=0; ipid<4; ipid++){
-               if(probabilities[pidtypes[ipid]]>0.7) reducedParticle->fQualityFlags |= (UShort_t(1)<<19);
-               if(probabilities[pidtypes[ipid]]>0.8) reducedParticle->fQualityFlags |= (UShort_t(1)<<20);
-               if(probabilities[pidtypes[ipid]]>0.9) reducedParticle->fQualityFlags |= (UShort_t(1)<<21);
+               if(probabilities[pidtypes[ipid]]>0.7) reducedParticle->fQualityFlags |= (ULong_t(1)<<19);
+               if(probabilities[pidtypes[ipid]]>0.8) reducedParticle->fQualityFlags |= (ULong_t(1)<<20);
+               if(probabilities[pidtypes[ipid]]>0.9) reducedParticle->fQualityFlags |= (ULong_t(1)<<21);
             }
           
             //reducedParticle->fBayes[0]   = probabilities[0];
@@ -932,8 +1058,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
      } */
    }
    if(isAOD) {
-      for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (1<<(5+idx));
-      for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (1<<(12+idx));
+      for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(5+idx));
+      for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(12+idx));
    }
    
    // If we want to write only AliReducedBaseTrack objects, then we stop here
@@ -975,25 +1101,29 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     trackInfo->fTPCGeomLength = values[AliDielectronVarManager::kTPCGeomLength];
         
     trackInfo->fTOFbeta      = values[AliDielectronVarManager::kTOFbeta];
-    trackInfo->fTOFtime      = values[AliDielectronVarManager::kTOFsignal]-pidResponse->GetTOFResponse().GetTimeZero();
+    //trackInfo->fTOFtime      = values[AliDielectronVarManager::kTOFsignal]-pidResponse->GetTOFResponse().GetTimeZero();
     trackInfo->fTOFmismatchProbab = values[AliDielectronVarManager::kTOFmismProb];
     trackInfo->fTOFnSig[0]   = values[AliDielectronVarManager::kTOFnSigmaEle];
     trackInfo->fTOFnSig[1]   = values[AliDielectronVarManager::kTOFnSigmaPio];
     trackInfo->fTOFnSig[2]   = values[AliDielectronVarManager::kTOFnSigmaKao];
     trackInfo->fTOFnSig[3]   = values[AliDielectronVarManager::kTOFnSigmaPro];
-   
+    
     Double_t trdProbab[AliPID::kSPECIES]={0.0};
     if(isESD) {
        trackInfo->fMassForTracking = esdTrack->GetMassForTracking();
        
        AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());
        AliESDVertex* eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
-       trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
+       if(fReducedEvent->fRunNo>245000. && fReducedEvent->fRunNo<247000.)
+         trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
        
       trackInfo->fTrackId          = (UShort_t)esdTrack->GetID();
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
 
-      trackInfo->fITSSharedClusterMap = esdTrack->GetITSSharedClusterMap();
+      //trackInfo->fITSSharedClusterMap = esdTrack->GetITSSharedClusterMap();
+      for(Int_t i=0; i<6; ++i) {
+         if(esdTrack->HasSharedPointOnITSLayer(i)) trackInfo->fITSSharedClusterMap |= (1<<i);
+      }
       
       Float_t xyDCA,zDCA;
       Double_t helixinfo[6];
@@ -1008,8 +1138,9 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         // helix information (Alex Chauvin)
         tpcInner->GetHelixParameters(helixinfo,InputEvent()->GetMagneticField());
         if(helixinfo[2] < 0) helixinfo[2] = helixinfo[2] + 2*TMath::Pi();
-        trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kNFclsTPCr]));
-        trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kNFclsTPCr]));
+        helixinfo[2] -= TMath::Pi()/2.;
+        trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
+        trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
         trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
       }
       
@@ -1042,6 +1173,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
            trackInfo->fMCLabels[0] = esdTrack->GetLabel();
            trackInfo->fMCPdg[0] = truthParticle->PdgCode();
            trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
+           if(truthParticle->PdgCode()!=-9999 && esdTrack->GetLabel()!=-9999) trackInfo->fQualityFlags |= (ULong_t(1)<<22);   // means the track has MC truth info
            
            AliMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
            if(motherTruth) {
@@ -1069,12 +1201,31 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       trackInfo->fMassForTracking = aodTrack->GetMassForTracking();
       trackInfo->fChi2TPCConstrainedVsGlobal = aodTrack->GetChi2TPCConstrainedVsGlobal(); 
       
-      trackInfo->fITSSharedClusterMap = aodTrack->GetITSSharedClusterMap();
+      //trackInfo->fITSSharedClusterMap = aodTrack->GetITSSharedClusterMap();
+      for(Int_t i=0; i<6; ++i) {
+         if(aodTrack->HasSharedPointOnITSLayer(i)) trackInfo->fITSSharedClusterMap |= (1<<i);
+      }
       
       const AliExternalTrackParam* tpcInner = aodTrack->GetInnerParam();
-      trackInfo->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
-      trackInfo->fTPCPt         = (tpcInner ? tpcInner->Pt() : 0.0);
-      trackInfo->fTPCEta        = (tpcInner ? tpcInner->Eta() : 0.0);
+      Float_t xyDCA,zDCA;
+      Double_t helixinfo[6];
+      if(tpcInner){
+        trackInfo->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
+        trackInfo->fTPCPt         = (tpcInner ? tpcInner->Pt() : 0.0);
+        trackInfo->fTPCEta        = (tpcInner ? tpcInner->Eta() : 0.0);
+      
+        aodTrack->GetImpactParametersTPC(xyDCA,zDCA);
+        trackInfo->fTPCDCA[0]     = xyDCA;
+        trackInfo->fTPCDCA[1]     = zDCA;
+      
+        // helix information (Alex Chauvin)
+        tpcInner->GetHelixParameters(helixinfo,InputEvent()->GetMagneticField());
+        if(helixinfo[2] < 0) helixinfo[2] = helixinfo[2] + 2*TMath::Pi();
+        helixinfo[2] -= TMath::Pi()/2.;
+        trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
+        trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
+        trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
+      }
       
       trackInfo->fTOFdz         = aodTrack->GetTOFsignalDz();
       trackInfo->fTOFdeltaBC = eventInfo->fBC - aodTrack->GetTOFBunchCrossing();
@@ -1101,9 +1252,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             trackInfo->fMCFreezeout[0] = truthParticle->Xv();
             trackInfo->fMCFreezeout[1] = truthParticle->Yv();
             trackInfo->fMCFreezeout[2] = truthParticle->Zv();
-            trackInfo->fMCLabels[0] = esdTrack->GetLabel();
+            trackInfo->fMCLabels[0] = aodTrack->GetLabel();
             trackInfo->fMCPdg[0] = truthParticle->PdgCode();
             trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
+            if(truthParticle->PdgCode()!=-9999 && aodTrack->GetLabel()!=-9999) trackInfo->fQualityFlags |= (ULong_t(1)<<22);
             
             AliAODMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
             if(motherTruth) {
@@ -1234,7 +1386,7 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
       goodK0sPair->fMass[1] = lambdaReducedPair->fMass[0];
       goodK0sPair->fMass[2] = alambdaReducedPair->fMass[0];
       goodK0sPair->fMass[3] = gammaReducedPair->fMass[0];
-      if(veryGoodK0s) goodK0sPair->fQualityFlags |= (UInt_t(1)<<1);
+      if(veryGoodK0s) goodK0sPair->fQualityFlags |= (ULong_t(1)<<1);
       fReducedEvent->fNV0candidates[1] += 1;
     } else {goodK0s=kFALSE;}
     if(fFillLambda && goodLambda && lambdaReducedPair->fMass[0]>fLambdaMassRange[0] && lambdaReducedPair->fMass[0]<fLambdaMassRange[1]) {
@@ -1244,7 +1396,7 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
       goodLambdaPair->fMass[1] = lambdaReducedPair->fMass[0];
       goodLambdaPair->fMass[2] = alambdaReducedPair->fMass[0];
       goodLambdaPair->fMass[3] = gammaReducedPair->fMass[0];
-      if(veryGoodLambda) goodLambdaPair->fQualityFlags |= (UInt_t(1)<<2);
+      if(veryGoodLambda) goodLambdaPair->fQualityFlags |= (ULong_t(1)<<2);
       fReducedEvent->fNV0candidates[1] += 1;
     } else {goodLambda=kFALSE;}
     if(fFillALambda && goodALambda && alambdaReducedPair->fMass[0]>fLambdaMassRange[0] && alambdaReducedPair->fMass[0]<fLambdaMassRange[1]) {
@@ -1254,7 +1406,7 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
       goodALambdaPair->fMass[1] = lambdaReducedPair->fMass[0];
       goodALambdaPair->fMass[2] = alambdaReducedPair->fMass[0];
       goodALambdaPair->fMass[3] = gammaReducedPair->fMass[0];
-      if(veryGoodALambda) goodALambdaPair->fQualityFlags |= (UInt_t(1)<<3);
+      if(veryGoodALambda) goodALambdaPair->fQualityFlags |= (ULong_t(1)<<3);
       fReducedEvent->fNV0candidates[1] += 1;
     } else {goodALambda = kFALSE;}
     //cout << "gamma mass: " << gammaReducedPair->fMass[0] << endl;
@@ -1265,7 +1417,7 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
       goodGammaPair->fMass[1] = lambdaReducedPair->fMass[0];
       goodGammaPair->fMass[2] = alambdaReducedPair->fMass[0];
       goodGammaPair->fMass[3] = gammaReducedPair->fMass[0];
-      if(veryGoodGamma) goodGammaPair->fQualityFlags |= (UInt_t(1)<<4);
+      if(veryGoodGamma) goodGammaPair->fQualityFlags |= (ULong_t(1)<<4);
       fReducedEvent->fNV0candidates[1] += 1;
     } else {goodGamma=kFALSE;}
     delete k0sReducedPair;

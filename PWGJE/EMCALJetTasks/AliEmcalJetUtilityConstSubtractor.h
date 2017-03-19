@@ -30,6 +30,7 @@ class AliEmcalJetUtilityConstSubtractor : public AliEmcalJetUtility
   void                   SetParticlesSubName(const char *n)  { fParticlesSubName = n     ; }
 
   void Init();
+  void InitEvent(AliFJWrapper& fjw);
   void Prepare(AliFJWrapper& fjw);
   void ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWrapper& fjw);
   void Terminate(AliFJWrapper& fjw);

@@ -28,7 +28,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
 		    kTopologicalStudy = 1,
 		    kTwoTrackStudy = 2};
     AliAnalysisV0Lam();
-    AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents);
+    AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents, Bool_t testNoTwoTrackCuts);
     virtual ~AliAnalysisV0Lam();
     virtual void UserCreateOutputObjects();
     virtual void Exec(Option_t *option);
@@ -69,7 +69,8 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     int    fNumberOfCfVariableCutValues; //Only different from above if doing variable avg sep cuts
     int    fVariableCutType;             //DCA, CosP, Mass... which is being varied
     int    fNominalTopCutIndex;    //Index of nominal topological cut value
-    
+
+    Bool_t fTestNoTTC;
     int    fNumberVariableAvgSepCuts;
     bool   fIsUsingVariableAvgSepCut;
     bool   fIsMCEvent;
@@ -128,14 +129,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     TH1F *fMCTruthPhiALam; //!
     TH1F *fMCTruthEtaLam; //!
     TH1F *fMCTruthEtaALam; //!
-    
-    //Pair kT Tracking
-    TH3F *fKtLamLamSig; //!
-    TH3F *fKtALamALamSig; //!
-    TH3F *fKtLamALamSig; //!
-    TH3F *fKtLamLamBkg; //!
-    TH3F *fKtALamALamBkg; //!
-    TH3F *fKtLamALamBkg; //!
+
     //Basic correlation functions
     TH3F *fSignalLamLam; //!
     TH3F *fBkgLamLam; //!
@@ -143,6 +137,21 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     TH3F *fBkgALamALam; //!
     TH3F *fSignalLamALam; //!
     TH3F *fBkgLamALam; //!
+    // kT vs k* histograms 
+    TH3F *fSignalKtVsKstarLamLam; //!
+    TH3F *fBkgKtVsKstarLamLam; //!
+    TH3F *fSignalKtVsKstarALamALam; //!
+    TH3F *fBkgKtVsKstarALamALam; //!
+    TH3F *fSignalKtVsKstarLamALam; //!
+    TH3F *fBkgKtVsKstarLamALam; //!
+    
+    //Proper decay length difference
+    TH1F *fHistSignalProperDecayLengthDiffLamLam;
+    TH1F *fHistSignalProperDecayLengthDiffALamALam;
+    TH1F *fHistSignalProperDecayLengthDiffLamALam;
+    TH1F *fHistBkgProperDecayLengthDiffLamLam;
+    TH1F *fHistBkgProperDecayLengthDiffALamALam;
+    TH1F *fHistBkgProperDecayLengthDiffLamALam;
     //Daughter separation distance
     TH3F *fSignalLamLamProtSep; //!
     TH3F *fSignalLamLamPiMinusSep; //!
@@ -195,8 +204,10 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     double CalculateKstar(TVector3 p1, TVector3 p2, double mass1, double mass2);
 
     void DoPairStudies(const AliAnalysisV0LamEvent *const event, const Int_t centralityBin);
-    void FillAvgSepHists(PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
+    void FillDecayLengthDiffHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
+    void FillAvgSepHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
     void FillCorrelationHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, const Bool_t isMixed, const Int_t cutBin, const Int_t centralityBin);
+    void FillKtVsKstarHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, const Bool_t isMixed, const Int_t centralityBin);
     vector<Bool_t> CheckAvgSepCut(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02);
     void FillMomentumResolutionMatrix(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
     bool RejectEventCentFlat(float MagField, float CentPercent);

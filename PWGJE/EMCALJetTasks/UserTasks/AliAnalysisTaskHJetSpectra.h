@@ -4,6 +4,7 @@
 
 class TH1I;
 class TH1F;
+class TF1;
 class TH2F;
 class TH2D;
 class TH1D;
@@ -27,7 +28,7 @@ class AliClusterContainer;
 #include "AliAnalysisTaskEmcalJet.h"
 
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
-// Author Filip Krizek   (5.Nov. 2015)
+// Author Filip Krizek   (17.Nov. 2016)
 
 class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    public:
@@ -42,7 +43,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   enum MyDataType {
     kReal   = 0,  // reconstructed real data 
     kPythia = 1,  // pythia simulation 
-    kHijing = 2   // hijing simulation
+    kHijing = 2,   // hijing simulation
+    kDmpjet = 3   // dmpjet simulation
   };
 
   enum MyAnalType {
@@ -122,6 +124,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   void        SetExternalRhoTaskNameMC(const char* name) {fRhoTaskNameMC = name;}
 
   void SetTT(Double_t tlr, Double_t thr,Double_t tls, Double_t ths);
+  void SetTTType(Int_t ttt){ fTTType = ttt;}
   void SetDphi(Double_t dphi){ fDphiCut = TMath::Pi() - dphi;} 
   void SetDoubleBinPrecision(Bool_t db){ fUseDoubleBinPrecision = db;} 
 
@@ -153,7 +156,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   Bool_t      IsEventInAcceptance(AliVEvent* event);     
   Bool_t      IsMCEventInAcceptance(AliVEvent* event);   
   Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet, Bool_t suppressGhost=1); 
-  
+  Bool_t      IsStrange(Int_t ip); //Check particle strangeness
 
    Double_t RelativePhi(Double_t mphi,Double_t vphi); 
    Double_t EstimateBgCone(AliJetContainer *jetCont, AliParticleContainer *trkArray, AliVParticle* triggerHadron, Bool_t isGen=kFALSE);   
@@ -205,6 +208,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
   Double_t            fTTlow[kTT];  //gc trigger particles TT bin lower boundary
   Double_t            fTThigh[kTT]; //gc trigger particles TT bin upper boundary
+  Int_t               fTTType;     // 0=TT selection unscaled, 1=TT scaled according to MB
   Double_t            fDphiCut; //minimal azimuthal angle between trigger and assoc jet 
   Bool_t              fUseDoubleBinPrecision; //use double bin precision
 
@@ -217,21 +221,21 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D               *fHJetSpec[kCAll][kTT][kRho];//!  TT associated spectrum of jets
    TH2D               *fHJetSpecGen[kCAll][kTT][kRho];//!TT associated spectrum of jets
 
-   TH1F    *fhRhoTT[kCAll][kTT][kRho-1]; //! gc X=rho from perp cone, Y=centrality
-   TH1F    *fhRhoIncl[kCAll][kRho-1]; //! gc X=rho from perp cone, Y=centrality
+   TH1F    *fhRhoTT[kCAll][kTT][kRho]; //! gc X=rho from perp cone, Y=centrality
+   TH1F    *fhRhoIncl[kCAll][kRho]; //! gc X=rho from perp cone, Y=centrality
  
-   TH1F    *fARhoTT[kCAll][kTT][kRho-1]; //! jet area times rho from perp cone
+   TH1F    *fARhoTT[kCAll][kTT][kRho]; //! jet area times rho from perp cone
    //TH1F    *fARhoTTGen[kRho-1]; //! #### jet area times rho from perp cone
 
-   TH1D    *fhDeltaPt[kCAll][kTT][kRho-1]; //!  delta pT 
-   TH1D    *fhDeltaPtEmb[kCAll][kTT][kRho-1]; //! embedded delta pT 
-   TH2D    *fhDeltaPtEmb2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet 
-   TH1D    *fhDeltaPtEmbPerp[kCAll][kTT][kRho-1]; //! embedded delta pT (emb track is perp to TT)
-   TH2D    *fhDeltaPtEmbPerp2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
-   TH1D    *fhDeltaPtEmbBc2Bc[kCAll][kTT][kRho-1]; //! embedded delta pT (emb track is back-to-back in azimuth to TT)
-   TH2D    *fhDeltaPtEmbBc2Bc2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is backtoback in azimtuh w.r.t to TT)
+   TH1D    *fhDeltaPt[kCAll][kTT][kRho]; //!  delta pT 
+   TH1D    *fhDeltaPtEmb[kCAll][kTT][kRho]; //! embedded delta pT 
+   TH2D    *fhDeltaPtEmb2D[kCAll][kTT][kRho]; //! embedded delta pT versus pT of the embedded jet 
+   TH1D    *fhDeltaPtEmbPerp[kCAll][kTT][kRho]; //! embedded delta pT (emb track is perp to TT)
+   TH2D    *fhDeltaPtEmbPerp2D[kCAll][kTT][kRho]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
+   TH1D    *fhDeltaPtEmbBc2Bc[kCAll][kTT][kRho]; //! embedded delta pT (emb track is back-to-back in azimuth to TT)
+   TH2D    *fhDeltaPtEmbBc2Bc2D[kCAll][kTT][kRho]; //! embedded delta pT versus pT of the embedded jet (emb track is backtoback in azimtuh w.r.t to TT)
 
-   TH1D    *fhDeltaPtIncl[kCAll][kRho-1]; //!  delta pT from RndCone using rho from perp cone inclusive event
+   TH1D    *fhDeltaPtIncl[kCAll][kRho]; //!  delta pT from RndCone using rho from perp cone inclusive event
 
    TH2F    *fhKTAreaPt;//!KT jets area versus PT
 
@@ -244,12 +248,21 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1F     *fhTrackPt[kCAll]; //! gc X=centrality; Y= track pT
    TH1F     *fhTrackPtGen[kCAll]; //!   gc X=centrality; Y= track pT
    TH1F     *fhVertexZ;  //! gc vertexZ inclusive
+   TH1F     *fhVertexXAccept; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexYAccept; //! gc vertexZ accepted after vtx cut
    TH1F     *fhVertexZAccept; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexXAcceptTT; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexYAcceptTT; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexZAcceptTT; //! gc vertexZ accepted after vtx cut
    TH1F     *fhVertexZMC;  //! gc vertexZ inclusive in MC
    TH1F     *fhVertexZAcceptMC; //! gc vertexZ accepted after vtx cut in MC
    TH2F     *fhDphiTriggerJet[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
    TH2F     *fhDphiTriggerJetGen[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
    TH1F     *fhDphiTriggerJetAccept; //!Dphi of accepted jets after dphi cut
+   TH1F     *fhDphiTTTT[kTT]; //!Dphi between multiple trigger tracks
+
+   TH2F     *fhJetPhiIncl;//!minimum bias phi inclusive
+   TH2F     *fhJetEtaIncl;//!minimum bias eta inclusive
 
    TH1F     *fhCentrality[kCAll];     //! centrality 
    TH1F     *fhCentralityTT[kTT];  //! centrality V0 multiplicity A+C when TT is present
@@ -277,18 +290,37 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1D*         fhImpactParameter[kCAll]; //! impact parameter distribution hijing
    TH1D*         fhImpactParameterTT[kCAll][kTT]; //! impact parameter distribution hijing versus TT
 
-   TH1D*  fhJetPtGen[kCAll][kRho];
-   TH2D*  fhJetPtGenVsJetPtRec[kCAll][kRho];
-   TH2D*  fhJetPtResolutionVsPtGen[kCAll][kRho];
-   TH2D*  fhPtTrkTruePrimRec[kCAll]; // pt spectrum of true reconstructed primary tracks    
-   TH2D*  fhPtTrkTruePrimGen[kCAll]; // pt spectrum of true generated primary track    
-   TH2D*  fhPtTrkSecOrFakeRec[kCAll]; // pt spectrum of reconstructed fake or secondary tracks    
+   TH1D*  fhJetPtGen[kCAll][kRho]; //! pt distribution of generator level jets
+   TH2D*  fhJetPtGenVsJetPtRec[kCAll][kRho]; //! pt jet gen level vs pT jet rec level
+   TH2D*  fhJetPtResolutionVsPtGen[kCAll][kRho]; //! pt jet resolution
+   TH2D*  fhPtTrkTruePrimRec[kCAll]; //! pt spectrum of true reconstructed primary tracks    
+   TH2D*  fhPtTrkTruePrimGen[kCAll]; //! pt spectrum of true generated primary track    
+   TH2D*  fhPtTrkSecOrFakeRec[kCAll]; //! pt spectrum of reconstructed fake or secondary tracks    
+   TH2D*  fhPtJetPrimVsPtJetRec[21]; //! pt spectrum of reconstructed jets without  fake track pT vs reconstructed jet pT  
+   TH2D*  fhDiffPtVsPtTrackTrue; //! track Y= rec pt - true pt   X= true track pT  
 
+   TH2D*  fhInvPtQVsPhi[2];   //! q*1/pT  versus phi
+   TH2D*  fhInvPtQVsEta[2];   //! q*1/pT  versus eta
+   TH2D*  fhInvPtQVsPhiASide[2];   //! q*1/pT  versus eta
+   TH2D*  fhInvPtQVsPhiCSide[2];   //! q*1/pT  versus eta
+   TH2D*  fhSigmaPtOverPtVsPt[2]; //!
+   TH2F  *fhTrackPhiCG; //! hybrid constrained global track phi vs track pT
+   TH2F  *fhTrackPhiTPCG; //! hybrid TPC constrained track phi vs track pT
+   
+   TH2D*  fhDCAinXVsPt;   //! X DCA versus pT 
+   TH2D*  fhDCAinYVsPt;   //! Y DCA versus pT 
+   TH2D*  fhDCAinXVsPtStrange;   //! X DCA versus pT of strange tracks
+   TH2D*  fhDCAinYVsPtStrange;   //! Y DCA versus pT of strange tracks
+   TH2D*  fhDCAinXVsPtNonStrange;   //! X DCA versus pT of non strange tracks
+   TH2D*  fhDCAinYVsPtNonStrange;   //! Y DCA versus pT of non strange tracks 
  
+
    TArrayD  fRhoRec[kTT];   // labels of particles on reconstructed track level
    TArrayD  fRhoMC[kTT];   // labels of particles on reconstructed track level
    TArrayD  fCentralityBins; //bin boaders
 
+   TF1 *fTrackPtRef;  //inclusive track pt spectrum 6-7 GeV
+   TF1 *fTrackPtSig;  //inclusive track pt spectrum 12-50 GeV
 
    Int_t  fNofRandomCones; // the number of random cones per event
  
@@ -301,13 +333,14 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    Int_t ficb[2];  //centrality bin 0=MB 1=CENT bin
    Double_t ftmpArray[2]; //tmp array
    Double_t ftmpArrayX[3]; //tmp array
+   Double_t fVtxArray[3]; //tmp array vx,vy,vz
    TArrayF fpyVtx;   //primaru vertex
    Double_t frhovec[999]; //auxiliary array to store pT/A of kT jets
 
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 17); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 24); // Charged jet analysis for pA
 
 };
 #endif
