@@ -52,6 +52,7 @@ public:
     //Signal extraction: smooth functions
     void SetMassMeanFunction  (TF1 *fMeanFunc ) { fF1Mean  = fMeanFunc;  }
     void SetMassSigmaFunction (TF1 *fSigmaFunc) { fF1Sigma = fSigmaFunc; }
+    void SetStandardMassFunctionsPbPb2015(); 
     
     void SetVerbose     ( Bool_t lVerb = kTRUE ) { lVerbose = lVerb; }
     void SetDoOnlyData  ( Bool_t lDoOnlyDataRec = kTRUE ) { lDoOnlyData = lDoOnlyDataRec; }

@@ -172,6 +172,27 @@ void AliStrangenessModule::SetVariableSigExtTech ( Long_t lRecNPtBins, TString *
 }
 
 //________________________________________________________________
+void AliStrangenessModule::SetStandardMassFunctionsPbPb2015 () {
+    if (lVerbose ) cout<<"Setting up standard mass / mean functions for PbPb 2015 data"<<endl;
+    
+    TF1 *fMeanFit = new TF1("fMeanFit", "[0]+[1]*TMath::Exp(-[2]*x)+[3]*TMath::Exp(-[4]*x)",0,10);
+    fMeanFit->SetParameter(0, 1.32510e+00);
+    fMeanFit->SetParameter(1, -3.41173e-03);
+    fMeanFit->SetParameter(2, 8.92321e-02);
+    fMeanFit->SetParameter(3, -3.30786e-03);
+    fMeanFit->SetParameter(4, 2.62183e+00);
+    
+    TF1 *fSigmaFit = new TF1("fSigmaFit", "[0]+[1]*x+[2]*TMath::Exp(-[3]*x)",0,10);
+    fSigmaFit->SetParameter(0, 1.40024e-03);
+    fSigmaFit->SetParameter(1, 3.52738e-04);
+    fSigmaFit->SetParameter(2, 2.20490e-03);
+    fSigmaFit->SetParameter(3, 1.83156e+00);
+    
+    SetMassMeanFunction(fMeanFit);
+    SetMassSigmaFunction(fSigmaFit);
+}
+
+//________________________________________________________________
 TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputFile ){
     //Main analysis code
     

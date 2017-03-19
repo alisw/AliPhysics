@@ -2259,6 +2259,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::SetupStandardVertexing()
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::SetupLooseVertexing()
+//Meant to store standard re-vertexing configuration
+{
+    //Tell the task to re-run vertexers
+    SetRunVertexers(kTRUE);
+    SetDoV0Refit(kTRUE);
+    
+    //V0-Related topological selections
+    SetV0VertexerDCAFirstToPV(0.05);
+    SetV0VertexerDCASecondtoPV(0.05);
+    SetV0VertexerDCAV0Daughters(1.20);
+    SetV0VertexerCosinePA(0.95);
+    SetV0VertexerMinRadius(0.9);
+    SetV0VertexerMaxRadius(200);
+    
+    //Cascade-Related topological selections
+    SetCascVertexerMinV0ImpactParameter(0.05);
+    SetCascVertexerV0MassWindow(0.006);
+    SetCascVertexerDCABachToPV(0.02);
+    SetCascVertexerDCACascadeDaughters(1.2);
+    SetCascVertexerCascadeMinRadius(.8);
+    SetCascVertexerCascadeCosinePA(.95);
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQAV0(Int_t lRecNumberOfSteps)
 //Add all configurations to do QA of topological variables for the V0 analysis
 {
@@ -2537,7 +2562,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
     }
     //________________________________________________________
     // Variable 4: V0 CosPA
-    Float_t lMinV0CosPA = 0.98;
+    Float_t lMinV0CosPA = fV0VertexerSels[4];
     Float_t lMaxV0CosPA = 1.00;
     Double_t lV0CosPAVals[lNumberOfSteps];
     Double_t lMinV0PA = 0.0;
@@ -2619,7 +2644,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
     }
     //________________________________________________________
     // Variable 10: Cascade CosPA
-    Float_t lMinCascCosPA = 0.98;
+    Float_t lMinCascCosPA = fCascadeVertexerSels[5];
     Float_t lMaxCascCosPA = 1.00;
     Double_t lCascCosPAVals[lNumberOfSteps];
     Double_t lMinCascPA = 0.0;

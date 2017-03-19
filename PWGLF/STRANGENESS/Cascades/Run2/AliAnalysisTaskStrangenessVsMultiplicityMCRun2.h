@@ -170,6 +170,7 @@ public:
     //Functions for analysis Bookkeepinp
     // 1- Configure standard vertexing
     void SetupStandardVertexing();
+    void SetupLooseVertexing();
     // 2- Standard Topological Selection QA Sweeps
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
     void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
