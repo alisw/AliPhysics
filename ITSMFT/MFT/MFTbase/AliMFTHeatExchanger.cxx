@@ -103,10 +103,10 @@ void AliMFTHeatExchanger::CreateManyfold(Int_t disk){
   
   Double_t deltay = 0.2;  // shift respect to the median plan of the MFT
   Double_t mfX = 2.2;     // width
-  Double_t mfY = 6.8;     // height
-  Double_t mfZ = 1.7;     // thickness
+  Double_t mfY = 6.8-0.1;     // height, decrease to avoid overlap with support, to be solved, fm
+  Double_t mfZ = 1.7-0.85;     // thickness, decrease to avoid overlap with support, to be solved, fm
   Double_t fShift=0;
-  if(disk==3 || disk==4)fShift=0.015; // to avoid overlap with the 2 curved water pipes on the 2 upstream chambers
+  if(disk==3 || disk==4)fShift=0.015; // to avoid overlap with the 2 curved water pipes on the 2 upstream chambers, fm
 
   TGeoMedium *kMedPeek    = gGeoManager->GetMedium("MFT_PEEK$");
   

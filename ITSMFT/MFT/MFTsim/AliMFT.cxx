@@ -230,8 +230,9 @@ void AliMFT::CreateMaterials() {
   Float_t aRohacell[nRohacell] = {1.00794, 12.0107, 15.9994};
   Float_t zRohacell[nRohacell] = {1., 6., 8.};
   Float_t wRohacell[nRohacell] = {0.0858, 0.5964, 0.3178};
-  Float_t dRohacell = 0.032;  // 0.032 g/cm3 rohacell 31, 0.075 g/cm3 rohacell 71;
-  
+  //Float_t dRohacell = 0.032;  // 0.032 g/cm3 rohacell 31, 0.075 g/cm3 rohacell 71;
+  Float_t dRohacell = 0.032/(1-0.3134);  // the density is increased since the water pipes are not inside the rohacell in the code ==> thickness decreased by 31.34%
+ 
   // Polyimide pipe mixture
   const Int_t nPolyimide = 4;
   Float_t aPolyimide[nPolyimide] = {1.00794, 12.0107, 14.0067, 15.9994};
@@ -293,11 +294,13 @@ void AliMFT::CreateMaterials() {
   Int_t    fieldType        = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();     // Field type
   Double_t maxField         = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();     // Field max.
   
-  AliMixture(kAir,"Air$", aAir, zAir, dAir, nAir, wAir);
+  AliMixture(++matId,"Air$", aAir, zAir, dAir, nAir, wAir);
+  //AliMixture(kAir,"Air$", aAir, zAir, dAir, nAir, wAir);
   AliMedium(kAir,    "Air$", kAir, unsens, fieldType, maxField, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //     Vacuum
-  AliMixture(kVacuum, "Vacuum$", aAir, zAir, dAirVacuum, nAir, wAir);
+  AliMixture(++matId, "Vacuum$", aAir, zAir, dAirVacuum, nAir, wAir);
+  //AliMixture(kVacuum, "Vacuum$", aAir, zAir, dAirVacuum, nAir, wAir);
   AliMedium(kVacuum,  "Vacuum$", kVacuum, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
 
   AliMaterial(++matId, "Si$", aSi, zSi, dSi, radSi, absSi);
@@ -324,9 +327,8 @@ void AliMFT::CreateMaterials() {
   maxStepSize      = .01;
   precision        = .003;
   minStepSize      = .003;
-  AliMaterial(matId, "Carbon$", aCarb, zCarb, dCarb, radCarb, absCarb);
-  AliMedium(kCarbon, "Carbon$", matId,0,fieldType,maxField,maxBending,
-            maxStepSize,maxEnergyLoss,precision,minStepSize);
+  AliMaterial(++matId, "Carbon$", aCarb, zCarb, dCarb, radCarb, absCarb);
+  AliMedium(kCarbon, "Carbon$", matId,0,fieldType,maxField,maxBending,maxStepSize,maxEnergyLoss,precision,minStepSize);
 
   //  AliMaterial(++matId, "Carbon$", aCarb, zCarb, dCarb, radCarb, absCarb );
 //  AliMedium(kCarbon,   "Carbon$", matId, unsens, fieldType,  maxField, tmaxfd, stemax, deemax, epsil, stmin);
