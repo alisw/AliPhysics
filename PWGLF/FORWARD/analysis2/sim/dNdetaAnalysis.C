@@ -1,3 +1,5 @@
+#ifndef DNDETAANALYSIS_C
+#define DNDETAANALYSIS_C
 #ifndef __CINT__
 # include <TH1.h>
 # include <TH2.h>
@@ -8,6 +10,7 @@
 #else
 class TH1;
 class TParticle;
+class TMap;
 #endif
 #include "FastAnalysis.C"
 #include "FastCentHelper.C"
@@ -43,6 +46,10 @@ namespace dNdeta {
       eta->SetDirectory(0);
     
       return eta;
+    }
+    static TObject* CreateOutput()
+    {
+      return CreatedNdeta();
     }
     /** 
      * Called on each slave at start of processing
@@ -187,7 +194,9 @@ namespace dNdeta {
      */  
     INELGt0(Bool_t verbose=false, Int_t monitor=0)
       : Base(verbose,monitor)
-    {}
+    {
+      SetTrigger("INEL>0");
+    }
     /** 
      * Process the header.  
      * 
@@ -201,6 +210,36 @@ namespace dNdeta {
     ClassDef(INELGt0,1);
   };
 
+  //====================================================================
+  /**
+   * Processes V0AND events and build the @f$ 1/N dN_{ch}/d\eta@f$ 
+   * 
+   */
+  struct V0AND : public Base
+  {
+    /** 
+     * Constructor 
+     * 
+     * @param verbose  Whether to be verbose 
+     * @param monitor  Frequency 
+     */  
+    V0AND(Bool_t verbose=false, Int_t monitor=0)
+      : Base(verbose,monitor)
+    {
+      SetTrigger("V0AND");
+    }
+    /** 
+     * Process the header.  
+     * 
+     * @return Always true - by definition INEL is all events. 
+     */
+    virtual Bool_t ProcessHeader()
+    {
+      return CheckTrigger();
+    }
+    ClassDef(V0AND,1);
+  };
+  
   //====================================================================
   struct Cent : public Base 
   {
@@ -220,6 +259,7 @@ namespace dNdeta {
 	fMinEvents(100),
 	fCentBin(0)	
     {
+      fTrigMask = 0x0;
       fCentMethod = fHelper.fCentMeth;
     }
     /** 
@@ -240,7 +280,7 @@ namespace dNdeta {
       fdNdeta->SetName("cache");
       fdNdeta->SetTitle("Cache");
 
-      fHelper.CreateHistos(fOutput, Base::CreatedNdeta);
+      fHelper.CreateHistos(fOutput, Base::CreateOutput);
       fOutput->ls();
     }
     virtual Bool_t SetupEstimator()
@@ -266,6 +306,7 @@ namespace dNdeta {
      */
     virtual Bool_t ProcessHeader()
     {
+      if (!CheckTrigger()) return false;
       Double_t cent = GetCentrality();
       fCentBin      = fHelper.CheckCentrality(cent,
 					      fEventMult,
@@ -332,9 +373,21 @@ namespace dNdeta {
 	return;
       }
 
-      if (!fHelper.Finalize(fOutput, fMinEvents))
+      if (!fHelper.Finalize(fOutput, fMinEvents, Cent::Normalize))
 	SetStatus(-1);
     }
+    static TH1* Normalize(TObject* o, Int_t n)
+    {
+      if (!o->IsA()->InheritsFrom(TH1::Class())) return 0;
+      TH1*  h = static_cast<TH1*>(o);
+      Int_t m = h->GetBinContent(0);
+      if (m != n) 
+	::Warning("Normalize", "Different event count here:%d helper:%d",m,n);
+      h->SetBinContent(0,0);
+      h->Scale(1. / n, "width");
+      return h;
+    }
+      
     /** 
      * Get the list of monitored objects 
      * 
@@ -353,6 +406,12 @@ namespace dNdeta {
       ret->Add(m3);
     
       return ret;
+    }
+    void Print(Option_t* option="") const
+    {
+      Base::Print(option);
+      Printf(" Least # events:        %d", fMinEvents);
+      fHelper.Print(option);
     }
     ClassDef(Cent,1);
   };
@@ -408,12 +467,14 @@ struct dNdetaMaker : public FastAnalysis::Maker
   FastAnalysis*  Make(const TString& subtype,
 		      Int_t          monitor,
 		      Bool_t         verbose,
-		      TString&       uopt)
+		      TMap&          uopt)
   {
+    FastAnalysis* ret = 0;
     TString t(subtype);
-    if      (t.EqualTo("INEL"))    return new dNdeta::INEL(verbose,monitor);
-    else if (t.EqualTo("NSD"))     return new dNdeta::NSD(verbose,monitor);
-    else if (t.EqualTo("INELGt0")) return new dNdeta::INELGt0(verbose,monitor);
+    if      (t.EqualTo("INEL"))    ret = new dNdeta::INEL   (verbose,monitor);
+    else if (t.EqualTo("NSD"))     ret = new dNdeta::NSD    (verbose,monitor);
+    else if (t.EqualTo("INELGt0")) ret = new dNdeta::INELGt0(verbose,monitor);
+    else if (t.EqualTo("V0AND"))   ret = new dNdeta::V0AND  (verbose,monitor);
     else if (t.BeginsWith("MULT") || t.BeginsWith("CENT")) {
       TString w(t(4, t.Length()-4));
       if (!(w.BeginsWith("RefMult") ||
@@ -431,12 +492,18 @@ struct dNdetaMaker : public FastAnalysis::Maker
 	return 0;
       }
       if (t.BeginsWith("MULT"))
-	return new dNdeta::Mult(w, verbose, monitor);
+	ret = new dNdeta::Mult(w, verbose, monitor);
       else
-	return new dNdeta::Cent(w, verbose, monitor);
+	ret = new dNdeta::Cent(w, verbose, monitor);
     }
-    Printf("Error: dNdetaMaker::Run: Invalid spec: %s", t.Data());
-    return 0;
+    
+    if (ret) {
+      TPair* tp = static_cast<TPair*>(uopt.FindObject("trig"));
+      if( tp) ret->SetTrigger(tp->Value()->GetName());
+    }
+    else 
+      Printf("Error: dNdetaMaker::Run: Invalid spec: %s", t.Data());
+    return ret;
   }
   /** 
    * Show list of possible sub-types
@@ -447,6 +514,7 @@ struct dNdetaMaker : public FastAnalysis::Maker
     Printf(" INEL            - inelastic");
     Printf(" INELGt0         - inelastic with at least 1 particle in |eta|<1");
     Printf(" NSD             - Non-single diffractive");
+    Printf(" V0AND           - Visible X-section");
     Printf(" CENT<est>       - Centrality classes. <est> is one of ");
     Printf("  ZNA            - ZNA signal");
     Printf("  ZNC            - ZNC signal");
@@ -470,7 +538,7 @@ dNdetaMaker* _dNdetaMaker = new dNdetaMaker;
 #pragma link C++ nestedclasses;
 #pragma link C++ namespace dNdeta;
 #endif
-
+#endif
 //
 // EOF
 //

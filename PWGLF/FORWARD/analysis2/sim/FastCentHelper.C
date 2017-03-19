@@ -10,6 +10,7 @@
 # include <THStack.h>
 # include <TClass.h>
 # include <TStyle.h>
+# include <TProfile.h>
 #else
 class TAxis;
 class TString;
@@ -19,6 +20,7 @@ class TH2;
 class TCollection;
 class TClass;
 class TH1D;
+class TArrayI;
 #endif
 
 struct FastCentHelper
@@ -32,16 +34,18 @@ struct FastCentHelper
   TH2*         fCentNPart; //!
   TH2*         fCentNBin; //!
   TH2*         fCentB; //!
+  TArrayI      fMapping; //!
   FastCentHelper(const char* method)
     : fCentAxis(0),
-      fCentMeth(""),
+      fCentMeth(method),
       fCentList(0),
       fCentAll(0),
       fCentAcc(0),
       fCentMult(0),
       fCentNPart(0),
       fCentNBin(0),
-      fCentB(0)
+      fCentB(0),
+      fMapping(0)
   {
     TString    axis("default");
     TString    meth(method);
@@ -172,6 +176,11 @@ struct FastCentHelper
 		Int_t(low),  Int_t(100*low) %100,
 		Int_t(high), Int_t(100*high)%100);
   }
+  virtual const char* HistName(Int_t i) const
+  {
+    if (!fCentAxis) return "?";
+    return HistName(fCentAxis->GetBinLowEdge(i), fCentAxis->GetBinUpEdge(i));
+  }
   /** 
    * Get the histogram title
    * 
@@ -201,17 +210,40 @@ struct FastCentHelper
    * @param low  Low edge of our bin
    * @param high High edge of our bin 
    */
-  void ModHist(TH1* h, Double_t low, Double_t high)
+  void ModHist(TObject* o, Double_t low, Double_t high, Int_t lvl=0)
   {
+    if (!o) return;
+    if (lvl == 0) {
+      Printf("Base level, setting names on %p", o);
+      if (o->IsA()->InheritsFrom(TNamed::Class())) {
+	TNamed* n = static_cast<TNamed*>(o);
+	n->SetName(HistName(low, high));
+	n->SetTitle(HistTitle(low, high));
+      }
+    }
+    if (o->IsA()->InheritsFrom(TCollection::Class())) {
+      Printf("Got a collection, will loop on that");
+      TCollection* c = static_cast<TCollection*>(o);
+      c->SetName(HistName(low, high));
+
+      TObject* oo = 0;
+      TIter    next(c);
+      while ((oo = next())) ModHist(oo, low, high, lvl+1);
+      return;
+    }
     Color_t col = GetCentralityColor(low, high);
-    h->SetLineColor(col);
-    h->SetLineStyle(1);
-    h->SetMarkerColor(col);
-    h->SetMarkerStyle(24);
-    h->SetFillColor(kWhite);
-    h->SetFillStyle(0);
-    h->SetName(HistName(low, high));
-    h->SetTitle(HistTitle(low, high));
+    if (o->IsA()->InheritsFrom(TH1::Class())) {
+      Printf("Got a histogram, will modify that");
+      TH1* h = static_cast<TH1*>(o);
+      h->SetLineColor(col);
+      h->SetLineStyle(1);
+      h->SetMarkerColor(col);
+      h->SetMarkerStyle(24);
+      h->SetFillColor(kWhite);
+      h->SetFillStyle(0);
+      h->SetMinimum(0);
+      h->Sumw2();
+    }
   }
   /** 
    * Create histograms 
@@ -219,7 +251,7 @@ struct FastCentHelper
    * @param output 
    * @param callback Call back to create histograms
    */
-  void CreateHistos(TCollection* output, TH1D* (*callback)())
+  void CreateHistos(TCollection* output, TObject* (*callback)())
   {
     // Create our stack 
     // fCentStack = new THStack("stack", "Stack of all dN_{ch}/d#eta");
@@ -228,34 +260,37 @@ struct FastCentHelper
     for (Int_t i = 1; i <= fCentAxis->GetNbins(); i++) {
       Double_t low  = fCentAxis->GetBinLowEdge(i);
       Double_t high = fCentAxis->GetBinUpEdge(i);
-      TH1*     hist = (*callback)();
-      ModHist(hist, low, high);
-      hist->SetMinimum(0);
-      hist->Sumw2();
-      fCentList->Add(hist);
+      Printf("Calling call-back for %5.1f-%5.1f%%", low, high);
+      TObject* obj  = (*callback)();
+      Printf("Got call back return %p", obj);
+      ModHist(obj, low, high);
+      Printf("Now adding %s (%s)to centrality list",
+	     obj->GetName(), obj->ClassName());
+      fCentList->Add(obj);
     }
     if (fCentMeth.BeginsWith("RefMult")) {
       // Create null-bin 
-      TH1* first = (*callback)();
+      TObject* first = (*callback)();
       ModHist(first, 0, 0);
       fCentList->AddFirst(first);
 
       // Create overflow-bin
-      TH1* last = (*callback)();
+      TObject* last = (*callback)();
       ModHist(last, 100, 100);
       fCentList->AddLast(last);
     }      
     output->Add(fCentList);
+    // output->ls();
 
     if (fCentAxis->GetXbins()->GetArray()) 
       fCentAll = new TH1D("cent", "All Centralities",
-			   fCentAxis->GetNbins(),
-			   fCentAxis->GetXbins()->GetArray());
+			  fCentAxis->GetNbins(),
+			  fCentAxis->GetXbins()->GetArray());
     else
       fCentAll = new TH1D("cent", "All Centralities",
-			   fCentAxis->GetNbins(),
-			   fCentAxis->GetXmin(),
-			   fCentAxis->GetXmax());
+			  fCentAxis->GetNbins(),
+			  fCentAxis->GetXmin(),
+			  fCentAxis->GetXmax());
     fCentAll->SetXTitle("Centrality [%]");
     fCentAll->SetYTitle("Events");
     fCentAll->SetFillColor(kRed+2);
@@ -275,6 +310,8 @@ struct FastCentHelper
     fCentAcc->SetDirectory(0);
     output->Add(fCentAcc);
     // output->ls();
+
+    Printf("End of create outputs");
   }
   /** 
    * Create diagnostics histograms 
@@ -290,7 +327,7 @@ struct FastCentHelper
     fCentNPart = 0;
     fCentNBin  = 0;
     Int_t maxNPart = 2*210;
-    Int_t maxNBin  = 3*210;
+    Int_t maxNBin  = 7*210;
     if (fCentAxis->GetXbins()->GetArray()) {
       fCentNPart = new TH2D("centNPart", "Centrality vs. N_{part}",
 			    fCentAxis->GetNbins(), 
@@ -401,6 +438,77 @@ struct FastCentHelper
     return ret;
   }
   /** 
+   * Get the object associated with the centrality bin @a bin in the
+   * range from 1 to the number of bins defined.
+   * 
+   * @param bin Bin number 
+   * @param cls Optional class to check the object against 
+   * 
+   * @return Object if found (and optionally of the right class), null
+   * otherwise
+   */
+  TObject* CentObject(Int_t bin, TClass* cls=0) const
+  {
+    if (!fCentList) {
+      Warning("CentObject", "No centrality objects defined");
+      return 0;
+    }
+    if (fMapping.GetArray()) {
+      if (bin >= fMapping.GetSize()) {
+	Warning("CentObject", "Bin # %2d out of range [%2d,%2d]",
+		bin, 1, fMapping.GetSize());
+	return 0;
+      }
+      Int_t old = bin;
+      bin = fMapping[old];
+      // Info("CentObject", "Mapped bin %d to index %d", old, bin);
+    }
+    if (bin <= 0 || bin > fCentList->GetEntries()) {
+      if (!fMapping.GetArray()) 
+	Warning("CentObject", "Bin # %2d out of range [%2d,%2d]",
+		bin, 1, fCentList->GetEntries());
+      return 0;
+    }
+    TObject* o = fCentList->At(bin-1);
+    if (!o) {
+      Warning("CentObject", "No centrality object defined for bin %d", bin);
+      return 0;
+    }
+    if (cls && !o->IsA()->InheritsFrom(cls)) {
+      Warning("CentObject", "Centrality object %s is not a %s, but a %s",
+	      o->GetName(), cls->GetName(), o->ClassName());
+      return 0;
+    }
+    return o;
+  }
+  /** 
+   * Get the histogram associated with the centrality bin @a bin in
+   * the range from 1 to the number of bins defined.
+   * 
+   * @param bin Bin number 
+   * 
+   * @return Histogram if found (and of the right class), null
+   * otherwise
+   */
+  TH1* CentHist(Int_t bin) const
+  {
+    return static_cast<TH1*>(CentObject(bin,TH1::Class()));
+  }
+  /** 
+   * Get the collection associated with the centrality bin @a bin in
+   * the range from 1 to the number of bins defined.
+   * 
+   * @param bin Bin number 
+   * 
+   * @return Collection if found (and of the right class), null
+   * otherwise
+   */
+  TCollection* CentCollection(Int_t bin) const
+  {
+    return static_cast<TCollection*>(CentObject(bin,TCollection::Class()));
+  }
+    
+  /** 
    * Get an object from the output list, possibly checking the type 
    * 
    * @param output Container 
@@ -424,19 +532,32 @@ struct FastCentHelper
     }
     return o;
   }
-  Bool_t Finalize(TCollection* output, Long_t minEvents)
+  TH2*   Get2DDiag(TCollection* output,
+		   const char*  name,
+		   Bool_t       projX) 
+  {
+    TH2* h = static_cast<TH2*>(GetOutputObject(output, name, TH2::Class()));
+    if (!h) return 0;
+    TProfile* p = (projX ?
+		   h->ProfileX(Form("%sMean", name)) :
+		   h->ProfileY(Form("%sMean", name)));
+    p->SetDirectory(0);
+    output->Add(p);
+    
+    return h;
+  }
+  Bool_t Finalize(TCollection* output, Long_t minEvents,
+		  TH1* (*callback)(TObject*,Int_t))
   {
     
     fCentAll   = static_cast<TH1*>(GetOutputObject(output, "cent",
 						   TH1::Class()));
     fCentAcc   = static_cast<TH1*>(GetOutputObject(output, "centAcc",
 						   TH1::Class()));
-    fCentMult  = static_cast<TH2*>(GetOutputObject(output, "centMult",
-						   TH2::Class()));
-    fCentNPart = static_cast<TH2*>(GetOutputObject(output, "centNPart",
-						   TH2::Class()));
-    fCentNBin  = static_cast<TH2*>(GetOutputObject(output, "centNBin",
-						   TH2::Class()));
+    fCentMult  = Get2DDiag(output, "centMult", false);
+    fCentNPart = Get2DDiag(output, "centNPart",true);
+    fCentNBin  = Get2DDiag(output, "centNBin", true);
+    fCentB     = Get2DDiag(output, "centB",    true);
     fCentList = static_cast<TList*>(GetOutputObject(output, "byCent",
 						    TList::Class()));
     if (!fCentList || !fCentAll || !fCentAcc) {
@@ -447,10 +568,13 @@ struct FastCentHelper
 	 int(fCentAcc->GetEntries()), int(fCentAll->GetEntries()),
 	 100*fCentAcc->GetEntries()/fCentAll->GetEntries());
 
+    fMapping.Set(fCentAll->GetNbinsX()+1);
+    fMapping.Reset(-1);
     THStack*  stack = new THStack("all", "All");
     TList*    hists = fCentList; // ->GetHists();
     TObjLink* link  = hists->FirstLink();
     Int_t     bin   = 1;
+    Int_t     cnt   = 0;
     Long64_t  sum   = 0;
     Long64_t  total = 0;
     Long64_t  all   = fCentAll->GetEntries();
@@ -461,10 +585,30 @@ struct FastCentHelper
 	bin++;
 	continue;
       }
-      TH1*  h = static_cast<TH1*>(o);
-      Int_t n = h->GetBinContent(0);
       Int_t m = fCentAcc->GetBinContent(bin);
       total += m;
+      printf("%9d events in bin %s ...", m, o->GetTitle());
+      if (m < minEvents) {
+	// Too few event, remove this
+	TObjLink* tmp = link->Next();
+	hists->Remove(link);
+	link = tmp;
+	delete o;
+	Printf(" removed");
+	bin++;
+	continue;
+      }
+      sum += m;
+      TH1* h = (*callback)(o,m);
+      stack->Add(h);
+      Printf(" processed [%2d->%2d]", bin, cnt);
+      link = link->Next();
+      fMapping[bin] = cnt+1;
+      cnt++;
+      bin++;
+#if 0
+      TH1*  h = static_cast<TH1*>(o);
+      Int_t n = h->GetBinContent(0);
       h->SetBinContent(0,0);
       printf("%9d (%9d) events in bin %s ...", n, m, o->GetTitle());
       if (n < minEvents) {
@@ -484,10 +628,24 @@ struct FastCentHelper
       Printf(" scaled");
       link = link->Next();
       bin++;
+#endif 
     }
     Printf("ana/acc/all: %9lld/%9lld/%9lld [%6.2f%%/%6.2f%%]",
 	   sum, total, all, float(100*sum)/total, float(100*total)/all);
     output->Add(stack);
+    for (Int_t i = 1; i < fMapping.GetSize(); i++)
+      Printf("  %3d -> %3d", i, fMapping[i]);
+  }
+  void Print(Option_t* option="") const
+  {
+    Int_t nBins = (fCentAxis?fCentAxis->GetNbins():0);
+    Printf("  Method:               %s", fCentMeth.Data());
+    Printf("  Axis:                 %d", nBins);
+    if (nBins < 2) return;
+    printf("   ");
+    for (Int_t i = 1; i <= nBins; i++)
+      printf("%5.1f-",fCentAxis->GetBinLowEdge(i));
+    Printf("%5.1f%%", fCentAxis->GetBinUpEdge(nBins));
   }
   ClassDef(FastCentHelper,1);
 };

@@ -25,7 +25,15 @@ struct FastShortHeader {
   UInt_t   fNSpecNtgt;   // # of spectator neutrons in target 
   UInt_t   fNSpecPproj;  // # of spectator protons in projectile
   UInt_t   fNSpecPtgt;   // # of spectator protons in target
-  
+  UInt_t   fTrigMask;    // Trigger mask
+
+  enum {
+    kV0A  = 0x1,
+    kV0C  = 0x2,
+    kADA  = 0x4,
+    kADC  = 0x8,
+    kEta1 = 0x10
+  };
   void Print()
   {
     Printf(" Run #/Event:          %9d/%9d", fRunNo, fEventId);
@@ -38,6 +46,13 @@ struct FastShortHeader {
     Printf(" Reaction plane:       %19f", fPhiR);
     Printf(" Specs (Nt,Np,Pt,Pp):  %4d/%4d/%4d/%4d",
 	   fNSpecNtgt, fNSpecNproj, fNSpecPtgt, fNSpecPproj);
+    Printf(" Trigger mask:         0x%04x (V0A:%d V0C:%d Eta1:%d)",
+	   fTrigMask,
+	   (fTrigMask&kV0A) ==kV0A,
+	   (fTrigMask&kV0C) ==kV0C,
+	   (fTrigMask&kADA) ==kADA,
+	   (fTrigMask&kADC) ==kADC,
+	   (fTrigMask&kEta1)==kEta1);
   }
   void Clear(Option_t* option="")
   {
@@ -61,6 +76,7 @@ struct FastShortHeader {
     fNSpecPtgt  = -1;
     fNSpecPproj = -1;
     fEG         = kUnknown;
+    fTrigMask   = 0;
   }
 
   enum EG_t {

@@ -5,10 +5,12 @@ LoadOne(const char* simdir, const char* script, const char* opt="+g")
 }
 
 void
-FastLoad()
+FastLoad(const char* opt="+g")
 {
-  const char* simdir = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/sim";
-  gSystem->AddIncludePath(Form("-I%s", simdir));
+  TString simdir = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/sim";
+  if (gSystem->Getenv("ANA_SRC"))  
+    simdir.Form("%s/sim", gSystem->Getenv("ANA_SRC"));
+  gSystem->AddIncludePath(Form("-I%s", simdir.Data()));
   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
@@ -24,7 +26,7 @@ FastLoad()
 			     0 };
   const char** ptr = scripts;
   while (*ptr) {
-    LoadOne(simdir, *ptr);
+    LoadOne(simdir, *ptr, opt);
     ptr++;
   }
 }

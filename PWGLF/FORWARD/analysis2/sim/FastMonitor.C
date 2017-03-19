@@ -58,7 +58,7 @@ struct FastMonitor : public TObject, public TQObject
     Bool_t hasCmd = (cmd && cmd[0] != '\0');
     TString lne;
     lne.Form("gProof%s%s", (hasCmd ? "->" : ""), (hasCmd ? cmd : ""));
-    Printf("FastMonitor::ProofExec: %s", lne.Data());
+    // Printf("FastMonitor::ProofExec: %s", lne.Data());
     return gROOT->ProcessLine(lne);
   }
   FastMonitor()
@@ -143,7 +143,7 @@ struct FastMonitor : public TObject, public TQObject
     if (ProofExec()) {
       // We're on Proof
       // Info("Construct", "Attaching to PROOF");
-      gROOT->ProcessLine(Form("((FastMontor*)%p)->SetName("
+      gROOT->ProcessLine(Form("((FastMonitor*)%p)->SetName("
 			      "gProof->GetSessionTag())", this));
       Long_t ret = ProofExec(Form("Connect(\"Feedback(TList *objs)\","
 				  "        \"FastMonitor\",(void*)%p,"
@@ -367,9 +367,11 @@ protected:
     // Info("DrawObject","Drawing %s '%s' with \"%s %s\" (%s with%s stats)",
     //      o->ClassName(), o->GetName(), opt, (same ? "same" : ""),
     //      scale ? "scaled" : "raw", nostats ? "out" : "");
+    // Printf("M: Draw object: %s (%s)", o->GetName(), o->ClassName());
     if (o->IsA()->InheritsFrom(TH1::Class())) {
       TH1* h = static_cast<TH1*>(o);
       TH1* c = static_cast<TH1*>(h->Clone(Form("cpy_%s", h->GetName())));
+      // Printf("M:  Is a histogram");
       c->SetDirectory(0);
       if (scale) {
 	Int_t nEvents = c->GetBinContent(0);
@@ -388,6 +390,7 @@ protected:
     else if (o->IsA()->InheritsFrom(TGraph::Class())) {
       TGraph* g = static_cast<TGraph*>(o);
       TGraph* c = static_cast<TGraph*>(g->Clone(Form("cpy_%s",g->GetName())));
+      // Printf("M:  Is a graph");
       c->Draw(Form("%s %s",opt, (same ? "" : "a")));
       c->SetBit(TObject::kCanDelete);
       // Info("DrawObject","Drawing Graph '%s' with \"%s %s\"",
@@ -398,6 +401,7 @@ protected:
       TIter        n(c);
       TObject*     co = 0;
       Bool_t       first = true;
+      // Printf("M:  Is a collection");
       // Info("DrawObject","Drawing collection '%s' with \"%s\"",
       //      c->GetName(), opt);
       while ((co = n())) {
@@ -406,6 +410,7 @@ protected:
       }
     }
     else {
+      Printf("M:  Is a generic object");
       TObject* c = o->DrawClone(opt);
       c->SetBit(TObject::kCanDelete);
     }

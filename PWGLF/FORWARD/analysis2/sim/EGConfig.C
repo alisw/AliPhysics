@@ -438,6 +438,16 @@ protected:
     Bool_t shadow  = !opt.Contains("noshadow");
     Bool_t spec    = opt.Contains("spectators");
     Bool_t quench  = opt.Contains("quench");
+    Bool_t slow    = opt.Contains("precise");
+    Int_t  nt      = 150;
+    // ampt_melt_nt@150_noscreen
+    if (opt.Contains("nt")) {
+      Int_t st = opt.Index("nt");
+      Int_t en = opt.Index("_", st);
+      if (en == kNPOS) en = opt.Length()-1;
+      TString val = opt(st+3, en-st-3);
+      nt          = val.Atoi();
+    }
     tit.Append(Form(" %sdecay",     decayer ? "" : "no"));
     tit.Append(Form(" %sscreen",    screen  ? "" : "no"));
     tit.Append(Form(" %smelt",      melt    ? "" : "no"));
@@ -471,7 +481,7 @@ protected:
     // --- Lund string fragmentation parameters ----------------------
     genHi->SetStringFrag(0.5, 0.9);
     // --- MAx number of time steps ----------------------------------
-    genHi->SetNtMax(150);
+    genHi->SetNtMax(nt); // slow ? 1000 : 150);
     // --- Boost according to LHC parameters -------------------------
     genHi->SetBoostLHC(1);
     // --- Create random reaction plane ------------------------------

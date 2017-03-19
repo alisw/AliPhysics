@@ -1,13 +1,19 @@
+#ifndef DNDYANALYSIS_C
+#define DNDYANALYSIS_C
 #ifndef __CINT__
 # include <TH1.h>
 # include <TH2.h>
+# include <TProfile.h>
 # include <TMath.h>
 # include <TParticle.h>
 # include <TObjArray.h>
 # include <TString.h>
+# include <TGraphErrors.h>
+# include <TMultiGraph.h>
 #else
 class TH1;
 class TParticle;
+class TMap;
 #endif
 #include "FastAnalysis.C"
 #include "FastCentHelper.C"
@@ -49,6 +55,7 @@ namespace dNdy {
     
       return h;
     }
+    static TObject* CreateOutput() { return CreatedNdy(); }
     /** 
      * Called on each slave at start of processing
      */
@@ -199,6 +206,35 @@ namespace dNdy {
     }
     ClassDef(INELGt0,1);
   };
+  //====================================================================
+  /**
+   * Processes V0AND events and build the @f$ 1/N dN_{ch}/d\eta@f$ 
+   * 
+   */
+  struct V0AND : public Base
+  {
+    /** 
+     * Constructor 
+     * 
+     * @param verbose  Whether to be verbose 
+     * @param monitor  Frequency 
+     */  
+    V0AND(Bool_t verbose=false, Int_t monitor=0)
+      : Base(verbose,monitor)
+    {
+      SetTrigger("V0AND");
+    }
+    /** 
+     * Process the header.  
+     * 
+     * @return Always true - by definition INEL is all events. 
+     */
+    virtual Bool_t ProcessHeader()
+    {
+      return CheckTrigger();
+    }
+    ClassDef(V0AND,1);
+  };
 
   //====================================================================
   struct Cent : public Base 
@@ -239,7 +275,7 @@ namespace dNdy {
       fdNdy->SetName("cache");
       fdNdy->SetTitle("Cache");
 
-      fHelper.CreateHistos(fOutput, Base::CreatedNdy);
+      fHelper.CreateHistos(fOutput, Base::CreateOutput);
       fOutput->ls();
     }
     virtual Bool_t SetupEstimator()
@@ -330,9 +366,117 @@ namespace dNdy {
 	return;
       }
 
-      if (!fHelper.Finalize(fOutput, fMinEvents))
+      if (!fHelper.Finalize(fOutput, fMinEvents, Cent::Normalize))
 	SetStatus(-1);
+
+      TH1* sigma = static_cast<TH1*>(fHelper.fCentAll->Clone("sigma"));
+      sigma->Reset();
+      sigma->SetTitle("\\sigma");
+      sigma->SetDirectory(0);
+      sigma->SetMarkerColor(kRed+2);
+      sigma->SetMarkerStyle(20);
+      sigma->SetLineColor(kRed+2);
+      fOutput->Add(sigma);
+
+      TGraphErrors* gsigma = new TGraphErrors;
+      gsigma->SetName("gsigma");
+      gsigma->SetTitle("\\sigma");
+      gsigma->SetMarkerColor(kRed+2);
+      gsigma->SetMarkerStyle(20);
+      gsigma->SetLineColor(kRed+2);
+      fOutput->Add(gsigma);
+
+      TGraphErrors* asigma = new TGraphErrors;
+      asigma->SetName("asigma");
+      asigma->SetTitle("\\sigma");
+      asigma->SetMarkerColor(kGreen+2);
+      asigma->SetMarkerStyle(22);
+      asigma->SetLineColor(kGreen+2);
+      fOutput->Add(asigma);
+
+      TGraphErrors* grms = new TGraphErrors;
+      grms->SetName("grms");
+      grms->SetTitle("RMS");
+      grms->SetMarkerColor(kBlue+2);
+      grms->SetMarkerStyle(21);
+      grms->SetLineColor(kBlue+2);
+      fOutput->Add(grms);
+
+      TProfile* nPart =
+	static_cast<TProfile*>(fOutput->FindObject("centNPartMean"));
+      if (!nPart) {
+	Warning("Terminate", "Output \"centNpartMean\" not found");
+	return;
+      }
+      Int_t j = 0;
+      for (Int_t i = 1; i <= sigma->GetNbinsX(); i++) {
+	TH1*     dndy  = fHelper.CentHist(i);
+	if (!dndy) {
+	  // Warning("Terminate", "dNdy histogram not found for bin %d", i);
+	  continue;
+	}
+	TF1*     func  = dndy->GetFunction("f");
+	if (!func) {
+	  Warning("Terminate", "Function not found for bin %d", i);
+	  continue;
+	}
+	TF1*     afun  = dndy->GetFunction("g");
+	if (!func) {
+	  Warning("Terminate", "Function not found for bin %d", i);
+	  continue;
+	}
+	Double_t sig   = func->GetParameter(2);
+	Double_t esig  = func->GetParError (2);
+	Double_t asig  = afun->GetParameter(2);
+	Double_t easig = afun->GetParError (2);
+	Double_t nP    = nPart->GetBinContent(i);
+	Double_t eP    = nPart->GetBinError  (i);
+	Double_t rms   = dndy->GetRMS();
+	Double_t erms  = dndy->GetRMSError();
+	Printf("%2d: %s %6.2f +/- %6.2f  ->  "
+	       "%4.2f +/- %4.2f  [%4.2f +/- %4.2f] (%4.2f +/- %4.2f)",
+	       i, dndy->GetName(), nP, eP, sig, esig, rms, erms);
+	sigma->SetBinContent (i,   sig);
+	sigma->SetBinError   (i,   esig);
+	gsigma->SetPoint     (j,   nP, sig);
+	gsigma->SetPointError(j,   eP, esig);
+	asigma->SetPoint     (j,   nP, asig);
+	asigma->SetPointError(j,   eP, easig);
+	grms  ->SetPoint     (j,   nP, rms);
+	grms  ->SetPointError(j,   eP, erms);
+	j++;
+      }
+      TMultiGraph* widths = new TMultiGraph("widths", "Widths");
+      widths->Add(gsigma);
+      widths->Add(asigma);
+      widths->Add(grms);
+      fOutput->Add(widths);
+      gsigma->SaveAs("sigma.C");
+      asigma->SaveAs("asigma.C");
+      grms  ->SaveAs("rms.C");
     }
+    static TH1* Normalize(TObject* o, Int_t n)
+    {
+      if (!o->IsA()->InheritsFrom(TH1::Class())) return 0;
+      TH1*  h = static_cast<TH1*>(o);
+      Int_t m = h->GetBinContent(0);
+      if (m != n) 
+	::Warning("Normalize", "Different event count here:%d helper:%d",m,n);
+      h->SetBinContent(0,0);
+      h->Scale(1. / n, "width");
+      TF1* f = new TF1("f", "gausn", -5, 5);
+      f->SetParameters(1,0,4);
+      f->FixParameter(1,0);
+      h->Fit(f,"0QBR+");
+      TF1* g = new TF1("g","gausn(0)*pol1(3)", -5, 5);
+      g->SetParameters(1,0,4,1,1);
+      g->FixParameter(0,1);
+      g->FixParameter(1,0);
+      g->SetParLimits(1,1,10);
+      h->Fit(g, "0QBR+");
+      return h;
+    }
+    
     /** 
      * Get the list of monitored objects 
      * 
@@ -406,12 +550,13 @@ struct dNdyMaker : public FastAnalysis::Maker
   FastAnalysis*  Make(const TString& subtype,
 		      Int_t          monitor,
 		      Bool_t         verbose,
-		      TString&       uopt)
+		      TMap&          uopt)
   {
     TString t(subtype);
     if      (t.EqualTo("INEL"))    return new dNdy::INEL(verbose,monitor);
     else if (t.EqualTo("NSD"))     return new dNdy::NSD(verbose,monitor);
     else if (t.EqualTo("INELGt0")) return new dNdy::INELGt0(verbose,monitor);
+    else if (t.EqualTo("V0AND"))   return new dNdy::V0AND(verbose,monitor);
     else if (t.BeginsWith("MULT") || t.BeginsWith("CENT")) {
       TString w(t(4, t.Length()-4));
       if (!(w.BeginsWith("RefMult") ||
@@ -445,6 +590,7 @@ struct dNdyMaker : public FastAnalysis::Maker
     Printf(" INEL            - inelastic");
     Printf(" INELGt0         - inelastic with at least 1 particle in |eta|<1");
     Printf(" NSD             - Non-single diffractive");
+    Printf(" V0AND           - Visible X-section");
     Printf(" CENT<est>       - Centrality classes. <est> is one of ");
     Printf("  ZNA            - ZNA signal");
     Printf("  ZNC            - ZNC signal");
@@ -468,7 +614,7 @@ dNdyMaker* _dNdyMaker = new dNdyMaker;
 #pragma link C++ nestedclasses;
 #pragma link C++ namespace dNdy;
 #endif
-
+#endif
 //
 // EOF
 //

@@ -99,6 +99,7 @@ struct FastSimMonitor : public FastMonitor
     Register("list/histograms/timing",  "hist", 0x18, false);
     Register("list/histograms/dNdeta",  "",     0x18, false);
     Register("list/histograms/dNdy",    "",     0x18, false);
+    Register("list/histograms/trigger", "e",    0x10, false);
     Register("list/estimators/rawV0MP", "e",    0x02, false);
     if (gProof)  gProof->AddFeedback("list");      
   }
@@ -151,6 +152,7 @@ struct FastSim : public TSelector
       fHB(0),
       fHPhiR(0),
       fHTime(0),
+      fHTrig(0),
       fBEstimator(0),
       fCentEstimators(0),
       fProofFile(0),
@@ -279,7 +281,7 @@ struct FastSim : public TSelector
     fTree->Branch("header", &fShortHead,
 		  "run/i:event:ntgt:nproj:nbin:type:"
 		  "ipx/D:ipy:ipz:b:c:phir:"
-		  "nsnp/i:nsnt:nspp:nspt");
+		  "nsnp/i:nsnt:nspp:nspt:mask");
     fTree->Branch("particles", &fParticles);
     fTree->SetAutoSave(500); // Save every on every 100 events 
     fTree->SetDirectory(fFile);
@@ -302,6 +304,11 @@ struct FastSim : public TSelector
     fTree->SetAlias("beta",    "(particles.P()/particle.Energy())");
     fTree->SetAlias("gamma",   "(1./sqrt(1-beta*beta))");
     fTree->SetAlias("npart",   "(header.ntgt+header.nproj)");
+    fTree->SetAlias("v0a",     "(header.mask&0x1)");
+    fTree->SetAlias("v0c",     "(header.mask&0x2)");
+    fTree->SetAlias("ada",     "(header.mask&0x4)");
+    fTree->SetAlias("adc",     "(header.mask&0x8)");
+    fTree->SetAlias("eta1",    "(header.mask&0x10)");
     
     // Let's add the title of the generator to the output.  We make a
     // histogram because that can be merged.
@@ -393,7 +400,20 @@ struct FastSim : public TSelector
     fHTime->GetXaxis()->SetBinLabel(4,"Particles");
     fHTime->GetXaxis()->SetBinLabel(5,"Filling");
     fHTime->SetDirectory(0);
-				    
+
+    fHTrig = new TH1D("trigger", "Trigger bits set", 6, -0.5, 5.5);
+    fHTrig->SetMarkerColor(kMagenta+2);
+    fHTrig->SetFillColor(kMagenta+2);
+    fHTrig->SetFillStyle(3001);
+    fHTrig->SetYTitle("Events");
+    fHTrig->GetXaxis()->SetBinLabel(1, "All");
+    fHTrig->GetXaxis()->SetBinLabel(2, "V0A");
+    fHTrig->GetXaxis()->SetBinLabel(3, "V0C");
+    fHTrig->GetXaxis()->SetBinLabel(4, "ADA");
+    fHTrig->GetXaxis()->SetBinLabel(5, "ADC");
+    fHTrig->GetXaxis()->SetBinLabel(6, "N_{ch}|_{|#eta|<1}#ge1");
+    fHTrig->SetDirectory(0);
+    
     fList = new TList;
     fList->SetName("list");
     fList->Add(egTitle);
@@ -409,6 +429,7 @@ struct FastSim : public TSelector
     histos->Add(fHB);
     histos->Add(fHPhiR);
     histos->Add(fHTime);
+    histos->Add(fHTrig);
     fList->Add(histos);
     
     TList* estimators = new TList;
@@ -975,6 +996,24 @@ struct FastSim : public TSelector
     return selected;
   }
   /** 
+   * Set trigger bits in header 
+   * 
+   * @param eta Eta of particle 
+   */
+  virtual void CheckTrigger(Double_t eta)
+  {
+    if (eta < +5.1 && eta > +2.8)
+      fShortHead.fTrigMask |= FastShortHeader::kV0A;
+    if (eta < -1.7 && eta > -3.7)
+      fShortHead.fTrigMask |= FastShortHeader::kV0C;
+    if (eta < +6.3 && eta > +4.8)
+      fShortHead.fTrigMask |= FastShortHeader::kADA;
+    if (eta < -4.9 && eta > -7.0)
+      fShortHead.fTrigMask |= FastShortHeader::kADC;
+    if (TMath::Abs(eta) < 1)
+      fShortHead.fTrigMask |= FastShortHeader::kEta1;	
+  }
+  /** 
    * Process all particles 
    * 
    * @param selected True if particle information should be diagnosed
@@ -1014,6 +1053,7 @@ struct FastSim : public TSelector
       Double_t pZ    = particle->Pz();
       Double_t theta = TMath::ATan2(pT, pZ);
       Double_t eta   = -TMath::Log(TMath::Tan(theta/2));
+      CheckTrigger(eta);
       if (eta > fHEta->GetXaxis()->GetXmin() && 
 	  eta < fHEta->GetXaxis()->GetXmax())
 	// Avoid filling under/overflow bins 
@@ -1030,6 +1070,13 @@ struct FastSim : public TSelector
     fHeader->SetNprimary(fStack->GetNprimary());
     fHeader->SetNtrack(fStack->GetNtrack());
 
+    fHTrig->Fill(0);
+    if (fShortHead.fTrigMask & FastShortHeader::kV0A)  fHTrig->Fill(1); 
+    if (fShortHead.fTrigMask & FastShortHeader::kV0C)  fHTrig->Fill(2); 
+    if (fShortHead.fTrigMask & FastShortHeader::kADA)  fHTrig->Fill(3); 
+    if (fShortHead.fTrigMask & FastShortHeader::kADC)  fHTrig->Fill(4); 
+    if (fShortHead.fTrigMask & FastShortHeader::kEta1) fHTrig->Fill(5); 
+    
     TIter next(fCentEstimators);
     FastCentEstimator* estimator = 0;
     while ((estimator = static_cast<FastCentEstimator*>(next())))
@@ -1211,6 +1258,7 @@ struct FastSim : public TSelector
     fHB    = static_cast<TH1*>(histos->FindObject("b"));
     fHPhiR = static_cast<TH1*>(histos->FindObject("phiR"));
     fHTime = static_cast<TH1*>(histos->FindObject("timing"));
+    fHTrig = static_cast<TH1*>(histos->FindObject("trigger"));
 
     if (!(fHEta && fHY && fHIpz && fHType && fHB && fHPhiR && fHTime)) {
       Warning("Terminate", "Missing histograms (%p,%p,%p,%p,%p,%p,%p)",
@@ -1224,6 +1272,7 @@ struct FastSim : public TSelector
     fHB   ->Scale(1./nTotal, "width");
     fHPhiR->Scale(1./nTotal, "width");
     fHTime->Scale(1./nTotal, "width");
+    fHTrig->Scale(1./nTotal, "width");
 
     if (!fFile){
       Warning("Terminate", "No file to write to");
@@ -1392,7 +1441,8 @@ struct FastSim : public TSelector
   TH1*   fHCent;                  //! Event type histogram
   TH1*   fHB;                     //! B histogram
   TH1*   fHPhiR;                  //! Reaction plane
-  TH1*   fHTime;                  //! Timing 
+  TH1*   fHTime;                  //! Timing
+  TH1*   fHTrig;                  //! Trigger bits
   /* @} */
   /** 
    * @{ 
@@ -1930,6 +1980,7 @@ struct EPosSim : public FastSim
       Double_t pZ    = particle->Pz();
       Double_t theta = TMath::ATan2(pT, pZ);
       Double_t eta   = -TMath::Log(TMath::Tan(theta/2));
+      CheckTrigger(eta);
       fHEta->Fill(eta);
     }
     return true;

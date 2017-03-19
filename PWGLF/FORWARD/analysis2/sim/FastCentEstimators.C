@@ -1,3 +1,5 @@
+#ifndef FASTCENTESTIMATOR_C
+#define FASTCENTESTIMATOR_C
 #ifndef __CINT__
 # include <TObject.h>
 # include <TString.h>
@@ -455,6 +457,7 @@ struct BCentEstimator : public Fast1DCentEstimator
   virtual void Terminate(TCollection* out)
   {
     TH1* h    = GetHistogram(out);
+    if (!h) return;
     TH1* cent = static_cast<TH1*>(h->Clone(GetName()));
     cent->SetDirectory(0);
     cent->SetYTitle("Centrality [%]");
@@ -937,7 +940,7 @@ struct ZNCentEstimator : public Fast1DCentEstimator
   }
   ClassDef(ZNCentEstimator,1);
 };
-
+#endif
 //
 // EOF
 //

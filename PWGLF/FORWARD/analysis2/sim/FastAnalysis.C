@@ -7,7 +7,8 @@
  * produced by FastSim.C
  * 
  */
-
+#ifndef FASTANALYSIS_C
+#define FASTANALYSIS_C
 #include <TSelector.h>
 #include <TQObject.h>
 #ifndef __CINT__
@@ -33,6 +34,7 @@
 # include <TSystem.h>
 # include <TUrl.h>
 # include <TGraph.h>
+# include <TMap.h>
 # include "FastShortHeader.C"
 # include "FastMonitor.C"
 // # include <TProof.h>
@@ -52,6 +54,7 @@ class TArrayI;
 class TProof;
 class TUrl;
 class TVirtualPad;
+class TMap;
 class FastShortHeader;
 #endif
 
@@ -84,6 +87,7 @@ struct FastAnalysis : public TSelector
   /** Monitor frequency in seconds */
   Int_t fMonitor;
   Bool_t fCompatB;
+  UInt_t fTrigMask;
   /** 
    * Constructor.  Opens the file passed and sets internal pointers to
    * tree, header, and particle list.
@@ -101,7 +105,8 @@ struct FastAnalysis : public TSelector
       fCentHist(0),
       fOK(0),
       fMonitor(monitor),
-      fCompatB(false)
+      fCompatB(false),
+      fTrigMask(0xFFFF)
   {
   }
   /**
@@ -111,6 +116,68 @@ struct FastAnalysis : public TSelector
   {
     if (fHeader)    delete fHeader;
     if (fParticles) delete fParticles;
+  }
+  /** 
+   * Set the trigger mask 
+   * 
+   * @param mask Mask 
+   */
+  void SetTrigger(UInt_t mask) { fTrigMask = mask; }
+  /** 
+   * Set the trigger mask 
+   * 
+   * @param mask  The mask
+   * @param isAnd If true, mark mask as and mask (otherwise or)
+   */
+  void SetTrigger(UInt_t mask, Bool_t isAnd)
+  {
+    if (isAnd) 
+      fTrigMask = ((mask & 0xFFFF) << 16) | 0xFFFF;
+    else
+      fTrigMask = ((mask & 0xFFFF) << 0) | 0xFFFF0000;
+  }
+  /** 
+   * Set the trigger mask from a string.  Valid options are 
+   *
+   * - INEL,MBOR:      V0A||V0C||ADA||ADC||ETA1
+   * - INEL>0,INELGT0: ETA1
+   * - V0AND,MBAND:    V0A&&V0C
+   * 
+   * @param what trigger string 
+   */
+  void SetTrigger(const char* what)
+  {
+    TString w(what);
+    w.ToUpper();
+    if      (w.EqualTo("INEL") || w.EqualTo("MBOR"))
+      SetTrigger(FastShortHeader::kV0A|FastShortHeader::kV0C|
+		 FastShortHeader::kADA|FastShortHeader::kADC|
+		 FastShortHeader::kEta1, false);
+    else if (w.EqualTo("INEL>0") || w.EqualTo("INELGT0")) {
+      SetTrigger(FastShortHeader::kV0A|FastShortHeader::kV0C|
+		 FastShortHeader::kADA|FastShortHeader::kADC, false);
+      SetTrigger(FastShortHeader::kEta1, true);
+    }
+    else if (w.EqualTo("V0AND") || w.EqualTo("MBAND")) {
+      SetTrigger(0xFFFF, false);
+      SetTrigger(FastShortHeader::kV0A|FastShortHeader::kV0C, true);
+    }
+    else
+      Warning("SetTrigger", "Unknown trigger: %s", what);
+  }
+  /** 
+   * Check trigger bits 
+   * 
+   * @return true if the appropriate bits are set
+   */
+  Bool_t CheckTrigger() const
+  {
+    UInt_t bits    = fHeader->fTrigMask & 0xFFFF;
+    UInt_t orMask  = (fTrigMask >>  0) & 0xFFFF;
+    UInt_t andMask = (fTrigMask >> 16) & 0xFFFF;
+    if (orMask  != 0 && (orMask  & bits) == 0)       return false;
+    if (andMask != 0 && (andMask & bits) != andMask) return false;
+    return true;
   }
   /** 
    * Set the verbosity flag 
@@ -142,7 +209,9 @@ struct FastAnalysis : public TSelector
       Info("SetupMonitor", "No monitored objects defined");
       return;
     }
-
+    Printf("Monitor objects are:");
+    objs->Print();
+    
     FastMonitor* monitor = new FastMonitor(this, "FastMonitor");
     TObject* obj = 0;
     TIter    next(objs);
@@ -331,6 +400,23 @@ struct FastAnalysis : public TSelector
     fOutput->ls();
   }
   Int_t Version() const { return 2; }
+  virtual void Print(Option_t* option="") const
+  {
+    Printf("Analysis object %s (%s)", GetName(), ClassName());
+    Printf(" Tree:                  %p", fTree);
+    Printf(" Header:                %p", fHeader);
+    Printf(" Particles:             %p", fParticles);
+    Printf(" Verbose:               %s", fVerbose ? "yes" : "no");
+    Printf(" Timer:                 %s", fTimer.GetName());
+    Printf(" Event multiplicity:    %d", fEventMult);
+    Printf(" Centrality method:     %s", fCentMethod.Data());
+    Printf(" Centrality histogram:  %p", fCentHist);
+    Printf(" # accepted events:     %d", fOK);
+    Printf(" Monitor frequency:     %d s", fMonitor);
+    Printf(" Compatibility impact:  %s", fCompatB ? "yes" : "no");
+    Printf(" Trigger mask:          And: 0x%04x  Or: 0x%04x",
+	   ((fTrigMask >> 16) & 0xFFFF), (fTrigMask & 0xFFFF));
+  }
   /* @} */
 
   /** 
@@ -549,7 +635,7 @@ struct FastAnalysis : public TSelector
    * 
    * @return True if the event is to be taken. 
    */
-  virtual Bool_t ProcessHeader() = 0;
+  virtual Bool_t ProcessHeader() { return CheckTrigger(); }
   /* @} */
 
   /** 
@@ -676,7 +762,7 @@ struct FastAnalysis : public TSelector
     virtual FastAnalysis* Make(const TString& subtype,
 			       Int_t          monitor,
 			       Bool_t         verbose,
-			       TString&       uout) = 0;
+			       TMap&          uout) = 0;
     /** 
      * List available sub-types
      */
@@ -723,7 +809,7 @@ struct FastAnalysis : public TSelector
 		       const TString& subtype,
 		       Int_t          monitor,
 		       Bool_t         verbose,
-		       TString&       uout)
+		       TMap&          uout)
     {
       Bool_t help = (type.EqualTo("help",TString::kIgnoreCase) ||
 		     type.EqualTo("list",TString::kIgnoreCase));
@@ -858,12 +944,13 @@ struct FastAnalysis : public TSelector
     Printf("===================================================\n"
 	   "\n"
 	   " Processing chain %s with selector %s\n"
-	   " Max events: %lld\n"
+	   " Max events:   %lld\n"
 	   " Event offset: %lld\n"
-	   " URL: %s\n"
+	   " URL:          %s\n"
 	   "\n"
 	   "===================================================",
 	   chain->GetName(), a->GetName(), nev, offset, u.GetUrl());
+    a->Print();
     if (nev < 0) nev = TChain::kBigNumber;
     Long64_t ret = chain->Process(a, "", nev, offset);
 
@@ -897,7 +984,7 @@ struct FastAnalysis : public TSelector
     Int_t        monitor = -1;
     Bool_t       verbose = false;
     TUrl         u(url);
-    TString      uout    = "";
+    TMap         uopt;
     TObjArray*   opts    = TString(u.GetOptions()).Tokenize("&");
     TObjString*  token   = 0;
     TIter        nextToken(opts);
@@ -911,8 +998,9 @@ struct FastAnalysis : public TSelector
       }
       TString  key, val;
       if (!Str2KeyVal(str,key,val)) {
-	if (!uout.IsNull()) uout.Append("&");
-	uout.Append(str);
+	uopt.Add(new TObjString(key), new TObjString(val));
+	// if (!uout.IsNull()) uout.Append("&");
+	// uout.Append(str);
 	continue;
       }
       
@@ -922,17 +1010,27 @@ struct FastAnalysis : public TSelector
       else if (key.EqualTo("subtype")) sub     = val;
       else if (key.EqualTo("monitor")) monitor = val.Atoi();
       else {
-	if (!uout.IsNull()) uout.Append("&");
-	uout.Append(str);
+	uopt.Add(new TObjString(key), new TObjString(val));
+	// if (!uout.IsNull()) uout.Append("&");
+	// uout.Append(str);
       }
     }
     opts->Delete();
-    FastAnalysis* a = Factory::Instance().Make(type,sub, monitor,verbose,uout);
+    FastAnalysis* a = Factory::Instance().Make(type,sub, monitor,verbose,uopt);
     const char*   s = Factory::Instance().Script(type);
     if (type.EqualTo("help",TString::kIgnoreCase) ||
 	type.EqualTo("list",TString::kIgnoreCase) ||
 	sub .EqualTo("help",TString::kIgnoreCase) ||
 	sub .EqualTo("list",TString::kIgnoreCase)) return false;
+    TString uout;
+    TIter next(&uopt);
+    TObject* k = 0;
+    while ((k = static_cast<TPair*>(next()))) {
+      TObject* v = uopt.GetValue(k);
+      if (!v) continue;
+      if (!uout.IsNull()) uout.Append("&");
+      uout.Append(Form("%s=%s",k->GetName(),v->GetName()));
+    }
     u.SetOptions(uout);
 
     return Run(u.GetUrl(), output, a, s, nev, off, monitor, verbose, opt);
@@ -948,7 +1046,7 @@ FastAnalysis::Maker::Maker(const char* type)
   FastAnalysis::Factory::Instance().Register(this);
 }
 
-
+#endif
 //
 //  EOF
 //  
