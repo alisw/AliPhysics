@@ -353,6 +353,9 @@ public:
   TH2F *   fhLambda1TCardCorrNoSelection[2];                //!<! Cluster m20 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLambdaRTCardCorrNoSelection[2];                //!<! Cluster m20/m02 vs E for clusters selected for TCard correlation studies
   TH2F *   fhNLocMaxTCardCorrNoSelection[2];                //!<! Cluster Number of local Maxima vs E for clusters selected for TCard correlation studies
+  TH2F *   fhEMaxRat1TCardCorrNoSelection[2];               //!<! Cluster E cell max / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhEMaxRat2TCardCorrNoSelection[2];               //!<! Cluster E cell max / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhEMaxRat3TCardCorrNoSelection[2];               //!<! Cluster E cell max / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies
 
   TH2F *   fhNCellsTCardCorrNoSelection[2];                 //!<! Ncells per cluster vs cluster energy, clusters selected for TCard correlation studies
   TH2F *   fhNCellsTCardCorrWithWeightNoSelection[2];       //!<! Ncells per cluster vs cluster energy, select cells with w>0.01, clusters selected for TCard correlation studies
@@ -413,6 +416,9 @@ public:
   TH2F *   fhLambda1TCardCorrelNCell[6][6][2];              //!<! Cluster m20 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
   TH2F *   fhLambdaRTCardCorrelNCell[6][6][2];              //!<! Cluster m20/m02 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
   TH2F *   fhNLocMaxTCardCorrelNCell[6][6][2];              //!<! Cluster nlocmax vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
+  TH2F *   fhEMaxRat1TCardCorrelNCell[6][6][2];             //!<! Cluster E cell max / E cluster for NLM=1 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
+  TH2F *   fhEMaxRat2TCardCorrelNCell[6][6][2];             //!<! Cluster E cell max / E cluster for NLM=2 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
+  TH2F *   fhEMaxRat3TCardCorrelNCell[6][6][2];             //!<! Cluster E cell max / E cluster for NLM>2 vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard            
   TH2F *   fhMassEClusTCardCorrelNCell[6][6][2];            //!<! Cluster invariant mass vs E cluster, one of clusters  0.1<m02<0.4 contains 0 to more than 6 cells with w > 0.01, in same TCard or diff TCard            
   TH2F *   fhMassEPairTCardCorrelNCell[6][6][2];            //!<! Cluster invariant mass vs E pair, one of clusters  0.1<m02<0.4 contains 0 to more than 6 cells with w > 0.01, in same TCard or diff TCard            
   TH2F *   fhExoticTCardCorrelNCell [6][6][2];              //!<! Cluster exoticity vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard  
