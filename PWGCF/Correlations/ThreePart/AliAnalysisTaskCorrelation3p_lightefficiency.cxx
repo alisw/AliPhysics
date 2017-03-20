@@ -822,7 +822,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
   nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(14,"B4+B6");
   nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(15,"B4+B5+B6");
   nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(16,"Any Bit");
-  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(16,"No Bit");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(17,"No Bit");
   nummberoftrackswithfilterbit->GetXaxis()->LabelsOption("v");
   fOutput->Add(nummberoftrackswithfilterbit);
 
