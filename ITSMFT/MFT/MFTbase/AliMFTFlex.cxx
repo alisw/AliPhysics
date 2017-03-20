@@ -149,22 +149,6 @@ void AliMFTFlex::Make_ElectricComponents(TGeoVolumeAssembly*  flex, Int_t nbsens
 								   zvarnish-AliMFTGeometry::kVarnishThickness/2 - AliMFTGeometry::kCapacitorDz/2));
   }
   total=total+3;
-
-  
-  /*
-  // The connector of the FPC
-  for(Int_t id=0; id < 74; id++)electric[id+total] = Make_ElectricComponent(AliMFTGeometry::kConnectorLength, AliMFTGeometry::kConnectorWidth, 
-									    AliMFTGeometry::kConnectorThickness, id+total);
-  for(Int_t id=0; id < 37; id++){
-    flex->AddNode(electric[id+total], id+100, new TGeoTranslation(length/2+0.15-AliMFTGeometry::kConnectorOffset, id*0.04-AliMFTGeometry::kFlexHeight/2 + 0.1, 
-								  zvarnish-AliMFTGeometry::kVarnishThickness/2-AliMFTGeometry::kCapacitorDz/2));
-    flex->AddNode(electric[id+total+37], id+200, new TGeoTranslation(length/2-0.15-AliMFTGeometry::kConnectorOffset, id*0.04-AliMFTGeometry::kFlexHeight/2 + 0.1, 
-								     zvarnish - AliMFTGeometry::kVarnishThickness/2 - AliMFTGeometry::kCapacitorDz/2));
-  }
-  total=total+74;
-  */
-  
-
   
   //-------------------------- New Connector ----------------------
   TGeoMedium *kMedAlu = gGeoManager->GetMedium("MFT_Alu$");
@@ -259,23 +243,6 @@ TGeoVolumeAssembly* AliMFTFlex::Make_ElectricComponent(Double_t dx, Double_t dy,
 
   return X7R0402;
   
-
-  //------------------------------------------------------
-
-  /*
-  // the medium has to be changed, see ITS capacitors...
-  TGeoMedium *kMedCopper = gGeoManager->GetMedium("MFT_Cu$");
-
-  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
-  Int_t idHalfMFT = mftGeom->GetHalfMFTID(fLadderSeg->GetUniqueID());
-  Int_t idHalfDisk = mftGeom->GetHalfDiskID(fLadderSeg->GetUniqueID());
-  Int_t idLadder = mftGeom->GetLadderID(fLadderSeg->GetUniqueID());
-  
-  TGeoVolume* electriccomponent = new TGeoVolume(Form("electric_%d_%d_%d_%d",idHalfMFT,idHalfDisk,idLadder,id), new TGeoBBox("BOX", dy/2, dx/2, dz/2), kMedCopper);
-  electriccomponent->SetVisibility(1);
-  electriccomponent->SetLineColor(kRed);
-  return electriccomponent;
-  */
 }
 
 
