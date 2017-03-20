@@ -1571,6 +1571,7 @@ private:
   Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
@@ -1582,7 +1583,6 @@ private:
   TProfile2D *fCRCZDCQVecResvsEAsym; //!
   TProfile2D *fCRCZDCQVecResvsETot; //!
   TProfile2D *fCRCZDCQVecResvsESum; //!
-  TProfile3D *fCRCZDCQVecResvsETotvsVtx; //!
   
   // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
   
@@ -1729,10 +1729,8 @@ private:
   const static Int_t fkNHistQVecCorrv1eta = 10;
 //  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
-  TProfile3D *fCRCTPCQVecVtxPosCenRe[fCRCMaxnCen][fCRCZDCnEtaBin]; //!
-  TProfile3D *fCRCTPCQVecVtxPosCenIm[fCRCMaxnCen][fCRCZDCnEtaBin]; //!
-  TProfile3D *fTProTempRe[fCRCMaxnCen][fCRCZDCnEtaBin]; //!
-  TProfile3D *fTProTempIm[fCRCMaxnCen][fCRCZDCnEtaBin]; //!
+  TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
+  TProfile3D *fTPCQVecProTemp[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
   
   // Flow QC
   TList *fFlowQCList;    //! QC List
