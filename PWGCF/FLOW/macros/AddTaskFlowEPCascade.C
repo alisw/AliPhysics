@@ -1,4 +1,8 @@
-AliAnalysisTask *AddTaskFlowEPCascade(Float_t centrMin=0, Float_t centrMax=100,
+// This is a major change
+
+AliAnalysisTask *AddTask
+
+EPCascade(Float_t centrMin=0, Float_t centrMax=100,
 				      TString fileName, TString suffixName="",
 				      Double_t vtxCut = 10., 
 				      Double_t etaCut = 0.9, 
