@@ -1,4 +1,4 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 100, Float_t etaCut = 0.8, Float_t upperPtCut = 10., Bool_t is2015Data = kTRUE)
+AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 100, Float_t etaCut = 0.8, Float_t upperPtCut = 10., Bool_t is2015Data = kTRUE, Bool_t oldTrigger = kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -24,8 +24,15 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 
   else task->SetUseAOD();
   task->SetUseMultiplicity();
   task->SetUseCountedMult();
+
   task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetTriggerMask(AliVEvent::kINT7 );
+  
+  if(oldTrigger){
+    task->SelectCollisionCandidates(AliVEvent::kMB);
+    task->SetTriggerMask(AliVEvent::kMB);    
+  }
+    
 
   const Int_t multNbins = nBinsMultiplicity;
   Double_t binsMult[multNbins+1];
