@@ -15,7 +15,6 @@
 
 #include "AliAnalysisTaskCorrelation3p_lightefficiency.h"
 #include "AliAnalysisManager.h"
-#include "AliLog.h"
 #include "AliEventPoolManager.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
@@ -408,6 +407,8 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackESD(AliVPart
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackFiltered(AliVParticle* t)
 {
   if(dynamic_cast<AliFilteredTrack*>(t)->IsMC())return kTRUE;//dont remove MC particles yet.
+  if(!dynamic_cast<AliFilteredTrack*>(t)->IsMC())FillFilterBit(dynamic_cast<AliFilteredTrack*>(t));//dont remove MC particles yet.
+  
   if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&(fCutMask==0||fCutMask>5))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT4()&&(fCutMask==1))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT5()&&(fCutMask==2))return kTRUE;
@@ -416,6 +417,59 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackFiltered(Ali
   if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&!(dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()|dynamic_cast<AliFilteredTrack*>(t)->IsBIT5())&&(fCutMask==5))return kTRUE;
   return kFALSE;
 }
+
+void AliAnalysisTaskCorrelation3p_lightefficiency::FillFilterBit(AliFilteredTrack* t)
+{
+  IncrementHist("filterbits",16);
+  if(t->IsGlobalHybrid()){
+    if(t->IsBIT4()){
+      if(t->IsBIT5()){
+	if(t->IsBIT6())IncrementHist("filterbits",11);
+	else IncrementHist("filterbits",8);
+      }
+      else{
+	if(t->IsBIT6())IncrementHist("filterbits",9);
+	else IncrementHist("filterbits",5);
+      }
+    }
+    else{
+      if(t->IsBIT5()){
+	if(t->IsBIT6())IncrementHist("filterbits",10);
+	else IncrementHist("filterbits",6);
+      }
+      else{
+	if(t->IsBIT6())IncrementHist("filterbits",7);
+	else IncrementHist("filterbits",1);
+      }
+    }
+  }
+  else{
+    if(t->IsBIT4()){
+      if(t->IsBIT5()){
+	if(t->IsBIT6()){
+	  IncrementHist("filterbits",15);
+	}
+	else IncrementHist("filterbits",12);
+      }
+      else{
+	if(t->IsBIT6())IncrementHist("filterbits",14);
+	else IncrementHist("filterbits",2);
+      }
+    }
+    else{
+      if(t->IsBIT5()){
+	if(t->IsBIT6())IncrementHist("filterbits",13);
+	else IncrementHist("filterbits",3);
+      }
+      else{
+	if(t->IsBIT6())IncrementHist("filterbits",4);
+	else IncrementHist("filterbits",17);
+      }
+    }
+  }
+}
+
+
 
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsMCFilteredTrack(AliVParticle* p)
 {
@@ -504,7 +558,8 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::FillPDG(Int_t GetPDG)
    return 99;//if none other is chosen, return other particle
  }
  if(abspdg>=511&&abspdg<1114){//bottom mesons, other particles up to proton.
-   if(abspdg==511||abspdg==513||abspdg==515||abspdg==531||abspdg==533||abspdg==535)return 19;//neutral B meson
+   if(abspdg==511||abspdg==513||abspdg==515||abspdg==531||abspdg==533||abspdg==535)return 19;//neutral B meson    kTrkGlobalSDD          = BIT(6), // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster tracks selected by this cut are exclusive to those selected by the previous cut
+
    if(abspdg==521||abspdg==523||abspdg==525||abspdg==541||abspdg==543||abspdg==545)return 20;//charged B meson
    if(abspdg==553)return 23;//Ypsilon
    if(abspdg==551||abspdg==555||abspdg==557)return 22;//other bbbar mesons.
@@ -749,6 +804,29 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
     fRunNumberList = new Int_t[fNruns];
     for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10d[i];
   }
+  //QA - filter bit histogram:
+  TH1I * nummberoftrackswithfilterbit = new TH1I("filterbits","# tracks per filter bit", 17 , 0,17);
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(1,"GH");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(2,"B4");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(3,"B5");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(4,"B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(5,"GH+B4");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(6,"GH+B5");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(7,"GH+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(8,"GH+B4+B5");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(9,"GH+B4+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(10,"GH+B5+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(11,"GH+B4+B5+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(12,"B4+B5");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(13,"B5+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(14,"B4+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(15,"B4+B5+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(16,"Any Bit");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(16,"No Bit");
+  nummberoftrackswithfilterbit->GetXaxis()->LabelsOption("v");
+  fOutput->Add(nummberoftrackswithfilterbit);
+
+  
   //QA per run histograms:
   TH1D * eventsperrun 		= new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
   TH1D * TracksperRun 		= new TH1D("TracksperRun", "# tracks per Run", fNruns, 0,1);
@@ -887,6 +965,18 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::FillHistogram(const char* key
     hist->Fill(x) ;
   else AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
+
+void AliAnalysisTaskCorrelation3p_lightefficiency::IncrementHist(const char* key, int bin)
+{
+  TH1 * hist = dynamic_cast<TH1*>(fOutput->FindObject(key)) ;
+  if(hist){
+    double fillvalue = hist->GetXaxis()->GetBinCenter(bin);
+    hist->Fill(fillvalue);
+    
+  }
+  else AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
+}
+
 
 void AliAnalysisTaskCorrelation3p_lightefficiency::FillHistogram(const char* key, Double_t x, Double_t y)
 {
