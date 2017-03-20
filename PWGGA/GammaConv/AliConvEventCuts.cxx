@@ -2026,7 +2026,22 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
           }
         }
         
-        if ( fPeriodEnum == kLHC15a3b || fPeriodEnum == kLHC15g1b ){
+        if ( fPeriodEnum == kLHC16h3b || fPeriodEnum == kLHC16h3 || fPeriodEnum == kLHC16h3_bis ){
+          Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
+                                           21, 28, 36, 45, 57,
+                                           70, 85, 99, 115, 132,
+                                          150, 169, 190, 212, 235,
+                                          1000000};
+          Double_t weightsBins[20]     = {  0.497248, 0.418209, 0.406224, 0.266711, 0.134954,
+                                         6.46245e-02, 2.26933e-02, 8.2999e-03, 3.55869e-03, 1.22882e-03,
+                                         4.91299e-04, 1.77528e-04, 8.79459e-05, 4.13544e-05, 2.03027e-05,
+                                         1.03665e-05, 5.64655e-06, 2.96148e-06, 1.59992e-06, 2.08391e-06};
+
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+
+        } else if ( fPeriodEnum == kLHC15a3b || fPeriodEnum == kLHC15g1b ){
           Double_t ptHardBinRanges[13] = {  5,  7,  9, 12, 16,
                                            21, 28, 36, 45, 57,
                                            70, 85, 1000};
@@ -2169,7 +2184,22 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
         }
       }
       
-      if ( fPeriodEnum == kLHC15a3b || fPeriodEnum == kLHC15g1b ){
+      if ( fPeriodEnum == kLHC16h3b || fPeriodEnum == kLHC16h3 || fPeriodEnum == kLHC16h3_bis ){
+          Double_t ptHardBinRanges[21] = {  5,  7,  9, 12, 16,
+                                           21, 28, 36, 45, 57,
+                                           70, 85, 99, 115, 132,
+                                          150, 169, 190, 212, 235,
+                                          1000000};
+          Double_t weightsBins[20]     = {  0.497248, 0.418209, 0.406224, 0.266711, 0.134954,
+                                         6.46245e-02, 2.26933e-02, 8.2999e-03, 3.55869e-03, 1.22882e-03,
+                                         4.91299e-04, 1.77528e-04, 8.79459e-05, 4.13544e-05, 2.03027e-05,
+                                         1.03665e-05, 5.64655e-06, 2.96148e-06, 1.59992e-06, 2.08391e-06};
+
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+
+      } else if ( fPeriodEnum == kLHC15a3b || fPeriodEnum == kLHC15g1b ){
         Double_t ptHardBinRanges[13]   = {  5,   7,   9,   12, 16, 
                           21,  28, 36, 45, 57, 
                           70, 85, 1000};
