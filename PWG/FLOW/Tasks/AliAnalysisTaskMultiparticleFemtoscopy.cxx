@@ -2973,7 +2973,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForHybridApproach()
  TString sTerm[5] = {"N^{A}_{3}(p_{1},p_{2},p_{3})","N^{A}_{2}(p_{1},p_{2})N^{B}_{1}(p_{3})","N^{A}_{2}(p_{2},p_{3})N^{B}_{1}(p_{1})","N^{A}_{2}(p_{3},p_{1})N^{B}_{1}(p_{2})","N^{A}_{1}(p_{1})N^{B}_{1}(p_{2})N^{C}_{1}(p_{3})"};
  for(Int_t t=0;t<5;t++) // five distinct terms in the numerator of Eq. (18)
  {
-  fDistributionsVsQ3[t] = new TH1F(Form("fDistributionsVsQ3[%d]",t),sTerm[t].Data(),fnQ3bins,fnQ3min,fnQ3max);
+  fDistributionsVsQ3[t] = new TH1F(Form("fDistributionsVsQ3[%d]",t),sTerm[t].Data(),5*fnQ3bins,fnQ3min,fnQ3max); // TBI hardwired refined binning, remove eventually
   //fDistributionsVsQ3[t]->SetStats(kFALSE);
   fDistributionsVsQ3[t]->SetMarkerStyle(kFullSquare);
   fDistributionsVsQ3[t]->SetMarkerColor(kBlue);
@@ -3787,8 +3787,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
    fCorrelationFunctions[pid1][pid2] = new TH1F(Form("fCorrelationFunctions[%d][%d]",pid1,pid2),Form("fCorrelationFunctions[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
    fCorrelationFunctions[pid1][pid2]->SetStats(kTRUE);
    fCorrelationFunctions[pid1][pid2]->SetFillColor(kBlue-10);
-   fCorrelationFunctions[pid1][pid2]->SetXTitle("k");
-   fCorrelationFunctions[pid1][pid2]->SetYTitle("C(k)");
+   fCorrelationFunctions[pid1][pid2]->SetXTitle("Q_{2}");
+   fCorrelationFunctions[pid1][pid2]->SetYTitle("C(Q_{2})");
    fCorrelationFunctionsSublist[0]->Add(fCorrelationFunctions[pid1][pid2]);
   } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
  } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
@@ -4649,51 +4649,51 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
    //  a1) pi+pi+ [2][2]:
    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[2][2]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a2) pi-pi- [7][7]:
    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[7][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[7][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a3) pi+pi- || pi-pi+ [2][7]:
    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,1,kTRUE)))
    {
-    fCorrelationFunctions[2][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[2][7]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // b) kaon-kaon:
    //  b1) K+K+ [3][3]:
    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[3][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[3][3]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b2) K-K- [8][8]:
    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[8][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[8][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b3) K+K- || K-K+ [3][8]:
    if((Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE)) || (Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,1,kTRUE)))
    {
-    fCorrelationFunctions[3][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[3][8]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // c) proton-proton:
    //  c1) p+p+ [4][4]:
    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[4][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[4][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c2) p-p- [9][9]:
    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[9][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[9][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c3) p+p- || p-p+ [4][9]:
    if((Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE)) || (Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,1,kTRUE)))
    {
-    fCorrelationFunctions[4][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[4][9]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // 2.) Mixed particle species:
@@ -4701,64 +4701,64 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
    //  a1) pi+K+ [2][3]:
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[2][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[2][3]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a2) pi+K- [2][8]
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[2][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[2][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a3) K+pi- [3][7]
    if(Kaon(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[3][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[3][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[7][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[7][8]->Fill(Q2(agtrack1,agtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[2][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[2][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b2) pi+p- [2][9]
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[2][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[2][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b3) p+pi- [4][7]
    if(Proton(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[4][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[4][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b4) pi-p- [7][9]
    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[7][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[7][9]->Fill(Q2(agtrack1,agtrack2));
    }
    // c) kaon-proton
    //  c1) K+p+ [3][4]:
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[3][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[3][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c2) K+p- [3][9]
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[3][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[3][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c3) p+K- [4][8]
    if(Proton(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[4][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[4][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c4) K-p- [8][9]
    if(Kaon(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[8][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    fCorrelationFunctions[8][9]->Fill(Q2(agtrack1,agtrack2));
    }
   } // for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
@@ -5159,15 +5159,14 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate4pCorrelationFunctions(Ali
      // First test example: pi+pi+pi+pi+
      if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE) && Pion(gtrack4,1,kTRUE))
      {
-      f4pCorrelationFunctions[2][2][2][2]->Fill(Q4(agtrack1,agtrack2,agtrack3,agtrack4));
+      f4pCorrelationFunctions[2][2][2][2]->Fill(Q4(agtrack1,agtrack2,agtrack3,agtrack4)); // Lorentz invariant Q4
      }
 
      // Second test example: pi-pi-pi-pi-
      if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE) && Pion(gtrack4,-1,kTRUE))
      {
-      f4pCorrelationFunctions[7][7][7][7]->Fill(Q4(agtrack1,agtrack2,agtrack3,agtrack4));
+      f4pCorrelationFunctions[7][7][7][7]->Fill(Q4(agtrack1,agtrack2,agtrack3,agtrack4)); // Lorentz invariant Q4
      }
-
 
 
     } // for(Int_t iTrack4=0;iTrack4<nTracks;iTrack4++)
@@ -5373,7 +5372,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
 
-   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto l, for x, y and z components separately"
+   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto l, for x, y and z components separately", not Lorentz invariant
    if(fFillCorrelationFunctionsTEST[0])
    {
     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
@@ -5457,7 +5456,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
     } // if(fFillControlHistogramsWithGlobalTrackInfo)
     if(!agtrack3){Fatal(sMethodName.Data(),"!agtrack3");}
 
-    // Test 0: "Same charge pions, 3p correlations and cumulants projected onto Q3, for x, y and z components separately"
+    // Test 0: "Same charge pions, 3p correlations and cumulants projected onto Q3, for x, y and z components separately", Lorentz invariant, as of 20170319 TBI
     if(fFillCorrelationFunctionsTEST[0])
     {
      if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
@@ -5504,34 +5503,34 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
      {
 
       // Q3:
-      Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // Lorentz invariant Q3
 
       // x-components:
-      singleEventAverageCorrelationsVsQ3[1][0][0]->Fill(dQ3_NEW,agtrack1->Px()); // <X1>_x
-      singleEventAverageCorrelationsVsQ3[1][1][0]->Fill(dQ3_NEW,agtrack2->Px()); // <X2>_x
-      singleEventAverageCorrelationsVsQ3[1][2][0]->Fill(dQ3_NEW,agtrack3->Px()); // <X3>_x
-      singleEventAverageCorrelationsVsQ3[1][3][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
-      singleEventAverageCorrelationsVsQ3[1][4][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
-      singleEventAverageCorrelationsVsQ3[1][5][0]->Fill(dQ3_NEW,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
-      singleEventAverageCorrelationsVsQ3[1][6][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
+      singleEventAverageCorrelationsVsQ3[1][0][0]->Fill(dQ3,agtrack1->Px()); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[1][1][0]->Fill(dQ3,agtrack2->Px()); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[1][2][0]->Fill(dQ3,agtrack3->Px()); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[1][3][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[1][4][0]->Fill(dQ3,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[1][5][0]->Fill(dQ3,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[1][6][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
 
       // y-components:
-      singleEventAverageCorrelationsVsQ3[1][0][1]->Fill(dQ3_NEW,agtrack1->Py()); // <X1>_y
-      singleEventAverageCorrelationsVsQ3[1][1][1]->Fill(dQ3_NEW,agtrack2->Py()); // <X2>_y
-      singleEventAverageCorrelationsVsQ3[1][2][1]->Fill(dQ3_NEW,agtrack3->Py()); // <X3>_y
-      singleEventAverageCorrelationsVsQ3[1][3][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
-      singleEventAverageCorrelationsVsQ3[1][4][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
-      singleEventAverageCorrelationsVsQ3[1][5][1]->Fill(dQ3_NEW,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
-      singleEventAverageCorrelationsVsQ3[1][6][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
+      singleEventAverageCorrelationsVsQ3[1][0][1]->Fill(dQ3,agtrack1->Py()); // <X1>_y
+      singleEventAverageCorrelationsVsQ3[1][1][1]->Fill(dQ3,agtrack2->Py()); // <X2>_y
+      singleEventAverageCorrelationsVsQ3[1][2][1]->Fill(dQ3,agtrack3->Py()); // <X3>_y
+      singleEventAverageCorrelationsVsQ3[1][3][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+      singleEventAverageCorrelationsVsQ3[1][4][1]->Fill(dQ3,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
+      singleEventAverageCorrelationsVsQ3[1][5][1]->Fill(dQ3,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
+      singleEventAverageCorrelationsVsQ3[1][6][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
 
       // z-components:
-      singleEventAverageCorrelationsVsQ3[1][0][2]->Fill(dQ3_NEW,agtrack1->Pz()); // <X1>_z
-      singleEventAverageCorrelationsVsQ3[1][1][2]->Fill(dQ3_NEW,agtrack2->Pz()); // <X2>_z
-      singleEventAverageCorrelationsVsQ3[1][2][2]->Fill(dQ3_NEW,agtrack3->Pz()); // <X3>_z
-      singleEventAverageCorrelationsVsQ3[1][3][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
-      singleEventAverageCorrelationsVsQ3[1][4][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
-      singleEventAverageCorrelationsVsQ3[1][5][2]->Fill(dQ3_NEW,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
-      singleEventAverageCorrelationsVsQ3[1][6][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
+      singleEventAverageCorrelationsVsQ3[1][0][2]->Fill(dQ3,agtrack1->Pz()); // <X1>_z
+      singleEventAverageCorrelationsVsQ3[1][1][2]->Fill(dQ3,agtrack2->Pz()); // <X2>_z
+      singleEventAverageCorrelationsVsQ3[1][2][2]->Fill(dQ3,agtrack3->Pz()); // <X3>_z
+      singleEventAverageCorrelationsVsQ3[1][3][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+      singleEventAverageCorrelationsVsQ3[1][4][2]->Fill(dQ3,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
+      singleEventAverageCorrelationsVsQ3[1][5][2]->Fill(dQ3,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
+      singleEventAverageCorrelationsVsQ3[1][6][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
 
      } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
     } // if(fFillCorrelationFunctionsTEST[1])
@@ -5545,8 +5544,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
      //if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
      {
       // Count the yield differentially:
-      Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
-      Int_t binNoQ3 = this->BinNoForSpecifiedValue(singleEventAverageCorrelationsVsQ3[2][0][0],dQ3_NEW); // TBI cross-check with some other profile
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
+      Int_t binNoQ3 = this->BinNoForSpecifiedValue(singleEventAverageCorrelationsVsQ3[2][0][0],dQ3); // TBI cross-check with some other profile
       if(binNoQ3>0) // otherwise it's either underflow or overflow
       {
        TString pattern1 = Form(":track%d:",iTrack1);
@@ -5931,26 +5930,7 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q2(AliAODTrack *agtrack1, AliAO
 
 Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
 {
- // Comment the weather here. TBI
-
- // Remark: This is NOT Lorentz invariant, see Q3_NEW()
-
- Double_t Q3 = -44.; // Q3 = \sqrt{q_{12}^2 + q_{13}^2 + q_{23}^2}
-
- Double_t q12 = 2.*RelativeMomenta(agtrack1,agtrack2);
- Double_t q13 = 2.*RelativeMomenta(agtrack1,agtrack3);
- Double_t q23 = 2.*RelativeMomenta(agtrack2,agtrack3);
- Q3 = pow(pow(q12,2.)+pow(q13,2.)+pow(q23,2.),0.5);
-
- return Q3;
-
-} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
-
-//=======================================================================================================================
-
-Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3_NEW(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
-{
- // This shall be Lorentz invariant Q3. TBI validate
+ // The Lorentz invariant Q3. TBI validate with some explicit calculation
 
  Double_t q12 = Q2(agtrack1,agtrack2);
  Double_t q13 = Q2(agtrack1,agtrack3);
@@ -5959,26 +5939,22 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3_NEW(AliAODTrack *agtrack1, A
 
  return Q3;
 
-} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3_NEW(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
+} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
 
 //=======================================================================================================================
 
 Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q4(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3, AliAODTrack *agtrack4)
 {
- // Comment the weather here. TBI
+ // The Lorentz invariant Q4. TBI validate with some explicit calculation
 
- // Remark: This is NOT Lorentz invariant, see Q4_NEW()
+ Double_t q12 = Q2(agtrack1,agtrack2);
+ Double_t q13 = Q2(agtrack1,agtrack3);
+ Double_t q14 = Q2(agtrack1,agtrack4);
+ Double_t q23 = Q2(agtrack2,agtrack3);
+ Double_t q24 = Q2(agtrack2,agtrack4);
+ Double_t q34 = Q2(agtrack3,agtrack4);
 
- Double_t Q4 = -44.; // Q4 = \sqrt{q_{12}^2 + q_{13}^2 + q_{14}^2 + q_{23}^2 + q_{24}^2 + q_{34}^2}
-
- Double_t q12 = 2.*RelativeMomenta(agtrack1,agtrack2);
- Double_t q13 = 2.*RelativeMomenta(agtrack1,agtrack3);
- Double_t q14 = 2.*RelativeMomenta(agtrack1,agtrack4);
- Double_t q23 = 2.*RelativeMomenta(agtrack2,agtrack3);
- Double_t q24 = 2.*RelativeMomenta(agtrack2,agtrack4);
- Double_t q34 = 2.*RelativeMomenta(agtrack3,agtrack4);
-
- Q4 = pow(pow(q12,2.)+pow(q13,2.)+pow(q14,2.)+pow(q23,2.)+pow(q24,2.)+pow(q34,2.),0.5);
+ Double_t Q4 = pow(pow(q12,2.)+pow(q13,2.)+pow(q14,2.)+pow(q23,2.)+pow(q24,2.)+pow(q34,2.),0.5);
 
  return Q4;
 
@@ -6712,7 +6688,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
      if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
      {
       // Q3:
-      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // TBI this is NOT Lorentz invariant, see Q3_NEW()
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3);
 
       fBackgroundYieldTEST[1]->Fill(dQ3);
 
@@ -6752,34 +6728,34 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
      if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
      {
       // Q3:
-      Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
 
       // x-components:
-      singleEventAverageCorrelationsVsQ3[1][0][0]->Fill(dQ3_NEW,agtrack1->Px()); // <X1>_x
-      singleEventAverageCorrelationsVsQ3[1][1][0]->Fill(dQ3_NEW,agtrack2->Px()); // <X2>_x
-      singleEventAverageCorrelationsVsQ3[1][2][0]->Fill(dQ3_NEW,agtrack3->Px()); // <X3>_x
-      singleEventAverageCorrelationsVsQ3[1][3][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
-      singleEventAverageCorrelationsVsQ3[1][4][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
-      singleEventAverageCorrelationsVsQ3[1][5][0]->Fill(dQ3_NEW,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
-      singleEventAverageCorrelationsVsQ3[1][6][0]->Fill(dQ3_NEW,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
+      singleEventAverageCorrelationsVsQ3[1][0][0]->Fill(dQ3,agtrack1->Px()); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[1][1][0]->Fill(dQ3,agtrack2->Px()); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[1][2][0]->Fill(dQ3,agtrack3->Px()); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[1][3][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[1][4][0]->Fill(dQ3,agtrack1->Px()*agtrack3->Px()); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[1][5][0]->Fill(dQ3,agtrack2->Px()*agtrack3->Px()); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[1][6][0]->Fill(dQ3,agtrack1->Px()*agtrack2->Px()*agtrack3->Px()); // <X1X2X3>_x
 
       // y-components:
-      singleEventAverageCorrelationsVsQ3[1][0][1]->Fill(dQ3_NEW,agtrack1->Py()); // <X1>_y
-      singleEventAverageCorrelationsVsQ3[1][1][1]->Fill(dQ3_NEW,agtrack2->Py()); // <X2>_y
-      singleEventAverageCorrelationsVsQ3[1][2][1]->Fill(dQ3_NEW,agtrack3->Py()); // <X3>_y
-      singleEventAverageCorrelationsVsQ3[1][3][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
-      singleEventAverageCorrelationsVsQ3[1][4][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
-      singleEventAverageCorrelationsVsQ3[1][5][1]->Fill(dQ3_NEW,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
-      singleEventAverageCorrelationsVsQ3[1][6][1]->Fill(dQ3_NEW,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
+      singleEventAverageCorrelationsVsQ3[1][0][1]->Fill(dQ3,agtrack1->Py()); // <X1>_y
+      singleEventAverageCorrelationsVsQ3[1][1][1]->Fill(dQ3,agtrack2->Py()); // <X2>_y
+      singleEventAverageCorrelationsVsQ3[1][2][1]->Fill(dQ3,agtrack3->Py()); // <X3>_y
+      singleEventAverageCorrelationsVsQ3[1][3][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()); // <X1X2>_y
+      singleEventAverageCorrelationsVsQ3[1][4][1]->Fill(dQ3,agtrack1->Py()*agtrack3->Py()); // <X1X3>_y
+      singleEventAverageCorrelationsVsQ3[1][5][1]->Fill(dQ3,agtrack2->Py()*agtrack3->Py()); // <X2X3>_y
+      singleEventAverageCorrelationsVsQ3[1][6][1]->Fill(dQ3,agtrack1->Py()*agtrack2->Py()*agtrack3->Py()); // <X1X2X3>_y
 
       // z-components:
-      singleEventAverageCorrelationsVsQ3[1][0][2]->Fill(dQ3_NEW,agtrack1->Pz()); // <X1>_z
-      singleEventAverageCorrelationsVsQ3[1][1][2]->Fill(dQ3_NEW,agtrack2->Pz()); // <X2>_z
-      singleEventAverageCorrelationsVsQ3[1][2][2]->Fill(dQ3_NEW,agtrack3->Pz()); // <X3>_z
-      singleEventAverageCorrelationsVsQ3[1][3][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
-      singleEventAverageCorrelationsVsQ3[1][4][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
-      singleEventAverageCorrelationsVsQ3[1][5][2]->Fill(dQ3_NEW,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
-      singleEventAverageCorrelationsVsQ3[1][6][2]->Fill(dQ3_NEW,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
+      singleEventAverageCorrelationsVsQ3[1][0][2]->Fill(dQ3,agtrack1->Pz()); // <X1>_z
+      singleEventAverageCorrelationsVsQ3[1][1][2]->Fill(dQ3,agtrack2->Pz()); // <X2>_z
+      singleEventAverageCorrelationsVsQ3[1][2][2]->Fill(dQ3,agtrack3->Pz()); // <X3>_z
+      singleEventAverageCorrelationsVsQ3[1][3][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()); // <X1X2>_z
+      singleEventAverageCorrelationsVsQ3[1][4][2]->Fill(dQ3,agtrack1->Pz()*agtrack3->Pz()); // <X1X3>_z
+      singleEventAverageCorrelationsVsQ3[1][5][2]->Fill(dQ3,agtrack2->Pz()*agtrack3->Pz()); // <X2X3>_z
+      singleEventAverageCorrelationsVsQ3[1][6][2]->Fill(dQ3,agtrack1->Pz()*agtrack2->Pz()*agtrack3->Pz()); // <X1X2X3>_z
 
      } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
     } // if(fFillBackgroundTEST[1])
@@ -6792,8 +6768,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
      //if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
      {
       // Count the yield differentially:
-      Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
-      Int_t binNoQ3 = this->BinNoForSpecifiedValue(singleEventAverageCorrelationsVsQ3[2][0][0],dQ3_NEW); // TBI cross-check with some other profile
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
+      Int_t binNoQ3 = this->BinNoForSpecifiedValue(singleEventAverageCorrelationsVsQ3[2][0][0],dQ3); // TBI cross-check with some other profile
       if(binNoQ3>0) // otherwise it's either underflow or overflow
       {
        TString pattern1 = Form(":track%d:",iTrack1);
@@ -8015,8 +7991,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::HybridApproach1stTerm(AliAODEvent *
     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
     {
      // Q3:
-     Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // TBI this is Lorentz invariant
-     fDistributionsVsQ3[0]->Fill(dQ3_NEW);
+     Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // TBI this is Lorentz invariant
+     fDistributionsVsQ3[0]->Fill(dQ3);
     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -8120,8 +8096,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::HybridApproach2ndTerm(AliAODEvent *
     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
     {
      // Q3:
-     Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // TBI this is Lorentz invariant
-     fDistributionsVsQ3[1]->Fill(dQ3_NEW);
+     Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // TBI this is Lorentz invariant
+     fDistributionsVsQ3[1]->Fill(dQ3);
     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
@@ -8222,8 +8198,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::HybridApproach5thTerm(TClonesArray 
     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
     {
      // Q3:
-     Double_t dQ3_NEW = Q3_NEW(agtrack1,agtrack2,agtrack3); // TBI this is Lorentz invariant
-     fDistributionsVsQ3[4]->Fill(dQ3_NEW);
+     Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // TBI this is Lorentz invariant
+     fDistributionsVsQ3[4]->Fill(dQ3);
     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)

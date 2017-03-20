@@ -111,7 +111,6 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Double_t RelativeMomenta(AliAODMCParticle *amcparticle1, AliAODMCParticle *amcparticle2);
   Double_t Q2(AliAODTrack *agtrack1, AliAODTrack *agtrack2);
   Double_t Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3);
-  Double_t Q3_NEW(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3); // TBI rename eventuall
   Double_t Q4(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3, AliAODTrack *agtrack4);
 
   virtual void ResetEBEObjects();
@@ -653,7 +652,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Double_t fnQ3min;                                  // min bin for all histos and profiles vs. Q3 (both for signal and background)
   Double_t fnQ3max;                                  // max bin for all histos and profiles vs. Q3 (both for signal and background)
   TList *fCorrelationFunctionsTESTSublist[10];       //! lists to hold all TEST correlation functions, they are enumerated in .cxx file
-  Bool_t fFillCorrelationFunctionsTEST[10];          //! fill or not particular TEST correlation functions, they are enumerated in .cxx file (by default all are set to FALSE)
+  Bool_t fFillCorrelationFunctionsTEST[10];          // fill or not particular TEST correlation functions, they are enumerated in .cxx file (by default all are set to FALSE)
   TProfile *fCorrelationFunctionsTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
   TProfile *fSignalCumulantsTEST[10][2][4][10];      //! [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
   TH1F *fSignalYieldTEST[2];                         //! [0=for <X1X2> and Q2, 1=for <X1X2X3> and Q3]
@@ -662,7 +661,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList *fBackgroundTESTList;                       // list to hold all TEST background for primary particle
   TProfile *fBackgroundTESTFlagsPro;                // profile to hold all flags for TEST background
   TList *fBackgroundTESTSublist[10];                //! lists to hold all TEST background, they are enumerated in .cxx file
-  Bool_t fFillBackgroundTEST[10];                   //! fill or not particular TEST background, they are enumerated in .cxx file (by default all are set to FALSE)
+  Bool_t fFillBackgroundTEST[10];                   // fill or not particular TEST background, they are enumerated in .cxx file (by default all are set to FALSE)
   TProfile *fBackgroundTEST[10][2][7][10];          //! [testNo][0=vs Q2, 1=vs Q3][correlation][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
   TProfile *fBackgroundCumulantsTEST[10][2][4][10]; //! [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
   TClonesArray *fMixedEventsTEST[3];                //! tracks for mixed events, using just 'shifting' for simplicity TBI make it it more sophisticated later
@@ -692,7 +691,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  // do something only for the specified event
   UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,17);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,18);
 
 };
 
