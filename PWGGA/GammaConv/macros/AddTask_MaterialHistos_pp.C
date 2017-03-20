@@ -136,10 +136,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cutnumberPhoton = "10000000000000000500000000";
   }
 
-  if (trainConfig ==  8 || trainConfig ==  10) {
+  if (trainConfig ==  8 || trainConfig ==  10 || trainConfig ==  1008 || trainConfig ==  2008 || trainConfig ==  3008 ) {
     cutnumberPhoton = "00000009266300008804004000";
   }
-  if (trainConfig ==  108 || trainConfig ==  110 ) {
+  if (trainConfig ==  108 || trainConfig ==  110 || trainConfig ==  1108 || trainConfig ==  2108 || trainConfig ==  3108 ) {
     cutnumberPhoton = "10000009266300008804004000";
   }
 
@@ -154,6 +154,18 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
+    if (  trainConfig ==  1008 || trainConfig ==  1108 ) {
+      fV0ReaderV1->SetImprovedPsiPair(1);
+    }
+    if (  trainConfig ==  2008 || trainConfig ==  2108 ) {
+      fV0ReaderV1->SetImprovedPsiPair(2);
+    }
+    if (  trainConfig ==  3008 || trainConfig ==  3108 ) {
+      fV0ReaderV1->SetImprovedPsiPair(3);
+    }
+
+
+    cout<< " GetImprovedPsiPair()::" <<fV0ReaderV1->GetImprovedPsiPair()<<endl ;
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;
@@ -242,7 +254,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00000103", "00000009366320005804404000");
     cuts.AddCut("00000103", "00000009366300005804404000");
     cuts.AddCut("00000103", "00000009366300005854404000");
- } else if (trainConfig == 8) {
+ } else if (trainConfig == 8  || trainConfig ==  1008 || trainConfig ==  2008 || trainConfig ==  3008 ) {
     cuts.AddCut("00000103", "00000009266300008804004000");
     cuts.AddCut("00000103", "00000009266300008800404000");
     cuts.AddCut("00000103", "00000009266370008804004000");
@@ -284,7 +296,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00000103", "10000009366320005804404000");
     cuts.AddCut("00000103", "10000009366300005804404000");
     cuts.AddCut("00000103", "10000009366300005854404000");
- } else if (trainConfig == 108) {
+ } else if (trainConfig == 108  || trainConfig ==  1108 || trainConfig ==  2108 || trainConfig ==  3108 ) {
     cuts.AddCut("00000103", "10000009266300008804004000");
     cuts.AddCut("00000103", "10000009266300008800404000");
     cuts.AddCut("00000103", "10000009266370008804004000");

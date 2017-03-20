@@ -111,6 +111,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     void               FillImpactParamHistograms(AliVTrack *ptrack, AliVTrack* ntrack, AliESDv0 *fCurrentV0, AliKFConversionPhoton *fCurrentMotherKF);
     Bool_t             CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked);
     Bool_t             CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
+    void               SetImprovedPsiPair(Int_t p)                      {fImprovedPsiPair=p;return;}
+    Int_t              GetImprovedPsiPair()                             {return fImprovedPsiPair;}
+  
 
 
   protected:
@@ -132,7 +135,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 
     Bool_t               GetConversionPoint(const AliExternalTrackParam *pparam, const AliExternalTrackParam *nparam, Double_t convpos[3], Double_t dca[2]);
     Bool_t               GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2]);
-    Double_t             GetPsiPair(const AliESDv0* v0, const AliExternalTrackParam *positiveparam, const AliExternalTrackParam *negativeparam) const;
+    Double_t             GetPsiPair(const AliESDv0* v0, const AliExternalTrackParam *positiveparam, const AliExternalTrackParam *negativeparam, const Double_t convpos[3]) const;
 
     AliConversionPhotonCuts  *fConversionCuts;    // Pointer to the ConversionCut Selection
     AliConvEventCuts         *fEventCuts;         // Pointer to the ConversionCut Selection
@@ -154,6 +157,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t         fProduceV0findingEffi;         // enable histograms for V0finding efficiency
     Bool_t         fProduceImpactParamHistograms; // enable histograms of impact parameters
     Float_t        fCurrentInvMassPair;           // Invariant mass of the pair
+    Int_t          fImprovedPsiPair;              // enables the calculation of PsiPair after the precise calculation of R and use of the proper function for propagation
     TList         *fHistograms;                   // list of histograms for V0 finding efficiency
     TList         *fImpactParamHistograms;        // list of histograms of impact parameters
     TH2F          *fHistoMCGammaPtvsR;            // histogram with all converted gammas vs Pt and R (eta < 0.9)
@@ -204,7 +208,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
-    ClassDef(AliV0ReaderV1, 12)
+    ClassDef(AliV0ReaderV1, 13)
 
 };
 

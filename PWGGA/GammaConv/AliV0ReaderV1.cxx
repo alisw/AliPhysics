@@ -100,6 +100,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fProduceV0findingEffi(kFALSE),
   fProduceImpactParamHistograms(kFALSE),
   fCurrentInvMassPair(0),
+  fImprovedPsiPair(0),
   fHistograms(NULL),
   fImpactParamHistograms(NULL),
   fHistoMCGammaPtvsR(NULL),
@@ -826,14 +827,16 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF->SetProductionVertex(primaryVertexImproved);
   }
   // SetPsiPair
-
-  Double_t PsiPair=GetPsiPair(fCurrentV0,fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative);
-  fCurrentMotherKF->SetPsiPair(PsiPair);
+  Double_t convpos[3]={0,0,0};
+  if (fImprovedPsiPair == 0){
+    Double_t PsiPair=GetPsiPair(fCurrentV0,fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative, convpos);
+    fCurrentMotherKF->SetPsiPair(PsiPair);
+  }
 
   // Recalculate ConversionPoint
   Double_t dca[2]={0,0};
   if(fUseOwnXYZCalculation){
-    Double_t convpos[3]={0,0,0};
+    //    Double_t convpos[3]={0,0,0};
     if(!GetConversionPoint(fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative,convpos,dca)){
       fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kConvPointFail);
       delete fCurrentMotherKF;
@@ -843,6 +846,15 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 
     fCurrentMotherKF->SetConversionPoint(convpos);
   }
+
+
+  // SetPsiPair
+   if (fImprovedPsiPair >= 1){
+     // the propagation can be more precise after the precise conversion point calculation
+     Double_t PsiPair=GetPsiPair(fCurrentV0,fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative,convpos);
+     fCurrentMotherKF->SetPsiPair(PsiPair);
+     //cout<<" GetPsiPair::"<<fCurrentMotherKF->GetPsiPair() <<endl;
+   }
 
   if(fCurrentMotherKF->GetNDF() > 0.)
     fCurrentMotherKF->SetChi2perNDF(fCurrentMotherKF->GetChi2()/fCurrentMotherKF->GetNDF());   //->Photon is created before all chi2 relevant changes are performed, set it "by hand"
@@ -883,7 +895,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 }
 
 ///________________________________________________________________________
-Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackParam *positiveparam,const AliExternalTrackParam *negativeparam) const {
+Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackParam *positiveparam,const AliExternalTrackParam *negativeparam,const Double_t convpos[3]) const {
   //
   // Angle between daughter momentum plane and plane
   //
@@ -894,7 +906,14 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
   Float_t magField = fInputEvent->GetMagneticField();
 
   Double_t xyz[3] = {0.,0.,0.};
-  v0->GetXYZ(xyz[0],xyz[1],xyz[2]);
+  if (fImprovedPsiPair==0 ) {
+    v0->GetXYZ(xyz[0],xyz[1],xyz[2]);
+  } else if  (fImprovedPsiPair>=1 ) {
+    xyz[0]= convpos[0];
+    xyz[1]= convpos[1];
+    xyz[2]= convpos[2];
+  }
+ 
 
   // Double_t pPlus[3]  = {pt.Px(),pt.Py(),pt.Pz()};
   // Double_t pMinus[3] = {nt.Px(),nt.Py(),nt.Pz()};
@@ -967,20 +986,58 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
   Double_t momNegProp[3] = {0,0,0};
 
   Double_t psiPair = 4.;
-  if(nt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
-  if(pt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
+  // cout<< "Momentum before propagation at radius ::"<< TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1])<< endl;
+   // cout<< mn[0]<< " " <<mn[1]<<" "<< mn[2]<<" "<<TMath::Sqrt(mn[0]*mn[0] + mn[1]*mn[1] +mn[2]*mn[2])<< endl;
+   // cout<< mp[0]<< " " <<mp[1]<<" "<< mp[2]<<" "<<TMath::Sqrt(mp[0]*mp[0] + mp[1]*mp[1] +mp[2]*mp[2])<< endl;
+  Double_t pEle,pPos;
 
-  pt.GetPxPyPz(momPosProp);//Get momentum vectors of tracks after propagation
-  nt.GetPxPyPz(momNegProp);
+  if (fImprovedPsiPair==1 || fImprovedPsiPair==0 ){
 
-  Double_t pEle =
+
+    if(nt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
+    if(pt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
+
+    pt.GetPxPyPz(momPosProp);//Get momentum vectors of tracks after propagation
+    nt.GetPxPyPz(momNegProp);
+ }else if (fImprovedPsiPair>=2){
+    momPosProp[0] = pt.GetParameterAtRadius(radiussum,magField,3);
+    momPosProp[1] = pt.GetParameterAtRadius(radiussum,magField,4);
+    momPosProp[2] = pt.GetParameterAtRadius(radiussum,magField,5);
+
+    momNegProp[0] = nt.GetParameterAtRadius(radiussum,magField,3);
+    momNegProp[1] = nt.GetParameterAtRadius(radiussum,magField,4);
+    momNegProp[2] = nt.GetParameterAtRadius(radiussum,magField,5);
+    pEle = TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
+
+    pPos = TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
+
+    if ( (pEle==0 || pPos==0) &&  fImprovedPsiPair==3) {
+      radiussum = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]) + 30;
+      momPosProp[0] = pt.GetParameterAtRadius(radiussum,magField,3);
+      momPosProp[1] = pt.GetParameterAtRadius(radiussum,magField,4);
+      momPosProp[2] = pt.GetParameterAtRadius(radiussum,magField,5);
+
+      momNegProp[0] = nt.GetParameterAtRadius(radiussum,magField,3);
+      momNegProp[1] = nt.GetParameterAtRadius(radiussum,magField,4);
+      momNegProp[2] = nt.GetParameterAtRadius(radiussum,magField,5);
+
+    }
+  }
+
+
+
+
+   pEle =
     TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
 
-  Double_t pPos =
+   pPos =
     TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
 
   Double_t scalarproduct =
     momPosProp[0]*momNegProp[0]+momPosProp[1]*momNegProp[1]+momPosProp[2]*momNegProp[2];//scalar product of propagated positive and negative daughters' momenta
+
+  if (pEle==0 || pPos==0) return psiPair;
+
 
   Double_t chipair = TMath::ACos(scalarproduct/(pEle*pPos));//Angle between propagated daughter tracks
 
