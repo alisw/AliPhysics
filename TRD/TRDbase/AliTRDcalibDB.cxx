@@ -2140,9 +2140,17 @@ AliTRDtrapConfig* AliTRDcalibDB::GetTrapConfig()
     this->LoadTrapConfig(fTrapConfigName, fTrapConfigVersion);
 
     // if we still don't have a valid TRAPconfig, we give up
-    if (!fTrapConfig)
-      AliFatal("Requested TRAP configuration not found!");
-
+    if (!fTrapConfig) {  // produce fatal only for year>=2012
+      if (fRun>170717) AliFatal("Requested TRAP configuration not found!");
+      else {
+	AliWarning("Falling back to default configuration for year<2012");
+	static AliTRDtrapConfig trapConfigDefault("default", "default TRAP configuration");
+	fTrapConfig = &trapConfigDefault;
+	AliTRDtrapConfigHandler cfgHandler(fTrapConfig);
+	cfgHandler.Init();
+	cfgHandler.LoadConfig();
+      }
+    }
     AliInfo(Form("using TRAPconfig \"%s\"", fTrapConfig->GetTitle()));
 
     // we still have to load the gain tables
