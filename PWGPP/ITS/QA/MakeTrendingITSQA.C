@@ -1034,7 +1034,7 @@ void FillVertexBranches(TList * VertxList){
         hntrksZvsSPDcls->SetTitle("ncontributors SPDZ vs number of cluster SPD - DATA");
         hntrksZvsSPDcls->Draw();
     }	
-    TRK_SPD3D_Vtx->SaveAs("vertexPerformance.pdf");
+//    TRK_SPD3D_Vtx->SaveAs("vertexPerformance.pdf");
     TRK_SPD3D_Vtx->SaveAs("vertexPerformance.png");
 //    pdfFileNames+=" vertexPerformance.pdf";
 //    delete fx;
@@ -1320,7 +1320,7 @@ void FillSSDBranches(TList * SSDList){
         c1SSD->cd(6);
         if(fHistCRmean->GetEntries()>0) fHistCRmean->DrawCopy();
         c1SSD->Update();
-        c1SSD->SaveAs("SSDPerformance.pdf");
+//        c1SSD->SaveAs("SSDPerformance.pdf");
         c1SSD->SaveAs("SSDPerformance.png");
 //        pdfFileNames+=" SSDPerformance.pdf";
         
@@ -1394,7 +1394,7 @@ void FillSDDBranches(TList * SDDList){
                 hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
             }
             ceffL->Update();
-            ceffL->SaveAs("frac_track_points_per_layer.pdf");
+//            ceffL->SaveAs("frac_track_points_per_layer.pdf");
             ceffL->SaveAs("frac_track_points_per_layer.png");
 //            pdfFileNames+=" frac_track_points_per_layer.pdf";
         }
@@ -1664,7 +1664,7 @@ void FillSDDBranches(TList * SDDList){
     }
     //  cpars->Update();
     ctim->Update();
-    ctim->SaveAs("SDDPerformance.pdf");
+//    ctim->SaveAs("SDDPerformance.pdf");
     ctim->SaveAs("SDDPerformance.png");
 //    pdfFileNames+=" SDDPerformance.pdf";
     
@@ -1727,7 +1727,7 @@ void FillSPDBranches(TList * SPDList){
             etaData.Scale(1./etaData.GetEntries());
             etaData.DrawCopy();
         }
-        track->SaveAs("SPDtrackletsEtaPhi.pdf");
+//        track->SaveAs("SPDtrackletsEtaPhi.pdf");
         track->SaveAs("SPDtrackletsEtaPhi.png");
 //        pdfFileNames+=" SPDtrackletsEtaPhi.pdf";
     }
@@ -2168,7 +2168,7 @@ void FillITSsaBranches(TList * ITSsaList){
         }
         
         cITSsa1->Update();
-        cITSsa1->SaveAs("TrackTypesPerformance.pdf");
+//        cITSsa1->SaveAs("TrackTypesPerformance.pdf");
         cITSsa1->SaveAs("TrackTypesPerformance.png");
 
         TH2F* hEtaPhiTPCITS=(TH2F*)ITSsaList->FindObject("hEtaPhiTPCITS");
@@ -2202,7 +2202,7 @@ void FillITSsaBranches(TList * ITSsaList){
             hEtaPhiTPCITS->GetXaxis()->SetTitle("Eta");
             hEtaPhiTPCITS->GetYaxis()->SetTitle("Phi");
         }
-        cITSsa2->SaveAs("TrackTypesEtaPhi.pdf");
+//        cITSsa2->SaveAs("TrackTypesEtaPhi.pdf");
         cITSsa2->SaveAs("TrackTypesEtaPhi.png");
 //        pdfFileNames+=" TrackTypesEtaPhi.pdf";
 
@@ -2382,7 +2382,7 @@ void FillITSsaBranches(TList * ITSsaList){
     cITSsa0a->cd(2);
     if(hITSTPCtracksVsTracklets){hITSTPCtracksVsTracklets->GetXaxis()->SetTitle("nTracklets");hITSTPCtracksVsTracklets->Draw("colz");}
     cITSsa0a->Update();
-    cITSsa0a->SaveAs("nTracksvsnTracklets.pdf");
+//    cITSsa0a->SaveAs("nTracksvsnTracklets.pdf");
     cITSsa0a->SaveAs("nTracksvsnTracklets.png");
 //    pdfFileNames+=" nTracksvsnTracklets.pdf";
     
@@ -2405,7 +2405,7 @@ void FillITSsaBranches(TList * ITSsaList){
         cITSsa0b->cd(2);
         if(hEtaPhiTracksLay2TPCITS){hEtaPhiTracksLay2TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay2TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay2TPCITS->Draw("colz");}
         cITSsa0b->Update();
-        cITSsa0b->SaveAs("TPCITSEtaPhiSPD.pdf");
+//        cITSsa0b->SaveAs("TPCITSEtaPhiSPD.pdf");
         cITSsa0b->SaveAs("TPCITSEtaPhiSPD.png");
 //        pdfFileNames+=" TPCITSEtaPhiSPD.pdf";
     }
@@ -2420,7 +2420,7 @@ void FillITSsaBranches(TList * ITSsaList){
         cITSsa0c->cd(2);
         if(hEtaPhiTracksLay4TPCITS){hEtaPhiTracksLay4TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay4TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay4TPCITS->Draw("colz");}
         cITSsa0c->Update();
-        cITSsa0c->SaveAs("TPCITSEtaPhiSDD.pdf");
+//        cITSsa0c->SaveAs("TPCITSEtaPhiSDD.pdf");
         cITSsa0c->SaveAs("TPCITSEtaPhiSDD.png");
 //        pdfFileNames+=" TPCITSEtaPhiSDD.pdf";
     }
@@ -2435,7 +2435,7 @@ void FillITSsaBranches(TList * ITSsaList){
         cITSsa0d->cd(2);
         if(hEtaPhiTracksLay6TPCITS){hEtaPhiTracksLay6TPCITS->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay6TPCITS->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay6TPCITS->Draw("colz");}
         cITSsa0d->Update();
-        cITSsa0d->SaveAs("TPCITSEtaPhiSSD.pdf");
+//        cITSsa0d->SaveAs("TPCITSEtaPhiSSD.pdf");
         cITSsa0d->SaveAs("TPCITSEtaPhiSSD.png");
 //        pdfFileNames+=" TPCITSEtaPhiSSD.pdf";
     }
@@ -2450,7 +2450,7 @@ void FillITSsaBranches(TList * ITSsaList){
         cITSsa0e->cd(2);
         if(hEtaPhiTracksLay2ITSpureSA){hEtaPhiTracksLay2ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay2ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay2ITSpureSA->Draw("colz");}
         cITSsa0e->Update();
-        cITSsa0e->SaveAs("ITSpureSAEtaPhiSPD.pdf");
+//        cITSsa0e->SaveAs("ITSpureSAEtaPhiSPD.pdf");
         cITSsa0e->SaveAs("ITSpureSAEtaPhiSPD.png");
 //        pdfFileNames+=" ITSpureSAEtaPhiSPD.pdf";
     }
@@ -2465,7 +2465,7 @@ void FillITSsaBranches(TList * ITSsaList){
         cITSsa0f->cd(2);
         if(hEtaPhiTracksLay4ITSpureSA){hEtaPhiTracksLay4ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay4ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay4ITSpureSA->Draw("colz");}
         cITSsa0f->Update();
-        cITSsa0f->SaveAs("ITSpureSAEtaPhiSDD.pdf");
+//        cITSsa0f->SaveAs("ITSpureSAEtaPhiSDD.pdf");
         cITSsa0f->SaveAs("ITSpureSAEtaPhiSDD.png");
 //        pdfFileNames+=" ITSpureSAEtaPhiSDD.pdf";
     }
@@ -2480,7 +2480,7 @@ void FillITSsaBranches(TList * ITSsaList){
         cITSsa0g->cd(2);
         if(hEtaPhiTracksLay6ITSpureSA){hEtaPhiTracksLay6ITSpureSA->GetXaxis()->SetTitle("Eta");hEtaPhiTracksLay6ITSpureSA->GetYaxis()->SetTitle("Phi");hEtaPhiTracksLay6ITSpureSA->Draw("colz");}
         cITSsa0g->Update();
-        cITSsa0g->SaveAs("ITSpureSAEtaPhiSSD.pdf");
+//        cITSsa0g->SaveAs("ITSpureSAEtaPhiSSD.pdf");
         cITSsa0g->SaveAs("ITSpureSAEtaPhiSSD.png");
 //        pdfFileNames+=" ITSpureSAEtaPhiSSD.pdf";
     }
@@ -2497,7 +2497,8 @@ void FillPileupBranches(TList *PileUpList){
     TH1F *hnPilVtx = (TH1F*)PileUpList->FindObject("hNOfPileupVertSPD");
     if(hnPilVtx){
     // Pileup vertices from SPD
-        if(hnPilVtx->GetEntries()>0){
+//        if(hnPilVtx->GetEntries()>0){ // exclude runs where no pileup is considered
+          if(hnPilVtx->GetBinContent(2)>0){
                 Float_t meanPilVtx = 0.0, meanPilVtx_n=0;
                 Float_t errmeanPilVtx = 0.0;
                 Float_t errmeanPilVtx_n = 0.0;
@@ -2794,7 +2795,7 @@ void DrawSPDpileup(TList *VertxList, TList *PileUPList)
     tp1->Draw();
     }
     
-    pileup->SaveAs("SPD_pileup.pdf");
+//    pileup->SaveAs("SPD_pileup.pdf");
     pileup->SaveAs("SPD_pileup.png");
 //    pdfFileNames+=" SPD_pileup.pdf";
     
@@ -3006,7 +3007,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
     } // if(fHistPtTPCInAccTOF)
     
     if(fHistPtTPCInAcc){
-    cITSTPCmatch->SaveAs("MatchingPerformanceVsPt.pdf");
+//    cITSTPCmatch->SaveAs("MatchingPerformanceVsPt.pdf");
     cITSTPCmatch->SaveAs("MatchingPerformanceVsPt.png");
 //    pdfFileNames+=" MatchingPerformanceVsPt.pdf";
       }
@@ -3371,7 +3372,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
         } // if(fHistEtaTPCInAcc){
         
         if(fHistEtaTPCInAcc){
-            cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.pdf");
+//            cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.pdf");
             cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.png");
             //    pdfFileNames+=" MatchingPerformanceVsEtaPhi.pdf";
         }
