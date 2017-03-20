@@ -96,11 +96,16 @@ fRangesSB1R(0x0),
 fRangesSB2L(0x0),
 fRangesSB2R(0x0),
 fScaleFactor(0x0),
+fSignalCorrelMC_c(0x0),
+fSignalCorrelMC_b(0x0),
 fIntegratePtBins(kFALSE),
 fDebug(0),
 fMassFit(0x0),
 fBkgFit(0x0),
-fMassHisto(0x0)
+fMassHisto(0x0),
+fMCOriginSuffix(0),
+fMCOriginType(0),
+fMCmode(kReco)
 {
 
 }
@@ -176,11 +181,16 @@ fRangesSB1R(source.fRangesSB1R),
 fRangesSB2L(source.fRangesSB2L),
 fRangesSB2R(source.fRangesSB2R),
 fScaleFactor(source.fScaleFactor),
+fSignalCorrelMC_c(source.fSignalCorrelMC_c),
+fSignalCorrelMC_b(source.fSignalCorrelMC_b),
 fIntegratePtBins(source.fIntegratePtBins),
 fDebug(source.fDebug),
 fMassFit(source.fMassFit),
 fBkgFit(source.fBkgFit),
-fMassHisto(source.fMassHisto)
+fMassHisto(source.fMassHisto),
+fMCOriginSuffix(source.fMCOriginSuffix),
+fMCOriginType(source.fMCOriginType),
+fMCmode(source.fMCmode)
 {
 
 }
@@ -297,7 +307,7 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
   if(nbinsDraw == 2) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1400,800);
     cDMass->Divide(2,1);
   }
-  if(nbinsDraw == 3) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1750,800);
+  if(nbinsDraw == 3) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1900,800);
     cDMass->Divide(3,1);
   }
   if(nbinsDraw == 4) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1200,900);
@@ -490,6 +500,274 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
 }
 
 //___________________________________________________________________________________________
+Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
+
+  TCanvas *cDMass;
+
+  Int_t nbinsDraw = fNpTbins;
+  if(fIntegratePtBins) nbinsDraw = 1;
+
+  if(nbinsDraw == 1) cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1400,800);
+  if(nbinsDraw == 2) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1400,800);
+    cDMass->Divide(2,1);
+  }
+  if(nbinsDraw == 3) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1900,800);
+    cDMass->Divide(3,1);
+  }
+  if(nbinsDraw == 4) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1200,900);
+    cDMass->Divide(2,2);
+  }
+  if(nbinsDraw == 5 || nbinsDraw == 6) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1000,800);
+    cDMass->Divide(3,2);
+  }
+  if(nbinsDraw == 7 || nbinsDraw == 8) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1200,900);
+    cDMass->Divide(4,2);
+  }
+  if(nbinsDraw == 9) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1200,1000);
+    cDMass->Divide(3,3);
+  }
+  if(nbinsDraw == 10 || nbinsDraw == 11 || nbinsDraw == 12) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1200,1000);
+    cDMass->Divide(3,4);
+  }
+
+  if(!cDMass){std::cout << "Cannot create canvas " <<std::endl; return kFALSE;}
+
+  // define arrays containing the outputs of the d meson fits - the last member contains the output of the merged ptbin
+  fDmesonFitterSignal = new Double_t[fNpTbins];
+  fDmesonFitterSignalError = new Double_t[fNpTbins];
+  fDmesonFitterMean = new Double_t[fNpTbins];
+  fDmesonFitterMeanError = new Double_t[fNpTbins];
+  fDmesonFitterSigma = new Double_t[fNpTbins];
+  fDmesonFitterSigmaError = new Double_t[fNpTbins];
+
+  fSignalCorrelMC_c = new Double_t[fNpTbins]; 
+  fSignalCorrelMC_b = new Double_t[fNpTbins]; 
+
+  fMassFit = new TF1*[fNpTbins];
+
+  fMassHisto = new TH1F*[fNpTbins];
+
+  AliHFMassFitter *fitter = NULL;
+  
+  if(fLastpTbin-fFirstpTbin+1 != fNpTbins) { // if fits fails - display warning and keep going
+      std::cout << "Error in the definition of the pT bins! Exiting..." << std::endl;
+      return kFALSE;
+  }
+
+  //*****************************//
+  //Extraction of c origin D mesons
+  //*****************************//
+  
+  //Loop on pT bins
+  for(int i=0; i<fNpTbins; i++) {
+    if(!fIntegratePtBins) { //Regular input extraction
+      if(fDmesonSpecies==kD0toKpi) {
+        fMassHisto[i] = (TH1F*)fMassList->FindObject(Form("%sc_%d",fMassHistoName.Data(),i+fFirstpTbin));
+      }
+      else {      
+	   std::cout << "D+ and D* (and D0-e) have still to implement how to load the MC D inv mass plots for c and b origin" << std::endl;
+	   return kFALSE;
+      }
+    } else { //Integrate mass pT bins in wider correlation pT bin
+      if(i>0) continue;
+      MergeMassPlotsVsPt_MC();
+    }
+/*
+    if(fMCmode==kReco) {
+
+      //Rebinning of the mass histogram - PAY ATTENTION! Now bins are different w.r.t. THnSparse 
+      if(fRebinMassPlots>1) fMassHisto[i]->Rebin(fRebinMassPlots);
+
+      //Settings of mass fitter and fit masses
+      if(fDmesonSpecies==kD0toKpi) {
+        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+        fitter->SetInitialGaussianMean(1.864);
+        fitter->SetInitialGaussianSigma(0.010);
+      } else if(fDmesonSpecies==kDplusKpipi) {
+        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+        fitter->SetInitialGaussianMean(1.869);
+        fitter->SetInitialGaussianSigma(0.010);
+      } else if(fDmesonSpecies==kDStarD0pi) {
+        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+        fitter->SetInitialGaussianMean(0.1454);
+        fitter->SetInitialGaussianSigma(0.0005);
+      } else if(fDmesonSpecies==kDxHFE) {
+        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+        fitter->SetInitialGaussianMean(1.864);
+        fitter->SetInitialGaussianSigma(0.010);
+      } else {
+        printf("Error! Decay channel not supported!\n"); 
+        return kFALSE;
+      }
+  
+      //Do the fit!
+      std::cout << "Fitting mass plots... " <<std::endl;
+      Bool_t isFitted = fitter->MassFitter(kFALSE);
+          
+      if(!isFitted) { // if fits fails - display warning and keep going
+        std::cout << ">>>>>>>>>>> Fit at bin " << i << " not successful - skipping " << std::endl;
+        return kFALSE;
+      }
+  
+      //Get the outputs of the Fit
+      fMassFit[i] = fitter->GetMassFunc();
+      fMassFit[i]->SetRange(fLeftFitRange,fRightFitRange);
+      fMassFit[i]->SetLineColor(4);
+  
+      fitter->Signal(fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]);
+    
+      fDmesonFitterMean[i] = fitter->GetMean();
+      fDmesonFitterMeanError[i] = fitter->GetMeanUncertainty();
+      fDmesonFitterSigma[i] = fitter->GetSigma();
+      fDmesonFitterSigmaError[i]= fitter->GetSigmaUncertainty();
+
+      //Draw mass plots
+      cDMass->cd(i+1);
+      SetHistoStyle(fMassHisto[i],1);
+      fMassHisto[i]->GetXaxis()->SetRangeUser(fLeftFitRange,fRightFitRange);
+      fMassHisto[i]->SetMinimum(0);
+      fMassHisto[i]->SetMaximum(fMassHisto[i]->GetMaximum()*1.3);
+      fMassHisto[i]->Sumw2();
+      fMassHisto[i]->Draw();
+      fBkgFit[i]->Draw("same");
+      fMassFit[i]->Draw("same");
+ 
+      TPaveText *paveTextDMass;
+      DefinePaveText(paveTextDMass,0.57,0.5,0.88,0.88,Form("masspavetext_%d",i+fFirstpTbin));
+       
+      paveTextDMass->AddText(Form("Bin #%d",i+fFirstpTbin));
+      paveTextDMass->AddText(Form("Signal (%.1f #sigma) =  %.1f #pm %.1f",fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]));
+      paveTextDMass->AddText(Form("Mean = %.2f #pm %.2f (MeV/c^{2}) ",fDmesonFitterMean[i]*1000,fDmesonFitterMeanError[i]*1000));
+      paveTextDMass->AddText(Form("Sigma = %.2f #pm %.2f (MeV/c^{2})  ",fDmesonFitterSigma[i]*1000,fDmesonFitterSigmaError[i]*1000));
+
+      paveTextDMass->Draw("same");
+    
+    }
+*/
+  }  //end of for cycle
+
+  for(int i=0; i<fNpTbins; i++) {
+    //Extract signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling; then evaluate SB scaling factor
+    if(fIntegratePtBins && i>0) continue;
+    fSignalCorrelMC_c[i] = fMassHisto[i]->Integral(1,fMassHisto[i]->GetNbinsX());
+  }
+/*
+  if(fMCmode==kReco) {
+    std::cout << "Mass distributions for the bins considered were fitted" <<std::endl;
+
+    cDMass->SaveAs(Form("Output_png/InvMassDistributions_%s_Bins%dto%d_MC_Reco_c.png",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
+    cDMass->SaveAs(Form("Output_Root/InvMassDistributions_%s_Bins%dto%d_MC_Reco_c.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
+  }
+*/
+  //*****************************//
+  //Extraction of b origin D mesons
+  //*****************************//
+  
+  //Loop on pT bins
+  for(int i=0; i<fNpTbins; i++) {
+    if(!fIntegratePtBins) { //Regular input extraction
+      if(fDmesonSpecies==kD0toKpi) {
+        fMassHisto[i] = (TH1F*)fMassList->FindObject(Form("%sb_%d",fMassHistoName.Data(),i+fFirstpTbin));
+      }
+      else {      
+	std::cout << "D+ and D* (and D0-e) have still to implement how to load the MC D inv mass plots for c and b origin" << std::endl;
+	return kFALSE;
+      }
+    } else { //Integrate mass pT bins in wider correlation pT bin
+      if(i>0) continue;
+      MergeMassPlotsVsPt_MC();
+    }
+/*
+    if(fMCmode==kReco) {
+
+      //Rebinning of the mass histogram - PAY ATTENTION! Now bins are different w.r.t. THnSparse 
+      if(fRebinMassPlots>1) fMassHisto[i]->Rebin(fRebinMassPlots);
+
+      //Settings of mass fitter and fit masses
+      if(fDmesonSpecies==kD0toKpi) {
+        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+        fitter->SetInitialGaussianMean(1.864);
+        fitter->SetInitialGaussianSigma(0.010);
+      } else if(fDmesonSpecies==kDplusKpipi) {
+        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+        fitter->SetInitialGaussianMean(1.869);
+        fitter->SetInitialGaussianSigma(0.010);
+      } else if(fDmesonSpecies==kDStarD0pi) {
+        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+        fitter->SetInitialGaussianMean(0.1454);
+        fitter->SetInitialGaussianSigma(0.0005);
+      } else if(fDmesonSpecies==kDxHFE) {
+        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+        fitter->SetInitialGaussianMean(1.864);
+        fitter->SetInitialGaussianSigma(0.010);
+      } else {
+        printf("Error! Decay channel not supported!\n"); 
+        return kFALSE;
+      }
+  
+      //Do the fit!
+      std::cout << "Fitting mass plots... " <<std::endl;
+      Bool_t isFitted = fitter->MassFitter(kFALSE);
+          
+      if(!isFitted) { // if fits fails - display warning and keep going
+        std::cout << ">>>>>>>>>>> Fit at bin " << i << " not successful - skipping " << std::endl;
+        return kFALSE;
+      }
+  
+      //Get the outputs of the Fit
+      fMassFit[i] = fitter->GetMassFunc();
+      fMassFit[i]->SetRange(fLeftFitRange,fRightFitRange);
+      fMassFit[i]->SetLineColor(4);
+  
+      fitter->Signal(fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]);
+    
+      fDmesonFitterMean[i] = fitter->GetMean();
+      fDmesonFitterMeanError[i] = fitter->GetMeanUncertainty();
+      fDmesonFitterSigma[i] = fitter->GetSigma();
+      fDmesonFitterSigmaError[i]= fitter->GetSigmaUncertainty();
+
+      //Draw mass plots
+      cDMass->cd(i+1);
+      SetHistoStyle(fMassHisto[i],1);
+      fMassHisto[i]->GetXaxis()->SetRangeUser(fLeftFitRange,fRightFitRange);
+      fMassHisto[i]->SetMinimum(0);
+      fMassHisto[i]->SetMaximum(fMassHisto[i]->GetMaximum()*1.3);
+      fMassHisto[i]->Sumw2();
+      fMassHisto[i]->Draw();
+      fBkgFit[i]->Draw("same");
+      fMassFit[i]->Draw("same");
+ 
+      TPaveText *paveTextDMass;
+      DefinePaveText(paveTextDMass,0.57,0.5,0.88,0.88,Form("masspavetext_%d",i+fFirstpTbin));
+       
+      paveTextDMass->AddText(Form("Bin #%d",i+fFirstpTbin));
+      paveTextDMass->AddText(Form("Signal (%.1f #sigma) =  %.1f #pm %.1f",fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]));
+      paveTextDMass->AddText(Form("Mean = %.2f #pm %.2f (MeV/c^{2}) ",fDmesonFitterMean[i]*1000,fDmesonFitterMeanError[i]*1000));
+      paveTextDMass->AddText(Form("Sigma = %.2f #pm %.2f (MeV/c^{2})  ",fDmesonFitterSigma[i]*1000,fDmesonFitterSigmaError[i]*1000));
+
+      paveTextDMass->Draw("same");
+    
+    }
+*/
+  }  //end of for cycle
+
+  for(int i=0; i<fNpTbins; i++) {
+    //Extract signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling; then evaluate SB scaling factor
+    if(fIntegratePtBins && i>0) continue;
+    fSignalCorrelMC_b[i] = fMassHisto[i]->Integral(1,fMassHisto[i]->GetNbinsX());
+  }
+/*
+  if(fMCmode==kReco) {
+    std::cout << "Mass distributions for the bins considered were fitted" <<std::endl;
+
+    cDMass->SaveAs(Form("Output_png/InvMassDistributions_%s_Bins%dto%d_MC_Reco_b.png",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
+    cDMass->SaveAs(Form("Output_Root/InvMassDistributions_%s_Bins%dto%d_MC_Reco_b.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
+  }  
+*/
+  return kTRUE;
+}
+
+//___________________________________________________________________________________________
 Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t thrMax) {
 
   if(!fCorrectPoolsSeparately && (fReadTreeSE || fReadTreeME)) {
@@ -540,6 +818,13 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
       if(fSubtractSoftPiME) {
         hME_Sign_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax,2); //2 = pick only bin2 of softpi axis (#5), i.e. pick the fake softpions
         hME_Sideb_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSideb,iPool,iBin,thrMin,thrMax,2);
+      }
+
+      if(fDebug>=3) {  //statistical uncertainty
+	printf("hSE_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sign[iPool][iBin]->GetBinContent(8,5),hSE_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)),hSE_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)));
+	printf("hME_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sign[iPool][iBin]->GetBinContent(8,5),hME_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)),hME_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)));
+	printf("hSE_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sideb[iPool][iBin]->GetBinContent(8,5),hSE_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)),hSE_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)));
+	printf("hME_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sideb[iPool][iBin]->GetBinContent(8,5),hME_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)),hME_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)));
       }
 
       //Scale bkg plots by ratio of signal region/sidebands
@@ -618,6 +903,13 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
 
     } // end of pT for
 
+    if(fDebug>=3) {  //statistical uncertainty
+      printf("hSE_Sign_PtInt: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sign_PtInt[iPool]->GetBinContent(8,5),hSE_Sign_PtInt[iPool]->GetBinError(8,5),TMath::Sqrt(hSE_Sign_PtInt[iPool]->GetBinContent(8,5)),hSE_Sign_PtInt[iPool]->GetBinError(8,5)/TMath::Sqrt(hSE_Sign_PtInt[iPool]->GetBinContent(8,5)));
+      printf("hME_Sign_PtInt: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sign_PtInt[iPool]->GetBinContent(8,5),hME_Sign_PtInt[iPool]->GetBinError(8,5),TMath::Sqrt(hME_Sign_PtInt[iPool]->GetBinContent(8,5)),hME_Sign_PtInt[iPool]->GetBinError(8,5)/TMath::Sqrt(hME_Sign_PtInt[iPool]->GetBinContent(8,5)));
+      printf("hSE_Sideb_PtInt: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sideb_PtInt[iPool]->GetBinContent(8,5),hSE_Sideb_PtInt[iPool]->GetBinError(8,5),TMath::Sqrt(hSE_Sideb_PtInt[iPool]->GetBinContent(8,5)),hSE_Sideb_PtInt[iPool]->GetBinError(8,5)/TMath::Sqrt(hSE_Sideb_PtInt[iPool]->GetBinContent(8,5)));
+      printf("hME_Sideb_PtInt: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sideb_PtInt[iPool]->GetBinContent(8,5),hME_Sideb_PtInt[iPool]->GetBinError(8,5),TMath::Sqrt(hME_Sideb_PtInt[iPool]->GetBinContent(8,5)),hME_Sideb_PtInt[iPool]->GetBinError(8,5)/TMath::Sqrt(hME_Sideb_PtInt[iPool]->GetBinContent(8,5)));
+    }
+
     //Normalize ME plots and (if requested) remove the softpion-compatible tracks
     NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
     NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
@@ -640,6 +932,11 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
     hSE_Sideb_PtInt[iPool]->SetEntries(N_SEsideb); 
     hCorr_Sign_PtInt[iPool]->SetEntries(N_sign); 
     hCorr_Sideb_PtInt[iPool]->SetEntries(N_sideb); 
+    
+    if(fDebug>=3) {  //statistical uncertainty
+      printf("hCorr_Sign_PtInt: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hCorr_Sign_PtInt[iPool]->GetBinContent(8,5),hCorr_Sign_PtInt[iPool]->GetBinError(8,5),TMath::Sqrt(hCorr_Sign_PtInt[iPool]->GetBinContent(8,5)),hCorr_Sign_PtInt[iPool]->GetBinError(8,5)/TMath::Sqrt(hCorr_Sign_PtInt[iPool]->GetBinContent(8,5)));
+      printf("hCorr_Sideb_PtInt: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hCorr_Sideb_PtInt[iPool]->GetBinContent(8,5),hCorr_Sideb_PtInt[iPool]->GetBinError(8,5),TMath::Sqrt(hCorr_Sideb_PtInt[iPool]->GetBinContent(8,5)),hCorr_Sideb_PtInt[iPool]->GetBinError(8,5)/TMath::Sqrt(hCorr_Sideb_PtInt[iPool]->GetBinContent(8,5)));
+    }
 
     if(fDebug>=1) {
       TCanvas *c = new TCanvas(Form("cSEME_%d_%1.1fto%1.1f",iPool,thrMin,thrMax),Form("cSEME_%s_pool%d_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),iPool,thrMin,thrMax),100,100,1600,900);
@@ -676,6 +973,11 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
     }
 
   } //end of pool for
+
+  if(fDebug>=3) {  //statistical uncertainty
+    printf("h2D_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",h2D_Sign->GetBinContent(8,5),h2D_Sign->GetBinError(8,5),TMath::Sqrt(h2D_Sign->GetBinContent(8,5)),h2D_Sign->GetBinError(8,5)/TMath::Sqrt(h2D_Sign->GetBinContent(8,5)));
+    printf("h2D_Sideb: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",h2D_Sideb->GetBinContent(8,5),h2D_Sideb->GetBinError(8,5),TMath::Sqrt(h2D_Sideb->GetBinContent(8,5)),h2D_Sideb->GetBinError(8,5)/TMath::Sqrt(h2D_Sideb->GetBinContent(8,5)));
+  }
 
   //Draw 2D plots (Signal region and Sidebands)
   TCanvas *c2D = new TCanvas(Form("c2D_IntPools_%1.1fto%1.1f",thrMin,thrMax),Form("c2D_%s_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1500,800);
@@ -721,8 +1023,15 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   h1D_Subtr->SetEntries(h1D_Sign->GetEntries()-h1D_Sideb->GetEntries());
   h1D_Subtr->SetTitle("Signal region after sideb. subt. corr.");
 
+  if(fDebug>=3) {  //statistical uncertainty
+    printf("ATTENTION TO DeltaPhi SCALING: h1D_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",h1D_Sign->GetBinContent(8),h1D_Sign->GetBinError(8),TMath::Sqrt(h1D_Sign->GetBinContent(8)),h1D_Sign->GetBinError(8)/TMath::Sqrt(h1D_Sign->GetBinContent(8)));
+    printf("ATTENTION TO DeltaPhi SCALING: h1D_Sideb: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",h1D_Sideb->GetBinContent(8),h1D_Sideb->GetBinError(8),TMath::Sqrt(h1D_Sideb->GetBinContent(8)),h1D_Sideb->GetBinError(8)/TMath::Sqrt(h1D_Sideb->GetBinContent(8)));
+    printf("ATTENTION TO DeltaPhi SCALING: h1D_Subtr: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",h1D_Subtr->GetBinContent(8),h1D_Subtr->GetBinError(8),TMath::Sqrt(h1D_Subtr->GetBinContent(8)),h1D_Subtr->GetBinError(8)/TMath::Sqrt(h1D_Subtr->GetBinContent(8)));
+    getchar();
+  } 
+
   //Draw 1D plots (Signal region, Sidebands, S-SB)
-  TCanvas *c1D = new TCanvas(Form("c1D_IntPools_%1.1fto%1.1f",thrMin,thrMax),Form("c1D_%s_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1600,700);
+  TCanvas *c1D = new TCanvas(Form("c1D_IntPools_%1.1fto%1.1f",thrMin,thrMax),Form("c1D_%s_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1600,500);
   c1D->Divide(3,1);
   SetHistoCorrStyle(h1D_Sign);
   SetHistoCorrStyle(h1D_Sideb);
@@ -760,7 +1069,6 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
     c1D_Norm->SaveAs(Form("Output_Root/h1D_%s_Canvas_Normalized_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax));
   }
 
-
   //Draw 1D plots (Signal region, not normalized)
   TCanvas *cFinNotNorm = new TCanvas(Form("cFinNotNorm_%1.1fto%1.1f",thrMin,thrMax),Form("cFinNotNorm_%s_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1200,700);
   SetHistoCorrStyle(h1D_Subtr);
@@ -783,6 +1091,197 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   return kTRUE;
 }
 
+//___________________________________________________________________________________________
+Bool_t AliDhCorrelationExtraction::ExtractCorrelations_MC(Double_t thrMin, Double_t thrMax) {
+	
+  Bool_t success = kTRUE;	
+  for(Int_t iOrig=0; iOrig<fMCOriginType.size(); iOrig++) {
+    gSystem->Exec(Form("mkdir Output_Root/Orig%d",iOrig));
+    gSystem->Exec(Form("mkdir Output_png/Orig%d",iOrig)); 
+    success = ExtractCorrelations_MC_Orig(thrMin,thrMax,iOrig);
+    if(!success) {
+      std::cout << "Error in extracting MC origin " << iOrig << "; Returning...\n" << std::endl;
+      return success;
+    }
+  }
+  success = DoSingleCanvasMCPlot(thrMin,thrMax);
+  return success;
+	
+}
+
+//___________________________________________________________________________________________
+Bool_t AliDhCorrelationExtraction::ExtractCorrelations_MC_Orig(Double_t thrMin, Double_t thrMax, Int_t orig) {
+
+  //DISCLAIMER: Only online mode is implemented for MC analysis
+  
+  Int_t origType = -1;
+  origType = fMCOriginType.at(orig);
+  
+  if(origType==-1) {
+    std::cout << "Problem in setting of the origin! Recheck the macro and the input files" << std::endl;
+    return kFALSE;
+  }
+  
+  TString suffixOrig = fMCOriginSuffix.at(orig);
+  
+  TString mode;
+  if(fMCmode==kKine) mode = "_Kine";
+  if(fMCmode==kReco) mode = "_Reco";
+
+  if(!fCorrectPoolsSeparately) fNpools = 1; //single histogram with integrated pools
+
+  //Histograms definition
+  TH2D* hSE_Sign[fNpools][fNpTbins];
+  TH2D* hME_Sign[fNpools][fNpTbins];  
+  TH2D* hME_Sign_SoftPi[fNpools][fNpTbins];  
+
+  TH2D* hSE_Sign_PtInt[fNpools];
+  TH2D* hME_Sign_PtInt[fNpools];
+  TH2D* hME_Sign_SoftPi_PtInt[fNpools];
+
+  TH2D* hCorr_Sign_PtInt[fNpools];
+
+  TH2D* h2D_Sign;
+
+  TH1D* h1D_Subtr;
+  TH1D* h1D_SubtrNorm;  //it's just h1D_Sign, but normalized
+
+  for(int iPool=0; iPool<fNpools; iPool++) {
+
+    for(int iBin=0; iBin<fNpTbins; iBin++) {
+
+      if(fIntegratePtBins && iBin>0) continue;
+
+      //Retrieve 2D plots for SE and ME, signal and bkg regions, for each pTbin and pool
+      hSE_Sign[iPool][iBin] = GetCorrelHisto_MC(kSE,iPool,iBin,thrMin,thrMax,orig);
+      hME_Sign[iPool][iBin] = GetCorrelHisto_MC(kME,iPool,iBin,thrMin,thrMax,orig);
+      if(fSubtractSoftPiME) hME_Sign_SoftPi[iPool][iBin] = GetCorrelHisto_MC(kME,iPool,iBin,thrMin,thrMax,orig,2); //2 = pick only bin2 of softpi axis (#5), i.e. pick the fake softpions
+
+      if(fDebug>=1) { 
+	TCanvas *c = new TCanvas(Form("cInput_%d_%d_%1.1fto%1.1f",iPool,iBin,thrMin,thrMax),Form("InputCorr_%s_pool%d_bin%d_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),iPool,iBin,thrMin,thrMax),100,100,1600,600);
+	if(fSubtractSoftPiME) {
+	  c->Divide(3);
+	  c->cd(1);
+	  hSE_Sign[iPool][iBin]->SetMinimum(0);
+	  hSE_Sign[iPool][iBin]->Draw("lego2");
+	  c->cd(2);
+	  hME_Sign[iPool][iBin]->SetMinimum(0);
+	  hME_Sign[iPool][iBin]->Draw("lego2");
+	  c->cd(3);
+	  hME_Sign_SoftPi[iPool][iBin]->SetMinimum(0);
+	  hME_Sign_SoftPi[iPool][iBin]->Draw("lego2");
+	  c->SaveAs(Form("Output_png/Orig%d/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f%s%s.png",orig,fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+	  c->SaveAs(Form("Output_Root/Orig%d/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f%s%s.root",orig,fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+	} else {
+	  c->Divide(2);
+	  c->cd(1);
+	  hSE_Sign[iPool][iBin]->SetMinimum(0);
+	  hSE_Sign[iPool][iBin]->Draw("lego2");
+  	  c->cd(2);
+	  hME_Sign[iPool][iBin]->SetMinimum(0);
+	  hME_Sign[iPool][iBin]->Draw("lego2");
+  	  c->SaveAs(Form("Output_png/Orig%d/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f%s%s.png",orig,fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+  	  c->SaveAs(Form("Output_Root/Orig%d/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f%s%s.root",orig,fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+	}
+      }
+
+      if(iBin==0) {
+        hSE_Sign_PtInt[iPool] = (TH2D*)hSE_Sign[iPool][iBin]->Clone(Form("hSE_Sign_PtInt_p%d",iPool));
+        hME_Sign_PtInt[iPool] = (TH2D*)hME_Sign[iPool][iBin]->Clone(Form("hME_Sign_PtInt_p%d",iPool));
+        if(fSubtractSoftPiME) hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));     
+      }
+      else {
+        hSE_Sign_PtInt[iPool]->Add(hSE_Sign[iPool][iBin]);
+        hME_Sign_PtInt[iPool]->Add(hME_Sign[iPool][iBin]);
+        if(fSubtractSoftPiME) hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
+      }
+
+    } // end of pT for
+
+    //Normalize ME plots and (if requested) remove the softpion-compatible tracks
+    NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
+
+    //Apply Event Mixing Correction
+    hCorr_Sign_PtInt[iPool] = (TH2D*)hSE_Sign_PtInt[iPool]->Clone(Form("hCorr_Sign_PtInt_p%d",iPool));
+    hCorr_Sign_PtInt[iPool]->Divide(hME_Sign_PtInt[iPool]);   
+    Double_t N_SEsign = 0, N_sign = 0;  
+    for(int i=1;i<=hCorr_Sign_PtInt[iPool]->GetXaxis()->GetNbins();i++) {
+      for(int j=1;j<=hCorr_Sign_PtInt[iPool]->GetYaxis()->GetNbins();j++) {
+	N_SEsign += hSE_Sign_PtInt[iPool]->GetBinContent(i,j);
+	N_sign += hCorr_Sign_PtInt[iPool]->GetBinContent(i,j);
+      }
+    }
+    hSE_Sign_PtInt[iPool]->SetEntries(N_SEsign); 
+    hCorr_Sign_PtInt[iPool]->SetEntries(N_sign); 
+
+    if(fDebug>=1) {
+      TCanvas *c = new TCanvas(Form("cSEME_%d_%1.1fto%1.1f",iPool,thrMin,thrMax),Form("cSEME_%s_pool%d_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),iPool,thrMin,thrMax),100,100,1600,600);
+      c->Divide(3);
+      c->cd(1);
+      hSE_Sign_PtInt[iPool]->SetMinimum(0);
+      hSE_Sign_PtInt[iPool]->Draw("lego2");
+      c->cd(2);
+      hME_Sign_PtInt[iPool]->SetMinimum(0);
+      hME_Sign_PtInt[iPool]->Draw("lego2");
+      c->cd(3);
+      hCorr_Sign_PtInt[iPool]->SetMinimum(0);
+      hCorr_Sign_PtInt[iPool]->Draw("lego2");
+      c->SaveAs(Form("Output_png/Orig%d/CorrSEandME_%s_Canvas_PtIntBins%dto%d_pool%d_thr%1.1fto%1.1f%s%s.png",orig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,iPool,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+      c->SaveAs(Form("Output_Root/Orig%d/CorrSEandME_%s_Canvas_PtIntBins%dto%d_pool%d_thr%1.1fto%1.1f%s%s.root",orig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,iPool,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+    }
+
+    //Pools integration
+    if(iPool==0) {
+      h2D_Sign = (TH2D*)hCorr_Sign_PtInt[0]->Clone("h2D_Sign");
+    } else {
+      h2D_Sign->Add(hCorr_Sign_PtInt[iPool]);
+    }
+
+  } //end of pool for
+
+  //Draw 2D plot 
+  TCanvas *c2D_Sub = new TCanvas(Form("c2D_Subtr_IntPools_%1.1fto%1.1f",thrMin,thrMax),Form("c2D_%s_Subtr_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1500,800);
+  h2D_Sign->SetTitle("Signal MC - 2D");
+  h2D_Sign->Draw("lego2");
+  c2D_Sub->SaveAs(Form("Output_png/Orig%d/h2D_%s_Subtr_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f%s%s.png",orig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+  c2D_Sub->SaveAs(Form("Output_Root/Orig%d/h2D_%s_Subtr_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f%s%s.root",orig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+
+  //Evaluate total number of triggers
+  ExtractNumberOfTriggers_MC();
+
+  Double_t Snorm = 0;
+  for(int iBin=0; iBin<fNpTbins; iBin++) {
+    if(fIntegratePtBins && iBin>0) continue;
+    if(origType==kOrigAll || origType==kOrigC || origType==kOrigLF) Snorm += fSignalCorrelMC_c[iBin];
+    if(origType==kOrigAll || origType==kOrigB || origType==kOrigLF) Snorm += fSignalCorrelMC_b[iBin];
+  }
+
+  //1D projection  -> There's no subtraction, so sign==subtr!
+  h1D_Subtr = (TH1D*)h2D_Sign->ProjectionX("h1D_Subtr"); 
+  h1D_Subtr->SetTitle("Signal MC correlations");
+  h1D_Subtr->Scale(1./h1D_Subtr->GetXaxis()->GetBinWidth(1));
+
+  //Draw 1D plots (Signal region, not normalized)
+  TCanvas *cFinNotNorm = new TCanvas(Form("cFinNotNorm_%1.1fto%1.1f",thrMin,thrMax),Form("cFinNotNorm_%s_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1200,700);
+  SetHistoCorrStyle(h1D_Subtr);
+  h1D_Subtr->Draw(); 
+  cFinNotNorm->SaveAs(Form("Output_png/Orig%d/AzimCorrDistr_NotNorm_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Ntrig_%.3f%s%s.png",orig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,Snorm,suffixOrig.Data(),mode.Data()));
+  cFinNotNorm->SaveAs(Form("Output_Root/Orig%d/AzimCorrDistr_NotNorm_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Ntrig_%.3f%s%s.root",orig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,Snorm,suffixOrig.Data(),mode.Data()));
+
+  //Apply normalization to number of triggers
+  h1D_SubtrNorm = (TH1D*)h1D_Subtr->Clone("h1D_SubtrNorm");
+  h1D_SubtrNorm->Scale(1./Snorm);
+  h1D_SubtrNorm->SetTitle("Signal region after sideb. subt. corr. - Normalized to # of triggers");  
+
+  //Draw 1D plots (Signal region, normalized)
+  TCanvas *cFinal = new TCanvas(Form("cFinal_%1.1fto%1.1f",thrMin,thrMax),Form("cFinal_%s_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1200,700);
+  SetHistoCorrStyle(h1D_SubtrNorm);
+  h1D_SubtrNorm->Draw(); 
+  cFinal->SaveAs(Form("Output_png/Orig%d/AzimCorrDistr_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f%s%s.png",orig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+  cFinal->SaveAs(Form("Output_Root/Orig%d/AzimCorrDistr_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f%s%s.root",orig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+
+  return kTRUE;
+}
 
 //___________________________________________________________________________________________
 void AliDhCorrelationExtraction::MergeMassPlotsVsPt() {
@@ -805,6 +1304,14 @@ void AliDhCorrelationExtraction::MergeMassPlotsVsPt() {
 
   fMassHisto[0]=(TH1F*)massPlotMerged->Clone(Form("%s_Merged",massPlotMerged->GetName()));
   return;
+}
+
+//___________________________________________________________________________________________
+void AliDhCorrelationExtraction::MergeMassPlotsVsPt_MC() {
+
+  std::cout << "Integration of mass pT bins still not active for MC! Returning..." << std::endl;
+  return;
+  
 }
 
 
@@ -900,6 +1407,13 @@ void AliDhCorrelationExtraction::MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t
   return;
 }
 
+//___________________________________________________________________________________________
+void AliDhCorrelationExtraction::MergeCorrelPlotsVsPt_MC(THnSparse* &hsparse, Int_t SEorME, Int_t pool, Int_t orig) {
+
+  std::cout << "Pt bin integration still not implemented in MC! Exiting\n" <<  std::endl;
+  return;
+  
+}
 
 //___________________________________________________________________________________________
 void AliDhCorrelationExtraction::MergeCorrelPlotsVsPtTTree(TH3D* &h3D, Int_t SEorME, Int_t SorSB, Int_t pool, Double_t thrMin, Double_t thrMax) {
@@ -947,6 +1461,51 @@ void AliDhCorrelationExtraction::MergeCorrelPlotsVsPtTTree(TH3D* &h3D, Int_t SEo
   } 
 
   return;
+}
+
+//___________________________________________________________________________________________
+Bool_t AliDhCorrelationExtraction::DoSingleCanvasMCPlot(Double_t thrMin, Double_t thrMax) {
+	
+  Bool_t success = kTRUE;
+  
+  TString mode;
+  if(fMCmode==kKine) mode = "_Kine";
+  if(fMCmode==kReco) mode = "_Reco";
+  
+  TCanvas *cOut = new TCanvas(Form("cOutSuperimp_%dto%d_%1.1fto%1.1f%s",fFirstpTbin,fLastpTbin,thrMin,thrMax,mode.Data()),Form("Superimposed_%dto%d_%1.1fto%1.1f_%s",fFirstpTbin,fLastpTbin,thrMin,thrMax,mode.Data()),100,100,1200,900);	
+  
+  for(Int_t iOrig=0; iOrig<fMCOriginType.size(); iOrig++) {
+
+    TString suffixOrig = fMCOriginSuffix.at(iOrig);
+	  
+    TFile *fIn = TFile::Open(Form("Output_Root/Orig%d/AzimCorrDistr_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f%s%s.root",iOrig,fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,suffixOrig.Data(),mode.Data()));
+    if(!fIn) {std::cout << "Cannot superimpose output plots! Input plots missing!" << std::endl; return kFALSE;}	  
+    TCanvas *cIn = (TCanvas*)fIn->Get(Form("cFinal_%1.1fto%1.1f",thrMin,thrMax));
+    if(!cIn) {std::cout << "Cannot superimpose output plots! Input canvas missing!" << std::endl; return kFALSE;}	  
+    TH1D *hIn = ((TH1D*)cIn->FindObject("h1D_SubtrNorm"));
+    TH1D *hDraw = (TH1D*)hIn->Clone(Form("h1D_SubtrNorm_Orig%d",iOrig));
+    if(!hIn) {std::cout << "Cannot superimpose output plots! Input histogram missing!" << std::endl; return kFALSE;}	  
+        	  
+    cOut->cd();
+    hDraw->SetLineColor(1+iOrig);
+    hDraw->SetMarkerColor(1+iOrig);
+    if(!iOrig) hDraw->Draw();
+    else hDraw->Draw("same");
+    
+  }
+  
+  cOut->SaveAs(Form("Output_png/AzimCorrDistr_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Superimposed%s.png",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,mode.Data()));
+  cOut->SaveAs(Form("Output_Root/AzimCorrDistr_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Superimposed%s.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,mode.Data()));
+  
+  if(fDebug<2) {
+    for(Int_t iOrig=0; iOrig<fMCOriginType.size(); iOrig++) {
+      gSystem->Exec(Form("rm -r Output_Root/Orig%d",iOrig));
+      gSystem->Exec(Form("rm -r Output_png/Orig%d",iOrig));
+    }  
+  }
+  
+  return success;
+	
 }
 
 //___________________________________________________________________________________________
@@ -1341,6 +1900,122 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDstarTTree(Int_t SEorME, Int_t S
   return h2D;
 }
 
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHisto_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig, Int_t softPiME) {
+
+  switch(fDmesonSpecies) {
+
+    case (kD0toKpi): {  //in this case, it can also extract fake softpions from ME analysis (from online correl analysis only)
+      return GetCorrelHistoDzero_MC(SEorME,pool,pTbin,thrMin,thrMax,orig,softPiME);
+      break;
+    } //end case D0
+
+    case (kDplusKpipi): {
+      return GetCorrelHistoDplus_MC(SEorME,pool,pTbin,thrMin,thrMax,orig);
+      break;
+    } //end case D+
+
+    case (kDStarD0pi): {
+      return GetCorrelHistoDstar_MC(SEorME,pool,pTbin,thrMin,thrMax,orig);
+      break;
+    } //end case D*
+
+    case (kDxHFE): {
+      return GetCorrelHistoDxHFE_MC(SEorME,pool,pTbin,thrMin,thrMax,orig);
+      break;
+    } //end case DxHFE
+
+    default:    
+      printf("Error! Wrong setting in the D meson specie - Returning...\n");
+      return 0x0; 
+  } 
+
+}
+
+
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig, Int_t softPiME) {
+
+  TString suffixOrig = fMCOriginSuffix.at(orig);
+
+  TH2D* h2D = new TH2D(); //pointer to be returned
+
+  TH3D* h3D; //for projecting the TH2Sparse onto
+  if(SEorME==kSE) {
+    THnSparse *hsparse = 0x0;
+    if(!fIntegratePtBins) {
+      if(fCorrectPoolsSeparately) hsparse = (THnSparse*)fSECorrelationList->FindObject(Form("%s%s_Bin%d_p%d",fSECorrelHistoName.Data(),suffixOrig.Data(),pTbin+fFirstpTbin,pool)); //D0: one histo x pool
+      else hsparse = (THnSparse*)fSECorrelationList->FindObject(Form("%s%s%d",fSECorrelHistoName.Data(),suffixOrig.Data(),pTbin+fFirstpTbin));
+    } else MergeCorrelPlotsVsPt_MC(hsparse,SEorME,pool,orig);
+    Int_t ptBinTrMin = (Int_t)(hsparse->GetAxis(2)->FindBin(thrMin+0.01)); //the 0.01 to avoid bin edges!
+    Int_t ptBinTrMax = (Int_t)(hsparse->GetAxis(2)->FindBin(thrMax-0.01));
+    Int_t etaLowBin = (Int_t)(hsparse->GetAxis(4)->FindBin(fDeltaEtaMin+0.01));
+    Int_t etaHighBin = (Int_t)(hsparse->GetAxis(4)->FindBin(fDeltaEtaMax-0.01));
+    if(ptBinTrMax > hsparse->GetAxis(2)->GetNbins()) ptBinTrMax = hsparse->GetAxis(2)->GetNbins();
+    if(etaHighBin > hsparse->GetAxis(4)->GetNbins()) etaHighBin = hsparse->GetAxis(4)->GetNbins();
+    if(etaLowBin < 1) etaLowBin = 1;
+    hsparse->GetAxis(2)->SetRange(ptBinTrMin,ptBinTrMax); //Apply cut on pT
+    hsparse->GetAxis(3)->SetRange(1,hsparse->GetAxis(3)->GetNbins()); //AApply cut on displacement
+    hsparse->GetAxis(4)->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
+    if(fDebug>=2 && pool==0) printf("Bin ranges - pT: %d-%d, dEta: %d-%d, displ: %d-%d\n",ptBinTrMin,ptBinTrMax,etaLowBin,etaHighBin,1,hsparse->GetAxis(3)->GetNbins());
+    h3D = (TH3D*)hsparse->Projection(1,4,0);//x,y,z axes
+  } else if(SEorME==kME) {  //here no differentiation of origins is still implemented! So no suffixOrig is called!
+    THnSparse *hsparse = 0x0;
+    if(!fIntegratePtBins) {
+      if(fCorrectPoolsSeparately) hsparse = (THnSparse*)fMECorrelationList->FindObject(Form("%s_Bin%d_p%d%s",fSECorrelHistoName.Data(),pTbin+fFirstpTbin,pool,fMEsuffix.Data()));
+      else hsparse = (THnSparse*)fMECorrelationList->FindObject(Form("%s%d%s",fSECorrelHistoName.Data(),pTbin+fFirstpTbin,fMEsuffix.Data()));
+    } else MergeCorrelPlotsVsPt(hsparse,SEorME,pool,orig);
+    Int_t ptBinTrMin = (Int_t)(hsparse->GetAxis(3)->FindBin(thrMin+0.01));
+    Int_t ptBinTrMax = (Int_t)(hsparse->GetAxis(3)->FindBin(thrMax-0.01));
+    Int_t etaLowBin = (Int_t)(hsparse->GetAxis(2)->FindBin(fDeltaEtaMin+0.01));
+    Int_t etaHighBin = (Int_t)(hsparse->GetAxis(2)->FindBin(fDeltaEtaMax-0.01));
+    if(ptBinTrMax > hsparse->GetAxis(3)->GetNbins()) ptBinTrMax = hsparse->GetAxis(3)->GetNbins();
+    if(etaHighBin > hsparse->GetAxis(2)->GetNbins()) etaHighBin = hsparse->GetAxis(4)->GetNbins();
+    if(etaLowBin < 1) etaLowBin = 1;
+    hsparse->GetAxis(2)->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
+    hsparse->GetAxis(3)->SetRange(ptBinTrMin,ptBinTrMax); //Apply cut on pT
+    if(fSubtractSoftPiME) {
+      if(hsparse->GetNdimensions()==5) hsparse->GetAxis(4)->SetRange(softPiME,2); //Apply cut on softpi axis (bin1=accepted tracks, bin2=fake softpi)
+      else printf("*** Removal of fake-softpi from ME distributions not possible! Info not saved in the online analysis! ***\n");
+    } else {
+      if(hsparse->GetNdimensions()==5) hsparse->GetAxis(4)->SetRange(1,2); //just to be sure that everything is considered when projecting (though only bin1 will be filled)
+    }
+    if(fDebug>=2 && pool==0) printf("Bin ranges - pT: %d-%d, dEta: %d-%d\n",ptBinTrMin,ptBinTrMax,etaLowBin,etaHighBin);
+    h3D = (TH3D*)hsparse->Projection(1,2,0);//x,y,z axes
+  }
+  //now restrict to signal region --> extract over the full mass axis for the MC case!
+
+  h3D->GetXaxis()->SetRange(1,h3D->GetNbinsX());
+  h2D = (TH2D*)h3D->Project3D("yz");
+
+  h3D->SetName(Form("%s_SE-ME%d_3D",h3D->GetName(),SEorME));      
+  h2D->SetName(Form("%s_SE-ME%d_2D",h2D->GetName(),SEorME));
+  return h2D;
+}
+
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDplus_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig) {
+
+  std::cout << "Case still not implemented! Returning void histo pointer..." << std::endl;
+  return 0x0;
+    
+}
+
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDstar_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig) {
+
+  std::cout << "Case still not implemented! Returning void histo pointer..." << std::endl;
+  return 0x0;
+    
+}
+
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDxHFE_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig) {
+
+  std::cout << "Case still not implemented! Returning void histo pointer..." << std::endl;
+  return 0x0;
+    
+}
 
 //___________________________________________________________________________________________
 void AliDhCorrelationExtraction::SetSBRanges(Double_t* rangesSB1L, Double_t* rangesSB1R, Double_t* rangesSB2L, Double_t* rangesSB2R) {
@@ -1618,6 +2293,46 @@ void AliDhCorrelationExtraction::SetD0Source(Int_t type, THnSparse* thn, Int_t d
   default      : sourceLow=-1  ; sourceHigh=8 ; break;
   }   
   thn->GetAxis(dimension)->SetRangeUser(sourceLow, sourceHigh);
+}
+
+//___________________________________________________________________________________________
+void AliDhCorrelationExtraction::DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax) {
+	
+  TCanvas *cOut = new TCanvas(Form("cMCClosure_%s_%dto%d_%1.1fto%1.1f",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax),Form("MCClosure_%s_%dto%d_%1.1fto%1.1f",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax),100,100,1200,900);	
+  
+  TFile *fInK = TFile::Open(Form("Output_Root/AzimCorrDistr_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Superimposed_Kine.root",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax));
+  TFile *fInR = TFile::Open(Form("Output_Root/AzimCorrDistr_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Superimposed_Reco.root",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax));
+  if(!fInK || !fInR) {std::cout << "Cannot do MC closure ratio output plots! Input plots missing!" << std::endl; return;}	  
+  TCanvas *cInK = (TCanvas*)fInK->Get(Form("cOutSuperimp_%dto%d_%1.1fto%1.1f_Kine",binMin,binMax,thrMin,thrMax));
+  TCanvas *cInR = (TCanvas*)fInR->Get(Form("cOutSuperimp_%dto%d_%1.1fto%1.1f_Reco",binMin,binMax,thrMin,thrMax));
+  if(!cInK || !cInR) {std::cout << "Cannot do MC closure ratio output plots! Input canvas missing!" << std::endl; return;}	  
+  
+  for(Int_t iOrig=0; iOrig<nOrig; iOrig++) {  
+    TH1D *hInK = ((TH1D*)cInK->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
+    hInK->SetName("hKine");
+    TH1D *hInR = ((TH1D*)cInR->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
+    hInR->SetName("hReco");
+    if(!hInK || !hInR) {std::cout << "Cannot superimpose output plots! Input histogram missing!" << std::endl; return;}	  
+    TH1D *hDraw = (TH1D*)hInR->Clone(Form("h1D_MCClosure_Orig%d",iOrig));
+    hDraw->Divide(hInK);
+    
+    cOut->cd();
+    hDraw->GetYaxis()->SetRangeUser(0.5,1.5);
+    if(!iOrig) hDraw->Draw();
+    else hDraw->Draw("same");
+    
+    TF1 *fitf = new TF1("fitf","[0]",-TMath::Pi()/2.,3*TMath::Pi()/2.);
+    fitf->SetLineColor(1+iOrig);
+    fitf->SetLineWidth(1);
+    hDraw->Fit(fitf);
+    printf("Fit outcome for Orig%d = %1.3f\n",iOrig,fitf->GetParameter(0));
+  }
+  
+  cOut->SaveAs(Form("Output_png/MCClosure_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f.png",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax));
+  cOut->SaveAs(Form("Output_Root/MCClosure_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f.root",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax));
+  
+  return;
+	
 }
 
 //__________________________________________

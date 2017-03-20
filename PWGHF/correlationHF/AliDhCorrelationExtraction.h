@@ -47,11 +47,13 @@ class AliDhCorrelationExtraction : public TObject
 
 public:
     
-  enum DMesonSpecies {kD0toKpi, kDplusKpipi, kDStarD0pi, kDxHFE};
+    enum DMesonSpecies {kD0toKpi, kDplusKpipi, kDStarD0pi, kDxHFE};
     enum SandBextraction {kSandBFromFit, kSfromBinCount, kBfromBinCount}; //default for paper: kBfromBinCount
     enum SBscaling {kFitScaling, kBinCountScaling}; //default for paper: kBfromBinCount
     enum selectAnType {kSE, kME};
-    enum selectRegion {kSign, kSideb};  
+    enum selectRegion {kSign, kSideb};
+    enum MCOrigin {kOrigAll, kOrigC, kOrigB, kOrigLF};  
+    enum MCmode {kKine, kReco};
     enum DxHFECorrBins {kDxCorrD0Mass, kDxCorrD0Pt, kDxCorrElPt, kDxCorrdPhi, kDxCorrdEta, kDxCorrPoolbin};
     enum DxHFECorrMCBins {kDxCorrMCD0Mass, kDxCorrMCD0Pt, kDxCorrMCElPt, kDxCorrMCdPhi, kDxCorrMCdEta, kDxCorrMCOriginD0, kDxCorrMCOriginEl,kDxCorrMCGeneratorEl};
     enum DxHFED0Bins {kDxD0Pt, kDxD0Phi, kDxD0Mass, kDxD0Eta, kDxD0Mother};
@@ -113,12 +115,19 @@ public:
     TH2D* GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDplusTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDstarTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
+    TH2D* GetCorrelHisto_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig, Int_t softPiME=1);
+    TH2D* GetCorrelHistoDzero_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig, Int_t softPiME=1);
+    TH2D* GetCorrelHistoDplus_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig);
+    TH2D* GetCorrelHistoDstar_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig);
+    TH2D* GetCorrelHistoDxHFE_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig);
     void NormalizeMEplot(TH2D* &histoME, TH2D* &histoMEsoftPi); //normalize ME plots to the average value of the 4 'central' bins
     void RescaleSidebandsInMassBinEdges(Int_t i); //readjust SB scaling factor if single bin is used & ranges passed from outside & ranges don't match bin edges
     void MergeMassPlotsVsPt(); //merge spectra from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
+    void MergeMassPlotsVsPt_MC(); //merge spectra from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
     void MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t SEorME, Int_t SorSB=0, Int_t pool=0); //merge THnSparse from mass-pT bins in correlation-pT bins (as if you have 1 pT bin)
+    void MergeCorrelPlotsVsPt_MC(THnSparse* &hsparse, Int_t SEorME, Int_t pool=0, Int_t orig=0); //merge THnSparse from mass-pT bins in correlation-pT bins (as if you have 1 pT bin)
     void MergeCorrelPlotsVsPtTTree(TH3D* &h3D, Int_t SEorME, Int_t SorSB, Int_t pool, Double_t thrMin, Double_t thrMax); //as before, but for TTree case
-
+    
     void ClearObjects();
 
     void SetDebugLevel(Int_t debug) {fDebug=debug;}
@@ -129,10 +138,18 @@ public:
     void SetElSource(Int_t type, THnSparse* thn, Int_t dimension);
     void SetD0Source(Int_t type, THnSparse* thn, Int_t dimension);
 
+    void AddOriginType(TString suffix, MCOrigin orig) {fMCOriginSuffix.push_back(suffix); fMCOriginType.push_back(orig);} //for MC case
+    void SetRecoMode(MCmode mode) {fMCmode=mode;}
+
     Bool_t ReadInputs(); //reads input files and loads lists of plots
     Bool_t FitInvariantMass(); //method to perform invariant mass fit via AliHFMassFitter
     Bool_t ExtractCorrelations(Double_t thrMin, Double_t thrMax); //method to retrieve the bkg subtracted and ME corrected correlation distributions
-
+    Bool_t ExtractCorrelations_MC(Double_t thrMin, Double_t thrMax); //method to retrieve the ME corrected correlation distributions in MC
+    Bool_t ExtractCorrelations_MC_Orig(Double_t thrMin, Double_t thrMax, Int_t orig); //method to retrieve the ME corrected correlation distributions in MC
+    Bool_t ExtractNumberOfTriggers_MC();
+    Bool_t DoSingleCanvasMCPlot(Double_t thrMin, Double_t thrMax);
+    void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax);
+    
 private:
     
     TFile *fFileMass; //file containing the mass histograms
@@ -214,6 +231,8 @@ private:
     Double_t *fRangesSB2L;
     Double_t *fRangesSB2R;
     Double_t *fScaleFactor;
+    Double_t *fSignalCorrelMC_c;
+    Double_t *fSignalCorrelMC_b;    
 
     Bool_t fIntegratePtBins;
 
@@ -224,7 +243,11 @@ private:
 
     TH1F **fMassHisto;
 
-    ClassDef(AliDhCorrelationExtraction,1); // class for plotting HF correlations
+    std::vector<TString>  fMCOriginSuffix;    //container of suffixes for THnSparse for different origins
+    std::vector<Int_t>    fMCOriginType;      //container of specificators of origins
+    MCmode		  fMCmode;	      //kine or reco analysis (changes just the filenames for output, for now)
+
+    ClassDef(AliDhCorrelationExtraction,2); // class for plotting HF correlations
 
 };
 
