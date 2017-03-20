@@ -19,6 +19,7 @@
 #include <TClonesArray.h>
 #include <AliEmcalList.h>
 #include <TObject.h>
+#include <TObjString.h>
 #include <TH1F.h>
 #include <TProfile.h>
 #include <TSystem.h>
@@ -753,13 +754,24 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
  */
 Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard)
 {
-
-  TString file(currFile);  
+  TString file(currFile);
   fXsec = 0;
   fTrials = 1;
 
-  if (file.Contains(".zip#")) {
-    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+  // Determine archive type
+  TString archivetype;
+  std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
+  for(auto t : *walk){
+    TString &tok = static_cast<TObjString *>(t)->String();
+    if(tok.Contains(".zip")){
+      archivetype = tok;
+      Int_t pos = archivetype.Index(".zip");
+      archivetype.Replace(pos, archivetype.Length() - pos, "");
+    }
+  }
+  if(archivetype.Length()){
+    AliDebugStream(1) << "Auto-detected archive type " << archivetype << std::endl;
+    Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
     Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
     file.Replace(pos+1,pos2-pos1,"");
@@ -767,18 +779,84 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     // not an archive take the basename....
     file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
-  AliDebug(1,Form("File name: %s",file.Data()));
+  AliDebugStream(1) << "File name: " << file << std::endl;
+
+  // Build virtual file name
+  // Support for train tests
+  TString virtualFileName;
+  if(file.Contains("__alice")){
+    TString tmp(file);
+    Int_t pos = tmp.Index("__alice");
+    tmp.Replace(0, pos, "");
+    tmp.ReplaceAll("__", "/");
+    // cut out tag for archive and root file
+    // this needs a determin
+    std::unique_ptr<TObjArray> toks(tmp.Tokenize("/"));
+    TString tag = "_" + archivetype;
+    for(auto t : *toks){
+      TString &path = static_cast<TObjString *>(t)->String();
+      if(path.Contains(tag)){
+        Int_t posTag = path.Index(tag);
+        path.Replace(posTag, path.Length() - posTag, "");
+      }
+      virtualFileName += "/" + path;
+    }
+  } else {
+    virtualFileName = file;
+  }
+
+  AliDebugStream(1) << "Physical file name " << file << ", virtual file name " << virtualFileName << std::endl;
 
   // Get the pt hard bin
-  TString strPthard(file);
+  TString strPthard(virtualFileName);
 
+  /*
+  // Dead code - to be removed after testing phase
+  // Procedure will fail for everything else than the expected path name
   strPthard.Remove(strPthard.Last('/'));
   strPthard.Remove(strPthard.Last('/'));
   if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
   strPthard.Remove(0,strPthard.Last('/')+1);
   if (strPthard.IsDec()) pthard = strPthard.Atoi();
   else 
-    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
+    AliWarningStream() << "Could not extract file number from path " << strPthard << std::endl;
+  */
+
+  // New implementation : pattern matching
+  // Reason: Implementation valid only for old productions (new productions swap run number and pt-hard bin)
+  // Idea: Don't use the position in the string but the match differnet informations
+  // + Year clearly 2000+
+  // + Run number can be match to the one in the event
+  // + If we know it is not year or run number, it must be the pt-hard bin if we start from the beginning
+  // The procedure is only valid for the current implementations and unable to detect non-pt-hard bins
+  // It will also fail in case of arbitrary file names
+
+  bool binfound = false;
+  std::unique_ptr<TObjArray> tokens(strPthard.Tokenize("/"));
+  for(auto t : *tokens) {
+    TString &tok = static_cast<TObjString *>(t)->String();
+    if(tok.IsDec()){
+      Int_t number = tok.Atoi();
+      if(number > 2000 && number < 3000){
+        // Year
+        continue;
+      } else if(number == fInputEvent->GetRunNumber()){
+        // Run number
+      } else {
+        if(!binfound){
+          // the first number that is not one of the two must be the pt-hard bin
+          binfound = true;
+          pthard = number;
+          break;
+        }
+      }
+    }
+  }
+  if(!binfound) {
+    AliErrorStream() << "Could not extract file number from path " << strPthard << std::endl;
+  } else {
+    AliInfoStream() << "Auto-detecting pt-hard bin " << pthard << std::endl;
+  }
 
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
   std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
