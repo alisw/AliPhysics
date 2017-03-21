@@ -41,6 +41,10 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
 
   void SetCutOnContribToSPDPileupVert(Int_t cutc) {fSPDContributorsCut=cutc;}
   void SetCutOnSPDZDiff(Double_t cutz) {fSPDZDiffCut=cutz;}
+  void SetUseMultDepSPDPileupSelection(Bool_t opt=kTRUE){
+    fUseMultDepSPDPileupSel=opt;
+  }
+
   void ConfigureMultiTrackVertexPileup(Int_t nc, Double_t wdz, Double_t chi2, Bool_t bcflag){
     fMVContributorsCut=nc;  fMVCChi2Cut=chi2;
     fMVWeiZDiffCut=wdz;  fMVCheckPlpFromDifferentBC=bcflag;
@@ -119,6 +123,7 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
 
   Int_t fSPDContributorsCut;  // cut on cotrtributors to SPD pileup vertex
   Double_t fSPDZDiffCut;      // cut on z diff of SPD pileup vertex
+  Bool_t fUseMultDepSPDPileupSel; // flag to enable pileup cuts in mult bins
 
   Int_t  fMVContributorsCut;  // cut on cotrtributors to MV pileup vertex
   Double_t fMVCChi2Cut;       //minimum value of Chi2perNDF of the pileup vertex, multi-vertex
@@ -133,7 +138,7 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   AliAnalysisTaskCheckPileup(const AliAnalysisTaskCheckPileup&); // not implemented
   AliAnalysisTaskCheckPileup& operator=(const AliAnalysisTaskCheckPileup&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPileup,4); // primary vertex analysis
+  ClassDef(AliAnalysisTaskCheckPileup,5); // primary vertex analysis
 };
 
 #endif

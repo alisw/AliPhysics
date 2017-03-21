@@ -2,6 +2,7 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
 						Int_t nContribSPD=3,
 						Double_t zDiffSPD=0.8,
 						Bool_t doTree=kTRUE,
+						Bool_t useMultDepSelection=kFALSE,
 						Bool_t readMC=kFALSE,
 						Int_t usePhysSel=1,
 						Bool_t usePFprotection=kFALSE,
@@ -46,6 +47,7 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
   taskpil->SetFillTree(doTree);
   taskpil->SetCutOnContribToSPDPileupVert(nContribSPD);
   taskpil->SetCutOnSPDZDiff(zDiffSPD);
+  taskpil->SetUseMultDepSPDPileupSelection(useMultDepSelection);
   taskpil->SetReadMC(readMC);
   taskpil->SetPhysicsSelectionOption(usePhysSel);
   taskpil->SetUsePFProtection(usePFprotection);

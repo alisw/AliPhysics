@@ -121,6 +121,7 @@ AliAnalysisTaskSE("PileupTask"),
   fNFastOr(0),
   fSPDContributorsCut(3),
   fSPDZDiffCut(0.8),
+  fUseMultDepSPDPileupSel(kFALSE),
   fMVContributorsCut(5),
   fMVCChi2Cut(5.),
   fMVWeiZDiffCut(15.),
@@ -487,7 +488,12 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
   fTimeStamp=esd->GetTimeStamp();
   if(fFillTree) fTrackTree->Fill();
 
-  Bool_t isPileUpfromSPD=esd->IsPileupFromSPD(fSPDContributorsCut,fSPDZDiffCut);
+  Bool_t isPileUpfromSPD=kFALSE;
+  if(fUseMultDepSPDPileupSel){
+    isPileUpfromSPD=esd->IsPileupFromSPDInMultBins();
+  }else{
+    isPileUpfromSPD=esd->IsPileupFromSPD(fSPDContributorsCut,fSPDZDiffCut);
+  }
   Int_t nPileupSPD=0;
   if(isPileUpfromSPD){    
     fCounterPerRun->Count(Form("Event:PileupSPD/Run:%d",runNumber));
