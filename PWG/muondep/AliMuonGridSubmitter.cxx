@@ -1074,3 +1074,4 @@ TMap* AliMuonGridSubmitter::Vars() const
   return fVars;
 }
 
+// this comment serves no purpose
