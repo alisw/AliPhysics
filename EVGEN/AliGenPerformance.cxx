@@ -217,6 +217,9 @@ void AliGenPerformance::Generate()
       mom[0]=mcParticle->GetPx();
       mom[1]=mcParticle->GetPy();
       mom[2]=mcParticle->GetPz(); 
+      posf[0]=pos[0];
+      posf[1]=pos[1];
+      posf[2]=pos[2];
       posf[0]+=mcParticle->GetVx();
       posf[1]+=mcParticle->GetVy();
       posf[2]+=mcParticle->GetVz();
@@ -255,6 +258,8 @@ void AliGenPerformance::Generate()
 	  if (TMath::Abs(flavour)==211) done=0; // TEMPORARY hack to get geant to track pion, kaon protons 
 	  if (TMath::Abs(flavour)==321) done=0;
 	  if (TMath::Abs(flavour)==2212) done=0;
+	  if (TMath::Abs(flavour)==11) done=0;
+	  if (TMath::Abs(flavour)==13) done=0;
 	  PushTrack(done,stackParent,flavour,mom, posf, polarization,0,type,nPart,1.,decayFlag);
 	  pLabel[iparticle]=nPart;
 	  if (done) KeepTrack(nPart);
