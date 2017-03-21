@@ -5693,7 +5693,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
     Int_t dX1X2 = counter[0]*counter[1]; // X1X2
     Int_t dX1X3 = counter[0]*counter[2]; // X1X3
     Int_t dX2X3 = counter[1]*counter[2]; // X2X3
-    Int_t dX1X2X3 = counter[1]*counter[2]*counter[3]; // X1X2X3
+    Int_t dX1X2X3 = counter[0]*counter[1]*counter[2]; // X1X2X3
     fCorrelationFunctionsTEST[2][1][0][0]->Fill(dBinCenter,dX1); // <X1>
     fCorrelationFunctionsTEST[2][1][1][0]->Fill(dBinCenter,dX2); // <X2>
     fCorrelationFunctionsTEST[2][1][2][0]->Fill(dBinCenter,dX3); // <X3>
@@ -6890,7 +6890,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
     Int_t dX1X2 = counter[0]*counter[1]; // X1X2
     Int_t dX1X3 = counter[0]*counter[2]; // X1X3
     Int_t dX2X3 = counter[1]*counter[2]; // X2X3
-    Int_t dX1X2X3 = counter[1]*counter[2]*counter[3]; // X1X2X3
+    Int_t dX1X2X3 = counter[0]*counter[1]*counter[2]; // X1X2X3
     fBackgroundTEST[2][1][0][0]->Fill(dBinCenter,dX1); // <X1>
     fBackgroundTEST[2][1][1][0]->Fill(dBinCenter,dX2); // <X2>
     fBackgroundTEST[2][1][2][0]->Fill(dBinCenter,dX3); // <X3>
