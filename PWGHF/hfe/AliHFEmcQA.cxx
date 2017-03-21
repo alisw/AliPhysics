@@ -1793,6 +1793,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_
 
      for (Int_t i=0; i<fNparents; i++){
         if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
+	  mpt = partMother->Pt();
           isFinalOpenCharm = kTRUE;
         }
      }
@@ -1801,7 +1802,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec, Double_
      // iterate until you find B hadron as a mother or become top ancester 
      for (Int_t i=1; i<fgkMaxIter; i++){
 
-        mpt = partMother->Pt();
+        
         Int_t jLabel = partMother->GetFirstMother();
         if (jLabel == -1){
           return kDirectCharm;
