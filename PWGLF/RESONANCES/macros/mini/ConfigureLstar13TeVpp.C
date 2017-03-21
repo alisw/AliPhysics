@@ -123,6 +123,9 @@ Bool_t ConfigureLstar13TeVpp
   /* kmassresolution  */ Int_t resmass  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kFALSE);
 
 
+  /* PhiV   */           Int_t phivID   = task->CreateValue(AliRsnMiniValue::kPhiV, kFALSE);
+
+
 
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -176,6 +179,9 @@ Bool_t ConfigureLstar13TeVpp
 
 
     out->AddAxis(centID, 110, 0.0, 110.0); // adding multiplicity axis
+
+
+    out->AddAxis(phivID, 360, 0.0, 360.0); // phiv
 
 
     if(isPtDaughter) {
