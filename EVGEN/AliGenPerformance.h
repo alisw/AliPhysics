@@ -22,18 +22,23 @@ class TChain;
 
 class AliGenPerformance : public AliGenerator{
 public:
-
+  enum EStreamFlags{ //
+    kFastOnly          =0x00001,    // flag: fast MC without stack for tests 
+    kStream            =0x00002,    // flag: for streaming
+    kStreamEvent       =0x00004     // flag: make key after each event - for debugging in case of job failure
+  };
   AliGenPerformance();
+  AliGenPerformance(const char* generName,Int_t debugLevel);
   AliGenPerformance(const AliGenPerformance& perf);
   AliGenPerformance &operator=(const AliGenPerformance& perf);
-  virtual ~AliGenPerformance() {}
+  virtual ~AliGenPerformance();
   virtual void Generate();
   virtual void Init();
   void SetNJets(Double_t nJets){fNJets=nJets;}
   Double_t GetNJets()const {return fNJets;}
   void SetFunctions(TF1 * momentum, TF1 *fphi=0, TF1 *ftheta=0, TF3 * position=0, TF1* pdg=0);
-  void SetStreamer(TTreeSRedirector *pcstream){fTestStream=pcstream;}
-  TTreeSRedirector * GetStreamer(){return fTestStream;}
+  void SetStreamer(TTreeSRedirector *pcstream){fStreamer=pcstream;}
+  TTreeSRedirector * GetStreamer(){return fStreamer;}
   static void TestAliGenPerformance(Int_t nEvents, TF1 *f1pt, TF1 *fpdg);
   static TChain *  MakeKineChain();
 private:
@@ -43,7 +48,8 @@ private:
   TF1 *   fFTheta;                // theta distribution function
   TF3 *   fFPosition;             // position distribution function 
   TF1 *   fFPdg;                  // pdg distribution function  
-  TTreeSRedirector *fTestStream;  // test stream
+  TTreeSRedirector *fStreamer;    // ! test stream
+  Int_t   fVerboseLevel;          // verbose level
   //
   ClassDef(AliGenPerformance,1) // performance generator
 };

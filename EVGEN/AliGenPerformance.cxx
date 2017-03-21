@@ -44,8 +44,6 @@
   AliGenPerformance::TestAliGenPerformance(5000,0,0);
   TFile * f = TFile::Open("testAliGenPerformance.root");
   testGener.Draw("pt>>his(100,10,100)","charge!=0&&abs(fKF)<2000","");
-  f1pt = new TF1("f1pt","1/(0.01+x)",0,0.1);  
-  his->Fit(f1);
 
 */
 
@@ -80,13 +78,36 @@ AliGenPerformance::AliGenPerformance():
   fFTheta(0),               // theta distribution function
   fFPosition(0),            // position distribution function 
   fFPdg(0),                 // pdg distribution function  
-  fTestStream(0)            // test stream - used for tuning of parameters of generator
+  fStreamer(0),           // test stream - used for tuning of parameters of generator
+  fVerboseLevel(0)            // verbose level
 {
   //
   // Default constructor
   //
-  SetNumberParticles(1);
+  SetNumberParticles(1);  
 }
+//-----------------------------------------------------------------------------
+AliGenPerformance::AliGenPerformance(const char* generName, Int_t verboseLevel):
+  AliGenerator(),
+  fNJets(1),                // mean number of jets per event
+  fF1Momentum(0),           // momentum distribution function 
+  fFPhi(0),                 // phi distribution function
+  fFTheta(0),               // theta distribution function
+  fFPosition(0),            // position distribution function 
+  fFPdg(0),                 // pdg distribution function  
+  fStreamer(0),           // test stream - used for tuning of parameters of generator
+  fVerboseLevel(0)            // verbose level
+{
+  //
+  // Default constructor
+  //
+  SetName(generName);
+  fVerboseLevel=verboseLevel;
+  if (fVerboseLevel >0) fStreamer = new TTreeSRedirector(TString::Format("%s.root",generName).Data(),"recreate");
+}
+
+
+
 
 AliGenPerformance::AliGenPerformance(const AliGenPerformance& func):
   AliGenerator(),
@@ -112,6 +133,14 @@ AliGenPerformance & AliGenPerformance::operator=(const AliGenPerformance& func)
       fFPosition  = func.fFPosition; 
       fFPdg       = func.fFPdg;      
       return *this;
+}
+
+AliGenPerformance::~AliGenPerformance(){
+  //
+  //
+  //
+  if (fStreamer) delete fStreamer;
+
 }
 
 
@@ -174,7 +203,7 @@ void AliGenPerformance::Generate()
     TParticlePDG *mParticle=databasePDG->GetParticle(pdg);
     if (mParticle==NULL) continue;
     Double_t mass=mParticle->Mass();
-    Double_t energy=TMath::Sqrt(ptot*ptot+mass*mass);
+    Double_t energy=TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2]+mass*mass);
     py->Py1ent(-1, -pdg, energy, theta, phi);
     py->Py1ent( 2,  pdg, energy, theta, phi+TMath::Pi());
     py->Pyexec();
@@ -192,30 +221,49 @@ void AliGenPerformance::Generate()
       posf[1]+=mcParticle->GetVy();
       posf[2]+=mcParticle->GetVz();
       TParticlePDG * pdgParticle=databasePDG->GetParticle(flavour);
-      Int_t decayFlag=(iparticle<2)?1:11;
-      pLabel[iparticle]=-1;
       Int_t pythiaParent=mcParticle->GetParent();
+      Int_t decayFlag=(iparticle<2)?1:11;      
+      pLabel[iparticle]=-1;
+      if (pythiaParent==iparticle){
+	decayFlag=1;
+	pythiaParent=-1;
+      }
       Int_t stackParent=(pythiaParent>0&&pythiaParent<nParticles)?pLabel[pythiaParent]:-1;
       //
-      if (!fTestStream &&pdgParticle!=NULL) {
-	if (mcParticle->GetEnergy()<=mcParticle->GetMass()){
-	  //::Error("AliGenPerformance::Generate","Unphysical particle %d",flavour); // MI to check Energy definition
-	  continue;
+      Bool_t isOK=kTRUE;
+      if (mcParticle->GetEnergy()<mcParticle->GetMass()){
+	if (fVerboseLevel>0){
+	  ::Error("AliGenPerformance::Generate","Unphysical particle %d",flavour); 
 	}
+	isOK=kFALSE;
+      }	
+      if (pythiaParent==iparticle){
+	if (fVerboseLevel>0){
+	  ::Error("AliGenPerformance::Generate","Incorrec prticle ID parent=this  %d",pythiaParent);
+	}
+	isOK=kFALSE;
+      }
+
+      if ((fVerboseLevel&kFastOnly)==0 &&pdgParticle!=NULL) {
 	// Missing info in order to apply reweighting
 	// 1.) validate mother/daughter relationship 
-	// 2.) validate position distribution 
-	// 3.) add decay mode
-	PushTrack(fTrackIt,stackParent,flavour,mom, posf, polarization,0,kPPrimary,nPart,1.,decayFlag);
-	pLabel[iparticle]=nPart; 
-	if (stackParent>0) KeepTrack(stackParent);
+	// 2.) validate position distribution (like in AliGenCorrHF::LoadTracks)
+	// Note : code fr the mother/daughter inspired by the  AliGenCorrHF::LoadTracks
+	TMCProcess type=(stackParent>=0) ? kPDecay:kPPrimary;
+	if (isOK){
+	  PushTrack(fTrackIt,stackParent,flavour,mom, posf, polarization,0,type,nPart,1.,decayFlag);
+	  pLabel[iparticle]=nPart; 
+	  if (stackParent>0) KeepTrack(stackParent);
+	  //fNprimaries++; 
+	}
       }
-      if (fTestStream){
+      if (fStreamer){
 	if (pdgParticle){
 	  Double_t charge=pdgParticle->Charge();
 	  Double_t mass=pdgParticle->Mass();
 	  Double_t  pt=TMath::Sqrt(mcParticle->GetPx()*mcParticle->GetPx()+mcParticle->GetPy()*mcParticle->GetPy());
-	  (*fTestStream)<<"testGener"<<
+	  (*fStreamer)<<"testGener"<<
+	    "isOK="<<isOK<<
 	    "njets="<<njets<<
 	    "ptot="<<ptot<<
 	    "theta="<<theta<<
@@ -235,7 +283,15 @@ void AliGenPerformance::Generate()
   }
   //  AliGenEventHeader* header = new AliGenEventHeader("THn");
   //gAlice->SetGenEventHeader(header);
-
+  if (fStreamer){   // in standard simulation destructor of the streamer (and file->Close() is not called - force writing)
+    ((*fStreamer)<<"testGener").GetTree()->Write();
+    fStreamer->GetFile()->Flush();
+  }
+  if ( (fVerboseLevel&kStreamEvent)>0  && fStreamer){
+    TString name=fStreamer->GetFile()->GetName();
+    delete fStreamer;
+    fStreamer = new TTreeSRedirector(name.Data(),"update");
+  }
   return;
 }
 
