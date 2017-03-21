@@ -2945,22 +2945,23 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
   TClonesArray *fMCStackAOD       = 0x0;
   if(MCEvent->IsA()==AliMCEvent::Class()){
     if(dynamic_cast<AliMCEvent*>(MCEvent)){
-      cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+      cHeader               = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
       if(cHeader) headerFound   = kTRUE;
-      fMCStack           = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+      fMCStack              = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
     }
   }
   if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
-    cHeaderAOD             = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-    fMCStackAOD           = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    cHeaderAOD              = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+    fMCStackAOD             = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(cHeaderAOD) headerFound     = kTRUE;
   }
 
   if (fDebugLevel > 0 ) cout << "event starts here" << endl;
   if(headerFound){
     TList *genHeaders         = 0x0;
-    if(cHeader) genHeaders       = cHeader->GetHeaders();
+    if(cHeader) genHeaders    = cHeader->GetHeaders();
     if(cHeaderAOD){
-      genHeaders           = cHeaderAOD->GetCocktailHeaders();
+      genHeaders              = cHeaderAOD->GetCocktailHeaders();
       if(genHeaders->GetEntries()==1){
         SetRejectExtraSignalsCut(0);
         return;
@@ -2973,15 +2974,14 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
     if(rejection == 2){ // TList of Headers Names
       for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-        gh             = (AliGenEventHeader*)genHeaders->At(i);
-        TString GeneratorName   = gh->GetName();
-        lastindexA         = lastindexA + gh->NProduced();
+        gh                    = (AliGenEventHeader*)genHeaders->At(i);
+        TString GeneratorName = gh->GetName();
+        lastindexA            = lastindexA + gh->NProduced();
         if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
-          TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
+          TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
           if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
           if(GeneratorName.CompareTo(GeneratorInList) == 0){
-    if(cHeaderAOD) headerFound     = kTRUE;
             if (fDebugLevel > 0 ) cout << "accepted" << endl;
             if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
               if(fMCStack){
