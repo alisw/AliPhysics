@@ -221,7 +221,7 @@ void AliGenPerformance::Generate()
       posf[1]+=mcParticle->GetVy();
       posf[2]+=mcParticle->GetVz();
       TParticlePDG * pdgParticle=databasePDG->GetParticle(flavour);
-      Int_t pythiaParent=mcParticle->GetParent();
+      Int_t pythiaParent=mcParticle->GetParent()-1;
       Int_t decayFlag=(iparticle<2)?1:11;      
       pLabel[iparticle]=-1;
       if (pythiaParent==iparticle){
@@ -259,6 +259,7 @@ void AliGenPerformance::Generate()
 	  pLabel[iparticle]=nPart;
 	  if (done) KeepTrack(nPart);
 	  if (stackParent>0) KeepTrack(stackParent);
+	  SetHighWaterMark(nPart);
 	  //fNprimaries++; 
 	}
       }
