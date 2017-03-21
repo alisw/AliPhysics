@@ -59,3 +59,4 @@ Bool_t AliCaloPhotonC::IsPIDOK(Int_t ipid)const{
   default: return kFALSE ; //Not known combination
   }
 }
+// this comment serves no purpose
