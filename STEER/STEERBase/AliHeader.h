@@ -64,6 +64,9 @@ public:
   
   virtual void Print(const char *opt=0) const;
 
+  Int_t    GetSgPerBgEmbedded()      const {return fSgPerBgEmbedded;}
+  void     SetSgPerBgEmbedded(int i)       {fSgPerBgEmbedded = i;}
+
   AliHeader& operator=(const AliHeader& head) 
     {head.Copy(*this); return *this;}
   
@@ -77,12 +80,13 @@ protected:
   Int_t         fNtrack;            //Number of tracks
   Int_t         fEvent;             //Event number (serial in the file)
   Int_t         fEventNrInRun;      //Unique Event number within the run
+  Int_t         fSgPerBgEmbedded;   //  in case this is embedded signal: bg.event repetition factor
   time_t        fTimeStamp;         //Event time-stamp
   AliStack     *fStack;             //Pointer to stack
   AliGenEventHeader* fGenHeader;    //Event Header for Generator
   TObjArray*         fDetHeaders;   //Event Headers for detector specific information 
 
-  ClassDef(AliHeader,4) //Alice event header    
+  ClassDef(AliHeader,5) //Alice event header    
 };
 
 #endif

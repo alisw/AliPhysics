@@ -1421,7 +1421,7 @@ void AliMC::FinishEvent()
   header->SetNprimary(stack->GetNprimary());
   header->SetNtrack(stack->GetNtrack());
   header->SetTimeStamp(AliSimulation::Instance()->GenerateTimeStamp());
-
+  header->SetSgPerBgEmbedded(gAlice->GetSgPerBgEmbedded());
   // Write out the kinematics
   if (!AliSimulation::Instance()->Lego()) stack->FinishEvent();
 

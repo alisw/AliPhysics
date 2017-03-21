@@ -67,6 +67,7 @@ ClassImp(AliRun)
 AliRun::AliRun():
 //  fRun(-1),
   fEventNrInRun(-1),
+  fSgPerBgEmbedded(0),
   fModules(0),
   fMCApp(0),
   fNdets(0),
@@ -86,6 +87,7 @@ AliRun::AliRun():
 AliRun::AliRun(const char *name, const char *title):
   TNamed(name,title),
   fEventNrInRun(-1),
+  fSgPerBgEmbedded(0),
   fModules(new TObjArray(77)), // Support list for the Detectors
   fMCApp(new AliMC(GetName(),GetTitle())),
   fNdets(0),

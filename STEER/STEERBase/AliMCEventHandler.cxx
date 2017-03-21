@@ -180,7 +180,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
 	AliMCEventHandler *handler;
 	while((handler = (AliMCEventHandler*)next())) {
 	    handler->Init(opt);
-	    handler->SetNumberOfEventsInContainer(fNEvent);
+	    //handler->SetNumberOfEventsInContainer(fNEvent); // RS not needed and will break embedding with rep.factor>1
 	}
     }
 
@@ -331,7 +331,11 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     Bool_t result = LoadEvent(entry);
 
     if (fSubsidiaryHandlers) {
-	TIter next(fSubsidiaryHandlers);
+      // RS: event ID's are not necessarily the same: bg event may repeat for multiple signal events
+      int repFactor = fMCEvent->Header()->GetSgPerBgEmbedded();
+      if (repFactor>0) entry /= repFactor; //RS bg entry corresponding to signal one
+
+      TIter next(fSubsidiaryHandlers);
 	AliMCEventHandler *handler;
 	while((handler = (AliMCEventHandler*)next())) {
 	    handler->BeginEvent(entry);

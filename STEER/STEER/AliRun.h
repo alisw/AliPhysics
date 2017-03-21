@@ -65,10 +65,13 @@ public:
   virtual  void Announce() const;
    
   virtual  void  InitLoaders(); //prepares run (i.e. creates getters)
+  Int_t          GetSgPerBgEmbedded()      const {return fSgPerBgEmbedded;}
+  void           SetSgPerBgEmbedded(int i)       {fSgPerBgEmbedded = i;}
 
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
   Int_t          fEventNrInRun;      //! Current unique event number in run
+  Int_t          fSgPerBgEmbedded;   //  in case this is embedded signal: bg.event repetition factor
   TObjArray     *fModules;           //  List of Detectors
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
   Int_t          fNdets;             //  Number of detectors
@@ -79,7 +82,7 @@ private:
   AliRun(const AliRun&); // Not implemented
   AliRun& operator = (const AliRun&); // Not implemented
 
-  ClassDef(AliRun,15)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,16)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

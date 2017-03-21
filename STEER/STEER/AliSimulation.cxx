@@ -1297,6 +1297,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     gAlice->GetMCApp()->Generator()->SetVertexGenerator(vtxGen);
     fUseTimeStampFromCDB = -1;
     AliInfo("TimeStamp generation is overriden: will be taken from background event");
+    gAlice->SetSgPerBgEmbedded(signalPerBkgrd);
   }
 
   if (!fRunSimulation) {
