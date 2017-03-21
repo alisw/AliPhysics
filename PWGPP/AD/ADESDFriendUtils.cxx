@@ -1,6 +1,6 @@
 // -*- C++ -*-
 // $Id$
-
+Something else which breaks
 /**************************************************************************
  * Author: C. Mayer                                                       *
  * Contributors are mentioned in the code where appropriate.              *
