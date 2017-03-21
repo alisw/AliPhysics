@@ -215,6 +215,26 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCRecFile;
   }
+  // load VZERO gain equalization
+  if(sDataSet=="2015") {
+    TString VZEROGainEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROEqGain.root";
+    TFile* VZEROGainEqFile = TFile::Open(VZEROGainEqFileName,"READ");
+    if(!VZEROGainEqFile) {
+      cout << "ERROR: VZERO gain equalization file not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* VZEROGainEqList = (TList*)(VZEROGainEqFile->FindObjectAny("VZEROEqGain"));
+    if(VZEROGainEqList) {
+      taskFE->SetVZEROGainEqList(VZEROGainEqList);
+      cout << "VZERO gain equalization set (from " <<  VZEROGainEqFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: VZERO gain equalization list not found!" << endl;
+      exit(1);
+    }
+    delete VZEROGainEqFile;
+  }
   
   // add the task to the manager
  mgr->AddTask(taskFE);
