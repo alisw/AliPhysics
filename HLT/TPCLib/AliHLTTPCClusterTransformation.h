@@ -48,7 +48,7 @@ class AliHLTTPCClusterTransformation{
   virtual ~AliHLTTPCClusterTransformation();
 
   /** Initialisation  */
-  Int_t  Init( double FieldBz, Long_t TimeStamp );
+  Int_t  Init( double FieldBz, Long_t TimeStamp, bool isMC );
  
   /** Initialisation  */
   Int_t  Init( const AliHLTTPCFastTransformObject &obj );
@@ -103,6 +103,8 @@ class AliHLTTPCClusterTransformation{
   TString fError; // Last error message
 
   AliHLTTPCFastTransform fFastTransform;// fast transformation object
+  
+  bool fIsMC; //Do we process MC?
 
   ClassDef(AliHLTTPCClusterTransformation, 1)
 };

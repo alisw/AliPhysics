@@ -59,6 +59,7 @@ fOfflineMode(0),
 fInitializeByObjectInDoEvent(0),
 fInitialized(0),
 fTPCPresent(0),
+fIsMC(0),
 fBenchmark("ClusterTransformation")
 {
   // see header file for class documentation
@@ -155,7 +156,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
           HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
     }
     else if( fOfflineMode ) {
-      err = fgTransform.Init( GetBz(), GetTimeStamp() );
+      err = fgTransform.Init( GetBz(), GetTimeStamp(), fIsMC );
 	  fInitialized = true;
     } else {
        const char* defaultNotify = "";
@@ -225,6 +226,10 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
     } else if (argument.CompareTo("-update-object-on-the-fly")==0){
       fInitializeByObjectInDoEvent = 2;
       HLTDebug("Initialize object at startup and update on the fly mode set.");
+      iRet++;
+    } else if (argument.CompareTo("-do-mc")==0){
+      fIsMC = 1;
+      HLTDebug("Processing Monte Carlo Data.");
       iRet++;
     } else {
       iRet = -EINVAL;

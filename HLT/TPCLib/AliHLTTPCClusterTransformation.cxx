@@ -52,7 +52,8 @@ AliRecoParam AliHLTTPCClusterTransformation::fOfflineRecoParam;
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 :
   fError(),
-  fFastTransform()  
+  fFastTransform(),
+  fIsMC(0)
 {
   // see header file for class documentation
   // or
@@ -67,9 +68,11 @@ AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation()
 }
 
 
-int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
+int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp, bool isMC )
 {
   // Initialisation
+  
+  fIsMC = isMC;
  
   if(!AliGeomManager::GetGeometry()){
     AliGeomManager::LoadGeometry();
@@ -146,7 +149,8 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
   AliTPCRecoParam* recParam = (AliTPCRecoParam*)fOfflineRecoParam.GetDetRecoParam(1);
 
   if( !recParam ) return Error(-9,"AliHLTTPCClusterTransformation::Init: No TPC Reco Param entry found for the given event specification");
-
+  
+  if (fIsMC && !recParam->GetUseCorrectionMap()) TimeStamp = 0;
  
   pCalib->GetTransform()->SetCurrentRecoParam(recParam);
 
@@ -164,14 +168,14 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
 Int_t  AliHLTTPCClusterTransformation::Init( const AliHLTTPCFastTransformObject &obj )
 {
   // Initialisation
-
+  
   if(!AliGeomManager::GetGeometry()){
     AliGeomManager::LoadGeometry();
   }
 
   if(!AliGeomManager::GetGeometry()) return Error(-1,"AliHLTTPCClusterTransformation::Init: Can not initialise geometry");
   
-  // set current time stamp and initialize the fast transformation
+  // Load the fast transform object
   int err = fFastTransform.ReadFromObject( obj );
 
   if( err!=0 ){
@@ -199,6 +203,8 @@ Int_t AliHLTTPCClusterTransformation::SetCurrentTimeStamp( Long_t TimeStamp )
 
   AliTPCRecoParam* recParam = (AliTPCRecoParam*)fOfflineRecoParam.GetDetRecoParam(1);
   if( !recParam )  return Error(-1,"AliHLTTPCClusterTransformation::SetCurrentTimeStamp: No TPC Reco Param entry found");
+  
+  if (fIsMC && !recParam->GetUseCorrectionMap()) TimeStamp = 0;
 
   AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
   if(!pCalib ) return Error(-2,"AliHLTTPCClusterTransformation::Init: Calibration not found");

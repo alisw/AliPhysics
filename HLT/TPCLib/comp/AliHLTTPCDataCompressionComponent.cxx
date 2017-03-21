@@ -1192,7 +1192,7 @@ int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
   /// drift time transformation, separately for A and C side
   int iResult=0;
   AliHLTTPCClusterTransformation transform;
-  if ((iResult=transform.Init( GetBz(), GetTimeStamp()))<0) {
+  if ((iResult=transform.Init( GetBz(), GetTimeStamp(), false))<0) {
     HLTError("failed to init AliHLTTPCClusterTransformation: %d", iResult);
     return iResult;
   }
