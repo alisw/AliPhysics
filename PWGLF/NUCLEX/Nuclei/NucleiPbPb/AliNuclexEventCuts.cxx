@@ -307,7 +307,7 @@ void AliNuclexEventCuts::AutomaticSetup(AliVEvent *ev) {
     SetupRun2pA(0);
     return;
   }
-  if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s:/ p-Pb 5 TeV
+  if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s: Pb-p 5 TeV
     SetupRun2pA(1);
     return;
   }
@@ -530,6 +530,10 @@ void AliNuclexEventCuts::SetupLHC11h() {
 void AliNuclexEventCuts::SetupRun2pA(int iPeriod) {
   /// iPeriod: 0 p-Pb 5&8 TeV, 1 Pb-p 8 TeV
   SetupRun2pp();
+  /// p--Pb requires nsigma cuts on primary vertex
+  fMaxDeltaSpdTrackNsigmaSPD = 20.f;
+  fMaxDeltaSpdTrackNsigmaTrack = 40.f;
+
   /// No centrality cuts by default
   fCentralityFramework = 1;
   fUseEstimatorsCorrelationCut = false;
