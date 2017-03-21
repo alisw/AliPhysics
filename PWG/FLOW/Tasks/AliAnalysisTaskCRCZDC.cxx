@@ -196,10 +196,12 @@ fUseTowerEq(kFALSE),
 fTowerEqList(NULL),
 fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
+fVZEROGainEqList(NULL),
 fUseZDCSpectraCorr(kFALSE),
 fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
 fBadTowerStuffList(NULL),
+fVZEROQVectorRecList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
 fhZNSpectraCor(0x0),
@@ -224,6 +226,11 @@ fhZNBCCorr(0x0)
   }
   for(Int_t c=0; c<100; c++) {
     fBadTowerCalibHist[c] = NULL;
+  }
+  fVZEROGainEqHist = NULL;
+  for (Int_t k=0; k<fkVZEROnHar; k++) {
+    fVZEROQVectorRecQx[k] = NULL;
+    fVZEROQVectorRecQy[k] = NULL;
   }
   for(Int_t i=0; i<8; i++) {
     SpecCorMu1[i] = NULL;
@@ -348,10 +355,12 @@ fUseTowerEq(kFALSE),
 fTowerEqList(NULL),
 fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
+fVZEROGainEqList(NULL),
 fUseZDCSpectraCorr(kFALSE),
 fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
 fBadTowerStuffList(NULL),
+fVZEROQVectorRecList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
 fhZNSpectraCor(0x0),
@@ -377,6 +386,11 @@ fhZNBCCorr(0x0)
   }
   for(Int_t c=0; c<100; c++) {
     fBadTowerCalibHist[c] = NULL;
+  }
+  fVZEROGainEqHist = NULL;
+  for (Int_t k=0; k<fkVZEROnHar; k++) {
+    fVZEROQVectorRecQx[k] = NULL;
+    fVZEROQVectorRecQy[k] = NULL;
   }
   for(Int_t i=0; i<8; i++) {
     SpecCorMu1[i] = NULL;
@@ -421,6 +435,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
   delete fCutsEvent;
   if (fTowerEqList)  delete fTowerEqList;
   if (fBadTowerCalibList) delete fBadTowerCalibList;
+  if (fVZEROGainEqList) delete fVZEROGainEqList;
   if (fZDCSpectraCorrList) delete fZDCSpectraCorrList;
   if (fAnalysisUtil) delete fAnalysisUtil;
   if (fQAList) delete fQAList;
@@ -497,6 +512,16 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fOutput->Add(fQAList);
   }
   
+  fVZEROQVectorRecList = new TList();
+  fVZEROQVectorRecList->SetOwner(kTRUE);
+  fVZEROQVectorRecList->SetName("VZERO stuff");
+  fOutput->Add(fVZEROQVectorRecList);
+  
+  fBadTowerStuffList = new TList();
+  fBadTowerStuffList->SetOwner(kTRUE);
+  fBadTowerStuffList->SetName("BadTowerCalib");
+  fOutput->Add(fBadTowerStuffList);
+  
   fCenDis = new TH1F("fCenDis", "fCenDis", 100, 0., 100.);
   fOutput->Add(fCenDis);
   fPileUpCount = new TH1F("fPileUpCount", "fPileUpCount", 9, 0., 9.);
@@ -539,11 +564,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fhZNCenDis[c] = new TH3D(Form("fhZNCenDis[%d]",c), Form("fhZNCenDis[%d]",c), 100, 0., 100., 100, -2., 2. , 100., -2., 2.);
     fOutput->Add(fhZNCenDis[c]);
   }
-  
-  fBadTowerStuffList = new TList();
-  fBadTowerStuffList->SetOwner(kTRUE);
-  fBadTowerStuffList->SetName("BadTowerCalib");
-  fOutput->Add(fBadTowerStuffList);
   
   if(fBadTowerCalibList) {
     for(Int_t c=0; c<100; c++) {
@@ -691,7 +711,21 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   for (Int_t i=0; i<fCRCnRun; i++) {
     fVZEROMult->GetXaxis()->SetBinLabel(i+1,Form("%d",fRunList[i]));
   }
-  fOutput->Add(fVZEROMult);
+  fVZEROQVectorRecList->Add(fVZEROMult);
+  
+  if(fVZEROGainEqList) {
+    fVZEROGainEqHist = (TH2D*)fVZEROGainEqList->FindObject("VZEROEqGain");
+    fVZEROQVectorRecList->Add(fVZEROGainEqHist);
+  }
+  
+  for (Int_t k=0; k<fkVZEROnHar; k++) {
+    fVZEROQVectorRecQx[k] = new TProfile3D(Form("fVZEROQVectorRecQx[%d]",k),Form("fVZEROQVectorRecQx[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.);
+    fVZEROQVectorRecQx[k]->Sumw2();
+    fVZEROQVectorRecList->Add(fVZEROQVectorRecQx[k]);
+    fVZEROQVectorRecQy[k] = new TProfile3D(Form("fVZEROQVectorRecQy[%d]",k),Form("fVZEROQVectorRecQy[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.);
+    fVZEROQVectorRecQy[k]->Sumw2();
+    fVZEROQVectorRecList->Add(fVZEROQVectorRecQy[k]);
+  }
   
   Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
   Double_t phimin[] = {0.,TMath::Pi()/8.,2*TMath::Pi()/8.,3*TMath::Pi()/8.,4*TMath::Pi()/8.,5*TMath::Pi()/8.,6*TMath::Pi()/8.,7*TMath::Pi()/8.,8*TMath::Pi()/8.,9*TMath::Pi()/8.,10*TMath::Pi()/8.,11*TMath::Pi()/8.,12*TMath::Pi()/8.,13*TMath::Pi()/8.,14*TMath::Pi()/8.,15*TMath::Pi()/8.,16*TMath::Pi()/8.};
@@ -1364,12 +1398,56 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       AliAODTracklets *trackl = aod->GetTracklets();
       Int_t nTracklets = trackl->GetNumberOfTracklets();
       
+      // VZERO
+      
+      // get VZERO data
       AliAODVZERO *vzeroAOD = aod->GetVZEROData();
       Double_t multV0A = vzeroAOD->GetMTotV0A();
       Double_t multV0C = vzeroAOD->GetMTotV0C();
+      Int_t CachednRing = 1;
+      Double_t QxTot[fkVZEROnHar] = {0.}, QyTot[fkVZEROnHar] = {0.};
+      Double_t denom = 0.;
+      
       for(Int_t i=0; i<64; i++) {
+        
+        // correct multiplicity per channel
         Double_t mult = vzeroAOD->GetMultiplicity(i);
+        if(fVZEROGainEqHist) {
+          Double_t EqFactor = fVZEROGainEqHist->GetBinContent(RunBin+1,i+1);
+          if(EqFactor>0.) mult *= EqFactor;
+        }
         fVZEROMult->Fill(RunBin+0.5,i+0.5,mult);
+        
+        // build Q-vector per ring
+        Int_t nRing = (Int_t)i/8 + 1;
+        Double_t ChPhi = TMath::PiOver4()*(0.5+i%8);
+        
+        if(i == 63) {
+          for (Int_t k=0; k<fkVZEROnHar; k++) {
+            QxTot[k] += mult*TMath::Cos((k+1.)*ChPhi);
+            QyTot[k] += mult*TMath::Sin((k+1.)*ChPhi);
+          }
+          denom += mult;
+          nRing++;
+        }
+        
+        if(nRing!=CachednRing) {
+          for (Int_t k=0; k<fkVZEROnHar; k++) {
+            Double_t QxRec = QxTot[k]/denom;
+            Double_t QyRec = QyTot[k]/denom;
+            fVZEROQVectorRecQx[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QxRec);
+            fVZEROQVectorRecQy[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QyRec);
+            QxTot[k] = 0.;
+            QyTot[k] = 0.;
+          }
+          denom = 0.;
+          CachednRing = nRing;
+        }
+        for (Int_t k=0; k<fkVZEROnHar; k++) {
+          QxTot[k] += mult*TMath::Cos((k+1.)*ChPhi);
+          QyTot[k] += mult*TMath::Sin((k+1.)*ChPhi);
+        }
+        denom += mult;
       }
       
 //      AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(aodEvent->FindListObject("Forward"));

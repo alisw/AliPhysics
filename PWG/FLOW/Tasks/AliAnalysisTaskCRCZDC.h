@@ -162,6 +162,8 @@ public:
   TList* GetTowerEqList() const {return this->fTowerEqList;};
   void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone(); fUseBadTowerCalib=kTRUE;};
   TList* GetBadTowerCalibList() const {return this->fBadTowerCalibList;};
+  void SetVZEROGainEqList(TList* const kList) {this->fVZEROGainEqList = (TList*)kList->Clone();};
+  TList* GetVZEROGainEqList() const {return this->fVZEROGainEqList;};
   void SetZDCSpectraCorrList(TList* const kList) {this->fZDCSpectraCorrList = (TList*)kList->Clone(); fUseZDCSpectraCorr=kTRUE;};
   TList* GetZDCSpectraCorrList() const {return this->fZDCSpectraCorrList;};
   virtual Int_t GetCenBin(Double_t Centrality);
@@ -329,6 +331,8 @@ private:
   TList *fBadTowerStuffList; //! list for storing calib files
   Bool_t fUseBadTowerCalib; //
   TList *fBadTowerCalibList; // list with original calib files
+  TList *fVZEROGainEqList; //
+  TList *fVZEROQVectorRecList; //!
   Bool_t fUseZDCSpectraCorr; //
   TList *fZDCSpectraCorrList; //
   TH1D *SpecCorMu1[8]; //!
@@ -336,6 +340,10 @@ private:
   TH1D *SpecCorAv[8]; //!
   TH1D *SpecCorSi[8]; //!
   TH2D *fBadTowerCalibHist[100]; //!
+  TH2D *fVZEROGainEqHist; //!
+  const static Int_t fkVZEROnHar = 4;
+  TProfile3D *fVZEROQVectorRecQx[fkVZEROnHar]; //!
+  TProfile3D *fVZEROQVectorRecQy[fkVZEROnHar]; //!
   Int_t fCachedRunNum;   //
   
   ClassDef(AliAnalysisTaskCRCZDC,8);
