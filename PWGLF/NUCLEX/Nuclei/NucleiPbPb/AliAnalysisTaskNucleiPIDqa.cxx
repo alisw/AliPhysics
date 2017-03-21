@@ -23,7 +23,7 @@ using std::string;
 ClassImp(AliAnalysisTaskNucleiPIDqa);
 ///\endcond
 
-const string                kNames[4]= {"2H","4H","3He","4He"};
+const string                kNames[4]= {"2H","3H","3He","4He"};
 const AliPID::EParticleType kSpecies[4] = {AliPID::kDeuteron, AliPID::kTriton, AliPID::kHe3, AliPID::kAlpha};
 const char                  kLetter[2] = {'A','M'};
 const string                kPIDmethod[5] = {"ITS","TPC","TOF","ITSTPC","TPCTOF"};
