@@ -15,7 +15,7 @@
 
 add_subdirectory(EMCALJetTasks)
 add_subdirectory(FlavourJetTasks)
-add_subdirectory(PWGJE)
+#add_subdirectory(PWGJE)
 add_subdirectory(StrangenessInJets)
 
 # Installing the macros
