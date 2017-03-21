@@ -13,6 +13,7 @@
 
 #include <TObject.h>
 #include <TString.h>
+#include "AliMCEvent.h"
 
 class TTree;
 class AliRawReader;
@@ -24,6 +25,7 @@ class AliDetectorRecoParam;
 class AliRunInfo;
 class AliEventInfo;
 class AliESDpid;
+class AliMCEvent;
 
 #include "AliReconstruction.h"
 
@@ -78,7 +80,9 @@ public:
   UInt_t   GetTimeStamp() const {return fTimeStamp;}
   void     SetTimeStamp(UInt_t t) {fTimeStamp = t;}
 
-
+  static void SetMCEvent(const AliMCEvent* mcev)      {fgMCEvent = mcev;}
+  static const AliMCEvent* GetMCEvent()               {return fgMCEvent;}
+  
 private:
 
   AliReconstructor(const AliReconstructor &); // Not implemented
@@ -89,6 +93,7 @@ private:
   AliRunInfo*                        fRunInfo;                                    //! pointer to the run info object
   AliEventInfo*                      fEventInfo;                                  //! pointer to the event info object
   AliESDEvent*                       fhltesd;                                     //! pointer to HLT ESD
+  static const AliMCEvent*           fgMCEvent;                                   //! optional pointer to MC event 
   UInt_t                             fTimeStamp;                                  //! event time stamp
   ClassDef(AliReconstructor, 0)   // base class for reconstruction algorithms
 };

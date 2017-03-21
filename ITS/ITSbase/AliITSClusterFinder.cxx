@@ -27,9 +27,12 @@
 #include "AliITSDetTypeRec.h"
 #include "AliITSMap.h"
 #include "AliITSgeomTGeo.h"
+#include "AliReconstructor.h"
 #include <TParticle.h>
+#include "AliMCParticle.h"
 #include <TArrayI.h>
 #include "AliMC.h"
+#include "AliMCEvent.h"
 #include "AliLog.h"
 #include <iostream>
 
@@ -316,14 +319,18 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10])
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
-  AliRunLoader *rl = AliRunLoader::Instance();
-  if(!rl) return;
-  TTree *trK=(TTree*)rl->TreeK();
-  if (!trK) return;
+  const AliMCEvent* mcEv = AliReconstructor::GetMCEvent();
+  if (!mcEv) {
+    AliRunLoader *rl = AliRunLoader::Instance();
+    if(!rl) return;
+    TTree *trK=(TTree*)rl->TreeK();
+    if (!trK) return;
+  }
   //
   int labS[10];
   Int_t nlabels = 0; 
-  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  const AliMCParticle* mcpart = 0;
+  //Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
   for (Int_t i=0;i<10;i++) if (lab[i]>=0) labS[nlabels++] = lab[i];
   if (nlabels==0) return;
   //
@@ -331,8 +338,14 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10])
   for (Int_t i=0;i<nlabels;i++) {
     Int_t label = labS[i];
     mom[i] = 0;
-    if (label>=ntracks) continue;
-    TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+    //if (label>=ntracks) continue; // RS: this should not happen
+    const TParticle *part = 0;
+    if (!mcEv) {
+      part = (TParticle*)gAlice->GetMCApp()->Particle(label);
+    }
+    else if ( (mcpart=(const AliMCParticle*)mcEv->GetTrack(label)) ) {
+      part = mcpart->Particle();
+    }
     mom[i] = part->P();
     if (part->P() < 0.02) {    // reduce soft particles from the same cluster
       Int_t m=part->GetFirstMother();
@@ -365,22 +378,22 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10])
 //______________________________________________________________________
 void AliITSClusterFinder::AddLabel(Int_t lab[10], Int_t label) {
   //add label to the cluster
-  AliRunLoader *rl = AliRunLoader::Instance();
-  TTree *trK=(TTree*)rl->TreeK();
-  if(trK){
-    if(label<0) return; // In case of no label just exit
+  if(label<0) return; // In case of no label just exit
+  //  AliRunLoader *rl = AliRunLoader::Instance();
+  //  TTree *trK=(TTree*)rl->TreeK();
+  // if(trK) {
 
-    Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
-    if (label>ntracks) return;
-    for (Int_t i=0;i<10;i++){
-      //    if (label<0) break;
-      if (lab[i]==label) break;
-      if (lab[i]<0) {
-	lab[i]= label;
-	break;
-      }
+  //    Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  //  if (label>ntracks) return;  // this should not happen
+  for (Int_t i=0;i<10;i++){
+    //    if (label<0) break;
+    if (lab[i]==label) break;
+    if (lab[i]<0) {
+      lab[i]= label;
+      break;
     }
   }
+    //  }
 }
 
 

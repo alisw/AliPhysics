@@ -202,6 +202,8 @@
 #include "AliTriggerInput.h"
 #include "AliLHCData.h"
 #include "ARVersion.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include <RVersion.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -337,6 +339,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fMemCountESDHLT(0),
   //
   fUpgradeModule(""),
+  fMCEventHandlerExt(0),
   fAnalysisMacro(),
   fAnalysis(0),
   fRecoHandler(0),
@@ -487,6 +490,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fMemCountESDHLT(0),
   //
   fUpgradeModule(""),
+  fMCEventHandlerExt(rec.fMCEventHandlerExt),
   fAnalysisMacro(rec.fAnalysisMacro),
   fAnalysis(0),
   fRecoHandler(0),
@@ -696,6 +700,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   //
   fUpgradeModule="";
   fAnalysisMacro = rec.fAnalysisMacro;
+  fMCEventHandlerExt = rec.fMCEventHandlerExt;
   fAnalysis = 0;
   fRecoHandler = 0;
   fDeclTriggerClasses = rec.fDeclTriggerClasses;
@@ -2006,6 +2011,16 @@ void AliReconstruction::SlaveBegin(TTree*)
     fAnalysis->GetCommonInputContainer()->SetData(ftree);
   }  
   //
+  if (fMCEventHandlerExt) {
+    AliInfo("Externaly supplied MCEventHandler will be used");
+    if (!fMCEventHandlerExt->InitOk()) {
+      if ( !fMCEventHandlerExt->Init("") && !fMCEventHandlerExt->InitOk() ) {
+	Abort("Failed to initialize MCEventHandler", TSelector::kAbortProcess);
+	return;
+      }
+    }  
+  }
+  //
   ProcessTriggerAliases();
   //
   if (!fWriteHLTESD) AliInfo("Writing of HLT ESD tree is disabled");
@@ -2103,7 +2118,16 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
 
   fRunLoader->GetEvent(iEvent);
-
+  
+  if (fMCEventHandlerExt) {
+    if (fMCEventHandlerExt->BeginEvent(iEvent)) AliReconstructor::SetMCEvent(fMCEventHandlerExt->MCEvent());
+    else {
+      AliErrorF("Failed to load MCEvent #%d from external handler %p",iEvent,fMCEventHandlerExt);
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+      else AliReconstructor::SetMCEvent(0);
+    }
+  }
+  
   // Fill Event-info object
   GetEventInfo();
   fRecoParam.SetEventSpecie(fRunInfo,fEventInfo,fListOfCosmicTriggers);
@@ -2645,7 +2669,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fLoader[AliQAv1::kTPC]->UnloadRecPoints();
     AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[AliQAv1::kTPC],iEvent), AliQAv1::kTPC,5, iEvent);
   }
-    
+
+  if (fMCEventHandlerExt) fMCEventHandlerExt->FinishEvent();
+  
   return kTRUE;
 }
 

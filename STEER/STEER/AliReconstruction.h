@@ -49,6 +49,7 @@ class AliCTPTimeParams;
 class AliAnalysisManager;
 class AliRecoInputHandler;
 class THashList;
+class AliMCEventHandler;
 
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
@@ -234,6 +235,9 @@ public:
   virtual Bool_t ProcessEvent(void* event);
   void           InitRun(const char* input);
 
+  void SetMCEventHandler(AliMCEventHandler* hmc) {fMCEventHandlerExt = hmc;}
+  AliMCEventHandler* GetMCEventHandler() const {return fMCEventHandlerExt;}
+  
 protected:
   // Functions needed to select events for which we store the ESD friends
   Bool_t IsHighPt() const;
@@ -439,6 +443,8 @@ private:
   // Upgrade detector reconstruction
   TString fUpgradeModule;
   Bool_t  fUpgradeMask[kNDetectors];
+  // optional MCHandler to access MC info in case of embedding
+  AliMCEventHandler*   fMCEventHandlerExt;  // only externally set
   // Connect an analysis manager in the event loop
   TString              fAnalysisMacro; // Full path to a macro creating an analysis manager train
   AliAnalysisManager  *fAnalysis;      //! Analysis manager
@@ -451,7 +457,7 @@ private:
   Int_t                fNAbandonedEv;   //  number of abandoned events
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 52)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 53)      // class for running the reconstruction
 };
 
 #endif

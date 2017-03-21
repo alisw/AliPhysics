@@ -36,6 +36,7 @@
 
 #include "AliLog.h"
 #include "AliReconstructor.h"
+#include "AliMCEvent.h"
 #include <TClass.h>
 #include <TString.h>
 
@@ -43,6 +44,8 @@
 ClassImp(AliReconstructor)
 
 const AliDetectorRecoParam* AliReconstructor::fgRecoParam[AliReconstruction::kNDetectors] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+
+const AliMCEvent* AliReconstructor::fgMCEvent = 0;
 
 //_____________________________________________________________________________
 void AliReconstructor::ConvertDigits(AliRawReader* /*rawReader*/, 
