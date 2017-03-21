@@ -17,6 +17,7 @@ class TH2F;
 class TList;
 class TString;
 class TVector2;
+class TBla;
 
 class AliESDEvent;
 class AliESDtrackCuts;
