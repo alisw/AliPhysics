@@ -23,13 +23,13 @@ public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *opt);
   virtual Bool_t PostProcess();
+  Double_t       ComputeDeltaPhi(Double_t, Double_t);
 
 private:
   AliMESpidTask(const AliMESpidTask&);
   AliMESpidTask& operator=(const AliMESpidTask&);
 
-  ClassDef(AliMESpidTask, 2)            // PID task for the Multi Event Shape
+  ClassDef(AliMESpidTask, 3)            // PID task for the Multi Event Shape
 };
 
 #endif
-

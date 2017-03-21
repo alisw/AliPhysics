@@ -223,6 +223,16 @@ void AliMESpidTask::UserExec(Option_t *opt)
   phi_LP = TMath::ATan2(py_LP, px_LP);
   phi_LP = (phi_LP>0) ? phi_LP : (phi_LP+TMath::TwoPi());  // if negative add 2*pi
 
+  Double_t px_LP_MC=0., py_LP_MC=0., pT_LP_MC=0., phi_LP_MC=0.;
+  if( HasMCdata() ){
+      // get the leading particle direction
+      px_LP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kTRUE);
+      py_LP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kFALSE);
+      phi_LP_MC = TMath::ATan2(py_LP_MC, px_LP_MC);
+      phi_LP_MC = (phi_LP_MC>0) ? phi_LP_MC : (phi_LP_MC+TMath::TwoPi());  // if negative add 2*pi
+  }
+
+
   // ESD track loop
   AliMEStrackInfo *t(NULL), *tMC(NULL);
   for(Int_t it(0); it<fTracks->GetEntries(); it++){
@@ -239,7 +249,9 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 
 	Double_t vec_hAllESD[12];    	// vector used to fill hAllESD
-	Double_t vec_hPIDQA[8];			//  vector used to fill hPIDQA
+    Double_t vec_hPIDQA[8];			//  vector used to fill hPIDQA
+    Double_t vec_hDeltaPhi[8];		//  vector used to fill hDeltaPhi
+
 
 	THnSparseD *hAllESD = (THnSparseD*)fHistosQA->At(1);
     // enum axis_hAllESD {l_comb08, l_V0M, l_comb0408, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
@@ -328,20 +340,9 @@ void AliMESpidTask::UserExec(Option_t *opt)
 // 	vec_hPIDQA[4] = vec_hAllESD[6];
 	vec_hPIDQA[4] = vec_hAllESD[l_TOFmatching];
 
+    // ---------------------------
     // get the delta phi angle
-    Double_t delta_phi = t->Phi() - phi_LP;
-    vec_hAllESD[l_delta_phi] = -9999.;
-    if(TMath::Abs(delta_phi) > 0.0001){
-        if(delta_phi < -TMath::PiOver2()){
-            vec_hAllESD[l_delta_phi] = TMath::TwoPi() + delta_phi;
-        }
-        else if(delta_phi > (3*TMath::PiOver2())){
-            vec_hAllESD[l_delta_phi] = delta_phi - TMath::TwoPi();
-        }
-        else{
-            vec_hAllESD[l_delta_phi] = delta_phi;
-        }
-    }
+    vec_hAllESD[l_delta_phi] = ComputeDeltaPhi(t->Phi(), phi_LP);
 
 
 	if( HasMCdata() ){ // run only on MC
@@ -379,6 +380,17 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		if( TMath::Abs(t->Pz()) != eMC ) vec_hAllESD[l_yMCPID] = 0.5*TMath::Log((eMC + t->Pz())/(eMC - t->Pz()));
 		else vec_hAllESD[l_yMCPID] = -9999;
 		if(TMath::Abs(vec_hAllESD[l_yMCPID]) > 1.0) continue;
+
+
+        // fill the deltaPhi sparse
+        THnSparseD *hDeltaPhi = (THnSparseD*)fHistosQA->At(5);
+        // vec_hDeltaPhi[0] = t->Pt();
+        vec_hDeltaPhi[0] = mult_comb08;
+        vec_hDeltaPhi[1] = directivity;
+        vec_hDeltaPhi[2] = ComputeDeltaPhi(t->Phi(), phi_LP);       // rec info
+        vec_hDeltaPhi[3] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);  // gen info
+        vec_hDeltaPhi[4] = ComputeDeltaPhi(t->Phi(), phi_LP_MC);    // rec tracks vs gen LP
+        hDeltaPhi->Fill(vec_hDeltaPhi);
 	}
 
 	// ---------------------------
@@ -526,14 +538,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
     enum axis_hGen {l_MC_comb08, l_MC_directivity, l_MC_pT, l_MC_charge, l_MC_PID, l_MC_rapidity, l_MC_delta_phi, l_MC_ESDmult, l_MC_ESDdir};  // labels for the hAllESD axis
 
 
-    // get the leading particle direction
-    Double_t px_LP_MC=0., py_LP_MC=0., pT_LP_MC=0., phi_LP_MC=0.;
-    px_LP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kTRUE);
-    py_LP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kFALSE);
-    phi_LP_MC = TMath::ATan2(py_LP_MC, px_LP_MC);
-    phi_LP_MC = (phi_LP_MC>0) ? phi_LP_MC : (phi_LP_MC+TMath::TwoPi());  // if negative add 2*pi
-
-
   	for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
 
@@ -582,19 +586,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
         // ---------------------------
         // get the delta phi angle
-        Double_t delta_phi_MC = tMC->Phi() - phi_LP_MC;
-        vec_hGen[l_MC_delta_phi] = -9999.;
-        if(TMath::Abs(delta_phi_MC) > 0.0001){
-            if(delta_phi_MC < -TMath::PiOver2()){
-                vec_hGen[l_MC_delta_phi] = delta_phi_MC + TMath::TwoPi();
-            }
-            else if(delta_phi_MC > (3*TMath::PiOver2())){
-                vec_hGen[l_MC_delta_phi] = delta_phi_MC - TMath::TwoPi();
-            }
-            else{
-                vec_hGen[l_MC_delta_phi] = delta_phi_MC;
-            }
-        }
+        vec_hGen[l_MC_delta_phi] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);
 
 		// ---------------------------
 		// get the ESD multiplicity
@@ -716,6 +708,16 @@ Bool_t AliMESpidTask::BuildQAHistos()
   hPIDQA->GetAxis(0)->Set(52, binLimits);
   fHistosQA->AddAt(hPIDQA, 4);
 
+
+  // deltaPhi studies
+  const Int_t ndimPhi(5);
+  const Int_t cldNbinsPhi[ndimPhi]   = {150, 20, 80, 80, 80};
+  const Double_t cldMinPhi[ndimPhi]  = {-0.5, 0., -TMath::PiOver2(), -TMath::PiOver2(), -TMath::PiOver2()},
+  cldMaxPhi[ndimPhi]  = {150.5, 1., (3.*TMath::PiOver2()), (3.*TMath::PiOver2()), (3.*TMath::PiOver2())};
+  THnSparseD *hDeltaPhi = new THnSparseD("DeltaPhi","deltaPhi;combined 0.8;directivity;deltaPhiESD;deltaPhiMC;deltaPhiESD_LPMC",ndimPhi, cldNbinsPhi, cldMinPhi, cldMaxPhi);
+  // hDeltaPhi->GetAxis(0)->Set(52, binLimits);
+  fHistosQA->AddAt(hDeltaPhi, 5);
+
 /*
 	// used for DCA corrections
 	const Int_t ndimDCA(10);
@@ -728,4 +730,27 @@ Bool_t AliMESpidTask::BuildQAHistos()
 	*/
 
   return kTRUE;
+}
+
+
+Double_t AliMESpidTask::ComputeDeltaPhi(Double_t phi, Double_t phi_LP)
+{
+    Double_t delta_phi = phi - phi_LP;
+
+    Double_t result = -9999.;
+
+    if(TMath::Abs(delta_phi) > 0.0001){  // avoid LP
+        if(delta_phi < -TMath::PiOver2()){
+            result = delta_phi + TMath::TwoPi();
+        }
+        else if(delta_phi > (3*TMath::PiOver2())){
+            result = delta_phi - TMath::TwoPi();
+        }
+        else{
+            result = delta_phi;
+        }
+    }
+
+    return result;
+
 }
