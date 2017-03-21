@@ -382,3 +382,4 @@ void AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
     task->SetForceBeamType(beam);
   }
 }
+// this comment serves no purpose
