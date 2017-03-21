@@ -1347,7 +1347,7 @@ void AliTOFClusterFinder::UnLoadClusters()
 
 }
 //-------------------------------------------------------------------------
-UShort_t AliTOFClusterFinder::GetClusterVolIndex(const Int_t * const ind) const {
+UShort_t AliTOFClusterFinder::GetClusterVolIndex(const Int_t * const ind) {
 
   //First of all get the volume ID to retrieve the l2t transformation...
   //
@@ -1360,10 +1360,10 @@ UShort_t AliTOFClusterFinder::GetClusterVolIndex(const Int_t * const ind) const 
 
   Int_t isector =ind[0];
   if (isector >= nSector)
-    AliError(Form("Wrong sector number in TOF (%d) !",isector));
+    Printf("ERROR: Wrong sector number in TOF (%d) !",isector);
   Int_t iplate = ind[1];
   if (iplate >= nPlate)
-    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+    Printf("ERROR: Wrong plate number in TOF (%d) !",iplate);
   Int_t istrip = ind[2];
 
   Int_t stripOffset = 0;
@@ -1384,7 +1384,7 @@ UShort_t AliTOFClusterFinder::GetClusterVolIndex(const Int_t * const ind) const 
     stripOffset = nStripC+nStripB+nStripA+nStripB;
     break;
   default:
-    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+    Printf("ERROR: Wrong plate number in TOF (%d) !",iplate);
     break;
   };
 
@@ -1397,7 +1397,7 @@ UShort_t AliTOFClusterFinder::GetClusterVolIndex(const Int_t * const ind) const 
 }
 //
 //-------------------------------------------------------------------------
-void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov) const {
+void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov) {
 
   //First of all get the volume ID to retrieve the l2t transformation...
   //
