@@ -221,11 +221,15 @@ class AliRDHFCuts : public AliAnalysisCuts
     /// see enum below
     fOptPileup=opt;
   }
-  void SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef=0.,Int_t switchTRand=0);
   void ConfigurePileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
     fMinContrPileup=minContrib;
     fMinDzPileup=minDz;
   }
+  void SetUseMultDepPileupCut(Bool_t opt=kTRUE){
+    fUseMultDepPileupCut=opt;
+  }
+
+  void SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef=0.,Int_t switchTRand=0);
   void SetMinCrossedRowsTPCPtDep(const char *rows="");
   void SetMinRatioClsOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioClsOverCrossRowsTPC = ratio;}
   void SetMinRatioSignalNOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioSignalNOverCrossRowsTPC = ratio;}
@@ -411,6 +415,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t  fOptPileup;      /// option for pielup selection
   Int_t  fMinContrPileup; /// min. n. of tracklets in pileup vertex
   Float_t fMinDzPileup;   /// min deltaz between main and pileup vertices
+  Bool_t fUseMultDepPileupCut; /// flag to use a multiplicity dependent pileup selection
   Int_t   fUseCentrality; /// off =0 (default)
                           /// 1 = V0 
                           /// 2 = Tracks
@@ -451,7 +456,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,39);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,40);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

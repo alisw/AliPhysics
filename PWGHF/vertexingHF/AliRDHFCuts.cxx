@@ -92,6 +92,7 @@ fUsePhysicsSelection(kTRUE),
 fOptPileup(0),
 fMinContrPileup(3),
 fMinDzPileup(0.6),
+fUseMultDepPileupCut(kFALSE),
 fUseCentrality(0),
 fMinCentrality(0.),
 fMaxCentrality(100.),
@@ -164,6 +165,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fOptPileup(source.fOptPileup),
   fMinContrPileup(source.fMinContrPileup),
   fMinDzPileup(source.fMinDzPileup),
+  fUseMultDepPileupCut(source.fUseMultDepPileupCut),
   fUseCentrality(source.fUseCentrality),
   fMinCentrality(source.fMinCentrality),
   fMaxCentrality(source.fMaxCentrality),
@@ -252,6 +254,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fOptPileup=source.fOptPileup;
   fMinContrPileup=source.fMinContrPileup;
   fMinDzPileup=source.fMinDzPileup;
+  fUseMultDepPileupCut=source.fUseMultDepPileupCut;
   fUseCentrality=source.fUseCentrality;
   fMinCentrality=source.fMinCentrality;
   fMaxCentrality=source.fMaxCentrality;
@@ -609,9 +612,15 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   // pile-up rejection
   if(fOptPileup==kRejectPileupEvent){
-    Int_t cutc=(Int_t)fMinContrPileup;
-    Double_t cutz=(Double_t)fMinDzPileup;
-    if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) {
+    Bool_t isPileup=kFALSE;
+    if(fUseMultDepPileupCut){
+      isPileup=event->IsPileupFromSPDInMultBins();
+    }else{
+      Int_t cutc=(Int_t)fMinContrPileup;
+      Double_t cutz=(Double_t)fMinDzPileup;
+      isPileup=event->IsPileupFromSPD(cutc,cutz,3.,2.,10.);
+    }
+    if(isPileup){
       if(accept) fWhyRejection=1;
       fEvRejectionBits+=1<<kPileup;
       accept=kFALSE;
