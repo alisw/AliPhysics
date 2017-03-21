@@ -1690,31 +1690,6 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
       }
     }
     
-    TString dataInputMultHisto  = "";
-    TString mcInputMultHisto    = "";
-    if (doMultiplicityWeighting){
-      cout << "enableling mult weighting" << endl; 
-      
-      if(i == 0){
-        dataInputMultHisto      = Form("%s_0005", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1a_0005";
-      } else if(i == 1){
-        dataInputMultHisto      = Form("%s_0510", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1a_0510";
-      } else if(i == 2){
-        dataInputMultHisto      = Form("%s_0010", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1a_0010";
-      } else if(i == 3){
-        dataInputMultHisto      = Form("%s_2040", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1b_2040";
-      } else if(i == 4){
-        dataInputMultHisto      = Form("%s_2050", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1b_2050";
-      }
-
-      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
-      
-    }
 
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   || 
         trainConfig == 21   || trainConfig == 25   || trainConfig == 29   || trainConfig == 33   || trainConfig == 37  || 

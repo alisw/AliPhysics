@@ -1,5 +1,5 @@
 
-void AddTask_GammaConvV1(TString mode){
+void AddTask_GammaConvV1(TString mode = "test", Bool_t isMC = kFALSE){
 
 	gSystem->Load("libCore");
 	gSystem->Load("libTree");
@@ -34,25 +34,20 @@ void AddTask_GammaConvV1(TString mode){
 	gSystem->Load("libPWGflowTasks.so");
 	gSystem->Load("libPWGGAGammaConv.so");
    
-   Bool_t isMC    = kFALSE;
    Bool_t readTR = kTRUE;
 
-   TString Pattern="pass2/*/AliESDs.root";
-   //TString Pattern="*/AliAOD.root";
-   TString Prefix ="000";
 
-//   Int_t run_numbers[100] = {137161, 137162, 137165, 137230, 137231, 137232, 137235, 137236, 137243, 137366, 137430, 137431, 137432, 137434, 137439, 137440, 137441, 137443, 137530, 137531, 137539, 137541, 137544, 137546, 137549, 137595, 137608, 137638, 137639, 137685, 137686, 137691, 137692, 137693, 137704, 137718, 137722, 137724, 137751, 137752, 137844, 137848, 138190, 138192, 138197, 138201, 138225, 138275, 138364, 138396, 138438, 138439, 138442, 138469, 138534, 138578, 138579, 138582, 138583, 138621, 138624, 138638, 138652, 138653, 138662, 138666, 138730, 138732, 138837, 138870, 138871, 138872, 139028, 139029, 139036, 139037, 139038, 139104, 139105, 139107, 139173, 139308, 139309, 139310, 139311, 139314, 139328, 139329, 139360, 139437, 139438, 139439, 139465, 139503, 139504, 139505, 139507, 139510};
-   Int_t run_numbers[1] = {168464}; //, 168310, 169094, 169411, 169415, 169417, 169584, 169965, 170208, 170270};
-   //Int_t run_numbers[10] = {137161, 137162, 137165, 137230, 137231, 137232, 137235, 137236, 137243, 137366};
-   //Int_t run_numbers[10] = {137430, 137431, 137432, 137434, 137439, 137440, 137441, 137443, 137530, 137531};
-   //Int_t run_numbers[10] = {137539, 137541, 137544, 137546, 137549, 137595, 137608, 137638, 137639, 137685};
-   //Int_t run_numbers[10] = {137686, 137691, 137692, 137693, 137704, 137718, 137722, 137724, 137751, 137752};
-   //Int_t run_numbers[10] = {137844, 137848, 138190, 138192, 138197, 138201, 138225, 138275, 138364, 138396};
-   //Int_t run_numbers[10] = {138438, 138439, 138442, 138469, 138534, 138578, 138579, 138582, 138583, 138621};
-   //Int_t run_numbers[10] = {138624, 138638, 138652, 138653, 138662, 138666, 138730, 138732, 138837, 138870};
-   //Int_t run_numbers[10] = {138871, 138872, 139028, 139029, 139036, 139037, 139038, 139104, 139105, 139107};
-   //Int_t run_numbers[10] = {139173, 139308, 139309, 139310, 139311, 139314, 139328, 139329, 139360, 139437};
-   //Int_t run_numbers[10] = {139438, 139439, 139465, 139503, 139504, 139505, 139507, 139510};
+   TString Pattern;
+   TString Prefix;
+   if(isMC){
+      Pattern="*/AliESDs.root";
+      Prefix ="";
+   } else {
+      Pattern="pass2/*/AliESDs.root";
+      Prefix ="000";
+   }
+
+   Int_t run_numbers[1] = {168464};
    gSystem->Setenv("alien_CLOSE_SE","ALICE::Grenoble::SE");
 
    AliAnalysisManager *mgr = new AliAnalysisManager("Analysis");
@@ -61,28 +56,21 @@ void AddTask_GammaConvV1(TString mode){
       return 0;
    }
 
-   gROOT->LoadMacro("CreateAlienHandlerNonPT.C");
+   gROOT->LoadMacro("CreateAlienHandlerNonPTTest.C");
    AliAnalysisAlien *alienHandler = CreateAlienHandler(mode);
    if (!alienHandler) return;
 
    TString WorkingDir = "";
-   //TString data = "/alice/sim/2014/LHC14a1a/";
-   TString data = "/alice/data/2011/LHC11h_2/";
-   TString period = "LHC11h_2";
-   
-   mgr->SetGridHandler(alienHandler);
-   alienHandler->SetGridWorkingDir(WorkingDir.Data());
-   alienHandler->SetGridOutputDir(Form("OUTPUT_%s",WorkingDir.Data()));
-
-   alienHandler->SetGridDataDir(data);
-   alienHandler->SetDataPattern(Pattern.Data());
-   alienHandler->SetRunPrefix(Prefix.Data());
-   //alienHandler->SetRunRange(137161,139510);
-   for (Int_t i=0; i<1; i++) {
-      if (run_numbers[i]==0) break;
-      alienHandler->AddRunNumber(run_numbers[i]);
+   TString data;
+   TString period;
+   if(isMC){
+     data = "/alice/sim/2014/LHC14a1a/";
+     period = "LHC14a1a";
+   } else {
+     data = "/alice/data/2011/LHC11h_2/";
+     period = "LHC11h";
    }
-      
+   
    AliESDInputHandler * handler;
    handler = new AliESDInputHandler(); mgr->SetInputEventHandler((AliESDInputHandler*)handler);
 
@@ -131,64 +119,7 @@ void AddTask_GammaConvV1(TString mode){
                                                      "LHC11h_2",  //name of the period for added signals and weighting
                                                      kFALSE,  //enable Weighting
                                                      kFALSE,  //use THnSparse
-													 0); 
-//    AliAnalysisTask *taskB = AddTask_GammaConvV1_PbPb(194,  //change different set of cuts
-//                                                      isMC,
-//                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
-//                                                      kTRUE, // enable additional QA task
-//                                                      "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
-//                                                      0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-//                                                      "1000000060084000001500000",
-//                                                      "LHC11h_2",  //name of the period for added signals and weighting
-//                                                      kFALSE,  //enable Weighting
-//                                                      kFALSE,  //use THnSparse
-// 													 0,
-// 													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
-// 													 0); 
-//    AliAnalysisTask *taskC = AddTask_GammaConvV1_PbPb(182,  //change different set of cuts
-//                                                      isMC,
-//                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
-//                                                      kTRUE, // enable additional QA task
-//                                                      "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
-//                                                      0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-//                                                      "1000000060084000001500000",
-//                                                      "LHC11h_2",  //name of the period for added signals and weighting
-//                                                      kFALSE,  //enable Weighting
-//                                                      kFALSE,  //use THnSparse
-// 													 0,
-// 													 "alien:///alice/cern.ch/user/l/lleardin/CentralityFlatFile20April.root",
-// 													 1); 
-//    AliAnalysisTask *taskC = AddTask_GammaConvV1_PbPb(125,  //change different set of cuts
-//                                                      isMC,
-//                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
-//                                                      kTRUE, // enable additional QA task
-//                                                      "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
-//                                                      0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-//                                                      "1000000060084000001500000",
-//                                                      "LHC11h_2",  //name of the period for added signals and weighting
-//                                                      kFALSE,  //enable Weighting
-//                                                      kFALSE);  //use THnSparse
-//    AliAnalysisTask *taskD = AddTask_GammaConvV1_PbPb(133,  //change different set of cuts
-//                                                      isMC,
-//                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
-//                                                      kTRUE, // enable additional QA task
-//                                                      "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
-//                                                      0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-//                                                      "1000000060084000001500000",
-//                                                      "LHC11h_2",  //name of the period for added signals and weighting
-//                                                      kFALSE,  //enable Weighting
-//                                                      kFALSE);  //use THnSparse
-//    AliAnalysisTask *taskD = AddTask_GammaConvV1_PbPb(134,  //change different set of cuts
-//                                                      isMC,
-//                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
-//                                                      kTRUE, // enable additional QA task
-//                                                      "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
-//                                                      0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-//                                                      "1000000060084000001500000",
-//                                                      "LHC11h_2",  //name of the period for added signals and weighting
-//                                                      kFALSE,  //enable Weighting
-//                                                      kFALSE);  //use THnSparse   
-
+                                                     0); 
    if (!mgr->InitAnalysis())return;
    mgr->StartAnalysis("grid");
 }
