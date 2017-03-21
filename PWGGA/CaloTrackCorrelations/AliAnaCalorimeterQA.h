@@ -434,6 +434,8 @@ public:
   TH2F *   fhMassEClusTCardCorrelNCell[6][6][2];            //!<! Cluster invariant mass vs E cluster, one of clusters  0.1<m02<0.4 contains 0 to more than 6 cells with w > 0.01, in same TCard or diff TCard            
   TH2F *   fhMassEPairTCardCorrelNCell[6][6][2];            //!<! Cluster invariant mass vs E pair, one of clusters  0.1<m02<0.4 contains 0 to more than 6 cells with w > 0.01, in same TCard or diff TCard            
   TH2F *   fhExoticTCardCorrelNCell   [6][6][2];            //!<! Cluster exoticity vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard  
+  TH2F *   fhTimeDiffTCardCorrelNCell   [6][6][2];          //!<! Cluster time-secondary cell time vs E, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard  
+  TH2F *   fhTimeDiffExoTCardCorrelNCell[6][6][2];          //!<! Cluster time-secondary cell time vs E, for exotic luster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard  
   TH2F *   fhColRowTCardCorrelNCellLowE [6][6][2];          //!<! Cluster max cell col vs row, E > 2 GeV, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard
   TH2F *   fhColRowTCardCorrelNCellHighE[6][6][2];          //!<! Cluster max cell col vs row, E > 8 GeV, cluster contains 0 to more than 6 cells with w > 0.01 in same TCard or diff TCard
 

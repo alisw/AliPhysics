@@ -339,7 +339,9 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
         fhE2ndEMaxRat3TCardCorrelNCell[i][j][tm] = 0 ;  
         fhMassEClusTCardCorrelNCell[i][j][tm] = 0 ;  
         fhMassEPairTCardCorrelNCell[i][j][tm] = 0 ;  
-        fhExoticTCardCorrelNCell [i][j][tm] = 0 ;  
+        fhExoticTCardCorrelNCell   [i][j][tm] = 0 ;  
+        fhTimeDiffTCardCorrelNCell [i][j][tm] = 0 ;  
+        fhTimeDiffExoTCardCorrelNCell[i][j][tm] = 0 ;  
         fhColRowTCardCorrelNCellLowE [i][j][tm] = 0 ; 
         fhColRowTCardCorrelNCellHighE[i][j][tm] = 0 ; 
       }
@@ -1295,7 +1297,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo  [matched]->Fill(eCellMax, tDiff, GetEventWeight());
     }
   }
-  
+    
   ///////////////////////////
   Int_t nCorrInd = nCorr;
   if(nCorr > 4) nCorrInd = 5; 
@@ -1334,6 +1336,31 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     fhEMaxRat3TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCellMax/energy, GetEventWeight());
     fhE2ndRat3TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
     fhE2ndEMaxRat3TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+  }
+  
+  // Time diff in cluster, depending nCells
+  for (Int_t ipos = 0; ipos < ncells; ipos++) 
+  {
+    Int_t absId  = clus->GetCellsAbsId()[ipos];   
+    
+    Float_t  eCell = cells->GetCellAmplitude(absId);
+    Double_t tCell = cells->GetCellTime(absId);      
+    
+    GetCaloUtils()->RecalibrateCellAmplitude(eCell, GetCalorimeter(), absId);
+    GetCaloUtils()->RecalibrateCellTime(tCell, GetCalorimeter(), absId, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
+    tCell *= 1.0e9;
+    tCell-=fConstantTimeShift;
+    
+    // consider cells with enough energy weight and not the reference one
+    Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
+    
+    if( absId == absIdMax || weight < 0.01 ) continue;
+    
+    Float_t tDiffMaxSecondary = tCellMax - tCell; 
+    //printf("Time max %f, second %f, diff %f\n",tCellMax,tCell,tDiffMaxSecondary);
+    fhTimeDiffTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, tDiffMaxSecondary, GetEventWeight());
+    if(exoticity > 0.97) 
+      fhTimeDiffExoTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, tDiffMaxSecondary, GetEventWeight());
   }
   
   // Invariant mass for clusters looking like photons, depending number of cells
@@ -3287,6 +3314,22 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhExoticTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
           fhExoticTCardCorrelNCell[i][j][tm]->SetYTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
           outputContainer->Add(fhExoticTCardCorrelNCell[i][j][tm]); 
+
+          fhTimeDiffTCardCorrelNCell[i][j][tm]  = new TH2F 
+          (Form("hTimeDiffTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+           Form("#it{t}_{cell}^{max}-#it{t}_{cell}^{other} vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+           nptbins,ptmin,ptmax,300,-150,150); 
+          fhTimeDiffTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+          fhTimeDiffTCardCorrelNCell[i][j][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell}^{other}");
+          outputContainer->Add(fhTimeDiffTCardCorrelNCell[i][j][tm]); 
+
+          fhTimeDiffExoTCardCorrelNCell[i][j][tm]  = new TH2F 
+          (Form("hTimeDiffExoTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+           Form("#it{t}_{cell}^{max}-#it{t}_{cell}^{other} vs #it{E}, N cells with  w > 0.01, exoticity > 0.97, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+           nptbins,ptmin,ptmax,300,-150,150); 
+          fhTimeDiffExoTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+          fhTimeDiffExoTCardCorrelNCell[i][j][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell}^{other}");
+          outputContainer->Add(fhTimeDiffExoTCardCorrelNCell[i][j][tm]); 
           
           fhColRowTCardCorrelNCellLowE[i][j][tm] = new TH2F
           (Form("hColRowTCardCorrelNCellLowE_Same%d_Diff%d%s",i,j,add[tm].Data()),
