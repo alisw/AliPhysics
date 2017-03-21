@@ -243,6 +243,7 @@ void AliGenPerformance::Generate()
 	}
 	isOK=kFALSE;
       }
+      Int_t done= (mcParticle->GetFirstChild()<=0);
 
       if ((fVerboseLevel&kFastOnly)==0 &&pdgParticle!=NULL) {
 	// Missing info in order to apply reweighting
@@ -251,8 +252,12 @@ void AliGenPerformance::Generate()
 	// Note : code fr the mother/daughter inspired by the  AliGenCorrHF::LoadTracks
 	TMCProcess type=(stackParent>=0) ? kPDecay:kPPrimary;
 	if (isOK){
-	  PushTrack(fTrackIt,stackParent,flavour,mom, posf, polarization,0,type,nPart,1.,decayFlag);
-	  pLabel[iparticle]=nPart; 
+	  if (TMath::Abs(flavour)==211) done=0; // TEMPORARY hack to get geant to track pion, kaon protons 
+	  if (TMath::Abs(flavour)==321) done=0;
+	  if (TMath::Abs(flavour)==2212) done=0;
+	  PushTrack(done,stackParent,flavour,mom, posf, polarization,0,type,nPart,1.,decayFlag);
+	  pLabel[iparticle]=nPart;
+	  if (done) KeepTrack(nPart);
 	  if (stackParent>0) KeepTrack(stackParent);
 	  //fNprimaries++; 
 	}
@@ -264,6 +269,7 @@ void AliGenPerformance::Generate()
 	  Double_t  pt=TMath::Sqrt(mcParticle->GetPx()*mcParticle->GetPx()+mcParticle->GetPy()*mcParticle->GetPy());
 	  (*fStreamer)<<"testGener"<<
 	    "isOK="<<isOK<<
+	    "done="<<done<<
 	    "njets="<<njets<<
 	    "ptot="<<ptot<<
 	    "theta="<<theta<<
