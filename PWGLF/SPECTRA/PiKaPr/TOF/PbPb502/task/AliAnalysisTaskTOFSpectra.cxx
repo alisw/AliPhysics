@@ -1002,13 +1002,13 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       //*****
       
       //Numerator
-      hNumMatchPtEtaPhiout[charge] = new TH3I(Form("hNumMatchPtEtaPhiout%s", pC[charge].Data()), Form("Matching Numerator %s;%s;%s", pCharge[charge].Data(), ptstring.Data(), etastring.Data()), kPtBins, 0, kPtBins, kEtaBins, -fEtaRange, fEtaRange, kPhiBins, 0, TMath::TwoPi());
+      hNumMatchPtEtaPhiout[charge] = new TH3I(Form("hNumMatchPtEtaPhiout%s", pC[charge].Data()), Form("Matching Numerator %s;%s;%s;%s", pCharge[charge].Data(), ptstring.Data(), etastring.Data(), phistring.Data()), kPtBins, 0, kPtBins, kEtaBins, -fEtaRange, fEtaRange, kPhiBins, 0, TMath::TwoPi());
       hNumMatchPtEtaPhiout[charge]->Sumw2();
       hNumMatchPtEtaPhiout[charge]->GetXaxis()->Set(kPtBins, fBinPt);
       fListHist->AddLast(hNumMatchPtEtaPhiout[charge]);
       
       //Denominator
-      hDenMatchPtEtaPhiout[charge] = new TH3I(Form("hDenMatchPtEtaPhiout%s", pC[charge].Data()), Form("Matching Denominator %s;%s;%s", pCharge[charge].Data(), ptstring.Data(), etastring.Data()), kPtBins, 0, kPtBins, kEtaBins, -fEtaRange, fEtaRange, kPhiBins, 0, TMath::TwoPi());
+      hDenMatchPtEtaPhiout[charge] = new TH3I(Form("hDenMatchPtEtaPhiout%s", pC[charge].Data()), Form("Matching Denominator %s;%s;%s;%s", pCharge[charge].Data(), ptstring.Data(), etastring.Data(), phistring.Data()), kPtBins, 0, kPtBins, kEtaBins, -fEtaRange, fEtaRange, kPhiBins, 0, TMath::TwoPi());
       hDenMatchPtEtaPhiout[charge]->Sumw2();
       hDenMatchPtEtaPhiout[charge]->GetXaxis()->Set(kPtBins, fBinPt);
       fListHist->AddLast(hDenMatchPtEtaPhiout[charge]);
