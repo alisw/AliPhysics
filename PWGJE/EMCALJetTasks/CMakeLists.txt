@@ -125,6 +125,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEGAMonitor.cxx
     Tracks/AliAnalysisTaskEmcalPatchMasking.cxx
     Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
+    Tracks/AliAnalysisTaskCountITStracks.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
