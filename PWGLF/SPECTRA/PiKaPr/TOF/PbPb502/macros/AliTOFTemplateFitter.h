@@ -1,9 +1,15 @@
+#ifndef ALITOFTEMPLATEFITTER
+#define ALITOFTEMPLATEFITTER
+//Flags to set the modes to be used
+#define USECDECONVOLUTION//Cholesky-like
+#define USEFITFUNCTIONS//Fit functions
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <RooAddPdf.h>
 #include <RooRealVar.h>
 #include <RooChi2Var.h>
 #include <RooDataHist.h>
 #include <RooFitResult.h>
+#include <RooGaussianTail.h>
 #include <RooHistPdf.h>
 #include <RooAbsPdf.h>
 #include <TPaveText.h>
@@ -14,22 +20,39 @@
 #include <TFractionFitter.h>
 #include <TObjArray.h>
 #include <TOFsignal.C>
-// #include <UtilTOFParams.h>
 #include <AliUtilTOFParams.h>
-#include <UtilFunctions.h>
-#include "UtilFiles.h"
-#include "UtilPlots.h"
-#include "UtilSpectra.h"
-#include "AliCDeconv.h"
+#include <UtilMessages.h>
 #include "TMath.h"
+#ifdef USECDECONVOLUTION
+#include "AliCDeconv.h"
+#endif
 #endif
 
 using namespace RooFit;
 
 Double_t CHI2 = -1;
+//Utilities
+//_________________________________________________________________________________________________
+Double_t ComputeChi2(const TH1 *hdata, const TH1 *hfit, const Double_t xlow, const Double_t xhigh){//Macro to compute chi2
+  if(xhigh < xlow){
+    Warningmsg("ComputeChi2", Form("Range for Chi2 not well defined [%f, %f]", xlow, xhigh));
+    return -1;
+  }
+  TH1 *h1 = (TH1*)hdata->Clone("h1");
+  TH1 *h2 = (TH1*)hfit->Clone("h2");
+  for (Int_t bin = 1; bin < h1->GetXaxis()->FindBin(xlow); bin++) h1->SetBinContent(bin, 0);
+  for (Int_t bin = h1->GetXaxis()->FindBin(xlow) + 1; bin <= h1->GetNbinsX(); bin++) h1->SetBinContent(bin, 0);
+  for (Int_t bin = 1; bin < h2->GetXaxis()->FindBin(xlow); bin++) h2->SetBinContent(bin, 0);
+  for (Int_t bin = h2->GetXaxis()->FindBin(xlow) + 1; bin <= h2->GetNbinsX(); bin++) h2->SetBinContent(bin, 0);
+  
+  const Double_t chi2 = h1->Chi2Test(h2, "UUCHI2/NDF"); 
+  delete h1;
+  delete h2;
+  return chi2;
+}
 
 //_________________________________________________________________________________________________
-Int_t PerformFitWithTFF(TH1F* hData, TObjArray* mc, Double_t *range, Double_t *fitrange, TArrayD &fraction, TArrayD &fractionErr, TObjArray *& prediction){
+Bool_t PerformFitWithTFF(TH1F* hData, TObjArray* mc, Double_t *range, Double_t *fitrange, TArrayD &fraction, TArrayD &fractionErr, TObjArray *& prediction){
   //TH1F* hData             -> Histogram of data to be fitted
   //TObjArray* mc           -> Templates for the fit
   //Double_t *range         -> Integration range over which to compute fractions
@@ -216,7 +239,7 @@ Int_t PerformFitWithTFF(TH1F* hData, TObjArray* mc, Double_t *range, Double_t *f
 }
 
 //_________________________________________________________________________________________________
-Int_t PerformFitWithRooFit(TH1F* hData, TObjArray *mc, Double_t *range, Double_t *fitrange, TArrayD &fraction, TArrayD &fractionErr, TObjArray *& prediction, Double_t &chi2 = CHI2){
+Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray *mc, Double_t *range, Double_t *fitrange, TArrayD &fraction, TArrayD &fractionErr, TObjArray *& prediction, Double_t &chi2 = CHI2){
   const Int_t ntemplates = mc->GetEntries();
   Int_t templatetype[ntemplates];//Template type all set to 0 for TH1F by default but can be also 1 for TF1
   const Bool_t normtoone = kFALSE;
@@ -583,7 +606,8 @@ Int_t PerformFitWithRooFit(TH1F* hData, TObjArray *mc, Double_t *range, Double_t
 }
 
 //_________________________________________________________________________________________________
-Int_t PerformFitWithFunctions(TH1F* hData, TObjArray *func, TF1 *funcsum, Double_t *range, Double_t *fitrange, TArrayD &fraction, TArrayD &fractionErr, TObjArray *& prediction){
+Bool_t PerformFitWithFunctions(TH1F* hData, TObjArray *func, TF1 *funcsum, Double_t *range, Double_t *fitrange, TArrayD &fraction, TArrayD &fractionErr, TObjArray *& prediction){
+  #ifdef USEFITFUNCTIONS
   const Int_t ntemplates = func->GetEntries();
   TF1 *singlefun[ntemplates];
   Double_t *parameters[ntemplates];
@@ -732,11 +756,14 @@ Int_t PerformFitWithFunctions(TH1F* hData, TObjArray *func, TF1 *funcsum, Double
   if(cFit) delete cFit;
   
   return kTRUE;
-  
+  #else 
+  return kFALSE;
+  #endif  
 }
 
 //_________________________________________________________________________________________________
-Int_t PerformFitWithCD(TH1F* hData, TObjArray* mc, Double_t *range, Double_t *fitrange, TArrayD &fraction, TArrayD &fractionErr, TObjArray *& prediction){
+Bool_t PerformFitWithCD(TH1F* hData, TObjArray* mc, Double_t *range, Double_t *fitrange, TArrayD &fraction, TArrayD &fractionErr, TObjArray *& prediction){
+  #ifdef USECDECONVOLUTION
   const Int_t ntemplates = mc->GetEntries();
   Double_t min = 100;
   
@@ -889,10 +916,13 @@ Int_t PerformFitWithCD(TH1F* hData, TObjArray* mc, Double_t *range, Double_t *fi
   
   if(status == 0) return kTRUE;
   else return kFALSE;
+  #else 
+  return kFALSE;
+  #endif
 }
 
 //_________________________________________________________________________________________________
-Int_t UseBinCounting(TH1F * hData, TObjArray* mc, Double_t *rangelol, TArrayD &fraction, TArrayD &fractionErr){
+Bool_t UseBinCounting(TH1F * hData, TObjArray* mc, Double_t *rangelol, TArrayD &fraction, TArrayD &fractionErr){
   const Int_t ntemplates = mc->GetEntries();
   
   const Double_t range[2] = {-240, 240};
@@ -907,3 +937,4 @@ Int_t UseBinCounting(TH1F * hData, TObjArray* mc, Double_t *rangelol, TArrayD &f
   }
   return kFALSE;
 }
+#endif
