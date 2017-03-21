@@ -1435,8 +1435,6 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
   // New decoder method
   //
 
-  Printf("Starting decoding");
-
   Int_t currentEquipment;
   Int_t currentDDL;
   const AliRawDataHeader *currentCDH = 0x0;
@@ -1448,8 +1446,6 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
   //loop and read DDL headers 
   while(fRawReader->ReadHeader()){
 
-    Printf("Here");
-    
     //get equipment infos
     currentEquipment = fRawReader->GetEquipmentId();
 
@@ -1469,11 +1465,9 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
     
     if (verbose)
       AliInfo(Form("Found equipment # %d header (DDL # %d): %d bytes (%d words)", currentEquipment, currentDDL, kDataSize, kDataWords));
-    Printf("Found equipment  %d header (DDL  %d): %d bytes (%d words)", currentEquipment, currentDDL, kDataSize, kDataWords);
     
     if (verbose)
       AliInfo(Form("Reading equipment #%d (DDL # %d) data...", currentEquipment, currentDDL));
-    Printf("Reading equipment %d (DDL %d) data...", currentEquipment, currentDDL);
     
     //read equipment payload
     if (!fRawReader->ReadNext(data, kDataSize))
@@ -1481,16 +1475,13 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
 	fRawReader->AddMajorErrorLog(kDDLdataReading);
 	if (verbose)
 	  AliWarning("Error while reading DDL data. Go to next equipment");
-	  Printf("Error while reading DDL data. Go to next equipment");
 	delete [] data;
 	data = 0x0;
 	continue;
       }
     
     if (verbose)
-      AliInfo(Form("Equipment # %d (DDL # %d) data has been readed", currentEquipment, currentDDL));
-      Printf("Equipment # %d (DDL # %d) data has been readed", currentEquipment, currentDDL);
-    
+      AliInfo(Form("Equipment # %d (DDL # %d) data has been readed", currentEquipment, currentDDL));    
     
     //set up the decoder
     fDecoder->SetVerbose(verbose);
@@ -1544,11 +1535,9 @@ Bool_t AliTOFRawStream::DecodeV2(Int_t verbose = 0) {
   
   if (verbose)
     AliInfo(Form("Found equipment # %d header (DDL # %d): %d bytes (%d words)", currentEquipment, currentDDL, kDataSize, kDataWords));
-  //Printf("Found equipment # %d header (DDL # %d): %d bytes (%d words)", currentEquipment, currentDDL, kDataSize, kDataWords);
   
   if (verbose)
     AliInfo(Form("Reading equipment #%d (DDL # %d) data...", currentEquipment, currentDDL));
-  //Printf("Reading equipment #%d (DDL # %d) data...", currentEquipment, currentDDL);
   
   //read equipment payload
   if (!fRawReader->ReadNext(data, kDataSize))
@@ -1563,7 +1552,6 @@ Bool_t AliTOFRawStream::DecodeV2(Int_t verbose = 0) {
   
   if (verbose)
     AliInfo(Form("Equipment # %d (DDL # %d) data has been read", currentEquipment, currentDDL));
-  //Printf("Equipment # %d (DDL # %d) data has been read", currentEquipment, currentDDL);
   
   
   //set up the decoder
