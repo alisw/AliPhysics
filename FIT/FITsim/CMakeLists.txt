@@ -36,6 +36,7 @@ set(SRCS
     AliFITv4.cxx
     AliFITv5.cxx
    AliFITv6.cxx
+   AliFITv7.cxx
 
    )
 
