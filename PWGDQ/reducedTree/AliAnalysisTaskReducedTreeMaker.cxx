@@ -1060,6 +1060,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
    if(isAOD) {
       for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(5+idx));
       for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)<0) reducedParticle->fQualityFlags |= (ULong_t(1)<<(12+idx));
+      for(Int_t idx=0; idx<11; ++idx) if(aodTrack->TestFilterBit(BIT(idx))) reducedParticle->SetQualityFlag(15+idx);
    }
    
    // If we want to write only AliReducedBaseTrack objects, then we stop here
