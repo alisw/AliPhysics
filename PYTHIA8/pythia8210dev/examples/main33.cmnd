@@ -1,0 +1,17 @@
+! main33.cmnd.
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+
+! The following settings provide a sensible default for
+! the merging of POWHEG events.
+POWHEG:veto = 1       ! enable vetoing via PowhegHooks
+POWHEG:vetoCount = 3  ! don't check emissions after three accepted
+POWHEG:pThard = 0     ! set to SCALUP
+POWHEG:pTemt = 0      ! the pT of the emitted parton w.r.t. the radiating parton
+POWHEG:emitted = 0    ! PYTHIA definition of emitted
+POWHEG:pTdef = 1      ! POWHEG ISR pT and FSR d_ij definitions
+POWHEG:QEDveto = 0    ! colorless partons excluded from shower pT for pTemt>0
+Beams:frameType = 5   ! initialize PYTHIA to use LHAup process (mandatory)
+
+! This parameter must be changed for the correponding POWHEG process.
+POWHEG:nFinal = 2     ! number of outgoing particles at Born level

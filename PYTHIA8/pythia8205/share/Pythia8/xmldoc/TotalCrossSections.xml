@@ -1,0 +1,212 @@
+<chapter name="Total Cross Sections"> 
+ 
+<h2>Total Cross Sections</h2> 
+ 
+The <code>SigmaTotal</code> class returns the total, elastic, diffractive 
+and nondiffractive cross sections in hadronic collisions, and also the 
+slopes of the <ei>d(sigma)/dt</ei> distributions. Most of the parametrizations 
+used are from <ref>Sch94, Sch97</ref> which borrows some of the total cross 
+sections from <ref>Don92</ref>. If you use the MBR (Minimum Bias Rockefeller) 
+model <ref>Cie12</ref>, <code>Diffraction:PomFlux = 5</code>, this model 
+contains its own parametrizations of all cross sections in <ei>p p</ei> 
+and <ei>pbar p</ei> collisions. 
+ 
+<p/> 
+There are strong indications that the currently implemented diffractive 
+cross section parametrizations, which should be in reasonable agreement 
+with data at lower energies, overestimate the diffractive rate at larger 
+values. If you wish to explore this (or other) aspect, it is possible to 
+override the cross section values in two different ways. The first offers 
+(almost) complete freedom, but needs to be defined separately for each 
+CM energy, while the second introduces a simpler parametrized damping. 
+The two cannot be combined. Furthermore the Coulomb term for elastic 
+scattering, which by default is off, can be switched on. 
+ 
+<p/> 
+The allowed combinations of incoming particles are <ei>p + p</ei>, 
+<ei>pbar + p</ei>, <ei>pi+ + p</ei>, <ei>pi- + p</ei>, 
+<ei>pi0/rho0 + p</ei>, <ei>phi + p</ei>, <ei>J/psi + p</ei>, 
+<ei>rho + rho</ei>, <ei>rho + phi</ei>, <ei>rho + J/psi</ei>, 
+<ei>phi + phi</ei>, <ei>phi + J/psi</ei>, <ei>J/psi + J/psi</ei>. 
+The strong emphasis on vector mesons is related to the description 
+of <ei>gamma + p</ei> and <ei>gamma + gamma</ei> interactions in a 
+Vector Dominance Model framework (which will not be available for some 
+time to come, so this is a bit of overkill). Nevertheless, the sections 
+below, with allowed variations, are mainly intended to make sense for 
+<ei>p + p</ei>. 
+ 
+<h3>Central diffraction</h3> 
+ 
+Central diffraction (CD), a.k.a. double Pomeron exchange (DPE), was not 
+part of the framework in <ref>Sch94</ref>. It has now been added for 
+multiparticle states, i.e. excluding the resonance region below 1 GeV 
+mass, as well as other exclusive states, but only for <ei>p p</ei> or 
+<ei>pbar p</ei>. It uses the same proton-Pomeron vertex as in single 
+diffraction, twice, to describe <ei>x_Pomeron</ei> and <ei>t</ei> spectra. 
+This fixes the energy dependence, which has been integrated and 
+parametrized. The absolute normalization has been left open, however. 
+Furthermore, since CD has not been included in previous tunes to data, 
+a special flag is available to reproduce the old behaviour (with due 
+complications when one does not want to do this). 
+ 
+<parm name="SigmaTotal:sigmaAXB2TeV" default="1.5" min="0."> 
+The CD cross section for <ei>p p</ei> and <ei>pbar p</ei> collisions, 
+normalized to its value at 2 TeV CM energy, expressed in mb. The energy 
+dependence is then parametrized, and behaves roughly like 
+<ei>ln^1.5(s)</ei>. Is used for the options 
+<code>Diffraction:PomFlux = 1 - 4</code>, while the MBR model 
+(<code>= 5</code>) has its own parametrization. 
+</parm> 
+ 
+<flag name="SigmaTotal:zeroAXB" default="on"> 
+several existing <aloc href="Tunes">tunes</aloc> do not include CD. 
+An inclusion of a nonvanishing CD cross section directly affects 
+the nondiffractive phenomenology, even if not dramatically, and so 
+this flag is used to forcibly set the CD cross section to vanish 
+in such tunes. You can switch CD back on <i>after</i> the selection of 
+a tune, if you so wish, by resetting <code>SigmaTotal:zeroAXB = off</code>. 
+This option has no effect for the MBR model 
+(<code>Diffraction:PomFlux = 5</code>), where the CD cross section 
+has been included from the onset. 
+</flag> 
+ 
+<h3>Set cross sections</h3> 
+ 
+<flag name="SigmaTotal:setOwn" default="off"> 
+Allow a user to set own cross sections by hand; on/off = true/false. 
+</flag> 
+ 
+<p/> 
+When <code>SigmaTotal:setOwn = on</code>, the user is expected to set 
+values for the corresponding cross sections: 
+ 
+<parm name="SigmaTotal:sigmaTot" default="80." min="0."> 
+Total cross section in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaEl" default="20." min="0."> 
+Elastic cross section in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaXB" default="8." min="0."> 
+Single Diffractive cross section <ei>A + B &rarr; X + B</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaAX" default="8." min="0."> 
+Single Diffractive cross section <ei>A + B &rarr; A + X</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaXX" default="4." min="0."> 
+Double Diffractive cross section <ei>A + B &rarr; X_1 + X_2</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaAXB" default="1." min="0."> 
+Central Diffractive cross section <ei>A + B &rarr; A + X + B</ei> in mb. 
+</parm> 
+ 
+<p/> 
+Note that the total cross section subtracted by the elastic and various 
+diffractive ones gives the inelastic nondiffractive cross section, 
+which therefore is not set separately. If this cross section evaluates 
+to be negative the internal parametrizations are used instead of the 
+ones here. However, since the nondiffractive inelastic cross section 
+is what makes up the minimum-bias event class, and plays a major role 
+in the description of multiparton interactions, it is important that a 
+consistent set is used. 
+ 
+<h3>Dampen diffractive cross sections</h3> 
+ 
+As already noted, unitarization effects may dampen the rise of diffractive 
+cross sections relative to the default parametrizations. The settings 
+here allows one way to introduce a dampening, which is used in some 
+of the existing <aloc href="Tunes">tunes</aloc>. 
+ 
+<flag name="SigmaDiffractive:dampen" default="on"> 
+Allow a user to dampen diffractive cross sections; on/off = true/false. 
+</flag> 
+ 
+<p/> 
+When <code>SigmaDiffractive:dampen = on</code>, the three diffractive 
+cross sections are damped so that they never can exceed the respective 
+values below. Specifically, if the standard parametrization gives 
+the cross section <ei>sigma_old(s)</ei> and a fixed <ei>sigma_max</ei> 
+is set, the actual cross section becomes <ei>sigma_new(s) 
+= sigma_old(s) * sigma_max / (sigma_old(s) + sigma_max)</ei>. 
+This reduces to <ei>sigma_old(s)</ei> at low energies and to 
+<ei>sigma_max</ei> at high ones. Note that the asymptotic value 
+is approached quite slowly, however. 
+ 
+<parm name="SigmaDiffractive:maxXB" default="65." min="0."> 
+The above <ei>sigma_max</ei> for <ei>A + B &rarr; X + B</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:maxAX" default="65." min="0."> 
+The above <ei>sigma_max</ei> for <ei>A + B &rarr; A + X</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:maxXX" default="65." min="0."> 
+The above <ei>sigma_max</ei> for <ei>A + B &rarr; X_1 + X_2</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:maxAXB" default="3." min="0."> 
+The above <ei>sigma_max</ei> for <ei>A + B &rarr; A + X + B</ei> in mb. 
+</parm> 
+ 
+<p/> 
+As above, a reduced diffractive cross section automatically translates 
+into an increased nondiffractive one, such that the total (and elastic) 
+cross section remains fixed. 
+ 
+ 
+<h3>Set elastic cross section</h3> 
+ 
+<p/> 
+In the above option the <ei>t</ei> slopes are based on the internal 
+parametrizations. In addition there is no Coulomb-term contribution 
+to the elastic (or total) cross section, which of course becomes 
+infinite if this contribution is included. If you have switched on 
+<code>SigmaTotal:setOwn</code> you can further switch on a machinery 
+to include the Coulomb term, including interference with the conventional 
+strong-interaction Pomeron one <ref>Ber87</ref>. Then the elastic cross 
+section is no longer taken from <code>SigmaTotal:sigmaEl</code> but 
+derived from the parameters below and <code>SigmaTotal:sigmaTot</code>, 
+using the optical theorem. The machinery is only intended to be used for 
+<ei>p p</ei> and <ei>pbar p</ei> collisions. The description of 
+diffractive events, and especially their slopes, remains unchanged. 
+ 
+<flag name="SigmaElastic:setOwn" default="no"> 
+Allow a user to set parameters for the normalization and shape of the 
+elastic cross section the by hand; yes/no = true/false. 
+</flag> 
+ 
+<parm name="SigmaElastic:bSlope" default="18." min="0."> 
+the slope <ei>b</ei> of the strong-interaction term <ei>exp(bt)</ei>, 
+in units of GeV^-2. 
+</parm> 
+ 
+<parm name="SigmaElastic:rho" default="0.13" min="-1." max="1."> 
+the ratio of the real to the imaginary parts of the nuclear scattering 
+amplitude. 
+</parm> 
+ 
+<parm name="SigmaElastic:lambda" default="0.71" min="0.1" max="2."> 
+the main parameter of the electric form factor 
+<ei>G(t) = lambda^2 / (lambda + |t|)^2</ei>, in units of GeV^2. 
+</parm> 
+ 
+<parm name="SigmaElastic:tAbsMin" default="5e-5" min="1e-10"> 
+since the Coulomb contribution is infinite a lower limit on 
+<ei>|t|</ei> must be set to regularize the divergence, 
+in units of GeV^2. 
+</parm> 
+ 
+<parm name="SigmaElastic:phaseConst" default="0.577"> 
+The Coulomb term is taken to contain a phase factor 
+<ei>exp(+- i alpha phi(t))</ei>, with + for <ei>p p</ei> and - for 
+<ei>pbar p</ei>, where <ei>phi(t) = - phaseConst - ln(-B t/2)</ei>. 
+This constant is model dependent <ref>Cah82</ref>. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2015 Torbjorn Sjostrand --> 

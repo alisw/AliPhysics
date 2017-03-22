@@ -1,0 +1,75 @@
+! File: main16.cmnd
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The changes here are illustrative, not always physics-motivated.
+
+! 1) Settings that are used in the main program.
+Main:numberOfEvents = 1000         ! number of events to generate
+Main:timesAllowErrors = 10         ! abort run after this many flawed events
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = on  ! list changed particle data
+#Init:showChangedResonanceData = on ! also print changed resonance data
+#Init:showOneParticleData = 25      ! print data for this particular particle
+Next:numberCount = 100             ! print message every n events
+Next:numberShowInfo = 1            ! print event information n times
+Next:numberShowProcess = 1         ! print process record n times
+Next:numberShowEvent = 0           ! print event record n times
+Stat:showPartonLevel = on          ! more statistics on MPI
+
+! 3) Beam settings.
+Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
+Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
+Beams:eCM = 14000.                 ! CM energy of collision, LHC
+
+! 4) Settings for hard-process generation internal to Pythia8.
+HiggsSM:gg2H = on                  ! Higgs production by gluon-gluon fusion
+
+! 5) Set Higgs mass, width and branching ratios by hand.
+! Values for 125 GeV SM Higgs taken from
+! Handbook of LHC Higgs Cross Sections: 1. Inclusive Observables,
+! S. Dittmaier et al., CERN-2011-002 [arXiv:1101.0593].
+! Note: sum is not quite unity, and so BR's are rescaled accordingly.
+25:m0        = 125.0               ! Higgs mass
+25:mWidth    = 0.00403             ! Higgs width
+25:0:bRatio  = 0.0                 ! H -> d dbar
+25:1:bRatio  = 0.0                 ! H -> u ubar
+25:2:bRatio  = 0.00044             ! H -> s sbar
+25:3:bRatio  = 0.0268              ! H -> c cbar
+25:4:bRatio  = 0.578               ! H -> b bbar
+25:5:bRatio  = 0.0                 ! H -> t tbar
+25:6:bRatio  = 0.0                 ! H -> e+ e-
+25:7:bRatio  = 0.000221            ! H -> mu+ mu-
+25:8:bRatio  = 0.0637              ! H -> tau+ tau-
+25:9:bRatio  = 0.0856              ! H -> g g
+25:10:bRatio = 0.00230             ! H -> gamma gamma
+25:11:bRatio = 0.00155             ! H -> gamma Z
+25:12:bRatio = 0.0267              ! H -> Z0 Z0
+25:13:bRatio = 0.216               ! H -> W+ W-
+25:0:meMode  = 100                 ! set meMode = 100 so that
+25:1:meMode  = 100                 ! branching ratios are not
+25:2:meMode  = 100                 ! overwritten at initialization
+25:3:meMode  = 100
+25:4:meMode  = 100
+25:5:meMode  = 100
+25:6:meMode  = 100
+25:7:meMode  = 100
+25:8:meMode  = 100
+25:9:meMode  = 100
+25:10:meMode = 100
+25:11:meMode = 100
+25:12:meMode = 100
+25:13:meMode = 100
+
+! 6) Switch off some key components of the simulation, for comparisons.
+#PartonLevel:all = off              ! stop after hard process
+#PartonLevel:MPI = off              ! no multiparton interactions
+#PartonLevel:ISR = off              ! no initial-state radiation
+#PartonLevel:FSR = off              ! no final-state radiation
+#HadronLevel:all = off              ! stop after parton level
+#HadronLevel:Hadronize = off        ! no hadronization
+#HadronLevel:Decay = off            ! no decays
+
+! 7) Any other changes you desire.

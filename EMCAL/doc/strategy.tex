@@ -1,0 +1,220 @@
+
+\section{Calibration and detector behavior\label{sec:strategy}}
+
+\subsection{Calibration}
+
+This section describes how different correction factors are obtained:  the energy calibration (MIP, $\pi^{0}$, run by run), the time calibration and the bad channel mask.\
+
+All these correction factors or masks are stored in the OCDB but also the OADB. Since these calibration parameters do not arrive before the full ALICE data reconstructions of the first periods are completed, the parameters are stored not only in the OCDB but also in the OADB so that the clusters can be corrected at the analysis level.  For the moment we do not store the time calibration and run by run correction factors in OCDB just in OADB.
+
+\subsubsection{Energy calibration: MIP calibration before installation - Julien}
+First, the calibration is done on cosmic measurements before installing the SuperModules at P2, but the accuracy obtained using MIPs is not good enough.
+
+\subsubsection{Energy calibration: $\pi^{0}$  - Catherine}
+
+The energy calibration relies during data taking on the measurement of the $\pi^{0}$ mass position per cell. Each tower has a calibration coefficient. In what follows, a calibration parameter is equal to the result of the fitted mass over the PDG mass value, where the fitted mass denotes the mass given by a gaussian fit on the $\pi^{0}$ invariant mass peak distribution in a given tower (plus a combinatorial background, fitted by a 2nd degree polynomial).
+About 100-200 M events EMCAL (L0) triggered (trigger threshold at 1.5-2 GeV) allow to calibrate a majority of the towers. The towers located on rows 0 and 23 of each super modul (SM ) and those behind the support frame (about 5 columns per SM) have much fewer statistics and would need a minimum of 150 Mevts (probably more). It is to be noted that the run-to-run temperature variations change the towers' response in a non-uniform way, i.e. the width of the $\pi^{0}$ peak increases, and the mean $\pi^{0}$ mass is shifted differently for the various towers. Also the $\pi^{0}$ mass shifts to lower values for the towers with material in front, due to photoconversion close to the EMCAL surface.
+
+A few iterations on the data, obtaining in each iteration improved calibration coefficients, are needed to achieve a good accuracy (1-2\%). Since the online calibration has a strong effect on the trigger efficiency, the voltage gains of the APDs are varied after each running period, to get a uniform trigger performance. Still, some towers are difficult to calibrate because they are behind of a lot of material (TRD support structures). For those MIPs or $J/\Psi$ measurements could help.
+
+\paragraph*{$\pi^{0}$ Calibration Procedure\\}
+
+Since $\pi^{0}$s decay into 2 gammas, their invariant mass is calculated from the energy of 2 clusters (and angle between the clusters). The position of the invariant mass peak of a tower therefore doesn't depend only on its response and calibration coefficient, but also on an average of the responses and calibration coefficients of all the other towers of the SM, weighted by  how often they appear in combination with a cluster in the considered tower. The 2nd effect, of weaker magnitude maybe, originates from the fact that a cluster most often covers more than the considered tower. To simplify the calibration process, the calibration coefficient is calculated as if the whole energy of the cluster was contained in the tower of the cluster which has the largest signal. So the position of the invariant mass peak of a tower also depends on an average of the responses and calib coeffs of its neighbouring towers. For these reasons, the calibration of the calorimeter with the  $\pi^{0}$ is an iterative procedure :
+\begin{itemize}
+\item Set all calib coeffs to 0 in OCDB.
+\item Reconstruct the $\pi^{0}$'s with these OCDB coeffs.
+\item Run the analysis code on this data to produce the analysis histograms and a 1st version of the calib coeffs.
+\item Look at the fits on the towers invariant mass histograms and discard the value (or set it by hand) of the calib coeff of the towers for which the fit can't be trusted.
+\item Create a 1st set of OCDB coeffs.
+\item Reconstruct the $\pi^{0}$'s with these OCDB coeffs.
+\item Run the analysis code on this data to produce the analysis histograms and a 2nd version of the calib coeffs.
+\item Look at the fits on the towers invariant mass histograms and discard the value (or set it by hand) of the calib coeff of the towers for which the fit can't be trusted.
+\item Create a 2nd set of OCDB coeffs.
+\item Etc..., until the invariant mass is satisfactory in all the towers.
+\end{itemize}
+When the statistics is enough, 4 iterations should be enough to finalize the calibration (in practice, more are needed, due to outliers or studies that are needed).
+
+There are 3 sets of codes :
+\begin{itemize}
+\item  Reco code : reads the data, reconstructs the $\pi^{0}$ inv mass distrib in each tower after it applies some cuts on the clusters and $\pi^{0}$ parameters. The output is a root file with invariant mass histograms (per tower, and summed-up per SM, per pT-bin).
+\item Analysis code : reads the file produced by the reco code and analyses the histograms to produce the calib coeffs. This code is the one I present in what follows.
+\item A code which reads the calib coeffs and writes them into a format that is loadable to OCDB.
+\end{itemize}
+The code is located in EMCAL/calibPi0/ :
+\begin{itemize}
+\item macros/ : contains the various macros.
+\item input/ : contains the root files produced by the analysis code for the various iterations ("passes"). It has subdirectories "pass0/", "pass1/", etc... with, in each dir, the root file.
+\item output/ : contains the various files produced by the analysis code for the various passes. It has subdirectories "pass0/", "pass1/", etc... with, in each dir, the various output files related to the pass.\footnote{Note that it wouldn't necessarily help to set-up a code that automatically reads and writes the pass number to avoid the hardcoded directories in the code, because it happens to do several times the same pass with various parameters (e.g. cuts in the reconstruction, or more statistics, or various masked zones, or hand-customization of a few calib coeffs, etc...).}
+\end{itemize}
+
+The cuts which must be put in the reconstruction are :
+\begin{itemize}
+\item Bad towers masked.
+\item Both clusters in the same SM (to avoid misalignment effects).
+\item Cut the 1-tower clusters out.
+\item 20~ns timing cut.
+\item Non-linearity correction (for the cluster energy)-- from beam test AFAIK.
+\item No asymetry cut.
+\item $E_{cluster} > 0.8$ ~GeV, or 0.7 GeV if there is little statistics. Tests showed that to remove the residual non-linearity (the $pi_{0}$ invariant mass rises with $p_{T}$), tightening the cut on $E_{cluster}$ was more efficient than requiring symetric decays (both gamma's of similar energy) (e.g. $asym < 0.5$ with $E_{gamma} > 0.5$~GeV).
+\end{itemize}
+It has the possibility to mask some areas. This is useful to disentangle the zones which have more material in front of them from those which don't. In the invariant mass distributions, the $\pi^{0}$ candidates kept are only those for which both clusters belong to the non-masked zones. In 2011, we considered masking the zones behind the support frame (in all the SMs or only in the SMs with TRD modules in front of them, i.e. SM 6-9 that year), plus additionnal problematic zones, to avoid taking clusters in these zones for the calculation of the average invariant mass in the towers with less material. (NB : not used for final calibration results, but for studies).
+
+The analysis code has 3 input files :
+\begin{itemize}
+\item the root file f05 with inv mass histograms produced by the reconstruction code,
+\item a file txtFileIn (output\_calibPi0\_parameters.txt) that contains the values of various parameters of the fit for each tower, at the previous pass,
+\item a file txtFilePrevCalib (output\_calibPi0\_coeffs\_clean.txt) that contains the value of the calibration coefficient for each tower, at the previous pass (and after the hand-made corrections).
+\end{itemize}
+The 2 last files are therefore useless for the "pass0". To run the code for "pass0" (1st iteration), put the name of a valid file (e.g. one of last year) and just ignore the plots (red colour, in the last section -- see below).
+
+There are 4 output files, that are written in the current directory (calibPi0/) : be careful not to overwrite an existing file ! After the code has been run, simply move those files to the relevant passXX directory := output/passXX/=.
+\begin{itemize}
+\item a postscript file psfile (output\_calibPi0.ps) with the plots described below,
+\item a root file rootFileOut (output\_calibPi0.root) that contains the same plots in root format,
+\item a file txtFileOut (output\_calibPi0\_parameters.txt) that contains the values of various parameters of the fit for each tower, for the current pass,
+\item a file outputFile (output\_calibPi0\_coeffs.txt) that contains the value of the calib coeff for each tower, for the current pass.
+Once the code has been run and the output files copied to the relevant output directory, I copy output\_calibPi0\_coeffs.txt to output\_calibPi0\_coeffs\_clean.txt, and modify the latter by hand to put the desired calib coeffs where we estimate that they can't be trusted.
+\end{itemize}
+
+9 parameters are defined to qualify the invariant mass distribution in each tower : the distribution is fitted by a gaussian + pol2 for the combinatorial background. The parameters are :
+\begin{itemize}
+\item amplitude of gaussian fit,
+\item mean of the gaussian fit,
+\item sigma of the gaussian fit,
+\item c, b and a parameters of the combinatorial background fit $ax^2+bx+c$, I (histo integral),
+\item I-S, S (integral of the gaussian fit). Minimal and maximal cut values are hardcoded (and to be changed at each iteration) for each parameter.
+\end{itemize}
+When the value of all the parameters lie between both extremes, the tower (i.e. the fit values, hence the mean, hence the calculated calib coeff) is "trusted". If one or more parameter has a value beyond the max cut value or below the min cut value, the tower is "untrusted".
+Because these cut values can't be guessed in advance, the analysis code must be run twice per pass. The 1st time, so as to get the distributions of all 9 parameters, and decide on the basis of those distributions what are the suitable cut values to separate the towers to be trusted and those not to be trusted. The values are plugged in the code, and the code is then run a 2nd time, for real this time.
+The macro (currently called DrawJulienFullEMCAL6.C) runs with 1 parameter in argument (set to 10 by default) : choice, which sets the number of SMs that one desires to include in the analysis. The values are either 4 (for the older SMs), or 6 (for only the newer SMs), or 10 (for the whole EMCAL). Here is the code. The macro is run this way :
+\begin{lstlisting}
+aliroot -b -q 'macros/DrawJulienFullEMCAL6.C++(10)'
+\end{lstlisting}
+There are various places where things must be customized before running the code ; they can be spotted by searching for this line : //CUSTOMIZE customize :.
+\begin{itemize}
+\item testChoice : this variable is a flag that allows to shorten the execution time for tests. 0 = not a test ; 1 = runs with only the 2 first columns of each SM ; 2 = runs with only the 2 first columns of the first SM,
+\item the root input file f05,
+\item the text input file txtFilePrevCalib (in principle not the name, only the path),
+\item the text input file txtFileIn (in principle not the name, only the path),
+\item if necessary : the min and max range values for the parameter histograms : tabMin and tabMax,
+\item the min and max cut values for the parameters cutMin and cutMax,
+\item if necessary : the number of bins in pT (for the 1st section, see below) nbPtBins and their range tabPtBins.
+\item Text output on the standard output ("printf's") :
+\end{itemize}
+
+Finally, the first iteration needs the recalibration factors. This file is made running macros/RecalibrationFactors\_TextToHistoJulien\_mult\_2012.C on the output\_calibPi0\_coeffs.txt file. Once the RecalibrationFactors.root file is created it needs to be linked properly to re-run the reconstruction.
+
+
+\subsubsection{Energy calibration: Run by run temperature gain variations - Evi, David  }
+
+The SuperModules calibration depends on the temperature dependence of the different towers gains. We observe that from one period to other, where the T changes, the $\pi^{0}$ peak positions also changes. There are 2 ways to correct for this effect : either measure the mean T per run, and get the gain curves per tower a calculate the corresponding correction; or use the calibration LED events to quantify the variation from one reference run. Each of those 2 procedures have problems, poor or lack of knowledge of the gain curves of some towers or bad performance of the LED system in certain regions.
+These temperature or time-dependent corrections are still under study: for further, and up-to-date, information, please see the wiki: 
+https://twiki.cern.ch/twiki/bin/viewauth/ALICE/EMCalTimeDependentCalibrations
+
+
+\subsubsection{Time calibration - Marie }
+
+The time of the amplitude measured by a given cell is a good candidate to reject noisy towers, identify pile up events when coming from different Bunch Crossing, or even identify heavy hadrons at low energy. The average time is around 580 ns. The aim of the time calibration is to do a relative calibration between cells to align all cells to a mean value of 0 ns, with as small spread as possible (negative values are unavoidable for the moment). The time calibration coefficient for each cell is the result of the average time of the cell when belonging to a cluster with enough energy (>1GeV). 
+The calibration coefficient have to be subtracted to the cell time.
+
+\paragraph*{Time Calibration Procedure\\}
+
+Since the some variations of mean time have been observed depending on the bunch cross numbers (BC) $\%$ 4 the computation of the time coefficients is done for each bunch cross numbers BC$\%$ 4 scheme.
+
+The time calibration coefficient computing is done in 2 iterations. 
+\begin{itemize}
+\item 1$^{rst}$  iteration:\\
+Get Bunch Cross Number for the event.
+Loop on all cluster of the event. \\ Loop on all cells in the cluster.
+If cell amplitude is > 0.9 GeV and 500ns < cell time < 700ns then 
+compute average per cell per BC$\%$4 and fill in 1D histogam with calibration coefficients: hAveragesBC$x$ where $x$ stands for the result of BC$\%$4.
+\item 2$^{nd}$iteration:\\
+Get Bunch Cross Number for the event.\\ 
+Loop on all cluster of the event. \\ Loop on all cells in the cluster.\\ 
+Get Calibration coefficient for BC$\%$4 from  hAveragesBC$x$.  If cell amplitude is > 0.9 GeV and -20ns < (cell time-cell Calibration Coefficient)  < 20ns.\\
+Compute average time per cell per BC$\%$4 and fill in 1D histogam with those new calibration coefficients: hAllAveragesBC$x$.
+\end{itemize}
+
+
+\paragraph*{Acces time calibration coefficients\\}
+
+The time calibration coefficient are stored in OADB in TH1D histograms named hAllTimeAvBCx where x stands for the BC$\%$4 value.
+They have the usual structure:
+runrange/pass/
+
+To use them in your analysis you may do the following:\\
+\begin{DDbox}{\linewidth}
+\begin{lstlisting}
+ AliOADBContainer *contTRF=new AliOADBContainer("");
+contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeCalib");
+TObjArray trecal=(TObjArray)contTRF->GetObject(runnumber);
+if(trecal)
+{TObjArray trecalpass=(TObjArray)trecal->FindObject(pass);
+if(trecalpass)
+{printf("AliCalorimeterUtils::SetOADBParameters() - Time Recalibrate EMCAL \n");
+for (Int_t ibc = 0; ibc < 4; ++ibc)
+{
+TH1F *h = GetEMCALChannelTimeRecalibrationFactors(ibc);
+if (h)
+delete h;
+h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
+}}
+\end{lstlisting}
+\end{DDbox}
+
+As already  mentioned the time calibration of the cells is not done at the reconstruction level but offline during analysis. The methods to recalibrate cells is implemented in the class 
+\texttt{\$ALICE\_ROOT/\\EMCAL/AliEMCALRecoUtils}.
+The method \texttt{RecalibrateCellTime(absId,bc,time)}: is called by the method \texttt{SwitchOnTimeRecalibration} , modifies the provided time with the calibration parameters. The inputs are the bunch crossing number that can be recovered from the event with InputEvent()->GetBunchCrossNumber(), and the absolute ID of the cell.
+The way to pass  the calibration parameters to AliEMCALRecoUtils is the following.\\ 
+\begin{DDbox}{\linewidth}
+\begin{lstlisting}
+AliCalorimeterUtils *cu = new AliCalorimeterUtils ;
+TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
+AliEMCALRecoUtils * reco = cu->GetEMCALRecoUtils();
+and then 
+for(Int_t i =0; i< 4; i++) reco->SetEMCALChannelTimeRecalibrationFactors( i, (TH1F*) file->Get(Form("hAllTimeAvBC%d",i)))
+\end{lstlisting}
+\end{DDbox}
+, where TFile *file is in the file containing the time calibration coefficients.
+
+Some more details on time recalibration can be found in twikis:
+https://twiki.cern.ch/twiki/bin/\\viewauth/ALICE/EMCalCode:HowTo\#Energy\_and\_Time\_calibration and in \\
+https://twiki.cern.ch/twiki/bin/viewauth/ALICE/EMCALTimeCalibration
+
+\subsection{Alignment - Marco}
+
+CERN provides survey measurements of the position of different EMCAL Supermodules points at the beginning of the running period (and on request?). As soon this information is available, the ideal EMCAL positions used in the reconstruction by default, are corrected with special position matrices calculated from the measurements. Finally, once the data is reconstructed, the accuracy of the alignment is cross checked with track matching and $\pi^{0}$ mass measurements, since those values change depending on variations on the positions of the SuperModules.
+
+\subsection{Bad channel finding - Alexis}
+
+The analysis is done on the output of offline Quality assurance see section \ref{sec:QAOffline} histograms \texttt{TH2F EMCAL\_hAmpId} containing the distribution of amplitudes (energy) of cell versus cell Absolute ID number (AbsId). The idea is to check distributions over the cells of different observables extracted from this histograms. Then each cell is tested regarding to the distribution over all the cells for each obbservable. The different tests are the following:
+
+\begin{enumerate}
+\item average energy (average computed for Emin< E  <Emax) 
+\item average number of hit per event  (average computed for Emin< E  <Emax)
+\item Shape criteria : A fit of the cell energy (amplitude) distribution is performed with the function:$A*e^{-B*x}/x^2$ between Emin and Emax.  Then the  $\chi^{2}/ndf$, A  and B which are parameters from the fit of each cell amplitude. 
+\end{enumerate}
+
+Each criteria is tested at least once (they can be tested also for different energy i nterval). At the end of each test the marked cells are excluded (if above nsigma from mean value, usually nsigma is taken equal 4 or 5) before computing the next distribution. 
+
+The typical nsigma used is 4 or 5.
+The min energy considered is 0.1 GeV/0.3 GeV.  And the maximum energy depends on the data (minbias or triggered data). 
+
+
+There are different levels of classification for  cells wich will enter the deadMap:
+\begin{itemize}
+\item kAlive = 0: cell is OK
+\item kDead = 1: cell is dead 
+\item kHot = 2: cell is bad
+\item kWarning=3: cell may have problems (warm or miscalibrated)
+\end{itemize}
+
+The distinction of the bad/warm status is done by visual check of the energy distribution of the cells detected by the different tests described above.
+
+In the reconstruction pass the only the cells marked as kHot and kDead are not reconstructed. 
+
+The macro to compute the BadCellAnalysis can be found on \\ \texttt{\$ALICE\_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/BadChannelAnalysis.C}. This macro allows first to merge all the individual run histograms in order to get the energy distribution over a large statistics. Usually this is done at the end of a data taking period. Then it computes the different tests and produces the text file with the dead and bad cells detected. Finally the macro produce a pdf file containing the individual energy distribution for all the detected cells.
+
+All the results and  OCDB created are updated on the following twiki:\\
+https://twiki.cern.ch/twiki/bin/viewauth/ALICE/EMCalQABadChannels.
+

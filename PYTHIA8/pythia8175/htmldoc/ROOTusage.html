@@ -1,0 +1,254 @@
+<html>
+<head>
+<title>ROOT usage</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+
+<h2>ROOT usage</h2>
+
+Many PYTHIA users wish to use <a href="http://root.cern.ch/">ROOT</a> 
+to produce histograms, or even to run PYTHIA as a plugin to ROOT. 
+This is possible. It is not a task supported by the PYTHIA team, 
+however. All issues involving ROOT usage should be directed to the 
+ROOT team, or to the local support team of your collaboration. 
+Below some helpful hints have been collected. The text is based on 
+contributions by Rene Brun, Andreas Morsch and Axel Naumann. 
+Another example may be found in the 
+<a href="http://home.fnal.gov/~skands/vincia/">VINCIA</a> 
+add-on program for parton showers, but this should also work for 
+a PYTHIA standalone run.
+<br/><br/>
+Note that in all that follows, a Linux-type system with a Bash shell
+and GNU Make is assumed. In particular, for Mac OS X, the
+<code>LD_LIBRARY_PATH</code> should be replaced with
+<code>DYLD_LIBRARY_PATH</code> and the extension for shared libraries
+<code>.so</code> should be replaced with <code>.dylib</code>.
+
+<br/><br/><hr/>
+<h3>Standalone usage</h3>
+
+One can perform the generation and analysis of events in a completely
+standalone fashion, and only use ROOT to process the completed events.
+Some example programs are provided in the <code>rootexamples</code>
+directory, with details provided below and in the <code>README</code>
+file.
+
+The examples assume that you have already compiled the PYTHIA library,
+ROOT is installed, and that all paths have been setup correctly (e.g.
+PATH and LD_LIBRARY_PATH). If these paths are not already set, ROOT
+typically comes with a shell script to set these paths, which can be
+run with
+<pre>
+    source /path_to_ROOT_installation/bin/thisroot.sh
+</pre>
+
+<h4>Histogramming with ROOT</h4>
+
+An example of histogramming with ROOT is provided in
+<code>rootexamples/hist.cc</code>. It may be compiled and run
+with the following commands
+<pre>
+    make hist
+    ./hist.exe
+</pre>
+After PYTHIA has run, a ROOT histogram of the charged multiplicity in
+the events will be shown. This is now stored in the
+<code>hist.root</code> file.
+
+<h4>Storing PYTHIA events in ROOT trees</h4>
+
+Instead of only generating histograms, it is possible to store entire
+PYTHIA events in ROOT trees. The <code>tree</code> example in the
+<code>rootexamples</code> subdirectory provides an example of this and
+is comprised of the following files
+<ul>
+  <li><code>tree.cc</code> is the main example program showing how
+  PYTHIA events can be stored in ROOT trees.</li>
+  <li><code>pythiaLinkdef.h</code> is used by Makefile to generate the
+  dictionary for all PYTHIA classes involved in the IO, as needed for
+  the example.</li>
+  <li><code>pythiaROOT.h</code> is a small include declaring the
+  <code>Pythia8</code> namespace as default.</li>
+</ul>
+
+<br/>
+The example may be compiled and run with
+<pre>
+    make tree
+    ./tree.exe
+</pre>
+After the example has run, the <code>pytree.root</code> file will now
+be present containing the PYTHIA events. Note that files can become
+quite large when many events are generated.
+
+<br/><br/><hr/>
+<h3>PYTHIA as a plugin to ROOT</h3>
+
+In more ROOT-centric applications, PYTHIA can be run as a ROOT plug-in.
+This requires a version of ROOT that has been 
+<a href="http://root.cern.ch/drupal/content/installing-root-source">
+installed from source</a>. The reason is that the interfaces depend on 
+PYTHIA header files that are not distributed with ROOT. Installing ROOT 
+is not more difficult than the PYTHIA installation, and some
+guidelines are provided below.
+
+<h4>Installation</h4>
+
+To be run as a plugin, PYTHIA must be compiled as a shared library.
+This is achieved by running the PYTHIA <code>configure</code> script
+with the <code>--enable-shared</code> option before <code>make</code>
+is run.<br/><br/>
+
+Define an environment variable for the path to your
+PYTHIA installation directory
+<pre>
+    export PYTHIA8=path_to_PYTHIA8_installation
+</pre>
+Before compiling ROOT,
+<a href="http://root.cern.ch/drupal/content/installing-root-source">
+configure ROOT</a> by running the <code>configure</code> command
+including the following options
+<pre>
+    --enable-pythia8
+    --with-pythia8-incdir=$PYTHIA8/include
+    --with-pythia8-libdir=$PYTHIA8/lib
+</pre>
+In case ROOT has already been compiled before, it will only recompile 
+the PYTHIA module and build the library <code>libEGPythia8</code>.
+
+<h4>Interfaces</h4>
+
+When running PYTHIA as a plugin, the exact interface structure becomes
+very relevant. ROOT provides two simple interfaces (wrappers) for
+PYTHIA 8. The code for these interfaces are located in
+<pre>
+    path_to_ROOT_source/montecarlo/pythia8
+</pre>
+<br/>
+The two interfaces are
+<ul>
+  <li><a href="http://root.cern.ch/root/html/TPythia8.html">
+  <code>TPythia8</code></a> is an implementation of the
+  <a href="http://root.cern.ch/root/html/TGenerator.html">
+  <code>TGenerator</code></a> interface for PYTHIA 8.<br/>
+  It allows you to use PYTHIA within a ROOT macro or as a plug-in 
+  for a general-purpose particle generator based on this interface. The 
+  main methods of the interface are
+  <ul>
+    <li><code>GenerateEvent()</code> which triggers the
+    generation of the next event, and </li>
+    <li><code>ImportParticles(TClonesArray* particles)</code>
+    which copies the native PYTHIA stack into a
+    <a href="http://root.cern.ch/root/html/TClonesArray.html">
+    <code>TClonesArray</code></a> of 
+    <a href="http://root.cern.ch/root/html/TParticle.html">
+    <code>TParticles</code></a>. 
+  </ul>
+
+  In addition, some methods that are directly related to corresponding
+  PYTHIA methods are implemented
+  <ul>
+    <li><code>ReadString(const char* string)</code> ->
+    <code>readString(...)</code></li>
+    <li><code>ReadConfigFile(const char* string)</code> ->
+    <code>readFile(...)</code></li>
+    <li><code>Initialize(int idAin, int idBin, double ecms)</code> ->
+    <code>init(...)</code></li>
+    <li><code>EventListing()</code> ->
+    <code>event.list()</code></li>
+    <li><code>PrintStatistic()</code> ->
+    <code>statistics()</code></li>
+  </ul>
+
+  These methods provide already the basic PYTHIA functionality 
+  interactively from the ROOT command line. However, this does not mean 
+  that the usage of PYTHIA from within ROOT is restricted to these methods. 
+  In compiled code, one can always obtain a pointer to the 
+  <code>Pythia</code> instance e.g.
+  <pre>
+    TPythia8        *tp = new TPythia8();
+    Pythia8::Pythia *p  = tp->Pythia8();</pre>
+  giving access to the full PYTHIA functionality. To access this
+  functionality in the CINT interpreter see the "Advanced usage"
+  section below.</li>
+
+  <li><a href="http://root.cern.ch/root/html/TPythia8Decayer.html">
+  <code>TPythia8Decayer</code></a> is an implementation of the 
+  <a href="http://root.cern.ch/root/html/TVirtualMCDecayer.html">
+  <code>TVirtualMCDecayer</code></a> interface.<br/>
+  It allows you to use PYTHIA as a plug-in decayer for simulation 
+  frameworks based on the Virtual Monte Carlo 
+  (<a href="http://root.cern.ch/drupal/content/vmc">VMC</a>) interface 
+  classes. The main methods of the interface are
+  <ul>
+    <li><code>TPythia8Decayer::Init()</code> for initialisation,</li>
+    <li><code>TPythia8Decayer::Decay(Int_t pdg, TLorentzVector* p)</code> 
+    to decay a particle with PDG code <code>pdg</code> and 
+    <a href="http://root.cern.ch/root/html/TLorentzVector.html">
+    4-momentum</a> <code>p</code>, and </li>
+    <li><code>ImportParticles(TClonesArray* particles)</code> 
+    to retrieve the decay products as 
+    <a href="http://root.cern.ch/root/html/TParticle.html">
+    <code>TParticles</code></a> in the 
+    <code><a href="http://root.cern.ch/root/html/TClonesArray.html">
+    TClonesArray</a> particles</code>.</li>
+  </ul></li>
+</ul>
+
+<h4>An example</h4>
+
+A <a href="http://root.cern.ch/root/html/tutorials/pythia/pythia8.C.html"> 
+basic example</a> for generating minimum-bias events with PYTHIA 8 inside 
+a ROOT macro, and filling some histograms with the kinematics of the 
+final-state particles is provided in either of the locations below
+<pre>
+    /path_to_ROOT_source/tutorials/pythia/pythia8.C
+    /path_to_ROOT_installation/share/doc/root/tutorials/pythia/pythia8.C
+</pre>
+<br/>
+Note that before executing this script
+<ul>
+  <li>the environment variables <code>PYTHIA8</code> and
+  <code>PYTHIA8DATA</code> must be setup correctly e.g.
+  <pre>
+    export PYTHIA8=/path_to_PYTHIA_installation
+    export PYTHIA8DATA=$PYTHIA8/xmldoc
+  <pre></li>
+  <li>your LD_LIBRARY_PATH must contain the location of the
+  PYTHIA 8 shared library, e.g.
+  <pre>
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:path_to_PYTHIA8_installation/lib
+  </pre>
+  </li>
+</ul>
+The script can then be run with ROOT
+<pre>
+    root pythia8.C
+</pre>
+After execution, ROOT will display some histograms from the event
+generation.
+
+<h4>Advanced usage</h4>
+
+To access the full PYTHIA functionality from the CINT interpreter,
+a ROOT dictionary must be created. An example of creating this
+dictionary is contained in the <code>rootexamples</code> directory.
+The <code>pythiaDict.so</code> library may be created by running
+<pre>
+    make dict
+</pre>
+
+This may then be loaded in ROOT giving full access to the full PYTHIA 8
+functionality, e.g. in an interactive session
+<pre>
+    gSystem->Load("path_to_PYTHIA8_installation/rootexamples/pythiaDict");
+    Pythia8::Pythia *p = new Pythia8::Pythia();
+    p->readString("SoftQCD:minBias = on");
+</pre>
+  
+</body>
+</html>
+
+<!-- Copyright (C) 2013 Torbjorn Sjostrand -->

@@ -1,0 +1,24 @@
+! main82.cmnd.
+! This file contains commands to be read in for a Pythia8 run. 
+! Lines not beginning with a letter or digit are comments.
+
+// specify statistics parameters
+Main:numberOfEvents		   = 100  // number of events generated
+
+// specify shower options
+HadronLevel:all          = off
+SpaceShower:MEafterFirst = off
+TimeShower:MEafterFirst  = off
+
+Merging:doUserMerging    = on
+Merging:Process          = pp>e+ve
+Merging:TMS              = 30.
+Merging:nJetMax          = 2
+
+// specify PDF set
+PDF:useLHAPDF            = on
+PDF:LHAPDFset            = cteq6ll.LHpdf
+
+
+
+

@@ -1,0 +1,8 @@
+* $Id$
+      REAL BRAT
+      COMMON/LUDAT3_HIJING/MDCY(500,3),MDME(2000,2),BRAT(2000),KFDP(2000
+     $     ,5)    
+#ifndef BLANKET_SAVE
+      SAVE /LUDAT3_HIJING/ 
+#endif
+

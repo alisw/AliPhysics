@@ -1,0 +1,45 @@
+! File: main42.cmnd
+! This file contains commands to be read in for a Pythia8 run. 
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The changes here are illustrative, not always physics-motivated.
+
+! 1) Settings that will be used in a main program.
+Main:numberOfEvents = 200          ! number of events to generate
+Main:timesAllowErrors = 3          ! abort run after this many flawed events
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showAllSettings = off         ! list all settings
+Init:showChangedParticleData = on  ! list changed particle data
+Init:showAllParticleData = off     ! list all particle data
+Next:numberCount = 1000            ! print message every n events
+Next:numberShowLHA = 1             ! print LHA information n times
+Next:numberShowInfo = 1            ! print event information n times
+Next:numberShowProcess = 1         ! print process record n times
+Next:numberShowEvent = 1           ! print event record n times
+Stat:showPartonLevel = on          ! additional statistics on MPI
+
+! 3) Beam parameter settings. Values below agree with default ones.
+Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
+Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
+Beams:eCM = 14000.                 ! CM energy of collision
+
+! 4a) Pick processes and kinematics cuts.
+Charmonium:gg2QQbar[3S1(1)]g = on  ! colour singlet charmonium production
+Charmonium:gg2QQbar[3P0(1)]g = on  !  "
+Charmonium:gg2QQbar[3P1(1)]g = on  !  " 
+Charmonium:gg2QQbar[3P2(1)]g = on  !  "
+PhaseSpace:pTHatMin = 20.          ! minimum pT of hard process
+
+! 4b) Alternative beam and process selection from a Les Houches Event File.
+! NOTE: to use this option, comment out the lines in section 4a above
+! and uncomment the ones below. Section 3 is ignored for frameType = 4.
+#Beams:frameType = 4                ! read info from a LHEF
+#Beams:LHEF = ttbar.lhe             ! the LHEF to read from
+
+! 5) Other settings. Can be expanded as desired. 
+! Note: may overwrite some of the values above, so watch out.
+#Tune:pp = 6                        ! use Tune 4Cx
+#ParticleDecays:limitTau0 = on      ! set long-lived particle stable ...
+#ParticleDecays:tau0Max = 10        ! ... if c*tau0 > 10 mm

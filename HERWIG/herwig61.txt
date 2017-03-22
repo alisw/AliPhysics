@@ -1,0 +1,632 @@
+
+    A new version of the Monte Carlo program HERWIG (version 6.1) is now
+    available, and can be obtained from the following web site:
+
+            http://hepwww.rl.ac.uk/theory/seymour/herwig/
+
+    This will temporarily be mirrored at CERN for the next few weeks:
+
+            http://home.cern.ch/~seymour/herwig/
+
+    More complete information on HERWIG  can be found in the publication
+    G. Marchesini, B.R. Webber,  G. Abbiendi, I.G. Knowles, M.H. Seymour
+    and L. Stanco, Computer Phys. Commun. 67 (1992) 465  and also in the
+    documentation for the previous version (5.9), which are available at
+    the  same site, together  with other  useful files  and information.
+    Here we merely give the new features relative to 5.9.
+
+    If you use HERWIG, please refer to it something along the lines of:
+
+    HERWIG 6.1, hep-ph/9912396; G. Marchesini, B.R. Webber, G. Abbiendi,
+    I.G. Knowles, M.H. Seymour and L. Stanco,
+    Computer Phys. Commun. 67 (1992) 465.
+
+
+                  *** NEW FEATURES OF THIS VERSION ***
+
+     *---------------------------------------------------------------*
+     | The main  new  features  are:  supersymmetric processes (both |
+     | R-parity conserving & violating) in hadron-hadron collisions; |
+     | new e+e- to four jets process;  matrix element corrections to |
+     | top decay and Drell-Yan processes;  new soft underlying event |
+     | options; updates to default particle data tables; new LaTeX & |
+     | html printout options.                                        |
+     *---------------------------------------------------------------*
+
+  * [N.B. Default values for input variables shown in square brackets.]
+
+  * All R-parity  conserving SUSY two-to-two  processes in hadron-hadron
+    collisions have been added. Their process numbers are:
+
+    +-------+----------------------------------------------------------+
+    | IPROC | Process                                                  |
+    +-------+----------------------------------------------------------+
+    | 3000  | 2 parton to 2 sparticles: the sum of 3010,3020 and 3030  |
+    | 3010  | 2 parton to 2 spartons                                   |
+    | 3020  | 2 parton to 2 gauginos                                   |
+    | 3030  | 2 parton to 2 sleptons                                   |
+    +-------+----------------------------------------------------------+
+
+    Further details  of the inclusion of superpartners  and their decays
+    are given below.
+
+    Additional  processes  for the  SUSY  two  Higgs  doublet model  are
+    currently under test and will be released shortly.
+
+  * All  R-parity violating SUSY  two-to-two processes  via resonant
+    sleptons and  squarks in hadron  collisions have been  added.  Their
+    process numbers are:
+
+    +-------+----------------------------------------------------------+
+    | IPROC | Processes derived from the LQD term in the superpotential|
+    +-------+----------------------------------------------------------+
+    | 4000  | The sum of 4010,4020,4040 and 4050                       |
+    | 4010  | Neutralino lepton production (all neutralinos)           |
+    | 401i  | As 4010 but only the ith neutralino                      |
+    | 4020  | Chargino lepton production (all charginos)               |
+    | 402i  | As 4020 but only the ith chargino                        |
+    | 4040  | Slepton W/Z   production                                 |
+    | 4050  | Slepton Higgs production                                 |
+    +-------+----------------------------------------------------------+
+    | 4060  | Sum of 4070 and 4080                                     |
+    | 4070  | quark-antiquark production      via LQD                  |
+    | 4080  | lepton production               via LLE and LQD          |
+    +=======+==========================================================+
+    | IPROC | Processes derived from the UDD term in the superpotential|
+    +-------+----------------------------------------------------------+
+    | 4100  | The sum of 4110, 4120, 4130, 4140 and 4150               |
+    | 4110  | Neutralino quark production (all neutralinos)            |
+    | 411i  | As 4110 but only the ith neutralino                      |
+    | 4120  | Chargino quark production (all charginos)                |
+    | 412i  | As 4120 but only the ith chargino                        |
+    | 4130  | Gluino quark production                                  |
+    | 4140  | Squark W/Z   production                                  |
+    | 4150  | Squark Higgs production                                  |
+    +-------+----------------------------------------------------------+
+    | 4160  | quark-quark production                                   |
+    +-------+----------------------------------------------------------+
+
+    In addition  the R-parity violating  decays of all  superpartners is
+    included.
+
+  * A new process describing electron-positron annihilation to four jets
+    has been added. This has IPROC=600+IQ, where a non-zero value for IQ
+    guarantees production of quark flavour IQ whilst IQ=0 corresponds to
+    the natural flavour mix.  IPROC=650+IQ is as above but without those
+    terms in the matrix element which orient the event w.r.t. the lepton
+    beam direction. The matrix elements are based on those of Ellis Ross
+    & Terrano with orientation terms from Catani & Seymour. The soft and
+    collinear divergences are avoided  by imposing a minimum y-cut, Y4JT
+    [.01], on the initial 4 partons. The interjet distance is calculated
+    using either the Durham or JADE metrics.  This choice is governed by
+    the logical variable DURHAM [.TRUE.]. Note that parameterizations of
+    the volume of four-body phase  space are used: these are accurate up
+    to a  few percent for y-cut  values less than 0.14.  Note, also that
+    the phase space is for massless partons, as are the matrix elements,
+    though a mass threshold cut is applied. Finally, the matrix elements
+    for the q-qbar-g-g & q-qbar-q-qbar (same flavour quark) final states
+    receive contributions from 2 colour flows each, the treatment of the
+    interference terms being controlled by the array IOP4JT:
+
+        q-qbar-g-g case:
+        IOP4JT(1)=0 neglect, =1 extreme 2341; =2 extreme 3421 [0]
+
+        q-qbar-q-qbar (identical quark flavour) case:
+        IOP4JT(2)=0 neglect, =1 extreme 4123; =2 extreme 2143 [0]
+
+    The scale EMSCA for the  parton showers is set equal to SQRT(s*ymin)
+    where ymin is the least  distance, according to the selected metric,
+    between any two partons.
+
+  * Matrix element corrections to the simulation of top quark decays and
+    Drell-Yan processes are now  available using the same general method
+    as  already implemented  for e+e-  annihilation and  DIS.  If HARDME
+    [.TRUE.] then  fill the missing phase-space (`dead  zone') using the
+    exact  1st-order  M.E.   result  (`hard  corrections').   If  SOFTME
+    [.TRUE.] then  correct emissions in the  already-populated region of
+    phase space  using the  exact amplitude for  every emission  that is
+    capable of being the hardest so far (`soft corrections').
+
+    - For t -> bW decays the routine HWBTOP implements hard corrections.
+      HWBRAN has been modified to  implement the soft corrections to top
+      decays. Since the dead zone  includes part of the soft singularity
+      a cutoff is required: only gluons with energy above GCUTME [2 GeV]
+      (in the top rest frame) are corrected. Physical quantities are not
+      strongly dependent on GCUTME in the range 1 to 5 GeV.  For details
+      see:
+
+      G. Corcella and M.H. Seymour, Phys. Lett. B442 (1998) 417.
+
+    - For the  Drell-Yan process the routine  HWBDYP implements the hard
+      corrections whilst  HWSBRN has been modified to implement the soft
+      corrections to the initial state radiation. For details see:
+
+      G. Corcella and M.H. Seymour, hep-ph/9908338.
+
+  * The  parameters of  the model  used  for soft  interactions are  now
+    available to  the user for modification.  The model is  based on the
+    minimum-bias event generator of  the UA5 Collaboration, which starts
+    from a parametrization of  the pbar p inelastic charged multiplicity
+    distribution as  a negative binomial. The parameters  are as follows
+    (default  parameter  values  are  the  UA5  ones  used  in  previous
+    versions):
+
+              +-------+---------------------------+---------+
+              | Name  |      Description          | Default |
+              +-------+---------------------------+---------+
+              | PMBN1 | a in <n> = a*S^b+c        |  9.11   |
+              | PMBN2 | b in <n> = a*S^b+c        |  0.115  |
+              | PMBN3 | c in <n> = a*S^b+c        | -9.50   |
+              |       |                           |         |
+              | PMBK1 | a in 1/k = a*log_e(S)+b   |  0.029  |
+              | PMBK2 | b in 1/k = a*log_e(S)+b   | -0.104  |
+              |       |                           |         |
+              | PMBM1 | a in (M-m_1-m_2-a)e^{-bM} |  0.4    |
+              | PMBM2 | b in (M-m_1-m_2-a)e^{-bM} |  2.0    |
+              |       |                           |         |
+              | PMBP1 | p_t slope for d,u         |  5.2    |
+              | PMBP2 | p_t slope for s,c         |  3.0    |
+              | PMBP3 | p_t slope for qq          |  5.2    |
+              +-------+---------------------------+---------+
+
+    The  first  three  parametrize  the  mean  charged  multiplicity  at
+    c.m.  energy  \sqrt{s}  as  indicated.  The  next  two  specify  the
+    parameter   k  in   the  negative   binomial   charged  multiplicity
+    distribution.   The  parameters   PMBM1  and   PMBM2   describe  the
+    distribution of cluster  masses M in the soft  collision. These soft
+    clusters  are  generated  with  a flat  rapidity  distribution  with
+    gaussian  shoulders. The  transverse momentum  distribution  of soft
+    clusters has the form
+
+    P(p_t)\propto p_t\exp(-b\sqrt{p_t^2+M^2})
+
+    where the slope  parameter b depends as indicated  on the flavour of
+    the quark or diquark pair created when the cluster was produced.
+
+    As an  option, for underlying events  the value of  \sqrt{s} used to
+    choose the  multiplicity n may be  enhanced by a  parameter ENSOF to
+    allow for an enhanced underlying activity in hard events. The actual
+    charged  multiplicity is  then taken  to be  n plus  the sum  of the
+    moduli of the charges of the colliding hadrons or clusters.
+
+  * There have been a number of additions/changes to the default hadrons
+    included via HWUDAT.  Here the identification of hadrons follows the
+    PDG ('98 edition) table 13.2 with numbering according to section 31.
+
+    New isoscalars states have been added to try to complete the 1^3D_3,
+    1^1D_2 and 1^3D_1 multiplets:
+
+           IDHW  RNAME        IDPDG      IDHW  RNAME        IDPDG
+           ----  -----        -----      ----  -----        -----
+            395  OMEGA_3        227       396  PHI_3          337
+            397  ETA_2(L)     10225       398  ETA_2(H)     10335
+            399  OMEGA(H)     30223
+
+    Also the following states have been re-identified/replaced:
+
+           IDHW  RNAME        IDPDG      IDHW  RNAME        IDPDG
+           ----  -----        -----      ----  -----        -----
+             57  FH_1         20333
+            293  F0P0       9010221       294  FH_00        10221
+             62  A_0(H)0      10111       290  A_00       9000111
+             63  A_0(H)+      10211       291  A_0+       9000211
+             64  A_0(H)-     -10211       292  A_0-      -9000211
+
+    The f_1(1420) state completely  replaces the f_1(1520) in the 1^3P_0
+    multiplet, taking over 57. The f_0(1370) (294) replaces the f_0(980)
+    (293) in the 1^3P_0 multiplet; the  latter is retained as it appears
+    in the decays of several other states.  The new a_0(1450) states (62
+    -64) replace the three old a_0(980) states (290 - 292) in the 1^3P_0
+    multiplet; the latter are kept, as they appear in f_1(1285) decays.
+
+    By default production of the f_0(980) and a_0(980) states in cluster
+    decays is vetoed.
+
+    Also, the PDG numbers for the remnant particles have been changed to
+    98 for REMG and 99 for REMN.
+
+  * Since version 6.1 contains a large number of supersymmetry processes
+    several new particles have been added.
+
+    Extra scalar bosons for the two Higgs Doublet (SUSY) scenario:
+
+           IDHW  RNAME        IDPDG      IDHW  RNAME        IDPDG
+           ----  -----        -----      ----  -----        -----
+            203  HIGGSL0         26       206  HIGGS+          37
+            204  HIGGSH0         35       207  HIGGS-         -37
+            205  HIGGSA0         36
+
+    Note that the lighter neutral scalar (203) is given the non-standard
+    PDG number 26, in order to distinguish it from the minimal SM Higgs,
+    PDG number 25.
+
+    Extra sfermions and gauginos for SUSY scenarios:
+
+           IDHW  RNAME        IDPDG      IDHW  RNAME        IDPDG
+           ----  -----        -----      ----  -----        -----
+            401  SSDL       1000001       413  SSDR       2000001
+              |  |          |               |  |          |
+            406  SST1       1000006       418  SST2       2000006
+            407  SSDLBR    -1000001       419  SSDRBR    -2000001
+              |  |          |               |  |          |
+            412  SST1BR    -1000006       424  SST2BR    -2000006
+
+            425  SSEL-      1000011       437  SSER-      2000011
+              |  |          |               |  |          |
+            430  SSNUTL     1000016       442  SSNUTR     2000016
+            431  SSEL+     -1000011       443  SSER+     -2000011
+              |  |          |               |  |          |
+            436  SSNUTLBR  -1000016       448  SSNUTRBR  -2000016
+
+            449  GLUINO     1000021       454  CHGINO1+   1000024
+            450  NTLINO1    1000022       455  CHGINO2+   1000037
+            451  NTLINO2    1000023       456  CHGINO1   -1000024
+            452  NTLINO3    1000025       457  CHGINO2   -1000037
+            453  NTLINO4    1000035       458  GRAVTINO   1000039
+
+    The implementation of SUSY is discussed more fully below.  Note that
+    the default masses of the SUSY particles are zero and that they have
+    no decay modes. Before a SUSY process can be simulated you must load
+    the appropriate  masses and decay modes generated  using ISAWIG (see
+    below) or an equivalent program.
+
+    These new states don't interfere  with the user's ability to add new
+    particles as previously described.
+
+  * It is now possible to create particle property and event listings in
+    any combination of 3 formats - standard ASCII, LaTeX or html.  These
+    options are controlled by the new, logical variables PRNDEF [.TRUE.]
+    PRNTEX [.FALSE.] and PRNWEB [.FALSE.].  The ASCII output is directed
+    to stout (screen / log file) as in previous versions. When a listing
+    of particle properties is requested (IPRINT.GE.2 or HWUDPR is called
+    explicitly) then the following files are produced:
+
+      If (PRNTEX):   HW_decays.tex
+      If (PRNWEB):   HW_decays/index.html
+                              /PART0000001.html etc.
+
+    The HW_decays.tex  file is written  to the working  directory whilst
+    the many **.html files  appear in the sub-directory HW_decays/ which
+    must have been created previously.   Paper sizes and offsets for the
+    LaTeX output  are stored at the  top of the block  data file HWUDAT:
+    they may  need modifying to  suit a particular printer.   When event
+    listings  are requested  (NEVHEP.LE.MAXPR.NE.0 or  HWUEPR  is called
+    explicitly) the  following files are created in  the current working
+    directory:
+
+      If (PRNTEX):   HWEV_*******.tex       where *******=0000001 etc.
+      If (PRNWEB):   HWEV_*******.html      is the event number
+
+    Note the .html file automatically makes links to the index.html file
+    of particle properties assumed to be in the HW_decays sub-directory.
+
+    A new integer variable NPRFMT [1] has been introduced to control how
+    many significant figures  are shown in each of  the 3 event outputs.
+    Basically NPRFMT=1 gives short compact outputs whilst NPRFMT=2 gives
+    long formats.
+
+    Note  that all  the LaTeX  files  use the  package longtable.sty  to
+    format the tables.  Also if  NPRFMT=2 or PRVTX=.TRUE. then the LaTeX
+    files are designed to be printed in landscape mode.
+
+  * There were  previously some  inconsistencies and ambiguities  in our
+    conventions for the  mixing of flavour `octet' and `singlet' mesons.
+    They are now:
+
+           Multiplet   Octet         Singlet          Mixing Angle
+           ---------   -----         -------          ------------
+            1^1S_0     eta           eta'             ETAMIX=-23.
+            1^3S_1     phi           omega            PHIMIX=+36.
+            1^1P_1     h_1(1380)     h_1(1170)        H1MIX =ANGLE
+            1^3P_0     MISSING       f_0(1370)        F0MIX =ANGLE
+            1^3P_1     f_1(1420)     f_1(1285)        F1MIX =ANGLE
+            1^3P_2     f'_2          f_2              F2MIX =+26.
+            1^1D_2     eta_2(1645)   eta_2(1870)      ET2MIX=ANGLE
+            1^3D_1     MISSING       omega(1600)      OMHMIX=ANGLE
+            1^3D_3     phi_3         omega_3          PH3MIX=+28.
+
+    After mixing the  quark content of the physical  states is given, in
+    terms of the mixing angle, theta, by:
+
+                  (ddbar+uubar)/sqrt(2)           ssbar
+                  ---------------------           -----
+         Octet:    cos(theta+theta_0)      -sin(theta+theta_0)
+       Singlet:    sin(theta+theta_0)       cos(theta+theta_0)
+
+    where  theta_0=ATAN(SQRT(2)).   Hence, using  the  default value  of
+    ANGLE=ATAN(1/SQRT(2))*180/ACOS(-ONE)  for theta gives  ideal mixing,
+    that  is,   the  `octet'   state  =  ssbar   and  the   `singlet'  =
+    (ddbar+uubar)/sqrt(2).   This  choice is  important  to avoid  large
+    isospin violations in the 1^3P_0  and 1^3D_1 multiplets in which the
+    octet member is unknown.
+
+  * A new treatment of the  colour interference terms in matrix elements
+    has been introduced in this version. A non-planar, interference term
+    is now shared between the planar terms corresponding to well defined
+    colour flows in proportion to the size of the planar terms. Existing
+    two-to-two QCD processes which have been affected are:
+
+              Light Quarks                          Heavy Quarks
+              ============                          ============
+           Process            IHPRO              Process           IHPRO
+           -------            -----              -------           -----
+    q   +q    --> q   +q       1,2       Q   +g    --> Q   +g      10,11
+    q   +qbar --> q   +qbar    5,6       Qbar+g    --> Qbar+g      21,22
+    qbar+q    --> qbar+q      13,14      g   +Q    --> g   +Q      23,24
+    qbar+qbar --> qbar+qbar   18,19      g   +Qbar --> g   +Qbar   25,26
+                                         g   +g    --> Q   +Qbar   27,28
+
+    The present and previous treatments of the interference term are the
+    same for the other two-to-two QCD processes which remain unaffected.
+
+    This new procedure has been adopted for all the SUSY QCD processes.
+
+    For details see: K. Odagiri, JHEP 10 (1998) 006
+
+  * A new process, direct gamma-gamma to charged particle pairs has been
+    added. This has IPROC=16000+IQ: if IQ=1-6 then only quark flavour IQ
+    is produced, if IQ=7,8 or 9 then only lepton flavour e, mu or tau is
+    produced and if IQ=10 then only W pairs are produced: in these cases
+    particle masses effects are included. Whilst if IQ=0 the natural mix
+    of quark pairs are produced  using massless MEs but including a mass
+    threshold cut. The range of allowed transverse momenta is controlled
+    by PTMIN & PTMAX as usual.
+
+  * A new package ISAWIG has been created to work with ISAJET to produce
+    a file of the SUSY  particle masses, lifetimes and decay modes which
+    can be read in by HERWIG.
+
+    This package takes  the outputs of the ISAJET  SUGRA or general MSSM
+    programs and produces a data file in a format that can be read in by
+    the HWISSP subroutine described below.
+
+    In addition to the decay modes included in the ISAJET package ISAWIG
+    allows for  the possibility of  violating R-parity and  includes the
+    calculation of all 2-body squark and slepton, and 3-body gaugino and
+    gluino R-parity violating decay modes.
+
+  * A new subroutine HWISSP has been  added to read the file of particle
+    properties produced by the ISAWIG program. In principle the user can
+    produce a similar file provided that the correct format is used. The
+    format should be as follows.
+
+    First the SUSY particle and top quark masses and lifetimes are given
+    as, for example:
+
+         65
+         401 927.3980    0.74510E-13
+         402 925.3307    0.74009E-13
+         ....etc.
+
+    That is,
+
+         NSUSY=Number of SUSY+top particles
+         IDHW, RMASS(IDHW) & RLTIM(IDHW)
+         repeated NSUSY times.
+
+    Next  each  particle's decay  modes  together  with their  branching
+    ratios and matrix element codes are given as, for example:
+
+         6
+         401  0.18842796E-01     0   450     1     0     0     0
+           |               |     |     |     |     |     |     |
+         401  0.32755006E-02     0   457     2     0     0     0
+         6
+         402  0.94147678E-02     0   450     2     0     0     0
+         ....etc.
+
+    That is,
+
+         Number of decay modes for a given particle (IDK)
+         IDK(*), BRFRAC(*), NME(*) & IDKPRD(1-5,*)
+         repeated for each mode.
+
+         Repeated for each particle (NSUSY times).
+
+    The order in which the decay products appear is significant: this is
+    important inorder to obtain appropriate showering and hadronization.
+    The correct ordering for each decay mode is indicated below.
+
+    +----------+------------------------+------------------------------+
+    | Decaying | Type of Mode           |  Order of Decay Products:    |
+    | Particle |                        |   1st   |   2nd   |   3rd    |
+    +----------+------------------------+---------+---------+----------+
+    | Top      | 2 body to Higgs        | Higgs   | Bottom  |          |
+    |          +------------------------+---------+---------+----------+
+    |          | 3 body via Higgs/W     | quarks or leptons | Bottom   |
+    |          |                        |    from W/Higgs   |          |
+    +----------+------------------------+---------+---------+----------+
+    | Gluino   | 2 body modes:          |         |         |          |
+    |          | without gluon          |     any order     |          |
+    |          | with    gluon          | gluon   | colour  |          |
+    |          |                        |         | neutral |          |
+    |          +------------------------+---------+---------+----------+
+    |          | 3 body modes:          | colour  |      q or qbar     |
+    |          | R-parity conserved     | neutral |                    |
+    +----------+------------------------+---------+---------+----------+
+    | Squark/  | 2 body modes:          |         |         |          |
+    | Slepton  | Gaugino/Gluino         | Gaugino | quark   |          |
+    |          | Quark/Lepton           | Gluino  | lepton  |          |
+    |          +------------------------+---------+---------+----------+
+    |          | 3 body modes:          |sparticle| particles from     |
+    |          | Weak                   |         | W decay            |
+    +----------+------------------------+---------+---------+----------+
+    | Squark   | 2 body modes:          |         |         |          |
+    |          | Lepton Number Violated | quark   | lepton  |          |
+    |          | Baryon Number Violated | quark   | quark   |          |
+    +----------+------------------------+---------+---------+----------+
+    | Slepton  | 2 body modes:          |      q or qbar    |          |
+    |          | Lepton Number Violated |         |         |          |
+    +----------+------------------------+---------+---------+----------+
+    | Higgs    | 2 body modes:          |         |         |          |
+    |          | (s)quark-(s)qbar       |   (s)q or (s)qbar |          |
+    |          | (s)lepton-(s)lepton    |   (s)l or (s)lbar |          |
+    |          +------------------------+---------+---------+----------+
+    |          | 3 body modes:          | colour  |      q or qbar     |
+    |          |                        | neutral |      l or lbar     |
+    +----------+------------------------+---------+---------+----------+
+    | Gaugino  | 2 body modes:          |         |         |          |
+    |          | squark-quark           |      q or sq      |          |
+    |          | slepton-lepton         |      l or sl      |          |
+    |          +------------------------+---------+---------+----------+
+    |          | 3 body modes:          | colour  |      q or qbar     |
+    |          | R-parity conserved     | neutral |      l or lbar     |
+    +----------+------------------------+---------+---------+----------+
+    | Gaugino/ | 3 body modes:          | particles in the order i,j,k |
+    | Gluino   | R-parity violating     |                              |
+    +----------+------------------------+---------+---------+----------+
+
+    A new matrix element code has been added for these decays:
+
+       NME = 300     3 body R-parity violating gaugino and gluino decays
+
+    in addition,  an extra matrix element code has been reserved for use
+    in a forthcoming version:
+
+       NME = 200     3 body top quark via charged Higgs
+
+    The indices i,j,k in  R-parity violating gaugino/gluino decays refer
+    to the ordering  of the indices in the  R-parity violating couplings
+    in the superpotential.  The convention is as in:
+
+    H.Dreiner, P.Richardson and M.H.Seymour, hep-ph/9912407.
+
+    Next a number of parameters derived from the SUSY Lagrangian must be
+    given. These are: the ratio of Higgs VEVs, tan(beta), and the scalar
+    Higgs mixing  angle, alpha; the  mixing parameters for  the Higgses,
+    gauginos and the sleptons; the trilinear couplings; and the Higgsino
+    mass parameter mu.
+
+    Finally the  logical variable  RPARTY should be  set: if  FALSE then
+    R-parity is violated, and the R-parity violating couplings must also
+    be supplied, otherwise not.
+
+    Details of the FORMAT statements  employed can be found by examining
+    the subroutine HWISSP.
+
+    The integer argument in the  call to HWISSP(N) gives the unit number
+    to be read from. If the data is stored in a `fort.N' file no further
+    action is required but  if the data is to be read  from a file named
+    `fname.dat' then appropriate OPEN and CLOSE statements must be added
+    by hand:
+
+      OPEN(UNIT=N,FORM='FORMATTED',STATUS='UNKNOWN',FILE='fname.dat')
+      CALL HWISSP(N)
+      CLOSE(UNIT=N)
+
+    A number of sets of SUSY parameter files, produced using ISAWIG, for
+    the standard LHC SUGRA and GMSB points are available from the HERWIG
+    home page: http://hepwww.rl.ac.uk/theory/seymour/herwig/
+
+  * A large number of changes have been made to enable SUSY processes to
+    be included in hadron-hadron collisions. The main changes are:
+
+    - The subroutine HWDHQK has been  replaced by HWDHOB which does both
+      heavy quark and SUSY particle decays.
+
+    - The subroutines HWBCON HWCGSP & HWCFOR have been adapted to handle
+      the colour connections found in normal SUSY decays.
+
+    - The subroutine HWBRCN has been included to deal with the inter-jet
+      colour connections arising in R-parity violating SUSY. Also HWCBVI
+      HWCBVT and HWCBCT  have been added to handle  the hadronization of
+      baryon number violating SUSY decays and processes. If the variable
+      RPARTY=.TRUE. [default] then the old HWBCON colour connection code
+      is used else the new HWBRCN
+
+  * The option of separate treatments for `light' and b-quark containing
+    clusters are now available.   The 3 variables, PSPLT (which controls
+    the mass spectrum of the fragments in heavy cluster splitting) CLDIR
+    (which controls whether perturbatively produced (anti-)quarks retain
+    some knowledge of their direction  in cluster decays to hadrons) and
+    CLSMR (which defines to what extent the hadron and constituent quark
+    directions are aligned), have been made two dimensional.
+
+          ARRAY(1) controls clusters that do NOT contain a b quark
+          ARRAY(2) controls clusters that do     contain a b quark
+
+    [ Default ARRAY(1)=ARRAY(2) equivalent to earlier versions. ]
+
+  * A new variable EFFMIN [1E-3] has been introduced, it allows the user
+    to set the minimum acceptable efficiency for event generation.
+
+  * All hadron & lepton masses are now given to five significant figures
+    whenever possible.
+
+  * The treatment of the perturbative g --> qqbar vertex in the partonic
+    showers  has been  improved. The  total rate  is unchanged,  but the
+    angular distribution  now covers the  full range, rather  than being
+    confined to the angular-ordered region as before.
+
+  * The treatment of the intrinsic transverse momentum  of partons in an
+    incoming  hadron has  been improved.   It is  now chosen  before the
+    initial state  cascade is performed, and  is held fixed  even if the
+    generated cascade  is rejected.  This removes  a correlation between
+    the amount of  perturbative and non-perturbative transverse momentum
+    generated that existed before.
+
+  * Space-time  positioning of clusters  is now  smeared according  to a
+    Gaussian distribution of width 1/(cluster mass).
+
+  * For e+e- processes with ISR a check was added requiring TMNISR to be
+    greater than the light quark threshold.
+
+  * The treatment of the W resonance in top decays has been improved.
+
+  * The common block file HERWIG61.INC has had many new variables added,
+    these are listed at the top of the file.
+
+  * Corrections for bugs have been made affecting the following:
+
+    - eta-eta' mixing: the parameterization was nonstandard (see above).
+
+    - 4/5 body phase space generation: was not flat - affected resonance
+      decays only.
+
+    - Drell-Yan: the overall normalization was too small by a factor 2/3
+      also the t-channel contribution to q-qbar-> q-qbar was incorrectly
+      normalized.
+
+    - HWHV1J: the normalization of Z+jet  production rate was a factor 4
+      too small; there was an incorrect correlation between the (signed)
+      W and jet rapidities; the treatment of the W/Z Breit-Wigner lead a
+      normalization error by a factor 3/pi.
+
+    - HWHWPR: there was an overall normalization error of (M_ff'/M_w)^2,
+      this only affected the line shape and normalization for the t-bbar
+      final state for which M_ff' is large.
+
+    - B_d/_s mixing: an incorrect formula was used.
+
+    - VMIN2: the effective cut-off on the space-time distances travelled
+      by light partons in a shower was incorrectly implemented. Also its
+      default  value has  been  increased to  [0.1],  which affects  the
+      colour reconnection probability.
+
+    - A number of fixes to improve safety against overflowing the HEPEVT
+      common block.
+
+    - Fix to the underlying event to prevent errors with heavy quarks.
+
+    - HWMODK/HWIODK: a number of corrections were made and the code made
+      more robust.
+
+    - HWURES: the minimum threshold for the decay of diquark-antidiquark
+      clusters was incorrectly set.
+
+    - The calculation of the top lifetime has been corrected and the QCD
+      corrections  included - this only affects the  treatment of colour
+      reconnection.
+
+    - The space-time positioning of clusters sometimes led to them being
+      produced outside the forward lightcone.  This has been rectified.
+
+    As usual, if you wish to be removed from the HERWIG mailing list, or
+    if you  know someone  who wants to  be added,  please let one  of us
+    know.
+
+    Mike Seymour,  Bryan Webber,  Ian Knowles,  Peter Richardson, Kosuke
+    Odagiri, Stefano Moretti, Gennaro Corcella, Pino Marchesini
+
+    CERN, Edinburgh, Oxford, RAL, Rochester, Milano, etc,
+    16th December 1999.

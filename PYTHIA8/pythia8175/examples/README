@@ -1,0 +1,94 @@
+----------------------------------------------------------------------
+
+   BASIC INSTRUCTIONS FOR RUNNING TEST PROGRAMS
+
+1) You are supposed to have already compiled PYTHIA 8, as described in 
+   the README file of the mother directory. For the moment we assume
+   that you will NOT use the HepMC, LHAPDF, or FastJet libraries.
+
+2) You are now ready to test run the first thirty of the mainNN examples,
+   see the manual page "Sample main program" for details.
+   Type "gmake mainNN" to build an executable "mainNN.exe". 
+   Type "./mainNN.exe > output" to run this executable. 
+   Then study the output file. The existing files outNN are examples of 
+   possible outputs from several runs, so that you can compare.
+
+3) If you want to run your own programs from this directory you can edit
+   the "Makefile", adding the name of your main program to the already
+   existing ones. Note that different cases exist, depending on which 
+   external libraries are to be linked. There is no main00, but this 
+   name is defined in the Makefile, so it can be used for simple first 
+   tests.
+
+4) With ./runmains all the 27 first mainXX program will be run,
+   plus main31, to get a thorough test of the installation. 
+   The runmains file can easily be edited to run the others as well,
+   but then you should first link to the appropriate external libraries.
+   The outref subdirectory contains the output of such a run, if you
+   want to compare with what you obtain.
+
+5) Type "gmake clean" to clean up the examples directory (but not the
+   output files).
+
+----------------------------------------------------------------------
+
+   ADVANCED INSTRUCTIONS FOR RUNNING TEST PROGRAMS
+
+1) If you want to be able to run examples linked to HepMC you should 
+   already have set that up with the "./configure" command in the mother 
+   directory. If not, you can go back and do it now. This will create 
+   files "config.csh" and "config.sh" in the current directory.
+
+2) If you are going to run examples linked with LHAPDF and/or FastJet, 
+   or if you want to move (all or parts of) the current examples 
+   subdirectory to a location separate from the rest of the library, 
+   you should as a first step run the script "configure" in the current 
+   directory. You can use command-line arguments to set up the desired 
+   library links. 
+
+   The possible options are:
+     --help : prints a brief summary of the options described here.
+     --enable-debug : turns on debugging flags and turns off optimization
+     --enable-shared : use shared library (not yet implemented; default no)
+     --lcgplatform=name : LCG platform name (can be part of path to 
+         external librtaries; default is x86_64-slc5-gcc43-opt)
+     --with-pythia8=p8path : path to the pythia81xx installation directory, 
+         where the programs in this examples directory can find libraries,
+         includes and parameters (default is ..)
+     --with-lhapdf=lhapdfpath : the path to your local copy of the LHAPDF
+         library (must be version 5.3 or higher)
+     --with-lhapdfversion=v : a simpler alternative to the above, valid 
+         if you are using the CERN AFS MCGenerators area; then you do not 
+         need to specify the full path but only the version, e.g. =5.3.0 
+         (must be version 5.3 or higher) 
+     --with-lhapdflibname=n : lhapdf library name line (default is -lLHAPDF)
+     --with-lhapdfsets=path : path to the LHAPDF data files 
+         (default is lhapdfpath/../PDFsets, CERN AFS default is 
+         lhapdfpath/../../../share/PDFsets)
+     --with-fastjet=path : path to FastJet (default = /usr/local)
+     --with-fastjetversion=v : FastJet version 
+         (simplified alternative when using CERN AFS external, e.g. =2.3.3)
+
+   When "configure" is run it will create or append to the config.csh 
+   and config.sh files.
+
+3) Before running the examples using external libraries for the first 
+   time, type "source config.csh" if you use the csh or tcsh shell, or 
+   "source config.sh" otherwise. (Use "echo $SHELL" if uncertain.)
+   This will set or append the environment variables LD_LIBRARY_PATH,
+   needed to find the HepMC libraries. (Eventually also LHAPDF and FastJet
+   libraries, if shared ones are used. Default, if taken from CERN AFS 
+   MCGenerators, is archive.) It will also set the variable LHAPATH, 
+   needed to find the LHAPDF data files.
+
+4) If you want to change to other LHAPDF or FastJet or versions, you 
+   have to rerun the script "configure" and again "source" one of the 
+   config.* files. In case of using shared libraries (these will  be taken 
+   if both shared and archive ones are on the same path) pay attention to 
+   the variable LD_LIBRARY_PATH: subsequent commands "source" will add new 
+   items to it, not substitute the old ones. As a result, the wrong 
+   version can still be loaded at runtime, which can cause relocation 
+   errors. A simple solution is to repeat the "configure" and "source" 
+   steps in a new window, i.e. in a new clean copy of the shell.
+
+----------------------------------------------------------------------

@@ -1,0 +1,24 @@
+'Version' '5.3'
+'Description: '
+'GRV-P1 pion PDFs'
+'Zeit.Phys.C53(1992)651'
+'This set has 1 member PDFs.'
+' 0/1 = GRV-P LO'
+'Alphas:'
+'Variable','lo','EvolCode'
+1,91.71,1.43,4.30,180.0
+'MinMax:'
+1,1
+1.E-05,0.9998,0.25,1000000.
+'QCDparams:'
+1,1
+0.200,0.1519
+'Parameterlist:'
+'list',1,1
+0.1281
+0.1281
+'Evolution:'
+'lo',1.0,1.0
+'GRVP0'
+1,0
+'End:'

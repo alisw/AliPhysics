@@ -1,0 +1,6 @@
+* $Id$
+	REAL RR, XX
+	COMMON/HIJHB/RR(10,201),XX(10,201)
+#ifndef BLANKET_SAVE
+	SAVE  /HIJHB/
+#endif

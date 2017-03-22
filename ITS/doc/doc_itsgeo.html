@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head>
+	<meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8"><title></title>
+	
+	<meta name="GENERATOR" content="OpenOffice.org 1.1.5  (Linux)">
+	<meta name="CREATED" content="20080430;10144900">
+	<meta name="CHANGED" content="20080430;11283000">
+	<style>
+	<!--
+		@page { size: 21.59cm 27.94cm; margin: 2.01cm }
+		P { margin-bottom: 0.2cm }
+	-->
+	</style></head>
+
+<body dir="ltr" lang="en-US">
+<p style="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid;">
+<font face="Albany, sans-serif"><font size="4">============================================================================</font></font></p>
+<p style="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid;">
+<font face="Albany, sans-serif"><font size="4">Description of ALICE ITS
+Geometry Code   (Rev. 1,00 -  April, 30<sup>th</sup>
+2008 -  M. Sitta)</font></font></p>
+<p style="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid;">
+<font face="Albany, sans-serif"><font size="4">============================================================================</font></font></p>
+<p style="margin-bottom: 0cm;"><a name="Content"></a><strong><font style="font-size: 16pt;" size="4">Content</font></strong>
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<ol>
+	<li><p style="margin-bottom: 0cm;"><a href="#punto%201">General
+	description</a></p>
+	</li><li><p style="margin-bottom: 0cm;"><a href="#punto%202">
+	Detector-specific classes</a></p>
+	</li><li><p style="margin-bottom: 0cm;"><a href="#punto%203">Initialization
+	</a></p>
+	</li><li><p style="margin-bottom: 0cm;"><a href="#punto%204">Main
+	methods</a></p>
+	</li><li><p style="margin-bottom: 0cm;"><a href="#punto%205">Helper
+	classes AliITSgeom and AliITSgeomTGeo</a></p>
+</li></ol>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p><a name="punto 1"></a><strong><a href="#Content" name="punto 1">General
+description</a></strong></p>
+<p style="margin-bottom: 0cm;">The <font face="Courier 10 Pitch">
+AliITSv11Hybrid</font> class describes the overall ITS geometry. It is a
+mix between the old geometry (originally coded in the
+<font face="Courier 10 Pitch">AliITSvPPRasymmFMD</font> class) and the new
+TGeo geometry (v11). The "old" part is described using Geant3 volumes, while
+the "new" one using TGeo volumes; moreover the new part is more adherent to
+the technical drawings and so is more realistic.
+</p>
+<p style="margin-bottom: 0cm;">Proper flags, set in the
+<font face="Courier 10 Pitch">AliITSInitGeometry</font> class, determine
+whether the old or the new part is used.
+</p>
+<p style="margin-bottom: 0cm;">Currently all the sensitive detectors and their
+supports, the mechanical supports and part of the services (namely the SDD
+cables) are described in the new geometry. The rest of the services and some
+other mechanics are (sometimes partly) described in the old geometry. Work is
+in progress to move everything in the new geometry.
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p style="margin-bottom: 0cm;">================================================================================</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p><a name="punto 2"></a><strong><a href="#Content" name="punto 2">
+Detector-specific classes</a></strong></p>
+<p style="margin-bottom: 0cm;">The old geometry is fully described in the
+<font face="Courier 10 Pitch">AliITSv11Hybrid</font> class. For the new
+geometry on the other hand, a set of specific classes are defined
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p style="margin-bottom: 0cm;">-&gt; <font face="Courier 10 Pitch">
+AliITSv11GeometrySPD</font> describes the whole SPD geometry
+</p>
+<p style="margin-bottom: 0cm;">-&gt; <font face="Courier 10 Pitch">
+AliITSv11GeometrySDD</font> describes the whole SDD geometry
+</p>
+<p style="margin-bottom: 0cm;">-&gt; <font face="Courier 10 Pitch">
+AliITSv11GeometrySSD</font> describes the whole SSD geometry
+</p>
+<p style="margin-bottom: 0cm;">-&gt; <font face="Courier 10 Pitch">
+AliITSv11GeometrySupport</font> describes the geometry of some mechanical
+supports (thermal shields and support cylinders and cones)
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p style="margin-bottom: 0cm;">================================================================================</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p><a name="punto 3"></a><strong><a href="#Content" name="punto 3">
+Initialization</a></strong></p>
+<p style="margin-bottom: 0cm;">To initialize an object of the
+<font face="Courier 10 Pitch">AliITSv11Hybrid</font> class it is enough to
+call its constructor in the <font face="Courier 10 Pitch">Config.C</font>
+macro
+</p>
+<p style="margin-bottom: 0cm;"><font face="Courier 10 Pitch">
+AliITSv11Hybrid *ITS  = new AliITSv11Hybrid("ITS","ITS detailed version with TGeo description");</font>
+</p>
+<p style="margin-bottom: 0cm;">the first string is the detector name (which
+is actually ignored, and internally set to "ITS"), the second string is an
+arbitrary title. Both strings are passed to the <font face="Courier 10 Pitch">
+AliITS</font> constructor.
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p style="margin-bottom: 0cm;">The class constructor initializes its private
+members, creates an object for each detector-specific class and sets their
+names, and sets the defaults for some detector parameters.
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p style="margin-bottom: 0cm;">================================================================================</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p><a name="punto 4"></a><strong><a href="#Content" name="punto 4">Main
+Methods</a></strong></p>
+<p style="margin-bottom: 0cm;">The main methods of the
+<font face="Courier 10 Pitch">AliITSv11Hybrid</font> class are
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<ul>
+<li><font face="Courier 10 Pitch">AliITSv11Hybrid::CreateGeometry</font> first
+calls <font face="Courier 10 Pitch">CreateOldGeometry</font> to define the
+old (Geant3) volumes (the ones still active according to the aforementioned
+flags); then it calls specific methods of the detector classes to create
+the new geometry</li>
+<li><font face="Courier 10 Pitch">AliITSv11Hybrid::CreateOldGeometry</font>
+creates the old geometry volumes; flags are used to determine which sections
+are to be skipped because already coded in the detector-specific classes</li>
+<li><font face="Courier 10 Pitch">AliITSv11Hybrid::CreateMaterials</font>
+defines all materials and mediums used in the ITS geometry description</li>
+<li><font face="Courier 10 Pitch">AliITSv11Hybrid::AddAlignableVolumes</font>
+creates entries for alignable volumes associating the symbolic volume name
+with the corresponding volume path</li>
+<li><font face="Courier 10 Pitch">AliITSv11Hybrid::StepManager</font> is
+called at every step in the ITS to save hits according to the subdetector
+which the particle is in</li>
+</ul>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p style="margin-bottom: 0cm;">================================================================================</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p><a name="punto 5"></a><strong><a href="#Content" name="punto 5">Helper
+classes AliITSgeom and AliITSgeomTGeo</a></strong></p>
+<p style="margin-bottom: 0cm;"><font face="Courier 10 Pitch">AliITSgeomTGeo
+</font> is a simple interface class to TGeoManager. It is used in the
+simulation and reconstruction in order to query the TGeo ITS geometry.
+</p>
+<p style="margin-bottom: 0cm;">It has methods such as for example<br>
+<font face="Courier 10 Pitch">GetModuleIndex</font> to compute the module
+index number from the layer, ladder, and detector numbers<br>
+<font face="Courier 10 Pitch">GetModuleId</font> to compute the layer,
+ladder and detector number given the module index number<br>
+<font face="Courier 10 Pitch">GetLayer</font> to compute the layer number
+for a given the module index<br>
+<font face="Courier 10 Pitch">GetMatrix</font> to get the
+transformation matrix for a given module by quering the TGeoManager<br>
+<font face="Courier 10 Pitch">GetTranslation</font> and
+<font face="Courier 10 Pitch">GetRotation</font> to get the translation
+vector or the rotation matrix for a given module by quering the
+TGeoManager<br>
+<font face="Courier 10 Pitch">LocalToGlobal</font> and
+<font face="Courier 10 Pitch">GlobalToLocal</font> to make the conversion
+from the local sensitive reference system to the global reference system
+and vice-versa, for an arbitrary local or global position
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+<p style="margin-bottom: 0cm;">Similarly the <font face="Courier 10 Pitch">
+AliITSgeom</font> class contains other methods for querying and
+interfacing the ITS geometry.
+</p>
+<p style="margin-bottom: 0cm;"><br>
+</p>
+
+</body></html>

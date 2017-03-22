@@ -1,0 +1,9 @@
+* $Id$
+C
+C
+      SUBROUTINE ARAN9(QRAN,NDIM)
+      DIMENSION QRAN(10)
+      DO 1 I=1,NDIM
+    1 QRAN(I)=RLU_HIJING(0)
+      RETURN
+      END

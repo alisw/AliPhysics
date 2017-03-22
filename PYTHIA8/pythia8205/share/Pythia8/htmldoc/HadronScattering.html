@@ -1,0 +1,115 @@
+<html>
+<head>
+<title>Hadron Scattering</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Hadron Scattering</h2> 
+ 
+A simple hadron scattering model. It is intended to take into account 
+that the overlap of multiple strings at low transverse dimensions 
+is likely to lead to some collective effects, not unlike those 
+observed in heavy-ion collisions, even if not quite as pronounced. 
+Specifically, it is assumed that the hadrons produced can scatter 
+against each other on the way out, before the fragmenting system 
+has had time to expand enough that the hadrons get free. Thereby 
+heavier particles are shifted to higher transverse momenta, at the 
+expense of the lighter ones. 
+ 
+<br/><b>Warning:</b> This is still at an experimental level, 
+and should not be used unless you know what you are doing. 
+ 
+<p/><code>flag&nbsp; </code><strong> HadronScatter:scatter &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Master flag for hadron scattering. 
+   
+ 
+<p/><code>flag&nbsp; </code><strong> HadronScatter:afterDecay &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Perform hadron scattering before or after first round of decays, 
+involving very short-lived particles like the <i>rho</i>. 
+The default is to perform scattering directly after the 
+string fragmentation, before any decays. 
+   
+ 
+<p/><code>flag&nbsp; </code><strong> HadronScatter:allowDecayProd &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Allow two hadrons with same parent hadron to scatter. 
+   
+ 
+<p/><code>flag&nbsp; </code><strong> HadronScatter:scatterRepeat &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Allow hadrons which have already scattered to scatter again. 
+Even if switched on, the same pair can not scatter off each 
+other twice. 
+   
+ 
+<h3>Hadron selection</h3> 
+ 
+<p/><code>mode&nbsp; </code><strong> HadronScatter:hadronSelect &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>; <code>minimum = 0</code>; <code>maximum = 0</code>)<br/>
+Probability that a hadron is soft enough to scatter. 
+(A high-<i>pT</i> hadron presumably being part of a jet, 
+and thus produced away from the high-particle-density region 
+at small transverse dimensions.) 
+<br/><code>option </code><strong> 0</strong> :  
+<i>P = N exp(-pT^2 / 2 / sigma^2) / 
+  ( (1 - k) exp(-pT^2 / 2 / sigma^2) + k pT0^p / (pT0^2 + pT^2)^(p/2), </i> 
+with <i>sigma = 2 StringPT:sigma</i> and <i>pT0</i> the same as that 
+used in <i>MultipartonInteractions</i>. 
+   
+   
+ 
+<p/><code>parm&nbsp; </code><strong> HadronScatter:N &nbsp;</strong> 
+ (<code>default = <strong>1.0</strong></code>; <code>minimum = 0.01</code>; <code>maximum = 1.0</code>)<br/>
+<i>N</i> parameter as above. 
+   
+<p/><code>parm&nbsp; </code><strong> HadronScatter:k &nbsp;</strong> 
+ (<code>default = <strong>1.0</strong></code>; <code>minimum = 0.01</code>; <code>maximum = 1.0</code>)<br/>
+<i>k</i> parameter as above. 
+   
+<p/><code>parm&nbsp; </code><strong> HadronScatter:p &nbsp;</strong> 
+ (<code>default = <strong>6</strong></code>; <code>minimum = 2</code>; <code>maximum = 30</code>)<br/>
+<i>p</i> parameter as above. 
+   
+ 
+<h3>Scattering probability</h3> 
+ 
+<p/><code>mode&nbsp; </code><strong> HadronScatter:scatterProb &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>; <code>minimum = 0</code>; <code>maximum = 2</code>)<br/>
+Probability for a pair of hadrons to scatter. 
+<br/><code>option </code><strong> 0</strong> : All hadrons scatter with probability 
+<i>j max(0, 1 - dR^2 / rMax^2)</i>. Angular distribution 
+is picked flat in <i>cos(theta).</i>   
+<br/><code>option </code><strong> 1</strong> : As option 0, above, but only <i>pi-pi</i>, 
+<i>pi-K</i> and <i>pi-p</i> scatterings are considered. 
+   
+<br/><code>option </code><strong> 2</strong> : Only <i>pi-pi</i>, <i>pi-K</i> and 
+<i>pi-p</i> scatterings are considered, with probability 
+given by <i>(1 - exp(-j sigEl)) max(0, 1 - dR^2 / rMax^2)</i>. 
+The elastic cross sections and angular distributions are taken 
+from the partial-wave distributions. 
+   
+   
+ 
+<p/><code>parm&nbsp; </code><strong> HadronScatter:j &nbsp;</strong> 
+ (<code>default = <strong>0.5</strong></code>; <code>minimum = 0.0</code>; <code>maximum = 10.0</code>)<br/>
+<i>j</i> parameter as above. 
+   
+<p/><code>parm&nbsp; </code><strong> HadronScatter:rMax &nbsp;</strong> 
+ (<code>default = <strong>0.5</strong></code>; <code>minimum = 0.1</code>; <code>maximum = 2.0</code>)<br/>
+<i>rMax</i> parameter as above. 
+   
+ 
+<p/><code>flag&nbsp; </code><strong> HadronScatter:tile &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Use tiling in <i>(eta, phi)</i> to reduce number of pairwise tests. 
+   
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2015 Torbjorn Sjostrand --> 
+ 

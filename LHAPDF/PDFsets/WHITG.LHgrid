@@ -1,0 +1,34 @@
+'Version' '5.3'
+'Description: '
+'WHIT-G  photon PDFs'
+'Phys.Lett.376B(1996)193'
+'This set has 6 member PDFs.'
+' 1/0 = WHIT-G 1 LO'
+' 2 = WHIT-G 2 LO'
+' 3 = WHIT-G 3 LO'
+' 4 = WHIT-G 4 LO'
+' 5 = WHIT-G 5 LO'
+' 6 = WHIT-G 6 LO'
+'Alphas:'
+'Variable','lo','EvolCode'
+1,91.71,1.43,4.30,180.0
+'MinMax:'
+6,1
+0.001,0.9998,4.,2500.
+'QCDparams:'
+6,1
+0.4000,0.3226
+'Parameterlist:'
+'list',6,1
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+'Evolution:'
+'lo',1.0,1.0
+'WHITG'
+6,0
+'End:'

@@ -1,0 +1,4 @@
+* $Id$
+      COMMON/LUDAT4_HIJING/CHAF(500)   
+      CHARACTER CHAF*8  
+      SAVE /LUDAT4_HIJING/ 

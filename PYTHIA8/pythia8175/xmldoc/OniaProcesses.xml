@@ -1,0 +1,300 @@
+<chapter name="Onia Processes">
+
+<h2>Onia Processes</h2>
+
+Production of J/psi or Upsilon, directly and via chi states and the 
+colour-octet mechanism. 
+In each process the square-bracketed expression specifies the state 
+in spectroscopic notation, <ei>(2S+1) L J</ei>, followed by 
+<ei>(1)</ei> for colour-singlet states and <ei>(8)</ei> for 
+colour-octet ditto. 
+
+<p/>
+The original Fortran code for these processes has been contributed 
+by Stefan Wolf [unpublished]. For the C++ version only the unpolarized
+expressions are retained, since the theoretical predictions of the 
+colour-octet model anyway do not agree with the experimental 
+observations. Furthermore, the polarization effects are modest,
+so isotropic decay is not a bad starting point. Such an event sample
+can afterwards be reweighted at will by the user, to test various
+assumptions.
+
+<p/>
+The description of  
+<aloc href="TimelikeShowers">final-state radiation</aloc>
+is in this case based on some further model assumptions.
+
+<p/>
+Most of the processes below are divergent in the limit <ei>pT -> 0</ei>, 
+and therefore a <ei>pTmin</ei> scale should be set. Comparisons with 
+data indicate that this divergence can be tamed the same way as for 
+the normal QCD <ei>2 -> 2</ei> cross sections <ref>Bar06,Kra08</ref>, 
+which makes sense, since they are all dominated by the same kind of 
+<ei>t</ei>-channel gluon exchange. It is therefore possible to use the 
+<aloc href="UserHooks">SuppressSmallPT</aloc> user hook to impose a 
+reweighting that cancels the low-<ei>pT</ei> divergence.
+
+<p/>
+An eikonalized description of these processes is included in the 
+multiparton-interactions framework. Here the low-<ei>pT</ei> dampening
+is automatic, and additionally the framework is more consistent
+(e.g. with respect to energy-momentum constraints and the 
+impact-parameter description) for events where the onium production 
+is not the hardest subprocess, as would often be the case in the 
+low-<ei>pT</ei> limit.
+
+<h3>Charmonium</h3>
+
+<flag name="Charmonium:all" default="off">
+Common switch for the group of charmonium production.
+</flag>
+
+<flag name="Charmonium:gg2QQbar[3S1(1)]g" default="off">
+<ei>g g -> ccbar[3S1(1)] g</ei>.
+Code 401.
+</flag>
+
+<flag name="Charmonium:gg2QQbar[3P0(1)]g" default="off">
+<ei>g g -> ccbar[3P0(1)] g</ei>.
+Code 402.
+</flag>
+
+<flag name="Charmonium:gg2QQbar[3P1(1)]g" default="off">
+<ei>g g -> ccbar[3P1(1)] g</ei>.
+Code 403.
+</flag>
+
+<flag name="Charmonium:gg2QQbar[3P2(1)]g" default="off">
+<ei>g g -> ccbar[3P2(1)] g</ei>.
+Code 404.
+</flag>
+
+<flag name="Charmonium:qg2QQbar[3P0(1)]q" default="off">
+<ei>q g -> ccbar[3P0(1)] q</ei>.
+Code 405.
+</flag>
+
+<flag name="Charmonium:qg2QQbar[3P1(1)]q" default="off">
+<ei>q g -> ccbar[3P1(1)] q</ei>.
+Code 406.
+</flag>
+
+<flag name="Charmonium:qg2QQbar[3P2(1)]q" default="off">
+<ei>q g -> ccbar[3P2(1)] q</ei>.
+Code 407.
+</flag>
+
+<flag name="Charmonium:qqbar2QQbar[3P0(1)]g" default="off">
+<ei>q qbar -> ccbar[3P0(1)] g</ei>.
+Code 408.
+</flag>
+
+<flag name="Charmonium:qqbar2QQbar[3P1(1)]g" default="off">
+<ei>q qbar -> ccbar[3P1(1)] g</ei>.
+Code 409.
+</flag>
+
+<flag name="Charmonium:qqbar2QQbar[3P2(1)]g" default="off">
+<ei>q qbar -> ccbar[3P2(1)] g</ei>.
+Code 410.
+</flag>
+
+<flag name="Charmonium:gg2QQbar[3S1(8)]g" default="off">
+<ei>g g -> ccbar[3S1(8)] g</ei>.
+Code 411.
+</flag>
+
+<flag name="Charmonium:gg2QQbar[1S0(8)]g" default="off">
+<ei>g g -> ccbar[3S1(8)] g</ei>.
+Code 412.
+</flag>
+
+<flag name="Charmonium:gg2QQbar[3PJ(8)]g" default="off">
+<ei>g g -> ccbar[3S1(8)] g</ei>.
+Code 413.
+</flag>
+
+<flag name="Charmonium:qg2QQbar[3S1(8)]q" default="off">
+<ei>q g -> ccbar[3S1(8)] q</ei>.
+Code 414.
+</flag>
+
+<flag name="Charmonium:qg2QQbar[1S0(8)]q" default="off">
+<ei>q g -> ccbar[3S1(8)] q</ei>.
+Code 415.
+</flag>
+
+<flag name="Charmonium:qg2QQbar[3PJ(8)]q" default="off">
+<ei>q g -> ccbar[3S1(8)] q</ei>.
+Code 416.
+</flag>
+
+<flag name="Charmonium:qqbar2QQbar[3S1(8)]g" default="off">
+<ei>q qbar -> ccbar[3S1(8)] g</ei>.
+Code 417.
+</flag>
+
+<flag name="Charmonium:qqbar2QQbar[1S0(8)]g" default="off">
+<ei>q qbar -> ccbar[3S1(8)] g</ei>.
+Code 418.
+</flag>
+
+<flag name="Charmonium:qqbar2QQbar[3PJ(8)]g" default="off">
+<ei>q qbar -> ccbar[3S1(8)] g</ei>.
+Code 419.
+</flag>
+
+<h3>Bottomonium</h3>
+
+<flag name="Bottomonium:all" default="off">
+Common switch for the group of charmonium production.
+</flag>
+
+<flag name="Bottomonium:gg2QQbar[3S1(1)]g" default="off">
+<ei>g g -> bbbar[3S1(1)] g</ei>.
+Code 501.
+</flag>
+
+<flag name="Bottomonium:gg2QQbar[3P0(1)]g" default="off">
+<ei>g g -> bbbar[3P0(1)] g</ei>.
+Code 502.
+</flag>
+
+<flag name="Bottomonium:gg2QQbar[3P1(1)]g" default="off">
+<ei>g g -> bbbar[3P1(1)] g</ei>.
+Code 503.
+</flag>
+
+<flag name="Bottomonium:gg2QQbar[3P2(1)]g" default="off">
+<ei>g g -> bbbar[3P2(1)] g</ei>.
+Code 504.
+</flag>
+
+<flag name="Bottomonium:qg2QQbar[3P0(1)]q" default="off">
+<ei>q g -> bbbar[3P0(1)] q</ei>.
+Code 505.
+</flag>
+
+<flag name="Bottomonium:qg2QQbar[3P1(1)]q" default="off">
+<ei>q g -> bbbar[3P1(1)] q</ei>.
+Code 506.
+</flag>
+
+<flag name="Bottomonium:qg2QQbar[3P2(1)]q" default="off">
+<ei>q g -> bbbar[3P2(1)] q</ei>.
+Code 507.
+</flag>
+
+<flag name="Bottomonium:qqbar2QQbar[3P0(1)]g" default="off">
+<ei>q qbar -> bbbar[3P0(1)] g</ei>.
+Code 508.
+</flag>
+
+<flag name="Bottomonium:qqbar2QQbar[3P1(1)]g" default="off">
+<ei>q qbar -> bbbar[3P1(1)] g</ei>.
+Code 509.
+</flag>
+
+<flag name="Bottomonium:qqbar2QQbar[3P2(1)]g" default="off">
+<ei>q qbar -> bbbar[3P2(1)] g</ei>.
+Code 510.
+</flag>
+
+<flag name="Bottomonium:gg2QQbar[3S1(8)]g" default="off">
+<ei>g g -> bbbar[3S1(8)] g</ei>.
+Code 511.
+</flag>
+
+<flag name="Bottomonium:gg2QQbar[1S0(8)]g" default="off">
+<ei>g g -> bbbar[3S1(8)] g</ei>.
+Code 512.
+</flag>
+
+<flag name="Bottomonium:gg2QQbar[3PJ(8)]g" default="off">
+<ei>g g -> bbbar[3S1(8)] g</ei>.
+Code 513.
+</flag>
+
+<flag name="Bottomonium:qg2QQbar[3S1(8)]q" default="off">
+<ei>q g -> bbbar[3S1(8)] q</ei>.
+Code 514.
+</flag>
+
+<flag name="Bottomonium:qg2QQbar[1S0(8)]q" default="off">
+<ei>q g -> bbbar[3S1(8)] q</ei>.
+Code 515.
+</flag>
+
+<flag name="Bottomonium:qg2QQbar[3PJ(8)]q" default="off">
+<ei>q g -> bbbar[3S1(8)] q</ei>.
+Code 516.
+</flag>
+
+<flag name="Bottomonium:qqbar2QQbar[3S1(8)]g" default="off">
+<ei>q qbar -> bbbar[3S1(8)] g</ei>.
+Code 517.
+</flag>
+
+<flag name="Bottomonium:qqbar2QQbar[1S0(8)]g" default="off">
+<ei>q qbar -> bbbar[3S1(8)] g</ei>.
+Code 518.
+</flag>
+
+<flag name="Bottomonium:qqbar2QQbar[3PJ(8)]g" default="off">
+<ei>q qbar -> bbbar[3S1(8)] g</ei>.
+Code 519.
+</flag>
+
+<h3>Onium matrix elements</h3>
+
+The implementation of charmonium and bottomonium production, including
+the colour-octet production mechanism, requires information on NRQCD
+matrix elements for the various wavefunctions involved. Default values
+for these are encoded in the following ten variables. They
+are taken from <ref>Nas00</ref>; see also <ref>Bar06</ref>. 
+
+<parm name="Charmonium:OJpsi3S11" default="1.16" min="0.0">
+<ei>&lt;O(J/psi)[3S1(1)]&gt;</ei>.
+</parm>
+
+<parm name="Charmonium:OJpsi3S18" default="0.0119" min="0.0">
+<ei>&lt;O(J/psi)[3S1(8)]&gt;</ei>.
+</parm>
+
+<parm name="Charmonium:OJpsi1S08" default="0.01" min="0.0">
+<ei>&lt;O(J/psi)[1S0(8)]&gt;</ei>.
+</parm>
+
+<parm name="Charmonium:OJpsi3P08" default="0.01" min="0.0">
+<ei>&lt;O(J/psi)[3P0(8)]&gt;/m_c^2</ei>.
+</parm>
+
+<parm name="Charmonium:Ochic03P01" default="0.05" min="0.0">
+<ei>&lt;O(chi_c0)[3P0(8)]&gt;/m_c^2</ei>.
+</parm>
+
+<parm name="Bottomonium:OUpsilon3S11" default="9.28" min="0.0">
+<ei>&lt;O(Upsilon)[3S1(1)]&gt;</ei>.
+</parm>
+
+<parm name="Bottomonium:OUpsilon3S18" default="0.15" min="0.0">
+<ei>&lt;O(Upsilon)[3S1(8)]&gt;</ei>.
+</parm>
+
+<parm name="Bottomonium:OUpsilon1S08" default="0.02" min="0.0">
+<ei>&lt;O(Upsilon)[1S0(8)]&gt;</ei>.
+</parm>
+
+<parm name="Bottomonium:OUpsilon3P08" default="0.02" min="0.0">
+<ei>&lt;O(Upsilon)[3P0(8)]&gt;/m_b^2</ei>.
+</parm>
+
+<parm name="Bottomonium:Ochib03P01" default="0.085" min="0.0">
+<ei>&lt;O(chi_b0)[3P0(8)]&gt;/m_b^2</ei>.
+</parm>
+
+
+</chapter>
+
+<!-- Copyright (C) 2013 Torbjorn Sjostrand -->
+

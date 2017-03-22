@@ -1,0 +1,171 @@
+# Makefile.msc for Pythia8 on Win32/NMAKE
+# Author: Bertrand Bellenot, 02/05/2007, 04/11/2009
+!IF "$(CFG)" == ""
+CFG = Win32 Release
+!MESSAGE No configuration specified. Defaulting to Win32 Release.
+!ENDIF 
+
+!IF "$(CFG)" != "Win32 Release" && "$(CFG)" != "Win32 Debug"
+!MESSAGE Invalid configuration "$(CFG)" specified.
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "Makefile.msc" CFG="Win32 Debug"
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE 
+!ERROR An invalid configuration is specified.
+!ENDIF 
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+OutPutOpt     = -out:
+
+# Win32 system with Microsoft Visual C/C++
+!include <win32.mak>
+CC            = $(cc)
+CXX           = $(cc)
+CXXFLAGS      = -EHsc -nologo -GR -DWIN32 -W3 -FIiso646.h \
+                -DVISUAL_CPLUSPLUS -D_WINDOWS -Iinclude
+LD            = $(link)
+
+!IF  "$(CFG)" == "Win32 Release"
+CXXOPT        = -O2 -MD -DNDEBUG
+LDOPT         = 
+OUTDIR        = ./Release
+!ELSEIF  "$(CFG)" == "Win32 Debug"
+CXXOPT        = -Z7 -MDd
+LDOPT         = 
+OUTDIR        = ./Debug
+!ENDIF 
+
+# Check if nmake version is 8.xx or 9.xx
+!if ([nmake /? 2>&1 | findstr /c:"Version 8\." > nul ] == 0) || \
+    ([nmake /? 2>&1 | findstr /c:"Version 9\." > nul ] == 0)
+MT_EXE        = mt -nologo -manifest $@.manifest -outputresource:$@;1
+MT_DLL        = mt -nologo -manifest $@.manifest -outputresource:$@;2
+EXTRAFLAGS    = -D_CRT_SECURE_NO_DEPRECATE
+!else
+MT_EXE        = 
+MT_DLL        = 
+EXTRAFLAGS    = -G5
+!endif
+
+####### Files
+
+SRCDIR  = src
+DUMDIR  = lhapdfdummy
+INCDIR  = include
+LIBDIR  = lib
+LIBRARY = libPythia8
+LIBDLL  = $(LIBDIR)/$(LIBRARY).dll
+LIBLIB  = $(LIBDIR)/$(LIBRARY).lib
+
+LDFLAGS = -lib /nologo /out:$(LIBLIB)
+
+OBJS =   $(OUTDIR)/Analysis.obj \
+         $(OUTDIR)/Basics.obj \
+         $(OUTDIR)/BeamParticle.obj \
+         $(OUTDIR)/BeamRemnants.obj \
+         $(OUTDIR)/BeamShape.obj \
+         $(OUTDIR)/BoseEinstein.obj \
+         $(OUTDIR)/Event.obj \
+         $(OUTDIR)/FragmentationFlavZpT.obj \
+         $(OUTDIR)/FragmentationSystems.obj \
+         $(OUTDIR)/HadronLevel.obj \
+         $(OUTDIR)/HadronScatter.obj \
+         $(OUTDIR)/HelicityBasics.obj \
+         $(OUTDIR)/HelicityMatrixElements.obj \
+         $(OUTDIR)/HiddenValleyFragmentation.obj \
+         $(OUTDIR)/History.obj \
+         $(OUTDIR)/Info.obj \
+         $(OUTDIR)/LesHouches.obj \
+         $(OUTDIR)/MergingHooks.obj \
+         $(OUTDIR)/MiniStringFragmentation.obj \
+         $(OUTDIR)/MultipartonInteractions.obj \
+         $(OUTDIR)/ParticleData.obj \
+         $(OUTDIR)/ParticleDecays.obj \
+         $(OUTDIR)/PartonDistributions.obj \
+         $(OUTDIR)/PartonLevel.obj \
+         $(OUTDIR)/PartonSystems.obj \
+         $(OUTDIR)/PhaseSpace.obj \
+         $(OUTDIR)/ProcessContainer.obj \
+         $(OUTDIR)/ProcessLevel.obj \
+         $(OUTDIR)/Pythia.obj \
+         $(OUTDIR)/PythiaStdlib.obj \
+         $(OUTDIR)/ResonanceDecays.obj \
+         $(OUTDIR)/ResonanceWidths.obj \
+         $(OUTDIR)/RHadrons.obj \
+         $(OUTDIR)/Settings.obj \
+         $(OUTDIR)/SigmaCompositeness.obj \
+         $(OUTDIR)/SigmaEW.obj \
+         $(OUTDIR)/SigmaExtraDim.obj \
+         $(OUTDIR)/SigmaGeneric.obj \
+         $(OUTDIR)/SigmaHiggs.obj \
+         $(OUTDIR)/SigmaLeftRightSym.obj \
+         $(OUTDIR)/SigmaLeptoquark.obj \
+         $(OUTDIR)/SigmaNewGaugeBosons.obj \
+         $(OUTDIR)/SigmaOnia.obj \
+         $(OUTDIR)/SigmaProcess.obj \
+         $(OUTDIR)/SigmaQCD.obj \
+         $(OUTDIR)/SigmaSUSY.obj \
+         $(OUTDIR)/SigmaTotal.obj \
+         $(OUTDIR)/SpaceShower.obj \
+         $(OUTDIR)/StandardModel.obj \
+         $(OUTDIR)/StringFragmentation.obj \
+         $(OUTDIR)/SusyCouplings.obj \
+         $(OUTDIR)/SusyLesHouches.obj \
+         $(OUTDIR)/SusyResonanceWidths.obj \
+         $(OUTDIR)/TauDecays.obj \
+         $(OUTDIR)/TimeShower.obj \
+         $(OUTDIR)/UserHooks.obj \
+# If you link to HepMC you also need HepMCInterface
+#         $(OUTDIR)/HepMCInterface.obj \
+# If you link to LHAPDF you don't want the last line
+         $(OUTDIR)/LHAPDFDummy.obj
+
+LIBS : $(OUTDIR) $(LIBDIR) $(BINDIR) $(LIBLIB)
+
+.PHONY: $(LIBS) all
+
+all: $(LIBS)
+
+"$(OUTDIR)" :
+    @if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+"$(LIBDIR)" :
+    @if not exist "$(LIBDIR)/$(NULL)" mkdir "$(LIBDIR)"
+
+$(LIBLIB) : $(OBJS)
+    $(LD) $(LDFLAGS) $(LDOPT) @<<
+  $(OBJS)
+<<
+
+.SUFFIXES: .h .cc .obj
+
+{$(INCDIR)}.h{$(OUTDIR)}.obj:
+    $(CXX) $(CXXFLAGS) $(EXTRAFLAGS) $(CXXOPT) /Fo"$(OUTDIR)/" -c $(SRCDIR)\$(@B).cc
+
+{$(SRCDIR)}.cc{$(OUTDIR)}.obj:
+    $(CXX) $(CXXFLAGS) $(EXTRAFLAGS) $(CXXOPT) /Fo"$(OUTDIR)/" -c $<
+
+{$(DUMDIR)}.cc{$(OUTDIR)}.obj:
+    $(CXX) $(CXXFLAGS) $(EXTRAFLAGS) $(CXXOPT) /Fo"$(OUTDIR)/" -c $<
+
+clean:
+   -@erase /q /s *.obj >nul 2>&1
+   -@rmdir /q /s Debug >nul 2>&1
+   -@rmdir /q /s Release >nul 2>&1
+
+distclean:      clean
+   -@erase /q "$(LIBDIR)\*.*" >nul 2>&1
+   -@rmdir /q /s lib >nul 2>&1
+
+

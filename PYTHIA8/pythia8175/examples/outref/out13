@@ -1,0 +1,261 @@
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.175      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 16 Feb 2013  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 16 Feb 2013 at 11:32:28    |  | 
+ |  |                                                                              |  | 
+ |  |   Torbjorn Sjostrand;  Department of Astronomy and Theoretical Physics,      |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      phone: + 46 - 46 - 222 48 16; e-mail: torbjorn@thep.lu.se               |  | 
+ |  |   Jesper Roy Christiansen;  Department of Astronomy and Theoretical Physics  |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      e-mail: Jesper.Roy.Christiansen@thep.lu.se                              |  | 
+ |  |   Philip Ilten;  School of Physics, Uniiversity College Dublin,              |  | 
+ |  |      Belfield, Dublin 4, Ireland;                                            |  | 
+ |  |      e-mail: philten@cern.ch                                                 |  | 
+ |  |   Stephen Mrenna;  Computing Division, Simulations Group,                    |  | 
+ |  |      Fermi National Accelerator Laboratory, MS 234, Batavia, IL 60510, USA;  |  | 
+ |  |      phone: + 1 - 630 - 840 - 2556; e-mail: mrenna@fnal.gov                  |  | 
+ |  |   Stefan Prestel;  Department of Astronomy and Theoretical Physics,          |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      phone: + 46 - 46 - 222 06 64; e-mail: stefan.prestel@thep.lu.se         |  | 
+ |  |   Peter Skands;  Theoretical Physics, CERN, CH-1211 Geneva 23, Switzerland;  |  | 
+ |  |      phone: + 41 - 22 - 767 2447; e-mail: peter.skands@cern.ch               |  | 
+ |  |   Stefan Ask; former author; e-mail: ask.stefan@gmail.com                    |  | 
+ |  |   Richard Corke; former author; e-mail: r.corke@errno.net                    |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is the 'Brief Introduction to PYTHIA 8.1',      |  | 
+ |  |   T. Sjostrand, S. Mrenna and P. Skands, Comput. Phys. Comm. 178 (2008) 85   |  | 
+ |  |   [arXiv:0710.3820]                                                          |  | 
+ |  |                                                                              |  | 
+ |  |   The main physics reference is the 'PYTHIA 6.4 Physics and Manual',         |  | 
+ |  |   T. Sjostrand, S. Mrenna and P. Skands, JHEP05 (2006) 026 [hep-ph/0603175]. |  | 
+ |  |                                                                              |  | 
+ |  |   An archive of program versions and documentation is found on the web:      |  | 
+ |  |   http://www.thep.lu.se/~torbjorn/Pythia.html                                |  | 
+ |  |                                                                              |  | 
+ |  |   This program is released under the GNU General Public Licence version 2.   |  | 
+ |  |   Please respect the MCnet Guidelines for Event Generator Authors and Users. |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2013 Torbjorn Sjostrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+
+ *-------  PYTHIA Process Initialization  --------------------------*
+ |                                                                  |
+ | We collide p+ with pbar- at a CM energy of 1.960e+03 GeV         |
+ |                                                                  |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | Subprocess                                    Code |   Estimated |
+ |                                                    |    max (mb) |
+ |                                                    |             |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | Les Houches User Process(es)                  9999 |   5.480e-09 |
+ |                                                                  |
+ *-------  End PYTHIA Process Initialization -----------------------*
+
+ *-------  PYTHIA Multiparton Interactions Initialization  ---------* 
+ |                                                                  | 
+ |            minbias,   sigmaNonDiffractive =   40.89 mb           | 
+ |                                                                  | 
+ |    pT0 =  2.12 gives sigmaInteraction =  136.66 mb: accepted     | 
+ |                                                                  | 
+ *-------  End PYTHIA Multiparton Interactions Initialization  -----* 
+
+ *-------  PYTHIA Flag + Mode + Parm + Vect + Word Settings (changes only)  ---------------------------------------* 
+ |                                                                                                                 | 
+ | Name                                          |                      Now |      Default         Min         Max | 
+ |                                               |                          |                                      | 
+ | BeamRemnants:reconnectRange                   |                  1.50000 |     10.00000         0.0    10.00000 | 
+ | Beams:frameType                               |                        4 |            1           1           5 | 
+ | Beams:LHEF                                    |                ttbar.lhe |         void                         | 
+ | Init:showChangedParticleData                  |                      off |           on                         | 
+ | Main:numberOfSubruns                          |                        2 |            0           0             | 
+ | Main:subrun                                   |                        1 |         -999           0             | 
+ | Main:timesAllowErrors                         |                        3 |           10           0             | 
+ | MultipartonInteractions:alphaSvalue           |                  0.13500 |      0.12700   0.0600000     0.25000 | 
+ | MultipartonInteractions:bProfile              |                        3 |            1           0           4 | 
+ | MultipartonInteractions:ecmPow                |                  0.19000 |      0.24000         0.0     0.50000 | 
+ | MultipartonInteractions:expPow                |                  2.00000 |      1.00000     0.40000    10.00000 | 
+ | MultipartonInteractions:pT0Ref                |                  2.08500 |      2.15000     0.50000    10.00000 | 
+ | Next:numberCount                              |                        0 |         1000           0             | 
+ | Next:numberShowEvent                          |                        0 |            1           0             | 
+ | PDF:pSet                                      |                        8 |            2           1          12 | 
+ | SigmaDiffractive:dampen                       |                       on |          off                         | 
+ | SigmaDiffractive:maxAX                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaDiffractive:maxXB                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaDiffractive:maxXX                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaProcess:alphaSvalue                      |                  0.13500 |      0.12650   0.0600000     0.25000 | 
+ | SigmaTotal:zeroAXB                            |                       on |          off                         | 
+ | SpaceShower:rapidityOrder                     |                       on |          off                         | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Flag + Mode + Parm + Vect + Word Settings  --------------------------------------------------* 
+
+ --------  LHA initialization information  ------------ 
+
+  beam    kind      energy  pdfgrp  pdfset 
+     A    2212     980.000       0       7
+     B   -2212     980.000       0       7
+
+  Event weighting strategy =  3
+
+  Processes, with strategy-dependent cross section info 
+  number      xsec (pb)      xerr (pb)      xmax (pb) 
+      81     5.2201e+00     5.3841e-01     1.0000e+00
+      82     2.6026e-01     1.0625e-01     1.0000e+00
+
+ --------  End LHA initialization information  -------- 
+
+ --------  LHA event information and listing  ---------------------------------------------------------------------- 
+
+    process =       81    weight =   1.0000e+00     scale =   1.7331e+02 (GeV) 
+                        alpha_em =   7.8198e-03    alpha_strong =   1.1567e-01
+
+    Participating Particles 
+    no        id stat     mothers     colours      p_x        p_y        p_z         e          m        tau    spin 
+     1         2   -1     0     0   101     0      0.000      0.000    108.382    108.382      0.000   0.000   9.000
+     2        -2   -1     0     0     0   102      0.000      0.000   -279.761    279.761      0.000   0.000   9.000
+     3         6    2     1     2   101     0     33.629      8.912   -110.596    212.418    177.987   0.000   9.000
+     4        -6    2     1     2     0   102    -33.629     -8.912    -60.783    175.725    161.166   0.000   9.000
+     5        24    2     3     0     0     0    -30.885    -12.140     -4.785     86.623     79.871   0.000   9.000
+     6         5    1     3     0   101     0     64.514     21.052   -105.811    125.794      4.800   0.000   9.000
+     7       -24    2     4     0     0     0    -50.940     34.881    -75.292    126.217     80.315   0.000   9.000
+     8        -5    1     4     0     0   102     17.311    -43.792     14.509     49.507      4.800   0.000   9.000
+     9        -1    1     5     0     0   103     18.584      9.166     18.652     27.882      0.330   0.000   9.000
+    10         2    1     5     0   103     0    -49.469    -21.306    -23.437     58.741      0.330   0.000   9.000
+    11        13    1     7     0     0     0      9.691     39.074    -25.560     47.687      0.106   0.000   9.000
+    12       -14    1     7     0     0     0    -60.632     -4.194    -49.732     78.530      0.000   0.000   9.000
+
+     pdf: id1 =    2 id2 =   -2 x1 = 1.106e-01 x2 = 2.855e-01 scalePDF = 1.733e+02 pdf1 = 5.530e-01 pdf2 = 3.572e-01
+
+ --------  End LHA event information and listing  ------------------------------------------------------------------ 
+
+ --------  PYTHIA Info Listing  ---------------------------------------- 
+ 
+ Beam A: id =   2212, pz =  9.800e+02, e =  9.800e+02, m =  9.383e-01.
+ Beam B: id =  -2212, pz = -9.800e+02, e =  9.800e+02, m =  9.383e-01.
+
+ In 1: id =    2, x =  1.106e-01, pdf =  5.530e-01 at Q2 =  3.004e+04.
+ In 2: id =   -2, x =  2.855e-01, pdf =  3.572e-01 at same Q2.
+
+ Process Les Houches User Process(es) with code 9999 is 2 -> 2.
+ Subprocess user process 81 with code 81 is 2 -> 2.
+ It has sHat =  1.213e+05,    tHat = -3.834e+04,    uHat = -2.529e+04,
+       pTHat =  3.479e+01,   m3Hat =  1.780e+02,   m4Hat =  1.612e+02,
+    thetaHat =  2.065e+00,  phiHat =  2.590e-01.
+     alphaEM =  7.820e-03,  alphaS =  1.157e-01    at Q2 =  3.004e+04.
+
+ Impact parameter b =  6.777e-01 gives enhancement factor =  1.623e+00.
+ Max pT scale for MPI =  1.960e+03, ISR =  1.960e+03, FSR =  1.960e+03.
+ Number of MPI =     6, ISR =    12, FSRproc =    46, FSRreson =    25.
+
+ --------  End PYTHIA Info Listing  ------------------------------------
+
+ --------  PYTHIA Event Listing  (hard process)  -----------------------------------------------------------------------------------
+ 
+    no        id   name            status     mothers   daughters     colours      p_x        p_y        p_z         e          m 
+     0        90   (system)           -11     0     0     0     0     0     0      0.000      0.000      0.000   1960.000   1960.000
+     1      2212   (p+)               -12     0     0     3     0     0     0      0.000      0.000    980.000    980.000      0.938
+     2     -2212   (pbar-)            -12     0     0     4     0     0     0      0.000      0.000   -980.000    980.000      0.938
+     3         2   (u)                -21     1     0     5     6   101     0      0.000      0.000    108.382    108.382      0.000
+     4        -2   (ubar)             -21     2     0     5     6     0   102      0.000      0.000   -279.761    279.761      0.000
+     5         6   (t)                -22     3     4     7     8   101     0     33.629      8.912   -110.596    212.418    177.987
+     6        -6   (tbar)             -22     3     4     9    10     0   102    -33.629     -8.912    -60.783    175.725    161.166
+     7        24   (W+)               -22     5     0    11    12     0     0    -30.885    -12.140     -4.785     86.623     79.871
+     8         5   b                   23     5     0     0     0   101     0     64.514     21.052   -105.811    125.794      4.800
+     9       -24   (W-)               -22     6     0    13    14     0     0    -50.940     34.881    -75.292    126.217     80.315
+    10        -5   bbar                23     6     0     0     0     0   102     17.311    -43.792     14.509     49.507      4.800
+    11        -1   dbar                23     7     0     0     0     0   103     18.584      9.166     18.652     27.882      0.330
+    12         2   u                   23     7     0     0     0   103     0    -49.469    -21.306    -23.437     58.741      0.330
+    13        13   mu-                 23     9     0     0     0     0     0      9.691     39.074    -25.560     47.687      0.106
+    14       -14   nu_mubar            23     9     0     0     0     0     0    -60.632     -4.194    -49.732     78.530      0.000
+                                   Charge sum:  0.000           Momentum sum:     -0.000      0.000   -171.379    388.143    348.258
+
+ --------  End PYTHIA Event Listing  -----------------------------------------------------------------------------------------------
+ PYTHIA Abort from Pythia::next: reached end of Les Houches Events File  
+ PYTHIA Warning in TimeShower::findMEcorr: ME weight above PS one  
+ PYTHIA Error in SpaceShower::pT2nearQCDthreshold: stuck in loop  
+
+ *-------  PYTHIA Event and Cross Section Statistics  -------------------------------------------------------------*
+ |                                                                                                                 |
+ | Subprocess                                    Code |            Number of events       |      sigma +- delta    |
+ |                                                    |       Tried   Selected   Accepted |     (estimated) (mb)   |
+ |                                                    |                                   |                        |
+ |-----------------------------------------------------------------------------------------------------------------|
+ |                                                    |                                   |                        |
+ | Les Houches User Process(es)                  9999 |         200        200        200 |   5.480e-09  5.488e-10 |
+ |    ... whereof user classification code         81 |         192        192        192 |                        | 
+ |    ... whereof user classification code         82 |           8          8          8 |                        | 
+ |                                                    |                                   |                        |
+ | sum                                                |         200        200        200 |   5.480e-09  5.488e-10 |
+ |                                                                                                                 |
+ *-------  End PYTHIA Event and Cross Section Statistics ----------------------------------------------------------*
+
+ *-------  PYTHIA Error and Warning Messages Statistics  ----------------------------------------------------------* 
+ |                                                                                                                 | 
+ |  times   message                                                                                                | 
+ |                                                                                                                 | 
+ |      2   Abort from Pythia::next: reached end of Les Houches Events File                                        | 
+ |      6   Error in SpaceShower::pT2nearQCDthreshold: stuck in loop                                               | 
+ |      1   Warning in TimeShower::findMEcorr: ME weight above PS one                                              | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Error and Warning Messages Statistics  ------------------------------------------------------* 
+
+
+  2013-02-16 11:32       charged particle multiplicity
+
+        1.30*10^ 1                                     X                                                                
+        1.25*10^ 1                                     X                                                                
+        1.20*10^ 1                             X       X                                                                
+        1.15*10^ 1                             X       X                                                                
+        1.10*10^ 1                             X       X                                                                
+        1.05*10^ 1                             X       X                                                                
+        1.00*10^ 1                       X     X    XX X                                                                
+        0.95*10^ 1                       X     X    XX X                                                                
+        0.90*10^ 1                       X     X    XX X    X                                                           
+        0.85*10^ 1                       X     X    XX X    X                                                           
+        0.80*10^ 1                       X    XXX   XX X  XXX                                                           
+        0.75*10^ 1                       X    XXX   XX X  XXX                                                           
+        0.70*10^ 1                     X X    XXXX  XX X  XXX                                                           
+        0.65*10^ 1                     X X    XXXX  XX X  XXX                                                           
+        0.60*10^ 1                     X X    XXXXXXXX XX XXX                                                           
+        0.55*10^ 1                     X X    XXXXXXXX XX XXX                                                           
+        0.50*10^ 1                     X X  X XXXXXXXX XX XXXX                                                          
+        0.45*10^ 1                     X X  X XXXXXXXX XX XXXX                                                          
+        0.40*10^ 1                     X XXXX XXXXXXXXXXXXXXXXX   X                                                     
+        0.35*10^ 1                     X XXXX XXXXXXXXXXXXXXXXX   X                                                     
+        0.30*10^ 1              X     XX XXXX XXXXXXXXXXXXXXXXXXX X                                                     
+        0.25*10^ 1              X     XX XXXX XXXXXXXXXXXXXXXXXXX X                                                     
+        0.20*10^ 1              XX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  X X X                                              
+        0.15*10^ 1              XX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  X X X                                              
+        0.10*10^ 1              XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX XXX XX XX                                          
+        0.05*10^ 1              XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX XXX XX XX                                          
+
+          Contents                                                                                                      
+            *10^ 1  0000000000000000000001000001000011010000000000000000000000000000000000000000000000000000000000000000
+            *10^ 0  0000000000003212223720445282876600436488954332410212021011000000000000000000000000000000000000000000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^-2  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge  -                                                                                                   
+            *10^ 2  0000000000000000000000000111111111111111111111111122222222222222222222222223333333333333333333333333
+            *10^ 1  0001122233444556667788899000112223344455666778889900011222334445566677888990001122233444556667788899
+            *10^ 0  1482604826048260482604826048260482604826048260482604826048260482604826048260482604826048260482604826
+
+   Entries  =         200    Mean =  1.2836e+02    Underflow =  0.0000e+00    Low edge  = -5.0000e-01
+   All chan =  2.0000e+02    Rms  =  3.7654e+01    Overflow  =  0.0000e+00    High edge =  3.9950e+02

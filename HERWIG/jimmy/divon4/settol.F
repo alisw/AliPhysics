@@ -1,0 +1,15 @@
+*CMZ :          23/08/93  13.30.10  by  Jonathan Butterworth
+*-- Author :
+      SUBROUTINE SETTOL (N,FTOL,GTOL,DELTA,ETA,ALFMAX,MAXFUN,IPRINT)
+      INTEGER N, MAXFUN, IPRINT
+      DOUBLE PRECISION FTOL, GTOL, DELTA, ETA, ALFMAX
+      SAVE
+      FTOL=5.0D-2
+      GTOL=1.0D-2
+      DELTA=1.0D-5
+      ETA=0.2D+0
+      ALFMAX=1.0D+2
+      MAXFUN=50*N
+      IPRINT=-1
+      RETURN
+      END

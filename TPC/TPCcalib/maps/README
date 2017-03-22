@@ -1,0 +1,16 @@
+The following file can be found on alien in the tpcdrop account:
+/alice/cern.ch/user/t/tpcdrop/calib/Run3MC/SpaceCharge/TPCcalib/maps/
+
+SC_ArCO2_eps5_50kHz.root
+SC_NeCO2_eps10_50kHz_precal.lookup.root
+SC_NeCO2_eps10_50kHz_precal.root
+SC_NeCO2_eps10_50kHz.root
+SC_NeCO2_eps20_50kHz_precal.lookup.root
+SC_NeCO2_eps20_50kHz_precal.root
+SC_NeCO2_eps20_50kHz.root
+SC_NeCO2_eps5_50kHz_precal.lookup.root
+SC_NeCO2_eps5_50kHz_precal.root
+SC_NeCO2_eps5_50kHz.root
+
+They are not directly related to AliRoot in terms of simulation and
+reconstruction, but only used for run3 specific studies.

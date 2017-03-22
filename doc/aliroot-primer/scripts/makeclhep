@@ -1,0 +1,6 @@
+tar zxvf clhep-2.0.3.1.tgz
+cd 2.0.3.1/CLHEP
+./configure --prefix=$ALICE/CLHEP # Select the place to install CLHEP
+make
+make check
+make install

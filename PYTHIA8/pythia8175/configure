@@ -1,0 +1,425 @@
+#!/bin/sh
+#
+# Configuration script, to be run before compilation
+#
+# Author: M. Kirsanov
+
+#
+# User-changeable part -------------------------------
+#
+
+#LCG platform. Can be needed if external libraries are specified
+if [ x$MYLCGPLATFORM = x ]; then
+  export MYLCGPLATFORM=x86_64-slc5-gcc43-opt
+fi
+
+# Defaults
+export COMPMODE=OPT
+export SHAREDLIBS=no
+export ENABLEGZIP=no
+export INSTALLDIR=.
+export DATADIR=
+
+for arg in $* ; do
+  if [ "x$arg" = "x--enable-debug" ] ; then
+    COMPMODE=DBG
+  elif [ "x$arg" = "x--enable-shared" ] ; then
+    SHAREDLIBS=yes
+  elif [ "x$arg" = "x--enable-64bits" ] ; then
+    ENABLE64=-m64
+  elif [ "x$arg" = "x--enable-gzip" ] ; then
+    ENABLEGZIP=yes
+  elif [ "x$arg" = "x--help" ] ; then
+    echo "Usage: ./configure [options] , where options are:"
+    echo "--help                : prints this help"
+    echo "--enable-debug        : turns on debugging flags and turns off optimization"
+    echo "--enable-shared       : turns on shared library creation (default no)"
+    echo "--enable-64bits       : turns on 64 bits compilation flags"
+    echo "--lcgplatform=name    : LCG platform name, default is x86_64-slc5-gcc43-opt"
+    echo "--installdir=name     : install directory, default is . "
+    echo "--prefix=name         : install directory (equivalent to --installdir)"
+    echo "--datadir=name        : data directory (for xmldoc), default is install directory"
+    echo "--with-hepmc=path     : path to HepMC library to build interface (default is not build)"
+    echo "--with-hepmcversion=v : HepMC version (simplified alternative when using CERN AFS LCG external, e.g. =2.06.08)"
+    echo "--enable-gzip         : turns on support for reading in gzipped files (default no)"
+    echo "                        (experimental feature, see README for more details)"
+    echo "--with-boost=path     : path to boost installation (default /usr) (required for gzip support)"
+    echo "--with-zlib=path      : path to zlib (default /usr/lib) (required for gzip support)"
+    echo
+    echo "Use the following environment variables to force the configuration process or add flags:"
+    echo "USRCXXFLAGS - to add flags. Use this variable to add -fPIC to the compilation flags for the static libraries"
+    echo "USRLDFLAGSSHARED - to add flags to the shared library build command"
+    echo "USRSHAREDSUFFIX - to force shared libraries suffix to be like this (default on MacOSX is dylib)"
+    echo
+    exit
+  elif [ x`echo x${arg} | grep "="` != x ] ; then
+    option=`echo ${arg} | awk -F = '{print $1}'`
+    value=`echo ${arg} | awk -F = '{print $2}'`
+    if [ "x${option}" = "x--lcgplatform" ] ; then
+      MYLCGPLATFORM=${value}
+    elif [ "x${option}" = "x--installdir" ] ; then
+      INSTALLDIR=${value}
+    elif [ "x${option}" = "x--prefix" ] ; then
+      INSTALLDIR=${value}
+    elif [ "x${option}" = "x--datadir" ] ; then
+      DATADIR=${value}
+    elif [ "x${option}" = "x--with-hepmcversion" ] ; then
+      HEPMCVERSION=${value}
+    elif [ "x${option}" = "x--with-hepmc" ] ; then
+      HEPMCLOCATION=${value}
+    elif [ "x${option}" = "x--with-boost" ] ; then
+      BOOSTLOCATION=${value}
+    elif [ "x${option}" = "x--with-zlib" ] ; then
+      ZLIBLOCATION=${value}
+    else
+      echo "${arg}: wrong option. Ignored." >&2
+    fi
+  fi
+done
+
+echo compilation mode is $COMPMODE
+echo sharedlibs = $SHAREDLIBS
+
+if [ "x${DATADIR}" = "x" ] ; then
+  DATADIR=${INSTALLDIR}
+fi
+
+# Environment variables for building HepMC interface library. Note that
+# the HepMC interface library is used by the examples main41, main42, ..  .
+# Attention: if you have already run these examples and you change HepMC
+# version you should reset your LD_LIBRARY_PATH
+# The default values here correspond to CERN AFS lcg external
+#
+if [ "x${HEPMCVERSION}" != "x" ] ; then
+  if [ "x${HEPMCLOCATION}" = "x" ] ; then
+    export HEPMCLOCATION=/afs/cern.ch/sw/lcg/external/HepMC/${HEPMCVERSION}/${MYLCGPLATFORM}
+  fi
+fi
+#   If you want to assign these variables by hand:
+#
+#export HEPMCVERSION=2.04.00
+#export HEPMCLOCATION=/afs/cern.ch/sw/lcg/external/HepMC/${HEPMCVERSION}/${MYLCGPLATFORM}
+
+
+if [ "x${HEPMCVERSION}" = "x" ] ; then
+  if [ "x${HEPMCLOCATION}" != "x" ] ; then
+#                                            try to find out which HepMC version
+    test1=`echo $HEPMCLOCATION | grep \/1.`
+    test2=`echo $HEPMCLOCATION | grep \/2.`
+    echo $test1
+    echo $test2
+    if [ "x${test1}" != "x" ] ; then
+      echo "Warning: HepMC 1 cannot be used anymore; Please use HepMC 2"
+      echo "         The interface will not be built"
+      export HEPMCLOCATION=
+    fi
+    if [ "x${test2}" != "x" ] ; then
+      export HEPMCVERSION=2.`echo $HEPMCLOCATION | awk -F \/2. '{print $2}' | awk -F \/ '{print $1}'`
+    fi
+  fi
+fi
+if [ "x${HEPMCVERSION}" != "x" ] ; then
+  export HEPMCMAINVERSION=`echo ${HEPMCVERSION} | awk -F . '{print$1}'`
+  if [ ${HEPMCMAINVERSION} = 1 ] ; then
+    echo "Warning: HepMC 1 cannot be used anymore; Please use HepMC 2"
+    echo "         The interface will not be built"
+    export HEPMCLOCATION=
+  fi
+fi
+if [ "x${HEPMCLOCATION}" != "x" ] ; then
+  if [ "x${HEPMCVERSION}" = "x" ] ; then
+    echo "Warning: hepmc specified, but cannot find out which HepMC version"
+    echo "Warning: if you specify HepMC 1 the compilation of interface will fail"
+  fi
+fi
+
+
+#
+# User-changeable part, experts  -----------------------------
+#
+
+# Switch off -Wshadow when gzip support is enabled
+WSHADOW="-Wshadow"
+if [ "x${ENABLEGZIP}" = "xyes" ]; then
+  WSHADOW=""
+fi
+
+# export FFLAGS_OPT="-O2 -Wuninitialized"
+# -Wuninitialized outputs many irrelevant warnings and therefore obscurs 
+export FFLAGS_OPT="-O2"
+export FFLAGS_DBG=-g
+export CFLAGS_OPT="-O2"
+export CFLAGS_DBG=-g
+export CXXFLAGS_OPT="-O2 -ansi -pedantic -W -Wall ${WSHADOW} ${ENABLE64}"
+export CXXFLAGS_DBG="-g -ansi -pedantic -W -Wall ${WSHADOW} ${ENABLE64}"
+#
+# Find platform.
+#
+export ARCH0="`uname`"
+export ARCH=${ARCH0}
+export theGcc=`gcc -dumpversion | awk -F . '{print $1}'`
+if [ ${theGcc} = 4 ]; then
+  export ARCH=${ARCH}-gcc4
+fi
+echo Platform is $ARCH
+
+#default platform settings:
+export FCCOPY=$FC
+if [ x$FC = x ]; then
+  export FC=g77
+fi
+if [ x$CC = x ]; then
+  export CC=gcc
+fi
+export FFLAGS="${FFLAGS_OPT}"
+export CFLAGS="${CFLAGS_OPT}"
+export CXXFLAGS="${CXXFLAGS_OPT}"
+export FLIBS="-lfrtbegin -lg2c"
+if [ ${COMPMODE} = OPT ]; then
+  export FFLAGS="${FFLAGS_OPT}"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+fi
+if [ ${COMPMODE} = DBG ]; then
+  export FFLAGS="${FFLAGS_DBG}"
+  export CFLAGS="${CFLAGS_DBG}"
+  export CXXFLAGS="${CXXFLAGS_DBG}"
+fi
+LDFLAGSSHARED="${CXXFLAGS} -fPIC -shared"
+LDFLAGLIBNAME="-Wl,-soname"
+SHAREDSUFFIX=so
+if [ $ARCH = Linux ]; then
+  if [ x$FCCOPY = x ]; then
+    export FC=g77
+  fi
+  export FFLAGS="${FFLAGS_OPT} -Wno-globals"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+  export FLIBS="-lfrtbegin -lg2c"
+  if [ ${COMPMODE} = OPT ]; then
+    export FFLAGS="${FFLAGS_OPT}"
+    export CFLAGS="${CFLAGS_OPT}"
+    export CXXFLAGS="${CXXFLAGS_OPT}"
+  fi
+  if [ ${COMPMODE} = DBG ]; then
+    export FFLAGS="${FFLAGS_DBG} -Wno-globals"
+    export CFLAGS="${CFLAGS_DBG}"
+    export CXXFLAGS="${CXXFLAGS_DBG}"
+  fi
+  LDFLAGSSHARED="${CXXFLAGS} -fPIC -shared"
+  LDFLAGLIBNAME="-Wl,-soname"
+  SHAREDSUFFIX=so
+fi
+# Linux platform with gcc4: new Fortran90 compiler.
+if [ $ARCH = Linux-gcc4 ]; then
+  if [ x$FCCOPY = x ]; then
+    export FC=gfortran
+  fi
+  export FFLAGS="${FFLAGS_OPT}"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+  export FLIBS="-lgfortran -lgfortranbegin"
+  if [ ${COMPMODE} = OPT ]; then
+    export FFLAGS="${FFLAGS_OPT}"
+    export CFLAGS="${CFLAGS_OPT}"
+    export CXXFLAGS="${CXXFLAGS_OPT}"
+  fi
+  if [ ${COMPMODE} = DBG ]; then
+    export FFLAGS="${FFLAGS_DBG}"
+    export CFLAGS="${CFLAGS_DBG}"
+    export CXXFLAGS="${CXXFLAGS_DBG}"
+  fi
+  LDFLAGSSHARED="${CXXFLAGS} -fPIC -shared"
+  LDFLAGLIBNAME="-Wl,-soname"
+  SHAREDSUFFIX=so
+fi
+# Mac-OSX with gcc4
+if [ $ARCH = Darwin-gcc4 ]; then
+  if [ x$FCCOPY = x ]; then
+    export FC=gfortran
+  fi
+  export FFLAGS="${FFLAGS_OPT}"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+  export FLIBS="-lgfortran"
+  if [ ${COMPMODE} = OPT ]; then
+    export FFLAGS="${FFLAGS_OPT}"
+    export CFLAGS="${CFLAGS_OPT}"
+    export CXXFLAGS="${CXXFLAGS_OPT}"
+  fi
+  if [ ${COMPMODE} = DBG ]; then
+    export FFLAGS="${FFLAGS_DBG}"
+    export CFLAGS="${CFLAGS_DBG}"
+    export CXXFLAGS="${CXXFLAGS_DBG}"
+  fi
+  LDFLAGSSHARED="${CXXFLAGS} -dynamiclib -single_module -flat_namespace -undefined suppress"
+  LDFLAGLIBNAME="-Wl,-dylib_install_name"
+  SHAREDSUFFIX=dylib
+fi
+# Mac-OSX with gcc3; is not tested
+if [ $ARCH = Darwin ]; then
+  if [ x$FCCOPY = x ]; then
+    export FC=g77
+  fi
+  export FFLAGS="${FFLAGS_OPT}"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+  export FLIBS="-lfrtbegin -lg2c"
+  if [ ${COMPMODE} = OPT ]; then
+    export FFLAGS="${FFLAGS_OPT}"
+    export CFLAGS="${CFLAGS_OPT}"
+    export CXXFLAGS="${CXXFLAGS_OPT}"
+  fi
+  if [ ${COMPMODE} = DBG ]; then
+    export FFLAGS="${FFLAGS_DBG}"
+    export CFLAGS="${CFLAGS_DBG}"
+    export CXXFLAGS="${CXXFLAGS_DBG}"
+  fi
+  LDFLAGSSHARED="${CXXFLAGS} -dynamiclib -single_module -flat_namespace -undefined suppress"
+  LDFLAGLIBNAME="-Wl,-dylib_install_name"
+  SHAREDSUFFIX=dylib
+fi
+
+
+CXXFLAGS="${CXXFLAGS} $USRCXXFLAGS"
+LDFLAGSSHARED="${LDFLAGSSHARED} $USRLDFLAGSSHARED"
+if [ "x${USRSHAREDSUFFIX}" != "x" ] ; then
+  SHAREDSUFFIX="${USRSHAREDSUFFIX}"
+fi
+
+
+#Platform & opt/dbg - independent flags and variables:
+
+
+#
+# End of the user-changeable part ---------------------------
+#
+# Checks
+#
+if [ $?HEPMCLOCATION ]; then
+  if [ x${HEPMCLOCATION} != x ]; then
+    if [ ! -d ${HEPMCLOCATION}/include ]; then
+      echo "Warning: bad HEPMCLOCATION: directory ${HEPMCLOCATION}/include does not exist"
+      echo "         The interface will not be built"
+      export HEPMCLOCATION=
+    fi
+    if [ ! -d ${HEPMCLOCATION}/lib ]; then
+      echo "Warning: bad HEPMCLOCATION: directory ${HEPMCLOCATION}/lib does not exist"
+      echo "         The interface will not be built"
+      export HEPMCLOCATION=
+    fi
+  fi
+fi
+
+# gzip support - do after SHAREDSUFFIX is set
+if [ "x${ENABLEGZIP}" = "xyes" ]; then
+
+  # Default locations if none given
+  if [ "x${BOOSTLOCATION}" = "x" ]; then
+    BOOSTLOCATION=/usr
+  fi
+  if [ "x${ZLIBLOCATION}" = "x" ]; then
+    ZLIBLOCATION=/usr/lib
+  fi
+
+  # Check for Boost and zlib
+  if [ "x${ENABLEGZIP}" = "xyes" ] ; then
+    if [ ! -d "${BOOSTLOCATION}/include/boost/iostreams" ]; then
+      echo "Error: cannot find required Boost include files; gzip support disabled"
+      ENABLEGZIP=no
+    fi
+
+    # Some systems have Boost only under lib64?
+    for i in lib lib64; do 
+      if [ -f "${BOOSTLOCATION}/$i/libboost_iostreams.${SHAREDSUFFIX}" ]; then
+        BOOSTLIBLOCATION=${BOOSTLOCATION}/$i
+        break
+      fi
+    done
+
+    if [ "x${ENABLEGZIP}" = "xyes" -a x"${BOOSTLIBLOCATION}" = x ]; then
+      echo "Error: cannot find required Boost library files; gzip support disabled"
+      ENABLEGZIP=no
+    fi
+
+    if [ "x${ENABLEGZIP}" = "xyes" -a ! -f "${ZLIBLOCATION}/libz.${SHAREDSUFFIX}" ]; then
+      echo "Error: cannot find zlib; gzip support disabled"
+      ENABLEGZIP=no
+    fi
+  fi
+
+  # Add flags
+  if [ "x${ENABLEGZIP}" = "xyes" ] ; then
+    echo gzip support is enabled
+    CXXFLAGS="${CXXFLAGS} -DGZIPSUPPORT -I${BOOSTLOCATION}/include"
+  fi
+fi
+
+rm -f config.mk
+
+echo SHELL = /bin/sh > config.mk
+echo ARCH = ${ARCH} >> config.mk
+echo MYLCGPLATFORM = ${MYLCGPLATFORM} >> config.mk
+echo SHAREDLIBS = ${SHAREDLIBS} >> config.mk
+echo FC = ${FC} >> config.mk
+echo CC = ${CC} >> config.mk
+echo FFLAGS = ${FFLAGS} >> config.mk
+echo CFLAGS = ${CFLAGS} >> config.mk
+echo CXXFLAGS = ${CXXFLAGS} >> config.mk
+echo FLIBS = ${FLIBS} >> config.mk
+echo LDFLAGSSHARED = ${LDFLAGSSHARED} >> config.mk
+echo LDFLAGLIBNAME = ${LDFLAGLIBNAME} >> config.mk
+echo SHAREDSUFFIX = ${SHAREDSUFFIX} >> config.mk
+echo INSTALLDIR = ${INSTALLDIR} >> config.mk
+echo DATADIR = ${DATADIR} >> config.mk
+#
+if [ x${HEPMCLOCATION} != x ]; then
+  if [ x${HEPMCVERSION} != x ]; then
+    echo HEPMCVERSION = ${HEPMCVERSION} >> config.mk
+  fi
+  echo HEPMCLOCATION = ${HEPMCLOCATION} >> config.mk
+fi
+#
+#
+#
+rm -f examples/config.sh
+rm -f examples/config.csh
+if [ x${HEPMCLOCATION} != x ]; then
+  if [ $ARCH0 != Darwin ]; then
+    echo "#!/bin/csh" > examples/config.csh
+    echo 'if( ! $?LD_LIBRARY_PATH ) then' >> examples/config.csh
+    echo "  setenv LD_LIBRARY_PATH ${HEPMCLOCATION}/lib" >> examples/config.csh
+    echo "else" >> examples/config.csh
+    echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${HEPMCLOCATION}/lib" >> examples/config.csh
+    echo "endif" >> examples/config.csh
+    echo "#!/bin/sh" > examples/config.sh
+    echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> examples/config.sh
+    echo "  export LD_LIBRARY_PATH=${HEPMCLOCATION}/lib" >> examples/config.sh
+    echo fi >> examples/config.sh
+    echo 'if [ $?LD_LIBRARY_PATH ]; then' >> examples/config.sh
+    echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${HEPMCLOCATION}/lib" >> examples/config.sh
+    echo fi >> examples/config.sh
+  else
+    echo "#!/bin/csh" > examples/config.csh
+    echo 'if( ! $?DYLD_LIBRARY_PATH ) then' >> examples/config.csh
+    echo "  setenv DYLD_LIBRARY_PATH ${HEPMCLOCATION}/lib" >> examples/config.csh
+    echo "else" >> examples/config.csh
+    echo "  setenv DYLD_LIBRARY_PATH" '${DYLD_LIBRARY_PATH}'":${HEPMCLOCATION}/lib" >> examples/config.csh
+    echo "endif" >> examples/config.csh
+    echo "#!/bin/sh" > examples/config.sh
+    echo 'if [ ! $?DYLD_LIBRARY_PATH ]; then' >> examples/config.sh
+    echo "  export DYLD_LIBRARY_PATH=${HEPMCLOCATION}/lib" >> examples/config.sh
+    echo fi >> examples/config.sh
+    echo 'if [ $?DYLD_LIBRARY_PATH ]; then' >> examples/config.sh
+    echo "  export DYLD_LIBRARY_PATH="'${DYLD_LIBRARY_PATH}'":${HEPMCLOCATION}/lib" >> examples/config.sh
+    echo fi >> examples/config.sh
+  fi
+fi
+
+# gzip support - write locations into config.mk
+if [ "x${ENABLEGZIP}" = "xyes" ] ; then
+  echo "ENABLEGZIP = yes" >> config.mk
+  echo "BOOSTLOCATION = ${BOOSTLOCATION}" >> config.mk
+  echo "BOOSTLIBLOCATION = ${BOOSTLIBLOCATION}" >> config.mk
+  echo "ZLIBLOCATION = ${ZLIBLOCATION}" >> config.mk
+fi

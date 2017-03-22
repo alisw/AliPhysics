@@ -1,0 +1,78 @@
+%________________________________________________________
+\section{Introduction}
+\label{Note:INTRO}
+
+Based on the official ALICE documents
+\cite{Note:RefPPR,Note:RefComputingTDR}, the computing model of the
+experiment can be described as follows:
+
+\begin{itemize}
+\item Tier 0 provides permanent storage of the raw data, distributes
+  them to Tier 1 and performs the calibration and alignment task as
+  well as the first reconstruction pass. The calibration procedure
+  will also be addressed by PROOF clusters such as the CERN Analysis
+  Facility (CAF) \cite{Note:RefCAF}.
+
+\item Tier 1s outside CERN collectively provide permanent storage of a
+  copy of the raw data. All Tier 1s perform the subsequent
+  reconstruction passes and the scheduled analysis tasks.
+
+\item Tier 2s generate and reconstruct the simulated Monte Carlo data
+  and perform the chaotic analysis submitted by the physicists.
+
+\end{itemize}
+
+The experience of past experiments shows that the typical data
+analysis (chaotic analysis) will consume a large fraction of the total
+amount of resources. The time needed to analyze and reconstruct events
+depends mainly on the analysis and reconstruction algorithm. In
+particular, the GRID user data analysis has been developed and tested
+with two approaches: the asynchronous (batch approach) and the
+synchronous (interactive) analysis.
+
+
+In this note we will try to describe the distributed framework, and
+the steps needed in order to analyze data. We will also provide some
+practical examples for the users based on the new analysis framework
+which has been adopted by the collaboration
+\cite{Note:RefAnalysisFramework}. Before going into detail on the
+different analysis tasks, we would like to address the general steps a
+user needs to take before submitting an analysis job:
+
+
+\begin{itemize}
+\item Code validation: In order to validate the code, a user should
+  copy a few AliESDs.root files locally and try to analyze them by
+  following the instructions listed in section \ref{Note:LOCAL}.
+
+\item Interactive analysis: After the user is satisfied from both the
+  code sanity and the corresponding results, the next step is to
+  increase the statistics by submitting an interactive job that will
+  analyze ESDs stored on the GRID. This task is done in such a way to
+  simulate the behavior of a GRID worker node. If this step is
+  successful then we have a big probability that our batch job will be
+  executed properly. Detailed instructions on how to perform this task
+  are listed in section \ref{Note:INTERACTIVE}.
+
+\item Finally, if the user is satisfied with the results from the
+  previous step, a batch job can be launched that will take advantage
+  of the whole GRID infrastructure in order to analyze files stored in
+  different storage elements. This step is covered in detail in
+  section \ref{Note:BATCH}.
+
+\end{itemize}
+
+It should be pointed out that what we describe in this note involves
+the usage of the whole metadata machinery of the ALICE experiment:
+that is both the file/run level metadata
+\cite{Note:RefFileCatalogMetadataNote} as well as the \tag\
+\cite{Note:RefEventTagNote}. The latter is used extensively because
+apart from the fact that it provides an event filtering mechanism to
+the users and thus reducing the overall analysis time significantly
+\cite{Note:RefEventTagNote}, it also provides a transparent way to
+retrieve the desired input data collection in the proper format (= a
+chain of ESD files) which can be directly analyzed. On the other hand,
+if the \tag\ is not used then apart from the fact that the user cannot
+utilize the event filtering, he/she also has to create the input data
+collection (= a chain of ESD files), manually.
+

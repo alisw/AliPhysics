@@ -1,0 +1,61 @@
+This directory contains files contributed by Rene Brun and 
+Axel Naumann, which illustrate how ROOT commands can be used 
+inside PYTHIA code. You should read the "ROOT usage" page 
+in the manual to understand the function of the files, and 
+how to set up the environment in which they can be used.
+
+The practical steps to be taken, assuming you use the bash shell, 
+are:
+
+1) Add to your ".bashrc" file (in your home directory) 
+the following lines:
+
+########################################################
+# Root path and libraries:
+source /Path_to_ROOT/root/bin/thisroot.sh
+ 
+# Pythia 8 path and libraries:
+export PYTHIA8=/Path_to_Pythia8/pythia81xx/
+export LD_LIBRARY_PATH=$PYTHIA8/lib:$LD_LIBRARY_PATH
+########################################################
+
+where xx is the Pythia 8.1 subversion.
+As usual type "source .bashrc" after the changes.
+
+2) Before compilation, configure Pythia 8 if you want to use
+ shared libraries:
+
+./configure --enable-shared 
+
+3) "make hist"  builds an application for histogramming 
+Pythia output (alternatively "make" builds and runs all examples).
+
+4) "./hist" runs the example showing the Pythia output histogram 
+in Root format.
+
+5) You can correspondingly try the "tree" program, which illustrates
+how Pythia event records can be saved by Root. Needless to say, files
+can become quite large when many events are generated.
+
+6) When upgrading to a new Pythia subversion, and you want to use a 
+shared library, you should re-generate pythiaDict.cxx to reflect the 
+new classes:
+
+cd NewPythiaVersion/rootexamples
+make dict
+
+and use the generated pythiaDict.h and pythiaDict.cxx for building 
+your program.
+
+7) For FastJet use, add the following lines to the Makefile:
+
+CXXFLAGS += -I/Path_to_FastJet/include
+
+-L$(PYTHIA8)/lib -lpythia8 -llhapdfdummy -L/Path_to_FastJet/lib -lfastjet
+
+where "Path_to_FastJet" is the directory where FastJet was installed.
+Finally, add to your ".bashrc" file the following line:
+
+export LD_LIBRARY_PATH=//Path_to_FastJet/lib:LD_LIBRARY_PATH
+
+and type "source .bashrc" after the changes.

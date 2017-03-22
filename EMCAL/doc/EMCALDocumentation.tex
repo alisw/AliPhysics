@@ -1,0 +1,139 @@
+\documentclass[ALICE,manyauthors]{ALICE_internal_notes}
+
+\newcommand{\slfrac}[2]{\left.#1\right/#2}
+\usepackage{rotating}
+%
+
+\usepackage{graphicx}% Include figure files
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+\usepackage{ifpdf}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{amssymb}
+\usepackage{epsfig}
+\usepackage{enumerate}
+\usepackage{pifont}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{lineno}
+
+\usepackage{pslatex}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{geometry}
+
+\usepackage{setspace}
+
+\usepackage{listings}
+
+%%configuration de listings
+\lstset{
+language=c++,
+basicstyle=\ttfamily\small, %
+identifierstyle=\color{red}, %
+keywordstyle=\color{blue}, %
+stringstyle=\color{black!60}, %
+commentstyle=\it\color{green!95!yellow!1}, %
+columns=flexible, %
+tabsize=2, %
+extendedchars=true, %
+showspaces=false, %
+showstringspaces=false, %
+numbers=left, %
+numberstyle=\tiny, %
+breaklines=true, %
+breakautoindent=true, %
+captionpos=b
+}
+
+\usepackage{xcolor}
+
+\definecolor{Zgris}{rgb}{0.87,0.85,0.85}
+
+\newsavebox{\BBbox}
+\newenvironment{DDbox}[1]{
+\begin{lrbox}{\BBbox}\begin{minipage}{\linewidth}}
+{\end{minipage}\end{lrbox}\noindent\colorbox{Zgris}{\usebox{\BBbox}} \\
+[.5cm]}
+
+
+\newcommand{\piz}{$\pi^{0}$}
+\newcommand{\pip}{$\pi^{+}$}
+\newcommand{\pim}{$\pi^{-}$}
+\newcommand{\kap}{K$^{+}$}
+\newcommand{\kam}{K$^{-}$}
+\newcommand{\pbar}{$\rm\overline{p}$}
+\newcommand{\Jpsi} {\mbox{J\kern-0.05em /\kern-0.05em$\psi$}\xspace}
+\newcommand{\degree}{$^{\rm o}$}
+\newcommand{\s}{$\sqrt{s}$}
+\newcommand{\sN}{$\sqrt{s_{NN}}$}
+\newcommand{\dedx}{d$E$/d$x$}
+\newcommand{\pp}{pp}
+\newcommand {\mom}    {\mbox{\rm  GeV$\kern-0.15em /\kern-0.12em c$}}
+\newcommand {\gmom}   {\mbox{\rm  GeV$\kern-0.15em /\kern-0.12em c$}}
+\newcommand {\mass} {\mbox{\rm  GeV$\kern-0.15em /\kern-0.12em c^2$}}
+
+\linenumbers
+
+\begin{document}%
+%%%%%%%%%%%%% ptdr definitions %%%%%%%%%%%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%  Title page %%%%%%%%%%%%%%%%%%%%%%%%
+%
+\begin{titlepage}
+
+\title{EMCal Offline Documentation}
+\ShortTitle{EMCal documentation}   % appears on right page headers
+%
+\author{EMCal collaboration}
+
+\author{Email:alice-emcal-offline@cern.ch }
+%
+%\ShortAuthor{ALICE Internal Note 2012}      % appears on left page headers, do not change
+%
+
+\begin{abstract}
+This document describes the EMCal, it's offline geometry, the software to run a simulation or reconstruct data, the strategy to control the quality of the data, the trigger code and the analysis format.
+\end{abstract}
+\end{titlepage}
+%
+\maketitle
+\tableofcontents
+
+\newpage
+
+
+%-----------------------------------------------------------------------------
+\input{introduction}
+\newpage
+
+\input{geometry}
+\clearpage
+
+\input{ocdb}
+\clearpage
+
+\input{simulation}
+\clearpage
+
+\input{reconstruction}
+\clearpage
+
+\input{strategy}
+\clearpage
+
+\input{trigger}
+\clearpage
+
+\input{analysis}
+\clearpage
+
+\input{QA}
+\clearpage
+
+\input{bibliography}
+\clearpage
+
+
+\end{document}

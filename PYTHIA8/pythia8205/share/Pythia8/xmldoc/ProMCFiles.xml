@@ -1,0 +1,33 @@
+<chapter name="ProMC files"> 
+ 
+<h2>ProMC Files</h2> 
+ 
+<a href="http://atlaswww.hep.anl.gov/asc/promc/">ProMC</a> 
+<ref>Che14</ref> is a library
+for the storage of Monte Carlo event records, or other data, in a very
+compact binary form. It provides routines for fast input to and output
+from these compact data files. It uses "varints" as a way to store and 
+compress an integer using a variable number of bytes, based on Google's
+platform- and language-neutral Protocol Buffers. Real numbers are converted
+to integers, e.g. by specifying a smallest unit of energy, momentum and
+length. Thereby a low-energy particle can be represented by a smaller 
+number of bytes.  
+
+<p/>
+The current PYTHIA linking and interface is based on ProMC version 1.5;
+earlier version will not do. Once you have to installed the ProMC library,
+you should configure PYTHIA with 
+<pre> 
+  ./configure --with-promc=/path/to/ProMC
+</pre> 
+and recompile the PYTHIA library. As usual more fine-grained options 
+are available to set paths to binaries, libraries and headers separately,
+if need be.
+ 
+<p/> 
+The <code>examples/main46.cc</code> sample program illustrates how to
+write PYTHIA events onto a ProMC file.
+
+</chapter> 
+ 
+<!-- Copyright (C) 2015 Torbjorn Sjostrand --> 

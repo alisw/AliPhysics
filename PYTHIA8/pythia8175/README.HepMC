@@ -1,0 +1,39 @@
+How to install HepMC on your laptop (Linux/Mac OSX) and link to Pythia
+
+As of Pythia 8.175 support for older HepMC versions have been dropped,
+so you have to use HepMC version 2.06 (or later), Here is an example 
+for HepMC 2.06.08 that works for me, but it comes with no guarantee.
+
+1) Create a directory where you want to do the installation, e.g.
+     mkdir hepmc
+and move to it
+     cd hepmc
+
+2) Open
+     http://lcgapp.cern.ch/project/simu/HepMC/download 
+in a browser, scroll down to "HepMC 2.06.08" and  pick the version relevant 
+for your platform from the list to the right. 
+
+3) In the pop-up menu pick "Save to file" and then the above hepmc directory.
+You should now have the appropriate version in that directory,
+e.g. HepMC-2.06.08-x86_64-mac106-gcc42-opt.tar.gz on a current Mac.
+
+4) Unpack with
+    tar -xzf file.tar.gz
+with "file" the name of the downloaded file. This will create a new directory, 
+e.g. x86_64-mac106-gcc42-opt/, where ready-to-use libraries can be found.
+
+5) Now move to your pythia8175 (or later) directory and configure with
+     ./configure --with-hepmc=mypath/hepmc/newdir --with-hepmcversion=2.06.08
+   where "mypath" is the absolute path to the hepmc directory (use pwd if 
+   in doubt) and "newdir" is the name of the new directory created in step 4.
+   (Re)compile with "make" (or "gmake") as usual.
+
+6) Move to the examples subdirectory and do
+     source config.sh
+     source config.csh
+Only one of them will work, depending on which shell you use, but the other
+should be harmless.
+
+7) You should now be able to make and run e.g. main41 to produce HepMC 
+output files.

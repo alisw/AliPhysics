@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
+	<META NAME="CREATED" CONTENT="20080430;10144900">
+	<META NAME="CHANGED" CONTENT="20080516;19440900">
+	<STYLE>
+	<!--
+		@page { size: 21.59cm 27.94cm; margin: 2.01cm }
+		P { margin-bottom: 0.2cm }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>============================================================================</FONT></FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>Description of ALICE ITS
+Code (Rev. 0.3 &#8212;  May, 16<SUP>th</SUP> 2008 &#8212; M. Masera)</FONT></FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>============================================================================</FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><STRONG><FONT SIZE=4 STYLE="font-size: 16pt">Contents</FONT></STRONG></P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><A NAME="punto 1"></A>The goal of this
+document is to give a concise description of the ITS software. For
+more general information the reader is referred to the ALICE <A HREF="http://aliceinfo.cern.ch/Offline/AliRoot/Manual.html">offline
+documentation</A>.</P>
+<P STYLE="margin-bottom: 0cm">The reader is assumed to have a basic
+knowledge of AliRoot and of the Inner Tracking System Detector.</P>
+<P STYLE="margin-bottom: 0cm">The documentation is organized in the
+following sections:</P>
+<OL>
+	<LI><P STYLE="margin-bottom: 0cm"><B><A HREF="doc_spd.html">SPD</A>.
+	</B>This section gives information on SPD simulation, local
+	reconstruction, calibration and specific run types. Author: D. Elia.</P>
+	<LI><P STYLE="margin-bottom: 0cm"><B><A HREF="doc_sdd.html">SDD</A>.</B>
+	As above. Author: F. Prino.</P>
+	<LI><P STYLE="margin-bottom: 0cm"><B><A HREF="doc_ssd.html">SSD</A>.</B> As above. Author: E. Fragiacomo.</P>
+	<LI><P STYLE="margin-bottom: 0cm"><B><A HREF="doc_itsgeo.html">Geometry</A>.</B>
+	In this section a short description of the implementation of the ITS
+	geometry used for simulation and reconstruction is given.</P>
+	<LI><P STYLE="margin-bottom: 0cm"><B>ITS tracking.</B> This section
+	provides information on the trackers used to prolong track
+	candidates from the TPC (AliITStrackerMI class) and to find and fit
+	tracks with the ITS alone (AliITStrackerSA). Information on cosmic
+	muon reconstruction is also provided. <FONT COLOR="#dc2300">To be
+	written</FONT>. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><B>Primary vertex measurement.</B>
+	This section describes the vertexers (AliITSVertexerZ and
+	AliITSVertexer3D) used to provide a first estimete on the postition
+	of the primary vertex position based on the local reconstruction of
+	the 2 pixel layers. Author: M. Masera. <FONT COLOR="#dc2300">To be
+	written</FONT>.</P>
+	<LI><P STYLE="margin-bottom: 0cm"><B>Charged particle multiplicity.
+	</B><SPAN STYLE="font-weight: medium">(Author: T. Virgili)</SPAN><B>
+	</B> The charged particle multiplicity is determined with the
+	<B>AliITSMultReconstructor</B> class, which measures the number of
+	clusters and tracklets.<BR>A <I>tracklet </I>consists of two ITS
+	clusters, one in the first pixel layer and one in the second. The
+	clusters are associates if  differences in <I>Phi </I>(azimuth) and
+	<I>Zeta</I> (longitudinal coordinate) are inside a fiducial region,
+	defined by appropriate cuts These cuts depend on the interacting
+	system (p-p or Pb-Pb) and can be set via <B>SetPhiWindow </B>and
+	<B>SetZetaWindow methods. </B>In case of multiple candidates, the
+	one with minimal azimuthal difference is chosen. <BR>It is also
+	possible to control if two clusters in layer 2 can be associated to
+	the same cluster in layer 1 or not. This is defined by means of the
+	<B>AssociationChoice</B> (TRUE means double associations exluded;
+	default = TRUE) method.<BR>The method <B>GetNTracklets</B> returns
+	the number of tracklets and the relative information: <B>theta</B>
+	and <B>phi </B>of the tracklet (as measured by layer 1), <B>Delta
+	phi</B> (phi difference between layer 1 and 2), the label of the
+	particle(s) producing the clusters.<BR>The unassociated clusters can
+	be retrieved by the method <B>GetNSingleClusters</B>.<BR><BR>
+	</P>
+</OL>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+</BODY>
+</HTML>

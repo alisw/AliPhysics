@@ -1,0 +1,5 @@
+* $Id$
+        COMMON/NJET_HIJING/N,IP_CRS
+#ifndef BLANKET_SAVE
+	SAVE  /NJET_HIJING/
+#endif

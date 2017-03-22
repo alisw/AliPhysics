@@ -1,0 +1,313 @@
+<chapter name="Colour reconnection"> 
+ 
+<h2>Colour Reconnection</h2> 
+ 
+The colour flows in the separate subprocesses defined in the 
+multiparton-interactions scenario are tied together via the assignment 
+of colour flow in the beam remnant. This is not an unambiguous 
+procedure, and currently two different methods are implemented. In the first 
+model the colour flow is reconstructed by how a PS could have 
+constructed the configuration. In the second model, the full QCD colour 
+calculation is taken into account, however the dynamical effects are modeled 
+loosely, only an overall saturation is taken into account. The idea is to 
+later account for other dynamical effects through colour reconnections. 
+ 
+<p/> 
+A simple "minimal" procedure of colour flow only via the beam remnants 
+does not result in a scenario in agreement with data, however, 
+notably not a sufficiently steep rise of 
+<ei>&lt;pT&gt;(n_ch)</ei>. The true origin of this behaviour and the 
+correct mechanism to reproduce it remains one of the big unsolved issues 
+at the borderline between perturbative and nonperturbative QCD. Since no final 
+answer is known, several models are implemented. The different models also 
+rely on the two different colour assignments in the beam remnant. There are 
+two, somewhat motivated, models implemented: the original PYTHIA scheme and 
+a new scheme that tries to incorporate more of the colour knowledge from QCD. 
+ 
+<p/> 
+The original PYTHIA scheme relies on the PS-like colour configuration of the 
+beam remnant. This is combined with an additional step, wherein the gluons 
+of a lower-<ei>pT</ei> MPI system are merged with the ones in a higher-pT MPI. 
+A more detailed description of the merging can be found below. 
+Relative to the other models it tests fewer reconnection possibilities, 
+and therefore tends to be reasonably fast. 
+ 
+<p/> 
+The new scheme <ref>Chr14a</ref>relies on the full QCD colour configuration 
+in the beam remnant. This is followed up by a colour reconnection, where the 
+potential string energy is minimized (ie. the <ei>lambda</ei> measure is 
+minimized). The QCD colour rules are also incorporated in the colour 
+reconnection, and determine the probability that a reconnection is allowed. 
+The model also allows the creation of junction structures. 
+ 
+<p/> 
+In addition to the two models described above, a simple model is implemented, 
+wherein gluons can be moved from one location to another so as to reduce the 
+total string length. This is one out of a range of simple models developed 
+to study potential colour reconnection effects e.g. on top mass 
+<ref>Arg14</ref>, not from the point of view of having the most realistic 
+description, but in order to probe the potential worst-case spread of 
+predictions. All of these models are made available separately in 
+<code>include/Pythia8Plugins/ColourReconnectionHooks.h</code>, with the 
+setup illustrated in <code>examples/main29.cc</code>, but only the 
+gluon-move one is sufficiently general and realistic that it has been 
+included among the standard options here. 
+ 
+<flag name="ColourReconnection:reconnect" default="on"> 
+Allow or not a system to be merged with another one. 
+</flag> 
+ 
+<modepick name="ColourReconnection:mode" default="0" min="0" max="2"> 
+Determine which model is used for colour reconnection. Beware that 
+different <code>BeamRemnants:remnantMode</code> should be used for 
+different reconnection schemes. 
+<option value="0"> The MPI-based original Pythia 8 scheme. 
+</option> 
+<option value="1"> The new more QCD based scheme. 
+</option> 
+<option value="2"> The new gluon-move model. 
+</option> 
+</modepick> 
+ 
+<h3>The MPI-based scheme</h3> 
+ 
+In this scheme partons are classified by which MPI system they belong to. 
+The colour flow of two such systems can be fused, and if so the partons 
+of the lower-<ei>pT</ei> system are added to the strings defined by the 
+higher-<ei>pT</ei> system in such a way as to give the smallest total 
+string length. The bulk of these lower-<ei>pT</ei> partons are gluons, 
+and this is what the scheme is optimized to handle. 
+ 
+<p/> 
+In more detail, an MPI system with a scale <ei>pT</ei> of the hard 
+interaction (normally <ei>2 &rarr; 2</ei>) can be merged with one of 
+a harder scale with a probability that is 
+<ei>pT0_Rec^2 / (pT0_Rec^2 + pT^2)</ei>, where <ei>pT0_Rec</ei> is 
+<code>range</code> times <ei>pT0</ei>, the latter being the same 
+energy-dependent dampening parameter as used for MPIs. 
+Thus it is easy to merge a low-<ei>pT</ei> system with any other, 
+but difficult to merge two high-<ei>pT</ei> ones with each other. 
+ 
+<parm name="ColourReconnection:range" default="1.8" min="0." max="10."> 
+The <code>range</code> parameter defined above. The higher this number is 
+the more reconnections can occur. For values above unity the reconnection 
+rate tends to saturate, since then most systems are already connected with 
+each other. This is why 10 is set as an effective upper limit, beyond 
+which it is not meaningful to let the parameter go. 
+</parm> 
+ 
+<p/> 
+The reconnection procedure is applied iteratively. Thus first the 
+reconnection probability <ei>P = pT0_Rec^2 / (pT0_Rec^2 + pT^2)</ei> of the 
+lowest-<ei>pT</ei> system is found, and gives the probability for merger with 
+the second-lowest one. If not merged, it is tested with the third-lowest 
+one, and so on. For the <ei>m</ei>'th higher system the reconnection 
+probability thus becomes <ei>(1 - P)^(m-1) P</ei>. That is, there is 
+no explicit dependence on the higher <ei>pT</ei> scale, but implicitly 
+there is via the survival probability of not already having been merged 
+with a lower-<ei>pT</ei> system. Also note that the total reconnection 
+probability for the lowest-<ei>pT</ei> system in an event with <ei>n</ei> 
+systems becomes <ei>1 - (1 - P)^(n-1)</ei>. Once the fate of the 
+lowest-<ei>pT</ei> system has been decided, the second-lowest is considered 
+with respect to the ones above it, then the third-lowest, and so on. 
+ 
+<p/> 
+Once it has been decided which systems should be joined, the actual merging 
+is carried out in the opposite direction. That is, first the hardest 
+system is studied, and all colour dipoles in it are found (including to 
+the beam remnants, as defined by the holes of the incoming partons). 
+Next each softer system to be merged is studied in turn. Its gluons are, 
+in decreasing <ei>pT</ei> order, inserted on the colour dipole <ei>i,j</ei> 
+that gives the smallest <ei>(p_g p_i)(p_g p_j)/(p_i p_j)</ei>, i.e. 
+minimizes the "disturbance" on the existing dipole, in terms of 
+<ei>pT^2</ei> or <ei>Lambda</ei> measure (string length). The insertion 
+of the gluon means that the old dipole is replaced by two new ones. 
+Also the (rather few) quark-antiquark pairs that can be traced back to 
+a gluon splitting are treated in close analogy with the gluon case. 
+Quark lines that attach directly to the beam remnants cannot be merged 
+but are left behind. 
+ 
+<p/> 
+The joining procedure can be viewed as a more sophisticated variant of 
+the one introduced already in <ref>Sjo87</ref>. Clearly it is ad hoc. 
+It hopefully captures some elements of truth. The lower <ei>pT</ei> scale 
+a system has the larger its spatial extent and therefore the larger its 
+overlap with other systems. It could be argued that one should classify 
+individual initial-state partons by <ei>pT</ei> rather than the system 
+as a whole. However, for final-state radiation, a soft gluon radiated off 
+a hard parton is actually produced at late times and therefore probably 
+less likely to reconnect. In the balance, a classification by system 
+<ei>pT</ei> scale appears sensible as a first try. 
+ 
+<p/> 
+Note that the reconnection is carried out before resonance decays are 
+considered by default. Colour inside a resonance therefore is not 
+reconnected. The 
+<code><aloc href="MasterSwitches">PartonLevel:earlyResDec</aloc></code> 
+can be switched on to perform resonance decays before colour reconnection, 
+and then the partons from resonance decays could be affected. 
+Ideally the time scales of resonance decays and of colour reconnection 
+should be picked dynamically, but this is not yet the case. Notably 
+the <ei>W</ei>, <ei>Z</ei> and <ei>t</ei> have intermediate decay time 
+scales, somewhat but not much shorter than typical hadronization times, 
+whereas the <ei>H</ei> is much more long-lived. 
+ 
+<h3>The newer scheme</h3> 
+ 
+<parm name="ColourReconnection:m0" default="0.5" min="0.1" 
+  max="5."> 
+This is the variable used in the lambda measure for the string length. 
+See the different choices of lambda measure for exact formulaes. This variable 
+is in the new model also used as a cut for forming pseudo particles that are 
+not colour reconnected. 
+</parm> 
+ 
+<modeopen name="ColourReconnection:nColours" default="9" min="1" max="30"> 
+The number of reconnection colours, this should not be confused with the 
+standard number of QCD colours. Each string is given an integer number between 
+0 and <code>nColours - 1</code>. Only strings with the same number are allowed 
+to do a normal string reconnection. The default value provides 
+the standard QCD probability that a triplet and an anti-triplet is in a 
+singlet state. The probability for two strings to form a junction structure is 
+in QCD given by the product of two triplets, which gives a probability of 1/3. 
+Therefore the number of reconnection colours for junction formation is 
+<code>iColours % 3</code>, where iColours refer to the integer of the string. 
+The behaviour of junction formation therefore only changes slightly with this 
+variable. 
+</modeopen> 
+ 
+<flag name="ColourReconnection:sameNeighbourColours" default="off"> 
+In the normal colour reconnection two neighbouring strings are not allowed 
+to have the same colour. Similar two strings orginating from a gluon split is 
+not allowed to reconnect. The physics motivation for this is that it would 
+require colour singlet gluons, and therefore for ordinary physics studies this 
+should be turned off. But for testing of extreme scenarios (i.e. 1 colour), 
+this variable needs to be turned on, since it is not possible to have 
+different neighbouring colours. 
+</flag> 
+ 
+<flag name="ColourReconnection:allowJunctions" default="on"> 
+This switch disables the formation of junctions in the colour reconnection. 
+</flag> 
+ 
+<modepick name="ColourReconnection:lambdaForm" default="0" min="0" max="2"> 
+This allows to switch between different options for what 
+<ei>lambda</ei>-measure to use. 
+The formula shown are how much each end of a dipole or junction contribute to 
+the total <ei>lambda</ei>-measure. The energies are defined in respectively 
+the dipole or junction restframe. 
+<option value="0"> <ei>lambda = ln (1 + sqrt(2) E/m0)</ei> 
+</option> 
+<option value="1"> <ei>lambda = ln (1 + 2 E/m0)</ei> 
+</option> 
+<option value="2"> <ei>lambda = ln (2 E/m0)</ei> 
+</option> 
+</modepick> 
+ 
+<parm name="ColourReconnection:minimumGainJun" default="1" min="-100" 
+max="100"> 
+The minimum <ei>lambda</ei> has to decrease in order to create a junction 
+antijunction pair. 
+</parm> 
+ 
+<flag name="ColourReconnection:allowDoubleJunRem" default="on"> 
+This parameter tells whether or not to allow a directly connected 
+junction-antijunction pair to split into two strings. The lambda measure of 
+the junction system is compared to that of the two possible string 
+configurations. If the chosen configuration is the junction system, a q-qbar 
+system is inserted between the junctions by removing some energy/momentum from 
+the other legs. 
+</flag> 
+ 
+<h3>The gluon-move scheme</h3> 
+ 
+This approach contains two steps, a first "move" one and an optional 
+second "flip" one. Both are intended to reduce the total "string length" 
+<ei>lambda</ei> measure of an event. For multiparton topologies the 
+correct <ei>lambda</ei> measure can become quite cumbersome, so here it 
+is approximated by the sum of <ei>lambda</ei> contributions from each pair 
+of partons connected by a colour string piece. For two partons <ei>i</ei> 
+and <ei>j</ei> with invariant mass <ei>m_ij</ei> this contribution 
+is defined as <ei>lambda_ij = ln(1 + m^2_ij / m2Lambda)</ei>. 
+The 1 is added ad hoc to avoid problems in the <ei>m_ij &rarr; 0</ei> 
+limit, problems which mainly comes from the approximate treatment, 
+and <ei>m2Lambda</ei> is a parameter set below. 
+ 
+<p/> 
+In the move step all final gluons are identified, alternatively only a 
+fraction <ei>fracGluon</ei> of them, and also all colour-connected 
+parton pairs. For each gluon and each pair it is calculated how the total 
+<ei>lambda</ei> would shift if the gluon would be removed from its current 
+location and inserted in between the pair. The gluon move that gives the 
+largest negative shift, if any, is then carried out. Alternatively, only 
+shifts more negative than <ei>dLambdaCut</ei> are considered. The procedure 
+is iterated so long as allowed moves can be found. 
+ 
+<p/> 
+There is some fine print. If a colour singlet subsystem consists of two 
+gluons only then it is not allowed to move any of them, since that then 
+would result in in a colour singlet gluon. Also, at most as many moves 
+are made as there are gluons, which normally should be enough. A specific 
+gluon may be moved more than once, however. Finally, a gluon directly 
+connected to a junction cannot be moved, and also no gluon can be inserted 
+between it and the junction. This is entirely for practical reasons, but 
+should not be a problem, since junctions are rare in this model. 
+ 
+<p/> 
+The gluon-move steps will not break the connection between string endpoints, 
+in the sense that a quark and an antiquark that are colour-connected via 
+a number of gluons will remain so, only the number and identity of the 
+intermediate gluons may change. Such a scenario may be too restrictive. 
+Therefore an optional second flip step is introduced. In it all such 
+colour chains are identified, omitting closed gluon loops. The lambda 
+change is defined by what happens if the two colour lines are crossed 
+somewhere, e.g. such that two systems <ei>q1 - g1 - qbar1</ei> and 
+<ei>q2 - g2 - qbar2</ei> are flipped to <ei>q1 - g1 - g2 - qbar2</ei> 
+and <ei>q2 - qbar1</ei>. The flip that gives the largest <ei>lambda</ei> 
+reduction is carried out, again with <ei>dLambdaCut</ei> offering a 
+possibility to restrict the options. As with the move step, the procedure 
+is repeated so long as it is allowed. An important restriction is 
+imposed, however, that a given system is only allowed to flip once, 
+and not with itself. The practical reason is that repeated flips could 
+split off closed gluon loops quite easily, which tends to result in 
+bad agreement with data. 
+ 
+<p/> 
+As an option, singlet subsystems containing a junction may or may not 
+be allowed to take part in the flip step. Since the number of junction 
+systems is limited in this model the differences are not so important. 
+ 
+<parm name="ColourReconnection:m2Lambda" default="1." min="0.25" max="16."> 
+The <ei>m2Lambda</ei> parameter used in the definition of the approximate 
+<ei>lambda</ei> measure above. It represents an approximate hadronic 
+mass-square scale, cf. <ei>m0</ei> in the previous model. Its value is 
+uncertain up to factors of 2, but the <ei>lambda</ei> change induced by 
+a potential move or flip is rather insensitive to the precise value, 
+owing to large cancellations. 
+</parm> 
+ 
+<parm name="ColourReconnection:fracGluon" default="1." min="0." max="1."> 
+The probability that a given gluon will be considered for being moved. 
+It thus gives the average fraction of gluons being considered. 
+</parm> 
+ 
+<parm name="ColourReconnection:dLambdaCut" default="0." min="0." max="10."> 
+Restrict gluon moves and colour flips to those that reduce <ei>lambda</ei> 
+by more than this amount. The larger this number, the fewer moves and flips 
+will be performed, but those that remain are the ones most likely to produce 
+large effects. 
+</parm> 
+ 
+<modepick name="ColourReconnection:flipMode" default="0" min="0" max="2"> 
+Performing the flip step or not. 
+<option value="0"> No flip handling. 
+</option> 
+<option value="1"> Allow flips, but not for strings in junction topologies. 
+</option> 
+<option value="2"> Allow flips, including for strings in junction topologies. 
+</option> 
+</modepick> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2015 Torbjorn Sjostrand --> 

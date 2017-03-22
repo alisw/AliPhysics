@@ -1,0 +1,16 @@
+.L fillCalibObject.C
+AliTPCCalibPedestal *calib=fillCalibObject("path/to/file.root")
+Int_t i
+for (i=0;i<72;i++) if (calib->GetHistoPedestal(i)) cout << i<<endl;
+//assume sector 0 is filled, show its RMS reference histogram
+calib->GetHistoPedestal(0)->SetEntries(1)
+calib->GetHistoPedestal(0)->Draw("colz")
+//Unsing the AliTPCCalPad class
+AliTPCCalPad pedestal(calib->GetCalPadPedestal())
+pedestal->MakeHisto2D()->Draw("colz");  //A-Side pedestals
+pedestal->MakeHisto2D(1)->Draw("colz"); //C-Side pedestals
+AliTPCCalPad noise(calib->GetCalPadRMS())
+noise->MakeHisto2D()->Draw("colz");  //A-Side noise
+noise->MakeHisto2D(1)->Draw("colz"); //C-Side noise
+//display single chamber (0)
+pedestal->GetCalROC(0)->MakeHisto2D()->Draw("colz")

@@ -1,0 +1,7 @@
+
+Unix.*.Root.MacroPath:      .:$(ALICE_ROOT)/macros:$(ALICE_ROOT)
+
+Root.Html.OutputDir: $(ALICE_ROOT)/html/roothtml/T0
+Root.Html.SourceDir: ./
+Root.Html.Author:  Rene Brun
+Root.Html.Root:  http://root.cern.ch/root/html

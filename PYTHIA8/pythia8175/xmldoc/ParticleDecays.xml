@@ -1,0 +1,353 @@
+<chapter name="Particle Decays">
+
+<h2>Particle Decays</h2>
+
+The <code>ParticleDecays</code> class performs the sequential decays of 
+all unstable hadrons produced in the string fragmentation stage,
+i.e. up to and including <ei>b</ei> hadrons and their decay products, 
+such as the <ei>tau</ei> lepton. It is not to be used for the decay of 
+more massive <aloc href="ResonanceDecays">resonances</aloc>, such as top, 
+<ei>Z^0</ei> or SUSY, where decays must be performed already at the 
+<code>ProcessLevel</code> of the event generation.
+
+<p/>
+The decay description essentially copies the one present in 
+PYTHIA since many years, but with some improvements, e.g. in the decay
+tables and the number of decay models available. Recently a more
+sophisticated handling of <ei>tau</ei> decays has also been introduced.
+Some issues may need further polishing.
+
+<h3>Variables determining whether a particle decays</h3>
+
+Before a particle is actually decayed, a number of checks are made.
+
+<p/>
+(i) Decay modes must have been defined for the particle kind;    
+tested by the <code>canDecay()</code> method of <code>Event</code> 
+(and <code>ParticleData</code>).        
+
+<p/>
+(ii) The main switch for allowing this particle kind to decay must 
+be on; tested by the <code>mayDecay()</code> method of <code>Event</code> 
+(and <code>ParticleData</code>). 
+
+<p/>
+(iii) Particles may be requested to have a nominal proper lifetime 
+<ei>tau0</ei> below a threshold.
+
+<flag name="ParticleDecays:limitTau0" default="off">
+When on, only particles with <ei>tau0 &lt; tau0Max</ei> are decayed.
+</flag>
+
+<parm name="ParticleDecays:tau0Max" default="10." min="0.">
+The above <ei>tau0Max</ei>, expressed in mm/c.
+</parm>
+
+<p/>
+(iv) Particles may be requested to have an actual proper lifetime 
+<ei>tau</ei> below a threshold.
+
+<flag name="ParticleDecays:limitTau" default="off">
+When on, only particles with <ei>tau &lt; tauMax</ei> are decayed.
+</flag>
+
+<parm name="ParticleDecays:tauMax" default="10." min="0."> 
+The above <ei>tauMax</ei>, expressed in mm/c.<br/>
+In order for this and the subsequent tests to work, a <ei>tau</ei> 
+is selected and stored for each particle, whether in the end it
+decays or not. (If each test would use a different temporary 
+<ei>tau</ei> it would lead to inconsistencies.)
+</parm>
+
+<p/>
+(v) Particles may be requested to decay within a given distance 
+of the origin.
+
+<flag name="ParticleDecays:limitRadius" default="off">
+When on, only particles with a decay within a radius <ei>r &lt; rMax</ei> 
+are decayed. There is assumed to be no magnetic field or other 
+detector effects.
+</flag>
+
+<parm name="ParticleDecays:rMax" default="10." min="0.">
+The above <ei>rMax</ei>, expressed in mm.
+</parm> 
+
+<p/>
+(vi) Particles may be requested to decay within a given cylindrical 
+volume around the origin.
+
+<flag name="ParticleDecays:limitCylinder" default="off">
+When on, only particles with a decay within a volume limited by
+<ei>rho = sqrt(x^2 + y^2) &lt; xyMax</ei> and <ei>|z| &lt; zMax</ei> 
+are decayed. There is assumed to be no magnetic field or other 
+detector effects.
+</flag>
+
+<parm name="ParticleDecays:xyMax" default="10." min="0.">
+The above <ei>xyMax</ei>, expressed in mm.
+</parm> 
+
+<parm name="ParticleDecays:zMax" default="10." min="0.">
+The above <ei>zMax</ei>, expressed in mm.
+</parm> 
+
+<h3>Mixing</h3>
+
+<flag name="ParticleDecays:mixB" default="on">
+Allow or not <ei>B^0 - B^0bar</ei> and <ei>B_s^0 - B_s^0bar</ei> mixing.
+</flag>
+
+<parm name="ParticleDecays:xBdMix" default="0.776" min="0.74" max="0.81">
+The mixing parameter <ei>x_d = Delta(m_B^0)/Gamma_B^0</ei> in the 
+<ei>B^0 - B^0bar</ei> system. (Default from RPP2006.)
+</parm> 
+
+<parm name="ParticleDecays:xBsMix" default="26.05" min="22.0" max="30.0"> 
+The mixing parameter <ei>x_s = Delta(m_B_s^0)/Gamma_B_s^0</ei> in the 
+<ei>B_s^0 - B_s^0bar</ei> system. (Delta-m from CDF hep-ex-0609040,
+Gamma from RPP2006.)
+</parm> 
+
+<h3>Tau decays</h3>
+
+A new machinery has been introduced to handle <ei>tau</ei> lepton decays, 
+with helicity information related to the production process and with
+the form of the hadronic current fitted to data. It is largely based
+on the corresponding Herwig++ implementation <ref>Gre07</ref>, with
+some input from Tauola <ref>Jad90</ref>. A complete writeup is 
+in preparation, but meanwhile a short summary can be found at
+<ref>Ilt12</ref>. 
+
+<p/>
+For <ei>tau</ei>s in external processes, interfaced with Les Houches 
+Accord information available, e.g. via Les Houches Event Files (LHEF), 
+the new machinery interprets the SPINUP number for <ei>tau</ei> leptons 
+as giving their helicity, and decays them accordingly. The only exceptions 
+are when a specific polarization is forced by the user (see below), 
+which then overrides the SPINUP value, or when SPINUP has the special 
+value 9 (unpolarized). In the latter case, PYTHIA defaults back to 
+attempting to determine the helicity structure from the production 
+process, in the same way as for internal processes.
+
+<p/>
+This new machinery is on by default, but it is possible to revert to 
+the simpler old decay handling, e.g. to study differences. Furthermore
+the spin tracing framework does not yet cover all possibilities; notably 
+it cannot handle taus coming from SUSY decay chains 
+(except via LHEF), so it makes sense 
+to switch off the new machinery in such instances, for speed reasons if 
+nothing else. In case only one tau mother species is undefined, the 
+polarization involved can be set by hand.
+
+<modepick name="ParticleDecays:sophisticatedTau" default="1" min="0" max="3">
+Choice of <ei>tau</ei> decay model.
+<option value="0">old decay model, with isotropic decays. 
+When reading LHEF files, the SPINUP digit will be ignored.</option>
+<option value="1">sophisticated decays where <ei>tau</ei> polarization is 
+calculated from the <ei>tau</ei> production mechanism. 
+When reading LHEF files, the SPINUP digit will be used.
+</option>
+<option value="2">sophisticated decays as above, but additionally <ei>tau</ei> 
+polarization is set to <code>ParticleDecaus:tauPolarization</code> for 
+<ei>tau</ei>s produced from <code>ParticleDecays:tauMother</code>. 
+When reading LHEF files, this overrides the SPINUP digit. 
+</option>
+<option value="3">sophisticated decays where <ei>tau</ei> polarization is set 
+to <code>ParticleDecaus:tauPolarization</code> for all <ei>tau</ei> decays. 
+When reading LHEF files, this overrides the SPINUP digit. 
+</option>
+<note>Note</note>: options <code>2</code> and <code>3</code>, 
+to force a specific <ei>tau</ei> polarization, only affect the decay 
+of the <ei>tau</ei>. The angular distribution of the <ei>tau</ei> itself, 
+given by its production, is not modified by these options. If you want, e.g., 
+a righthanded <ei>W</ei>, or a SUSY decay chain, the kinematics should 
+be handled by the corresponding cross section class(es), supplemented by 
+the resonance decay one(s). The options here could then still be used 
+to ensure the correct polarization at the <ei>tau</ei> decay stage.
+</modepick>
+
+<parm name="ParticleDecays:tauPolarization" default="0" min="-1." max="1.">
+Polarization of the <ei>tau</ei> when mode <ei>2</ei> or <ei>3</ei> of 
+<code>ParticleDecays:sophisticatedTau</code> is selected.
+</parm>
+
+<modeopen name="ParticleDecays:tauMother" default="0" min="0">
+Mother of the <ei>tau</ei> for forced polarization when mode <ei>2</ei> of 
+<code>ParticleDecays:sophisticatedTau</code> is selected. You should give the
+positive identity code; to the extent an antiparticle exists it will
+automatically obtain the inverse polarization.
+</modeopen>
+
+<h3>QED radiation</h3>
+
+So far PYTHIA does not have any generic machinery for handling QED radiation
+in normal particle decays. In order to include this, a program like Photos 
+<ref>Bar94, Dav10</ref> could be used as an afterburner. In a few cases,
+however, the existing shower machinery can be used also here: for 
+two-body decays to a lepton pair (<ei>l^+ l^-</ei> or <ei>l^+- nu_l</ei>).
+Such decays are mediated by <ei>gamma^*/Z^0/W^+-</ei> exchange, for
+which PYTHIA does have an existing machinery that can be applied, 
+including first-order matrix-element corrections for the first (hardest)
+photon emission. 
+
+<flag name="ParticleDecays:allowPhotonRadiation" default="off">
+Allow or not photon radiations in decays to a lepton pair, see above.
+<note>Note:</note> The current default is to have radiation switched off, 
+in order to avoid double-counting of emissions if you link to an external 
+QED-radiation program, as is the norm in many collaborations.
+</flag>
+
+<h3>Other variables</h3>
+
+<parm name="ParticleDecays:mSafety" default="0.0005" min="0." max="0.01">
+Minimum mass difference required between the decaying mother mass 
+and the sum of the daughter masses, kept as a safety margin to avoid
+numerical problems in the decay generation.
+</parm> 
+
+<parm name="ParticleDecays:sigmaSoft" default="0.5" min="0.2" max="2.">
+In semileptonic decays to more than one hadron, such as 
+<ei>B -> nu l D pi</ei>, decay products after the first three are 
+dampened in momentum by an explicit weight factor 
+<ei>exp(-p^2/sigmaSoft^2)</ei>, where <ei>p</ei> is the 
+three-momentum in the rest frame of the decaying particle.
+This takes into account that such further particles come from the
+fragmentation of the spectator parton and thus should be soft.   
+</parm> 
+
+<p/>
+When a decay mode is defined in terms of a partonic content, a random 
+multiplicity (and a random flavour set) of hadrons is to be picked, 
+especially for some charm and bottom decays. This is done according to 
+a Poissonian distribution, for <ei>n_p</ei> normal particles and 
+<ei>n_q</ei> quarks the average value is chosen as  
+<eq>
+  n_p/ 2 + n_q/4 + multIncrease * ln ( mDiff / multRefMass)
+</eq>
+with <ei>mDiff</ei> the difference between the decaying particle mass 
+and the sum of the normal-particle masses and the constituent quark masses. 
+For gluon systems <ei>multGoffset</ei> offers and optional additional 
+term to the multiplicity. The lowest possible multiplicity is 
+<ei>n_p + n_q/2</ei> (but at least 2) and the highest possible 10.
+If the picked hadrons have a summed mass above that of the mother a 
+new try is made, including a new multiplicity. These constraints 
+imply that the actual average multiplicity does not quite agree with
+the formula above.
+
+<parm name="ParticleDecays:multIncrease" default="4." min="2." max="6.">
+The above <ei>multIncrease</ei> parameter, except for 
+<code>meMode = 23</code>.
+</parm> 
+
+<parm name="ParticleDecays:multIncreaseWeak" default="2.5" min="1." max="4.">
+The above <ei>multIncrease</ei> parameter, specifically for 
+<code>meMode = 23</code>. Here the weak decay implies that only the 
+virtual W mass should contribute to the production of new particles, 
+rather than the full meson mass.
+</parm> 
+
+<parm name="ParticleDecays:multRefMass" default="0.7"min="0.2" max="2.0">
+The above <ei>multRefMass</ei> parameter.
+</parm> 
+
+<parm name="ParticleDecays:multGoffset" default="0.5" min="0.0" max="2.0">
+The above <ei>multGoffset</ei> parameter.
+</parm> 
+
+<parm name="ParticleDecays:colRearrange" default="0.5" min="0." max="1.0">
+When a decay is given as a list of four partons to be turned into
+hadrons (primarily for modes 41 - 80)  it is assumed that they are 
+listed in pairs, as a first and a second colour singlet, which could 
+give rise to separate sets of hadrons. Here <ei>colRearrange</ei> is 
+the probability that this original assignment is not respected, and 
+default corresponds to no memory of this original colour topology.
+</parm> 
+
+<flag name="ParticleDecays:FSRinDecays" default="true">
+When a particle decays to <ei>q qbar</ei>, <ei>g g</ei>, <ei>g g g</ei> 
+or <ei>gamma g g</ei>, with <code>meMode > 90</code>, allow or not a 
+shower to develop from it, before the partonic system is hadronized. 
+(The typical example is <ei>Upsilon</ei> decay.)
+</flag>
+
+In addition, some variables defined for string fragmentation and for
+flavour production are used also here.
+ 
+<h3>Modes for Matrix Element Processing</h3>
+
+Some decays can be treated better than what pure phase space allows,
+by reweighting with appropriate matrix elements. In others a partonic
+content has to be converted to a set of hadrons. The presence of such
+corrections is signaled by a nonvanishing <code>meMode()</code> value
+for a decay mode in the <aloc href="ParticleDataScheme">particle
+data table</aloc>. The list of allowed possibilities almost agrees with the 
+PYTHIA 6 ones, but several obsolete choices have been removed, 
+a few new introduced, and most have been moved for better consistency. 
+Here is the list of currently allowed <code>meMode()</code> codes:
+<ul>
+<li>  0 : pure phase space of produced particles ("default");
+input of partons is allowed and then the partonic content is 
+converted into the minimal number of hadrons (i.e. one per
+parton pair, but at least two particles in total)</li>
+<li>  1 : <ei>omega</ei> and <ei>phi -> pi+ pi- pi0</ei></li>
+<li>  2 : polarization in <ei>V -> PS + PS</ei> (<ei>V</ei> = vector, 
+<ei>PS</ei> = pseudoscalar), when <ei>V</ei> is produced by 
+<ei>PS -> PS + V</ei> or <ei>PS -> gamma + V</ei></li>
+<li> 11 : Dalitz decay into one particle, in addition to the 
+lepton pair (also allowed to specify a quark-antiquark pair that 
+should collapse to a single hadron)</li>
+<li> 12 : Dalitz decay into two or more particles in addition 
+to the lepton pair</li>
+<li> 13 : double Dalitz decay into two lepton pairs</li>
+<li> 21 : decay to phase space, but weight up <ei>neutrino_tau</ei> spectrum
+in <ei>tau</ei> decay</li>
+<li> 22 : weak decay; if there is a quark spectator system it collapses to 
+one hadron; for leptonic/semileptonic decays the <ei>V-A</ei> matrix element
+is used, for hadronic decays simple phase space</li>
+<li> 23 : as 22, but require at least three particles in decay</li>
+<li> 31 : decays of type B -> gamma X, very primitive simulation where
+X is given in terms of its flavour content, the X multiplicity is picked 
+according to a geometrical distribution with average number 2, and 
+the photon energy spectrum is weighted up relative to pure phase space</li>
+<li> 42 - 50 : turn partons into a random number of hadrons, picked according 
+to a Poissonian with average value as described above, but at least 
+<code>code</code> - 40 and at most 10, and then distribute then in pure 
+phase space; make a new try with another multiplicity if the sum of daughter
+masses exceed the mother one </li>
+<li> 52 - 60 : as 42 - 50, with multiplicity between <code>code</code> - 50 
+and 10, but avoid already explicitly listed non-partonic channels</li>
+<li> 62 - 70 : as 42 - 50, but fixed multiplicity <code>code</code> - 60</li>
+<li> 72 - 80 : as 42 - 50, but fixed multiplicity <code>code</code> - 70,
+and avoid already explicitly listed non-partonic channels</li>
+<li> 91 : decay to <ei>q qbar</ei> or <ei>g g</ei>, which should shower 
+and hadronize</li>
+<li> 92 : decay onium to <ei>g g g</ei> or <ei>g g gamma</ei> 
+(with matrix element), which should shower and hadronize</li>
+<li> 100 - : reserved for the description of partial widths of 
+<aloc href="ResonanceDecays">resonances</aloc></li>
+</ul>
+
+Three special decay product identity codes are defined.
+<ul>
+<li>81: remnant flavour. Used for weak decays of c and b hadrons, where the
+c or b quark decays and the other quarks are considered as a spectator
+remnant in this decay. In practice only used for baryons with multiple 
+c and b quarks, which presumably would never be used, but have simple
+(copied) just-in-case decay tables. Assumed to be last decay product.</li> 
+<li>82: random flavour, picked by the standard fragmentation flavour
+machinery, used to start a sequence of hadrons, for matrix element
+codes in 41 - 80. Assumed to be first decay product, with -82 as second
+and last. Where multiplicity is free to be picked it is selected as for
+normal quarkonic systems. Currently unused.</li>  
+<li>83: as for 82, with matched pair 83, -83 of decay products. The 
+difference is that here the pair is supposed to come from a closed gluon 
+loop (e.g. <ei>eta_c -> g g</ei>) and so have a somewhat higher average
+multiplicity than the simple string assumed for 82, see the
+<code>ParticleDecays:multGoffset</code> parameter above.</li>
+</ul>
+
+</chapter>
+
+<!-- Copyright (C) 2013 Torbjorn Sjostrand -->
+

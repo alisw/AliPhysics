@@ -1,0 +1,34 @@
+# This file is a template for coherent photonuclear production of rho mesons at RHIC
+# (200 GeV/nucleon gold-gold collisions), including interference.
+#
+# to use, re-name this file slight.in
+
+baseFileName = slight	#suite of output files will be saved with this base name 
+BEAM_1_Z = 79    #Z of projectile
+BEAM_1_A = 197   #A of projectile
+BEAM_2_Z = 79   #Z of target
+BEAM_2_A = 197   #A of target
+BEAM_1_GAMMA = 108.4 #Gamma of the colliding ion 1
+BEAM_2_GAMMA = 108.4 #Gamma of the colliding ion 2
+W_MAX = -1   #Max value of w
+W_MIN = -1    #Min value of w
+W_N_BINS = 50    #Bins in w
+RAP_MAX = 5.    #max y
+RAP_N_BINS = 50    #Bins in y
+CUT_PT = 0 #Cut in pT? 0 = (no, 1 = yes)
+PT_MIN = 1.0 #Minimum pT in GeV; ignored if CUT_PT=0
+PT_MAX = 3.0 #Maximum pT in GeV; ignored if CUT_PT=0
+CUT_ETA = 0 #Cut in pseudorapidity? (0 = no, 1 = yes)
+ETA_MIN = -10 #Minimum pseudorapidity; ignored if CUT_ETA=0
+ETA_MAX = 10 #Maximum pseudorapidity; ignored if CUT_ETA=0
+PROD_MODE = 3     #gg or gP switch (1 = 2-photon, 2 = coherent vector meson (narrow), 3 = coherent vector meson (wide), 4 = incoherent vector meson)
+N_EVENTS = 1000   #Number of events
+PROD_PID = 113   #Channel of interest
+RND_SEED = 5574533 #Random number seed
+BREAKUP_MODE = 2     #Controls the nuclear breakup; a 2 here requires xnxn
+INTERFERENCE = 1     #Interference (0 = off, 1 = on)
+IF_STRENGTH = 1.    #% of interference (0.0 - 1.0); ignored if INTERFERENCE=0
+INT_PT_MAX = 0.24  #Maximum pt considered, when interference is turned on; ignored if INTERFERENCE=0
+INT_PT_N_BINS =120   #Number of pt bins when interference is turned on; ignored if INTERFERENCE=0
+XSEC_METHOD = 1 # Set to 0 to use old method for calculating gamma-gamma luminosity
+PYTHIA_FULL_EVENTRECORD = 0 # (0 = off, 1 = on) Writes full pythia information to output (vertex, parents, daughter etc), 0=do not write Pythia record

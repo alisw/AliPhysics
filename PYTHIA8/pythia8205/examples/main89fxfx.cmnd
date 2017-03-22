@@ -1,0 +1,39 @@
+! main89fxfx.cmnd
+
+! Specify statistics parameters.
+Main:numberOfEvents         = 10000  ! number of events generated
+! Tell Pythia that LHEF input is used
+Beams:frameType             = 4
+
+! Use same PDFs and alpha_s as in ME calculation (not necessary!)
+PDF:pSet                  = LHAPDF5:CT10.LHgrid
+SpaceShower:alphaSvalue   = 0.118
+TimeShower:alphaSvalue    = 0.118
+
+! Specify jet matching parameters for FxFx.
+JetMatching:merge            = on
+JetMatching:scheme           = 1
+JetMatching:setMad           = off
+JetMatching:qCut             = 20.0
+JetMatching:coneRadius       = 1.0
+JetMatching:etaJetMax        = 10.0
+SpaceShower:MEcorrections    = off
+TimeShower:pTmaxMatch        = 1
+TimeShower:pTmaxFudge        = 1
+TimeShower:MEcorrections     = off
+TimeShower:globalRecoil      = on
+TimeShower:limitPTmaxGlobal  = on
+TimeShower:nMaxGlobalRecoil  = 1
+TimeShower:globalRecoilMode  = 2
+TimeShower:nMaxGlobalBranch  = 1
+
+! Be more forgiving with momentum mismatches.
+Check:epTolErr               = 1e-2
+
+! Subruns for FxFx NLO jet matching
+LHEFInputs:nSubruns       = 1
+Main:subrun               = 0
+JetMatching:doFxFx        = on
+JetMatching:qCutME        = 10.0
+JetMatching:nJetMax       = 1
+Beams:LHEF                = zProduction_Fxfx_01.lhe.gz

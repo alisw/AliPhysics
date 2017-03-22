@@ -1,0 +1,14 @@
+<chapter name="Welcome">
+ 
+<frameset cols="260,*" framespacing="0" frameborder="0" border="0">
+<frame src="Index.xml" name="index" scrolling="auto" border="0" 
+  marginwidth="20" marginheight="20" frameborder="0">
+</frame>
+<frame src="Frontpage.xml" name="page" scrolling="auto" border="0" 
+  marginwidth="20" marginheight="20" frameborder="0">
+</frame>
+</frameset>
+
+</chapter>
+
+<!-- Copyright (C) 2013 Torbjorn Sjostrand -->

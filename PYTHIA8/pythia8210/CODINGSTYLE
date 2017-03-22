@@ -1,0 +1,345 @@
+Coding Style
+
+This file is only intended for contributors of code to Pythia 8.
+As a normal user you need not read it.
+
+A reasonably consistent coding style enhances readability and
+understanding of code, so do take the time to make new code
+blend smoothly with the existing structure. That said, complete
+consistency is impossible, and style must always come second to
+content. So any rules should be applied with common sense.
+
+Remember to update the xmldoc documentation in parallel with the
+code updates. The xml rules are provided after the coding rules.
+
+-----------------------------------------------------------------------
+
+For the Pythia8 code some principles have been used, some by
+deliberate decision, while others evolved organically.
+An incomplete list is as follows.
+
+ 1. Use existing files to get a feel for the general outlay.
+    (Especially the "core" files that have set the standard for
+    later writing, e.g. Pythia, Event, or Basics.)
+
+ 2. Use standard C++, in a clear and consistent manner. Do not
+    show off by using special tricks that only experts will
+    appreciate. Do not use any experimental language features.
+
+ 3. English is the only allowed language (for comments, variable
+    names, etc.).
+
+ 4. Lines should be at most 79 characters long, so that they do
+    not overflow when opened in an 80 characters wide text editor
+    window. This number includes any trailing blanks, another
+    "feature" that should be avoided.
+
+ 5. Never make code dependent on the presence of external libraries.
+    Some libraries, like LHAPDF and HepMC are already interfaced,
+    but only in well-defined non-critical manners. If you want to
+    include interfaces to new libraries, or modify the existing ones,
+    you should bring it up for open discussion beforehand.
+
+ 6. The underscore "character" should be avoided as far as possible;
+    it makes code difficult to read. See also point 24. Currently it
+    is only used in headers, for #ifndef Pythia8_filename_H.
+
+ 7. Extra code used for debugging purposes, or left behind from
+    the development process, even if commented out, should be
+    removed from the public version. Feel free to save your own
+    private versions where such code is available.
+
+ 8. Begin each code file with
+// (filename) is a part of the PYTHIA event generator.
+// Copyright (C) 2015 Torbjorn Sjostrand.
+// PYTHIA is licenced under the GNU GPL version 2, see COPYING for details.
+// Please respect the MCnet Guidelines, see GUIDELINES for details.
+    to establish the legal structure. Follow that with specific
+    information on authorship of the particular file, where relevant,
+    and a very brief summary of the contents. After that follow with
+    #include and other preprocessor commands and namespace Pythia8 {,
+    before the actual code.
+
+ 9. Use lines
+//==========================================================================
+    to separate classes from each other, and from top and bottom
+    material of a file, that does not belong to a class.
+
+10. Use lines
+//--------------------------------------------------------------------------
+    for smaller subdivisions than above. Specifically, in .cc files,
+    insert it between the different methods that belong to the same
+    class.
+
+11. Blank lines should be used to separate the code into suitable
+    chunks of statements that belong together. Never use two or
+    more blank lines consecutively, however.
+
+12. Begin each code chunk with one or more comment lines that
+    explains the purpose of this chunk. Do not overdo documentation,
+    however: the purpose is to provide overview, not clutter.
+
+13. Comment lines may also precede a particularly crucial statement
+    inside a code chunk, without the need for a blank line before.
+
+14. Do not add comments on the same line as a statement:
+       a = b + c;   // No comment here!
+
+15. Write comments in terms of (cryptic but) correct English, with
+    relevant punctuation.
+
+16. Do not use /* .... */ : not for code because all such code
+    should have been removed in the first place (point 7), and not
+    for comments since intent is more obvious if all comment lines
+    begin with //.
+
+17. Indent two further steps for each new logical substructure
+    (loops, conditional statements, etc.). The namespace {, public:
+    and private: are exceptions to this rule, requiring no extra
+    indentation.
+
+18. Do not use tabs for formatting; it may give a mess when read by
+    another user.
+
+19. Use exactly one space to separate logical structures and operators:
+    if (a == b) then {
+    If readibility can be improved by lining up nearby statements then
+    this is allowed to take precedence, however:
+    int    iNew = 0;
+    double pm   = 0.;
+
+20. One area of inconsistency is whether a blank is used after ( or not:
+    void status(int statusIn) {statusSave = statusIn;}
+    virtual void set1Kin( double x1in, double x2in, double sHin);
+    If there is a thought, it is that for short constructions a blank
+    tends to unnecessarily break up the structure, while for longer ones
+    such breaks are necessary to gain overview. Similarly ( ( may often
+    be used to give better structure than ((.
+
+21. Allow several statements on the same line in header files, since
+    operations here should be simple and short. Avoid it in .cc files,
+    where one may want to more carefully study the logical structure,
+    and could more easily miss statements that way.
+
+22. Do not use pointers more than you absolutely need to. For most usage
+    a reference is much nicer, but unfortunetely it cannot be saved.
+    If you need a pointer, have its name end with Ptr, so it is easily
+    recognized. In declarations the * goes with the pointer type:
+    Info* infoPtr;
+    rather than e.g. Info *infoPtr.
+
+23. Class names should begin with a capital letter, whereas instances of
+    this class begin lowercase. Also methods and local variable names
+    should begin lowercase. Only static const VARIABLENAME are given in
+    uppercase throughout.
+
+24. Use capitalization inside a word to help reading, e.g.
+    pAbs, toCMframe, useNewBeamShape, skipInit.
+    Descriptive names are helpful, but don't make them longer than
+    they have to (thisVariableSumsAllDiagonalMatrixElements is better
+    replaced by sumDiag).
+
+25. It is useful if index names begin with an i (or j, k if several
+    are needed) and sizes with an n.
+
+26. Pick ++i instead of i++, unless the latter is intentional.
+    Recall that ++i is updated at the point it is encountered,
+    while i++ implies it need only be updated after other operations
+    have taken place, which can be confusing.
+
+27. Use int for all integers, except where potential overflow warrants
+    long, and avoid unsigned integers.
+
+28. Use double for all real variables.
+
+29. Use the Pythia complex type for all complex variables, defined by
+    typedef std::complex<double> complex;
+    in PythiaComplex.h
+
+30. Use the Pythia Vec4 class for four-vectors.
+
+31. Use string for all text, except when C++ leaves you no option but
+    to use char or char*, e.g. for the name of a file to be opened.
+
+32. Use the Boolean operators &&, || and !, not the alternative old
+    cleartext "and", "or" and "not".
+
+33. Do not use cast notation where function style is possible,
+    i.e. int i = int(r); rather than int i = (int)r;.
+
+34. Do not use typedef (except in point 29 above).
+
+35. Units of GeV for energies and mm for distances are implicit,
+    with c = 1 so the same units can be used for momentum, mass
+    and time.
+
+36. If an expression needs to be split over lines, let the new line
+    begin with an operator, so that the reason for several lines is
+    apparent:
+    double sum = a + b + c + d
+               + e + f + g;
+    alternatively
+    double sum = a + b + c + d
+      + e + f + g;
+    (i.e. lined-up or indented-two-steps, whatever is most convenient).
+
+37. Be very restrictive with output from your methods. Some limited
+    initialization info may be relevant, but desist if you can.
+    During running printing should either be located in special methods
+    that the user has to call explicitly (with ostream& os = cout as
+    last argument) or, for error messages, make use of the
+    Info::errorMsg(..) method.
+
+38. No global variables. It should be possible to have several
+    instances of Pythia running without any risk of interference
+    between them.
+
+39. Do not have a { on a line of its own, but allow a lone } at
+    the very end of the conditions/loops (or, for longer pieces of
+    code, at the end of each conditions case):
+    if (isCharged) {
+      statements;
+    } else {
+      more statements;
+    }
+
+40. Use the standard constant M_PI for the value of pi = 3.141592...
+
+41. Use pow2(double), pow3(double), pow4(double), pow5(double) and
+    pow6(double) for small positive integer powers, since the standard
+    pow(double, double) can be very slow for such operations.
+
+42. The event record, both the process and event ones, are always
+    passed as references rather than pointers. This allows notation
+    like event[i].p() rather than (*eventPtr)[i].p(); note that
+    eventPtr[i]->p() is not allowed C++ notation.
+
+43. Use standard names for some of the other class instances, like
+    infoPtr, particleDataPtr, rndmPtr, beamAPtr, beamBPtr, couplingsPtr,
+    partonSystemsPtr, userHooksPtr, etc..The Settings database is normally
+    only interrogated during initializations, so is usually passad as
+    reference settings rather than pointer settingsPtr.
+
+44. Only use == and != for comparisons between two pointers,
+    or a pointer and 0. Thus comparisons like (Xptr > 0) are forbidden.
+
+-----------------------------------------------------------------------
+
+Remember to update the xmldoc documentation in parallel with the
+code updates. All the details should make it directly into the
+respective webpage, with UpdateHistory.xml only giving a very
+brief summary. (This is different from Pythia 6, where the update
+notes had to be complete.)
+
+The xml notes are not intended to be read by users, who instead will
+access the html and php equivalents. The translation from xml to
+html and php is done with a specially written conversion program.
+This program is not distributed with the code, to avoid abuse by
+users, but will be run from time to time. The program handles a set
+of new tags, and additionally you can use many standard html ones,
+which are passed on without any action.
+
+Outlined below is the set of xml tags in current use, that are
+covered by a translation program. Also a few other open issues.
+
+We try to stick with xml rules, e.g. <tag>...</tag> for pair
+and <tag/> for single (=combined begin+end). Note that the parsing
+of the conversion program assumes a "sensible" layout of the text.
+
+A) Standard html concepts:
+<h1></h1> a top-level header;
+<h2></h2> a subheader;
+<h3></h3> a subsubheader;
+<h4></h4> a subsubsubheader;
+<br/> a new line;
+<p/> a new paragraph;
+<ol></ol> an ordered list, with <li> items;
+<ul></ul> a bulleted list, with <li> items;
+<li></li> an item in an ordered or bulleted list;
+<dl></dl> a definition list (used for references);
+<dt></dt> a definition term in a definition list;
+<dd></dd> a definition text in a definition list;
+<b></b> boldface;
+<i></i> italics - will be used for typesetting formulae so avoid for text;
+<code></code> inline computer code (teletype font);
+<pre></pre> a piece of code, with linebreaks as formatted (teletype font);
+<a href="..." target="..."></a> anchor;
+<frameset ....></frameset> : only used in Welcome.xml;
+<frame ....></frame> : only used in Welcome.xml;
+<img src="..." alt="..." hspace=... /> only used in Index.xml;
+<table</table> and <td></td> around SaveSettings dialog box.
+
+B) New concepts for simple markup (no interactivity):
+<chapter name="..."></chapter> a large chunk of text,
+    stored as one single xml file;
+<eq></eq> text to be displayed on a separate line, centered if possible
+    (a poor man's equation), maybe typeset in italics (<i>);
+<ei></ei> inline variant of above;
+<note></note> text begun on new line, in boldface;
+<notenl></notenl> text begun, no linebreak, in boldface;
+<file name="..."></file> name of a program file (new paragraph, boldface);
+<class name="..."></class> information on a specific class,
+    specifically the class creation command form;
+<method name="..."></method> explanation of a class method;
+<methodmore name="..."></methodmore> a class method to be listed closely
+    together with the previous one, since they belong together;
+<argument name="..." default="..."></argument> an argument of
+    the class creation or another method in the class, optionally
+    with a default value:
+<argoption value="..."></argoption> further explanation of an
+    allowed option of an argument.
+
+C) New concepts for user interaction in php files (but no interactivity
+in html):
+<ref></ref>
+    reference to an article; replaced by [...] and anchor;
+<aloc href="..."></aloc>
+    anchor among local pages; automatically fills with file type and
+    target="page";
+<aidx href="..."></aidx>
+    anchor from Index.xml to other files; automatically fills with
+    file type and target="page";
+<flag name="..." default="..."></flag>
+    a switch to be used in the event generation; in php shown with
+    radio buttons to pick on (= yes, true) or off (= no, false),
+    written to file as a line with name = value;
+<flagfix name="..." default="..."></flagfix>
+    ditto but no interactivity;
+<modeopen name="..." default="..." min="..." max="..."></modeopen>
+    an integer value to be used in the event generation; in php
+    shown as a dialogue box where an integer can be typed in, and
+    written to file as a line with name = value; the min and max values
+    are optional;
+<modepick name="..." default="..." min="..." max="..."></modepick>
+    an integer value to be used in the event generation; unlike modeopen
+    above there is a fixed set of <option>'s available, in php shown
+    with radio buttons to pick one of them, written to file as a line
+    with name = value; the min and max values are optional;
+<option value="..."></option>
+    a discrete set of options for a <modepick>, see above;
+<modefix name="..." default="..." min="..." max="..."></modefix>
+    ditto but no interactivity;
+<parm name="..." default="..." min="..." max="..."></parm>
+    a double-precision value to be used in the event generation; in php
+    shown as a dialogue box where a real number can be typed in, and
+    written to file as a line with name = value; the min and max values
+    are optional;
+<parmfix name="..." default="..." min="..." max="..."></parmfix>
+    ditto but no interactivity;
+<word name="..." default="..."></word>
+    a character string, without blanks, to be used in the event generation
+    mainly for file names; in php shown as a dialogue box where text can be
+    typed in, and written to file as a line with name = value;
+<wordfix name="..." default="..."></wordfix>
+    ditto but no interactivity;
+
+D) New concepts that could one day be made interactive, but currently
+are not:
+<particle id="..." name="..." antiName="..." spinType="..."
+    chargeType="..." colType="..." m0="..." mWidth="..." mMin="..."
+    mMax="..." tau0="..."></particle>
+    the properties of a particle, most of which are optional;
+<channel onMode="..." bRatio="..." meMode="..." products="..."/></channel>
+    the properties of a decay channel; this tag can only appear inside a
+    <particle>...</particle> block; the meMode field is optional; the
+    products appear as a blank-separated list.

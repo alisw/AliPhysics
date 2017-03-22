@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
+	<META NAME="CREATED" CONTENT="20080430;10144900">
+	<META NAME="CHANGED" CONTENT="20080507;16563500">
+	<STYLE>
+	<!--
+		@page { size: 8.5in 11in; margin: 0.79in }
+		P { margin-bottom: 0.08in }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P STYLE="margin-top: 0.17in; margin-bottom: 0.2in; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>============================================================================</FONT></FONT></P>
+<P STYLE="margin-top: 0.17in; margin-bottom: 0.2in; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>Description of ALICE
+Silicon Strip Detector (SSD) Code (May 7, 2008, Enrico Fragiacomo)</FONT></FONT></P>
+<P STYLE="margin-top: 0.17in; margin-bottom: 0.2in; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>============================================================================</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><A NAME="Content"></A><STRONG><FONT SIZE=4 STYLE="font-size: 16pt">Content</FONT></STRONG>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<OL>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#punto 1">Geometrical
+	description of the SSD module</A></P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#punto 2">Detector
+	response simulation</A></P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#punto 3">Cluster finding
+	and local reconstruction</A></P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#punto 4">Calibration
+	files (OCDB)</A></P>
+	<LI><P STYLE="margin-bottom: 0in"><A HREF="#punto 5">ECS Run types
+	and DAs</A></P>
+</OL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-top: 0.17in; margin-bottom: 0.2in; page-break-after: avoid">
+<FONT SIZE=4><FONT FACE="Albany, sans-serif">============================================================================</FONT></FONT></P>
+<P><STRONG><A HREF="#Content" NAME="punto 1">Geometrical description
+of the SSD module</A></STRONG></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Each of the 1698 SSD modules (748 on
+layer5 and 950 on layer6, module index ranging 500-2198) is a
+double-sided silicon strip detector. 
+</P>
+<P STYLE="margin-bottom: 0in">Both P- and N-side has 768 strips,
+strip numbering ranging 0-767. Strip 0 on Pside is opposite to strip
+0 on Nside (note that hardware numbering ranges 0-1535, with strip
+1535, on Nside, opposite to strip 0 on Pside. This leads to
+conversions of the type strip=1535-strip for Nside, e.g. in the
+streamer class for rawdata decoding, see below).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">P- and N-stereo angles are 7.5
+milliradiant and 27.5 milliradiant, respectively, leading to a P-to-N
+stereo angle of 35 milliradiant. This small value eventually
+decreases the resolution (750 microns) along the z-coordinate
+parallel to the strips but reduces the number of fake intersections
+(ghosts). The resolution along the x-coordinate, perpendicular to the
+strips, is down to 20 microns.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Detector size along x (r-phi): 72960
+microns</P>
+<P STYLE="margin-bottom: 0in">Detector size along z: 40000 microns</P>
+<P STYLE="margin-bottom: 0in">Detector thickness (local y): 300
+microns</P>
+<P STYLE="margin-bottom: 0in">Strip pitch: 95 microns</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Stereo angles, detector sizes and
+number of channels are controlled via the <B>AliITSsegmentationSSD</B>
+class, which also provides the tools for system frame conversion
+(local to global and viceversa). 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Each SSD module is readout by 12 chips,
+6 on P- and 6 on N-side, each of them reading 128 strips. Conversion
+from local coordinates to chip index is also provided by
+AliITSsegmentationSSD for dead area recovery during tracking (if the
+track misses the point, the tracker checks if the area is readout by
+a dead chip).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">=================================================================================================================</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P><A NAME="punto 2"></A><STRONG><A HREF="#Content" NAME="punto 2">Detector
+response simulation</A></STRONG></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The SSD response simulation and
+digitization proceeds via the <B>AliITSsimulationSSD</B> class with
+the method DigitiseModule(), which in turn is called for each module
+by the HitsToDigits method of AliITS. Calibration and segmentation
+information are obtained via the <B>AliITSDetTypeSim</B> class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"> DigitiseModule calls: 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<OL>
+	<LI><P STYLE="margin-bottom: 0in">HitsToAnalogDigits, which 
+	provides the analog strip signal from the energy release of the
+	particle passing through the module. The step between two geant hits
+	(tipically, one entering and one exiting the module for
+	perpendicular tracks) is further divided into 25 microns step to
+	allow for a better geometrical description of the charge
+	distribution in the silicon. From the energy release in the step a
+	certain amount of charge is produced (as electron-holes pairs
+	generated in the middle of the step) which drifts as gaussian clouds
+	to the two sides of the detector (electrons to the P- and holes to
+	the N-side). The width of the cloud (which eventually determines the
+	number of strips involved by the cloud) depends on the drift
+	constant D and on the drift time, which in turn depends on the drift
+	velocity and the generation point. Both D and drift velocity differ
+	for the two types of carriers. The percentage of the charge gaussian
+	cloud which spatially corresponds to a strip is given to that strip.
+		</P>
+	<P STYLE="margin-bottom: 0in"></P>
+	<LI><P STYLE="margin-bottom: 0in">SdigitToDigit, which in turn: 
+	</P>
+	<OL>
+		<LI><P STYLE="margin-bottom: 0in">distributes the signal to the
+		neighbouring strips according to the capacitive coupling, 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">adds the electronic noise
+		(modeled as a gaussian distribution) to each strip (noise values
+		are taken from the OCDB via AliITSCalibrationSSD);</P>
+		<LI><P STYLE="margin-bottom: 0in">kills dead strips;</P>
+		<LI><P STYLE="margin-bottom: 0in">zero-suppresses those strips with
+		signal below 3*sigma_noise.</P>
+		<LI><P STYLE="margin-bottom: 0in">signal is finally converted to
+		ADC units and uncalibrated for the gain (with values from the
+		OCDB).</P>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">========================================================================================================================</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P><A NAME="punto 3"></A><STRONG><A HREF="#Content" NAME="punto 3">Cluster
+finding and local reconstruction</A></STRONG></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Cluster finding and local
+reconstruction in the SSD proceeds via the AliITSClusterFinderV2SSD
+class. As AliReconstruction::RunLocalEventReconstruction calls
+AliITSReconstructor::Reconstruct for the ITS and in turn
+AliITSDetTypeRec::DigitsToRecPoints, two differents methods of
+AliITSClusterFinderV2SSD (FindRawClusters or RawdataToClusters) can
+be called for each SSD module depending whether the input is a digits
+file (essentially from simulation) or a rawdata file (from real
+data). 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">===============================================================================================================================</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P><A NAME="punto 4"></A><STRONG><A HREF="#Content" NAME="punto 4">Calibration
+Files (OCDB)</A></STRONG></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">There are 4 directories in ITS/Calib
+with calibration data to be used in SSD reconstruction</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<OL>
+	<LI><P STYLE="margin-bottom: 0in">NoiseSSD</P>
+	<LI><P STYLE="margin-bottom: 0in">PedestalSSD</P>
+	<LI><P STYLE="margin-bottom: 0in">BadChannelsSSD</P>
+	<LI><P STYLE="margin-bottom: 0in">GainSSD</P>
+</OL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">========================================================================================================================</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P><A NAME="punto 5"></A><STRONG><A HREF="#Content" NAME="punto 5">ECS
+Run Types amd DA</A></STRONG></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">1) STANDALONE</P>
+<P STYLE="margin-bottom: 0in">- for test purposes</P>
+<P STYLE="margin-bottom: 0in">- no DA launched at EOR</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">2) PEDESTAL</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">3) PHYSICS</P>
+<P STYLE="margin-bottom: 0in">Nothing done for now.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">===========================================================================================================================</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

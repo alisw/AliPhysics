@@ -1,0 +1,423 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{graphicx}
+\usepackage[dvips]{epsfig}
+\usepackage{a4wide}
+\usepackage{amsmath}
+\parindent=0pt
+
+\begin{document}
+  \title{TPC Offline Manual}
+  \author{P.~Christiansen, H.~Helstrup, M.~Ivanov, M.~Kowalski, 
+    and J.~Wiechula} 
+  \date{v0.1, January 31, 2008} 
+\maketitle
+\begin{abstract}
+  This document is meant to give an overview of TPC offline code
+  relevant for expert shifters and for people interested in analyzing
+  TPC data.
+\end{abstract}
+
+\tableofcontents
+
+\newpage 
+
+
+
+\section{Environment setup on lxplus cern.ch}
+
+This part is valid only for login on lxplus.cern.ch. In case of problems contact marian.ivanov@cern.ch.
+
+
+{\bf{Alien setup:}}
+\begin{itemize}
+\item Use bash shell: {\it bash}
+\item {\it{source /afs/cern.ch/user/m/miranov/public/.balien}}
+\item {\it alien-token-init \$USERNAME}
+\item Default message example -  Your token is valid until: Sat Feb  9 15:21:17 2008
+\item In case of problem be sure that your certificate is fine.
+      e.g. Check the presence of the .globus director: 	ls ~/.globus 
+\item {\it source /tmp/gclient\_env\_\$UID}
+\end{itemize}
+
+{\bf{AliRoot setup:}}
+\begin{itemize}
+\item The central - default aliroot setup - type {\it new}
+\item The TPC setup -  regularly updated HEAD version of HEAD. Use this setup if you want to use TPC specific features. The will be  \\
+      {\it source //afs/cern.ch/user/m/miranov/public/.balice}
+\end{itemize} 
+
+
+
+
+\section{Data Location and Access}
+
+
+\subsection{Raw data}
+
+The naming scheme for the raw files is:\\
+\texttt{<year2digits><runno9digits><gdc3digits>.<fileno>0.root}\\
+%FIXME: is this true?
+Example: 07000015067004.10.root
+
+A single tag file is created for each GDC.\\
+
+The directories depends on whether the run was recorded in standalone
+or in global mode. Unfortunately it is not always possible to see from
+the logbook overview if a run was started as a stand alone or a global
+run (DAQ is always standalone).\\
+
+% FIXME: is this true?
+
+\textbf{Standalone runs:}\\
+
+CASTOR: \texttt{/castor/cern.ch/alice/tpc/<year>/<month>/<day>/<hour>} \\
+AliEn: \texttt{/alice/data/<year>/LHC<year2digits><quarter>\_TPC/<runno>/raw/} \\
+
+Where \texttt{<quarter>} can be w (winter).\\
+
+% FIXME: update with all 4 quarters
+
+\textbf{Global runs:}\\
+
+CASTOR: \texttt{/castor/cern.ch/alice/data/<year>/<month>/<day>/<hour>}\\
+AliEn:  \texttt{/alice/data/<year>/LHC<year2digits><quarter>/<runno>/raw/}
+
+\subsubsection{Access to raw data}
+
+The files located on CASTOR can be accessed directly from
+\texttt{lxplus} machines where one can use \texttt{nsls} to list files
+and \texttt{rfcp} to copy files to local disk. The files can also be
+accessed directly inside a ROOT session if ROOT is compiled with rfio
+option (\texttt{--enable-rfio}).
+
+Example of ROOT filename:\\
+\texttt{rfio:/castor/cern.ch/alice/tpc/2007/12/13/05/07000011524011.6380.root}\\
+Nb! You have to specify \texttt{rfio:} to let ROOT know that it is a
+remote/CASTOR file you wish to open.\\
+
+The data registered in AliEn can be directly streamed in ROOT (if ROOT
+is compiled with AliEn support).  One has to get an AliEn token
+(\texttt{alien-token-init}) and then do\\
+\texttt{Tgrid::Connect("alien://");}\\
+inside root, aliroot or alieve.
+
+Example of ROOT path-name:\\
+\texttt{alien:///alice/data/2007/LHC07w\_TPC/000010897/raw/07000010897011.20.root}\\
+NB! \texttt{alien://} tells ROOT that it is an AliEn file you wish to
+open.
+
+\subsection{Reconstructed data}
+
+The automatically reconstructed data can be found on AliEn. Instead of the \texttt{raw} directory, the files are stored under \texttt{ESDs}.
+
+Example of directory with reconstructed files:\\
+\texttt{/alice/data/2007/LHC07w/000014493/ESDs/00120/}\\ 
+The name of the directory \texttt{00120} corresponds to the last 5
+digits in the raw file name.
+
+\subsubsection{Analysis of reconstructed data}
+
+An example AnalysisTask for looping over the clusters in reconstructed
+tracks is under development.
+
+An early working example can be found at:\\
+\texttt{http://www.hep.lu.se/staff/christiansen/tpc\_ana\_track\_example.tgz}
+
+\newpage 
+
+\section{Data Monitors}
+
+There two types of monitors. The TPC pad monitor and the standard
+AliEve monitors.
+
+\subsection{The TPC Pad Monitor}
+
+The TPC pad monitor is maintained by Stefan Kniege as both an AliRoot
+and standalone application. The standalone application is used for
+installation on the TPC shift machine in the counting room.
+
+The AliRoot version can be run from inside an aliroot session like this:
+
+\begin{verbatim}
+.L $ALICE_ROOT/lib/tgt_linux/libTPCmon.so
+.L $ALICE_ROOT/TPC/macros/TPCMonitor.C
+TPCMonitor()
+\end{verbatim}
+
+Now the GUI starts and you should click:\\
+\texttt{Sel.Format} - Select ROOT and remember to press 
+\texttt{Select Entry}\\
+\texttt{Sel.File} - Open file - can soon be alien file\\
+Press \texttt{Next Event} until the data is loaded\\
+
+\subsection{AliEve}
+
+AliEve is part of AliRoot and is a general purpose 3d graphical
+monitoring framework. It is called with the command
+\texttt{alieve}. The monitoring display for different detectors is
+controlled by macros. For the TPC, AliEve can be used to display both
+raw data and reconstructed data.\\
+
+To run the TPC raw display one has to call the following macro inside alieve:
+
+\begin{verbatim}
+.L ../test-macros/tpc_gui.C 
+tpc_gui(<filename>, <event_no>) 
+\end{verbatim}
+
+In the GUI you can double click on TPCLoader to control the many
+different draw options. 
+
+Click \texttt{Help} to see how to navigate in the opengl window. You
+can also get the menu of graphical elements by clicking on them
+(\texttt{SHIFT+right click}) and see 1d projections of the raw data
+(\texttt{CTRL+left click}).
+
+% FIXME Need description of ESD monitor. Especially the nice one used by Marian.
+
+\newpage
+
+\section{Calibration, Shuttle and QA}
+
+\subsection{Calibration Classes}
+
+% FIXME: Needs input
+
+\subsubsection{AliTPCdataQA}
+
+This special calibration class is used for QA of raw data, but can
+also be run standalone. It is currently under development. The problem
+is how to extract relevant parameters from the raw data which are not
+dominated by the large noise.
+
+\subsection{The Shuttle}
+
+% FIXME: Needs input
+
+\subsection{TPC QA}
+
+A first version of the TPC QA have recently been committed. It
+contains the basic structure and a few histograms.
+
+The TPC QA is made in the standard ALICE QA framework and contains the
+3 classes:\\
+\texttt{AliTPCQAChecker, AliTPCQADataMakerSim,
+AliTPCQADataMakerRec}.
+
+The DataMaker classes makes the histograms from the relevant data ---
+hits and digits for \texttt{Sim}, and raw, rec points and ESDs for
+\texttt{Rec} --- and the Checker contains the rules for comparing the
+histograms to the reference histograms (which currently does not
+exist). The Checker is currently empty which means that the default
+comparison is employed.
+
+The implementation is slightly different than for the other QA classes
+since we have chosen to have histogram pointers in the class to make
+the class easier to debug. The only place where this could cause
+a problem is in the copy constructor where the histogram pointers have
+to be assigned after the ``lists'' have been copied. This has been
+implemented, but not tested.
+
+In the QA Checker for raw data we use the more powerful TPC
+calibration framework (the class AliTPCdataQA, see above) so that the
+method for handling the raw data QA is non-standard. Instead of
+filling the histograms in the \texttt{MakeRaws} method, the
+calibration object is filled, and it is first in the method
+\texttt{EndOfDetectorCycle} when we have called
+\texttt{AliTPCdataQA::Analyse} that the histogram is projected from
+the calibration object and added to the list.
+
+The QA can be run like this inside aliroot:
+
+\begin{verbatim}
+  AliQADataMakerSteer* dataMaker = new AliQADataMakerSteer();
+  dataMaker->Run("TPC", <type>, filename);  
+\end{verbatim}
+
+Where \texttt{filename} does not have to be supplied for data in the
+same directory (except for raw data), and \texttt{<type>} can be:
+
+\begin{verbatim}
+AliQA::kRAWS
+AliQA::kHITS
+AliQA::kSDIGITS
+AliQA::kDIGITS
+AliQA::kRECPOINTS
+AliQA::kESDS
+\end{verbatim}
+
+\newpage
+
+\section{Simulation and Reconstruction}
+
+This section gives a short overview of the TPC simulation and
+reconstruction software. Other sources of information can be found in
+the ALICE TPC TDR~\cite{tpctdr}, the ALICE Physics Performance
+Reports~\cite{Carminati:2004fp,Alessandro:2006yt} (1: p.1620-1627,
+updated description of TPC, 2: p.~1326-1336, description of
+clustering, tracking algorithms and performance).
+
+The TPC simulation and reconstruction consists of the following steps:
+\begin{itemize}
+\item Energy loss simulation. The physics routine which is called by
+e.g. GEANT3. Output: TPC.Hits.root.
+\item Signal generation. The electrons drift to the ROCs and are
+amplified and digitized. Output: TPC.Digits.root.
+\item Clustering. The first step of reconstruction is the grouping of
+signals into clusters. The same algorithm is applied to real data and
+simulated data. Output: TPC.RecPoints.root.
+\item Tracking. The last step of reconstruction is the grouping of
+clusters into tracks. The same algorithm is applied to real data and
+simulated data. Output: AliESDs.root.
+\end{itemize}
+This section gives a short overview of the TPC simulation and
+reconstruction software. Other sources of information can be found in
+the ALICE TPC TDR~\cite{tpctdr}, the ALICE Physics Performance
+Reports~\cite{Carminati:2004fp,Alessandro:2006yt} (1: p.1620-1627,
+updated description of TPC, 2: p.~1326-1336, description of
+clustering, tracking algorithms and performance).
+
+The TPC simulation and reconstruction consists of the following steps:
+\begin{itemize}
+\item Energy loss simulation. The physics routine which is called by
+e.g. GEANT3. Output: TPC.Hits.root.
+\item Signal generation. The electrons drift to the ROCs and are
+amplified and digitized. Output: TPC.Digits.root.
+\item Clustering. The first step of reconstruction is the grouping of
+signals into clusters. The same algorithm is applied to real data and
+simulated data. Output: TPC.RecPoints.root.
+\item Tracking. The last step of reconstruction is the grouping of
+clusters into tracks. The same algorithm is applied to real data and
+simulated data. Output: AliESDs.root.
+\end{itemize}
+
+\subsection{Simulation}
+
+The simulation is currently working for GEANT3 and FLUKA simulations. 
+
+How to switch between GEANT3 and FLUKA? In Config*.C macro one has to:
+\begin{itemize}
+\item replace    \\
+// libraries required by geant321\\
+$\sharp$ if defined($_{--}$CINT$_{--}$)\\
+      gSystem->Load("libgeant321");\\
+$\sharp$ endif\\
+
+      new     TGeant3TGeo("C++ Interface to Geant3");\\
+
+ with \\
+     gSystem->Load(''libTFluka'');\\
+     new TFluka("C++ Interface to Fluka",0/*verbositylevel*/);\\
+     
+\item add a line TPC->SetPrimaryIonisation();  
+\end{itemize}
+
+\subsubsection{TPC versions}
+We have 4 TPC versions:
+\begin{itemize}
+\item AliTPCv0 - no sensitive volumes, geometry as in other versions
+\item AliTPCv1 - fast simulation - the sensitive elements are thin gas strips
+placed at the pad center, where space-points are created, then the coordinates 
+are smeared according the space-point resolution
+\item AliTPCv2 - the defaul version - detailed simulation \\
+In the case of GEANT3 the distance to the next primary ionization is calculated
+in \texttt{AliTPCv2::StepManager} method. In case of FLUKA it is handled by 
+the FLUKA code itself.
+The energy loss simulation is well
+described in the TPC TDR~\cite{tpctdr}.
+\item AliTPCv3 - used only for the space-charge studies, the sensitive volume 
+is the entire drift gas.
+\item AliTPCv4 - used for Krypton simulations.
+\end{itemize}
+The comparison of the energy loss simulation with test beam data is
+covered in the note~\cite{tpctune}.\\
+The result of the simulation are hits - the space point coordinates and the 
+track label.
+Hits from the simulation are converted to Digits in: \\
+\texttt{AliTPC::Hits2Digits()} which runs in a loop over sectors.
+the relevant methods are:
+\begin{itemize}
+\item \texttt{MakeSector} (drift and amplification) - each electron is 
+transported 
+to the readout chamber and amplified.
+\item \texttt{DigitizeRow} - for each electron at the given row the signal is 
+calculated in the method \texttt{GetSignal}. This method returns the track 
+label. For every digit labels of 3 tracks contributing mostly to this
+digit are stored as well. This is controlled by the \texttt{GetList}
+metod.
+\end{itemize}
+In time direction  a Gaussian response is assumed in pad direction we use 
+the Gatti-Mathiesson function~\cite{math}.\\
+It turned out recently that the
+response function after filtering and baseline restoration is
+asymmetric and one can eventualy change this.
+\subsection{Reconstruction}
+
+Parameters used by the reconstruction are set in the AliTPCRecoParam,
+e.g., the CtgRange, which removes clusters with angles less than 45
+degrees (default) with respect to the beam axis, where the track
+density is too high in Pb+Pb collisions, but which are important in
+cosmic ray data.
+
+If one wants to have access to the TPC cluster information in the
+reconstructed tracks it is important to call\\
+\texttt{AliTPCReconstructor::SetStreamLevel(1)} and\\
+\texttt{reco.SetWriteESDfriend(kTRUE)}\\
+before calling the reconstruction.
+
+\subsubsection{Clustering}
+
+For each row in a sector the signals are stored in an array of size
+Ntimebins $\times$ Npads. In the code there is a loop over this matrix
+and for each peak (local maximum) one makes a cluster.
+% FIXME: starting from the highest maximum and going down?
+
+The clusters are matrices of 5 $\times$ 5 (pads $\times$ timebins) and
+the position in space and time is calculated from a charge weighted
+average over this matrix. The total charge $Q$ is the sum of all
+charge and $Q_{\text{MAX}}$ is the charge at the center of cluster
+(maximum).
+
+For small clusters a symmetrization algorithm is applied to the cluster
+which has been discussed if it should be removed since it introduces
+systematic binning effects.
+
+\subsubsection{Tracking}
+
+% FIXME: To be done
+
+
+\subsection{Reconstruction of raw data}
+
+% FIXME: Should we have a grid example here?
+
+\begin{thebibliography}{9}
+  
+\bibitem{tpctdr} ALICE Collaboration, ``Time Projection Chamber'',
+  ALICE TDR 7, CERN/LHCC 2000-001.
+\bibitem{math} J.S. Gordon and E. Mathieson, Nucl. Instrum. Methods 227 
+(1984) 267;\\
+E. Mathieson and J.S. Gordon, Nucl. Instrum. Methods 227 (1984) 277;\\
+J.R. Thompson et al., Nucl. Instrum. Methods A234 (1985) 505; \\
+E. Mathieson, Nucl. Instrum. Methods A270 (1988) 602.
+%\cite{Carminati:2004fp}
+\bibitem{Carminati:2004fp}
+  F.~Carminati {\it et al.}  [ALICE Collaboration],
+  %``ALICE: Physics performance report, volume I,''
+  J.\ Phys.\ G {\bf 30}, 1517 (2004).
+  %%CITATION = JPHGB,G30,1517;%%
+
+%\cite{Alessandro:2006yt}
+\bibitem{Alessandro:2006yt}
+  B.~Alessandro {\it et al.}  [ALICE Collaboration],
+  %``ALICE: Physics performance report, volume II,''
+  J.\ Phys.\ G {\bf 32}, 1295 (2006).
+  %%CITATION = JPHGB,G32,1295;%%
+
+\bibitem{tpctune} P.~Christiansen and P.~Gros, for the Alice TPC
+  Collaboration, ``Benchmarking the AliRoot TPC simulation against the
+  2004 TPC test beam data'', draft for ALICE note.
+
+\end{thebibliography}
+\end{document}
+

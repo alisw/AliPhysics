@@ -1,0 +1,36 @@
+! main89ckkwl.cmnd
+
+! Specify statistics parameters.
+Main:numberOfEvents         = 10000  ! number of events generated
+! Tell Pythia that LHEF input is used
+Beams:frameType             = 4
+
+! Specify merging parameters for CKKW-L, UMEPS, UNLOPS.
+Merging:TMS                 = 10.                  ! merging scale value
+Merging:Process             = pp>LEPTONS,NEUTRINOS ! process definition
+Merging:nJetMax             = 2         ! maximal number of additional LO jets
+TimeShower:pTmaxMatch       = 1
+SpaceShower:pTmaxMatch      = 1
+
+! Set renormalisation / factorisation scales of the 2->2 process
+Merging:muFac               = 91.188
+Merging:muRen               = 91.188
+Merging:muFacInME           = 91.188
+Merging:muRenInME           = 91.188
+
+! Use same PDFs / alpha_s value as in ME calculation (not necessary!)
+PDF:pSet                  = LHAPDF5:CT10.LHgrid
+SpaceShower:alphaSvalue   = 0.118
+TimeShower:alphaSvalue    = 0.118
+
+! Do not include rapidity ordering (not necessary!)
+SpaceShower:rapidityOrder = off
+
+! Be more forgiving with momentum mismatches.
+Check:epTolErr               = 2e-2
+
+! Subruns for CKKW-L merging.
+LHEFInputs:nSubruns       = 1
+Main:subrun               = 0
+Merging:doPTLundMerging   = on
+Beams:LHEF                = zProduction_Ckkwl_012.lhe.gz

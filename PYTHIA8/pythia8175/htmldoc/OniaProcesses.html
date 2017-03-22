@@ -1,0 +1,357 @@
+<html>
+<head>
+<title>Onia Processes</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+
+<h2>Onia Processes</h2>
+
+Production of J/psi or Upsilon, directly and via chi states and the 
+colour-octet mechanism. 
+In each process the square-bracketed expression specifies the state 
+in spectroscopic notation, <i>(2S+1) L J</i>, followed by 
+<i>(1)</i> for colour-singlet states and <i>(8)</i> for 
+colour-octet ditto. 
+
+<p/>
+The original Fortran code for these processes has been contributed 
+by Stefan Wolf [unpublished]. For the C++ version only the unpolarized
+expressions are retained, since the theoretical predictions of the 
+colour-octet model anyway do not agree with the experimental 
+observations. Furthermore, the polarization effects are modest,
+so isotropic decay is not a bad starting point. Such an event sample
+can afterwards be reweighted at will by the user, to test various
+assumptions.
+
+<p/>
+The description of  
+<a href="TimelikeShowers.html" target="page">final-state radiation</a>
+is in this case based on some further model assumptions.
+
+<p/>
+Most of the processes below are divergent in the limit <i>pT -> 0</i>, 
+and therefore a <i>pTmin</i> scale should be set. Comparisons with 
+data indicate that this divergence can be tamed the same way as for 
+the normal QCD <i>2 -> 2</i> cross sections [<a href="Bibliography.html" target="page">Bar06,Kra08</a>], 
+which makes sense, since they are all dominated by the same kind of 
+<i>t</i>-channel gluon exchange. It is therefore possible to use the 
+<a href="UserHooks.html" target="page">SuppressSmallPT</a> user hook to impose a 
+reweighting that cancels the low-<i>pT</i> divergence.
+
+<p/>
+An eikonalized description of these processes is included in the 
+multiparton-interactions framework. Here the low-<i>pT</i> dampening
+is automatic, and additionally the framework is more consistent
+(e.g. with respect to energy-momentum constraints and the 
+impact-parameter description) for events where the onium production 
+is not the hardest subprocess, as would often be the case in the 
+low-<i>pT</i> limit.
+
+<h3>Charmonium</h3>
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:all &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of charmonium production.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:gg2QQbar[3S1(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> ccbar[3S1(1)] g</i>.
+Code 401.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:gg2QQbar[3P0(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> ccbar[3P0(1)] g</i>.
+Code 402.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:gg2QQbar[3P1(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> ccbar[3P1(1)] g</i>.
+Code 403.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:gg2QQbar[3P2(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> ccbar[3P2(1)] g</i>.
+Code 404.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qg2QQbar[3P0(1)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> ccbar[3P0(1)] q</i>.
+Code 405.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qg2QQbar[3P1(1)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> ccbar[3P1(1)] q</i>.
+Code 406.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qg2QQbar[3P2(1)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> ccbar[3P2(1)] q</i>.
+Code 407.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qqbar2QQbar[3P0(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> ccbar[3P0(1)] g</i>.
+Code 408.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qqbar2QQbar[3P1(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> ccbar[3P1(1)] g</i>.
+Code 409.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qqbar2QQbar[3P2(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> ccbar[3P2(1)] g</i>.
+Code 410.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:gg2QQbar[3S1(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> ccbar[3S1(8)] g</i>.
+Code 411.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:gg2QQbar[1S0(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> ccbar[3S1(8)] g</i>.
+Code 412.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:gg2QQbar[3PJ(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> ccbar[3S1(8)] g</i>.
+Code 413.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qg2QQbar[3S1(8)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> ccbar[3S1(8)] q</i>.
+Code 414.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qg2QQbar[1S0(8)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> ccbar[3S1(8)] q</i>.
+Code 415.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qg2QQbar[3PJ(8)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> ccbar[3S1(8)] q</i>.
+Code 416.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qqbar2QQbar[3S1(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> ccbar[3S1(8)] g</i>.
+Code 417.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qqbar2QQbar[1S0(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> ccbar[3S1(8)] g</i>.
+Code 418.
+  
+
+<p/><code>flag&nbsp; </code><strong> Charmonium:qqbar2QQbar[3PJ(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> ccbar[3S1(8)] g</i>.
+Code 419.
+  
+
+<h3>Bottomonium</h3>
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:all &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of charmonium production.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:gg2QQbar[3S1(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> bbbar[3S1(1)] g</i>.
+Code 501.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:gg2QQbar[3P0(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> bbbar[3P0(1)] g</i>.
+Code 502.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:gg2QQbar[3P1(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> bbbar[3P1(1)] g</i>.
+Code 503.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:gg2QQbar[3P2(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> bbbar[3P2(1)] g</i>.
+Code 504.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qg2QQbar[3P0(1)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> bbbar[3P0(1)] q</i>.
+Code 505.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qg2QQbar[3P1(1)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> bbbar[3P1(1)] q</i>.
+Code 506.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qg2QQbar[3P2(1)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> bbbar[3P2(1)] q</i>.
+Code 507.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qqbar2QQbar[3P0(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> bbbar[3P0(1)] g</i>.
+Code 508.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qqbar2QQbar[3P1(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> bbbar[3P1(1)] g</i>.
+Code 509.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qqbar2QQbar[3P2(1)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> bbbar[3P2(1)] g</i>.
+Code 510.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:gg2QQbar[3S1(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> bbbar[3S1(8)] g</i>.
+Code 511.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:gg2QQbar[1S0(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> bbbar[3S1(8)] g</i>.
+Code 512.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:gg2QQbar[3PJ(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>g g -> bbbar[3S1(8)] g</i>.
+Code 513.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qg2QQbar[3S1(8)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> bbbar[3S1(8)] q</i>.
+Code 514.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qg2QQbar[1S0(8)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> bbbar[3S1(8)] q</i>.
+Code 515.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qg2QQbar[3PJ(8)]q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q g -> bbbar[3S1(8)] q</i>.
+Code 516.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qqbar2QQbar[3S1(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> bbbar[3S1(8)] g</i>.
+Code 517.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qqbar2QQbar[1S0(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> bbbar[3S1(8)] g</i>.
+Code 518.
+  
+
+<p/><code>flag&nbsp; </code><strong> Bottomonium:qqbar2QQbar[3PJ(8)]g &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+<i>q qbar -> bbbar[3S1(8)] g</i>.
+Code 519.
+  
+
+<h3>Onium matrix elements</h3>
+
+The implementation of charmonium and bottomonium production, including
+the colour-octet production mechanism, requires information on NRQCD
+matrix elements for the various wavefunctions involved. Default values
+for these are encoded in the following ten variables. They
+are taken from [<a href="Bibliography.html" target="page">Nas00</a>]; see also [<a href="Bibliography.html" target="page">Bar06</a>]. 
+
+<p/><code>parm&nbsp; </code><strong> Charmonium:OJpsi3S11 &nbsp;</strong> 
+ (<code>default = <strong>1.16</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(J/psi)[3S1(1)]&gt;</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Charmonium:OJpsi3S18 &nbsp;</strong> 
+ (<code>default = <strong>0.0119</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(J/psi)[3S1(8)]&gt;</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Charmonium:OJpsi1S08 &nbsp;</strong> 
+ (<code>default = <strong>0.01</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(J/psi)[1S0(8)]&gt;</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Charmonium:OJpsi3P08 &nbsp;</strong> 
+ (<code>default = <strong>0.01</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(J/psi)[3P0(8)]&gt;/m_c^2</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Charmonium:Ochic03P01 &nbsp;</strong> 
+ (<code>default = <strong>0.05</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(chi_c0)[3P0(8)]&gt;/m_c^2</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Bottomonium:OUpsilon3S11 &nbsp;</strong> 
+ (<code>default = <strong>9.28</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(Upsilon)[3S1(1)]&gt;</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Bottomonium:OUpsilon3S18 &nbsp;</strong> 
+ (<code>default = <strong>0.15</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(Upsilon)[3S1(8)]&gt;</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Bottomonium:OUpsilon1S08 &nbsp;</strong> 
+ (<code>default = <strong>0.02</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(Upsilon)[1S0(8)]&gt;</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Bottomonium:OUpsilon3P08 &nbsp;</strong> 
+ (<code>default = <strong>0.02</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(Upsilon)[3P0(8)]&gt;/m_b^2</i>.
+  
+
+<p/><code>parm&nbsp; </code><strong> Bottomonium:Ochib03P01 &nbsp;</strong> 
+ (<code>default = <strong>0.085</strong></code>; <code>minimum = 0.0</code>)<br/>
+<i>&lt;O(chi_b0)[3P0(8)]&gt;/m_b^2</i>.
+  
+
+
+</body>
+</html>
+
+<!-- Copyright (C) 2013 Torbjorn Sjostrand -->
+

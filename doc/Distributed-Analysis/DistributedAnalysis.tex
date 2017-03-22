@@ -1,0 +1,118 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                             %
+%        DISTRIBUTED ANALYSIS NOTE                            %
+%                                                             %
+%       Author: Panos Christakoglou                           %
+%               Markus Oldenburg                              %
+%                                                             %
+%       Last changes                                          %  
+%  15.10.06: Summary and abstract by Markus                   %
+%  22.12.06: Added the CAF reference                          %
+%  22.12.06: Changes in Introduction.tex (Fed - Yves)         %
+%  22.12.06: Changes in Flow.tex (Fed - Yves - Panos)         %
+%  22.12.06: Changes in Local.tex (Fed - Yves - Panos)        %
+%            Changing order (example comes first)             %    
+%  23.12.06: Changes in Interactive.tex (Fed - Yves - Panos)  %
+%            Changing order (example comes first)             %    
+%  23.12.06: Changes in Batch.tex (Fed - Yves - Panos)        %
+%                                                             %    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{indentfirst}
+\usepackage{epsfig}
+\usepackage[dvips]{color}
+\usepackage{listings}
+\lstset{                      % general command to set parameter(s)
+  basicstyle=\ttfamily,       % print whole listing small
+  keywordstyle=\bfseries,     % bold black keywords
+  identifierstyle=,           % identifiers in italic
+  commentstyle=\itshape,      % white comments in italic
+  stringstyle=\ttfamily,      % typewriter type for strings
+  showstringspaces=false,     % no special string spaces
+  columns=fullflexible,       % Flexible columns
+  xleftmargin=2em,            % Extra margin, left
+  xrightmargin=2em,           % Extra margin, right
+  numbers=left,               % Line numbers on the left
+  numberfirstline=true,       % First line numbered
+  firstnumber=1,              % Always start at 1 
+  stepnumber=5,               % Every fifth line 
+  numberstyle=\footnotesize\itshape, % Style of line numbers
+  frame=lines}                % Lines above and below listings
+
+\topmargin=1cm
+
+\newcommand{\tag}{{\ttfamily Event Tag System }}
+
+\begin{document}
+
+\title{Distributed Analysis - Overview of the framework and practical examples}
+\author{Editors: P.~Christakoglou\footnote{{\bf email : Panos.Christakoglou@cern.ch}}, M.~Oldenburg\footnote{{\bf email : Markus.Oldenburg@cern.ch}}}
+\date{\today}
+
+\maketitle
+
+\begin{abstract}
+In order to perform physics analysis in ALICE, a physicist has to use the GRID infrastructure since the data will be distributed in many sites. The machinery though complex due to the nature of the GRID, is totally transparent to the user who is shielded by a friendly user interface. In order to provide some guidelines to successfully utilize the provided functionalities, it was felt that an up-to-date manual was needed. With this document we try to explain the analysis framework as of today by covering all the recent developments.
+
+After a short introduction, the general flow of a GRID based analysis will be outlined. The different steps of how to get your analysis ready and running on the GRID using the newly developed analysis framework will be covered in the subsequent chapters.
+
+
+\end{abstract}
+
+\newpage
+\tableofcontents
+%\lstlistoflistings
+
+
+%________________________________________________________
+\include{Introduction}
+%________________________________________________________
+\include{Flow}
+%________________________________________________________
+\include{Analysis}
+%________________________________________________________
+\include{Local}
+%________________________________________________________
+\include{Interactive}
+%________________________________________________________
+\include{Batch}
+%________________________________________________________
+\include{Summary}
+%________________________________________________________
+\begin{appendix}
+\include{ObjectCuts}
+\include{StringCuts}
+\end{appendix}
+%________________________________________________________
+
+
+%________________________________________________________
+\begin{thebibliography}{99}
+%________________________________________________________
+\bibitem{Note:RefPPR} {"ALICE Physics Performance Report", CERN/LHCC 2003-049.}
+\bibitem{Note:RefComputingTDR} {F.\ Carminati \textit{et al.}, ALICE collaboration, CERN/LHCC 2005.}
+\bibitem{Note:RefCAF} {CAF web cite.}
+\bibitem{Note:RefAnalysisFramework} {http://pcaliweb02.cern.ch/Offline/Analysis/AnalysisFramework/}
+\bibitem{Note:RefFileCatalogMetadataNote} {M.\ Oldenburg, ALICE internal note --- to be submitted to EDMS;\\
+http://cern.ch/Oldenburg/MetaData/MetaData.doc}
+\bibitem{Note:RefEventTagNote} {P.\ Christakoglou and P.\ Hristov, "The Event Tag System", ALICE-INT-2006-023.}
+%________________________________________________________
+\bibitem{Note:RefFileCatalogMetadataWeb} {http://pcaliweb02.cern.ch/Offline/Analysis/RunEventTagSystem/\\RunTags.html\#Run/File\%20metadata}
+\bibitem{Note:RefAlienTutorial} {http://pcaliweb02.cern.ch/Offline/Analysis/Tutorial/\\
+http://indico.cern.ch/conferenceDisplay.py?confId=8546}
+\bibitem{Note:RefALIEN} {
+P.~Saiz \textit{et al.}, Nucl.\,Instrum.\,Meth.\,A\textbf{502} (2003) 437--440;\\ 
+http://alien.cern.ch/.}
+\bibitem{Note:RefPROOF} {http://pcaliweb02.cern.ch/Offline/Analysis/CAF/}
+%________________________________________________________
+\bibitem{Note:ROOTManual} {http://root.cern.ch/root/html/TTreeFormula.html}
+%________________________________________________________
+\bibitem{Note:RefEventTagWeb} {http://pcaliweb02.cern.ch/Offline/Analysis/RunEventTagSystem/\\EventTagsAnalysis.html\#Analysis\%20with\%20tags}
+%________________________________________________________
+\bibitem{Note:RefGSHELL} {http://project-arda-dev.web.cern.ch/project-arda-dev/alice/apiservice/AA-UserGuide-0.0m.pdf}
+%________________________________________________________
+\end{thebibliography}
+%________________________________________________________
+
+
+\end{document}

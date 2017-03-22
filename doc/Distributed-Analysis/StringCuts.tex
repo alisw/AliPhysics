@@ -1,0 +1,93 @@
+\section{String base object and event level tags}
+\label{App:StringCuts}
+\subsection{Variables for run cuts}
+{\ttfamily \noindent
+\begin{verbatim}
+  Int_t   fAliceRunId;                  //the run id
+  Float_t fAliceMagneticField;          //value of the magnetic field
+  Int_t   fAliceRunStartTimeMin;        //minimum run start date
+  Int_t   fAliceRunStartTimeMax;        //maximum run start date
+  Int_t   fAliceRunStopTimeMin;         //minmum run stop date
+  Int_t   fAliceRunStopTimeMax;         //maximum run stop date
+  TString fAlirootVersion;              //aliroot version
+  TString fRootVersion;                 //root version
+  TString fGeant3Version;               //geant3 version
+  Bool_t  fAliceRunQuality;             //validation script
+  Float_t fAliceBeamEnergy;             //beam energy cm
+  TString fAliceBeamType;               //run type (pp, AA, pA)
+  Int_t   fAliceCalibrationVersion;     //calibration version  
+  Int_t   fAliceDataType;               //0: simulation -- 1: data  
+\end{verbatim}
+}
+\subsection{Variables for event cuts}
+To invoke one of these cuts, please make sure to use the {\ttfamily fEventTag.} identifier. Example: {\ttfamily "fEventTag.fNParticipants < 100"}.
+
+\par
+{\ttfamily \noindent
+\begin{verbatim}
+  Int_t fNParticipantsMin, fNParticipantsMax;
+  Float_t fImpactParamMin, fImpactParamMax;
+
+  Float_t fVxMin, fVxMax;
+  Float_t fVyMin, fVyMax;
+  Float_t fVzMin, fVzMax;
+  Int_t fPrimaryVertexFlag;
+  Float_t fPrimaryVertexZErrorMin, fPrimaryVertexZErrorMax;
+
+  ULong64_t fTriggerMask;
+  UChar_t fTriggerCluster;
+  
+  Float_t fZDCNeutron1EnergyMin, fZDCNeutron1EnergyMax;
+  Float_t fZDCProton1EnergyMin, fZDCProton1EnergyMax;
+  Float_t fZDCNeutron2EnergyMin, fZDCNeutron2EnergyMax;
+  Float_t fZDCProton2EnergyMin, fZDCProton2EnergyMax;
+  Float_t fZDCEMEnergyMin, fZDCEMEnergyMax;
+  Float_t fT0VertexZMin, fT0VertexZMax;
+
+  Int_t fMultMin, fMultMax;
+  Int_t fPosMultMin, fPosMultMax;
+  Int_t fNegMultMin, fNegMultMax;
+  Int_t fNeutrMultMin, fNeutrMultMax;
+  Int_t fNV0sMin, fNV0sMax;
+  Int_t fNCascadesMin, fNCascadesMax;
+  Int_t fNKinksMin, fNKinksMax;
+  
+  Int_t fNPMDTracksMin, fNPMDTracksMax;
+  Int_t fNFMDTracksMin, fNFMDTracksMax;
+  Int_t fNPHOSClustersMin, fNPHOSClustersMax;
+  Int_t fNEMCALClustersMin, fNEMCALClustersMax;
+  Int_t fNJetCandidatesMin, fNJetCandidatesMax;
+
+  Float_t fTopJetEnergyMin;
+  Float_t fTopNeutralEnergyMin;
+  
+  Int_t fNHardPhotonCandidatesMin, fNHardPhotonCandidatesMax;
+  Int_t fNChargedAbove1GeVMin, fNChargedAbove1GeVMax;
+  Int_t fNChargedAbove3GeVMin, fNChargedAbove3GeVMax;
+  Int_t fNChargedAbove10GeVMin, fNChargedAbove10GeVMax;
+  Int_t fNMuonsAbove1GeVMin, fNMuonsAbove1GeVMax;
+  Int_t fNMuonsAbove3GeVMin, fNMuonsAbove3GeVMax;
+  Int_t fNMuonsAbove10GeVMin, fNMuonsAbove10GeVMax;
+  Int_t fNElectronsAbove1GeVMin, fNElectronsAbove1GeVMax;
+  Int_t fNElectronsAbove3GeVMin, fNElectronsAbove3GeVMax;
+  Int_t fNElectronsAbove10GeVMin,fNElectronsAbove10GeVMax;
+  Int_t fNElectronsMin, fNElectronsMax;
+  Int_t fNMuonsMin, fNMuonsMax;
+  Int_t fNPionsMin, fNPionsMax;
+  Int_t fNKaonsMin, fNKaonsMax;
+  Int_t fNProtonsMin, fNProtonsMax;
+  Int_t fNLambdasMin, fNLambdasMax;
+  Int_t fNPhotonsMin, fNPhotonsMax;
+  Int_t fNPi0sMin, fNPi0sMax;
+  Int_t fNNeutronsMin, fNNeutronsMax;
+  Int_t fNKaon0sMin, fNKaon0sMax;
+  Float_t fTotalPMin, fTotalPMax;
+  Float_t fMeanPtMin, fMeanPtMax;
+  Float_t fTopPtMin;
+  Float_t fTotalNeutralPMin, fTotalNeutralPMax;
+  Float_t fMeanNeutralPtMin, fMeanNeutralPtMax;
+  Float_t fTopNeutralPtMin;
+  Float_t fEventPlaneAngleMin, fEventPlaneAngleMax;
+  Float_t fHBTRadiiMin, fHBTRadiiMax;
+\end{verbatim}
+}

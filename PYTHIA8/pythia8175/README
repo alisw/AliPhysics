@@ -1,0 +1,186 @@
+
+   BASIC INSTALLATION
+
+1) Once you have unpacked your tarball into a new (sub)directory,
+   the first step is to run the "configure" script. If you accept the 
+   default compiler options, and plan to run PYTHIA 8 standalone, you 
+   only have to type "./configure". This will create the file config.mk. 
+   Actually, running this script by hand is optional since "make" will 
+   run "configure" anyway, but possible errors in the paths will be 
+   less clearly visible.
+
+2) Type "gmake" or "make". This will create an archive library. 
+   On Linux systems gmake and make are usually equivalent. For others, 
+   in case of doubt, use gmake. This applies below as well.
+
+3) The library should now be ready for use. To study some examples,
+   go to the "examples" subdirectory. The README file in that 
+   subdirectory contain further instructions how executables can 
+   be built and run.
+    
+4) At any time, typing "gmake clean" will remove all files related to
+   the library compilation, including the library itself, but it will
+   not reset the configure selections. With "gmake distclean" additionally
+   the configure selection is reset, and many other temporary files are
+   removed. Output files you may have created during your test runs are
+   not affected. (A "gmake clean" is also available in the examples 
+   subdirectory, see the README there.) 
+
+----------------------------------------------------------------------
+
+   ADVANCED INSTALLATION
+
+1) If you want to set various compilation options, or prepare the 
+   linking to the HepMC external library then the "configure" script 
+   will have to do more work. There are two different ways to 
+   accomplish this.
+
+1.1)  You can use command-line arguments to set up the desired library 
+     links. The possible options are:
+     --help : prints a brief summary of the options described here.
+     --enable-debug : turns on debugging flags and turns off optimization.
+         (This makes program execution much slower. If you later want to 
+         switch optimization back on you have to rerun configure without
+         this option, since default is to allow optimization.)
+     --enable-shared : turns on shared-library creation,
+         in addition to the archive libraries always built.
+     --enable-64bits : turns on 64 bits compilation flag
+         (is automatic on many 64-bit installations, but just in case).
+     --lcgplatform=name : allows you to specify the platform assumed for
+         compilation, which also affects the assumed location of the 
+         libraries below; default is x86_64-slc5-gcc43-opt while other 
+         supported values for name include slc4_ia32_gcc34, 
+         slc4_amd64_gcc34 and slc3_ia32_gcc323 (deprecated). 
+     --installdir=name : absolute path to a directory where the compiled
+         library and header file directories will be copied, by a 
+         "gmake install" command subsequent to the "gmake" one. 
+         Note that the files in the current working directory are kept. 
+     --prefix=name : equivalent alternative to --installdir=name.
+     --datadir=name : absolute path to a directory where the xmldoc
+         data directory will be copied, by a "gmake install" command 
+         subsequent to the "gmake" one. Defaults to the same as 
+         --installdir=name if not set separately.
+     --with-hepmc=path : the path to your local copy of the HepMC library.
+         You must use version 2.06 (or later). If the path does not 
+         contain the version number you will be warned about it.    
+     --with-hepmcversion=v : a simpler alternative to the above, valid 
+         if you are using the CERN AFS LCG external area.
+     --enable-gzip     : enable support for gzipped LHE file reading
+     --with-boost=path   see GZIP SUPPORT section below for
+     --with-zlib=path    further details
+     There also are a few environment variables that you can set to 
+     force the configuration process or add flags:
+     USRCXXFLAGS : to add flags. Use this variable to add -fPIC to the 
+         compilation flags for the static libraries
+     USRLDFLAGSSHARED : to add flags to the shared library build command
+     USRSHAREDSUFFIX : to force shared libraries suffix to be like this 
+         (default on MacOSX is dylib).
+
+1.2) If you want to use the external HepMC from some different location, 
+     or it is more convenient to put the paths directly into the script,
+     then you have to edit the "configure" file by hand before you run 
+     it. Search in the "configure" file for
+       HEPMCLOCATION
+     and provide the paths where you have the respective libraries
+     installed on your local platform.
+
+   Information on the selected paths is stored in the files config.mk,
+   examples/config.sh and examples/config.csh when you run "./configure".
+
+1.3) The CC and FC global environment variables can be set to specify 
+   the C++ and Fortran 77/90 compilers, otherwise set in 
+   <code>configure</code> and <code>examples/configure</code>.
+
+2) If you want to change the version of HepMC, you have to
+   rerun the script "configure" with relevant options, then type "make" 
+   to recompile the library hepmcinterface. If you tried already to run 
+   examples with previous versions, pay attention to the environment 
+   variable LD_LIBRARY_PATH (see README in examples).
+
+   Hints on how to install HepMC from scratch can be found in the
+   separate README.HepMC file.
+
+3) If you have two CPUs or cores on your computer then using the -j2 
+   option on make/gmake may speed up compilation.
+
+4) Necessary data are automatically loaded when you use the default 
+   PYTHIA installation directory structure and run the main programs in 
+   the examples subdirectory. However, in the general case, you must 
+   provide the path to the .xml files, originally stored in the xmldoc 
+   directory, where default settings and particle data are found. This 
+   can be done in two ways.
+
+4.1) You can set the environment variable PYTHIA8DATA to contain the 
+     location of the xmldoc directory. In the csh and tcsh shells this 
+     could e.g. be
+       setenv PYTHIA8DATA /home/myname/pythia81xx/xmldoc
+     while in other shells it could be
+       export PYTHIA8DATA=/home/myname/pythia81xx/xmldoc
+     where xx is the subversion number.
+     Recall that environment variables set locally are only defined in 
+     the current instance of the shell. The above lines should go into 
+     your .cshrc and .bashrc files, respectively, if you want a more 
+     permanent assignment.
+
+4.2) You can provide the path as argument to the Pythia constructor in 
+     your main program, e.g.
+       Pythia pythia("/home/myname/pythia81xx/xmldoc");
+     where again xx is the subversion number.
+
+   When PYTHIA8DATA is set it takes precedence, else the path in the 
+   constructor is used, else one defaults to the ../xmldoc directory.
+
+----------------------------------------------------------------------
+
+   GZIP SUPPORT (experimental)
+
+The '--enable-gzip' options turns on support for the reading of
+gzipped LHE files. It relies upon Boost and zlib to function, and
+the locations of these must be set with the '--with-boost=boost_path'
+and '--with-zlib=zlib_path' options. Specifically, it requires (note
+that .so should be replaced with .dylib for Mac OS X):
+  boost_path/include/boost/iostreams/ (with the appropriate files
+                                       in this directory)
+  boost_path/lib/libboost_iostreams.so (or boost_path/lib64/...)
+  zlib_path/libz.so
+
+Note that when compiling a final PYTHIA executable, these libraries
+must also be included, e.g.:
+  -Lboost_path/lib -lboost_iostreams -Lzlib_path -lz
+This is done automatically for the examples in the 'examples' and
+'rootexamples' directories when gzip support is enabled.
+
+When running the executable, if the Boost and zlib libraries are
+in a non-standard directory, the LD_LIBRARY_PATH (DYLD_LIBRARY_PATH
+for Mac OS X) must be set to include these directories, e.g. in a 
+bash-type shell:
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:boost_path/lib:zlib_path
+
+Gzip support currently switches off the '-Wshadow' compiler option
+to avoid the possibility of a large number of warning messages.
+
+----------------------------------------------------------------------
+
+   FOR WINDOWS USERS
+
+The Makefile.msc file is intended for use on Win32/NMAKE systems with 
+the  Microsoft Visual C/C++ compiler. This alternative installation
+is not the development platform, however, and therefore not as well 
+tested. Not all parts of the above installation procedure are the same,
+so some experimentation may be required. A few suggestions are found 
+in the the separate README.Win32 file.    
+
+----------------------------------------------------------------------
+
+   LEARN MORE
+
+To learn more about the current program:
+
+A) A brief self-contained introduction is found in the 
+   htmldoc/pythia8100.pdf file.
+
+B) Details can be found by opening a web browser on the 
+   htmldoc/Welcome.html file, and then navigating among the pages 
+   in the index there.   
+
+----------------------------------------------------------------------

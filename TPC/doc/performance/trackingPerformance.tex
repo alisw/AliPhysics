@@ -1,0 +1,235 @@
+\documentclass{elsart}  
+\usepackage{epsfig,amssymb,amsmath}  
+\usepackage{rotating}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+
+\usepackage{float}
+
+\begin{document}
+
+
+\section{ Alice TPC Performance}
+
+
+%  Chapter 11: Performance  ps file    
+%Editors: Marian Ivanov and Marek Kowalski
+%  1. double hit resolution
+%  2. tracking efficiency
+%  3. momentum resolution
+%  4. dE/dx resolution
+%  5. vertex Resolution 
+
+
+\subsection{Performance}
+
+\subsubsection{tracking performance}
+
+Main issue show the performance and compare the MC and real data
+\begin{itemize} 
+\item Space point resolution parameterization.
+      \begin{itemize} 	
+      \item Plots 1 : 2 2D plots -Y, Z resolution (Z and Angle dependence)
+      \item Plots 2 : 2 1D plots -Y and Z resolution Z dependence (cosmic and MC data)  
+      \end{itemize}
+\item Track parameter resolution. 
+      \begin{itemize} 	
+      \item Primary vertex: $DCA_r$, $DCA_z$, 
+      \item Angular:        $\phi$, $theta$, 
+      \item Momentum:       $1/p_{t}$
+      \item Systematic effects discussion	
+      \end{itemize}	
+      \begin{itemize} 	
+      \item  Plot: Resolution as function of drift length (5) - MC and Real data in the same plots
+      \item  Plot: Resolution as function of the $p_t$        - MC and real data in the same plots
+ 	     + fit of the resolution  $\sigma^2 \approx \sigma^2_0+\sigma^2_1/p_{t}$
+      \item  Plot: Normalized resolution (pulls) as function of the $p_t$        - MC and real data in the same plots
+ 	     + fit of the resolution  $\sigma^2 \approx \sigma^2_0+\sigma^2_1/p_{t}$
+      \item Table: $\sigma_0$ and $\sigma_1$ -  MC and cosmic data       	
+      \end{itemize}	
+\end{itemize}
+
+
+
+\subsubsection{PID performance}
+\begin{itemize} 
+\item  dEdx as function of beta gama - MC and cosmic
+\item  Gain calibration. (Pad by pad, angular and position correction of energy deposit,time dependence of gas gain, dEdx equalization -short, medium, long pads)
+\item  dEdx - Truncated mean - comparison of different truncation + maybe other methods - likelihood, weighted mean
+\item  
+	
+\end{itemize}
+
+
+\subsubsection{tracking efficiency}
+\begin{itemize} 
+\item 100 \% tracking efficiency
+\item Physical tracking efficiency - Dead zone - Absorbtion in the material
+\end{itemize}
+
+\subsection{ double hit resolution}
+Not enough data to study it. I think we should not include it
+
+
+
+\section{ Alice TPC Performance}
+
+
+\subsection{Space point resolution}
+
+\begin{figure}
+  \centering\epsfig{figure=picClusterResol/YResol_Pad0.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picClusterResol/YResol_Pad1.eps,width=0.5\linewidth}
+  \caption{Space point resolution as function of the drift length and the inlination angle.}
+  \label{figPointResolYDRTAN}
+\end{figure}
+
+
+
+\subsection{Track parameter resolution}
+
+
+The TPC performance was studied using the cosmic tracks.
+Cosmic tracks are reconstructed independently in two halves of the TPC. 
+Both tracks are propagated independently to the DCA (Distance of Closest approach)  to point (0,0). Paramaters of the tracks are compared in the DCA point.
+
+
+The TPC fiducial volume was restricted. Following selection criteria were used in the study:
+\begin{itemize}
+\item Selection criteria on parameter matching, to reduce the randmom matching of tracks
+     \begin{itemize}
+     \item $\Delta_{y} \leq$ 3  cm
+     \item $\Delta_{z} \leq$ 15 cm
+     \item $\Delta_{\phi}\leq$ 0.1 rad
+     \item $\Delta_{\theta} \leq$ 0.1 rad
+     \item $\Delta_{1/p_t} \leq$ 0.5 1/GeV		  
+     \end{itemize} 
+\item Selection criteria on the pulls of variables.
+     \begin{itemize}
+     \item $\Delta_{y}/\sigma_{y} \leq$ 10	
+     \item $\Delta_{\phi}/\sigma_{\phi} \leq$ 10	
+     \item $\Delta_{1/p_t}/\sigma_{1/p_t} \leq$ 10	
+     \end{itemize}		 
+\item Selection criteria on geometrical acceptance.
+     \begin{itemize}
+     \item $Z_{inner}\leq$ 240 cm and  $Z_{outer}\leq$ 240 cm- Tracks in TPC fiducial volume
+     \item $DCA_r \leq$ 70 cm     		
+     \end{itemize}	
+\end{itemize}
+ 
+\begin{figure}
+  \centering\epsfig{figure=pic/NCl_Radius.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/NCl_Z.eps,width=0.5\linewidth}
+  \caption{Number of TPC clusters as function of the DCA. 
+   Number of clusters as function of z done with DCA$_R$ selection less than 70 cm}
+  \label{figNCLDCA}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=pic/Sigma1Pt_N.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/Pull1Pt_N.eps,width=0.5\linewidth}
+  \caption{$P_{t}$ resolution as function of number of clusters. This number is dominated 
+     by the fraction of the track in the dead zone.}
+  \label{figPtResNCL}
+\end{figure}
+
+The tracking performance depends on the track topology.
+\begin{itemize}
+\item Space point resolution. Space point error parameterization was determined by fitting the space point residuals for different topologies. (see ?).
+\begin{itemize} 
+\item Z position of space points. 
+\item Local track inclination angle.
+\end{itemize} 
+\item Level arm- the distance between last and first point on track. 
+      The momentum resolution depends on $1/L^2$ and angular resolution on$1/L$.
+\item The fraction of the track in the dead zone, between TPC chambers.
+      (see pic. \ref{figPtResNCL}).   
+\item The material crossed by track. On C side of the TPC (z$\leq$0) the absorber is present.
+      The multiple scattering and precision of the energy loss correction determination depends linearly on the crossed material budget. (In following study not enough statisic to investigate only tracks pointing to ITS detector)  
+\end{itemize}
+
+
+In the following section the resolution and pulls  as function of the z position and $1/p_{t}$ will be shown and results will be discussed. The $1/p_{t}$  variable instead of $p_{t}$ was choosen to characterize the performance as the multiple scattering and unprecission of the energy loss correction  ...
+
+
+\subsection { Y resolution}
+
+YResolution in the Y coordiante is dominated mainly by the precission of the space point measurement in the TPC. Therefore the strong dependence on the z position of the track is visible (see pic \ref{figYvsZ}). 
+
+
+\begin{figure}
+  \centering\epsfig{figure=pic/SigmaY_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/PullY_z.eps,width=0.5\linewidth}
+  \caption{Resolution in y coordinate - DCA$_r$ as function of z position- Drift length}
+  \label{figYvsZ}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=pic/SigmaY_1pt.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/PullY_1pt.eps,width=0.5\linewidth}
+  \caption{Resolution in y coordinate - DCA$_r$ as function of particle momenta}
+  \label{figYvs1Pt}
+\end{figure}
+
+
+\subsection { Z resolution}
+
+
+
+
+\begin{figure}
+  \centering\epsfig{figure=pic/SigmaZ_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/PullZ_z.eps,width=0.5\linewidth}
+  \caption{Resolution in z coordinate  as function of z position- Drift length}
+  \label{figZvsZ}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=pic/SigmaZ_1pt.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/PullZ_1pt.eps,width=0.5\linewidth}
+  \caption{Resolution in z coordinate  as function of particle momenta}
+  \label{figZvs1pt}
+\end{figure}
+
+
+
+\subsection { P$_t$ resolution}
+
+
+
+\begin{figure}
+  \centering\epsfig{figure=pic/SigmaPt_Pt.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/SigmaPt_PtLog.eps,width=0.5\linewidth}
+  \caption{Resolution $\Delta p_{t}/p_{t}$  as function of pt.}
+  \label{figPtvsPt}
+\end{figure}
+
+
+\begin{figure}
+  \centering\epsfig{figure=pic/Sigma1Pt_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/Pull1Pt_z.eps,width=0.5\linewidth}
+  \caption{Resolution in 1/p$_t$  as function of z position- Drift length}
+  \label{fig1PtvsZ}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=pic/Sigma1Pt_1pt.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=pic/Pull1Pt_1pt.eps,width=0.5\linewidth}
+  \caption{Resolution in 1/p$_t$  as function of particle momenta}
+  \label{fig1Ptvs1pt}
+\end{figure}
+
+
+
+
+
+
+
+
+
+\end{document}
+
+
+
+

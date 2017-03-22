@@ -1,0 +1,22 @@
+! main86.cmnd.
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+
+! Number of events generated
+Main:numberOfEvents        = 1000
+
+! Specify shower options
+HadronLevel:all            = on
+PartonLevel:MPI            = on
+
+! Core process for merging
+Merging:Process            = pp>LEPTONS,NEUTRINOS
+
+! Maximal number of additional LO jets.
+Merging:nJetMax            = 2
+
+! Merging scale value.
+Merging:TMS                = 15
+
+! Switch off enforced rapidity ordering
+SpaceShower:rapidityOrder  = off

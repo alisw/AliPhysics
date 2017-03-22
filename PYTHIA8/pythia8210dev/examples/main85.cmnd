@@ -1,0 +1,34 @@
+! main85.cmnd.
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+
+! Number of events generated
+Main:numberOfEvents        = 1000
+
+// Shower options
+HadronLevel:all            = on
+PartonLevel:MPI            = on
+
+! Core process for merging
+Merging:Process            = pp>LEPTONS,NEUTRINOS
+
+! Maximal number of additional jets.
+Merging:nJetMax            = 2
+
+! Jet-separation merging
+Merging:doKTMerging        = off
+Merging:doMGMerging        = off
+Merging:doUserMerging      = off
+Merging:doPTLundMerging    = on
+! Merging scale value.
+Merging:TMS                = 15
+
+! Cut-based merging
+Merging:doCutBasedMerging  = off
+! Merging scale values.
+Merging:QijMS              = 0
+Merging:pTiMS              = 0
+Merging:dRijMS             = 0
+
+! Switch off enforced rapidity ordering
+SpaceShower:rapidityOrder  = off

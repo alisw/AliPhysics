@@ -1,0 +1,25 @@
+'Version' '5.3'
+'Description: '
+'DO-G photon PDFs'
+'Phys.Rev. D26(1982)1600'
+'This set has 1 member PDFs.'
+' 1/0 = DO-G Set 2 - MSBAR NLO'
+'Alphas:'
+'Variable','nlo','EvolCode'
+1,91.71,1.43,4.30,180.0
+'MinMax:'
+1,1
+1.E-05,0.9,10.,10000.
+'QCDparams:'
+1,0
+0.440,0.315
+0.440,0.315
+'Parameterlist:'
+'list',1,1
+ 0.1225
+ 0.1225
+'Evolution:'
+'nlo',1.0,1.0
+'DOG1'
+1,0
+'End:'

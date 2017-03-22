@@ -1,0 +1,32 @@
+! main86.cmnd.
+! This file contains commands to be read in for a Pythia8 run. 
+! Lines not beginning with a letter or digit are comments.
+
+// Number of events generated
+Main:numberOfEvents        = 1000
+
+// Specify shower options
+HadronLevel:all            = on
+PartonLevel:MPI            = on
+
+// Core process for merging
+Merging:Process            = pp>LEPTONS,NEUTRINOS
+
+// Maximal number of additional LO jets.
+Merging:nJetMax            = 2
+
+// Merging scale value.
+Merging:TMS                = 15
+
+// Switch off enforced rapidity ordering
+SpaceShower:rapidityOrder  = off
+
+// Since UMEPS is a tree-level merging method, both leading-order and 
+// next-to-neading order PDFs are allowed. However, from parton shower 
+// considerations, leading-order PDFs are preferred, since multiparton 
+// interactions probe the incoming hadron at small momentum scales.  
+// Example PDF files generated with CTEQ6M PDFs.
+PDF:useLHAPDF              = on
+PDF:LHAPDFset              = cteq6m.LHpdf
+SpaceShower:alphaSvalue    = 0.118
+TimeShower:alphaSvalue     = 0.118

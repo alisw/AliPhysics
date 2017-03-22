@@ -1,0 +1,458 @@
+#!/bin/sh
+#
+# Configuration script, to be run before making examples
+#
+# Author: M. Kirsanov
+
+#
+# User-changeable part -------------------------------
+#
+
+#LCG platform. Can be needed if external libraries are specified
+if [ x$MYLCGPLATFORM = x ]; then
+  export MYLCGPLATFORM=x86_64-slc5-gcc43-opt
+fi
+
+# Defaults
+export COMPMODE=OPT
+export PYTHIA8LOCATION=..
+
+# check arguments
+
+for arg in $* ; do
+  if [ "x$arg" = "x--enable-debug" ] ; then
+    COMPMODE=DBG
+  elif [ "x$arg" = "x--enable-shared" ] ; then
+    SHAREDLIBS=yes
+  elif [ "x$arg" = "x--help" ] ; then
+    echo "Usage: ./configure [options] , where options are:"
+    echo "--help                   : prints this help"
+    echo "--enable-debug           : turns on debugging flags and turns off optimization"
+    echo "--enable-shared          : use shared library (not yet implemented) (default no)"
+    echo "--lcgplatform=name       : LCG platform name, default is slc4_ia32_gcc34"
+    echo "--with-pythia8=p8path    : path to pythia8 installation dir to find libs, includes and pars (default is ..)"
+    echo "--with-lhapdf=lhapdfpath : path to LHAPDF libraries dir (LHAPDF must be version 5.3 or higher)"
+    echo "--with-lhapdfversion=v   : LHAPDF version (simplified alternative when using CERN AFS MCGenerators, e.g. =5.5.1.a)"
+    echo "--with-lhapdflibname=n   : lhapdf library name line (default is -lLHAPDF)"
+    echo "--with-lhapdfsets=path   : path to LHAPDF data (default is lhapdfpath/../PDFsets, CERN AFS default is lhapdfpath/../../../share/PDFsets)"
+    echo "--with-fastjet=path      : path to fastjet (default = /usr/local)"
+    echo "--with-fastjetversion=v  : fastjet version (simplified alternative when using CERN AFS external, e.g. =2.3.3)"
+    exit
+  elif [ x`echo x${arg} | grep "="` != x ] ; then
+    option=`echo ${arg} | awk -F = '{print $1}'`
+    value=`echo ${arg} | awk -F = '{print $2}'`
+    if [ "x${option}" = "x--lcgplatform" ] ; then
+      MYLCGPLATFORM=${value}
+    elif [ "x${option}" = "x--with-pythia8" ] ; then
+      PYTHIA8LOCATION=${value}
+    elif [ "x${option}" = "x--with-lhapdfversion" ] ; then
+      LHAPDFVERSION=${value}
+    elif [ "x${option}" = "x--with-lhapdf" ] ; then
+      LHAPDFLOCATION=${value}
+    elif [ "x${option}" = "x--with-lhapdflibname" ] ; then
+      LHAPDFLIBNAME=${value}
+    elif [ "x${option}" = "x--with-lhapdfsets" ] ; then
+      LHAPDFSETSLOCATION=${value}
+    elif [ "x${option}" = "x--with-fastjetversion" ] ; then
+      FASTJETVERSION=${value}
+    elif [ "x${option}" = "x--with-fastjet" ] ; then
+      FASTJETLOCATION=${value}
+    else
+      echo "${arg}: wrong option. Ignored." >&2
+    fi
+  else
+    echo "${arg}: wrong option. Ignored." >&2
+  fi
+done
+
+echo compilation mode is $COMPMODE
+
+
+# LHAPDF location
+# The default values here correspond to CERN AFS (but you may want to change
+# the version and/or platform).
+
+if [ x${LHAPDFLOCATION} != x ]; then
+  if [ x${LHAPDFSETSLOCATION} = x ]; then
+    export LHAPDFSETSLOCATION=${LHAPDFLOCATION}/../PDFsets
+    if [ ! -d ${LHAPDFSETSLOCATION} ]; then
+      export LHAPDFSETSLOCATION=${LHAPDFLOCATION}/../../share/lhapdf/PDFsets
+    fi
+    if [ ! -d ${LHAPDFSETSLOCATION} ]; then
+      export LHAPDFSETSLOCATION=${LHAPDFLOCATION}/../share/lhapdf/PDFsets
+    fi
+    if [ ! -d ${LHAPDFSETSLOCATION} ]; then
+      export LHAPDFSETSLOCATION=${LHAPDFLOCATION}/../../../share/lhapdf/PDFsets
+    fi
+  fi
+fi
+if [ x${LHAPDFVERSION} = x ]; then
+  export LHAPDFVERSION=5.7.0
+else
+  if [ x${LHAPDFLOCATION} = x ]; then
+    export LHAPDFLOCATION=/afs/cern.ch/sw/lcg/external/MCGenerators/lhapdf/${LHAPDFVERSION}/${MYLCGPLATFORM}/lib/archive
+    if [ x${LHAPDFSETSLOCATION} = x ]; then
+      export LHAPDFSETSLOCATION=/afs/cern.ch/sw/lcg/external/MCGenerators/lhapdf/${LHAPDFVERSION}/share/PDFsets
+    fi
+  fi
+fi
+if [ x${LHAPDFLOCATION} = x ]; then
+  export LHAPDFLOCATION=/afs/cern.ch/sw/lcg/external/MCGenerators/lhapdf/${LHAPDFVERSION}/${MYLCGPLATFORM}/lib/archive
+fi
+if [ x${LHAPDFLIBNAME} = x ]; then
+  export LHAPDFLIBNAME="-lLHAPDF"
+fi
+if [ x${LHAPDFSETSLOCATION} = x ]; then
+  export LHAPDFSETSLOCATION=/afs/cern.ch/sw/lcg/external/MCGenerators/lhapdf/${LHAPDFVERSION}/share/PDFsets
+fi
+
+# Fastjet location
+if [ x${FASTJETVERSION} != x ]; then
+  export FASTJETLOCATION=/afs/cern.ch/sw/lcg/external/fastjet/${FASTJETVERSION}/${MYLCGPLATFORM}
+fi
+if [ x${FASTJETLOCATION} = x ]; then
+  export FASTJETLOCATION=/usr/local
+fi
+
+#
+# User-changeable part, experts  -----------------------------
+#
+
+# export FFLAGS_OPT="-O2 -Wuninitialized"
+# -Wuninitialized outputs many irrelevant warnings and therefore obscurs 
+export FFLAGS_OPT="-O2"
+export FFLAGS_DBG=-g
+export CFLAGS_OPT=-O2
+export CFLAGS_DBG=-g
+export CXXFLAGS_OPT="-O2 -ansi -pedantic -W -Wall"
+export CXXFLAGS_DBG="-g -ansi -pedantic -W -Wall"
+#
+# Find platform.
+#
+export ARCH0="`uname`"
+export ARCH=${ARCH0}
+export theGcc=`g++ --version | head -n 1 | awk '{print$3}' | awk -F . '{print $1}'`
+if [ ${theGcc} = 4 ]; then
+  export ARCH=${ARCH}-gcc4
+fi
+echo Platform is $ARCH
+
+#default platform settings:
+if [ x$FC = x ]; then
+  export FC=g77
+fi
+if [ x$CC = x ]; then
+  export CC=gcc
+fi
+export FFLAGS="${FFLAGS_OPT}"
+export CFLAGS="${CFLAGS_OPT}"
+export CXXFLAGS="${CXXFLAGS_OPT}"
+export FLIBS="-lfrtbegin -lg2c"
+if [ ${COMPMODE} = OPT ]; then
+  export FFLAGS="${FFLAGS_OPT}"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+fi
+if [ ${COMPMODE} = DBG ]; then
+  export FFLAGS="${FFLAGS_DBG}"
+  export CFLAGS="${CFLAGS_DBG}"
+  export CXXFLAGS="${CXXFLAGS_DBG}"
+fi
+if [ $ARCH = Linux ]; then
+  if [ x$FC = x ]; then
+    export FC=g77
+  fi
+  export FFLAGS="${FFLAGS_OPT} -Wno-globals"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+  export FLIBS="-lfrtbegin -lg2c"
+  if [ ${COMPMODE} = OPT ]; then
+    export FFLAGS="${FFLAGS_OPT}"
+    export CFLAGS="${CFLAGS_OPT}"
+    export CXXFLAGS="${CXXFLAGS_OPT}"
+  fi
+  if [ ${COMPMODE} = DBG ]; then
+    export FFLAGS="${FFLAGS_DBG} -Wno-globals"
+    export CFLAGS="${CFLAGS_DBG}"
+    export CXXFLAGS="${CXXFLAGS_DBG}"
+  fi
+fi
+# Linux platform with gcc4: new Fortran90 compiler.
+if [ $ARCH = Linux-gcc4 ]; then
+  if [ x$FC = x ]; then
+    export FC=gfortran
+  fi
+  export FFLAGS="${FFLAGS_OPT}"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+  export FLIBS="-lgfortran -lgfortranbegin"
+  if [ ${COMPMODE} = OPT ]; then
+    export FFLAGS="${FFLAGS_OPT}"
+    export CFLAGS="${CFLAGS_OPT}"
+    export CXXFLAGS="${CXXFLAGS_OPT}"
+  fi
+  if [ ${COMPMODE} = DBG ]; then
+    export FFLAGS="${FFLAGS_DBG}"
+    export CFLAGS="${CFLAGS_DBG}"
+    export CXXFLAGS="${CXXFLAGS_DBG}"
+  fi
+fi
+# Mac-OSX with gcc4
+if [ $ARCH = Darwin-gcc4 ]; then
+  if [ x$FC = x ]; then
+    export FC=gfortran
+  fi
+  export FFLAGS="${FFLAGS_OPT}"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+  export FLIBS="-lgfortran"
+  if [ ${COMPMODE} = OPT ]; then
+    export FFLAGS="${FFLAGS_OPT}"
+    export CFLAGS="${CFLAGS_OPT}"
+    export CXXFLAGS="${CXXFLAGS_OPT}"
+  fi
+  if [ ${COMPMODE} = DBG ]; then
+    export FFLAGS="${FFLAGS_DBG}"
+    export CFLAGS="${CFLAGS_DBG}"
+    export CXXFLAGS="${CXXFLAGS_DBG}"
+  fi
+fi
+# Mac-OSX with gcc3; is not tested
+if [ $ARCH = Darwin ]; then
+  if [ x$FC = x ]; then
+    export FC=g77
+  fi
+  export FFLAGS="${FFLAGS_OPT}"
+  export CFLAGS="${CFLAGS_OPT}"
+  export CXXFLAGS="${CXXFLAGS_OPT}"
+  export FLIBS="-lfrtbegin -lg2c"
+  if [ ${COMPMODE} = OPT ]; then
+    export FFLAGS="${FFLAGS_OPT}"
+    export CFLAGS="${CFLAGS_OPT}"
+    export CXXFLAGS="${CXXFLAGS_OPT}"
+  fi
+  if [ ${COMPMODE} = DBG ]; then
+    export FFLAGS="${FFLAGS_DBG}"
+    export CFLAGS="${CFLAGS_DBG}"
+    export CXXFLAGS="${CXXFLAGS_DBG}"
+  fi
+fi
+
+#Platform & opt/dbg - independent flags and variables:
+
+
+#
+# End of the user-changeable part ---------------------------
+#
+# Checks
+#
+
+if [ ! -d ${PYTHIA8LOCATION}/lib ]; then
+  echo ERROR: pythia8 libraries not found at ${PYTHIA8LOCATION}/lib
+  exit
+fi
+
+if [ $?LHAPDFLOCATION ]; then
+  if [ x${LHAPDFLOCATION} != x ]; then
+    if [ ! -d ${LHAPDFLOCATION} ]; then
+      echo WARNING in LHAPDFLOCATION: directory ${LHAPDFLOCATION} does not exist
+      echo ...so you cannot run main programs that use LHAPDF 
+    fi
+    if [ ! -e ${LHAPDFLOCATION}/libLHAPDF.so ] && \
+       [ ! -e ${LHAPDFLOCATION}/libLHAPDF.dylib ] && \
+       [ ! -e ${LHAPDFLOCATION}/libLHAPDF.a ]; then
+      echo WARNING in LHAPDFLOCATION: LHAPDF libraries are not found in ${LHAPDFLOCATION}
+      echo "please specify path to the LHAPDF libraries directory (add /lib to the path?)"
+      echo ...otherwise you cannot run main programs that use LHAPDF
+    fi
+    if [ ! -d ${LHAPDFSETSLOCATION} ]; then
+      echo WARNING in LHAPDFSETSLOCATION: directory ${LHAPDFSETSLOCATION} does not exist
+      echo ...so you cannot run main programs that use LHAPDF 
+    fi
+  fi
+fi
+
+# Fastjet
+if [ -x ${FASTJETLOCATION}/bin/fastjet-config ]; then
+  FASTJETVERSION1=`${FASTJETLOCATION}/bin/fastjet-config --version`
+  echo Found fastjet version ${FASTJETVERSION1} at ${FASTJETLOCATION}
+else
+  echo WARNING: FastJet not found, the corresponding examples will not work
+  echo ...so you cannot run main programs that use FastJet
+  export FASTJETLOCATION=
+fi
+
+rm -f config.mk
+
+echo SHELL = /bin/sh > config.mk
+#echo ARCH = ${ARCH} >> config.mk
+#echo MYLCGPLATFORM = ${MYLCGPLATFORM} >> config.mk
+#echo FC = ${FC} >> config.mk
+#echo CC = ${CC} >> config.mk
+#echo FFLAGS = ${FFLAGS} >> config.mk
+#echo CFLAGS = ${CFLAGS} >> config.mk
+#echo CXXFLAGS = ${CXXFLAGS} >> config.mk
+#echo FLIBS = ${FLIBS} >> config.mk
+#
+echo PYTHIA8LOCATION = ${PYTHIA8LOCATION} >> config.mk
+if [ x${LHAPDFVERSION} != x ]; then
+  echo LHAPDFVERSION = ${LHAPDFVERSION} >> config.mk
+fi
+if [ x${LHAPDFLOCATION} != x ]; then
+  echo LHAPDFLOCATION = ${LHAPDFLOCATION} >> config.mk
+fi
+if [ "x${LHAPDFLIBNAME}" != "x" ]; then
+  echo "LHAPDFLIBNAME = ${LHAPDFLIBNAME}" >> config.mk
+fi
+
+# Fastjet
+if [ "x${FASTJETLOCATION}" != "x" ]; then
+  echo "FASTJETLOCATION = ${FASTJETLOCATION}" >> config.mk
+fi
+
+
+#
+if [ ${PYTHIA8LOCATION} != .. ]; then
+  if [ ! -e config.csh ]; then
+    echo "#!/bin/csh" > config.csh
+    echo "setenv PYTHIA8DATA ${PYTHIA8LOCATION}/xmldoc" >> config.csh
+    echo "#!/bin/sh" > config.sh
+    echo "export PYTHIA8DATA=${PYTHIA8LOCATION}/xmldoc" >> config.sh
+  else
+    echo "setenv PYTHIA8DATA ${PYTHIA8LOCATION}/xmldoc" >> config.csh
+    echo "export PYTHIA8DATA=${PYTHIA8LOCATION}/xmldoc" >> config.sh
+  fi
+fi
+#
+# For the moment we take archive libraries of lhapdf, so actions with
+# LD_LIBRARY_PATH are not needed, this is for the future.
+# Setting LHAPATH is always needed
+# Linux platforms:
+if [ $ARCH0 != Darwin ]; then
+  if [ x${LHAPDFLOCATION} != x ]; then
+    if [ ! -e config.csh ]; then
+      echo "#!/bin/csh" > config.csh
+      echo 'if( ! $?LD_LIBRARY_PATH ) then' >> config.csh
+      echo "  setenv LD_LIBRARY_PATH ${LHAPDFLOCATION}" >> config.csh
+      echo "else" >> config.csh
+      echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${LHAPDFLOCATION}" >> config.csh
+      echo "endif" >> config.csh
+      echo "setenv LHAPATH ${LHAPDFSETSLOCATION}" >> config.csh
+      echo "#!/bin/sh" > config.sh
+      echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH=${LHAPDFLOCATION}" >> config.sh
+      echo fi >> config.sh
+      echo 'if [ $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${LHAPDFLOCATION}" >> config.sh
+      echo fi >> config.sh
+      echo "export LHAPATH=${LHAPDFSETSLOCATION}" >> config.sh
+    else
+      echo 'if( ! $?LD_LIBRARY_PATH ) then' >> config.csh
+      echo "  setenv LD_LIBRARY_PATH ${LHAPDFLOCATION}" >> config.csh
+      echo "else" >> config.csh
+      echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${LHAPDFLOCATION}" >> config.csh
+      echo "endif" >> config.csh
+      echo "setenv LHAPATH ${LHAPDFSETSLOCATION}" >> config.csh
+      echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH=${LHAPDFLOCATION}" >> config.sh
+      echo fi >> config.sh
+      echo 'if [ $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${LHAPDFLOCATION}" >> config.sh
+      echo fi >> config.sh
+      echo "export LHAPATH=${LHAPDFSETSLOCATION}" >> config.sh
+    fi
+  fi
+  if [ x${FASTJETLOCATION} != x ]; then
+    if [ ! -e config.csh ]; then
+      echo "#!/bin/csh" > config.csh
+      echo 'if( ! $?LD_LIBRARY_PATH ) then' >> config.csh
+      echo "  setenv LD_LIBRARY_PATH ${FASTJETLOCATION}/lib" >> config.csh
+      echo "else" >> config.csh
+      echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${FASTJETLOCATION}/lib" >> config.csh
+      echo "endif" >> config.csh
+      echo "#!/bin/sh" > config.sh
+      echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH=${FASTJETLOCATION}/lib" >> config.sh
+      echo fi >> config.sh
+      echo 'if [ $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${FASTJETLOCATION}/lib" >> config.sh
+      echo fi >> config.sh
+    else
+      echo 'if( ! $?LD_LIBRARY_PATH ) then' >> config.csh
+      echo "  setenv LD_LIBRARY_PATH ${FASTJETLOCATION}/lib" >> config.csh
+      echo "else" >> config.csh
+      echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${FASTJETLOCATION}/lib" >> config.csh
+      echo "endif" >> config.csh
+      echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH=${FASTJETLOCATION}/lib" >> config.sh
+      echo fi >> config.sh
+      echo 'if [ $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${FASTJETLOCATION}/lib" >> config.sh
+      echo fi >> config.sh
+    fi
+  fi
+# Mac-OSX platforms:
+else
+  if [ x${LHAPDFLOCATION} != x ]; then
+    if [ ! -e config.csh ]; then
+      echo "#!/bin/csh" > config.csh
+      echo 'if( ! $?LD_LIBRARY_PATH ) then' >> config.csh
+      echo "  setenv LD_LIBRARY_PATH ${LHAPDFLOCATION}" >> config.csh
+      echo "else" >> config.csh
+      echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${LHAPDFLOCATION}" >> config.csh
+      echo "endif" >> config.csh
+      echo "setenv LHAPATH ${LHAPDFSETSLOCATION}" >> config.csh
+      echo "#!/bin/sh" > config.sh
+      echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH=${LHAPDFLOCATION}" >> config.sh
+      echo fi >> config.sh
+      echo 'if [ $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${LHAPDFLOCATION}" >> config.sh
+      echo fi >> config.sh
+      echo "export LHAPATH=${LHAPDFSETSLOCATION}" >> config.sh
+    else
+      echo 'if( ! $?LD_LIBRARY_PATH ) then' >> config.csh
+      echo "  setenv LD_LIBRARY_PATH ${LHAPDFLOCATION}" >> config.csh
+      echo "else" >> config.csh
+      echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${LHAPDFLOCATION}" >> config.csh
+      echo "endif" >> config.csh
+      echo "setenv LHAPATH ${LHAPDFSETSLOCATION}" >> config.csh
+      echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH=${LHAPDFLOCATION}" >> config.sh
+      echo fi >> config.sh
+      echo 'if [ $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${LHAPDFLOCATION}" >> config.sh
+      echo fi >> config.sh
+      echo "export LHAPATH=${LHAPDFSETSLOCATION}" >> config.sh
+    fi
+  fi
+  if [ x${FASTJETLOCATION} != x ]; then
+    if [ ! -e config.csh ]; then
+      echo "#!/bin/csh" > config.csh
+      echo 'if( ! $?LD_LIBRARY_PATH ) then' >> config.csh
+      echo "  setenv LD_LIBRARY_PATH ${FASTJETLOCATION}/lib" >> config.csh
+      echo "else" >> config.csh
+      echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${FASTJETLOCATION}/lib" >> config.csh
+      echo "endif" >> config.csh
+      echo "#!/bin/sh" > config.sh
+      echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH=${FASTJETLOCATION}/lib" >> config.sh
+      echo fi >> config.sh
+      echo 'if [ $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${FASTJETLOCATION}/lib" >> config.sh
+      echo fi >> config.sh
+    else
+      echo 'if( ! $?LD_LIBRARY_PATH ) then' >> config.csh
+      echo "  setenv LD_LIBRARY_PATH ${FASTJETLOCATION}/lib" >> config.csh
+      echo "else" >> config.csh
+      echo "  setenv LD_LIBRARY_PATH" '${LD_LIBRARY_PATH}'":${FASTJETLOCATION}/lib" >> config.csh
+      echo "endif" >> config.csh
+      echo 'if [ ! $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH=${FASTJETLOCATION}/lib" >> config.sh
+      echo fi >> config.sh
+      echo 'if [ $?LD_LIBRARY_PATH ]; then' >> config.sh
+      echo "  export LD_LIBRARY_PATH="'${LD_LIBRARY_PATH}'":${FASTJETLOCATION}/lib" >> config.sh
+      echo fi >> config.sh
+    fi
+  fi
+fi

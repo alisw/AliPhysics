@@ -1,0 +1,5 @@
+* $Id$
+      REAL WIDP, WIDE, WIDS
+      COMMON/PYINT4_HIJING/WIDP(21:40,0:40),WIDE(21:40,0:40),WIDS(21:40
+     $     ,3) 
+      SAVE /PYINT4_HIJING/ 

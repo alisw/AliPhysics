@@ -1,0 +1,6 @@
+* $Id$
+      REAL PDPM1,PDPM2
+      COMMON/DPMCOM2/NDPM,KDPM(20,2),PDPM1(20,5),PDPM2(20,5)
+#ifndef BLANKET_SAVE
+      SAVE  /DPMCOM2/
+#endif

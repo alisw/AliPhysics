@@ -1,0 +1,14 @@
+#!/bin/sh
+
+cd root
+export ROOTSYS=`pwd`
+
+ALIEN_ROOT=/opt/alien
+
+./configure \
+      --with-pythia6-uscore=SINGLE \
+      --enable-cern --enable-rfio \
+      --enable-mathmore --enable-mathcore --enable-roofit \
+      --enable-asimage --enable-minuit2 \
+      --enable-alien --with-alien-incdir=${ALIEN_ROOT}/api/include \
+      --with-alien-libdir=${ALIEN_ROOT}/api/lib

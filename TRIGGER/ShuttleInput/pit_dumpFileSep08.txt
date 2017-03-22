@@ -1,0 +1,109 @@
+# This file was automatically generated.
+# It describes the configuration of the Pixel Trigger active during a specified ALICE run
+[Header]
+RUN_NUMBER=0
+PROCESSING_FIRMWARE_VERSION =1
+INPUT_CONDITIONS_VERSION =0
+PARAMETERS_VERSION =0
+VERSION_REGISTER_VALUE =525
+GLOBAL_DESCRIPTION = 'Firmware implementing Pixel Trigger multiplicity algorithms'
+
+[Outputs]
+# Lines describing the algorithms implemented on the Pixel Trigger outputs by the active firmware
+0 = '0SMB','Minimum bias trigger. Ntot > total_threshold and Nin > inner_threshold and Nout > outer_threshold'
+1 = '0SH1','High multiplicity. Nin > inner_threshold and Nout > outer_threshold'
+2 = '0SH2','High multiplicity. Nin > inner_threshold and Nout > outer_threshold'
+3 = '0SH3','High multiplicity. Nin > inner_threshold and Nout > outer_threshold'
+4 = '0SH4','High multiplicity. Nin > inner_threshold and Nout > outer_threshold'
+5 = '0SPF','Past future protection. Ntot > total_threshold and Nin > inner_threshold and Nout > outer_threshold'
+6 = '0SX1','Spare background. Nin > Nout + background_offset_inner'
+7 = '0SX2','Spare background. Nout > Nin + background_offset_outer'
+8 = '0SBK','Background. Ntot > background_threshold_both'
+9 = '0SCO','Programmable cosmic algorithm'
+
+[Output_parameters]
+# Lines listing the numeric parameters for each of the 10 outputs
+# Pairs of parameter name and value pairs are separated by semi-colon. There can be a avariable number of parameters
+# Example:
+# output number='parameterName0', value; 'parameterName1', value1; 'parameterNameN', valueN
+0 = 'total_threshold',273;'inner_threshold',273;'outer_threshold',68;
+1 = 'inner_threshold',273;'outer_threshold',68;
+2 = 'inner_threshold',273;'outer_threshold',68;
+3 = 'inner_threshold',273;'outer_threshold',68;
+4 = 'inner_threshold',273;'outer_threshold',68;
+5 = 'total_threshold',273;'inner_threshold',273;'outer_threshold',68;
+6 = 'background_offset_inner',273;
+7 = 'background_offset_outer',68;
+8 = 'background_threshold_both',273;
+9 = 'cosmic_mode',0;
+
+[Active_chips]
+# This section lists the chips with their fastor actively used in the trigger logic
+# There are as many lines as halfstaves with masked chips.
+# If an halfstave is not listed by default all its chips are active 
+# The format of each line is: 
+#	 sector number(0-9), side(A|C), halfstave number(0-5) = fastor mask (string of '0' if masked, '1' if active; leftmost is chip 9, rightmost is chip 0)
+#   Example: 5, C, 5 = 0000000001
+0,A,0=1110111111
+0,A,4=1111111011
+1,A,2=1111110111
+1,A,5=1111111011
+2,A,1=0000000000
+2,A,2=0000000000
+2,C,0=0000000000
+2,C,1=1111011111
+3,A,0=0000000000
+3,A,1=0000000000
+3,A,2=0000000000
+3,A,3=0000000000
+3,A,4=1111111101
+3,A,5=1111111100
+3,C,1=0000000000
+3,C,2=0000000000
+3,C,3=0000000000
+3,C,5=0111111111
+4,A,1=0000000000
+4,C,3=1111111011
+4,C,5=1111110111
+5,A,0=0000000000
+5,A,1=0000000000
+5,A,2=0000000000
+5,A,3=0000000000
+5,C,0=1111110011
+5,C,1=0000000000
+5,C,2=0000000000
+5,C,3=0000000000
+5,C,4=1011111111
+5,C,5=0000000000
+6,A,0=1111111011
+6,A,2=0000000000
+6,A,3=0000000000
+6,A,4=1111111101
+6,A,5=0000000000
+6,C,0=0000000000
+6,C,1=0000000000
+6,C,2=0000000000
+6,C,3=0000000000
+6,C,5=1110110111
+7,A,0=0000000000
+7,A,1=0000000000
+7,A,3=0000000000
+7,A,4=0000000000
+7,A,5=0000000000
+7,C,0=0000000000
+7,C,1=0000000000
+7,C,5=1100011111
+8,A,1=1011111111
+8,A,2=1111111011
+8,A,3=1111110111
+8,C,0=1111011111
+8,C,2=1101111111
+9,A,0=0000000000
+9,A,1=1111111110
+9,A,2=1111011001
+9,A,3=0000000000
+9,A,4=1111110011
+9,A,5=0000000000
+9,C,0=0000000000
+9,C,3=0000000000
+9,C,5=0000011111

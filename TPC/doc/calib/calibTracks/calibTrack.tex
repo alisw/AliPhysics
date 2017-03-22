@@ -1,0 +1,222 @@
+\RequirePackage{ifpdf}
+
+\documentclass[a4paper,12pt]{article}
+\ifpdf
+  \usepackage[pdftex]{graphicx}
+\else
+  \usepackage[dvips]{graphicx}
+\fi
+
+
+\usepackage{epsfig}
+\usepackage{rotating}
+
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+
+\usepackage{float}
+%\usepackage[config,format=hang,font=small,labelfont=bf,textfont=it,margin=10pt]{caption,subfig}
+%\usepackage[format=hang,font=small,labelfont=bf,textfont=it,margin=10pt]{caption,subfig}
+%\captionsetup[subfigure]{font=footnotesize}
+
+%\usepackage{attachfile} %should be placed at the end, needed to attach files to a pdf document
+
+%define float placement
+\floatplacement{figure}{H}
+\floatplacement{table}{H}
+
+\newcommand{\CodeMacro}[2]
+{
+  \lstinputlisting[basicstyle=\footnotesize\ttfamily,
+          numbers=left,
+          numberstyle=\tiny,
+          stepnumber=5,
+          numbersep=5pt,
+          language={C++},
+          frame=tb,
+           aboveskip=\bigskipamount,
+           belowskip=\bigskipamount,
+          captionpos=b,
+          label={#2},
+          caption={{#1}}
+]
+{code/#1}
+}
+
+\newcommand{\CodeCint}[2]
+{
+%  \renewcommand{\tit}{\textattachfile[color=0 0 0]{code/#1}{#1}}
+  \renewcommand{\tit}{{#1}}
+  \renewcommand{\thelstnumber}{root [\the\value{lstnumber}]}
+  \lstinputlisting[basicstyle=\footnotesize\ttfamily,
+          numbers=left,
+          numberstyle=\footnotesize,
+          stepnumber=1,
+          numbersep=5pt,
+          language={[GNU]C++},
+          frame=tb,
+          aboveskip=\bigskipamount,
+          belowskip=\bigskipamount,
+          xleftmargin=4em,
+          framexleftmargin=4em,
+          captionpos=b,
+          label={#2},
+          caption={\tit}
+]
+{code/#1}
+
+}
+
+
+\begin{document}
+
+
+\section{ Alice TPC calibration using tracks}
+
+
+All calibration classes (components) using the tracks and ESDs derives from the AliTPCcalibBase.
+Following classes implemented:
+\begin{itemize}
+\item {\bf{AliTPCcalibCalib.}}      Re-apply calibration on the cluster level, refit the track. To be (optionally) used as prefilter before calibration. 
+\item {\bf{AliTPCcalibTracks.}}     Cluster shape and error parameterization.
+\item {\bf{AliTPCcalibTracksGain.}} Gain calibration
+\item {\bf{AliTPCcalibAlign.}}      Internal alignment of the TPC chambers.
+\item {\bf{AliTPCcalibLaser.}}      Calibration using laser tracks. Drift vleloctity and unlinearities. ExB effect.
+\item {\bf{AliTPCcalibTime.}}       Time dependent calibration of drift velocity and the gain.
+\item {\bf{AliTPCcalibCosmic.}}     Currently only for performance study.
+\item {\bf{AliTPCcalibUnlinearity.}} Unlinearity calibration.
+\end{itemize}
+
+Additional class {\bf{AliTPCAnalysisTaskcalib}} was implemented as a steering class to invoke the calibration tasks inside the AliROOT Analysis framework. 
+
+
+
+The base functionality to be optionally implemented by the derived classes.
+\begin{itemize}
+\item {\bf{Process(AliESDEvent *event)}} To implement if full even necessary: AliTPCcalibLaser, AliTPCcalibCosmic, AliTPCcalibTime.
+\item {\bf{Process(AliTPCseed  *track)}} All clusters needed: AliTPCcalibTracks, AliTPCcalibTracksGain
+\item {\bf{Process(AliESDtrack *track)}}
+\item
+\item {\bf{Merge(TCollection)}} All components are able to merge results. (Histograms, AliTPCCalPads, Fitters) 
+\item {\bf{Terminate()}}        Function to be called before saving results. (Usually update of fitters)
+\item {\bf{Bool AcceptTrigger()}} Don't process event with non appropriate trigger mask           
+\item {\bf{Analyze()}}          Analyze raw data (histograms, calPads fitters). Extract parameterizations fits.
+
+Using the components inside of the Analysis framework, optionaly streamers (Trees)  can be used. 
+By default the usage of the streamers is disabled. They have to be explicitly enabled in the task 
+configuration macro. 
+
+The usage of stremers is important during the development phase (see example \ref{app:streamer.calibTime}):
+\begin{itemize}
+\item 1. Possible to debug derivation of the intermediate results. Important when the derivation is not straightforward.
+\item 2. Possible to tune selection criteria.
+\item 3. If the variable of interest (delta Z in example) is function of many other variables.  
+\end{itemize}
+
+\CodeMacro{StreamerExample.C}{app:streamer.calibTime}
+
+
+
+\end{itemize}
+
+
+\subsection{Usage of the calibration components in Analysis framework}
+
+The calibration components were designed in the way that they can be used stand-alone or 
+inside of the AliRoot Analysis framework. Possibility to use components inside of the Analysis 
+framework is important mainly during the development phase.
+
+(see example macros \ref{app:code.CalibrateTPC}).
+New calibration entries created by calibration can be stored at differnt locations. In order to verify calibration the OCDB has to be setup. See example macro \ref{app:code.ConfigOCDB}. In order to reaply the new calibration from specific storage the calibration component for track refitting has to be activated, the component {\bf{AliTPCcalibCalib}} has to added to the task in calibration configuration macro. 
+\CodeMacro{CalibrateTPC.C}{app:code.CalibrateTPC}
+\CodeMacro{ConfigOCDB.C}{app:code.ConfigOCDB}
+
+
+The calibration components are self containing, they can be optionally stored in the reference OCDB. For real correction, values extracted from the components are used to fill OCDB entries.
+
+
+
+The usage cluster error and shape parameterization and the gain parameterization (position- due electron attachementand  diffusion, and the angular) is implemented in the {\bf{AliTPCclusterParam}} class.
+
+
+AliTPCcalibTracks and AliTPCcalibTracksGain component will provide the functionality to update current AliTPCclusterParam. Currently it is done in the macros. Calibration sequence:
+\begin{itemize}
+\item Reconstruction with current AliTPCclusterParam
+\item Calibration, filling the fitters and histograms
+\item Analyze fits and histogram. Visual inspection.
+\item Update AliTPCclusterParam 
+\end{itemize}
+
+
+\subsection{Cluster error and shape parameterization - AliTPCcalibTracks}
+
+The main purpose, get the cluster error and shape parameterization as function of the cluster position, inclination angle and amplitude. 
+
+The mean width of the cluster distribution is given by:
+\begin{equation}
+     \sigma_{\rm{t}}^2 = \sigma^2_{\rm{preamp}}+D{\rm{^2_L}}L_{\rm{drift}}+
+        \frac{\tan^2\alpha~L_{\rm{pad}}^2}{12},
+\end{equation}
+
+\begin{equation}
+     \sigma_{\rm{p}}^2 = \sigma^2_{\rm{PRF}}+D{\rm{^2_T}}L_{\rm{drift}}+
+        \frac{\tan^2\beta~L_{\rm{pad}}^2}{12},
+\end{equation}
+where ${\sigma_{\rm{preamp}}}$ and ${\sigma_{\rm{PRF}}}$  are the
+r.m.s. of the time response function and  pad response function,
+respectively.
+
+The measured width is binned in the L and in the inclination angle   ${\tan_{\rm{PRF}}}$.
+Following parameters are fitted:
+\begin{equation}
+     \sigma_y^2 = k_0+k_1L_{\rm{drift}}+k_2\tan^2\alpha
+\end{equation}
+The agreement between the data and the theoretical formula is on the level of 5\% over the full drift length,
+and inclination angle $\tan$ from 0 up to 1.4. Such precision is sufficient to signed overlapped tracks.
+In order to estimate the drift length, more precise formula should be used. The second order Taylor 
+approximation can be used:
+\begin{equation}
+     \sigma_y^2 = k_0+k_1L_{\rm{drift}}+k_2\tan^2\alpha+k_3L^2_{\rm{drift}}+k_4\tan^4\alpha+k_5L_{\rm{drift}}\tan^2\alpha
+\end{equation}
+
+The measured width of the cluster distribution depends also on the deposited charge, this dependence we consider as second order correction. (To be implemented in the AliTPCClusterparam)
+\begin{equation}
+     \sigma_y^2 = k_0+k_1L_{\rm{drift}}+k_2\tan^2\alpha+k_3L^2_{\rm{drift}}+k_4\tan^4\alpha+ \\ 
+k_5L_{\rm{drift}}\tan^2\alpha+k_6/Q_{max}+k_7L_{\rm{drift}}/Q_{max}+k_8\tan^2\alpha/Q_{max}
+\end{equation}
+
+
+Pictures to be added: 
+First approximation, second order approximation, comparison of MC and real data. The track mean shape, real track, overlapped events.
+
+
+
+
+
+\subsection{Laser calibration, drift velocity, ExB - AliTPCcalibLaser}
+
+
+The resolution of the v drift velocity determination using laser tracks is on the level of ~ $10^-4$ for
+one event ~ 250 microns for full drift length.  This number critically depends on how many laser tracks are we using. If the laser intensity is low, we have smaller number of tracks  and the resolution is worse.  This number is already on the edge of our knowledge of the temperature condition (map) in the TPC.   Therefore one event is sufficient to determine the drift velocity.
+Some rough cut on the chi2 of fit should be applied.
+
+
+In AliTPCcalibLaser for drift velocity we fit 3 parameters:
+$P_0$ = $t_0$ offset
+$P_1$ = $v_d$ correction
+$P_2$ = $v_d$ global y  correction
+event by event.
+I prefer to store the graph of the fitted parameters.
+$P_0$, $P1_1$ and $P_2$ as function of time stamps.
+
+
+
+
+
+
+\end{document}
+
+
+
+

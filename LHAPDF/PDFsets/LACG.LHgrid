@@ -1,0 +1,29 @@
+'Version' '5.3'
+'Description: '
+'LAC-G and GAL-G  photon PDFs'
+'This set has 4 member PDFs.'
+' 1/0 = LAC-G Set 1 - LO - Phys.Lett.269B(1991)458'
+' 2 = LAC-G Set 2 - LO'
+' 3 = LAC-G Set 3 - LO'
+' 4 = GAL-G - hep-ph/9711355'
+'Alphas:'
+'Variable','lo','EvolCode'
+1,91.71,1.43,4.30,180.0
+'MinMax:'
+4,1
+0.0001,0.9998,5.,100000.
+'QCDparams:'
+4,1
+0.2000,0.1519
+'Parameterlist:'
+'list',4,1
+ 0.1282
+ 0.1282
+ 0.1282
+ 0.1282
+ 0.1282
+'Evolution:'
+'lo',1.0,1.0
+'LACG'
+4,0
+'End:'

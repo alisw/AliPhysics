@@ -1,0 +1,6 @@
+* $Id$
+      DOUBLE PRECISION F, TI, TSI
+      COMMON/BVEG3_HIJING/F,TI,TSI   
+#ifndef BLANKET_SAVE
+      SAVE  /BVEG3_HIJING/
+#endif

@@ -1,0 +1,7 @@
+
+Unix.*.Root.MacroPath:  .:$(ALICE_ROOT)/macros:$(ALICE_ROOT):$(ALICE_ROOT)/TPC
+
+Root.Html.OutputDir: $(ALICE_ROOT)/html/roothtml/ITS
+Root.Html.SourceDir: ./
+Root.Html.Author:  Roberto Barbera
+Root.Html.Root:  http://root.cern.ch/root/html

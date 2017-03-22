@@ -1,0 +1,6 @@
+* $Id$
+        REAL ATCO, ATXS
+        COMMON/HIPYINT/MINT4,MINT5,ATCO(200,20),ATXS(0:200)
+#ifndef BLANKET_SAVE
+	SAVE  /HIPYINT/
+#endif

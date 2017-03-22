@@ -1,0 +1,112 @@
+\section{Simulation code}
+
+The class AliSimulation manages this part. An example is here : ``\$ALICE\_ROOT/EMCAL/
+macros/TestEMCALSimulation.C''. The simulation
+consists of different steps: geometry and event definition, particle
+generation, transport of the particle in the material (GEANT) and
+finally digitization. Note that the final output from the digitization
+process is different from the processing of real experimental Raw Data. The process
+of converting the digitized data to Raw Data is discussed in Sec.~\ref{sec:digi}.
+Sec.~\ref{sec:simu_steps} gives the recipe to do all the steps of the simulation.
+
+
+%\subsection{Event generation and particle transport: Hits}
+
+
+%Once the generator is executed, the generated particles are transported
+%in the detector material with the Monte Carlo code, GEANT3 by default. Other options are 
+%GEANT4 or FLUKA\footnote{There may be some license problems  with FLUKA right now which could explain why it cannot be used at the moment}. All the generated particles are kept in a file called \textbf{Kinematics.root}. After the particle transport is executed, the objects \textbf{Hits}
+%are created. They contain the energy deposited in the sensitive material
+%of the detector by the generated particle, their position, impact
+%time (after collision) and the identity of the original particle.
+%Hits are stored in a file called \textbf{DETECTOR.Hits.root}, in the
+%calorimeter case: \textbf{EMCAL.Hits.root.}
+
+\input{StepManagerParticleTransport}
+\clearpage
+
+
+\subsection{Digitization: SDigits and Digits - Evi \label{sec:digi}}
+
+We want to generate events which look like the real data collected
+by the experiment. In the end, we want to have an amplitude in ADC
+counts and a time (when particle traverse a cell) per each cell (tower)
+of the calorimeter. In the code for calorimeters, it is done in the
+following steps: 
+\begin{enumerate}
+\item \textbf{SDigit} objects are created, they consist
+of the sum of deposited energy by all Hits in a cell (a particle can
+create Hits in different cells but only one in a single cell), so
+there is only one SDigit per fired cell.
+\item \textbf{Digit} objects are created, they are like the SDigits but the energy in the cell
+is transformed into the ADC amplitude units, the electronic noise
+is added and Digits whose energy does not pass an energy threshold
+(3 ADC counts) are eliminated. SDigits and Digits are stored in the files
+\textbf{EMCAL.SDigits.root} and \textbf{EMCAL.Digits.root}, respectively.
+\end{enumerate}
+
+\subsection{Raw data - David \label{sec:simu_raw}}
+
+The experiment does not record Digits directly, but instead a series of so-called
+time samples with 10-bit ADC counts per channel. Each time bin is 100 ns
+wide, corresponding to a 10 MHz readout.
+These samples are referred to as
+\textbf{Raw Data}. The samples follow a certain signal shape, more complicated than
+a Gaussian distribution, which is fitted offline. 
+The simulated signal (Gamma-2) shape is described in the AliEMCALRawResponse class,
+in the RawResponseFunction method.
+With real data, which is zero-suppressed, i.e. has the pedestal subtracted online, the
+Digits amplitude is just the maximum of the distribution obtained
+with the fit to the sample. The Digit time (defined by the time the
+particle hits the active volume of the detector) is the time value at
+the maximum signal fit. There are methods to go from Digits to
+Raw and vice versa in the AliEMCALRawUtils class: Raw2Digits and Digits2Raw,
+respectively. For the reconstruction step Digits are needed. The
+generation of Raw Data is optional during simulations and the generated 
+data can be reconstructed directly from Digits, but Raw data is the initial
+step when reconstructing real data.
+
+
+\subsection{How to make a simulation\label{sec:simu_steps}}
+
+TestEMCALSimulation.C is a very simple macro where we specify all the simulation parameters
+and proccess the simulation. Below is a similar but a bit more elaborated macro:
+
+
+
+\begin{DDbox}{\linewidth}
+\begin{lstlisting}
+void TestEMCALSimulation() {
+
+TString detector=``EMCAL TPC''; // Define in this variable the detectors that you want to be included in the simulation for the digitization. They can be less detectors than the detectors defined in the Config.C file, imagine that you want all the detectors in front of EMCal present to consider the conversion of particles but you are not really interested in the output from these detectors. 
+// Option detector=``ALL''  makes all detectors. 
+
+AliSimulation sim ; //Create simulation object 
+
+// Generation and simulation 
+
+sim.SetRunGeneration(kTRUE) ; //Default value is kTRUE, make generation  
+// For some reason we may want to redo the Digitization, without redoing the generation, in this case it must set to kFALSE 
+
+// Making SDigits 
+sim.SetMakeSDigits(detector) ; //We want to make SDigits
+// set no detectors if SDigits are already made
+
+// Making Digits 
+sim.SetMakeDigits(detector) ; //We want to make Digits 
+// set no detectors if SDigits are already made
+
+//Merging 
+//sim.MergeWith(``bgrd/galice.root'') ; //If we want to merge a signal and a background, the merging is done at the SDigit level. The background must be located in the repertory defined in the method. 
+
+//Write Raw Data, make Raw data from digits 
+//sim.SetWriteRawData(detector) ;
+//sim.SetConfigFile(``somewhere/ConfigXXX.C'');//Default is Config.C
+
+//Make the simulation 
+sim.Run(3) ; // Run the simulation and make 3 events 
+
+
+
+\end{lstlisting}
+\end{DDbox}

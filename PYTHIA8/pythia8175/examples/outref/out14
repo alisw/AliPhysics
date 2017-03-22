@@ -1,0 +1,285 @@
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.175      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 16 Feb 2013  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 16 Feb 2013 at 11:32:31    |  | 
+ |  |                                                                              |  | 
+ |  |   Torbjorn Sjostrand;  Department of Astronomy and Theoretical Physics,      |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      phone: + 46 - 46 - 222 48 16; e-mail: torbjorn@thep.lu.se               |  | 
+ |  |   Jesper Roy Christiansen;  Department of Astronomy and Theoretical Physics  |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      e-mail: Jesper.Roy.Christiansen@thep.lu.se                              |  | 
+ |  |   Philip Ilten;  School of Physics, Uniiversity College Dublin,              |  | 
+ |  |      Belfield, Dublin 4, Ireland;                                            |  | 
+ |  |      e-mail: philten@cern.ch                                                 |  | 
+ |  |   Stephen Mrenna;  Computing Division, Simulations Group,                    |  | 
+ |  |      Fermi National Accelerator Laboratory, MS 234, Batavia, IL 60510, USA;  |  | 
+ |  |      phone: + 1 - 630 - 840 - 2556; e-mail: mrenna@fnal.gov                  |  | 
+ |  |   Stefan Prestel;  Department of Astronomy and Theoretical Physics,          |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      phone: + 46 - 46 - 222 06 64; e-mail: stefan.prestel@thep.lu.se         |  | 
+ |  |   Peter Skands;  Theoretical Physics, CERN, CH-1211 Geneva 23, Switzerland;  |  | 
+ |  |      phone: + 41 - 22 - 767 2447; e-mail: peter.skands@cern.ch               |  | 
+ |  |   Stefan Ask; former author; e-mail: ask.stefan@gmail.com                    |  | 
+ |  |   Richard Corke; former author; e-mail: r.corke@errno.net                    |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is the 'Brief Introduction to PYTHIA 8.1',      |  | 
+ |  |   T. Sjostrand, S. Mrenna and P. Skands, Comput. Phys. Comm. 178 (2008) 85   |  | 
+ |  |   [arXiv:0710.3820]                                                          |  | 
+ |  |                                                                              |  | 
+ |  |   The main physics reference is the 'PYTHIA 6.4 Physics and Manual',         |  | 
+ |  |   T. Sjostrand, S. Mrenna and P. Skands, JHEP05 (2006) 026 [hep-ph/0603175]. |  | 
+ |  |                                                                              |  | 
+ |  |   An archive of program versions and documentation is found on the web:      |  | 
+ |  |   http://www.thep.lu.se/~torbjorn/Pythia.html                                |  | 
+ |  |                                                                              |  | 
+ |  |   This program is released under the GNU General Public Licence version 2.   |  | 
+ |  |   Please respect the MCnet Guidelines for Event Generator Authors and Users. |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2013 Torbjorn Sjostrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+
+ Begin subrun number 0 : HardQCD:gg2gg
+ Cross section is 5.874e-01 and in Pythia6 was 4.960e-01,
+ i.e. now is factor >>> 1.184 <<< different
+
+ Begin subrun number 1 : HardQCD:gg2qqbar + HardQCD:gg2ccbar + HardQCD:gg2bbbar
+ Cross section is 1.919e-02 and in Pythia6 was 1.627e-02,
+ i.e. now is factor >>> 1.180 <<< different
+
+ Begin subrun number 2 : HardQCD:qg2qg
+ Cross section is 3.222e-01 and in Pythia6 was 2.790e-01,
+ i.e. now is factor >>> 1.155 <<< different
+
+ Begin subrun number 3 : HardQCD:qq2qq
+ Cross section is 3.187e-02 and in Pythia6 was 2.800e-02,
+ i.e. now is factor >>> 1.138 <<< different
+
+ Begin subrun number 4 : HardQCD:qqbar2gg
+ Cross section is 3.835e-04 and in Pythia6 was 3.310e-04,
+ i.e. now is factor >>> 1.159 <<< different
+
+ Begin subrun number 5 : HardQCD:qqbar2qqbarNew + HardQCD:qqbar2ccbar + HardQCD:qqbar2bbbar
+ Cross section is 4.118e-04 and in Pythia6 was 3.653e-04,
+ i.e. now is factor >>> 1.127 <<< different
+
+ Begin subrun number 6 : PromptPhoton:qg2qgamma
+ Cross section is 1.797e-04 and in Pythia6 was 1.697e-04,
+ i.e. now is factor >>> 1.059 <<< different
+
+ Begin subrun number 7 : PromptPhoton:qqbar2ggamma
+ Cross section is 1.261e-05 and in Pythia6 was 1.163e-05,
+ i.e. now is factor >>> 1.085 <<< different
+
+ Begin subrun number 8 : PromptPhoton:gg2ggamma
+ Cross section is 1.346e-07 and in Pythia6 was 1.065e-07,
+ i.e. now is factor >>> 1.263 <<< different
+
+ Begin subrun number 9 : PromptPhoton:ffbar2gammagamma
+ Cross section is 8.390e-08 and in Pythia6 was 8.259e-08,
+ i.e. now is factor >>> 1.016 <<< different
+
+ Begin subrun number 10 : PromptPhoton:gg2gammagamma
+ Cross section is 9.827e-08 and in Pythia6 was 8.237e-08,
+ i.e. now is factor >>> 1.193 <<< different
+
+ Begin subrun number 11 : WeakBosonExchange:ff2ff(t:gmZ)
+ Cross section is 2.551e-05 and in Pythia6 was 2.544e-05,
+ i.e. now is factor >>> 1.003 <<< different
+
+ Begin subrun number 12 : WeakBosonExchange:ff2ff(t:W)
+ Cross section is 5.354e-06 and in Pythia6 was 5.321e-06,
+ i.e. now is factor >>> 1.006 <<< different
+
+ Begin subrun number 13 : WeakSingleBoson:ffbar2gmZ
+ Cross section is 5.639e-05 and in Pythia6 was 5.571e-05,
+ i.e. now is factor >>> 1.012 <<< different
+
+ Begin subrun number 14 : WeakSingleBoson:ffbar2W
+ Cross section is 1.647e-04 and in Pythia6 was 1.621e-04,
+ i.e. now is factor >>> 1.016 <<< different
+
+ Begin subrun number 15 : WeakDoubleBoson:ffbar2gmZgmZ
+ Cross section is 9.302e-09 and in Pythia6 was 9.039e-09,
+ i.e. now is factor >>> 1.029 <<< different
+
+ Begin subrun number 16 : WeakDoubleBoson:ffbar2ZW
+ Cross section is 2.271e-08 and in Pythia6 was 2.247e-08,
+ i.e. now is factor >>> 1.011 <<< different
+
+ Begin subrun number 17 : WeakDoubleBoson:ffbar2WW
+ Cross section is 6.121e-08 and in Pythia6 was 5.893e-08,
+ i.e. now is factor >>> 1.039 <<< different
+
+ Begin subrun number 18 : WeakBosonAndParton:qqbar2gmZg
+ Cross section is 4.078e-06 and in Pythia6 was 3.781e-06,
+ i.e. now is factor >>> 1.078 <<< different
+
+ Begin subrun number 19 : WeakBosonAndParton:qg2gmZq
+ Cross section is 1.193e-05 and in Pythia6 was 1.078e-05,
+ i.e. now is factor >>> 1.106 <<< different
+
+ Begin subrun number 20 : WeakBosonAndParton:ffbar2gmZgm
+ Cross section is 4.760e-08 and in Pythia6 was 4.551e-08,
+ i.e. now is factor >>> 1.046 <<< different
+
+ Begin subrun number 21 : WeakBosonAndParton:qqbar2Wg
+ Cross section is 1.098e-05 and in Pythia6 was 1.025e-05,
+ i.e. now is factor >>> 1.071 <<< different
+
+ Begin subrun number 22 : WeakBosonAndParton:qg2Wq
+ Cross section is 3.438e-05 and in Pythia6 was 3.208e-05,
+ i.e. now is factor >>> 1.072 <<< different
+
+ Begin subrun number 23 : WeakBosonAndParton:ffbar2Wgm
+ Cross section is 5.530e-08 and in Pythia6 was 5.435e-08,
+ i.e. now is factor >>> 1.018 <<< different
+
+ Begin subrun number 24 : Charmonium:all
+ Cross section is 1.350e-04 and in Pythia6 was 1.038e-04,
+ i.e. now is factor >>> 1.300 <<< different
+
+ Begin subrun number 25 : Bottomonium:all
+ Cross section is 4.689e-05 and in Pythia6 was 3.929e-05,
+ i.e. now is factor >>> 1.193 <<< different
+
+ Begin subrun number 26 : Top:gg2ttbar
+ Cross section is 4.707e-07 and in Pythia6 was 4.155e-07,
+ i.e. now is factor >>> 1.133 <<< different
+
+ Begin subrun number 27 : Top:qqbar2ttbar
+ Cross section is 7.326e-08 and in Pythia6 was 6.685e-08,
+ i.e. now is factor >>> 1.096 <<< different
+
+ Begin subrun number 28 : Top:qq2tq(t:W)
+ Cross section is 2.043e-07 and in Pythia6 was 1.898e-07,
+ i.e. now is factor >>> 1.077 <<< different
+
+ Begin subrun number 29 : Top:ffbar2ttbar(s:gmZ)
+ Cross section is 4.253e-10 and in Pythia6 was 4.240e-10,
+ i.e. now is factor >>> 1.003 <<< different
+
+ Begin subrun number 30 : Top:ffbar2tqbar(s:W)
+ PYTHIA Warning in PhaseSpace2to2tauyz::trialKin: maximum for cross section violated  
+ Cross section is 7.261e-09 and in Pythia6 was 7.142e-09,
+ i.e. now is factor >>> 1.017 <<< different
+
+ Begin subrun number 31 : HiggsSM:ffbar2H
+ Cross section is 1.936e-10 and in Pythia6 was 1.547e-10,
+ i.e. now is factor >>> 1.251 <<< different
+
+ Begin subrun number 32 : HiggsSM:gg2H
+ Cross section is 9.106e-09 and in Pythia6 was 7.064e-09,
+ i.e. now is factor >>> 1.289 <<< different
+
+ Begin subrun number 33 : HiggsSM:ffbar2HZ
+ Cross section is 1.386e-10 and in Pythia6 was 1.316e-10,
+ i.e. now is factor >>> 1.053 <<< different
+
+ Begin subrun number 34 : HiggsSM:ffbar2HW
+ Cross section is 2.480e-10 and in Pythia6 was 2.332e-10,
+ i.e. now is factor >>> 1.064 <<< different
+
+ Begin subrun number 35 : HiggsSM:ff2Hff(t:ZZ)
+ Cross section is 5.173e-10 and in Pythia6 was 5.105e-10,
+ i.e. now is factor >>> 1.013 <<< different
+
+ Begin subrun number 36 : HiggsSM:ff2Hff(t:WW)
+ Cross section is 1.312e-09 and in Pythia6 was 1.316e-09,
+ i.e. now is factor >>> 0.997 <<< different
+
+ Begin subrun number 37 : HiggsSM:qg2Hq
+ Cross section is 5.804e-11 and in Pythia6 was 4.462e-11,
+ i.e. now is factor >>> 1.301 <<< different
+
+ Begin subrun number 38 : HiggsSM:gg2Hg(l:t)
+ Cross section is 7.387e-09 and in Pythia6 was 5.557e-09,
+ i.e. now is factor >>> 1.329 <<< different
+
+ Begin subrun number 39 : HiggsSM:qg2Hq(l:t)
+ Cross section is 2.521e-09 and in Pythia6 was 1.966e-09,
+ i.e. now is factor >>> 1.282 <<< different
+
+ Begin subrun number 40 : HiggsSM:qqbar2Hg(l:t)
+ Cross section is 1.092e-11 and in Pythia6 was 8.725e-12,
+ i.e. now is factor >>> 1.251 <<< different
+
+ Begin subrun number 41 : HiggsBSM:allH1
+ PYTHIA Warning in ParticleDataEntry::initBWmass: switching off width for id = 25
+ Cross section is 6.189e-09 and in Pythia6 was 2.450e-08,
+ i.e. now is factor >>> 0.253 <<< different
+
+ Begin subrun number 42 : HiggsBSM:allH2
+ Cross section is 6.704e-09 and in Pythia6 was 5.839e-09,
+ i.e. now is factor >>> 1.148 <<< different
+
+ Begin subrun number 43 : HiggsBSM:allA3
+ Cross section is 2.095e-08 and in Pythia6 was 1.687e-08,
+ i.e. now is factor >>> 1.242 <<< different
+
+ Begin subrun number 44 : HiggsBSM:allH+-
+ Cross section is 8.994e-11 and in Pythia6 was 8.950e-11,
+ i.e. now is factor >>> 1.005 <<< different
+
+ Begin subrun number 45 : HiggsBSM:allHpair
+ Cross section is 4.491e-11 and in Pythia6 was 4.188e-11,
+ i.e. now is factor >>> 1.072 <<< different
+
+ Begin subrun number 46 : NewGaugeBoson:ffbar2gmZZprime
+ Cross section is 2.015e-07 and in Pythia6 was 1.980e-07,
+ i.e. now is factor >>> 1.018 <<< different
+
+ Begin subrun number 47 : NewGaugeBoson:ffbar2Wprime
+ Cross section is 4.648e-07 and in Pythia6 was 4.551e-07,
+ i.e. now is factor >>> 1.021 <<< different
+
+ Begin subrun number 48 : LeftRightSymmmetry:ffbar2ZR
+ Cross section is 5.972e-09 and in Pythia6 was 6.005e-09,
+ i.e. now is factor >>> 0.994 <<< different
+
+ Begin subrun number 49 : LeftRightSymmmetry:ffbar2WR
+ Cross section is 1.098e-07 and in Pythia6 was 1.102e-07,
+ i.e. now is factor >>> 0.996 <<< different
+
+ Begin subrun number 50 : LeftRightSymmmetry:ffbar2HLHL
+ Cross section is 7.816e-11 and in Pythia6 was 7.784e-11,
+ i.e. now is factor >>> 1.004 <<< different
+
+ Begin subrun number 51 : LeftRightSymmmetry:ffbar2HRHR
+ Cross section is 3.516e-11 and in Pythia6 was 3.488e-11,
+ i.e. now is factor >>> 1.008 <<< different
+
+ Begin subrun number 52 : LeptoQuark:all
+ Cross section is 6.662e-08 and in Pythia6 was 6.006e-08,
+ i.e. now is factor >>> 1.109 <<< different
+
+ Begin subrun number 53 : ExcitedFermion:dg2dStar
+ Cross section is 3.470e-06 and in Pythia6 was 3.235e-06,
+ i.e. now is factor >>> 1.073 <<< different
+
+ Begin subrun number 54 : ExcitedFermion:qq2dStarq
+ Cross section is 1.848e-05 and in Pythia6 was 1.689e-05,
+ i.e. now is factor >>> 1.094 <<< different
+
+ Begin subrun number 55 : ExcitedFermion:qqbar2eStare
+ Cross section is 5.693e-07 and in Pythia6 was 5.986e-07,
+ i.e. now is factor >>> 0.951 <<< different
+
+ Begin subrun number 56 : ExtraDimensionsG*:all
+ Cross section is 3.131e-10 and in Pythia6 was 3.241e-10,
+ i.e. now is factor >>> 0.966 <<< different

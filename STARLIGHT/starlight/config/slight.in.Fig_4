@@ -1,0 +1,33 @@
+# This file is a template for J/psi production in Pb-Pb collisions at the LHC.
+#
+# to use, rename this file slight.in
+#
+baseFileName = fig4	#suite of output files will be saved with this base name 
+BEAM_1_Z = 82    #Z of projectile
+BEAM_1_A = 208   #A of projectile
+BEAM_2_Z = 82   #Z of target
+BEAM_2_A = 208   #A of target
+BEAM_1_GAMMA = 1470.0 #Gamma of the colliding ion 1
+BEAM_2_GAMMA = 1470.0 #Gamma of the colliding ion 2
+W_MAX = -1   #Max value of w
+W_MIN = -1    #Min value of w
+W_N_BINS = 50    #Bins i w
+RAP_MAX = 9.    #max y
+RAP_N_BINS = 200    #Bins i y
+CUT_PT = 0 #Cut in pT? 0 = (no, 1 = yes)
+PT_MIN = 1.0 #Minimum pT in GeV
+PT_MAX = 3.0 #Maximum pT in GeV
+CUT_ETA = 0 #Cut in pseudorapidity? (0 = no, 1 = yes)
+ETA_MIN = -10 #Minimum pseudorapidity
+ETA_MAX = 10 #Maximum pseudorapidity
+PROD_MODE = 2     #gg or gP switch (1 = 2-photon, 2 = coherent vector meson (narrow), 3 = coherent vector meson (wide), 4 = incoherent vector meson)
+N_EVENTS = 100000   #Number of events
+PROD_PID = 443013   #Channel of interest; this is j/psi --> mu+ mu-
+RND_SEED = 5574535 #Random number seed
+BREAKUP_MODE = 5     #Controls the nuclear breakup; a 5 here makes no requirement on the breakup of the ions
+INTERFERENCE = 0     #Interference (0 = off, 1 = on)
+IF_STRENGTH = 1.    #% of intefernce (0.0 - 0.1)
+INT_PT_MAX = 0.24  #Maximum pt considered, when interference is turned on
+INT_PT_N_BINS =120   #Number of pt bins when interference is turned on
+XSEC_METHOD = 1 # Set to 0 to use old method for calculating gamma-gamma luminosity
+PYTHIA_FULL_EVENTRECORD = 0 # Write full pythia information to output (vertex, parents, daughter etc).

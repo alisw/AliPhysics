@@ -1,0 +1,7 @@
+# $Id$
+# 
+# ROOT Environment additional settings for mapping.
+
+# Rint (interactive ROOT executable) specific alias, logon and logoff macros
+Rint.Logon:              mlibs.C
+Rint.Logoff:             empty.C

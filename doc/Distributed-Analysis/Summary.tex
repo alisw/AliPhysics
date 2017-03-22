@@ -1,0 +1,9 @@
+%________________________________________________________
+\section{Summary}
+\label{Note:SUMMARY}
+
+In summary, we tried to describe the overall distributed analysis framework by also providing some practical examples. The intention of this note, among other things, was to enlighten the users about the whole procedure starting from the validation of the code which is usually done locally up to the submission of GRID jobs. 
+
+We started off by showing how one can interact with the file catalog and extract a collection of files. Then we presented how one can use the \tag\ in order to analyze a few ESD files stored locally, a step which is necessary for the validation of the user's code (code sanity and result testing). The next step was the interactive analysis with GRID stored ESDs. This was also described in detail in Section \ref{Note:INTERACTIVE}. Finally, in Section \ref{Note:BATCH}, we presented in detail the whole machinery of the distributed analysis and we also provided some practical examples to create a new xml collection using the \tag. We also presented in detail the files needed in order to submit a GRID job and on this basis we tried to explain the relevant JDL fields and their syntax.
+
+We should point out once again, that this note concentrated on the usage of the whole metadata machinery of the experiment: that is both the file/run level metadata \cite{Note:RefFileCatalogMetadataNote} as well as the \tag\ \cite{Note:RefEventTagNote}. The latter is used because apart from the fact that it provides us with a fast event filtering mechanism, it also takes care in a fully transparent way the creation of the analyzed input sample in the proper format ({\ttfamily TChain}). Thus, it is really easy to plug it in as a first step in the new analysis framework \cite{Note:RefAlienTutorial,Note:RefAnalysisFramework} which is being developed and validated at the moment this note was being written.

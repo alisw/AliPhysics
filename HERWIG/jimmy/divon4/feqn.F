@@ -1,0 +1,16 @@
+*CMZ :          23/08/93  13.30.10  by  Jonathan Butterworth
+*-- Author :
+      SUBROUTINE FEQN (NCUT,F,FGAM,FNLIN)
+      INTEGER NCUT
+      DOUBLE PRECISION FGAM
+      DOUBLE PRECISION F(NCUT), FNLIN(NCUT)
+      INTEGER I, NCUTM1
+      SAVE
+      IF(NCUT.EQ.1) GOTO 20
+      NCUTM1=NCUT-1
+      DO 10 I=1,NCUTM1
+      FNLIN(I)=F(I)-F(I+1)
+ 10   CONTINUE
+ 20   FNLIN(NCUT)=F(1)-FGAM
+      RETURN
+      END

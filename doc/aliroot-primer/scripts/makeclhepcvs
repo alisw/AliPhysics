@@ -1,0 +1,10 @@
+cvs -d :pserver:anonymous@clhep.cvs.cern.ch:/cvs/CLHEP login
+# Empty password
+cvs -d :pserver:anonymous@clhep.cvs.cern.ch:/cvs/CLHEP \
+	co -r CLHEP_2_0_3_1 CLHEP
+cd CLHEP
+./bootstrap
+./configure --prefix=$ALICE/CLHEP # Select the place to install CLHEP
+make
+make check
+make install

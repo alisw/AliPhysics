@@ -1,0 +1,27 @@
+\documentclass{elsart}  
+\usepackage{epsfig,amssymb,amsmath}  
+\begin{document}
+
+
+\section{ALICE TPC  ExB effect}
+
+The main barrel of ALICE is located inside the L3 magnet.
+The magnetic field B of the L3 magnet and the electric field E of the TPC are in the 
+first approximation parallel.  The magnetic field supplied by the L3 magnet (it
+ measures about length x diameter 11.6 x 11.2 m) is not perfectly homegenous.
+In the region where the TPC is located these inhomogenities are on the order of 1\%.
+
+The small angle of displacement causes a displacement of tracks that is 
+proportional to the drift length and parameter $\omega\tau$.
+Parameter  $\omega\tau$ is, in its turn, proportional to the magnetic field ($\omega=(e/m)|B|)$ 
+and a characteristic time of TPC drift gas $\tau$. Integrating over the full 
+drift length of ALICE TPC (250 cm), these displacements are of the order of 1 
+cm and have to be corrected.
+
+ExB effect in the ALICE TPC was calibrated using ALICE laser system which consists of 336 laser beams spaced at different x, y, z position. Displacement of  reconstructed laser beam position with respect to sureveyed position for different magnetic field setting was measured ($B_z$ = -0.5, -0.5,-0.2, 0, 0.2, 0.4 and 0.5 T). The effect of misalingment was reduced by subtracting the displacement values for the setting without magnetic field.
+
+The measured L3 magnetic field can serve as additional input source for the calibration procedure.
+Parameter $\omega\tau$ was fitted by measuring the laser track distortion at different magnetic field intensity . 
+
+The precision of constructed ExB distiortion map is on the level of about 0.35 mm. Additional improvement was obtained by adding constant B field components on top of measured B field map. (Not included in the AliRoot yet)  
+\end{document}

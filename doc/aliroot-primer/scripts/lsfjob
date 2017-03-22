@@ -1,0 +1,17 @@
+#! /bin/sh
+# Take all the C++ macros from the local computer to the working directory 
+command scp phristov@pcepalice69:/home/phristov/pp/*.C .
+
+# Execute the simulation macro. Redirect the output and error streams
+command aliroot -b -q sim.C > sim.log 2>&1
+
+# Execute the reconstruction macro. Redirect the output and error streams
+command aliroot -b -q rec.C > rec.log 2>&1
+
+# Create a new CASTOR directory for this job ($LSB_JOBID)
+command rfmkdir /castor/cern.ch/user/p/phristov/pp/$LSB_JOBID
+
+# Copy all log files to CASTOR
+for a in *.log; do rfcp $a /castor/cern.ch/user/p/phristov/pp/$LSB_JOBID; done
+# Copy all ROOT files to CASTOR
+for a in *.root; do rfcp $a /castor/cern.ch/user/p/phristov/pp/$LSB_JOBID; done

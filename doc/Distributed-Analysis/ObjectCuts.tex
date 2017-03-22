@@ -1,0 +1,87 @@
+\section{Run and event level cut member functions}
+\label{App:ObjectCuts}
+\subsection{Run level member functions}
+{\ttfamily \noindent
+\begin{verbatim}
+  void SetRunId(Int_t Pid);
+  void SetMagneticField(Float_t Pmag);
+  void SetRunStartTimeRange(Int_t t0, Int_t t1);
+  void SetRunStopTimeRange(Int_t t0, Int_t t1);
+  void SetAlirootVersion(TString v);
+  void SetRootVersion(TString v);
+  void SetGeant3Version(TString v);
+  void SetRunQuality(Int_t Pn);
+  void SetBeamEnergy(Float_t PE);
+  void SetBeamType(TString Ptype);
+  void SetCalibVersion(Int_t Pn);
+  void SetDataType(Int_t i);
+\end{verbatim}
+}
+\subsection{Event level member functions}
+{\ttfamily \noindent
+\begin{verbatim}
+  void SetNParticipantsRange(Int_t low, Int_t high);
+  void SetImpactParamRange(Float_t low, Float_t high);
+
+  void SetPrimaryVertexXRange(Float_t low, Float_t high);
+  void SetPrimaryVertexYRange(Float_t low, Float_t high);
+  void SetPrimaryVertexZRange(Float_t low, Float_t high);
+  void SetPrimaryVertexFlag(Int_t flag);
+  void SetPrimaryVertexZErrorRange(Float_t low, Float_t high);
+
+  void SetTriggerMask(ULong64_t trmask);
+  void SetTriggerCluster(UChar_t trcluster);
+
+  void SetZDCNeutron1Range(Float_t low, Float_t high);
+  void SetZDCProton1Range(Float_t low, Float_t high);
+  void SetZDCEMRange(Float_t low, Float_t high);
+  void SetZDCNeutron2Range(Float_t low, Float_t high);
+  void SetZDCProton2Range(Float_t low, Float_t high);
+  void SetT0VertexZRange(Float_t low, Float_t high);
+
+  void SetMultiplicityRange(Int_t low, Int_t high);
+  void SetPosMultiplicityRange(Int_t low, Int_t high);
+  void SetNegMultiplicityRange(Int_t low, Int_t high);
+  void SetNeutrMultiplicityRange(Int_t low, Int_t high);
+  void SetNV0sRange(Int_t low, Int_t high);
+  void SetNCascadesRange(Int_t low, Int_t high);
+  void SetNKinksRange(Int_t low, Int_t high);
+
+  void SetNPMDTracksRange(Int_t low, Int_t high);
+  void SetNFMDTracksRange(Int_t low, Int_t high);
+  void SetNPHOSClustersRange(Int_t low, Int_t high);
+  void SetNEMCALClustersRange(Int_t low, Int_t high);
+  void SetNJetCandidatesRange(Int_t low, Int_t high);
+
+  void SetTopJetEnergyMin(Float_t low);
+  void SetTopNeutralEnergyMin(Float_t low);
+  void SetNHardPhotonsRange(Int_t low, Int_t high);
+  void SetNChargedAbove1GeVRange(Int_t low, Int_t high);
+  void SetNChargedAbove3GeVRange(Int_t low, Int_t high);
+  void SetNChargedAbove10GeVRange(Int_t low, Int_t high);
+  void SetNMuonsAbove1GeVRange(Int_t low, Int_t high);
+  void SetNMuonsAbove3GeVRange(Int_t low, Int_t high);
+  void SetNMuonsAbove10GeVRange(Int_t low, Int_t high);
+  void SetNElectronsAbove1GeVRange(Int_t low, Int_t high);
+  void SetNElectronsAbove3GeVRange(Int_t low, Int_t high);
+  void SetNElectronsAbove10GeVRange(Int_t low, Int_t high);
+  void SetNElectronRange(Int_t low, Int_t high);
+  void SetNMuonRange(Int_t low, Int_t high);
+  void SetNPionRange(Int_t low, Int_t high);
+  void SetNKaonRange(Int_t low, Int_t high);
+  void SetNProtonRange(Int_t low, Int_t high);
+  void SetNLambdaRange(Int_t low, Int_t high);
+  void SetNPhotonRange(Int_t low, Int_t high);
+  void SetNPi0Range(Int_t low, Int_t high);
+  void SetNNeutronRange(Int_t low, Int_t high);
+  void SetNKaon0Range(Int_t low, Int_t high); 
+  void SetTotalPRange(Float_t low, Float_t high);
+  void SetMeanPtRange(Float_t low, Float_t high);
+  void SetTopPtMin(Float_t low);
+  void SetTotalNeutralPRange(Float_t low, Float_t high);
+  void SetMeanNeutralPtPRange(Float_t low, Float_t high);
+  void SetTopNeutralPtMin(Float_t low);
+  void SetEventPlaneAngleRange(Float_t low, Float_t high);
+  void SetHBTRadiiRange(Float_t low, Float_t high);
+\end{verbatim}
+}

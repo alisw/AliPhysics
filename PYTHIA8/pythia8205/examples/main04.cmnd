@@ -1,0 +1,59 @@
+! File: main04.cmnd
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The changes here are illustrative, not always physics-motivated.
+
+! 1) Settings used in the main program.
+Main:numberOfEvents = 1000         ! number of events to generate
+Main:timesAllowErrors = 10         ! how many aborts before run stops
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = off ! list changed particle data
+Next:numberCount = 500             ! print message every n events
+Next:numberShowInfo = 3            ! print event information n times
+Next:numberShowProcess = 0         ! print process record n times
+Next:numberShowEvent = 0           ! print event record n times
+
+! 3) Beam parameter settings. Values below agree with default ones.
+Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
+Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
+Beams:eCM = 14000.                 ! CM energy of collision
+
+! 4) Settings for the hard-process generation.
+SoftQCD:all = on                   ! Allow total sigma = elastic/SD/DD/ND
+! Optionally only study one or a few processes at a time.
+#SoftQCD:elastic = on               ! Elastic
+#SoftQCD:singleDiffractive = on     ! Single diffractive
+#SoftQCD:doubleDiffractive = on     ! Double diffractive
+#SoftQCD:centralDiffractive = on    ! Central diffractive
+#SoftQCD:nonDiffractive = on        ! Nondiffractive (inelastic)
+#SoftQCD:inelastic = on             ! All inelastic
+
+! 5) Optionally switch on hand-set cross section and Coulomb term.
+! Note: these values are illustrative only, not to be taken seriously.
+#SigmaTotal:setOwn = on             ! set your own total/elastic/diffr. sigma
+#SigmaTotal:sigmaTot = 106.         ! total cross section (excluding Coulomb)
+#SigmaTotal:sigmaXX = 5.            ! reduce double diffractive cross section
+#SigmaElastic:setOwn = on           ! suboption for Coulomb term in elastic
+#SigmaElastic:tAbsMin = 4e-5        ! divergence requires lower cutoff
+
+! 6) Optionally select diffractive model.
+Diffraction:PomFlux = 5             ! the MBR model for diffraction
+
+! 7) Multiparton interactions and impact parameter picture.
+! Note: these values are illustrative only, not to be taken seriously.
+MultipartonInteractions:pT0Ref = 2.
+MultipartonInteractions:ecmRef = 1960.
+MultipartonInteractions:ecmPow = 0.16
+MultipartonInteractions:pTmin = 0.2
+MultipartonInteractions:bProfile = 2
+#MultipartonInteractions:coreRadius = 0.4
+#MultipartonInteractions:coreFraction = 0.5
+MultipartonInteractions:expPow = 1.
+
+! 8) Other settings. Can be expanded as desired.
+! Note: may overwrite some of the values above, so watch out.
+#Tune:pp = 6                         ! use Tune 4Cx
+

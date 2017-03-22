@@ -1,0 +1,270 @@
+\documentclass{elsart}  
+\usepackage{epsfig,amssymb,amsmath}  
+\usepackage{rotating}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+
+\usepackage{float}
+
+\begin{document}
+
+
+
+\section{ Alice space point distortion - Nonlinearities}
+
+
+The electric field in the TPC in the ideal case has just z component ($E=(0,0,E_z)$).
+The deviation from the ideal behavior causes a distortion which is on the level  $\approx1$ mm
+close to the Outer field cage.
+The drift vector follows the E field vector. The effect of distortion is integrated over the 
+electron drift length. The track position resolution $\sigma$ is on the level of 100 microns.
+Therefore the nonlinearities due to the E field imperfection can not be neglected.
+
+Distortions can be estimated by histograming the difference between the tracks and the corresponding
+ space points. ($\Delta_z= Z_p-Z_f$,$\Delta_y= Y_p-Y_f$).The tracks are fitted in the region where the distortion is assumed to be minimal.
+In our studies, the first and the last 15 pad-rows close to the Inner and Outer field cage were removed from the fit.
+
+To estimate radial distortion we assume following model:
+\begin{equation}
+\Delta_y=\Delta_{y0}(R,Z)+\Delta_R(R,Z)\tan(\Phi) 
+\end{equation}
+\begin{equation}
+\Delta_z=\Delta_{z0}(R,Z)+\Delta_R(R,Z)\tan(\Theta)
+\end{equation}
+
+\begin{figure}
+  \centering\epsfig{figure=picDistortion/hisdz_XZ0.eps,width=0.8\linewidth}	
+  \centering\epsfig{figure=picDistortion/hisdz_XAside.eps,width=0.8\linewidth}
+  \centering\epsfig{figure=picDistortion/hisdz_XCside.eps,width=0.8\linewidth}
+  \caption{Mean residuals between the track and the space point in z direction as a function of radial position. }
+  \label{figLocalZDistortion}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=picDistortion/hisdy_XZ.eps,width=0.8\linewidth}	
+  \centering\epsfig{figure=picDistortion/hisdy_XAside.eps,width=0.8\linewidth}
+  \centering\epsfig{figure=picDistortion/hisdy_XCside.eps,width=0.8\linewidth}
+  \caption{Mean residuals between the track and the space point in y direction as a function of radial position. Only tracks with positive tan($\phi$) used. }
+  \label{figLocalYDistortion}
+\end{figure}
+
+
+The influence of radial distortion effect to the cluster residuals in y direction is visualized on picture \ref{figLocalYDistortion}.
+Close to the Outer field cage the points are systematically shifted. This shift can be
+fitted with exponential fit function with decay length $\approx$ 7 cm.
+ 
+The radial distortion is smaller on C side than on A side, and is proportional to the drift length (see \ref{figRadialDistortionMapDZ}).
+To describe the effect in two dimensions 2 exponential decay model was fitted.
+\begin{equation}
+\Delta_R=(k5_0+k5_1z+k5_2z^2)e^{-d_{out}/5}+(k10_0+k10_1z+k10_2z^2)e^{-d_{out}/10}
+\end{equation}
+Chosen model is linear in parameters and therefore has a analytical solution.
+(I do not have better idea for the moment). 
+
+The fitted radial distortion is also sector  dependent (see pic. \ref{figRadialDistortionMapXY})
+The statistical error of the fit using 400000 tracks is about 0.2 mm.
+
+
+
+
+The effect of missing correction for the radial distortion on track angular matching is visualized in picture \ref{figAngularAlignRdist}. The radial distortion has to be calibrated before, or together with the alignment. 
+
+
+
+
+\begin{figure}
+  \centering\epsfig{figure=picDistortion/hisdrfitAC_DZ.eps,width=0.6\linewidth}
+  \caption{Fitted radial distortion map.}
+  \label{figRadialDistortionMapDZ}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=picDistortion/hisdrfitA_XY2.eps,width=0.6\linewidth}
+  \centering\epsfig{figure=picDistortion/hisdrfitC_XY2.eps,width=0.6\linewidth}
+  \caption{Fitted radial distortion map (XY).}
+  \label{figRadialDistortionMapXY}
+\end{figure}
+
+
+
+\begin{figure}
+  \centering\epsfig{figure=picDistortion/dphi_zphi,width=0.5\linewidth}
+  \centering\epsfig{figure=picDistortion/dtheta_ztheta,width=0.5\linewidth}
+  \caption{Angular matching between OROC and IROC as function of z. Indication of the radial 
+           distortions }
+  \label{figAngularAlignRdist}
+\end{figure}
+
+\section{R-$\Phi$ distortion}
+
+A R-$\Phi$ distortion is obsered at the edge of the chambers. This distortion depends on the distance to the edge pad - $d_{pad0}$ and on the distance to the wire mounting ($d_{w}$).
+
+There are following components contributing:
+\begin{itemize}
+\item Main component. Cluster edge effect depends on the distance to edge pad (see pic. \ref{figAngularAlignRPHIdist})
+\item Decrease of amplification close to the edge ($d_{w}$ dependence).
+\item Field distortion ($d_{w}$ dependence)
+\end{itemize}  
+
+The effect can be described using weighted Center of gravity function (see eq.\ref{eq:WeightCOG})
+At the edge of the chamber the signal is atenuated by factor $w_i$, and cut at the pad
+less then 0. The atenuation factor and Pad Responsense Function (PRF) width were measured independently and they were used on correction formula. The PRF is approximated by gaussian 
+distribution. 
+\begin{eqnarray}
+    \Delta_{R\Phi}(y)=y_{\rm{COG}}-y=\frac{\sum_{i=0}^{N}{iw_if_{ri}}}{\sum_{i=1}^N{w_if_{ri}}}-y \\
+    w_i = 1-k_ae^{-d_il_a} \\
+    f_{ri}=e^{-(y_p-y)^2/(2\sigma^2)} 	
+\label{eq:WeightCOG}
+\end{eqnarray}
+
+The correction formula describe the data down to 2 cm distance with precission bellow 0.5 mm
+(see pic. \ref{figAngularAlignRPHIdistCorr} upper plot). For practical usage in tracking we reject the clusters with in the TPC region with $R-\Phi$ correction bigger than cluster position resolution  ($\approx 1 mm$).
+
+\begin{figure}
+  \centering\epsfig{figure=picDistortionRPHI/ycl_ytcm.eps,width=0.5\linewidth}
+  \epsfig{figure=picDistortionRPHI/ycl_ytpad.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picDistortionRPHI/dycl_ytcm.eps,width=0.5\linewidth}
+  \epsfig{figure=picDistortionRPHI/dycl_ytpad.eps,width=0.5\linewidth}
+  \caption{Clusters residual  at the edge of TPC sectors. $Y_0$ is the position of the edge pad.
+	   For y bellow 0.5 pad width, the COG of cluster is almost independent of the track position. Non linear effect is observed up to distance 2 pad width. Small difference between the different pads can be explained by different Pad response function width.
+	  }
+  \label{figAngularAlignRPHIdist}
+\end{figure}
+
+\begin{figure}
+  \centering\
+  \epsfig{figure=picDistortionRPHI/rphi_dist_max100.000000.eps,width=0.5\linewidth}
+  \epsfig{figure=picDistortionRPHI/rphi_dist_max0.100000.eps,width=0.5\linewidth}
+\caption{ Cluster residual at the edge of the TPC sectors. In upper part all clusters used, in lower part only the clusters with the estimated distortion bellow 1 mm used.}
+\label{figAngularAlignRPHIdistCorr}
+\end{figure}
+
+
+\section{ Alice TPC alignment}
+
+Problems with y and phi alignment in the OROC -left right alignment. 
+Systematic shift in y and phi.
+Shift observed mainly for the short track. 
+The effect was reduced making stronger cut on pt matching and pt resolution.
+
+
+
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignMag5/SigmaY_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignMag5/DeltaY_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignMag5/PullY_z.eps,width=0.5\linewidth}
+  \caption{Field 0.5 T data. Extracted sigma, mean and pull in y matching between IROC and OROC}
+  \label{figDeltaP0}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignNoMag/SigmaY_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignNoMag/DeltaY_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignNoMag/PullY_z.eps,width=0.5\linewidth}
+  \caption{No field data. Extracted sigma, mean and pull in y matching between IROC and OROC}
+  \label{figDeltaP0}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignMag5/SigmaZ_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignMag5/DeltaZ_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignMag5/PullZ_z.eps,width=0.5\linewidth}
+  \caption{Field 0.5 T data. Extracted sigma, mean and pull in z matching between IROC and OROC}
+  \label{figDeltaP1}
+\end{figure}
+
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignNoMag/SigmaZ_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignNoMag/DeltaZ_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignNoMag/PullZ_z.eps,width=0.5\linewidth}
+  \caption{No field data.Extracted sigma, mean and pull in z matching between IROC and OROC}
+  \label{figDeltaP1}
+\end{figure}
+
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignMag5/SigmaP4_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignMag5/DeltaP4_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignMag5/PullP4_z.eps,width=0.5\linewidth}
+  \caption{Field 0.5 T data. Extracted sigma, mean and pull in curvature matching between IROC and OROC}
+  \label{figDeltaP1}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignNoMag/SigmaP4_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignNoMag/DeltaP4_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignNoMag/PullP4_z.eps,width=0.5\linewidth}
+  \caption{No field data. Extracted sigma, mean and pull in curvature matching between IROC and OROC}
+  \label{figDeltaP1}
+\end{figure}
+
+
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignNoMag/SigmaP4_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignNoMag/DeltaP4_z.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignNoMag/PullP4_z.eps,width=0.5\linewidth}
+  \caption{No field data. Extracted sigma, mean and pull in curvature matching between IROC and OROC}
+  \label{figDeltaP1}
+\end{figure}
+
+
+
+\section{ Alice TPC alignment comparison of data with and without field.}
+
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignComp/mag5dPhi.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignComp/nomagdPhi.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignComp/diffnomagmag5dPhi.eps,width=0.5\linewidth}
+  \caption{$\phi$ Angular alignment. Data with and without magnetic field}
+  \label{figDeltaPhi}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignComp/mag5dTheta.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignComp/nomagdTheta.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignComp/diffnomagmag5dTheta.eps,width=0.5\linewidth}
+  \caption{$\theta$ Angular alignment. Data with and without magnetic field}
+  \label{figDeltaTheta}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignComp/mag5dZ.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignComp/nomagdZ.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignComp/diffnomagmag5dZ.eps,width=0.5\linewidth}
+  \caption{Z alignment. Data with and without magnetic field}
+  \label{figDeltaZ}
+\end{figure}
+
+\begin{figure}
+  \centering\epsfig{figure=picAlignComp/mag5dY.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignComp/nomagdY.eps,width=0.5\linewidth}
+  \centering\epsfig{figure=picAlignComp/diffnomagmag5dY.eps,width=0.5\linewidth}
+  \caption{Y alignment. Data with and without magnetic field}
+  \label{figDeltaY}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
+
+
+
+

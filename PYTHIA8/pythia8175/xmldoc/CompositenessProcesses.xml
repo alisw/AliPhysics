@@ -1,0 +1,220 @@
+<chapter name="Compositeness Processes">
+
+<h2>Compositeness Processes</h2>
+
+Compositeness scenarios may give rise to sharp resonances of excited 
+quarks and leptons. An excited copy of the first generation is 
+implemented, consisting of spin 1/2 particles. The possibility of 
+contact interactions between SM fermions is also implemented in the 
+context of <ei>2 -> 2</ei> quark or fermion-lepton scattering. 
+
+<p/>  
+Related to excited fermions, the current implementation contains gauge 
+interaction production by quark-gluon fusion or lepton-photon fusion 
+and contact interaction production by quark-quark or quark-antiquark 
+scattering. For both the <ei>2 -> 1</ei> and <ei>2 -> 2</ei> processes 
+a non-trivial angular dependence is included in the decay, however, 
+only decays into gauge bosons are supported, i.e. not decays through 
+contact interactions. In additions to the compositeness scale and couplings 
+listed below, you are expected to change the excited-fermion masses in 
+accordance with what is desired. See <ref>Bau90</ref> for conventions.
+
+<p/>
+The contact interactions are implemented according to <ref>Eic83</ref>. 
+The processes include the SM contributions as well as interference. 
+For this reason the processes below converge toward the SM equivalents 
+when the contact interaction contributions are close to zero, e.g. 
+<code>HardQCD:qq2qq</code> and <code>HardQCD:qqbar2qqbarNew</code> in 
+the case of quark scattering. 
+
+<h3>Excited fermions, production processes</h3>
+
+A few different production processes have been implemented, which normally 
+would not overlap and therefore could be run together.
+
+<flag name="ExcitedFermion:all" default="off">
+Common switch for the group of implemented processes that produce an
+excited fermion.
+</flag>
+
+<flag name="ExcitedFermion:dg2dStar" default="off">
+Scatterings <ei>d g -> d^*</ei>. 
+Code 4001.
+</flag>
+
+<flag name="ExcitedFermion:ug2uStar" default="off">
+Scatterings <ei>u g -> u^*</ei>. 
+Code 4002.
+</flag>
+
+<flag name="ExcitedFermion:sg2sStar" default="off">
+Scatterings <ei>s g -> s^*</ei>. 
+Code 4003.
+</flag>
+
+<flag name="ExcitedFermion:cg2cStar" default="off">
+Scatterings <ei>c g -> c^*</ei>. 
+Code 4004.
+</flag>
+
+<flag name="ExcitedFermion:bg2bStar" default="off">
+Scatterings <ei>b g -> b^*</ei>. 
+Code 4005.
+</flag>
+
+<flag name="ExcitedFermion:egm2eStar" default="off">
+Scatterings <ei>e gamma -> e^*</ei>. 
+Code 4011.
+</flag>
+
+<flag name="ExcitedFermion:mugm2muStar" default="off">
+Scatterings <ei>mu gamma -> mu^*</ei>. 
+Code 4013.
+</flag>
+
+<flag name="ExcitedFermion:taugm2tauStar" default="off">
+Scatterings <ei>tau gamma -> tau^*</ei>. 
+Code 4015.
+</flag>
+
+<flag name="ExcitedFermion:qq2dStarq" default="off">
+Scatterings <ei>q q(bar) -> d^* q(bar)</ei>. 
+Code 4021.
+</flag>
+
+<flag name="ExcitedFermion:qq2uStarq" default="off">
+Scatterings <ei>q q(bar) -> u^* q(bar)</ei>. 
+Code 4022.
+</flag>
+
+<flag name="ExcitedFermion:qq2sStarq" default="off">
+Scatterings <ei>q q(bar) -> s^* q(bar)</ei>. 
+Code 4023.
+</flag>
+
+<flag name="ExcitedFermion:qq2cStarq" default="off">
+Scatterings <ei>q q(bar) -> c^* q(bar)</ei>. 
+Code 4024.
+</flag>
+
+<flag name="ExcitedFermion:qq2bStarq" default="off">
+Scatterings <ei>q q(bar) -> b^* q(bar)</ei>. 
+Code 4025.
+</flag>
+
+<flag name="ExcitedFermion:qqbar2eStare" default="off">
+Scatterings <ei>q qbar -> e^*+- e^-+</ei>. 
+Code 4031.
+</flag>
+
+<flag name="ExcitedFermion:qqbar2nueStarnue" default="off">
+Scatterings <ei>q qbar -> nu_e^* nu_ebar</ei>. 
+Code 4032.
+</flag>
+
+<flag name="ExcitedFermion:qqbar2muStarmu" default="off">
+Scatterings <ei>q qbar -> mu^*+- mu^-+</ei>. 
+Code 4033.
+</flag>
+
+<flag name="ExcitedFermion:qqbar2numuStarnumu" default="off">
+Scatterings <ei>q qbar -> nu_mu^* nu_mubar</ei>. 
+Code 4034.
+</flag>
+
+<flag name="ExcitedFermion:qqbar2tauStartau" default="off">
+Scatterings <ei>q qbar -> tau^*+- tau^-+</ei>. 
+Code 4035.
+</flag>
+
+<flag name="ExcitedFermion:qqbar2nutauStarnutau" default="off">
+Scatterings <ei>q qbar -> nu_tau^* nu_taubar</ei>. 
+Code 4036.
+</flag>
+
+<h3>Excited fermions, parameters</h3>
+
+The basic couplings of the model are
+
+<parm name="ExcitedFermion:Lambda" default="1000." min="100.">
+Compositeness scale <ei>Lambda</ei> in GeV.
+</parm>
+
+<parm name="ExcitedFermion:coupF" default="1.0" min="0.0">
+Strength <ei>f</ei> of the <ei>SU(2)</ei> coupling.
+</parm>
+
+<parm name="ExcitedFermion:coupFprime" default="1.0" min="0.0">
+Strength <ei>f'</ei> of the <ei>U(1)</ei> coupling.
+</parm>
+
+<parm name="ExcitedFermion:coupFcol" default="1.0" min="0.0">
+Strength <ei>f_c</ei> of the <ei>SU(3)</ei> coupling.
+</parm>
+
+<h3>Contact interactions, production processes</h3>
+
+The processes including contact interactions are
+
+<flag name="ContactInteractions:QCqq2qq" default="off">
+Scatterings <ei>q q -> q q</ei> including contact interactions. 
+Code 4201.
+</flag>
+
+<flag name="ContactInteractions:QCqqbar2qqbar" default="off">
+Scatterings <ei>q qbar -> q' qbar'</ei> including contact interactions. 
+Code 4202.
+</flag>
+
+<flag name="ContactInteractions:QCffbar2eebar" default="off">
+Scatterings <ei>f fbar -> e- e+</ei> including contact interactions. 
+Code 4203.
+</flag>
+
+<flag name="ContactInteractions:QCffbar2mumubar" default="off">
+Scatterings <ei>f fbar -> mu- mu+</ei> including contact interactions. 
+Code 4204.
+</flag>
+
+<flag name="ContactInteractions:QCffbar2tautaubar" default="off">
+Scatterings <ei>f fbar -> tau- tau+</ei> including contact interactions. 
+Code 4205.
+</flag>
+
+<h3>Contact interactions, parameters</h3>
+
+<modeopen name="ContactInteractions:nQuarkNew" default="3" min="0" max="5">
+Number of allowed outgoing new quark flavours in the above
+<ei>q qbar -> q' qbar'</ei> process. Similar to <ei>HardQCD:nQuarkNew</ei> 
+for the QCD processes.
+</modeopen>
+
+<parm name="ContactInteractions:Lambda" default="1000." min="100.">
+Compositeness scale <ei>Lambda</ei> in GeV.
+</parm>
+
+<modepick name="ContactInteractions:etaLL" default="0" min="-1" max="1">
+Helicity parameter. 
+<option value="1"></option>
+<option value="0"></option>
+<option value="-1"></option>
+</modepick>
+
+<modepick name="ContactInteractions:etaRR" default="0" min="-1" max="1">
+Helicity parameter. 
+<option value="1"></option>
+<option value="0"></option>
+<option value="-1"></option>
+</modepick>
+
+<modepick name="ContactInteractions:etaLR" default="0" min="-1" max="1">
+Helicity parameter. 
+<option value="1"></option>
+<option value="0"></option>
+<option value="-1"></option>
+</modepick>
+
+</chapter>
+
+<!-- Copyright (C) 2013 Torbjorn Sjostrand -->
+

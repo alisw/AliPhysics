@@ -1,0 +1,17 @@
+#!/bin/sh
+
+make
+make map
+cd test
+make
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
+export PATH=$LD_LIBRARY_PATH:.
+./stress
+./stressFit
+./stressGeometry
+./stressGraphics
+./stressHepix
+./stressLinear
+./stressShapes
+./stressSpectrum
+./stressVector

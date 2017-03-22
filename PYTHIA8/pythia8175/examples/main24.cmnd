@@ -1,0 +1,47 @@
+! main24.cmnd
+! This file contains commands to be read in for a Pythia8 run. 
+! Lines not beginning with a letter or digit are comments.
+
+! 1) Settings used in the main program.
+Main:numberOfEvents = 10000        ! number of events to generate
+Main:timesAllowErrors = 3          ! how many aborts before run stops
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = off ! list changed particle data
+Next:numberCount = 500             ! print message every n events
+Next:numberShowInfo = 2            ! print event information n times
+Next:numberShowProcess = 2         ! print process record n times
+Next:numberShowEvent = 2           ! print event record n times
+
+! 3) Beam parameter settings. Values below agree with default ones.
+Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
+Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
+Beams:eCM = 10000.                 ! CM energy of collision
+
+! 4) Read SLHA spectrum
+SLHA:file = cmssm.spc              ! Sample SLHA1 spectrum for CMSSM-10.1.1
+#SLHA:file = sps1aWithDecays.spc     ! Older example including DECAY tables
+
+! 5) Process selection 
+SUSY:all = on                      ! Switches on ALL (~400) SUSY processes
+#SUSY:gg2gluinogluino  = on      
+#SUSY:qqbar2gluinogluino  = on
+#SUSY:qg2squarkgluino = on
+#SUSY:gg2squarkantisquark = on
+#SUSY:qqbar2squarkantisquark = on
+#SUSY:qq2squarksquark = on
+#SUSY:qqbar2chi0chi0  = on
+#SUSY:qqbar2chi+-chi0 = on
+#SUSY:qqbar2chi+chi-  = on
+#SUSY:qg2chi0squark = on
+#SUSY:qg2chi+-squark  = on
+! Optionally select only specific sparticle codes in the final state
+#SUSY:idA        = 2000001           ! 0: all
+#SUSY:idB        = 2000001           ! 0: all
+
+! 6) Settings for the event generation process in the Pythia8 library.
+PartonLevel:MPI = off              ! no multiparton interactions
+PartonLevel:ISR = off              ! no initial-state radiation 
+PartonLevel:FSR = off              ! no final-state radiation
+HadronLevel:Hadronize = off        ! no hadronization

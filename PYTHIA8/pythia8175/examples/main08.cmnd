@@ -1,0 +1,29 @@
+! File: main08.cmnd
+! This file contains commands to be read in for a Pythia8 run. 
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The changes here are illustrative, not always physics-motivated.
+
+! The current file is input for subruns with consecutive pT ranges.
+
+Main:numberOfSubruns = 5
+
+Main:subrun = 0
+PhaseSpace:pTHatMin = 100.
+PhaseSpace:pTHatMax = 150.
+
+Main:subrun = 1 
+PhaseSpace:pTHatMin = 150. 
+PhaseSpace:pTHatMax = 250.
+
+Main:subrun = 2 
+PhaseSpace:pTHatMin = 250.
+PhaseSpace:pTHatMax = 400.
+
+Main:subrun = 3 
+PhaseSpace:pTHatMin = 400. 
+PhaseSpace:pTHatMax = 600.
+
+Main:subrun = 4 
+PhaseSpace:pTHatMin = 600.
+PhaseSpace:pTHatMax = 0.              ! 0. means open-ended

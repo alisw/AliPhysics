@@ -1,0 +1,68 @@
+\documentclass{elsart}  
+\usepackage{epsfig,amssymb,amsmath}  
+\begin{document}
+
+
+\section{ Alice TPC space point transformation}
+
+The infomation needed for space point transformation.
+
+\begin{itemize}
+\item  Calibration entries - AliTPCcalibDB interface class
+\item  Event by event information (trigger offset, Altro to LHC phase) - source RCU trailer - Current implementation:  
+\begin{itemize}
+\item  AliTPCParam::GetL1Delay
+\item  AliTPCParam::GetNTBinsBeforeL1
+\end{itemize}
+\end{itemize}
+
+
+The information for space point transformation in AliTPCcalibDB.
+\begin{itemize}
+\item ExB effect - {\bf{AliTPCExB * AliTPCcalibDB::GetExB()}} - ExB transformation class
+\item Time 0 offset - {\bf{AliTPCCalPad * AliTPCcalibDB::GetPadTime0()}} -Pad-by-pad time offset
+\item Drift velocity
+\begin{itemize}
+\item Current implementation- fixed drift velocity -  {\bf{AliTPCcalibDB::GetParameters()::GetDriftV()}}
+\item Work in progress - AliTPCCalibVdrift should get the position dependent 
+drift velocity. Following optional calulation: 1.Use the output from laser -  central electrode calibration.  2. Use the GOOFIE values. 3. Use the temperature, pressure, gas composition parameterization (DCS values)
+\end{itemize}
+\item Missalignment - current implementation - only orthogonal transformation.
+      Possibility to use the arbitrary linear transformation under investigation.
+\end{itemize}
+
+
+The space point transformation--correction are applied in different way in the simulation and in reconstruction. In both cases the OCDB values accesible via {\bf{AliTPCcalibDB}} are used. The reason is that during the simulation some random processes (e.g. diffusion) and the detection process (e.g pad, time response function) are applied. During reconstruction only correction for mean effect is applied. 
+
+
+The simulation sequence of the space transormation--correction is implemented in the function {\bf{AliTPC::MakeSector}}. For all simulated primary electrons, the contribution to the observable signal, digit amplitude is calculated. The sequence is following:
+\begin{itemize}
+\item Skip the electron if attached. (Attachement coeficient {\bf{AliTPCcalibDB::GetParameters()::GetAttCoef()}})
+\item  ExB effect in drift volume. ({\bf{AliTPCcalibDB::GetExB()::CorrectInverse(dxyz0,dxyz1)}})
+\item Conversion from global frame to the local coordinate frame (pad-row, pad, timebin). The missalignment is taking into account ({\bf{AliTPCcalibDB::GetParameters()::Transform1to2()}}. {\it{ Currently only orthogonal transformation form the Alignment used. The possibility to use general linear transormation to be implemented if neccesary}}  
+\item Applying the time 0 correction pad-by-pad. ( {\bf{AliTPCCalPad * AliTPCcalibDB::GetPadTime0()}}). Plus sign in the simulation, minus sign in the reconstruction.
+\item Appling global time correction:
+\begin{itemize}
+\item  AliTPCParam::GetL1Delay.
+\item  AliTPCParam::GetNTBinsBeforeL1.
+\item  Time of flight correction. (Value stored for hit)	 
+\end{itemize} 
+\item Calculate Pad and Time response function.
+\end{itemize}
+
+In order to make a space point correction of reconstructed space points the helper class {\bf{AliTPCtransform}} class is used. 
+The instance of this class is created by {\bf{AliTPCcalibDB}}. As a input the space point position in digits cordiante frame is used. As a output space point in tracking frame is used. The following sequence is used ({see \bf{AliTPCcalibDB::GetTransform::Transform()}}):
+
+\begin{itemize}
+\item Applying time 0 correction.
+\item Transormation to the local coordinate frame. Appling the drift velocity parameterization.
+\item Transformation to the global frame.
+\item Applying ExB correction.
+\item Aplying time of flight correction from interaction point. The position of the trigger detector should  be specified (AliTPCTransform::SetPrimVertex).
+\item Transform to the local tracking system.
+\item The (orthogonal) alignment correction applied in separate function.
+       {\bf{GetParameters()::GetClusterMatrix(cluster::GetDetector())::LocalToMaster(pos,posC)}}
+\end{itemize}
+
+
+\end{document}

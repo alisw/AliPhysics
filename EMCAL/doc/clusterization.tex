@@ -1,0 +1,204 @@
+
+%\subsection{Clusterization: From digits to clusters -  Adam}
+%classes:
+%AliEMCALClusterizer.cxx
+%AliEMCALClusterizerv1.cxx
+%AliEMCALClusterizerNxN.cxx
+%AliEMCALClusterizerv2.cxx
+%AliEMCALClusterizerFixedWindow.cxx  
+%unfolding
+The set of information related to one cell - (between each other) the position of cell and the energy deposited in it is called a digit. The digit is represented by the \texttt{AliEMCALDigit} class. A group of digits which are related somehow between each other is called a cluster. The cluster is represented by the \texttt{AliEMCALRecPoint} class.
+
+Transformation from digits to clusters is done during clusterization phase. There are many ideas how to form cluster. Each applied idea is called clusterizer. Currently, there are four types of clusterizers in the EMCal:
+
+%\parskip
+
+\begin{itemize}
+%\parskip
+\item Clusterizer V1,
+\item Clusterizer V2.
+\item Clusterizer V1 with unfolding,
+\item Clusterizer NxN,
+
+\end{itemize}
+
+
+Technically it is organized in the following way. \texttt{AliEMCALClusterizer} is a base clusterizer class. The V1 and NxN clusterizer classes (\texttt{AliEMCALClusterizerv1} and \texttt{AliEMCALClusterizerNxN}, respectively) inherit from the base class. The clusterizer class V2 (\texttt{AliEMCALClusterizerv2}) inherits from \texttt{AliEMCALClusterizerv1}. The third case of clusterization (clusterizer V1 with unfolding) is realized via settable option in the \texttt{AliEMCALClusterizerv1} class. The dedicated class \texttt{AliEMCALUnfolding} was written for the purpose of unfolding. The description of each clusterizer type separately and common clusterization structure together with a description of the cluster is explained below.
+\subsubsection{Clusterization in the EMCal}
+A clusterizer is called in the \texttt{AliEMCALReconstructor} class. The set of clusterizer parameters is initialised. Usually parameters are taken from the OCDB. The full set of parameters which are used during clusterization is given in Tab.~\ref{tab:clusterizationparams}. The other fields of the \texttt{AliEMCALClusterizer} class are given in Tab.~\ref{tab:clusterizationfields}.
+%
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{| c | c | l |}
+  \hline
+  Name & Type & Explanation \\ 
+  \hline
+   fTimeMin                & \texttt{Float\_t } & minimum time of physical signal in a cell/digit\\
+   fTimeMax                & \texttt{Float\_t } & maximum time of physical signal in a cell/digit\\
+   fTimeCut                & \texttt{Float\_t } & maximum time difference between the digits inside EMC cluster\\
+   fToUnfold               & \texttt{Bool\_t  } & says if unfolding should be performed \\
+   fECAClusteringThreshold & \texttt{Float\_t } & minimum energy to seed a EC digit in a cluster\\
+   fECALocMaxCut           & \texttt{Float\_t } & minimum energy difference to distinguish local maxima in a cluster\\
+   fECAW0                  & \texttt{Float\_t } & logarithmic weight for the cluster center of gravity calculation\\
+   fMinECut                & \texttt{Float\_t } & minimum energy for a digit to be a member of a cluster\\
+   fSSPars[8]              & \texttt{Double\_t} & shower shape parameters \\
+   fPar5[3]                & \texttt{Double\_t} & shower shape parameter 5\\
+   fPar6[3]                & \texttt{Double\_t} & shower shape parameter 6\\
+  \hline
+  \end{tabular}
+\end{center}
+\caption{Parameter name, type and explanation.}
+\label{tab:clusterizationparams}
+\end{table}
+%
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{| c | c | l |}
+  \hline
+  Name & Type & Explanation \\ 
+  \hline
+    fADCchannelECA     &  \texttt{Float\_t}         &  width of one ADC channel for EC section (GeV)\\
+    fADCpedestalECA    &  \texttt{Float\_t}         &  pedestal of ADC for EC section (GeV)\\
+    fTimeECA           &  \texttt{Float\_t}         &  calibration parameter for channels time\\
+    fIsInputCalibrated &  \texttt{Bool\_t}          &  to enable reclusterization from ESD cells\\
+    fJustClusters      &  \texttt{Bool\_t}          &  false for standard reco                  \\
+    fDigitsArr    & \texttt{TClonesArray*}          &  pointer to array with EMCAL digits       \\
+    fTreeR        & \texttt{TTree*}                 &  pointer to tree with output clusters                                         \\
+    fRecPoints    & \texttt{TObjArray*}             &  pointer to array with EMCAL clusters                                         \\
+    fGeom         & \texttt{AliEMCALGeometry*}      &  pointer to geometry for utilities                                            \\
+    fCalibData    & \texttt{AliEMCALCalibData*}     &  pointer to calibration database if available                                  \\
+    fCaloPed      & \texttt{AliCaloCalibPedestal*}  &  pointer to tower status map if available                                      \\
+    fDefaultInit         & \texttt{Bool\_t}          &  says if the task was created by default ctor \\
+    fNumberOfECAClusters & \texttt{Int\_t}           &  number of clusters found in EC section \\
+    fClusterUnfolding & \texttt{AliEMCALUnfolding*} &  pointer to unfolding object \\
+\hline
+  \end{tabular}
+\end{center}
+\caption{Other fields in the \texttt{AliEMCALClusterizer} class.}
+\label{tab:clusterizationfields}
+\end{table}
+%
+Also input and output are connected. Finally, a clusterization phase is done in a \texttt{Digits2Clusters} method. Main steps run as follow:
+\begin{enumerate}
+\item Get calibration parameters (method \texttt{GetCalibrationParameters}),
+\item Get pedestal parameters (method \texttt{GetCaloCalibPedestal}),
+\item Make clusters (method \texttt{MakeClusters}),
+\item Make unfolding or not (method \texttt{MakeUnfolding}),
+\item Evaluate cluster properties (\texttt{AliEMCALRecPoint} class methods),
+\item Store clusters.
+\end{enumerate}
+In the first two steps calibration (ADC counts to energy conversion) and pedestal parameters are read from a database. The third step, where clusters are formed, is different for each clusterizer. 
+However, some beginning parts of this step are common for each algorithm. The input is the same. It is an array of fired digits with electronic signal registered in each of them. Also calibration and cleaning the array of digits, to work with reduced sample of digits, is the same for each algorithm. This common part is done in the common method \texttt{Calibrate} of the \texttt{AliEMCALClusterizer} class. Here, we require the proper timing (via selection of \texttt{fTimeMax} and \texttt{fTimeMin} of a given digit), status (check of dead channel map) and calibrate energy and time of each digit. If any digit fails to pass one of requirement it is rejected from a ``working array'' of digits (pool of digits). In make clusters step the \texttt{AreNeighbours} method is used. The method could differ for each clusterization algorithm. 
+%Also the used method \texttt{AreNeighbours} differs for each clusterizer in this step. 
+The explanation how clusters are formed is given in next four subsections for each clusterization algorithm, respectively. The next step (unfolding) is an option in each clusterizer, but currently is used only for the V1 clusterizer. The last two steps (evaluation of a cluster properties and its recording) are the same for each algorithm.
+
+\subsubsection{Clusterizer V1}
+%The input for each clusterizer is array of fired digits with electronic signal registered in each of them. The first step in each algorithm is to calibrate and clean array of digits to work with reduced sample of digits. It is done in common method \texttt{Calibrate} of \texttt{AliEMCALClusterizer} class. Here we require the proper timing (via selection of \texttt{fTimeMax} and \texttt{fTimeMin} of a given digit), status (check of dead channel map) and calibrate energy and time of each digit. If any digit fails to pass one of requirement it is rejected from a ``working array'' of digits. 
+%Then, in the V1 algorithm, we reject digits with energy smaller than \texttt{fMinECut}, which is set to be by default 10~MeV in the database. 
+Having obtained ``working array'' of digits in the V1 algorithm we additionally reject digits with energy smaller than \texttt{fMinECut}, which is set to be 10~MeV in the database by default.
+
+After selecting digits we form clusters. We loop over all digits to find the first seed digit with energy grater than \texttt{fECAClusteringThreshold} (default value is 100~MeV). 
+When the seed digit is found it is associated to a new cluster and removed from the ``working array'' of digits. We loop over all remaining digits to look for neighbours of the seed digit.
+The neighbour digits are called digits which have at least common side (i.e.: row index difference or column index difference must be equal 1, but not both of them at the same time are equal 1, so one cell can have four neighbours at maximum).
+The additional requirement on neighbour digits is applied. The absolute value of time difference for two digits must be less or equal \texttt{fTimeCut}.
+
+The neighbour digits are associated to the cluster (also removed from the ``working array'' of digits) and we keep on looking for neighbours of each digit associated to the cluster. When a digit is associated to one cluster it cannot be associated to other one. When there are no more neighbours of digits in one cluster one can say that this cluster is formed. Once the cluster
+is formed and there are still remaining digits in the ``working array'' the procedure starts to check seeds and all the story repeats until no seed digit is found. The consequence of such algorithm is that one cluster can contain all digits in the super-module. The other thing is that there can be digits which are not associated to any cluster. The special case when cluster is formed from digits in two super-modules at the same SM-$\phi$ angle is also supported.  
+
+
+
+\subsubsection{Clusterizer V2}
+%The first step in this algorithm is the same as in V1 clusterizer. It is calibration of digits to get the pool of digits with the energy over the energy threshold \texttt{fMinECut} and with proper timing (\texttt{fTimeMax} and \texttt{fTimeMin} variables). 
+%When it is done the most energetic digit with the energy over \texttt{fECAClusteringThreshold} is taken. It is the seed of a cluster. 
+The algorithm starts with the pool of digits. Then the most energetic digit with the energy over \texttt{fECAClusteringThreshold} is taken. It is the seed of a cluster. 
+We scan over digits already associated to the cluster and check for neighbours. It is the iterative procedure. Here, the absolute value of the time difference of seed and neighbours digits should be less or equal \texttt{fTimeCut}. The definition of neighbours is the same like in V1 clusterizer, however, energy of neighboring digit should be smaller in order to become a neighbor. \texttt{fDoEnGradCut} flag is responsible for application of the last condition. 
+If the process of one cluster formation ends we start from the point where new and the most energetic digit is found in the pool of digits and repeat other steps until no digit remains in the pool.
+
+\subsubsection{Clusterizer V1 with unfolding}
+The main goal of unfolding is to divide multi-maxima clusters into single-maxima clusters and split energy of unfolded clusters. The unfolding is an option which is switched off by default. It can be switched on in every clusterizer. However, as the output of V2 and NxN algorithms clusters are already small and contains only one maximum. The V1 clusterizer provides multi-maxima clusters, so unfolding can be reasonably used only in V1 method of clusterization. 
+
+Unfolding uses already reconstructed clusters from V1 as an input and modify (split and share energy in digits among several clusters) them if necessary. The unfolding scheme can be divided into several steps:
+%\parskip
+\begin{enumerate}
+%\parskip
+\item Maxima finding.
+\item Fit.
+\item Reclustering.
+\end{enumerate}
+{\bf Maxima finding.} As the first step number of local maxima is defined in one cluster. A cell is a local maximum when its energy deposit is greater than the energy deposit in each of its neighboring cells (by neighboring cell we understand here two cells touched by side or corner, so one cell can have 8 neighbours at maximum) by at least some constant value. This constant value  is called the minimum energy difference between two local maxima (\texttt{fECALocMaxCut}) and as a default is equal to 30~MeV. In the particular case where two neighboring cells have a similar energy deposit (the difference between energy of two cells is below a certain value) the cluster is treated as a flat one with no maximum.
+
+The outcome of the maximum finding procedure is divided in two cases. In the case no pronounced maximum or only one maximum is found unfolding is not applied and cluster is not touched. If there are at least two maxima the procedure of unfolding starts running.
+
+{\bf Fit.} The next step is the fitting procedure which allows to disentangle overlapping clusters based on the knowledge of what should be the typical shower shape of a $\gamma$ particle. The energy distribution in a single photon cluster (shower shape) is described by following function:
+\begin{equation}
+\label{eq:function}
+f(r)=P_0 \cdot exp(- (2.332 \cdot r)^{P_1} \cdot (\frac{1}{P_3 +P_4 \cdot (2.332 \cdot r)^{P_1} } + \frac{P_5}{1+(2.332 \cdot r)^{P_2} \cdot P_6} ) ), 
+\end{equation}
+where $P_{0,1,2,3,4,5,6}$ are parameters and $r$ is a distance between a cell center and the center of gravity of a cluster. This function is constant for given $\phi$ region and it is our reference to start to unfold clusters. One single photon cascade can be described by the shower shape function with fixed parameters. However to locate it in the detector we need 3 parameters: position of center of gravity of cluster in $\phi$ and $\eta$ coordinates and a cluster's energy. In case of a single photon cluster we could fit just mentioned 3 parameters. If there are more maxima we start with more parameters. The correlation is very simple. One maximum found corresponds to 3 parameters which we want to fit. The initial value of parameters for one maximum are following: position of the local maximum cell in $\phi$ and $\eta$ coordinates and its energy. TMinuit package is called to minimize the $\chi^2$ between the shower shape function of a single $\gamma$ and the shower shape spectrum of the cluster being unfolded. The outcome of the fit is the set of parameters which describe center of gravity and energy of each unfolded cluster.
+
+{\bf Reclustering.} The last step is to build in terms of cell energy attribution the two (or more) clusters obtained splitting the original big blob cluster. There is an obvious constraint for the energy in each cell. The sum of the energies associated to the different clusters returns the measured energy associate at the cell. For each cell, and for each split cluster, the fit result from the previous step provides an expected value which can be used as weight to distribute the cell energy among the different unfolded clusters. The total (measured) signal present in the cell is shared among the split clusters with the proportion given by the fit function values. The split (unfolded) clusters are built based on these new cell entries. 
+
+The energy of each cell in the unfolded cluster should be above a certain energy threshold $E_{th}$ (\texttt{fThreshold}). By default energy threshold is set to be $E_{th}=10$~MeV. If a cell after unfolding in a given cluster has an energy below threshold, this cell is rejected from this cluster and its energy is shared among other clusters, proportionally to the energy of this cell in other clusters. If after unfolding only one cluster contains a cell with energy above threshold cells below threshold are rejected from other clusters and the full energy is associated to the cell with energy above threshold. If after unfolding each energy of cell is below threshold then the whole energy is associated to the most energetic cell.
+
+The number of new (unfolded) clusters will be the same as the number of local maxima found during the first step above. When unfolding succeeds the original big blob cluster is replaced by several unfolded clusters. Unfolding method is precisely described in~\cite{unfolding_note}.
+%
+%Different methods of clusterization are compared in Fig.~\ref{fig:clusterizers}.
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[scale=0.4]{figures/clusters}
+\caption{Comparison of different algorithms of clusterization. Boxes represent energy in cells. $E_{th}$ is clusterization threshold \texttt{fMinECut}. a) Energy in cells before clusterization marked by green color. b) Result of V1 clusterizer. There is one big cluster made of cells in blue color. Green cells are below threshold and not associated to the cluster. c) Result of V2 algorithm. There are two clusters made of blue and orange cells. Green cells are below threshold and not associated to any cluster. d) Result of NxN clusterizer. There are two clusters made of blue and orange cells. Green cells are not associated to any cluster. e) Result of V1 algorithm with unfolding. There are two clusters made of blue and orange cells. One cell is associated to two clusters and its energy is shared. Green cells are below threshold and not associated to any cluster. }
+\label{fig:clusterizers}
+\end{center}
+\end{figure}
+
+\subsubsection{Clusterizer NxN}
+%The initial step in this algorithm is a calibration of each digit to obtain the ``working array'' of digits (pool of digits). It is the same like for V1 clusterizer. 
+The highest energy digit which exceeds energy threshold \texttt{fMinECut} is looked for in the pool of digits. This digit is a seed for a new precluster. To form a precluster we loop over remaining digits and check whether they are neighbours of the seed digit. The energy of a neighbour should be smaller than the energy of the seed. Here neighbours are defined in the other way than in the V1 clusterizer: row index difference or column index difference must be less or equal 1. In such requirement one cell can have eight neighbours at maximum. Here neighbours must fulfill also timing condition. The absolute value of time difference for two digits must be less or equal \texttt{fTimeCut}. The precluster starts to be a cluster only if a precluster energy is larger than clustering threshold given by \texttt{fECAClusteringThreshold}. If the requirement is satisfied a new cluster is formed from the precluster and digits which belong to precluster are removed from the pool of digits. Otherwise only the seed digit is removed from the pool of digits. The procedure is repeated but with a new seed if available. Here maximum size of a cluster is $3 \times 3$ cells. However, digits associated to the cluster do not fulfill the energy threshold condition (energy of digit greater than \texttt{fMinECut}). The special case when cluster is formed from digits in two super-modules at the same SM-$\phi$ angle is also supported.
+
+Different methods of clusterization are compared in Fig.~\ref{fig:clusterizers}.
+
+\subsubsection{Cluster in the EMCal}
+A cluster is represented by the \texttt{AliEMCALRecPoint} class. This class contains an information about cluster itself (energy, multiplicity, local or global position, etc.), features of the cluster (shower ellipse axes, dispersion, etc.) and digits belonging to the cluster (index, energy, etc.). The list of important fields is shown in Tab.~\ref{tab:recpoint}.
+%
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{| c | c | l |}
+  \hline
+  Name & Type & Explanation \\ 
+  \hline
+	fAmp              &  \texttt{Float\_t  }  &  summed amplitude of digits   \\
+	fIndexInList      &  \texttt{Int\_t    }  &  the index of this RecPoint in the\\
+                          &                       &  list stored in TreeR (to be set by analysis)\\
+	fGlobPos          &  \texttt{TVector3 }   &  global position\\
+	fLocPos           &  \texttt{TVector3 }   &  local  position in the sub-detector coordinate\\
+	fMulDigit         &  \texttt{Int\_t    }  &  total multiplicity of digits       \\
+	fMulTrack         &  \texttt{Int\_t    }  &  total multiplicity of tracks\\
+	fDigitsList       &  \texttt{Int\_t*}     & [fMulDigit] list of digit's indexes from which the point was reconstructed\\
+	fTracksList       &  \texttt{Int\_t*}     & [fMulTrack] list of tracks to which the point was assigned\\
+	fClusterType      &  \texttt{Int\_t    }  &  type of cluster stored: v1\\
+        fCoreEnergy       &  \texttt{Float\_t  }  &  energy in a shower core \\
+	fLambda[2]        &  \texttt{Float\_t  }  &  shower ellipse axes\\
+	fDispersion       &  \texttt{Float\_t  }  &  shower dispersion\\
+	fEnergyList       &  \texttt{Float\_t*}   & [fMulDigit] energy of digits\\
+	fAbsIdList        &  \texttt{Int\_t*}     & [fMulDigit] absId  of digits\\
+	fTime             &  \texttt{Float\_t  }  &  Time of the digit with maximal energy deposition\\
+	fNExMax           &  \texttt{Short\_t  }  &  number of (Ex-)maxima before unfolding\\
+	fCoreRadius       &  \texttt{Float\_t  }  &  The radius in which the core energy is evaluated\\
+	fDETracksList     &  \texttt{Float\_t*}   & [fMulTrack] list of tracks to which the point was assigned\\
+	fMulParent        &  \texttt{Int\_t    }  &  Multiplicity of the parents\\
+	fMaxParent        &  \texttt{Int\_t    }  &  Maximum number of parents allowed\\
+	fParentsList      &  \texttt{Int\_t*}     &  [fMulParent] list of the parents of the digits\\
+	fDEParentsList    &  \texttt{Float\_t*}   &  [fMulParent] list of the parents of the digits\\
+	fSuperModuleNumber&  \texttt{Int\_t    }  &  number identifying super-module containing recpoint, reference is cell \\
+& & with maximum energy\\
+	fDigitIndMax      &  \texttt{Int\_t    }  &  Index of digit with max energy in array fAbsIdList\\
+	fDistToBadTower   &  \texttt{Float\_t  }  &  Distance to nearest bad tower\\
+	fSharedCluster    &  \texttt{Bool\_t   }  &  States if cluster is shared by 2 super-modules in same phi rack (eg. 0,1)\\
+	\hline
+  \end{tabular}
+\end{center}
+\caption{Basic fields in the \texttt{AliEMCALRecPoint} class.}
+\label{tab:recpoint}
+\end{table}
+%
+\clearpage

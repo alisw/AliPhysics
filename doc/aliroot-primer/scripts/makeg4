@@ -1,0 +1,56 @@
+tar zxvf geant4.8.1.p02.tar.gz
+cd geant4.8.1.p02
+mkdir data
+cd data
+tar zxvf ../../G4NDL.3.9.tar.gz
+tar zxvf ../../G4EMLOW4.0.tar.gz
+tar zxvf ../../PhotonEvaporation.2.0.tar.gz
+tar zxvf ../../RadiativeDecay.3.0.tar.gz
+tar zxvf ../../G4ELASTIC.1.1.tar.gz
+cd ..
+
+# Configuration and compilation
+
+./Configure -build
+
+# As asnwer choose the default (proposed) value, except of the following
+# (please note that the "Question" word itself is not displayed)
+
+
+# Question: Specify the path where Geant4 libraries and source files should be
+# installed. $ALICE/geant4
+
+# Question: Directory $ALICE/geant4 doesn't exist.  Use that name anyway? Y
+
+# Question: Do you want to copy all Geant4 headers in one directory? Y
+
+# Question: Please, specify where CLHEP is installed: $ALICE/CLHEP
+
+# Question: Do you want to build 'shared' (.so) libraries? Y
+
+# Question:
+#  G4VIS_BUILD_OPENGLX_DRIVER
+#  G4VIS_USE_OPENGLX
+#
+# It is an interface to the de facto standard 3D graphics library,
+# OpenGL. It is well suited for real-time fast visualization
+# and prototyping. The X11 version of the OpenGL libraries is
+# required. Y
+
+# Question:
+#  G4LIB_BUILD_G3TOG4  
+#
+# The utility module 'g3tog4' will be built by setting this
+# variable. NOTE: it requires a valid FORTRAN compiler to be
+# installed on your system and the 'cernlib' command in the
+# path, in order to build the ancillary tools!
+# Do you want to build 'g3tog4' ? Y
+
+# now a long compilation...
+
+# Installation in the selected place ($ALICE/geant4)
+./Configure -install
+
+# Environment variables (please note the "dot" in the beginning)
+# The <platform> has to ve replaced by the actiual value
+. $ALICE/geant4/src/geant4/.config/bin/<platform>/env.sh

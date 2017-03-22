@@ -1,0 +1,416 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
+	<META NAME="CREATED" CONTENT="20080430;10144900">
+	<META NAME="CHANGED" CONTENT="20080518;10080400">
+	<META NAME="ProgId" CONTENT="Word.Document">
+	<META NAME="Originator" CONTENT="Microsoft Word 11">
+	<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+	<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>Domenico Elia</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>Domenico Elia</o:LastAuthor>
+  <o:Revision>98</o:Revision>
+  <o:TotalTime>539</o:TotalTime>
+  <o:LastPrinted>2008-05-08T16:06:00Z</o:LastPrinted>
+  <o:Created>2008-04-30T12:51:00Z</o:Created>
+  <o:LastSaved>2008-05-08T16:57:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>1539</o:Words>
+  <o:Characters>8775</o:Characters>
+  <o:Company>INFN Sezione di Bari</o:Company>
+  <o:Lines>73</o:Lines>
+  <o:Paragraphs>20</o:Paragraphs>
+  <o:CharactersWithSpaces>10294</o:CharactersWithSpaces>
+  <o:Version>11.6568</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]-->
+	<!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:HyphenationZone>14</w:HyphenationZone>
+  <w:ValidateAgainstSchemas/>
+  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]-->
+	<!--[if gte mso 9]><xml>
+ <w:LatentStyles DefLockedState="false" LatentStyleCount="156">
+ </w:LatentStyles>
+</xml><![endif]-->
+	<!--[if !mso]><object
+ classid="clsid:38481807-CA0E-42D2-BF39-B33AF135CC4D" id=ieooui></object>
+<style>
+st1\:*{behavior:url(#ieooui) }
+</style>
+<![endif]-->
+	<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Tabella normale";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+</style>
+<![endif]-->
+	<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext="edit" spidmax="11266"/>
+</xml><![endif]-->
+	<!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext="edit">
+  <o:idmap v:ext="edit" data="1"/>
+ </o:shapelayout></xml><![endif]-->
+	<STYLE>
+	<!--
+		P { color: #000000 }
+		A:link { color: #0000ff }
+		A:visited { color: #0000ff }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="it-IT" TEXT="#000000" LINK="#0000ff" VLINK="#0000ff" DIR="LTR">
+<P LANG="en-US" STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Arial"><FONT SIZE=4 STYLE="font-size: 13pt">============================================================================</FONT></FONT></P>
+<P LANG="en-US" STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Arial"><FONT SIZE=4 STYLE="font-size: 13pt">Description
+of ALICE Silicon Pixel Detector (SPD) Code (Rev. 1.00 &#8212; May 8, 2008
+&#8212; D. Elia)</FONT></FONT></P>
+<P LANG="en-US" STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Arial"><FONT SIZE=4 STYLE="font-size: 13pt">============================================================================</FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><A NAME="Content"></A><STRONG><SPAN LANG="en-US"><FONT SIZE=4 STYLE="font-size: 16pt">Content</FONT></SPAN></STRONG>
+</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P STYLE="margin-left: 1.27cm; margin-top: 0.18cm; margin-bottom: 0cm">
+<SPAN LANG="en-US">1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN><A HREF="#punto_1"><SPAN LANG="en-US">SPD
+module geometrical description</SPAN></A></P>
+<P STYLE="margin-left: 1.27cm; margin-top: 0.18cm; margin-bottom: 0cm">
+<SPAN LANG="en-US">2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN><A HREF="#punto_2"><SPAN LANG="en-US">Raw
+data format</SPAN></A></P>
+<P STYLE="margin-left: 1.27cm; margin-top: 0.18cm; margin-bottom: 0cm">
+<SPAN LANG="en-US">3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN><A HREF="#punto_3"><SPAN LANG="en-US">Simulation</SPAN></A></P>
+<P STYLE="margin-left: 1.27cm; margin-top: 0.18cm; margin-bottom: 0cm">
+<SPAN LANG="en-US">4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN><A HREF="#punto_4"><SPAN LANG="en-US">Local
+reconstruction</SPAN></A></P>
+<P STYLE="margin-left: 1.27cm; margin-top: 0.18cm; margin-bottom: 0cm">
+<SPAN LANG="en-US">5.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN><A HREF="#punto_5"><SPAN LANG="en-US">Calibration
+and DAs</SPAN></A></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P><A NAME="punto_1"></A><A HREF="#Content"><B><SPAN LANG="en-US">SPD
+module geometrical description</SPAN></B></A></P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">The SPD module geometrical
+description is managed by the <B>AliITSsegmentationSPD</B> class.&nbsp;
+</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">This offline module
+corresponds to half of a single SPD basic unit (the half-stave which
+is made of 2 ladders), so it corresponds to a single SPD ladder. In
+total the SPD consists of 240 modules, 80 on the inner layer and 160
+on the outer layer. The module is divided into 5 chips with the
+corresponding sensor cells connected to 5 independent read-out
+matrices. 
+</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">The single pixel cell size
+is 425 microns (local Z) x 50 microns (local X). Pixels at the
+boundary between adjacent chips in the module are 625 microns wide in
+Z.</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">The single chip has 32
+columns (local Z) x 256 rows (local X).</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">The single module size is
+6.96 cm (local Z) x 1.28 cm (local X). The sensor is 200 microns
+thick. The read-out chip is 150 microns thick.&nbsp;&nbsp;&nbsp;&nbsp;
+</P>
+<P STYLE="margin-bottom: 0cm"><SPAN LANG="en-US">The module numbering
+and the correspondence between online and offline conventions are
+illustrated <A HREF="http://tydes.home.cern.ch/tydes/doc/Numbering5/"><B><FONT COLOR="#0000ff">here</FONT></B></A>.
+In the </SPAN><B><SPAN LANG="en-GB">AliITSRawStreamSPD</SPAN></B>
+<SPAN LANG="en-GB">class the raw data is decoded and so-called digits
+are extracted. Inside this class a module map matrix
+(fgkDDLModuleMap[][]) is used:</SPAN></P>
+<P CLASS="msonormal" ALIGN=CENTER><!--[if gte vml 1]><v:shapetype
+ id="_x0000_t75" coordsize="21600,21600" o:spt="75" o:preferrelative="t"
+ path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f">
+ <v:stroke joinstyle="miter"/>
+ <v:formulas>
+  <v:f eqn="if lineDrawn pixelLineWidth 0"/>
+  <v:f eqn="sum @0 1 0"/>
+  <v:f eqn="sum 0 0 @1"/>
+  <v:f eqn="prod @2 1 2"/>
+  <v:f eqn="prod @3 21600 pixelWidth"/>
+  <v:f eqn="prod @3 21600 pixelHeight"/>
+  <v:f eqn="sum @0 0 1"/>
+  <v:f eqn="prod @6 1 2"/>
+  <v:f eqn="prod @7 21600 pixelWidth"/>
+  <v:f eqn="sum @8 21600 0"/>
+  <v:f eqn="prod @7 21600 pixelHeight"/>
+  <v:f eqn="sum @10 21600 0"/>
+ </v:formulas>
+ <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>
+ <o:lock v:ext="edit" aspectratio="t"/>
+</v:shapetype><v:shape id="_x0000_i1025" type="#_x0000_t75" alt="" style='width:423pt;
+ height:222.75pt'>
+ <v:imagedata src="spdim001.gif"  o:href="spdim001.gif">
+</v:shape><![endif]--><IMG SRC="spdim001.gif" NAME="Graphic1" ALIGN=BOTTOM WIDTH=564 HEIGHT=297 BORDER=0></P>
+<P LANG="en-GB" CLASS="msonormal">This map specifies how the modules
+are numbered (the rows of the matrix represent different equipment
+ids, the columns have the 2 ladders of hs0, the 2 ladders of hs1, and
+so on...). <BR>Then one also needs to take the columns and rows
+numbering into account. 
+</P>
+<P LANG="en-GB" CLASS="msonormal">To make the conversion between
+online and offline coordinates there are the following static member
+functions in AliITSRawStreamSPD: 
+</P>
+<P CLASS="msonormal">&nbsp;</P>
+<P CLASS="msonormal" ALIGN=CENTER><!--[if gte vml 1]><v:shape
+ id="_x0000_i1026" type="#_x0000_t75" alt="" style='width:723pt;height:137.25pt'>
+ <v:imagedata src="spdim002.gif" o:href="spdim002.gif">
+</v:shape><![endif]--><IMG SRC="spdim002.gif" NAME="Graphic2" ALIGN=BOTTOM WIDTH=964 HEIGHT=183 BORDER=0></P>
+<P CLASS="msonormal" ALIGN=CENTER>&nbsp;</P>
+<P CLASS="msonormal" ALIGN=CENTER>&nbsp;</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">=================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P><A NAME="punto_2"></A><A HREF="#Content"><B><SPAN LANG="en-US">Raw
+data format</SPAN></B></A></P>
+<P CLASS="msonormal">&nbsp;</P>
+<P LANG="en-GB" CLASS="msonormal">The SPD raw data are decoded by the
+<B>AliITSRawStreamSPD</B> class.</P>
+<P CLASS="msonormal">&nbsp;</P>
+<P CLASS="msonormal"><SPAN LANG="en-GB">The SPD has equipment IDs
+from 0 to 19, each corresponding to the readout of one half sector.
+The geometrical map of the DDLs is illustrated <A HREF="http://tydes.home.cern.ch/tydes/doc/Numbering5/"><B>here</B></A>.</SPAN></P>
+<P CLASS="msonormal"><SPAN LANG="en-GB">Each equipment</SPAN> <SPAN LANG="en-GB">starts
+with the <I>Equipment Header</I> (15 32-bit words) of which the last
+8 words are known as the <I>Common Data Header, CDH</I> (8 32-bit
+words). After these headers, sometimes a <I>Calibration Header</I>
+appears (for dedicated calibration runs). This extra header has
+variable length, depending on the type of calibration scan. Finally,
+there is the actual data words, i.e. which pixels are hit in the
+event. This part has a variable length depending on the number of
+hits. Further details on the various headers and the data word
+formats can be found <A HREF="http://tydes.home.cern.ch/tydes/doc/DataFormat/"><B>here</B></A>.</SPAN></P>
+<P CLASS="msonormal">&nbsp;</P>
+<P CLASS="msonormal">&nbsp;</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">=================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P><A NAME="punto_3"></A><A HREF="#Content"><B><SPAN LANG="en-US">Simulation</SPAN></B></A></P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">The SPD digitization is
+implemented in the <B>AliITSsimulationSPD</B> class and managed via
+the <B>AliITSDetTypeSim</B> class.</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">It is based on the
+following working scheme:</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm"><B>1) Hits --&gt; SDigits
+(AliSimulation::RunSDigitization)</B></P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt; AliITS::Hits2SDigits
+</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITS::Hits2Predigits 
+</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSPD::SDigitiseModule</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSPD::HitToSDigitFast</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- read hits, gets
+parameters for diffusion (temperature, thickness over bias voltage,
+asymmetry of gaussian diffusion, etc.) and for electronic coupling
+from OCDB</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- apply electron cloud
+diffusion (gaussian smearing) along z and r*phi</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- eventually apply the
+Lorentz drift to the electron cloud (by default null Lorentz drift) 
+</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- apply coupling between
+adiacent pixels</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSPD::RemoveDeadPixel</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&nbsp; remove dead pixels
+as stored in the calibration object</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSPD::WriteSDigits</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- write SDigits to file,
+basically call AliITS::AddSumDigit (which calls
+AliITSDetTypeSim::AddSumDigit) to write SDigits (AliITSpListItem) to
+file</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm"><B>2) SDigits --&gt;
+Digits (AliSimulation::RunDigitization)</B></P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITSDigitizer::Exec</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- load SDigits</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSPD::FinishSDigitiseModule</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- call
+AliITSsimulationSPD::FrompListToDigits</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- eventually add
+electronic baseline and noise, perform the zero suppression and add
+the digits to the list&nbsp; (by calling AliITS::AddSimDigit)</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P STYLE="margin-bottom: 0cm"><SPAN LANG="en-US">A detailed
+description of the SPD response model (in
+AliITSsimulationSPD::HitToSDigitFast) can be found <A HREF="https://edms.cern.ch/document/888905/1"><B>here</B></A>
+(ALICE-INT-2008-003 and references therein). The model parameters are
+stored in two OCDB files under $ALICE_ROOT/ITS/Calib:</SPAN></P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">1) RespSPD: contains 1
+AliITSresponseSPD object with parameters common to all the modules
+(coupling type and diffusion asymmetry)</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">2) SPDDead: contains 1
+TOjArray with 240 AliITSCalibrationSPD objects, i.e. 1
+AliITSCalibrationSPD object for each module with the list of dead
+pixels (see calibration section below) and the other parameters
+needed to the response model (threshold, noise, coupling strength,
+bias-over-voltage) 
+</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">========================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P><A NAME="punto_4"></A><A HREF="#Content"><B><SPAN LANG="en-US">Local
+Reconstruction</SPAN></B></A></P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">The SPD local
+reconstruction is implemented in <B>AliITSClusterFinderV2SPD </B>class
+and managed via the <B>AliITSDetTypeRec</B> class.</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">It is based on the
+following working scheme:</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm"><B>Cluster Finding
+(AliReconstruction::RunLocalEventReconstruction)</B></P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITSReconstructor::Reconstruct</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt;
+AliITSDetTypeRec::DigitsToRecPoints 
+</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- Based on the input data
+(simulation digits or simulation/real raw data), there are two
+possibilities:</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">A)
+<U>RECONSTRUCTION FROM DIGITS</U></SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">-&gt;
+AliITSClusterFinderV2SPD::FindRawClusters</SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">- call
+AliITSClusterFinderV2SPD::FindClustersSPD</SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">- build
+AliBin array from digit tree</SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">- call
+AliITSClusterFinderV2SPD::ClustersSPD</SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">B)
+<U>RECONSTRUCTION FROM RAW DATA </U></SPAN>
+</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">-&gt;
+AliITSClusterFinderV2SPD::RawdataToClusters</SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">-
+instantiate AliITSRawStreamSPD object</SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">- call
+AliITSClusterFinderV2SPD::FindClustersSPD</SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">- build
+AliBin array from raw data</SPAN></P>
+<P STYLE="margin-bottom: 0cm">&nbsp;&nbsp; <SPAN LANG="en-US">- call
+AliITSClusterFinderV2SPD::ClustersSPD</SPAN></P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">-&gt; AliITS
+ClusterFinderV2SPD::ClustersSPD</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- loop on dead pixels as
+stored in the calibration objects and reset them (corresponding
+AliBin elements)</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">- loop on AliBin elements
+and:</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">1) find cluster
+(FindCluster)</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">2) unfold cluster if
+allowed (this is set via AliITSRecoParam, the default is unfolding
+off)</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">3) calculate cluster
+coordinates and sigmas</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">4) add cluster to cluster
+array</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P LANG="en-US" STYLE="margin-bottom: 0cm">===============================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm">&nbsp;</P>
+<P><A NAME="punto_5"></A><A HREF="#Content"><B><SPAN LANG="en-US">Calibration
+and DAs</SPAN></B></A></P>
+<P LANG="en-GB">For the SPD there are two types of processes, called
+<I>Detector Algoritms (DAs)</I>, running on the <I>DAQ</I> network to
+produce output transported via the <I>File Exchange Server (FXS)</I>
+to the <I>Offline</I> and <I>Detector Control System (DCS)</I>
+networks. The following picture illustrates how the Online
+Calibration scheme works:</P>
+<P ALIGN=CENTER><SPAN LANG="en-GB"><BR><!--[if gte vml 1]><v:shape id="_x0000_i1027" type="#_x0000_t75" alt=""
+ style='width:384pt;height:254.25pt'>
+ <v:imagedata src="spdim003.jpg" o:href="spdim003.jpg">
+</v:shape><![endif]--></SPAN><IMG SRC="spdim003.jpg" NAME="Graphic3" ALIGN=BOTTOM WIDTH=512 HEIGHT=339 BORDER=0></P>
+<P>&nbsp;</P>
+<P><SPAN LANG="en-GB">In case <I>a</I> the calibration is performed
+as a <B>standalone scan</B>. The raw data collected on the <I>Local
+Data Concentrators (LDCs)</I> are analyzed. In case <I>b</I> the
+calibration is performed on a regular <B>physics run</B> and the data
+is analyzed online through the <I>DATE</I> monitoring functionality.
+Further details on the types of runs and scans and a global overview
+of the SPD calibration can be found <A HREF="http://tydes.home.cern.ch/tydes/doc/CalibrationOverview/"><B>here</B></A>.</SPAN></P>
+<P LANG="en-GB" CLASS="msonormal">The so-called <I>Shuttle</I> brings
+the output files from the <I>FXS</I> to <I>DCS</I> and <I>Offline</I>
+networks. Here the data go through a second level of processing,
+generally called preprocessing. Finally, the <I>Offline Calibration
+Database (OCDB)</I> and the <I>DCS Configuration Database</I> are
+updated. 
+</P>
+<P LANG="en-GB" CLASS="msonormal">The procedures also produce
+so-called <I>Reference Data</I>, basically raw data summaries, which
+can later be used offline to reconstruct the calibration output. This
+may be useful for instance for debugging purposes. A <I>Reference
+Data Displayer</I> (GUI) program has been developed to simplify the
+analysis of the Reference Data.</P>
+<P LANG="en-GB" STYLE="margin-bottom: 0cm">The two top level classes
+corresponding to Standalone Calibration Runs and Physics Runs are
+<B>ITSSPDSCANda</B> and <B>ITSSPDPHYSda</B> respectively. The <I>Offline
+Preprocessing</I> is implemented in the <B>AliITSPreprocessorSPD</B>
+class. It takes care of saving the reference data and put information
+relevant for the offline reconstruction (lists of dead and noisy
+pixels) in the OCDB.</P>
+<P LANG="en-GB" STYLE="margin-bottom: 0cm">The calibration files in
+the OCDB are stored in two directories under $ALICE_ROOT/ITS/Calib:</P>
+<P STYLE="margin-bottom: 0cm"><SPAN LANG="en-GB">1</SPAN><SPAN LANG="en-US">)
+SPDDead: contains 1 TOjArray with 240 AliITSCalibrationSPD objects,
+i.e. 1 AliITSCalibrationSPD object for each module with the list of
+dead pixels and some parameters needed to the response model </SPAN>
+</P>
+<P STYLE="margin-bottom: 0cm"><SPAN LANG="en-GB">2) SPDNoisy:
+conatins </SPAN><SPAN LANG="en-US">1 TOjArray with 240
+AliITSCalibrationSPD objects, i.e. 1 AliITSCalibrationSPD object for
+each module with the list of noisy pixels</SPAN></P>
+<P STYLE="margin-bottom: 0cm"><SPAN LANG="en-GB">The noisy pixel
+search is always based on one run only. There is a minimum number of
+events required to do the search which is basically performed at the
+level of one read-out chip (8192 pixels). The dead pixel search may
+span several runs, in order to collect more statistics (which is
+mandatory for the p-p runs). Also here there is a minimum number of
+events required to even try to perform the search. The search
+requires that a noisy pixel search has been done first. The noisy
+pixels are then removed from the hit-maps before the dead pixel
+search. Also the dead pixel search is basically performed on the
+level of one read-out chip. For further details on the dead and noisy
+pixel search see <A HREF="http://tydes.home.cern.ch/tydes/doc/CalibrationOverview/CalibrationAlgorithms/noisydead/"><B>here</B></A>.</SPAN></P>
+</BODY>
+</HTML>

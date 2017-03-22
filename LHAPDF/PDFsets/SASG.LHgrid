@@ -1,0 +1,47 @@
+'Version' '5.3'
+'Description: '
+'SASG photon PDFs'
+'This set has 8 member PDFs.'
+'Zeit.Phys.C68(1995)607'
+' 1 = SAS-G 1D (Version 1) LO'
+' 2 = SAS-G 1M (Version 1) LO'
+' 3 = SAS-G 2D (Version 1) LO'
+' 4 = SAS-G 2M (Version 1) LO'
+'Phys.Lett.376B(1996)193'
+' 5 = SAS-G 1D (Version 2) LO'
+' 6/0 = SAS-G 1M (Version 2) LO'
+' 7 = SAS-G 2D (Version 2) LO'
+' 8= SAS-G 2M (Version 2) LO'
+'Alphas:'
+'Variable','lo','EvolCode'
+1,91.71,1.43,4.30,180.0
+'MinMax:'
+8,0
+1.E-05,0.9998,0.36,50000.
+1.E-05,0.9998,0.36,50000.
+1.E-05,0.9998,0.36,50000.
+1.E-05,0.9998,4.,50000.
+1.E-05,0.9998,4.,50000.
+1.E-05,0.9998,0.36,50000.
+1.E-05,0.9998,0.36,50000.
+1.E-05,0.9998,4.,50000.
+1.E-05,0.9998,4.,50000.
+'QCDparams:'
+8,1
+0.2000,0.3226
+'Parameterlist:'
+'list',8,1
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+ 0.1452
+'Evolution:'
+'lo',1.0,1.0
+'SASG'
+8,0
+'End:'

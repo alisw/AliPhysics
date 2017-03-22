@@ -1,0 +1,11 @@
+# Make fluka subdirectory in $ALICE
+cd $ALICE
+mkdir fluka
+
+# Unpack the FLUKA libraries in the $ALICE/fluka directory.
+# Please set correctly the path to the FLUKA tarball.
+cd fluka
+tar zxvf  <path_to_fluka_tarball>/fluka2006.3-linuxAA.tar.gz
+
+# Set the environment variables
+export FLUPRO=$ALICE/fluka

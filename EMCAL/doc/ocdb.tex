@@ -1,0 +1,252 @@
+
+\section{EMCal OCDB/OADB - Marcel}
+
+OCDB is the Offline data base. It contains the different parameters used for simulation or reconstruction of the detectors or even the LHC machine parameters that might change for the different run conditions.
+
+OADB is the Offline Analysis data base.
+
+The EMCAL OCDB (and other detectors OCDB) is divided in 3 directories that can be found in 
+\begin{lstlisting}
+$ALICE_ROOT/OCDB/EMCAL
+\end{lstlisting}
+\begin{itemize}
+\item Calib: Very different type of information, from hardware mapping to calibration parameters. 
+\item Align: Survey misplacements in geometry.
+\item Config: Detector configuration, temperatures
+\end{itemize}
+
+Inside these directories you will find other subdirectories with more specific types of parameters. Each of the directories contains a file named in this way:
+\begin{lstlisting}
+Run(FirstRun)_(LastRun)_v(version)_s(version).root
+\end{lstlisting}
+being the default and what you will find in the trunk
+\begin{lstlisting}
+Run0_999999999_v0_s0.root
+\end{lstlisting}
+
+What is actually used for the real data reconstruction can be found in alien here:
+\begin{lstlisting}
+/alice/data/20XX/OCDB/EMCAL
+\end{lstlisting}
+There are different repositories for different years (20XX). For the simulation productions, there is another repository on the grid:
+\begin{lstlisting}
+/alice/simulation/2008/v4-15-Release/XXX/EMCAL
+\end{lstlisting}
+which is divided into 3 other repositories: Ideal, Full and Residual. Each one is meant to reproduce the detector with different precision. For EMCAL, right now these 3 repositories contain the same parameters.
+
+The following section explain the elements stored and how to read and fill OCDB parameters.
+
+\subsection{Accessing a different OCDB}
+
+In the simulation/reconstruction macro a default OCDB needs to be specified if different from 
+\begin{lstlisting} 
+$ALICE_ROOT/OCDB.
+\end{lstlisting} 
+When running on the grid, one needs to set for example in a reconstruction of simulated data:
+\begin{lstlisting}
+ reco.SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Residual/");
+\end{lstlisting}
+If one or several OCDB files have been modified, the following line has to be added in the simulation or reconstruction macro:
+\begin{lstlisting}
+ reco.SetSpecificStorage("EMCAL/Calib/Pedestals","local://your/modified/local/OCDB");
+\end{lstlisting}
+
+The file with the calibration coefficients needs to be stored in the directory :
+\begin{lstlisting}
+ /your/modified/local/OCDB/EMCAL/Calib/Data 
+ \end{lstlisting}
+ 
+If more of the OCDB files are modified, add the following line :
+\begin{lstlisting}
+ reco.SetSpecificStorage("EMCAL/Calib/","local:/your/modified/local/OCDB");
+ \end{lstlisting}
+with all the directories inside \begin{lstlisting} EMCAL/Calib \end{lstlisting} and corresponding files put in 
+\begin{lstlisting}
+/your/modified/local/OCDB/EMCAL/Calib/
+\end{lstlisting}
+
+\subsection{Energy calibration}
+
+Calibration Coefficients tower by towers are stored in the following directory :
+\begin{lstlisting}
+EMCAL/Calib/Data
+\end{lstlisting}
+What is stored is an object of the class AliEMCALCalibData which is a container of gains and pedestals per tower. These coefficients are used in:
+\begin{itemize}
+\item  Simulation:  during the digitization, in AliEMCALDigitizer::Digitizer(), when calling AliEMCALDigitizer::DigitizeEnergy(), to transform the deposited energy into ADC counts. 
+\item  Reconstruction: in AliEMCALClusterizerv1::Calibrate() called in AliEMCALClusterizer::MakeClusters(), when forming the cluster, to get the final cluster energy.
+\end{itemize}
+The macro 
+\begin{lstlisting}
+$ALICE_ROOT/EMCAL/macros/CalibrationDB/AliEMCALSetCDB.C
+\end{lstlisting}
+is an example on how to set the calibration coefficients per channel, or how to read them from the OCDB file. This macro can set all channels with the same selected value or with random values given a uniform or gaussian smearing of a selected input value. A simple example that shows how to print the parameters is PrintEMCALCalibData.C
+
+All channels in the simulation have the same value for the gains (0.0153 GeV/ADC counts) and pedestal (set to 0 since the calorimeter works with Zero Suppressed data).
+
+\subsection{Bad channels}
+
+Storage for the bad channels map found in hardware are here :
+\begin{lstlisting}
+EMCAL/Calib/Pedestals
+\end{lstlisting}
+The object stored is from the class AliCaloCalibPedestal used for monitoring the towers calibration and functionality. This class has the data member TObjArray *fDeadMap  which consists of an array of 12 TH2I (as many as Super Modules), and each TH2I has the dimension of 24x48 (number of towers in $\phi\times\eta$ direction), each bin corresponds to a tower. The content of each entry in the histogram is an integer which represents the possible status:
+\begin{lstlisting}
+enum kDeadMapEntry{kAlive = 0, kDead,  kHot, kWarning, kResurrected, kRecentlyDeceased, kNumDeadMapStates};
+\end{lstlisting}
+Right now only the status kAlive, kDead, kHot and soon kWarning (soon, not yet) are set but, the code is basically skipping all the channels that are  kDead and kHot. The bad channel map is used in the reconstruction code in 3 places:
+\begin{itemize}
+\item AliEMCALRawUtils::Raw2Digits() : Before the raw data time sample is fitted, the status of the tower is checked, and if bad (kHot or kDead), the fit is not done. This avoids trying to fit ill shaped samples. This step is optional though, right now default is to skip the bad channels here. With the RecParam OCDB we can select to use it or not.
+\item AliEMCALClusterizerv1::Calibrate(): once the cluster is formed, to get the cluster energy from its cells.
+\item AliEMCALRecPoint::EvalDistanceToBadChannels(): Evaluate the distance of a cluster to the closest bad channel. During the analysis we may want to skip clusters close to a bad channel. This time a bad channel is whatever is not kAlive.
+\end{itemize}
+
+The macro 
+\begin{lstlisting}
+$ALICE_ROOT/EMCAL/macros/PedestalDB/AliEMCALPedestalCDB.C
+\end{lstlisting}
+is an example on how to set the bad channel map and how to read it from a file. When executed, it displays a menu that allows to set randomly as bad a given \% of the towers. It also allows to set the map from an input txt file, with the format like\\ \$ALICE\_ROOT/EMCAL/macros/PedestalDB/map.txt (this map file is the one used in the last mapping in the raw OCDB). It can also read the OCDB file and display the 12 TH2I histograms on screen.
+
+\subsection{Reconstruction parameters}
+
+The storage of the parameters used in reconstruction is done in 
+\begin{lstlisting}
+EMCAL/Calib/RecoParam
+\end{lstlisting}
+What is stored is an object of the class AliEMCALRecParam which is a container for all the parameters used. There are different kind of parameters, we can distinguish them depending on which step of the reconstruction are used as explained below.
+
+\paragraph*{Raw data fitting and mapping}
+\begin{itemize}
+
+  \item Double\_t fHighLowGainFactor;  // gain factor to convert between high and low gain
+
+   \item  Int\_t    fOrderParameter;        // order parameter for raw signal fit
+
+  \item   Double\_t fTau;                       // decay constant for raw signal fit
+
+  \item   Int\_t    fNoiseThreshold;          // threshold to consider signal or noise
+
+   \item  Int\_t    fNPedSamples;            // number of time samples to use in pedestal calculation
+
+   \item  Bool\_t   fRemoveBadChannels; // select if bad channels are removed before fitting
+
+  \item   Int\_t    fFittingAlgorithm;         // select the fitting algorithm
+
+   \item  static TObjArray* fgkMaps;      // ALTRO mappings for RCU0..RCUX
+\end{itemize}
+
+\paragraph*{Clusterization }
+\begin{itemize}
+
+   \item  Float\_t fClusteringThreshold ; // Minimum energy to seed a EC digit in a cluster
+
+   \item  Float\_t fW0 ;                       // Logarithmic weight for the cluster center of gravity calculation
+
+   \item  Float\_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
+
+   \item  Bool\_t  fUnfold;                   // Flag to perform cluster unfolding
+
+   \item  Float\_t fLocMaxCut;              // Minimum energy difference to consider local maxima in a cluster
+
+   \item  Float\_t fTimeCut ;                // Maximum difference time of digits in EMC cluster
+
+   \item  Float\_t fTimeMin ;                // Minimum time of digits
+
+   \item  Float\_t fTimeMax ;               // Maximum time of digits
+\end{itemize}
+
+\paragraph*{Track Matching}
+\begin{itemize}
+
+   \item  Double\_t  fTrkCutX;              // X-difference cut for track matching
+
+   \item  Double\_t  fTrkCutY;              // Y-difference cut for track matching
+
+   \item  Double\_t  fTrkCutZ;              // Z-difference cut for track matching
+
+   \item  Double\_t  fTrkCutR;              // cut on allowed track-cluster distance
+
+   \item  Double\_t  fTrkCutAlphaMin;    // cut on 'alpha' parameter for track matching (min)
+
+   \item  Double\_t  fTrkCutAlphaMax;   // cut on 'alpha' parameter for track matching (min)
+
+   \item  Double\_t  fTrkCutAngle;        // cut on relative angle between different track points for track matching
+
+   \item  Double\_t  fTrkCutNITS;         // Number of ITS hits for track matching
+
+   \item  Double\_t  fTrkCutNTPC;         // Number of TPC hits for track matching
+\end{itemize}
+
+ \paragraph*{PID}
+\begin{itemize}
+
+  \item  Double\_t fGamma[6][6];              // Parameter to Compute PID for photons     
+
+   \item Double\_t fGamma1to10[6][6];      // Parameter to Compute PID not used
+
+  \item  Double\_t fHadron[6][6];               // Parameter to Compute PID for hadrons     
+
+   \item Double\_t fHadron1to10[6][6];       // Parameter to Compute PID for hadrons between 1 and 10 GeV    
+
+   \item Double\_t fHadronEnergyProb[6];   // Parameter to Compute PID for energy ponderation for hadrons          
+
+   \item Double\_t fPiZeroEnergyProb[6];    // Parameter to Compute PID for energy ponderation for Pi0      
+
+   \item Double\_t fGammaEnergyProb[6];  // Parameter to Compute PID for energy ponderation for gamma    
+
+   \item Double\_t fPiZero[6][6];                // Parameter to Compute PID for pi0     
+\end{itemize}
+
+ 
+
+The macro 
+\begin{lstlisting}
+$ALICE_ROOT/EMCAL/macros/RecParamDB/AliEMCALSetRecParamCDB.C
+\end{lstlisting} 
+is an example on how to set the parameters. There are different event types that we might record, and each event type may require different reconstruction parameters. The event types that are now defined in STEER/AliRecoParam.h are:
+\begin{lstlisting}
+  enum EventSpecie\_t {kDefault = 1, kLowMult = 2, kHighMult = 4, kCosmic = 8, kCalib = 16};
+\end{lstlisting} 
+
+
+The default event species that we have is kLowMult (low multiplicity). For AliRoot versions smaller than release 4.17 it was set to be kHighMult (high multiplicity). Today, the code is as follow :
+\begin{lstlisting}
+ kDefault=kLowMult=kCosmic=kCalib.
+ \end{lstlisting} 
+ kHighMult differs only from the other two in 2 clusterization parameters, for low multiplicity they are fMinECut=10 MeV and fClusteringThreshold=100 MeV and for high multiplicity they are fMinECut=0.45 GeV and fClusteringThreshold=0.5 GeV.
+
+A simple example that shows how to print the parameters for the different event species is PrintEMCALRecParam.C 
+
+
+\subsection{Simulation parameters}
+
+
+The parameters used in the simulation are stored in EMCAL/Calib/SimParam. What is stored is an object of the class AliEMCALSimParam which is a container of all the parameters used. There are different kind of parameters depending on the step of the simulation :
+
+\paragraph*{SDigitization}
+\begin{itemize}
+        \item Float\_t fA ;                      // Pedestal parameter
+
+        \item Float\_t fB ;                      // Slope Digitizition parameters
+
+        \item Float\_t fECPrimThreshold ; // To store primary if Shower Energy loss > threshold
+\end{itemize} 
+
+\paragraph*{Digitization}
+\begin{itemize}
+       \item  Int\_t   fDigitThreshold  ;        // Threshold for storing digits in EMC = 3 ADC counts
+
+        \item Int\_t   fMeanPhotonElectron ; // number of photon electrons per GeV deposited energy = 4400 MeV/photon 
+
+         \item Float\_t fPinNoise ;                // Electronics noise in EMC = 12 MeV
+
+         \item Double\_t fTimeResolution ;    // Time resolution of FEE electronics = 600 ns
+
+         \item Int\_t   fNADCEC ;                 // number of channels in EC section ADC = 
+\end{itemize}
+ 
+
+The macro \$ALICE\_ROOT/EMCAL/macros/SimParamDB/AliEMCALSetSimParamCDB.C, is an example on how to set the parameters. A simple example that shows how to print the parameters is PrintEMCALSimParam.C 
+
+\subsection{Alignment}
+

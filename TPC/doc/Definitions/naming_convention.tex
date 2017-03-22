@@ -1,0 +1,158 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage[a4paper, left=1.5cm, right=1cm, top=2cm]{geometry}
+%\author{Marian Ivano, Nicole Martin, Patrick Reichelt and Jens Wiechula}
+%\title{Naming conventions for trending variables and QA WEB directory}
+\begin{document}
+\title{Naming conventions for trending variables and QA WEB directory}
+\author{Marian Ivano, Nicole Martin, Patrick Riechelt and Jens Wiechula}
+\maketitle
+
+This file explains the definition of the naming convention for trending variables and the QA WEB directory. You can also find a presentation explaining the naming conventions for the trending variables here:  
+\url{https://indico.cern.ch/getFile.py/access?contribId=4&resId=0&materialId=slides&confId=171449} . 
+As well as a presentation explaining the naming conventions for the QA WEB directory here:
+\url{https://indico.cern.ch/getFile.py/access?contribId=3&resId=0&materialId=slides&confId=235865}.
+
+\section{Trending variables}
+
+\subsection{General}
+
+\begin{itemize}
+
+\item Seperate `properties' by a `\_' : \\ \setlength{\parskip}{1pt} 
+
+Variable name as main identifyer \hspace*{3cm} Statisctics and fit propertie  \\ 
+\hspace*{0.3cm} $ \downarrow $ \hspace*{10cm} $ \downarrow $ 
+
+ \small{Type\_ SideA/C\_ ChargePlus/Minus\_ StatisicType(StatMean/StatRMS/StatChi2/FitSlope/FitMean/FitSigma)\_ Err} \\ 
+ \hspace*{1.5cm} $ \uparrow $\hspace*{2cm} $ \uparrow $ \hspace*{13.1cm} $ \uparrow $ \\
+ \hspace*{1cm} Further type specifications \hspace*{10cm} Error of an-\hspace*{15.5cm} other variable
+ 
+\item Further description: \\
+     Type: Variable name as main identifyer \\
+     SideA/C and ChargePlus/Minus: Further type specifications $ \rightarrow $ Side and particle type \\
+     StatisicType: Statisctics and fit properties \\
+     Err: Indicates that this is an error of another variable with the same name \\
+      
+ \item IROC vs OROC: Differentiate variables which are different for IRCO's and OROC's by: \_ IROC\_ or \_OROC \_
+
+\end{itemize}
+
+\subsection{Special variables}
+
+To avoid confusions between similar short cuts for variables please respect the following capital and small letters!!!
+
+\begin{itemize}
+ 
+\item velocity vs voltage 
+
+v = velocity (small) \\
+V = voltage  (capital)
+
+\item time vs temperature
+
+t = time        (small)\\
+T = temperature (capital)
+
+\item momentum vs pressure
+
+p = momentum (small) \\
+P = pressure (capital)
+
+\end{itemize}
+
+
+\subsection{Statistic vs Gau\ss{} fit variables}
+
+Please use the prefix 'Stat' or 'Fit' to diffenrentiate between statistic and Gau\ss{} fit variables: \\ \setlength{\parskip}{1pt}
+   
+StatMean --- FitMean \\
+\hspace*{0.5cm} StatRMS  --- FitSigma
+
+\subsection{Examples}
+
+The following examples should illustrate the naming convention and help you to implement it.
+
+\subsubsection{QA tree}
+\begin{tabular}{l l}
+%\hline 
+Old & New \\ 
+\hline 
+ &  \\
+%\hline 
+meanTPCnclF & TPCnclF\_ StatMean \\ 
+%\hline 
+slopeATPCnclF &  TPCnclF\_ SideA\_ FitSlope\\ 
+%\hline 
+SlopeATPCnclFErr &  TPCnclF\_ SideA\_ FitSlope\_ Err\\ 
+%\hline 
+SlopedZAErrPos &  dZ\_ SideA\_ ChargePlus\_ FitSlope\_ Err\\ 
+%\hline 
+\end{tabular} 
+
+\subsubsection{OCDB tree}
+\begin{tabular}{ l l}
+%\hline 
+Old & New \\ 
+\hline 
+ &  \\ 
+%\hline 
+VIROC &  V\_ IROC\\ 
+%\hline 
+medianVIROC & V\_ IROC\_ StatMedian \\ 
+%\hline 
+rocGainIROC & rocGain\_ IROC \\ 
+%\hline 
+rocGAinERRIROC &  rocGain\_ IROC\_ Err\\ 
+%\hline 
+\end{tabular} 
+
+%
+%     Old 		------------------ New
+%     
+%     meanTPCnclF	------------------ TPCnclF_StatMean
+%     slopeATPCnclF	------------------ TPCnclF_SideA_FitSlope   
+%     SlopeATPCnclFErr	------------------ TPCnclF_SideA_FitSlope_Err
+%     SlopedZAErrPos	------------------ dZ_SideA_ChargePlus_FitSlope_Err
+%
+%4.2) OCDB tree
+%
+%     Old 		------------------ New
+%     
+%     VIROC		------------------ V_IROC
+%     medianVIROC	------------------ V_IROC_StatMedian
+%     rocGainIROC	------------------ rocGain_IROC
+%     rocGAinERRIROC	------------------ rocGain_IROC_Err
+
+\section{QA WEB directory}
+
+The generic path, where everything goes, has to follow this convention: \\
+\parindent0pt
+
+\framebox{PATH=\${prefix}/\${datatype}/\${year}/\${period}/\${recopass}/\${suffix}} \\
+
+\begin{itemize}
+
+\item with prefix according to the website of the respective institute and detector 
+\item e.g. at GSI:
+
+\subitem Official:           prefix $=$ http://www-alice.gsi.de/TPC/PWG1train \\
+\subitem Development: prefix $=$ http://web-docs.gsi.de/{\raise.17ex\hbox{$\scriptstyle\mathtt{\sim}$}}username/TPC/PWG1train \\
+
+\item datatype: datatype $=$ data   or   datatype $=$ sim   (nothing like data\_year anymore!) \\
+\item suffix:  StandardQA  or  ExpertQA  or  CalibrationQA  or  ExpertCalibrationQA \\
+
+\end{itemize}
+
+\underline{Also to be used by all detectors which will merge trending trees with the TPC}
+\begin{itemize}
+\item rootfiles with the trees should have a static name, e.g. trending.root, TRDtree.root, ...
+
+\end{itemize}
+
+\end{document}

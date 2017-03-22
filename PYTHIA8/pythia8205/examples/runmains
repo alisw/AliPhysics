@@ -1,0 +1,254 @@
+# runmains is a part of the PYTHIA event generator.
+# Copyright (C) 2015 Torbjorn Sjostrand.
+# PYTHIA is licenced under the GNU GPL version 2, see COPYING for details.
+# Please respect the MCnet Guidelines, see GUIDELINES for details. 
+ 
+# Simple script to run all the mainNN test programs
+# Several of the ones from main31 and higher need linkage to external 
+# libraries, however, and therefore the execution exits before them by default.
+# If you want to change that behaviour, comment out the "exit" line.
+# The subdirectory outref contains output from reference run.
+
+echo
+echo Now begin main01
+make main01
+time ./main01 > out01
+
+echo
+echo Now begin main02
+make main02
+time ./main02 > out02
+
+echo
+echo Now begin main03
+make main03
+time ./main03 > out03
+
+echo
+echo Now begin main04
+make main04
+time ./main04 > out04
+
+echo
+echo Now begin main05
+make main05
+time ./main05 > out05
+
+echo
+echo Now begin main06
+make main06
+time ./main06 > out06
+
+echo
+echo Now begin main07
+make main07
+time ./main07 > out07
+
+echo
+echo Now begin main08
+make main08
+time ./main08 > out08
+
+echo
+echo Now begin main09
+make main09
+time ./main09 > out09
+
+echo
+echo Now begin main10
+make main10
+time ./main10 > out10
+
+echo
+echo Now begin main11
+make main11
+time ./main11 > out11
+
+echo
+echo Now begin main12
+make main12
+time ./main12 > out12
+
+echo
+echo Now begin main13
+make main13
+time ./main13 > out13
+
+echo
+echo Now begin main14
+make main14
+time ./main14 > out14
+
+echo
+echo Now begin main15
+make main15
+time ./main15 > out15
+
+echo
+echo Now begin main16
+make main16
+time ./main16 main16.cmnd > out16
+
+echo
+echo Now begin main17
+make main17
+time ./main17 > out17
+
+echo
+echo Now begin main18
+make main18
+time ./main18 > out18
+
+echo
+echo Now begin main19
+make main19
+time ./main19 > out19
+
+echo
+echo Now begin main20
+make main20
+time ./main20 > out20
+
+echo
+echo Now begin main21
+make main21
+time ./main21 > out21
+
+echo
+echo Now begin main22
+make main22
+time ./main22 > out22
+
+echo
+echo Now begin main23
+make main23
+time ./main23 > out23
+
+echo
+echo Now begin main24
+make main24
+time ./main24 > out24
+
+echo
+echo Now begin main25
+make main25
+time ./main25 > out25
+
+echo
+echo Now begin main26
+make main26
+time ./main26 > out26
+
+echo
+echo Now begin main27
+make main27
+time ./main27 > out27
+
+echo
+echo Now begin main28
+make main28
+time ./main28 > out28
+
+echo
+echo Now begin main29
+make main29
+time ./main29 > out29
+
+echo
+echo Now begin main30
+make main30
+time ./main30 > out30
+
+# This code section stops the testing before the mainNN programs
+# that need access to various external libraries (plus a few further).  
+# If you have ensured such linkage, feel free to comment out
+# the exit command below, to have the program continue to the end.
+echo 
+echo The testing stops here!
+echo Most further checks require that you have external libraries linked,
+echo and that you edit this runmains file, by removing a single exit line.
+exit
+
+echo
+echo Now begin main31
+make main31
+time ./main31 > out31
+
+echo
+echo Now begin main32
+make main32
+time ./main32 > out32
+
+echo
+echo Now begin main37
+make main37
+time ./main37 > out37
+
+echo
+echo Now begin main38
+make main38
+time ./main38 > out38
+
+echo
+echo Now begin main41
+make main41
+time ./main41 > out41
+
+echo
+echo Now begin main42
+make main42
+time ./main42 main42.cmnd hepmcout42.dat > out42
+
+echo
+echo Now begin main43
+make main43
+time ./main43 main43.cmnd hepmcout43.dat > out43
+
+echo
+echo Now begin main51
+make main51
+time ./main51 > out51
+
+echo
+echo Now begin main52
+make main52
+time ./main52 > out52
+
+echo
+echo Now begin main53
+make main53
+time ./main53 > out53
+
+echo
+echo Now begin main54
+make main54
+time ./main54 > out54
+
+echo
+echo Now begin main71
+make main71
+time ./main71 > out71
+
+echo
+echo Now begin main72
+make main72
+time ./main72 > out72
+
+echo
+echo Now begin main80
+make main80
+time ./main80 > out80
+
+# main81 - main89 not yet implemented; requires file paths
+
+echo
+echo Now begin main91
+make main91
+time ./main91 > out91
+
+echo
+echo Now begin main92
+make main92
+time ./main92 > out92
+
+

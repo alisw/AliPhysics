@@ -1,0 +1,92 @@
+$Id$
+
+AliRoot
+-------
+
+########################### Release version 3.02 ##########################
+
+Last update Tue Nov  9 08:26:53 CET 1999 - Federico Carminati
+
+This is the Version 3.02 of the ALICE simulation and reconstruction
+software. It is intended to offer a general purpose framework for ALICE
+simulation and reconstruction. The program should not be considered
+complete, and we are relying on the feed-back from users to correct bugs
+and provide improvements.
+
+The simulation program is based on GEANT3.21. A special version of the
+GEANT library and a mini-CERN Library are included in the distribution.
+
+Up-to-date information on installation and use of this code can be found at
+http://www.cern.ch/alice/Projects/offline. This README is a very condensed
+summary of the information contained there.
+
+
+Installation
+------------
+
+- Install ROOT and define the ROOTSYS symbol correctly.
+
+- Decide in which directory you will install the ALICE sofware. We will
+indicate it with <directory>
+
+- Define the following global variables in the login script
+
+ALICE			= <directory>
+ALICE_LEVEL		= pro
+ALICE_ROOT		= $ALICE/$ALICE_LEVEL
+ALICE_TARGET		= `uname`
+LD_LIBRARY_PATH 	= $ALICE_ROOT/lib/tgt_${ALICE_TARGET}\:$LD_LIBRARY_PATH (on all systems)
+SHLIB_PATH		= $ALICE_ROOT/lib/tgt_${ALICE_TARGET}\:$SHLIB_PATH (on hpux)
+PATH			= $PATH\:$ALICE_ROOT/bin/tgt_${ALICE_TARGET}
+
+At this point you should logout, login again and check that the symbols are
+set correctly
+
+EITHER
+======
+
+- Get the file 
+              /afs/cern.ch/alice/offline/dist/AliOffline3.02.tar.gz
+  or the file 
+              ftp://pcepaip01.cern.ch/pub/AliOffline3.02.tar.gz
+
+- Unpack it with
+
+$ cd $ALICE
+$ gtar xvfz AliOffline3.02pre.tar.gz
+
+OR
+==
+
+- Get the files
+
+      /afs/cern.ch/alice/offline/dist/AliRoot3.02.tar.gz (AliRoot code)
+      /afs/cern.ch/alice/offline/dist/AliLibs3.02.tar.gz (minicern code)
+
+or the files
+
+      ftp://pcepaip01.cern.ch/pub/AliRoot3.02.tar.gz (AliRoot code)
+      ftp://pcepaip01.cern.ch/pub/AliLibs3.02.tar.gz (minicern code)
+
+THEN PROCEED WITH
+=================
+
+- install the CERN library part
+
+$ cd $ALICE_ROOT
+$ gmake cernlibs
+
+- Install the ALICE specific software
+
+$ cd $ALICE_ROOT
+$ gmake
+
+- Copy the file $ALICE_ROOT/.rootrc to your home directory
+
+- run the code
+
+$ aliroot
+
+root [1] .x menu.C
+
+

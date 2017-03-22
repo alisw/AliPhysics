@@ -1,0 +1,108 @@
+
+               MCNET GUIDELINES
+
+      for Event Generator Authors and Users
+
+
+    PREAMBLE
+
+This generator has been developed as part of an academic research
+project and is the result of many years of work by the authors.
+Proper academic recognition is a requirement for its continued
+development.
+
+The components of the program have been developed to work together
+as a coherent physics framework. We believe that the creation of
+separately maintained forks or piecewise distribution of individual
+parts would diminish their scientific value.
+
+The authors are convinced that software development in a scientific
+context requires full availability of all source code, to further
+progress and to allow local modifications to meet the specific
+requirements of the individual user.
+
+Therefore we have decided to release this program under the
+GNU General Public License (GPL) version 2. This ensures
+that the source code will be available to you and grants you the
+freedom to use and modify the program. You can redistribute your
+modified versions as long as you retain the GPL and respect existing
+copyright notices (see the file 'COPYING' for details).
+
+By using the GPL, we entrust you with considerable freedom and expect
+you to use it wisely, since the GPL does not address the issues in
+the first two paragraphs. To remedy this shortcoming, we have
+formulated the following guidelines relevant for the distribution
+and usage of event generator software in an academic setting.
+
+
+    GUIDELINES
+
+1) The integrity of the program should be respected.
+    -------------------------------------------------
+
+1.1) Suspected bugs and proposed fixes should be reported back to the
+    original authors to be considered for inclusion in the standard
+    distribution.  No independently developed and maintained forks
+    should be created as long as the original authors actively work on
+    the program.
+
+1.2) The program should normally be redistributed in its entirety.
+    When there are special reasons, an agreement should be sought with
+    the original authors to redistribute only specific parts. This
+    should be arranged such that the redistributed parts remain
+    updated in step with the standard distribution.
+
+1.3) Any changes in the code must be clearly marked in the source
+   (reason, author, date) and documented. If any modified version is
+   redistributed it should be stated at the point of distribution
+   (download link) that it has been modified and why.
+
+1.4) If a significant part of the code is used by another program,
+    this should be clearly specified in that program's documentation and
+    stated at its point of distribution.
+
+1.5) Copyright information and references may not be removed.
+    Copyright-related program messages may not be altered and must be
+    printed even if only a part of the program is used. Adding further
+    messages specifying any modifications is encouraged.
+
+
+2) The program and its physics should be properly cited when used for
+    academic publications
+    ------------------------------------------------------------------
+
+2.1) The main software reference as designated by the program authors
+    should always be cited.
+
+2.2) In addition, the original literature on which the program is based
+    should be cited to the extent that it is of relevance for a study,
+    applying the same threshold criteria as for other literature.
+
+2.3) When several programs are combined, they should all be mentioned,
+    commensurate with their importance for the physics study at hand.
+
+2.4) To make published results reproducible, the exact versions of the
+    codes that were used and any relevant program and parameter
+    modifications should be spelled out.
+
+
+    POSTSCRIPT
+
+The copyright license of the software is the GPL v2 alone, therefore
+the above guidelines are not legally binding. However, we reserve the
+right to criticize offenders. The guidelines should always be combined
+with common sense, for interpretation and for issues not covered.
+Enquiries regarding the guidelines and related issues are encouraged
+and should be directed to the authors of the program.
+
+Please note that the program, including all its code and documentation,
+is intended for academic use and is delivered "as is" to be used at 
+your own risk, without any guarantees.
+
+----------------------------------------------------------------------
+
+These guidelines were edited by Nils Lavesson and David Grellscheid
+for the MCnet collaboration, which has approved and agreed to respect
+them.  MCnet is a Marie Curie Research Training Network funded under
+Framework Programme 6 contract MRTN-CT-2006-035606.
+

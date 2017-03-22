@@ -1,0 +1,6 @@
+* $Id$
+      REAL VINT
+      COMMON/PYINT1_HIJING/MINT(400),VINT(400) 
+#ifndef BLANKET_SAVE
+      SAVE /PYINT1_HIJING/ 
+#endif

@@ -1,0 +1,7 @@
+* $Id$
+      REAL COEF
+      COMMON/PYINT2_HIJING/ISET(200),KFPR(200,2),COEF(200,20),ICOL(40,4
+     $     ,2) 
+#ifndef BLANKET_SAVE
+      SAVE /PYINT2_HIJING/ 
+#endif

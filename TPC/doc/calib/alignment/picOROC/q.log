@@ -1,0 +1,38 @@
+This is pdfeTeX, Version 3.141592-1.30.5-2.2 (Web2C 7.5.5) (format=latex 2008.9.26)  6 FEB 2009 18:27
+entering extended mode
+**OROCalignment.tex
+(/usr/share/texmf-texlive/tex/latex/tools/q.tex
+! Interruption.
+<to be read again> 
+                   \begingroup 
+l.1 
+    %%
+? .qqqqqqqqqqqqqqqq
+Type <return> to proceed, S to scroll future error messages,
+R to run without stopping, Q to run quietly,
+I to insert something, E to edit your file,
+H for help, X to quit.
+? Q
+OK, entering \batchmode...
+LaTeX2e <2003/12/01>
+Babel <v3.8g> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, ukrainian, russian, bulgarian, czech, slovak, dutch, french, basque
+, german, ngerman, italian, polish, portuguese, spanish, catalan, ukenglish, lo
+aded.
+ File ignored
+)
+! Emergency stop.
+<*> OROCalignment.tex
+                     
+*** (job aborted, no legal \end found)
+
+ 
+Here is how much of TeX's memory you used:
+ 7 strings out of 94760
+ 250 string characters out of 1928161
+ 47591 words of memory out of 1000000
+ 3300 multiletter control sequences out of 10000+50000
+ 3640 words of font info for 14 fonts, out of 500000 for 2000
+ 315 hyphenation exceptions out of 8191
+ 5i,0n,1p,97b,8s stack positions out of 1500i,500n,5000p,200000b,5000s
+No pages of output.

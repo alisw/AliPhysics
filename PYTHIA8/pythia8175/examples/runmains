@@ -1,0 +1,212 @@
+# runmains is a part of the PYTHIA event generator.
+# Copyright (C) 2013 Torbjorn Sjostrand.
+# PYTHIA is licenced under the GNU GPL version 2, see COPYING for details.
+# Please respect the MCnet Guidelines, see GUIDELINES for details. 
+ 
+# Simple script to run all the mainXX test programs
+# Several of the ones from main31 and higher need linkage to external 
+# libraries, however, and therefore the execution exits before them by default.
+# If you want to change that behaviour, comment out the "exit" line.
+# The subdirectory outref contains output from reference run.
+
+echo
+echo Now begin main01
+make main01
+time ./main01.exe > out01
+
+echo
+echo Now begin main02
+make main02
+time ./main02.exe > out02
+
+echo
+echo Now begin main03
+make main03
+time ./main03.exe > out03
+
+echo
+echo Now begin main04
+make main04
+time ./main04.exe > out04
+
+echo
+echo Now begin main05
+make main05
+time ./main05.exe > out05
+
+echo
+echo Now begin main06
+make main06
+time ./main06.exe > out06
+
+echo
+echo Now begin main07
+make main07
+time ./main07.exe > out07
+
+echo
+echo Now begin main08
+make main08
+time ./main08.exe > out08
+
+echo
+echo Now begin main09
+make main09
+time ./main09.exe > out09
+
+echo
+echo Now begin main10
+make main10
+time ./main10.exe > out10
+
+echo
+echo Now begin main11
+make main11
+time ./main11.exe > out11
+
+echo
+echo Now begin main12
+make main12
+time ./main12.exe > out12
+
+echo
+echo Now begin main13
+make main13
+time ./main13.exe > out13
+
+echo
+echo Now begin main14
+make main14
+time ./main14.exe > out14
+
+echo
+echo Now begin main15
+make main15
+time ./main15.exe > out15
+
+echo
+echo Now begin main16
+make main16
+time ./main16.exe main16.cmnd > out16
+
+echo
+echo Now begin main17
+make main17
+time ./main17.exe > out17
+
+echo
+echo Now begin main18
+make main18
+time ./main18.exe > out18
+
+echo
+echo Now begin main19
+make main19
+time ./main19.exe > out19
+
+echo
+echo Now begin main20
+make main20
+time ./main20.exe > out20
+
+echo
+echo Now begin main21
+make main21
+time ./main21.exe > out21
+
+echo
+echo Now begin main22
+make main22
+time ./main22.exe > out22
+
+echo
+echo Now begin main23
+make main23
+time ./main23.exe > out23
+
+echo
+echo Now begin main24
+make main24
+time ./main24.exe > out24
+
+echo
+echo Now begin main25
+make main25
+time ./main25.exe > out25
+
+echo
+echo Now begin main26
+make main26
+time ./main26.exe > out26
+
+echo
+echo Now begin main27
+make main27
+time ./main27.exe > out27
+
+echo
+echo Now begin main28
+make main28
+time ./main28.exe > out28
+
+# This code section stops the testing before the mainXX programs
+# that need access to various external libraries (+ main31).  
+# If you have ensured such linkage, feel free to comment out
+# the exit command below, to have the program continue to the end.
+echo 
+echo The testing stops here!
+echo Further checks require that you have external libraries linked,
+echo and edit this runmains file, by removing a single exit line.
+exit
+
+echo
+echo Now begin main31
+make main31
+time ./main31.exe > out31
+
+echo
+echo Now begin main41
+make main41
+time ./main41.exe > out41
+
+echo
+echo Now begin main42
+make main42
+time ./main42.exe main42.cmnd hepmcout42.dat > out42
+
+echo
+echo Now begin main51
+make main51
+time ./main51.exe > out51
+
+echo
+echo Now begin main52
+make main52
+time ./main52.exe > out52
+
+echo
+echo Now begin main53
+make main53
+time ./main53.exe > out53
+
+echo
+echo Now begin main61
+make main61
+time ./main61.exe main61.cmnd hepmcout61.dat > out61
+
+echo
+echo Now begin main62
+make main62
+time ./main62.exe main62.cmnd hepmcout62.dat > out62
+
+echo
+echo Now begin main71
+make main71
+time ./main71.exe > out71
+
+echo
+echo Now begin main72
+make main72
+time ./main72.exe > out72
+
+

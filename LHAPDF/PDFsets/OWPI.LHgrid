@@ -1,0 +1,28 @@
+'Version' '5.3'
+'Description: '
+'OW-P pion PDFs'
+'Phys.Rev.D30(1984)943'
+'This set has 2 member PDFs.'
+' 0/1 = OW-P Set 1 - LO'
+' 2 = OW-P Set 2 - LO'
+'Alphas:'
+'Variable','lo','EvolCode'
+1,91.71,1.43,4.30,180.0
+'MinMax:'
+2,1
+0.005,0.9998,4.,2000.
+'QCDparams:'
+2,0
+0.200,0.1519
+0.200,0.1519
+0.400,0.3226
+'Parameterlist:'
+'list',2,1
+ 0.1281
+ 0.1281 
+ 0.1452
+'Evolution:'
+'lo',1.0,1.0
+'OWP'
+2,0
+'End:'

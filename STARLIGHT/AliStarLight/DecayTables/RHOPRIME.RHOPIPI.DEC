@@ -1,0 +1,15 @@
+Alias myrho0 rho0
+##
+Decay rho(2S)0 
+1.000     myrho0  pi+ pi-                VVPIPI;
+Enddecay
+
+Decay rho(3S)0 
+1.000     myrho0  pi+ pi-                VVPIPI;
+Enddecay
+
+Decay myrho0 
+1.000    pi+ pi-                         VSS;
+Enddecay
+End
+

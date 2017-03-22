@@ -1,0 +1,81 @@
+<?php
+
+echo "<table border = 0><tr><td align=left valign=center>";
+
+if($_POST["resetval"] == 1)
+{
+  //DELETE OLD FILE ON RESET
+  unlink($_POST["rmfile"]);
+}
+
+if (!$_POST["filename"])
+{
+  echo "Please choose a (temporary) file name:</br>";
+  echo "<form method='POST' action='SaveParameters.php'>";
+  echo "<input type='text' name='filename'/>";
+  echo "<input type='submit' value='Submit'/>";
+  echo "</form>";
+}
+else if ($_POST["filename"] != "")
+{
+  $filename = $_POST["filename"];
+  $filepath = "files/".$_POST["filename"];
+  $filecheck = file_exists($filepath);
+  
+  if(($_POST["finish"] == 1) || ($_GET["returning"] == 1))
+    {
+      $filecheck = 0;
+      $fileopen = 1;
+    }
+  
+  if ($filecheck == 1)
+    {
+      echo "<font color='red'>File in use.. choose again:</br></font>";
+      echo "<form method='POST' action='SaveParameters.php'>";
+      echo "<input type='text' name='filename'/>";
+      echo "<input type='submit' value='Submit'/>";
+      echo "</form>";
+    }
+  else
+    {
+      if(!$_POST["finish"])
+	{
+	  echo "Filename chosen:<b>  "; 
+          echo $_POST["filename"];
+          echo "</br></b>";
+	  echo "<table border = 0 valign = top><tr><td valign=\"top\"><form method='POST' action='SaveParameters.php'>";
+	  echo "<input type='hidden' name='filename' value='".$filename."'/>";
+	  echo "<input type='hidden' name='finish' value='1'/>";
+	  echo "<input type='submit' value='Finish File'/>";
+	  echo "</form></td>";
+	  echo "<td valign=\"top\"><form method='POST' action='SaveParameters.php'>";
+	  echo "<input type='hidden' name='filename' value=''/>";
+	  echo "<input type='hidden' name='rmfile' value='".$filepath."'/>";
+	  echo "<input type='hidden' name='resetval' value='1'/>";
+	  echo "<input type='submit' value='RESET'/>";
+	  echo "</form></td></tr></table>";
+	}
+      if($fileopen != 1)
+	{
+	  //CREATE & OPEN FILE & CHANGE PERMISSIONS TO 666
+	  $handle = fopen($filepath, 'w');
+	  chmod($filepath, 0666);
+	  fclose($handle);
+
+	}
+      if ($_POST["finish"])
+	{
+	  echo "<b><li><a href='".$filepath."'>Right Click to Save Target: ".$filename."</a></b></br>";
+	  echo "<form method='POST' action='SaveParameters.php'>";
+	  echo "<input type='hidden' name='filename' value=''/>";
+	  echo "<input type='hidden' name='rmfile' value='".$filepath."'/>";
+	  echo "<input type='hidden' name='resetval' value='1'/>";
+	  echo "<input type='submit' value='RESET'/>";
+	  echo "</form>";
+	}
+    }
+}
+
+echo "</td><td></td></tr></table>";
+
+?>

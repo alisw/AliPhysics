@@ -1,0 +1,18 @@
+.L fillCalibObject.C
+AliTPCCalibPulser *calib=fillCalibObject("path/to/file.root")
+//or
+AliTPCCalibCE *calib=fillCalibObject("path/to/file.root")
+Int_t i
+for (i=0;i<72;i++) if (calib->GetHistoT0(i)) cout << i<<endl;
+//assume sector 0 is filled, show its RMS reference histogram
+calib->GetHistoT0(0)->SetEntries(1)
+calib->GetHistoT0(0)->Draw("colz")
+//Unsing the AliTPCCalPad class
+AliTPCCalPad t0(calib->GetCalPadT0())
+t0->MakeHisto2D()->Draw("colz");  //A-Side time arrival
+t0->MakeHisto2D(1)->Draw("colz"); //C-Side time arrival
+AliTPCCalPad q(calib->GetCalPadQ())
+q->MakeHisto2D()->Draw("colz");  //A-Side signal sum
+q->MakeHisto2D(1)->Draw("colz"); //C-Side signal sum
+//display single chamber (0)
+t0->GetCalROC(0)->MakeHisto2D()->Draw("colz")

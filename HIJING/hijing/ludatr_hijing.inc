@@ -1,0 +1,4 @@
+* $Id$
+      REAL RRLU
+      COMMON/LUDATR_HIJING/MRLU(6),RRLU(100)   
+      SAVE /LUDATR_HIJING/ 

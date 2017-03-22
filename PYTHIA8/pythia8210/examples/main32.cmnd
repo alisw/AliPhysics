@@ -1,0 +1,102 @@
+! 1) Settings used in the main program.
+Main:numberOfEvents   = -1         ! number of events to generate (-1 for all)
+Main:timesAllowErrors = 3          ! how many aborts before run stops
+Main:spareMode1 = 0                ! skip n events at beginning of file
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = on  ! list changed particle data
+Next:numberCount       = 10      ! print message every n events
+Next:numberShowInfo    = 1         ! print event information n times
+Next:numberShowProcess = 1         ! print process record n times
+Next:numberShowEvent   = 1         ! print event record n times
+
+! 3) Enable matching
+JetMatching:merge = on
+
+! Madgraph run:
+Beams:LHEF = w+_production_lhc_2.lhe
+Beams:frameType = 4
+JetMatching:scheme = 1
+JetMatching:setMad = off
+JetMatching:qCut = 20.0
+JetMatching:coneRadius = 1.0
+JetMatching:etaJetMax = 10.0
+JetMatching:nJetMax = 3
+
+! Alpgen run
+! Alpgen:file = main32
+! Alpgen:setMLM = on
+! JetMatching:scheme = 2
+! JetMatching:nJetMax = 3
+
+! Alpgen file + Madgraph matching scheme
+! Alpgen:file = main32
+! JetMatching:scheme = 1
+! JetMatching:qCut = 20.0
+! JetMatching:coneRadius = 1.0
+! JetMatching:etaJetMax = 10.0
+
+! LHEF + Alpgen matching scheme
+! Beams:LHEF = w+_production_lhc_2.lhe
+! Beams:frameType = 4
+! JetMatching:scheme = 2
+! JetMatching:slowJetPower = 1
+! JetMatching:jetAlgorithm = 1
+! JetMatching:eTjetMin = 20.0
+! JetMatching:coneRadius = 1.0
+! JetMatching:exclusive = 1
+
+! 4) Examples of further possible MLM settings.
+
+! Default is CellJet algorithm with merging parameters set based on
+! read in matrix element cuts. Exclusive/inclusive mode is set
+! based on the read in value of 'MLM:nJet', and 'MLM:nJetMax' above.
+
+! MLM master settings
+!Alpgen:file = main32
+!Alpgen:setMLM       = on
+!JetMatching:scheme  = 2
+!JetMatching:nJetMax = 3
+
+! Pick custom merging parameters
+! Alpgen:file            = main32
+! Alpgen:setMLM          = off
+! JetMatching:scheme     = 2
+! JetMatching:nJetMax    = 3
+! JetMatching:eTjetMin   = 30.0
+! JetMatching:coneRadius = 1.0
+! JetMatching:etaJetMax  = 2.0
+! JetMatching:exclusive  = 0
+
+! Disable automatic setting of Alpgen masses
+! Alpgen:setMasses    = off
+
+! Anti-kT algorithm with ghost particle jet matching
+! Alpgen:file            = main32
+! Alpgen:setMLM          = on
+! JetMatching:scheme     = 2
+! JetMatching:jetAlgorithm    = 2
+! JetMatching:slowJetPower    = -1
+! JetMatching:jetMatch        = 2
+! JetMatching:jetAllow        = 2
+
+! Anti-kT algorithm with deltaR matching with factor 1.
+! Alpgen:file            = main32
+! Alpgen:setMLM          = on
+! JetMatching:scheme     = 2
+! JetMatching:jetAlgorithm    = 2
+! JetMatching:slowJetPower    = -1
+! JetMatching:coneMatchLight  = 1.0
+! JetMatching:coneMatchHeavy  = 1.0
+
+! kT algorithm with ghost particle jet matching
+! Alpgen:file            = main32
+! Alpgen:setMLM          = on
+! JetMatching:scheme     = 2
+! JetMatching:jetAlgorithm    = 2
+! JetMatching:slowJetPower    = 1
+! JetMatching:jetMatch        = 2
+
+! 5) Other settings
+HadronLevel:all        = off       ! switch off hadronisation for testing only

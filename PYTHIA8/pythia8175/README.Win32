@@ -1,0 +1,56 @@
+====================================
+   INSTRUCTIONS FOR WINDOWS USERS
+====================================
+
+I)   How to build
+II)  How to clean
+III) Further notes
+
+Note: this is a first version, and does not (yet) have
+the full functionality offered for the Linux case.
+
+
+I) How to build
+===============
+
+To build Pythia8 on windows, open a command prompt, 
+cd to the location where Pythia has been extracted, 
+then type nmake with any of these options :
+
+to build in debug mode :
+
+   nmake -f Makefile.msc CFG="Win32 Debug"
+
+in optimized mode :
+
+   nmake -f Makefile.msc CFG="Win32 Release"
+
+libPythia8.lib will be located in $PYTHIADIR\lib directory
+
+
+II) How to clean
+================
+
+To clean intermediate (obj) files :
+
+   nmake -f Makefile.msc clean CFG="Win32 Debug"
+or
+   nmake -f Makefile.msc clean CFG="Win32 Release"
+
+To clean all binaries (obj, idb, pdb, ilk, lib and exe) :
+
+   nmake -f Makefile.msc distclean CFG="Win32 Debug"
+or
+   nmake -f Makefile.msc distclean CFG="Win32 Release"
+
+
+III) Further notes
+==================
+
+Some C++ distributions do not implement the error function erf(x). 
+Should you encounter such a compilation problem, the PhaseSpace.h 
+and SigmaTotal.h files do contain commented-out erf(x) code, 
+that then should be uncommented. The approximation used is not
+of high precision, but fully sufficient for the task at hand.
+
+

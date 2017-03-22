@@ -1,0 +1,353 @@
+\section{Analysis format and code}
+
+All the reconstructed particles of all the detectors are kept
+in a file called \textbf{AliESDs.root}. The detectors must store there
+the most relevant information which will be used in the analysis. 
+Together with the AliESDs.root file, another file is created with some reference tags of the simulated events, containing for example the number of events per run. This file is
+named \textbf{Run0.Event0\_1.ESD.tag.root} (1 means that only 1 event
+was simulated). 
+
+In order to do the analysis with the data contained in the ESDs, the only file needed is \textbf{AliESDs.root} in the local directories or a grid collection. No other files are needed in the working directory (such as galice.root nor EMCAL.{*}.root) unless one needs to access the primary particles generated during the simulation. In that case, the files \textbf{galice.root} and \textbf{Kinematics.root} are needed locally.  Also, if one want to access to some information of the detector geometry, the \textbf{geometry.root} file is needed.
+
+There are other data analysis containers created from the ESD, the
+AOD (Analysis Object Data) with smaller quantity of data for most of the subsystems but for the calorimeters, where we copy all the information\footnote{until half 2012 everything but the time of the cells was stored}.
+
+
+\subsection{Calorimeter information in ESDs/AODs}
+
+The basic calorimeter information needed for analysis is stored in the ESDs or AODs in the form of CaloClusters and CaloCells (cell = EMCal Tower or PHOS crystal). Also there is some information stored in the AOD/ESD event classes, it will be detailed more in the lines below. Both AOD and ESD classes derive from virtual classes so that with a similar analysis code and access methods, we can read both kind of data formats.
+
+
+\subsubsection{AliVEvent (AliESDEvent, AliAODEvent)}
+
+Those are manager classes for the event information retrieval. Regarding the calorimeters they have the following access information (getters) methods\footnote{There are the equivalent setters just have a look to the header file of the class}:
+\begin{itemize}
+
+\item AliVCaloCluster *GetCaloCluster(Int\_t i) : Returns a CaloCluster listed in position "i" in the array of CaloClusters. It can be either PHOS or EMCal (PHOS list of clusters is before the EMCal list).
+
+\item TClonesArray *GetCaloClusters() :  Returns the array with CaloClusters PHOS+EMCAL, Only defined for AODs
+
+\item Int\_t GetEMCALClusters(TRefArray *clusters) ; Int\_t GetPHOSClusters(TRefArray *clusters) : Returns an array with only EMCal clusters or only with PHOS clusters.
+
+\item Int\_t GetNumberOfCaloClusters(): Returns the total number of clusters PHOS+EMCAL.
+
+\item AliVCaloCells *GetEMCALCells();  AliESDCaloCells *GetPHOSCells() : Returns the pointer with the CaloCells object for EMCal or PHOS.
+
+\item AliVCaloTrigger *GetCaloTrigger(TString calo) : Access to trigger patch information, for calo="PHOS" or calo="EMCAL"
+
+\item const TGeoHMatrix* GetPHOSMatrix(Int\_t i); const TGeoHMatrix* GetEMCALMatrix(Int\_t i): Get the matrices for the transformation of global to local. The transformation matrices are not stored in the AODs.
+
+
+
+\end{itemize}
+
+
+
+\subsubsection{AliVCaloCluster (AliESDCaloCluster,AliAODCaloCluster)}
+
+They  contain the information of the calorimeter clusters. Note that PHOS and EMCAL CaloClusters are kept in the same TClonesArray (see above). The information stored in each CaloCluster is :
+
+\begin{itemize}
+\item General
+	\begin{itemize}
+	\item Int\_t GetID(): It returns a unique identifier number for a CaloCluster.
+
+	\item Char\_t GetClusterType():It returns kPHOSNeutral (kPHOSCharged exists but not used) or  kEMCALClusterv1. Another way to get the origin of the cluster:
+
+	\item Bool\_t IsEMCAL(); Bool\_t IsPHOS(). 
+
+	\item void GetPosition(Float\_t *pos) : It returns a {x,y,z} array with the global positions of the clusters in centimeters.
+
+	\item Double\_t E() : It returns the energy of the cluster in GeV units.
+
+	\item void GetMomentum(TLorentzVector\& p, Double\_t * vertexPosition ): It fills a TLorentzVector pointing to the measured vertex of the collision. It also modifies the cluster global positions to have a vector pointing to the vertex, this has to be corrected. Assumes that cluster is neutral. To be used only for analysis with clusters not matched with tracks.
+	\end{itemize}
+\item Shower Shape
+	\begin{itemize}
+
+	\item Double\_t GetDispersion(): Dispersion of the shower.
+
+	\item Double\_t Chi2(): Not filled.
+
+	\item Double\_t GetM20()  Double\_t GetM02() : Ellipse axis.
+
+	\item UChar\_t GetNExMax() : Number or maxima in cluster. Not filled.
+
+	\item Double\_t *GetPID(): PID weights array, 10 entries corresponding to the ones defined in AliPID.h
+
+	 \item enum EParticleType { kElectron = 0,  kMuon = 1, kPion = 2, kKaon = 3, kProton = 4, kPhoton = 5, kPi0 = 6, kNeutron =7, kKaon0 = 8, kEleCon = 9,kUnknown = 10}; : PID tag numbers, corresponding to the PID array
+
+	\item Double\_t GetDistanceToBadChannel() : Distance of the cluster to closest channel declared as kDead, kWarm or kHot.
+
+	\item Double\_t GetTOF() :  Measured Time of Flight of the cluster.
+	\end{itemize}
+
+\item Track-Cluster matching
+	\begin{itemize}
+
+	\item TArrayI * GetTracksMatched(): List of indexes to the likely matched tracks. Tracks ordered in matching likeliness. If there is no match at all, by default it contains one entry with value -1. Only in ESDs.
+
+	\item Int\_t GetTrackMatchedIndex(Int\_t i): Index of track in position "i" in the list of indices stored in GetTracksMatched(). Only in ESDs
+
+	\item Int\_t GetNTracksMatched() : Total number of likely matched tracks. Size of GetTracksMatched() array.
+
+	\item Double\_t GetEmcCpvDistance() : PHOS method, not used anymore. Use instead those below.
+
+	\item Double\_t GetTrackDx(void), Double\_t GetTrackDz(void): Distance in x and z to closest track. 
+
+	\item TObject * GetTrackMatched(Int\_t i): References to the list of most likely matched tracks are stored in a TRefArray. This method retrives the one in position "i". Tracks are listed in order of likeliness. The TObject is a AliAODTrack. Only for AODs
+
+	\end{itemize}
+
+\item MonteCarlo labels:
+	\begin{itemize}
+
+	\item TArrayI * GetLabels(): List of indexes to the MonteCarlo particles that contribute to the cluster. Labels ordered in energy contribution.
+
+	\item Int\_t GetLabel(): Index of MonteCarlo particle that deposited more energy in the cluster. First entry of GetLabels() array.
+	
+         \item Int\_t GetLabelAt(UInt\_t i): Index of MonteCarlo particle in position i of the array of MonteCarlo indices.
+
+	\item Int\_t GetNLabels() : Total number of MonteCarlo particles that deposited energy. Size of GetLabels() array.
+	\end{itemize}
+
+\item Cluster cells
+	\begin{itemize}
+
+	\item Int\_t GetNCells() : It returns the number of cells that contribute to the cluster.
+
+	\item UShort\_t *GetCellsAbsId(): It returns the array with absolute id number of the cells contributing to the cluster. Size of the array is given by GetNCells().
+
+	\item Double32\_t *GetCellsAmplitudeFraction(): For cluster unfolding, it returns an array with the fraction the energy that a cell contributes to the cluster. 
+
+	\item Int\_t GetCellAbsId(Int\_t i) : It returns the absolute Id number of a cell in the array between 0 and GetNCells()-1. 
+
+	\item Double\_t GetCellAmplitudeFraction(Int\_t i) : It returns the amplitude fraction of a cell in the array between 0 and GetNCells()-1.
+
+	\end{itemize}
+
+ \end{itemize}
+
+
+\subsubsection{AliVCaloCells (AliESDCaloCells, AliAODCaloCells)}
+They   contain an array with  the amplitude or time of all the cells that fired in the calorimeter during the event. Notice that per event there will be a CaloCell object with EMCAL cells and another one with PHOS cells.
+
+\begin{itemize}
+
+	\item Short\_t GetNumberOfCells(): Returns number of cells with some energy.
+	
+	\item Bool\_t IsEMCAL(); Bool\_t IsPHOS(); Char\_t  GetType(): Methods to check the origin of the AliESDCaloCell object, kEMCALCell or kPHOSCell.
+
+	\item Short\_t  GetCellNumber(Short\_t pos):  Given the position in the array of cells (from 0 to GetNumberOfCells()-1), it returns the absolute cell number (from 0 to NModules*NRows*NColumns - 1).
+
+	\item Double\_t GetCellAmplitude(Short\_t cellNumber): Given absolute cell number of a cell (from 0 to NModules*NRows*NColumns - 1), it returns the measured amplitude of the cell in GeV units.
+
+	\item Double\_t GetCellTime(Short\_t cellNumber):  Given absolute cell number of a cell (from 0 to NModules*NRows*NColumns - 1), it returns the measured time of the cell in second units.
+
+	\item Double\_t GetAmplitude(Short\_t pos): Given the position in the array of cells (from 0 to GetNumberOfCells()-1), it returns the amplitude of the cell in GeV units. 
+
+	\item Double\_t GetTime(Short\_t pos):  Given the position in the array of cells (from 0 to GetNumberOfCells()-1), it returns the time of the cell in second units. 
+
+	\item Double\_t GetCellMCLable(Short\_t cellNumber): Given absolute cell number of a cell (from 0 to NModules*NRows*NColumns - 1), it returns the index of the most likely MC label.
+
+	\item Double\_t GetCellEFraction(Short\_t cellNumber):  Given absolute cell number of a cell (from 0 to NModules*NRows*NColumns - 1), it returns the fraction of embedded energy from MC to real data (only for embedding)
+
+	\item  Double\_t GetMCLabel(Short\_t pos): Given the position in the array of cells (from 0 to GetNumberOfCells()-1), it returns the index of the most likely MC label.
+
+	\item Double\_t GetEFraction(Short\_t pos):  Given the position in the array of cells (from 0 to GetNumberOfCells()-1), it returns the fraction of embedded energy from MC to real data (only for embbedding)
+
+          \item Bool\_t   GetCell(Short\_t pos, Short\_t \&cellNumber, Double\_t \&amplitude, Double\_t \&time, Short\_t \&mclabel,    Double\_t  \&efrac); : For a given position of the list of cells, it fills the amplitude, time, mc lable and fraction of energy.
+          
+          
+ \end{itemize}
+
+\subsubsection{AliVCaloTrigger (AliESDCaloTrigger, AliAODCaloTrigger) - Rachid)}
+
+\subsection{Macros}
+You can find example macros to run on ESDs or AODs in 
+\begin{lstlisting}
+$ALICE_ROOT/EMCAL/macros/TestESD.C or TestAOD.C
+\end{lstlisting}
+
+ All the ESDs information is filled via the AliEMCALReconstructor/AliPHOSReconstructor class, in the method FillESD(). The AODs are created via the analysis class 
+
+\begin{lstlisting}
+$ALICE_ROOT/ANALYSIS/AliAnalysisTaskESDfilter.cxx,.h
+\end{lstlisting}
+
+and as already mentioned, for the calorimeters it basically just copies all the information from ESD format to AOD format. 
+
+Below is a description of what information is stored and how to retrieve it. The location of the corresponding classes is
+\begin{lstlisting}
+$ALICE_ROOT/STEER
+\end{lstlisting}
+
+
+
+\subsection{Code example}
+
+The analysis is done using the data stored in the ESD. The macro
+\begin{lstlisting}
+$ALICE_ROOT/EMCAL/macros/TestESD.C
+\end{lstlisting}
+is an example of how to read the data for the calorimeters PHOS and
+EMCal (just replace where it says EMCAL by PHOS in the macro to obtain
+PHOS data). For these detectors we have to use the ESD class AliESDCaloCluster or AliESDCaloCells to retrieve all the calorimeters information. For the tracking detectors,
+the class is called AliESDtrack, but the way to use it is very similar
+(see ``\$ALICE\_ROOT/STEER/AliESDtrack.*''\\ and ``\$ALICE\_ROOT/STEER/AliESDCaloCluster*'' for more details). In AliESDCaloCluster we keep the following
+cluster information: energy, position, number of Digits that belong
+to the cluster, list of the cluster Digits indeces, shower dispersion, shower lateral axis and a few more parameters. In AliESDCaloCells we keep the following
+tower information: amplitude (GeV), time (seconds), absolute cell number.
+
+The structure of the ESD testing macro (TestESD.C) is the
+following:
+
+\begin{itemize}
+\item Lines 0-29: This macro is prepared to be compiled so it has ``includes'' to all the Root and AliRoot classes used.
+
+\item Lines 30-36: This macro prints some information on screen, the kind of information is set here. We  print by default clusters information and optionally, the cells information, the matches information, the cells in the clusters information or the MonteCarlo original particle kinematics.
+
+\item Lines 40-64: Here are the methods used to load AliESDs.root , geometry or kinematics files. Also loop on ESD event is here.
+
+\item Lines 65-66 Gets the measured vertex of the collision.
+
+\item Lines 69-78 Loops on all the CaloCell entries and prints the cell amplitude, absolute number and time.
+ 
+\item Lines 84- end:  We access the  EMCAL AliESDCaloCluster  array and loop on it. 
+We get the different information from the CaloCluster.
+
+\item Lines 111-130:  Track Matching prints. Access to the matched track stored in AliESDtrack.
+
+\item Lines 133-159: Cells in cluster prints
+
+\item Lines  161 - end: Access the stack with the MC information and prints the parameters of the particle that generated the cluster.
+
+
+\end{itemize}
+
+\subsection{Advanced utilities : Reconstruction/corrrections of cells, clusters  during the analysis}
+
+\subsubsection{AliEMCALRecoUtils}
+\subsubsection{Tender : AliEMCALTenderSupply}
+
+\subsubsection{Particle Identification with the EMCal}
+
+In the EMCal we have two different ways to obtain the PID of a given particle:
+\begin{enumerate}
+\item Shower shape of the cluster: Distinguish electrons/photons and $\pi^{0}$ from other particles. This is done without any track information in the class \texttt{AliEMCALPID}.
+\item Ratio between energy of the cluster and the momentum of a matched track: Distinguish electrons from other particles. This is done in the combined PID framework by the class \texttt{AliEMCalPIDResponse}.
+\end{enumerate}
+
+\paragraph{AliEMCALPID (AliEMCALPIDutils)}
+
+The idea for particle identification with EMCal clusters is that the shower shapes produced in the EMCal are different for different particle species. The long axis of the cluster ($\lambda_{0}$) is used for this purpose and parametrized for electrons/photons (should have the same electromagnetic shower), for $\pi^{0}$ (two photons merging in one cluster give a different shape than one photon), and hadrons (MIP signal).
+
+The main method in this class is \texttt{RunPID()}, which calls \texttt{AliEMCALPIDutils::ComputePID(Double\_t energy, Double\_t lambda0)} for each cluster with cluster energy \texttt{energy} and long axis of the cluster \texttt{lambda0} in the event. Inside this method first the \texttt{energy} dependent parametrizations for the three cases (photons, $\pi^{0}$, and hadrons) are retrieved. The parametrization is done here with a combination of a Gaussian and a Landau (at the moment there are two parameter sets available: low and high flux, which can be set by \texttt{AliEMCALPID::SetLowFluxParam()} and  \texttt{AliEMCALPID::SetHighFluxParam()}). Then a conditional probability is assigned to the cluster for each of these three species depending on \texttt{lambda0}. Finally a probability for a cluster being of a certain particle species is calculated with the Bayesian approach that can be retrieved by \texttt{AliVCluster::GetPID()}.\\
+\begin{DDbox}{\linewidth}
+\begin{lstlisting}
+  // compute PID weights
+  if( (fProbGamma + fProbPiZero + fProbHadron)>0.){
+    fPIDWeight[0] = fProbGamma / (fProbGamma + fProbPiZero + fProbHadron);    // gamma
+    fPIDWeight[1] = fProbPiZero / (fProbGamma+fProbPiZero+fProbHadron);          // pi0
+    fPIDWeight[2] = fProbHadron / (fProbGamma+fProbPiZero+fProbHadron);        // hadron
+  }
+...
+  //default particles
+  fPIDFinal[AliPID::kElectron]  = fPIDWeight[0]/2; // electron
+  fPIDFinal[AliPID::kMuon]      = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kPion]      = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kKaon]      = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kProton]    = fPIDWeight[2]/8;
+  //light nuclei
+  fPIDFinal[AliPID::kDeuteron]  = 0;
+  fPIDFinal[AliPID::kTriton]    = 0;
+  fPIDFinal[AliPID::kHe3]       = 0;
+  fPIDFinal[AliPID::kAlpha]     = 0;
+  //neutral particles
+  fPIDFinal[AliPID::kPhoton]    = fPIDWeight[0]/2; // photon
+  fPIDFinal[AliPID::kPi0]       = fPIDWeight[1]  ; // pi0
+  fPIDFinal[AliPID::kNeutron]   = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kKaon0]     = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kEleCon]    = fPIDWeight[2]/8;
+  //
+  fPIDFinal[AliPID::kUnknown]   = fPIDWeight[2]/8;
+\end{lstlisting}
+\end{DDbox}
+
+
+
+
+
+\paragraph{AliEMCalPIDResponse}
+
+The idea for particle identification with EMCal clusters AND the track information is that electrons are loosing their total energy in an electromagnetic shower inside the EMCal whereas all other charged particles only part of it. The main observable is $E/p$ with the energy of the EMCal cluster ($E$) and the momentum of a matched track ($p$). This ratio is $E/p\sim1$ for electrons and $E/p< 1$ for other charged particles. 
+
+The decision about a particle species is done within the PID framework provided by ALICE. The main classes are: \texttt{STEER/STEERBase/AliPIDCombined} and \texttt{STEER/STEERBase/AliPIDResponse}. There are two methods of usage:
+\begin{enumerate}
+\item $n\sigma$ method: For each detector the multiples of $\sigma$ values are given for the deviation from the expected mean value at a given $p_{\mathrm{T}}$ (assuming a Gaussian distribution). This can be done via: \texttt{AliPIDResponse::GetNumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type)}
+\item Bayesian approach: In \texttt{AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPIDResponse *response, Double\_t* bayesProbabilities)} for each detector (included in the analysis via\\ \texttt{AliPIDCombined::SetDetectorMask(AliPIDResponse::EDetector)}) the conditional probability for the respective detector observable is calculated for each particle species (selected via\\ \texttt{AliPIDCombined::SetSelectedSpecies(AliPID::EParticleType)}). Then the probability for a track being of a certain particle type is calculated with the Bayesian approach. The initial particle abundances (priors) can be activated via\\ \texttt{AliPIDCombined::SetEnablePriors(kTRUE)} and either own priors can be loaded\\ (\texttt{AliPIDCombined::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior)}) or default ones can be chosen (\texttt{AliPIDCombined::SetDefaultTPCPriors()}).
+\end{enumerate}
+
+For the case of the EMCal the $n\sigma$ as well as the conditional probability are calculated in\\ \texttt{AliEMCALPIDResponse::GetNumberOfSigmas( Float\_t pt,  Float\_t eop, AliPID::EParticleType n,  Int\_t charge)} and\\
+\texttt{AliEMCALPIDResponse::ComputeEMCALProbability(Int\_t nSpecies, Float\_t pt, Float\_t eop, Int\_t charge, Double\_t *pEMCAL)}, respectively. These methods are called from \texttt{AliPIDCombined} and \texttt{AliPIDResponse} internally, so usually the user does not use them. 
+
+To calculate $n\sigma$ and the conditional probability a parametrization of $E/p$ for the different particle species at different momenta is needed. This was retrieved from data in a clean PID sample with the help of $V0$ decays for electrons, pions and protons ($\gamma\rightarrow e^+e^-$, $K^0\rightarrow \pi^+\pi^-$, and $\Lambda\rightarrow p+\pi^-/\bar{p}+\pi^+$ ) for different periods. Electrons are parametrized with a Gaussian distribution (mean value and $\sigma$), all other particles are parametrized with a Gaussian for $0.5 < E/p < 1.5$ and the probabilty to have a value in this $E/p$ interval (this is small, since the maximum of the distribution lies around $0.1$). Here we distinguish between protons, antiprotons (higher probabilty for higher $E/p$ values due to annihilation) and other particles (pions are used for these). At the moment this parametrization is not done for all periods so far, as default LHC11d is taken. There might be especially some centrality dependence on the $E/p$ parametrization (because of the different multiplicities of track--cluster matches).
+
+In addition to that the purity of the electron identification can be enhanced by using shower shape cuts in addition. At the moment this can be done by getting them together with $n\sigma$:\\
+\texttt{AliEMCALPIDResponse::NumberOfSigmasEMCAL(const AliVParticle *track,\\ 
+AliPID::EParticleType type, Double\_t \&eop, Double\_t showershape[4])} In future, a full treatmeant inside the PID framework is planned (by combining with \texttt{AliEMCALPID}).
+
+Some more information can be found on following TWiki pages:
+\begin{itemize}
+\item \href{https://twiki.cern.ch/twiki/bin/view/ALICE/AlicePIDTaskForce}{https://twiki.cern.ch/twiki/bin/view/ALICE/AlicePIDTaskForce}
+\item
+\href{https://twiki.cern.ch/twiki/bin/view/ALICE/PIDInAnalysis}{https://twiki.cern.ch/twiki/bin/view/ALICE/PIDInAnalysis}
+\item \href{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/EMCalPIDResponse}{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/EMCalPIDResponse}
+\end{itemize}
+
+Here follows an example how to include the EMCal PID in an analysis task:
+
+\begin{DDbox}{\linewidth}
+\begin{lstlisting}
+   // in analysis header: 
+
+   AliPIDCombined fPIDCombined;                                                        
+   AliPIDResponse fPIDResponse;   
+
+
+   // in Constructor: 
+
+   fPIDCombined(0),                                                       
+   fPIDResponse(0), 
+
+
+   // in UserCreateOutputObjects 
+
+   // Set up combined PID
+   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+   fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
+
+   fPIDCombined = new AliPIDCombined;
+   fPIDCombined->SetSelectedSpecies(AliPID::kSPECIES);
+   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetEMCAL);
+   fPIDCombined->SetEnablePriors(kFALSE);
+
+
+   // in UserExec: 
+
+   Double_t pEMCAL[AliPID::kSPECIES];
+   Double_t pBAYES[AliPID::kSPECIES];
+   Double_t eop;
+   Double_t ss[4];        //shower shape parameters (number of cells, M02, M20, Dispersion)
+
+   // NSigma value for electrons
+   nSigma = fPIDResponse->NumberOfSigmas(kEMCAL,track,AliPID::kElectron);
+   // or with getting also the E/p and shower shape values
+   nSigma = fPIDResponse->NumberOfSigmasEMCAL(track,AliPID::kElectron,eop,ss);
+
+   // Bayes probability
+   fPIDCombined->ComputeProbabilities(track, fPIDResponse, pBAYES);  
+\end{lstlisting}
+\end{DDbox}
+

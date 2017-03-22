@@ -1,0 +1,5 @@
+cd $ALICE
+cvs -q -z2 -d :pserver:cvs@root.cern.ch:/user/cvs co -r v1-3 geant3
+cd $ALICE/geant3
+export PLATFORM=`root-config --arch`
+make

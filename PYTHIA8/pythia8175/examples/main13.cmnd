@@ -1,0 +1,33 @@
+! main13.cmnd.
+! This file contains commands to be read in for a Pythia8 run. 
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The settings here are illustrative, not always physics-motivated.
+
+! 1) Settings used in the main program.
+Main:timesAllowErrors = 3          ! how many aborts before run stops
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = off ! list changed particle data
+Next:numberCount =   0             ! print message every n events, 0 = off
+Next:numberShowLHA = 1             ! print LHA information n times
+Next:numberShowInfo = 1            ! print event information n times
+Next:numberShowProcess = 1         ! print process record n times
+Next:numberShowEvent = 0           ! print event record n times
+
+! 3) Other common settings.
+6:m0 = 175.                        ! same m_t as Pythia 6.4 to compare
+
+! 4) The number of subruns to execute.
+Main:numberOfSubruns = 2
+
+! 5) Information specific to the first subrun
+Main:subrun = 1                    ! matches readFile( ..., 1)
+Beams:frameType = 4                ! use LHEF input
+Beams:LHEF = ttbar.lhe             ! first LHEF event file
+
+! 6) Information specific to the second subrun
+Main:subrun = 2                    ! matches readFile( ..., 2)
+Beams:newLHEFsameInit = on         ! no reinitialization needed/wanted
+Beams:LHEF = ttbar2.lhe            ! second LHEF event file

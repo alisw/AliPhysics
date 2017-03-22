@@ -1,0 +1,40 @@
+! File: main16.cmnd
+! This file contains commands to be read in for a Pythia8 run. 
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The changes here are illustrative, not always physics-motivated.
+
+! 1) Settings that are used in the main program.
+Main:numberOfEvents = 1000         ! number of events to generate
+Main:timesAllowErrors = 10         ! abort run after this many flawed events
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = on  ! list changed particle data
+#Init:showChangedResonanceData = on ! also print changed resonance data
+Init:showOneParticleData = 25      ! print data for this particular particle
+Next:numberCount = 100             ! print message every n events
+Next:numberShowInfo = 1            ! print event information n times
+Next:numberShowProcess = 1         ! print process record n times
+Next:numberShowEvent = 0           ! print event record n times
+Stat:showPartonLevel = on          ! more statistics on MPI  
+
+! 3) Beam settings.
+Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
+Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
+Beams:eCM = 14000.                 ! CM energy of collision, LHC
+
+! 4) Settings for hard-process generation internal to Pythia8.
+HiggsSM:gg2H = on                  ! Higgs production by gluon-gluon fusion
+25:m0 = 123.5                      ! Higgs mass
+
+! 5) Switch off some key components of the simulation, for comparisons.
+#PartonLevel:all = off              ! stop after hard process 
+#PartonLevel:MPI = off              ! no multiparton interactions
+#PartonLevel:ISR = off              ! no initial-state radiation 
+#PartonLevel:FSR = off              ! no final-state radiation
+#HadronLevel:all = off              ! stop after parton level 
+#HadronLevel:Hadronize = off        ! no hadronization
+#HadronLevel:Decay = off            ! no decays
+
+! 6) Any other changes you desire.

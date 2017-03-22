@@ -1,0 +1,27 @@
+'Version' '5.3'
+'Description: '
+'GRV-G & GRS-G photon PDFs'
+'This set has 2 member PDFs.'
+' 1 = GRV-G LO  -  Phys.Rev.D45(1992)3986'
+' 2/0 = GRS-G LO - Phys.Rev.D51(1995)3220'
+'Alphas:'
+'Variable','lo','EvolCode'
+1,91.71,1.43,4.30,180.0
+'MinMax:'
+2,1
+1.E-05,0.9998,0.25,1000000.
+'QCDparams:'
+2,0
+0.2000,0.1530
+0.2000,0.1519
+0.2000,0.1530
+'Parameterlist:'
+'list',2,1
+0.1283
+0.1281
+0.1283
+'Evolution:'
+'lo',1.0,1.0
+'GRVG0'
+2,0
+'End:'

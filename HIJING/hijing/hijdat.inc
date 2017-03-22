@@ -1,0 +1,6 @@
+* $Id$
+        REAL HIDAT0, HIDAT
+        COMMON/HIJDAT/HIDAT0(10,10),HIDAT(10)
+#ifndef BLANKET_SAVE
+	SAVE  /HIJDAT/
+#endif

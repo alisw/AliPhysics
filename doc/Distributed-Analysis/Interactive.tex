@@ -1,0 +1,135 @@
+%________________________________________________________
+\section{Interactive analysis with GRID ESDs}
+\label{Note:INTERACTIVE}
+
+Once the first step described in Section \ref{Note:LOCAL} was successful and we are satisfied from both the code and the results, we are ready to validate our code on a larger data sample. In this section we will describe how we can analyze interactively (that is sitting in from of a terminal and getting back the results in our screen) files that are stored in the Grid. We will once again concentrate in the case where we use the \tag\ \cite{Note:RefAlienTutorial,Note:RefEventTagWeb}.
+
+The first thing that we need to create is a collection of tag files by querying the file catalog (for details on this process the reader should look either in the example of section \ref{Note:FLOW} or in \cite{Note:RefFileCatalogMetadataNote,Note:RefFileCatalogMetadataWeb}). These tag files, which are registered in the Grid, are the official ones created as a last step of the reconstruction code \cite{Note:RefEventTagNote}. Once we have a valid xml collection, we launch a ROOT session, we setup the {\ttfamily par file} (the way to do this has been described in detail in section \ref{Note:FLOW}), we apply some selection criteria and we query the \tag which returns the desired events in the proper format (TChain along with the associated list of events that satisfy our cuts). The following lines give a snapshot of how a typical code should look like:
+
+\vspace{0.5 cm}
+\textbf{Usage of AliRunTagCuts and AliEventTagCuts classes}
+\begin{lstlisting}[language=C++]
+  // Case where the tag files are stored in the file catalog
+  // tag.xml is the xml collection of tag files that was produced 
+  // by querying the file catalog.
+  TGrid::Connect("alien://"); 
+  TAlienCollection* coll = TAlienCollection::Open("tag.xml");
+  TGridResult* tagResult = coll->GetGridResult("");
+
+  // Create a RunTagCut object
+  AliRunTagCuts *runCutsObj = new AliRunTagCuts();
+  runCutsObj->SetRunId(340);
+
+  // Create an EventTagCut object
+  AliEventTagCuts *evCutsObj = new AliEventTagCuts();
+  evCutsObj->SetMultiplicityRange(2, 100);
+
+  // Create a new AliTagAnalysis object and chain the grid stored tags
+  AliTagAnalysis *tagAna = new AliTagAnalysis(); 
+  tagAna->ChainGridTags(tagResult);
+
+  // Cast the output of the query to a TChain
+  TChain *analysisChain = tagAna->QueryTags(runCutsObj, evCutsObj);
+
+  // Process the chain with a manager
+  AliAnalysisManager *mgr = new AliAnalysisManager();
+  AliAnalysisTask *task1 = new AliAnalysisTaskPt("TaskPt");
+  mgr->AddTask(task1);
+
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1", 
+  TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1", 
+  TH1::Class(),AliAnalysisManager::kOutputContainer);
+  mgr->ConnectInput(task1,0,cinput1);
+  mgr->ConnectOutput(task1,0,coutput1);
+  cinput1->SetData(analysisChain);
+  
+  if (mgr->InitAnalysis()) {
+    mgr->PrintStatus();
+    analysisChain->Process(mgr);
+  }
+\end{lstlisting}
+
+\vspace{0.5 cm}
+\textbf{Usage of string statements}
+\begin{lstlisting}[language=C++]
+  // Case where the tag files are stored in the file catalog
+  // tag.xml is the xml collection of tag files that was produced 
+  // by querying the file catalog.
+  TGrid::Connect("alien://"); 
+  TAlienCollection* coll = TAlienCollection::Open("tag.xml");
+  TGridResult* tagResult = coll->GetGridResult("");
+
+  //Usage of string statements//
+  const char* runCutsStr = "fAliceRunId == 340";
+  const char* evCutsStr = "fEventTag.fNumberOfTracks >= 2 &&
+  fEventTag.fNumberOfTracks <= 100";
+
+  // Create a new AliTagAnalysis object and chain the grid stored tags
+  AliTagAnalysis *tagAna = new AliTagAnalysis(); 
+  tagAna->ChainGridTags(tagResult);
+
+  // Cast the output of the query to a TChain
+  TChain *analysisChain = tagAna->QueryTags(runCutsStr, evCutsStr);
+
+  // Process the chain with a manager
+  AliAnalysisManager *mgr = new AliAnalysisManager();
+  AliAnalysisTask *task1 = new AliAnalysisTaskPt("TaskPt");
+  mgr->AddTask(task1);
+
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",
+  TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1", 
+  TH1::Class(),AliAnalysisManager::kOutputContainer);
+  mgr->ConnectInput(task1,0,cinput1);
+  mgr->ConnectOutput(task1,0,coutput1);
+  cinput1->SetData(analysisChain);
+  
+  if (mgr->InitAnalysis()) {
+    mgr->PrintStatus();
+    analysisChain->Process(mgr);
+  }
+\end{lstlisting}
+
+
+\noindent We will now review the previous lines. Since we would like to access Grid stored files we have to connect to the API server using the corresponding ROOT classes:\\
+\\
+{\ttfamily TGrid::Connect("alien://");}\\
+
+Then we create a {\ttfamily TAlienCollection} object by opening the xml file (tag.xml) and we convert it to a {\ttfamily TGridResult}:\\
+\\
+{\ttfamily TAlienCollection* coll = TAlienCollection::Open("tag.xml");}\\
+{\ttfamily TGridResult* tagResult = coll->GetGridResult("");}\\
+
+\noindent where \textbf{tag.xml} is the name of the file (which is stored in the working directory) having the collection of tag files. 
+
+The difference of the two cases is located in the way we apply the event tag cuts. In the first case, we create an {\ttfamily AliRunTagCuts} and an {\ttfamily AliEventTagCuts} object and impose our criteria at the run and event level of the \tag, while in the second we use the string statements to do so. The corresponding lines have already been descibe in the previous section. 
+
+
+Regardless of the way we define our cuts, we need to initialize an {\ttfamily AliTagAnalysis} object and chain the GRID stored tags by providing as an argument to the {\ttfamily ChainGridTags} function the {\ttfamily TGridResult} we had created before:\\
+\\
+{\ttfamily AliTagAnalysis *tagAna = new AliTagAnalysis();}\\
+{\ttfamily tagAna->ChainGridTags(tagResult);}\\
+
+We then query the \tag, using the imposed selection criteria and we end up having the chain of ESD files along with the associated event list (list of the events that fulfill the criteria):\\
+\\
+{\ttfamily TChain *analysisChain = tagAna->QueryTags(runCutsObj, evCutsObj);}\\
+\noindent, for the first case (usage of objects), or: \\
+\\
+{\ttfamily TChain *analysisChain = tagAna->QueryTags(runCutsStr, evCutsStr);}\\
+\noindent, for the second case (usage of sting statements).
+
+Finally we process this {\ttfamily TChain} by invoking our implemented task using a manager:\\
+\\
+{\ttfamily  AliAnalysisManager *mgr = new AliAnalysisManager();}\\
+{\ttfamily  AliAnalysisTask *task1 = new AliAnalysisTaskPt("TaskPt");}\\
+{\ttfamily  mgr->AddTask(task1);}\\
+{\ttfamily  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1", TChain::Class(),AliAnalysisManager::kInputContainer);}\\
+{\ttfamily  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1", TH1::Class(),AliAnalysisManager::kOutputContainer);}\\
+{\ttfamily  mgr->ConnectInput(task1,0,cinput1);}\\
+{\ttfamily  mgr->ConnectOutput(task1,0,coutput1);}\\
+{\ttfamily  cinput1->SetData(analysisChain);}\\  
+{\ttfamily  if (mgr->InitAnalysis()) {mgr->PrintStatus();analysisChain->Process(mgr);}}\\
+
+All the needed files to run this example can be found inside the PWG2 module of AliRoot under the AnalysisMacros/Interactive directory.
+

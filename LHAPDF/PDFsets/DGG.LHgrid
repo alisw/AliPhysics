@@ -1,0 +1,30 @@
+'Version' '5.3'
+'Description: '
+'DG-G  photon PDFs'
+'Zeit.Phys.C28(1985)451'
+'This set has 4 member PDFs.'
+' 0/1 = DG-G Set 1 - LO'
+' 2 = DG-G Set 2 - LO'
+' 3 = DG-G Set 3 - LO'
+' 4 = DG-G Set 2 - LO'
+'Alphas:'
+'Variable','lo','EvolCode'
+1,91.71,1.43,4.30,180.0
+'MinMax:'
+4,1
+1.E-05,0.9998,1.,10000.
+'QCDparams:'
+4,1
+0.400,0.3226
+'Parameterlist:'
+'list',4,1
+ 0.1454
+ 0.1454
+ 0.1454
+ 0.1454
+ 0.1454
+'Evolution:'
+'lo',1.0,1.0
+'DGG'
+4,0
+'End:'

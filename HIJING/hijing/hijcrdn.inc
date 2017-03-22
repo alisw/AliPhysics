@@ -1,0 +1,6 @@
+* $Id$
+        REAL YP, YT
+	COMMON/HIJCRDN/YP(3,300),YT(3,300)
+#ifndef BLANKET_SAVE
+	SAVE  /HIJCRDN/
+#endif

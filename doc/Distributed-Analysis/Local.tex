@@ -1,0 +1,112 @@
+%________________________________________________________
+\section{Interactive analysis with local ESDs}
+\label{Note:LOCAL}
+
+We assume that you have stored a few ESDs locally (the way to do this is described in detail in \cite{Note:RefAlienTutorial}) and that the first step regarding the creation of the tag files, which are also stored locally (under {\ttfamily path}), for these ESDs has been finished \cite{Note:RefEventTagNote}.
+
+We setup the {\ttfamily par file} (see section \ref{Note:FLOW} for details) and then we invoke the following lines that summarize what we have to do  in order to analyze data stored locally using the \tag:\\
+
+To specify cuts, we either do
+\begin{lstlisting}[language=C++]
+AliRunTagCuts *runCuts = new AliRunTagCuts();
+runCuts->SetRunId(340);
+// add more run cuts here...
+
+AliEventTagCuts *evCuts = new AliEventTagCuts();
+evCuts->SetMultiplicityRange(2, 100);
+// add more event cuts here...
+\end{lstlisting}
+or we write
+\begin{lstlisting}[language=C++]
+const char *runCuts = "fAliceRunId == 340";
+const char *evCuts = "fEventTag.fNumberOfTracks >= 2 &&
+                      fEventTag.fNumberOfTracks <= 100";
+// extend the strings to apply more cuts
+\end{lstlisting}
+
+Then we chain the tag files (keep in mind that the tag files in this example are stored locally under {\ttfamily path}), we query the \tag according to your cuts provided and we follow the example shown in section \ref{Note:ANALYSIS} to create a manager and a task:
+\begin{lstlisting}[language=C++]
+  AliTagAnalysis *tagAna = new AliTagAnalysis();
+  tagAna->ChainLocalTags("path");
+  TChain *analysisChain = tagAna->QueryTags(runCuts, evCuts);
+
+  AliAnalysisManager *mgr = new AliAnalysisManager();
+  AliAnalysisTask *task1 = new AliAnalysisTaskPt("TaskPt");
+  mgr->AddTask(task1);
+
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",
+  TChain::Class(),AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1", 
+  TH1::Class(),AliAnalysisManager::kOutputContainer);
+  mgr->ConnectInput(task1,0,cinput1);
+  mgr->ConnectOutput(task1,0,coutput1);
+  cinput1->SetData(analysisChain);
+  
+  if (mgr->InitAnalysis()) {
+    mgr->PrintStatus();
+    analysisChain->Process(mgr);
+  }
+
+\end{lstlisting}
+
+There are two possible ways to impose run and event cuts. The first is to create two objects, called {\ttfamily AliRunTagCuts} and {\ttfamily AliEventTagCuts}, whose member functions will take care of your cuts. The second is to provide two strings which describe the cuts you want to apply on the run and on the event level. In the following we will describe both methods.
+
+
+\subsection{Object based cut strategy}
+The first step in the object based cut strategy is to create an {\ttfamily AliRunTagCuts} and an {\ttfamily AliEventTagCuts} object:\\
+\\
+{\ttfamily AliRunTagCuts *runCuts = new AliRunTagCuts();}\\
+{\ttfamily AliEventTagCuts *evCuts = new AliEventTagCuts();}\\
+\\
+These objects are used to describe the cuts imposed to your analysis, in order to reduce the number of runs and events to be analyzed to the ones effectively satisfying your criteria. There are many selections possible and they are provided as member functions of the two classes {\ttfamily AliRunTagCuts} and {\ttfamily AliEventTagCuts} class. In the case of the member functions describing a range of some entity, the run or event will pass the test if the described entity lies inclusively within the limits {\ttfamily low $\le$ value $\le$ high}. In case of only one argument, the run or event will pass the test if the entity is equal to the input flag or mask ({\ttfamily value == flag}, {\ttfamily value == mask}) or, in case of a 'Max' or 'Min' identifier, if the run or event quantity is lower or equal ({\ttfamily quantity $\le$ value}) or higher or equal ({\ttfamily quantity $\ge$ value}) than the provided value. A full list of available run and event cut functions can be found in Appendix\,\ref{App:ObjectCuts}.
+
+Let's consider only a cut on the run number and one on the multiplicity: All events with run numbers others than 340 and all events with less than 2 and more than 100 particles will be discarded.\\
+\\
+{\ttfamily runCuts->SetRunId(340);}\\
+{\ttfamily evCuts->SetMultiplicityRange(2, 100);}\\
+\\
+You can add as many other cuts as you like here.
+
+\subsection{String based cut strategy}
+Contrary to the object based cut strategy, you also have the possibility to provide your desired cut criteria as strings. You do that by creating two separate strings, one for the run cuts and one for the event cuts. The syntax is based on C and the string is later evaluated by the TTreeFormula mechanism of ROOT. Therefore a wide range of operators are supported (see the ROOT manual \cite{Note:ROOTManual} for details). The variables used to describe the run and event properties are the data members of the {\ttfamily AliRunTagCuts} and the {\ttfamily AliEventTagCuts} classes. Therefore they are same ones which are accessed by the object-based methods, but due to the enhanced number of available operators this system provides more flexibility.
+
+In order to create the same cuts as in the object based example above, the two strings should look like this:\\
+\\
+{\ttfamily const char *runCuts = "fAliceRunId == 340";}\\
+{\ttfamily const char *evCuts = "fEventTag.fNumberOfTracks >= 2 \&\&\\
+fEventTag.fNumberOfTracks <= 100";}\\
+\\
+The full list of available data members to cut on can be found in Appendix\,\ref{App:StringCuts}. Within the quotes you can easily extend your cut statements in C style syntax.
+
+\vspace{0.6cm}
+Regardless of the way you choose to define your cuts, you create an {\ttfamily AliTagAnalysis} object, which is responsible to actually perform your desired analysis task.\\
+\\
+{\ttfamily AliTagAnalysis *TagAna = new AliTagAnalysis();}\\
+\\
+You have to provide this object with the locally stored tags since we assumed at the beginning of this section that these files were created and were stored locally (in the next section we will see how we can use the Grid stored tags). In order to do this you have to specify the correct path where the tag file(s) is/are located:\\ 
+\\
+{\ttfamily tagAna->ChainLocalTags("\emph{path}");}\\
+\\
+This function will pick up every file under the given path ending with {\ttfamily tag.root}. Now you ask your {\ttfamily AliTagAnalysis} object to return a {\ttfamily TChain}, imposing the event cuts as defined in the {\ttfamily AliRunTagCuts} and {\ttfamily AliEventTagCuts} objects or by the two strings representing the run and event tags:\\
+\\
+{\ttfamily TChain *analysisChain = tagAna->QueryTags(runCuts, evCuts);}\\
+\\
+The two arguments must be of the same type: two Ali*TagCuts objects or two strings! If you don't want to impose run or event cuts, simply provide a NULL pointer.
+
+Finally you process the {\ttfamily TChain} by invoking your analysis manager with the following line of code:\\
+\\
+{\ttfamily  AliAnalysisManager *mgr = new AliAnalysisManager();}\\
+{\ttfamily  AliAnalysisTask *task1 = new AliAnalysisTaskPt("TaskPt");}\\
+{\ttfamily  mgr->AddTask(task1);}\\
+{\ttfamily  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1", TChain::Class(),AliAnalysisManager::kInputContainer);}\\
+{\ttfamily  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1", TH1::Class(),AliAnalysisManager::kOutputContainer);}\\
+{\ttfamily  mgr->ConnectInput(task1,0,cinput1);}\\
+{\ttfamily  mgr->ConnectOutput(task1,0,coutput1);}\\
+{\ttfamily  cinput1->SetData(analysisChain);}\\  
+{\ttfamily  if (mgr->InitAnalysis()) analysisChain->Process(mgr);}\\
+
+One thing to mention is that even in the case where you do not want to imply any run and event cuts, it is useful to use the chain of commands described above. You would then simply pass two {\ttfamily NULL} pointers to the {\ttfamily AliTagAnalysis} class. The advantage of this procedure is that this setup takes care of chaining all the necessary files for you.
+
+All the needed files to run this example can be found inside the PWG2 module of AliRoot under the AnalysisMacros/Local directory.
+
+

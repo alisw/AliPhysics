@@ -1,0 +1,6 @@
+* $Id$
+      REAL XSEC
+      COMMON/PYINT5_HIJING/NGEN(0:200,3),XSEC(0:200,3) 
+#ifndef BLANKET_SAVE
+      SAVE /PYINT5_HIJING/ 
+#endif

@@ -1,0 +1,11 @@
+Alias myJ/psi J/psi
+##
+Decay psi(2S) 
+1.000     myJ/psi  pi+ pi-                VVPIPI;
+Enddecay
+
+Decay myJ/psi
+1.000     e+   e-                       PHOTOS   VLL;   
+Enddecay
+End
+

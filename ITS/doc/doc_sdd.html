@@ -1,0 +1,523 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
+	<META NAME="CREATED" CONTENT="20080430;10144900">
+	<META NAME="CHANGED" CONTENT="20080430;11283000">
+	<STYLE>
+	<!--
+		@page { size: 21.59cm 27.94cm; margin: 2.01cm }
+		P { margin-bottom: 0.2cm }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>============================================================================</FONT></FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>Description of ALICE
+Silicon Drift Detector (SDD) Code   (Rev. 2  &#8212; May, 17<SUP>th</SUP>
+2008 &#8212; F. Prino)</FONT></FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.5cm; page-break-after: avoid">
+<FONT FACE="Albany, sans-serif"><FONT SIZE=4>============================================================================</FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><A NAME="Content"></A><STRONG><FONT SIZE=4 STYLE="font-size: 16pt">Content</FONT></STRONG>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<OL>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#punto 1">SDD module
+	geometrical description</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#punto 2">Simulation</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#punto 3">Local
+	Reconstruction</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#punto 4">Calibration
+	files (OCDB)</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#punto 5">ECS Run types
+	and DAs</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#punto 6">DCS data points</A></P>
+</OL>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P><A NAME="punto 1"></A><STRONG><A HREF="#Content" NAME="punto 1">SDD
+module geometrical description</A></STRONG></P>
+<P STYLE="margin-bottom: 0cm">SDD module geometrical description (=
+anode numbering scheme, time bin definition, conversion from local
+coordinates to detector coordinates) is managed by the
+AliITSsegmentationSDD class. The detector is divided in 2 drift
+regions along the drift direction (horizontal in the following
+scheme).</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Each drift region is read by 256 anodes
+(anode pitch = 294 micrometers).</P>
+<P STYLE="margin-bottom: 0cm">The anode signal is sampled every 25
+ns, this allows to measure the drift time of the charge produced by
+the crossing particle.</P>
+<P STYLE="margin-bottom: 0cm">The memory depth (= number of time
+bins) is of 256 samplings per anode resulting in 6.4 microseconds of
+maximum drift time.</P>
+<P STYLE="margin-bottom: 0cm">Detector size (active region) along
+anode axis = 256 * 294 microns = 75.264 mm</P>
+<P STYLE="margin-bottom: 0cm">Detector size (active region) along
+drift axis = 2 * 35.085 mm = 70.170 mm</P>
+<PRE>     microcables                                  microcables     
+       /\                                           /\            
+       ||                                           ||            
+       ||                                           ||            
+       ||                                           ||            
+        0                     256                    0            
+      0 |----------------------|---------------------| 511        
+        |       time-bins      |     time-bins       |            
+        | a                    |                   a |            
+        | n                    |                   n |            
+    X &lt;_|_o____________________|___________________o_|__          
+        | d                    |                   d |            
+        | e     LEFT SIDE      |   RIGHT SIDE      e |            
+        | s     CHANNEL 0      |   CHANNEL 1       s |               
+        |       Xlocal &gt; 0     |   Xlocal &lt; 0        |               
+    255 |----------------------|---------------------| 256           
+                               |                                     
+                               |                                     
+                               V                                     
+                               Z                                     </PRE><P STYLE="margin-bottom: 0cm">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0cm">=================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P><A NAME="punto 2"></A><STRONG><A HREF="#Content" NAME="punto 2">Simulation</A></STRONG></P>
+<P STYLE="margin-bottom: 0cm">SDD digitization is implemented in the
+AliITSsimulationSDD class and managed via the AliITSDetTypeSim class.</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Working scheme:</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">1) Hits --&gt; SDigits
+(AliSimulation::RunSDigitization)</P>
+<P STYLE="margin-bottom: 0cm">-&gt; AliITS::Hits2SDigits 
+</P>
+<P STYLE="margin-bottom: 0cm">-&gt; AliITS::Hits2Predigits 
+</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSDD::SDigitiseModule</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSDD::HitsToAnalogDigits</P>
+<P STYLE="margin-bottom: 0cm">- read hits, calculate anode and time
+bin using drift speed from OCDB and AliITSsegmentationSDD class</P>
+<P STYLE="margin-bottom: 0cm">- apply electron cloud diffusion
+(gaussian smearing) along anode and drift directions, charge loss
+during drift (set to zero)</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSDD::ChargeToSignal</P>
+<P STYLE="margin-bottom: 0cm">- apply gain (from OCDB) to signal 
+</P>
+<P STYLE="margin-bottom: 0cm">- sum the signal to the baseline (from
+OCDB) value fluctuating with the</P>
+<P STYLE="margin-bottom: 0cm">proper noise (from OCDB)</P>
+<P STYLE="margin-bottom: 0cm">-&gt; AliITSsimulationSDD::WriteSDigits</P>
+<P STYLE="margin-bottom: 0cm">- call AliITS::AddSumDigit (which calls
+AliITSDetTypeSim::AddSumDigit) to write SDigits (AliITSpListItem) to
+file</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">2) SDigits --&gt; Digits
+(AliSimulation::RunDigitization)</P>
+<P STYLE="margin-bottom: 0cm">-&gt; AliITSDigitizer::Exec</P>
+<P STYLE="margin-bottom: 0cm">- load SDigits</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSDD::FinishSDigitiseModule</P>
+<P STYLE="margin-bottom: 0cm">-&gt; AliITSsimulationSDD::FinishDigits</P>
+<P STYLE="margin-bottom: 0cm">- check zero suppression option</P>
+<P STYLE="margin-bottom: 0cm">-&gt; AliITSsimulationSDD::Compress2D
+(if zero supp is active)</P>
+<P STYLE="margin-bottom: 0cm">- apply zero suppression</P>
+<P STYLE="margin-bottom: 0cm">- compress signal from 10 to 8 bit</P>
+<P STYLE="margin-bottom: 0cm">- subtract low threshold</P>
+<P STYLE="margin-bottom: 0cm">- calculate expanded signal by
+converting back from 8 to 10 bit</P>
+<P STYLE="margin-bottom: 0cm">- store digit (by calling
+AliITS::AddSimDigit which calls</P>
+<P STYLE="margin-bottom: 0cm">AliITSDetTypeSim::AddSimDigit) both
+compressed (8 bit, low threshold subtracted) and expanded (10 bit,
+low threshold added)</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSsimulationSDD::StoreAllDigits (if zero supp is not active)</P>
+<P STYLE="margin-bottom: 0cm">- compress signal from 10 to 8 bit</P>
+<P STYLE="margin-bottom: 0cm">- calculate expanded signal by
+converting back from 8 to 10 bit</P>
+<P STYLE="margin-bottom: 0cm">- store digit (by calling
+AliITS::AddRealDigit which calls</P>
+<P STYLE="margin-bottom: 0cm">AliITSDetTypeSim::AddRealDigit). Only
+expanded (10 bit) value is stored in fSignal. TO BE CHECKED AND
+FIXED!!!</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">========================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P><A NAME="punto 3"></A><STRONG><A HREF="#Content" NAME="punto 3">Local
+Reconstruction</A></STRONG></P>
+<P STYLE="margin-bottom: 0cm">Local reconstruction is implemented in
+AliITSClusterFinderV2SDD class and managed via the AliITSDetTypeRec
+class.</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Working scheme:</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Cluster Finding
+(AliReconstruction::RunLocalEventReconstruction)</P>
+<P STYLE="margin-bottom: 0cm">-&gt; AliITSReconstructor::Reconstruct</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSDetTypeRec::DigitsToRecPoints 
+</P>
+<P STYLE="margin-bottom: 0cm">- Two possibilities:</P>
+<P STYLE="margin-bottom: 0cm">A) RECONSTRUCTION FROM DIGITS</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSClusterFinderV2SDD::FindRawClusters</P>
+<P STYLE="margin-bottom: 0cm">- build AliBin array from digit tree</P>
+<P STYLE="margin-bottom: 0cm">- apply gain (from OCDB) correction</P>
+<P STYLE="margin-bottom: 0cm">B) RECONSTRUCTION FROM RAW DATA 
+</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSClusterFinderV2SDD::RawdataToClusters</P>
+<P STYLE="margin-bottom: 0cm">- instantiate AliITSRawStreamSDD object
+and set</P>
+<P STYLE="margin-bottom: 0cm">1) ddl map 
+</P>
+<P STYLE="margin-bottom: 0cm">2) low threshold for zero suppression
+(needed to decompress raw data)</P>
+<P STYLE="margin-bottom: 0cm">- build AliBin array from raw data</P>
+<P STYLE="margin-bottom: 0cm">- apply gain (from OCDB) correction</P>
+<P STYLE="margin-bottom: 0cm">-&gt;
+AliITSClusterFinderV2SDD::FindClustersSDD</P>
+<P STYLE="margin-bottom: 0cm">- loop on AliBin elements and:</P>
+<P STYLE="margin-bottom: 0cm">1) apply noise suppression
+(AliITSClusterFinderV2SDD::NoiseSuppress)</P>
+<P STYLE="margin-bottom: 0cm">2) find peaks
+(AliITSClusterFinderV2::FindPeaks)</P>
+<P STYLE="margin-bottom: 0cm">3) unfold clusters
+(AliITSClusterFinderV2::MarkPeaks)</P>
+<P STYLE="margin-bottom: 0cm">4) calculate coordinates
+(AliITSClusterFinderV2::MakeCluster)</P>
+<P STYLE="margin-bottom: 0cm">5) calculate cluster size (TO BE
+REVIEWED)</P>
+<P STYLE="margin-bottom: 0cm">6) convert from anode/time bin to local
+coordinates</P>
+<P STYLE="margin-bottom: 0cm">using drift speed (from OCDB) and
+AliITSsegmentationSDD class</P>
+<P STYLE="margin-bottom: 0cm">7) apply correction from laser maps
+(from OCDB)</P>
+<P STYLE="margin-bottom: 0cm">8) convert cluster charge from ADC to
+keV (from OCDB)</P>
+<P STYLE="margin-bottom: 0cm">9) add cluster to cluster array</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">===============================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P><A NAME="punto 4"></A><STRONG><A HREF="#Content" NAME="punto 4">Calibration
+Files (OCDB)</A></STRONG></P>
+<P STYLE="margin-bottom: 0cm">There are 6 directories in ITS/Calib
+with calibration data to be used in SDD reconstruction</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">1) DDLMapSDD</P>
+<P STYLE="margin-bottom: 0cm">Contains: 1 AliITSDDLModuleMapSDD
+object  with the correspondence between hardware/online and
+aliroot/offline numbering scheme for SDD modules</P>
+<P STYLE="margin-bottom: 0cm">Online numbering scheme = DDL number,
+Carlos Number 
+</P>
+<P STYLE="margin-bottom: 0cm">SDD use 23 DDL each reading up to 12
+Carlos cards (=12 modules)</P>
+<P STYLE="margin-bottom: 0cm">Details on geometrical mapping can be found <A HREF="http://www.to.infn.it/~prino/alice/sddgeo/sddgeo.html">here</A>.</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Update in OCDB: every time the hardware
+cabling on the acquisition cards is modified (practically this should
+occur only at the beginning of data taking periods)</P>
+<P STYLE="margin-bottom: 0cm">Object creation: macro StoreDDLMapSDD.C</P>
+<P STYLE="margin-bottom: 0cm">strategy for storage via preprocessor
+to be finalized 
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">2) CalibSDD: 
+</P>
+<P STYLE="margin-bottom: 0cm">Contains: 1 TObjArray with 260
+AliITSCalibrationSDD objects, i.e. 1 AliITSCalibrationSDD object for
+each module with:</P>
+<P STYLE="margin-bottom: 0cm">- status (0/1) of module 
+</P>
+<P STYLE="margin-bottom: 0cm">- status (0/1) for the 8 chips of the
+module</P>
+<P STYLE="margin-bottom: 0cm">- flag to control the use of correction
+maps for the module</P>
+<P STYLE="margin-bottom: 0cm">And:</P>
+<P STYLE="margin-bottom: 0cm">- baseline</P>
+<P STYLE="margin-bottom: 0cm">- noise</P>
+<P STYLE="margin-bottom: 0cm">- gain</P>
+<P STYLE="margin-bottom: 0cm">for each of the 520 anodes of the
+module</P>
+<P STYLE="margin-bottom: 0cm">+ list of bad anodes (TArrayI)</P>
+<P STYLE="margin-bottom: 0cm">NOTE: bad anodes are tagged in 2 ways:</P>
+<P STYLE="margin-bottom: 0cm">1) inserted in the TArrayI of bad anode
+numbers</P>
+<P STYLE="margin-bottom: 0cm">2) gain set to zero</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Update in OCDB: after each sequence of
+PEDESTAL+PULSER run and PEDESTAL run -&gt; launch ITSSDDBASda.cxx</P>
+<P STYLE="margin-bottom: 0cm">-&gt; measure baselines and noise for
+each anode</P>
+<P STYLE="margin-bottom: 0cm">-&gt; produce temporary output on LDC</P>
+<P STYLE="margin-bottom: 0cm">PULSER run -&gt; launch
+ITSSDDGAINda.cxx</P>
+<P STYLE="margin-bottom: 0cm">-&gt; read output of PEDESTAL</P>
+<P STYLE="margin-bottom: 0cm">-&gt; measure gain from test pulse for
+each anode</P>
+<P STYLE="margin-bottom: 0cm">-&gt; store baselines, noise and gain
+on FXS</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Simulated files can be produced with
+the macro StoreCalibSDD.C</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">3) DriftSpeedSDD</P>
+<P STYLE="margin-bottom: 0cm">Contains: 1 TObjArray of 520
+AliITSDriftSpeedArraySDD objects, i.e. 1 AliITSDriftSpeedArraySDD for
+each drift region (hybrid).</P>
+<P STYLE="margin-bottom: 0cm">The AliITSDriftSpeedArraySDD class
+contains AliITSDriftSpeedSDD objects with polynomial coefficients of
+fit to drift speed vs. anode number together with event number and
+event timestamp.</P>
+<P STYLE="margin-bottom: 0cm">It provides methods for interpolation
+of drift speed vs. time.</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Update in OCDB: 1) after an INJECTOR
+run</P>
+<P STYLE="margin-bottom: 0cm">-&gt; launch ITSSDDINJda.cxx</P>
+<P STYLE="margin-bottom: 0cm">-&gt; measure drift speed for each
+injector pad (33 drift speed determinations for each hybrid, at every
+8th anode)</P>
+<P STYLE="margin-bottom: 0cm">2) after a PHYSICS run (if and when SDD
+injector triggers will be implemented in the DAQ)</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Simulated files can be produced with
+the macro StoreDriftSpeedSDD.C</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">4) RespSDD</P>
+<P STYLE="margin-bottom: 0cm">Contains: 1 AliITSresponseSDD object
+with calibration parameters common to all modules:</P>
+<P STYLE="margin-bottom: 0cm">- flag for zero suppressed data</P>
+<P STYLE="margin-bottom: 0cm">- ADC to keV conversion factor for
+detected signal</P>
+<P STYLE="margin-bottom: 0cm">- time offset to account for various
+delays in the measurement of drift time</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Update in OCDB: from offline analysis
+(time offset from alignemnt studies</P>
+<P STYLE="margin-bottom: 0cm">ADC to keV from reconstructed poits of
+cosmic tracks)</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Simulated files can be produced with
+the macro StoreCalibSDD.C</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">5) MapsAnodeSDD</P>
+<P STYLE="margin-bottom: 0cm">Contains: 1 TObjArray of 520
+AliITSMapSDD objects, i.e. 1 AliITSMapSDD for each drift region
+(hybrid) with systematic deviations between particle crossing
+positions and reconstructed coordinates along anode axis</P>
+<P STYLE="margin-bottom: 0cm">These residuals have been measured with
+the laser by scanning the detector surface on a discrete 2D grid.</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Update in OCDB: never updated, data
+have been measured in the lab during the construction phase</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Simulated files can be produced with
+the macro StoreMapsSDD.C</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">6) MapsTimeSDD</P>
+<P STYLE="margin-bottom: 0cm">Contains: 1 TObjArray of 520
+AliITSMapSDD objects, i.e. 1 AliITSMapSDD for each drift region
+(hybrid) with systematic deviations between particle crossing
+positions and reconstructed coordinates along drift axis</P>
+<P STYLE="margin-bottom: 0cm">These residuals have been measured with
+the laser by scanning the detector surface on a discrete 2D grid.</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Update in OCDB: never updated, data
+have been measured in the lab during the construction phase</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Simulated files can be produced with
+the macro StoreMapsSDD.C</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">========================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">ECD Run Types and DAs</P>
+<P STYLE="margin-bottom: 0cm">---------------------</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P><A NAME="punto 5"></A><STRONG><A HREF="#Content" NAME="punto 5">ECS
+Run Types available for SDD</A></STRONG></P>
+<P STYLE="margin-bottom: 0cm">1) STANDALONE</P>
+<P STYLE="margin-bottom: 0cm">- for test purposes</P>
+<P STYLE="margin-bottom: 0cm">- no DA launched at EOR</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">2) PEDESTAL</P>
+<P STYLE="margin-bottom: 0cm">- GOAL: measure baselines and noise</P>
+<P STYLE="margin-bottom: 0cm">- JTAG configuration: zero-suppression
+OFF</P>
+<P STYLE="margin-bottom: 0cm">baseline equalization OFF</P>
+<P STYLE="margin-bottom: 0cm">testpulse OFF</P>
+<P STYLE="margin-bottom: 0cm">prepulse OFF</P>
+<P STYLE="margin-bottom: 0cm">- DA: ITSSDDBASda.cxx (running on LDCs)</P>
+<P STYLE="margin-bottom: 0cm">- uses AliITSOnlineSDDBase and
+AliITSOnlineSDDCMN classes</P>
+<P STYLE="margin-bottom: 0cm">- calculates baseline, noise and common
+mode for each anode</P>
+<P STYLE="margin-bottom: 0cm">- tags bad (= noisy + bad baseline)
+anodes 
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">2) PULSER</P>
+<P STYLE="margin-bottom: 0cm">- GOAL: measure gain 
+</P>
+<P STYLE="margin-bottom: 0cm">- JTAG configuration: zero-suppression
+OFF</P>
+<P STYLE="margin-bottom: 0cm">baseline equalization OFF</P>
+<P STYLE="margin-bottom: 0cm">testpulse ON</P>
+<P STYLE="margin-bottom: 0cm">prepulse OFF</P>
+<P STYLE="margin-bottom: 0cm">- DA: ITSSDDGAINda.cxx (running on
+LDCs)</P>
+<P STYLE="margin-bottom: 0cm">- uses AliITSOnlineSDDTP class</P>
+<P STYLE="margin-bottom: 0cm">- read PEDESTAL DA output</P>
+<P STYLE="margin-bottom: 0cm">- calculates gain for each anode</P>
+<P STYLE="margin-bottom: 0cm">- sets anodes with problems of gain
+(dead) as bad</P>
+<P STYLE="margin-bottom: 0cm">- stores data to FXS</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">3) INJECTOR</P>
+<P STYLE="margin-bottom: 0cm">- GOAL: measure drift speed</P>
+<P STYLE="margin-bottom: 0cm">- JTAG configuration: zero-suppression
+ON</P>
+<P STYLE="margin-bottom: 0cm">baseline equalization ON</P>
+<P STYLE="margin-bottom: 0cm">testpulse OFF</P>
+<P STYLE="margin-bottom: 0cm">prepulse ON</P>
+<P STYLE="margin-bottom: 0cm">- DA: ITSSDDINJda.cxx (running on LDCs)</P>
+<P STYLE="margin-bottom: 0cm">- uses AliITSOnlineSDDInjectors class</P>
+<P STYLE="margin-bottom: 0cm">- calculates drift speed for each of
+the 33 groups of injectors</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0cm">fits drift speed vs. anode with a
+	3rd degree polynomial</P>
+	<LI><P STYLE="margin-bottom: 0cm">stores data to FXS</P>
+</UL>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">4) PHYSICS</P>
+<P STYLE="margin-bottom: 0cm">Nothing done for now.</P>
+<P STYLE="margin-bottom: 0cm">If/when injector triggers will be
+implemented in DAQ, a monitoring</P>
+<P STYLE="margin-bottom: 0cm">DA will be prepared to calculated drift
+speed for these triggers.</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">===========================================================================================================================</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P><A NAME="punto 6"></A><STRONG><A HREF="#Content" NAME="punto 6">DCS
+data points</A></STRONG></P>
+<P STYLE="margin-bottom: 0cm">DCS data points are used for reference.
+They are needed for a possible backup 
+</P>
+<P STYLE="margin-bottom: 0cm">estimation of drift speed in case of
+injector failure.</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Values monitored (and stored every 2
+minutes + when out of confidence band) by SDD DCS:</P>
+<P STYLE="margin-bottom: 0cm">- 260 HV values (1 for each module)</P>
+<P STYLE="margin-bottom: 0cm">- 260 MV values (1 for each module)</P>
+<P STYLE="margin-bottom: 0cm">- 520 temperature values (1 for each
+hybrid)</P>
+<P STYLE="margin-bottom: 0cm">Plus:</P>
+<P STYLE="margin-bottom: 0cm">- 260 module status bits (1 for each
+module)</P>
+<P STYLE="margin-bottom: 0cm">- 520 temperature status bits (1 for
+each hybrid)</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Data treated by AliITSDCSAnalyzerSDD
+class which:</P>
+<P STYLE="margin-bottom: 0cm">- compress status bits into 1 byte</P>
+<P STYLE="margin-bottom: 0cm">- reduce data size by saving values
+only if out of confidence band with 
+</P>
+<P STYLE="margin-bottom: 0cm">respect to last stored value</P>
+<P STYLE="margin-bottom: 0cm">- store data into AliITSDCSDataSDD
+objects for each module</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm">Data stored in
+Reference/ITS/DCS/DataSDD.</P>
+<P STYLE="margin-bottom: 0cm">Object stored: 1 TClonesArray of 260
+AliITSDCSDataSDD (q for each module)</P>
+</BODY>
+</HTML>
