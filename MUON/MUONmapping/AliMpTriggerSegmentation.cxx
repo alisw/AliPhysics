@@ -18,14 +18,15 @@
 
 #include "AliMpTriggerSegmentation.h"
 
+#include "TArrayI.h"
 #include "AliLog.h"
 #include "AliMpConnection.h"
 #include "AliMpMotif.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
-#include "AliMpPCB.h"
 #include "AliMpSlat.h"
 #include "AliMpTrigger.h"
+#include "AliMpTriggerPadIterator.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMpTriggerSegmentation
@@ -114,10 +115,7 @@ AliMpTriggerSegmentation::CreateIterator() const
 {
   ///
   /// Returns an iterator to loop over all the pads
-  /// Not implemented for trigger.
-  AliError("Not implemented for trigger");
-  
-  return 0;
+  return new AliMpTriggerPadIterator(Slat());
 }
 
 //_____________________________________________________________________________

@@ -93,6 +93,7 @@ set(SRCS
     AliMpSubZone.cxx
     AliMpTriggerCrate.cxx
     AliMpTrigger.cxx
+    AliMpTriggerPadIterator.cxx
     AliMpTriggerReader.cxx
     AliMpTriggerSegmentation.cxx
     AliMpUID.cxx
