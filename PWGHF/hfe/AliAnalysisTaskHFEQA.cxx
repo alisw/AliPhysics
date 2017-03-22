@@ -64,8 +64,6 @@
 #include "AliAODMCHeader.h"
 
 
-ClassImp(AliAnalysisTaskHFEQA)
-
 //____________________________________________________________________
 AliAnalysisTaskHFEQA::AliAnalysisTaskHFEQA() :
   AliAnalysisTaskSE(),
