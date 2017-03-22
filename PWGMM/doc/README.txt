@@ -1,13 +1,18 @@
 /*! \page pwgmm PWG-MM
 
-... PWG-MM directory under construction ...
+This directory contains the code relevant for the analyses hosted in
+PWG-MM. The code is organised according to the PAG structure.
 
-# Monte Carlo generators
+Analyses are discussed on the page \subpage pwgmm_ana.
+
+# Luminosity
+
+# Multiplicity
+
+# Rivet & Monte Carlo generators
 
 Event generators are discussed on the page \subpage pwgmm_mc.
 
-# Analyses
-
-Analyses are discussed on the page \subpage pwgmm_ana.
+# Underlying Event
 
 */
