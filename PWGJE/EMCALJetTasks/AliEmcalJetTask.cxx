@@ -403,7 +403,6 @@ void AliEmcalJetTask::ExecOnce()
 
   InitUtilities();
 
-
   AliAnalysisTaskEmcal::ExecOnce();
 
   // Setup container utils. Must be called after AliAnalysisTaskEmcal::ExecOnce() so that the
@@ -422,7 +421,7 @@ void AliEmcalJetTask::ExecOnce()
  * @param particles_sub Array containing subtracted constituents
  */
 void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet::PseudoJet>& constituents,
-    std::vector<fastjet::PseudoJet>& constituents_unsub, Int_t flag, TClonesArray *particles_sub)
+    std::vector<fastjet::PseudoJet>& constituents_unsub, Int_t flag, TString particlesSubName)
 {
   Int_t nt            = 0;
   Int_t nc            = 0;
@@ -436,6 +435,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
   Int_t nneutral      = 0;
   Double_t mcpt       = 0.;
   Double_t emcpt      = 0.;
+  TClonesArray * particles_sub = 0;
 
   Int_t uid   = -1;
 
@@ -520,14 +520,18 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         }
       }
 
-      if (flag == 0 || particles_sub == 0) {
+      if (flag == 0 || particlesSubName == "") {
         jet->AddTrackAt(fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid), nt);
       }
       else {
+        // Get the particle container and array corresponding to the subtracted particles
+        partCont = GetParticleContainer(particlesSubName);
+        particles_sub = partCont->GetArray();
+        // Create the new particle in the particles_sub array and add it to the jet
         Int_t part_sub_id = particles_sub->GetEntriesFast();
         AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(dynamic_cast<AliVTrack*>(t));   // SA: probably need to be fixed!!
         part_sub->SetPtEtaPhiM(constituents[ic].perp(),constituents[ic].eta(),constituents[ic].phi(),constituents[ic].m());
-        jet->AddTrackAt(part_sub_id, nt);
+        jet->AddTrackAt(fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, part_sub_id), nt);
       }
 
       ++nt;
@@ -566,14 +570,18 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         }
       }
 
-      if (flag == 0 || particles_sub == 0) {
+      if (flag == 0 || particlesSubName == "") {
         jet->AddClusterAt(fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid), nc);
       }
       else {
+        // Get the cluster container and array corresponding to the subtracted particles
+        clusCont = GetClusterContainer(particlesSubName);
+        particles_sub = clusCont->GetArray();
+        // Create the new particle in the particles_sub array and add it to the jet
         Int_t part_sub_id = particles_sub->GetEntriesFast();
         AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(c);
         part_sub->SetPtEtaPhiM(constituents[ic].perp(),constituents[ic].eta(),constituents[ic].phi(),constituents[ic].m());
-        jet->AddTrackAt(part_sub_id, nt);
+        jet->AddClusterAt(fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, part_sub_id), nc);
       }
 
       ++nc;

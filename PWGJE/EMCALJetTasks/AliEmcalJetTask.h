@@ -110,7 +110,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   TObjArray*             GetUtilities()                   { return fUtilities         ; }
 
   void                   FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet::PseudoJet>& constituents,
-                                             std::vector<fastjet::PseudoJet>& constituents_sub, Int_t flag = 0, TClonesArray *particles_sub = 0);
+                                             std::vector<fastjet::PseudoJet>& constituents_sub, Int_t flag = 0, TString particlesSubName = "");
 
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
