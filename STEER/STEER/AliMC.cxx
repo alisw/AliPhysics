@@ -351,7 +351,7 @@ void  AliMC::AddParticles()
 
   // d*(2380) - dibaryon resonance
   TVirtualMC::GetMC()->DefineParticle( 900010020, "d*_2380", kPTHadron, 2.38, 1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, 2, kTRUE);
-  TVirtualMC::GetMC()->DefineParticle( -900010020, "d*_2380_bar", kPTHadron, 2.38, 1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, -2, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle( -900010020, "d*_2380_bar", kPTHadron, 2.38, -1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, -2, kTRUE);
 
   Int_t dstmode[6][3] = {0};
   Float_t dstratio[6] = {0.f};
