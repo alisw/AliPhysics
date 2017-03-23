@@ -47,6 +47,7 @@
 #include "AliTriggerConfiguration.h"
 #include "AliInputEventHandler.h"
 
+#include "AliAnalysisMuonUtility.h"
 #include "AliOADBContainer.h"
 #include "AliOADBMultSelection.h"
 #include "AliMultEstimator.h"
@@ -85,7 +86,6 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   fTriggerClasses[4]="CMLL7";
   fTriggerClasses[5]="CMSL7 & 0MLL";
   fTriggerClasses[6]="CMSL7 & 0MUL";
-
   fL0TriggerInputMLL = 20; // reference to MLL L0 trigger
   fL0TriggerInputMUL = 21; // reference to MUL L0 trigger
 }
@@ -115,7 +115,6 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name,
   fTriggerClasses[4]="CMLL7";
   fTriggerClasses[5]="CMSL7 & 0MLL";
   fTriggerClasses[6]="CMSL7 & 0MUL";
-
   fL0TriggerInputMLL = 20; // reference to MLL L0 trigger
   fL0TriggerInputMUL = 21; // reference to MUL L0 trigger
 
@@ -147,32 +146,11 @@ AliAnalysisTaskLMREventFilter::~AliAnalysisTaskLMREventFilter()
 
 //====================================================================================================================================================
 
-void AliAnalysisTaskLMREventFilter::NotifyRun()
-{
-
-  AliCDBManager *man = AliCDBManager::Instance();
-  man->Init();
-  man->SetDefaultStorage("raw://"); 
-  man->SetRun(fInputHandler->GetEvent()->GetRunNumber()); 
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
-  AliTriggerConfiguration *cfg=(AliTriggerConfiguration*)entry->GetObject(); 
-  TObjArray  inputs = cfg->GetInputs(); 
-  for(Int_t i=0;i<inputs.GetEntriesFast();i++)
-    {
-      AliTriggerInput* inp =  (AliTriggerInput*) inputs[i];
-      TString name=inp->GetName();
-      if(name.Contains("0MUL"))
-	fL0TriggerInputMUL = inp->GetIndexCTP(); // reference to MUL L0 trigger
-      if(name.Contains("0MLL"))
-	fL0TriggerInputMLL = inp->GetIndexCTP(); // reference to MLL L0 trigger
-    }
-  fhL0TriggerInputMLL->Fill(fL0TriggerInputMLL);
-  fhL0TriggerInputMUL->Fill(fL0TriggerInputMUL);
-}
-
 void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
  {
   // Called once
+  fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca); 
+  fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
 
   fEventTree = new TTree("Data","Data");
   fAliLMREvent = new AliLMREvent();
@@ -188,7 +166,7 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fhNMu = new TH2D("hNMu","Number of Muon",50,0,50,fNTrigClass,0,fNTrigClass);
   fOutputList->Add(fhNMu);
   fhNMu->Sumw2();
-  
+
   fhL0TriggerInputMLL = new TH1D("fhL0TriggerInputMLL","",120,-0.5,119.5);
   fOutputList->Add(fhL0TriggerInputMLL);
   fhL0TriggerInputMLL->Sumw2();
@@ -208,12 +186,35 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   printf("End of create Output\n");
 }
 
+
+void AliAnalysisTaskLMREventFilter::NotifyRun()
+{
+  fMuonTrackCuts->SetRun(fInputHandler);//(AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->Init();
+  man->SetDefaultStorage("raw://"); 
+  man->SetRun(fInputHandler->GetEvent()->GetRunNumber()); 
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
+  AliTriggerConfiguration *cfg=(AliTriggerConfiguration*)entry->GetObject(); 
+  TObjArray  inputs = cfg->GetInputs(); 
+  for(Int_t i=0;i<inputs.GetEntriesFast();i++)
+    {
+      AliTriggerInput* inp =  (AliTriggerInput*) inputs[i];
+      TString name=inp->GetName();
+      if(name.Contains("0MUL"))
+	fL0TriggerInputMUL = inp->GetIndexCTP(); // reference to MUL L0 trigger
+      if(name.Contains("0MLL"))
+	fL0TriggerInputMLL = inp->GetIndexCTP(); // reference to MLL L0 trigger
+    }
+  fhL0TriggerInputMLL->Fill(fL0TriggerInputMLL);
+  fhL0TriggerInputMUL->Fill(fL0TriggerInputMUL);
+}
 //====================================================================================================================================================
 
 void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
  {
   //   Main loop
-  //   Called for each event	
+  //   Called for each event
   UShort_t evtTrigSelect=0;
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(InputEvent());  
   if (!fAOD) 
@@ -244,21 +245,27 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   TString triggerWord(((AliAODHeader*) fAOD->GetHeader())->GetFiredTriggerClasses());
   // ---
 
+  
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD-> FindListObject("MultSelection");
 
-  if (!MultSelection) 
+  // All multiplicity are initialized at 166 and is used for error code of multselection non actived
+  Double_t Multiplicity_V0M          = 166.;
+  Double_t Multiplicity_ADM          = 166.;
+  Double_t Multiplicity_SPDTracklets = 166.;
+  Double_t Multiplicity_SPDClusters  = 166.;
+  Double_t Multiplicity_RefMult05    = 166.;
+  Double_t Multiplicity_RefMult08    = 166.;
+
+  if (MultSelection) 
     {
-      printf ("No reconstructed activity found\n");
-      return;
+      Multiplicity_V0M          = MultSelection->GetMultiplicityPercentile("V0M");
+      Multiplicity_ADM          = MultSelection->GetMultiplicityPercentile("ADM");
+      Multiplicity_SPDTracklets = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+      Multiplicity_SPDClusters  = MultSelection->GetMultiplicityPercentile("SPDClusters");
+      Multiplicity_RefMult05    = MultSelection->GetMultiplicityPercentile("RefMult05");
+      Multiplicity_RefMult08    = MultSelection->GetMultiplicityPercentile("RefMult08");
     }
   
-  
-  Double_t Multiplicity_V0M          = MultSelection->GetMultiplicityPercentile("V0M");
-  Double_t Multiplicity_ADM = MultSelection->GetMultiplicityPercentile("ADM");
-  Double_t Multiplicity_SPDTracklets = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-  Double_t Multiplicity_SPDClusters = MultSelection->GetMultiplicityPercentile("SPDClusters");
-  Double_t Multiplicity_RefMult05 = MultSelection->GetMultiplicityPercentile("RefMult05");
-  Double_t Multiplicity_RefMult08 = MultSelection->GetMultiplicityPercentile("RefMult08");
 
   AliAODVertex *vert = fAOD->GetPrimaryVertex();
   if (!vert) {
@@ -286,7 +293,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   fAliLMREvent->SetMultiplicity("RefMult08",Multiplicity_RefMult08);
   fAliLMREvent->SetTriggerString(triggerWord);
 
-  if (nmu>1)
+  if (nmu>0)
     {
       Int_t ntotTr = fAOD->GetNumberOfTracks(); 
       AliLMRMuon *trk = NULL;
@@ -317,6 +324,8 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  trk->SetRabs(rAbs);
 	  trk->SetpDCA(pDca);
 	  trk->SetTriggerMatch(match);
+	  trk->SetSelectionMask(fMuonTrackCuts->GetSelectionMask(track));
+	  trk->SetLocalBoard((UShort_t)AliAnalysisMuonUtility::GetLoCircuit(track));
 	}
     }
   
@@ -389,11 +398,6 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   
   if(trigStr.Contains("CMSL7"))
     {
-      /*
-      Int_t inputMLL = 20; // reference to MLL L0 trigger
-      Int_t inputMUL = 21; // reference to MUL L0 trigger
-      */
-
       UInt_t inpmask = fAOD->GetHeader()->GetL0TriggerInputs();
       Int_t is0MLLfired = (inpmask & (1<<(fL0TriggerInputMLL-1)));
       Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
