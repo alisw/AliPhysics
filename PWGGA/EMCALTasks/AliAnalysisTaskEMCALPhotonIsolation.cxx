@@ -98,6 +98,7 @@ fAnalysispPb(kFALSE),
 fTriggerLevel1(0),
 fTest1(0),
 fTest2(0),
+fMCtruth(0),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -265,6 +266,7 @@ fAnalysispPb(kFALSE),
 fTriggerLevel1(0),
 fTest1(0),
 fTest2(0),
+fMCtruth(0),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -1385,7 +1387,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     
     Float_t pos[3] = {0};
     clust->GetPosition(pos);
-    TVector3 cpos(pos);
+    TVector3 cpos(pos[0],pos[1],pos[2]);
     Double_t ceta     = cpos.Eta();
     Double_t cphi     = cpos.Phi();
     deta=veta-ceta;
