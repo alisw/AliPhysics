@@ -752,7 +752,7 @@ void  AliMC::AddParticles()
   mode10[0][1] = 2212; // proton
   bratio10[1] = 50.;
   mode10[1][0] = 2212; // proton
-  mode10[1][1] = -211; // negative pion
+  mode10[1][1] = -321; // negative kaon
   mode10[1][2] = 2212; // proton
 
   TVirtualMC::GetMC()->SetDecayMode(1010010021,bratio10,mode10);
@@ -772,7 +772,7 @@ void  AliMC::AddParticles()
   amode10[0][1] = -2212; // anti-proton
   abratio10[1] = 50.;
   amode10[1][0] = -2212; // anti-proton
-  amode10[1][1] = 211;   // positive pion
+  amode10[1][1] = 321;   // positive kaon
   amode10[1][2] = -2212; // anti-proton
 
   TVirtualMC::GetMC()->SetDecayMode(-1010010021,abratio10,amode10);
