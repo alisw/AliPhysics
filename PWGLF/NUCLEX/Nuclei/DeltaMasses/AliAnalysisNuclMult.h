@@ -29,6 +29,7 @@ class AliMCEventHandler;
 class AliMCEvent;
 class AliStack;
 //class AliVParticle;
+class AliGenEventHeader;
 
 class AliAnalysisNuclMult : public AliAnalysisTaskSE {
  
@@ -128,6 +129,12 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
 
   //Only for MC:
   TH2F *hpdg[1];                                  //! pdg label (after event selection)
+  
+  TH3F *hMCTrackletsVsV0mult[1];                  //! before the event selection
+
+  THnSparseF *fSparsehpt[18];                     //! before the event selection
+  
+  TH1F *htest[1];                                 //!
 
   TH3F *hpt[4][3][18];                            //! pT distributions
 
@@ -163,12 +170,16 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   Double_t GetM2(Double_t p, Double_t beta);
 
   //Methods called only on MC analysis:
+  Int_t GetPdgCode(AliVParticle *mcpart);
+  
+  Int_t GetMCSpec(AliVParticle *mcpart);
+  
   void ForPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec);
   
   Bool_t IsTOFgoodmatching(AliVTrack *track, Int_t label, Double_t nsigmaTOF[9], Int_t kSpec, Double_t t_pt, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
   //---
   
-  ClassDef(AliAnalysisNuclMult, 9);
+  ClassDef(AliAnalysisNuclMult, 10);
 };
 
 #endif

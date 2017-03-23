@@ -513,7 +513,7 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     c->SetNCells(ncellsTrue);
     c->SetCellsAbsId(absIds);
     c->SetCellsAmplitudeFraction(ratios);
-    c->SetID(recpoint->GetUniqueID());
+    c->SetID(nout-1);
     c->SetDispersion(recpoint->GetDispersion());
     c->SetEmcCpvDistance(-1);
     c->SetChi2(-1);
