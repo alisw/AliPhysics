@@ -719,10 +719,10 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   }
   
   for (Int_t k=0; k<fkVZEROnHar; k++) {
-    fVZEROQVectorRecQx[k] = new TProfile3D(Form("fVZEROQVectorRecQx[%d]",k),Form("fVZEROQVectorRecQx[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.);
+    fVZEROQVectorRecQx[k] = new TProfile3D(Form("fVZEROQVectorRecQx[%d]",k),Form("fVZEROQVectorRecQx[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
     fVZEROQVectorRecQx[k]->Sumw2();
     fVZEROQVectorRecList->Add(fVZEROQVectorRecQx[k]);
-    fVZEROQVectorRecQy[k] = new TProfile3D(Form("fVZEROQVectorRecQy[%d]",k),Form("fVZEROQVectorRecQy[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.);
+    fVZEROQVectorRecQy[k] = new TProfile3D(Form("fVZEROQVectorRecQy[%d]",k),Form("fVZEROQVectorRecQy[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
     fVZEROQVectorRecQy[k]->Sumw2();
     fVZEROQVectorRecList->Add(fVZEROQVectorRecQy[k]);
   }
