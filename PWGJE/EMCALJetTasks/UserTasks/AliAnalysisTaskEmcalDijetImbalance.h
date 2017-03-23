@@ -87,7 +87,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void                        AllocateDijetImbalanceHistograms()                ;
   void                        AllocateMomentumBalanceHistograms()               ;
   void                        AllocateGeometricalMatchingHistograms()           ;
-  void                        FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin, Int_t trigJetMinPtBinå);
+  void                        FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin, Int_t trigJetMinPtBin);
   void                        DoMomentumBalance(TString histname)               ;
   void                        DoGeometricalMatching();
   void                        FindMatchingDijet(AliJetContainer* jetCont)       ;
