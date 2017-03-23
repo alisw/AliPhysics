@@ -37,6 +37,8 @@
 #include "TMinuit.h"
 #include "AliTMinuitToolkit.h"
 
+std::map<std::string, AliTMinuitToolkit*> AliTMinuitToolkit::fPredefinedFitters;  
+
 //--------------------------------------------------------------------------------------
 //
 // The AliTMinuitToolkit serves as an easy to use interface for the TMinuit 
@@ -177,7 +179,7 @@ void   AliTMinuitToolkit::SetInitialParam(TMatrixD *const paramLimits) {
 
 
 
-void AliTMinuitToolkit::FitHistogram(TH1F *const his) {
+void AliTMinuitToolkit::FitHistogram(TH1 *const his) {
   //
   // Fit a one dimensional histogram
   //
@@ -267,7 +269,12 @@ void AliTMinuitToolkit::Fit(Bool_t doReset) {
   if (fInitialParam == 0) {
     ::Info("AliTMinuitToolkit::Fit","Default initial parameters set");
     fInitialParam=  new TMatrixD(nParam,4);
-    for (Int_t iparam=0; iparam<nParam; iparam++) (*fInitialParam)(iparam,1)=0;
+    for (Int_t iparam=0; iparam<nParam; iparam++) {
+      (*fInitialParam)(iparam,0)=0;
+      (*fInitialParam)(iparam,1)=1000;
+      (*fInitialParam)(iparam,2)=0;
+      (*fInitialParam)(iparam,3)=0;
+    }
   }
     
   // migrad fit algorithm as default
@@ -502,3 +509,58 @@ void AliTMinuitToolkit::TwoFoldCrossValidation(Int_t nIter, const char * reportN
 }
 
 
+void  AliTMinuitToolkit::RegisterDefaultFitters(){
+  //
+  //
+  TF1 *likeGausCachy = new TF1("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike,-10,10,2);
+  likeGausCachy->SetParameters(0.8,1);
+  TF1 *fpol1 = new TF1("fpol1","[0]+[1]*x");
+  TF1 *fgaus = new TF1("fgaus","gaus");
+  //
+  AliTMinuitToolkit * fitter1D = new AliTMinuitToolkit();
+  fitter1D->SetVerbose(0x1); fitter1D->SetFitFunction(fpol1,kTRUE);
+  AliTMinuitToolkit::SetPredefinedFitter("pol1",fitter1D);
+  //
+  AliTMinuitToolkit * fitter1DR = new AliTMinuitToolkit();
+  fitter1DR->SetVerbose(0x1); fitter1DR->SetFitFunction(fpol1,kTRUE);
+  fitter1DR->SetLogLikelihoodFunction(likeGausCachy);
+  AliTMinuitToolkit::SetPredefinedFitter("pol1R",fitter1DR);
+  //
+  TMatrixD initParG(3,4);
+  initParG(0,0)=1; initParG(0,1)=1; 
+  initParG(1,0)=0; initParG(1,1)=1; 
+  initParG(2,0)=1; initParG(2,1)=1; 
+  AliTMinuitToolkit * fitterGR = new AliTMinuitToolkit();
+  fitterGR->SetVerbose(0x1); fitterGR->SetFitFunction(fgaus,kTRUE);
+  fitterGR->SetLogLikelihoodFunction(likeGausCachy);
+  fitterGR->SetInitialParam(&initParG);
+  AliTMinuitToolkit::SetPredefinedFitter("gausR",fitterGR);
+  //
+
+}
+
+
+AliTMinuitToolkit *  AliTMinuitToolkit::Fit(TH1* his, const char *fitterName, Option_t* option, Option_t* goption, Double_t xmin, Double_t xmax){
+  //
+  //
+  AliTMinuitToolkit *fitter=GetPredefinedFitter(fitterName);
+  if (fitter==NULL){
+    ::Error("AliTMinuitToolkit::Fit","Unsuported fitter %s. \nfitter can be added to the list using. SetPredefinedFitter", fitterName);
+    return NULL;
+  }
+  if (his==NULL){
+    ::Error("AliTMinuitToolkit::Fit","Zerro pointer");
+    return NULL;
+  }
+  fitter->FitHistogram(his);
+  TF1 * fitFun = (TF1*)(fitter->GetFormula()->Clone());
+  fitFun->SetParameters(fitter->GetParameters()->GetMatrixArray());
+  his->GetListOfFunctions()->AddLast(fitFun);
+  if (xmin<xmax) {
+    fitFun->SetRange(xmin,xmax);
+  }else{
+    fitFun->SetRange(his->GetXaxis()->GetXmin(), his->GetXaxis()->GetXmax());
+  }
+  his->Draw("same");
+  return fitter;
+}

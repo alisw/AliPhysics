@@ -21,6 +21,7 @@
 #include "TStatToolkit.h"
 
 Int_t fitEntries=400;
+const Int_t kNDim=10;
 const Int_t kLineColors[5]={1,2,4,3,6};
 const Int_t kLineStyle[5]={1,7,10,1,2};
 TF1 likeGausCachy("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike,-10,10,2);
@@ -45,26 +46,38 @@ void AliTMinuitToolkitTest(Int_t iters, Int_t nPoints=1000){
 
 void GenerateInput(){
   //
-  //  0. Generate input data
+  //  0. Generate input data n diminesional array 1,1
   TTreeSRedirector *pcstream = new TTreeSRedirector("AliTMinuiToolkitTestInput.root","recreate");
+  TVectorD xxx(kNDim);
   for (Int_t i=0; i<fitEntries; i++){
-    Double_t x0=2*(gRandom->Rndm()-0.5), x1=2*(gRandom->Rndm()-0.5),x2=2*(gRandom->Rndm()-0.5);
+    for (Int_t iDim=0; iDim<kNDim; iDim++){
+      xxx[iDim]=2.*(gRandom->Rndm()-0.5);      
+    }
+    Double_t noiseG=gRandom->Gaus();
+    Double_t noiseL=gRandom->Landau();
     if (inputTree==NULL) {
-      (*pcstream)<<"data"<<"testx0="<<x0<<"testx1="<<x1<<"testx2="<<x2<<"\n";
+      (*pcstream)<<"data"<<
+	"x.="<<&xxx<<
+	"noiseG="<<noiseG<<
+	"noiseL="<<noiseL<<
+	"\n";
       inputTree=((*pcstream)<<"data").GetTree();
     }else{
       inputTree->Fill();
     }
   }
+  
+  delete pcstream;
+  TFile *f = TFile::Open("AliTMinuiToolkitTestInput.root");
+  inputTree= (TTree*)f->Get("data");
 }
 
  
 void TestHistogram() {
   //
   // This test function shows the basic working principles of this class 
-  // and illustrates how a robust fit can improve the results
-  //
-  
+  // and illustrates how a robust fit can improve the results for histogram fitting
+  // 
   // 1. provide some example histogram
   gStyle->SetOptStat(0);
   TH1F * hist = new TH1F("test", "AliTMinuitToolkit: Test histogram fit (e^{-x}) with outliers", 20,0,4);
@@ -126,7 +139,11 @@ void TestHistogram() {
 void Test1D(Int_t bootStrapIter){
   //
   // 1D fit example
-  TVectorD oParam(2); oParam[0]=0; oParam[1]=5;
+  //    chi2, huber norm, abs(norm) and gaus+cachy log likelihood function
+  // Input: 
+  //    y=p[0]+p[1]*x;   // p[0]=0; p[1]=2 
+  //
+  TVectorD oParam(2); oParam[0]=0; oParam[1]=2;
   TMatrixD initParam(2,4); // param,error,min,max
   initParam(0,0)=1; initParam(0,1)=1; initParam(0,0)=0; initParam(0,1)=100000;
   initParam(1,0)=1; initParam(1,1)=1; initParam(1,0)=0; initParam(1,1)=20;
@@ -134,14 +151,16 @@ void Test1D(Int_t bootStrapIter){
   TF1 *fitFunctions[5];
   TH1 *resHistograms[5];
   TF1 formula1D("formula1D","[0]+[1]*x[0]",-1,1);
-  inputTree->SetAlias("test1D","5*testx0");
-  inputTree->SetAlias("noise","(rndm<0.7)?AliTMinuitToolkit::RrndmGaus():4*AliTMinuitToolkit::RrndmLandau()");
+  inputTree->SetAlias("test1D","2*x.fElements[0]");
+  inputTree->SetAlias("noise","(rndm<0.7)?noiseG:4*noiseL");
+  inputTree->SetAlias("X0","x.fElements[0]");
+
   TString  selection="1";
   AliTMinuitToolkit * tool1D = new AliTMinuitToolkit("AliTMinutiTookitTest1D.root");
   tool1D->SetVerbose(0x1);
   tool1D->SetFitFunction(&formula1D,kTRUE);
   tool1D->SetInitialParam(&initParam);
-  tool1D->FillFitter(inputTree,"test1D+noise:1/sqrt(12.+0)","testx0", "", 0,fitEntries);
+  tool1D->FillFitter(inputTree,"test1D+noise:1/sqrt(12.+0)","X0", "", 0,fitEntries);
   //
   formula1D.SetParameters(oParam.GetMatrixArray());
   fitFunctions[0]= (TF1*)formula1D.DrawClone("same");
@@ -193,9 +212,9 @@ void Test1D(Int_t bootStrapIter){
   latex.SetTextSize(0.055);
 
   canvasTest1D->cd(1);
-  TGraphErrors *gr0 = TStatToolkit::MakeGraphErrors(inputTree,"test1D+noise:testx0:1","",25,1,0.5,0,TMath::Min(fitEntries,100));
+  TGraphErrors *gr0 = TStatToolkit::MakeGraphErrors(inputTree,"test1D+noise:X0:1","",25,1,0.5,0,TMath::Min(fitEntries,100));
   gr0->SetMaximum(30); gr0->SetMinimum(-30);
-  TGraphErrors *gr1 = TStatToolkit::MakeGraphErrors(inputTree,"test1D+noise:testx0:1","",25,1,0.5,0,TMath::Min(fitEntries,100));
+  TGraphErrors *gr1 = TStatToolkit::MakeGraphErrors(inputTree,"test1D+noise:X0:1","",25,1,0.5,0,TMath::Min(fitEntries,100));
   gr1->SetMaximum(5); gr1->SetMinimum(-5);
 
   gr0->Draw("ap");
@@ -206,7 +225,7 @@ void Test1D(Int_t bootStrapIter){
     fitFunctions[ifit]->Draw("same");     
   }
   latex.SetTextSize(0.07);
-  latex.DrawLatexNDC(0.11,0.8,"Input y=0+5*x+#epsilon ");
+  latex.DrawLatexNDC(0.11,0.8,"Input y=0+2*x+#epsilon ");
   latex.DrawLatexNDC(0.11,0.7,"      #epsilon=(0.8 Gaus +0.2 Landau)");
   latex.SetTextSize(0.055);
   canvasTest1D->cd(2);
@@ -265,4 +284,40 @@ void Test1D(Int_t bootStrapIter){
   canvasTest1D->SaveAs("AliTMinuitToolkitTest.Test1D.png");
   canvasTest1D->SaveAs("AliTMinuitToolkitTest.Test1D.pdf");
 
+}
+
+
+
+void TestND(Int_t bootStrapIter){
+  //
+  // 1D fit example
+  //    chi2, huber norm, abs(norm) and gaus+cachy log likelihood function
+  //
+  TVectorD oParam(2); oParam[0]=0; oParam[1]=5;
+  TMatrixD initParam(kNDim+1,4); // param,error,min,max
+  for (Int_t iDim=0; iDim<kNDim+1; iDim++){
+    initParam(0,0)=iDim; initParam(0,1)=1; initParam(0,0)=0; initParam(0,1)=100000;
+  }
+  TF1 *fitFunctions[5];
+  TH1 *resHistograms[5];
+  TString strXND="[0]";
+  TString strYND="";
+  for (Int_t iDim=0; iDim<kNDim; iDim++){
+    inputTree->SetAlias(TString::Format("X%d",iDim).Data(),TString::Format("x.fElements[%d]",iDim).Data());
+    strXND+=TString::Format("+[%d]*x[%d]",iDim+1, iDim);  // formula
+    strYND+=TString::Format("+(%.1f)*x[%d]",iDim+1., iDim);  // formula
+  }
+
+  TFormula formulaND("formulaND",strXND.Data());
+  inputTree->SetAlias("test1D","5*X0");
+  inputTree->SetAlias("noise","(rndm<0.7)?nosieG:4*noiseL");
+  TString  selection="1";
+  AliTMinuitToolkit * tool1D = new AliTMinuitToolkit("AliTMinutiTookitTest1D.root");
+  tool1D->SetVerbose(0x1);
+  tool1D->SetFitFunction(&formula1D,kTRUE);
+  tool1D->SetInitialParam(&initParam);
+  tool1D->FillFitter(inputTree,"test1D+noise:1/sqrt(12.+0)","testx0", "", 0,fitEntries);
+  //
+  formula1D.SetParameters(oParam.GetMatrixArray());
+  fitFunctions[0]= (TF1*)formula1D.DrawClone("same");
 }
