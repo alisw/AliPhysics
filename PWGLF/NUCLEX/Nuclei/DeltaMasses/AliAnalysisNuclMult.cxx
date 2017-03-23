@@ -34,7 +34,6 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 //#include "AliVParticle.h"
-#include "AliGenEventHeader.h"
 
 ClassImp(AliAnalysisNuclMult)
 
@@ -136,7 +135,7 @@ void AliAnalysisNuclMult::UserCreateOutputObjects()
     htriggerMask[1]->Fill(xaxisTitle[i],0);
   }
 
-  hzvertex = new TH1F("hzvertex","z-vertex distribution. After (only) the trigger selection and the selection of INEL. collisions. Therefore it's filled before the other event cuts;z_{vtx} (cm)",200,-20,20);
+  hzvertex = new TH1F("hzvertex","z-vertex distribution. After (only) the trigger selection and the selection of INEL. collisions. Therefore it's filled before the other event cuts;z_{vtx}",1000,-50,50);
  
   hNevent = new TH1F("hNevent","Event counter. To check the event selection compare the last bin with the number of hV0mult entries",7,0,7);
   const Char_t *xaxisTitle2[7]={"kMB","IsINELgtZERO","IsAcceptedVertexPosition","HasNoInconsistentSPDandTrackVertices","IsNotPileupSPDInMultBins","IsEventSelected","InsideMultiplicityBin"};
@@ -319,8 +318,8 @@ for(Int_t i=0;i<7;i++) {
       else fDcawTOF_1[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,ptMin,ptMax,1,0,5);
     }
   }
-  
-  Char_t name_fDcaz[18][200];
+
+Char_t name_fDcaz[18][200];
   Char_t title_fDcaz[18][200];
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fDcaz[iS],200,"fDca_z_%s",nameSpec[iS]);
@@ -416,45 +415,6 @@ for(Int_t i=0;i<7;i++) {
     
     hpdg[0] = new TH2F("hpdg","Pdg label of generated particles (after the event selection);Pdg label;isPrimary           isSecMat           isSecWeak   ",50082,-25041,25041,3,0,3);
     hpdg[0]->GetYaxis()->SetNdivisions(105);
-
-    //bes=before event selection
-    const Int_t Ntrackletsbins_bes=14;
-    const Float_t trackletsbins_bes[Ntrackletsbins_bes+1]={-1, 0, 1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 1000};
-
-    const Int_t Nmultbins_bes=22;
-    const Float_t multbins_bes[Nmultbins_bes+1]={-1, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 101};
-
-    if(1) {
-      const Int_t Ndim=4;
-      Int_t bins[Ndim] = {Nptbins, Ntrackletsbins_bes, Nmultbins_bes, 200};
-      Double_t xmin[Ndim] = {ptMin,   -1,  -1, -20};
-      Double_t xmax[Ndim] = {ptMax, 1000, 101,  20};
-      Char_t name_fSparse[200];
-      Char_t title_fSparse[200];
-      TString axis[Ndim] = {"p_{T} (GeV/c)", "Number of tracklets", "V0M Multiplicity Percentile", "z_{vtx} (cm)"};
-      for(Int_t iS=0;iS<18;iS++) {
-	snprintf(name_fSparse,200,"fSparsehpt_%s",nameSpec[iS]);
-	snprintf(title_fSparse,200,"p_{T} distribution of generated primary %s (at least one charged particle in |#eta|<1)",nameSpec[iS]);
-	if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) {
-	  fSparsehpt[iS]=new THnSparseF(name_fSparse, title_fSparse, Ndim, bins, xmin, xmax);
-	  fSparsehpt[iS]->GetAxis(1)->Set(Ntrackletsbins_bes, trackletsbins_bes);
-	  fSparsehpt[iS]->GetAxis(2)->Set(Nmultbins_bes, multbins_bes);
-	}
-	else {
-	  Int_t Ebins[Ndim] = {1, 1, 1, 1};
-	  fSparsehpt[iS]=new THnSparseF(name_fSparse, title_fSparse, Ndim, Ebins, xmin, xmax);
-	}
-	for(Int_t j=0;j<Ndim;j++) {
-	  fSparsehpt[iS]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
-	}
-      }
-    }
-
-    hMCTrackletsVsV0mult[0] = new TH3F("hMCTrackletsVsV0mult","Event counter for events with at least one charged particle in |#eta|<1;z_{vtx} (cm);V0M Multiplicity Percentile;Number of tracklets",200,-20,20,Nmultbins_bes,-1,101,Ntrackletsbins_bes,-1,1000);
-    hMCTrackletsVsV0mult[0]->GetYaxis()->Set(Nmultbins_bes, multbins_bes);
-    hMCTrackletsVsV0mult[0]->GetZaxis()->Set(Ntrackletsbins_bes, trackletsbins_bes);
-
-    htest[0] = new TH1F("htest","htest;pT",Nptbins,ptMin,ptMax);
 
     //variable binning on Ntracklets set below
     Char_t name_hpt[200];
@@ -746,15 +706,6 @@ for(Int_t i=0;i<7;i++) {
   if(isMC) {
     fList->Add(hpdg[0]);
     
-    fList->Add(hMCTrackletsVsV0mult[0]);
-
-    fList->Add(htest[0]);
-
-    for(Int_t i=0;i<2;i++) fList->Add(fSparsehpt[2+9*i]);
-    for(Int_t i=0;i<2;i++) fList->Add(fSparsehpt[3+9*i]);
-    for(Int_t i=0;i<2;i++) fList->Add(fSparsehpt[4+9*i]);
-    for(Int_t i=0;i<2;i++) fList->Add(fSparsehpt[5+9*i]);
-
     for(Int_t j=0;j<3;j++) {
       for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][2+9*i]);
       for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][3+9*i]);
@@ -858,68 +809,6 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     }
   }
   
-  // Fill of MC particles pT spectrum for the true INEL>0:
-  // at least one primary charged particle in |eta|<1 and |zvtx_mc|<10 cm
-  // See AliAnalysisTaskPPVsMultCrossCheckMC.cxx
-  if(isMC) {
-       
-    Bool_t isTrueINEL=kFALSE;
-
-    for(Int_t iM=0;iM<mcEvent->GetNumberOfTracks();iM++){
-      
-      AliVParticle *mcpart = (AliVParticle *) mcEvent->GetTrack(iM);
-      Int_t label = mcpart->GetLabel();
-      Bool_t isPrimary = fStack->IsPhysicalPrimary(label);
-      Double_t eta =  mcpart->Eta();
-      Double_t charge = ((Double_t) mcpart->Charge())/3;
-      
-      if(TMath::Abs(charge)<0.001) continue;
-      if(!isPrimary) continue;
-      if(TMath::Abs(eta)>1) continue;
-      
-      isTrueINEL=kTRUE;  
-    }
-    
-    //z_vtx (MC)
-    Float_t zvtx_mc=mcEvent->GetPrimaryVertex()->GetZ();
-    
-    Float_t Ntracklets_bes = (Float_t) fPPVsMultUtils->GetStandardReferenceMultiplicity(fEvent, kFALSE);
-    if(Ntracklets_bes<0) Ntracklets_bes=-1;
-
-    Float_t mult_bes = fPPVsMultUtils->GetMultiplicityPercentile(fEvent, "V0M", kFALSE);
-    if(mult_bes<0) mult_bes=-1;
-    if(mult_bes>100) mult_bes=100;
-    
-    for(Int_t iM=0;iM<mcEvent->GetNumberOfTracks();iM++){
-      
-      if(!isTrueINEL) break;
-
-      AliVParticle *mcpart = (AliVParticle *) mcEvent->GetTrack(iM);
-      
-      Int_t kSpec = this->GetMCSpec(mcpart);
-      Int_t label = mcpart->GetLabel();
-      Bool_t isPrimary = fStack->IsPhysicalPrimary(label);
-      Double_t rapidity = mcpart->Y();
-      Double_t pt = mcpart->Pt();
-      
-      if(TMath::Abs(rapidity)>0.5) continue;
-      
-      if(kSpec<0) continue;
-      
-      if(!isPrimary) continue;
-      
-      Double_t value[4]={pt, Ntracklets_bes, mult_bes, zvtx_mc};
-      fSparsehpt[kSpec]->Fill(value);
-      
-      Int_t Pdg=this->GetPdgCode(mcpart);
-      if(TMath::Abs(zvtx_mc)<10 && TMath::Abs(Pdg)==211) htest[0]->Fill(pt);
-      
-    }//loop on MC particles closed
-      
-    if(isTrueINEL) hMCTrackletsVsV0mult[0]->Fill(zvtx_mc, mult_bes, Ntracklets_bes);
-
-  }//stop MC
-  
   //------------------------- Event selection:
   this->EventSelectionMonitor();
   
@@ -941,13 +830,20 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
   
   //------------------------------- Loop on MC particles
   if(isMC) {
-
     for(Int_t iM=0;iM<mcEvent->GetNumberOfTracks();iM++){
       
       AliVParticle *mcpart = (AliVParticle *) mcEvent->GetTrack(iM);
       
-      Int_t Pdg = this->GetPdgCode(mcpart);
-      Int_t kSpec = this->GetMCSpec(mcpart);
+      Int_t Pdg = mcpart->PdgCode();
+      //for nuclei: e.g. deuteron: 1000010020-1000000000=10020
+      if(Pdg>1e+9) Pdg -= 1e+9;
+      else if (Pdg<-1e+9) Pdg += 1e+9;
+      Int_t kSpec=-1;
+      for(Int_t iS=0;iS<18;iS++) {
+	if(Pdg!=PdgStd[iS]) continue;
+	kSpec=iS;
+      }
+      
       Int_t label = mcpart->GetLabel();
       Bool_t isPrimary = fStack->IsPhysicalPrimary(label);
       Bool_t isSecMat = fStack->IsSecondaryFromMaterial(label);
@@ -996,8 +892,16 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
       
       mcpart = (AliVParticle *) mcEvent->GetTrack(label);
       
-      Pdg = this->GetPdgCode(mcpart);
-      kSpec = this->GetMCSpec(mcpart);
+      Pdg = mcpart->PdgCode();
+      //for nuclei: e.g. deuteron: 1000010020-1000000000=10020
+      if(Pdg>1e+9) Pdg -= 1e+9;
+      else if (Pdg<-1e+9) Pdg += 1e+9;
+      kSpec=-1;
+      for(Int_t iS=0;iS<18;iS++) {
+	if(Pdg!=PdgStd[iS]) continue;
+	kSpec=iS;
+      }
+      
       t_label = mcpart->GetLabel();
       isPrimary = fStack->IsPhysicalPrimary(t_label);
       isSecMat = fStack->IsSecondaryFromMaterial(t_label);
@@ -1140,6 +1044,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
 	  Double_t value[5]={m2, pt, DCAxy, mult, Ntracklets};
 	  fSparseM2vspt[iS]->Fill(value);
 
+	  //printf("%i %i\n",mult,iMultBin);
 	  fDcawTOF_0[0][iS]->Fill(DCAxy,m2,pt);
 	  if(iMultBin>0) fDcawTOF_0[iMultBin][iS]->Fill(DCAxy,m2,pt);
 	  
@@ -1492,29 +1397,6 @@ Double_t AliAnalysisNuclMult::GetBeta(AliVTrack *track, Double_t pt, Double_t ns
   }
   
   return beta;
-}
-//_____________________________________________________________________________
-Int_t AliAnalysisNuclMult::GetPdgCode(AliVParticle *mcpart) {
-  
-  Int_t Pdg = mcpart->PdgCode();
-  //for nuclei: e.g. deuteron: 1000010020-1000000000=10020
-  if(Pdg>1e+9) Pdg -= 1e+9;
-  else if (Pdg<-1e+9) Pdg += 1e+9;
-  
-  return Pdg;
-}
-//_____________________________________________________________________________
-Int_t AliAnalysisNuclMult::GetMCSpec(AliVParticle *mcpart) {
-  
-  Int_t Pdg = this->GetPdgCode(mcpart);
-
-  Int_t kSpec=-1;
-  for(Int_t iS=0;iS<18;iS++) {
-    if(Pdg!=PdgStd[iS]) continue;
-    kSpec=iS;
-  }
-
-  return kSpec;
 }
 //_____________________________________________________________________________
 Double_t AliAnalysisNuclMult::GetM2(Double_t p, Double_t beta) {

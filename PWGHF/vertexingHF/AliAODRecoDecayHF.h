@@ -231,7 +231,7 @@ inline Int_t AliAODRecoDecayHF::NumberOfFakeDaughters() const
 inline void AliAODRecoDecayHF::Setd0errProngs(Int_t nprongs,Double_t *d0err) 
 {
   if(nprongs!=GetNProngs()) { 
-    printf("Wrong number of d0 err values, must be nProngs\n");
+    printf("Wrong number of momenta, must be nProngs");
     return;
   }
   if(!fd0err) {
