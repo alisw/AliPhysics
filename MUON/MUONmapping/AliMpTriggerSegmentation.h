@@ -26,7 +26,6 @@
 #endif
 
 class AliMpMotifPosition;
-class AliMpPCB;
 class AliMpTrigger;
 
 class AliMpTriggerSegmentation : public AliMpVSegmentation
