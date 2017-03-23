@@ -25,8 +25,9 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-  Bool_t IsSelectedTrigger(AliAODEvent *fAOD, Bool_t fillHisto,UShort_t &evtTrigSelect);
   virtual void NotifyRun();
+  Bool_t IsSelectedTrigger(AliAODEvent *fAOD, Bool_t fillHisto,UShort_t &evtTrigSelect);
+
 private:
   
   AliAnalysisTaskLMREventFilter(const AliAnalysisTaskLMREventFilter&); // not implemented
@@ -40,8 +41,12 @@ private:
   AliLMREvent *fAliLMREvent;
 
   TH1D *fhTriggers;
+  TH1D *fhL0TriggerInputMLL;
+  TH1D *fhL0TriggerInputMUL;
   TH2D *fhNMu;
-
+  
+  Int_t fL0TriggerInputMLL;
+  Int_t fL0TriggerInputMUL;
   Int_t fNTrigClass;
   TString fTriggerClasses[7];
   UShort_t fTriggerMask[7];
