@@ -40,12 +40,8 @@ private:
   AliLMREvent *fAliLMREvent;
 
   TH1D *fhTriggers;
-  TH1D *fhL0TriggerInputMLL;
-  TH1D *fhL0TriggerInputMUL;
   TH2D *fhNMu;
 
-  Int_t fL0TriggerInputMLL;
-  Int_t fL0TriggerInputMUL;
   Int_t fNTrigClass;
   TString fTriggerClasses[7];
   UShort_t fTriggerMask[7];

@@ -87,8 +87,6 @@ class AliReducedBaseTrack : public TObject {
                                                    // BIT12 toggled if the track has kink0 index < 0
                                                    // BIT13 toggled if the track has kink1 index < 0
                                                    // BIT14 toggled if the track has kink2 index < 0
-                                                   // AOD
-                                                   // BIT(15+i) toggled if track has filter bit 0+i , 0 <= i <= 10
                                                    // BAYES TPC(||TOF)
                                                    // BIT15 toggled if electron (prob>0.5)
                                                    // BIT16 toggled if pion (prob>0.5)

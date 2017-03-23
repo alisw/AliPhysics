@@ -33,7 +33,6 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
-#include "AliDataFile.h"
 
 #include "AliProdInfo.h"
 #include "AliOADBContainer.h"
@@ -202,7 +201,7 @@ Bool_t AliMuonTrackCuts::ReadParamFromOADB ( Int_t runNumber, TString passName )
   
   if ( passName.IsNull() && ! fAllowDefaultParams ) AliFatal("Pass name not specified! Please provide one or allow for default parameters");
   
-  TString filename = AliDataFile::GetFileNameOADB("PWG/MUON/MuonTrackCuts.root");
+  TString filename = Form("%s/PWG/MUON/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
 
   TFile* file = TFile::Open(filename.Data(), "READ");
   if ( ! file ) {
