@@ -330,6 +330,42 @@ void  AliMC::AddParticles()
   // f2(1270) (PDG: width = 185 MeV)
   TVirtualMC::GetMC()->DefineParticle(225, "f2_1270", kPTNeutron, 1.275 , 0.0, 3.558e-24,"Hadron", 0.185, 0, 0, 0, 0, 0, 0, 0, 0, kTRUE);
 
+  // Ps - hidden strange (s-sbar) pentaquarks
+  TVirtualMC::GetMC()->DefineParticle( 9322134, "Ps_2100", kPTHadron, 2.1 ,  1.0, 1.6455e-23,"Hadron", 4.e-2, 3, -1, 0, 0, 0, 0, 0,  1, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(-9322134, "Ps_2100", kPTHadron, 2.1 , -1.0, 1.6455e-23,"Hadron", 4.e-2, 3, -1, 0, 0, 0, 0, 0, -1, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle( 9322136, "Ps_2500", kPTHadron, 2.5 ,  1.0, 1.6455e-23,"Hadron", 4.e-2, 5, 1, 0, 0, 0, 0, 0,  1, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(-9322136, "Ps_2500", kPTHadron, 2.5 , -1.0, 1.6455e-23,"Hadron", 4.e-2, 5, 1, 0, 0, 0, 0, 0, -1, kTRUE);
+
+  Int_t psmode[6][3] = {0};
+  Float_t psratio[6] = {0.f};
+  psratio[0] = 100.;
+
+  psmode[0][0] = 333;  // phi
+  psmode[0][1] = 2212; // proton
+  TVirtualMC::GetMC()->SetDecayMode(9322134,psratio,psmode);
+  TVirtualMC::GetMC()->SetDecayMode(9322136,psratio,psmode);
+
+  psmode[0][1] = -2212; // anti-proton
+  TVirtualMC::GetMC()->SetDecayMode(-9322134,psratio,psmode);
+  TVirtualMC::GetMC()->SetDecayMode(-9322136,psratio,psmode);
+
+  // d*(2380) - dibaryon resonance
+  TVirtualMC::GetMC()->DefineParticle( 900010020, "d*_2380", kPTHadron, 2.38, 1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, 2, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle( -900010020, "d*_2380_bar", kPTHadron, 2.38, -1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, -2, kTRUE);
+
+  Int_t dstmode[6][3] = {0};
+  Float_t dstratio[6] = {0.f};
+  dstratio[0] = 100; // For now we implement only the mode of interest
+                     // d* -> d pi+ pi-
+  dstmode[0][0] = 1000010020; // deuteron
+  dstmode[0][1] = -211; // negative pion
+  dstmode[0][2] = 211; // positive pion
+  TVirtualMC::GetMC()->SetDecayMode(900010020,dstratio,dstmode);
+
+  dstmode[0][0] = -1000010020; // anti-deuteron
+  TVirtualMC::GetMC()->SetDecayMode(-900010020,dstratio,dstmode);
+
+
   // Heavy vector mesons
   // D*+
   TVirtualMC::GetMC()->DefineParticle(413, "D*+", kPTHadron, 2.0103, 1.0, 0.0,"Hadron", 0.0, 1, -1, 0, 0, 0, 0, 0, 0, kTRUE);
@@ -716,7 +752,7 @@ void  AliMC::AddParticles()
   mode10[0][1] = 2212; // proton
   bratio10[1] = 50.;
   mode10[1][0] = 2212; // proton
-  mode10[1][1] = -211; // negative pion
+  mode10[1][1] = -321; // negative kaon
   mode10[1][2] = 2212; // proton
 
   TVirtualMC::GetMC()->SetDecayMode(1010010021,bratio10,mode10);
@@ -736,7 +772,7 @@ void  AliMC::AddParticles()
   amode10[0][1] = -2212; // anti-proton
   abratio10[1] = 50.;
   amode10[1][0] = -2212; // anti-proton
-  amode10[1][1] = 211;   // positive pion
+  amode10[1][1] = 321;   // positive kaon
   amode10[1][2] = -2212; // anti-proton
 
   TVirtualMC::GetMC()->SetDecayMode(-1010010021,abratio10,amode10);

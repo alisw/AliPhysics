@@ -101,7 +101,7 @@ const char* AliPID::fgkParticleLatexName[AliPID::kSPECIESCN+1] = {
 
   "d",
   "t",
-  "he3",
+  "^{3}He",
   "#alpha",
 
   "#gamma",
