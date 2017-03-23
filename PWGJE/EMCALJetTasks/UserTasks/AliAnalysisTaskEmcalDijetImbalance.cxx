@@ -54,7 +54,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fNCentHistBins(0),
   fCentHistBins(0),
   fPlotJetHistograms(kFALSE),
-  fPlotDijetJetHistograms(kFALSE),
+  fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
   fDoMomentumBalance(kFALSE),
   fDoGeometricalMatching(kFALSE),
@@ -87,7 +87,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fNCentHistBins(0),
   fCentHistBins(0),
   fPlotJetHistograms(kFALSE),
-  fPlotDijetJetHistograms(kFALSE),
+  fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
   fDoMomentumBalance(kFALSE),
   fDoGeometricalMatching(kFALSE),
@@ -130,7 +130,7 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   if (fPlotJetHistograms) AllocateJetHistograms();
-  if (fPlotDijetJetHistograms) AllocateDijetJetHistograms();
+  if (fPlotDijetCandHistograms) AllocateDijetCandHistograms();
   if (fPlotDijetImbalanceHistograms) AllocateDijetImbalanceHistograms();
   if (fDoMomentumBalance) AllocateMomentumBalanceHistograms();
   if (fDoGeometricalMatching) AllocateGeometricalMatchingHistograms();
@@ -293,9 +293,11 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
 }
 
 /*
- * This function allocates the histograms for single jets that comprise dijet pairs.
+ * This function allocates the histograms for dijet candidates, i.e. dijet pairs with the leading jet
+ * passing the trigger condition, but no condition on the subleading jet. In particular this histogram is
+ * designed to study the kinematic selection of dijets.
  */
-void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetJetHistograms()
+void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetCandHistograms()
 {
   // Allocate dijet THnSparse
   AliJetContainer* jets = 0;
@@ -331,63 +333,49 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetJetHistograms()
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
-    axisTitle[dim] = "#it{p}_{T,min}^{ass}";
-    nbins[dim] = fNDijetPtThresholds;
-    min[dim] = -0.5;
-    max[dim] = fNDijetPtThresholds - 0.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "isAccepted";
-    nbins[dim] = 2;
-    min[dim] = -0.5;
-    max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "LeadingSubleading";
-    nbins[dim] = 2;
-    min[dim] = -0.5;
-    max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "#it{p}_{T,jet} (GeV/#it{c})";
+    axisTitle[dim] = "#it{p}_{T,trig jet} (GeV/#it{c})";
     nbins[dim] = fMaxPt/3;
     min[dim] = -fMaxPt/2 + 25;
     max[dim] = fMaxPt/2 + 25;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
-    axisTitle[dim] = "#phi_{jet}";
+    axisTitle[dim] = "#it{p}_{T,ass jet} (GeV/#it{c})";
+    nbins[dim] = fMaxPt/3;
+    min[dim] = -fMaxPt/2 + 25;
+    max[dim] = fMaxPt/2 + 25;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    axisTitle[dim] = "#phi_{trig jet}";
     nbins[dim] = fMaxPt/3;
     min[dim] = 0;
     max[dim] = TMath::TwoPi();
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
-    axisTitle[dim] = "#eta_{jet}";
+    axisTitle[dim] = "#phi_{ass jet}";
+    nbins[dim] = fMaxPt/3;
+    min[dim] = 0;
+    max[dim] = TMath::TwoPi();
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    axisTitle[dim] = "#eta_{trig jet}";
     nbins[dim] = fMaxPt/3;
     min[dim] = -1;
     max[dim] = 1;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
-    axisTitle[dim] = "N_{tracks}";
-    nbins[dim] = fMaxPt/5;
-    min[dim] = 0;
-    max[dim] = 100;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "A_{jet}";
+    axisTitle[dim] = "#eta_{ass jet}";
     nbins[dim] = fMaxPt/3;
-    min[dim] = 0;
-    max[dim] = 1.5;
+    min[dim] = -1;
+    max[dim] = 1;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
-    TString thnname = TString::Format("%s/DijetObservables", jets->GetArrayName().Data());
+    TString thnname = TString::Format("%s/DijetCandObservables", jets->GetArrayName().Data());
     THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
     for (Int_t i = 0; i < dim; i++) {
       hn->GetAxis(i)->SetTitle(axisTitle[i]);
@@ -397,7 +385,8 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetJetHistograms()
 }
 
 /*
- * This function allocates the histograms for dijet imbalance.
+ * This function allocates the histograms for accepted dijets.
+ * The purpose is to study in detail the imbalance properties of the accepted dijets.
  */
 void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetImbalanceHistograms()
 {
@@ -420,27 +409,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetImbalanceHistograms()
       max[dim] = fCentHistBins[fNCentHistBins];
       dim++;
     }
-    
-    axisTitle[dim] = "LeadingHadronRequired";
-    nbins[dim] = 2;
-    min[dim] = -0.5;
-    max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "#it{p}_{T,min}^{trig}";
-    nbins[dim] = fNDijetPtThresholds;
-    min[dim] = -0.5;
-    max[dim] = fNDijetPtThresholds - 0.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "#it{p}_{T,min}^{ass}";
-    nbins[dim] = fNDijetPtThresholds;
-    min[dim] = -0.5;
-    max[dim] = fNDijetPtThresholds - 0.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
 
     axisTitle[dim] = "#Delta#phi";
     nbins[dim] = 100;
@@ -476,6 +444,20 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetImbalanceHistograms()
     max[dim] = 100;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
+    
+    axisTitle[dim] = "N_{tracks, trig jet}";
+    nbins[dim] = fMaxPt/5;
+    min[dim] = 0;
+    max[dim] = 100;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    axisTitle[dim] = "N_{tracks, ass jet}";
+    nbins[dim] = fMaxPt/5;
+    min[dim] = 0;
+    max[dim] = 100;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
 
     TString thnname = TString::Format("%s/DijetImbalanceObservables", jets->GetArrayName().Data());
     THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
@@ -502,27 +484,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateMomentumBalanceHistograms()
     Double_t max[30] = {0.};
     Double_t *binEdges[20] = {0};
     Int_t dim = 0;
-    
-    axisTitle[dim] = "LeadingHadronRequired";
-    nbins[dim] = 2;
-    min[dim] = -0.5;
-    max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "#it{p}_{T,min}^{trig}";
-    nbins[dim] = fNDijetPtThresholds;
-    min[dim] = -0.5;
-    max[dim] = fNDijetPtThresholds - 0.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "#it{p}_{T,min}^{ass}";
-    nbins[dim] = fNDijetPtThresholds;
-    min[dim] = -0.5;
-    max[dim] = fNDijetPtThresholds - 0.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
     
     axisTitle[dim] = "A_{J}";
     nbins[dim] = 100;
@@ -684,7 +645,7 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
   
   AliInfo(Form("Number of pT thresholds: %d", fNDijetPtThresholds));
   for (Int_t i = 0; i < fNDijetPtThresholds; i++) {
-    AliInfo(Form("Trigger jet threshold %d = %f, Associated jet threshold %d = %f", i, fMinTrigJetPt[i], i, fMinAssJetPt[i]));
+    AliInfo(Form("Trigger jet threshold %d = %f, Associated jet threshold %d = %f", i, fMinTrigJetPt[i], i, fMinAssJetPt));
   }
   AliInfo(Form("Leading hadron threshold (for dijet leading jet): %f GeV", fDijetLeadingHadronPt));
   AliInfo(Form("Momentum balance study: %d", fDoMomentumBalance));
@@ -721,44 +682,48 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
     TString jetContName = jetCont->GetName();
     if (jetContName.Contains("HardCore")) continue;
 
+    //-----------------------------------------------------------------------------
+    // Loop over the kinematic selection arrays, to fill di-jet candidate histogram
+    
     // Loop over leading hadron cut or not
     for (Int_t leadingHadronCutType=0; leadingHadronCutType<2; leadingHadronCutType++) {
       
       // Loop through leading jet pT thresholds
       for (Int_t trigJetMinPtType = 0; trigJetMinPtType < fNDijetPtThresholds; trigJetMinPtType++) {
-        
-        // Loop through subleading jet pT thresholds
-        for (Int_t assJetMinPtType=0; assJetMinPtType < fNDijetPtThresholds; assJetMinPtType++) {
           
-          // Find the dijet candidate of the event and store its info in struct fDijet
-          FindDijet(jetCont, leadingHadronCutType, trigJetMinPtType, assJetMinPtType);
+        // Find the dijet candidate of the event and store its info in struct fDijet
+        FindDijet(jetCont, leadingHadronCutType, trigJetMinPtType);
 
-          // If we find a dijet candidate (i.e. acceptable trig jet; ass jet accepted or not), fill the di-jet jet histograms
-          if (fDijet.trigJet && fPlotDijetJetHistograms) {
-            TString histname = TString::Format("%s/DijetObservables", jetCont->GetArrayName().Data());
-            FillDijetJetHistograms(histname, fDijet.isAccepted, 0, fDijet.trigJetPt, fDijet.trigJetPhi, fDijet.trigJetEta,
-                                   fDijet.trigJet->GetNumberOfTracks(), fDijet.trigJet->Area());
-            if (fDijet.assJet)
-              FillDijetJetHistograms(histname, fDijet.isAccepted, 1, fDijet.assJetPt, fDijet.assJetPhi, fDijet.assJetEta,
-                                     fDijet.assJet->GetNumberOfTracks(), fDijet.assJet->Area());
-          }
-          
-          // If we find an accepted dijet, fill the dijet imbalance histogram
-          if (fDijet.isAccepted && fPlotDijetImbalanceHistograms) {
-            TString histname = TString::Format("%s/DijetImbalanceObservables", jetCont->GetArrayName().Data());
-            FillDijetImbalanceHistograms(histname);
-          }
-
-          // If we find an accepted dijet, perform momentum-balance study (if requested)
-          if (fDijet.isAccepted && fDoMomentumBalance) {
-            histname = TString::Format("%s/MomentumBalance", jetCont->GetArrayName().Data());
-            DoMomentumBalance(histname);
-          }
+        // If we find a dijet candidate (i.e. acceptable trig jet; ass jet accepted or not), fill the di-jet candidate histogram
+        if (fDijet.trigJet && fPlotDijetCandHistograms) {
+          TString histname = TString::Format("%s/DijetCandObservables", jetCont->GetArrayName().Data());
+          FillDijetCandHistograms(histname);
         }
+        
       }
     }
+    
+    //---------------------------------------------------------------------------------------------------
+    // Now, study the accepted dijet selection -- specified by the 0th elements of the looped over arrays
+    
+    // Find the dijet candidate of the event and store its info in struct fDijet
+    FindDijet(jetCont, 0, 0);
+    
+    // If we find an accepted dijet, fill the dijet imbalance histogram
+    if (fDijet.isAccepted && fPlotDijetImbalanceHistograms) {
+      TString histname = TString::Format("%s/DijetImbalanceObservables", jetCont->GetArrayName().Data());
+      FillDijetImbalanceHistograms(histname);
+    }
+    
+    // If we find an accepted dijet, perform momentum-balance study (if requested)
+    if (fDijet.isAccepted && fDoMomentumBalance) {
+      histname = TString::Format("%s/MomentumBalance", jetCont->GetArrayName().Data());
+      DoMomentumBalance(histname);
+    }
+    
   }
 
+  //---------------------------------------------------------------------------
   // Do the constituent threshold and geometrical matching study (if requested)
   if (fDoGeometricalMatching)
     DoGeometricalMatching();
@@ -770,12 +735,11 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
  * Find the leading dijet in an event (background subtracted, unless hard-core jet container).
  * Fills dijet to fDijet.
  */
-void AliAnalysisTaskEmcalDijetImbalance::FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin, Int_t trigJetMinPtBin, Int_t assJetMinPtBin)
+void AliAnalysisTaskEmcalDijetImbalance::FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin, Int_t trigJetMinPtBin)
 {
   fDijet.clear();
   fDijet.leadingHadronCutType = leadingHadronCutBin;
   fDijet.trigJetMinPtType = trigJetMinPtBin;
-  fDijet.assJetMinPtType = assJetMinPtBin;
   
   // Get trigger jet
   AliEmcalJet* trigJet = 0;
@@ -817,7 +781,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FindDijet(AliJetContainer* jetCont, Int
   fDijet.assJetPt = GetJetPt(jetCont, assJet);
   fDijet.assJetPhi  = assJet->Phi();
   fDijet.assJetEta  = assJet->Eta();
-  fDijet.isAccepted = fDijet.assJetPt > fMinAssJetPt[assJetMinPtBin];
+  fDijet.isAccepted = fDijet.assJetPt > fMinAssJetPt;
   
   fDijet.deltaPhi = TMath::Abs(trigJet->Phi() - assJet->Phi());
   fDijet.deltaEta = trigJet->Eta() - assJet->Eta();
@@ -884,9 +848,9 @@ void AliAnalysisTaskEmcalDijetImbalance::DoGeometricalMatching()
   AliJetContainer* jetContHardCore = GetJetContainer(jetContHardCoreName.Data());
   
   // Find the di-jet in the hard-core jet sample, then find the matching di-jet and fill histograms
-  FindDijet(jetContHardCore, 0, 0, 0);
+  FindDijet(jetContHardCore, 0, 0);
   if (fDijet.isAccepted) {
-    FindMatchingDijet(jetContAll, 0);
+    FindMatchingDijet(jetContAll);
     FillGeometricalMatchingHistograms();
   }
 }
@@ -895,10 +859,9 @@ void AliAnalysisTaskEmcalDijetImbalance::DoGeometricalMatching()
  * Find the matching leading dijet in an event (background subtracted, unless hard-core jet container).
  * Fills matched dijet to fMatchingDijet.
  */
-void AliAnalysisTaskEmcalDijetImbalance::FindMatchingDijet(AliJetContainer* jetCont, Int_t assJetMinPtBin)
+void AliAnalysisTaskEmcalDijetImbalance::FindMatchingDijet(AliJetContainer* jetCont)
 {
   fMatchingDijet.clear();
-  fMatchingDijet.assJetMinPtType = assJetMinPtBin;
   
   // Loop over jets and find leading jet within R of fDijet.trigJet
   AliEmcalJet *matchingTrigJet = 0;
@@ -942,7 +905,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FindMatchingDijet(AliJetContainer* jetC
     fMatchingDijet.assJetPt = GetJetPt(jetCont, assJet);
     fMatchingDijet.assJetPhi  = assJet->Phi();
     fMatchingDijet.assJetEta  = assJet->Eta();
-    fMatchingDijet.isAccepted = fMatchingDijet.assJetPt > fMinAssJetPt[assJetMinPtBin];
+    fMatchingDijet.isAccepted = fMatchingDijet.assJetPt > fMinAssJetPt;
     
     fMatchingDijet.deltaPhi = TMath::Abs(trigJet->Phi() - assJet->Phi());
     fMatchingDijet.deltaEta = trigJet->Eta() - assJet->Eta();
@@ -1059,9 +1022,9 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
 }
 
 /**
- * Fill dijet THnSparse.
+ * Fill dijet candidate THnSparse.
  */
-void AliAnalysisTaskEmcalDijetImbalance::FillDijetJetHistograms(TString histname, Int_t isAccepted, Int_t IsAssJet, Double_t jetPt, Double_t jetPhi, Double_t jetEta, Int_t nTracksJet, Double_t jetArea)
+void AliAnalysisTaskEmcalDijetImbalance::FillDijetCandHistograms(TString histname)
 {
   Double_t contents[30]={0};
   THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
@@ -1074,22 +1037,18 @@ void AliAnalysisTaskEmcalDijetImbalance::FillDijetJetHistograms(TString histname
       contents[n] = fDijet.leadingHadronCutType;
     else if (title=="#it{p}_{T,min}^{trig}")
       contents[n] = fDijet.trigJetMinPtType;
-    else if (title=="#it{p}_{T,min}^{ass}")
-      contents[n] = fDijet.assJetMinPtType;
-    else if (title=="isAccepted")
-      contents[n] = isAccepted;
-    else if (title=="LeadingSubleading")
-      contents[n] = IsAssJet;
-    else if (title=="#it{p}_{T,jet} (GeV/#it{c})")
-      contents[n] = jetPt;
-    else if (title=="#phi_{jet}")
-      contents[n] = jetPhi;
-    else if (title=="#eta_{jet}")
-      contents[n] = jetEta;
-    else if (title=="N_{tracks}")
-      contents[n] = nTracksJet;
-    else if (title=="A_{jet}")
-      contents[n] = jetArea;
+    else if (title=="#it{p}_{T,trig jet} (GeV/#it{c})")
+      contents[n] = fDijet.trigJetPt;
+    else if (title=="#it{p}_{T,ass jet} (GeV/#it{c})")
+      contents[n] = fDijet.assJetPt;
+    else if (title=="#phi_{trig jet}")
+      contents[n] = fDijet.trigJetPhi;
+    else if (title=="#phi_{ass jet}")
+      contents[n] = fDijet.assJetPhi;
+    else if (title=="#eta_{trig jet}")
+      contents[n] = fDijet.trigJetEta;
+    else if (title=="#eta_{ass jet}")
+      contents[n] = fDijet.assJetEta;
     else
       AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
@@ -1108,12 +1067,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillDijetImbalanceHistograms(TString hi
     TString title(histJetObservables->GetAxis(n)->GetTitle());
     if (title=="Centrality (%)")
       contents[n] = fCent;
-    else if (title=="LeadingHadronRequired")
-      contents[n] = fDijet.leadingHadronCutType;
-    else if (title=="#it{p}_{T,min}^{trig}")
-      contents[n] = fDijet.trigJetMinPtType;
-    else if (title=="#it{p}_{T,min}^{ass}")
-      contents[n] = fDijet.assJetMinPtType;
     else if (title=="#Delta#phi")
       contents[n] = fDijet.deltaPhi;
     else if (title=="#Delta#eta")
@@ -1124,6 +1077,10 @@ void AliAnalysisTaskEmcalDijetImbalance::FillDijetImbalanceHistograms(TString hi
       contents[n] = fDijet.xJ;
     else if (title=="k_{Ty} (GeV)")
       contents[n] = fDijet.kTy;
+    else if (title=="N_{tracks, trig jet}")
+      contents[n] = fDijet.trigJet->GetNumberOfTracks();
+    else if (title=="N_{tracks, ass jet}")
+      contents[n] = fDijet.assJet->GetNumberOfTracks();
     else
       AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
@@ -1140,13 +1097,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FillMomentumBalanceHistograms(TString h
   if (!histJetObservables) return;
   for (Int_t n = 0; n < histJetObservables->GetNdimensions(); n++) {
     TString title(histJetObservables->GetAxis(n)->GetTitle());
-    if (title=="LeadingHadronRequired")
-      contents[n] = fDijet.leadingHadronCutType;
-    else if (title=="#it{p}_{T,min}^{trig}")
-      contents[n] = fDijet.trigJetMinPtType;
-    else if (title=="#it{p}_{T,min}^{ass}")
-      contents[n] = fDijet.assJetMinPtType;
-    else if (title=="A_{J}")
+    if (title=="A_{J}")
       contents[n] = fDijet.AJ;
     else if (title=="#Delta#phi")
       contents[n] = deltaPhi;
