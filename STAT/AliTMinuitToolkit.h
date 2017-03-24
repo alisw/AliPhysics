@@ -3,6 +3,7 @@
 
 
 #include <TNamed.h>
+class TH1;
 class TH1F;
 class TH2F;
 class TFormula;
@@ -12,6 +13,7 @@ class TTreeSRedirector;
 #include <TVectorDfwd.h>
 #include <TMatrixDfwd.h>
 #include <TArrayI.h>
+#include <map>
 
 
 class AliTMinuitToolkit: public TNamed{
@@ -24,7 +26,7 @@ public:
   virtual ~AliTMinuitToolkit();  
   void  ClearData();
   void  Fit(Bool_t doRest=kFALSE);
-  void  FitHistogram(TH1F *const his);
+  void  FitHistogram(TH1 *const his);
   //  Int_t UnbinnedFit(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
   Int_t FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
   TString GetFitFunctionAsAlias();
@@ -33,6 +35,7 @@ public:
   //
   void SetFitFunction(TFormula *const formula, Bool_t doReset);
   void SetInitialParam(TMatrixD *const initialParam);  
+  TMatrixD *  GetInitialParam() {return fInitialParam;}
   void SetLogLikelihoodFunction(TFormula *logLikelihood){fLogLikelihoodFunction=logLikelihood;}
   void SetFitAlgorithm(Char_t *const name) {fFitAlgorithm=name;};
   void SetMaxCalls(Int_t calls) {fMaxCalls = calls;};
@@ -52,10 +55,16 @@ public:
   Bool_t     IsHuberCost() const {return fIsHuberCost;};
   TObjArray  *GetListOfVariables(){return fVarNames;}
   void SetVerbose(Int_t verbose){fVerbose=verbose;}
-  static Double_t RrndmGaus(Double_t mean=0, Double_t sigma=1);
-  static Double_t RrndmLandau(Double_t mean=0, Double_t sigma=1);  
   const TTreeSRedirector *GetStreamer(){return fStreamer;}
   static Double_t  GaussCachyLogLike(Double_t *x, Double_t *p);
+  // static fittig
+  static AliTMinuitToolkit *  Fit(TH1* his, const char *fitterName, Option_t* option = "", Option_t* goption = "", Double_t xmin = 0, Double_t xmax = 0);
+  static AliTMinuitToolkit *  GetPredefinedFitter(std::string fitterName){return fPredefinedFitters[fitterName];}
+  static void   SetPredefinedFitter(std::string fitterName, AliTMinuitToolkit * fitter){fPredefinedFitters[fitterName]=fitter;}
+  static  void  RegisterDefaultFitters();
+  // helper functions for TFormula and TTreeFormuladrawing
+  static Double_t RrndmGaus(Double_t mean=0, Double_t sigma=1);
+  static Double_t RrndmLandau(Double_t mean=0, Double_t sigma=1);  
 private:
   //
   AliTMinuitToolkit(const AliTMinuitToolkit&);            // fake copy constr. -- suppress warnings
@@ -81,7 +90,7 @@ private:
   Int_t             fMaxCalls;           // maximum number of calls, default value depends on fit algorithm
   Double_t          fPrecision;          // normalized tolerance, default value depends on fit algorithm
   Bool_t            fIsHuberCost;        // switch on/off robust option, default: kFalse
-  //  
+  static            std::map<std::string, AliTMinuitToolkit*> fPredefinedFitters;  
   ClassDef(AliTMinuitToolkit,2);
 };
 
