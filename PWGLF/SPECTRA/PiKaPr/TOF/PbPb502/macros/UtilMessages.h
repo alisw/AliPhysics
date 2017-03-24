@@ -1,6 +1,7 @@
 #ifndef UtilMessages_h
 #define UtilMessages_h
 
+#include "TError.h"
 //Output macros 
 const char redTxt[] =     { 0x1b, '[', '1', ';', '3', '1', 'm', 0 };
 const char greenTxt[] =   { 0x1b, '[', '1', ';', '3', '2', 'm', 0 };

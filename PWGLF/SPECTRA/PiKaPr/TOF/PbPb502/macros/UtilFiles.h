@@ -1,8 +1,13 @@
 #ifndef UtilFiles_h
 #define UtilFiles_h
 
+#include <Riostream.h>
 #include "UtilMessages.h"
 #include "TSystem.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
+#include "TFile.h"
 #include "TKey.h"
 
 //_________________________________________________________________________________________________
