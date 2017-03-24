@@ -36,13 +36,13 @@ class AliTOFDigitizer : public AliDigitizer {
   // Do the main work
   void Digitize(Option_t* option=0) ;
   TClonesArray* SDigits() const {return fSDigitsArray;}
-  void ReadSDigit(Int_t inputFile);
+  void ReadSDigit(Int_t inputFile, int offset=0);
   void CreateDigits();
   void InitDecalibration() const;
   void DecalibrateTOFSignal();
   
  private:
-  void CollectSDigit(const AliTOFSDigit * const sdigit) ;
+  void CollectSDigit(const AliTOFSDigit * const sdigit, int streamOffset=0);
   Int_t PutNoise(Int_t /*charge*/)const {return 0;}; // not yet
 						     // implemented
 						     // due to the low
