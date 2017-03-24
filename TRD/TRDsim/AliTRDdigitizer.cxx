@@ -1677,15 +1677,15 @@ Bool_t AliTRDdigitizer::MergeSDigits()
 	      // Add the mask to the track id if defined.
 	      for (iDict = 0; iDict < kNDict; iDict++) {
 		Int_t trackB = dictionaryB[iDict]->GetData(iRow,iCol,iTime);
-	        if ((fMasks) && (trackB > 0))  {
-		  for (jDict = 0; jDict < kNDict; jDict++) { 
-		    Int_t trackA = dictionaryA[iDict]->GetData(iRow,iCol,iTime); 
-		    if (trackA == 0) {
-		      trackA = trackB + fMasks[iMerge];
-		      dictionaryA[iDict]->SetData(iRow,iCol,iTime,trackA);  
-		    } // if:  track A == 0
+	        if ((fMasks) && (trackB >= 0))  {
+		  for (jDict = 0; jDict < kNDict; jDict++) { //RS: find 1s free slot for this channel
+		    Int_t trackA = dictionaryA[jDict]->GetData(iRow,iCol,iTime); 
+		    if (trackA == -1) {
+		      dictionaryA[jDict]->SetData(iRow,iCol,iTime,trackB+fMasks[iMerge]);
+		      break;
+		    } // if:  track A == -1 , i.e. not set (RS)
 		  } // for: jDict
-		} // if:  fMasks and trackB > 0
+		} // if:  fMasks and trackB >= 0 (i.e. set)
 	      } // for: iDict
 
 	    } // for: iTime
