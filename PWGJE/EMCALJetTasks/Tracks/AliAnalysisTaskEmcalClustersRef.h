@@ -197,6 +197,10 @@ private:
     virtual ~EnergyBinning() {}
   };
 
+  int CountTracklets(double etamin, double etamax, double phimin, double phimax);
+  int CountEmcalClusters(double ecut);
+  int GetEMCALCellOccupancy(double ecut);
+
   AliAnalysisTaskEmcalClustersRef(const AliAnalysisTaskEmcalClustersRef &);
   AliAnalysisTaskEmcalClustersRef &operator=(const AliAnalysisTaskEmcalClustersRef &);
 

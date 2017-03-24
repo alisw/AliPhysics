@@ -16,6 +16,7 @@
 #include <bitset>
 #include <iostream>
 #include <map>
+#include <set>
 #include <vector>
 
 #include <TArrayD.h>
@@ -99,10 +100,15 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
    */
   std::array<Double_t, 5> encuts = {1., 2., 5., 10., 20.};
   Int_t sectorsWithEMCAL[10] = {4, 5, 6, 7, 8, 9, 13, 14, 15, 16};
+
+  // Binnings for Multiplicity correlation
+  TLinearBinning v0abinning(1000, 0., 1000.), trackletbinning(500, 0., 500.), emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.);
+  const TBinning *multbinning[5] = {&v0abinning, &trackletbinning, &trackletbinning, &emcclustbinning, &emccellbinning};
   for(auto trg : GetSupportedTriggers()){
     fHistos->CreateTH1("hEventCount" + trg, "Event count for trigger class " + trg, 1, 0.5, 1.5, optionstring);
     fHistos->CreateTH1("hEventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
+    fHistos->CreateTHnSparse("hMultiplicityCorrelation", "Multiplicity correllation", 5, multbinning);
     fHistos->CreateTH1("hClusterEnergy" + trg, "Cluster energy for trigger class " + trg, energybinning, optionstring);
     fHistos->CreateTH1("hClusterET" + trg, "Cluster transverse energy for trigger class " + trg, energybinning, optionstring);
     fHistos->CreateTH1("hClusterEnergyFired" + trg, "Cluster energy for trigger class " + trg + ", firing the trigger", energybinning, optionstring);
@@ -283,11 +289,20 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
 }
 
 void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
+  double v0amult = fInputEvent->GetVZEROData()->GetMTotV0A(),
+         trackletmult = static_cast<double>(CountTracklets(-0.8, 0.8, 0., TMath::TwoPi())),
+         emctrackletmult = static_cast<double>(CountTracklets(-0.8, 0.8, 1.4, TMath::Pi())),
+         emcclustermult = static_cast<double>(CountEmcalClusters(0.5)),
+         emccellocc = static_cast<double>(this->GetEMCALCellOccupancy(0.1));
   for(const auto &t : fSelectedTriggers){
     Double_t weight = GetTriggerWeight(t);
     fHistos->FillTH1("hEventCount" + t, 1, weight);
     fHistos->FillTH1("hEventCentrality" + t, fEventCentrality, weight);
     fHistos->FillTH1("hVertexZ" + t, fVertex[2], weight);
+
+    // Multiplicity correlation (no correction for downscaling)
+    double data[5] = {v0amult, trackletmult,emctrackletmult, emcclustermult, emccellocc};
+    fHistos->FillTHnSparse("hMultiplicityCorrelation", data);
   }
 }
 
@@ -345,6 +360,41 @@ void AliAnalysisTaskEmcalClustersRef::GetPatchBoundaries(TObject *o, Double_t *b
   boundaries[1] = patch->GetEtaMax();
   boundaries[2] = patch->GetPhiMin();
   boundaries[3] = patch->GetPhiMax();
+}
+
+int AliAnalysisTaskEmcalClustersRef::CountEmcalClusters(double ecut){
+	int nclusters = 0;
+	for(auto clust : GetClusterContainer(fNameClusterContainer.Data())->all()){
+	  if(!clust->IsEMCAL()) continue;
+	  if(clust->GetIsExotic()) continue;
+	  if(clust->E() > ecut) nclusters++;
+	  nclusters++;
+	}
+	return nclusters;
+}
+
+int AliAnalysisTaskEmcalClustersRef::CountTracklets(double etamin, double etamax, double phimin, double phimax){
+  int ntracklets = 0;
+  AliVMultiplicity *mult = fInputEvent->GetMultiplicity();
+  for(int itl = 0; itl < mult->GetNumberOfTracklets(); itl++){
+    double eta = mult->GetEta(itl), phi = mult->GetPhi(itl);
+    if(!(eta > etamin && eta < etamax)) continue;
+    if(!(phi > phimin && phi < phimax)) continue;
+    ntracklets++;
+  }
+  return ntracklets;
+}
+
+int AliAnalysisTaskEmcalClustersRef::GetEMCALCellOccupancy(double ecut){
+  std::set<int> cellIDs;
+  AliVCaloCells *emccells = fInputEvent->GetEMCALCells();
+  for(short icell = 0; icell < emccells->GetNumberOfCells(); icell++){
+    if(emccells->GetAmplitude(icell) > ecut){
+      int cellID = emccells->GetCellNumber(icell);
+      if(cellIDs.find(cellID) != cellIDs.end()) cellIDs.insert(cellID);
+    }
+  }
+  return cellIDs.size();
 }
 
 AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalClustersRef(const TString &nclusters, const TString &suffix){
