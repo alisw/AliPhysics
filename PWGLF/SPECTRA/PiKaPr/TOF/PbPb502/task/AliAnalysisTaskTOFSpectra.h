@@ -203,6 +203,7 @@ public:
       break;
     }
     if(fBinPtIndex < 0) AliWarning(Form("Pt bin not assigned, fPt value: %f!", fPt));
+    //if(fBinPtIndex >= 0 && fBinPtIndex + 1 != hNumMatch[0]->GetXaxis()->FindBin(fPt)) AliFatal(Form("Pt bin is different than intendend: %i vs %i!", fBinPtIndex, hNumMatch[0]->GetXaxis()->FindBin(fPt)));
   };
   
   ///
@@ -690,15 +691,15 @@ private:
   TH1D* hTimeOfFlightResNoMismatch;             ///<  Histogram with the Time Of Flight for PID consistent with TPC for Pi K P
   TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
   TH2F* hTOFDist;                               ///<  Histogram with the distributions of the TOF strips and sectors
-  TH2F* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
-  TH2F* hBetaNoMismatch;                        ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
-  TH2F* hBetaNoMismatchEtaCut;                  ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
-  TH2F* hBetaNoMismatchEtaCutOut;               ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a lower cut on the eta range
-  TH2F* hBetaCentral;                           ///<  Histogram with the track beta vs the track momentum for central events
-  TH2F* hBetaNoMismatchCentral;                 ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch
-  TH2F* hBetaNoMismatchCentralEtaCut;           ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
-  TH2F* hBetaNoMismatchCentralEtaCutOut;        ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
-  TH2F* hTPCdEdx;                               ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TH2I* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
+  TH2I* hBetaNoMismatch;                        ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
+  TH2I* hBetaNoMismatchEtaCut;                  ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
+  TH2I* hBetaNoMismatchEtaCutOut;               ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a lower cut on the eta range
+  TH2I* hBetaCentral;                           ///<  Histogram with the track beta vs the track momentum for central events
+  TH2I* hBetaNoMismatchCentral;                 ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch
+  TH2I* hBetaNoMismatchCentralEtaCut;           ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
+  TH2I* hBetaNoMismatchCentralEtaCutOut;        ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
+  TH2I* hTPCdEdx;                               ///<  Histogram with the track energy loss in the TOC vs the track momentum
   TH2I* hChannelTime;                           ///<  Histogram with the measured time at TOF divided into each channel (or strip) -> Used to get the mismatch
   TH1F* hTOFClusters;                           ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                    ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
