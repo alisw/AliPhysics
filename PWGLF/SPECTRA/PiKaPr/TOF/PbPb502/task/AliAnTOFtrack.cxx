@@ -128,7 +128,7 @@ Bool_t AliAnTOFtrack::IsTPCElectron(){
 
 //________________________________________________________________________
 Bool_t AliAnTOFtrack::IsTPCPiKP(const UInt_t i){
-  if(i > 3) AliFatal("Wrong index required");
+  if(i >= 3) AliFatal("Wrong index required");
   if(GetMaskBit(fTPCPIDMask, kIsTPCPion + i)) return kTRUE; //5 sigma cut for Pi/K/P in TPC
   return kFALSE;
 }
