@@ -572,6 +572,19 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
     TH1F* tmpMtwg = new TH1F(nameMassWg.Data(),"D^{0} invariant mass c - weight 1/D0eff; M [GeV]; Entries",150,1.5648,2.1648);
     tmpMtwg->Sumw2();
     fOutputMass->Add(tmpMtwg);
+    
+    if(fFillTrees>0) { //multi-histo for mass, pT, centrality for offline code (use in place of TH1F to select centrality and change pT bins offline)
+      nameMass="histMass_";  nameMass+=i;
+      TH2F* hMass2D = new TH2F(nameMass.Data(),"Mass histogram vs centrality; Entries",150,1.5648,2.1648,100,0.,100.);
+      hMass2D->Sumw2();
+      fOutputMass->Add(hMass2D);
+
+      nameMass="histMass2D_WeigD0Eff_";  nameMass+=i;      
+      TH2F* hMass2DW = new TH2F(nameMass.Data(),"Mass histogram vs centrality - weight 1/D0eff; Entries",150,1.5648,2.1648,100,0.,100.);
+      hMass2DW->Sumw2();
+      fOutputMass->Add(hMass2DW);      
+    }
+    
   }
 
 //for origin b case (no Bkg and Mass histos, here for weights you should use c+b efficiencies, while on data (on MC they're useless))
@@ -908,6 +921,10 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   //Fill Event Multiplicity (needed only in Reco)
   fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
 
+  //Fill control plots for event centrality and zVtx
+  if(fCutsD0->GetUseCentrality()) ((TH1F*)fOutputStudy->FindObject("hCentralEvts"))->Fill(fCutsD0->GetCentrality(aod));
+  ((TH1F*)fOutputStudy->FindObject("hZvtxEvts"))->Fill(vtx1->GetZ());
+
   //RecoD0 case ************************************************
   if(fRecoD0) {
 
@@ -975,7 +992,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
           }
         }
 
-        FillMassHists(d,mcArray,fCutsD0,fOutputMass);
+        FillMassHists(d,mcArray,fCutsD0,fOutputMass,aod);
       }
     }
   }
@@ -1078,7 +1095,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 }
 
 //____________________________________________________________________________
-void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi* cuts, TList *listout){
+void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi* cuts, TList *listout, AliAODEvent *aod) {
   //
   // function used in UserExec to fill mass histograms:
   //
@@ -1101,7 +1118,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
 
   if ((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2) { //D0
 
-    if(fReadMC){
+    if(fReadMC){ //on MC
       if(labD0>=0 && CheckD0Origin(arrMC,(AliAODMCParticle*)arrMC->At(labD0))==4) {
   	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
 	Int_t pdgD0 = partD0->GetPdgCode();
@@ -1156,7 +1173,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
         if(!fUseDeff) effD0=1.; 
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
       }
-    }else{
+    }else{ //on data
       fillthis="histMass_";
       fillthis+=ptbin;
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
@@ -1165,12 +1182,19 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
       if(!fUseDeff) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
+      if(fFillTrees>0) {
+	Double_t centFill = 0.;
+	if(fCutsD0->GetUseCentrality()) centFill = fCutsD0->GetCentrality(aod);
+        ((TH2F*)(listout->FindObject("histMass2D_")))->Fill(invmassD0,centFill);
+        ((TH2F*)(listout->FindObject("histMass2D_WeigD0Eff_")))->Fill(invmassD0,centFill,1./effD0);
+      }
+      
     }
      
   }
   if (fIsSelectedCandidate>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) { //D0bar
 
-    if(fReadMC){
+    if(fReadMC){ //on MC
       if(labD0>=0 && CheckD0Origin(arrMC,(AliAODMCParticle*)arrMC->At(labD0))==4) {
   	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
 	Int_t pdgD0 = partD0->GetPdgCode();
@@ -1225,7 +1249,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
         if(!fUseDeff) effD0=1.; 
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
       }
-    }else{
+    }else{ //on data
       fillthis="histMass_";
       fillthis+=ptbin;
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
@@ -1234,6 +1258,12 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
       if(!fUseDeff) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
+      if(fFillTrees>0) {
+	Double_t centFill = 0.;
+	if(fCutsD0->GetUseCentrality()) centFill = fCutsD0->GetCentrality(aod);
+        ((TH2F*)(listout->FindObject("histMass2D_")))->Fill(invmassD0,centFill);
+        ((TH2F*)(listout->FindObject("histMass2D_WeigD0Eff_")))->Fill(invmassD0,centFill,1./effD0);
+      }      
     }
 
   }
@@ -1747,10 +1777,18 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hCountK->SetMinimum(0);
   fOutputStudy->Add(hCountK);
 
-  TH1F *hZvtx = new TH1F("hZvtx", "z of Primary vtx; # Events",24,-12.,12.);
+  TH1F *hZvtx = new TH1F("hZvtx", "z of Primary vtx (for events with selected D); # Events",48,-12.,12.);
   hZvtx->SetMinimum(0);
   fOutputStudy->Add(hZvtx);
   
+  TH1F *hZvtxEvts = new TH1F("hZvtxEvts", "z of Primary vtx (for selected events); # Events",120,-30.,30.);
+  hZvtxEvts->SetMinimum(0);
+  fOutputStudy->Add(hZvtxEvts);
+  
+  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (for selected events); # Events",120,-30.,30.);
+  hCentralEvts->SetMinimum(0);
+  fOutputStudy->Add(hCentralEvts);  
+
   if (fReadMC) {
     TH1D *hEventTypeMC = new TH1D("EventTypeMC","EventTypeMC",100,-0.5,99.5);
     fOutputStudy->Add(hEventTypeMC); 
@@ -1762,11 +1800,11 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     hPtCAll->SetMinimum(0);
     fOutputStudy->Add(hPtCAll);
 
-    TH1F *hPtHAll = new TH1F("hist_Pt_Kcharg_AllEv", "Hadrons pT (All); p_{T} (GeV/c)",240,0.,12.);
+    TH1F *hPtHAll = new TH1F("hist_Pt_Kcharg_AllEv", "Kaons pT (All); p_{T} (GeV/c)",240,0.,12.);
     hPtHAll->SetMinimum(0);
     fOutputStudy->Add(hPtHAll);
 
-    TH1F *hPtKAll = new TH1F("hist_Pt_K0_AllEv", "Kaons pT (All); p_{T} (GeV/c)",240,0.,12.);
+    TH1F *hPtKAll = new TH1F("hist_Pt_K0_AllEv", "K0 pT (All); p_{T} (GeV/c)",240,0.,12.);
     hPtKAll->SetMinimum(0);
     fOutputStudy->Add(hPtKAll);
 
@@ -1782,17 +1820,51 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     hPhiDistCAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistCAll);
 
-    TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Hadrons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Kaons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
     hPhiDistHAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistHAll);
 
-    TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "Kaons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "K0 phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
     hPhiDistKAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistKAll);
 
     TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
     hPhiDistDAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistDAll);
+
+    //phi distributions
+    TH1F *hEtaDistCAll = new TH1F("hist_EtaDistr_Charg", "Charged track eta distr. (All); p_{T} (GeV/c)",40,-1,1);
+    hEtaDistCAll->SetMinimum(0);
+    fOutputStudy->Add(hEtaDistCAll);
+
+    TH1F *hEtaDistHAll = new TH1F("hist_EtaDistr_Kcharg", "Kaons eta distr. (All); p_{T} (GeV/c)",40,-1,1);
+    hEtaDistHAll->SetMinimum(0);
+    fOutputStudy->Add(hEtaDistHAll);
+
+    TH1F *hEtaDistKAll = new TH1F("hist_EtaDistr_K0", "K0 eta distr. (All); p_{T} (GeV/c)",40,-1,1);
+    hEtaDistKAll->SetMinimum(0);
+    fOutputStudy->Add(hEtaDistKAll);
+
+    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_D0", "D^{0} eta distr. (All); p_{T} (GeV/c)",40,-1,1);
+    hEtaDistDAll->SetMinimum(0);
+    fOutputStudy->Add(hEtaDistDAll);
+    
+    //phivsEta
+    TH2F *hPhiVsEtaDistCAll = new TH2F("hist_PhiVsEtaDistr_Charg", "Phi vs Eta distribution - Charged tracks",64,0,6.283,40,-1,1);
+    hPhiVsEtaDistCAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiVsEtaDistCAll);     
+    
+    TH2F *hPhiVsEtaDistHAll = new TH2F("hist_PhiVsEtaDistr_Kcharg", "Phi vs Eta distribution - Charged Kaons",64,0,6.283,40,-1,1);
+    hPhiVsEtaDistHAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiVsEtaDistHAll);  
+    
+    TH2F *hPhiVsEtaDistKAll = new TH2F("hist_PhiVsEtaDistr_K0", "Phi vs Eta distribution - K^{0}",64,0,6.283,40,-1,1);
+    hPhiVsEtaDistKAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiVsEtaDistKAll);  
+    
+    TH2F *hPhiVsEtaDistDAll = new TH2F("hist_PhiVsEtaDistr_D0", "Phi vs Eta distribution - D^{0}",64,0,6.283,40,-1,1);
+    hPhiVsEtaDistDAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiVsEtaDistDAll);  
     }
 
   //for MC analysis only
@@ -1972,6 +2044,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
 
   //Fill of D0 phi distribution
   if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_PhiDistr_D0"))->Fill(d->Phi());  
+  if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_EtaDistr_D0"))->Fill(d->Eta()); 
 
   //Origin of D0
   TString orig="";
@@ -2251,6 +2324,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelationsMCKine(AliAODMCPartic
 
   //Fill of D0 phi distribution
   if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_PhiDistr_D0"))->Fill(d->Phi()); 
+  if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_EtaDistr_D0"))->Fill(d->Phi()); 
   
   //Origin of D0
   TString orig="";
@@ -2452,6 +2526,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
   Double_t ptTrack = track->Pt();
   Double_t d0Track = type!=kK0 ? track->GetImpPar() : 0.;
   Double_t phiTr = track->Phi();
+  Double_t etaTr = track->Eta();
   Double_t origTr = fReadMC ? CheckTrackOrigin(mcArray,(AliAODMCParticle*)mcArray->At(track->GetLabel())) : 0;
 
   TString part = "", orig = "";
@@ -2529,6 +2604,8 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
       if(!fAlreadyFilled) {
  	   ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_%s_Bin%d",part.Data(),ptbin)))->Fill(pTorig);
  	   ((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
+ 	   ((TH1F*)fOutputStudy->FindObject(Form("hist_EtaDistr_%s",part.Data())))->Fill(etaTr);
+ 	   ((TH2F*)fOutputStudy->FindObject(Form("hist_PhiVsEtaDistr_%s",part.Data())))->Fill(phiTr,etaTr);
       }
     }
 
@@ -2566,13 +2643,16 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
          }
       } 
       if(!fAlreadyFilled) {
-	    ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_Bin%d",part.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
+	((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_Bin%d",part.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
         if (origTr>=1&&origTr<=8) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_HF_Bin%d",part.Data(),ptbin)))->Fill(d0orig);
         if (origTr>=1&&origTr<=8) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_HF%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(d0orig);
         ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
         ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_%s_Bin%d",part.Data(),ptbin)))->Fill(pTorig);
         ((TH1F*)fOutputStudy->FindObject(Form("histOrig_%s_Bin%d",part.Data(),ptbin)))->Fill(origTr);
- 	    ((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
+ 	((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
+ 	((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
+ 	((TH1F*)fOutputStudy->FindObject(Form("hist_EtaDistr_%s",part.Data())))->Fill(etaTr);
+ 	((TH2F*)fOutputStudy->FindObject(Form("hist_PhiVsEtaDistr_%s",part.Data())))->Fill(phiTr,etaTr);
       }
     }//end MC case
 
