@@ -68,7 +68,11 @@ class AliAODHeader : public AliVAODHeader {
 
   Int_t     GetRunNumber()          const { return fRunNumber;}
   Int_t     GetEventNumberESDFile() const { return fEventNumberESDFile;}
-  Int_t     GetNumberOfESDTracks()    const { return fNumberESDTracks;}
+  Int_t     GetNumberOfESDTracks()   const { return fNumberESDTracks;}
+  Int_t     GetNumberOfTPCClusters() const {return fNumberTPCClusters;}
+  Int_t     GetNumberOfTPCTracks()   const {return fNumberTPCTracks;}
+  void      SetNumberOfTPCClusters(int n)  {fNumberTPCClusters = n;}
+  void      SetNumberOfTPCTracks(int n)    {fNumberTPCTracks = n;}
   UShort_t  GetBunchCrossNumber()   const { return fBunchCrossNumber; }
   UInt_t    GetOrbitNumber()        const { return fOrbitNumber; }
   UInt_t    GetPeriodNumber()       const { return fPeriodNumber; }
@@ -268,6 +272,8 @@ class AliAODHeader : public AliVAODHeader {
   TString     fESDFileName;         // ESD file name to which this event belongs
   Int_t       fEventNumberESDFile;  // Event number in ESD file
   Int_t       fNumberESDTracks;     // Number of tracks in origingal ESD event
+  Int_t       fNumberTPCTracks;     // Number of TPCrefit tracks in origingal ESD event
+  Int_t       fNumberTPCClusters;   // total number of TPC clusters  
   UInt_t      fL0TriggerInputs;     // L0 Trigger Inputs (mask)
   UInt_t      fL1TriggerInputs;     // L1 Trigger Inputs (mask)
   UShort_t    fL2TriggerInputs;     // L2 Trigger Inputs (mask)
@@ -279,7 +285,7 @@ class AliAODHeader : public AliVAODHeader {
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
   TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 29);
+  ClassDef(AliAODHeader, 30);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

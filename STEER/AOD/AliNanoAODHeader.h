@@ -1,3 +1,4 @@
+
 #ifndef _ALINANOAODHEADER_H_
 #define _ALINANOAODHEADER_H_
 
@@ -61,6 +62,9 @@ public:
 
   virtual Double_t GetZDCEMEnergy(Int_t /* i */) const            {NotImplemented(); return 0;};
   virtual Int_t    GetNumberOfESDTracks()  const            {NotImplemented(); return 0;};
+  virtual Int_t    GetNumberOfTPCClusters() const {NotImplemented(); return 0;};
+  virtual Int_t    GetNumberOfTPCTracks()   const {NotImplemented(); return 0;};
+  
   virtual UInt_t   GetNumberOfITSClusters(Int_t /* ilay */) const {NotImplemented(); return 0;};
   virtual Float_t  GetT0spread(Int_t /* i */)               const {NotImplemented(); return 0;};
   // FIXME: THIS IS UGLY!!!!
