@@ -1992,8 +1992,11 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
       // Set custom ID. Should be the same if custom particle A and B are the same
       if(fCustomParticlesA == fCustomParticlesB)
         particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + iParticle) * 10 + 6);
-      else
-        particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + iParticle) * 10 + idet);
+      else  // Set custom ID based on event counter & custom particle label
+      {
+        // Setting the label of the custom particle allows a user-defined labeling
+        particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + customParticle->GetLabel()) * 10 + 6);
+      }
 
       obj->Add(particle);
     }
