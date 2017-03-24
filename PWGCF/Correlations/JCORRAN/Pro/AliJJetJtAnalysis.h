@@ -236,8 +236,9 @@ class AliJJetJtAnalysis{
 
 
     //Histograms for jt in event
-    AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks
-    AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks
+    AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks with 1/jT weight in track pT bins
+    AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks with 1/jT weight
+    AliJTH1D fhEventJtBin; ///Distribution of track jT for all tracks without weight
 
 
     //Histograms for jt in cone

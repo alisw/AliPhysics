@@ -124,6 +124,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt
   , fhLogJtWithPtCutWeightBinBin()
   , fhLogJtWithPtCutWeight2BinBin()
+  , fhEventJtBin()
   , fhEventJtWeightBin()
   , fhEventJtWithPtCutWeightBinBin()
   , fhJetConeTrkPt()
@@ -371,6 +372,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhJtWeightBinLimBin()
   , fhLogJtWeightBinLimBin()
   , fhLogJtWeight2BinLimBin()
+  , fhEventJtBin()
   , fhEventJtWeightBin()
   , fhEventJtWithPtCutWeightBinBin()
   , fhJetConeTrkPt()
@@ -603,6 +605,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhJtWeightBinLimBin(ap.fhJtWeightBinLimBin)
   , fhLogJtWeightBinLimBin(ap.fhLogJtWeightBinLimBin)
   , fhLogJtWeight2BinLimBin(ap.fhLogJtWeight2BinLimBin)
+  , fhEventJtBin(ap.fhEventJtBin)
   , fhEventJtWeightBin(ap.fhEventJtWeightBin)
   , fhEventJtWithPtCutWeightBinBin(ap.fhEventJtWithPtCutWeightBinBin)
   , fhJetConeTrkPt(ap.fhJetConeTrkPt)
@@ -924,6 +927,11 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   for(int ij=0;ij<=NBINSJt;ij++) LogBinsJt[ij]=LimLJt*exp(ij*logBWJt);
   int NBINSJtW=150;
   double LimLJtW=TMath::Log(0.01), LimHJtW=TMath::Log(10);
+
+  fhEventJtBin 
+    << TH1D("EventJtBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
 
   fhEventJtWeightBin 
     << TH1D("EventJtWeightBin","",NBINSJt, LogBinsJt ) 
@@ -2053,8 +2061,11 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
       z = (track->Vect()*jet->Vect().Unit())/jet->P();
       jt = (track->Vect()-z*jet->Vect()).Mag();
       //jT for all tracks in the event 
-      fhEventJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]->Fill(jt, 1.0/jt * effCorrection);
-      fhEventJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); 
+      if(deltaR < TMath::Pi()/2){
+        fhEventJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]->Fill(jt, 1.0/jt * effCorrection);
+        fhEventJtWeightBin[iContainer][iBin]->Fill(jt, 1.0/jt * effCorrection); 
+        fhEventJtBin[iContainer][iBin]->Fill(jt,effCorrection); 
+      }
 
       //Jet Cone Jt here
       deltaR   = getDiffR(jet->Phi(),track->Phi(),jet->Eta(),track->Eta());
