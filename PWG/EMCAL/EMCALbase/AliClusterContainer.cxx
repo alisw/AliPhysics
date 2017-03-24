@@ -17,6 +17,8 @@
 #include <vector>
 #include <TClonesArray.h>
 
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliVEvent.h"
 #include "AliLog.h"
 #include "AliTLorentzVector.h"
@@ -474,6 +476,12 @@ const char* AliClusterContainer::GetTitle() const
   }
 
   return clusterString.Data();
+}
+
+TString AliClusterContainer::GetDefaultArrayName(const AliVEvent * const ev) const {
+  if(ev->IsA() == AliAODEvent::Class()) return "caloClusters";
+  else if(ev->IsA() == AliESDEvent::Class()) return "CaloClusters";
+  else return "";
 }
 
 

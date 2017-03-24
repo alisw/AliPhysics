@@ -128,6 +128,10 @@ void AliEmcalContainer::SetClassName(const char *clname)
  */
 void AliEmcalContainer::SetArray(const AliVEvent *event)
 {
+  // Handling of default containers
+  if(fClArrayName == "usedefault"){
+    fClArrayName = GetDefaultArrayName(event);
+  }
   const AliVVertex *vertex = event->GetPrimaryVertex();
   if (vertex) vertex->GetXYZ(fVertex);
 
