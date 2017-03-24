@@ -177,14 +177,12 @@ vzBin(0)
      runNums[i] = 0;
 
  for(int i=0;i<90;i++){
-
     for(int j=0;j<10;j++){
-    fHist_znCx_V0_VxVy[i][j] = NULL;
-    fHist_znCy_V0_VxVy[i][j] = NULL;
-    fHist_znAx_V0_VxVy[i][j] = NULL;
-    fHist_znAy_V0_VxVy[i][j] = NULL;
-    }
-
+        fHist_znCx_V0_VxVy[i][j] = NULL;
+        fHist_znCy_V0_VxVy[i][j] = NULL;
+        fHist_znAx_V0_VxVy[i][j] = NULL;
+        fHist_znAy_V0_VxVy[i][j] = NULL;
+     }
     fHist_ZDCA_En_Run[i]  = NULL;
     fHist_ZDCC_En_Run[i]  = NULL;
  }
@@ -198,18 +196,17 @@ vzBin(0)
 
  for(int i=0;i<4;i++){
   for(int j=0;j<5;j++){
-   fHist_X_vs_Obs_before[i][j] = NULL;
-   fHist_X_vs_Obs_after1[i][j] = NULL;
-   fHist_XX_vs_Obs_before[i][j] = NULL;
-   fHist_XX_vs_Obs_after1[i][j] = NULL;
-  }
+      fHist_X_vs_Obs_before[i][j] = NULL;
+      fHist_X_vs_Obs_after1[i][j] = NULL;
+      fHist_XX_vs_Obs_before[i][j] = NULL;
+      fHist_XX_vs_Obs_after1[i][j] = NULL;
+   }
  }
-
-
 
  for(int i=0;i<10;i++){
- fFB_Efficiency_Cent[i] = NULL;
+     fFB_Efficiency_Cent[i] = NULL;
  }
+
 
      DefineInput(1, AliFlowEventSimple::Class()); // Input slot #0 works with an AliFlowEventSimple
     DefineOutput(1,TList::Class());
@@ -322,11 +319,11 @@ vzBin(0)
 
  for(int i=0;i<90;i++){
     for(int j=0;j<10;j++){
-    fHist_znCx_V0_VxVy[i][j] = NULL;
-    fHist_znCy_V0_VxVy[i][j] = NULL;
-    fHist_znAx_V0_VxVy[i][j] = NULL;
-    fHist_znAy_V0_VxVy[i][j] = NULL;
-    }
+        fHist_znCx_V0_VxVy[i][j] = NULL;
+        fHist_znCy_V0_VxVy[i][j] = NULL;
+        fHist_znAx_V0_VxVy[i][j] = NULL;
+        fHist_znAy_V0_VxVy[i][j] = NULL;
+     }
     fHist_ZDCA_En_Run[i]  = NULL;
     fHist_ZDCC_En_Run[i]  = NULL;
  }
@@ -340,16 +337,17 @@ vzBin(0)
 
  for(int i=0;i<4;i++){
   for(int j=0;j<5;j++){
-   fHist_X_vs_Obs_before[i][j] = NULL;
-   fHist_X_vs_Obs_after1[i][j] = NULL;
-   fHist_XX_vs_Obs_before[i][j] = NULL;
-   fHist_XX_vs_Obs_after1[i][j] = NULL;
-  }
+      fHist_X_vs_Obs_before[i][j] = NULL;
+      fHist_X_vs_Obs_after1[i][j] = NULL;
+      fHist_XX_vs_Obs_before[i][j] = NULL;
+      fHist_XX_vs_Obs_after1[i][j] = NULL;
+   }
  }
 
  for(int i=0;i<10;i++){
- fFB_Efficiency_Cent[i] = NULL;
+     fFB_Efficiency_Cent[i] = NULL;
  }
+
 
    fDataSet="2010";
    fAnalysisSet="recenter1";
@@ -380,19 +378,19 @@ AliAnalysisTaskVnZDC::~AliAnalysisTaskVnZDC()
  if(fAnalysisSet=="recenter2"){
   for(int i=0;i<90;i++){
     for(int j=0;j<10;j++){
-     delete fHist_znCx_V0_VxVy[i][j];
-     delete fHist_znCy_V0_VxVy[i][j];
-     delete fHist_znAx_V0_VxVy[i][j];
-     delete fHist_znAy_V0_VxVy[i][j];
-    }
+       delete fHist_znCx_V0_VxVy[i][j];
+       delete fHist_znCy_V0_VxVy[i][j];
+       delete fHist_znAx_V0_VxVy[i][j];
+       delete fHist_znAy_V0_VxVy[i][j];
+      }
     delete fHist_ZDCA_En_Run[i];
     delete fHist_ZDCC_En_Run[i];
   }
  }
 
 
-  for(int i=0;i<10;i++){
-   delete fFB_Efficiency_Cent[i];
+ for(int i=0;i<10;i++){
+    delete fFB_Efficiency_Cent[i];
   }
 
  delete           fListHistos;
@@ -415,25 +413,25 @@ void AliAnalysisTaskVnZDC::UserCreateOutputObjects()
 
  Int_t runArray_2011[68] = {167915, 168115, 168460, 169035, 169238, 169859, 170228, 167920, 168310, 168464, 169091, 169411, 169923, 170230, 167985, 168311, 168467, 169094, 169415, 170027, 170268, 167987, 168322, 168511, 169138, 169417, 170081, 170269, 167988, 168325, 168512, 169144, 169835, 170155, 170270, 168069, 168341, 168514, 169145, 169837, 170159, 170306, 168076, 168342, 168777, 169148, 169838, 170163, 170308, 168105, 168361, 168826, 169156, 169846, 170193, 170309, 168107, 168362, 168988, 169160, 169855, 170203, 168108, 168458, 168992, 169167, 169858, 170204};
 
-Int_t runArray_2015[90] = {246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246540, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
+ Int_t runArray_2015[90] = {246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246540, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
 
  //Int_t runArray_2015[77] = {246994, 246991, 246989, 246984, 246982, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245692, 245683};
 
 
  if(fDataSet=="2010"){
-  frunflag = 89;
-  for(int i=0;i<frunflag;i++)
-    runNums[i] = runArray_2010[i];
+    frunflag = 89;
+    for(int i=0;i<frunflag;i++)
+       runNums[i] = runArray_2010[i];
  }
  if(fDataSet=="2011"){
-   frunflag = 10;                 //<--------- 2011 runnumbers have to be checked and put...
-  for(int i=0;i<frunflag;i++)
-    runNums[i] = runArray_2011[i];
+    frunflag = 10;                 //<--------- 2011 runnumbers have to be checked and put...
+    for(int i=0;i<frunflag;i++)
+       runNums[i] = runArray_2011[i];
  }
  if(fDataSet=="2015"){
-  frunflag = 90;
-  for(int i=0;i<frunflag;i++)
-    runNums[i] = runArray_2015[i];
+    frunflag = 90;
+    for(int i=0;i<frunflag;i++)
+       runNums[i] = runArray_2015[i];
  }
 
 
@@ -516,18 +514,18 @@ Int_t runArray_2015[90] = {246994, 246991, 246989, 246984, 246982, 246980, 24694
 
  //-------- define and add the recenter histograms ----------------
 if(fDataSet=="2010") {
-  vxBin = 8;
-  vyBin = 8;
-//vxBin = 20;
-//vyBin = 20;
-  vzBin = 10;   // j<10
+   vxBin = 8;
+   vyBin = 8;
+ //vxBin = 20;
+ //vyBin = 20;
+   vzBin = 10;   // j<10
 
-  VxCut[0] =  -0.035;
-  VxCut[1] =   0.020;
-  VyCut[0] =   0.144;
-  VyCut[1] =   0.214;
-  VzCut[0] =   -10.0;
-  VzCut[1] =    10.0;
+   VxCut[0] =  -0.035;
+   VxCut[1] =   0.020;
+   VyCut[0] =   0.144;
+   VyCut[1] =   0.214;
+   VzCut[0] =   -10.0;
+   VzCut[1] =    10.0;
  }
 
  if(fDataSet=="2015"){
@@ -538,16 +536,16 @@ if(fDataSet=="2010") {
 
    vzBin = 10;   // j<10
 
-  VxCut[0] =   0.060;
-  VxCut[1] =   0.086;
-  VyCut[0] =   0.321;
-  VyCut[1] =   0.345;
-  VzCut[0] =   -10.0;
-  VzCut[1] =    10.0;
+   VxCut[0] =   0.060;
+   VxCut[1] =   0.086;
+   VyCut[0] =   0.321;
+   VyCut[1] =   0.345;
+   VzCut[0] =   -10.0;
+   VzCut[1] =    10.0;
   }
  if(fDataSet=="2011"){
-   AliDebug(2,"\n\n !!** WARNING ***!!  \n cuts not defined for DATASET: %s\n ...EXIT...\n\n)");
-   exit(0);
+    AliDebug(2,"\n\n !!** WARNING ***!!  \n cuts not defined for DATASET: %s\n ...EXIT...\n\n)");
+    exit(0);
  }
 
 
@@ -558,13 +556,6 @@ if(fDataSet=="2010") {
   fHist_Vz_ArrayFinder = new TH1F("fHist_Vz_ArrayFinder","",vzBin,VzCut[0],VzCut[1]);
 
 
-
- /*testdata
-  error in bin 3 of 'fHist_v2xV1_ZDN_Norm_cosXX' 
-  w/o  sumW2 = 1.88819554507380614e-04;
-  with sumW2 = 1.91637179319978525e-04;
-  conclusion: ~3% increase in error. 
-  */
 
 
 
@@ -582,23 +573,23 @@ if(fDataSet=="2010") {
 
     for(int i=0;i<4;i++) {
       for(int j=0;j<5;j++) {
-      //store: X,Y position for recenter:
-       sprintf(name,"fHist_%s_vs_%s_before",static_cast<const char*>(sNameQn[i]),static_cast<const char*>(sNameVs[j]));
-       fHist_X_vs_Obs_before[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
-       fListHistos->Add(fHist_X_vs_Obs_before[i][j]);
+       //store: X,Y position for recenter:
+         sprintf(name,"fHist_%s_vs_%s_before",static_cast<const char*>(sNameQn[i]),static_cast<const char*>(sNameVs[j]));
+         fHist_X_vs_Obs_before[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
+         fListHistos->Add(fHist_X_vs_Obs_before[i][j]);
 
-       sprintf(name,"fHist_%s_vs_%s_after1",static_cast<const char*>(sNameQn[i]),static_cast<const char*>(sNameVs[j]));
-       fHist_X_vs_Obs_after1[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
-       fListHistos->Add(fHist_X_vs_Obs_after1[i][j]);
+         sprintf(name,"fHist_%s_vs_%s_after1",static_cast<const char*>(sNameQn[i]),static_cast<const char*>(sNameVs[j]));
+         fHist_X_vs_Obs_after1[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
+         fListHistos->Add(fHist_X_vs_Obs_after1[i][j]);
 
-       sprintf(name,"fHist_%s_vs_%s_before",static_cast<const char*>(sNameQn2[i]),static_cast<const char*>(sNameVs[j]));
-       fHist_XX_vs_Obs_before[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
-       fListHistos->Add(fHist_XX_vs_Obs_before[i][j]);
+         sprintf(name,"fHist_%s_vs_%s_before",static_cast<const char*>(sNameQn2[i]),static_cast<const char*>(sNameVs[j]));
+         fHist_XX_vs_Obs_before[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
+         fListHistos->Add(fHist_XX_vs_Obs_before[i][j]);
 
-       sprintf(name,"fHist_%s_vs_%s_after1",static_cast<const char*>(sNameQn2[i]),static_cast<const char*>(sNameVs[j]));
-       fHist_XX_vs_Obs_after1[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
-       fListHistos->Add(fHist_XX_vs_Obs_after1[i][j]);
-      }
+         sprintf(name,"fHist_%s_vs_%s_after1",static_cast<const char*>(sNameQn2[i]),static_cast<const char*>(sNameVs[j]));
+         fHist_XX_vs_Obs_after1[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
+         fListHistos->Add(fHist_XX_vs_Obs_after1[i][j]);
+       }
     }
 
   Double_t centRange[12] = {0,5,10,20,30,40,50,60,70,80,90,100};
@@ -688,15 +679,15 @@ if(fDataSet=="2010") {
 
   //------------ calculate centrality weight: ------------
    if(fZDCESEList) {
-     fCent_fromDATA = (TH1F *)  fZDCESEList->FindObject("fHist_Cent_afterr_ZDCcut");
+      fCent_fromDATA = (TH1F *)  fZDCESEList->FindObject("fHist_Cent_afterr_ZDCcut");
     }
-   else{
-    AliDebug(2,"\n\n ******** Running without Centrality weight !!******** \n\n");
-    fCent_fromDATA = new TH1F("fCent_fromDATA","Centrality distribution",100,0,100);
-    for(int i=1;i<=100;i++){
-      fCent_fromDATA->SetBinContent(i,100);
+    else{
+      AliDebug(2,"\n\n ******** Running without Centrality weight !!******** \n\n");
+      fCent_fromDATA = new TH1F("fCent_fromDATA","Centrality distribution",100,0,100);
+       for(int i=1;i<=100;i++){
+          fCent_fromDATA->SetBinContent(i,100);
+       }
     }
-   }
 
    Double_t maxCount = -1;
    Int_t    maxCent  = -1;
@@ -704,9 +695,9 @@ if(fDataSet=="2010") {
 
    for(int i=1;i<=fCent_fromDATA->GetNbinsX();i++){
      Content = fCent_fromDATA->GetBinContent(i);
-     if(maxCount < Content){
-       maxCount = Content;
-       maxCent = i;
+      if(maxCount < Content){
+         maxCount = Content;
+         maxCent = i;
       }
    }
 
@@ -737,19 +728,19 @@ if(fDataSet=="2010") {
 
  if(fFBEffiList1) {
    for(int i=0;i<10;i++) {
-    fFB_Efficiency_Cent[i] = (TH1D *) fFBEffiList1->FindObject(Form("eff_unbiased_%d",i));
-    name2 = fFB_Efficiency_Cent[i]->GetName();
+      fFB_Efficiency_Cent[i] = (TH1D *) fFBEffiList1->FindObject(Form("eff_unbiased_%d",i));
+      name2 = fFB_Efficiency_Cent[i]->GetName();
     //cout<<i<<" name = "<<name2<<endl;
    }
  }
-  else{ // if MC efficiency not found then use weight = 1. Define histograms so that code doesn't crash
+ else{ // if MC efficiency not found then use weight = 1. Define histograms so that code doesn't crash
     for(int i=0;i<10;i++){
-     fFB_Efficiency_Cent[i] = new TH1D(Form("eff_unbiased_%d",i),"",100,0,20); 
-      for(int j=1;j<=100;j++){
-        fFB_Efficiency_Cent[i]->SetBinContent(j,1.000);
-      }
-    } 
-  }
+       fFB_Efficiency_Cent[i] = new TH1D(Form("eff_unbiased_%d",i),"",100,0,20); 
+        for(int j=1;j<=100;j++){
+           fFB_Efficiency_Cent[i]->SetBinContent(j,1.000);
+     }
+   } 
+ }
  //---------Filter bit efficiency----------
 
 
@@ -760,13 +751,13 @@ if(fDataSet=="2010") {
   if(fZDCESEList) {
    for(int i=0;i<frunflag;i++) { 
      for(int j=0;j<10;j++){
-       fHist_znCx_V0_VxVy[i][j] = (TProfile2D *) fZDCESEList->FindObject(Form("fHist_znCx_V0_Run%d_Vz%d",runNums[i],j+1));
-       fHist_znCy_V0_VxVy[i][j] = (TProfile2D *) fZDCESEList->FindObject(Form("fHist_znCy_V0_Run%d_Vz%d",runNums[i],j+1));
-       fHist_znAx_V0_VxVy[i][j] = (TProfile2D *) fZDCESEList->FindObject(Form("fHist_znAx_V0_Run%d_Vz%d",runNums[i],j+1));
-       fHist_znAy_V0_VxVy[i][j] = (TProfile2D *) fZDCESEList->FindObject(Form("fHist_znAy_V0_Run%d_Vz%d",runNums[i],j+1));
-       if(!fHist_znCx_V0_VxVy[i][j] || !fHist_znCy_V0_VxVy[i][j] || !fHist_znAx_V0_VxVy[i][j] || !fHist_znAy_V0_VxVy[i][j]) {
-	 printf("\n\n !!** WARNING *** One/more Recenter1 histograms NOT FOUND\n ...........!! \n\n");
-	 //exit(0);
+         fHist_znCx_V0_VxVy[i][j] = (TProfile2D *) fZDCESEList->FindObject(Form("fHist_znCx_V0_Run%d_Vz%d",runNums[i],j+1));
+         fHist_znCy_V0_VxVy[i][j] = (TProfile2D *) fZDCESEList->FindObject(Form("fHist_znCy_V0_Run%d_Vz%d",runNums[i],j+1));
+         fHist_znAx_V0_VxVy[i][j] = (TProfile2D *) fZDCESEList->FindObject(Form("fHist_znAx_V0_Run%d_Vz%d",runNums[i],j+1));
+         fHist_znAy_V0_VxVy[i][j] = (TProfile2D *) fZDCESEList->FindObject(Form("fHist_znAy_V0_Run%d_Vz%d",runNums[i],j+1));
+          if(!fHist_znCx_V0_VxVy[i][j] || !fHist_znCy_V0_VxVy[i][j] || !fHist_znAx_V0_VxVy[i][j] || !fHist_znAy_V0_VxVy[i][j]) {
+  	     printf("\n\n !!** WARNING *** One/more Recenter1 histograms NOT FOUND\n ...........!! \n\n");
+	   //exit(0);
       }
      }
     }
@@ -776,10 +767,10 @@ if(fDataSet=="2010") {
     printf("\n\n ******** Running without Recentering 1 !!******** \n\n");
     for(int i=0;i<frunflag;i++){
      for(int j=0;j<10;j++){
-      fHist_znCx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
-      fHist_znCy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
-      fHist_znAx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
-      fHist_znAy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+         fHist_znCx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+         fHist_znCy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+         fHist_znAx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+         fHist_znAy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
      }
     }
    }
@@ -836,22 +827,23 @@ if(fDataSet=="2010") {
         fHist_ZDCA_En_Run[i]  = new TProfile2D(Form("fHist_ZDCA_En_Run%d",runNums[i]),"",100,0,100,5,0,5,"");
         fHist_ZDCC_En_Run[i]  = new TProfile2D(Form("fHist_ZDCC_En_Run%d",runNums[i]),"",100,0,100,5,0,5,"");
     //store: <X>,<Y> run by run for recenter://90 centrality bins:
-    for(int j=0;j<10;j++){
-     fHist_znCx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
-     fHist_znCy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
-     fHist_znAx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
-     fHist_znAy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+        for(int j=0;j<10;j++){
+            fHist_znCx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+            fHist_znCy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+            fHist_znAx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+            fHist_znAy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90,"");
+        }
      }
-    }
+
     for(int i=0;i<frunflag;i++){
-     fListHistos->Add(fHist_ZDCA_En_Run[i]);
-     fListHistos->Add(fHist_ZDCC_En_Run[i]);
-    for(int j=0;j<10;j++) {
-     fZDCESEList->Add(fHist_znCx_V0_VxVy[i][j]);
-     fZDCESEList->Add(fHist_znCy_V0_VxVy[i][j]);
-     fZDCESEList->Add(fHist_znAx_V0_VxVy[i][j]);
-     fZDCESEList->Add(fHist_znAy_V0_VxVy[i][j]);
-     }
+        fListHistos->Add(fHist_ZDCA_En_Run[i]);
+        fListHistos->Add(fHist_ZDCC_En_Run[i]);
+        for(int j=0;j<10;j++) {
+            fZDCESEList->Add(fHist_znCx_V0_VxVy[i][j]);
+            fZDCESEList->Add(fHist_znCy_V0_VxVy[i][j]);
+            fZDCESEList->Add(fHist_znAx_V0_VxVy[i][j]);
+            fZDCESEList->Add(fHist_znAy_V0_VxVy[i][j]);
+        }
     }
 
     fZDCESEList->Add(fHist_Cent_count1);
@@ -868,14 +860,14 @@ if(fDataSet=="2010") {
   PostData(1,fListHistos); //posting in slot #1,
 
   if(fAnalysisSet=="recenter1") {
-  PostData(2,fZDCESEList); 
+     PostData(2,fZDCESEList); 
   }
   else{
-    fZListDummy = new TList();
-    fZListDummy->SetOwner(kTRUE);
-    fZListDummy->Add(fHist_Cent_count1);
-    fZListDummy->Add(fHist_Cent_count2);
-    PostData(2,fZListDummy); 
+     fZListDummy = new TList();
+     fZListDummy->SetOwner(kTRUE);
+     fZListDummy->Add(fHist_Cent_count1);
+     fZListDummy->Add(fHist_Cent_count2);
+     PostData(2,fZListDummy); 
   }
 
   //AliDebug(2,
@@ -902,8 +894,8 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
 
 
   if(!aod){
-    printf("\n ... ::UserExec no aod found.....  \n");
-    return;
+     printf("\n ... ::UserExec no aod found.....  \n");
+     return;
   }
 
   fHist_Event_count->Fill(stepCount);
@@ -916,7 +908,6 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
   Vxyz[1]             = pVertex->GetY();
   Vxyz[2]             = pVertex->GetZ();
 
-  //printf("\n ... ::UserExec() is being called. 2 Step %d...  \n",stepCount);
 
   //------- Apply Necessary event cuts ---------
   if(Vxyz[2] >= VzCut[1]  || Vxyz[2] <= VzCut[0])  return;
@@ -931,7 +922,6 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
   fHist_Event_count->Fill(stepCount);
   stepCount++;
 
-  //printf("\n ... ::UserExec() is being called. 3 Step %d...  \n",stepCount);
 
 
   Double_t EvtCent = fEvent->GetCentrality();
@@ -960,19 +950,18 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
    Double_t centrCL0=300; Double_t centrTRK=300;
 
  if(fDataSet=="2010"||fDataSet=="2011"){
-   centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
-   centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
-   centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
-   centrTRK = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK");
+    centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+    centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
+    centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
+    centrTRK = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK");
   }// 2010/2011
 
  else{
      fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
-     if(!fMultSelection) {
-    //If you get this warning, please check if AliMultSelectionTask actually ran (before your task)
-       AliDebug(2,Form("\n **WARNING** ::UserExec() AliMultSelection object not found. Step# %d\n",stepCount));
-       //printf("\n ... **WARNING** \n::UserExec() AliMultSelection object not found. step: %d...  \n",stepCount);
-       exit(1);
+      if(!fMultSelection) {
+        //If you get this warning, please check if AliMultSelectionTask actually ran (before your task)
+        AliDebug(2,Form("\n **WARNING** ::UserExec() AliMultSelection object not found. Step# %d\n",stepCount));
+        exit(1);
     }
       centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
       centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
@@ -1090,7 +1079,7 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
      if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1) {
             fPileUpCount->Fill(5.5);
             BisPileup=kTRUE;
-          }
+        }
 
           double covTrc[6], covSPD[6];
           vtTrc->GetCovarianceMatrix(covTrc);
@@ -1132,7 +1121,7 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
 //       }
          if(aodTrk->TestFilterBit(128))
               multTPC++;
-        } // end of for (Int_t it = 0; it < nTracks; it++)
+     } // end of for (Int_t it = 0; it < nTracks; it++)
 
       Double_t multTPCn = multTPC;
       Double_t multEsdn = multEsd;
@@ -1175,14 +1164,14 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
     fTPCV0M_CentDiff_vs_Vz->Fill(Vxyz[2],centrTRK-centrV0M);
 
   if(EvtCent<20){
-    fAvg_Cent_vs_Vx_Cent_woCut->Fill(Vxyz[0],EvtCent);
-    fAvg_Cent_vs_Vy_Cent_woCut->Fill(Vxyz[1],EvtCent);
-    fAvg_Cent_vs_Vz_Cent_woCut->Fill(Vxyz[2],EvtCent);
+     fAvg_Cent_vs_Vx_Cent_woCut->Fill(Vxyz[0],EvtCent);
+     fAvg_Cent_vs_Vy_Cent_woCut->Fill(Vxyz[1],EvtCent);
+     fAvg_Cent_vs_Vz_Cent_woCut->Fill(Vxyz[2],EvtCent);
    }
   if(EvtCent>50){
-    fAvg_Cent_vs_Vx_Peri_woCut->Fill(Vxyz[0],EvtCent);
-    fAvg_Cent_vs_Vy_Peri_woCut->Fill(Vxyz[1],EvtCent);
-    fAvg_Cent_vs_Vz_Peri_woCut->Fill(Vxyz[2],EvtCent);
+     fAvg_Cent_vs_Vx_Peri_woCut->Fill(Vxyz[0],EvtCent);
+     fAvg_Cent_vs_Vy_Peri_woCut->Fill(Vxyz[1],EvtCent);
+     fAvg_Cent_vs_Vz_Peri_woCut->Fill(Vxyz[2],EvtCent);
    }
 
 
@@ -1222,10 +1211,10 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
   stepCount++;
 
   if(fAnalysisSet=="recenter1"){
-  for(Int_t it=0; it<5; it++) {
-  fHist_ZDCA_En_Run[runindex]->Fill(EvtCent,it,towZNA[it]);
-  fHist_ZDCC_En_Run[runindex]->Fill(EvtCent,it,towZNC[it]);
-  }
+   for(Int_t it=0; it<5; it++) {
+       fHist_ZDCA_En_Run[runindex]->Fill(EvtCent,it,towZNA[it]);
+       fHist_ZDCC_En_Run[runindex]->Fill(EvtCent,it,towZNC[it]);
+    }
   }
 
 //********** Get centroid from ZDCs **************
@@ -1236,8 +1225,8 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
   Float_t zncEnergy=0., znaEnergy=0.;
 
   for(Int_t i=0; i<5; i++){
-    zncEnergy += towZNC[i];
-    znaEnergy += towZNA[i];
+     zncEnergy += towZNC[i];
+     znaEnergy += towZNA[i];
   }
 
 
@@ -1299,10 +1288,10 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
     }
 
   if(denZNC!=0) {
-    xyZNC[0] = numXZNC/denZNC;
-    xyZNC[1] = numYZNC/denZNC;
+     xyZNC[0] = numXZNC/denZNC;
+     xyZNC[1] = numYZNC/denZNC;
   }
-   else{
+  else{
      xyZNC[0]  = 999.;
      xyZNC[1]  = 999.;
      zncEnergy =   0.;
@@ -1357,53 +1346,44 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
           cIndex = abs(EvtCent/10.0) + 1;
     }
 
-    //check my commited code. May be I am calling track loop for recenter1, causing 
-    // a call to undefined histogram. do lot of cout and see where it breaks. 
 
     Double_t dUx = 0;
     Double_t dUy = 0;
 
-if(fAnalysisSet=="recenter2") {
-
+ if(fAnalysisSet=="recenter2") {
     for(Int_t i=0; i<iTracks; i++)
-    {
-    pTrack     =  fEvent->GetTrack(i);
-    if (!pTrack)             continue;
+     {
+      pTrack     =  fEvent->GetTrack(i);
+      if (!pTrack)             continue;
+      dPhi      =         pTrack->Phi();
+      dPt       =         pTrack-> Pt();
+      dEta      =         pTrack->Eta();
+      //dCharge   =      pTrack->Charge();
+      if(fabs(dEta)>0.8)       continue;
+      if(dPt<0.15 || dPt>10.0) continue;
+      nRefMult++;
+      if(dPt<0.20)             continue;
 
-    dPhi      =         pTrack->Phi();
-    dPt       =         pTrack-> Pt();
-    dEta      =         pTrack->Eta();
-    //dCharge   =      pTrack->Charge();
+      //fHistQA_etaphi->Fill(dPhi,dEta);
+      ipTBin = fFB_Efficiency_Cent[cIndex]->FindBin(dPt);
+      pTwgt  = 1.0/fFB_Efficiency_Cent[cIndex]->GetBinContent(ipTBin);
 
-    if(fabs(dEta)>0.8)       continue;
-    if(dPt<0.15 || dPt>10.0) continue;
-    nRefMult++;
+      Qnx_TPC[0] += TMath::Cos(2.*dPhi)*pTwgt;
+      Qny_TPC[0] += TMath::Sin(2.*dPhi)*pTwgt;
 
-    if(dPt<0.20)             continue;
-
-
-    //fHistQA_etaphi->Fill(dPhi,dEta);
-    ipTBin = fFB_Efficiency_Cent[cIndex]->FindBin(dPt);
-    pTwgt  = 1.0/fFB_Efficiency_Cent[cIndex]->GetBinContent(ipTBin);
-
-    Qnx_TPC[0] += TMath::Cos(2.*dPhi)*pTwgt;
-    Qny_TPC[0] += TMath::Sin(2.*dPhi)*pTwgt;
-
-    npoiMult   += pTwgt;
-    //cout<<"c = "<<EvtCent<<" indC = "<<cIndex<<"  "<<npoiMult<<" pt = "<<dPt<<" weight = "<<pTwgt<<endl;
-
+      npoiMult   += pTwgt;
+      //cout<<"c = "<<EvtCent<<" indC = "<<cIndex<<"  "<<npoiMult<<" pt = "<<dPt<<" weight = "<<pTwgt<<endl;
     }//track loop ends
   } //----- call track loop only for recenter2 -------
 
-   //printf("\n ... ::UserExec() is being called. Step 3 %d...  \n",stepCount);
 
   if(npoiMult>0){
      dUx = Qnx_TPC[0]/npoiMult;
      dUy = Qny_TPC[0]/npoiMult;
   }
   else{
-    dUx = 0;
-    dUy = 0;
+     dUx = 0;
+     dUy = 0;
   }
 
    //double psi2 = 0.5*TMath::ATan2(Qny_TPC[0],Qnx_TPC[0]);
@@ -1415,18 +1395,17 @@ if(fAnalysisSet=="recenter2") {
  
   fHist_Cent_count2->        Fill(EvtCent);
 
-  //printf("\n ... ::UserExec() is being called. Step 4 %d...  \n",stepCount);
 
 
   if(EvtCent<20){
-    fAvg_Cent_vs_Vx_Cent_wCuts->Fill(Vxyz[0],EvtCent);
-    fAvg_Cent_vs_Vy_Cent_wCuts->Fill(Vxyz[1],EvtCent);
-    fAvg_Cent_vs_Vz_Cent_wCuts->Fill(Vxyz[2],EvtCent);
+     fAvg_Cent_vs_Vx_Cent_wCuts->Fill(Vxyz[0],EvtCent);
+     fAvg_Cent_vs_Vy_Cent_wCuts->Fill(Vxyz[1],EvtCent);
+     fAvg_Cent_vs_Vz_Cent_wCuts->Fill(Vxyz[2],EvtCent);
    }
   if(EvtCent>50){
-    fAvg_Cent_vs_Vx_Peri_wCuts->Fill(Vxyz[0],EvtCent);
-    fAvg_Cent_vs_Vy_Peri_wCuts->Fill(Vxyz[1],EvtCent);
-    fAvg_Cent_vs_Vz_Peri_wCuts->Fill(Vxyz[2],EvtCent);
+     fAvg_Cent_vs_Vx_Peri_wCuts->Fill(Vxyz[0],EvtCent);
+     fAvg_Cent_vs_Vy_Peri_wCuts->Fill(Vxyz[1],EvtCent);
+     fAvg_Cent_vs_Vz_Peri_wCuts->Fill(Vxyz[2],EvtCent);
    }
 
   
@@ -1452,13 +1431,11 @@ if(fAnalysisSet=="recenter2") {
   fHist_Psi1_zdnA->Fill(psi2);
 
 
-  //printf("\n ... ::UserExec() is being called. Step 4 %d...  \n",stepCount);
 
   Int_t indexVx = fHist_Vx_ArrayFinder->FindBin(Vxyz[0]);
   Int_t indexVy = fHist_Vy_ArrayFinder->FindBin(Vxyz[1]);
   Int_t indexVz = fHist_Vz_ArrayFinder->FindBin(Vxyz[2]);
 
-  //printf("\n ... ::UserExec() is being called. Step 5 %d...  \n",stepCount);
 
  /*if(fAnalysisSet=="recenter1"){
   Double_t tVertexBin1 = (Double_t) (indexVy-1)*vxBin + (Double_t)indexVx - 0.5 ; // 
@@ -1494,17 +1471,11 @@ if(fAnalysisSet=="recenter2") {
    for(int i=0;i<4;i++){
      for(int j=0;j<5;j++){
         fHist_X_vs_Obs_before[i][j]->Fill(FillVsWith[j],FillValue1[i]);
-       fHist_XX_vs_Obs_before[i][j]->Fill(FillVsWith[j],FillValue11[i]);
+        fHist_XX_vs_Obs_before[i][j]->Fill(FillVsWith[j],FillValue11[i]);
      }
    }
-   // why the fuck did I miss this>> 'indexVz' should have replaced by 'tCentBin'
-   /*
-   meanCx[0] = fHist_znCx_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,indexVz); // Holy mother of GOD..!!!! indexVz ???!!!
-   meanCy[0] = fHist_znCy_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,indexVz);
-   meanAx[0] = fHist_znAx_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,indexVz);
-   meanAy[0] = fHist_znAy_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,indexVz); */
 
-   meanCx[0] = fHist_znCx_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,tCentBin); //Fixed here..
+   meanCx[0] = fHist_znCx_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,tCentBin); 
    meanCy[0] = fHist_znCy_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,tCentBin);
    meanAx[0] = fHist_znAx_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,tCentBin);
    meanAy[0] = fHist_znAy_V0_VxVy[runindex][indexVz-1]->GetBinContent(tVertexBin2,tCentBin); 
@@ -1580,21 +1551,20 @@ if(fAnalysisSet=="recenter2") {
 
 
   
-  if(fievent%10==0){
-   std::cout<<fievent<<" cTPC= "<<EvtCent<<" cV0M = "<<centrV0M<<" cWgt = "<<CentWgt<<" vz= "<<Vxyz[2]<<"\tCx= "<<meanCx[0]
-   <<"\tCy= "<<meanCy[0]<<"\tAx= "<<meanAx[0]<<"\tAy= "<<meanAy[0]<<"\tRefm= "<<nRefMult<<std::endl;  } 
+  //if(fievent%10==0){
+  //std::cout<<fievent<<" cTPC= "<<EvtCent<<" cV0M = "<<centrV0M<<" cWgt = "<<CentWgt<<" vz= "<<Vxyz[2]<<"\tCx= "<<meanCx[0]
+  //<<"\tCy= "<<meanCy[0]<<"\tAx= "<<meanAx[0]<<"\tAy= "<<meanAy[0]<<"\tRefm= "<<nRefMult<<std::endl;  } 
  
 
   PostData(1,fListHistos);
 
   if(fAnalysisSet=="recenter2"){
-  PostData(2,fZListDummy); 
+    PostData(2,fZListDummy); 
   }
   else{
-  PostData(2,fZDCESEList); 
+    PostData(2,fZDCESEList); 
   }
-  //printf("\n ... ::UserExec() is being called. Step last %d... Event %d  \n",stepCount,fievent);
-  
+
 
 
   fievent++;
@@ -1626,8 +1596,8 @@ void AliAnalysisTaskVnZDC::Terminate(Option_t *)
 double AliAnalysisTaskVnZDC::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
 {
   // calculate sqrt of weighted distance to other vertex
-  if (!v0 || !v1) {
-    AliDebug(2,"\n\n ::GetWDist => One of vertices is not valid\n\n");
+  if(!v0 || !v1) {
+     AliDebug(2,"\n\n ::GetWDist => One of vertices is not valid\n\n");
     return 0;
   }
   static TMatrixDSym vVb(3);
@@ -1673,15 +1643,15 @@ double AliAnalysisTaskVnZDC::GetWDist(const AliVVertex* v0, const AliVVertex* v1
   //int bcPrim = vtPrm->GetBC();
 
   for(int ipl=0;ipl<nPlp;ipl++) {
-    vtPlp = (const AliVVertex*)aod->GetPileupVertexTracks(ipl);
-    if (vtPlp->GetNContributors() < kMinPlpContrib) continue;
-    if (vtPlp->GetChi2perNDF()    > kMaxPlpChi2)    continue;
+     vtPlp = (const AliVVertex*)aod->GetPileupVertexTracks(ipl);
+      if(vtPlp->GetNContributors() < kMinPlpContrib) continue;
+      if(vtPlp->GetChi2perNDF()    > kMaxPlpChi2)    continue;
     //int bcPlp = vtPlp->GetBC();
     //if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2)
     // return kTRUE; // pile-up from other BC
 
     double wDst = GetWDist(vtPrm,vtPlp);
-    if (wDst<kMinWDist)        continue;
+      if(wDst<kMinWDist)        continue;
 
     return kTRUE; // pile-up: well separated vertices
     }
