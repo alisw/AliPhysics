@@ -7,6 +7,7 @@
 #include <TH1D.h>
 //#include "AliFemtoHisto.h"
 #include <cstdio>
+#include <TNtuple.h>
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -33,9 +34,12 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const char* title,
   , fDenLongP(NULL)
   , fDenLongN(NULL)
   , fkTMonitor(NULL)
+  , mNtuple(NULL)
+  , fParticleP(kFALSE)
 {
   // Default constructor
   // set up numerators
+  fParticleP = kFALSE;
   fNumOutP = new TH1D(TString("NumOutP") + title, title, nbins, QinvLo, QinvHi);
   fNumOutN = new TH1D(TString("NumOutN") + title, title, nbins, QinvLo, QinvHi);
   fNumSideP = new TH1D(TString("NumSideP") + title, title, nbins, QinvLo, QinvHi);
@@ -52,6 +56,7 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const char* title,
   fDenLongN = new TH1D(TString("DenLongN") + title, title, nbins, QinvLo, QinvHi);
 
   fkTMonitor = new TH1D(TString("kTDep") + title, title, 250, 0.0, 5.0);
+  mNtuple = new TNtuple(TString("pair") + title, "pair", "px1:py1:pz1:e1:px2:py2:pz2:e2");
 
   // to enable error bar calculation...
   fNumOutP->Sumw2();
@@ -120,6 +125,7 @@ AliFemtoCorrFctnNonIdDR::~AliFemtoCorrFctnNonIdDR()
   delete fDenLongP;
   delete fDenLongN;
   delete fkTMonitor;
+  delete mNtuple;
 }
 
 //_________________________
@@ -213,7 +219,6 @@ void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair)
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
-
   double tKStar = pair->KStar();
   if (pair->KOut()>0.0)
     fNumOutP->Fill(tKStar);
@@ -231,6 +236,8 @@ void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair)
     fNumLongN->Fill(tKStar);
 
   fkTMonitor->Fill(pair->KT());
+
+
 }
 //____________________________
 void AliFemtoCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair)
@@ -255,6 +262,24 @@ void AliFemtoCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair)
     fDenLongP->Fill(tKStar);
   else
     fDenLongN->Fill(tKStar);
+
+//Added by Ashutosh
+  if(fParticleP){
+  //1st particle
+  Double_t px1 = pair->Track1()->FourMomentum().vect().x();
+  Double_t py1 = pair->Track1()->FourMomentum().vect().y();
+  Double_t pz1 = pair->Track1()->FourMomentum().vect().z();
+  Double_t e1 = pair->Track1()->FourMomentum().e();
+
+  //2nd particle
+  Double_t px2 = pair->Track2()->FourMomentum().vect().x();
+  Double_t py2 = pair->Track2()->FourMomentum().vect().y();
+  Double_t pz2 = pair->Track2()->FourMomentum().vect().z();
+  Double_t e2 = pair->Track2()->FourMomentum().e();
+  
+  mNtuple->Fill(px1, py1, pz1, e1,px2, py2, pz2, e2);
+  }
+  //finish adding
 }
 //____________________________
 void AliFemtoCorrFctnNonIdDR::Write()
@@ -272,6 +297,9 @@ void AliFemtoCorrFctnNonIdDR::Write()
   fDenLongP->Write();
   fDenLongN->Write();
   fkTMonitor->Write();
+  if(fParticleP){
+    mNtuple->Write();}
+  
 }
 
 TList* AliFemtoCorrFctnNonIdDR::GetOutputList()
@@ -292,6 +320,12 @@ TList* AliFemtoCorrFctnNonIdDR::GetOutputList()
   tOutputList->Add(fDenLongP);
   tOutputList->Add(fDenLongN);
   tOutputList->Add(fkTMonitor);
+  if(fParticleP){  tOutputList->Add(mNtuple);}
 
   return tOutputList;
+}
+
+void AliFemtoCorrFctnNonIdDR::FillParticleP(bool fillTuple)
+{
+  fParticleP = fillTuple;
 }
