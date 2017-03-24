@@ -18,14 +18,15 @@ class AliMultSelection;
 class AliAnalysisUtils;
 class TList;
 
-
+#include "TApplication.h"
 #include "TString.h"
 #include "AliAnalysisTaskSE.h"
 #include "TNtuple.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "TProfile2D.h"
+#include "TH3.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 #include "TTree.h"
 #include "TList.h"
 
@@ -62,6 +63,8 @@ public:
   //setters:
   void    SetRunFlag(Int_t const runnum)              {this->frunflag = runnum; }
   void    SetZDCESEList(TList* const kList)           {this->fZDCESEList = kList;}
+
+  void    SetFBEffiList(TList* const kList3)          {this->fFBEffiList1 = kList3;}
   void    SetDataSet(TString fdataset)                {this->fDataSet = fdataset;}
   void    SetAnalysisSet(TString fanalysisSet)        {this->fAnalysisSet = fanalysisSet;}
   void    SetRejectPileUpTight(Bool_t const pileupt8) {this->fRejectPileUpTight = pileupt8;}
@@ -84,13 +87,16 @@ private:
   AliAnalysisTaskVnZDC(const AliAnalysisTaskVnZDC& aAnalysisTask);
   AliAnalysisTaskVnZDC& operator=(const AliAnalysisTaskVnZDC& aAnalysisTask);
 
-  AliFlowEventSimple* fEvent;         //input event
-
+  AliFlowEventSimple* fEvent;         //! input event
 //AliFlowAnalysisIDCSP** fSP;         // analysis object
 //AliFlowAnalysisIDCSP*  fSP;         // analysis object only one.
   Int_t              fievent;
   TList         *fListHistos;         // collection of output
   TList        *fListWeights;         // list with weights
+  TList         *fZDCESEList;         //
+  TList         *fZListDummy;         //
+  TList        *fFBEffiList1;         //
+
   Bool_t        fMinimalBook;         // flag to turn off QA and minimize FlowCommonHist
   Bool_t      fUsePhiWeights;         // use phi weights
   Int_t            fHarmonic;         // harmonic
@@ -102,7 +108,7 @@ private:
 
   //rihan:
   Int_t             frunflag;  //
-  Int_t          runNums[89];  //
+  Int_t          runNums[90];  //
   Float_t           VxCut[2];  //
   Float_t           VyCut[2];  //
   Float_t           VzCut[2];  //
@@ -120,20 +126,6 @@ private:
   AliAnalysisUtils*    fAnalysisUtil;    // < Event selection
 
 
-
-  TProfile   *fHist_znCx_V0_Cent[89];    //!
-  TProfile   *fHist_znCy_V0_Cent[89];    //!
-  TProfile   *fHist_znAx_V0_Cent[89];    //!
-  TProfile   *fHist_znAy_V0_Cent[89];    //!
-  TList                 *fZDCESEList;    //
-
-  TProfile2D  *fHist_ZDCC_En_Run[89];    //!
-  TProfile2D  *fHist_ZDCA_En_Run[89];    //!
-
-  TH2F          *fHist_ZDCn_A_XY[89];    //!
-  TH2F          *fHist_ZDCn_C_XY[89];    //!
-  TProfile2D        *fHist_QnxRecent;    //!
-  TProfile2D        *fHist_QnyRecent;    //!
   TH1F              *fHist_vBincount;    //!
   TH1F              *fHist_Psi1_zdnA;    //!
   TH1F              *fHist_Psi1_zdnC;    //!
@@ -150,21 +142,79 @@ private:
   TH1F                 *fPileUpCount;    //!
   TH1F          *fPileUpMultSelCount;    //!
 
+  TH3F         *fHist_ZDCn_A_XYvsRun;    //!
+  TH3F         *fHist_ZDCn_C_XYvsRun;    //!
 
+  TProfile2D  *fHist_ZDCC_En_Run[90];    //!
+  TProfile2D  *fHist_ZDCA_En_Run[90];    //!
 
+  TProfile2D *fHist_znCx_V0_VxVy[90][10];  //
+  TProfile2D *fHist_znCy_V0_VxVy[90][10];  //
+  TProfile2D *fHist_znAx_V0_VxVy[90][10];  //
+  TProfile2D *fHist_znAy_V0_VxVy[90][10];  //
 
+  //add result histograms: i.e. after two recenters:
+  TProfile   *fHist_X_vs_Obs_before[4][5];  //!
+  TProfile   *fHist_X_vs_Obs_after1[4][5];  //!
+  TProfile  *fHist_XX_vs_Obs_before[4][5];  //!
+  TProfile  *fHist_XX_vs_Obs_after1[4][5];  //!
 
+  TProfile        *fHist_v2xV1_ZDN_Norm_cosXX;       //!
+  TProfile        *fHist_v2xV1_ZDN_Refm_cosXX;       //!
+  TProfile        *fHist_v2xV1_ZDN_Cent_cosXX;       //!
+  TProfile        *fHist_v2xV1_ZDN_Norm_cosYY;       //!
+  TProfile        *fHist_v2xV1_ZDN_Refm_cosYY;       //!
+  TProfile        *fHist_v2xV1_ZDN_Cent_cosYY;       //!
+  TProfile        *fHist_v2xV1_ZDN_Norm_sinXY;       //!
+  TProfile        *fHist_v2xV1_ZDN_Refm_sinXY;       //!
+  TProfile        *fHist_v2xV1_ZDN_Cent_sinXY;       //!
+  TProfile        *fHist_v2xV1_ZDN_Norm_sinYX;       //!
+  TProfile        *fHist_v2xV1_ZDN_Refm_sinYX;       //!
+  TProfile        *fHist_v2xV1_ZDN_Cent_sinYX;       //!
 
+  TProfile        *fHist_v2xV1_ZDN_Norm_All;         //!
+  TProfile        *fHist_v2xV1_ZDN_Refm_All;         //!
+  TProfile        *fHist_v2xV1_ZDN_Cent_All;         //!
+  TProfile        *fHist_ZDN_resol_Norm_All;         //!
+  TProfile        *fHist_ZDN_resol_Refm_All;         //!
+  TProfile        *fHist_ZDN_resol_Cent_All;         //!
 
+  TProfile        *fHist_ZDN_resol_Norm_cos;         //!
+  TProfile        *fHist_ZDN_resol_Norm_sin;         //!
+  TProfile        *fHist_ZDN_resol_Refm_cos;         //!
+  TProfile        *fHist_ZDN_resol_Cent_cos;         //!
+  TProfile        *fHist_ZDN_resol_Refm_sin;         //!
+  TProfile        *fHist_ZDN_resol_Cent_sin;         //! 
+
+  TProfile        *fAvg_Cent_vs_Vz_Cent_woCut;        //! 
+  TProfile        *fAvg_Cent_vs_Vz_Peri_woCut;        //! 
+  TProfile        *fAvg_Cent_vs_Vx_Cent_woCut;        //! 
+  TProfile        *fAvg_Cent_vs_Vx_Peri_woCut;        //! 
+  TProfile        *fAvg_Cent_vs_Vy_Cent_woCut;        //! 
+  TProfile        *fAvg_Cent_vs_Vy_Peri_woCut;        //! 
+
+  TProfile        *fAvg_Cent_vs_Vz_Cent_wCuts;        //! 
+  TProfile        *fAvg_Cent_vs_Vz_Peri_wCuts;        //! 
+  TProfile        *fAvg_Cent_vs_Vx_Cent_wCuts;        //! 
+  TProfile        *fAvg_Cent_vs_Vx_Peri_wCuts;        //! 
+  TProfile        *fAvg_Cent_vs_Vy_Cent_wCuts;        //! 
+  TProfile        *fAvg_Cent_vs_Vy_Peri_wCuts;        //! 
+
+  TProfile           *fTPCV0M_CentDiff_vs_Vz;        //! 
+  TProfile           *fTPCV0M_CentDiff_vs_Vx;        //! 
+  TProfile           *fTPCV0M_CentDiff_vs_Vy;        //! 
+  
+  TH1F              *fHist_Psi1_zdnA_after1;    //!
+  TH1F              *fHist_Psi1_zdnC_after1;    //!
+  TH1F              *fHist_Psi1_zdnA_after2;    //!
+  TH1F              *fHist_Psi1_zdnC_after2;    //!
+  TH1F                        *fWeight_Cent;    //
+  TH1F                      *fCent_fromDATA;    //
+  TH1D             *fFB_Efficiency_Cent[10];    //
 //These are non written (non-listed) histograms. must be deleted in the constructor
-  TH1F         *fHist_Vx_ArrayFinder;    //!
-  TH1F         *fHist_Vy_ArrayFinder;    //!
-  TH1F         *fHist_Vz_ArrayFinder;    //!
-  TProfile2D *fHist_znCx_V0_VxVy[89];    //!
-  TProfile2D *fHist_znCy_V0_VxVy[89];    //!
-  TProfile2D *fHist_znAx_V0_VxVy[89];    //!
-  TProfile2D *fHist_znAy_V0_VxVy[89];    //!
-
+  TH1F                *fHist_Vx_ArrayFinder;    //!
+  TH1F                *fHist_Vy_ArrayFinder;    //!
+  TH1F                *fHist_Vz_ArrayFinder;    //!
 
 
 
