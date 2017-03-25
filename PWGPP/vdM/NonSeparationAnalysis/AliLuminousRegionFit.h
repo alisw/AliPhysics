@@ -49,7 +49,7 @@ public:
   virtual ~AliLuminousRegionFit() {
     if (fTSep) {
       fTSep->ResetBranchAddresses();
-      delete fTSep; 
+      delete fTSep;
       fTSep = NULL;
     }
     if (fL) {
@@ -67,10 +67,12 @@ public:
 	       Double_t tMin, Double_t tMax,
 	       Int_t    scanType,
 	       Double_t offset,
-	       Int_t    bcSel=-1);  // <0: no selection on BCID
+	       Int_t    bcSel    = -1,       // <0: no selection on BCID
+	       Bool_t   selV0AND = kFALSE,   //
+	       Bool_t   selV0M   = kFALSE);  //
 
   Double_t MinuitFunction(const Double_t *par);
-    
+
 protected:
   Bool_t SetupTreeSep(TString sepFileName) {
     if (!fTSep->ReadFile(sepFileName, "timeStart/D:timeEnd:sep"))
