@@ -18,6 +18,7 @@
 #include <TH2F.h>
 #include <TList.h>
 #include <THnSparse.h>
+#include <TRandom3.h>
 
 #include <AliVCluster.h>
 #include <AliVParticle.h>
@@ -29,6 +30,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliEMCALGeometry.h"
 
 #include "AliAnalysisTaskEmcalDijetImbalance.h"
 
@@ -46,7 +48,6 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fEventCutList(0),
   fUseManualEventCuts(kFALSE),
   fDeltaPhiMin(0),
-  fNDijetPtThresholds(1),
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
   fDijetLeadingHadronPt(0),
@@ -56,6 +57,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fPlotJetHistograms(kFALSE),
   fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
+  fComputeBackground(kFALSE),
   fDoMomentumBalance(kFALSE),
   fDoGeometricalMatching(kFALSE),
   fMatchingJetR(0.2),
@@ -79,7 +81,6 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fEventCutList(0),
   fUseManualEventCuts(kFALSE),
   fDeltaPhiMin(0),
-  fNDijetPtThresholds(1),
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
   fDijetLeadingHadronPt(0),
@@ -89,6 +90,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fPlotJetHistograms(kFALSE),
   fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
+  fComputeBackground(kFALSE),
   fDoMomentumBalance(kFALSE),
   fDoGeometricalMatching(kFALSE),
   fMatchingJetR(0.2),
@@ -278,18 +280,32 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     // Allocate other jet histograms
     TString histname;
     TString title;
-    histname = TString::Format("%s/fHistJetRejectionReason", jets->GetArrayName().Data());
+    histname = TString::Format("%s/hJetRejectionReason", jets->GetArrayName().Data());
     title = histname + ";Rejection reason;#it{p}_{T,jet} (GeV/#it{c});counts";
     TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 50, 0, 250);
     SetRejectionReasonLabels(hist->GetXaxis());
     
     if (!jets->GetRhoName().IsNull()) {
-      histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
+      histname = TString::Format("%s/hRhoVsCent", jets->GetArrayName().Data());
       title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
       fHistManager.CreateTH2(histname.Data(), title.Data(), 101, 0, 101, 100, 0, 500);
     }
     
+    // Allocate background subtraction histograms, if enabled
+    if (fComputeBackground) {
+      
+      histname = TString::Format("%s/hScaleFactor", jets->GetArrayName().Data());
+      title = histname + ";Centrality;Scale factor;counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, 300, 0, 3);
+      
+      histname = TString::Format("%s/hDeltaPt", jets->GetArrayName().Data());
+      title = histname + ";#delta#it{p}_{T} (GeV/#it{c});counts";
+      fHistManager.CreateTH1(histname.Data(), title.Data(), 400, -100, 100);
+      
+    }
+    
   }
+  
 }
 
 /*
@@ -323,13 +339,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetCandHistograms()
     nbins[dim] = 2;
     min[dim] = -0.5;
     max[dim] = 1.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "#it{p}_{T,min}^{trig}";
-    nbins[dim] = fNDijetPtThresholds;
-    min[dim] = -0.5;
-    max[dim] = fNDijetPtThresholds - 0.5;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
@@ -556,20 +565,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateGeometricalMatchingHistograms()
       max[dim] = fCentHistBins[fNCentHistBins];
       dim++;
     }
-    
-    axisTitle[dim] = "#it{p}_{T,min}^{trig}";
-    nbins[dim] = fNDijetPtThresholds;
-    min[dim] = -0.5;
-    max[dim] = fNDijetPtThresholds - 0.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
-    
-    axisTitle[dim] = "#it{p}_{T,min}^{ass}";
-    nbins[dim] = fNDijetPtThresholds;
-    min[dim] = -0.5;
-    max[dim] = fNDijetPtThresholds - 0.5;
-    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
-    dim++;
   
     axisTitle[dim] = "isSwitched";
     nbins[dim] = 2;
@@ -643,10 +638,9 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
   
-  AliInfo(Form("Number of pT thresholds: %d", fNDijetPtThresholds));
-  for (Int_t i = 0; i < fNDijetPtThresholds; i++) {
-    AliInfo(Form("Trigger jet threshold %d = %f, Associated jet threshold %d = %f", i, fMinTrigJetPt[i], i, fMinAssJetPt));
-  }
+  fNeedEmcalGeom = kTRUE;
+  
+  AliInfo(Form("Trigger jet threshold = %f, Associated jet threshold = %f", fMinTrigJetPt, fMinAssJetPt));
   AliInfo(Form("Leading hadron threshold (for dijet leading jet): %f GeV", fDijetLeadingHadronPt));
   AliInfo(Form("Momentum balance study: %d", fDoMomentumBalance));
   AliInfo(Form("Geometrical matching study: %d", fDoGeometricalMatching));
@@ -683,31 +677,29 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
     if (jetContName.Contains("HardCore")) continue;
 
     //-----------------------------------------------------------------------------
-    // Loop over the kinematic selection arrays, to fill di-jet candidate histogram
+    // Find the leading di-jet candidate in each event, and if it satisfies the
+    // trig jet pT threshold, then fill di-jet candidate histogram (regardless of ass jet).
+    // The idea is to study the kinematic selections in post-processing.
     
     // Loop over leading hadron cut or not
     for (Int_t leadingHadronCutType=0; leadingHadronCutType<2; leadingHadronCutType++) {
       
-      // Loop through leading jet pT thresholds
-      for (Int_t trigJetMinPtType = 0; trigJetMinPtType < fNDijetPtThresholds; trigJetMinPtType++) {
-          
-        // Find the dijet candidate of the event and store its info in struct fDijet
-        FindDijet(jetCont, leadingHadronCutType, trigJetMinPtType);
+      // Find the dijet candidate of the event and store its info in struct fDijet
+      FindDijet(jetCont, leadingHadronCutType);
 
-        // If we find a dijet candidate (i.e. acceptable trig jet; ass jet accepted or not), fill the di-jet candidate histogram
-        if (fDijet.trigJet && fPlotDijetCandHistograms) {
-          TString histname = TString::Format("%s/DijetCandObservables", jetCont->GetArrayName().Data());
-          FillDijetCandHistograms(histname);
-        }
-        
+      // If we find a dijet candidate (i.e. acceptable trig jet; ass jet accepted or not), fill the di-jet candidate histogram
+      if (fDijet.trigJet && fPlotDijetCandHistograms) {
+        TString histname = TString::Format("%s/DijetCandObservables", jetCont->GetArrayName().Data());
+        FillDijetCandHistograms(histname);
       }
+      
     }
     
     //---------------------------------------------------------------------------------------------------
-    // Now, study the accepted dijet selection -- specified by the 0th elements of the looped over arrays
+    // Now, study the accepted dijet selection -- specified by the trig/ass jet pT conditions
     
     // Find the dijet candidate of the event and store its info in struct fDijet
-    FindDijet(jetCont, 0, 0);
+    FindDijet(jetCont, 0);
     
     // If we find an accepted dijet, fill the dijet imbalance histogram
     if (fDijet.isAccepted && fPlotDijetImbalanceHistograms) {
@@ -733,13 +725,15 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
 
 /**
  * Find the leading dijet in an event (background subtracted, unless hard-core jet container).
+ * The trig jet is required to be above pT threshold, or else empty dijet is returned.
+ * The ass jet is the leading jet in the opposite hemisphere.
  * Fills dijet to fDijet.
+ * The field fDijet.isAccepted is true if the ass jet is above its corresponding pT threshold.
  */
-void AliAnalysisTaskEmcalDijetImbalance::FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin, Int_t trigJetMinPtBin)
+void AliAnalysisTaskEmcalDijetImbalance::FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin)
 {
   fDijet.clear();
   fDijet.leadingHadronCutType = leadingHadronCutBin;
-  fDijet.trigJetMinPtType = trigJetMinPtBin;
   
   // Get trigger jet
   AliEmcalJet* trigJet = 0;
@@ -751,7 +745,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FindDijet(AliJetContainer* jetCont, Int
   
   // Skip the event if the leading jet doesn't satisfy the pT threshold
   Double_t trigJetPt = GetJetPt(jetCont, trigJet);
-  if ( trigJetPt < fMinTrigJetPt[trigJetMinPtBin] ) return;
+  if ( trigJetPt < fMinTrigJetPt ) return;
   
   // Skip the event if the leading jet doesn't satisfy the leading hadron threshold
   if (jetCont->GetLeadingHadronPt(trigJet) < fDijetLeadingHadronPt*leadingHadronCutBin) return;
@@ -848,7 +842,7 @@ void AliAnalysisTaskEmcalDijetImbalance::DoGeometricalMatching()
   AliJetContainer* jetContHardCore = GetJetContainer(jetContHardCoreName.Data());
   
   // Find the di-jet in the hard-core jet sample, then find the matching di-jet and fill histograms
-  FindDijet(jetContHardCore, 0, 0);
+  FindDijet(jetContHardCore, 0);
   if (fDijet.isAccepted) {
     FindMatchingDijet(jetContAll);
     FillGeometricalMatchingHistograms();
@@ -916,6 +910,106 @@ void AliAnalysisTaskEmcalDijetImbalance::FindMatchingDijet(AliJetContainer* jetC
 }
 
 /**
+ * This function performs a study of the heavy-ion background.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetCont)
+{
+  // Loop over tracks and clusters in order to:
+  //   (1) Compute scale factor for full jets
+  //   (2) Compute delta-pT for full jets, with the random cone method
+  
+  // Define the acceptance boundaries for the TPC and EMCal
+  // For the RC, use the fiducial volume
+  Double_t etaTPC = 0.9;
+  Double_t etaEMCal = 0.7;
+  Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+  Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad();
+  Double_t accTPC = 2 * etaTPC * 2 * TMath::Pi();
+  Double_t accEMCal = 2 * etaEMCal * (phiMaxEMCal - phiMinEMCal);
+  Double_t jetR = jetCont->GetJetRadius();
+  
+  // generate random eta,phi within fiducial acceptance for random cone
+  TRandom3* r = new TRandom3(0);
+  Double_t etaRC = r->Uniform(-etaEMCal + jetR, etaEMCal - jetR);
+  Double_t phiRC = r->Uniform(phiMinEMCal + jetR, phiMaxEMCal - jetR);
+  
+  // Loop over tracks
+  // Sum the track pT, both in the entire TPC and in the EMCal, and in the random cone
+  Double_t trackPtSumTPC = 0;
+  Double_t trackPtSumEMCal = 0;
+  Double_t trackPtSumRC = 0;
+  Double_t trackEta;
+  Double_t trackPhi;
+  Double_t trackPt;
+  AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
+  AliTLorentzVector track;
+  for (auto trackIterator : trackCont->accepted_momentum() ) {
+    
+    track.Clear();
+    track = trackIterator.first;
+    trackEta = track.Eta();
+    trackPhi = track.Phi_0_2pi();
+    trackPt = track.Pt();
+
+    if (TMath::Abs(trackEta) < etaTPC) {
+      trackPtSumTPC += trackPt;
+    }
+    
+    if (TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinEMCal && trackPhi < phiMaxEMCal) {
+      trackPtSumEMCal += trackPt;
+    }
+    
+    Double_t deltaR = GetDeltaR(&track, etaRC, phiRC);
+    if (deltaR < jetR) {
+      trackPtSumRC += trackPt;
+    }
+    
+  }
+  
+  // Loop over clusters
+  // Sum the cluster ET inside the EMCal, and in the random cone
+  Double_t clusESumEMCal = 0;
+  Double_t clusESumRC = 0;
+  AliClusterContainer* clusCont = GetClusterContainer(0);
+  AliTLorentzVector clus;
+  Double_t clusEta;
+  Double_t clusPhi;
+  Double_t clusE;
+  for (auto clusIterator : clusCont->accepted_momentum() ) {
+   
+    clus.Clear();
+    clus = clusIterator.first;
+    clusEta = clus.Eta();
+    clusPhi = clus.Phi_0_2pi();
+    clusE = clus.E();
+    
+    if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
+      clusESumEMCal += clusE;
+    }
+    
+    Double_t deltaR = GetDeltaR(&clus, etaRC, phiRC);
+    if (deltaR < jetR) {
+      clusESumRC += clusE;
+    }
+    
+  }
+  
+  // Compute the scale factor
+  Double_t numerator = (trackPtSumEMCal + clusESumEMCal) / accEMCal;
+  Double_t denominator = trackPtSumTPC / accTPC;
+  Double_t scaleFactor = numerator / denominator;
+  TString histname = TString::Format("%s/hScaleFactor", jetCont->GetArrayName().Data());
+  fHistManager.FillTH2(histname, fCent, scaleFactor);
+  
+  // Compute delta pT (use tracks+clusters, for a data-driven measure of the fluctuations in full jets)
+  Double_t rho = jetCont->GetRhoVal();
+  Double_t deltaPt = trackPtSumRC + clusESumRC - rho * TMath::Pi() * jetR * jetR;
+  histname = TString::Format("%s/hDeltaPt", jetCont->GetArrayName().Data());
+  fHistManager.FillTH1(histname, deltaPt);
+  
+}
+
+/**
  * Get pT of jet -- background subtracted, unless hard-core jet
  */
 Double_t AliAnalysisTaskEmcalDijetImbalance::GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet)
@@ -933,6 +1027,17 @@ Double_t AliAnalysisTaskEmcalDijetImbalance::GetDeltaR(AliEmcalJet* jet1, AliEmc
 {
   Double_t deltaPhi = TMath::Abs(jet1->Phi() - jet2->Phi());
   Double_t deltaEta = TMath::Abs(jet1->Eta() - jet2->Eta());
+  Double_t deltaR = TMath::Sqrt( deltaPhi*deltaPhi + deltaEta*deltaEta );
+  return deltaR;
+}
+
+/**
+ * Get deltaR of a track/cluster and a reference point.
+ */
+Double_t AliAnalysisTaskEmcalDijetImbalance::GetDeltaR(AliTLorentzVector* part, Double_t etaRef, Double_t phiRef)
+{
+  Double_t deltaPhi = TMath::Abs(part->Phi_0_2pi() - phiRef);
+  Double_t deltaEta = TMath::Abs(part->Eta() - etaRef);
   Double_t deltaR = TMath::Sqrt( deltaPhi*deltaPhi + deltaEta*deltaEta );
   return deltaR;
 }
@@ -965,7 +1070,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
     Double_t rhoVal = 0;
     if (jets->GetRhoParameter()) {
       rhoVal = jets->GetRhoVal();
-      histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
+      histname = TString::Format("%s/hRhoVsCent", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), fCent, rhoVal);
     }
     
@@ -973,7 +1078,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
       
       UInt_t rejectionReason = 0;
       if (!jets->AcceptJet(jet, rejectionReason)) {
-        histname = TString::Format("%s/fHistJetRejectionReason", jets->GetArrayName().Data());
+        histname = TString::Format("%s/hJetRejectionReason", jets->GetArrayName().Data());
         fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(rejectionReason), jet->Pt());
         continue;
       }
@@ -1018,6 +1123,10 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
       histJetObservables->Fill(contents);
       
     } //jet loop
+    
+    //---------------------------------------------------------------------------
+    // Do study of background (if requested)
+    if (fComputeBackground) ComputeBackground(jets);
   }
 }
 
@@ -1035,8 +1144,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillDijetCandHistograms(TString histnam
       contents[n] = fCent;
     else if (title=="LeadingHadronRequired")
       contents[n] = fDijet.leadingHadronCutType;
-    else if (title=="#it{p}_{T,min}^{trig}")
-      contents[n] = fDijet.trigJetMinPtType;
     else if (title=="#it{p}_{T,trig jet} (GeV/#it{c})")
       contents[n] = fDijet.trigJetPt;
     else if (title=="#it{p}_{T,ass jet} (GeV/#it{c})")
@@ -1135,10 +1242,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillGeometricalMatchingHistograms()
       TString title(histJetObservables->GetAxis(n)->GetTitle());
       if (title=="Centrality (%)")
         contents[n] = fCent;
-      else if (title=="#it{p}_{T,min}^{trig}")
-        contents[n] = fDijet.trigJetMinPtType;
-      else if (title=="#it{p}_{T,min}^{ass}")
-        contents[n] = fDijet.assJetMinPtType;
       else if (title=="isSwitched")
         contents[n] = isSwitched;
       else if (title=="#DeltaR_{trig}")
