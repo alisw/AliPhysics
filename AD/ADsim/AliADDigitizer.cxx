@@ -671,6 +671,8 @@ void AliADDigitizer::ReadSDigits()
     TClonesArray *sdigitsArray = NULL;
     sdigitsBranch->SetAddress(&sdigitsArray);
 
+    int offset = fDigInput->GetMask(inputFile);
+    
     // Sum contributions from the sdigits
     // Get number of entries in the tree
     Int_t nentries  = Int_t(sdigitsBranch->GetEntries());
@@ -697,7 +699,7 @@ void AliADDigitizer::ReadSDigits()
         for(Int_t i=0; i<3; ++i) {
           if (fLabels[pmNumber][i] < 0) {
             if (labels[j] < 0) break;
-            fLabels[pmNumber][i] = labels[j];
+            fLabels[pmNumber][i] = labels[j] + offset;
             j++;
           }
         }
