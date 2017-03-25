@@ -186,7 +186,7 @@ void AliTOFDigitizer::Digitize(Option_t* /*option*/)
 
   for (Int_t inputFile=0; inputFile<fDigInput->GetNinputs();
        inputFile++) {
-    ReadSDigit(inputFile);
+    ReadSDigit(inputFile, fDigInput->GetMask(inputFile));
    }
 
   // create digits
@@ -294,7 +294,7 @@ void AliTOFDigitizer::CreateDigits()
 
 //---------------------------------------------------------------------
 
-void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
+void AliTOFDigitizer::ReadSDigit(Int_t inputFile, Int_t offset )
 {
   // Read sdigits for current event and inputFile; 
   // store them into the sdigits container
@@ -379,11 +379,11 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
       
       if (fhitMap->TestHit(vol) != kEmpty) {
 	AliTOFSDigit *sdig = static_cast<AliTOFSDigit*>(fhitMap->GetHit(vol));
-	sdig->Update(tofSdigit);
+	sdig->Update(tofSdigit, offset);
 
       } else {
 
-	CollectSDigit(tofSdigit); // collect the current sdigit
+	CollectSDigit(tofSdigit, offset); // collect the current sdigit
 	fhitMap->SetHit(vol);     // update the hitmap for location vol
 
       } // if (hitMap->TestHit(vol) != kEmpty)
@@ -396,7 +396,7 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
 
 
 //_____________________________________________________________________________
-void AliTOFDigitizer::CollectSDigit(const AliTOFSDigit * const sdigit)
+void AliTOFDigitizer::CollectSDigit(const AliTOFSDigit * const sdigit, int streamOffset)
 {
   //
   // Add a TOF sdigit in container
@@ -405,7 +405,8 @@ void AliTOFDigitizer::CollectSDigit(const AliTOFSDigit * const sdigit)
   Int_t last=fSDigitsArray->GetEntriesFast();
   // make a copy of the current sdigit and
   // put it into tmp array
-  new (aSDigitsArray[last]) AliTOFSDigit(*sdigit);
+  AliTOFSDigit* sdig = new (aSDigitsArray[last]) AliTOFSDigit(*sdigit);
+  if (streamOffset) sdig->OffsetTracks(streamOffset);
 }
 
 //_____________________________________________________________________________

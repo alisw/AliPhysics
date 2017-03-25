@@ -34,8 +34,8 @@ class AliTOFSDigit : public TObject {
   Int_t           GetTotPad() const;
 
   void Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track);
-  void Update(AliTOFSDigit * const sdig);
-
+  void Update(AliTOFSDigit * const sdig, int offset=0);
+  void OffsetTracks(int offset);
 // getters for AliTOFSDigit object 
   Int_t   GetNDigits() const    {return fNDigits;}
   Int_t GetTdc(Int_t i) const {return fTdc->At(i);}

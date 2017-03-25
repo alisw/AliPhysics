@@ -69,6 +69,9 @@ class AliVAODHeader : public AliVHeader {
 
   virtual Double_t GetZDCEMEnergy(Int_t /* i */)            const  = 0;
   virtual Int_t    GetNumberOfESDTracks()                   const  = 0;
+  virtual Int_t    GetNumberOfTPCClusters() const = 0;
+  virtual Int_t    GetNumberOfTPCTracks()   const = 0; 
+  
   virtual UInt_t   GetNumberOfITSClusters(Int_t /* ilay */) const  = 0;
   virtual Float_t  GetT0spread(Int_t /* i */)               const  = 0;
   // FIXME: THIS IS UGLY!!!!                                       

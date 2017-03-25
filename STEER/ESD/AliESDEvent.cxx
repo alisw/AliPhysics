@@ -2589,3 +2589,13 @@ UInt_t AliESDEvent::GetTimeStampCTPBCCorr() const
   tCTP += span*3564*kBCLHC;
   return tCTP;
 }
+
+//______________________________________________________________________________
+Int_t AliESDEvent::GetNumberOfTPCTracks() const
+{
+  // get number of tracks with TPCrefit
+  int ntrTPC = 0;
+  for (int itr=GetNumberOfTracks();itr--;) if (GetTrack(itr)->IsOn(AliESDtrack::kTPCrefit)) ntrTPC++;
+  return ntrTPC;
+}
+

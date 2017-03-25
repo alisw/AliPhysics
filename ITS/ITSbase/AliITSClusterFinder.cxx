@@ -320,17 +320,21 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10])
   // Tries to find mother's labels
   //------------------------------------------------------------
   const AliMCEvent* mcEv = AliReconstructor::GetMCEvent();
+  int ntracks = 0;
   if (!mcEv) {
     AliRunLoader *rl = AliRunLoader::Instance();
     if(!rl) return;
     TTree *trK=(TTree*)rl->TreeK();
     if (!trK) return;
   }
+  else { // we need to filter out labels from bg event in absence of full MCevent info
+    ntracks = gAlice->GetMCApp()->GetNtrack();
+  }
   //
   int labS[10];
   Int_t nlabels = 0; 
   const AliMCParticle* mcpart = 0;
-  //Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  //
   for (Int_t i=0;i<10;i++) if (lab[i]>=0) labS[nlabels++] = lab[i];
   if (nlabels==0) return;
   //
@@ -338,9 +342,10 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10])
   for (Int_t i=0;i<nlabels;i++) {
     Int_t label = labS[i];
     mom[i] = 0;
-    //if (label>=ntracks) continue; // RS: this should not happen
+    //
     const TParticle *part = 0;
     if (!mcEv) {
+      if (label>=ntracks) continue; // RS: this may happen for bg event in embedding
       part = (TParticle*)gAlice->GetMCApp()->Particle(label);
     }
     else if ( (mcpart=(const AliMCParticle*)mcEv->GetTrack(label)) ) {

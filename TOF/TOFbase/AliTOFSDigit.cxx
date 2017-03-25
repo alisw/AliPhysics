@@ -177,6 +177,15 @@ void AliTOFSDigit::GetLocation(Int_t *Loc) const
 }
 
 ////////////////////////////////////////////////////////////////////////
+void AliTOFSDigit::OffsetTracks(int offset)
+{
+  // add offset to sdigit tracks to flag embedding
+  if (!fTracks) return;
+  int *arr = fTracks->GetArray();
+  for (int i=kMAXDIGITS*fNDigits;i--;) if (arr[i]!=-1) arr[i] += offset;
+}
+  
+////////////////////////////////////////////////////////////////////////
 void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
 {
   //
@@ -237,7 +246,7 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliTOFSDigit::Update(AliTOFSDigit * const sdig)
+void AliTOFSDigit::Update(AliTOFSDigit * const sdig, int offset)
 {
 
   //
@@ -262,6 +271,7 @@ void AliTOFSDigit::Update(AliTOFSDigit * const sdig)
     // getting here all the track numbers
     for (Int_t iTrack = 0; iTrack<kMAXDIGITS; iTrack++) {
       track = sdig->GetTrack(j,iTrack);
+      if (offset && track>-1) track += offset;
       Update(tdcbin, tdc, adc, track);
     } // end loop on tracks
 
