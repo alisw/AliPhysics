@@ -16,6 +16,7 @@ class AliCDBStorage;
 class AliCDBEntry;
 class ADESDFriendUtils;
 class AliADCalibData;
+class TGraph;
 
 #include <TString.h>
 
@@ -25,7 +26,7 @@ class AliAnalysisTaskADCalib : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskADCalib(const char *name="AliAnalysisTaskADCalib");
   virtual ~AliAnalysisTaskADCalib();
-  
+
   virtual void NotifyRun();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -36,7 +37,7 @@ public:
     fBCRangeExtrapolation[1] = bcMax;
   }
 
-  void  ProcessOutput(const Char_t *filename, AliCDBStorage* db, Int_t runNumber);
+  void  ProcessOutput(const Char_t *filename, AliCDBStorage* db, Int_t runNumber, Int_t runNumberEnd=-1);
   Int_t GetStatus() const;
 
 protected:
@@ -48,6 +49,8 @@ protected:
   TString GetHistTitle(Int_t ch, Int_t bc, Bool_t integrator) const;  // for TH2
   TString GetHistTitle(Int_t ch, Bool_t integrator) const;            // for THnSparse
   Bool_t  MakeExtrapolationFit(TH2* h, TF1* f, Int_t ch, Int_t bc, Double_t &xMax);
+  TGraph* MakeGraphSlope(TH2 *h, Double_t &s, const TString& name) const;
+  TH2*    RemoveHorizontalLines(TH2* h, Int_t dx) const;
 
 private:
   TTree*       MakeSaturationCalibObject(AliADCalibData*);
@@ -62,7 +65,7 @@ private:
 
   Float_t fTimeResolution[2];     //! HPTDC time resolution per side
 
-  ADESDFriendUtils *fADESDFriendUtils; //! AD ESD friend helper 
+  ADESDFriendUtils *fADESDFriendUtils; //! AD ESD friend helper
   TList            *fList;             //! output histograms
                                        // TH2s (charge in a BC vs. tail charge)
                                        // THnSparse (time1,time2,tail charge)
@@ -77,5 +80,5 @@ private:
   } ;
   Int_t fStatus; //! calibration status (after ProcessOutput)
 
-  ClassDef(AliAnalysisTaskADCalib, 3);
+  ClassDef(AliAnalysisTaskADCalib, 4);
 } ;
