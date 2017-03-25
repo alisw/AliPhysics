@@ -332,7 +332,8 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
 				     Float_t  edep, 
 				     Bool_t   isPrimary,
 				     Int_t    nTrack,
-				     Int_t*   tracknos)
+				     Int_t*   tracknos,
+				     Int_t    offset)
 {
   // Add edep contribution from (detector,ring,sector,strip) to cache
   AliFMDParameters* param = AliFMDParameters::Instance();
@@ -378,13 +379,13 @@ AliFMDBaseDigitizer::AddContribution(UShort_t detector,
     }
     for (Int_t i = 0; i < nTrack; i++) {
       AliFMDDebug(15, ("=> Setting track label # %d", oldN+i));
-      entry.fLabels[oldN + i] = tracknos[i];
+      entry.fLabels[oldN + i] = tracknos[i]+offset;
       AliFMDDebug(15, ("<= Setting track label # %d", oldN+i));
     }
   }
-  AliFMDDebug(15,("Adding contribution %f to FMD%d%c[%2d,%3d] (%f) track %d", 
+  AliFMDDebug(15,("Adding contribution %f to FMD%d%c[%2d,%3d] (%f) track %d (offset %d)", 
 		  edep, detector, ring, sector, strip,
-		  entry.fEdep, (nTrack > 0 ? tracknos[0] : -1)));
+		  entry.fEdep, (nTrack > 0 ? tracknos[0] : -1),offset));
   
 }
 

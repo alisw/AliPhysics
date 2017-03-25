@@ -349,11 +349,11 @@ AliFMDDigitizer::Digitize(Option_t*)
     }
 
     // Set the branch addresses 
-    fFMD->SetTreeAddress();
+    fFMD->SetTreeAddress(); // RS: this sets address to 1st streem always 
 
     // Sum contributions from the sdigits
     AliFMDDebug(3, ("Will now sum contributions from SDigits"));
-    SumContributions(sdigitsBranch);
+    SumContributions(sdigitsBranch,fDigInput->GetMask(inputFile));
 
     // Unload the sdigits
     inFMD->UnloadSDigits();
@@ -387,7 +387,7 @@ AliFMDDigitizer::Digitize(Option_t*)
 
 //____________________________________________________________________
 void
-AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch) 
+AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch, int offset) 
 {
   // 
   // Sum contributions from SDigits 
@@ -399,6 +399,8 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
 
   // Get a list of hits from the FMD manager 
   TClonesArray *fmdSDigits = fFMD->SDigits();
+
+  sdigitsBranch->SetAddress(&fmdSDigits); //RS Impose reading from supplied branch
   
   // Get number of entries in the tree 
   Int_t nevents  = Int_t(sdigitsBranch->GetEntries());
@@ -435,7 +437,8 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
 		      fmdSDigit->Edep(), 
 		      kTRUE,
 		      fmdSDigit->GetNTrack(),
-		      fmdSDigit->GetTracks());
+		      fmdSDigit->GetTracks(),
+		      offset);
     }  // sdigit loop
   } // event loop
 
