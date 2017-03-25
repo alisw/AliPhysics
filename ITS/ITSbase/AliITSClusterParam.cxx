@@ -155,6 +155,11 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
       *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer,bz);
     Float_t errmisalZ2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(layer,bz)
       *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(layer,bz);
+
+    TVectorF *extraY=0,*extraZ=0;
+    if ( (extraY=AliITSReconstructor::GetExtraErrorY2()) ) errmisalY2 += (*extraY)[layer];
+    if ( (extraZ=AliITSReconstructor::GetExtraErrorZ2()) ) errmisalZ2 += (*extraZ)[layer];
+    
     erry = TMath::Sqrt(erry*erry+errmisalY2);
     errz = TMath::Sqrt(errz*errz+errmisalZ2);
   }

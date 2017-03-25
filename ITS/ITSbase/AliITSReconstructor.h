@@ -14,11 +14,13 @@
 #include "AliITSRecoParam.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPointContainer.h"
+#include <TVectorF.h>
 class AliESDpid;
 class AliITSgeom;
 class AliTracker;
 class AliTrackleter;
 class AliITStrackerMI;
+
 
 class AliITSReconstructor: public AliReconstructor {
 public:
@@ -45,6 +47,11 @@ public:
   static void   SetCheckInvariant(Bool_t v) {fgkCheckInvariant = v;}
   static Bool_t GetCheckInvariant()         {return fgkCheckInvariant;}
 
+  static TVectorF* GetExtraErrorY2() {return fgExtraErrorY2;}
+  static TVectorF* GetExtraErrorZ2() {return fgExtraErrorZ2;}  
+  static void      SetExtraErrorY2(TVectorF* v) {fgExtraErrorY2=v;}
+  static void      SetExtraErrorZ2(TVectorF* v) {fgExtraErrorZ2=v;}  
+  
 private:
   AliITSReconstructor(const AliITSReconstructor &); //Not implemented
   AliITSReconstructor& operator=(const AliITSReconstructor &); //Not implemented
@@ -54,6 +61,9 @@ private:
 
   static Bool_t fgkCheckInvariant;   // allow or forbid AliITStrackV2::CheckInvariant
 
+  static TVectorF* fgExtraErrorY2;   // additional errors^2 in Y
+  static TVectorF* fgExtraErrorZ2;   // additional errirs^2 in Z
+  
   ClassDef(AliITSReconstructor, 6)   // class for the ITS reconstruction
 };
 
