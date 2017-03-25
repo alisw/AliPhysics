@@ -108,30 +108,37 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
 {
   AliEmcalCorrectionComponent::Run();
   
-  if (!fClusCont) return kFALSE;
-  
   // loop over clusters
-  fClusCont->ResetCurrentID();
   AliVCluster *clus = 0;
-  while ((clus = fClusCont->GetNextCluster())) {
-    if (!clus->IsEMCAL()) continue;
-    
-    if (fCreateHisto) {
-      fEnergyDistBefore->Fill(clus->E());
-      fEnergyTimeHistBefore->Fill(clus->E(), clus->GetTOF());
-    }
-    
-    if (fRecoUtils) {
-      if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
-        Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
-        clus->SetNonLinCorrEnergy(energy);
+  AliClusterContainer * clusCont = 0;
+  TIter nextClusCont(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
+
+    if (!clusCont) return kFALSE;
+    auto clusItCont = clusCont->all_momentum();
+
+    for (AliClusterIterableMomentumContainer::iterator clusIterator = clusItCont.begin(); clusIterator != clusItCont.end(); ++clusIterator) {
+      clus = static_cast<AliVCluster *>(clusIterator->second);
+
+      if (!clus->IsEMCAL()) continue;
+
+      if (fCreateHisto) {
+        fEnergyDistBefore->Fill(clus->E());
+        fEnergyTimeHistBefore->Fill(clus->E(), clus->GetTOF());
       }
-    }
-    
-    // Fill histograms only if cluster is not exotic, as in ClusterMaker (the clusters are flagged, not removed)
-    if (fCreateHisto && !clus->GetIsExotic()) {
-      fEnergyDistAfter->Fill(clus->GetNonLinCorrEnergy());
-      fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
+
+      if (fRecoUtils) {
+        if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
+          Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
+          clus->SetNonLinCorrEnergy(energy);
+        }
+      }
+
+      // Fill histograms only if cluster is not exotic, as in ClusterMaker (the clusters are flagged, not removed)
+      if (fCreateHisto && !clus->GetIsExotic()) {
+        fEnergyDistAfter->Fill(clus->GetNonLinCorrEnergy());
+        fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
+      }
     }
   }
   

@@ -208,11 +208,11 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
       fOutput->Add(fHistJetRhovsEta[i]);
 
       for (Int_t j = 0; j < 3; j++) {
-	name = Form("NjUEoverNjVsNj_%d_%d",i,j+1);
-	fHistNjUEoverNjVsNj[i*3+j] = new TH2F(name, name, 150, -0.5, 149.5, 120, 0.01, 1.21);
-	fHistNjUEoverNjVsNj[i*3+j]->GetXaxis()->SetTitle("N_{jet}");
-	fHistNjUEoverNjVsNj[i*3+j]->GetYaxis()->SetTitle("N_{jet_{UE}} / N_{jet}");
-	fOutput->Add(fHistNjUEoverNjVsNj[i*3+j]);
+        name = Form("NjUEoverNjVsNj_%d_%d",i,j+1);
+        fHistNjUEoverNjVsNj[i*3+j] = new TH2F(name, name, 150, -0.5, 149.5, 120, 0.01, 1.21);
+        fHistNjUEoverNjVsNj[i*3+j]->GetXaxis()->SetTitle("N_{jet}");
+        fHistNjUEoverNjVsNj[i*3+j]->GetYaxis()->SetTitle("N_{jet_{UE}} / N_{jet}");
+        fOutput->Add(fHistNjUEoverNjVsNj[i*3+j]);
       }
     }
   }
@@ -259,10 +259,10 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
       fOutput->Add(fHistDeltaRhoScalevsCent);
       
       if (fParticleCollArray.GetEntriesFast()>0) {
-	fHistDeltaRhoScalevsNtrack = new TH2F("fHistDeltaRhoScalevsNtrack", "fHistDeltaRhoScalevsNtrack", 150, Ntrackrange[0], Ntrackrange[1], fNbins, -fMaxBinPt, fMaxBinPt);
-	fHistDeltaRhoScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
-	fHistDeltaRhoScalevsNtrack->GetYaxis()->SetTitle("#Delta#rho_{scaled} (GeV/c * rad^{-1})");
-	fOutput->Add(fHistDeltaRhoScalevsNtrack);
+        fHistDeltaRhoScalevsNtrack = new TH2F("fHistDeltaRhoScalevsNtrack", "fHistDeltaRhoScalevsNtrack", 150, Ntrackrange[0], Ntrackrange[1], fNbins, -fMaxBinPt, fMaxBinPt);
+        fHistDeltaRhoScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
+        fHistDeltaRhoScalevsNtrack->GetYaxis()->SetTitle("#Delta#rho_{scaled} (GeV/c * rad^{-1})");
+        fOutput->Add(fHistDeltaRhoScalevsNtrack);
       }
     }
   }
@@ -300,10 +300,17 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
     multV0C = vV0->GetMTotV0C();
   }
 
-  if (GetParticleContainer(0))
-    Ntracks = GetParticleContainer(0)->GetNAcceptedParticles();
-  if (GetClusterContainer(0))
-    Nclusters = GetClusterContainer(0)->GetNAcceptedClusters();
+  // Loop over all possible contianers
+  AliParticleContainer * partCont = 0;
+  TIter nextPartCont(&fParticleCollArray);
+  while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
+    Ntracks += partCont->GetNAcceptedParticles();
+  }
+  AliClusterContainer * clusCont = 0;
+  TIter nextClusCont(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
+    Nclusters += clusCont->GetNAcceptedClusters();
+  }
 
   if (fJets) {
     Int_t    Njets         = fJets->GetEntries();
@@ -316,40 +323,40 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
     Double_t rhoPlus3Sigma = fOutRho->GetVal() + 3*fInEventSigmaRho;
 
     for (Int_t i = 0; i < Njets; ++i) {
-      
+
       AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(i));
       if (!jet) {
-	AliError(Form("%s: Could not receive jet %d", GetName(), i));
-	continue;
+        AliError(Form("%s: Could not receive jet %d", GetName(), i));
+        continue;
       } 
-      
+
       if (!AcceptJet(jet))
-	continue;
-      
+        continue;
+
       fHistJetPtvsCent->Fill(fCent, jet->Pt());
       fHistJetAreavsCent->Fill(fCent, jet->Area());
       fHistJetRhovsCent->Fill(fCent, jet->Pt() / jet->Area());
       fHistJetRhovsEta[fCentBin]->Fill(jet->Pt() / jet->Area(), jet->Eta());
 
       if (fTracks) {
-	fHistJetPtvsNtrack->Fill(Ntracks, jet->Pt());
-	fHistJetAreavsNtrack->Fill(Ntracks, jet->Area());
+        fHistJetPtvsNtrack->Fill(Ntracks, jet->Pt());
+        fHistJetAreavsNtrack->Fill(Ntracks, jet->Area());
       }
 
       fHistJetNconstVsPt[fCentBin]->Fill(jet->GetNumberOfConstituents(), jet->Pt());
 
       if (jet->Pt() < rhoPlus1Sigma * jet->Area())
-	NjetUE1Sigma++;
+        NjetUE1Sigma++;
 
       if (jet->Pt() < rhoPlus2Sigma * jet->Area())
-	NjetUE2Sigma++;
+        NjetUE2Sigma++;
 
       if (jet->Pt() < rhoPlus3Sigma * jet->Area())
-	NjetUE3Sigma++;
-      
+        NjetUE3Sigma++;
+
       NjetAcc++;
     }
-    
+
     if (NjetAcc>0) {
       fHistNjUEoverNjVsNj[fCentBin*3  ]->Fill(NjetAcc,1.*NjetUE1Sigma/NjetAcc);
       fHistNjUEoverNjVsNj[fCentBin*3+1]->Fill(NjetAcc,1.*NjetUE2Sigma/NjetAcc);
@@ -360,7 +367,7 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
     if (fTracks)
       fHistNjetvsNtrack->Fill(Ntracks, NjetAcc);
   }
-  
+
   fHistRhovsCent->Fill(fCent, fOutRho->GetVal());
 
   if (fTracks)
@@ -382,7 +389,7 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
     if (fCompareRhoScaled) {
       fHistDeltaRhoScalevsCent->Fill(fCent, fOutRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
       if (fTracks)
-	fHistDeltaRhoScalevsNtrack->Fill(Ntracks, fOutRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
+        fHistDeltaRhoScalevsNtrack->Fill(Ntracks, fOutRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
     }
   }
 
@@ -400,10 +407,10 @@ void AliAnalysisTaskRhoBase::ExecOnce()
 
     if (fAttachToEvent) {
       if (!(InputEvent()->FindListObject(fOutRhoName))) {
-	InputEvent()->AddObject(fOutRho);
+        InputEvent()->AddObject(fOutRho);
       } else {
-	AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoName.Data()));
-	return;
+        AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoName.Data()));
+        return;
       }
     }
   }
@@ -413,10 +420,10 @@ void AliAnalysisTaskRhoBase::ExecOnce()
 
     if (fAttachToEvent) {
       if (!(InputEvent()->FindListObject(fOutRhoScaledName))) {
-	InputEvent()->AddObject(fOutRhoScaled);
+        InputEvent()->AddObject(fOutRhoScaled);
       } else {
-	AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoScaledName.Data()));
-	return;
+        AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoScaledName.Data()));
+        return;
       }
     }
   }

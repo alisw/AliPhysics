@@ -46,8 +46,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fGeom(0),
   fIsEmbedded(kFALSE),
   fMinMCLabel(0),
-  fClusCont(0),
-  fPartCont(0),
+  fClusterCollArray(),
+  fParticleCollArray(),
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
@@ -82,8 +82,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fGeom(0),
   fIsEmbedded(kFALSE),
   fMinMCLabel(0),
-  fClusCont(0),
-  fPartCont(0),
+  fClusterCollArray(),
+  fParticleCollArray(),
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
@@ -401,3 +401,4 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   
   return 1;
 }
+

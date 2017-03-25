@@ -1,8 +1,10 @@
-/*! \page READMEembedding Embedding
+/*! \page READMEembedding Old Embedding Framework
 
-__Page under construction__
+__IMPORTANT__: This page describes the old embedding framework and has been superseded by the new EMCal Embedding Framework! Please see documentation on the [new framework](\ref READMEemcEmbedding).
 
 # Embedding
+
+__Page under construction__
 
 The basic functionalities are in the class AliJetModelBaseTask, in particular the methods to add tracks, clusters, or MC particles to the corresponding track or clusters array. Those methods are AliJetModelBaseTask::AddTrack, AliJetModelBaseTask::AddCluster, AliJetModelBaseTask::AddMCParticle. The embedded objects can be added to the original array or into a copy of it (`SetCopyArray(kTRUE)` and `SetSuffix(newName)`).
 

@@ -8,7 +8,7 @@
 #include <utility>
 
 #include <iosfwd>
-#include <TArrayS.h>
+#include <TArrayI.h>
 #include <TMath.h>
 #include <TClonesArray.h>
 #include <TVector2.h>
@@ -127,7 +127,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          AreaE()                      const { return fAreaE                   ; }
   Double_t          AreaEmc()                    const { return fAreaEmc                 ; }
   Bool_t            AxisInEmcal()                const { return fAxisInEmcal             ; }
-  Short_t           ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx)      ; }
+  Int_t             ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx)      ; }
   UShort_t          GetNumberOfClusters()        const { return fClusterIDs.GetSize()    ; }
   UShort_t          GetNumberOfTracks()          const { return fTrackIDs.GetSize()      ; }
   UShort_t          GetNumberOfConstituents()    const { return GetNumberOfClusters()+GetNumberOfTracks(); }
@@ -150,7 +150,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          PtEmc()                      const { return fPtEmc                   ; }
   Double_t          PtSub()                      const { return fPtSub                   ; }
   Double_t          PtSubVect()                  const { return fPtSubVect               ; }
-  Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx)        ; }
+  Int_t             TrackAt(Int_t idx)           const { return fTrackIDs.At(idx)        ; }
 
   // Background subtraction
   Double_t          PtSub(Double_t rho, Bool_t save = kFALSE)          ;
@@ -158,10 +158,12 @@ class AliEmcalJet : public AliVParticle
   TLorentzVector    SubtractRhoVect(Double_t rho, Bool_t save = kFALSE);
 
   // Jet constituents
+  AliVCluster      *Cluster(Int_t idx)                                             const;
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)                         const;
   Int_t             ContainsCluster(AliVCluster* cluster, TClonesArray* clusters)  const;
   Int_t             ContainsCluster(Int_t ic)                                      const;
   AliVCluster      *GetLeadingCluster(TClonesArray *clusters)                      const;
+  AliVParticle     *Track(Int_t idx)                                               const;
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)                           const;
   Int_t             ContainsTrack(AliVParticle* track, TClonesArray* tracks)       const;
   Int_t             ContainsTrack(Int_t it)                                        const;

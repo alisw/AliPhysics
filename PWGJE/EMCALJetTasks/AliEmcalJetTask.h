@@ -16,6 +16,9 @@ class AliEmcalJetUtility;
 #include "FJ_includes.h"
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include "AliEmcalContainerIndexMap.h"
+#endif
 
 namespace fastjet {
   class PseudoJet;
@@ -62,6 +65,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   void                   SetGhostArea(Double_t gharea)              { if (IsLocked()) return; fGhostArea        = gharea; }
   void                   SetJetsName(const char *n)                 { if (IsLocked()) return; fJetsTag          = n     ; }
+  void                   SetJetsTag(const char *n)                  { if (IsLocked()) return; fJetsTag          = n     ; }
   void                   SetJetEtaRange(Double_t emi, Double_t ema) { if (IsLocked()) return; fJetEtaMin        = emi   ; fJetEtaMax = ema; }
   void                   SetJetPhiRange(Double_t pmi, Double_t pma) { if (IsLocked()) return; fJetPhiMin        = pmi   ; fJetPhiMax = pma; }
   void                   SetJetAlgo(EJetAlgo_t a)                   { if (IsLocked()) return; fJetAlgo          = a     ; }
@@ -71,6 +75,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetMinJetPt(Double_t j)                    { if (IsLocked()) return; fMinJetPt         = j     ; }
   void                   SetRecombScheme(ERecoScheme_t scheme)      { if (IsLocked()) return; fRecombScheme     = scheme; }
   void                   SetTrackEfficiency(Double_t t)             { if (IsLocked()) return; fTrackEfficiency  = t     ; }
+  void                   SetTrackEfficiencyOnlyForEmbedding(Bool_t b) { if (IsLocked()) return; fTrackEfficiencyOnlyForEmbedding = b     ; }
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost        = b     ; }
   void                   SetRadius(Double_t r)                      { if (IsLocked()) return; fRadius           = r     ; }
@@ -85,6 +90,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   Double_t               GetGhostArea()                   { return fGhostArea         ; }
   const char*            GetJetsName()                    { return fJetsName.Data()   ; }
+  const char*            GetJetsTag()                     { return fJetsTag.Data()    ; }
   Double_t               GetJetEtaMin()                   { return fJetEtaMin         ; }
   Double_t               GetJetEtaMax()                   { return fJetEtaMax         ; }
   Double_t               GetJetPhiMin()                   { return fJetPhiMin         ; }
@@ -98,12 +104,13 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               GetRadius()                      { return fRadius            ; }
   Int_t                  GetRecombScheme()                { return fRecombScheme      ; }
   Double_t               GetTrackEfficiency()             { return fTrackEfficiency   ; }
+  Bool_t                 GetTrackEfficiencyOnlyForEmbedding() { return fTrackEfficiencyOnlyForEmbedding; }
 
   TClonesArray*          GetJets()                        { return fJets              ; }
   TObjArray*             GetUtilities()                   { return fUtilities         ; }
 
   void                   FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet::PseudoJet>& constituents,
-                                             std::vector<fastjet::PseudoJet>& constituents_sub, Int_t flag = 0, TClonesArray *particles_sub = 0);
+                                             std::vector<fastjet::PseudoJet>& constituents_sub, Int_t flag = 0, TString particlesSubName = "");
 
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
@@ -164,6 +171,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               fGhostArea;              // ghost area
   Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
   TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
+  Bool_t                 fTrackEfficiencyOnlyForEmbedding; // Apply aritificial tracking inefficiency only for embedded tracks
   Bool_t                 fLocked;                 // true if lock is set
 
   TString                fJetsName;               //!name of jet collection
@@ -178,12 +186,18 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   static const Int_t     fgkConstIndexShift;      //!contituent index shift
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  // Handle mapping between index and containers
+  AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
+#endif
+
  private:
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTask, 23);
+  ClassDef(AliEmcalJetTask, 24);
   /// \endcond
 };
 #endif

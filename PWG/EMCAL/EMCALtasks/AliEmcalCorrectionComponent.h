@@ -12,15 +12,18 @@
 class TH1F;
 #include <TNamed.h>
 
-class AliClusterContainer;
-class AliParticleContainer;
 class AliMCEvent;
 class AliEMCALRecoUtils;
 class AliVCaloCells;
 class AliVTrack;
 class AliVCluster;
 class AliVEvent;
-#include "AliLog.h"
+#include <AliLog.h>
+#include "AliEmcalContainerUtils.h"
+#include "AliParticleContainer.h"
+#include "AliMCParticleContainer.h"
+#include "AliTrackContainer.h"
+#include "AliClusterContainer.h"
 #include "AliEMCALGeometry.h"
 
 /**
@@ -60,13 +63,28 @@ class AliEmcalCorrectionComponent : public TNamed {
   void FillCellQA(TH1F* h);
   Int_t InitBadChannels();
 
-  AliClusterContainer * GetClusterContainer() { return fClusCont; }
-  AliParticleContainer * GetParticleContainer() { return fPartCont; }
-  AliVCaloCells * GetCaloCells() { return fCaloCells; }
-  TList * GetOutputList() { return fOutput; }
+  // Containers and cells
+  AliParticleContainer   *AddParticleContainer(const char *n)                    { return AliEmcalContainerUtils::AddContainer<AliParticleContainer>(n, fParticleCollArray); }
+  AliTrackContainer      *AddTrackContainer(const char *n)                       { return AliEmcalContainerUtils::AddContainer<AliTrackContainer>(n, fParticleCollArray); }
+  AliMCParticleContainer *AddMCParticleContainer(const char *n)                  { return AliEmcalContainerUtils::AddContainer<AliMCParticleContainer>(n, fParticleCollArray); }
+  AliClusterContainer    *AddClusterContainer(const char *n)                     { return AliEmcalContainerUtils::AddContainer<AliClusterContainer>(n, fClusterCollArray); }
+  void                    AdoptParticleContainer(AliParticleContainer* cont)     { fParticleCollArray.Add(cont)                        ; }
+  void                    AdoptTrackContainer(AliTrackContainer* cont)           { AdoptParticleContainer(cont)                        ; }
+  void                    AdoptMCParticleContainer(AliMCParticleContainer* cont) { AdoptParticleContainer(cont)                        ; }
+  void                    AdoptClusterContainer(AliClusterContainer* cont)       { fClusterCollArray.Add(cont)                         ; }
+  AliParticleContainer   *GetParticleContainer(Int_t i=0)                  const { return AliEmcalContainerUtils::GetContainer<AliParticleContainer>(i, fParticleCollArray); }
+  AliParticleContainer   *GetParticleContainer(const char* name)           const { return AliEmcalContainerUtils::GetContainer<AliParticleContainer>(name, fParticleCollArray); }
+  AliClusterContainer    *GetClusterContainer(Int_t i=0)                   const { return AliEmcalContainerUtils::GetContainer<AliClusterContainer>(i, fClusterCollArray); }
+  AliClusterContainer    *GetClusterContainer(const char* name)            const { return AliEmcalContainerUtils::GetContainer<AliClusterContainer>(name, fClusterCollArray); }
+  AliMCParticleContainer *GetMCParticleContainer(Int_t i=0)                const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(i))   ; }
+  AliMCParticleContainer *GetMCParticleContainer(const char* name)         const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(name)); }
+  AliTrackContainer      *GetTrackContainer(Int_t i=0)                     const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(i))        ; }
+  AliTrackContainer      *GetTrackContainer(const char* name)              const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
+  void                    RemoveParticleContainer(Int_t i=0)                     { fParticleCollArray.RemoveAt(i)                      ; }
+  void                    RemoveClusterContainer(Int_t i=0)                      { fClusterCollArray.RemoveAt(i)                       ; }
+  AliVCaloCells          *GetCaloCells()  const { return fCaloCells; }
+  TList                  *GetOutputList() const { return fOutput; }
   
-  void SetClusterContainer(AliClusterContainer * cont) { fClusCont = cont; }
-  void SetParticleContainer(AliParticleContainer * cont) { fPartCont = cont; }
   void SetCaloCells(AliVCaloCells * cells) { fCaloCells = cells; }
   void SetRecoUtils(AliEMCALRecoUtils *ru) { fRecoUtils = ru; }
 
@@ -122,8 +140,8 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEMCALGeometry       *fGeom;                          //!<! Geometry object
   Bool_t                  fIsEmbedded;                    ///< Trigger, embedded signal
   Int_t                   fMinMCLabel;                    ///< Minimum MC label value for the tracks/clusters being considered MC particles
-  AliClusterContainer    *fClusCont;                      ///< Pointer to the cluster container
-  AliParticleContainer   *fPartCont;                      ///< Pointer to the track/particle container
+  TObjArray               fClusterCollArray;              ///< Cluster collection array
+  TObjArray               fParticleCollArray;             ///< Particle/track collection array
   AliVCaloCells          *fCaloCells;                     //!<! Pointer to CaloCells
   AliEMCALRecoUtils      *fRecoUtils;                     ///<  Pointer to RecoUtils
   TList                  *fOutput;                        //!<! List of output histograms
@@ -135,7 +153,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 1); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 2); // EMCal correction component
   /// \endcond
 };
 

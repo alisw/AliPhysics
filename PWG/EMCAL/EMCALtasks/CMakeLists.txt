@@ -68,6 +68,7 @@ set(SRCS
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
+  AliEmcalCorrectionCellCombineCollections.cxx
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
   AliEmcalCorrectionClusterExotics.cxx
