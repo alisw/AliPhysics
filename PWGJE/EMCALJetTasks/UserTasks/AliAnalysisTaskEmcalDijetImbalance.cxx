@@ -294,13 +294,21 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     // Allocate background subtraction histograms, if enabled
     if (fComputeBackground) {
       
-      histname = TString::Format("%s/hScaleFactor", jets->GetArrayName().Data());
+      histname = TString::Format("%s/hScaleFactorEMCal", jets->GetArrayName().Data());
       title = histname + ";Centrality;Scale factor;counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 100, 0, 100, 300, 0, 3);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
       
-      histname = TString::Format("%s/hDeltaPt", jets->GetArrayName().Data());
+      histname = TString::Format("%s/hDeltaPtEMCal", jets->GetArrayName().Data());
       title = histname + ";#delta#it{p}_{T} (GeV/#it{c});counts";
       fHistManager.CreateTH1(histname.Data(), title.Data(), 400, -100, 100);
+      
+      histname = TString::Format("%s/hScaleFactorDCalRegion", jets->GetArrayName().Data());
+      title = histname + ";Centrality;Scale factor;Eta bin";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 50, 0, 100, 200, 0, 10, 28, -0.5, 27.5);
+      
+      histname = TString::Format("%s/hDeltaPtDCalRegion", jets->GetArrayName().Data());
+      title = histname + ";#delta#it{p}_{T} (GeV/#it{c});Eta bin;counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 400, -100, 100, 20, -0.5, 19.5);
       
     }
     
@@ -917,32 +925,73 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   // Loop over tracks and clusters in order to:
   //   (1) Compute scale factor for full jets
   //   (2) Compute delta-pT for full jets, with the random cone method
+  // For both the scale factor and delta-pT, we compute only one histogram each for EMCal.
+  // But for DCal, we bin in eta, in order to study DCal vs. PHOS vs. gap
   
-  // Define the acceptance boundaries for the TPC and EMCal
-  // For the RC, use the fiducial volume
+  // Define the acceptance boundaries for the TPC and EMCal/DCal/PHOS
   Double_t etaTPC = 0.9;
   Double_t etaEMCal = 0.7;
-  Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad();
-  Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad();
+  Double_t etaMinDCal = 0.22;
+  Double_t etaMaxPHOS = 0.13;
+  Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad(); // 80
+  Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad(); // ~188
+  Double_t phiMinDCal = fGeom->GetDCALPhiMin() * TMath::DegToRad(); // 260
+  Double_t phiMaxDCal = fGeom->GetDCALPhiMax() * TMath::DegToRad(); // ~327 (1/3 SMs start at 320)
+  Double_t phiMinPHOS = 250 * TMath::DegToRad();
+  Double_t phiMaxPHOS = 320 * TMath::DegToRad();
+
   Double_t accTPC = 2 * etaTPC * 2 * TMath::Pi();
   Double_t accEMCal = 2 * etaEMCal * (phiMaxEMCal - phiMinEMCal);
-  Double_t jetR = jetCont->GetJetRadius();
+  Double_t accDCalRegion = 2 * etaEMCal * (phiMaxDCal - phiMinDCal);
   
-  // generate random eta,phi within fiducial acceptance for random cone
+  // Define fiducial acceptances, to be used to generate random cones
   TRandom3* r = new TRandom3(0);
-  Double_t etaRC = r->Uniform(-etaEMCal + jetR, etaEMCal - jetR);
-  Double_t phiRC = r->Uniform(phiMinEMCal + jetR, phiMaxEMCal - jetR);
+  Double_t jetR = jetCont->GetJetRadius();
+  Double_t etaEMCalfid = etaEMCal - jetR;
+  Double_t phiMinEMCalfid = phiMinEMCal + jetR;
+  Double_t phiMaxEMCalfid = phiMaxEMCal - jetR;
+  Double_t phiMinDCalRegionfid = phiMinDCal + jetR;
+  Double_t phiMaxDCalRegionfid = phiMaxDCal - jetR;
   
-  // Loop over tracks
-  // Sum the track pT, both in the entire TPC and in the EMCal, and in the random cone
+  // Generate EMCal random cone eta-phi
+  Double_t etaEMCalRC = r->Uniform(-etaEMCalfid, etaEMCalfid);
+  Double_t phiEMCalRC = r->Uniform(phiMinEMCalfid, phiMaxEMCalfid);
+  
+  // Generate DCalRegion random cone eta-phi inside each eta slice (same phi used for all)
+  Double_t etaStep = 0.05;
+  const Int_t nEtaBinsSF = 28; // 2 * 0.7 / 0.05
+  const Int_t nEtaBinsRC = 20; // 2 * 0.5 / 0.05
+  
+  Double_t phiDCalRC = r->Uniform(phiMinDCalRegionfid, phiMaxDCalRegionfid);
+  Double_t etaDCalRC[nEtaBinsRC];
+  Double_t etaMin;
+  Double_t etaMax;
+  for (Int_t bin=0; bin < nEtaBinsRC; bin++) {
+    etaMin = -etaEMCalfid + bin*etaStep;
+    etaMax = etaMin + etaStep;
+    etaDCalRC[bin] = r->Uniform(etaMin, etaMax);
+  }
+  
+  // Initialize the various sums to 0
   Double_t trackPtSumTPC = 0;
   Double_t trackPtSumEMCal = 0;
-  Double_t trackPtSumRC = 0;
+  Double_t trackPtSumEMCalRC = 0;
+  Double_t clusESumEMCal = 0;
+  Double_t clusESumEMCalRC = 0;
+  Double_t trackPtSumDCal[nEtaBinsSF] = {0.};
+  Double_t trackPtSumDCalRC[nEtaBinsRC] = {0.};
+  Double_t clusESumDCal[nEtaBinsSF] = {0.};
+  Double_t clusESumDCalRC[nEtaBinsRC] = {0.};
+  
+  // Loop over tracks. Sum the track pT:
+  // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal random cone,
+  // (4) in the DCalRegion at each eta, (5) in the DCalRegion random cone at each eta
+  AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
+  AliTLorentzVector track;
   Double_t trackEta;
   Double_t trackPhi;
   Double_t trackPt;
-  AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
-  AliTLorentzVector track;
+  Double_t deltaR;
   for (auto trackIterator : trackCont->accepted_momentum() ) {
     
     track.Clear();
@@ -951,25 +1000,46 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
     trackPhi = track.Phi_0_2pi();
     trackPt = track.Pt();
 
+    // (1)
     if (TMath::Abs(trackEta) < etaTPC) {
       trackPtSumTPC += trackPt;
     }
     
+    // (2)
     if (TMath::Abs(trackEta) < etaEMCal && trackPhi > phiMinEMCal && trackPhi < phiMaxEMCal) {
       trackPtSumEMCal += trackPt;
     }
     
-    Double_t deltaR = GetDeltaR(&track, etaRC, phiRC);
+    // (3)
+    deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
     if (deltaR < jetR) {
-      trackPtSumRC += trackPt;
+      trackPtSumEMCalRC += trackPt;
+    }
+    
+    // (4)
+    for (Int_t bin=0; bin < nEtaBinsSF; bin++) {
+      if (trackPhi > phiMinDCal && trackPhi < phiMaxDCal) {
+        etaMin = -etaEMCal+ bin*etaStep;
+        etaMax = etaMin + etaStep;
+        if (trackEta > etaMin && trackEta < etaMax) {
+          trackPtSumDCal[bin] += trackPt;
+        }
+      }
+    }
+    
+    // (5)
+    for (Int_t bin=0; bin < nEtaBinsRC; bin++) {
+      deltaR = GetDeltaR(&track, etaDCalRC[bin], phiDCalRC);
+      if (deltaR < jetR) {
+        trackPtSumDCalRC[bin] += trackPt;
+      }
     }
     
   }
   
-  // Loop over clusters
-  // Sum the cluster ET inside the EMCal, and in the random cone
-  Double_t clusESumEMCal = 0;
-  Double_t clusESumRC = 0;
+  // Loop over clusters. Sum the cluster ET:
+  // (1) in the EMCal, (2) in the EMCal random cone, (3) in the DCalRegion at each eta,
+  // (4) in the DCalRegion random cone at each eta
   AliClusterContainer* clusCont = GetClusterContainer(0);
   AliTLorentzVector clus;
   Double_t clusEta;
@@ -983,30 +1053,67 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
     clusPhi = clus.Phi_0_2pi();
     clusE = clus.E();
     
+    // (1)
     if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
       clusESumEMCal += clusE;
     }
     
-    Double_t deltaR = GetDeltaR(&clus, etaRC, phiRC);
+    // (2)
+    deltaR = GetDeltaR(&clus, etaEMCalRC, phiEMCalRC);
     if (deltaR < jetR) {
-      clusESumRC += clusE;
+      clusESumEMCalRC += clusE;
+    }
+    
+    // (3)
+    for (Int_t bin=0; bin < nEtaBinsSF; bin++) {
+      if (clusPhi > phiMinDCal && clusPhi < phiMaxDCal) {
+        etaMin = -etaEMCal+ bin*etaStep;
+        etaMax = etaMin + etaStep;
+        if (clusEta > etaMin && clusEta < etaMax) {
+          clusESumDCal[bin] += clusE;
+        }
+      }
+    }
+    
+    // (4)
+    for (Int_t bin=0; bin < nEtaBinsRC; bin++) {
+      deltaR = GetDeltaR(&clus, etaDCalRC[bin], phiDCalRC);
+      if (deltaR < jetR) {
+        clusESumDCalRC[bin] += clusE;
+      }
     }
     
   }
   
-  // Compute the scale factor
+  // Compute the scale factor for EMCal
   Double_t numerator = (trackPtSumEMCal + clusESumEMCal) / accEMCal;
   Double_t denominator = trackPtSumTPC / accTPC;
   Double_t scaleFactor = numerator / denominator;
-  TString histname = TString::Format("%s/hScaleFactor", jetCont->GetArrayName().Data());
+  TString histname = TString::Format("%s/hScaleFactorEMCal", jetCont->GetArrayName().Data());
   fHistManager.FillTH2(histname, fCent, scaleFactor);
   
-  // Compute delta pT (use tracks+clusters, for a data-driven measure of the fluctuations in full jets)
+  // Compute the scale factor for DCalRegion
+  Double_t accDCalRegionBin = accDCalRegion / nEtaBinsSF;
+  for (Int_t bin=0; bin < nEtaBinsSF; bin++) {
+    numerator = (trackPtSumDCal[bin] + clusESumDCal[bin]) / accDCalRegionBin;
+    scaleFactor = numerator / denominator;
+    histname = TString::Format("%s/hScaleFactorDCalRegion", jetCont->GetArrayName().Data());
+    fHistManager.FillTH3(histname, fCent, scaleFactor, bin);
+  }
+  
+  // Compute delta pT for EMCal
   Double_t rho = jetCont->GetRhoVal();
-  Double_t deltaPt = trackPtSumRC + clusESumRC - rho * TMath::Pi() * jetR * jetR;
-  histname = TString::Format("%s/hDeltaPt", jetCont->GetArrayName().Data());
+  Double_t deltaPt = trackPtSumEMCalRC + clusESumEMCalRC - rho * TMath::Pi() * jetR * jetR;
+  histname = TString::Format("%s/hDeltaPtEMCal", jetCont->GetArrayName().Data());
   fHistManager.FillTH1(histname, deltaPt);
   
+  // Compute delta pT for DCalRegion
+  for (Int_t bin=0; bin < nEtaBinsRC; bin++) {
+    deltaPt = trackPtSumDCalRC[bin] + clusESumDCalRC[bin] - rho * TMath::Pi() * jetR * jetR;
+    histname = TString::Format("%s/hDeltaPtDCalRegion", jetCont->GetArrayName().Data());
+    fHistManager.FillTH2(histname, deltaPt, bin);
+  }
+
 }
 
 /**
