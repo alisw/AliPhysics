@@ -598,7 +598,7 @@ void AliVZERODigitizer::ReadSDigits()
       AliError("No sdigit tree from digInput");
       continue;
     }
-
+    
     // Get the branch 
     TBranch* sdigitsBranch = sdigitsTree->GetBranch("VZEROSDigit");
     if (!sdigitsBranch) {
@@ -608,6 +608,8 @@ void AliVZERODigitizer::ReadSDigits()
     // Set the branch address
     TClonesArray *sdigitsArray = NULL;
     sdigitsBranch->SetAddress(&sdigitsArray);
+
+    int offset = fDigInput->GetMask(inputFile);
 
     // Sum contributions from the sdigits
     // Get number of entries in the tree 
@@ -634,7 +636,7 @@ void AliVZERODigitizer::ReadSDigits()
 	for(Int_t i = 0; i < 3; ++i) {
 	  if (fLabels[pmNumber][i] < 0) {
 	    if (labels[j] < 0) break;
-	    fLabels[pmNumber][i] = labels[j];
+	    fLabels[pmNumber][i] = labels[j]+offset;
 	    j++;
 	  }
 	}
