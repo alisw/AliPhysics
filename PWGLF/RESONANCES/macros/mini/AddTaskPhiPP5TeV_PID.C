@@ -17,8 +17,8 @@ enum eventCutSet { kEvtDefault=0,
 		   kMCEvtDefault, //=5                   
 		   kSpecial1, //=6                   
 		   kSpecial2, //=7
-		   kSpecial3, //=9 
-		   kNoEvtSel //=8
+		   kNoEvtSel, //=8 
+		   kSpecial3//=9
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -125,11 +125,14 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
   AliRsnCutPrimaryVertex* cutVertex=0;
-  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && !MultBins){
+  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel &&  (!MultBins || fabs(vtxZcut-10.)>1.e-10)){
     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+    if(!MultBins && evtCutSetID!=eventCutSet::kSpecial3){
     cutVertex->SetCheckZResolutionSPD();
     cutVertex->SetCheckDispersionSPD();
     cutVertex->SetCheckZDifferenceSPDTrack();
+    }
+   if (evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;
@@ -170,7 +173,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
     task->SetEventCuts(eventCuts);
   }
 
-  // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
+  //-- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
 
   //vertex
   Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);

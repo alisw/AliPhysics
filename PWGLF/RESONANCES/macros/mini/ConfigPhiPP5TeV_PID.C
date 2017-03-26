@@ -113,12 +113,12 @@ Bool_t ConfigPhiPP5TeV_PID
     else out->AddAxis(diffID,200,-0.02,0.02);
 
     //axis Y: transverse momentum of pair as default - else chosen value
-    if(yaxisVar==AliRsnMiniValue::kFirstDaughterPt) out->AddAxis(fdpt,100,0.,10.);
-    else if(yaxisVar==AliRsnMiniValue::kSecondDaughterPt) out->AddAxis(sdpt,100,0.,10.);
-    else if(yaxisVar==AliRsnMiniValue::kFirstDaughterP) out->AddAxis(fdp,100,0.,10.);
-    else if(yaxisVar==AliRsnMiniValue::kSecondDaughterP)  out->AddAxis(sdp,100,0.,10.);
-    else if(isMC && (i==5 || i==7)) out->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
-    else out->AddAxis(ptID,500,0.,50.);//default use mother pt
+    // if(yaxisVar==AliRsnMiniValue::kFirstDaughterPt) out->AddAxis(fdpt,100,0.,10.);
+    // else if(yaxisVar==AliRsnMiniValue::kSecondDaughterPt) out->AddAxis(sdpt,100,0.,10.);
+    // else if(yaxisVar==AliRsnMiniValue::kFirstDaughterP) out->AddAxis(fdp,100,0.,10.);
+    // else if(yaxisVar==AliRsnMiniValue::kSecondDaughterP)  out->AddAxis(sdp,100,0.,10.);
+    // else if(isMC && (i==5 || i==7)) out->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
+     out->AddAxis(ptID,500,0.,50.);//default use mother pt
 
     // axis Z: centrality-multiplicity
     if(!isPP) out->AddAxis(centID,100,0.,100.);
@@ -222,6 +222,8 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
 
   if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+    trkQualityCut->SetPtRange(0.15, 20000.0);
+    trkQualityCut->SetEtaRange(-0.8, 0.8);
     Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
 
    if(!customFilterBit){//ESD
