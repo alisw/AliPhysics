@@ -213,17 +213,11 @@ Bool_t Config_pikx(
   Double_t mass      = part->Mass();
   
   // set daughter cuts
-
-  Float_t nsigmaPiTPC=fmod(nsigmaPi,1000.);
-  Float_t nsigmaPiTOF=(nsigmaPi-fmod(nsigmaPi,1000.))/1000.;
-  Float_t nsigmaKTPC=fmod(nsigmaK,1000.);
-  Float_t nsigmaKTOF=(nsigmaK-fmod(nsigmaK,1000.))/1000.;
-
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
 
-  AliRsnCutSetDaughterParticle* cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPi),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
-  AliRsnCutSetDaughterParticle* cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015, nsigmaK),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kKaon,nsigmaKTPC,nsigmaKTOF);
+  AliRsnCutSetDaughterParticle* cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPi),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPi);
+  AliRsnCutSetDaughterParticle* cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015, nsigmaK),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kKaon,nsigmaK);
   
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
   Int_t iCutK  = task->AddTrackCuts(cutSetK);
@@ -274,7 +268,7 @@ Bool_t Config_pikx(
 
     // axis X: invmass (or resolution)
     if (useIM[i]) 
-      out->AddAxis(imID, 1370, 0.63, 2.);
+      out->AddAxis(imID, 870, 0.63, 1.5);
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     
@@ -282,12 +276,10 @@ Bool_t Config_pikx(
     out->AddAxis(ptID, 200, 0.0, 20.0);
     
     // axis Z: centrality-multiplicity
-    /*
     if (!isPP)
       out->AddAxis(centID, 100, 0.0, 100.0);
     else 
       out->AddAxis(centID, 400, 0.0, 400.0);
-    */
       
     // axis W: pseudorapidity
     // out->AddAxis(etaID, 20, -1.0, 1.0);
@@ -546,7 +538,6 @@ Bool_t Config_pik0
    Bool_t                  ptDep    
 )
 {
-  Float_t nsigmaPiTOF=3.;
    // manage suffix
    if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
  
@@ -554,23 +545,16 @@ Bool_t Config_pik0
    // selections for the pion from the decay of KStarPlusMinus*
    /////////////////////////////////////////////////////
    //
-   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
-   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-   AliRsnCutSetDaughterParticle* cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,piPIDCut),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,piPIDCut,nsigmaPiTOF);
-   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
-
-   /*
    AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionFork0pi", AliPID::kPion);
    cutPi->SetPIDCut(piPIDCut);    // fPIDCut used in IsSelected() after the call to cutQuality
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
-   cutQuality->SetDefaults2011();
-   //cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
+   //cutQuality->SetDefaults2011();
+   cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
      
    AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionFork0pi", AliRsnTarget::kDaughter);
    cutSetPi->AddCut(cutPi);
    cutSetPi->SetCutScheme(cutPi->GetName());
    Int_t iCutPi = task->AddTrackCuts(cutSetPi);
-   */
    //
    /////////////////////////////////////////////////////////////
    // selections for K0s and for the daughters of K0s
@@ -673,14 +657,14 @@ Bool_t Config_pik0
      out->SetPairCuts(cutsPair);
      // axis X: invmass
      if (useIM[i]) 
-       out->AddAxis(imID, 1370, 0.63, 2.);
+       out->AddAxis(imID, 870, 0.63, 1.5);
      // axis Y: transverse momentum
      out->AddAxis(ptID, 300, 0.0, 30.0);
    //  out->AddAxis(k0sDCA, 10, 0.0, 1.0);
      
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-     //if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-     //else out->AddAxis(centID, 100, 0.0, 100.);
+     if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
+     else out->AddAxis(centID, 100, 0.0, 100.);
    } 
 
    TString pname="pi";
@@ -971,8 +955,6 @@ Bool_t Config_kxk0
    Bool_t                  ptDep    
 )
 {
-   Float_t nsigmaKxTOF=3.;
-
    // manage suffix
    if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
  
@@ -980,13 +962,6 @@ Bool_t Config_kxk0
    // selections for the pion from the decay of KStarPlusMinus*
    /////////////////////////////////////////////////////
    //
-
-   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
-   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-   AliRsnCutSetDaughterParticle* cutSetKx=new AliRsnCutSetDaughterParticle(Form("cutKx%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,kxPIDCut),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kKaon,kxPIDCut,nsigmaKxTOF);
-   Int_t iCutKx = task->AddTrackCuts(cutSetKx);
-
-   /*
    AliRsnCutDaughterSigmaStar2010PP *cutKx = new AliRsnCutDaughterSigmaStar2010PP("cutKaonForkxk0", AliPID::kKaon);
    cutKx->SetPIDCut(kxPIDCut);    // fPIDCut used in IsSelected() after the call to cutQuality
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutKx->CutQuality();
@@ -997,7 +972,6 @@ Bool_t Config_kxk0
    cutSetKx->AddCut(cutKx);
    cutSetKx->SetCutScheme(cutKx->GetName());
    Int_t iCutKx = task->AddTrackCuts(cutSetKx);
-   */
    //
    /////////////////////////////////////////////////////////////
    // selections for K0s and for the daughters of K0s
@@ -1100,14 +1074,14 @@ Bool_t Config_kxk0
      out->SetPairCuts(cutsPair);
      // axis X: invmass
      if (useIM[i]) 
-       out->AddAxis(imID, 1005, 0.99, 3.);
+       out->AddAxis(imID, 870, 0.63, 1.5);
      // axis Y: transverse momentum
      out->AddAxis(ptID, 300, 0.0, 30.0);
    //  out->AddAxis(k0sDCA, 10, 0.0, 1.0);
      
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-     //if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-     //else out->AddAxis(centID, 100, 0.0, 100.);
+     if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
+     else out->AddAxis(centID, 100, 0.0, 100.);
    } 
 
    TString pname="kx";
@@ -1241,7 +1215,7 @@ AliRsnMiniAnalysisTask * AddTask_pkx
    } 
 
    // create the task and configure 
-   TString taskName = Form("%s_%s%s", lname.Data(), (isPP? "pp" : "pPb"), (isMC ? "MC" : "Data"));
+   TString taskName = Form("%s_%s%s_%i%i_%s", lname.Data(), (isPP? "pp" : "pPb"), (isMC ? "MC" : "Data"));
    
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
@@ -1553,7 +1527,7 @@ Bool_t Config_pkx
     if (useIM[i]) 
       //      out->AddAxis(imID, 300, 1.4, 1.7);
       //     out->AddAxis(imID, 300, 1.4, 2.2);
-      out->AddAxis(imID, 800, 1.4, 3.);
+      out->AddAxis(imID, 800, 1.4, 2.2);
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     
@@ -1567,7 +1541,7 @@ Bool_t Config_pkx
     //out->AddAxis(PtRat, 20, 0.0, 1.0);
 
 
-    //out->AddAxis(centID, 110, 0.0, 110.0); // adding multiplicity axis
+    out->AddAxis(centID, 110, 0.0, 110.0); // adding multiplicity axis
 
 
     if(isPtDaughter) {
@@ -2181,14 +2155,14 @@ Bool_t Config_pk0
      out->SetPairCuts(cutsPair);
      // axis X: invmass
      if (useIM[i]) 
-       out->AddAxis(imID, 785, 1.43, 3.);
+       out->AddAxis(imID, 870, 1.43, 2.3);
      // axis Y: transverse momentum
      out->AddAxis(ptID, 300, 0.0, 30.0);
    //  out->AddAxis(k0sDCA, 10, 0.0, 1.0);
      
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-     //if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-     //else out->AddAxis(centID, 100, 0.0, 100.);
+     if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
+     else out->AddAxis(centID, 100, 0.0, 100.);
    } 
 
    TString pname="p";
@@ -2430,9 +2404,9 @@ Bool_t Config_Lambdapi
    //cutPi->SetMinTPCcluster(NTPCcluster);
 
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
-   cutQuality->SetDefaults2011();
+   //cutQuality->SetDefaults2011();
    //cutQuality->SetDCARmax(trackDCAcut);
-   //cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
+   cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
    // SetDefaults2010 contains the following selections:
    //     SetPtRange(0.15, 1E+20);
    //     SetEtaRange(-0.8, 0.8);
@@ -2572,12 +2546,12 @@ Bool_t Config_Lambdapi
       out->SetPairCuts(cutsPair);
       // axis X: invmass
       if (useIM[i]) 
-             out->AddAxis(imID, 875, 1.25, 3.);
+             out->AddAxis(imID, 750, 1.25, 2.0);
       // axis Y: transverse momentum
 	  out->AddAxis(ptID, 100, 0.0, 10.0);
 	 //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
 	 
-	  //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+      if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
       
     }
 
@@ -2947,7 +2921,6 @@ Bool_t Config_Lambdakx
 )
 {
   Float_t     KPIDCut = 2.;
-  Float_t     nsigmaKxTOF=3.;
   Float_t     pLife = 20;
   Float_t     radiuslow = 0.5;
   Float_t     radiushigh = 200;
@@ -2961,20 +2934,13 @@ Bool_t Config_Lambdakx
    // selections for the pion from the decay of Sigma*
    /////////////////////////////////////////////////////
    //
-
-   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
-   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-   AliRsnCutSetDaughterParticle* cutSetKaon=new AliRsnCutSetDaughterParticle(Form("cutKaon%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,KPIDCut),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kKaon,KPIDCut,nsigmaKxTOF);
-   Int_t iCutKaon = task->AddTrackCuts(cutSetKaon);
-
-   /*
    AliRsnCutDaughterSigmaStar2010PP *cutKaon = new AliRsnCutDaughterSigmaStar2010PP("cutKaonForLambdakx", AliPID::kKaon);
    cutKaon->SetPIDCut(KPIDCut);    // fPIDCut used in IsSelected() after the call to cutQuality
 
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutKaon->CutQuality();
-   cutQuality->SetDefaults2011();
+   //cutQuality->SetDefaults2011();
    //cutQuality->SetDCARmax(trackDCAcut);
-   //cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
+   cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
    // SetDefaults2010 contains the following selections:
    //     SetPtRange(0.15, 1E+20);
    //     SetEtaRange(-0.8, 0.8);
@@ -2997,7 +2963,6 @@ Bool_t Config_Lambdakx
    cutSetKaon->AddCut(cutKaon);
    cutSetKaon->SetCutScheme(cutKaon->GetName());
    Int_t iCutKaon = task->AddTrackCuts(cutSetKaon);
-   */
    //
    /////////////////////////////////////////////////////////////
    // selections for Lambda and for the daughters of Lambda 
@@ -3115,12 +3080,12 @@ Bool_t Config_Lambdakx
       out->SetPairCuts(cutsPair);
       // axis X: invmass
       if (useIM[i]) 
-             out->AddAxis(imID, 700, 1.6, 3.);
+             out->AddAxis(imID, 800, 1.6, 2.4);
       // axis Y: transverse momentum
 	  out->AddAxis(ptID, 100, 0.0, 10.0);
 	 //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
 	 
-	  //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+      if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
       
     }
 
@@ -3649,12 +3614,12 @@ Bool_t Config_Lambdak0
       out->SetPairCuts(cutsPair);
       // axis X: invmass
       if (useIM[i]) 
-             out->AddAxis(imID, 700, 1.6, 3.);
+             out->AddAxis(imID, 800, 1.6, 2.4);
       // axis Y: transverse momentum
 	  out->AddAxis(ptID, 100, 0.0, 10.0);
 	 //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
 	 
-	  //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+      if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
       
     }
 
@@ -4172,12 +4137,12 @@ Bool_t Config_Lambdap
       out->SetPairCuts(cutsPair);
       // axis X: invmass
       if (useIM[i]) 
-             out->AddAxis(imID, 975, 2.05, 4.);
+             out->AddAxis(imID, 950, 2.05, 3.0);
       // axis Y: transverse momentum
 	  out->AddAxis(ptID, 100, 0.0, 10.0);
 	 //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
 	 
-	  //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+      if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
       
     }
 
@@ -4238,7 +4203,7 @@ Bool_t Config_Lambdap
      out->AddAxis(ptID, 100, 0.0, 10.0);
      //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
      
-     //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
      
      // create output
      AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarM_TrueMC%s", suffix), mode.Data(), "MOTHER");
@@ -4585,7 +4550,7 @@ void AddMonitorOutput_V0DCA2TPV(TString name="",TObjArray *mon=0,TString opt="",
 void AddMonitorOutput_V0CPA(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0)
 {
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0cpa",name.Data()),AliRsnValueDaughter::kCosPointAng);
-  a->SetBins(0.96,1.,0.001);
+  a->SetBins(0.94,1.,0.0001);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
   o->AddValue(a);
   if (mon) mon->Add(o);
@@ -4595,7 +4560,7 @@ void AddMonitorOutput_V0CPA(TString name="",TObjArray *mon=0,TString opt="",AliR
 void AddMonitorOutput_V0TPCpim(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0)
 {
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0TPCpim",name.Data()),AliRsnValueDaughter::kLambdaPionPIDCut);
-  a->SetBins(0.,5.,0.01);
+  a->SetBins(-10.,10.,0.01);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
   o->AddValue(a);
   if (mon) mon->Add(o);
@@ -4605,7 +4570,7 @@ void AddMonitorOutput_V0TPCpim(TString name="",TObjArray *mon=0,TString opt="",A
 void AddMonitorOutput_V0TPCpip(TString name="",TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *loop=0)
 {
   AliRsnValueDaughter* a=new AliRsnValueDaughter(Form("%s_v0TPCpip",name.Data()),AliRsnValueDaughter::kAntiLambdaAntiPionPIDCut);
-  a->SetBins(-0.,5.,0.01);
+  a->SetBins(-10.,10.,0.01);
   AliRsnListOutput* o=new AliRsnListOutput(Form("out_%s",a->GetName()),AliRsnListOutput::kHistoDefault);
   o->AddValue(a);
   if (mon) mon->Add(o);

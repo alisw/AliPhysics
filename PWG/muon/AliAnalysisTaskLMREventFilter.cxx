@@ -39,14 +39,6 @@
 #include "AliCentrality.h"
 #include "AliLog.h"
 #include "TBits.h"
-
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
-#include "AliGRPObject.h"
-#include "AliTriggerInput.h"
-#include "AliTriggerConfiguration.h"
-#include "AliInputEventHandler.h"
-
 #include "AliAnalysisMuonUtility.h"
 #include "AliOADBContainer.h"
 #include "AliOADBMultSelection.h"
@@ -69,8 +61,6 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   fOutputList(0x0),
   fAliLMREvent(0),  
   fhTriggers(0),
-  fhL0TriggerInputMLL(0),
-  fhL0TriggerInputMUL(0),
   fhNMu(0)
 {
   //
@@ -86,8 +76,7 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   fTriggerClasses[4]="CMLL7";
   fTriggerClasses[5]="CMSL7 & 0MLL";
   fTriggerClasses[6]="CMSL7 & 0MUL";
-  fL0TriggerInputMLL = 20; // reference to MLL L0 trigger
-  fL0TriggerInputMUL = 21; // reference to MUL L0 trigger
+
 }
 
 
@@ -100,8 +89,6 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name,
   fOutputList(0x0),
   fAliLMREvent(0),  
   fhTriggers(0),
-  fhL0TriggerInputMLL(0),
-  fhL0TriggerInputMUL(0),
   fhNMu(0)
 {
   // Constructor
@@ -115,8 +102,6 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name,
   fTriggerClasses[4]="CMLL7";
   fTriggerClasses[5]="CMSL7 & 0MLL";
   fTriggerClasses[6]="CMSL7 & 0MUL";
-  fL0TriggerInputMLL = 20; // reference to MLL L0 trigger
-  fL0TriggerInputMUL = 21; // reference to MUL L0 trigger
 
   // Define input and output slots here
   DefineOutput(1, TList::Class());
@@ -137,8 +122,6 @@ AliAnalysisTaskLMREventFilter::~AliAnalysisTaskLMREventFilter()
   delete fAliLMREvent;
   fAliLMREvent=NULL;
   delete fhTriggers;
-  delete fhL0TriggerInputMLL;
-  delete fhL0TriggerInputMUL;
   delete fhNMu;
   fhTriggers=NULL;
   fhNMu=NULL;
@@ -167,14 +150,6 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fOutputList->Add(fhNMu);
   fhNMu->Sumw2();
 
-  fhL0TriggerInputMLL = new TH1D("fhL0TriggerInputMLL","",120,-0.5,119.5);
-  fOutputList->Add(fhL0TriggerInputMLL);
-  fhL0TriggerInputMLL->Sumw2();
-
-  fhL0TriggerInputMUL = new TH1D("fhL0TriggerInputMUL","",120,-0.5,119.5);
-  fOutputList->Add(fhL0TriggerInputMUL);
-  fhL0TriggerInputMUL->Sumw2();
-
   for (Int_t i=0;i<fNTrigClass;i++)
     {
       fhTriggers->GetXaxis()->SetBinLabel(i+1,fTriggerClasses[i]);
@@ -190,24 +165,6 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
 void AliAnalysisTaskLMREventFilter::NotifyRun()
 {
   fMuonTrackCuts->SetRun(fInputHandler);//(AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  AliCDBManager *man = AliCDBManager::Instance();
-  man->Init();
-  man->SetDefaultStorage("raw://"); 
-  man->SetRun(fInputHandler->GetEvent()->GetRunNumber()); 
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
-  AliTriggerConfiguration *cfg=(AliTriggerConfiguration*)entry->GetObject(); 
-  TObjArray  inputs = cfg->GetInputs(); 
-  for(Int_t i=0;i<inputs.GetEntriesFast();i++)
-    {
-      AliTriggerInput* inp =  (AliTriggerInput*) inputs[i];
-      TString name=inp->GetName();
-      if(name.Contains("0MUL"))
-	fL0TriggerInputMUL = inp->GetIndexCTP(); // reference to MUL L0 trigger
-      if(name.Contains("0MLL"))
-	fL0TriggerInputMLL = inp->GetIndexCTP(); // reference to MLL L0 trigger
-    }
-  fhL0TriggerInputMLL->Fill(fL0TriggerInputMLL);
-  fhL0TriggerInputMUL->Fill(fL0TriggerInputMUL);
 }
 //====================================================================================================================================================
 
@@ -398,9 +355,11 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   
   if(trigStr.Contains("CMSL7"))
     {
+      Int_t inputMLL = 20; // reference to MLL L0 trigger
+      Int_t inputMUL = 21; // reference to MUL L0 trigger
       UInt_t inpmask = fAOD->GetHeader()->GetL0TriggerInputs();
-      Int_t is0MLLfired = (inpmask & (1<<(fL0TriggerInputMLL-1)));
-      Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
+      Int_t is0MLLfired = (inpmask & (1<<(inputMLL-1)));
+      Int_t is0MULfired = (inpmask & (1<<(inputMUL-1)));
       
       if(is0MLLfired)
 	{
