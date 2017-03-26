@@ -995,4 +995,11 @@ AliVEvent::EDataLayoutType AliMCEvent::GetDataLayoutType() const
   return AliVEvent::kMC;
 }
 
+TParticle* AliMCEvent::Particle(int i) const
+{
+  // extract Particle from the MCTrack with global index i
+  const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
+  return mcpart ? mcpart->Particle() : 0;
+}
+
 ClassImp(AliMCEvent)
