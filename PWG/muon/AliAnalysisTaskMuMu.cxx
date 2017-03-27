@@ -235,7 +235,7 @@ void AliAnalysisTaskMuMu::SetPoolSize (Int_t size)
 //_____________________________________________________________________________
 float AliAnalysisTaskMuMu::CentralityFromCentrality(const char* estimator) const
 {
-  /// Estimate Centrality from new centrality framework
+  /// Estimate Centrality from old centrality framework
 
   AliCentrality* centrality = Event()->GetCentrality();
   if ( centrality ) return centrality->GetCentralityPercentile(estimator);
@@ -248,7 +248,7 @@ float AliAnalysisTaskMuMu::CentralityFromCentrality(const char* estimator) const
 //_____________________________________________________________________________
 float AliAnalysisTaskMuMu::CentralityFromMultSelection(const char* estimator) const
 {
-  /// Estimate Centrality from old centrality framework
+  /// Estimate Centrality from new centrality framework
 
   AliMultSelection* multSelection = static_cast<AliMultSelection*>(Event()->FindListObject("MultSelection"));
   if ( multSelection ) return multSelection->GetMultiplicityPercentile(estimator);
@@ -566,16 +566,13 @@ void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* t
         Int_t i(-1);
         Bool_t parFound(kFALSE);
         while ( i < list->GetEntries() - 1 && !parFound ){
-
           i++;
           while ( list->At(i)->IsA() != TParameter<Double_t>::Class()  && i < list->GetEntries() - 1 ) i++;// In case there is a diferent object, just to skip it
-
           p = static_cast<TParameter<Double_t>*>(list->At(i));
-
-          if ( TString(p->GetName()).Contains(parToFind.Data()) ) parFound = kTRUE;
+          if ( TString(p->GetName()).Contains(parToFind.Data()) )
+            parFound = kTRUE;
         }
-      }
-      else AliFatal("No multiplicity info on Event");
+      } else AliFatal("No multiplicity info on Event");
 
       TIter next(bin);
       AliAnalysisMuMuBinning::Range* r;
@@ -586,9 +583,7 @@ void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* t
       }
       delete bin;
     }
-  }
-
-  else fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", eventSelection, triggerClassName,  centrality, currentRun));
+  } else fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", eventSelection, triggerClassName,  centrality, currentRun));
 }
 
 //_____________________________________________________________________________

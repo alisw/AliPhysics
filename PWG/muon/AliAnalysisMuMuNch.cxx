@@ -1065,9 +1065,9 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
 
   Double_t SPDZv = vertex->GetZ();
 
-  TH1* hSPDcorrectionVsEta = static_cast<TH1*>(nchList->FindObject("SPDcorrectionVsEta"));
-  TH1* hNTrackletVsEta = static_cast<TH1*>(nchList->FindObject("NTrackletVsEta"));
-  TH1* hNTrackletVsPhi = static_cast<TH1*>(nchList->FindObject("NTrackletVsPhi"));
+  TH1* hSPDcorrectionVsEta  = static_cast<TH1*>(nchList->FindObject("SPDcorrectionVsEta"));
+  TH1* hNTrackletVsEta      = static_cast<TH1*>(nchList->FindObject("NTrackletVsEta"));
+  TH1* hNTrackletVsPhi      = static_cast<TH1*>(nchList->FindObject("NTrackletVsPhi"));
 
   TH1* hNTrackletSecVsEta(0x0);
   if ( fSPDMeanTrackletsCorrToCompare ) // In case we have a secondary eta range we clone the tracklets vs eta histo
@@ -1079,10 +1079,10 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
   TH1* hNchVsEta = static_cast<TH1*>(hNTrackletVsEta->Clone("NchVsEta"));
 
   TProfile* hMeanTrackletsVsEta = static_cast<TProfile*>(Histo(eventSelection,triggerClassName,centrality,"MeanTrackletsVsEta"));
-  TProfile* hMeanNchVsEta = static_cast<TProfile*>(Histo(eventSelection,triggerClassName,centrality,"MeanNchVsEta"));
-  TProfile* hMeandNchdEtaVsEta = static_cast<TProfile*>(Histo(eventSelection,triggerClassName,centrality,"MeandNchdEtaVsEta"));
+  TProfile* hMeanNchVsEta       = static_cast<TProfile*>(Histo(eventSelection,triggerClassName,centrality,"MeanNchVsEta"));
+  TProfile* hMeandNchdEtaVsEta  = static_cast<TProfile*>(Histo(eventSelection,triggerClassName,centrality,"MeandNchdEtaVsEta"));
 
-  TH2* hEventsVsZVertexVsEta = static_cast<TH2*>(Histo(eventSelection,triggerClassName,centrality,"EventsVsZVertexVsEta"));
+  TH2* hEventsVsZVertexVsEta    = static_cast<TH2*>(Histo(eventSelection,triggerClassName,centrality,"EventsVsZVertexVsEta"));
 
   Int_t nBins(0);
 
@@ -1194,7 +1194,7 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
 
     if ( parFound1 && parFound2 )
     {
-//      Double_t dNchdetaPubli = 17.35; //FIXME: hardcoded (pPb value)
+      // Double_t dNchdetaPubli = 17.35; //FIXME: hardcoded (pPb value)
       Double_t ctToNch = 1.11; //FIXME: hardcoded (value for Nch vs NtrCorr(eta<0.5) in pPb)
 
       Histo(eventSelection,triggerClassName,centrality,"dNchdetaComparison2Corrections")->Fill(dNchdeta,ctToNch*NtrCorr/(2*fEtaMax));
@@ -1219,7 +1219,7 @@ void AliAnalysisMuMuNch::FillHistosForEvent(const char* eventSelection,
   while ( i < nchList->GetEntries() - 1 )
   {
     i++;
-    while ( nchList->At(i)->IsA() != TParameter<Double_t>::Class() && i < nchList->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
+    while ( nchList->At(i)->IsA() != TParameter<Double_t>::Class() && i < nchList->GetEntries() - 1 ) // In case there is a different object, just to skip it
     {
       i++;
     }
@@ -1785,34 +1785,35 @@ Double_t AliAnalysisMuMuNch::GetSPDCorrection(Double_t zvert, Double_t eta) cons
 //_____________________________________________________________________________
 Double_t AliAnalysisMuMuNch::GetTrackletsMeanCorrection(Double_t zvert, Int_t nTracklets, Bool_t corrToCompare) const
 {
-  if ( !fSPDMeanTracklets )
-  {
+
+  /// Correct the raw number of tracklets using the SPD <tracklet> distribution
+  if ( !fSPDMeanTracklets ) {
     AliFatal("ERROR: No tracklets mean correction");
     return 0;
   }
+
+  // Get SPD <traklet> distribution
+  TProfile* h(0x0);
+  if ( corrToCompare && fSPDMeanTrackletsCorrToCompare )
+    h = static_cast<TProfile*>(fSPDMeanTrackletsCorrToCompare);
   else
+    h = static_cast<TProfile*>(fSPDMeanTracklets);
+
+  Int_t bin         = h->FindBin(zvert);
+  Double_t mNTtklsZ = h->GetBinContent(bin);
+
+  Double_t mNTtklsZref(0.);
+  if ( fSPDMeanTrackletsCorrToCompare )
   {
-    TProfile* h(0x0);
-    if ( corrToCompare && fSPDMeanTrackletsCorrToCompare ) h = static_cast<TProfile*>(fSPDMeanTrackletsCorrToCompare);
-    else h = static_cast<TProfile*>(fSPDMeanTracklets);
-
-    Int_t bin = h->FindBin(zvert);
-    Double_t mNTtklsZ = h->GetBinContent(bin);
-
-    Double_t mNTtklsZref(0.);
-    if ( fSPDMeanTrackletsCorrToCompare )
-    {
-      if ( corrToCompare ) mNTtklsZref = h->GetMaximum();
-      else
-      {
-        if ( fMeanTrRef > 0. ) mNTtklsZref = fMeanTrRef;
-        else mNTtklsZref = h->GetMaximum();
-      }
-    }
+    if ( corrToCompare )      mNTtklsZref = h->GetMaximum();
     else
     {
-      if ( fMeanTrRef > 0. ) mNTtklsZref = fMeanTrRef;
-      else mNTtklsZref = h->GetMaximum();//*1.11;
+      if ( fMeanTrRef > 0. )  mNTtklsZref = fMeanTrRef;
+      else                    mNTtklsZref = h->GetMaximum();
+    }
+  } else {
+    if ( fMeanTrRef > 0. )  mNTtklsZref = fMeanTrRef;
+    else                    mNTtklsZref = h->GetMaximum();//*1.11;
 //      {
 //        if ( nTracklets*mNTtklsZref/mNTtklsZ < 9.5 ) mNTtklsZref = h->GetMaximum()*1.18;
 //        else if ( nTracklets*mNTtklsZref/mNTtklsZ < 19.5 ) mNTtklsZref = h->GetMaximum()*1.12;
@@ -1821,16 +1822,16 @@ Double_t AliAnalysisMuMuNch::GetTrackletsMeanCorrection(Double_t zvert, Int_t nT
 //        else if ( nTracklets*mNTtklsZref/mNTtklsZ < 69.5 ) mNTtklsZref = h->GetMaximum()*1.04;
 //        else if ( nTracklets*mNTtklsZref/mNTtklsZ > 69.5 ) mNTtklsZref = h->GetMaximum()*1.01;
 //      }
-    }
+  }
 
-    Double_t deltaN;
-    if ( mNTtklsZ == 0. ) deltaN = -1000.; // If the zvertex is out of the correction range the correction is < -999 (non valid)
-    else
-    {
-      Double_t coef(1.);
-      if ( mNTtklsZref < mNTtklsZ ) coef = -1.;
+  Double_t deltaN;
+  if ( mNTtklsZ == 0. ) deltaN = -1000.; // If the zvertex is out of the correction range the correction is < -999 (non valid)
+  else
+  {
+    Double_t coef(1.);
+    if ( mNTtklsZref < mNTtklsZ ) coef = -1.;
 
-      Double_t meanPoiss = nTracklets*(mNTtklsZref - mNTtklsZ)/mNTtklsZ;
+    Double_t meanPoiss = nTracklets*(mNTtklsZref - mNTtklsZ)/mNTtklsZ;
 
 //      if ( nTracklets*mNTtklsZref/mNTtklsZ < 1.5 ) meanPoiss = meanPoiss*1.75;
 //      else if ( nTracklets*mNTtklsZref/mNTtklsZ < 4.5 ) meanPoiss = meanPoiss*1.19;
@@ -1844,45 +1845,41 @@ Double_t AliAnalysisMuMuNch::GetTrackletsMeanCorrection(Double_t zvert, Int_t nT
 //      else if ( nTracklets*mNTtklsZref/mNTtklsZ < 69.5 ) meanPoiss = meanPoiss*0.94;
 //      else if ( nTracklets*mNTtklsZref/mNTtklsZ > 69.5 ) meanPoiss = meanPoiss*0.91;
 
-      deltaN = coef*frand->PoissonD(TMath::Abs(meanPoiss));
-    }
-    return deltaN;
+    deltaN = coef*frand->PoissonD(TMath::Abs(meanPoiss));
   }
+  return deltaN;
 }
 
 //_____________________________________________________________________________
 Double_t AliAnalysisMuMuNch::GetV0MeanCorrection(Double_t zvert, Int_t mV0) const
 {
-  if ( !fV0MeanMult )
-  {
+  if ( !fV0MeanMult ) {
     AliFatal("ERROR: No V0 mean correction");
     return 0;
   }
+
+  TProfile* h   = static_cast<TProfile*>(fV0MeanMult);
+  Int_t bin     = h->FindBin(zvert);
+  Double_t mV0Z = h->GetBinContent(bin);
+
+  Double_t mV0Zref(0.);
+
+  if ( fMeanV0Ref > 0. )  mV0Zref = fMeanV0Ref;
+  else                    mV0Zref = h->GetMaximum();
+
+  Double_t deltaN;
+  if ( mV0Z == 0. ) deltaN = -1000.; // If the zvertex is out of the correction range the correction is < -999 (non valid)
   else
   {
-    TProfile* h = static_cast<TProfile*>(fV0MeanMult);
+    Double_t coef(1.);
+    if ( mV0Zref < mV0Z ) coef = -1.;
 
-    Int_t bin = h->FindBin(zvert);
-    Double_t mV0Z = h->GetBinContent(bin);
+    Double_t meanPoiss = mV0*(mV0Zref - mV0Z)/mV0Z;
 
-    Double_t mV0Zref(0.);
-
-    if ( fMeanV0Ref > 0. ) mV0Zref = fMeanV0Ref;
-    else mV0Zref = h->GetMaximum();
-
-    Double_t deltaN;
-    if ( mV0Z == 0. ) deltaN = -1000.; // If the zvertex is out of the correction range the correction is < -999 (non valid)
-    else
-    {
-      Double_t coef(1.);
-      if ( mV0Zref < mV0Z ) coef = -1.;
-
-      Double_t meanPoiss = mV0*(mV0Zref - mV0Z)/mV0Z;
-
-      deltaN = coef*frand->PoissonD(TMath::Abs(meanPoiss));
-    }
-    return deltaN;
+    deltaN = coef*frand->PoissonD(TMath::Abs(meanPoiss));
   }
+  return deltaN;
+
 }
 
 //_____________________________________________________________________________
@@ -2073,7 +2070,8 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
 
   AliAnalysisMuMuBase::SetEvent(event,mcEvent); // To have Event() and MCEvent() method working
 
-  TList* nchList = static_cast<TList*>(event->FindListObject("NCH")); // Define the list with the NCH info for each event
+  // Define the list with the NCH info for each event
+  TList* nchList = static_cast<TList*>(event->FindListObject("NCH"));
   if (!nchList)
   {
     nchList = new TList;
@@ -2081,18 +2079,17 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
     nchList->SetName("NCH");
     event->AddObject(nchList);
   }
+  nchList->Clear();
 
-  nchList->Clear(); // We clear the NCH list for this new event
 
-
+  // Get all we need from event
   const AliVVertex* vertexSPD = event->GetPrimaryVertexSPD();
   Double_t SPDZv              = vertexSPD->GetZ();
-
   AliAODTracklets* tracklets  = GetTracklets(event);
-
   AliVVZERO* vzero            = Event()->GetVZEROData();
 
-  TH1* hSPDcorrectionVsEta(0x0); // Pointers for the individual event histos
+  // Pointers for the individual event histos
+  TH1* hSPDcorrectionVsEta(0x0);
   TH1* hNchVsEta(0x0);
   TH1* hNTrackletVsEta(0x0);
   TH1* hNTrackletVsPhi(0x0);
@@ -2140,11 +2137,13 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
     }
     //_________
 
-    hSPDcorrectionVsEta = Histo("AliAnalysisMuMuNch","SPDcorrectionVsEta"); // Set the individual event histos
+    // Set the individual event histos
+    hSPDcorrectionVsEta = Histo("AliAnalysisMuMuNch","SPDcorrectionVsEta");
     hNTrackletVsEta     = Histo("AliAnalysisMuMuNch","NTrackletVsEta");
     hNTrackletVsPhi     = Histo("AliAnalysisMuMuNch","NTrackletVsPhi");
 
-    hSPDcorrectionVsEta->Reset(); // Reset of the individual event histos
+    // Reset of the individual event histos
+    hSPDcorrectionVsEta->Reset();
     hNTrackletVsEta->Reset();
     hNTrackletVsPhi->Reset();
 
@@ -2161,11 +2160,10 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
       for (Int_t i = 0 ; i < nTracklets ; i++)
       {
         thetaTracklet = tracklets->GetTheta(i);
-        etaTracklet = -TMath::Log(TMath::Tan(thetaTracklet/2.));
+        etaTracklet   = -TMath::Log(TMath::Tan(thetaTracklet/2.));
         if ( etaTracklet < fetaRange[0] || etaTracklet > fetaRange[1] ) continue; // Avoid tracklets out of the eta SPD acceptance or out of the eta cut
 
-        SPDr = GetSPDCorrection(SPDZv,etaTracklet); // Get SPD AccxEff for the corresponding [zvtx,eta] bin (If we use the 'mean correction' or no correction it will be always 1)
-
+        SPDr      = GetSPDCorrection(SPDZv,etaTracklet); // Get SPD AccxEff for the corresponding [zvtx,eta] bin (If we use the 'mean correction' or no correction it will be always 1)
         Int_t bin = fEtaAxis->FindBin(etaTracklet);
 
         nTrackletsInRange++;
@@ -2176,9 +2174,7 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
           hNTrackletVsPhi->Fill(tracklets->GetPhi(i));
 
           nTrackletsInRangeSPDOk++;
-        }
-        else // If the correction is above the threshold we store a -1 in the correction to skip this eta bin int the fill method (can just happen using SPD AccxEff correction)
-        {
+        } else {
           hSPDcorrectionVsEta->SetBinContent(bin,-1.0);
         }
       }
@@ -2192,17 +2188,17 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
       binMax = fEtaAxis->FindBin(fetaRange[1]);
 
       for ( Int_t i = 1; i < binMin; ++i )
-      {
         hSPDcorrectionVsEta->SetBinContent(i,-1.0);
-      }
-      for ( Int_t i = binMax + 1 ; i <= fEtaAxis->GetNbins(); ++i )
-      {
-        hSPDcorrectionVsEta->SetBinContent(i,-1.0);
-      }
 
-      if ( fSPDOneOverAccxEff || fSPDMeanTracklets ) // Here we correct the raw tracklets
+      for ( Int_t i = binMax + 1 ; i <= fEtaAxis->GetNbins(); ++i )
+        hSPDcorrectionVsEta->SetBinContent(i,-1.0);
+
+      // Correct the raw tracklets
+      if ( fSPDOneOverAccxEff || fSPDMeanTracklets )
       {
-        if ( fSPDOneOverAccxEff ) // In this case the correction is the SPD accxEff
+
+        // In this case the correction is the SPD accxEff
+        if ( fSPDOneOverAccxEff )
         {
 
           //----- Mean dNchdEta computation to set it into the event
@@ -2240,35 +2236,28 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
           nchList->Add(new TParameter<Double_t>("MeandNchdEta",meandNchdEta)); // We add the mean dNch/dEta to the event. It will serve us as a multiplicity estimator.
         }
 
-        if( fSPDMeanTracklets ) // In this case the correction is the 'mean correction'
+        // In this case the correction is the 'mean correction'
+        if( fSPDMeanTracklets )
         {
           SPDr = GetTrackletsMeanCorrection(SPDZv,nTrackletsInRange); // Get 'mean correction' for the zvtx
 
-          if ( SPDr < -999.) nch = -1;
-          else nch = nTrackletsInRange + SPDr;
+          if ( SPDr < -999.)  nch = -1;
+          else                nch = nTrackletsInRange + SPDr;
 
           nchList->Add(new TParameter<Double_t>("NtrCorr",nch));// We add the corrected number of tracklets to the event. It will serve us as a multiplicity estimator.
         }
       }
 
-    }
-    else // If there is no tracklets or vertex object or the eta range is not valid everything is invalidated
-    {
-      for ( Int_t i = 1 ; i <= hSPDcorrectionVsEta->GetNbinsX() ; ++i )
-      {
-        hSPDcorrectionVsEta->SetBinContent(i,-1.0);
-      }
+    } else {
+
+      // Set -1 everywhere is anything bad happened
+
+      for ( Int_t i = 1 ; i <= hSPDcorrectionVsEta->GetNbinsX() ; ++i )  hSPDcorrectionVsEta->SetBinContent(i,-1.0);
 
       nchList->Add(new TParameter<Double_t>("Ntr",-1)); //We set an invalid Ntracklets
 
-      if ( fSPDOneOverAccxEff ) // In this case the correction is the SPD accxEff
-      {
-        nchList->Add(new TParameter<Double_t>("MeandNchdEta",-1)); //We set an invalid dNch/deta
-      }
-      else if( fSPDMeanTracklets ) // In this case the correction is the 'mean correction'
-      {
-        nchList->Add(new TParameter<Double_t>("NtrCorr",-1)); //We set an invalid Ntracklets corrected
-      }
+      if ( fSPDOneOverAccxEff )     nchList->Add(new TParameter<Double_t>("MeandNchdEta",-1));
+      else if( fSPDMeanTracklets )  nchList->Add(new TParameter<Double_t>("NtrCorr",-1));
     }
     //_______
 
@@ -2380,7 +2369,7 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
 
         if ( isPP && nGentorDex==0 )
         {
-//          if ( !IsMCtrackFromGenerator(i) ) continue; // Select only the particles generated by the desired generator
+          // if ( !IsMCtrackFromGenerator(i) ) continue; // Select only the particles generated by the desired generator
 
           if ( MCpart->Charge()!=0 ) // We take only charged particles
           {
@@ -2413,7 +2402,7 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
         Int_t label1 = tracklets->GetLabel(i,0);
         Int_t label2 = tracklets->GetLabel(i,1);
 
-//        if ( !IsMCtrackFromGenerator(label1) || !IsMCtrackFromGenerator(label2) ) continue; // Select only the particles generated by the desired generator
+        // if ( !IsMCtrackFromGenerator(label1) || !IsMCtrackFromGenerator(label2) ) continue; // Select only the particles generated by the desired generator
 
         thetaTracklet = tracklets->GetTheta(i);
         etaTracklet = -TMath::Log(TMath::Tan(thetaTracklet/2.));
@@ -2450,7 +2439,6 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
       }
 
     }
-
   }
   //_______
 

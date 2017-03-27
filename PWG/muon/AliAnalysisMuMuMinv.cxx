@@ -83,7 +83,7 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
   CreateSemaphoreHistogram(eventSelection,triggerClassName,centrality);
 
   // no bins defined by the external steering macro, use our own defaults
-  if (!fBinsToFill) SetBinsToFill("psi","integrated,ptvsy,yvspt,pt,y,phi");
+  if (!fBinsToFill) SetBinsToFill("psi","integrated,ptvsy,yvspt,pt,y,phi,ntrcorr,ntr,nch,v0a,v0acorr,v0ccorr,v0mcorr");
 
   // mass range
   Double_t minvMin = fMinvMin;
@@ -168,6 +168,7 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
   CreatePairHistos(kHistoForData,eventSelection,triggerClassName,centrality,"NchForPsiP","Corrected multiplicity distribution for 3.6 < m_{#mu^{+}#mu^{-}} < 3.9",nbinsMult,multMin,multMax);
 
   TIter next(fBinsToFill);
+  next.Reset();
   AliAnalysisMuMuBinning::Range* r;
   Int_t nb(0);
 
@@ -481,6 +482,7 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
   }
 
   TIter nextBin(fBinsToFill);
+  nextBin.Reset();
   AliAnalysisMuMuBinning::Range* r;
 
   // Loop over all bin ranges
