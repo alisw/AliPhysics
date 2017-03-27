@@ -114,7 +114,7 @@ public:
     
     void SetUseAlternativeBinning() {fUseAlternativeBinnig = kTRUE;};
     
-    void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
+    void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = ZNA, 1 = V0A
     void SetAdditionalCuts(Double_t PtMinAsso, Int_t TpcNclsAsso) {fPtMinAsso = PtMinAsso; fTpcNclsAsso = TpcNclsAsso;};
     void SetSPDCutForHadrons() {fAssocWithSPD = kTRUE;};
     

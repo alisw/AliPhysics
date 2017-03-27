@@ -15,6 +15,10 @@
  TPC PID Cluster = TPCNClusterPID (obvius)
  TPCNSigma = TPCNClusterPID (obvius)
  
+CentralityEstimator 
+0 = ZNA (Standard)
+1 = VOA (used before)
+
  
  */
 
@@ -42,7 +46,8 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(TString taskName = "HFe_
                                                         Int_t TPCNCluster = 100,
                                                         Int_t TPCNClusterPartner = 60,
                                                         Int_t TPCNClusterPID = 80,
-                                                        Bool_t UseGlobalTracksForHadrons = kTRUE)
+                                                        Bool_t UseGlobalTracksForHadrons = kTRUE,
+                                                        Int_t CentralityEstimator = 0)
 {
     
     
@@ -147,6 +152,9 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(TString taskName = "HFe_
     
     task->SetCentrality(MultiplicityLow,MultiplicityUp);
     printf("MinMultiplicity = %1.2f MaxMultiplicy = %1.2f\n", MultiplicityLow,MultiplicityUp);
+    
+    task->SetCentralityEstimator(CentralityEstimator);
+    printf("Centrality estimator = %d",CentralityEstimator);
     
     
     ///_______________________________________________________________________________________________________________

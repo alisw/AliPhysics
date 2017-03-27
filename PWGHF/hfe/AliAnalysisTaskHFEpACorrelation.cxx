@@ -1401,7 +1401,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                 }
                 else
                 {
-                    if (fEstimator==1)
+                    if (fEstimator==0)
                     {
                         fCentralityValue =  MultSelection->GetMultiplicityPercentile("ZNA");
                     }
@@ -1416,7 +1416,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             {
                 //Run 1 centrality
                 fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-                if(fEstimator==1)
+                if(fEstimator==0)
                     fCentralityValue = fCentrality->GetCentralityPercentile("ZNA");
                 else
                     fCentralityValue = fCentrality->GetCentralityPercentile("V0A");
