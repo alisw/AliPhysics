@@ -370,7 +370,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
     } else {
-      if (!PassesPIDSelection(track)) continue;
+      bool pid_check = PassesPIDSelection(track);
       const int iC = (track->Charge() > 0) ? 1 : 0;
 
       float tpc_n_sigma = GetTPCsigmas(track);
@@ -384,8 +384,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       }
       if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) continue;
       fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
-
-      if (iTof == 0) continue;
+      if (!pid_check || iTof == 0) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
       fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
