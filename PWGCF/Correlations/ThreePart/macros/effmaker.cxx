@@ -30,7 +30,7 @@
 
 using namespace std;
 double glimit = 4.5;
-double gMaxWeight = 5.0;
+double gMaxWeight = 1000.0;
 THnF * SumCent(Double_t Mincent , Double_t Maxcent, THnF* source, const char * name){
   THnF * output = (THnF*)source->Clone(name);
   output->Reset();

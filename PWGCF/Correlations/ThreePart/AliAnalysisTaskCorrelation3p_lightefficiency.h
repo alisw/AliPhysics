@@ -82,7 +82,11 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
       fCutMask = 3;
       AliWarning("Track cut set to Bit6");
     }
-    
+    //Filter Bit 5 | 6 - 4
+    if(TString(cutmask).CompareTo("BIT56")==0){
+      fCutMask = 4;
+      AliWarning("Track cut set to Bit5|Bit6");
+    }    
   }
   void SetTree(bool istree){fisTree=istree;}
 protected:

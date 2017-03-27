@@ -1339,7 +1339,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	savehist2->Write();
 	if(mb == 0&&zb == 0)HistPhi = savehist2;
 	else HistPhi->Add(savehist2);
-	TH1D*  savehist3 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistEta,mb,zb),"total_Eta","Eta of triggers and associated combined","#eta []","# particles"));
+	TH1D*  savehist3 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistEta,mb,zb),"total_Eta","Eta of triggers and associated combined","#eta ","# particles"));
 	savehist3->Write();
 	if(mb == 0&&zb == 0)HistEta = savehist3;
 	else HistEta->Add(savehist3);
@@ -1351,7 +1351,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	savehist5->Write();
 	if(mb == 0&&zb == 0)HistTriggerPhi = savehist5;
 	else HistTriggerPhi->Add(savehist5);
-	TH1D* savehist6 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerEta,mb,zb),"trigger_Eta","Eta of triggers","#eta []","# triggers"));
+	TH1D* savehist6 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerEta,mb,zb),"trigger_Eta","Eta of triggers","#eta ","# triggers"));
 	savehist6->Write();
 	if(mb == 0&&zb == 0)HistTriggerEta = savehist6;
 	else HistTriggerEta->Add(savehist6);
@@ -1363,7 +1363,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	savehist8->Write();
 	if(mb == 0&&zb == 0)HistAssociatedPhi = savehist8;
 	else HistAssociatedPhi->Add(savehist8);
-	TH1D* savehist9 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedEta,mb,zb),"associated_Eta","Eta of associated","#eta []","# associated"));	
+	TH1D* savehist9 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedEta,mb,zb),"associated_Eta","Eta of associated","#eta ","# associated"));	
 	savehist9->Write();
 	if(mb == 0&&zb == 0)HistAssociatedEta = savehist9;
 	else HistAssociatedEta->Add(savehist9);
@@ -1404,33 +1404,33 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  delete tempcanvas;
 ///////DPHI DETA HISTOGRAMS:
 	  TH2D* DPHIDETA12_3 = slice(DPHIDPHIDETA,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
-	  PrepareHist(DPHIDETA12_3,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+	  PrepareHist(DPHIDETA12_3,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} ","#Delta#Phi_{1} [rad]","# Pairs");
 	  DPHIDETA12_3->Write("DPhi_1_DEta_12");
 	  tempcanvas= Makecanvas(DPHIDETA12_3,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  TH2D* DPHIDETA12SameSide_3 =DeltaEtaCut(DPHIDPHIDETA,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
-	  PrepareHist(DPHIDETA12SameSide_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+	  PrepareHist(DPHIDETA12SameSide_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} ","#Delta#Phi_{1} [rad]","# Pairs");
 	  DPHIDETA12SameSide_3->Write("DPhi_1_DEta_12_SameSide");
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3,"DPHIDEta12_SameSide_3d",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  TH2D* DPHI12ADETA12 =AveragePhi(DPHIDPHIDETA,"DPhi_12A_DEta_12",kFALSE);
-	  PrepareHist(DPHI12ADETA12,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} ","#Delta#eta_{12} []","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs");
+	  PrepareHist(DPHI12ADETA12,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} ","#Delta#eta_{12} ","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs");
 	  DPHI12ADETA12->Write("DPhi_12A_DEta_12");
 	  tempcanvas= Makecanvas(DPHI12ADETA12,"DPHI12ADEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  
 	  TH2D* DPHIDETA = dynamic_cast<TH2D*>(fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
-	  PrepareHist(DPHIDETA,"#Delta#Phi vs #Delta#eta","#Delta#eta []","#Delta#Phi [rad]","# Associated");
+	  PrepareHist(DPHIDETA,"#Delta#Phi vs #Delta#eta","#Delta#eta ","#Delta#Phi [rad]","# Associated");
 	  DPHIDETA->Write();
 	  tempcanvas= Makecanvas(DPHIDETA,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  
 	  TH2D* DPHIDETA2a = dynamic_cast<TH2D*>(fHistograms->At(GetNumberHist(khPhiEtaa,mb,zb))->Clone("DPhi_DEta2a"));
-	  PrepareHist(DPHIDETA2a,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]","# Associated");
+	  PrepareHist(DPHIDETA2a,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} ","#Delta#Phi_{12} [rad]","# Associated");
 	  DPHIDETA2a->Write();
 	  tempcanvas= Makecanvas(DPHIDETA2a,"DPHIDEta2a",kFALSE);
 	  tempcanvas->Write();
@@ -1474,7 +1474,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  delete tempcanvas;
 ///////DPHI DETA HISTOGRAMS:
 	  TH2D* DPHIDETA12_3m = slice(DPHIDPHIDETAm,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
-	  PrepareHist(DPHIDETA12_3m,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true,scale);
+	  PrepareHist(DPHIDETA12_3m,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} ","#Delta#Phi_{1} [rad]","",true,scale);
 	  DPHIDETA12_3m->Write("DPhi_1_DEta_12");
 	  scale->Write("DPhi_1_DEta_12_scale");
 	  scale->SetVal(0.0);
@@ -1483,7 +1483,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  delete tempcanvas;
 
 	  TH2D* DPHIDETA12SameSide_3m =DeltaEtaCut(DPHIDPHIDETAm,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
-	  PrepareHist(DPHIDETA12SameSide_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true,scale);
+	  PrepareHist(DPHIDETA12SameSide_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} ","#Delta#Phi_{1} [rad]","",true,scale);
 	  DPHIDETA12SameSide_3m->Write("DPhi_1_DEta_12_SameSide");
 	  scale->Write("DPhi_1_DEta_12_SameSide_scale");
 	  scale->SetVal(0.0);
@@ -1491,7 +1491,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  TH2D* DPHI12ADETA12m =AveragePhi(DPHIDPHIDETAm,"DPhi_12A_DEta_12",kFALSE);
-	  PrepareHist(DPHI12ADETA12m,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} ","#Delta#eta_{12} []","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs",true,scale);
+	  PrepareHist(DPHI12ADETA12m,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} ","#Delta#eta_{12} ","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs",true,scale);
 	  DPHI12ADETA12m->Write("DPhi_12A_DEta_12");
 	  scale->Write("DPhi_12A_DEta_12_scale");
 	  scale->SetVal(0.0);	  
@@ -1501,7 +1501,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 
 	  
 	  TH2D* DPHIDETAm = dynamic_cast<TH2D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
-	  PrepareHist(DPHIDETAm,"#Delta#Phi vs #Delta#eta","#Delta#eta []","#Delta#Phi [rad]","",true,scale);
+	  PrepareHist(DPHIDETAm,"#Delta#Phi vs #Delta#eta","#Delta#eta ","#Delta#Phi [rad]","",true,scale);
 	  DPHIDETAm->Write();
 	  scale->Write("DPhi_DEta_scale");
 	  scale->SetVal(0.0);
@@ -1510,7 +1510,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  delete tempcanvas;	
 	  
 	  TH2D* DPHIDETA2am = dynamic_cast<TH2D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiEtaa,mb,zb))->Clone("DPhi_DEta2a"));
-	  PrepareHist(DPHIDETA2am,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]","",true,scale);
+	  PrepareHist(DPHIDETA2am,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} ","#Delta#Phi_{12} [rad]","",true,scale);
 	  DPHIDETA2am->Write();
 	  scale->Write("DPhi_DEta2a_scale");
 	  scale->SetVal(0.0);	  
