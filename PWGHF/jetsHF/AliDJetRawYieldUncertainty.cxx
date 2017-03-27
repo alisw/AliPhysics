@@ -1258,7 +1258,7 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
   TFile *fFitReflection = new TFile(Form("%s_fitted_%s.root", inputfileNoExt.Data(), fitType.Data()), "recreate");
 
   for (Int_t i = 0; i < nPtBins; i++) {
-    TH1F *hSignMC = dynamic_cast<TH1F*>(fReflections->Get(Form("histSgn_%d", i)));
+    TH1 *hSignMC = dynamic_cast<TH1*>(fReflections->Get(Form("histSgn_%d", i)));
     if (hSignMC) {
       fFitReflection->cd();
       hSignMC->Write(Form("histSgn_%d", i));
@@ -1274,7 +1274,7 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
 
   for (Int_t iBin = 0; iBin < nPtBins; iBin++) {
     Printf("Bin %d", iBin);
-    TH1F *hfitRefl= (TH1F*)fReflections->Get(Form("histRfl_%d", iBin));
+    TH1 *hfitRefl= dynamic_cast<TH1*>(fReflections->Get(Form("histRfl_%d", iBin)));
     hfitRefl->SetName(Form("histoRfl_%d",iBin));
     hfitRefl->SetMarkerStyle(1);
     hfitRefl->SetLineStyle(1);
@@ -1324,8 +1324,8 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
 
     TF1 *fFitRefl = hfitRefl->GetFunction("finput");
 
-    TH1F *hFitReflNewTemp = static_cast<TH1F*>(hfitRefl->Clone(Form("histRflFitted%s_ptBin%d", fitType.Data(), iBin)));
-    TH1F *ratio = static_cast<TH1F*>(hfitRefl->Clone(Form("ratioRelDistr_%s_bin%d", fitType.Data(), iBin)));
+    TH1 *hFitReflNewTemp = static_cast<TH1*>(hfitRefl->Clone(Form("histRflFitted%s_ptBin%d", fitType.Data(), iBin)));
+    TH1 *ratio = static_cast<TH1*>(hfitRefl->Clone(Form("ratioRelDistr_%s_bin%d", fitType.Data(), iBin)));
     for (Int_t iBin2 = 1; iBin2 <= hfitRefl->GetNbinsX(); iBin2++){
       hFitReflNewTemp->SetBinContent(iBin2, 0.);
       ratio->SetBinContent(iBin2, 0.);
