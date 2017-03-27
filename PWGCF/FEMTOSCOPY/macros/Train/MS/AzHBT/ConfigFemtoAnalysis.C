@@ -52,7 +52,7 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) {
+AliFemtoManager* ConfigFemtoAnalysis(int CentL=30, int CentH=40, int kTRange=4) {
     
     double PionMass = 0.13956995;
     double KaonMass = 0.493677;
