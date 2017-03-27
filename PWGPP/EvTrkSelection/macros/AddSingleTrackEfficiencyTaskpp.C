@@ -18,22 +18,23 @@ const Int_t mintrackrefsTOF = 0;
 const Int_t mintrackrefsMUON = 0;
 const Bool_t ischarged = kTRUE;
 
+
 //PID Threshold
 const Float_t thresholdPID = 0.8;
-AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskPbPb(const Bool_t readAOD = 0, // Flag to read AOD:1 or ESD:0
-								 TString suffix="default", // suffix for the output directory
-								 AliPID::EParticleType specie=AliPID::kPion, 
-								 Int_t pdgcode=0, //particle specie
-								 ULong64_t triggerMask=AliVEvent::kAnyINT,
-								 TString centralityEstimator = "V0M",
-								 Int_t fBit=0,
-								 Bool_t TPCRefit = kTRUE,
-								 Int_t minclustersTPC = 70,
-								 Bool_t ITSRefit = kTRUE,
-								 Int_t spdHits=AliESDtrackCuts::kAny,
-								 Int_t minclustersITS = 0,
-								 Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast,
-								 Int_t usageOfBayesianPID=AliSingleTrackEffCuts::kNoBayesianPID)
+AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskpp(const Bool_t readAOD = 0, // Flag to read AOD:1 or ESD:0
+							       TString suffix="default", // suffix for the output directory
+							       AliPID::EParticleType specie=AliPID::kPion, 
+							       Int_t pdgcode=0, //particle specie
+							       ULong64_t triggerMask=AliVEvent::kAnyINT,
+							       TString centralityEstimator = "V0M",
+							       Int_t fBit=0,
+							       Bool_t TPCRefit = kTRUE,
+							       Int_t minclustersTPC = 0,
+							       Bool_t ITSRefit = kTRUE,
+							       Int_t spdHits=AliESDtrackCuts::kAny,
+							       Int_t minclustersITS = 0,
+							       Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast,
+							       Int_t usageOfBayesianPID=AliSingleTrackEffCuts::kNoBayesianPID)
 {
 
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
@@ -82,7 +83,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskPbPb(const Bool_t re
   Double_t *binLim3 = new Double_t[iBin[2]+1];
   Double_t *binLim4 = new Double_t[iBin[3]+1];
   Double_t *binLim5 = new Double_t[iBin[4]+1];
-  Double_t binLimmult[nbinmult+1] = {0.,100.,500.,1000.,2000.,3000.,4000.,5000.,10000.};
+  Double_t binLimmult[nbinmult+1] = {0.,5.,10.,20.,30.,40.,50.,80.,200.};
   Double_t binLimcent[nbincent+1] = {0.,2.5,5.0,7.5,10.,15.,20.,30.,40.,50.,60.,80.,100.};
 
   // Other Variables
@@ -209,6 +210,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskPbPb(const Bool_t re
   }else{
     task->SetFilterBit(kFALSE);
   }
+
   //  task->SelectCollisionCandidates(triggerMask);//AliVEvent::kMB);
   if(centralityEstimator != "") task->SetUseCentrality(kTRUE,centralityEstimator);
   task->SetConfiguration(configuration);
