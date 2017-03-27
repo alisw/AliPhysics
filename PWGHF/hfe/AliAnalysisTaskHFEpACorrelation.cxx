@@ -2008,15 +2008,15 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     fNonHFE->SetHistDCABack(fDCABack);
     fNonHFE->SetHistDCA(fDCA);
     
-    //"SetHistMassBack" sets the ULS histogram in the invariant mass
-    //"SetHistMassk" sets the LS histogram in the invariant mass
+    //"SetHistMassBack" sets the LS histogram in the invariant mass
+    //"SetHistMass" sets the ULS histogram in the invariant mass
     
     for (Int_t pTbin = 0; pTbin < fpTBins.GetSize()-1; pTbin++ )
     {
         if(fPtE>=fpTBins.At(pTbin) && fPtE<fpTBins.At(pTbin+1))
         {
-            fNonHFE->SetHistMassBack(fInvMassULS[pTbin]);
-            fNonHFE->SetHistMass(fInvMassLS[pTbin]);
+            fNonHFE->SetHistMass(fInvMassULS[pTbin]);
+            fNonHFE->SetHistMassBack(fInvMassLS[pTbin]);
         }
     }
     
