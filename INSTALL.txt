@@ -44,10 +44,10 @@ AliRoot workflow. This workflow can be adapted to suit users purpose.
 2. Clone AliRoot repository inside your work directory.
    If this is just a simple build and there is no need to change and submit code,
    please use Git public interface
-    $ git clone http://git.cern.ch/pub/AliRoot AliRoot
+    $ git clone http://github.com/alisw/AliRoot AliRoot
 
    For development purpose please use the private interface, https or kerberos
-    $ git clone https://git.cern.ch/reps/AliRoot AliRoot
+    $ git clone https://github.com/alisw/AliRoot AliRoot
 
 3. Create the build folder. The worklow is creating a "build" folder but any name can be used.
     $ mkdir build
