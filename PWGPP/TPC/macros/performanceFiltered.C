@@ -1,13 +1,16 @@
 /*
   .x $NOTES/aux/NimStyle.C  
-  .L $NOTES/JIRA/PWGPP-221/code/performanceFiltered.C+
+  .L $ALIPHYSICS_SRC/PWGPP/TPC/macros/performanceFiltered.C+
   gStyle->SetOptStat(0);
   //
   //
-  performanceFiltered(2000000);
-
-
+  //  performanceFiltered(20000000);
+  //  InitAnalysis();
+  //  AnalyzeHistograms();
+  AnalyzeHistograms()
   Combined tracking performance 
+  //
+  aliroot -b -q $ALIPHYSICS_SRC/PWGPP/TPC/macros/performanceFiltered.C\(2000000\)
 
 */
 #include "TSystem.h"
@@ -59,16 +62,13 @@ void InitAnalysis();
 TObjArray * FillPerfomanceHisto(Int_t maxEntries);
 void GetNclReport(TObjArray * hisArray,  TObjArray *keepArray );
 void GetDCAReport(TObjArray * hisArray,  TObjArray *keepArray );
-
+void SetMetadata();
 
 void performanceFiltered(Int_t maxEvents){
   //
   //   .L $NOTES/JIRA/PWGPP-221/code/performanceFiltered.C+
   //
-  pcstream = new TTreeSRedirector("performanceHisto.root","recreate");
-  pcstream->GetFile()->cd();
   InitAnalysis(); 
-  SetMetadata();
   hisArray = FillPerfomanceHisto(maxEvents);
   keepArray=new TObjArray();
   GetNclReport(hisArray,keepArray);
@@ -87,6 +87,7 @@ void AnalyzeHistograms(){
   hisArray=(TObjArray*)finput->Get("perfArray");
   pcstream = new TTreeSRedirector("performanceSummary.root","recreate");
   keepArray=new TObjArray();
+
 }
 
 
@@ -95,7 +96,17 @@ void SetMetadata(){
   //
   chain->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
   chain->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
-  chain->SetAlias("deltaP2","(extTPCInnerC.fP[2]-esdTrack.fP[2])");
+  //
+  chain->SetAlias("deltaP2","(extInnerParamV.fP[2]-esdTrack.fP[2])");
+  chain->SetAlias("pullP2","(extInnerParamV.fP[2]-esdTrack.fP[2])/sqrt(extInnerParamV.fC[5]+esdTrack.fC[5])");
+  chain->SetAlias("deltaP2C","(extInnerParamC.fP[2]-esdTrack.fCp.fP[2])");
+  chain->SetAlias("pullP2C","(extInnerParamC.fP[2]-esdTrack.fCp.fP[2])/sqrt(extInnerParamC.fC[5]+esdTrack.fCp.fC[5])");
+  //
+  chain->SetAlias("deltaP4","(extInnerParam.fP[4]-esdTrack.fP[4])");
+  chain->SetAlias("pullP4","(extInnerParam.fP[4]-esdTrack.fP[4])/sqrt(extInnerParam.fC[14]+esdTrack.fC[14])");
+  chain->SetAlias("deltaP4C","(extInnerParamC.fP[4]-esdTrack.fCp.fP[4])");
+  chain->SetAlias("pullP4C","(extInnerParamC.fP[4]-esdTrack.fCp.fP[4])/sqrt(extInnerParamC.fC[14]+esdTrack.fCp.fC[14])");
+  //
   chain->SetAlias("normChi2ITS","sqrt(esdTrack.fITSchi2/esdTrack.fITSncls)");
   chain->SetAlias("normChi2TPC","esdTrack.fTPCchi2/esdTrack.fTPCncls");
   chain->SetAlias("normDCAR","esdTrack.fdTPC/sqrt(1+esdTrack.fP[4]**2)");
@@ -103,6 +114,19 @@ void SetMetadata(){
   chain->SetAlias("TPCASide","esdTrack.fIp.fP[1]>0");
   chain->SetAlias("TPCCSide","esdTrack.fIp.fP[1]<0");
   chain->SetAlias("TPCCross","esdTrack.fIp.fP[1]*esdTrack.fIp.fP[3]<0");
+  chain->SetAlias("qPt","esdTrack.fP[4]");
+  chain->SetAlias("tgl","esdTrack.fP[3]");
+  //
+  chain->SetAlias("ITSOn","((esdTrack.fFlags&0x1)>0)");
+  chain->SetAlias("TPCOn","((esdTrack.fFlags&0x10)>0)");
+  chain->SetAlias("ITSRefit","((esdTrack.fFlags&0x4)>0)");
+  chain->SetAlias("TPCRefit","((esdTrack.fFlags&0x40)>0)");
+  chain->SetAlias("TOFOn","((esdTrack.fFlags&0x2000)>0)");
+  chain->SetAlias("TRDOn","((esdTrack.fFlags&0x400)>0)");
+  chain->SetAlias("ITSOn0","esdTrack.fITSncls>4&&esdTrack.HasPointOnITSLayer(0)&&esdTrack.HasPointOnITSLayer(1)");
+  chain->SetAlias("nclCut","(esdTrack.GetTPCClusterInfo(3,1)+esdTrack.fTRDncls)>140-5*(abs(esdTrack.fP[4]))");
+  chain->SetAlias("IsPrim4","abs(esdTrack.fD/sqrt(esdTrack.fCdd))<4");
+  
 
 }
 
@@ -112,12 +136,16 @@ void InitAnalysis(){
   // get parameters
   // Init analysis
   ::Info("InitAnalysis()","START");
+  pcstream = new TTreeSRedirector("performanceHisto.root","recreate");
+  pcstream->GetFile()->cd();
+
   run=TString(gSystem->Getenv("run")).Atoi();
   period=gSystem->Getenv("period");
   if (gSystem->Getenv("deltaT")!=NULL) deltaT=TString(gSystem->Getenv("deltaT")).Atof();
   //
   // get chain
-  chain = AliXRDPROOFtoolkit::MakeChainRandom("filtered.list","highPt",0,40);
+  chain = AliXRDPROOFtoolkit::MakeChainRandom("filtered.list","highPt",0,40000);
+  SetMetadata();
   //
   Int_t selected = chain->Draw("ntracks:mult:evtTimeStamp","","goff",100000);
   ntracksEnd=TMath::KOrdStat(selected,chain->GetV1(),Int_t(selected*0.98))*1.02; // max Ntracks
@@ -205,6 +233,24 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
     hisString+=TString::Format("normDCAZ:secInner:evtTimeStamp:#TPCASide&&abs(esdTrack.fD)<0.2>>hisTPCDCAZSecTimeA(100,-3,3,180,0,18,%s);",timeRange.Data());
     hisString+=TString::Format("normDCAZ:secInner:evtTimeStamp:#TPCCSide&&abs(esdTrack.fD)<0.2>>hisTPCDCAZSecTimeC(100,-3,3,180,0,18,%s);",timeRange.Data());
     hisString+=TString::Format("normDCAZ:secInner:evtTimeStamp:#TPCCross&&abs(esdTrack.fD)<0.2>>hisTPCDCAZSecTimeCross(100,-3,3,180,0,18,%s);",timeRange.Data());
+    // deltaP2 and pullP2 histograms  (TPC+TRD - ITS+TPF+TRD)
+    hisString+=TString::Format("deltaP2:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisDeltaP2CQPtTglAll(400,-0.01,0.01,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("deltaP2:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisDeltaP2CQPtTglTRD(400,-0.01,0.01,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("pullP2:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisPullP2CQPtTglAll(100,-6,6,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("pullP2:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisPullP2CQPtTglTRD(100,-6,6,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("deltaP2C:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisDeltaP2ConstCQPtTglAll(400,-0.01,0.01,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("deltaP2C:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisDeltaP2ConstCQPtTglTRD(400,-0.01,0.01,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("pullP2C:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisPullP2ConstCQPtTglAll(100,-6,6,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("pullP2C:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisPullP2ConstCQPtTglTRD(100,-6,6,200,-5,5,10,-1,1);");
+    // deltaP4 and pullP4 histograms (TPC+TRD - ITS+TPF+TRD)
+    hisString+=TString::Format("deltaP2:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisDeltaP4CQPtTglAll(400,-0.05,0.05,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("deltaP2:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisDeltaP4CQPtTglTRD(400,-0.05,0.05,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("pullP2:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisPullP4CQPtTglAll(100,-6,6,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("pullP2:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisPullP4CQPtTglTRD(100,-6,6,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("deltaP2C:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisDeltaP4ConstCQPtTglAll(400,-0.05,0.05,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("deltaP2C:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisDeltaP4ConstCQPtTglTRD(400,-0.05,0.05,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("pullP2C:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisPullP4ConstCQPtTglAll(100,-6,6,200,-5,5,10,-1,1);");
+    hisString+=TString::Format("pullP2C:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisPullP4ConstCQPtTglTRD(100,-6,6,200,-5,5,10,-1,1);");
   }
   //
   TStopwatch timer;
@@ -405,6 +451,57 @@ void GetChi2Report(){
 
 
 }
+
+void makeP2Report(){
+  TString drawExpressionP2="";
+  drawExpressionP2="[1,1,2]:";
+  //drawExpressionP2+="%Ogridx,gridy;hisDeltaP2CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-mean p);:";
+  drawExpressionP2+="%Ogridx,gridy;hisDeltaP2CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-grms p);:";
+  //drawExpressionP2+="%Ogridx,gridy;hisPullP2CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-mean p);:";
+  drawExpressionP2+="%Ogridx,gridy;hisPullP2CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-grms p);:";
+  drawExpressionP2+="%Ogridx,gridy;hisDeltaP2CQPtTglTRD(100,300,100,101,0,10)(0)(err);:";
+  drawExpressionP2+="%Ogridx,gridy;hisPullP2CQPtTglTRD(10,90,100,101,0,10)(0)(err);:";
+  TPad * padP2 = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionP2,keepArray, 1+2+4+8);
+  padP2->SaveAs("deltaP2TPCtoFull.png");
+
+  TString drawExpressionDeltaP2Const="";
+  drawExpressionDeltaP2Const="[1,1,2]:";
+  //drawExpressionDeltaP2Const+="%Ogridx,gridy;hisDeltaP2ConstCQPtTglTRD(0,400,80,120,0,10)(0,1)(f-mean p);:";
+  drawExpressionDeltaP2Const+="%Ogridx,gridy;hisDeltaP2ConstCQPtTglTRD(0,400,80,120,0,10)(0,1)(f-grms p);:";
+  //drawExpressionDeltaP2Const+="%Ogridx,gridy;hisPullP2CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-mean p);:";
+  drawExpressionDeltaP2Const+="%Ogridx,gridy;hisPullP2ConstCQPtTglTRD(0,400,80,120,0,10)(0,1)(f-grms p);:";
+  drawExpressionDeltaP2Const+="%Ogridx,gridy;hisDeltaP2ConstCQPtTglTRD(100,300,99,101,0,10)(0)(err);:";
+  drawExpressionDeltaP2Const+="%Ogridx,gridy;hisPullP2ConstCQPtTglTRD(10,90,97,102,0,10)(0)(err);:";
+  TPad * padDeltaP2const = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionDeltaP2Const,keepArray, 1+2+4+8);
+  padDeltaP2const->SaveAs("deltaP2TPCConsttoFullConst.png");
+}
+
+
+void makeP4Report(){
+  TString drawExpressionP4="";
+  drawExpressionP4="[1,1,2]:";
+  //drawExpressionP4+="%Ogridx,gridy;hisDeltaP4CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-mean p);:";
+  drawExpressionP4+="%Ogridx,gridy;hisDeltaP4CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-grms p);:";
+  //drawExpressionP4+="%Ogridx,gridy;hisPullP4CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-mean p);:";
+  drawExpressionP4+="%Ogridx,gridy;hisPullP4CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-grms p);:";
+  drawExpressionP4+="%Ogridx,gridy;hisDeltaP4CQPtTglTRD(100,300,99,102,0,10)(0)(err);:";
+  drawExpressionP4+="%Ogridx,gridy;hisPullP4CQPtTglTRD(10,90,99,102,0,10)(0)(err);:";
+  TPad * padP4 = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionP4,keepArray, 1+2+4+8);
+  padP4->SaveAs("deltaP4TPCtoFull.png");
+
+  TString drawExpressionDeltaP4Const="";
+  drawExpressionDeltaP4Const="[1,1,2]:";
+  //drawExpressionDeltaP4Const+="%Ogridx,gridy;hisDeltaP4ConstCQPtTglTRD(0,400,80,120,0,10)(0,1)(f-mean p);:";
+  drawExpressionDeltaP4Const+="%Ogridx,gridy;hisDeltaP4ConstCQPtTglTRD(0,400,80,120,0,10)(0,1)(f-grms p);:";
+  //drawExpressionDeltaP4Const+="%Ogridx,gridy;hisPullP4CQPtTglTRD(0,400,80,120,0,10)(0,1)(f-mean p);:";
+  drawExpressionDeltaP4Const+="%Ogridx,gridy;hisPullP4ConstCQPtTglTRD(0,400,80,120,0,10)(0,1)(f-grms p);:";
+  drawExpressionDeltaP4Const+="%Ogridx,gridy;hisDeltaP4ConstCQPtTglTRD(100,300,99,101,0,10)(0)(err);:";
+  drawExpressionDeltaP4Const+="%Ogridx,gridy;hisPullP4ConstCQPtTglTRD(10,90,97,102,0,10)(0)(err);:";
+  TPad * padDeltaP4const = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionDeltaP4Const,keepArray, 1+2+4+8);
+  padDeltaP4const->SaveAs("deltaP4TPCConsttoFullConst.png");
+}
+
+
 
 
 
