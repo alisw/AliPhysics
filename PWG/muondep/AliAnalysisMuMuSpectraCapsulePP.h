@@ -8,17 +8,12 @@
 
 // $Id$
 
-/**
+/// @ingroup pwg_muondep_mumu
+/// @class AliAnalysisMuMuSpectraCapsulePbPb
+/// @brief helper class to deal with results stored in a spectra with PbPb methods.
+///
+/// author : Benjamin Audurier (Subatech)
 
-  @ingroup pwg_muondep_mumu
-
-  @class AliAnalysisMuMuSpectraCapsulePP
-
-  @brief Deal with Spectra after the fitting procedure
-
-  @author Benjamin Audurier (Subatech)
-  
-*/
 
 #include "TNamed.h"
 #include "TMath.h"
@@ -44,9 +39,9 @@ public:
   // dtor
   virtual ~AliAnalysisMuMuSpectraCapsulePP();
   // Compute Yield
-  TGraphErrors* ComputeYield(const char* what="", const TH1* histo=0x0, const char* sResName="");
+  TGraphErrors* ComputeYield(const char* what="", const TH1* histo=0x0, const char* sResName="",Double_t MUL=0.);
   // Compute Cross-Section
-  TList* ComputePPCrossSection(const char* what ="CorrNofJPsi") const ;
+  TList* ComputeJpsiPPCrossSection(const char* what ="CorrNofJPsi") const ;
   // Draw fit results and save them if wanted
   void DrawResults(const char* particle="PSI",const char* subresults="")const;
   // Print Flag
@@ -72,16 +67,11 @@ private:
 
 private:
 
-  const AliAnalysisMuMuSpectra* fSpectra;// Spectra with result and subresults
-  const TString               fSpectraName;     // SpectraName
-  TString fExternFile;      // name of spectra selected
-  TString fExternFile2;     // name of spectra selected
-  Double_t fConstArray[13]; // Array to store constant according to centrality bins
-  Bool_t fPrintFlag;
+  Double_t      fConstArray[13]; // Array to store constant according to centrality bins
 
-/// \cond CLASSIMP
-ClassDef(AliAnalysisMuMuSpectraCapsulePP,2);
-/// \endcond
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisMuMuSpectraCapsulePP,3);
+  /// \endcond
 };
 
 

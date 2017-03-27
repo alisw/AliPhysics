@@ -145,7 +145,7 @@ AliAnalysisMuMuResult& AliAnalysisMuMuResult::operator=(const AliAnalysisMuMuRes
 //_____________________________________________________________________________
 AliAnalysisMuMuResult::~AliAnalysisMuMuResult()
 {
-  // dtor
+  /// dtor
   delete fMap;
   delete fSubResults;
   delete fKeys;
@@ -297,8 +297,8 @@ Double_t AliAnalysisMuMuResult::ErrorABCDE(Double_t a, Double_t aerr, Double_t b
 //_____________________________________________________________________________
 void AliAnalysisMuMuResult::Exclude(const char* subResultList)
 {
-  // exclude some subresult names from the list of subresult
-  // to be used when computing the mean
+  /// exclude some subresult names from the list of subresult
+  /// to be used when computing the mean
 
   TString slist(subResultList);
 
@@ -329,7 +329,7 @@ void AliAnalysisMuMuResult::Exclude(const char* subResultList)
 //_____________________________________________________________________________
 Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subResultName) const
 {
-  // compute the mean error value from all subresults that are included
+  /// compute the mean error value from all subresults that are included
 
   // If we specify a subresults
   if ( strlen(subResultName) > 0 )
@@ -347,7 +347,7 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
     }
     return sub->GetErrorStat(name);
   }
-  // ??
+
   if ( fMap )
   {
     TObjArray* p = static_cast<TObjArray*>(fMap->GetValue(name));
@@ -366,23 +366,37 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
     // Mean method (by default)
     Int_t n(0);
 
-    Double_t/* wval = 0, wval2 = 0,*/ werr = 0, sumw = 0;
+    Double_t werr = 0, sumw = 0;
     while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
     {
       // Loop on all subresults
       if ( IsIncluded(r->Alias()) && r->HasValue(name) )
       {
-        // COMMENTS OUTDATED !
+        // COMMENTS OUTDATED ! but we keep them as information anyway
         // The weight for each subresult is the same (=1.), since the data sample is always the same and just the fit function changes among subresults.
         // Before subresults were weighted with 1./err/err/wstat;
         // wstat was not there before and was introduced to remove the dependence of the error with the Nof extracted Jpsi (valid only for counts results with different data samples and not for <pt>...)
+
+
+        // NOT OUTDATED COMMENT : the stat. error is just a weighted mean of all the stat. error.
+
+        Int_t fitStatus = r->HasValue("FitResult") ? r->GetValue("FitResult") : 0;
+        Int_t covStatus = r->HasValue("CovMatrixStatus") ? r->GetValue("CovMatrixStatus") : 3;
+        Int_t chi2      = r->HasValue("FitChi2PerNDF") ? r->GetValue("FitChi2PerNDF") : 1;
+        // Select only Fit that converge
+        if ( (fitStatus!=0 && fitStatus!=4000) || chi2 > 2.5 /*|| covStatus!=3*/ ){
+            AliDebug(1,Form("Fit %s excluded (FitResult = %d | Cov. Mat. = %d)\n",r->GetName(),fitStatus,covStatus));
+            continue;
+        }
 
         // weight and error
         Double_t w   = r->Weight();
         Double_t err = r->GetErrorStat(name);
 
         AliDebug(1,Form(" ----> Weight for subResults %s = %f \n", r->GetName(),w));
-        if ( !(err>0.0 ) ) continue; // If the error is not correct we skip the subresult
+        if ( !(err>0.0 ) ){
+          continue;
+        } // If the error is not correct we skip the subresult
 
         // stat and sum of weight
         werr += w*err;
@@ -405,6 +419,7 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
         }
       }
     }
+
 
     return werr/sumw;
   }
@@ -438,8 +453,8 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
 //_____________________________________________________________________________
 Double_t AliAnalysisMuMuResult::GetRMS(const char* name, const char* subResultName) const
 {
-  // compute the rms of the subresults
-  // returns zero if no subresults
+  /// compute the rms of the subresults
+  /// returns zero if no subresults
 
   if ( strlen(subResultName) > 0 )
   {
@@ -476,26 +491,31 @@ Double_t AliAnalysisMuMuResult::GetRMS(const char* name, const char* subResultNa
 
   Double_t xmean = GetValue(name);
 
+
   while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
   {
     if ( IsIncluded(r->Alias()) && r->HasValue(name) )
     {
+        Int_t fitStatus = r->HasValue("FitResult") ? r->GetValue("FitResult") : 0;
+        Int_t covStatus = r->HasValue("CovMatrixStatus") ? r->GetValue("CovMatrixStatus") : 3;
+        Int_t chi2      = r->HasValue("FitChi2PerNDF") ? r->GetValue("FitChi2PerNDF") : 1;
+        // Select only Fit that converge
+        if ( (fitStatus!=0 && fitStatus!=4000) || chi2 > 2.5 /*|| covStatus!=3*/ ){
+          AliDebug(1,Form("Fit %s excluded (FitResult = %d | Cov. Mat. = %d)\n",r->GetName(),fitStatus,covStatus));
+          continue;
+      }
+
       Double_t val = r->GetValue(name);
       Double_t err = r->GetErrorStat(name);
 
-      if ( !(err>0.0 ) ) continue; // If the error is not correct we skip the subresult
       // weight
       Double_t wstat = 1./val;
 
-      Double_t wi = 1.; // The weight for each subresult is the same (=1.), since the data sample is always the same and just the fit function changes among subresults. Before subresults were weighted with 1./err/err/wstat; wstat was not there before and was introduced to remove the dependence of the error with the Nof extracted Jpsi (valid only for counts results with different data samples and not for <pt>...)
+      // The weight for each subresult is the same (=1.), since the data sample is always the same and just the fit function changes among subresults.
+      // Before subresults were weighted with 1./err/err/wstat; wstat was not there before and
+      // was introduced to remove the dependence of the error with the Nof extracted Jpsi (valid only for counts results with different data samples and not for <pt>...)
+      Double_t wi = r->Weight();
 
-//      Double_t e2 = r->GetErrorStat(name);
-//
-//      e2 *= e2;
-//
-//      if ( !(e2>0.0) ) e2 = TMath::Sqrt(r->GetValue(name));
-//
-//      Double_t wi = 1.0/e2;
       v1 += wi;
       v2 += wi*wi;
       Double_t diff = r->GetValue(name) - xmean;
@@ -524,13 +544,14 @@ Double_t AliAnalysisMuMuResult::GetRMS(const char* name, const char* subResultNa
 
   AliDebug(1,Form(" ----> v1 %e v1*v1 %e v2 %e -> biased %e unbiased %e (ratio %e) \n",v1,v1*v1,v2,biased,unbiased,unbiased/biased));
 
+
   return unbiased;
 }
 
 //_____________________________________________________________________________
 TString AliAnalysisMuMuResult::GetSubResultNameList() const
 {
-  // get a comma separated list of our subresult aliases
+  /// get a comma separated list of our subresult aliases
   TString tobeincluded;
   TIter next(fSubResults);
   AliAnalysisMuMuResult* r;
@@ -544,9 +565,9 @@ TString AliAnalysisMuMuResult::GetSubResultNameList() const
 }
 
 //_____________________________________________________________________________
-Double_t AliAnalysisMuMuResult::GetValue(const char* name, const char* subResultName) const
+Double_t AliAnalysisMuMuResult::GetValue(const char* name, const char* subResultName ) const
 {
-  // get a value (either directly or by computing the mean of the subresults)
+  /// get a value (either directly or by computing the mean of the subresults)
 
   if ( strlen(subResultName) > 0 )
   {
@@ -590,6 +611,17 @@ Double_t AliAnalysisMuMuResult::GetValue(const char* name, const char* subResult
         // The weight for each subresult is the same (=1.), since the data sample is always the same and just the fit function changes among subresults.
         // Before subresults were weighted with e = r->GetErrorStat(name)/TMath::Sqrt(r->GetValue(name));
         //The Sqrt(r->GetValue(name)) was not there before and was introduced to remove the dependence of the error with the Nof extracted Jpsi (valid only for counts results with different data samples and not for <pt>...)
+
+        Int_t fitStatus = r->HasValue("FitResult") ? r->GetValue("FitResult") : 0;
+        Int_t covStatus = r->HasValue("CovMatrixStatus") ? r->GetValue("CovMatrixStatus") : 3;
+        Int_t chi2      = r->HasValue("FitChi2PerNDF") ? r->GetValue("FitChi2PerNDF") : 1;
+        // Select only Fit that converge
+        if ( (fitStatus!=0 && fitStatus!=4000) || chi2 > 2.5 /*|| covStatus!=3*/ ){
+            AliDebug(1,Form("Fit %s excluded (FitResult = %d | Cov. Mat. = %d)\n",r->GetName(),fitStatus,covStatus));
+            continue;
+        }
+
+
         Double_t e = r->Weight();
         AliDebug(1,Form(" ----> Weight for subResults %s = %f \n", r->GetName(),e));
         // Double_t e2 = e*e;
@@ -599,14 +631,8 @@ Double_t AliAnalysisMuMuResult::GetValue(const char* name, const char* subResult
         Sum += e;
       }
     }
-    if ( Sum != 0.0 )
-    {
-      return mean/Sum;
-    }
-    else
-    {
-      return TMath::Limits<Double_t>::Max();
-    }
+    if ( Sum != 0.0 ) return mean/Sum;
+    else              return TMath::Limits<Double_t>::Max();
   }
   else
   {
@@ -702,7 +728,7 @@ void AliAnalysisMuMuResult::Hide(const char* keyPattern)
 //_____________________________________________________________________________
 void AliAnalysisMuMuResult::Include(const char* subResultList)
 {
-  // (re)include some subresult names
+  /// (re)include some subresult names
 
   TString slist(subResultList);
 
@@ -741,7 +767,7 @@ void AliAnalysisMuMuResult::Include(const char* subResultList)
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMuResult::IsIncluded(const TString& alias) const
 {
-  // whether that subresult alias should be included when computing means, etc...
+  /// whether that subresult alias should be included when computing means, etc...
 
   if (!fSubResultsToBeIncluded) return kTRUE;
 
@@ -832,6 +858,7 @@ Long64_t AliAnalysisMuMuResult::Merge(TCollection* list)
 
   while ( ( key = static_cast<TObjString*>(nextKey())) )
   {
+    if(!fMap) continue;
     Double_t value = GetValue(key->String())*Weight()/sumw;
     Double_t e = GetErrorStat(key->String());
     Double_t e2 = e*e*Weight()*Weight()/sumw/sumw;
@@ -869,21 +896,27 @@ Long64_t AliAnalysisMuMuResult::Merge(TCollection* list)
         TMath::Sqrt(e2));
   }
 
-  TIter nextSubresult(fSubResults);
-  AliAnalysisMuMuResult* r;
+  // --- Add subresults ---
 
-  while ( ( r = static_cast<AliAnalysisMuMuResult*>(nextSubresult())) )
+  next.Reset();
+  while ( ( currObj = next() ) )
   {
-    TList sublist;
+    printf("currObj : %s\n",currObj->GetName() );
+    AliAnalysisMuMuResult* result = dynamic_cast<AliAnalysisMuMuResult*>(currObj);
+    if( !result->SubResults()) continue;
 
-    next.Reset();
+    TIter nextSubresult(result->SubResults());
+    AliAnalysisMuMuResult* r;
 
-    while ( ( currObj = next() ) )
+    nextSubresult.Reset();
+    while ( ( r = static_cast<AliAnalysisMuMuResult*>(nextSubresult())) )
     {
-      sublist.Add(currObj);
+      if(!AdoptSubResult(static_cast<AliAnalysisMuMuResult*>(r->Clone())))
+      {
+        AliError(Form("Cannot adopt sub results %s",r->GetName()));
+        continue;
+      }
     }
-
-    r->Merge(&sublist);
   }
 
   fWeight = sumw;
@@ -894,7 +927,7 @@ Long64_t AliAnalysisMuMuResult::Merge(TCollection* list)
 //_____________________________________________________________________________
 Int_t AliAnalysisMuMuResult::NofIncludedSubResults(const char* name) const
 {
-  // Return the number of subresults which have key name and are included
+  /// Return the number of subresults which have key name and are included
 
   TIter next(fSubResults);
   AliAnalysisMuMuResult* r;
@@ -985,7 +1018,7 @@ void AliAnalysisMuMuResult::Print(Option_t* opt) const
 void AliAnalysisMuMuResult::PrintValue(const char* key, const char* opt,
                                        Double_t value, Double_t errorStat, Double_t rms) const
 {
-  // print one value and its associated error
+  /// print one value and its associated error
 
   if ( TString(key).Contains("AccEff") )
   {

@@ -28,6 +28,7 @@
 #include <cassert>
 #include "TMap.h"
 #include "THashList.h"
+#include "TROOT.h"
 
 ClassImp(AliAnalysisMuMuConfig)
 
@@ -79,6 +80,10 @@ namespace {
         {
         std::cout << "MB=" << map.find(AliAnalysisMuMuConfig::kMBTriggerClassName)->second << " ";
         }
+    if ( map.count(AliAnalysisMuMuConfig::kMIXTriggerClassName) )
+        {
+        std::cout << "MIX=" << map.find(AliAnalysisMuMuConfig::kMIXTriggerClassName)->second << " ";
+        }
     if ( map.count(AliAnalysisMuMuConfig::kMULTriggerClassName) )
         {
         std::cout << "MUL=" << map.find(AliAnalysisMuMuConfig::kMULTriggerClassName)->second << " ";
@@ -100,15 +105,20 @@ namespace {
 
 }
 
-const char* AliAnalysisMuMuConfig::DimuonTriggerKey() const { return "DimuonTrigger"; }
-const char* AliAnalysisMuMuConfig::MuonTriggerKey() const { return "MuonTrigger"; }
-const char* AliAnalysisMuMuConfig::MinbiasTriggerKey() const { return  "MinbiasTrigger"; }
-const char* AliAnalysisMuMuConfig::EventSelectionKey() const { return "EventSelection"; }
-const char* AliAnalysisMuMuConfig::PairSelectionKey() const { return "PairSelection"; }
+const char* AliAnalysisMuMuConfig::RefMixTriggerKey()       const { return "RefMixTrigger"; }
+const char* AliAnalysisMuMuConfig::RefMixEventSelectionKey()const { return "RefMixEventSelection"; }
+const char* AliAnalysisMuMuConfig::DimuonTriggerKey()       const { return "DimuonTrigger"; }
+const char* AliAnalysisMuMuConfig::MuonTriggerKey()         const { return "MuonTrigger"; }
+const char* AliAnalysisMuMuConfig::MinbiasTriggerKey()      const { return "MinbiasTrigger"; }
+const char* AliAnalysisMuMuConfig::MixTriggerKey()          const { return "MixTrigger"; }
+const char* AliAnalysisMuMuConfig::EventSelectionKey()      const { return "EventSelection"; }
+const char* AliAnalysisMuMuConfig::EventSelectionMixKey()   const { return "EventSelectionMix"; }
+const char* AliAnalysisMuMuConfig::PairSelectionKey()       const { return "PairSelection"; }
 const char* AliAnalysisMuMuConfig::CentralitySelectionKey() const { return "Centrality"; }
-const char* AliAnalysisMuMuConfig::FitTypeKey() const { return "FitType"; }
-const char* AliAnalysisMuMuConfig::CompactGraphKey() const { return "CompactGraphs"; }
-const char* AliAnalysisMuMuConfig::OCDBPathKey() const { return "OCDBPath"; }
+const char* AliAnalysisMuMuConfig::FitTypeKey()             const { return "FitType"; }
+const char* AliAnalysisMuMuConfig::FitSingleKey()           const { return "FitSingle"; }
+const char* AliAnalysisMuMuConfig::CompactGraphKey()        const { return "CompactGraphs"; }
+const char* AliAnalysisMuMuConfig::OCDBPathKey()            const { return "OCDBPath"; }
 
 //_____________________________________________________________________________
 AliAnalysisMuMuConfig::AliAnalysisMuMuConfig() : TObject(),
@@ -225,6 +235,8 @@ void AliAnalysisMuMuConfig::Clear(Option_t*)
 //_____________________________________________________________________________
 TString AliAnalysisMuMuConfig::First(const char* key, Bool_t simulation) const
 {
+    /// Get the first element of a key
+
     THashList* list = static_cast<THashList*>(Map()->GetValue(key));
     TIter next(list);
     TObjString* s;
@@ -252,6 +264,16 @@ TString AliAnalysisMuMuConfig::GetMBTriggerClassName(Int_t runNumber) const
     if ( fPerRunInfo.count(runNumber) )
     {
     return (fPerRunInfo.find(runNumber)->second).find(kMBTriggerClassName)->second;
+    }
+    return "";
+}
+
+//_____________________________________________________________________________
+TString AliAnalysisMuMuConfig::GetMIXTriggerClassName(Int_t runNumber) const
+{
+    if ( fPerRunInfo.count(runNumber) )
+    {
+    return (fPerRunInfo.find(runNumber)->second).find(kMIXTriggerClassName)->second;
     }
     return "";
 }
@@ -299,56 +321,6 @@ TString AliAnalysisMuMuConfig::GetCentralityName(Int_t runNumber) const
 
 }
 
-#if 0
-//_____________________________________________________________________________
-void AliAnalysisMuMuConfig::GetDimuonPaths(TObjArray& paths, Bool_t simulation) const
-{
-    /// Fill the paths array with the paths /event/trigger/paircut/centrality
-
-    paths.Clear();
-
-    TObjArray* triggerArray = GetListElements(DimuonTriggerKey(),simulation);
-    TObjArray* eventTypeArray = GetListElements(EventSelectionKey(),simulation);
-    TObjArray* pairCutArray = GetListElements(PairSelectionKey(),simulation);
-    TObjArray* centralityArray = GetListElements(CentralitySelectionKey(),simulation);
-
-    TIter nextTrigger(triggerArray);
-    TIter nextEventType(eventTypeArray);
-    TIter nextPairCut(pairCutArray);
-    TIter nextCentrality(centralityArray);
-
-    TObjString* trigger;
-    TObjString* eventType;
-    TObjString* pairCut;
-    TObjString* centrality;
-
-    while ( ( trigger = static_cast<TObjString*>(nextTrigger())) )
-    {
-    nextEventType.Reset();
-    while ( ( eventType = static_cast<TObjString*>(nextEventType())) )
-        {
-        nextPairCut.Reset();
-        while ( ( pairCut = static_cast<TObjString*>(nextPairCut())) )
-            {
-            nextCentrality.Reset();
-            while ( ( centrality = static_cast<TObjString*>(nextCentrality()) ) )
-                {
-                paths.Add(new TObjString(Form("/%s/%s/%s/%s/",eventType->String().Data(),
-                                              trigger->String().Data(),
-                                              centrality->String().Data(),
-                                              pairCut->String().Data())));
-                }
-            }
-        }
-    }
-
-    delete triggerArray;
-    delete eventTypeArray;
-    delete pairCutArray;
-    delete centralityArray;
-}
-#endif
-
 //_____________________________________________________________________________
 TObjArray* AliAnalysisMuMuConfig::GetListElements(const char* key, Bool_t simulation) const
 {
@@ -380,6 +352,70 @@ TObjArray* AliAnalysisMuMuConfig::GetListElements(const char* key, Bool_t simula
 }
 
 //_____________________________________________________________________________
+TObjArray* AliAnalysisMuMuConfig::GetTriggersList(Bool_t simulation) const
+{
+    /// Get list as an array (to be deleted by the user)
+
+    TObjArray* a = new TObjArray;
+    a->SetOwner(kTRUE);
+
+    TObjArray* list = new TObjArray();
+    TObjArray* list1 = static_cast<TObjArray*>(Map()->GetValue(RefMixTriggerKey()));
+    TObjArray* list2 = static_cast<TObjArray*>(Map()->GetValue(DimuonTriggerKey()));
+    TObjArray* list3 = static_cast<TObjArray*>(Map()->GetValue(MuonTriggerKey()));
+    TObjArray* list4 = static_cast<TObjArray*>(Map()->GetValue(MinbiasTriggerKey()));
+    TObjArray* list5 = static_cast<TObjArray*>(Map()->GetValue(MixTriggerKey()));
+
+    if(list1){
+        for (int i = 0; i < list1->GetEntries(); ++i){
+            if ( !list->Contains(list1->At(i)->GetName()) )
+                list->Add(list1->At(i)->Clone());
+        }
+    }
+
+    if(list2){
+        for (int i = 0; i < list2->GetEntries(); ++i){
+            if ( !list->Contains(list2->At(i)->GetName()) )
+                list->Add(list2->At(i)->Clone());
+        }
+    }
+
+    if(list3){
+        for (int i = 0; i < list3->GetEntries(); ++i){
+            if ( !list->Contains(list3->At(i)->GetName()) )
+                list->Add(list3->At(i)->Clone());
+        }
+    }
+
+    if(list4){
+        for (int i = 0; i < list4->GetEntries(); ++i){
+            if ( !list->Contains(list4->At(i)->GetName()) )
+                list->Add(list4->At(i)->Clone());
+        }
+    }
+
+    if(list5){
+        for (int i = 0; i < list5->GetEntries(); ++i){
+            if ( !list->Contains(list5->At(i)->GetName()) )
+                list->Add(list5->At(i)->Clone());
+        }
+    }
+
+    TIter next(list);
+    TObjString* s;
+    TString rv;
+    UInt_t test(kReal);
+
+    if ( simulation ) test = kSim;
+
+    while ( ( s = static_cast<TObjString*>(next()) ) )
+        if ( s->GetUniqueID() & test )
+            a->Add(new TObjString(*s));
+
+    return a;
+}
+
+//_____________________________________________________________________________
 TString AliAnalysisMuMuConfig::GetTriggerClassName(ETriggerType tt, Int_t runNumber) const
 {
     // get the triggerclass to for a given trigger type and run number
@@ -387,6 +423,10 @@ TString AliAnalysisMuMuConfig::GetTriggerClassName(ETriggerType tt, Int_t runNum
     if ( tt == kMB )
     {
     return GetMBTriggerClassName(runNumber);
+    }
+    if ( tt == kMIX )
+    {
+    return GetMIXTriggerClassName(runNumber);
     }
     else if ( tt == kMUL )
     {
@@ -414,6 +454,10 @@ TString AliAnalysisMuMuConfig::GetTriggerTypeName(ETriggerType tt)
     if ( tt == kMB )
     {
     return "MB";
+    }
+    if ( tt == kMIX )
+    {
+    return "MIX";
     }
     else if ( tt == kMUL )
     {
@@ -603,6 +647,10 @@ void AliAnalysisMuMuConfig::SetRunInfo(const TString& runranges, const TString& 
         {
         mapForOneRun[kMBTriggerClassName]=value;
         }
+    if (!key.CompareTo("MIX",TString::kIgnoreCase))
+        {
+        mapForOneRun[kMIXTriggerClassName]=value;
+        }
     if (!key.CompareTo("MUL",TString::kIgnoreCase))
         {
         mapForOneRun[kMULTriggerClassName]=value;
@@ -647,13 +695,18 @@ void AliAnalysisMuMuConfig::ReadFromFile(const char* inputfile)
 
     std::vector<TString> selectionKeys;
 
+    selectionKeys.push_back(RefMixTriggerKey());
+    selectionKeys.push_back(RefMixEventSelectionKey());
     selectionKeys.push_back(DimuonTriggerKey());
     selectionKeys.push_back(MuonTriggerKey());
     selectionKeys.push_back(MinbiasTriggerKey());
+    selectionKeys.push_back(MixTriggerKey());
     selectionKeys.push_back(EventSelectionKey());
+    selectionKeys.push_back(EventSelectionMixKey());
     selectionKeys.push_back(PairSelectionKey());
     selectionKeys.push_back(CentralitySelectionKey());
     selectionKeys.push_back(FitTypeKey());
+    selectionKeys.push_back(FitSingleKey());
 
     // read per run info
     while (std::getline(in,line))
@@ -735,6 +788,53 @@ void AliAnalysisMuMuConfig::SetColorScheme()
     gStyle->SetStatTextColor(AliAnalysisMuMuConfig::kBlue);
 
     gStyle->SetOptStat(0);
+}
+
+
+// _____________________________________________________________________________
+void  AliAnalysisMuMuConfig::LoadAliceStyles(){
+  int font = 42;
+  gROOT->SetStyle("Plain");
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetCanvasBorderMode(0);
+  gStyle->SetPadBorderMode(0);
+  gStyle->SetPadColor(10);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetTitleFillColor(10);
+  gStyle->SetTitleBorderSize(1);
+  gStyle->SetStatColor(10);
+  gStyle->SetStatBorderSize(1);
+  gStyle->SetLegendBorderSize(1);
+  gStyle->SetDrawBorder(0);
+  gStyle->SetTextFont(font);
+  gStyle->SetStatFont(font);
+  gStyle->SetStatFontSize(0.05);
+  gStyle->SetStatX(0.97);
+  gStyle->SetStatY(0.98);
+  gStyle->SetStatH(0.03);
+  gStyle->SetStatW(0.3);
+  gStyle->SetTickLength(0.02,"y");
+  gStyle->SetEndErrorSize(3);
+  gStyle->SetLabelSize(0.05,"xyz");
+  gStyle->SetLabelFont(font,"xyz");
+  gStyle->SetLabelOffset(0.01,"xyz");
+  gStyle->SetTitleFont(font,"xyz");
+  gStyle->SetTitleOffset(1.1,"xy");
+  gStyle->SetTitleSize(0.05,"xyz");
+  gStyle->SetMarkerSize(1.3);
+  gStyle->SetPalette(1,0);
+  gROOT->ForceStyle();
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  gStyle->SetLineWidth(2);
+  gStyle->SetLegendFont(42);
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetLegendFillColor(10);
+  gStyle->SetPadTickY(1);
+  gStyle->SetPadTickX(1);
+  gStyle->SetEndErrorSize(0);
+
 }
 
 

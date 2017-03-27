@@ -19,6 +19,7 @@
 #include "TMath.h"
 #include "AliLog.h"
 #include "AliVParticle.h"
+#include "THnSparse.h"
 #include "TLorentzVector.h"
 #include "AliAnalysisMuMuCutCombination.h"
 #include "AliAnalysisMuMuCutRegistry.h"
@@ -88,6 +89,42 @@ AliAnalysisMuMuSingle::CreateTrackHisto(const char* eventSelection,
 }
 
 //_____________________________________________________________________________
+void
+AliAnalysisMuMuSingle::CreateTrackTHnSparse(const char* eventSelection,
+                                        const char* triggerClassName,
+                                        const char* centrality,
+                                        const char* hname, const char* htitle,
+                                        Int_t nDim, Int_t* nbinsx, Double_t* xmin, Double_t* xmax,
+                                        Bool_t separatePlusAndMinus) const
+{
+  /// Append histograms for single track to our histogram collection
+
+  if ( IsHistogramDisabled(hname) ) return;
+
+  if ( separatePlusAndMinus )
+  {
+    const char* suffix[] = { "Plus", "Minus" };
+    const char* symbol[] = { "+", "-" };
+
+    for ( Int_t i = 0; i < 2; ++i )
+    {
+      TString shtitle(htitle);
+      TString shname(hname);
+
+      shtitle.ReplaceAll("#mu",Form("#mu^{%s}",symbol[i]));
+
+      shname += suffix[i];
+
+      AliAnalysisMuMuBase::CreateTrackTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,shname.Data(),shtitle.Data(),nDim,nbinsx,xmin,xmax);
+    }
+  }
+  else
+  {
+    AliAnalysisMuMuBase::CreateTrackTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,hname,htitle,nDim,nbinsx,xmin,xmax);
+  }
+}
+
+//_____________________________________________________________________________
 Bool_t AliAnalysisMuMuSingle::IsPDCAOK(const AliVParticle& part)
 {
   UInt_t selectionMask = MuonTrackCuts() ? MuonTrackCuts()->GetSelectionMask(&part) : 0;
@@ -131,28 +168,6 @@ Int_t AliAnalysisMuMuSingle::EAGetNumberOfMuonTracks() const
   return ntracks;
 }
 
-////_____________________________________________________________________________
-//Int_t AliAnalysisMuMuSingle::EAGetNumberOfSelectMuonTracks() const
-//{
-//  // Get the number of "very good" muon tracks :
-//  // Rabs + DCA + pT > 1.5 Gev/C
-//
-//  Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(Event());
-//
-//  UInt_t check = kAll | kMatched | kRabs | kDCA | kEta | kPt1dot5;
-//
-//  Int_t nGood(0);
-//
-//  for ( Int_t i = 0; i < nTracks; ++i )
-//  {
-//    ULong64_t m = GetTrackMask(i);
-//    if ( ( m & check ) == check )
-//    {
-//      ++nGood;
-//    }
-//  }
-//  return nGood;
-//}
 
 //_____________________________________________________________________________
 Double_t AliAnalysisMuMuSingle::EAGetTrackDCA(const AliVParticle& track) const
@@ -168,7 +183,8 @@ Double_t AliAnalysisMuMuSingle::EAGetTrackDCA(const AliVParticle& track) const
 //_____________________________________________________________________________
 void AliAnalysisMuMuSingle::DefineHistogramCollection(const char* eventSelection,
                                                       const char* triggerClassName,
-                                                      const char* centrality)
+                                                      const char* centrality,
+                                                      Bool_t mix)
 {
   /// Actually create the histograms for phyics/triggerClassName
 
@@ -231,6 +247,13 @@ void AliAnalysisMuMuSingle::DefineHistogramCollection(const char* eventSelection
   CreateTrackHisto(eventSelection,triggerClassName,centrality,"dcaPwPtCut23Mu","#mu DCA vs P for 2-3 degrees with Pt Cut;P (GeV);DCA (cm)",nbinsP,pMin,pMax,nbins,xmin,xmax,fShouldSeparatePlusAndMinus);
 
   CreateTrackHisto(eventSelection,triggerClassName,centrality,"dcaPwPtCut310Mu","#mu DCA vs P for 3-10 degrees with Pt Cut;P (GeV);DCA (cm)",nbinsP,pMin,pMax,nbins,xmin,xmax,fShouldSeparatePlusAndMinus);
+
+
+  // Int_t nBins[3]={234,nbinsPt,nbinsEta};
+  // Double_t xminsparse[3]={0.5,ptMin,etaMin};
+  // Double_t xmaxsparse[3]={234.5,ptMax,etaMax};
+
+  // CreateTrackTHnSparse(eventSelection,triggerClassName,centrality,"HitperTriggerLocalBoardMu","#mu P_{T}-eta distribution vs Trigger Local Board",3,nBins,xminsparse,xmaxsparse,fShouldSeparatePlusAndMinus);
 
   xmin  = 0;
   xmax  = 3564;
@@ -330,6 +353,16 @@ void AliAnalysisMuMuSingle::FillHistosForMuonTrack(AliMergeableCollectionProxy& 
   {
     proxy.Histo(Form("Chi2Mu%s",charge.Data()))->Fill(AliAnalysisMuonUtility::GetChi2perNDFtracker(&track));
   }
+
+  // if (!IsHistogramDisabled("HitperTriggerLocalBoardMu*"))
+  // {
+  //   if(AliAnalysisMuonUtility::GetLoCircuit(&track) !=0){
+  //     Double_t x[3] = {static_cast<Double_t>(AliAnalysisMuonUtility::GetLoCircuit(&track)),p.Pt(),p.Eta()};
+  //     if(proxy.GetObject(Form("HitperTriggerLocalBoardMu%s",charge.Data())))
+  //       static_cast<THnSparse*>(proxy.GetObject(Form("HitperTriggerLocalBoardMu%s",charge.Data())))->Fill(x);
+
+  //   }
+  // }
 
   if (!fDCAHistos)
   {

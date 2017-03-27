@@ -86,26 +86,26 @@ const TString                 spectraPath,
 const char                  * externFile,
 const char                  * externFile2)
 :
-  AliAnalysisMuMuSpectraCapsule(),
-  fSpectra(spectra),
-  fSpectraName(spectraPath),
-  fExternFile(externFile),
-  fExternFile2(externFile2)
+  AliAnalysisMuMuSpectraCapsule(spectra,spectraPath,externFile,externFile2)
+  // fSpectra(spectra),
+  // fSpectraName(spectraPath),
+  // fExternFile(externFile),
+  // fExternFile2(externFile2)
 {
-  //Check point
-  if (!fSpectra)
-  {
-    AliError(Form("Cannot find spectra wih name %s Please check the name",fSpectra->GetName()));
-    return;
-  }
-  AliDebug(1, Form(" - spectra(%s) = %p ",fSpectra->GetName(),fSpectra));
+  // //Check point
+  // if (!fSpectra)
+  // {
+  //   AliError(Form("Cannot find spectra wih name %s Please check the name",fSpectra->GetName()));
+  //   return;
+  // }
+  // AliDebug(1, Form(" - spectra(%s) = %p ",fSpectra->GetName(),fSpectra));
 
 
-  if (fSpectraName.IsNull())
-  {
-    AliWarning(Form("No spectra name ! "));
-    return;
-  }
+  // if (fSpectraName.IsNull())
+  // {
+  //   AliWarning(Form("No spectra name ! "));
+  //   return;
+  // }
 
   if(!AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
   {
@@ -123,10 +123,9 @@ AliAnalysisMuMuSpectraCapsulePbP::~AliAnalysisMuMuSpectraCapsulePbP()
 //_____________________________________________________________________________
 TGraphErrors* AliAnalysisMuMuSpectraCapsulePbP::ComputeYield( const char* what, const TH1* histo, const char* sResName)
 {
-  /// Compute Yield.
-  /// Arguments :
-  ///   - what : the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
-  ///   - histo : histogramme of Equivalent MinBias
+  /// @brief Compute Yield.
+  /// @argument what  the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
+  /// @argument histo  histogramme of Equivalent MinBias
 
   if(!GetSpectra() || histo==0x0|| strcmp(what,"")==1) return 0x0;
 
