@@ -258,8 +258,8 @@ private:
     TH2F				**fCEtaPhi_ULS_NoP_Weight; //!
     TH2F				**fCEtaPhi_LS_NoP_Weight; //!
     
-    TH1F				*fInvMass; //!
-    TH1F				*fInvMassBack; //!
+    TH1F				**fInvMassULS; //!
+    TH1F				**fInvMassLS; //!
     TH1F				*fDCA; //!
     TH1F				*fDCABack; //!
     TH1F				*fOpAngle; //!

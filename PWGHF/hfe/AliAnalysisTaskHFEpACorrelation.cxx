@@ -192,8 +192,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fCEtaPhi_LS_Weight(0)
 ,fCEtaPhi_ULS_NoP_Weight(0)
 ,fCEtaPhi_LS_NoP_Weight(0)
-,fInvMass(0)
-,fInvMassBack(0)
+,fInvMassULS(0)
+,fInvMassLS(0)
 ,fDCA(0)
 ,fDCABack(0)
 ,fOpAngle(0)
@@ -432,8 +432,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fCEtaPhi_LS_Weight(0)
 ,fCEtaPhi_ULS_NoP_Weight(0)
 ,fCEtaPhi_LS_NoP_Weight(0)
-,fInvMass(0)
-,fInvMassBack(0)
+,fInvMassULS(0)
+,fInvMassLS(0)
 ,fDCA(0)
 ,fDCABack(0)
 ,fOpAngle(0)
@@ -911,8 +911,22 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     }
     
     
-    fInvMass = new TH1F("fInvMass","",100,0,0.3);
-    fInvMassBack = new TH1F("fInvMassBack","",100,0,0.3);
+    //fInvMass = new TH1F("fInvMass","",100,0,0.3);
+    //fInvMassBack = new TH1F("fInvMassBack","",100,0,0.3);
+    
+    //Inv Mass in pT Bins
+    fInvMassULS = new TH1F *[fpTBins.GetSize()];
+    fInvMssLS = new TH1F *[fpTBins.GetSize()];
+    
+    for (Int_t i = 0 ; i < fpTBins.GetSize()-1 ; i++)
+    {
+        fInvMassULS[i] = new TH1F(Form("fInvMassULS%d",i), Form("ULS Inv Mass distribution for %1.2f < p_{T}^{e} < %1.2f",fpTBins.At(i),fpTBins.At(i+1)),100,0,0.3);
+        fInvMassLS[i] = new TH1F(Form("fInvMassLS%d",i), Form("LS Inv Mass distribution for %1.2f < p_{T}^{e} < %1.2f",fpTBins.At(i),fpTBins.At(i+1)),100,0,0.3);
+        fOutputList->Add(fInvMassULS[i]);
+        fOutputList->Add(fInvMassLS[i]);
+        
+    }
+    
     fDCA = new TH1F("fDCA","",100,0,1);
     fDCABack = new TH1F("fDCABack","",100,0,1);
     fOpAngle = new TH1F("fOpAngle","",100,0,0.5);
@@ -933,8 +947,6 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fCEtaPhi_ULS_Weight_EM = new TH2F *[NumberBins];
         fCEtaPhi_LS_Weight_EM = new TH2F *[NumberBins];
         
-        fOutputList->Add(fInvMass);
-        fOutputList->Add(fInvMassBack);
         fOutputList->Add(fDCA);
         fOutputList->Add(fDCABack);
         fOutputList->Add(fOpAngle);
@@ -1160,7 +1172,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             return;
         }
     }
-
+    
     //______________________________________________________________________
     //Vertex Selection
     if(!fIspp){
@@ -1813,7 +1825,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fpid->Fill(pidpassed);
         
         if(pidpassed==0) continue;
-
+        
         
         //______________________________________________________________
         // Vertex
@@ -1974,13 +1986,22 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     fNonHFE->SetTrackCuts(-3.0,3.0,fPartnerCuts);
     fNonHFE->SetAdditionalCuts(fPtMinAsso,fTpcNclsAsso);
     
-    
     fNonHFE->SetHistAngleBack(fOpAngleBack);
     fNonHFE->SetHistAngle(fOpAngle);
     fNonHFE->SetHistDCABack(fDCABack);
     fNonHFE->SetHistDCA(fDCA);
-    fNonHFE->SetHistMassBack(fInvMassBack);
-    fNonHFE->SetHistMass(fInvMass);
+    
+    //"SetHistMassBack" sets the ULS histogram in the invariant mass
+    //"SetHistMassk" sets the LS histogram in the invariant mass
+    
+    for (Int_t pTbin = 0; pTbin < fpTBins.GetSize()-1; pTbin++ )
+    {
+        if(fPtE>=fpTBins.At(pTbin) && fPtE<fpTBins.At(pTbin+1))
+        {
+            fNonHFE->SetHistMassBack(fInvMassULS[pTbin]);
+            fNonHFE->SetHistMass(fInvMassLS[pTbin]);
+        }
+    }
     
     fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
     
