@@ -98,6 +98,8 @@ public:
     virtual Int_t     GetNumberOfTracks()    const {return fNparticles;}
     virtual Int_t     GetNumberOfV0s()       const {return -1;}
     virtual Int_t     GetNumberOfCascades()  const {return -1;}
+
+    TParticle* Particle(int i) const;
     // Vertex
     using AliVEvent::GetPrimaryVertex;
     virtual const AliVVertex *GetPrimaryVertex() const;

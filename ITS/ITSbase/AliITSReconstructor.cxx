@@ -45,6 +45,8 @@ ClassImp(AliITSReconstructor)
 
 
 Bool_t AliITSReconstructor::fgkCheckInvariant = kTRUE;
+TVectorF* AliITSReconstructor::fgExtraErrorY2 = 0;
+TVectorF* AliITSReconstructor::fgExtraErrorZ2 = 0;
 
 //___________________________________________________________________________
 AliITSReconstructor::AliITSReconstructor() : AliReconstructor(),

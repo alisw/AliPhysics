@@ -85,7 +85,7 @@ protected:
    *
    * @param sdigitsBranch Branch of SDigit data 
    */
-  void SumContributions(TBranch* sdigitsBranch);
+  void SumContributions(TBranch* sdigitsBranch, int offset=0);
   
   ClassDef(AliFMDDigitizer,1) // Make Digits from Hits
 };

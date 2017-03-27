@@ -485,6 +485,16 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
   // check whether we have to skip some layers
   SetForceSkippingOfLayer();
 
+  // Inform if extra error is used for clusters
+  TVectorF *extraErrY=0,*extraErrZ=0;
+  if ( (extraErrY=AliITSReconstructor::GetExtraErrorY2()) ||
+       (extraErrZ=AliITSReconstructor::GetExtraErrorZ2()) ) {
+    AliWarning("Extra errors are used for clusters");
+    if (extraErrY) for (int i=0;i<extraErrY->GetNoElements();i++) printf("%e ",(*extraErrY)[i]); printf("\n");
+    if (extraErrZ) for (int i=0;i<extraErrZ->GetNoElements();i++) printf("%e ",(*extraErrZ)[i]); printf("\n");
+  }
+
+  
   return 0;
 }
 //------------------------------------------------------------------------
