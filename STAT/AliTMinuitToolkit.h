@@ -9,6 +9,7 @@ class TH2F;
 class TFormula;
 class TF1;
 class TTree;
+class TGraph;
 class TTreeSRedirector;
 #include <TVectorDfwd.h>
 #include <TMatrixDfwd.h>
@@ -18,21 +19,34 @@ class TTreeSRedirector;
 
 class AliTMinuitToolkit: public TNamed{
 public: 
-  enum EVerboseFlags{ // flags for verbosity
+  enum EVerboseFlags{       // flags for verbosity
     kPrintMinuit=0x00001,   // flag:print Minuit messages 
-    kSysInfo=0x00002        // flag:print SystemInfoamtion for profiling (Mempry, CPU...)
+    kSysInfo=0x00002,       // flag:print SystemInfoamtion for profiling (Mempry, CPU...)
+    kPrintAll=0x00004,      // flag:print detailed infor in minuit
+    kStreamFcn=0x00010      // flag: stream fcn values   
   };
+  enum EFitFlags{
+    kCovarFailed=0x0001     // flag - problem to extract covariance matrix 
+  };
+
   AliTMinuitToolkit(const char *streamerName=0);
   virtual ~AliTMinuitToolkit();  
+  // streaming intermediate results
+  void  SetStreamer(const char *streamerName);
+  TTreeSRedirector *GetStreamer(){return fStreamer;}
+  
+  //
   void  ClearData();
-  void  Fit(Bool_t doRest=kFALSE);
-  void  FitHistogram(TH1 *const his);
+  void  Fit(Option_t* option = "");
+  void  FitHistogram(TH1 *const his,  Option_t* option = "");
+  void  FitGraph(TGraph *const gr, Option_t* option = "");
   //  Int_t UnbinnedFit(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
   Int_t FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
   TString GetFitFunctionAsAlias();
-  void Bootstrap(Int_t nIter, const char* reportName);
-  void TwoFoldCrossValidation(Int_t nIter, const char*reportName);
-  //
+  void Bootstrap(Int_t nIter, const char* reportName, Option_t  *option=0);
+  void TwoFoldCrossValidation(Int_t nIter, const char*reportName, Option_t *option=0);
+  void MISAC(Int_t nFitPoints, Int_t nIter, const char*reportName, Option_t *option=0);
+  // 
   void SetFitFunction(TFormula *const formula, Bool_t doReset);
   void SetInitialParam(TMatrixD *const initialParam);  
   TMatrixD *  GetInitialParam() {return fInitialParam;}
@@ -50,21 +64,26 @@ public:
   TFormula * GetFormula() const {return fFormula;};
   const TFormula *GetLogLikelihoodFunction() const { return fLogLikelihoodFunction;}
   const TVectorD * GetParameters() const {return fParam;};
+  const TVectorD * GetRMSEstimator() const {return fRMSEstimator;};
   const TMatrixD * GetCovarianceMatrix() const {return fCovar;};
+  const TMatrixD * GetMISACEstimators() const {return fMISACEstimators;};
+  
+  Double_t GetChisquare(){return fChi2;}
   Int_t GetStatus(){return fStatus;}
   Bool_t     IsHuberCost() const {return fIsHuberCost;};
   TObjArray  *GetListOfVariables(){return fVarNames;}
   void SetVerbose(Int_t verbose){fVerbose=verbose;}
-  const TTreeSRedirector *GetStreamer(){return fStreamer;}
-  static Double_t  GaussCachyLogLike(Double_t *x, Double_t *p);
   // static fittig
-  static AliTMinuitToolkit *  Fit(TH1* his, const char *fitterName, Option_t* option = "", Option_t* goption = "", Double_t xmin = 0, Double_t xmax = 0);
+  static AliTMinuitToolkit *  Fit(TH1* his, const char *fitterName, Option_t* option = "", Option_t* goption = "", Option_t *foption="", Double_t xmin = 0, Double_t xmax = 0);
+  static AliTMinuitToolkit *  Fit(TGraph* graph, const char *fitterName, Option_t* option = "", Option_t* goption = "", Option_t* foption="",Double_t xmin = 0, Double_t xmax = 0);
   static AliTMinuitToolkit *  GetPredefinedFitter(std::string fitterName){return fPredefinedFitters[fitterName];}
   static void   SetPredefinedFitter(std::string fitterName, AliTMinuitToolkit * fitter){fPredefinedFitters[fitterName]=fitter;}
   static  void  RegisterDefaultFitters();
   // helper functions for TFormula and TTreeFormuladrawing
+  static Double_t  GaussCachyLogLike(Double_t *x, Double_t *p);
   static Double_t RrndmGaus(Double_t mean=0, Double_t sigma=1);
   static Double_t RrndmLandau(Double_t mean=0, Double_t sigma=1);  
+  static void SetFunctionDrawOption(TF1 *fun, Option_t *option); // parse draw option and set function attributes
 private:
   //
   AliTMinuitToolkit(const AliTMinuitToolkit&);            // fake copy constr. -- suppress warnings
@@ -84,6 +103,8 @@ private:
   //
   TMatrixD        * fInitialParam;       // limits of the parameters (up, down)
   TVectorD        * fParam;              // parameter values
+  TVectorD        * fRMSEstimator;       // parameter spread as estimated in Bootstrap resp. TwoFold cross validation
+  TMatrixD        * fMISACEstimators;    // MISAC estimators
   TMatrixD        * fCovar;              // covariance matrix
   Int_t             fStatus;             // fstatus
   Double_t          fChi2;               // chi-square
