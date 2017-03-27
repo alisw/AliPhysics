@@ -499,7 +499,7 @@ TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, In
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
   TString namestring = TString(name);
-  TH2D* Slice;
+  TH2D* Slice = new TH2D();
   if(o.CompareTo("xy")==0||o.CompareTo("yx")==0){
     if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xy",name));Slice->Reset("m");}
     if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yx",name));Slice->Reset("m");}
@@ -621,7 +621,7 @@ void AliCorrelation3p::AddSlice(TH3F* hist,TH2D* AddTo, const char* option, Int_
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
   TString namestring = TString(name);
-  TH2D* Slice;
+  TH2D* Slice = new TH2D();
   if(o.CompareTo("xy")==0||o.CompareTo("yx")==0){
     if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xy",name));Slice->Reset("m");}
     if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yx",name));Slice->Reset("m");}
@@ -1313,11 +1313,15 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
   TCanvas    * tempcanvas=NULL;
   //Hists and directories for the total stuff:
   TDirectory * totbinstats = gDirectory->mkdir("bin_stats");
-  TH1D * HistpT, * HistPhi,* HistEta, * HistTriggerpT, * HistTriggerPhi, * HistTriggerEta, * HistAssociatedpT, * HistAssociatedPhi,* HistAssociatedEta;
-  TH3F * hPhiPhiDEtadiv=NULL;TH3F * hPhiPhiDEtadivscaled=NULL;
-  TH2D * hDeltaPhidiv=NULL;TH2D* hDeltaPhidivscaled=NULL;TH2D * hDeltaPhineardiv=NULL;TH2D * hDeltaPhineardivscaled=NULL;TH2D * hDeltaPhimiddiv=NULL;TH2D * hDeltaPhimiddivscaled=NULL;TH2D * hDeltaPhifardiv=NULL;TH2D * hDeltaPhifardivscaled = NULL;
-  TH2D * hPhiEta12div=NULL;TH2D* hPhiEta12_divscaled=NULL;TH2D * hPhiEta12_cut1div=NULL;TH2D * hPhiEta12_cut2div=NULL;TH2D * hPhiEta12_samesidediv=NULL;TH2D * hPhiEta12_sameside_divscaled=NULL;TH2D * hPhiEtadiv=NULL;
-  Double_t navm, nav;
+  TH1D * HistpT = new TH1D();
+  TH1D * HistPhi = new TH1D();
+  TH1D * HistEta = new TH1D();
+  TH1D * HistTriggerpT = new TH1D();
+  TH1D * HistTriggerPhi = new TH1D();
+  TH1D * HistTriggerEta = new TH1D();
+  TH1D * HistAssociatedpT = new TH1D();
+  TH1D * HistAssociatedPhi = new TH1D();
+  TH1D * HistAssociatedEta = new TH1D();
   Long_t NTriggers=0;
   Bool_t setAverage = kTRUE;  
   for(int mb =0;mb<fMBinEdges.GetSize()-1;mb++){
