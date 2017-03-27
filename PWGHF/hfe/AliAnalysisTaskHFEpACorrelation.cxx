@@ -734,7 +734,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     
     for(Int_t i = 0; i < 3; i++)
     {
-        fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
+        fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";p (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
         fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
         
         fOutputList->Add(fTPC_p[i]);
@@ -1684,7 +1684,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fTPC_momentum->Fill(fP,fTPCsignal);
         fTPC_eta->Fill(EtaTrig,fTPCsignal);
         
-        fTPC_p[0]->Fill(fPt,fTPCsignal);
+        fTPC_p[0]->Fill(fP,fTPCsignal);
         fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
         Float_t TPCNcls = track->GetTPCNcls();
         //TPC Ncls for pid
@@ -1772,7 +1772,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
         
         fEtad[1]->Fill(EtaTrig);
-        fTPC_p[1]->Fill(fPt,fTPCsignal);
+        fTPC_p[1]->Fill(fP,fTPCsignal);
         fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
         TPCNcls = track->GetTPCNcls();
         
@@ -1810,6 +1810,13 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             DiHadronCorrelation(track, iTracks);
         }
         
+        //Add TOF-Only PID cuts to study contamination as function of p
+        if (TMath::Abs(fTOFnSigma) <= 3)
+        {
+            fTPC_p[2]->Fill(fP,fTPCsignal);
+            fTPCnsigma_p[2]->Fill(fP,fTPCnSigma);
+        }
+            
         
         ///________________________________________________________________________
         ///PID
@@ -1860,8 +1867,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fDCAElectronZ[0]->Fill(DCAz);
         
         fEtad[2]->Fill(EtaTrig);
-        fTPC_p[2]->Fill(fPt,fTPCsignal);
-        fTPCnsigma_p[2]->Fill(fP,fTPCnSigma);
         
         if(track->Pt()< fMinpTElec || track->Pt() > fMaxpTElec) continue;
         
