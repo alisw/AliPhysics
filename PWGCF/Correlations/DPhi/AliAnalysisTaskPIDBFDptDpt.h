@@ -7,6 +7,9 @@
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"
+#include "AliPPVsMultUtils.h"
+
+
 
 class AliAODEvent;
 class AliESDEvent;
@@ -168,6 +171,7 @@ protected:
     
     // Handlers and events
     AliAODEvent*             fAODEvent;             //! AOD Event
+    AliPPVsMultUtils*        fUtils;
     AliESDEvent*             fESDEvent;             //! ESD Event
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
     
