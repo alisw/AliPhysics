@@ -789,14 +789,14 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   Qy2n  = QnVectTPCn->Qy(fHarmonic);
 
   
-  qxEPa = QnVectV0->Qx(fHarmonic);
-  qyEPa = QnVectV0->Qy(fHarmonic);
+  qxEPa = QnVectV0A->Qx(fHarmonic);
+  qyEPa = QnVectV0A->Qy(fHarmonic);
   	  
-  qxEPc = QnVectV0A->Qx(fHarmonic);
-  qyEPc = QnVectV0A->Qy(fHarmonic);
+  qxEPc = QnVectV0C->Qx(fHarmonic);
+  qyEPc = QnVectV0C->Qy(fHarmonic);
   	  
-  qxEP  = QnVectV0C->Qx(fHarmonic);
-  qyEP  = QnVectV0C->Qy(fHarmonic);
+  qxEP  = QnVectV0->Qx(fHarmonic);
+  qyEP  = QnVectV0->Qy(fHarmonic);
 
 
   Double_t evPlAngV0A = eventplaneqncorrVZERO[1];
