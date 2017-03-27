@@ -365,21 +365,35 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
  
   //Loop on pT bins
   for(int i=0; i<fNpTbins; i++) {
-    if(!fIntegratePtBins) { //Regular input extraction
-      if(fDmesonSpecies==kDplusKpipi) {
-        THnSparse *h = (THnSparse*)fMassList->FindObject(Form("%s%d",fMassHistoName.Data(),i+fFirstpTbin));
-        fMassHisto[i] = (TH1F*)h->Projection(0);
-      }
-      else if (fDmesonSpecies==kDxHFE) {
-	THnSparseF *h = (THnSparseF*)fMassList->FindObject("D0 info"); 
-	SetPtRanges(i+fFirstpTbin, h, kDxD0Pt);
-	fMassHisto[i] = (TH1F*)h->Projection(kDxD0Mass);
-      }
-      else fMassHisto[i] = (TH1F*)fMassList->FindObject(Form("%s%d",fMassHistoName.Data(),i+fFirstpTbin));
-    } else { //Integrate mass pT bins in wider correlation pT bin
-      if(i>0) continue;
-      MergeMassPlotsVsPt();
+
+    if(fUseMassVsCentPlots) { //2D mass vs cent plots (only offline)
+      if(!fReadTreeSE || !fReadTreeME) {std::cout << "2D mass plots can be used only for offline correlations! Exiting..." << std::endl;  return kFALSE;}
+      if (fDmesonSpecies==kDxHFE)  {std::cout << "2D mass plots not implemented for D0-e correlations! Exiting..." << std::endl;  return kFALSE;}
+      if(!fIntegratePtBins) { //Regular input extraction
+	TH2F *h2DMass = (TH2F*)fMassList->FindObject(Form("%s%d",fMassHistoName.Data(),i+fFirstpTbin));
+        fMassHisto[i] = (TH1F*)h2DMass->ProjectionX(Form("hMass_%d",i),h2DMass->GetYaxis()->FindBin(fMinCent+0.01),h2DMass->GetYaxis()->FindBin(fMaxCent-0.01));
+      } else { //Integrate mass pT bins in wider correlation pT bin
+        std::cout << "Integrate mass bin option not available for 2D mass plots! Exiting..." << std::endl;
+        return kFALSE;
+      }      
     }
+    else { //'standard' 1D mass plots
+      if(!fIntegratePtBins) { //Regular input extraction
+        if(fDmesonSpecies==kDplusKpipi) {
+          THnSparse *h = (THnSparse*)fMassList->FindObject(Form("%s%d",fMassHistoName.Data(),i+fFirstpTbin));
+          fMassHisto[i] = (TH1F*)h->Projection(0);
+        }
+        else if (fDmesonSpecies==kDxHFE) {
+	  THnSparseF *h = (THnSparseF*)fMassList->FindObject("D0 info"); 
+  	  SetPtRanges(i+fFirstpTbin, h, kDxD0Pt);
+	  fMassHisto[i] = (TH1F*)h->Projection(kDxD0Mass);
+        }
+        else fMassHisto[i] = (TH1F*)fMassList->FindObject(Form("%s%d",fMassHistoName.Data(),i+fFirstpTbin));
+      } else { //Integrate mass pT bins in wider correlation pT bin
+        if(i>0) continue;
+        MergeMassPlotsVsPt();
+      }
+    } //end of 1D mass plots
 
     //Rebinning of the mass histogram - PAY ATTENTION! Now bins are different w.r.t. THnSparse 
     if(fRebinMassPlots>1) fMassHisto[i]->Rebin(fRebinMassPlots);
