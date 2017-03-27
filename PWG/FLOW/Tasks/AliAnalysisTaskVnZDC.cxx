@@ -1159,21 +1159,22 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
     fHist_Event_count->Fill(stepCount);
     stepCount++;
 
+ if(fAnalysisSet=="recenter1") {
     fTPCV0M_CentDiff_vs_Vx->Fill(Vxyz[0],centrTRK-centrV0M);
     fTPCV0M_CentDiff_vs_Vy->Fill(Vxyz[1],centrTRK-centrV0M);
     fTPCV0M_CentDiff_vs_Vz->Fill(Vxyz[2],centrTRK-centrV0M);
 
-  if(EvtCent<20){
-     fAvg_Cent_vs_Vx_Cent_woCut->Fill(Vxyz[0],EvtCent);
-     fAvg_Cent_vs_Vy_Cent_woCut->Fill(Vxyz[1],EvtCent);
-     fAvg_Cent_vs_Vz_Cent_woCut->Fill(Vxyz[2],EvtCent);
-   }
-  if(EvtCent>50){
-     fAvg_Cent_vs_Vx_Peri_woCut->Fill(Vxyz[0],EvtCent);
-     fAvg_Cent_vs_Vy_Peri_woCut->Fill(Vxyz[1],EvtCent);
-     fAvg_Cent_vs_Vz_Peri_woCut->Fill(Vxyz[2],EvtCent);
-   }
-
+    if(EvtCent<20){
+       fAvg_Cent_vs_Vx_Cent_woCut->Fill(Vxyz[0],EvtCent);
+       fAvg_Cent_vs_Vy_Cent_woCut->Fill(Vxyz[1],EvtCent);
+       fAvg_Cent_vs_Vz_Cent_woCut->Fill(Vxyz[2],EvtCent);
+     }
+    if(EvtCent>50){
+       fAvg_Cent_vs_Vx_Peri_woCut->Fill(Vxyz[0],EvtCent);
+       fAvg_Cent_vs_Vy_Peri_woCut->Fill(Vxyz[1],EvtCent);
+       fAvg_Cent_vs_Vz_Peri_woCut->Fill(Vxyz[2],EvtCent);
+     }
+ }
 
  // ********** fZDCgain alpha = 0.50 instead of 0.35 *********
   AliAODZDC *aodZDC = aod->GetZDCData();
@@ -1396,7 +1397,7 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
   fHist_Cent_count2->        Fill(EvtCent);
 
 
-
+ if(fAnalysisSet=="recenter1") {
   if(EvtCent<20){
      fAvg_Cent_vs_Vx_Cent_wCuts->Fill(Vxyz[0],EvtCent);
      fAvg_Cent_vs_Vy_Cent_wCuts->Fill(Vxyz[1],EvtCent);
@@ -1407,7 +1408,7 @@ void AliAnalysisTaskVnZDC::UserExec(Option_t *)
      fAvg_Cent_vs_Vy_Peri_wCuts->Fill(Vxyz[1],EvtCent);
      fAvg_Cent_vs_Vz_Peri_wCuts->Fill(Vxyz[2],EvtCent);
    }
-
+ }
   
   Int_t nTracks = aod->GetNumberOfTracks();      //number of AOD tracks
 
