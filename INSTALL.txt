@@ -182,4 +182,4 @@ tree and install directory are different locations.
 
 For any question do not hesitate to contact us:  aliroot-git-admins@cern.ch
 
-Have a nice AliRoot development!
+Enjoy your AliRoot development!
