@@ -88,6 +88,8 @@ public:
    */
   void EnableDCALTriggers(Bool_t doEnable) { fEnableDCALTriggers = doEnable; }
 
+  void EnableT0Triggers(Bool_t doEnable) { fEnableT0Triggers = doEnable; }
+
   /**
    * @brief Set the name of the OADB container with the downscale factors.
    *
