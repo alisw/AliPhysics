@@ -1,16 +1,13 @@
 #include <TRandom.h>
-#include  "AliJEventPool.h"
-
 #include <TH1D.h>
-
-#include  "AliJTrack.h"
-#include  "AliJPhoton.h"
 #include <TClonesArray.h>
 
+#include  "AliJEventPool.h"
+
 #include  "AliJBaseTrack.h"
+#include  "AliJTrack.h"
+#include  "AliJMCTrack.h"
 #include  "AliJPhoton.h"
-
-
 #include  "AliJPiZero.h"
 
 #include  "AliJCard.h"
@@ -166,6 +163,10 @@ void AliJEventPool::AcceptList(TClonesArray *inList, float cent, float Z, float 
 					AliJPiZero *tkpz = (AliJPiZero*)inList->At(i);
 					new ((*fLists[cBin][fwhereToStore[cBin]])[i]) AliJPiZero(*tkpz);
 				}
+        else if ( fthisPoolType == kJHadronMC ){
+          AliJMCTrack *mcTrack = (AliJMCTrack*)inList->At(i);
+          new ((*fLists[cBin][fwhereToStore[cBin]])[i]) AliJMCTrack(*mcTrack);
+        }
 				else{
 					AliJTrack *tk3 = (AliJTrack*)inList->At(i);
 					new ((*fLists[cBin][fwhereToStore[cBin]])[i]) AliJTrack(*tk3);

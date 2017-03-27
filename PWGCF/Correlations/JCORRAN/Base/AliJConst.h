@@ -59,7 +59,7 @@ const int kNumberOfParticleTypes = kJNone+1;
 const char* const kParticleTypeStrName[kNumberOfParticleTypes] =
                     {"hadron", "pion", "kaon", "proton", "photon", "decayphoton", "pizero", "eta", "hadronMC", "jet", "Cluster", "none"};
 const char* const kParticleProtoType[kNumberOfParticleTypes] =
-                     {"AliJTrack", "AliJTrack", "AliJTrack", "AliJTrack", "AliJPhoton", "AliJPhoton", "AliJPiZero", "AliJPiZero", "None", "None", "None", "None"};
+                     {"AliJTrack", "AliJTrack", "AliJTrack", "AliJTrack", "AliJPhoton", "AliJPhoton", "AliJPiZero", "AliJPiZero", "AliJMCTrack", "None", "None", "None"};
 
 //=======================JCorran trigger table definition===========================
 //internal JCorran trigger mask  TBit=0 is MinBias, TBit=1 HighMultiplicityTrigger

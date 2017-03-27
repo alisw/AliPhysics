@@ -323,7 +323,11 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
                 // This is done using IsPhysicalPrimary() method of AliAODMCParticle
               
                 // Check that the track is a final state charged hadron
-                if(cgl->IsFinal() && cgl->IsCharged() && cgl->IsHadron()){
+                // in the acceptance range of the analysis
+                if(cgl->IsFinal() && cgl->IsCharged() && cgl->IsHadron()
+                                  && fCard->IsInEtaRange(  cgl->Eta() )){
+                    cgl->SetID(ii);
+                    cgl->SetParticleType(kJHadronMC);
                     new ((*listToFill)[counter++]) AliJMCTrack(*cgl);
                 }
             }
