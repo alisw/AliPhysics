@@ -73,8 +73,8 @@ Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
-    cellE: 0.05                                     # Minimum cell energy
-    seedE: 0.1                                      # Seed energy threshold
+    cellE: 0.05                                     # Minimum cell energy (GeV)
+    seedE: 0.1                                      # Seed energy threshold (GeV)
     cellTimeMin: -1                                 # Min cell time (s)
     cellTimeMax: +1                                 # Max cell time (s)
     clusterTimeLength: 1                            # Maximum time difference between the digits inside EMC cluster (s)

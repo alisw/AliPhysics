@@ -42,10 +42,10 @@ class AliEmcalContainerUtils {
    * @brief %Type of input object to be created
    */
   enum InputObject_t {
-    kNoDefinedInputObject = -1,    //!< Not initialized type
-    kCaloCells = 0,                //!< Calo cells
-    kCluster = 1,                  //!< Cluster container
-    kTrack = 2,                    //!< Track container
+    kNoDefinedInputObject = -1,    //!<! Not initialized type
+    kCaloCells = 0,                //!<! Calo cells
+    kCluster = 1,                  //!<! Cluster container
+    kTrack = 2,                    //!<! Track container
   };
 
   // Utility functions

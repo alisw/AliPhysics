@@ -721,7 +721,7 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
       }
 
       if (checkObjectExists && !(cellCont->GetCells())) {
-        AliFatal(TString::Format("%s: Unable to retrieve input object \"%s\" because it is null. Please check your configuration!", GetName(), str.c_str()));
+        AliFatal(TString::Format("%s: Unable to retrieve cells \"%s\" in input object \"%s\" because the cells are null. Please check your configuration!", GetName(), cellCont->GetBranchName().c_str(), str.c_str()));
       }
 
       // Set the calo cells (may be null)
