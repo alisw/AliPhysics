@@ -309,7 +309,7 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
             break;
 
         default :
-            cout<<"Unknown particle type in JDatamenager.cxx/fillList()"<<endl; 
+            cout<<"Unknown particle type in AliJDataManager.cxx/RegisterList()"<<endl; 
             exit(0);
     }//switch for PID
 
