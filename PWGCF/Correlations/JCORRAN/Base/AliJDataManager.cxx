@@ -258,6 +258,8 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
             break;
         case kJPizero:
             break;
+        
+        // Selection for hadrons
         case kJHadron:       
             noIn    = fTrackList->GetEntriesFast(); 
             counter = 0;
@@ -288,6 +290,7 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
             }
             break;
 
+        // Selection for protons
         case kJProton:       
             noIn    = fTrackList->GetEntriesFast(); 
             counter = 0;
@@ -307,9 +310,27 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
                 }
             }
             break;
+        
+        // Selection for Monte Carlo truth particles
+        case kJHadronMC:
+            noIn    = fMCTrackList->GetEntriesFast();
+            counter = 0;
+            for(int ii=0;ii<noIn;ii++){ // loop for all tracks
+                AliJMCTrack *cgl = (AliJMCTrack*)fMCTrackList->At(ii);
+              
+                // Note: The Monte Carlo track list is filled by AliJFilter.cxx class
+                // It is already required in that class that MC tracks are physical primaries
+                // This is done using IsPhysicalPrimary() method of AliAODMCParticle
+              
+                // Check that the track is a final state charged hadron
+                if(cgl->IsFinal() && cgl->IsCharged() && cgl->IsHadron()){
+                    new ((*listToFill)[counter++]) AliJMCTrack(*cgl);
+                }
+            }
+            break;
 
         default :
-            cout<<"Unknown particle type in AliJDataManager.cxx/RegisterList()"<<endl; 
+            cout<<"Unknown particle type in AliJDataManager.cxx/RegisterList()"<<endl;
             exit(0);
     }//switch for PID
 
