@@ -916,7 +916,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     
     //Inv Mass in pT Bins
     fInvMassULS = new TH1F *[fpTBins.GetSize()];
-    fInvMssLS = new TH1F *[fpTBins.GetSize()];
+    fInvMassLS = new TH1F *[fpTBins.GetSize()];
     
     for (Int_t i = 0 ; i < fpTBins.GetSize()-1 ; i++)
     {
@@ -1946,7 +1946,24 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     Bool_t lIsNHFe = kFALSE;
     Bool_t lIsHFe = kFALSE;
     Bool_t lIsOther = kFALSE;
-    Bool_t lHasMother = kFALSE;;
+    Bool_t lHasMother = kFALSE;
+    
+    //Electron Information
+    Double_t fPhiE = -999;
+    Double_t fEtaE = -999;
+    Double_t fPhiH = -999;
+    Double_t fEtaH = -999;
+    Double_t fDphi = -999;
+    Double_t fDeta = -999;
+    Double_t fPtE = -999;
+    Double_t fPtH = -999;
+    
+    Double_t pi = TMath::Pi();
+    
+    fPhiE = track->Phi();
+    fEtaE = track->Eta();
+    fPtE = track->Pt();
+    
     
     ///_________________________________________________________________
     
@@ -2012,21 +2029,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     ///#################################################################
     
     
-    //Electron Information
-    Double_t fPhiE = -999;
-    Double_t fEtaE = -999;
-    Double_t fPhiH = -999;
-    Double_t fEtaH = -999;
-    Double_t fDphi = -999;
-    Double_t fDeta = -999;
-    Double_t fPtE = -999;
-    Double_t fPtH = -999;
-    
-    Double_t pi = TMath::Pi();
-    
-    fPhiE = track->Phi();
-    fEtaE = track->Eta();
-    fPtE = track->Pt();
+
     
     
     if(fIsMC)
