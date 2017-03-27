@@ -22,8 +22,6 @@ class AliVEvent;
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
 #include "AliEmcalTrackSelection.h"
-// Remove this after permanently removing the run period!
-#include "AliLog.h"
 
 /**
  * @class AliEmcalCorrectionTask
@@ -83,10 +81,12 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void SetUserConfigurationFilename(std::string name) { fUserConfigurationFilename = name; }
   /// Set the path to the default configuration filename (Expert use only! The user should set the user configuration!)
   void SetDefaultConfigurationFilename(std::string name) { fDefaultConfigurationFilename = name; }
-  // Write configuration to file
-  bool WriteConfigurationFile(std::string filename, bool userConfig = false) const;
   // Print the actual configuration string
   std::ostream & PrintConfigurationString(std::ostream & in, bool userConfig = false) const;
+  // Write configuration to file
+  bool WriteConfigurationFile(std::string filename, bool userConfig = false) const;
+  // Compare configurations
+  bool CompareToStoredConfiguration(std::string filename, bool userConfig = false) const;
 
   // Options
   // Printing
@@ -96,7 +96,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   std::string toString(bool includeYAMLConfigurationInfo = false) const;
   // Set
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
-  void                        SetRunPeriod(const char* runPeriod)                   { AliError("SetRunPeriod() is not required anymore! Remove this call!"); }
   void                        SetNeedEmcalGeometry(Bool_t b)                        { fNeedEmcalGeom = b; }
   // Centrality options
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
