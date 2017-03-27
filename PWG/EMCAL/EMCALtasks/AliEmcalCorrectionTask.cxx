@@ -1396,17 +1396,61 @@ bool AliEmcalCorrectionTask::WriteConfigurationFile(std::string filename, bool u
     }
     else
     {
-      AliWarning(TString::Format("Configuration not properly initialized! Cannot print %s configuration!", userConfig ? "user" : "default"));
+      AliError(TString::Format("Configuration not properly initialized! Cannot print %s configuration!", userConfig ? "user" : "default"));
     }
 
   }
   else
   {
-    AliWarning("Please pass a valid filename instead of empty quotes!");
+    AliError("Please pass a valid filename instead of empty quotes!");
   }
   return returnValue;
 }
 
+/**
+ * Compare the passed YAML configuration to the stored YAML configuration.
+ *
+ * @param filename The filename of the YAML configuration to compare
+ * @param userConfig True to compare against the user configuration
+ * @return True when the passed YAML configuration is the same as the stored YAML configuration
+ */
+bool AliEmcalCorrectionTask::CompareToStoredConfiguration(std::string filename, bool userConfig) const
+{
+  bool returnValue = false;
+  if (filename != "")
+  {
+    if (fConfigurationInitialized == true)
+    {
+      // Generate YAML nodes for the comparison
+      YAML::Node passedNode = YAML::LoadFile(filename);
+      YAML::Node comparisonNode = YAML::Load(userConfig ? fUserConfigurationString : fDefaultConfigurationString);
+
+      // Need to stream the configuration back to a string to remove the comments
+      // since they are not preserved in the YAML node.
+      std::stringstream passedNodeSS;
+      passedNodeSS << passedNode;
+
+      // Compare the nodes. Make the comparison as strings, as the YAML nodes do _not_ match, despite the strings matching.
+      // In fact, the YAML nodes will _not_ match even if they are generated from the same string....
+      if (passedNodeSS.str() == (userConfig ? fUserConfigurationString : fDefaultConfigurationString)) {
+        returnValue = true;
+      }
+      else {
+        AliWarningStream() << "Passed YAML config:\n" << passedNode << "\n\nStored YAML config:\n" << comparisonNode << "\nPassed config located in file \"" << filename << "\" is not the same as the stored " << (userConfig ? "user" : "default") << "configuration file! YAML configurations printed above.\n";
+      }
+    }
+    else
+    {
+      AliError(TString::Format("Configuration not properly initialized! Cannot compare %s configuration!", userConfig ? "user" : "default"));
+    }
+
+  }
+  else
+  {
+    AliError("Please pass a valid filename instead of empty quotes!");
+  }
+  return returnValue;
+}
 
 /**
  * Checks if a file exists. This is done inline to make it efficient.
