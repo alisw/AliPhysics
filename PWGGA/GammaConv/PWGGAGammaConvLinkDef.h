@@ -23,10 +23,12 @@
 #pragma link C++ class AliDalitzElectronCuts+;
 #pragma link C++ class AliDalitzElectronSelector+;
 #pragma link C++ class AliCaloTrackMatcher+;
+#pragma link C++ class AliMyTParticleMotherAndDaughter+;
 
 // User tasks
 #pragma link C++ class AliAnalysisTaskPi0v2+;
 #pragma link C++ class AliGammaConversionAODBGHandler+;
+#pragma link C++ class AliAnalysisTaskDirectPhotons+;
 #pragma link C++ class AliAnalysisTaskGammaConvV1+;
 #pragma link C++ class AliAnalysisTaskGammaConvDalitzV1+;
 #pragma link C++ class AliAnalysisTaskConversionQA+;
