@@ -1594,18 +1594,13 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   //
   // Called for each event
   //
-  
-  
-  if(fIsMC>0) fMCEvent = MCEvent();
-  if(fMCEvent == NULL) fIsMC = 0;
-  
   fInputEvent = InputEvent();
-
+  
+  // Set MC events
+  if(fIsMC>0) fMCEvent = MCEvent();
   if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
     fMCStack = fMCEvent->Stack();
-    if(fMCStack == NULL) fIsMC = 0;
   }
-
   
   //calculating the weight for the centrality flattening
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
@@ -1617,7 +1612,8 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
   if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
-  if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or because it is incomplere or  wrong trigger for V0ReaderV1
+  // Event Not Accepted due to MC event missing or because it is incomplere or  wrong trigger for V0ReaderV1 => skip broken events/files
+  if(eventQuality == 2 || eventQuality == 3){
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
       fHistoNEvents[iCut]->Fill(eventQuality);
       if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
