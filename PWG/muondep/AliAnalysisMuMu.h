@@ -289,8 +289,6 @@ public:
       const char* eventSelection,
       Int_t runNumber=-1);
 
-    std::vector<Double_t> GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const;
-
     const char* GetParticleName() { return fParticleName; }
 
     ULong64_t GetTriggerScalerCount(const char* triggerList, Int_t runNumber);
@@ -317,7 +315,6 @@ public:
 
     void SetParticleName(const char* particleName) { fParticleName = particleName; }
     void SetConfig(const AliAnalysisMuMuConfig& config);
-    void SetCentralitySelectionList(const char* centralitySelectionList);
 
     static TFile* FileOpen(const char* file);
     static TString ExpandPathName(const char* file);

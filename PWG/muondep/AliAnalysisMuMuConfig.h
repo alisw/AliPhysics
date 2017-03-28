@@ -164,8 +164,6 @@ public:
   TObjArray* GetListElements(const char* type, Bool_t simulation) const;
   TObjArray* GetTriggersList(Bool_t simulation) const;
 
-  void DefineDefaultsFromFile(const char* configfile);
-
   void LoadAliceStyles();
 
 private:
