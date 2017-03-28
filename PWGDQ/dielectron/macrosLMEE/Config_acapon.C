@@ -14,7 +14,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE; //Needed for LMEEcutlib
 Bool_t isQAtask=kTRUE;
 
-AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t SDDstatus =kFALSE)
+AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t SDDstatus =kFALSE, Bool_t = doMixing)
 {
   //
   // Setup the instance of AliDielectron
@@ -23,7 +23,6 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
   Int_t selectedPID=-1;
   Int_t selectedCentrality=-1;
   Bool_t rejectionStep=kTRUE; //Wut?
-  //Bool_t doPairing=kTRUE;
   LMEECutLib*  LMcutlib = new LMEECutLib(SDDstatus);
   
   //Task name
@@ -41,7 +40,9 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
   //die->SetPreFilterAllSigns(); //Can select only one sign or photons (e.g) for prefilter step
   
   // deactivate pairing to check track cuts or run with loose pid cuts:
-  die->SetNoPairing();
+  if(doMixing){
+    die->SetNoPairing();
+  }
   
   cout << "cutDefinition = " << cutDefinition << endl;
   // Setup Analysis Selection
@@ -64,71 +65,23 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
     cout << " =============================== " << endl;
   }
 
-  //
-  // Now configure task
-  //
-  // add centrality selection to event cuts
-  //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCentrality) );
-  // switch off KF Particle
+ 
   die->SetUseKF(kFALSE);
-  
-  // --------------------------------------------------
-  // with Rejection Step (Prefilter)
-  // --------------------------------------------------
-  /*if(rejectionStep){
-    if (isESD){
-      die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna(selectedPID) );
-      //die->GetPairPreFilterLegs().AddCuts( LMcutlib->GetESDTrackCutsAna(selectedPID) ); // this is redundant!?
-    }
-    // set initial track filter.
-    // the function 'GetPIDCutsPre()' must also call 'GetTrackCutsPre()'!
-    die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsPre(selectedPID) );
-    // set Prefilter. "remove all tracks from the Single track arrays that pass the cuts in this filter" (comment in AliDielectron.cxx)
-    // cuts = REJECTION!!!
-    //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) ); 
-    
-    // "apply leg cuts after the pre filter" (comment in AliDielectron.cxx)
-    // the function 'GetPIDCutsAna()' must also call 'GetTrackCutsAna()'!
-    //die->GetPairPreFilterLegs().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
-    
-    // set Pairfilter.
-    // cuts = SELECTION!!!
-    //die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID, kFALSE) ); 
+   
+   AliDielectronMixingHandler* mix = 0x0;
+  if(doMixing){
+   mix = LMcutlib->GetMixingHandler(selectedPID);
+    die->SetMixingHandler(mix);
   }
-  // --------------------------------------------------
-  // without Rejection Step
-  // --------------------------------------------------
-  else 
-  {
-    if (isESD) {
-      die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna(selectedPID) );
-    }
-    // the function 'GetPIDCutsAna()' must also call 'GetTrackCutsAna()'!
-    die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
-    //die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID, kFALSE) );
-  }*/
-  // --------------------------------------------------
-  
-  
-  //AliDielectronTrackRotator *rot= 0x0;
-  //To save time and as it is not 100% test, rotation switched off
-  /*AliDielectronTrackRotator *rot= LMcutlib->GetTrackRotator(selectedPID);
-    die->SetTrackRotator(rot);
-  */
-  //AliDielectronMixingHandler *mix=LMcutlib->GetMixingHandler(selectedPID);
-  //die->SetMixingHandler(mix);
   
   InitHistograms(die, cutDefinition);
-  
-  // the last definition uses no cuts and only the QA histograms should be filled!
-  // InitCF(die,cutDefinition);
   
   return die;
 }
 
 //______________________________________________________________________________________
 
-void InitHistograms(AliDielectron *die, Int_t cutDefinition)
+void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = kFALSE)
 {
   //Define histogram names based on cut value, in order to avoid mem. warning error
 
@@ -156,14 +109,14 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //  "ev1+_ev2-",  "ev1-_ev2-",                // 6-7
   //  "ev2+_ev2-",  "ev2-_ev2-",  "ev1+_ev1-_TR"
   // };
-  /*for(Int_t i=0; i<3; ++i){
+  for(Int_t i=0; i<3; ++i){
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(i)));
     // Legs of final Pairs. Both charges together. No duplicate entries.
     histos->AddClass(Form("Track_Legs_%s",AliDielectron::PairClassName(i))); // not TrackClassName, see 'AliDielectron::FillHistograms(...)'
-  }*/
+  }
   
   //ME and track rot
-  /*if(die->GetMixingHandler()){
+  if(die->GetMixingHandler()){
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(3)));
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(4)));
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(6)));
@@ -171,7 +124,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   }
   if(die->GetTrackRotator()){
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(10)));
-  }*/
+  }
   
   //PreFilter Classes
   //to fill also track info from 2nd event loop until 2
@@ -307,7 +260,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                         GetVector(kEta3D), GetVector(kSigmaEle), BinsToVector(100,0.,5000.),
                         AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRefMultTPConly);
   
-  if (isQAtask) {
+  if(isQAtask){
     histos->UserHistogram("Track","TPC_dEdx_Eta",";Eta;TPC signal (arb units)",
                           GetVector(kEta2D), GetVector(kTPCdEdx), AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal);
     histos->UserHistogram("Track","TPC_dEdx_Eta_P",";Eta;TPC signal (arb units);p (GeV/c)",
@@ -358,7 +311,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                         GetVector(kEta2D), GetVector(kSigmaEle), AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);
   histos->UserHistogram("Track","TOFnSigmaEle_Phi",";Phi;n#sigma_{elec}^{TOF}",
                         GetVector(kPhi2D), GetVector(kSigmaEle), AliDielectronVarManager::kPhi,AliDielectronVarManager::kTOFnSigmaEle);
-  if(isQAtask) {
+  if(isQAtask){
     histos->UserHistogram("Track","TOFnSigmaPio_P",";p (GeV/c);TOF number of sigmas Pions",
                           GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kTOFnSigmaPio);
     histos->UserHistogram("Track","TOFnSigmaKao_P",";p (GeV/c);TOF number of sigmas Kaons",
@@ -368,7 +321,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Track","TOFnSigmaEle_Cent", ";Centrality;n#sigma_{ele}^{ITS}", GetVector(kCent), GetVector(kSigmaEle), AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kTOFnSigmaEle);
   }    
   // 2D-PID
-  if (isQAtask) {
+  if(isQAtask){
     histos->UserHistogram("Track","PIn_TPCnSigmaEle_ITSnSigmaEle",";p_{in} (GeV/c);n#sigma_{ele}^{TPC};n#sigma_{ele}^{ITS}",
                           50,0.,2.5, 160,-12.,20., 150,-10.,20.,
                           AliDielectronVarManager::kP,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kITSnSigmaEle);
@@ -392,8 +345,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           120,0.,TMath::TwoPi(), 120,0.,1.2, AliDielectronVarManager::kPhi,AliDielectronVarManager::kNFclsTPCfCross);
   }
   
-  if(!isQAtask) 
-  {
+  if(doMixing){
     //add histograms to Pair classes
     histos->UserHistogram("Pair","InvMass","",500,0.,5.,AliDielectronVarManager::kM);
     histos->UserHistogram("Pair","PairPt","",160,0.,8., AliDielectronVarManager::kPt);
