@@ -15,7 +15,6 @@
 
 #include "AliAnalysisTaskCorrelation3p_lightefficiency.h"
 #include "AliAnalysisManager.h"
-#include "AliLog.h"
 #include "AliEventPoolManager.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
@@ -408,6 +407,8 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackESD(AliVPart
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackFiltered(AliVParticle* t)
 {
   if(dynamic_cast<AliFilteredTrack*>(t)->IsMC())return kTRUE;//dont remove MC particles yet.
+  if(!dynamic_cast<AliFilteredTrack*>(t)->IsMC())FillFilterBit(dynamic_cast<AliFilteredTrack*>(t));//dont remove MC particles yet.
+  
   if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&(fCutMask==0||fCutMask>5))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT4()&&(fCutMask==1))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT5()&&(fCutMask==2))return kTRUE;
@@ -416,6 +417,59 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackFiltered(Ali
   if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&!(dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()|dynamic_cast<AliFilteredTrack*>(t)->IsBIT5())&&(fCutMask==5))return kTRUE;
   return kFALSE;
 }
+
+void AliAnalysisTaskCorrelation3p_lightefficiency::FillFilterBit(AliFilteredTrack* t)
+{
+  IncrementHist("filterbits",16);
+  if(t->IsGlobalHybrid()){
+    if(t->IsBIT4()){
+      if(t->IsBIT5()){
+	if(t->IsBIT6())IncrementHist("filterbits",11);
+	else IncrementHist("filterbits",8);
+      }
+      else{
+	if(t->IsBIT6())IncrementHist("filterbits",9);
+	else IncrementHist("filterbits",5);
+      }
+    }
+    else{
+      if(t->IsBIT5()){
+	if(t->IsBIT6())IncrementHist("filterbits",10);
+	else IncrementHist("filterbits",6);
+      }
+      else{
+	if(t->IsBIT6())IncrementHist("filterbits",7);
+	else IncrementHist("filterbits",1);
+      }
+    }
+  }
+  else{
+    if(t->IsBIT4()){
+      if(t->IsBIT5()){
+	if(t->IsBIT6()){
+	  IncrementHist("filterbits",15);
+	}
+	else IncrementHist("filterbits",12);
+      }
+      else{
+	if(t->IsBIT6())IncrementHist("filterbits",14);
+	else IncrementHist("filterbits",2);
+      }
+    }
+    else{
+      if(t->IsBIT5()){
+	if(t->IsBIT6())IncrementHist("filterbits",13);
+	else IncrementHist("filterbits",3);
+      }
+      else{
+	if(t->IsBIT6())IncrementHist("filterbits",4);
+	else IncrementHist("filterbits",17);
+      }
+    }
+  }
+}
+
+
 
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsMCFilteredTrack(AliVParticle* p)
 {
@@ -504,7 +558,8 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::FillPDG(Int_t GetPDG)
    return 99;//if none other is chosen, return other particle
  }
  if(abspdg>=511&&abspdg<1114){//bottom mesons, other particles up to proton.
-   if(abspdg==511||abspdg==513||abspdg==515||abspdg==531||abspdg==533||abspdg==535)return 19;//neutral B meson
+   if(abspdg==511||abspdg==513||abspdg==515||abspdg==531||abspdg==533||abspdg==535)return 19;//neutral B meson    kTrkGlobalSDD          = BIT(6), // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster tracks selected by this cut are exclusive to those selected by the previous cut
+
    if(abspdg==521||abspdg==523||abspdg==525||abspdg==541||abspdg==543||abspdg==545)return 20;//charged B meson
    if(abspdg==553)return 23;//Ypsilon
    if(abspdg==551||abspdg==555||abspdg==557)return 22;//other bbbar mesons.
@@ -523,7 +578,7 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::FillPDG(Int_t GetPDG)
  if(abspdg>=4122&&abspdg<4444)return 29;//charmed baryon
  if(abspdg>=4444&&abspdg<5122)return 99;
  if(abspdg>=5122&&abspdg<5554)return 30;//bottom baryon
- 
+ return 100000;
 }
 
 const char* AliAnalysisTaskCorrelation3p_lightefficiency::NamePDG(Int_t BinPDG)
@@ -726,10 +781,10 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
   }
 
    //Initialize array for run numbers.
-  Int_t runnumbersP10b[fNRunsP10b] = {117222, 117220, 117116, 117112, 117109, 117099, 117092, 117063, 117060, 117059, 117053, 117052, 117050, 117048, 116787, 116645, 116643, 116574, 116571, 116562, 116432, 116431, 116429,116403, 116402, 116372, 116360, 116358, 116288, 116102, 116081, 116079, 115521, 115414, 115406, 115401, 115399, 115393, 115369,115345, 115335, 115328,  115327, 115322, 115318, 115312, 115310,  115193, 115186, 115056, 114931, 114930, 114924, 114920, 114918, 114798, 114786};
-  Int_t runnumbersP10c[fNRunsP10c] = {121040, 121039, 120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244,120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119163, 119161, 119159, 118561, 118560, 118558, 118556, 118518, 118512, 118507, 118506};
+//   Int_t runnumbersP10b[fNRunsP10b] = {117222, 117220, 117116, 117112, 117109, 117099, 117092, 117063, 117060, 117059, 117053, 117052, 117050, 117048, 116787, 116645, 116643, 116574, 116571, 116562, 116432, 116431, 116429,116403, 116402, 116372, 116360, 116358, 116288, 116102, 116081, 116079, 115521, 115414, 115406, 115401, 115399, 115393, 115369,115345, 115335, 115328,  115327, 115322, 115318, 115312, 115310,  115193, 115186, 115056, 114931, 114930, 114924, 114920, 114918, 114798, 114786};
+//   Int_t runnumbersP10c[fNRunsP10c] = {121040, 121039, 120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244,120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119163, 119161, 119159, 118561, 118560, 118558, 118556, 118518, 118512, 118507, 118506};
   Int_t runnumbersP10d[fNRunsP10d] = {126432, 126425, 126424, 126422, 126409, 126408, 126407, 126406, 126405, 126404, 126403, 126359, 126352, 126351, 126350, 126285, 126284, 126283, 126168,126167, 126160, 126158, 126097, 126090, 126088, 126082, 126081, 126078, 126073, 126008, 126007, 126004, 125855, 125851, 125850, 125849, 125848, 125847, 125844, 125843,  125842, 125633, 125632, 125630, 125628, 125296, 125295, 125186, 125156, 125140, 125139, 125134, 125133, 125101, 125100, 125097, 125085, 125083, 125023, 124751, 122375, 122374};
-  Int_t runnumbersP10e[fNRunsP10e] = {130850, 130848, 130847, 130844, 130842, 130840, 130834, 130804, 130803, 130802, 130799, 130798, 130795, 130793, 130704, 130696, 130628, 130623, 130621, 130620, 130609, 130608, 130601, 130526, 130524, 130520, 130519, 130517, 130481, 130480, 130479, 130375, 130360, 130358, 130356, 130354, 130343, 130342, 130178, 130172, 130168, 130158, 130157, 130151, 130149, 129983, 129966, 129962, 129961, 129960, 129959, 129744, 129742, 129738, 129736, 129735, 129734, 129729, 129726, 129725, 129723, 129666, 129659, 129653, 129652, 129651, 129650, 129647, 129641, 129639, 129599, 129587, 129586, 129540, 129536, 129528, 129527, 129525, 129524, 129523, 129521, 129520, 129519, 129516, 129515, 129514, 129513, 129512, 129042, 128913, 128855, 128853, 128850, 128843, 128836, 128835, 128834, 128833, 128824, 128823, 128820, 128819, 128778, 128777, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128596, 128594, 128592, 128590, 128582, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486, 128452, 128366}; 
+//   Int_t runnumbersP10e[fNRunsP10e] = {130850, 130848, 130847, 130844, 130842, 130840, 130834, 130804, 130803, 130802, 130799, 130798, 130795, 130793, 130704, 130696, 130628, 130623, 130621, 130620, 130609, 130608, 130601, 130526, 130524, 130520, 130519, 130517, 130481, 130480, 130479, 130375, 130360, 130358, 130356, 130354, 130343, 130342, 130178, 130172, 130168, 130158, 130157, 130151, 130149, 129983, 129966, 129962, 129961, 129960, 129959, 129744, 129742, 129738, 129736, 129735, 129734, 129729, 129726, 129725, 129723, 129666, 129659, 129653, 129652, 129651, 129650, 129647, 129641, 129639, 129599, 129587, 129586, 129540, 129536, 129528, 129527, 129525, 129524, 129523, 129521, 129520, 129519, 129516, 129515, 129514, 129513, 129512, 129042, 128913, 128855, 128853, 128850, 128843, 128836, 128835, 128834, 128833, 128824, 128823, 128820, 128819, 128778, 128777, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128596, 128594, 128592, 128590, 128582, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486, 128452, 128366}; 
   Int_t runnumbersP10h[fNRunsP10h] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161, 137135};
   Int_t runnumbersP11a[fNRunsP11a] = {146860, 146859, 146858, 146856, 146824, 146817, 146807, 146806, 146805, 146804, 146803, 146802, 146801, 146748, 146747, 146746, 146402, 146369,146292, 146287, 146282, 146277, 146273, 146272, 146223, 146220, 146208, 146158, 146156, 146153, 146152, 146148, 146147, 146141, 146099, 146079, 146072, 146071, 146027, 146026, 146025, 146024, 146023, 145674, 145455, 145385, 145384, 145383, 145379, 145355, 145354, 145353, 145314, 145300, 145292, 145290, 145289, 145288};
   Int_t runnumbersP11h[fNRunsP11h] = {170593, 170572, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170230, 170228, 170207, 170204, 170203, 170193, 170163, 170159, 170155, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170027, 169965, 169923, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169591, 169590, 169588, 169587, 169586, 169557, 169555, 169554, 169553, 169550, 169515, 169512, 169506, 169504, 169498, 169475, 169420, 169419, 169418, 169417, 169415, 169411, 169238, 169167, 169160, 169156, 169148, 169145, 169144, 169138, 169099, 169094, 169091, 169045, 169044, 169040, 169035, 168992, 168988, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168460, 168458, 168362, 168361, 168342, 168341, 168325, 168322, 168311, 168310, 168115, 168108, 168107, 168105, 168076, 168069, 167988, 167987, 167985, 167920, 167915};
@@ -749,6 +804,34 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
     fRunNumberList = new Int_t[fNruns];
     for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10d[i];
   }
+  if(fperiod==AliAnalysisTaskCorrelation3p_lightefficiency::P11a){
+    fNruns=fNRunsP11a;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP11a[i];
+  }
+  //QA - filter bit histogram:
+  TH1I * nummberoftrackswithfilterbit = new TH1I("filterbits","# tracks per filter bit", 17 , 0,17);
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(1,"GH");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(2,"B4");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(3,"B5");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(4,"B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(5,"GH+B4");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(6,"GH+B5");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(7,"GH+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(8,"GH+B4+B5");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(9,"GH+B4+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(10,"GH+B5+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(11,"GH+B4+B5+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(12,"B4+B5");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(13,"B5+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(14,"B4+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(15,"B4+B5+B6");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(16,"Any Bit");
+  nummberoftrackswithfilterbit->GetXaxis()->SetBinLabel(17,"No Bit");
+  nummberoftrackswithfilterbit->GetXaxis()->LabelsOption("v");
+  fOutput->Add(nummberoftrackswithfilterbit);
+
+  
   //QA per run histograms:
   TH1D * eventsperrun 		= new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
   TH1D * TracksperRun 		= new TH1D("TracksperRun", "# tracks per Run", fNruns, 0,1);
@@ -887,6 +970,18 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::FillHistogram(const char* key
     hist->Fill(x) ;
   else AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
+
+void AliAnalysisTaskCorrelation3p_lightefficiency::IncrementHist(const char* key, int bin)
+{
+  TH1 * hist = dynamic_cast<TH1*>(fOutput->FindObject(key)) ;
+  if(hist){
+    double fillvalue = hist->GetXaxis()->GetBinCenter(bin);
+    hist->Fill(fillvalue);
+    
+  }
+  else AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
+}
+
 
 void AliAnalysisTaskCorrelation3p_lightefficiency::FillHistogram(const char* key, Double_t x, Double_t y)
 {

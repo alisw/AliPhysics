@@ -17,6 +17,14 @@
 set(MODULE PWGCFCorrelationsThreePart)
 add_definitions(-D_MODULE_="${MODULE}")
 
+
+if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang OR CMAKE_COMPILER_IS_GNUCXX)
+  if (NOT ${CMAKE_SYSTEM_VERSION} MATCHES el5)
+    message(STATUS "Treating warnings as errors under ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+  endif()
+endif()
+
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/ThreePart)
 

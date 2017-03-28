@@ -429,7 +429,7 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
     int sec = timediff%60;
     int min = ((timediff-sec)/60)%60;
     int hour = (timediff-sec-60*min)/(60*60);
-    if(hour ==0&&min==0){
+    if(hour ==0&&min==0){ 
     AliWarning(Form("Number of Events finished:%i. Number of Events parsed:%i. Time: %i. Time spent: %i seconds",fNEventsProcessed,fNEventsParsed,now.GetTime(),sec));
     }
     if(hour ==0&&min!=0){
@@ -627,7 +627,7 @@ void AliAnalysisTaskCorrelation3p::GetPi0s(TObjArray* allrelevantParticles, AliV
 	  FillHistogram("pi0ThetaPHOS",p12.Theta());
 	}
 	if (clu1->IsEMCAL()) {
-	  npiEMCAL +=1;
+	  npiEMCAL +=1;  
 	  FillHistogram("EmcalSelectedPionsperRun",fRunFillValue);
 	  FillHistogram("pi0ptemcal",p12.Pt());
 	  FillHistogram("pi0phiemcal",p12.Phi());
@@ -735,11 +735,11 @@ void AliAnalysisTaskCorrelation3p::GetMCArray()
     AliAODInputHandler* aodHandler=dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if (aodHandler){
       AliAODEvent *aod=aodHandler->GetEvent();
-//       if (aod && fefficiencies) {
-// 	fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
-// 	if (!fMcArray) AliError("Could not retrieve MC array!");
-//       }
-//       else AliError("Could not retrieve AOD event! MC is only supported in AOD.");
+      if (aod ) {
+	fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (!fMcArray) AliError("Could not retrieve MC array!");
+      }
+      else AliError("Could not retrieve AOD event! MC is only supported in AOD.");
     }
 }
 
@@ -1961,8 +1961,8 @@ void AliAnalysisTaskCorrelation3p::Askforgensettings()
 		if(ss1.fail()) {AliWarning("You need to enter an integer of the ones above:"); continue;}
 		else {worked3 = true;}
 	      }
-	      TGraphAsymmErrors * v2graph;
-	      TGraphAsymmErrors * v3graph;
+	      TGraphAsymmErrors * v2graph = new  TGraphAsymmErrors();
+	      TGraphAsymmErrors * v3graph = new TGraphAsymmErrors();
 	      if(choice == 1){
 		v2graph = dynamic_cast<TGraphAsymmErrors*>(flowpt->Get("v20t5prc"));
 		v3graph = dynamic_cast<TGraphAsymmErrors*>(flowpt->Get("v30t5prc"));}

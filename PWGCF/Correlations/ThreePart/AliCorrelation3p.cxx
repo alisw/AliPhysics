@@ -499,7 +499,7 @@ TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, In
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
   TString namestring = TString(name);
-  TH2D* Slice;
+  TH2D* Slice = new TH2D();
   if(o.CompareTo("xy")==0||o.CompareTo("yx")==0){
     if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xy",name));Slice->Reset("m");}
     if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yx",name));Slice->Reset("m");}
@@ -621,7 +621,7 @@ void AliCorrelation3p::AddSlice(TH3F* hist,TH2D* AddTo, const char* option, Int_
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
   TString namestring = TString(name);
-  TH2D* Slice;
+  TH2D* Slice = new TH2D();
   if(o.CompareTo("xy")==0||o.CompareTo("yx")==0){
     if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xy",name));Slice->Reset("m");}
     if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yx",name));Slice->Reset("m");}
@@ -1313,11 +1313,15 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
   TCanvas    * tempcanvas=NULL;
   //Hists and directories for the total stuff:
   TDirectory * totbinstats = gDirectory->mkdir("bin_stats");
-  TH1D * HistpT, * HistPhi,* HistEta, * HistTriggerpT, * HistTriggerPhi, * HistTriggerEta, * HistAssociatedpT, * HistAssociatedPhi,* HistAssociatedEta;
-  TH3F * hPhiPhiDEtadiv=NULL;TH3F * hPhiPhiDEtadivscaled=NULL;
-  TH2D * hDeltaPhidiv=NULL;TH2D* hDeltaPhidivscaled=NULL;TH2D * hDeltaPhineardiv=NULL;TH2D * hDeltaPhineardivscaled=NULL;TH2D * hDeltaPhimiddiv=NULL;TH2D * hDeltaPhimiddivscaled=NULL;TH2D * hDeltaPhifardiv=NULL;TH2D * hDeltaPhifardivscaled = NULL;
-  TH2D * hPhiEta12div=NULL;TH2D* hPhiEta12_divscaled=NULL;TH2D * hPhiEta12_cut1div=NULL;TH2D * hPhiEta12_cut2div=NULL;TH2D * hPhiEta12_samesidediv=NULL;TH2D * hPhiEta12_sameside_divscaled=NULL;TH2D * hPhiEtadiv=NULL;
-  Double_t navm, nav;
+  TH1D * HistpT = new TH1D();
+  TH1D * HistPhi = new TH1D();
+  TH1D * HistEta = new TH1D();
+  TH1D * HistTriggerpT = new TH1D();
+  TH1D * HistTriggerPhi = new TH1D();
+  TH1D * HistTriggerEta = new TH1D();
+  TH1D * HistAssociatedpT = new TH1D();
+  TH1D * HistAssociatedPhi = new TH1D();
+  TH1D * HistAssociatedEta = new TH1D();
   Long_t NTriggers=0;
   Bool_t setAverage = kTRUE;  
   for(int mb =0;mb<fMBinEdges.GetSize()-1;mb++){
@@ -1339,7 +1343,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	savehist2->Write();
 	if(mb == 0&&zb == 0)HistPhi = savehist2;
 	else HistPhi->Add(savehist2);
-	TH1D*  savehist3 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistEta,mb,zb),"total_Eta","Eta of triggers and associated combined","#eta []","# particles"));
+	TH1D*  savehist3 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistEta,mb,zb),"total_Eta","Eta of triggers and associated combined","#eta ","# particles"));
 	savehist3->Write();
 	if(mb == 0&&zb == 0)HistEta = savehist3;
 	else HistEta->Add(savehist3);
@@ -1351,7 +1355,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	savehist5->Write();
 	if(mb == 0&&zb == 0)HistTriggerPhi = savehist5;
 	else HistTriggerPhi->Add(savehist5);
-	TH1D* savehist6 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerEta,mb,zb),"trigger_Eta","Eta of triggers","#eta []","# triggers"));
+	TH1D* savehist6 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerEta,mb,zb),"trigger_Eta","Eta of triggers","#eta ","# triggers"));
 	savehist6->Write();
 	if(mb == 0&&zb == 0)HistTriggerEta = savehist6;
 	else HistTriggerEta->Add(savehist6);
@@ -1363,7 +1367,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	savehist8->Write();
 	if(mb == 0&&zb == 0)HistAssociatedPhi = savehist8;
 	else HistAssociatedPhi->Add(savehist8);
-	TH1D* savehist9 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedEta,mb,zb),"associated_Eta","Eta of associated","#eta []","# associated"));	
+	TH1D* savehist9 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedEta,mb,zb),"associated_Eta","Eta of associated","#eta ","# associated"));	
 	savehist9->Write();
 	if(mb == 0&&zb == 0)HistAssociatedEta = savehist9;
 	else HistAssociatedEta->Add(savehist9);
@@ -1372,21 +1376,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	delete tempcanvas;
 	tempcanvas=NULL;
 	if(!(mb==0&&zb==0)){delete savehist1;delete savehist2;delete savehist3;delete savehist4;delete savehist5;delete savehist6;delete savehist7;delete savehist8;delete savehist9;}
-	TH1D* savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNassoc,mb,zb),"number_of_associated","Number of associated per trigger","# associated in a given fill","# fills"));		
-	savehist->Write();
-	nav = 0;
-	Double_t norm = 0;
-	for(int i=1;i<savehist->GetNbinsX();i++){nav += savehist->GetBinCenter(i)*savehist->GetBinContent(i);norm += savehist->GetBinContent(i);}
-	if(norm !=0)nav = nav/norm;
-	else nav = 0;
-	savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNassoc,mb,zb),"number_of_associated_mixed","Number of associated per trigger in mixed","# associated in a given fill","# fills","",true));		
-	savehist->Write();
-	navm = 0;
-	Double_t normm = 0;
-	for(int i=1;i<savehist->GetNbinsX();i++){navm += savehist->GetBinCenter(i)*savehist->GetBinContent(i);normm += savehist->GetBinContent(i);}
-	if(normm !=0)navm = navm/normm;
-	else nav = 0;
-	savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of triggers filled","","# triggers"));
+	TH1D* savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of triggers filled","","# triggers"));
 	savehist->Write();
 	delete savehist;
       }
@@ -1418,52 +1408,33 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  delete tempcanvas;
 ///////DPHI DETA HISTOGRAMS:
 	  TH2D* DPHIDETA12_3 = slice(DPHIDPHIDETA,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
-	  PrepareHist(DPHIDETA12_3,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+	  PrepareHist(DPHIDETA12_3,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} ","#Delta#Phi_{1} [rad]","# Pairs");
 	  DPHIDETA12_3->Write("DPhi_1_DEta_12");
 	  tempcanvas= Makecanvas(DPHIDETA12_3,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12DPHI12L2PI_3 = DeltaEtaCut(DPHIDPHIDETA,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
-// 	  PrepareHist(DPHIDETA12DPHI12L2PI_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
-// 	  DPHIDETA12DPHI12L2PI_3->Write("DPhi_1_DEta_12_DPHI12_LESS_2PI");     
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12DPHI12L4PI_3 = DeltaEtaCut(DPHIDPHIDETA,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
-// 	  PrepareHist(DPHIDETA12DPHI12L4PI_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
-// 	  DPHIDETA12DPHI12L4PI_3->Write("DPhi_1_DEta_12_DPHI12_LESS_4PI");
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3,"DPHIDEta12_DPHI12less4Pi_3d",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-
 	  TH2D* DPHIDETA12SameSide_3 =DeltaEtaCut(DPHIDPHIDETA,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
-	  PrepareHist(DPHIDETA12SameSide_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+	  PrepareHist(DPHIDETA12SameSide_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} ","#Delta#Phi_{1} [rad]","# Pairs");
 	  DPHIDETA12SameSide_3->Write("DPhi_1_DEta_12_SameSide");
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3,"DPHIDEta12_SameSide_3d",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  TH2D* DPHI12ADETA12 =AveragePhi(DPHIDPHIDETA,"DPhi_12A_DEta_12",kFALSE);
-	  PrepareHist(DPHI12ADETA12,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} ","#Delta#eta_{12} []","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs");
+	  PrepareHist(DPHI12ADETA12,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} ","#Delta#eta_{12} ","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs");
 	  DPHI12ADETA12->Write("DPhi_12A_DEta_12");
 	  tempcanvas= Makecanvas(DPHI12ADETA12,"DPHI12ADEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-// 	  TH2D* DPHI12ADETA12SameSide =AveragePhi(DPHIDPHIDETA,"DPhi_12A_DEta_12_SameSide",kTRUE);
-// 	  PrepareHist(DPHI12ADETA12SameSide,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs");
-// 	  DPHI12ADETA12SameSide->Write("DPhi_12A_DEta_12_SameSide");
-// 	  tempcanvas= Makecanvas(DPHI12ADETA12SameSide,"DPHI12ADEta12_SameSide",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
 	  
 	  TH2D* DPHIDETA = dynamic_cast<TH2D*>(fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
-	  PrepareHist(DPHIDETA,"#Delta#Phi vs #Delta#eta","#Delta#eta []","#Delta#Phi [rad]","# Associated");
+	  PrepareHist(DPHIDETA,"#Delta#Phi vs #Delta#eta","#Delta#eta ","#Delta#Phi [rad]","# Associated");
 	  DPHIDETA->Write();
 	  tempcanvas= Makecanvas(DPHIDETA,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  
 	  TH2D* DPHIDETA2a = dynamic_cast<TH2D*>(fHistograms->At(GetNumberHist(khPhiEtaa,mb,zb))->Clone("DPhi_DEta2a"));
-	  PrepareHist(DPHIDETA2a,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]","# Associated");
+	  PrepareHist(DPHIDETA2a,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} ","#Delta#Phi_{12} [rad]","# Associated");
 	  DPHIDETA2a->Write();
 	  tempcanvas= Makecanvas(DPHIDETA2a,"DPHIDEta2a",kFALSE);
 	  tempcanvas->Write();
@@ -1507,27 +1478,16 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  delete tempcanvas;
 ///////DPHI DETA HISTOGRAMS:
 	  TH2D* DPHIDETA12_3m = slice(DPHIDPHIDETAm,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
-	  PrepareHist(DPHIDETA12_3m,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true,scale);
+	  PrepareHist(DPHIDETA12_3m,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} ","#Delta#Phi_{1} [rad]","",true,scale);
 	  DPHIDETA12_3m->Write("DPhi_1_DEta_12");
 	  scale->Write("DPhi_1_DEta_12_scale");
 	  scale->SetVal(0.0);
 	  tempcanvas= Makecanvas(DPHIDETA12_3m,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12DPHI12L2PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
-// 	  PrepareHist(DPHIDETA12DPHI12L2PI_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
-// 	  DPHIDETA12DPHI12L2PI_3m->Write("DPhi_1_DEta_12_DPHI12_LESS_2PI");      
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3m,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12DPHI12L4PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
-// 	  PrepareHist(DPHIDETA12DPHI12L4PI_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
-// 	  DPHIDETA12DPHI12L4PI_3m->Write("DPhi_1_DEta_12_DPHI12_LESS_4PI");
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3m,"DPHIDEta12_DPHI12less4Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
+
 	  TH2D* DPHIDETA12SameSide_3m =DeltaEtaCut(DPHIDPHIDETAm,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
-	  PrepareHist(DPHIDETA12SameSide_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true,scale);
+	  PrepareHist(DPHIDETA12SameSide_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} ","#Delta#Phi_{1} [rad]","",true,scale);
 	  DPHIDETA12SameSide_3m->Write("DPhi_1_DEta_12_SameSide");
 	  scale->Write("DPhi_1_DEta_12_SameSide_scale");
 	  scale->SetVal(0.0);
@@ -1535,7 +1495,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  TH2D* DPHI12ADETA12m =AveragePhi(DPHIDPHIDETAm,"DPhi_12A_DEta_12",kFALSE);
-	  PrepareHist(DPHI12ADETA12m,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} ","#Delta#eta_{12} []","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs",true,scale);
+	  PrepareHist(DPHI12ADETA12m,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} ","#Delta#eta_{12} ","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs",true,scale);
 	  DPHI12ADETA12m->Write("DPhi_12A_DEta_12");
 	  scale->Write("DPhi_12A_DEta_12_scale");
 	  scale->SetVal(0.0);	  
@@ -1543,17 +1503,9 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas->Write();
 	  delete tempcanvas;
 
-// 	  TH2D* DPHI12ADETA12SameSidem =AveragePhi(DPHIDPHIDETAm,"DPhi_12A_DEta_12_SameSide",kTRUE);
-// 	  PrepareHist(DPHI12ADETA12SameSidem,"#langle #Delta#Phi_{12}#rangle vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#langle #Delta#Phi_{12}#rangle [rad]","# Pairs",true,scale);
-// 	  DPHI12ADETA12SameSidem->Write("DPhi_12A_DEta_12_SameSide");
-// 	  scale->Write("DPhi_12A_DEta_12_SameSide_scale");
-// 	  scale->SetVal(0.0);	  
-// 	  tempcanvas= Makecanvas(DPHI12ADETA12SameSidem,"DPHI12ADEta12_SameSide",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
 	  
 	  TH2D* DPHIDETAm = dynamic_cast<TH2D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
-	  PrepareHist(DPHIDETAm,"#Delta#Phi vs #Delta#eta","#Delta#eta []","#Delta#Phi [rad]","",true,scale);
+	  PrepareHist(DPHIDETAm,"#Delta#Phi vs #Delta#eta","#Delta#eta ","#Delta#Phi [rad]","",true,scale);
 	  DPHIDETAm->Write();
 	  scale->Write("DPhi_DEta_scale");
 	  scale->SetVal(0.0);
@@ -1562,7 +1514,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  delete tempcanvas;	
 	  
 	  TH2D* DPHIDETA2am = dynamic_cast<TH2D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiEtaa,mb,zb))->Clone("DPhi_DEta2a"));
-	  PrepareHist(DPHIDETA,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]","",true,scale);
+	  PrepareHist(DPHIDETA2am,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} ","#Delta#Phi_{12} [rad]","",true,scale);
 	  DPHIDETA2am->Write();
 	  scale->Write("DPhi_DEta2a_scale");
 	  scale->SetVal(0.0);	  
@@ -1636,26 +1588,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas->Write();
 	  delete tempcanvas;	 
 	  delete DPHIDETA12_3div;
-// 	  TH2D* DPHIDETA12DPHI12L2PI_3div = (TH2D*)DPHIDETA12DPHI12L2PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_2PI");
-// 	  if(!empty)DPHIDETA12DPHI12L2PI_3div->Divide(DPHIDETA12DPHI12L2PI_3m);
-// 	  else DPHIDETA12DPHI12L2PI_3div->Scale(0.0);
-// 	  if(setAverage) DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
-// 	  if(!setAverage)DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
-// 	  DPHIDETA12DPHI12L2PI_3div->Write();
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3div,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  delete DPHIDETA12DPHI12L2PI_3div;
-// 	  TH2D* DPHIDETA12DPHI12L4PI_3div = (TH2D*)DPHIDETA12DPHI12L4PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_4PI");
-// 	  if(!empty)DPHIDETA12DPHI12L4PI_3div->Divide(DPHIDETA12DPHI12L4PI_3m);
-// 	  else DPHIDETA12DPHI12L4PI_3div->Scale(0.0);
-// 	  if(setAverage) DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
-// 	  if(!setAverage)DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
-// 	  DPHIDETA12DPHI12L4PI_3div->Write();
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3div,"DPHIDEta12_DPHI12less4Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  delete DPHIDETA12DPHI12L4PI_3div;
+
 	  TH2D* DPHIDETA12SameSide_3div = (TH2D*)DPHIDETA12SameSide_3->Clone("DPhi_1_DEta_12_SameSide");
 	  if(!empty)DPHIDETA12SameSide_3div->Divide(DPHIDETA12SameSide_3m);
 	  else DPHIDETA12SameSide_3div->Scale(0.0);
@@ -1678,16 +1611,6 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  delete tempcanvas;
 	  delete DPHI12ADETA12div;
 	  
-// 	  TH2D* DPHI12ADETA12SameSidediv = (TH2D*)DPHI12ADETA12SameSide->Clone("DPhi_12A_DEta_12_SameSide");
-// 	  if(!empty)DPHI12ADETA12SameSidediv->Divide(DPHI12ADETA12SameSidem);
-// 	  else DPHI12ADETA12SameSidediv->Scale(0.0);
-// 	  if(setAverage) DPHI12ADETA12SameSidediv->Scale(resultscalingfactor);
-// 	  if(!setAverage)DPHI12ADETA12SameSidediv->Scale(resultscalingfactor);
-// 	  DPHI12ADETA12SameSidediv->Write();
-// 	  tempcanvas= Makecanvas(DPHI12ADETA12SameSidediv,"DPHI12ADETA12SameSide",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  delete DPHI12ADETA12SameSidediv;
 	  
 	  TH2D* DPHIDETAdiv = (TH2D*)DPHIDETA->Clone("DPhi_DEta");
 	  if(!empty)DPHIDETAdiv->Divide(DPHIDETAm);

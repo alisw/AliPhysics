@@ -7,9 +7,11 @@
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
 #include "TArrayD.h"
+#include "AliLog.h"
 class AliCorrelation3p;
 class AliESDtrackCuts;
 class AliAODTrack;
+class AliFilteredTrack;
 class AliCentrality;
 class TH1;
 class TH2;
@@ -60,13 +62,31 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
   void SetTrackCut(const char* cutmask){
     fCutMask = 0;//Defaults to GlobalHybrid tracks.
     //GlobalHybrid - 0
-    if(TString(cutmask).CompareTo("GlobalHybrid")==0) fCutMask = 0;
+    if(TString(cutmask).CompareTo("GlobalHybrid")==0){
+      fCutMask = 0;
+      
+      AliWarning("Track cut set to GlobalHybrid");
+    }
     //Filter Bit 4 - 1
-    if(TString(cutmask).CompareTo("BIT4")==0) fCutMask = 1;
+    if(TString(cutmask).CompareTo("BIT4")==0){
+      fCutMask = 1;
+      AliWarning("Track cut set to Bit4");
+    }
     //Filter Bit 5 - 2
-    if(TString(cutmask).CompareTo("BIT5")==0) fCutMask = 2;
+    if(TString(cutmask).CompareTo("BIT5")==0){
+      fCutMask = 2;
+      AliWarning("Track cut set to Bit5");
+    }      
     //Filter Bit 6 - 3
-    if(TString(cutmask).CompareTo("BIT6")==0) fCutMask = 3;
+    if(TString(cutmask).CompareTo("BIT6")==0){
+      fCutMask = 3;
+      AliWarning("Track cut set to Bit6");
+    }
+    //Filter Bit 5 | 6 - 4
+    if(TString(cutmask).CompareTo("BIT56")==0){
+      fCutMask = 4;
+      AliWarning("Track cut set to Bit5|Bit6");
+    }    
   }
   void SetTree(bool istree){fisTree=istree;}
 protected:
@@ -82,6 +102,7 @@ protected:
   void 		    	InitializeQAhistograms();
   void 			InitializeEffHistograms();
   void 			FillHistogram(const char * key,Double_t x);
+  void 			IncrementHist(const char * key,int bin);
   void 			FillHistogram(const char * key,Double_t x,Double_t y);
   void 			FillHistogramGenPar(const char * key,Int_t x,Int_t y,Double_t z);
   void 			FillHistogram(const char * key,Double_t x,Double_t y,Double_t z);
@@ -98,6 +119,7 @@ protected:
   Bool_t 	    	IsSelectedTrackAOD(AliVParticle* p);
   Bool_t 	    	IsSelectedTrackESD(AliVParticle* p);
   Bool_t 	    	IsSelectedTrackFiltered(AliVParticle* p);
+  void 			FillFilterBit(AliFilteredTrack* p);
   Bool_t		IsMCFilteredTrack(AliVParticle* p);
   Bool_t 		IsAddedSignal(AliVParticle* p);
   void 			GeneratorStat(AliVParticle* p);
