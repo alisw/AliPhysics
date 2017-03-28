@@ -1837,11 +1837,12 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
   //
   // Called for each event
   //
-
-  if(fIsMC> 0) fMCEvent = MCEvent();
-  if(fMCEvent == NULL) fIsMC = 0;
-
   fInputEvent = InputEvent();
+  
+  if(fIsMC> 0) fMCEvent = MCEvent();
+  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
+    fMCStack = fMCEvent->Stack();
+  }
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
   if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
@@ -1851,12 +1852,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
     }
     return;
-  }
-  
-  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
-    fMCStack = fMCEvent->Stack();
-    if(fMCStack == NULL) fIsMC = 0;
-  }
+  }  
   
   // ------------------- BeginEvent ----------------------------
   

@@ -144,7 +144,9 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fHistoRdiff(NULL),
   fHistoImpactParameterStudy(NULL),
   fImpactParamTree(NULL),
-  fVectorFoundGammas(0)
+  fVectorFoundGammas(0),
+  fCurrentFileName(""),
+  fMCFileChecked(kFALSE)
 {
   // Default constructor
 
@@ -469,34 +471,41 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 
 }
 //________________________________________________________________________
-Bool_t AliV0ReaderV1::Notify()
-{
+Bool_t AliV0ReaderV1::Notify(){
+  
+  // set file name to empty & reset check flag
+  fCurrentFileName = "";
+  fMCFileChecked   = kFALSE;
+  
+  // obtain file name from analysis manager
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if(man) {
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+    if (inputHandler){
+      TTree* tree = (TTree*) inputHandler->GetTree();
+      TFile* file = (TFile*) tree->GetCurrentFile();
+      fCurrentFileName = file->GetName();
+    }
+  }
+  
+  // try to extract period name from file name if not given
   if (fPeriodName.CompareTo("") == 0){
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    if(man) {
-      AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-      if (inputHandler){
-        TTree* tree = (TTree*) inputHandler->GetTree();
-        TFile* file = (TFile*) tree->GetCurrentFile();
-        TString fileName(file->GetName());
-        TObjArray *arr = fileName.Tokenize("/");
-        fPtHardBin = -1;
-        for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
-          TObjString* testObjString = (TObjString*)arr->At(i);
-          if (testObjString->GetString().BeginsWith("LHC")){
-            fPeriodName = testObjString->GetString();
-            i = arr->GetEntriesFast();
-          }
-        }
-        if (fPeriodName.CompareTo("")==0){
-          TObjArray *arr2 = fileName.Tokenize("__");
-          for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
-            TObjString* testObjString = (TObjString*)arr2->At(i);
-            if (testObjString->GetString().BeginsWith("LHC")){
-              fPeriodName = testObjString->GetString();
-              i = arr2->GetEntriesFast();
-            }
-          }
+    TObjArray *arr = fCurrentFileName.Tokenize("/");
+    fPtHardBin = -1;
+    for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+      TObjString* testObjString = (TObjString*)arr->At(i);
+      if (testObjString->GetString().BeginsWith("LHC")){
+        fPeriodName = testObjString->GetString();
+        i = arr->GetEntriesFast();
+      }
+    }
+    if (fPeriodName.CompareTo("")==0){
+      TObjArray *arr2 = fCurrentFileName.Tokenize("__");
+      for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+        TObjString* testObjString = (TObjString*)arr2->At(i);
+        if (testObjString->GetString().BeginsWith("LHC")){
+          fPeriodName = testObjString->GetString();
+          i = arr2->GetEntriesFast();
         }
       }
     }
@@ -507,27 +516,22 @@ Bool_t AliV0ReaderV1::Notify()
     if(fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
       fEventCuts->SetPeriodEnum (fPeriodName);
     }  
-  }  
-  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus   || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3b   ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c){
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    if(man) {
-      AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-      if (inputHandler){
-        TTree* tree = (TTree*) inputHandler->GetTree();
-        TFile* file = (TFile*) tree->GetCurrentFile();
-        TString fileName(file->GetName());
-        TObjArray *arr = fileName.Tokenize("/");
-        fPtHardBin = -1;
-        for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
-          TObjString* testObjString = (TObjString*)arr->At(i);
-          if (testObjString->GetString().BeginsWith("LHC")){
-            TObjString* testObjString2 = (TObjString*)arr->At(i+1);
-            fPtHardBin = testObjString2->GetString().Atoi();
-            i = arr->GetEntriesFast();
-          }
-        }
+  }
+  // set pt hard bin from file name
+  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus || 
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3b  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b || 
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b || 
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c){
+    TObjArray *arr = fCurrentFileName.Tokenize("/");
+    fPtHardBin = -1;
+    for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+      TObjString* testObjString = (TObjString*)arr->At(i);
+      if (testObjString->GetString().BeginsWith("LHC")){
+        TObjString* testObjString2 = (TObjString*)arr->At(i+1);
+        fPtHardBin = testObjString2->GetString().Atoi();
+        i = arr->GetEntriesFast();
       }
     }
   }
@@ -542,7 +546,6 @@ Bool_t AliV0ReaderV1::Notify()
         (fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data(),fEventCuts->GetEtaShift());
     fEventCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
   }
-
 
   return kTRUE;
 }
@@ -572,8 +575,8 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   //Reset the TClonesArray
   fConversionGammas->Delete();
 
-  fInputEvent=inputEvent;
-  fMCEvent=mcEvent;
+  fInputEvent = inputEvent;
+  fMCEvent    = mcEvent;
 
   if(!fInputEvent){
     AliError("No Input event");
@@ -587,8 +590,13 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   CountTracks();
 
   // Event Cuts
-  if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent))return kFALSE;
-
+  if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
+    if (fEventCuts->GetEventQuality() == 2 && !fMCFileChecked ){
+      cout << fCurrentFileName.Data() << endl;
+      fMCFileChecked                  = kTRUE;
+    }  
+    return kFALSE;
+  }  
   // Set Magnetic Field
   AliKFParticle::SetField(fInputEvent->GetMagneticField());
 
@@ -601,7 +609,6 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
     CreatePureMCHistosForV0FinderEffiESD();
     fVectorFoundGammas.clear();
   }
-
 
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ProcessESDV0s();
@@ -992,14 +999,12 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
   Double_t pEle,pPos;
 
   if (fImprovedPsiPair==1 || fImprovedPsiPair==0 ){
-
-
     if(nt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
     if(pt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
 
     pt.GetPxPyPz(momPosProp);//Get momentum vectors of tracks after propagation
     nt.GetPxPyPz(momNegProp);
- }else if (fImprovedPsiPair>=2){
+ } else if (fImprovedPsiPair>=2) {
     momPosProp[0] = pt.GetParameterAtRadius(radiussum,magField,3);
     momPosProp[1] = pt.GetParameterAtRadius(radiussum,magField,4);
     momPosProp[2] = pt.GetParameterAtRadius(radiussum,magField,5);
@@ -1024,14 +1029,8 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
     }
   }
 
-
-
-
-   pEle =
-    TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
-
-   pPos =
-    TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
+  pEle = TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
+  pPos = TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
 
   Double_t scalarproduct =
     momPosProp[0]*momNegProp[0]+momPosProp[1]*momNegProp[1]+momPosProp[2]*momNegProp[2];//scalar product of propagated positive and negative daughters' momenta
@@ -1166,9 +1165,10 @@ Bool_t AliV0ReaderV1::GetConversionPoint(const AliExternalTrackParam *pparam,con
   dca[1]=TMath::Abs(n.GetZ()-p.GetZ());
 
   return kTRUE;
-  }
-  //________________________________________________________________________
-  Bool_t AliV0ReaderV1::GetAODConversionGammas(){
+}
+
+//________________________________________________________________________
+Bool_t AliV0ReaderV1::GetAODConversionGammas(){
 
   // Get reconstructed conversion photons from satellite AOD file
 
@@ -1224,6 +1224,7 @@ void AliV0ReaderV1::FindDeltaAODBranchName(){
     }
   }
 }
+
 //________________________________________________________________________
 void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
 

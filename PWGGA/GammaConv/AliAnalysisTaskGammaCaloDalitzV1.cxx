@@ -65,7 +65,7 @@ ClassImp(AliAnalysisTaskGammaCaloDalitzV1)
 //________________________________________________________________________
 AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(): AliAnalysisTaskSE(),
 	fV0Reader(NULL),
-    fV0ReaderName("V0ReaderV1"),
+  fV0ReaderName("V0ReaderV1"),
 	fElecSelector(NULL),
 	fBGClusHandler(NULL),
 	fInputEvent(NULL),
@@ -1751,7 +1751,6 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserExec(Option_t *)
 	//
 	
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-	
 	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
 
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
@@ -1760,17 +1759,12 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserExec(Option_t *)
 		return;
 	}
 	
-	
-	
 	if(fIsMC) fMCEvent = MCEvent();
-	if(fMCEvent == NULL) fIsMC = kFALSE;
-	
 	
 	fInputEvent = InputEvent();
 	
 	if(fIsMC && fInputEvent->IsA()==AliESDEvent::Class()){
 		fMCStack = fMCEvent->Stack();
-		if(fMCStack == NULL) fIsMC = kFALSE;
 	}
 	
 	if(fInputEvent->IsA()==AliAODEvent::Class()){
