@@ -120,7 +120,8 @@ class AliAODHeader : public AliVAODHeader {
   Double_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
   Double_t GetSigma2DiamondZ() const {return fDiamondSig2Z;}
   void GetDiamondCovXY(Float_t cov[3]) const {
-    for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
+    for(Int_t i=0;i<3;i++) { cov[i]=fDiamondCovXY[i]; }
+    return;
   }
   UInt_t   GetL0TriggerInputs() const {return fL0TriggerInputs;}  
   UInt_t   GetL1TriggerInputs() const {return fL1TriggerInputs;} 

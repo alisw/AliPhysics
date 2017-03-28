@@ -58,7 +58,8 @@ public:
   Double_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
   Double_t GetSigma2DiamondZ() const {return fDiamondSig2Z;}
   void GetDiamondCovXY(Float_t cov[3]) const {
-    for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
+    for(Int_t i=0;i<3;i++) { cov[i]=fDiamondCovXY[i]; }
+    return;
   }
   const char* GetTriggerClass(Int_t index) const;
   TString     GetActiveTriggerClasses() const;
