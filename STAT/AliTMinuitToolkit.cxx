@@ -176,7 +176,7 @@ void  AliTMinuitToolkit::ClearData(){
   //   fCovar=0;
 }
 
-void  AliTMinuitToolkit::SetFitFunction(TFormula *const formula, Bool_t doReset) {
+void  AliTMinuitToolkit::SetFitFunction(TF1 *const formula, Bool_t doReset) {
   //
   fFormula=formula;
   if (doReset){
@@ -249,7 +249,7 @@ void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchis
   //if (info) info[0]=fcnCounter;
   fcnCounter++;
   AliTMinuitToolkit * fitter = (AliTMinuitToolkit*)TVirtualFitter::GetFitter()->GetObjectFit();
-  TFormula *logLike=fitter->fLogLikelihoodFunction;
+  TF1 *logLike=fitter->fLogLikelihoodFunction;
   const Double_t* likeParam= (logLike!=NULL) ? logLike->GetParameters():NULL;
   fchisq = 0;
   const TMatrixD & variables= (*fitter->GetPoints());

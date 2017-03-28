@@ -47,10 +47,10 @@ public:
   void TwoFoldCrossValidation(Int_t nIter, const char*reportName, Option_t *option=0);
   void MISAC(Int_t nFitPoints, Int_t nIter, const char*reportName, Option_t *option=0);
   // 
-  void SetFitFunction(TFormula *const formula, Bool_t doReset);
+  void SetFitFunction(TF1 *const formula, Bool_t doReset);
   void SetInitialParam(TMatrixD *const initialParam);  
   TMatrixD *  GetInitialParam() {return fInitialParam;}
-  void SetLogLikelihoodFunction(TFormula *logLikelihood){fLogLikelihoodFunction=logLikelihood;}
+  void SetLogLikelihoodFunction(TF1 *logLikelihood){fLogLikelihoodFunction=logLikelihood;}
   void SetFitAlgorithm(Char_t *const name) {fFitAlgorithm=name;};
   void SetMaxCalls(Int_t calls) {fMaxCalls = calls;};
   void SetTolerance(Double_t tol) {fPrecision = tol;};
@@ -61,8 +61,8 @@ public:
   //
   const TMatrixD * GetPoints() const {return fPoints;};
   const TMatrixD * GetValues() const {return fValues;};
-  TFormula * GetFormula() const {return fFormula;};
-  const TFormula *GetLogLikelihoodFunction() const { return fLogLikelihoodFunction;}
+  TF1 * GetFormula() const {return fFormula;};
+  const TF1 *GetLogLikelihoodFunction() const { return fLogLikelihoodFunction;}
   const TVectorD * GetParameters() const {return fParam;};
   const TVectorD * GetRMSEstimator() const {return fRMSEstimator;};
   const TMatrixD * GetCovarianceMatrix() const {return fCovar;};
@@ -91,8 +91,8 @@ private:
   //
   TTreeSRedirector *fStreamer;              // !pointer to the streamer
   Int_t             fVerbose;               // verbosity flag
-  TFormula        * fFormula;               // formula of the fitted function
-  TFormula        * fLogLikelihoodFunction; // Log likelihood (const)  function
+  TF1        * fFormula;               // formula of the fitted function
+  TF1        * fLogLikelihoodFunction; // Log likelihood (const)  function
   TString           fFitAlgorithm;          // fit algorithm for TMinuit: migrad, simplex, ...  
   //
   TMatrixD        * fPoints;             // !points -  IsOwner
