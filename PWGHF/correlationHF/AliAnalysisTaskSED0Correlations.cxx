@@ -1785,7 +1785,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hZvtxEvts->SetMinimum(0);
   fOutputStudy->Add(hZvtxEvts);
   
-  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (for selected events); # Events",120,-30.,30.);
+  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (for selected events); # Events",102,-1.,101.);
   hCentralEvts->SetMinimum(0);
   fOutputStudy->Add(hCentralEvts);  
 
