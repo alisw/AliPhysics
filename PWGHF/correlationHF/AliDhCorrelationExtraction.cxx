@@ -64,6 +64,10 @@ fCorrectPoolsSeparately(kTRUE),
 fNpools(9),
 fReadTreeSE(kFALSE),
 fReadTreeME(kFALSE),
+fSubtractSoftPiME(kFALSE),
+fUseMassVsCentPlots(kFALSE),
+fMinCent(0.),
+fMaxCent(100.),
 fDmesonFitterSignal(0x0),
 fDmesonFitterSignalError(0x0),
 fDmesonFitterBackground(0x0),
@@ -149,6 +153,10 @@ fCorrectPoolsSeparately(source.fCorrectPoolsSeparately),
 fNpools(source.fNpools),
 fReadTreeSE(source.fReadTreeSE),
 fReadTreeME(source.fReadTreeME),
+fSubtractSoftPiME(source.fSubtractSoftPiME),
+fUseMassVsCentPlots(source.fUseMassVsCentPlots),
+fMinCent(source.fMinCent),
+fMaxCent(source.fMaxCent),
 fDmesonFitterSignal(source.fDmesonFitterSignal),
 fDmesonFitterSignalError(source.fDmesonFitterSignalError),
 fDmesonFitterBackground(source.fDmesonFitterBackground),
@@ -783,6 +791,11 @@ Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
 
 //___________________________________________________________________________________________
 Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t thrMax) {
+
+  if(fSubtractSoftPiME && fReadTreeME) {
+    printf("Fake softPi subtraction in ME via extraction code MUST BE DISABLED for offline ME! Exiting...\n");
+    return kFALSE;
+  }
 
   if(!fCorrectPoolsSeparately && (fReadTreeSE || fReadTreeME)) {
     printf("SE/ME correction after pool integration is not supported when reading from TTree the SE or ME correlations. Exiting...\n");
