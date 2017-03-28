@@ -37,6 +37,8 @@ void AliTMinuitToolkitTestLinear(Int_t nIter, Int_t nDraw){
   // nIter=1000; nDraw=4;
   AliTMinuitToolkit::RegisterDefaultFitters();
   AliTMinuitToolkit::GetPredefinedFitter("pol1R")->SetStreamer("AliTMinuitToolkit_Pol1Rstreamer.root");
+  ((TFormula*)AliTMinuitToolkit::GetPredefinedFitter("pol1R")->GetLogLikelihoodFunction())->SetParameter(0,0.7);
+
   //
   //  
   TMatrixD &pInit = *((AliTMinuitToolkit::GetPredefinedFitter("pol1R")->GetInitialParam()));
