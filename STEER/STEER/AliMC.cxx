@@ -332,9 +332,9 @@ void  AliMC::AddParticles()
 
   // Ps - hidden strange (s-sbar) pentaquarks
   TVirtualMC::GetMC()->DefineParticle( 9322134, "Ps_2100", kPTHadron, 2.1 ,  1.0, 1.6455e-23,"Hadron", 4.e-2, 3, -1, 0, 0, 0, 0, 0,  1, kTRUE);
-  TVirtualMC::GetMC()->DefineParticle(-9322134, "Ps_2100", kPTHadron, 2.1 , -1.0, 1.6455e-23,"Hadron", 4.e-2, 3, -1, 0, 0, 0, 0, 0, -1, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(-9322134, "AntiPs_2100", kPTHadron, 2.1 , -1.0, 1.6455e-23,"Hadron", 4.e-2, 3, -1, 0, 0, 0, 0, 0, -1, kTRUE);
   TVirtualMC::GetMC()->DefineParticle( 9322136, "Ps_2500", kPTHadron, 2.5 ,  1.0, 1.6455e-23,"Hadron", 4.e-2, 5, 1, 0, 0, 0, 0, 0,  1, kTRUE);
-  TVirtualMC::GetMC()->DefineParticle(-9322136, "Ps_2500", kPTHadron, 2.5 , -1.0, 1.6455e-23,"Hadron", 4.e-2, 5, 1, 0, 0, 0, 0, 0, -1, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(-9322136, "AntiPs_2500", kPTHadron, 2.5 , -1.0, 1.6455e-23,"Hadron", 4.e-2, 5, 1, 0, 0, 0, 0, 0, -1, kTRUE);
 
   Int_t psmode[6][3] = {0};
   Float_t psratio[6] = {0.f};
