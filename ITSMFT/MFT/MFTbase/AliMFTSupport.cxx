@@ -33,7 +33,7 @@ ClassImp(AliMFTSupport)
 AliMFTSupport::AliMFTSupport():
 TNamed(),
 fSupportVolume(NULL),
-fSupportThickness(0.8), // cm
+fSupportThickness(0.7), // cm    instead of 0.8, fm
 fPCBThickness(0.1) // cm
 {
 
@@ -54,25 +54,20 @@ TGeoVolumeAssembly* AliMFTSupport::CreateVolume(Int_t half, Int_t disk){
 
   AliInfo(Form("Creating Support and PCB for half %d and disk %d ",half, disk));
 
-
-
   fSupportVolume = new TGeoVolumeAssembly(Form("SupportPCB_%d_%d", half, disk));
 
   TGeoVolume * supportVolume =  CreateSupport(half, disk);
   TGeoVolumeAssembly * pcbVolume =  CreatePCBs(half, disk);
 
-
   // Place the core of the support
-  fSupportVolume->AddNode(supportVolume, 1);
+  fSupportVolume->AddNode(supportVolume, 1);   // to much issue with the latest support, fm
 
 
   // Place the front PCB
-  fSupportVolume->AddNode(pcbVolume, 1,new TGeoTranslation(0.,0.,(fSupportThickness+ fPCBThickness)/2.));
+  fSupportVolume->AddNode(pcbVolume, 1,new TGeoTranslation(0.,0.,(fSupportThickness+ fPCBThickness)/2. + 0.0));
   // Place the back PCB (supposing both fron and back are the same shapes)
-  fSupportVolume->AddNode(pcbVolume, 2,new TGeoCombiTrans (0.,0.,-(fSupportThickness+ fPCBThickness)/2., new TGeoRotation("rot",0.,180.,0.)));
-
-
-
+  fSupportVolume->AddNode(pcbVolume, 2,new TGeoCombiTrans (0.,0.,-(fSupportThickness+ fPCBThickness)/2. - 0.0, new TGeoRotation("rot",0.,180.,0.)));
+  
   return fSupportVolume;
 }
 
@@ -84,16 +79,18 @@ TGeoVolumeAssembly* AliMFTSupport::CreatePCBs(Int_t half, Int_t disk){
   TGeoVolumeAssembly * pcbVolume;// = new TGeoVolumeAssembly(Form("PCB_%d_%d", half, disk));
 
   // Create PCBs
+  
     switch (disk) {
-      case 0: pcbVolume =  PCB_00_01(half, disk);
+    case 0: pcbVolume =  PCB_00_01(half, disk);
         break;
-      case 1: pcbVolume =  PCB_00_01(half, disk);
+    case 1: pcbVolume =  PCB_00_01(half, disk);
         break;
-      case 2: pcbVolume =  PCB_02(half, disk);
+	//case 2: pcbVolume =  PCB_02(half, disk); to avoid overlap, fm
+    case 2: pcbVolume =  PCB_00_01(half, disk);
         break;
-      case 3: pcbVolume =  PCB_03(half, disk);
+    case 3: pcbVolume =  PCB_03(half, disk);
         break;
-      case 4: pcbVolume =  PCB_04(half, disk);
+    case 4: pcbVolume =  PCB_04(half, disk);
         break;
     }
 
@@ -123,9 +120,12 @@ TGeoVolumeAssembly* AliMFTSupport::PCB_00_01(Int_t half, Int_t disk){
 // ---------------------- Volume data -------------------------------------
 Double_t Box00_dy=2.5;                                                              // Box00
 Double_t Box01_dX=12.7, Box01_dY = 7.6;                                              // Box01
-Double_t Box02_dX=3.25/2, Box02_dY = 1.9/2; Double_t Box02_X=11.075, Box02_Y = -7.96;  // Box02
-Double_t Box03_dX=15.0/2, Box03_dY = 11.9; Double_t Box03_X=0.5/2, Box03_Y = 0.0;    // Box03
-Double_t Box04_dX=4.8/2, Box04_dY = 14.2; Double_t Box04_X=0.5/2, Box04_Y = 0.0;      // Box04
+//Double_t Box02_dX=3.25/2, Box02_dY = 1.9/2; Double_t Box02_X=11.075, Box02_Y = -7.96;  // Box02
+Double_t Box02_dX=3.25/2, Box02_dY = 1.9/2; Double_t Box02_X=14.075, Box02_Y = -7.96;  // Box02, to avoid overlap with support, fm
+//Double_t Box03_dX=15.0/2, Box03_dY = 11.9; Double_t Box03_X=0.5/2, Box03_Y = 0.0;    // Box03
+Double_t Box03_dX=16.0/2, Box03_dY = 11.9; Double_t Box03_X=0.5/2, Box03_Y = 0.0;    // Box03, to avoid overlap with support, fm
+//Double_t Box04_dX=4.8/2, Box04_dY = 14.2; Double_t Box04_X=0.5/2, Box04_Y = 0.0;      // Box04
+Double_t Box04_dX=5.8/2, Box04_dY = 14.2; Double_t Box04_X=0.5/2, Box04_Y = 0.0;      // Box04, to avoid overlap with support, fm
 Double_t Box05_dX=.251/2, Box05_dY = .491/2; Double_t Box05_X=-14.75/2, Box05_Y = -9.155;      // Box05
 Double_t Box06_dX=10.65, Box06_dY = 8.91;       // Box06
 
@@ -345,12 +345,18 @@ TGeoTranslation *tr_Arc02= new TGeoTranslation ("PCB0tr_Arc02",Arc02_01_X,Arc02_
 TGeoTranslation *tr_Arc02b= new TGeoTranslation ("PCB0tr_Arc02b",Arc02_02_X,Arc02_02_Y ,0.0); tr_Arc02b-> RegisterYourself();
 
 // -------------------------- Volume botton ---------------------------------
-
+/*  bug 0.001 ?? fm
   TGeoBBox   *Box19v = new TGeoBBox("Box19_PCB_01v",Box19_dX, Box19_dY, fr4Thickness/2+0.001);
   TGeoBBox   *Box1bv = new TGeoBBox("Box1b_PCB_01v",Box1b0_dX, Box1b_dY, fr4Thickness/2+0.001);
 
   TGeoTubeSeg *Arc02_01v = new TGeoTubeSeg("Arc02_PCB_01v",Arc02_01_dR0,Arc02_01_dR, fr4Thickness/2+0.001,Arc02_01_phy0,Arc02_01_phy);
   TGeoTubeSeg *Arc02_02v = new TGeoTubeSeg("Arc02_PCB_02v",Arc02_02_dR0,Arc02_02_dR, fr4Thickness/2+0.001,Arc02_02_phy0,Arc02_02_phy);
+*/
+  TGeoBBox   *Box19v = new TGeoBBox("Box19_PCB_01v",Box19_dX, Box19_dY, fr4Thickness/2);
+  TGeoBBox   *Box1bv = new TGeoBBox("Box1b_PCB_01v",Box1b0_dX, Box1b_dY, fr4Thickness/2);
+
+  TGeoTubeSeg *Arc02_01v = new TGeoTubeSeg("Arc02_PCB_01v",Arc02_01_dR0,Arc02_01_dR, fr4Thickness/2,Arc02_01_phy0,Arc02_01_phy);
+  TGeoTubeSeg *Arc02_02v = new TGeoTubeSeg("Arc02_PCB_02v",Arc02_02_dR0,Arc02_02_dR, fr4Thickness/2,Arc02_02_phy0,Arc02_02_phy);
 
    TGeoCompositeShape *box_outb_01av = new TGeoCompositeShape  ("box_outb_01av", "Box19_PCB_01v:PCB0tr_Box19+(Box1b_PCB_01v:PCB0tr_Box1b+Arc02_PCB_01v:PCB0tr_Arc02+Arc02_PCB_02v:PCB0tr_Arc02b)");
 
@@ -456,7 +462,8 @@ Double_t Box25_dX=.2+ t_delta, Box25_dY = .245+ t_delta; Double_t Box25_X=-11.35
 Double_t Box26_dX=.85+ t_delta, Box26_dY = .195+ t_delta;  Double_t Box26_X=13.2, Box26_Y = -9.105;      // +Box26
 Double_t Box27_dX=11.75+ t_delta, Box27_dY = 1.5+ t_delta;  Double_t Box27_X=.6, Box27_Y = -10.42;      // +Box27
 Double_t Box28_dX=.2+ t_delta, Box28_dY = 0.24+ t_delta;  Double_t Box28_X=9.15, Box28_Y = -12.16;      // +Box28
-Double_t Box29_dX=9.2+ t_delta, Box29_dY = 1.505+ t_delta;  Double_t Box29_X=-0.25, Box29_Y = -13.425;      // +Box29
+//Double_t Box29_dX=9.2+ t_delta, Box29_dY = 1.505+ t_delta;  Double_t Box29_X=-0.25, Box29_Y = -13.425;      // +Box29
+Double_t Box29_dX=10.0+ t_delta, Box29_dY = 1.505+ t_delta;  Double_t Box29_X=-0.25, Box29_Y = -13.425;      // +Box29, to avoid overlap, fm
 Double_t Box2a_dX=4.1+ t_delta, Box2a_dY = .9+ t_delta;  Double_t Box2a_X=-0.25, Box2a_Y = -15.83;      // +Box2a
 Double_t Box2b_dX=.85+ t_delta, Box2b_dY = .23+ t_delta;  Double_t Box2b_X=3., Box2b_Y = -16.96;      // +Box2b
 Double_t Box2c_dX=2.4+ t_delta, Box2c_dY = .7+ t_delta;  Double_t Box2c_X=-0.25, Box2c_Y = -17.43;      // +Box2c
@@ -687,16 +694,20 @@ Double_t Box32_dX=16.5, Box32_dY = 7.0;                              // +Box32
 Double_t Box33_dX=1.225, Box33_dY = .3; Double_t Box33_X=15.275, Box33_Y =-7.3;    // Box33
 Double_t Box34_dX=14.325, Box34_dY = 8.91; Double_t Box34_X=-0.5/2, Box34_Y = 0.0;      // Box34
 Double_t Box35_dX=.65, Box35_dY = .02; Double_t Box35_X=13.3, Box35_Y = -8.93;      // Box35
-Double_t Box36_dX=12.95, Box36_dY = 9.4;  Double_t Box36_X=-0.175, Box36_Y = 0;      // +Box36
+//Double_t Box36_dX=12.95, Box36_dY = 9.4;  Double_t Box36_X=-0.175, Box36_Y = 0;      // +Box36
+Double_t Box36_dX=14.2, Box36_dY = 9.4;  Double_t Box36_X=-0.175, Box36_Y = 0;      // +Box36
 Double_t Box37_dX=12.6, Box37_dY = 11.92;  Double_t Box37_X=-0.25, Box37_Y = 0;      // +Box37
-Double_t Box38_dX=11.225, Box38_dY = 12.4;  Double_t Box38_X=-.175, Box38_Y = 0;      // +Box38
-Double_t Box39_dX=10.9, Box39_dY = 14.93;  Double_t Box39_X=-0.25, Box39_Y = 0;      // +Box39
-Double_t Box3a_dX=7.825, Box3a_dY = 15.35;  Double_t Box3a_X=-0.175, Box3a_Y = 0;      // +Box3a
+//Double_t Box38_dX=11.225, Box38_dY = 12.4;  Double_t Box38_X=-.175, Box38_Y = 0;      // +Box38
+Double_t Box38_dX=14.6, Box38_dY = 12.4;  Double_t Box38_X=-.175, Box38_Y = 0;      // +Box38, to avoid overlap, fm 
+//Double_t Box39_dX=10.9, Box39_dY = 14.93;  Double_t Box39_X=-0.25, Box39_Y = 0;      // +Box39
+Double_t Box39_dX=11.5, Box39_dY = 14.93;  Double_t Box39_X=-0.25, Box39_Y = 0;      // +Box39, to avoid overlap, fm  
+//Double_t Box3a_dX=7.825, Box3a_dY = 15.35;  Double_t Box3a_X=-0.175, Box3a_Y = 0;      // +Box3a
+Double_t Box3a_dX=12.825, Box3a_dY = 15.35;  Double_t Box3a_X=-0.175, Box3a_Y = 0;      // +Box3a, to avoid overlap, fm  
 Double_t Box3b_dX=7.5, Box3b_dY = 17.94;  Double_t Box3b_X=-0.25, Box3b_Y = 0;      // +Box3b
 Double_t Box3c_dX=2.4, Box3c_dY = 18.53;  Double_t Box3c_X=-0.175, Box3c_Y = 0;      // +Box3c
 
 // ------------------------ Translations ---------------------------------
-
+ 
 TGeoTranslation *tr_Box33= new TGeoTranslation ("PCB0tr_Box33",Box33_X,Box33_Y,0.0); tr_Box33-> RegisterYourself();
 TGeoTranslation *tr_Box34= new TGeoTranslation ("PCB0tr_Box34",Box34_X,Box34_Y,0.0); tr_Box34-> RegisterYourself();
 TGeoTranslation *tr_Box35= new TGeoTranslation ("PCB0tr_Box35",Box35_X,Box35_Y,0.0); tr_Box35-> RegisterYourself();
@@ -1176,12 +1187,13 @@ TGeoVolume* AliMFTSupport::CreateSupport(Int_t half, Int_t disk){
 
 // Create Volumes
   TGeoVolume *supportVol = new TGeoVolume();
+
   switch (disk) {
     case 0: supportVol =  Disc_Support_00();
       break;
     case 1: supportVol =  Disc_Support_01();
       break;
-    case 2: supportVol =  Disc_Support_02();
+    case 2: supportVol =  Disc_Support_02(); 
       break;
     case 3: supportVol =  Disc_Support_03();
       break;
@@ -1209,7 +1221,7 @@ TGeoVolume* AliMFTSupport::Disc_Support_00 (){
 
     double rMin = 0,
             rMax = 17.5,
-            thickness = .8/2,
+      thickness = .7/2,   // instead 0.8 fm
             phi0 = 0.,
             phi1 = 180.,
             t_delta = 0.1,
@@ -1533,6 +1545,7 @@ TGeoVolume* AliMFTSupport::Disc_Support_00 (){
       TGeoCompositeShape *basedisk = new TGeoCompositeShape ("D0basedisk", "(D0IntCutBox+D0ssboxes+D0ssboxes:D0rotback-D0void1-D0void02)-D0holes-D0holes:D0rotback-D0void1:D0rotback-D0void02:D0rotback");
 
       TGeoVolume *vol = new TGeoVolume("Disc_Support_00", basedisk);
+
       //vol->Raytrace();
       //vol->Draw(); //   TView *view = gPad->GetView(); view->ShowAxis();
 
@@ -1542,6 +1555,349 @@ TGeoVolume* AliMFTSupport::Disc_Support_00 (){
 }
 
 
+
+
+//=============================================================================================
+TGeoVolume* AliMFTSupport::Disc_Support_01 (){  // a copy of the Disc support 0
+
+
+    double rMin = 0,
+            rMax = 17.5,
+      thickness = .7/2,   // instead 0.8 fm
+            phi0 = 0.,
+            phi1 = 180.,
+            t_delta = 0.1,
+            sup_box_dZ = 0.305/2;
+
+
+
+     // ================= Disk_Support_00 - base tube =============
+
+
+     TGeoTubeSeg *base = new TGeoTubeSeg("D1base",rMin,rMax,thickness,phi0,phi1);
+     //TGeoTranslation *tr  = new TGeoTranslation(0., 0., 0.);
+     //tr->SetName("D0tr"); tr->RegisterYourself();
+
+     // ======= Disk_Support_00 - Inner cuts =========
+
+      TGeoBBox   *IntCutBox1 = new TGeoBBox("D1IntCutBox1",rMax+t_delta, 2.8/2, thickness+t_delta);
+  //    TGeoBBox   *IntCutBox2 = new TGeoBBox("D1IntCutBox2",25/2, 3.4/2,  thickness+t_delta);
+      TGeoBBox   *IntCutBox3 = new TGeoBBox("D1IntCutBox3",24.8/2, 13.8/2,  thickness+t_delta);
+      TGeoBBox   *IntCutBox4 = new TGeoBBox("D1IntCutBox4",15/2, 19.84/2,  thickness+t_delta);
+      TGeoBBox   *IntCutBox5 = new TGeoBBox("D1IntCutBox5",5.1/2, 23.6/2,  thickness+t_delta);
+
+
+      TGeoBBox   *ExtCutBox1 = new TGeoBBox("D1ExtCutBox1",8.2, 1.15,  thickness+t_delta);
+      TGeoTranslation *tr7 = new TGeoTranslation(0., 16.65, 0.);
+      tr7->SetName("D1tr7"); tr7->RegisterYourself();
+
+      TGeoBBox   *ExtCutBox2 = new TGeoBBox("D1ExtCutBox2",1.3875, 1.45,  thickness+t_delta);
+        TGeoTranslation *tr8 = new TGeoTranslation(-16.1875, 7.9, 0.);
+      tr8->SetName("D1tr8"); tr8->RegisterYourself();
+
+            TGeoTranslation *tr6 = new TGeoTranslation(16.1875, 7.9, 0.);
+      tr6->SetName("D1tr6"); tr6->RegisterYourself();
+
+
+      TGeoCompositeShape *IntCutBox = new TGeoCompositeShape
+      ("D1IntCutBox", "D1base-(D1IntCutBox1 + D1IntCutBox3+ D1IntCutBox4 + D1IntCutBox5+D1ExtCutBox2:D1tr6  + D1ExtCutBox1:D1tr7+ D1ExtCutBox2:D1tr8 )");
+
+      // ================= Screw holes reliefs  ====================
+
+
+    //Screw support box 1
+    Double_t ssbox1_dX=1.2/2, ssbox1_dY = 1.9/2;
+    Double_t ssbox1_X=8.75, ssbox1_Y = 7.86, ssbox1_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox1 = new TGeoBBox("D1ssbox1",ssbox1_dX,ssbox1_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox1= new TGeoTranslation ("D1tr_ssbox1",ssbox1_X,ssbox1_Y,ssbox1_Z);
+    tr_ssbox1-> RegisterYourself();
+
+    //Screw support box 2
+    Double_t ssbox2_dX=3.05/2, ssbox2_dY = 1.9/2;
+    Double_t ssbox2_X=-9.025, ssbox2_Y = 7.86, ssbox2_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox2 = new TGeoBBox("D1ssbox2",ssbox2_dX,ssbox2_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox2= new TGeoTranslation ("D1tr_ssbox2",ssbox2_X,ssbox2_Y,ssbox2_Z);
+    tr_ssbox2-> RegisterYourself();
+
+    //Screw support box 3
+    Double_t ssbox3_dX=4.6/2, ssbox3_dY = 1.9/2;
+    Double_t ssbox3_X=5.35, ssbox3_Y = 10.87, ssbox3_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox3 = new TGeoBBox("D1ssbox3",ssbox3_dX,ssbox3_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox3= new TGeoTranslation ("D1tr_ssbox3",ssbox3_X,ssbox3_Y,ssbox3_Z);
+    tr_ssbox3-> RegisterYourself();
+
+    //Screw support box 4
+    Double_t ssbox4_dX=4.6/2, ssbox4_dY = 1.88/2;
+    Double_t ssbox4_X=-4.85, ssbox4_Y = 10.86, ssbox4_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox4 = new TGeoBBox("D1ssbox4",ssbox4_dX,ssbox4_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox4= new TGeoTranslation ("D1tr_ssbox4",ssbox4_X,ssbox4_Y,ssbox4_Z);
+    tr_ssbox4-> RegisterYourself();
+
+    //Screw support box 5
+    Double_t ssbox5_dX=4.6/2, ssbox5_dY = 2.12/2;
+    Double_t ssbox5_X=.25, ssbox5_Y = 12.86, ssbox5_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox5 = new TGeoBBox("D1ssbox5",ssbox5_dX,ssbox5_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox5= new TGeoTranslation ("D1tr_ssbox5",ssbox5_X,ssbox5_Y,ssbox5_Z);
+    tr_ssbox5-> RegisterYourself();
+
+    TGeoCompositeShape *ssboxes = new TGeoCompositeShape ("D1ssboxes",
+     "D1ssbox1:D1tr_ssbox1+D1ssbox2:D1tr_ssbox2+D1ssbox3:D1tr_ssbox3+D1ssbox4:D1tr_ssbox4+D1ssbox5:D1tr_ssbox5");
+
+    //Screwholes Area #1
+    Double_t AX=8.75, AY=7.41;
+    Int_t N_holes = 1;
+    TGeoTranslation *tr_holes1= new TGeoTranslation ("D1tr_holes1",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes1-> RegisterYourself();
+    TGeoCompositeShape * holes1 = new TGeoCompositeShape();
+    holes1 = screw_array(N_holes); holes1->SetName("D1holes1");
+
+    //Screwholes Area #2
+    AX=-8.25; AY=7.41; N_holes = 2;
+    TGeoTranslation *tr_holes2= new TGeoTranslation ("D1tr_holes2",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes2-> RegisterYourself();
+    TGeoCompositeShape * holes2 = new TGeoCompositeShape();
+    holes2 = screw_array(N_holes,-1.7); holes2->SetName("D1holes2");
+
+    //Screwholes Area #3
+    AX=3.65; AY=10.42; N_holes = 3;
+    TGeoTranslation *tr_holes3= new TGeoTranslation ("D1tr_holes3",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes3-> RegisterYourself();
+    TGeoCompositeShape * holes3 = new TGeoCompositeShape();
+    holes3 = screw_array(N_holes,1.7); holes3->SetName("D1holes3");
+
+    //Screwholes Area #4
+    AX=-3.15; AY=10.42; N_holes = 3;
+    TGeoTranslation *tr_holes4= new TGeoTranslation ("D1tr_holes4",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes4-> RegisterYourself();
+    TGeoCompositeShape * holes4 = new TGeoCompositeShape();
+    holes4 = screw_array(N_holes,-1.7); holes4->SetName("D1holes4");
+
+    //Screwholes Area #5 (not aligned!!!)
+    //A
+    AX=1.95; AY=12.27;
+    TGeoTranslation *tr_holes5a= new TGeoTranslation ("D1tr_holes5a",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes5a-> RegisterYourself();
+    TGeoCompositeShape * holes5a = new TGeoCompositeShape();
+    holes5a = screw_array(1); holes5a->SetName("D1holes5a");
+    //B
+    AX=0.25; AY=12.52;
+    TGeoTranslation *tr_holes5b= new TGeoTranslation ("D1tr_holes5b",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes5b-> RegisterYourself();
+    TGeoCompositeShape * holes5b = new TGeoCompositeShape();
+    holes5b = screw_array(1); holes5b->SetName("D1holes5b");
+    //C
+    AX=-1.45; AY=12.43;
+    TGeoTranslation *tr_holes5c= new TGeoTranslation ("D1tr_holes5c",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes5c-> RegisterYourself();
+    TGeoCompositeShape * holes5c = new TGeoCompositeShape();
+    holes5c = screw_array(1); holes5c->SetName("D1holes5c");
+    TGeoCompositeShape *holes5 = new TGeoCompositeShape ("D1holes5", "(D1holes5a:D1tr_holes5a+D1holes5b:D1tr_holes5b+D1holes5c:D1tr_holes5c)");
+
+    //ScrewHoles C, D; and E
+
+    TGeoRotation *rotscrewC = new TGeoRotation("D1rotscrewC",0.,-90.,0.);
+    rotscrewC->RegisterYourself();
+
+    TGeoRotation *rotscrewDE = new TGeoRotation("D1rotscrewDE",0.,90.,0.);
+    rotscrewDE->RegisterYourself();
+
+    //Screwholes C
+    AX=15.5, AY=6.5;
+    TGeoCompositeShape * holesC = new TGeoCompositeShape();
+    holesC = screw_C(); holesC->SetName("D1holesC");
+    TGeoCombiTrans * rot_tr_screwC = new TGeoCombiTrans("D1rot_tr_screwC",AX,AY, 0.,rotscrewC);
+    rot_tr_screwC->RegisterYourself();
+
+
+    //Screwholes D
+    AX=11.7, AY=1.7;
+    TGeoCompositeShape * holesD = new TGeoCompositeShape();
+    holesD = screw_D(); holesD->SetName("D1holesD");
+    TGeoCombiTrans * rot_tr_screwD = new TGeoCombiTrans("D1rot_tr_screwD",AX,AY, 0.,rotscrewDE);
+    rot_tr_screwD->RegisterYourself();
+
+    //Screwholes E
+    AX=12.1, AY=1.7;
+    TGeoCompositeShape * holesE = new TGeoCompositeShape();
+    holesE = screw_E(); holesE->SetName("D1holesE");
+    TGeoCombiTrans * rot_tr_screwE = new TGeoCombiTrans("D1rot_tr_screwE",AX,AY, 0.,rotscrewDE);
+    rot_tr_screwE->RegisterYourself();
+
+    //Through Hole A
+    AX=16.6, AY=2;
+    TGeoCompositeShape * ThRA = new TGeoCompositeShape();
+    ThRA = through_hole_a(); ThRA->SetName("D1ThRA");
+    TGeoTranslation * tr_ThRA = new TGeoTranslation("D1tr_ThRA",AX,AY, 0.);
+    tr_ThRA->RegisterYourself();
+    //through_hole_a
+
+    //Through Hole B
+    AX=16.6, AY=3;
+    TGeoCompositeShape * ThRB = new TGeoCompositeShape();
+    ThRB = through_hole_b(); ThRB->SetName("D1ThRB");
+    TGeoTranslation * tr_ThRB = new TGeoTranslation("D1tr_ThRB",AX,AY, 0.);
+    tr_ThRB->RegisterYourself();
+
+    //Through Hole C
+    AX=15.5, AY=4.7;
+    TGeoCompositeShape * ThRC = new TGeoCompositeShape();
+    ThRC = through_hole_c(); ThRC->SetName("D1ThRC");
+    TGeoTranslation * tr_ThRC = new TGeoTranslation("D1tr_ThRC",AX,AY, 0.);
+    tr_ThRC->RegisterYourself();
+
+
+    //Through Hole D
+    AX=14., AY=9.5;
+    TGeoCompositeShape * ThRD = new TGeoCompositeShape();
+    ThRD = through_hole_d(); ThRD->SetName("D1ThRD");
+    TGeoTranslation * tr_ThRD = new TGeoTranslation("D1tr_ThRD",AX,AY, 0.);
+    tr_ThRD->RegisterYourself();
+
+    //Through Hole E
+    AX=11.2, AY=9.5;
+    TGeoCompositeShape * ThRE = new TGeoCompositeShape();
+    ThRE = through_hole_e(); ThRE->SetName("D1ThRE");
+    TGeoTranslation * tr_ThRE = new TGeoTranslation("D1tr_ThRE",AX,AY, 0.);
+    tr_ThRE->RegisterYourself();
+
+    //Combining all relief holes of one side
+    TGeoCompositeShape *holes = new TGeoCompositeShape ("D1holes", "(D1holes1:D1tr_holes1+D1holes2:D1tr_holes2+D1holes3:D1tr_holes3+D1holes4:D1tr_holes4+D1holesC:D1rot_tr_screwC+D1holesD:D1rot_tr_screwD+D1holesE:D1rot_tr_screwE+D1holes5+D1ThRA:D1tr_ThRA+D1ThRB:D1tr_ThRB+D1ThRC:D1tr_ThRC+D1ThRD:D1tr_ThRD+D1ThRE:D1tr_ThRE)");
+
+    //Create screw areas and holes in the backside by rotation
+    TGeoRotation *rotback = new TGeoRotation("D1rotback",0.,180.,180.);
+    rotback->RegisterYourself();
+
+   //Removing though holes and large voids
+
+
+    // Void01
+
+    Double_t voidbox_dZ= thickness+t_delta; //This is common to all though holes and voids
+
+    // Void01 box1
+    Double_t voidbox_dX=.9/2, voidbox_dY = 3.7/2;
+    Double_t voidbox_X=13.35, voidbox_Y = 6.85;
+    TGeoBBox   *voidbox1 = new TGeoBBox("D1voidbox1",voidbox_dX,voidbox_dY,voidbox_dZ);
+    TGeoTranslation *tr_voidbox1= new TGeoTranslation ("D1tr_voidbox1",voidbox_X,voidbox_Y,0);
+    tr_voidbox1-> RegisterYourself();
+
+    // Void01 box2
+    voidbox_dX=1.9/2, voidbox_dY = 3.2/2;
+    voidbox_X=13.85, voidbox_Y = 3.4;
+    TGeoBBox   *voidbox2 = new TGeoBBox("D1voidbox2",voidbox_dX,voidbox_dY,voidbox_dZ);
+    TGeoTranslation *tr_voidbox2= new TGeoTranslation ("D1tr_voidbox2",voidbox_X,voidbox_Y,0);
+    tr_voidbox2-> RegisterYourself();
+
+    // Void01 box3
+    voidbox_dX=3.25/2, voidbox_dY = 1.29/2;
+    voidbox_X=12.175, voidbox_Y = 8.055;
+    TGeoBBox   *voidbox3 = new TGeoBBox("D1voidbox3",voidbox_dX,voidbox_dY,voidbox_dZ);
+    TGeoTranslation *tr_voidbox3= new TGeoTranslation ("D1tr_voidbox3",voidbox_X,voidbox_Y,0);
+    tr_voidbox3-> RegisterYourself();
+
+    // Voids arcs
+
+    TGeoTubeSeg *voidsarcA = new TGeoTubeSeg("D1arcA",.5,.75, thickness+t_delta,180.,270.);
+    TGeoTubeSeg *voidsarcB = new TGeoTubeSeg("D1arcB",.5,.75, thickness+t_delta,270.,360.);
+    TGeoTubeSeg *voidsarcC = new TGeoTubeSeg("D1arcC",.5,.75, thickness+t_delta,0.,90.);
+    TGeoTubeSeg *voidsarcD = new TGeoTubeSeg("D1arcD",.5,.75, thickness+t_delta,90.,180.);
+    TGeoTubeSeg *voidsarcE = new TGeoTubeSeg("D1arcE",0,.5, thickness+t_delta,0,180);
+    TGeoTubeSeg *voidsarcF = new TGeoTubeSeg("D1arcF",15.01,16.5,thickness+t_delta,180-124.446,180-117.048);
+    TGeoTubeSeg *voidsarcG = new TGeoTubeSeg("D1arcG",0.,.5,thickness+t_delta,180-117.048,270.-180);
+
+    TGeoTranslation *trv01arc01  = new TGeoTranslation(14.3, 2.3, 0.);//B- -> arcB:trv01arc01
+    trv01arc01->SetName("D1trv01arc01"); trv01arc01->RegisterYourself();
+
+    TGeoTranslation *trv01arc01b  = new TGeoTranslation(13.4, 2.3, 0.);//A- -> arcA:trv01arc01b
+    trv01arc01b->SetName("D1trv01arc01b"); trv01arc01b->RegisterYourself();
+
+    TGeoTranslation *trv01arc02  = new TGeoTranslation(14.3, 4.5, 0.);//C- -> arcC:trv01arc02
+    trv01arc02->SetName("D1trv01arc02"); trv01arc02->RegisterYourself();
+
+    TGeoTranslation *trv01arc02b  = new TGeoTranslation(14.3, 5.5, 0.);//A+ -> arcA:trv01arc02b
+    trv01arc02b->SetName("D1trv01arc02b"); trv01arc02b->RegisterYourself();
+
+    TGeoTranslation *trv01arc03  = new TGeoTranslation(13.3, 8.2, 0.);//C- -> arcC:trv01arc03
+    trv01arc03->SetName("D1trv01arc03"); trv01arc03->RegisterYourself();
+
+    TGeoTranslation *trv01arc03b  = new TGeoTranslation(12.4, 6.91, 0.);//C+ -> arcC:trv01arc03b
+    trv01arc03b->SetName("D1trv01arc03b"); trv01arc03b->RegisterYourself();
+
+    TGeoTranslation *trv01arc04  = new TGeoTranslation(11.05, 7.91, 0.);//A- -> arcA:trv01arc04
+    trv01arc04->SetName("D1trv01arc04"); trv01arc04->RegisterYourself();
+
+    TGeoTranslation *trv01arc04b  = new TGeoTranslation(11.05, 8.2, 0.);//D- -> arcD:trv01arc04b
+    trv01arc04b->SetName("D1trv01arc04b"); trv01arc04b->RegisterYourself();
+
+
+    //Smoothing corners
+    TGeoCompositeShape *void1 = new TGeoCompositeShape ("D1void1", "D1voidbox1:D1tr_voidbox1+D1voidbox2:D1tr_voidbox2+D1voidbox3:D1tr_voidbox3 +   (D1arcA:D1trv01arc02b+D1arcC:D1trv01arc03b) -(D1arcB:D1trv01arc01+D1arcA:D1trv01arc01b+D1arcC:D1trv01arc02+D1arcC:D1trv01arc03+D1arcA:D1trv01arc04+D1arcD:D1trv01arc04b)");
+
+    //void1->Draw();
+
+    // Void02  *******************************
+
+
+   // Box  Void02
+
+     voidbox_dX=1.35/2, voidbox_dY = 3.4/2; voidbox_X=8.875, voidbox_Y = 11.5;
+     TGeoBBox   *void02_Box001 = new TGeoBBox("D1void02_Box001",voidbox_dX,voidbox_dY,thickness+t_delta);
+     TGeoTranslation *tr_v02box001= new TGeoTranslation("D1tr_v02box001",voidbox_X,voidbox_Y,0);
+     tr_v02box001-> RegisterYourself();
+
+     voidbox_dX=4.2759/2, voidbox_dY = 1.95/2; voidbox_X=5.13795, voidbox_Y = 13.775;
+     TGeoBBox   *void02_Box002 = new TGeoBBox("D1void02_Box002",voidbox_dX,voidbox_dY,thickness+t_delta);
+     TGeoTranslation *tr_v02box002= new TGeoTranslation("D1tr_v02box002",voidbox_X,voidbox_Y,0);
+     tr_v02box002-> RegisterYourself();
+
+     voidbox_dX=1.1/2, voidbox_dY = .6/2; voidbox_X=7.31392, voidbox_Y = 13.1;
+     TGeoBBox   *void02_Box003 = new TGeoBBox("D1void02_Box003",voidbox_dX,voidbox_dY,thickness+t_delta);
+     TGeoTranslation *tr_v02box003= new TGeoTranslation("D1tr_v02box003",voidbox_X,voidbox_Y,0);
+     tr_v02box003-> RegisterYourself();
+
+   // =============  arcs Void02 ===============
+
+      TGeoTranslation *tr02arcs001  = new TGeoTranslation(8.7, 10.3, 0.);
+      tr02arcs001->SetName("D1tr02arcs001"); tr02arcs001->RegisterYourself(); //A- -> arcA:tr02arcs001
+
+      TGeoTranslation *tr02arcs001b  = new TGeoTranslation(9.05, 10.3, 0.);
+      tr02arcs001b->SetName("D1tr02arcs001b"); tr02arcs001b->RegisterYourself(); //B- -> arcB:tr02arcs001b
+
+      TGeoTranslation *tr02arcs002  = new TGeoTranslation(7.7, 12.3, 0.);
+      tr02arcs002->SetName("D1tr02arcs002"); tr02arcs002->RegisterYourself(); //C+ -> arcC:tr02arcs002
+
+      TGeoTranslation *tr02arcs002b  = new TGeoTranslation(9.05, 13.2, 0.);
+      tr02arcs002b->SetName("D1tr02arcs002b"); tr02arcs002b->RegisterYourself(); //C+ -> arcC:tr02arcs002b
+
+      TGeoTranslation *tr02arcs003  = new TGeoTranslation(3.5, 13.3, 0.);
+      tr02arcs003->SetName("D1tr02arcs003"); tr02arcs003->RegisterYourself(); //A- -> arcA:tr02arcs003
+
+      TGeoTranslation *tr02arcs003b  = new TGeoTranslation(3.5, 14.25, 0.);
+      tr02arcs003b->SetName("D1tr02arcs003b"); tr02arcs003b->RegisterYourself(); //D- -> arcD:tr02arcs003b
+
+      TGeoTranslation *tr02arcs004  = new TGeoTranslation(7.27582, 14.25, 0.);
+      tr02arcs004->SetName("D1tr02arcs004"); tr02arcs004->RegisterYourself(); //G- -> arcG:tr02arcs004
+
+      TGeoCompositeShape *void02 = new TGeoCompositeShape ("D1void02", "(D1void02_Box001:D1tr_v02box001+D1void02_Box002:D1tr_v02box002+D1void02_Box003:D1tr_v02box003+D1arcC:D1tr02arcs002+D1arcE:D1tr02arcs002b+D1arcF+D1arcG:D1tr02arcs004)-(D1arcA:D1tr02arcs001+D1arcB:D1tr02arcs001b+D1arcA:D1tr02arcs003+D1arcD:D1tr02arcs003b)");
+      //void02->Draw();
+
+      //========================
+
+      //Composing basedisk
+      TGeoCompositeShape *basedisk = new TGeoCompositeShape ("D1basedisk", "(D1IntCutBox+D1ssboxes+D1ssboxes:D1rotback-D1void1-D1void02)-D1holes-D1holes:D1rotback-D1void1:D1rotback-D1void02:D1rotback");
+
+      TGeoVolume *vol = new TGeoVolume("Disc_Support_01", basedisk);
+
+      //vol->Raytrace();
+      //vol->Draw(); //   TView *view = gPad->GetView(); view->ShowAxis();
+
+      return vol;
+
+
+}
+
+
+/*
 
 //=============================================================================================
 TGeoVolume* AliMFTSupport::Disc_Support_01 (){
@@ -1553,8 +1909,6 @@ TGeoVolume* AliMFTSupport::Disc_Support_01 (){
           phi1 = 180.,
           t_delta = 0.1,
           sup_box_dZ = 0.305/2;
-
-
 
    // ================= Disk_Support_01 - base tube =============
 
@@ -1588,8 +1942,6 @@ TGeoVolume* AliMFTSupport::Disc_Support_01 (){
     ("IntCutBox", "base-(IntCutBox1 + IntCutBox2 + IntCutBox3+ IntCutBox4 + IntCutBox5+ExtCutBox2:tr6  + ExtCutBox1:tr7+ ExtCutBox2:tr8 )");
 
     // ================= Screw holes reliefs  ====================
-
-
   //Screw support box 1
   Double_t ssbox1_dX=1.2/2, ssbox1_dY = 1.9/2;
   Double_t ssbox1_X=8.75, ssbox1_Y = 7.86, ssbox1_Z= thickness+sup_box_dZ;
@@ -1734,7 +2086,6 @@ TGeoVolume* AliMFTSupport::Disc_Support_01 (){
   TGeoTranslation * tr_ThRC = new TGeoTranslation("tr_ThRC",AX,AY, 0.);
   tr_ThRC->RegisterYourself();
 
-
   //Through Hole D
   AX=14., AY=9.5;
   TGeoCompositeShape * ThRD = new TGeoCompositeShape();
@@ -1757,7 +2108,6 @@ TGeoVolume* AliMFTSupport::Disc_Support_01 (){
   rotback->RegisterYourself();
 
  //Removing though holes and large voids
-
 
   // Void01
 
@@ -1831,7 +2181,6 @@ TGeoVolume* AliMFTSupport::Disc_Support_01 (){
 
   // Void02  *******************************
 
-
  // Box  Void02
 
    voidbox_dX=1.35/2, voidbox_dY = 3.4/2; voidbox_X=8.875, voidbox_Y = 11.5;
@@ -1850,7 +2199,6 @@ TGeoVolume* AliMFTSupport::Disc_Support_01 (){
    tr_v02box003-> RegisterYourself();
 
  // =============  arcs Void02 ===============
-
     TGeoTranslation *tr02arcs001  = new TGeoTranslation(8.7, 10.3, 0.);
     tr02arcs001->SetName("tr02arcs001"); tr02arcs001->RegisterYourself(); //A- -> arcA:tr02arcs001
 
@@ -1876,7 +2224,6 @@ TGeoVolume* AliMFTSupport::Disc_Support_01 (){
     //void02->Draw();
 
     //========================
-
     //Composing basedisk
     TGeoCompositeShape *basedisk = new TGeoCompositeShape ("basedisk", "(IntCutBox+ssboxes+ssboxes:rotback-void1-void02)-d1holes-d1holes:rotback-void1:rotback-void02:rotback");
 
@@ -1886,8 +2233,358 @@ TGeoVolume* AliMFTSupport::Disc_Support_01 (){
 
     return vol;
 
+}
+
+*/
+
+
+
+
+//=============================================================================================
+TGeoVolume* AliMFTSupport::Disc_Support_02 (){  // a copy of the Disc support 0
+
+
+    double rMin = 0,
+            rMax = 17.5,
+      thickness = .7/2,  // instead 0.8 fm
+            phi0 = 0.,
+            phi1 = 180.,
+            t_delta = 0.1,
+            sup_box_dZ = 0.305/2;
+
+
+
+     // ================= Disk_Support_00 - base tube =============
+
+
+     TGeoTubeSeg *base = new TGeoTubeSeg("D2base",rMin,rMax,thickness,phi0,phi1);
+     //TGeoTranslation *tr  = new TGeoTranslation(0., 0., 0.);
+     //tr->SetName("D0tr"); tr->RegisterYourself();
+
+     // ======= Disk_Support_00 - Inner cuts =========
+
+      TGeoBBox   *IntCutBox1 = new TGeoBBox("D2IntCutBox1",rMax+t_delta, 2.8/2, thickness+t_delta);
+  //    TGeoBBox   *IntCutBox2 = new TGeoBBox("D2IntCutBox2",25/2, 3.4/2,  thickness+t_delta);
+      TGeoBBox   *IntCutBox3 = new TGeoBBox("D2IntCutBox3",24.8/2, 13.8/2,  thickness+t_delta);
+      TGeoBBox   *IntCutBox4 = new TGeoBBox("D2IntCutBox4",15/2, 19.84/2,  thickness+t_delta);
+      TGeoBBox   *IntCutBox5 = new TGeoBBox("D2IntCutBox5",5.1/2, 23.6/2,  thickness+t_delta);
+
+
+      TGeoBBox   *ExtCutBox1 = new TGeoBBox("D2ExtCutBox1",8.2, 1.15,  thickness+t_delta);
+      TGeoTranslation *tr7 = new TGeoTranslation(0., 16.65, 0.);
+      tr7->SetName("D2tr7"); tr7->RegisterYourself();
+
+      TGeoBBox   *ExtCutBox2 = new TGeoBBox("D2ExtCutBox2",1.3875, 1.45,  thickness+t_delta);
+        TGeoTranslation *tr8 = new TGeoTranslation(-16.1875, 7.9, 0.);
+      tr8->SetName("D2tr8"); tr8->RegisterYourself();
+
+            TGeoTranslation *tr6 = new TGeoTranslation(16.1875, 7.9, 0.);
+      tr6->SetName("D2tr6"); tr6->RegisterYourself();
+
+
+      TGeoCompositeShape *IntCutBox = new TGeoCompositeShape
+      ("D2IntCutBox", "D2base-(D2IntCutBox1 + D2IntCutBox3+ D2IntCutBox4 + D2IntCutBox5+D2ExtCutBox2:D2tr6  + D2ExtCutBox1:D2tr7+ D2ExtCutBox2:D2tr8 )");
+
+      // ================= Screw holes reliefs  ====================
+
+
+    //Screw support box 1
+    Double_t ssbox1_dX=1.2/2, ssbox1_dY = 1.9/2;
+    Double_t ssbox1_X=8.75, ssbox1_Y = 7.86, ssbox1_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox1 = new TGeoBBox("D2ssbox1",ssbox1_dX,ssbox1_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox1= new TGeoTranslation ("D2tr_ssbox1",ssbox1_X,ssbox1_Y,ssbox1_Z);
+    tr_ssbox1-> RegisterYourself();
+
+    //Screw support box 2
+    Double_t ssbox2_dX=3.05/2, ssbox2_dY = 1.9/2;
+    Double_t ssbox2_X=-9.025, ssbox2_Y = 7.86, ssbox2_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox2 = new TGeoBBox("D2ssbox2",ssbox2_dX,ssbox2_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox2= new TGeoTranslation ("D2tr_ssbox2",ssbox2_X,ssbox2_Y,ssbox2_Z);
+    tr_ssbox2-> RegisterYourself();
+
+    //Screw support box 3
+    Double_t ssbox3_dX=4.6/2, ssbox3_dY = 1.9/2;
+    Double_t ssbox3_X=5.35, ssbox3_Y = 10.87, ssbox3_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox3 = new TGeoBBox("D2ssbox3",ssbox3_dX,ssbox3_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox3= new TGeoTranslation ("D2tr_ssbox3",ssbox3_X,ssbox3_Y,ssbox3_Z);
+    tr_ssbox3-> RegisterYourself();
+
+    //Screw support box 4
+    Double_t ssbox4_dX=4.6/2, ssbox4_dY = 1.88/2;
+    Double_t ssbox4_X=-4.85, ssbox4_Y = 10.86, ssbox4_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox4 = new TGeoBBox("D2ssbox4",ssbox4_dX,ssbox4_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox4= new TGeoTranslation ("D2tr_ssbox4",ssbox4_X,ssbox4_Y,ssbox4_Z);
+    tr_ssbox4-> RegisterYourself();
+
+    //Screw support box 5
+    Double_t ssbox5_dX=4.6/2, ssbox5_dY = 2.12/2;
+    Double_t ssbox5_X=.25, ssbox5_Y = 12.86, ssbox5_Z= thickness+sup_box_dZ;
+    TGeoBBox   *ssbox5 = new TGeoBBox("D2ssbox5",ssbox5_dX,ssbox5_dY,sup_box_dZ);
+    TGeoTranslation *tr_ssbox5= new TGeoTranslation ("D2tr_ssbox5",ssbox5_X,ssbox5_Y,ssbox5_Z);
+    tr_ssbox5-> RegisterYourself();
+
+    TGeoCompositeShape *ssboxes = new TGeoCompositeShape ("D2ssboxes",
+     "D2ssbox1:D2tr_ssbox1+D2ssbox2:D2tr_ssbox2+D2ssbox3:D2tr_ssbox3+D2ssbox4:D2tr_ssbox4+D2ssbox5:D2tr_ssbox5");
+
+    //Screwholes Area #1
+    Double_t AX=8.75, AY=7.41;
+    Int_t N_holes = 1;
+    TGeoTranslation *tr_holes1= new TGeoTranslation ("D2tr_holes1",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes1-> RegisterYourself();
+    TGeoCompositeShape * holes1 = new TGeoCompositeShape();
+    holes1 = screw_array(N_holes); holes1->SetName("D2holes1");
+
+    //Screwholes Area #2
+    AX=-8.25; AY=7.41; N_holes = 2;
+    TGeoTranslation *tr_holes2= new TGeoTranslation ("D2tr_holes2",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes2-> RegisterYourself();
+    TGeoCompositeShape * holes2 = new TGeoCompositeShape();
+    holes2 = screw_array(N_holes,-1.7); holes2->SetName("D2holes2");
+
+    //Screwholes Area #3
+    AX=3.65; AY=10.42; N_holes = 3;
+    TGeoTranslation *tr_holes3= new TGeoTranslation ("D2tr_holes3",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes3-> RegisterYourself();
+    TGeoCompositeShape * holes3 = new TGeoCompositeShape();
+    holes3 = screw_array(N_holes,1.7); holes3->SetName("D2holes3");
+
+    //Screwholes Area #4
+    AX=-3.15; AY=10.42; N_holes = 3;
+    TGeoTranslation *tr_holes4= new TGeoTranslation ("D2tr_holes4",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes4-> RegisterYourself();
+    TGeoCompositeShape * holes4 = new TGeoCompositeShape();
+    holes4 = screw_array(N_holes,-1.7); holes4->SetName("D2holes4");
+
+    //Screwholes Area #5 (not aligned!!!)
+    //A
+    AX=1.95; AY=12.27;
+    TGeoTranslation *tr_holes5a= new TGeoTranslation ("D2tr_holes5a",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes5a-> RegisterYourself();
+    TGeoCompositeShape * holes5a = new TGeoCompositeShape();
+    holes5a = screw_array(1); holes5a->SetName("D2holes5a");
+    //B
+    AX=0.25; AY=12.52;
+    TGeoTranslation *tr_holes5b= new TGeoTranslation ("D2tr_holes5b",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes5b-> RegisterYourself();
+    TGeoCompositeShape * holes5b = new TGeoCompositeShape();
+    holes5b = screw_array(1); holes5b->SetName("D2holes5b");
+    //C
+    AX=-1.45; AY=12.43;
+    TGeoTranslation *tr_holes5c= new TGeoTranslation ("D2tr_holes5c",AX,AY, 2*sup_box_dZ+thickness);
+    tr_holes5c-> RegisterYourself();
+    TGeoCompositeShape * holes5c = new TGeoCompositeShape();
+    holes5c = screw_array(1); holes5c->SetName("D2holes5c");
+    TGeoCompositeShape *holes5 = new TGeoCompositeShape ("D2holes5", "(D2holes5a:D2tr_holes5a+D2holes5b:D2tr_holes5b+D2holes5c:D2tr_holes5c)");
+
+    //ScrewHoles C, D; and E
+
+    TGeoRotation *rotscrewC = new TGeoRotation("D2rotscrewC",0.,-90.,0.);
+    rotscrewC->RegisterYourself();
+
+    TGeoRotation *rotscrewDE = new TGeoRotation("D2rotscrewDE",0.,90.,0.);
+    rotscrewDE->RegisterYourself();
+
+    //Screwholes C
+    AX=15.5, AY=6.5;
+    TGeoCompositeShape * holesC = new TGeoCompositeShape();
+    holesC = screw_C(); holesC->SetName("D2holesC");
+    TGeoCombiTrans * rot_tr_screwC = new TGeoCombiTrans("D2rot_tr_screwC",AX,AY, 0.,rotscrewC);
+    rot_tr_screwC->RegisterYourself();
+
+
+    //Screwholes D
+    AX=11.7, AY=1.7;
+    TGeoCompositeShape * holesD = new TGeoCompositeShape();
+    holesD = screw_D(); holesD->SetName("D2holesD");
+    TGeoCombiTrans * rot_tr_screwD = new TGeoCombiTrans("D2rot_tr_screwD",AX,AY, 0.,rotscrewDE);
+    rot_tr_screwD->RegisterYourself();
+
+    //Screwholes E
+    AX=12.1, AY=1.7;
+    TGeoCompositeShape * holesE = new TGeoCompositeShape();
+    holesE = screw_E(); holesE->SetName("D2holesE");
+    TGeoCombiTrans * rot_tr_screwE = new TGeoCombiTrans("D2rot_tr_screwE",AX,AY, 0.,rotscrewDE);
+    rot_tr_screwE->RegisterYourself();
+
+    //Through Hole A
+    AX=16.6, AY=2;
+    TGeoCompositeShape * ThRA = new TGeoCompositeShape();
+    ThRA = through_hole_a(); ThRA->SetName("D2ThRA");
+    TGeoTranslation * tr_ThRA = new TGeoTranslation("D2tr_ThRA",AX,AY, 0.);
+    tr_ThRA->RegisterYourself();
+    //through_hole_a
+
+    //Through Hole B
+    AX=16.6, AY=3;
+    TGeoCompositeShape * ThRB = new TGeoCompositeShape();
+    ThRB = through_hole_b(); ThRB->SetName("D2ThRB");
+    TGeoTranslation * tr_ThRB = new TGeoTranslation("D2tr_ThRB",AX,AY, 0.);
+    tr_ThRB->RegisterYourself();
+
+    //Through Hole C
+    AX=15.5, AY=4.7;
+    TGeoCompositeShape * ThRC = new TGeoCompositeShape();
+    ThRC = through_hole_c(); ThRC->SetName("D2ThRC");
+    TGeoTranslation * tr_ThRC = new TGeoTranslation("D2tr_ThRC",AX,AY, 0.);
+    tr_ThRC->RegisterYourself();
+
+
+    //Through Hole D
+    AX=14., AY=9.5;
+    TGeoCompositeShape * ThRD = new TGeoCompositeShape();
+    ThRD = through_hole_d(); ThRD->SetName("D2ThRD");
+    TGeoTranslation * tr_ThRD = new TGeoTranslation("D2tr_ThRD",AX,AY, 0.);
+    tr_ThRD->RegisterYourself();
+
+    //Through Hole E
+    AX=11.2, AY=9.5;
+    TGeoCompositeShape * ThRE = new TGeoCompositeShape();
+    ThRE = through_hole_e(); ThRE->SetName("D2ThRE");
+    TGeoTranslation * tr_ThRE = new TGeoTranslation("D2tr_ThRE",AX,AY, 0.);
+    tr_ThRE->RegisterYourself();
+
+    //Combining all relief holes of one side
+    TGeoCompositeShape *holes = new TGeoCompositeShape ("D2holes", "(D2holes1:D2tr_holes1+D2holes2:D2tr_holes2+D2holes3:D2tr_holes3+D2holes4:D2tr_holes4+D2holesC:D2rot_tr_screwC+D2holesD:D2rot_tr_screwD+D2holesE:D2rot_tr_screwE+D2holes5+D2ThRA:D2tr_ThRA+D2ThRB:D2tr_ThRB+D2ThRC:D2tr_ThRC+D2ThRD:D2tr_ThRD+D2ThRE:D2tr_ThRE)");
+
+    //Create screw areas and holes in the backside by rotation
+    TGeoRotation *rotback = new TGeoRotation("D2rotback",0.,180.,180.);
+    rotback->RegisterYourself();
+
+   //Removing though holes and large voids
+
+
+    // Void01
+
+    Double_t voidbox_dZ= thickness+t_delta; //This is common to all though holes and voids
+
+    // Void01 box1
+    Double_t voidbox_dX=.9/2, voidbox_dY = 3.7/2;
+    Double_t voidbox_X=13.35, voidbox_Y = 6.85;
+    TGeoBBox   *voidbox1 = new TGeoBBox("D2voidbox1",voidbox_dX,voidbox_dY,voidbox_dZ);
+    TGeoTranslation *tr_voidbox1= new TGeoTranslation ("D2tr_voidbox1",voidbox_X,voidbox_Y,0);
+    tr_voidbox1-> RegisterYourself();
+
+    // Void01 box2
+    voidbox_dX=1.9/2, voidbox_dY = 3.2/2;
+    voidbox_X=13.85, voidbox_Y = 3.4;
+    TGeoBBox   *voidbox2 = new TGeoBBox("D2voidbox2",voidbox_dX,voidbox_dY,voidbox_dZ);
+    TGeoTranslation *tr_voidbox2= new TGeoTranslation ("D2tr_voidbox2",voidbox_X,voidbox_Y,0);
+    tr_voidbox2-> RegisterYourself();
+
+    // Void01 box3
+    voidbox_dX=3.25/2, voidbox_dY = 1.29/2;
+    voidbox_X=12.175, voidbox_Y = 8.055;
+    TGeoBBox   *voidbox3 = new TGeoBBox("D2voidbox3",voidbox_dX,voidbox_dY,voidbox_dZ);
+    TGeoTranslation *tr_voidbox3= new TGeoTranslation ("D2tr_voidbox3",voidbox_X,voidbox_Y,0);
+    tr_voidbox3-> RegisterYourself();
+
+    // Voids arcs
+
+    TGeoTubeSeg *voidsarcA = new TGeoTubeSeg("D2arcA",.5,.75, thickness+t_delta,180.,270.);
+    TGeoTubeSeg *voidsarcB = new TGeoTubeSeg("D2arcB",.5,.75, thickness+t_delta,270.,360.);
+    TGeoTubeSeg *voidsarcC = new TGeoTubeSeg("D2arcC",.5,.75, thickness+t_delta,0.,90.);
+    TGeoTubeSeg *voidsarcD = new TGeoTubeSeg("D2arcD",.5,.75, thickness+t_delta,90.,180.);
+    TGeoTubeSeg *voidsarcE = new TGeoTubeSeg("D2arcE",0,.5, thickness+t_delta,0,180);
+    TGeoTubeSeg *voidsarcF = new TGeoTubeSeg("D2arcF",15.01,16.5,thickness+t_delta,180-124.446,180-117.048);
+    TGeoTubeSeg *voidsarcG = new TGeoTubeSeg("D2arcG",0.,.5,thickness+t_delta,180-117.048,270.-180);
+
+    TGeoTranslation *trv01arc01  = new TGeoTranslation(14.3, 2.3, 0.);//B- -> arcB:trv01arc01
+    trv01arc01->SetName("D2trv01arc01"); trv01arc01->RegisterYourself();
+
+    TGeoTranslation *trv01arc01b  = new TGeoTranslation(13.4, 2.3, 0.);//A- -> arcA:trv01arc01b
+    trv01arc01b->SetName("D2trv01arc01b"); trv01arc01b->RegisterYourself();
+
+    TGeoTranslation *trv01arc02  = new TGeoTranslation(14.3, 4.5, 0.);//C- -> arcC:trv01arc02
+    trv01arc02->SetName("D2trv01arc02"); trv01arc02->RegisterYourself();
+
+    TGeoTranslation *trv01arc02b  = new TGeoTranslation(14.3, 5.5, 0.);//A+ -> arcA:trv01arc02b
+    trv01arc02b->SetName("D2trv01arc02b"); trv01arc02b->RegisterYourself();
+
+    TGeoTranslation *trv01arc03  = new TGeoTranslation(13.3, 8.2, 0.);//C- -> arcC:trv01arc03
+    trv01arc03->SetName("D2trv01arc03"); trv01arc03->RegisterYourself();
+
+    TGeoTranslation *trv01arc03b  = new TGeoTranslation(12.4, 6.91, 0.);//C+ -> arcC:trv01arc03b
+    trv01arc03b->SetName("D2trv01arc03b"); trv01arc03b->RegisterYourself();
+
+    TGeoTranslation *trv01arc04  = new TGeoTranslation(11.05, 7.91, 0.);//A- -> arcA:trv01arc04
+    trv01arc04->SetName("D2trv01arc04"); trv01arc04->RegisterYourself();
+
+    TGeoTranslation *trv01arc04b  = new TGeoTranslation(11.05, 8.2, 0.);//D- -> arcD:trv01arc04b
+    trv01arc04b->SetName("D2trv01arc04b"); trv01arc04b->RegisterYourself();
+
+
+    //Smoothing corners
+    TGeoCompositeShape *void1 = new TGeoCompositeShape ("D2void1", "D2voidbox1:D2tr_voidbox1+D2voidbox2:D2tr_voidbox2+D2voidbox3:D2tr_voidbox3 +   (D2arcA:D2trv01arc02b+D2arcC:D2trv01arc03b) -(D2arcB:D2trv01arc01+D2arcA:D2trv01arc01b+D2arcC:D2trv01arc02+D2arcC:D2trv01arc03+D2arcA:D2trv01arc04+D2arcD:D2trv01arc04b)");
+
+    //void1->Draw();
+
+    // Void02  *******************************
+
+
+   // Box  Void02
+
+     voidbox_dX=1.35/2, voidbox_dY = 3.4/2; voidbox_X=8.875, voidbox_Y = 11.5;
+     TGeoBBox   *void02_Box001 = new TGeoBBox("D2void02_Box001",voidbox_dX,voidbox_dY,thickness+t_delta);
+     TGeoTranslation *tr_v02box001= new TGeoTranslation("D2tr_v02box001",voidbox_X,voidbox_Y,0);
+     tr_v02box001-> RegisterYourself();
+
+     voidbox_dX=4.2759/2, voidbox_dY = 1.95/2; voidbox_X=5.13795, voidbox_Y = 13.775;
+     TGeoBBox   *void02_Box002 = new TGeoBBox("D2void02_Box002",voidbox_dX,voidbox_dY,thickness+t_delta);
+     TGeoTranslation *tr_v02box002= new TGeoTranslation("D2tr_v02box002",voidbox_X,voidbox_Y,0);
+     tr_v02box002-> RegisterYourself();
+
+     voidbox_dX=1.1/2, voidbox_dY = .6/2; voidbox_X=7.31392, voidbox_Y = 13.1;
+     TGeoBBox   *void02_Box003 = new TGeoBBox("D2void02_Box003",voidbox_dX,voidbox_dY,thickness+t_delta);
+     TGeoTranslation *tr_v02box003= new TGeoTranslation("D2tr_v02box003",voidbox_X,voidbox_Y,0);
+     tr_v02box003-> RegisterYourself();
+
+   // =============  arcs Void02 ===============
+
+      TGeoTranslation *tr02arcs001  = new TGeoTranslation(8.7, 10.3, 0.);
+      tr02arcs001->SetName("D2tr02arcs001"); tr02arcs001->RegisterYourself(); //A- -> arcA:tr02arcs001
+
+      TGeoTranslation *tr02arcs001b  = new TGeoTranslation(9.05, 10.3, 0.);
+      tr02arcs001b->SetName("D2tr02arcs001b"); tr02arcs001b->RegisterYourself(); //B- -> arcB:tr02arcs001b
+
+      TGeoTranslation *tr02arcs002  = new TGeoTranslation(7.7, 12.3, 0.);
+      tr02arcs002->SetName("D2tr02arcs002"); tr02arcs002->RegisterYourself(); //C+ -> arcC:tr02arcs002
+
+      TGeoTranslation *tr02arcs002b  = new TGeoTranslation(9.05, 13.2, 0.);
+      tr02arcs002b->SetName("D2tr02arcs002b"); tr02arcs002b->RegisterYourself(); //C+ -> arcC:tr02arcs002b
+
+      TGeoTranslation *tr02arcs003  = new TGeoTranslation(3.5, 13.3, 0.);
+      tr02arcs003->SetName("D2tr02arcs003"); tr02arcs003->RegisterYourself(); //A- -> arcA:tr02arcs003
+
+      TGeoTranslation *tr02arcs003b  = new TGeoTranslation(3.5, 14.25, 0.);
+      tr02arcs003b->SetName("D2tr02arcs003b"); tr02arcs003b->RegisterYourself(); //D- -> arcD:tr02arcs003b
+
+      TGeoTranslation *tr02arcs004  = new TGeoTranslation(7.27582, 14.25, 0.);
+      tr02arcs004->SetName("D2tr02arcs004"); tr02arcs004->RegisterYourself(); //G- -> arcG:tr02arcs004
+
+      TGeoCompositeShape *void02 = new TGeoCompositeShape ("D2void02", "(D2void02_Box001:D2tr_v02box001+D2void02_Box002:D2tr_v02box002+D2void02_Box003:D2tr_v02box003+D2arcC:D2tr02arcs002+D2arcE:D2tr02arcs002b+D2arcF+D2arcG:D2tr02arcs004)-(D2arcA:D2tr02arcs001+D2arcB:D2tr02arcs001b+D2arcA:D2tr02arcs003+D2arcD:D2tr02arcs003b)");
+      //void02->Draw();
+
+      //========================
+
+      //Composing basedisk
+      TGeoCompositeShape *basedisk = new TGeoCompositeShape ("D2basedisk", "(D2IntCutBox+D2ssboxes+D2ssboxes:D2rotback-D2void1-D2void02)-D2holes-D2holes:D2rotback-D2void1:D2rotback-D2void02:D2rotback");
+
+      TGeoVolume *vol = new TGeoVolume("Disc_Support_02", basedisk);
+
+      //vol->Raytrace();
+      //vol->Draw(); //   TView *view = gPad->GetView(); view->ShowAxis();
+
+      return vol;
+
 
 }
+
+
+
+
+
+
+/*
 
 //=============================================================================================
 TGeoVolume* AliMFTSupport::Disc_Support_02 (){
@@ -2342,6 +3039,8 @@ TGeoVolume* AliMFTSupport::Disc_Support_02 (){
   return vol  ;
 }
 
+*/
+
 
 //=============================================================================================
 TGeoVolume* AliMFTSupport::Disc_Support_03 (){
@@ -2351,7 +3050,7 @@ TGeoVolume* AliMFTSupport::Disc_Support_03 (){
 
   double rMin = 0,
          rMax = 25.5,
-         thickness = .8/2,
+    thickness = .7/2,  // instead 0.8 fm
          phi0=0.,
          phi1=180. ,
          t_delta=0.1,
@@ -2471,7 +3170,7 @@ TGeoVolume* AliMFTSupport::Disc_Support_03 (){
   trd3_cut3->SetName("trd3_cut3"); trd3_cut3->RegisterYourself();
   TGeoTranslation *trd3_cut3b  = new TGeoTranslation(-21.5, 0., 0.);
   trd3_cut3b->SetName("trd3_cut3b"); trd3_cut3b->RegisterYourself();
-
+  
   TGeoBBox   *d3_cut4 = new TGeoBBox("d3_cut4",23.1/2, 19.84/2,thickness+ t_delta);
   TGeoBBox   *d3_cut5 = new TGeoBBox("d3_cut5",18.7/2, 25.86/2,thickness+ t_delta);
   TGeoBBox   *d3_cut6 = new TGeoBBox("d3_cut6",8.5/2, 29.46/2,thickness+ t_delta);
@@ -2599,6 +3298,12 @@ TGeoVolume* AliMFTSupport::Disc_Support_03 (){
   //Combining all relief holes of one side
   TGeoCompositeShape *d3holes = new TGeoCompositeShape ("d3holes", "d3holes1:d3tr_holes1 + d3holes2:d3tr_holes2 + d3holes3:d3tr_holes3 + d3holes4a:d3tr_holes4a+ d3holes4b:d3tr_holes4b+ d3holes4c:d3tr_holes4c + d3holes5:d3tr_holes5 + d3holes6:d3tr_holes6 + d3holes7:d3tr_holes7 + d3holes8:d3tr_holes8 + d3holes9:d3tr_holes9 + d3Th001:d3tr_Th001 + d3Th002:d3tr_Th002 + d3Th003:d3tr_Th003 + d3Th004:d3tr_Th004 + d3Th005:d3tr_Th005");
 
+  //============================== Missing rotback, added fm
+  //Create screw areas and holes in the backside by rotation
+  TGeoRotation *rotback = new TGeoRotation("rotback",0.,180.,180.);
+  rotback->RegisterYourself();
+  //==============================
+
   //Adding reliefs
   TGeoCompositeShape *d3base2 = new TGeoCompositeShape ("d3base2", "d3base+d3ssboxes+d3ssboxes:rotback");
 
@@ -2615,6 +3320,8 @@ TGeoVolume* AliMFTSupport::Disc_Support_03 (){
   return vol  ;
 }
 
+
+
 //=============================================================================================
 TGeoVolume* AliMFTSupport::Disc_Support_04 (){
   // define shape components with names + positions
@@ -2623,7 +3330,7 @@ TGeoVolume* AliMFTSupport::Disc_Support_04 (){
 
   double rMin = 0,
          rMax = 25.5,
-         thickness = .8/2,
+    thickness = .7/2,  // instead 0.8 fm
          phi0=0.,
          phi1=180. ,
          t_delta=0.1,
@@ -2644,21 +3351,24 @@ TGeoVolume* AliMFTSupport::Disc_Support_04 (){
 
   //Screw support box 1
   Double_t ssbox1_dX=1.2/2, ssbox1_dY = 1.9/2;
-  Double_t ssbox1_X=12.15, ssbox1_Y = 7.86, ssbox1_Z= thickness+sup_box_dZ;
+  //Double_t ssbox1_X=12.15, ssbox1_Y = 7.86, ssbox1_Z= thickness+sup_box_dZ;
+  Double_t ssbox1_X=13.15, ssbox1_Y = 8.2, ssbox1_Z= thickness+sup_box_dZ; // avoid overlap, fm
   TGeoBBox   *ssbox1 = new TGeoBBox("d4ssbox1",ssbox1_dX,ssbox1_dY,sup_box_dZ);
   TGeoTranslation *tr_ssbox1= new TGeoTranslation ("d4tr_ssbox1",ssbox1_X,ssbox1_Y,ssbox1_Z);
   tr_ssbox1-> RegisterYourself();
 
   //Screw support box 2
   Double_t ssbox2_dX=1.2/2, ssbox2_dY = 1.9/2;
-  Double_t ssbox2_X=10.45, ssbox2_Y = 10.87, ssbox2_Z= thickness+sup_box_dZ;
+  //Double_t ssbox2_X=10.45, ssbox2_Y = 10.87, ssbox2_Z= thickness+sup_box_dZ;
+  Double_t ssbox2_X=12.0, ssbox2_Y = 11.2, ssbox2_Z= thickness+sup_box_dZ;  // avoid overlap, fm
   TGeoBBox   *ssbox2 = new TGeoBBox("d4ssbox2",ssbox2_dX,ssbox2_dY,sup_box_dZ);
   TGeoTranslation *tr_ssbox2= new TGeoTranslation ("d4tr_ssbox2",ssbox2_X,ssbox2_Y,ssbox2_Z);
   tr_ssbox2-> RegisterYourself();
 
   //Screw support box 3
   Double_t ssbox3_dX=4.6/2, ssbox3_dY = 1.9/2;
-  Double_t ssbox3_X=7.05, ssbox3_Y = 13.88, ssbox3_Z= thickness+sup_box_dZ;
+  //Double_t ssbox3_X=7.05, ssbox3_Y = 13.88, ssbox3_Z= thickness+sup_box_dZ;
+  Double_t ssbox3_X=10.05, ssbox3_Y = 13.88, ssbox3_Z= thickness+sup_box_dZ;  // avoid overlap, fm
   TGeoBBox   *ssbox3 = new TGeoBBox("d4ssbox3",ssbox3_dX,ssbox3_dY,sup_box_dZ);
   TGeoTranslation *tr_ssbox3= new TGeoTranslation ("d4tr_ssbox3",ssbox3_X,ssbox3_Y,ssbox3_Z);
   tr_ssbox3-> RegisterYourself();
@@ -2672,35 +3382,40 @@ TGeoVolume* AliMFTSupport::Disc_Support_04 (){
 
   //Screw support box 5
   Double_t ssbox5_dX=1.2/2, ssbox5_dY = 1.9/2;
-  Double_t ssbox5_X=3.65, ssbox5_Y = 15.68, ssbox5_Z= thickness+sup_box_dZ;
+  //Double_t ssbox5_X=3.65, ssbox5_Y = 15.68, ssbox5_Z= thickness+sup_box_dZ;
+  Double_t ssbox5_X=3.65, ssbox5_Y = 16.4, ssbox5_Z= thickness+sup_box_dZ;  // avoid overlap, fm
   TGeoBBox   *ssbox5 = new TGeoBBox("d4ssbox5",ssbox5_dX,ssbox5_dY,sup_box_dZ);
   TGeoTranslation *tr_ssbox5= new TGeoTranslation ("d4tr_ssbox5",ssbox5_X,ssbox5_Y,ssbox5_Z);
   tr_ssbox5-> RegisterYourself();
 
   //Screw support box6
   Double_t ssbox6_dX=1.2/2, ssbox6_dY = 1.9/2;
-  Double_t ssbox6_X=-3.15, ssbox6_Y = 16.1371, ssbox6_Z= thickness+sup_box_dZ;
+  //Double_t ssbox6_X=-3.15, ssbox6_Y = 16.1371, ssbox6_Z= thickness+sup_box_dZ;
+  Double_t ssbox6_X=-3.15, ssbox6_Y = 16.4, ssbox6_Z= thickness+sup_box_dZ;  // avoid overlap, fm
   TGeoBBox   *ssbox6 = new TGeoBBox("d4ssbox6",ssbox6_dX,ssbox6_dY,sup_box_dZ);
   TGeoTranslation *tr_ssbox6= new TGeoTranslation ("d4tr_ssbox6",ssbox6_X,ssbox6_Y,ssbox6_Z);
   tr_ssbox6-> RegisterYourself();
 
   //Screw support box7
   Double_t ssbox7_dX=4.6/2, ssbox7_dY = 1.9/2;
-  Double_t ssbox7_X=-6.55, ssbox7_Y = 13.88, ssbox7_Z= thickness+sup_box_dZ;
+  //Double_t ssbox7_X=-6.55, ssbox7_Y = 13.88, ssbox7_Z= thickness+sup_box_dZ;
+  Double_t ssbox7_X=-10.05, ssbox7_Y = 13.88, ssbox7_Z= thickness+sup_box_dZ;  // avoid overlap, fm
   TGeoBBox   *ssbox7 = new TGeoBBox("d4ssbox7",ssbox7_dX,ssbox7_dY,sup_box_dZ);
   TGeoTranslation *tr_ssbox7= new TGeoTranslation ("d4tr_ssbox7",ssbox7_X,ssbox7_Y,ssbox7_Z);
   tr_ssbox7-> RegisterYourself();
 
   //Screw support box8
   Double_t ssbox8_dX=2.9/2, ssbox8_dY = 1.9/2;
-  Double_t ssbox8_X=-10.8, ssbox8_Y = 10.87, ssbox8_Z= thickness+sup_box_dZ;
+  //Double_t ssbox8_X=-10.8, ssbox8_Y = 10.87, ssbox8_Z= thickness+sup_box_dZ;
+  Double_t ssbox8_X=-12.8, ssbox8_Y = 10.87, ssbox8_Z= thickness+sup_box_dZ;  // avoid overlap, fm
   TGeoBBox   *ssbox8 = new TGeoBBox("d4ssbox8",ssbox8_dX,ssbox8_dY,sup_box_dZ);
   TGeoTranslation *tr_ssbox8= new TGeoTranslation ("d4tr_ssbox8",ssbox8_X,ssbox8_Y,ssbox8_Z);
   tr_ssbox8-> RegisterYourself();
 
   //Screw support box9
   Double_t ssbox9_dX=1.2/2, ssbox9_dY = 1.9/2;
-  Double_t ssbox9_X=-13.35, ssbox9_Y = 7.86, ssbox9_Z= thickness+sup_box_dZ;
+  //Double_t ssbox9_X=-13.35, ssbox9_Y = 7.86, ssbox9_Z= thickness+sup_box_dZ;
+  Double_t ssbox9_X=-13.35, ssbox9_Y = 7.86, ssbox9_Z= thickness+sup_box_dZ; // avoid overlap, fm
   TGeoBBox   *ssbox9 = new TGeoBBox("d4ssbox9",ssbox9_dX,ssbox9_dY,sup_box_dZ);
   TGeoTranslation *tr_ssbox9= new TGeoTranslation ("d4tr_ssbox9",ssbox9_X,ssbox9_Y,ssbox9_Z);
   tr_ssbox9-> RegisterYourself();
@@ -2736,7 +3451,7 @@ TGeoVolume* AliMFTSupport::Disc_Support_04 (){
   // Disk cuts
 
   TGeoBBox   *d4_cut1 = new TGeoBBox("d4_cut1",rMax+ t_delta, 1.4, thickness+ t_delta);
-  TGeoBBox   *d4_cut2 = new TGeoBBox("d4_cut2",31.8/2, 13.82/2,thickness+ t_delta);
+  TGeoBBox   *d4_cut2 = new TGeoBBox("d4_cut2",32.5/2, 13.82/2,thickness+ t_delta);
   TGeoBBox   *d4_cut3 = new TGeoBBox("d4_cut3",8.0/2, 10.0/2,thickness+ t_delta);
 
   TGeoTranslation *trd4_cut3  = new TGeoTranslation(21.5, 0., 0.);
@@ -2744,9 +3459,18 @@ TGeoVolume* AliMFTSupport::Disc_Support_04 (){
   TGeoTranslation *trd4_cut3b  = new TGeoTranslation(-21.5, 0., 0.);
   trd4_cut3b->SetName("trd4_cut3b"); trd4_cut3b->RegisterYourself();
 
+  /*
   TGeoBBox   *d4_cut4 = new TGeoBBox("d4_cut4",23.1/2, 19.84/2,thickness+ t_delta);
   TGeoBBox   *d4_cut5 = new TGeoBBox("d4_cut5",18.7/2, 25.86/2,thickness+ t_delta);
   TGeoBBox   *d4_cut6 = new TGeoBBox("d4_cut6",8.5/2, 29.46/2,thickness+ t_delta);
+  TGeoBBox   *d4_cut7 = new TGeoBBox("d4_cut7",5.1/2, 31.92/2,thickness+ t_delta);
+  TGeoBBox   *d4_cut8 = new TGeoBBox("d4_cut8",19.8/2, 2.0/2,thickness+ t_delta);
+  */
+
+  // to avoid overlap, fm
+  TGeoBBox   *d4_cut4 = new TGeoBBox("d4_cut4",24.5/2, 19.84/2,thickness+ t_delta);
+  TGeoBBox   *d4_cut5 = new TGeoBBox("d4_cut5",22./2, 25.86/2,thickness+ t_delta);
+  TGeoBBox   *d4_cut6 = new TGeoBBox("d4_cut6",15.3/2, 30.8/2,thickness+ t_delta);
   TGeoBBox   *d4_cut7 = new TGeoBBox("d4_cut7",5.1/2, 31.92/2,thickness+ t_delta);
   TGeoBBox   *d4_cut8 = new TGeoBBox("d4_cut8",19.8/2, 2.0/2,thickness+ t_delta);
 
@@ -2762,21 +3486,24 @@ TGeoVolume* AliMFTSupport::Disc_Support_04 (){
 
   //Reliefs
   //Screwholes Area #1
-  Double_t AX=12.15, AY=7.41; Int_t N_holes = 1;
+  //Double_t AX=12.15, AY=7.41; Int_t N_holes = 1;
+  Double_t AX=13.15, AY=7.8; Int_t N_holes = 1;  // to avoid overlap, fm
   TGeoTranslation *tr_d4holes1= new TGeoTranslation ("d4tr_holes1",AX,AY, 2*sup_box_dZ+thickness);
   tr_d4holes1-> RegisterYourself();
   TGeoCompositeShape * d4holes1 = new TGeoCompositeShape();
   d4holes1 = screw_array(N_holes); d4holes1->SetName("d4holes1");
 
   //Screwholes Area #2
-  AX=10.45; AY=10.42; N_holes = 1;
+  //AX=10.45; AY=10.42; N_holes = 1;
+  AX=12.0; AY=10.8; N_holes = 1; // to avoid overlap, fm
   TGeoTranslation *tr_d4holes2= new TGeoTranslation ("d4tr_holes2",AX,AY, 2*sup_box_dZ+thickness);
   tr_d4holes2-> RegisterYourself();
   TGeoCompositeShape * d4holes2 = new TGeoCompositeShape();
   d4holes2 = screw_array(N_holes,-1.7); d4holes2->SetName("d4holes2");
 
   //Screwholes Area #3
-  AX=8.75; AY=13.43; N_holes = 3;
+  //AX=8.75; AY=13.43; N_holes = 3;
+  AX=11.75; AY=13.43; N_holes = 3;  // avoid overlap, fm
   TGeoTranslation *tr_d4holes3= new TGeoTranslation ("d4tr_holes3",AX,AY, 2*sup_box_dZ+thickness);
   tr_d4holes3-> RegisterYourself();
   TGeoCompositeShape * d4holes3 = new TGeoCompositeShape();
@@ -2802,28 +3529,32 @@ TGeoVolume* AliMFTSupport::Disc_Support_04 (){
   d4holes4c = screw_array(N_holes,-1.7); d4holes4c->SetName("d4holes4c");
 
   //Screwholes Area #5
-  AX=3.65; AY=15.23; N_holes = 1;
+  //AX=3.65; AY=15.23; N_holes = 1;
+  AX=3.65; AY=15.6; N_holes = 1;  // avoid overlap, fm
   TGeoTranslation *tr_d4holes5= new TGeoTranslation ("d4tr_holes5",AX,AY, 2*sup_box_dZ+thickness);
   tr_d4holes5-> RegisterYourself();
   TGeoCompositeShape * d4holes5 = new TGeoCompositeShape();
   d4holes5 = screw_array(N_holes,-1.7); d4holes5->SetName("d4holes5");
 
   //Screwholes Area #6
-  AX=-3.15; AY=15.69; N_holes = 1;
+  //AX=-3.15; AY=15.69; N_holes = 1;
+  AX=-3.15; AY=16.4; N_holes = 1; // avoid overlap, fm
   TGeoTranslation *tr_d4holes6= new TGeoTranslation ("d4tr_holes6",AX,AY, 2*sup_box_dZ+thickness);
   tr_d4holes6-> RegisterYourself();
   TGeoCompositeShape * d4holes6 = new TGeoCompositeShape();
   d4holes6 = screw_array(N_holes,-1.7); d4holes6->SetName("d4holes6");
 
   //Screwholes Area #7
-  AX=-4.85, AY=13.43; N_holes = 3;
+  //AX=-4.85, AY=13.43; N_holes = 3;
+  AX=-8.35, AY=13.43; N_holes = 3;   // avoid overlap, fm
   TGeoTranslation *tr_d4holes7= new TGeoTranslation ("d4tr_holes7",AX,AY, 2*sup_box_dZ+thickness);
   tr_d4holes7-> RegisterYourself();
   TGeoCompositeShape * d4holes7 = new TGeoCompositeShape();
   d4holes7 = screw_array(N_holes,-1.7); d4holes7->SetName("d4holes7");
 
   //Screwholes Area #8
-  AX=-9.95, AY=10.42; N_holes = 2;
+  //AX=-9.95, AY=10.42; N_holes = 2;
+  AX=-11.95, AY=10.42; N_holes = 2;  // avoid overlap, fm
   TGeoTranslation *tr_d4holes8= new TGeoTranslation ("d4tr_holes8",AX,AY, 2*sup_box_dZ+thickness);
   tr_d4holes8-> RegisterYourself();
   TGeoCompositeShape * d4holes8 = new TGeoCompositeShape();
@@ -2870,6 +3601,12 @@ TGeoVolume* AliMFTSupport::Disc_Support_04 (){
 
   //Combining all relief holes of one side
   TGeoCompositeShape *d4holes = new TGeoCompositeShape ("d4holes", "d4holes1:d4tr_holes1 + d4holes2:d4tr_holes2 + d4holes3:d4tr_holes3 + d4holes4a:d4tr_holes4a+ d4holes4b:d4tr_holes4b+ d4holes4c:d4tr_holes4c + d4holes5:d4tr_holes5 + d4holes6:d4tr_holes6 + d4holes7:d4tr_holes7 + d4holes8:d4tr_holes8 + d4holes9:d4tr_holes9 + d4Th001:d4tr_Th001 + d4Th002:d4tr_Th002 + d4Th003:d4tr_Th003 + d4Th004:d4tr_Th004 + d4Th005:d4tr_Th005");
+
+  //===================== Missing rotback, added fm
+  //Create screw areas and holes in the backside by rotation
+  TGeoRotation *rotback = new TGeoRotation("rotback",0.,180.,180.);
+  rotback->RegisterYourself();
+
 
   //Adding reliefs
   TGeoCompositeShape *d4base2 = new TGeoCompositeShape ("d4base2", "d4base+d4ssboxes+d4ssboxes:rotback");
