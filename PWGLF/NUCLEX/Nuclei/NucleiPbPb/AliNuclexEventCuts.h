@@ -38,7 +38,7 @@ class AliNuclexEventCutsContainer : public TNamed {
 
 class AliNuclexEventCuts : public TList {
   public:
-    AliNuclexEventCuts(bool savePlots = false) __attribute__ ((deprecated("Please use AliEventCuts for your analysis.")));
+    AliNuclexEventCuts(bool savePlots = false);
     virtual ~AliNuclexEventCuts() { if (fMultiplicityV0McorrCut) delete fMultiplicityV0McorrCut; }
     enum CutsBin {
       kNoCuts = 0,
@@ -126,6 +126,8 @@ class AliNuclexEventCuts : public TList {
     const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
+    AliNuclexEventCuts(const AliNuclexEventCuts& copy) {}
+    AliNuclexEventCuts operator=(const AliNuclexEventCuts& copy) {return *this;}
     void          AutomaticSetup (AliVEvent *ev);
     void          ComputeTrackMultiplicity(AliVEvent *ev);
     template<typename F> F PolN(F x, F* coef, int n);
