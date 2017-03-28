@@ -114,7 +114,9 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fh2PtTriggerHadronJet(0x0),
   fhPhiTriggerHadronJet(0x0),
   fhPhiTriggerHadronEventPlane(0x0),
-  fhPhiTriggerHadronEventPlaneTPC(0x0)
+  fhPhiTriggerHadronEventPlaneTPC(0x0),
+  fhDetJetPt_Incl(0x0),
+  fhDetJetPt_Matched(0x0)
 
 {
   for(Int_t i=0;i<nBranch;i++){
@@ -174,7 +176,9 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fh2PtTriggerHadronJet(0x0),
   fhPhiTriggerHadronJet(0x0),
   fhPhiTriggerHadronEventPlane(0x0),
-  fhPhiTriggerHadronEventPlaneTPC(0x0)
+  fhPhiTriggerHadronEventPlaneTPC(0x0),
+  fhDetJetPt_Incl(0x0),
+  fhDetJetPt_Matched(0x0)
   
 {
   // Standard constructor.
@@ -238,7 +242,7 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
 
   if (fJetShapeType==AliAnalysisTaskRecoilJetYield::kData || fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
     
-    fhJetPt= new TH1F("fhJetPt", "Jet Pt",1500,-0.5,149.5 );   
+    fhJetPt= new TH1F("fhJetPt", "Jet Pt",150,-0.5,149.5 );   
     fOutput->Add(fhJetPt);
     fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
     fOutput->Add(fhJetPhi);
@@ -260,6 +264,10 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fOutput->Add(fhGroomedPtvJetPt);
     fhDroppedBranches= new TH1F("fhDroppedBranches","Number of Softdropped branches",50,0,50);
     fOutput->Add(fhDroppedBranches);
+    fhDetJetPt_Incl= new TH1F("fhDetJetPt_Incl", "Jet Pt",200,-0.5,199.5 );   
+    fOutput->Add(fhDetJetPt_Incl);
+    fhDetJetPt_Matched= new TH1F("fhDetJetPt_Matched", "Jet Pt",200,-0.5,199.5 );   
+    fOutput->Add(fhDetJetPt_Matched);
 
     if(fJetSelection == kRecoil){
       fhPtTriggerHadron= new TH1F("fhPtTriggerHadron", "fhPtTriggerHadron",1500,-0.5,149.5);  
@@ -406,13 +414,17 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
   ////////////////////kEmbedded////////////////////
   if(fJetShapeType == kDetEmbPart){
     AliEmcalJet *JetHybridS = NULL; //Subtracted hybrid Jet  
-    AliEmcalJet *JetHybridUS = NULL; //Unsubtracted Hybrid Jet                                                                                                                     
+    AliEmcalJet *JetHybridUS = NULL; //Unsubtracted Hybrid Jet     //For matching SubtractedHybrid->DetPythia this jet container is also Subtracted Hybrid                                                                                                                
     AliEmcalJet *JetPythDet = NULL; //Detector Level Pythia Jet
     AliEmcalJet *JetPythTrue = NULL; //Particle Level Pyhtia Jet
     AliJetContainer *JetContHybridS= GetJetContainer(0); //Jet Container for Subtracted Hybrid Jets 
     AliJetContainer *JetContHybridUS= GetJetContainer(1); //Jet Container for Unsubtracted Hybrid Jets                                                                                  
     AliJetContainer *JetContPythDet= GetJetContainer(2); //Jet Container for Detector Level Pyhtia Jets 
     AliJetContainer *JetContPythTrue= GetJetContainer(3); //Jet Container for Particle Level Pythia Jets
+
+   while((JetPythDet = JetContPythDet->GetNextAcceptJet())){
+     fhDetJetPt_Incl->Fill(JetPythDet->Pt()); //Fill histogram with all Detector level jets
+    }
 
     Bool_t JetsMatched = kFALSE;
     Double_t JetPtThreshold;
@@ -440,6 +452,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
           continue;
         }
 	if (!JetPythDet) continue;
+	fhDetJetPt_Matched->Fill(JetPythDet->Pt()); //Fill only matched detector level jets for tagging efficiency comparison
 	JetPythTrue=JetPythDet->ClosestJet();
 	if(!JetPythTrue) continue;
 	JetsMatched=kTRUE;
@@ -472,6 +485,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       }
     }
   }
+
+  
+  
   return kTRUE;
 }
 
@@ -587,51 +603,68 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
  
 
   std::vector<fastjet::PseudoJet> jet_constituents = fOutputJets[0].constituents();
-  Float_t NSubjettinessResult1, NSubjettinessResult2, NSubBeta = 1, R0=0.4;
+  Float_t NSubjettinessResult[3], NSubBeta = 1, R0=0.4;
   std::vector<fastjet::PseudoJet> Subjet_Axes;
   fastjet::PseudoJet SubJet1_Axis,SubJet2_Axis;
-  if(jet_constituents.size()>=2){
-    fastjet::contrib::Nsubjettiness nSub1(1,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(NSubBeta,R0));
-    fastjet::contrib::Nsubjettiness nSub2(2,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(NSubBeta,R0));
+  Double_t DelR=-5;
+	
+  
+  for(Int_t j=1; j<3; j++){
+    if(jet_constituents.size() < j){
+      if(!fTruthJet){
+	if(j==1) fJetInfoVar[4]=-5;
+	else if(j==2) fJetInfoVar[6]=-5;
+      }
+      else {
+	if(j==1) fJetInfoVar[5]=-5;
+	else if(j==2) fJetInfoVar[7]=-5;
+      }
+      continue;
+    }
+    else{
+      fastjet::contrib::Nsubjettiness nSub(j,fastjet::contrib::KT_Axes(),fastjet::contrib::NormalizedMeasure(NSubBeta,R0));
+      NSubjettinessResult[j] = nSub.result(fOutputJets[0]);
+      if(j==2){ //find subjet axis to calculate delR
+	Subjet_Axes = nSub.currentAxes();
+	SubJet1_Axis = Subjet_Axes[0];
+	SubJet2_Axis = Subjet_Axes[1];
 
-    NSubjettinessResult1 = nSub1.result(fOutputJets[0]);
-    NSubjettinessResult2 = nSub2.result(fOutputJets[0]);
-    Subjet_Axes = nSub2.currentAxes();
-    SubJet1_Axis = Subjet_Axes[0];
-    SubJet2_Axis = Subjet_Axes[1];
+	Double_t SubJet1_Eta=SubJet1_Axis.pseudorapidity();
+	Double_t SubJet2_Eta=SubJet2_Axis.pseudorapidity();
+	Double_t SubJet1_Phi=SubJet1_Axis.phi();
+	if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
+	else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
+	Double_t SubJet2_Phi=SubJet2_Axis.phi();
+	if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
+	else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
 
-    Double_t SubJet1_Eta=SubJet1_Axis.pseudorapidity();
-    Double_t SubJet2_Eta=SubJet2_Axis.pseudorapidity();
-    Double_t SubJet1_Phi=SubJet1_Axis.phi();
-    if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
-    else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
-    Double_t SubJet2_Phi=SubJet2_Axis.phi();
-    if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
-    else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
-
-    Double_t DeltaPhiSubJets,DeltaEtaSubJets;
-    DeltaPhiSubJets=SubJet1_Phi-SubJet2_Phi;
-    DeltaEtaSubJets=SubJet1_Eta-SubJet2_Eta;
-    if(DeltaPhiSubJets < -1*TMath::Pi()) DeltaPhiSubJets += (2*TMath::Pi());
-    else if (DeltaPhiSubJets > TMath::Pi()) DeltaPhiSubJets -= (2*TMath::Pi());
-    Double_t DelR=0;
-    DelR = TMath::Power(TMath::Power(DeltaPhiSubJets,2)+TMath::Power(DeltaEtaSubJets,2),0.5);
-
-    if(!fTruthJet) fJetInfoVar[12]=DelR;
-    else fJetInfoVar[13]=DelR;
+	Double_t DeltaPhiSubJets,DeltaEtaSubJets;
+	DeltaPhiSubJets=SubJet1_Phi-SubJet2_Phi;
+	DeltaEtaSubJets=SubJet1_Eta-SubJet2_Eta;
+	if(DeltaPhiSubJets < -1*TMath::Pi()) DeltaPhiSubJets += (2*TMath::Pi());
+	else if (DeltaPhiSubJets > TMath::Pi()) DeltaPhiSubJets -= (2*TMath::Pi());
+	
+	DelR = TMath::Power(TMath::Power(DeltaPhiSubJets,2)+TMath::Power(DeltaEtaSubJets,2),0.5);
+      }
+    }
   }
+    if(!fTruthJet){
+      fJetInfoVar[4]=NSubjettinessResult[1];
+      fJetInfoVar[6]=NSubjettinessResult[2];
+      fJetInfoVar[12]=DelR;
+    }
+    else {
+      fJetInfoVar[5]=NSubjettinessResult[1];
+      fJetInfoVar[7]=NSubjettinessResult[2];
+      fJetInfoVar[13]=DelR;
+    }
+
+    
   
   fastjet::contrib::SoftDrop softdrop(beta, zcut);
   softdrop.set_verbose_structure(kTRUE);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
-  if(!fTruthJet){
-    fJetInfoVar[4]=NSubjettinessResult1;
-    fJetInfoVar[6]=NSubjettinessResult2;
-  }
-  else {
-    fJetInfoVar[5]=NSubjettinessResult1;
-    fJetInfoVar[7]=NSubjettinessResult2;
-  }
+
   AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
   std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
   Double_t FastjetTrackDelR,EmcalTrackDelR;
