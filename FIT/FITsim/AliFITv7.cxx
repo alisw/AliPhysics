@@ -161,9 +161,9 @@ void AliFITv7::CreateGeometry()
   Float_t pinstart[3] = {2.95,2.95,4.};
   Float_t  pmcp[3] = {2.949, 2.949, 2.8}; //MCP
   Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
-  Float_t ptopref[3] = {1.325, 1.325, 1.06};//cherenkov radiator wrapped with reflection 
-  Float_t preg[3] = {1.324, 1.324, 0.05};//photcathode 
-  Double_t prfv[3]= {0.0005,1.323, 1.};//vertical refracting layer bettwen radiators and bettwen radiator and not optical Air
+  Float_t ptopref[3] = {1.3241, 1.3241, 1.};//cherenkov radiator wrapped with reflection 
+  Float_t preg[3] = {1.324, 1.324, 0.005};//photcathode 
+  Double_t prfv[3]= {0.0002,1.323, 1.};//vertical refracting layer bettwen radiators and bettwen radiator and not optical Air
   Double_t prfh[3]= {1.323,0.0002, 1.};//horizontal refracting layer bettwen radiators a 
    Float_t zV0A = 325.;
   Float_t zV0C = 89;
@@ -320,11 +320,11 @@ void AliFITv7::CreateGeometry()
   y=0;
    
   // Entry window (glass)
-  TVirtualMC::GetMC()->Gsvolu("0TOP","BOX",idtmed[kOpGlass],ptop,3); //glass
+  TVirtualMC::GetMC()->Gsvolu("0TOP","BOX",idtmed[kOpGlass],ptop,3); //glass radiator
   TGeoVolume *top = gGeoManager->GetVolume("0TOP");
   TVirtualMC::GetMC()->Gsvolu("0TRE","BOX",idtmed[kAir],ptopref,3); //air: wrapped  radiator
   TGeoVolume *topref = gGeoManager->GetVolume("0TRE");
-    TVirtualMC::GetMC()->Gsvolu ("0REG", "BOX", idtmed[kOpGlassCathode], preg, 3); 
+  TVirtualMC::GetMC()->Gsvolu ("0REG", "BOX", idtmed[kOpGlassCathode], preg, 3); 
   TGeoVolume *cat = gGeoManager->GetVolume("0REG");
   TVirtualMC::GetMC()->Gsvolu("0MCP","BOX",idtmed[kGlass],pmcp,3); //glass
   TGeoVolume *mcp = gGeoManager->GetVolume("0MCP");
@@ -337,74 +337,43 @@ void AliFITv7::CreateGeometry()
   Int_t ntops=0, nrfvs=0, nrfhs=0;
   Float_t xin=0, yin=0, xinv=0, yinv=0,xinh=0,yinh=0;
   topref->AddNode(top, 1, new TGeoTranslation(0,0,0) );
-  xinv = -ptopref[0] + prfv[0];
+  // xinv = -ptopref[0] + prfv[0];
+  
+xinv = -ptop[0] - prfv[0];
   topref->AddNode(rfv, 1, new TGeoTranslation(xinv,0,0) );
   printf(" GEOGEO  refv %f ,  0,0 \n",xinv);
-  xinv = ptopref[0] - prfv[0];
+  xinv = ptop[0] + prfv[0];
   topref->AddNode(rfv, 2, new TGeoTranslation(xinv,0,0) );
   printf(" GEOGEO  refv %f ,  0,0 \n",xinv);
-  yinv = -ptopref[1] + prfh[1];
+  yinv = -ptop[1] - prfh[1];
   topref->AddNode(rfh, 1, new TGeoTranslation(0,yinv,0) );
   printf(" GEOGEO  refh  ,  0, %f, 0 \n",yinv);
-  yinv = ptopref[0] - prfh[1];
+  yinv = ptop[1] + prfh[1];
   topref->AddNode(rfh, 2, new TGeoTranslation(0,yinv,0) );
-  z = ptopref[2] - 2 * ptop[2] - preg[2];
-  topref->AddNode(cat, 1, new TGeoTranslation(0,0,z) );
-  topref->Print();
 
-// MCP
-//   z=-pinstart[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
-  z=-pinstart[2] + 2*ptopref[2]  + pmcp[2];
-  ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
-	 
+  //container for radiator, cathod, mcp	 
   for (Int_t ix=0; ix<2; ix++) {
     xin = - pinstart[0] + 0.3 + (ix+0.5)*2*ptopref[0] ;
     for (Int_t iy=0; iy<2 ; iy++) {
-      z = - pinstart[2]+ptop[2];
+      z = - pinstart[2]+ptopref[2];
       yin = - pinstart[1] + 0.3 + (iy+0.5)*2*ptopref[1];
       ntops++;
       ins->AddNode(topref, ntops, new TGeoTranslation(xin,yin,z) );
       printf(" 0TOP  full %i x %f y %f z %f \n", ntops, xin, yin, z);
+      z = -pinstart[2] + 2 * ptopref[2] + preg[2];
+      ins->AddNode(cat, ntops, new TGeoTranslation(xin, yin, z) );
+      // cat->Print();
+      printf(" GEOGEO  CATHOD x=%f , y= %f z= %f num  %i\n", xin, yin, z, ntops);
       }
    }
-      /*       
-              //start positioning of refractiong layers 
-       topref->AddNode(top, 1, new TGeoTranslation(0,0,0) );
-       xinv = -ptopref[0] + prfv[0];
-       topref->AddNode(rfv, 1, new TGeoTranslation(xinv,0,0) );
-       xinv = ptopref[0] - prfv[0];
-       topref->AddNode(rfv, 1, new TGeoTranslation(xinv,0,0) );
-        yinv = -ptopref[1] + prfh[1];
-       topref->AddNode(rfh, 1, new TGeoTranslation(0,yinv,0) );
-       yinv = ptopref[0] - prfh[1];
-       topref->AddNode(rfh, 1, new TGeoTranslation(0,yinv,0) );
-       z = ptopref[2] - 2 * ptop[2] - preg[2];
-       ins->AddNode(cat, ntops, new TGeoTranslation(0,0,z) );
+     
+// MCP
+   z=-pinstart[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
+   //   z=-pinstart[2] + 2*ptopref[2] + preg[2];
+  ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
 
-  
-    //vertical
-       nrfvs++;
-       xinv = xin-ptop[0]-prfv[0];
-       ins->AddNode(rfv, nrfvs, new TGeoTranslation(xinv,yin,z) );
-       xinv = xin +ptop[0]+prfv[0];
-       nrfvs++;
-       ins->AddNode(rfv, nrfvs, new TGeoTranslation(xinv,yin,z) );
-       //horizontal
-       nrfhs++;
-       yinh = yin-ptop[1]-prfh[1];
-       ins->AddNode(rfh, nrfhs, new TGeoTranslation(xin,yinh,z) );
-       yinh = yin +ptop[1]+prfh[1];
-       nrfhs++;
-       ins->AddNode(rfh, nrfhs, new TGeoTranslation(xin,yinh,z) );
-        printf(" GEOGEO  %i %i %i %f %f %f %f %f %f \n", ntops, ix, iy,
-	       xin,yin,,y1[ntops],x1[ntops]+xin,y1[ntops]+yin);
 
-       z = -pinstart[2] + 2 * ptop[2] + preg[2];
-       ins->AddNode(cat, ntops, new TGeoTranslation(xin,yin,z) );
-       
-     }
-     } */
-
+ 
   //V0+
 
   const int kV0PlusColorSci   = 5;
@@ -967,7 +936,8 @@ void AliFITv7::Init()
 // Initialises version 0 of the Forward Multiplicity Detector
 //
   AliFIT::Init();
-  fIdSens1=TVirtualMC::GetMC()->VolId("0REG");
+    fIdSens1=TVirtualMC::GetMC()->VolId("0REG");
+  // fIdSens1=TVirtualMC::GetMC()->VolId("0TOP");
 
   //Defining the sensitive volumes
   for (Int_t Sec = 0; Sec < nSectors; Sec++)
@@ -996,9 +966,9 @@ void AliFITv7::StepManager()
   //   TClonesArray &lhits = *fHits;
   
   if(!TVirtualMC::GetMC()->IsTrackAlive()) return; // particle has disappeared
-  
   id=TVirtualMC::GetMC()->CurrentVolID(copy);  
   // Check the sensetive volume
+  // printf("T0 :::volumes %i %s \n", id, TVirtualMC::GetMC()->CurrentVolName() ); 
   if(id==fIdSens1 ) { 
     if(TVirtualMC::GetMC()->IsTrackEntering()) {
       TVirtualMC::GetMC()->CurrentVolOffID(1,copy1);
@@ -1027,7 +997,8 @@ void AliFITv7::StepManager()
       hits[10] = fSenseless;//Energy loss is sensless for T0+
       hits[11] = fSenseless;//Track length is sensless for T0+
       hits[12] = fSenseless;//Photon production for V0+
-      if (TVirtualMC::GetMC()->TrackPid() == 50000050)   // If particles is photon then ...
+      //      printf("T0 :::volumes pmt %i mcp %i vol %i x %f y %f z %f particle %f all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
+   if (TVirtualMC::GetMC()->TrackPid() == 50000050)   // If particles is photon then ...
 	{
 	  if(RegisterPhotoE(hits[3])) {
 	    fIshunt = 2;
@@ -1039,7 +1010,6 @@ void AliFITv7::StepManager()
       if ( TVirtualMC::GetMC()->TrackCharge() ) {
 	fIshunt = 0;
 	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
-	//	printf("T0 :::volumes pmt %i mcp %i vol %i x %f y %f z %f particle %f all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
       }
             
       //charge particle TrackReference
