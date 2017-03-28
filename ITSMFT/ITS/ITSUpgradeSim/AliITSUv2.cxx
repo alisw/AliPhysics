@@ -1023,68 +1023,67 @@ void AliITSUv2::StepManager()
     return; // not an ITS sensitive volume.
   } 
   //
-  static TLorentzVector position, momentum; // Saves on calls to construtors
-  static AliITSUHit hit;// Saves on calls to constructors
+  TLorentzVector position, momentum;
+  static AliITSUHit hit;
   //
   TClonesArray &lhits = *(Hits());
   Int_t chipID, status = 0;
   //
+  enum {kInside=0x1,kEntering=0x2,kExiting=0x4,kOut=0x8,kDisappear=0x10,kStop=0x20,kAlive=0x40};
   // Track status
-  if(fMC->IsTrackInside())      status +=  1;
-  if(fMC->IsTrackEntering())    status +=  2;
-  if(fMC->IsTrackExiting()) {
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
-    status +=  4;
-  } // if Outer ITS mother Volume
-  if(fMC->IsTrackOut())         status +=  8;
-  if(fMC->IsTrackDisappeared()) status += 16;
-  if(fMC->IsTrackStop())        status += 32;
-  if(fMC->IsTrackAlive())       status += 64;
+  static Bool_t createdHit=kFALSE;
+  Bool_t startHit=kFALSE,stopHit=kFALSE;
+  if(fMC->IsTrackInside())      status |= kInside;
+  if(fMC->IsTrackEntering())    status |= kEntering;
+  if(fMC->IsTrackExiting())     status |= kExiting;
+  if(fMC->IsTrackOut())         status |= kOut;
+  if(fMC->IsTrackDisappeared()) status |= kDisappear;
+  if(fMC->IsTrackStop())        status |= kStop;
+  if(fMC->IsTrackAlive())       status |= kAlive;
   //
-  // retrieve the indices with the volume path
+  // track is entering or created in the volume
+  if ( (status&kEntering) || (status&kInside && !createdHit) ) startHit = kTRUE;
+  else if ( (status&(kExiting|kOut|kDisappear|kStop)) ) stopHit = kTRUE; 
   //
-  fMC->TrackPosition(position);
-  int chip=-1,module=-1,sstave=-1,stave=-1,level=0; // volume copies on different levels
-  fMC->CurrentVolOffID(++level,chip);
-  if (fGeomTGeo->GetNModules(lay)>0)    fMC->CurrentVolOffID(++level,module);
-  if (fGeomTGeo->GetNHalfStaves(lay)>0) fMC->CurrentVolOffID(++level,sstave);
-  fMC->CurrentVolOffID(++level,stave);
+  if (!startHit) hit.SetEdep(hit.GetIonization()+fMC->Edep());
+  //  
+  if (!(startHit|stopHit)) return; // do noting
   //
-  chipID = fGeomTGeo->GetChipIndex(lay,stave,sstave,module,chip);
+  //
   // Fill hit structure.
   //
-  hit.SetChip(chipID);
-  hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
   fMC->TrackPosition(position);
-  fMC->TrackMomentum(momentum);
-  hit.SetPosition(position);
-  hit.SetTime(fMC->TrackTime());
-  hit.SetMomentum(momentum);
-
   //
-  // ALPIDE chip simulation
-  //
-  hit.SetPID(TVirtualMC::GetMC()->TrackPid());
-  hit.SetTotalEnergy(TVirtualMC::GetMC()->Etot());
-  //////////////////////////////
-
-  hit.SetStatus(status);
-  hit.SetEdep(fMC->Edep());
-  hit.SetShunt(GetIshunt());
-  if(fMC->IsTrackEntering()){
+  if (startHit) {
+    int chip=-1,module=-1,sstave=-1,stave=-1,level=0; // volume copies on different levels
+    fMC->CurrentVolOffID(++level,chip);
+    if (fGeomTGeo->GetNModules(lay)>0)    fMC->CurrentVolOffID(++level,module);
+    if (fGeomTGeo->GetNHalfStaves(lay)>0) fMC->CurrentVolOffID(++level,sstave);
+    fMC->CurrentVolOffID(++level,stave);
+    chipID = fGeomTGeo->GetChipIndex(lay,stave,sstave,module,chip);
+    fMC->TrackMomentum(momentum);
+    //
+    hit.SetChip(chipID);
+    hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     hit.SetStartPosition(position);
     hit.SetStartTime(fMC->TrackTime());
+    hit.SetMomentum(momentum);
+    hit.SetPID(fMC->TrackPid());
+    hit.SetTotalEnergy(fMC->Etot());
+    hit.SetEdep(0.);
     hit.SetStartStatus(status);
-    return; // don't save entering hit.
-  } // end if IsEntering
-    // Fill hit structure with this new hit.
-    //Info("StepManager","Calling Copy Constructor");
-  new(lhits[fNhits++]) AliITSUHit(hit); // Use Copy Construtor.
-  // Save old position... for next hit.
-  hit.SetStartPosition(position);
-  hit.SetStartTime(fMC->TrackTime());
-  hit.SetStartStatus(status);
-
+    hit.SetShunt(GetIshunt());
+    createdHit = kTRUE;
+  }
+  if (stopHit) { 
+    hit.SetPosition(position);
+    hit.SetTime(fMC->TrackTime());
+    hit.SetStatus(status);
+    new(lhits[fNhits++]) AliITSUHit(hit); // Use Copy Construtor.
+    createdHit = kFALSE;
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
+  }
+  //
   return;
 }
 
