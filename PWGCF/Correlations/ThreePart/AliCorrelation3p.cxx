@@ -395,7 +395,7 @@ TObject* AliCorrelation3p::FindObject(const TObject *obj) const
 void AliCorrelation3p::SaveAs(const char *filename,Option_t */*option*/) const
 {
   /// overloaded from TObject: save to file
-  std::auto_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
+  std::unique_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
   if (!output.get() || output->IsZombie()) {
     AliError(Form("can not open file %s from writing", filename));
     return;
