@@ -40,7 +40,12 @@ public:
 
 	void    SetL1V0(const Int_t* v) {for (int i = 0; i < 2; i++) fL1V0[i] = v[i];}
         void    SetL1V0(Int_t i, const Int_t* v) {
-          if (i) {for (int j = 0; j < 2; i++) fL1DCALV0[j] = v[j];} else {for (int j = 0; j < 2; j++) fL1V0[j] = v[j];}
+          for (int j = 0; j < 2; j++) {
+            if (i)
+              { fL1DCALV0[j] = v[j]; }
+            else
+              { fL1V0[j] = v[j]; }
+            }
         }
   
         void    SetL1FrameMask(Int_t m) {fL1FrameMask = m;}
