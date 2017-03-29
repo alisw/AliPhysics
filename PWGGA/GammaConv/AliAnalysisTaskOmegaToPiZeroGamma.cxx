@@ -1402,7 +1402,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserExec(Option_t *)
   fInputEvent = InputEvent();
 
   if(fIsMC > 0) fMCEvent = MCEvent();
-  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
+  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){
     fMCStack = fMCEvent->Stack();
   }
 

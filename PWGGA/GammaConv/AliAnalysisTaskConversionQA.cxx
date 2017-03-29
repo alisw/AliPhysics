@@ -482,7 +482,7 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
   }
   fInputEvent = InputEvent();
   if(fIsMC) fMCEvent = MCEvent();
-  if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){ fMCStack = fMCEvent->Stack(); }
+  if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){ fMCStack = fMCEvent->Stack(); }
 
   Int_t eventNotAccepted =
     fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);

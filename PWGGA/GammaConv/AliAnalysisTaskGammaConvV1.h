@@ -298,9 +298,11 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Int_t                             fDoCentralityFlat;                          //flag for centrality flattening
     Double_t                          fWeightJetJetMC;                            // weight for Jet-Jet MC
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
-    Bool_t                            fEnableClusterCutsForTrigger;                //enables ClusterCuts for Trigger
+    Bool_t                            fEnableClusterCutsForTrigger;               //enables ClusterCuts for Trigger
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
-    
+    TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
+    TObjString*                       fFileNameBroken;                            // string object for broken file name
+
   private:
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
