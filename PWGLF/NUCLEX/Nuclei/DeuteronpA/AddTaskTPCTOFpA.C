@@ -1,5 +1,3 @@
-
-
 AliAnalysisTask *AddTaskDeuteronpA(){
 
 
@@ -43,7 +41,7 @@ AliAnalysisTask *AddTaskDeuteronpA(){
   AliAnalysisDataContainer *coutput1;
 
 
-  coutput1 =  mgr->CreateContainer(Form("akalweit_DeuteronpA"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:akalweit_TPCTOFpA", AliAnalysisManager::GetCommonFileName())); 
+  coutput1 =  mgr->CreateContainer(Form("akalweit_DeuteronpA"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:akalweit_DeuteronpA", AliAnalysisManager::GetCommonFileName())); 
 
 
 
