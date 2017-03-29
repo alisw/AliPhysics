@@ -152,11 +152,11 @@ AliHFInvMassFitter::~AliHFInvMassFitter() {
 
   ///destructor
 
-  delete fHistoInvMass;
   delete fSigFunc;
   delete fBkgFunc;
   delete fBkgFuncSb;
   delete fBkgFuncRefit;
+  delete fHistoInvMass;
   delete fRflFunc;
   delete fBkRFunc;
   delete fSecFunc;
