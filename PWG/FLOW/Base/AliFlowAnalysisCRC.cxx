@@ -19101,6 +19101,13 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     }
   }
   
+  if(fMinMulZN==9) {
+    Double_t fVtxPosCor[3] = {fVtxPos[0]-fAvVtxPosX[fRunBin],fVtxPos[1]-fAvVtxPosY[fRunBin],fVtxPos[2]-fAvVtxPosZ[fRunBin]};
+    if(fabs(fVtxPosCor[0])>3.e-3) PassZDCcuts = kFALSE;
+    if(fabs(fVtxPosCor[1])>3.e-3) PassZDCcuts = kFALSE;
+    if(fabs(fVtxPosCor[2])>3.e-01) PassZDCcuts = kFALSE;
+  }
+  
   // fill QA plots
   if(PassZDCcuts) {
     fhZNCvsZNA[fCenBin]->Fill(fZNCen,fZNAen);
