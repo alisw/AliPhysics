@@ -40,6 +40,6 @@ void runGlauberMC(Double_t sigNN=64, Bool_t doPartProd=0, Int_t option=0, Int_t 
   TNtuple  *nt = mcg.GetNtuple();
   TFile out(fname,"recreate",fname,9);
   if(nt) nt->Write();
-  printf("total cross section with a nucleon-nucleon cross section %.4f is %.4f\n\n",signn,mcg.GetTotXSect());
+  printf("total cross section with a nucleon-nucleon cross section %.4f is %.4f\n\n",sigNN,mcg.GetTotXSect());
   out.Close();
 }
