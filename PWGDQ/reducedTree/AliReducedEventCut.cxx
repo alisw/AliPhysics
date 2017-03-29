@@ -11,6 +11,7 @@
 #endif
 
 #include "AliReducedBaseEvent.h"
+#include "AliReducedEventInfo.h"
 #include "AliReducedVarManager.h"
 
 ClassImp(AliReducedEventCut)
@@ -19,7 +20,9 @@ ClassImp(AliReducedEventCut)
 AliReducedEventCut::AliReducedEventCut() :
   AliReducedVarCut(),
   fEventTagFilterEnabled(kFALSE),
-  fEventFilter(0)
+  fEventFilter(0),
+  fEventTriggerMaskEnabled(kFALSE), 
+  fEventTriggerMask(0)
 {
   //
   // default constructor
@@ -30,7 +33,9 @@ AliReducedEventCut::AliReducedEventCut() :
 AliReducedEventCut::AliReducedEventCut(const Char_t* name, const Char_t* title) :
   AliReducedVarCut(name, title),
   fEventTagFilterEnabled(kFALSE),
-  fEventFilter(0)
+  fEventFilter(0),
+  fEventTriggerMaskEnabled(kFALSE), 
+  fEventTriggerMask(0)
 {
   //
   // named constructor
@@ -68,6 +73,12 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
    
    AliReducedBaseEvent* event = (AliReducedBaseEvent*)obj;
    if(fEventTagFilterEnabled && !(event->EventTag() & fEventFilter)) return kFALSE;
+
+   if(fEventTriggerMaskEnabled) {
+     if(!obj->InheritsFrom(AliReducedEventInfo::Class())) return kFALSE;
+     AliReducedEventInfo* eventInfo = (AliReducedEventInfo*)obj;
+     if(fEventTriggerMaskEnabled && !(eventInfo->TriggerMask() & fEventTriggerMask)) return kFALSE;
+   }
    
    return AliReducedVarCut::IsSelected(values);   
 }
