@@ -16,10 +16,10 @@ AliAnalysisTask* AddTask_iarsene_jpsi2ee(Bool_t isAliRoot=kTRUE, Int_t runMode=1
   AliReducedAnalysisJpsi2ee* jpsi2eeAnalysis = new AliReducedAnalysisJpsi2ee("Jpsi2eeAnalysis","Jpsi->ee analysis");
   jpsi2eeAnalysis->Init();
   //jpsi2eeAnalysis->SetLoopOverTracks(kFALSE);
-  //jpsi2eeAnalysis->SetRunEventMixing(kFALSE);
+  jpsi2eeAnalysis->SetRunEventMixing(kFALSE);
   //jpsi2eeAnalysis->SetRunPairing(kFALSE);
-  //jpsi2eeAnalysis->SetRunOverMC(kTRUE);
-  //jpsi2eeAnalysis->SetRunLikeSignPairing(kFALSE);
+  jpsi2eeAnalysis->SetRunOverMC(kTRUE);
+  jpsi2eeAnalysis->SetRunLikeSignPairing(kFALSE);
   Setup(jpsi2eeAnalysis, prod);
   // initialize an AliAnalysisTask which will wrapp the AliReducedAnalysisJpsi2ee such that it can be run in an aliroot analysis train (e.g. LEGO, local analysis etc)
   AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager", runMode);
