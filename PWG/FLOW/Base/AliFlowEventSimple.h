@@ -121,6 +121,10 @@ class AliFlowEventSimple: public TObject {
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   virtual void GetZDC2Qsub(AliFlowVector* Qarray);
   virtual void SetZDC2Qsub(Double_t* QVC, Double_t MC, Double_t* QVA, Double_t MA);
+  // begin test methods for LHC15o VZERO calibration, do not use
+  virtual void GetV02Qsub(AliFlowVector* Qarray, Int_t har);
+  virtual void SetV02Qsub(Double_t QVCx, Double_t QVCy, Double_t MC, Double_t QVAx, Double_t QVAy, Double_t MA, Int_t har);
+  // end test methods for LHC15o calibration
   virtual void SetVertexPosition(Double_t* pos);
   virtual void GetVertexPosition(Double_t* pos);
 
@@ -179,6 +183,9 @@ class AliFlowEventSimple: public TObject {
   Int_t                   fRun;                       // run number
   AliFlowVector           fZNCQ;                      // Q_1 vector from ZNC-C
   AliFlowVector           fZNAQ;                      // Q_1 vector from ZNC-A
+  // test members for LHC15o VZERO calibration, do not use
+  AliFlowVector           fV0C[4];                    // Q_n vector from V0-C
+  AliFlowVector           fV0A[4];                    // Q_n vector from V0-C
   Double_t                fZNCM;                      // total energy from ZNC-C
   Double_t                fZNAM;                      // total energy from ZNC-A
   Double_t                fVtxPos[3];                 // Primary vertex position (x,y,z)

@@ -215,8 +215,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCRecFile;
   }
-  // load VZERO gain equalization
   if(sDataSet=="2015") {
+    // load VZERO gain equalization
     TString VZEROGainEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROEqGain.root";
     TFile* VZEROGainEqFile = TFile::Open(VZEROGainEqFileName,"READ");
     if(!VZEROGainEqFile) {
@@ -234,6 +234,24 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
     delete VZEROGainEqFile;
+    // load VZERO Q-vector re-centering
+    TString VZEROQVecRecFileName = "alien:///alice/cern.ch/user/m/mhaque/jacopo/15oHI_VZEROQVecRec.root";
+    TFile* VZEROQVecRecFile = TFile::Open(VZEROQVecRecFileName,"READ");
+    if(!VZEROQVecRecFile) {
+      cout << "ERROR: VZERO Q-vector re-centering file not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* VZEROQVecRecList = (TList*)(VZEROQVecRecFile->FindObjectAny("VZEROEqGain"));
+    if(VZEROQVecRecList) {
+      taskFE->SetVZEROQVecRecList(VZEROQVecRecList);
+      cout << "VZERO Q-vector re-centering set (from " <<  VZEROQVecRecFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: Q-vector re-centering list not found!" << endl;
+      exit(1);
+    }
+    delete VZEROQVecRecFile;
   }
   
   // add the task to the manager

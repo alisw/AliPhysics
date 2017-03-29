@@ -148,6 +148,10 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
   }
+  for(Int_t i=0; i < 4; i++) {
+    fV0C[i] = AliFlowVector();
+    fV0A[i] = AliFlowVector();
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -193,6 +197,10 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   memcpy(fNumberOfPOIs,anEvent.fNumberOfPOIs,fNumberOfPOItypes*sizeof(Int_t));
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = anEvent.fVtxPos[i];
+  }
+  for(Int_t i=0; i < 4; i++) {
+    fV0C[i] = anEvent.fV0C[i];
+    fV0A[i] = anEvent.fV0A[i];
   }
 }
 
@@ -268,6 +276,10 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fZNAM = anEvent.fZNAM;
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = anEvent.fVtxPos[i];
+  }
+  for(Int_t i=0; i < 4; i++) {
+    fV0C[i] = anEvent.fV0C[i];
+    fV0A[i] = anEvent.fV0A[i];
   }
   delete [] fShuffledIndexes;
   return *this;
@@ -712,22 +724,46 @@ void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
 
 }
 
+//------------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------
 void AliFlowEventSimple::GetZDC2Qsub(AliFlowVector* Qarray)
 {
   Qarray[0] = fZNCQ;
   Qarray[1] = fZNAQ;
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void AliFlowEventSimple::SetZDC2Qsub(Double_t* QVC, Double_t MC, Double_t* QVA, Double_t MA)
 {
   fZNCQ = AliFlowVector(QVC[0],QVC[1],MC,1);
   fZNAQ = AliFlowVector(QVA[0],QVA[1],MA,1);
 }
-//-----------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+
+void AliFlowEventSimple::GetV02Qsub(AliFlowVector* Qarray, Int_t har)
+{
+  if(har>0 && har<5) {
+    Qarray[0] = fV0C[har-1];
+    Qarray[1] = fV0A[har-1];
+  } else {
+    printf("WARNING: harmonic %d not available \n",har);
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void AliFlowEventSimple::SetV02Qsub(Double_t QVCx, Double_t QVCy, Double_t MC, Double_t QVAx, Double_t QVAy, Double_t MA, Int_t har)
+{
+  if(har>0 && har<5) {
+    fV0C[har-1] = AliFlowVector(QVCx,QVCy,MC,har);
+    fV0A[har-1] = AliFlowVector(QVAx,QVAy,MA,har);
+  }
+}
+
+//------------------------------------------------------------------------------
+
 void AliFlowEventSimple::GetVertexPosition(Double_t* pos)
 {
   pos[0] = fVtxPos[0];
@@ -735,7 +771,7 @@ void AliFlowEventSimple::GetVertexPosition(Double_t* pos)
   pos[2] = fVtxPos[2];
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void AliFlowEventSimple::SetVertexPosition(Double_t* pos)
 {
@@ -743,7 +779,7 @@ void AliFlowEventSimple::SetVertexPosition(Double_t* pos)
   fVtxPos[1] = pos[1];
   fVtxPos[2] = pos[2];
 }
-//-----------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void AliFlowEventSimple::Print(Option_t *option) const
 {
