@@ -92,7 +92,7 @@ class AliHFInvMassFitter : public TNamed {
     if(fTotFunc) return fTotFunc->GetProb();
     else return -1;
   }
-  Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t nSigma=3., Int_t option=0) const;
+  Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t nSigma=3., Int_t option=0, Int_t pdgCode=0) const;
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option=0) const;
 
   Bool_t   MassFitter(Bool_t draw=kTRUE);
