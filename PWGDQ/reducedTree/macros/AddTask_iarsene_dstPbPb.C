@@ -67,7 +67,7 @@ AliAnalysisTask *AddTask_iarsene_dstPbPb(Int_t reducedEventType=-1, Bool_t write
   //task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
   //task->SetFillFMDInfo(); AddFMDTask();
   if(hasMC) task->SetFillMCInfo(kTRUE);
-  //task->SetFillEventPlaneInfo(kTRUE);
+  task->SetFillEventPlaneInfo(kTRUE);
 
   //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kFullEventsWithFullTracks);
   //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kBaseEventsWithBaseTracks);
@@ -133,7 +133,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fIsPhysicsSelection");
    //task->SetTreeInactiveBranch("fIsSPDPileup");
    //task->SetTreeInactiveBranch("fIsSPDPileupMultBins");
-   //task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
+   task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
    //task->SetTreeInactiveBranch("fVtxTPC*");
    //task->SetTreeInactiveBranch("fNVtxTPCContributors");
    //task->SetTreeInactiveBranch("fVtxSPD*");
@@ -150,7 +150,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fITSClusters*");
    //task->SetTreeInactiveBranch("fSPDnSingle");
    //task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
-   task->SetTreeInactiveBranch("fVZEROMult*");
+   //task->SetTreeInactiveBranch("fVZEROMult*");
    //task->SetTreeInactiveBranch("fVZEROTotalMult*");
    task->SetTreeInactiveBranch("fZDCnEnergy*");
    task->SetTreeInactiveBranch("fZDCpEnergy*");
@@ -166,7 +166,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    task->SetTreeInactiveBranch("fNCaloClusters");
    task->SetTreeInactiveBranch("fCaloClusters.*");
    task->SetTreeInactiveBranch("fFMD.*");
-   task->SetTreeInactiveBranch("fEventPlane.*");
+   //task->SetTreeInactiveBranch("fEventPlane.*");
    
    //task->SetTreeInactiveBranch("fTracks.fP*");
    //task->SetTreeInactiveBranch("fTracks.fIsCartesian");

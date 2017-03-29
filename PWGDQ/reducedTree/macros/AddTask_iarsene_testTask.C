@@ -65,10 +65,10 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
-  //evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
+  evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
   AliReducedEventCut* evCut2 = new AliReducedEventCut("VertexZ","Vertex selection");
   evCut2->AddCut(AliReducedVarManager::kVtxZ, -25.0, 25.0);
-  processor->AddEventCut(evCut1);
+  //processor->AddEventCut(evCut1);
   processor->AddEventCut(evCut2);
   
   // Set track cuts

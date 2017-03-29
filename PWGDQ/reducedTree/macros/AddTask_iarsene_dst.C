@@ -21,6 +21,7 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
      !prod.CompareTo("LHC10e") || !prod.CompareTo("LHC10f")) collSystem = 4;   // minimum bias pp
   if(!prod.CompareTo("LHC13b") || !prod.CompareTo("LHC13c")) collSystem = 5;   // minimum bias p-Pb   
   if(!prod.CompareTo("LHC16l")) collSystem = 6;    // minimum bias pp and Pb-Pb
+  if(!prod.CompareTo("LHC16q") || !prod.CompareTo("LHC16r") || !prod.CompareTo("LHC16s") || !prod.CompareTo("LHC16t")) collSystem = 7;    // triggered p-Pb (2016 data)
   
   if(!collSystem && !hasMC) {
      collSystem = 1;
@@ -37,6 +38,7 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   if(collSystem==4) task->SetTriggerMask(AliVEvent::kMB);
   if(collSystem==5) task->SetTriggerMask(AliVEvent::kINT7);
   if(collSystem==6) task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kINT7+AliVEvent::kHighMultSPD+AliVEvent::kHighMultV0);
+  if(collSystem==7) task->SetTriggerMask(AliVEvent::kINT7+AliVEvent::kTRD);
   
   //if(collSystem==4)
   //  task->SetRejectPileup();
@@ -44,7 +46,7 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   //task->UsePhysicsSelection(kTRUE);
   task->SetUseAnalysisUtils(kFALSE);
   
-  task->SetFillV0Info(kTRUE);
+  task->SetFillV0Info(kFALSE);
   //task->SetFillGammaConversions(kFALSE);
   //task->SetFillK0s(kFALSE);
   //task->SetFillLambda(kFALSE);
@@ -114,41 +116,42 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fRunNo");
    //task->SetTreeInactiveBranch("fVtx*");
    //task->SetTreeInactiveBranch("fNVtxContributors");
-   //task->SetTreeInactiveBranch("fCentrality*");
-   //task->SetTreeInactiveBranch("fCentQuality");
+   task->SetTreeInactiveBranch("fCentrality*");
+   task->SetTreeInactiveBranch("fCentQuality");
    //task->SetTreeInactiveBranch("fNtracks*");
    task->SetTreeInactiveBranch("fNV0candidates*");
    //task->SetTreeInactiveBranch("fTracks.*");
    task->SetTreeInactiveBranch("fCandidates.*");
    task->SetTreeInactiveBranch("fEventNumberInFile");
-   task->SetTreeInactiveBranch("fL0TriggerInputs");
-   task->SetTreeInactiveBranch("fL1TriggerInputs");
-   task->SetTreeInactiveBranch("fL2TriggerInputs");
-   task->SetTreeInactiveBranch("fBC");
-   //task->SetTreeInactiveBranch("fTimeStamp");
+   //task->SetTreeInactiveBranch("fL0TriggerInputs");
+   //task->SetTreeInactiveBranch("fL1TriggerInputs");
+   //task->SetTreeInactiveBranch("fL2TriggerInputs");
+   //task->SetTreeInactiveBranch("fBC");
+   task->SetTreeInactiveBranch("fTimeStamp");
    task->SetTreeInactiveBranch("fEventType");
    //task->SetTreeInactiveBranch("fTriggerMask");
-   //task->SetTreeInactiveBranch("fMultiplicityEstimators*");
-   //task->SetTreeInactiveBranch("fMultiplicityEstimatorPercentiles*");
+   task->SetTreeInactiveBranch("fMultiplicityEstimators*");
+   task->SetTreeInactiveBranch("fMultiplicityEstimatorPercentiles*");
    //task->SetTreeInactiveBranch("fIsPhysicsSelection");
    //task->SetTreeInactiveBranch("fIsSPDPileup");
    //task->SetTreeInactiveBranch("fIsSPDPileupMultBins");
    task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
-   //task->SetTreeInactiveBranch("fVtxTPC*");
-   //task->SetTreeInactiveBranch("fNVtxTPCContributors");
+   task->SetTreeInactiveBranch("fVtxTPC*");
+   task->SetTreeInactiveBranch("fNVtxTPCContributors");
    task->SetTreeInactiveBranch("fVtxSPD*");
    task->SetTreeInactiveBranch("fNVtxSPDContributors");
    //task->SetTreeInactiveBranch("fNpileupSPD");
    //task->SetTreeInactiveBranch("fNpileupTracks");
+   //task->SetTreeInactiveBranch("fNTPCclusters");
    task->SetTreeInactiveBranch("fNPMDtracks");
    task->SetTreeInactiveBranch("fNTRDtracks");
    task->SetTreeInactiveBranch("fNTRDtracklets");
    //task->SetTreeInactiveBranch("fSPDntracklets");
    task->SetTreeInactiveBranch("fSPDntrackletsEta*");
    //task->SetTreeInactiveBranch("fSPDFiredChips*");
-   //task->SetTreeInactiveBranch("fITSClusters*");
-   //task->SetTreeInactiveBranch("fSPDnSingle");
-   //task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
+   task->SetTreeInactiveBranch("fITSClusters*");
+   task->SetTreeInactiveBranch("fSPDnSingle");
+   task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
    task->SetTreeInactiveBranch("fVZEROMult*");
    //task->SetTreeInactiveBranch("fVZEROTotalMult*");
    task->SetTreeInactiveBranch("fZDCnEnergy*");
@@ -174,14 +177,14 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTracks.fQualityFlags");
    //task->SetTreeInactiveBranch("fTracks.fTrackId");
    //task->SetTreeInactiveBranch("fTracks.fStatus");
-   //task->SetTreeInactiveBranch("fTracks.fTPCPhi");
-   //task->SetTreeInactiveBranch("fTracks.fTPCPt");
-   //task->SetTreeInactiveBranch("fTracks.fTPCEta");
+   task->SetTreeInactiveBranch("fTracks.fTPCPhi");
+   task->SetTreeInactiveBranch("fTracks.fTPCPt");
+   task->SetTreeInactiveBranch("fTracks.fTPCEta");
    //task->SetTreeInactiveBranch("fTracks.fMomentumInner");
    //task->SetTreeInactiveBranch("fTracks.fDCA*");
    task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
    task->SetTreeInactiveBranch("fTracks.fTrackLength");
-   //task->SetTreeInactiveBranch("fTracks.fMassForTracking");
+   task->SetTreeInactiveBranch("fTracks.fMassForTracking");
    //task->SetTreeInactiveBranch("fTracks.fChi2TPCConstrainedVsGlobal");
    task->SetTreeInactiveBranch("fTracks.fHelixCenter*");
    task->SetTreeInactiveBranch("fTracks.fHelixRadius");
@@ -199,8 +202,8 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTracks.fTPCsignalN");
    //task->SetTreeInactiveBranch("fTracks.fTPCnSig*");
    //task->SetTreeInactiveBranch("fTracks.fTPCchi2");
-   //task->SetTreeInactiveBranch("fTracks.fTPCActiveLength");
-   //task->SetTreeInactiveBranch("fTracks.fTPCGeomLength");
+   task->SetTreeInactiveBranch("fTracks.fTPCActiveLength");
+   task->SetTreeInactiveBranch("fTracks.fTPCGeomLength");
    //task->SetTreeInactiveBranch("fTracks.fTOFbeta");
    task->SetTreeInactiveBranch("fTracks.fTOFtime");
    task->SetTreeInactiveBranch("fTracks.fTOFdx");
@@ -209,9 +212,9 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    task->SetTreeInactiveBranch("fTracks.fTOFchi2");
    task->SetTreeInactiveBranch("fTracks.fTOFnSig*");
    task->SetTreeInactiveBranch("fTracks.fTOFdeltaBC");
-   task->SetTreeInactiveBranch("fTracks.fTRDntracklets*");
-   task->SetTreeInactiveBranch("fTracks.fTRDpid*");
-   task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
+   //task->SetTreeInactiveBranch("fTracks.fTRDntracklets*");
+   //task->SetTreeInactiveBranch("fTracks.fTRDpid*");
+   //task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
    task->SetTreeInactiveBranch("fTracks.fCaloClusterId");
    //task->SetTreeInactiveBranch("fTracks.fMCMom*");
    //task->SetTreeInactiveBranch("fTracks.fMCFreezeout*");
@@ -271,6 +274,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   AliDielectronTrackCuts* trackCuts2 = new AliDielectronTrackCuts("trackCuts2","track cuts");
   //trackCuts2->SetRequireITSRefit(kTRUE);
   trackCuts2->SetRequireTPCRefit(kTRUE);
+  if(isAOD) trackCuts2->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
   cuts->AddCut(trackCuts2);
     //}
   /*else {
@@ -293,7 +297,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   
   AliDielectronPID *electronPid = new AliDielectronPID("PID","PID cut");
   electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron    
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-2.0, 2.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for proton
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-3.0, 3.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for proton
   electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,-3.0, 3.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for kaon
   //electronPid->AddCut(AliDielectronPID::kTOF,AliPID::kProton,  -3.0, 3.0, -2.0, 2.0, kTRUE, AliDielectronPID::kIfAvailable, AliDielectronVarManager::kTPCnSigmaPro); // TPC exclusion for proton   
   cuts->AddCut(electronPid);
