@@ -72,20 +72,24 @@ const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager:
 };
 
 const Char_t* AliReducedVarManager::fgkOfflineTriggerNames[64] = {
-    "MB",               "INT7",        "MUON",             "HighMult/HighMultSPD",          "EMC1", 
-    "CINT5",            "CMUS5/MUSPB", "MUSH7/MUSHPB",     "MUL7/MuonLikePB",   "MUU7/MuonUnlikePB", 
-    "EMC7",             "MUS7",        "PHI1",             "PHI7/PHOSPb",       "EMCEJE",
-    "EMCEGA",           "Central/HighMultV0",     "SemiCentral",      "DG5",               "ZED",         
-    "SPI7",             "CINT8",       "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8",  
-    "MuonUnlikeLowPt8", "N/A",         "UserDefined",      "N/A",               "N/A",         
-    "FastOnly",         "N/A",         "N/A",              "N/A",               "N/A",  
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A",
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A",  
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A",
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A", 
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A", 
-    "N/A",              "N/A",         "N/A",              "N/A"
+    "MB/INT1",                                             "INT7",                                                         "MUON",                                    "HighMult/HighMultSPD",                      
+    "EMC1",                                                 "CINT5/INT5",                                               "CMUS5/MUSPB/INT7inMUON", "MuonSingleHighPt7/MUSH7/MUSHPB", 
+    "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8",                           "MUS7/MuonSingleLowPt7",    
+    "PHI1",                                                  "PHI7/PHI8/PHOSPb",                                    "EMCEJE",                                  "EMCEGA",           
+    "Central/HighMultV0",                           "SemiCentral",                                              "DG/DG5",                                "ZED",         
+    "SPI7/SPI",                                             "INT8",                                                          "MuonSingleLowPt8",                "MuonSingleHighPt8", 
+    "MuonLikeLowPt8",                               "MuonUnlikeLowPt8",                                    "MuonUnlikeLowPt0/INT6",       "UserDefined",      
+    "TRD",                                                   "N/A",                                                            "FastOnly",                               "N/A",         
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",              
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",               
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",      
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",     
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",   
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A", 
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A"
 };
+
 
 // radii of VZERO channels centers (in cm)
 const Double_t AliReducedVarManager::fgkVZEROChannelRadii[64] = {
