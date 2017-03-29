@@ -209,7 +209,7 @@ void AliHFInvMassFitter::SetNumberOfParams(){
   }
 
   if(fReflections) fNParsRfl=1;
-  else fNParsSec=0;
+  else fNParsRfl=0;
 
   if(fSecondPeak) fNParsSec=3;
   else fNParsSec=0;
@@ -1023,11 +1023,31 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
   return 0x0;
 }
 // _______________________________________________________________________
-Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t nOfSigma, Int_t option) const{
+Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t nOfSigma, Int_t option, Int_t pdgCode) const{
   /// Method to compute the signal using inv. mass histo bin counting 
   /// -> interface method to compute yield in nsigma range around peak
-  Double_t minMass=fMass-nOfSigma*fSigmaSgn;
-  Double_t maxMass=fMass+nOfSigma*fSigmaSgn;
+  /// pdgCode: if==411,421,413,413 or 4122: range defined based on PDG mass
+  //           else (default) mean of gaussian fit
+
+  Double_t massVal=fMass;
+  switch (pdgCode) {
+  case 411:
+  case 421:
+  case 431:
+  case 4122:
+    massVal=TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
+    break;
+  case 413:
+    massVal=TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
+    massVal-=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    break;
+  default:
+    massVal=fMass;
+    break;
+  }
+
+  Double_t minMass=massVal-nOfSigma*fSigmaSgn;
+  Double_t maxMass=massVal+nOfSigma*fSigmaSgn;
   return GetRawYieldBinCounting(errRyBC,minMass,maxMass,option);
 }
 // _______________________________________________________________________
