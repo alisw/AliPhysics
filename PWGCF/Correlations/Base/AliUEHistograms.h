@@ -94,7 +94,8 @@ class AliUEHistograms : public TNamed
   void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
   void SetPtOrder(Bool_t flag) { fPtOrder = flag; }
   void SetTwoTrackCutMinRadius(Float_t min) { fTwoTrackCutMinRadius = min; }
-  
+
+  void SetCheckEventNumberInCorrelation(Bool_t val) { fCheckEventNumberInCorrelation = val; }
   void ExtendTrackingEfficiency(Bool_t verbose = kFALSE);
   void Reset();
 
@@ -155,12 +156,14 @@ protected:
   Bool_t fWeightPerEvent;	// weight with the number of trigger particles per event
   Bool_t fPtOrder;		// apply pT,a < pT,t condition
   Float_t fTwoTrackCutMinRadius; // min radius for TTR cut
-  
+
+  Bool_t fCheckEventNumberInCorrelation; // do not correlate two particles from the same event (only works for AliBasicParticles)
+
   Long64_t fRunNumber;           // run number that has been processed
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 30)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 31)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

@@ -38,7 +38,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
                                                              const TString  suffix        = "default",
                                                              const Bool_t   qaan          = kTRUE,
                                                              const Bool_t   hadronan      = kTRUE,
-                                                             const Bool_t   calibrate     = kTRUE,
+                                                             const Bool_t   calibrate     = kFALSE,
                                                              const Int_t    minTime       = -1000,
                                                              const Int_t    maxTime       =  1000,
                                                              const Int_t    minCen        = -1,
@@ -94,27 +94,31 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
   
-  // Photon analysis
   maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,0,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
   maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,0,collision,containerName,simulation,year,qaan,debugLevel,minCen) ,n++); // Previous photon invariant mass
   if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,0,collision,simulation,year,debugLevel),n++);
-
-  if(calorimeter=="EMCAL") // DCal
-  {
-    maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,1,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
-    maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,1,collision,containerName,simulation,year,qaan,debugLevel,minCen) ,n++); // Previous photon invariant mass
-    if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,1,collision,simulation,year,debugLevel),n++);
-  }
   
   if(hadronan)
   {
     maker->GetReader()->SwitchOnCTS();
     maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,year,debugLevel), n++); // charged tracks plots
+    maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel), n++); // isolation 
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel,minCen), n++); // Gamma hadron correlation
-    if(calorimeter=="EMCAL") // DCal
-      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,1,collision,containerName,simulation,year,debugLevel,minCen), n++); // Gamma hadron correlation
   }
   
+  // Analysis with DCal
+  if(year > 2014 && calorimeter=="EMCAL")
+  {
+    maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,1,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
+    maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,1,collision,containerName,simulation,year,qaan,debugLevel,minCen) ,n++); // Previous photon invariant mass
+    if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,1,collision,simulation,year,debugLevel),n++);
+
+    if(hadronan)
+    {
+      maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,1,collision,containerName,simulation,year,debugLevel), n++); // isolation 
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,1,collision,containerName,simulation,year,debugLevel,minCen), n++); // Gamma hadron correlation
+    }
+  }
   
   maker->SetAnaDebug(debugLevel)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -224,8 +228,12 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, B
 
   // Time cut 
   reader->SwitchOffUseParametrizedTimeCut();
-  reader->SwitchOnUseEMCALTimeCut() ;
-  reader->SetEMCALTimeCut(minTime,maxTime);
+  
+  if(calibrate)
+  {
+    reader->SwitchOnUseEMCALTimeCut() ;
+    reader->SetEMCALTimeCut(minTime,maxTime);
+  }
   
   reader->SwitchOffUseTrackTimeCut();
   reader->SetTrackTimeCut(-1e10,1e10);
@@ -321,7 +329,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
   cu->SetLocalMaximaCutE(0.1);
   cu->SetLocalMaximaCutEDiff(0.03);
 
-  cu->SwitchOffClusterPlot();
+  //cu->SwitchOffClusterPlot();
   cu->SwitchOffRecalculateClusterTrackMatching();
   
   cu->SwitchOnBadChannelsRemoval() ;
@@ -335,10 +343,10 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
   cu->SwitchOffRecalibration(); // Check the reader if it is taken into account during filtering
   cu->SwitchOffRunDepCorrection();
 
-  cu->SwitchOnCorrectClusterLinearity();
+  cu->SwitchOffCorrectClusterLinearity();
 
   Bool_t bExotic  = kTRUE;
-  Bool_t bNonLin  = kTRUE;
+  Bool_t bNonLin  = kFALSE;
   Bool_t bBadMap  = kTRUE;
   
   Bool_t bEnCalib = kFALSE;
@@ -362,7 +370,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
                           bEnCalib,
                           bBadMap,
                           bTiCalib);
-  recou->SetExoticCellDiffTimeCut(50.);
+  //recou->SetExoticCellDiffTimeCut(50.);
 
   if(calorimeter=="PHOS")
   {
@@ -495,7 +503,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, Bool_t caloType, TString co
   ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
   
   // Cuts 
-  if(calorimeter=="EMCAL") ana->SetPairTimeCut(70);
+  if(calorimeter=="EMCAL") ana->SetPairTimeCut(100);
     
   ana->SetNPIDBits(1);
   ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
@@ -578,6 +586,95 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString conta
   
   ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
   ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
+  
+  if(debugLevel > 0) ana->Print("");
+  
+  return ana;
+}
+
+///
+/// Configure the task doing the trigger particle hadron correlation
+///
+AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,  TString calorimeter, Bool_t caloType,
+                                                    TString collision, TString containerName,
+                                                    Bool_t simulation, Int_t year, Int_t debugLevel)
+{
+  AliAnaParticleIsolation *ana = new AliAnaParticleIsolation();
+  ana->SetDebug(debugLevel);
+    
+  if(collision.Contains("Pb"))   ana->SwitchOnFillHighMultiplicityHistograms();
+  
+  ana->SetMinPt(7);
+  
+  ana->SwitchOffStudyTracksInCone() ;
+  ana->SwitchOnUEBandSubtractionHistoFill();
+
+  ana->SwitchOffDecayTaggedHistoFill() ;
+  ana->SwitchOnSSHistoFill();
+  
+  ana->SwitchOffLeadingOnly();
+  ana->SwitchOffCheckNeutralClustersForLeading();
+
+  ana->SwitchOffPtTrigBinHistoFill();
+  ana->SwitchOffBackgroundBinHistoFill();
+  ana->SwitchOffTMHistoFill();
+  
+  // MC
+  ana->SwitchOffPrimariesInConeSelection();
+  ana->SwitchOffPrimariesPi0DecayStudy() ;
+  
+  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOnFiducialCut();
+  
+  if(calorimeter == "EMCAL" && caloType == 0)
+  {
+    // Avoid borders of EMCal
+    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 86, 174) ;
+  }
+  if(calorimeter == "EMCAL" && caloType == 1)
+  {
+    // Avoid borders of DCal
+    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 264, 316) ;
+  }
+ 
+  AliCaloPID* caloPID = ana->GetCaloPID();
+  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDPhiCut(0.030);
+
+  ana->SwitchOffSeveralIsolation() ;
+  ana->SwitchOffReIsolation();
+  
+  //
+  // Do settings for main isolation cut class
+  //
+  AliIsolationCut * ic =  ana->GetIsolationCut();
+  ic->SetDebug(debugLevel);
+  ic->SetParticleTypeInCone(AliIsolationCut::kNeutralAndCharged);
+  ic->SetICMethod(AliIsolationCut::kSumPtIC);
+  if ( collision == "pp" || collision == "pPb" )
+  {
+    ic->SetPtThreshold(0.5);
+    ic->SetSumPtThreshold(2.0) ;
+    ic->SetConeSize(0.4);
+  }
+  if ( collision == "PbPb" )
+  {
+    ic->SetPtThreshold(3.);
+    ic->SetSumPtThreshold(3.0) ;
+    ic->SetConeSize(0.3);
+  }
+
+  // Input / output delta AOD settings
+  
+  ana->SetInputAODName(Form("%s%s_Calo%d",particle.Data(),containerName.Data(),caloType));
+  ana->SetAODObjArrayName(Form("%sIso_%s_Calo%d",particle.Data(),containerName.Data(),caloType));
+  
+  // Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("AnaIsol%s_Calo%d_",particle.Data(),caloType));
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,caloType,collision,year); // see method below
+  
+  if(simulation) ana->SwitchOnDataMC();
   
   if(debugLevel > 0) ana->Print("");
   

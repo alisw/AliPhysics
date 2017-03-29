@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <cstring>
+#include <cfloat>
 #include <functional>
 #include <iostream>
 #include <vector>
@@ -139,7 +140,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
     if(cut.Contains("VarSPDhit")){
       double cutvalue = ValueDecoder(cut, "VarSPDhit");
       AliESDtrackCuts *esdcuts = GenerateDefaultCutsESD();
-      if(cutvalue > 0){
+      if(TMath::Abs(cutvalue) > DBL_EPSILON){
         esdcuts->SetName("VarSPDhitOn");
         esdcuts->SetTitle("Default cuts - variation SPD hit requirement on");
       } else {

@@ -64,14 +64,19 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
   void SetEvtSpecie(UInt_t evspc = 4){fEvtSpecie = evspc;}
   void SetEmbedEvtSelection(Bool_t evtSel = kFALSE){fEvtEmbedSelection = evtSel;}
-  void SetRequestRefit(bool itsR = kFALSE, bool itsRpion = kFALSE, bool itsRin = kFALSE) {fRequestITSrefit = itsR; fRequestITSrefitPion = itsRpion; fRequestITSin = itsRin;}
-  void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
-  void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
+  void SetRequestITSclusters(bool itsCls = kFALSE, int itsClsmin = 0) {fRequireITSclusters = itsCls; fMinITSclustersN = itsClsmin;}
+  void SetRequestITSRefit(bool itsR = kFALSE, bool itsRpion = kFALSE) {fRequireITSrefit = itsR; fRequireITSrefitPion = itsRpion;}
+  void SetRequestITSin(bool itsRin = kFALSE) {fRequireITSin = itsRin;}
+  void SetTOFpid(bool reqTOFpid = kFALSE) {fRequireTOFPid = reqTOFpid;}
+  void SetRequestTPCSigmas(float tpcSgm_pi, float tpcSgm_p, float tpcSgm_d) {fPionTPCSigmas = tpcSgm_pi; fProtonTPCSigmas = tpcSgm_p; fDeuteronTPCSigmas = tpcSgm_d;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
   void SetChargeTriplet(bool sign_c = kTRUE, bool ls_c = kTRUE) {fMinvSignal = sign_c; fMinvLikeSign = ls_c;}
   void SetMotherType(bool matter = kTRUE, bool antimatter = kTRUE){fChooseMatter = matter; fChooseAntiMatter = antimatter;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
   void SetDCAtracksTrianSel(Bool_t selDcaT = kFALSE) {fTriangularDCAtracks = selDcaT;}
+
+  void SetDeuteronPtRange(double min=0, double max=10){fMinPtDeuteron = min; fMaxPtDeuteron = max;}
+  void SetProtonPtRange(double min=0, double max=10){fMinPtProton = min; fMaxPtProton = max;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
   void SetDCAzProtonPrimaryVtx(double dcaprotonpv) {fDCAzPPVmax = dcaprotonpv;}
@@ -88,7 +93,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   void SetMaxPtMother(double maxpt) {fMaxPtMother = maxpt;}
   void SetMinPtMother(double minpt) {fMinPtMother = minpt;}
-  void SetMaxPMotherCM(double maxp_cm){fMaxPMotherCM = maxp_cm;}
 
   void SetDCAPioDecayVtxXY(double maxpixy) {fDCAPiSVxymax = maxpixy;}
   void SetDCAPioDecayVtxZ(double maxpiz) {fDCAPiSVzmax = maxpiz;}
@@ -111,9 +115,12 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
  private:
   Bool_t PassTriggerSelection(UInt_t PhysSelMask);
   Bool_t PassCentralitySelection();
+  Bool_t PassTrackSelection(AliESDtrack *trk);
   Bool_t HasTOF(AliESDtrack *trk, float &beta_tof);
-  Bool_t PassPIDSelection(AliESDtrack *trk, int specie, Bool_t isTOFin); // specie according to AliPID enum: 2-pion, 4-proton, 5-deuteron
+  Bool_t PassPIDSelection(AliESDtrack *trk, Int_t specie, Bool_t isTOFin, Float_t nsigma_cut); // specie according to AliPID enum: 2-pion, 4-proton, 5-deuteron
+  Double_t ComputeSigma(Double_t dc[2], Double_t dc_cov[3]);
   void CombineThreeTracks(Bool_t isMatter, TArrayI arrD, TArrayI arrP, TArrayI arrPi, Bool_t cent0, Bool_t cent1);
+
 
   AliESDEvent        *fESDevent;                   ///< ESD event
   AliESDtrackCuts    *fESDtrackCuts;               ///< First set of ESD track cuts
@@ -137,11 +144,15 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fCentrality;                  ///< Centrality class
   Float_t            fCentralityPercentile;        ///< Centrality percentile
   UShort_t           fTriggerConfig;               ///< select different trigger configuration
-  Bool_t             fRequestITSrefit;             ///< flag for switch the ITSrefit request in the track cuts
-  Bool_t             fRequestITSrefitPion;         ///< flag for switch the ITSrefit request only for candidate pion track cuts
-  Bool_t             fRequestITSin;                ///< flag for switch the ITSin request: tracks with ITSin and FAILED ITSrefit are rejected
-  Float_t            fRequestTPCSigmas;            ///< number of sigmas for TPC pid
-  Bool_t             fRequestTOFPid;               ///< switch on/off TOF pid
+  Bool_t             fRequireITSclusters;          ///< flag for switch on the ITSclusters request in the track selection
+  Int_t              fMinITSclustersN;             ///< minimum number of clusters in ITS
+  Bool_t             fRequireITSrefit;             ///< flag for switch on the ITSrefit request in the track cuts
+  Bool_t             fRequireITSrefitPion;         ///< flag for switch on the ITSrefit request only for candidate pion track cuts
+  Bool_t             fRequireITSin;                ///< flag for switch on the ITSin request: tracks with ITSin and FAILED ITSrefit are rejected
+  Float_t            fPionTPCSigmas;               ///< number of sigmas for pion TPC pid
+  Float_t            fProtonTPCSigmas;             ///< number of sigmas for proton TPC pid
+  Float_t            fDeuteronTPCSigmas;           ///< number of sigmas for deuteron TPC pid
+  Bool_t             fRequireTOFPid;               ///< switch on/off TOF pid
   Float_t            fRequestTOFSigmas;            ///< number of sigmas for TOF pid
   Bool_t             fChooseMatter;                ///< flag to switch on/off the study of the hypertriton
   Bool_t             fChooseAntiMatter;            ///< flag to switch on/off the study of the anti-hypertriton
@@ -151,6 +162,10 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Bool_t             fTriangularDCAtracks;             ///<
 
   //Cut variables
+  Double_t           fMinPtDeuteron;               ///< Cut on minimum pT of deuteron candidate
+  Double_t           fMaxPtDeuteron;               ///< Cut on maximum pT of deuteron candidate
+  Double_t           fMinPtProton;                 ///< Cut on minimum pT of proton candidate
+  Double_t           fMaxPtProton;                 ///< Cut on maximum pT of proton candidate
   Double_t           fDCAPiPVmin;                  ///< Cut on Min DCA of \f$\pi\f$ from primary vertex
   Double_t           fDCAzPPVmax;                  ///< Cut on Max DCAz of p from primary vertex
   Double_t           fDCAzDPVmax;                  ///< Cut on Max DCAz of d from primary vertex
@@ -172,7 +187,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fDCAdpi;                      ///< Cut DCA deuteron-pion
   Double_t           fAngledp;                     ///< Cut on the angle between deuteron - proton
   Double_t           fAngledpi;                    ///< Cut on the angle between deuteron - pion
-  Double_t           fMaxPMotherCM;                ///< Cut on max mother momentum in the CM
   Double_t           fLowCentrality;               ///< Cut on lower value of centrality class
   Double_t           fHighCentrality;              ///< Cut on high value of centrality class
 
@@ -190,6 +204,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistYPrimaryVtx;                     //!<! Primary vertex Y coordinate
   TH1F               *fHistChi2perTPCcluster;               //!<! TPC \f$\chi^{2}/NDF\f$ tracks distribution
   TH1F               *fHistTrackFlagReco;                   //!<! Check of track flags: kTPCrefit, kITSout, kITSrefit
+  TH1F               *fHistITSclusters;                     //!<! ITS clusters distribution
 
 
   //PID
@@ -201,17 +216,17 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   //--> TOF
   TH2F               *fHistTOFsignal;                       //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
-  TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
-  TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
-  //TH1F               *fHistTOFdeumass;                      //!<! TOF mass of deuteron identified with TPC
-  //TH1F               *fHistTOFpromass;                      //!<! TOF mass of proton identified with TPC
+  TH2F               *fHistTOFdeusignal;                    //!<! TOF PID: deuteron candidates
+  TH2F               *fHistTOFprosignal;                    //!<! TOF PID: proton candidates
+  //TH1F               *fHistTOFdeumass;                    //!<! TOF mass of deuteron identified with TPC
+  //TH1F               *fHistTOFpromass;                    //!<! TOF mass of proton identified with TPC
 
   //Candidate combination
   // Data and MC histograms
   TH1F               *fHistpionTPCcls;                      //!<! TPC clusters distribution of candidate \f$\pi\f$
-  //TH2F               *fHistCorrDCAdprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex
-  //TH2F               *fHistCorrDCApprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
-  //TH2F               *fHistCorrDCApiprimary;                //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
+  //TH2F               *fHistCorrDCAdprimary;               //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex
+  //TH2F               *fHistCorrDCApprimary;               //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
+  //TH2F               *fHistCorrDCApiprimary;              //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
   TH1F               *fHistDCApiprimary;                    //!<! DCA pion-primary vertex distribution
   TH1F               *fHistDCAXYpiprimary;                  //!<! DCA_xy pion-primary vertex distribution
   TH1F               *fHistDCAZpiprimary;                   //!<! DCA_z pion-primary vertex distribution
@@ -233,12 +248,21 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistDCApionvtx;                      //!<! \f$DCA\f$ candidate pion-secondary vertex
   TH1F               *fHistDCAXYpionvtx;                    //!<! \f$DCA_{xy}\f$ candidate pion-secondary vertex
   TH1F               *fHistDCAZpionvtx;                     //!<! \f$DCA_{z}\f$ candidate pion-secondary vertex
+  TH1F               *fHistSigmaDcaXYpionvtx;               //!<! \f$\sigma\_{DCA, xy}$\ candidate pion-secondary vertex
+  TH1F               *fHistSigmaDcaZpionvtx;                //!<! \f$\sigma\_{DCA, z}$\ candidate pion-secondary vertex
+  TH1F               *fHistSigmaDcapionvtx;                 //!<! \f$\sigma\_{DCA}$\ candidate pion-secondary vertex
   TH1F               *fHistDCAprovtx;                       //!<! \f$DCA\f$ candidate proton-secondary vertex
   TH1F               *fHistDCAXYprovtx;                     //!<! \f$DCA_{xy}\f$ candidate proton-secondary vertex
   TH1F               *fHistDCAZprovtx;                      //!<! \f$DCA_{z}\f$ candidate proton-secondary vertex
+  TH1F               *fHistSigmaDcaXYprovtx;                //!<! \f$\sigma\_{DCA, xy}$\ candidate proton-secondary vertex
+  TH1F               *fHistSigmaDcaZprovtx;                 //!<! \f$\sigma\_{DCA, z}$\ candidate proton-secondary vertex
+  TH1F               *fHistSigmaDcaprovtx;                  //!<! \f$\sigma\_{DCA}$\ candidate proton-secondary vertex
   TH1F               *fHistDCAdeuvtx;                       //!<! \f$DCA\f$ candidate deuteron-secondary vertex
   TH1F               *fHistDCAXYdeuvtx;                     //!<! \f$DCA_{xy}\f$ candidate deuteron-secondary vertex
   TH1F               *fHistDCAZdeuvtx;                      //!<! \f$DCA_{z}\f$ candidate deuteron-secondary vertex
+  TH1F               *fHistSigmaDcaXYdeuvtx;                //!<! \f$\sigma\_{DCA, xy}$\ candidate deuteron-secondary vertex
+  TH1F               *fHistSigmaDcaZdeuvtx;                 //!<! \f$\sigma\_{DCA, z}$\ candidate deuteron-secondary vertex
+  TH1F               *fHistSigmaDcadeuvtx;                  //!<! \f$\sigma\_{DCA}$\ candidate deuteron-secondary vertex
   TH1F               *fHistDecayLengthH3L;                  //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistNormalizedDecayL;                //!<! Normalized decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistLifetime;                        //!<! c*tau distribution of candidate \f$H^{3}_{\Lambda}\f$

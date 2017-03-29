@@ -443,13 +443,15 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
     Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries
     Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
+    TTree*                  tBrokenFiles;                                       // tree for keeping track of broken files
+    TObjString*             fFileNameBroken;                                    // string object for broken file name
     
     
   private:
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 37);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 38);
 };
 
 #endif

@@ -166,7 +166,6 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hReweightMultData(NULL),
   hReweightMultMC(NULL),
   fDebugLevel(0)
-
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());

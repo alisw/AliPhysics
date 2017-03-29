@@ -1573,8 +1573,9 @@ private:
   Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
-  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
-  TProfile2D *fCRCZDCQVecEComTot[fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
+//  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
+  const static Int_t fkCRCnCQVecEcomPos = 12;
+  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
@@ -1890,7 +1891,7 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   
-  ClassDef(AliFlowAnalysisCRC, 44);
+  ClassDef(AliFlowAnalysisCRC, 45);
   
 };
 

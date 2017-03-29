@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "AliAnalysisMuMuFnorm.h"
 
 #include "AliAnalysisMuMuGraphUtil.h"
@@ -40,6 +39,8 @@
 #include <numeric>
 
 ClassImp(AliAnalysisMuMuFnorm)
+
+using namespace std;
 
 //_____________________________________________________________________________
 AliAnalysisMuMuFnorm::AliAnalysisMuMuFnorm(AliCounterCollection& cc,AliAnalysisMuMuConfig& cf,
@@ -69,94 +70,93 @@ AliAnalysisMuMuFnorm::~AliAnalysisMuMuFnorm()
   }
 }
 
-//_____________________________________________________________________________
-void AliAnalysisMuMuFnorm::ComputeFnorm()
-{
-  /// Compute the REF to CINT ratio(s)
-  ///
-  /// Using offline method
-  ///   - in one go CINT/REF
-  ///   - in two steps CINT/CMSL and CMSL/REF
-  ///
-  /// Using scaler method
-  ///   - bare scaler values
-  ///   - scaler values corrected for pile-up
-  ///   - scaler values corrected for pile-up and physics selection
+// //_____________________________________________________________________________
+// void AliAnalysisMuMuFnorm::ComputeFnorm()
+// {
+//   /// Compute the REF to CINT ratio(s)
+//   ///
+//   /// Using offline method
+//   ///   - in one go CINT/REF
+//   ///   - in two steps CINT/CMSL and CMSL/REF
+//   ///
+//   /// Using scaler method
+//   ///   - bare scaler values
+//   ///   - scaler values corrected for pile-up
+//   ///   - scaler values corrected for pile-up and physics selection
 
-//   const ETriggerType triggerTypes[] = { kMB, kMUL, kMSL, kMSH };
-//   const Bool_t trueFalse[] = { kTRUE, kFALSE };
-//   // Call ComputeNofEvent for every combination possible
-//   for ( Int_t i = 0; i < 4; ++i )
-//   {
-//     for ( Int_t pileup = 0; pileup < 2; ++pileup )
-//     {
-//       for ( Int_t ps = 0; ps < 2; ++ps )
-//       {
-//         ComputeNofEvents(triggerTypes[i],trueFalse[pileup],ps);
-//       }
-//     }
-//   }
-//   ComputeFnormOffline(1,kFALSE,0);
-//   ComputeFnormOffline(1,kFALSE,1);
-//   ComputeFnormOffline(1,kTRUE,1);
+// //   const ETriggerType triggerTypes[] = { kMB, kMUL, kMSL, kMSH };
+// //   const Bool_t trueFalse[] = { kTRUE, kFALSE };
+// //   // Call ComputeNofEvent for every combination possible
+// //   for ( Int_t i = 0; i < 4; ++i )
+// //   {
+// //     for ( Int_t pileup = 0; pileup < 2; ++pileup )
+// //     {
+// //       for ( Int_t ps = 0; ps < 2; ++ps )
+// //       {
+// //         ComputeNofEvents(triggerTypes[i],trueFalse[pileup],ps);
+// //       }
+// //     }
+// //   }
+// //   ComputeFnormOffline(1,kFALSE,0);
+// //   ComputeFnormOffline(1,kFALSE,1);
+// //   ComputeFnormOffline(1,kTRUE,1);
 
-//   ComputeFnormOffline(2,kFALSE,0);
-//   ComputeFnormOffline(2,kFALSE,1);
-//   ComputeFnormOffline(2,kTRUE,1);
+// //   ComputeFnormOffline(2,kFALSE,0);
+// //   ComputeFnormOffline(2,kFALSE,1);
+// //   ComputeFnormOffline(2,kTRUE,1);
 
-// //  ComputeFnormOffline(2,kFALSE,2);
-// //  ComputeFnormOffline(2,kTRUE,2);
+// // //  ComputeFnormOffline(2,kFALSE,2);
+// // //  ComputeFnormOffline(2,kTRUE,2);
 
-//   ComputeFnormScalers(kFALSE,0);
-//   ComputeFnormScalers(kTRUE,0);
-//   ComputeFnormScalers(kTRUE,1);
-// //  ComputeFnormScalers(kTRUE,2);
+// //   ComputeFnormScalers(kFALSE,0);
+// //   ComputeFnormScalers(kTRUE,0);
+// //   ComputeFnormScalers(kTRUE,1);
+// // //  ComputeFnormScalers(kTRUE,2);
 
-//   WeightedMeanGraphs("Offline");
-//   WeightedMeanGraphs("Scalers");
-//   WeightedMeanGraphs("FnormOffline2PUPS,FnormOffline1PUPS","FnormOffline12PUPS");
+// //   WeightedMeanGraphs("Offline");
+// //   WeightedMeanGraphs("Scalers");
+// //   WeightedMeanGraphs("FnormOffline2PUPS,FnormOffline1PUPS","FnormOffline12PUPS");
 
-//   WeightedMeanGraphs("FnormOffline2PUPS,FnormScalersPUPS","FnormBest2");
+// //   WeightedMeanGraphs("FnormOffline2PUPS,FnormScalersPUPS","FnormBest2");
 
-//   ComputeGraphRelDif("FnormOffline2PUPS","FnormScalersPUPS");
+// //   ComputeGraphRelDif("FnormOffline2PUPS","FnormScalersPUPS");
 
-//   ComputeGraphRelDif("FnormOffline2PUPS","FnormOffline2");
-//   ComputeGraphRelDif("FnormOffline2PUPS","FnormOffline2PS");
+// //   ComputeGraphRelDif("FnormOffline2PUPS","FnormOffline2");
+// //   ComputeGraphRelDif("FnormOffline2PUPS","FnormOffline2PS");
 
-//   ComputeGraphRelDif("CorrectionPSMB","CorrectionPSREF");
+// //   ComputeGraphRelDif("CorrectionPSMB","CorrectionPSREF");
 
-// //  for ( Int_t i = 0; i < 4; ++i )
-// ///  {
-//     TString triggerEvents;
+// // //  for ( Int_t i = 0; i < 4; ++i )
+// // ///  {
+// //     TString triggerEvents;
 
-// //  triggerEvents.Form("NofEvent%sPUPS",GetTriggerTypeName(triggerTypes[i]).Data());
-//   triggerEvents.Form("NofEvent%sPUPS",GetTriggerTypeName(fReferenceTriggerType).Data());
+// // //  triggerEvents.Form("NofEvent%sPUPS",GetTriggerTypeName(triggerTypes[i]).Data());
+// //   triggerEvents.Form("NofEvent%sPUPS",GetTriggerTypeName(fReferenceTriggerType).Data());
 
-//   MultiplyGraphs(triggerEvents.Data(),"FnormBest2","NMBeqBest2");
+// //   MultiplyGraphs(triggerEvents.Data(),"FnormBest2","NMBeqBest2");
 
-//     MultiplyGraphs(triggerEvents.Data(),"FnormOffline2PUPS","NMBeqOffline2PUPS");
-//   MultiplyGraphs(triggerEvents.Data(),"FnormScalersPUPS","NMBeqScalersPUPS");
-// //  }
+// //     MultiplyGraphs(triggerEvents.Data(),"FnormOffline2PUPS","NMBeqOffline2PUPS");
+// //   MultiplyGraphs(triggerEvents.Data(),"FnormScalersPUPS","NMBeqScalersPUPS");
+// // //  }
 
-// //  MultiplyGraphs(Form("NofEvent%sPUTS",GetTriggerTypeName(fReferenceTriggerType).Data()),"FnormOffline2PUTS","NMBeqOffline2PUTS");
-// //  MultiplyGraphs(Form("NofEvent%sPUTS",GetTriggerTypeName(fReferenceTriggerType).Data()),"FnormOffline2TS","NMBeqOffline2TS");
+// // //  MultiplyGraphs(Form("NofEvent%sPUTS",GetTriggerTypeName(fReferenceTriggerType).Data()),"FnormOffline2PUTS","NMBeqOffline2PUTS");
+// // //  MultiplyGraphs(Form("NofEvent%sPUTS",GetTriggerTypeName(fReferenceTriggerType).Data()),"FnormOffline2TS","NMBeqOffline2TS");
 
-//   ComputeResultsFromGraphs();
+// //   ComputeResultsFromGraphs();
 
-//   AliAnalysisMuMuResult* result = GetResult("Fnorm");
-//   if (result)
-//   {
-//     result->Exclude("*");
-//     result->Include("FnormBest2");
-//   }
-}
+// //   AliAnalysisMuMuResult* result = GetResult("Fnorm");
+// //   if (result)
+// //   {
+// //     result->Exclude("*");
+// //     result->Include("FnormBest2");
+// //   }
+// }
 
 //_____________________________________________________________________________
 void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrected)
 {
   /// Compute individual graphs for the correction factors (PS_REF, PS_CINT,
   /// F_pile-up,PS_CINT/PS_REF) used in the computation of (some) Fnorm factors
-  ///
 
   TString graphName(Form("CorrectionGlobal%s",GetEventSelectionName(eventSelectionCorrected).Data()));;
 
@@ -168,13 +168,14 @@ void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrecte
 
   AliDebug(2,"");// ??
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
 
-  std::vector<double> vyGlobal;
-  std::vector<double> vyGlobalErr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
+
+  vector<double> vyGlobal;
+  vector<double> vyGlobalErr;
 
   const ETriggerType triggerTypes[] = { kMB, kMUL, kMSL, kMSH };
 
@@ -244,7 +245,7 @@ void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrecte
 // {
 //   /// Compute the run by run REF cross-section as sigma(ref) = sigma_(vdm)/FNorm and the integrated luminosity
 //   /// This method ment to run originaly for PP system.
-//   /// \argument nsteps : The FNorm reference graph, could be 1 (offline1), 2 (offline1) or 0 (Scaler)
+//   /// @argument nsteps : The FNorm reference graph, could be 1 (offline1), 2 (offline1) or 0 (Scaler)
 
 //   TString centrality(fConfig.First(fConfig.CentralitySelectionKey()));
 
@@ -302,12 +303,12 @@ void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrecte
 //   }
 
 
-//   const std::set<int>& runs = RunNumbers();
+//   const set<int>& runs = RunNumbers();
 
-//   std::vector<double> vx;
-//   std::vector<double> vxerr;
-//   std::vector<double> vy;
-//   std::vector<double> vyerr;
+//   vector<double> vx;
+//   vector<double> vxerr;
+//   vector<double> vy;
+//   vector<double> vyerr;
 
 //   Double_t purityREF(1.0);
 //   Double_t purityMB(1.0);
@@ -315,7 +316,7 @@ void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrecte
 //   Double_t purityMBerror(0.0);
 
 //   // compute the per run values
-//   for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+//   for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
 //   {
 //     Int_t runNumber = *it;
 
@@ -388,9 +389,9 @@ void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrecte
 void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrected, Int_t eventSelectionCorrected)
 {
   /// Compute MB to REF ratio using offline method, either in 1 or 2 steps
-  /// \argument nstep                  : 1 = one step method ; 2 = two steps method
-  /// \argument pileUpCorrected        : wheither or not we apply the pile-up correction factor
-  /// \argument eventSelectionCorrected: wheither or not we apply the purity facot correction
+  /// @argument nstep                    1 = one step method ; 2 = two steps method
+  /// @argument pileUpCorrected          wheither or not we apply the pile-up correction factor
+  /// @argument eventSelectionCorrected  wheither or not we apply the purity factor correction and how : 1 = ps ; 2= ts
 
   TString name("FnormOffline");
   TString title("Computed using offline information");
@@ -423,15 +424,15 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
 
   AliDebug(2,name);
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
-  const std::set<int>& runs = RunNumbers();
-  // Main loop over all the run numbers
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
-  {
+  const set<int>& runs = RunNumbers();
+
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it ){
+
     Int_t runNumber = *it;
     // Get trigger name
     TString mbTrigger   = GetTriggerClassName(kMB,runNumber);
@@ -443,13 +444,11 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
     AliDebug(1,Form("mb trigger  : %s\n", mbTrigger.Data()));
     AliDebug(1,Form("muon trigger: %s\n", muonTrigger.Data()));
 
-
     Double_t nofMB = GetSum(mbTrigger.Data(),runNumber,eventSelectionCorrected);
     Double_t nofMSL(0.0);
     Double_t nofMSLw0REF(0.0);
 
-    if ( nstep==2 )
-    {
+    if ( nstep==2 ){
       nofMSL = GetSum(muonTrigger.Data(),runNumber,eventSelectionCorrected);
       TString counterName = muonTrigger;
       if ( fReferenceTriggerType != kMSL ) counterName += Form("&%s",refInput.Data());
@@ -467,8 +466,7 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
     Double_t purityMB(1.0);
     Double_t purityMBerror(0.0);
 
-    if ( eventSelectionCorrected > 0 )
-    {
+    if ( eventSelectionCorrected > 0 ){
       ComputeEventSelectionGraph(kMB,eventSelectionCorrected);
 
       TGraphErrors* gps= 0x0;
@@ -481,8 +479,7 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
     Double_t pileUpFactor(1.0);
     Double_t pileUpFactorError(0.0);
 
-    if (pileUpCorrected)
-    {
+    if (pileUpCorrected){
       ComputePileUpGraph(kMB,eventSelectionCorrected);
 
       TGraphErrors* gpu = GetGraph(Form("CorrectionPU%s%s",GetEventSelectionName(eventSelectionCorrected).Data(),GetTriggerTypeName(kMB).Data()));
@@ -497,16 +494,11 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
                                                               nofMBw0REF,TMath::Sqrt(nofMBw0REF),
                                                               pileUpFactor,pileUpFactorError);
 
-    if ( nstep == 2 )
-    {
+    if ( nstep == 2 ){
       value =  nofMBw0MSL > 0.0 ? (nofMB/nofMSLw0REF)*(nofMSL/nofMBw0MSL) : 0.0;
-
-      // if ( runNumber == 196310 )
-      // {
-        AliDebug(1,Form("RUN %09d %d-%d-%d value=%e nofMB %e nofMSLw%s %e nofMSL %e nofMBw0MSL %e",
-                        runNumber,nstep,pileUpCorrected,eventSelectionCorrected,
-                        value,nofMB,refInput.Data(),nofMSLw0REF,nofMSL,nofMBw0MSL));
-      // }
+      AliDebug(1,Form("RUN %09d %d-%d-%d value=%e nofMB %e nofMSLw%s %e nofMSL %e nofMBw0MSL %e",
+                      runNumber,nstep,pileUpCorrected,eventSelectionCorrected,
+                      value,nofMB,refInput.Data(),nofMSLw0REF,nofMSL,nofMBw0MSL));
 
       error = value*AliAnalysisMuMuResult::ErrorABCD(nofMB,TMath::Sqrt(nofMB),
                                                           nofMSLw0REF,TMath::Sqrt(nofMSLw0REF),
@@ -514,13 +506,10 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
                                                           nofMBw0MSL,TMath::Sqrt(nofMBw0MSL));
     }
 
-    // if ( value > 0.0 )
-    // {
-      vx.push_back(1.0*runNumber);
-      vxerr.push_back(0.5);
-      vy.push_back(value);
-      vyerr.push_back(error);
-    // }
+    vx.push_back(1.0*runNumber);
+    vxerr.push_back(0.5);
+    vy.push_back(value);
+    vyerr.push_back(error);
   }
 
   CreateAndAddGraph(name,title,vx,vxerr,vy,vyerr);
@@ -535,9 +524,15 @@ void AliAnalysisMuMuFnorm::ComputeFnormScalers(Bool_t pileUpCorrected,
   ///
   /// i.e. Fnorm = L0B(MB) x PS(MB) x Fpile-up / ( L0B(REF) x PS(REF) )
   ///
-  /// where MB is the minbias trigger
-  /// REF is the fReferenceTrigger
-  /// and PS is the fraction of events selected by the physics selection
+  /// where
+  ///
+  ///   - MB is the minbias trigger
+  ///
+  ///
+  ///   -REF is the fReferenceTrigger
+  ///
+  ///
+  ///   -PS is the fraction of events selected by the physics selection
   ///
   /// The correction factor (the two PS and one Fpile-up) are
   /// taken from graphs computed in other methods
@@ -577,12 +572,12 @@ void AliAnalysisMuMuFnorm::ComputeFnormScalers(Bool_t pileUpCorrected,
   ComputeTriggerL0B(kMB);
   ComputeTriggerL0B(fReferenceTriggerType);
 
-  const std::set<int>& runs = RunNumbers();
+  const set<int>& runs = RunNumbers();
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
   Double_t purityREF(1.0);
   Double_t purityMB(1.0);
@@ -590,7 +585,7 @@ void AliAnalysisMuMuFnorm::ComputeFnormScalers(Bool_t pileUpCorrected,
   Double_t purityMBerror(0.0);
 
   // compute the per run values
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -701,10 +696,10 @@ void AliAnalysisMuMuFnorm::ComputeGraphRelDif(const char* a, const char* b) cons
 
   TString title(Form("%s-%s (RelDif,%%)",b,a));
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
   for ( Int_t i = 0; i < ga->GetN(); ++i )
   {
@@ -778,16 +773,16 @@ void AliAnalysisMuMuFnorm::ComputePileUpGraph(ETriggerType tt, Int_t eventSelect
 
   AliDebug(2,graphName);
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
-  const std::set<int>& runs = RunNumbers();
+  const set<int>& runs = RunNumbers();
 
   AliAnalysisTriggerScalers ts(runs,OCDBPath().Data());
 
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -845,16 +840,16 @@ void AliAnalysisMuMuFnorm::ComputeEventSelectionGraph(ETriggerType tt, Int_t eve
 
   AliDebug(2,graphName);
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
-  const std::set<int>& runs = RunNumbers();
+  const set<int>& runs = RunNumbers();
 
   // AliAnalysisTriggerScalers ts(runs,OCDBPath().Data()); // à quoi ça sert ??
 
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -899,16 +894,16 @@ void AliAnalysisMuMuFnorm::ComputePurityFactorForScalerGraph(ETriggerType tt, In
 
   AliDebug(2,graphName);
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
-  const std::set<int>& runs = RunNumbers();
+  const set<int>& runs = RunNumbers();
 
   // AliAnalysisTriggerScalers ts(runs,OCDBPath().Data()); // à quoi ça sert ??
 
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -935,7 +930,6 @@ void AliAnalysisMuMuFnorm::ComputePurityFactorForScalerGraph(ETriggerType tt, In
 
   CreateAndAddGraph(graphName,title,vx,vxerr,vy,vyerr);
 }
-
 
 //_____________________________________________________________________________
 void AliAnalysisMuMuFnorm::ComputeResultsFromGraphs()
@@ -1040,16 +1034,16 @@ void AliAnalysisMuMuFnorm::ComputeNofEvents(ETriggerType triggerType,
 
   AliDebug(2,graphName);
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
-  const std::set<int>& runs = RunNumbers();
+  const set<int>& runs = RunNumbers();
 
   Int_t i(0);
 
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -1118,16 +1112,16 @@ void AliAnalysisMuMuFnorm::ComputeTriggerFractions(ETriggerType triggerType,
 
   AliDebug(2,graphName);
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
-  const std::set<int>& runs = RunNumbers();
+  const set<int>& runs = RunNumbers();
 
   Double_t n(0.0);
 
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -1145,7 +1139,7 @@ void AliAnalysisMuMuFnorm::ComputeTriggerFractions(ETriggerType triggerType,
     return;
   }
 
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -1170,10 +1164,10 @@ void AliAnalysisMuMuFnorm::ComputeTriggerL0B(ETriggerType triggerType)
 {
   /// Compute trigger L0B
 
-  std::vector<double> vx;
-  std::vector<double> vxerr;
-  std::vector<double> vy;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vxerr;
+  vector<double> vy;
+  vector<double> vyerr;
 
   TString graphName(Form("L0B%s",GetTriggerTypeName(triggerType).Data()));
 
@@ -1185,11 +1179,11 @@ void AliAnalysisMuMuFnorm::ComputeTriggerL0B(ETriggerType triggerType)
 
   AliDebug(2,graphName);
 
-  const std::set<int>& runs = RunNumbers();
+  const set<int>& runs = RunNumbers();
 
   AliAnalysisTriggerScalers ts(runs,OCDBPath().Data());
 
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -1233,16 +1227,16 @@ void AliAnalysisMuMuFnorm::ComputeTriggerL0B(ETriggerType triggerType)
 //
 //  AliDebug(1,graphName);
 //
-//  std::vector<double> vx;
-//  std::vector<double> vxerr;
-//  std::vector<double> vy;
-//  std::vector<double> vyerr;
+//  vector<double> vx;
+//  vector<double> vxerr;
+//  vector<double> vy;
+//  vector<double> vyerr;
 //
-//  const std::set<int>& runs = RunNumbers();
+//  const set<int>& runs = RunNumbers();
 //
 //  AliAnalysisTriggerScalers ts(runs,OCDBPath().Data());
 //
-//  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+//  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
 //  {
 //    Int_t runNumber = *it;
 //
@@ -1273,10 +1267,10 @@ void AliAnalysisMuMuFnorm::ComputeTriggerL0B(ETriggerType triggerType)
 //_____________________________________________________________________________
 TGraphErrors* AliAnalysisMuMuFnorm::CreateAndAddGraph(const TString& name,
                                                       const TString& title,
-                                                      const std::vector<double>& vx,
-                                                      const std::vector<double>& vxerr,
-                                                      const std::vector<double>& vy,
-                                                      const std::vector<double>& vyerr) const
+                                                      const vector<double>& vx,
+                                                      const vector<double>& vxerr,
+                                                      const vector<double>& vy,
+                                                      const vector<double>& vyerr) const
 {
   /// Creates a graph and an histo and adds it to our mergeable collection
 
@@ -1400,7 +1394,7 @@ TString AliAnalysisMuMuFnorm::GetEventSelectionName(Int_t eventSelectionCorrecte
 //_____________________________________________________________________________
 TGraphErrors* AliAnalysisMuMuFnorm::GetGraph(const char* name) const
 {
-  // shortcut method to give access to one graph
+  /// shortcut method to give access to one graph
 
   TObject* o = MC()->GetObject(Form("/GRAPHS/%s",name));
 
@@ -1418,7 +1412,7 @@ TGraphErrors* AliAnalysisMuMuFnorm::GetGraph(const char* name) const
 //_____________________________________________________________________________
 TH1* AliAnalysisMuMuFnorm::GetGraphAsHisto(const char* name) const
 {
-  // shortcut method to give access to one graph and return it as an histo
+  /// shortcut method to give access to one graph and return it as an histo
 
   TObject* o = MC()->GetObject(Form("/GRAPHS/%s",name));
 
@@ -1429,7 +1423,7 @@ TH1* AliAnalysisMuMuFnorm::GetGraphAsHisto(const char* name) const
     return 0x0;
   }
 
-  const std::set<int>& runs = RunNumbers();
+  const set<int>& runs = RunNumbers();
 
   TGraphErrors *g = static_cast<TGraphErrors*>(o->Clone());
   TH1F * h =new TH1F(Form("%s_AsHisto",g->GetName()),Form("%s_AsHisto",g->GetName()),1,0.,1.);
@@ -1438,7 +1432,7 @@ TH1* AliAnalysisMuMuFnorm::GetGraphAsHisto(const char* name) const
   Double_t dy = 0.;
 
   //Fill
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
+  for ( set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
   {
     Int_t runNumber = *it;
 
@@ -1569,7 +1563,7 @@ void AliAnalysisMuMuFnorm::GetPurityFactor(TString triggerClassName, Int_t runNu
 //_____________________________________________________________________________
 AliAnalysisMuMuResult* AliAnalysisMuMuFnorm::GetResult(const char* name) const
 {
-  // shortcut method to give access to one result
+  /// shortcut method to give access to one result
 
   TObject* o = MC()->GetObject(Form("/RESULTS/%s",name));
 
@@ -1604,7 +1598,7 @@ AliAnalysisMuMuResult* AliAnalysisMuMuFnorm::GetRunIntegratedResult(const TGraph
 
   TGraphErrors* gTriggerFractions = GetGraph(fname);
 
-  StdoutToAliDebug(2,std::cout << g.GetName() << std::endl; g.Print(););
+  StdoutToAliDebug(2,cout << g.GetName() << endl; g.Print(););
 
   if (!gTriggerFractions)
   {
@@ -1833,18 +1827,7 @@ TString AliAnalysisMuMuFnorm::MSHTriggerClassName(Int_t runNumber) const
 //_____________________________________________________________________________
 TString AliAnalysisMuMuFnorm::MSLTriggerClassName(Int_t runNumber) const
 {
-  /// FIXME : find a better way ?
-
- //  if ( TriggerClassnameTest("CMSL7-B-NOPF-MUON",runNumber) )
- //  {
- //      return "CMSL7-B-NOPF-MUON";
- //  }
- // else
- //   if ( TriggerClassnameTest("CPBI1MSL-B-NOPF-MUON",runNumber) )
- // {
- //   return "CPBI1MSL-B-NOPF-MUON";
- // }
- //  return "";
+  /// Take the first key in the config. file.
 
  TString triggerType(fConfig.First(fConfig.MuonTriggerKey(),kFALSE).Data());
   return triggerType.Data();
@@ -1855,10 +1838,10 @@ TString AliAnalysisMuMuFnorm::MSLTriggerClassName(Int_t runNumber) const
 void AliAnalysisMuMuFnorm::MultiplyGraphs(const char* g1name, const char* g2name, const char* name)
 {
   /// Make a new graph = g1*g2
-  std::vector<double> vx;
-  std::vector<double> vy;
-  std::vector<double> vxerr;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vy;
+  vector<double> vxerr;
+  vector<double> vyerr;
 
   TGraphErrors* g1 = GetGraph(g1name);
   TGraphErrors* g2 = GetGraph(g2name);
@@ -1917,21 +1900,7 @@ void AliAnalysisMuMuFnorm::MultiplyGraphs(const char* g1name, const char* g2name
 //_____________________________________________________________________________
 TString AliAnalysisMuMuFnorm::MULTriggerClassName(Int_t runNumber) const
 {
-  /// FIXME : find a better way ?
-
-  // if ( TriggerClassnameTest("CMUL7-B-NOPF-ALLNOTRD",runNumber) )
-  // {
-  //   return "CMUL7-B-NOPF-ALLNOTRD";
-  // }
-  // else if ( TriggerClassnameTest("CMUL7-B-NOPF-MUON",runNumber) )
-  // {
-  //   return "CMUL7-B-NOPF-MUON";
-  // }
-  // else if ( TriggerClassnameTest("CPBI1MUL-B-NOPF-MUON",runNumber) )
-  // {
-  //   return "CPBI1MUL-B-NOPF-MUON";
-  // }
-  // return "";
+  /// Take the first key in the config. file.
 
   TString triggerType(fConfig.First(fConfig.DimuonTriggerKey(),kFALSE).Data());
     return triggerType.Data();
@@ -1949,11 +1918,11 @@ void AliAnalysisMuMuFnorm::Print(Option_t* opt) const
 }
 
 //_____________________________________________________________________________
-std::set<int> AliAnalysisMuMuFnorm::RunNumbers() const
+set<int> AliAnalysisMuMuFnorm::RunNumbers() const
 {
-  // Extract the run numbers from our counter collection
+  /// Extract the run numbers from our counter collection
 
-  std::set<int> runset;
+  set<int> runset;
 
   TString sruns = fCounterCollection.GetKeyWords("run");
   TObjArray* runs = sruns.Tokenize(",");
@@ -2059,6 +2028,7 @@ void
 AliAnalysisMuMuFnorm::WeightedMeanGraphs(const char* patternOrList, const char* graphName, AliMergeableCollection* oc)
 {
   /// Sum the graphs which name matches pattern
+  ///
   /// Sum is made using a weighted mean (each element is weighted by the inverse
   /// of its error squared)
 
@@ -2115,10 +2085,10 @@ AliAnalysisMuMuFnorm::WeightedMeanGraphs(const char* patternOrList, const char* 
 
   if (selected.GetLast()<0) return;
 
-  std::vector<double> vx;
-  std::vector<double> vy;
-  std::vector<double> vxerr;
-  std::vector<double> vyerr;
+  vector<double> vx;
+  vector<double> vy;
+  vector<double> vxerr;
+  vector<double> vyerr;
 
   Int_t npts = static_cast<TGraphErrors*>(selected.First())->GetN();
   if(npts==0 || npts==1) return;

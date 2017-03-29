@@ -33,7 +33,7 @@ fBinning(0x0),
 fBins(0x0),
 fWeight(1.0)
 {
-  // default ctor
+  /// default ctor
 }
 
 //______________________________________________________________________________
@@ -43,7 +43,7 @@ fBinning(0x0),
 fBins(0x0),
 fWeight(rhs.Weight())
 {
-  // copy ctor
+  /// copy ctor
 
   if ( rhs.fBinning )
   {
@@ -70,7 +70,7 @@ fWeight(rhs.Weight())
 AliAnalysisMuMuSpectra&
 AliAnalysisMuMuSpectra::operator=(const AliAnalysisMuMuSpectra& rhs)
 {
-  // assignment operator
+  /// assignment operator
 
   if (this==&rhs) return *this;
 
@@ -105,7 +105,7 @@ AliAnalysisMuMuSpectra::operator=(const AliAnalysisMuMuSpectra& rhs)
 //______________________________________________________________________________
 AliAnalysisMuMuSpectra::~AliAnalysisMuMuSpectra()
 {
-  // dtor
+  /// dtor
   delete fBinning;
   delete fBins;
 }
@@ -114,7 +114,7 @@ AliAnalysisMuMuSpectra::~AliAnalysisMuMuSpectra()
 Bool_t AliAnalysisMuMuSpectra::AdoptResult(const AliAnalysisMuMuBinning::Range& bin,
                                          AliAnalysisMuMuResult* result)
 {
-  // adopt (i.e. we are becoming the owner) a result for a given bin
+  /// adopt (i.e. we are becoming the owner) a result for a given bin
   if ( !result )
   {
     AliError("Cannot adopt a null result");
@@ -284,7 +284,7 @@ Bool_t AliAnalysisMuMuSpectra::HasValue(const char* what) const
 //______________________________________________________________________________
 Bool_t AliAnalysisMuMuSpectra::IsEmpty() const
 {
-  // whether this spectra is empty or not
+  /// whether this spectra is empty or not
   return ( fBins==0x0 || fBins->GetEntries()<=0 );
 }
 
@@ -292,9 +292,9 @@ Bool_t AliAnalysisMuMuSpectra::IsEmpty() const
 Long64_t AliAnalysisMuMuSpectra::Merge(TCollection* list)
 {
   /// Merge method
-
-  // Merge a list of AliAnalysisMuMuSpectra objects with this
-  // Returns the number of merged objects (including this).
+  ///
+  /// Merge a list of AliAnalysisMuMuSpectra objects with this
+  /// Returns the number of merged objects (including this).
 
   if (!list) return 0;
 
@@ -351,21 +351,76 @@ Long64_t AliAnalysisMuMuSpectra::Merge(TCollection* list)
   return count+1;
 }
 
+//______________________________________________________________________________
+Long64_t AliAnalysisMuMuSpectra::Merge(AliAnalysisMuMuSpectra* spectraToAdd)
+{
+  /// Merge method
+  ///
+  /// Merge a list of AliAnalysisMuMuSpectra objects with this
+  /// Returns the number of merged objects (including this).
+
+  if (!spectraToAdd) return 0;
+
+  Int_t count(0);
+
+  TList binningList;
+
+  // for each bin must do a list of results, and merge that list
+
+  TObjArray* bins = fBinning->CreateBinObjArray();
+  TIter nextBin(bins);
+  AliAnalysisMuMuBinning::Range* bin;
+
+  Int_t i(0);
+
+  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
+  {
+
+    TList binList;
+
+    AliAnalysisMuMuSpectra* spectra = static_cast<AliAnalysisMuMuSpectra*>(spectraToAdd);
+
+    if (i==0)
+    {
+      binningList.Add(spectra->Binning());
+
+      if ( !fBinning->IsEqual(spectra->Binning()) || spectra->BinContentArray()->GetLast() != BinContentArray()->GetLast() )
+      {
+        AliError("Cannot merge spectra with different binning");
+        continue;
+      }
+      ++count;
+    }
+
+    binList.Add(spectra->GetResultForBin(*bin));
+
+    ++i;
+
+    AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(GetResultForBin(*bin));
+    r->Merge(&binList);
+
+  }
+
+  delete bins;
+
+  return count+1;
+}
+
 //_____________________________________________________________________________
 TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_t divideByBinWidth) const
 {
-  // Convert the spectra into an histogram
+  /// Convert the spectra into an histogram
 
   TString swhat(what);
   TString swhatT(what);
   swhat.ToUpper();
 
-  Double_t* bins = fBinning->CreateBinArray();
+  Double_t* bins  = fBinning->CreateBinArray();
   Double_t* binsX = fBinning->CreateBinArrayX();
   Double_t* binsY = fBinning->CreateBinArrayY();
 
-  Int_t nbinsX = fBinning->GetNBinsX();
-  Int_t nbinsY = fBinning->GetNBinsY();
+  Int_t nbinsX    = fBinning->GetNBinsX();
+  Int_t nbinsY    = fBinning->GetNBinsY();
 
   TObjArray* binArray = fBinning->CreateBinObjArray();
 
@@ -419,18 +474,17 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_
       Int_t x = j/nbinsY + 1;
       Int_t y = (j % nbinsY) + 1;
 
-      std::cout << "x="  << x << ";" << "y=" << y << std::endl;
+      // std::cout << "x="  << x << ";" << "y=" << y << std::endl;
 
       h->SetBinContent(x,y,z);
       h->SetBinError(x,y,zerr);
 
-    }
+    } else {
 
-    else
-    {
       if (!h)
       {
-        h = new TH1F(r->GetName(),r->GetName(),binArray->GetEntries(),bins);
+        if(b.IsIntegrated()) h = new TH1F(r->GetName(),r->GetName(),1,-1,1.);
+        else h = new TH1F(r->GetName(),r->GetName(),binArray->GetEntries(),bins);
         h->SetDirectory(0);
       }
 
@@ -470,7 +524,7 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_
 //______________________________________________________________________________
 void AliAnalysisMuMuSpectra::Print(Option_t* opt) const
 {
-  // printout
+  /// printout
 
   if (!IsEmpty())
   {
@@ -488,7 +542,7 @@ void AliAnalysisMuMuSpectra::Print(Option_t* opt) const
 //______________________________________________________________________________
 void AliAnalysisMuMuSpectra::Scale(Double_t value)
 {
-  // scale all bins by value
+  /// scale all bins by value
 
   TIter next(fBins);
   AliAnalysisMuMuResult* r;
@@ -502,7 +556,7 @@ void AliAnalysisMuMuSpectra::Scale(Double_t value)
 //______________________________________________________________________________
 void AliAnalysisMuMuSpectra::SetWeight(Double_t w)
 {
-  // Set the weight of this spectra
+  /// Set the weight of this spectra
   fWeight = w;
   TIter next(fBins);
   AliAnalysisMuMuResult* r;
