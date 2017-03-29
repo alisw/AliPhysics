@@ -190,7 +190,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
   
   //Track cut variables for QA
   //ITS
-  histos->UserHistogram("Track","ITSnCls",";ITS number clusters;#tracks",6,-0.5,5.5,AliDielectronVarManager::kNclsITS);
+  histos->UserHistogram("Track","ITSnCls",";ITS number clusters;#tracks",6,-0.5,6.5,AliDielectronVarManager::kNclsITS);
   histos->UserHistogram("Track","ITSchi2",";ITS chi2/Cl;#tracks",110,0.,11.,AliDielectronVarManager::kITSchi2Cl);
   histos->UserHistogram("Track","nITSshared","#shared ITS clusters", 7, 0, 7, AliDielectronVarManager::kNclsSITS);
   histos->UserHistogram("Track","fracITSshared","frac. shared ITS clusters", 120, 0,  1.2, AliDielectronVarManager::kNclsSITS);
