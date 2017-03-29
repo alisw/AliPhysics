@@ -657,7 +657,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    AliBasicParticle* particleBasic        = dynamic_cast<AliBasicParticle*>(particle);
 	    if(!triggerParticleBasic || !particleBasic)
 	    {
-	      AliError("If fCheckEventNumberInCorrelation is set, particle must be derived from AliBasicParticle");
+	      AliFatal("If fCheckEventNumberInCorrelation is set, particle must be derived from AliBasicParticle");
 	      continue;
 	    }
 	
@@ -732,7 +732,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
           AliBasicParticle* triggerParticleBasic = dynamic_cast<AliBasicParticle*>(triggerParticle);
           AliBasicParticle* particleBasic        = dynamic_cast<AliBasicParticle*>(particle);
           if(!triggerParticleBasic || !particleBasic)
-            AliError("If fCheckEventNumberInCorrelation is set, particle must be derived from AliBasicParticle");
+            AliFatal("If fCheckEventNumberInCorrelation is set, particle must be derived from AliBasicParticle");
       
           if(triggerParticleBasic->IsInSameEvent(particleBasic))
             continue;
