@@ -655,8 +655,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   UInt_t pattern = 0;
   Int_t nbad = fCEPUtil->countstatus(fTrackStatus,mask,pattern);
   if (nbad==0) fhStatsFlow->Fill(AliCEPBase::kBinSharedCluster);
-  //fEventCondition += (nbad==0) * AliCEPBase::kBitSClusterCut;
-  fEventCondition += kTRUE * AliCEPBase::kBitSClusterCut;
+  fEventCondition += (nbad==0) * AliCEPBase::kBitSClusterCut;
   
 	// Martin's selection
 	TArrayI Mindices;
