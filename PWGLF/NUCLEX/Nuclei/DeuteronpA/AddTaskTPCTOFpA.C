@@ -21,7 +21,7 @@ AliAnalysisTask *AddTaskDeuteronpA(){
 
   //normal tracks
   AliAnalysisDeuteronpA *task = new AliAnalysisDeuteronpA("janielskTaskDeuteronpA");
-
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
 
   //initialize task
   task->Initialize();
