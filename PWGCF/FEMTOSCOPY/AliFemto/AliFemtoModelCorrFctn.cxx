@@ -84,6 +84,8 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
 
   snprintf(buf , 100,  "QgenQrec%s", title);
   fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
+  //test
+  //fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,-0.05,0.05);
 
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
@@ -209,9 +211,9 @@ AliFemtoString AliFemtoModelCorrFctn::Report()
 //_______________________
 void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 {
+  if (fPairCut)
+    if (!fPairCut->Pass(aPair)) return;//SetPairSelectionCut() in ConfigFemtoAnalysis.C
   if(!fKaonPDG) {
-    if (fPairCut)
-      if (!fPairCut->Pass(aPair)) return;
     // cout<<" AliFemtoModelCorrFcn add real pair "<<endl;
     Double_t weight = fManager->GetWeight(aPair);
     //cout<<" wight "<< weight<<endl;
@@ -236,9 +238,9 @@ void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 //_______________________
 void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
 {
+  if (fPairCut)
+    if (!fPairCut->Pass(aPair)) return;//SetPairSelectionCut() in ConfigFemtoAnalysis.C
   if(!fKaonPDG) {
-    if (fPairCut)
-      if (!fPairCut->Pass(aPair)) return;
     Double_t weight = fManager->GetWeight(aPair);
     fNumeratorFake->Fill(aPair->QInv(), weight);
     fDenominator->Fill(aPair->QInv(), 1.0);
@@ -264,6 +266,8 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
     if(tQinvTrue>0)fNumeratorFakeIdeal->Fill(tQinvTrue, weight);
     if(tQinvTrue>0)fDenominatorIdeal->Fill(tQinvTrue, 1.0);
     if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,aPair->QInv());
+    //test
+    //if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,tQinvTrue-aPair->QInv());
   }
 }
 
