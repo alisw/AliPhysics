@@ -25,9 +25,9 @@
 #include "AliAnalysisMuMuGraphUtil.h"
 #include "AliAnalysisMuMuJpsiResult.h"
 #include "AliAnalysisMuMuSpectra.h"
-#include "AliAnalysisMuMuSpectraCapsulePbPb.h"
-#include "AliAnalysisMuMuSpectraCapsulePbP.h"
-#include "AliAnalysisMuMuSpectraCapsulePP.h"
+#include "AliAnalysisMuMuSpectraProcessorPbPb.h"
+#include "AliAnalysisMuMuSpectraProcessorPbP.h"
+#include "AliAnalysisMuMuSpectraProcessorPP.h"
 #include "AliAnalysisTriggerScalers.h"
 #include "AliCounterCollection.h"
 #include "AliHistogramCollection.h"
@@ -395,16 +395,16 @@ void AliAnalysisMuMu::DrawFitResults(const char* what,
             return;
           }
 
-          // Create pointer on fitted spectra. Any kind of capsule do the job
-          AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,"","");
-          if(!capsule){
+          // Create pointer on fitted spectra. Any kind of Processor do the job
+          AliAnalysisMuMuSpectraProcessorPbPb * Processor = new AliAnalysisMuMuSpectraProcessorPbPb(spectra,spectraPath,"","");
+          if(!Processor){
             AliError("Could not find spetra !");
             return;
           }
           // Draw results
           TString sspectraName(spectraName);
-          if(sspectraName.Contains("PSI-"))capsule->DrawResults(what,"PSI",subresults);
-          delete capsule;
+          if(sspectraName.Contains("PSI-"))Processor->DrawResults(what,"PSI",subresults);
+          delete Processor;
         }
       }
     }
@@ -1216,12 +1216,12 @@ void AliAnalysisMuMu::RAAasGraphic(const char* particle,const char* binType,cons
 {
   /**
    * @brief Compute, store and print R_AA
-   * @details Should be used after a fit process (FitJpsi() for instance). Work is delegated to a AliAnalysisMuMuSpectraCapsule class according to beam year.
+   * @details Should be used after a fit process (FitJpsi() for instance). Work is delegated to a AliAnalysisMuMuSpectraProcessor class according to beam year.
    *
    * @param particle    particle name
    * @param binType     [description]
-   * @param externfile  Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
-   * @param externfile2 Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+   * @param externfile  Config. file readed by AliAnalysisMuMuSpectraProcessor classes. See AliAnalysisMuMuSpectraProcessor documentation
+   * @param externfile2 Config. file readed by AliAnalysisMuMuSpectraProcessor classes. See AliAnalysisMuMuSpectraProcessor documentation
    * @param RefCent     Centrality bin from which we get the number of trigger in the counter collection. V0M_00.00_00.90 by default
    * @param print       Print error details
    * @param AccEffCorr  Spectra type
@@ -1353,13 +1353,13 @@ void AliAnalysisMuMu::RAAasGraphic(const char* particle,const char* binType,cons
                           Int_t NofMUL = TMath::Nint(CC()->GetSum(Form("trigger:%s/event:%s/centrality:%s",strigger->String().Data(),seventType->String().Data(),RefCent)));
                           //________
 
-                          AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,externfile,externfile2);
-                          if(!capsule) continue;
-                          AliDebug(1,Form("Spectra = %p",capsule));
-                          if(print)capsule->SetPrintFlag();
+                          AliAnalysisMuMuSpectraProcessorPbPb * Processor = new AliAnalysisMuMuSpectraProcessorPbPb(spectra,spectraPath,externfile,externfile2);
+                          if(!Processor) continue;
+                          AliDebug(1,Form("Spectra = %p",Processor));
+                          if(print)Processor->SetPrintFlag();
 
                           // Get Graph with RAA results
-                          list = capsule->RAAasGraphic(NofMUL);
+                          list = Processor->RAAasGraphic(NofMUL);
 
                           if(!list) continue;
                           AliDebug(1,Form("list = %p",list));
@@ -1442,7 +1442,7 @@ void AliAnalysisMuMu::RAAasGraphic(const char* particle,const char* binType,cons
                             graphCentErr->SetPointError(n-1,2.5,dysys);
                           }
                         n++;
-                        delete capsule;
+                        delete Processor;
                       }
                       cout << "" << endl;
                       if (sbinType->String().Contains("INTEGRATED")){ //Print
@@ -3713,7 +3713,7 @@ void AliAnalysisMuMu::PrintNofWhat(const char* what, const char* spectraName, Bo
 {
     /**
     * @brief            Print number of particle. Method to use after FitJPsi() or any other fit process.
-    * @details          Delegate to AliAnalysisMuMuCapsulePbPb::PrintNumberOfWhat().
+    * @details          Delegate to AliAnalysisMuMuProcessorPbPb::PrintNumberOfWhat().
     * @param particle   particle name
     * @param what Quantity stored in the AliAnalysisMuMuSpectra
     */
@@ -3801,15 +3801,15 @@ void AliAnalysisMuMu::PrintNofWhat(const char* what, const char* spectraName, Bo
           //________
 
           // Create pointer on fitted spectra
-          AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,"","");
-          AliDebug(1,Form("capsule = %p",capsule));
-          if(!capsule){
+          AliAnalysisMuMuSpectraProcessorPbPb * Processor = new AliAnalysisMuMuSpectraProcessorPbPb(spectra,spectraPath,"","");
+          AliDebug(1,Form("Processor = %p",Processor));
+          if(!Processor){
             AliError("Could not find spetra !");
             continue;
           }
 
-          capsule->PrintNofWhat(what);
-          delete capsule;
+          Processor->PrintNofWhat(what);
+          delete Processor;
         }
       }
     }
@@ -4487,12 +4487,12 @@ void AliAnalysisMuMu::ComputePPCrossSection(const char* spectraName,const char* 
 /**
  *   [AliAnalysisMuMu::ComputePPCrossSection description]
  *   @brief   Compute the PP Cross section. At the moment, only implemented when <what> == CorrNofJPsi
- *   @details Delegate the process to AliAnalysisMuMuCapsulePP.
+ *   @details Delegate the process to AliAnalysisMuMuProcessorPP.
  *
  *   @param   spectraName spectra Name
  *   @param   what        Quantity stored in the AliAnalysisMuMuSpectra used for the cross-section. Should always be already Accxeff corrected ("CorrNofJPsi" for instance)
- *   @param   externfile  Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
- *   @param   externfile2 Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+ *   @param   externfile  Config. file readed by AliAnalysisMuMuSpectraProcessor classes. See AliAnalysisMuMuSpectraProcessor documentation
+ *   @param   externfile2 Config. file readed by AliAnalysisMuMuSpectraProcessor classes. See AliAnalysisMuMuSpectraProcessor documentation
  *   @param   print       Print more details
  */
 
@@ -4567,15 +4567,15 @@ void AliAnalysisMuMu::ComputePPCrossSection(const char* spectraName,const char* 
             return;
           }
 
-          // Create capsule who will compute the cross section
-          AliAnalysisMuMuSpectraCapsulePP * capsule = new AliAnalysisMuMuSpectraCapsulePP(spectra,spectraPath,externfile,externfile2);
-          if(!capsule) continue;
-          AliDebug(1,Form("Spectra = %p",capsule));
+          // Create Processor who will compute the cross section
+          AliAnalysisMuMuSpectraProcessorPP * Processor = new AliAnalysisMuMuSpectraProcessorPP(spectra,spectraPath,externfile,externfile2);
+          if(!Processor) continue;
+          AliDebug(1,Form("Spectra = %p",Processor));
 
-          if(print)capsule->SetPrintFlag();
+          if(print)Processor->SetPrintFlag();
 
           // Get Graph with RAA results
-          list = capsule->ComputeJpsiPPCrossSection(what);
+          list = Processor->ComputeJpsiPPCrossSection(what);
 
           AliDebug(1,Form("list = %p",list));
           if(!list) continue;
@@ -4983,11 +4983,11 @@ void AliAnalysisMuMu::PlotJpsiYield(const char* spectraName, const char* subresu
 /**
  *   [AliAnalysisMuMu::ComputeJpsiYield description]
  *   @brief   Compute the Jpsi yield, i.e NofJPsi/AccxEff/FNorm/MUL.
- *   @details Delegate to AliAnalysisMuMuCapsule. It can be compute for an specific subresult (fit with an specific background shape, signal, fitting range... combination) or from the mean of all the subresults.
+ *   @details Delegate to AliAnalysisMuMuProcessor. It can be compute for an specific subresult (fit with an specific background shape, signal, fitting range... combination) or from the mean of all the subresults.
  *
  *   @param binType        [description]
- *   @param externfile     Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
- *   @param externfile2    Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+ *   @param externfile     Config. file readed by AliAnalysisMuMuSpectraProcessor classes. See AliAnalysisMuMuSpectraProcessor documentation
+ *   @param externfile2    Config. file readed by AliAnalysisMuMuSpectraProcessor classes. See AliAnalysisMuMuSpectraProcessor documentation
  *   @param AccEffCorr     Spectra type
  *   @param subresultname  If one wants to draw one/several specific results.
  */
@@ -5067,7 +5067,7 @@ void AliAnalysisMuMu::PlotJpsiYield(const char* spectraName, const char* subresu
             else                                      idHisto= Form("hFNormInt_%s",striggerMB.Data());
 
             h = OC()->Histo(Form("%s/%s",id.Data(),idHisto.Data()));
-            if (!h) AliError(Form("Could not find histo in %s/%s. Take FNorm from the capsule",id.Data(),idHisto.Data()));
+            if (!h) AliError(Form("Could not find histo in %s/%s. Take FNorm from the Processor",id.Data(),idHisto.Data()));
             //________
 
             //________Get spectra
@@ -5084,14 +5084,13 @@ void AliAnalysisMuMu::PlotJpsiYield(const char* spectraName, const char* subresu
             if(syear.Contains("PbPb"))
             {
               printf("there !!\n");
-              AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,externfile,externfile2);
-              AliDebug(1,Form("Spectra = %p",capsule));
+              AliAnalysisMuMuSpectraProcessorPbPb * Processor = new AliAnalysisMuMuSpectraProcessorPbPb(spectra,spectraPath,externfile,externfile2);
+              AliDebug(1,Form("Spectra = %p",Processor));
 
               const char* what ="NofJPsi";
 
               // Get Graph with Yield results
-              printf("coucou !! !!\n");
-              graph = capsule->ComputeYield(what,h,subresultname,NofMUL);
+              graph = Processor->ComputeYield(what,h,subresultname,NofMUL);
 
               TLegend * leg = new TLegend(0.4,0.7,0.90,0.9);
               leg->SetHeader(Form("ALICE, Pb-Pb #sqrt{s_{NN}}=2.76 TeV, L_{int}=70 #mub^{-1}, %s",scentrality->String().Data()));
@@ -5099,35 +5098,35 @@ void AliAnalysisMuMu::PlotJpsiYield(const char* spectraName, const char* subresu
               graph->Draw("ap");
               leg->Draw();
 
-              delete capsule;
+              delete Processor;
             }
             else if(syear.Contains("pPb") || syear.Contains("Pbp"))
             {
               AliError("Not implemented yet ! You are welcome to do so :D ");
               return;
-              // AliAnalysisMuMuSpectraCapsulePbP * capsule = new AliAnalysisMuMuSpectraCapsulePbP(spectra,spectraPath,externfile,externfile2);
-              // AliDebug(1,Form("Spectra = %p",capsule));
+              // AliAnalysisMuMuSpectraProcessorPbP * Processor = new AliAnalysisMuMuSpectraProcessorPbP(spectra,spectraPath,externfile,externfile2);
+              // AliDebug(1,Form("Spectra = %p",Processor));
 
               // Int_t NofMUL= TMath::Nint(CC()->GetSum(Form("trigger:%s/event:%s/centrality:%s",striggerDimuon->String().Data(),seventType->String().Data(),"V0M_00.00_90.00")));
               // AliDebug(1,Form("Reference centrality for NofMUL = V0M_00.00_90.00"));
 
               // // Get Graph with Yield results
-              // graph = capsule->ComputeYield(what,h,subresultname,NofMUL);
+              // graph = Processor->ComputeYield(what,h,subresultname,NofMUL);
 
-              // delete capsule;
+              // delete Processor;
             }
             else if(syear.Contains("pp"))
             {
               const char* what ="CorrNofJPsi";
 
-              AliAnalysisMuMuSpectraCapsulePP * capsule = new AliAnalysisMuMuSpectraCapsulePP(spectra,spectraPath,externfile,externfile2);
-              AliDebug(1,Form("Spectra = %p",capsule));
+              AliAnalysisMuMuSpectraProcessorPP * Processor = new AliAnalysisMuMuSpectraProcessorPP(spectra,spectraPath,externfile,externfile2);
+              AliDebug(1,Form("Spectra = %p",Processor));
 
               Int_t NofMUL= TMath::Nint(CC()->GetSum(Form("trigger:%s/event:%s/centrality:%s",striggerDimuon->String().Data(),seventType->String().Data(),"PP")));
               AliDebug(1,Form("Reference centrality for NofMUL = PP"));
 
               // Get Graph with Yield results
-              graph = capsule->ComputeYield(what,h,subresultname,NofMUL);
+              graph = Processor->ComputeYield(what,h,subresultname,NofMUL);
 
               TLegend * leg = new TLegend(0.4,0.7,0.90,0.9);
               leg->SetHeader(Form("ALICE, pp #sqrt{s}=5.02 TeV, L_{int}=116.3 #mub^{-1}, %s",scentrality->String().Data()));
@@ -5135,7 +5134,7 @@ void AliAnalysisMuMu::PlotJpsiYield(const char* spectraName, const char* subresu
               graph->Draw("ap");
               leg->Draw();
 
-              delete capsule;
+              delete Processor;
             }
 
             //________ Update resultes in Mergeable collection

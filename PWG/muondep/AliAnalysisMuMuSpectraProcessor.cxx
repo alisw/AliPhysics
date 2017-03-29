@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliAnalysisMuMuSpectraCapsule.h"
+#include "AliAnalysisMuMuSpectraProcessor.h"
 
-ClassImp(AliAnalysisMuMuSpectraCapsule)
+ClassImp(AliAnalysisMuMuSpectraProcessor)
 
 
 #include "AliLog.h"
@@ -46,7 +46,7 @@ using std::ifstream;
 
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectraCapsule::AliAnalysisMuMuSpectraCapsule(
+AliAnalysisMuMuSpectraProcessor::AliAnalysisMuMuSpectraProcessor(
 const AliAnalysisMuMuSpectra*  spectra,
 const TString                 spectraPath,
 const char                  * externFile,
@@ -76,13 +76,13 @@ fPrintFlag(kFALSE)
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectraCapsule::~AliAnalysisMuMuSpectraCapsule()
+AliAnalysisMuMuSpectraProcessor::~AliAnalysisMuMuSpectraProcessor()
 {
   // dtor
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(const char* file, Double_t* constantArray, const TString* spectraName)
+Bool_t AliAnalysisMuMuSpectraProcessor::SetConstantFromExternFile(const char* file, Double_t* constantArray, const TString* spectraName)
 {
   /// Set member constants depending on centrality bin from an ewternfile.
   /// If values are empty and can be obtained from a graph provided by the AliAnalysisMuMu Framework, this value is set by default
@@ -159,7 +159,7 @@ Bool_t AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(const char* file
 
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsule::PrintNofWhat(const char* what) const
+void AliAnalysisMuMuSpectraProcessor::PrintNofWhat(const char* what) const
 {
   /// Print what number for each results on terminal.
 
