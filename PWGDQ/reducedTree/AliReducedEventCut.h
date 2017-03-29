@@ -20,6 +20,9 @@ class AliReducedEventCut : public AliReducedVarCut {
   void AddEventTagFilterBit(UShort_t bit)  {if(bit>63) return; fEventFilter |= (ULong64_t(1)<<bit); fEventTagFilterEnabled = kTRUE;};
   void EnableVertexDistanceCut()  {fEventFilter |= (ULong64_t(1)<<13); fEventTagFilterEnabled = kTRUE;};
   
+  void AddEventTriggerFilter(ULong64_t filter) {fEventTriggerMask |= filter; fEventTriggerMaskEnabled = kTRUE;};
+  void AddEventTriggerFilterBit(UShort_t bit)  {if(bit>63) return; fEventTriggerMask |= (ULong64_t(1)<<bit); fEventTriggerMaskEnabled = kTRUE;};
+  
   virtual Bool_t IsSelected(TObject* obj);
   virtual Bool_t IsSelected(TObject* obj, Float_t* values);
   
@@ -28,6 +31,8 @@ class AliReducedEventCut : public AliReducedVarCut {
   // Cuts on event specific quantities
   Bool_t         fEventTagFilterEnabled;           // if true apply the filter to the event tag 
   ULong64_t  fEventFilter;                             // filter for the event tag map
+  Bool_t         fEventTriggerMaskEnabled;     // if true apply the filter on the event trigger mask 
+  ULong64_t  fEventTriggerMask;                             // filter for the event trigger mask
    
   AliReducedEventCut(const AliReducedEventCut &c);
   AliReducedEventCut& operator= (const AliReducedEventCut &c);
