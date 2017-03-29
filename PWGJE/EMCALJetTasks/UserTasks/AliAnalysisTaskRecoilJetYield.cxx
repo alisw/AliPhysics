@@ -286,6 +286,7 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   }
   PostData(1,fOutput);
   PostData(2,fTreeJetInfo);
+  cout<<"End of UserCreateOutputObjects"<<endl;
   // delete [] fShapesVarNames;
 }
 
@@ -293,7 +294,6 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
 Bool_t AliAnalysisTaskRecoilJetYield::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
-
   return kTRUE;
 }
 
@@ -338,9 +338,10 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     fhPhiTriggerHadronEventPlaneTPC->Fill(TMath::Abs(RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),TriggerHadron->Phi()))); //TPC event plane 
   }
 
-
   ////////////////////kData////////////////////
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kData){
+    cout<<"entering kData"<<endl;
+
     AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                         
     AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
     Int_t JetCounter=0; //Counts number of jets in event  
@@ -422,13 +423,20 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     AliJetContainer *JetContPythDet= GetJetContainer(2); //Jet Container for Detector Level Pyhtia Jets 
     AliJetContainer *JetContPythTrue= GetJetContainer(3); //Jet Container for Particle Level Pythia Jets
 
-   while((JetPythDet = JetContPythDet->GetNextAcceptJet())){
-     fhDetJetPt_Incl->Fill(JetPythDet->Pt()); //Fill histogram with all Detector level jets
-    }
+  
 
     Bool_t JetsMatched = kFALSE;
     Double_t JetPtThreshold;
     JetContHybridS->ResetCurrentID();
+    JetContHybridUS->ResetCurrentID();
+    JetContPythDet->ResetCurrentID();
+    JetContPythTrue->ResetCurrentID();
+
+      while((JetPythDet = JetContPythDet->GetNextAcceptJet())){
+      fhDetJetPt_Incl->Fill(JetPythDet->Pt()); //Fill histogram with all Detector level jets
+    }
+      
+      
     if(fJetShapeSub==kConstSub){
       while((JetHybridS = JetContHybridS->GetNextAcceptJet())){
 	if (fJetShapeSub==kConstSub) JetPtThreshold=JetHybridS->Pt();
@@ -437,13 +445,19 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	Int_t JetNumber=-1;
 	for(Int_t i = 0; i<JetContHybridUS->GetNJets(); i++) {
 	  JetHybridUS = JetContHybridUS->GetJet(i);
+	  if (!JetHybridUS) continue;
+	    
 	  if(JetHybridUS->GetLabel()==JetHybridS->GetLabel()) {
 	    JetNumber=i;
 	  }
 	}
 	if(JetNumber==-1) continue;
 	JetHybridUS=JetContHybridUS->GetJet(JetNumber);
-	if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<fSharedFractionPtMin) continue;
+	//if(JetHybridUS) cout<<"Matched to jet i = "<< JetNumber<<endl;
+	if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<fSharedFractionPtMin) {
+	  //cout<<"Fraction shared pt below cut = "<<JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<<endl;
+	  continue;
+	}
 	JetPythDet=JetHybridUS->ClosestJet();
 
 	if(!(fJetShapeSub==kConstSub)) JetHybridUS = JetHybridS->ClosestJet();
@@ -464,18 +478,18 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  SoftDrop(JetPythTrue,JetContPythTrue,fZCut,fBeta_SD,kTRUE);
 	}
 	else{
-	    fJetInfoVar[2]=0;
-	    fJetInfoVar[3]=0;
-	    fJetInfoVar[4]=0;
-	    fJetInfoVar[5]=0;
-	    fJetInfoVar[6]=0;
-	    fJetInfoVar[7]=0;
-	    fJetInfoVar[12]=0;
-	    fJetInfoVar[13]=0;
-	    fJetInfoVar[14]=0;
-	    fJetInfoVar[15]=0;
-	    fJetInfoVar[16]=0;
-	    fJetInfoVar[17]=0;
+	  fJetInfoVar[2]=0;
+	  fJetInfoVar[3]=0;
+	  fJetInfoVar[4]=0;
+	  fJetInfoVar[5]=0;
+	  fJetInfoVar[6]=0;
+	  fJetInfoVar[7]=0;
+	  fJetInfoVar[12]=0;
+	  fJetInfoVar[13]=0;
+	  fJetInfoVar[14]=0;
+	  fJetInfoVar[15]=0;
+	  fJetInfoVar[16]=0;
+	  fJetInfoVar[17]=0;
 	}		    
 	fJetInfoVar[8]=PTD(JetHybridS,0);
 	fJetInfoVar[9]=PTD(JetPythTrue,0);
