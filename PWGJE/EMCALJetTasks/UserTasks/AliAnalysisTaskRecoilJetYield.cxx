@@ -286,7 +286,7 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   }
   PostData(1,fOutput);
   PostData(2,fTreeJetInfo);
-  cout<<"End of UserCreateOutputObjects"<<endl;
+  //cout<<"End of UserCreateOutputObjects"<<endl;
   // delete [] fShapesVarNames;
 }
 
@@ -340,7 +340,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 
   ////////////////////kData////////////////////
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kData){
-    cout<<"entering kData"<<endl;
+    // cout<<"entering kData"<<endl;
 
     AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                         
     AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
