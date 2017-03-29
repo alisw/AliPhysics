@@ -83,7 +83,9 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
   fDenominatorIdeal = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
 
   snprintf(buf , 100,  "QgenQrec%s", title);
-  fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
+  //fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
+  //test
+  fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,-0.05,0.05);
 
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
@@ -209,9 +211,9 @@ AliFemtoString AliFemtoModelCorrFctn::Report()
 //_______________________
 void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 {
+  if (fPairCut)
+    if (!fPairCut->Pass(aPair)) return;//SetPairSelectionCut() in ConfigFemtoAnalysis.C
   if(!fKaonPDG) {
-    if (fPairCut)
-      if (!fPairCut->Pass(aPair)) return;
     // cout<<" AliFemtoModelCorrFcn add real pair "<<endl;
     Double_t weight = fManager->GetWeight(aPair);
     //cout<<" wight "<< weight<<endl;
@@ -236,9 +238,9 @@ void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 //_______________________
 void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
 {
+  if (fPairCut)
+    if (!fPairCut->Pass(aPair)) return;//SetPairSelectionCut() in ConfigFemtoAnalysis.C
   if(!fKaonPDG) {
-    if (fPairCut)
-      if (!fPairCut->Pass(aPair)) return;
     Double_t weight = fManager->GetWeight(aPair);
     fNumeratorFake->Fill(aPair->QInv(), weight);
     fDenominator->Fill(aPair->QInv(), 1.0);
@@ -263,7 +265,9 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
     Double_t tQinvTrue = GetQinvTrue(aPair);
     if(tQinvTrue>0)fNumeratorFakeIdeal->Fill(tQinvTrue, weight);
     if(tQinvTrue>0)fDenominatorIdeal->Fill(tQinvTrue, 1.0);
-    if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,aPair->QInv());
+    //if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,aPair->QInv());
+    //test
+    if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,tQinvTrue-aPair->QInv());
   }
 }
 
@@ -271,38 +275,33 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
 Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
 {
   if(!fKaonPDG) {
-      AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
-      AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
-      if(!inf1 || !inf2)
-      {
-//          cout<<"Warning! AliFemtoModelCorrFctn::GetQinvTrue - Could not find requested tracks."<<endl;
-          return -1;
-      }
-      
-      AliFemtoLorentzVector fm1;
-      AliFemtoThreeVector* temp = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
-      fm1.SetVect(*temp);
-      Double_t am1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
-      Double_t am2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
-      double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
-      fm1.SetE(ener);
-      
-      AliFemtoLorentzVector fm2;
-      AliFemtoThreeVector* temp2 =  ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum();
-      fm2.SetVect(*temp2);
-      ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
-      fm2.SetE(ener);
-      
-      //std::cout<<" CFModel mass1 mass2 "<<am1<<" "<<am2<<std::endl;
-      
-      AliFemtoLorentzVector tQinvTrueVec = (fm1-fm2);
-      Double_t tQinvTrue = -1.* tQinvTrueVec.m();
-      
-      return tQinvTrue;
+  AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
+  AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
+
+  AliFemtoLorentzVector fm1;
+  AliFemtoThreeVector* temp = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
+  fm1.SetVect(*temp);
+  Double_t am1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
+  Double_t am2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
+  double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
+  fm1.SetE(ener);
+
+  AliFemtoLorentzVector fm2;
+  AliFemtoThreeVector* temp2 =  ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum();
+  fm2.SetVect(*temp2);
+  ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
+  fm2.SetE(ener);
+
+  //std::cout<<" CFModel mass1 mass2 "<<am1<<" "<<am2<<std::endl;
+
+  AliFemtoLorentzVector tQinvTrueVec = (fm1-fm2);
+  Double_t tQinvTrue = -1.* tQinvTrueVec.m();
+
+  return tQinvTrue;
   }
   //Special MC analysis for K selected by PDG code -->
   else {
-      AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
+  AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
   AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
 
   AliFemtoLorentzVector fm1;
