@@ -289,6 +289,7 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
   // histo filler
   bool twoTracks = false;
   if(ftk1->GetParticleType()==kJHadron && ftk2->GetParticleType()==kJHadron) twoTracks =true;
+  if(ftk1->GetParticleType()==kJHadronMC && ftk2->GetParticleType()==kJHadronMC) twoTracks =true;
   
   //double-counting check
   if(fTyp == kReal && twoTracks && ftk1->GetID()==ftk2->GetID()) return;

@@ -1,4 +1,4 @@
-
+#include<TList.h>
 
 void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2, Double_t dptMax = 10.0,
 		  Double_t detaMin = -0.8, Double_t detaMax = 0.8, Int_t iCharge = 1,
@@ -6,8 +6,9 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
                   TString sAnalysisDef = "recenter1", TString sanalysisType = "AUTOMATIC", TString sEvTrigger = "MB",
                   Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE, Bool_t bUseVZERO = kTRUE,
                   Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Bool_t useParFiles = kFALSE,
-                  Bool_t recent = kFALSE,
-		  TString ZDCRecenterFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter_zdc_ver1.root",
+                  Bool_t recent = kFALSE,Bool_t SetFBEffi = kFALSE,
+		  TString ZDCRecenterFile1="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
+		  TString EfficiencyFB768="alien:///alice/cern.ch/user/m/mhaque/calib_files/FB_hijing_eff2010.root",
                   TString sCentrEstimator = "V0", Double_t dVertexRange = 10., Double_t dDCAxy = 2.4, Double_t dDCAz = 3.2,
                   Double_t dMinClusTPC = 70, const char *suffix = "")
 {
@@ -45,11 +46,11 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
 	}
 
 
-	gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"); // Needed for LHC2015o
-	AliMultSelectionTask *MultSelection = AddTaskMultSelection(kFALSE);            // kFALSE == User mode, kTRUE == Calibration mode
-        MultSelection->SetSelectedTriggerClass(AliVEvent::kINT7);
-      //MultSelection->SetSelectedTriggerClass(AliVEvent::kMB);
-        mgr->AddTask(MultSelection);
+	//gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"); // Needed for LHC2015o
+	//AliMultSelectionTask *MultSelection = AddTaskMultSelection(kFALSE);            // kFALSE == User mode, kTRUE == Calibration mode
+        //MultSelection->SetSelectedTriggerClass(AliVEvent::kINT7);
+        //MultSelection->SetSelectedTriggerClass(AliVEvent::kMB);
+        //mgr->AddTask(MultSelection);
 
 
 	TString taskFEname = "FlowEventTaskCh";                // charged particle (not proton)
@@ -57,8 +58,10 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
 
 	// create instance of the class: because possible qa plots are added in a second output slot,
 	AliAnalysisTaskFlowEvent *taskFE_charge = new AliAnalysisTaskFlowEvent(taskFEname,"",bCutsQA);
+
 	taskFE_charge->SetQAOn(bCutsQA);
 	taskFE_charge->SetAnalysisType(sanalysisType); //sanalysisType = AUTOMATIC see the initializers!!
+
 	// add the task to the manager. Added later.
 	// mgr->AddTask(taskFE_charge);
 
@@ -75,10 +78,10 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
 	       if(sDataSet == "2010"){
 		taskFE_charge->SelectCollisionCandidates(AliVEvent::kMB);
 		}
-	       if(sDataSet == "2011"){
+	       else if(sDataSet == "2011"){
 		taskFE_charge->SelectCollisionCandidates(AliVEvent::kMB);
 		}
-               else if(sDataSet=="2015"){
+               else{
 		taskFE_charge->SelectCollisionCandidates(AliVEvent::kINT7);
 		}
 	}
@@ -92,8 +95,8 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
 
 
 	//--------------- define the event cuts object ---------------------
-	AliFlowEventCuts *cutsEvent = new AliFlowEventCuts("EventCuts");
-
+	 AliFlowEventCuts *cutsEvent = new AliFlowEventCuts("EventCuts");
+         cutsEvent->SetCheckPileup(kFALSE);
 	 cutsEvent->SetPrimaryVertexZrange(-dVertexRange, dVertexRange);      // vertex-z cut
          cutsEvent->SetQA(bEventCutsQA);                                      // enable the qa plots
          cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE); 	              // multiplicity outlier cut
@@ -108,8 +111,8 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
 	 cutsEvent->SetCheckPileup(kTRUE);
 	}
 
-	//method used for centrality determination
-	if(sCentrEstimator=="V0")
+      //method used for centrality determination
+       if(sCentrEstimator=="V0"||sCentrEstimator=="V0M")
           cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
 
 	if(sCentrEstimator=="TPC")
@@ -121,6 +124,28 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
 	  else if(sDataSet == "2010"){
           cutsEvent->SetLHC10h(kTRUE);
 	 }
+
+
+      
+  AliFlowTrackCuts* RefMultCuts = new AliFlowTrackCuts("RefMultCuts");
+  RefMultCuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
+  RefMultCuts->SetAODfilterBit(iAODfilterBit);
+  RefMultCuts->SetMinimalTPCdedx(-999999999);
+  RefMultCuts->SetMaxDCAToVertexXY(dDCAxy);
+  RefMultCuts->SetMaxDCAToVertexZ(dDCAz);
+  RefMultCuts->SetMinNClustersTPC(dMinClusTPC);
+  RefMultCuts->SetMinChi2PerClusterTPC(0.1);
+  RefMultCuts->SetMaxChi2PerClusterTPC(4.);
+  RefMultCuts->SetPtRange(dptMin,dptMax);
+  RefMultCuts->SetEtaRange(detaMin,detaMax);
+  RefMultCuts->SetAcceptKinkDaughters(kFALSE);
+
+
+        cutsEvent->SetRefMultCuts(RefMultCuts);
+        cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
+
+
+
 
 	taskFE_charge->SetCutsEvent(cutsEvent);	//pass these cuts to your flow event task
         //-------------------------- --------------------------------
@@ -209,7 +234,7 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
 	mgr->ConnectOutput(taskFE_charge, 2, coutputFEQA);          // kOutputContainer: written to the output file
 
 
-
+       
 
 
 
@@ -258,31 +283,100 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
 	    taskQC_prot->SetRejectPileUpTight(bPileUpTight); //kTRUE:700,kFALSE:15000
             //(if 'SetRejectPileUp' is 'kFALSE' then 'SetRejectPileUpTight' does not apply)
 
+	    //read and pass the efficiency histograms:
 
+
+
+      if(SetFBEffi){
+          TFile* FBefficiency = TFile::Open(EfficiencyFB768,"READ");
+	  //std::cout<<"\n Info: FB efficiency requested... \n"<<std::endl;
+          if(!FBefficiency) {
+	   std::cout<<"\n ERROR: FB efficiency file not found! \n"<<std::endl;
+           exit(1);
+         } 
+	 /* TList* FBEffiList = new TList();
+          FBEffiList->SetOwner(kTRUE);
+	  TH1D *h[10];
+	  for(int i=0;i<10;i++){
+	    h[i] = (TH1D *) FBefficiency->Get(Form("eff_unbiased_%d",i));
+            FBEffiList->Add(h[i]);
+	  }*/
+
+       TList* FBEffiList = dynamic_cast<TList*>(FBefficiency->FindObjectAny("fMcEffiHij"));
+       TList* FBEffiListUse = FBEffiList->Clone();
+
+       //FBefficiency->Close();
+  
+       if(FBEffiListUse) {
+       //std::cout<<"\n\n Efficiency Histograms found\n:"<<FBEffiListUse->ls()<<"\n\n"<<std::endl;
+         taskQC_prot->SetFBEffiList(FBEffiListUse);
+        }
+         else{
+	  std::cout<<"\n\n !!!!**** ERROR: FB Efficiency Histograms not found !!\n check name in AddTaskMacro ?? ****!!!\n"<<std::endl;
+          exit(1);
+        }
+      }
+
+
+
+      //sanity:
+      if(sAnalysisDef=="recenter2"){
+	recent=kTRUE;
+        SetFBEffi=kTRUE;
+      }
+      if(sAnalysisDef=="recenter1"){
+	recent=kFALSE;
+        SetFBEffi=kFALSE;
+      }
 
      if(recent) // use ZDC recentering
       {
-       TFile* ZDCESEFile = TFile::Open(ZDCRecenterFile,"READ");
-         if(!ZDCESEFile) {
-	  std::cout<<"\n ERROR: ZDC recenter file not found! \n"<<std::endl;
+       TFile* ZDCESEFile1 = TFile::Open(ZDCRecenterFile1,"READ");
+       //std::cout<<"\n Info: ZDC recenter histograms requested... \n"<<std::endl;
+         if(!ZDCESEFile1) {
+	  std::cout<<"\n ERROR: ZDC recenter file1 not found! \n"<<std::endl;
           exit(1);
          }
 
-       TList* ZDCESEList = dynamic_cast<TList*>(ZDCESEFile->FindObjectAny("recenterZDC"));
-       TList* ZDCESEListUse = ZDCESEList->Clone();
+       TList* ZDCESEList  = dynamic_cast<TList*>(ZDCESEFile1->FindObjectAny("recenterZDC"));
+ 
+       const TList* ZDCESEListUse = new TList();
+       ZDCESEListUse = (TList* ) ZDCESEList->Clone();
+       ZDCESEFile1->Close();
 
-       ZDCESEFile->Close();
-
-       if(ZDCESEListUse) {
+       if(ZDCESEList) {
+	 //std::cout<<"\n@@@@@@@@@\n Recenter 1 Histograms found ("<<ZDCESEList->ls()<<")\n\n"<<std::endl;
+         //taskQC_prot->SetZDCESEList(ZDCESEList);
          taskQC_prot->SetZDCESEList(ZDCESEListUse);
-	 //std::cout<<"\n\n Recenter Histograms found ("<<ZDCRecenterFile.Data()<<") \n\n "<<std::endl;
-	 std::cout<<"\n@@@@@@@@@\n Recenter Histograms found ("<<ZDCESEListUse->ls()<<")\n\n"<<std::endl;
+         //std::cout<<"\n@@@@@@@@@\n Recenter 1 Histograms found ("<<ZDCESEListUse->ls()<<")\n\n"<<std::endl;
        }
         else{
 	 std::cout<<"\n\n !!!!**** ERROR: Root file is there but TList not found !!\n check name in AddTaskMacro ?? ****!!!\n"<<std::endl;
          exit(1);
         }
+
+       /*
+        TFile* ZDCESEFile2 = TFile::Open(ZDCRecenterFile2,"READ");
+         if(!ZDCESEFile2) {
+	  std::cout<<"\n ERROR: ZDC recenter file2 not found! \n"<<std::endl;
+          exit(1);
+         }
+       TList* ZDCESEList2 = dynamic_cast<TList*>(ZDCESEFile2->FindObjectAny("recenterZDC"));
+       TList* ZDCESEListUse2 = ZDCESEList2->Clone();
+
+       ZDCESEFile2->Close();
+
+       if(ZDCESEListUse2) {
+         taskQC_prot->SetZDCESEList2(ZDCESEListUse2);
+	 //std::cout<<"\n@@@@@@@@@\n Recenter 2 Histograms found ("<<ZDCESEListUse->ls()<<")\n\n"<<std::endl;
+       }
+        else{
+	 std::cout<<"\n\n !!!!**** ERROR: Root file is there but TList not found !!\n check name in AddTaskMacro ?? ****!!!\n"<<std::endl;
+         exit(1);
+        }*/
+
       }
+
 
 
 
@@ -295,9 +389,11 @@ void AddTaskVnZDC(Double_t dcentrMin, Double_t dcentrMax, Double_t dptMin = 0.2,
       TString outputSP = file;      // file is the common outfile filename
               outputSP += ":ZDCgains";
 
-      AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("recenterZDC",TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
-
+      AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("QAotherZDC",TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
       mgr->ConnectOutput(taskQC_prot, 1, coutputSP);
+
+      AliAnalysisDataContainer *coutputSP = mgr->CreateContainer("recenterZDC",TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
+      mgr->ConnectOutput(taskQC_prot, 2, coutputSP);
 
 	if(!mgr->InitAnalysis())  // check if we can initialize the manager
         {

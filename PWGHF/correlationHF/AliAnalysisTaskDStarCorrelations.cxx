@@ -1268,9 +1268,14 @@ if(fmult){
                      weight = DmesonWeight * (1./efficiency);
                  }
                  
-                 Double_t ptLim_Sparse = ((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsDStarHadron_%d_Multbin_%d",ptbin,Multbin)))->GetAxis(3)->GetXmax(); //all plots have same axes...
-		 if(ptHad > ptLim_Sparse) ptHad = ptLim_Sparse-0.01;
-                 
+                 if(fmult) {	 
+                   Double_t ptLim_Sparse = ((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsDStarHadron_%d_Multbin_%d",ptbin,Multbin)))->GetAxis(3)->GetXmax(); //all plots have same axes...
+		   if(ptHad > ptLim_Sparse) ptHad = ptLim_Sparse-0.01;
+	         } else {
+                   Double_t ptLim_Sparse = ((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsDStarHadron_%d",ptbin)))->GetAxis(3)->GetXmax(); //all plots have same axes...
+		   if(ptHad > ptLim_Sparse) ptHad = ptLim_Sparse-0.01;			 
+		 }
+	         
                  // cout << "crash correlation 5" << endl;
                  arraytofill[0] = DeltaPhi;
                  arraytofill[1] = deltainvMDStar;

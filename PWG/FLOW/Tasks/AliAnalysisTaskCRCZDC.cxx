@@ -197,11 +197,12 @@ fTowerEqList(NULL),
 fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
 fVZEROGainEqList(NULL),
+fVZEROQVecRecList(NULL),
 fUseZDCSpectraCorr(kFALSE),
 fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
 fBadTowerStuffList(NULL),
-fVZEROQVectorRecList(NULL),
+fVZEROStuffList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
 fhZNSpectraCor(0x0),
@@ -229,8 +230,13 @@ fhZNBCCorr(0x0)
   }
   fVZEROGainEqHist = NULL;
   for (Int_t k=0; k<fkVZEROnHar; k++) {
-    fVZEROQVectorRecQx[k] = NULL;
-    fVZEROQVectorRecQy[k] = NULL;
+//    fVZEROQVectorRecQx[k] = NULL;
+//    fVZEROQVectorRecQy[k] = NULL;
+    fVZEROQVectorRecQxStored[k] = NULL;
+    fVZEROQVectorRecQyStored[k] = NULL;
+    for (Int_t t=0; t<fkVZEROnQAplots; t++) {
+      fVZEROQVectorRecFinal[k][t] = NULL;
+    }
   }
   for(Int_t i=0; i<8; i++) {
     SpecCorMu1[i] = NULL;
@@ -356,11 +362,12 @@ fTowerEqList(NULL),
 fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
 fVZEROGainEqList(NULL),
+fVZEROQVecRecList(NULL),
 fUseZDCSpectraCorr(kFALSE),
 fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
 fBadTowerStuffList(NULL),
-fVZEROQVectorRecList(NULL),
+fVZEROStuffList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
 fhZNSpectraCor(0x0),
@@ -389,8 +396,13 @@ fhZNBCCorr(0x0)
   }
   fVZEROGainEqHist = NULL;
   for (Int_t k=0; k<fkVZEROnHar; k++) {
-    fVZEROQVectorRecQx[k] = NULL;
-    fVZEROQVectorRecQy[k] = NULL;
+    //    fVZEROQVectorRecQx[k] = NULL;
+    //    fVZEROQVectorRecQy[k] = NULL;
+    fVZEROQVectorRecQxStored[k] = NULL;
+    fVZEROQVectorRecQyStored[k] = NULL;
+    for (Int_t t=0; t<fkVZEROnQAplots; t++) {
+      fVZEROQVectorRecFinal[k][t] = NULL;
+    }
   }
   for(Int_t i=0; i<8; i++) {
     SpecCorMu1[i] = NULL;
@@ -436,6 +448,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
   if (fTowerEqList)  delete fTowerEqList;
   if (fBadTowerCalibList) delete fBadTowerCalibList;
   if (fVZEROGainEqList) delete fVZEROGainEqList;
+  if (fVZEROQVecRecList) delete fVZEROQVecRecList;
   if (fZDCSpectraCorrList) delete fZDCSpectraCorrList;
   if (fAnalysisUtil) delete fAnalysisUtil;
   if (fQAList) delete fQAList;
@@ -512,10 +525,10 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fOutput->Add(fQAList);
   }
   
-  fVZEROQVectorRecList = new TList();
-  fVZEROQVectorRecList->SetOwner(kTRUE);
-  fVZEROQVectorRecList->SetName("VZERO stuff");
-  fOutput->Add(fVZEROQVectorRecList);
+  fVZEROStuffList = new TList();
+  fVZEROStuffList->SetOwner(kTRUE);
+  fVZEROStuffList->SetName("VZERO stuff");
+  fOutput->Add(fVZEROStuffList);
   
   fBadTowerStuffList = new TList();
   fBadTowerStuffList->SetOwner(kTRUE);
@@ -711,21 +724,38 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   for (Int_t i=0; i<fCRCnRun; i++) {
     fVZEROMult->GetXaxis()->SetBinLabel(i+1,Form("%d",fRunList[i]));
   }
-  fVZEROQVectorRecList->Add(fVZEROMult);
+  fVZEROStuffList->Add(fVZEROMult);
   
   if(fVZEROGainEqList) {
     fVZEROGainEqHist = (TH2D*)fVZEROGainEqList->FindObject("VZEROEqGain");
-    fVZEROQVectorRecList->Add(fVZEROGainEqHist);
+    fVZEROStuffList->Add(fVZEROGainEqHist);
+  }
+  if(fVZEROQVecRecList) {
+    for (Int_t k=0; k<fkVZEROnHar; k++) {
+      fVZEROQVectorRecQxStored[k] = (TProfile3D*)fVZEROQVecRecList->FindObject(Form("fVZEROQVectorRecQx[%d]",k));
+      fVZEROQVectorRecQxStored[k]->SetTitle(Form("fVZEROQVectorRecQxStored[%d]",k));
+      fVZEROQVectorRecQxStored[k]->SetName(Form("fVZEROQVectorRecQxStored[%d]",k));
+      fVZEROStuffList->Add(fVZEROQVectorRecQxStored[k]);
+      fVZEROQVectorRecQyStored[k] = (TProfile3D*)fVZEROQVecRecList->FindObject(Form("fVZEROQVectorRecQy[%d]",k));
+      fVZEROQVectorRecQyStored[k]->SetTitle(Form("fVZEROQVectorRecQyStored[%d]",k));
+      fVZEROQVectorRecQyStored[k]->SetName(Form("fVZEROQVectorRecQyStored[%d]",k));
+      fVZEROStuffList->Add(fVZEROQVectorRecQyStored[k]);
+      for (Int_t t=0; t<fkVZEROnQAplots; t++) {
+        fVZEROQVectorRecFinal[k][t] = new TProfile2D(Form("fVZEROQVectorRecFinal[%d][%d]",k,t),Form("fVZEROQVectorRecFinal[%d][%d]",k,t),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,"s");
+        fVZEROQVectorRecFinal[k][t]->Sumw2();
+        fVZEROStuffList->Add(fVZEROQVectorRecFinal[k][t]);
+      }
+    }
   }
   
-  for (Int_t k=0; k<fkVZEROnHar; k++) {
-    fVZEROQVectorRecQx[k] = new TProfile3D(Form("fVZEROQVectorRecQx[%d]",k),Form("fVZEROQVectorRecQx[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
-    fVZEROQVectorRecQx[k]->Sumw2();
-    fVZEROQVectorRecList->Add(fVZEROQVectorRecQx[k]);
-    fVZEROQVectorRecQy[k] = new TProfile3D(Form("fVZEROQVectorRecQy[%d]",k),Form("fVZEROQVectorRecQy[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
-    fVZEROQVectorRecQy[k]->Sumw2();
-    fVZEROQVectorRecList->Add(fVZEROQVectorRecQy[k]);
-  }
+//  for (Int_t k=0; k<fkVZEROnHar; k++) {
+//    fVZEROQVectorRecQx[k] = new TProfile3D(Form("fVZEROQVectorRecQx[%d]",k),Form("fVZEROQVectorRecQx[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
+//    fVZEROQVectorRecQx[k]->Sumw2();
+//    fVZEROStuffList->Add(fVZEROQVectorRecQx[k]);
+//    fVZEROQVectorRecQy[k] = new TProfile3D(Form("fVZEROQVectorRecQy[%d]",k),Form("fVZEROQVectorRecQy[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
+//    fVZEROQVectorRecQy[k]->Sumw2();
+//    fVZEROStuffList->Add(fVZEROQVectorRecQy[k]);
+//  }
   
   Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
   Double_t phimin[] = {0.,TMath::Pi()/8.,2*TMath::Pi()/8.,3*TMath::Pi()/8.,4*TMath::Pi()/8.,5*TMath::Pi()/8.,6*TMath::Pi()/8.,7*TMath::Pi()/8.,8*TMath::Pi()/8.,9*TMath::Pi()/8.,10*TMath::Pi()/8.,11*TMath::Pi()/8.,12*TMath::Pi()/8.,13*TMath::Pi()/8.,14*TMath::Pi()/8.,15*TMath::Pi()/8.,16*TMath::Pi()/8.};
@@ -1407,6 +1437,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Int_t CachednRing = 1;
       Double_t QxTot[fkVZEROnHar] = {0.}, QyTot[fkVZEROnHar] = {0.};
       Double_t denom = 0.;
+      Double_t V0TotQC[fkVZEROnHar][2] = {{0.}}, V0TotQA[fkVZEROnHar][2] = {{0.}};
+      Double_t MultC=0., MultA=0.;
       
       for(Int_t i=0; i<64; i++) {
         
@@ -1435,8 +1467,24 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           for (Int_t k=0; k<fkVZEROnHar; k++) {
             Double_t QxRec = QxTot[k]/denom;
             Double_t QyRec = QyTot[k]/denom;
-            fVZEROQVectorRecQx[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QxRec);
-            fVZEROQVectorRecQy[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QyRec);
+            // store values for re-centering
+//            fVZEROQVectorRecQx[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QxRec);
+//            fVZEROQVectorRecQy[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QyRec);
+            // do re-centering
+            if(fVZEROQVectorRecQxStored[k]) {
+              QxRec -= fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
+              QyRec -= fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
+            }
+            // sum of Q-vectors over all rings (total V0 Q-vector)
+            if (CachednRing <= 4) {
+              V0TotQC[k][0] += QxRec*denom;
+              V0TotQC[k][1] += QyRec*denom;
+              MultC += denom;
+            } else {
+              V0TotQA[k][0] += QxRec*denom;
+              V0TotQA[k][1] += QyRec*denom;
+              MultA += denom;
+            }
             QxTot[k] = 0.;
             QyTot[k] = 0.;
           }
@@ -1449,7 +1497,22 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         }
         denom += mult;
       }
-      
+    
+    for (Int_t k=0; k<fkVZEROnHar; k++) {
+      Double_t QCx = V0TotQC[k][0]/MultC, QCy = V0TotQC[k][1]/MultC, QAx = V0TotQA[k][0]/MultA, QAy = V0TotQA[k][1]/MultA;
+      fFlowEvent->SetV02Qsub(QCx,QCy,MultC,QAx,QAy,MultA,k+1);
+      fVZEROQVectorRecFinal[k][0]->Fill(RunBin+0.5,centrperc,QCx);
+      fVZEROQVectorRecFinal[k][1]->Fill(RunBin+0.5,centrperc,QCy);
+      fVZEROQVectorRecFinal[k][2]->Fill(RunBin+0.5,centrperc,QAx);
+      fVZEROQVectorRecFinal[k][3]->Fill(RunBin+0.5,centrperc,QAy);
+      fVZEROQVectorRecFinal[k][4]->Fill(RunBin+0.5,centrperc,QCx*QAx);
+      fVZEROQVectorRecFinal[k][5]->Fill(RunBin+0.5,centrperc,QCy*QAy);
+      fVZEROQVectorRecFinal[k][6]->Fill(RunBin+0.5,centrperc,QCx*QAy);
+      fVZEROQVectorRecFinal[k][7]->Fill(RunBin+0.5,centrperc,QCy*QAx);
+    }
+    
+    
+    
 //      AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(aodEvent->FindListObject("Forward"));
 //      const TH2D& d2Ndetadphi = aodForward->GetHistogram();
 //      Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();

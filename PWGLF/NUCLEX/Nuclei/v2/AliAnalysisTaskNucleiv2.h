@@ -89,13 +89,14 @@ class AliAnalysisTaskNucleiv2 : public AliAnalysisTaskSE {
   
   // EP TPC vs EP VZ for different centralities 
 
-  TH2F *hEvPlaneTPCvsEvPVz05;                      
-  TH2F *hEvPlaneTPCvsEvPVz075; 
-  TH2F *hEvPlaneTPCvsEvPVz1530;
-  TH2F *hEvPlaneTPCvsEvPVz3050;                      
-  TH2F *hEvPlaneTPCvsEvPVz2040;                      
-  TH2F *hEvPlaneTPCvsEvPVz4060;                      
-
+  TH2F *hEvPlaneTPCvsEvPVz010  ;                      
+  TH2F *hEvPlaneTPCvsEvPVz1020 ; 
+  TH2F *hEvPlaneTPCvsEvPVz2030 ;
+  TH2F *hEvPlaneTPCvsEvPVz3040 ;                      
+  TH2F *hEvPlaneTPCvsEvPVz4050 ;                      
+  TH2F *hEvPlaneTPCvsEvPVz5060 ;   
+  TH2F *hEvPlaneTPCvsEvPVz6080 ;   
+  
   // For EP Resolution
 
   TH2F *hCos2DeltaTPCVzAvsCentrality;
@@ -123,11 +124,6 @@ class AliAnalysisTaskNucleiv2 : public AliAnalysisTaskSE {
   TH2F *hQxVzMvsCentrality;
   TH2F *hQyVzMvsCentrality;
   
-  // Flattness
-
-  TH2F *hqEPCvsCentrality; 
-  TH2F *hqEPAvsCentrality;
-  TH2F *hqEPvsCentrality;
   // TTree
 
   TTree *ftree;                //! Some Information on the tracks

@@ -3,6 +3,10 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include "AliEmcalContainerIndexMap.h"
+#endif
+
 class TH1;
 class TClonesArray;
 
@@ -58,6 +62,7 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   // Sets up and runs the task
   Bool_t Initialize();
   void UserCreateOutputObjects();
+  void ExecOnce();
   Bool_t Run();
   
  protected:
@@ -83,6 +88,12 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   Bool_t        fUpdateTracks;          ///< update tracks with matching info
   Bool_t        fUpdateClusters;        ///< update clusters with matching info
   
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  // Handle mapping between index and containers
+  AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
+#endif
+
   TClonesArray *fEmcalTracks;           //!<!emcal tracks
   TClonesArray *fEmcalClusters;         //!<!emcal clusters
   Int_t         fNEmcalTracks;          //!<!number of emcal tracks
@@ -100,11 +111,11 @@ private:
   AliEmcalCorrectionClusterTrackMatcher(const AliEmcalCorrectionClusterTrackMatcher &);               // Not implemented
   AliEmcalCorrectionClusterTrackMatcher &operator=(const AliEmcalCorrectionClusterTrackMatcher &);    // Not implemented
 
-  // Allows the registration of the class so that it is availble to be used by the correction task.
+  // Allows the registration of the class so that it is available to be used by the correction task.
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterTrackMatcher> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 3); // EMCal cluster track matcher correction component
+  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 4); // EMCal cluster track matcher correction component
   /// \endcond
 };
 

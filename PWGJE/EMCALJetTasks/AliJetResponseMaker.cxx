@@ -56,6 +56,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fDBCAxis(0),
   fFlavourZAxis(0),
   fFlavourPtAxis(0),
+  fJetRelativeEPAngle(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistRejectionReason1(0),
@@ -143,6 +144,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fDBCAxis(0),
   fFlavourZAxis(0),
   fFlavourPtAxis(0),
+  fJetRelativeEPAngle(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistRejectionReason1(0),
@@ -683,6 +685,14 @@ void AliJetResponseMaker::AllocateTHnSparse()
     dim++;
   }
 
+  if (fJetRelativeEPAngle) {
+    title[dim] = "#theta_{jet}^{EP}";
+    nbins[dim] = 3;
+    min[dim] = 0;
+    max[dim] = TMath::Pi()/2;
+    dim++;
+  }
+
   title[dim] = "p_{T,particle}^{leading} (GeV/c)";
   nbins[dim] = 120;
   min[dim] = 0;
@@ -954,6 +964,20 @@ void AliJetResponseMaker::AllocateTHnSparse()
     dim++;
   }
 
+  if (fJetRelativeEPAngle) {
+    title[dim] = "#theta_{jet,1}^{EP}";
+    nbins[dim] = 3;
+    min[dim] = 0;
+    max[dim] = TMath::Pi()/2;
+    dim++;
+
+    title[dim] = "#theta_{jet,2}^{EP}";
+    nbins[dim] = 3;
+    min[dim] = 0;
+    max[dim] = TMath::Pi()/2;
+    dim++;
+  }
+
   fHistMatching = new THnSparseD("fHistMatching","fHistMatching",dim,nbins,min,max);
 
   for (Int_t i = 0; i < dim; i++)
@@ -1021,6 +1045,7 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
 
     if (zflavour == 1 || (zflavour > 1 && zflavour - 1 < 1e-3)) zflavour = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
+  Double_t jetRelativeEPAngle = GetRelativeEPAngle(jet->Phi(), fEPV0);
 
   if (fHistoType==1) {
     THnSparse *histo = 0;
@@ -1059,6 +1084,8 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
         contents[i] = zflavour;
       else if (title=="p_{T}^{D}")
         contents[i] = ptflavour;
+      else if (title=="#theta_{jet}^{EP}")
+        contents[i] = jetRelativeEPAngle;
       else 
         AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -1121,6 +1148,7 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
 
     if (zflavour1 == 1 || (zflavour1 > 1 && zflavour1 - 1 < 1e-3)) zflavour1 = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
+  Double_t jetRelativeEPAngle1 = GetRelativeEPAngle(jet1->Phi(), fEPV0);
 
 
   AliTLorentzVector leadPart2;
@@ -1138,6 +1166,7 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
 
     if (zflavour2 == 1 || (zflavour2 > 1 && zflavour2 - 1 < 1e-3)) zflavour2 = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
+  Double_t jetRelativeEPAngle2 = GetRelativeEPAngle(jet2->Phi(), fEPV0);
 
   if (fHistoType==1) {
     Double_t contents[20]={0};
@@ -1212,6 +1241,10 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
         contents[i] = ( jet1->GetShapeProperties()->GetSoftDropDropCount() );
       else if (title=="DBC_{2}")
         contents[i] = ( jet2->GetShapeProperties()->GetSoftDropDropCount() );
+      else if (title=="#theta_{jet,1}^{EP}")
+        contents[i] = jetRelativeEPAngle1;
+      else if (title=="#theta_{jet,2}^{EP}")
+        contents[i] = jetRelativeEPAngle2;
       else 
         AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -1404,8 +1437,10 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 
   if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return;
 
+  // tracks1 just serves as a proxy to ensure that tracks are in jets1
   AliParticleContainer *tracks1   = jets1->GetParticleContainer();
-  AliClusterContainer  *clusters1 = jets1->GetClusterContainer();
+  // tracks2 is used to retrieve MC labels associated with tracks in the container
+  // NOTE: For multiple containers, this would need to be generalized!
   AliParticleContainer *tracks2   = jets2->GetParticleContainer();
 
   // d1 and d2 represent the matching level: 0 = maximum level of matching, 1 = the two jets are completely unrelated
@@ -1416,7 +1451,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
   // remove completely tracks that are not MC particles (label == 0)
   if (tracks1 && tracks1->GetArray()) {
     for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
-      AliVParticle *track = jet1->TrackAt(iTrack,tracks1->GetArray());
+      AliVParticle *track = jet1->Track(iTrack);
       if (!track) {
         AliWarning(Form("Could not find track %d!", iTrack));
         continue;
@@ -1436,7 +1471,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
   // remove completely clusters that are not MC particles (label == 0)
   if (fUseCellsToMatch && fCaloCells) { 
     for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
-      AliVCluster *clus = jet1->ClusterAt(iClus,clusters1->GetArray());
+      AliVCluster *clus = jet1->Cluster(iClus);
       if (!clus) {
         AliWarning(Form("Could not find cluster %d!", iClus));
         continue;
@@ -1461,7 +1496,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
   }
   else {
     for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
-      AliVCluster *clus = jet1->ClusterAt(iClus,clusters1->GetArray());
+      AliVCluster *clus = jet1->Cluster(iClus);
       if (!clus) {
         AliWarning(Form("Could not find cluster %d!", iClus));
         continue;
@@ -1486,7 +1521,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 
     // now look for common particles in the track array
     for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
-      AliVParticle *track = jet1->TrackAt(iTrack,tracks1->GetArray());
+      AliVParticle *track = jet1->Track(iTrack);
       if (!track) {
         AliWarning(Form("Could not find track %d!", iTrack));
         continue;
@@ -1508,7 +1543,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
       d1 -= track->Pt();
 
       if (!track2Found) {
-        AliVParticle *MCpart = tracks2->GetParticle(index2);
+        AliVParticle *MCpart = jet2->Track(index2);
         AliDebug(3,Form("Track %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
             iTrack,track->Pt(),track->Eta(),track->Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
         d2 -= MCpart->Pt();
@@ -1520,7 +1555,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
     // now look for common particles in the cluster array
     if (fUseCellsToMatch && fCaloCells) { // if the cell colection is available, look for cells with a matched MC particle
       for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
-        AliVCluster *clus = jet1->ClusterAt(iClus,fCaloClusters);
+        AliVCluster *clus = jet1->Cluster(iClus);
         if (!clus) {
           AliWarning(Form("Could not find cluster %d!", iClus));
           continue;
@@ -1549,7 +1584,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
           d1 -= part.Pt() * cellFrac;
 
           if (!track2Found) { // only if it is not already found among charged tracks (charged particles are most likely already found)
-            AliVParticle *MCpart = tracks2->GetParticle(index2);
+            AliVParticle *MCpart = jet2->Track(index2);
             AliDebug(3,Form("Cell %d belonging to cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
                 iCell,iClus,part.Pt(),part.Eta(),part.Phi_0_2pi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
             d2 -= MCpart->Pt() * cellFrac;
@@ -1561,7 +1596,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
     }
     else { //otherwise look for the first contributor to the cluster, and if matched to a MC label remove it
       for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
-        AliVCluster *clus = jet1->ClusterAt(iClus,fCaloClusters);
+        AliVCluster *clus = jet1->Cluster(iClus);
         if (!clus) {
           AliWarning(Form("Could not find cluster %d!", iClus));
           continue;
@@ -1587,7 +1622,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
         d1 -= part.Pt();
 
         if (!track2Found) { // only if it is not already found among charged tracks (charged particles are most likely already found)
-          AliVParticle *MCpart = tracks2->GetParticle(index2);
+          AliVParticle *MCpart = jet2->Track(index2);
           AliDebug(3,Form("Cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
               iClus,part.Pt(),part.Eta(),part.Phi_0_2pi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
 
@@ -1624,6 +1659,7 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
 
   if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return;
 
+  // All of the containers are simply used as proxies for whether tracks or clusters are in a jet
   AliParticleContainer *tracks1   = jets1->GetParticleContainer();
   AliClusterContainer  *clusters1 = jets1->GetClusterContainer();
   AliParticleContainer *tracks2   = jets2->GetParticleContainer();
@@ -1640,12 +1676,12 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
       for (Int_t iTrack1 = 0; iTrack1 < jet1->GetNumberOfTracks(); iTrack1++) {
         Int_t index1 = jet1->TrackAt(iTrack1);
         if (index2 == index1) { // found common particle
-          AliVParticle *part1 = tracks1->GetParticle(index1);
+          AliVParticle *part1 = jet1->Track(iTrack1);
           if (!part1) {
             AliWarning(Form("Could not find track %d!", index1));
             continue;
           }
-          AliVParticle *part2 = tracks2->GetParticle(index2);
+          AliVParticle *part2 = jet2->Track(iTrack2);
           if (!part2) {
             AliWarning(Form("Could not find track %d!", index2));
             continue;
@@ -1770,12 +1806,12 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
         for (Int_t iClus1 = 0; iClus1 < jet1->GetNumberOfClusters(); iClus1++) {
           Int_t index1 = jet1->ClusterAt(iClus1);
           if (index2 == index1) { // found common particle
-            AliVCluster *clus1 = clusters1->GetCluster(index1);
+            AliVCluster *clus1 = jet1->Cluster(iClus1);
             if (!clus1) {
               AliWarning(Form("Could not find cluster %d!", index1));
               continue;
             }
-            AliVCluster *clus2 =  clusters2->GetCluster(index2);
+            AliVCluster *clus2 =  jet2->Cluster(iClus2);
             if (!clus2) {
               AliWarning(Form("Could not find cluster %d!", index2));
               continue;
@@ -1919,4 +1955,39 @@ Bool_t AliJetResponseMaker::FillHistograms()
     FillJetHisto(jet1, 1);
   }
   return kTRUE;
+}
+
+/**
+ * Function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2).
+ * Adapted from AliAnalysisTaskEmcalJetHadEPpid.
+ *
+ * @param jetAngle Phi angle of the jet (could be any particle)
+ * @param epAngle Event plane angle
+ *
+ * @return Angle between jet and EP in the 1st quadrant (0,Pi/2)
+ */
+Double_t AliJetResponseMaker::GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const
+{
+  Double_t dphi = (epAngle - jetAngle);
+
+  // ran into trouble with a few dEP<-Pi so trying this...
+  if( dphi<-1*TMath::Pi()  ){
+    dphi = dphi + 1*TMath::Pi();
+  } // this assumes we are doing full jets currently
+
+  if( (dphi>0) && (dphi<1*TMath::Pi()/2)  ){
+    // Do nothing! we are in quadrant 1
+  }else if( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi())  ){
+    dphi = 1*TMath::Pi() - dphi;
+  }else if( (dphi<0) && (dphi>-1*TMath::Pi()/2)  ){
+    dphi = fabs(dphi);
+  }else if( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi())  ){
+    dphi = dphi + 1*TMath::Pi();
+  }
+
+  // test
+  if( dphi < 0 || dphi > TMath::Pi()/2  )
+    AliWarning(Form("%s: dPHI not in range [0, 0.5*Pi]!", GetName()));
+
+  return dphi;   // dphi in [0, Pi/2]
 }

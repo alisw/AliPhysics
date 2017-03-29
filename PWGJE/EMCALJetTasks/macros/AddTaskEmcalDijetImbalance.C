@@ -93,7 +93,6 @@ AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(
   /////////////////////////////////////////////////////////////
   // Configure di-jet task
   AliAnalysisTaskEmcalDijetImbalance* dijetTask = new AliAnalysisTaskEmcalDijetImbalance(name);
-  dijetTask->SetVzRange(-10,10);
   dijetTask->SetDeltaPhiCut(deltaPhiMin);
   if (doGeomMatching) dijetTask->SetDoGeometricalMatching(doGeomMatching, jetR, minTrPtHardCore, minClPtHardCore);
   

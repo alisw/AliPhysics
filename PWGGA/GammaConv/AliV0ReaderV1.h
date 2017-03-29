@@ -56,7 +56,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
                                                                      return NULL;}
     TList*                    GetEventCutHistograms()               {if(fEventCuts) {return fEventCuts->GetCutHistograms();}
                                                                      return NULL;}
-
+    TString                   GetCurrentFileName()                  {return fCurrentFileName;}
     // Set Options
     void               CountTracks();
     void               SetConversionCuts(const TString cut);
@@ -203,12 +203,14 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TTree         *fImpactParamTree;               // tree with y, pt and conversion radius 
    
     vector<Int_t>  fVectorFoundGammas;            // vector with found MC labels of gammas
-
+    TString       fCurrentFileName;               // current file name
+    Bool_t        fMCFileChecked;                 // vector with MC file names which are broken
+    
   private:
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
-    ClassDef(AliV0ReaderV1, 13)
+    ClassDef(AliV0ReaderV1, 14)
 
 };
 

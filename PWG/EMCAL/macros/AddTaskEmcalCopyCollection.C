@@ -1,4 +1,4 @@
-AliEmcalCopyCollection* AddTaskEmcalCopyCollection(AliEmcalCorrectionTask::InputObject_t inputObjectType = AliEmcalCorrectionTask::kNoDefinedInputObject,
+AliEmcalCopyCollection* AddTaskEmcalCopyCollection(AliEmcalContainerUtils::InputObject_t inputObjectType = AliEmcalContainerUtils::kNoDefinedInputObject,
                           const char * collectionToCopyName = "",
                           const char * newCollectionName = "",
                           bool isEmbedding = false)

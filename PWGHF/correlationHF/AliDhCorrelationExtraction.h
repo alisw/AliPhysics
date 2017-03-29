@@ -84,7 +84,9 @@ public:
     void IntegratePtBins(Bool_t intPt=kFALSE) {fIntegratePtBins=intPt;}
     void ReadTTreeOutputFiles(Bool_t treeSE, Bool_t treeME) {fReadTreeSE=treeSE; fReadTreeME=treeME;}
     void SetSubtractSoftPiInMEdistr(Bool_t subtractSoftPiME) {fSubtractSoftPiME=subtractSoftPiME;}
-
+    void SetUseMassVsCentPlots(Bool_t mass2D) {fUseMassVsCentPlots=mass2D;}
+    void SetCentralitySelection(Double_t min, Double_t max) {fMinCent=min; fMaxCent=max;} //activated only if both values are != 0
+    
     void SetRebinMassPlots(Int_t rebinMassPlots) {fRebinMassPlots=rebinMassPlots;}
     void SetNpTbins(Int_t npt) {fNpTbins=npt;}
     void SetFirstpTbin(Int_t ptFirst) {fFirstpTbin=ptFirst;}
@@ -193,6 +195,9 @@ private:
     Bool_t fReadTreeSE;
     Bool_t fReadTreeME;
     Bool_t fSubtractSoftPiME;
+    Bool_t fUseMassVsCentPlots;		//don't use histMass plots, but project histMass2D plots (for offline)
+    Double_t fMinCent;
+    Double_t fMaxCent;
 
     Double_t *fDmesonFitterSignal;
     Double_t *fDmesonFitterSignalError;
@@ -247,7 +252,7 @@ private:
     std::vector<Int_t>    fMCOriginType;      //container of specificators of origins
     MCmode		  fMCmode;	      //kine or reco analysis (changes just the filenames for output, for now)
 
-    ClassDef(AliDhCorrelationExtraction,2); // class for plotting HF correlations
+    ClassDef(AliDhCorrelationExtraction,3); // class for plotting HF correlations
 
 };
 

@@ -24,7 +24,7 @@ namespace EMCalTriggerPtAnalysis {
  * @date Oct.  6, 2016
  *
  * Base class for analyses using EMCAL-triggered events. This class provides several
- * extra funcitonalities shared among different tasks
+ * extra functionalities shared among different tasks
  * - Handling of downscale weights for downscaled triggers
  * - Handling of online trigger cleanup (requirement of recalc patch above threshold to select event)
  * - Trigger classification, also for exclusive classes (classes not containing lower classes)
@@ -44,8 +44,8 @@ namespace EMCalTriggerPtAnalysis {
  *
  * Two functions implement monitoring
  * ~~~{.cxx}
- * void UserFillHistosBeforeEventSelection();   // Filling distribuions before event selection
- * void UserFillHistosAfterEventSelection();    // Filling distribuions after event selection
+ * void UserFillHistosBeforeEventSelection();   // Filling distributions before event selection
+ * void UserFillHistosAfterEventSelection();    // Filling distributions after event selection
  * ~~~
  *
  * Otherwise the class uses functionality of the AliAnalysisTaskEmcal. This includes the main
@@ -88,6 +88,8 @@ public:
    */
   void EnableDCALTriggers(Bool_t doEnable) { fEnableDCALTriggers = doEnable; }
 
+  void EnableT0Triggers(Bool_t doEnable) { fEnableT0Triggers = doEnable; }
+
   /**
    * @brief Set the name of the OADB container with the downscale factors.
    *
@@ -120,6 +122,12 @@ public:
    * @param[in] doSelect If true only noise events are used in the analysis
    */
   void SetSelectNoiseEvents(Bool_t doSelect = true) { fSelectNoiseEvents = doSelect; }
+
+  /**
+   * @brief Specify whether L0 is needed for L1
+   * @param[in] doRequire if true L0 is required for L1
+   */
+  void SetRequireL0ForL1(Bool_t doRequire = true) { fRequireL0forL1 = doRequire; }
 
   /**
    * @brief Add absolute ID of a FastOR to be masked (excluded from trigger patches)
@@ -402,6 +410,8 @@ protected:
   Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
   Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
+  Bool_t                          fEnableT0Triggers;          ///< Enable triggers depending on T0 (INT8, EMC8, EMC8EGA, EMC8EJE)
+  Bool_t                          fRequireL0forL1;            ///< Require L0 for L1
   Bool_t                          fExclusiveMinBias;          ///< Only look at Min. Bias trigger
 
 private:

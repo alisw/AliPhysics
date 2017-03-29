@@ -40,6 +40,7 @@
 #pragma link C++ class  AliEmcalCorrectionCellBadChannel+;
 #pragma link C++ class  AliEmcalCorrectionCellEnergy+;
 #pragma link C++ class  AliEmcalCorrectionCellTimeCalib+;
+#pragma link C++ class  AliEmcalCorrectionCellCombineCollections+;
 #pragma link C++ class  AliEmcalCorrectionClusterizer+;
 #pragma link C++ class  AliEmcalCorrectionClusterNonLinearity+;
 #pragma link C++ class  AliEmcalCorrectionClusterExotics+;

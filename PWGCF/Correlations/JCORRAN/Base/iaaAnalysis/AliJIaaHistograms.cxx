@@ -137,7 +137,7 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
 	double pTa2 = fPTaBin.GetMax();
 
 	fhIphiTrigg
-			<< TH1D( "fhIphiTrigg", "",  bins, -kJPi-0.1, kJPi+0.1)
+            << TH1D( "fhIphiTrigg", "",  bins, -kJPi, kJPi)
 			<<  fCentBin << fPTtBin  << "END";
 	fhIetaTrigg
 			<< TH1D( "hIetaTrigg", "",  80, -fmaxEtaRange, fmaxEtaRange)
@@ -153,7 +153,7 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
 			<< TH1D( "hAssocPtBin", "", (int)TMath::Ceil((pTa2-pTa1)/ptbw), pTa1, pTa2)
 			<<  fCentBin << fPTtBin << fPTaBin  << "END";
 	fhIphiAssoc
-			<< TH1D( "fhIphiAssoc", "",  bins, -kJPi-0.1, kJPi+0.1)
+            << TH1D( "fhIphiAssoc", "",  bins, -kJPi, kJPi)
 			<<  fCentBin << fPTaBin  << "END";
 	fhIetaAssoc
 			<< TH1D( "hIetaAssoc", "",  80, -fmaxEtaRange, fmaxEtaRange)
@@ -173,11 +173,11 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
             <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
 	fhDphiDetaPta
-			<< TH2D( "hDphiDetaPta", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -kJPi/2.-0.1, 1.5*kJPi+0.1)
+            << TH2D( "hDphiDetaPta", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
 			<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
 
 	fhResonanceCut
-			<< TH2D( "hResonanceCut", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -kJPi/2.-0.1, 1.5*kJPi+0.1)
+            << TH2D( "hResonanceCut", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
 			<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
 
 	delete [] uEBinBorders;

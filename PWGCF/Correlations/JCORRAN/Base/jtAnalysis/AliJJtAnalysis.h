@@ -99,6 +99,7 @@ private:
   bool fbLPCorrel; //! Flag for leading particle correlation
   double fMinimumPt; //!  Minimum pT value for a particle to be still accepted to analysis
   bool fbLPSystematics; //! false = regular run, true = do systematic error estimate for missed leading particles
+  bool fMCTruthRun; //! false = regular run, true = read particles from MC particle list
   
   Int_t fEventBC; //! Selector for some BC%4
   

@@ -574,7 +574,7 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
     fOutputMass->Add(tmpMtwg);
     
     if(fFillTrees>0) { //multi-histo for mass, pT, centrality for offline code (use in place of TH1F to select centrality and change pT bins offline)
-      nameMass="histMass_";  nameMass+=i;
+      nameMass="histMass2D_";  nameMass+=i;
       TH2F* hMass2D = new TH2F(nameMass.Data(),"Mass histogram vs centrality; Entries",150,1.5648,2.1648,100,0.,100.);
       hMass2D->Sumw2();
       fOutputMass->Add(hMass2D);
@@ -1185,8 +1185,8 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       if(fFillTrees>0) {
 	Double_t centFill = 0.;
 	if(fCutsD0->GetUseCentrality()) centFill = fCutsD0->GetCentrality(aod);
-        ((TH2F*)(listout->FindObject("histMass2D_")))->Fill(invmassD0,centFill);
-        ((TH2F*)(listout->FindObject("histMass2D_WeigD0Eff_")))->Fill(invmassD0,centFill,1./effD0);
+        ((TH2F*)(listout->FindObject(Form("histMass2D_%d",ptbin))))->Fill(invmassD0,centFill);
+        ((TH2F*)(listout->FindObject(Form("histMass2D_WeigD0Eff_%d",ptbin))))->Fill(invmassD0,centFill,1./effD0);
       }
       
     }
@@ -1261,8 +1261,8 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       if(fFillTrees>0) {
 	Double_t centFill = 0.;
 	if(fCutsD0->GetUseCentrality()) centFill = fCutsD0->GetCentrality(aod);
-        ((TH2F*)(listout->FindObject("histMass2D_")))->Fill(invmassD0,centFill);
-        ((TH2F*)(listout->FindObject("histMass2D_WeigD0Eff_")))->Fill(invmassD0,centFill,1./effD0);
+        ((TH2F*)(listout->FindObject(Form("histMass2D_%d",ptbin))))->Fill(invmassD0bar,centFill);
+        ((TH2F*)(listout->FindObject(Form("histMass2D_WeigD0Eff_%d",ptbin))))->Fill(invmassD0bar,centFill,1./effD0);
       }      
     }
 
@@ -1785,7 +1785,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hZvtxEvts->SetMinimum(0);
   fOutputStudy->Add(hZvtxEvts);
   
-  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (for selected events); # Events",120,-30.,30.);
+  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (for selected events); # Events",102,-1.,101.);
   hCentralEvts->SetMinimum(0);
   fOutputStudy->Add(hCentralEvts);  
 

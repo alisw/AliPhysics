@@ -24,12 +24,10 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   
   // Struct to store all relevant info of a di-jet pair
   struct Dijet_t {
-    Dijet_t() : leadingHadronCutType(0), trigJetMinPtType(0), assJetMinPtType(0), trigJet(0), trigJetPt(0), trigJetPhi(0), trigJetEta(0),
+    Dijet_t() : leadingHadronCutType(0), trigJet(0), trigJetPt(0), trigJetPhi(0), trigJetEta(0),
                 assJet(0), assJetPt(0), assJetPhi(0), assJetEta(0), isAccepted(kFALSE), deltaPhi(0), deltaEta(0), AJ(0), xJ(0), kTy(0) {}
     
     Int_t leadingHadronCutType;
-    Int_t trigJetMinPtType;
-    Int_t assJetMinPtType;
     
     AliEmcalJet* trigJet;
     Double_t trigJetPt;
@@ -49,7 +47,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
     Double_t xJ;
     Double_t kTy;
     
-    void clear() {leadingHadronCutType=0; trigJetMinPtType=0; assJetMinPtType=0; trigJet=0; trigJetPt=0; trigJetPhi=0; trigJetEta=0;
+    void clear() {leadingHadronCutType=0; trigJet=0; trigJetPt=0; trigJetPhi=0; trigJetEta=0;
                     assJet=0; assJetPt=0; assJetPhi=0; assJetEta=0; isAccepted=kFALSE; deltaPhi=0; deltaEta=0; AJ=0; xJ=0; kTy=0;}
   };
 
@@ -63,13 +61,13 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void SetDeltaPhiCut(Double_t d)                           { fDeltaPhiMin = d; }
   void SetMaxPt(Double_t d)                                 { fMaxPt = d; }
   void SetPlotJetHistograms(Bool_t b)                       { fPlotJetHistograms = b; }
-  void SetPlotDijetCandHistograms(Bool_t b)                  { fPlotDijetCandHistograms = b; }
+  void SetPlotDijetCandHistograms(Bool_t b)                 { fPlotDijetCandHistograms = b; }
   void SetPlotDijetImbalanceHistograms(Bool_t b)            { fPlotDijetImbalanceHistograms = b; }
+  void SetComputeBackground(Bool_t b)                       { fComputeBackground = b; }
   void SetDoMomentumBalance(Bool_t b)                       { fDoMomentumBalance = b; }
   void SetDoGeometricalMatching(Bool_t b, Double_t r, Double_t trackThresh, Double_t clusThresh)
     { fDoGeometricalMatching = b; fMatchingJetR = r; fTrackConstituentThreshold = trackThresh; fClusterConstituentThreshold = clusThresh;}
-  void SetNDijetPtThresholds(Int_t n)                       { fNDijetPtThresholds = n; }
-  void SetMinTrigJetPt(Double_t* arr)                       { fMinTrigJetPt = arr; }
+  void SetMinTrigJetPt(Double_t p)                          { fMinTrigJetPt = p; }
   void SetMinAssJetPt(Double_t p)                           { fMinAssJetPt = p; }
   void SetDijetLeadingHadronPt(Double_t pt)                 { fDijetLeadingHadronPt = pt; }
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
@@ -83,11 +81,12 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
   void                        AllocateJetHistograms()                           ;
-  void                        AllocateDijetCandHistograms()                      ;
+  void                        AllocateDijetCandHistograms()                     ;
   void                        AllocateDijetImbalanceHistograms()                ;
   void                        AllocateMomentumBalanceHistograms()               ;
   void                        AllocateGeometricalMatchingHistograms()           ;
-  void                        FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin, Int_t trigJetMinPtBin);
+  void                        FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin);
+  void                        ComputeBackground(AliJetContainer* jetCont)       ;
   void                        DoMomentumBalance(TString histname)               ;
   void                        DoGeometricalMatching();
   void                        FindMatchingDijet(AliJetContainer* jetCont)       ;
@@ -100,11 +99,11 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   // Utility functions
   Double_t                    GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet);
   Double_t                    GetDeltaR(AliEmcalJet* jet1, AliEmcalJet* jet2);
+  Double_t                    GetDeltaR(AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
   
   // Analysis parameters
   Double_t                    fDeltaPhiMin;                         ///< minimum delta phi between di-jets
-  Int_t                       fNDijetPtThresholds;                  ///< number of pT thresholds on leading/subleading jets
-  Double_t*                   fMinTrigJetPt;                        //[fNDijetPtThresholds] array of leading jet min pT's in a dijet pair
+  Double_t                    fMinTrigJetPt;                        ///< leading jet min pT in a dijet pair
   Double_t                    fMinAssJetPt;                         ///< subleading jet min pT in a dijet pair, for it to be accepted
   Double_t                    fDijetLeadingHadronPt;                ///< leading hadron pT threshold for leading jet in dijet
   Double_t                    fMatchingJetR;                        ///< jet R for matching study
@@ -115,8 +114,9 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
 
   // Analysis configuration and plotting options
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
-  Bool_t                      fPlotDijetCandHistograms;              ///< Set whether to enable dijet pair histograms
+  Bool_t                      fPlotDijetCandHistograms;             ///< Set whether to enable dijet pair histograms
   Bool_t                      fPlotDijetImbalanceHistograms;        ///< Set whether to enable dijet imbalance histograms
+  Bool_t                      fComputeBackground;                   ///< Set whether to enable study of background
   Bool_t                      fDoMomentumBalance;                   ///< Set whether to enable momentum balance study
   Bool_t                      fDoGeometricalMatching;               ///< Set whether to enable constituent study with geometrical matching
 
@@ -138,7 +138,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 4);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 5);
   /// \endcond
 };
 #endif

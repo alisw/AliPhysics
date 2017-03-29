@@ -1,8 +1,8 @@
 //
 // Particle cuts
 //
-const Double_t etamin = -0.9;
-const Double_t etamax =  0.9;
+const Double_t etamin = -0.8;
+const Double_t etamax =  0.8;
 const Double_t ptmin = 0.0;
 const Double_t ptmax = 30.0;
 const Double_t phimin = 0.;
@@ -16,23 +16,24 @@ const Int_t mintrackrefsTPC = 5;
 const Int_t mintrackrefsITS = 4;
 const Int_t mintrackrefsTOF = 0;
 const Int_t mintrackrefsMUON = 0;
-const Int_t minclustersTPC = 70;
-const Int_t minclustersITS = 2;
-const Bool_t TPCRefit = kTRUE;
-const Bool_t ITSRefit = kFALSE;
 const Bool_t ischarged = kTRUE;
-const Int_t  fBit = 0;
-const TString centralityEstimator = "V0M";
 
 //PID Threshold
 const Float_t thresholdPID = 0.8;
 AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskPbPb(const Bool_t readAOD = 0, // Flag to read AOD:1 or ESD:0
-							     TString suffix="default", // suffix for the output directory
-							     AliPID::EParticleType specie=AliPID::kPion, Int_t pdgcode=0, //particle specie
-							     ULong64_t triggerMask=AliVEvent::kAnyINT,
-							     Bool_t useCentrality = kFALSE,
-                                 Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast,
-                                 Int_t usageOfBayesianPID=AliSingleTrackEffCuts::kNoBayesianPID)
+								 TString suffix="default", // suffix for the output directory
+								 AliPID::EParticleType specie=AliPID::kPion, 
+								 Int_t pdgcode=0, //particle specie
+								 ULong64_t triggerMask=AliVEvent::kAnyINT,
+								 TString centralityEstimator = "V0M",
+								 Int_t fBit=0,
+								 Bool_t TPCRefit = kTRUE,
+								 Int_t minclustersTPC = 70,
+								 Bool_t ITSRefit = kTRUE,
+								 Int_t spdHits=AliESDtrackCuts::kAny,
+								 Int_t minclustersITS = 0,
+								 Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast,
+								 Int_t usageOfBayesianPID=AliSingleTrackEffCuts::kNoBayesianPID)
 {
 
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
@@ -192,7 +193,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskPbPb(const Bool_t re
   QualityCuts->SetMinNClustersITS(minclustersITS);
   QualityCuts->SetRequireTPCRefit(TPCRefit);
   QualityCuts->SetRequireITSRefit(ITSRefit);
-  QualityCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  QualityCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,spdHits);
   QualityCuts->SetMinDCAToVertexXY(0.);
   QualityCuts->SetEtaRange(etamin,etamax);
   QualityCuts->SetPtRange(ptmin,ptmax);
@@ -202,11 +203,14 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskPbPb(const Bool_t re
   printf("CREATE CF Single track task\n");
 
   AliCFSingleTrackEfficiencyTask *task = new AliCFSingleTrackEfficiencyTask("AliCFSingleTrackEfficiencyTask",QualityCuts,cuts);
-  if(readAOD) task->SetFilterBit(kTRUE);
-  else task->SetFilterBit(kFALSE);
-  task->SetFilterType(fBit);
+  if(readAOD && fBit>=0){
+    task->SetFilterBit(kTRUE);
+    task->SetFilterType(fBit);
+  }else{
+    task->SetFilterBit(kFALSE);
+  }
   //  task->SelectCollisionCandidates(triggerMask);//AliVEvent::kMB);
-  if(useCentrality) task->SetUseCentrality(useCentrality,centralityEstimator);
+  if(centralityEstimator != "") task->SetUseCentrality(kTRUE,centralityEstimator);
   task->SetConfiguration(configuration);
   task->SetCFManager(man); //here is set the CF manager
 

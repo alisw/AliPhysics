@@ -262,7 +262,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fDoTHnSparse(kTRUE),
   fWeightJetJetMC(1),
   fEnableClusterCutsForTrigger(kFALSE),
-  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
+  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  tBrokenFiles(NULL),
+  fFileNameBroken(NULL)
 {
 
 }
@@ -470,7 +472,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fDoTHnSparse(kTRUE),
   fWeightJetJetMC(1),
   fEnableClusterCutsForTrigger(kFALSE),
-  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
+  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  tBrokenFiles(NULL),
+  fFileNameBroken(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1556,6 +1560,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }  
     
   }
+  if (fIsMC > 0){
+    tBrokenFiles = new TTree("BrokenFiles","BrokenFiles");   
+    tBrokenFiles->Branch("fileName",&fFileNameBroken);
+    fOutputContainer->Add(tBrokenFiles);
+  }
   
   PostData(1, fOutputContainer);
 }
@@ -1594,18 +1603,13 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   //
   // Called for each event
   //
-  
-  
-  if(fIsMC>0) fMCEvent = MCEvent();
-  if(fMCEvent == NULL) fIsMC = 0;
-  
   fInputEvent = InputEvent();
-
-  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
+  
+  // Set MC events
+  if(fIsMC>0) fMCEvent = MCEvent();
+  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){
     fMCStack = fMCEvent->Stack();
-    if(fMCStack == NULL) fIsMC = 0;
   }
-
   
   //calculating the weight for the centrality flattening
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
@@ -1617,7 +1621,19 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
   if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
-  if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or because it is incomplere or  wrong trigger for V0ReaderV1
+  // Event Not Accepted due to MC event missing or because it is incomplere or  wrong trigger for V0ReaderV1 => skip broken events/files
+  if(eventQuality == 2 || eventQuality == 3){
+    // write out name of broken file for first event
+    if (fIsMC > 0){
+      if (fInputEvent->IsA()==AliESDEvent::Class()){
+        if (((AliESDEvent*)fInputEvent)->GetEventNumberInFile() == 0){  
+          fFileNameBroken = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+          if (tBrokenFiles) tBrokenFiles->Fill();
+          delete fFileNameBroken;
+        } 
+      }  
+    }  
+      
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
       fHistoNEvents[iCut]->Fill(eventQuality);
       if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);

@@ -342,7 +342,9 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
   fDoPrimaryTrackMatching(kFALSE),
-  fDoInvMassShowerShapeTree(kFALSE)
+  fDoInvMassShowerShapeTree(kFALSE),
+  tBrokenFiles(NULL),
+  fFileNameBroken(NULL)
 {
   
 }
@@ -629,7 +631,9 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
   fDoPrimaryTrackMatching(kFALSE),
-  fDoInvMassShowerShapeTree(kFALSE)
+  fDoInvMassShowerShapeTree(kFALSE),
+  tBrokenFiles(NULL),
+  fFileNameBroken(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2141,6 +2145,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       }
     }
   }
+  
+  if (fIsMC > 0){
+    tBrokenFiles = new TTree("BrokenFiles","BrokenFiles");   
+    tBrokenFiles->Branch("fileName",&fFileNameBroken);
+    fOutputContainer->Add(tBrokenFiles);
+  }
+
+  
   PostData(1, fOutputContainer);
 }
 //_____________________________________________________________________________
@@ -2180,14 +2192,28 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
   //
   // Called for each event
   //
-  if(fIsMC > 0) fMCEvent = MCEvent();
-  if(fMCEvent == NULL) fIsMC = 0;
-
   fInputEvent = InputEvent();
+
+  if(fIsMC > 0) fMCEvent = MCEvent();
+  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){
+    fMCStack = fMCEvent->Stack();
+  }
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
   if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;// incomplete event
-  if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
+  // Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete => abort processing of this event/file
+  if(eventQuality == 2 || eventQuality == 3){
+    // write out name of broken file for first event
+    if (fIsMC > 0){
+      if (fInputEvent->IsA()==AliESDEvent::Class()){
+        if (((AliESDEvent*)fInputEvent)->GetEventNumberInFile() == 0){  
+          fFileNameBroken = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+          if (tBrokenFiles) tBrokenFiles->Fill();
+          delete fFileNameBroken;
+        } 
+      }  
+    }  
+
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
       fHistoNEvents[iCut]->Fill(eventQuality);
       if (fIsMC > 1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
@@ -2195,10 +2221,6 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
     return;
   }
 
-  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
-    fMCStack = fMCEvent->Stack();
-    if(fMCStack == NULL) fIsMC = 0;
-  }
   
   if(fInputEvent->IsA()==AliAODEvent::Class()){
     fInputEvent->InitMagneticField();
@@ -4099,8 +4121,8 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
   if(isTruePi0 || isTrueEta){// True Pion or Eta
     if (!matched){
       if (isTruePi0){
+        fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
         if(!fDoLightOutput){
-          fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
           fHistoTruePi0InvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC);
           if (TrueGammaCandidate1->IsLargestComponentPhoton()) fHistoTruePi0PureGammaInvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC);
         }

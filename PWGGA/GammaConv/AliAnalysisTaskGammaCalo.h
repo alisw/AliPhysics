@@ -375,12 +375,14 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fEnableSortForClusMC;                                 // switch on sorting for MC labels in cluster
     Bool_t                fProduceCellIDPlots;                                  // switch to produce CellID plots for fDoClusterQA==2
     Bool_t                fProduceTreeEOverP;                                   // flag for producing tree for E/p studies
+    TTree*                tBrokenFiles;                                         // tree for keeping track of broken files
+    TObjString*           fFileNameBroken;                                      // string object for broken file name
 
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 31);
+    ClassDef(AliAnalysisTaskGammaCalo, 32);
 };
 
 #endif

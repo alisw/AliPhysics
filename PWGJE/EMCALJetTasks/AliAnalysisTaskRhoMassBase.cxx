@@ -182,10 +182,10 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
       fOutput->Add(fHistDeltaRhoMassScalevsCent);
       
       if (fParticleCollArray.GetEntriesFast()>0) {
-	fHistDeltaRhoMassScalevsNtrack = new TH2F("fHistDeltaRhoMassScalevsNtrack", "fHistDeltaRhoMassScalevsNtrack", 150, Ntrackrange[0], Ntrackrange[1], fNbins, -fMaxBinPt, fMaxBinPt);
-	fHistDeltaRhoMassScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
-	fHistDeltaRhoMassScalevsNtrack->GetYaxis()->SetTitle("#Delta#rho_{m,scaled} (GeV/c * rad^{-1})");
-	fOutput->Add(fHistDeltaRhoMassScalevsNtrack);
+        fHistDeltaRhoMassScalevsNtrack = new TH2F("fHistDeltaRhoMassScalevsNtrack", "fHistDeltaRhoMassScalevsNtrack", 150, Ntrackrange[0], Ntrackrange[1], fNbins, -fMaxBinPt, fMaxBinPt);
+        fHistDeltaRhoMassScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
+        fHistDeltaRhoMassScalevsNtrack->GetYaxis()->SetTitle("#Delta#rho_{m,scaled} (GeV/c * rad^{-1})");
+        fOutput->Add(fHistDeltaRhoMassScalevsNtrack);
       }
     }
   }
@@ -215,10 +215,17 @@ Bool_t AliAnalysisTaskRhoMassBase::FillHistograms()
   Int_t Ntracks   = 0;
   Int_t Nclusters = 0;
 
-  if (GetParticleContainer(0))
-    Ntracks = GetParticleContainer(0)->GetNAcceptedParticles();
-  if (GetClusterContainer(0))
-    Nclusters = GetClusterContainer(0)->GetNAcceptedClusters();
+  // Loop over all possible contianers
+  AliParticleContainer * partCont = 0;
+  TIter nextPartCont(&fParticleCollArray);
+  while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
+    Ntracks += partCont->GetNAcceptedParticles();
+  }
+  AliClusterContainer * clusCont = 0;
+  TIter nextClusCont(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
+    Nclusters += clusCont->GetNAcceptedClusters();
+  }
 
   if (fJets) {
     Int_t    Njets         = fJets->GetEntries();
@@ -227,18 +234,18 @@ Bool_t AliAnalysisTaskRhoMassBase::FillHistograms()
     for (Int_t i = 0; i < Njets; ++i) {
       AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(i));
       if (!jet) {
-	AliError(Form("%s: Could not receive jet %d", GetName(), i));
-	continue;
+        AliError(Form("%s: Could not receive jet %d", GetName(), i));
+        continue;
       } 
-      
+
       if (!AcceptJet(jet))
-	continue;
-      
+        continue;
+
       fHistJetMassvsCent->Fill(fCent, jet->M());
       NjetAcc++;
     }
   }
-  
+
   fHistRhoMassvsCent->Fill(fCent, fOutRhoMass->GetVal());
 
   if (fTracks)
@@ -260,7 +267,7 @@ Bool_t AliAnalysisTaskRhoMassBase::FillHistograms()
     if (fCompareRhoMassScaled) {
       fHistDeltaRhoMassScalevsCent->Fill(fCent, fOutRhoMassScaled->GetVal() - fCompareRhoMassScaled->GetVal());
       if (fTracks)
-	fHistDeltaRhoMassScalevsNtrack->Fill(Ntracks, fOutRhoMassScaled->GetVal() - fCompareRhoMassScaled->GetVal());
+        fHistDeltaRhoMassScalevsNtrack->Fill(Ntracks, fOutRhoMassScaled->GetVal() - fCompareRhoMassScaled->GetVal());
     }
   }
 
@@ -278,10 +285,10 @@ void AliAnalysisTaskRhoMassBase::ExecOnce()
 
     if (fAttachToEvent) {
       if (!(InputEvent()->FindListObject(fOutRhoMassName))) {
-	InputEvent()->AddObject(fOutRhoMass);
+        InputEvent()->AddObject(fOutRhoMass);
       } else {
-	AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoMassName.Data()));
-	return;
+        AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoMassName.Data()));
+        return;
       }
     }
   }
@@ -291,10 +298,10 @@ void AliAnalysisTaskRhoMassBase::ExecOnce()
 
     if (fAttachToEvent) {
       if (!(InputEvent()->FindListObject(fOutRhoMassScaledName))) {
-	InputEvent()->AddObject(fOutRhoMassScaled);
+        InputEvent()->AddObject(fOutRhoMassScaled);
       } else {
-	AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoMassScaledName.Data()));
-	return;
+        AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoMassScaledName.Data()));
+        return;
       }
     }
   }
