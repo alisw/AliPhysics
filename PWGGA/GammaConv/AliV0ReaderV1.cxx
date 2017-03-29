@@ -592,7 +592,7 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
     if (fEventCuts->GetEventQuality() == 2 && !fMCFileChecked ){
-      cout << fCurrentFileName.Data() << endl;
+      cout << "ERROR with MC reading for: "<<  fCurrentFileName.Data() << endl;
       fMCFileChecked                  = kTRUE;
     }  
     return kFALSE;

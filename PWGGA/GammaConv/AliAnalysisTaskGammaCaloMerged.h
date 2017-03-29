@@ -264,12 +264,14 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     Int_t                   fSelectedMesonID;                                   // switch for meson analysis
     Bool_t                  fEnableDetailedPrintOut;                            // switch on detailed print outs
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
-    
+    TTree*                  tBrokenFiles;                                       // tree for keeping track of broken files
+    TObjString*             fFileNameBroken;                                    // string object for broken file name
+
   private:
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 23);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 24);
 };
 
 #endif

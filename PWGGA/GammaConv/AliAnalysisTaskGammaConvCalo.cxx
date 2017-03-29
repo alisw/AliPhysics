@@ -342,7 +342,9 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
   fDoPrimaryTrackMatching(kFALSE),
-  fDoInvMassShowerShapeTree(kFALSE)
+  fDoInvMassShowerShapeTree(kFALSE),
+  tBrokenFiles(NULL),
+  fFileNameBroken(NULL)
 {
   
 }
@@ -629,7 +631,9 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
   fDoPrimaryTrackMatching(kFALSE),
-  fDoInvMassShowerShapeTree(kFALSE)
+  fDoInvMassShowerShapeTree(kFALSE),
+  tBrokenFiles(NULL),
+  fFileNameBroken(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2141,6 +2145,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       }
     }
   }
+  
+  if (fIsMC > 0){
+    tBrokenFiles = new TTree("BrokenFiles","BrokenFiles");   
+    tBrokenFiles->Branch("fileName",&fFileNameBroken);
+    fOutputContainer->Add(tBrokenFiles);
+  }
+
+  
   PostData(1, fOutputContainer);
 }
 //_____________________________________________________________________________
@@ -2183,7 +2195,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
   fInputEvent = InputEvent();
 
   if(fIsMC > 0) fMCEvent = MCEvent();
-  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
+  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){
     fMCStack = fMCEvent->Stack();
   }
 
@@ -2191,6 +2203,17 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
   if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;// incomplete event
   // Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete => abort processing of this event/file
   if(eventQuality == 2 || eventQuality == 3){
+    // write out name of broken file for first event
+    if (fIsMC > 0){
+      if (fInputEvent->IsA()==AliESDEvent::Class()){
+        if (((AliESDEvent*)fInputEvent)->GetEventNumberInFile() == 0){  
+          fFileNameBroken = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+          if (tBrokenFiles) tBrokenFiles->Fill();
+          delete fFileNameBroken;
+        } 
+      }  
+    }  
+
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
       fHistoNEvents[iCut]->Fill(eventQuality);
       if (fIsMC > 1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);

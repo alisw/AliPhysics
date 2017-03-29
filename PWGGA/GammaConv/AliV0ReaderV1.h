@@ -56,7 +56,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
                                                                      return NULL;}
     TList*                    GetEventCutHistograms()               {if(fEventCuts) {return fEventCuts->GetCutHistograms();}
                                                                      return NULL;}
-
+    TString                   GetCurrentFileName()                  {return fCurrentFileName;}
     // Set Options
     void               CountTracks();
     void               SetConversionCuts(const TString cut);

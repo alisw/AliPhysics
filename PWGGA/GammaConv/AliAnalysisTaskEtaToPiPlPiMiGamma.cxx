@@ -655,7 +655,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserExec(Option_t *){
 	// Execute analysis for current event
 	//
 
-    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();

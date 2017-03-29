@@ -1763,7 +1763,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserExec(Option_t *)
 	
 	fInputEvent = InputEvent();
 	
-	if(fIsMC && fInputEvent->IsA()==AliESDEvent::Class()){
+	if(fIsMC && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){
 		fMCStack = fMCEvent->Stack();
 	}
 	
