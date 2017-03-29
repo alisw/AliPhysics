@@ -24,7 +24,7 @@ public:
                             const char* centrality);
 
   virtual void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
-                                         const char* centrality);
+                                         const char* centrality, Bool_t mix =kFALSE);
 
   Bool_t SelectAnyTriggerClass(const TString& firedTriggerClasses, TString& acceptedTriggerClasses) const;
   

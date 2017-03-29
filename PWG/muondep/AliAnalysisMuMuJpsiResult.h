@@ -4,24 +4,29 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/** 
- 
+/**
+
 @ingroup pwg_muondep_mumu
 
-@class AliAnalysisMuMuJpsiResult 
+@class AliAnalysisMuMuJpsiResult
 
 @brief Class to hold results about J/psi
 
 The class is used to hold results like number of of J/psi (before and after Acc x Eff correction),
 Acc x Eff correction, Yield, RAB, etc...
 
-A note on "naming conventions" : 
+A note on "naming conventions" :
 
 -  FitFunctionXY : denotes a function with a prototype double func(double*,double*)
  which can be used in a fit. X = Background, Signal or Total for Background+Signal
 Y is the functio name
 
+The FitTypeKey() is the one decoded to select/configure the fit.
+This string should be written as : FitType : <key>=<value>:<key>=<value>:<key>=<value>:<key>=<value>...
+FitType: func=PSIPSIPRIMECB2VWG:rebin=1:histoType=minv:alJPsi=0.974323:nlJPsi=7.36371:auJPsi=1.84248:nuJPsi=16.0656:range=1.7;4.8
+
 @author Laurent Aphecetche (Subatech)
+@author  Benjamin Audurier (Subatech)
 */
 
 #include "TNamed.h"
@@ -108,7 +113,9 @@ public:
 
   //** All the mean pt fit methods MUST contain the corresponding name of the inv mass spectra method
   void FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL2();
+  void FitMPTPSIPSIPRIMECB2POL1POL2_BKGMPTPOL2();
   void FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP();
+  void FitMPTPSIPSIPRIMECB2POL1POL2_BKGMPTPOL2EXP();
   void FitMPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2();
   void FitMPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP();
 
@@ -117,14 +124,14 @@ public:
   void FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL4();
   void FitMPTPSIPSIPRIMECB2VWGINDEPTAILS_BKGMPTPOL2();
 
-//  void FitMPT2CB2POL2EXP_BKGMPTPOL4();
-//  void FitMPT2CB2POL4EXP_BKGMPTPOL2();
-//  void FitMPT2CB2POL4EXP_BKGMPTPOL4();
-
   void FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2();
   void FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP();
+  void FitMPTPSIPSIPRIMENA60NEWPOL1POL2_BKGMPTPOL2();
+  void FitMPTPSIPSIPRIMENA60NEWPOL1POL2_BKGMPTPOL2EXP();
   void FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2();
   void FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP();
+
+  void FitMPTPSI_HFUNCTION();
 
   Int_t NofRuns() const;
 
@@ -142,7 +149,7 @@ public:
 
   Long64_t Merge(TCollection* list);
 
-  static Double_t CountParticle(const TH1& hminv, const char* particle, Double_t sigma=-1.0);
+  static Double_t CountParticle(const TH1& hminv, const char* particle, Double_t sigma=-1);
 
   virtual AliAnalysisMuMuJpsiResult* Mother() const { return static_cast<AliAnalysisMuMuJpsiResult*>(AliAnalysisMuMuResult::Mother()); }
 
@@ -230,11 +237,17 @@ private:
 
   Double_t FitFunctionTotalTwoCB2VWGINDEPTAILS(Double_t *x, Double_t *par);
 
+  Double_t hFunction(Double_t*x, Double_t* par);
+
   Double_t alphaCB2VWG(Double_t*x, Double_t* par);
+
+  Double_t alphaCB2POL1POL2(Double_t*x, Double_t* par);
 
   Double_t alphaCB2POL2EXP(Double_t*x, Double_t* par);
 
   Double_t alphaNA60NEWVWG(Double_t*x, Double_t* par);
+
+  Double_t alphaNA60NEWPOL1POL2(Double_t*x, Double_t* par);
 
   Double_t alphaNA60NEWPOL2EXP(Double_t*x, Double_t* par);
 
@@ -248,7 +261,11 @@ private:
 
   Double_t FitFunctionMeanPtS2CB2VWGPOL2(Double_t *x, Double_t *par);
 
+  Double_t FitFunctionMeanPtS2CB2POL1POL2POL2(Double_t *x, Double_t *par);
+
   Double_t FitFunctionMeanPtS2CB2VWGPOL2EXP(Double_t *x, Double_t *par);
+
+  Double_t FitFunctionMeanPtS2CB2POL1POL2POL2EXP(Double_t *x, Double_t *par);
 
   Double_t FitFunctionMeanPtS2CB2POL2EXPPOL2(Double_t *x, Double_t *par);
 
@@ -256,12 +273,17 @@ private:
 
   Double_t FitFunctionMeanPtS2NA60NEWVWGPOL2(Double_t *x, Double_t *par);
 
+  Double_t FitFunctionMeanPtS2NA60NEWPOL1POL2POL2(Double_t *x, Double_t *par);
+
   Double_t FitFunctionMeanPtS2NA60NEWVWGPOL2EXP(Double_t *x, Double_t *par);
+
+  Double_t FitFunctionMeanPtS2NA60NEWPOL1POL2POL2EXP(Double_t *x, Double_t *par);
 
   Double_t FitFunctionMeanPtS2NA60NEWPOL2EXPPOL2(Double_t *x, Double_t *par);
 
   Double_t FitFunctionMeanPtS2NA60NEWPOL2EXPPOL2EXP(Double_t *x, Double_t *par);
 
+  Double_t FitFunctionMeanPtHFunction(Double_t *x, Double_t *par);
 
 
   Double_t FitFunctionMeanPtS2CB2VWGPOL3(Double_t *x, Double_t *par);

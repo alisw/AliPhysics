@@ -7,24 +7,28 @@
 // $Id$
 
 /**
- 
   @ingroup pwg_muondep_mumu
 
   @class AliAnalysisMuMuConfig
-  
+
   @brief helper class to store steering options for other MuMu classes
-  
+
  Holds some options (e.g. for the AliAnalysisMuMu and AliAnalysisMuMuEvolution classesi)
  like the list of triggers to consider, the fit to be performed, etc...
  both for real data and for simulations (which might differ in e.g.
- the naming of the triggers)
+ the naming of the triggers).
+ This class reads an extern file config.mumu. Each line should be written as <key> : <value> <type>
+
+ #DimuonTrigger: CMUL8-S-NOPF-MUON real sim
+ MuonTrigger : CMSL7-8-NOPF-MUON sim
+ MuonTrigger : CMSL7-7-NOPF-MUON sim
 
  \author Laurent Aphecetche, Subatech
- 
+ @author : Benjamin Audurier (Subatech)
+
  @todo : make it readeable/writeable from/to a simple ASCII file ?
 
  */
-
 
 #include "TObject.h"
 #include "TString.h"
@@ -52,7 +56,8 @@ public:
     kMB=1,
     kMUL=2,
     kMSL=3,
-    kMSH=4
+    kMSH=4,
+    kMIX=5
   };
 
   enum EPerRunInfo
@@ -61,7 +66,9 @@ public:
     kMULTriggerClassName,
     kMSLTriggerClassName,
     kMSHTriggerClassName,
-    kCentralityName
+    kCentralityName,
+    kMIXTriggerClassName
+
   };
 
   AliAnalysisMuMuConfig();
@@ -82,6 +89,8 @@ public:
   TString GetTriggerClassName(ETriggerType tt, Int_t runNumber) const;
   /** Get the name of the Minimum Bias (MB) trigger class */
   TString GetMBTriggerClassName(Int_t runNumber) const;
+  /** Get the name of the Mix trigger class */
+  TString GetMIXTriggerClassName(Int_t runNumber) const;
   /** Get the name of the dimuon unlike sign (MUL) trigger class */
   TString GetMULTriggerClassName(Int_t runNumber) const;
   /** Get the name of the single muon low pt threshold (MSL) trigger class */
@@ -122,20 +131,30 @@ public:
    *  Valid keys to be used in the configuration file or in the query methods
    */
   ///@{
+  /// Used to specify the list of specific trigger classnames used
+  const char* RefMixTriggerKey() const;
+  /// Used to specify the list of specific trigger classnames used
+  const char* RefMixEventSelectionKey() const;
   /// Used to specify the list of dimuon trigger classnames used
   const char* DimuonTriggerKey() const;
   /// Used to specify the list of single muon trigger classnames used
   const char* MuonTriggerKey() const;
   /// Used to specify the list of minimum bias trigger classnames used
   const char* MinbiasTriggerKey() const;
+  /// Used to specify the list of mix trigger classnames used
+  const char* MixTriggerKey() const;
   /// Used to specify the list of event selections used
   const char* EventSelectionKey() const;
+  /// Used to specify the list of event selections used for mixing
+  const char* EventSelectionMixKey() const;
   /// Used to specify the list of pair selections used
   const char* PairSelectionKey() const;
   /// Used to specify the list of centralities used
   const char* CentralitySelectionKey() const;
   /// Used to specify the list of fits used
   const char* FitTypeKey() const;
+  /// Used to specify a particular fit used
+  const char* FitSingleKey() const;
   /// Used to specify whether or not to use compact graphs
   const char* CompactGraphKey() const;
   /// Used to specify OCDB path
@@ -143,6 +162,9 @@ public:
   ///@}
 
   TObjArray* GetListElements(const char* type, Bool_t simulation) const;
+  TObjArray* GetTriggersList(Bool_t simulation) const;
+
+  void LoadAliceStyles();
 
 private:
 

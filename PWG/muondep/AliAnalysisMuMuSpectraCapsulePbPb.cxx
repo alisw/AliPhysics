@@ -57,7 +57,6 @@ namespace
   const Double_t BR                = 5.96/100; // Branching ratio
   const Double_t BRerr             = 0.03/5.96; // Branching ratio
   //Normalization factor
-  //FIXME                          : Fnorm store in TH1, make in general
   const Double_t Fnorm             = 11.842;    // Normalization
   const Double_t FnormStat         = 0.00095;     // Normalization
   const Double_t FnormSyst         = 0.059;     // Normalization
@@ -101,27 +100,27 @@ const TString                 spectraPath,
 const char                  * externFile,
 const char                  * externFile2)
 :
-  AliAnalysisMuMuSpectraCapsule(),
-  fSpectra(spectra),
-  fSpectraName(spectraPath),
-  fExternFile(externFile),
-  fExternFile2(externFile2),
-  fPrintFlag(kFALSE)
+  AliAnalysisMuMuSpectraCapsule(spectra,spectraPath,externFile,externFile2)
+  // fSpectra(spectra),
+  // fSpectraName(spectraPath),
+  // fExternFile(externFile),
+  // fExternFile2(externFile2),
+  // fPrintFlag(kFALSE)
 {
-  //Check point
-  if (!fSpectra)
-  {
-    AliError(Form("Cannot find spectra wih name %s Please check the name",fSpectra->GetName()));
-    return;
-  }
-  AliDebug(1, Form(" - spectra(%s) = %p ",fSpectra->GetName(),fSpectra));
+  // //Check point
+  // if (!fSpectra)
+  // {
+  //   AliError(Form("Cannot find spectra wih name %s Please check the name",fSpectra->GetName()));
+  //   return;
+  // }
+  // AliDebug(1, Form(" - spectra(%s) = %p ",fSpectra->GetName(),fSpectra));
 
 
-  if (fSpectraName.IsNull())
-  {
-    AliWarning(Form("No spectra name ! "));
-    return;
-  }
+  // if (fSpectraName.IsNull())
+  // {
+  //   AliWarning(Form("No spectra name ! "));
+  //   return;
+  // }
 
   if(!AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
   {
@@ -137,14 +136,15 @@ AliAnalysisMuMuSpectraCapsulePbPb::~AliAnalysisMuMuSpectraCapsulePbPb()
 }
 
 //_____________________________________________________________________________
-TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what, const TH1* histo, const char* sResName)
+TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what, const TH1* histo, const char* sResName, Double_t MUL)
 {
-  /// Compute Yield.
-  /// Arguments :
-  ///   - what : the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
-  ///   - histo : histogramme of Equivalent MinBias
+  /// @brief Compute Yield.
+  /// @argument  what  the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
+  /// @argument  histo histogramme of Equivalent MinBias
 
-  if(!GetSpectra() || histo==0x0|| strcmp(what,"")==1) return 0x0;
+  if(!GetSpectra() || strcmp(what,"")==1) return 0x0;
+
+  printf("here !\n");
 
   // Some constants
   const TString graphTitle = Form("%s-YIELD",GetSpectraName().Data());
@@ -163,8 +163,9 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what,
   }
 
   // Here we define some pointers
+  TGraphErrors* graphAll[2];
   TGraphErrors*graph(0x0);
-  // TGraphErrors*graph_sysUncorr(0x0);
+  TGraphErrors*graph_sysUncorr(0x0);
 
   Double_t    * binArray(0x0) ;// (intrinseque 'new')
   Int_t binsX = 0;
@@ -173,15 +174,15 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what,
   if (GetSpectraName().Contains("-INTEGRATED"))
   {
     graph           = new TGraphErrors(1);
-    // graph_sysUncorr = new TGraphErrors(1);
+    graph_sysUncorr = new TGraphErrors(1);
     graph->SetTitle(graphTitle.Data());
 
     // graph_sysUncorr->SetFillColorAlpha(5,0.05);
   }
-  else if (GetSpectraName().Contains("-PT")|| GetSpectraName().Contains("-Y"))
+  else if (GetSpectraName().Contains("-PT") || GetSpectraName().Contains("-Y"))
   {
-    binArray =GetSpectra()->Binning()->CreateBinArray();
-    binsX = GetSpectra()->Binning()->GetNBinsX();
+    binArray = GetSpectra()->Binning()->CreateBinArray();
+    binsX    = GetSpectra()->Binning()->GetNBinsX();
 
     if (!binArray)
     {
@@ -217,7 +218,6 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what,
   //==============================================================================
   while ((r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin())))
   {
-
     //________Make bin a MuMuResult
     result = GetSpectra()->GetResultForBin(*r);
     if (!result)
@@ -232,14 +232,18 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what,
     Double_t NofWhattTot = result->GetValue(what,sres.Data());
     Double_t NofWhattTotError = result->GetErrorStat(what,sres.Data());
 
-    Double_t nEqMBTot      = histo->GetBinContent(nofResult+1);
-    Double_t nEqMBTotError = histo->GetBinError(nofResult+1);
-
-    AliDebug(1,Form("histo used    : %s",histo->GetTitle()));
-    AliDebug(1,Form("%s            = %f",what,NofWhattTot));
-    AliDebug(1,Form("%s error      = %f",what,NofWhattTotError));
-    AliDebug(1,Form("nEqMBTot      = %f",nEqMBTot));
-    AliDebug(1,Form("nEqMBTotError = %f",nEqMBTotError));
+    Double_t nEqMBTot      = 0.0;
+    Double_t nEqMBTotError = 0.0;
+    if (histo)
+    {
+      nEqMBTot = histo->GetBinContent(nofResult+1);
+      nEqMBTotError = histo->GetBinError(nofResult+1);
+      AliDebug(1,Form("histo used    : %s",histo->GetTitle()));
+    } else {
+      Double_t nmul = MUL!=0. ? MUL :  Mul2015;
+      nEqMBTot      = Fnorm * nmul;
+      nEqMBTotError = nmul*FnormStat/Fnorm ;
+    }
 
     if( NofWhattTot==0||NofWhattTotError==0||nEqMBTot==0||nEqMBTotError==0)
     {
@@ -247,29 +251,40 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what,
       return 0x0;
     }
 
-    //________Compute R_AA in case of fully integrated spectra
+    AliDebug(1,Form("%s            = %f",what,NofWhattTot));
+    AliDebug(1,Form("%s error      = %f",what,NofWhattTotError));
+    AliDebug(1,Form("nEqMBTot      = %f",nEqMBTot));
+    AliDebug(1,Form("nEqMBTotError = %f",nEqMBTotError));
+
+    //________Compute yield in case of fully integrated spectra
     if(GetSpectraName().Contains("-INTEGRATED"))
     {
-      Double_t yieldInt = NofWhattTot/(nEqMBTot*BR);
+
+      Double_t yieldInt = NofWhattTot/(nEqMBTot*BR*fConstArray[8]);
       Double_t yieldIntError = yieldInt*AliAnalysisMuMuResult::ErrorAB(NofWhattTot,NofWhattTotError,nEqMBTot,TMath::Sqrt(nEqMBTot));
 
       // Add results to TGraphs
       graph->SetPoint(nofResult,fConstArray[0],yieldInt);
       graph->SetPointError(nofResult,fConstArray[1],yieldIntError);
-      // graph_sysUncorr->SetPoint(nofResult,0,num[4]);
-      // graph_sysUncorr->SetPointError(nofResult,0.2,num[7]);
-    }
-    else
-    {
-      Double_t yieldInt = NofWhattTot/(nEqMBTot*BR);
+    } else {
+
+      // read exterfile and get the correct value
+      float valueArray[13];
+      //  valueArray[0], valueArray[1], valueArray[2], valueArray[3],     valueArray[4], valueArray[5], valueArray[6], valueArray[7], valueArray[8], valueArray[9], valueArray[10], valueArray[11] valueArray[12]
+      //  sigmapp         dsigmapp      dsigmappUnCorr   dsigmappCorr(%)  AccEff         dAccEff        sysMC          TrajEffError    TriggerError  MatchingError,  NofJpsi,       NofJpsiStat,    NofJpsiSys
+
+      if(ReadFromFile(r->AsString(),&valueArray[0])==kFALSE) return 0x0;
+      AliDebug(1, " Values correctly read from extern file");
+
+      Double_t yieldInt = NofWhattTot/(nEqMBTot*valueArray[4]);
       Double_t yieldIntError = yieldInt*AliAnalysisMuMuResult::ErrorAB(NofWhattTot,NofWhattTotError,nEqMBTot,TMath::Sqrt(nEqMBTot));
+
+      printf("bin : %s -- %s = %f +/- %f --  nEqMBTot : %f -- yield : %f +/- %f\n",r->AsString().Data(),what,NofWhattTot,NofWhattTotError,nEqMBTot,yieldInt,yieldIntError );
 
       //Fill graph
       Double_t binCenter = (binArray[nofResult+1]-binArray[nofResult])/2 + binArray[nofResult];
       graph->SetPoint(nofResult,binCenter,yieldInt);
-      graph->SetPointError(nofResult,r->WidthX()/5,yieldInt);
-      // graph_sysUncorr->SetPoint(nofResult,binCenter,num[4]);
-      // graph_sysUncorr->SetPointError(nofResult,r->WidthX()/5,num[7]);
+      graph->SetPointError(nofResult,r->WidthX()/5,yieldIntError);
     }
     //________
 
@@ -284,17 +299,14 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what,
   graph->SetMarkerColor(4);
   graph->SetMarkerStyle(21);
 
-  // delete graph;
-  // delete graph_sysUncorr;
   delete bins;
   delete binArray;
 
  return graph ;
-
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePbPb::DrawResults( const char* particle,const char* subresults) const
+void AliAnalysisMuMuSpectraCapsulePbPb::DrawResults( const char* what, const char* particle,const char* subresults) const
 {
   /**
    *
@@ -341,19 +353,19 @@ void AliAnalysisMuMuSpectraCapsulePbPb::DrawResults( const char* particle,const 
   //Iterator for bin
   TIter nextBin(bins);
 
-  std::vector<double> NofJpsi;
-  std::vector<double> NofJpsiErr;
+  std::vector<double> NofWhat;
+  std::vector<double> NofWhatErr;
   std::vector<double> SoverB;
   std::vector<double> BinRange;
   std::vector<double> massJpsi;
   std::vector<double> massJpsiErr;
   std::vector<double> sigmaJpsi;
   std::vector<double> sigmaJpsiErr;
+  std::vector<double> chi2perndf;
 
   TString BinType;
 
-  // Loop on bins
-  //==============================================================================
+  // --- Loop on bins
   while ((r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin())))
   {
     // Make bin a MuMuResult
@@ -394,18 +406,36 @@ void AliAnalysisMuMuSpectraCapsulePbPb::DrawResults( const char* particle,const 
       }
 
       // To go on the TLegend
-      NofJpsi.push_back( subresult->GetValue("NofJPsi") );
-      NofJpsiErr.push_back( subresult->GetErrorStat("NofJPsi") );
-      SoverB.push_back ( subresult->GetValue("SignalOverBkg3s") );
+      if (subresult->HasValue(what))             NofWhat.push_back( subresult->GetValue(what) );
+      else NofWhat.push_back( 0.0 );
+
+      if (subresult->HasValue(what))             NofWhatErr.push_back( subresult->GetErrorStat(what) );
+      else NofWhatErr.push_back( 0.0 );
+
+      if(subresult->HasValue("SignalOverBkg3s")) SoverB.push_back ( subresult->GetValue("SignalOverBkg3s") );
+      else SoverB.push_back (0.0);
+
+      if(subresult->HasValue("mJPsi"))           massJpsi.push_back( subresult->GetValue("mJPsi") );
+      else massJpsi.push_back(0.0);
+
+      if(subresult->HasValue("mJPsi"))           massJpsiErr.push_back( subresult->GetErrorStat("mJPsi") );
+      else massJpsiErr.push_back(0.0);
+
+      if(subresult->HasValue("sJPsi"))           sigmaJpsi.push_back( subresult->GetValue("sJPsi") );
+      else sigmaJpsi.push_back(0.0);
+
+      if(subresult->HasValue("sJPsi"))           sigmaJpsiErr.push_back( subresult->GetErrorStat("sJPsi") );
+      else sigmaJpsiErr.push_back(0.0);
+
+      if(subresult->HasValue("FitChi2PerNDF"))   chi2perndf.push_back( subresult->GetErrorStat("FitChi2PerNDF") );
+      else chi2perndf.push_back(0.0);
+
       BinRange.push_back ( r->Xmin() );
       BinRange.push_back ( r->Xmax() );
-      massJpsi.push_back( subresult->GetValue("mJPsi") );
-      massJpsiErr.push_back( subresult->GetErrorStat("mJPsi") );
-      sigmaJpsi.push_back( subresult->GetValue("sJPsi") );
-      sigmaJpsiErr.push_back( subresult->GetErrorStat("sJPsi") );
     }
   }
-  //Configure canvas
+
+  // Configure canvas
   Int_t nx(1);
   Int_t ny(1);
   Int_t nofResult = histos->GetEntries(); // # of histo
@@ -418,95 +448,91 @@ void AliAnalysisMuMuSpectraCapsulePbPb::DrawResults( const char* particle,const 
     nx = TMath::Nint((nofResult/ny) +0.6);
   }
 
-  TCanvas *c = new TCanvas("canFit", "canFit");
+  TCanvas *c = new TCanvas();
 
-  // ------ Configure pad ------
+  // --- Configure pad ---
   SetCanvasStyle(c);
-  // c->SetBorderMode(0);
-  // c->SetBorderSize(0);
-  // c->SetRightMargin(0.04989154);
-  // c->SetTopMargin(0.04902248);
-  // c->SetBottomMargin(0.0800598);
-  // c->SetFrameBorderMode(0);
   c->Divide(nx,ny,0,0);
   c->SetTitle(Form("%s",fSpectraName.Data()));
   c->Draw();
-  //____________________________
 
   AliDebug(1, Form(" Canvas divided in %dx%d",nx,ny));
 
-  //Iterator on histos + counter
   TIter nextHisto(histos);
   TH1 * h2;
   Int_t n=0;
+
   // Loop on Pad
   while ((h2 = static_cast<TH1*>(nextHisto())))
   {
     AliDebug(1,Form(" - subcanvas = %d",n));
-    h = static_cast<TH1*>(histos->At(n));
-    if (h){
-      ++n;
+    if (h2){
+      n++;
       c->cd(n);// got to pad
 
-      // ---- Configure histo ----
-      Double_t scale = (h->GetNbinsX())/(h->GetXaxis()->GetXmax()-h->GetXaxis()->GetXmin());
-      h->GetXaxis()->SetRangeUser(2.2,4.7);
-      h->GetXaxis()->SetTitleOffset(1.1);
-      h->SetMinimum(1);
-      h->GetXaxis()->SetLabelFont(42);
-      h->GetXaxis()->SetTitleFont(42);
-      h->GetXaxis()->SetTitleSize(0.08);
-      h->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/#it{c}^{2})");
-      h->GetYaxis()->CenterTitle();
-      h->GetYaxis()->SetLabelFont(42);
-      h->GetYaxis()->SetTitleFont(42);
-      h->SetMarkerSize(0.8);
-      h->SetMarkerStyle(20);
-      h->GetYaxis()->SetTitle(Form("Counts per %.0f MeV/#it{c}^{2}",1000*h->GetBinWidth(4)));
-      //____________________________
+      // --- Configure histo ---
+      Double_t scale = (h2->GetNbinsX())/(h2->GetXaxis()->GetXmax()-h2->GetXaxis()->GetXmin());
+      h2->GetXaxis()->SetRangeUser(1.,6.);
+      h2->GetXaxis()->SetTitleOffset(1.1);
+      h2->SetMinimum(1);
+      h2->GetXaxis()->SetLabelFont(42);
+      h2->GetXaxis()->SetTitleFont(42);
+      h2->GetXaxis()->SetTitleSize(0.08);
+      h2->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/#it{c}^{2})");
+      h2->GetYaxis()->CenterTitle();
+      h2->GetYaxis()->SetLabelFont(42);
+      h2->GetYaxis()->SetTitleFont(42);
+      h2->SetMarkerSize(0.8);
+      h2->SetMarkerStyle(20);
+      h2->GetYaxis()->SetTitle(Form("Counts per %.0f MeV/#it{c}^{2}",1000*h2->GetBinWidth(4)));
 
-      h->Draw();
+      h2->Draw();
 
-      //Get fitting functions and draw them
-      f1 = h->GetFunction("signal+bck");
-      f1->SetNpx(150);
-      f1->SetLineColor(kBlue);
+      // --- Get fitting functions and draw them ---
+      if(h2->GetFunction("signal+bck") )      f1 = h2->GetFunction("signal+bck");
+      else if(h2->GetFunction("fitMeanpt") )  f1 = h2->GetFunction("fitMeanpt");
+      else if(h2->GetFunction("signal") )     f1 = h2->GetFunction("signal");
+      if(f1)f1->SetNpx(150);
+      if(f1)f1->SetLineColor(kBlue);
       Double_t chi2 =f1->GetChisquare()/f1->GetNDF();
-      Double_t sb =f1->GetChisquare()/f1->GetNDF();
 
-      f2 = h->GetFunction("signalJPsi");
-      f2->SetLineColor(kRed);
-      f2->SetLineStyle(7);
-      f2->SetNpx(150);
+      printf("FitChi2PerNDF = %f",chi2);
 
-      f3 = h->GetFunction("signalPsiP");
-      f3->SetLineColor(kRed);
-      f3->SetLineStyle(7);
-      f3->SetNpx(150);
 
-      f4 = h->GetFunction("bck");
-      f4->SetLineColor(kGray+2);
-      f4->SetLineStyle(7);
-      f4->SetNpx(150);
+      if(h2->GetFunction("signalJPsi") ) f2 = h2->GetFunction("signalJPsi");
+      if(f2)f2->SetLineColor(kRed);
+      if(f2)f2->SetLineStyle(7);
+      if(f2)f2->SetNpx(150);
+
+      if(h2->GetFunction("signalPsiP") )f3 = h2->GetFunction("signalPsiP");
+      if(f3)f3->SetLineColor(kRed);
+      if(f3)f3->SetLineStyle(7);
+      if(f3)f3->SetNpx(150);
+
+      if(h2->GetFunction("bck") )f4 = h2->GetFunction("bck");
+      if(f4)f4->SetLineColor(kGray+2);
+      if(f4)f4->SetLineStyle(7);
+      if(f4)f4->SetNpx(150);
 
       if(f1) f1->DrawCopy("same");
       if(f2) f2->DrawCopy("same");
       if(f3) f3->DrawCopy("same");
       if(f4) f4->DrawCopy("same");
 
+      // --- Config. first legend pad ---
 
       TLegend* leg = new TLegend(0.5209804,0.2662884,0.7326179,0.7057458);
       leg->SetTextSize(0.05);
-
       leg->SetBorderSize(0);
 
-      leg->AddEntry((TObject*)0,Form("#chi^{2}/ndf = %.2f ",chi2),"");
+      leg->AddEntry((TObject*)0,Form("#chi^{2}/ndf = %.2f ",chi2perndf[n-1]),"");
       leg->AddEntry((TObject*)0,Form("S/B = %.1f",SoverB[n-1]),"");
-      leg->AddEntry((TObject*)0,Form("m_{J/#psi} = %.4f +/-  %.4f ",massJpsi[n-1],massJpsiErr[n-1]),"");
-      leg->AddEntry((TObject*)0,Form("#sigma_{J/#psi} = %.3f +/-  %.3f",sigmaJpsi[n-1],sigmaJpsiErr[n-1]),"");
-      leg->AddEntry((TObject*)0,Form("N_{J/#psi} = %.0f +/-  %.0f",NofJpsi[n-1],NofJpsiErr[n-1]),"");
-
+      leg->AddEntry((TObject*)0,Form("%s = %.0f +/-  %.0f",what,NofWhat[n-1],NofWhatErr[n-1]),"");
+      leg->AddEntry((TObject*)0,Form("m_{J/#psi} = %.0f +/-  %.1f  MeV/#it{c}",1000*massJpsi[n-1],1000*massJpsiErr[n-1]),"");
+      leg->AddEntry((TObject*)0,Form("#sigma_{J/#psi} = %.0f +/-  %.1f MeV/#it{c}",1000*sigmaJpsi[n-1],1000*sigmaJpsiErr[n-1]),"");
       leg->Draw("same");
+
+      // --- Playground for a second pad if needed   ---
 
       TPaveText* pt = new TPaveText(0.55,0.75,0.75,0.95,"brNDC");
       pt->SetBorderSize(0);
@@ -516,20 +542,38 @@ void AliAnalysisMuMuSpectraCapsulePbPb::DrawResults( const char* particle,const 
       pt->SetTextFont(42);
       pt->SetTextSize(0.058);
       // pt->AddText("ALICE Performance 20/08/2016 ");
-      // pt->AddText("pp #sqrt{#it{s}} = 5.02 TeV, L_{int} = 109 #mub^{-1}");
-      if(BinType.Contains("PT")){
-        if (n & 1)pt->AddText(Form(" %.0f < #it{p}_{T } < %.0f GeV/#it{c}",BinRange[n-1],BinRange[n]));
-        else pt->AddText(Form(" %.0f < #it{p}_{T } < %.0f GeV/#it{c}^{2}",BinRange[n],BinRange[n+1]));
-        pt->AddText(Form("2.5 < #it{y} < 4"));
-      }
-      else if(BinType.Contains("Y")){
-        if (n & 1)pt->AddText(Form(" 0 < #it{p}_{T } < 12 GeV/#it{c}^{2}, %.0f < #it{y} < %.0f",BinRange[n-1],BinRange[n]));
-        else pt->AddText(Form(" 0 < #it{p}_{T } < 12 GeV/#it{c}^{2}, %.0f < #it{y} < %.0f",BinRange[n],BinRange[n+1]));
-        pt->AddText(Form(" 0 < #it{p}_{T } < 12 GeV/#it{c}^{2}"));
-      }
+      pt->AddText("ALICE pp #sqrt{#it{s}} = 5.02 TeV, L_{int} = 109 #pm 2.1 % nb^{-1}");
+      pt->AddText("0 < #it{p}_{T} < 12 GeV/#it{c}^{2}");
+      pt->AddText("2.5 < #it{y} < 4");
+
+      // if(BinType.CompareTo("PSI-YVSPT-2DBIN1")==0){
+      //   if (n == 1)pt->AddText(Form(" %.0f < #it{p}_{T } < %.0f GeV/#it{c}",BinRange[n-1],BinRange[n]));
+      //   else pt->AddText(Form(" %.0f < #it{p}_{T } < %.0f GeV/#it{c}^{2}",BinRange[n],BinRange[n+1]));
+      //   pt->AddText(Form("3.25 < #it{y} < 4"));
+      // }
+      // else if(BinType.CompareTo("PSI-YVSPT-2DBIN2")==0){
+      //   if (n == 1)pt->AddText(Form(" %.0f < #it{p}_{T } < %.0f GeV/#it{c}",BinRange[n-1],BinRange[n]));
+      //   else pt->AddText(Form(" %.0f < #it{p}_{T } < %.0f GeV/#it{c}^{2}",BinRange[n],BinRange[n+1]));
+      //   pt->AddText(Form("2.5 < #it{y} < 3.25"));
+      // }
+      // else if(BinType.CompareTo("PSI-PT")==0){
+      //   if (n == 1)pt->AddText(Form(" %.0f < #it{p}_{T } < %.0f GeV/#it{c}",BinRange[n-1],BinRange[n]));
+      //   else pt->AddText(Form(" %.0f < #it{p}_{T } < %.0f GeV/#it{c}^{2}",BinRange[n],BinRange[n+1]));
+      //   pt->AddText(Form("2.5 < #it{y} < 4"));
+      // }
+      // else if(BinType.CompareTo("PSI-Y")==0){
+      //   if (n == 1)pt->AddText(Form(" 0 < #it{p}_{T } < 12 GeV/#it{c}^{2}, %.0f < #it{y} < %.0f",BinRange[n-1],BinRange[n]));
+      //   else pt->AddText(Form(" 0 < #it{p}_{T } < 12 GeV/#it{c}^{2}, %.0f < #it{y} < %.0f",BinRange[n],BinRange[n+1]));
+      // }
+      // else if(BinType.CompareTo("PSI-INTEGRATED")==0){
+      //   // if (n == 1)pt->AddText(Form(" 0 < #it{p}_{T } < 12 GeV/#it{c}^{2}, %.0f < #it{y} < %.0f",BinRange[n-1],BinRange[n]));
+      //   // else pt->AddText(Form(" 0 < #it{p}_{T } < 12 GeV/#it{c}^{2}, %.0f < #it{y} < %.0f",BinRange[n],BinRange[n+1]));
+      //   pt->AddText(Form("2.5 < #it{y} < 4"));
+      //   pt->AddText(Form(" 0 < #it{p}_{T } < 12 GeV/#it{c}^{2}"));
+      // }
       pt->Draw();
-      gPad->Modified();
-      gPad->Update();
+      // gPad->Modified();
+      // gPad->Update();
     }
     else
     {
@@ -859,7 +903,6 @@ Bool_t AliAnalysisMuMuSpectraCapsulePbPb::ComputeRAA(TString sbin, Double_t numA
     //Stat error
     numArray[5] = numArray[4] * AliAnalysisMuMuResult::ErrorAB(numArray[0],numArray[1],fConstArray[8],fConstArray[9]);
     //                               signal
-
     //Corr error
     numArray[6]        =  TMath::Sqrt(
     MCParamError       *MCParamError             // MC input (%)
@@ -881,7 +924,6 @@ Bool_t AliAnalysisMuMuSpectraCapsulePbPb::ComputeRAA(TString sbin, Double_t numA
     AliError("Unowned bin type... I Told you !");
     return kFALSE;
   }
-
  return kTRUE;
 }
 

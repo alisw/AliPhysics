@@ -24,18 +24,18 @@ class TObjArray;
 class AliAnalysisMuMuNch : public AliAnalysisMuMuBase
 {
 public:
-  
+
   AliAnalysisMuMuNch(TRootIOCtor* ioCtor);
 
   AliAnalysisMuMuNch(TH2F* spdCorrection=0x0, TProfile* spdMeanCorrection = 0x0, Double_t meanTrRef=-1., Double_t etaMin=-0.5, Double_t etaMax=0.5
                      , Double_t zmin=-10., Double_t zmax=10., Bool_t disableHistos=kFALSE ,Bool_t computeResolution=kFALSE);
-  
+
   AliAnalysisMuMuNch(TH2F* spdCorrection, TH2F* spdFluctuations, Double_t etaMin=-0.5, Double_t etaMax=0.5
                                          , Double_t zMin=-10., Double_t zMax=10., Bool_t disableHistos=kFALSE, Bool_t computeResolution=kFALSE);
 
   AliAnalysisMuMuNch(TProfile* spdMeanCorrection, TProfile* spdMeanCorrectionToCompare, Double_t meanTrRef=-1., Double_t etaMin=-1.0,
                      Double_t etaMax=1.0, Double_t zMin=-10., Double_t zMax=10., Double_t etaMinToCompare=-0.5, Double_t etaMaxToCompare=0.5,Bool_t disableHistos=kFALSE, Bool_t computeResolution=kFALSE);
-  
+
   AliAnalysisMuMuNch(TObjArray* spdCorrectionList, Double_t meanTrRef=-1., TObjArray* runWeightsList=0x0, Double_t etaMin=-0.5, Double_t etaMax=0.5
                                          , Double_t zmin=-10, Double_t zmax=10, Bool_t disableHistos=kFALSE ,Bool_t computeResolution=kFALSE);
 
@@ -43,19 +43,19 @@ public:
                      Double_t meanTrRef=-1., Double_t etaMin=-1., Double_t etaMax=1., Double_t zmin=-10, Double_t zmax=10, Bool_t disableHistos=kFALSE);
 
   virtual ~AliAnalysisMuMuNch();
-  
+
   void DefineGeneratorName(const char* genName);
-  
+
   Bool_t HasAtLeastNTrackletsInEtaRange(const AliVEvent& event, Int_t n,
                                         Double_t& etaMin, Double_t& etaMax) const;
 
   void NameOfHasAtLeastNTrackletsInEtaRange(TString& name, Int_t n,
                                             Double_t& etaMin, Double_t& etaMax) const;
-  
+
   virtual void SetEvent(AliVEvent* event, AliMCEvent* mcEvent=0x0);
-  
+
   void SetRun(const AliInputEventHandler* eventHandler);
-  
+
   virtual void Terminate(Option_t *);
 
 protected:
@@ -67,7 +67,7 @@ protected:
                 Double_t z,
                 TH1* h,
                 Bool_t isMC=kFALSE);
-  
+
   void AttachSPDAcceptance(UInt_t dataType,
                            const char* eventSelection,
                            const char* triggerClassName,
@@ -77,37 +77,37 @@ protected:
 
   void FillHistosForMCEvent(const char* eventSelection, const char* triggerClassName,
               const char* centrality);
-  
+
 
   void FillHistosForEvent(const char* eventSelection, const char* triggerClassName,
                           const char* centrality);
-  
+
   virtual void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
-                                         const char* centrality);
+                                         const char* centrality, Bool_t mix = kFALSE);
 
   void DefineSPDAcceptance();
-  
+
   void DefineSPDFluctuationsMap(TH2F* spdFluctuations);
 
   Bool_t GetEtaRangeSPD(Double_t spdZVertex, Double_t etaRange[]);
 
   Double_t GetSPDCorrection(Double_t zvert, Double_t eta) const;
-  
+
   Double_t GetTrackletsMeanCorrection(Double_t zvert, Int_t nTracklets,Bool_t corrToCompare=kFALSE) const;
-  
+
   Double_t GetV0MeanCorrection(Double_t zvert, Int_t mV0) const;
 
   AliAODTracklets* GetTracklets(AliVEvent* event);
-  
+
   Bool_t IsMCtrackFromGenerator(Int_t indexMC) const;
-  
+
 private:
-  
+
   Double_t NumberOfTrackletsInEtaRange(const AliVEvent& event, Double_t& etamin,
                                        Double_t& etamax, Bool_t corrected=kFALSE) const;
-  
+
   void DefineSPDCorrectionMap(TObjArray* spdCorrectionList);
-  
+
 private:
   TH2F* fSPDOneOverAccxEff; // Nch/Tracklets_SPD (eta vs z). SPD AccxEffCorrection for tracklets
   TObjArray* fSPDFluctuationsList; // Array for the fluctuations distributions in Ntr corrected by SPD AccxEff slices
@@ -122,22 +122,22 @@ private:
   AliVEvent* fCurrentEvent; //! cache of the current event
   Double_t fMeanTrRef; // Mean reference number of tracklets for mean tracklets correction
   Double_t fMeanV0Ref;  // Mean reference V0 multiplicity for mean V0 multiplicity correction
-  Double_t fEtaMin; // Minimum tracklet eta value 
+  Double_t fEtaMin; // Minimum tracklet eta value
   Double_t fEtaMax; // Maximum tracklet eta value
   Double_t fEtaMinToCompare; // Minimum tracklet eta value for the comparison
   Double_t fEtaMaxToCompare; // Maximum tracklet eta value for the comparison
   Double_t fetaRange[2];
-  Double_t fZMin; // Minimum z vertex value 
-  Double_t fZMax; // Maximum z vertex value 
+  Double_t fZMin; // Minimum z vertex value
+  Double_t fZMax; // Maximum z vertex value
   Bool_t fResolution; // Flag to set the resolution computation
   TRandom3* frand;
   TString* fGeneratorHeaderClass; // Class of the header MC generator
-  
+
   TF1* fSPD1LR; // SPD acceptance shape
   TF1* fSPD1LL; // SPD acceptance shape
   TF1* fSPD2LR; // SPD acceptance shape
   TF1* fSPD2LL; // SPD acceptance shape
-  
+
   TObjArray* fMCWeightList; // List with the run weights
   Double_t fMCWeight; // Weight of current MC run
   TString* fV0side; // Which V0 side will be use to estimate multiplicicty
