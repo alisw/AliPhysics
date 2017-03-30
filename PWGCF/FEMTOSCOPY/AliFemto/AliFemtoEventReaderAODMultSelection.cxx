@@ -29,6 +29,21 @@ AliFemtoEvent* AliFemtoEventReaderAODMultSelection::CopyAODtoFemtoEvent()
   case kCentrality:
     femto_event->SetNormalizedMult(lrint(10 * mult_selection->GetMultiplicityPercentile("V0M")));
     break;
+  case kCentralityV0A:
+    femto_event->SetNormalizedMult(lrint(10 * mult_selection->GetMultiplicityPercentile("V0A")));
+    break;
+  case kCentralityV0C:
+    femto_event->SetNormalizedMult(lrint(10 * mult_selection->GetMultiplicityPercentile("V0C")));
+    break;
+  case kCentralityZNA:
+    femto_event->SetNormalizedMult(lrint(10 * mult_selection->GetMultiplicityPercentile("ZNA")));
+    break;
+  case kCentralityZNC:
+    femto_event->SetNormalizedMult(lrint(10 * mult_selection->GetMultiplicityPercentile("ZNC")));
+    break;
+  case kCentralityCL0:
+    femto_event->SetNormalizedMult(lrint(10 * mult_selection->GetMultiplicityPercentile("CL0")));
+    break;
   case kCentralityCL1:
     femto_event->SetNormalizedMult(lrint(10 * mult_selection->GetMultiplicityPercentile("CL1")));
     break;
