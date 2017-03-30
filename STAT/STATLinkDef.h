@@ -48,6 +48,8 @@
 #pragma link C++ class std::map<std::string,TFormula*>+;
 #pragma link C++ class std::map<std::string,TVectorF*>+;
 #pragma link C++ class std::map<std::string,TVectorD*>+;
+#pragma link C++ class std::map<UInt_t,THn*>+;
+
 /*
 // RS At the moment is not recognized by the CINT...
 
