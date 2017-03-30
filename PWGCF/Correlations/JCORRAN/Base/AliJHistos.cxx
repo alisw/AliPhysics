@@ -92,6 +92,8 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhChargedPt(),
   fhChargedPtNoCorr(),
   fhChargedPtJacek(),
+  fhChargedPtJacekPos(),
+  fhChargedPtJacekNeg(),
   fhChargedPtJacekEta(),
   fhChargedPtFiete(),
   fhVdelta2(),
@@ -289,6 +291,8 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhChargedPt(obj.fhChargedPt),
   fhChargedPtNoCorr(obj.fhChargedPtNoCorr),
   fhChargedPtJacek(obj.fhChargedPtJacek),
+  fhChargedPtJacekPos(obj.fhChargedPtJacekPos),
+  fhChargedPtJacekNeg(obj.fhChargedPtJacekNeg),
   fhChargedPtJacekEta(obj.fhChargedPtJacekEta),
   fhChargedPtFiete(obj.fhChargedPtFiete),
   fhVdelta2(obj.fhVdelta2),
@@ -731,6 +735,12 @@ void AliJHistos::CreateEventTrackHistos(){
         << fCentBin << "END";
     fhChargedPtJacek 
         << TH1D("hChargedPtJacek","", fNJacek, fPttJacek )
+        << fCentBin << "END";
+    fhChargedPtJacekPos 
+        << TH1D("hChargedPtJacekPos","", fNJacek, fPttJacek )
+        << fCentBin << "END";
+    fhChargedPtJacekNeg 
+        << TH1D("hChargedPtJacekNeg","", fNJacek, fPttJacek )
         << fCentBin << "END";
     fhChargedPtJacekEta
         << TH1D("hChargedPtJacekEta","", fNJacek, fPttJacek )
