@@ -7,7 +7,9 @@
  *
  * \brief Various event cuts used in AliAnalysisTaskMuMu
  *
- * \author L. Aphecetche and J. Martin Blanco
+ * \author L. Aphecetche
+ * \author J. Martin Blanco
+ * \author B. Audurier
  *
  */
 
@@ -51,8 +53,11 @@ public:
   Bool_t IsPhysicsSelectedMUL(const AliInputEventHandler& eventHandler) const;
   void NameOfIsPhysicsSelectedMUL(TString& name) const { name="PSMUL"; }
 
-  Bool_t IsPhysicsSelectedMUSPB(const AliInputEventHandler& eventHandler) const;
-  void NameOfIsPhysicsSelectedMUSPB(TString& name) const { name="PSMUSPB"; }
+  Bool_t IsPhysicsSelectedMULORMLL(const AliInputEventHandler& eventHandler) const;
+  void NameOfIsPhysicsSelectedMULORMLL(TString& name) const { name="PSMULORMLL"; }
+
+  Bool_t IsPhysicsSelectedINT7inMUON(const AliInputEventHandler& eventHandler) const;
+  void NameOfIsPhysicsSelectedINT7inMUON(TString& name) const { name="PSINT7inMUON"; }
 
   Bool_t IsPhysicsSelectedMSL(const AliInputEventHandler& eventHandler) const;
   void NameOfIsPhysicsSelectedMSL(TString& name) const { name="PSMSL"; }

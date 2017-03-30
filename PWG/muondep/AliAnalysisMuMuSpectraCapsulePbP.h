@@ -8,17 +8,11 @@
 
 // $Id$
 
-/**
- 
-  @ingroup pwg_muondep_mumu
-
-  @class AliAnalysisMuMuSpectraCapsulePP
-
-  @brief Handle operations on Spectra after fit procedure
-
-  @author Benjamin Audurier (Subatech)
-
-*/
+/// @ingroup pwg_muondep_mumu
+/// @class AliAnalysisMuMuSpectraCapsulePbP
+/// @brief helper class to deal with results stored in a spectra with pPb methods.
+///
+/// author : Benjamin Audurier (Subatech)
 
 #include "TNamed.h"
 #include "TMath.h"
@@ -71,16 +65,12 @@ private:
 
 
 private:
-  TString fExternFile;      // name of spectra selected
-  TString fExternFile2;     // name of spectra selected
+
   Double_t fConstArray[13]; // Array to store constant according to centrality bins
 
-  const AliAnalysisMuMuSpectra* fSpectra;// Spectra with result and subresults
-  const TString               fSpectraName;     // SpectraName
-
-/// \cond CLASSIMP
-ClassDef(AliAnalysisMuMuSpectraCapsulePbP,1);
-/// \endcond
+ /// \cond CLASSIMP
+ ClassDef(AliAnalysisMuMuSpectraCapsulePbP,2);
+ /// \endcond
 };
 
 

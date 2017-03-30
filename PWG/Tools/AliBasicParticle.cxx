@@ -3,7 +3,7 @@
 ClassImp(AliBasicParticle)
 
 //________________________________________________________________________
-AliBasicParticle::AliBasicParticle() : fEta(0), fPhi(0), fpT(0), fCharge(0) 
+AliBasicParticle::AliBasicParticle() : fEta(0), fPhi(0), fpT(0), fCharge(0), fEventIndex(0)
 {
   // constructor
 }

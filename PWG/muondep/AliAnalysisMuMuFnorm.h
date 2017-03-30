@@ -4,6 +4,20 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+
+/**
+*   @class AliAnalysisMuMuFnorm
+*   @details class to encapsulate computation(s)
+*   of the normalisation factor used to get the equivalent
+*   number of MB events from the number of REF triggers
+*
+*   The computed objects are stored within a AliMergeableCollection in a new subdirectories
+*
+*
+*   @author: Laurent Aphecetche (Subatech)
+*   @author: Benjamin Audurier (Subatech)
+**/
+
 #ifndef ROOT_TObject
 #  include "TObject.h"
 #endif
@@ -64,7 +78,7 @@ public:
 
   virtual ~AliAnalysisMuMuFnorm();
 
-  void ComputeFnorm();
+  // void ComputeFnorm();
 
   void ComputeCorrectionFactors(Int_t eventSelectionCorrected);
 

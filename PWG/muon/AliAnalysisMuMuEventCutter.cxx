@@ -197,10 +197,16 @@ Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelectedMUL(const AliInputEventHandl
   return const_cast<AliInputEventHandler&>(eventHandler).IsEventSelected() & AliVEvent::kMuonUnlikeLowPt7;
 }
 
-Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelectedMUSPB(const AliInputEventHandler& eventHandler) const
+Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelectedMULORMLL(const AliInputEventHandler& eventHandler) const
 {
   /// Whether or not the event is physics selected
-  return const_cast<AliInputEventHandler&>(eventHandler).IsEventSelected() & AliVEvent::kMUSPB;
+  return const_cast<AliInputEventHandler&>(eventHandler).IsEventSelected() & ( AliVEvent::kMuonUnlikeLowPt7 | AliVEvent::kMuonLikeLowPt7 );
+}
+
+Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelectedINT7inMUON(const AliInputEventHandler& eventHandler) const
+{
+  /// Whether or not the event is physics selected
+  return const_cast<AliInputEventHandler&>(eventHandler).IsEventSelected() & AliVEvent::kINT7inMUON;
 }
 
 Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelectedMSL(const AliInputEventHandler& eventHandler) const

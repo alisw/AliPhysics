@@ -27,7 +27,16 @@ ClassImp(AliAnalysisMuMuSpectraCapsule)
 #include "AliAnalysisMuMuJpsiResult.h"
 #include "AliAnalysisMuMuBinning.h"
 #include "TObjArray.h"
+#include "TStyle.h"
+#include "TH1F.h"
+#include "TLine.h"
+#include "TCanvas.h"
+#include "TLegend.h"
 #include "TString.h"
+#include "TPaveText.h"
+#include "TPaveStats.h"
+#include "TLatex.h"
+#include "TList.h"
 #include <fstream>
 #include <string>
 
@@ -37,9 +46,33 @@ using std::ifstream;
 
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectraCapsule::AliAnalysisMuMuSpectraCapsule() : TObject()
+AliAnalysisMuMuSpectraCapsule::AliAnalysisMuMuSpectraCapsule(
+const AliAnalysisMuMuSpectra*  spectra,
+const TString                 spectraPath,
+const char                  * externFile,
+const char                  * externFile2) :
+TObject(),
+fSpectra(spectra),
+fSpectraName(spectraPath),
+fExternFile(externFile),
+fExternFile2(externFile2),
+fPrintFlag(kFALSE)
 {
   /// Default ctor
+  //Check point
+  if (!fSpectra)
+  {
+    AliError(Form("Cannot find spectra wih name %s Please check the name",fSpectra->GetName()));
+    return;
+  }
+  AliDebug(1, Form(" - spectra(%s) = %p ",fSpectra->GetName(),fSpectra));
+
+
+  if (fSpectraName.IsNull())
+  {
+    AliWarning(Form("No spectra name ! "));
+    return;
+  }
 }
 
 //_____________________________________________________________________________
@@ -128,8 +161,7 @@ Bool_t AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(const char* file
 //_____________________________________________________________________________
 void AliAnalysisMuMuSpectraCapsule::PrintNofWhat(const char* what) const
 {
-  /// Print whar number for each results on terminal.
-
+  /// Print what number for each results on terminal.
 
   //Check point
   if(!GetSpectra() || strcmp(what,"")==1 )
@@ -177,9 +209,16 @@ void AliAnalysisMuMuSpectraCapsule::PrintNofWhat(const char* what) const
     //Some variables
     TString  binAsString(r->AsString());// Usefull for the coming loop
 
-    cout << Form(" -_-_-_-_- %s_%s -_-_-_-_- ",binAsString.Data(),GetSpectraName().Data()) << endl;
-    // Loop on subresults
-    //==============================================================================
+    // To store subresults values
+    Double_t subNofWhat[result->SubResults()->GetEntries()];
+    Double_t subNofWhatStatError[result->SubResults()->GetEntries()];
+    const char * srName[result->SubResults()->GetEntries()];
+
+    cout << Form(" -_-_-_-_- %s --- %s -_-_-_-_- ",binAsString.Data(),GetSpectraName().Data()) << endl;
+
+    int excludedResults =0;
+
+    // --- Loop on subresults ---
     while ((sr = static_cast<AliAnalysisMuMuResult*>(nextSubResult())))
     {
       // Get our final result
@@ -192,18 +231,72 @@ void AliAnalysisMuMuSpectraCapsule::PrintNofWhat(const char* what) const
       AliDebug(1,Form("subresult(%s) = %p",sr->GetName(),subresult));
 
       //Get quantities
-      Double_t NofJPsiSub      = subresult->GetValue(what);
-      Double_t NofJPsiErrorStat = subresult->GetErrorStat(what);
+      Double_t NofWhat                  = subresult->GetValue(what);
+      Double_t NofWhatErrorStat         = subresult->GetErrorStat(what);
+
+      subNofWhat[nofSubResult]          = NofWhat;
+      subNofWhatStatError[nofSubResult] = NofWhatErrorStat;
+      srName[nofSubResult]              = sr->GetName();
 
       //Output messages
       cout << Form(" -------- ") << endl;
-      cout << Form(" -- subresult %s :  %.0f +/- %.0f ",sr->GetName(),NofJPsiSub,NofJPsiErrorStat) << endl;
-      nofSubResult++;
+      cout << Form(" -- subresult %s :  %.3f +/- %.3f ",sr->GetName(),NofWhat,NofWhatErrorStat) << endl;
 
+      // To check the status
+      Int_t fitStatus = subresult->HasValue("FitResult") ? subresult->GetValue("FitResult") : 0;
+      Int_t covStatus = subresult->HasValue("CovMatrixStatus") ? subresult->GetValue("CovMatrixStatus") : 3;
+      Int_t chi2      = subresult->HasValue("FitChi2PerNDF") ? subresult->GetValue("FitChi2PerNDF") : 1;
+      if ( (fitStatus!=0 && fitStatus!=4000) || chi2 > 2.5 /*|| covStatus!=3*/ ){
+          printf("Fit most likely excluded, you can check in AliAnalysisMuMuResults (FitResult = %d | Cov. Mat. = %d | chi2 = %d)\n",fitStatus,covStatus,chi2);
+          ++excludedResults;
+      }
+
+      nofSubResult++;
     }
+
+    // Plot the histograms
+    TH1F * h_test = new TH1F(Form("%s_%s",what,r->AsString().Data()),Form("%s_%s",what,r->AsString().Data()),result->SubResults()->GetEntries(),0,result->SubResults()->GetEntries());
+    for (int i = 0; i < result->SubResults()->GetEntries(); ++i)
+    {
+        // the histo we plot
+        h_test->SetBinContent(i+1,subNofWhat[i]);
+        h_test->SetBinError(i+1,subNofWhatStatError[i]);
+
+        // Here we change the label names
+        h_test->GetXaxis()->SetBinLabel(i+1,Form("%s",srName[i]));
+    }
+
+    // --- Here we draw ---
+    TCanvas *se = new TCanvas;
+    h_test->DrawCopy();
+
+    TLine *line1 = new TLine(0,result->GetValue(what),result->SubResults()->GetEntries(),result->GetValue(what));
+    line1->SetLineColor(kBlue);
+    line1->SetLineWidth(3);
+
+    TLine *line2 = new TLine(0,result->GetValue(what)-result->GetRMS(what),result->SubResults()->GetEntries(),result->GetValue(what)-result->GetRMS(what));
+    line2->SetLineColor(kBlue);
+    line2->SetLineWidth(3);
+    line2->SetLineStyle(3);
+
+    TLine *line3 = new TLine(0,result->GetValue(what)+result->GetRMS(what),result->SubResults()->GetEntries(),result->GetValue(what)+result->GetRMS(what));
+    line3->SetLineColor(kBlue);
+    line3->SetLineWidth(3);
+    line3->SetLineStyle(3);
+    line1->Draw("same");
+    line2->Draw("same");
+    line3->Draw("same");
+
+    TLegend* leg = new TLegend(0.2772713,0.6872277,0.5569771,0.8642429,NULL,"brNDC");
+    leg->AddEntry("NULL",Form("number of excluded tests : %d",excludedResults),"P");
+    leg->Draw("same");
+
+
+
     cout << Form(" -------- ") << endl;
-    cout << Form(" ------ Mean :  %.1f +/- %.1f (%.1f %%) +/- %.1f (%.1f %%) ------ ",
-      result->GetValue(what),result->GetErrorStat(what),100*result->GetErrorStat(what)/result->GetValue(what),result->GetRMS(what),100*result->GetRMS(what)/result->GetValue(what)) << endl;
+    cout << Form(" ------ Mean :  %.0f +/- %.0f (%.1f %%) +/- %.0f (%.1f %%) ------ ",
+      result->GetValue(what),result->GetErrorStat(what),100*result->GetErrorStat(what)/result->GetValue(what),result->GetRMS(what),100*result->GetRMS(what)/result->GetValue(what)) 
+    << " with " <<excludedResults << " excluded results" << endl;
     cout << "" << endl;
     nofResult++;
   }
