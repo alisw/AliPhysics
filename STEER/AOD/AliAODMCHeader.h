@@ -70,6 +70,7 @@ public:
   virtual UInt_t    GetOrbitNumber()        const {return 0;}
   virtual UInt_t    GetPeriodNumber()       const {return 0;}
   virtual ULong64_t GetTriggerMask()        const {return 0;}
+  virtual ULong64_t GetTriggerMaskNext50()  const {return 0;}
   virtual UChar_t   GetTriggerCluster()     const {return 0;}
   virtual UInt_t    GetTimeStamp()          const {return 0;}
   // 
