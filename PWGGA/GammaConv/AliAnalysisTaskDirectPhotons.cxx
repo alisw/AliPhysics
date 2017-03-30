@@ -61,22 +61,13 @@ ClassImp( AliAnalysisTaskDirectPhotons );
 AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons():
     AliAnalysisTaskSE(),
     fOutputList(NULL),
-    /*fNegativeParticles(NULL),
-    fPositiveParticles(NULL),
-    fNeutralParticles(NULL),
-    fTrueElectrons(NULL),
-    fTruePositrons(NULL),*/
     fDataIsElectron(NULL),
     fDataIsPositron(NULL),
-    //fLabelDaughterElectron(NULL),
-    //fLabelDaughterPositron(NULL),
     fPhotonCandidateFirst(NULL),
     fGoodPhotonCandidates(NULL),
     fGammaCutArray(NULL),
     fEventCutArray(NULL),
     fNeutralPionMesonCutArray(NULL),
-    //fNumSigmasTPCTrack(NULL),
-    //fParticlesArray(NULL),
     pSigmaTPC(NULL),
     fnCuts(0),
     magField(0),
@@ -87,8 +78,6 @@ AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons():
     dPointToSecVertexLine(0),
     nTracks(0),
     fisMC(kTRUE),
-    //stackNTracksNoCut(NULL),
-    //stackNTracks(NULL),
     nPhotonCandidates(0),
     fEvent(NULL),
     fPrimVertex(NULL),
@@ -96,7 +85,6 @@ AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons():
     fAODEvent(NULL),
     fTrackCuts(new AliESDtrackCuts),
     fV0Reader(NULL),
-    //fV0ReaderName("V0ReaderV1"),
     fMCEvent(0),
     fMCStack(NULL),
     fPIDResponse(NULL),
@@ -107,7 +95,6 @@ AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons():
     fHistXY(NULL),
     fHistPtNegativeParticles(NULL),
     fHistPtPositiveParticles(NULL),
-//    fHistTrueDCAToPrimVtx(NULL),
     fHistInvMassPosElec(NULL),
     fHistInvMassPosElecBack(NULL),
     fHistInvMassPosElecAfterDCut(NULL),
@@ -135,22 +122,13 @@ AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons():
 AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons(const char* name):
     AliAnalysisTaskSE(name),
     fOutputList(NULL),
-    /*fNegativeParticles(NULL),
-    fPositiveParticles(NULL),
-    fNeutralParticles(NULL),
-    fTrueElectrons(NULL),
-    fTruePositrons(NULL),*/
     fDataIsElectron(NULL),
     fDataIsPositron(NULL),
-    //fLabelDaughterElectron(NULL),
-    //fLabelDaughterPositron(NULL),
     fPhotonCandidateFirst(NULL),
     fGoodPhotonCandidates(NULL),
     fGammaCutArray(NULL),
     fEventCutArray(NULL),
     fNeutralPionMesonCutArray(NULL),
-    //fNumSigmasTPCTrack(NULL),
-    //fParticlesArray(NULL),
     pSigmaTPC(NULL),
     fnCuts(0),
     magField(0),
@@ -161,8 +139,6 @@ AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons(const char* name):
     dPointToSecVertexLine(0),
     nTracks(0),
     fisMC(kTRUE),
-    //stackNTracksNoCut(NULL),
-    //stackNTracks(NULL),
     nPhotonCandidates(0),
     fEvent(NULL),
     fPrimVertex(NULL),
@@ -170,7 +146,6 @@ AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons(const char* name):
     fAODEvent(NULL),
     fTrackCuts(new AliESDtrackCuts),
     fV0Reader(NULL),
-    //fV0ReaderName("V0ReaderV1"),
     fMCEvent(0),
     fMCStack(NULL),
     fPIDResponse(NULL),
@@ -181,7 +156,6 @@ AliAnalysisTaskDirectPhotons::AliAnalysisTaskDirectPhotons(const char* name):
     fHistXY(NULL),
     fHistPtNegativeParticles(NULL),
     fHistPtPositiveParticles(NULL),
-//    fHistTrueDCAToPrimVtx(NULL),
     fHistInvMassPosElec(NULL),
     fHistInvMassPosElecBack(NULL),
     fHistInvMassPosElecAfterDCut(NULL),
@@ -257,23 +231,6 @@ void AliAnalysisTaskDirectPhotons::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
 
-    //fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
-    /*if(!fV0Reader) {
-        cout<<"Não tem v0000000"<<endl;
-
-        return; // GetV0Reader
-    }*/
-
-    /*fNegativeParticles = new TObjArray();
-
-    fPositiveParticles = new TObjArray();
-
-    fNeutralParticles = new TObjArray();
-
-    fTrueElectrons = new TObjArray();
-
-    fTruePositrons = new TObjArray();*/
-
     fDataIsElectron = new TClonesArray("AliVTrack");
 
     fDataIsPositron = new TClonesArray("AliVTrack");
@@ -292,10 +249,7 @@ void AliAnalysisTaskDirectPhotons::UserCreateOutputObjects()
     fOutputList->Add(fHistPtNegativeParticles);
 
     fHistPtPositiveParticles = new TH1F("fHistPtPos","fHistPtPos", 500, 0, 50);
-    fOutputList->Add(fHistPtPositiveParticles);
-
-/*    fHistTrueDCAToPrimVtx = new TH1D("fHistTrueDCAToPrimVtx","fHistTrueDCAToPrimVtx", 150, 0, 15);
-    fOutputList->Add(fHistTrueDCAToPrimVtx);*/    
+    fOutputList->Add(fHistPtPositiveParticles);   
 
     fHistInvMassPosElec = new TH2D("fHistInvMassPosElec","fHistInvMassPosElec", 125, 0, 0.25, 100, 0, 10);
     fOutputList->Add(fHistInvMassPosElec);
@@ -370,7 +324,7 @@ void AliAnalysisTaskDirectPhotons::UserExec(Option_t *)
 
     fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
     if(!fV0Reader) {
-        cout<<"Não tem v0"<<endl;
+        cout<<"v0 Reader is missing"<<endl;
         return;
     }
 
@@ -430,15 +384,8 @@ void AliAnalysisTaskDirectPhotons::UserExec(Option_t *)
     ProcessAllTracks();
     FindGammaCandidates();
     FindNeutralMesonCandidates();
-
-    cout<<"ACABARAM AS FUNCOES"<<endl;
     //FindTrueNeutralMesonCandidates();
 
-    /*fNegativeParticles->Clear();
-    fPositiveParticles->Clear();
-    fNeutralParticles->Clear();
-    fTrueElectrons->Clear();
-    fTruePositrons->Clear();*/
     fDataIsElectron->Clear();
     fDataIsPositron->Clear();
     fPhotonCandidateFirst->Clear();
@@ -464,7 +411,7 @@ void AliAnalysisTaskDirectPhotons::CalculateEfficiency(){
 void AliAnalysisTaskDirectPhotons::ProcessStackParticles(){
 
     Int_t stackNTracks = fMCStack->GetNtrack();
-    cout<<"n tracks stack"<<stackNTracks<<endl;
+    //cout<<"n tracks stack"<<stackNTracks<<endl;
 
     for (Int_t iStackTrack = 0; iStackTrack < stackNTracks; iStackTrack++){
 
@@ -496,33 +443,20 @@ void AliAnalysisTaskDirectPhotons::ProcessStackParticles(){
 
         if (pdgDaughterOne == 11 && pdgDaughterTwo == -11) {
 
-            //myParticle->daughterElectron = *daughterOne;
             myParticle->labelDaughterElectron= labelDaughterOne;
-
-            //myParticle->daughterPositron = *daughterTwo;
             myParticle->labelDaughterPositron= labelDaughterTwo;
-
-            //myParticle->motherPhoton = *particle;
-            myParticle->labelMotherPhoton= iStackTrack; //------------------------------------->é de fato istacktrack?
-
+            myParticle->labelMotherPhoton= iStackTrack; 
         }
 
         if (pdgDaughterTwo == 11 && pdgDaughterOne == -11) {
 
-            //myParticle->daughterElectron = daughterTwo;
             myParticle->labelDaughterElectron= labelDaughterTwo;
-
-            //myParticle->daughterPositron = daughterOne;
             myParticle->labelDaughterPositron= labelDaughterOne;
-
-            //myParticle->motherPhoton = particle;
             myParticle->labelMotherPhoton= iStackTrack;
 
         }
 
         ProcessStackInfos();
-
-        //ProcessDataEfficiency();
 
         delete myParticle;
 
@@ -573,10 +507,10 @@ void AliAnalysisTaskDirectPhotons::ProcessDataEfficiency(){
     TLorentzVector firstParticle(0,0,0,0), secondParticle(0,0,0,0), firstPhotonCandidate(0,0,0,0);
 
     Int_t nElectrons = fDataIsElectron->GetEntries();
-    cout<<"n electrons"<<nElectrons<<endl;
+    //cout<<"n electrons"<<nElectrons<<endl;
 
     Int_t nPositrons = fDataIsPositron->GetEntries();
-    cout<<"n positrons"<<nPositrons<<endl;
+    //cout<<"n positrons"<<nPositrons<<endl;
 
     for (Int_t iElectrons=0; iElectrons < nElectrons; iElectrons++){
 
@@ -588,8 +522,6 @@ void AliAnalysisTaskDirectPhotons::ProcessDataEfficiency(){
 
         aliExternal1 -> CopyFromVTrack(electronTrack);
         if(!aliExternal1) continue;
-
-        //cout<<"electronlabel"<<electronTrack->GetLabel()<<endl;
 
         for(Int_t iPositrons = 0; iPositrons < nPositrons; iPositrons++){
 
@@ -604,8 +536,6 @@ void AliAnalysisTaskDirectPhotons::ProcessDataEfficiency(){
             aliExternal2 -> CopyFromVTrack(positronTrack);
             if(!aliExternal2) continue;
 
-            //cout<<"positronlabel"<<positronTrack->GetLabel()<<endl;
-
             //if(positronTrack->GetMother(0) != electronTrack->GetMother(0)) continue; ----------->NAO POSSO PQ NAO EH TPARTICLE
 
             //if(positronTrack->GetLabel() != electronTrack->GetLabel()+1 || electronTrack->GetLabel() != positronTrack->GetLabel()+1) continue;
@@ -615,9 +545,6 @@ void AliAnalysisTaskDirectPhotons::ProcessDataEfficiency(){
 
             aliExternal1->GetPxPyPzAt(x1, magField, p1);
             aliExternal2->GetPxPyPzAt(x2, magField, p2);
-
-            /*E1= electronTrack->E();
-            E2= positronTrack->E();*/
 
             E1= TMath::Sqrt(p1[0]*p1[0]+p1[1]*p1[1]+p1[2]*p1[2]+elecMass*elecMass);
             E2= TMath::Sqrt(p2[0]*p2[0]+p2[1]*p2[1]+p2[2]*p2[2]+elecMass*elecMass);
@@ -661,15 +588,11 @@ void AliAnalysisTaskDirectPhotons::ProcessAllTracks(){
 
         if (track->Charge() < 0){
             fHistPtNegativeParticles->Fill(track->Pt());
-            //fNegativeParticles->Add(track);
         }
 
         if (track->Charge() > 0){
             fHistPtPositiveParticles->Fill(track->Pt());
-            //fPositiveParticles->Add(track);
         }
-
-        //if (track->Charge() == 0) fNeutralParticles->Add(track);
 
         pSigmaTPC[iTracks] =fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         if(!&pSigmaTPC[iTracks]) continue;
@@ -706,20 +629,12 @@ void AliAnalysisTaskDirectPhotons::FindGammaCandidates(){
 
     nPhotonCandidates = fPhotonCandidateFirst->GetEntries();
 
-    cout<<"TAMANHO FNCUTS: "<< fnCuts <<endl;
-
-    //for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-
-        //cout<<"ICUT"<<iCut<<endl;
-
     for (Int_t iPhotons=0; iPhotons < nPhotonCandidates; iPhotons++){
 
         AliAODConversionPhoton* firstPhotonCandidate = static_cast<AliAODConversionPhoton*>(fPhotonCandidateFirst->At(iPhotons));
         if (!firstPhotonCandidate) continue;
 
         if(!(AliConversionPhotonCuts*)fConversionCuts->PhotonIsSelected(firstPhotonCandidate,fEvent)) continue;
-
-        cout<<"dentro loop fotons"<<endl;
 
         photonMass = firstPhotonCandidate->M();
         photonPt = firstPhotonCandidate->Pt();
@@ -734,117 +649,12 @@ void AliAnalysisTaskDirectPhotons::FindGammaCandidates(){
 
     }
 
-    //}
-
-    /*Double_t maxd=2, E1=-999., E2=-999., photonMass=-999., elecMass=0.511e-3, x1=-999., x2=-999., *dz=0, *cov=0;
-
-    Short_t charge1=0, charge2=0;
-
-    if(fESDEvent){
-
-    TLorentzVector firstParticle(0,0,0,0), secondParticle(0,0,0,0), firstPhotonCandidate(0,0,0,0);
-
-    for (Int_t iTracks = 0; iTracks < nTracks-1 ; iTracks++){
-
-        AliESDtrack* esdTrack1 = (AliESDtrack*)fESDEvent->GetTrack(iTracks);
-        if (!esdTrack1) continue;
-        if (!fTrackCuts->AcceptTrack(esdTrack1)) continue;
-
-        AliVTrack* track1 = dynamic_cast<AliVTrack*>(esdTrack1);
-        if (!track1) continue;
-
-        AliExternalTrackParam* aliExternal1 = new AliExternalTrackParam();
-
-        charge1 = track1->Charge();
-
-        aliExternal1 -> CopyFromVTrack(track1);
-
-        for (Int_t jTracks = iTracks+1; jTracks < nTracks ; jTracks++){
-
-            AliESDtrack* esdTrack2 = (AliESDtrack*)fESDEvent->GetTrack(jTracks);
-            if (!esdTrack2) continue;
-            if (!fTrackCuts->AcceptTrack(esdTrack2)) continue;
-
-            AliVTrack* track2 = dynamic_cast<AliVTrack*>(esdTrack2);
-            if (!track2) continue;
-
-            AliExternalTrackParam* aliExternal2 = new AliExternalTrackParam();
-
-            charge2 = track2->Charge();
-
-            aliExternal2 -> CopyFromVTrack(track2);
-
-            if (pSigmaTPC[iTracks]>-2.0 && pSigmaTPC[jTracks]>-2.0 && pSigmaTPC[iTracks]<3.0 && pSigmaTPC[jTracks]<3.0){
-
-                if (track1 == track2) continue;
-
-                Double_t dca = aliExternal1->GetDCA(aliExternal2, magField, x1, x2);
-                if (dca > 2.5) continue; //------>MUDEI PARA 2.5
-
-                //if (aliExternal1->PropagateToDCA(fPrimVertex, magField, maxd, dz, cov)) continue;
-
-                Double_t* p1 = new Double_t[3];
-                Double_t* p2 = new Double_t[3];
-
-                aliExternal1->GetPxPyPzAt(x1, magField, p1);
-                aliExternal2->GetPxPyPzAt(x2, magField, p2);
-
-                E1= TMath::Sqrt(p1[0]*p1[0]+p1[1]*p1[1]+p1[2]*p1[2]+elecMass*elecMass);
-                E2= TMath::Sqrt(p2[0]*p2[0]+p2[1]*p2[1]+p2[2]*p2[2]+elecMass*elecMass);
-
-                firstParticle.SetPxPyPzE(p1[0],p1[1],p1[2],E1);
-                secondParticle.SetPxPyPzE(p2[0],p2[1],p2[2],E2);
-
-                firstPhotonCandidate = firstParticle + secondParticle;
-
-                photonMass = firstPhotonCandidate->M();
-                if (photonMass > 0.06) continue; //------------->CORTE NO LUGAR CORRETO?
-
-                //FindSecVertexPosition(&firstPhotonCandidate);//------------------------------------>VERIFICAR
-
-                if(charge1*charge2<0) {
-
-                    TLorentzVector* photonCandidate = static_cast<TLorentzVector*>(fPhotonCandidateFirst->New(idx++));
-
-                    //cout<<"INDICE: "<<idx<<endl;
-
-                    *photonCandidate = firstPhotonCandidate;
-
-                    fHistInvMassPosElec->Fill(photonMass);
-
-                }
-
-                if (charge1*charge2>0){
-                    fHistInvMassPosElecBack->Fill(photonMass);
-
-                }
-
-                /*delete[] p1;
-                delete[] p2;
-
-            }
-
-            delete aliExternal2;
-        }
-
-        delete aliExternal1;
-
-    }
-
-    }*/
-
 }
 
 //--------------------------------------------------------------------------------------------------
 void AliAnalysisTaskDirectPhotons::FindNeutralMesonCandidates(){
 
-    cout<<"NUMERO CANDIDATOS A FOTON: "<<fPhotonCandidateFirst->GetEntries()<<endl;
-    cout<<"NUMERO CANDIDATOS A FOTON APOS CORTE: "<<fGoodPhotonCandidates->GetEntries()<<endl;
-    cout<<"NUMERO DE TRACKS: "<<nTracks<<endl;
-
     Double_t neutralMesonMass=-999., neutralMesonPt=-999.;
-
-    //TLorentzVector firstPhotonCandidate(0,0,0,0), secondPhotonCandidate(0,0,0,0), neutralMesonCandidate(0,0,0,0);
 
     for (Int_t iPhotonEntries=0; iPhotonEntries < nPhotonCandidates-1; iPhotonEntries++){
 
@@ -867,8 +677,6 @@ void AliAnalysisTaskDirectPhotons::FindNeutralMesonCandidates(){
 
             AliAODConversionMother* neutralMesonCandidate = new AliAODConversionMother(firstPhotonCandidate,secondPhotonCandidate);
 
-            //if(((AliConversionMesonCuts*)fNeutralPionMesonCutArray->MesonIsSelected(neutralMesonCandidate,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-
             neutralMesonMass = neutralMesonCandidate->M();
             neutralMesonPt = neutralMesonCandidate->Pt();
 
@@ -877,8 +685,6 @@ void AliAnalysisTaskDirectPhotons::FindNeutralMesonCandidates(){
             fHistInvMassNeutralMeson->Fill(neutralMesonMass, neutralMesonPt);
 
             delete neutralMesonCandidate;
-
-           // }
 
         }
 
@@ -890,7 +696,6 @@ void AliAnalysisTaskDirectPhotons::FindNeutralMesonCandidates(){
 void AliAnalysisTaskDirectPhotons::FindTrueNeutralMesonCandidates(){
 
     Int_t stackNTracks = fMCStack->GetNtrack();
-    cout<<"n tracks stack"<<stackNTracks<<endl;
 
     Double_t particlePt = -999.;
 
@@ -983,8 +788,6 @@ void AliAnalysisTaskDirectPhotons::FindSecVertexPosition(TLorentzVector *firstPh
 
     dPointToSecVertexLine = ((PSecPPrim.Cross(v)).Dot((PSecPPrim.Cross(v))))/(v.Dot(v));
     fHistDistanceToPrimVertex->Fill(dPointToSecVertexLine);
-    //cout<< dPointToSecVertexLine << endl;
-
 
 }
 

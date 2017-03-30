@@ -1,12 +1,6 @@
 #ifndef AliAnalysisTaskDirectPhotons_h
 #define AliAnalysisTaskDirectPhotons_h
 
-/*#include <iostream>
-#include <vector>
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisManager.h"
-#include "Math/Vector3D.h"*/
-
 class TH1;
 class TH1F;
 class TH1D;
@@ -82,33 +76,18 @@ public:
                         fEventCutArray = CutArray;
                         }
     void                SetConversionCutList(TList *CutArray){ fGammaCutArray = CutArray;}
-    void                SetNeutralPionCutList(TList *CutArray){ fNeutralPionMesonCutArray = CutArray; }
-    //void                SetV0ReaderName(TString name){fV0ReaderName=name; return;}
-
 
 private:
 
     //all lists
     TList*                         fOutputList;
-    /*TObjArray*                  fNegativeParticles;
-    TObjArray*                  fPositiveParticles;
-    TObjArray*                  fNeutralParticles;
-    TObjArray*                  fTrueElectrons;
-    TObjArray*                  fTruePositrons;*/
     TClonesArray*                  fDataIsElectron;
     TClonesArray*                  fDataIsPositron;
     TClonesArray*                  fPhotonCandidateFirst;
     TClonesArray*                  fGoodPhotonCandidates;
     TList*                         fEventCutArray;
-    TList* 	       				fGammaCutArray;
-    TList* 	       				fNeutralPionMesonCutArray;
-
-
-//    TClonesArray*               fParticlesArray;
-//    TList*                  fNumSigmasTPCTrack;
-//    TObjArray*                  fMyParticles;
-//    TList*                  fLabelDaughterElectron;
-//    TList*                  fLabelDaughterPositron;
+    TList* 	       		   fGammaCutArray;
+    TList* 	       		   fNeutralPionMesonCutArray;
 
 
     Float_t*               pSigmaTPC;
@@ -121,8 +100,6 @@ private:
     Double_t               dPointToSecVertexLine;
     Int_t                  nTracks;
     Bool_t                 fisMC;
-//    Int_t                  stackNTracksNoCut;
-//    Int_t                  stackNTracks;
     Int_t                  nPhotonCandidates;
 
     AliVEvent*              fEvent;
@@ -130,7 +107,6 @@ private:
     AliESDEvent*            fESDEvent;
     AliAODEvent*            fAODEvent;
     AliESDtrackCuts*        fTrackCuts;
-    //TString                 fV0ReaderName;
     AliV0ReaderV1*          fV0Reader;
     AliMCEvent*             fMCEvent;
     AliStack*               fMCStack;
@@ -186,13 +162,8 @@ class AliMyTParticleMotherAndDaughter : public TObject
 
     public:
 
-    //TParticle* daughterElectron;
     Int_t labelDaughterElectron;
-
-    //TParticle* daughterPositron;
     Int_t labelDaughterPositron;
-	
-    //TParticle* motherPhoton;
     Int_t labelMotherPhoton;
 
     ClassDef(AliMyTParticleMotherAndDaughter,1); //primeira versão, mudar a cada atualização
