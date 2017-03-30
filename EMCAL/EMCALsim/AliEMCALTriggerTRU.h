@@ -30,6 +30,8 @@ public:
 	virtual void   SaveRegionADC(Int_t iTRU, Int_t iEvent);
 	virtual void   Reset();
 	virtual void   ShowFastOR(Int_t timewindow, Int_t chan = -1);
+// MHO
+	virtual void   GetL0Region(const int time, Int_t ** arr);
 	virtual void   GetL0Region(const int time, Int_t arr[][4]);
 	virtual Int_t  GetL0Time() const {return fL0Time;}
 	

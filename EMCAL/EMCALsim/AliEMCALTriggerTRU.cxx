@@ -83,9 +83,12 @@ fL0Time(0)
 		SetPatchSize( size );	
 	}	
 	
-	for (Int_t ietam=0;ietam<24;ietam++)
+//	for (Int_t ietam=0;ietam<24;ietam++)
+//	{
+//		for (Int_t iphim=0;iphim<4;iphim++)
+/*	for (Int_t ietam=0;ietam<rSize.X();ietam++)
 	{
-		for (Int_t iphim=0;iphim<4;iphim++)
+		for (Int_t iphim=0;iphim<rSize.Y();iphim++)
 		{
 			// idx: 0..95 since iphim: 0..11 ietam: 0..23
 			Int_t idx = ( !mapType ) ? ( 3 - iphim ) + ietam * 4 : iphim + (23 - ietam) * 4;	
@@ -93,7 +96,30 @@ fL0Time(0)
 			// Build a matrix used to get TRU digit id (ADC channel) from (eta,phi)|SM
 			fMap[ietam][iphim] = idx; // [0..11][0..3] namely [eta][phi] in SM
 		}
+	}*/
+	Int_t nPhi = rSize.X();
+	Int_t nEta = rSize.Y();
+
+	for (Int_t iphim=0;iphim<nPhi;iphim++)
+	{
+		for (Int_t ietam=0;ietam<nEta;ietam++)
+		{
+			// idx: 0..95 since iphim: 0..11 ietam: 0..23
+		//	Int_t idx = ( !mapType ) ? ( 3 - iphim ) + ietam * 4 : iphim + (23 - ietam) * 4;	
+		
+
+			// MHO: this is a guess:  //FIXME check with TriggerMapping
+			Int_t idx = ( !mapType ) ? ( nPhi - 1 - iphim ) + ietam * nPhi : iphim + (nEta - 1 - ietam) * nPhi;	
+	//		printf("MHO withinTRU(iPhi = %d, iEta = %d) -> iADC = %d\n ",iphim,ietam,idx);
+	
+			// Build a matrix used to get TRU digit id (ADC channel) from (eta,phi)|SM
+	//		fMap[ietam][iphim] = idx; // [0..11][0..3] namely [eta][phi] in SM
+			fMap[iphim][ietam] = idx; // [0..3][0..11] or [0..11][0..8 namely [phi][eta] in SM
+		}
 	}
+
+
+
 }
 
 //________________
@@ -492,6 +518,29 @@ void AliEMCALTriggerTRU::GetL0Region(const int time, Int_t arr[][4])
 	}
 }
 
+
+void AliEMCALTriggerTRU::GetL0Region(const int time, Int_t ** arr)
+{
+	Int_t r0 = time - fDCSConfig->GetRLBKSTU();
+	
+	if (r0 < 0) 
+	{
+		AliError(Form("TRU buffer not accessible! time: %d rollback: %d", time, fDCSConfig->GetRLBKSTU()));
+		return;
+	}
+	
+	for (Int_t i = 0; i < fRegionSize->X(); i++) 
+	{
+		for (Int_t j = 0; j < fRegionSize->Y(); j++) 
+		{
+			for (Int_t k = r0; k < r0 + kTimeWindowSize; k++)
+			{
+				arr[i][j] += fADC[fMap[i][j]][k];
+			}
+		}
+	}
+}
+
 //________________
 void AliEMCALTriggerTRU::SaveRegionADC(Int_t iTRU, Int_t iEvent)
 {
@@ -499,13 +548,17 @@ void AliEMCALTriggerTRU::SaveRegionADC(Int_t iTRU, Int_t iEvent)
 	//
 	gSystem->Exec(Form("mkdir -p Event%d",iEvent));
 	
+	Int_t nphi    = Int_t(fRegionSize->X());
+	Int_t neta    = Int_t(fRegionSize->Y());
+
 	ofstream outfile(Form("Event%d/data_TRU%d.txt",iEvent,iTRU),ios_base::trunc);
-	
+	// FIXME update for different shapes
 	for (Int_t i=0;i<96;i++) 
 	{
-		Int_t ietam = 23 - i/4;
-	
-		Int_t iphim =  3 - i%4;
+//		Int_t ietam = 23 - i/4;
+//		Int_t iphim =  3 - i%4;
+		Int_t ietam = neta - 1 - i/nphi;
+		Int_t iphim =  nphi - 1 - i%nphi;
 		
 		outfile << fRegion[ietam][iphim] << endl;
 	}

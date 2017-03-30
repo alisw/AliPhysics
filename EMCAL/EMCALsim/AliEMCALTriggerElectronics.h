@@ -3,6 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+
 /*
 EMCal trigger electronics manager L0/L1
 can handle both simulated digits and raw data
@@ -39,11 +40,21 @@ private:
 
 	AliEMCALTriggerElectronics(const AliEMCALTriggerElectronics& other);            // Not implemented
 	AliEMCALTriggerElectronics& operator=(const AliEMCALTriggerElectronics& other); // Not implemented
-
-	TClonesArray*        fTRU; // 32 TRU
-	AliEMCALTriggerSTU*  fSTU; //  1 STU
-	AliEMCALGeometry     *fGeometry; // EMCal geometry
+//MHO
+	Int_t                 fNTRU;  // 
+	TClonesArray*         fTRU; // 32 TRU
+	AliEMCALTriggerSTU*   fSTU; //  1 STU
+	AliEMCALGeometry      *fGeometry; // EMCal geometry
 	
+	Int_t                fEMCALFw;  // EMCAL STU firmware version
+	Int_t                fDCALFw;   //  DCAL STU firmware version
+	TClonesArray*        fTRUDCAL;  // 14 TRU
+	AliEMCALTriggerSTU*  fSTUDCAL;  // STU for DCAL
+
+
+
+
+
   ClassDef(AliEMCALTriggerElectronics,1)
 };
 

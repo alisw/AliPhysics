@@ -101,6 +101,8 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fGeom)
   {
     Int_t runNumber = man->GetRun();
+		//MHO
+		AliWarning(Form("Finding EMCAL Geometry from run number %d.",runNumber));
     fGeom =  AliEMCALGeometry::GetInstanceFromRunNumber(runNumber);
   }
   
@@ -432,7 +434,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Note: fgTriggerProcessor reset done at the end of this method
   
   // TO DO: Run2 emulation
-  if(esd->GetRunNumber() < 200000) // Enable trigger emulation for Run1
+//MHO  if(esd->GetRunNumber() < 200000) // Enable trigger emulation for Run1
     fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, (AliEMCALTriggerData*)fgTriggerData->At(0));
   
   // Fill ESD
