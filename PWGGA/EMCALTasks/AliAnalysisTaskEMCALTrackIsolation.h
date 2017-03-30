@@ -71,6 +71,7 @@ public:
   void         SetQA (Bool_t QA)                              { fQA = QA;}
   void         SetMC (Bool_t MC)                              { fIsMC = MC;}
   void         SetUSEofTPC (Bool_t TPC)                       { fTPC4Iso = TPC;}
+  void         SetLTAnalysis (Bool_t LT)                      { fisLTAnalysis = LT;}
   void         SetRejectEventWithoutTracks(Bool_t revwotr)    { fRejectionEventWithoutTracks = revwotr;}
   void         SetAnalysispPb(Bool_t ana)                     { fAnalysispPb = ana;}
   void         SetTriggerLevel1(Int_t L)                      { fTriggerLevel1 = L;}
@@ -98,6 +99,7 @@ protected:
   Double_t*    GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
   void         ExecOnce();
   Bool_t       Run();
+  Bool_t       SelectCandidate(AliAODTrack* );
   void         AnalyzeMC();
   void         LookforParticle(Int_t, Double_t, Double_t, Double_t, Double_t);
   void         IsolationAndUEinEMCAL(AliAODTrack *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index);
@@ -130,6 +132,7 @@ protected:
   Int_t               fNDimensions;                    //!<!number of Dimensions for the THnSPARSE Reconstruction
   Int_t               fMCDimensions;                   //!<!number of Dimensions for the THnSPARSE Truth
   Int_t               fMCQAdim;                        //!<!number of Dimensions for the THnSPARSE Mix
+  Bool_t              fisLTAnalysis;                   // Flag to pass from Leading Clusters Analysis to a NC One
   Bool_t              fRejectionEventWithoutTracks;    // able/disable rejction of events without tracks
   Bool_t              fAnalysispPb;                    // able/disable the pPb analysis facilities
   Int_t               fTriggerLevel1;                  // enable to "simulate" the L1 trigger in MC: 1 = EG1 and 2 = EG2
@@ -190,7 +193,7 @@ private:
   AliAnalysisTaskEMCALTrackIsolation&operator=(const AliAnalysisTaskEMCALTrackIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTrackIsolation, 1);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALTrackIsolation, 2);    //EMCAL Neutrals base analysis task
                                                         /// \endcond
 };
 #endif
