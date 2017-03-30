@@ -26,6 +26,7 @@ class AliVHeader : public TNamed {
   virtual UInt_t    GetPeriodNumber()       const = 0;
   virtual UInt_t    GetTimeStamp()          const = 0;
   virtual ULong64_t GetTriggerMask()        const = 0;
+  virtual ULong64_t GetTriggerMaskNext50()  const = 0;
   virtual UChar_t   GetTriggerCluster()     const = 0;
   virtual UInt_t    GetEventType()          const = 0;
   virtual TList*    GetCocktailHeaders()    {return 0;}
