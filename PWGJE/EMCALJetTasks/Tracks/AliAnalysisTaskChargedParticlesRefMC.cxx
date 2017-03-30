@@ -439,7 +439,7 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
 
 
 void AliAnalysisTaskChargedParticlesRefMC::InitializeTrackCuts(TString cutname, bool isAOD){
-  SetTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
+  SetEMCALTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
 }
 
 
@@ -523,7 +523,7 @@ AliAnalysisTaskChargedParticlesRefMC *AliAnalysisTaskChargedParticlesRefMC::AddT
   task->SetOfflineTriggerSelection(
       EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
   );
-  task->SetTrackSelection(
+  task->SetEMCALTrackSelection(
       EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
           cutname,
           mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
