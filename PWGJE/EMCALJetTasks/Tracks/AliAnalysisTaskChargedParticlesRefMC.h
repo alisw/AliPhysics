@@ -102,11 +102,12 @@ public:
   void  SetAnalysisUtil(AliAnalysisUtils *util) { fAliAnalysisUtils = util; }
 
   /**
-   * @brief Set the track selection
-   * @param[in] cutname Name of the track cuts
-   * @param[in] isAOD check whether we run on ESDs or AODs
+   * @brief Set the virtual track selection.
+   *
+   * Assumes that the track selection object is already fully configured
+   * @param[in] sel Virtual track selection
    */
-  void SetTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
+  void SetEMCALTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
 
   /**
    * Define kinematic cut to particles and tracks on \f$ \eta \f$ in the lab frame. By default
