@@ -118,7 +118,7 @@ using std::endl;
 ClassImp(AliAnalysisTaskStrangenessVsMultiplicityMCRun2)
 
 AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMultiplicityMCRun2()
-    : AliAnalysisTaskSE(), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0), fRand(0),
+    : AliAnalysisTaskSE(), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
@@ -153,6 +153,11 @@ fTrigType(AliVEvent::kMB),
 //---> Variables for fTreeEvent
 fCentrality(0),
 fMVPileupFlag(kFALSE),
+fNTOFClusters(-1),
+fNTOFMatches(-1),
+fNTracksITSsa2010(-1),
+fNTracksGlobal2015(-1),
+fNTracksGlobal2015TriggerPP(-1),
 
 //---> Variables for fTreeV0
 fTreeVariableChi2V0(0),
@@ -196,6 +201,14 @@ fTreeVariablePosDCAz(-1),
 fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
 fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+
+fTreeVariableNegTOFExpTDiff(99999),
+fTreeVariablePosTOFExpTDiff(99999),
+//fTreeVariableNTOFClusters(-1),
+//fTreeVariableNTOFMatches(-1),
+//fTreeVariableNTracksITSsa2010(-1),
+//fTreeVariableNTracksGlobal2015(-1),
+//fTreeVariableNTracksGlobal2015TriggerPP(-1),
 
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
@@ -348,7 +361,7 @@ fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
 }
 
 AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMultiplicityMCRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
-    : AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0), fRand(0),
+    : AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
@@ -362,6 +375,7 @@ fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ), 
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
+fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ), 
 
 //---> Flags controlling Cascade TTree output
@@ -383,6 +397,11 @@ fTrigType(AliVEvent::kMB),
 //---> Variables for fTreeEvent
 fCentrality(0),
 fMVPileupFlag(kFALSE),
+fNTOFClusters(-1),
+fNTOFMatches(-1),
+fNTracksITSsa2010(-1),
+fNTracksGlobal2015(-1),
+fNTracksGlobal2015TriggerPP(-1),
 
 //---> Variables for fTreeV0
 fTreeVariableChi2V0(0),
@@ -426,6 +445,14 @@ fTreeVariablePosDCAz(-1),
 fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
 fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+
+fTreeVariableNegTOFExpTDiff(99999),
+fTreeVariablePosTOFExpTDiff(99999),
+//fTreeVariableNTOFClusters(-1),
+//fTreeVariableNTOFMatches(-1),
+//fTreeVariableNTracksITSsa2010(-1),
+//fTreeVariableNTracksGlobal2015(-1),
+//fTreeVariableNTracksGlobal2015TriggerPP(-1),
 
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
@@ -611,8 +638,12 @@ fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
     
     //Special Debug Options (more to be added as needed)
     // A - Study Wrong PID for tracking bug
+    // B - Study invariant mass *B*ump
+    // C - Study OOB pileup in pp 2016 data
     if ( lExtraOptions.Contains("A") ) fkDebugWrongPIDForTracking = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugBump                = kTRUE;
+    if ( lExtraOptions.Contains("C") ) fkDebugOOBPileup           = kTRUE;
+
 }
 
 AliAnalysisTaskStrangenessVsMultiplicityMCRun2::~AliAnalysisTaskStrangenessVsMultiplicityMCRun2()
@@ -667,6 +698,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         //Branch Definitions
         fTreeEvent->Branch("fCentrality",&fCentrality,"fCentrality/F");
         fTreeEvent->Branch("fMVPileupFlag",&fMVPileupFlag,"fMVPileupFlag/O");
+        //
+        if ( fkDebugOOBPileup ){
+            fTreeEvent->Branch("fNTOFClusters",&fNTOFClusters,"fNTOFClusters/I");
+            fTreeEvent->Branch("fNTOFMatches",&fNTOFMatches,"fNTOFMatches/I");
+            fTreeEvent->Branch("fNTracksITSsa2010",&fNTracksITSsa2010,"fNTracksITSsa2010/I");
+            fTreeEvent->Branch("fNTracksGlobal2015",&fNTracksGlobal2015,"fNTracksGlobal2015/I");
+            fTreeEvent->Branch("fNTracksGlobal2015TriggerPP",&fNTracksGlobal2015TriggerPP,"fNTracksGlobal2015TriggerPP/I");
+        }
     }
     
     //------------------------------------------------
@@ -719,6 +758,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
             fTreeV0->Branch("fTreeVariableNegDCAz",&fTreeVariableNegDCAz,"fTreeVariableNegDCAz/F");
             fTreeV0->Branch("fTreeVariablePosDCAz",&fTreeVariablePosDCAz,"fTreeVariablePosDCAz/F");
+        }
+        if ( fkDebugOOBPileup ) {
+            fTreeV0->Branch("fTreeVariableNegTOFExpTDiff",&fTreeVariableNegTOFExpTDiff,"fTreeVariableNegTOFExpTDiff/F");
+            fTreeV0->Branch("fTreeVariablePosTOFExpTDiff",&fTreeVariablePosTOFExpTDiff,"fTreeVariablePosTOFExpTDiff/F");
+            //fTreeV0->Branch("fTreeVariableNTOFClusters",&fTreeVariableNTOFClusters,"fTreeVariableNTOFClusters/I");
+            //fTreeV0->Branch("fTreeVariableNTOFMatches",&fTreeVariableNTOFMatches,"fTreeVariableNTOFMatches/I");
+            //fTreeV0->Branch("fTreeVariableNTracksITSsa2010",&fTreeVariableNTracksITSsa2010,"fTreeVariableNTracksITSsa2010/I");
+            //fTreeV0->Branch("fTreeVariableNTracksGlobal2015",&fTreeVariableNTracksGlobal2015,"fTreeVariableNTracksGlobal2015/I");
+            //fTreeV0->Branch("fTreeVariableNTracksGlobal2015TriggerPP",&fTreeVariableNTracksGlobal2015TriggerPP,"fTreeVariableNTracksGlobal2015TriggerPP/I");
         }
         //-----------MC Exclusive info--------------------
         fTreeV0->Branch("fTreeVariablePtMother",&fTreeVariablePtMother,"fTreeVariablePtMother/F");
@@ -901,6 +949,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         // if seed is 0 (default value) a TUUID is generated and
         // used to fill the first 8 integers of the seed array.
         fRand->SetSeed(0);
+    }
+
+    // OOB Pileup in pp 2016
+    if( !fESDtrackCutsGlobal2015 && fkDebugOOBPileup ) {
+        fESDtrackCutsGlobal2015 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kTRUE,kFALSE);
+        //Initial set of cuts - to be adjusted
+        fESDtrackCutsGlobal2015->SetPtRange(0.15);
+        fESDtrackCutsGlobal2015->SetEtaRange(-1.0, 1.0);
+    }
+    if( !fESDtrackCutsITSsa2010 && fkDebugOOBPileup ) {
+        fESDtrackCutsITSsa2010 = AliESDtrackCuts::GetStandardITSSATrackCuts2010();
     }
 
     //------------------------------------------------
@@ -1112,6 +1171,29 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
      ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
      ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
+
+    //Save info for pileup study (high multiplicity triggers pp 13 TeV - 2016 data)
+    if( fkDebugOOBPileup ) {
+        fNTOFClusters      = lESDevent->GetESDTOFClusters()->GetEntriesFast();
+        fNTOFMatches       = lESDevent->GetESDTOFMatches()->GetEntriesFast();
+        fNTracksITSsa2010  = 0;
+        fNTracksGlobal2015 = 0;
+        fNTracksGlobal2015TriggerPP = 0;
+        //Count tracks with various selections
+        for(Long_t itrack = 0; itrack<lESDevent->GetNumberOfTracks(); itrack++) {
+            AliVTrack *track = lESDevent -> GetVTrack( itrack );
+            if( !track ) continue;
+            //Only ITSsa tracks
+            if( fESDtrackCutsITSsa2010->AcceptVTrack(track) ) fNTracksITSsa2010++;
+            if( !fESDtrackCutsGlobal2015->AcceptVTrack(track) ) continue;
+            //Only for accepted tracks
+            fNTracksGlobal2015++;
+            //Count accepted + TOF time window (info from Alberica)
+            //Warning: 12.5 is appropriate for pp (for Pb-Pb use 30)
+            if( TMath::Abs( track->GetTOFExpTDiff() ) < 12.5 ) fNTracksGlobal2015TriggerPP++;
+        }
+    }
+
     
     
     //Fill centrality histogram
@@ -1423,6 +1505,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
 
         //Copy Multiplicity information
         fTreeVariableCentrality = fCentrality;
+
+        //TOF info for pileup studies
+        if( fkDebugOOBPileup ) {
+            fTreeVariableNegTOFExpTDiff      = nTrack->GetTOFExpTDiff(lESDevent->GetMagneticField());
+            fTreeVariablePosTOFExpTDiff      = pTrack->GetTOFExpTDiff(lESDevent->GetMagneticField());
+            ////Copy TOF information for this event
+            //fTreeVariableNTOFClusters               = fNTOFClusters;
+            //fTreeVariableNTOFMatches                = fNTOFMatches;
+            //fTreeVariableNTracksITSsa2010           = fNTracksITSsa2010;
+            //fTreeVariableNTracksGlobal2015          = fNTracksGlobal2015;
+            //fTreeVariableNTracksGlobal2015TriggerPP = fNTracksGlobal2015TriggerPP;
+        }
 
         //===============================================
         // V0 Monte Carlo Association starts here

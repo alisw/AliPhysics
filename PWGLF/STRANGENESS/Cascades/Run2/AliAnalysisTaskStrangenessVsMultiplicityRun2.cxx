@@ -205,15 +205,11 @@ fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
-fTreeVariableNegTOFSignal(99999),
-fTreeVariablePosTOFSignal(99999),
-fTreeVariableNegTOFBunchCrossing(99999),
-fTreeVariablePosTOFBunchCrossing(99999),
-fTreeVariableNTOFClusters(-1),
-fTreeVariableNTOFMatches(-1),
-fTreeVariableNTracksITSsa2010(-1),
-fTreeVariableNTracksGlobal2015(-1),
-fTreeVariableNTracksGlobal2015TriggerPP(-1),
+//fTreeVariableNTOFClusters(-1),
+//fTreeVariableNTOFMatches(-1),
+//fTreeVariableNTracksITSsa2010(-1),
+//fTreeVariableNTracksGlobal2015(-1),
+//fTreeVariableNTracksGlobal2015TriggerPP(-1),
 
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
@@ -394,15 +390,11 @@ fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
-fTreeVariableNegTOFSignal(99999),
-fTreeVariablePosTOFSignal(99999),
-fTreeVariableNegTOFBunchCrossing(99999),
-fTreeVariablePosTOFBunchCrossing(99999),
-fTreeVariableNTOFClusters(-1),
-fTreeVariableNTOFMatches(-1),
-fTreeVariableNTracksITSsa2010(-1),
-fTreeVariableNTracksGlobal2015(-1),
-fTreeVariableNTracksGlobal2015TriggerPP(-1),
+//fTreeVariableNTOFClusters(-1),
+//fTreeVariableNTOFMatches(-1),
+//fTreeVariableNTracksITSsa2010(-1),
+//fTreeVariableNTracksGlobal2015(-1),
+//fTreeVariableNTracksGlobal2015TriggerPP(-1),
 
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
@@ -652,15 +644,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         if ( fkDebugOOBPileup ) {
             fTreeV0->Branch("fTreeVariableNegTOFExpTDiff",&fTreeVariableNegTOFExpTDiff,"fTreeVariableNegTOFExpTDiff/F");
             fTreeV0->Branch("fTreeVariablePosTOFExpTDiff",&fTreeVariablePosTOFExpTDiff,"fTreeVariablePosTOFExpTDiff/F");
-            fTreeV0->Branch("fTreeVariableNegTOFSignal",&fTreeVariableNegTOFSignal,"fTreeVariableNegTOFSignal/F");
-            fTreeV0->Branch("fTreeVariablePosTOFSignal",&fTreeVariablePosTOFSignal,"fTreeVariablePosTOFSignal/F");
-            fTreeV0->Branch("fTreeVariableNegTOFBunchCrossing",&fTreeVariableNegTOFBunchCrossing,"fTreeVariableNegTOFBunchCrossing/I");
-            fTreeV0->Branch("fTreeVariablePosTOFBunchCrossing",&fTreeVariablePosTOFBunchCrossing,"fTreeVariablePosTOFBunchCrossing/I");
-            fTreeV0->Branch("fTreeVariableNTOFClusters",&fTreeVariableNTOFClusters,"fTreeVariableNTOFClusters/I");
-            fTreeV0->Branch("fTreeVariableNTOFMatches",&fTreeVariableNTOFMatches,"fTreeVariableNTOFMatches/I");
-            fTreeV0->Branch("fTreeVariableNTracksITSsa2010",&fTreeVariableNTracksITSsa2010,"fTreeVariableNTracksITSsa2010/I");
-            fTreeV0->Branch("fTreeVariableNTracksGlobal2015",&fTreeVariableNTracksGlobal2015,"fTreeVariableNTracksGlobal2015/I");
-            fTreeV0->Branch("fTreeVariableNTracksGlobal2015TriggerPP",&fTreeVariableNTracksGlobal2015TriggerPP,"fTreeVariableNTracksGlobal2015TriggerPP/I");
+            //fTreeV0->Branch("fTreeVariableNTOFClusters",&fTreeVariableNTOFClusters,"fTreeVariableNTOFClusters/I");
+            //fTreeV0->Branch("fTreeVariableNTOFMatches",&fTreeVariableNTOFMatches,"fTreeVariableNTOFMatches/I");
+            //fTreeV0->Branch("fTreeVariableNTracksITSsa2010",&fTreeVariableNTracksITSsa2010,"fTreeVariableNTracksITSsa2010/I");
+            //fTreeV0->Branch("fTreeVariableNTracksGlobal2015",&fTreeVariableNTracksGlobal2015,"fTreeVariableNTracksGlobal2015/I");
+            //fTreeV0->Branch("fTreeVariableNTracksGlobal2015TriggerPP",&fTreeVariableNTracksGlobal2015TriggerPP,"fTreeVariableNTracksGlobal2015TriggerPP/I");
         }
         //------------------------------------------------
     }
@@ -1238,18 +1226,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
         //TOF info for pileup studies
         if( fkDebugOOBPileup ) {
-            fTreeVariableNegTOFSignal        = nTrack->GetTOFsignal();
-            fTreeVariablePosTOFSignal        = pTrack->GetTOFsignal();
             fTreeVariableNegTOFExpTDiff      = nTrack->GetTOFExpTDiff(lESDevent->GetMagneticField());
             fTreeVariablePosTOFExpTDiff      = pTrack->GetTOFExpTDiff(lESDevent->GetMagneticField());
-            fTreeVariableNegTOFBunchCrossing = nTrack->GetTOFBunchCrossing(lESDevent->GetMagneticField());
-            fTreeVariablePosTOFBunchCrossing = pTrack->GetTOFBunchCrossing(lESDevent->GetMagneticField());
-            //Copy TOF information for this event
-            fTreeVariableNTOFClusters               = fNTOFClusters;
-            fTreeVariableNTOFMatches                = fNTOFMatches;
-            fTreeVariableNTracksITSsa2010           = fNTracksITSsa2010;
-            fTreeVariableNTracksGlobal2015          = fNTracksGlobal2015;
-            fTreeVariableNTracksGlobal2015TriggerPP = fNTracksGlobal2015TriggerPP;
+            ////Copy TOF information for this event
+            //fTreeVariableNTOFClusters               = fNTOFClusters;
+            //fTreeVariableNTOFMatches                = fNTOFMatches;
+            //fTreeVariableNTracksITSsa2010           = fNTracksITSsa2010;
+            //fTreeVariableNTracksGlobal2015          = fNTracksGlobal2015;
+            //fTreeVariableNTracksGlobal2015TriggerPP = fNTracksGlobal2015TriggerPP;
         }
 
 
