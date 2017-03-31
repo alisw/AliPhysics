@@ -194,7 +194,7 @@ void AliReducedAnalysisTest::Process() {
     
       if(!IsTrackSelected(track)) continue;
       AliReducedVarManager::FillTrackInfo(track,fValues);
-      fHistosManager->FillHistClass("TrackQA_AllTracks_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      fHistosManager->FillHistClass("TrackQA_AllTracks", fValues);
     
       AliReducedTrackInfo* trackInfo = NULL;
       if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
@@ -219,25 +219,25 @@ void AliReducedAnalysisTest::Process() {
           fHistosManager->FillHistClass("TPCclusterMap", fValues);
         }
       }
-      if(track->IsGammaLeg()) fHistosManager->FillHistClass("TrackQA_GammaLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-      if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-      if(track->IsK0sLeg()) fHistosManager->FillHistClass("TrackQA_K0sLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-      if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      if(track->IsGammaLeg()) fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
+      if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg", fValues);
+      if(track->IsK0sLeg()) fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
+      if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg", fValues);
       if(track->IsLambdaLeg()) {
-        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-        else fHistosManager->FillHistClass("TrackQA_LambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg", fValues);
+        else fHistosManager->FillHistClass("TrackQA_LambdaNegLeg", fValues);
       }
       if(track->IsPureLambdaLeg()) {
-        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureLambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-        else fHistosManager->FillHistClass("TrackQA_PureLambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureLambdaPosLeg", fValues);
+        else fHistosManager->FillHistClass("TrackQA_PureLambdaNegLeg", fValues);
       }
       if(track->IsALambdaLeg()) {
-        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_ALambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-        else fHistosManager->FillHistClass("TrackQA_ALambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_ALambdaPosLeg", fValues);
+        else fHistosManager->FillHistClass("TrackQA_ALambdaNegLeg", fValues);
       }
       if(track->IsPureALambdaLeg()) {
-        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureALambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-        else fHistosManager->FillHistClass("TrackQA_PureALambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureALambdaPosLeg", fValues);
+        else fHistosManager->FillHistClass("TrackQA_PureALambdaNegLeg", fValues);
       }  
     }  // end loop over tracks
   }  // end if(trackList)  

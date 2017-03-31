@@ -208,6 +208,7 @@ class AliReducedVarManager : public TObject {
     kNTRDtracklets,          // number of TRD tracklets
     kNVtxContributors,    // number of vertex contributors
     kNVtxTPCContributors,  // number of TPC vertex contributors
+    kNVtxSPDContributors,  // number of SPD vertex contributors
     kVtxX,              // vtx X                      
     kVtxY,              // vtx Y                      
     kVtxZ,              // vtx Z 
@@ -215,6 +216,10 @@ class AliReducedVarManager : public TObject {
     kVtxYtpc,           // vtx Y from tpc
     kVtxZtpc,           // vtx Z from tpc
     kDeltaVtxZ,         // vtxZ - vtxZtpc
+    kVtxXspd,           // vtx X from spd
+    kVtxYspd,           // vtx Y from spd
+    kVtxZspd,           // vtx Z from spd
+    kDeltaVtxZspd,         // vtxZ - vtxZspd
     kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
     kNTracksTPCoutVsITSout=kNTracksPerTrackingStatus+kNTrackingStatus,   //  TPCout/ITSout
     kNTracksTRDoutVsITSout,                              //  TRDout/ITSout
