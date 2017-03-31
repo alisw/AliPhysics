@@ -796,11 +796,10 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
       if(decayLengthH3L > fMaxDecayLength || decayLengthH3L < fMinDecayLength) continue;
 
 
-      posD.SetXYZM(trackD->Px(),trackD->Py(),trackD->Pz(),1.87561);
+      posD.SetXYZM(trkD.Px(),trkD.Py(),trkD.Pz(),1.87561);
+      posP.SetXYZM(trkP.Px(),trkP.Py(),trkP.Pz(),0.93827);
+      negPi.SetXYZM(trkPi.Px(),trkPi.Py(),trkPi.Pz(),0.13957);
 
-      posP.SetXYZM(trackP->Px(),trackP->Py(),trackP->Pz(),0.93827);
-
-      negPi.SetXYZM(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz(),0.13957);
 
       Hypertriton=posD+posP+negPi;
 
@@ -830,9 +829,9 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
 
       //Angular correlation
 
-      d1.SetXYZ(trackD->Px(),trackD->Py(),trackD->Pz());
-      p1.SetXYZ(trackP->Px(),trackP->Py(),trackP->Pz());
-      pi1.SetXYZ(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz());
+      d1.SetXYZ(trkD.Px(),trkD.Py(),trkD.Pz());
+      p1.SetXYZ(trkP.Px(),trkP.Py(),trkP.Pz());
+      pi1.SetXYZ(trkPi.Px(),trkPi.Py(),trkPi.Pz());
 
       angle_dp = d1.Angle(p1);
       angle_dpi = d1.Angle(pi1);

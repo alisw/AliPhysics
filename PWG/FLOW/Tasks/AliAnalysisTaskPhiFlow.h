@@ -148,6 +148,7 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
         Bool_t                               plpMV(const AliAODEvent* aod);
         void                                 SetRemovePileup(Bool_t p) {fPileUp = p;}
+        void                                 SetMultESDTPCdif(Int_t m) {fMultESDTPCdif = m;}
         Short_t                              FindMinNSigma(Double_t nSpi, Double_t nSk, Double_t nSp) const;
         Bool_t                               GetDoubleCountingK(Double_t nSk, Short_t minNSigma) const;
 
@@ -235,6 +236,7 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         Bool_t               fUsePidResponse;//use pid response instead of aliflowbayesianpid object for pid
         AliPIDCombined*      fPIDCombined;   // pid combined
         Bool_t               fPileUp;        // cut pile up
+        Int_t                fMultESDTPCdif; // cut esd and barrel track divergence
         TF1                  *fLowCut;       //!
         TF1                  *fHighCut;      //!
         TF1                  *fMultTOFLowCut;//!
@@ -248,7 +250,7 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
         void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[], Double_t p = 0., Double_t pz = 0.) const;
 
-        ClassDef(AliAnalysisTaskPhiFlow, 9);
+        ClassDef(AliAnalysisTaskPhiFlow, 10);
 };
 
 #endif

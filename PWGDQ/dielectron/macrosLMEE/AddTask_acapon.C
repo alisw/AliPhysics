@@ -1,6 +1,5 @@
-AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", Bool_t SDDstatus = kFALSE, Bool_t getFromAlien = kFALSE, Bool_t = doMixing){
-
-
+AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", Bool_t SDDstatus = kFALSE, Bool_t getFromAlien = kFALSE, Bool_t doMixing = kTRUE){
+  
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {

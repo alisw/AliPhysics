@@ -75,6 +75,7 @@ fTPC4Iso(0),
 fNDimensions(0),
 fMCDimensions(0),
 fMCQAdim(0),
+fisLTAnalysis(kFALSE),
 fRejectionEventWithoutTracks(kTRUE),
 fAnalysispPb(kFALSE),
 fTriggerLevel1(0),
@@ -148,6 +149,7 @@ fTPC4Iso(0),
 fNDimensions(0),
 fMCDimensions(0),
 fMCQAdim(0),
+fisLTAnalysis(kFALSE),
 fRejectionEventWithoutTracks(kTRUE),
 fAnalysispPb(kFALSE),
 fTriggerLevel1(0),
@@ -457,6 +459,56 @@ void AliAnalysisTaskEMCALTrackIsolation::ExecOnce()
 }
 
   //______________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALTrackIsolation::SelectCandidate(AliAODTrack *aodToi)
+{
+  if(!(aodToi->IsHybridGlobalConstrainedGlobal())) return kFALSE;
+  
+    //Printf("Pt %f",aodToi->Pt());
+  if((aodToi->Pt())<0.2)
+    return kFALSE;
+  
+    //Printf("With ITSrefit? %s",((aodToi->GetStatus() & AliAODTrack::kITSrefit)==AliAODTrack::kITSrefit)?"yes":"no");
+  if((aodToi->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit)
+    return kFALSE;
+  
+  
+  Double_t frac = 0;
+  Float_t ncls  = Float_t(aodToi->GetTPCncls ());
+  Float_t nclsS = Float_t(aodToi->GetTPCnclsS());
+  if (  ncls> 0 )  frac =  nclsS / ncls ;
+  
+  if(frac > 0.4) return kFALSE;
+  
+  Int_t index=aodToi->GetID();
+  aodToi->P();
+  Double_t toiTOF = aodToi->GetTOFsignal();
+  fTrackTime->Fill(toiTOF);
+  
+  if(fQA)  FillQAHistograms(aodToi);
+  
+  if(!fIsMC){
+    if(toiTOF< 1.2e4 || toiTOF > 2.5e4)
+      return kFALSE;
+  }
+  fPtaftTime->Fill(aodToi->Pt());
+  
+  if(!CheckBoundaries(aodToi))
+    return kFALSE;
+  
+    //Printf("ok2!");
+  fPtaftFC->Fill(aodToi->Pt());
+  
+  if(fQA){
+    fTestIndexPt->Fill(aodToi->Pt(),index);
+  }
+    //Printf("ok3!");
+  if(aodToi->Pt()<5.) return kFALSE;
+  
+  fEtaPhiTrack->Fill(aodToi->Eta(),aodToi->Phi());
+  
+  return kTRUE;
+}
+  //______________________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALTrackIsolation::Run()
 {
     // Run the analysis.
@@ -464,7 +516,7 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::Run()
     //vertex cuts
   AliTrackContainer *tracksANA = GetTrackContainer("filterTracksAna");
   if(!tracksANA){
-    //Printf("Cannot find the tracks for Isolation");
+      //Printf("Cannot find the tracks for Isolation");
     return kFALSE;
   }
   
@@ -479,14 +531,14 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::Run()
   
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   
-  //Printf("Vertex Z coordinate for NF: %lf", fVertex[2]);
+    //Printf("Vertex Z coordinate for NF: %lf", fVertex[2]);
   
   if (fVertex[2]>10. || fVertex[2]<-10.) return kFALSE;
     //  AliError(Form("La task tourne bien"));
   
   Int_t nbTracksEvent;
   nbTracksEvent =InputEvent()->GetNumberOfTracks();
-  //Printf("nbTracksEvent %d",nbTracksEvent);
+    //Printf("nbTracksEvent %d",nbTracksEvent);
   if(fRejectionEventWithoutTracks && nbTracksEvent==0)
     return kFALSE;
   
@@ -548,78 +600,65 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::Run()
       //    }
   }
   
-  AliAODTrack *aodToi;
-  for (auto it : tracksANA->accepted()){
-    AliVTrack *toi = static_cast<AliVTrack*>(it);
+  if(fisLTAnalysis){
+    AliVTrack *toi = (tracksANA->GetLeadingTrack());
     if(!toi) {
-      AliError("No tracks found");
+      AliError("No Leading track found");
       return kFALSE;
     }
-      //
-    aodToi = static_cast<AliAODTrack*>(toi);
-    //Printf("hybrid? %s", aodToi->IsHybridGlobalConstrainedGlobal()?"yes":"no");
-    if(!(aodToi->IsHybridGlobalConstrainedGlobal())) continue;
+    AliAODTrack *aodToi=static_cast<AliAODTrack*>(toi);
     
-    //Printf("Pt %f",aodToi->Pt());
-    if((aodToi->Pt())<0.2)
-      continue;
+    Bool_t isSelected=SelectCandidate(aodToi);
     
-    //Printf("With ITSrefit? %s",((aodToi->GetStatus() & AliAODTrack::kITSrefit)==AliAODTrack::kITSrefit)?"yes":"no");
-    if((aodToi->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
-    
-    
-    Double_t frac = 0;
-    Float_t ncls  = Float_t(aodToi->GetTPCncls ());
-    Float_t nclsS = Float_t(aodToi->GetTPCnclsS());
-    if (  ncls> 0 )  frac =  nclsS / ncls ;
-    
-    if(frac > 0.4) continue;
-    
-    index=aodToi->GetID();
-    aodToi->P();
-    Double_t toiTOF = aodToi->GetTOFsignal();
-    cout<<"time  "<<toiTOF<<endl;
-    fTrackTime->Fill(toiTOF);
-    
-    if(fQA)  FillQAHistograms(aodToi);
-    
-    if(!fIsMC){
-      if(toiTOF< 1.2e4 || toiTOF > 2.5e4)
-        continue;
-    }
-    fPtaftTime->Fill(aodToi->Pt());
-    
-    if(!CheckBoundaries(aodToi))
-      continue;
-    
-    //Printf("ok2!");
-    fPtaftFC->Fill(aodToi->Pt());
-    
-    if(fQA){
-      fTestIndexPt->Fill(aodToi->Pt(),index);
-    }
-    //Printf("ok3!");
-    if(aodToi->Pt()<5.) continue;
-    
-    fEtaPhiTrack->Fill(aodToi->Eta(),aodToi->Phi());
-    //Printf("ok4!");
-    //Printf("Inside Run: Passing to FillGeneralHistograms for tracks with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",index,aodToi->Pt(),aodToi->Eta(),aodToi->Phi());
-    
+    if(isSelected){
+      for (auto it : tracksANA->accepted()){
+        AliAODTrack *tr = static_cast<AliAODTrack*>(it);
+        if(!tr)
+          continue;
+        
+        fPtTracksVSpTTR->Fill(aodToi->Pt(),tr->Pt());
+          //      cout<<"ok4.2"<<endl;
+          //      fPhiTracksVStrackPt->Fill(aodToi->Pt(),tr->Phi());
+          //      cout<<"ok4.3"<<endl;
+          //      fEtaTracksVStrackPt->Fill(aodToi->Pt(),tr->Eta());
+      }
+        //Printf("ok5!");
+      FillGeneralHistograms(aodToi,index);
+    }//is Selected Track
+  }//Leading Track Analysis
+  else{
+    AliAODTrack *aodToi;
     for (auto it : tracksANA->accepted()){
-      AliAODTrack *tr = static_cast<AliAODTrack*>(it);
-      if(!tr)
-        continue;
+      AliVTrack *toi = static_cast<AliVTrack*>(it);
+      if(!toi) {
+        AliError("No tracks found");
+        return kFALSE;
+      }
+        //
+      aodToi = static_cast<AliAODTrack*>(toi);
+        //Printf("hybrid? %s", aodToi->IsHybridGlobalConstrainedGlobal()?"yes":"no");
+        //Printf("ok4!");
+        //Printf("Inside Run: Passing to FillGeneralHistograms for tracks with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",index,aodToi->Pt(),aodToi->Eta(),aodToi->Phi());
+      Bool_t isSelected=SelectCandidate(aodToi);
       
-      cout<<"ok4.1"<<endl;
-      fPtTracksVSpTTR->Fill(aodToi->Pt(),tr->Pt());
-        //      cout<<"ok4.2"<<endl;
-        //      fPhiTracksVStrackPt->Fill(aodToi->Pt(),tr->Phi());
-        //      cout<<"ok4.3"<<endl;
-        //      fEtaTracksVStrackPt->Fill(aodToi->Pt(),tr->Eta());
-    }
-    //Printf("ok5!");
-    FillGeneralHistograms(aodToi,index);
-  }
+      if(isSelected){
+        for (auto it : tracksANA->accepted()){
+          AliAODTrack *tr = static_cast<AliAODTrack*>(it);
+          if(!tr)
+            continue;
+          
+          cout<<"ok4.1"<<endl;
+          fPtTracksVSpTTR->Fill(aodToi->Pt(),tr->Pt());
+            //      cout<<"ok4.2"<<endl;
+            //      fPhiTracksVStrackPt->Fill(aodToi->Pt(),tr->Phi());
+            //      cout<<"ok4.3"<<endl;
+            //      fEtaTracksVStrackPt->Fill(aodToi->Pt(),tr->Eta());
+        }
+          //Printf("ok5!");
+        FillGeneralHistograms(aodToi,index);
+      }//is Selected Track
+    }//For Loop on Accepted Tracks
+  }//NO Leading Track Analysis
   return kTRUE;
 }
 
@@ -698,7 +737,7 @@ void AliAnalysisTaskEMCALTrackIsolation::FillQAHistograms(AliAODTrack *toi){
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackPhiBand(AliAODTrack *t, Double_t &ptIso, Double_t &phiBandtrack, Int_t index){
     // Underlying events study with tracks in phi band in EMCAL acceptance
-  //Printf("Inside PhiBand");
+    //Printf("Inside PhiBand");
   
     //INSERT BOUNDARIES ACCORDING TO THE FLAG WE WANT TO USE
   Double_t sumpTConeCharged=0., sumpTPhiBandTrack=0.;
@@ -781,7 +820,7 @@ void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackPhiBand(AliAODTrack *t, Doubl
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackEtaBand(AliAODTrack *t, Double_t &ptIso, Double_t &etaBandtrack, Int_t index){
     // Underlying events study with tracks in eta band in EMCAL acceptance
-  //Printf("Inside EtaBand");
+    //Printf("Inside EtaBand");
   
     //INSERT BOUNDARIES ACCORDING TO THE FLAG WE WANT TO USE
   Double_t sumpTConeCharged=0., sumpTEtaBandTrack=0.;
@@ -796,7 +835,7 @@ void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackEtaBand(AliAODTrack *t, Doubl
   AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
   Int_t localIndex=0;
   
-  //Printf("tracks ANA : %d" ,tracksAna);
+    //Printf("tracks ANA : %d" ,tracksAna);
   
   if(!tracksAna){
     AliError(Form("Could not retrieve tracks !"));
@@ -817,13 +856,13 @@ void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackEtaBand(AliAODTrack *t, Doubl
     if(localIndex==index)
       continue;
     
-    //Printf("\t\thybrid? %s", aodEtrack->IsHybridGlobalConstrainedGlobal()?"yes":"no");
+      //Printf("\t\thybrid? %s", aodEtrack->IsHybridGlobalConstrainedGlobal()?"yes":"no");
     if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())) continue;
     
     if((aodEtrack->Pt())<0.2)
       continue;
     
-    //Printf("\t\tWith ITSrefit? %s",((aodEtrack->GetStatus() & AliAODTrack::kITSrefit)==AliAODTrack::kITSrefit)?"yes":"no");
+      //Printf("\t\tWith ITSrefit? %s",((aodEtrack->GetStatus() & AliAODTrack::kITSrefit)==AliAODTrack::kITSrefit)?"yes":"no");
     if((aodEtrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
     
     Double_t frac = 0;
@@ -837,13 +876,13 @@ void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackEtaBand(AliAODTrack *t, Doubl
       //CHECK IF TRACK IS IN BOUNDARIES
     phiTrack = aodEtrack->Phi();
     etaTrack = aodEtrack->Eta();
-    //Printf("\t\ttracks with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",localIndex,aodEtrack->Pt(),etaTrack,phiTrack);
-    //Printf("allowed range :Phi in (%f, %f),Eta in (%f, %f)",minPhi,maxPhi,minEta,maxEta);
+      //Printf("\t\ttracks with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",localIndex,aodEtrack->Pt(),etaTrack,phiTrack);
+      //Printf("allowed range :Phi in (%f, %f),Eta in (%f, %f)",minPhi,maxPhi,minEta,maxEta);
       // define the radius between the leading tracks and the considered tracks
       //redefine phi/t->Eta() from the tracks we passed to the function
     if( (phiTrack < maxPhi) && (phiTrack > minPhi) && (etaTrack < maxEta) && (etaTrack > minEta)){
       radius = TMath::Sqrt(TMath::Power(phiTrack - t->Phi(),2)+TMath::Power(etaTrack - t->Eta(),2));
-      //Printf("\t\tdistance to candidate: %lf with allowed %f",radius,fIsoConeRadius);
+        //Printf("\t\tdistance to candidate: %lf with allowed %f",radius,fIsoConeRadius);
       if(radius>fIsoConeRadius){ // if tracks are outside the isolation cone study
         
           // actually phi band here --- ADD Boundaries conditions
@@ -851,7 +890,7 @@ void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackEtaBand(AliAODTrack *t, Doubl
           sumpTEtaBandTrack += aodEtrack->Pt();
       }
       else if(radius<fIsoConeRadius && radius!=0.){
-        //Printf("\t\tInside Cone");
+          //Printf("\t\tInside Cone");
         sumpTConeCharged += aodEtrack->Pt(); // should not double count if the track matching is already done
         if(fQA){
           fTestIndex->Fill(index,localIndex);
@@ -861,18 +900,18 @@ void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackEtaBand(AliAODTrack *t, Doubl
       }
     }
   }
-  //Printf("filling some histo %f...%f",iTracksCone,t->Pt());
+    //Printf("filling some histo %f...%f",iTracksCone,t->Pt());
   fTrackMultvsPt->Fill(iTracksCone,t->Pt());
   ptIso = sumpTConeCharged;
   etaBandtrack = sumpTEtaBandTrack;
-  //Printf("Returning to FillGeneralHistograms");
+    //Printf("Returning to FillGeneralHistograms");
 }
 
 
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackOrthCones(AliAODTrack *t, Double_t &ptIso, Double_t &cones, Int_t index){
     // Underlying events study with tracks in orthogonal cones in TPC
-  //Printf("Inside PerpCones");
+    //Printf("Inside PerpCones");
   
   Double_t sumpTConeCharged=0., sumpTPerpConeTrack=0.;
   
@@ -952,7 +991,7 @@ void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackOrthCones(AliAODTrack *t, Dou
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackFullTPC(AliAODTrack *t, Double_t &ptIso, Double_t &full, Int_t index){
     // Underlying events study with tracks in full TPC except back to back bands
-  //Printf("Inside FullTPC");
+    //Printf("Inside FullTPC");
   Double_t sumpTConeCharged=0., sumpTTPCexceptB2B=0.;
   
   AliTrackContainer *tracks = GetTrackContainer(0);
@@ -1018,7 +1057,7 @@ void AliAnalysisTaskEMCALTrackIsolation::PtIsoTrackFullTPC(AliAODTrack *t, Doubl
   //__________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALTrackIsolation::CheckBoundaries(AliAODTrack *t){
     // Check if the cone around the considered tracks is in EMCAL acceptance
-  ////Printf("Inside CheckBoundaries\n");
+    ////Printf("Inside CheckBoundaries\n");
   
   Double_t minPhiBound= 0. , minEtaBound= 0., maxPhiBound= 0., maxEtaBound= 0.;
   Bool_t isINBoundaries;
@@ -1145,7 +1184,7 @@ void AliAnalysisTaskEMCALTrackIsolation::LookforParticle(Int_t tracklabel, Doubl
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALTrackIsolation::IsolationAndUEinEMCAL(AliAODTrack *toi, Double_t& isolation,Double_t& ue,Double_t pTThreshold, Int_t index){
   
-  //Printf("Inside IsolationAndUEinEMCAL");
+    //Printf("Inside IsolationAndUEinEMCAL");
     //EMCAL (Only tracks for the Isolation since Isolated Tracks analysis)
   Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
   
@@ -1436,23 +1475,23 @@ void AliAnalysisTaskEMCALTrackIsolation::IsolationAndUEinTPC(AliAODTrack *toi, D
   //__________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALTrackIsolation::FillGeneralHistograms(AliAODTrack *toi, Int_t index){
     //AliInfo("Inside FillGeneralHistograms\n");
-  //Printf("Inside FillGeneralHistograms\n");
+    //Printf("Inside FillGeneralHistograms\n");
     // Fill the histograms for underlying events and isolation studies
     // AliError(Form("Arrive bien dans fill general histograms"));
   
     // I would like to remove this part and fill the tracks multiplicity histogram in FillQAHistograms, is that ok for thnSparses? (especially cause here the histogram is filled several times per event)
     // AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
   AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
-  //Printf("Name of the tracks used for Isolation: %s",(tracksAna->GetClassName()).Data());
+    //Printf("Name of the tracks used for Isolation: %s",(tracksAna->GetClassName()).Data());
   
   tracksAna->ResetCurrentID();
   
   const Int_t nTracks = tracksAna->GetNAcceptedTracks();
-  //Printf("Ntracks for the event with this tracks: %d", nTracks);
+    //Printf("Ntracks for the event with this tracks: %d", nTracks);
   if(fQA)
     fTrackMult->Fill(nTracks);
   
-  //Printf("After Loop on Tracks");
+    //Printf("After Loop on Tracks");
   Double_t pTTOI = 0.;
   
     //Definition of the Array for Davide's Output
@@ -1461,7 +1500,7 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::FillGeneralHistograms(AliAODTrack *to
   
   pTTOI = toi->Pt();
   
-  //Printf("tracks ID %d ",toi->GetID());
+    //Printf("tracks ID %d ",toi->GetID());
   
     // ******** Isolation and UE calculation with different methods *********
   
@@ -1488,11 +1527,11 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::FillGeneralHistograms(AliAODTrack *to
   else
     IsolationAndUEinTPC(toi,isolation,ue,pTThreshold,index);
   
-  //Printf("after Isolation and UE in %s",fTPC4Iso?"TPC":"EMCAL");
+    //Printf("after Isolation and UE in %s",fTPC4Iso?"TPC":"EMCAL");
   if(fIsMC)
     LookforParticle(TMath::Abs(toi->GetLabel()),toi->Pt(),toi->Phi(),toi->Eta(),isolation);
   
-  //Printf("after Look4Particle");
+    //Printf("after Look4Particle");
   /*  Here we should call something to know the number of tracks...
    Soon I'll put in this version the "old way"; please let me know if
    any of you could do the same with the JET framework*/

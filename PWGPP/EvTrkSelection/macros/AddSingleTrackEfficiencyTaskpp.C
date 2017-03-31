@@ -25,6 +25,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskpp(const Bool_t read
 							       TString suffix="default", // suffix for the output directory
 							       AliPID::EParticleType specie=AliPID::kPion, 
 							       Int_t pdgcode=0, //particle specie
+							       Bool_t useMCtruthForKine=kFALSE,
 							       ULong64_t triggerMask=AliVEvent::kAnyINT,
 							       TString centralityEstimator = "V0M",
 							       Int_t fBit=0,
@@ -214,6 +215,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskpp(const Bool_t read
   //  task->SelectCollisionCandidates(triggerMask);//AliVEvent::kMB);
   if(centralityEstimator != "") task->SetUseCentrality(kTRUE,centralityEstimator);
   task->SetConfiguration(configuration);
+  task->SetUseGeneratedKine(useMCtruthForKine);
   task->SetCFManager(man); //here is set the CF manager
 
   //

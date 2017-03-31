@@ -604,10 +604,13 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNA));
 	Bool_t isZDNC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
+  Bool_t isV0DG = isSPD && !(isV0A || isV0C);
 
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
-  if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
+
+  if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
+  if (isV0DG) ((TH1F*)flQArnum->At(4))->Fill(fRun);
   
   // determine the gap condition using
   // ITS,V0,FMD,AD,ZD

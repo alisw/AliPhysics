@@ -139,6 +139,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fVtxZBin(-999),
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
+  fIsPbPb(kTRUE),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -277,6 +278,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fVtxZBin(-999),
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
+  fIsPbPb(kTRUE),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -399,7 +401,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   AliDebug(3, "Creating Output Objects");
 
   Double_t pi = TMath::Pi();
-    
+
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
@@ -407,19 +409,89 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   Int_t poolsize   = 1000;
 
   Int_t nZvtxBins  = 6;
-  //Double_t vertexBins[7] = {-10,-5.5,-2.5,0,2.5,5.5,10};
-
   Double_t vertexBins[7];
-  if(!fFlagMEBinChange){ //mean of VtxZ is at 0.5
-    vertexBins[0] = -10;
-    vertexBins[1] = -5;
-    vertexBins[2] = -2;
-    vertexBins[3] = 0.5;
-    vertexBins[4] = 3;
-    vertexBins[5] = 6;
-    vertexBins[6] = 10;
+
+  Int_t nCentralityBinsPbPb = 6;
+  Double_t CentralityBinsPbPb[7];
+  Int_t nCentralityBinspp = 1;
+  Double_t CentralityBinspp[2];
+
+  if(fIsPbPb){
+    if(!fFlagMEBinChange){ //mean of VtxZ is at 0.5
+      vertexBins[0] = -10;
+      vertexBins[1] = -5;
+      vertexBins[2] = -2;
+      vertexBins[3] = 0.5;
+      vertexBins[4] = 3;
+      vertexBins[5] = 6;
+      vertexBins[6] = 10;
+    }
+    if(fFlagMEBinChange){
+      vertexBins[0] = -10;
+      vertexBins[1] = -5;
+      vertexBins[2] = -2.5;
+      vertexBins[3] = 0;
+      vertexBins[4] = 2.5;
+      vertexBins[5] = 5;
+      vertexBins[6] = 10;
+    }
+
+    if(fCentralityMax == 20)
+    {
+      if(!fFlagMEBinChange){
+        CentralityBinsPbPb[0] = 0;
+        CentralityBinsPbPb[1] = 1.5;
+        CentralityBinsPbPb[2] = 3.5;
+        CentralityBinsPbPb[3] = 6;
+        CentralityBinsPbPb[4] = 9;
+        CentralityBinsPbPb[5] = 14;
+        CentralityBinsPbPb[6] = 20;
+      }
+      if(fFlagMEBinChange){
+        CentralityBinsPbPb[0] = 0;
+        CentralityBinsPbPb[1] = 2;
+        CentralityBinsPbPb[2] = 4;
+        CentralityBinsPbPb[3] = 6.5;
+        CentralityBinsPbPb[4] = 10;
+        CentralityBinsPbPb[5] = 15;
+        CentralityBinsPbPb[6] = 20;
+      }
+    }
+    if(fCentralityMax == 50)
+    {
+      if(!fFlagMEBinChange){
+        CentralityBinsPbPb[0] = 20;
+        CentralityBinsPbPb[1] = 25;
+        CentralityBinsPbPb[2] = 30;
+        CentralityBinsPbPb[3] = 35;
+        CentralityBinsPbPb[4] = 40;
+        CentralityBinsPbPb[5] = 45;
+        CentralityBinsPbPb[6] = 50;
+      }
+      if(fFlagMEBinChange){
+        CentralityBinsPbPb[0] = 20;
+        CentralityBinsPbPb[1] = 24;
+        CentralityBinsPbPb[2] = 29;
+        CentralityBinsPbPb[3] = 35;
+        CentralityBinsPbPb[4] = 40;
+        CentralityBinsPbPb[5] = 45;
+        CentralityBinsPbPb[6] = 50;
+      }
+    }
+    if(fCentralityMax > 50)
+    {
+      if(!fFlagMEBinChange){
+        CentralityBinsPbPb[0] = 50;
+        CentralityBinsPbPb[1] = 55;
+        CentralityBinsPbPb[2] = 60;
+        CentralityBinsPbPb[3] = 65;
+        CentralityBinsPbPb[4] = 70;
+        CentralityBinsPbPb[5] = 75;
+        CentralityBinsPbPb[6] = 80;
+      }
+    }
   }
-  if(fFlagMEBinChange){
+  if(!fIsPbPb){
     vertexBins[0] = -10;
     vertexBins[1] = -5;
     vertexBins[2] = -2.5;
@@ -427,65 +499,16 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
     vertexBins[4] = 2.5;
     vertexBins[5] = 5;
     vertexBins[6] = 10;
+
+    CentralityBinspp[0] = -2;
+    CentralityBinspp[1] = 100;
   }
 
-  Int_t nCentralityBins  = 6;
-  Double_t CentralityBins[7];
-  if(fCentralityMax == 20)
-  {
-    if(!fFlagMEBinChange){
-    CentralityBins[0] = 0;
-    CentralityBins[1] = 1.5;
-    CentralityBins[2] = 3.5;
-    CentralityBins[3] = 6;
-    CentralityBins[4] = 9;
-    CentralityBins[5] = 14;
-    CentralityBins[6] = 20;
-    }
-      if(fFlagMEBinChange){
-          CentralityBins[0] = 0;
-          CentralityBins[1] = 2;
-          CentralityBins[2] = 4;
-          CentralityBins[3] = 6.5;
-          CentralityBins[4] = 10;
-          CentralityBins[5] = 15;
-          CentralityBins[6] = 20;
-      }
-  }
-  if(fCentralityMax == 50)
-  {
-    if(!fFlagMEBinChange){
-      CentralityBins[0] = 20;
-      CentralityBins[1] = 25;
-      CentralityBins[2] = 30;
-      CentralityBins[3] = 35;
-      CentralityBins[4] = 40;
-      CentralityBins[5] = 45;
-      CentralityBins[6] = 50;
-    }
-    if(fFlagMEBinChange){
-      CentralityBins[0] = 20;
-      CentralityBins[1] = 24;
-      CentralityBins[2] = 29;
-      CentralityBins[3] = 35;
-      CentralityBins[4] = 40;
-      CentralityBins[5] = 45;
-      CentralityBins[6] = 50;
-    }
-  }
-  if(fCentralityMax > 50)
-  {
-   if(!fFlagMEBinChange){
-    CentralityBins[0] = 50;
-    CentralityBins[1] = 55;
-    CentralityBins[2] = 60;
-    CentralityBins[3] = 65;
-    CentralityBins[4] = 70;
-    CentralityBins[5] = 75;
-    CentralityBins[6] = 80;
-   }
-  }
-  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBins, nZvtxBins, (Double_t*) vertexBins);
+  if(fIsPbPb)
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, (Double_t*) CentralityBinsPbPb, nZvtxBins, (Double_t*) vertexBins);
+
+  if(!fIsPbPb)
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspp, (Double_t*) CentralityBinspp, nZvtxBins, (Double_t*) vertexBins);
 
   ///////////////
   //Output list//
@@ -533,10 +556,8 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhi);
 
-
   fHistoNCells = new TH2F("fHistoNCells","No of EMCAL cells in a cluster;Cluster E;N^{EMC}_{cells}",300,0,30,50,0,50);
   fOutputList->Add(fHistoNCells);
-
 
   fHistoTimeEMC = new TH2F("fHistoTimeEMC","EMCAL Time;E (GeV); t(ns)",500,0,50,1800,-900,900);
   fOutputList->Add(fHistoTimeEMC);
@@ -661,14 +682,24 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   for(int i=0; i < nEventBins+1; i++)
     EventBins[i] = i;
 
-  fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBins,CentralityBins);
-  fOutputList->Add(fMixStatCent);
+  if(fIsPbPb){
+    fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinsPbPb,CentralityBinsPbPb);
+    fOutputList->Add(fMixStatCent);
 
-  fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
-  fOutputList->Add(fMixStatVtxZ);
+    fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinsPbPb,CentralityBinsPbPb);
+    fOutputList->Add(fMixStatCentVtxz);
+  }
 
-  fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Centrality;Vtx_{z}",nZvtxBins,vertexBins,nCentralityBins,CentralityBins);
-  fOutputList->Add(fMixStatCentVtxz);
+  if(!fIsPbPb){
+    fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinspp,CentralityBinspp);
+    fOutputList->Add(fMixStatCent);
+
+    fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinspp,CentralityBinspp);
+    fOutputList->Add(fMixStatCentVtxz);
+  }
+    
+    fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
+    fOutputList->Add(fMixStatVtxZ);
 
   //  fHisHadDphi = new TH2F("fHisHadDphi","Hadron Dphi;p_{T}^{e};#Delta#varphi",50,0,50,64,-TMath::Pi()/2,(3*TMath::Pi())/2);
   //  fOutputList->Add(fHisHadDphi);
@@ -684,7 +715,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
 
   //------THnsparse------
-  // Int_t bin[6] = {30,20,32,50,nZvtxBins,nCentralityBins}; //ptElec, ptHad,Dphi, Deta
+  // Int_t bin[6] = {30,20,32,50,nZvtxBins,nCentralityBinsPbPb}; //ptElec, ptHad,Dphi, Deta
   // Double_t xmin[6] = {0,0,-TMath::Pi()/2,-1.8,0,0};
   // Double_t xmax[6] = {30,20,(3*TMath::Pi())/2,1.8,6,6};
   Int_t bin[4] = {30,20,32,50}; //ptElec, ptHad,Dphi, Deta
@@ -779,10 +810,10 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   //event selection///
   ////////////////////
   if(!PassEventSelect(fVevent)) return;
-    
-    if(fApplyAddPileUpCuts){
-        if(!PassAddtionalPileUpCuts()) return;
-    }
+
+  if(fApplyAddPileUpCuts){
+    if(!PassAddtionalPileUpCuts()) return;
+  }
 
   /////////////////
   // Centrality ///
@@ -796,15 +827,15 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   //Get VtxZ and Cent Bin//
   /////////////////////////
   GetVtxZCentralityBin();
-    
-    //////////////
-    //if Tender //
-    //////////////
-    if(fUseTender){
-        //new branches with calibrated tracks and clusters
-        fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
-    }
+
+  //////////////
+  //if Tender //
+  //////////////
+  if(fUseTender){
+    //new branches with calibrated tracks and clusters
+    fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+  }
 
   //////////////////////
   //EMcal cluster info//
@@ -818,10 +849,10 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
-    for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
+  for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliVParticle* Vtrack = 0x0;
-        if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
-        if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
+    if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
+    if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
     if (!Vtrack) {
       printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
@@ -856,7 +887,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     AliVCluster *clustMatch=0x0;
     if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
     if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
-        
+
     Double_t emcphi = -999, emceta=-999;
     Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;
     if(clustMatch && clustMatch->IsEMCAL())
@@ -920,7 +951,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       if(!fElectTrack) continue;
       fInclsElecPt->Fill(TrkPt);
       fNEle++;
-    
+
       ///////////////////
       //E-H Correlation//
       ///////////////////
@@ -985,18 +1016,18 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
   Double_t ptEle = -999;
   Double_t phiEle = -999, phiHad = -999, Dphi = -999;
   Double_t etaEle = -999, etaHad = -999, Deta = -999;
-    
+
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
     if(ktracks == itrack) continue; //do not select the same electron
-      
-      AliVParticle* VtrackHad = 0x0;
-      if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
-      if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
-      
+
+    AliVParticle* VtrackHad = 0x0;
+    if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
+    if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
+
     if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
@@ -1015,7 +1046,6 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
 
     if(!PassHadronCuts(atrackHad)) continue; //apply hadron cuts;
     if(fTrigElePtCut && (ptHad > ptEle)) continue; //select only pTe > pTh is requested
-
 
     Dphi = phiEle - phiHad;
     if (Dphi > 3*pi/2)
@@ -1048,18 +1078,18 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
   Double_t ptEle = -999;
   Double_t phiEle = -999, phiHad = -999, Dphi = -999;
   Double_t etaEle = -999, etaHad = -999, Deta = -999;
-    
-    Int_t ntracks = -999;
-    if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
-    if(fUseTender) ntracks = fTracks_tender->GetEntries();
+
+  Int_t ntracks = -999;
+  if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+  if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
     if(ktracks == itrack || ktracks == jtrack) continue; //do not select the same electron and partner etrack from invmass
-      
-      AliVParticle* VtrackHad = 0x0;
-      if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
-      if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
-      
+
+    AliVParticle* VtrackHad = 0x0;
+    if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
+    if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
+
     if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
@@ -1102,18 +1132,18 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
 void AliAnalysisTaskEHCorrel::HadronInfo(Int_t itrack)
 {
   //Hadron information
-    
-    Int_t ntracks = -999;
-    if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
-    if(fUseTender) ntracks = fTracks_tender->GetEntries();
+
+  Int_t ntracks = -999;
+  if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+  if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
 
     if(ktracks == itrack) continue; //do not select the same electron
-      AliVParticle* VtrackHad = 0x0;
-      if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
-      if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
-      
+    AliVParticle* VtrackHad = 0x0;
+    if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
+    if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
+
     if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
@@ -1177,19 +1207,19 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   if(fFlagHadITSNCls){
     if(HadTrack->GetITSNcls() < 3) return kFALSE;
   }
-    
+
   if(fFlagHadFiducialCut){
     if(HadTrack->Eta()< -0.8 || HadTrack->Eta()>0.8) return kFALSE;
   }
- 
+
   if(fFlagHadPosEtaOnly){
-        if(HadTrack->Eta()< 0 || HadTrack->Eta()>0.9) return kFALSE;
+    if(HadTrack->Eta()< 0 || HadTrack->Eta()>0.9) return kFALSE;
   }
 
-    if(fFlagHadNegEtaOnly){
-        if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0) return kFALSE;
-    }
-    
+  if(fFlagHadNegEtaOnly){
+    if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0) return kFALSE;
+  }
+
   return kTRUE;
 }
 //___________________________________________
@@ -1281,10 +1311,10 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   if(atrack->GetITSNcls() < 3) return kFALSE;
   if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) return kFALSE;
   if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
-    
-    if(fFlagEleSPDkFirst) {
-        if(!(atrack->HasPointOnITSLayer(0))) return kFALSE;
-    }
+
+  if(fFlagEleSPDkFirst) {
+    if(!(atrack->HasPointOnITSLayer(0))) return kFALSE;
+  }
 
   if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
@@ -1326,6 +1356,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
   Double_t NcontSPD = vtSPD->GetNContributors();
   if(NcontV<2 || NcontSPD<1)return kFALSE;
 
+    if(!fIsPbPb){
   Double_t covTrc[6],covSPD[6];
   fpVtx->GetCovarianceMatrix(covTrc);
   vtSPD->GetCovarianceMatrix(covSPD);
@@ -1335,6 +1366,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
   Double_t nsigTot = TMath::Abs(dz)/errTot;
   Double_t nsigTrc = TMath::Abs(dz)/errTrc;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return kFALSE;// bad vertexing
+    }
 
   fNevents->Fill(1); //events after vettex cuts
 
@@ -1352,30 +1384,30 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
 //___________________________________________
 Bool_t AliAnalysisTaskEHCorrel::PassAddtionalPileUpCuts()
 {
-    //additional cuts to reject pile-up
-    Int_t nTPCout=0;
-    Float_t mTotV0=0;
-    
-    //get multiplicity
-    AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
-    Float_t mTotV0A=v0data->GetMTotV0A();
-    Float_t mTotV0C=v0data->GetMTotV0C();
-    mTotV0=mTotV0A+mTotV0C;
-    
-    //get no of tracks with kTPCout
-    Int_t ntracksEv = fAOD->GetNumberOfTracks();
-    for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
-        AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
-        if(!track) {AliFatal("Not a standard AOD");}
-        if(track->GetID()<0)continue;
-        if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
-        else continue;
-    }
-    Double_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
-    
-    if(mTotV0 < mV0Cut) return kFALSE;
-    
-    return kTRUE;
+  //additional cuts to reject pile-up
+  Int_t nTPCout=0;
+  Float_t mTotV0=0;
+
+  //get multiplicity
+  AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
+  Float_t mTotV0A=v0data->GetMTotV0A();
+  Float_t mTotV0C=v0data->GetMTotV0C();
+  mTotV0=mTotV0A+mTotV0C;
+
+  //get no of tracks with kTPCout
+  Int_t ntracksEv = fAOD->GetNumberOfTracks();
+  for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+    AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+    if(!track) {AliFatal("Not a standard AOD");}
+    if(track->GetID()<0)continue;
+    if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
+    else continue;
+  }
+  Double_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
+
+  if(mTotV0 < mV0Cut) return kFALSE;
+
+  return kTRUE;
 }
 //___________________________________________
 void AliAnalysisTaskEHCorrel::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
@@ -1421,9 +1453,9 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
   Double_t clustE=-999, emcphi = -999, emceta=-999;
   Float_t tof=-999;
 
-    if(!fUseTender) Nclust = fVevent->GetNumberOfCaloClusters();
-    if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
-    for(Int_t icl=0; icl<Nclust; icl++)
+  if(!fUseTender) Nclust = fVevent->GetNumberOfCaloClusters();
+  if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
+  for(Int_t icl=0; icl<Nclust; icl++)
   {
     AliVCluster *clust = 0x0;
     if(!fUseTender) clust = fVevent->GetCaloCluster(icl);
@@ -1493,18 +1525,18 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
   Bool_t flagPhotonicElec = kFALSE, flagLSElec = kFALSE;
   Double_t ptAsso=-999., nsigmaAsso=-999.0;
   Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-    
-    
+
+
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t jTracks = 0; jTracks < ntracks; jTracks++){
     if(jTracks==itrack) continue;
-      
-      AliVParticle* VtrackAsso = 0x0;
-      if(!fUseTender) VtrackAsso  = fVevent->GetTrack(jTracks);
-      if(fUseTender) VtrackAsso = dynamic_cast<AliVTrack*>(fTracks_tender->At(jTracks)); //take tracks from Tender list
+
+    AliVParticle* VtrackAsso = 0x0;
+    if(!fUseTender) VtrackAsso  = fVevent->GetTrack(jTracks);
+    if(fUseTender) VtrackAsso = dynamic_cast<AliVTrack*>(fTracks_tender->At(jTracks)); //take tracks from Tender list
     if (!VtrackAsso) {
       printf("ERROR: Could not receive track %d\n", jTracks);
       continue;
@@ -1652,8 +1684,8 @@ void  AliAnalysisTaskEHCorrel::MixedEvent(AliVTrack *track, THnSparse *SparseMix
         fvalueMixDphi[1] = ptMixTrk;
         fvalueMixDphi[2] = Dphi;
         fvalueMixDphi[3] = Deta;
-        fvalueMixDphi[4] = fVtxZBin;
-        fvalueMixDphi[5] = fCentBin;
+        //fvalueMixDphi[4] = fVtxZBin;
+        //fvalueMixDphi[5] = fCentBin;
         SparseMixEHCorrl->Fill(fvalueMixDphi);
       }
     }
@@ -1665,21 +1697,21 @@ TObjArray* AliAnalysisTaskEHCorrel::CloneAndReduceTrackList()
   // clones a track list by using AliehDPhiBasicParticle which uses much less memory (used for event mixing)
   TObjArray* fArrayTracksMix = new TObjArray;
   fArrayTracksMix->SetOwner(kTRUE);
-    
-    Int_t ntracks = -999;
-    if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
-    if(fUseTender) ntracks = fTracks_tender->GetEntries();
+
+  Int_t ntracks = -999;
+  if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+  if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
-      AliVParticle* Vtrack = 0x0;
-      if(!fUseTender) Vtrack  =  fVevent->GetTrack(ktracks);
-      if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
-      
+    AliVParticle* Vtrack = 0x0;
+    if(!fUseTender) Vtrack  =  fVevent->GetTrack(ktracks);
+    if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
+
     if (!Vtrack) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
     }
-
+      
     AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
     if(!track) continue;
     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
