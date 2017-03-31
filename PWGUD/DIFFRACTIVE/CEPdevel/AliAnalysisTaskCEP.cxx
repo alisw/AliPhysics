@@ -222,6 +222,10 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
     delete flQArnum;
     flQArnum = 0x0;
   }
+  if (flBBFlag) {
+    delete flBBFlag;
+    flBBFlag = 0x0;
+  }
   if (flSPDpileup) {
     delete flSPDpileup;
     flSPDpileup = 0x0;
@@ -377,6 +381,19 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
       fHist->Add((TObject*)flQArnum->At(ii));
   }
   
+  // histograms BBFlag study
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitBBFlagStudy,AliCEPBase::kBitBBFlagStudy)) {
+    
+    // get list of histograms
+    flBBFlag = new TList();
+    flBBFlag = fCEPUtil->GetBBFlagQAHists();
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flBBFlag->GetEntries(); ii++)
+      fHist->Add((TObject*)flBBFlag->At(ii));
+  }
+  
   // histograms for SPD pile-up study
   if (fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitSPDPileupStudy,AliCEPBase::kBitSPDPileupStudy)) {
@@ -515,6 +532,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   if (flSPDpileup) {
     fCEPUtil->SPDVtxAnalysis(fEvent,3,0.8,3.,2.,5.,flSPDpileup);
+  }
+  
+  if (flBBFlag) {
+    fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
   }
   
   //fAnalysisUtils.SetBSPDCvsTCut(4);
