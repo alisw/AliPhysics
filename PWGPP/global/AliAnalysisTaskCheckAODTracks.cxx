@@ -656,10 +656,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     }
 
     if(fReadMC){
-      (itsRefit ? fHistPtResidVsPtTPCselITSrefAll : fHistPtResidVsPtTPCselAll)->Fill(ptgen,(pttrack-ptgen));
+      fHistPtResidVsPtTPCselAll->Fill(ptgen,(pttrack-ptgen));
+      if (itsRefit) fHistPtResidVsPtTPCselITSrefAll->Fill(ptgen,(pttrack-ptgen));
       for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
         if (pid[iS]) {
-          (itsRefit ? fHistPtResidVsPtTPCselITSref[iS] : fHistPtResidVsPtTPCsel[iS])->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
+           fHistPtResidVsPtTPCsel[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
+           if (itsRefit) fHistPtResidVsPtTPCselITSref[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
         }
       }
     

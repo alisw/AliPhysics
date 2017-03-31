@@ -838,13 +838,16 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     bool isPion = pid[AliPID::kPion];
 
     if (fReadMC) {
-      (itsRefit ? fHistPtResidVsPtTPCselITSrefAll : fHistPtResidVsPtTPCselAll)->Fill(ptgen,(pttrack-ptgen));
+      fHistPtResidVsPtTPCselAll->Fill(ptgen,(pttrack-ptgen));
+      if (itsRefit) fHistPtResidVsPtTPCselITSrefAll->Fill(ptgen,(pttrack-ptgen));
       for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
         if (pid[iS]) {
           if (pidtr == iS) {
-            (itsRefit ? fHistPtResidVsPtTPCselITSrefGoodHyp[iS] : fHistPtResidVsPtTPCselGoodHyp[iS])->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
+            fHistPtResidVsPtTPCselGoodHyp[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
+            if (itsRefit) fHistPtResidVsPtTPCselITSrefGoodHyp[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
           } else {
-            (itsRefit ? fHistPtResidVsPtTPCselITSrefBadHyp[iS] : fHistPtResidVsPtTPCselBadHyp[iS])->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
+            fHistPtResidVsPtTPCselBadHyp[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
+            if (itsRefit) fHistPtResidVsPtTPCselITSrefBadHyp[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
           }
         }
       }
