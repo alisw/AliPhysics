@@ -34,10 +34,13 @@
 #include "TFrame.h"
 
 // --- AliRoot header files ---
-#include"AliQACheckerBase.h"
+#include "AliQACheckerBase.h"
 #include "AliITSQASPDChecker.h"
 #include "AliITSQADataMakerRec.h"
 #include "AliLog.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliITSTriggerConditions.h"
 
 ClassImp(AliITSQASPDChecker)
 //__________________________________________________________________
@@ -47,7 +50,7 @@ AliITSQASPDChecker::AliITSQASPDChecker() :
   fStepBitSPD(NULL),
   fLowSPDValue(NULL),
   fHighSPDValue(NULL),
-  fImage(NULL) 
+  fImage(NULL)
 {
   // default contructor
 }
@@ -186,71 +189,67 @@ Double_t AliITSQASPDChecker::CheckRawData(const TObjArray * list) {
       totalHistos++;
       // data format error
       if(histName.Contains("SPDErrorsAll")){
-	if(hdata->GetListOfFunctions()->GetEntries()<1) hdata->GetListOfFunctions()->Add(new TPaveText(0.09,0.74,0.945,0.94,"NDC"));
-
-	for(Int_t i=0; i<hdata->GetListOfFunctions()->GetEntries(); i++){
-	  TString funcName = hdata->GetListOfFunctions()->At(i)->ClassName();
-	  if(funcName.Contains("TPaveText")){
-	    TPaveText *p = (TPaveText*)hdata->GetListOfFunctions()->At(i);
-	    p->Clear();
-
-	    if(hdata->Integral(0,hdata->GetNbinsX())>0){
-	      Bool_t isHighMult = kFALSE;
-	      Bool_t isDataCorrupted=kFALSE;
-	      for(Int_t ieq=0; ieq<20; ieq++){
-		if(hdata->GetBinContent(ieq+1,17+1)>0 && hdata->GetBinContent(ieq+1,20+1)>0) isHighMult = kTRUE;
-		for(Int_t iErr=1; iErr<20; iErr++){
-		  if(iErr==20 || iErr==17) continue;
-		  if(hdata->GetBinContent(ieq+1,iErr+1)>0) isDataCorrupted=kTRUE; 
-		}
-	      }
-	      if(isHighMult && !isDataCorrupted) {
-		p->SetFillColor(kOrange);
-		p->AddText("High occupancy in a chip detected (-> errors type 17,20 and 0 are present). ");
-		p->AddText("ONLY IF OTHER error types are present CALL the expert");
-		response = fHighSPDValue[AliQAv1::kWARNING];
-	      } else if(isDataCorrupted) {
-		p->SetFillColor(kRed);
-		p->AddText("Data Format NOT OK. Please call the expert!");
-		response = fHighSPDValue[AliQAv1::kFATAL];
-		fatalProblem=kTRUE;
-	      }
-	      continue;
-	    } // if errors 
-	    else {
-	      p->Clear();
-	      p->SetFillColor(kGreen);
-	      p->AddText("OK");
+	TPaveText *p = ((TPaveText*)hdata->GetListOfFunctions()->FindObject("TPave"));	    
+	if(hdata->Integral(0,hdata->GetNbinsX())>0){
+	  Bool_t isHighMult = kFALSE;
+	  Bool_t isDataCorrupted=kFALSE;
+	  for(Int_t ieq=0; ieq<20; ieq++){
+	    if(hdata->GetBinContent(ieq+1,17+1)>0 && hdata->GetBinContent(ieq+1,20+1)>0) isHighMult = kTRUE;
+	    for(Int_t iErr=1; iErr<20; iErr++){
+	      if(iErr==20 || iErr==17) continue;
+	      if(hdata->GetBinContent(ieq+1,iErr+1)>0) isDataCorrupted=kTRUE; 
 	    }
-	  } // TPaveText
-	} // list entries   
+	  }
+	  if(isHighMult && !isDataCorrupted) {
+	    response = fHighSPDValue[AliQAv1::kWARNING];
+	    if(p) {
+	      p->Clear();
+	      p->SetFillColor(kOrange);
+	      p->AddText("High occupancy in a chip detected (only error types 17,20 and 0 are present) ");
+	      p->AddText("ONLY if OTHER error types are present CALL the expert");
+	    }
+	  } else if(isDataCorrupted) {
+	    response = fHighSPDValue[AliQAv1::kFATAL];
+	    fatalProblem=kTRUE;
+	    if(p) {
+	      p->Clear();
+	      p->SetFillColor(kRed);
+	      p->AddText("Data Format NOT OK. Please call the expert!");		
+	    }
+	  }
+	  continue;
+	} // if errors 
+	else {
+	  if(p) {
+	    p->Clear();
+	    p->SetFillColor(kGreen);
+	    p->AddText("OK");
+	  }
+	}
       } // data format error
 
       // MEB error
       else if(histName.Contains("MEB")){
-	if(hdata->GetListOfFunctions()->GetEntries()<1) hdata->GetListOfFunctions()->Add(new TPaveText(0.09,0.735,0.945,0.935,"NDC"));
+	TPaveText *pmeb = ((TPaveText*)hdata->GetListOfFunctions()->FindObject("TPave"));
+	if(hdata->GetEntries()>0){
+	  response = fHighSPDValue[AliQAv1::kFATAL];
+	  fatalProblem=kTRUE;
+	  if(pmeb) {
+	    pmeb->Clear();
+	    pmeb->SetFillColor(kRed);
+	    pmeb->AddText("MEB problem could be present. Please check if SPD is in READY state.");
+	    pmeb->AddText("If SPD is in -READY- state, please notify it to the expert."); 
+	  }
+	  continue;
 
-	for(Int_t i=0; i<hdata->GetListOfFunctions()->GetEntries(); i++){
-	  TString funcName = hdata->GetListOfFunctions()->At(i)->ClassName();
-	  if(funcName.Contains("TPaveText")){
-	    TPaveText *p = (TPaveText*)hdata->GetListOfFunctions()->At(i);
-	    p->Clear();
+	} else {
+	  if(pmeb) {
+	    pmeb->Clear();
+	    pmeb->SetFillColor(kGreen);
+	    pmeb->AddText("OK");
+	  }
+	}   
 
-	    if(hdata->GetEntries()>0){
-	      p->SetFillColor(kRed);
-	      p->AddText("MEB problem could be present. Please check if SPD is in READY state.");
-	      p->AddText("If SPD is in -READY- state, please notify it to the expert."); 
-	      response = fHighSPDValue[AliQAv1::kFATAL];
-	      fatalProblem=kTRUE;
-	      continue;
-
-	    } else {
-	      p->SetFillColor(kGreen);
-	      p->AddText("OK");
-	    }   
-
-	  } // pave text
-	} // list 
       }
       goodHistos++;
     }
@@ -278,7 +277,6 @@ void AliITSQASPDChecker::SetStepBit(const Double_t *steprange)
     }
 }
 
-
 //__________________________________________________________________
 void  AliITSQASPDChecker::SetSPDLimits(const Float_t *lowvalue, const Float_t * highvalue)
 {
@@ -293,6 +291,44 @@ void  AliITSQASPDChecker::SetSPDLimits(const Float_t *lowvalue, const Float_t * 
     }
 
 }
+
+//__________________________________________________________________
+void AliITSQASPDChecker::MaskFastOrChips(TH2F *hFOmap, Int_t iLayer)
+{
+  // Empty masked FastOr Chips from OCDB
+  AliCDBEntry *pitEntry = 0x0;       
+  AliITSTriggerConditions *triCd = 0x0;
+  Int_t sect = 999;
+  Int_t chipbin = 999;
+  
+  // Read PIT trigger conditions
+  AliCDBManager *man = AliCDBManager::Instance();
+  if(man) {
+    man->SetDefaultStorage(gSystem->Getenv("AMORE_CDB_URI"));
+    pitEntry = man->Get("TRIGGER/SPD/PITConditions", AliQAChecker::Instance()->GetRunNumber());
+  }
+  if(!pitEntry) {
+    AliWarning("Trigger conditions retrieval from OCDB failed!");
+    return;
+  }
+  triCd = (AliITSTriggerConditions*)pitEntry->GetObject();
+  
+  //exclude masked chips
+  for (UInt_t ieq=0; ieq<20; ieq++) {
+    for (UInt_t ihs=2*iLayer; ihs<(2+4*iLayer); ihs++) {
+      for (UInt_t ichip=0; ichip<10; ichip++) {
+	if(!triCd->IsChipActive(ieq,ihs,ichip)) {
+	  if(ieq<10) {sect = ieq; chipbin = (19-ichip)+1;} //side A
+	  else {sect = ieq-10; chipbin = ichip+1;} //side C
+	  if(iLayer=0)   hFOmap->SetBinContent(chipbin,1+sect*2+ihs,0.); //inner layer
+	  if(iLayer=1)   hFOmap->SetBinContent(chipbin,1+sect*4+(ihs-2),0.); //outer layer
+	}
+      }
+    }
+  }
+  
+}
+
 //__________________________________________________________________
 Bool_t  AliITSQASPDChecker::MakeSPDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
 {
@@ -380,17 +416,14 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	TString name(hist->GetName());
 	if(name.Contains("SPDErrorsAll")) {
 	  fImage[esIndex]->cd(1) ;    
-	  for(Int_t i=0; i<hist->GetListOfFunctions()->GetEntries(); i++){
-	    TString funcName = hist->GetListOfFunctions()->At(i)->ClassName();
-	    if(funcName.Contains("TPaveText")){
-	      TPaveText *p = (TPaveText*)hist->GetListOfFunctions()->At(i);
-	      if(p->GetFillColor()!=kGreen){
-		gPad->SetFillColor(p->GetFillColor());
-		gPad->SetFillStyle(3001);
-		gPad->SetFrameFillColor(19);
-	      }
-	    }
-	  }    
+	  TPaveText *pImErrs = ((TPaveText*)hist->GetListOfFunctions()->FindObject("TPave"));
+	  if(pImErrs) {
+	    if(pImErrs->GetFillColor()!=kGreen){
+	      gPad->SetFillColor(pImErrs->GetFillColor());
+	      gPad->SetFillStyle(3001);
+	      gPad->SetFrameFillColor(19);
+	    }    
+	  }
 	  gPad->SetBorderMode(0) ;  
 	  gPad->SetRightMargin(0.05);
 	  gPad->SetLeftMargin(0.1);
@@ -407,15 +440,12 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	}     
 	if(name.Contains("MEB")) {
 	  fImage[esIndex]->cd(4) ; 
-	  for(Int_t i=0; i<hist->GetListOfFunctions()->GetEntries(); i++){
-	    TString funcName = hist->GetListOfFunctions()->At(i)->ClassName();
-	    if(funcName.Contains("TPaveText")){
-	      TPaveText *p = (TPaveText*)hist->GetListOfFunctions()->At(i);
-	      if(p->GetFillColor()!=kGreen){
-		gPad->SetFillColor(p->GetFillColor());
-		gPad->SetFillStyle(3001);
-		gPad->SetFrameFillColor(19);
-	      }
+	  TPaveText *pImMeb = ((TPaveText*)hist->GetListOfFunctions()->FindObject("TPave"));
+	  if(pImMeb) {
+	    if(pImMeb->GetFillColor()!=kGreen){
+	      gPad->SetFillColor(pImMeb->GetFillColor());
+	      gPad->SetFillStyle(3001);
+	      gPad->SetFrameFillColor(19);
 	    }
 	  }
 	  gPad->SetBorderMode(0) ;  
@@ -493,7 +523,10 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	  gPad->SetGridy();
 	  hist->SetObjectStat(0);
 	  hist->SetOption("colz") ;
-	  hist->DrawCopy();               
+	  TH2F hFOinClone;
+	  hist->Copy(hFOinClone);
+	  MaskFastOrChips(&hFOinClone,0);
+	  hFOinClone.DrawCopy();
 	}
 	if(name.Contains("SPDFastOrMapStaveOuter")){
 	  fImage[esIndex]->cd(6) ; 
@@ -505,7 +538,10 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	  gPad->SetGridy();
 	  hist->SetObjectStat(0);
 	  hist->SetOption("colz") ;
-	  hist->DrawCopy();               
+	  TH2F hFOoutClone;
+	  hist->Copy(hFOoutClone);
+	  MaskFastOrChips(&hFOoutClone,1);        
+	  hFOoutClone.DrawCopy();            
 	}
 
       }
