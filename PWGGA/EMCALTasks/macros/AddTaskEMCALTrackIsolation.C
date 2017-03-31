@@ -51,9 +51,6 @@ AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
   AliAnalysisTaskEMCALTrackIsolation* task = new AliAnalysisTaskEMCALTrackIsolation("AnalysisTrack",bHisto);
   
   TString configFile("config_TrackIsolation.C"); //Name of config file
-                                                 //  if(gSystem->AccessPathName(configFile.Data())){ //Check for exsisting file and delete it
-                                                 //    gSystem->Exec(Form("rm %s",configFile.Data()));
-                                                 //  }
   
   cout<<configBasePath<<endl;
   Printf("original BasePath for config file: %s",configBasePath.Data());
@@ -118,6 +115,8 @@ AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
   task->SetPDGBinning(PDGBin);
   task->SetMomPDGBinning(MomPDGBin);
   task->SetTrackPDGBinning(TrackPDGBin);
+  task->SetDxBinning(DxBin);
+  task->SetDzBinning(DzBin);
   task->SetDecayBinning(DecayBin);
   task->SetMCtruth(bmcTruth);
   

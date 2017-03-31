@@ -23,7 +23,6 @@ class THnSparse;
 class TList;
 class TObjArray;
 class AliEMCALGeometry;
-class AliESDCaloCells;
 class AliESDEvent;
 class AliESDtrack;
 class TClonesArray;
@@ -32,7 +31,6 @@ class TString;
 class AliVParticle;
 class AliESDtrackCuts;
 class AliAODEvent;
-class AliAODCaloCells;
 class AliMCEvent;
 class AliStack;
 class TParticle;
@@ -46,7 +44,6 @@ class AliEMCALTrack;
 class AliEMCALRecoUtils;
   //class AliAnalysisFilter;
 class AliAODTrack;
-class AliVCaloCells;
 class AliAODMCParticle;
 class AliGenPythiaEventHeader;
 class AliAODMCHeader;
@@ -84,7 +81,10 @@ public:
   void			   SetPDGBinning(vector<Double_t> binedges)			  { fBinsPDG = binedges; }
   void			   SetMomPDGBinning(vector<Double_t> binedges)		{ fBinsMomPDG = binedges; }
   void			   SetTrackPDGBinning(vector<Double_t> binedges)	{ fBinsTrackPDG = binedges; }
+  void			   SetDxBinning(vector<Double_t> binedges)			   { fBinsDx = binedges; }
+  void			   SetDzBinning(vector<Double_t> binedges)			   { fBinsDz = binedges; }
   void			   SetDecayBinning(vector<Double_t> binedges)			{ fBinsDecay = binedges; }
+  
   void         SetMCtruth(Bool_t mctruth)                     {fMCtruth=mctruth;}
   
 protected:

@@ -247,8 +247,55 @@ void AliAnalysisTaskEMCALTrackIsolation::UserCreateOutputObjects(){
   Int_t binDecayType = fBinsDecay.size()-1;
     //bincells=20;
   
-  Int_t bins[] = {binPT, binPTiso, binPTUE, binetatr, binphitr};
+    //   Initialization of all the Common THistos for the Three different outputs
+  fEvents = new TH1D("hEvents_TR","Events",100,0.,100.);
+  fEvents->Sumw2();
+  fOutput->Add(fEvents);
   
+  fVz = new TH1D("hVz_TR","Vertex Z distribution",100,-50.,50.);
+  fVz->Sumw2();
+  fOutput->Add(fVz);
+  
+  fPtaftTime = new TH1D("hPtaftTime_TR","p_{T} distribution for tracks after tracks time cut",200,0.,100.);
+  fPtaftTime->Sumw2();
+  fOutput->Add(fPtaftTime);
+  
+  fPtaftFC = new TH1D("hPtaftFC_TR","p_{T} distribution for tracks after fiducial cut",200,0.,100.);
+  fPtaftFC->Sumw2();
+  fOutput->Add(fPtaftFC);
+  
+  fPtTracksVSpTTR = new TH2F ("hPtTracksVSpTTR","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
+  fPtTracksVSpTTR->Sumw2();
+  fOutput->Add(fPtTracksVSpTTR);
+
+    //Include QA plots to the OutputList //DEFINE BETTER THE BINNING AND THE AXES LIMITS
+  fTrackMult = new TH1D ("hTrackMult","Tracks multiplicity Distribution",100,0.,100.);
+  fTrackMult->Sumw2();
+  fOutput->Add(fTrackMult);
+  
+  fTrackTime = new TH1D("hTrackTime_TR","Time distribution for tracks",2000,1e4,3e4);
+  fTrackTime->Sumw2();
+  fOutput->Add(fTrackTime);
+  
+  fEtaPhiTrack = new TH2D ("hEtaPhiTrackActivity","",250,-0.8,0.8, 250, 1.2, 3.4);
+  fEtaPhiTrack->Sumw2();
+  fOutput->Add(fEtaPhiTrack);
+  
+  fPT = new TH1D("hPt_TR","P_{T} distribution for tracks",100,0.,100.);
+  fPT->Sumw2();
+  fOutput->Add(fPT);
+  
+  fP = new TH1D("hE_TR","E distribution for tracks",200,0.,100.);
+  fP->Sumw2();
+  fOutput->Add(fP);
+  
+  fTestIndexPt= new TH2D("hTestIndexPt","Test index vs transverse momentum for tracks",200,0.,100.,100,0.,100.);
+  fTestIndexPt->SetXTitle("tracks pT");
+  fTestIndexPt->SetYTitle("index");
+  fTestIndexPt->Sumw2();
+  fOutput->Add(fTestIndexPt);
+  
+  Int_t bins[] = {binPT, binPTiso, binPTUE, binetatr, binphitr};
   
   fNDimensions = sizeof(bins)/sizeof(Int_t);
   const Int_t ndims =   fNDimensions;
@@ -267,7 +314,7 @@ void AliAnalysisTaskEMCALTrackIsolation::UserCreateOutputObjects(){
   
   if(fIsMC){
     Int_t binsMC[] = {binPT, binPTiso, binPTUE, binMCPDG ,binetatr,binphitr,binlabel};
-    Int_t binsSMC[] = {binPT, binMCTrackPDG, binMCMotherPDG, binPT, bindx, bindz, binPTiso,binDecayType};
+    Int_t binsSMC[] = {binPT, binMCTrackPDG, binMCMotherPDG, binPT, bindx, bindz, binPTiso,binPTiso};
     
     fMCDimensions = sizeof(binsMC)/sizeof(Int_t);
     const Int_t ndimsMC = fMCDimensions;
@@ -338,38 +385,11 @@ void AliAnalysisTaskEMCALTrackIsolation::UserCreateOutputObjects(){
     // TO CHECK IF THERE ARE OTHER HISTOGRAMS TO BE INSERTED HERE
     //
   
-    //Include QA plots to the OutputList //DEFINE BETTER THE BINNING AND THE AXES LIMITS
-  fTrackMult = new TH1D ("hTrackMult","Tracks multiplicity Distribution",100,0.,100.);
-  fTrackMult->Sumw2();
-  fOutput->Add(fTrackMult);
-  
-  fTrackTime = new TH1D("hTrackTime_TR","Time distribution for tracks",2000,1e4,3e4);
-  fTrackTime->Sumw2();
-  fOutput->Add(fTrackTime);
-  
-  fEtaPhiTrack = new TH2D ("hEtaPhiTrackActivity","",250,-0.8,0.8, 250, 1.2, 3.4);
-  fEtaPhiTrack->Sumw2();
-  fOutput->Add(fEtaPhiTrack);
-  
-  fPT = new TH1D("hPt_TR","P_{T} distribution for tracks",100,0.,100.);
-  fPT->Sumw2();
-  fOutput->Add(fPT);
-  
-  fP = new TH1D("hE_TR","E distribution for tracks",200,0.,100.);
-  fP->Sumw2();
-  fOutput->Add(fP);
-  
   fTestIndex= new TH2D("hTestIndex","Test index for tracks",100,0.,100.,100,0.,100.);
   fTestIndex->SetXTitle("index");
   fTestIndex->SetYTitle("local index");
   fTestIndex->Sumw2();
   fOutput->Add(fTestIndex);
-  
-  fTestIndexPt= new TH2D("hTestIndexPt","Test index vs transverse momentum for tracks",200,0.,100.,100,0.,100.);
-  fTestIndexPt->SetXTitle("tracks pT");
-  fTestIndexPt->SetYTitle("index");
-  fTestIndexPt->Sumw2();
-  fOutput->Add(fTestIndexPt);
   
   fTestLocalIndexPt= new TH2D("hTestLocalIndexE","Test local index vs tranverse momentum for tracks",200,0.,100.,100,0.,100.);
   fTestLocalIndexPt->SetXTitle("tracks pT");
@@ -380,27 +400,6 @@ void AliAnalysisTaskEMCALTrackIsolation::UserCreateOutputObjects(){
   fTrackMultvsPt = new TH2D("hTrackMultvsPt","Track Multiplicity vs  p_{T} track for clusters",100,0.,100.,200,0.,100.);
   fTrackMultvsPt->Sumw2();
   fOutput->Add(fTrackMultvsPt);
-  
-    //   Initialization of all the Common THistos for the Three different outputs
-  fVz = new TH1D("hVz_TR","Vertex Z distribution",100,-50.,50.);
-  fVz->Sumw2();
-  fOutput->Add(fVz);
-  
-  fEvents = new TH1D("hEvents_TR","Events",100,0.,100.);
-  fEvents->Sumw2();
-  fOutput->Add(fEvents);
-  
-  fPtaftTime = new TH1D("hPtaftTime_TR","p_{T} distribution for tracks after tracks time cut",200,0.,100.);
-  fPtaftTime->Sumw2();
-  fOutput->Add(fPtaftTime);
-  
-  fPtaftFC = new TH1D("hPtaftFC_TR","p_{T} distribution for tracks after fiducial cut",200,0.,100.);
-  fPtaftFC->Sumw2();
-  fOutput->Add(fPtaftFC);
-  
-  fPtTracksVSpTTR = new TH2F ("hPtTracksVSpTTR","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
-  fPtTracksVSpTTR->Sumw2();
-  fOutput->Add(fPtTracksVSpTTR);
   
   
   if(fIsMC){
@@ -623,6 +622,8 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::Run()
           //      fEtaTracksVStrackPt->Fill(aodToi->Pt(),tr->Eta());
       }
         //Printf("ok5!");
+      Int_t index=aodToi->GetID();
+      
       FillGeneralHistograms(aodToi,index);
     }//is Selected Track
   }//Leading Track Analysis
@@ -655,6 +656,7 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::Run()
             //      fEtaTracksVStrackPt->Fill(aodToi->Pt(),tr->Eta());
         }
           //Printf("ok5!");
+        Int_t index=aodToi->GetID();
         FillGeneralHistograms(aodToi,index);
       }//is Selected Track
     }//For Loop on Accepted Tracks
@@ -1491,7 +1493,6 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::FillGeneralHistograms(AliAODTrack *to
   if(fQA)
     fTrackMult->Fill(nTracks);
   
-    //Printf("After Loop on Tracks");
   Double_t pTTOI = 0.;
   
     //Definition of the Array for Davide's Output
@@ -1542,7 +1543,6 @@ Bool_t AliAnalysisTaskEMCALTrackIsolation::FillGeneralHistograms(AliAODTrack *to
   outputValues[2] = ue;
   outputValues[3] = toi->Eta();
   outputValues[4] = toi->Phi();
-  cout<<"Filling ThnSparse"<<endl;
   fOutputTHnS -> Fill(outputValues);
   
   return kTRUE;
@@ -1706,113 +1706,85 @@ void AliAnalysisTaskEMCALTrackIsolation::AnalyzeMC(){
     //AliAODMCParticle *mcp, *mcpmaxE, *mcpp, *mom;
     //  if(!fisLCAnalysis){
     //Loop on the event
-  for(int iTr=0;iTr<nTracks;iTr++){
-    
-    mcpT=0.;pT =0; phi=0.; eta=0.;
-    
-    mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
-    
-    if(mcpart->GetStatus()>10) {continue;}
-    if(!mcpart->IsPrimary()) {continue;}
-    if(!mcpart->IsPhysicalPrimary()) {continue;}
-    
-    charge = mcpart->Charge();
-    if(charge==0)
-      continue;
-    
-    eta = mcpart->Eta();
-    phi = mcpart->Phi();
-    
-    if(!fTPC4Iso){
-      if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.398 + fIsoConeRadius || phi>(TMath::Pi()-fIsoConeRadius-0.03)))
-        continue;
+  if(fisLTAnalysis){
+    maxpT=0.;
+    int indexmaxpT=0;
+      //getting the index of the particle with the maximum energy.
+    for(int iTr=0;iTr<nTracks;iTr++){
+      mcsearch= static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
+      
+      if(!mcsearch) continue;
+      
+      if(mcsearch->GetStatus()>10) continue;
+      if(mcsearch->Charge()==0) continue;
+      if(!mcsearch->IsPrimary()) continue;
+      
+      if(TMath::Abs(mcsearch->Eta())>0.67-fIsoConeRadius) continue;
+      if(!fTPC4Iso){
+        if((TMath::Abs(mcsearch->Eta())>0.67-fIsoConeRadius ) || (mcsearch->Phi() < 1.398 + fIsoConeRadius || mcsearch->Phi()>(TMath::Pi()-fIsoConeRadius-0.03)))
+          continue;
+      }
+      else {
+        if((TMath::Abs(mcsearch->Eta())>0.87-fIsoConeRadius ) || (mcsearch->Phi() < 1.398 || mcsearch->Phi()>(TMath::Pi()-0.03)))
+          continue;
+      }
+      
+      mcfirstPt= mcsearch->Pt();
+      if(mcfirstPt>maxpT){
+        maxpT=mcfirstPt;
+        indexmaxpT=iTr;
+      }
+      else continue;
     }
-    else{
-      if((TMath::Abs(eta)>0.87-fIsoConeRadius ) || (phi < 1.398 || phi>(TMath::Pi()-0.03)))
-        continue;
+    mcfirst= static_cast<AliAODMCParticle*>(fAODMCParticles->At(indexmaxpT));
+    mcfirstPt=mcfirst->Pt();
+    
+    int momidx= mcfirst->GetMother();
+    if(momidx>0){
+      mcfirstmom =  static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
+      mompdg= TMath::Abs(mcfirstmom->GetPdgCode());
     }
-      //printf("\nParticle Position %d  and Label: %d  PDG: %d  Pt: %f  Eta: %f  Phi: %f",iTr, mcpart->GetLabel(),pdg,mcpart->Pt(), eta, phi);
+    else
+      mompdg=mcfirst->GetPdgCode();
     
-    tracklabel = iTr;
-    int momidx = mcpart->GetMother();
+    mcFirstEta = mcfirst->Eta();
+    mcFirstPhi = mcfirst->Phi();
     
-    mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
-    mompdg= TMath::Abs(mom->GetPdgCode());
-    
-      //printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
-    
-    pT= mcpart->Pt(); //transform to transverse Energy
-    
-    bool foundmatch=kFALSE;
-      //This loop excludes tracks which share the same direction with other particles in their isolation cone
-    for(int m=0;m<nTracks && foundmatch==kFALSE;m++){
-        //not the same track
-      if(m==iTr) continue;
-      
-      matchingtrack = static_cast<AliAODMCParticle*>(fAODMCParticles->At(m));
-      
-      if(! matchingtrack->IsPrimary()) continue;
-      if(! matchingtrack->IsPhysicalPrimary()) continue;
-      if(matchingtrack->GetStatus()> 10 ) continue;
-      
-      Double_t etamatching = matchingtrack->Eta();
-      Double_t phimatching = matchingtrack->Phi();
-      
-      if(TMath::Abs(eta-etamatching)<=fdetacut && TMath::Abs(phi-phimatching)<=fdphicut)
-        foundmatch=kTRUE;
-    }
-    if(foundmatch) continue;
-    
-    distance=0.;
     phip=0., etap=0.;
-    sumpTiso=0.,sumUE=0.;
+    sumpTiso=0,sumUE=0;
     
-    for(int iTrack=0;iTrack<nTracks;iTrack++){
+    for(Int_t iTrack=1;iTrack<nTracks ;iTrack++){
+      if(iTrack==indexmaxpT) continue;
       
-      if(iTrack==tracklabel)
-        continue;
-      
-      mcpp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
-      
-      if(!mcpp) {continue;}
-      
-      
-      if(mcpp->Charge()!=0 && mcpp->GetStatus()<10)
-        fPtTracksVSpTTR_MC->Fill(pT,mcpp->Pt());
-      else
-        continue;
-      
-      int mumidx=mcpp->GetMother();
-      if (mumidx<0 || mumidx>nTracks) continue;
-      
-      mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
-      if(mumidx == tracklabel || mum->GetPdgCode()==22) continue;
-      
+      mcpp= static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
       phip = mcpp->Phi();
       etap = mcpp->Eta();
+      if(!mcpp)
+        continue;
       
-        //Depending on which Isolation method and UE method is considered.
-      distance= TMath::Sqrt((phi-phip)*(phi-phip) + (eta-etap)*(eta-etap));
+      if(mcpp->GetStatus()>10) continue;
+      if(!mcpp->IsPrimary())continue;
       
-      if(distance <= fIsoConeRadius){
-          //cout<<iTrack<<"\t"<<photonlabel<<endl;
-          //mcpp->Print();
+      distance=0.;
+      distance= TMath::Sqrt((mcFirstPhi- phip)*(mcFirstPhi- phip) + (mcFirstEta- etap)*(mcFirstEta- etap));
+      
+      if(distance<=fIsoConeRadius){
         sumpTiso += mcpp->Pt();
       }
       else{
-        AddParticleToUEMC(sumUE,mcpp, eta, phi);}
+        AddParticleToUEMC(sumUE,mcpp,mcFirstEta,mcFirstPhi);
+      }
     }
+      //  cout<<"\n\nTotal Energy inside the Isolation Cone : "<<sumEiso<<endl;
     CalculateUEDensityMC(sumUE);
-    
-      //printf("Storing Particle: Label %d  PDG: %d  Eta: %f  Phi: %f",mcpart->GetLabel(),pdg,eta,phi);
-      //printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
-    outputValuesMC[0] = pT;
+      //cout<<"Total UE Energy : "<<sumUE<<" calculated with method "<<fUEMethod<<endl;
+    outputValuesMC[0] = mcfirstPt;
     outputValuesMC[1] = sumpTiso;
     outputValuesMC[2] = sumUE;
     outputValuesMC[3] = mompdg;
-    outputValuesMC[4] = eta;
-    outputValuesMC[5] = phi;
-    outputValuesMC[6] = mcpart->GetLabel();
+    outputValuesMC[4] = mcFirstEta;
+    outputValuesMC[5] = mcFirstPhi;
+    outputValuesMC[6] = mcfirst->GetLabel();
       // EtaPhiMCPhoton
       // EtMC
       // EtIsoCone
@@ -1822,70 +1794,133 @@ void AliAnalysisTaskEMCALTrackIsolation::AnalyzeMC(){
       //fill some histograms or a THnSparse or a TTree.
       //	AliError(Form("Fill something in Analize MC"));
     fOutMCTruth -> Fill(outputValuesMC);
+
+      //Fill the Output TTree for MC Truth
   }
-    //  }
-    //  else{
-    //    maxE=0.;
-    //    int indexmaxE=0;
-    //      //getting the index of the particle with the maximum energy.
-    //    for(int iTr=0;iTr<nTracks;iTr++){
-    //      mcsearch= static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
-    //
-    //      if(!mcsearch) continue;
-    //
-    //      if(mcsearch->GetStatus()>10) continue;
-    //      if(mcsearch->GetPdgCode()!=22) continue;
-    //      if(TMath::Abs(mcsearch->Eta())>0.67-fIsoConeRadius) continue;
-    //      if(mcsearch->Phi()<= 1.798 ||mcsearch->Phi()>= TMath::Pi()) continue;
-    //
-    //      mcfirstEnergy= mcsearch->E();
-    //      if(mcfirstEnergy>maxE){
-    //        maxE=mcfirstEnergy;
-    //        indexmaxE=iTr;
-    //      }
-    //      else continue;
-    //    }
-    //    mcfirst= static_cast<AliAODMCParticle*>(fAODMCParticles->At(indexmaxE));
-    //    mcfirstEnergy=mcfirst->E()*TMath::Sin(mcfirst->Theta());
-    //
-    //    int momidx= mcfirst->GetMother();
-    //    mcfirstmom =  static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
-    //    mompdg= TMath::Abs(mcfirstmom->GetPdgCode());
-    //    mcFirstEta = mcfirst->Eta();
-    //    mcFirstPhi = mcfirst->Phi();
-    //
-    //    phip=0., etap=0.;
-    //    sumEiso=0,sumUE=0;
-    //
-    //    for(Int_t iTrack=1;iTrack<nTracks ;iTrack++){
-    //      if(iTrack==indexmaxE) continue;
-    //
-    //      mcpp= static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
-    //      phip = mcpp->Phi();
-    //      etap = mcpp->Eta();
-    //      if(!mcpp)
-    //        continue;
-    //
-    //      if(mcpp->GetStatus()>10) continue;
-    //      if(mcpp->GetPdgCode()==22)continue;
-    //      if(TMath::Abs(etap>0.7)) continue;
-    //      if(phip<=1.4 || phip>= TMath::Pi()) continue;
-    //      distance=0.;
-    //      distance= TMath::Sqrt((mcFirstPhi- phip)*(mcFirstPhi- phip) + (mcFirstEta- etap)*(mcFirstEta- etap));
-    //
-    //      if(distance<=fIsoConeRadius){
-    //        sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
-    //      }
-    //      else{
-    //        AddParticleToUEMC(sumUE,mcpp,mcFirstEta,mcFirstPhi);
-    //      }
-    //    }
-    //      //  cout<<"\n\nTotal Energy inside the Isolation Cone : "<<sumEiso<<endl;
-    //    CalculateUEDensityMC(sumUE);
-    //      //cout<<"Total UE Energy : "<<sumUE<<" calculated with method "<<fUEMethod<<endl;
-    //
-    //      //Fill the Output TTree for MC Truth
-    //  }
+  else{
+    
+    for(int iTr=0;iTr<nTracks;iTr++){
+      
+      mcpT=0.;pT =0; phi=0.; eta=0.;
+      
+      mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
+      
+      if(mcpart->GetStatus()>10) {continue;}
+      if(!mcpart->IsPrimary()) {continue;}
+      if(!mcpart->IsPhysicalPrimary()) {continue;}
+      
+      charge = mcpart->Charge();
+      if(charge==0)
+        continue;
+      
+      eta = mcpart->Eta();
+      phi = mcpart->Phi();
+      
+      if(!fTPC4Iso){
+        if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.398 + fIsoConeRadius || phi>(TMath::Pi()-fIsoConeRadius-0.03)))
+          continue;
+      }
+      else{
+        if((TMath::Abs(eta)>0.87-fIsoConeRadius ) || (phi < 1.398 || phi>(TMath::Pi()-0.03)))
+          continue;
+      }
+        //printf("\nParticle Position %d  and Label: %d  PDG: %d  Pt: %f  Eta: %f  Phi: %f",iTr, mcpart->GetLabel(),pdg,mcpart->Pt(), eta, phi);
+      
+      tracklabel = iTr;
+      int momidx = mcpart->GetMother();
+      
+      if(momidx>0){
+        mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
+        mompdg= TMath::Abs(mom->GetPdgCode());
+      }
+      else
+        mompdg=mcpart->GetPdgCode();
+      
+        //printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
+      
+      pT= mcpart->Pt(); //transform to transverse Energy
+      
+      bool foundmatch=kFALSE;
+        //This loop excludes tracks which share the same direction with other particles in their isolation cone
+      for(int m=0;m<nTracks && foundmatch==kFALSE;m++){
+          //not the same track
+        if(m==iTr) continue;
+        
+        matchingtrack = static_cast<AliAODMCParticle*>(fAODMCParticles->At(m));
+        
+        if(! matchingtrack->IsPrimary()) continue;
+        if(! matchingtrack->IsPhysicalPrimary()) continue;
+        if(matchingtrack->GetStatus()> 10 ) continue;
+        
+        Double_t etamatching = matchingtrack->Eta();
+        Double_t phimatching = matchingtrack->Phi();
+        
+        if(TMath::Abs(eta-etamatching)<=fdetacut && TMath::Abs(phi-phimatching)<=fdphicut)
+          foundmatch=kTRUE;
+      }
+      if(foundmatch) continue;
+      
+      distance=0.;
+      phip=0., etap=0.;
+      sumpTiso=0.,sumUE=0.;
+      
+      for(int iTrack=0;iTrack<nTracks;iTrack++){
+        
+        if(iTrack==tracklabel)
+          continue;
+        
+        mcpp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
+        
+        if(!mcpp) {continue;}
+        
+        
+        if(mcpp->Charge()!=0 && mcpp->GetStatus()<10)
+          fPtTracksVSpTTR_MC->Fill(pT,mcpp->Pt());
+        else
+          continue;
+        
+        int mumidx=mcpp->GetMother();
+        if (mumidx<0 || mumidx>nTracks) continue;
+        
+        mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
+        if(mumidx == tracklabel || mum->GetPdgCode()==22) continue;
+        
+        phip = mcpp->Phi();
+        etap = mcpp->Eta();
+        
+          //Depending on which Isolation method and UE method is considered.
+        distance= TMath::Sqrt((phi-phip)*(phi-phip) + (eta-etap)*(eta-etap));
+        
+        if(distance <= fIsoConeRadius){
+            //cout<<iTrack<<"\t"<<photonlabel<<endl;
+            //mcpp->Print();
+          sumpTiso += mcpp->Pt();
+        }
+        else{
+          AddParticleToUEMC(sumUE,mcpp, eta, phi);}
+      }
+      CalculateUEDensityMC(sumUE);
+      
+        //printf("Storing Particle: Label %d  PDG: %d  Eta: %f  Phi: %f",mcpart->GetLabel(),pdg,eta,phi);
+        //printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
+      outputValuesMC[0] = pT;
+      outputValuesMC[1] = sumpTiso;
+      outputValuesMC[2] = sumUE;
+      outputValuesMC[3] = mompdg;
+      outputValuesMC[4] = eta;
+      outputValuesMC[5] = phi;
+      outputValuesMC[6] = mcpart->GetLabel();
+        // EtaPhiMCPhoton
+        // EtMC
+        // EtIsoCone
+        // EtMother
+        // UE Et
+        // Mother PDG
+        //fill some histograms or a THnSparse or a TTree.
+        //	AliError(Form("Fill something in Analize MC"));
+      fOutMCTruth -> Fill(outputValuesMC);
+    }
+  }
   
   return;
 }
