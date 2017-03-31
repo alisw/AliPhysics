@@ -59,6 +59,8 @@ vector<Double_t> LabelBin = makeLinBinning(0.,1500.,150);
 vector<Double_t> PDGBin = makeArbBinning(PID_bins,sizeof(PID_bins)/sizeof(PID_bins[0]));
 vector<Double_t> MomPDGBin = makeArbBinning(PID_bins,sizeof(PID_bins)/sizeof(PID_bins[0]));
 vector<Double_t> TrackPDGBin = makeArbBinning(PID_bins,sizeof(PID_bins)/sizeof(PID_bins[0]));
+vector<Double_t> DxBin = makeLinBinning(-1.,1.,2);
+vector<Double_t> DzBin = makeLinBinning(-1.,1.,2);
 vector<Double_t> DecayBin = makeLinBinning(0.,10.,10);
 
 
