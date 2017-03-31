@@ -30,6 +30,8 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TMath.h>
+#include <TPaveText.h>
+#include <TList.h>
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -130,14 +132,14 @@ void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
     if(task == AliQAv1::kRAWS) {
       TObjArray &harr = *fAliITSQADataMakerRec->GetRawsDataOfTrigClass(trCl);  // extract the clones for given trigger class
       //
-      if (harr[5+shift]) ((TH1*)harr[5+shift])->Reset();  // clean up MEB histo (needed at the first cycle for small statistics)
+      if (harr[5+shift]) ((TH2*)harr[5+shift])->Reset("ICES");  // clean up MEB histo (needed at the first cycle for small statistics)
       if (harr[7+shift]&&harr[1+shift]&&harr[0+shift]) ((TH1*)harr[7+shift])->Divide((TH1*)harr[1+shift],(TH1*)harr[0+shift]);
       if (harr[8+shift]&&harr[2+shift]&&harr[0+shift]) ((TH1*)harr[8+shift])->Divide((TH1*)harr[2+shift],(TH1*)harr[0+shift]); // missing FO ratio (per event) 
       if (harr[9+shift]&&harr[3+shift]&&harr[4+shift]) ((TH1*)harr[9+shift])->Divide((TH1*)harr[3+shift],(TH1*)harr[4+shift]); // noisy FO ratio   (per event)
       //
       if (harr[6+shift] && harr[kAmoreFoOffset+shift]){
 	Nevts = ((TH1*)harr[6+shift])->GetEntries();
-	((TH1*)harr[kAmoreFoOffset+shift])->SetTitle(Form("Error codes - SPD - in %d Events  ",Nevts)); // Add number of processed events information 
+	((TH2*)harr[kAmoreFoOffset+shift])->SetTitle(Form("Error codes - SPD - in %d Events  ",Nevts)); // Add number of processed events information 
       }
       //
       TH1 *h0 = (TH1*)harr[0+shift];
@@ -166,7 +168,6 @@ void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
       }
     } // QA Task Index == RAWS
   } // RS: loop over trigger classes
-
 }
 
 //____________________________________________________________________________ 
@@ -241,6 +242,10 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
     if(ibiny < 10) hSPDChipsMEB->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",ibiny));
     else hSPDChipsMEB->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",19-ibiny));
   }
+  //
+  TPaveText *paveMeb = new TPaveText(0.09,0.735,0.945,0.935,"NDC");
+  hSPDChipsMEB->GetListOfFunctions()->Add(paveMeb);
+  //
   rv = fAliITSQADataMakerRec->Add2RawsList(hSPDChipsMEB, 5+shift, !expert, image, !saveCorr);
   fSPDhRawsTask++;  
   // 6
@@ -284,6 +289,10 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   //  herrorsAll->SetOption("COLZ");
   herrorsAll->SetOption("text");
   herrorsAll->UseCurrentStyle();
+  // 
+  TPaveText *paveErrs = new TPaveText(0.09,0.74,0.945,0.94,"NDC");
+  herrorsAll->GetListOfFunctions()->Add(paveErrs);	
+  //
   rv = fAliITSQADataMakerRec->Add2RawsList(herrorsAll, kAmoreFoOffset+shift, !expert, image, !saveCorr);
   fSPDhRawsTask++;
   //11-30
