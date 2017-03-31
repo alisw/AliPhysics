@@ -38,9 +38,10 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;
   }
-  void SetUseMultSelectionFramework(Bool_t multFramework) { fUseMultSelectionFramework = multFramework;} 
-  void SetUseUncheckedCentrality(Bool_t unchecked) { fUseUncheckedCentrality = unchecked; }
-
+  void SetUseMultSelectionFramework(Bool_t multFramework) { useMultSelectionFramework = multFramework;} 
+  void SetUseUncheckedCentrality(Bool_t unchecked) { useUncheckedCentrality = unchecked; }
+  void SetUseAdditionalTrackCuts(Bool_t setUseAdditionalTrackCuts) { useAdditionalTrackCuts = setUseAdditionalTrackCuts; }
+  
   void SetPtRange(Double_t min, Double_t max){
     fPtMin = min;
     fPtMax = max;
@@ -55,6 +56,7 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
   Double_t IsEventAccepted(AliVEvent *event);
   void GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   void GetAcceptedHFVertexingTracks(AliVEvent *event, Double_t gCentrality);
+  static Bool_t GetDCA(const AliVEvent *event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0=0);
   
   AliAnalysisTaskAODFilterBitQA(const AliAnalysisTaskAODFilterBitQA&); // not implemented
   AliAnalysisTaskAODFilterBitQA& operator=(const AliAnalysisTaskAODFilterBitQA&); // not implemented
@@ -62,10 +64,11 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
   TClonesArray *fArrayMC;//MC track array for AODs
 
   TList *fListQA;//output list for QA histograms
-
+  
+  Bool_t useAdditionalTrackCuts;// use additional track cuts on AODs
   Bool_t useCentrality;// use centrality as event class estimator (default = OFF)
-  Bool_t fUseMultSelectionFramework;// use the AliMultSelection framework; default: kFALSE
-  Bool_t fUseUncheckedCentrality; // use unchecked centrality; default: kFALSE
+  Bool_t useMultSelectionFramework;// use the AliMultSelection framework; default: kFALSE
+  Bool_t useUncheckedCentrality; // use unchecked centrality; default: kFALSE
   Bool_t fillOnlySecondaries;//fill only secondary particles (only for MC running)
   Bool_t fillHFVertexingTracks;//fill HF vertexing tracks
 
@@ -83,6 +86,8 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
 
   TH2D* fHistEventStats;//QA histogram for event trigger bit statistics vs. centrality
   TH2D* fHistTrackStats;//QA histogram for track filter bit statistics vs. centrality
+  TH2D* fHistTrackStats2;//QA histogram for track filter bit statistics vs. fired bits
+  TH1D* fHistTrackStats3;//QA histogram for number of AOD tracks per ESD track (after track cuts)
   TH3D* fHistKinematics[gNCharge][gBitMax];//QA histograms for kinematics (eta, phi, pT) for different filter bits
   TH2D* fHistDCAconstrained[gNCharge][gBitMax];//QA histograms for DCA (xy,z) for different filter bits for constrained tracks (stored in DCA methods)
   TH3D* fHistDCAglobal[gNCharge][gBitMax];//QA histograms for DCA (xy,z) for different filter bits for global tracks (stored in Position methods)
