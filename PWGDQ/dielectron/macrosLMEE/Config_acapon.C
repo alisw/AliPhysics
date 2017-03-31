@@ -13,8 +13,9 @@ TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE; //Needed for LMEEcutlib
 Bool_t isQAtask=kTRUE;
-
-AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t SDDstatus =kFALSE, Bool_t = doMixing)
+Int_t selectedPID = -1;
+Printf("heeeey");
+AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t SDDstatus =kFALSE, Bool_t doMixing = kTRUE)
 {
   
   //Setup the instance of AliDielectron
@@ -30,7 +31,7 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
   MCenabled=hasMC;
 
   // deactivate pairing to check track cuts or run with loose pid cuts:
-  if(doMixing){
+  if(!doMixing){
     die->SetNoPairing();
   }
   
@@ -41,12 +42,14 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
     die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
     die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+    die->GetTrackFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
   }
   else if(cutDefinition == 1){
     selectedPID = LMEECutLib::kElectrons;
     die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
     die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+    die->GetTrackFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
   }
   else{
     cout << " =============================== " << endl;
@@ -59,19 +62,21 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
   die->SetUseKF(kFALSE);
    
   AliDielectronMixingHandler* mix = 0x0;
+  Printf("werd");
   if(doMixing){
+    Printf("Creating mixing handler");
     mix = LMcutlib->GetMixingHandler(selectedPID);
     die->SetMixingHandler(mix);
   }
   
-  InitHistograms(die, cutDefinition);
+  InitHistograms(die, cutDefinition, doMixing);
   
   return die;
 }
 
 //______________________________________________________________________________________
 
-void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = kFALSE)
+void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = kTRUE)
 {
   //Define histogram names based on cut value, in order to avoid mem. warning error
 
@@ -79,7 +84,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
   AliDielectronHistos *histos=new AliDielectronHistos(die->GetName(),die->GetTitle());
   
   //Initialise histogram classes
-  histos->SetReservedWords("Track;Pair;Track_Legs");//;Pre;RejPair;RejTrack");
+  histos->SetReservedWords("Track;Pair;Track_Legs;Pre");//RejPair;RejTrack");
   
   //Event class
   histos->AddClass("Event"); // all classes will be stored in 'THashList fHistoList'
@@ -386,7 +391,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
     histos->UserHistogram("Pre","ITSnSigmaKao_P",";p (GeV/c);n#sigma_{kaon}^{ITS}",
                           GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaKao);
     histos->UserHistogram("Pre","ITSnSigmaPro_P",";p (GeV/c);n#sigma_{proton}^{ITS}",
-    //                      GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPro);
+                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPro);
     
     histos->UserHistogram("Pre","TPCnSigmaEle_P",";p_{in} (GeV/c);n#sigma_{ele}^{TPC}",
                           GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
