@@ -98,5 +98,6 @@
 #pragma link C++ class AliHFCutVarFDsubEfficiency+;
 #pragma link C++ class AliHFCutVarFDsubMassFitter+;
 #pragma link C++ class AliHFCutVarFDsubMinimiser+;
+#pragma link C++ class AliHFVnVsMassFitter+;
 
 #endif
