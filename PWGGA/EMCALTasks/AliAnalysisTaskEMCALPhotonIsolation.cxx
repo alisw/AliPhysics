@@ -1016,7 +1016,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI,fVertex);
   Double_t coiTOF = coi->GetTOF()*1e9;
-
+  index=coi->GetID();
   if(!fIsMC){
     if(coiTOF< -30. || coiTOF > 30.)
       return kFALSE;
@@ -2753,7 +2753,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
 
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index){
-  Printf("Inside IsolationAncUEinEMCAL");
+//  Printf("Inside IsolationAncUEinEMCAL");
   Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
   
   Double_t etaBandArea = 1.4*2.*fIsoConeRadius-isoConeArea;
@@ -3349,7 +3349,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t& sumUE){
 
 void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   
-    //printf("New Event...Analysing Stack!");
   if (!fIsMC)
     return;
     //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
@@ -3398,7 +3397,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   if(!fisLCAnalysis){
       //Loop on the event
     for(int iTr=0;iTr<nTracks;iTr++){
-      
+
       mcEnergy=0.;energy =0;
       eT=0.; phi=0.; eta=0.;
       
@@ -3409,7 +3408,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(!mcpart->IsPhysicalPrimary()) {continue;}
       
       pdg = mcpart->GetPdgCode();
-      
       if(pdg != 22 /*|| mcpart->GetLabel()!=8*/ )
       {continue;}
       
@@ -3425,13 +3423,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         if((TMath::Abs(eta)>0.87-fIsoConeRadius ) || (phi < 1.398 || phi>(TMath::Pi()-0.03)))
           continue;
       }
+      
         //printf("\nParticle Position %d  and Label: %d  PDG: %d  Pt: %f  Eta: %f  Phi: %f",iTr, mcpart->GetLabel(),pdg,mcpart->Pt(), eta, phi);
       
       photonlabel = iTr;
       int momidx = mcpart->GetMother();
-      
-      mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
-      mompdg= TMath::Abs(mom->GetPdgCode());
+      if(momidx>0){
+        mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
+        mompdg= TMath::Abs(mom->GetPdgCode());
+      }
+      else
+        mompdg=mcpart->GetPdgCode();
       
         //printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
       
@@ -3469,7 +3471,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         
         if(iTrack==photonlabel)
           continue;
-        
         mcpp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
         
         if(!mcpp) {continue;}
@@ -3490,7 +3491,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         
         phip = mcpp->Phi();
         etap = mcpp->Eta();
-        
+
           //Depending on which Isolation method and UE method is considered.
         distance= TMath::Sqrt((phi-phip)*(phi-phip) + (eta-etap)*(eta-etap));
         
@@ -3536,10 +3537,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       
       if(mcsearch->GetStatus()>10) continue;
       if(mcsearch->GetPdgCode()!=22) continue;
-      if(TMath::Abs(mcsearch->Eta())>0.67-fIsoConeRadius) continue;
-      if(mcsearch->Phi()<= 1.798 ||mcsearch->Phi()>= TMath::Pi()) continue;
-      
-      mcfirstEnergy= mcsearch->E();
+      if(!fTPC4Iso){
+        if((TMath::Abs(mcsearch->Eta())>0.67-fIsoConeRadius ) || (mcsearch->Phi() < 1.398 + fIsoConeRadius || mcsearch->Phi()>(TMath::Pi()-fIsoConeRadius-0.03)))
+          continue;
+      }
+      else {
+        if((TMath::Abs(mcsearch->Eta())>0.87-fIsoConeRadius ) || (mcsearch->Phi() < 1.398 || mcsearch->Phi()>(TMath::Pi()-0.03)))
+          continue;
+      }
+
+      mcfirstEnergy= mcsearch->E()*TMath::Sin(mcsearch->Theta());
       if(mcfirstEnergy>maxE){
         maxE=mcfirstEnergy;
         indexmaxE=iTr;
@@ -3548,10 +3555,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     }
     mcfirst= static_cast<AliAODMCParticle*>(fAODMCParticles->At(indexmaxE));
     mcfirstEnergy=mcfirst->E()*TMath::Sin(mcfirst->Theta());
-    
+
     int momidx= mcfirst->GetMother();
-    mcfirstmom =  static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
-    mompdg= TMath::Abs(mcfirstmom->GetPdgCode());
+    if(momidx>0){
+      mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
+      mompdg= TMath::Abs(mom->GetPdgCode());
+    }
+    else
+      mompdg=mcfirst->GetPdgCode();
+    
     mcFirstEta = mcfirst->Eta();
     mcFirstPhi = mcfirst->Phi();
     
@@ -3560,7 +3572,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     
     for(Int_t iTrack=1;iTrack<nTracks ;iTrack++){
       if(iTrack==indexmaxE) continue;
-      
+
       mcpp= static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
       phip = mcpp->Phi();
       etap = mcpp->Eta();
@@ -3568,9 +3580,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         continue;
       
       if(mcpp->GetStatus()>10) continue;
-      if(mcpp->GetPdgCode()==22)continue;
-      if(TMath::Abs(etap>0.7)) continue;
-      if(phip<=1.4 || phip>= TMath::Pi()) continue;
+      if(!mcpp->IsPrimary())continue;
+      
       distance=0.;
       distance= TMath::Sqrt((mcFirstPhi- phip)*(mcFirstPhi- phip) + (mcFirstEta- etap)*(mcFirstEta- etap));
       
@@ -3584,8 +3595,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       //  cout<<"\n\nTotal Energy inside the Isolation Cone : "<<sumEiso<<endl;
     CalculateUEDensityMC(sumUE);
       //cout<<"Total UE Energy : "<<sumUE<<" calculated with method "<<fUEMethod<<endl;
-    
+    outputValuesMC[0] = mcfirstEnergy;
+    outputValuesMC[1] = sumEiso;
+    outputValuesMC[2] = sumUE;
+    outputValuesMC[3] = mompdg;
+    outputValuesMC[4] = mcFirstEta;
+    outputValuesMC[5] = mcFirstPhi;
+    outputValuesMC[6] = mcfirst->GetLabel();
       //Fill the Output TTree for MC Truth
+    if(fWho==1)
+      fOutMCTruth->Fill(outputValuesMC);
+
   }
   
   return;
