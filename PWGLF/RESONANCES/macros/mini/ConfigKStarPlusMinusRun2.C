@@ -87,7 +87,7 @@ Bool_t ConfigKStarPlusMinusRun2
     if(ptDep){
    esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     }else
-   esdTrackCuts->SetMinDCAToVertexXY(dcaxy); //Use one of the two - pt dependent or fixed value cut.
+   esdTrackCuts->SetMinDCAToVertexXY(DCAxy); //Use one of the two - pt dependent or fixed value cut.
   
    //
    /////////////////////////////////////////////////
@@ -205,7 +205,7 @@ Bool_t ConfigKStarPlusMinusRun2
      out->SetPairCuts(cutsPair);
      // axis X: invmass
      if (useIM[i]) 
-       out->AddAxis(imID, 90, 0.6, 1.5);
+       out->AddAxis(imID, 900, 0.6, 1.5);
      //  out->AddAxis(imID, 700, 1.2, 4.0);
      // axis Y: transverse momentum
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -257,7 +257,7 @@ Bool_t ConfigKStarPlusMinusRun2
      // pair cuts
      out->SetPairCuts(cutsPair);
      // binnings
-     out->AddAxis(imID, 90, 0.6, 1.5);
+     out->AddAxis(imID, 900, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
      //out->AddAxis(k0sDCA, 10, 0.0, 1.0);
      
@@ -275,7 +275,7 @@ Bool_t ConfigKStarPlusMinusRun2
      // pair cuts
      out->SetPairCuts(cutsPair);
      // binnings
-     out->AddAxis(imID, 90, 0.6, 1.5);
+     out->AddAxis(imID, 900, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
      //out->AddAxis(k0sDCA, 10, 0.0, 1.0);
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
