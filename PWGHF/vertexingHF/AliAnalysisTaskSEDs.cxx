@@ -1443,7 +1443,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 	  isDaugInAcc = CheckDaugAcc(arrayMC,nProng,labDau);
                     
 	  if(isFidAcc) {
-	    Double_t var4nSparseAcc[2] = {pt,rapid};
+	    Double_t var4nSparseAcc[2] = {pt,rapid*10};
 	    if(isDaugInAcc) {
 	      if(orig==4) fnSparseMCDplus[0]->Fill(var4nSparseAcc);
 	      if(orig==5) fnSparseMCDplus[1]->Fill(var4nSparseAcc);
