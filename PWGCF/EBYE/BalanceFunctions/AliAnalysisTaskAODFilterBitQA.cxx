@@ -29,9 +29,10 @@ AliAnalysisTaskAODFilterBitQA::AliAnalysisTaskAODFilterBitQA(const char *name)
   : AliAnalysisTaskSE(name),
   fArrayMC(0x0),
   fListQA(0x0),
+  useAdditionalTrackCuts(kFALSE),
   useCentrality(kFALSE),
-  fUseMultSelectionFramework(kFALSE),
-  fUseUncheckedCentrality(kFALSE),
+  useMultSelectionFramework(kFALSE),
+  useUncheckedCentrality(kFALSE),
   fillOnlySecondaries(kFALSE),
   fillHFVertexingTracks(kFALSE),
   fHFBranchName("D0toKpi"),
@@ -44,7 +45,9 @@ AliAnalysisTaskAODFilterBitQA::AliAnalysisTaskAODFilterBitQA(const char *name)
   fEtaMin(-10),
   fEtaMax(10),
   fHistEventStats(0),
-  fHistTrackStats(0)
+  fHistTrackStats(0),
+  fHistTrackStats2(0),
+  fHistTrackStats3(0)
 {
 
   for(Int_t iCharge = 0; iCharge < gNCharge; iCharge++){
@@ -86,8 +89,12 @@ void AliAnalysisTaskAODFilterBitQA::UserCreateOutputObjects() {
   // QA histograms
   fHistEventStats = new TH2D("fHistEventStats","Event statistics;Centrality;EventTriggerBit;N_{events}",104,-2,102,32,0,32);
   fListQA->Add(fHistEventStats);
-  fHistTrackStats = new TH2D("fHistTrackStats","Track statistics;Centrality;TrackFilterBit;N_{events}",100,0,100,gBitMax,0,gBitMax);
+  fHistTrackStats = new TH2D("fHistTrackStats","Track statistics;Centrality;TrackFilterBit;N_{tracks}",100,0,100,gBitMax,0,gBitMax);
   fListQA->Add(fHistTrackStats);
+  fHistTrackStats2 = new TH2D("fHistTrackStats2","Track statistics 2;TrackFilterBit;Fired bits;N_{tracks}",gBitMax,0,gBitMax,gBitMax,0,gBitMax);
+  fListQA->Add(fHistTrackStats2);
+  fHistTrackStats3 = new TH1D("fHistTrackStats3","Track statistics 3;N_{AODtracks};N_{ESDtracks}",10,0,10);
+  fListQA->Add(fHistTrackStats3);
 
   TString sCharge[gNCharge] = {"Plus","Minus"};
   
@@ -198,13 +205,13 @@ Double_t AliAnalysisTaskAODFilterBitQA::IsEventAccepted(AliVEvent *event){
 	      if(useCentrality){
 
 		// use AliMultSelection framework
-		if (fUseMultSelectionFramework) {
+		if (useMultSelectionFramework) {
 
 		  AliMultSelection *multSelection = (AliMultSelection*) event->FindListObject("MultSelection");
 		  if (!multSelection)
 		    AliFatal("MultSelection not found in input event");
 		  
-		  if (fUseUncheckedCentrality)
+		  if (useUncheckedCentrality)
 		    gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kFALSE);
 		  else
 		    gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kTRUE);
@@ -260,6 +267,14 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
   Double_t pos[3];
   Double_t v[3];
 
+  Int_t ESDtrackID;
+      
+  const Int_t nESDtracks = 1000;
+  Int_t numberOfAODTracksPerESDTrack[nESDtracks];
+  for(Int_t iESDtracks = 0; iESDtracks<nESDtracks; iESDtracks++){
+    numberOfAODTracksPerESDTrack[iESDtracks] = 0;
+  }
+
   const AliVVertex *vertex = event->GetPrimaryVertex();
   vertex->GetXYZ(v);
 
@@ -281,7 +296,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
 	continue;      
     }
 
-    // track parameters
+     // track parameters
     vEta    = aodTrack->Eta();
     vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
     vPt     = aodTrack->Pt();
@@ -289,7 +304,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
     vDCAconstrainedz   = aodTrack->ZAtDCA();   
     vChi2   = aodTrack->Chi2perNDF(); 
     vClus   = aodTrack->GetTPCNcls(); 
-    
+
     // calculate pT resolution
     double cov[21],p[3];
     aodTrack->GetPxPyPz(p);
@@ -299,12 +314,6 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
     double sigPt = cov[9]*px2pt*px2pt+cov[14]*py2pt*py2pt + 2.*cov[13]*px2pt*py2pt;
     if (sigPt>0) vPtRes = TMath::Sqrt(sigPt);
     else vPtRes = -666;
-    
-    // kinematic cuts
-    if( vPt > fPtMax || vPt < fPtMin )
-      continue;
-    if( vEta > fEtaMax || vEta < fEtaMin )
-      continue;
 
     // if not constrained track the position is stored (primary vertex to be subtracted)
     aodTrack->GetXYZ(pos);
@@ -312,7 +321,76 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
     vDCAglobaly  = pos[1] - v[1];
     vDCAglobalz  = pos[2] - v[2];
     
-    // fill for separately for positive and negative charges
+    // kinematic cuts
+    if( vPt > fPtMax || vPt < fPtMin )
+      continue;
+    if( vEta > fEtaMax || vEta < fEtaMin )
+      continue;
+
+    // =====================================================================
+    // additional AOD track cuts (if activated)
+    if(useAdditionalTrackCuts){
+
+      // at the moment hard coded (taken from LMee cutlib Aaron Capon)
+      Double_t d0z0[2]={-999.0,-999.0};
+      GetDCA(event,aodTrack, d0z0);      
+      if(d0z0[0] < -1.0 || d0z0[0] > 1.0)
+	continue;
+      if(d0z0[1] < -3.0 || d0z0[1] > 3.0)
+	continue;
+
+      Int_t nITSclus = aodTrack->GetITSNcls();
+      if(nITSclus < 4 || nITSclus > 100)
+	continue;
+
+      Double_t chi2ITSclus = (nITSclus>0)?aodTrack->GetITSchi2()/nITSclus:-1.;
+      if(chi2ITSclus < 0.0 || chi2ITSclus > 36.0)
+	continue;
+
+      Int_t nTPCclus = aodTrack->GetTPCNcls();
+      if(nTPCclus < 70 || nTPCclus > 200)
+	continue;
+      
+      Int_t nTPCrows = aodTrack->GetTPCClusterInfo(2,1);
+      if(nTPCrows < 60 || nTPCrows > 200)
+	continue;
+
+       Double_t chi2TPCclus = (nTPCclus>0)?aodTrack->Chi2perNDF()*(nTPCclus-5)/nTPCclus:-1.;
+       if(chi2TPCclus < 0.0 || chi2TPCclus > 6.0)
+	continue;
+
+       Int_t NFclsTPC = aodTrack->GetTPCNclsF();
+       Double_t NFclsTPCfCross = (NFclsTPC>0)?(nTPCrows/NFclsTPC):0;
+       if(NFclsTPCfCross < 0.3 || NFclsTPCfCross > 1.1)
+	continue;
+       
+    }
+    // =====================================================================
+
+    // book keeping of number of AOD tracks per ESD track
+    ESDtrackID = aodTrack->GetID();
+    if(ESDtrackID<0)
+      ESDtrackID = -1 -ESDtrackID; // TPC only and constrained tracks are storing the ID as -ID - 1
+    
+    if(ESDtrackID>=nESDtracks){
+      AliWarning(Form("ESD track ID %d bigger than maximum %d -> ignore this ESD track.",ESDtrackID,nESDtracks));
+    }
+    else{
+      numberOfAODTracksPerESDTrack[ESDtrackID]++;
+    }
+    
+    // first find out how many bits are fired
+    Int_t iFiredBits = 0;
+    for(Int_t iTrackBit = 0; iTrackBit < gBitMax-1; iTrackBit++){
+      if(aodTrack->TestFilterBit(1<<iTrackBit)){
+	if(numberOfAODTracksPerESDTrack[ESDtrackID]>1){
+	  AliInfo(Form("Track %d with Bit %d was already found before -> %d AOD tracks per ESD track",iTracks,iTrackBit,numberOfAODTracksPerESDTrack[ESDtrackID]));
+	}
+	iFiredBits++;
+      }
+    }
+
+    // then fill for separately for positive and negative charges
     Int_t iCharge = -1;
     // positive 
     if(aodTrack->Charge() > 0)
@@ -323,14 +401,14 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
       AliError("Charge==0?");
       iCharge = -1;
     }
-
-
+    
     // AOD track cuts
     if(iCharge > -1){
       for(Int_t iTrackBit = 0; iTrackBit < gBitMax-1; iTrackBit++){
 	fHistTrackStats->Fill(gCentrality,iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
 	
 	if(aodTrack->TestFilterBit(1<<iTrackBit)){
+	  fHistTrackStats2->Fill(iTrackBit,iFiredBits);
 	  fHistKinematics[iCharge][iTrackBit]->Fill(vEta,vPhi,vPt);
 	  fHistDCAconstrained[iCharge][iTrackBit]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
 	  fHistDCAglobal[iCharge][iTrackBit]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
@@ -338,7 +416,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
 	  fHistPtRes[iCharge][iTrackBit]->Fill(vPt,vPtRes/vPt);
 	} 
       }//bit loop
-      
+
       // fill all tracks in last bit
       fHistTrackStats->Fill(gCentrality,gBitMax-1,1);
       fHistKinematics[iCharge][gBitMax-1]->Fill(vEta,vPhi,vPt);
@@ -349,6 +427,11 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
       
     }//charge positive or negative
   }//track loop
+
+  for(Int_t iESDtracks = 0; iESDtracks<nESDtracks; iESDtracks++){
+    if(numberOfAODTracksPerESDTrack[iESDtracks]>0)
+      fHistTrackStats3->Fill(numberOfAODTracksPerESDTrack[iESDtracks]);
+  }
   
   return;  
 }
@@ -507,4 +590,38 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedHFVertexingTracks(AliVEvent *even
    }//HF vertex loop
    
   return;  
+}
+
+
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskAODFilterBitQA::GetDCA(const AliVEvent *event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0)
+// this was taken from AliDielectronVarManager
+{
+  if(track->TestBit(AliAODTrack::kIsDCA)){
+    d0z0[0]=track->DCA();
+    d0z0[1]=track->ZAtDCA();
+    // the covariance matrix is not stored in case of AliAODTrack::kIsDCA
+    return kTRUE;
+  }
+
+  Bool_t ok=kFALSE;
+  if(event) {
+    AliExternalTrackParam etp; etp.CopyFromVTrack(track);
+
+    Float_t xstart = etp.GetX();
+    if(xstart>3.) {
+      d0z0[0]=-999.;
+      d0z0[1]=-999.;
+      return kFALSE;
+    }
+
+    AliAODVertex *vtx =(AliAODVertex*)(event->GetPrimaryVertex());
+    Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
+    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+  }
+  if(!ok){
+    d0z0[0]=-999.;
+    d0z0[1]=-999.;
+  }
+  return ok;
 }
