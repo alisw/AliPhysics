@@ -842,9 +842,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
         if (pid[iS]) {
           if (pidtr == iS) {
-            (itsRefit ? fHistPtResidVsPtTPCselITSrefGoodHyp[iS] : fHistPtResidVsPtTPCselGoodHyp[iS])->Fill(pttrack,(pttrack-ptgen));
+            (itsRefit ? fHistPtResidVsPtTPCselITSrefGoodHyp[iS] : fHistPtResidVsPtTPCselGoodHyp[iS])->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
           } else {
-            (itsRefit ? fHistPtResidVsPtTPCselITSrefBadHyp[iS] : fHistPtResidVsPtTPCselBadHyp[iS])->Fill(pttrack,(pttrack-ptgen));
+            (itsRefit ? fHistPtResidVsPtTPCselITSrefBadHyp[iS] : fHistPtResidVsPtTPCselBadHyp[iS])->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
           }
         }
       }

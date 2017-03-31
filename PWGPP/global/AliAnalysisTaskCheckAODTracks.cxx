@@ -659,7 +659,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       (itsRefit ? fHistPtResidVsPtTPCselITSrefAll : fHistPtResidVsPtTPCselAll)->Fill(ptgen,(pttrack-ptgen));
       for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
         if (pid[iS]) {
-          (itsRefit ? fHistPtResidVsPtTPCselITSref[iS] : fHistPtResidVsPtTPCsel[iS])->Fill(pttrack,(pttrack-ptgen));
+          (itsRefit ? fHistPtResidVsPtTPCselITSref[iS] : fHistPtResidVsPtTPCsel[iS])->Fill(pttrack*AliPID::ParticleCharge(iS),(pttrack*AliPID::ParticleCharge(iS)-ptgen));
         }
       }
     
