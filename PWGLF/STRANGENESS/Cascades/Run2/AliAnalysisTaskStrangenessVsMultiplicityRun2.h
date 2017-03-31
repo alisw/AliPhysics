@@ -296,16 +296,12 @@ private:
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff;      //!
     Float_t fTreeVariablePosTOFExpTDiff;      //!
-    Float_t fTreeVariableNegTOFSignal;        //!
-    Float_t fTreeVariablePosTOFSignal;        //!
-    Int_t   fTreeVariableNegTOFBunchCrossing; //!
-    Int_t   fTreeVariablePosTOFBunchCrossing; //!
-    //Event info
-    Int_t  fTreeVariableNTOFClusters;  //!
-    Int_t  fTreeVariableNTOFMatches;   //!
-    Int_t  fTreeVariableNTracksITSsa2010; //!
-    Int_t  fTreeVariableNTracksGlobal2015; //!
-    Int_t  fTreeVariableNTracksGlobal2015TriggerPP; //!
+    ////Event info
+    //Int_t  fTreeVariableNTOFClusters;  //!
+    //Int_t  fTreeVariableNTOFMatches;   //!
+    //Int_t  fTreeVariableNTracksITSsa2010; //!
+    //Int_t  fTreeVariableNTracksGlobal2015; //!
+    //Int_t  fTreeVariableNTracksGlobal2015TriggerPP; //!
 
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
