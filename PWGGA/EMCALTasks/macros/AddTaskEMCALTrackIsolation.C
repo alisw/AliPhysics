@@ -18,6 +18,7 @@ AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
                                                                const Int_t     iPtIsoMethod   = 0,
                                                                const Int_t     iUEMethod      = 1,
                                                                const Bool_t    bUseofTPC      = kFALSE,
+                                                               const Bool_t    isLTAnalysis   = kTRUE,
                                                                const Float_t   iIsoConeRadius = 0.4,
                                                                const Bool_t    i_pPb          = kFALSE,
                                                                const Bool_t    isQA           = kTRUE,
@@ -43,7 +44,7 @@ AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
   else
     myContName = Form("Analysis_Tracks");
   
-  myContName.Append(Form("_PtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f",iPtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius));
+  myContName.Append(Form("_PtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_LeadTrack_%s",iPtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,isLTAnalysis?"yes":"no"));
   
   cout<<myContName<<endl;
     // #### Define analysis task
@@ -98,12 +99,13 @@ AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
   cout<<task<<endl;
     // #### Task preferences
     //  task->SetLCAnalysis(kFALSE);
-  cout<<iIsoConeRadius<<"\t"<<PtIso<<"\t"<<iPtIsoMethod<<"\t"<<iUEMethod<<"\t"<<bUseofTPC<<"\t"<<bIsMC<<"\t"<<i_pPb<<"\t"<<bmcTruth<<endl;
+  cout<<iIsoConeRadius<<"\t"<<PtIso<<"\t"<<iPtIsoMethod<<"\t"<<iUEMethod<<"\t"<<bUseofTPC<<"\t"<<isLTAnalysis<<"\t"<<bIsMC<<"\t"<<i_pPb<<"\t"<<bmcTruth<<endl;
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetPtIsoThreshold(PtIso); // after should be replace by EtIso
   task->SetPtIsoMethod(iPtIsoMethod);
   task->SetUEMethod(iUEMethod);
   task->SetUSEofTPC(bUseofTPC);
+  task->SetLTAnalysis(isLTAnalysis);
   task->SetMC(bIsMC);
   task->SetAnalysispPb(i_pPb);
   task->SetQA(isQA);

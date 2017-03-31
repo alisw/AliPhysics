@@ -261,18 +261,27 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB");
+//  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
 
   for (Int_t r=0;r<nRuns;r++){
     t->GetEntry(r);
+//    if (run==253660) continue;
+//    if (run>=255042 && run<=255076) continue;
+//    if (TMath::Abs(aV0MOnVsOfVal)<1e-5) continue;
+//    if (TMath::Abs(bV0MOnVsOfVal)<1e-5) continue;
+//    if (TMath::Abs(aSPDOnVsOfVal)<1e-5) continue;
+//    if (TMath::Abs(bSPDOnVsOfVal)<1e-5) continue;    
+
 //    if (!partition->String().Contains("PHYSICS_1")) continue;
 //    if (!lhcState->String().Contains("STABLE")) continue;
 //    if (!lhcPeriod->String().Contains("LHC15o")) continue;
     Double_t thr = 0;
-    man->SetRun(run);
-    AliCDBEntry* triggerEntry = man->Get("VZERO/Trigger/Data");
-    AliVZEROTriggerData* trigData = triggerEntry ? (AliVZEROTriggerData*) triggerEntry->GetObject() : 0;
-    thr = trigData ? trigData->GetCentralityV0AThrLow() : 0;
-
+    if (1) {
+      man->SetRun(run);
+      AliCDBEntry* triggerEntry = man->Get("VZERO/Trigger/Data");
+      AliVZEROTriggerData* trigData = triggerEntry ? (AliVZEROTriggerData*) triggerEntry->GetObject() : 0;
+      thr = trigData ? trigData->GetCentralityV0AThrLow() : 0;
+    }
     char* srun = Form("%i",run);
     hInteractionRate->Fill(srun,interactionRate);
     hMu             ->Fill(srun,mu);
@@ -653,6 +662,10 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hBCs->Write();
   hDuration->Write();
   hLumiSeen->Write();
+  hMeanTKL->Write();
+  hMeanTKLHM->Write();
+  hMeanV0MOf->Write();
+  hMeanV0MOn->Write();
   fglobal->Close();
 
   TFile* fclassL0B = new TFile("class_L0B_counts.root","recreate");
@@ -739,7 +752,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   }
   gPad->Print("class_lumi.pdf]");
   fclassLumi->Close();
-  
+
   TCanvas* dummy = new TCanvas("dummy","dummy",1800,500);
   gPad->SetMargin(0.05,0.01,0.18,0.06);
   gPad->Print("alias_event_statistics.pdf[");
@@ -761,21 +774,21 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   for (Int_t i=1;i<=hRecorded->GetNbinsY();i++) {
     char* bitName = hRecorded->GetYaxis()->GetBinLabel(i);
     printf("bit=%i %s\n",i,bitName);
-    TH1D* hRecorded1D = hRecorded->ProjectionX(Form("hRecorded%02i",i),i,i);
-    TH1D* hReconstructed1D = hReconstructed->ProjectionX(Form("hReconstructed%02i",i),i,i);
-    TH1D* hAccepted1D  = hAccepted->ProjectionX(Form("hAccepted%02i",i),i,i);
-    TH1D* hAccStep1_1D = hAccStep1->ProjectionX(Form("hAccStep1_%02i",i),i,i);
-    TH1D* hAccStep2_1D = hAccStep2->ProjectionX(Form("hAccStep2_%02i",i),i,i);
-    TH1D* hAccStep3_1D = hAccStep3->ProjectionX(Form("hAccStep3_%02i",i),i,i);
-    TH1D* hAccStep4_1D = hAccStep4->ProjectionX(Form("hAccStep4_%02i",i),i,i);
-    TH1D* hAccStep5_1D = hAccStep5->ProjectionX(Form("hAccStep5_%02i",i),i,i);
-    TH1D* hAccStep6_1D = hAccStep6->ProjectionX(Form("hAccStep6_%02i",i),i,i);
-    TH1D* hAccStep7_1D = hAccStep7->ProjectionX(Form("hAccStep7_%02i",i),i,i);
+    TH1D* hRecorded1D = hRecorded->ProjectionX(Form("hRecorded_%s",bitName),i,i);
+    TH1D* hReconstructed1D = hReconstructed->ProjectionX(Form("hReconstructed_%s",bitName),i,i);
+    TH1D* hAccepted1D  = hAccepted->ProjectionX(Form("hAccepted_%s",bitName),i,i);
+    TH1D* hAccStep1_1D = hAccStep1->ProjectionX(Form("hAccStep1_%s",bitName),i,i);
+    TH1D* hAccStep2_1D = hAccStep2->ProjectionX(Form("hAccStep2_%s",bitName),i,i);
+    TH1D* hAccStep3_1D = hAccStep3->ProjectionX(Form("hAccStep3_%s",bitName),i,i);
+    TH1D* hAccStep4_1D = hAccStep4->ProjectionX(Form("hAccStep4_%s",bitName),i,i);
+    TH1D* hAccStep5_1D = hAccStep5->ProjectionX(Form("hAccStep5_%s",bitName),i,i);
+    TH1D* hAccStep6_1D = hAccStep6->ProjectionX(Form("hAccStep6_%s",bitName),i,i);
+    TH1D* hAccStep7_1D = hAccStep7->ProjectionX(Form("hAccStep7_%s",bitName),i,i);
     
-    TH1D* hRejected1D = hReconstructed->ProjectionX(Form("hRejected1D%02i",i),i,i);
-    TH1D* hLumiRecorded1D = hLumiRecorded->ProjectionX(Form("hLumiRecorded%02i",i),i,i);
-    TH1D* hLumiReconstructed1D = hLumiReconstructed->ProjectionX(Form("hLumiReconstructed%02i",i),i,i);
-    TH1D* hLumiAccepted1D = hLumiAccepted->ProjectionX(Form("hLumiAccepted%02i",i),i,i);
+    TH1D* hRejected1D = hReconstructed->ProjectionX(Form("hRejected1D_%s",bitName),i,i);
+    TH1D* hLumiRecorded1D = hLumiRecorded->ProjectionX(Form("hLumiRecorded_%s",bitName),i,i);
+    TH1D* hLumiReconstructed1D = hLumiReconstructed->ProjectionX(Form("hLumiReconstructed_%s",bitName),i,i);
+    TH1D* hLumiAccepted1D = hLumiAccepted->ProjectionX(Form("hLumiAccepted_%s",bitName),i,i);
     hRejected1D->Add(hAccepted1D,-1);
     
     if (hReconstructed1D->Integral()<1) continue;
@@ -810,14 +823,14 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hLumiAccepted1D->SetLineColor(kGreen+2);
     hLumiAccepted1D->SetFillColor(kGreen+2);
 
-    TH1D* hAcceptedFraction = (TH1D*) hReconstructed1D->Clone(Form("hAcceptedFraction%02i",ibit));
-    TH1D* hAccStep1Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep1Fraction%02i",ibit));
-    TH1D* hAccStep2Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep2Fraction%02i",ibit));
-    TH1D* hAccStep3Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep3Fraction%02i",ibit));
-    TH1D* hAccStep4Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep4Fraction%02i",ibit));
-    TH1D* hAccStep5Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep5Fraction%02i",ibit));
-    TH1D* hAccStep6Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep61raction%02i",ibit));
-    TH1D* hAccStep7Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep71raction%02i",ibit));
+    TH1D* hAcceptedFraction = (TH1D*) hReconstructed1D->Clone(Form("hAcceptedFraction_%s",bitName));
+    TH1D* hAccStep1Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep1Fraction_%s",bitName));
+    TH1D* hAccStep2Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep2Fraction_%s",bitName));
+    TH1D* hAccStep3Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep3Fraction_%s",bitName));
+    TH1D* hAccStep4Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep4Fraction_%s",bitName));
+    TH1D* hAccStep5Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep5Fraction_%s",bitName));
+    TH1D* hAccStep6Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep61raction_%s",bitName));
+    TH1D* hAccStep7Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep71raction_%s",bitName));
     hAcceptedFraction->SetTitle(Form("Accepted fraction: %s",bitName));
     hAcceptedFraction->Divide(hAccepted1D,hReconstructed1D,1,1,"B");
     hAccStep1Fraction->Divide(hAccStep1_1D,hReconstructed1D,1,1,"B");
@@ -829,7 +842,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hAccStep7Fraction->Divide(hAccStep7_1D,hReconstructed1D,1,1,"B");
     hAcceptedFraction->SetFillColor(0);
     hAcceptedFraction->SetLineWidth(2);
-    TH1D* hRejectedFraction = (TH1D*) hReconstructed1D->Clone(Form("hRejectedFraction%02i",ibit));
+    TH1D* hRejectedFraction = (TH1D*) hReconstructed1D->Clone(Form("hRejectedFraction_%s",bitName));
     hRejectedFraction->SetTitle(Form("Rejected fraction: %s",bitName));
     hRejectedFraction->Divide(hRejected1D,hReconstructed1D,1,1,"B");
     hRejectedFraction->SetFillColor(0);
@@ -869,6 +882,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
 //    hAcceptedFraction->Draw();
     hAccStep1Fraction->SetTitle(hAcceptedFraction->GetTitle());
+    hAccStep1Fraction->SetMinimum(hAccStep7Fraction->GetMinimum()*0.9);
     hAccStep1Fraction->Draw();
     hAccStep2Fraction->Draw("same");
     hAccStep3Fraction->Draw("same");
@@ -876,7 +890,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hAccStep5Fraction->Draw("same");
     hAccStep6Fraction->Draw("same");
     hAccStep7Fraction->Draw("same");
-    
     AddFillSeparationLines(hAcceptedFraction,fills);
     AddPeriodSeparationLines(hAcceptedFraction,periods);
 
@@ -938,6 +951,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     
     cCounts->cd();
     hRecorded1D->SetTitle(Form("%s trigger counts: recorded=%0.f, total=%.0f, accepted=%.0f",bitName,hRecorded1D->Integral(),hReconstructed1D->Integral(),hAccepted1D->Integral()));
+    hReconstructed1D->SetTitle(Form("%s trigger counts: recorded=%0.f, total=%.0f, accepted=%.0f",bitName,hRecorded1D->Integral(),hReconstructed1D->Integral(),hAccepted1D->Integral()));
+    hAccepted1D->SetTitle(Form("%s trigger counts: recorded=%0.f, total=%.0f, accepted=%.0f",bitName,hRecorded1D->Integral(),hReconstructed1D->Integral(),hAccepted1D->Integral()));
     hRecorded1D->Draw("h");
     hReconstructed1D->Draw("h same");
     hAccepted1D->Draw("h same");
@@ -949,6 +964,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
     cLumi->cd();
     hLumiRecorded1D->SetTitle(Form("%s luminosity [ub-1]: recorded=%.0g, total=%.0g, accepted=%.0g",bitName,hLumiRecorded1D->Integral(),hLumiReconstructed1D->Integral(),hLumiAccepted1D->Integral()));
+    hLumiReconstructed1D->SetTitle(Form("%s luminosity [ub-1]: recorded=%.0g, total=%.0g, accepted=%.0g",bitName,hLumiRecorded1D->Integral(),hLumiReconstructed1D->Integral(),hLumiAccepted1D->Integral()));
+    hLumiAccepted1D->SetTitle(Form("%s luminosity [ub-1]: recorded=%.0g, total=%.0g, accepted=%.0g",bitName,hLumiRecorded1D->Integral(),hLumiReconstructed1D->Integral(),hLumiAccepted1D->Integral()));
     hLumiRecorded1D->Draw("h");
     hLumiReconstructed1D->Draw("h same");
     hLumiAccepted1D->Draw("h same");
@@ -1004,6 +1021,7 @@ void SetHisto(TH2D* h, Bool_t setMinimumToZero){
 }
 
 void AddFillSeparationLines(TH1* h, map<Int_t,Int_t> &fills){
+//  return;
   gPad->Update();
   Double_t ymin = gPad->GetUymin();
   Double_t ymax = gPad->GetUymax();

@@ -405,7 +405,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter,   Bool_t caloType, TS
   // cluster selection cuts
   
   ana->SwitchOnFiducialCut(); 
-  if(caloType==0)ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 100, 187) ; // EMC 
+  if(caloType==0)ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
   else           ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC
   ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
 
@@ -604,7 +604,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,  TString c
     
   if(collision.Contains("Pb"))   ana->SwitchOnFillHighMultiplicityHistograms();
   
-  ana->SetMinPt(7);
+  ana->SetMinPt(5);
   
   ana->SwitchOffStudyTracksInCone() ;
   ana->SwitchOnUEBandSubtractionHistoFill();
@@ -709,7 +709,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
 
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
-  ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
+  ana->SwitchOffAbsoluteLeading(); // Select trigger leading particle of all the selected tracks
   ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
   //ana->SwitchOnLeadHadronSelection();

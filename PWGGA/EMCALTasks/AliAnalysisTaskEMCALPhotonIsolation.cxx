@@ -1010,6 +1010,74 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
 }
 
   //______________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
+{
+  Int_t index=0;
+  TLorentzVector vecCOI;
+  coi->GetMomentum(vecCOI,fVertex);
+  Double_t coiTOF = coi->GetTOF()*1e9;
+
+  if(!fIsMC){
+    if(coiTOF< -30. || coiTOF > 30.)
+      return kFALSE;
+  }
+  fPtaftTime->Fill(vecCOI.Pt());
+  
+  if((coi->GetNCells() < 2))
+    return kFALSE;
+  
+  fPtaftCell->Fill(vecCOI.Pt());
+  
+  Int_t nlm=0;
+  AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
+  if(fCaloCells)
+  {
+    nlm = GetNLM(coi,fCaloCells);
+    AliDebug(1,Form("NLM = %d",nlm));
+    
+      // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
+    if(coi->E()>=5. && coi->E()<70. && fQA)
+      fNLM->Fill(nlm,coi->E());
+    if(fIsNLMCut && fNLMCut>0 && fNLMmin>0)
+      if(nlm > fNLMCut || nlm < fNLMmin ){
+          //AliWarning(Form("NLM = %d --- NLM min = %d --- NLMcut = %d",nlm,fNLMmin,fNLMCut));
+        return kFALSE;
+      }
+  }
+  else{
+    AliDebug(1,Form("Can't retrieve EMCAL cells"));
+    return kFALSE;
+  }
+  
+  fPtaftNLM->Fill(vecCOI.Pt());
+  if(fTMClusterRejected)
+  {
+    if(ClustTrackMatching(coi,kTRUE))
+      return kFALSE;
+  }
+  fPtaftTM->Fill(vecCOI.Pt());
+  if((coi->GetDistanceToBadChannel() < 2)) return kFALSE;
+  
+  fPtaftDTBC->Fill(vecCOI.Pt());
+  
+  if(!CheckBoundaries(vecCOI))
+    return kFALSE;
+  
+  fPtaftFC->Fill(vecCOI.Pt());
+  
+  if(fQA){
+    fTestIndexE->Fill(vecCOI.Pt(),index);
+  }
+  if(vecCOI.Pt()<5.)
+    return kFALSE;
+  
+  if(fQA)
+    fNLM2_NC_Acc->Fill(nlm,coi->E());
+  
+  return kTRUE;
+}
+
+  //______________________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 {
     // Run the analysis.
@@ -1114,37 +1182,32 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     AliVCluster *coi = (clusters->GetLeadingCluster());
     
     if(!coi){
-      
       AliError(Form("No leading cluster"));
       return kFALSE;
     }
-    
-    
-      //   index = coi->IdInCollection();
-    index = coi->GetID();
-      //add a command to get the index of the leading cluster!
     if (!coi->IsEMCAL()) return kFALSE;
     
-      // AliVCluster *coi = emccluster->GetCluster();
-      // if (!coi) return kFALSE;
-    
+    index = coi->GetID();
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI,fVertex);
+    if(fQA)  FillQAHistograms(coi,vecCOI);
     
-    
-    Double_t coiTOF = coi->GetTOF()*1e9;
-    if(coiTOF<-30. || coiTOF>30.)
-      return kFALSE;
-    
-    
-    if(ClustTrackMatching(coi,kTRUE))
-      return kFALSE;
-    
-    if(!CheckBoundaries(vecCOI))
-      return kFALSE;
-    
-    else
+    Bool_t isSelected=SelectCandidate(coi);
+
+    if(isSelected){
+      for (auto it : tracksANA->accepted()){
+        AliVTrack *tr = static_cast<AliVTrack*>(it);
+        if(!tr) {
+          AliError("No track found");
+          return kFALSE;
+        }
+        fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
+        fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+        fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+      }
+
       FillGeneralHistograms(coi,vecCOI, index);
+    }
   }
   else{
       //get the entries of the Cluster Container
@@ -1157,84 +1220,30 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         AliError("No cluster found");
         return kFALSE;
       }
-        //
+      if (!coi->IsEMCAL()) return kFALSE;
       
       index=coi->GetID();
       TLorentzVector vecCOI;
       coi->GetMomentum(vecCOI,fVertex);
-      Double_t coiTOF = coi->GetTOF()*1e9;
-      Double_t coiM02 = coi->GetM02();
-      
       if(fQA)  FillQAHistograms(coi,vecCOI);
       
-      if(!fIsMC){
-        if(coiTOF< -30. || coiTOF > 30.)
-          continue;
-      }
-      fPtaftTime->Fill(vecCOI.Pt());
+      Bool_t isSelected=SelectCandidate(coi);
       
-      if((coi->GetNCells() < 2))
-        continue;
-      
-      fPtaftCell->Fill(vecCOI.Pt());
-      
-      Int_t nlm=0;
-      AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
-      if(fCaloCells)
-      {
-        nlm = GetNLM(coi,fCaloCells);
-        AliDebug(1,Form("NLM = %d",nlm));
-        
-          // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
-        if(coi->E()>=5. && coi->E()<70. && fQA)
-          fNLM->Fill(nlm,coi->E());
-        if(fIsNLMCut && fNLMCut>0 && fNLMmin>0)
-          if(nlm > fNLMCut || nlm < fNLMmin ){
-              //AliWarning(Form("NLM = %d --- NLM min = %d --- NLMcut = %d",nlm,fNLMmin,fNLMCut));
-            continue;
+      if(isSelected){
+        for (auto it : tracksANA->accepted()){
+          AliVTrack *tr = static_cast<AliVTrack*>(it);
+          if(!tr) {
+            AliError("No track found");
+            return kFALSE;
           }
-      }
-      else
-        AliDebug(1,Form("Can't retrieve EMCAL cells"));
-      
-      fPtaftNLM->Fill(vecCOI.Pt());
-      if(fTMClusterRejected)
-      {
-        if(ClustTrackMatching(coi,kTRUE))
-          continue;
-      }
-      fPtaftTM->Fill(vecCOI.Pt());
-      if((coi->GetDistanceToBadChannel() < 2)) continue;
-      
-      fPtaftDTBC->Fill(vecCOI.Pt());
-      
-      if(!CheckBoundaries(vecCOI))
-        continue;
-
-      fPtaftFC->Fill(vecCOI.Pt());
-      
-      if(fQA){
-        fTestIndexE->Fill(vecCOI.Pt(),index);
-      }
-      if(vecCOI.Pt()<5.)
-        continue;
-      
-      for (auto it : tracksANA->accepted()){
-        AliVTrack *tr = static_cast<AliVTrack*>(it);
-        if(!tr) {
-          AliError("No track found");
-          return kFALSE;
+          fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
+          fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+          fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
         }
-        fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
-        fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
-        fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+
+        FillGeneralHistograms(coi,vecCOI,index);
       }
-      if(fQA)
-        fNLM2_NC_Acc->Fill(nlm,coi->E());
-      
-      FillGeneralHistograms(coi,vecCOI,index);
     }
-    
   }
   return kTRUE;
 }

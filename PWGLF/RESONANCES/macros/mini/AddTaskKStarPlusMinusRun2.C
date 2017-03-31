@@ -84,8 +84,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Int_t       centr = 0,
  Bool_t      ptDep = kTRUE,
  Float_t     DCAxy = 0.06,
- Bool_t      enableSys = kTRUE,
- Int_t       Sys= 1
+ Bool_t      enableSys = kFALSE,
+ Int_t       Sys= 0
  )
 {  
   //-------------------------------------------                                                                                          

@@ -93,6 +93,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
     
     void    SetAdditionalPileUpCuts(Bool_t addpilupcuts) {fApplyAddPileUpCuts = addpilupcuts;};
+    
+    void    IsPbPb(Bool_t isPbPb) {fIsPbPb = isPbPb;};
 
   private:
     AliVEvent 		    *fVevent;//!V event object
@@ -143,6 +145,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fVtxZBin;//!
     Double_t            fCentBin;//!
     Bool_t              fFlagMEBinChange;//
+    Bool_t              fIsPbPb;//
 
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events

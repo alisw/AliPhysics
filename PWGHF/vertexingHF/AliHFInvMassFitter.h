@@ -67,6 +67,8 @@ class AliHFInvMassFitter : public TNamed {
     SetInitialReflOverS(rovers);
     fFixRflOverSig=kTRUE;
   }
+  void SetSmoothReflectionTemplate(Bool_t opt){fSmoothRfl=opt;}
+
   void IncludeSecondGausPeak(Double_t mass, Bool_t fixm, Double_t width, Bool_t fixw){
     fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width;
     fFixSecMass=fixm;  fFixSecWidth=fixw;

@@ -43,7 +43,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Int_t            minNLM                    = 1,
                                                                  const Double_t         TMdetaIso                 = 0.02,
                                                                  const Double_t         TMdphiIso                 = 0.03,
-                                                                 const Bool_t           bmcTruth                  = kTRUE
+                                                                 const Bool_t           bmcTruth                  = kTRUE,
+                                                                 const Bool_t           isLCAnalysis                     = kFALSE
                                                                  )
 {
   
@@ -64,7 +65,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   else
     myContName = Form("Analysis_Neutrals");
   
-  myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear));
+  myContName.Append(Form("_LC_%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d",isLCAnalysis?"Yes":"No",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear));
   
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
@@ -113,7 +114,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   
     // #### Task preferences
   task->SetOutputFormat(iOutput);
-  task->SetLCAnalysis(kFALSE);
+  task->SetLCAnalysis(isLCAnalysis);
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetEtIsoThreshold(EtIso); // after should be replace by EtIso
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta

@@ -139,6 +139,7 @@ protected:
   Double_t*                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
   void                     ExecOnce();
   Bool_t                   Run();
+  Bool_t                   SelectCandidate(AliVCluster* );
   void                     AnalyzeMC();
   void                     LookforParticle(Int_t, Double_t, Double_t, Double_t,Double_t,Double_t, Double_t);
   Bool_t                   MCSimTrigger(AliVEvent *eventIn, Int_t triggerLevel=0); // for the trigger level 1 = EMCEGA1 level 2 = EMCEGA2
