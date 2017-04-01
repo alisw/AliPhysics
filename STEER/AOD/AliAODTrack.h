@@ -159,7 +159,7 @@ class AliAODTrack : public AliVTrack {
   virtual Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * fMomentum[2])); }
 
   virtual Short_t  Charge() const {return fCharge; }
-
+  virtual Double_t GetSign() const {return fCharge; }
   virtual Bool_t   PropagateToDCA(const AliVVertex *vtx, 
 	  Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]);
 
