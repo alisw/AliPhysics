@@ -324,7 +324,7 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
               
                 // Check that the track is a final state charged hadron
                 // in the acceptance range of the analysis
-                if(cgl->IsFinal() && cgl->IsCharged() && cgl->IsHadron()
+                if(/*cgl->IsFinal() &&*/ cgl->IsCharged() && cgl->IsHadron()
                                   && fCard->IsInEtaRange(  cgl->Eta() )){
                     cgl->SetID(ii);
                     cgl->SetParticleType(kJHadronMC);
