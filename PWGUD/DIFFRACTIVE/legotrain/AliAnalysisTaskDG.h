@@ -43,7 +43,7 @@ public:
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
   void SetTriggerSelectionSPD(TString ts) { fTriggerSelectionSPD = ts; }
   void SetMaxTracksSave(Int_t m);
-
+ 
   TString GetListName() const { return fTrackCutType+"_TL"; }
   TString GetTreeName() const { return fTrackCutType+"_TE"; }
   TString GetResultsFileName() const { return "results.root"; }
@@ -64,6 +64,7 @@ public:
       , fOrbitID(0) {
       for (Int_t i=0; i<4; ++i)
 	fnTrklet[i] = 0;
+      fnFO[0] = fnFO[1] = 0;
     }
 
     void Fill(const AliVEvent *);
@@ -78,6 +79,7 @@ public:
     Int_t     fRunNumber;
     UShort_t  fnTrk;
     UShort_t  fnTrklet[4]; // all, C,cent,A
+    UShort_t  fnFO[2];     // inner,outer layer
     Char_t    fCharge;
     UShort_t  fL2Inputs;
     UShort_t  fOrbitID;
@@ -146,7 +148,7 @@ public:
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 5);
+    ClassDef(TreeData, 6);
   } ;
 
   struct TrackData : public TObject {
@@ -240,7 +242,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 10);
+  ClassDef(AliAnalysisTaskDG, 11);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
