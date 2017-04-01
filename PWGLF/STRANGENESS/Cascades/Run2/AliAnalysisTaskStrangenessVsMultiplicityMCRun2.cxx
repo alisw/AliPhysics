@@ -3001,9 +3001,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::SetupLooseVertexing()
     SetDoV0Refit(kTRUE);
     
     //V0-Related topological selections
-    SetV0VertexerDCAFirstToPV(0.05);
-    SetV0VertexerDCASecondtoPV(0.05);
-    SetV0VertexerDCAV0Daughters(1.20);
+    SetV0VertexerDCAFirstToPV(0.1);
+    SetV0VertexerDCASecondtoPV(0.1);
+    SetV0VertexerDCAV0Daughters(1.40);
     SetV0VertexerCosinePA(0.95);
     SetV0VertexerMinRadius(0.9);
     SetV0VertexerMaxRadius(200);
@@ -3012,8 +3012,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::SetupLooseVertexing()
     SetCascVertexerMinV0ImpactParameter(0.05);
     SetCascVertexerV0MassWindow(0.006);
     SetCascVertexerDCABachToPV(0.02);
-    SetCascVertexerDCACascadeDaughters(1.2);
-    SetCascVertexerCascadeMinRadius(.8);
+    SetCascVertexerDCACascadeDaughters(1.4);
+    SetCascVertexerCascadeMinRadius(.5);
     SetCascVertexerCascadeCosinePA(.95);
 }
 
@@ -3182,6 +3182,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
         0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
         2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
         4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
+    //Double_t lPtbinlimits[] = {0.2,0.3, 0.4, 0.5, 0.6,
+    //    0.7,0.8,.9,1.0,1.2, 1.4, 1.6, 1.8 ,2.0,
+    //    2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,
+    //    4.4,4.8,5.0,6.0,7.0,8.0,9.0,10.,11.,12.};
+    
     //Double_t lPtbinlimits[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2,
     //3.6, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.5, 8.5, 10, 12};
     
@@ -3205,8 +3210,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     Float_t lLifetimeCut[4];
     lLifetimeCut[0] = 15.0;
     lLifetimeCut[1] = 15.0;
-    lLifetimeCut[2] =  8.0;
-    lLifetimeCut[3] =  8.0;
+    lLifetimeCut[2] = 12.0;
+    lLifetimeCut[3] = 12.0;
     
     Float_t lMass[4];
     lMass[0] = 1.322;
@@ -3226,24 +3231,26 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
         
         //Default cuts: use vertexer level ones
         //Setters for V0 Cuts
-        lCascadeResult[lN]->SetCutDCANegToPV            ( 0.05 ) ;
-        lCascadeResult[lN]->SetCutDCAPosToPV            ( 0.05 ) ;
-        lCascadeResult[lN]->SetCutDCAV0Daughters        (  1.2 ) ;
+        lCascadeResult[lN]->SetCutDCANegToPV            ( 0.2 ) ;
+        lCascadeResult[lN]->SetCutDCAPosToPV            ( 0.2 ) ;
+        lCascadeResult[lN]->SetCutDCAV0Daughters        (  1. ) ;
         lCascadeResult[lN]->SetCutV0CosPA               ( 0.98 ) ;
-        lCascadeResult[lN]->SetCutV0Radius              (  2.0 ) ;
+        lCascadeResult[lN]->SetCutV0Radius              (  3 ) ;
         //Setters for Cascade Cuts
-        lCascadeResult[lN]->SetCutDCAV0ToPV             ( 0.05 ) ;
+        lCascadeResult[lN]->SetCutDCAV0ToPV             ( 0.1 ) ;
         lCascadeResult[lN]->SetCutV0Mass                ( 0.006 ) ;
-        lCascadeResult[lN]->SetCutDCABachToPV           ( 0.02 ) ;
-        lCascadeResult[lN]->SetCutDCACascDaughters      ( 1.2 ) ;
-        lCascadeResult[lN]->SetCutCascRadius            ( 0.8 ) ;
+        lCascadeResult[lN]->SetCutDCABachToPV           ( 0.03 ) ;
+        lCascadeResult[lN]->SetCutDCACascDaughters      ( 1. ) ;
+        lCascadeResult[lN]->SetCutCascRadius            ( 1.2 ) ;
+        if(i==2||i==3)
+            lCascadeResult[lN]->SetCutCascRadius            ( 1.0 ) ; //omega case
         lCascadeResult[lN]->SetCutCascCosPA             ( 0.98 ) ;
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
         lCascadeResult[lN]->SetCutLeastNumberOfClusters ( 70.0 ) ;
         lCascadeResult[lN]->SetCutTPCdEdx               ( 4.0 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
-        lCascadeResult[lN]->SetCutBachBaryonCosPA        ( 0.999928 ) ;
+        lCascadeResult[lN]->SetCutBachBaryonCosPA        ( TMath::Cos(0.006) ) ;
         //Add result to pool
         lN++;
     }
@@ -3252,7 +3259,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     
     //________________________________________________________
     // Variable 1: DCA Neg to PV
-    Float_t lMaxDCANegToPV = 20.00;
+    Float_t lMaxDCANegToPV = 1.5;
     
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
@@ -3265,7 +3272,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 2: DCA Pos to PV
-    Float_t lMaxDCAPosToPV = 20.00;
+    Float_t lMaxDCAPosToPV = 1.5;
     
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
@@ -3278,7 +3285,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 3: DCA V0 Daughters
-    Float_t lMaxDCAV0Daughters = 1.20;
+    Float_t lMaxDCAV0Daughters = 1.40;
     
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
@@ -3310,7 +3317,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 5: V0 Radius
-    Float_t lMinV0Radius = 2.0;
+    Float_t lMinV0Radius = 0.0;
     Float_t lMaxV0Radius = 20.00;
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
@@ -3323,7 +3330,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 6:
-    Float_t lMaxDCAV0ToPV = 1.0;
+    Float_t lMaxDCAV0ToPV = 0.5;
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0ToPVSweep",icut) );
@@ -3335,7 +3342,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 7: DCA Bach To PV
-    Float_t lMaxDCABachToPV = 6.00;
+    Float_t lMaxDCABachToPV = 0.5;
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCABachToPVSweep",icut) );
@@ -3347,7 +3354,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 8: DCA Casc Daughters
-    Float_t lMaxDCACascDaughters = 1.20;
+    Float_t lMaxDCACascDaughters = 1.40;
     
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
@@ -3360,7 +3367,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 9: Cascade Radius
-    Float_t lMinCascRadius = 0.8;
+    Float_t lMinCascRadius = 0.5;
     Float_t lMaxCascRadius = 20.00;
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
@@ -3392,7 +3399,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 11: Bach-Baryon CosPA
-    Float_t lMinBBCosPA = 0.995;
+    Float_t lMinBBCosPA = TMath::Cos(0.1);
     Float_t lMaxBBCosPA = 1.000;
     Double_t lBBCosPAVals[lNumberOfSteps];
     Double_t lMinBBPA = 0.0;
@@ -3411,10 +3418,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 12: Cascade Lifetime Sweep
-    Float_t lMinLifetime = 0.00;
-    Float_t lMaxLifetime = 20.00;
-    Int_t lLifetimeSteps = 20;
+    
+    Int_t lLifetimeSteps = 15;
     for(Int_t i = 0 ; i < 4 ; i ++){
+        Float_t lMinLifetime = 5.00;
+        Float_t lMaxLifetime = 20.00;
         for(Int_t icut = 0; icut<lLifetimeSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascLifetimeSweep",icut) );
             Float_t lThisCut = lMinLifetime + (lMaxLifetime-lMinLifetime)*(((Float_t)icut)+1)/((Float_t)lLifetimeSteps);
@@ -3425,9 +3433,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     //________________________________________________________
     // Variable 13: V0 Lifetime Sweep
-    Float_t lMinV0Lifetime = 0.00;
+    Float_t lMinV0Lifetime = 8.00;
     Float_t lMaxV0Lifetime = 40.00;
-    Int_t lV0LifetimeSteps = 40;
+    Int_t lV0LifetimeSteps = 32;
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lV0LifetimeSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MaxV0LifetimeSweep",icut) );
@@ -3442,6 +3450,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
         AddConfiguration(lCascadeResult[iconf]);
     
     cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
+
 }
 
 //________________________________________________________________________
