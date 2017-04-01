@@ -173,6 +173,7 @@ class AliFlatESDTrack :public AliVTrack {
   virtual Double_t Eta() const {return 0.;}
   virtual Double_t Y() const {return 0.;}
   virtual Short_t Charge() const {return 0;}
+  virtual Double_t GetSign() const {return 0;}
   virtual Int_t GetLabel() const {return 0;}
   virtual Int_t PdgCode() const {return 0;}
   virtual const Double_t* PID() const {return NULL;} 
