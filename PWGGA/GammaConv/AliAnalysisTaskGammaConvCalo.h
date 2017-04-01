@@ -241,10 +241,12 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoClusGammaE;                   //! array of histos with cluster, E
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
                     
-    //histograms for pure MC quantities
+    //histograms for pure MC quantities 
     TH1I**                  fHistoMCHeaders;                    //! array of histos for header names
+    //histograms for pure MC quantities for gamma part
     TH1F**                  fHistoMCAllGammaPt;                 //! array of histos with all gamma, pT
     TH1F**                  fHistoMCAllGammaEMCALAccPt;         //! array of histos with all gamma in EMCAL acceptance, pT
+    TH2F**                  fHistoMCAllSecondaryGammaPt;        //! array of histos with all secondary gamma, pT
     TH1F**                  fHistoMCDecayGammaPi0Pt;            //! array of histos with decay gamma from pi0, pT
     TH1F**                  fHistoMCDecayGammaRhoPt;            //! array of histos with decay gamma from rho, pT
     TH1F**                  fHistoMCDecayGammaEtaPt;            //! array of histos with decay gamma from eta, pT
@@ -253,8 +255,11 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCDecayGammaPhiPt;            //! array of histos with decay gamma from phi, pT
     TH1F**                  fHistoMCDecayGammaSigmaPt;          //! array of histos with decay gamma from Sigma0, pT
     TH1F**                  fHistoMCConvGammaPt;                //! array of histos with converted gamma, pT
+    TH2F**                  fHistoMCSecondaryConvGammaPt;       //! array of histos wiht secondary converted gamma, pt
     TH1F**                  fHistoMCConvGammaR;                 //! array of histos with converted gamma, R
     TH1F**                  fHistoMCConvGammaEta;               //! array of histos with converted gamma, Eta
+    
+    //histograms for pure MC quantities for mesaon analysis
     TH1F**                  fHistoMCPi0Pt;                      //! array of histos with weighted pi0, pT
     TH1F**                  fHistoMCPi0WOWeightPt;              //! array of histos with unweighted pi0, pT
     TH1F**                  fHistoMCPi0WOEvtWeightPt;           //! array of histos without event weights pi0, pT
@@ -279,6 +284,17 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCSecEtaSource;               //! array of histos with secondary eta, source
     TH2F**                  fHistoMCPi0PtJetPt;                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                 //! array of histos with weighted eta, pT, hardest jet pt
+
+    // histograms for pure MC quantites for dir gamma analysis part
+    TH2F**                  fHistoMCPi0PtGammaLeg;              //! array of histos with weighted pi0, pT gamma, different legs
+    TH2F**                  fHistoMCPi0WOWeightPtGammaLeg;      //! array of histos with unweighted pi0, pT gamma, different legs
+    TH2F**                  fHistoMCPi0InAccPtGammaLeg;         //! array of histos with weighted pi0, pT gamma, different legs
+    TH2F**                  fHistoMCPi0WOWeightInAccPtGammaLeg; //! array of histos with unweighted pi0, pT gamma, different legs
+    TH2F**                  fHistoMCSecPi0PtGamma1vsSource;     //! array of histos with secondary pi0, pT gamma 1, source
+    TH2F**                  fHistoMCSecPi0InAccPtGamma1vsSource;//! array of histos with secondary pi0, pT gamma 1, source in acceptance
+    TH2F**                  fHistoMCSecPi0PtGamma2vsSource;     //! array of histos with secondary pi0, pT gamma 2, source
+    TH2F**                  fHistoMCSecPi0InAccPtGamma2vsSource;//! array of histos with secondary pi0, pT gamma 2, source in acceptance
+    
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0InvMassPt;                             //! array of histos with validated pi0, invMass, pt
     TH2F**                  fHistoTrueEtaInvMassPt;                             //! array of histos with validated eta, invMass, pt
@@ -330,16 +346,19 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueEtaPtAlpha;                               //! array of histos with validated eta, pt, alpha
     TH2F**                  fHistoTruePi0PtOpenAngle;                           //! array of histos with validated pi0, pt, openAngle
     TH2F**                  fHistoTrueEtaPtOpenAngle;                           //! array of histos with validated eta, pt, openAngle
+    
     // MC validated reconstructed quantities photons
     TH1F**                  fHistoTrueConvGammaPt;                              //! array of histos with validated conversion photon, pt
     TH1F**                  fHistoTrueConvGammaEta;                             //! array of histos with validated conversion photon, eta
     TH2F**                  fHistoCombinatorialPt;                              //! array of histos with combinatorial BG, pt, source
-    TH1F**                  fHistoTruePrimaryConvGammaPt;                       //! array of histos with validated primary conversion photon, pt  
-    TH2F**                  fHistoTruePrimaryConvGammaESDPtMCPt;                //! array of histos with validated primary conversion photon, rec pt, mc pt  
-    TH1F**                  fHistoTrueSecondaryConvGammaPt;                     //! array of histos with validated secondary conversion photon, pt  
-    TH1F**                  fHistoTrueSecondaryConvGammaFromXFromK0sPt;         //! array of histos with validated secondary conversion photon from K0s, pt  
-    TH1F**                  fHistoTrueSecondaryConvGammaFromXFromK0lPt;         //! array of histos with validated secondary conversion photon from K0l, pt
-    TH1F**                  fHistoTrueSecondaryConvGammaFromXFromLambdaPt;      //! array of histos with validated secondary conversion photon from Lambda, pt  
+    TH1F**                  fHistoTruePrimaryConvGammaPt;                       //! array of histos with validated primary
+    TH2F**                  fHistoTruePrimaryConvGammaESDPtMCPt;                //! array of histos with validated primary conversion photon, rec pt, mc pt conversion photon, pt  
+    TH2F**                  fHistoTrueSecondaryConvGammaPt;                     //! array of histos with validated secondary conversion photon, rec pt for different sources  
+    TH2F**                  fHistoTrueSecondaryConvGammaMCPt;                   //! array of histos with validated secondary conversion photon, MC pt  for different sources
+    TH2F**                  fHistoTrueSecondaryConvGammaFromXFromK0sMCPtESDPt;  //! array of histos with validated secondary conversion photon from K0s, rec pt, mc pt conversion photon, pt  
+    TH2F**                  fHistoTrueSecondaryConvGammaFromXFromK0lMCPtESDPt;  //! array of histos with validated secondary conversion photon from K0l, rec pt, mc pt conversion photon, pt  
+    TH2F**                  fHistoTrueSecondaryConvGammaFromXFromLambdaMCPtESDPt; //! array of histos with validated secondary conversion photon from Lambda, rec pt, mc pt conversion photon, pt  
+
     TH1F**                  fHistoTrueClusGammaPt;                              //! array of histos with validated cluster (electron or photon), pt
     TH1F**                  fHistoTrueClusElectronPt;                           //! array of histos with validated electron, pt
     TH1F**                  fHistoTrueClusConvGammaPt;                          //! array of histos with validated converted photon, pt
@@ -362,15 +381,20 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoTrueSecondaryClusGammaFromK0sPt;              //! array of histos with validated secondary cluster from K0s, photons, pt
     TH1F**                  fHistoTrueSecondaryClusGammaFromK0lPt;              //! array of histos with validated secondary cluster from K0l, photons, pt
     TH1F**                  fHistoTrueSecondaryClusGammaFromLambdaPt;           //! array of histos with validated secondary cluster from Lambda, photons, pt
+    
+    // MC validated reconstructed quantities for direct photon reco
     TH2F**                  fHistoTruePrimaryPi0PhotonPairPtconv;               //! array of histos with validated primary pi0's vs conversion photon pT
+    TH2F**                  fHistoTruePrimaryPi0W0WeightsPhotonPairPtconv;      //! array of histos with validated primary pi0's vs conversion photon pT
     TH1F**                  fHistoTruePrimaryPi0DCPtconv;                       //! array of histos with validated primary pi0's vs conversion photon pT, double counting
     TH1F**                  fHistoTruePrimaryPi0MissingPtconv;                  //! array of histos with validated primary pi0's vs conversion photon pT, missing
-    TH2F**                  fHistoTruePrimaryEtaPhotonPairPtconv;               //! array of histos with validated primary eta's vs conversion photon pT
-    TH1F**                  fHistoTruePrimaryEtaDCPtconv;                       //! array of histos with validated primary eta's vs conversion photon pT, double counting
-    TH1F**                  fHistoTruePrimaryEtaMissingPtconv;                  //! array of histos with validated primary eta's vs conversion photon pT, missing
     TH2F**                  fHistoTrueSecondaryPi0PhotonPairPtconv;             //! array of histos with validated secondary pi0's vs conversion photon pT
-    TH1F**                  fHistoTrueSecondaryPi0DCPtconv;                     //! array of histos with validated secondary pi0's vs conversion photon pT, double counting
-    TH1F**                  fHistoTrueSecondaryPi0MissingPtconv;                //! array of histos with validated secondary pi0's vs conversion photon pT, missing
+    TH2F**                  fHistoTrueSecondaryPi0FromK0sPhotonPairPtconv;      //! array of histos with validated secondary pi0's from K0s vs conversion photon pT
+    TH2F**                  fHistoTrueSecondaryPi0FromK0lPhotonPairPtconv;      //! array of histos with validated secondary pi0's from K0l vs conversion photon pT
+    TH2F**                  fHistoTrueSecondaryPi0FromLambdaPhotonPairPtconv;   //! array of histos with validated secondary pi0's from Lambda vs conversion photon pT
+    TH2F**                  fHistoTrueSecondaryPi0DCPtconvSource;               //! array of histos with validated secondary pi0's vs conversion photon pT, double counting vs source
+    TH2F**                  fHistoTrueSecondaryPi0MissingPtconvSource;          //! array of histos with validated secondary pi0's vs conversion photon pT, missing vs source
+    
+    // variable to keep track of multiple & missing reco
     vector<Int_t>           fVectorRecTruePi0s;                                 //! array of strings containing the stack position of the reconstructed validated pi0
     vector<Int_t>           fVectorRecTrueEtas;                                 //! array of strings containing the stack position of the reconstructed validated eta
     TH2F**                  fHistoDoubleCountTruePi0InvMassPt;                  //! array of histos with double counted pi0s, invMass, pT
@@ -389,10 +413,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     map<Int_t,Int_t>        fMapMultipleCountTrueEtas;                          //! map containing eta labels that are counted at least twice
     map<Int_t,Int_t>        fMapMultipleCountTrueConvGammas;                    //! map containing photon labels that are counted at least twice
     map<Int_t,Int_t>        fMapMultipleCountTrueClusterGammas;                 //! map containing cluster photon labels that are counted at least twice
+    
+    // further QA and calibration hist for Calo clusters
     TH2F**                  fHistoTrueClusGammaEM02;                            //! array of histos with TruePhotons: cluster E vs M02
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with TruePi0s: cluster E vs M02
     TH2F**                  fHistoTruePi0InvMassECalib;                         //! array of histogram with pure pi0 signal inv Mass, energy of cluster
     TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
+    
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
@@ -451,7 +478,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 38);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 39);
 };
 
 #endif
