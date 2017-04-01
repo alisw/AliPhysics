@@ -37,6 +37,7 @@ class AliPicoTrack: public AliVTrack {
   Double_t        Eta()                       const { return fEta;    }
   Double_t        Y()                         const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()));  }
   Short_t         Charge()                    const { return (char)fQ;}
+  Double_t        GetSign()                   const { return fQ;}
   Int_t           GetLabel()                  const { return fLabel;  }
   void            SetLabel(Int_t label)             { fLabel = label; }
   Byte_t          GetTrackType()              const { return fTrackType;}
