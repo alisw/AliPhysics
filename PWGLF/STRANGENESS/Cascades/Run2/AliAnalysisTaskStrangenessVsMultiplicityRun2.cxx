@@ -772,7 +772,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fRand = new TRandom3();
         // From TRandom3 reference:
         // if seed is 0 (default value) a TUUID is generated and
-        // used to fill the first 8 integers of the seed array.
+        // used to fill the first 8 integers of the seed array
         fRand->SetSeed(0);
     }
 
