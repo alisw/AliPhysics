@@ -579,6 +579,8 @@ void AliJetEmbeddingFromAODTask::Run()
     return;
   }
 
+  AliDebug(3, Form("Embedding entry %d", fCurrentAODEntry));
+
   if (fHistEmbeddingQA)
     fHistEmbeddingQA->Fill("OK", 1);
 
@@ -598,7 +600,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	  continue;
 	}
 	
-	AliDebug(3, Form("Processing MC particle %d with pT = %f, eta = %f, phi = %f", i, part->Pt(), part->Eta(), part->Phi()));
+	AliDebug(4, Form("Processing MC particle %d with pT = %f, eta = %f, phi = %f", i, part->Pt(), part->Eta(), part->Phi()));
 	
 	if (!part->IsPhysicalPrimary()) 
 	  continue;
@@ -630,7 +632,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	  continue;
 	}
 	
-	AliDebug(3, Form("Processing track %d with pT = %f, eta = %f, phi = %f, label = %d", i, track->Pt(), track->Eta(), track->Phi(), track->GetLabel()));
+	AliDebug(4, Form("Processing track %d with pT = %f, eta = %f, phi = %f, label = %d", i, track->Pt(), track->Eta(), track->Phi(), track->GetLabel()));
 	
 	Int_t type = 0;
 	Bool_t isEmc = kFALSE;

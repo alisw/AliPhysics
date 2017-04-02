@@ -140,6 +140,15 @@ void AliAnalysisTaskEmcalJetSample::AllocateClusterHistograms()
       }
     }
   }
+
+  histname = "fHistSumNClusters";
+  histtitle = TString::Format("%s;Sum of n clusters;events", histname.Data());
+  if (fForceBeamType != kpp) {
+    fHistManager.CreateTH1(histname, histtitle, 500, 0, 3000);
+  }
+  else {
+    fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+  }
 }
 
 /*
@@ -231,6 +240,15 @@ void AliAnalysisTaskEmcalJetSample::AllocateTrackHistograms()
         fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
       }
     }
+  }
+
+  histname = "fHistSumNTracks";
+  histtitle = TString::Format("%s;Sum of n tracks;events", histname.Data());
+  if (fForceBeamType != kpp) {
+    fHistManager.CreateTH1(histname, histtitle, 500, 0, 5000);
+  }
+  else {
+    fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
   }
 }
 
@@ -354,6 +372,7 @@ void AliAnalysisTaskEmcalJetSample::DoTrackLoop()
 
   TString histname;
   TString groupname;
+  UInt_t sumAcceptedTracks = 0;
   AliParticleContainer* partCont = 0;
   TIter next(&fParticleCollArray);
   while ((partCont = static_cast<AliParticleContainer*>(next()))) {
@@ -396,10 +415,14 @@ void AliAnalysisTaskEmcalJetSample::DoTrackLoop()
         }
       }
     }
+    sumAcceptedTracks += count;
 
     histname = TString::Format("%s/histNTracks_%d", groupname.Data(), fCentBin);
     fHistManager.FillTH1(histname, count);
   }
+
+  histname = "fHistSumNTracks";
+  fHistManager.FillTH1(histname, sumAcceptedTracks);
 }
 
 /**
@@ -410,6 +433,7 @@ void AliAnalysisTaskEmcalJetSample::DoClusterLoop()
 {
   TString histname;
   TString groupname;
+  UInt_t sumAcceptedClusters = 0;
   AliClusterContainer* clusCont = 0;
   TIter next(&fClusterCollArray);
   while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
@@ -447,10 +471,14 @@ void AliAnalysisTaskEmcalJetSample::DoClusterLoop()
       histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, nPart.Eta());
     }
+    sumAcceptedClusters += count;
 
     histname = TString::Format("%s/histNClusters_%d", groupname.Data(), fCentBin);
     fHistManager.FillTH1(histname, count);
   }
+
+  histname = "fHistSumNClusters";
+  fHistManager.FillTH1(histname, sumAcceptedClusters);
 }
 
 /**
