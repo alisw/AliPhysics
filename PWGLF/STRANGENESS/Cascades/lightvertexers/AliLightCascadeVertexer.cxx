@@ -87,8 +87,33 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
                continue;
            }
            //Pre-filter for CPU time reduction
+           
+           //1) DCA V0 Dau
            if( v->GetDcaV0Daughters() > 1.4 ) continue;
+           
+           //2) CosPA
            if( v->GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<0.95 ) continue;
+           
+           //3) DCA neg/pos to PV
+           UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
+           UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
+           AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+           AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+           
+           Double_t lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(xPrimaryVertex,
+                                                         yPrimaryVertex,
+                                                         b) );
+           
+           Double_t lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(xPrimaryVertex,
+                                                         yPrimaryVertex,
+                                                         b) );
+           if(lDcaNegToPrimVertex<0.1||lDcaPosToPrimVertex<0.1) continue; //ignore if too close
+           
+           //4) V0 Decay Radius
+           Double_t tDecayVertexV0[3];
+           v->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
+           Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+           if(lV0Radius<0.9) continue;
        }
        
        if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fDV0min) continue;
