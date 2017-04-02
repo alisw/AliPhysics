@@ -633,6 +633,8 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     fTreeData.fEventInfo.fnTrklet[2] += (eta >= -0.9 && eta <= +0.9);
     fTreeData.fEventInfo.fnTrklet[3] += (eta >  +0.9);
   }
+  fTreeData.fEventInfo.fnFO[1] = fFastOrMap.CountBits(400);
+  fTreeData.fEventInfo.fnFO[0] = fFastOrMap.CountBits() - fTreeData.fEventInfo.fnFO[1];
   std::unique_ptr<TObjArray> oa;
   if (esdEvent) { // ESD
     oa = std::unique_ptr<TObjArray>(fTrackCuts->GetAcceptedTracks(esdEvent));
@@ -659,7 +661,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     return;
 
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
-    fTreeData.fEventInfo.fCharge += Int_t(dynamic_cast<AliVTrack*>(oa->At(i))->GetSign());
+    fTreeData.fEventInfo.fCharge += (dynamic_cast<AliVTrack*>(oa->At(i))->GetSign() > 0 ? +1 : -1);
 
   TClonesArrayGuard guardTrackData(fTrackData);
   if (oa->GetEntries() <= fMaxTracksSave)  {
