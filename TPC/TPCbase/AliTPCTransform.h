@@ -83,6 +83,9 @@ public:
   static int  SectorUp(int idROC);
   static int  SectorDown(int idROC);
   static double GetMaxY2X() {return fgkMaxY2X;}
+  static Float_t GetDistDispThreshold() {return fgDistDispThresh;}
+  static void    SetDistDispThreshold(float v=300.0e-4) {fgDistDispThresh = v;}
+
   void SetDebugStreamer(TTreeSRedirector * pcstream){fDebugStreamer=pcstream;}
   TTreeSRedirector *GetDebugStreemer() const { return fDebugStreamer;}     //!debug streamer
 
@@ -131,6 +134,7 @@ private:
   static const Double_t fgkSin20;       // sin(20)
   static const Double_t fgkCos20;       // sin(20)
   static const Double_t fgkMaxY2X;      // tg(10)
+  static       Float_t fgDistDispThresh; // threshold of Dist.dispersion wrt reference to consider as fluctuation
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   //
   ClassDef(AliTPCTransform,5)
