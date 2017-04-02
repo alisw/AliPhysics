@@ -77,7 +77,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   
   // Name for containers
   
-  TString containerName = Form("%s_%s",calorimeter.Data(), suffix.Data());
+  TString containerName = Form("%s_Trig%s",calorimeter.Data(), suffix.Data());
   
   if(collision!="pp" && maxCen>=0) containerName+=Form("Cen%d_%d",minCen,maxCen);
     
@@ -93,25 +93,31 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
+  Bool_t fillQACellTimeHisto = kTRUE;
   
-  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,0,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
-  maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,0,collision,containerName,simulation,year,qaan,debugLevel,minCen) ,n++); // Previous photon invariant mass
-  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,0,collision,simulation,year,debugLevel),n++);
-  
-  if(hadronan)
+  // Analysis with EMCal trigger or MB
+  if ( !suffix.Contains("DCAL") )
   {
-    maker->GetReader()->SwitchOnCTS();
-    maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,year,debugLevel), n++); // charged tracks plots
-    maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel), n++); // isolation 
-    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel,minCen), n++); // Gamma hadron correlation
+    maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,0,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
+    maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,0,collision,containerName,simulation,year,qaan,debugLevel,minCen) ,n++); // Previous photon invariant mass
+    if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,0,collision,simulation,fillQACellTimeHisto,year,debugLevel),n++);
+    
+    if(hadronan)
+    {
+      maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel), n++); // isolation 
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel,minCen), n++); // Gamma hadron correlation
+    }
   }
   
-  // Analysis with DCal
-  if(year > 2014 && calorimeter=="EMCAL")
+  // Analysis with DCal trigger or MB
+  if(year > 2014 && calorimeter=="EMCAL" && !suffix.Contains("EMCAL"))
   {
     maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,1,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
     maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,1,collision,containerName,simulation,year,qaan,debugLevel,minCen) ,n++); // Previous photon invariant mass
-    if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,1,collision,simulation,year,debugLevel),n++);
+    
+    if(suffix.Contains("INT") || suffix.Contains("MB") || suffix.Contains("default")) fillQACellTimeHisto = kFALSE;
+    
+    if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,1,collision, simulation, fillQACellTimeHisto,year,debugLevel),n++);
 
     if(hadronan)
     {
@@ -120,6 +126,13 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     }
   }
   
+  if(hadronan)
+  {
+    maker->GetReader()->SwitchOnCTS();
+    maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,year,debugLevel), n++); // charged tracks plots
+  }
+  
+    
   maker->SetAnaDebug(debugLevel)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker() ;
@@ -156,6 +169,54 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   //task->SetBranches("ESD:AliESDRun.,AliESDHeader");
   //task->SetBranches("AOD:header,tracks,vertices,emcalCells,caloClusters");
   task->SetAnalysisMaker(maker);
+  
+  
+  //
+  // Select events trigger depending on suffix
+  //
+  if(!simulation)
+  {
+    if( suffix.Contains("INT") || suffix.Contains("MB") || suffix.Contains("default") )
+    {
+      task->SelectCollisionCandidates( AliVEvent::kINT7 | AliVEvent::kMB );
+    }
+    else if(suffix.Contains("EMCAL_L0"))
+    {
+      task ->SelectCollisionCandidates( AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 );
+      maker->GetReader()->SetFiredTriggerClassName("EMC");
+    }
+    else if(suffix.Contains("DCAL_L0"))
+    {
+      task ->SelectCollisionCandidates( AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 );
+      maker->GetReader()->SetFiredTriggerClassName("DMC");
+    }
+    else if(suffix.Contains("EMCAL_L1"))
+    {
+      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
+      maker->GetReader()->SetFiredTriggerClassName("EG1");
+    }
+    else if(suffix.Contains("DCAL_L1"))
+    {
+      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
+      maker->GetReader()->SetFiredTriggerClassName("DG1");
+    }
+    else if(suffix.Contains("EMCAL_L1_Run1"))
+    {
+      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
+      //maker->GetReader()->SetFiredTriggerClassName("EGA");
+    }
+    else if(suffix.Contains("EMCAL_L2"))
+    {
+      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
+      maker->GetReader()->SetFiredTriggerClassName("EG2");
+    }
+    else if(suffix.Contains("DCAL_L2"))
+    {
+      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
+      maker->GetReader()->SetFiredTriggerClassName("DG2");
+    }
+  }
+
   mgr->AddTask(task);
   
   //Create containers
@@ -369,7 +430,9 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
                           bNonLin,
                           bEnCalib,
                           bBadMap,
-                          bTiCalib);
+                          bTiCalib,
+                          debugLevel
+                          );
   //recou->SetExoticCellDiffTimeCut(50.);
 
   if(calorimeter=="PHOS")
@@ -493,7 +556,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, Bool_t caloType, TString co
   ana->SetCalorimeter(calorimeter);
   
   ana->SwitchOnFiducialCut(); 
-  if(caloType==0)ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 100, 187) ; // EMC 
+  if(caloType==0)ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
   else           ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC
   ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
 
@@ -540,7 +603,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, Bool_t caloType, TString co
 
   ana->SwitchOffMultipleCutAnalysis();
   ana->SwitchOnSMCombinations();
-  ana->SwitchOnFillAngleHisto();
+  ana->SwitchOffFillAngleHisto();
   ana->SwitchOffFillOriginHisto();
   
   //Set Histograms name tag, bins and ranges
@@ -602,12 +665,12 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,  TString c
   AliAnaParticleIsolation *ana = new AliAnaParticleIsolation();
   ana->SetDebug(debugLevel);
     
-  if(collision.Contains("Pb"))   ana->SwitchOnFillHighMultiplicityHistograms();
+  //if(collision.Contains("Pb"))   ana->SwitchOnFillHighMultiplicityHistograms();
   
   ana->SetMinPt(5);
   
   ana->SwitchOffStudyTracksInCone() ;
-  ana->SwitchOnUEBandSubtractionHistoFill();
+  ana->SwitchOffUEBandSubtractionHistoFill();
 
   ana->SwitchOffDecayTaggedHistoFill() ;
   ana->SwitchOnSSHistoFill();
@@ -723,7 +786,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetNZvertBin(20);
   ana->SwitchOffCorrelationVzBin() ;
 
-  if(collision.Contains("Pb"))   ana->SwitchOnFillHighMultiplicityHistograms();
+  //if(collision.Contains("Pb"))   ana->SwitchOnFillHighMultiplicityHistograms();
   
   if(collision=="pp")
   {
@@ -773,14 +836,16 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
 /// Configure the task doing standard calorimeter QA
 ///
 AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, Bool_t caloType, TString collision,
-                                         Bool_t simulation,    Int_t year,    Int_t debugLevel)
+                                         Bool_t simulation,   Bool_t fillCellTime,  Int_t year,    Int_t debugLevel)
 {
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
   ana->SetDebug(debugLevel); //10 for lots of messages
   ana->SetCalorimeter(calorimeter);
   
+  //printf("QA: calorimeter %s, caloType %d, collision %s, simulation %d, fillCellTime %d, year %d, debugLevel  %d\n",
+  //       calorimeter.Data(),caloType,collision.Data(),simulation,fillCellTime,year,debugLevel);
+  
   ana->SetTimeCut(-1e10,1e10); // Open time cut
-  ana->SwitchOnCorrelation();
   ana->SwitchOffStudyBadClusters() ;
   ana->SwitchOffFillAllTH3Histogram();
   ana->SwitchOffFillAllPositionHistogram();
@@ -788,15 +853,29 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, Bool_t caloType, T
   ana->SwitchOffStudyBadClusters();
   ana->SwitchOffStudyClustersAsymmetry();
   ana->SwitchOffStudyWeight();
+  ana->SwitchOffFillAllPi0Histogram()  ;
+
   ana->SwitchOnFillAllTrackMatchingHistogram();
-  ana->SwitchOnFillAllCellTimeHisto() ;
-    
+
+  if(fillCellTime) 
+  {
+    ana->SwitchOnFillAllCellTimeHisto() ;
+    ana->SwitchOnCorrelation();
+  }
+  else
+  {
+    ana->SwitchOffFillAllCellTimeHisto() ;
+    ana->SwitchOffCorrelation();
+
+  }
+  
   ana->AddToHistogramsName(Form("QA_Calo%d_",caloType)); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter, caloType, collision,year); // see method below
   
   ana->SwitchOnFiducialCut(); 
-  if(caloType==0)ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 100, 187) ; // EMC 
+  if(caloType==0)ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
   else           ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC
+  
   ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
   
   if(simulation) ana->SwitchOnDataMC();
@@ -845,11 +924,12 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
     histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
   }
   
-  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 4.9, 500);
+  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 2.9, 300);
   
   // Invariant mass histoRangeslysis
-  histoRanges->SetHistoMassRangeAndNBins(0., 1., 200) ;
+  histoRanges->SetHistoMassRangeAndNBins(0., 0.8, 160) ;
   histoRanges->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
+  histoRanges->SetHistoOpeningAngleRangeAndNBins(0,0.7,50);
   
   // check if time calibration is on
   histoRanges->SetHistoTimeRangeAndNBins(-1000.,1000,500);
@@ -857,9 +937,9 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   histoRanges->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
   
   // track-cluster residuals
-  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.15,0.15,300);
-  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.15,0.15,300);
-  histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
+  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.10,0.10,200);
+  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.10,0.10,200);
+  histoRanges->SetHistodRRangeAndNBins(0.,0.10,100);//QA
 
   // QA, electron, charged
   histoRanges->SetHistoPOverERangeAndNBins(0,  2. ,200);
@@ -867,11 +947,11 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   
   // QA
   histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
+  histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,250);
   histoRanges->SetHistoZRangeAndNBins(-350,350,175);
   histoRanges->SetHistoRRangeAndNBins(430,460,30);
-  histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
-  histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
+  histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,250);
+  histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,250);
   
   // QA, correlation
   if(collision=="PbPb")
