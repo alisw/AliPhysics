@@ -243,7 +243,7 @@ public:
   virtual Double_t          GetTOFsignalDz() const {return 0;}
   virtual Double_t          GetP() const {return 0;}
   virtual Double_t          GetSignedPt() const {return 0;}
-  virtual Double_t          GetSign() const = 0;
+  virtual Double_t          GetSign() const {return 0;}
   virtual void              GetDirection(Double_t []) const {;}
   virtual Double_t          GetLinearD(Double_t /*xv*/, Double_t /*yv*/) const {return 0;}
   virtual void              GetDZ(Double_t /*x*/,Double_t /*y*/,Double_t /*z*/,Double_t /*b*/,Float_t [] /*dz[2]*/) const {;}

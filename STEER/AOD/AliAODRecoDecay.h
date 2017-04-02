@@ -46,7 +46,6 @@ class AliAODRecoDecay : public AliVTrack {
   void     GetSecondaryVtx(Double_t vtx[3]) const;
   Double_t GetReducedChi2() const {return GetSecondaryVtx()->GetChi2perNDF();}
   Short_t  Charge() const {return fCharge;}
-  Double_t GetSign() const {return fCharge;}
   Short_t  GetCharge() const {return fCharge;}
   void     SetCharge(Short_t charge=0) {fCharge=charge;}
 
