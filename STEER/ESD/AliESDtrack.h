@@ -543,8 +543,8 @@ public:
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
-  AliExternalTrackParam *fIp; // Track parameters estimated at the inner wall of TPC
-  AliExternalTrackParam *fTPCInner; // Track parameters estimated at the inner wall of TPC using the TPC stand-alone 
+  AliExternalTrackParam *fIp; // Track parameters estimated at the inner wall of TPC at PropagateBack stage
+  AliExternalTrackParam *fTPCInner; // Track parameters estimated at the inner wall of TPC using the TPC stand-alone and propagating to vtx w/o material correction 
   AliExternalTrackParam *fOp; // Track parameters estimated at the point of maximal radial coordinate reached during the tracking
   AliExternalTrackParam *fHMPIDp; // Track parameters at HMPID
   AliESDfriendTrack *fFriendTrack; //! All the complementary information
