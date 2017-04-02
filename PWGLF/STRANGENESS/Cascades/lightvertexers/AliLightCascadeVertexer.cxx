@@ -86,6 +86,9 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
            if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ){
                continue;
            }
+           //Pre-filter for CPU time reduction
+           if( v->GetDcaV0Daughters() > 1.4 ) continue;
+           if( v->GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<0.95 ) continue;
        }
        
        if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fDV0min) continue;
