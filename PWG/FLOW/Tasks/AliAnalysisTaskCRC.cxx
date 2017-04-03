@@ -98,6 +98,7 @@ fnSubsamples(10),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
 fCalculateCME(kFALSE),
+fCalculateCRCInt(kFALSE),
 fCalculateCRC2(kFALSE),
 fCalculateCRCVZ(kFALSE),
 fCalculateCRCZDC(kFALSE),
@@ -250,6 +251,7 @@ fnSubsamples(10),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
 fCalculateCME(kFALSE),
+fCalculateCRCInt(kFALSE),
 fCalculateCRC2(kFALSE),
 fCalculateCRCVZ(kFALSE),
 fCalculateCRCZDC(kFALSE),
@@ -378,6 +380,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetCalculateCRC(fCalculateCRC);
   fQC->SetCalculateCRCPt(fCalculateCRCPt);
   fQC->SetCalculateCME(fCalculateCME);
+  fQC->SetCalculateCRCInt(fCalculateCRCInt),
   fQC->SetCalculateCRC2(fCalculateCRC2);
   fQC->SetCalculateCRCVZ(fCalculateCRCVZ);
   fQC->SetCalculateCRCZDC(fCalculateCRCZDC);
