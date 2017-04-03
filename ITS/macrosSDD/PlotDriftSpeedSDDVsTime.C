@@ -29,7 +29,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
+void PlotDriftSpeedSDDVsTime(Int_t year=2017, Int_t firstRun=256400,
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -154,7 +154,13 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   else if(year==2013) timeZero=1356994800;
   else if(year==2014) timeZero=1388530800;
   else if(year==2015) timeZero=1420128000;
-  else timeZero=1451606400;
+  else if(year==2016) timeZero=1451606400;
+  else timeZero=1483228800;
+
+  Double_t mintimeday=999999999;
+  Double_t maxtimeday=0;
+  Double_t minrunnum=999999999;
+  Double_t maxrunnum=0;
 
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
@@ -231,6 +237,12 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
 	}
       }
     }
+    if(goodTime){
+      if(timeday<mintimeday) mintimeday=timeday;
+      if(timeday>maxtimeday) maxtimeday=timeday;
+    }
+    if(nrun<minrunnum) minrunnum=nrun;
+    if(nrun>maxrunnum) maxrunnum=nrun;
 
     for(Int_t iMod=0; iMod<260;iMod++){
 
@@ -389,6 +401,62 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
     f->Close();
   }
 
+  
+  printf("Minimum Time=%f   Max Time=%f\n",mintimeday,maxtimeday);
+  if(mintimeday<99999999){
+    mintimeday=TMath::Nint(mintimeday-2);
+  }else{
+    mintimeday=0;
+  }
+  if(maxtimeday>0){
+    maxtimeday=TMath::Nint(maxtimeday+2);
+  }else{
+    maxtimeday=1;
+  }
+
+  if(minrunnum<99999999){
+    minrunnum=minrunnum-10;
+  }else{
+    minrunnum=0;
+  }
+  if(maxrunnum>0){
+    maxrunnum=maxrunnum+10;
+  }else{
+    maxrunnum=1;
+  }
+
+
+
+  TString title;
+  if(year==2009){
+    title="Time (days since July 16th 2009)";
+  }else{
+    title=Form("Time (days since January 1st %d)",year);
+  }
+  TH2F* hFrameVT=new TH2F("hFrameVT",Form("  ; %s ; Drift speed (#mum/ns)",title.Data()),200,mintimeday,maxtimeday,200,6.4,6.95);
+  hFrameVT->SetStats(0);
+  TH2F* hFrameVR=new TH2F("hFrameVR","  ; Run number ; Drift speed (#mum/ns)",200,minrunnum,maxrunnum,200,6.4,6.95);
+  hFrameVR->SetStats(0);
+  TH2F* hFrameGT=new TH2F("hFrameGT",Form("  ; %s ; Half-modules with drift speed from injectors",title.Data()),200,mintimeday,maxtimeday,200,0,370);
+  hFrameGT->SetStats(0);
+  TH2F* hFrameGR=new TH2F("hFrameGR","  ; Run number ; Half-modules with drift speed from injectors",200,minrunnum,maxrunnum,200,0,370);
+  hFrameGR->SetStats(0);
+  TH2F* hFrameFT=new TH2F("hFrameFT",Form("  ; %s ; Fraction of half-modules with drift speed from injectors",title.Data()),200,mintimeday,maxtimeday,200,0,0.9);
+  hFrameFT->SetStats(0);
+  hFrameFT->GetYaxis()->SetTitleSize(0.035);
+  TH2F* hFrameFR=new TH2F("hFrameFR","  ; Run number ; Fraction of half-modules with drift speed from injectors",200,minrunnum,maxrunnum,200,0,0.9);
+  hFrameFR->SetStats(0);
+  hFrameFR->GetYaxis()->SetTitleSize(0.035);
+  TH2F* hFrameRT=new TH2F("hFrameRT",Form("  ; %s ; Half-modules with drift speed from golden module",title.Data()),200,mintimeday,maxtimeday,200,0,120);
+  hFrameRT->SetStats(0);
+  TH2F* hFrameRR=new TH2F("hFrameRR","  ; Run number ; Half-modules with drift speed from golden module",200,minrunnum,maxrunnum,200,0,120);
+  hFrameRR->SetStats(0);
+  TH2F* hFrameST=new TH2F("hFrameST",Form("  ; %s ; Injector status",title.Data()),200,mintimeday,maxtimeday,200,-0.2,9.2);
+  hFrameST->SetStats(0);
+  TH2F* hFrameSR=new TH2F("hFrameSR","  ; Run number ; Injector status",200,minrunnum,maxrunnum,200,-0.2,9.2);
+  hFrameSR->SetStats(0);
+
+
   Char_t filout[100];
   sprintf(filout,"DriftSpVsTime_%d.root",year);
   TFile *ofil=new TFile(filout,"recreate");
@@ -440,6 +508,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   TCanvas* c0=new TCanvas("c0","Vdrift vs. time");
   c0->SetGridx();
   c0->SetGridy();
+  hFrameVT->Draw();
   gvdrvstime[2*mod1]->SetMarkerStyle(20);
   gvdrvstime[2*mod2]->SetMarkerStyle(22);
   gvdrvstime[2*mod2]->SetMarkerColor(2);
@@ -450,17 +519,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   gvdrvstime[2*mod4]->SetMarkerStyle(27);
   gvdrvstime[2*mod4]->SetMarkerColor(4);
   gvdrvstime[2*mod4]->SetLineColor(4);
-  gvdrvstime[2*mod1]->Draw("AP");
-  gvdrvstime[2*mod1]->SetMinimum(6.4);
-  gvdrvstime[2*mod1]->SetMaximum(6.95);
-  Char_t title[100];
-  if(year==2009){
-    sprintf(title,"Time (days since July 16th 2009)");
-  }else{
-    sprintf(title,Form("Time (days since January 1st %d)",year));
-  }
-  gvdrvstime[2*mod1]->GetXaxis()->SetTitle(title);
-  gvdrvstime[2*mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
+  gvdrvstime[2*mod1]->Draw("PSAME");
   gvdrvstime[2*mod2]->Draw("PSAME");
   gvdrvstime[2*mod3]->Draw("PSAME");
   gvdrvstime[2*mod4]->Draw("PSAME");
@@ -481,6 +540,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   TCanvas* c0b=new TCanvas("c0b","StatusInj vs. time");
   c0->SetGridx();
   c0->SetGridy();
+  hFrameST->Draw();
   gstatusinjvstime[2*mod1]->SetMarkerStyle(20);
   gstatusinjvstime[2*mod2]->SetMarkerStyle(22);
   gstatusinjvstime[2*mod2]->SetMarkerColor(2);
@@ -491,8 +551,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   gstatusinjvstime[2*mod4]->SetMarkerStyle(27);
   gstatusinjvstime[2*mod4]->SetMarkerColor(4);
   gstatusinjvstime[2*mod4]->SetLineColor(4);
-  gstatusinjvstime[2*mod1]->Draw("AP");
-  gvdrvstime[2*mod1]->GetXaxis()->SetTitle(title);
+  gstatusinjvstime[2*mod1]->Draw("PSAME");
   gvdrvstime[2*mod2]->Draw("PSAME");
   gvdrvstime[2*mod3]->Draw("PSAME");
   gvdrvstime[2*mod4]->Draw("PSAME");
@@ -502,6 +561,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   TCanvas* c1=new TCanvas("c1","Vdrift vs. run");
   c1->SetGridx();
   c1->SetGridy();
+  hFrameVR->Draw();
   gvdrvsrun[2*mod1]->SetMarkerStyle(20);
   gvdrvsrun[2*mod2]->SetMarkerStyle(22);
   gvdrvsrun[2*mod2]->SetMarkerColor(2);
@@ -512,12 +572,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   gvdrvsrun[2*mod4]->SetMarkerStyle(27);
   gvdrvsrun[2*mod4]->SetMarkerColor(4);
   gvdrvsrun[2*mod4]->SetLineColor(4);
-  gvdrvsrun[2*mod1]->Draw("AP");
-  gvdrvsrun[2*mod1]->SetMinimum(6.4);
-  gvdrvsrun[2*mod1]->SetMaximum(6.95);
-
-  gvdrvsrun[2*mod1]->GetXaxis()->SetTitle("Run number");
-  gvdrvsrun[2*mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
+  gvdrvsrun[2*mod1]->Draw("PSAME");
   gvdrvsrun[2*mod2]->Draw("PSAME");
   gvdrvsrun[2*mod3]->Draw("PSAME");
   gvdrvsrun[2*mod4]->Draw("PSAME");
@@ -592,20 +647,17 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   TCanvas* c4=new TCanvas("c4","GoodMod vs. run");
   c4->SetGridx();
   c4->SetGridy();
+  hFrameGR->Draw();
   gGoodInjVsRun->SetMarkerStyle(20);
-  gGoodInjVsRun->SetMinimum(0.);
-  gGoodInjVsRun->SetMaximum(370.);
   gGoodInjVsRunL3->SetMarkerStyle(22);
   gGoodInjVsRunL3->SetMarkerColor(2);
   gGoodInjVsRunL3->SetLineColor(2);
   gGoodInjVsRunL4->SetMarkerStyle(23);
   gGoodInjVsRunL4->SetMarkerColor(4);
   gGoodInjVsRunL4->SetLineColor(4);
-  gGoodInjVsRun->Draw("AP");
+  gGoodInjVsRun->Draw("PSAME");
   gGoodInjVsRunL3->Draw("PSAME");
   gGoodInjVsRunL4->Draw("PSAME");
-  gGoodInjVsRun->GetXaxis()->SetTitle("Run number");
-  gGoodInjVsRun->GetYaxis()->SetTitle("Half-modules with drift speed from injectors");
   TLegend* leg2=new TLegend(0.6,0.7,0.89,0.89);
   leg2->SetBorderSize(0);
   leg2->SetFillColor(0);
@@ -622,65 +674,55 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   TCanvas* c4bis=new TCanvas("c4bis"," Frac GoodMod vs. run");
   c4bis->SetGridx();
   c4bis->SetGridy();
+  hFrameFR->Draw();
   gFracGoodInjVsRun->SetMarkerStyle(20);
-  gFracGoodInjVsRun->SetMinimum(0.);
-  gFracGoodInjVsRun->SetMaximum(0.9);
   gFracGoodInjVsRunL3->SetMarkerStyle(22);
   gFracGoodInjVsRunL3->SetMarkerColor(2);
   gFracGoodInjVsRunL3->SetLineColor(2);
   gFracGoodInjVsRunL4->SetMarkerStyle(23);
   gFracGoodInjVsRunL4->SetMarkerColor(4);
   gFracGoodInjVsRunL4->SetLineColor(4);
-  gFracGoodInjVsRun->Draw("AP");
+  gFracGoodInjVsRun->Draw("PSAME");
   gFracGoodInjVsRunL3->Draw("PSAME");
   gFracGoodInjVsRunL4->Draw("PSAME");
-  gFracGoodInjVsRun->GetXaxis()->SetTitle("Run number");
-  gFracGoodInjVsRun->GetYaxis()->SetTitle("Fraction of Half-modules with drift speed from injectors");
-  gFracGoodInjVsRun->GetYaxis()->SetTitleSize(0.03);
-  gFracGoodInjVsRun->GetYaxis()->SetTitleOffset(1.5);
   leg2->Draw();
   
   TCanvas* c4ter=new TCanvas("c4ter","RescaledMod vs. run");
   c4ter->SetGridx();
   c4ter->SetGridy();
+  hFrameRR->Draw();
   gRescaledSpeedVsRun->SetMarkerStyle(20);
-  gRescaledSpeedVsRun->SetMinimum(0.);
-  gRescaledSpeedVsRun->SetMaximum(120.);
   gRescaledSpeedVsRunL3->SetMarkerStyle(22);
   gRescaledSpeedVsRunL3->SetMarkerColor(2);
   gRescaledSpeedVsRunL3->SetLineColor(2);
   gRescaledSpeedVsRunL4->SetMarkerStyle(23);
   gRescaledSpeedVsRunL4->SetMarkerColor(4);
   gRescaledSpeedVsRunL4->SetLineColor(4);
-  gRescaledSpeedVsRun->Draw("AP");
+  gRescaledSpeedVsRun->Draw("PSAME");
   gRescaledSpeedVsRunL3->Draw("PSAME");
   gRescaledSpeedVsRunL4->Draw("PSAME");
-  gRescaledSpeedVsRun->GetXaxis()->SetTitle("Run number");
-  gRescaledSpeedVsRun->GetYaxis()->SetTitle("Half-modules with drift speed from golden module");
   leg2->Draw();
 
   TCanvas* c5=new TCanvas("c5","GoodMod vs. time");
   c5->SetGridx();
   c5->SetGridy();
+  hFrameGT->Draw();
   gGoodInjVsTime->SetMarkerStyle(20);
-  gGoodInjVsTime->SetMinimum(0.);
-  gGoodInjVsTime->SetMaximum(370.);
   gGoodInjVsTimeL3->SetMarkerStyle(22);
   gGoodInjVsTimeL3->SetMarkerColor(2);
   gGoodInjVsTimeL3->SetLineColor(2);
   gGoodInjVsTimeL4->SetMarkerStyle(23);
   gGoodInjVsTimeL4->SetMarkerColor(4);
   gGoodInjVsTimeL4->SetLineColor(4);
-  gGoodInjVsTime->Draw("AP");
+  gGoodInjVsTime->Draw("PSAME");
   gGoodInjVsTimeL3->Draw("PSAME");
   gGoodInjVsTimeL4->Draw("PSAME");
-  gGoodInjVsTime->GetXaxis()->SetTitle(title);
-  gGoodInjVsTime->GetYaxis()->SetTitle("Half-modules with drift speed from injectors");
   leg2->Draw();
   
   TCanvas* c5bis=new TCanvas("c5bis","Frac GoodMod vs. time");
   c5bis->SetGridx();
   c5bis->SetGridy();
+  hFrameFT->Draw();
   gFracGoodInjVsTime->SetMarkerStyle(20);
   gFracGoodInjVsTime->SetMinimum(0.);
   gFracGoodInjVsTime->SetMaximum(0.9);
@@ -690,35 +732,26 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
   gFracGoodInjVsTimeL4->SetMarkerStyle(23);
   gFracGoodInjVsTimeL4->SetMarkerColor(4);
   gFracGoodInjVsTimeL4->SetLineColor(4);
-  gFracGoodInjVsTime->Draw("AP");
+  gFracGoodInjVsTime->Draw("PSAME");
   gFracGoodInjVsTimeL3->Draw("PSAME");
   gFracGoodInjVsTimeL4->Draw("PSAME");
-  gFracGoodInjVsTime->GetXaxis()->SetTitle(title);
-  gFracGoodInjVsTime->GetYaxis()->SetTitleSize(0.03);
-  gFracGoodInjVsTime->GetYaxis()->SetTitleOffset(1.5);
-  gFracGoodInjVsTime->GetYaxis()->SetTitle("Fraction of Half-modules with drift speed from injectors");
   leg2->Draw();
   c5bis->SaveAs(Form("FracGoodInjVsTime%d.gif",year));
 
   TCanvas* c5ter=new TCanvas("c5ter","RescaledMod vs. time");
   c5ter->SetGridx();
   c5ter->SetGridy();
+  hFrameRT->Draw();
   gRescaledSpeedVsTime->SetMarkerStyle(20);
-  gRescaledSpeedVsTime->SetMinimum(0.);
-  gRescaledSpeedVsTime->SetMaximum(120.);
   gRescaledSpeedVsTimeL3->SetMarkerStyle(22);
   gRescaledSpeedVsTimeL3->SetMarkerColor(2);
   gRescaledSpeedVsTimeL3->SetLineColor(2);
   gRescaledSpeedVsTimeL4->SetMarkerStyle(23);
   gRescaledSpeedVsTimeL4->SetMarkerColor(4);
   gRescaledSpeedVsTimeL4->SetLineColor(4);
-  gRescaledSpeedVsTime->Draw("AP");
+  gRescaledSpeedVsTime->Draw("PSAME");
   gRescaledSpeedVsTimeL3->Draw("PSAME");
   gRescaledSpeedVsTimeL4->Draw("PSAME");
-  gRescaledSpeedVsTime->GetXaxis()->SetTitle(title);
-  gRescaledSpeedVsTime->GetYaxis()->SetTitleSize(0.03);
-  gRescaledSpeedVsTime->GetYaxis()->SetTitleOffset(1.5);
-  gRescaledSpeedVsTime->GetYaxis()->SetTitle("Half-modules with drift speed from golden module");
   leg2->Draw();
 }
 
