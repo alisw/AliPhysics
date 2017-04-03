@@ -17,12 +17,16 @@
 ************************************************************************/
 
 
-PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
+PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE,
+                Char_t *output            = "pdf"                          // "eps", "png" or "pdf"
+               ){
+
+
   CustomGStyleSettings();  
 
   //==============================================================
   //Open Output File
-  TFile* file = TFile::Open("AnalysisResults.root", "READ");
+  TFile* file = TFile::Open("AnalysisResults.root"), "READ");
   if (!file){
     cout<<"Output file not found!"<<endl;
     return;
@@ -52,8 +56,11 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
   TLatex Tl;
   Tl.SetNDC();
   Tl.SetTextSize(0.05);
-  Tl.DrawLatex(.35, .9277, "Event Counters")  ;    
-  cHistEvent->SaveAs("V0_QA.pdf(");    
+  Tl.DrawLatex(.35, .9277, "Event Counters")  ;  
+  if      (output == "png") cHistEvent->SaveAs("LF_QAanalysis_V0_page1.png");  
+  else if (output == "eps") cHistEvent->SaveAs("LF_QAanalysis_V0_page1.eps");
+  else if (output == "pdf") cHistEvent->SaveAs("LF_QAanalysis_V0.pdf(");    
+
   //==============================================================
 
   //==============================================================
@@ -126,7 +133,10 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
   fHiPtK0ShortSample->GetYaxis()->SetTitle("Counts/Event");
   fHiPtK0ShortSample->Draw(); 
   Tl.DrawLatex(.25, .9277, "5 < p_{T} (GeV/c^{2}) < 10");  
-  cInvMassK0Short->SaveAs("V0_QA.pdf");
+  if      (output == "png") cInvMassK0Short->SaveAs("LF_QAanalysis_V0_pageX.png");
+  else if (output == "eps") cInvMassK0Short->SaveAs("LF_QAanalysis_V0_pageX.eps");
+  else if (output == "pdf") cInvMassK0Short->SaveAs("LF_QAanalysis_V0.pdf");
+
   */
   //==============================================================
 
@@ -257,7 +267,10 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
     Tli.DrawLatex(0.2,0.8,Form("peak = %.4f #pm %.4f MeV/c^{2}",f3->GetParameter(4),f3->GetParameter(5)) ) ;
   }
 
-  cInvMassK0ShortWithdEdx->SaveAs("V0_QA.pdf");
+  if      (output == "png") cInvMassK0ShortWithdEdx->SaveAs("LF_QAanalysis_V0_page2.png");      
+  else if (output == "eps") cInvMassK0ShortWithdEdx->SaveAs("LF_QAanalysis_V0_page2.eps");
+  else if (output == "pdf") cInvMassK0ShortWithdEdx->SaveAs("LF_QAanalysis_V0.pdf"); 
+
   //==============================================================  
 
 
@@ -323,7 +336,10 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
   fHiPtLambdaSample->GetYaxis()->SetTitle("Counts/Event");
   fHiPtLambdaSample->Draw(); 
   Tl.DrawLatex(.25, .9277, "5 < p_{T} (GeV/c^{2}) < 10");  
-  cInvMassLambda->SaveAs("V0_QA.pdf");
+  if      (output == "png") cInvMassLambda->SaveAs("LF_QAanalysis_V0_pageY.png");
+  else if (output == "eps") cInvMassLambda->SaveAs("LF_QAanalysis_V0_pageY.eps");
+  else if (output == "pdf") cInvMassLambda->SaveAs("LF_QAanalysis_V0.pdf");
+
   */
   //==============================================================
 
@@ -448,11 +464,10 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
     Tli.DrawLatex(0.2,0.8,Form("peak = %.4f #pm %.4f MeV/c^{2}",fl3->GetParameter(4),fl3->GetParameter(5)) ) ;
   }
 
-
-
-
  
-  cInvMassLambdaWithdEdx->SaveAs("V0_QA.pdf");
+  if      (output == "png") cInvMassLambdaWithdEdx->SaveAs("LF_QAanalysis_V0_page3.png");
+  else if (output == "eps") cInvMassLambdaWithdEdx->SaveAs("LF_QAanalysis_V0_page3.eps");
+  else if (output == "pdf") cInvMassLambdaWithdEdx->SaveAs("LF_QAanalysis_V0.pdf");
   //==============================================================  
 
   //==============================================================
@@ -517,7 +532,10 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
   fHiPtAntiLambdaSample->GetYaxis()->SetTitle("Counts/Event");
   fHiPtAntiLambdaSample->Draw(); 
   Tl.DrawLatex(.25, .9277, "5 < p_{T} (GeV/c^{2}) < 10");  
-  cInvMassAntiLambda->SaveAs("V0_QA.pdf");
+  if      (output == "png") cInvMassAntiLambda->SaveAs("LF_QAanalysis_V0_pageZ.png");
+  else if (output == "eps") cInvMassAntiLambda->SaveAs("LF_QAanalysis_V0_pageZ.eps");
+  else if (output == "pdf") cInvMassAntiLambda->SaveAs("LF_QAanalysis_V0.pdf");
+
   */
   //==============================================================
 
@@ -643,7 +661,10 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
   }
 
  
-  cInvMassAntiLambdaWithdEdx->SaveAs("V0_QA.pdf");
+  if      (output == "png") cInvMassAntiLambdaWithdEdx->SaveAs("LF_QAanalysis_V0_page4.png");
+  else if (output == "eps") cInvMassAntiLambdaWithdEdx->SaveAs("LF_QAanalysis_V0_page4.eps");
+  else if (output == "pdf") cInvMassAntiLambdaWithdEdx->SaveAs("LF_QAanalysis_V0.pdf");
+
   //==============================================================  
 
   //==============================================================  
@@ -793,7 +814,11 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
     Tlq.SetTextColor(kRed); 
     Tlq.DrawLatex ( 0.15,0.8, "Prob.! Check dEd/x!");
   }
-  cdEdxPure->SaveAs("V0_QA.pdf");
+
+  if      (output == "png") cdEdxPure->SaveAs("LF_QAanalysis_V0_page5.png");
+  else if (output == "eps") cdEdxPure->SaveAs("LF_QAanalysis_V0_page5.eps");
+  else if (output == "pdf") cdEdxPure->SaveAs("LF_QAanalysis_V0.pdf");
+
 
   //==============================================================
 
@@ -936,7 +961,10 @@ PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
     Tlt.DrawLatex( 0.15, 0.29, "#bf{Autodetect Interpretation}: ");  
     Tlt.DrawLatex( 0.1, 0.2, "Typical pp Reconstruction Cuts"); //To be checked
   }
-  cTopo->SaveAs("V0_QA.pdf)");
+
+  if      (output == "png") cTopo->SaveAs("LF_QAanalysis_V0_page6.png");
+  else if (output == "eps") cTopo->SaveAs("LF_QAanalysis_V0_page6.eps");
+  else if (output == "pdf") cTopo->SaveAs("LF_QAanalysis_V0.pdf)");
 
 
 }
