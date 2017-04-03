@@ -16,6 +16,7 @@ void rec() {
   rec.SetRunMultFinder(kFALSE);   // to be implemented - CreateMultFinder
   rec.SetRunPlaneEff(kFALSE);     // to be implemented - CreateTrackleter
 
+  rec.SetDefaultStorage("local://$ALICE_ROOT_OCDB/OCDB");
   rec.SetSpecificStorage("GRP/GRP/Data",
 			 Form("local://%s",gSystem->pwd()));
   rec.SetSpecificStorage("ITS/Align/Data",
