@@ -41,7 +41,14 @@ AliAnalysisTaskEmcalOccupancy::~AliAnalysisTaskEmcalOccupancy() {
 }
 
 void AliAnalysisTaskEmcalOccupancy::UserCreateOutputObjects() {
+  AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
   fHistos = new THistManager("histos");
+
+  TLinearBinning multbinning(1000, 0., 100.),
+                 cellbinning(25001, -0.5, 25000.5),
+                 clusterbinning(1001, -0.5, 101.5);
+  const TBinning *histbinning[5] = {&multbinning, &cellbinning, &cellbinning, &clusterbinning, &clusterbinning};
+  fHistos->CreateTHnSparse("EMCALOccupancy", "EMCAL occupancy", 5, histbinning);
 
   for(auto h : *fHistos) fOutput->Add(h);
   PostData(1, fOutput);
@@ -50,13 +57,6 @@ void AliAnalysisTaskEmcalOccupancy::UserCreateOutputObjects() {
 void AliAnalysisTaskEmcalOccupancy::ExecOnce() {
   AliAnalysisTaskEmcalLight::ExecOnce();
   if(!fLocalInitialized) return;
-
-  TLinearBinning multbinning(1000, 0., 100.),
-                 cellbinning(25001, -0.5, 25000.5),
-                 clusterbinning(1001, -0.5, 101.5);
-
-  const TBinning *histbinning[5] = {&multbinning, &cellbinning, &cellbinning, &clusterbinning, &clusterbinning};
-  fHistos->CreateTHnSparse("EMCALOccupancy", "EMCAL occupancy", 5, histbinning);
 
   // Create buffer for cells (would normally be done with a std::unique_ptr
   fCellCounter = new UChar_t[fGeom->GetNCells()];
