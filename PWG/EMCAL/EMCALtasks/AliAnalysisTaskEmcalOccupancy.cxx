@@ -101,7 +101,7 @@ Bool_t AliAnalysisTaskEmcalOccupancy::Run() {
   return true;
 }
 
-AliAnalysisTaskEmcalOccupancy *AddOccupancyTask(const char *name) {
+AliAnalysisTaskEmcalOccupancy *AliAnalysisTaskEmcalOccupancy::AddOccupancyTask(const char *name) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cout << "AddOccupancyTask: Analysis Manager not available - exiting ..." << std::endl;
