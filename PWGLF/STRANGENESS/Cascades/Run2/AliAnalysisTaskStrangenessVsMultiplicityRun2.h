@@ -174,6 +174,7 @@ public:
     // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration();
     void AddStandardCascadeConfiguration();
+    void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
