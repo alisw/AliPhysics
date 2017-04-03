@@ -116,7 +116,8 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fhPhiTriggerHadronEventPlane(0x0),
   fhPhiTriggerHadronEventPlaneTPC(0x0),
   fhDetJetPt_Incl(0x0),
-  fhDetJetPt_Matched(0x0)
+  fhDetJetPt_Matched(0x0),
+  fReclusterAlgo(0)
 
 {
   for(Int_t i=0;i<nBranch;i++){
@@ -178,7 +179,8 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fhPhiTriggerHadronEventPlane(0x0),
   fhPhiTriggerHadronEventPlaneTPC(0x0),
   fhDetJetPt_Incl(0x0),
-  fhDetJetPt_Matched(0x0)
+  fhDetJetPt_Matched(0x0),
+  fReclusterAlgo(0)
   
 {
   // Standard constructor.
@@ -454,7 +456,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	if(JetNumber==-1) continue;
 	JetHybridUS=JetContHybridUS->GetJet(JetNumber);
 	//if(JetHybridUS) cout<<"Matched to jet i = "<< JetNumber<<endl;
-	if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<fSharedFractionPtMin) {
+	if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS,JetContHybridUS->GetParticleContainer())<fSharedFractionPtMin) {
 	  //cout<<"Fraction shared pt below cut = "<<JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<<endl;
 	  continue;
 	}
@@ -676,8 +678,20 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     
   
   fastjet::contrib::SoftDrop softdrop(beta, zcut);
+  //fastjet::contrib::SoftDrop softdrop_antikt(beta,zcut);
   softdrop.set_verbose_structure(kTRUE);
+  //fastjet::JetDefinition jet_def_akt(fastjet::antikt_algorithm, 0.4);
+  // fastjet::contrib::Recluster *antiKT_Recluster(jet_def_akt);
+  fastjet::contrib::Recluster *recluster;
+  if(fReclusterAlgo == 2) recluster = new fastjet::contrib::Recluster(fastjet::kt_algorithm,1,true);
+  if(fReclusterAlgo == 1) recluster = new fastjet::contrib::Recluster(fastjet::antikt_algorithm,1,true);
+  if(fReclusterAlgo == 0) recluster = new fastjet::contrib::Recluster(fastjet::cambridge_algorithm,1,true);  
+  softdrop.set_reclustering(true,recluster);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
+  // fastjet::PseudoJet finaljet_antikt = softdrop_antikt(fOutputJets[0]);
+  //cout<< finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
+  //cout<< finaljet_antikt.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
+
 
   AliEmcalJet* jet = new AliEmcalJet(finaljet.perp(), finaljet.eta(), finaljet.phi(), finaljet.m());
   std::vector<fastjet::PseudoJet> fSDTracks=finaljet.constituents();
