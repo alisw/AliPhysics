@@ -1178,6 +1178,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	tESD->UpdateTrackParams(&trdTrack,AliESDtrack::kTRDout);
 	tESD->SetStatus(AliESDtrack::kTRDin);
 	tESD->SetTRDpid(TRDpid);
+  tESD->SetTRDntracklets(trdTrack.GetNtracklets() << 3);
 
 	if( pESDfriend ) { 
 	  AliESDfriendTrack *friendTrack = pESDfriend->GetTrack(esdID);
@@ -1203,7 +1204,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	}
       }
       if( iResult>=0 ){    
-	HLTInfo("converted %d track(s) to AliESDtrack and added to ESD", trackData->fCount);
+	HLTInfo("converted %d TRD track(s) to AliESDtrack and added to ESD", trackData->fCount);
 	iAddedDataBlocks++;
       } else {
 	HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
