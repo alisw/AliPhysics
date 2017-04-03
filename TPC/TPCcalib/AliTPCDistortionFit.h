@@ -3,15 +3,17 @@
 
 #include <map>
 class AliTPCChebCorr;
+class TPRegexp;
 
 class AliTPCDistortionFit : public TNamed{
 public:
-  // static interface to distortion map - AliTPCChebCorr - used for TTree and TFormula evaluation 
-  
+  // static interface to distortion map - AliTPCChebCorr - used for TTree and TFormula evaluation  
+  static Int_t RegisterFitters();
+  static Double_t LineFieldLocal(const Double_t *x, const Double_t *param);  
   static Int_t LoadDistortionMaps(Int_t run, const char *storage=NULL);
   static void  LoadDistortionTree(const char *chinput);
   static void  SetMetadata(TTree * tree, TString friendName,Int_t run);
-  static void  PrintMap();
+  static void  PrintMap(TPRegexp *filter=NULL);
   //
   static void   RegisterMap(TString mapName,  AliTPCChebCorr *map);
   static Int_t  GetNameHash(string name){  return fgkMapNameHash[name];}

@@ -6,6 +6,8 @@ Class for fitting of distortion maps using phsyical models
 /*
   gSystem->AddIncludePath("-I$AliRoot_SRC/TPC/TPCcalib/");
   .L $AliRoot_SRC/TPC/TPCcalib/AliTPCDistortionFit.cxx+
+  AliTPCDistortionFit::RegisterFitters();
+
   AliTPCDistortionFit::LoadDistortionMaps(245683, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
   AliTPCDistortionFit::LoadDistortionMaps(246855, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
 
@@ -31,19 +33,63 @@ Class for fitting of distortion maps using phsyical models
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliGRPObject.h"
-
-using namespace std;
+#include "AliTMinuitToolkit.h"
 
 #include "AliTPCDistortionFit.h"
+using namespace std;
+ 
 using std::cout;
 
 ClassImp(AliTPCDistortionFit)
 
 map<string,int>    AliTPCDistortionFit::fgkMapNameHash;              // map  name->index
 map<int,string>  AliTPCDistortionFit::fgkMapHashName;                // map  index->name
-map<int,const AliTPCChebCorr *> AliTPCDistortionFit::fgkMapCheb;
+map<int,const AliTPCChebCorr *> AliTPCDistortionFit::fgkMapCheb;     // map  index->Cheb param
 TTree *  AliTPCDistortionFit::fgkDistortionTree;     
 
+Double_t AliTPCDistortionFit::LineFieldLocal(const Double_t *x, const Double_t *param){
+  // Simple E filed
+  // x        - input vector
+  //   x[0]   - return vector description
+  //     0    - Er
+  //     1    - Erphi
+  //     2    - Dr
+  //     3    - Drphi
+  //
+  //   x[1]   - r
+  //   x[2]   - rphi
+  //   x[3]   - z
+  // param    - description of charge
+  //      [0] - line Q
+  //      [1] - r0
+  //      [2] - rphi0
+  //      [3] - scale
+  //      [4] - wt
+  //      [5] - symmetry plane for mirror charge
+  //      [6] - E nominal
+  // 
+
+  Double_t rdist2= (x[1]-param[1])*(x[1]-param[1])+(x[2]-param[2])*(x[2]-param[2]);
+  Double_t eField=param[0]/TMath::Sqrt(rdist2+param[3]*param[3]);
+  Double_t eR=eField*(x[1]-param[1])/TMath::Sqrt(rdist2);
+  Double_t eRPhi=eField*(x[2]-param[2])/TMath::Sqrt(rdist2);
+  //
+  Double_t xmirror=param[5]-(param[1]-param[5]);
+  Double_t rdist2M= (x[1]-xmirror)*(x[1]-xmirror)+(x[2]-param[2])*(x[2]-param[2]);
+  Double_t eFieldM=param[0]/TMath::Sqrt(rdist2M+param[3]*param[3]);
+  Double_t eRM=eFieldM*(x[1]-xmirror)/TMath::Sqrt(rdist2M);
+  Double_t eRPhiM=eFieldM*(x[2]-param[2])/TMath::Sqrt(rdist2M);
+  //
+  eR+=eRM;
+  eRPhi+=eRPhiM;
+  if (x[0]==0) return eR;
+  if (x[0]==1) return eRPhi;
+  Double_t drift=250-TMath::Abs(x[3]);
+  Double_t dR=    drift*(eR+param[4]*eRPhi)/param[6];
+  Double_t dRPhi= drift*(eR*param[4]+eRPhi)/param[6];
+  if (x[0]==2) return dR;
+  if (x[0]==3) return dRPhi;
+}
 
 
 Int_t AliTPCDistortionFit::LoadDistortionMaps(Int_t run, const char *storage){
@@ -199,11 +245,14 @@ void AliTPCDistortionFit::RegisterMap(TString mapName,  AliTPCChebCorr *map){
   fgkMapCheb[hashIndex]=map;  
 }
 
-void AliTPCDistortionFit::PrintMap(){
+void AliTPCDistortionFit::PrintMap(TPRegexp *filter){
   // Loop through the map (Would be much easier in c++11)
   // looping over map with const_iterator
   typedef std::map<string,int>::const_iterator it_type;
   for(it_type iterator = fgkMapNameHash.begin(); iterator != fgkMapNameHash.end(); ++iterator) {
+    if (filter){
+      if (filter->Match(iterator->first)==0) continue;
+    }
     std::cout << iterator->first << " " << iterator->second << "\n";
   }
   return;
@@ -408,4 +457,52 @@ Double_t AliTPCDistortionFit::EvalRhoSector(Int_t hashIndex, Int_t hashref, Floa
 
 }
 
+Int_t AliTPCDistortionFit::RegisterFitters(){
+  //
+  //
+  //  
+  TF1 *likeGausCachy = new TF1("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike,-10,10,2);
+  likeGausCachy->SetParameters(0.95,1);
+  //  1 line function
+  TF1 *funLine1 = new TF1("funLine1",AliTPCDistortionFit::LineFieldLocal,-20,20,7);
+  AliTMinuitToolkit * fitterLine1 = new AliTMinuitToolkit();
+  fitterLine1->SetVerbose(0x1); fitterLine1->SetFitFunction(funLine1,kTRUE);
+  //fitterLine1->SetLogLikelihoodFunction(likeGausCachy);
+  TMatrixD initPar1(7,4),   param1(7,1);       // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
+  initPar1(0,0)=1;   initPar1(0,1)=1;    initPar1(0,2)=0;    initPar1(0,3)=0;            // q
+  initPar1(1,0)=120; initPar1(1,1)=10;   initPar1(1,2)=80;   initPar1(1,3)=140;          // r
+  initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=0;    initPar1(2,3)=0;            // rphi
+  initPar1(3,0)=1;   initPar1(3,1)=1;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
+  initPar1(4,0)=0.3; initPar1(4,1)=0.1;  initPar1(4,2)=0.05; initPar1(4,3)=0.5;          // wt   
+  initPar1(5,0)=80;  initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=0.0;          // symetry plane
+  initPar1(6,0)=400; initPar1(6,1)=0;    initPar1(6,2)=0;    initPar1(6,3)=0.0;          // Ez 
+  for (Int_t ipar=0; ipar<7; ipar++) {funLine1->SetParameter(ipar, initPar1(ipar,0)); param1(ipar,0)=initPar1(ipar,0);}
+  fitterLine1->SetInitialParam(&initPar1);
+  AliTMinuitToolkit::SetPredefinedFitter("fitterLine1",fitterLine1);
 
+}
+
+void MakeFitExample1(){
+  //   gSystem->AddIncludePath("-I$AliRoot_SRC/TPC/TPCcalib/");
+  //.L $AliRoot_SRC/TPC/TPCcalib/AliTPCDistortionFit.cxx+
+  AliTPCDistortionFit::RegisterFitters();
+  AliTPCDistortionFit::LoadDistortionMaps(245683, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
+  AliTPCDistortionFit::LoadDistortionMaps(246855, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
+  AliTPCDistortionFit::LoadDistortionTree("/data/alien/alice/data/2015/LHC15o/000245683/cpass0_pass1/ResidualMerge/TPCSPCalibration/1448920523_1448922567_000245683/voxelResTree.root");
+  AliTMinuitToolkit * fitter = AliTMinuitToolkit::GetPredefinedFitter("fitterLine1");
+  // AliTPCDistortionFit::fgkDistortionTree->Draw("run245683_1448920523_1448922567.dY:fsector","x==30&&z2x==2&&abs(fsector-9)<1","*",1000000)
+  
+
+  fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"run245683_1448920523_1448922567.dY:1", "3:lx:lx*(fsector-9):lz","abs(fsector-9)<0.5",0,10000000);
+  TMatrixD initPar1(7,4),   param1(7,1);       // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
+  initPar1(0,0)=1;   initPar1(0,1)=1;    initPar1(0,2)=0;    initPar1(0,3)=0;            // q
+  initPar1(1,0)=120; initPar1(1,1)=10;   initPar1(1,2)=80;   initPar1(1,3)=140;          // r
+  // initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=0;    initPar1(2,3)=0;            // rphi
+  initPar1(3,0)=1;   initPar1(3,1)=0;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
+  initPar1(4,0)=0.3; initPar1(4,1)=0.1;  initPar1(4,2)=0.05; initPar1(4,3)=0.5;          // wt   
+  initPar1(5,0)=80;  initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=0.0;          // symetry plane
+  initPar1(6,0)=400; initPar1(6,1)=0;    initPar1(6,2)=0;    initPar1(6,3)=0.0;          // Ez 
+  fitter->SetInitialParam(&initPar1);
+  fitter->Fit();
+
+}
