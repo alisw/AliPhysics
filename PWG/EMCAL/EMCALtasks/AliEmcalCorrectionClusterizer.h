@@ -5,6 +5,8 @@
 
 #include "AliEMCALRecParam.h"
 
+class TStopwatch;
+
 /**
  * @class AliEmcalCorrectionClusterizer
  * @ingroup EMCALCOREFW
@@ -68,6 +70,10 @@ protected:
   void           SetClustersMCLabelFromOriginalClusters();
   void           ClearEMCalClusters();
   
+  TH1F* fHistCPUTime;                                     //!<! CPU time for the Run() function (event loop)
+  TH1F* fHistRealTime;                                    //!<! Real time for the Run() function (event loop)
+  TStopwatch * fTimer;                                    //!<! Timer for the Run() function (event loop)
+
   TClonesArray          *fDigitsArr;                      //!<!digits array
   TObjArray             *fClusterArr;                     //!<!recpoints array
   AliEMCALRecParam      *fRecParam;                       ///< reconstruction parameters container
@@ -122,7 +128,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterizer> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterizer, 2); // EMCal correction clusterizer component
+  ClassDef(AliEmcalCorrectionClusterizer, 3); // EMCal correction clusterizer component
   /// \endcond
 };
 

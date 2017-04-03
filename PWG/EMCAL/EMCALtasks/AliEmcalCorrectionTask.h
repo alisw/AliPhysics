@@ -96,9 +96,10 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   std::string toString(bool includeYAMLConfigurationInfo = false) const;
   // Set
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
-  void                        SetNeedEmcalGeometry(Bool_t b)                        { fNeedEmcalGeom = b; }
+  void                        SetNeedEmcalGeometry(Bool_t b)                        { fNeedEmcalGeom     = b                              ; }
   // Centrality options
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
+  void                        SetCentralityEstimator(const char * c)                { fCentEst           = c                              ; }
   virtual void                SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
 
