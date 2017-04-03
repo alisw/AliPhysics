@@ -240,7 +240,7 @@ void AliTMinuitToolkit::FitGraph(TGraph *const gr, Option_t *option) {
 
 
 
-void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchisq, double *gin, int /*iflag*/){
+void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchisq, double *gin, int iflag){
   //
   // internal function which gives the specified function to the TMinuit function
   //  
@@ -256,6 +256,7 @@ void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchis
   const TMatrixD & values=    (*fitter->GetValues());
   Int_t nvars       = variables.GetNcols();
   Int_t npoints     = variables.GetNrows();
+  TVectorD param(fitter->fFormula->GetNpar(), gin);
   // calculate  log likelihood
   //
   if (fitter->fPointIndex.GetSize()>0) { 
@@ -271,20 +272,41 @@ void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchis
     Double_t value=values(ipoint,0);
     Double_t weight=values(ipoint,1);
     Double_t delta = TMath::Abs(value - funx);
+    Double_t toAdd=0;
     if (logLike){
       Double_t normDelta = delta*weight;
-      fchisq+=logLike->EvalPar(&delta,likeParam);
+      toAdd=logLike->EvalPar(&delta,likeParam);
       continue;
+    }else{
+      if (fitter->IsHuberCost() == true) {       //hubert norm
+	delta = delta*weight;                   // normalization
+	if (delta <= 2.5) toAdd= delta*delta; // new metric: Huber-k-estimator
+	if (delta > 2.5)  toAdd= 2*(2.5)*delta - (2.5*2.5);
+      } else {
+	Double_t chi2 = delta*weight;
+	chi2*=chi2;
+	toAdd=chi2;   // chi2 (log likelihood)
+      }
     }
-    if (fitter->IsHuberCost() == true) {       //hubert norm
-     delta = delta*weight;                   // normalization
-     if (delta <= 2.5) fchisq+= delta*delta; // new metric: Huber-k-estimator
-     if (delta > 2.5) fchisq+= 2*(2.5)*delta - (2.5*2.5);
-    } else {
-     Double_t chi2 = delta*weight;
-     chi2*=chi2;
-     fchisq+= chi2;   // chi2 (log likelihood)
+    //if (fitter-
+    if (fitter->IsVerbose(kStreamFcnPoint) || (iflag&kStreamFcnPoint)){
+      TVectorD vecX(nvars, x);
+      (*(fitter->fStreamer))<<"fcnDebugPoint"<<
+	"toAdd="<<toAdd<<  // log likelihood to add
+	"val="<<value<<    // "measurement"
+	"w="<<weight<<     // wight of point
+	"fun="<<funx<<     // function value
+	"x.="<<&vecX<<     // variable vector
+	"p.="<<&param<<    // parameter vector
+	"\n";
     }
+    fchisq+=toAdd;    
+  }
+  if (fitter->IsVerbose(kStreamFcn) || (iflag&kStreamFcn )){
+    (*(fitter->fStreamer))<<"fcnDebug"<<
+      "fchisq="<<fchisq<<
+      "p.="<<&param<<
+      "\n";
   }
   fcnCounter++;
 }
@@ -773,7 +795,7 @@ void  AliTMinuitToolkit::RegisterDefaultFitters(){
   fitterGR->SetLogLikelihoodFunction(likeGausCachy);
   fitterGR->SetInitialParam(&initPar);
   AliTMinuitToolkit::SetPredefinedFitter("gausR",fitterGR);
-  //
+ //
 }
 
 
