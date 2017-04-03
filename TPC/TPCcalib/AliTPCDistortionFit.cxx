@@ -478,8 +478,7 @@ Int_t AliTPCDistortionFit::RegisterFitters(){
   initPar1(6,0)=400; initPar1(6,1)=0;    initPar1(6,2)=0;    initPar1(6,3)=0.0;          // Ez 
   for (Int_t ipar=0; ipar<7; ipar++) {funLine1->SetParameter(ipar, initPar1(ipar,0)); param1(ipar,0)=initPar1(ipar,0);}
   fitterLine1->SetInitialParam(&initPar1);
-  AliTMinuitToolkit::SetPredefinedFitter("fitterLine1",fitterLine1);
-
+  AliTMinuitToolkit::SetPredefinedFitter("fitterLine1",fitterLine1);  
 }
 
 void MakeFitExample1(){
@@ -491,18 +490,32 @@ void MakeFitExample1(){
   AliTPCDistortionFit::LoadDistortionTree("/data/alien/alice/data/2015/LHC15o/000245683/cpass0_pass1/ResidualMerge/TPCSPCalibration/1448920523_1448922567_000245683/voxelResTree.root");
   AliTMinuitToolkit * fitter = AliTMinuitToolkit::GetPredefinedFitter("fitterLine1");
   // AliTPCDistortionFit::fgkDistortionTree->Draw("run245683_1448920523_1448922567.dY:fsector","x==30&&z2x==2&&abs(fsector-9)<1","*",1000000)
-  
+   
 
-  fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"run245683_1448920523_1448922567.dY:1", "3:lx:lx*(fsector-9):lz","abs(fsector-9)<0.5",0,10000000);
+  fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"run245683_1448920523_1448922567.dY:1", "3:lx:lx*pi*(fsector-9)/9:lz","abs(fsector-9)<0.5&&lx<150",0,10000000);
   TMatrixD initPar1(7,4),   param1(7,1);       // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
   initPar1(0,0)=1;   initPar1(0,1)=1;    initPar1(0,2)=0;    initPar1(0,3)=0;            // q
   initPar1(1,0)=120; initPar1(1,1)=10;   initPar1(1,2)=80;   initPar1(1,3)=140;          // r
-  // initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=0;    initPar1(2,3)=0;            // rphi
-  initPar1(3,0)=1;   initPar1(3,1)=0;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
+  initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=0;    initPar1(2,3)=0;            // rphi
+  initPar1(3,0)=1;   initPar1(3,1)=1;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
   initPar1(4,0)=0.3; initPar1(4,1)=0.1;  initPar1(4,2)=0.05; initPar1(4,3)=0.5;          // wt   
   initPar1(5,0)=80;  initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=0.0;          // symetry plane
   initPar1(6,0)=400; initPar1(6,1)=0;    initPar1(6,2)=0;    initPar1(6,3)=0.0;          // Ez 
   fitter->SetInitialParam(&initPar1);
+
+  fitter->SetStreamer("testFitLine1.root");
+  fitter->SetVerbose( AliTMinuitToolkit::kPrintAll| AliTMinuitToolkit::kStreamFcn);
   fitter->Fit();
+  Double_t chi2=0;
+  Int_t flag= Int_t(AliTMinuitToolkit::kStreamFcnPoint);
+  Int_t npar=4;
+  AliTMinuitToolkit::FitterFCN(npar,0,chi2,(Double_t*)(fitter->GetParameters()->GetMatrixArray()), flag);
+  ((*(fitter->GetStreamer())).GetFile())->Flush();
+
+  TTree * t = ((*(fitter->GetStreamer()))<<"fcnDebugPoint").GetTree();
+  t->ResetBranchAddresses();
+
+
+
 
 }
