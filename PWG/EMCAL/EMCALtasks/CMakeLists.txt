@@ -74,6 +74,7 @@ set(SRCS
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
+  AliAnalysisTaskEmcalOccupancy.cxx
   )
 
 # Headers from sources
