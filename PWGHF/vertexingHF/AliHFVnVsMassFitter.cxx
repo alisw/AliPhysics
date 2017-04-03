@@ -14,6 +14,7 @@
 #include <TPaveText.h>
 #include "Fit/BinData.h"
 #include "HFitInterface.h"
+#include <vector>
 
 #include "AliVertexingHFUtils.h"
 
@@ -195,7 +196,7 @@ Bool_t AliHFVnVsMassFitter::SimultaneusFit(Bool_t drawFit) {
   if(!massprefit) {AliError("Impossible to perform the mass prefit"); return kFALSE;}
   Bool_t vnprefit=VnSBPrefit();
 
-  vector<Double_t> initpars;
+  std::vector<Double_t> initpars;
   for(Int_t iBkgPar=0; iBkgPar<fNParsMassBkg; iBkgPar++) {
     initpars.push_back(fMassFuncFromPrefit->GetParameter(iBkgPar));
   }
@@ -256,7 +257,7 @@ Bool_t AliHFVnVsMassFitter::SimultaneusFit(Bool_t drawFit) {
   // (specify optionally data size and flag to indicate that is a chi2 fit
   fitter.FitFCN(nparsvn,globalChi2,0,dataMass.Size()+dataVn.Size(),kFALSE);
   ROOT::Fit::FitResult result = fitter.Result();
-  result.Print(cout);
+  result.Print(std::cout);
 
   //set parameters in every function
   fVnBkgFunc = new TF1("fVnBkgFunc",this,&AliHFVnVsMassFitter::vnBkgFunc,fMassMin,fMassMax,fNParsVnBkg,"AliHFVnVsMassFitter","vnBkgFunc");
