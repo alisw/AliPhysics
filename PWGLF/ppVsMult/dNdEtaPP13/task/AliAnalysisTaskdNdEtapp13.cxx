@@ -190,6 +190,7 @@ const int AliAnalysisTaskdNdEtapp13::fgkPDGCodes[] = {
     // unknown
 };
 
+TH1 *hMCcalib1 = NULL;
 
 //________________________________________________________________________
 /*//Default constructor
@@ -644,8 +645,38 @@ AliMultSelection *MultSelection = (AliMultSelection*) esd -> FindListObject("Mul
 static Bool_t skipCentrality = (fUseCentralityVar == "MB"); // If the centrality var is MB, the centrality selection is skept
 Double_t centPercentile = -1;
 if(!skipCentrality) {
-    centPercentile = MultSelection->GetMultiplicityPercentile(fUseCentralityVar);
+  if (fUseMC) {
+    TFile *mcCalib1 = NULL;
+
+    if (hPythia) {
+  	  TString str1 = handler->GetTree()->GetCurrentFile()->GetName();
+
+  	  if (str1.Contains("LHC15g3c3")) {
+  	    printf("loading PYTHIA6 Perugia-0 V0M calibration (LHC15g3c3)\n");
+  	    mcCalib1 = TFile::Open("V0M_bins_LHC15g3c3.root");
+  	  }
+  	  else if (str1.Contains("LHC15g3a3")) {
+  	    printf("loading PYTHIA8 Monash V0M calibration (LHC15g3a3)\n");
+  	    mcCalib1 = TFile::Open("V0M_bins_LHC15g3a3.root");
+  	  }
+  	}
+    else {
+    printf("loading EPOS-LHC V0M calibration (LHC16d3)\n");
+      mcCalib1 = TFile::Open("V0M_bins_LHC16d3.root");
+    }
+
+    hMCcalib1 = (TH1 *)mcCalib1->Get("h3");
+
+  Float_t multV01=0;
+  AliESDVZERO* esdV01 = esd->GetVZEROData();
+  multV01 = esdV01->GetMTotV0A()+esdV01->GetMTotV0C();
+  centPercentile = hMCcalib1->Interpolate(multV01);
+  fCurrCentBin = GetCentralityBin(centPercentile);
+}
+  else  { centPercentile = MultSelection->GetMultiplicityPercentile(fUseCentralityVar);
     fCurrCentBin = GetCentralityBin(centPercentile);
+  }
+
 } else {
     fCurrCentBin = 0;
 }
@@ -1442,7 +1473,7 @@ if (fScaleDTBySin2T) {
 
 
 if (fCutOnPhi) {
-    if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
+  if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
 }
 
 if (fCutOnDThetaX && TMath::Abs(dThetaX)>fDThetaWindow) continue;
