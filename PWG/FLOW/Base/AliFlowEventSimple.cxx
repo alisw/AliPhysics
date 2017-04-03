@@ -90,6 +90,10 @@ AliFlowEventSimple::AliFlowEventSimple():
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
   }
+  for(Int_t i=0; i < 4; i++) {
+    fV0C[i] = AliFlowVector();
+    fV0A[i] = AliFlowVector();
+  }
   cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
 }
 
@@ -915,6 +919,10 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fZNAQ = AliFlowVector();
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
+  }
+  for(Int_t i=0; i < 4; i++) {
+    fV0C[i] = AliFlowVector();
+    fV0A[i] = AliFlowVector();
   }
 }
 
