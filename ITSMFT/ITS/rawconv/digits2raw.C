@@ -10,7 +10,6 @@
 #include "AliLoader.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSMFTSegmentationPix.h"
-#include "AliITSUSDigit.h"
 #include "AliITSMFTDigitPix.h"
 #include "AliITSMFTSensMap.h"
 #endif

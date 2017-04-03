@@ -109,19 +109,20 @@ public:
   unsigned long long   MakeLinkHeader(unsigned short link, unsigned short cycle);
   unsigned long long   MakeLinkTrailer(unsigned short link, unsigned short cycle);
   //
-protected:
+  void AddToBuffer(unsigned short v);
+  void AddToBuffer(unsigned char v);
+  void AddToBuffer(unsigned int v, int nbytes);
+  void AddToBuffer(unsigned long long v, int nbytes);
+  //
   struct PixLink {
     PixLink() {col=0; nextInRow=0;}
     short col;
     PixLink* nextInRow;
   };
   typedef struct PixLink PixLink_t;
+protected:
   //
   void ExpandBuffer(int add=1000);
-  void AddToBuffer(unsigned short v);
-  void AddToBuffer(unsigned char v);
-  void AddToBuffer(unsigned int v, int nbytes);
-  void AddToBuffer(unsigned long long v, int nbytes);
   void EraseInBuffer(int nbytes);
   //
   bool GetFromBuffer(unsigned char &v);
