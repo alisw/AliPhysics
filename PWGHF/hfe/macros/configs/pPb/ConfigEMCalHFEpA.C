@@ -454,7 +454,7 @@ Bool_t isTOFdet 		= kFALSE
 				task->SetTPCcal_cut_max(3);
 		}
 		
-		if((period == "b" || period =="c") && !isEMCal){
+		if((period == "b" || period =="c") && !isEMCal && !isTOFdet){
 			Double_t max=5;//looser cut for hfe package. Real cut inside the task.
 			task->SetTPCcal_cut_max(3);
 		}
