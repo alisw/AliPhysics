@@ -514,6 +514,7 @@ void AliGenMUONLMR::Generate() {
 	  y   = fY[ipart]->GetRandom(); 
 	  phi = gRandom->Rndm() * 2 * TMath::Pi(); 
 	  mass = pdg->GetParticle(fPDG[ipart])->Mass(); 
+	  if (fPDG[ipart] == 113) mass = fRhoLineShape->GetRandom(); 
 	  px  = pt * TMath::Cos(phi); 
 	  py  = pt * TMath::Sin(phi); 
 	  mt  = TMath::Sqrt(pt * pt + mass * mass);
@@ -610,11 +611,13 @@ void AliGenMUONLMR::Decay2Body(TParticle *mother){
   // performs decay in two muons of the low mass resonances
   Double_t md1 = fMu[0]->GetMass(); 
   Int_t pdg = mother->GetPdgCode(); 
-  Double_t mres =0; 
+  Double_t mres =mother->GetCalcMass(); 
   // if mother is a rho, extract the mass from its line shape
   // otherwise consider the resonance mass 
-  if (pdg == 113) mres = fRhoLineShape->GetRandom(); 
-  else mres = mother->GetCalcMass();
+  //if (pdg == 113) mres = fRhoLineShape->GetRandom(); 
+  // else mres = mother->GetCalcMass();
+
+
   //  while (mres < md1 + md2) mres =  fDsigmaDm[res]->GetRandom();
   // energies and momenta in rest frame 
   Double_t e1 = mres / 2.;
