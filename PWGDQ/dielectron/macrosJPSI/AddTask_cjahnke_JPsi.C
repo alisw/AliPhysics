@@ -76,9 +76,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
 	  }
   }
 
-	
-	
-		//moved to configuration file
+
   //Add event filter
 	
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
@@ -157,7 +155,7 @@ if(!isMC){
 	}
 	
 	
-	if(trigger_index == 50){
+	if(trigger_index==50){
 		task->SetTriggerMask(AliVEvent::kHighMultV0);
 	}
 	
