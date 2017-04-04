@@ -1496,6 +1496,7 @@ private:
   TArrayD fAvVtxPosZ;    // Run list
   TList *fCRCQVecList; //! Q Vectors list
   TList *fCRCQVecListTPC; //! Q Vectors list TPC
+  TList *fCRCQVecListVZ; //! Q Vectors list VZERO
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
   TList *fCRCZDCCalibList; //! ZDC calibration
@@ -1530,6 +1531,7 @@ private:
   TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
   TProfile2D *fZDCEcomHist[4];//! Run-by-run vtxZDCQvec
   TProfile2D *fZDCEcomTotHist[4];//! Run-by-run vtxZDCQvec
+  TProfile3D *fZDCEcomTotvsVtxHist[12];//! Run-by-run vtxZDCQvec
   TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
@@ -1555,6 +1557,7 @@ private:
   Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+  TProfile3D *fCRCVZQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! VZERO Vtx positions re-centered Qvec in cen bins
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
   TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
@@ -1576,7 +1579,7 @@ private:
   TList *fCRCVZList; //! VZERO CRC List
   AliFlowVector fVZFlowVect[2][fCRCnHar];
   const static Int_t fkNHistCRCVZ = 7;
-  const static Int_t fkNHarCRCVZ = 2;
+  const static Int_t fkNHarCRCVZ = 2; // warning: <= 3
   TProfile *fCRCVZEROetaPro[fCRCMaxnCen][fkNHarCRCVZ][fkNHistCRCVZ]; //!
   TH1D *fCRCVZEROetaHist[fCRCMaxnCen][fkNHarCRCVZ][fkNHistCRCVZ]; //!
   
