@@ -334,7 +334,7 @@ void AliHFMassFitterVAR::SetBackHighPolDegree(Int_t deg){
 }
 
 
-TH1F*  AliHFMassFitterVAR::SetTemplateReflections(const TH1 *h, TString opt,Double_t minRange,Double_t maxRange){
+TH1F*  AliHFMassFitterVAR::SetTemplateReflections(const TH1F *h, TString opt,Double_t minRange,Double_t maxRange){
   fhTemplRefl=(TH1F*)h->Clone("hTemplRefl");  
 
   if(opt.EqualTo("templ")||opt.EqualTo("Templ")||opt.EqualTo("TEMPL")||opt.EqualTo("template")||opt.EqualTo("Template")||opt.EqualTo("TEMPLATE")){

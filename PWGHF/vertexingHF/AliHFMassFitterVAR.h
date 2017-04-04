@@ -95,7 +95,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const; /// significance in nsigma with error
   void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const; /// significance in (min, max) with error
   Double_t GetReflOverSignal(Double_t &err)const;
-  TH1F*    SetTemplateReflections(const TH1 *h,TString option="templ",Double_t minRange=1.72,Double_t maxRange=2.05);
+  TH1F*    SetTemplateReflections(const TH1F *h,TString option="templ",Double_t minRange=1.72,Double_t maxRange=2.05);
   void     SetFixReflOverS(Double_t val,Bool_t fixpar=kTRUE){fReflInit=val;
     if(ftypeOfFit4Sgn!=2)Printf("Set or Fixing Refl/Signal but fit with template not foreseen");
     fFixParReflExternalValue[0]=fixpar;
