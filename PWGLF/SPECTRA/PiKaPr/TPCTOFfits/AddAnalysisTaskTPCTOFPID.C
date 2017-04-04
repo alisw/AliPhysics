@@ -45,6 +45,8 @@ AddAnalysisTaskTPCTOFPID(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE, Boo
   mgr->ConnectInput(task, 0, inputc);
   AliAnalysisDataContainer *outcont = mgr->CreateContainer("PIDTree",TTree::Class(), AliAnalysisManager::kOutputContainer,AliAnalysisManager::GetCommonFileName());
   mgr->ConnectOutput(task,1,outcont);
+  AliAnalysisDataContainer *outcont2 = mgr->CreateContainer("StatHist",TH1D::Class(), AliAnalysisManager::kOutputContainer,AliAnalysisManager::GetCommonFileName());
+  mgr->ConnectOutput(task,2,outcont2);
   /* setup task */
   task->SetMCFlag(mcFlag);
   task->SetMCTuneFlag(mcTuneFlag);

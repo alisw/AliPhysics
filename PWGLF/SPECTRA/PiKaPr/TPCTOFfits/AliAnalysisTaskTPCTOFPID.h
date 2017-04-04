@@ -11,11 +11,16 @@ class AliPhysicsSelection;
 class AliESDtrackCuts;
 class AliESDpid;
 class AliESDtrack;
+class AliESDv0;
+class AliESDVertex;
+class AliAnalysisPIDV0;
+class AliAODVertex;
 class AliTOFcalib;
 class AliTOFT0maker;
 class TList;
 class TH1F;
 class TH2F;
+class TH1D;
 class TObjArray;
 class AliAnalysisPIDEvent;
 class AliAnalysisPIDTrack;
@@ -24,8 +29,12 @@ class TClonesArray;
 class AliCentrality;
 class AliPIDResponse;
 class AliPPVsMultUtils;
+class AliAnalysisUtils;
 class AliESDtrackCuts;
 class TTree;
+class AliKFVertex;
+class AliKFParticle;
+class AliVVZERO;
 class AliAnalysisTaskTPCTOFPID :
 public AliAnalysisTaskSE
 {
@@ -56,6 +65,8 @@ public AliAnalysisTaskSE
   void SetVertexCut(Double_t value) {fVertexCut = value;}; // setter
   void SetRapidityCut(Double_t value) {fRapidityCut = value;}; // setter
   void SetTimeResolution(Double_t value) {fTimeResolution = value;}; // setter
+  void ProcessV0s();
+  void FillHist(Double_t myflag);
 
  protected:
 
@@ -69,9 +80,9 @@ public AliAnalysisTaskSE
   Bool_t HasPrimaryDCA(AliESDtrack *track); // has primary DCA
   Bool_t MakeTPCPID(AliESDtrack *track, Double_t *nsigma, Double_t *signal); // make TPC PID
   Bool_t MakeTOFPID(AliESDtrack *track, Double_t *nsigma, Double_t *signal); // make TOF PID
-
+  Int_t GetTrackCutsFlag(AliESDtrack *LocalTrack);
   /* flags */
-  AliESDtrackCuts *fESDtrackCuts;
+  //AliESDtrackCuts *fESDtrackCuts;
   Bool_t fInitFlag; // init flag
   Bool_t fMCFlag; // MC flag
   Bool_t fMCTuneFlag; // MC tune flag
@@ -79,16 +90,20 @@ public AliAnalysisTaskSE
   Bool_t fVertexSelectionFlag; // vertex selection flag
   Bool_t fPrimaryDCASelectionFlag; // primary DCA selection flag
   TTree *fPIDTree;
+  TH1D *fEvHist;
   /* ESD analysis */
   AliPIDResponse *fPIDResponse; //! PID object
   AliPPVsMultUtils *fMultiUtils; //! V0M Multi utils
+  AliAnalysisUtils *fAnUtils; //! Analysis Utils
   Int_t fRunNumber; // run number
   UInt_t fStartTime; // start time
   UInt_t fEndTime; // end time
   AliESDEvent *fESDEvent; // ESD event
   AliMCEvent *fMCEvent; // MC event
   AliStack *fMCStack; // MC stack
-  AliESDtrackCuts *fTrackCuts; //! track cuts
+  AliESDtrackCuts *fTrackCuts2010; //! ITSTPC track cuts 2010
+  AliESDtrackCuts *fTrackCuts2011; //! ITSTPC track cuts 2011
+  AliESDtrackCuts *fTrackCutsTPCRefit; //! TPC only track cuts + refit
   AliESDpid *fESDpid; // ESD PID
   Bool_t fIsCollisionCandidate; // is collision candidate
   UInt_t fIsEventSelected; // is event selected
@@ -103,6 +118,8 @@ public AliAnalysisTaskSE
   AliAnalysisPIDTrack *fAnalysisTrack; // analysis track
   TClonesArray *fAnalysisParticleArray; // analysis particle array
   AliAnalysisPIDParticle *fAnalysisParticle; // analysis particle
+  TClonesArray *fAnalysisV0TrackArray; //V0 track array
+  AliAnalysisPIDV0 *fAnalysisV0Track; //V0 track object
 
   /* TOF related */
   AliTOFcalib *fTOFcalib; // TOF calib
@@ -124,7 +141,7 @@ public AliAnalysisTaskSE
   TList *fMCHistoList; // MC histo list
 
   
-  ClassDef(AliAnalysisTaskTPCTOFPID, 1);
+  ClassDef(AliAnalysisTaskTPCTOFPID, 2);
 };
 
 #endif /* ALIANALYSISTASKTPCTOFPID_H */

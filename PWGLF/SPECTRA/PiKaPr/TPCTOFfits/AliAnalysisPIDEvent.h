@@ -43,7 +43,8 @@ public TObject
   void SetMCTimeZero(Float_t value) {fMCTimeZero = value;}; // setter
   void SetV0Mmultiplicity(Float_t multi) { fV0Mmultiplicity = multi;}; // setter
   void SetPPVsMultFlags(Bool_t IsNotPileUpFromSPDInMultBins, Bool_t IsINELgtZERO, Bool_t IsAcceptedVertexPosition,Bool_t HasNoInconsistentSPDandTrackVertices,Bool_t IsMinimumBias);
-
+  void SetMagneticField(Double_t MagneticFieldValue) { fMagneticField = MagneticFieldValue; };
+  void SetRunNumber(Int_t RunNo) { fRunNo = RunNo; };
 
 
   void Reset(); // reset
@@ -74,6 +75,11 @@ public TObject
   Float_t GetV0Mmultiplicity() { return fV0Mmultiplicity;}; //getter
   Int_t GetMCMultiplicity() {return fMCMultiplicity; }; // getter
   Bool_t IsPileup() {return fIsPileupFromSPD; }; // getter
+  void SetV0CellAmplitude(Int_t i, Float_t CellAmp) { fV0CellAmplitude[i] = CellAmp; }; // setter
+    Float_t *GetV0CellAmplitude() { return fV0CellAmplitude; }; //! Return the signal array in V0 cells. 0-31 for V0A, 32-63 for V0C
+  Float_t GetV0CellAmplitude(Int_t CellNo) { return fV0CellAmplitude[CellNo]; };//! Return the signal CellNo V0 cell. 0-31 for V0A, 32-63 for V0C
+  Double_t GetMagneticField() { return fMagneticField;};
+  Int_t GetRunNumber() { return fRunNo; };
   enum ECentralityEstimator_t {
     kCentEst_V0M, /* V0 multiplicity */
     kCentEst_V0A, /* V0A multiplicity */
@@ -85,7 +91,6 @@ public TObject
     kNCentralityEstimators
   };
   static const Char_t *fgkCentralityEstimatorName[kNCentralityEstimators]; // centrality estimator name
-
   static void SetVertexZCuts(Float_t min, Float_t max) {fgVertexZ_cuts[0] = min; fgVertexZ_cuts[1] = max;}; // setter
 
 
@@ -100,6 +105,7 @@ public TObject
   UChar_t fCentralityQuality; // centrality quality
   Int_t fReferenceMultiplicity; // reference multiplicity in eta 0.8
   Float_t fV0Mmultiplicity;
+  Float_t fV0CellAmplitude[64];
   Int_t fMCMultiplicity; // MC multiplicity
   /*** TPC event info ***/
   /*** TOF event info ***/
@@ -115,7 +121,8 @@ public TObject
   Bool_t fIsAcceptedVertexPosition;
   Bool_t fHasNoInconsistentSPDandTrackVertices;
   Bool_t fIsMinimumBias;
-  
+  Double_t fMagneticField;
+  Int_t fRunNo;
 
 
   /*** tools ***/
@@ -141,7 +148,7 @@ public TObject
   static Double_t fgTimeZeroTOFCentCorrParams[3];
   static TF1 *fgTimeZeroTOFCentCorrFunc;
 
-  ClassDef(AliAnalysisPIDEvent, 3);
+  ClassDef(AliAnalysisPIDEvent, 4);
 };
 
 #endif /* ALIANALYSISPIDEVENT_H */
