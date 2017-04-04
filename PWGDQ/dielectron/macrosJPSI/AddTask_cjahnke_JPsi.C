@@ -154,7 +154,6 @@ if(!isMC){
 		 task->SetTriggerMask(AliVEvent::kAny);
 		 TString triggerClass = "kHighMultV0";
 		 if(! triggerClass.IsNull() ) task->SetFiredTriggerName(triggerClass.Data() );
-		//task->SetFiredTriggerName("HMV0");
 	}
 	
 	
