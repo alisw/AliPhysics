@@ -36,10 +36,13 @@ class AliStack;
 class TParticle;
 class AliTrackerContainer;
 class AliParticleContainer;
+class AliClusterContainer;
 class AliTrackContainer;
 class AliEmcalParticle;
   //AliRoot Syste
 class AliEMCALTrack;
+class AliVCluster;
+class AliAODCaloCluster;
   //class AliMagF;
 class AliEMCALRecoUtils;
   //class AliAnalysisFilter;
@@ -63,6 +66,7 @@ public:
   
   void         SetIsoConeRadius(Float_t r)                    { fIsoConeRadius = r ;}
   void         SetPtIsoThreshold(Float_t r)                   { fptIsoThreshold = r ;}
+  void         SetIsoMethod(Int_t r)                          { fIsoMethod = r ;}
   void         SetPtIsoMethod (Int_t r )                      { fptIsoMethod = r ;}
   void         SetUEMethod (Int_t r )                         { fUEMethod = r ;}
   void         SetQA (Bool_t QA)                              { fQA = QA;}
@@ -90,6 +94,7 @@ public:
 protected:
   
   void         FillQAHistograms(AliAODTrack *coi); // Fill some QA histograms
+  void         EtIsoClusOnlyEtaBand(AliAODTrack *t, Double_t &ptIso, Double_t &etaBand, Int_t index);   //EIsoCone via ClusterOnly 
   void         PtIsoTrackPhiBand(AliAODTrack *t, Double_t &ptIso, Double_t &phiBand, Int_t index);   //PIsoCone via Track UE via PhiBand TPC
   void         PtIsoTrackEtaBand(AliAODTrack *t, Double_t &ptIso, Double_t &etaBand, Int_t index);   //PIsoCone via Track UE via EtaBand TPC
   void         PtIsoTrackOrthCones(AliAODTrack *t, Double_t &ptIso, Double_t &cones, Int_t index);   //PIsoCone via Tracks UE via Orthogonal Cones in Phi
@@ -116,12 +121,14 @@ protected:
   TClonesArray        *fAODMCParticles;                //!<!
   AliAODMCHeader      *fmcHeader;                      //!<!
   TClonesArray        *fTracksAna;                     //!<! hybrid track array in
+  TClonesArray        *fClusters;                      //!<! clusters container
   AliStack            *fStack;                         //!<!
   AliEMCALRecoUtils   *fEMCALRecoUtils;                //!<!  EMCAL utils for cluster rereconstruction.
   
   Float_t             fIsoConeRadius;                  // Radius for the Isolation Cont
   Int_t               fptIsoMethod;                    // Isolation definition 0=SumEt<EtThr, 1=SumEt<%Ephoton, 2=Etmax<EtThr
   Double_t            fptIsoThreshold;                 // Et isolation threshold, supposed to be % if method one is choosed
+  Int_t               fIsoMethod;                      // IsoMethod =0 ->Tracks; IsoMethod =1 Clusters Only
   Double_t            fdetacut;                        // cut on deta between track and MCparticle
   Double_t            fdphicut;                        // cut on dphi between track and MCparticle
 
@@ -193,7 +200,7 @@ private:
   AliAnalysisTaskEMCALTrackIsolation&operator=(const AliAnalysisTaskEMCALTrackIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTrackIsolation, 2);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALTrackIsolation, 3);    //EMCAL Neutrals base analysis task
                                                         /// \endcond
 };
 #endif
