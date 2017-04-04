@@ -1610,6 +1610,12 @@ TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tr
     else
       copy = new AliBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
     copy->SetUniqueID(particle->GetUniqueID());
+
+    // Set unique event index if input tracks are AliBasicParticles
+    AliBasicParticle* particleBasic = dynamic_cast<AliBasicParticle*>(particle);
+    if(particleBasic)
+      copy->SetEventIndex(particleBasic->GetEventIndex());
+
     tracksClone->Add(copy);
   }
   
