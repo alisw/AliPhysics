@@ -89,7 +89,8 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fFixRefloS(0),
   fNtupleMultiTrials(0x0),
   fMinYieldGlob(0),
-  fMaxYieldGlob(0)
+  fMaxYieldGlob(0),
+  fMassFitters()
 {
   // constructor
   Int_t rebinStep[4]={3,4,5,6};
@@ -109,6 +110,7 @@ AliHFMultiTrials::~AliHFMultiTrials(){
   delete [] fLowLimFitSteps;
   delete [] fUpLimFitSteps;
   if(fhTemplRefl) delete fhTemplRefl;
+  for (auto fitter : fMassFitters) delete fitter;
 }
 
 //________________________________________________________________________
@@ -233,25 +235,28 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
               Int_t globBin=itrial+theCase*totTrials;
               for(Int_t j=0; j<15; j++) xnt[j]=0.;
 
+              Bool_t mustDeleteFitter = kTRUE;
               AliHFMassFitterVAR*  fitter=0x0;
-              if(typeb<=kPol2Bkg){
-                fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,typeb,types);
-              }else if(typeb==kPowBkg){
-                fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,4,types);
-              }else if(typeb==kPowTimesExpoBkg){
-                fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,5,types);
-              }else{
-                fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,6,types);
-                if(typeb==kPol3Bkg) fitter->SetBackHighPolDegree(3);
-                if(typeb==kPol4Bkg) fitter->SetBackHighPolDegree(4);
-                if(typeb==kPol5Bkg) fitter->SetBackHighPolDegree(5);
-              }
-              fitter->SetReflectionSigmaFactor(0);
               //if D0 Reflection
               if(fhTemplRefl){
                 fitter=new AliHFMassFitterVAR(hRebinned,hmin,hmax,1,typeb,2);
                 fitter->SetTemplateReflections(fhTemplRefl);
                 fitter->SetFixReflOverS(fFixRefloS,kTRUE);
+              }
+              else {
+                if(typeb<=kPol2Bkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,typeb,types);
+                }else if(typeb==kPowBkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,4,types);
+                }else if(typeb==kPowTimesExpoBkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,5,types);
+                }else{
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,6,types);
+                  if(typeb==kPol3Bkg) fitter->SetBackHighPolDegree(3);
+                  if(typeb==kPol4Bkg) fitter->SetBackHighPolDegree(4);
+                  if(typeb==kPol5Bkg) fitter->SetBackHighPolDegree(5);
+                }
+                fitter->SetReflectionSigmaFactor(0);
               }
               if(fFitOption==1) fitter->SetUseChi2Fit();
               fitter->SetInitialGaussianMean(fMassD);
@@ -319,6 +324,8 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
                 if(out && fDrawIndividualFits && thePad){
                   thePad->Clear();
                   fitter->DrawHere(thePad);
+                  fMassFitters.push_back(fitter);
+                  mustDeleteFitter = kFALSE;
                   for (auto format : fInvMassFitSaveAsFormats) {
                     thePad->SaveAs(Form("FitOutput_%s_Trial%d.%s",hInvMassHisto->GetName(),globBin, format.c_str()));
                   }
@@ -414,8 +421,7 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
                   }
                 }
               }
-              delete fitter;
-              //	    if(typeb>4) delete fB1;
+              if (mustDeleteFitter) delete fitter;
               fNtupleMultiTrials->Fill(xnt);
             }
           }
