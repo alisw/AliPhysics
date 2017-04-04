@@ -17,6 +17,7 @@ public:
   virtual ~AliAnalysisTaskEmcalOccupancy();
 
   void SetUseCentralityPercentile(Bool_t doUse) { fUseCentrality = doUse; }
+  void SetNameClusters(const char *name) { fNameClusters = name; }
 
   static AliAnalysisTaskEmcalOccupancy *AddOccupancyTask(const char *name);
 
