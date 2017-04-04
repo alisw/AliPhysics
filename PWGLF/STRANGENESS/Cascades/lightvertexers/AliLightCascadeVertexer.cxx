@@ -86,7 +86,9 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
            if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ){
                continue;
            }
-           //Pre-filter for CPU time reduction
+           //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+           //Pre-filter on-the-fly candidates for CPU time reduction
+           //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
            
            //1) DCA V0 Dau
            if( v->GetDcaV0Daughters() > 1.4 ) continue;
@@ -114,6 +116,20 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
            v->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
            Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
            if(lV0Radius<0.9) continue;
+           
+           //5) kTPC refit check
+           // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+           if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+           if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+           
+           //6) 70 clusters
+           if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+           
+           //7) Daughter eta
+           Double_t lNegEta = nTrack->Eta();
+           Double_t lPosEta = pTrack->Eta();
+           if( TMath::Abs(lNegEta)>0.8 || TMath::Abs(lPosEta)>0.8 ) continue;
+           //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
        }
        
        if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fDV0min) continue;
