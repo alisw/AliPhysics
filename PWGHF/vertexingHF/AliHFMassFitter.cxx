@@ -1748,19 +1748,19 @@ void AliHFMassFitter::WriteCanvas(TString userIDstring,TString path,Double_t nsi
   filename.Prepend(userIDstring);
   path.Append(filename);
 
-  TFile* outputcv=new TFile(path.Data(),"update");
-
-  TCanvas* c=(TCanvas*)GetPad(nsigma,writeFitInfo);
+  TCanvas* c = static_cast<TCanvas*>(GetPad(nsigma,writeFitInfo));
   c->SetName(Form("%s%s%s",c->GetName(),userIDstring.Data(),type.Data()));
-  if(draw)c->DrawClone();
-  outputcv->cd();
+  if (draw) c->DrawClone();
+
+  TFile outputcv(path.Data(),"update");
+  outputcv.cd();
   c->Write();
-  outputcv->Close();
+  outputcv.Close();
 }
 
 //_________________________________________________________________________
-
-TVirtualPad* AliHFMassFitter::GetPad(Double_t nsigma,Int_t writeFitInfo)const{
+TVirtualPad* AliHFMassFitter::GetPad(Double_t nsigma,Int_t writeFitInfo) const
+{
   //return a TVirtualPad with the fitted histograms and info
 
   TString cvtitle="fit of ";
@@ -1768,13 +1768,14 @@ TVirtualPad* AliHFMassFitter::GetPad(Double_t nsigma,Int_t writeFitInfo)const{
   TString cvname="c";
   cvname+=fcounter;
 
-  TCanvas *c=new TCanvas(cvname,cvtitle);
-  PlotFit(c->cd(),nsigma,writeFitInfo);
-  return c->cd();
+  TCanvas* c = new TCanvas(cvname,cvtitle);
+  PlotFit(c, nsigma, writeFitInfo);
+  return c;
 }
 //_________________________________________________________________________
 
-void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo)const{
+void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo) const
+{
   //plot histogram, fit functions and write parameters according to verbosity level (0,1,>1)
   gStyle->SetOptStat(0);
   gStyle->SetCanvasColor(0);
@@ -1812,9 +1813,7 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
 
       pinfo->AddText(Form("Reduced #chi^{2} = %.3f",f->GetChisquare()/f->GetNDF()));
       pd->cd();
-      pinfo->DrawClone();
-
-
+      pinfo->Draw();
     }
 
     return;
@@ -1844,7 +1843,7 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
       if(!(writeFitInfo==1 && i==fNFinalPars-3)) pinfom->AddText(str);
     }
     pd->cd();
-    pinfom->DrawClone();
+    pinfom->Draw();
 
     TPaveText *pinfo2=new TPaveText(0.1,0.1,0.6,0.4,"NDC");
     pinfo2->SetBorderSize(0);
@@ -1879,10 +1878,8 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
         pinfob->AddText(str);
       }
       pd->cd();
-      pinfob->DrawClone();
+      pinfob->Draw();
     }
-
-
   }
   return;
 }

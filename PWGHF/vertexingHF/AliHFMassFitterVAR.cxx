@@ -1375,14 +1375,14 @@ void AliHFMassFitterVAR::WriteCanvas(TString userIDstring,TString path,Double_t 
   filename.Prepend(userIDstring);
   path.Append(filename);
 
-  TFile* outputcv=new TFile(path.Data(),"update");
-
-  TCanvas* c=(TCanvas*)GetPad(nsigma,writeFitInfo);
+  TCanvas* c = static_cast<TCanvas*>(GetPad(nsigma,writeFitInfo));
   c->SetName(Form("%s%s%s",c->GetName(),userIDstring.Data(),type.Data()));
-  if(draw)c->DrawClone();
-  outputcv->cd();
+  if (draw) c->DrawClone();
+
+  TFile outputcv(path.Data(),"update");
+  outputcv.cd();
   c->Write();
-  outputcv->Close();
+  outputcv.Close();
 }
 
 
