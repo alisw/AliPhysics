@@ -179,6 +179,7 @@ Bool_t AliHFMultiTrials::CreateHistos(){
     }
   }
   fNtupleMultiTrials = new TNtuple(Form("ntuMultiTrial%s",fSuffix.Data()),Form("ntuMultiTrial%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:confsig:confmean:chi2:signif:mean:emean:sigma:esigma:rawy:erawy",128000);
+  fNtupleMultiTrials->SetDirectory(nullptr);
   return kTRUE;
 
 }
@@ -249,7 +250,7 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 	      //if D0 Reflection
 	      if(fhTemplRefl){
 		fitter=new AliHFMassFitterVAR(hRebinned,hmin,hmax,1,typeb,2);
-		fitter->SetTemplateReflections((TH1*)fhTemplRefl);
+		fitter->SetTemplateReflections(fhTemplRefl);
 		fitter->SetFixReflOverS(fFixRefloS,kTRUE);
 	      }
 	      if(fFitOption==1) fitter->SetUseChi2Fit();
@@ -430,7 +431,12 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 void AliHFMultiTrials::SaveToRoot(TString fileName, TString option) const{
   // save histos in a root file for further analysis
   const Int_t nCases=kNBkgFuncCases*kNFitConfCases;
-  TFile* outHistos=new TFile(fileName.Data(),option.Data());
+  TFile outHistos(fileName.Data(),option.Data());
+  if (outHistos.IsZombie()) {
+    Printf("Could not open file '%s'!", fileName.Data());
+    return;
+  }
+  outHistos.cd();
   fHistoRawYieldTrialAll->Write();
   fHistoSigmaTrialAll->Write();
   fHistoMeanTrialAll->Write();
@@ -455,10 +461,9 @@ void AliHFMultiTrials::SaveToRoot(TString fileName, TString option) const{
     fHistoRawYieldTrialBinC[ic]->Write();
     fHistoRawYieldDistBinC[ic]->Write();
   }
-  fNtupleMultiTrials->SetDirectory(outHistos);
+  fNtupleMultiTrials->SetDirectory(&outHistos);
   fNtupleMultiTrials->Write();
-  outHistos->Close();
-  delete outHistos;
+  outHistos.Close();
 }
 
 //________________________________________________________________________
