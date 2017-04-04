@@ -63,7 +63,7 @@ public TObject
   Int_t GetMCPdgCode() const {return fMCPdgCode;}; // get MC PDG code
   Int_t GetMCMotherPdgCode() const {return fMCMotherPdgCode;}; // get MC mother PDG code
   Int_t GetMCMotherPrimary() const {return fMCMotherPrimary;}; // get MC mother primary
-
+  Int_t GetMCMotherLabel() const {return fMCMotherLabel; }; //get MC mother label
   Bool_t IsMCTOFMatchPrimary() const {return fMCTOFMatchPrimary;};
   Int_t GetMCTOFMatchPdgCode() const {return fMCTOFMatchPdgCode;};
   Int_t GetMCTOFMatchLevel() const {return fMCTOFMatchLevel;};
@@ -89,7 +89,7 @@ public TObject
   Float_t GetTPCBetaGamma(Int_t ipart) const {return fTPCmomentum / AliPID::ParticleMass(ipart);}; // get TPC beta-gamma
 
   void Reset(); // reset
-  void Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Bool_t PassTrackCuts); // update
+  void Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
   Bool_t HasTOFMatch() const {return (fStatus & AliESDtrack::kTOFout);}; // has TOF match
   Bool_t HasIntegratedTimes() const{ return (fStatus & AliESDtrack::kTIME);}; // has integrated times
   Bool_t HasTPCPID() const; // has TPC PID
@@ -120,10 +120,14 @@ public TObject
   Float_t GetNSigmaPionTOF() {return nSigmaPionTOF;};
   Float_t GetNSigmaKaonTOF() {return nSigmaKaonTOF;};
   Float_t GetNSigmaProtonTOF() {return nSigmaProtonTOF;};
-  Bool_t IsAcceptedByTrackCuts() {return fPassedTrackCuts; };
-
+  Int_t GetTrackCutFlag() {return fTrackCutFlag; };
+  Bool_t HasEMCal() { return fHasEMCal; };
+  Float_t GetEMCalE() { return fEMCalE; };
+  Float_t GetEMCalP() { return fEMCalP; };
+  Float_t GetChiSq() { return fTPCchi2; };
+  void SetEMCalPars(Float_t lEMCalE, Float_t lEMCalP) { fHasEMCal = kTRUE; fEMCalE = lEMCalE; fEMCalP = lEMCalP;};
   static Bool_t LoadTuningExpTimeTh(const Char_t *filename); // load tuning exp time th
-
+  Bool_t IsAcceptedByTrackCuts(Int_t CutFlag) { return GetTrackCutFlag()&CutFlag;};
   //  Int_t GetTOFCalibIndex(Int_t imap) {return (Int_t)fgTOFcalibHisto.GetCalibMap(imap, fTOFIndex);}; // get TOF calib index
 
   static AliTOFPIDResponse *GetTOFResponse() {return fgTOFResponse;}; // getter
@@ -181,6 +185,7 @@ public TObject
   Int_t fMCPdgCode; // MC PDG code
   Bool_t fMCMotherPrimary; // MC mother primary flag
   Int_t fMCMotherPdgCode; // MC mother PDG code
+  Int_t fMCMotherLabel; //MC mother label
   Bool_t fMCTOFMatchPrimary; // MC TOF match primary flag
   Int_t fMCTOFMatchPdgCode; // MC TOF match PDG code
   Short_t fMCTOFMatchLevel; // MC TOF match level
@@ -200,8 +205,10 @@ public TObject
   /*** extras ***/
   Float_t fTPCchi2; // TPC chi2
   Bool_t fITSFakeFlag; // ITS fake flag
-  Bool_t fPassedTrackCuts;
-
+  Int_t fTrackCutFlag;
+  Float_t fEMCalE;
+  Float_t fEMCalP;
+  Bool_t fHasEMCal;
   /*** cut paramters */
   static Float_t fgEtaCut; // eta cut
   static Float_t fgEtaReject; // eta reject
@@ -229,7 +236,7 @@ public TObject
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisPIDTrack, 1);
+  ClassDef(AliAnalysisPIDTrack, 3);
 };
 
 #endif /* ALIANALYSISPIDTRACK_H */
