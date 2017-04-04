@@ -8,9 +8,7 @@ class LMEECutLib {
     };
     
     
-    LMEECutLib(Bool_t SDDstatus){
-      wSDD = SDDstatus;
-    }
+    LMEECutLib(Bool_t wSDD): wSDD(wSDD){}
     
     //Getters
     AliDielectronEventCuts*     GetEventCuts(Int_t cutSet);
@@ -18,7 +16,7 @@ class LMEECutLib {
     AliDielectronTrackRotator*  GetTrackRotator(Int_t cutSet);
     AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet);
     
-    AliAnalysisCuts* GetPairCutsAna(Int_t cutSet, Int_t togglePC=0); //Bool_t togglePC=kFALSE
+    AliAnalysisCuts* GetPairCutsAna(Int_t cutSet); //Bool_t togglePC=kFALSE
     AliAnalysisCuts* GetPairCutsPre(Int_t cutSet);
     
     AliAnalysisCuts* GetPIDCutsAna(Int_t cutSet);
@@ -27,22 +25,16 @@ class LMEECutLib {
     AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet);
     AliAnalysisCuts* GetTrackCutsPre(Int_t cutSet);
 
-  //Setters
-    void SetEtaCorrection(AliDielectron *die, Int_t selPID, Int_t selCent, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
-    void SetSDDstatus(Bool_t answer){ wSDD = answer; }
   
-  private:
-
-    Bool_t wSDD;
-  
+    private:
+        Bool_t wSDD;
 };
 
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-// the selection is hardcoded in the AddTask, currently to 'kAllSpecies'
+// the selection is hardcoded in the AddTask
 AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
   AliDielectronEventCuts* eventCuts = 0x0;
-  //AliDielectronEventCuts* eventCuts = AliDielectronEventCuts("eventCuts_acapon","Vertex Track && |vtxZ|<10 && ncontrib>0");
 
   switch(cutSet){
    case kAllSpecies:
@@ -76,22 +68,6 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 }
 
 
-//Basic track rotator settings from J/Psi, more investigation needed
-AliDielectronTrackRotator* LMEECutLib::GetTrackRotator(Int_t cutSet) {
-  AliDielectronTrackRotator* trackRotator = 0x0;
-  switch (cutSet) {
-    default: cout << "No Rotator defined" << endl;
-      //default:
-      //  trackRotator = new AliDielectronTrackRotator();
-      //  trackRotator->SetIterations(20);
-      //  trackRotator->SetConeAnglePhi(TMath::Pi()/180*165);
-      //  trackRotator->SetStartAnglePhi(TMath::Pi());
-      //  break;
-  }
-  return trackRotator;
-}
-
-
 AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
   AliDielectronMixingHandler* mixingHandler = 0x0;
   switch (cutSet) {
@@ -115,14 +91,19 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 
 //Pair Cuts for Analysis step - take care of logic - inverted compared to other PairCuts!!
 // cuts = SELECTION!!!
-AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet, Int_t togglePC)  {
-  cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
-  AliAnalysisCuts* pairCuts=0x0;
-  switch (cutSet) {
-  case kAllSpecies: 
-  case kElectrons: 
-    cout << "No Pair Cuts used - ok " << endl; 
-    break;
+AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
+    cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
+    AliAnalysisCuts* pairCuts = 0x0;
+    switch (cutSet) {
+    case kAllSpecies: 
+    case kElectrons: 
+        AliDielectronVarCuts* pairCutsPhiV = new AliDielectronVarCuts("pairCutsPhiV","pairCutsPhiV");
+        //pairCutsPhiV->AddCut(AliDielectronVarManager::kM, 0.0 , 1);
+        //kM is single and pair mass?
+        //pairCutsPhiV->AddCut(AliDielectronVarManager::kPhivPair, 0, 3.2);
+        //pairCutsPhiV->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0 , 1/*0.050*/, kTRUE);
+        pairCuts = pairCutsPhiV;
+        break;
   default: cout << "No Pair Cuts defined " << endl;
   }
   return pairCuts;
@@ -137,10 +118,6 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet)  {
   switch (cutSet) {
   case kAllSpecies: 
   case kElectrons: 
-    /*AliDielectronVarCuts *pairCutsPhiV = new AliDielectronVarCuts("pairCutsPhiV","pairCutsPhiV");//mass and Phiv together
-    pairCutsPhiV->AddCut(AliDielectronVarManager::kM, 0.0 , 0.05);
-    pairCutsPhiV->AddCut(AliDielectronVarManager::kPhivPair, 2.5 , 3.2 );
-    pairCuts = pairCutsPhiV;*/
     break;
     
   default: cout << "No Prefilter Pair Cuts defined " << endl;
@@ -282,7 +259,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet) {
     trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable 
     //Lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
     AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-    //trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
+    //trackCutsDiel->SetAODFilterBit(0<<0); // (=0) filterbit 0! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
     trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
     trackCutsDiel->SetRequireITSRefit(kTRUE);
     trackCutsDiel->SetRequireTPCRefit(kTRUE);
