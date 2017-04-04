@@ -185,5 +185,5 @@
 #pragma link C++ class  AliSingleTrackEffCuts+;
 #pragma link C++ class  AliAnalysisTrackingUncertaintiesAOT+;
 #pragma link C++ class  AliAnalysisTrackingUncertainties+;
-
+#pragma link C++ class  AliAnalysisTaskEventCutsValidation+;
 #endif
