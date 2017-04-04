@@ -34,19 +34,21 @@ AliAnalysisTaskEmcalOccupancy::AliAnalysisTaskEmcalOccupancy(const char *name) :
   fCellCounter(nullptr)
 {
   SetNeedEmcalGeom(true);
+  this->SetMakeGeneralHistograms(true);
 }
 
 AliAnalysisTaskEmcalOccupancy::~AliAnalysisTaskEmcalOccupancy() {
   if(fCellCounter) delete fCellCounter;
+  if(fHistos) delete fHistos;
 }
 
 void AliAnalysisTaskEmcalOccupancy::UserCreateOutputObjects() {
   AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
   fHistos = new THistManager("histos");
 
-  TLinearBinning multbinning(1000, 0., 100.),
-                 cellbinning(25001, -0.5, 25000.5),
-                 clusterbinning(1001, -0.5, 101.5);
+  TLinearBinning multbinning(101, -0.5, 100.5),
+                 cellbinning(20001, -0.5, 20000.5),
+                 clusterbinning(2001, -0.5, 2000.5);
   const TBinning *histbinning[5] = {&multbinning, &cellbinning, &cellbinning, &clusterbinning, &clusterbinning};
   fHistos->CreateTHnSparse("EMCALOccupancy", "EMCAL occupancy", 5, histbinning);
 
@@ -64,14 +66,10 @@ void AliAnalysisTaskEmcalOccupancy::ExecOnce() {
 
 Bool_t AliAnalysisTaskEmcalOccupancy::Run() {
   // Reset cell counter
-  memset(fCellCounter, 0, sizeof(fGeom->GetNCells()));
+  memset(fCellCounter, 0, sizeof(UChar_t) * fGeom->GetNCells());
 
-  // Get the centrality percentile
-  double centralityPercentile = 0;
-  if(fUseCentrality) {
-    AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
-    if(mult) centralityPercentile = mult->GetMultiplicityPercentile("V0M");
-  }
+  // Get the centrality percentile - steered by AliAnalysisTaskEmcalLight
+  double centralityPercentile = (this->fForceBeamType == AliAnalysisTaskEmcalOccupancy::kAA) ? fCent : 0.;
 
   AliVCaloCells *emccells = InputEvent()->GetEMCALCells();
   int cellcounterRaw(0), cellcounterCorr(0);
