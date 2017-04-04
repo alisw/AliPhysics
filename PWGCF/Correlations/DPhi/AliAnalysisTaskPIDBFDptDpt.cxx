@@ -65,7 +65,7 @@
 #include "AliPIDCombined.h"
 #include "AliVTrack.h"
 #include "AliVParticle.h"
-#include "AliMultSelection.h"
+#include "AliPPVsMultUtils.h"
 
 
 using namespace std;
@@ -80,6 +80,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   fRemoveTracksT0Fill( 0 ),
   fHasTOFPID( 0 ),
   fAODEvent(0),
+  fUtils(0),
   fESDEvent(0),
   fInputHandler(0),
   fPIDResponse(0x0),
@@ -427,6 +428,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   fRemoveTracksT0Fill( 0 ),
   fHasTOFPID( 0 ),
   fAODEvent(0),
+  fUtils(0),
   fESDEvent(0),
   fInputHandler(0),
   fPIDResponse(0),
@@ -1251,13 +1253,12 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   float centrality = -999;
     
   if( fAODEvent )
-    {
-
+    {      
       if( fSystemType == "PbPb" || fSystemType == "pPb" )
 	{
-	  AliCentrality * centralityObject =  ( ( AliVAODHeader * ) fAODEvent -> GetHeader() ) -> GetCentralityP();
+	  AliCentrality * centralityObject = ((AliVAODHeader *)fAODEvent->GetHeader())->GetCentralityP();
 	  	
-	  if ( centralityObject )
+	  if (centralityObject)
 	    {
 	      v0Centr  = centralityObject->GetCentralityPercentile("V0M");
 	      v0ACentr = centralityObject->GetCentralityPercentile("V0A");
@@ -1268,18 +1269,13 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	}
       else
 	{
-	  AliMultSelection * multSelection = ( AliMultSelection * ) fAODEvent -> FindListObject( "MultSelection" );
-	  if ( !multSelection )
-	    AliFatal( "MultSelection not found in input event" );
-
-	  v0Centr  = multSelection->GetMultiplicityPercentile("V0M", kTRUE); //only for checked centrality
-	  v0ACentr = multSelection->GetMultiplicityPercentile("V0A", kTRUE);
-	  v0CCentr = multSelection->GetMultiplicityPercentile("V0C", kTRUE);
+	  fUtils = new AliPPVsMultUtils;
+	  v0Centr  = fUtils->GetMultiplicityPercentile(fAODEvent, "V0M");
+	  v0ACentr = fUtils->GetMultiplicityPercentile(fAODEvent, "V0A");
+	  v0CCentr = fUtils->GetMultiplicityPercentile(fAODEvent, "V0C");
         }
-        
 
-      _nTracks  = fAODEvent -> GetNumberOfTracks();
-        
+      _nTracks  = fAODEvent -> GetNumberOfTracks();        
       _mult3    = _nTracks;
       _mult4    = v0Centr;
       _mult5    = trkCentr;
@@ -1287,7 +1283,6 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
       _mult7    = v0ACentr;
       _mult8    = v0CCentr;
       _field    = fAODEvent -> GetMagneticField();
-
 
       switch ( _centralityMethod )
         {
@@ -1305,7 +1300,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
       
       if      ( fSystemType == "PbPb" )
 	{ if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
-      else if ( fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0A_kINT7" || fSystemType == "pp_V0_kMB" )
+      else if ( fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0_kMB" )
 	{ if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
       else    return;
 	
