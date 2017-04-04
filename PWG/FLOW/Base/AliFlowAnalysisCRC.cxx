@@ -18879,7 +18879,6 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     QAReR -= fZDCEcomTotvsVtxHist[10]->GetBinContent(fZDCEcomTotvsVtxHist[10]->FindBin(fCentralityEBE,fZNAen,fVtxPosCor[2]));
     QAImR -= fZDCEcomTotvsVtxHist[11]->GetBinContent(fZDCEcomTotvsVtxHist[11]->FindBin(fCentralityEBE,fZNAen,fVtxPosCor[2]));
     fZDCFlowVect[1].Set(QAReR,QAImR);
-    printf("doing it boy: %e \n",fZDCEcomTotvsVtxHist[11]->GetBinContent(fZDCEcomTotvsVtxHist[11]->FindBin(fCentralityEBE,fZNAen,fVtxPosCor[2])));
   }
   
   // store Q-vectors vs Energy in the common tower
