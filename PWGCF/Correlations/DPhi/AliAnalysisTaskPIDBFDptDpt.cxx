@@ -66,6 +66,10 @@
 #include "AliVTrack.h"
 #include "AliVParticle.h"
 #include "AliMultSelection.h"
+#include "AliOADBMultSelection.h"
+#include "AliMultEstimator.h"
+#include "AliMultVariable.h"
+#include "AliMultInput.h"
 
 
 using namespace std;
@@ -1208,23 +1212,28 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   int iEtaPhi_Etaminus1 = 0;
   int iZEtaPhiPt_Etaplus1 = 0;
   int iZEtaPhiPt_Etaminus1 = 0;
-    
+
+  
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
   if ( !manager ) { return; }
 
+  
   AliAODInputHandler* inputHandler = dynamic_cast<AliAODInputHandler*> (manager->GetInputEventHandler());
   if ( !inputHandler ) { return; }
-    
+
+  
   fAODEvent = dynamic_cast<AliAODEvent*>(InputEvent()); // create pointer to event
     
   if ( !fAODEvent ) { return; }
 
+  
   fPIDResponse = inputHandler -> GetPIDResponse();
   if (!fPIDResponse){
     AliFatal("This Task needs the PID response attached to the inputHandler");
     return;
   }
-    
+
+  
   _eventCount++;
     
   if ( _eventAccounting )  _eventAccounting -> Fill( 0 );
@@ -1252,7 +1261,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     
   if( fAODEvent )
     {
-
+      
       if( fSystemType == "PbPb" || fSystemType == "pPb" )
 	{
 	  AliCentrality * centralityObject =  ( ( AliVAODHeader * ) fAODEvent -> GetHeader() ) -> GetCentralityP();
@@ -1267,16 +1276,16 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    }
 	}
       else
-	{
-	  AliMultSelection * multSelection = ( AliMultSelection * ) fAODEvent -> FindListObject( "MultSelection" );
-	  if ( !multSelection )
-	    AliFatal( "MultSelection not found in input event" );
-
-	  v0Centr  = multSelection->GetMultiplicityPercentile("V0M", kTRUE); //only for checked centrality
-	  v0ACentr = multSelection->GetMultiplicityPercentile("V0A", kTRUE);
-	  v0CCentr = multSelection->GetMultiplicityPercentile("V0C", kTRUE);
+	{ 
+	  AliMultSelection *multSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");
+	  //If get this warning, please check that the AliMultSelectionTask actually ran (before your task)
+	  if (!multSelection)    AliWarning("MultSelection not found in input event");
+	  else{
+	    v0Centr  = multSelection->GetMultiplicityPercentile("V0M");
+	    v0ACentr = multSelection->GetMultiplicityPercentile("V0A");
+	    v0CCentr = multSelection->GetMultiplicityPercentile("V0C");
+	  }
         }
-        
 
       _nTracks  = fAODEvent -> GetNumberOfTracks();
         
@@ -1305,7 +1314,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
       
       if      ( fSystemType == "PbPb" )
 	{ if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
-      else if ( fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0A_kINT7" || fSystemType == "pp_V0_kMB" )
+      else if ( fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0_kMB" )
 	{ if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
       else    return;
 	
