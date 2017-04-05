@@ -440,17 +440,20 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80083013","1111141051032230000","0163403100000050"); // default EG1
     cuts.AddCut("80085013","1111141051032230000","0163403100000050"); // default EG2
     
-
   //************************************************ PHOS clusters *************************************************
-  } else if (trainConfig == 31) {  // min energy = 0.3 GeV/c
-    cuts.AddCut("80000013","2444400040033200000","0163103100000050"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCut("80062013","2444400040033200000","0163103100000050"); //standard cut, kPHI7  // PHOS clusters
-  } else if (trainConfig == 32){ // Validation PHOS
-    cuts.AddCut("80000013","2444400040053200000","0163103100000050");
-  } else if (trainConfig == 33){ // Validation PHOS, only added signals
-    cuts.AddCut("80000023","2444400040053200000","0163103100000050");
+  } else if (trainConfig == 301) {  // min energy = 0.3 GeV/c
+    cuts.AddCut("80000013","2444400040033200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCut("80062013","2444400040033200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+  } else if (trainConfig == 302){ // Validation PHOS
+    cuts.AddCut("80000013","2444400040053200000","0163103100000010");
+  } else if (trainConfig == 303){ // Validation PHOS, only added signals
+    cuts.AddCut("80000023","2444400040053200000","0163103100000010");
+  } else if (trainConfig == 304){ // min energy = 0.3 GeV/c
+    cuts.AddCut("80000013","2444400040033200000","0163103100000000"); // kINT7 // PHOS clusters no open angle cut
+    cuts.AddCut("80062013","2444400040033200000","0163103100000000"); // kPHI7 // PHOS clusters no open angle cut
+    cuts.AddCut("80000013","2444400040033200000","0163103100000030"); // kINT7 // PHOS clusters open angle cut 0.1
+    cuts.AddCut("80062013","2444400040033200000","0163103100000030"); // kPHI7 // PHOS clusters  open angle cut 0.1
 
-    
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
