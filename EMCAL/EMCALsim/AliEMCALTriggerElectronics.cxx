@@ -72,9 +72,9 @@ fGeometry(0)
 		
 	
 
-
   fNTRU = fGeometry->GetNTotalTRU() ;
 //	fNTRU = dcsConf->GetTRUArr()->GetSize();
+	AliInfo(TString::Format("fGeometry <<%s>> has %d TRUs; dcsConf has %d TRUs.\n",fGeometry->GetName(),fNTRU,dcsConf->GetTRUArr()->GetSize()));
 	TString fGeometryName = fGeometry->GetName();
 
 	// Update here for future trigger mapping versions

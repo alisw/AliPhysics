@@ -79,7 +79,7 @@ TClonesArray               *AliEMCALReconstructor::fgTriggerData      = 0x0;
 AliEMCALReconstructor::AliEMCALReconstructor() 
   : fGeom(0),fCalibData(0),fCalibTime(0),fPedestalData(0), fMatches(0x0)
 {
-  fgRawUtils = new AliEMCALRawUtils;
+//  fgRawUtils = new AliEMCALRawUtils;
   
   AliCDBManager* man = AliCDBManager::Instance();
   
@@ -101,7 +101,6 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fGeom)
   {
     Int_t runNumber = man->GetRun();
-		//MHO
 		AliWarning(Form("Finding EMCAL Geometry from run number %d.",runNumber));
     fGeom =  AliEMCALGeometry::GetInstanceFromRunNumber(runNumber);
   }
@@ -115,6 +114,9 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if ( !fGeom ) AliFatal(Form("Could not get geometry!"));
   else          AliInfo (Form("Geometry name: <<%s>>",fGeom->GetName())); 
   
+
+  fgRawUtils = new AliEMCALRawUtils;
+
   //---------------------------
   // Get energy calibration parameters	
   if(!fCalibData)
