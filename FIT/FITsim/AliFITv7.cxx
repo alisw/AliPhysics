@@ -130,7 +130,7 @@ AliFITv7::AliFITv7(const char *name, const char *title):
   // Standart constructor for FIT Detector version 0
   //
   fIshunt = 2; 
-  SetPMTeff();
+  //  SetPMTeff();
 }
 //_____________________________________________________________________________
 
@@ -900,8 +900,11 @@ void AliFITv7::DefineOpticalProperties()
   Double_t *dPckov=NULL;
   Float_t *aAbsSiO2=NULL;
   Float_t *rindexSiO2=NULL;
+  Float_t *qeff = NULL;
   Int_t kNbins=0;
-  ReadOptProperties(optPropPath.Data(), &aPckov, &dPckov, &aAbsSiO2, &rindexSiO2, kNbins);
+  ReadOptProperties(optPropPath.Data(), &aPckov, &dPckov, &aAbsSiO2, &rindexSiO2, &qeff, kNbins);
+  // set QE
+   fPMTeff = new TGraph(kNbins,aPckov,qeff);
 
 // Prepare pointers for arrays with constant and hardcoded values (independent on wavelength)
   Float_t *efficAll=NULL;
@@ -1130,7 +1133,7 @@ Bool_t AliFITv7::RegisterPhotoE(Double_t energy)
 }
 
 //----------------------------------------------------------------------------
-
+/*
 void AliFITv7::SetPMTeff()
 {
   Float_t lambda[50];
@@ -1149,7 +1152,7 @@ void AliFITv7::SetPMTeff()
   fPMTeff = new TGraph(50,lambda,eff);
  
 }
-
+*/
 //-------------------------------------------------------------------------
 Int_t AliFITv7::GetCellId(Int_t *vol)
 {
@@ -1245,7 +1248,7 @@ Int_t AliFITv7::GetCellId(Int_t *vol)
 //-----------------------------------------------------------------
 
 Int_t AliFITv7::ReadOptProperties(const std::string filePath, Float_t **e, Double_t **de,
-    Float_t **abs, Float_t **n, Int_t &kNbins) const{
+				  Float_t **abs, Float_t **n, Float_t **qe, Int_t &kNbins) const{
   std::ifstream infile;
   infile.open(filePath.c_str());
 
@@ -1274,6 +1277,7 @@ Int_t AliFITv7::ReadOptProperties(const std::string filePath, Float_t **e, Doubl
   *de = new Double_t[kNbins];
   *abs = new Float_t[kNbins];
   *n = new Float_t[kNbins];
+  *qe = new Float_t[kNbins];
 
   getline(infile,comment); // finish 3rd line after the nEntries are read
   getline(infile,comment); // 4th comment line
@@ -1293,6 +1297,8 @@ Int_t AliFITv7::ReadOptProperties(const std::string filePath, Float_t **e, Doubl
     (*e)[iLine] = static_cast<Float_t> ((*de)[iLine]); // same value, different precision
     ssLine >> (*abs)[iLine];
     ssLine >> (*n)[iLine];
+    ssLine >> (*qe)[iLine];
+    cout<<iLine<<" e "<< (*de)[iLine]<<" abs "<<(*abs)[iLine]<<" n "<<(*n)[iLine]<<" qe "<<(*qe)[iLine]<<endl;
     if(!(ssLine.good() || ssLine.eof())){ // check if there were problems with numbers conversion
             AliFatal(Form("Error while reading line %i: %s", iLine, ssLine.str().c_str()));
       return -6;
@@ -1304,7 +1310,7 @@ Int_t AliFITv7::ReadOptProperties(const std::string filePath, Float_t **e, Doubl
           AliFatal(Form("Total number of lines %i is different than declared %i. Check input file: %s", iLine, kNbins, filePath.c_str()));
     return -7;
   }
-
+ 
   AliInfo(Form("Optical properties taken from the file: %s. Number of lines read: %i",filePath.c_str(),iLine));
   return 0;
 }
