@@ -376,13 +376,19 @@ public:
   TH2F *   fhColRowHighENegTime;                            //!<! cluster col-row cluster cell max, E > 8 GeV, t < -5 ns exo < 0.97, n cell > 1
   TH2F *   fhColRowHighENulTime;                            //!<! cluster col-row cluster cell max, E > 8 GeV, -5 < t < 5 ns exo < 0.97, n cell > 1
   
-  TH2F *   fhColRowTCardCorrNoSelectionExoticLowE[2];       //!<! col-row cluster cell max for those selected for TCard correlation studies, 5 < E < 8 GeV, exoticity > 0.97
+  TH2F *   fhColRowTCardCorrNoSelectionExoticLowE [2];      //!<! col-row cluster cell max for those selected for TCard correlation studies, 5 < E < 8 GeV, exoticity > 0.97
   TH2F *   fhColRowTCardCorrNoSelectionExoticHighE[2];      //!<! col-row cluster cell max for those selected for TCard correlation studies, E > 8 GeV, exoticity > 0.97
+  
   TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE [2];//!<! secondary cell in diff TCard col vs row, 5 < E < 8 GeV, exo > 0.97
   TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[2];//!<! secondary cell in diff TCard col vs row, E > 8 GeV, exo > 0.97
   TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE [2];//!<! secondary cell in same TCard col vs row, 5 < E < 8 GeV, exo > 0.97
   TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[2];//!<! secondary cell in same TCard col vs row, E > 8 GeV, exo > 0.97
- 
+  
+  TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE [2];//!<! secondary cell in diff TCard col vs row, 5 < E < 8 GeV, exo > 0.97, 0 cells in same T-Card
+  TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[2];//!<! secondary cell in diff TCard col vs row, E > 8 GeV, exo > 0.97, 0 cells in same T-Card
+  TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE [2];//!<! secondary cell in same TCard col vs row, 5 < E < 8 GeV, exo > 0.97, 0 cells in diff T-Card
+  TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[2];//!<! secondary cell in same TCard col vs row, E > 8 GeV, exo > 0.97, 0 cells in diff T-Card
+  
   TH2F *   fhColRowTCardCorrNoSelectionLowE[2];             //!<! col-row cluster cell max for those selected for TCard correlation studies, 5 < E < 8 GeV
   TH2F *   fhColRowTCardCorrNoSelectionHighE[2];            //!<! col-row cluster cell max for those selected for TCard correlation studies, E > 8 GeV
  

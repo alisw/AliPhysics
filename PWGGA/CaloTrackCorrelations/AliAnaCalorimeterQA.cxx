@@ -317,11 +317,17 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     
     fhColRowTCardCorrNoSelectionExoticLowE [tm] = 0 ;       
     fhColRowTCardCorrNoSelectionExoticHighE[tm] = 0 ;       
+
     fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE [tm] = 0 ;
     fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm] = 0 ;
     fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE [tm] = 0 ;
     fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm] = 0 ;
 
+    fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE [tm] = 0 ;
+    fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm] = 0 ;
+    fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE [tm] = 0 ;
+    fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm] = 0 ;
+    
     fhColRowTCardCorrNoSelectionLowE [tm] = 0 ;       
     fhColRowTCardCorrNoSelectionHighE[tm] = 0 ;  
     
@@ -1129,7 +1135,13 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       {
         Int_t absId  = clus->GetCellsAbsId()[ipos];   
         
-        if(absId == absIdMax) continue;
+        Float_t  eCell = cells->GetCellAmplitude(absId);        
+        GetCaloUtils()->RecalibrateCellAmplitude(eCell, GetCalorimeter(), absId);
+              
+        // consider cells with enough energy weight and not the reference one
+        Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
+        
+        if( absId == absIdMax || weight < 0.01 ) continue;
         
         Int_t rowDiff = -100, colDiff = -100;
         Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
@@ -1576,6 +1588,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   fhLambda1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
 //fhLambdaRTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20/m02, GetEventWeight());
   fhNLocMaxTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, nlm, GetEventWeight());
+  
   if(fStudyExotic)
     fhExoticTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, exoticity, GetEventWeight());
   
@@ -1620,7 +1633,30 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     //printf("Time max %f, second %f, diff %f\n",tCellMax,tCell,tDiffMaxSecondary);
     fhTimeDiffTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, tDiffMaxSecondary, GetEventWeight());
     if ( fStudyExotic && exoticity > 0.97 ) 
+    {
       fhTimeDiffExoTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, tDiffMaxSecondary, GetEventWeight());
+      // Get the col and row of the secondary cluster cell
+      Int_t icol2 = -1, irow2 = -1, iRCU2 = -1, icolAbs2 = -1, irowAbs2 = -1;
+      GetModuleNumberCellIndexesAbsCaloMap(absId,GetCalorimeter(), icol2, irow2, iRCU2, icolAbs2, irowAbs2);
+      
+      Int_t rowDiff = -100, colDiff = -100;
+      Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
+
+      if ( !sameTCard )
+      {
+        if ( energy >= 5 && energy < 8 && nCorr == 0 )
+          fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE [matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+        else if ( energy >= 8 && nCorr == 0 )
+          fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+      }
+      else
+      {
+        if ( energy >= 5 && energy < 8 && nCorrNo == 0 )
+          fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE [matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+        else if ( energy >= 8 && nCorrNo == 0 )
+          fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+      }
+    } // exotic
     
     if     (nlm==1)  
     {
@@ -1640,7 +1676,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       fhLogECellNLM3TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
       fhECellWeightNLM3TCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, weight, GetEventWeight());
     }
-  }
+  } //cell loop
   
   // Invariant mass for clusters looking like photons, depending number of cells
   if(m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut)
@@ -3758,7 +3794,39 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
          96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
         fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]->SetYTitle("row");
         fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]->SetXTitle("column");
-        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]) ;
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]) ;        
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm]) ;
         
         fhNCellsTCardSameAndDiffFractionExotic[tm]  = new TH2F 
         (Form("hNCellsTCardSameAndDiffFraction_Exotic%s",add[tm].Data()),
