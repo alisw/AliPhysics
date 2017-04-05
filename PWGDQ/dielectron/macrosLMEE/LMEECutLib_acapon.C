@@ -94,35 +94,40 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
     cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
     AliAnalysisCuts* pairCuts = 0x0;
-    switch (cutSet) {
-    case kAllSpecies: 
-    case kElectrons: 
-        AliDielectronVarCuts* pairCutsPhiV = new AliDielectronVarCuts("pairCutsPhiV","pairCutsPhiV");
-        //pairCutsPhiV->AddCut(AliDielectronVarManager::kM, 0.0 , 1);
-        //kM is single and pair mass?
-        //pairCutsPhiV->AddCut(AliDielectronVarManager::kPhivPair, 0, 3.2);
-        //pairCutsPhiV->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0 , 1/*0.050*/, kTRUE);
-        pairCuts = pairCutsPhiV;
-        break;
-  default: cout << "No Pair Cuts defined " << endl;
-  }
-  return pairCuts;
+    switch(cutSet){
+        case kAllSpecies: 
+        case kElectrons: 
+            AliDielectronVarCuts* pairCutsPhiV = new AliDielectronVarCuts("pairCutsPhiV","pairCutsPhiV");
+            //pairCutsPhiV->AddCut(AliDielectronVarManager::kM, 0.0, 1.0);
+            //kM is single and pair mass?
+            //pairCutsPhiV->AddCut(AliDielectronVarManager::kPhivPair, 0, 3.2);
+            //pairCutsPhiV->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0 , 1/*0.050*/, kTRUE);
+            pairCuts = pairCutsPhiV;
+            break;
+        default: cout << "No Pair Cuts defined " << endl;
+    }
+    return pairCuts;
 }
 
 
 //Pair Cuts for PREFILTER step
 // cuts = REJECTION!!!
 AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet)  {  
-  cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << endl;
-  AliAnalysisCuts* pairCuts=0x0;
-  switch (cutSet) {
-  case kAllSpecies: 
-  case kElectrons: 
-    break;
+    cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << endl;
+    AliAnalysisCuts* pairCuts=0x0;
+    switch(cutSet){
+        case kAllSpecies: 
+        case kElectrons: 
+            AliDielectronVarCuts* pairCutsPre = new AliDielectronVarCuts("pairCutsPre", "pairCutsPre");
+            pairCutsPre->AddCut(AliDielectronVarManager::kM, 0.0, 0.05);
+            pairCutsPre->AddCut(AliDielectronVarManager::kPhivPair, 2.5, 3.2);
+            pairCutsPre->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.05);
+            pairCuts = pairCutsPre;
+            break;
     
-  default: cout << "No Prefilter Pair Cuts defined " << endl;
-  } 
-  return pairCuts;
+        default: cout << "No Prefilter Pair Cuts defined " << endl;
+    } 
+    return pairCuts;
 }
 
 

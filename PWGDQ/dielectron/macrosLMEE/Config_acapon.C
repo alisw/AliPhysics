@@ -18,7 +18,7 @@ Bool_t pairCuts = kTRUE;
 
 AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t SDDstatus =kFALSE, Bool_t doMixing = kTRUE)
 {
-  
+ 
   //Setup the instance of AliDielectron
   LMEECutLib*  LMcutlib = new LMEECutLib(SDDstatus);
   
@@ -44,7 +44,7 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
     die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
     if(pairCuts){
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
+        die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
     }
   }
   else if(cutDefinition == 1){
@@ -53,7 +53,7 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
     die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
     if(pairCuts){
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
+        die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
     }
   }
   else{
@@ -156,6 +156,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
         //Track cut variables for trackQA
         //ITS
         histos->UserHistogram("Track","ITSnCls",";ITS number clusters;#tracks",6,-0.5,6.5,AliDielectronVarManager::kNclsITS);
+        histos->UserHistogram("Track","ITSnClsClusterMap",";ITS cluster map;#tracks",100, 0.0, 100.0,AliDielectronVarManager::kITSclusterMap);
         histos->UserHistogram("Track","ITSchi2",";ITS chi2/Cl;#tracks",110,0.,11.,AliDielectronVarManager::kITSchi2Cl);
         histos->UserHistogram("Track","nITSshared","#shared ITS clusters", 7, 0, 7, AliDielectronVarManager::kNclsSITS);
         histos->UserHistogram("Track","fracITSshared","frac. shared ITS clusters", 120, 0,  1.2, AliDielectronVarManager::kNclsSITS);
@@ -167,6 +168,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
         histos->UserHistogram("Track","nTPCshared","#shared TPC clusters", 170, 0, 170, AliDielectronVarManager::kNclsSTPC);
         histos->UserHistogram("Track","TPCcrossedRows",";TPC crossed rows;#tracks",170,-0.5,169.5,AliDielectronVarManager::kNFclsTPCr);
         histos->UserHistogram("Track","TPCcrossedRowsOverFindable",";TPC crossed rows over findable clusters;#tracks",240,0.,1.2,AliDielectronVarManager::kNFclsTPCfCross);
+        //Repeats to check for binning issues
+        histos->UserHistogram("Track","TPCcrossedRowsOverFindableThin",";TPC crossed rows over findable clusters;#tracks",360,0.,1.2,AliDielectronVarManager::kNFclsTPCfCross);
+        histos->UserHistogram("Track","TPCcrossedRowsOverFindableWide",";TPC crossed rows over findable clusters;#tracks",120,0.,1.2,AliDielectronVarManager::kNFclsTPCfCross);
 
         //Quality
         histos->UserHistogram("Track","TPCclsDiff",";TPC cluster difference;#tracks",200,0,20.,AliDielectronVarManager::kTPCclsDiff);
