@@ -219,6 +219,7 @@ struct XiCutParams
 
   double maxDecayLengthXi;
   double minCosPointingAngleXi;
+  double minCosPointingAngleV0toXi;
   double maxDcaXi;
   double maxDcaXiDaughters;
 
@@ -232,7 +233,7 @@ struct XiCutParams
   double minDcaV0;
   double minInvMassV0,
          maxInvMassV0;
-  double minCosPointingAngleV0;
+  double minCosPointingAngleV0;  //this is V0 to primary vertex, not terribly useful for Xi analysis
   double etaV0;
   double minPtV0,
          maxPtV0;

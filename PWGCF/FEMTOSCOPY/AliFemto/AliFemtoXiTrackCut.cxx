@@ -10,7 +10,7 @@
 
 
 //------------------------------
-AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000), fBuildPurityAidXi(false), fMinvPurityAidHistoXi(0)
+AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMinCosPointingAngleV0toXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000), fBuildPurityAidXi(false), fMinvPurityAidHistoXi(0)
 {
   // Default constructor
 }
@@ -26,7 +26,7 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut) :
   fMaxEtaXi(aCut.fMaxEtaXi),fMinPtXi(aCut.fMinPtXi),fMaxPtXi(aCut.fMaxPtXi),fChargeXi(aCut.fChargeXi),
   fMaxEtaBac(aCut.fMaxEtaBac),fMinPtBac(aCut.fMinPtBac),fMaxPtBac(aCut.fMaxPtBac),fTPCNclsBac(aCut.fTPCNclsBac),
   fNdofBac(aCut.fNdofBac),fStatusBac(aCut.fStatusBac),fMaxDcaXi(aCut.fMaxDcaXi),fMinDcaXiBac(aCut.fMinDcaXiBac),
-  fMaxDcaXiDaughters(aCut.fMaxDcaXiDaughters),fMinCosPointingAngleXi(aCut.fMinCosPointingAngleXi),
+  fMaxDcaXiDaughters(aCut.fMaxDcaXiDaughters),fMinCosPointingAngleXi(aCut.fMinCosPointingAngleXi), fMinCosPointingAngleV0toXi(aCut.fMinCosPointingAngleV0toXi),
   fMaxDecayLengthXi(aCut.fMaxDecayLengthXi),fInvMassXiMin(aCut.fInvMassXiMin),fInvMassXiMax(aCut.fInvMassXiMax),
   fParticleTypeXi(aCut.fParticleTypeXi),fBuildPurityAidXi(aCut.fBuildPurityAidXi)
 {
@@ -57,6 +57,7 @@ AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut
   fMinDcaXiBac = aCut.fMinDcaXiBac;
   fMaxDcaXiDaughters = aCut.fMaxDcaXiDaughters;
   fMinCosPointingAngleXi = aCut.fMinCosPointingAngleXi;
+  fMinCosPointingAngleV0toXi = aCut.fMinCosPointingAngleV0toXi;
   fMaxDecayLengthXi = aCut.fMaxDecayLengthXi;
   fInvMassXiMin = aCut.fInvMassXiMin;
   fInvMassXiMax = aCut.fInvMassXiMax;
@@ -140,6 +141,10 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
     
     //cos pointing angle
     if(aXi->CosPointingAngleXi()<fMinCosPointingAngleXi)
+      return false; 
+
+    //cos pointing angle of V0 to Xi
+    if(aXi->CosPointingAngleV0toXi()<fMinCosPointingAngleV0toXi)
       return false; 
     
     //decay length
@@ -270,10 +275,16 @@ void AliFemtoXiTrackCut::SetMaxDcaXiDaughters(double x)
   fMaxDcaXiDaughters = x;
 }
 
-void AliFemtoXiTrackCut::SetMinCosPointingAngleXi(double max)
+void AliFemtoXiTrackCut::SetMinCosPointingAngleXi(double min)
 {
-  fMinCosPointingAngleXi = max;
+  fMinCosPointingAngleXi = min;
 }
+
+void AliFemtoXiTrackCut::SetMinCosPointingAngleV0toXi(double min)
+{
+  fMinCosPointingAngleV0toXi = min;
+}
+
 
 void AliFemtoXiTrackCut::SetParticleTypeXi(short x)
 {
