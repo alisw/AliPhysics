@@ -6,7 +6,6 @@
 
 class TH1I;
 class TParticle;
-class AliStack;
 class AliCFManager;
 class AliAODTrack;
 class AliESDtrack;
