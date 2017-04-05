@@ -24,7 +24,7 @@
 void SetupStyle();
 TH2* Get2DHistogramfromList(TList *pidqalist, const char* listname, const char* histoname);
 void AddFit(TH2* h2d);
-void PublishCanvas(TList *qaList, const char* det, const char* name, TString nadd="");
+void PublishCanvas(TList *qaList, const char* det, const char* name, TString nadd="", TString outputformat="");
 void SetupPadStyle();
 void StoreTrendingVars(TH1* hMean, TH1* hSigma);
 
@@ -52,7 +52,7 @@ Float_t vecForTrend[totTrending];
 
 
 
-void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TString detList="all", Int_t runNumber=111111, const char* outputFile="PIDqaReport.pdf")
+void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TString detList="all", Int_t runNumber=111111, const TString outputformat="png,root",const char* outputFile="PIDqaReport.pdf")
 {
   //
   // Make a pdf file with the efficiency report
@@ -112,14 +112,14 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
   
 
   // ITS PID
-  if(detList.Contains("ALL") || detList.Contains("ITS")) PublishCanvas(qaList,"ITS","hNsigmaP_ITS_%s");
+  if(detList.Contains("ALL") || detList.Contains("ITS")) PublishCanvas(qaList,"ITS","hNsigmaP_ITS_%s","",outputformat);
 
   // TPC PID
   if(detList.Contains("ALL") || detList.Contains("TPC")){
     TList *qaListTPC = (TList*)qaList->FindObject("TPC");
     if (qaListTPC){
-      PublishCanvas(qaListTPC,"TPCBasic","hNsigmaP_TPC_Basic_%s");
-      PublishCanvas(qaListTPC,"TPCV0","hNsigmaP_TPC_V0_%s");
+      PublishCanvas(qaListTPC,"TPCBasic","hNsigmaP_TPC_Basic_%s","",outputformat);
+      PublishCanvas(qaListTPC,"TPCV0","hNsigmaP_TPC_V0_%s","",outputformat);
       //   if (man->GetCurrentPeriod()=="11h"){
       //     PublishCanvas(qaListTPC,"TPC","hNsigmaP_TPC_Basic_%s_Hybrid","Hybrid");
       //     PublishCanvas(qaListTPC,"TPC","hNsigmaP_TPC_Basic_%s_OROChigh","OROChigh");
@@ -158,18 +158,19 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
       pt.Draw();
       fCanvas->cd(2);
       pt2.Draw();
-      fCanvas->SaveAs("TPCSplinesAndConfigInfo.png");
+      if(outputformat.Contains("png")) fCanvas->SaveAs("TPCSplinesAndConfigInfo.png");
+      if(outputformat.Contains("eps")) fCanvas->SaveAs("TPCSplinesAndConfigInfo.eps");
       fCanvas->Update();
       fCanvas->Clear();
     }
 
     // TPC PID after 3 sigma TOF cut
-    PublishCanvas(qaList,"TPC_TOF","hNsigmaP_TPC_TOF_%s");
+    PublishCanvas(qaList,"TPC_TOF","hNsigmaP_TPC_TOF_%s","",outputformat);
 
   }
   
   // TOF PID
-  if(detList.Contains("ALL") || detList.Contains("TOF")) PublishCanvas(qaList,"TOF","hNsigmaP_TOF_%s");
+  if(detList.Contains("ALL") || detList.Contains("TOF")) PublishCanvas(qaList,"TOF","hNsigmaP_TOF_%s","",outputformat);
 
   // TRD PID
   if(detList.Contains("ALL") || detList.Contains("TRD")){
@@ -316,7 +317,7 @@ void AddFit(TH2* h2d)
   StoreTrendingVars(hMean,hSigma);
 }
 
-void PublishCanvas(TList *qaList, const char* det, const char* name, TString nadd)
+void PublishCanvas(TList *qaList, const char* det, const char* name, TString nadd, TString outputformat)
 {
   //
   // draw all nSigma + signal histo
@@ -365,8 +366,9 @@ void PublishCanvas(TList *qaList, const char* det, const char* name, TString nad
     SetupPadStyle();
     arrHistos.At(i)->Draw();
   }
-  fCanvas->SaveAs(Form("%snSigmaPID.png",det));
-  fCanvas->SaveAs(Form("%snSigmaPID.root",det));
+  if(outputformat.Contains("png")) fCanvas->SaveAs(Form("%snSigmaPID.png",det));
+  if(outputformat.Contains("eps"))   fCanvas->SaveAs(Form("%snSigmaPID.eps",det));
+  if(outputformat.Contains("root"))   fCanvas->SaveAs(Form("%snSigmaPID.root",det));
   fCanvas->Update();
   fCanvas->Clear();
 

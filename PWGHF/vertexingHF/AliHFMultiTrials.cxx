@@ -455,6 +455,7 @@ void AliHFMultiTrials::SaveToRoot(TString fileName, TString option) const{
     fHistoRawYieldTrialBinC[ic]->Write();
     fHistoRawYieldDistBinC[ic]->Write();
   }
+  fNtupleMultiTrials->SetDirectory(outHistos);
   fNtupleMultiTrials->Write();
   outHistos->Close();
   delete outHistos;

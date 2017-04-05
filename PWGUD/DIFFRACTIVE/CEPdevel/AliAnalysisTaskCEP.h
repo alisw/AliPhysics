@@ -116,6 +116,7 @@ private:
   AliCEPUtils *fCEPUtil;                  //! object of type AliCEPUtils
 
   TList *flQArnum;      //! list of QA histograms for QA vs rnum study
+  TList *flBBFlag;      //! list of QA histograms for BBFlag study
   TList *flSPDpileup;   //! list of QA histograms for SPD pile-up study
   TList *flnClunTra;    //! list of QA histograms for nClunTra BG rejection
   TList *flVtx     ;    //! list of QA histograms for vertex selection

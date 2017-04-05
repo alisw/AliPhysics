@@ -17,10 +17,13 @@
 #include <cfloat>
 #include <functional>
 #include <iostream>
+#include <memory>
 
 #include <TClonesArray.h>
 #include <TGrid.h>
 #include <THistManager.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 #include <TParameter.h>
 
 #include "AliAnalysisTaskEmcalTriggerBase.h"
@@ -67,6 +70,8 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
   fEnableDCALTriggers(true),
+  fEnableT0Triggers(false),
+  fRequireL0forL1(false),
   fExclusiveMinBias(false)
 {
   SetNeedEmcalGeom(true);
@@ -97,6 +102,8 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
   fEnableDCALTriggers(true),
+  fEnableT0Triggers(false),
+  fRequireL0forL1(false),
   fExclusiveMinBias(false)
 {
   SetNeedEmcalGeom(true);
@@ -176,20 +183,24 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
 
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
+         isMinBiasT0 = selectionstatus & AliVEvent::kINT8,
+      emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn],
+      emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgn];
 
   if(fExclusiveMinBias){
     // do not perform EMCAL trigger selection in case only
     // min. bias trigger is requested:w
     if(isMinBias) fSelectedTriggers.push_back("MB");
+    if(isMinBiasT0 && fEnableT0Triggers) fSelectedTriggers.push_back("MBT0");
     return;
   }
 
   for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcalTriggers[itrg] = true;
+  if(fEnableT0Triggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emc8Triggers[itrg] = true;
   if(!isMC){
     // In case of data select events as bunch-bunch (-B-) events.
     // Cut not applied in simulations
-    if(fRequireBunchCrossing && ! triggerstring.Contains("-B-")) return;
+    if(fRequireBunchCrossing && ! (triggerstring.Contains("-B-") || triggerstring.Contains("-S-"))) return;
 
     // In case of data use information from the physics selection and event record
     // Further cleanup of trigger events can be performed depending on the presence
@@ -197,36 +208,62 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     // threshold
     if(fUseTriggerBits){
       const std::array<ULong_t, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerBits = {
-    	  AliVEvent::kEMC7, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE,
-		  AliVEvent::kEMC7, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE,
+    	  AliVEvent::kEMC7|AliVEvent::kEMC8, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE,
+		  AliVEvent::kEMC7|AliVEvent::kEMC8, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE
       };
-      for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++)
+      for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
         emcalTriggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
+        emc8Triggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
+        if(fRequireL0forL1 || !bool(selectionstatus & (AliVEvent::kEMC7|AliVEvent::kEMC8))) {
+          emcalTriggers[iclass] = false;
+          emc8Triggers[iclass] = false;
+        }
+      }
     }
 
     // Apply cut on the trigger string - this basically discriminates high- and low-threshold
     // triggers
     const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
-    		"CEMC7", "EG1", "EG2", "EJ1", "EJ2", "CDMC7", "DG1", "DG2", "DJ1", "DJ2"
+    		"CEMC7-|CEMC8-", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "CDMC7-|CDMC8-", "DG1", "DG2", "DJ1", "DJ2"
     };
     if(triggerstring.Contains("EMC")) AliDebugStream(1) << GetName() << ": Trigger string " << triggerstring << std::endl;
+    bool isT0trigger = triggerstring.Contains("INT8") || triggerstring.Contains("EMC8");
     for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
-      emcalTriggers[iclass] &= triggerstring.Contains(kSelectTriggerStrings[iclass]);
+      bool selectionStatus = false;
+      if(kSelectTriggerStrings[iclass].Contains("|")){
+        std::unique_ptr<TObjArray> options(kSelectTriggerStrings[iclass].Tokenize("|"));
+        for(auto o : *options){
+          TObjString *optstring = static_cast<TObjString *>(o);
+          if(triggerstring.Contains(optstring->String())) selectionStatus = true;
+        }
+      } else {
+        selectionStatus = triggerstring.Contains(kSelectTriggerStrings[iclass]);
+      }
+      if(isT0trigger) {
+        emc8Triggers[iclass] &= selectionStatus;
+        emcalTriggers[iclass] = false;
+      } else {
+        emcalTriggers[iclass] &= selectionStatus;
+        emc8Triggers[iclass] = false;
+      }
       if(emcalTriggers[iclass])
-        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << std::endl;
+        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << " (INT7 suite)" << std::endl;
+      if(emc8Triggers[iclass])
+        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << " (INT8 suite)" << std::endl;
     }
 
     // Online selection / rejection
     if(fRejectNoiseEvents || fSelectNoiseEvents){
-      if(fRejectNoiseEvents){
-        for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
-          if(emcalTriggers[itrg])
-            emcalTriggers[itrg] &= SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));
-        }
-      } else {
-        for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
-          if(emcalTriggers[itrg])
-            emcalTriggers[itrg] &= !SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));
+      for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
+        if(emcalTriggers[itrg] || emc8Triggers[itrg]){
+          Bool_t onlinestatus = SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));;
+          if(fRejectNoiseEvents){
+            if(emcalTriggers[itrg]) emcalTriggers[itrg] &= onlinestatus;
+            if(emc8Triggers[itrg]) emc8Triggers[itrg] &= onlinestatus;
+          } else {
+            if(emcalTriggers[itrg]) emcalTriggers[itrg] &= !onlinestatus;
+            if(emc8Triggers[itrg]) emc8Triggers[itrg] &= !onlinestatus;
+          }
         }
       }
     }
@@ -283,6 +320,25 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1]){
       fSelectedTriggers.push_back("DG1");
       if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2])) fSelectedTriggers.push_back("DG1excl");
+    }
+  }
+
+  if(fEnableT0Triggers) {
+    if(isMinBiasT0) fSelectedTriggers.push_back("MBT0");
+    if(emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgEL0]) {
+      // EMC8 trigger
+      fSelectedTriggers.push_back("EMC8");
+      if(!isMinBiasT0) fSelectedTriggers.push_back("EMC8excl");
+    }
+    if(emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgEG1]){
+      // EMC8EGA trigger
+      fSelectedTriggers.push_back("EMC8EGA");
+      if(!(isMinBiasT0 || emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgEL0])) fSelectedTriggers.push_back("EMC8EGAexcl");
+    }
+    if(emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgEJ1]){
+      // EMC8EJE trigger
+      fSelectedTriggers.push_back("EMC8EJE");
+      if(!(isMinBiasT0 || emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgEL0])) fSelectedTriggers.push_back("EMC8EJEexcl");
     }
   }
 }
@@ -414,11 +470,15 @@ std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(){
   std::vector<TString> triggers = {"MB"}; // Min. Bias always enabled
   const std::array<TString, 10> emcaltriggers = {"EMC7", "EJ1", "EJ2", "EG1", "EG2", "EMC7excl", "EG2excl", "EJ2excl", "EJ1excl", "EG1excl"},
                                 dcaltriggers = {"DMC7", "DJ1", "DJ2", "DG1", "DG2", "DMC7excl", "DG2excl", "DJ2excl", "DJ1excl", "DG1excl"};
+  const std::array<TString, 7> t0triggers = {"MBT0", "EMC8", "EMC8EGA", "EMC8EJE", "EMC8excl", "EMC8EGAexcl", "EMC8EJEexcl"};
   if(!fExclusiveMinBias){
     for(const auto &t : emcaltriggers) triggers.push_back(t);
   }
   if(fEnableDCALTriggers){
     for(const auto &t : dcaltriggers) triggers.push_back(t);
+  }
+  if(fEnableT0Triggers){
+    for(const auto &t: t0triggers) triggers.push_back(t);
   }
   return triggers;
 }

@@ -42,6 +42,9 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
+#include "AliESDAD.h"
+#include "AliVVZERO.h"
+
 #include "AliCEPBase.h"
 
 class AliCEPUtils : public TObject {
@@ -86,6 +89,10 @@ class AliCEPUtils : public TObject {
     // QA studies
     static TList* GetQArnumHists(Int_t rnummin, Int_t rnummax);
     
+    static TList* GetBBFlagQAHists();
+    void BBFlagAnalysis(
+      AliVEvent *Event,
+      TList *lhh );
     static TList* GetSPDPileupQAHists();
     void SPDVtxAnalysis (
       AliVEvent *Event,

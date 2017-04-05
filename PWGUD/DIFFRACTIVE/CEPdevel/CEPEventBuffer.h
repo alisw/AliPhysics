@@ -154,6 +154,7 @@ class CEPEventBuffer : public TObject {
     Bool_t isZDNC() const { return fEventCondition & AliCEPBase::kBitZDNC; }
 
     CEPTrackBuffer* GetTrack(Int_t ind);
+    Bool_t RemoveTrack(Int_t ind);
 
   ClassDef(CEPEventBuffer, 3)     // CEP event buffer
 

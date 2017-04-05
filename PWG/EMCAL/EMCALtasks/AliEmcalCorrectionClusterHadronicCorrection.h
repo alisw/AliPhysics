@@ -3,6 +3,10 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include "AliEmcalContainerIndexMap.h"
+#endif
+
 class TH1;
 class TH2;
 
@@ -35,6 +39,7 @@ class AliEmcalCorrectionClusterHadronicCorrection : public AliEmcalCorrectionCom
   // Sets up and runs the task
   Bool_t Initialize();
   void UserCreateOutputObjects();
+  void ExecOnce();
   Bool_t Run();
   
 protected:
@@ -54,6 +59,12 @@ protected:
   Double_t               fHadCorr;                   ///< hadronic correction (fraction)
   Double_t               fEexclCell;                 ///< energy/cell that we cannot subtract from the clusters
   Bool_t                 fDoExact;                   ///< do exact correction (embedding only)
+
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  // Handle mapping between index and containers
+  AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
+#endif
   
   // QA plots
   TH2                   *fHistMatchEtaPhi[10][9][2];  //!<!deta vs. dphi of matched cluster-track pairs
@@ -83,11 +94,11 @@ protected:
   AliEmcalCorrectionClusterHadronicCorrection(const AliEmcalCorrectionClusterHadronicCorrection &);               // Not implemented
   AliEmcalCorrectionClusterHadronicCorrection &operator=(const AliEmcalCorrectionClusterHadronicCorrection &);    // Not implemented
 
-  // Allows the registration of the class so that it is availble to be used by the correction task.
+  // Allows the registration of the class so that it is available to be used by the correction task.
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterHadronicCorrection> reg;
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 2); // EMCal cluster hadronic correction component
+  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 3); // EMCal cluster hadronic correction component
   /// \endcond
 };
 

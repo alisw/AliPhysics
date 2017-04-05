@@ -239,7 +239,7 @@ void AliFilteredTrack::Print(Option_t *option) const
   const char* fullIndent="          ";
   int maxIndent=strlen(fullIndent);
   const char* indent=fullIndent+maxIndent;
-  std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
+  std::unique_ptr<TObjArray> tokens(strOption.Tokenize(" "));
   if (!tokens.get()) return;
   for (int i=0; i<tokens->GetEntriesFast(); i++) {
     if (!tokens->At(i)) continue;

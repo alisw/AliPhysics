@@ -24,7 +24,10 @@ class AliFilteredTrack;
 class AliFilteredEvent : public AliVEvent {
   public:
   AliFilteredEvent();
+  AliFilteredEvent(const AliFilteredEvent& other);
   AliFilteredEvent(const char* name);
+  AliFilteredEvent& operator=(const AliFilteredEvent& other);
+  
   ~AliFilteredEvent();
   
   //Getting and Setting the event Characteristics:

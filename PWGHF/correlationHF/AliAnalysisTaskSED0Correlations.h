@@ -111,7 +111,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
 
   AliAnalysisTaskSED0Correlations(const AliAnalysisTaskSED0Correlations &source);
   AliAnalysisTaskSED0Correlations& operator=(const AliAnalysisTaskSED0Correlations& source); 
-  void FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
+  void FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout, AliAODEvent *aod);
   Int_t CheckD0Origin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   //correlation methods
   void CreateCorrelationsObjs();

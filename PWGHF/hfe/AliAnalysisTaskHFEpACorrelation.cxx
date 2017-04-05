@@ -192,8 +192,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fCEtaPhi_LS_Weight(0)
 ,fCEtaPhi_ULS_NoP_Weight(0)
 ,fCEtaPhi_LS_NoP_Weight(0)
-,fInvMass(0)
-,fInvMassBack(0)
+,fInvMassULS(0)
+,fInvMassLS(0)
 ,fDCA(0)
 ,fDCABack(0)
 ,fOpAngle(0)
@@ -432,8 +432,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fCEtaPhi_LS_Weight(0)
 ,fCEtaPhi_ULS_NoP_Weight(0)
 ,fCEtaPhi_LS_NoP_Weight(0)
-,fInvMass(0)
-,fInvMassBack(0)
+,fInvMassULS(0)
+,fInvMassLS(0)
 ,fDCA(0)
 ,fDCABack(0)
 ,fOpAngle(0)
@@ -734,7 +734,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     
     for(Int_t i = 0; i < 3; i++)
     {
-        fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
+        fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";p (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
         fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
         
         fOutputList->Add(fTPC_p[i]);
@@ -911,8 +911,22 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     }
     
     
-    fInvMass = new TH1F("fInvMass","",100,0,0.3);
-    fInvMassBack = new TH1F("fInvMassBack","",100,0,0.3);
+    //fInvMass = new TH1F("fInvMass","",100,0,0.3);
+    //fInvMassBack = new TH1F("fInvMassBack","",100,0,0.3);
+    
+    //Inv Mass in pT Bins
+    fInvMassULS = new TH1F *[fpTBins.GetSize()];
+    fInvMassLS = new TH1F *[fpTBins.GetSize()];
+    
+    for (Int_t i = 0 ; i < fpTBins.GetSize()-1 ; i++)
+    {
+        fInvMassULS[i] = new TH1F(Form("fInvMassULS%d",i), Form("ULS Inv Mass distribution for %1.2f < p_{T}^{e} < %1.2f",fpTBins.At(i),fpTBins.At(i+1)),100,0,0.3);
+        fInvMassLS[i] = new TH1F(Form("fInvMassLS%d",i), Form("LS Inv Mass distribution for %1.2f < p_{T}^{e} < %1.2f",fpTBins.At(i),fpTBins.At(i+1)),100,0,0.3);
+        fOutputList->Add(fInvMassULS[i]);
+        fOutputList->Add(fInvMassLS[i]);
+        
+    }
+    
     fDCA = new TH1F("fDCA","",100,0,1);
     fDCABack = new TH1F("fDCABack","",100,0,1);
     fOpAngle = new TH1F("fOpAngle","",100,0,0.5);
@@ -933,8 +947,6 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fCEtaPhi_ULS_Weight_EM = new TH2F *[NumberBins];
         fCEtaPhi_LS_Weight_EM = new TH2F *[NumberBins];
         
-        fOutputList->Add(fInvMass);
-        fOutputList->Add(fInvMassBack);
         fOutputList->Add(fDCA);
         fOutputList->Add(fDCABack);
         fOutputList->Add(fOpAngle);
@@ -1160,7 +1172,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             return;
         }
     }
-
+    
     //______________________________________________________________________
     //Vertex Selection
     if(!fIspp){
@@ -1389,7 +1401,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                 }
                 else
                 {
-                    if (fEstimator==1)
+                    if (fEstimator==0)
                     {
                         fCentralityValue =  MultSelection->GetMultiplicityPercentile("ZNA");
                     }
@@ -1404,7 +1416,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             {
                 //Run 1 centrality
                 fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-                if(fEstimator==1)
+                if(fEstimator==0)
                     fCentralityValue = fCentrality->GetCentralityPercentile("ZNA");
                 else
                     fCentralityValue = fCentrality->GetCentralityPercentile("V0A");
@@ -1672,7 +1684,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fTPC_momentum->Fill(fP,fTPCsignal);
         fTPC_eta->Fill(EtaTrig,fTPCsignal);
         
-        fTPC_p[0]->Fill(fPt,fTPCsignal);
+        fTPC_p[0]->Fill(fP,fTPCsignal);
         fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
         Float_t TPCNcls = track->GetTPCNcls();
         //TPC Ncls for pid
@@ -1760,7 +1772,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
         
         fEtad[1]->Fill(EtaTrig);
-        fTPC_p[1]->Fill(fPt,fTPCsignal);
+        fTPC_p[1]->Fill(fP,fTPCsignal);
         fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
         TPCNcls = track->GetTPCNcls();
         
@@ -1798,6 +1810,13 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             DiHadronCorrelation(track, iTracks);
         }
         
+        //Add TOF-Only PID cuts to study contamination as function of p
+        if (TMath::Abs(fTOFnSigma) <= 3)
+        {
+            fTPC_p[2]->Fill(fP,fTPCsignal);
+            fTPCnsigma_p[2]->Fill(fP,fTPCnSigma);
+        }
+            
         
         ///________________________________________________________________________
         ///PID
@@ -1813,7 +1832,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fpid->Fill(pidpassed);
         
         if(pidpassed==0) continue;
-
+        
         
         //______________________________________________________________
         // Vertex
@@ -1848,8 +1867,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         fDCAElectronZ[0]->Fill(DCAz);
         
         fEtad[2]->Fill(EtaTrig);
-        fTPC_p[2]->Fill(fPt,fTPCsignal);
-        fTPCnsigma_p[2]->Fill(fP,fTPCnSigma);
         
         if(track->Pt()< fMinpTElec || track->Pt() > fMaxpTElec) continue;
         
@@ -1934,7 +1951,24 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     Bool_t lIsNHFe = kFALSE;
     Bool_t lIsHFe = kFALSE;
     Bool_t lIsOther = kFALSE;
-    Bool_t lHasMother = kFALSE;;
+    Bool_t lHasMother = kFALSE;
+    
+    //Electron Information
+    Double_t fPhiE = -999;
+    Double_t fEtaE = -999;
+    Double_t fPhiH = -999;
+    Double_t fEtaH = -999;
+    Double_t fDphi = -999;
+    Double_t fDeta = -999;
+    Double_t fPtE = -999;
+    Double_t fPtH = -999;
+    
+    Double_t pi = TMath::Pi();
+    
+    fPhiE = track->Phi();
+    fEtaE = track->Eta();
+    fPtE = track->Pt();
+    
     
     ///_________________________________________________________________
     
@@ -1974,13 +2008,22 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     fNonHFE->SetTrackCuts(-3.0,3.0,fPartnerCuts);
     fNonHFE->SetAdditionalCuts(fPtMinAsso,fTpcNclsAsso);
     
-    
     fNonHFE->SetHistAngleBack(fOpAngleBack);
     fNonHFE->SetHistAngle(fOpAngle);
     fNonHFE->SetHistDCABack(fDCABack);
     fNonHFE->SetHistDCA(fDCA);
-    fNonHFE->SetHistMassBack(fInvMassBack);
-    fNonHFE->SetHistMass(fInvMass);
+    
+    //"SetHistMassBack" sets the LS histogram in the invariant mass
+    //"SetHistMass" sets the ULS histogram in the invariant mass
+    
+    for (Int_t pTbin = 0; pTbin < fpTBins.GetSize()-1; pTbin++ )
+    {
+        if(fPtE>=fpTBins.At(pTbin) && fPtE<fpTBins.At(pTbin+1))
+        {
+            fNonHFE->SetHistMass(fInvMassULS[pTbin]);
+            fNonHFE->SetHistMassBack(fInvMassLS[pTbin]);
+        }
+    }
     
     fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
     
@@ -1991,21 +2034,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     ///#################################################################
     
     
-    //Electron Information
-    Double_t fPhiE = -999;
-    Double_t fEtaE = -999;
-    Double_t fPhiH = -999;
-    Double_t fEtaH = -999;
-    Double_t fDphi = -999;
-    Double_t fDeta = -999;
-    Double_t fPtE = -999;
-    Double_t fPtH = -999;
-    
-    Double_t pi = TMath::Pi();
-    
-    fPhiE = track->Phi();
-    fEtaE = track->Eta();
-    fPtE = track->Pt();
+
     
     
     if(fIsMC)

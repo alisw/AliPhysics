@@ -605,7 +605,7 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 	
 	//Aging monitoring
 	Bool_t localPF = kTRUE;
-	for(Int_t iClock=0; iClock<10; iClock++) if(esdAD->GetPFBBFlag(i,iClock) || esdAD->GetPFBGFlag(i,iClock))localPF = kFALSE;
+	for(Int_t iClock=0; iClock<10; iClock++)  if(esdAD->GetPFBBFlag(i,iClock) || esdAD->GetPFBGFlag(i,iClock))localPF = kFALSE;
 	for(Int_t iClock=11; iClock<21; iClock++) if(esdAD->GetPFBBFlag(i,iClock) || esdAD->GetPFBGFlag(i,iClock))localPF = kFALSE;
 	
 	if(esdAD->GetTime(i)> -1024 + 1e-6 && !isPileUp && !isBackground){

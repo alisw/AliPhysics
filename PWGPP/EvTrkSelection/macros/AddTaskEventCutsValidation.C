@@ -5,7 +5,7 @@
 #include <Rtypes.h>
 #include <TString.h>
 #include "AliAnalysisTaskEventCutsValidation.h"
-#include "AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #endif
@@ -40,7 +40,7 @@ AliAnalysisTaskEventCutsValidation* AddTaskEventCutsValidation(bool storeCuts = 
   
   if (storeCuts) {
     AliAnalysisDataContainer *cutCont = mgr->CreateContainer("EventCuts",
-        AliNuclexEventCuts::Class(),
+        AliEventCuts::Class(),
         AliAnalysisManager::kParamContainer,
         output.Data());
     mgr->ConnectOutput(ev, 2, cutCont);

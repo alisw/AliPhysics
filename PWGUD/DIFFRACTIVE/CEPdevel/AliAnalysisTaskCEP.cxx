@@ -222,6 +222,10 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
     delete flQArnum;
     flQArnum = 0x0;
   }
+  if (flBBFlag) {
+    delete flBBFlag;
+    flBBFlag = 0x0;
+  }
   if (flSPDpileup) {
     delete flSPDpileup;
     flSPDpileup = 0x0;
@@ -377,6 +381,19 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
       fHist->Add((TObject*)flQArnum->At(ii));
   }
   
+  // histograms BBFlag study
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitBBFlagStudy,AliCEPBase::kBitBBFlagStudy)) {
+    
+    // get list of histograms
+    flBBFlag = new TList();
+    flBBFlag = fCEPUtil->GetBBFlagQAHists();
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flBBFlag->GetEntries(); ii++)
+      fHist->Add((TObject*)flBBFlag->At(ii));
+  }
+  
   // histograms for SPD pile-up study
   if (fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitSPDPileupStudy,AliCEPBase::kBitSPDPileupStudy)) {
@@ -517,6 +534,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPUtil->SPDVtxAnalysis(fEvent,3,0.8,3.,2.,5.,flSPDpileup);
   }
   
+  if (flBBFlag) {
+    fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
+  }
+  
   //fAnalysisUtils.SetBSPDCvsTCut(4);
 	//fAnalysisUtils.SetASPDCvsTCut(65);
   Bool_t isClusterCut = !fAnalysisUtils.IsSPDClusterVsTrackletBG(fEvent);
@@ -604,10 +625,13 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNA));
 	Bool_t isZDNC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
+  Bool_t isV0DG = isSPD && !(isV0A || isV0C);
 
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
-  if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
+
+  if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
+  if (isV0DG) ((TH1F*)flQArnum->At(4))->Fill(fRun);
   
   // determine the gap condition using
   // ITS,V0,FMD,AD,ZD
@@ -655,8 +679,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   UInt_t pattern = 0;
   Int_t nbad = fCEPUtil->countstatus(fTrackStatus,mask,pattern);
   if (nbad==0) fhStatsFlow->Fill(AliCEPBase::kBinSharedCluster);
-  //fEventCondition += (nbad==0) * AliCEPBase::kBitSClusterCut;
-  fEventCondition += kTRUE * AliCEPBase::kBitSClusterCut;
+  fEventCondition += (nbad==0) * AliCEPBase::kBitSClusterCut;
   
 	// Martin's selection
 	TArrayI Mindices;

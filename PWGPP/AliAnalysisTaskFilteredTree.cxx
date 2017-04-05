@@ -1029,12 +1029,18 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       // Constrain TPC refitted tracks at inner TPC wall (InnerParams) to vertex  
       // Clone track InnerParams has to be deleted
       //
-      Bool_t isOKtrackInnerC = kFALSE;
-      AliExternalTrackParam * trackInnerC =  new AliExternalTrackParam(*(track->GetInnerParam()));
-      if (trackInnerC) {
-        isOKtrackInnerC = ConstrainTrackInner(trackInnerC,vtxESD,track->GetMass(),b);
-        isOKtrackInnerC = trackInnerC->Rotate(track->GetAlpha());
-        isOKtrackInnerC = trackInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
+      Bool_t isOKtrackInnerC = kTRUE;
+      AliExternalTrackParam * trackInnerC = NULL; 
+      AliExternalTrackParam * trackInnerV =  new AliExternalTrackParam(*(track->GetInnerParam()));
+      isOKtrackInnerC=AliTracker::PropagateTrackToBxByBz(trackInnerV,3,track->GetMass(),3,kFALSE);
+      isOKtrackInnerC&= trackInnerV->Rotate(track->GetAlpha());
+      isOKtrackInnerC&= trackInnerV->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
+
+      if (isOKtrackInnerC) {
+	trackInnerC =  new AliExternalTrackParam(*trackInnerV);
+        isOKtrackInnerC&= ConstrainTrackInner(trackInnerC,vtxESD,track->GetMass(),b);
+        isOKtrackInnerC&= trackInnerC->Rotate(track->GetAlpha());
+        isOKtrackInnerC&= trackInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
       } 
 
       //
@@ -1446,12 +1452,13 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	    "tofPID.="<<&tofPID<<                  // bayesian PID - without priors
 	    "tpcPID.="<<&tpcPID<<                  // bayesian PID - without priors
 	    
-	    "friendTrack.="<<friendTrackStore<<      // esdFriendTrack associated to the esdTrack
-            "extTPCInnerC.="<<tpcInnerC<<          // ??? 
-            "extInnerParamC.="<<trackInnerC<<      // ???
-            "extInnerParam.="<<trackInnerC2<<      // ???
-            "extOuterITS.="<<outerITSc<<           // ???
-            "extInnerParamRef.="<<trackInnerC3<<   // ???
+	    "friendTrack.="<<friendTrackStore<<      // esdFriendTrack associated to the esdTrack 
+            "extTPCInnerC.="<<tpcInnerC<<          // TPC track from the first tracking iteration propagated and updated at vertex 
+            "extInnerParamV.="<<trackInnerV<<      // TPC+TRD  inner param after refit  propagate to vertex 
+            "extInnerParamC.="<<trackInnerC<<      // TPC+TRD  inner param after refit  propagate and updated at vertex 
+            "extInnerParam.="<<trackInnerC2<<      // TPC+TRD  inner param after refit propagate to refernce TPC layer
+            "extOuterITS.="<<outerITSc<<           // ITS outer track propagated to the TPC refernce radius
+            "extInnerParamRef.="<<trackInnerC3<<   // TPC+TRD  inner param after refit propagated to the first TPC reference 
             "chi2TPCInnerC="<<chi2(0,0)<<           // chi2   of tracks ???
             "chi2InnerC="<<chi2trackC(0,0)<<        // chi2s  of tracks TPCinner to the combined
             "chi2OuterITS="<<chi2OuterITS(0,0)<<    // chi2s  of tracks TPC at inner wall to the ITSout

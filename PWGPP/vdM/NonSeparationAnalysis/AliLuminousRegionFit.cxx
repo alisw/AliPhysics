@@ -38,12 +38,12 @@ Bool_t AliLuminousRegionFit::CutOutliers(TTree *t, Bool_t doCut, Double_t sigmaT
   Int_t m = t->Draw("xTRKnc:yTRKnc:zTRKnc", sel, "GOFF");
   if (m < 10)
     return kFALSE;
-  
+
   // update mu
   mu[0] = TMath::Mean(m, t->GetV1());
   mu[1] = TMath::Mean(m, t->GetV2());
   mu[2] = TMath::Mean(m, t->GetV3());
-    
+
   // update sigma
   m = t->Draw(TString::Format("(xTRKnc%+.8f)**2:(yTRKnc%+.8f)**2:(zTRKnc%+.8f)**2", -mu[0], -mu[1], -mu[2]), sel, "GOFF");
   cov(0,0) = TMath::Mean(m, t->GetV1());
@@ -91,7 +91,7 @@ Double_t AliLuminousRegionFit::MinuitFunction(const Double_t *par)
     const Double_t x = fX[0][i] - par[0] - par[7]*(fX[2][i] - par[2]);
     const Double_t y = fX[1][i] - par[1] - par[8]*(fX[2][i] - par[2]);
     const Double_t z = fX[2][i] - par[2];
-    
+
     sum += 0.5*(x*x*sigma(0,0) + y*y*sigma(1,1) + x*y*sigma(0,1) + x*y*sigma(1,0));
     sum += 0.5*z*z/(par[5]*par[5]);
     result += sum;
@@ -109,7 +109,7 @@ void AliLuminousRegionFit::ComputeMoments(TTree *t,
     fCov[i] = t->GetVal(3+i);
   }
   ROOT::Math::Functor fcn(this, &AliLuminousRegionFit::MinuitFunction, 10);
-  TMinuitMinimizer m("minimize", 10); 
+  TMinuitMinimizer m("minimize", 10);
   m.UseStaticMinuit(kTRUE);
   m.SetFunction(fcn);
 
@@ -125,7 +125,7 @@ void AliLuminousRegionFit::ComputeMoments(TTree *t,
   m.SetLimitedVariable( 3, "#sigma_x", sigma[0], 0.01*sigma[0], 0,   1);
   m.SetLimitedVariable( 4, "#sigma_y", sigma[1], 0.01*sigma[1], 0,   1);
   m.SetLimitedVariable( 5, "#sigma_z", sigma[2], 0.01*sigma[2], 0, 200);
-  
+
   m.SetLimitedVariable( 6, "C_xy", cov(0,1)/(sigma[0]*sigma[1]), .01, -1, 1);
   m.SetLimitedVariable( 7, "s_x",  0.0, 0.0001, -1.0, 1.0);
   m.SetLimitedVariable( 8, "s_y",  0.0, 0.0001, -1.0, 1.0);
@@ -178,7 +178,7 @@ TTree* AliLuminousRegionFit::SkimTTree(TTree *t, const TArrayI *idxOutliers)
     }
     t->GetEntry(i);
     tNew->Fill();
-  }  
+  }
   delete t;
 
   return tNew;
@@ -204,7 +204,7 @@ TTree* AliLuminousRegionFit::RemoveOutliersRobust(TTree *t, TVectorD &mu, TMatri
     robEst.AddRow(data);
   }
   t->ResetBranchAddresses();
-  
+
   robEst.Evaluate();
 
   t = SkimTTree(t, robEst.GetOuliers()); // typo in ROOT (Ouliers instead of Outliers)
@@ -212,7 +212,7 @@ TTree* AliLuminousRegionFit::RemoveOutliersRobust(TTree *t, TVectorD &mu, TMatri
     delete t; t = NULL;
     return t;
   }
-  
+
   mu.ResizeTo(3);
   cov.ResizeTo(3,3);
   robEst.GetMean(mu);
@@ -237,10 +237,12 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
 				   Double_t tMin, Double_t tMax,
 				   Int_t    scanType,
 				   Double_t offset,
-				   Int_t    bcSel)
+				   Int_t    bcSel,
+				   Bool_t   selV0AND,
+				   Bool_t   selV0M)
 {
-  const char* graphNamesMoment[9] = { "gX", "gY", "gZ",  "gSX", "gSY", "gSZ",  "gCXY", "gCXZ","gCYZ" };
-  const char* graphNamesModel[10] = { "geX","geY","geZ", "geSX","geSY","geSZ", "geCXY","gesX","gesY","gek" };
+  const char* graphNamesMoment[9] = {  "gX", "gY", "gZ",  "gSX", "gSY", "gSZ",  "gCXY", "gCXZ", "gCYZ" };
+  const char* graphNamesModel[10] = { "geX","geY","geZ", "geSX","geSY","geSZ", "geCXY", "gesX","gesY","gek" };
 
   if (fListSave) delete fListSave;
   fListSave = new TList;
@@ -257,21 +259,24 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
   fTE->SetBranchStatus("*",         0);
   fTE->SetBranchStatus("timestamp", 1);
   fTE->SetBranchStatus("*TRK*",     1);
-  fTE->SetBranchStatus("isV0and",   1);
+  fTE->SetBranchStatus("isV0and",   selV0AND);
+  fTE->SetBranchStatus("isV0M",     selV0M);
   fTE->SetBranchStatus("covMtx*",   1);
   fTE->SetBranchStatus("bx",        1);
-    
+
   UInt_t   timeStamp(0);
   UShort_t ntrksTRKnc(0);
   Bool_t   isV0and(0);
+  Bool_t   isV0M(0);
   UInt_t   bcid(0);
   fTE->SetBranchAddress("timestamp",  &timeStamp);
   fTE->SetBranchAddress("ntrksTRKnc", &ntrksTRKnc);
   fTE->SetBranchAddress("isV0and",    &isV0and);
+  fTE->SetBranchAddress("isV0M",      &isV0M);
   fTE->SetBranchAddress("bx",         &bcid);
 
   const TCut cut(TString::Format("timeStart > %f && timeEnd < %f", tMin, tMax));
-  
+
   const Int_t n = fTSep->Draw("timeStart:timeEnd:sep",cut, "GOFF");
   const Double_t *timeStart = fTSep->GetV1();
   const Double_t *timeEnd   = fTSep->GetV2();
@@ -295,7 +300,8 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
 	  timeStamp  <  timeEnd[i]            &&
 	  ntrksTRKnc >= fMinNumberOfTracks    &&
 	  (bcSel < 0 || (Int_t)bcid == bcSel) &&
-	  isV0and) {
+	  (!selV0AND || isV0and)              &&
+	  (!selV0M   || isV0M)) {
 	tTemp[i]->Fill();
       }
     }
@@ -338,7 +344,7 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
       gMoments[6+j]->SetPoint(gMoments[6+j]->GetN(), sep[i],
 			      cov(idx[j][0], idx[j][1])/TMath::Sqrt(cov(idx[j][0],idx[j][0])*cov(idx[j][1],idx[j][1])));
     }
-    
+
     ComputeMoments(tTemp[i], sel, mu, cov, x, cx, llRatio);
 
     for (Int_t j=0; j<10; ++j) {
@@ -358,13 +364,13 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
   for (Int_t i=0; i<n; ++i)
     delete tTemp[i];
   delete[] tTemp;
-  
+
   gSystem->Exec(TString::Format("mkdir -p root/%d", fFillNumber));
   TString saveFileName = TString::Format("root/%d/lumiRegion_", fFillNumber) + scanName;
   saveFileName += (bcSel < 0
 		   ? TString(".root")
 		   : TString::Format("_bcid%d.root", bcSel));
-  
+
   TFile *fSave = TFile::Open(saveFileName, "RECREATE");
   fListSave->Write();
   fSave->Write();

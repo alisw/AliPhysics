@@ -60,6 +60,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fEtaCmsCut(-2., 2.),
     fPhiCut(0., TMath::TwoPi()),
     fStudyPID(false),
+    fStudyEMCALgeo(false),
     fEnableSumw2(false)
 {
 }
@@ -74,6 +75,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fEtaCmsCut(-2., 2.),
     fPhiCut(0., TMath::TwoPi()),
     fStudyPID(false),
+    fStudyEMCALgeo(false),
     fEnableSumw2(false)
 {
   SetNeedEmcalGeom(true);
@@ -106,10 +108,13 @@ void AliAnalysisTaskChargedParticlesRef::CreateUserHistos() {
     fHistos->CreateTH1("hVertexBefore" + trg, "Vertex distribution before z-cut for trigger class " + trg, 500, -50, 50, optionstring);
     fHistos->CreateTH1("hVertexAfter" + trg, "Vertex distribution after z-cut for trigger class " + trg, 100, -10, 10, optionstring);
 
+
     fHistos->CreateTHnSparse("hPtEtaPhiAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + " ; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
-    fHistos->CreateTHnSparse("hPtEtaPhiEMCALAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
     fHistos->CreateTHnSparse("hPtEtaPhiCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
-    fHistos->CreateTHnSparse("hPtEtaPhiEMCALCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
+    if(fStudyEMCALgeo) {
+      fHistos->CreateTHnSparse("hPtEtaPhiEMCALAll" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
+      fHistos->CreateTHnSparse("hPtEtaPhiEMCALCent" + trg, "p_{t}-#eta-#phi distribution of all accepted tracks pointing to the EMCAL for trigger " + trg + "; p_{t} (GeV/c); #eta; #phi; charge", 4, binning4D, optionstring);
+    }
 
     if(fStudyPID){
       fHistos->CreateTH2(Form("hTPCdEdxEMCAL%s", trg.Data()), Form("TPC dE/dx of charged particles in the EMCAL region for trigger %s", trg.Data()), 400, -20., 20., 200, 0., 200., optionstring);
@@ -142,21 +147,24 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
     if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;
     if(!fPhiCut.IsInRange(checktrack->Phi())) continue;
     if(TMath::Abs(checktrack->Pt()) < fMinPt) continue;
-    if(checktrack->IsA() == AliESDtrack::Class()){
-      AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
-      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
-      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
-      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
-    } else {
-      AliAODTrack copytrack(*(static_cast<AliAODTrack *>(checktrack)));
-      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
-      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
-      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+
+    if(fStudyEMCALgeo){
+      if(checktrack->IsA() == AliESDtrack::Class()){
+        AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
+        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+        etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+        phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+      } else {
+        AliAODTrack copytrack(*(static_cast<AliAODTrack *>(checktrack)));
+        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+        etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+        phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+      }
+      Int_t supermoduleID = -1;
+      isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
+      // Exclude supermodules 10 and 11 as they did not participate in the trigger
+      isEMCAL = isEMCAL && supermoduleID < 10;
     }
-    Int_t supermoduleID = -1;
-    isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
-    // Exclude supermodules 10 and 11 as they did not participate in the trigger
-    isEMCAL = isEMCAL && supermoduleID < 10;
 
     // Calculate eta in cms frame according
     // EPJC74 (2014) 3054:
@@ -211,7 +219,7 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
   double kinepointall[4] = {TMath::Abs(pt), etalab, phi, posCharge ? 1. : -1.}, kinepointcent[4] = {TMath::Abs(pt), etacent, phi, posCharge ? 1. : -1.};
   fHistos->FillTHnSparse("hPtEtaPhiAll" + eventclass, kinepointall, weight);
   fHistos->FillTHnSparse("hPtEtaPhiCent" + eventclass, kinepointcent, weight);
-  if(inEmcal){
+  if(fStudyEMCALgeo && inEmcal){
     fHistos->FillTHnSparse("hPtEtaPhiEMCALAll" + eventclass, kinepointall, weight);
     fHistos->FillTHnSparse("hPtEtaPhiEMCALCent" + eventclass, kinepointall, weight);
   }

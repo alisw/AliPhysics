@@ -207,7 +207,9 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fWeightJetJetMC(1),
   fSelectedMesonID(0),
   fEnableDetailedPrintOut(kFALSE),
-  fEnableSortForClusMC(kFALSE)
+  fEnableSortForClusMC(kFALSE),
+  tBrokenFiles(NULL),
+  fFileNameBroken(NULL)
 {
   
 }
@@ -359,7 +361,9 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fWeightJetJetMC(1),
   fSelectedMesonID(0),
   fEnableDetailedPrintOut(kFALSE),
-  fEnableSortForClusMC(kFALSE)
+  fEnableSortForClusMC(kFALSE),
+  tBrokenFiles(NULL),
+  fFileNameBroken(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1177,6 +1181,14 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fCutFolder[iCut]->Add(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms());
     }
   }
+  
+  if (fIsMC > 0){
+    tBrokenFiles = new TTree("BrokenFiles","BrokenFiles");   
+    tBrokenFiles->Branch("fileName",&fFileNameBroken);
+    fOutputContainer->Add(tBrokenFiles);
+  }
+
+  
   PostData(1, fOutputContainer);
 }
 //_____________________________________________________________________________
@@ -1231,26 +1243,35 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
   //
   // Called for each event
   //
+  fInputEvent = InputEvent();
 
   if(fIsMC> 0) fMCEvent = MCEvent();
-  if(fMCEvent == NULL) fIsMC = 0;
-
-  fInputEvent = InputEvent();
+  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class() && fMCEvent){
+    fMCStack = fMCEvent->Stack();
+  }
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
   if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
-  if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
+
+  // Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete => abort processing of this file/event
+  if(eventQuality == 2 || eventQuality == 3){
+    // write out name of broken file for first event
+    if (fIsMC > 0){
+      if (fInputEvent->IsA()==AliESDEvent::Class()){
+        if (((AliESDEvent*)fInputEvent)->GetEventNumberInFile() == 0){  
+          fFileNameBroken = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+          if (tBrokenFiles) tBrokenFiles->Fill();
+          delete fFileNameBroken;
+        } 
+      }  
+    }  
+
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
       fHistoNEvents[iCut]->Fill(eventQuality);
       if (fIsMC==2) 
         fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
     }
     return;
-  }
-  
-  if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
-    fMCStack = fMCEvent->Stack();
-    if(fMCStack == NULL) fIsMC = 0;
   }
   
   // ------------------- BeginEvent ----------------------------

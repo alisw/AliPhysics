@@ -65,7 +65,7 @@ class AliReducedBaseTrack : public TObject {
     Bool_t SetFlag(UShort_t iflag)  {if(iflag>=8*sizeof(ULong_t)) return kFALSE; fFlags|=(ULong_t(1)<<iflag); return kTRUE;}
     Bool_t UnsetFlag(UShort_t iflag) {if(iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestFlag(iflag)) fFlags^=(ULong_t(1)<<iflag); return kTRUE;}  
     Bool_t SetQualityFlag(UShort_t iflag)      {if (iflag>=8*sizeof(ULong_t)) return kFALSE; fQualityFlags|=(ULong_t(1)<<iflag); return kTRUE;}
-    Bool_t UnsetQualityFlag(UShort_t iflag)  {if (iflag>=8*sizeof(ULong_t)) return kFALSE; fQualityFlags|=(ULong_t(0)<<iflag); return kTRUE;}
+    Bool_t UnsetQualityFlag(UShort_t iflag)  {if (iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestQualityFlag(iflag)) fQualityFlags^=(ULong_t(1)<<iflag); return kTRUE;}
         
   protected:
     Float_t fP[3];         // 3-momentum vector

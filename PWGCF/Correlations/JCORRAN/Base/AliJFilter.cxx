@@ -1071,6 +1071,12 @@ void AliJFilter::ReadMCTracksFromAOD(){
 			ctrack->SetFlag(AliJMCTrack::kPrimary, isPrimary);
 
 			ctrack->SetProductionVertex(track->Xv(),track->Yv(),track->Zv());
+      
+      // If the particle has no daughters, it must be still alive when hitting the detector
+      Int_t nDaughters = track->GetNDaughters();
+      Bool_t isFinal = kFALSE;
+      if(nDaughters == 0) isFinal = kTRUE;
+      ctrack->SetIsFinal(isFinal);
 		}
 	}
 

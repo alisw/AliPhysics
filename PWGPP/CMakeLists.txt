@@ -210,6 +210,7 @@ set ( SRCS16
   EvTrkSelection/AliAnalysisTrackingUncertaintiesAOT.cxx
   EvTrkSelection/AliCFSingleTrackEfficiencyTask.cxx
   EvTrkSelection/AliSingleTrackEffCuts.cxx
+  EvTrkSelection/AliAnalysisTaskEventCutsValidation.cxx
   )
 #file ( GLOB SRCS17 "TRD/TRDPID/*.cxx" )
 set ( SRCS17

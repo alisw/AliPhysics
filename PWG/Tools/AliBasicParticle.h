@@ -47,17 +47,21 @@ class AliBasicParticle : public AliVParticle
     virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
     virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
 
+    virtual Long64_t GetEventIndex()const { return fEventIndex; }
     virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
+    virtual Bool_t IsInSameEvent(const AliBasicParticle* obj) const { return (obj->GetEventIndex() == GetEventIndex()); }
 
     virtual void SetPhi(Double_t phi) { fPhi = phi; }
+    virtual void SetEventIndex(Long64_t val) { fEventIndex = val; }
 
   private:
     Float_t fEta;      // eta
     Float_t fPhi;      // phi
     Float_t fpT;       // pT
     Short_t fCharge;   // charge
+    Long64_t fEventIndex;// event index
 
-    ClassDef( AliBasicParticle, 1); // very basic particle class used for correlation analyses
+    ClassDef( AliBasicParticle, 3); // very basic particle class used for correlation analyses
 };
 
 #endif

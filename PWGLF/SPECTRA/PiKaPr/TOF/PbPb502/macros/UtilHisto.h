@@ -1,5 +1,14 @@
 #ifndef UtilHisto_h
 #define UtilHisto_h
+
+#include <Riostream.h>
+#include "UtilMessages.h"
+#include "TCanvas.h"
+#include "TMath.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
+
 //_________________________________________________________________________________________________
 Bool_t SameBinning(const TH1 *h1, const TH1 *h2, const Bool_t check = kFALSE){
   Infomsg("SameBinning", "Checking same binning");

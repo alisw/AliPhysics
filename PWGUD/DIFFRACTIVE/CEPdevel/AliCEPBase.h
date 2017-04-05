@@ -138,7 +138,8 @@ class AliCEPBase : public TObject {
     kBitnClunTraStudy         = (1<< 6), // cluster vs tracklet study
     kBitVtxStudy              = (1<< 7), // Vtx study
     kBitTrackCutStudy         = (1<< 8), // track cut study
-		kBitConfigurationVersion  = (1<< 9)  // always set, last bit
+    kBitBBFlagStudy           = (1<< 9), // BBFlag study
+		kBitConfigurationVersion  = (1<<10)  // always set, last bit
 	
   };
 

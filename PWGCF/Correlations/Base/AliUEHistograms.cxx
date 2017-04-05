@@ -25,6 +25,7 @@
 #include "AliUEHistograms.h"
 
 #include "AliCFContainer.h"
+#include "AliBasicParticle.h"
 #include "AliVParticle.h"
 #include "AliAODTrack.h"
 
@@ -74,6 +75,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
   fTwoTrackCutMinRadius(0.8),
+  fCheckEventNumberInCorrelation(kFALSE),
   fRunNumber(0),
   fMergeCount(1)
 {
@@ -244,6 +246,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
   fTwoTrackCutMinRadius(0.8),
+  fCheckEventNumberInCorrelation(kFALSE),
   fRunNumber(0),
   fMergeCount(1)
 {
@@ -646,9 +649,22 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    particle = (AliVParticle*) mixed->UncheckedAt(j);
 	  
 	  // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event)
-	  if (mixed && triggerParticle->IsEqual(particle))
+	  if (fCheckEventNumberInCorrelation)
+	  {
+	    AliBasicParticle* triggerParticleBasic = dynamic_cast<AliBasicParticle*>(triggerParticle);
+	    AliBasicParticle* particleBasic        = dynamic_cast<AliBasicParticle*>(particle);
+	    if(!triggerParticleBasic || !particleBasic)
+	    {
+	      AliFatal("If fCheckEventNumberInCorrelation is set, particle must be derived from AliBasicParticle");
+	      continue;
+	    }
+	
+	    if(triggerParticleBasic->IsInSameEvent(particleBasic))
+	      continue;
+	  }
+	  else if (mixed && triggerParticle->IsEqual(particle))
 	    continue;
-	 
+	  
 	  if (triggerParticle->Charge() * particle->Charge() > 0)
 	    continue;
       
@@ -709,7 +725,17 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
           particle = (AliVParticle*) mixed->UncheckedAt(j);
         
         // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event)
-        if (mixed && triggerParticle->IsEqual(particle))
+        if (fCheckEventNumberInCorrelation)
+        {
+          AliBasicParticle* triggerParticleBasic = dynamic_cast<AliBasicParticle*>(triggerParticle);
+          AliBasicParticle* particleBasic        = dynamic_cast<AliBasicParticle*>(particle);
+          if(!triggerParticleBasic || !particleBasic)
+            AliFatal("If fCheckEventNumberInCorrelation is set, particle must be derived from AliBasicParticle");
+      
+          if(triggerParticleBasic->IsInSameEvent(particleBasic))
+            continue;
+        }
+        else if (mixed && triggerParticle->IsEqual(particle))
           continue;
         
         if (fPtOrder)
@@ -1254,6 +1280,7 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fWeightPerEvent = fWeightPerEvent;
   target.fPtOrder = fPtOrder;
   target.fTwoTrackCutMinRadius = fTwoTrackCutMinRadius;
+  target.fCheckEventNumberInCorrelation = fCheckEventNumberInCorrelation;
 }
 
 //____________________________________________________________________

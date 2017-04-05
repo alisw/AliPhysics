@@ -177,6 +177,7 @@ public:
     // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration();
     void AddStandardCascadeConfiguration();
+    void AddCascadeConfiguration276TeV();
     //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
@@ -195,6 +196,8 @@ private:
 
     AliPIDResponse *fPIDResponse;     // PID response object
     AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
+    AliESDtrackCuts *fESDtrackCutsITSsa2010;  // ESD track cuts used for ITSsa track definition
+    AliESDtrackCuts *fESDtrackCutsGlobal2015; // ESD track cuts used for global track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
     
     //Implementation of event selection utility
@@ -212,6 +215,7 @@ private:
     Bool_t fkUseOnTheFlyV0Cascading; 
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
+    Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //use AliEventCuts for event selection
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
@@ -237,6 +241,14 @@ private:
 //===========================================================================================
     Float_t fCentrality; //!
     Bool_t fMVPileupFlag; //!
+
+    //TOF info for OOB pileuo study
+    Int_t  fNTOFClusters;  //!
+    Int_t  fNTOFMatches;   //!
+    Int_t  fNTracksITSsa2010; //!
+    Int_t  fNTracksGlobal2015; //!
+    Int_t  fNTracksGlobal2015TriggerPP; //!
+
 
 //===========================================================================================
 //   Variables for V0 Tree
@@ -285,7 +297,17 @@ private:
     ULong64_t fTreeVariablePosTrackStatus; //!
     Float_t fTreeVariableNegDCAz; //!
     Float_t fTreeVariablePosDCAz; //!
-    
+
+    //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
+    Float_t fTreeVariableNegTOFExpTDiff;      //!
+    Float_t fTreeVariablePosTOFExpTDiff;      //!
+    ////Event info
+    //Int_t  fTreeVariableNTOFClusters;  //!
+    //Int_t  fTreeVariableNTOFMatches;   //!
+    //Int_t  fTreeVariableNTracksITSsa2010; //!
+    //Int_t  fTreeVariableNTracksGlobal2015; //!
+    //Int_t  fTreeVariableNTracksGlobal2015TriggerPP; //!
+
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
     Bool_t fTreeVariableMVPileupFlag;         //!

@@ -60,12 +60,21 @@ CellTimeCalib:                                      # Cell Time Calibration comp
     createHistos: false                             # Whether the task should create output histograms
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
+CellCombineCollections:                             # Utility task to combine two cells collections into a single collection.
+                                                    # It is useful for embedding, but little else.
+                                                    # The combined needs to be done here to enable different cell corrections for the different cell collections (for example, MC may need different corrections than data.)
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    externalCellsBranchName: "usedefault"           # Name of the cells branch in the embedded (external) event.
+    combinedCellsBranchName: "emcalCellsCombined"   # Name of the cells branch to be created for the combined cells in the input event.
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
-    cellE: 0.05                                     # Minimum cell energy
-    seedE: 0.1                                      # Seed energy threshold
+    cellE: 0.05                                     # Minimum cell energy (GeV)
+    seedE: 0.1                                      # Seed energy threshold (GeV)
     cellTimeMin: -1                                 # Min cell time (s)
     cellTimeMax: +1                                 # Max cell time (s)
     clusterTimeLength: 1                            # Maximum time difference between the digits inside EMC cluster (s)
@@ -141,6 +150,7 @@ executionOrder:
     - CellEnergy
     - CellBadChannel
     - CellTimeCalib
+    - CellCombineCollections
     - Clusterizer
     - ClusterExotics
     - ClusterNonLinearity

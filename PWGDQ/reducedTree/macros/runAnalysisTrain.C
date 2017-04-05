@@ -3,14 +3,14 @@ TString gGridRunMode = "full";
 TString gRootVersion = "v5-34-30-alice7-1";
 TString gAlirootVersion = "v5-08-18c-1";
 TString gAliphysicsVersion = "vAN-20161208-1";
-TString gGridDataDir = "/alice/data/2015/LHC15o";
-//TString gGridDataDir = "/alice/data/2016/LHC16l";
+//TString gGridDataDir = "/alice/data/2015/LHC15o";
+TString gGridDataDir = "/alice/data/2016/LHC16q";
 //TString gGridDataDir = "/alice/cern.ch/user/i/iarsene/work/outputDst";
 //TString gGridDataPattern = "*/pass1/*/AliESDs.root";
 //TString gGridDataPattern = "*/pass1/PWGDQ/DQ_PbPb/231_20161009-2048/*/dstTree.root";
 TString gGridDataPattern = "*/pass1/*/AliESDs.root";
 TString gGridWorkingDir = "work";
-TString gGridOutputDir = "testTrees_run246037";
+TString gGridOutputDir = "testTrees_runBLALA";
 Int_t gGridMaxInputFileNumber = 40;
 
 //______________________________________________________________________________________________________________________________________
@@ -97,10 +97,11 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
         AddTaskCentrality();
       }
-      if(!prod.CompareTo("LHC15o") || !prod.CompareTo("LHC16l") || !prod.CompareTo("mcPbPb")) {         // Run-2 Pb-Pb
+      else  { // Run-2
+      //if(!prod.CompareTo("LHC15o") || !prod.CompareTo("LHC16l") || !prod.CompareTo("LHC16q") || !prod.CompareTo("LHC16t")) {         // Run-2 Pb-Pb
          gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
          AliMultSelectionTask* multTask = AddTaskMultSelection();
-         if(!prod.CompareTo("mcPbPb"))
+         if(hasMC && !prod.CompareTo("LHC15o"))
            multTask->SetAlternateOADBforEstimators("LHC15o-DefaultMC-HIJING");
       }      
 

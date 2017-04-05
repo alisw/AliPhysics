@@ -68,11 +68,13 @@ set(SRCS
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
+  AliEmcalCorrectionCellCombineCollections.cxx
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
+  AliAnalysisTaskEmcalOccupancy.cxx
   )
 
 # Headers from sources

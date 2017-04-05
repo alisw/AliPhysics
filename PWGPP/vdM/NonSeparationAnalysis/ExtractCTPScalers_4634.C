@@ -80,22 +80,38 @@ TString classNames[] = {
 
 const Int_t nClasses = sizeof(classNames)/sizeof(TString);
 
+TTree *TT = new TTree;
 void ExtractCTPScalers_4634()
 {
   gROOT->LoadMacro("AnalyzeCTPRecords.C+");
   gROOT->LoadMacro("ExtractRateFromCTPScalers.C+");
 
-//   AnalyzeCTPRecords(244369, 2015, classNames, nClasses);
-//   AnalyzeCTPRecords(244375, 2015, classNames, nClasses);
+  // AnalyzeCTPRecords(244369, 2015, classNames, nClasses);
+  // AnalyzeCTPRecords(244375, 2015, classNames, nClasses);
 
-  const TString classIDs[] = { "C0TVX" };
+  const char *suffix[5] = { "", "_PU1", "_PU2", "_BB1", "_BB2" };
+  const Int_t     bb[5] = { 0,    0,      0,      -1,    1     };
+  const Double_t  pu[5] = { 0.0,  0.9,    1.0,   0.0,    0.0   };
+
+  const TString classIDs[] = { "CADAND" };
   const TString bunchIDs[] = { "B", "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8" };
   const Int_t   nBunches[] = {  22,    1,    1,    1,    1,    1,    1,    1,    1 };
 
-  for (Int_t i=0; i<sizeof(classIDs)/sizeof(TString); ++i) {
-    for (Int_t j=0; j<sizeof(bunchIDs)/sizeof(TString); ++j) {
-      ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 244369, "txt/4634/ScanXY.txt",     nBunches[j], 4634, 0.593, 0.559);
-      ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 244375, "txt/4634/ScanOffset.txt", nBunches[j], 4634, 0.593, 0.559);
+  const Double_t ratioA = 0.129; // AnotC/AandC (AD)
+  const Double_t ratioC = 0.287; // CnotA/AandC (AD)
+
+  for (Int_t l=0; l<5; ++l) {
+    for (Int_t i=0; i<sizeof(classIDs)/sizeof(TString); ++i) {
+      for (Int_t j=0; j<sizeof(bunchIDs)/sizeof(TString); ++j) {
+	ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 244369, "txt/4634/ScanXY.txt",     nBunches[j], 4634, pu[l]*ratioA, pu[l]*ratioC,
+				  "root/4634/IntensityDecay.root", "root/4634/SatelliteContaminationAD.root", bb[l], TT);
+	ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 244375, "txt/4634/ScanOffset.txt", nBunches[j], 4634, pu[l]*ratioA, pu[l]*ratioC,
+				  "", "root/4634/SatelliteContaminationAD.root", bb[l], TT);
+      }
     }
+    TFile *f = TFile::Open(Form("root/4634/RatesAndSep_4634%s.root", suffix[l]), "RECREATE");
+    TT->Write("TT");
+    f->Write();
+    f->Close();
   }
 }

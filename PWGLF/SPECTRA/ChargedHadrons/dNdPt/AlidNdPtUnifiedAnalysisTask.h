@@ -160,6 +160,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     TF1               *fFunTrkEff;
 
     TH1D* fHistV0Amp;
+    THnF* fHistMCMultPt;
 
     // Output Histograms
 

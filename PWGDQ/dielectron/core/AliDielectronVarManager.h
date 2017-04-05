@@ -1137,7 +1137,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
   // Reset AliESDtrack interface specific information
   if(Req(kNclsITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
-  if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = particle->GetITSchi2() / particle->GetITSNcls();
+  if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = (particle->GetITSNcls()>0)? particle->GetITSchi2() / particle->GetITSNcls() : 0;
   if(Req(kNclsTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
   if(Req(kNclsSTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   if(Req(kNclsSFracTPC)) values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;

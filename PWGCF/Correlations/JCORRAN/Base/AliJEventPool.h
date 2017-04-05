@@ -19,6 +19,7 @@ class TClonesArray;
 class AliJBaseTrack;
 class AliJPhoton;
 class AliJTrack;
+class AliJMCTrack;
 class AliJCard;
 class AliJCorrelationInterface;
 class AliJHistogramInterface;

@@ -43,6 +43,7 @@
 #include "AliESDUtils.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliMultSelection.h"
 #include "AliStack.h"
 #include "AliLog.h"
 //
@@ -55,17 +56,21 @@ ClassImp(AliAnalysisTrackingUncertaintiesAOT)
 //________________________________________________________________________
 AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
 : AliAnalysisTaskSE("TaskTestPA"),
+  fUseCentrality(kCentOff),
   fMaxDCAxy(2.4),
   fMaxDCAz(3.2),
   fMaxEta(0.8),
   fSPDlayerReq(AliESDtrackCuts::kAny),
   fCrossRowsOverFndCltTPC(0.8),
+  fminCent(0.),
+  fmaxCent(100.),
   fTriggerClass("CINT1B"),
   fTriggerMask(AliVEvent::kMB),
   fESD(0),
   fESDpid(0),
   fspecie(0),
   fHistNEvents(0x0),
+  fHistCent(0x0),
   fHistMC(0x0),
   fHistMCTPConly(0x0),
   fHistData(0x0),
@@ -77,24 +82,29 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fDoCutV0multTPCout(kFALSE),
   fListHist(0x0),
   fESDtrackCuts(0x0),
-  fVertex(0x0)
+  fVertex(0x0),
+  fMultSelectionObjectName("MultSelection")
 {
     
 }
 //________________________________________________________________________
 AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const char *name)
   : AliAnalysisTaskSE(name),
+    fUseCentrality(kCentOff),
     fMaxDCAxy(2.4),
     fMaxDCAz(3.2),
     fMaxEta(0.8),
     fSPDlayerReq(AliESDtrackCuts::kAny),
     fCrossRowsOverFndCltTPC(0.8),
+    fminCent(0.),
+    fmaxCent(100.),
     fTriggerClass("CINT1B"),
     fTriggerMask(AliVEvent::kMB),
     fESD(0),
     fESDpid(0),
     fspecie(0),
     fHistNEvents(0x0),
+    fHistCent(0x0),
     fHistMC(0x0),
     fHistMCTPConly(0x0),
     fHistData(0x0),
@@ -106,7 +116,8 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fDoCutV0multTPCout(kFALSE),
     fListHist(0x0),
     fESDtrackCuts(0x0),
-    fVertex(0x0)
+    fVertex(0x0),
+    fMultSelectionObjectName("MultSelection")
 {
   //
   // standard constructur
@@ -122,7 +133,8 @@ AliAnalysisTrackingUncertaintiesAOT::~AliAnalysisTrackingUncertaintiesAOT()
   if (fListHist) {
         
     delete fHistNEvents;
-        
+    delete fHistCent;
+      
     delete fHistMC;
     delete fHistMCTPConly;
     delete fHistData;
@@ -168,6 +180,9 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     
   fListHist->Add(fHistNEvents);
     
+  fHistCent = new TH1F("histCent","Selected centrality; Percentile",100,0.,100.);
+  fListHist->Add(fHistCent);
+    
   TH2F * histVertexSelection = new TH2F("histVertexSelection", "vertex selection; vertex z (cm); accepted/rejected", 100, -50., 50., 2, -0.5, 1.5);
   fListHist->Add(histVertexSelection);
   TH2F * histTPCITS = new TH2F("histTPCITS", "TPC vs ITS clusters", 100, 0., 500., 1000, 0, 15000);
@@ -176,6 +191,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   fListHist->Add(histTPCITS);
   fListHist->Add(histTPCCL1);
   fListHist->Add(histTPCntrkl);
+    
     
   if(fDoCutV0multTPCout) {
     fHistAllV0multNTPCout = new TH2F("HistAllV0multNTPCout", "V0mult vs # TPCout (all) ;V0mult ;# TPCout", 1000, 0., 40000, 1000, 0, 30000);
@@ -310,6 +326,10 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
     PostData(1, fListHist);
     return;
   }
+    
+  if (fUseCentrality!=kCentOff) {
+    if(!IsEventSelectedInCentrality(fESD)) return;
+  }
   //
   // Fill track cut variation histograms
   //
@@ -319,7 +339,58 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
   //
   PostData(1, fListHist);
 }
+//---------------------------------------------------------------------------
+void AliAnalysisTrackingUncertaintiesAOT::SetUseCentrality(AliAnalysisTrackingUncertaintiesAOT::ECentrality flag) {
+  //
+  // set centrality estimator
+  //
+  fUseCentrality=flag;
+  if(fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid) Printf("Centrality estimator not valid");
+    
+  return;
+}
 
+//________________________________________________________________________
+Bool_t AliAnalysisTrackingUncertaintiesAOT::IsEventSelectedInCentrality(AliESDEvent *ESDevent) {
+    
+  if(fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid){
+    Printf("Centrality estimator not valid");
+    return kFALSE;
+  }else{
+    if(ESDevent->GetRunNumber()<244824) {
+      Printf("use OLD centrality fw -- not yet implemented!");
+      return kFALSE;
+    }
+    else {
+      Double_t cent=-999;
+      AliMultSelection *multSelection = (AliMultSelection*)ESDevent->FindListObject(fMultSelectionObjectName);
+      if(!multSelection){
+	Printf("AliMultSelection could not be found in the esd event list of objects");
+	return kFALSE;
+      }
+      if(fUseCentrality==kCentV0M){
+	cent=multSelection->GetMultiplicityPercentile("V0M");
+      }else if(fUseCentrality==kCentV0A){
+	cent=multSelection->GetMultiplicityPercentile("V0A");
+      }else if(fUseCentrality==kCentZNA){
+	cent=multSelection->GetMultiplicityPercentile("ZNA");
+      }else if(fUseCentrality==kCentCL1){
+	cent=multSelection->GetMultiplicityPercentile("CL1");
+      }else {
+	Printf("CENTRALITY ESTIMATE WITH ESTIMATOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)fUseCentrality);
+	return kFALSE;
+      }
+      Int_t qual = multSelection->GetEvSelCode();
+      if(qual == 199 ) cent=-999;
+            
+      if(cent>=fminCent && cent<fmaxCent) {
+	fHistCent->Fill(cent);
+	return kTRUE;
+      }
+      else return kFALSE;
+    }
+  }
+}
 //________________________________________________________________________
 void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     

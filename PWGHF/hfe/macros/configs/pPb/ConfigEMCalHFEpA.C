@@ -1,5 +1,5 @@
 
-AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
+AliAnalysisTaskEMCalHFEpA2* ConfigEMCalHFEpA(
 											
 
 Bool_t isMC=kFALSE, 
@@ -103,7 +103,7 @@ Bool_t isTOFdet 		= kFALSE
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
-	AliAnalysisTaskEMCalHFEpA *task = new AliAnalysisTaskEMCalHFEpA(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
+	AliAnalysisTaskEMCalHFEpA2 *task = new AliAnalysisTaskEMCalHFEpA2(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
 	printf("task ------------------------ %p\n ", task);
 	task->SetHFECuts(hfecuts);
 	task->SetCorrelationAnalysis(kFALSE);
@@ -157,7 +157,7 @@ Bool_t isTOFdet 		= kFALSE
 			
 	}
 	
-	if((period == "b" || period == "c") && !isEMCal){
+	if((period == "b" || period == "c") && !isEMCal && !isTOFdet){
 		
 		printf("======================================================================================\n ");
 		printf("\n\n Running on 13b or 13c period!!! WITH CALIBRATION for TPCnsigma mean and width      \n\n  \n\n ");
@@ -289,7 +289,7 @@ Bool_t isTOFdet 		= kFALSE
 	if(centralityIndex==2) task->SetCentrality(40,60);
 	if(centralityIndex==3) task->SetCentrality(60,80);
 	if(centralityIndex==4) task->SetCentrality(80,100);
-		//if(centralityIndex==5) task->SetCentrality(0,100);
+	if(centralityIndex==5) task->SetCentrality(0,100);
 	
 	if(centralityIndex==6) task->SetCentrality(0,10);
 	if(centralityIndex==7) task->SetCentrality(10,20);
@@ -407,6 +407,10 @@ Bool_t isTOFdet 		= kFALSE
 		
 	
 	}
+	if(isTOFdet){	
+		params[0] = -1;
+
+	}
 
 	
 		//=========================================
@@ -450,7 +454,7 @@ Bool_t isTOFdet 		= kFALSE
 				task->SetTPCcal_cut_max(3);
 		}
 		
-		if((period == "b" || period =="c") && !isEMCal){
+		if((period == "b" || period =="c") && !isEMCal && !isTOFdet){
 			Double_t max=5;//looser cut for hfe package. Real cut inside the task.
 			task->SetTPCcal_cut_max(3);
 		}

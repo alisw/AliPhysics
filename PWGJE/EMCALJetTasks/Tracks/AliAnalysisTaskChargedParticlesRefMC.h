@@ -102,11 +102,12 @@ public:
   void  SetAnalysisUtil(AliAnalysisUtils *util) { fAliAnalysisUtils = util; }
 
   /**
-   * @brief Set the track selection
-   * @param[in] cutname Name of the track cuts
-   * @param[in] isAOD check whether we run on ESDs or AODs
+   * @brief Set the virtual track selection.
+   *
+   * Assumes that the track selection object is already fully configured
+   * @param[in] sel Virtual track selection
    */
-  void SetTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
+  void SetEMCALTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
 
   /**
    * Define kinematic cut to particles and tracks on \f$ \eta \f$ in the lab frame. By default
@@ -189,6 +190,12 @@ public:
    * @param[in] name Name of the OADB container with the trigger acceptance map
    */
   void SetTriggerAcceptanceOADB(const TString &name) { fNameAcceptanceOADB = name; }
+
+  /**
+   * @brief Add histograms for tracks pointing to EMCAL supermodules
+   * @param[in] doStudy If true histograms are added
+   */
+  void SetStudyEMCALgeo(Bool_t doStudy) { fStudyEMCALgeo = doStudy; }
 
   /**
    * Preconfigure task. Intended for subwagon configuration inside the train.
@@ -274,9 +281,10 @@ protected:
    * @param[in] etacent Track \f$ \eta \f$ in cms frame
    * @param[in] phi Track \f$ \eta \f$ in lab frame
    * @param[in] inEmcal Track in EMCAL \f$ \phi \f$ acceptance
+   * @param[in] isPrimary If true then the particle is a primary particle
    * @param[in] pid True particle species
    */
-  void FillTrackHistos(const TString &eventclass, Double_t weight, Bool_t posCharge, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal, const TString &pid);
+  void FillTrackHistos(const TString &eventclass, Double_t weight, Bool_t posCharge, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal, Bool_t isPrimary, const TString &pid);
 
   /**
    * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
@@ -339,6 +347,7 @@ private:
   Double_t                              fFracPtHard;                ///< Cut on the maximum fraction of pt hard of any trigger jet
   Bool_t                                fEnableSumw2;               ///< Enable sumw2 when filling histograms (by default off)
   Bool_t                                fStudyPID;                  ///< Fill kinematics histograms with information of true particle species (default: off)
+  Bool_t                                fStudyEMCALgeo;             ///< Add histograms for tracks pointing to the EMCAL acceptance
 
   TString                               fNameAcceptanceOADB;        ///< Name of the OADB container with trigger acceptance maps
 

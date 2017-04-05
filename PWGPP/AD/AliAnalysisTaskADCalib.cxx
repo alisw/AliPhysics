@@ -14,6 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <TArrayI.h>
 #include <TCutG.h>
 #include <TFile.h>
 #include <THashList.h>
@@ -222,7 +223,7 @@ void AliAnalysisTaskADCalib::UserExec(Option_t* ) {
     return;
   }
 
-  AliESDfriend *esdFriend = esdEvent->FindFriend();  
+  AliESDfriend *esdFriend = esdEvent->FindFriend();
   if (NULL == esdFriend) {
     AliError("NULL == esdFriend");
     return;
@@ -252,7 +253,7 @@ void AliAnalysisTaskADCalib::UserExec(Option_t* ) {
 
     // (3) compute the charge in the tail
     for (Int_t bc=fBCRangeTail[0], n=fBCRangeTail[1]; bc<=n; ++bc)
-      tail[ch] += fADESDFriendUtils->GetADCPedSub(ch, bc);    
+      tail[ch] += fADESDFriendUtils->GetADCPedSub(ch, bc);
 
     // (4) fill 2D histograms with charge in BC vs. tail charge
     for (Int_t bc=fBCRangeExtrapolation[0], n=fBCRangeExtrapolation[1]; bc<=n; ++bc) {
@@ -287,7 +288,8 @@ void AliAnalysisTaskADCalib::Terminate(Option_t* ) {
 
 void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
 					   AliCDBStorage *cdbStorage,
-					   Int_t runNumber) {
+					   Int_t runNumber,
+					   Int_t runNumberEnd) {
   fStatus = kOk;
 
   // if necessary clean up
@@ -384,7 +386,7 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   md->SetBeamPeriod(0);
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetComment("AD Saturation");
-  AliCDBId idSat ("AD/Calib/Saturation", runNumber, runNumber);
+  AliCDBId idSat ("AD/Calib/Saturation", runNumber, (runNumberEnd == -1 ? runNumber : runNumberEnd));
   AliCDBId idGain("AD/Calib/PMGains",    runNumber, runNumber);
 
   // (7c) put the objects into the OCDB storage
@@ -396,18 +398,95 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
 	     : kStoreError);
 }
 
+TGraph* AliAnalysisTaskADCalib::MakeGraphSlope(TH2 *h, Double_t &s, const TString& name) const {
+  // make up a TGraph containing sum of the histogram
+  // along a line through (0,0) with a given slope vs. this slope
+  TAxis *ax = h->GetXaxis();
+  TAxis *ay = h->GetYaxis();
+
+  const Int_t nx = h->GetNbinsX();
+  const Int_t ny = h->GetNbinsY();
+
+  TGraph *g = new TGraph;
+  g->SetName(name);
+  for (Int_t i=2; i<=nx; ++i) {
+    const Double_t x     = ax->GetBinCenter(i);
+    const Double_t slope = ay->GetBinCenter(ny)/x;
+    Double_t sum=0;
+    for (Int_t j=1; j<=ny; ++j) {
+      const Double_t y = ay->GetBinCenter(j);
+      const Double_t x = y/slope;
+      if (x<10 || y<5) continue;
+      sum += h->Interpolate(x, y);
+    }
+    g->SetPoint(g->GetN(), slope, sum);
+  }
+  for (Int_t i=2; i<=ny; ++i) {
+    const Double_t y     = ay->GetBinCenter(i);
+    const Double_t slope = y/ax->GetBinCenter(nx);
+    Double_t sum=0;
+    for (Int_t j=1; j<=nx; ++j) {
+      const Double_t x = ax->GetBinCenter(j);
+      const Double_t y = slope*x;
+      if (x<10 || y<5) continue;
+      sum += h->Interpolate(x, y);
+    }
+    g->SetPoint(g->GetN(), slope, sum);
+  }
+  TArrayI idx(g->GetN());
+  TMath::Sort(g->GetN(), g->GetY(), idx.GetArray());
+  s= g->GetX()[idx[0]];
+  AliDebugClassF(5, "slope = %f", s);
+  return g;
+}
+
+TH2* AliAnalysisTaskADCalib::RemoveHorizontalLines(TH2* h, Int_t dx) const {
+  // removes horizontal lines which are due to ADC saturation and can bias the fit
+  for (Int_t j=2; j<h->GetNbinsY(); ++j) {
+    for (Int_t i=dx+1; i<=h->GetNbinsX()-dx; ++i) {
+      Int_t sum = 0;
+      for (Int_t k=i-dx; k<i+dx; ++k) {
+	sum += Bool_t(h->GetBinContent(k,j-1));
+	sum += Bool_t(h->GetBinContent(k,j+1));
+      }
+      if (!sum) {
+	for (Int_t k=i-dx; k<i+dx; ++k)
+	  h->SetBinContent(k,j, 0);
+      }
+    }
+  }
+  return h;
+}
+
 Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, Int_t bc, Double_t &xMax) {
-  if (NULL == h || NULL == f) {
+  if (NULL == h || NULL == f || (ch < 8 && bc == 9)) {
     xMax = -999.9f;
     return kFALSE;
   }
 
-  // (1a) set up the TF1 depending on BC
+  // (1a) do not fit on (nearly) empty histograms
+  if (h->GetEntries() < 10)
+    return kFALSE;
+
+  // (1b) initial estimates for the slope, xMax, yMax
+  Double_t slope=0;
+  fList->Add(MakeGraphSlope(RemoveHorizontalLines(h, 10), // removes activity due to ADC saturation
+			    slope, TString::Format("%s_slope", h->GetName())));
+  TF1 f0("f0", "[0]*x", 0, 600);
+  f0.SetParameter(0, slope);
+  xMax = f0.GetX(1024.0, 10.0, 590.0);
+  Double_t yMax = f0.Eval(xMax);
+  AliDebugF(5, "Ch%02d bc=%2d slope=%.1f", ch, bc, slope);
+
+  // (1c) set up the TF1 depending on the BC
   switch (bc) {
   case  9:
+    f->SetParameters(1024.0, slope/1024.0, 0.0, 0.0);
+    break;
   case 10:
-    f->SetParameters(0, 8);
+    f->SetParameters(0, slope);
     f->SetParNames("offset", "slope");
+    f->SetParLimits(0, -10, 10);
     f->SetParLimits(1, 0.0, 40.0);
     break;
   case 11:
@@ -415,76 +494,66 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   case 13:
   case 14:
   case 15:
-    f->SetParameters(0, 2, 0, 2);
+    f->SetParameters(0, slope, 0.1, 1.5);
     f->SetParNames("offset", "slope", "p_{0}", "power");
     f->SetParLimits(0,-20.0,20.0);
     f->SetParLimits(1, 0.0, 10.0);
     f->SetParLimits(2, 0.0,  1.0);
-    f->SetParLimits(3, 1.1,  6.0);
+    f->SetParLimits(3, 1.1,  4.0);
+    if (bc >= 13 && slope < 0.6) {
+      f->FixParameter(2, 0.0);
+      f->FixParameter(3, 1.1);
+    }
     break;
   default:
     return kFALSE;
   }
   f->SetLineStyle(2);
 
-  // (1b) do not fit on (nearly) empty histograms
-  if (h->GetEntries() < 10)
-    return kFALSE;
-
-  // (2) fit to the profile
-  TProfile *h_pfx = h->ProfileX();
+  // (2a) initial profile (without TCutG applied)
+  TProfile *h_pfx = h->ProfileX(Form("%s_pfxNoCut", h->GetName()), 1, -1);
+  fList->Add(h_pfx);
   h_pfx->SetDirectory(NULL);
+  h_pfx->SetLineWidth(2);
 
-  xMax = 40.0f;
-  for (Int_t i=2, n=h_pfx->GetNbinsX(); i<n; ++i) {
-    if (h_pfx->GetBinContent(i))
-      AliDebug(3, Form("%6.1f %f %f", h_pfx->GetXaxis()->GetBinUpEdge(i), h_pfx->GetBinContent(i), h_pfx->GetBinContent(i-1)));
-    if (h_pfx->GetBinContent(i) <  10.0)
-      continue;
-    if (h_pfx->GetBinContent(i) > 750.0 ||
-	(xMax != 40.0 && h_pfx->GetBinContent(i) <  10.0) ||
-	(h_pfx->GetBinContent(i) < h_pfx->GetBinContent(i-1)-0.1*h_pfx->GetBinContent(i)))
-      break;
-    xMax = h_pfx->GetXaxis()->GetBinUpEdge(i);
+  // (2b) fit the profile
+  f->FixParameter(1, f->GetParameter(1));
+  if (bc == 9) {
+    Double_t q, p=0.9999;
+    h->ProjectionX()->GetQuantiles(1, &q, &p);
+    h_pfx->Fit(f, "Q0", "", 0, q);
+  } else {
+    h_pfx->Fit(f, "Q0", "", 0, xMax);
   }
-  AliDebug(3, Form("ch=%02d bc=%2d xMax= %.1f", ch, bc, xMax));
-  if (xMax < 200 && bc != 10)
-    f->FixParameter(3, 0.0);
-  h_pfx->Fit(f, "WQ0", "", 0, xMax);
+  f->ReleaseParameter(1);
 
-  // update xMax based on the fit function
-  xMax = TMath::Min(xMax, f->GetX(1024.0, 10.0, 590.0));
-  Double_t yMax = f->Eval(xMax);
-
-  // (3) cut outliers by adapting a TGutG to the fitted function
+  // (3) cut outliers+pile-up by adapting iteratively a TGutG to the fitted function
   const Int_t nInterations = 6;
   for (Int_t iteration=nInterations-1; iteration>=0; --iteration) {
     // (3a) make up a TCutG based on the last fit
     //      last iteraton: adapt dY to the slope
     const Double_t dX = 5.0;
-    const Double_t dY = 15*(iteration+1)*TMath::Sqrt(1+TMath::Power(yMax/xMax, 2));
-    const Int_t  iMax = Int_t(xMax/dX);
+    //      a line with distance d to a given linear function with slope m has an offset of d*sqrt(1+m**2)
+    const Double_t dY = 15*((bc>=11 || bc==9) ? (iteration+1) : 1)*TMath::Sqrt(1.0+TMath::Power(yMax/xMax, 2));
+    const Int_t  iMax = Int_t(0.5+xMax/dX);
     TString cutName = TString::Format("%s_cutg_%d", h->GetName(), iteration);
-    TCutG *cutg = new TCutG(cutName, 2*(2+iMax)+1);
+    TCutG *cutg = new TCutG(cutName, 2*(2+iMax));
     fList->Add(cutg);
-    
     Int_t counter=0;
     for (Int_t i=-1; i<=iMax; ++i)
       cutg->SetPoint(counter++, dX*i, f->Eval(dX*i)-dY);
     for (Int_t i=iMax; i>=-1; --i)
       cutg->SetPoint(counter++, dX*i, f->Eval(dX*i)+dY);
-    cutg->SetPoint(counter++, -dX, f->Eval(-dX)-dY);
 
-    // (3b) get a new profile with TCutG
+    // (3b) make a new profile with the TCutG
     h_pfx = h->ProfileX(Form("%s_pfxCut_%d", h->GetName(), iteration), 1, -1, "["+cutName+"]");
     fList->Add(h_pfx);
     h_pfx->SetDirectory(NULL);
     h_pfx->SetLineWidth(2);
 
-    // (3c) fit the new profile and update xMax
+    // (3c) fit the new profile and update xMax, yMax
     h_pfx->Fit(f, "WQ0", "", 0, xMax);
-//     xMax = f->GetX(1024.0, 10.0, 590.0);
-    xMax = TMath::Min(xMax, f->GetX(1024.0, 10.0, 590.0));
+    xMax = f->GetX(1024.0, 10.0, 590.0);
     yMax = f->Eval(xMax);
   }
   return kTRUE;
@@ -498,7 +567,7 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
   const Int_t gOffline2Online[16] = {
     15, 13, 11,  9, 14, 12, 10,  8,
      7,  5,  3,  1,  6,  4,  2,  0
-  };  
+  };
 
   if (NULL == fList)
     return NULL;
@@ -550,7 +619,7 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
   // (2) compute charge equalization factors
   Float_t chargeEqualizationFactor = 1.0f;
   t->Branch("chargeEqualizationFactor", &chargeEqualizationFactor);
-  
+
   // (3) fill TTree
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
     f_Int0.Clear();
@@ -564,51 +633,49 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
 
     const Double_t largeThr = 1e5;
     for (Int_t bc=0; bc<21; ++bc) {
-      TH2* h0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 0))); // integrator0
-      TH2* h1 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 1))); // integrator1
       switch (bc) {
-	if (NULL != h0 && NULL != h1) {
-	case 9:
-	case 10: {
-	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x");
-	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x");
-	  Bool_t fitOk[2] = { kTRUE,    kTRUE    };
-	  Double_t thr[2] = { largeThr, largeThr };
-	  fitOk[0] &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
-	  fitOk[1] &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
-	  doExtrapolation[bc] = (fitOk[0] || fitOk[1]);
-	  extrapolationThresholds[bc] = ((fitOk[0] && fitOk[1])
-					 ? TMath::Min(thr[0], thr[1])
-					 : fitOk[0]*thr[0] + fitOk[1]*thr[1]);
-	  if (!doExtrapolation[bc])
-	    extrapolationThresholds[bc] = -999.9f;
-	  break;
-	}
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-	case 15: {
-	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x + [2]*abs(x)**[3]");
-	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x + [2]*abs(x)**[3]");
-	  Bool_t fitOk[2] = { kTRUE,    kTRUE    };
-	  Double_t thr[2] = { largeThr, largeThr };
-	  fitOk[0] &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
-	  fitOk[1] &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
-	  doExtrapolation[bc] = (fitOk[0] || fitOk[1]);
-	  extrapolationThresholds[bc] = ((fitOk[0] && fitOk[1])
-					 ? TMath::Min(thr[0], thr[1])
-					 : fitOk[0]*thr[0] + fitOk[1]*thr[1]);
-	  if (!doExtrapolation[bc])
-	    extrapolationThresholds[bc] = -999.9f;
-	  break;
-	}
-	} // (NULL != h0 && NULL != h1)
+      case 9: {
+	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0]*TMath::TanH([1]*(x-[2]))+[3]", 0, 600);
+	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0]*TMath::TanH([1]*(x-[2]))+[3]", 0, 600);
+	doExtrapolation[bc] = kTRUE;
+	break;
+      }
+      case 10: {
+	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x");
+	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x");
+	doExtrapolation[bc] = kTRUE;
+	break;
+      }
+      case 11:
+      case 12:
+      case 13:
+      case 14:
+      case 15: {
+	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x + [2]*abs(x)**[3]", 0, 600);
+	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x + [2]*abs(x)**[3]", 0, 600);
+	doExtrapolation[bc] = kTRUE;
+	break;
+      }
       default:
 	doExtrapolation[bc]         = kFALSE;
 	extrapolationThresholds[bc] = -999.9f;
-	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "x");
-	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "x");
+	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "x", 0, 600);
+	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "x", 0, 600);
+      }
+
+      if (doExtrapolation[bc]) {
+	TH2* h0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 0))); // integrator0
+	TH2* h1 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 1))); // integrator1
+	Bool_t fitOk[2] = { kTRUE,    kTRUE    };
+	Double_t thr[2] = { largeThr, largeThr };
+	fitOk[0] &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
+	fitOk[1] &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
+	doExtrapolation[bc] = (fitOk[0] || fitOk[1]);
+	extrapolationThresholds[bc] = ((fitOk[0] && fitOk[1])
+				       ? TMath::Min(thr[0], thr[1])
+				       : fitOk[0]*thr[0] + fitOk[1]*thr[1]);
+	if (!doExtrapolation[bc])
+	  extrapolationThresholds[bc] = -999.9f;
       }
     }
     t->Fill();
@@ -686,7 +753,7 @@ AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree
     (Float_t)TMath::Mean(8, mip+8)
   };
   AliInfo(Form("meanMIP=%.3f %.3f", meanMIP[0], meanMIP[1]));
-  
+
   // (3) update the a and b parameters in such a way to have the same MIP per side for the given HV
   for (Int_t ch=0; ch<16; ++ch) {
     if (calibData->IsChannelDead(ch))

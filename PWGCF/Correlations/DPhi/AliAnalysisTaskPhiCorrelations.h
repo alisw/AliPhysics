@@ -172,6 +172,7 @@ public:
   void SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
   AliEventPoolManager* GetEventPoolManager() {return fPoolMgr;}
   void SetUsePtBinnedEventPool(Bool_t val) {fUsePtBinnedEventPool = val;}
+  void SetCheckEventNumberInMixedEvent(Bool_t val) {fCheckEventNumberInMixedEvent = val;}
 
   // Set which pools will be saved
   void AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
@@ -196,6 +197,7 @@ private:
   TObjArray* GetParticlesFromDetector(AliVEvent* inputEvent, Int_t idet);
   Bool_t IsMuEvent();
   Bool_t InitiateEventPlane(Double_t& evtPlanePhi, AliVEvent* inputEvent);
+  Long64_t GetUniqueEventID(AliVEvent* inputEvent);
 
   // General configuration
   Int_t               fDebug;           //  Debug flag
@@ -313,8 +315,9 @@ private:
   // Event pool variables
   vector<vector<Double_t> >   fEventPoolOutputList; // vector representing a list of pools (given by value range) that will be saved
   Bool_t                      fUsePtBinnedEventPool; // uses event pool in pt bins
+  Bool_t                      fCheckEventNumberInMixedEvent; // check event number before correlation in mixed event
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 61); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 62); // Analysis task for delta phi correlations
 };
 
 #endif

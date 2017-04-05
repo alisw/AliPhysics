@@ -494,6 +494,8 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 			fHistos->fhChargedEta->Fill(etat, effCorr);
 			//fHistos->fhChargedPtJacek[cBin]->Fill(ptt, effCorr );
 			fHistos->fhChargedPtJacek[cBin]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0); //One CANNOT do 1/ptt here!! First unfold.
+			if(track->GetCharge()>0.) fHistos->fhChargedPtJacekPos[cBin]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0); //One CANNOT do 1/ptt here!! First unfold.
+			if(track->GetCharge()<0.) fHistos->fhChargedPtJacekNeg[cBin]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0); //One CANNOT do 1/ptt here!! First unfold.
 			if( -0.8<etat && etat<-0.2) fHistos->fhChargedPtJacekEta[cBin][0]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0);
 			if( -0.2<etat && etat< 0.3) fHistos->fhChargedPtJacekEta[cBin][1]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0);
 			if(  0.3<etat && etat< 0.8) fHistos->fhChargedPtJacekEta[cBin][2]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0);

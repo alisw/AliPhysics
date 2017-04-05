@@ -10,7 +10,7 @@
 * copies and that both the copyright notice and this permission notice   *
 * appear in the supporting documentation. The authors make no claims     *
 * about the suitability of this software for any purpose. It is          *
-* provided "as is" without express or implied warranty.                  * 
+* provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
 #include "AliCorrelation3p_noQA.h"
@@ -73,7 +73,7 @@ AliCorrelation3p_noQA::AliCorrelation3p_noQA(const AliCorrelation3p_noQA& other)
   , fMaxAssociatedPt(other.fMaxAssociatedPt)
   , fhPhiEtaDeltaPhi12Cut1(other.fhPhiEtaDeltaPhi12Cut1)
   , fhPhiEtaDeltaPhi12Cut2(other.fhPhiEtaDeltaPhi12Cut2)
-  , fAcceptanceCut(other.fAcceptanceCut)  
+  , fAcceptanceCut(other.fAcceptanceCut)
   , fMixedEvent((other.fMixedEvent!=NULL?(new AliCorrelation3p_noQA(*other.fMixedEvent)):NULL))
   , fMBinEdges(other.fMBinEdges)
   , fZBinEdges(other.fZBinEdges)
@@ -191,7 +191,7 @@ int AliCorrelation3p_noQA::Init(const char* arguments)
   if (fMaxAssociatedPt > fMinAssociatedPt) infoAssociatedPt.Form("%f < pt < %f", fMinAssociatedPt, fMaxAssociatedPt);
   else infoAssociatedPt.Form("pt > %f", fMinAssociatedPt);
   AliInfo(Form("initializing %s for trigger %s and associated particle %s", GetName(), infoTriggerPt.Data(), infoAssociatedPt.Data()));
-  // avoid the objects to be added to the global directory 
+  // avoid the objects to be added to the global directory
   bool statusAddDirectory=TH1::AddDirectoryStatus();
   TH1::AddDirectory(false);
   const double Pii=TMath::Pi();
@@ -283,7 +283,7 @@ int AliCorrelation3p_noQA::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  Ali
 int AliCorrelation3p_noQA::Fill(AliVParticle* ptrigger,AliVParticle* p1, const double weight)
 {
   /// fill histograms from particles
-//   Double_t fillweight = 1.0;  
+//   Double_t fillweight = 1.0;
   if (!ptrigger || !p1) return -EINVAL;
   if (ptrigger->Pt()<=p1->Pt()) return 0;
   const double Pii=TMath::Pi();
@@ -317,7 +317,7 @@ int AliCorrelation3p_noQA::Filla(AliVParticle* p1,AliVParticle* p2,const double 
 
 int AliCorrelation3p_noQA::FillTrigger(AliVParticle* ptrigger)
 {
-  Double_t fillweight = dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();    
+  Double_t fillweight = dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
   HistFill(GetNumberHist(kHistNTriggers,fMBin,fVzBin),0.5,fillweight);//Increments number of triggers by weight. Call before filling with any associated.
   return 1;
 }
@@ -378,7 +378,7 @@ TObject* AliCorrelation3p_noQA::FindObject(const TObject *obj) const
 void AliCorrelation3p_noQA::SaveAs(const char *filename,Option_t */*option*/) const
 {
   /// overloaded from TObject: save to file
-  std::auto_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
+  std::unique_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
   if (!output.get() || output->IsZombie()) {
     AliError(Form("can not open file %s from writing", filename));
     return;
@@ -489,7 +489,7 @@ TH2D* AliCorrelation3p_noQA::slice(TH3F* hist, const char* option, Int_t firstbi
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
   TString namestring = TString(name);
-  TH2D* Slice;
+  TH2D* Slice = new TH2D();
   if(o.CompareTo("xy")==0||o.CompareTo("yx")==0){
     if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xy",name));Slice->Reset("m");}
     if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yx",name));Slice->Reset("m");}
@@ -506,12 +506,12 @@ TH2D* AliCorrelation3p_noQA::slice(TH3F* hist, const char* option, Int_t firstbi
 	    Double_t binerr = hist->GetBinError(x,y,z);
 	    if(binerr !=0){
 	      Content += hist->GetBinContent(x,y,z)/(binerr*binerr);
-	      locerr += 1.0/(binerr*binerr);	
+	      locerr += 1.0/(binerr*binerr);
 	    }
 	    if(binerr ==0){
-	     locerr +=1.0; 
+	     locerr +=1.0;
 	    }
-	  }  
+	  }
 	}
 	if(baverage&&locerr!=0){
 	  Content = Content/locerr;//normalize
@@ -521,7 +521,7 @@ TH2D* AliCorrelation3p_noQA::slice(TH3F* hist, const char* option, Int_t firstbi
 	if(o.CompareTo("yx")==0) Slice->SetBinContent(x,y,Content);
 	if(o.CompareTo("xy")==0) Slice->SetBinError(y,x,TMath::Sqrt(locerr));
 	if(o.CompareTo("yx")==0) Slice->SetBinError(x,y,TMath::Sqrt(locerr));
-	
+
       }
     }
     Slice->SetEntries(Slice->GetEffectiveEntries());
@@ -604,7 +604,7 @@ TH2D* AliCorrelation3p_noQA::slice(TH3F* hist, const char* option, Int_t firstbi
     Double_t stats[6];
     Slice->GetStats(stats);
     Slice->PutStats(stats);
-  }  
+  }
   return Slice;
 }
 
@@ -612,7 +612,7 @@ void AliCorrelation3p_noQA::AddSlice(TH3F* hist,TH2D* AddTo, const char* option,
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
   TString namestring = TString(name);
-  TH2D* Slice;
+  TH2D* Slice = new TH2D();
   if(o.CompareTo("xy")==0||o.CompareTo("yx")==0){
     if(o.CompareTo("xy")==0){Slice = (TH2D*)hist->Project3D(Form("%s_xy",name));Slice->Reset("m");}
     if(o.CompareTo("yx")==0){Slice = (TH2D*)hist->Project3D(Form("%s_yx",name));Slice->Reset("m");}
@@ -629,12 +629,12 @@ void AliCorrelation3p_noQA::AddSlice(TH3F* hist,TH2D* AddTo, const char* option,
 	    Double_t binerr = hist->GetBinError(x,y,z);
 	    if(binerr !=0){
 	      Content += hist->GetBinContent(x,y,z)/(binerr*binerr);
-	      locerr += 1.0/(binerr*binerr);	
+	      locerr += 1.0/(binerr*binerr);
 	    }
 	    if(binerr ==0){
-	     locerr +=1.0; 
+	     locerr +=1.0;
 	    }
-	  }  
+	  }
 	}
 	if(baverage&&locerr!=0){
 	  Content = Content/locerr;//normalize
@@ -644,7 +644,7 @@ void AliCorrelation3p_noQA::AddSlice(TH3F* hist,TH2D* AddTo, const char* option,
 	if(o.CompareTo("yx")==0) Slice->SetBinContent(x,y,Content);
 	if(o.CompareTo("xy")==0) Slice->SetBinError(y,x,TMath::Sqrt(locerr));
 	if(o.CompareTo("yx")==0) Slice->SetBinError(x,y,TMath::Sqrt(locerr));
-	
+
       }
     }
     Slice->SetEntries(Slice->GetEffectiveEntries());
@@ -727,7 +727,7 @@ void AliCorrelation3p_noQA::AddSlice(TH3F* hist,TH2D* AddTo, const char* option,
     Double_t stats[6];
     Slice->GetStats(stats);
     Slice->PutStats(stats);
-  }  
+  }
   AddTo->Add(Slice);
   delete Slice;
 }
@@ -764,7 +764,7 @@ TH2D* AliCorrelation3p_noQA::DeltaEtaCut(TH3F* hist, const char* option, const c
   //option can be: sameside    = if deltaPhi_1<pi/2, deltaPhi_2<pi/2 and  if deltaPhi_1>pi/2, deltaPhi_2>pi/2
   //		   lesspi2     = DeltaPhi_[12]<pi/2
   //		   lesspi4     = DeltaPhi_[12]<pi/4
-  TString o = TString(option); 
+  TString o = TString(option);
   TAxis* dphi1axis=hist->GetYaxis();
   TAxis* dphi2axis=hist->GetZaxis();
   TH2D* Result = (TH2D*)hist->Project3D(Form("%s_yx",name));
@@ -916,16 +916,16 @@ Double_t AliCorrelation3p_noQA::FindScalingfactor(const char* scalingmethod,TH2D
       Double_t sigintegral = sighist->Integral(0,8,sighist->GetYaxis()->FindBin(4),sighist->GetNbinsY()) + sighist->Integral(sighist->GetXaxis()->FindBin(4),sighist->GetNbinsX(),0,8);
       if(mixedintegral!=0) scalingfactor=sigintegral/mixedintegral;
       if(mixedintegral==0 && sigintegral!=0) scalingfactor = 0.0;
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
   if(selector.CompareTo("ppdatascaled")==0){
       Double_t mixedintegralsc = mixhist->Integral(0,8,mixhist->GetYaxis()->FindBin(4),mixhist->GetNbinsY()) + mixhist->Integral(mixhist->GetXaxis()->FindBin(4),mixhist->GetNbinsX(),0,8);
       Double_t sigintegralsc = sighist->Integral(0,8,sighist->GetYaxis()->FindBin(4),sighist->GetNbinsY()) + sighist->Integral(sighist->GetXaxis()->FindBin(4),sighist->GetNbinsX(),0,8);
-      if(mixedintegralsc!=0) scalingfactor=sigintegralsc/mixedintegralsc;      
-      if(mixedintegralsc==0&&sigintegralsc!=0) scalingfactor=0.0;     
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixedintegralsc!=0) scalingfactor=sigintegralsc/mixedintegralsc;
+      if(mixedintegralsc==0&&sigintegralsc!=0) scalingfactor=0.0;
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
@@ -934,7 +934,7 @@ Double_t AliCorrelation3p_noQA::FindScalingfactor(const char* scalingmethod,TH2D
       Double_t sigintegral2p = sighist->Integral(0,sighist->GetNbinsX(),0,4);
       if(mixedintegral2p!=0) scalingfactor = sigintegral2p/mixedintegral2p;
       if(mixedintegral2p==0&&sigintegral2p!=0)  scalingfactor = 0.0;
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
@@ -943,16 +943,16 @@ Double_t AliCorrelation3p_noQA::FindScalingfactor(const char* scalingmethod,TH2D
       Double_t sigintegral = sighist->Integral(0,8,sighist->GetYaxis()->FindBin(4),sighist->GetNbinsY()) + sighist->Integral(sighist->GetXaxis()->FindBin(4),sighist->GetNbinsX(),0,8);
       if(mixedintegral!=0) scalingfactor=sigintegral/mixedintegral;
       if(mixedintegral==0 && sigintegral!=0) scalingfactor = 0.0;
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
   if(selector.CompareTo("PbPbdatascaled")==0){
       Double_t mixedintegralsc = mixhist->Integral(0,8,mixhist->GetYaxis()->FindBin(4),mixhist->GetNbinsY()) + mixhist->Integral(mixhist->GetXaxis()->FindBin(4),mixhist->GetNbinsX(),0,8);
       Double_t sigintegralsc = sighist->Integral(0,8,sighist->GetYaxis()->FindBin(4),sighist->GetNbinsY()) + sighist->Integral(sighist->GetXaxis()->FindBin(4),sighist->GetNbinsX(),0,8);
-      if(mixedintegralsc!=0) scalingfactor=sigintegralsc/mixedintegralsc;      
-      if(mixedintegralsc==0&&sigintegralsc!=0) scalingfactor=0.0;     
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixedintegralsc!=0) scalingfactor=sigintegralsc/mixedintegralsc;
+      if(mixedintegralsc==0&&sigintegralsc!=0) scalingfactor=0.0;
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
@@ -961,7 +961,7 @@ Double_t AliCorrelation3p_noQA::FindScalingfactor(const char* scalingmethod,TH2D
       Double_t sigintegral2p = sighist->Integral(0,sighist->GetNbinsX(),0,4);
       if(mixedintegral2p!=0) scalingfactor = sigintegral2p/mixedintegral2p;
       if(mixedintegral2p==0&&sigintegral2p!=0)  scalingfactor = 0.0;
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
@@ -970,16 +970,16 @@ Double_t AliCorrelation3p_noQA::FindScalingfactor(const char* scalingmethod,TH2D
       Double_t sigintegral = sighist->Integral(0,8,sighist->GetYaxis()->FindBin(4),sighist->GetNbinsY()) + sighist->Integral(sighist->GetXaxis()->FindBin(4),sighist->GetNbinsX(),0,8);
       if(mixedintegral!=0) scalingfactor=sigintegral/mixedintegral;
       if(mixedintegral==0 && sigintegral!=0) scalingfactor = 0.0;
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
   if(selector.CompareTo("generatorscaled")==0){
       Double_t mixedintegralsc = mixhist->Integral(0,8,mixhist->GetYaxis()->FindBin(4),mixhist->GetNbinsY()) + mixhist->Integral(mixhist->GetXaxis()->FindBin(4),mixhist->GetNbinsX(),0,8);
       Double_t sigintegralsc = sighist->Integral(0,8,sighist->GetYaxis()->FindBin(4),sighist->GetNbinsY()) + sighist->Integral(sighist->GetXaxis()->FindBin(4),sighist->GetNbinsX(),0,8);
-      if(mixedintegralsc!=0) scalingfactor=sigintegralsc/mixedintegralsc;      
-      if(mixedintegralsc==0&&sigintegralsc!=0) scalingfactor=0.0;     
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixedintegralsc!=0) scalingfactor=sigintegralsc/mixedintegralsc;
+      if(mixedintegralsc==0&&sigintegralsc!=0) scalingfactor=0.0;
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
@@ -988,7 +988,7 @@ Double_t AliCorrelation3p_noQA::FindScalingfactor(const char* scalingmethod,TH2D
       Double_t sigintegral2p = sighist->Integral(0,sighist->GetNbinsX(),0,4);
       if(mixedintegral2p!=0) scalingfactor = sigintegral2p/mixedintegral2p;
       if(mixedintegral2p==0&&sigintegral2p!=0)  scalingfactor = 0.0;
-      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));      
+      if(mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0))>10)scalingfactor = 1.0/mixhist->GetBinContent(mixhist->GetXaxis()->FindBin(0.0), mixhist->GetYaxis()->FindBin(0.0));
       else scalingfactor=0;
       return scalingfactor;
   }
@@ -1028,9 +1028,9 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
   TH1D* hist11d = dynamic_cast<TH1D*>(histtoadd);
   TH1D* hist21d = dynamic_cast<TH1D*>(addedhist);
   TH2D* hist12d = dynamic_cast<TH2D*>(histtoadd);
-  TH2D* hist22d = dynamic_cast<TH2D*>(addedhist);  
+  TH2D* hist22d = dynamic_cast<TH2D*>(addedhist);
   TH3F* hist13d = dynamic_cast<TH3F*>(histtoadd);
-  TH3F* hist23d = dynamic_cast<TH3F*>(addedhist);   
+  TH3F* hist23d = dynamic_cast<TH3F*>(addedhist);
   if(hist11d&&hist21d){
     Int_t nbinsx1 = hist11d->GetNbinsX();
     if(nbinsx1!=hist21d->GetNbinsX()){AliWarning("The histograms do not match! TH1D* with different x dimensions.");
@@ -1039,10 +1039,10 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
       Double_t content1 = histtoadd->GetBinContent(x);
       Double_t error1   = histtoadd->GetBinError(x);
       Double_t content2 = addedhist->GetBinContent(x);
-      Double_t error2   = addedhist->GetBinError(x);      
+      Double_t error2   = addedhist->GetBinError(x);
       Double_t result = 0;
       Double_t resulte = 0;
-      if(!isAverage){	
+      if(!isAverage){
 	result = content1 + content2;
 	resulte = TMath::Sqrt(error1*error1 + error2*error2);
       }
@@ -1054,7 +1054,6 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
 	if(content2>1.0e-10&&content1<1.0e-10){
 	  result = content2/(error2*error2);
 	  resulte =  1/(error2*error2) + 1.0;
-	  
 	}
 	if(content1>1.0e-10&&content2<1.0e-10){
 	  result = content1/(error1*error1);
@@ -1065,7 +1064,7 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
 	  resulte = 1.0/TMath::Sqrt(resulte);
 	}
 	else{
-	  result = 0.0;	  
+	  result = 0.0;
 	}
       }
       if(result!=0.0)histtoadd->SetBinContent(x,result);
@@ -1084,10 +1083,10 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
 	Double_t content1 = histtoadd->GetBinContent(x,y);
 	Double_t error1   = histtoadd->GetBinError(x,y);
 	Double_t content2 = addedhist->GetBinContent(x,y);
-	Double_t error2   = addedhist->GetBinError(x,y);      
+	Double_t error2   = addedhist->GetBinError(x,y);
 	Double_t result = 0;
 	Double_t resulte = 0;
-	if(!isAverage){	
+	if(!isAverage){
 	result = content1 + content2;
 	resulte = TMath::Sqrt(error1*error1 + error2*error2);
       }
@@ -1099,7 +1098,6 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
 	if(content2>1.0e-10&&content1<1.0e-10){
 	  result = content2/(error2*error2);
 	  resulte =  1/(error2*error2) + 1.0;
-	  
 	}
 	if(content1>1.0e-10&&content2<1.0e-10){
 	  result = content1/(error1*error1);
@@ -1110,7 +1108,7 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
 	  resulte = 1.0/TMath::Sqrt(resulte);
 	}
 	else{
-	  result = 0.0;	  
+	  result = 0.0;
 	}
       }
       if(result!=0.0)histtoadd->SetBinContent(x,y,result);
@@ -1134,10 +1132,10 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
 	  Double_t content1 = histtoadd->GetBinContent(x,y,z);
 	  Double_t error1   = histtoadd->GetBinError(x,y,z);
 	  Double_t content2 = addedhist->GetBinContent(x,y,z);
-	  Double_t error2   = addedhist->GetBinError(x,y,z);      
+	  Double_t error2   = addedhist->GetBinError(x,y,z);
 	  Double_t result = 0;
 	  Double_t resulte = 0;
-	 if(!isAverage){	
+	 if(!isAverage){
 	result = content1 + content2;
 	resulte = TMath::Sqrt(error1*error1 + error2*error2);
       }
@@ -1149,7 +1147,6 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
 	if(content2>1.0e-10&&content1<1.0e-10){
 	  result = content2/(error2*error2);
 	  resulte =  1/(error2*error2) + 1.0;
-	  
 	}
 	if(content1>1.0e-10&&content2<1.0e-10){
 	  result = content1/(error1*error1);
@@ -1160,7 +1157,7 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
 	  resulte = 1.0/TMath::Sqrt(resulte);
 	}
 	else{
-	  result = 0.0;	  
+	  result = 0.0;
 	}
       }
       if(result!=0.0)histtoadd->SetBinContent(x,y,z,result);
@@ -1171,7 +1168,7 @@ void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* adde
   }
   else{
     AliWarning("The histograms do not match!");
-    return ;    
+    return;
   }
 }
 
@@ -1183,7 +1180,7 @@ TH1 * AliCorrelation3p_noQA::PrepareHist(int HistLocation,const char* HistName,c
   Hist->GetXaxis()->SetTitle(xaxis);
   Hist->GetYaxis()->SetTitle(yaxis);
   if(TString(zaxis).CompareTo("")!=0) Hist->GetZaxis()->SetTitle(zaxis);
-  if(dynamic_cast<TH1D*>(Hist)){	  
+  if(dynamic_cast<TH1D*>(Hist)){
     Hist->SetTitleSize(0.045,"xy");
     Hist->SetTitleOffset(1.2,"y");
   }
@@ -1196,7 +1193,7 @@ TH1 * AliCorrelation3p_noQA::PrepareHist(int HistLocation,const char* HistName,c
     Hist->SetTitleSize(0.045,"xyz");
     Hist->SetTitleOffset(1.2,"xy");
     Hist->SetTitleOffset(0.9,"z");
-  }  
+  }
   return Hist;
 }
 
@@ -1206,7 +1203,7 @@ TH1 * AliCorrelation3p_noQA::PrepareHist(TH1* Hist,const char* title, const char
   Hist->GetXaxis()->SetTitle(xaxis);
   Hist->GetYaxis()->SetTitle(yaxis);
   if(TString(zaxis).CompareTo("")!=0) Hist->GetZaxis()->SetTitle(zaxis);
-  if(dynamic_cast<TH1D*>(Hist)){	  
+  if(dynamic_cast<TH1D*>(Hist)){
     Hist->SetTitleSize(0.045,"xy");
     Hist->SetTitleOffset(1.2,"y");
   }
@@ -1214,7 +1211,7 @@ TH1 * AliCorrelation3p_noQA::PrepareHist(TH1* Hist,const char* title, const char
     Hist->SetTitleSize(0.045,"xyz");
     Hist->SetTitleOffset(1.2,"xy");
     Hist->SetTitleOffset(0.9,"z");
-    if(scale){      
+    if(scale){
       if(par) par->SetVal(GetPoint(Hist,0.0,0.0));
       if(GetPoint(Hist,0.0,0.0)>LeastContent){Hist->Scale(1.0/GetPoint(Hist,0.0,0.0));}
       else Hist->Scale(0.0);
@@ -1224,7 +1221,7 @@ TH1 * AliCorrelation3p_noQA::PrepareHist(TH1* Hist,const char* title, const char
     Hist->SetTitleSize(0.045,"xyz");
     Hist->SetTitleOffset(1.2,"xy");
     Hist->SetTitleOffset(0.9,"z");
-  }  
+  }
   return Hist;
 }
 
@@ -1237,7 +1234,6 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
   else{
     outfile = new TFile("results.root","UPDATE");
   }
-  
   if(TString("").CompareTo(scalingmethod)!=0){
     if(dir.Contains("/")){
       TObjArray *dirs=dir.Tokenize("/");
@@ -1248,7 +1244,7 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
 	processdir->cd();
 	mixeddir = processdir->GetDirectory((dirs->At(1))->GetName());
 	if(mixeddir){processdir->rmdir((dirs->At(1))->GetName());}
-	mixeddir = processdir->mkdir((dirs->At(1))->GetName());	
+	mixeddir = processdir->mkdir((dirs->At(1))->GetName());
 	mixeddir->cd();
       }
     }
@@ -1267,20 +1263,22 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
   }
 
   TDirectory * dirmzbin = NULL;
-  TDirectory * binstats = NULL;
   TDirectory * dirmzbinsig=NULL;
   TDirectory * dirmzbinmixed=NULL;
   TDirectory * dirmzbindiv=NULL;
   TCanvas    * tempcanvas=NULL;
   //Hists and directories for the total stuff:
   TDirectory * totbinstats = gDirectory->mkdir("bin_stats");
-  TH1D * HistpT, * HistPhi,* HistEta, * HistTriggerpT, * HistTriggerPhi, * HistTriggerEta, * HistAssociatedpT, * HistAssociatedPhi,* HistAssociatedEta;
-  TH3F * hPhiPhiDEtadiv=NULL;TH3F * hPhiPhiDEtadivscaled=NULL;
-  TH2D * hDeltaPhidiv=NULL;TH2D* hDeltaPhidivscaled=NULL;TH2D * hDeltaPhineardiv=NULL;TH2D * hDeltaPhineardivscaled=NULL;TH2D * hDeltaPhimiddiv=NULL;TH2D * hDeltaPhimiddivscaled=NULL;TH2D * hDeltaPhifardiv=NULL;TH2D * hDeltaPhifardivscaled = NULL;
-  TH2D * hPhiEta12div=NULL;TH2D* hPhiEta12_divscaled=NULL;TH2D * hPhiEta12_cut1div=NULL;TH2D * hPhiEta12_cut2div=NULL;TH2D * hPhiEta12_samesidediv=NULL;TH2D * hPhiEta12_sameside_divscaled=NULL;TH2D * hPhiEtadiv=NULL;
-  Double_t navm, nav;
-  Long_t NTriggers=0;
-  Bool_t setAverage = kTRUE;  
+  TH1D * HistpT = new TH1D();
+  TH1D * HistPhi = new TH1D();
+  TH1D * HistEta = new TH1D();
+  TH1D * HistTriggerpT = new TH1D();
+  TH1D * HistTriggerPhi = new TH1D();
+  TH1D * HistTriggerEta = new TH1D();
+  TH1D * HistAssociatedpT = new TH1D();
+  TH1D * HistAssociatedPhi = new TH1D();
+  TH1D * HistAssociatedEta = new TH1D();  Long_t NTriggers=0;
+  Bool_t setAverage = kTRUE;
   for(int mb =0;mb<fMBinEdges.GetSize()-1;mb++){
     for(int zb=0;zb<fZBinEdges.GetSize()-1;zb++){
       if(mixeddir) mixeddir->cd();
@@ -1312,7 +1310,7 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
 	  TH2D* DPHIDPHI3far = slice(DPHIDPHIDETA,"yz",1,DPHIDPHIDETA->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far",kFALSE);
 	  AddSlice(DPHIDPHIDETA,DPHIDPHI3far,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(1)+1,DPHIDPHIDETA->GetNbinsX(),"temphist2",kFALSE);
 	  PrepareHist(DPHIDPHI3far,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","# Pairs");
-	  DPHIDPHI3far->Write("DPhi_1_DPHI_2_far");      
+	  DPHIDPHI3far->Write("DPhi_1_DPHI_2_far");
 	  tempcanvas= Makecanvas(DPHIDPHI3,DPHIDPHI3near,DPHIDPHI3mid,DPHIDPHI3far,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
@@ -1341,7 +1339,7 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
 	TH1D* scalinghistm= dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of times the mixed histogram was filled with a trigger","","# triggers","",true));
 	scalinghistm->Write();
 	TH3F* DPHIDPHIDETAm = dynamic_cast<TH3F*>(PrepareHist(GetNumberHist(khPhiPhiDEta,mb,zb),"DPhi_1_DPhi_2_DEta_12","#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]",true));
-	DPHIDPHIDETAm->Write();	
+	DPHIDPHIDETAm->Write();
 	TH2D* DPhi12DEta12m = DetaDphiAss(DPHIDPHIDETAm,"DPhi_12_DEta_12");
 	PrepareHist(DPhi12DEta12m,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]","",true);
 	DPhi12DEta12m->Write("DPhi_12_DEta_12");
@@ -1365,7 +1363,7 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
 	  TH2D* DPHIDPHI3farm = slice(DPHIDPHIDETAm,"yz",1,DPHIDPHIDETAm->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far",kFALSE);
 	  AddSlice(DPHIDPHIDETAm,DPHIDPHI3farm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(1)+1,DPHIDPHIDETAm->GetNbinsX(),"temphist2",kFALSE);
 	  PrepareHist(DPHIDPHI3farm,"#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1","#Delta#Phi_{1} [rad]","#Delta#Phi_{2} [rad]","",true,scale);
-	  DPHIDPHI3farm->Write("DPhi_1_DPHI_2_far");      
+	  DPHIDPHI3farm->Write("DPhi_1_DPHI_2_far");
 	  scale->Write("DPhi_1_DPHI_2_far_scale");
 	  scale->SetVal(0.0);
 	  tempcanvas= Makecanvas(DPHIDPHI3m,DPHIDPHI3nearm,DPHIDPHI3midm,DPHIDPHI3farm,"DPHIDPHI",kFALSE);
@@ -1395,7 +1393,7 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
 	  scale->SetVal(0.0);
 	  tempcanvas= Makecanvas(DPHIDETAm,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
-	  delete tempcanvas;	
+	  delete tempcanvas;
 	  delete scale;
 
       Double_t resultscalingfactor = 1.0;//Scale the result with 1/ntriggers
@@ -1447,7 +1445,7 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
 	  else DPHIDPHI3fardiv->Scale(0.0);
 	  if(setAverage) DPHIDPHI3fardiv->Scale(resultscalingfactor);
 	  if(!setAverage)DPHIDPHI3fardiv->Scale(resultscalingfactor);
-	  DPHIDPHI3fardiv->Write();      
+	  DPHIDPHI3fardiv->Write();
 	  tempcanvas= Makecanvas(DPHIDPHI3div,DPHIDPHI3neardiv,DPHIDPHI3middiv,DPHIDPHI3fardiv,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
@@ -1461,7 +1459,7 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
 	  DPHIDETA12_3div->Write();
 	  tempcanvas= Makecanvas(DPHIDETA12_3div,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
-	  delete tempcanvas;	 
+	  delete tempcanvas;
 	  delete DPHIDETA12_3div;
 	  TH2D* DPHIDETA12SameSide_3div = (TH2D*)DPHIDETA12SameSide_3->Clone("DPhi_1_DEta_12_SameSide");
 	  if(!empty)DPHIDETA12SameSide_3div->Divide(DPHIDETA12SameSide_3m);
@@ -1483,7 +1481,6 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  delete DPHIDETAdiv;
-      
       delete scalinghist;delete scalinghistm;
       delete DPHIDPHIDETA;delete DPHIDPHIDETAm;
       delete DPhi12DEta12;delete DPhi12DEta12m;

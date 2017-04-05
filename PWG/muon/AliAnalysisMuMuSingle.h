@@ -63,7 +63,7 @@ public:
 protected:
 
   void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
-                                 const char* centrality);
+                                 const char* centrality,Bool_t mix =kFALSE);
 
   virtual void FillHistosForTrack(const char* eventSelection, const char* triggerClassName,
                                   const char* centrality,
@@ -82,6 +82,13 @@ private:
                         Int_t nbinsx, Double_t xmin, Double_t xmax,
                         Int_t nbinsy=-1, Double_t ymin=0.0, Double_t ymax=0.0,
                         Bool_t separatePlusAndMinus=kFALSE) const;
+
+  void CreateTrackTHnSparse(const char* eventSelection,
+                            const char* triggerClassName,
+                            const char* centrality,
+                            const char* hname, const char* htitle,
+                            Int_t nDim, Int_t* nbinsx, Double_t* xmin, Double_t* xmax,
+                            Bool_t separatePlusAndMinus) const;
 
   Double_t GetTrackTheta(const AliVParticle& particle) const;
 

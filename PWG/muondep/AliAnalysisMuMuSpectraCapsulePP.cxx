@@ -57,6 +57,9 @@ namespace
   const Double_t lumiStat     = 0.09;   // nb^-1
   const Double_t lumiSys      = 2.1/100; // (%)
   const Double_t Trigg        = 1.5/100; // (%)
+  // Fnor
+  const Double_t Fnorm        = 1960.08;
+  const Double_t FnormStat    = 1.69;
 
 }
 
@@ -68,27 +71,9 @@ const TString                 spectraPath,
 const char                  * externFile,
 const char                  * externFile2)
 :
-  AliAnalysisMuMuSpectraCapsule(),
-  fSpectra(spectra),
-  fSpectraName(spectraPath),
-  fExternFile(externFile),
-  fExternFile2(externFile2),
-  fPrintFlag(kFALSE)
+  AliAnalysisMuMuSpectraCapsule(spectra,spectraPath,externFile,externFile2)
 {
-  //Check point
-  if (!fSpectra)
-  {
-    AliError(Form("Cannot find spectra wih name %s Please check the name",fSpectra->GetName()));
-    return;
-  }
-  AliDebug(1, Form(" - spectra(%s) = %p ",fSpectra->GetName(),fSpectra));
 
-
-  if (fSpectraName.IsNull())
-  {
-    AliWarning(Form("No spectra name ! "));
-    return;
-  }
 
   if(!AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
   {
@@ -102,7 +87,9 @@ AliAnalysisMuMuSpectraCapsulePP::~AliAnalysisMuMuSpectraCapsulePP()
   // dtor
 }
 
-TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) const
+
+//_____________________________________________________________________________
+TList* AliAnalysisMuMuSpectraCapsulePP::ComputeJpsiPPCrossSection(const char* what) const
 {
   /// Compute the PP cross section
   /// Warning : the cross-section is normalized to bin width only if bin width > 2
@@ -120,17 +107,19 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
 
   TGraphErrors * gCrossSection = new TGraphErrors(nBinX);
   TGraphErrors * gSys = new TGraphErrors(nBinX);
-  TString sbin;
+  TString sbin = "";
 
   int j= 1;
   while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
   {
       r = static_cast<AliAnalysisMuMuResult*>(fSpectra->GetResultForBin(bin->AsString()));
-      if(j==1 && bin->AsString().Contains("PT"))      sbin ="PT";
-      else if(j==1 && bin->AsString().Contains("Y"))  sbin ="Y";
+      if( j==1 && bin->AsString().Contains("PT") && !bin->Is2D() )        sbin ="PT";
+      else if( j==1 && bin->AsString().Contains("Y") && !bin->Is2D() )    sbin ="Y";
+      else if( j==1 && bin->AsString().Contains("YVSPT") && bin->Is2D() ) sbin ="YVSPT";
+      else if( j==1 && bin->AsString().Contains("PTVSY") && bin->Is2D() ) sbin ="PTVSY";
 
-      // PT and Y bin
-      if(sbin.Contains("PT") || sbin.Contains("Y")){
+      // PT,Y,YVSPT...
+      if( !bin->IsIntegrated() && !sbin.IsNull() ){
 
         // read exterfile and get the correct value
         float valueArray[4];
@@ -155,6 +144,7 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
           printf("\n");
           printf("%s                        = %f +/- %f\n",what,r->GetValue(what),r->GetErrorStat(what));
           printf("NofJPsi                   = %f +/- %f (%f %%)+/- %f (%f %%)\n ",NofJPsi,NofJPsiError,100*NofJPsiError/NofJPsi,r->GetRMS("NofJPsi"),100*r->GetRMS("NofJPsi")/NofJPsi);
+          printf("AccEff                    = %f \n ",NofJPsi/r->GetValue(what));
           printf("Systematic MC             = %f \n ",valueArray[0]);
           printf("Tracking Error            = %f \n ",valueArray[1]);
           printf("Trigger  Error            = %f \n ",valueArray[2]);
@@ -165,7 +155,6 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
           printf("\n");
         }
 
-
         if(CorrNofJPsi==0. || NofJPsi ==0.){
           printf(" cannot found Corrected NofJpsi or NofJpsi, did you compute AccEff ? Abording...");
           continue;
@@ -173,13 +162,16 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
 
         // Select Delta y according to bin
         Double_t deltaY =0.;
-        if(sbin.Contains("PT") && bin->WidthX() <= 2.0 )deltaY = 1.5; // For pT_0_1,pT_1_2...Y_4_3.75...
-        else  deltaY =1.;
+        if( sbin == "PT" )         deltaY = 1.5;  // For pT_0_1,pT_1_2...Y_4_3.75...
+        else if( sbin == "YVSPT" ) deltaY = 0.75; // For pT_0_1,pT_1_2...Y_4_3.75...
+        else                       deltaY =1.;
 
         // Compute cross section
-        if(bin->WidthX() <= 2.0)sigma = (r->GetValue(what))/(lumi*BR*1000.*bin->WidthX()); // For pT_0_1,pT_1_2...Y_4_3.75...
-        else                    sigma = (r->GetValue(what))/(lumi*BR*1000.);               // For pT_0_8,pT_0_12...Y_4_2.5...
+        Double_t deltabin =1.;
+        Double_t binWidth = bin->WidthX();
+        if( sbin == "PT" || sbin == "YVSPT" || sbin == "Y" || sbin == "PTVSY"  ) deltabin = binWidth;
 
+        sigma = (r->GetValue(what))/(lumi*BR*1000.*deltabin);
 
         // Compute stat. error on cross section
         sigmaerrorstat = sigma*TMath::Sqrt(
@@ -188,7 +180,9 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
 
          // Get X
         Double_t xmin = bin->Xmin();
+        // printf("xmin =%f\n",xmin );
         Double_t xmax = bin->Xmax();
+        // printf("xmax =%f\n",xmax );
         Double_t x    = xmin + (xmax-xmin)/2;
 
         // Uncorrelated error squared (%)
@@ -208,7 +202,7 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
         // In case of fully integrated results == large pT bins
         Double_t CorrErrorFull2 =  CorrError2 + UncError2;
 
-        printf("  -------- cross section for bin %s = %f +/- %f (stat. %f %%) +/- %f (uncorr. %f %%) +/- %f (corr. %f %%)  (#Delta y = %f) -------- \n"
+        printf("  -------- cross section for bin %s = %.4f +/- %.4f (stat. %.1f %%) +/- %.4f (uncorr. %.1f %%) +/- %.4f (corr. %.1f %%)  (#delta y = %f)  (#delta bin = %f) -------- \n"
           ,bin->AsString().Data(),
           sigma/deltaY,
           sigmaerrorstat/deltaY,
@@ -217,25 +211,27 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
           100*TMath::Sqrt(UncError2),
           sigma*TMath::Sqrt(CorrError2)/deltaY,
           100*TMath::Sqrt(CorrError2),
-          deltaY);
+          deltaY,
+          deltabin);
 
-        printf("  --------  if fully integrated dsigma_corr. = %f (corrFull. %f %%)  -------- \n\n"
+        printf("  --------  if fully integrated dsigma_corr. = %.4f (corrFull. %.1f %%)  -------- \n\n"
           ,sigma*TMath::Sqrt(CorrErrorFull2)/deltaY,
           100*TMath::Sqrt(CorrErrorFull2));
 
+        // printf("x = %f\n", x );
+
         // Fill graphs
-        if(sbin.Contains("Y"))gCrossSection->SetPoint(j,-x,sigma/deltaY);
-        else gCrossSection->SetPoint(j,x,sigma/deltaY);
+        if(sbin=="Y" || sbin=="YVSPT" || sbin=="PTVSY") gCrossSection->SetPoint(j,-x,sigma/deltaY);
+        else          gCrossSection->SetPoint(j,x,sigma/deltaY);
         gCrossSection->SetPointError(j,bin->WidthX()/2,sigmaerrorstat/deltaY);
 
-        if(sbin.Contains("Y"))gSys->SetPoint(j,-x,sigma/deltaY);
-        else gSys->SetPoint(j,x,sigma/deltaY);
+        if(sbin=="Y" || sbin=="YVSPT" || sbin=="PTVSY") gSys->SetPoint(j,-x,sigma/deltaY);
+        else          gSys->SetPoint(j,x,sigma/deltaY);
         gSys->SetPointError(j,bin->WidthX()/4,sigma*TMath::Sqrt(UncError2)/deltaY);
-
 
         j++;
       }
-      else { // Integrated
+      else if ( bin->IsIntegrated() ){ // Integrated
 
         Double_t sigma        =0.;
         Double_t sigmaerror   =0.;
@@ -282,17 +278,21 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
           printf("\n");
           printf("%s                        = %f +/- %f\n",what,r->GetValue(what),r->GetErrorStat(what));
           printf("NofJPsi                   = %f +/- %f +/- %f \n ",NofJPsi,NofJPsiError,r->GetRMS("NofJPsi"));
-          printf("Systematic MC             = %f \n ",100*fConstArray[6]);
-          printf("Tracking Error            = %f \n ",100*fConstArray[5]);
-          printf("Trigger  Error            = %f \n ",100*fConstArray[4]);
-          printf("matching Error            = %f \n ",100*fConstArray[7]);
-          printf("Trigger Error local board = %f %%\n ",100*fConstArray[4]);
+          printf("Systematic MC             = %.2f \n ",100*fConstArray[6]);
+          printf("Tracking Error            = %.2f \n ",100*fConstArray[5]);
+          printf("Trigger  Error            = %.2f \n ",100*fConstArray[4]);
+          printf("matching Error            = %.2f \n ",100*fConstArray[7]);
+          printf("Trigger Error local board = %.2f %%\n ",100*fConstArray[4]);
           printf("Lumiosity                 = %f +/- %f  +/- %f %% \n ",lumi,lumiStat,100*fConstArray[2]);
           printf("BR                        = %f +/- %f (%%)\n ",BR,100*BRerr);
           printf("\n");
         }
 
         printf("integrated cross section for  %s = %f +/- %f +/- %f #mubarn\n",fSpectra->GetName(),sigma,sigmaerror,sigma*TMath::Sqrt(sigmasys2) );
+        return 0x0;
+      }
+      else {
+        AliError("Not implemented yet");
         return 0x0;
       }
   }
@@ -310,15 +310,155 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputePPCrossSection(const char* what) 
 }
 
 //_____________________________________________________________________________
-TGraphErrors* AliAnalysisMuMuSpectraCapsulePP::ComputeYield( const char* what, const TH1* histo, const char* sResName)
+TGraphErrors* AliAnalysisMuMuSpectraCapsulePP::ComputeYield( const char* what, const TH1* histo, const char* sResName, Double_t MUL)
 {
-  /// Compute Yield.
-  /// Arguments :
-  ///   - what : the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
-  ///   - histo : histogramme of Equivalent MinBias
+  /// @brief Compute Yield.
+  /// @argument what  the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
+  /// @argument histo  histogramme of Equivalent MinBias
 
- printf("Not implemented yet \n");
- return 0x0;
+  if(!GetSpectra() || strcmp(what,"")==1) return 0x0;
+
+  // Some constants
+  const TString graphTitle = Form("%s-YIELD",GetSpectraName().Data());
+  TString sres(sResName);
+
+  // Pointers to handle results and subresults and binning
+  AliAnalysisMuMuResult    * result;
+  AliAnalysisMuMuBinning   ::Range* r;
+
+ // Array to store bins for the while loop
+  TObjArray * bins=GetSpectra()->Binning()->CreateBinObjArray();// (intrinseque 'new')
+  if (!bins){
+    AliError(Form("Cannot find bins"));
+    return 0x0;
+  }
+
+  // Here we define some pointers
+  TGraphErrors*graph(0x0);
+  // TGraphErrors*graph_sysUncorr(0x0);
+
+  Double_t    * binArray(0x0) ;// (intrinseque 'new')
+  Int_t binsX = 0;
+
+  //________Define histo according to bin type
+  if (GetSpectraName().Contains("-INTEGRATED"))
+  {
+    graph           = new TGraphErrors(1);
+    // graph_sysUncorr = new TGraphErrors(1);
+    graph->SetTitle(graphTitle.Data());
+
+    // graph_sysUncorr->SetFillColorAlpha(5,0.05);
+  }
+  else if (GetSpectraName().Contains("-PT")|| GetSpectraName().Contains("-Y"))
+  {
+    binArray =GetSpectra()->Binning()->CreateBinArray();
+    binsX = GetSpectra()->Binning()->GetNBinsX();
+
+    if (!binArray)
+    {
+      AliError(Form("Cannot set binArray"));
+      return 0x0;
+    }
+    if (binsX==0)
+    {
+      AliError(Form("Cannot set binsX"));
+      return 0x0;
+    }
+
+    graph           = new TGraphErrors(binsX);
+    // graph_sysUncorr = new TGraphErrors(binsX);
+    graph->SetTitle(graphTitle.Data());
+
+    // graph_sysUncorr->SetFillColorAlpha(5,0.05);
+  }
+  else
+  {
+    cout << "Unknowned Bin type !" << endl;
+    return 0x0;
+  }
+  //________
+
+  //________Counters and Iterator for bin
+  Int_t nofResult = 0;
+  TIter nextBin(bins);
+  nextBin.Reset();
+  //________
+
+  // Loop on bins
+  //==============================================================================
+  while ((r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin())))
+  {
+
+    //________Make bin a MuMuResult
+    result = GetSpectra()->GetResultForBin(*r);
+    if (!result)
+    {
+      AliError(Form("Cannot find result "));
+      return 0x0;
+    }
+    AliDebug(1, Form("result(%s) = %p ",result->GetName(),result));
+    //________
+
+    // Store quantities
+    Double_t NofWhattTot = result->GetValue(what,sres.Data());
+    Double_t NofWhattTotError = result->GetErrorStat(what,sres.Data());
+
+    Double_t nEqMBTot      = 0.0;
+    Double_t nEqMBTotError = 0.0;
+    if (histo) {
+      nEqMBTot = histo->GetBinContent(nofResult+1);
+      nEqMBTotError = histo->GetBinError(nofResult+1);
+      AliDebug(1,Form("histo used    : %s",histo->GetTitle()));
+      AliDebug(1,Form("%s            = %f",what,NofWhattTot));
+      AliDebug(1,Form("%s error      = %f",what,NofWhattTotError));
+      AliDebug(1,Form("nEqMBTot      = %f",nEqMBTot));
+      AliDebug(1,Form("nEqMBTotError = %f",nEqMBTotError));
+    } else {
+      nEqMBTot = Fnorm * MUL;
+      nEqMBTotError = MUL*FnormStat/Fnorm ;
+    }
+
+    if( NofWhattTot == 0 || NofWhattTotError == 0 || nEqMBTot == 0 || nEqMBTotError== 0){
+      AliError("Cannot set quantities properly");
+      return 0x0;
+    }
+
+    //________Compute yield in case of fully integrated spectra
+    if(GetSpectraName().Contains("-INTEGRATED"))
+    {
+      Double_t yieldInt = NofWhattTot/(nEqMBTot*BR);
+      Double_t yieldIntError = yieldInt*AliAnalysisMuMuResult::ErrorAB(NofWhattTot,NofWhattTotError,nEqMBTot,TMath::Sqrt(nEqMBTot));
+
+      // Add results to TGraphs
+      graph->SetPoint(nofResult,0.5,yieldInt);
+      graph->SetPointError(nofResult,0.5,yieldIntError);
+    } else {
+
+      Double_t yieldInt = NofWhattTot/(nEqMBTot*BR);
+      Double_t yieldIntError = yieldInt*AliAnalysisMuMuResult::ErrorAB(NofWhattTot,NofWhattTotError,nEqMBTot,TMath::Sqrt(nEqMBTot));
+
+      //Fill graph
+      Double_t binCenter = (binArray[nofResult+1]-binArray[nofResult])/2 + binArray[nofResult];
+      graph->SetPoint(nofResult,binCenter,yieldInt);
+      graph->SetPointError(nofResult,r->WidthX()/5,yieldIntError);
+    }
+    //________
+
+    nofResult++;
+  }
+
+  // Config. graphics
+  if(GetSpectraName().Contains("-INTEGRATED"))graph->GetXaxis()->SetTitle(Form("INTEGRATED"));
+  else if (GetSpectraName().Contains("-PT"))graph->GetXaxis()->SetTitle(Form("PT"));
+  else if (GetSpectraName().Contains("-Y"))graph->GetXaxis()->SetTitle(Form("Y"));
+  graph->GetYaxis()->SetTitle("Yield");
+  graph->SetMarkerColor(4);
+  graph->SetMarkerStyle(21);
+
+  delete bins;
+  delete binArray;
+
+ return graph ;
 
 }
 
@@ -558,7 +698,7 @@ Bool_t AliAnalysisMuMuSpectraCapsulePP::ReadFromFile(TString sbin, float valueAr
       while(infile.eof()!=kTRUE){
 
         //read the line
-        line.ReadLine(infile,kFALSE);
+        line.ReadLine(infile,kTRUE);
         if (line.BeginsWith("#"))continue;
         AliDebug(1,Form(" Read line : %s",line.Data()));
 

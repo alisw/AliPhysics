@@ -51,40 +51,53 @@ class AliReducedVarManager : public TObject {
   // NOTE: Check consistency with updates in aliroot!!!
   enum EOfflineTriggerTypes { 
     kMB                = BIT(0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
+    kINT1              = BIT( 0), // V0A | V0C | SPD minimum bias trigger
     kINT7              = BIT(1), // V0AND trigger, offline V0 selection
     kMUON              = BIT(2), // Muon trigger, offline SPD or V0 selection
     kHighMult          = BIT(3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
     kHighMultSPD    = BIT(3), // offline SPD high multiplicity trigger
     kEMC1              = BIT(4), // EMCAL trigger
     kCINT5             = BIT(5), // Minimum bias trigger without SPD. i.e. interaction trigger, offline V0 selection
+    kINT5              = BIT( 5), // V0OR minimum bias trigger
     kCMUS5             = BIT(6), // Muon trigger, offline V0 selection
     kMUSPB             = BIT(6), // idem for PbPb
+    kINT7inMUON     = BIT( 6), // INT7 in MUON or MUFAST cluster
+    kMuonSingleHighPt7 = BIT( 7), // Single muon high-pt, INT7 suite
     kMUSH7             = BIT(7), // Muon trigger: high pt, single muon, offline V0 selection, CINT7 suite
     kMUSHPB            = BIT(7), // idem for PbPb
+    kMuonLikeLowPt7    = BIT( 8), // Like-sign dimuon low-pt, INT7 suite
     kMUL7              = BIT(8), // Muon trigger: like sign dimuon, offline V0 selection, CINT7 suite
     kMuonLikePB        = BIT(8), // idem for PbPb
+    kMuonUnlikeLowPt7  = BIT( 9), // Unlike-sign dimuon low-pt, INT7 suite
     kMUU7              = BIT(9), // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
     kMuonUnlikePB      = BIT(9), // idem for PbPb
-    kEMC7              = BIT(10), // EMCAL trigger, CINT7 suite
+    kEMC7              = BIT(10), // EMCAL trigger, INT7 suite
+    kEMC8              = BIT(10), // EMCAL/DCAL L0 trigger, INT8 suite
     kMUS7              = BIT(11), // Muon trigger: low pt, single muon, offline V0 selection, CINT7 suite
+    kMuonSingleLowPt7  = BIT(11), // Single muon low-pt, INT7 suite 
     kPHI1              = BIT(12), // PHOS trigger, CINT1 suite
     kPHI7              = BIT(13), // PHOS trigger, CINT7 suite
+    kPHI8              = BIT(13), // PHOS trigger, INT8 suite
     kPHOSPb            = BIT(13), // idem for PbPb
     kEMCEJE            = BIT(14), // EMCAL jet patch trigger
     kEMCEGA            = BIT(15), // EMCAL gamma trigger
     kCentral           = BIT(16), // PbPb central collision trigger
     kHighMultV0    = BIT(16), // offline V0 high multiplicity trigger
     kSemiCentral       = BIT(17), // PbPb semicentral collision trigger
+    kDG                = BIT(18), // Double gap diffractive
     kDG5               = BIT(18), // Double gap diffractive
     kZED               = BIT(19), // ZDC electromagnetic dissociation
     kSPI7              = BIT(20), // Power interaction trigger
+    kSPI               = BIT(20), // Power interaction trigger
     kINT8              = BIT(21), // CINT8 trigger: 0TVX (T0 vertex) triger
     kMuonSingleLowPt8  = BIT(22), // Muon trigger : single muon, low pt, T0 selection, CINT8 suite
     kMuonSingleHighPt8 = BIT(23), // Muon trigger : single muon, high pt, T0 selection, CINT8 suite
     kMuonLikeLowPt8    = BIT(24), // Muon trigger : like sign muon, low pt, T0 selection, CINT8 suite
     kMuonUnlikeLowPt8  = BIT(25), // Muon trigger : unlike sign muon, low pt, T0 selection, CINT8 suite
+    kMuonUnlikeLowPt0  = BIT(26), // Unlike-sign dimuon low-pt, no additional L0 requirement
     kINT6              = BIT(26),
     kUserDefined       = BIT(27), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
+    kTRD               = BIT(28), // TRD trigger  
     // Bits 28 and above are reserved for FLAGS
     kFastOnly          = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
     kAny               = 0xffffffff, // to accept any trigger
@@ -195,6 +208,7 @@ class AliReducedVarManager : public TObject {
     kNTRDtracklets,          // number of TRD tracklets
     kNVtxContributors,    // number of vertex contributors
     kNVtxTPCContributors,  // number of TPC vertex contributors
+    kNVtxSPDContributors,  // number of SPD vertex contributors
     kVtxX,              // vtx X                      
     kVtxY,              // vtx Y                      
     kVtxZ,              // vtx Z 
@@ -202,6 +216,10 @@ class AliReducedVarManager : public TObject {
     kVtxYtpc,           // vtx Y from tpc
     kVtxZtpc,           // vtx Z from tpc
     kDeltaVtxZ,         // vtxZ - vtxZtpc
+    kVtxXspd,           // vtx X from spd
+    kVtxYspd,           // vtx Y from spd
+    kVtxZspd,           // vtx Z from spd
+    kDeltaVtxZspd,         // vtxZ - vtxZspd
     kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
     kNTracksTPCoutVsITSout=kNTracksPerTrackingStatus+kNTrackingStatus,   //  TPCout/ITSout
     kNTracksTRDoutVsITSout,                              //  TRDout/ITSout

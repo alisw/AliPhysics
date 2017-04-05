@@ -786,31 +786,35 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     fListHist->AddLast(hTOFDist);
     
     if(fPerformance){
-      hBeta = new TH2F("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
+      const Int_t Bnbins      = 4000;
+      const Double_t Blim[2]  = {0., 1.5};
+      const Double_t Bplim[2] = {0., 10.};
+      
+      hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBeta);
       
-      hBetaNoMismatch = new TH2F("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
+      hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBetaNoMismatch);
       
-      hBetaNoMismatchEtaCut = new TH2F("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
+      hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBetaNoMismatchEtaCut);
       
-      hBetaNoMismatchEtaCutOut = new TH2F("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
+      hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBetaNoMismatchEtaCutOut);
       
-      hBetaCentral = new TH2F("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
+      hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBetaCentral);
       
-      hBetaNoMismatchCentral = new TH2F("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
+      hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBetaNoMismatchCentral);
       
-      hBetaNoMismatchCentralEtaCut = new TH2F("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
+      hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
       
-      hBetaNoMismatchCentralEtaCutOut = new TH2F("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
+      hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
       fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
       
-      hTPCdEdx = new TH2F("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
+      hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
       fListHist->AddLast(hTPCdEdx);
     }
     
@@ -1530,8 +1534,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     if(track->GetSign() == 0) continue; //No neutral particles
     hNTrk->Fill(3);// --> Charged track
     
-    FindPtBin();                      // Find the corresponding Pt bin
-    if(fBinPtIndex < 0) continue;     //Track has higher momentum than actual binning this cut makes sense because if you don't have the DCA templates you cannot correct for primaries!!
+    FindPtBin();                                            // Find the corresponding Pt bin
+    if(fBinPtIndex < 0 || fBinPtIndex >= kPtBins) continue; //Track has higher momentum than actual binning this cut makes sense because if you don't have the DCA templates you cannot correct for primaries!!
     hNTrk->Fill(4);// --> Track in pt range
     
     //

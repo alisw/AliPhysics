@@ -9,9 +9,10 @@
 
 namespace AliUtilTOFParams {
   
-  enum {nMultBin = 12, kPtBins = 59, kCharges = 2, kSpecies = 3, kFModes = 4};
+  enum {nMultBin = 12, kPtBins = 59, kSpecies = 3, kFModes = 4};
   //Indexes for PID
   enum {kExpSpecies = 6, ke = 0, kmu, kpi, kK, kp, kd};
+  enum {kpos = 0, kneg, kCharges = 2};
   //Indexes to store event
   //Track info
   enum fTrkMaskIndex {kNegTrk, kIsMismatch, kT0_0, kT0_1, kT0_2, kIsTOFout, kIsTOFTime, kIsTRDout, kPassGoldenChi2, kLimitfTrkMask};//Track information bitmask fTrkMask - kT0_0 (T0 TOF) kT0_1 (T0 T0A) kT0_2 (T0C)

@@ -18,6 +18,7 @@
 // --- Root ---
 #include <TObjArray.h>
 #include <TArrayI.h>
+#include <TStopwatch.h>
 
 // --- AliRoot ---
 #include "AliCDBEntry.h"
@@ -193,8 +194,12 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   std::string embeddedCellEnergyTypeStr = "";
   GetProperty("embeddedCellEnergyType", embeddedCellEnergyTypeStr);
   fEmbeddedCellEnergyType = fgkEmbeddedCellEnergyTypeMap.at(embeddedCellEnergyTypeStr);
-  //fEmbeddedCellEnergyType = AliEmcalCorrectionClusterizer::kFEEData;
-  Printf("embeddedCellEnergyType: %d",fEmbeddedCellEnergyType);
+  //Printf("embeddedCellEnergyType: %d",fEmbeddedCellEnergyType);
+
+  // Only support one cluster container for the clusterizer!
+  if (fClusterCollArray.GetEntries() > 1) {
+    AliFatal("Passed more than one cluster container to the clusterizer, but the clusterizer only supports one cluster container!");
+  }
   
   return kTRUE;
 }
@@ -205,6 +210,16 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
 void AliEmcalCorrectionClusterizer::UserCreateOutputObjects()
 {   
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
+
+  if (fCreateHisto){
+    fHistCPUTime = new TH1F("hCPUTime","hCPUTime;CPU Time (ms)", 2000, 0, 1000);
+    fOutput->Add(fHistCPUTime);
+
+    fHistRealTime = new TH1F("hRealTime","hRealTime;Real Time (ms)", 2000, 0, 1000);
+    fOutput->Add(fHistRealTime);
+
+    fTimer = new TStopwatch();
+  }
 }
 
 /**
@@ -212,12 +227,23 @@ void AliEmcalCorrectionClusterizer::UserCreateOutputObjects()
  */
 Bool_t AliEmcalCorrectionClusterizer::Run()
 {
+  // Time the event loop if histogram creation is enabled
+  if (fCreateHisto) {
+    fTimer->Start(kTRUE);
+  }
+
   AliEmcalCorrectionComponent::Run();
   
   fEsd = dynamic_cast<AliESDEvent*>(fEvent);
   fAod = dynamic_cast<AliAODEvent*>(fEvent);
+
+  // Only support one cluster container in the clusterizer!
+  AliClusterContainer * clusCont = GetClusterContainer(0);
+  if (!clusCont) {
+    AliFatal("Could not retrieve cluster container!");
+  }
   
-  fCaloClusters = fClusCont->GetArray();
+  fCaloClusters = clusCont->GetArray();
 
   // If cells are empty, clear clusters and return
   if (fCaloCells->GetNumberOfCells()<=0)
@@ -266,6 +292,13 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
   UpdateClusters();
   
   CalibrateClusters();
+
+  if (fCreateHisto) {
+    fTimer->Stop();
+    // Ensure that it is stored in ms
+    fHistCPUTime->Fill(fTimer->CpuTime() * 1000.);
+    fHistRealTime->Fill(fTimer->RealTime() * 1000.);
+  }
   
   return kTRUE;
 }

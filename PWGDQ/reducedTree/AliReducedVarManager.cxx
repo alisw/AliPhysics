@@ -72,20 +72,24 @@ const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager:
 };
 
 const Char_t* AliReducedVarManager::fgkOfflineTriggerNames[64] = {
-    "MB",               "INT7",        "MUON",             "HighMult/HighMultSPD",          "EMC1", 
-    "CINT5",            "CMUS5/MUSPB", "MUSH7/MUSHPB",     "MUL7/MuonLikePB",   "MUU7/MuonUnlikePB", 
-    "EMC7",             "MUS7",        "PHI1",             "PHI7/PHOSPb",       "EMCEJE",
-    "EMCEGA",           "Central/HighMultV0",     "SemiCentral",      "DG5",               "ZED",         
-    "SPI7",             "CINT8",       "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8",  
-    "MuonUnlikeLowPt8", "N/A",         "UserDefined",      "N/A",               "N/A",         
-    "FastOnly",         "N/A",         "N/A",              "N/A",               "N/A",  
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A",
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A",  
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A",
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A", 
-    "N/A",              "N/A",         "N/A",              "N/A",               "N/A", 
-    "N/A",              "N/A",         "N/A",              "N/A"
+    "MB/INT1",                                             "INT7",                                                         "MUON",                                    "HighMult/HighMultSPD",                      
+    "EMC1",                                                 "CINT5/INT5",                                               "CMUS5/MUSPB/INT7inMUON", "MuonSingleHighPt7/MUSH7/MUSHPB", 
+    "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8",                           "MUS7/MuonSingleLowPt7",    
+    "PHI1",                                                  "PHI7/PHI8/PHOSPb",                                    "EMCEJE",                                  "EMCEGA",           
+    "Central/HighMultV0",                           "SemiCentral",                                              "DG/DG5",                                "ZED",         
+    "SPI7/SPI",                                             "INT8",                                                          "MuonSingleLowPt8",                "MuonSingleHighPt8", 
+    "MuonLikeLowPt8",                               "MuonUnlikeLowPt8",                                    "MuonUnlikeLowPt0/INT6",       "UserDefined",      
+    "TRD",                                                   "N/A",                                                            "FastOnly",                               "N/A",         
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",              
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",               
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",      
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",     
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",   
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A", 
+    "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A"
 };
+
 
 // radii of VZERO channels centers (in cm)
 const Double_t AliReducedVarManager::fgkVZEROChannelRadii[64] = {
@@ -400,8 +404,14 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kVtxXtpc]              = event->VertexTPC(0);
   values[kVtxYtpc]              = event->VertexTPC(1);
   values[kVtxZtpc]              = event->VertexTPC(2);
+  values[kNVtxTPCContributors]  = event->VertexTPCContributors();
+  values[kVtxXspd]              = event->VertexSPD(0);
+  values[kVtxYspd]              = event->VertexSPD(1);
+  values[kVtxZspd]              = event->VertexSPD(2);
+  values[kNVtxSPDContributors]  = event->VertexSPDContributors();
   
   if(fgUsedVars[kDeltaVtxZ]) values[kDeltaVtxZ] = values[kVtxZ] - values[kVtxZtpc];
+  if(fgUsedVars[kDeltaVtxZspd]) values[kDeltaVtxZspd] = values[kVtxZ] - values[kVtxZspd];
   
   for(Int_t iflag=0;iflag<32;++iflag) 
     values[kNTracksPerTrackingStatus+iflag] = event->TracksPerTrackingFlag(iflag);
@@ -1752,6 +1762,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNTRDtracklets]        = "Number of TRD tracklets";         fgVariableUnits[kNTRDtracklets]        = "";
   fgVariableNames[kNVtxContributors]     = "Number of vtx. contributors";     fgVariableUnits[kNVtxContributors]     = "";
   fgVariableNames[kNVtxTPCContributors]  = "Number of TPC vtx. contributors"; fgVariableUnits[kNVtxTPCContributors]  = "";
+  fgVariableNames[kNVtxSPDContributors]  = "Number of SPD vtx. contributors"; fgVariableUnits[kNVtxSPDContributors]  = "";
   fgVariableNames[kVtxX]                 = "Vtx X";                           fgVariableUnits[kVtxX]                 = "cm";
   fgVariableNames[kVtxY]                 = "Vtx Y";                           fgVariableUnits[kVtxY]                 = "cm";
   fgVariableNames[kVtxZ]                 = "Vtx Z";                           fgVariableUnits[kVtxZ]                 = "cm";
@@ -1759,6 +1770,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kVtxYtpc]              = "Vtx Y TPC";                       fgVariableUnits[kVtxYtpc]              = "cm";
   fgVariableNames[kVtxZtpc]              = "Vtx Z TPC";                       fgVariableUnits[kVtxZtpc]              = "cm";
   fgVariableNames[kDeltaVtxZ]            = "#Delta Z";                        fgVariableUnits[kDeltaVtxZ]            = "cm";
+  fgVariableNames[kVtxXspd]              = "Vtx X SPD";                       fgVariableUnits[kVtxXspd]              = "cm";
+  fgVariableNames[kVtxYspd]              = "Vtx Y SPD";                       fgVariableUnits[kVtxYspd]              = "cm";
+  fgVariableNames[kVtxZspd]              = "Vtx Z SPD";                       fgVariableUnits[kVtxZspd]              = "cm";
+  fgVariableNames[kDeltaVtxZspd]            = "#Delta Z (global-SPD)";                        fgVariableUnits[kDeltaVtxZspd]            = "cm";
   for(Int_t iflag=0; iflag<kNTrackingStatus; ++iflag) {
     fgVariableNames[kNTracksPerTrackingStatus+iflag] = Form("Tracks with %s on", fgkTrackingStatusNames[iflag]); 
     fgVariableUnits[kNTracksPerTrackingStatus+iflag] = ""; 

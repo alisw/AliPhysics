@@ -36,7 +36,8 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     kSpecProton   = BIT(3),
     kAll          = BIT(4)
   };
-    
+  enum ECentrality {kCentOff,kCentV0M,kCentCL1,kCentZNA,kCentV0A,kCentInvalid};
+
     
   AliAnalysisTrackingUncertaintiesAOT(const char *name);
   AliAnalysisTrackingUncertaintiesAOT();
@@ -62,6 +63,10 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetUsePtLogScale(Bool_t flag)        {fUsePtLogAxis = flag;}
   void           SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   void           SetSPDRequirement(AliESDtrackCuts::ITSClusterRequirement  spdlayreq)   {fSPDlayerReq = spdlayreq;}                   
+  void           SetMultSelectionObjectName(TString str){fMultSelectionObjectName=str;}
+  void           SetMinCentrality(Double_t val) {fminCent = val;}
+  void           SetMaxCentrality(Double_t val) {fmaxCent = val;}
+  void           SetUseCentrality(AliAnalysisTrackingUncertaintiesAOT::ECentrality flag);
 
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
@@ -74,11 +79,15 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Bool_t IsKaon(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
   Bool_t IsProton(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
   Bool_t IsConsistentWithPid(Int_t specie, const AliESDtrack * const tr);//Int_t type, const AliESDtrack * const tr);
+  Bool_t IsEventSelectedInCentrality(AliESDEvent *ESDevent);
     
+  AliAnalysisTrackingUncertaintiesAOT::ECentrality   fUseCentrality;
   Double_t fMaxDCAxy;
   Double_t fMaxDCAz;
   Double_t fMaxEta;
   Double_t fCrossRowsOverFndCltTPC;
+  Double_t fminCent;
+  Double_t fmaxCent;
   AliESDtrackCuts::ITSClusterRequirement fSPDlayerReq; // SPD layers requirement 
     
   TString  fTriggerClass;           /// trigger class
@@ -89,6 +98,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   ULong64_t   fspecie;
     
   TH1F *fHistNEvents;               //! histo with number of events
+  TH1F *fHistCent;                  //! histo for the centrality 
   THnSparse *fHistMC;               //! sparse of the tracks on MC and ITS-TOC matching
   THnSparse *fHistMCTPConly;        //! sparse of the tracks on MC and only TPC request
   THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
@@ -100,6 +110,8 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Bool_t   fUsePtLogAxis;           //flag to use log scale on pt axis in match. eff. sparse
   Bool_t fDoCutV0multTPCout;        //flag to activate cut on V0mult vs #tracks TPCout
 
+  TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
+
   TList           * fListHist;      //! output list for histograms
   AliESDtrackCuts * fESDtrackCuts;  //! cut set which is under study
   AliESDVertex    * fVertex;        //! pointer to ESD vertex
@@ -107,7 +119,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 4);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 5);
 };
 
 #endif

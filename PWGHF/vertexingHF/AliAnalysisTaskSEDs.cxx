@@ -548,39 +548,46 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->Add(fPtVsMassK0st);
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSig);
-    
-  Int_t nBinsReco[knVarForSparse]   = {350, 20,     30,     14,    14,   20,   10,   10,    14,    6,    6,   12};
-  Double_t xminReco[knVarForSparse] = {1.6,  0.,  0.00,    0.0,   0.0,   0.,  0.9,  0.9,  0.00,  0.7,   0.0,  0.};
-  Double_t xmaxReco[knVarForSparse] = {2.3, 20., 0.015,   0.07,  0.07,  10.,  1.0,  1.0,  0.07,  1.0,   0.3,  6.};
+
+  nInvMassBins=(Int_t)(0.7/fMassBinSize+0.5);
+  minMass=massDs-0.5*nInvMassBins*fMassBinSize;
+  maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
+
+  Int_t nBinsReco[knVarForSparse]   = {nInvMassBins,  20,     30,     14,    14,   20,    10,   10,     14,     6,     6,   12};
+  Double_t xminReco[knVarForSparse] = {minMass,       0.,     0.,     0.,    0.,   0.,   90.,   90.,    0.,    7.,    0.,   0.};
+  Double_t xmaxReco[knVarForSparse] = {maxMass,      20.,     15,    70.,   70.,  10.,  100.,  100.,   70.,   10.,    3.,   6.};
   TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP"};
   if(fSystem == 1) { //pPb,PbPb
-    nBinsReco[0] = 200; //Ds mass
-    xminReco[0]  = 1.75;
-    xmaxReco[0]  = 2.15;
+    nInvMassBins=(Int_t)(0.45/fMassBinSize+0.5);
+    minMass=massDs-0.5*nInvMassBins*fMassBinSize;
+    maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
+    nBinsReco[0] = nInvMassBins; //Ds mass
+    xminReco[0]  = minMass;
+    xmaxReco[0]  = maxMass;
         
     nBinsReco[1] = 16; //pt
     xminReco[1]  = 0.;
     xmaxReco[1]  = 16.;
         
-    nBinsReco[2] = 12; //#Delta Mass(KK)
-    xmaxReco[2]  = 0.012;
+    nBinsReco[2] =  12; //#Delta Mass(KK)
+    xmaxReco[2]  = 12.;
         
     nBinsReco[3] = 7; //dlen
     nBinsReco[4] = 7; //dlenxy
     nBinsReco[5] = 10; //ndlenxy
         
-    nBinsReco[6] = 6; //cosP
-    xminReco[6]  = 0.97;
-    xmaxReco[6]  = 1.0;
+    nBinsReco[6] =    6; //cosP
+    xminReco[6]  =  97.;
+    xmaxReco[6]  = 100.;
         
-    nBinsReco[7] = 6; //cosPxy
-    xminReco[7]  = 0.97;
-    xmaxReco[7]  = 1.0;
+    nBinsReco[7] =    6; //cosPxy
+    xminReco[7]  =  97.;
+    xmaxReco[7]  = 100.;
   }
     
-  Int_t nBinsAcc[knVarForSparseAcc]   = {20,  20};
-  Double_t xminAcc[knVarForSparseAcc] = {0., -1.};
-  Double_t xmaxAcc[knVarForSparseAcc] = {20,  1.};
+  Int_t nBinsAcc[knVarForSparseAcc]   = {20,   20};
+  Double_t xminAcc[knVarForSparseAcc] = {0., -10.};
+  Double_t xmaxAcc[knVarForSparseAcc] = {20,  10.};
     
   Int_t nBinsIP[knVarForSparseIP]   = { 20,  400,  400,  400,  400,  3};
   Double_t xminIP[knVarForSparseIP] = { 0., -10., -10., -10., -10., 0.};
@@ -1138,9 +1145,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[1] = tmpNormIP[1];
 	    normIPprong[2] = tmpNormIP[2];
                         
-	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdlxy,cosp,cospxy,
-						    sigvert,cosPiDs,cosPiKPhi,TMath::Abs(normIP)};
-                        
+	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK*1000,dlen*1000,dlenxy*1000,normdlxy,cosp*100,cospxy*100,
+						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP)};
+          
 	    if(!fReadMC) {
 	      fnSparse->Fill(var4nSparse);
 	    }
@@ -1177,9 +1184,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[1] = tmpNormIP[1];
 	    normIPprong[2] = tmpNormIP[0];
                         
-	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdlxy,cosp,cospxy,
-						    sigvert,cosPiDs,cosPiKPhi,TMath::Abs(normIP)};
-                        
+	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK*1000,dlen*1000,dlenxy*1000,normdlxy,cosp*100,cospxy*100,
+						    sigvert*1000,cosPiDs*10,cosPiKPhi*10,TMath::Abs(normIP)};
+          
 	    if(!fReadMC) {
 	      fnSparse->Fill(var4nSparse);
 	    }
@@ -1406,7 +1413,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 	  isDaugInAcc = CheckDaugAcc(arrayMC,nProng,labDau);
                     
 	  if(isFidAcc) {
-	    Double_t var4nSparseAcc[2] = {pt,rapid};
+	    Double_t var4nSparseAcc[2] = {pt,rapid*10};
 	    if(isDaugInAcc) {
 	      if(orig==4) fnSparseMC[0]->Fill(var4nSparseAcc);
 	      if(orig==5) fnSparseMC[1]->Fill(var4nSparseAcc);
@@ -1436,7 +1443,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 	  isDaugInAcc = CheckDaugAcc(arrayMC,nProng,labDau);
                     
 	  if(isFidAcc) {
-	    Double_t var4nSparseAcc[2] = {pt,rapid};
+	    Double_t var4nSparseAcc[2] = {pt,rapid*10};
 	    if(isDaugInAcc) {
 	      if(orig==4) fnSparseMCDplus[0]->Fill(var4nSparseAcc);
 	      if(orig==5) fnSparseMCDplus[1]->Fill(var4nSparseAcc);
