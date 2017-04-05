@@ -52,6 +52,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kFALSE),
   fFilePattern(""),
+  fInputFilename(""),
   fFileListFilename(""),
   fFilenameIndex(-1),
   fFilenames(),
@@ -92,6 +93,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kFALSE),
   fFilePattern(""),
+  fInputFilename(""),
   fFileListFilename(""),
   fFilenameIndex(-1),
   fFilenames(),
@@ -159,6 +161,19 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 {
+  // Determine the pattern filename if not yet set
+  if (fInputFilename == "") {
+    if (fTreeName == "aodTree") {
+      fInputFilename = "AliAOD.root";
+    }
+    else if (fTreeName == "esdTree") {
+      fInputFilename = "AliESDs.root";
+    }
+    else {
+      AliFatal(TString::Format("Requested default (pattern) input filename, but could not determine file type from tree name \"%s\". Please check the tree name and set the pattern input filename", fTreeName.Data()));
+    }
+  }
+
   // Retrieve filenames if we don't have them yet.
   if (fFilenames.size() == 0)
   {
@@ -194,8 +209,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       }
 
       // Retrieve filenames from alien using alien_find
+      // NOTE: This input is unfiltered! Be careful here!
       TString command = "alien_find";
       command += fFilePattern;
+      command += " ";
+      command += fInputFilename;
       command += " > ";
       command += fFileListFilename;
 
@@ -232,6 +250,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   for (auto filename : fFilenames)
   {
     if (filename.find(".zip") != std::string::npos && filename.find("#") == std::string::npos) {
+      filename += "#";
+      filename += fInputFilename;
       if (fTreeName == "aodTree") {
         filename += "#AliAOD.root";
       }
