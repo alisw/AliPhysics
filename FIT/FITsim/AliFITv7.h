@@ -33,7 +33,7 @@ public:
   virtual Int_t  IsVersion() const {return 0;}
   Bool_t RegisterPhotoE(Double_t energy);
   virtual void   StepManager();
-  void SetPMTeff();
+  // void SetPMTeff();
 
 protected:
   Int_t fIdSens1; // Sensetive volume  in T0
@@ -50,7 +50,7 @@ protected:
 private: 
  // Optical properties reader: e-Energy, abs-AbsorptionLength[cm], n-refractive index
   Int_t ReadOptProperties(const std::string inputFilePath, Float_t **e,
-    Double_t **de, Float_t **abs, Float_t **n, Int_t &kNbins) const;
+			  Double_t **de, Float_t **abs, Float_t **n, Float_t **qe, Int_t &kNbins) const;
   void FillOtherOptProperties(Float_t **efficAll, Float_t **rindexAir,
     Float_t **absorAir, Float_t **rindexCathodeNext, Float_t **absorbCathodeNext,
     Double_t **efficMet, Double_t **aReflMet, const Int_t kNbins) const;
