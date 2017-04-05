@@ -60,6 +60,7 @@ set(SRCS
   AliFemtoModelCorrFctnNonIdDR.cxx
   AliFemtoModelCorrFctnQinv.cxx
   AliFemtoModelCorrFctnTrueQ.cxx
+  AliFemtoModelCorrFctnTrueQ3D.cxx
   AliFemtoNSigmaFilter.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
