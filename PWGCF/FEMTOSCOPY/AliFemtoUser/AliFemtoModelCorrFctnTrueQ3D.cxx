@@ -10,6 +10,7 @@
 #include <TH3D.h>
 #include <TList.h>
 #include <TString.h>
+#include <TRandom.h>
 
 #include <tuple>
 #include <iostream>
@@ -36,6 +37,7 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const char *title, UI
   , fNumeratorReconstructed(nullptr)
   , fDenominatorGenerated(nullptr)
   , fDenominatorReconstructed(nullptr)
+  , fRng(new TRandom())
 {
   fNumeratorGenerated = new TH3D(TString::Format("%s_NumGen", title), "Numerator (MC-Generated Momentum)",
                                  nbins, qmin, qmax,
@@ -70,6 +72,7 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
   , fNumeratorReconstructed(nullptr)
   , fDenominatorGenerated(nullptr)
   , fDenominatorReconstructed(nullptr)
+  , fRng(new TRandom())
 {
   fNumeratorGenerated = new TH3D(*orig.fNumeratorGenerated);
   fNumeratorReconstructed = new TH3D(*orig.fNumeratorReconstructed);
@@ -84,6 +87,7 @@ AliFemtoModelCorrFctnTrueQ3D::~AliFemtoModelCorrFctnTrueQ3D()
   delete fNumeratorReconstructed;
   delete fDenominatorGenerated;
   delete fDenominatorReconstructed;
+  delete fRng;
 }
 
 
@@ -116,28 +120,21 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
                             , d = p1 - p2
                             ;
 
-  Double_t dx = d.x()
-         , dy = d.y()
-         , dz = d.z();
-
-  Double_t xt = p.x()
-         , yt = p.y()
-         , k1 = p.Perp()
-         , k2 = dx*xt + dy*yt;
+  Double_t k1 = p.Perp(),
+           k2 = d.x()*p.x() + d.y()*p.y();
 
   // relative momentum out component in lab frame
   Double_t qout = (k1 == 0) ? 0.0 : k2/k1;
 
- 
   // relative momentum side component in lab frame
-  Double_t qside = (k1 == 0) ? 0.0 : 2.0*(p2.x()*p1.y()-p1.x()*p2.y())/k1;
+  Double_t qside = (k1 == 0) ? 0.0 : 2.0 * (p2.x()*p1.y() - p1.x()*p2.y())/k1;
 
   // relative momentum component in lab frame
 
-  double beta = p.z()/p.t();
-  double gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta));
+  Double_t beta = p.z()/p.t(),
+          gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta));
   
-  double qlong = gamma * (dz - beta*d.t());
+  Double_t qlong = gamma * (d.z() - beta*d.t());
 
   // double qlong = (p.t()*d.z() - p.z()*d.t()) / TMath::Sqrt(p.t()*p.t() - p.z()*p.z());
   
@@ -188,27 +185,30 @@ AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2, TH
 void
 AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
 {
-  std::cout << "Adding real pair\n";
-//  Double_t weight = fManager->GetWeight(pair);
-//  
-//  const AliFemtoParticle *p1 = pair->Track1(),
-//                         *p2 = pair->Track2();
-//
-//  std::swap(p1, p2);
-//  AddPair(*p1, *p2, fNumeratorGenerated, fNumeratorReconstructed, weight);
-  std::cout << "    Done\n";
+  Double_t weight = fManager->GetWeight(pair);
+
+  const AliFemtoParticle *p1 = pair->Track1(),
+                         *p2 = pair->Track2();
+
+  // randomize to avoid ordering biases
+  if (fRng->Uniform() >= 0.5) {
+    std::swap(p1, p2);
+  }
+  AddPair(*p1, *p2, fNumeratorGenerated, fNumeratorReconstructed, weight);
 }
 
 void
 AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
 {
-  std::cout << "Adding mixed pair" << std::endl;
-//  const AliFemtoParticle *p1 = pair->Track1(),
-//                         *p2 = pair->Track2();
-//
-//  std::cout << "p1: " << p1 << "  p2: " << p2 << "\n";
-//  AddPair(*p1, *p2, fDenominatorGenerated, fDenominatorReconstructed, 1.0);
-  std::cout << "    Done\n";
+  const AliFemtoParticle *p1 = pair->Track1(),
+                         *p2 = pair->Track2();
+
+  // randomize to avoid ordering biases
+  if (fRng->Uniform() >= 0.5) {
+    std::swap(p1, p2);
+  }
+
+  AddPair(*p1, *p2, fDenominatorGenerated, fDenominatorReconstructed, 1.0);
 }
 
 

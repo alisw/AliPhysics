@@ -5,12 +5,11 @@
 #pragma once
 
 #include "AliFemtoCorrFctn.h"
-#include <TRandom.h>
 
 class AliFemtoPair;
 class AliFemtoModelManager;
 class TH3D;
-
+class TRandom;
 
 /// \class AliFemtoModelCorrFctnTrueQ3D
 /// \brief Correlation function storing true momentum in LCMS frame.
@@ -112,6 +111,9 @@ protected:
   
   /// Denominator with reconstructed data
   TH3D *fDenominatorReconstructed;
+
+  /// Random number generator used for randomizing order of pair momentums
+  TRandom *fRng;
 };
 
 inline
