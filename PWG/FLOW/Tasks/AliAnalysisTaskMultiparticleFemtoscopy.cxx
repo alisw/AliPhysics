@@ -251,6 +251,8 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
   this->InitializeArraysForCorrelationFunctionsTEST();
   this->InitializeArraysForBackgroundTEST();
 
+  // dummy comment
+
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
   //DefineInput(0, AliFlowEventSimple::Class());  
