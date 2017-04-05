@@ -191,7 +191,7 @@ fhEMaxCellClusterRatio(0),             fhEMaxCellClusterLogRatio(0),
 fhECellTotalRatio(0),                  fhECellTotalLogRatio(0),
 fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0),
 
-fhExoL0ECross(0),                      fhExoL1ECross(0),
+//fhExoL0ECross(0),                      fhExoL1ECross(0),
 
 // MC and reco
 fhRecoMCE(),                           fhRecoMCPhi(),                          fhRecoMCEta(), 
