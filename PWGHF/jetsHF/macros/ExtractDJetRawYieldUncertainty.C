@@ -46,9 +46,11 @@ void EvaluateBinPerBinUncertainty(
     return;
   }
 
-  Bool_t multitrial = interface->RunMultiTrial();
-  if (!multitrial) {
+  AliHFMultiTrials* multitrial = interface->RunMultiTrial();
+  if (!multitrial || !interface->Success()) {
     printf("Error in running the MultiTrial code! Exiting...\n");
+    delete multitrial;
+    delete interface;
     return;
   }
 

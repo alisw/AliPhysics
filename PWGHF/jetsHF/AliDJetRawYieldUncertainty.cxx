@@ -100,7 +100,9 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
   fJetYieldUnc(nullptr),
   fJetSpectrSBVars(nullptr),
   fJetSpectrSBDef(nullptr),
-  fJetPtBinYieldDistribution(nullptr)
+  fJetPtBinYieldDistribution(nullptr),
+  fSuccess(kFALSE),
+  fCanvases()
 {
   memset(fMeanSigmaVar, 0, sizeof(Bool_t)*fgkNSigmaVar);
   memset(fBkgVar, 0, sizeof(Bool_t)*fgkNBkgVar);
@@ -163,7 +165,9 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
   fJetYieldUnc(nullptr),
   fJetSpectrSBVars(nullptr),
   fJetSpectrSBDef(nullptr),
-  fJetPtBinYieldDistribution(nullptr)
+  fJetPtBinYieldDistribution(nullptr),
+  fSuccess(kFALSE),
+  fCanvases()
 {
   if (source.fnDbins > 0) {
     fnDbins = source.fnDbins;
@@ -231,6 +235,7 @@ AliDJetRawYieldUncertainty::~AliDJetRawYieldUncertainty()
     for (int i = 0; i < fnJetbins; i++) delete fJetPtBinYieldDistribution[i];
     delete[] fJetPtBinYieldDistribution;
   }
+  for (auto c : fCanvases) delete c;
 }
 
 /**
@@ -320,7 +325,7 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot()
 /**
  * Run the multi-trial analysis.
  */
-Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
+AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial()
 {
   TH1::AddDirectory(kFALSE);
 
@@ -368,7 +373,7 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
 
   if (sigmaToFix == 0){
     Printf("**** ERROR **** sigmaToFix = 0!!");
-    return kFALSE;
+    return nullptr;
   }
   AliHFMultiTrials* mt = new AliHFMultiTrials();
   mt->SetSuffixForHistoNames("");
@@ -405,19 +410,22 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
   TString cname;
   cname = TString::Format("MassFit_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TCanvas* c0 = new TCanvas(cname,cname);
+  fCanvases.push_back(c0);
 
   if (fFitRefl) { //reflection treatment
     std::cout << " Reflection template file: " << fReflFilenameInput.Data() << " - Reflection histo name:  " << fReflHistoName.Data() << std::endl;
     TFile fRefl(fReflFilenameInput.Data(), "read");
     if (fRefl.IsZombie()) {
       std::cout << " Reflection file not found! Exiting... " << std::endl;
-      return kFALSE;
+      delete mt;
+      return nullptr;
     }
     TH1 *hTemplRefl_temp = dynamic_cast<TH1*>(fRefl.Get(fReflHistoName.Data()));
     if (!hTemplRefl_temp) {
       std::cout << " Reflection histo not found! Exiting... " << std::endl;
       fRefl.Close();
-      return kFALSE;
+      delete mt;
+      return nullptr;
     }
     Printf("Copying histogram...");
     TH1F *hTemplRefl = new TH1F("temp", "temp", 1, 0, 1); // needed to convert other types of TH1 (TH1D in particular)
@@ -433,13 +441,15 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
       TFile fSigMC(fSigMCFilenameInput.Data(),"read"); //needed if refl/sigMC ratio is not fixed
       if (fSigMC.IsZombie()) {
         std::cout << " MC signal file not found! Exiting... " << std::endl;
-        return kFALSE;
+        delete mt;
+        return nullptr;
       }
       TH1 *hSignMC = dynamic_cast<TH1*>(fSigMC.Get(fSigMCHistoName.Data()));
       if (!hSignMC) {
         std::cout << " MC signal histo not found! Exiting... " << std::endl;
         fSigMC.Close();
-        return kFALSE;
+        delete mt;
+        return nullptr;
       }
       fFixRiflOverS = factor * hTemplRefl->Integral(hTemplRefl->FindBin(fReflRangeL + 0.00001), hTemplRefl->FindBin(fReflRangeR - 0.00001)) / hSignMC->Integral(hSignMC->FindBin(fReflRangeL + 0.00001), hSignMC->FindBin(fReflRangeR - 0.00001));
       Printf("Sign over Refl bin %1.1f-%1.1f = %f", fpTmin, fpTmax, fFixRiflOverS);
@@ -453,7 +463,8 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
   Bool_t isOK = mt->DoMultiTrials(fMassPlot, c0);
 
   cname = TString::Format("AllTrials_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
-  TCanvas* cOut =new TCanvas(cname, cname);
+  TCanvas* cOut = new TCanvas(cname, cname);
+  fCanvases.push_back(cOut);
   std::cout << "Has MultiTrial suceeded? " << isOK << std::endl;
 
   if (isOK) {
@@ -461,12 +472,13 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
     mt->SaveToRoot(outfilnam.Data(), "recreate");
   }
   else {
-    return kFALSE;
+    delete mt;
+    return nullptr;
   }
 
-  isOK = CombineMultiTrialOutcomes();
+  fSuccess = CombineMultiTrialOutcomes();
 
-  return isOK;
+  return mt;
 }
 
 /**
@@ -667,6 +679,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
 
   TString cname = TString::Format("All_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TCanvas* call = new TCanvas(cname, cname, 1400 ,800);
+  fCanvases.push_back(call);
   call->Divide(4,2);
   call->cd(1);
   gPad->SetLeftMargin(0.13);
@@ -1178,6 +1191,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       //ADVANCED - save distribution of final jet yields (summing all pT(D) bins) in a single plot
       cname = Form("cDistr_%s_%s", fDmesonLabel.Data(), fMethodLabel.Data());
       TCanvas *cDistr = new TCanvas(cname, cname, 900, 600);
+      fCanvases.push_back(cDistr);
       for (Int_t iTrial = 0; iTrial < fnMaxTrials; iTrial++) {
         for (int l=0; l < fJetSpectrSBVars[iTrial]->GetNbinsX();l++) fJetSpectrSBVars[iTrial]->SetBinError(l + 1, 0.0001);
         fJetSpectrSBVars[iTrial]->SetMarkerColor(iTrial + 1);
@@ -1191,6 +1205,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       for (int iDbin = 0; iDbin < fnDbins; iDbin++) {
         cname = Form("cDistr_%s_%s_%d", fDmesonLabel.Data(), fMethodLabel.Data(), iDbin);
         TCanvas *cDistr1 = new TCanvas(cname, cname, 900, 600);
+        fCanvases.push_back(cDistr1);
         TH1F** hJetSpectrFromSingleDbin = new TH1F*[fnMaxTrials];
         for(Int_t iTrial = 0; iTrial < fnMaxTrials; iTrial++) {
           hJetSpectrFromSingleDbin[iTrial] = static_cast<TH1F*>(fJetSpectrSBVars[0]->Clone(Form("JetRawYieldDistr_Dbin%d",iDbin)));
@@ -1209,6 +1224,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       //ADVANCED - save averages of final jet yields from each single pT(D) bin, with their RMS, without summing them, in a single plot
       cname = Form("cDistrAllAvgs_%s_%s", fDmesonLabel.Data(), fMethodLabel.Data());
       TCanvas *cDistr2 = new TCanvas(cname, cname, 900, 600);
+      fCanvases.push_back(cDistr2);
 
       fJetYieldCentral->SetLineWidth(3);
       fJetYieldCentral->Draw();
