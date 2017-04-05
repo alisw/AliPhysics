@@ -822,6 +822,10 @@ public:
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   
   // CRC VZERO:
+  void SetCRCVZEROetaPro(TProfile* const TP, Int_t const c, Int_t const k, Int_t const r) {this->fCRCVZEROetaPro[c][k][r] = TP;};
+  TProfile* GetCRCVZEROetaPro(Int_t const c, Int_t const k, Int_t const r) const {return this->fCRCVZEROetaPro[c][k][r];};
+  void SetCRCVZEROetaHist(TH1D* const TP, Int_t const c, Int_t const k, Int_t const r) {this->fCRCVZEROetaHist[c][k][r] = TP;};
+  TH1D* GetCRCVZEROetaHist(Int_t const c, Int_t const k, Int_t const r) const {return this->fCRCVZEROetaHist[c][k][r];};
   
   // CRC ZDC:
   // 12.a) EbE Corr:
@@ -1711,6 +1715,8 @@ private:
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
   TProfile3D *fTPCQVecProTemp[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
+  const static Int_t fkNv1evenCor = 4;
+  TProfile2D *fFlowSPZDCv1evenCorPro[fkNv1evenCor]; //!
   
   // Flow QC
   TList *fFlowQCList;    //! QC List
