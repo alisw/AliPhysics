@@ -49,6 +49,8 @@ struct MacroParams {
   bool do_deltaeta_deltaphi_cf;
   bool do_avg_sep_cf;
   bool do_trueq_cf;
+  bool do_trueq3d_cf;
+
   bool do_kt_q3d;
   bool do_kt_qinv;
   bool do_ylm_cf; // not implemented yet
@@ -83,6 +85,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
   macro_config.do_ylm_cf = false;
   macro_config.do_trueq_cf = true;
+  macro_config.do_trueq3d_cf = true;
+
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
 
@@ -238,9 +242,15 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_q3d_cf) {
         cf_title = TString("_q3D_") + pair_type_str;
-        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, macro_config.q3d_bin_count, 0.25));
+        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
 
+      if (macro_config.do_trueq3d_cf) {
+        cf_title = TString("Trueq3D_") + pair_type_str;
+        AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+        analysis->AddCorrFctn(m_cf);
+      }
 
       if (macro_config.do_kt_qinv) {
         AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));
@@ -254,7 +264,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_q3d) {
-        TString q3d_cf_name = TString("q3D_") + pair_type_str;
+        TString q3d_cf_name = TString("_q3D_") + pair_type_str;
         AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
           new AliFemtoCorrFctn3DLCMSSym(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
         kt_q3d->AddKtRange(0.2, 0.3);
