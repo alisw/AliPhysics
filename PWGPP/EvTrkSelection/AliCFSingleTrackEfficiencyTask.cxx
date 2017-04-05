@@ -25,7 +25,6 @@
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
 #include "AliLog.h"
-#include "AliStack.h"
 #include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
 #include "AliCentrality.h"
