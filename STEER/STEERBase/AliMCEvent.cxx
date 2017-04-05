@@ -177,21 +177,39 @@ void AliMCEvent::ConnectTreeTR (TTree* tree)
 Int_t AliMCEvent::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs)
 {
     // Retrieve entry i
-    if (i < 0 || i >= fNparticles) {
-	AliWarning(Form("AliMCEventHandler::GetEntry: Index out of range"));
+  if (i >= BgLabelOffset()) {
+    if (fSubsidiaryEvents) {
+      AliMCEvent* bgEvent = (AliMCEvent*) (fSubsidiaryEvents->At(1));
+      return bgEvent->GetParticleAndTR(i - BgLabelOffset(),particle,trefs);
+    } else {
+      return 0;
+    }
+  } 
+  //  
+  if (i < 0 || i >= fNparticles) {
+    AliWarning(Form("AliMCEventHandler::GetEntry: Index out of range"));
 	particle = 0;
 	trefs    = 0;
 	return (-1);
-    }
-    particle = fStack->Particle(i);
-    if (fTreeTR) {
-	fTreeTR->GetEntry(fStack->TreeKEntry(i));
-	trefs    = fTRBuffer;
-	return trefs->GetEntries();
-    } else {
-	trefs = 0;
-	return -1;
-    }
+  }
+
+  if (fSubsidiaryEvents) {
+    AliMCEvent*   mc;
+    Int_t idx = FindIndexAndEvent(i, mc);
+    return mc->GetParticleAndTR(idx,particle,trefs);
+  }
+  //
+  particle = fStack->Particle(i);
+  if (fTreeTR) {
+    fTreeTR->GetEntry(fStack->TreeKEntry(i));
+    trefs    = fTRBuffer;
+    return trefs->GetEntries();
+  } else {
+    trefs = 0;
+    return -1;
+  }
+
+    
 }
 
 
