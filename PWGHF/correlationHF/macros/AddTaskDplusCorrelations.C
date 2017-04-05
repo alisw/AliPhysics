@@ -128,6 +128,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     AliAnalysisTaskSEDplusCorrelations *dpluscorrTask = new AliAnalysisTaskSEDplusCorrelations("DplusCorrelation",DplusCorrCuts,HFAssoTrackCuts);
     dpluscorrTask->SetEventMixing(fMixing);
     dpluscorrTask->SetCorrelator(fOption);
+    dpluscorrTask->SetBinWidth(0.004);
     dpluscorrTask->SetDebugLevel(0);
     //dpluscorrTask->SetEtaRagne(etacorr);
     dpluscorrTask->SetCorrFormPart(genMC);
