@@ -50,6 +50,8 @@ AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const char* name) :
   fBayesThreshold(0.05),
   fWeightKKpi(1.),
   fWeightpiKK(1.),
+  fPhiMassRef(1.019),
+  fUseRefPhiMass(kFALSE),
   fUsed0MeasMinusExpCut(kFALSE),
   fMaxd0MeasMinusExp(0x0),
   fUsed0Cut(kFALSE),
@@ -154,6 +156,8 @@ AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi &source) :
   fBayesThreshold(source.fBayesThreshold),
   fWeightKKpi(source.fWeightKKpi),
   fWeightpiKK(source.fWeightpiKK),
+  fPhiMassRef(source.fPhiMassRef),
+  fUseRefPhiMass(source.fUseRefPhiMass),
   fUsed0MeasMinusExpCut(source.fUsed0MeasMinusExpCut),
   fMaxd0MeasMinusExp(0x0),
   fUsed0Cut(source.fUsed0Cut),
@@ -184,6 +188,8 @@ AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &s
   fBayesThreshold=source.fBayesThreshold;
   fWeightKKpi=source.fWeightKKpi;
   fWeightpiKK=source.fWeightpiKK;
+  fPhiMassRef=source.fPhiMassRef;
+  fUseRefPhiMass=source.fUseRefPhiMass;
   fUsed0MeasMinusExpCut=source.fUsed0MeasMinusExpCut;
   fUsed0Cut=source.fUsed0Cut;
   if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
@@ -690,10 +696,12 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     if(fCutOnResonances){
       Double_t mPhiPDG = TDatabasePDG::Instance()->GetParticle(333)->Mass();
       Double_t mK0starPDG = TDatabasePDG::Instance()->GetParticle(313)->Mass();
+      Double_t mPhiRef = mPhiPDG;
+      if(fUseRefPhiMass) mPhiRef = fPhiMassRef;
       if(okDsKKpi){
 	Double_t mass01phi=d->InvMass2Prongs(0,1,321,321);
 	Double_t mass12K0s=d->InvMass2Prongs(1,2,321,211);
-	if(TMath::Abs(mass01phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhiKKpi=1;
+	if(TMath::Abs(mass01phi-mPhiRef)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhiKKpi=1;
 	if(TMath::Abs(mass12K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starKKpi = 1;
 	if(!okMassPhiKKpi && !okMassK0starKKpi) okDsKKpi=0;
 	if(okMassPhiKKpi) okDsPhiKKpi=1;
@@ -703,7 +711,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 	Double_t mass01K0s=d->InvMass2Prongs(0,1,211,321);
 	Double_t mass12phi=d->InvMass2Prongs(1,2,321,321);
 	if(TMath::Abs(mass01K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starpiKK = 1;
-	if(TMath::Abs(mass12phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhipiKK=1;
+	if(TMath::Abs(mass12phi-mPhiRef)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhipiKK=1;
 	if(!okMassPhipiKK && !okMassK0starpiKK) okDspiKK=0;
 	if(okMassPhipiKK) okDsPhipiKK=1;
 	if(okMassK0starpiKK) okDsK0starpiKK=1;

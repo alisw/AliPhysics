@@ -80,6 +80,8 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   void SetMaxPStrongPidK(Float_t spid){fMaxPStrongPidK=spid;}
   void SetMaxPStrongPidpi(Float_t spid){fMaxPStrongPidpi=spid;}
   
+  void SetUseReferencePhiMass(Double_t value){fUseRefPhiMass = kTRUE; fPhiMassRef = value;}
+    
   Int_t GetPidOption() const {return fPidOption;}
   Double_t GetWeightForKKpi() const {return fWeightKKpi;}
   Double_t GetWeightForpiKK() const {return fWeightpiKK;}
@@ -101,13 +103,15 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   Double_t fBayesThreshold;/// Threshold for Bayesian PID probability
   Double_t fWeightKKpi; /// weight for KKpi for kBayesianWeights
   Double_t fWeightpiKK; /// weight for piKK for kBayesianWeights
+  Double_t fPhiMassRef; /// Reference Phi mass to be used for the cut on delta phi mass (instead of PDG value)
+  Bool_t fUseRefPhiMass; ///swicth to the usage of Reference Phi mass (instead of PDG value)
   Bool_t fUsed0MeasMinusExpCut; /// switch for cut on d0meas-d0exp
   Float_t* fMaxd0MeasMinusExp;  //[fnPtBins] cut values on d0meas-d0exp
   Bool_t fUsed0Cut; /// switch for cut on d0
   Float_t* fMaxd0;  //[fnPtBins] cut values on d0
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsDstoKKpi,5);  /// class for cuts on AOD reconstructed Ds->KKpi
+  ClassDef(AliRDHFCutsDstoKKpi,6);  /// class for cuts on AOD reconstructed Ds->KKpi
   /// \endcond
 };
 
