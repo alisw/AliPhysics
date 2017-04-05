@@ -407,6 +407,7 @@ public:
   TH2F *   fhLambda1NLM2TCardCorrNoSelection[2];            //!<! Cluster m20 vs E for clusters selected for TCard correlation studies, nlm=2
   TH2F *   fhLambdaRTCardCorrNoSelection[2];                //!<! Cluster m20/m02 vs E for clusters selected for TCard correlation studies
   TH2F *   fhNLocMaxTCardCorrNoSelection[2];                //!<! Cluster Number of local Maxima vs E for clusters selected for TCard correlation studies
+ 
   TH2F *   fhEMaxRatNLM1TCardCorrNoSelection[2];            //!<! Cluster E cell max / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies
   TH2F *   fhEMaxRatNLM2TCardCorrNoSelection[2];            //!<! Cluster E cell max / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies
   TH2F *   fhEMaxRatNLM3TCardCorrNoSelection[2];            //!<! Cluster E cell max / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies
@@ -417,6 +418,13 @@ public:
   TH2F *   fhE2ndEMaxRatNLM2TCardCorrNoSelection[2];        //!<! Cluster E cell second loc max / E Max for NLM=2 vs E for clusters selected for TCard correlation studies
   TH2F *   fhE2ndEMaxRatNLM3TCardCorrNoSelection[2];        //!<! Cluster E cell second loc max / E Max for NLM>2 vs E for clusters selected for TCard correlation studies
 
+  TH2F *   fhE2ndSameRatNLM1TCardCorrNoSelection[2];        //!<! Cluster E cell second max / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameRatNLM2TCardCorrNoSelection[2];        //!<! Cluster E cell second loc max / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameRatNLM3TCardCorrNoSelection[2];        //!<! Cluster E cell second loc max / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[2];    //!<! Cluster E cell second loc max / E Max for NLM=1 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[2];    //!<! Cluster E cell second loc max / E Max for NLM=2 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[2];    //!<! Cluster E cell second loc max / E Max for NLM>2 vs E for clusters selected for TCard correlation studies
+
   TH2F *   fhECellClusRatNLM1TCardCorrNoSelection[2];       //!<! Cluster E cell / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies
   TH2F *   fhECellClusRatNLM2TCardCorrNoSelection[2];       //!<! Cluster E cell / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies
   TH2F *   fhECellClusRatNLM3TCardCorrNoSelection[2];       //!<! Cluster E cell / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies
@@ -426,6 +434,17 @@ public:
   TH2F *   fhLogECellNLM1TCardCorrNoSelection[2];           //!<! Cluster Log E cell for NLM=1 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLogECellNLM2TCardCorrNoSelection[2];           //!<! Cluster Log E cell for NLM=2 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLogECellNLM3TCardCorrNoSelection[2];           //!<! Cluster Log E cell for NLM>2 vs E for clusters selected for TCard correlation studies
+
+  TH2F *   fhECellSameClusRatNLM1TCardCorrNoSelection[2];   //!<! Cluster E cell / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameClusRatNLM2TCardCorrNoSelection[2];   //!<! Cluster E cell / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameClusRatNLM3TCardCorrNoSelection[2];   //!<! Cluster E cell / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameWeightNLM1TCardCorrNoSelection[2];    //!<! Cluster E cell weight for NLM=1 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameWeightNLM2TCardCorrNoSelection[2];    //!<! Cluster E cell weight for NLM=2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameWeightNLM3TCardCorrNoSelection[2];    //!<! Cluster E cell weight for NLM>2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhLogECellSameNLM1TCardCorrNoSelection[2];       //!<! Cluster Log E cell for NLM=1 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhLogECellSameNLM2TCardCorrNoSelection[2];       //!<! Cluster Log E cell for NLM=2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhLogECellSameNLM3TCardCorrNoSelection[2];       //!<! Cluster Log E cell for NLM>2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+
   
   TH2F *   fhNCellsTCardCorrNoSelection[2];                 //!<! Ncells per cluster vs cluster energy, clusters selected for TCard correlation studies
   TH2F *   fhNCellsTCardCorrWithWeightNoSelection[2];       //!<! Ncells per cluster vs cluster energy, select cells with w>0.01, clusters selected for TCard correlation studies
