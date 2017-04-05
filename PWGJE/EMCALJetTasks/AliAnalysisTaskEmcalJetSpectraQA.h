@@ -69,6 +69,8 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJetLight {
   void                        SetPtBin(Float_t w, Float_t max)    { fPtBinWidth            = w; fMaxPt = max ; }
   void                        SetIsEmbedded(Bool_t i)             { fIsEmbedded            = i; }
 
+  static AliAnalysisTaskEmcalJetSpectraQA* AddTaskEmcalJetSpectraQA(TString ntracks = "usedefault", TString nclusters = "usedefault", Double_t trackPtCut = 0.15, Double_t clusECut = 0.30, TString suffix = "");
+
  protected:
   virtual void                AllocateTHX(const AliJetContainer* jets);
   virtual void                AllocateTHnSparse(const AliJetContainer* jets);
@@ -94,7 +96,7 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJetLight {
   AliAnalysisTaskEmcalJetSpectraQA &operator=(const AliAnalysisTaskEmcalJetSpectraQA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 5)
+  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 5);
   /// \endcond
 };
 #endif
