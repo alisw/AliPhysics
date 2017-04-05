@@ -115,14 +115,24 @@ Bool_t AliAnalysisTaskEmcalJetLight::RetrieveEventObjects()
  * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
  * @param[in] radius Resolution parameter (0.2, 0.4, ...)
  * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] partContName Name of the particle container of the objects used to generate the jets
+ * @param[in] clusContName Name of the cluster container of the objects used to generate the jets
  * @param[in] tag Label to distinguish different jet branches (defaul is 'Jet')
  * @return Pointer to the new jet container
  */
 AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
-    UInt_t accType, TString tag)
+    UInt_t accType, std::string partContName, std::string clusContName, TString tag)
 {
-  AliParticleContainer* partCont = fParticleCollArray.size() > 0 ? fParticleCollArray.begin()->second : nullptr;
-  AliClusterContainer* clusCont = fClusterCollArray.size() > 0 ? fClusterCollArray.begin()->second : nullptr;
+  AliParticleContainer* partCont = nullptr;
+  AliClusterContainer* clusCont =  nullptr;
+  auto partContSearch = fParticleCollArray.find(partContName);
+  if (partContSearch != fParticleCollArray.end()) partCont = partContSearch->second;
+  auto clusContSearch = fClusterCollArray.find(partContName);
+  if (clusContSearch != fClusterCollArray.end()) clusCont = clusContSearch->second;
+  if (!partCont && !clusCont) {
+    AliError(Form("Could not find neither particle nor cluster container with names '%s' and '%s'", partContName.c_str(), clusContName.c_str()));
+    return nullptr;
+  }
 
   return AddJetContainer(jetType, jetAlgo, recoScheme, radius, accType, partCont, clusCont, tag);
 }
