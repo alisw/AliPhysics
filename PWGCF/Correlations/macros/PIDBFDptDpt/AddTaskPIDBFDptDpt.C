@@ -5,17 +5,16 @@
 //   pPb          13:     centralityMethod = 7 (V0A),       trigger = kTRUE (AliVEvent::kINT7).     
 //   pp           10:     centralityMethod = 3 (nTracks),   trigger = kFALSE (AliVEvent::kMB).
 //   pp_V0A_kMB   10:     centralityMethod = 7 (V0A),       trigger = kFALSE (AliVEvent::kMB).
-//   pp_V0A_kINT7 10:     centralityMethod = 7 (V0A),       trigger = kTRUE (AliVEvent::kINT7).
 //   pp_V0_kMB    10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
 /////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
 (
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- TString System                 = "pp_V0A_kMB",      // "PbPb", "pPb", "pp", "pp_V0A_kMB", "pp_V0A_kINT7", "pp_V0_kMB"
+ TString System                 = "pp_V0_kMB",      // "PbPb", "pPb", "pp", "pp_V0A_kMB", "pp_V0_kMB"
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
- int    CentralityGroup         =  9,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    CentralityGroup         =  21,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
@@ -33,7 +32,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  4,
+ int nCentrality                =  5,
  int particleID                 =  0,   // Pion=0, Kaon=1, Proton=2
  double nSigmaCut               =  2.0,
  double ElectronVetoCut         =  1.0,
@@ -65,7 +64,6 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   else if ( System == "pPb" )           { centralityMethod = 7; trigger = kTRUE;  }
   else if ( System == "pp" )            { centralityMethod = 3; trigger = kFALSE; }
   else if ( System == "pp_V0A_kMB" )    { centralityMethod = 7; trigger = kFALSE; }
-  else if ( System == "pp_V0A_kINT7" )  { centralityMethod = 7; trigger = kTRUE;  }
   else if ( System == "pp_V0_kMB" )     { centralityMethod = 4; trigger = kFALSE; }
   else    return 0;
 
@@ -155,6 +153,12 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
     { minCentrality[0] = 0;       maxCentrality[0]  = 5.;
       minCentrality[1] = 30.;     maxCentrality[1]  = 40.;
       minCentrality[2] = 70.;     maxCentrality[2]  = 80.; }
+  else if ( CentralityGroup == 21 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 20.;
+      minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
+      minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
+      minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
+      minCentrality[4] = 80.;     maxCentrality[4]  = 100.;}
   else    return 0;
   
   double dedxMin                =  0.0;
