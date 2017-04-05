@@ -111,7 +111,7 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   Float_t* fMaxd0;  //[fnPtBins] cut values on d0
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsDstoKKpi,5);  /// class for cuts on AOD reconstructed Ds->KKpi
+  ClassDef(AliRDHFCutsDstoKKpi,6);  /// class for cuts on AOD reconstructed Ds->KKpi
   /// \endcond
 };
 
