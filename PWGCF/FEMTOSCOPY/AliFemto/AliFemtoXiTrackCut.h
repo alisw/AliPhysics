@@ -50,7 +50,8 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   void SetMaxDcaXi(double x);
   void SetMinDcaXiBac(double x);
   void SetMaxDcaXiDaughters(double x);
-  void SetMinCosPointingAngleXi(double max);
+  void SetMinCosPointingAngleXi(double min);
+  void SetMinCosPointingAngleV0toXi(double min);
   void SetParticleTypeXi(short x);
 
   //-----The fMinvPurityAidHistoXi is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the Xi collection
@@ -79,6 +80,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   double fMinDcaXiBac;
   double fMaxDcaXiDaughters;
   double fMinCosPointingAngleXi;
+  double fMinCosPointingAngleV0toXi;
   double fMaxDecayLengthXi;
   double fInvMassXiMin;
   double fInvMassXiMax;
