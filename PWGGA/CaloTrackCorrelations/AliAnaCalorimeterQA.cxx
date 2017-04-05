@@ -76,9 +76,9 @@ fInvMassMinECut(0),                    fInvMassMaxECut(0),
 fInvMassMinM02Cut(0),                  fInvMassMaxM02Cut(0),                    
 fInvMassMaxOpenAngle(0),               fInvMassMaxTimeDifference(0),
 
-// Exotic
-fExoNECrossCuts(0),                    fExoECrossCuts(),
-fExoNDTimeCuts(0),                     fExoDTimeCuts(),    
+//// Exotic
+//fExoNECrossCuts(0),                    fExoECrossCuts(),
+//fExoNDTimeCuts(0),                     fExoDTimeCuts(),    
 
 fClusterMomentum(),                    fClusterMomentum2(),
 fPrimaryMomentum(),
@@ -249,21 +249,21 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
   fhDeltaIAMC[0]            = 0 ;         fhDeltaIAMC[1]            = 0;
   fhDeltaIAMC[2]            = 0 ;         fhDeltaIAMC[3]            = 0;
   
-  // Exotic
-  for (Int_t ie = 0; ie < 10 ; ie++) 
-  {
-    fhExoDTime[ie] = 0;
-    for (Int_t idt = 0; idt < 5 ; idt++) 
-    {
-      fhExoNCell    [ie][idt] = 0;
-      fhExoL0       [ie][idt] = 0;
-      fhExoL1       [ie][idt] = 0;
-      fhExoECross   [ie][idt] = 0;
-      fhExoTime     [ie][idt] = 0;
-      fhExoL0NCell  [ie][idt] = 0;
-      fhExoL1NCell  [ie][idt] = 0;
-    } 
-  }
+//  // Exotic
+//  for (Int_t ie = 0; ie < 10 ; ie++) 
+//  {
+//    fhExoDTime[ie] = 0;
+//    for (Int_t idt = 0; idt < 5 ; idt++) 
+//    {
+//      fhExoNCell    [ie][idt] = 0;
+//      fhExoL0       [ie][idt] = 0;
+//      fhExoL1       [ie][idt] = 0;
+//      fhExoECross   [ie][idt] = 0;
+//      fhExoTime     [ie][idt] = 0;
+//      fhExoL0NCell  [ie][idt] = 0;
+//      fhExoL1NCell  [ie][idt] = 0;
+//    } 
+//  }
   
   // MC
   
@@ -2238,7 +2238,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Float_t ampMax = cells->GetCellAmplitude(absIdMax);
     GetCaloUtils()->RecalibrateCellAmplitude(ampMax,GetCalorimeter(), absIdMax);
     
-    if(fStudyExotic) ExoticHistograms(absIdMax, ampMax, clus, cells);
+    //if(fStudyExotic) ExoticHistograms(absIdMax, ampMax, clus, cells);
 
     // Check bad clusters if requested and rejection was not on
     Bool_t goodCluster = IsGoodCluster(absIdMax, clus->GetM02(), nCaloCellsPerCluster, cells);
@@ -2998,75 +2998,75 @@ TObjString * AliAnaCalorimeterQA::GetAnalysisCuts()
   return new TObjString(parList) ;
 }
 
-//_________________________________________________________________________________
-/// Fill histograms with exoticity parameters.
-//_________________________________________________________________________________
-void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
-                                           AliVCluster *clus, AliVCaloCells* cells)
-{
-  if(ampMax < 0.01) 
-  {
-    AliDebug(1,Form("Low amplitude energy %f",ampMax));
-    return;
-  }
-    
-  Float_t  l0   = clus->GetM02();
-  Float_t  l1   = clus->GetM20();
-  Float_t  en   = clus->E();
-  Int_t    nc   = clus->GetNCells();  
-  Double_t tmax = clus->GetTOF()*1.e9-fConstantTimeShift; // recalibrated elsewhere
-  
-  Float_t eCrossFrac = 1-GetECross(absIdMax,cells, 10000000)/ampMax;
-
-  if(en > 5) 
-  {
-    fhExoL0ECross->Fill(eCrossFrac, l0, GetEventWeight());
-    fhExoL1ECross->Fill(eCrossFrac, l1, GetEventWeight());
-  }
-  
-  for(Int_t ie = 0; ie < fExoNECrossCuts; ie++)
-  {    
-    for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
-    {  
-      eCrossFrac = 1-GetECross(absIdMax,cells, fExoDTimeCuts[idt])/ampMax;
-      
-      if(eCrossFrac > fExoECrossCuts[ie])
-      {
-        // Exotic
-        fhExoL0    [ie][idt]->Fill(en,l0  , GetEventWeight());
-        fhExoL1    [ie][idt]->Fill(en,l1  , GetEventWeight());
-        fhExoTime  [ie][idt]->Fill(en,tmax, GetEventWeight());
-        
-        if(en > 5) 
-        {
-          fhExoL0NCell[ie][idt]->Fill(nc, l0, GetEventWeight());
-          fhExoL1NCell[ie][idt]->Fill(nc, l1, GetEventWeight());
-        } 
-        
-        // Diff time, do for one cut in time
-        if(idt == 0)
-        {
-          for (Int_t icell = 0; icell < clus->GetNCells(); icell++) 
-          {
-            Int_t absId  = clus->GetCellsAbsId()[icell]; 
-            Double_t time  = cells->GetCellTime(absId);
-            GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
-            time *= 1e9;
-            time -= fConstantTimeShift;
-            
-            Float_t diff = tmax-time;
-            fhExoDTime[ie]->Fill(en, diff, GetEventWeight());
-          }
-        }
-      }
-      else
-      {
-        fhExoECross[ie][idt]->Fill(en, eCrossFrac, GetEventWeight());
-        fhExoNCell [ie][idt]->Fill(en, nc        , GetEventWeight());
-      }
-    } // D time cut loop
-  } // e cross cut loop
-}
+////_________________________________________________________________________________
+///// Fill histograms with exoticity parameters.
+////_________________________________________________________________________________
+//void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
+//                                           AliVCluster *clus, AliVCaloCells* cells)
+//{
+//  if(ampMax < 0.01) 
+//  {
+//    AliDebug(1,Form("Low amplitude energy %f",ampMax));
+//    return;
+//  }
+//    
+//  Float_t  l0   = clus->GetM02();
+//  Float_t  l1   = clus->GetM20();
+//  Float_t  en   = clus->E();
+//  Int_t    nc   = clus->GetNCells();  
+//  Double_t tmax = clus->GetTOF()*1.e9-fConstantTimeShift; // recalibrated elsewhere
+//  
+//  Float_t eCrossFrac = 1-GetECross(absIdMax,cells, 10000000)/ampMax;
+//
+//  if(en > 5) 
+//  {
+//    fhExoL0ECross->Fill(eCrossFrac, l0, GetEventWeight());
+//    fhExoL1ECross->Fill(eCrossFrac, l1, GetEventWeight());
+//  }
+//  
+//  for(Int_t ie = 0; ie < fExoNECrossCuts; ie++)
+//  {    
+//    for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
+//    {  
+//      eCrossFrac = 1-GetECross(absIdMax,cells, fExoDTimeCuts[idt])/ampMax;
+//      
+//      if(eCrossFrac > fExoECrossCuts[ie])
+//      {
+//        // Exotic
+//        fhExoL0    [ie][idt]->Fill(en,l0  , GetEventWeight());
+//        fhExoL1    [ie][idt]->Fill(en,l1  , GetEventWeight());
+//        fhExoTime  [ie][idt]->Fill(en,tmax, GetEventWeight());
+//        
+//        if(en > 5) 
+//        {
+//          fhExoL0NCell[ie][idt]->Fill(nc, l0, GetEventWeight());
+//          fhExoL1NCell[ie][idt]->Fill(nc, l1, GetEventWeight());
+//        } 
+//        
+//        // Diff time, do for one cut in time
+//        if(idt == 0)
+//        {
+//          for (Int_t icell = 0; icell < clus->GetNCells(); icell++) 
+//          {
+//            Int_t absId  = clus->GetCellsAbsId()[icell]; 
+//            Double_t time  = cells->GetCellTime(absId);
+//            GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+//            time *= 1e9;
+//            time -= fConstantTimeShift;
+//            
+//            Float_t diff = tmax-time;
+//            fhExoDTime[ie]->Fill(en, diff, GetEventWeight());
+//          }
+//        }
+//      }
+//      else
+//      {
+//        fhExoECross[ie][idt]->Fill(en, eCrossFrac, GetEventWeight());
+//        fhExoNCell [ie][idt]->Fill(en, nc        , GetEventWeight());
+//      }
+//    } // D time cut loop
+//  } // e cross cut loop
+//}
 
 //___________________________________________________
 /// Create histograms to be saved in output file and
@@ -4817,85 +4817,85 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
   }
   
-  if(fStudyExotic)
-  {
-    fhExoL0ECross  = new TH2F("hExoL0_ECross",
-                               "#lambda^{2}_{0} vs 1-#it{E}_{+}/#it{E}_{max} for E > 5 GeV",
-                               400,0,1,ssbins,ssmin,ssmax); 
-    fhExoL0ECross ->SetXTitle("1-#it{E}_{+}/#it{E}_{cell max}");
-    fhExoL0ECross ->SetYTitle("#lambda^{2}_{0}");
-    outputContainer->Add(fhExoL0ECross) ;     
-
-    fhExoL1ECross  = new TH2F("hExoL1_ECross",
-                              "#lambda^{2}_{1} vs 1-#it{E}_{+}/#it{E}_{max} for E > 5 GeV",
-                              400,0,1,ssbins,ssmin,ssmax); 
-    fhExoL1ECross ->SetXTitle("1-#it{E}_{+}/#it{E}_{cell max}");
-    fhExoL1ECross ->SetYTitle("#lambda^{2}_{1}");
-    outputContainer->Add(fhExoL1ECross) ;  
-    
-    for(Int_t ie = 0; ie <fExoNECrossCuts; ie++)
-    {  
-      
-      fhExoDTime[ie]  = new TH2F(Form("hExoDTime_ECross%d",ie),
-                                 Form("#Delta time = t_{max}-t_{cells} vs #it{E}_{cluster} for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f",fExoECrossCuts[ie]),
-                                 nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
-      fhExoDTime[ie] ->SetYTitle("#Delta #it{t} (ns)");
-      fhExoDTime[ie] ->SetXTitle("#it{E} (GeV)");
-      outputContainer->Add(fhExoDTime[ie]) ; 
-      
-      for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
-      {        
-        fhExoNCell[ie][idt]  = new TH2F(Form("hExoNCell_ECross%d_DT%d",ie,idt),
-                                     Form("N cells per cluster vs E cluster, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                     nptbins,ptmin,ptmax,nceclbins,nceclmin,nceclmax); 
-        fhExoNCell[ie][idt] ->SetYTitle("#it{n}_cells");
-        fhExoNCell[ie][idt] ->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhExoNCell[ie][idt]) ; 
-        
-        fhExoL0   [ie][idt]  = new TH2F(Form("hExoL0_ECross%d_DT%d",ie,idt),
-                                     Form("#lambda^{2}_{0} vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhExoL0   [ie][idt] ->SetYTitle("#lambda^{2}_{0}");
-        fhExoL0   [ie][idt] ->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhExoL0[ie][idt]) ; 
-
-        fhExoL1   [ie][idt]  = new TH2F(Form("hExoL1_ECross%d_DT%d",ie,idt),
-                                        Form("#lambda^{2}_{1} vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhExoL1   [ie][idt] ->SetYTitle("#lambda^{2}_{1}");
-        fhExoL1   [ie][idt] ->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhExoL1[ie][idt]) ; 
-        
-        fhExoECross[ie][idt]  = new TH2F(Form("hExoECross_ECross%d_DT%d",ie,idt),
-                                      Form("#it{E} cross for cells vs E cell, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                      nptbins,ptmin,ptmax,400,0,1); 
-        fhExoECross[ie][idt] ->SetYTitle("1-#it{E}_{+}/#it{E}_{cell max}");
-        fhExoECross[ie][idt] ->SetXTitle("#it{E}_{cell} (GeV)");
-        outputContainer->Add(fhExoECross[ie][idt]) ; 
-        
-        fhExoTime  [ie][idt]  = new TH2F(Form("hExoTime_ECross%d_DT%d",ie,idt),
-                                        Form("Time of cluster (max cell) vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                        nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-        fhExoTime  [ie][idt] ->SetYTitle("#it{t}_{max} (ns)");
-        fhExoTime  [ie][idt] ->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhExoTime[ie][idt]) ; 
-
-        fhExoL0NCell[ie][idt]  = new TH2F(Form("hExoL0_NCell%d_DT%d",ie,idt),
-                                          Form("#lambda^{2}_{0} vs N cells per clusters for E > 5 GeV, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-        fhExoL0NCell[ie][idt] ->SetYTitle("#it{n}_{cells}");
-        fhExoL0NCell[ie][idt] ->SetXTitle("#lambda^{2}_{0}");
-        outputContainer->Add(fhExoL0NCell[ie][idt]) ;  
-        
-        fhExoL1NCell[ie][idt]  = new TH2F(Form("hExoL1_NCell%d_DT%d",ie,idt),
-                                          Form("#lambda^{2}_{1} vs N cells per clusters for E > 5 GeV, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-        fhExoL1NCell[ie][idt] ->SetYTitle("#it{n}_{cells}");
-        fhExoL1NCell[ie][idt] ->SetXTitle("#lambda^{2}_{1}");
-        outputContainer->Add(fhExoL1NCell[ie][idt]) ;  
-      }
-    } 
-  }
+//  if(fStudyExotic)
+//  {
+//    fhExoL0ECross  = new TH2F("hExoL0_ECross",
+//                               "#lambda^{2}_{0} vs 1-#it{E}_{+}/#it{E}_{max} for E > 5 GeV",
+//                               400,0,1,ssbins,ssmin,ssmax); 
+//    fhExoL0ECross ->SetXTitle("1-#it{E}_{+}/#it{E}_{cell max}");
+//    fhExoL0ECross ->SetYTitle("#lambda^{2}_{0}");
+//    outputContainer->Add(fhExoL0ECross) ;     
+//
+//    fhExoL1ECross  = new TH2F("hExoL1_ECross",
+//                              "#lambda^{2}_{1} vs 1-#it{E}_{+}/#it{E}_{max} for E > 5 GeV",
+//                              400,0,1,ssbins,ssmin,ssmax); 
+//    fhExoL1ECross ->SetXTitle("1-#it{E}_{+}/#it{E}_{cell max}");
+//    fhExoL1ECross ->SetYTitle("#lambda^{2}_{1}");
+//    outputContainer->Add(fhExoL1ECross) ;  
+//    
+//    for(Int_t ie = 0; ie <fExoNECrossCuts; ie++)
+//    {  
+//      
+//      fhExoDTime[ie]  = new TH2F(Form("hExoDTime_ECross%d",ie),
+//                                 Form("#Delta time = t_{max}-t_{cells} vs #it{E}_{cluster} for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f",fExoECrossCuts[ie]),
+//                                 nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
+//      fhExoDTime[ie] ->SetYTitle("#Delta #it{t} (ns)");
+//      fhExoDTime[ie] ->SetXTitle("#it{E} (GeV)");
+//      outputContainer->Add(fhExoDTime[ie]) ; 
+//      
+//      for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
+//      {        
+//        fhExoNCell[ie][idt]  = new TH2F(Form("hExoNCell_ECross%d_DT%d",ie,idt),
+//                                     Form("N cells per cluster vs E cluster, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                     nptbins,ptmin,ptmax,nceclbins,nceclmin,nceclmax); 
+//        fhExoNCell[ie][idt] ->SetYTitle("#it{n}_cells");
+//        fhExoNCell[ie][idt] ->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhExoNCell[ie][idt]) ; 
+//        
+//        fhExoL0   [ie][idt]  = new TH2F(Form("hExoL0_ECross%d_DT%d",ie,idt),
+//                                     Form("#lambda^{2}_{0} vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+//        fhExoL0   [ie][idt] ->SetYTitle("#lambda^{2}_{0}");
+//        fhExoL0   [ie][idt] ->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhExoL0[ie][idt]) ; 
+//
+//        fhExoL1   [ie][idt]  = new TH2F(Form("hExoL1_ECross%d_DT%d",ie,idt),
+//                                        Form("#lambda^{2}_{1} vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+//        fhExoL1   [ie][idt] ->SetYTitle("#lambda^{2}_{1}");
+//        fhExoL1   [ie][idt] ->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhExoL1[ie][idt]) ; 
+//        
+//        fhExoECross[ie][idt]  = new TH2F(Form("hExoECross_ECross%d_DT%d",ie,idt),
+//                                      Form("#it{E} cross for cells vs E cell, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                      nptbins,ptmin,ptmax,400,0,1); 
+//        fhExoECross[ie][idt] ->SetYTitle("1-#it{E}_{+}/#it{E}_{cell max}");
+//        fhExoECross[ie][idt] ->SetXTitle("#it{E}_{cell} (GeV)");
+//        outputContainer->Add(fhExoECross[ie][idt]) ; 
+//        
+//        fhExoTime  [ie][idt]  = new TH2F(Form("hExoTime_ECross%d_DT%d",ie,idt),
+//                                        Form("Time of cluster (max cell) vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                        nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+//        fhExoTime  [ie][idt] ->SetYTitle("#it{t}_{max} (ns)");
+//        fhExoTime  [ie][idt] ->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhExoTime[ie][idt]) ; 
+//
+//        fhExoL0NCell[ie][idt]  = new TH2F(Form("hExoL0_NCell%d_DT%d",ie,idt),
+//                                          Form("#lambda^{2}_{0} vs N cells per clusters for E > 5 GeV, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+//        fhExoL0NCell[ie][idt] ->SetYTitle("#it{n}_{cells}");
+//        fhExoL0NCell[ie][idt] ->SetXTitle("#lambda^{2}_{0}");
+//        outputContainer->Add(fhExoL0NCell[ie][idt]) ;  
+//        
+//        fhExoL1NCell[ie][idt]  = new TH2F(Form("hExoL1_NCell%d_DT%d",ie,idt),
+//                                          Form("#lambda^{2}_{1} vs N cells per clusters for E > 5 GeV, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+//        fhExoL1NCell[ie][idt] ->SetYTitle("#it{n}_{cells}");
+//        fhExoL1NCell[ie][idt] ->SetXTitle("#lambda^{2}_{1}");
+//        outputContainer->Add(fhExoL1NCell[ie][idt]) ;  
+//      }
+//    } 
+//  }
   
   // Cluster size in terms of cells
     
@@ -6758,13 +6758,13 @@ void AliAnaCalorimeterQA::InitParameters()
   
   fInvMassMaxOpenAngle = 100*TMath::DegToRad(); // 100 degrees
   
-  // Exotic studies
-  fExoNECrossCuts  = 10 ;
-  fExoNDTimeCuts   = 4  ;
-  
-  fExoDTimeCuts [0] = 1.e4 ; fExoDTimeCuts [1] = 50.0 ; fExoDTimeCuts [2] = 25.0 ; fExoDTimeCuts [3] = 10.0 ;
-  fExoECrossCuts[0] = 0.80 ; fExoECrossCuts[1] = 0.85 ; fExoECrossCuts[2] = 0.90 ; fExoECrossCuts[3] = 0.92 ; fExoECrossCuts[4] = 0.94 ;
-  fExoECrossCuts[5] = 0.95 ; fExoECrossCuts[6] = 0.96 ; fExoECrossCuts[7] = 0.97 ; fExoECrossCuts[8] = 0.98 ; fExoECrossCuts[9] = 0.99 ;
+//  // Exotic studies
+//  fExoNECrossCuts  = 10 ;
+//  fExoNDTimeCuts   = 4  ;
+//  
+//  fExoDTimeCuts [0] = 1.e4 ; fExoDTimeCuts [1] = 50.0 ; fExoDTimeCuts [2] = 25.0 ; fExoDTimeCuts [3] = 10.0 ;
+//  fExoECrossCuts[0] = 0.80 ; fExoECrossCuts[1] = 0.85 ; fExoECrossCuts[2] = 0.90 ; fExoECrossCuts[3] = 0.92 ; fExoECrossCuts[4] = 0.94 ;
+//  fExoECrossCuts[5] = 0.95 ; fExoECrossCuts[6] = 0.96 ; fExoECrossCuts[7] = 0.97 ; fExoECrossCuts[8] = 0.98 ; fExoECrossCuts[9] = 0.99 ;
 
 //  fNEBinCuts = 14;
 //  fEBinCuts[0] = 0.;  fEBinCuts[1] = 0.3;  fEBinCuts[2] = 0.5;

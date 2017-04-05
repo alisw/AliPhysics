@@ -89,8 +89,8 @@ public:
 
   void         Correlate();
   
-  void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
-                                AliVCluster *clus, AliVCaloCells* cells);
+//  void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
+//                                AliVCluster *clus, AliVCaloCells* cells);
   
   void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax, Float_t exoticity) ;
   
@@ -205,11 +205,11 @@ public:
   void SwitchOffStudyExotic()                   { fStudyExotic      = kFALSE ; }
   //===============================
 
-  void SetNECrossCuts(Int_t n)                  { fExoNECrossCuts   = n      ; }
-  void SetNDTimeCuts (Int_t n)                  { fExoNDTimeCuts    = n      ; }
-  
-  void SetExoECrossCuts (Int_t i, Float_t c)    { if (i<fExoNECrossCuts) fExoECrossCuts[i] = c ; }
-  void SetExoDTimeCuts  (Int_t i, Float_t c)    { if (i<fExoNDTimeCuts ) fExoDTimeCuts [i] = c ; }
+//  void SetNECrossCuts(Int_t n)                  { fExoNECrossCuts   = n      ; }
+//  void SetNDTimeCuts (Int_t n)                  { fExoNDTimeCuts    = n      ; }
+//  
+//  void SetExoECrossCuts (Int_t i, Float_t c)    { if (i<fExoNECrossCuts) fExoECrossCuts[i] = c ; }
+//  void SetExoDTimeCuts  (Int_t i, Float_t c)    { if (i<fExoNDTimeCuts ) fExoDTimeCuts [i] = c ; }
   
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
 
@@ -270,12 +270,13 @@ public:
   Float_t  fInvMassMaxM02Cut;                   ///<  Maximum M02 shower shape cut value for clusters entering the invariant mass calculation
   Float_t  fInvMassMaxOpenAngle;                ///<  Combine clusters within with a maximum opening angle between them. In radians.
   Float_t  fInvMassMaxTimeDifference;           ///<  Maximum difference between the time of the 2 clusters to be considered in invariant mass. In ns.
-  // Exotic studies
-    
-  Float_t  fExoNECrossCuts   ;                  ///<  Number of ecross cuts
-  Float_t  fExoECrossCuts[10];                  ///<  List of ecross cuts
-  Float_t  fExoNDTimeCuts    ;                  ///<  Number of time cuts
-  Float_t  fExoDTimeCuts[5]  ;                  ///<  List of time cuts
+
+//  // Exotic studies
+// 
+//  Float_t  fExoNECrossCuts   ;                  ///<  Number of ecross cuts
+//  Float_t  fExoECrossCuts[10];                  ///<  List of ecross cuts
+//  Float_t  fExoNDTimeCuts    ;                  ///<  Number of time cuts
+//  Float_t  fExoDTimeCuts[5]  ;                  ///<  List of time cuts
   
   TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
   TLorentzVector fClusterMomentum2;             //!<! Cluster momentum, temporary container
