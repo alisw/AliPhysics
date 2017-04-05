@@ -1954,7 +1954,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     }
     else{
         // actually phi band here for Tracks also
-      if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius){
+      if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius){
         sumpTPhiBandTracks += eTrack->Pt();
       }
     }
@@ -2110,7 +2110,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     }
     else{
         // actually eta band here for Tracks also
-      if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius){
+      if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius){
           //        Printf("but phi similar, so UE EtaBand!!");
         sumpTEtaBandTracks += eTrack->Pt();
       }
