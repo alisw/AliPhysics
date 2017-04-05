@@ -384,7 +384,14 @@ public:
  
   TH2F *   fhColRowTCardCorrNoSelectionLowE[2];             //!<! col-row cluster cell max for those selected for TCard correlation studies, 5 < E < 8 GeV
   TH2F *   fhColRowTCardCorrNoSelectionHighE[2];            //!<! col-row cluster cell max for those selected for TCard correlation studies, E > 8 GeV
-    
+ 
+  TH2F *   fhEnergyTimeTCardCorrNoSelection1Cell[2];        //!<! 1 cell cluster energy vs time, T-Card strict cuts
+  TH2F *   fhEnergyTMEtaResidualTCardCorrNoSelection1Cell;  //!<! 1 cell cluster energy vs eta track-cluster residual, T-Card strict cuts
+  TH2F *   fhEnergyTMPhiResidualTCardCorrNoSelection1Cell;  //!<! 1 cell cluster energy vs phi track-cluster residual, T-Card strict cuts
+  TH2F *   fhEnergyTimeTCardCorrNoSelectionExotic[2];       //!<! cluster energy vs time, exo > 0.97, T-Card strict cuts
+  TH2F *   fhEnergyTMEtaResidualTCardCorrNoSelectionExotic; //!<! cluster energy vs eta track-cluster residual, exo > 0.97, T-Card strict cuts 
+  TH2F *   fhEnergyTMPhiResidualTCardCorrNoSelectionExotic; //!<! cluster energy vs phi track-cluster residual, exo > 0.97, T-Card strict cuts
+  
   TH2F *   fhLambda0TCardCorrNoSelection[2];                //!<! Cluster m02 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLambda1TCardCorrNoSelection[2];                //!<! Cluster m20 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLambda0NLM1TCardCorrNoSelection[2];            //!<! Cluster m02 vs E for clusters selected for TCard correlation studies, nlm=1
@@ -464,6 +471,8 @@ public:
 
   TH2F *   fhTMPhiResidualExoticity[14];                    //!<! Cluster-track matching residual in phi vs exoticity              
   TH2F *   fhTMEtaResidualExoticity[14];                    //!<! Cluster-track matching residual in phi vs exoticity             
+  TH2F *   fhTMPhiResidualExoticityLooseCut[14];            //!<! Cluster-track matching residual in phi vs exoticity, loose acceptance cut              
+  TH2F *   fhTMEtaResidualExoticityLooseCut[14];            //!<! Cluster-track matching residual in phi vs exoticity, loose acceptance cut             
 //  TH2F *   fhTMPhiResidualExoticityAllSameTCard[14];        //!<! Cluster-track matching residual in phi vs exoticity, all cells in same TCard as leading                
 //  TH2F *   fhTMEtaResidualExoticityAllSameTCard[14];        //!<! Cluster-track matching residual in phi vs exoticity, all cells in same TCard as leading                
 
