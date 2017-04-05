@@ -10,6 +10,7 @@
 #include <TH3D.h>
 #include <TList.h>
 #include <TString.h>
+#include <TRandom.h>
 
 #include <tuple>
 #include <iostream>
@@ -36,6 +37,7 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const char *title, UI
   , fNumeratorReconstructed(nullptr)
   , fDenominatorGenerated(nullptr)
   , fDenominatorReconstructed(nullptr)
+  , fRng(new TRandom())
 {
   fNumeratorGenerated = new TH3D(TString::Format("%s_NumGen", title), "Numerator (MC-Generated Momentum)",
                                  nbins, qmin, qmax,
@@ -70,6 +72,7 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
   , fNumeratorReconstructed(nullptr)
   , fDenominatorGenerated(nullptr)
   , fDenominatorReconstructed(nullptr)
+  , fRng(new TRandom())
 {
   fNumeratorGenerated = new TH3D(*orig.fNumeratorGenerated);
   fNumeratorReconstructed = new TH3D(*orig.fNumeratorReconstructed);
@@ -84,6 +87,7 @@ AliFemtoModelCorrFctnTrueQ3D::~AliFemtoModelCorrFctnTrueQ3D()
   delete fNumeratorReconstructed;
   delete fDenominatorGenerated;
   delete fDenominatorReconstructed;
+  delete fRng;
 }
 
 
@@ -188,27 +192,30 @@ AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2, TH
 void
 AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
 {
-  std::cout << "Adding real pair\n";
-//  Double_t weight = fManager->GetWeight(pair);
-//  
-//  const AliFemtoParticle *p1 = pair->Track1(),
-//                         *p2 = pair->Track2();
-//
-//  std::swap(p1, p2);
-//  AddPair(*p1, *p2, fNumeratorGenerated, fNumeratorReconstructed, weight);
-  std::cout << "    Done\n";
+  Double_t weight = fManager->GetWeight(pair);
+
+  const AliFemtoParticle *p1 = pair->Track1(),
+                         *p2 = pair->Track2();
+
+  // randomize to avoid ordering biases
+  if (fRng->Uniform() >= 0.5) {
+    std::swap(p1, p2);
+  }
+  AddPair(*p1, *p2, fNumeratorGenerated, fNumeratorReconstructed, weight);
 }
 
 void
 AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
 {
-  std::cout << "Adding mixed pair" << std::endl;
-//  const AliFemtoParticle *p1 = pair->Track1(),
-//                         *p2 = pair->Track2();
-//
-//  std::cout << "p1: " << p1 << "  p2: " << p2 << "\n";
-//  AddPair(*p1, *p2, fDenominatorGenerated, fDenominatorReconstructed, 1.0);
-  std::cout << "    Done\n";
+  const AliFemtoParticle *p1 = pair->Track1(),
+                         *p2 = pair->Track2();
+
+  // randomize to avoid ordering biases
+  if (fRng->Uniform() >= 0.5) {
+    std::swap(p1, p2);
+  }
+
+  AddPair(*p1, *p2, fDenominatorGenerated, fDenominatorReconstructed, 1.0);
 }
 
 
