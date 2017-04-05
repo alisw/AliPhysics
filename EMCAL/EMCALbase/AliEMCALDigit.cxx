@@ -363,11 +363,11 @@ Float_t AliEMCALDigit::GetDEParent(Int_t index) const
 //____________________________________________________________________________
 void AliEMCALDigit::ShiftPrimary(Int_t shift){
   //shifts primary number to BIG offset, to separate primary in different TreeK
-  Int_t index  ;
+  Int_t index  ;  
   for(index = 0; index <fNprimary; index++ ){
-    fPrimary[index] = fPrimary[index]+ shift * 10000000   ;}
+    fPrimary[index] = fPrimary[index]+ shift; } // * 10000000   ;}
   for(index =0; index <fNiparent; index++){
-    fIparent[index] = fIparent[index] + shift * 10000000 ;}
+    fIparent[index] = fIparent[index] + shift; }// * 10000000 ;}
 }
 
 
