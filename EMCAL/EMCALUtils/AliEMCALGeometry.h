@@ -437,65 +437,68 @@ protected:
 
   void Init(void);     		     // initializes the parameters of EMCAL
   
-  AliEMCALEMCGeometry * fEMCGeometry;// Geometry object for Electromagnetic calorimeter
+  AliEMCALEMCGeometry * fEMCGeometry;///< Geometry object for Electromagnetic calorimeter
 
-  AliEMCALTriggerMapping* fTriggerMapping; // Trigger mapping
+  AliEMCALTriggerMapping* fTriggerMapping; ///< Trigger mapping
   
-  TString  fGeoName;                 // geometry name
-  //Int_t    *fEMCSMSystem;	         // [fEMCGeometry.fNumberOfSuperModules] geometry structure
-  Int_t    fKey110DEG;               // for calculation abs cell id; 19-oct-05 
-  Int_t    fnSupModInDCAL;           // for calculation abs cell id; 06-nov-12
-  Int_t    fNCellsInSupMod;          // number cell in super module
-  Int_t    fNETAdiv;                 // number eta divizion of module
-  Int_t    fNPHIdiv;                 // number phi divizion of module
-  Int_t    fNCellsInModule;          // number cell in module
-  TArrayD  fPhiBoundariesOfSM;       // phi boundaries of SM in rad; size is fNumberOfSuperModules;
-  TArrayD  fPhiCentersOfSM;          // phi of centers of SM; size is fNumberOfSuperModules/2
-  TArrayD  fPhiCentersOfSMSec;       // phi of centers of section where SM lies; size is fNumberOfSuperModules/2
+  TString  fGeoName;                 ///< Geometry name string
+  //Int_t    *fEMCSMSystem;	         ///< [fEMCGeometry.fNumberOfSuperModules] geometry structure
+  Int_t    fKey110DEG;               ///< For calculation abs cell id; 19-oct-05 
+  Int_t    fnSupModInDCAL;           ///< For calculation abs cell id; 06-nov-12
+  Int_t    fNCellsInSupMod;          ///< Number cell in super module
+  Int_t    fNETAdiv;                 ///< Number eta division of module
+  Int_t    fNPHIdiv;                 ///< Number phi division of module
+  Int_t    fNCellsInModule;          ///< Number cell in module
+  TArrayD  fPhiBoundariesOfSM;       ///< Phi boundaries of SM in rad; size is fNumberOfSuperModules;
+  TArrayD  fPhiCentersOfSM;          ///< Phi of centers of SM; size is fNumberOfSuperModules/2
+  TArrayD  fPhiCentersOfSMSec;       ///< Phi of centers of section where SM lies; size is fNumberOfSuperModules/2
+  
   // Local Coordinates of SM
-  TArrayD  fPhiCentersOfCells;       // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
-  TArrayD  fCentersOfCellsEtaDir;    // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
-  TArrayD  fCentersOfCellsPhiDir;    // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
-  TArrayD  fEtaCentersOfCells;       // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
-  Int_t    fNCells;                  // number of cells in calo
-  Int_t    fNPhi;                    // Number of Towers in the PHI direction
-  TArrayD  fCentersOfCellsXDir;      // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
-  Float_t  fEnvelop[3];              // the GEANT TUB for the detector 
-  Float_t  fArm1EtaMin;              // Minimum pseudorapidity position of EMCAL in Eta
-  Float_t  fArm1EtaMax;              // Maximum pseudorapidity position of EMCAL in Eta
-  Float_t  fArm1PhiMin;              // Minimum angular position of EMCAL in Phi (degrees)
-  Float_t  fArm1PhiMax;              // Maximum angular position of EMCAL in Phi (degrees)
-  Float_t  fEtaMaxOfTRD1;            // Max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
-  Float_t  fDCALPhiMin;              // Minimum angular position of DCAL in Phi (degrees)
-  Float_t  fDCALPhiMax;              // Maximum angular position of DCAL in Phi (degrees)
-  Float_t  fEMCALPhiMax;             // Maximum angular position of EMCAL in Phi (degrees)
-  Float_t  fDCALStandardPhiMax;      // special edge for the case that DCAL contian extension
-  Float_t  fDCALInnerExtandedEta;    // DCAL inner edge in Eta (with some extension)
-  TList   *fShishKebabTrd1Modules;   // list of modules
-  Float_t  fParSM[3];                // SM sizes as in GEANT (TRD1)
-  Float_t  fPhiModuleSize;           // Phi -> X 
-  Float_t  fEtaModuleSize;           // Eta -> Y 
-  Float_t  fPhiTileSize;             // Size of phi tile
-  Float_t  fEtaTileSize;             // Size of eta tile
-  Int_t    fNZ;                      // Number of Towers in the Z direction
-  Float_t  fIPDistance;		           // Radial Distance of the inner surface of the EMCAL
-  Float_t  fLongModuleSize;          // Size of long module
+  TArrayD  fPhiCentersOfCells;       ///< [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
+  TArrayD  fCentersOfCellsEtaDir;    ///< Size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
+  TArrayD  fCentersOfCellsPhiDir;    ///< Size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
+  TArrayD  fEtaCentersOfCells;       ///< [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
+  Int_t    fNCells;                  ///< Number of cells in calo
+  Int_t    fNPhi;                    ///< Number of Towers in the PHI direction
+  TArrayD  fCentersOfCellsXDir;      ///< Size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
+  Float_t  fEnvelop[3];              ///< The GEANT TUB for the detector 
+  Float_t  fArm1EtaMin;              ///< Minimum pseudorapidity position of EMCAL in Eta
+  Float_t  fArm1EtaMax;              ///< Maximum pseudorapidity position of EMCAL in Eta
+  Float_t  fArm1PhiMin;              ///< Minimum angular position of EMCAL in Phi (degrees)
+  Float_t  fArm1PhiMax;              ///< Maximum angular position of EMCAL in Phi (degrees)
+  Float_t  fEtaMaxOfTRD1;            ///< Max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
+  Float_t  fDCALPhiMin;              ///< Minimum angular position of DCAL in Phi (degrees)
+  Float_t  fDCALPhiMax;              ///< Maximum angular position of DCAL in Phi (degrees)
+  Float_t  fEMCALPhiMax;             ///< Maximum angular position of EMCAL in Phi (degrees)
+  Float_t  fDCALStandardPhiMax;      ///< Special edge for the case that DCAL contian extension
+  Float_t  fDCALInnerExtandedEta;    ///< DCAL inner edge in Eta (with some extension)
+  TList   *fShishKebabTrd1Modules;   ///< List of modules
+  Float_t  fParSM[3];                ///< SM sizes as in GEANT (TRD1)
+  Float_t  fPhiModuleSize;           ///< Phi -> X 
+  Float_t  fEtaModuleSize;           ///< Eta -> Y 
+  Float_t  fPhiTileSize;             ///< Size of phi tile
+  Float_t  fEtaTileSize;             ///< Size of eta tile
+  Int_t    fNZ;                      ///< Number of Towers in the Z direction
+  Float_t  fIPDistance;		           ///< Radial Distance of the inner surface of the EMCAL
+  Float_t  fLongModuleSize;          ///< Size of long module
+  
   // Geometry Parameters
-  Float_t  fShellThickness;	         // Total thickness in (x,y) direction
-  Float_t  fZLength;		             // Total length in z direction
-  Float_t  fSampling;		             // Sampling factor
+  Float_t  fShellThickness;	         ///< Total thickness in (x,y) direction
+  Float_t  fZLength;		             ///< Total length in z direction
+  Float_t  fSampling;		             ///< Sampling factor
 	
-  TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; //Orientations of EMCAL super modules
-  Bool_t   fUseExternalMatrices;      // Use the matrices set in fkSModuleMatrix and not those in the geoManager
+  TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; ///< Orientations of EMCAL super modules
+  Bool_t   fUseExternalMatrices;     ///< Use the matrices set in fkSModuleMatrix and not those in the geoManager
 	
 private:
   
-  static AliEMCALGeometry *fgGeom;	               // Pointer to the unique instance of the singleton
-  static Bool_t            fgInit;	               // Tells if geometry has been succesfully set up.
-  static const Char_t     *fgkDefaultGeometryName; // Default name of geometry
+  static AliEMCALGeometry *fgGeom;	               ///< Pointer to the unique instance of the singleton
+  static Bool_t            fgInit;	               ///< Tells if geometry has been succesfully set up.
+  static const Char_t     *fgkDefaultGeometryName; ///< Default name of geometry
   
-  
-  ClassDef(AliEMCALGeometry,17)       // EMCAL geometry class 
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALGeometry,17) ;       
+  /// \endcond
 
 } ;
 
