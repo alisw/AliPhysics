@@ -167,12 +167,18 @@ void AliAnalysisTaskDG::FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t
   }
 }
 
+Int_t GetTrackSign(const AliVTrack *tr) {
+  const AliAODTrack *aodTrack = dynamic_cast<const AliAODTrack*>(tr);
+  return (aodTrack
+	  ? aodTrack->Charge()
+	  : tr->GetSign());
+}
 void AliAnalysisTaskDG::TrackData::Fill(AliVTrack *tr, AliPIDResponse *pidResponse=nullptr) {
   if (!tr || !pidResponse) {
     AliErrorF("tr=%p pidResponse=%p", tr, pidResponse);
     return;
   }
-  fSign = tr->GetSign();
+  fSign = GetTrackSign(tr);
   fPx   = tr->Px();
   fPy   = tr->Py();
   fPz   = tr->Pz();
@@ -237,21 +243,25 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   DefineOutput(2, TTree::Class());
 }
 
- AliAnalysisTaskDG::~AliAnalysisTaskDG()
+AliAnalysisTaskDG::~AliAnalysisTaskDG()
 {
   const AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  if (nullptr != man && man->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
+  if (man && man->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
     return;
 
-  if (nullptr != fList)
+  fTriggerIRs.Delete();
+  fTrackData.Delete();
+  fMCTracks.Delete();
+
+  if (fList)
     delete fList;
   fList = nullptr;
 
-  if (nullptr != fTE)
+  if (fTE)
     delete fTE;
   fTE = nullptr;
 
-  if (nullptr != fTrackCuts)
+  if (fTrackCuts)
     delete fTrackCuts;
   fTrackCuts = nullptr;
 
@@ -378,7 +388,7 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
 
 void AliAnalysisTaskDG::NotifyRun()
 {
-  AliInfoF("run %d", fCurrentRunNumber);
+  AliDebugF(5, "run %d", fCurrentRunNumber);
 }
 
 class TClonesArrayGuard {
@@ -412,11 +422,10 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
 
   Bool_t selectedForSPD = (fTriggerSelectionSPD == "");
   if (!selectedForSPD) { // trigger selection for SPD efficiency studies
-    std::unique_ptr<const TObjArray> split(fTriggerSelectionSPD.Tokenize("|"));
-    for (Int_t i=0, n=split->GetEntries() && !selectedForSPD; i<n; ++i) {
-      const TString tcName(split->At(i)->GetName());
+    TString tcName = "";
+    Ssiz_t  from   = 0;
+    while (fTriggerSelectionSPD.Tokenize(tcName, from, "|") && !selectedForSPD)
       selectedForSPD = esdEvent->GetFiredTriggerClasses().Contains(tcName);
-    }
   }
   AliInfoF("selectedForSPD = %d", selectedForSPD);
   if (selectedForSPD) { // PF protection
@@ -472,7 +481,6 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
 void AliAnalysisTaskDG::FillTriggerIR(const AliESDHeader* esdHeader) {
   if (!esdHeader)
     return;
-  TClonesArrayGuard guardTriggerIR(fTriggerIRs);
   // store trigger IR for up to +-1 orbits around the event
   for (Int_t i=0,j=0,n=esdHeader->GetTriggerIREntries(); i<n; ++i) {
     const AliTriggerIR *ir = esdHeader->GetTriggerIR(i);
@@ -560,20 +568,22 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   if (!selected) {
     // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS3&Only2Trk|CLASS4&AtLeast2Trk"
-    std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
-
     Int_t sumCutNotV0(0);
     Int_t sumUseOnly2Trk(0);
     Int_t sumRequireAtLeast2Trk(0);
 
-    Int_t counter=0;
-    for (Int_t i=0, n=split->GetEntries(); i<n; ++i) {
-      TString tcName(split->At(i)->GetName());
-      std::unique_ptr<const TObjArray> s(tcName.Tokenize("&"));
-      if (vEvent->GetFiredTriggerClasses().Contains(s->At(0)->GetName())) {
-	sumCutNotV0           += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "NotV0");
-	sumUseOnly2Trk        += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "Only2Trk");
-	sumRequireAtLeast2Trk += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "AtLeast2Trk");
+    Int_t   counter     = 0;
+    TString tcName      = "";
+    Ssiz_t  from_tcName = 0;
+    while (fTriggerSelection.Tokenize(tcName, from_tcName, "|")) {
+      TString tok      = "";
+      Ssiz_t  from_tok = 0;
+      if (!tcName.Tokenize(tok, from_tok, "&")) continue;
+      if (!vEvent->GetFiredTriggerClasses().Contains(tok)) continue;
+      if ( tcName.Tokenize(tok, from_tok, "&")) {
+	sumCutNotV0           += (tok == "NotV0");
+	sumUseOnly2Trk        += (tok == "Only2Trk");
+	sumRequireAtLeast2Trk += (tok == "AtLeast2Trk");
 	++counter;
       }
     }
@@ -584,9 +594,9 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     requireAtLeast2Trk = (counter == sumRequireAtLeast2Trk);
   }
 
-  AliInfoF("selected: %d (%d,%d,%d) %s ", selected,
-	   cutNotV0, useOnly2Trk, requireAtLeast2Trk,
-	   vEvent->GetFiredTriggerClasses().Data());
+  AliDebugF(5, "selected: %d (%d,%d,%d) %s ", selected,
+	    cutNotV0, useOnly2Trk, requireAtLeast2Trk,
+	    vEvent->GetFiredTriggerClasses().Data());
   if (!selected)
     return;
 
@@ -616,6 +626,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   }
   fTOFHeader    = *(vEvent->GetTOFHeader());
 
+  TClonesArrayGuard guardTriggerIR(fTriggerIRs);
   FillTriggerIR(dynamic_cast<const AliESDHeader*>(vHeader));
 
   fFastOrMap    = mult->GetFastOrFiredChips();
@@ -661,7 +672,9 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     return;
 
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
-    fTreeData.fEventInfo.fCharge += (dynamic_cast<AliVTrack*>(oa->At(i))->GetSign() > 0 ? +1 : -1);
+    fTreeData.fEventInfo.fCharge += (GetTrackSign(dynamic_cast<AliVTrack*>(oa->At(i))) > 0
+				     ? +1
+				     : -1);
 
   TClonesArrayGuard guardTrackData(fTrackData);
   if (oa->GetEntries() <= fMaxTracksSave)  {
