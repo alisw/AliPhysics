@@ -442,17 +442,21 @@ void AddTask_GammaCalo_pPb(
     
   //************************************************ PHOS clusters *************************************************
   } else if (trainConfig == 301) {  // min energy = 0.3 GeV/c
-    cuts.AddCut("80000013","2444400040033200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCut("80062013","2444400040033200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+    cuts.AddCut("80000013","2444400040013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCut("80062013","2444400040013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
   } else if (trainConfig == 302){ // Validation PHOS
-    cuts.AddCut("80000013","2444400040053200000","0163103100000010");
+    cuts.AddCut("80000013","2444400040013200000","0163103100000010");
   } else if (trainConfig == 303){ // Validation PHOS, only added signals
-    cuts.AddCut("80000023","2444400040053200000","0163103100000010");
+    cuts.AddCut("80000023","2444400040013200000","0163103100000010");
   } else if (trainConfig == 304){ // min energy = 0.3 GeV/c
-    cuts.AddCut("80000013","2444400040033200000","0163103100000000"); // kINT7 // PHOS clusters no open angle cut
-    cuts.AddCut("80062013","2444400040033200000","0163103100000000"); // kPHI7 // PHOS clusters no open angle cut
-    cuts.AddCut("80000013","2444400040033200000","0163103100000030"); // kINT7 // PHOS clusters open angle cut 0.1
-    cuts.AddCut("80062013","2444400040033200000","0163103100000030"); // kPHI7 // PHOS clusters  open angle cut 0.1
+    cuts.AddCut("80000013","2444400040013200000","0163103100000000"); // kINT7 // PHOS clusters no open angle cut
+    cuts.AddCut("80062013","2444400040013200000","0163103100000000"); // kPHI7 // PHOS clusters no open angle cut
+    cuts.AddCut("80000013","2444400040013200000","0163103100000030"); // kINT7 // PHOS clusters open angle cut 0.1
+    cuts.AddCut("80062013","2444400040013200000","0163103100000030"); // kPHI7 // PHOS clusters  open angle cut 0.1
+  } else if (trainConfig == 305){ // timing cut variations
+    cuts.AddCut("80000013","2444400010013200000","0163103100000010"); // 1000ns
+    cuts.AddCut("80000013","2444400030013200000","0163103100000010"); // 200ns
+    cuts.AddCut("80000013","2444400050013200000","0163103100000010"); // 50ns
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
