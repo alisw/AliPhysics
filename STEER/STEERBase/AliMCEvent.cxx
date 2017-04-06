@@ -540,8 +540,6 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
     Int_t          ntref      = 0;
     TObjArray     *rarray     = 0;
 
-
-
     // Out of range check
     if (i < 0 || i >= fNparticles) {
 	AliWarning(Form("AliMCEvent::GetEntry: Index out of range"));
@@ -825,6 +823,16 @@ void AliMCEvent::InitEvent()
 void AliMCEvent::PreReadAll()                              
 {
     // Preread the MC information
+  if (fSubsidiaryEvents) { // prereading should be done only once all sub events read and initialized
+    TIter next(fSubsidiaryEvents);
+    AliMCEvent* evt;
+    while((evt = (AliMCEvent*)next())) {
+      evt->PreReadAll();
+    }
+    return;
+  }
+  
+  
     Int_t i;
     // secondaries
     for (i = fStack->GetNprimary(); i < fStack->GetNtrack(); i++) 
