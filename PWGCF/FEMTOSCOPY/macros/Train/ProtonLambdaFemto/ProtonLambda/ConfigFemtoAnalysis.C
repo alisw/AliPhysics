@@ -357,7 +357,8 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false,
                             sqp5cetaphitpc[aniter]->SetMaxEEMinv(0.002);
                             sqp5cetaphitpc[aniter]->SetMaxThetaDiff(0.008);
                             sqp5cetaphitpc[aniter]->SetDataType(AliFemtoPairCut::kAOD);
-                            sqp5cetaphitpc[aniter]->SetTPCEntranceSepMinimum(5.0);
+                            sqp5cetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.00001);
+                            sqp5cetaphitpc[aniter]->SetAvgsepMinimum(5.0);
                             
                             avgsepcorr[aniter] = new AliFemtoAvgSepCorrFctn(Form("Avgsep%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),5000,0,500);
                             
