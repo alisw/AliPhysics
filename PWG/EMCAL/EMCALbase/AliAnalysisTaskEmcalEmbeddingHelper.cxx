@@ -23,6 +23,7 @@
 #include <TRandom.h>
 #include <TChain.h>
 #include <TGrid.h>
+#include <TGridResult.h>
 #include <TSystem.h>
 #include <TUUID.h>
 
@@ -159,7 +160,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
  * NOTE: Exercise care if you set both the file pattern and the filename! Doing so will probably cause your
  * file to be overwritten!
  */
-void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
+bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 {
   // Determine the pattern filename if not yet set
   if (fInputFilename == "") {
@@ -195,31 +196,41 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
         TGrid::Connect("alien://");
       }
       if (!gGrid) {
-        AliFatal(Form("Cannot access AliEn to retrieve file list with pattern %s!", fFilePattern.Data()));
+        AliFatal(TString::Format("Cannot access AliEn to retrieve file list with pattern %s!", fFilePattern.Data()));
       }
     }
 
     // Retrieve AliEn filenames directly from AliEn
     if (fFilePattern.Contains("alien://")) {
-      AliDebug(2,Form("Trying to retrieve file list from AliEn with pattern file %s...", fFilePattern.Data()));
+      AliDebug(2, TString::Format("Trying to retrieve file list from AliEn with pattern file %s...", fFilePattern.Data()));
 
       // Create a temporary filename based on a UUID to make sure that it doesn't overwrite any files
       if (fFileListFilename == "") {
         fFileListFilename += GenerateUniqueFileListFilename();
       }
 
-      // Retrieve filenames from alien using alien_find
-      // NOTE: This input is unfiltered! Be careful here!
-      TString command = "alien_find";
-      command += fFilePattern;
-      command += " ";
-      command += fInputFilename;
-      command += " > ";
-      command += fFileListFilename;
+      // The query command cannot handle "alien://" in the file pattern, so we need to remove it for the command
+      TString filePattern = fFilePattern;
+      filePattern.ReplaceAll("alien://", "");
 
-      // Execute the alien_find command to get the filenames
-      AliDebug(2,Form("Trying to retrieve file list from AliEn with alien_find command \"%s\"", command.Data()));
-      gSystem->Exec(command.Data());
+      // Execute the grid query to get the filenames
+      AliDebug(2, TString::Format("Trying to retrieve file list from AliEn with pattern \"%s\" and input filename \"%s\"", filePattern.Data(), fInputFilename.Data()));
+      auto result = gGrid->Query(filePattern.Data(), fInputFilename.Data());
+
+      if (result) {
+        // Loop over the result to store it in the fileList file
+        std::ofstream outFile(fFileListFilename);
+        for (int i = 0; i < result->GetEntries(); i++)
+        {
+          // "turl" corresponds to the full AliEn url
+          outFile << result->GetKey(i, "turl") << "\n";
+        }
+        outFile.close();
+      }
+      else {
+        AliErrorStream() << "Failed to run grid query\n";
+        return false;
+      }
     }
 
     // Handle a filelist on AliEn
@@ -239,10 +250,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
     std::copy(std::istream_iterator<std::string>(inputFile),
         std::istream_iterator<std::string>(),
         std::back_inserter(fFilenames));
+
+    inputFile.close();
   }
 
   if (fFilenames.size() == 0) {
-    AliFatal(Form("Filenames from pattern \"%s\" and file list \"%s\" yielded an empty list!", fFilePattern.Data(), fFileListFilename.Data()));
+    AliFatal(TString::Format("Filenames from pattern \"%s\" and file list \"%s\" yielded an empty list!", fFilePattern.Data(), fFileListFilename.Data()));
   }
 
   // Add "#" to files in there are any zip files
@@ -260,6 +273,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       }
       else {
         AliError(TString::Format("Filename %s contains \".zip\" and not \"#\", but tree name %s is not recognized. Please check the file list to ensure that the proper path is set.", filename.c_str(), fTreeName.Data()));
+        return false;
       }
     }
   }
@@ -276,12 +290,14 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
     // Skip notifying on -1 since it will likely be set there due to constructor.
     if (fFilenameIndex != -1) {
-      AliWarning(Form("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
+      AliWarning(TString::Format("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
     }
     fFilenameIndex = 0;
   }
 
   AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
+
+  return true;
 }
 
 /**

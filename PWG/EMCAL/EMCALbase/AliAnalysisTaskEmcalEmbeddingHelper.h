@@ -129,7 +129,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   static AliAnalysisTaskEmcalEmbeddingHelper * AddTaskEmcalEmbeddingHelper();
 
  protected:
-  void            GetFilenames()        ;
+  bool            GetFilenames()        ;
   std::string     GenerateUniqueFileListFilename();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
