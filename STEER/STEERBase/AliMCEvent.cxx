@@ -179,8 +179,9 @@ Int_t AliMCEvent::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*&
     // Retrieve entry i
   if (i >= BgLabelOffset()) {
     if (fSubsidiaryEvents) {
-      AliMCEvent* bgEvent = (AliMCEvent*) (fSubsidiaryEvents->At(1));
-      return bgEvent->GetParticleAndTR(i - BgLabelOffset(),particle,trefs);
+      AliMCEvent* bgEvent=0;
+      i = FindIndexAndEvent(i, bgEvent);
+      return bgEvent->GetParticleAndTR(i,particle,trefs);
     } else {
       return 0;
     }
@@ -524,8 +525,9 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
     
     if (i >= BgLabelOffset()) {
 	if (fSubsidiaryEvents) {
-	    AliMCEvent* bgEvent = (AliMCEvent*) (fSubsidiaryEvents->At(1));
-	    return (bgEvent->GetTrack(i - BgLabelOffset()));
+	  AliMCEvent* bgEvent=0;
+	  i = FindIndexAndEvent(i, bgEvent);
+	  return bgEvent->GetTrack(i);
 	} else {
 	    return 0;
 	}
@@ -557,68 +559,84 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
     //
     // First check If the MC Particle has been already cached
     if(!fMCParticleMap->At(i)) {
-	// Get particle from the stack
-	particle   = fStack->Particle(i);
-	// Get track references from Tree TR
-	if (fTreeTR) {
-	    fTreeTR->GetEntry(fStack->TreeKEntry(i));
-	    trefs     = fTRBuffer;
-	    ntref     = trefs->GetEntriesFast();
-	    rarray    = new TObjArray(ntref);
-	    Int_t nen = fTrackReferences->GetEntriesFast();
-	    for (Int_t j = 0; j < ntref; j++) {
-		// Save the track references in a TClonesArray
-		AliTrackReference* ref = dynamic_cast<AliTrackReference*>((*fTRBuffer)[j]);
-		// Save the pointer in a TRefArray
-		if (ref) {
-		    new ((*fTrackReferences)[nen]) AliTrackReference(*ref);
-		    rarray->AddAt((*fTrackReferences)[nen], j);
-		    nen++;
-		}
-	    } // loop over track references for entry i
-	} // if TreeTR available
-	Int_t nentries = fMCParticles->GetEntriesFast();
-	mcParticle = new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
-	fMCParticleMap->AddAt(mcParticle, i);
-	if (mcParticle) {
-	    TParticle* part = mcParticle->Particle();
-	    Int_t imo  = part->GetFirstMother();
-	    Int_t id1  = part->GetFirstDaughter();
-	    Int_t id2  = part->GetLastDaughter();
-	    if (fPrimaryOffset > 0 || fSecondaryOffset > 0) {
-		// Remapping of the mother and daughter indices
-		if (imo < fNprimaries) {
-		    mcParticle->SetMother(imo + fPrimaryOffset);
-		} else {
-		    mcParticle->SetMother(imo + fSecondaryOffset - fNprimaries);
-		}
-		
-		if (id1 < fNprimaries) {
-		    mcParticle->SetFirstDaughter(id1 + fPrimaryOffset);
-		    mcParticle->SetLastDaughter (id2 + fPrimaryOffset);
-		} else {
-		    mcParticle->SetFirstDaughter(id1 + fSecondaryOffset - fNprimaries);
-		    mcParticle->SetLastDaughter (id2 + fSecondaryOffset - fNprimaries);
-		}
-		
-		
-		if (i > fNprimaries) {
-		    mcParticle->SetLabel(i + fPrimaryOffset);
-		} else {
-		    mcParticle->SetLabel(i + fSecondaryOffset - fNprimaries);
-		}
+      // Get particle from the stack
+      particle   = fStack->Particle(i);
+      // Get track references from Tree TR
+      if (fTreeTR) {
+	fTreeTR->GetEntry(fStack->TreeKEntry(i));
+	trefs     = fTRBuffer;
+	ntref     = trefs->GetEntriesFast();
+	rarray    = new TObjArray(ntref);
+	Int_t nen = fTrackReferences->GetEntriesFast();
+	for (Int_t j = 0; j < ntref; j++) {
+	  // Save the track references in a TClonesArray
+	  AliTrackReference* ref = dynamic_cast<AliTrackReference*>((*fTRBuffer)[j]);
+	  // Save the pointer in a TRefArray
+	  if (ref) {
+	    new ((*fTrackReferences)[nen]) AliTrackReference(*ref);
+	    rarray->AddAt((*fTrackReferences)[nen], j);
+	    nen++;
+	  }
+	} // loop over track references for entry i
+      } // if TreeTR available
+      Int_t nentries = fMCParticles->GetEntriesFast();
+      mcParticle = new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
+      fMCParticleMap->AddAt(mcParticle, i);
+      if (mcParticle) {
+	TParticle* part = mcParticle->Particle();
+	Int_t imo  = part->GetFirstMother();
+	Int_t id1  = part->GetFirstDaughter();
+	Int_t id2  = part->GetLastDaughter();
+	mcParticle->SetLabel(i); // RS mcParticle should refer to its position in its parent stack
+	if (fPrimaryOffset > 0 || fSecondaryOffset > 0) {
+	  // Remapping of the mother and daughter indices
+	  if (imo>=0) {
+	    mcParticle->SetMother( imo<fNprimaries ? imo + fPrimaryOffset : imo + fSecondaryOffset - fNprimaries);
+	  }
+	  if (id1>=0) {		
+	    if (id1 < fNprimaries) {
+	      mcParticle->SetFirstDaughter(id1 + fPrimaryOffset);
+	      mcParticle->SetLastDaughter (id2 + fPrimaryOffset);
 	    } else {
-		mcParticle->SetFirstDaughter(id1);
-		mcParticle->SetLastDaughter (id2);
-		mcParticle->SetMother       (imo);
+	      mcParticle->SetFirstDaughter(id1 + fSecondaryOffset - fNprimaries);
+	      mcParticle->SetLastDaughter (id2 + fSecondaryOffset - fNprimaries);
 	    }
+	  }
+	  //
+	  /* // RS: this breacks convention on label
+	  if (i > fNprimaries) {
+	    mcParticle->SetLabel(i + fPrimaryOffset);
+	  } else {
+	    mcParticle->SetLabel(i + fSecondaryOffset - fNprimaries);
+	  }
+	  */
+	} else {
+	  mcParticle->SetFirstDaughter(id1);
+	  mcParticle->SetLastDaughter (id2);
+	  mcParticle->SetMother       (imo);
 	}
+      }
     } else {
-	mcParticle = dynamic_cast<AliMCParticle*>(fMCParticleMap->At(i));
+      mcParticle = dynamic_cast<AliMCParticle*>(fMCParticleMap->At(i));
     }
-
+    
     //Printf("mcParticleGetMother %d",mcParticle->GetMother());
     return mcParticle;
+}
+
+TParticle* AliMCEvent::ParticleFromStack(Int_t i) const
+{
+  // Get MC Particle i from original stack, accounting for eventual label offset in case of embedding
+  //
+  if (fExternal) {
+    AliMCParticle* mcp = (AliMCParticle*)fMCParticles->At(i);
+    return mcp ? mcp->Particle() : 0;
+  }
+  if (fSubsidiaryEvents) {
+    AliMCEvent* event = (AliMCEvent*)fSubsidiaryEvents->At(i/BgLabelOffset());
+    return event->Stack()->Particle(i%BgLabelOffset());
+  }
+  return fStack->Particle(i);
 }
 
 AliGenEventHeader* AliMCEvent::GenEventHeader() const 
@@ -685,27 +703,37 @@ AliGenEventHeader *AliMCEvent::FindHeader(Int_t ipart) {
 Int_t AliMCEvent::FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const
 {
     // Find the index and event in case of composed events like signal + background
+  
+  // Check first if this explicitely accesses the subsidiary event
+  if (oldidx >= BgLabelOffset()) {
+    event = (AliMCEvent*) (fSubsidiaryEvents->At(oldidx/BgLabelOffset()));
+    return oldidx%BgLabelOffset();
+  }
+  if (fSubsidiaryEvents) {
     TIter next(fSubsidiaryEvents);
     next.Reset();
-     if (oldidx < fNprimaries) {
-	while((event = (AliMCEvent*)next())) {
-	    if (oldidx < (event->GetPrimaryOffset() + event->GetNumberOfPrimaries())) break;
-	}
-	if (event) {
-	    return (oldidx - event->GetPrimaryOffset());
-	} else {
-	    return (-1);
-	}
+    if (oldidx < fNprimaries) {
+      while((event = (AliMCEvent*)next())) {
+	if (oldidx < (event->GetPrimaryOffset() + event->GetNumberOfPrimaries())) break;
+      }
+      if (event) {
+	return (oldidx - event->GetPrimaryOffset());
+      } else {
+	return (-1);
+      }
     } else {
-	while((event = (AliMCEvent*)next())) {
-	    if (oldidx < (event->GetSecondaryOffset() + (event->GetNumberOfTracks() - event->GetNumberOfPrimaries()))) break;
-	}
-	if (event) {
-	    return (oldidx - event->GetSecondaryOffset() + event->GetNumberOfPrimaries());
-	} else {
-	    return (-1);
-	}
+      while((event = (AliMCEvent*)next())) {
+	if (oldidx < (event->GetSecondaryOffset() + (event->GetNumberOfTracks() - event->GetNumberOfPrimaries()))) break;
+      }
+      if (event) {
+	return (oldidx - event->GetSecondaryOffset() + event->GetNumberOfPrimaries());
+      } else {
+	return (-1);
+      }
     }
+  } else {
+    return oldidx;
+  }
 }
 
 Int_t AliMCEvent::BgLabelToIndex(Int_t label)

@@ -180,6 +180,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
 	AliMCEventHandler *handler;
 	while((handler = (AliMCEventHandler*)next())) {
 	    handler->Init(opt);
+	    handler->SetPreReadMode(kNoPreRead); //RS prereading will be handled by top event handler
 	    //handler->SetNumberOfEventsInContainer(fNEvent); // RS not needed and will break embedding with rep.factor>1
 	}
     }

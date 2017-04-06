@@ -99,6 +99,7 @@ public:
     virtual Int_t     GetNumberOfV0s()       const {return -1;}
     virtual Int_t     GetNumberOfCascades()  const {return -1;}
 
+    TParticle* ParticleFromStack(Int_t i) const;
     TParticle* Particle(int i) const;
     // Vertex
     using AliVEvent::GetPrimaryVertex;
@@ -156,9 +157,11 @@ public:
 
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
+  virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const; //RS
+  
 private:
     virtual void      ReorderAndExpandTreeTR();
-    virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;
+
     void 	      UpdateEventInformation();
     virtual void      AssignGeneratorIndex();    
     virtual void      AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax);    

@@ -348,8 +348,8 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10])
       if (label>=ntracks) continue; // RS: this may happen for bg event in embedding
       part = (TParticle*)gAlice->GetMCApp()->Particle(label);
     }
-    else if ( (mcpart=(const AliMCParticle*)mcEv->GetTrack(label)) ) {
-      part = mcpart->Particle();
+    else {
+      part = mcEv->ParticleFromStack(label);
     }
     mom[i] = part->P();
     if (part->P() < 0.02) {    // reduce soft particles from the same cluster
