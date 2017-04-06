@@ -710,12 +710,15 @@ void AliESDv0KineCuts::Armenteros(AliESDv0* const v0, Float_t val[2]) const
   TVector3 vecP(mp[0],mp[1],mp[2]);
   TVector3 vecM(mm[0],mm[1],mm[2]);
   
-  Double_t thetaP = acos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
-  Double_t thetaN = acos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
-  
-  Double_t alfa = ((vecP.Mag())*cos(thetaP)-(vecN.Mag())*cos(thetaN))/
-    ((vecP.Mag())*cos(thetaP)+(vecN.Mag())*cos(thetaN)) ;
-  Double_t qt = vecP.Mag()*sin(thetaP);
+  Double_t costhetaP = (vecP * vecM)/(vecP.Mag() * vecM.Mag());
+  Double_t costhetaN = (vecN * vecM)/(vecN.Mag() * vecM.Mag());
+  Double_t sin2thetaP = 1 - costhetaP*costhetaP;
+  Double_t sinthetaP = 0;
+  if(sin2thetaP>0) sinthetaP=TMath::Sqrt(sin2thetaP);
+
+  Double_t alfa = ((vecP.Mag())*costhetaP-(vecN.Mag())*costhetaN)/
+    ((vecP.Mag())*costhetaP+(vecN.Mag())*costhetaN) ;
+  Double_t qt = vecP.Mag()*sinthetaP;
 
   val[0] = alfa;
   val[1] = qt;
