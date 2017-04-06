@@ -114,6 +114,7 @@ private:
     TH1F        *fVtxY;//!Vertex y
     TH2F        *fTrigMulti;//!trigger multiplicity
     TH1F        *fHistClustE;//!cluster energy
+    TH1F        *fHistNonLinClustE;//!Nonlinear corrected cluster energy
     TH2F        *fHistClustEcent;//!cluster energy
     TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
     TH1F        *fHistClustEEG1;//! Cluster Energy, Trigger patch > ThresholdEG1
@@ -154,6 +155,7 @@ private:
     TH2F        *fEMCTPCnsig;//! EMC trk nsig
     TH2F        *fEMCTPCNpts;//!EMC Npoints used for dedx
     TH1F        *fClsEAftMatch;//!EMC Cluster energy after track matching
+    TH1F        *fNonLinClsEAftMatch;//!Nonlinear corrected EMC Cluster energy after track matching
     TH2F        *fClsEtaPhiAftMatch;//!EMC Cluster eta phi distribution after track matching
     TH2F        *fClsEtaPhiAftMatchEMCin;//!EMC Cluster eta phi distribution after track matching inside EMC phi acceptance
     TH2F        *fClsEtaPhiAftMatchEMCout;//!EMC Cluster eta phi distribution after track matching outside EMC phi acceptance

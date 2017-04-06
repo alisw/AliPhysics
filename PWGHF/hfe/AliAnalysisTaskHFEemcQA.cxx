@@ -105,6 +105,7 @@ fVtxX(0),
 fVtxY(0),
 fTrigMulti(0),
 fHistClustE(0),
+fHistNonLinClustE(0),
 fHistClustEcent(0),
 fEMCClsEtaPhi(0),
 fHistClustEEG1(0),
@@ -144,6 +145,7 @@ fEMCdEdx(0),
 fEMCTPCnsig(0),
 fEMCTPCNpts(0),
 fClsEAftMatch(0),
+fNonLinClsEAftMatch(0),
 fClsEtaPhiAftMatch(0),
 fClsEtaPhiAftMatchEMCin(0),
 fClsEtaPhiAftMatchEMCout(0),
@@ -228,6 +230,7 @@ fVtxX(0),
 fVtxY(0),
 fTrigMulti(0),
 fHistClustE(0),
+fHistNonLinClustE(0),
 fHistClustEcent(0),
 fEMCClsEtaPhi(0),
 fHistClustEEG1(0),
@@ -267,6 +270,7 @@ fEMCdEdx(0),
 fEMCTPCnsig(0),
 fEMCTPCNpts(0),
 fClsEAftMatch(0),
+fNonLinClsEAftMatch(0),
 fClsEtaPhiAftMatch(0),
 fClsEtaPhiAftMatchEMCin(0),
 fClsEtaPhiAftMatchEMCout(0),
@@ -391,6 +395,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
     fOutputList->Add(fHistClustE);
     
+    fHistNonLinClustE = new TH1F("fHistNonLinClustE", "Nonlinearity corrected EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
+    fOutputList->Add(fHistNonLinClustE);
+    
     fHistClustEcent = new TH2F("fHistClustEcent", "EMCAL cluster energy distribution vs. centrality; centrality; Cluster E", 100,0,100,500, 0.0, 50.0);
     fOutputList->Add(fHistClustEcent);
     
@@ -514,6 +521,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fClsEAftMatch = new TH1F("fClsEAftMatch", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 500, 0.0, 50.0);
     fOutputList->Add(fClsEAftMatch);
+    
+    fNonLinClsEAftMatch = new TH1F("fNonLinClsEAftMatch", "Nonlinearity corrected EMCAL cluster energy distribution after track matching; Cluster E;counts", 500, 0.0, 50.0);
+    fOutputList->Add(fNonLinClsEAftMatch);
     
     fClsEtaPhiAftMatch = new TH2F("fClsEtaPhiAftMatch","EMCAL cluster #eta and #phi distribution after track matching;#eta;#phi",100,-0.9,0.9,200,0,6.3);
     fOutputList->Add(fClsEtaPhiAftMatch);
@@ -644,9 +654,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     //////////////
     if(fUseTender){
         //new branches with calibrated tracks and clusters
-        if(IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-        if(!IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("ESDFilterTracks"));
-        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+        if(IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
+       // if(!IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
+        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
     }
     
     ////////////////////
@@ -889,6 +899,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
             fHistClustE->Fill(clustE);
+            fHistNonLinClustE->Fill(clust->GetNonLinCorrEnergy());
+            
             if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
             fEMCClsEtaPhi->Fill(emceta,emcphi);
             fHistoNCells->Fill(clustE,clust->GetNCells());
@@ -1155,7 +1167,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             fEMCTPCNpts->Fill(TrkP,track->GetTPCsignalN());
             
             Double_t clustMatchE = clustMatch->E();
+            
             fClsEAftMatch->Fill(clustMatchE);
+            fNonLinClsEAftMatch->Fill(clustMatch->GetNonLinCorrEnergy());
             
             fClsEtaPhiAftMatch->Fill(emceta,emcphi);
             
