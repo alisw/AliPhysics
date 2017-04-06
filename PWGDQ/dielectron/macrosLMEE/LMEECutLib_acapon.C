@@ -113,7 +113,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
 // cuts = REJECTION!!!
 AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet)  {  
     cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << endl;
-    AliAnalysisCuts* pairCuts=0x0;
+    AliAnalysisCuts* pairCutsPre = 0x0;
     switch(cutSet){
         case kAllSpecies: 
         case kElectrons: 
@@ -121,12 +121,12 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet)  {
             cutsPre->AddCut(AliDielectronVarManager::kM, 0.0, 0.05);
             cutsPre->AddCut(AliDielectronVarManager::kPhivPair, 2.5, 3.2);
             cutsPre->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.05);
-            pairCuts = cutsPre;
+            pairCutsPre = cutsPre;
             break;
     
         default: cout << "No Prefilter Pair Cuts defined " << endl;
     } 
-    return pairCuts;
+    return pairCutsPre;
 }
 
 
