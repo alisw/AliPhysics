@@ -93,6 +93,8 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   fListSubRun(NULL),
   fRejectPileUpTight(kFALSE),
   fRejectPileUp(kFALSE),
+  bFillCosSin(kFALSE),
+  bFillZDCQAon(kFALSE),
   fHarmonic(2),
   frunflag(0),
   fievent(0),
@@ -108,34 +110,47 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   fHist_ChanWgt_ZDCA(NULL),
   fHist_Vx_ArrayFinder(NULL),
   fHist_Vy_ArrayFinder(NULL),
-  fHist_Vz_ArrayFinder(NULL)
+  fHist_Vz_ArrayFinder(NULL),
+  fHist_Task_config(NULL),
+  fHist_Cent_woZDCcut(NULL),
+  fHist_Cent_wiZDCcut(NULL),
+  fHist_CutParameters(NULL),
+  fHist_Psi1_ZDCC_wGainCorr(NULL),
+  fHist_Psi1_ZDCA_wGainCorr(NULL)
 {
   for(int i=0;i<90;i++){
-     runNums[i] = 0;
-     for(int j=0;j<10;j++){
-      fHist_znCx_V0_VxVy[i][j] = NULL;
-      fHist_znCy_V0_VxVy[i][j] = NULL;
-      fHist_znAx_V0_VxVy[i][j] = NULL;
-      fHist_znAy_V0_VxVy[i][j] = NULL;
+   runNums[i] = 0;
+    for(int j=0;j<10;j++){
+     fHist_znCx_V0_VxVy[i][j] = NULL;
+     fHist_znCy_V0_VxVy[i][j] = NULL;
+     fHist_znAx_V0_VxVy[i][j] = NULL;
+     fHist_znAy_V0_VxVy[i][j] = NULL;
     }     
   }
- for(int i=0;i<2;i++)
- {
-      VxCut[i] = 0;
-      VyCut[i] = 0;
-      VzCut[i] = 0;
- }
 
-     DefineInput(1, AliFlowEventSimple::Class()); // Input slot #1 works with an AliFlowEventSimple
-    DefineOutput(1,TList::Class());
-    DefineOutput(2,TList::Class());
+  for(int i=0;i<4;i++){
+    for(int j=0;j<5;j++){
+     fHist_Qx_vs_Obs_woCorr[i][j] = NULL;
+     fHist_XX_vs_Obs_woCorr[i][j] = NULL;
+    }
+  }
 
-   fDataSet="2010";
-   fAnalysisSet="DoGainEq";
+  for(int i=0;i<2;i++){
+    VxCut[i] = 0;
+    VyCut[i] = 0;
+    VzCut[i] = 0;
+  }
 
-   //fTotalQvector = new TString("QaQb");         // "QaQb" (means Qa+Qb), "Qa"  or "Qb"
 
-   cout<<"AliAnalysisTaskZDCGainEq::Constructor is called..!! fAnalysisSet = "<<fAnalysisSet.Data()<<endl;
+  DefineInput(1, AliFlowEventSimple::Class()); // Input slot #1 works with an AliFlowEventSimple
+  DefineOutput(1,TList::Class());
+  DefineOutput(2,TList::Class());
+
+  fDataSet="2010";
+  fAnalysisSet="DoGainEq";
+  sCentEstimator="V0";
+
+ //fTotalQvector = new TString("QaQb");         // "QaQb" (means Qa+Qb), "Qa"  or "Qb"
 
 }//-------------constructor-----------------
 
@@ -153,6 +168,8 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
   fListSubRun(NULL),
   fRejectPileUpTight(kFALSE),
   fRejectPileUp(kFALSE),
+  bFillCosSin(kFALSE),
+  bFillZDCQAon(kFALSE),
   fHarmonic(2),
   frunflag(0),
   fievent(0),
@@ -168,27 +185,40 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
   fHist_ChanWgt_ZDCA(NULL),
   fHist_Vx_ArrayFinder(NULL),
   fHist_Vy_ArrayFinder(NULL),
-  fHist_Vz_ArrayFinder(NULL)
+  fHist_Vz_ArrayFinder(NULL),
+  fHist_Task_config(NULL),
+  fHist_Cent_woZDCcut(NULL),
+  fHist_Cent_wiZDCcut(NULL),
+  fHist_CutParameters(NULL),
+  fHist_Psi1_ZDCC_wGainCorr(NULL),
+  fHist_Psi1_ZDCA_wGainCorr(NULL)
 {
   for(int i=0;i<90;i++){
-     runNums[i] = 0;
-     for(int j=0;j<10;j++){
-      fHist_znCx_V0_VxVy[i][j] = NULL;
-      fHist_znCy_V0_VxVy[i][j] = NULL;
-      fHist_znAx_V0_VxVy[i][j] = NULL;
-      fHist_znAy_V0_VxVy[i][j] = NULL;
+   runNums[i] = 0;
+    for(int j=0;j<10;j++){
+     fHist_znCx_V0_VxVy[i][j] = NULL;
+     fHist_znCy_V0_VxVy[i][j] = NULL;
+     fHist_znAx_V0_VxVy[i][j] = NULL;
+     fHist_znAy_V0_VxVy[i][j] = NULL;
     }     
   }
 
-  for(int i=0;i<2;i++)
-  {
-      VxCut[i] = 0;
-      VyCut[i] = 0;
-      VzCut[i] = 0;
+  for(int i=0;i<4;i++){
+    for(int j=0;j<5;j++){
+     fHist_Qx_vs_Obs_woCorr[i][j] = NULL;
+     fHist_XX_vs_Obs_woCorr[i][j] = NULL;
+    }
   }
 
-   fDataSet="2010";
-   fAnalysisSet="DoGainEq";
+  for(int i=0;i<2;i++){
+    VxCut[i] = 0;
+    VyCut[i] = 0;
+    VzCut[i] = 0;
+  }
+
+  fDataSet="2010";
+  fAnalysisSet="DoGainEq";
+  sCentEstimator="V0";
 }
 
 
@@ -204,21 +234,20 @@ AliAnalysisTaskZDCGainEq::~AliAnalysisTaskZDCGainEq()
   delete                 fListDummy1;        
   delete                 fListHijing;        
 
-  delete              fMultSelection; // it is not = new 
-  delete               fAnalysisUtil; // it is = new !!!
+  delete              fMultSelection; 
+  delete               fAnalysisUtil; // it is '= new' !!!
 
 
  //these histograms are not in any list:
  //therefore, deleted manually.
  //delete         *fHist_ChanWgt_ZDCC;  //can't delete, Execption thrown.!! why?
  //delete         *fHist_ChanWgt_ZDCA;  
-
  //delete       *fHist_Vx_ArrayFinder; 
  //delete       *fHist_Vy_ArrayFinder; 
  //delete       *fHist_Vz_ArrayFinder; 
 
 
- printf("\n\n ~AliAnalysisTaskZDCGainEq::Destructor is called..!!\n\n");
+ //printf("\n\n ~AliAnalysisTaskZDCGainEq::Destructor is called..!!\n\n");
 }
 
 //________________________________________________________________________
@@ -277,50 +306,132 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(8,"GoodVertex2016");
   fListHistos->Add(fPileUpMultSelCount);
 
+  fHist_Task_config = new TH1F("fTask_Configuration", "Task Configuration", 20, 0., 20.);
+  fHist_Task_config->GetXaxis()->SetBinLabel(1,"IsZDCQAon");
+  fHist_Task_config->GetXaxis()->SetBinLabel(2,"IsCentV0M");
+  fHist_Task_config->GetXaxis()->SetBinLabel(3,"IsCentTPC");
+  fHist_Task_config->GetXaxis()->SetBinLabel(4,"IsCentCL1");
+  fHist_Task_config->GetXaxis()->SetBinLabel(5,"IsPileUpOn");
+  fHist_Task_config->GetXaxis()->SetBinLabel(6,"IsPileUpTightOn");
+  fHist_Task_config->GetXaxis()->SetBinLabel(7,"IsFillGainEq");
+  fHist_Task_config->GetXaxis()->SetBinLabel(8,"IsDoGainEq");
+  fHist_Task_config->GetXaxis()->SetBinLabel(9,"IsAvailGainFile");
+  fHist_Task_config->GetXaxis()->SetBinLabel(10,"IsFillCosSin");
+  fHist_Task_config->GetXaxis()->SetBinLabel(11,"IsDoRecenter");
+  fHist_Task_config->GetXaxis()->SetBinLabel(12,"IsAvailRecntFile");
+  fListHistos->Add(fHist_Task_config);
+
+
+  fHist_CutParameters = new TH1F("fTask_CutParameters", "Variable Cut Values", 10, 0., 10.);
+  fHist_CutParameters->GetXaxis()->SetBinLabel(1,"VzCutLowValue");
+  fHist_CutParameters->GetXaxis()->SetBinLabel(2,"VzCutHighValue");
+  fHist_CutParameters->GetXaxis()->SetBinLabel(3,"NBins_Vz");
+  fHist_CutParameters->GetXaxis()->SetBinLabel(4,"VxCutHighValue");
+  fHist_CutParameters->GetXaxis()->SetBinLabel(5,"VxCutLowValue");
+  fHist_CutParameters->GetXaxis()->SetBinLabel(6,"NBins_Vx");
+  fHist_CutParameters->GetXaxis()->SetBinLabel(7,"VyCutHighValue");
+  fHist_CutParameters->GetXaxis()->SetBinLabel(8,"VyCutLowValue");
+  fHist_CutParameters->GetXaxis()->SetBinLabel(9,"NBins_Vy");
+  fListHistos->Add(fHist_CutParameters);
+
+  fHist_Cent_woZDCcut =  new TH1F("fHist_Cent_before_ZDCcut"," ",100,0,100);
+  fListHistos->Add(fHist_Cent_woZDCcut);
+  fHist_Cent_wiZDCcut =  new TH1F("fHist_Cent_afterr_ZDCcut"," ",100,0,100);
+  fListHistos->Add(fHist_Cent_wiZDCcut);
+
 
 
   Double_t centRange[12]    = {0,5,10,20,30,40,50,60,70,80,90,100};
 
 
-
-
  //-------- define and add the recenter histograms ----------------
-if(fDataSet=="2010") {
-  vxBin = 9;
-  vyBin = 9;
-  vzBin = 10;   
+  if(fDataSet=="2010") {
+    //vxBin = 9; 
+    //vyBin = 9;
+    //vzBin = 10;   
 
-  VxCut[0] =  -0.030;
-  VxCut[1] =   0.015;
-  VyCut[0] =   0.150;
-  VyCut[1] =   0.204;
-  VzCut[0] =   -10.0;
-  VzCut[1] =     9.4;
- }
+    VxCut[0] =  -0.030;
+    VxCut[1] =   0.015;
+    VyCut[0] =   0.150;
+    VyCut[1] =   0.204;
+    VzCut[0] =   -10.0;
+    VzCut[1] =     9.4;
+  }
 
- if(fDataSet=="2015"){
-   vxBin = 8;
-   vyBin = 8;
-   vzBin = 10;  
+  if(fDataSet=="2015"){
+    //vxBin = 8;
+    //vyBin = 8;
+    //vzBin = 10;  
 
-   VxCut[0] =   0.060;
-   VxCut[1] =   0.086;
-   VyCut[0] =   0.321;
-   VyCut[1] =   0.345;
-   VzCut[0] =   -10.0;
-   VzCut[1] =    10.0;
- }
+    VxCut[0] =   0.060;
+    VxCut[1] =   0.086;
+    VyCut[0] =   0.321;
+    VyCut[1] =   0.345;
+    VzCut[0] =   -10.0;
+    VzCut[1] =    10.0;
+  }
 
- if(fDataSet=="2011"){
-    AliDebug(2,"\n\n !!** WARNING ***!!  \n cuts not defined for DATASET: %s\n ...EXIT...\n\n)");
-    exit(1);
- }
+  if(fDataSet=="2011"){
+     AliDebug(2,"\n\n !!** WARNING ***!!  \n cuts not defined for DATASET: %s\n ...EXIT...\n\n)");
+     exit(1);
+  }
+
+
+
+  if(bFillZDCQAon){
+
+   fHist_Task_config->Fill(0.5);
+
+   fHist_Psi1_ZDCC_wGainCorr      = new TH1F("fHist_Psi1_ZDCC_wGainCorr","", 200, 0,2.*TMath::Pi());
+   fListHistos->Add(fHist_Psi1_ZDCC_wGainCorr);
+   fHist_Psi1_ZDCA_wGainCorr      = new TH1F("fHist_Psi1_ZDCA_wGainCorr","", 200, 0,2.*TMath::Pi());
+   fListHistos->Add(fHist_Psi1_ZDCA_wGainCorr);
+
+   TString     sNameQn[4] = {"Xa","Xc","Ya","Yc"};
+   TString    sNameQn2[4] = {"XaXc","YaYc","XcYa","YcXa"};
+   TString     sNameVs[5] = {"Cent","Mult","Vx","Vy","Vz"};      
+   Int_t     nBinNumVs[5] = {100,  100,       50,       50, 400}; // number of bins for "Cent", "Mult", "Vx","Vy","Vz"
+   Double_t  lBinLowVs[5] = {  0,    0, VxCut[0], VyCut[0], -10}; // bin low  value: "Cent", "Mult", "Vx", "Vy", "Vz"
+   Double_t lBinHighVs[5] = {100, 4000, VxCut[1], VyCut[1],  10}; // bin high value: "Cent", "Mult", "Vx", "Vy", "Vz"
+
+   char name[100];
+
+   for(int i=0;i<4;i++) {
+     for(int j=0;j<5;j++) {//fHist_Qx_vs_Obs_woCorr
+      //store: X,Y position for recenter:
+       sprintf(name,"fHist_%s_vs_%s_woCorr",static_cast<const char*>(sNameQn[i]),static_cast<const char*>(sNameVs[j]));
+       fHist_Qx_vs_Obs_woCorr[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
+       fListHistos->Add(fHist_Qx_vs_Obs_woCorr[i][j]);
+
+       sprintf(name,"fHist_%s_vs_%s_woCorr",static_cast<const char*>(sNameQn2[i]),static_cast<const char*>(sNameVs[j]));
+       fHist_XX_vs_Obs_woCorr[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
+       fListHistos->Add(fHist_XX_vs_Obs_woCorr[i][j]);
+
+       //sprintf(name,"fHist_%s_vs_%s_withCor",static_cast<const char*>(sNameQn[i]),static_cast<const char*>(sNameVs[j]));
+       //fHist_Qx_vs_Obs_withCor[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
+       //fListHistos->Add(fHist_Qx_vs_Obs_withCor[i][j]);
+
+       //sprintf(name,"fHist_%s_vs_%s_withCor",static_cast<const char*>(sNameQn2[i]),static_cast<const char*>(sNameVs[j]));
+       //fHist_XX_vs_Obs_withCor[i][j] = new TProfile(name,"", nBinNumVs[j], lBinLowVs[j], lBinHighVs[j],"");
+       //fListHistos->Add(fHist_XX_vs_Obs_withCor[i][j]);
+     }
+   }
+  }
+
 
   const int NbinVt =  (vyBin-1)*vxBin + vxBin;
 
   fHist_Vx_ArrayFinder = new TH1F("fHist_Vx_ArrayFinder","",vxBin,VxCut[0],VxCut[1]);
   fHist_Vy_ArrayFinder = new TH1F("fHist_Vy_ArrayFinder","",vyBin,VyCut[0],VyCut[1]);
   fHist_Vz_ArrayFinder = new TH1F("fHist_Vz_ArrayFinder","",vzBin,VzCut[0],VzCut[1]);
+
+
+  if(vzBin>10){
+    printf("\n\n::UserCreateOutPutObject()\n Vz Binning more than 10 not allowed\n Exit \n\n");
+    exit(1);
+  }
+
+  const int VzBinIter = (const int) vzBin;
 
 
   //filling the Q vectors for recenter:
@@ -330,7 +441,7 @@ if(fDataSet=="2010") {
     fListZDCQxy->SetOwner(kTRUE);
 
     for(int i=0;i<frunflag;i++) {
-      for(int j=0;j<10;j++) {
+      for(int j=0;j<VzBinIter;j++) {
         fHist_znCx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90);
         fHist_znCy_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znCy_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90);
         fHist_znAx_V0_VxVy[i][j] = new TProfile2D(Form("fHist_znAx_V0_Run%d_Vz%d",runNums[i],j+1),"",NbinVt,0,NbinVt,90,0,90);
@@ -343,6 +454,45 @@ if(fDataSet=="2010") {
       }
     }
   }
+
+
+  if(sCentEstimator=="V0"){
+    fHist_Task_config->Fill(1.5);
+  }
+  if(sCentEstimator=="TPC"){
+    fHist_Task_config->Fill(2.5);
+  }
+  if(sCentEstimator=="CL1"){
+    fHist_Task_config->Fill(3.5);
+  }
+  if(fRejectPileUp){
+    fHist_Task_config->Fill(4.5);
+  }
+  if(fRejectPileUpTight){
+    fHist_Task_config->Fill(5.5);
+  }
+  if(fAnalysisSet=="FillGainEq"){
+    fHist_Task_config->Fill(6.5);
+  }
+  if(fAnalysisSet=="DoGainEq"){
+    fHist_Task_config->Fill(7.5);
+  }
+  if(fListZDCWgt){
+    fHist_Task_config->Fill(8.5);
+  }
+  if(bFillCosSin){
+    fHist_Task_config->Fill(9.5);
+  }
+
+  fHist_CutParameters->SetBinContent(1,VzCut[0]);
+  fHist_CutParameters->SetBinContent(2,VzCut[1]);
+  fHist_CutParameters->SetBinContent(3,vzBin);
+  fHist_CutParameters->SetBinContent(4,VxCut[0]);
+  fHist_CutParameters->SetBinContent(5,VxCut[1]);
+  fHist_CutParameters->SetBinContent(6,vxBin);
+  fHist_CutParameters->SetBinContent(7,VyCut[0]);
+  fHist_CutParameters->SetBinContent(8,VyCut[1]);
+  fHist_CutParameters->SetBinContent(9,vyBin);
 
 
 
@@ -366,7 +516,7 @@ if(fDataSet=="2010") {
 
   fcheckOnce = 0;
   fOldRunNum = 0;
-  printf("\n\n::UserCreateOutPutObject(). frunflag= %d, dataset: %s, Analysis= %s\n\n",frunflag,fDataSet.Data(),fAnalysisSet.Data());
+  printf("\n\n::UserCreateOutPutObject()\n Runflag= %d, dataset: %s, VxyBin = %d, Analysis= %s\n\n",frunflag,fDataSet.Data(),NbinVt,fAnalysisSet.Data());
 
 }
 
@@ -453,14 +603,13 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
    Double_t centrCL0=300;
    Double_t centrTRK=300;
 
- if(fDataSet=="2010"||fDataSet=="2011"){
+  if(fDataSet=="2010"||fDataSet=="2011"){
     centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
     centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
     centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
     centrTRK = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK");
   }
-
- else{
+  else{
     fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
      if(!fMultSelection) {
        printf("\n **WARNING** ::UserExec() AliMultSelection object not found. Step# %d\n",stepCount);
@@ -657,42 +806,42 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
 
  //read Histograms for channel Wgt:
- if(runNumber!=fOldRunNum){  //if runNumber changed, re-read new list.
-   fcheckOnce = 0;
- }
+  if(runNumber!=fOldRunNum){  //if runNumber changed, re-read new list.
+    fcheckOnce = 0;
+  }
 
- if(!fcheckOnce && fAnalysisSet=="DoGainEq") {
-   fHist_ChanWgt_ZDCC = (TH1F *) fListZDCWgt->FindObject(Form("fHist1F_ZDCC_ChannelWgt_Run%d",runNumber));
-   fHist_ChanWgt_ZDCA = (TH1F *) fListZDCWgt->FindObject(Form("fHist1F_ZDCA_ChannelWgt_Run%d",runNumber));
+  if(!fcheckOnce && fAnalysisSet=="DoGainEq") {
+    fHist_ChanWgt_ZDCC = (TH1F *) fListZDCWgt->FindObject(Form("fHist1F_ZDCC_ChannelWgt_Run%d",runNumber));
+    fHist_ChanWgt_ZDCA = (TH1F *) fListZDCWgt->FindObject(Form("fHist1F_ZDCA_ChannelWgt_Run%d",runNumber));
 
-   fcheckOnce++;
-   fOldRunNum = runNumber;
- }
+    fcheckOnce++;
+    fOldRunNum = runNumber;
+  }
 
 
- Double_t ChanWgtZDCC[4] = {1.,1.,1.,1.};
- Double_t ChanWgtZDCA[4] = {1.,1.,1.,1.};
+  Double_t ChanWgtZDCC[4] = {1.,1.,1.,1.};
+  Double_t ChanWgtZDCA[4] = {1.,1.,1.,1.};
 
- Int_t iCentBin = abs(EvtCent) + 1;
- Int_t iWgtBin = -1;
+  Int_t iCentBin = abs(EvtCent) + 1;
+  Int_t iWgtBin = -1;
 
- if(fAnalysisSet=="DoGainEq") {
-   if(fHist_ChanWgt_ZDCC && fHist_ChanWgt_ZDCA){
-     for(int ich=1; ich<=4;  ich++){
+  if(fAnalysisSet=="DoGainEq") {
+    if(fHist_ChanWgt_ZDCC && fHist_ChanWgt_ZDCA){
+      for(int ich=1; ich<=4;  ich++){
         iWgtBin = 4*(iCentBin-1) + ich;
         ChanWgtZDCC[ich-1] = fHist_ChanWgt_ZDCC->GetBinContent(iWgtBin);
         ChanWgtZDCA[ich-1] = fHist_ChanWgt_ZDCA->GetBinContent(iWgtBin);
-     }
-   }
-   else{
+      }
+    }
+    else{
         printf("\n\n **WARNING**\n ZDC Channel Weights not found. Using weights = 1.0 \n\n");
         //exit(1);
-   }
- }
+    }
+  }
 
 
 
-
+  fHist_Cent_woZDCcut->Fill(EvtCent);
 
 
   //----------- Read ZDC information ----------
@@ -811,42 +960,40 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
   Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
 
-  for(Int_t i=0; i<4; i++)
-   {
-    if(towCalibZNC[i+1]>0.)
-      {
+  for(Int_t i=0; i<4; i++) {
+    if(towCalibZNC[i+1]>0.) {
        wZNC = TMath::Power(towCalibZNC[i+1], fZDCGainAlpha)*AvTowerGain[i];
        numXZNC += x[i]*wZNC;
        numYZNC += y[i]*wZNC;
        denZNC  += wZNC;
-      }
+    }
 
     if(towCalibZNA[i+1]>0.) {
        wZNA = TMath::Power(towCalibZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4];
        numXZNA += x[i]*wZNA;
        numYZNA += y[i]*wZNA;
        denZNA  += wZNA;
-      }
     }
+  }
 
   if(denZNC!=0) {
     xyZNC[0] = numXZNC/denZNC;
     xyZNC[1] = numYZNC/denZNC;
   }
-   else{
+  else{
      xyZNC[0]  = 999.;
      xyZNC[1]  = 999.;
      zncEnergy =   0.;
-    }
+  }
   if(denZNA!=0) {
      xyZNA[0] = numXZNA/denZNA;
      xyZNA[1] = numYZNA/denZNA;
-    }
-   else{
+  }
+  else{
      xyZNA[0]  = 999.;
      xyZNA[1]  = 999.;
      znaEnergy =   0.;
-   }
+  }
 
 
   
@@ -867,27 +1014,70 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   fHist_Event_count->Fill(stepCount);
   stepCount++;
 
+
+
   Int_t indexVx = fHist_Vx_ArrayFinder->FindBin(Vxyz[0]);
   Int_t indexVy = fHist_Vy_ArrayFinder->FindBin(Vxyz[1]);
   Int_t indexVz = fHist_Vz_ArrayFinder->FindBin(Vxyz[2]);
   Double_t tVertexBin1 = 0;
 
-  if(fAnalysisSet=="DoGainEq") {
-     tVertexBin1 = (Double_t) (indexVy-1)*vxBin + (Double_t)indexVx - 0.5 ; // 
-  //fHist_vBincount->Fill(tVertexBin1);
-     fHist_znCx_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,xyZNC[0]); //EvtCent
-     fHist_znCy_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,xyZNC[1]);
-     fHist_znAx_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,xyZNA[0]);
-     fHist_znAy_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,xyZNA[1]);
+  if(fAnalysisSet=="DoGainEq"){
+
+    tVertexBin1 = (Double_t) (indexVy-1)*vxBin + (Double_t)indexVx - 0.5 ; 
+
+    if(bFillCosSin) {
+       double psi1C = TMath::ATan2(xyZNC[1],xyZNC[0]);
+       if(psi1C<0){
+         psi1C += 2.*TMath::Pi();
+       }
+       fHist_Psi1_ZDCC_wGainCorr->Fill(psi1C);
+
+       double psi1A = TMath::ATan2(xyZNA[1],xyZNA[0]);
+       if(psi1A<0){
+         psi1A += 2.*TMath::Pi();
+       }
+       fHist_Psi1_ZDCA_wGainCorr->Fill(psi1A);
+
+       fHist_znCx_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,TMath::Cos(psi1C)); 
+       fHist_znCy_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,TMath::Sin(psi1C));
+       fHist_znAx_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,TMath::Cos(psi1A));
+       fHist_znAy_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,TMath::Sin(psi1A));
+    }
+    else{
+       fHist_znCx_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,xyZNC[0]); 
+       fHist_znCy_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,xyZNC[1]);
+       fHist_znAx_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,xyZNA[0]);
+       fHist_znAy_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,xyZNA[1]);
+    }
   }
 
-  
+
+  Int_t nRefMult = fEvent->GetReferenceMultiplicity();
+
+  if(bFillZDCQAon){
+
+    Double_t  FillVsWith[5]  = {EvtCent,static_cast<Double_t>(nRefMult), Vxyz[0], Vxyz[1], Vxyz[2]};
+    Double_t  FillValueQx[4] = {xyZNA[0],xyZNC[0],xyZNA[1],xyZNC[1]};
+    Double_t  FillValueXX[4] = {xyZNA[0]*xyZNC[0],xyZNA[1]*xyZNC[1],xyZNC[0]*xyZNA[1],xyZNC[1]*xyZNA[0]}; //XaXc,YaYc,XcYa,YcXa
+
+    //fill the uncorrected Qx,XX.  /* Corrected to be added later */
+    for(int i=0;i<4;i++){
+     for(int j=0;j<5;j++){
+        fHist_Qx_vs_Obs_woCorr[i][j]->Fill(FillVsWith[j],FillValueQx[i]);
+        fHist_XX_vs_Obs_woCorr[i][j]->Fill(FillVsWith[j],FillValueXX[i]);
+     }
+    }
+  }
+
+  fHist_Cent_wiZDCcut->Fill(EvtCent);
+
+
   Int_t    iTracks = fEvent->NumberOfTracks();
 
 
   //if(fievent%20==0){
-    //std::cout<<fievent<<" run = "<<runNumber<<" cTPC= "<<EvtCent<<"\tVertexBin1 = "<<tVertexBin1
-    //         <<"\t towZNA[2] = "<<towZNA[2]<<"\t towCalibZNA[2] = "<<towCalibZNA[2]<<std::endl;    } 
+  //std::cout<<fievent<<" run = "<<runNumber<<" cTPC= "<<EvtCent<<"\tRefMult = "<<nRefMult
+  //         <<"\t towZNA[2] = "<<towZNA[2]<<"\t towCalibZNA[2] = "<<towCalibZNA[2]<<std::endl;    } 
   
 
   PostData(1,fListHistos);

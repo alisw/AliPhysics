@@ -60,8 +60,18 @@ public:
 
   void    SetDataSet(TString fdataset)                {this->fDataSet           =     fdataset;}
   void    SetAnalysisSet(TString fanalysisSet)        {this->fAnalysisSet       = fanalysisSet;}
+  void    SetCentEstimator(TString centEstim)         {this->sCentEstimator     =    centEstim;}
+
   void    SetRejectPileUpTight(Bool_t const pileupt8) {this->fRejectPileUpTight =     pileupt8;}
   void    SetRejectPileUp(Bool_t const pileup)        {this->fRejectPileUp      =       pileup;}
+  void    SetFillCosSin(Bool_t const fillcossin)      {this->bFillCosSin        =   fillcossin;}
+  void    SetFillZDCQA(Bool_t const fillzdcQAon)      {this->bFillZDCQAon       =  fillzdcQAon;}
+  void    SetVxVyVzBinForAvgQx(Int_t vxbin,Int_t vybin,Int_t vzbin){
+           this->vxBin =  vxbin;   
+           this->vyBin =  vybin;   
+           this->vzBin =  vzbin;
+          }
+
 
   Bool_t                        plpMV(const AliAODEvent* aod);
   double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
@@ -91,26 +101,33 @@ private:
 
   TString                   fDataSet;    // Dataset: 2010, 2011, or 2015.
   TString               fAnalysisSet;    // Values: recenter1,recenter2,analysis1
+  TString             sCentEstimator;
   Bool_t               fRejectPileUp;    //
   Bool_t          fRejectPileUpTight;    //
+  Bool_t                 bFillCosSin;    //
+  Bool_t                bFillZDCQAon;    //
 
-  Int_t                  runNums[90];  //!
-  Float_t                   VxCut[2];  //
-  Float_t                   VyCut[2];  //
-  Float_t                   VzCut[2];  //
+  Int_t                  runNums[90];    //
+  Float_t                   VxCut[2];    //
+  Float_t                   VyCut[2];    //
+  Float_t                   VzCut[2];    //
 
   Int_t                     frunflag;  //!
   Int_t                      fievent;  //!
   Int_t                   fcheckOnce;  //!
   Int_t                   fOldRunNum;  //!
-  Int_t                        vxBin;  //!
-  Int_t                        vyBin;  //!
-  Int_t                        vzBin;  //!
+  Int_t                        vxBin;  //
+  Int_t                        vyBin;  //
+  Int_t                        vzBin;  //
 
 
   TH1F            *fHist_Event_count;  //!
   TH1F                 *fPileUpCount;  //!
   TH1F          *fPileUpMultSelCount;  //!
+  TH1F            *fHist_Task_config;  //!
+  TH1F          *fHist_CutParameters;  //!
+  TH1F          *fHist_Cent_woZDCcut;  //!
+  TH1F          *fHist_Cent_wiZDCcut;  //!
 
   TH1F           *fHist_ChanWgt_ZDCC;  //!
   TH1F           *fHist_ChanWgt_ZDCA;  //!
@@ -119,13 +136,19 @@ private:
   TH1F         *fHist_Vy_ArrayFinder; //!
   TH1F         *fHist_Vz_ArrayFinder; //!
 
+  TH1F            *fHist_Psi1_ZDCC_wGainCorr;  //!
+  TH1F            *fHist_Psi1_ZDCA_wGainCorr;  //!
+  TProfile     *fHist_Qx_vs_Obs_woCorr[4][5];  //!
+  TProfile     *fHist_XX_vs_Obs_woCorr[4][5];  //!
+
+
   TProfile2D     *fHist_znCx_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znCy_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znAx_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znAy_V0_VxVy[90][10];  //!
 
 
-  ClassDef(AliAnalysisTaskZDCGainEq, 1); // example of analysis
+  ClassDef(AliAnalysisTaskZDCGainEq, 2); // example of analysis
 };
 
 //==================================================================
