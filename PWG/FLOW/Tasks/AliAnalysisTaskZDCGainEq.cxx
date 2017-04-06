@@ -242,7 +242,6 @@ AliAnalysisTaskZDCGainEq::~AliAnalysisTaskZDCGainEq()
  //therefore, deleted manually.
  //delete         *fHist_ChanWgt_ZDCC;  //can't delete, Execption thrown.!! why?
  //delete         *fHist_ChanWgt_ZDCA;  
-
  //delete       *fHist_Vx_ArrayFinder; 
  //delete       *fHist_Vy_ArrayFinder; 
  //delete       *fHist_Vz_ArrayFinder; 
@@ -604,14 +603,13 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
    Double_t centrCL0=300;
    Double_t centrTRK=300;
 
- if(fDataSet=="2010"||fDataSet=="2011"){
+  if(fDataSet=="2010"||fDataSet=="2011"){
     centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
     centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
     centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
     centrTRK = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK");
   }
-
- else{
+  else{
     fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
      if(!fMultSelection) {
        printf("\n **WARNING** ::UserExec() AliMultSelection object not found. Step# %d\n",stepCount);
@@ -962,42 +960,40 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
   Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
 
-  for(Int_t i=0; i<4; i++)
-   {
-    if(towCalibZNC[i+1]>0.)
-      {
+  for(Int_t i=0; i<4; i++) {
+    if(towCalibZNC[i+1]>0.) {
        wZNC = TMath::Power(towCalibZNC[i+1], fZDCGainAlpha)*AvTowerGain[i];
        numXZNC += x[i]*wZNC;
        numYZNC += y[i]*wZNC;
        denZNC  += wZNC;
-      }
+    }
 
     if(towCalibZNA[i+1]>0.) {
        wZNA = TMath::Power(towCalibZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4];
        numXZNA += x[i]*wZNA;
        numYZNA += y[i]*wZNA;
        denZNA  += wZNA;
-      }
     }
+  }
 
   if(denZNC!=0) {
     xyZNC[0] = numXZNC/denZNC;
     xyZNC[1] = numYZNC/denZNC;
   }
-   else{
+  else{
      xyZNC[0]  = 999.;
      xyZNC[1]  = 999.;
      zncEnergy =   0.;
-    }
+  }
   if(denZNA!=0) {
      xyZNA[0] = numXZNA/denZNA;
      xyZNA[1] = numYZNA/denZNA;
-    }
-   else{
+  }
+  else{
      xyZNA[0]  = 999.;
      xyZNA[1]  = 999.;
      znaEnergy =   0.;
-   }
+  }
 
 
   
@@ -1031,11 +1027,15 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
     if(bFillCosSin) {
        double psi1C = TMath::ATan2(xyZNC[1],xyZNC[0]);
-       if(psi1C<0) psi1C += 2.*TMath::Pi();
+       if(psi1C<0){
+         psi1C += 2.*TMath::Pi();
+       }
        fHist_Psi1_ZDCC_wGainCorr->Fill(psi1C);
 
        double psi1A = TMath::ATan2(xyZNA[1],xyZNA[0]);
-       if(psi1A<0) psi1A += 2.*TMath::Pi();
+       if(psi1A<0){
+         psi1A += 2.*TMath::Pi();
+       }
        fHist_Psi1_ZDCA_wGainCorr->Fill(psi1A);
 
        fHist_znCx_V0_VxVy[runindex][indexVz-1]->Fill(tVertexBin1,EvtCent,TMath::Cos(psi1C)); 

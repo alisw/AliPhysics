@@ -1,7 +1,7 @@
 #include<TList.h>
 
 
-void AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=5,Int_t iVyBin=5,Int_t iVzBin=10, 
+ void AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=5,Int_t iVyBin=5,Int_t iVzBin=10, 
  TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisDef = "recenter1", 
  TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE, 
  Bool_t bUseVZERO = kTRUE, Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Double_t dVertexRange = 10., 
@@ -25,7 +25,9 @@ void AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=
 
 
 
-  TString taskFEname = "FlowEventTaskCh";   
+  TString taskFEname;
+  taskFEname.Form("ZDCFlowEventTask%s", suffix);
+
   AliAnalysisTaskFlowEvent *taskFE = new AliAnalysisTaskFlowEvent(taskFEname,"",bEventCutsQA);
   taskFE->SetQAOn(bEventCutsQA);
   taskFE->SetAnalysisType(sAnalysisType); //sanalysisType = AUTOMATIC see the initializers!!
@@ -132,7 +134,11 @@ void AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=
 
   TString file = AliAnalysisManager::GetCommonFileName();
 
-  AliAnalysisDataContainer *coutputFE = mgr->CreateContainer("FECont",AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+  TString ContainerFE;
+  ContainerFE.Form("FlowEventCont_%s", suffix);
+
+
+  AliAnalysisDataContainer *coutputFE = mgr->CreateContainer(ContainerFE,AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
   AliAnalysisDataContainer    *cinput = mgr->GetCommonInputContainer();  //AOD event
 
   mgr->ConnectInput( taskFE, 0, cinput); 	//connect the input data (AOD) to the flow event task
@@ -141,18 +147,25 @@ void AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=
   TString taskFEQA = file;      // file is the common outfile filename
   taskFEQA   += ":QAcharge";
 
-  AliAnalysisDataContainer *coutputFEQA = mgr->CreateContainer("FEContQA",TList::Class(),AliAnalysisManager::kOutputContainer,taskFEQA.Data());
+
+  TString ContainerFEQA;
+  ContainerFEQA.Form("FEContQA_%s", suffix);
+
+  AliAnalysisDataContainer *coutputFEQA = mgr->CreateContainer(ContainerFEQA,TList::Class(),AliAnalysisManager::kOutputContainer,taskFEQA.Data());
   mgr->ConnectOutput(taskFE, 2, coutputFEQA);          // kOutputContainer: written to the output file
 
 
   //==========================================================================================
 
-  AliAnalysisTaskZDCGainEq *taskQC_prot = new AliAnalysisTaskZDCGainEq("TaskQC_charge");
+  TString TaskZDCflow;
+  TaskZDCflow.Form("TaskZDCFlow_%s", suffix);
+
+  AliAnalysisTaskZDCGainEq *taskQC_prot = new AliAnalysisTaskZDCGainEq(TaskZDCflow);
 
   if(sDataSet == "2015")
-   {
+  {
     taskQC_prot->SelectCollisionCandidates(AliVEvent::kINT7);
-   }
+  }
   else{
     taskQC_prot->SelectCollisionCandidates(AliVEvent::kMB);
   }
@@ -184,8 +197,8 @@ void AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=
          taskQC_prot->SetZDCChWgtList(fZDCChanWgtUse);
      }
      else{
-	  std::cout<<"\n\n !!!!**** ERROR:ZDC Channel wgt Histograms not found ****!!!\n\n"<<std::endl;
-          exit(1);
+	 std::cout<<"\n\n !!!!**** ERROR:ZDC Channel wgt Histograms not found ****!!!\n\n"<<std::endl;
+         exit(1);
      }
   }
 
@@ -232,10 +245,16 @@ void AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=
   TString outputSP = file;      // file is the common outfile filename
   outputSP += ":ZDCgains";
 
-  AliAnalysisDataContainer *coutputSP1 = mgr->CreateContainer("QAotherZDC",TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
+  TString fZDCCont1;
+  fZDCCont1.Form("QAotherZDC_%s", suffix);
+
+  AliAnalysisDataContainer *coutputSP1 = mgr->CreateContainer(fZDCCont1,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
   mgr->ConnectOutput(taskQC_prot, 1, coutputSP1);
 
-  AliAnalysisDataContainer *coutputSP2 = mgr->CreateContainer("recenterZDC",TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
+  TString fZDCCont2;
+  fZDCCont2.Form("recenterZDC_%s", suffix);
+
+  AliAnalysisDataContainer *coutputSP2 = mgr->CreateContainer(fZDCCont2,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
   mgr->ConnectOutput(taskQC_prot, 2, coutputSP2);
 
   if(!mgr->InitAnalysis())  // check if we can initialize the manager
