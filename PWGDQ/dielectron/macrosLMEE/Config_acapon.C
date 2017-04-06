@@ -18,24 +18,26 @@ Bool_t pairCuts = kTRUE;
 
 AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t SDDstatus =kFALSE, Bool_t doMixing = kTRUE)
 {
- 
-  //Setup the instance of AliDielectron
-  LMEECutLib*  LMcutlib = new LMEECutLib(SDDstatus);
-  
-  //Task name
-  TString name=Form("%02d",cutDefinition);
-  if (cutDefinition < arrNames->GetEntriesFast())  name=arrNames->At(cutDefinition)->GetName();
-  
-  //Init AliDielectron
-  AliDielectron *die = new AliDielectron(Form("%s",name.Data()), Form("AliDielectron with cuts: %s",name.Data()));
-  //die->SetHasMC(hasMC);
-  MCenabled=hasMC;
 
-  // deactivate pairing to check track cuts or run with loose pid cuts:
-  if(!doMixing){
-    die->SetNoPairing();
-  }
-  
+    //Setup the instance of AliDielectron
+    LMEECutLib*  LMcutlib = new LMEECutLib(SDDstatus);
+
+    //Task name
+    TString name=Form("%02d",cutDefinition);
+    if (cutDefinition < arrNames->GetEntriesFast())  name=arrNames->At(cutDefinition)->GetName();
+
+    //Init AliDielectron
+    AliDielectron *die = new AliDielectron(Form("%s",name.Data()), Form("AliDielectron with cuts: %s",name.Data()));
+    //die->SetHasMC(hasMC);
+    MCenabled=hasMC;
+
+    // deactivate pairing to check track cuts or run with loose pid cuts:
+    if(!doMixing){
+        die->SetNoPairing();
+    }
+ 
+    die->SetPreFilterUnlikeOnly(kTRUE);
+
   cout << "cutDefinition = " << cutDefinition << endl;
   // Setup Analysis Selection
   if(cutDefinition == 0){
@@ -44,7 +46,8 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
     die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
     if(pairCuts){
-        die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
+        //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
+        die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
     }
   }
   else if(cutDefinition == 1){
@@ -53,7 +56,8 @@ AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t is
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
     die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
     if(pairCuts){
-        die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
+        //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
+        die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
     }
   }
   else{
@@ -308,6 +312,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
         histos->UserHistogram("Pair","PairPt","",160,0.,8., AliDielectronVarManager::kPt);
         histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
         histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
+        histos->UserHistogram("Pair","PhiV","", GetVector(kPhiV), AliDielectronVarManager::kPhivPair);
 
         //2D and 3D histograms
         histos->UserHistogram("Pair","InvMass_PairPt",";Inv. Mass [GeV];Pair Pt [GeV];#pairs",
