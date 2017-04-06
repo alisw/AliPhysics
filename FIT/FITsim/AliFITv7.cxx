@@ -66,6 +66,9 @@
 
 ClassImp(AliFITv7)
 
+using std::cout;
+using std::endl;
+
 //--------------------------------------------------------------------
 AliFITv7::AliFITv7():  AliFIT(),
   fIdSens1(0),
