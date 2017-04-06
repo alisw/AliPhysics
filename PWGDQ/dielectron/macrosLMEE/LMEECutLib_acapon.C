@@ -98,10 +98,9 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
         case kAllSpecies: 
         case kElectrons: 
             AliDielectronVarCuts* pairCutsPhiV = new AliDielectronVarCuts("pairCutsPhiV","pairCutsPhiV");
-            //pairCutsPhiV->AddCut(AliDielectronVarManager::kM, 0.0, 1.0);
-            //kM is single and pair mass?
-            //pairCutsPhiV->AddCut(AliDielectronVarManager::kPhivPair, 0, 3.2);
-            //pairCutsPhiV->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0 , 1/*0.050*/, kTRUE);
+            pairCutsPhiV->AddCut(AliDielectronVarManager::kM, 0.05, 5.0);
+            pairCutsPhiV->AddCut(AliDielectronVarManager::kPhivPair, 0.0, 2.5);
+            pairCutsPhiV->AddCut(AliDielectronVarManager::kOpeningAngle, 0.05, 3.2);
             pairCuts = pairCutsPhiV;
             break;
         default: cout << "No Pair Cuts defined " << endl;
