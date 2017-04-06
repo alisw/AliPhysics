@@ -2937,7 +2937,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           if(fFillAngleHisto)
             fhPrimPi0OpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight()*weightPt);
           
-          if(fNAngleCutBins > 0)
+          if ( fNAngleCutBins > 0 && fFillOpAngleCutHisto )
           {
             Int_t angleBin = -1;
             for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
@@ -2985,7 +2985,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           if(fFillAngleHisto)
             fhPrimEtaOpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight()*weightPt);
           
-          if(fNAngleCutBins > 0)
+          if ( fNAngleCutBins > 0 && fFillOpAngleCutHisto )
           {
             Int_t angleBin = -1;
             for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
