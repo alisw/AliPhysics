@@ -320,8 +320,8 @@ void AliITSQASPDChecker::MaskFastOrChips(TH2F *hFOmap, Int_t iLayer)
 	if(!triCd->IsChipActive(ieq,ihs,ichip)) {
 	  if(ieq<10) {sect = ieq; chipbin = (19-ichip)+1;} //side A
 	  else {sect = ieq-10; chipbin = ichip+1;} //side C
-	  if(iLayer=0)   hFOmap->SetBinContent(chipbin,1+sect*2+ihs,0.); //inner layer
-	  if(iLayer=1)   hFOmap->SetBinContent(chipbin,1+sect*4+(ihs-2),0.); //outer layer
+	  if(iLayer==0)   hFOmap->SetBinContent(chipbin,1+sect*2+ihs,0.); //inner layer
+	  if(iLayer==1)   hFOmap->SetBinContent(chipbin,1+sect*4+(ihs-2),0.); //outer layer
 	}
       }
     }
