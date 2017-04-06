@@ -69,6 +69,7 @@ set(SRCS
   AliAnalysisTaskMultiparticleFemtoscopy.cxx
   AliAnalysisTaskForStudents.cxx
   AliAnalysisTaskVnZDC.cxx
+  AliAnalysisTaskZDCGainEq.cxx
   )
 
 # Headers from sources
