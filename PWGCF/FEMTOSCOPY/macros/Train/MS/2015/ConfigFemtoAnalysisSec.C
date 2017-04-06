@@ -283,7 +283,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=10, int CentH=20, int kTRange=4) 
                                         ktpaircut[ichg][imult][icuts][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
                                         ktpaircut[ichg][imult][icuts][ikt][iphi]->SetPhiRange(phirange2[iphi],phirange2[iphi+1]);
 
-                                        cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i_%s", nametest,ichg, imult, ikt, iphi,detadphistar[icuts]),56,-0.14,0.14);//was 30 bins
+                                        cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i_%s", nametest,ichg, imult, ikt, iphi,detadphistar[icuts]),96,-0.12,0.12);//was 30 bins
                                         cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi]->SetPairSelectionCut(ktpaircut[ichg][imult][icuts][ikt][iphi]);
                                         ana[ichg][imult][icuts]->AddCorrFctn(cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi]);
 
