@@ -1586,6 +1586,7 @@ private:
   const static Int_t fkNHarCRCVZ = 2; // warning: <= 3
   TProfile *fCRCVZEROetaPro[fCRCMaxnCen][fkNHarCRCVZ][fkNHistCRCVZ]; //!
   TH1D *fCRCVZEROetaHist[fCRCMaxnCen][fkNHarCRCVZ][fkNHistCRCVZ]; //!
+  TProfile2D *fCRCVZEROQVec[fCRCMaxnRun][fkNHarCRCVZ]; //!
   
   // CRCZDC
   TList *fCRCZDCList; //! ZDCERO CRC List
