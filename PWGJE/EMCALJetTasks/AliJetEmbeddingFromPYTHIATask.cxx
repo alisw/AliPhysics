@@ -34,7 +34,8 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
   fPtHardBinCount(0),
-  fHistPtHardBins(0)
+  fHistPtHardBins(0),
+  fDebugEmbedding(kFALSE)
 {
   // Default constructor.
   SetSuffix("PYTHIAEmbedding");
@@ -56,7 +57,8 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name, B
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
   fPtHardBinCount(0),
-  fHistPtHardBins(0)
+  fHistPtHardBins(0),
+  fDebugEmbedding(kFALSE)
 {
   // Standard constructor.
   SetSuffix("PYTHIAEmbedding");
@@ -207,7 +209,17 @@ Bool_t AliJetEmbeddingFromPYTHIATask::UserNotify()
 //________________________________________________________________________
 TFile* AliJetEmbeddingFromPYTHIATask::GetNextFile() 
 {
-  fCurrentAODFileID = TMath::Nint(gRandom->Rndm()*(fTotalFiles-1))+1;
+  if (fDebugEmbedding == kTRUE) {
+    // Embed files in order
+    fCurrentAODFileID++;
+    // Ensure only files up to the total number of files are used
+    if (fCurrentAODFileID > fTotalFiles) {
+      fCurrentAODFileID = 1;
+    }
+  }
+  else {
+    fCurrentAODFileID = TMath::Nint(gRandom->Rndm()*(fTotalFiles-1))+1;
+  }
 
   if (fMinEntriesPerPtHardBin < 0) {
     fCurrentPtHardBin = GetRandomPtHardBin();
