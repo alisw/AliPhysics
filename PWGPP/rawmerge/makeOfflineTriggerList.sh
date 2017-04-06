@@ -276,7 +276,7 @@ gitRawListFromAlien(){
     #
     for a in `find alice -iname "filtered*list" | grep "/lists/" `; do ln -sf $a .  ; done
     ls filtered*list > ref.list
-    aliroot -b -q $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.C+(\"GetRawSummary\") | grep KeyValue> GetRawSummary.log
+    aliroot -b -q "$ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.C+(\"GetRawSummary\")" | grep KeyValue> GetRawSummary.log
 
 }
   
