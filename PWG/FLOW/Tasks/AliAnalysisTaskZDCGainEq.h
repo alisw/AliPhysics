@@ -66,6 +66,10 @@ public:
   void    SetRejectPileUp(Bool_t const pileup)        {this->fRejectPileUp      =       pileup;}
   void    SetFillCosSin(Bool_t const fillcossin)      {this->bFillCosSin        =   fillcossin;}
   void    SetFillZDCQA(Bool_t const fillzdcQAon)      {this->bFillZDCQAon       =  fillzdcQAon;}
+  void    SetFillQnRunAverage(Bool_t const runAvg)    {this->bRunAveragedQn     =       runAvg;}
+
+
+
   void    SetVxVyVzBinForAvgQx(Int_t vxbin,Int_t vybin,Int_t vzbin){
            this->vxBin =  vxbin;   
            this->vyBin =  vybin;   
@@ -106,6 +110,7 @@ private:
   Bool_t          fRejectPileUpTight;    //
   Bool_t                 bFillCosSin;    //
   Bool_t                bFillZDCQAon;    //
+  Bool_t              bRunAveragedQn;    //
 
   Int_t                  runNums[90];    //
   Float_t                   VxCut[2];    //
@@ -148,7 +153,7 @@ private:
   TProfile2D     *fHist_znAy_V0_VxVy[90][10];  //!
 
 
-  ClassDef(AliAnalysisTaskZDCGainEq, 2); // example of analysis
+  ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
 };
 
 //==================================================================

@@ -5,8 +5,8 @@
  TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisDef = "recenter1", 
  TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE, 
  Bool_t bUseVZERO = kTRUE, Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Double_t dVertexRange = 10., 
- TString sCentEstimator = "V0", Bool_t bfillZDCQA = kFALSE, Bool_t bfillCosSin = kFALSE, Bool_t bSetGainEq = kFALSE, 
- TString sGainEqFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
+ TString sCentEstimator = "V0", Bool_t bfillZDCQA = kFALSE, Bool_t bfillCosSin = kFALSE, Bool_t bFillRunAvg = kFALSE, 
+ Bool_t bSetGainEq = kFALSE, TString sGainEqFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
  const char *suffix = "")
 {
 
@@ -29,6 +29,7 @@
   taskFEname.Form("ZDCFlowEventTask%s", suffix);
 
   AliAnalysisTaskFlowEvent *taskFE = new AliAnalysisTaskFlowEvent(taskFEname,"",bEventCutsQA);
+
   taskFE->SetQAOn(bEventCutsQA);
   taskFE->SetAnalysisType(sAnalysisType); //sanalysisType = AUTOMATIC see the initializers!!
 
@@ -39,7 +40,10 @@
     taskFE->SelectCollisionCandidates(AliVEvent::kMB);
   }
 
-  AliFlowEventCuts *cutsEvent = new AliFlowEventCuts("EventCuts");
+ 
+  taskFEname.Form("EventCuts%s", suffix);
+
+  AliFlowEventCuts *cutsEvent = new AliFlowEventCuts(taskFEname);
   cutsEvent->SetCheckPileup(kFALSE);
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange, dVertexRange);      // vertex-z cut
   cutsEvent->SetQA(bEventCutsQA);                                      // enable the qa plots
@@ -71,7 +75,9 @@
   Double_t dDCAxy = 2.4;
   Double_t dDCAz  = 3.2;
 
-  AliFlowTrackCuts* RefMultCuts = new AliFlowTrackCuts("RefMultCuts");
+  taskFEname.Form("RefMultCuts%s", suffix);
+
+  AliFlowTrackCuts* RefMultCuts = new AliFlowTrackCuts(taskFEname);
   RefMultCuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   RefMultCuts->SetAODfilterBit(768);
   RefMultCuts->SetMinimalTPCdedx(-99999);
@@ -92,8 +98,9 @@
 
   Bool_t bTrackCutsQA = kTRUE;
 
+  taskFEname.Form("RP_cuts_%s", suffix);
 
-  AliFlowTrackCuts *cutsRP  =  new AliFlowTrackCuts("RP_cuts");
+  AliFlowTrackCuts *cutsRP  =  new AliFlowTrackCuts(taskFEname);
   cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);//sets how we want to select the tracks.
   cutsRP->SetAODfilterBit(768);
   cutsRP->SetEtaGap(-0.0,0.0);                          //rihan:check this gap **************
@@ -110,7 +117,8 @@
   cutsRP->SetMaxChi2PerClusterTPC(4.0);
   cutsRP->SetAcceptKinkDaughters(kFALSE);
 
-  AliFlowTrackCuts *cutsPOI   = new AliFlowTrackCuts("POI_cuts");
+  taskFEname.Form("POI_cuts_%s", suffix);
+  AliFlowTrackCuts *cutsPOI   = new AliFlowTrackCuts(taskFEname);
   cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   cutsPOI->SetAODfilterBit(768);
   cutsPOI->SetMinimalTPCdedx(-99999);
@@ -146,7 +154,7 @@
 
   TString taskFEQA = file;      // file is the common outfile filename
   taskFEQA   += ":QAcharge";
-
+  //taskFEQA   += suffix;    should I do this or not?
 
   TString ContainerFEQA;
   ContainerFEQA.Form("FEContQA_%s", suffix);
@@ -175,6 +183,7 @@
   taskQC_prot->SetFillZDCQA(bfillZDCQA);
   taskQC_prot->SetCentEstimator(sCentEstimator);
   taskQC_prot->SetVxVyVzBinForAvgQx(iVxBin,iVyBin,iVzBin);
+  taskQC_prot->SetFillQnRunAverage(bFillRunAvg);
   taskQC_prot->SetDataSet(sDataSet);   
   taskQC_prot->SetAnalysisSet(sAnalysisDef); 
   taskQC_prot->SetRejectPileUp(bPileUp);  
@@ -244,6 +253,7 @@
 
   TString outputSP = file;      // file is the common outfile filename
   outputSP += ":ZDCgains";
+  //outputSP   += suffix;    should I do this or not?
 
   TString fZDCCont1;
   fZDCCont1.Form("QAotherZDC_%s", suffix);
