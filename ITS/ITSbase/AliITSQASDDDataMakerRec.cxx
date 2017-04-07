@@ -437,7 +437,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   fSDDhRawsTask++;
   
   TH2F *hDigitsPerModule = new TH2F("SDDnOfDigitsPerModule","SDD Digits vs module ; module ID ; # of digits", fgknSDDmodules,modBins,200,digbins);
-  rv = fAliITSQADataMakerRec->Add2RawsList(hDigitsPerModule,kSDDNofDigitsVsMod+offsRW, expert, !image, !saveCorr); //7   
+  rv = fAliITSQADataMakerRec->Add2RawsList(hDigitsPerModule,kSDDNofDigitsVsMod+offsRW, expert, image, !saveCorr); //7
   fSDDhRawsTask++;
   
   // active modules and drift regions
@@ -527,7 +527,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   hsummarydata->GetXaxis()->SetBinLabel(46,"dr_overthl4");
   hsummarydata->GetXaxis()->LabelsOption("v");
 
-  rv = fAliITSQADataMakerRec->Add2RawsList(hsummarydata,kSDDRawDataCheck+offsRW, !expert, image, !saveCorr); 
+  rv = fAliITSQADataMakerRec->Add2RawsList(hsummarydata,kSDDRawDataCheck+offsRW, !expert, !image, !saveCorr);
   fSDDhRawsTask++; 
   fOnlineOffsetRaws = fSDDhRawsTask;
 
@@ -547,7 +547,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
 #endif
     hsize->GetXaxis()->SetTitle("Event Size [kB]");
     hsize->GetYaxis()->SetTitle("Entries");
-    rv = fAliITSQADataMakerRec->Add2RawsList(hsize,kSDDDataSize+offsRW, expert, !image, !saveCorr); 
+    rv = fAliITSQADataMakerRec->Add2RawsList(hsize,kSDDDataSize+offsRW, expert, image, !saveCorr);
     fSDDhRawsTask++;
 
     Int_t nTimeBins= 256/fTimeBinSize;
@@ -1102,7 +1102,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 //____________________________________________________________________________ 
 Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
- // Fill QA for RecPoints - SDD -
+  // Fill QA for RecPoints - SDD -
   Int_t rv = 0 ;
   Int_t lay, lad, det; 
 
@@ -1216,10 +1216,10 @@ void AliITSQASDDDataMakerRec::CreateTheMap()
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
   Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
   if(!ddlMapSDD){
-      AliError("Calibration object retrieval failed! SDD will not be processed");
-      fDDLModuleMap = NULL;
-      //return rv;
-    }
+    AliError("Calibration object retrieval failed! SDD will not be processed");
+    fDDLModuleMap = NULL;
+    //return rv;
+  }
   else{
     fDDLModuleMap = (AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
     if(!cacheStatus)ddlMapSDD->SetObject(NULL);
@@ -1274,19 +1274,19 @@ void AliITSQASDDDataMakerRec::CreateTheCalibration()
 void AliITSQASDDDataMakerRec::InitCalibrationArray()
 {
   //create the histograms with the calibration informations. The histograms are stored in a TObjArray
-    TH1F *pattern1  = new TH1F("CALSDDModPattern","Calibration HW Modules pattern",fgknSDDmodules,239.5,499.5);
-    pattern1->SetDirectory(0) ;
-    TH2F *patternl3 = new TH2F("CALSDDphizL3","Calibration SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);
-    patternl3->SetDirectory(0) ;
-    TH2F *patternl4 = new TH2F("CALSDDphizL4"," Calibration SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5);
-    patternl4->SetDirectory(0) ;
+  TH1F *pattern1  = new TH1F("CALSDDModPattern","Calibration HW Modules pattern",fgknSDDmodules,239.5,499.5);
+  pattern1->SetDirectory(0) ;
+  TH2F *patternl3 = new TH2F("CALSDDphizL3","Calibration SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);
+  patternl3->SetDirectory(0) ;
+  TH2F *patternl4 = new TH2F("CALSDDphizL4"," Calibration SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5);
+  patternl4->SetDirectory(0) ;
 
-    if(!fHistoCalibration)fHistoCalibration = new TObjArray(3);
-    fHistoCalibration->AddAtAndExpand(pattern1,0);
-    fHistoCalibration->AddAtAndExpand(patternl3,1);
-    fHistoCalibration->AddAtAndExpand(patternl4,2);
-    fHistoCalibration->SetOwner(kTRUE); 
-    //    printf("Calibration Histograms created!\n");
+  if(!fHistoCalibration)fHistoCalibration = new TObjArray(3);
+  fHistoCalibration->AddAtAndExpand(pattern1,0);
+  fHistoCalibration->AddAtAndExpand(patternl3,1);
+  fHistoCalibration->AddAtAndExpand(patternl4,2);
+  fHistoCalibration->SetOwner(kTRUE); 
+  //    printf("Calibration Histograms created!\n");
 }
 
 //____________________________________________________________________

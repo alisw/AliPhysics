@@ -42,7 +42,8 @@
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliQACheckerBase.h"
-
+#include "TPaveStats.h"
+#include "TStyle.h"
 
 ClassImp(AliITSQASDDChecker)
 
@@ -61,7 +62,7 @@ AliITSQASDDChecker::AliITSQASDDChecker():TObject(),
   fImage(NULL),
   fESforCheck(0)
 {
-// Default constructor
+  // Default constructor
   fStepBitSDD=new Double_t[AliQAv1::kNBIT];
   fLowSDDValue=new Float_t[AliQAv1::kNBIT];
   fHighSDDValue=new Float_t[AliQAv1::kNBIT];
@@ -730,52 +731,118 @@ Bool_t  AliITSQASDDChecker::MakeSDDImage( TObjArray ** list, AliQAv1::TASKINDEX_
 Bool_t AliITSQASDDChecker::DrawHistos(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
 {
   // MakeSDDRawsImage: raw data QA plots
-
+    
   for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0)  {
       continue;
     } else {
-      const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
+      const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ;
       if ( !fImage[esIndex] ) {
 	fImage[esIndex] = new TCanvas(title, title,1280,980) ;
       }
-      fImage[esIndex]->Clear() ; 
-      fImage[esIndex]->SetTitle(title) ; 
+      fImage[esIndex]->Clear() ;
+      fImage[esIndex]->SetTitle(title) ;
       fImage[esIndex]->cd();
       TPaveText someText(0.015, 0.015, 0.98, 0.98);
       someText.AddText(title);
-      someText.Draw(); 
-      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
-      fImage[esIndex]->Clear() ; 
+      someText.Draw();
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ;
+      fImage[esIndex]->Clear() ;
       if(task == AliQAv1::kRAWS) fImage[esIndex]->Divide(2,3);
       else fImage[esIndex]->Divide(2,6);
-      TIter nexthist(list[esIndex]) ; 
+      TIter nexthist(list[esIndex]) ;
       TH1* hist = NULL ;
-      Int_t npad = 1 ; 
-      fImage[esIndex]->cd(npad); 
+      Int_t npad = 1 ;
+      fImage[esIndex]->cd(npad);
       fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
       while ( (hist=static_cast<TH1*>(nexthist())) ) {
 	TString hname(hist->GetName());
-	TString cln(hist->ClassName()) ; 
+	TString cln(hist->ClassName()) ;
 	if ( ! cln.Contains("TH") ) continue ;
 	if(hist->TestBit(AliQAv1::GetImageBit())) {
+	  Bool_t drawProj=kFALSE;
 	  hist->GetXaxis()->SetTitleSize(0.04);
 	  hist->GetYaxis()->SetTitleSize(0.04);
-	  hist->GetXaxis()->SetLabelSize(0.02);
-	  hist->GetYaxis()->SetLabelSize(0.02);
+	  hist->GetXaxis()->SetTitleOffset(1.02);
+	  hist->GetYaxis()->SetTitleOffset(0.9);
+	  hist->GetXaxis()->SetLabelSize(0.035);
+	  hist->GetYaxis()->SetLabelSize(0.035);
 	  if(cln.Contains("TH1") && task == AliQAv1::kRECPOINTS){
 	    if(!hname.Contains("Check")) hist->SetFillColor(kOrange+7);
 	  }
 	  if(cln.Contains("TH2")) {
+	    if(hname.Contains("DigitsPerModule")) {
+	      TH2F *hist2D = (TH2F*)hist;
+	      Int_t firstbinL3 = hist2D->GetXaxis()->FindBin(240.);
+	      Int_t lastbinL3  = hist2D->GetXaxis()->FindBin(323.);
+	      Int_t firstbinL4 = hist2D->GetXaxis()->FindBin(324.);
+	      Int_t lastbinL4  = hist2D->GetXaxis()->FindBin(499.);
+	      TH1D *hprojL3 = (TH1D*)hist2D->ProjectionY("SDDDigitsDistribLay3",firstbinL3,lastbinL3);
+	      TH1D *hprojL4 = (TH1D*)hist2D->ProjectionY("SDDDigitsDistribLay4",firstbinL4,lastbinL4);
+	      fImage[esIndex]->cd(6);
+	      gPad->SetRightMargin(0.15);
+	      gPad->SetLeftMargin(0.05);
+	      gPad->SetLogy();
+	      gPad->SetLogx();
+	      hprojL3->SetFillColor(kRed);
+	      hprojL4->SetFillColor(kBlue);
+	      hprojL3->SetLineColor(kRed);
+	      hprojL4->SetLineColor(kBlue);
+	      hprojL4->SetFillStyle(3002);
+	      hprojL3->SetFillStyle(3004);
+	      gStyle->SetOptStat(1);
+	      hprojL3->SetStats(1);
+	      hprojL4->SetStats(1);
+	      hprojL4->GetYaxis()->SetTitle("Entries");
+	      hprojL4->GetXaxis()->SetTitleSize(0.04);
+	      hprojL4->GetYaxis()->SetTitleSize(0.04);
+	      hprojL4->GetXaxis()->SetTitleOffset(1.02);
+	      hprojL4->GetYaxis()->SetTitleOffset(0.9);
+	      hprojL4->GetXaxis()->SetLabelSize(0.035);
+	      hprojL4->GetYaxis()->SetLabelSize(0.035);
+	      hprojL4->Draw();
+	      fImage[esIndex]->GetPad(6)->Update();
+	      TPaveStats *pv1 = (TPaveStats*)hprojL4->GetListOfFunctions()->FindObject("stats");
+	      if(pv1) {
+		pv1->SetName("stats1");
+		pv1->SetTextColor(kBlue);
+		pv1->SetY1NDC(0.70);
+		pv1->SetY2NDC(0.89);
+	      }
+	      fImage[esIndex]->GetPad(6)->Update();
+	      hprojL3->Draw("sames");
+	      fImage[esIndex]->GetPad(6)->Update();
+	      TPaveStats *pv2 = (TPaveStats*)hprojL3->FindObject("stats");
+	      if(pv2) {
+		pv2->SetName("stats2");
+		pv2->SetTextColor(kRed);
+		pv2->SetY1NDC(0.51);
+		pv2->SetY2NDC(0.70);
+	      }
+	      fImage[esIndex]->GetPad(6)->Update();
+	      drawProj=kTRUE;
+	      fImage[esIndex]->cd(npad);
+	    }
+	    else {
+	      gPad->SetRightMargin(0.15);
+	      gPad->SetLeftMargin(0.05);
+	      hist->SetStats(0);
+	      hist->SetOption("colz") ;
+	    }
+	  }
+	  else if(hname.Contains("EventSize")){
 	    gPad->SetRightMargin(0.15);
 	    gPad->SetLeftMargin(0.05);
-	    hist->SetStats(0);
-	    hist->SetOption("colz") ;
+	    gPad->SetLogy();
+	    hist->SetFillColor(kBlue-3);
 	  }
-	  hist->DrawCopy(); 
-	  fImage[esIndex]->cd(++npad) ; 
-	  fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
-	} 
+                    
+	  if(!drawProj){
+	    hist->DrawCopy();
+	    fImage[esIndex]->cd(++npad) ;
+	    fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
+	  }
+	}
       }
       fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
     }
