@@ -132,6 +132,9 @@ public:
     void SetMaxPtCascade     ( Float_t lMaxPt ) {
         fMaxPtCascade = lMaxPt;
     }
+    void SetMassWindowAroundCascade     ( Double_t lMassWin ) {
+        fMassWindowAroundCascade = lMassWin;
+    }
 //---------------------------------------------------------------------------------------
     //Functions for analysis Bookkeepinp
     // 1- Configure standard vertexing
@@ -179,8 +182,12 @@ private:
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
 
+    //Min/Max pT for cascades
     Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
+    
+    //Mass Window around masses of interest
+    Double_t fMassWindowAroundCascade; 
 
     //===========================================================================================
 //   Histograms
