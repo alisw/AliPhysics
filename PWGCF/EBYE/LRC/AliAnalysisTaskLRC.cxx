@@ -15,7 +15,7 @@
 // for a given Eta window 
 
 // Authors : Andrey Ivanov , Igor Altsybeev, St.Petersburg State University
-// Email: Andrey.Ivanov@cern.ch, Igor.Altsybeev@cern.ch
+// Email: Igor.Altsybeev@cern.ch
 
 #include <AliAnalysisManager.h>
 #include <AliESDInputHandler.h>
