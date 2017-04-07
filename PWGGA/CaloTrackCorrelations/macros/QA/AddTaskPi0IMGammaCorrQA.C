@@ -13,6 +13,11 @@
 ///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
+// Global variables, set externally, uncomment next lines for local tests.
+//const char* kPeriod   = "LHC16t"; // gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+//const char* kColType  = "PbPb";   // gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE"); //either "pp", "pPb" or "PbPb"
+//const char* kProdType = "MC";     // gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
+//Bool_t kMC = kFALSE;
 
 ///
 /// Main method calling all the configuration
@@ -22,7 +27,7 @@
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle.
 /// \param simulation : A bool identifying the data as simulation.
 /// \param collision: A string with the colliding system.
-/// \param suffix : A string with the type of trigger (default: MB, EMC).
+/// \param period : A string with the data period: LHC11h, LHC15n ... from it we extract the year.
 /// \param qaan: execute the detector QA analysis.
 /// \param hadronan: execute the track QA and cluster-track correlation analysis.
 /// \param calibrate: if OADB was updated with calibration parameters not used in reconstruction, apply them here.
@@ -31,11 +36,12 @@
 /// \param minCen : An int to select the minimum centrality, -1 means no selection.
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection.
 /// \param debugLevel : An int to define the debug level of all the tasks.
+/// \param suffix : A string with the type of trigger (default: MB, EMC).
 ///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calorimeter   = "EMCAL",
-                                                             const Bool_t   simulation    = kFALSE,
-                                                             const TString  collision     = "pp",
-                                                             const TString  suffix        = "default",
+                                                                   Bool_t   simulation    = kFALSE,
+                                                                   TString  collision     = "pp",
+                                                                   TString  period        = "",
                                                              const Bool_t   qaan          = kTRUE,
                                                              const Bool_t   hadronan      = kTRUE,
                                                              const Bool_t   calibrate     = kFALSE,
@@ -44,47 +50,88 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
                                                              const Int_t    minCen        = -1,
                                                              const Int_t    maxCen        = -1,
                                                              const Int_t    debugLevel    = -1,
-                                                             const Int_t    year          = 2015
+                                                             const char *  suffix         = "default"
                                                           )
 {
-  if(simulation && !suffix.Contains("default"))
+  // Check the global variables, and reset the provided ones if empty.
+  //
+  TString trigger = suffix;
+  if(collision=="")
   {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggered events not checked in simulation!! \n");
-    return 0x0;
-  }
+    
+    if      (!strcmp(kColType, "PbPb")) collision = "PbPb"; 
+    else if (!strcmp(kColType, "AA"  )) collision = "PbPb"; 
+    else if (!strcmp(kColType, "pA"  )) collision = "pPb"; 
+    else if (!strcmp(kColType, "Ap"  )) collision = "pPb";     
+    else if (!strcmp(kColType, "pPb" )) collision = "pPb"; 
+    else if (!strcmp(kColType, "Pbp" )) collision = "pPb"; 
+    else if (!strcmp(kColType, "pp"  )) collision = "pp" ; 
+    
+    simulation = kMC;
+    period = kPeriod;
+    
+    // print check on global settings once
+    if(trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
+      printf("AddTaskPi0IMGammaCorrQA - Get the data features from global parameters: col <%s>, period <%s>, mc <%d> \n",
+           kColType,kPeriod,kMC);
 
-  // Get the pointer to the existing analysis manager via the static access method.
+  }
   
+  Int_t year = 2017;
+  if ( period!="" )
+  {
+    if     (period.Contains("16")) year = 2016;
+    else if(period.Contains("15")) year = 2015;
+    else if(period.Contains("13")) year = 2013;
+    else if(period.Contains("12")) year = 2012;
+    else if(period.Contains("11")) year = 2011;
+    else if(period.Contains("10")) year = 2010;
+  }
+  
+  // Do not create the analysis for certain analysis combinations
+  //
+  Bool_t doAnalysis = CheckAnalysisTrigger(simulation,trigger,period,year);
+  if(!doAnalysis) return NULL;
+    
+  // Get the pointer to the existing analysis manager via the static access method.
+  //
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 
   {
     ::Error("AddTaskPi0IMGammaCorrQA", "No analysis manager to connect to.");
     return NULL;
   }  
-  
+
   // Check the analysis type using the event handlers connected to the analysis manager.
-  
+  //
   if (!mgr->GetInputEventHandler()) 
   {
     ::Error("AddTaskPi0IMGammaCorrQA", "This task requires an input event handler");
     return NULL;
   }
-  
-  // Make sure the B field is enabled for track selection, some cuts need it
-  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
-  
+
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
-  // Name for containers
+  // Make sure the B field is enabled for track selection, some cuts need it
+  //
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
   
-  TString containerName = Form("%s_Trig%s",calorimeter.Data(), suffix.Data());
+  // Print settings to check all is as expected
+  //
+  printf("AddTaskPi0IMGammaCorrQA - Settings: data <%s>, calo <%s>, MC <%d>, collision <%s>, trigger <%s>, period <%s>, year <%d>,\n"
+         "\t \t \t  CaloQA on <%d>, Track QA on <%d>, Make corrections <%d>, %5.1f < time < %5.1f, %2.1f < cen < %2.1f, debug level <%d> \n", 
+         inputDataType.Data(), calorimeter.Data(),simulation, collision.Data(),trigger.Data(), period.Data(), year,
+         qaan , hadronan, calibrate, minTime, maxTime, minCen, maxCen, debugLevel);
+  //
+
+  // Name for containers
+  //
+  TString containerName = Form("%s_Trig_%s",calorimeter.Data(), trigger.Data());
   
   if(collision!="pp" && maxCen>=0) containerName+=Form("Cen%d_%d",minCen,maxCen);
-    
-  printf("AddTaskPi0IMGammaCorrQA - Container NAME: %s \n",containerName.Data());
-  
+      
   // #### Configure analysis ####
-    
+  //  
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
 
   // General frame setting and configuration
@@ -96,7 +143,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   Bool_t fillQACellTimeHisto = kTRUE;
   
   // Analysis with EMCal trigger or MB
-  if ( !suffix.Contains("DCAL") )
+  if ( !trigger.Contains("DCAL") )
   {
     maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,0,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
     maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,0,collision,containerName,simulation,year,qaan,debugLevel,minCen) ,n++); // Previous photon invariant mass
@@ -110,12 +157,12 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   }
   
   // Analysis with DCal trigger or MB
-  if(year > 2014 && calorimeter=="EMCAL" && !suffix.Contains("EMCAL"))
+  if(year > 2014 && calorimeter=="EMCAL" && !trigger.Contains("EMCAL"))
   {
     maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,1,collision,containerName,simulation,year     ,debugLevel), n++); // Photon cluster selection
     maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,1,collision,containerName,simulation,year,qaan,debugLevel,minCen) ,n++); // Previous photon invariant mass
     
-    if(suffix.Contains("INT") || suffix.Contains("MB") || suffix.Contains("default")) fillQACellTimeHisto = kFALSE;
+    if(trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default")) fillQACellTimeHisto = kFALSE;
     
     if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,1,collision, simulation, fillQACellTimeHisto,year,debugLevel),n++);
 
@@ -137,7 +184,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker() ;
 //  maker->SwitchOffDataControlHistograms();
-//  if(suffix.Contains("EMC"))
+//  if(trigger.Contains("EMC"))
 //    maker->SwitchOnDataControlHistograms();
 
   if(simulation)
@@ -163,6 +210,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   
   TString taskName =Form("Pi0IM_GammaTrackCorr_%s",containerName.Data());
   
+  printf("AddTaskPi0IMGammaCorrQA - Task NAME: %s \n",taskName.Data());
+  
   AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (taskName);
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   task->SetDebugLevel(debugLevel);
@@ -172,45 +221,46 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   
   
   //
-  // Select events trigger depending on suffix
+  // Select events trigger depending on trigger
   //
   if(!simulation)
   {
-    if( suffix.Contains("INT") || suffix.Contains("MB") || suffix.Contains("default") )
+    if( trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default") )
     {
       task->SelectCollisionCandidates( AliVEvent::kINT7 | AliVEvent::kMB );
     }
-    else if(suffix.Contains("EMCAL_L0"))
+    else if(trigger.Contains("EMCAL_L0"))
     {
       task ->SelectCollisionCandidates( AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 );
       maker->GetReader()->SetFiredTriggerClassName("EMC");
     }
-    else if(suffix.Contains("DCAL_L0"))
+    else if(trigger.Contains("DCAL_L0"))
     {
       task ->SelectCollisionCandidates( AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 );
       maker->GetReader()->SetFiredTriggerClassName("DMC");
     }
-    else if(suffix.Contains("EMCAL_L1"))
+    else if(trigger.Contains("EMCAL_L1"))
     {
       task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
-      maker->GetReader()->SetFiredTriggerClassName("EG1");
+      if(year > 2012) maker->GetReader()->SetFiredTriggerClassName("EG1");
+      // before 2013 only one kind of L1 trigger
     }
-    else if(suffix.Contains("DCAL_L1"))
+    else if(trigger.Contains("DCAL_L1"))
     {
       task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
       maker->GetReader()->SetFiredTriggerClassName("DG1");
     }
-    else if(suffix.Contains("EMCAL_L1_Run1"))
+    else if(trigger.Contains("EMCAL_L1_Run1"))
     {
       task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
       //maker->GetReader()->SetFiredTriggerClassName("EGA");
     }
-    else if(suffix.Contains("EMCAL_L2"))
+    else if(trigger.Contains("EMCAL_L2"))
     {
       task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
       maker->GetReader()->SetFiredTriggerClassName("EG2");
     }
-    else if(suffix.Contains("DCAL_L2"))
+    else if(trigger.Contains("DCAL_L2"))
     {
       task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
       maker->GetReader()->SetFiredTriggerClassName("DG2");
@@ -223,13 +273,13 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   
-  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(taskName, TList::Class(),
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(trigger, TList::Class(),
                                                              AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:%s",outputfile.Data(),taskName.Data()));
+                                                             Form("%s:%s",outputfile.Data(),Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
 	
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",taskName.Data()), TList::Class(),
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",trigger.Data()), TList::Class(),
                                                              AliAnalysisManager::kParamContainer, 
-                                                             Form("%s_Parameters.root",taskName.Data()));
+                                                             Form("%s_Parameters.root",Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
   
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
@@ -974,6 +1024,124 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   // Isolation
   histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
   histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
-  
 }
 
+///
+/// Check if the selected trigger is appropriate
+/// to run the analysis, depending on the period
+/// certain triggers were not available.
+///
+/// Run MC analysis for no trigger.
+///
+/// \param simulation: bool with data (0) or MC (1) condition
+/// \param trigger: trigger string name (EMCAL_L0, EMCAL_L1, EMCAL_L2, DCAL_L0, DCAL_L1, DCAL_L2)
+///
+/// \return True if analysis can be done.
+///
+Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, Int_t year)
+{
+  // Accept directly all MB kind of events
+  //
+  if ( trigger.Contains("default") || trigger.Contains("INT") || trigger.Contains("MB") ) return kTRUE;
+
+  // MC analysis has no trigger dependence, execute only for the default case
+  //
+  if ( simulation )
+  {
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggered events not checked in simulation, SKIP trigger %s! \n", trigger.Data());
+    return kFALSE;
+  }
+    
+  // Triggers introduced in 2011
+  //
+  if ( year < 2011 && ( trigger.Contains("EMCAL") || trigger.Contains("DCAL") ) )
+  {
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events for year < 2011, SKIP trigger %s! \n", trigger.Data());
+    return kFALSE;
+  }
+  
+  // DCal Triggers introduced in 2015
+  //
+  if ( year < 2014 && trigger.Contains("DCAL") )
+  {
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events by DCal for year < 2014, SKIP trigger %s! \n", trigger.Data());
+    return kFALSE;
+  }
+
+  // EG2 trigger only activated from 2013
+  //
+  if ( year  < 2013 && trigger.Contains("L2") )
+  { 
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : EG2 trigger not available for year < 2012, SKIP %s in %s \n", trigger.Data(),period.Data());
+    return kFALSE;
+  }
+
+  // Triggers only activated in 2013 from LHC13d for physics (it might be there are in b and c but not taking data)
+  //
+  if ( year == 2013 && trigger.Contains("L") && ( period.Contains("b") || period.Contains("c") ) )
+  { 
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggers not available for year 2013 in period %s, SKIP %s in %s \n",period.Data(), trigger.Data());
+    return kFALSE;
+  }
+  
+  // DCal Triggers introduced in 2015
+  //
+  if ( year < 2014 && ( trigger.Contains("DCAL") ) )
+  {
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events by DCal for year < 2014, SKIP trigger %s! \n", trigger.Data());
+    return kFALSE;
+  }
+
+  // L0 trigger used for periods below LHC11e? 
+  //
+  if ( period == "LHC11h" && trigger.Contains("EMCAL_L0") )
+  {
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No EMCAL_L0 triggered events by EMCal for period LHC11h, SKIP trigger %s! \n", trigger.Data());
+    return kFALSE;
+  }
+
+  // L1 trigger not used until LHC11e? period, what about LHC11f?
+  //
+  if ( period.Contains("LHC11") && period != "LHC11h" && trigger.Contains("EMCAL_L1") )
+  {
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    return kFALSE;
+  }
+
+  // L1 trigger not used again until LHC12c period
+  //
+  if ( ( period == "LHC12a" ||  period == "LHC12b" ) && trigger.Contains("EMCAL_L1") )
+  { 
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    return kFALSE;
+  }
+
+  // Run2: No trigger used again until LHC15i period
+  //
+  if ( year == 2015 && ( period == "LHC15h" ||  period == "LHC15g" || period == "LHC15f" || period == "LHC15e" ||  
+                         period == "LHC15d" ||  period == "LHC15c" || period == "LHC15b" || period == "LHC15a"    ) )
+  { 
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    return kFALSE;
+  }
+  
+  // Run2: L1 trigger not used again until LHC15o period
+  //
+  if ( year == 2015 && period != "LHC15o" && !trigger.Contains("L0") )
+  { 
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    return kFALSE;
+  }
+
+  // Run2: L1 trigger not used again until LHC15o period
+  //
+  if ( year == 2015 && period == "LHC15o" && ( trigger.Contains("L0") || trigger.Contains("L2") ) )
+  { 
+    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    return kFALSE;
+  }
+
+  
+  return kTRUE;
+  
+}
