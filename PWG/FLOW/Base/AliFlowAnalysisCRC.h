@@ -1583,10 +1583,9 @@ private:
   TList *fCRCVZList; //! VZERO CRC List
   AliFlowVector fVZFlowVect[2][fCRCnHar];
   const static Int_t fkNHistCRCVZ = 7;
-  const static Int_t fkNHarCRCVZ = 2; // warning: <= 3
-  TProfile *fCRCVZEROetaPro[fCRCMaxnCen][fkNHarCRCVZ][fkNHistCRCVZ]; //!
-  TH1D *fCRCVZEROetaHist[fCRCMaxnCen][fkNHarCRCVZ][fkNHistCRCVZ]; //!
-  TProfile2D *fCRCVZEROQVec[fCRCMaxnRun][fkNHarCRCVZ]; //!
+  TProfile *fCRCVZEROetaPro[fCRCMaxnCen][fCRCnHar][fkNHistCRCVZ]; //!
+  TH1D *fCRCVZEROetaHist[fCRCMaxnCen][fCRCnHar][fkNHistCRCVZ]; //!
+  TProfile2D *fCRCVZEROQVec[fCRCMaxnRun][fCRCnHar]; //!
   
   // CRCZDC
   TList *fCRCZDCList; //! ZDCERO CRC List
