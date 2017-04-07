@@ -566,10 +566,12 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
       fVZFlowVect[0][h] = vQarray[0];
       fVZFlowVect[1][h] = vQarray[1];
       // fill Q-vector RbR
-      fCRCVZEROQVec[fRunBin][h]->Fill(0.5,fCentralityEBE,fVZFlowVect[0][h].X());
-      fCRCVZEROQVec[fRunBin][h]->Fill(1.5,fCentralityEBE,fVZFlowVect[0][h].Y());
-      fCRCVZEROQVec[fRunBin][h]->Fill(2.5,fCentralityEBE,fVZFlowVect[1][h].X());
-      fCRCVZEROQVec[fRunBin][h]->Fill(3.5,fCentralityEBE,fVZFlowVect[1][h].Y());
+      if(fCRCVZEROQVec[fRunBin][h]) {
+        fCRCVZEROQVec[fRunBin][h]->Fill(0.5,fCentralityEBE,fVZFlowVect[0][h].X());
+        fCRCVZEROQVec[fRunBin][h]->Fill(1.5,fCentralityEBE,fVZFlowVect[0][h].Y());
+        fCRCVZEROQVec[fRunBin][h]->Fill(2.5,fCentralityEBE,fVZFlowVect[1][h].X());
+        fCRCVZEROQVec[fRunBin][h]->Fill(3.5,fCentralityEBE,fVZFlowVect[1][h].Y());
+      }
     } // end of for(Int_t h=0; h<fCRCnHar; h++)
   } // end of if(fUseVZERO)
   
@@ -16425,7 +16427,7 @@ void AliFlowAnalysisCRC::InitializeArraysForCRCVZ()
   }
   
   for (Int_t h=0; h<fCRCnCen; h++) {
-    for (Int_t k=0; k<fkNHarCRCVZ; k++) {
+    for (Int_t k=0; k<fCRCnHar; k++) {
       for(Int_t j=0; j<fkNHistCRCVZ; j++) {
         fCRCVZEROetaPro[h][k][j] = NULL;
         fCRCVZEROetaHist[h][k][j] = NULL;
@@ -16539,7 +16541,7 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
     for(Int_t i=0;i<fCRCQVecnCov;i++) {
       fCRCZDCQVecCov[r][i] = NULL;
     }
-    for(Int_t h=0;h<fkNHarCRCVZ;h++) {
+    for(Int_t h=0;h<fCRCnHar;h++) {
       fCRCVZEROQVec[r][h] = NULL;
     }
     //    for(Int_t i=0;i<16;i++) {
@@ -19199,7 +19201,7 @@ void AliFlowAnalysisCRC::CalculateCRCVZERO()
   Double_t fVtxPosCor[3] = {fVtxPos[0]-fAvVtxPosX[fRunBin],fVtxPos[1]-fAvVtxPosY[fRunBin],fVtxPos[2]-fAvVtxPosZ[fRunBin]};
   Bool_t pass = kTRUE;
   
-  for (Int_t k=0; k<fkNHarCRCVZ; k++) {
+  for (Int_t k=0; k<fCRCnHar; k++) {
     
     // RPS eta < 0
     Double_t ZCRe = fVZFlowVect[0][k].X();
@@ -21383,7 +21385,7 @@ void AliFlowAnalysisCRC::CalculateFlowSPVZ()
   // ZDC QA cuts
   if(fQAZDCCuts && !fQAZDCCutsFlag) {return;}
   
-  for(Int_t hr=0; hr<fFlowNHarm; hr++) {
+  for(Int_t hr=0; hr<fCRCnHar; hr++) {
     
     // VZ eta < 0
     Double_t VCRe = fVZFlowVect[0][hr].X();
@@ -22527,7 +22529,7 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
   cout << endl;
   
   for (Int_t h=0; h<fCRCnCen; h++) {
-    for (Int_t k=0; k<fkNHarCRCVZ; k++) {
+    for (Int_t k=0; k<fCRCnHar; k++) {
       for (Int_t j=0; j<fkNHistCRCVZ; j++) {
         
         for(Int_t c=1;c<=fCRCVZEROetaPro[h][k][j]->GetNbinsX();c++) {
@@ -22571,7 +22573,7 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
   }
   
   for (Int_t h=0; h<fCRCnCen; h++) {
-    for (Int_t k=0; k<fkNHarCRCVZ; k++) {
+    for (Int_t k=0; k<fCRCnHar; k++) {
       for (Int_t eb=0; eb<fEtaDiffNBins; eb++) {
         if(k==0) {
           Double_t v1P = fCRCVZEROetaHist[h][k][0]->GetBinContent(eb+1);
@@ -27246,7 +27248,7 @@ void AliFlowAnalysisCRC::GetPointersForCRCVZ()
   }
   
   for (Int_t h=0; h<fCRCnCen; h++) {
-    for (Int_t k=0; k<fkNHarCRCVZ; k++) {
+    for (Int_t k=0; k<fCRCnHar; k++) {
       for(Int_t j=0; j<fkNHistCRCVZ; j++) {
         TProfile *FlowSPZDCv1etaPro = dynamic_cast<TProfile*>(fCRCVZList->FindObject(Form("fCRCVZEROetaPro[%d][%d][%d]",h,k,j)));
         if(FlowSPZDCv1etaPro) { this->SetCRCVZEROetaPro(FlowSPZDCv1etaPro,h,k,j); }
@@ -28528,7 +28530,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCVZ()
   if(!fUseVZERO){return;}
   
   for (Int_t h=0; h<fCRCnCen; h++) {
-    for (Int_t k=0; k<fkNHarCRCVZ; k++) {
+    for (Int_t k=0; k<fCRCnHar; k++) {
       for(Int_t j=0; j<fkNHistCRCVZ; j++) {
         fCRCVZEROetaPro[h][k][j] = new TProfile(Form("fCRCVZEROetaPro[%d][%d][%d]",h,k,j),Form("fCRCVZEROetaPro[%d][%d][%d]",h,k,j),fEtaDiffNBins,fCRCEtaMin,fCRCEtaMax);
         fCRCVZEROetaPro[h][k][j]->Sumw2();
@@ -29238,7 +29240,7 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
 //  }
   
   for(Int_t r=0;r<fCRCnRun;r++) {
-    for(Int_t h=0;h<fkNHarCRCVZ;h++) {
+    for(Int_t h=0;h<fCRCnHar;h++) {
         fCRCVZEROQVec[r][h] = new TProfile2D(Form("fCRCVZEROQVec[%d][%d]",fRunList[r],h),
                                              Form("fCRCVZEROQVec[%d][%d]",fRunList[r],h),4,0.,4.,100,0.,100.,"s");
         fCRCVZEROQVec[r][h]->Sumw2();
