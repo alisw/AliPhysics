@@ -132,6 +132,10 @@ public:
     void SetMaxPtCascade     ( Float_t lMaxPt ) {
         fMaxPtCascade = lMaxPt;
     }
+    void SetCentralityInterval     ( Float_t lMinCent, Float_t lMaxCent ) {
+        fMinCentrality = lMinCent;
+        fMaxCentrality = lMaxCent;
+    }
     void SetMassWindowAroundCascade     ( Double_t lMassWin ) {
         fMassWindowAroundCascade = lMassWin;
     }
@@ -185,6 +189,10 @@ private:
     //Min/Max pT for cascades
     Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
+    
+    //Min/Max Centrality
+    Float_t fMinCentrality; //centrality interval to actually regenerate candidates
+    Float_t fMaxCentrality; //centrality interval to actually regenerate candidates
     
     //Mass Window around masses of interest
     Double_t fMassWindowAroundCascade; 
