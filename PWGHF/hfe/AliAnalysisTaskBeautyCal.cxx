@@ -892,10 +892,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
   //if(trigger==7)if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   //cout << "EG1tr = " << EG1tr << endl;
-  if(trigger==7){if(!firedTrigger.Contains(TriggerEG1))return;}
+  if(!fMCarray && trigger==7){if(!firedTrigger.Contains(TriggerEG1))return;}
   //if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
 
   //cout << "Zvertex = " << Zvertex << endl;
+  //cout << endl;
 
   ////////////////////////
   // Mag. field
@@ -1368,7 +1369,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Bool_t fFlagNonHFE=kFALSE;  // ULS
       Bool_t fFlagNonLsHFE=kFALSE;  // LS
       
-      Double_t mimSig = -1.0;
+      //Double_t mimSig = -1.0;
+      Double_t mimSig = -0.5;
       Double_t maxSig =  3.0;
       if(fMCarray) // nSigma cut in MC
         {
@@ -1387,7 +1389,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //cout << "itschi2 = " << fitschi2 << endl;
       if(atrack->GetITSchi2() > fitschi2) continue; 
  
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
+      if(fTPCnSigma > mimSig && fTPCnSigma < maxSig && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5)fHistEopHad2->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
