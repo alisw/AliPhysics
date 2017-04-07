@@ -32,7 +32,6 @@ AliAnalysisTaskWeakDecayVertexer *AddTaskWeakDecayVertexer( TString lExtraOption
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileName );
     
-    
     //Recommendation: Tree as a single output slot
     mgr->ConnectInput (taskWDvertexer, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskWDvertexer, 1, coutputList);

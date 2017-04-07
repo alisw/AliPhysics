@@ -105,6 +105,7 @@ fkDoExtraEvSels(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kTRUE ),
+fkPreselectDedxLambda ( kTRUE ),
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
@@ -136,7 +137,8 @@ fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
-fkPreselectDedx ( kFALSE ),
+fkPreselectDedx ( kTRUE ),
+fkPreselectDedxLambda ( kTRUE ),
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
