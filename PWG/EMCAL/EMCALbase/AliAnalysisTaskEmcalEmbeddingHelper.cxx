@@ -67,6 +67,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fOffset(0),
   fMaxNumberOfFiles(0),
   fFileNumber(0),
+  fInitializedConfiguration(false),
   fInitializedEmbedding(false),
   fInitializedNewFile(false),
   fWrappedAroundTree(false),
@@ -108,6 +109,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fOffset(0),
   fMaxNumberOfFiles(0),
   fFileNumber(0),
+  fInitializedConfiguration(false),
   fInitializedEmbedding(false),
   fInitializedNewFile(false),
   fWrappedAroundTree(false),
@@ -135,6 +137,22 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
     fExternalFile->Close();
     delete fExternalFile;
   }
+}
+
+/**
+ * Initialize the Embedding Helper task. *Must* be called after configuring the task,
+ * either during the run macro or wagon configuration.
+ */
+bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize()
+{
+  // Get file list
+  bool result = GetFilenames();
+
+  if (result) {
+    fInitializedConfiguration = true;
+  }
+
+  return result;
 }
 
 /**
@@ -278,25 +296,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
     }
   }
 
-  // Determine the next filename index
-  // This determines which file is added first to the TChain, thus determining the order of processing
-  // Random file access. Only do this if the user has no set the filename index and request random file access
-  if (fFilenameIndex == -1 && fRandomFileAccess) {
-    // - 1 ensures that we it doesn't overflow
-    fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
-    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex));
-  }
-  // If not random file access, then start from the beginning
-  if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
-    // Skip notifying on -1 since it will likely be set there due to constructor.
-    if (fFilenameIndex != -1) {
-      AliWarning(TString::Format("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
-    }
-    fFilenameIndex = 0;
-  }
-
-  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
-
+  AliInfoStream() << "Found " << fFilenames.size() << " files to embed\n";
   return true;
 }
 
@@ -319,6 +319,31 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename(
   tempStr += ".txt";
 
   return tempStr;
+}
+
+/**
+ * Determine the first file to embed and store the index. The index will either be
+ * random or the first file in the list, depending on the task configuration.
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
+{
+  // This determines which file is added first to the TChain, thus determining the order of processing
+  // Random file access. Only do this if the user has no set the filename index and request random file access
+  if (fFilenameIndex == -1 && fRandomFileAccess) {
+    // - 1 ensures that we it doesn't overflow
+    fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
+    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex));
+  }
+  // If not random file access, then start from the beginning
+  if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
+    // Skip notifying on -1 since it will likely be set there due to constructor.
+    if (fFilenameIndex != -1) {
+      AliWarning(TString::Format("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
+    }
+    fFilenameIndex = 0;
+  }
+
+  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
 }
 
 /**
@@ -514,6 +539,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 {
+  // Determine which file to start with
+  DetermineFirstFileToEmbed();
+
   // Setup TChain
   fChain = new TChain(fTreeName);
 
@@ -587,8 +615,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::SetupEmbedding()
 {
-  // Get file list
-  GetFilenames();
+  if (fInitializedConfiguration == false) {
+    AliFatal("The configuration is not initialized. Check that Initialize() was called!");
+  }
 
   // Setup TChain
   Bool_t res = SetupInputFiles();
