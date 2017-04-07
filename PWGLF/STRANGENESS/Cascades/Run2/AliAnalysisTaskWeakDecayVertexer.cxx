@@ -115,8 +115,9 @@ fkPreselectDedxLambda ( kFALSE ),
 //Flags for cascade vertexer
 fkRunCascadeVertexer    ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
-fMinPtCascade(   0.4 ), 
+fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
+fMassWindowAroundCascade(0.060),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -146,8 +147,9 @@ fkPreselectDedxLambda ( kTRUE ),
 //Flags for cascade vertexer
 fkRunCascadeVertexer    ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
-fMinPtCascade(   0.4 ), //pre-selection
+fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
+fMassWindowAroundCascade(0.060),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -707,6 +709,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             
             if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) <fCascadeVertexerSels[5]) continue; //condition on the cascade pointing angle
             
+            //Filter masses: anti-cascade hypotheses
+            Double_t lV0quality = 0.;
+            cascade.ChangeMassHypothesis(lV0quality , 3312); // pdg code -3312 = Xi+
+            Double_t lInvMassXi = cascade.GetEffMassXi();
+            cascade.ChangeMassHypothesis(lV0quality , 3334); // pdg code -3312 = Xi+
+            Double_t lInvMassOmega = cascade.GetEffMassXi();
+            
+            //Remove if outside window of interest
+            if(TMath::Abs(lInvMassXi   -1.322)>fMassWindowAroundCascade &&
+               TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
+            
             cascade.SetDcaXiDaughters(dca);
             event->AddCascade(&cascade);
             ncasc++;
@@ -753,6 +766,25 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (r2 > (x1*x1+y1*y1)) continue;
             
             if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) < fCascadeVertexerSels[5]) continue; //condition on the cascade pointing angle
+            
+            //pre-select on pT
+            Double_t lXiMomX       = 0. , lXiMomY = 0., lXiMomZ = 0.;
+            Double_t lXiTransvMom  = 0. ;
+            cascade.GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
+            lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
+            if(lXiTransvMom<fMinPtCascade) continue;
+            if(lXiTransvMom>fMaxPtCascade) continue;
+            
+            //Filter masses: anti-cascade hypotheses
+            Double_t lV0quality = 0.;
+            cascade.ChangeMassHypothesis(lV0quality , -3312); // pdg code -3312 = Xi+
+            Double_t lInvMassXi = cascade.GetEffMassXi();
+            cascade.ChangeMassHypothesis(lV0quality , -3334); // pdg code -3312 = Xi+
+            Double_t lInvMassOmega = cascade.GetEffMassXi();
+            
+            //Remove if outside window of interest
+            if(TMath::Abs(lInvMassXi   -1.322)>fMassWindowAroundCascade &&
+               TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
             
             cascade.SetDcaXiDaughters(dca);
             event->AddCascade(&cascade);
