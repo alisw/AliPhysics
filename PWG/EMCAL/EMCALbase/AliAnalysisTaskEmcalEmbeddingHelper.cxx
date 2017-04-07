@@ -14,9 +14,12 @@
  **************************************************************************/
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
+#include <bitset>
 
 #include <TFile.h>
 #include <TMath.h>
@@ -219,7 +222,9 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
     }
 
     // Retrieve AliEn filenames directly from AliEn
+    bool usedFilePattern = false;
     if (fFilePattern.Contains("alien://")) {
+      usedFilePattern = true;
       AliDebug(2, TString::Format("Trying to retrieve file list from AliEn with pattern file %s...", fFilePattern.Data()));
 
       // Create a temporary filename based on a UUID to make sure that it doesn't overwrite any files
@@ -253,6 +258,11 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 
     // Handle a filelist on AliEn
     if (fFileListFilename.Contains("alien://")) {
+      // Check if we already used the file pattern
+      if (usedFilePattern) {
+        AliErrorStream() << "You set both the file pattern and the file list filename! The file list filename will override the pattern! Pattern: \"" << fFilePattern << "\", filename: \"" << fFileListFilename << "\"\nPlease check that this is the desired behavior!\n";
+      }
+
       // Determine the local filename and copy file to local directory
       std::string alienFilename = fFileListFilename.Data();
       fFileListFilename = gSystem->BaseName(alienFilename.c_str());
@@ -772,4 +782,85 @@ AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::AddTa
   //mgr->ConnectOutput(embeddingHelper, 1, cOutput);
 
   return embeddingHelper;
+}
+
+/**
+ * Prints information about the correction task.
+ *
+ * @return std::string containing information about the task.
+ */
+std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) const
+{
+  std::stringstream tempSS;
+
+  // Show the correction components
+  tempSS << std::boolalpha;
+  tempSS << GetName() << ": Embedding helper configuration:\n";
+  tempSS << "Pt Hard Bin: " << fPtHardBin << "\n";
+  tempSS << "Anchor Run: " << fAnchorRun << "\n";
+  tempSS << "File pattern: \"" << fFilePattern << "\"\n";
+  tempSS << "Input filename: \"" << fInputFilename << "\"\n";
+  tempSS << "File list filename: \"" << fFileListFilename << "\"\n";
+  tempSS << "Tree name: " << fTreeName << "\n";
+  tempSS << "Random event number access: " << fRandomEventNumberAccess << "\n";
+  tempSS << "Random file access: " << fRandomFileAccess << "\n";
+  tempSS << "Starting file index: " << fFilenameIndex << "\n";
+  tempSS << "Number of files to embed: " << fFilenames.size() << "\n";
+
+  std::bitset<32> triggerMask(fTriggerMask);
+  tempSS << "\nEmbedded event settings:\n";
+  tempSS << "Trigger mask (binary): " << triggerMask << "\n";
+  tempSS << "Z vertex cut: " << fZVertexCut << "\n";
+  tempSS << "Max vertex distance: " << fMaxVertexDist << "\n";
+
+  if (includeFileList) {
+    tempSS << "\nFiles to embed:\n";
+    for (auto filename : fFilenames) {
+      tempSS << "\t" << filename << "\n";
+    }
+  }
+
+  return tempSS.str();
+}
+
+/**
+ * Print correction task information on an output stream using the string representation provided by
+ * AliAnalysisTaskEmcalEmbeddingHelper::toString(). Used by operator<<
+ *
+ * @param in output stream stream
+ * @return reference to the output stream
+ */
+std::ostream & AliAnalysisTaskEmcalEmbeddingHelper::Print(std::ostream & in) const {
+  in << toString();
+  return in;
+}
+
+/**
+ * Implementation of the output stream operator for AliAnalysisTaskEmcalEmbeddingHelper. Printing
+ * basic correction task information provided by function toString()
+ *
+ * @param in output stream
+ * @param myTask Task which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream & operator<<(std::ostream & in, const AliAnalysisTaskEmcalEmbeddingHelper & myTask)
+{
+  std::ostream & result = myTask.Print(in);
+  return result;
+}
+
+/**
+ * Print basic correction task information using the string representation provided by
+ * AliAnalysisTaskEmcalEmbeddingHelper::toString()
+ *
+ * @param opt If "FILELIST" is passed, then the list of files to embed is also printed
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::Print(Option_t* opt) const
+{
+  std::string temp(opt);
+  bool includeFileList = false;
+  if (temp == "FILELIST") {
+    includeFileList = true;
+  }
+  Printf("%s", toString(includeFileList).c_str());
 }

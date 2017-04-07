@@ -21,6 +21,10 @@ class TChain;
 class TFile;
 class AliVEvent;
 
+#include <iosfwd>
+#include <vector>
+#include <string>
+
 #include <AliAnalysisTaskSE.h>
 
 /**
@@ -70,7 +74,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   static const AliAnalysisTaskEmcalEmbeddingHelper* GetInstance() { return fgInstance       ; }
 
   AliVEvent* GetExternalEvent()                             const { return fExternalEvent   ; }
-
 
   /**
    * @{
@@ -131,7 +134,19 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
   /* @} */
 
+  /**
+   * @{
+   * @name Utility functions
+   */
+  // AddTask
   static AliAnalysisTaskEmcalEmbeddingHelper * AddTaskEmcalEmbeddingHelper();
+
+  // Printing
+  friend std::ostream & operator<<(std::ostream &in, const AliAnalysisTaskEmcalEmbeddingHelper &myTask);
+  void Print(Option_t* opt = "") const;
+  std::ostream & Print(std::ostream &in) const;
+  std::string toString(bool includeFileList = false) const;
+  /* @} */
 
  protected:
   bool            GetFilenames()        ;
