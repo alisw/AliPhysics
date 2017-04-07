@@ -111,7 +111,6 @@ fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
 fkDoV0Refit       ( kTRUE ),
-fkPreselectDedxLambda ( kFALSE ),
 //________________________________________________
 //Flags for cascade vertexer
 fkRunCascadeVertexer    ( kFALSE ),
@@ -144,7 +143,6 @@ fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
 fkDoV0Refit       ( kTRUE ),
-fkPreselectDedxLambda ( kTRUE ),
 //________________________________________________
 //Flags for cascade vertexer
 fkRunCascadeVertexer    ( kFALSE ),
@@ -235,11 +233,11 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
     if(! fHistNumberOfCandidates ) {
         //Histogram Output: Event-by-Event
         fHistNumberOfCandidates = new TH1D( "fHistNumberOfCandidates", "Candidate count;Centrality;Event Count",4,0,4);
-        fHistEventCounter->GetXaxis()->SetBinLabel(1, "V0s: original");
-        fHistEventCounter->GetXaxis()->SetBinLabel(2, "V0s: re-vertexed");
-        fHistEventCounter->GetXaxis()->SetBinLabel(3, "Cascades: original");
-        fHistEventCounter->GetXaxis()->SetBinLabel(4, "Cascades: re-vertexed");
-        fListHist->Add(fHistEventCounter);
+        fHistNumberOfCandidates->GetXaxis()->SetBinLabel(1, "V0s: original");
+        fHistNumberOfCandidates->GetXaxis()->SetBinLabel(2, "V0s: re-vertexed");
+        fHistNumberOfCandidates->GetXaxis()->SetBinLabel(3, "Cascades: original");
+        fHistNumberOfCandidates->GetXaxis()->SetBinLabel(4, "Cascades: re-vertexed");
+        fListHist->Add(fHistNumberOfCandidates);
     }
 
     PostData(1, fListHist    );
