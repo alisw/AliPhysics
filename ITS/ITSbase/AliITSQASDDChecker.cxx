@@ -837,7 +837,8 @@ Bool_t AliITSQASDDChecker::DrawHistos(TObjArray ** list, AliQAv1::TASKINDEX_t ta
 	    hist->SetFillColor(kBlue-3);
 	  }
                     
-	  if(!drawProj){hist->DrawCopy();
+	  if(!drawProj){
+        hist->DrawCopy();
 	    fImage[esIndex]->cd(++npad) ;
 	    fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
 	  }
