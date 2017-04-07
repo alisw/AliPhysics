@@ -37,5 +37,5 @@ AliAnalysisTaskWeakDecayVertexer *AddTaskWeakDecayVertexer( TString lExtraOption
     mgr->ConnectInput (taskWDvertexer, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskWDvertexer, 1, coutputList);
     
-    return taskAuxiliary;
+    return taskWDvertexer;
 }   
