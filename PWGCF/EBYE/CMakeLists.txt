@@ -64,6 +64,7 @@ set(SRCS
   Fluctuations/AliHigherMomentsToyModel.cxx
   Fluctuations/AliEbyEMultFluctuationTask.cxx
   Fluctuations/AliEbyEHigherMomentsTaskPID.cxx
+  Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
   PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx
