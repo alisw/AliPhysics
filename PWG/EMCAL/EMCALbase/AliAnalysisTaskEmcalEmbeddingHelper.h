@@ -21,6 +21,10 @@ class TChain;
 class TFile;
 class AliVEvent;
 
+#include <iosfwd>
+#include <vector>
+#include <string>
+
 #include <AliAnalysisTaskSE.h>
 
 /**
@@ -75,6 +79,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @{
    * @name Properties of the embedding helper
    */
+  bool Initialize();
+
+  // Get
   Int_t GetPtHardBin()                                      const { return fPtHardBin; }
   Int_t GetAnchorRun()                                      const { return fAnchorRun; }
   TString GetTreeName()                                     const { return fTreeName; }
@@ -85,6 +92,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t GetStartingFileIndex()                              const { return fFilenameIndex; }
   TString GetFileListFilename()                             const { return fFileListFilename; }
 
+  // Set
   /// Set the pt hard bin which will be added into the file pattern. Can also be omitted and set directly in the pattern.
   void SetPtHardBin(Int_t r)                                      { fPtHardBin           = r; }
   /// Sets the anchor run which will be added into the file pattern. Can also be omitted and set directly in the pattern.
@@ -126,11 +134,24 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
   /* @} */
 
+  /**
+   * @{
+   * @name Utility functions
+   */
+  // AddTask
   static AliAnalysisTaskEmcalEmbeddingHelper * AddTaskEmcalEmbeddingHelper();
 
+  // Printing
+  friend std::ostream & operator<<(std::ostream &in, const AliAnalysisTaskEmcalEmbeddingHelper &myTask);
+  void Print(Option_t* opt = "") const;
+  std::ostream & Print(std::ostream &in) const;
+  std::string toString(bool includeFileList = false) const;
+  /* @} */
+
  protected:
-  void            GetFilenames()        ;
+  bool            GetFilenames()        ;
   std::string     GenerateUniqueFileListFilename();
+  void            DetermineFirstFileToEmbed();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
   Bool_t          GetNextEntry()        ;
@@ -142,6 +163,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Double_t                                      fZVertexCut;        ///<  Z vertex cut on embedded event
   Double_t                                      fMaxVertexDist;     ///<  Max distance between Z vertex of internal and embedded event
 
+  bool                                          fInitializedConfiguration; ///< Notes if the configuration has been initialized
   bool                                          fInitializedNewFile; //!<! Notes where the entry indices have been initialized for a new tree in the chain
   bool                                          fInitializedEmbedding; //!<! Notes where the TChain has been initialized for embedding
   bool                                          fWrappedAroundTree; //!<! Notes whether we have wrapped around the tree, which is important if the offset into the tree is non-zero
@@ -156,7 +178,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   TString                                       fInputFilename    ; ///<  Filename of input root files
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
   Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
-  std::vector <std::string>                     fFilenames        ; //!<! Paths to the files to embed
+  std::vector <std::string>                     fFilenames        ; ///< Paths to the files to embed
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
   TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
   Int_t                                         fCurrentEntry     ; //!<! Current entry in the current tree

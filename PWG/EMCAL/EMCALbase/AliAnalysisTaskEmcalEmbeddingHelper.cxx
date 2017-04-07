@@ -14,15 +14,19 @@
  **************************************************************************/
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
+#include <bitset>
 
 #include <TFile.h>
 #include <TMath.h>
 #include <TRandom.h>
 #include <TChain.h>
 #include <TGrid.h>
+#include <TGridResult.h>
 #include <TSystem.h>
 #include <TUUID.h>
 
@@ -66,6 +70,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fOffset(0),
   fMaxNumberOfFiles(0),
   fFileNumber(0),
+  fInitializedConfiguration(false),
   fInitializedEmbedding(false),
   fInitializedNewFile(false),
   fWrappedAroundTree(false),
@@ -107,6 +112,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fOffset(0),
   fMaxNumberOfFiles(0),
   fFileNumber(0),
+  fInitializedConfiguration(false),
   fInitializedEmbedding(false),
   fInitializedNewFile(false),
   fWrappedAroundTree(false),
@@ -137,6 +143,22 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
 }
 
 /**
+ * Initialize the Embedding Helper task. *Must* be called after configuring the task,
+ * either during the run macro or wagon configuration.
+ */
+bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize()
+{
+  // Get file list
+  bool result = GetFilenames();
+
+  if (result) {
+    fInitializedConfiguration = true;
+  }
+
+  return result;
+}
+
+/**
  * Get the names of the files to embed and determine which file to start from. The filenames will be
  * used to initialize a TChain. Filenames can either be specified in a local file with one filename per
  * line or found on AliEn by specifying any pattern that would work in alien_find.
@@ -159,7 +181,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
  * NOTE: Exercise care if you set both the file pattern and the filename! Doing so will probably cause your
  * file to be overwritten!
  */
-void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
+bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 {
   // Determine the pattern filename if not yet set
   if (fInputFilename == "") {
@@ -195,35 +217,52 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
         TGrid::Connect("alien://");
       }
       if (!gGrid) {
-        AliFatal(Form("Cannot access AliEn to retrieve file list with pattern %s!", fFilePattern.Data()));
+        AliFatal(TString::Format("Cannot access AliEn to retrieve file list with pattern %s!", fFilePattern.Data()));
       }
     }
 
     // Retrieve AliEn filenames directly from AliEn
+    bool usedFilePattern = false;
     if (fFilePattern.Contains("alien://")) {
-      AliDebug(2,Form("Trying to retrieve file list from AliEn with pattern file %s...", fFilePattern.Data()));
+      usedFilePattern = true;
+      AliDebug(2, TString::Format("Trying to retrieve file list from AliEn with pattern file %s...", fFilePattern.Data()));
 
       // Create a temporary filename based on a UUID to make sure that it doesn't overwrite any files
       if (fFileListFilename == "") {
         fFileListFilename += GenerateUniqueFileListFilename();
       }
 
-      // Retrieve filenames from alien using alien_find
-      // NOTE: This input is unfiltered! Be careful here!
-      TString command = "alien_find";
-      command += fFilePattern;
-      command += " ";
-      command += fInputFilename;
-      command += " > ";
-      command += fFileListFilename;
+      // The query command cannot handle "alien://" in the file pattern, so we need to remove it for the command
+      TString filePattern = fFilePattern;
+      filePattern.ReplaceAll("alien://", "");
 
-      // Execute the alien_find command to get the filenames
-      AliDebug(2,Form("Trying to retrieve file list from AliEn with alien_find command \"%s\"", command.Data()));
-      gSystem->Exec(command.Data());
+      // Execute the grid query to get the filenames
+      AliDebug(2, TString::Format("Trying to retrieve file list from AliEn with pattern \"%s\" and input filename \"%s\"", filePattern.Data(), fInputFilename.Data()));
+      auto result = gGrid->Query(filePattern.Data(), fInputFilename.Data());
+
+      if (result) {
+        // Loop over the result to store it in the fileList file
+        std::ofstream outFile(fFileListFilename);
+        for (int i = 0; i < result->GetEntries(); i++)
+        {
+          // "turl" corresponds to the full AliEn url
+          outFile << result->GetKey(i, "turl") << "\n";
+        }
+        outFile.close();
+      }
+      else {
+        AliErrorStream() << "Failed to run grid query\n";
+        return false;
+      }
     }
 
     // Handle a filelist on AliEn
     if (fFileListFilename.Contains("alien://")) {
+      // Check if we already used the file pattern
+      if (usedFilePattern) {
+        AliErrorStream() << "You set both the file pattern and the file list filename! The file list filename will override the pattern! Pattern: \"" << fFilePattern << "\", filename: \"" << fFileListFilename << "\"\nPlease check that this is the desired behavior!\n";
+      }
+
       // Determine the local filename and copy file to local directory
       std::string alienFilename = fFileListFilename.Data();
       fFileListFilename = gSystem->BaseName(alienFilename.c_str());
@@ -239,10 +278,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
     std::copy(std::istream_iterator<std::string>(inputFile),
         std::istream_iterator<std::string>(),
         std::back_inserter(fFilenames));
+
+    inputFile.close();
   }
 
   if (fFilenames.size() == 0) {
-    AliFatal(Form("Filenames from pattern \"%s\" and file list \"%s\" yielded an empty list!", fFilePattern.Data(), fFileListFilename.Data()));
+    AliFatal(TString::Format("Filenames from pattern \"%s\" and file list \"%s\" yielded an empty list!", fFilePattern.Data(), fFileListFilename.Data()));
   }
 
   // Add "#" to files in there are any zip files
@@ -260,28 +301,13 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       }
       else {
         AliError(TString::Format("Filename %s contains \".zip\" and not \"#\", but tree name %s is not recognized. Please check the file list to ensure that the proper path is set.", filename.c_str(), fTreeName.Data()));
+        return false;
       }
     }
   }
 
-  // Determine the next filename index
-  // This determines which file is added first to the TChain, thus determining the order of processing
-  // Random file access. Only do this if the user has no set the filename index and request random file access
-  if (fFilenameIndex == -1 && fRandomFileAccess) {
-    // - 1 ensures that we it doesn't overflow
-    fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
-    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex));
-  }
-  // If not random file access, then start from the beginning
-  if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
-    // Skip notifying on -1 since it will likely be set there due to constructor.
-    if (fFilenameIndex != -1) {
-      AliWarning(Form("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
-    }
-    fFilenameIndex = 0;
-  }
-
-  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
+  AliInfoStream() << "Found " << fFilenames.size() << " files to embed\n";
+  return true;
 }
 
 /**
@@ -303,6 +329,31 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename(
   tempStr += ".txt";
 
   return tempStr;
+}
+
+/**
+ * Determine the first file to embed and store the index. The index will either be
+ * random or the first file in the list, depending on the task configuration.
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
+{
+  // This determines which file is added first to the TChain, thus determining the order of processing
+  // Random file access. Only do this if the user has no set the filename index and request random file access
+  if (fFilenameIndex == -1 && fRandomFileAccess) {
+    // - 1 ensures that we it doesn't overflow
+    fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
+    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex));
+  }
+  // If not random file access, then start from the beginning
+  if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
+    // Skip notifying on -1 since it will likely be set there due to constructor.
+    if (fFilenameIndex != -1) {
+      AliWarning(TString::Format("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
+    }
+    fFilenameIndex = 0;
+  }
+
+  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
 }
 
 /**
@@ -498,6 +549,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 {
+  // Determine which file to start with
+  DetermineFirstFileToEmbed();
+
   // Setup TChain
   fChain = new TChain(fTreeName);
 
@@ -571,8 +625,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::SetupEmbedding()
 {
-  // Get file list
-  GetFilenames();
+  if (fInitializedConfiguration == false) {
+    AliFatal("The configuration is not initialized. Check that Initialize() was called!");
+  }
 
   // Setup TChain
   Bool_t res = SetupInputFiles();
@@ -727,4 +782,85 @@ AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::AddTa
   //mgr->ConnectOutput(embeddingHelper, 1, cOutput);
 
   return embeddingHelper;
+}
+
+/**
+ * Prints information about the correction task.
+ *
+ * @return std::string containing information about the task.
+ */
+std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) const
+{
+  std::stringstream tempSS;
+
+  // Show the correction components
+  tempSS << std::boolalpha;
+  tempSS << GetName() << ": Embedding helper configuration:\n";
+  tempSS << "Pt Hard Bin: " << fPtHardBin << "\n";
+  tempSS << "Anchor Run: " << fAnchorRun << "\n";
+  tempSS << "File pattern: \"" << fFilePattern << "\"\n";
+  tempSS << "Input filename: \"" << fInputFilename << "\"\n";
+  tempSS << "File list filename: \"" << fFileListFilename << "\"\n";
+  tempSS << "Tree name: " << fTreeName << "\n";
+  tempSS << "Random event number access: " << fRandomEventNumberAccess << "\n";
+  tempSS << "Random file access: " << fRandomFileAccess << "\n";
+  tempSS << "Starting file index: " << fFilenameIndex << "\n";
+  tempSS << "Number of files to embed: " << fFilenames.size() << "\n";
+
+  std::bitset<32> triggerMask(fTriggerMask);
+  tempSS << "\nEmbedded event settings:\n";
+  tempSS << "Trigger mask (binary): " << triggerMask << "\n";
+  tempSS << "Z vertex cut: " << fZVertexCut << "\n";
+  tempSS << "Max vertex distance: " << fMaxVertexDist << "\n";
+
+  if (includeFileList) {
+    tempSS << "\nFiles to embed:\n";
+    for (auto filename : fFilenames) {
+      tempSS << "\t" << filename << "\n";
+    }
+  }
+
+  return tempSS.str();
+}
+
+/**
+ * Print correction task information on an output stream using the string representation provided by
+ * AliAnalysisTaskEmcalEmbeddingHelper::toString(). Used by operator<<
+ *
+ * @param in output stream stream
+ * @return reference to the output stream
+ */
+std::ostream & AliAnalysisTaskEmcalEmbeddingHelper::Print(std::ostream & in) const {
+  in << toString();
+  return in;
+}
+
+/**
+ * Implementation of the output stream operator for AliAnalysisTaskEmcalEmbeddingHelper. Printing
+ * basic correction task information provided by function toString()
+ *
+ * @param in output stream
+ * @param myTask Task which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream & operator<<(std::ostream & in, const AliAnalysisTaskEmcalEmbeddingHelper & myTask)
+{
+  std::ostream & result = myTask.Print(in);
+  return result;
+}
+
+/**
+ * Print basic correction task information using the string representation provided by
+ * AliAnalysisTaskEmcalEmbeddingHelper::toString()
+ *
+ * @param opt If "FILELIST" is passed, then the list of files to embed is also printed
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::Print(Option_t* opt) const
+{
+  std::string temp(opt);
+  bool includeFileList = false;
+  if (temp == "FILELIST") {
+    includeFileList = true;
+  }
+  Printf("%s", toString(includeFileList).c_str());
 }
