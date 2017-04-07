@@ -2595,6 +2595,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0CosPASweep",icut) );
             //Add result to pool
+            lCascadeResult[lN] -> SetCutUseVarV0CosPA( kFALSE );
             lCascadeResult[lN] -> SetCutV0CosPA ( lV0CosPAVals[icut] );
             lN++;
         }
@@ -2677,6 +2678,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascCosPASweep",icut) );
             //Add result to pool
+            lCascadeResult[lN] -> SetCutUseVarCascCosPA( kFALSE );
             lCascadeResult[lN] -> SetCutCascCosPA ( lCascCosPAVals[icut] );
             lN++;
         }
@@ -2696,6 +2698,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"BBCosPASweep",icut) );
             //Add result to pool
+            lCascadeResult[lN] -> SetCutUseVarBBCosPA( kFALSE );
             lCascadeResult[lN] -> SetCutBachBaryonCosPA ( lBBCosPAVals[icut] );
             lN++;
         }
