@@ -13,9 +13,8 @@
 // Analysis task for Long Range Correlation (LRC) analysis using TPC data
 // This includes a TList of AliLRCBase objects that are processing LRC analysis
 // for a given Eta window 
-// This task is worcking with ESD data only
 
-// Authors : Andrey Ivanov , Igor Altsybeev, St.Peterburg State University
+// Authors : Andrey Ivanov , Igor Altsybeev, St.Petersburg State University
 // Email: Andrey.Ivanov@cern.ch, Igor.Altsybeev@cern.ch
 
 #include <AliAnalysisManager.h>
