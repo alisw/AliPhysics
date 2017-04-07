@@ -129,7 +129,7 @@ fHistNumberOfCandidates(0) //bookkeep total number of candidates analysed
 }
 
 AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *name, TString lExtraOptions)
-: AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0),
+: AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0),
 //________________________________________________
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
