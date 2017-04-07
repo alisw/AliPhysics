@@ -838,7 +838,7 @@ Bool_t AliITSQASDDChecker::DrawHistos(TObjArray ** list, AliQAv1::TASKINDEX_t ta
 	  }
                     
 	  if(!drawProj){
-        hist->DrawCopy();
+	    hist->DrawCopy();
 	    fImage[esIndex]->cd(++npad) ;
 	    fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
 	  }
