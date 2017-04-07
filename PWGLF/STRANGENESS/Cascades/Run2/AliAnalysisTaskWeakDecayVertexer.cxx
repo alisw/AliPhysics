@@ -102,6 +102,8 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer()
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
+fMinCentrality(0.0),
+fMaxCentrality(90.0),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kTRUE ),
@@ -134,6 +136,8 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *n
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
+fMinCentrality(0.0),
+fMaxCentrality(90.0),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kTRUE ),
@@ -328,7 +332,10 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     
     if( fkRunV0Vertexer ){
         lESDevent->ResetV0s();
-        Tracks2V0vertices(lESDevent);
+        //Only regenerate candidates if within interesting interval
+        if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ){
+            Tracks2V0vertices(lESDevent);
+        }
     }
     
     nv0s = lESDevent->GetNumberOfV0s();
@@ -345,7 +352,10 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
 
     if( fkRunCascadeVertexer ){
         lESDevent->ResetCascades();
-        V0sTracks2CascadeVertices(lESDevent);
+        //Only regenerate candidates if within interesting interval
+        if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ){
+            V0sTracks2CascadeVertices(lESDevent);
+        }
     }
     
     ncascades = lESDevent->GetNumberOfCascades();
