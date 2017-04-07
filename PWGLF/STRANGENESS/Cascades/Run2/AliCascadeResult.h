@@ -119,6 +119,22 @@ public:
         fCutVarV0CosPA_Const     = l5;
     }
     
+    //Variable BBCosPA
+    void SetCutUseVarBBCosPA      ( Bool_t lCut )   { fCutUseVariableBBCosPA     = lCut; }
+    void SetCutVarBBCosPAExp0Const( Double_t lCut ) { fCutVarBBCosPA_Exp0Const = lCut; }
+    void SetCutVarBBCosPAExp0Slope( Double_t lCut ) { fCutVarBBCosPA_Exp0Slope = lCut; }
+    void SetCutVarBBCosPAExp1Const( Double_t lCut ) { fCutVarBBCosPA_Exp1Const = lCut; }
+    void SetCutVarBBCosPAExp1Slope( Double_t lCut ) { fCutVarBBCosPA_Exp1Slope = lCut; }
+    void SetCutVarBBCosPAConst    ( Double_t lCut ) { fCutVarBBCosPA_Const     = lCut; }
+    void SetCutVarBBCosPA ( Double_t l1, Double_t l2, Double_t l3, Double_t l4, Double_t l5 ){
+        fCutUseVariableBBCosPA = kTRUE; //Automatically switch on!
+        fCutVarBBCosPA_Exp0Const = l1;
+        fCutVarBBCosPA_Exp0Slope = l2;
+        fCutVarBBCosPA_Exp1Const = l3;
+        fCutVarBBCosPA_Exp1Slope = l4;
+        fCutVarBBCosPA_Const     = l5;
+    }
+    
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
     TString GetParticleName() const; 
@@ -181,6 +197,14 @@ public:
     Double_t GetCutVarV0CosPAExp1Const() const { return fCutVarV0CosPA_Exp1Const; }
     Double_t GetCutVarV0CosPAExp1Slope() const { return fCutVarV0CosPA_Exp1Slope; }
     Double_t GetCutVarV0CosPAConst    () const { return fCutVarV0CosPA_Const;     }
+    
+    //Variable BBCosPA
+    Bool_t GetCutUseVarBBCosPA        () const { return fCutUseVariableBBCosPA;   }
+    Double_t GetCutVarBBCosPAExp0Const() const { return fCutVarBBCosPA_Exp0Const; }
+    Double_t GetCutVarBBCosPAExp0Slope() const { return fCutVarBBCosPA_Exp0Slope; }
+    Double_t GetCutVarBBCosPAExp1Const() const { return fCutVarBBCosPA_Exp1Const; }
+    Double_t GetCutVarBBCosPAExp1Slope() const { return fCutVarBBCosPA_Exp1Slope; }
+    Double_t GetCutVarBBCosPAConst    () const { return fCutVarBBCosPA_Const;     }
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
@@ -257,9 +281,18 @@ private:
     Double_t fCutVarV0CosPA_Exp1Slope;
     Double_t fCutVarV0CosPA_Const;
     
+    //Experimental: pt-variable BB cosPA
+    //Warning: if this cut is tighter than fCutBachBaryonCosPA, this gets used instead!
+    Bool_t fCutUseVariableBBCosPA;
+    Double_t fCutVarBBCosPA_Exp0Const;
+    Double_t fCutVarBBCosPA_Exp0Slope;
+    Double_t fCutVarBBCosPA_Exp1Const;
+    Double_t fCutVarBBCosPA_Exp1Slope;
+    Double_t fCutVarBBCosPA_Const;
+    
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 22)
+    ClassDef(AliCascadeResult, 23)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -282,5 +315,6 @@ private:
     // 20 - Configuration flags for rsn-like bg estimation (experimental)
     // 21 - swap v0 meson charge addition
     // 22 - swap v0 baryon charge addition
+    // 23 - Parametric Bach Baryon CosPA
 };
 #endif
