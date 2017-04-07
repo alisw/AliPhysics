@@ -989,6 +989,7 @@ AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutPar
   tXiCut->SetInvariantMassXi(aCutParams.minInvariantMass,aCutParams.maxInvariantMass);
   tXiCut->SetMaxDecayLengthXi(aCutParams.maxDecayLengthXi);
   tXiCut->SetMinCosPointingAngleXi(aCutParams.minCosPointingAngleXi);
+  tXiCut->SetMinCosPointingAngleV0toXi(aCutParams.minCosPointingAngleV0toXi);
   tXiCut->SetMaxDcaXi(aCutParams.maxDcaXi);
     //XiDaughters
     tXiCut->SetMaxDcaXiDaughters(aCutParams.maxDcaXiDaughters);
@@ -1825,6 +1826,7 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
 
   tReturnParams.maxDecayLengthXi = 100.;
   tReturnParams.minCosPointingAngleXi = 0.9992;
+  tReturnParams.minCosPointingAngleV0toXi = 0.9993;
   tReturnParams.maxDcaXi = 100.;
   tReturnParams.maxDcaXiDaughters = 0.3;
 
@@ -1838,7 +1840,8 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.minDcaV0 = 0.1;
   tReturnParams.minInvMassV0 = LambdaMass-0.005;
   tReturnParams.maxInvMassV0 = LambdaMass+0.005;
-  tReturnParams.minCosPointingAngleV0 = 0.998;
+  tReturnParams.minCosPointingAngleV0 = 0.;  //TODO was 0.998, might need to revert back
+                                             //changed because of new minCosPointingAngleV0toXi
   tReturnParams.etaV0 = 0.8;
   tReturnParams.minPtV0 = 0.4;
   tReturnParams.maxPtV0 = 100.;
@@ -1880,6 +1883,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
 
   tReturnParams.maxDecayLengthXi = 100.;
   tReturnParams.minCosPointingAngleXi = 0.9992;
+  tReturnParams.minCosPointingAngleV0toXi = 0.9993;
   tReturnParams.maxDcaXi = 100.;
   tReturnParams.maxDcaXiDaughters = 0.3;
 
@@ -1893,7 +1897,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.minDcaV0 = 0.1;
   tReturnParams.minInvMassV0 = LambdaMass-0.005;
   tReturnParams.maxInvMassV0 = LambdaMass+0.005;
-  tReturnParams.minCosPointingAngleV0 = 0.998;
+  tReturnParams.minCosPointingAngleV0 = 0.;  //TODO was 0.998, might need to revert back
+                                             //changed because of new minCosPointingAngleV0toXi
   tReturnParams.etaV0 = 0.8;
   tReturnParams.minPtV0 = 0.4;
   tReturnParams.maxPtV0 = 100.;

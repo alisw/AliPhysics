@@ -1,5 +1,7 @@
 AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
-							     TString  fListName                = "pPbCorrelations",
+							     TString  fListName                = "pPbCorrelations_1",
+							     TString  fListName1 ="Corr_1",
+							     TString  fListName2 ="QA_1",
 							     TString  fCollisiontype			 = "pPb",
 							     TString anamode="TPCTPC",
 							     TString anacent="V0A",
@@ -62,8 +64,8 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 	
 	AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 	AliAnalysisDataContainer *coutput = mgr->CreateContainer(fListName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);	
-	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(output1name, TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
-	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(output2name, TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
+	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(fListName1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
+	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(fListName2.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
 	//____________________________________________//
 	mgr->ConnectInput(myTask,0,cinput);	
 	mgr->ConnectOutput(myTask,1,coutput);

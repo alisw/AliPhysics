@@ -17,10 +17,13 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
+#include <vector>
 
 class TH1D;
 class TH2D;
 class TH1F;
+class TCanvas;
+class AliHFMultiTrials;
 
 class AliDJetVReader;
 
@@ -91,7 +94,7 @@ public:
 
   static void FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType = "DoubleGaus");
 
-  Bool_t RunMultiTrial();
+  AliHFMultiTrials* RunMultiTrial();
   Bool_t CombineMultiTrialOutcomes();
 
   Bool_t ExtractInputMassPlot();
@@ -99,6 +102,8 @@ public:
   Bool_t EvaluateUncertainty();
   Bool_t EvaluateUncertaintyEffScale();
   Bool_t EvaluateUncertaintySideband();
+
+  Bool_t Success() const { return fSuccess; }
 
   Bool_t GenerateJetPtSpectrum(TH2* hInvMassJetPt, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetpt, TH1* hjetpt_s, TH1* hjetpt_s1, TH1* hjetpt_s2);
 
@@ -168,6 +173,11 @@ protected:
   TH1F             **fJetSpectrSBVars            ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
   TH1F              *fJetSpectrSBDef             ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
   TH1F             **fJetPtBinYieldDistribution  ; //!<!Array of histograms with yield distributions from the trials for each pT(jet)
+
+  Bool_t             fSuccess                    ; //!<!Status of the last run
+
+  std::vector<TCanvas*>
+                     fCanvases                   ; //!<!Canvases created by this class
 
 private:
   ClassDef(AliDJetRawYieldUncertainty,1);

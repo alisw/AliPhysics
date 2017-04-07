@@ -106,6 +106,7 @@ public:
 
   //!!!!!!!!!!! new below 1.09.2015
   void SetCosPointingAngleXi(double x);
+  void SetCosPointingAngleV0toXi(double x);
   void SetPhiXi(double x);
   void SetEtaXi(double x);
 
@@ -133,6 +134,7 @@ public:
 
 
   double CosPointingAngleXi() const;
+  double CosPointingAngleV0toXi() const;
   double EtaXi() const;
   double PhiXi() const;
 
@@ -201,6 +203,9 @@ protected:
 
   //!!!!!!!!! new below 1.09.2015
   double fCosPointingAngleXi; // Cosine of Xi pointing angle
+  double fCosPointingAngleV0toXi; //Cosing of V0 pointing angle to Xi decay vertex 
+    //AliFemtoV0 has fCosPointingAngle, but this is the pointing angle to the primary vertex.
+    //What is more important here is the V0 pointing angle to the Xi decay vertex
   double fPhiXi;  //Phi angle of Xi
   double fEtaXi;
 
@@ -308,6 +313,7 @@ inline void AliFemtoXi::SetdedxBac(float x){fDedxBachelor=x;}
 
 //!!!!!!!!! new below 1.09.2015
 inline void AliFemtoXi::SetCosPointingAngleXi(double x) {fCosPointingAngleXi = x;}
+inline void AliFemtoXi::SetCosPointingAngleV0toXi(double x) {fCosPointingAngleV0toXi = x;}
 inline void AliFemtoXi::SetPhiXi(double x) {fPhiXi = x;}
 inline void AliFemtoXi::SetEtaXi(double x) {fEtaXi = x;}
 
@@ -333,6 +339,7 @@ inline void AliFemtoXi::SetTOFKaonTimeBac(double x) {fTOFKaonTimeBac = x;}
 inline void AliFemtoXi::SetChargeXi(int x) {fCharge = x;}
 
 inline double AliFemtoXi::CosPointingAngleXi() const {return fCosPointingAngleXi;}
+inline double AliFemtoXi::CosPointingAngleV0toXi() const {return fCosPointingAngleV0toXi;}
 inline double AliFemtoXi::EtaXi() const {return fEtaXi;}
 inline double AliFemtoXi::PhiXi() const {return fPhiXi;}
 

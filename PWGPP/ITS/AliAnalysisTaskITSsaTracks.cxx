@@ -6,7 +6,6 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliTriggerConfiguration.h"
-#include "AliStack.h"
 #include "AliPID.h"
 #include "AliCentrality.h"
 #include "AliITSPIDResponse.h"
@@ -555,7 +554,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     }
   }
 
-  AliStack* stack=0;
+  AliMCEvent* mcEvent = 0x0;
 
   if(fReadMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -563,14 +562,9 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       Printf("ERROR: Could not retrieve MC event handler");
       return;
     }
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
-    stack = mcEvent->Stack();
-    if (!stack) {
-      Printf("ERROR: stack not available");
       return;
     }
   }
@@ -714,7 +708,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     Float_t etagen=-999.;
     Float_t phigen=-999.;
     if(fReadMC){
-      TParticle* part = stack->Particle(TMath::Abs(trlabel));
+      TParticle* part = ((AliMCParticle*)mcEvent->GetTrack(TMath::Abs(trlabel)))->Particle();
       ptgen=part->Pt();
       //     pgen=part->P();
       pxgen=part->Px();
@@ -837,7 +831,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     Int_t hadronSpecie=-1;
     if(fReadMC && fUseMCId){
       if(trlabel>=0){
-	TParticle* part = stack->Particle(trlabel);
+	TParticle* part = ((AliMCParticle*)mcEvent->GetTrack(trlabel))->Particle();
 	Int_t pdg=TMath::Abs(part->GetPdgCode());
 	if(pdg==211) hadronSpecie=kPion;
 	else if(pdg==321) hadronSpecie=kKaon;
@@ -889,7 +883,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
 	
       if(fReadMC){  
 	if(trlabel>=0){
-	  TParticle* part = stack->Particle(trlabel);
+	  TParticle* part =  ((AliMCParticle*)mcEvent->GetTrack(trlabel))->Particle();
 	  ptgen=part->Pt();
 	  Float_t invpttrack=track->OneOverPt();
 	  Float_t invptgen=0.;

@@ -610,6 +610,7 @@ void SummarizeLogs(const char * logTreeFile="log.tree"){
   Double_t minY=grAll->GetY()[0], maxY=grAll->GetY()[0];
 
   for (Int_t igr=0; igr<6; igr++){
+    if ( graphs[igr]==NULL) continue;
     Double_t gmin=TMath::MinElement(graphs[igr]->GetN(),graphs[igr]->GetY());
     Double_t gmax=TMath::MaxElement(graphs[igr]->GetN(),graphs[igr]->GetY());
     if (minY>gmin) minY=gmin;
@@ -625,16 +626,36 @@ void SummarizeLogs(const char * logTreeFile="log.tree"){
   legend->SetBorderSize(0);
   grLogbook->GetYaxis()->SetTitle("# Events");
   grLogbook->GetXaxis()->SetTitle("run");
-  grLogbook->Draw("alp");   grLogbookTPC->Draw("lp"); grAll->Draw("lp"); grHighPt->Draw("lp");   grV0s->Draw("lp"); grMult->Draw("lp");
+  for (Int_t igr=0; igr<6; igr++){
+    if ( graphs[igr]==NULL) continue;
+    if (igr==0) graphs[igr]->Draw("alp");
+    graphs[igr]->Draw("lp");
+  }
   legend->AddEntry(grLogbook,"Logbook #totalEventsPhysics","p");
   legend->AddEntry(grLogbookTPC,"TPC #totalEventsPhysics","p");
   legend->AddEntry(grAll,"ESD. #Events processed ","p");
   legend->AddEntry(grHighPt,"# High pt x 100","p");
   legend->AddEntry(grV0s,"# V0s x 100","p");
-  legend->AddEntry(grMult,"#High mult x 100","p");
+  if (grMult) legend->AddEntry(grMult,"#High mult x 100","p");
+  //
   legend->Draw();
   canvasStat->SaveAs("makeOfflineTriggerListEventSummary.png");
   canvasStat->SaveAs("makeOfflineTriggerListEventSummary.pdf");
+  // make period counter summary
+  gStyle->SetOptStat(0);
+  logTree->SetMarkerStyle(21);
+  logTree->Draw("key","( (strstr(key,\"TriggerHighPt.NEventsAll\")>0)||(strstr(key,\"elected\")>0))*value/1000000.");
+  logTree->GetHistogram()->GetXaxis()->SetTitle("Trigger");
+  logTree->GetHistogram()->GetYaxis()->SetTitle("#Events/1000000");
+  logTree->GetHistogram()->Draw("hist TEXT0");
+  canvasStat->SaveAs("numberOfEventsTriggered.png");
+  // make period fraction summary
+  logTree->GetHistogram()->Scale(1/logTree->GetHistogram()->GetBinContent(1));
+  logTree->GetHistogram()->GetXaxis()->SetRangeUser(1,10000);
+  logTree->GetHistogram()->GetYaxis()->SetTitle("fraction");
+  logTree->GetHistogram()->Draw("hist TEXT0");
+  canvasStat->SaveAs("fractionOfEventsTriggered.png");
+
 }
 
 
