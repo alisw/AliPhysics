@@ -1217,7 +1217,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kKinkIndex0]    = kinkIndex;
 
   Double_t d0z0[2]={-999.0,-999.0};
-  Float_t dcaRes[3] = {-999.,-999.,-999.};
+  Double_t dcaRes[3] = {-999.,-999.,-999.};
   if(Req(kImpactParXY) || Req(kImpactParZ) || Req(kImpactParXYsigma) || Req(kImpactParZsigma) ) GetDCA(particle, d0z0, dcaRes);
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
