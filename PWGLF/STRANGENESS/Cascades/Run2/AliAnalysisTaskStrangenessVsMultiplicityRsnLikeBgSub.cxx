@@ -2016,6 +2016,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
             }
             //========================================================================
             
+            //========================================================================
+            //Setting up: Variable BB CosPA
+            Float_t lBBCosPACut = lCascadeResult -> GetCutBachBaryonCosPA();
+            Float_t lVarBBCosPApar[5];
+            lVarBBCosPApar[0] = lCascadeResult->GetCutVarBBCosPAExp0Const();
+            lVarBBCosPApar[1] = lCascadeResult->GetCutVarBBCosPAExp0Slope();
+            lVarBBCosPApar[2] = lCascadeResult->GetCutVarBBCosPAExp1Const();
+            lVarBBCosPApar[3] = lCascadeResult->GetCutVarBBCosPAExp1Slope();
+            lVarBBCosPApar[4] = lCascadeResult->GetCutVarBBCosPAConst();
+            Float_t lVarBBCosPA = TMath::Cos(
+                                             lVarBBCosPApar[0]*TMath::Exp(lVarBBCosPApar[1]*fTreeCascVarPt) +
+                                             lVarBBCosPApar[2]*TMath::Exp(lVarBBCosPApar[3]*fTreeCascVarPt) +
+                                             lVarBBCosPApar[4]);
+            if( lCascadeResult->GetCutUseVarBBCosPA() ){
+                //Only use if looser than the non-variable cut (WARNING: BEWARE INVERSE LOGIC)
+                if( lVarBBCosPA > lBBCosPACut ) lBBCosPACut = lVarBBCosPA;
+            }
+            //========================================================================
+            
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiMinus     ){
                 lCharge  = -1;
                 if ( lCascadeResult->GetSwapBachelorCharge() ) lCharge = +1;
@@ -2163,7 +2182,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
                 
                 //Check 7: Experimental Bach Baryon CosPA
-                ( fTreeCascVarWrongCosPA < lCascadeResult->GetCutBachBaryonCosPA()  ) &&
+                ( fTreeCascVarWrongCosPA < lBBCosPACut  ) &&
                 
                 //Check 8: Min/Max V0 Lifetime cut
                 ( ( fTreeCascVarV0Lifetime > lCascadeResult->GetCutMinV0Lifetime() ) &&
