@@ -269,6 +269,7 @@ fUseBCMod(kFALSE),
 fBCMod4(2),
 fCutOnPhi(kFALSE),
 fCalibfilePath(""),
+fHcalib3(NULL),
 //
 fWeight(1.),
 fPPVsMultUtils(new AliPPVsMultUtils())
@@ -318,6 +319,7 @@ AliAnalysisTaskdNdEtapp13::~AliAnalysisTaskdNdEtapp13()
   delete fHistosTrRcblSec;
   delete fHistosCustom;
   //
+  delete fHcalib3;
 }
 
 //________________________________________________________________________
@@ -459,6 +461,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
       if (particle->Charge() == 0)
       continue;
       if (TMath::Abs(particle->Eta()) < 1.)
+      //printf(" eta =  %f \n", particle->Eta());
       totalNch++;
     }
     if (totalNch < 1) return;
@@ -468,6 +471,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
     if (TMath::Abs(mult->GetEta(i)) < 1.) {
       totalNtr++;
+
       inelgt0 = kTRUE;
     }
   }
@@ -591,7 +595,7 @@ fIsSelected = trg & fTrigSel;
 if(fIsSelected) hstat->Fill(kEvAfterPhysSel, fWeight);
 fIsSelected &= fPPVsMultUtils->IsNotPileupSPDInMultBins(esd);
 //fIsSelected &= isPileupfromSPD;
-fIsSelected &= fPPVsMultUtils->IsINELgtZERO(esd);
+//fIsSelected &= fPPVsMultUtils->IsINELgtZERO(esd);
 if(fIsSelected) hstat->Fill(kEvAfterPileUp);
 
 
@@ -648,47 +652,51 @@ static Bool_t skipCentrality = (fUseCentralityVar == "MB"); // If the centrality
 Double_t centPercentile = -1;
 if(!skipCentrality) {
   if (fUseMC) {
-    TFile *mcCalib1 = NULL;
-
-    if (hPythia) {
-      TString str1 = handler->GetTree()->GetCurrentFile()->GetName();
-
-      if (str1.Contains("LHC15g3c3")) {
-        printf("loading PYTHIA6 Perugia-0 V0M calibration (LHC15g3c3)\n");
-
-        if (TString(fCalibfilePath).BeginsWith("alien:")) {
-          TGrid::Connect("alien:");
-          mcCalib1 = TFile::Open(fCalibfilePath);
-        }
-        else    mcCalib1 = TFile::Open(fCalibfilePath);
-
-      }
-      else if (str1.Contains("LHC15g3a3")) {
-        printf("loading PYTHIA8 Monash V0M calibration (LHC15g3a3)\n");
-
-        if (TString(fCalibfilePath).BeginsWith("alien:")) {
-          TGrid::Connect("alien:");
-          mcCalib1 = TFile::Open(fCalibfilePath);
-        }
-        else   mcCalib1 = TFile::Open(fCalibfilePath);
-      }
-    }
-
-    else {
-      printf("loading EPOS-LHC V0M calibration (LHC16d3)\n");
-      if (TString(fCalibfilePath).BeginsWith("alien:")) {
-        TGrid::Connect("alien:");
-        mcCalib1 = TFile::Open(fCalibfilePath);
-      }
-      else    mcCalib1 = TFile::Open(fCalibfilePath);
-    }
-
-    hMCcalib1 = (TH1 *)mcCalib1->Get("h3");
+    // TFile *mcCalib1 = NULL;
+    //
+    // if (hPythia) {
+    //   TString str1 = handler->GetTree()->GetCurrentFile()->GetName();
+    //
+    //   if (str1.Contains("LHC15g3c3")) {
+    //     printf("loading PYTHIA6 Perugia-0 V0M calibration (LHC15g3c3)\n");
+    //
+    //     if (TString(fCalibfilePath).BeginsWith("alien:")) {
+    //       TGrid::Connect("alien:");
+    //       mcCalib1 = TFile::Open(fCalibfilePath);
+    //     }
+    //     else    mcCalib1 = TFile::Open(fCalibfilePath);
+    //
+    //   }
+    //   else if (str1.Contains("LHC15g3a3")) {
+    //     printf("loading PYTHIA8 Monash V0M calibration (LHC15g3a3)\n");
+    //
+    //     if (TString(fCalibfilePath).BeginsWith("alien:")) {
+    //       TGrid::Connect("alien:");
+    //       mcCalib1 = TFile::Open(fCalibfilePath);
+    //     }
+    //     else   mcCalib1 = TFile::Open(fCalibfilePath);
+    //   }
+    // }
+    //
+    // else {
+    //   printf("loading EPOS-LHC V0M calibration (LHC16d3)\n");
+    //   if (TString(fCalibfilePath).BeginsWith("alien:")) {
+    //     TGrid::Connect("alien:");
+    //     mcCalib1 = TFile::Open(fCalibfilePath);
+    //   }
+    //   else    mcCalib1 = TFile::Open(fCalibfilePath);
+    // }
+    //
+    // hMCcalib1 = (TH1 *)mcCalib1->Get("h3");
 
     Float_t multV01=0;
     AliESDVZERO* esdV01 = esd->GetVZEROData();
     multV01 = esdV01->GetMTotV0A()+esdV01->GetMTotV0C();
-    centPercentile = hMCcalib1->Interpolate(multV01);
+    //    centPercentile = hMCcalib1->Interpolate(multV01);
+
+    centPercentile = fHcalib3->Interpolate(multV01);
+    //  printf(" centPercentile =  %f \n", centPercentile);
+
     fCurrCentBin = GetCentralityBin(centPercentile);
   }
   else  { centPercentile = MultSelection->GetMultiplicityPercentile(fUseCentralityVar);
@@ -1992,4 +2000,17 @@ Bool_t AliAnalysisTaskdNdEtapp13::FillHistosSet(TObjArray* histos, double eta,
             if (i<nbins) AliInfoF("CentBin# %.2f-%.2f",arr[i],arr[i+1]);
           }
           //
+        }
+
+        //______________________________________________
+        void AliAnalysisTaskdNdEtapp13::SetCalibHisto(TH1D *calibhisto)
+        {
+          // set user calibhisto
+
+          fHcalib3 = (TH1D*)calibhisto->Clone();
+
+          if (!fHcalib3) {
+            AliError(Form("No calibration histo found")) ;
+          }
+
         }

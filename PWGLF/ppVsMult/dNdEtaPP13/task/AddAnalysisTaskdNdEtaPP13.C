@@ -22,40 +22,40 @@ const Double_t centBinsMB[] = {0., 100.};
 
 AliAnalysisTaskdNdEtapp13 *
 AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
-                        const Char_t *listname = "clist",
-                        //
-                        Float_t etaMin     =-5,          // min eta range to fill in histos
-                        Float_t etaMax     = 5,          // max eta range to fill in histos
-                        Float_t zMin       = -10,         // process events with Z vertex min
-                        Float_t zMax       =  10,         //                     max positions
-                        const char* useCentVar = "V0M",          // centrality variable to use
-                        //
-                        Float_t cutSigNStd  = 1.5,        // cut on weighed distance used to extract signal
-                        Float_t cutSigDPhiS = -1,        // cut on dPhi-phiBent used to extract signal (if negative -> dphi*sqrt(cutSigNStd)
-                        Bool_t  useMC  = kTRUE,          // fill MC info
-                        //
-                        Bool_t doRec  = kFALSE,          // fill data histos from new reco
-                        Bool_t doInj  = kFALSE,          // create Inj. bg
-                        Bool_t doRot  = kFALSE,          // create Rot. bg
-                        //
-                        // specific parameters for reconstruction
-                        float  phiRot      = 3.14159e+00, // angle for bg. generation with rotation
-                        float  injScale    = 1.,//0.7,    // inject injScale*Ncl(Lr1/Lr2) hits
-                        Bool_t scaleDTheta = kTRUE,       // scale dTheta by 1/sin^2(theta) in trackleting
-                        float  nStdDev     = 25.,         // number of st.dev. for tracklet cut to keep
-                        float  dphi        = 0.08,        // dphi window (sigma of tracklet cut)
-                        float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used with additional cut on |dthetaX|, apart from w.distance
-                        float  phishift    = 0.0045,      // bending shift
-                        Bool_t remOvl      = kTRUE,
-                        float  ovlPhiCut   = 0.005,
-                        float  ovlZetaCut  = 0.05,
-                        Bool_t checkReconstructables = kFALSE,
-                        UInt_t trigSel = AliVEvent::kINT7,//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
-                        Bool_t ridgeBins      = kFALSE,             // VOM percentiles with ridge binning
-                        Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
-                        Int_t BCmod4      = 2,              // set Bunch crossing mode 4
-                       Bool_t phicuts      = kFALSE       // set cut on affected phi regions
-
+const Char_t *listname = "clist",
+//
+Float_t etaMin     =-5,          // min eta range to fill in histos
+Float_t etaMax     = 5,          // max eta range to fill in histos
+Float_t zMin       = -10,         // process events with Z vertex min
+Float_t zMax       =  10,         //                     max positions
+const char* useCentVar = "V0M",          // centrality variable to use
+//
+Float_t cutSigNStd  = 1.5,        // cut on weighed distance used to extract signal
+Float_t cutSigDPhiS = -1,        // cut on dPhi-phiBent used to extract signal (if negative -> dphi*sqrt(cutSigNStd)
+Bool_t  useMC  = kTRUE,          // fill MC info
+//
+Bool_t doRec  = kFALSE,          // fill data histos from new reco
+Bool_t doInj  = kFALSE,          // create Inj. bg
+Bool_t doRot  = kFALSE,          // create Rot. bg
+//
+// specific parameters for reconstruction
+float  phiRot      = 3.14159e+00, // angle for bg. generation with rotation
+float  injScale    = 1.,//0.7,    // inject injScale*Ncl(Lr1/Lr2) hits
+Bool_t scaleDTheta = kTRUE,       // scale dTheta by 1/sin^2(theta) in trackleting
+float  nStdDev     = 25.,         // number of st.dev. for tracklet cut to keep
+float  dphi        = 0.08,        // dphi window (sigma of tracklet cut)
+float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used with additional cut on |dthetaX|, apart from w.distance
+  float  phishift    = 0.0045,      // bending shift
+  Bool_t remOvl      = kTRUE,
+  float  ovlPhiCut   = 0.005,
+  float  ovlZetaCut  = 0.05,
+  Bool_t checkReconstructables = kFALSE,
+  UInt_t trigSel = AliVEvent::kINT7,//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
+  Bool_t ridgeBins      = kFALSE,             // VOM percentiles with ridge binning
+  Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
+  Int_t BCmod4      = 2,              // set Bunch crossing mode 4
+  Bool_t phicuts      = kFALSE,       // set cut on affected phi regions
+  TString calibfile = "$ALICE_PHYSICS/PWGLF/ppVsMult/dNdEtaPP13/task/V0M_bins_LHC15g3a3.root"
 
 )
 {
@@ -68,29 +68,29 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
   /* check analysis manager */
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-      Error("", "cannot get analysis manager");
-      return NULL;
+    Error("", "cannot get analysis manager");
+    return NULL;
   }
 
   /* check input event handler */
   if (!mgr->GetInputEventHandler()) {
-      Error("", "cannot get input event handler");
-      return NULL;
+    Error("", "cannot get input event handler");
+    return NULL;
   }
 
   /* get common input data container */
   AliAnalysisDataContainer *inputc = mgr->GetCommonInputContainer();
   if (!inputc) {
-      Error("", "cannot get common input container");
-      return NULL;
+    Error("", "cannot get common input container");
+    return NULL;
   }
 
   /* create output data container */
   AliAnalysisDataContainer *outputc1 = mgr->CreateContainer(listname, TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
 
   if (!outputc1) {
-      Error("", "cannot create output container \"clist\"");
-      return NULL;
+    Error("", "cannot create output container \"clist\"");
+    return NULL;
   }
 
 
@@ -110,9 +110,14 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
   //__________________________________________________________________
 
   //
-  task->SetUseCentralityVar(useCentVar);
 
-//  task->SetCalibfilePath("alien:///alice/cern.ch/user/p/ppalni/V0M_bins_LHC15g3a3.root");
+  TFile *fcalib = TFile::Open(calibfile);
+  TH1D * hMCcalib2 = (TH1D*)fcalib->Get("h3") ;
+
+  task->SetCalibfilePath(calibfile);
+  task->SetCalibHisto(hMCcalib2);
+
+  task->SetUseCentralityVar(useCentVar);
 
   const Double_t *centBins = NULL;
   //const Float_t *centBins = NULL;

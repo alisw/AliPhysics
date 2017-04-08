@@ -227,6 +227,9 @@ enum {kDummyBin,
   void       SetBCMod(Int_t mod=2)        {fBCMod4 = mod;}
   void       SetCutOnPhi(Bool_t p=kFALSE)   {fCutOnPhi = p;}
   void SetCalibfilePath(TString CalibfilePath) {fCalibfilePath=CalibfilePath;}
+  void SetCalibHisto(TH1D *calibhisto=0x0);
+
+
 
   //
 protected:
@@ -263,6 +266,8 @@ protected:
   TObjArray*   fHistosTrRcblPrim;          //! Primary Reconstructable
   TObjArray*   fHistosTrRcblSec;           //! Secondary Reconstructable
   TObjArray*   fHistosCustom;              //! custom histos
+  TH1D*        fHcalib3;
+
   //
   // Settings for the reconstruction
   // tracklet reco settings
