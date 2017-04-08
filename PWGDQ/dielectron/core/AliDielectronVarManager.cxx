@@ -102,6 +102,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
   {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},
+  {"ImpactParXYsigma",       "#it{dca}_{xy}",                                      "(#sigma)"},
+  {"ImpactParZsigma",        "#it{dca}_{z}",                                       "(#sigma)"},
   {"TrackLength",            "#it{l}_{track}",                                     "(cm)"},
   {"DistPrimToSecVtxXYMC",   "distance prim vtx to sec vtx in XY",                 "(cm)"},
   {"DistPrimToSecVtxZMC",    "distance prim vtx to sec vtx inZ",                   "(cm)"},
