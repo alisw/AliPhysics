@@ -595,7 +595,7 @@ fIsSelected = trg & fTrigSel;
 if(fIsSelected) hstat->Fill(kEvAfterPhysSel, fWeight);
 fIsSelected &= fPPVsMultUtils->IsNotPileupSPDInMultBins(esd);
 //fIsSelected &= isPileupfromSPD;
-//fIsSelected &= fPPVsMultUtils->IsINELgtZERO(esd);
+fIsSelected &= fPPVsMultUtils->IsINELgtZERO(esd);
 if(fIsSelected) hstat->Fill(kEvAfterPileUp);
 
 
