@@ -6117,10 +6117,10 @@ void AliAnaParticleIsolation::InitParameters()
   fBkgBinLimit[10] = 10.0; fBkgBinLimit[11] = 100.;
   for(Int_t ibin = fNBkgBin+1; ibin < 20; ibin++) fBkgBinLimit[ibin] = 00.0;
 
-  fNPtTrigBin = 6;
-  fPtTrigBinLimit[ 0] =  8; fPtTrigBinLimit[ 1] = 10; fPtTrigBinLimit[ 2] = 12; fPtTrigBinLimit[ 3] = 14; fPtTrigBinLimit[ 4] = 16;
-  fPtTrigBinLimit[ 5] = 20; fPtTrigBinLimit[ 6] = 25; ;
-  for(Int_t ibin = fNPtTrigBin+1; ibin < 20; ibin++) fPtTrigBinLimit[ibin] = 00.0;
+  fNPtTrigBin = 7;
+  fPtTrigBinLimit[ 0] =  8; fPtTrigBinLimit[ 1] = 10; fPtTrigBinLimit[ 2] = 12; fPtTrigBinLimit[ 3] = 16; fPtTrigBinLimit[ 4] = 20;
+  fPtTrigBinLimit[ 5] = 25; fPtTrigBinLimit[ 6] = 30; fPtTrigBinLimit[ 7] = 50;
+  for(Int_t ibin = fNPtTrigBin+1; ibin < 20; ibin++) fPtTrigBinLimit[ibin] = 10000.0;
   
   fNPtCutsInCone = 20;
   for(Int_t i = 0; i < 20; i++) fMinPtCutInCone[i] = 0.2+i*0.1;
