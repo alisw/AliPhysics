@@ -92,7 +92,7 @@ class AliCFContainer;
 //=================
 // - MAIN FUNCTION
 //=================
-void PostProcessQAMultistrange(Int_t   collidingsystem = 0,                             // 0) PbPb  1) pp/pPb
+void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                             // 0) PbPb  1) pp/pPb
                                Bool_t  isMC            = kFALSE,                        // kTRUE-->MC and kFALSE-->Exp.
                                Char_t *fileDir         = ".",                           // Input file directory
                                Char_t *output          = "pdf"                          // "eps", "png" or "pdf"
@@ -453,7 +453,7 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 0,                     
      if      (output == "png") c4->SaveAs("LF_QAanalysis_Multistrange_page4.png");
      else if (output == "eps") c4->SaveAs("LF_QAanalysis_Multistrange_page4.eps");
      else if (output == "pdf" && isMC)  c4->SaveAs("LF_QAanalysis_Multistrange.pdf");
-     else if (output == "pdf" && !isMC) c4->SaveAs("LF_QAanalysis_Multistrange.pdf");
+     else if (output == "pdf" && !isMC) c4->SaveAs("LF_QAanalysis_Multistrange.pdf)");
 
 
      //_____________________________________________
