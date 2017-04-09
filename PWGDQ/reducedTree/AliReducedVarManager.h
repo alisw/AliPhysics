@@ -199,6 +199,7 @@ class AliReducedVarManager : public TObject {
     kOnlineTriggerFired2,  // online trigger if fired, -1 if not fired
     kIsPhysicsSelection,    // physics selection 
     kIsSPDPileup,          // whether is SPD pileup
+    kIsSPDPileup5,          // whether is SPD pileup (5 vertex contributors)
     kIsSPDPileupMultBins,  // whether is SPD pileup in multiplicity bins
     kNSPDpileups,         // number of pileup events from SPD
     kNTrackPileups,       // number of pileup events from tracks
@@ -276,7 +277,11 @@ class AliReducedVarManager : public TObject {
     kSPDntracklets,     // SPD number of tracklets in |eta|<1.0                 
     kSPDntracklets08,     // SPD number of tracklets in |eta|<0.8
     kSPDntracklets16,     // SPD number of tracklets in |eta|<1.6
-    kSPDntrackletsCorr, // SPD number of tracklets in |eta|<1.0                 
+    kSPDntrackletsCorr, // SPD number of tracklets in |eta|<1.0, corrected for detector effects
+    kSPDntrackletsCorrSmear, // SPD number of tracklets in |eta|<1.0, corrected for detector effects, Poisson smeared
+    kSPDntrackletsOuter,     // SPD number of tracklets in outer eta region
+    kSPDntrackletsOuterCorr,     // SPD number of tracklets in outer eta region, corrected for detector effects
+    kSPDntrackletsOuterCorrSmear,     // SPD number of tracklets in outer eta region, corrected for detector effects, Poisson smeared
     kSPDntrackletsEta,  // SPD number of tracklets in -1.6+0.1*i < eta < -1.6+0.1*(i+1)
     kSPDFiredChips=kSPDntrackletsEta+32,   // SPD fired chips in first and second layer
     kITSnClusters=kSPDFiredChips+2,        // number of ITS clusters in each layer
@@ -286,6 +291,8 @@ class AliReducedVarManager : public TObject {
     kVZEROATotalMult,   // total multiplicity of VZEROA                         
     kVZEROCTotalMult,   // total multiplicity of VZEROC                         
     kVZEROTotalMult,    // total multiplicity of VZERO                          
+    kVZEROTotalMultCorr,    // total multiplicity of VZERO, corrected for detector effects
+    kVZEROTotalMultCorrSmear,    // total multiplicity of VZERO, corrected for detector effects, Poisson smeared
     kVZEROAemptyChannels,  // Number of empty VZERO channels in A side          
     kVZEROCemptyChannels,  // Number of empty VZERO channels in C side          
     kVZEROChannelMult,                        // VZERO multiplicity per channel           
@@ -571,7 +578,7 @@ class AliReducedVarManager : public TObject {
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   static void SetRunNumbers( TString runNumbers );
-  static void SetTrackletsProfile( TProfile * profileTracklets );
+  static void SetMultiplicityProfile( TH1* profile, Int_t estimator = 0 );
   static void SetVZEROCalibrationPath(const Char_t* path);
   static void SetCalibrateVZEROqVector(Bool_t option);
   static void SetRecenterVZEROqVector(Bool_t option);
@@ -608,8 +615,8 @@ class AliReducedVarManager : public TObject {
   static TH1I* fgRunTimeEnd;                  // run stop time, GRP/GRP/Data::GetTimeEnd()
   static std::vector<Int_t> fgRunNumbers;     // vector with run numbers (for histograms vs. run number)
   static Int_t fgRunID;                       // run ID
-  static TProfile* fgAvgSpdTrackletsVertex; // average number of SPD tracklets vs. z-vertex
-  static Double_t fgRefMult;                  // reference multiplicity for z-vertex correction
+  static TH1* fgAvgMultVsVertex[3];           // average multiplicity vs. z-vertex position
+  static Double_t fgRefMult[3];                  // reference multiplicity for z-vertex correction
   static TString fgVZEROCalibrationPath;       // path to the VZERO calibration histograms
   static TProfile2D* fgAvgVZEROChannelMult[64];       // average multiplicity in VZERO channels vs (vtxZ,centSPD)
   static TProfile2D* fgVZEROqVecRecentering[4];       // (vtxZ,centSPD) maps of the VZERO A and C recentering Qvector offsets
