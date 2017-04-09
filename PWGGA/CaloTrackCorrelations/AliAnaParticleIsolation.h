@@ -84,7 +84,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillAcceptanceHistograms();
  
   void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
-                                                             Float_t coneptsum, Float_t coneleadpt, Int_t mcIndex) ;
+                                                             Float_t coneptsum,  Float_t coneptsumTrack, Float_t coneptsumCluster, 
+                                                             Float_t coneleadpt, Int_t mcIndex) ;
   
   Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
   
@@ -639,30 +640,51 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
     
   /// Candidate pt bin, distribution of cone sum particle pt.
   TH1F **  fhPtTrigBinSumPtCone  ;                     //![fNPtTrigBin]
+  /// Candidate pt bin, distribution of cone sum track pt.
+  TH1F **  fhPtTrigBinSumPtTrackCone  ;                //![fNPtTrigBin]
+  /// Candidate pt bin, distribution of cone sum cluster pt.
+  TH1F **  fhPtTrigBinSumPtClusterCone  ;              //![fNPtTrigBin]
 
   /// Candidate pt bin, distribution of cone leading particle pt, per MC particle.
   TH1F **  fhPtTrigBinPtLeadConeMC ;                   //![fNPtTrigBin*fgkNmcTypes]
     
   /// Candidate pt bin, distribution of cone sum particle pt, per MC particle.
   TH1F **  fhPtTrigBinSumPtConeMC  ;                   //![fNPtTrigBin*fgkNmcTypes]
+  /// Candidate pt bin, distribution of cone sum track pt, per MC particle.
+  TH1F **  fhPtTrigBinSumPtTrackConeMC  ;              //![fNPtTrigBin*fgkNmcTypes]
+  /// Candidate pt bin, distribution of cone sum cluster pt, per MC particle.
+  TH1F **  fhPtTrigBinSumPtClusterConeMC  ;            //![fNPtTrigBin*fgkNmcTypes]
   
   /// Candidate pt bin, distribution of cone leading particle pt, tagged as decay.
   TH1F **  fhPtTrigBinPtLeadConeDecay ;                //![fNBkgBin*fNDecayBits]
   
   /// Candidate pt bin, distribution of cone sum particle pt, tagged as decay.
   TH1F **  fhPtTrigBinSumPtConeDecay  ;                //![fNBkgBin*fNDecayBits]
+  /// Candidate pt bin, distribution of cone sum track pt, tagged as decay.
+  TH1F **  fhPtTrigBinSumPtTrackConeDecay  ;           //![fNBkgBin*fNDecayBits]
+  /// Candidate pt bin, distribution of cone sum cluster pt, tagged as decay.
+  TH1F **  fhPtTrigBinSumPtClusterConeDecay  ;         //![fNBkgBin*fNDecayBits]
 
   /// Candidate shower shape distribution depending vs cone leading particle in pT trigger bins.
   TH2F **  fhPtTrigBinLambda0vsPtLeadCone ;            //![fNPtTrigBin]
     
   /// Candidate shower shape distribution depending vs of cone sum pt in pT trigger bins.
   TH2F **  fhPtTrigBinLambda0vsSumPtCone  ;            //![fNPtTrigBin]
-    
+  /// Candidate shower shape distribution depending vs of cone sum track pt in pT trigger bins.
+  TH2F **  fhPtTrigBinLambda0vsSumPtTrackCone  ;       //![fNPtTrigBin]
+  /// Candidate shower shape distribution depending vs of cone sum cluster pt in pT trigger bins.
+  TH2F **  fhPtTrigBinLambda0vsSumPtClusterCone  ;     //![fNPtTrigBin]
+
+  
   /// Candidate shower shape distribution depending vs cone leading particle in pT trigger bins, per MC particle.
   TH2F **  fhPtTrigBinLambda0vsPtLeadConeMC ;          //![fNPtTrigBin*fgkNmcTypes]
     
   /// Candidate shower shape distribution depending vs cone sum pt in pT trigger bins, per MC particle.
   TH2F **  fhPtTrigBinLambda0vsSumPtConeMC  ;          //![fNPtTrigBin*fgkNmcTypes]
+  /// Candidate shower shape distribution depending vs cone sum pt track in pT trigger bins, per MC particle.
+  TH2F **  fhPtTrigBinLambda0vsSumPtTrackConeMC  ;     //![fNPtTrigBin*fgkNmcTypes]
+  /// Candidate shower shape distribution depending vs cone sum pt cluster in pT trigger bins, per MC particle.
+  TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMC  ;   //![fNPtTrigBin*fgkNmcTypes]
 
   // Local maxima
   TH2F *   fhNLocMax[2];                               //!<! Number of maxima in selected clusters.
