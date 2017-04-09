@@ -2397,7 +2397,13 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 //    Call BeginEvent() for optional input/output and MC services 
       if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
       if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
-      if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
+      if (fMCtruthEventHandler) {
+	fMCtruthEventHandler->BeginEvent(entry);
+	if (fInputEventHandler) {
+	  AliVEvent* inpEv = fInputEventHandler->GetEvent();
+	  if (inpEv) inpEv->AdjustMCLabels(fMCtruthEventHandler->GetEvent());
+	}
+      }
       gROOT->cd();
       if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
          AliSysInfo::AddStamp("Handlers_BeginEvent",fNcalls, 1000, 0);
@@ -2444,7 +2450,13 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    fIOTimer->Start(kTRUE);
    if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(-1);
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(-1);
-   if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(-1);
+   if (fMCtruthEventHandler) {
+     fMCtruthEventHandler->BeginEvent(-1);
+     if (fInputEventHandler) {
+       AliVEvent* inpEv = fInputEventHandler->GetEvent();
+       if (inpEv) inpEv->AdjustMCLabels(fMCtruthEventHandler->GetEvent());
+     }
+   }
    fIOTimer->Stop();
    fIOTime += fIOTimer->RealTime();
    gROOT->cd();

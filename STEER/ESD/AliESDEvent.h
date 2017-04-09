@@ -75,7 +75,7 @@ class AliESDACORDE;
 class AliESDAD;
 class AliESDHLTDecision;
 class AliESDCosmicTrack;
-
+class AliMCEvent;
 class TList;
 class TString;
 
@@ -599,6 +599,8 @@ public:
   //
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
+  void AdjustMCLabels(const AliVEvent *mctruth);
+  
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);

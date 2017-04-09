@@ -79,6 +79,7 @@
 #include "AliTriggerClass.h"
 #include "AliTriggerCluster.h"
 #include "AliEventplane.h"
+#include "AliMCEvent.h"
 
 ClassImp(AliESDEvent)
 
@@ -2599,3 +2600,120 @@ Int_t AliESDEvent::GetNumberOfTPCTracks() const
   return ntrTPC;
 }
 
+//______________________________________________________________________________
+void AliESDEvent::AdjustMCLabels(const AliVEvent *mcTruth)
+{
+  // adjust labels to account for eventual composed MC event
+  if (!mcTruth) return;
+  if (mcTruth->IsA()!=AliMCEvent::Class()) {
+    AliFatalF("Argument of type %s is expected, %s supplied",
+						   "AliMCEvent",mcTruth->IsA()->GetName());
+  }
+  AliMCEvent* mcEvent = (AliMCEvent*) mcTruth;
+  if (!mcEvent->HasSubsidiaries()) return; // no relabling needed
+
+  int lbraw,lbfix;
+  for (int itr=GetNumberOfTracks();itr--;) {
+    AliESDtrack* trc = GetTrack(itr);
+    // global label
+    lbraw = trc->GetLabel();
+    lbfix = mcEvent->Raw2MergedLabel(lbraw<0 ? -lbraw:lbraw);
+    trc->SetLabel(lbraw<0 ? -lbfix:lbfix);
+    // ITS label
+    if (trc->IsOn(AliESDtrack::kITSin)) {
+      lbraw = trc->GetITSLabel();
+      lbfix = mcEvent->Raw2MergedLabel(lbraw<0 ? -lbraw:lbraw);
+      trc->SetITSLabel(lbraw<0 ? -lbfix:lbfix);
+    }
+    // TPC label
+    if (trc->IsOn(AliESDtrack::kTPCin)) {
+      lbraw = trc->GetTPCLabel();
+      lbfix = mcEvent->Raw2MergedLabel(lbraw<0 ? -lbraw:lbraw);
+      trc->SetTPCLabel(lbraw<0 ? -lbfix:lbfix);
+    }
+    // TRD label
+    if (trc->GetTRDntracklets()) {
+      lbraw = trc->GetTRDLabel();
+      lbfix = mcEvent->Raw2MergedLabel(lbraw<0 ? -lbraw:lbraw);
+      trc->SetTRDLabel(lbraw<0 ? -lbfix:lbfix);
+    }
+  }
+  //
+  // TOF hits (-1 is dummy)
+  for (int ih=fESDTOFHits->GetEntriesFast();ih--;) {
+    AliESDTOFHit* thit = (AliESDTOFHit*)fESDTOFHits->At(ih);
+    int lbtof[3] = {-1,-1,-1};
+    for (int i=0;i<3;i++) {
+      if ( (lbtof[i] = thit->GetTOFLabel(i))<0 ) break;
+      lbtof[i] = mcEvent->Raw2MergedLabel(lbtof[i]);
+    }
+    thit->SetTOFLabel(lbtof);
+  }    
+  // MUON tracks
+  for (int itr=GetNumberOfMuonTracks();itr--;) {
+    AliESDMuonTrack* trc = GetMuonTrack(itr);
+    lbraw = trc->GetLabel();
+    lbfix = mcEvent->Raw2MergedLabel(lbraw<0 ? -lbraw:lbraw);
+    trc->SetLabel(lbraw<0 ? -lbfix:lbfix);
+  }
+  //
+  // MFT-MUON Global tracks
+  for (int itr=GetNumberOfMuonGlobalTracks();itr--;) {
+    AliESDMuonGlobalTrack* trc = GetMuonGlobalTrack(itr);
+    lbraw = trc->GetLabel();
+    lbfix = mcEvent->Raw2MergedLabel(lbraw<0 ? -lbraw:lbraw);
+    trc->SetLabel(lbraw<0 ? -lbfix:lbfix);
+  }
+  // CALO clusters
+  for (int icl=GetNumberOfCaloClusters();icl--;) {
+    AliESDCaloCluster* cl = GetCaloCluster(icl);
+    int* lbArr = cl->GetLabels();
+    if (!lbArr) continue;
+    int nlb = cl->GetNLabels();
+    for (int i=nlb;i--;) {
+      lbArr[i] = mcEvent->Raw2MergedLabel(lbArr[i]);
+    }
+  }
+  //
+  // EMCAL Cells
+  if (fEMCALCells) {
+    int ncells = fEMCALCells->GetNumberOfCells();
+    for (int i=ncells;i--;) {
+      lbraw = fEMCALCells->GetMCLabel(i);
+      if (lbraw<-1) continue;
+      fEMCALCells->SetMCLabel(i,mcEvent->Raw2MergedLabel(lbraw));
+    }
+  }
+  // PHOS Cells
+  if (fPHOSCells) {
+    int ncells = fPHOSCells->GetNumberOfCells();
+    for (int i=ncells;i--;) {
+      lbraw = fPHOSCells->GetMCLabel(i);
+      if (lbraw<-1) continue;
+      fPHOSCells->SetMCLabel(i,mcEvent->Raw2MergedLabel(lbraw));
+    }    
+  }
+  // TRD tracklets
+  for (int itr=GetNumberOfTrdTracklets();itr--;) {
+    AliESDTrdTracklet* trdTklet = GetTrdTracklet(itr);
+    lbraw = trdTklet->GetLabel();
+    if (lbraw<0) continue;
+    trdTklet->SetLabel(mcEvent->Raw2MergedLabel(lbraw));    
+  }
+  // TRD tracks
+  for (int itr=GetNumberOfTrdTracks();itr--;) {
+    AliESDTrdTrack* trdTrk = GetTrdTrack(itr);
+    lbraw = trdTrk->GetLabel();
+    if (lbraw<0) continue;
+    trdTrk->SetLabel(mcEvent->Raw2MergedLabel(lbraw));    
+  }
+  // PMD tracks
+  for (int itr=GetNumberOfPmdTracks();itr--;) {
+    AliESDPmdTrack* pmdTrk = GetPmdTrack(itr);
+    lbraw = pmdTrk->GetClusterTrackNo();
+    if (lbraw<0) continue;
+    pmdTrk->SetClusterTrackNo(mcEvent->Raw2MergedLabel(lbraw));    
+  }
+  
+  
+}

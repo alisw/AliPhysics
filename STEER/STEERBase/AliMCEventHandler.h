@@ -65,6 +65,7 @@ public:
     virtual void         SetPreReadMode(PreReadMode_t mode) {Changed(); fPreReadMode = mode;}
     virtual void         SetCacheSize(Long64_t size) {if (fCacheSize==0) fCacheSize = size;}
     //
+    AliVEvent*  GetEvent() const {return (AliVEvent*)fMCEvent;}
     AliMCEvent* MCEvent() const {return fMCEvent;}
     TTree*      TreeTR()  const {return fTreeTR;}
     TTree*      TreeK()   const {return fTreeK;}

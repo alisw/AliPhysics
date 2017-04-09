@@ -99,6 +99,8 @@ public:
     virtual Int_t     GetNumberOfV0s()       const {return -1;}
     virtual Int_t     GetNumberOfCascades()  const {return -1;}
 
+    Int_t Raw2MergedLabel(int lbRaw) const;
+  
     TParticle* ParticleFromStack(Int_t i) const;
     TParticle* Particle(int i) const;
     // Vertex
@@ -158,6 +160,8 @@ public:
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
   virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const; //RS
+
+  Bool_t HasSubsidiaries() const {return fSubsidiaryEvents!=0;}
   
 private:
     virtual void      ReorderAndExpandTreeTR();

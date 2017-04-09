@@ -1056,4 +1056,16 @@ TParticle* AliMCEvent::Particle(int i) const
   return mcpart ? mcpart->Particle() : 0;
 }
 
+Int_t AliMCEvent::Raw2MergedLabel(int lbRaw) const
+{
+  // convert raw label corresponding to stack and eventual embedded MC component to global
+  // label corresponding to MCEvent::GetTrack conventions (first all primiraies then all secondaries)
+  if (!fSubsidiaryEvents) return lbRaw;
+  int lb = lbRaw%BgLabelOffset();
+  AliMCEvent* mcev = (AliMCEvent*)fSubsidiaryEvents->At(lbRaw/BgLabelOffset());
+  int nprim = mcev->GetNumberOfPrimaries();
+  lb += lb<nprim ? mcev->GetPrimaryOffset() : mcev->GetSecondaryOffset() - nprim;
+  return lb;
+}
+
 ClassImp(AliMCEvent)
