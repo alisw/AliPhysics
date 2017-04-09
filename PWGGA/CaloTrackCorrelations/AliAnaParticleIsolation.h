@@ -686,6 +686,20 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   /// Candidate shower shape distribution depending vs cone sum pt cluster in pT trigger bins, per MC particle.
   TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMC  ;   //![fNPtTrigBin*fgkNmcTypes]
 
+  /// Candidate shower shape distribution depending vs cone sum pt in pT trigger bins, per MC particle, candidate without overlaps
+  TH2F **  fhPtTrigBinLambda0vsSumPtConeMCNoOverlap  ;          //![fNPtTrigBin*fgkNmcTypes]
+  /// Candidate shower shape distribution depending vs cone sum pt track in pT trigger bins, per MC particle,, candidate without overlaps
+  TH2F **  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  ;     //![fNPtTrigBin*fgkNmcTypes]
+  /// Candidate shower shape distribution depending vs cone sum pt cluster in pT trigger bins, per MC particle, candidate without overlaps
+  TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap  ;   //![fNPtTrigBin*fgkNmcTypes]
+
+  /// Candidate shower shape distribution depending vs cone sum pt in pT trigger bins, per MC particle, candidate with at least 1 overlap
+  TH2F **  fhPtTrigBinLambda0vsSumPtConeMC1Overlap  ;          //![fNPtTrigBin*fgkNmcTypes]
+  /// Candidate shower shape distribution depending vs cone sum pt track in pT trigger bins, per MC particle, candidate with at least 1 overlap
+  TH2F **  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  ;     //![fNPtTrigBin*fgkNmcTypes]
+  /// Candidate shower shape distribution depending vs cone sum pt cluster in pT trigger bins, per MC particle, candidate with at least 1 overlap
+  TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap  ;   //![fNPtTrigBin*fgkNmcTypes]
+  
   // Local maxima
   TH2F *   fhNLocMax[2];                               //!<! Number of maxima in selected clusters.
   TH2F *   fhELambda0LocMax1[2] ;                      //!<! E vs lambda0 of selected cluster, 1 local maxima in cluster.

@@ -2036,10 +2036,10 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     } // MC data
   } // background dependent bins
   
+  Int_t ptTrigBin  = -1;
   if(fFillPtTrigBinHistograms)
   {
     // Get the background bin for this cone and trigger
-    Int_t ptTrigBin  = -1;
     for(Int_t ibin = 0; ibin < fNPtTrigBin; ibin++)
     {
       if( pt  >= fPtTrigBinLimit[ibin] && coneptsum  < fPtTrigBinLimit[ibin+1]) ptTrigBin  = ibin;
@@ -2226,6 +2226,34 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
           fhPtNOverlap[kmcPhoton][isolated]->Fill(pt, noverlaps, GetEventWeight());
+        
+        if(fFillPtTrigBinHistograms && fFillSSHisto)
+        {
+          Int_t ptTrigBinMC = ptTrigBin+mcIndex*fNPtTrigBin;
+          
+          if( ptTrigBin >=0 )
+          {
+            if ( noverlaps == 0 )
+            {
+              fhPtTrigBinLambda0vsSumPtConeMCNoOverlap        [ptTrigBinMC]->Fill(coneptsum     , m02, GetEventWeight());
+              if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
+              {
+                fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap   [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
+                fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap [ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight());
+              }
+            } // nover = 0
+            else if ( noverlaps == 1 )
+            {
+              fhPtTrigBinLambda0vsSumPtConeMC1Overlap        [ptTrigBinMC]->Fill(coneptsum     , m02, GetEventWeight());
+              if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
+              {
+                fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap   [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
+                fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap [ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight());
+              }
+            } // nover = 1
+
+          } // pt bin exists
+        }
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
         {
@@ -3038,6 +3066,18 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             fhPtTrigBinLambda0vsSumPtTrackConeMC   = new TH2F*[fNPtTrigBin*fgkNmcTypes];
             fhPtTrigBinLambda0vsSumPtClusterConeMC = new TH2F*[fNPtTrigBin*fgkNmcTypes];
           }
+          if(fFillOverlapHistograms)
+          {
+            fhPtTrigBinLambda0vsSumPtConeMCNoOverlap  = new TH2F*[fNPtTrigBin*fgkNmcTypes];
+            fhPtTrigBinLambda0vsSumPtConeMC1Overlap  = new TH2F*[fNPtTrigBin*fgkNmcTypes];
+            if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
+            {
+              fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap   = new TH2F*[fNPtTrigBin*fgkNmcTypes];
+              fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap = new TH2F*[fNPtTrigBin*fgkNmcTypes];
+              fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap   = new TH2F*[fNPtTrigBin*fgkNmcTypes];
+              fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap = new TH2F*[fNPtTrigBin*fgkNmcTypes];
+            }
+          }
         }
       }
       
@@ -3239,6 +3279,61 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                 fhPtTrigBinLambda0vsSumPtClusterConeMC[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{cluster} (GeV/#it{c})");
                 outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterConeMC[binmc]) ;
               }
+              
+              if(fFillOverlapHistograms)
+              {  
+                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]  = new TH2F
+                (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d_MC_NoOverlap%s",ibin,mcPartName[imc].Data()),
+                 Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
+                      fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
+                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
+                outputContainer->Add(fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]) ;
+
+                fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]  = new TH2F
+                (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d_MC_1Overlap%s",ibin,mcPartName[imc].Data()),
+                 Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
+                      fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
+                fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
+                outputContainer->Add(fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]) ;
+
+                if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
+                {
+                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]  = new TH2F
+                  (Form("hPtTrigBin_SumPtTrackConeVSLambda0_Bin%d_MC_NoOverlap%s",ibin,mcPartName[imc].Data()),
+                   Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{track}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
+                        fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
+                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{track} (GeV/#it{c})");
+                  outputContainer->Add(fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]) ;
+                  
+                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]  = new TH2F
+                  (Form("hPtTrigBin_SumPtClusterConeVSLambda0_Bin%d_MC_NoOverlap%s",ibin,mcPartName[imc].Data()),
+                   Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{cluster}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
+                        fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
+                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{cluster} (GeV/#it{c})");
+                  outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]) ;                
+                  
+                  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]  = new TH2F
+                  (Form("hPtTrigBin_SumPtTrackConeVSLambda0_Bin%d_MC_1Overlap%s",ibin,mcPartName[imc].Data()),
+                   Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{track}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
+                        fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
+                  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{track} (GeV/#it{c})");
+                  outputContainer->Add(fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]) ;
+                  
+                  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]  = new TH2F
+                  (Form("hPtTrigBin_SumPtClusterConeVSLambda0_Bin%d_MC_1Overlap%s",ibin,mcPartName[imc].Data()),
+                   Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{cluster}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
+                        fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
+                  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{cluster} (GeV/#it{c})");
+                  outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]) ;
+
+                }               
+              } // Overlap histograms
             } // MC particle loop
           } // MC
         } // SS histo
