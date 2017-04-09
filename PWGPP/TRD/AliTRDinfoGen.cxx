@@ -74,7 +74,6 @@
 #include <AliMultiplicity.h>
 #include <AliCentrality.h>
 #include <AliPID.h>
-#include <AliStack.h>
 #include <AliTrackReference.h>
 #include <TTreeStream.h>
 
@@ -550,14 +549,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
   fV0Identifier->SetEvent(fESDev);
 
   Bool_t *trackMap(NULL);
-  AliStack * mStack(NULL);
   Int_t nTracksMC = HasMCdata() ? fMCev->GetNumberOfTracks() : 0, nTracksESD = fESDev->GetNumberOfTracks();
   if(HasMCdata()){
-    mStack = fMCev->Stack();
-    if(!mStack){
-      AliError("Failed retrieving MC Stack");
-      return;
-    }
     trackMap = new Bool_t[nTracksMC];
     memset(trackMap, 0, sizeof(Bool_t) * nTracksMC);
   }
@@ -652,12 +645,13 @@ void AliTRDinfoGen::UserExec(Option_t *){
       label = esdTrack->GetLabel(); 
       alab = TMath::Abs(label);
       // register the track
-      if(alab < UInt_t(nTracksMC)){ 
-        trackMap[alab] = kTRUE; 
-      } else { 
-        AliError(Form("MC label[%d] outside scope for Ev[%d] Trk[%d].", label, (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), itrk));
-        continue; 
-      }
+      // RS: this check makes no sense for events with embedding
+      //      if(alab < UInt_t(nTracksMC)){ 
+      trackMap[alab] = kTRUE; 
+      //    } else { 
+      //  AliError(Form("MC label[%d] outside scope for Ev[%d] Trk[%d].", label, (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), itrk));
+      //  continue; 
+      // }
       AliMCParticle *mcParticle(NULL);
       if(!(mcParticle = (AliMCParticle*) fMCev->GetTrack(alab))){
         AliError(Form("MC particle label[%d] missing for Ev[%d] Trk[%d].", label, (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), itrk));

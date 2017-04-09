@@ -19,7 +19,6 @@ class TClonesArray;
 class AliESDVertex;
 class AliESDtrack;
 class AliMCEvent;
-class AliStack;
 class AliTrackReference;
 class AliESDEvent; 
 class AliESDfriend; 

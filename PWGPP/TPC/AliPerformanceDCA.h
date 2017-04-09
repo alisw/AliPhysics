@@ -11,7 +11,6 @@
 
 class AliESDEvent; 
 class AliESDfriend; 
-class AliStack; 
 class AliRecInfoCuts;
 class AliMCInfoCuts;
 class AliESDVertex;
@@ -52,9 +51,9 @@ public :
   // Export objects to folder
   TFolder *ExportToFolder(TObjArray * array=0);
 
-  void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
+  void ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack);
+  void ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
+  void ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
 
   // Selection cuts
   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
