@@ -7,8 +7,10 @@
 #include <TString.h>
 #include <TPad.h>
 #include <set>
+#include <vector>
 
 class TNtuple;
+class AliHFMassFitterVAR;
 
 /// \class AliHFMultiTrials
 
@@ -174,6 +176,8 @@ class AliHFMultiTrials : public TNamed {
 
   Double_t fMinYieldGlob;   /// minimum yield
   Double_t fMaxYieldGlob;   /// maximum yield
+
+  std::vector<AliHFMassFitterVAR*> fMassFitters; //!<! Mass fitters
 
   /// \cond CLASSIMP
   ClassDef(AliHFMultiTrials,5); /// class for multiple trials of invariant mass fit

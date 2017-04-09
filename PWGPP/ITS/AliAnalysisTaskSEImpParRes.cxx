@@ -39,7 +39,6 @@
 #include "AliMCEventHandler.h"
 #include "AliGenEventHeader.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
 #include "AliAODHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
@@ -1229,7 +1228,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   Bool_t highMult=(nTrks>500 ? kTRUE : kFALSE);
 
   Double_t vtxTrue[3];
-  AliStack *stack=0;
+  AliMCEvent* mcEvent=0x0;
   TClonesArray *mcArray=0;
   AliESDVertex *vtxESDTrue=0;
   AliVVertex *vtxVSkip=0;
@@ -1284,15 +1283,9 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	return;
       }
       
-      AliMCEvent* mcEvent = eventHandler->MCEvent();
+      mcEvent = eventHandler->MCEvent();
       if (!mcEvent) {
 	Printf("ERROR: Could not retrieve MC event");
-	return;
-      }
-      
-      stack = mcEvent->Stack();
-      if (!stack) {
-	AliDebug(AliLog::kError, "Stack not available");
 	return;
       }
       
@@ -1377,8 +1370,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	if(!AODpart) printf("NOPART\n");
 	pdgCode = TMath::Abs(AODpart->GetPdgCode());	
       }
-      if(!fIsAOD && stack) {
-	part = (TParticle*)stack->Particle(trkLabel);
+      if(!fIsAOD && mcEvent) {
+	part = ((AliMCParticle*)mcEvent->GetTrack(trkLabel))->Particle();
 	pdgCode = TMath::Abs(part->GetPdgCode());
       }
       //pdgCode = TMath::Abs(part->GetPdgCode());

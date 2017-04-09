@@ -32,6 +32,7 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   void           SetFileTable(THashTable *t)                       { fFileTable                                 = t ; }
   void           SetUseAsVetoTable(Bool_t v)                       { fUseAsVetoTable                            = v ; }
   void           SetMinEntriesPerPtHardBin(Int_t r)                { fMinEntriesPerPtHardBin                    = r ; }
+  void           SetDebugEmbedding(Bool_t d=kTRUE)                 { fDebugEmbedding                            = d ; }
 
  protected:
   Bool_t           ExecOnce()               ;// intialize task
@@ -49,6 +50,7 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   Int_t            fCurrentPtHardBin        ;//!Pt hard bin of the current open file
   TParameter<int> *fPtHardBinParam          ;//!Pt hard bin param
   Int_t            fPtHardBinCount          ;//!Number of event embedded from the current pt hard bin
+  Bool_t           fDebugEmbedding          ;// Debug embedding by embedding files in order. Do _not_ use on the grid! (It will embed the same files for each job)
 
   TH1             *fHistPtHardBins          ;//!Embeded pt hard bin distribution
 

@@ -99,8 +99,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
   fEtaMax(0.8),
   fESigITSMin(-3.),
   fESigITSMax(3.),
-  fESigTPCMin(-5.),
-  fESigTPCMax(5.),
+  fESigTPCMin(-4.),
+  fESigTPCMax(4.),
   fESigTOFMin(-3.),
   fESigTOFMax(3.),
   fPSigTPCMin(-99.),
@@ -138,7 +138,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 //________________________________________________________________________
 
 void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
-
+  
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   inputHandler->SetNeedField();
@@ -292,7 +292,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       Double_t TPCsignal = track->GetTPCsignal();
       Double_t TOFsignal = track->GetTOFsignal();
       
-          
+      Double_t nTPCclusters = track->GetNumberOfTPCClusters(); 
+      Double_t nTPCcrossed = track->GetTPCCrossedRows();
+      Double_t TPCcrossOverFind = track->GetTPCCrossedRows()/track->GetTPCNclsF();
+      Double_t nTPCshared = (Double_t)track->GetTPCnclsS();
+
       //DCA values
       Float_t DCAxy = 0.;
       Float_t DCAz = 0.;
@@ -300,18 +304,20 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       
       //ITS clusters and shared clusters
       Int_t nITS = track->GetNumberOfITSClusters();
-      Double_t nITS_shared = 0.;
+      Double_t fITS_shared = 0.;
       for(Int_t d = 0; d < 6; d++){
-              nITS_shared += (Double_t) track->HasSharedPointOnITSLayer(d);
+              fITS_shared += (Double_t) track->HasSharedPointOnITSLayer(d);
         }
-      nITS_shared /= nITS;
+      fITS_shared /= nITS;
      
       //Get chi2 values 
       Double_t chi2ITS = track->GetITSchi2();
       Double_t chi2TPC = track->GetTPCchi2();
 
       Int_t fCutMaxChi2TPCConstrainedVsGlobalVertexType = fESDtrackCuts->kVertexTracks | fESDtrackCuts->kVertexSPD;
+
       const AliESDVertex* vertex = 0;
+
       if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDtrackCuts->kVertexTracks){
         vertex = track->GetESDEvent()->GetPrimaryVertexTracks();}
 
@@ -364,6 +370,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "KsigITS="    << KnSigmaITS <<
         "KsigTPC="    << KnSigmaTPC <<
         "KsigTOF="    << KnSigmaTOF <<
+
         "charge="     << charge <<
         "ITSsignal="  << ITSsignal <<
         "TPCsignal="  << TPCsignal << 
@@ -371,13 +378,21 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "vertexX="    << primaryVertex[0] <<
         "vertexY="    << primaryVertex[1] <<
         "vertexZ="    << primaryVertex[2] <<
+
+        "nTPC="       << nTPCclusters <<
+        "nTPCcrossed="<< nTPCcrossed <<
+        "TPCcrossFind="<< TPCcrossOverFind <<
+        "nTPCshared=" << nTPCshared <<
+        "chi2TPC="    << chi2TPC <<
+
         "nITS="       << nITS <<
-        "nITSshared=" << nITS_shared << 
+        "fITSshared=" << fITS_shared << 
+        "chi2ITS="    << chi2ITS <<
+
         "DCAxy="      << DCAxy <<
         "DCAz="       << DCAz <<
-        "chi2ITS="    << chi2ITS <<
-        "chi2TPC="    << chi2TPC <<
         "goldenChi2=" << goldenChi2 <<
+
         "mcEta="      << mcEta <<
         "mcPhi="      << mcPhi <<
         "mcPt="       << mcPt <<
@@ -402,6 +417,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "KsigITS="    << KnSigmaITS <<
         "KsigTPC="    << KnSigmaTPC <<
         "KsigTOF="    << KnSigmaTOF <<
+
         "charge="     << charge <<
         "ITSsignal="  << ITSsignal <<
         "TPCsignal="  << TPCsignal << 
@@ -409,12 +425,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "vertexX="    << primaryVertex[0] <<
         "vertexY="    << primaryVertex[1] <<
         "vertexZ="    << primaryVertex[2] <<
+
+        "nTPC="       << nTPCclusters <<
+        "nTPCcrossed="<< nTPCcrossed <<
+        "TPCcrossFind="<< TPCcrossOverFind <<
+        "nTPCshared=" << nTPCshared <<
+        "chi2TPC="    << chi2TPC <<
+
         "nITS="       << nITS <<
-        "nITSshared=" << nITS_shared << 
+        "fITSshared=" << fITS_shared << 
+        "chi2ITS="    << chi2ITS <<
+
         "DCAxy="      << DCAxy <<
         "DCAz="       << DCAz <<
-        "chi2ITS="    << chi2ITS <<
-        "chi2TPC="    << chi2TPC <<
         "goldenChi2=" << goldenChi2 <<
         "runNumber="  << runNumber << 
         "eventNum="   << eventNum <<
@@ -483,11 +506,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       
       //ITS clusters and shared clusters
       Int_t nITS = posTrack->GetNumberOfITSClusters();
-      Double_t nITS_shared = 0.;
+      Double_t fITS_shared = 0.;
       for(Int_t d = 0; d < 6; d++){
-              nITS_shared += static_cast<Double_t>(posTrack->HasSharedPointOnITSLayer(d));
+              fITS_shared += static_cast<Double_t>(posTrack->HasSharedPointOnITSLayer(d));
         }
-      nITS_shared /= nITS;
+      fITS_shared /= nITS;
 
       Int_t daughtCharge = posTrack->Charge();
       
@@ -527,7 +550,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           "KsigTPC="    << KnSigmaTPC <<
           "KsigTOF="    << KnSigmaTOF <<
           "nITS="       << nITS <<
-          "nITSshared=" << nITS_shared << 
+          "fITSshared=" << fITS_shared << 
           "impParamXY=" << ImpParamXY <<
           "impParamZ="  << ImpParamZ <<
           "charge="     << daughtCharge <<
@@ -561,7 +584,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           "KsigTPC="    << KnSigmaTPC <<
           "KsigTOF="    << KnSigmaTOF <<
           "nITS="       << nITS <<
-          "nITSshared=" << nITS_shared << 
+          "nITSshared=" << fITS_shared << 
           "impParamXY=" << ImpParamXY <<
           "impParamZ="  << ImpParamZ <<
           "charge="     << daughtCharge <<
@@ -595,11 +618,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       
       //ITS clusters andared clusters
       nITS = negTrack->GetNumberOfITSClusters();
-      nITS_shared = 0.;
+      fITS_shared = 0.;
       for(Int_t d = 0; d < 6; d++){
-              nITS_shared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
+              fITS_shared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
         }
-      nITS_shared /= nITS;
+      fITS_shared /= nITS;
       daughtCharge = negTrack->Charge(); 
       //Write negative observales to tree (v0 information written twice. Filter by looking at only pos or neg charge)
       if(fIsMC){
@@ -630,7 +653,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           "KsigTPC="    << KnSigmaTPC <<
           "KsigTOF="    << KnSigmaTOF <<
           "nITS="       << nITS <<
-          "nITSshared=" << nITS_shared << 
+          "nITSshared=" << fITS_shared << 
           "impParamXY=" << ImpParamXY <<
           "impParamZ="  << ImpParamZ <<
           "charge="     << daughtCharge <<
@@ -664,7 +687,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           "KsigTPC="    << KnSigmaTPC <<
           "KsigTOF="    << KnSigmaTOF <<
           "nITS="       << nITS <<
-          "nITSshared=" << nITS_shared << 
+          "nITSshared=" << fITS_shared << 
           "impParamXY=" << ImpParamXY <<
           "impParamZ="  << ImpParamZ <<
           "charge="     << daughtCharge <<

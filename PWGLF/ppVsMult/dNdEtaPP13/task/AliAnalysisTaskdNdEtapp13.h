@@ -30,137 +30,137 @@ class AliPPVsMultUtils;
 #include <TMath.h>
 
 class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
- public:
+public:
   enum {kData,kBgInj,kBgRot,kMC};
   enum {kCentV0M,kCentV0A,kCentV0C,kCentFMD,kCentTRK,kCentTKL,kCentCL0,kCentCL1,kCentV0MvsFMD,kCentZNA,kCentTKLvsV0,kCentZEMvsZDC,kCentV0A123,kCentV0A0,kCentV0S,kCentMB,kCentRef,kCentV0av,kNCentTypes}; // what is used to define centrality
   //
   enum {  // define here id's of the standard histos in corresponding TObjArray* fHistosTr...
-    kHEtaZvCut,       // histo zv vs eta for tracklets passing final selection (dist<1 or |dPhi|<narrowWindow ...)
-    kHDPhiDTheta,     // measured dTheta vs dPhi
-    kHDPhiSDThetaX,   // dTheta (1/sin^2 scaled if needed) vs dPhi (bending subtracted)
-    kHWDist,          // Weighted distance
-    //    kHEtaZvSPD1,      // histo zv vs eta for SPD1 single clusters
-    kHWDvEta,         // WDist vs eta
-    kNStandardH       // number of standard histos per centrality bin
-  };
-  enum { // define here id's of any custom histos to be added to fHistosCustom
-    kHStat,            // job info (meaning of bins defined in the enum below)
-    //
-    kHStatCent,        // events per centrality bin with real values on the axis
-    kHStatCentBin,     // events per centrality bin
-    kHCentDistNoSel,   // events per centrality percentile before selection
-          kHCentDistTrig,   // events per centrality percentile after trigger
-    kHCentDist,        // events per centrality percentile
-    //
-    kHNPrimMeanMC,     // <n> primaries per mult bin
-    kHNPrim2PartMC,    // <n> prim per part.pair per mult bin
-    kHNPrim2BCollMC,   // <n> prim per bin.coll per mult bin
-    kHNPrim2PartNpMC,  // <n> prim per n part vs npart
-    kHNPrim2BCollNpMC, // <n> prim per n part vs npart
-    kHNPartMC,         // n.part.pairs according to MC
-    kHNPartMeanMC,     // <n> part pairs per mult bin
-    kHNBCollMC,        // n.bin.colls according to MC
-    kHNBCollMeanMC,
-    //
-    kHNPrimEta2All,    // NPrim |eta|<2 all gen events
-    kHNPrimEta2Vt,     // NPrim |eta|<2 events with vtx
-    kHNPrimEta2Sel,    // NPrim |eta|<2 events after selection
-    kHNPrimEta2SelVt,  // NPrim |eta|<2 events passing selection with vertex
-    kHNCorrMCEta2,     // Ntracklets |eta|<2 vs NPrim |eta|<2
-    //
-    //
-    kHZVtxNoSel,       // Z vertex distribution before event selection
-    kHV0NoSel,         // V0 before selection
-          kHV0Trig,         // V0 after trigger
-    kHNClSPD2NoSel,    // NSPD2 before selection
-    kHZDCZEMNoSel,     // ZDC ZEM before selection
-    //
-    kHTotalNchNoPhSel,
-    kHProcessMCNoPhSel,
-    //
-    kHZVtxMCNoPhSel,   // Z vertex distribution MC before physics selection
-    kHZVtxMCNoVtSel,   // Z vertex distribution MC before rec.vertex selection
-    kHZVtxMC,          // Z vertex distribution MC after all selections
-    kHZVtx,            // Z vertex distribution
-    kHV0,              // V0 before selection
-    kHNClSPD2,         // NSPD2 before selection
-    kHZDCZEM,          // ZDC ZEM before selection
-    //
-    kHPrimPDG,         // PDG code of prim tracklet
-    kHSecPDG,          // PDG code of sec tracklet
-    kHPrimParPDG,      // PDG code of prim tracklet parent
-    kHSecParPDG,       // PDG code of sec tracklet parent
-    //
-    kHClUsedInfoL0,    // used clusters of lr0
-    kHClUsedInfoL1,    // used clusters of lr1
-    kHClAllInfoL0,     // all clusters of lr0
-    kHClAllInfoL1,     // all clusters of lr1
-    //
-    kHMltEstTrITSTPC,  // mult distribution with kTrackletsITSTPC
-    kHMltEstTrITSSA,   // mult distribution with kTrackletsITSSA
-    kHMltEstTr,        // mult distribution with tracklets
-    kHMltMC,           // mult distribution for MC primaries
-    //
-    kHEffMatrix,
-    //
-    kHEtaPhi,          // traklets eta/phi
-    // These MUST be last one: this is just beginning of many histos (one per bin)
-    kHZVEtaPrimMC,                        // Zv gen vs eta for all primary tracks (true MC multiplicity) in all events
-    kHZVrEtaPrimMC=kHZVEtaPrimMC+50,      // Zv rec vs eta for all primary tracks (true MC multiplicity) in sel. events
-   kHZVResMC=kHZVrEtaPrimMC+50,      // zv resolution
+  kHEtaZvCut,       // histo zv vs eta for tracklets passing final selection (dist<1 or |dPhi|<narrowWindow ...)
+  kHDPhiDTheta,     // measured dTheta vs dPhi
+  kHDPhiSDThetaX,   // dTheta (1/sin^2 scaled if needed) vs dPhi (bending subtracted)
+  kHWDist,          // Weighted distance
+  //    kHEtaZvSPD1,      // histo zv vs eta for SPD1 single clusters
+  kHWDvEta,         // WDist vs eta
+  kNStandardH       // number of standard histos per centrality bin
+};
+enum { // define here id's of any custom histos to be added to fHistosCustom
+kHStat,            // job info (meaning of bins defined in the enum below)
+//
+kHStatCent,        // events per centrality bin with real values on the axis
+kHStatCentBin,     // events per centrality bin
+kHCentDistNoSel,   // events per centrality percentile before selection
+kHCentDistTrig,   // events per centrality percentile after trigger
+kHCentDist,        // events per centrality percentile
+//
+kHNPrimMeanMC,     // <n> primaries per mult bin
+kHNPrim2PartMC,    // <n> prim per part.pair per mult bin
+kHNPrim2BCollMC,   // <n> prim per bin.coll per mult bin
+kHNPrim2PartNpMC,  // <n> prim per n part vs npart
+kHNPrim2BCollNpMC, // <n> prim per n part vs npart
+kHNPartMC,         // n.part.pairs according to MC
+kHNPartMeanMC,     // <n> part pairs per mult bin
+kHNBCollMC,        // n.bin.colls according to MC
+kHNBCollMeanMC,
+//
+kHNPrimEta2All,    // NPrim |eta|<2 all gen events
+kHNPrimEta2Vt,     // NPrim |eta|<2 events with vtx
+kHNPrimEta2Sel,    // NPrim |eta|<2 events after selection
+kHNPrimEta2SelVt,  // NPrim |eta|<2 events passing selection with vertex
+kHNCorrMCEta2,     // Ntracklets |eta|<2 vs NPrim |eta|<2
+//
+//
+kHZVtxNoSel,       // Z vertex distribution before event selection
+kHV0NoSel,         // V0 before selection
+kHV0Trig,         // V0 after trigger
+kHNClSPD2NoSel,    // NSPD2 before selection
+kHZDCZEMNoSel,     // ZDC ZEM before selection
+//
+kHTotalNchNoPhSel,
+kHProcessMCNoPhSel,
+//
+kHZVtxMCNoPhSel,   // Z vertex distribution MC before physics selection
+kHZVtxMCNoVtSel,   // Z vertex distribution MC before rec.vertex selection
+kHZVtxMC,          // Z vertex distribution MC after all selections
+kHZVtx,            // Z vertex distribution
+kHV0,              // V0 before selection
+kHNClSPD2,         // NSPD2 before selection
+kHZDCZEM,          // ZDC ZEM before selection
+//
+kHPrimPDG,         // PDG code of prim tracklet
+kHSecPDG,          // PDG code of sec tracklet
+kHPrimParPDG,      // PDG code of prim tracklet parent
+kHSecParPDG,       // PDG code of sec tracklet parent
+//
+kHClUsedInfoL0,    // used clusters of lr0
+kHClUsedInfoL1,    // used clusters of lr1
+kHClAllInfoL0,     // all clusters of lr0
+kHClAllInfoL1,     // all clusters of lr1
+//
+kHMltEstTrITSTPC,  // mult distribution with kTrackletsITSTPC
+kHMltEstTrITSSA,   // mult distribution with kTrackletsITSSA
+kHMltEstTr,        // mult distribution with tracklets
+kHMltMC,           // mult distribution for MC primaries
+//
+kHEffMatrix,
+//
+kHEtaPhi,          // traklets eta/phi
+// These MUST be last one: this is just beginning of many histos (one per bin)
+kHZVEtaPrimMC,                        // Zv gen vs eta for all primary tracks (true MC multiplicity) in all events
+kHZVrEtaPrimMC=kHZVEtaPrimMC+50,      // Zv rec vs eta for all primary tracks (true MC multiplicity) in sel. events
+kHZVResMC=kHZVrEtaPrimMC+50,      // zv resolution
 
-    kHCorrMatrix=kHZVResMC+50, // correlation matrix
+kHCorrMatrix=kHZVResMC+50, // correlation matrix
 
-   kHCorrMatrixSel = kHCorrMatrix+50 // correlation matrix with events sel
+kHCorrMatrixSel = kHCorrMatrix+50 // correlation matrix with events sel
 
-  }; // custom histos
+}; // custom histos
 
-  // bins for saved parameters
-  enum {kDummyBin,
-	kEvTot0,      // events read
-	kEvTot,       // events read after vertex quality selection
-        kEvAfterPhysSel  , // events after pileup rejection
-        kEvAfterPileUp  , // events after pileup rejection
-        kEvAfterClsVsTrk, // events after the cluster vs tracklet cut
-        kEvAfterAsymCut , // events after V0 asymmetry cut
-	kOneUnit,     // just 1 to track primate merges
-	kNWorkers,    // n workers
-	//
-	kCentVar,     // cetrality var. used
-	kDPhi,        // dphi window
-	kDTht,        // dtheta window
-	kNStd,        // N.standard deviations to keep
-	kPhiShift,    // bending shift
-	kThtS2,       // is dtheta scaled by 1/sin^2
-	kThtCW,       // on top of w.dist cut cut also on 1 sigma dThetaX
-	kPhiOvl,      // overlap params
-	kZEtaOvl,     // overlap params
-	kNoOvl,       // flag that overlap are suppressed
-	//
-	kPhiRot,      // rotation phi
-	kInjScl,      // injection scaling
-	kEtaMin,      // eta cut
-	kEtaMax,      // eta cut
-	kZVMin,       // min ZVertex to process
-	kZVMax,       // max ZVertex to process
-	//
-	kDPiSCut,     // cut on dphi used to extract signal (when WDist is used in analysis, put it equal to kDPhi
-	kNStdCut,     // cut on weighted distance (~1) used to extract signal
-	//
-	kMCV0Scale,   // scaling value for V0 in MC
-	//
-	kNEvSDMC,     // number of pure SD event from MC
-	// here we put entries for each mult.bin
-	kBinEntries = 50,
-	kEvInMltBin = 0,
-	kEvProcData,  // events with data mult.object (ESD or reco) passing all selections
-	kEvProcInj,   // events Injected, total
-	kEvProcRot,   // events Rotated
-	kEvProcMix,   // events Mixed
-	kEvCentBin,   // events in centrality bin (w/o any selection)
-	kEvPassPS,    // events passed ev.sel + trigger
-	kEvPassVtx,   // and having vertex (not necessarily in needed range)
-	kEntriesPerBin = 10
+// bins for saved parameters
+enum {kDummyBin,
+  kEvTot0,      // events read
+  kEvTot,       // events read after vertex quality selection
+  kEvAfterPhysSel  , // events after pileup rejection
+  kEvAfterPileUp  , // events after pileup rejection
+  kEvAfterClsVsTrk, // events after the cluster vs tracklet cut
+  kEvAfterAsymCut , // events after V0 asymmetry cut
+  kOneUnit,     // just 1 to track primate merges
+  kNWorkers,    // n workers
+  //
+  kCentVar,     // cetrality var. used
+  kDPhi,        // dphi window
+  kDTht,        // dtheta window
+  kNStd,        // N.standard deviations to keep
+  kPhiShift,    // bending shift
+  kThtS2,       // is dtheta scaled by 1/sin^2
+  kThtCW,       // on top of w.dist cut cut also on 1 sigma dThetaX
+  kPhiOvl,      // overlap params
+  kZEtaOvl,     // overlap params
+  kNoOvl,       // flag that overlap are suppressed
+  //
+  kPhiRot,      // rotation phi
+  kInjScl,      // injection scaling
+  kEtaMin,      // eta cut
+  kEtaMax,      // eta cut
+  kZVMin,       // min ZVertex to process
+  kZVMax,       // max ZVertex to process
+  //
+  kDPiSCut,     // cut on dphi used to extract signal (when WDist is used in analysis, put it equal to kDPhi
+    kNStdCut,     // cut on weighted distance (~1) used to extract signal
+    //
+    kMCV0Scale,   // scaling value for V0 in MC
+    //
+    kNEvSDMC,     // number of pure SD event from MC
+    // here we put entries for each mult.bin
+    kBinEntries = 50,
+    kEvInMltBin = 0,
+    kEvProcData,  // events with data mult.object (ESD or reco) passing all selections
+    kEvProcInj,   // events Injected, total
+    kEvProcRot,   // events Rotated
+    kEvProcMix,   // events Mixed
+    kEvCentBin,   // events in centrality bin (w/o any selection)
+    kEvPassPS,    // events passed ev.sel + trigger
+    kEvPassVtx,   // and having vertex (not necessarily in needed range)
+    kEntriesPerBin = 10
   };
 
   //
@@ -226,9 +226,13 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   void       SetUseBCMod(Bool_t bc = kFALSE)              {fUseBCMod = bc;}
   void       SetBCMod(Int_t mod=2)        {fBCMod4 = mod;}
   void       SetCutOnPhi(Bool_t p=kFALSE)   {fCutOnPhi = p;}
+  void SetCalibfilePath(TString CalibfilePath) {fCalibfilePath=CalibfilePath;}
+  void SetCalibHisto(TH1D *calibhisto=0x0);
+
+
 
   //
- protected:
+protected:
   void       InitMultReco();
   Bool_t     HaveCommonParent(const float* clLabs0,const float* clLabs1);
   void       FillHistos(Int_t type, const AliMultiplicity* mlt);
@@ -240,7 +244,7 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   void       CheckReconstructables();
   Int_t      GetCentralityBin(Float_t percentile) const;
   //
- protected:
+protected:
   TList*       fOutput;                   // output list send on output slot 1
   //
   Bool_t       fDoNormalReco;              // do normal reco
@@ -262,6 +266,8 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   TObjArray*   fHistosTrRcblPrim;          //! Primary Reconstructable
   TObjArray*   fHistosTrRcblSec;           //! Secondary Reconstructable
   TObjArray*   fHistosCustom;              //! custom histos
+  TH1D*        fHcalib3;
+
   //
   // Settings for the reconstruction
   // tracklet reco settings
@@ -311,6 +317,8 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   Bool_t fUseBCMod;                         // flag to use bunch crossing mod 4 events
   Int_t      fBCMod4;                        // Select BC Mod4
   Bool_t fCutOnPhi;                          // Set cut on affected phi regions
+  TString fCalibfilePath;                     // Set V0M MC calibration file name path
+
 
 
   //
@@ -319,8 +327,8 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   static const Int_t  fgkPDGCodes[];                //!pdg codes
   //
   Double_t fWeight;
-    AliPPVsMultUtils *fPPVsMultUtils; //!
- private:
+  AliPPVsMultUtils *fPPVsMultUtils; //!
+private:
   AliAnalysisTaskdNdEtapp13(const AliAnalysisTaskdNdEtapp13&); // not implemented
   AliAnalysisTaskdNdEtapp13& operator=(const AliAnalysisTaskdNdEtapp13&); // not implemented
 

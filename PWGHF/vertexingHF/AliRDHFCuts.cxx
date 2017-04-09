@@ -340,9 +340,9 @@ Int_t AliRDHFCuts::IsEventSelectedInCentrality(AliVEvent *event) {
   }else{    
     Float_t centvalue=GetCentrality((AliAODEvent*)event);          
     if (centvalue<-998.){//-999 if no centralityP
-      return 0;
+      return 3;
     }else if(fEvRejectionBits&(1<<kMismatchOldNewCentrality)){
-      return 0;
+      return 3;
     }else{      
       if (centvalue<fMinCentrality || centvalue>fMaxCentrality){
 	return 2;      
@@ -561,6 +561,44 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }
   }
 
+  // centrality selection
+  if (fUseCentrality!=kCentOff) {  
+    Int_t rejection=IsEventSelectedInCentrality(event);    
+    Bool_t okCent=kFALSE;
+    if(rejection==0) okCent=kTRUE;
+    if(isMC && rejection==4 && !fUseCentrFlatteningInMC) okCent=kTRUE;
+    if(!okCent){      
+      if(accept) fWhyRejection=rejection;      
+      if(fWhyRejection==4)fEvRejectionBits+=1<<kCentralityFlattening;
+      else fEvRejectionBits+=1<<kOutsideCentrality;
+      accept=kFALSE;
+    }
+   
+  }
+
+  // PbPb2011 outliers in tracklets vs. VZERO and centTRK vs. centV0
+  if(event->GetRunNumber()>=167693 && event->GetRunNumber()<=170593){
+    if(fRemoveTrackletOutliers){
+      Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
+      Double_t ntracklets=((AliAODEvent*)event)->GetTracklets()->GetNumberOfTracklets();
+      Double_t cutval=60.-0.08*ntracklets+1./50000.*ntracklets*ntracklets;
+      if(ntracklets<1000. && v0cent<cutval){
+	if(accept) fWhyRejection=2;      
+	fEvRejectionBits+=1<<kOutsideCentrality;
+	 accept=kFALSE;
+      }
+    }
+    if(fMaxDiffTRKV0Centr>0.){
+      Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
+      Double_t trkcent=GetCentrality((AliAODEvent*)event,kCentTRK);
+      if(TMath::Abs(trkcent-v0cent)>fMaxDiffTRKV0Centr){
+	if(accept) fWhyRejection=1;
+	fEvRejectionBits+=1<<kBadTrackV0Correl;
+	accept=kFALSE;	
+      }
+    }
+  }
+
   // vertex requirements
    
   const AliVVertex *vertex = event->GetPrimaryVertex();
@@ -636,43 +674,6 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }
   }
 
-  // centrality selection
-  if (fUseCentrality!=kCentOff) {  
-    Int_t rejection=IsEventSelectedInCentrality(event);    
-    Bool_t okCent=kFALSE;
-    if(rejection==0) okCent=kTRUE;
-    if(isMC && rejection==4 && !fUseCentrFlatteningInMC) okCent=kTRUE;
-    if(!okCent){      
-      if(accept) fWhyRejection=rejection;      
-      if(fWhyRejection==4)fEvRejectionBits+=1<<kCentralityFlattening;
-      else fEvRejectionBits+=1<<kOutsideCentrality;
-      accept=kFALSE;
-    }
-   
-  }
-
-  // PbPb2011 outliers in tracklets vs. VZERO and centTRK vs. centV0
-  if(event->GetRunNumber()>=167693 && event->GetRunNumber()<=170593){
-    if(fRemoveTrackletOutliers){
-      Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
-      Double_t ntracklets=((AliAODEvent*)event)->GetTracklets()->GetNumberOfTracklets();
-      Double_t cutval=60.-0.08*ntracklets+1./50000.*ntracklets*ntracklets;
-      if(ntracklets<1000. && v0cent<cutval){
-	if(accept) fWhyRejection=2;      
-	fEvRejectionBits+=1<<kOutsideCentrality;
-	 accept=kFALSE;
-      }
-    }
-    if(fMaxDiffTRKV0Centr>0.){
-      Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
-      Double_t trkcent=GetCentrality((AliAODEvent*)event,kCentTRK);
-      if(TMath::Abs(trkcent-v0cent)>fMaxDiffTRKV0Centr){
-	if(accept) fWhyRejection=1;
-	fEvRejectionBits+=1<<kBadTrackV0Correl;
-	accept=kFALSE;	
-      }
-    }
-  }
 
   // Correcting PP2012 flag to remoce tracks crossing SPD misaligned staves for periods 12def
   if(fApplySPDMisalignedPP2012 && !(event->GetRunNumber()>=195681 && event->GetRunNumber()<=197388)) fApplySPDMisalignedPP2012=false;

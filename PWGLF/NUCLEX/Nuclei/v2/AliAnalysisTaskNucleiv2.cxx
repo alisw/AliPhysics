@@ -441,7 +441,7 @@ void AliAnalysisTaskNucleiv2::UserCreateOutputObjects()
   fListHist->Add(hCos2DeltaTPCpTPCnvsCentrality);
 
   if(fHarmonic < 3)
-    hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-20,20,105,0,105);
+    hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-100,100,105,0,105);
   else
     hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",5000,-1000,1000,105,0,105);
   fListHist->Add(hQVzAQVzCvsCentrality);

@@ -2019,6 +2019,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 if( lVarV0CosPA > lV0CosPACut ) lV0CosPACut = lVarV0CosPA;
             }
             //========================================================================
+            
+            //========================================================================
+            //Setting up: Variable BB CosPA
+            Float_t lBBCosPACut = lCascadeResult -> GetCutBachBaryonCosPA();
+            Float_t lVarBBCosPApar[5];
+            lVarBBCosPApar[0] = lCascadeResult->GetCutVarBBCosPAExp0Const();
+            lVarBBCosPApar[1] = lCascadeResult->GetCutVarBBCosPAExp0Slope();
+            lVarBBCosPApar[2] = lCascadeResult->GetCutVarBBCosPAExp1Const();
+            lVarBBCosPApar[3] = lCascadeResult->GetCutVarBBCosPAExp1Slope();
+            lVarBBCosPApar[4] = lCascadeResult->GetCutVarBBCosPAConst();
+            Float_t lVarBBCosPA = TMath::Cos(
+                                             lVarBBCosPApar[0]*TMath::Exp(lVarBBCosPApar[1]*fTreeCascVarPt) +
+                                             lVarBBCosPApar[2]*TMath::Exp(lVarBBCosPApar[3]*fTreeCascVarPt) +
+                                             lVarBBCosPApar[4]);
+            if( lCascadeResult->GetCutUseVarBBCosPA() ){
+                //Only use if looser than the non-variable cut (WARNING: BEWARE INVERSE LOGIC)
+                if( lVarBBCosPA > lBBCosPACut ) lBBCosPACut = lVarBBCosPA;
+            }
+            //========================================================================
 
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiMinus     ){
                 lCharge  = -1;
@@ -2110,7 +2129,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
 
                 //Check 7: Experimental Bach Baryon CosPA
-                ( fTreeCascVarWrongCosPA < lCascadeResult->GetCutBachBaryonCosPA()  ) &&
+                ( fTreeCascVarWrongCosPA < lBBCosPACut  ) &&
 
                 //Check 8: Min/Max V0 Lifetime cut
                 ( ( fTreeCascVarV0Lifetime > lCascadeResult->GetCutMinV0Lifetime() ) &&
@@ -2428,7 +2447,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
     // STEP 1: Decide on binning (needed to improve on memory consumption)
 
     // pT binning
-    Double_t lPtbinlimits[] = {0.0,0.1,0.2,0.3, 0.4, 0.5, 0.6,
+    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
     0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
         2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
        4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
@@ -2484,23 +2503,38 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         lCascadeResult[lN]->SetCutDCANegToPV            ( 0.2 ) ;
         lCascadeResult[lN]->SetCutDCAPosToPV            ( 0.2 ) ;
         lCascadeResult[lN]->SetCutDCAV0Daughters        (  1. ) ;
-        lCascadeResult[lN]->SetCutV0CosPA               ( 0.98 ) ;
+        lCascadeResult[lN]->SetCutV0CosPA               ( 0.95 ) ; //+variable
+        lCascadeResult[lN]->SetCutVarV0CosPA            (TMath::Exp(10.853),
+                                                         -25.0322,
+                                                         TMath::Exp(-0.843948),
+                                                         -0.890794,
+                                                         0.057553);
         lCascadeResult[lN]->SetCutV0Radius              (  3 ) ;
         //Setters for Cascade Cuts
         lCascadeResult[lN]->SetCutDCAV0ToPV             ( 0.1 ) ;
         lCascadeResult[lN]->SetCutV0Mass                ( 0.006 ) ;
-        lCascadeResult[lN]->SetCutDCABachToPV           ( 0.03 ) ;
-        lCascadeResult[lN]->SetCutDCACascDaughters      ( 1. ) ;
+        lCascadeResult[lN]->SetCutDCABachToPV           ( 0.1 ) ;
+        lCascadeResult[lN]->SetCutDCACascDaughters      ( 1.0) ;
         lCascadeResult[lN]->SetCutCascRadius            ( 1.2 ) ;
         if(i==2||i==3)
             lCascadeResult[lN]->SetCutCascRadius            ( 1.0 ) ; //omega case
-        lCascadeResult[lN]->SetCutCascCosPA             ( 0.98 ) ;
+        lCascadeResult[lN]->SetCutCascCosPA             ( 0.95 ) ; //+variable
+        lCascadeResult[lN]->SetCutVarCascCosPA          (TMath::Exp(4.86664),
+                                                         -10.786,
+                                                         TMath::Exp(-1.33411),
+                                                         -0.729825,
+                                                         0.0695724);
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
         lCascadeResult[lN]->SetCutLeastNumberOfClusters ( 70.0 ) ;
         lCascadeResult[lN]->SetCutTPCdEdx               ( 4.0 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
-        lCascadeResult[lN]->SetCutBachBaryonCosPA        ( TMath::Cos(0.006) ) ;
+        lCascadeResult[lN]->SetCutBachBaryonCosPA       ( TMath::Cos(0.04) ) ; //+variable
+        lCascadeResult[lN]->SetCutVarBBCosPA            (TMath::Exp(-2.29048),
+                                                         -20.2016,
+                                                         TMath::Exp(-2.9581),
+                                                         -0.649153,
+                                                         0.00526455);
         //Add result to pool
         lN++;
     }
@@ -2548,7 +2582,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
     }
     //________________________________________________________
     // Variable 4: V0 CosPA
-    Float_t lMinV0CosPA = fV0VertexerSels[4];
+    Float_t lMinV0CosPA = 0.95;
     Float_t lMaxV0CosPA = 1.00;
     Double_t lV0CosPAVals[lNumberOfSteps];
     Double_t lMinV0PA = 0.0;
@@ -2561,6 +2595,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0CosPASweep",icut) );
             //Add result to pool
+            lCascadeResult[lN] -> SetCutUseVarV0CosPA( kFALSE );
             lCascadeResult[lN] -> SetCutV0CosPA ( lV0CosPAVals[icut] );
             lN++;
         }
@@ -2618,7 +2653,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
     //________________________________________________________
     // Variable 9: Cascade Radius
     Float_t lMinCascRadius = 0.5;
-    Float_t lMaxCascRadius = 20.00;
+    Float_t lMaxCascRadius = 7.0;
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascRadiusSweep",icut) );
@@ -2630,7 +2665,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
     }
     //________________________________________________________
     // Variable 10: Cascade CosPA
-    Float_t lMinCascCosPA = fCascadeVertexerSels[5];
+    Float_t lMinCascCosPA = 0.95;
     Float_t lMaxCascCosPA = 1.00;
     Double_t lCascCosPAVals[lNumberOfSteps];
     Double_t lMinCascPA = 0.0;
@@ -2643,6 +2678,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascCosPASweep",icut) );
             //Add result to pool
+            lCascadeResult[lN] -> SetCutUseVarCascCosPA( kFALSE );
             lCascadeResult[lN] -> SetCutCascCosPA ( lCascCosPAVals[icut] );
             lN++;
         }
@@ -2662,6 +2698,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"BBCosPASweep",icut) );
             //Add result to pool
+            lCascadeResult[lN] -> SetCutUseVarBBCosPA( kFALSE );
             lCascadeResult[lN] -> SetCutBachBaryonCosPA ( lBBCosPAVals[icut] );
             lN++;
         }

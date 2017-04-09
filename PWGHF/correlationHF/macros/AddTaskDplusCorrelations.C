@@ -2,33 +2,36 @@
 
 /* $Id: AddTaskDplusCorrelations.C 58712 2012-09-20 08:38:36Z prino $ */
 //AddTask for the Dplus - Hadron (or Kaon/K0) Corelation with same/mixed event
-//Jitendra Kumar(Last updated on 02.10.2016) //AOD production setting
+//Jitendra Kumar(Last updated on 02.10.2016) //AOD production setting:
 AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
-                                                                TString  fSys = "PP",
-                                                                Int_t  fOption = 1,
-                                                                Bool_t fMixing = kFALSE,
-                                                                Bool_t readMC  = kFALSE,
-                                                                Bool_t genMC   = kFALSE,
-                                                                Bool_t tracks  = kTRUE,
-                                                                TString fileDplusCuts="",
-                                                                TString DplusCutsObjName="",
-                                                                TString fileTrackCuts="",
-                                                                TString TrackCutsObjName="",
-                                                                Bool_t isTrackEff = kFALSE,
-                                                                TString fileTrackeff="",
-                                                                Bool_t isDplusEff = kFALSE,
-                                                                TString fileDplusEff="",
-                                                                Bool_t PoolbyPool=kFALSE,
-                                                                Bool_t useCentrality = kFALSE,
-                                                                Int_t AODproduction=1,
-                                                                Bool_t IncDCutQA=kTRUE,
-                                                                Bool_t IncDCutQABefore=kFALSE,
-                                                                Bool_t IsfillTrees=kTRUE,
-                                                                Double_t fractAccME=100.,
-                                                                Double_t DPtThrs=3)
+                                                             Bool_t useCutFileSBRanges=kFALSE,
+                                                             TString fileSignalSBRange="",
+                                                             TString  fSys = "PP",
+                                                             Int_t  fOption = 1,
+                                                             Bool_t fMixing = kFALSE,
+                                                             Bool_t readMC  = kFALSE,
+                                                             Bool_t genMC   = kFALSE,
+                                                             Bool_t tracks  = kTRUE,
+                                                             TString fileDplusCuts="",
+                                                             TString DplusCutsObjName="",
+                                                             TString fileTrackCuts="",
+                                                             TString TrackCutsObjName="",
+                                                             Bool_t isTrackEff = kFALSE,
+                                                             TString fileTrackeff="",
+                                                             Bool_t isDplusEff = kFALSE,
+                                                             TString fileDplusEff="",
+                                                             Bool_t PoolbyPool=kFALSE,
+                                                             Bool_t useCentrality = kFALSE,
+                                                             Int_t centralityEstimator=AliRDHFCuts::kCentZNA,
+                                                             Int_t AODproduction=1,
+                                                             Bool_t IncDCutQA=kTRUE,
+                                                             Bool_t IncDCutQABefore=kFALSE,
+                                                             Bool_t IsfillTrees=kTRUE,
+                                                             Double_t fractAccME=100.,
+                                                             Double_t DPtThrs=3,
+                                                             Bool_t LeadPartCorr=kFALSE)
 {
     
-    const Int_t centralityEstimator = 7; // enum from AliRDHFCuts.h
     Double_t etacorr  =  0.9;
     
     //1. Dplus Cuts either from PPStd OR from cut file
@@ -125,10 +128,12 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     AliAnalysisTaskSEDplusCorrelations *dpluscorrTask = new AliAnalysisTaskSEDplusCorrelations("DplusCorrelation",DplusCorrCuts,HFAssoTrackCuts);
     dpluscorrTask->SetEventMixing(fMixing);
     dpluscorrTask->SetCorrelator(fOption);
+    dpluscorrTask->SetBinWidth(0.004);
     dpluscorrTask->SetDebugLevel(0);
     //dpluscorrTask->SetEtaRagne(etacorr);
     dpluscorrTask->SetCorrFormPart(genMC);
     dpluscorrTask->SetCorrFormTrack(tracks);
+    dpluscorrTask->SetLeadPartCorrelation(LeadPartCorr);
     dpluscorrTask->SetDataOrMC(readMC);
     dpluscorrTask->SetUseBit(kTRUE);
     dpluscorrTask->SetTCConfig(kTRUE);
@@ -144,45 +149,75 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     
     //7. Create container for input/output
     TString finDirname = "";
-    if(fSys=="pp" || fSys=="PP"|| fSys=="p-p"){
-        finDirname+="PP";
-        //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
+    
+    if(useCutFileSBRanges) { //use SB ranges from cut file
         
-        Double_t LSBLowLim[15] = {0.,0.,0.,1.7930,1.7770,1.7850,1.7530,1.7690,1.7690,1.7690,1.7690,1.7690,1.7690,0.,0.};
-        Double_t LSBUppLim[15] = {0.,0.,0.,1.8410,1.8330,1.8330,1.8170,1.8250,1.8250,1.8250,1.8250,1.8250,1.8250,0.,0.};
-        Double_t RSBLowLim[15] = {0.,0.,0.,1.8970,1.9050,1.9050,1.9210,1.9130,1.9130,1.9130,1.9130,1.9130,1.9130,0.,0.};
-        Double_t RSBUppLim[15] = {0.,0.,0.,1.9450,1.9610,1.9450,1.9770,1.9690,1.9690,1.9690,1.9690,1.9690,1.9690,0.,0.};
-        Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8410,1.8490,1.8330,1.8410,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
-        Double_t SandBUppLim[15] = {0.,0.,0.,1.8890,1.8970,1.8890,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,0.,0.};
+        filerange=TFile::Open(fileSignalSBRange.Data());
+        if(!filerange && !filerange->IsOpen()){
+            AliFatal("Signal and Side Band Ranges are  not found: EXIT");
+            return;
+        }
         
-    }else if(fSys=="pPb" || fSys=="p-Pb" || fSys=="PPb"){
-        finDirname+="pPb";
-        //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
-        Double_t LSBLowLim[15]   = {0.,0.,0.,1.7930,1.7930,1.7850,1.7850,1.7770,1.7770,1.7690,1.7690,1.7530,1.7610,0.,0.};
-        Double_t LSBUppLim[15]   = {0.,0.,0.,1.8410,1.8410,1.8330,1.8330,1.8330,1.8330,1.8250,1.8250,1.8170,1.8250,0.,0.};
-        Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8490,1.8490,1.8490,1.8490,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
-        Double_t SandBUppLim[15] = {0.,0.,0.,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.9050,1.8970,0.,0.};
-        Double_t RSBLowLim[15]   = {0.,0.,0.,1.9050,1.9050,1.9050,1.9050,1.9130,1.9130,1.9130,1.9130,1.9210,1.9130,0.,0.};
-        Double_t RSBUppLim[15]   = {0.,0.,0.,1.9530,1.9530,1.9610,1.9530,1.9610,1.9610,1.9690,1.9770,1.9850,1.9770,0.,0.};
+        TVectorD *LSBLow = (TVectorD*)filerange->Get("vLSBLow");
+        TVectorD *LSBUpp = (TVectorD*)filerange->Get("vLSBUpp");
+        TVectorD *RSBLow = (TVectorD*)filerange->Get("vRSBLow");
+        TVectorD *RSBUpp = (TVectorD*)filerange->Get("vRSBUpp");
+        TVectorD *SandBLow = (TVectorD*)filerange->Get("vSandBLow");
+        TVectorD *SandBUpp = (TVectorD*)filerange->Get("vSandBUpp");
         
-    }else if(fSys=="PbPb" || fSys=="Pb-Pb" || fSys=="PbPb"){
-        finDirname+="PbPb";
-        //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
-        Double_t LSBLowLim[15]   = {0.,0.,0.,1.797,1.775,1.791,1.759,1.767,1.767,1.767,1.767,1.767,1.767,1.767,1.767};
-        Double_t LSBUppLim[15]   = {0.,0.,0.,1.837,1.829,1.837,1.821,1.821,1.821,1.821,1.821,1.821,1.821,1.821,1.821};
-        Double_t SandBLowLim[15] = {0.,0.,0.,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843};
-        Double_t SandBUppLim[15] = {0.,0.,0.,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885};
-        Double_t RSBLowLim[15]   = {0.,0.,0.,1.901,1.907,1.901,1.917,1.917,1.917,1.917,1.917,1.917,1.917,1.917,1.917};
-        Double_t RSBUppLim[15]   = {0.,0.,0.,1.939,1.963,1.947,1.979,1.971,1.971,1.971,1.971,1.971,1.971,1.971,1.971};
+        if(!LSBLow||!LSBUpp||!RSBLow||!RSBUpp ||!SandBLow ||!SandBUpp) {printf("Error! No SB ranges found in the Associated track cut file, but useCutFileSBRanges==kTRUE! Exiting...\n"); return;}
         
-    }else{
-        cout << "EROOR in AddTask: Please check system name" << endl;
-        return;
+        dpluscorrTask->SetLSBLowerUpperLim(LSBLow->GetMatrixArray(), LSBUpp->GetMatrixArray());
+        dpluscorrTask->SetSandBLowerUpperLim(SandBLow->GetMatrixArray(), SandBUpp->GetMatrixArray());
+        dpluscorrTask->SetRSBLowerUpperLim(RSBLow->GetMatrixArray(), RSBUpp->GetMatrixArray());
+        
+    }
+    if (!useCutFileSBRanges){
+        if(fSys=="pp" || fSys=="PP"|| fSys=="p-p"){
+            
+            //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
+            Double_t LSBLowLim[15] = {0.,0.,0.,1.7930,1.7770,1.7850,1.7530,1.7690,1.7690,1.7690,1.7690,1.7690,1.7690,0.,0.};
+            Double_t LSBUppLim[15] = {0.,0.,0.,1.8410,1.8330,1.8330,1.8170,1.8250,1.8250,1.8250,1.8250,1.8250,1.8250,0.,0.};
+            Double_t RSBLowLim[15] = {0.,0.,0.,1.8970,1.9050,1.9050,1.9210,1.9130,1.9130,1.9130,1.9130,1.9130,1.9130,0.,0.};
+            Double_t RSBUppLim[15] = {0.,0.,0.,1.9450,1.9610,1.9450,1.9770,1.9690,1.9690,1.9690,1.9690,1.9690,1.9690,0.,0.};
+            Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8410,1.8490,1.8330,1.8410,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
+            Double_t SandBUppLim[15] = {0.,0.,0.,1.8890,1.8970,1.8890,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,0.,0.};
+            
+            
+        }else if(fSys=="pPb" || fSys=="p-Pb" || fSys=="PPb"){
+            
+            //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
+            Double_t LSBLowLim[15]   = {0.,0.,0.,1.7930,1.7930,1.7850,1.7850,1.7770,1.7770,1.7690,1.7690,1.7530,1.7610,0.,0.};
+            Double_t LSBUppLim[15]   = {0.,0.,0.,1.8410,1.8410,1.8330,1.8330,1.8330,1.8330,1.8250,1.8250,1.8170,1.8250,0.,0.};
+            Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8490,1.8490,1.8490,1.8490,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
+            Double_t SandBUppLim[15] = {0.,0.,0.,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.9050,1.8970,0.,0.};
+            Double_t RSBLowLim[15]   = {0.,0.,0.,1.9050,1.9050,1.9050,1.9050,1.9130,1.9130,1.9130,1.9130,1.9210,1.9130,0.,0.};
+            Double_t RSBUppLim[15]   = {0.,0.,0.,1.9530,1.9530,1.9610,1.9530,1.9610,1.9610,1.9690,1.9770,1.9850,1.9770,0.,0.};
+            
+            
+        }else if(fSys=="PbPb" || fSys=="Pb-Pb" || fSys=="PbPb"){
+            
+            //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
+            Double_t LSBLowLim[15]   = {0.,0.,0.,1.797,1.775,1.791,1.759,1.767,1.767,1.767,1.767,1.767,1.767,1.767,1.767};
+            Double_t LSBUppLim[15]   = {0.,0.,0.,1.837,1.829,1.837,1.821,1.821,1.821,1.821,1.821,1.821,1.821,1.821,1.821};
+            Double_t SandBLowLim[15] = {0.,0.,0.,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843,1.843};
+            Double_t SandBUppLim[15] = {0.,0.,0.,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885};
+            Double_t RSBLowLim[15]   = {0.,0.,0.,1.901,1.907,1.901,1.917,1.917,1.917,1.917,1.917,1.917,1.917,1.917,1.917};
+            Double_t RSBUppLim[15]   = {0.,0.,0.,1.939,1.963,1.947,1.979,1.971,1.971,1.971,1.971,1.971,1.971,1.971,1.971};
+            
+            
+        }else{
+            cout << "EROOR in AddTask: Please check system name" << endl;
+            return;
+        }
+        dpluscorrTask->SetLSBLowerUpperLim(LSBLowLim, LSBUppLim);
+        dpluscorrTask->SetSandBLowerUpperLim(SandBLowLim, SandBUppLim);
+        dpluscorrTask->SetRSBLowerUpperLim(RSBLowLim, RSBUppLim);
     }
     
-    dpluscorrTask->SetLSBLowerUpperLim(LSBLowLim, LSBUppLim);
-    dpluscorrTask->SetSandBLowerUpperLim(SandBLowLim, SandBUppLim);
-    dpluscorrTask->SetRSBLowerUpperLim(RSBLowLim, RSBUppLim);
+    if(fSys=="pp" || fSys=="PP"|| fSys=="p-p") finDirname+="PP";
+    else if(fSys=="pPb" || fSys=="p-Pb" || fSys=="PPb") finDirname+="pPb";
+    else if(fSys=="PbPb" || fSys=="Pb-Pb" || fSys=="PbPb") finDirname+="PbPb";
     
     if(fOption==1)finDirname+="HadCorr";
     else if(fOption==2)finDirname+="KaonCorr";

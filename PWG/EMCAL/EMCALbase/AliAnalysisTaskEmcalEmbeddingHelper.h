@@ -21,6 +21,10 @@ class TChain;
 class TFile;
 class AliVEvent;
 
+#include <iosfwd>
+#include <vector>
+#include <string>
+
 #include <AliAnalysisTaskSE.h>
 
 /**
@@ -65,31 +69,62 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   void      UserExec(Option_t *option)                           ;
   void      UserCreateOutputObjects()                            ;
-  void      SetPtHardBin(Int_t r)                                 { fPtHardBin           = r; }
-  void      SetAnchorRun(Int_t r)                                 { fAnchorRun           = r; }
   void      Terminate(Option_t *option)                          ;
 
   static const AliAnalysisTaskEmcalEmbeddingHelper* GetInstance() { return fgInstance       ; }
 
   AliVEvent* GetExternalEvent()                             const { return fExternalEvent   ; }
 
+  /**
+   * @{
+   * @name Properties of the embedding helper
+   */
+  bool Initialize();
+
+  // Get
+  Int_t GetPtHardBin()                                      const { return fPtHardBin; }
+  Int_t GetAnchorRun()                                      const { return fAnchorRun; }
   TString GetTreeName()                                     const { return fTreeName; }
-  /// Randomly start from an entry in the file. Will then loop around so that all entries are made available.
   Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
-  /// Randomly select the first file. Continues sequentially afterwards
   Bool_t GetRandomFileAccess()                              const { return fRandomFileAccess; }
   TString GetFilePattern()                                  const { return fFilePattern; }
+  TString GetInputFilename()                                const { return fInputFilename; }
   Int_t GetStartingFileIndex()                              const { return fFilenameIndex; }
   TString GetFileListFilename()                             const { return fFileListFilename; }
 
+  // Set
+  /// Set the pt hard bin which will be added into the file pattern. Can also be omitted and set directly in the pattern.
+  void SetPtHardBin(Int_t r)                                      { fPtHardBin           = r; }
+  /// Sets the anchor run which will be added into the file pattern. Can also be omitted and set directly in the pattern.
+  void SetAnchorRun(Int_t r)                                      { fAnchorRun           = r; }
+  /// Set to embed from ESD
   void SetESD(const char * treeName = "esdTree")                  { fTreeName     = treeName; }
+  /// Set to embed from AOD
   void SetAOD(const char * treeName = "aodTree")                  { fTreeName     = treeName; }
+  /**
+   * Enable to begin embedding at a random entry in each embedded file. Will then loop around in order
+   * so that all entries are made available.
+   */
   void SetRandomEventNumberAccess(Bool_t b)                       { fRandomEventNumberAccess = b; }
+  /// Randomly select the first file to embed from the file list. Continues sequentially afterwards
   void SetRandomFileAccess(Bool_t b)                              { fRandomFileAccess = b; }
+  /// Sets the file pattern to select AliEn files. This pattern is used as input to the alien_find command.
   void SetFilePattern(const char * pattern)                       { fFilePattern = pattern; }
+  /**
+   * Sets the input filename used to select and open files. Note that this is just the filename, not the path!
+   * This filename is also used as input to the alien_find command.
+   */
+  void SetInputFilename(const char * filename)                    { fInputFilename = filename; }
+  /// Select the file ID to start embedding from.
   void SetStartingFileIndex(Int_t n)                              { fFilenameIndex = n; }
+  /// Set the path to a file containing the list of files to embed
   void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
+  /* @} */
 
+  /**
+   * @{
+   * @name Options for the embedded event
+   */
   UInt_t GetTriggerMask()                                   const { return fTriggerMask; }
   Double_t GetZVertexCut()                                  const { return fZVertexCut; }
   Double_t GetMaxVertexDistance()                           const { return fMaxVertexDist; }
@@ -97,12 +132,26 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetTriggerMask(UInt_t triggerMask)                         { fTriggerMask = triggerMask; }
   void SetZVertexCut(Double_t zVertex)                            { fZVertexCut = zVertex; }
   void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
+  /* @} */
 
+  /**
+   * @{
+   * @name Utility functions
+   */
+  // AddTask
   static AliAnalysisTaskEmcalEmbeddingHelper * AddTaskEmcalEmbeddingHelper();
 
+  // Printing
+  friend std::ostream & operator<<(std::ostream &in, const AliAnalysisTaskEmcalEmbeddingHelper &myTask);
+  void Print(Option_t* opt = "") const;
+  std::ostream & Print(std::ostream &in) const;
+  std::string toString(bool includeFileList = false) const;
+  /* @} */
+
  protected:
-  void            GetFilenames()        ;
+  bool            GetFilenames()        ;
   std::string     GenerateUniqueFileListFilename();
+  void            DetermineFirstFileToEmbed();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
   Bool_t          GetNextEntry()        ;
@@ -114,6 +163,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Double_t                                      fZVertexCut;        ///<  Z vertex cut on embedded event
   Double_t                                      fMaxVertexDist;     ///<  Max distance between Z vertex of internal and embedded event
 
+  bool                                          fInitializedConfiguration; ///< Notes if the configuration has been initialized
   bool                                          fInitializedNewFile; //!<! Notes where the entry indices have been initialized for a new tree in the chain
   bool                                          fInitializedEmbedding; //!<! Notes where the TChain has been initialized for embedding
   bool                                          fWrappedAroundTree; //!<! Notes whether we have wrapped around the tree, which is important if the offset into the tree is non-zero
@@ -124,10 +174,11 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t                                        fRandomEventNumberAccess; ///<  If true, it will start embedding from a random entry in the file rather than from the first
   Bool_t                                        fRandomFileAccess ; ///< If true, it will start embedding from a random file in the input files list
 
-  TString                                       fFilePattern      ; ///<  File pattern to select AliEn files
+  TString                                       fFilePattern      ; ///<  File pattern to select AliEn files using alien_find
+  TString                                       fInputFilename    ; ///<  Filename of input root files
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
   Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
-  std::vector <std::string>                     fFilenames        ; //!<! Paths to the files to embed
+  std::vector <std::string>                     fFilenames        ; ///< Paths to the files to embed
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
   TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
   Int_t                                         fCurrentEntry     ; //!<! Current entry in the current tree
@@ -145,7 +196,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 1);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 2);
   /// \endcond
 };
 #endif

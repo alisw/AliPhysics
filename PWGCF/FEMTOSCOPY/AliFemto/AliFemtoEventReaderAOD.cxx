@@ -1397,6 +1397,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   tFemtoXi->SetPhiXi(tPhiXi);
 
   tFemtoXi->SetCosPointingAngleXi(tAODxi->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]));
+  tFemtoXi->SetCosPointingAngleV0toXi(tAODxi->CosPointingAngle(tAODxi->GetDecayVertexXi()));
 
   tFemtoXi->SetChargeXi(tAODxi->ChargeXi());
   tFemtoXi->SetptXi(std::sqrt(tAODxi->Pt2Xi()));

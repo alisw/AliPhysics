@@ -233,6 +233,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHiszvtxSelEv(0)
   , fHisWhichVert(0)
   , fHisWhichVertSelEv(0)
+  , fHisnClsITSvsNtrackletsSel(0)
+  , fHiszvtxvsSPDzvtx(0)
+  , fHiszvtxvsSPDzvtxSel(0)
   , fHisTrigCent(0)
   , fHisTrigMul(0)
   , fHisTrigCentSel(0)
@@ -408,6 +411,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHiszvtxSelEv(0)
   , fHisWhichVert(0)
   , fHisWhichVertSelEv(0)
+  , fHisnClsITSvsNtrackletsSel(0)
+  , fHiszvtxvsSPDzvtx(0)
+  , fHiszvtxvsSPDzvtxSel(0)
   , fHisTrigCent(0)
   , fHisTrigMul(0)
   , fHisTrigCentSel(0)
@@ -1253,7 +1259,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fHisWhichVertSelEv->GetXaxis()->SetBinLabel(4,"SPD-z");
 
     fHisnClsITSvsNtrackletsSel=new TH2F("hnClsITSvsNtrackletsSel","number of SPD clusters vs number of SPD tracklets; n. SPD clusters; Ntracklets",200,0,6000,500,0,20000); // max values should be changed for pp data to about 200 and 1000 respectively
-    fHiszvtxvsSPDzvtxSel=new TH2F("hzvtxvsSPDzvtxSel","event primary z-vertex vs SPD z-vertex; PV z-vertex [cm]; SPD z-vertex [cm]",800,-30,30,800,-30,30);
+    fHiszvtxvsSPDzvtx=new TH2F("hzvtxvsSPDzvtx","event primary z-vertex vs SPD z-vertex - before event selection; PV z-vertex [cm]; SPD z-vertex [cm]",800,-30,30,800,-30,30);
+    fHiszvtxvsSPDzvtxSel=new TH2F("hzvtxvsSPDzvtxSel","event primary z-vertex vs SPD z-vertex - after event selection; PV z-vertex [cm]; SPD z-vertex [cm]",800,-30,30,800,-30,30);
 
     fHisTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",24,-1.5,22.5,12,-10,110);
     fHisTrigCent->GetXaxis()->SetBinLabel(1,"All");
@@ -1397,6 +1404,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(trigCounter2);
     fOutputEvSelection->Add(fHisWhyEvRejected);
     fOutputEvSelection->Add(fHisnClsITSvsNtrackletsSel);
+    fOutputEvSelection->Add(fHiszvtxvsSPDzvtx);
     fOutputEvSelection->Add(fHiszvtxvsSPDzvtxSel);
 
   }
@@ -2226,15 +2234,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     fHisyvtx->Fill(yvtx);
     fHiszvtx->Fill(zvtx);
     fHisWhichVert->Fill(vtxTyp);
+    const AliVVertex *vSPD = aod->GetPrimaryVertexSPD();
+    fHiszvtxvsSPDzvtx->Fill(vSPD->GetZ(),zvtx);
     if(evSelected){
       fHisxvtxSelEv->Fill(xvtx);
       fHisyvtxSelEv->Fill(yvtx);
       fHiszvtxSelEv->Fill(zvtx);
       fHisWhichVertSelEv->Fill(vtxTyp);
+      fHiszvtxvsSPDzvtxSel->Fill(vSPD->GetZ(),zvtx);
     }
 
-    const AliVVertex *vSPD = aod->GetPrimaryVertexSPD();
-    fHiszvtxvsSPDzvtxSel->Fill(vSPD->GetZ(),zvtx);
     Int_t nCls = aod->GetNumberOfITSClusters(0) + aod->GetNumberOfITSClusters(1);
     fHisnClsITSvsNtrackletsSel->Fill(nCls,aod->GetTracklets()->GetNumberOfTracklets());
 

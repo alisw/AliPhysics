@@ -1728,7 +1728,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
 
     //=====================================================================
     //Option to override estimators from alternate oadb file
-    if ( fAlternateOADBForEstimators.EqualTo("")==kFALSE ) {
+    if ( fAlternateOADBForEstimators.EqualTo("")==kFALSE && fAlternateOADBFullManualBypass.EqualTo("")==kTRUE) {
         AliWarning("Extra option detected: Load estimators from OADB file called: ");
         AliWarning(Form(" path: %s", fAlternateOADBForEstimators.Data() ));
 

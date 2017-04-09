@@ -62,7 +62,13 @@ fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
-fCutVarV0CosPA_Const(1)
+fCutVarV0CosPA_Const(1),
+fCutUseVariableBBCosPA(kFALSE),
+fCutVarBBCosPA_Exp0Const(0),
+fCutVarBBCosPA_Exp0Slope(0),
+fCutVarBBCosPA_Exp1Const(0),
+fCutVarBBCosPA_Exp1Slope(0),
+fCutVarBBCosPA_Const(1)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, pt, mass
@@ -119,7 +125,13 @@ fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
-fCutVarV0CosPA_Const(1)
+fCutVarV0CosPA_Const(1),
+fCutUseVariableBBCosPA(kFALSE),
+fCutVarBBCosPA_Exp0Const(0),
+fCutVarBBCosPA_Exp0Slope(0),
+fCutVarBBCosPA_Exp1Const(0),
+fCutVarBBCosPA_Exp1Slope(0),
+fCutVarBBCosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -178,7 +190,13 @@ fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
-fCutVarV0CosPA_Const(1)
+fCutVarV0CosPA_Const(1),
+fCutUseVariableBBCosPA(kFALSE),
+fCutVarBBCosPA_Exp0Const(0),
+fCutVarBBCosPA_Exp0Slope(0),
+fCutVarBBCosPA_Exp1Const(0),
+fCutVarBBCosPA_Exp1Slope(0),
+fCutVarBBCosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -246,7 +264,13 @@ fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
-fCutVarV0CosPA_Const(1)
+fCutVarV0CosPA_Const(1),
+fCutUseVariableBBCosPA(kFALSE),
+fCutVarBBCosPA_Exp0Const(0),
+fCutVarBBCosPA_Exp0Slope(0),
+fCutVarBBCosPA_Exp1Const(0),
+fCutVarBBCosPA_Exp1Slope(0),
+fCutVarBBCosPA_Const(1)
 {
     //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
     const Long_t lNMassBinsConst = lNMassBins;
@@ -315,7 +339,13 @@ fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
 fCutVarV0CosPA_Exp0Slope(lCopyMe.fCutVarV0CosPA_Exp0Slope),
 fCutVarV0CosPA_Exp1Const(lCopyMe.fCutVarV0CosPA_Exp1Const),
 fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
-fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const)
+fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const),
+fCutUseVariableBBCosPA(lCopyMe.fCutUseVariableBBCosPA),
+fCutVarBBCosPA_Exp0Const(lCopyMe.fCutVarBBCosPA_Exp0Const),
+fCutVarBBCosPA_Exp0Slope(lCopyMe.fCutVarBBCosPA_Exp0Slope),
+fCutVarBBCosPA_Exp1Const(lCopyMe.fCutVarBBCosPA_Exp1Const),
+fCutVarBBCosPA_Exp1Slope(lCopyMe.fCutVarBBCosPA_Exp1Slope),
+fCutVarBBCosPA_Const(lCopyMe.fCutVarBBCosPA_Const)
 
 {
     SetName( lNewName.Data() );
@@ -391,6 +421,14 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutVarV0CosPA_Exp1Const = lCopyMe -> GetCutVarV0CosPAExp1Const();
     fCutVarV0CosPA_Exp1Slope = lCopyMe -> GetCutVarV0CosPAExp1Slope();
     fCutVarV0CosPA_Const = lCopyMe -> GetCutVarV0CosPAConst();
+    
+    //Variable BBCosPA
+    fCutUseVariableBBCosPA = lCopyMe -> GetCutUseVarBBCosPA();
+    fCutVarBBCosPA_Exp0Const = lCopyMe -> GetCutVarBBCosPAExp0Const();
+    fCutVarBBCosPA_Exp0Slope = lCopyMe -> GetCutVarBBCosPAExp0Slope();
+    fCutVarBBCosPA_Exp1Const = lCopyMe -> GetCutVarBBCosPAExp1Const();
+    fCutVarBBCosPA_Exp1Slope = lCopyMe -> GetCutVarBBCosPAExp1Slope();
+    fCutVarBBCosPA_Const = lCopyMe -> GetCutVarBBCosPAConst();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -473,6 +511,14 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutVarV0CosPA_Exp1Const = lCopyMe.GetCutVarV0CosPAExp1Const();
     fCutVarV0CosPA_Exp1Slope = lCopyMe.GetCutVarV0CosPAExp1Slope();
     fCutVarV0CosPA_Const = lCopyMe.GetCutVarV0CosPAConst();
+    
+    //Variable BBCosPA
+    fCutUseVariableBBCosPA = lCopyMe.GetCutUseVarBBCosPA();
+    fCutVarBBCosPA_Exp0Const = lCopyMe.GetCutVarBBCosPAExp0Const();
+    fCutVarBBCosPA_Exp0Slope = lCopyMe.GetCutVarBBCosPAExp0Slope();
+    fCutVarBBCosPA_Exp1Const = lCopyMe.GetCutVarBBCosPAExp1Const();
+    fCutVarBBCosPA_Exp1Slope = lCopyMe.GetCutVarBBCosPAExp1Slope();
+    fCutVarBBCosPA_Const = lCopyMe.GetCutVarBBCosPAConst();
     
     if (fHisto) {
         delete fHisto;
@@ -574,6 +620,14 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if ( TMath::Abs(fCutVarV0CosPA_Exp1Slope - lCompareCascade->GetCutVarV0CosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutVarV0CosPA_Const  - lCompareCascade->GetCutVarV0CosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
     
+    //Variable BBCosPA
+    if ( TMath::Abs(fCutUseVariableBBCosPA - lCompareCascade->GetCutUseVarBBCosPA()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarBBCosPA_Exp0Const - lCompareCascade->GetCutVarBBCosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarBBCosPA_Exp0Slope - lCompareCascade->GetCutVarBBCosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarBBCosPA_Exp1Const - lCompareCascade->GetCutVarBBCosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarBBCosPA_Exp1Slope - lCompareCascade->GetCutVarBBCosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarBBCosPA_Const  - lCompareCascade->GetCutVarBBCosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -623,6 +677,14 @@ void AliCascadeResult::Print()
     cout<<" Casc 2D Radius.....: "<<fCutCascRadius<<endl;
     cout<<" DCA Bach to Baryon.: "<<fCutDCABachToBaryon<<endl;
     cout<<" Bach Baryon CosPA..: "<<fCutBachBaryonCosPA<<endl;
+    cout<<" Use Var BBCosPA....: "<<fCutUseVariableBBCosPA<<endl;
+    if( fCutUseVariableBBCosPA ){
+        cout<<" ^--Exp. 0 Const....: "<<fCutVarBBCosPA_Exp0Const<<endl;
+        cout<<" ^--Exp. 0 Slope....: "<<fCutVarBBCosPA_Exp0Slope<<endl;
+        cout<<" ^--Exp. 1 Const....: "<<fCutVarBBCosPA_Exp1Const<<endl;
+        cout<<" ^--Exp. 1 Slope....: "<<fCutVarBBCosPA_Exp1Slope<<endl;
+        cout<<" ^--Constant........: "<<fCutVarBBCosPA_Const<<endl;
+    }
     cout<<" Min V0 Lifetime....: "<<fCutMinV0Lifetime<<endl;
     cout<<" Max V0 Lifetime....: "<<fCutMaxV0Lifetime<<endl;
     

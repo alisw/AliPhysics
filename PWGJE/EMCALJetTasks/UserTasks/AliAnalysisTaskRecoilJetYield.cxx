@@ -434,16 +434,16 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     JetContPythDet->ResetCurrentID();
     JetContPythTrue->ResetCurrentID();
 
-      while((JetPythDet = JetContPythDet->GetNextAcceptJet())){
+    while((JetPythDet = JetContPythDet->GetNextAcceptJet())){
       fhDetJetPt_Incl->Fill(JetPythDet->Pt()); //Fill histogram with all Detector level jets
     }
       
       
-    if(fJetShapeSub==kConstSub){
-      while((JetHybridS = JetContHybridS->GetNextAcceptJet())){
-	if (fJetShapeSub==kConstSub) JetPtThreshold=JetHybridS->Pt();
-	else JetPtThreshold=JetHybridS->Pt()-(GetRhoVal(0)*JetHybridS->Area());
-        if ( (!JetHybridS) || (JetPtThreshold<fPtThreshold)) continue;
+    while((JetHybridS = JetContHybridS->GetNextAcceptJet())){
+      if (fJetShapeSub==kConstSub) JetPtThreshold=JetHybridS->Pt();
+      else JetPtThreshold=JetHybridS->Pt()-(GetRhoVal(0)*JetHybridS->Area());
+      if ( (!JetHybridS) || (JetPtThreshold<fPtThreshold)) continue;
+      if (fJetShapeSub==kConstSub){
 	Int_t JetNumber=-1;
 	for(Int_t i = 0; i<JetContHybridUS->GetNJets(); i++) {
 	  JetHybridUS = JetContHybridUS->GetJet(i);
@@ -461,45 +461,49 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  continue;
 	}
 	JetPythDet=JetHybridUS->ClosestJet();
-
-	if(!(fJetShapeSub==kConstSub)) JetHybridUS = JetHybridS->ClosestJet();
-        if (!JetHybridUS) {
-          Printf("Unsubtracted embedded jet does not exist, returning");
-          continue;
-        }
-	if (!JetPythDet) continue;
-	fhDetJetPt_Matched->Fill(JetPythDet->Pt()); //Fill only matched detector level jets for tagging efficiency comparison
-	JetPythTrue=JetPythDet->ClosestJet();
-	if(!JetPythTrue) continue;
-	JetsMatched=kTRUE;
-
-	fJetInfoVar[0]=JetHybridS->Pt();
-	fJetInfoVar[1]=JetPythTrue->Pt();
-	if(fDoSoftDrop) {
-	  SoftDrop(JetHybridS,JetContHybridS,fZCut,fBeta_SD,kFALSE);
-	  SoftDrop(JetPythTrue,JetContPythTrue,fZCut,fBeta_SD,kTRUE);
-	}
-	else{
-	  fJetInfoVar[2]=0;
-	  fJetInfoVar[3]=0;
-	  fJetInfoVar[4]=0;
-	  fJetInfoVar[5]=0;
-	  fJetInfoVar[6]=0;
-	  fJetInfoVar[7]=0;
-	  fJetInfoVar[12]=0;
-	  fJetInfoVar[13]=0;
-	  fJetInfoVar[14]=0;
-	  fJetInfoVar[15]=0;
-	  fJetInfoVar[16]=0;
-	  fJetInfoVar[17]=0;
-	}		    
-	fJetInfoVar[8]=PTD(JetHybridS,0);
-	fJetInfoVar[9]=PTD(JetPythTrue,0);
-	fJetInfoVar[10]=Angularity(JetHybridS,0);
-	fJetInfoVar[11]=Angularity(JetPythTrue,0);
-	fTreeJetInfo->Fill();
       }
+      if(!(fJetShapeSub==kConstSub)){
+	if (JetContHybridS->AliJetContainer::GetFractionSharedPt(JetHybridS)<fSharedFractionPtMin) continue;
+	    JetPythDet = JetHybridS->ClosestJet();
+      }
+      if (!JetHybridUS) {
+	Printf("Unsubtracted embedded jet does not exist, returning");
+	continue;
+      }
+      if (!JetPythDet) continue;
+      fhDetJetPt_Matched->Fill(JetPythDet->Pt()); //Fill only matched detector level jets for tagging efficiency comparison
+      JetPythTrue=JetPythDet->ClosestJet();
+      if(!JetPythTrue) continue;
+      JetsMatched=kTRUE;
+
+      if(fJetShapeSub==kConstSub) fJetInfoVar[0]=JetHybridS->Pt();
+      else fJetInfoVar[0]=JetHybridS->Pt()-(GetRhoVal(0)*JetHybridS->Area());
+      fJetInfoVar[1]=JetPythTrue->Pt();
+      if(fDoSoftDrop) {
+	SoftDrop(JetHybridS,JetContHybridS,fZCut,fBeta_SD,kFALSE);
+	SoftDrop(JetPythTrue,JetContPythTrue,fZCut,fBeta_SD,kTRUE);
+      }
+      else{
+	fJetInfoVar[2]=0;
+	fJetInfoVar[3]=0;
+	fJetInfoVar[4]=0;
+	fJetInfoVar[5]=0;
+	fJetInfoVar[6]=0;
+	fJetInfoVar[7]=0;
+	fJetInfoVar[12]=0;
+	fJetInfoVar[13]=0;
+	fJetInfoVar[14]=0;
+	fJetInfoVar[15]=0;
+	fJetInfoVar[16]=0;
+	fJetInfoVar[17]=0;
+      }		    
+      fJetInfoVar[8]=PTD(JetHybridS,0);
+      fJetInfoVar[9]=PTD(JetPythTrue,0);
+      fJetInfoVar[10]=Angularity(JetHybridS,0);
+      fJetInfoVar[11]=Angularity(JetPythTrue,0);
+      fTreeJetInfo->Fill();
     }
+    
   }
 
   
