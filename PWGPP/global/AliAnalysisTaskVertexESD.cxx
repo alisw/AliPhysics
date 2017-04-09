@@ -406,7 +406,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 
 
   const AliESDVertex *spdv=esdE->GetPrimaryVertexSPD();
-  const AliESDVertex *spdvp=esdE->GetPileupVertexSPD(0);
+  const AliESDVertex *spdvp = esdE->GetNumberOfPileupVerticesSPD()>0 ? esdE->GetPileupVertexSPD(0):0;
   const AliESDVertex *tpcv=esdE->GetPrimaryVertexTPC();
   const AliESDVertex *trkv=esdE->GetPrimaryVertexTracks();
   
