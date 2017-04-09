@@ -30,9 +30,9 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
   // user customization part
 
   taskESD->SelectCollisionCandidates(AliVEvent::kINT7);
-  taskESD->SetMC(kFALSE);
-  taskESD->setSDDstatus(kFALSE);
-  taskESD->createV0tree(kFALSE);
+  //taskESD->SetMC(kFALSE);
+  //taskESD->setSDDstatus(kFALSE);
+  //taskESD->createV0tree(kFALSE);
 
 
   
