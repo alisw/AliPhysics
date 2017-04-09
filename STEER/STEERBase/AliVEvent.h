@@ -261,6 +261,8 @@ public:
   const char* Whoami();
   virtual ULong64_t  GetSize()  const {return 0;}
 
+  virtual void AdjustMCLabels(const AliVEvent *mctruth) {return;}
+  
   ClassDef(AliVEvent, 3)  // base class for AliEvent data
 };
 #endif 
