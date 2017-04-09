@@ -50,7 +50,6 @@
 #include "AliMCParticle.h" 
 #include "AliHeader.h" 
 #include "AliGenEventHeader.h" 
-#include "AliStack.h" 
 #include "AliMCInfoCuts.h" 
 #include "AliRecInfoCuts.h" 
 #include "AliTracker.h" 
@@ -195,7 +194,7 @@ void AliPerformanceRes::Init(){
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   if(!esdEvent) return;
   if(!esdTrack) return;
@@ -229,10 +228,10 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   //
   // Fill rec vs MC information
   //
-  if(!stack) return;
+  if(!mcev) return;
   Int_t label = esdTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
   if (label <= 0) return;
-  TParticle* particle = stack->Particle(label);
+  TParticle* particle = ((AliMCParticle*)mcev->GetTrack(label))->Particle();
   if(!particle) return;
   if(!particle->GetPDG()) return;
   if(particle->GetPDG()->Charge()==0) return;
@@ -309,7 +308,7 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   // Fill resolution comparison information (TPC+ITS)
   if(!esdEvent) return;
@@ -338,10 +337,10 @@ void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   //
   // Fill rec vs MC information
   //
-  if(!stack) return;
+  if(!mcev) return;
 
   Int_t label = TMath::Abs(esdTrack->GetLabel()); //Use global label for combined resolution analysis
-  TParticle* particle = stack->Particle(label);
+  TParticle* particle = ((AliMCParticle*)mcev->GetTrack(label))->Particle();
   if(!particle) return;
   if(!particle->GetPDG()) return;
   if(particle->GetPDG()->Charge()==0) return;
@@ -430,7 +429,7 @@ void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   // Fill resolution comparison information (constarained parameters) 
   //
@@ -464,10 +463,10 @@ void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *c
   //
   // Fill rec vs MC information
   //
-  if(!stack) return;
+  if(!mcev) return;
 
   Int_t label = TMath::Abs(esdTrack->GetLabel()); 
-  TParticle* particle = stack->Particle(label);
+  TParticle* particle = ((AliMCParticle*)mcev->GetTrack(label))->Particle();
   if(!particle) return;
   if(!particle->GetPDG()) return;
   if(particle->GetPDG()->Charge()==0) return;
@@ -661,7 +660,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   else
   {
 	  //If Track vertex is not used the above check does not work, hence we use the MC reference track
-	  isPrimary = label < mcEvent->Stack()->GetNprimary();
+    isPrimary = mcEvent->IsPhysicalPrimary(label);
   }
   if(isPrimary) 
   { 
@@ -880,7 +879,6 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   }
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
-  AliStack* stack = 0;
   TArrayF vtxMC(3);
   
   if(bUseMC)
@@ -893,12 +891,6 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     header = mcEvent->Header();
     if (!header) {
       Error("Exec","Header not available");
-      return;
-    }
-    // MC particle stack
-    stack = mcEvent->Stack();
-    if (!stack) {
-      Error("Exec","Stack not available");
       return;
     }
     // get MC vertex
@@ -949,33 +941,32 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 
 
     Int_t label = TMath::Abs(track->GetLabel()); 
-    if ( label > stack->GetNtrack() ) 
+    /* // RS this check is not needed
+    if ( label > mcEvent->GetNumberOfTracks() ) 
     {
       ULong_t status = track->GetStatus();
       printf ("Error : ESD MCLabel %d - StackSize %d - Status %lu \n",
 	       track->GetLabel(), stack->GetNtrack(), status );
       printf(" NCluster %d \n", track->GetTPCclusters(0) );
-      /*
-      if ((status&AliESDtrack::kTPCrefit)== 0 ) printf("   kTPCrefit \n");
-      if ((status&AliESDtrack::kTPCin)== 0 )    printf("   kTPCin \n");
-      if ((status&AliESDtrack::kTPCout)== 0 )   printf("   kTPCout \n");
-      if ((status&AliESDtrack::kTRDrefit)== 0 ) printf("   kTRDrefit \n");
-      if ((status&AliESDtrack::kTRDin)== 0 )    printf("   kTRDin \n");
-      if ((status&AliESDtrack::kTRDout)== 0 )   printf("   kTRDout \n");
-      if ((status&AliESDtrack::kITSrefit)== 0 ) printf("   kITSrefit \n");
-      if ((status&AliESDtrack::kITSin)== 0 )    printf("   kITSin \n");
-      if ((status&AliESDtrack::kITSout)== 0 )   printf("   kITSout \n");
-      */
+//      if ((status&AliESDtrack::kTPCrefit)== 0 ) printf("   kTPCrefit \n");
+//      if ((status&AliESDtrack::kTPCin)== 0 )    printf("   kTPCin \n");
+//      if ((status&AliESDtrack::kTPCout)== 0 )   printf("   kTPCout \n");
+//      if ((status&AliESDtrack::kTRDrefit)== 0 ) printf("   kTRDrefit \n");
+//      if ((status&AliESDtrack::kTRDin)== 0 )    printf("   kTRDin \n");
+//      if ((status&AliESDtrack::kTRDout)== 0 )   printf("   kTRDout \n");
+//      if ((status&AliESDtrack::kITSrefit)== 0 ) printf("   kITSrefit \n");
+//      if ((status&AliESDtrack::kITSin)== 0 )    printf("   kITSin \n");
+//      if ((status&AliESDtrack::kITSout)== 0 )   printf("   kITSout \n");
 
       continue;
     }
-
+*/
 	if (label == 0) continue;		//Cannot distinguish between track or fake track
 	if (track->GetLabel() < 0) continue; //Do not consider fake tracks
 
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent);
-    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track,esdEvent);
+    if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,track,esdEvent);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,track,esdEvent);
+    else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,track,esdEvent);
     else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,track,esdEvent);
     else if(GetAnalysisMode() == 4) {
 
