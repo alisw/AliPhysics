@@ -5258,10 +5258,10 @@ void AliHFSystErr::InitLctopK0S2013pPb() {
 
   // MC dN/dpt 
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nBins,limits); // quadratic sum of ptshape and multiplicity dependence
-  fMCPtShape->SetBinContent(1,0.03);
-  fMCPtShape->SetBinContent(2,0.03);
-  fMCPtShape->SetBinContent(3,0.04);
-  fMCPtShape->SetBinContent(4,0.04);
+  fMCPtShape->SetBinContent(1,0.01);
+  fMCPtShape->SetBinContent(2,0.01);
+  fMCPtShape->SetBinContent(3,0.01);
+  fMCPtShape->SetBinContent(4,0.03);
  
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",nBins,limits);
@@ -5308,8 +5308,7 @@ void AliHFSystErr::InitLctopK0S2013pPbBDT() {
 
   // MC dN/dpt 
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0.,12.);
-  for(Int_t i=1; i<=12;i++) fMCPtShape->SetBinContent(i,0.00);
-  for(Int_t i=7; i<=8;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=1; i<=12;i++) fMCPtShape->SetBinContent(i,0.01); // quadratic sum of ptshape and multiplicity dependence
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);
