@@ -2771,7 +2771,53 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
     //      for the two particle species. Another potential improvement could be asymmetric
     //      DCA selections for the Neg / Pos tracks for the (anti)Lambda decay, as decay
     //      kinematics would prefer having the pion daughter with a larger DCA.
-
+    
+    /***
+     //Information from Michal, 09th April
+     === Lambda ===
+     --- 0-10% ---
+     Signal loss: 5%
+     Parameters from real data:
+     par 0   0.18945
+     par 1  -0.57882
+     par 2   0.01302
+     Signal loss: 5%
+     Parameters from MC:
+     par 0   0.26081
+     par 1  -1.16285
+     par 2   0.02692
+     
+     === AntiLambda ===
+     --- 0-10% ---
+     Signal loss: 5%
+     Parameters from real data:
+     par 0   0.21861
+     par 1  -0.67273
+     par 2   0.01200
+     Signal loss: 5%
+     Parameters from MC:
+     par 0   0.24144
+     par 1  -1.04444
+     par 2   0.02684
+     
+     === K0Short ===
+     --- 0-10% ---
+     Signal loss: 5%
+     Parameters from real data:
+     par 0   0.21320
+     par 1  -0.91380
+     par 2   0.02483
+     Signal loss: 5%
+     Parameters from MC:
+     par 0   0.17816
+     par 1  -0.79000
+     par 2   0.02184
+     */
+    
+    Double_t parExpConst[3] = { 0.26081, 0.24144, 0.17816 };
+    Double_t parExpSlope[3] = { -1.16285, -1.04444, -0.79000 };
+    Double_t parConst[3]    = { 0.02692, 0.02684, 0.02184 };
+    
     //================================================================================
     // K0SHORT SELECTIONS
     //--------------------------------------------------------------------------------
@@ -2779,7 +2825,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
     lcutsV0[0][0][ 0] = 0.06;    lcutsV0[0][1][ 0] =   0.1; lcutsV0[0][2][0] = 0.17; //DCANegToPV
     lcutsV0[0][0][ 1] = 0.06;    lcutsV0[0][1][ 1] =   0.1; lcutsV0[0][2][1] = 0.17; //DCAPosToPV
     lcutsV0[0][0][ 2] = 0.95;    lcutsV0[0][1][ 2] =   0.8; lcutsV0[0][2][2] =  0.7; //DCAV0Daughters
-    lcutsV0[0][0][ 3] =.9986;    lcutsV0[0][1][ 3] = 0.999; lcutsV0[0][2][3] =.9992; //V0CosPA
+    lcutsV0[0][0][ 3] = 0.95;    lcutsV0[0][1][ 3] =  0.95; lcutsV0[0][2][3] = 0.95; //V0CosPA
     lcutsV0[0][0][ 4] = 4.50;    lcutsV0[0][1][ 4] =  5.00; lcutsV0[0][2][4] = 5.50; //V0Radius
     lcutsV0[0][0][ 5] =   12;    lcutsV0[0][1][ 5] =    10; lcutsV0[0][2][5] =    8; //Proper Lifetime (in cm)
     lcutsV0[0][0][ 6] =   70;    lcutsV0[0][1][ 6] =    70; lcutsV0[0][2][6] =   80; //Least Nbr Crossed Rows
@@ -2794,7 +2840,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
     lcutsV0[1][0][ 0] =  0.1;    lcutsV0[1][1][ 0] =   0.2; lcutsV0[1][2][0] = 0.30; //DCANegToPV
     lcutsV0[1][0][ 1] = 0.08;    lcutsV0[1][1][ 1] =   0.1; lcutsV0[1][2][1] = 0.13; //DCAPosToPV
     lcutsV0[1][0][ 2] =  1.0;    lcutsV0[1][1][ 2] =   0.8; lcutsV0[1][2][2] = 0.65; //DCAV0Daughters
-    lcutsV0[1][0][ 3] =.9984;    lcutsV0[1][1][ 3] = 0.999; lcutsV0[1][2][3] =.9992; //V0CosPA
+    lcutsV0[1][0][ 3] = 0.95;    lcutsV0[1][1][ 3] =  0.95; lcutsV0[1][2][3] = 0.95; //V0CosPA
     lcutsV0[1][0][ 4] = 4.00;    lcutsV0[1][1][ 4] =  5.00; lcutsV0[1][2][4] = 6.00; //V0Radius
     lcutsV0[1][0][ 5] =   24;    lcutsV0[1][1][ 5] =    20; lcutsV0[1][2][5] =   17; //Proper Lifetime (in cm)
     lcutsV0[1][0][ 6] =   70;    lcutsV0[1][1][ 6] =    70; lcutsV0[1][2][6] =   80; //Least Nbr Crossed Rows
@@ -2809,7 +2855,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
     lcutsV0[2][0][ 0] = 0.08;    lcutsV0[2][1][ 0] =   0.1; lcutsV0[2][2][0] = 0.13; //DCANegToPV
     lcutsV0[2][0][ 1] =  0.1;    lcutsV0[2][1][ 1] =   0.2; lcutsV0[2][2][1] = 0.30; //DCAPosToPV
     lcutsV0[2][0][ 2] =  1.0;    lcutsV0[2][1][ 2] =   0.8; lcutsV0[2][2][2] = 0.65; //DCAV0Daughters
-    lcutsV0[2][0][ 3] =.9984;    lcutsV0[2][1][ 3] = 0.999; lcutsV0[2][2][3] =.9992; //V0CosPA
+    lcutsV0[2][0][ 3] = 0.95;    lcutsV0[2][1][ 3] =  0.95; lcutsV0[2][2][3] = 0.95; //V0CosPA
     lcutsV0[2][0][ 4] = 4.00;    lcutsV0[2][1][ 4] =  5.00; lcutsV0[2][2][4] = 6.00; //V0Radius
     lcutsV0[2][0][ 5] =   24;    lcutsV0[2][1][ 5] =    20; lcutsV0[2][2][5] =   17; //Proper Lifetime (in cm)
     lcutsV0[2][0][ 6] =   70;    lcutsV0[2][1][ 6] =    70; lcutsV0[2][2][6] =   80; //Least Nbr Crossed Rows
@@ -2840,6 +2886,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
         lV0Result[lNV0]->SetCutDCAPosToPV            ( lcutsV0[i][1][ 1] ) ;
         lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcutsV0[i][1][ 2] ) ;
         lV0Result[lNV0]->SetCutV0CosPA               ( lcutsV0[i][1][ 3] ) ;
+        //Set Variable cut
+        lV0Result[lNV0]->SetCutVarV0CosPA               ( parExpConst[i], parExpSlope[i], 0.0, 1.0, parConst[i] ) ;
+        
         lV0Result[lNV0]->SetCutV0Radius              ( lcutsV0[i][1][ 4] ) ;
 
         //Miscellaneous
@@ -2863,6 +2912,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
         lV0Result[lNV0]->SetCutDCAPosToPV            ( lcutsV0[i][1][ 1] ) ;
         lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcutsV0[i][1][ 2] ) ;
         lV0Result[lNV0]->SetCutV0CosPA               ( lcutsV0[i][1][ 3] ) ;
+        //Set Variable cut
+        lV0Result[lNV0]->SetCutVarV0CosPA               ( parExpConst[i], parExpSlope[i], 0.0, 1.0, parConst[i] ) ;
         lV0Result[lNV0]->SetCutV0Radius              ( lcutsV0[i][1][ 4] ) ;
 
         //Miscellaneous
@@ -2889,6 +2940,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
             if(iCut ==  1 ) lV0Result[lNV0]->SetCutDCAPosToPV            ( lcutsV0[i][0][iCut] ) ;
             if(iCut ==  2 ) lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcutsV0[i][0][iCut] ) ;
             if(iCut ==  3 ) lV0Result[lNV0]->SetCutV0CosPA               ( lcutsV0[i][0][iCut] ) ;
+            
+            
             if(iCut ==  4 ) lV0Result[lNV0]->SetCutV0Radius              ( lcutsV0[i][0][iCut] ) ;
 
             //Miscellaneous
