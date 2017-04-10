@@ -380,7 +380,8 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   }
   
   Double_t values[AliDielectronVarManager::kNMaxValues];
-  AliDielectronVarManager::Fill(event, values);
+  AliDielectronVarManager::SetEventData(values);
+  AliDielectronVarManager::SetEvent(event);
   
   if(fUseAnalysisUtils) {
     if(fAnalysisUtils->IsVertexSelected2013pA(event))  // 2013 p-Pb event selection    
