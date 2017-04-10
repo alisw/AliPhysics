@@ -214,9 +214,23 @@ public:
   }
   
   ///
+  /// Method to get if the T0 time is T0 TOF or T0 T0A
+  Bool_t IsOrT0TOF_T0A(){
+    if(IsT0TOF() || IsT0A()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
   /// Method to get if the T0 time is T0 TOF and T0 T0C
   Bool_t IsT0TOF_T0C(){
     if(IsT0TOF() && IsT0C()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF or T0 T0C
+  Bool_t IsOrT0TOF_T0C(){
+    if(IsT0TOF() || IsT0C()) return kTRUE;
     return kFALSE;
   }
   
@@ -228,9 +242,23 @@ public:
   }
   
   ///
+  /// Method to get if the T0 time is T0 T0A or T0 T0C
+  Bool_t IsOrT0A_T0C(){
+    if(IsT0A() || IsT0C()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
   /// Method to get if the T0 time is T0 TOF, T0 T0A and T0 T0C
   Bool_t IsT0TOF_T0A_T0C(){
     if(IsT0TOF() && IsT0A() && IsT0C()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF or T0 T0A or T0 T0C
+  Bool_t IsOrT0TOF_T0A_T0C(){
+    if(IsT0TOF() || IsT0A() || IsT0C()) return kTRUE;
     return kFALSE;
   }
   
@@ -274,7 +302,7 @@ public:
   /// Method to get the particle momentum
   Double_t GetMomentum() const { return fPt/TMath::Sin(GetTheta()); }
   
-  ClassDef(AliAnTOFtrack, 5);
+  ClassDef(AliAnTOFtrack, 6);
 };
 
 #endif
