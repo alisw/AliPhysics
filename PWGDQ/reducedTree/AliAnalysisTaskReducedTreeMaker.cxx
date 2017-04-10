@@ -379,10 +379,9 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     }
   }
   
-  Double_t values[AliDielectronVarManager::kNMaxValues];
-  AliDielectronVarManager::SetEventData(values);
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::SetEvent(event);
-  
+
   if(fUseAnalysisUtils) {
     if(fAnalysisUtils->IsVertexSelected2013pA(event))  // 2013 p-Pb event selection    
       fReducedEvent->fEventTag |= (ULong64_t(1)<<0);
@@ -665,14 +664,14 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   
   if(fFillEventPlaneInfo) {
     AliReducedEventPlaneInfo* ep=new AliReducedEventPlaneInfo();     
-    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][0] = values[AliDielectronVarManager::kQnTPCxH2];
-    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][1] = values[AliDielectronVarManager::kQnTPCyH2];
+    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][0] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnTPCxH2);
+    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][1] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnTPCyH2);
     ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPC][1] = AliReducedEventPlaneInfo::kRecentered;
-    ep->fQvector[AliReducedEventPlaneInfo::kVZEROA][1][0] = values[AliDielectronVarManager::kQnV0AxH2];
-    ep->fQvector[AliReducedEventPlaneInfo::kVZEROA][1][1] = values[AliDielectronVarManager::kQnV0AyH2];
+    ep->fQvector[AliReducedEventPlaneInfo::kVZEROA][1][0] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnV0AxH2);
+    ep->fQvector[AliReducedEventPlaneInfo::kVZEROA][1][1] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnV0AyH2);
     ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kVZEROA][1] = AliReducedEventPlaneInfo::kRecentered;
-    ep->fQvector[AliReducedEventPlaneInfo::kVZEROC][1][0] = values[AliDielectronVarManager::kQnV0CxH2];
-    ep->fQvector[AliReducedEventPlaneInfo::kVZEROC][1][1] = values[AliDielectronVarManager::kQnV0CyH2];
+    ep->fQvector[AliReducedEventPlaneInfo::kVZEROC][1][0] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnV0CxH2);
+    ep->fQvector[AliReducedEventPlaneInfo::kVZEROC][1][1] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnV0CyH2);
     ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kVZEROC][1] = AliReducedEventPlaneInfo::kRecentered;
     eventInfo->SetEventPlane(ep);
   }
