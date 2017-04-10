@@ -219,28 +219,19 @@ public:
   //
   Int_t    GetSMType(Int_t nSupMod)           const { if( nSupMod > fEMCGeometry->GetNumberOfSuperModules() ) return -1;
                                                       return fEMCGeometry->GetEMCSystem()[nSupMod]		     ; }
-  Bool_t   IsDCALSM(Int_t nSupMod) const;
+  Bool_t   IsDCALSM   (Int_t nSupMod) const;
   Bool_t   IsDCALExtSM(Int_t nSupMod) const;
+  
+  // Methods needed for SM in extension, where center of SM != center of the SM-section.
+  // Used in AliEMCALv0 to calculate position.
   Bool_t   GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, Double_t &phiMax)    const 
     { return fEMCGeometry->GetPhiBoundariesOfSM(nSupMod, phiMin, phiMax)   ; }
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const 
     { return fEMCGeometry->GetPhiBoundariesOfSMGap(nPhiSec, phiMin, phiMax); }
-  //
-  // especially for SM in extension, where center of SM != center of the SM-section.
-  // Used in AliEMCALv0 to calculate position.
-  
-  //////////////////////////////////////////////////
-  // Obsolete methods to be thrown out when feasible
-  Float_t GetGap2Active(void)                 const { return fEMCGeometry->GetGap2Active()           ; }
+    
+  // Obsolete?
   Float_t GetSteelFrontThickness(void)        const { return fEMCGeometry->GetSteelFrontThickness()  ; }
-  Float_t GetTrd2AngleY(void)                 const { return fEMCGeometry->GetTrd2AngleY()           ; }
-  Float_t Get2Trd2Dy2(void)                   const { return fEMCGeometry->Get2Trd2Dy2()             ; }
-  Float_t GetTubsR(void)                      const { return fEMCGeometry->GetTubsR()                ; }
-  Float_t GetTubsTurnAngle(void)              const { return fEMCGeometry->GetTubsTurnAngle()        ; }
-  //Float_t GetAlFrontThickness(void)           const { return fEMCGeometry->GetAlFrontThickness()     ; }
-  //Float_t GetIP2ECASection(void)              const { return fEMCGeometry->GetIP2ECASection()        ; }   
-  //////////////////////////////////////////////////
-  
+   
   ///////////////////////////////
   //Geometry data member setters
   //
