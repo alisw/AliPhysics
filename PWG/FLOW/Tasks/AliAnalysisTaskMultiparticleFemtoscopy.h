@@ -370,6 +370,12 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList* GetCorrelationFunctionsTESTList() const {return this->fCorrelationFunctionsTESTList;}
   void SetCorrelationFunctionsTESTFlagsPro(TProfile* const cfTfp) {this->fCorrelationFunctionsTESTFlagsPro = cfTfp;};
   TProfile* GetCorrelationFunctionsTESTFlagsPro() const {return this->fCorrelationFunctionsTESTFlagsPro;};
+  void SetBoostVelocity(const Double_t vx, const Double_t vy, const Double_t vz)
+  {
+   fBoost = kTRUE;
+   fBoostVelocity = TVector3(vx,vy,vz);
+  }
+  
   void SetQ2binning(const Int_t nBins, const Double_t min, const Double_t max)
   {
    this->fnQ2bins = nBins;
@@ -645,6 +651,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // *.) Testing new ways to calculate correlation functions and cumulants:
   TList *fCorrelationFunctionsTESTList;              // list to hold all TEST correlation functions for primary particle
   TProfile *fCorrelationFunctionsTESTFlagsPro;       // profile to hold all flags for TEST correlation functions
+  Bool_t fBoost;                                     // boost or not   
+  TVector3 fBoostVelocity;                           // boost everything in the system mocing with relative velocity fBoostVelocity    
   Int_t fnQ2bins;                                    // number of bins for all histos and profiles vs. Q2 (both for signal and background)
   Double_t fnQ2min;                                  // min bin for all histos and profiles vs. Q2 (both for signal and background)
   Double_t fnQ2max;                                  // max bin for all histos and profiles vs. Q2 (both for signal and background)
@@ -691,7 +699,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  // do something only for the specified event
   UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,19);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,20);
 
 };
 
