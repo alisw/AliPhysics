@@ -454,8 +454,8 @@ void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int iSM) c
 /// Figure out the global coordinates from local coordinates on a supermodule. 
 /// Use the supermodule alignment. Use TVector3.
 ///
-/// \param loc: 3-vector local coordinates, input (remove & ?)
-/// \param glob: 3-vector global coordinates, output
+/// \param vloc: 3-vector local coordinates, input (remove & ?)
+/// \param vglob: 3-vector global coordinates, output
 /// \param iSM: super module number
 ///
 //________________________________________________________________________________________________
@@ -472,10 +472,10 @@ void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int iSM)
 /// Use the supermodule alignment. Use double[3].
 ///
 /// \param absId: cell absolute id. number.
-/// \param glob: double[3] coordinates, output
+/// \param glob: 3-double coordinates, output
 ///
 //________________________________________________________________________________________________
-void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
+void AliEMCALGeometry::GetGlobal(Int_t absId , Double_t glob[3]) const
 {
   static Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1;
   static double loc[3];
@@ -501,7 +501,7 @@ void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
 /// Use the supermodule alignment. Use TVector3.
 ///
 /// \param absId: cell absolute id. number.
-/// \param glob: TVector3 coordinates, output
+/// \param vglob: TVector3 coordinates, output
 ///
 //___________________________________________________________________
 void AliEMCALGeometry::GetGlobal(Int_t absId , TVector3 &vglob) const
@@ -633,8 +633,8 @@ Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nModule, Int_t nIphi, 
 /// \param nSupMod: super module number
 /// \param iphi: index of cell in phi direction inside super module
 /// \param ieta: index of cell in eta direction inside super module
-/// \param nIphi: index of cell in module in phi direction 0 or 1 
-/// \param nIeta: index of cell in module in eta direction 0 or 1 
+/// \param iphim: index of cell in module in phi direction 0 or 1 
+/// \param ietam: index of cell in module in eta direction 0 or 1 
 /// \param nModule: module number
 ///
 //________________________________________________________________________________________________
