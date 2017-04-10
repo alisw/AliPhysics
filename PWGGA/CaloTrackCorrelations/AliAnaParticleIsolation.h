@@ -542,8 +542,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtLambda0MCWith1Overlap    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously). At least one overlap from other particles.
   TH2F *   fhPtLambda0MCConvWith1Overlap[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). At least one overlap from other particles.
 
-  TH2F *   fhPtLambda0MCWithNOverlap    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously). More tha one overlap from other particles.
-  TH2F *   fhPtLambda0MCConvWithNOverlap[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). More tha one overlap from other particles.
+  TH2F *   fhPtLambda0MCWithNoOverlap    [fgkNmcTypes][2];          //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously). More tha one overlap from other particles.
+  TH2F *   fhPtLambda0MCConvWithNoOverlap[fgkNmcTypes][2];          //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). More tha one overlap from other particles.
   
   TH2F *   fhPtNOverlap    [fgkNmcTypes][2];                        //!<! Number of overlaps of (non) isolated candidates originated by mcTypes (do not apply SS cut previously). More tha one overlap from other particles.
   TH2F *   fhPtNOverlapConv[fgkNmcTypes][2];                        //!<! Number of overlaps of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). More tha one overlap from other particles.
