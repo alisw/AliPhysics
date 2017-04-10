@@ -14,7 +14,6 @@
 #include "AliPIDResponse.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
 #include "AliTOFPIDResponse.h"
 #include "TH2I.h"
 
@@ -143,15 +142,11 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
       AliFatal("You asked for MC analysis, but I don't find any MCEventHandler... did you forget to add it to your analysis manager?");
   }
   //
-  AliMCEvent* mcEvent = 0x0;
-  AliStack* stack = 0x0;
+  AliMCEvent* mcEvent = nullptr;
   if (eventHandler) mcEvent = eventHandler->MCEvent();
   if (!mcEvent && mMCtrue)
     AliFatal("Missing MC event");
   if (mMCtrue) {
-    stack = mcEvent->Stack();
-    if (!stack)
-      AliFatal("Missing MC stack");
     mHeader.mEventMask |= kMCevent;
   }
 
@@ -267,7 +262,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
 
     if (mMCtrue) {
       int label = track->GetLabel();
-      TParticle* part = stack->Particle(abs(label));
+      TParticle* part = mcEvent->Particle(abs(label));
       if (!part) continue;
       int particle_mask = GetParticleMask(part);
       if (!particle_mask) continue;
@@ -285,8 +280,8 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
         if (TOFmismatch) t.mask |= kTOFmismatch;
       }
 
-      if (stack->IsPhysicalPrimary(abs(label))) t.mask |= kIsPrimary;
-      else if (stack->IsSecondaryFromMaterial(abs(label))) t.mask |= kIsSecondaryFromMaterial;
+      if (mcEvent->IsPhysicalPrimary(abs(label))) t.mask |= kIsPrimary;
+      else if (mcEvent->IsSecondaryFromMaterial(abs(label))) t.mask |= kIsSecondaryFromMaterial;
     }
 
     /// If everything went OK pushing the track
@@ -303,8 +298,8 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.DCAz = 0;
     t.TPCchi2NDF = 0;
     t.ITSchi2NDF = 0;
-    for (int iP = 0; iP < stack->GetNtrack(); ++iP) {
-      TParticle* particle = stack->Particle(iP);
+    for (int iP = 0; iP < mcEvent->GetNumberOfTracks(); ++iP) {
+      TParticle* particle = mcEvent->Particle(iP);
       if (!particle)
         continue;
 
@@ -316,8 +311,8 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
       if (!particle_mask)
         continue;
       t.mask = particle_mask;
-      if (stack->IsPhysicalPrimary(iP)) t.mask |= kIsPrimary;
-      else if (stack->IsSecondaryFromMaterial(iP)) t.mask |= kIsSecondaryFromMaterial;
+      if (mcEvent->IsPhysicalPrimary(iP)) t.mask |= kIsPrimary;
+      else if (mcEvent->IsSecondaryFromMaterial(iP)) t.mask |= kIsSecondaryFromMaterial;
 
       t.eta = particle->Eta();
       t.phi = particle->Phi();
