@@ -2,7 +2,6 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliESDEvent.h"
-#include "AliStack.h"
 #include "AliPID.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -525,7 +524,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
   
-  AliStack* stack=0;
+  AliMCEvent* mcEvent = nullptr;
 
   if(fReadMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -533,14 +532,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       Printf("ERROR: Could not retrieve MC event handler");
       return;
     }
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
-    stack = mcEvent->Stack();
-    if (!stack) {
-      Printf("ERROR: stack not available");
       return;
     }
   }
@@ -743,7 +737,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t hadronSpecies=-1;
     Float_t invptgen=-999.;
     if(fReadMC){
-      TParticle* part = stack->Particle(TMath::Abs(trlabel));
+      TParticle* part = mcEvent->Particle(TMath::Abs(trlabel));
       ptgen=part->Pt();
       pgen=part->P();
       pxgen=part->Px();
@@ -969,13 +963,13 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       keepAntiLambda=kFALSE;
       Int_t labelPos=TMath::Abs(pTrack->GetLabel());
       Int_t labbelNeg =TMath::Abs(nTrack->GetLabel());
-      TParticle* partPos=stack->Particle(labelPos);
-      TParticle* partNeg=stack->Particle(labbelNeg);
+      TParticle* partPos=mcEvent->Particle(labelPos);
+      TParticle* partNeg=mcEvent->Particle(labbelNeg);
       if(partPos && partNeg){
         Int_t labelMotherPos=partPos->GetFirstMother() ;
         Int_t labelMotherNeg=partNeg->GetFirstMother();
 	if(labelMotherPos==labelMotherNeg && labelMotherPos>-1){
-	  TParticle* partV0=stack->Particle(labelMotherPos);
+	  TParticle* partV0=mcEvent->Particle(labelMotherPos);
 	  Int_t pdgV0=partV0->GetPdgCode();
 	  if(TMath::Abs(pdgV0)==310) keepK0s=kTRUE;
 	  if(pdgV0==3122) keepLambda=kTRUE;
