@@ -892,7 +892,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
   //if(trigger==7)if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   //cout << "EG1tr = " << EG1tr << endl;
-  if(!fMCarray && trigger==7){if(!firedTrigger.Contains(TriggerEG1))return;}
+  //if(!fMCarray && trigger==7){if(!firedTrigger.Contains(TriggerEG1))return;}
+  if(!fMCarray)
+    {
+     if(trigger==7){if(!firedTrigger.Contains(TriggerEG1))return;}
+    }
   //if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
 
   //cout << "Zvertex = " << Zvertex << endl;
