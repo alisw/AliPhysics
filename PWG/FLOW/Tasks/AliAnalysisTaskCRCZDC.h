@@ -172,6 +172,7 @@ public:
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
   Bool_t plpMV(const AliAODEvent* aod);
   Double_t GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist);
+  void SetWhichVZERORings(int minVZC, int maxVZC, int minVZA, int maxVZA) {fMinRingVZC = minVZC; fMaxRingVZC = maxVZC; fMinRingVZA = minVZA; fMaxRingVZA = maxVZA;}
   
 private:
   AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -352,8 +353,12 @@ private:
   const static Int_t fkVZEROnQAplots = 8;
   TProfile2D *fVZEROQVectorRecFinal[fkVZEROnHar][fkVZEROnQAplots]; //!
   Int_t fCachedRunNum;   //
+  Int_t fMinRingVZC; //
+  Int_t fMaxRingVZC; //
+  Int_t fMinRingVZA; //
+  Int_t fMaxRingVZA; //
   
-  ClassDef(AliAnalysisTaskCRCZDC,8);
+  ClassDef(AliAnalysisTaskCRCZDC,9);
   
 };
 
