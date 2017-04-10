@@ -16,7 +16,6 @@
 
 // ALIROOT includes
 #include "AliAnalysisManager.h"
-#include "AliCentrality.h"
 #include "AliPDG.h"
 #include "AliMultSelection.h"
 #include "AliTPCPIDResponse.h"
