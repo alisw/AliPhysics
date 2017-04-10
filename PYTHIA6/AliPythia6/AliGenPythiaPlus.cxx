@@ -343,7 +343,9 @@ void AliGenPythiaPlus::Init()
     fPythia->SetInitialAndFinalStateRadiation(fGinit, fGfinal);
 
 //  pt - kick
-    fPythia->SetIntrinsicKt(fPtKick);
+//  10/4/2017
+//  this line has been removed since it overwrites the settings of the standard tunes
+//  fPythia->SetIntrinsicKt(fPtKick);
 
     if (fReadFromFile) {
 	fRL  =  AliRunLoader::Open(fFileName, "Partons");
@@ -625,7 +627,7 @@ void AliGenPythiaPlus::Generate()
 	    fProcess != kPyBeautyppMNRwmi &&
       fProcess != kPyWPWHG &&
 	    fProcess != kPyJetsPWHG &&
-	    fProcess != kPyCharmPWHG &&
+            fProcess != kPyCharmPWHG &&
      fProcess != kPyBeautyPWHG) {
 	    
 	    for (i = 0; i < np; i++) {
