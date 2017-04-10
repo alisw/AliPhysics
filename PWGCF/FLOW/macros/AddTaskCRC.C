@@ -26,7 +26,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
-                             Bool_t bRequireITSRefit=kFALSE,
+                             Bool_t bSpecialVZERORingSelection=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
@@ -93,6 +93,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bUsePhiEtaCuts=kFALSE;
   Bool_t bSetQAZDC=kTRUE;
   Double_t MaxChi2PerClTPC=4.;
+  Bool_t bRequireITSRefit=kFALSE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -254,6 +255,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete VZEROQVecRecFile;
   }
+  // set which rings of VZEROs to use
+  if(bSpecialVZERORingSelection) taskFE->SetWhichVZERORings(1,2,7,8);
   
   // add the task to the manager
  mgr->AddTask(taskFE);
@@ -626,7 +629,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
 //    if(AODfilterBit==768) QVecWeightsFileName += "15oHI_QnVarCalib_FB768.root";
 //    if(AODfilterBit==96) QVecWeightsFileName += "15oHI_QnVarCalib_FB96.root";
 //    if(AODfilterBit==32) QVecWeightsFileName += "15oHI_QnVarCalib_FB32.root";
-    QVecWeightsFileName += "15oHI_Q1VtxCalibPosNeg_FB768.root";
+    QVecWeightsFileName += "15oHI_Q1VtxCalibPosNeg_CRC2_FB768.root";
     TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
     if(!QVecWeightsFile) {
       cout << "ERROR: QVecWeightsFile not found!" << endl;
@@ -661,6 +664,27 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCCalibFile;
   } // end of if(bUseZDC)
+  
+//  if(bCalculateCRCVZ==kTRUE && sDataSet=="2015") {
+//    TString VZEROCalibFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROcalib_Cen.root";
+//    TFile* VZEROCalibFile = TFile::Open(VZEROCalibFileName,"READ");
+//    if(!VZEROCalibFile) {
+//      cout << "ERROR: VZERO calibration not found!" << endl;
+//      exit(1);
+//    }
+//    gROOT->cd();
+//    TList* VZEROCalibList = (TList*)(VZEROCalibFile->FindObjectAny("Q Vectors"));
+//    if(VZEROCalibList) {
+//      taskQC->SetCRCVZEROCalibList(VZEROCalibList);
+//      cout << "VZERO calibration set (from " <<  VZEROCalibFileName.Data() << ")" << endl;
+//    }
+//    else {
+//      cout << "ERROR: VZEROCalibList not found!" << endl;
+//      exit(1);
+//    }
+//    delete VZEROCalibFile;
+//  }
+  
 //  if(bRescaleZDC) {
 //    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCRescaling.root";
 //    TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
