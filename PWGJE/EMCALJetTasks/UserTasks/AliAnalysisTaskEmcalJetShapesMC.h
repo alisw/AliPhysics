@@ -23,9 +23,14 @@ class TClonesArray;
 class TArrayI;
 class AliAnalysisManager;
 class AliJetContainer;
+class AliEmcalJetFinder;
+class AliFJWrapper;
+
+
 
 #include "AliAnalysisTaskEmcalJet.h"
-
+#include "AliFJWrapper.h"
+#include "AliClusterContainer.h"
 
 
 class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
@@ -100,7 +105,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            GetSigma2(AliEmcalJet *jet, Int_t jetContNb=0);
   Float_t                            Sigma2(AliEmcalJet *jet, Int_t jetContNb=0);
   void                               NTValues(AliEmcalJet *jet, Int_t jetContNb, Float_t* nTFractions);
-  
+  void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, Int_t ReclusterAlgo);
   AliEmcalJetFinder*                 Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name);
 
   //Double_t                           NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
@@ -123,7 +128,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[23];//     jet shapes used for the tagging
+  Float_t                             fShapesVar[33];              //     jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Float_t                             fJetRadius;
