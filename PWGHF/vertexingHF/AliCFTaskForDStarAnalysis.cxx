@@ -36,7 +36,6 @@
 #include <TFile.h>
 
 #include "AliCFTaskForDStarAnalysis.h"
-#include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliCFManager.h"
 #include "AliCFContainer.h"

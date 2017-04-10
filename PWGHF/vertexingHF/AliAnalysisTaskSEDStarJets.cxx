@@ -28,7 +28,6 @@
 
 #include "AliAnalysisTaskSEDStarJets.h"
 #include "AliRDHFCutsDStartoKpipi.h"
-#include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliAODHandler.h"
