@@ -53,9 +53,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
     fCentersOfCellsEtaDir(0), fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
     fParSM(), fILOSS(-1), fIHADR(-1),
-    //obsolete member data
-     fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
-    f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
+    fSteelFrontThick(0.)  // obsolete data member?
 { 
   fParSM[0]=0; fParSM[1]=0; fParSM[2]=0;
   fEnvelop[0] = 0; fEnvelop[1] = 0; fEnvelop[2] = 0;
@@ -88,9 +86,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title
     fCentersOfCellsEtaDir(0),fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
     fParSM(),fILOSS(-1), fIHADR(-1), 
-    //obsolete member data
-    fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
-    f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
+    fSteelFrontThick(0.) // obsolete data member?
 {
   AliDebug(2, Form("AliEMCALEMCGeometry(%s,%s,%s,%s) ", name,title,mcname,mctitle));
 
@@ -166,14 +162,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fPhiCentersOfCells(geom.fPhiCentersOfCells),
     fShishKebabTrd1Modules(geom.fShishKebabTrd1Modules),
     fILOSS(geom.fILOSS), fIHADR(geom.fIHADR),
-    //obsolete member data
-    fGap2Active(geom.fGap2Active),
-    fSteelFrontThick(geom.fSteelFrontThick),
-    fTrd2AngleY(geom.fTrd2AngleY),
-    f2Trd2Dy2(geom.f2Trd2Dy2),
-    fEmptySpace(geom.fEmptySpace),
-    fTubsR(geom.fTubsR),
-    fTubsTurnAngle(geom.fTubsTurnAngle)
+    fSteelFrontThick(geom.fSteelFrontThick) // obsolete data member? 
 {
   for(Int_t i=0;i<fNumberOfSuperModules;i++)
     fEMCSMSystem[i] = geom.fEMCSMSystem[i];

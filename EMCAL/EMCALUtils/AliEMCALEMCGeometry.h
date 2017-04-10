@@ -107,10 +107,10 @@ public:
   // Return EMCAL geometrical parameters
   //
   
-  TString GetGeoName()              const { return fGeoName;}
+  TString GetGeoName()               const { return fGeoName;}
   
-  const Int_t * GetEMCSystem()      const { return fEMCSMSystem ; } 
-        Int_t * GetEMCSystem()            { return fEMCSMSystem ; } // Why? GCB
+  const Int_t * GetEMCSystem()       const { return fEMCSMSystem ; } 
+        Int_t * GetEMCSystem()             { return fEMCSMSystem ; } // Why? GCB
   
   const Char_t* GetNameOfEMCALEnvelope() const { const Char_t* env = "XEN1"; return env ;}
   
@@ -187,15 +187,8 @@ public:
   //
   Bool_t   GetPhiBoundariesOfSM   (Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const;
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
+  
   //
-  // Local Coordinates of SM
-/*   TArrayD  GetCentersOfCellsEtaDir() const { return fCentersOfCellsEtaDir;}        // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm) */
-/*   TArrayD  GetCentersOfCellsXDir()   const { return fCentersOfCellsXDir;}          // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm) */
-/*   TArrayD  GetCentersOfCellsPhiDir() const { return fCentersOfCellsPhiDir;}        // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm) */
-/*   // */
-/*   TArrayD  GetEtaCentersOfCells() const { return fEtaCentersOfCells;}           // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position;  */
-/*   TArrayD  GetPhiCentersOfCells() const { return fPhiCentersOfCells;}           // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.) */
-
   static int ParseString(const TString &topt, TObjArray &Opt) ; 
 
   ///////////////////////////////
@@ -222,15 +215,8 @@ public:
   }
 
   //////////////////////////////////////////////////
-  // Obsolete methods to be thrown out when feasible
-  Float_t GetGap2Active() const { return  fGap2Active ;}
+  // Obsolete?
   Float_t GetSteelFrontThickness() const { return fSteelFrontThick;}
-  Float_t GetTrd2AngleY()const { return fTrd2AngleY;}
-  Float_t Get2Trd2Dy2()  const { return f2Trd2Dy2;}
-  Float_t GetTubsR()     const { return fTubsR;}
-  Float_t GetTubsTurnAngle() const { return fTubsTurnAngle;}
-  //  Float_t GetIP2ECASection() const { return ( GetIPDistance() + GetAlFrontThickness() 
-  //					      + GetGap2Active() ) ; }   
   //////////////////////////////////////////////////
 
   static const Char_t* fgkDefaultGeometryName; ///< Default name of geometry
@@ -308,8 +294,8 @@ private:
   Float_t fEtaMaxOfTRD1;                 ///< max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
   
   // Oct 26,2010
-  Float_t fTrd1AlFrontThick;		 ///< Thickness of the Al front plate  
-  Float_t fTrd1BondPaperThick;		 ///< Thickness of the Bond Paper sheet  
+  Float_t fTrd1AlFrontThick;             ///< Thickness of the Al front plate  
+  Float_t fTrd1BondPaperThick;           ///< Thickness of the Bond Paper sheet  
   
   // Local Coordinates of SM
   TArrayD fCentersOfCellsEtaDir;         ///< size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
@@ -328,23 +314,8 @@ private:
   Int_t   fILOSS;                        ///< Options for Geant (MIP business) - will call in AliEMCAL
   Int_t   fIHADR;                        ///< Options for Geant (MIP business) - will call in AliEMCAL
 
-  ////////////////////////////////////////////////////////////
-  //Obsolete member data that will be thrown out when feasible
-  //
-  Float_t fGap2Active;                   ///< Gap between the envelop and the active material
-  Float_t fSteelFrontThick;              ///< Thickness of the front stell face of the support box - 9-sep-04
+  Float_t fSteelFrontThick;              ///< Thickness of the front stell face of the support box - 9-sep-04; obsolete?
   
-  // TRD2 options - 27-jan-07
-  Float_t fTrd2AngleY;                   ///< angle in y-z plane (in degree) 
-  Float_t f2Trd2Dy2;                     ///< 2*dy2 for TRD2
-  Float_t fEmptySpace;                   ///< 2mm om fred drawing
-  
-  // Super module as TUBS
-  Float_t fTubsR;                        ///< radius of tubs 
-  Float_t fTubsTurnAngle;                ///< turn angle of tubs in degree
-
-  ///////////////////////////////////////////////////////////
-
   /// \cond CLASSIMP
   ClassDef(AliEMCALEMCGeometry, 3) ;
   /// \endcond
