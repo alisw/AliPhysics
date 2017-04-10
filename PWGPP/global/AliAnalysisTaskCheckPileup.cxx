@@ -267,32 +267,32 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fHistoNOfPileupVertSPD = new TH1F("hNOfPileupVertSPD","",11,-0.5,10.5);
   fOutputSPDPil->Add(fHistoNOfPileupVertSPD);
 
-  fHistoNtracklPilSPD = new TH1F("hNtracklPilSPD","Number of tracklets in events tagged as pileup",201,-0.5,200.5);
+  fHistoNtracklPilSPD = new TH1F("hNtracklPilSPD","Number of tracklets in events tagged as pileup",501,-0.5,500.5);
   fOutputSPDPil->Add(fHistoNtracklPilSPD);
-  fHistoNtracklNoPilSPD = new TH1F("hNtracklNoPilSPD","Number of tracklets in events without pileup",201,-0.5,200.5);
+  fHistoNtracklNoPilSPD = new TH1F("hNtracklNoPilSPD","Number of tracklets in events without pileup",501,-0.5,500.5);
   fOutputSPDPil->Add(fHistoNtracklNoPilSPD);
   
-  fHistoNCL1PilSPD = new TH1F("hNCL1PilSPD","Number of CL1 in events tagged as pileup",201,-0.5,200.5);
+  fHistoNCL1PilSPD = new TH1F("hNCL1PilSPD","Number of CL1 in events tagged as pileup",501,-0.5,500.5);
   fOutputSPDPil->Add(fHistoNCL1PilSPD);
-  fHistoNCL1NoPilSPD = new TH1F("hNCL1NoPilSPD","Number of CL1 in events without pileup",201,-0.5,200.5);
+  fHistoNCL1NoPilSPD = new TH1F("hNCL1NoPilSPD","Number of CL1 in events without pileup",501,-0.5,500.5);
   fOutputSPDPil->Add(fHistoNCL1NoPilSPD);
 
-  fHistoContribPrimVertPilSPD = new TH1F("hContribPrimVertPilSPD","Number of CL1 in events tagged as pileup",201,-0.5,200.5);
+  fHistoContribPrimVertPilSPD = new TH1F("hContribPrimVertPilSPD","Number of CL1 in events tagged as pileup",501,-0.5,500.5);
   fOutputSPDPil->Add(fHistoContribPrimVertPilSPD);
-  fHistoContribPrimVertNoPilSPD = new TH1F("hContribPrimVertNoPilSPD","Number of CL1 in events without pileup",201,-0.5,200.5);
+  fHistoContribPrimVertNoPilSPD = new TH1F("hContribPrimVertNoPilSPD","Number of CL1 in events without pileup",501,-0.5,500.5);
   fOutputSPDPil->Add(fHistoContribPrimVertNoPilSPD);
 
-  fHistoContribFirstPilSPD = new TH1F("hContribFirstPilSPD","Number of contributors to first pileup",101,-0.5,100.5);
+  fHistoContribFirstPilSPD = new TH1F("hContribFirstPilSPD","Number of contributors to first pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoContribFirstPilSPD);
   fHistoZDiffFirstPilSPD = new TH1F("hZDiffFirstPilSPD","zPile-zVert fo first pileup",200,-20.,20.);
   fOutputSPDPil->Add(fHistoZDiffFirstPilSPD);
 
-  fHistoContribSecondPilSPD = new TH1F("hContribSecondPilSPD","Number of contributors to first pileup",101,-0.5,100.5);
+  fHistoContribSecondPilSPD = new TH1F("hContribSecondPilSPD","Number of contributors to first pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoContribSecondPilSPD);
   fHistoZDiffSecondPilSPD = new TH1F("hZDiffSecondPilSPD","zPile-zVert fo first pileup",200,-20.,20.);
   fOutputSPDPil->Add(fHistoZDiffSecondPilSPD);
 
-  fHistoContribTaggingPilSPD = new TH1F("hContribTaggingPilSPD","Number of contributors to first pileup",101,-0.5,100.5);
+  fHistoContribTaggingPilSPD = new TH1F("hContribTaggingPilSPD","Number of contributors to first pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoContribTaggingPilSPD);
   fHistoZDiffTaggingPilSPD = new TH1F("hZDiffTaggingPilSPD","zPile-zVert fo first pileup",200,-20.,20.);
   fOutputSPDPil->Add(fHistoZDiffTaggingPilSPD);
@@ -303,32 +303,32 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fHistoNOfPileupVertMV = new TH1F("hNOfPileupVertMV","",11,-0.5,10.5);
   fOutputMVPil->Add(fHistoNOfPileupVertMV);
 
-  fHistoNtracklPilMV = new TH1F("hNtracklPilMV","Number of tracklets in events tagged as pileup",201,-0.5,200.5);
+  fHistoNtracklPilMV = new TH1F("hNtracklPilMV","Number of tracklets in events tagged as pileup",501,-0.5,500.5);
   fOutputMVPil->Add(fHistoNtracklPilMV);
-  fHistoNtracklNoPilMV = new TH1F("hNtracklNoPilMV","Number of tracklets in events without pileup",201,-0.5,200.5);
+  fHistoNtracklNoPilMV = new TH1F("hNtracklNoPilMV","Number of tracklets in events without pileup",501,-0.5,500.5);
   fOutputMVPil->Add(fHistoNtracklNoPilMV);
   
-  fHistoNCL1PilMV = new TH1F("hNCL1PilMV","Number of CL1 in events tagged as pileup",201,-0.5,200.5);
+  fHistoNCL1PilMV = new TH1F("hNCL1PilMV","Number of CL1 in events tagged as pileup",501,-0.5,500.5);
   fOutputMVPil->Add(fHistoNCL1PilMV);
-  fHistoNCL1NoPilMV = new TH1F("hNCL1NoPilMV","Number of CL1 in events without pileup",201,-0.5,200.5);
+  fHistoNCL1NoPilMV = new TH1F("hNCL1NoPilMV","Number of CL1 in events without pileup",501,-0.5,500.5);
   fOutputMVPil->Add(fHistoNCL1NoPilMV);
 
-  fHistoContribPrimVertPilMV = new TH1F("hContribPrimVertPilMV","Number of CL1 in events tagged as pileup",201,-0.5,200.5);
+  fHistoContribPrimVertPilMV = new TH1F("hContribPrimVertPilMV","Number of CL1 in events tagged as pileup",501,-0.5,500.5);
   fOutputMVPil->Add(fHistoContribPrimVertPilMV);
-  fHistoContribPrimVertNoPilMV = new TH1F("hContribPrimVertNoPilMV","Number of CL1 in events without pileup",201,-0.5,200.5);
+  fHistoContribPrimVertNoPilMV = new TH1F("hContribPrimVertNoPilMV","Number of CL1 in events without pileup",501,-0.5,500.5);
   fOutputMVPil->Add(fHistoContribPrimVertNoPilMV);
 
-  fHistoContribFirstPilMV = new TH1F("hContribFirstPilMV","Number of contributors to first pileup",101,-0.5,100.5);
+  fHistoContribFirstPilMV = new TH1F("hContribFirstPilMV","Number of contributors to first pileup",201,-0.5,200.5);
   fOutputMVPil->Add(fHistoContribFirstPilMV);
   fHistoZDiffFirstPilMV = new TH1F("hZDiffFirstPilMV","zPile-zVert fo first pileup",200,-20.,20.);
   fOutputMVPil->Add(fHistoZDiffFirstPilMV);
 
-  fHistoContribSecondPilMV = new TH1F("hContribSecondPilMV","Number of contributors to first pileup",101,-0.5,100.5);
+  fHistoContribSecondPilMV = new TH1F("hContribSecondPilMV","Number of contributors to first pileup",201,-0.5,200.5);
   fOutputMVPil->Add(fHistoContribSecondPilMV);
   fHistoZDiffSecondPilMV = new TH1F("hZDiffSecondPilMV","zPile-zVert fo first pileup",200,-20.,20.);
   fOutputMVPil->Add(fHistoZDiffSecondPilMV);
 
-  fHistoContribTaggingPilMV = new TH1F("hContribTaggingPilMV","Number of contributors to first pileup",101,-0.5,100.5);
+  fHistoContribTaggingPilMV = new TH1F("hContribTaggingPilMV","Number of contributors to first pileup",201,-0.5,200.5);
   fOutputMVPil->Add(fHistoContribTaggingPilMV);
   fHistoZDiffTaggingPilMV = new TH1F("hZDiffTaggingPilMV","zPile-zVert fo first pileup",200,-20.,20.);
   fOutputMVPil->Add(fHistoZDiffTaggingPilMV);
