@@ -1040,7 +1040,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     
     if(fTracking == 0){
       if(!(trk->TestFilterBit(1<<4))) continue;
-      //if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
+      if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
