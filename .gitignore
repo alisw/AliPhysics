@@ -72,6 +72,7 @@ rpm-tmp.*
 .cproject
 .project
 .settings
+.vscode/
 
 # OS X metafiles
 .DS_Store
