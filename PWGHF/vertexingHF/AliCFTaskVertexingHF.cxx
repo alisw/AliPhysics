@@ -39,7 +39,6 @@
 #include <TF1.h>
 
 #include "AliCFTaskVertexingHF.h"
-#include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliCFManager.h"
 #include "AliCFContainer.h"

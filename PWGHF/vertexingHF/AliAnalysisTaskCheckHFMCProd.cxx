@@ -3,7 +3,6 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
-#include "AliStack.h"
 #include "AliCentrality.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -443,7 +442,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     fHistoTRKVtxZ->Fill(trkv->GetZ());
   }
 
-  AliStack* stack=0;
+  AliMCEvent* mcEvent = 0x0;
 
   if(fReadMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -451,14 +450,9 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Printf("ERROR: Could not retrieve MC event handler");
       return;
     }
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
-    stack = mcEvent->Stack();
-    if (!stack) {
-      Printf("ERROR: stack not available");
       return;
     }
     const AliVVertex* mcVert=mcEvent->GetPrimaryVertex();
@@ -515,19 +509,19 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       else if(genTitle.Contains("cele")) typeHF=2;
       fHistNcollHFtype->Fill(typeHF,1.);
     }
-    Int_t nParticles=stack->GetNtrack();
+    Int_t nParticles=mcEvent->GetNumberOfTracks();
     Double_t dNchdy = 0.;
     Int_t nb = 0, nc=0;
     Int_t nCharmed=0;
     Int_t nPhysPrim=0;
     Int_t nPiKPeta09=0;
     for (Int_t i=0;i<nParticles;i++){
-      TParticle* part = (TParticle*)stack->Particle(i);
+      TParticle* part = (TParticle*)mcEvent->Particle(i);
       Int_t absPdg=TMath::Abs(part->GetPdgCode());
       Int_t pdg=part->GetPdgCode();
       if(absPdg==4) nc++;
       if(absPdg==5) nb++;
-      if(stack->IsPhysicalPrimary(i)){
+      if(mcEvent->IsPhysicalPrimary(i)){
 	Double_t eta=part->Eta();
 	fHistoEtaPhysPrim->Fill(eta);
 	if(absPdg==11) fHistEtaPhiPtGenEle->Fill(eta,part->Phi(),part->Pt());
@@ -556,33 +550,33 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Int_t dummy[4];
       if(absPdg==421){
 	iSpecies=0;
-	iType=AliVertexingHFUtils::CheckD0Decay(stack,i,dummy); 
+	iType=AliVertexingHFUtils::CheckD0Decay(mcEvent,i,dummy); 
 	if(iType>0) iPart=0;	
       }
       else if(absPdg==411){
 	iSpecies=1;
-	iType=AliVertexingHFUtils::CheckDplusDecay(stack,i,dummy);
+	iType=AliVertexingHFUtils::CheckDplusDecay(mcEvent,i,dummy);
 	if(iType<0){
-	  Int_t iTypeKKpi=AliVertexingHFUtils::CheckDplusKKpiDecay(stack,i,dummy);
+	  Int_t iTypeKKpi=AliVertexingHFUtils::CheckDplusKKpiDecay(mcEvent,i,dummy);
 	  if(iTypeKKpi>0) iType=3;
 	}
 	if(iType>0) iPart=1;
       }
       else if(absPdg==413){
 	iSpecies=2;
-	iType=AliVertexingHFUtils::CheckDstarDecay(stack,i,dummy);
+	iType=AliVertexingHFUtils::CheckDstarDecay(mcEvent,i,dummy);
 	if(iType>0) iPart=2;
       }
       else if(absPdg==431){
 	iSpecies=3;
-	iType=AliVertexingHFUtils::CheckDsDecay(stack,i,dummy);
+	iType=AliVertexingHFUtils::CheckDsDecay(mcEvent,i,dummy);
 	if(iType==1 || iType==2) iPart=3;
       }
       else if(absPdg==4122){
 	iSpecies=4;
-	iType=AliVertexingHFUtils::CheckLcpKpiDecay(stack,i,dummy);
+	iType=AliVertexingHFUtils::CheckLcpKpiDecay(mcEvent,i,dummy);
 	if(iType<0){
-	  Int_t iTypeV0=AliVertexingHFUtils::CheckLcV0bachelorDecay(stack,i,dummy);
+	  Int_t iTypeV0=AliVertexingHFUtils::CheckLcV0bachelorDecay(mcEvent,i,dummy);
 	  if(iTypeV0==1) iType=5;
 	  if(iTypeV0==2) iType=6;
 	}
@@ -627,7 +621,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Double_t distz=part->Vz()-mcVert->GetZ();
       Double_t distToVert=TMath::Sqrt(distx*distx+disty*disty+distz*distz);
       fHistMotherID->Fill(part->GetFirstMother());
-      Int_t iFromB=AliVertexingHFUtils::CheckOrigin(stack,part,fSearchUpToQuark);
+      Int_t iFromB=AliVertexingHFUtils::CheckOrigin(mcEvent,part,fSearchUpToQuark);
       if(iFromB==4){
 	fHistYPtPromptAllDecay[iSpecies]->Fill(part->Pt(),rapid);
 	fHistOriginPrompt->Fill(distToVert);
@@ -659,8 +653,8 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	else fHistPtRecFake->Fill(track->Pt());
 	Int_t label=TMath::Abs(track->GetLabel());
 	
-	if(stack->IsPhysicalPrimary(label)){
-	  TParticle* part = (TParticle*)stack->Particle(label);
+	if(mcEvent->IsPhysicalPrimary(label)){
+	  TParticle* part = (TParticle*)mcEvent->Particle(label);
 	  Int_t absPdg=TMath::Abs(part->GetPdgCode());
 	  if(absPdg==11) fHistEtaPhiPtRecEle->Fill(part->Eta(),part->Phi(),part->Pt());
 	  else if(absPdg==211) fHistEtaPhiPtRecPi->Fill(part->Eta(),part->Phi(),part->Pt());

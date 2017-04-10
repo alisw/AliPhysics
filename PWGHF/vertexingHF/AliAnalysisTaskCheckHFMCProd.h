@@ -24,7 +24,6 @@ class TTree;
 class TString;
 class AliESDEvent;
 class AliESDfriend;
-class AliStack;
 class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"

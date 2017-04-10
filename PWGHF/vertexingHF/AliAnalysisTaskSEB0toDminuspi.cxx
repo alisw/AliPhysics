@@ -31,7 +31,6 @@
 #include <AliAnalysisDataContainer.h>
 //#include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
-#include "AliStack.h"
 #include "AliVertex.h"
 #include "AliVVertex.h"
 #include "AliESDVertex.h"
