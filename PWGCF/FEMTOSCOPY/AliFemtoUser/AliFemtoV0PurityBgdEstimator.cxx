@@ -354,6 +354,7 @@ void AliFemtoV0PurityBgdEstimator::BuildV0(AliFemtoPair* aPair)
   fFemtoV0->SetNdofPos(tTrackPos->TPCchi2());
   fFemtoV0->SetStatusPos(tTrackPos->Flags());
   fFemtoV0->SetidPos(tTrackPos->TrackId());
+  fFemtoV0->SetEtaPos(tTrackPos->P().PseudoRapidity());
 
 //  fFemtoV0->SetdcaNegToPrimVertex(sqrt(pow(tTrackNeg->ImpactD(),2)+pow(tTrackNeg->ImpactZ(),2)));  //V0s apparently only use DcaXY here
   fFemtoV0->SetdcaNegToPrimVertex(tTrackNeg->ImpactD());
@@ -367,6 +368,7 @@ void AliFemtoV0PurityBgdEstimator::BuildV0(AliFemtoPair* aPair)
   fFemtoV0->SetNdofNeg(tTrackNeg->TPCchi2());
   fFemtoV0->SetStatusNeg(tTrackNeg->Flags());
   fFemtoV0->SetidNeg(tTrackNeg->TrackId());
+  fFemtoV0->SetEtaNeg(tTrackNeg->P().PseudoRapidity());
 }
 
 
