@@ -42,6 +42,21 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     TH2F*                 fHistPtYEta;                //! histo for Etas
     TH2F*                 fHistPtYEtaPrim;            //! histo for EtaPrims
     TH2F*                 fHistPtYOmega;              //! histo for Omegas
+    TH2F*                 fHistPtYRho0;               //! histo for rho0
+    TH2F*                 fHistPtYRhoPl;              //! histo for rho+
+    TH2F*                 fHistPtYRhoMi;              //! histo for rho-
+    TH2F*                 fHistPtYPhi;                //! histo for phi
+    TH2F*                 fHistPtYJPsi;               //! histo for J/psi
+    TH2F*                 fHistPtYSigma0;             //! histo for Sigma0
+    TH2F*                 fHistPtYK0s;                //! histo for K0s
+    TH2F*                 fHistPtYK0l;                //! histo for K0l
+    TH2F*                 fHistPtYK0star;             //! histo for K0*
+    TH2F*                 fHistPtYDeltaPlPl;          //! histo for Delta++
+    TH2F*                 fHistPtYDeltaPl;            //! histo for Delta+
+    TH2F*                 fHistPtYDeltaMi;            //! histo for Delta-
+    TH2F*                 fHistPtYDelta0;             //! histo for Delta0
+    TH2F*                 fHistPtYLambda;             //! histo for Lambda
+
     TH2F*                 fHistPtYPi0FromEta;         //! histo for Pi0s from Etas
     TH2F*                 fHistPtYPi0FromLambda;      //! histo for Pi0s from Lambdas
     TH2F*                 fHistPtYPi0FromK;           //! histo for Pi0s from Ks
