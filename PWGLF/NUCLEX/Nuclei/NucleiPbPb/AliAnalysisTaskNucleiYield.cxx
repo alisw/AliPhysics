@@ -28,7 +28,6 @@
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEventHandler.h"
-#include "AliStack.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
