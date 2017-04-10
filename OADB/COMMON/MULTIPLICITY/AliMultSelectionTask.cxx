@@ -2189,13 +2189,14 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 244340 && fCurrentRun <= 244628 ) lProductionName = "LHC15n";
     
     //2016
+    if ( fCurrentRun >= 254124 && fCurrentRun <= 254332 ) lProductionName = "LHC16g";
     if ( fCurrentRun >= 256146 && fCurrentRun <= 256420 ) lProductionName = "LHC16j";
     if ( fCurrentRun >= 256504 && fCurrentRun <= 258537 ) lProductionName = "LHC16k";
     if ( fCurrentRun >= 258883 && fCurrentRun <= 260187 ) lProductionName = "LHC16l";
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
-    if ( fCurrentRun >= 244917 && fCurrentRun <= 256145 ) lProductionName = "LHC15o";
+    if ( fCurrentRun >= 244917 && fCurrentRun <= 246994 ) lProductionName = "LHC15o";
     
     //Registered Productions : Run 2 p-Pb
     if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lProductionName = "LHC16q";
