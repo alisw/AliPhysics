@@ -15,7 +15,7 @@ class TString;
 class TLoretzVector;
 class AliESDEvent;
 class AliAODEvent;
-class AliStack;
+class AliMCEvent;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -51,7 +51,7 @@ private:
    AliAnalysisTaskCountLcEta& operator=(const AliAnalysisTaskCountLcEta& source); 
    
    
-   void FillHistosL(TParticle *part, AliStack *stack);
+   void FillHistosL(TParticle *part, AliMCEvent* mcEvent);
    Bool_t SelectTrack(TParticle *p,Bool_t fillh=kFALSE);
    Bool_t SelectTracksForCandidate(TParticle* pion, TParticle* kaon, TParticle* proton);
    Double_t InvMass(TParticle *p1p,TParticle *pn,TParticle *p2p,TLorentzVector *&candp1ppnp2p);
