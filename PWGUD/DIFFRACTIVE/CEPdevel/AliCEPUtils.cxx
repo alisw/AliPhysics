@@ -59,7 +59,6 @@ AliCEPUtils::~AliCEPUtils()
 TH1F* AliCEPUtils::GetHistStatsFlow()
 {
 	// setup the stats flow histogram
-
 	TH1F *hist = new TH1F("statsFlow","",
     AliCEPBase::kBinLastValue,0,AliCEPBase::kBinLastValue);
 	TAxis* axis = hist->GetXaxis();
@@ -111,6 +110,42 @@ TList* AliCEPUtils::GetQArnumHists(Int_t rnummin, Int_t rnummax)
   lhh->Add(fhh03);
   TH1F* fhh04 = new TH1F("nSaved","nSaved",nch,rnummin,rnummax);
   lhh->Add(fhh04);
+  TH1F* fhh05 = new TH1F("nV0DG","nV0DG",nch,rnummin,rnummax);
+  lhh->Add(fhh05);
+  
+  return lhh;
+  
+}
+
+//------------------------------------------------------------------------------
+// definition of QA histograms used in AliCEPUtils::BBFlagAnalysis
+TList* AliCEPUtils::GetBBFlagQAHists()
+{
+
+  // initialisations
+  TList *lhh = new TList();
+  lhh->SetOwner();
+  
+  // define the histograms and and add them to the list lhh
+  printf("Preparing QABBFlag histograms\n");
+  // number of input events
+  TH2F* fhh01 = new TH2F("V0ABBFlag","V0ABBFlag",32,0,31,21,0,20);
+  lhh->Add(fhh01);
+  TH2F* fhh02 = new TH2F("V0CBBFlag","V0CBBFlag",32,0,31,21,0,20);
+  lhh->Add(fhh02);
+  TH2F* fhh03 = new TH2F("ADABBFlag","ADABBFlag",8,0,7,21,0,20);
+  lhh->Add(fhh03);
+  TH2F* fhh04 = new TH2F("ADCBBFlag","ADCBBFlag",8,0,7,21,0,20);
+  lhh->Add(fhh04);
+
+  TH2F* fhh05 = new TH2F("V0ABGFlag","V0ABGFlag",32,0,31,21,0,20);
+  lhh->Add(fhh05);
+  TH2F* fhh06 = new TH2F("V0CBGFlag","V0CBGFlag",32,0,31,21,0,20);
+  lhh->Add(fhh06);
+  TH2F* fhh07 = new TH2F("ADABGFlag","ADABGFlag",8,0,7,21,0,20);
+  lhh->Add(fhh07);
+  TH2F* fhh08 = new TH2F("ADCBGFlag","ADCBGFlag",8,0,7,21,0,20);
+  lhh->Add(fhh08);
   
   return lhh;
   
@@ -323,6 +358,57 @@ UInt_t AliCEPUtils::GetVtxPos(AliVEvent *Event, TVector3 *fVtxPos)
   
 }
 
+//------------------------------------------------------------------------------
+void AliCEPUtils::BBFlagAnalysis (
+  AliVEvent *Event,
+  TList *lhh)
+{
+  
+  if (!lhh) return;
+
+  // V0
+  // there are 32 channels and 21 bc
+  AliVVZERO* esdV0 = Event->GetVZEROData();
+  if (esdV0) {
+    // side A
+    for (Int_t ch=0; ch<32; ch++) {
+      for (Int_t bc=0; bc<21; bc++) {
+        if (esdV0->GetPFBBFlag(ch+32,bc)>0) ((TH2F*)lhh->At(0))->Fill(ch,bc);
+        if (esdV0->GetPFBGFlag(ch+32,bc)>0) ((TH2F*)lhh->At(4))->Fill(ch,bc);
+      }
+    }
+    
+    // side C
+    for (Int_t ch=0; ch<32; ch++) {
+      for (Int_t bc=0; bc<21; bc++) {
+        if (esdV0->GetPFBBFlag(ch,bc)>0)    ((TH2F*)lhh->At(1))->Fill(ch,bc);
+        if (esdV0->GetPFBGFlag(ch,bc)>0)    ((TH2F*)lhh->At(5))->Fill(ch,bc);
+      }
+    }
+  }
+  
+  // AD
+  // there are 16 channels - 8 channels per side (A, C) - and 21 bc values
+  AliESDAD* esdAD = (AliESDAD*)Event->GetADData();
+  if (esdAD) {
+    // side A
+    for (Int_t ch=0; ch<8; ch++) {
+      for (Int_t bc=0; bc<21; bc++) {
+        if (esdAD->GetPFBBFlag(ch+8,bc)>0) ((TH2F*)lhh->At(2))->Fill(ch,bc);
+        if (esdAD->GetPFBGFlag(ch+8,bc)>0) ((TH2F*)lhh->At(6))->Fill(ch,bc);
+      }
+    }
+
+    // side C
+    for (Int_t ch=0; ch<8; ch++){
+      for (Int_t bc=0; bc<21; bc++) {
+        if (esdAD->GetPFBBFlag(ch,bc)>0)   ((TH2F*)lhh->At(3))->Fill(ch,bc);
+        if (esdAD->GetPFBGFlag(ch,bc)>0)   ((TH2F*)lhh->At(7))->Fill(ch,bc);
+      }
+    }
+  }
+
+}
 //------------------------------------------------------------------------------
 // This function compiles parameters which are relevant in SPD pile-up
 // rejection, see AliESDEvent::IsPileupFromSPD

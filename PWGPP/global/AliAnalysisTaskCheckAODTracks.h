@@ -24,6 +24,7 @@ class AliESDEvent;
 
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliPID.h"
 
 class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
 
@@ -103,14 +104,10 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH2F* fHistTPCChi2ndfPtFiltBit[kNumOfFilterBits];           //!<!  histo of n. TPC clus per filter bit
   TH2F* fHistChi2TPCConstrVsGlobPtFiltBit[kNumOfFilterBits];  //!<!  histo of n. TPC clus per filter bit
 
-  TH2F* fHistPtResidVsPtTPCselAll;            //!<!  histo for pt resolution (TPC cuts -all)
-  TH2F* fHistPtResidVsPtTPCselPion;           //!<!  histo for pt resolution (TPC cuts -pions)
-  TH2F* fHistPtResidVsPtTPCselKaon;           //!<!  histo for pt resolution (TPC cuts -kaons)
-  TH2F* fHistPtResidVsPtTPCselProton;         //!<!  histo for pt resolution (TPC cuts -protons)
-  TH2F* fHistPtResidVsPtTPCselITSrefAll;             //!<!  histo for pt resolution (TPC cuts -all)
-  TH2F* fHistPtResidVsPtTPCselITSrefPion;     //!<!  histo for pt resolution (TPC cuts -pions)
-  TH2F* fHistPtResidVsPtTPCselITSrefKaon;     //!<!  histo for pt resolution (TPC cuts -kaons)
-  TH2F* fHistPtResidVsPtTPCselITSrefProton;   //!<!  histo for pt resolution (TPC cuts -protons)
+  TH2F* fHistPtResidVsPtTPCselAll;                       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis
+  TH2F* fHistPtResidVsPtTPCselITSrefAll;                 //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
+  TH2F* fHistPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
 
   TH3F* fHistEtaPhiPtTPCselITSrefGood;        //!<!  histo of eta,phi,pt - good MC tracks
   TH3F* fHistEtaPhiPtTPCselITSrefFake;        //!<!  histo of eta,phi,pt - fake MC tracks
@@ -134,10 +131,13 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
+  Int_t fNPtBins;              // number of pt intervals in histos
+  Double_t fMinPt;             // minimum pt for histos
+  Double_t fMaxPt;             // maximum pt for histos
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,3);
+  ClassDef(AliAnalysisTaskCheckAODTracks,4);
 };
 
 

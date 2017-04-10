@@ -16,10 +16,10 @@ AliAnalysisTask* AddTask_iarsene_jpsi2ee(Bool_t isAliRoot=kTRUE, Int_t runMode=1
   AliReducedAnalysisJpsi2ee* jpsi2eeAnalysis = new AliReducedAnalysisJpsi2ee("Jpsi2eeAnalysis","Jpsi->ee analysis");
   jpsi2eeAnalysis->Init();
   //jpsi2eeAnalysis->SetLoopOverTracks(kFALSE);
-  //jpsi2eeAnalysis->SetRunEventMixing(kFALSE);
+  jpsi2eeAnalysis->SetRunEventMixing(kFALSE);
   //jpsi2eeAnalysis->SetRunPairing(kFALSE);
-  //jpsi2eeAnalysis->SetRunOverMC(kTRUE);
-  //jpsi2eeAnalysis->SetRunLikeSignPairing(kFALSE);
+  jpsi2eeAnalysis->SetRunOverMC(kTRUE);
+  jpsi2eeAnalysis->SetRunLikeSignPairing(kFALSE);
   Setup(jpsi2eeAnalysis, prod);
   // initialize an AliAnalysisTask which will wrapp the AliReducedAnalysisJpsi2ee such that it can be run in an aliroot analysis train (e.g. LEGO, local analysis etc)
   AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager", runMode);
@@ -1311,7 +1311,7 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
                           36,-0.9,0.9,AliReducedVarManager::kEta,100,-5.0,5.0,AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron);
         man->AddHistogram(classStr.Data(),"TPCnsigElectronCorrected_TimeFromSOR_prof","<corrected TPC N_{#sigma} electron> vs. time from SOR",kTRUE,
                           90, 0., 450.,AliReducedVarManager::kTimeRelativeSOR,80,-4.0,4.0,AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron);
-        man->AddHistogram(classStr.Data(),"MassUsedForTracking","",kFALSE,40,0.,4.,AliReducedVarManager::kMassUsedForTracking);
+        
         /*man->AddHistogram(classStr.Data(),"TPCnsigElectronCorrected_Pin_MassUsedForTracking_prof","<mass used for tracking> vs corrected TPC N_{#sigma} electron vs. inner param P",kTRUE,
                           100,0.0,10.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron, 40, 0., 4., AliReducedVarManager::kMassUsedForTracking);
         man->AddHistogram(classStr.Data(),"TPCnsigElectronCorrected_Eta_MassUsedForTracking_prof","<mass used for tracking> vs corrected TPC N_{#sigma} electron vs. eta",kTRUE,

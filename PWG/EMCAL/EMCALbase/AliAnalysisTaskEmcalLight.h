@@ -97,8 +97,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   // Containers
   AliParticleContainer       *AddParticleContainer(std::string branchName, std::string contName="");
   AliClusterContainer        *AddClusterContainer(std::string branchName, std::string contName="");
-  void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray.insert(std::pair<std::string, AliParticleContainer*>(cont->GetName(), cont)); }
-  void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.insert(std::pair<std::string, AliClusterContainer*>(cont->GetName(), cont))  ; }
+  void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray[cont->GetName()] = cont; }
+  void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray[cont->GetName()]  = cont; }
   AliParticleContainer       *GetParticleContainer(std::string name)          const;
   AliClusterContainer        *GetClusterContainer(std::string name)           const;
   AliMCParticleContainer     *GetMCParticleContainer(std::string name)        const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(name)); }

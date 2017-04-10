@@ -1,3 +1,4 @@
+
 #ifndef ALIPERFORMANCEPTCALIBMC_H
 #define ALIPERFORMANCEPTCALIBMC_H
 //----------------------------------------------------------------------------------------------------
@@ -24,7 +25,6 @@ class TList;
 class AliESDVertex;
 class AliESDtrack;
 class AliMCEvent;
-class AliStack;
 class AliTrackReference;
 class AliESDEvent; 
 class AliESDfriend; 

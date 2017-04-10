@@ -84,6 +84,7 @@ ClassImp(AliAnalysisTaskJetExtractorHF)
 //________________________________________________________________________
 AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetExtractorHF", kTRUE),
+  fTruthParticleArray(0),
   fJetsCont(0),
   fTracksCont(0),
   fJetsTree(0),
@@ -129,6 +130,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
 //________________________________________________________________________
 AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
+  fTruthParticleArray(0),
   fJetsCont(0),
   fTracksCont(0),
   fJetsTree(0),
@@ -203,6 +205,8 @@ void AliAnalysisTaskJetExtractorHF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetPhiEta", "Jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
   AddHistogram2D<TH2D>("hJetArea", "Jet area", "COLZ", 200, 0., 2., 100, 0, 100, "Jet A", "Centrality", "dN^{Jets}/dA");
 
+  AddHistogram2D<TH2D>("hJetType", "Jet type", "COLZ", 7, 0, 7, 7, 0, 7, "Jet type from hadron matching", "Jet type initial collision", "dN^{Jets}/dType");
+
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
   AddHistogram2D<TH2D>("hConstituentPhiEta", "Jet constituent relative #phi/#eta distribution", "COLZ", 120, -0.6, 0.6, 120, -0.6, 0.6, "#Delta#phi", "#Delta#eta", "dN^{Const}/d#phi d#eta");
 
@@ -226,6 +230,9 @@ void AliAnalysisTaskJetExtractorHF::ExecOnce() {
   fJetsTree = new TTree("ExtractedJets", "ExtractedJets");
   fJetsTree->Branch("Jets", "AliBasicJet", &fJetsTreeBuffer, 1000);
   fOutput->Add(fJetsTree);
+
+  if (fTruthParticleArrayName != "")
+    fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
 
   // ### Prepare vertexer
   if(fCalculateSecondaryVertices)
@@ -324,9 +331,14 @@ void AliAnalysisTaskJetExtractorHF::AddJetToTree(AliEmcalJet* jet)
     if(!particle) continue;
 
     // Impact parameter analysis
-    Double_t z     = GetTrackImpactParameter(myVertex, dynamic_cast<AliAODTrack*>(particle));
 
-    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), particle->Xv(), particle->Yv(), particle->Zv(), z);
+    // significant impact parameters
+    Double_t z0sig = 0;
+    Double_t d0sig = 0;
+
+    GetTrackImpactParameters(myVertex, dynamic_cast<AliAODTrack*>(particle), d0sig, z0sig);
+
+    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), particle->Xv(), particle->Yv(), particle->Zv(), d0sig, z0sig);
     AddPIDInformation(particle, *basicJet.GetJetConstituent(basicJet.GetNumbersOfConstituents()-1));
   }
 
@@ -357,6 +369,8 @@ void AliAnalysisTaskJetExtractorHF::FillJetControlHistograms(AliEmcalJet* jet)
   FillHistogram("hJetPt", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), fCent);
   FillHistogram("hJetPhiEta", jet->Phi(), jet->Eta());
   FillHistogram("hJetArea", jet->Area(), fCent);
+
+  FillHistogram("hJetType", fCurrentJetTypeHM, fCurrentJetTypeIC);
 
   // ### Jet constituent plots
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
@@ -495,19 +509,20 @@ void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* primV
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskJetExtractorHF::GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track)
+void AliAnalysisTaskJetExtractorHF::GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Double_t& d0sig, Double_t& z0sig)
 {
-  Double_t z = 0;
-  // Impact parameter z
   if (track)
   {
     Double_t d0rphiz[2],covd0[3];
-    Bool_t isDCA=track->PropagateToDCA(vtx,InputEvent()->GetMagneticField(),9999.,d0rphiz,covd0);
+    Bool_t isDCA=track->PropagateToDCA(vtx,InputEvent()->GetMagneticField(),3.0,d0rphiz,covd0);
     if(isDCA)
-      z = d0rphiz[1]; // impact parameter z
+    {
+      if(covd0[0] > 0)
+        d0sig = d0rphiz[0]/TMath::Sqrt(covd0[0]);
+      if(covd0[2] > 0)
+        z0sig = d0rphiz[1]/TMath::Sqrt(covd0[2]);
+    }
   }
-
-  return z;
 }
 
 //________________________________________________________________________
@@ -548,12 +563,8 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType(AliEmcalJet* jet, Int_t& ty
 
   // Do hadron matching jet type tagging using mcparticles
   // ... if not explicitly deactivated
-  if (fTruthParticleArrayName != "")
+  if (fTruthParticleArray)
   {
-    TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
-    if(!fTruthParticleArray)
-      return;
-
     typeHM = 1; // light jet until something else was found
     for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
     {
@@ -618,10 +629,62 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType(AliEmcalJet* jet, Int_t& ty
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskJetExtractorHF::IsStrangeJet(AliEmcalJet* jet)
+{
+  // Do hadron matching jet type tagging using mcparticles
+  // ... if not explicitly deactivated
+  if (fTruthParticleArray)
+  {
+    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
+    {
+      AliAODMCParticle* part = (AliAODMCParticle*)fTruthParticleArray->At(i);
+      if(!part) continue;
+
+      // Check if the particle has strangeness
+      Int_t absPDG = TMath::Abs(part->PdgCode());
+      if ((absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
+      {
+        // Check if particle is in a radius around the jet
+        Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
+        if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
+          continue;
+        else
+          return kTRUE;
+      }
+    }
+  }
+  // As fallback, the MC stack will be tried
+  else if(MCEvent() && (MCEvent()->Stack()))
+  {
+    AliStack* stack = MCEvent()->Stack();
+    // Go through the whole particle stack
+    for(Int_t i=0; i<stack->GetNtrack(); i++)
+    {
+      TParticle *part = stack->Particle(i);
+      if(!part) continue;
+
+      // Check if the particle has strangeness
+      Int_t absPDG = TMath::Abs(part->GetPdgCode());
+      if ((absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
+      {
+        // Check if particle is in a radius around the jet
+        Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
+        if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
+          continue;
+        else
+          return kTRUE;
+      }
+    }
+  }
+  return kFALSE;
+
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM)
 {
   Double_t radius = fHadronMatchingRadius;
-  TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
+
   if(!fTruthParticleArray)
     return;
 
@@ -643,7 +706,13 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, 
   }
 
   if (!parton[1])
-    typeHM = 1;
+  {
+    // No HF jet -- now also separate jets in udg (1) and s-jets (3) (on demand)
+    if((std::find(fExtractionListPIDsHM.begin(), fExtractionListPIDsHM.end(), 3) != fExtractionListPIDsHM.end()) && IsStrangeJet(jet))
+      typeHM = 3;
+    else
+      typeHM = 1;
+  }
   else {
     Int_t pdg = TMath::Abs(parton[1]->PdgCode());
     if ((pdg >= 400 && pdg <= 500) || (pdg >= 4000 && pdg <= 5000)) typeHM = 4;
@@ -706,7 +775,6 @@ void AliAnalysisTaskJetExtractorHF::AddPIDInformation(AliVParticle* particle, Al
   Int_t truthPID = 9;
 
   // Get truth values if we are on MC
-  TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
   if(fTruthParticleArray)
   {
     for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
@@ -839,7 +907,7 @@ void AliAnalysisTaskJetExtractorHF::CalculateInitialCollisionJets()
     initialParton2_pdg = fPythiaInfo->GetPartonFlag7();
   }
   // or direct particle level information from mcparticles branch
-  else if (TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data())))
+  else if (fTruthParticleArray)
   {
     AliAODMCParticle* parton1 = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(6));
     AliAODMCParticle* parton2 = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(7));

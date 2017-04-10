@@ -19,7 +19,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t dMinClusTPC=70,
                              Double_t dDCAxy=1000.,
                              Double_t dDCAz=1000.,
-                             Double_t MaxChi2PerClTPC=4.,
+                             Int_t CRC2nEtaBins=5,
                              Double_t MaxFracSharedTPCCl=0.4,
                              TString sSelecCharge="",
                              Bool_t bPtDepDCAxyCut=kFALSE,
@@ -74,10 +74,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Double_t centrMin=0.;
  Double_t centrMax=100.;
  Double_t CenBinWidth=10.;
- Int_t CRC2nEtaBins=6;
- Bool_t bCalculateCRC2=kFALSE;
+ Bool_t bCalculateCRCInt=kFALSE;
+ Bool_t bCalculateCRC2=kTRUE;
  Float_t MaxDevZN=10.;
- Bool_t bCalculateCRCVZ=kFALSE;
+ Bool_t bCalculateCRCVZ=kTRUE;
  TString PhiEtaWeightsFileName="";
   Bool_t bCutsQA=kTRUE;
   Bool_t bCalculateEbEFlow=kFALSE;
@@ -92,6 +92,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Int_t bCutTPCbound=0;
   Bool_t bUsePhiEtaCuts=kFALSE;
   Bool_t bSetQAZDC=kTRUE;
+  Double_t MaxChi2PerClTPC=4.;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -215,8 +216,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCRecFile;
   }
-  // load VZERO gain equalization
   if(sDataSet=="2015") {
+    // load VZERO gain equalization
     TString VZEROGainEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROEqGain.root";
     TFile* VZEROGainEqFile = TFile::Open(VZEROGainEqFileName,"READ");
     if(!VZEROGainEqFile) {
@@ -234,6 +235,24 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
     delete VZEROGainEqFile;
+    // load VZERO Q-vector re-centering
+    TString VZEROQVecRecFileName = "alien:///alice/cern.ch/user/m/mhaque/jacopo/15oHI_VZEROQVecRec.root";
+    TFile* VZEROQVecRecFile = TFile::Open(VZEROQVecRecFileName,"READ");
+    if(!VZEROQVecRecFile) {
+      cout << "ERROR: VZERO Q-vector re-centering file not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* VZEROQVecRecList = (TList*)(VZEROQVecRecFile->FindObjectAny("VZEROEqGain"));
+    if(VZEROQVecRecList) {
+      taskFE->SetVZEROQVecRecList(VZEROQVecRecList);
+      cout << "VZERO Q-vector re-centering set (from " <<  VZEROQVecRecFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: Q-vector re-centering list not found!" << endl;
+      exit(1);
+    }
+    delete VZEROQVecRecFile;
   }
   
   // add the task to the manager
@@ -457,6 +476,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);
+ taskQC->SetCalculateCRCInt(bCalculateCRCInt);
  taskQC->SetCalculateCRC2(bCalculateCRC2);
  taskQC->SetCalculateCRCVZ(bCalculateCRCVZ);
  taskQC->SetCalculateCRCZDC(bCalculateCRCZDC);
@@ -465,10 +485,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlowQC(bCalculateFlow);
  if(bUseZDC) taskQC->SetCalculateFlowZDC(bCalculateFlow);
- if(bUseVZERO) taskQC->SetCalculateFlowVZ(bCalculateFlow);
+ if(bCalculateCRCVZ) taskQC->SetCalculateFlowVZ(bCalculateFlow);
  taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetFlowQCDeltaEta(DeltaEta);
- taskQC->SetUseVZERO(bUseVZERO);
+ taskQC->SetUseVZERO(bCalculateCRCVZ);
  taskQC->SetUseZDC(kTRUE);
   if (ZDCCalibFileName != "" && bUseZDC) {
     taskQC->SetRecenterZDC(kTRUE);

@@ -166,6 +166,8 @@ public:
   Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
   void SetCalculateCME(Bool_t const cCRC) {this->fCalculateCME = cCRC;};
   Bool_t GetCalculateCME() const {return this->fCalculateCME;};
+  void SetCalculateCRCInt(Bool_t const cCRC) {this->fCalculateCRCInt = cCRC;};
+  Bool_t GetCalculateCRCInt() const {return this->fCalculateCRCInt;};
   void SetCalculateCRC2(Bool_t const cCRC) {this->fCalculateCRC2 = cCRC;};
   Bool_t GetCalculateCRC2() const {return this->fCalculateCRC2;};
   void SetCalculateCRCVZ(Bool_t const cCRC) {this->fCalculateCRCVZ = cCRC;};
@@ -313,6 +315,7 @@ private:
   Bool_t fCalculateCRC; // calculate CRC quantities
   Bool_t fCalculateCRCPt;
   Bool_t fCalculateCME;
+  Bool_t fCalculateCRCInt;
   Bool_t fCalculateCRC2;
   Bool_t fCalculateCRCVZ;
   Bool_t fCalculateCRCZDC;

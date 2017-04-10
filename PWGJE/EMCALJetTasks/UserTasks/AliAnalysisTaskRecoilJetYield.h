@@ -84,6 +84,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
   void SetRhoName(const char *r)                              {fRhoName = r;}
+  void SetSoftDropRecluster(Int_t n)                          {fReclusterAlgo = n;} //0 = CA, 1 = anti-kt, 2 = kt
   
 
  protected:
@@ -136,6 +137,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   AliRhoParameter                     *fRhoParam;
 
   Bool_t                              fNsubMeasure;
+  Int_t                               fReclusterAlgo;
   
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPhi;
@@ -153,7 +155,10 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhTrackPt;
   TH2F                                *fhGroomedPtvJetPt;
   TH1F                                *fhDroppedBranches;
+  TH1F                                *fhDetJetPt_Incl;
+  TH1F                                *fhDetJetPt_Matched;
   TTree                               *fTreeJetInfo;  //Tree with tagging variables subtracted MC or true MC or raw
+  
 
  private:
   AliAnalysisTaskRecoilJetYield(const AliAnalysisTaskRecoilJetYield&);            // not implemented

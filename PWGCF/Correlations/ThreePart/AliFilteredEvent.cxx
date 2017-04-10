@@ -24,6 +24,39 @@ AliFilteredEvent::AliFilteredEvent() :
   
 }
 
+AliFilteredEvent::AliFilteredEvent(const AliFilteredEvent& other) :
+  AliVEvent(other),
+  fCentrality(other.fCentrality),
+  fVertex(),
+  fRunNr(other.fRunNr),
+  fEventPlaneAngle(other.fEventPlaneAngle),
+  fConnected(false),
+  fNTracks(other.fNTracks),
+  fTracks(0x0)
+{
+  // copy constructor
+  if(other.fVertex){
+    fVertex[0] = other.fVertex[0];
+    fVertex[1] = other.fVertex[1];    
+    fVertex[2] = other.fVertex[2];  }
+  if(other.fgTracks)fgTracks = new TClonesArray(*other.fgTracks);
+  if(!fgTracks) fgTracks = new TClonesArray("AliFilteredTrack", 100000);
+  fTracks = fgTracks;
+  
+}
+
+  AliFilteredEvent& AliFilteredEvent::operator=(const AliFilteredEvent& other) 
+  {
+  // assignment operator
+  // forward to copy constructor, but should be implemented if the class
+  // members get more complex
+  if (this==&other) return *this;
+  this->~AliFilteredEvent();
+  new (this) AliFilteredEvent(other);
+  return *this;
+}
+
+
 AliFilteredEvent::AliFilteredEvent(const char* name) :
   AliVEvent(),
   fCentrality(-1.0),

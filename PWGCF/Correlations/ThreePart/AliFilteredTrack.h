@@ -102,6 +102,7 @@ class AliFilteredTrack : public AliVTrack {
   virtual Short_t Charge()      const {
     return TestBit(kSignBit)?-1:1;
   }
+  virtual Double_t GetSign()    const {return Charge();}
   virtual Int_t   GetLabel()    const {return -999;}
 
   virtual Int_t PdgCode() const {return -999;}

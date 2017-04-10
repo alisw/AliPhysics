@@ -115,6 +115,7 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fBinsPt(0),
   fBinsEta(0),
   fBinsZv(0),
+  fHistMCMultPt(0),
   fHistV0Amp(0)
 {
   // Set default binning
@@ -177,6 +178,11 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   Double_t minMultEventCorrelation[2]={fBinsMultCent->GetAt(0),fBinsMultCent->GetAt(0)};
   Double_t maxMultEventCorrelation[2]={fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
   
+
+  /// Closure Test histogram (pt vs. Nch)
+  Int_t nBinsMCMultPt[2]={fBinsMultCent->GetSize()-1,fBinsPt->GetSize()-1};
+  Double_t minMCMultPt[2]={fBinsMultCent->GetAt(0),fBinsPt->GetAt(0)};
+  Double_t maxMCMultPt[2]={fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsPt->GetAt(fBinsPt->GetSize()-1)};
   
   
   fHistTrack = new THnF("fHistTrack", "Histogram for Tracks",4,nBinsTrack,minTrack,maxTrack);
@@ -390,6 +396,14 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistMCResponseMat->GetAxis(0)->SetTitle("reconstructed track multiplicity N_{acc}");
     fHistMCResponseMat->GetAxis(1)->SetTitle("generated particle multiplicity N_{ch}");
     fHistMCResponseMat->Sumw2();
+    
+    fHistMCMultPt = new THnF("fHistMCMultPt","Histogram for MC Closure test #it{p}_T vs. N_{acc}",2,nBinsMCMultPt, minMCMultPt, maxMCMultPt);
+    fHistMCMultPt->SetBinEdges(0,fBinsMultCent->GetArray());
+    fHistMCMultPt->SetBinEdges(1,fBinsPt->GetArray());
+    fHistMCMultPt->GetAxis(0)->SetTitle("N_{ch}");
+    fHistMCMultPt->GetAxis(1)->SetTitle("#it{p}_T");
+    fHistMCMultPt->Sumw2();
+
 
     /*
        fHistMCGenTrackINEL0 = new THnF("fHistMCGenTrackINEL0","Histogram for generated tracks for INEL>0 MC Events",4,nBinsTrack,minTrack,maxTrack);
@@ -434,6 +448,8 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCTrigINEL0Event);
     fOutputList->Add(fHistMCRecINEL0Event);
     fOutputList->Add(fHistMCResponseMat);
+    fOutputList->Add(fHistMCMultPt);
+    
     
     //     fOutputList->Add(fHistMCGenTrackINEL0);
   }
@@ -443,7 +459,7 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   //InitdNdPtEventCuts(); (does nothing atm so I just leave it out for the moment)
   if(fIsESD) InitESDTrackCuts();
   if((fIs2013pA || fIs2015data) && !fUtils){fUtils = new AliAnalysisUtils();}
-  
+
 }
 
 /// Destructor
@@ -456,6 +472,7 @@ AlidNdPtUnifiedAnalysisTask::~AlidNdPtUnifiedAnalysisTask(){
 ///TODO: solve Multiplicity problem
 ///________________________________________________________________________
 void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for each event)
+
 
   /// ====================== Initialize variables ===============================
 
@@ -524,6 +541,7 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   if(!IsEventAcceptedQuality(fEvent)) return;
   if (fIs2013pA){	if(!IsEventAccepted2013pA(fEvent)) return;	}
   if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}
+
 
   /// ------------------ Reconstructed Events --------------------------------------
 
@@ -667,6 +685,7 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
         fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
 
         multGenPart++;
+
       }
       if(IsChargedPrimaryOrLambda(iParticle))
       {
@@ -683,6 +702,28 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
     Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
     fHistMCResponseMat->Fill(responseMatrixTuple);
+    
+    
+    // now fill multPt hist for MC closure test and generator comparison
+    for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
+      TParticle *mcGenParticle = fMCStack->Particle(iParticle);
+      if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
+
+      /// \li Acceptance cuts for generated particles
+      // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
+      if(!IsTrackAcceptedKinematics(mcGenParticle, kFALSE)) continue;
+
+      if(IsChargedPrimary(iParticle)){
+	
+	Double_t mcMultPt[2] = {multGenPart, mcGenParticle->Pt()};
+	fHistMCMultPt->Fill(mcMultPt);
+
+      }
+    }
+
+    
+    
+    
 
   }
     
@@ -837,6 +878,7 @@ void AlidNdPtUnifiedAnalysisTask::InitESDTrackCuts(){
 
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   if(!fESDtrackCuts) {printf("ERROR: fESDtrackCuts not available\n"); return;}
+
 
   fESDtrackCuts->SetRequireTPCRefit(fTPCRefit);
   fESDtrackCuts->SetRequireITSRefit(fITSRefit);

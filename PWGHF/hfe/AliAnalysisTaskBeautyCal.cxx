@@ -883,12 +883,20 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   Bool_t EG1tr = kFALSE;
   Bool_t EG2tr = kFALSE;
 
-  if(trigger==7)fEMCEG1 = kTRUE;
+  //cout << "trigger = " << trigger << endl;
+  //if(trigger==7)fEMCEG1 = kTRUE;
   //if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   //if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
+  //cout << "fEMCEGA1 = " << fEMCEG1 << endl;
+  //cout << "firedTrigger = " << firedTrigger << endl;
 
-  if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
+  //if(trigger==7)if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
+  //cout << "EG1tr = " << EG1tr << endl;
+  if(!fMCarray && trigger==7){if(!firedTrigger.Contains(TriggerEG1))return;}
   //if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
+
+  //cout << "Zvertex = " << Zvertex << endl;
+  //cout << endl;
 
   ////////////////////////
   // Mag. field
@@ -1361,7 +1369,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Bool_t fFlagNonHFE=kFALSE;  // ULS
       Bool_t fFlagNonLsHFE=kFALSE;  // LS
       
-      Double_t mimSig = -1.0;
+      //Double_t mimSig = -1.0;
+      Double_t mimSig = -0.5;
       Double_t maxSig =  3.0;
       if(fMCarray) // nSigma cut in MC
         {
@@ -1380,13 +1389,14 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //cout << "itschi2 = " << fitschi2 << endl;
       if(atrack->GetITSchi2() > fitschi2) continue; 
  
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
+      if(fTPCnSigma > mimSig && fTPCnSigma < maxSig && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5)fHistEopHad2->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
 
-      if(fTPCnSigma > mimSig && fTPCnSigma < maxSig && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
+      //if(fTPCnSigma > mimSig && fTPCnSigma < maxSig && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
+      if(fTPCnSigma > mimSig && fTPCnSigma < maxSig && eop>0.9 && eop<1.2 && m20>m20mim && m20<m20max)
         {
           fHistTotalAccPhi->Fill(1.0/track->Pt(),TrkPhi);
           fHistTotalAccEta->Fill(1.0/track->Pt(),TrkEta);

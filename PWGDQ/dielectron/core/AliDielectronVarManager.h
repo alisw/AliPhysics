@@ -169,6 +169,8 @@ public:
 
     kImpactParXY,            // Impact parameter in XY plane
     kImpactParZ,             // Impact parameter in Z
+    kImpactParXYsigma,       // Impact parameter in XY plane normalized to resolution
+    kImpactParZsigma,        // Impact parameter in Z normalized to resolution
     kTrackLength,            // Track length
     kDistPrimToSecVtxXYMC,      // Distance of secondary vertex to primary vertex  in the XY plane
     kDistPrimToSecVtxZMC,       // Distance of secondary vertex to primary vertex in Z
@@ -943,6 +945,14 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   particle->GetImpactParameters(impactParXY, impactParZ);
   values[AliDielectronVarManager::kImpactParXY]   = impactParXY;
   values[AliDielectronVarManager::kImpactParZ]    = impactParZ;
+  values[AliDielectronVarManager::kImpactParXYsigma]   = -1.;
+  values[AliDielectronVarManager::kImpactParZsigma]    = -1.;
+
+  Float_t dca[2] = {-999.,-999.};
+  Float_t dcaRes[3] = {-999.,-999.,-999.};
+  esdTrack->GetImpactParameters(dca, dcaRes);
+  if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYsigma] = dca[0]/TMath::Sqrt(dcaRes[0]);
+  if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZsigma]  = dca[1]/TMath::Sqrt(dcaRes[2]);
 
 
   values[AliDielectronVarManager::kPdgCode]=-1;
@@ -1137,7 +1147,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
   // Reset AliESDtrack interface specific information
   if(Req(kNclsITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
-  if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = particle->GetITSchi2() / particle->GetITSNcls();
+  if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = (particle->GetITSNcls()>0)? particle->GetITSchi2() / particle->GetITSNcls() : 0;
   if(Req(kNclsTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
   if(Req(kNclsSTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   if(Req(kNclsSFracTPC)) values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
@@ -1207,9 +1217,15 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kKinkIndex0]    = kinkIndex;
 
   Double_t d0z0[2]={-999.0,-999.0};
-  if(Req(kImpactParXY) || Req(kImpactParZ)) GetDCA(particle, d0z0);
+  Double_t dcaRes[3] = {-999.,-999.,-999.};
+  if(Req(kImpactParXY) || Req(kImpactParZ) || Req(kImpactParXYsigma) || Req(kImpactParZsigma) ) GetDCA(particle, d0z0, dcaRes);
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
+  values[AliDielectronVarManager::kImpactParXYsigma] = -999.0;
+  values[AliDielectronVarManager::kImpactParZsigma] = -999.0;
+  if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYsigma] = d0z0[0]/TMath::Sqrt(dcaRes[0]);
+  if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZsigma]  = d0z0[1]/TMath::Sqrt(dcaRes[2]);
+
 
   values[AliDielectronVarManager::kPIn]            =  0.;
   values[AliDielectronVarManager::kTPCsignal]      =  0.;

@@ -55,7 +55,6 @@
 #include "AliMCEvent.h" 
 #include "AliHeader.h" 
 #include "AliGenEventHeader.h" 
-#include "AliStack.h" 
 #include "AliMCInfoCuts.h" 
 #include "AliRecInfoCuts.h" 
 #include "AliTracker.h" 
@@ -277,7 +276,7 @@ void AliPerformanceTPC::Init()
 
 
 //_____________________________________________________________________________
-void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus)
+void AliPerformanceTPC::ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus)
 {
 //
 // fill TPC QA info
@@ -354,13 +353,13 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   //
   // Fill rec vs MC information
   //
-  if(!stack) return;
+  if(!mcev) return;
 
 }
 
 
 //_____________________________________________________________________________
-void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent, Bool_t vertStatus)
+void AliPerformanceTPC::ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent, Bool_t vertStatus)
 {
   // Fill comparison information (TPC+ITS) 
   if(!esdTrack) return;
@@ -425,12 +424,12 @@ void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   //
   // Fill rec vs MC information
   //
-  if(!stack) return;
+  if(!mcev) return;
 }
 
 
 //_____________________________________________________________________________
-void AliPerformanceTPC::ProcessConstrained(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/, AliESDEvent* const /*esdEvent*/)
+void AliPerformanceTPC::ProcessConstrained(AliMCEvent* const /*mcev*/, AliESDtrack *const /*esdTrack*/, AliESDEvent* const /*esdEvent*/)
 {
   // Fill comparison information (constarained parameters) 
   AliDebug(AliLog::kWarning, "Warning: Not implemented");
@@ -450,7 +449,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   }
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
-  AliStack* stack = 0;
   TArrayF vtxMC(3);
   
   if(bUseMC)
@@ -463,12 +461,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     header = mcEvent->Header();
     if (!header) {
       Error("Exec","Header not available");
-      return;
-    }
-    // MC particle stack
-    stack = mcEvent->Stack();
-    if (!stack) {
-      Error("Exec","Stack not available");
       return;
     }
     // get MC vertex
@@ -563,9 +555,9 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
       }
     }
 
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent,vertStatus);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent,vertStatus);
-    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track,esdEvent);
+    if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,track,esdEvent,vertStatus);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,track,esdEvent,vertStatus);
+    else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,track,esdEvent);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;

@@ -63,7 +63,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   Bool_t remove_Tracks_T0       = 1;
   bool   PurePIDinMC            = 0;   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
    
-  
+
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
   else if ( System == "pPb" )                 { centralityMethod = 7; trigger = kTRUE;  }
   else if ( System == "pp" )                  { centralityMethod = 3; trigger = kFALSE; }

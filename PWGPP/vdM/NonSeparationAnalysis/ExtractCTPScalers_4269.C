@@ -10,7 +10,7 @@ TString classNames[] = {
   "CINT7-I6-NOPF-FASTNOTRD",
   "CINT7-I7-NOPF-FASTNOTRD",
   "CINT7-I8-NOPF-FASTNOTRD",
-  
+
   "CINT5-B-NOPF-FASTNOTRD",
 
   "C0TVX-B-NOPF-FASTNOTRD",
@@ -90,11 +90,34 @@ TString classNames[] = {
 
 const Int_t nClasses = sizeof(classNames)/sizeof(TString);
 
+TTree *TT = new TTree;
+
 void ExtractCTPScalers_4269()
 {
   gROOT->LoadMacro("AnalyzeCTPRecords.C+");
+  gROOT->LoadMacro("ExtractRateFromCTPScalers.C+");
 
-//   AnalyzeCTPRecords(234040, 2015, classNames, nClasses);
-//   AnalyzeCTPRecords(234045, 2015, classNames, nClasses);
+  // AnalyzeCTPRecords(234040, 2015, classNames, nClasses);
+  // AnalyzeCTPRecords(234045, 2015, classNames, nClasses);
 
+  const TString classIDs[] = { "CADAND" };
+  const TString bunchIDs[] = { "B", "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8" };
+  const Int_t   nBunches[] = {  27,   1,    1,    1,    1,    1,    1,    1,    1  };
+
+  // AD ratios
+  // 11/1/2015 Martino: I computed the ratios from the analysis of run 234039 (mu  ~0.01): I got AnotC / A&C = 11.6%, CnotA / A&C = 26.6%. 
+  const Double_t ratioA = 0.116;
+  const Double_t ratioC = 0.266;
+  for (Int_t i=0; i<sizeof(classIDs)/sizeof(TString); ++i) {
+    for (Int_t j=0; j<sizeof(bunchIDs)/sizeof(TString); ++j) {
+      ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 234040, "txt/4269/ScanXY.txt",     nBunches[j], 4269, ratioA, ratioC,
+				"root/4269/IntensityDecay.root", "root/4269/SatelliteContamination.root", -1, TT);
+      ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 234045, "txt/4269/ScanOffset.txt", nBunches[j], 4269, ratioA, ratioC,
+				"",                              "root/4269/SatelliteContamination.root", -1, TT);
+    }
+  }
+  TFile::Open("root/4269/RatesAndSep_4269_BB2.root", "RECREATE");
+  TT->Write("TT");
+  gFile->Write();
+  gFile->Close();
 }

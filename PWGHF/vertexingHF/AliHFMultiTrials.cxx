@@ -89,7 +89,8 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fFixRefloS(0),
   fNtupleMultiTrials(0x0),
   fMinYieldGlob(0),
-  fMaxYieldGlob(0)
+  fMaxYieldGlob(0),
+  fMassFitters()
 {
   // constructor
   Int_t rebinStep[4]={3,4,5,6};
@@ -109,6 +110,7 @@ AliHFMultiTrials::~AliHFMultiTrials(){
   delete [] fLowLimFitSteps;
   delete [] fUpLimFitSteps;
   if(fhTemplRefl) delete fhTemplRefl;
+  for (auto fitter : fMassFitters) delete fitter;
 }
 
 //________________________________________________________________________
@@ -119,9 +121,9 @@ Bool_t AliHFMultiTrials::CreateHistos(){
 
   TString funcBkg[kNBkgFuncCases]={"Expo","Lin","Pol2","Pol3","Pol4","Pol5","PowLaw","PowLawExpo"};
   TString gausSig[kNFitConfCases]={"FixedS","FixedSp20","FixedSm20","FreeS","FixedMeanFixedS","FixedMeanFreeS"};
-  
+
   Int_t totTrials=fNumOfRebinSteps*fNumOfFirstBinSteps*fNumOfLowLimFitSteps*fNumOfUpLimFitSteps;
-  
+
   fHistoRawYieldDistAll = new TH1F(Form("hRawYieldDistAll%s",fSuffix.Data()),"  ; Raw Yield",5000,0.,50000.);
   fHistoRawYieldTrialAll = new TH1F(Form("hRawYieldTrialAll%s",fSuffix.Data())," ; Trial # ; Raw Yield",nCases*totTrials,-0.5,nCases*totTrials-0.5);
   fHistoSigmaTrialAll = new TH1F(Form("hSigmaTrialAll%s",fSuffix.Data())," ; Trial # ; Sigma (GeV/c^{2})",nCases*totTrials,-0.5,nCases*totTrials-0.5);
@@ -175,10 +177,11 @@ Bool_t AliHFMultiTrials::CreateHistos(){
         fHistoBkgTrial[theCase]->SetMarkerStyle(7);
         fHistoBkgInBinEdgesTrial[theCase]->SetMarkerStyle(7);
       }
-      
+
     }
   }
   fNtupleMultiTrials = new TNtuple(Form("ntuMultiTrial%s",fSuffix.Data()),Form("ntuMultiTrial%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:confsig:confmean:chi2:signif:mean:emean:sigma:esigma:rawy:erawy",128000);
+  fNtupleMultiTrials->SetDirectory(nullptr);
   return kTRUE;
 
 }
@@ -189,7 +192,7 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 
   Bool_t hOK=CreateHistos();
   if(!hOK) return kFALSE;
-  
+
   Int_t itrial=0;
   Int_t types=0;
   Int_t itrialBC=0;
@@ -206,219 +209,223 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
       if(fNumOfFirstBinSteps==1) hRebinned=RebinHisto(hInvMassHisto,rebin,-1);
       else hRebinned=RebinHisto(hInvMassHisto,rebin,iFirstBin);
       for(Int_t iMinMass=0; iMinMass<fNumOfLowLimFitSteps; iMinMass++){
-	Double_t minMassForFit=fLowLimFitSteps[iMinMass];
-	Double_t hmin=TMath::Max(minMassForFit,hRebinned->GetBinLowEdge(2));
-	for(Int_t iMaxMass=0; iMaxMass<fNumOfUpLimFitSteps; iMaxMass++){
-	  Double_t maxMassForFit=fUpLimFitSteps[iMaxMass];
-	  Double_t hmax=TMath::Min(maxMassForFit,hRebinned->GetBinLowEdge(hRebinned->GetNbinsX()));
-	  ++itrial;
-	  for(Int_t typeb=0; typeb<kNBkgFuncCases; typeb++){
-	    if(typeb==kExpoBkg && !fUseExpoBkg) continue;
-	    if(typeb==kLinBkg && !fUseLinBkg) continue;
-	    if(typeb==kPol2Bkg && !fUsePol2Bkg) continue;
-	    if(typeb==kPol3Bkg && !fUsePol3Bkg) continue;
-	    if(typeb==kPol4Bkg && !fUsePol4Bkg) continue;
-	    if(typeb==kPol5Bkg && !fUsePol5Bkg) continue;
-	    if(typeb==kPowBkg && !fUsePowLawBkg) continue;
-	    if(typeb==kPowTimesExpoBkg && !fUsePowLawTimesExpoBkg) continue;
-	    for(Int_t igs=0; igs<kNFitConfCases; igs++){
-	      if (igs==kFixSigUpFreeMean && !fUseFixSigUpFreeMean) continue;
-	      if (igs==kFixSigDownFreeMean && !fUseFixSigDownFreeMean) continue;
-	      if (igs==kFreeSigFixMean  && !fUseFixedMeanFreeS) continue;
-	      if (igs==kFreeSigFreeMean  && !fUseFreeS) continue;
-	      if (igs==kFixSigFreeMean  && !fUseFixSigFreeMean) continue;
-	      if (igs==kFixSigFixMean   && !fUseFixSigFixMean) continue;
-	      Int_t theCase=igs*kNBkgFuncCases+typeb;
-	      Int_t globBin=itrial+theCase*totTrials;
-	      for(Int_t j=0; j<15; j++) xnt[j]=0.;
-	      
-	      AliHFMassFitterVAR*  fitter=0x0;
-	      if(typeb<=kPol2Bkg){
-		fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,typeb,types);
-	      }else if(typeb==kPowBkg){
-		fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,4,types);		
-	      }else if(typeb==kPowTimesExpoBkg){
-		fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,5,types);
-	      }else{
-		fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,6,types);
-		if(typeb==kPol3Bkg) fitter->SetBackHighPolDegree(3);
-		if(typeb==kPol4Bkg) fitter->SetBackHighPolDegree(4);
-		if(typeb==kPol5Bkg) fitter->SetBackHighPolDegree(5);
-	      }
-	      fitter->SetReflectionSigmaFactor(0);
-	      //if D0 Reflection
-	      if(fhTemplRefl){
-		fitter=new AliHFMassFitterVAR(hRebinned,hmin,hmax,1,typeb,2);
-		fitter->SetTemplateReflections((TH1*)fhTemplRefl);
-		fitter->SetFixReflOverS(fFixRefloS,kTRUE);
-	      }
-	      if(fFitOption==1) fitter->SetUseChi2Fit();
-	      fitter->SetInitialGaussianMean(fMassD);
-	      fitter->SetInitialGaussianSigma(fSigmaGausMC);
-	      xnt[0]=rebin;
-	      xnt[1]=iFirstBin;
-	      xnt[2]=minMassForFit;
-	      xnt[3]=maxMassForFit;
-	      xnt[4]=typeb;
-	      xnt[6]=0;
-	      if(igs==kFixSigFreeMean){
-		fitter->SetFixGaussianSigma(fSigmaGausMC,kTRUE);
-		xnt[5]=1;
-	      }else if(igs==kFixSigUpFreeMean){
-		fitter->SetFixGaussianSigma(fSigmaGausMC*(1.+fSigmaMCVariation),kTRUE);
-		xnt[5]=2;
-	      }else if(igs==kFixSigDownFreeMean){
-		fitter->SetFixGaussianSigma(fSigmaGausMC*(1.-fSigmaMCVariation),kTRUE);
-		xnt[5]=3;
-	      }else if(igs==kFreeSigFreeMean){
-		xnt[5]=0;
-	      }else if(igs==kFixSigFixMean){
-		fitter->SetFixGaussianSigma(fSigmaGausMC,kTRUE);
-		fitter->SetFixGaussianMean(fMassD,kTRUE);
-		xnt[5]=1;
-		xnt[6]=1;
-	      }else if(igs==kFreeSigFixMean){
-		fitter->SetFixGaussianMean(fMassD,kTRUE);	      
-		xnt[5]=0;
-		xnt[6]=1;
-	      }
-	      Bool_t out=kFALSE;
-	      Double_t chisq=-1.;
-	      Double_t sigma=0.;
-	      Double_t esigma=0.;
-	      Double_t pos=.0;
-	      Double_t epos=.0;
-	      Double_t ry=.0;
-	      Double_t ery=.0;
-	      Double_t significance=0.;
-	      Double_t erSignif=0.;
-	      Double_t bkg=0.;
-	      Double_t erbkg=0.;
-	      Double_t bkgBEdge=0;
-	      Double_t erbkgBEdge=0;
-	      TF1* fB1=0x0;
-	      if(typeb<kNBkgFuncCases){
-		printf("****** START FIT OF HISTO %s WITH REBIN %d FIRST BIN %d MASS RANGE %f-%f BACKGROUND FIT FUNCTION=%d CONFIG SIGMA/MEAN=%d\n",hInvMassHisto->GetName(),rebin,iFirstBin,minMassForFit,maxMassForFit,typeb,igs);
-		out=fitter->MassFitter(0);
-		chisq=fitter->GetReducedChiSquare();
-		fitter->Significance(3,significance,erSignif);
-		sigma=fitter->GetSigma();
-		pos=fitter->GetMean();
-		esigma=fitter->GetSigmaUncertainty();
-		if(esigma<0.00001) esigma=0.0001;
-		epos=fitter->GetMeanUncertainty();
-		if(epos<0.00001) epos=0.0001;
-		ry=fitter->GetRawYield(); 
-		ery=fitter->GetRawYieldError(); 
-		fB1=fitter->GetBackgroundFullRangeFunc();
-	        fitter->Background(fnSigmaForBkgEval,bkg,erbkg);
-		Double_t minval = hInvMassHisto->GetXaxis()->GetBinLowEdge(hInvMassHisto->FindBin(pos-fnSigmaForBkgEval*sigma));
-		Double_t maxval = hInvMassHisto->GetXaxis()->GetBinUpEdge(hInvMassHisto->FindBin(pos+fnSigmaForBkgEval*sigma));
-	  	fitter->Background(minval,maxval,bkgBEdge,erbkgBEdge);
-		if(out && fDrawIndividualFits && thePad){
-		  thePad->Clear();
-		  fitter->DrawHere(thePad);
-		  for (auto format : fInvMassFitSaveAsFormats) {
-		    thePad->SaveAs(Form("FitOutput_%s_Trial%d.%s",hInvMassHisto->GetName(),globBin, format.c_str()));
-		  }
-		}
-	      }
-	      // else{
-	      //   out=DoFitWithPol3Bkg(hRebinned,hmin,hmax,igs);
-	      //   if(out && thePad){
-	      // 	thePad->Clear();
-	      // 	hRebinned->Draw();
-	      // 	TF1* fSB=(TF1*)hRebinned->GetListOfFunctions()->FindObject("fSB");
-	      // 	fB1=new TF1("fB1","[0]+[1]*x+[2]*x*x+[3]*x*x*x",hmin,hmax);
-	      // 	for(Int_t j=0; j<4; j++) fB1->SetParameter(j,fSB->GetParameter(3+j));
-	      // 	fB1->SetLineColor(2);
-	      // 	fB1->Draw("same");
-	      // 	fSB->SetLineColor(4);
-	      // 	fSB->Draw("same");
-	      // 	thePad->Update();
-	      // 	chisq=fSB->GetChisquare()/fSB->GetNDF();;
-	      // 	sigma=fSB->GetParameter(2);
-	      // 	esigma=fSB->GetParError(2);
-	      // 	if(esigma<0.00001) esigma=0.0001;
-	      // 	pos=fSB->GetParameter(1);
-	      // 	epos=fSB->GetParError(1);
-	      // 	if(epos<0.00001) epos=0.0001;
-	      // 	ry=fSB->GetParameter(0)/hRebinned->GetBinWidth(1);
-	      // 	ery=fSB->GetParError(0)/hRebinned->GetBinWidth(1);
-	      //   }
-	      // }
-	      xnt[7]=chisq;
-	      if(out && chisq>0. && sigma>0.5*fSigmaGausMC && sigma<2.0*fSigmaGausMC){
-		xnt[8]=significance;
-		xnt[9]=pos;
-		xnt[10]=epos;
-		xnt[11]=sigma;
-		xnt[12]=esigma;
-		xnt[13]=ry;
-		xnt[14]=ery;
-		fHistoRawYieldDistAll->Fill(ry);
-		fHistoRawYieldTrialAll->SetBinContent(globBin,ry);
-		fHistoRawYieldTrialAll->SetBinError(globBin,ery);
-		fHistoSigmaTrialAll->SetBinContent(globBin,sigma);
-		fHistoSigmaTrialAll->SetBinError(globBin,esigma);
-		fHistoMeanTrialAll->SetBinContent(globBin,pos);
-		fHistoMeanTrialAll->SetBinError(globBin,epos);
-		fHistoChi2TrialAll->SetBinContent(globBin,chisq);
-		fHistoChi2TrialAll->SetBinError(globBin,0.00001);
-		fHistoSignifTrialAll->SetBinContent(globBin,significance);
-		fHistoSignifTrialAll->SetBinError(globBin,erSignif);
-	        if(fSaveBkgVal) {
-	  	  fHistoBkgTrialAll->SetBinContent(globBin,bkg);
-		  fHistoBkgTrialAll->SetBinError(globBin,erbkg);
-		  fHistoBkgInBinEdgesTrialAll->SetBinContent(globBin,bkgBEdge);
-		  fHistoBkgInBinEdgesTrialAll->SetBinError(globBin,erbkgBEdge);
-		}
+        Double_t minMassForFit=fLowLimFitSteps[iMinMass];
+        Double_t hmin=TMath::Max(minMassForFit,hRebinned->GetBinLowEdge(2));
+        for(Int_t iMaxMass=0; iMaxMass<fNumOfUpLimFitSteps; iMaxMass++){
+          Double_t maxMassForFit=fUpLimFitSteps[iMaxMass];
+          Double_t hmax=TMath::Min(maxMassForFit,hRebinned->GetBinLowEdge(hRebinned->GetNbinsX()));
+          ++itrial;
+          for(Int_t typeb=0; typeb<kNBkgFuncCases; typeb++){
+            if(typeb==kExpoBkg && !fUseExpoBkg) continue;
+            if(typeb==kLinBkg && !fUseLinBkg) continue;
+            if(typeb==kPol2Bkg && !fUsePol2Bkg) continue;
+            if(typeb==kPol3Bkg && !fUsePol3Bkg) continue;
+            if(typeb==kPol4Bkg && !fUsePol4Bkg) continue;
+            if(typeb==kPol5Bkg && !fUsePol5Bkg) continue;
+            if(typeb==kPowBkg && !fUsePowLawBkg) continue;
+            if(typeb==kPowTimesExpoBkg && !fUsePowLawTimesExpoBkg) continue;
+            for(Int_t igs=0; igs<kNFitConfCases; igs++){
+              if (igs==kFixSigUpFreeMean && !fUseFixSigUpFreeMean) continue;
+              if (igs==kFixSigDownFreeMean && !fUseFixSigDownFreeMean) continue;
+              if (igs==kFreeSigFixMean  && !fUseFixedMeanFreeS) continue;
+              if (igs==kFreeSigFreeMean  && !fUseFreeS) continue;
+              if (igs==kFixSigFreeMean  && !fUseFixSigFreeMean) continue;
+              if (igs==kFixSigFixMean   && !fUseFixSigFixMean) continue;
+              Int_t theCase=igs*kNBkgFuncCases+typeb;
+              Int_t globBin=itrial+theCase*totTrials;
+              for(Int_t j=0; j<15; j++) xnt[j]=0.;
 
-		if(ry<fMinYieldGlob) fMinYieldGlob=ry;
-		if(ry>fMaxYieldGlob) fMaxYieldGlob=ry;
-		fHistoRawYieldDist[theCase]->Fill(ry);
-		fHistoRawYieldTrial[theCase]->SetBinContent(itrial,ry);
-		fHistoRawYieldTrial[theCase]->SetBinError(itrial,ery);
-		fHistoSigmaTrial[theCase]->SetBinContent(itrial,sigma);
-		fHistoSigmaTrial[theCase]->SetBinError(itrial,esigma);
-		fHistoMeanTrial[theCase]->SetBinContent(itrial,pos);
-		fHistoMeanTrial[theCase]->SetBinError(itrial,epos);
-		fHistoChi2Trial[theCase]->SetBinContent(itrial,chisq);
-		fHistoChi2Trial[theCase]->SetBinError(itrial,0.00001);
-		fHistoSignifTrial[theCase]->SetBinContent(itrial,significance);
-		fHistoSignifTrial[theCase]->SetBinError(itrial,erSignif);
-	        if(fSaveBkgVal) {
-	  	  fHistoBkgTrial[theCase]->SetBinContent(itrial,bkg);
-		  fHistoBkgTrial[theCase]->SetBinError(itrial,erbkg);
-		  fHistoBkgInBinEdgesTrial[theCase]->SetBinContent(itrial,bkgBEdge);
-		  fHistoBkgInBinEdgesTrial[theCase]->SetBinError(itrial,erbkgBEdge);
-		}
+              Bool_t mustDeleteFitter = kTRUE;
+              AliHFMassFitterVAR*  fitter=0x0;
+              //if D0 Reflection
+              if(fhTemplRefl){
+                fitter=new AliHFMassFitterVAR(hRebinned,hmin,hmax,1,typeb,2);
+                fitter->SetTemplateReflections(fhTemplRefl);
+                fitter->SetFixReflOverS(fFixRefloS,kTRUE);
+              }
+              else {
+                if(typeb<=kPol2Bkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,typeb,types);
+                }else if(typeb==kPowBkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,4,types);
+                }else if(typeb==kPowTimesExpoBkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,5,types);
+                }else{
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,6,types);
+                  if(typeb==kPol3Bkg) fitter->SetBackHighPolDegree(3);
+                  if(typeb==kPol4Bkg) fitter->SetBackHighPolDegree(4);
+                  if(typeb==kPol5Bkg) fitter->SetBackHighPolDegree(5);
+                }
+                fitter->SetReflectionSigmaFactor(0);
+              }
+              if(fFitOption==1) fitter->SetUseChi2Fit();
+              fitter->SetInitialGaussianMean(fMassD);
+              fitter->SetInitialGaussianSigma(fSigmaGausMC);
+              xnt[0]=rebin;
+              xnt[1]=iFirstBin;
+              xnt[2]=minMassForFit;
+              xnt[3]=maxMassForFit;
+              xnt[4]=typeb;
+              xnt[6]=0;
+              if(igs==kFixSigFreeMean){
+                fitter->SetFixGaussianSigma(fSigmaGausMC,kTRUE);
+                xnt[5]=1;
+              }else if(igs==kFixSigUpFreeMean){
+                fitter->SetFixGaussianSigma(fSigmaGausMC*(1.+fSigmaMCVariation),kTRUE);
+                xnt[5]=2;
+              }else if(igs==kFixSigDownFreeMean){
+                fitter->SetFixGaussianSigma(fSigmaGausMC*(1.-fSigmaMCVariation),kTRUE);
+                xnt[5]=3;
+              }else if(igs==kFreeSigFreeMean){
+                xnt[5]=0;
+              }else if(igs==kFixSigFixMean){
+                fitter->SetFixGaussianSigma(fSigmaGausMC,kTRUE);
+                fitter->SetFixGaussianMean(fMassD,kTRUE);
+                xnt[5]=1;
+                xnt[6]=1;
+              }else if(igs==kFreeSigFixMean){
+                fitter->SetFixGaussianMean(fMassD,kTRUE);
+                xnt[5]=0;
+                xnt[6]=1;
+              }
+              Bool_t out=kFALSE;
+              Double_t chisq=-1.;
+              Double_t sigma=0.;
+              Double_t esigma=0.;
+              Double_t pos=.0;
+              Double_t epos=.0;
+              Double_t ry=.0;
+              Double_t ery=.0;
+              Double_t significance=0.;
+              Double_t erSignif=0.;
+              Double_t bkg=0.;
+              Double_t erbkg=0.;
+              Double_t bkgBEdge=0;
+              Double_t erbkgBEdge=0;
+              TF1* fB1=0x0;
+              if(typeb<kNBkgFuncCases){
+                printf("****** START FIT OF HISTO %s WITH REBIN %d FIRST BIN %d MASS RANGE %f-%f BACKGROUND FIT FUNCTION=%d CONFIG SIGMA/MEAN=%d\n",hInvMassHisto->GetName(),rebin,iFirstBin,minMassForFit,maxMassForFit,typeb,igs);
+                out=fitter->MassFitter(0);
+                chisq=fitter->GetReducedChiSquare();
+                fitter->Significance(3,significance,erSignif);
+                sigma=fitter->GetSigma();
+                pos=fitter->GetMean();
+                esigma=fitter->GetSigmaUncertainty();
+                if(esigma<0.00001) esigma=0.0001;
+                epos=fitter->GetMeanUncertainty();
+                if(epos<0.00001) epos=0.0001;
+                ry=fitter->GetRawYield();
+                ery=fitter->GetRawYieldError();
+                fB1=fitter->GetBackgroundFullRangeFunc();
+                fitter->Background(fnSigmaForBkgEval,bkg,erbkg);
+                Double_t minval = hInvMassHisto->GetXaxis()->GetBinLowEdge(hInvMassHisto->FindBin(pos-fnSigmaForBkgEval*sigma));
+                Double_t maxval = hInvMassHisto->GetXaxis()->GetBinUpEdge(hInvMassHisto->FindBin(pos+fnSigmaForBkgEval*sigma));
+                fitter->Background(minval,maxval,bkgBEdge,erbkgBEdge);
+                if(out && fDrawIndividualFits && thePad){
+                  thePad->Clear();
+                  fitter->DrawHere(thePad);
+                  fMassFitters.push_back(fitter);
+                  mustDeleteFitter = kFALSE;
+                  for (auto format : fInvMassFitSaveAsFormats) {
+                    thePad->SaveAs(Form("FitOutput_%s_Trial%d.%s",hInvMassHisto->GetName(),globBin, format.c_str()));
+                  }
+                }
+              }
+              // else{
+              //   out=DoFitWithPol3Bkg(hRebinned,hmin,hmax,igs);
+              //   if(out && thePad){
+              // 	thePad->Clear();
+              // 	hRebinned->Draw();
+              // 	TF1* fSB=(TF1*)hRebinned->GetListOfFunctions()->FindObject("fSB");
+              // 	fB1=new TF1("fB1","[0]+[1]*x+[2]*x*x+[3]*x*x*x",hmin,hmax);
+              // 	for(Int_t j=0; j<4; j++) fB1->SetParameter(j,fSB->GetParameter(3+j));
+              // 	fB1->SetLineColor(2);
+              // 	fB1->Draw("same");
+              // 	fSB->SetLineColor(4);
+              // 	fSB->Draw("same");
+              // 	thePad->Update();
+              // 	chisq=fSB->GetChisquare()/fSB->GetNDF();;
+              // 	sigma=fSB->GetParameter(2);
+              // 	esigma=fSB->GetParError(2);
+              // 	if(esigma<0.00001) esigma=0.0001;
+              // 	pos=fSB->GetParameter(1);
+              // 	epos=fSB->GetParError(1);
+              // 	if(epos<0.00001) epos=0.0001;
+              // 	ry=fSB->GetParameter(0)/hRebinned->GetBinWidth(1);
+              // 	ery=fSB->GetParError(0)/hRebinned->GetBinWidth(1);
+              //   }
+              // }
+              xnt[7]=chisq;
+              if(out && chisq>0. && sigma>0.5*fSigmaGausMC && sigma<2.0*fSigmaGausMC){
+                xnt[8]=significance;
+                xnt[9]=pos;
+                xnt[10]=epos;
+                xnt[11]=sigma;
+                xnt[12]=esigma;
+                xnt[13]=ry;
+                xnt[14]=ery;
+                fHistoRawYieldDistAll->Fill(ry);
+                fHistoRawYieldTrialAll->SetBinContent(globBin,ry);
+                fHistoRawYieldTrialAll->SetBinError(globBin,ery);
+                fHistoSigmaTrialAll->SetBinContent(globBin,sigma);
+                fHistoSigmaTrialAll->SetBinError(globBin,esigma);
+                fHistoMeanTrialAll->SetBinContent(globBin,pos);
+                fHistoMeanTrialAll->SetBinError(globBin,epos);
+                fHistoChi2TrialAll->SetBinContent(globBin,chisq);
+                fHistoChi2TrialAll->SetBinError(globBin,0.00001);
+                fHistoSignifTrialAll->SetBinContent(globBin,significance);
+                fHistoSignifTrialAll->SetBinError(globBin,erSignif);
+                if(fSaveBkgVal) {
+                  fHistoBkgTrialAll->SetBinContent(globBin,bkg);
+                  fHistoBkgTrialAll->SetBinError(globBin,erbkg);
+                  fHistoBkgInBinEdgesTrialAll->SetBinContent(globBin,bkgBEdge);
+                  fHistoBkgInBinEdgesTrialAll->SetBinError(globBin,erbkgBEdge);
+                }
 
-		for(Int_t iStepBC=0; iStepBC<fNumOfnSigmaBinCSteps; iStepBC++){
-		  Double_t minMassBC=fMassD-fnSigmaBinCSteps[iStepBC]*sigma;
-		  Double_t maxMassBC=fMassD+fnSigmaBinCSteps[iStepBC]*sigma;
-		  if(minMassBC>minMassForFit && 
-		     maxMassBC<maxMassForFit && 
-			       minMassBC>(hRebinned->GetXaxis()->GetXmin()) &&
-		     maxMassBC<(hRebinned->GetXaxis()->GetXmax())){
-		    Double_t cnts,ecnts;
-		    BinCount(hRebinned,fB1,1,minMassBC,maxMassBC,cnts,ecnts);
-		    ++itrialBC;
-		    fHistoRawYieldDistBinCAll->Fill(cnts);
-		    fHistoRawYieldTrialBinCAll->SetBinContent(globBin,iStepBC+1,cnts);
-		    fHistoRawYieldTrialBinCAll->SetBinError(globBin,iStepBC+1,ecnts);
-		    fHistoRawYieldTrialBinC[theCase]->SetBinContent(itrial,iStepBC+1,cnts);
-		    fHistoRawYieldTrialBinC[theCase]->SetBinError(itrial,iStepBC+1,ecnts);		    
-		    fHistoRawYieldDistBinC[theCase]->Fill(cnts);
-		  }
-		}
-	      }
-	      delete fitter;
-	      //	    if(typeb>4) delete fB1;
-	      fNtupleMultiTrials->Fill(xnt);
-	    }
-	  }
-	}
+                if(ry<fMinYieldGlob) fMinYieldGlob=ry;
+                if(ry>fMaxYieldGlob) fMaxYieldGlob=ry;
+                fHistoRawYieldDist[theCase]->Fill(ry);
+                fHistoRawYieldTrial[theCase]->SetBinContent(itrial,ry);
+                fHistoRawYieldTrial[theCase]->SetBinError(itrial,ery);
+                fHistoSigmaTrial[theCase]->SetBinContent(itrial,sigma);
+                fHistoSigmaTrial[theCase]->SetBinError(itrial,esigma);
+                fHistoMeanTrial[theCase]->SetBinContent(itrial,pos);
+                fHistoMeanTrial[theCase]->SetBinError(itrial,epos);
+                fHistoChi2Trial[theCase]->SetBinContent(itrial,chisq);
+                fHistoChi2Trial[theCase]->SetBinError(itrial,0.00001);
+                fHistoSignifTrial[theCase]->SetBinContent(itrial,significance);
+                fHistoSignifTrial[theCase]->SetBinError(itrial,erSignif);
+                if(fSaveBkgVal) {
+                  fHistoBkgTrial[theCase]->SetBinContent(itrial,bkg);
+                  fHistoBkgTrial[theCase]->SetBinError(itrial,erbkg);
+                  fHistoBkgInBinEdgesTrial[theCase]->SetBinContent(itrial,bkgBEdge);
+                  fHistoBkgInBinEdgesTrial[theCase]->SetBinError(itrial,erbkgBEdge);
+                }
+
+                for(Int_t iStepBC=0; iStepBC<fNumOfnSigmaBinCSteps; iStepBC++){
+                  Double_t minMassBC=fMassD-fnSigmaBinCSteps[iStepBC]*sigma;
+                  Double_t maxMassBC=fMassD+fnSigmaBinCSteps[iStepBC]*sigma;
+                  if(minMassBC>minMassForFit &&
+                      maxMassBC<maxMassForFit &&
+                      minMassBC>(hRebinned->GetXaxis()->GetXmin()) &&
+                      maxMassBC<(hRebinned->GetXaxis()->GetXmax())){
+                    Double_t cnts,ecnts;
+                    BinCount(hRebinned,fB1,1,minMassBC,maxMassBC,cnts,ecnts);
+                    ++itrialBC;
+                    fHistoRawYieldDistBinCAll->Fill(cnts);
+                    fHistoRawYieldTrialBinCAll->SetBinContent(globBin,iStepBC+1,cnts);
+                    fHistoRawYieldTrialBinCAll->SetBinError(globBin,iStepBC+1,ecnts);
+                    fHistoRawYieldTrialBinC[theCase]->SetBinContent(itrial,iStepBC+1,cnts);
+                    fHistoRawYieldTrialBinC[theCase]->SetBinError(itrial,iStepBC+1,ecnts);
+                    fHistoRawYieldDistBinC[theCase]->Fill(cnts);
+                  }
+                }
+              }
+              if (mustDeleteFitter) delete fitter;
+              fNtupleMultiTrials->Fill(xnt);
+            }
+          }
+        }
       }
       delete hRebinned;
     }
@@ -430,7 +437,12 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 void AliHFMultiTrials::SaveToRoot(TString fileName, TString option) const{
   // save histos in a root file for further analysis
   const Int_t nCases=kNBkgFuncCases*kNFitConfCases;
-  TFile* outHistos=new TFile(fileName.Data(),option.Data());
+  TFile outHistos(fileName.Data(),option.Data());
+  if (outHistos.IsZombie()) {
+    Printf("Could not open file '%s'!", fileName.Data());
+    return;
+  }
+  outHistos.cd();
   fHistoRawYieldTrialAll->Write();
   fHistoSigmaTrialAll->Write();
   fHistoMeanTrialAll->Write();
@@ -455,9 +467,9 @@ void AliHFMultiTrials::SaveToRoot(TString fileName, TString option) const{
     fHistoRawYieldTrialBinC[ic]->Write();
     fHistoRawYieldDistBinC[ic]->Write();
   }
+  fNtupleMultiTrials->SetDirectory(&outHistos);
   fNtupleMultiTrials->Write();
-  outHistos->Close();
-  delete outHistos;
+  outHistos.Close();
 }
 
 //________________________________________________________________________
@@ -491,7 +503,7 @@ void AliHFMultiTrials::DrawHistos(TCanvas* cry) const{
 }
 //________________________________________________________________________
 TH1F* AliHFMultiTrials::RebinHisto(TH1D* hOrig, Int_t reb, Int_t firstUse) const{
-    // Rebin histogram, from bin firstUse to lastUse
+  // Rebin histogram, from bin firstUse to lastUse
   // Use all bins if firstUse=-1
 
   Int_t nBinOrig=hOrig->GetNbinsX();
@@ -549,7 +561,7 @@ void AliHFMultiTrials::BinCount(TH1F* h, TF1* fB, Int_t rebin, Double_t minMass,
 }
 //________________________________________________________________________
 Bool_t AliHFMultiTrials::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Double_t  hmax, 
-					  Int_t iCase){
+    Int_t iCase){
   //
 
   TH1F *hCutTmp=(TH1F*)histoToFit->Clone("hCutTmp");

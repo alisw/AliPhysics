@@ -965,38 +965,34 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 			
 			
 			if( fDoMesonQA > 1 ) {
-			  
-			const Int_t nDimRZ = 2;
-			Int_t   nBinsRZ[nDimRZ] = { 1200, 800};
-			Double_t xMinRZ[nDimRZ] = { -150, 0};
-			Double_t xMaxRZ[nDimRZ] = {  150, 200};
-			
-			const Int_t nDimXY = 2;
-			Int_t   nBinsXY[nDimXY] = { 1200, 1200};
-			Double_t xMinXY[nDimXY] = { -150, -150};
-			Double_t xMaxXY[nDimXY] = {  150,  150};
-			
-			sESDConvGammaZR[iCut] = new THnSparseF("ESD_ConvGamma_ZR","ESD_ConvGamma_ZR",nDimRZ,nBinsRZ,xMinRZ,xMaxRZ);
-			fQAFolder[iCut]->Add(sESDConvGammaZR[iCut]);
-			
-			sESDConvGammaXY[iCut] = new THnSparseF("ESD_ConvGamma_XY","ESD_ConvGamma_XY",nDimXY,nBinsXY,xMinXY,xMaxXY);
-			fQAFolder[iCut]->Add(sESDConvGammaXY[iCut]);
-			
-			
-			const Int_t nDimDalPlot = 2;
-			Int_t    nBinsDalPlot[nDimDalPlot] = {  4000, 4000};
-			Double_t xMinDalPlot[nDimDalPlot]  = {    0,     0};
-			Double_t xMaxDalPlot[nDimDalPlot]  = {  4.0,   4.0};
-			
-			
-			sESDMotherDalitzPlot[iCut] = new THnSparseF("ESD_Mother_DalitzPlot","ESD_Mother_DalitzPlot",nDimDalPlot,nBinsDalPlot,xMinDalPlot,xMaxDalPlot);
-			fQAFolder[iCut]->Add(sESDMotherDalitzPlot[iCut]);
-			
+          
+        const Int_t nDimRZ = 2;
+        Int_t   nBinsRZ[nDimRZ] = { 1200, 800};
+        Double_t xMinRZ[nDimRZ] = { -150, 0};
+        Double_t xMaxRZ[nDimRZ] = {  150, 200};
+        
+        const Int_t nDimXY = 2;
+        Int_t   nBinsXY[nDimXY] = { 1200, 1200};
+        Double_t xMinXY[nDimXY] = { -150, -150};
+        Double_t xMaxXY[nDimXY] = {  150,  150};
+        
+        sESDConvGammaZR[iCut] = new THnSparseF("ESD_ConvGamma_ZR","ESD_ConvGamma_ZR",nDimRZ,nBinsRZ,xMinRZ,xMaxRZ);
+        fQAFolder[iCut]->Add(sESDConvGammaZR[iCut]);
+        
+        sESDConvGammaXY[iCut] = new THnSparseF("ESD_ConvGamma_XY","ESD_ConvGamma_XY",nDimXY,nBinsXY,xMinXY,xMaxXY);
+        fQAFolder[iCut]->Add(sESDConvGammaXY[iCut]);
+        
+        
+        const Int_t nDimDalPlot = 2;
+        Int_t    nBinsDalPlot[nDimDalPlot] = {  4000, 4000};
+        Double_t xMinDalPlot[nDimDalPlot]  = {    0,     0};
+        Double_t xMaxDalPlot[nDimDalPlot]  = {  4.0,   4.0};
+        
+        
+        sESDMotherDalitzPlot[iCut] = new THnSparseF("ESD_Mother_DalitzPlot","ESD_Mother_DalitzPlot",nDimDalPlot,nBinsDalPlot,xMinDalPlot,xMaxDalPlot);
+        fQAFolder[iCut]->Add(sESDMotherDalitzPlot[iCut]);
+        
 			}
-			
-	
-			
-						
 			fCutFolder[iCut]->Add(fQAFolder[iCut]);
 		}
 		
@@ -1573,176 +1569,177 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
 {
 
-	//
-	// Execute analysis for current event
-	//
+  //
+  // Execute analysis for current event
+  //
 
-    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
-	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
-
-
-	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-
-	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
-			for(Int_t iCut = 0; iCut<fnCuts; iCut++){
-		hNEvents[iCut]->Fill(eventQuality);
-			}
-		return;
-	}
-
-	fElecSelector=(AliDalitzElectronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ElectronSelector");
-	if(!fElecSelector){printf("Error: No ElectronSelector");return;} // GetV0Reader
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
+  if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
 
-	if(fIsMC) 	      fMCEvent        =  MCEvent();
-	fESDEvent        = (AliESDEvent*)InputEvent();
-	fReaderGammas    = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
-	
-	AliEventplane *EventPlane = fInputEvent->GetEventplane();
-	if(fIsHeavyIon == 1)fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
-	else fEventPlaneAngle=0.0;
-	
-	
-	fSelectorElectronIndex = fElecSelector->GetReconstructedElectronsIndex(); // Electrons from default Cut
-	fSelectorPositronIndex = fElecSelector->GetReconstructedPositronsIndex(); // Positrons from default Cut
+  Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
 
-	CountESDTracks(); // Estimate Event Multiplicity
-	fNumberOfESDTracks = fV0Reader->GetNumberOfPrimaryTracks();
-	//AddTaskContainers(); //Add conatiner
+  // Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
+  if(eventQuality == 2 || eventQuality == 3){
+    for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+      hNEvents[iCut]->Fill(eventQuality);
+    }
+    return;
+  }
 
-	for(Int_t iCut = 0; iCut<fnCuts; iCut++){		
-		fiCut = iCut;
-		fNVirtualGammas = 0;
+  fElecSelector=(AliDalitzElectronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ElectronSelector");
+  if(!fElecSelector){printf("Error: No ElectronSelector");return;} // GetV0Reader
 
-		Int_t eventNotAccepted =
-			((AliConvEventCuts*)fCutEventArray->At(iCut))
-			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
-		
-		
-		//Int_t eventNotAccepted = ((AliConvEventCuts*)fCutGammaArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
-		
-		if(eventNotAccepted){
-			// 			cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
-			hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
-			continue;
-		}
 
-		if(eventQuality != 0){// Event Not Accepted
-			// 			cout << "event rejected due to: " <<eventQuality << endl;
-			hNEvents[iCut]->Fill(eventQuality);
-			continue;
-		}
+  if(fIsMC) 	      fMCEvent        =  MCEvent();
+  fESDEvent        = (AliESDEvent*)InputEvent();
+  fReaderGammas    = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
+  
+  AliEventplane *EventPlane = fInputEvent->GetEventplane();
+  if(fIsHeavyIon == 1)fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
+  else fEventPlaneAngle=0.0;
+  
+  
+  fSelectorElectronIndex = fElecSelector->GetReconstructedElectronsIndex(); // Electrons from default Cut
+  fSelectorPositronIndex = fElecSelector->GetReconstructedPositronsIndex(); // Positrons from default Cut
 
-		hNEvents[iCut]->Fill(eventQuality);
-		hNGoodESDTracks[iCut]->Fill(fNumberOfESDTracks);
-		
-		if(((AliConvEventCuts*)fCutEventArray->At(iCut))->IsHeavyIon() == 2) hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
-		else hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
+  CountESDTracks(); // Estimate Event Multiplicity
+  fNumberOfESDTracks = fV0Reader->GetNumberOfPrimaryTracks();
+  //AddTaskContainers(); //Add conatiner
 
-		if(fMCEvent){ // Process MC Particle
-			fMCStack = fMCEvent->Stack();
-			if(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetSignalRejection() != 0){
-					((AliConvEventCuts*)fCutEventArray->At(iCut))->GetNotRejectedParticles( ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetSignalRejection(),
-																							((AliConvEventCuts*)fCutEventArray->At(iCut))->GetAcceptedHeader(),
-																							fMCEvent);
-			} 
-			ProcessMCParticles();
-		}
+  for(Int_t iCut = 0; iCut<fnCuts; iCut++){		
+    fiCut = iCut;
+    fNVirtualGammas = 0;
 
-		ProcessPhotonCandidates(); // Process this cuts gammas
-		ProcessElectronCandidates(); // Process this cuts gammas
-		
-		if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
-		
-			fUnsmearedPx = new Double_t[fGoodGammas->GetEntries()]; // Store unsmeared Momenta
-			fUnsmearedPy = new Double_t[fGoodGammas->GetEntries()];
-			fUnsmearedPz = new Double_t[fGoodGammas->GetEntries()];
-			fUnsmearedE =  new Double_t[fGoodGammas->GetEntries()];
+    Int_t eventNotAccepted =
+      ((AliConvEventCuts*)fCutEventArray->At(iCut))
+      ->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
+    
+    
+    //Int_t eventNotAccepted = ((AliConvEventCuts*)fCutGammaArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
+    
+    if(eventNotAccepted){
+      // 			cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
+      hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
+      continue;
+    }
 
-			for(Int_t gamma=0;gamma<fGoodGammas->GetEntries();gamma++){ // Smear the AODPhotons in MC
-				fUnsmearedPx[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Px();
-				fUnsmearedPy[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Py();
-				fUnsmearedPz[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Pz();
-				fUnsmearedE[gamma] =  ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->E();
-				((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->SmearParticle(dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(gamma)));
-			}           
-		}
-		
-		if( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetUseVPhotonMCPmearing() && ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
-			// cout<<"Entro virtual photon smearing"<<endl;
-			fUnsmearedVPx = new Double_t[fGoodVirtualGammas->GetEntries()]; // Store unsmeared Momenta
-			fUnsmearedVPy = new Double_t[fGoodVirtualGammas->GetEntries()];
-			fUnsmearedVPz = new Double_t[fGoodVirtualGammas->GetEntries()];
-			fUnsmearedVE =  new Double_t[fGoodVirtualGammas->GetEntries()];
+    if(eventQuality != 0){// Event Not Accepted
+      // 			cout << "event rejected due to: " <<eventQuality << endl;
+      hNEvents[iCut]->Fill(eventQuality);
+      continue;
+    }
 
-			for(Int_t Vgamma=0;Vgamma<fGoodVirtualGammas->GetEntries();Vgamma++){ // Smear the AODPhotons in MC
-				fUnsmearedVPx[Vgamma] = ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->Px();
-				fUnsmearedVPy[Vgamma] = ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->Py();
-				fUnsmearedVPz[Vgamma] = ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->Pz();
-				fUnsmearedVE[Vgamma] =  ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->E();
-				((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->SmearVirtualPhoton(dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualGammas->At(Vgamma)));
-			}           
-		}
-		
-		ProcessVirtualGammasCandidates();
-		CalculatePi0DalitzCandidates();
-		
-		if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->DoBGCalculation()){
-				if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->BackgroundHandlerType() == 0){
-			
-		
-		CalculateBackground();
-		UpdateEventByEventData();
-		
-				}
-		}
-				
-		
-		if ( fDoMesonQA > 0) {
-			hNGoodESDTracksVsNGoodGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fGoodGammas->GetEntries());
-			hNGoodESDTracksVsNGoodVGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fNVirtualGammas);
-			fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
-		}
-		
-		
-		if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
-		
-			for(Int_t gamma=0;gamma<fGoodGammas->GetEntries();gamma++){ // Smear the AODPhotons in MC
-				((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetPx(fUnsmearedPx[gamma]); // Reset Unsmeared Momenta
-				((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetPy(fUnsmearedPy[gamma]);
-				((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetPz(fUnsmearedPz[gamma]);
-				((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetE(fUnsmearedE[gamma]);
-			}
-			delete[] fUnsmearedPx; fUnsmearedPx = 0x0;
-			delete[] fUnsmearedPy; fUnsmearedPy = 0x0;
-			delete[] fUnsmearedPz; fUnsmearedPz = 0x0;
-			delete[] fUnsmearedE;  fUnsmearedE  = 0x0;
-		}
-		
-		if( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetUseVPhotonMCPmearing() && ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
-		
-			for(Int_t Vgamma=0;Vgamma<fGoodVirtualGammas->GetEntries();Vgamma++){ // Smear the AODPhotons in MC
-				((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetPx(fUnsmearedVPx[Vgamma]); // Reset Unsmeared Momenta
-				((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetPy(fUnsmearedVPy[Vgamma]);
-				((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetPz(fUnsmearedVPz[Vgamma]);
-				((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetE(fUnsmearedVE[Vgamma]);
-			} 
-			delete[] fUnsmearedVPx; fUnsmearedVPx = 0x0;
-			delete[] fUnsmearedVPy; fUnsmearedVPy = 0x0;
-			delete[] fUnsmearedVPz; fUnsmearedVPz = 0x0;
-			delete[] fUnsmearedVE;  fUnsmearedVE  = 0x0;
-		}
-		fVectorDoubleCountTruePi0s.clear();
-		fVectorDoubleCountTrueEtas.clear();
-		fVectorDoubleCountTrueConvGammas.clear();
-		fGoodGammas->Clear(); // delete this cuts good gammas
-		fGoodVirtualGammas->Clear(); // delete this cuts good gammas
-	}
+    hNEvents[iCut]->Fill(eventQuality);
+    hNGoodESDTracks[iCut]->Fill(fNumberOfESDTracks);
+    
+    if(((AliConvEventCuts*)fCutEventArray->At(iCut))->IsHeavyIon() == 2) hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
+    else hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
 
-	fSelectorElectronIndex.clear();
-	fSelectorPositronIndex.clear();
+    if(fMCEvent){ // Process MC Particle
+      fMCStack = fMCEvent->Stack();
+      if(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetSignalRejection() != 0){
+          ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetNotRejectedParticles( ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetSignalRejection(),
+                                              ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetAcceptedHeader(),
+                                              fMCEvent);
+      } 
+      ProcessMCParticles();
+    }
 
-	PostData( 1, fOutputContainer );
+    ProcessPhotonCandidates(); // Process this cuts gammas
+    ProcessElectronCandidates(); // Process this cuts gammas
+    
+    if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
+    
+      fUnsmearedPx = new Double_t[fGoodGammas->GetEntries()]; // Store unsmeared Momenta
+      fUnsmearedPy = new Double_t[fGoodGammas->GetEntries()];
+      fUnsmearedPz = new Double_t[fGoodGammas->GetEntries()];
+      fUnsmearedE =  new Double_t[fGoodGammas->GetEntries()];
+
+      for(Int_t gamma=0;gamma<fGoodGammas->GetEntries();gamma++){ // Smear the AODPhotons in MC
+        fUnsmearedPx[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Px();
+        fUnsmearedPy[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Py();
+        fUnsmearedPz[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Pz();
+        fUnsmearedE[gamma] =  ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->E();
+        ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->SmearParticle(dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(gamma)));
+      }           
+    }
+    
+    if( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetUseVPhotonMCPmearing() && ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
+      // cout<<"Entro virtual photon smearing"<<endl;
+      fUnsmearedVPx = new Double_t[fGoodVirtualGammas->GetEntries()]; // Store unsmeared Momenta
+      fUnsmearedVPy = new Double_t[fGoodVirtualGammas->GetEntries()];
+      fUnsmearedVPz = new Double_t[fGoodVirtualGammas->GetEntries()];
+      fUnsmearedVE =  new Double_t[fGoodVirtualGammas->GetEntries()];
+
+      for(Int_t Vgamma=0;Vgamma<fGoodVirtualGammas->GetEntries();Vgamma++){ // Smear the AODPhotons in MC
+        fUnsmearedVPx[Vgamma] = ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->Px();
+        fUnsmearedVPy[Vgamma] = ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->Py();
+        fUnsmearedVPz[Vgamma] = ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->Pz();
+        fUnsmearedVE[Vgamma] =  ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->E();
+        ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->SmearVirtualPhoton(dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualGammas->At(Vgamma)));
+      }           
+    }
+    
+    ProcessVirtualGammasCandidates();
+    CalculatePi0DalitzCandidates();
+    
+    if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->DoBGCalculation()){
+        if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->BackgroundHandlerType() == 0){
+      
+    
+    CalculateBackground();
+    UpdateEventByEventData();
+    
+        }
+    }
+        
+    
+    if ( fDoMesonQA > 0) {
+      hNGoodESDTracksVsNGoodGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fGoodGammas->GetEntries());
+      hNGoodESDTracksVsNGoodVGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fNVirtualGammas);
+      fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
+    }
+    
+    
+    if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
+    
+      for(Int_t gamma=0;gamma<fGoodGammas->GetEntries();gamma++){ // Smear the AODPhotons in MC
+        ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetPx(fUnsmearedPx[gamma]); // Reset Unsmeared Momenta
+        ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetPy(fUnsmearedPy[gamma]);
+        ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetPz(fUnsmearedPz[gamma]);
+        ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->SetE(fUnsmearedE[gamma]);
+      }
+      delete[] fUnsmearedPx; fUnsmearedPx = 0x0;
+      delete[] fUnsmearedPy; fUnsmearedPy = 0x0;
+      delete[] fUnsmearedPz; fUnsmearedPz = 0x0;
+      delete[] fUnsmearedE;  fUnsmearedE  = 0x0;
+    }
+    
+    if( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetUseVPhotonMCPmearing() && ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
+    
+      for(Int_t Vgamma=0;Vgamma<fGoodVirtualGammas->GetEntries();Vgamma++){ // Smear the AODPhotons in MC
+        ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetPx(fUnsmearedVPx[Vgamma]); // Reset Unsmeared Momenta
+        ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetPy(fUnsmearedVPy[Vgamma]);
+        ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetPz(fUnsmearedVPz[Vgamma]);
+        ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetE(fUnsmearedVE[Vgamma]);
+      } 
+      delete[] fUnsmearedVPx; fUnsmearedVPx = 0x0;
+      delete[] fUnsmearedVPy; fUnsmearedVPy = 0x0;
+      delete[] fUnsmearedVPz; fUnsmearedVPz = 0x0;
+      delete[] fUnsmearedVE;  fUnsmearedVE  = 0x0;
+    }
+    fVectorDoubleCountTruePi0s.clear();
+    fVectorDoubleCountTrueEtas.clear();
+    fVectorDoubleCountTrueConvGammas.clear();
+    fGoodGammas->Clear(); // delete this cuts good gammas
+    fGoodVirtualGammas->Clear(); // delete this cuts good gammas
+  }
+
+  fSelectorElectronIndex.clear();
+  fSelectorPositronIndex.clear();
+
+  PostData( 1, fOutputContainer );
 }
 
 Bool_t AliAnalysisTaskGammaConvDalitzV1::Notify()

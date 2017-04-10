@@ -7,6 +7,7 @@
 #include <TString.h>
 #include "AliEmcalTriggerOfflineSelection.h"
 
+class AliESDtrackCuts;
 class AliEmcalTrackSelection;
 
 namespace EMCalTriggerPtAnalysis {
@@ -73,6 +74,25 @@ public:
    * @return Fully configured EMCAL trigger offline selection
    */
   static AliEmcalTriggerOfflineSelection *TriggerSelectionFactory(Double_t el0, Double_t eg1, Double_t eg2, Double_t ej1, Double_t ej2, AliEmcalTriggerOfflineSelection::EmcalEnergyDefinition_t endef = AliEmcalTriggerOfflineSelection::kFEEEnergy);
+
+  /**
+   * Generate default cut settings for the analysis
+   * @return Default cut settings for the analysis
+   */
+  static AliESDtrackCuts *GenerateDefaultCutsESD();
+
+  /**
+   * Generate cut settings with loose DCA (used for the hybrid cuts)
+   * @return Cut settings with loose DCA cuts
+   */
+  static AliESDtrackCuts *GenerateLooseDCACutsESD();
+
+  /**
+   * Definition: ITSchi2XXXX
+   * - 3 Digits before . (to be filled with 0)
+   * - 1 Digit after .
+   */
+  static double ValueDecoder(const char *string, const char *tag);
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalAnalysisFactory, 1);

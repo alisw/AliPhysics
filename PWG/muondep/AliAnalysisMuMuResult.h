@@ -18,6 +18,7 @@
  computed using various methods, each with their errors
 
  @author Laurent Aphecetche (Subatech)
+ @author Benjamin Audurier (Subatech)
  */
 
 #include "TNamed.h"
@@ -98,6 +99,8 @@ public:
 
   Bool_t IsValid() const { return fIsValid; }
 
+  Bool_t Map() const { return fMap; }
+
   void Invalidate() { fIsValid = kFALSE; }
 
   void Show(const char* keyPattern);
@@ -124,16 +127,16 @@ private:
   Int_t NofIncludedSubResults(const char* name) const;
 
 private:
-  TObjArray* fSubResults; // TObjArray of AliAnalysisMuMuResult*
-  TMap* fMap; // internal parameter map
+  TObjArray            * fSubResults; // TObjArray of AliAnalysisMuMuResult*
+  TMap                 * fMap; // internal parameter map
   AliAnalysisMuMuResult* fMother; // mother result
-  mutable THashList* fKeys; //! keys we have in our internal map (or the one of our subresults)
+  mutable THashList    * fKeys; //! keys we have in our internal map (or the one of our subresults)
   Double_t fWeight; // weight of this result (default 1.0)
   TString fAlias; // alias name
-  mutable TList* fSubResultsToBeIncluded; // inclusion list
+  mutable TList        * fSubResultsToBeIncluded; // inclusion list
   EResultMergingMethod fResultMergingMethod; // how to merge result (e.g. mean or sum)
   Bool_t fIsValid; // is this result valid ?
-  mutable THashList* fVisibleKeys; // list of keys to show with the Print method
+  mutable THashList    * fVisibleKeys; // list of keys to show with the Print method
 
   ClassDef(AliAnalysisMuMuResult,14) // a class to some results (counts, yields, AccxEff, R_AB, etc...)
 };

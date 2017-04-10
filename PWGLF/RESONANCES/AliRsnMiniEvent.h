@@ -57,10 +57,10 @@ private:
 
    Int_t         fLeading;    // index of leading particle
    TClonesArray  fParticles;  // list of selected particles
-   AliVEvent    *fRef;      //  pointer to input event
-   AliVEvent    *fRefMC;    //  pointer to reference MC event (if any)
+   AliVEvent    *fRef;        //!  pointer to input event
+   AliVEvent    *fRefMC;      //!  pointer to reference MC event (if any)
 
-   ClassDef(AliRsnMiniEvent, 7)
+   ClassDef(AliRsnMiniEvent, 8)
 };
 
 #endif

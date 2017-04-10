@@ -1,6 +1,6 @@
 
-#ifndef ALIANALYSISTASKSEDPLUSCORRELATIONS_H
-#define ALIANALYSISTASKSEDPLUSCORRELATIONS_H
+#ifndef AliAnalysisTaskSEDplusCorrelations_H
+#define AliAnalysisTaskSEDplusCorrelations_H
 
 
 #include <TROOT.h>
@@ -66,6 +66,8 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void SetPoolByPoolCorr(Bool_t sel2=kFALSE){fPoolByPool=sel2;}
     void SetCheckCutDistandChoice(Bool_t sel3=kFALSE, Bool_t sel4=kFALSE){fCheckCutDist=sel3;fRawCutQA=sel4;}
     void SetAODMismatchProtection(Int_t sel5=1) {fAODProtection=sel5;}
+    void SetLeadPartCorrelation(Bool_t Sel){fLeadPartCorr = Sel;}
+    
     //void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
     
     void SetMinDPt(Double_t minDPt){fMinDPt=minDPt;}
@@ -95,8 +97,6 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
             fRSBUppLim.push_back(RSBUppLim[i]);
         }
     }
-    
-    
     
     
     private :
@@ -154,7 +154,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Bool_t fRawCutQA; //if D cut before sel
     TList *fOutput;     //! user output data
     TList *fOutputCorr; //! user output data
-    
+    Bool_t fLeadPartCorr; // Added by shyam Flag for leading particle correlation THnsparse
     //Offline
     AliHFCorrelationBranchD   *fBranchD; //!
     AliHFCorrelationBranchTr  *fBranchTr; //!

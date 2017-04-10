@@ -474,16 +474,58 @@ void AliAnalysisTaskBuildCorrTree::InitializeQAhistograms()
   Int_t runnumbersP11a[fNRunsP11a] = {146860, 146859, 146858, 146856, 146824, 146817, 146807, 146806, 146805, 146804, 146803, 146802, 146801, 146748, 146747, 146746, 146402, 146369,146292, 146287, 146282, 146277, 146273, 146272, 146223, 146220, 146208, 146158, 146156, 146153, 146152, 146148, 146147, 146141, 146099, 146079, 146072, 146071, 146027, 146026, 146025, 146024, 146023, 145674, 145455, 145385, 145384, 145383, 145379, 145355, 145354, 145353, 145314, 145300, 145292, 145290, 145289, 145288};
   Int_t runnumbersP11h[fNRunsP11h] = {170593, 170572, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170230, 170228, 170207, 170204, 170203, 170193, 170163, 170159, 170155, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170027, 169965, 169923, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169591, 169590, 169588, 169587, 169586, 169557, 169555, 169554, 169553, 169550, 169515, 169512, 169506, 169504, 169498, 169475, 169420, 169419, 169418, 169417, 169415, 169411, 169238, 169167, 169160, 169156, 169148, 169145, 169144, 169138, 169099, 169094, 169091, 169045, 169044, 169040, 169035, 168992, 168988, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168460, 168458, 168362, 168361, 168342, 168341, 168325, 168322, 168311, 168310, 168115, 168108, 168107, 168105, 168076, 168069, 167988, 167987, 167985, 167920, 167915};
 
-  if(fperiod==AliAnalysisTaskBuildCorrTree::P11h){
-    fNruns=fNRunsP11h;
+  
+  if (fperiod == AliAnalysisTaskBuildCorrTree::P10b){
+    fNruns = fNRunsP10b;
     fRunNumberList = new Int_t[fNruns];
-    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP11h[i];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10b[i];
+    //Set the correct collision type
+    fCollisionType = AliAnalysisTaskBuildCorrTree::pp;
   }
-  if(fperiod==AliAnalysisTaskBuildCorrTree::P10h){
-    fNruns=fNRunsP10h;
+  if (fperiod == AliAnalysisTaskBuildCorrTree::P10c){
+    fNruns = fNRunsP10c;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10c[i];
+    //Set the correct collision type
+    fCollisionType = AliAnalysisTaskBuildCorrTree::pp;
+  }
+  if (fperiod == AliAnalysisTaskBuildCorrTree::P10d){
+    fNruns = fNRunsP10d;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10d[i];
+    //Set the correct collision type
+    fCollisionType = AliAnalysisTaskBuildCorrTree::pp;
+  }
+  if (fperiod == AliAnalysisTaskBuildCorrTree::P10e){
+    fNruns = fNRunsP10e;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10e[i];
+    //Set the correct collision type
+    fCollisionType = AliAnalysisTaskBuildCorrTree::pp;
+  }
+  if (fperiod == AliAnalysisTaskBuildCorrTree::P11a){
+    fNruns = fNRunsP11a;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP11a[i];
+    //Set the correct collision type
+    fCollisionType = AliAnalysisTaskBuildCorrTree::pp;
+  }
+  if (fperiod ==  AliAnalysisTaskBuildCorrTree::P10h){
+    fNruns = fNRunsP10h;
     fRunNumberList = new Int_t[fNruns];
     for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10h[i];
+    //Set the correct collision type
+    fCollisionType = AliAnalysisTaskBuildCorrTree::PbPb;
   }
+  if (fperiod == AliAnalysisTaskBuildCorrTree::P11h){
+    fNruns = fNRunsP11h;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP11h[i];
+    //Set the correct collision type
+    fCollisionType = AliAnalysisTaskBuildCorrTree::PbPb;
+  }
+  
+  
   //QA per run histograms:
   TH1D * eventsperrun 		= new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
   TH1D * TracksperRun 		= new TH1D("TracksperRun", "# tracks per Run", fNruns, 0,1);

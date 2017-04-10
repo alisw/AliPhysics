@@ -19,7 +19,6 @@ class TH3;
 class AliESDVertex;
 class AliESDtrack;
 class AliMCEvent;
-class AliStack;
 class AliESDEvent; 
 class AliESDfriend; 
 class AliMCInfoCuts;
@@ -53,9 +52,9 @@ public :
   virtual TTree* CreateSummary();
 
   // Process events
-  void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
-  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus);
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus);
+  void ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
+  void ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus);
+  void ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus);
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderTPC",TString title = "Analysed TPC performance histograms");

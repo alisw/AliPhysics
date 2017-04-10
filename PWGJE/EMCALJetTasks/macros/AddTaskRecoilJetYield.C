@@ -103,7 +103,8 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   AliJetContainer *JetContHybridS=0x0;
 
   TString strType(type);
-
+  
+  ///////kTrue///////
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTrue) {
     JetContTrue = task->AddJetContainer(njetsTrue,strType,R);
     if(JetContTrue) {
@@ -115,7 +116,7 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
       JetContTrue->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
   }
-
+  ///////kGenOnTheFly///////
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly) {
     JetContTrue = task->AddJetContainer(njetsTrue,strType,R);
     if(JetContTrue) {
@@ -138,7 +139,7 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
     }  
   }
 
-  
+  ///////kTrueDet///////
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet){
     
     JetContDet = task->AddJetContainer(njetsDet,strType,R);  //detector level MC
@@ -161,6 +162,7 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
     }
   }  
 
+  ///////kData||kSim///////
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kData || jetShapeType==AliAnalysisTaskRecoilJetYield::kSim){
     JetContData = task->AddJetContainer(njetsData,strType,R); //Data
     if(JetContData) {
@@ -183,7 +185,8 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
       }
     }   
   }
-  
+
+  ///////kDetEmbPart///////
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
     JetContHybridS = task->AddJetContainer(njetsHybridS,strType,R);  //Subtracted Hybrid (Pb+Pyhthia Det Level)                                                               
     if(JetContHybridS) {

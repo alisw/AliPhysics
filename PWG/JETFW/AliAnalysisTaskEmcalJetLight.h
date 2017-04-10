@@ -40,9 +40,9 @@ class AliAnalysisTaskEmcalJetLight : public AliAnalysisTaskEmcalLight {
   AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
       UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
   AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
-      UInt_t accType, TString tag = "Jet");
+      UInt_t accType, std::string partContName, std::string clusContName, TString tag = "Jet");
 
-  void                        AdoptJetContainer(AliJetContainer* cont)           { fJetCollArray.insert(std::pair<std::string, AliJetContainer*>(cont->GetName(), cont)); }
+  void                        AdoptJetContainer(AliJetContainer* cont)           { fJetCollArray[cont->GetName()] = cont; }
   void                        RemoveJetContainer(std::string name)               { fJetCollArray.erase(name);}
   AliJetContainer            *GetJetContainer(std::string name)                                        const;
 

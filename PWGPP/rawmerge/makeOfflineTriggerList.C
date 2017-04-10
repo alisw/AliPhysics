@@ -234,9 +234,45 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long64_t nEvents
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutHighPt","",0,nEvents, "csv","filteredHighPt.list");
   //
+  // Make QA plots
+  //
+  // QA plots
+  TString qaHistograms="";
+  qaHistograms+=TString::Format("mult:#1>>hisMultAll(%.0f,0,%.0f);",2*mult95,2*mult95);
+  qaHistograms+=TString::Format("mult:#cutHighPt>>hisMultSelected(%.0f,0,%.0f);",2*mult95,2*mult95);
+  qaHistograms+=TString::Format("ntracks:#1>>hisNtracksAll(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("ntracks:#cutHighPt>>hisNtracksSelected(%.0f,0,%.0f);",ntracks95,2*ntracks95);
+  qaHistograms+=TString::Format("mult/ntracks:#1>>hisMultNtracksAll(100,0,1);");
+  qaHistograms+=TString::Format("mult/ntracks:#cutHighPt>>hisMultNtracksSelected(100,0,1);");
+  qaHistograms+=TString::Format("esdTrack.Pt():#1>>hisPtAll(100,0,%.0f);",2.*ptQuant95);
+  qaHistograms+=TString::Format("esdTrack.Pt():#cutHighPt>>hisPtSelected(100,0,%.0f);",2.*ptQuant95);
+  TStopwatch timer; TObjArray *hisArray = AliTreePlayer::MakeHistograms(treeHighPt, qaHistograms, "cutHighPt",0,nEvents,nEvents,15); timer.Print();
+  //
+  TString drawExpression="";
+  drawExpression="[1,1,1,1]:";
+  drawExpression+="%Ogridx,gridy;hisMultAll(0,100)(0)(err);hisMultSelected(0,100)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisMultNtracksAll(0,10000)(0)(err);hisMultNtracksSelected(0,10000)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisNtracksAll(0,10000)(0)(err);hisNtracksSelected(0,10000)(0)(err):";
+  drawExpression+="%Ogridx,gridy;hisPtAll(0,100)(0)(err);hisPtSelected(0,100)(0)(err):";
+  TObjArray *keepArray = new TObjArray(100);
+  TPad * pad = AliTreePlayer::DrawHistograms(0,hisArray,drawExpression,keepArray, 15); 
+  ((TCanvas*)pad)->SetWindowSize(1800,1000);
+  pad->SaveAs("triggerHighPt.png");
+  pcstream->GetFile()->cd();
+  hisArray->Write("hisArray",TObjArray::kSingleKey);
+  keepArray->Write("keepArray",TObjArray::kSingleKey);
+  //
+  //
+  tree->Draw("-esdTrack.Pt():mult:ntracks","cutHighPt","goff",nEvents);
+  Double_t meanMult=TMath::Mean(tree->GetSelectedRows(),tree->GetV2());
+  Double_t meanNTracks=TMath::Mean(tree->GetSelectedRows(),tree->GetV3());
+  Double_t mult95=TMath::KOrdStat(tree->GetSelectedRows(),tree->GetV2(),Long64_t(tree->GetSelectedRows()*0.95));
+  Double_t ntracks95=TMath::KOrdStat(tree->GetSelectedRows(),tree->GetV3(),Long64_t(tree->GetSelectedRows()*0.95));
+
+  //
   Int_t nHighPtSelected = tree->Draw("esdTrack.fTPCncls","cutHighPt");
   Int_t nEventsAll=treeEvent->GetEntries();
-   // Dump input parameters
+  // Dump input parameters
   
   ::Info("KeyValue.TriggerHighPt.Input.Filter","%s",filter);
   ::Info("KeyValue.TriggerHighPt.Input.dcaCut","%f",dcaCut);
@@ -245,6 +281,9 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long64_t nEvents
   ::Info("KeyValue.TriggerHighPt.Selection","%s",tree->GetAlias("cutHighPt"));
   ::Info("KeyValue.TriggerHighPt.NEventsAll","%d",nEventsAll);
   ::Info("KeyValue.TriggerHighPt.NHighPtSelected","%d",nHighPtSelected);
+  ::Info("KeyValue.TriggerHighPt.MeanMult","%d",meanMult);  
+  ::Info("KeyValue.TriggerHighPt.Mult95","%d", mult95);  
+  ::Info("KeyValue.TriggerHighPt.NTracks95","%d",ntracks95);  
   delete pcstream;
 }
 
@@ -358,7 +397,7 @@ void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nE
   Double_t ntracks95=TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV3(),Long64_t(treeHighPt->GetSelectedRows()*0.95));
   Double_t ptQuant95=-TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV1(),Long64_t(treeHighPt->GetSelectedRows()*0.05));
   Double_t ptQuant=-TMath::KOrdStat(treeHighPt->GetSelectedRows(),treeHighPt->GetV1(),TMath::Min(treeHighPt->GetSelectedRows()-1,Long64_t(maxTracks/meanMult)-1));
-  treeHighPt->SetAlias("cutHighPt",TString::Format("abs(esdTrack.fdTPC)<%.3f&&abs(esdTrack.fzTPC)<%.3f&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.01&&%s&&mult/ntracks>%f&&esdTrack.Pt()>%f&&mult>%f",dcaCut,dcaCut, filter,fractionCut,ptQuant,multCut).Data());
+  treeHighPt->SetAlias("cutHighPt",TString::Format("abs(esdTrack.fdTPC)<%.3f&&abs(esdTrack.fzTPC)<%.3f&&esdTrack.fzTPC!=0&&sqrt(esdTrack.fC[14])<0.01&&%s&&mult/ntracks>%f&&esdTrack.Pt()>%f&&mult>%f",dcaCut,dcaCut, filter,fractionCut,ptQuant,multCut).Data()); 
   //
   TString outputString="";
   outputString+="fileName.GetString();1;fname;/C:";
@@ -572,7 +611,7 @@ void GetRawSummary(){
   }
 }
 
-void SummarizeLogs(const char * logTreeFile="log.tree"){
+void SummarizeLogs(const char * logTreeFile="log.tree", const char * pass=0){
   //
   // Input data assumed to be in fromatted csv file with header
   //     year/d:period/C:run/d:name/C:key/C:value/I
@@ -599,6 +638,13 @@ void SummarizeLogs(const char * logTreeFile="log.tree"){
   logTree.BuildIndex("run");
   logTree.AddFriend(logbookTree,"Logbook");
   logTree.AddFriend(logbookTree->GetFriend("Logbook.detector_TPC"),"LogbookTPC");
+  TTree *evsTree=NULL;
+  if (pass!=NULL){
+    evsTree =info.GetTree("QA.EVS",cperiod,pass,"");
+    evsTree->BuildIndex("run");
+    logTree.AddFriend(evsTree,"EVS");
+  }
+  
   //
   TGraph *grLogbook= TStatToolkit::MakeGraphSparse(&logTree, "Logbook.totalEventsPhysics:run","Logbook.run==run",25,1,1);
   TGraph *grLogbookTPC= TStatToolkit::MakeGraphSparse(&logTree, "LogbookTPC.eventCountPhysics:run","run==LogbookTPC.run",21,2,1);
@@ -610,6 +656,7 @@ void SummarizeLogs(const char * logTreeFile="log.tree"){
   Double_t minY=grAll->GetY()[0], maxY=grAll->GetY()[0];
 
   for (Int_t igr=0; igr<6; igr++){
+    if ( graphs[igr]==NULL) continue;
     Double_t gmin=TMath::MinElement(graphs[igr]->GetN(),graphs[igr]->GetY());
     Double_t gmax=TMath::MaxElement(graphs[igr]->GetN(),graphs[igr]->GetY());
     if (minY>gmin) minY=gmin;
@@ -625,16 +672,36 @@ void SummarizeLogs(const char * logTreeFile="log.tree"){
   legend->SetBorderSize(0);
   grLogbook->GetYaxis()->SetTitle("# Events");
   grLogbook->GetXaxis()->SetTitle("run");
-  grLogbook->Draw("alp");   grLogbookTPC->Draw("lp"); grAll->Draw("lp"); grHighPt->Draw("lp");   grV0s->Draw("lp"); grMult->Draw("lp");
+  for (Int_t igr=0; igr<6; igr++){
+    if ( graphs[igr]==NULL) continue;
+    if (igr==0) graphs[igr]->Draw("alp");
+    graphs[igr]->Draw("lp");
+  }
   legend->AddEntry(grLogbook,"Logbook #totalEventsPhysics","p");
   legend->AddEntry(grLogbookTPC,"TPC #totalEventsPhysics","p");
   legend->AddEntry(grAll,"ESD. #Events processed ","p");
   legend->AddEntry(grHighPt,"# High pt x 100","p");
   legend->AddEntry(grV0s,"# V0s x 100","p");
-  legend->AddEntry(grMult,"#High mult x 100","p");
+  if (grMult) legend->AddEntry(grMult,"#High mult x 100","p");
+  //
   legend->Draw();
   canvasStat->SaveAs("makeOfflineTriggerListEventSummary.png");
   canvasStat->SaveAs("makeOfflineTriggerListEventSummary.pdf");
+  // make period counter summary
+  gStyle->SetOptStat(0);
+  logTree->SetMarkerStyle(21);
+  logTree->Draw("key","( (strstr(key,\"TriggerHighPt.NEventsAll\")>0)||(strstr(key,\"elected\")>0))*value/1000000.");
+  logTree->GetHistogram()->GetXaxis()->SetTitle("Trigger");
+  logTree->GetHistogram()->GetYaxis()->SetTitle("#Events/1000000");
+  logTree->GetHistogram()->Draw("hist TEXT0");
+  canvasStat->SaveAs("numberOfEventsTriggered.png");
+  // make period fraction summary
+  logTree->GetHistogram()->Scale(1/logTree->GetHistogram()->GetBinContent(1));
+  logTree->GetHistogram()->GetXaxis()->SetRangeUser(1,10000);
+  logTree->GetHistogram()->GetYaxis()->SetTitle("fraction");
+  logTree->GetHistogram()->Draw("hist TEXT0");
+  canvasStat->SaveAs("fractionOfEventsTriggered.png");
+
 }
 
 

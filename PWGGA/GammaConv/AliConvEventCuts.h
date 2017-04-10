@@ -13,6 +13,7 @@
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "TF1.h"
+#include "TObjArray.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 #include "TRandom3.h"
@@ -169,7 +170,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16h2c,        // anchored LHC15o pass1 - jet-jet 50-90%
         kLHC16h3,         // anchored LHC15n pass2 - jet-jet first chunck
         kLHC16h3b,        // anchored LHC15n pass2 - jet-jet second chunck
-	kLHC16h3_bis,     // anchored LHC15n pass2 - jet-jet extra sample
+        kLHC16h3_bis,     // anchored LHC15n pass2 - jet-jet extra sample
         kLHC16h8a,        // anchored LHC15n pass2 - general purpose Pythia8
         kLHC16h8b,        // anchored LHC15n pass2 - general purpose Pythia6
         kLHC16k3a,        // anchored LHC15n pass2 - gen. purpose Pyt6wpileup
@@ -438,7 +439,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                   TClonesArray *aodmcArray, 
                                                   Bool_t isConversion );
       
-      
     protected:
       TList*                      fHistograms;
       TList*                      fHeaderList;
@@ -539,8 +539,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameHistoReweightingMultMC;            // Histogram name for reweighting Eta
       TH1D*                       hReweightMultData;                      // histogram input for reweighting Eta
       TH1D*                       hReweightMultMC;                        // histogram input for reweighting Pi0
-      Int_t                       fDebugLevel;                             // debug level for interactive debugging
-     
+      Int_t                       fDebugLevel;                            // debug level for interactive debugging
   private:
 
       ClassDef(AliConvEventCuts,29)

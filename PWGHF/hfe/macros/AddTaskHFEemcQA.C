@@ -2,7 +2,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
                                  Bool_t UseTender=kTRUE,
                                  Bool_t FillElecSparse=kFALSE,
                                  Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
-                                 Bool_t ispPb=kFALSE,
+                                 Bool_t hasTwoEMCTrigThres=kFALSE,
                                  Int_t MimCent = -1, Int_t MaxCent = -1,
                                  Int_t thEG1ADC=140, Int_t thEG2ADC=89,
                                  TString ContNameExt = "", TString centrality="V0M")
@@ -78,7 +78,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     
     mgr->ConnectInput(eventplaneTask, 0,cinputTPCEP);
     mgr->ConnectOutput(eventplaneTask,1,coutputTPCEP);
-
+    
     
     // +++ EMCal MB
     // INT8
@@ -128,7 +128,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName7, TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
     mgr->ConnectInput(hfecalqa7, 0, cinput);
     mgr->ConnectOutput(hfecalqa7, 1, coutput1);
-    
+/*
     // EMCal L0
     // + kEMC7
     AliAnalysisTaskHFEemcQA *hfecalqaL07 = new AliAnalysisTaskHFEemcQA("emcqa");
@@ -177,12 +177,12 @@ AliAnalysisTask *AddTaskHFEemcQA(
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerNameL08, TList::Class(),AliAnalysisManager::kOutputContainer, containerNameL08.Data());
     mgr->ConnectInput(hfecalqaL08, 0, cinput);
     mgr->ConnectOutput(hfecalqaL08, 1, coutput1);
-    
-    
+ */
     // EMCal EGA
-    if(ispPb)
+    if(hasTwoEMCTrigThres)
     {
         // EMCal EGA EG1
+        if(ClsTypeEMC){
         AliAnalysisTaskHFEemcQA *hfecalqaTrig01 = new AliAnalysisTaskHFEemcQA("emcqa");
         mgr->AddTask(hfecalqaTrig01);
         hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
@@ -231,7 +231,8 @@ AliAnalysisTask *AddTaskHFEemcQA(
         AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
         mgr->ConnectInput(hfecalqaTrig02, 0, cinput);
         mgr->ConnectOutput(hfecalqaTrig02, 1, coutput1);
-        
+        }
+        if(ClsTypeDCAL){
         // DCal EGA DG1
         AliAnalysisTaskHFEemcQA *hfdcalqaTrig01 = new AliAnalysisTaskHFEemcQA("emcqa");
         mgr->AddTask(hfdcalqaTrig01);
@@ -281,8 +282,9 @@ AliAnalysisTask *AddTaskHFEemcQA(
         AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName04, TList::Class(),AliAnalysisManager::kOutputContainer, containerName04.Data());
         mgr->ConnectInput(hfdcalqaTrig02, 0, cinput);
         mgr->ConnectOutput(hfdcalqaTrig02, 1, coutput1);
+        }
     }
-    if(!ispPb)
+    if(!hasTwoEMCTrigThres)
     {
         // EMCal EGA
         AliAnalysisTaskHFEemcQA *hfecalqaTrig0 = new AliAnalysisTaskHFEemcQA("emcqa");
@@ -310,7 +312,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         mgr->ConnectInput(hfecalqaTrig0, 0, cinput);
         mgr->ConnectOutput(hfecalqaTrig0, 1, coutput1);
     }
-    
+  /*
     // EMCal EJE
     AliAnalysisTaskHFEemcQA *hfecalqaTrig1 = new AliAnalysisTaskHFEemcQA("emcqa");
     mgr->AddTask(hfecalqaTrig1);
@@ -334,7 +336,8 @@ AliAnalysisTask *AddTaskHFEemcQA(
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName2, TList::Class(),AliAnalysisManager::kOutputContainer, containerName2.Data());
     mgr->ConnectInput(hfecalqaTrig1, 0, cinput);
     mgr->ConnectOutput(hfecalqaTrig1, 1, coutput1);
-    
+ */   
     //return hfecalqa;
+
     return NULL;
 }

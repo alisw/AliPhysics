@@ -11,7 +11,6 @@
 //   --  collidingsystem   =  0) PbPb  1) pp/pPb
 //   --  isMC              =  kTRUE if running on MC production 
 //   --  fileDir           =  "Input file directory"
-//   --  filein            =  "Input file name"
 //
 //
 //   -------------------------------------
@@ -94,9 +93,8 @@ class AliCFContainer;
 // - MAIN FUNCTION
 //=================
 void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                             // 0) PbPb  1) pp/pPb
-                               Bool_t  isMC            = kTRUE,                         // kTRUE-->MC and kFALSE-->Exp.
+                               Bool_t  isMC            = kFALSE,                        // kTRUE-->MC and kFALSE-->Exp.
                                Char_t *fileDir         = ".",                           // Input file directory
-                               Char_t *filein          = "AnalysisResults.root",        // Input file name
                                Char_t *output          = "pdf"                          // "eps", "png" or "pdf"
                               ) {
 
@@ -116,20 +114,20 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
 
      //_________________________________
      //SOURCE THE FILE AND THE CONTAINER
-     TFile *f = new TFile(Form("%s/%s",fileDir,filein));
+     TFile *f = new TFile(Form("%s/AnalysisResults.root",fileDir));
      AliCFContainer *cf = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));  
 
      //___________
      //DEFINE TEXT
      TLatex* t1 = new TLatex(0.6,0.7,"#color[3]{OK!!}");         myLatexMakeUp(t1,42,0.2,1);
      TLatex* t2 = new TLatex(0.6,0.7,"#color[2]{NOT OK!!}");     myLatexMakeUp(t2,42,0.2,2);
-     TLatex* t31 = new TLatex(0.3,0.7,"#color[2]{CUT TIGHTER!!}");               myLatexMakeUp(t31,42,0.1,2);
-     TLatex* t32 = new TLatex(0.2,0.6,"#color[2]{PROBLEM FOR ANALYSIS. CHECK}"); myLatexMakeUp(t32,42,0.1,2);
-     TLatex* t41 = new TLatex(0.3,0.7,"#color[42]{CUT LOOSER!!}");                      myLatexMakeUp(t41,42,0.1,2);
-     TLatex* t42 = new TLatex(0.2,0.6,"#color[42]{NOT AN ISSUE FOR ANALYSIS. CHECK}");  myLatexMakeUp(t42,42,0.1,2);
+     TLatex* t31 = new TLatex(0.15,0.7,"#color[2]{TIGHTER CUT (WRT EXPECTED) IS USED!!}");               myLatexMakeUp(t31,42,0.1,2);
+     TLatex* t32 = new TLatex(0.15,0.6,"#color[2]{PROBLEM FOR ANALYSIS. CHECK}"); myLatexMakeUp(t32,42,0.1,2);
+     TLatex* t41 = new TLatex(0.15,0.7,"#color[42]{LOOSER CUT (WRT EXPECTED) IS USED!!}");                      myLatexMakeUp(t41,42,0.1,2);
+     TLatex* t42 = new TLatex(0.15,0.6,"#color[42]{NOT AN ISSUE FOR ANALYSIS. CHECK}");  myLatexMakeUp(t42,42,0.1,2);
      Char_t *pname[4] = {"#color[1]{#Xi^{-}}", "#color[1]{#bar{#Xi}^{+}}", "#color[1]{#Omega^{-}}", "#color[1]{#bar{#Omega}^{+}}"};
      TLatex** tcas = new TLatex*[4];
-     for (Int_t icas = 0; icas < 4; icas++) { tcas[icas] = new TLatex(0.2,0.7,Form("%s",pname[icas]));  myLatexMakeUp(tcas[icas],42,0.25,2); }
+     for (Int_t icas = 0; icas < 4; icas++) { tcas[icas] = new TLatex(0.8,0.3,Form("%s",pname[icas]));  myLatexMakeUp(tcas[icas],42,0.25,2); }
      const Int_t color[4] = {kRed+1,kOrange+1,kAzure+2,kViolet-4};
      Char_t *pdgmass[4] = {"PDG mass: 1.32171 GeV/c^{2}","PDG mass: 1.32171 GeV/c^{2}","PDG mass: 1.67245 GeV/c^{2}","PDG mass: 1.67245 GeV/c^{2}"}; 
 
@@ -255,11 +253,10 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
             if      (checkExactMaxLimit(hvar5[icas],x5) == 1) { cout<<"The cut on 'DCA V0 daughters' for cascade "<<icas<<" is +++LOOSER+++!!"<<endl;   t41->Draw();  t42->Draw(); }
             else if (checkExactMaxLimit(hvar5[icas],x5) == 2) { cout<<"The cut on 'DCA V0 daughters' for cascade "<<icas<<" is ***TIGHTER***!!"<<endl;  t31->Draw();  t32->Draw(); }
             else if (checkExactMaxLimit(hvar5[icas],x5) == 3) { cout<<"The cut on 'DCA V0 daughters' for cascade "<<icas<<" is FINE!!"<<endl;     t1->Draw();                }
-
-
-           if      (output == "png") c1[icas]->SaveAs(Form("fig_lf_Multistrange_page1_%i.png",icas));
-           else if (output == "eps") c1[icas]->SaveAs(Form("fig_lf_Multistrange_page1_%i.eps",icas));
-           else if (output == "pdf") c1[icas]->SaveAs("fig_lf_Multistrange.pdf(");
+          // -- OUTPUT
+          if      (output == "png") c1[icas]->SaveAs(Form("LF_QAanalysis_Multistrange_page1_%i.png",icas));
+          else if (output == "eps") c1[icas]->SaveAs(Form("LF_QAanalysis_Multistrange_page1_%i.eps",icas));
+          else if (output == "pdf") c1[icas]->SaveAs("LF_QAanalysis_Multistrange.pdf(");
      }
 
 
@@ -352,10 +349,10 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
             hvar11[icas]->SetLineColor(color[icas]);
             hvar11[icas]->GetYaxis()->SetRangeUser(0.01,(hvar11[icas]->GetBinContent(hvar11[icas]->GetMaximumBin()))*1.5);
             hvar11[icas]->Draw("histo");
-     
-           if      (output == "png") c2[icas]->SaveAs(Form("fig_lf_Multistrange_page2_%i.png",icas));
-           else if (output == "eps") c2[icas]->SaveAs(Form("fig_lf_Multistrange_page2_%i.eps",icas));
-           else if (output == "pdf") c2[icas]->SaveAs("fig_lf_Multistrange.pdf");
+           // -- OUTPUT
+           if      (output == "png") c2[icas]->SaveAs(Form("LF_QAanalysis_Multistrange_page2_%i.png",icas));
+           else if (output == "eps") c2[icas]->SaveAs(Form("LF_QAanalysis_Multistrange_page2_%i.eps",icas));
+           else if (output == "pdf") c2[icas]->SaveAs("LF_QAanalysis_Multistrange.pdf");
      }
 
 
@@ -400,9 +397,10 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
             hvar15[icas]->Draw("histo");
            // -- Pad 5 & 6 empty
            // empty 
-           if      (output == "png") c3[icas]->SaveAs(Form("fig_lf_Multistrange_page3_%i.png",icas));
-           else if (output == "eps") c3[icas]->SaveAs(Form("fig_lf_Multistrange_page3_%i.eps",icas));
-           else if (output == "pdf") c3[icas]->SaveAs("fig_lf_Multistrange.pdf");
+           // -- OUTPUT
+           if      (output == "png") c3[icas]->SaveAs(Form("LF_QAanalysis_Multistrange_page3_%i.png",icas));
+           else if (output == "eps") c3[icas]->SaveAs(Form("LF_QAanalysis_Multistrange_page3_%i.eps",icas));
+           else if (output == "pdf") c3[icas]->SaveAs("LF_QAanalysis_Multistrange.pdf");
      }
 
 
@@ -425,6 +423,7 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
      Double_t meanGauss[4], sigmaGauss[4];
 
      for (Int_t icas = 0; icas < 4; icas++)  {
+           cout<<"\nAnalysing cascade: "<<icas<<endl;
            c4->cd(icas+1); 
             myPadSetUp(gPad,kFALSE);
             hvar16[icas] = cf->ShowProjection(11+icas/2,icas);
@@ -450,9 +449,11 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
             pave[icas]->Draw("same");
             tcas[icas]->Draw();
      }
-     if      (output == "png") c4->SaveAs("fig_lf_Multistrange_page4.png");
-     else if (output == "eps") c4->SaveAs("fig_lf_Multistrange_page4.eps");
-     else if (output == "pdf") c4->SaveAs("fig_lf_Multistrange.pdf");   
+     // -- OUTPUT
+     if      (output == "png") c4->SaveAs("LF_QAanalysis_Multistrange_page4.png");
+     else if (output == "eps") c4->SaveAs("LF_QAanalysis_Multistrange_page4.eps");
+     else if (output == "pdf" && isMC)  c4->SaveAs("LF_QAanalysis_Multistrange.pdf");
+     else if (output == "pdf" && !isMC) c4->SaveAs("LF_QAanalysis_Multistrange.pdf)");
 
 
      //_____________________________________________
@@ -461,7 +462,7 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
      if (isMC) {
         TList *l = (TList*) f->Get("PWGLFStrangeness.outputCheckCascade/fListHistMultistrangeQA");
         Char_t *histoname[4] = {"fHistCascadeMultiplicityXiMinusForMC","fHistCascadeMultiplicityXiPlusForMC","fHistCascadeMultiplicityOmegaMinusForMC","fHistCascadeMultiplicityOmegaPlusForMC"}; 
-        TCanvas *c6 = new TCanvas("c6","",1200,800);
+        TCanvas *c5 = new TCanvas("c5","",1200,800);
         c6->Divide(2,2);
         TH1D** hvar18 = new TH1D*[4];
         Double_t mean[4] = {};
@@ -470,7 +471,7 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
         TPaveText** pave1 = new TPaveText[4];
 
         for (Int_t icas = 0; icas < 4; icas++)  {
-              c6->cd(icas+1);
+              c5->cd(icas+1);
                myPadSetUp(gPad,kFALSE); 
                hvar18[icas] = (TH1D*) l->FindObject(Form("%s",histoname[icas]));
                hvar18[icas]->Draw();
@@ -485,9 +486,10 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
                myPaveMakeUp(pave1[icas],Form("Mean : %.2f",mean[icas]),0,22,0.1,0,0);
                pave1[icas]->Draw("same");
         }
-        if      (output == "png") c6->SaveAs("fig_lf_Multistrange_page5.png");
-        else if (output == "eps") c6->SaveAs("fig_lf_Multistrange_page5.eps");
-        else if (output == "pdf") c6->SaveAs("fig_lf_Multistrange.pdf");
+        // -- OUTPUT
+        if      (output == "png") c5->SaveAs("LF_QAanalysis_Multistrange_page5.png");
+        else if (output == "eps") c5->SaveAs("LF_QAanalysis_Multistrange_page5.eps");
+        else if (output == "pdf") c5->SaveAs("LF_QAanalysis_Multistrange.pdf");
      }
 
 
@@ -496,7 +498,7 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
      cout<<"\n--- BUILD THE SEVENTH PAGE: general variables for MC generated particles ---"<<endl;
      if (isMC) { 
           AliCFContainer *cfMC = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeMCgen"));
-          TCanvas** c7 = new TCanvas*[4];
+          TCanvas** c6 = new TCanvas*[4];
           TH1D** hvar19 = new TH1D*[4];
           TH1D** hvar20 = new TH1D*[4];
           TH1D** hvar21 = new TH1D*[4]; 
@@ -505,50 +507,51 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
           TH1D** hvar24 = new TH1D*[4];
 
           for (Int_t icas = 0; icas < 4; icas++)  {
-                c7[icas] = new TCanvas(Form("c7_%i",icas),"",1200,800);
-                c7[icas]->Divide(2,3);
+                c6[icas] = new TCanvas(Form("c6_%i",icas),"",1200,800);
+                c6[icas]->Divide(2,3);
                 // -- Pad 1: Total Momentum
-                c7[icas]->cd(1);
+                c6[icas]->cd(1);
                  myPadSetUp(gPad,kFALSE);
                  hvar19[icas] = cfMC->ShowProjection(0,icas);
                  hvar19[icas]->SetLineColor(color[icas]);
                  hvar19[icas]->Draw("histo");
                  tcas[icas]->Draw();
                 // -- Pad 2: Transverse Momentum
-                c7[icas]->cd(2);
+                c6[icas]->cd(2);
                  myPadSetUp(gPad,kFALSE);
                  hvar20[icas] = cfMC->ShowProjection(1,icas);
                  hvar20[icas]->SetLineColor(color[icas]);
                  hvar20[icas]->Draw("histo");
                 // -- Pad 3: Rapidity (y)
-                c7[icas]->cd(3);
+                c6[icas]->cd(3);
                  myPadSetUp(gPad,kFALSE);
                  hvar21[icas] = cfMC->ShowProjection(2,icas);
                  hvar21[icas]->SetLineColor(color[icas]);
                  hvar21[icas]->Draw("histo");
                 // -- Pad 4: Pseudo-rapidity (eta)
-                c7[icas]->cd(4);
+                c6[icas]->cd(4);
                  myPadSetUp(gPad,kFALSE);
                  hvar22[icas] = cfMC->ShowProjection(3,icas);
                  hvar22[icas]->SetLineColor(color[icas]);
                  hvar22[icas]->Draw("histo");
                 // -- Pad 5: Theta
-                c7[icas]->cd(5);
+                c6[icas]->cd(5);
                  myPadSetUp(gPad,kFALSE);
                  hvar23[icas] = cfMC->ShowProjection(4,icas);
                  hvar23[icas]->SetLineColor(color[icas]);
                  hvar23[icas]->Draw("histo");
                 // -- Pad 6: Phi
-                c7[icas]->cd(6);
+                c6[icas]->cd(6);
                  myPadSetUp(gPad,kFALSE);
                  hvar24[icas] = cfMC->ShowProjection(5,icas);
                  hvar24[icas]->SetLineColor(color[icas]);
                  hvar24[icas]->Draw("histo");
-		if      (output == "png") c7[icas]->SaveAs(Form("fig_lf_Multistrange_page6_%i.png",icas));
-                else if (output == "eps") c7[icas]->SaveAs(Form("fig_lf_Multistrange_page6_%i.eps",icas));
+                // -- OUTPUT
+                if      (output == "png") c6[icas]->SaveAs(Form("LF_QAanalysis_Multistrange_page6_%i.png",icas));
+                else if (output == "eps") c6[icas]->SaveAs(Form("LF_QAanalysis_Multistrange_page6_%i.eps",icas));
                 else if (output == "pdf") {
-                    if (icas < 3) c7[icas]->SaveAs("fig_lf_Multistrange.pdf");
-                    else          c7[icas]->SaveAs("fig_lf_Multistrange.pdf)");   
+                    if (icas < 3)  c6[icas]->SaveAs("%s_Multistrange.pdf");
+                    else           c6[icas]->SaveAs("%s_Multistrange.pdf)");
                 }
           }
      }
@@ -561,29 +564,6 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
 //====================
 // - USEFUL FUNCTIONS
 //====================
-//______________________
-Bool_t checkUnderTheLimit(TH1D *lHist, Double_t limit) {
-         Int_t binlimit = lHist->FindBin(limit);
-         Bool_t checkOk = kTRUE;
-         for (Int_t i = 1; i < binlimit; i++) {
-              Int_t content = 0;
-              content = lHist->GetBinContent(i);
-              if (content != 0) checkOk = kFALSE;
-         }
-         return checkOk;
-}
-//______________________
-Bool_t checkOverTheLimit(TH1D *lHist, Double_t limit) {
-         Int_t binlimit = lHist->FindBin(limit);
-         Int_t lastbin  = lHist->GetNbinsX();
-         Bool_t checkOk = kTRUE;
-         for (Int_t i = binlimit; i < lastbin+1; i++) {
-              Int_t content = 0;
-              content = lHist->GetBinContent(i);
-              if (content != 0) checkOk = kFALSE;
-         }
-         return checkOk;
-}
 //______________________
 Int_t checkExactMinLimit(TH1D *lHist, Float_t limit) {
          Int_t checkOk = 4;

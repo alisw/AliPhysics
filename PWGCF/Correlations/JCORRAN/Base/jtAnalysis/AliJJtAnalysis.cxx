@@ -71,6 +71,7 @@ AliJJtAnalysis::AliJJtAnalysis() :
   fbLPCorrel(0),
   fMinimumPt(0),
   fbLPSystematics(false),
+  fMCTruthRun(false),
   fEventBC(0),
   fEfficiency(0),
   fRunTable(0),
@@ -108,6 +109,7 @@ AliJJtAnalysis::AliJJtAnalysis(Bool_t execLocal) :
   fbLPCorrel(0),
   fMinimumPt(0),
   fbLPSystematics(false),
+  fMCTruthRun(false),
   fEventBC(0),
   fEfficiency(0),
   fRunTable(0),
@@ -164,6 +166,7 @@ AliJJtAnalysis::AliJJtAnalysis(const AliJJtAnalysis& obj) :
   fbLPCorrel(obj.fbLPCorrel),
   fMinimumPt(obj.fMinimumPt),
   fbLPSystematics(obj.fbLPSystematics),
+  fMCTruthRun(obj.fMCTruthRun),
   fEventBC(obj.fEventBC),
   fEfficiency(obj.fEfficiency),
   fRunTable(obj.fRunTable),
@@ -192,6 +195,10 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
   cout << "jtAnalysis user create output objects ----------------" << endl;
   
   fHadronSelectionCut =int ( fcard->Get("HadronSelectionCut"));
+  
+  // Switch between regular analysis and MC truth analysis
+  fMCTruthRun = false;
+  if(fcard->Get("AnalyseMCTruth") == 1) fMCTruthRun = true;
   
   // Initialize the histograms needed to store the output
   fhistos = new AliJJtHistograms( fcard );
@@ -372,7 +379,7 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
   fassocPool   = new AliJEventPool( fcard, fhistos, fcorrelations, fjassoc);
   
   fphotonList = new TClonesArray(kParticleProtoType[kJPhoton],1500);
-  fchargedHadronList  = new TClonesArray(kParticleProtoType[kJHadron],1500);
+  fchargedHadronList  = new TClonesArray(kParticleProtoType[fMCTruthRun ? kJHadronMC : kJHadron],1500);
   fpizeroList = new TClonesArray(kParticleProtoType[kJPizero],1500);
   ftriggList  = new TClonesArray(kParticleProtoType[fjtrigg],1500);
   fassocList  = new TClonesArray(kParticleProtoType[fjassoc],1500);
@@ -505,9 +512,10 @@ void AliJJtAnalysis::UserExec(){
 	// Triggers and associated
 	//----------------------ooooo---------------------------------------
 
-	if(fjtrigg==kJHadron || fjassoc==kJHadron){
+	if(fjtrigg==kJHadron || fjassoc==kJHadron || fjtrigg==kJHadronMC || fjassoc==kJHadronMC){
 		fchargedHadronList->Clear();
-		fdmg->RegisterList(fchargedHadronList, NULL, cBin, zBin, kJHadron);
+    
+		fdmg->RegisterList(fchargedHadronList, NULL, cBin, zBin, fMCTruthRun ? kJHadronMC : kJHadron);
 		// apply efficiencies
 
 		for( int i = 0; i < fchargedHadronList->GetEntries(); i++ ){
@@ -515,15 +523,20 @@ void AliJJtAnalysis::UserExec(){
 			triggerTrack = (AliJBaseTrack*)fchargedHadronList->At(i);
 			ptt = triggerTrack->Pt();
 
-			effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
-			fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
-			triggerTrack->SetTrackEff( 1./effCorr );
+      if(fMCTruthRun){
+        fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1.0 );
+        triggerTrack->SetTrackEff(1.0);
+      } else {
+			  effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
+			  fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
+			  triggerTrack->SetTrackEff( 1./effCorr );
+      }
 		}
 	}
 
 	//---- assign input list ---- 
 	if(fjtrigg==kJPizero)      finputList = fpizeroList;  
-	else if(fjtrigg==kJHadron) finputList = fchargedHadronList;
+	else if(fjtrigg==kJHadron || fjtrigg==kJHadronMC) finputList = fchargedHadronList;
 	else if(fjtrigg==kJPhoton) finputList = fphotonList;
 	int noAllTriggTracks = finputList->GetEntries();
 	int noAllChargedTracks = fchargedHadronList->GetEntries();
@@ -598,7 +611,7 @@ void AliJJtAnalysis::UserExec(){
 	fassocList->Clear();
 	int noAssocs=0;
 	if(fjassoc==kJPizero) finputList = fpizeroList;  
-	else if(fjassoc==kJHadron) finputList = fchargedHadronList;
+	else if(fjassoc==kJHadron || fjassoc==kJHadronMC) finputList = fchargedHadronList;
 	else if(fjassoc==kJPhoton) finputList = fphotonList;
 
 	int noAllAssocTracks = finputList->GetEntries();
@@ -626,7 +639,11 @@ void AliJJtAnalysis::UserExec(){
 	// Leading particle pT and eta
 	//-----------------------------------------------
 	if( lpTrackCounter->Exists() ){
-		effCorr = 1./fEfficiency->GetCorrection(lpTrackCounter->Pt(), fHadronSelectionCut, fcent );
+    if(fMCTruthRun){
+      effCorr = 1.0;
+    } else {
+		  effCorr = 1./fEfficiency->GetCorrection(lpTrackCounter->Pt(), fHadronSelectionCut, fcent );
+    }
 		fhistos->fhLPpt->Fill(lpTrackCounter->Pt(), effCorr);
 		fhistos->fhLPeta->Fill(lPTr->Eta(), effCorr);
 	}

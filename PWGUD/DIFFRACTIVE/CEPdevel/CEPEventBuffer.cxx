@@ -136,6 +136,36 @@ CEPTrackBuffer* CEPEventBuffer::GetTrack(Int_t ind)
 }
 
 // ----------------------------------------------------------------------------
+Bool_t CEPEventBuffer::RemoveTrack(Int_t ind)
+{
+    
+  // initialize the result track
+  //printf("Removing track %i of %i ...",ind,fCEPTracks->GetEntries());
+  Bool_t done = kFALSE;
+  CEPTrackBuffer *trk = NULL;
+
+  if (fCEPTracks->GetEntries() > ind) {
+    trk = (CEPTrackBuffer*) fCEPTracks->RemoveAt(ind);
+    fCEPTracks->Compress();
+    //printf("ntracks left %i ...",fCEPTracks->GetEntries());
+
+    // update track counters
+    fnTracks--;
+    if (trk->GetTrackStatus() & AliCEPBase::kTTITSpure) {
+      fnTracksITSpure--;
+    } else {
+      fnTracksCombined--;
+    }
+    
+    done = kTRUE;
+  }
+  //printf("... done %i!\n",done);
+  
+  return done;
+  
+}
+
+// ----------------------------------------------------------------------------
 Int_t CEPEventBuffer::GetnTracks(UInt_t mask, UInt_t pattern)
 {
   

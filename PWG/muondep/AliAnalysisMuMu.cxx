@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1996-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -46,6 +46,7 @@
 #include "TGrid.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "THnSparse.h"
 #include "TProfile.h"
 #include "THashList.h"
 #include "TKey.h"
@@ -95,10 +96,7 @@ fConfig(new AliAnalysisMuMuConfig(config))
 
   GetCollections(fFilename,fDirectory,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
 
-  if ( IsSimulation() )
-  {
-    SetParticleNameFromFileName(fFilename);
-  }
+  if ( IsSimulation() ) SetParticleNameFromFileName(fFilename);
 }
 
 
@@ -116,28 +114,18 @@ fAssociatedSimulation2(0x0),
 fParticleName(""),
 fConfig(0x0)
 {
-  // ctor
+  /// ctor
 
   GetFileNameAndDirectory(filename);
 
   GetCollections(fFilename,fDirectory,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
 
-  if ( IsSimulation() )
-  {
-    SetParticleNameFromFileName(fFilename);
-  }
+  if ( IsSimulation() ) SetParticleNameFromFileName(fFilename);
 
-  if ( fCounterCollection )
-  {
-    if ( strlen(associatedSimFileName) )
-    {
-      fAssociatedSimulation = new AliAnalysisMuMu(associatedSimFileName);
-    }
+  if ( fCounterCollection ) {
 
-    if ( strlen(associatedSimFileName2) )
-    {
-      fAssociatedSimulation2 = new AliAnalysisMuMu(associatedSimFileName2);
-    }
+    if ( strlen(associatedSimFileName) ) fAssociatedSimulation = new AliAnalysisMuMu(associatedSimFileName);
+    if ( strlen(associatedSimFileName2) ) fAssociatedSimulation2 = new AliAnalysisMuMu(associatedSimFileName2);
 
     fConfig = new AliAnalysisMuMuConfig;
 
@@ -148,16 +136,10 @@ fConfig(0x0)
 //_____________________________________________________________________________
 AliAnalysisMuMu::~AliAnalysisMuMu()
 {
-  // dtor
+  /// dtor
 
-  if ( fAssociatedSimulation )
-  {
-    fAssociatedSimulation->Update();
-  }
-  if ( fAssociatedSimulation2 )
-  {
-    fAssociatedSimulation2->Update();
-  }
+  if ( fAssociatedSimulation ) fAssociatedSimulation->Update();
+  if ( fAssociatedSimulation2 ) fAssociatedSimulation2->Update();
 
   Update();
 
@@ -176,14 +158,17 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
                                   ULong64_t* totalNmsl,
                                   ULong64_t* totalNmul)
 {
-  // Report of some basic trigger counts (for MB,MUL and MSL)
-  // both before and after physics selection.
-  //
-  // Amount all the triggers available in our counter collection,
-  // we only consider the triggers that are defined in the configuration
-  //
-  // If detailTriggers is kTRUE, will show the detail, including Physics Selection fraction,
-  // for each trigger found (as opposed to just showing info for MB,MSL and MUL triggers)
+/**
+ * @brief Report of some basic trigger counts (for MB,MUL and MSL) both before and after physics selection.
+ * @details Amount all the triggers available in our counter collection,we only consider the triggers that are defined in the configuration.
+ * If detailTriggers is kTRUE, will show the detail, including Physics Selection fraction,
+ * for each trigger found (as opposed to just showing info for MB,MSL and MUL triggers)
+ *
+ * @param detailTriggers
+ * @param totalNmb
+ * @param totalNmsl
+ * @param totalNmul
+ */
 
   if (!fMergeableCollection || !fCounterCollection) return;
 
@@ -204,9 +189,9 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
   ULong64_t localNmsl(0);
   ULong64_t localNmul(0);
 
-  if ( totalNmb) *totalNmb = 0;
+  if ( totalNmb)  *totalNmb = 0;
   if ( totalNmsl) *totalNmsl = 0;
-  if ( totalNmul ) *totalNmul = 0;
+  if ( totalNmul )*totalNmul = 0;
 
   while ( ( srun = static_cast<TObjString*>(nextRun()) ) )
   {
@@ -241,30 +226,26 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
 
         details += TString::Format(" PS %5.1f %%",nps*100.0/n);
 
-        if (nps)
-        {
-          ++nofPS;
-        }
-
+        if (nps) ++nofPS;
       }
 
       if ( Config()->Has(Config()->MinbiasTriggerKey(),strigger->String(),IsSimulation() ) )
       {
-        nmb += n;
+        nmb             += n;
         if ( totalNmb) (*totalNmb) += n;
-        localNmb += n;
+        localNmb        += n;
       }
       else if ( Config()->Has(Config()->MuonTriggerKey(),strigger->String(),IsSimulation()))
       {
-        nmsl += n;
+        nmsl             += n;
         if ( totalNmsl) (*totalNmsl) += n;
-        localNmsl += n;
+        localNmsl        += n;
       }
       else if ( Config()->Has(Config()->DimuonTriggerKey(),strigger->String(),IsSimulation()) )
       {
-        nmul += n;
+        nmul              += n;
         if ( totalNmul ) (*totalNmul) += n;
-        localNmul += n;
+        localNmul         += n;
       }
     }
 
@@ -272,18 +253,13 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
                  nmb,nmsl,nmul,(nofPS == 0 ? "(NO PS AVAIL)": ""));
 
 
-    if ( detailTriggers )
-    {
-      std::cout << details.Data();
-    }
+
+    if ( detailTriggers ) std::cout << details.Data();
+
     std::cout << std::endl;
   }
 
-  if ( !totalNmul && !totalNmsl && !totalNmb )
-  {
-    std::cout << std::endl << Form("%13s MB %10lld MSL %10lld MUL %10lld ","TOTAL",
-                                   localNmb,localNmsl,localNmul) << std::endl;
-  }
+  if ( !totalNmul && !totalNmsl && !totalNmb ) std::cout << std::endl << Form("%13s MB %10lld MSL %10lld MUL %10lld ","TOTAL",localNmb,localNmsl,localNmul) << std::endl;
 
   delete runs;
   delete triggers;
@@ -295,524 +271,407 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
 //_____________________________________________________________________________
 void AliAnalysisMuMu::CleanAllSpectra()
 {
-    /// Delete all the spectra we may have
-
-    OC()->RemoveByType("AliAnalysisMuMuSpectra");
-    Update();
+  /**
+  * @brief Delete all the spectra we may have
+  */
+  OC()->RemoveByType("AliAnalysisMuMuSpectra");
+  Update();
 }
 
 //_____________________________________________________________________________
 void AliAnalysisMuMu::CleanFNorm()
 {
-    /// Delete all the spectra we may have
+  /**
+  * @brief Delete the FNorm related results we may have
+  */
 
-    OC()->Prune("/FNORM");
-    Update();
+  OC()->Prune("/FNORM");
+  Update();
 }
 
-
 //_____________________________________________________________________________
-TObjArray* AliAnalysisMuMu::CompareJpsiPerCMUUWithBackground(const char* jpsiresults,
-                                                                   const char* backgroundresults)
+void AliAnalysisMuMu::CleanMix()
 {
-  TFile* fjpsi = FileOpen(jpsiresults);
-  TFile* fbck = FileOpen(backgroundresults);
-
-  if (!fjpsi || !fbck) return 0x0;
-
-  TGraph* gjpsi = static_cast<TGraph*>(fjpsi->Get("jpsipercmuu"));
-
-  std::vector<std::string> checks;
-
-  checks.push_back("muminus-CMUU7-B-NOPF-ALLNOTRD");
-  checks.push_back("muplus-CMUU7-B-NOPF-ALLNOTRD");
-  checks.push_back("muminus-CMUSH7-B-NOPF-MUON");
-  checks.push_back("muplus-CMUSH7-B-NOPF-MUON");
-
-  if (!gjpsi) return 0x0;
-
-  TObjArray* a = new TObjArray;
-  a->SetOwner(kTRUE);
-
-  for ( std::vector<std::string>::size_type j = 0; j < checks.size(); ++j )
-  {
-
-    TGraph* gback = static_cast<TGraph*>(fbck->Get(checks[j].c_str()));
-
-    if (!gback) continue;
-
-    if ( gjpsi->GetN() != gback->GetN() )
-    {
-      AliErrorClass("graphs have different number of points !");
-      continue;
-    }
-
-    TGraphErrors* g = new TGraphErrors(gjpsi->GetN());
-
-    for ( int i = 0; i < gjpsi->GetN(); ++i )
-    {
-      double r1,r2,y1,y2;
-
-      gjpsi->GetPoint(i,r1,y1);
-      gback->GetPoint(i,r2,y2);
-
-      if ( r1 != r2 )
-      {
-        AliWarningClass(Form("run[%d]=%d vs %d",i,(int)r1,(int)r2));
-        continue;
-      }
-
-      g->SetPoint(i,y2,y1);
-      //    g->SetPointError(i,gjpsi->GetErrorY(i),gback->GetErrorY(i));
-    }
-
-    g->SetMarkerStyle(25+j);
-    g->SetMarkerSize(1.2);
-    if (j==0)
-    {
-      g->Draw("ap");
-    }
-    else
-    {
-      g->Draw("p");
-    }
-    g->SetLineColor(j+1);
-    g->SetMarkerColor(j+1);
-    g->SetName(checks[j].c_str());
-    a->AddLast(g);
-  }
-
-  return a;
+  /**
+   * @brief Delete all the spectra we may have
+   */
+  OC()->Prune("/MIX");
+  Update();
 }
 
 //_____________________________________________________________________________
-TGraph* AliAnalysisMuMu::CompareJpsiPerCMUUWithSimu(const char* realjpsiresults,
-                                                    const char* simjpsiresults)
-{
-  TFile* freal = FileOpen(realjpsiresults);
-  TFile* fsim = FileOpen(simjpsiresults);
-
-  if (!freal || !fsim) return 0x0;
-
-  TGraph* greal = static_cast<TGraph*>(freal->Get("jpsipercmuu"));
-  TGraph* gsim = static_cast<TGraph*>(fsim->Get("jpsipercmuu"));
-
-  TObjArray* a = new TObjArray;
-  a->SetOwner(kTRUE);
-
-  if ( greal->GetN() != gsim->GetN() )
-  {
-    AliErrorClass("graphs have different number of points !");
-    return 0x0;
-  }
-
-  TGraphErrors* g = new TGraphErrors(greal->GetN());
-  TGraphErrors* gratio = new TGraphErrors(greal->GetN());
-
-  for ( int i = 0; i < greal->GetN(); ++i )
-  {
-    double r1,r2,y1,y2;
-
-    greal->GetPoint(i,r1,y1);
-    gsim->GetPoint(i,r2,y2);
-
-    if ( r1 != r2 )
-    {
-      AliWarningClass(Form("run[%d]=%d vs %d",i,(int)r1,(int)r2));
-      continue;
-    }
-
-    double ratio(0.0);
-
-    if ( TMath::Abs(y1)<1E-6 || TMath::Abs(y2)<1E-6)
-    {
-      g->SetPoint(i,0,0);
-      g->SetPointError(i,0,0);
-    }
-    else
-    {
-      g->SetPoint(i,y2,y1);
-      g->SetPointError(i,greal->GetErrorY(i),gsim ->GetErrorY(i));
-      ratio = y2/y1;
-    }
-    gratio->SetPoint(i,r1,ratio);
-  }
-
-  g->SetMarkerStyle(25);
-  g->SetMarkerSize(1.2);
-
-  new TCanvas;
-
-  g->Draw("ap");
-
-  g->SetLineColor(1);
-  g->SetMarkerColor(1);
-  g->SetName("jpsipercmuurealvssim");
-
-  new TCanvas;
-
-  greal->Draw("alp");
-  gsim->SetLineColor(4);
-
-  gsim->Draw("lp");
-
-  new TCanvas;
-  gratio->Draw("alp");
-
-  return g;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::DrawFitResults(const char* particle,
-                                     const char* binType,
+void AliAnalysisMuMu::DrawFitResults(const char* what,
+                                     const char* spectraName,
                                      const char* subresults,
+                                     Bool_t mix,
                                      Bool_t AccEffCorr
                                      )const
 {
-    /// A function to use after JPsi()
-    /// Draw all results/subresults (i.e fit functions) spectras on a single canvas for every combination of Trigger / event Type / centrality / Pair cut.
+  /**
+  * @brief Draw all fit results
+  * @details Draw all results/subresults (i.e fit functions) spectras on a single canvas for every combination of Trigger/eventType/centrality/Pair cut.
+  *
+  * @param particle    particle name
+  * @param binType     [description]
+  * @param subresults  If one wants to draw one/several specific results. Tokenized by ','
+  * @param AccEffCorr  Spectra type
+  */
 
-    if (!OC() || !CC())
-        {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-        }
-
-
-    // Get configuration settings
-    TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
-    TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
-    TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());// to add here an entry
-    TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
-    TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
-    TObjArray* particleArray    = TString(particle).Tokenize(",");
-    TObjArray* binTypeArray     = TString(binType).Tokenize(",");
-    TObjArray* bins;
-
-    // Iterater for loops
-    TIter nextTrigger(triggerArray);
-    TIter nextEventType(eventTypeArray);
-    TIter nextPairCut(pairCutArray);
-    TIter nextParticle(particleArray);
-    TIter nextBinType(binTypeArray);
-    TIter nextCentrality(centralityArray);
-
-    // Strings
-    TObjString* strigger;
-    TObjString* seventType;
-    TObjString* spairCut;
-    TObjString* sparticle;
-    TObjString* sbinType;
-    TObjString* scentrality;
-
-    AliAnalysisMuMuSpectra * spectra=0x0;
-
-    //Loop on particle
-    while ( ( sparticle = static_cast<TObjString*>(nextParticle()) ) )
-        {
-        AliDebug(1,Form("particle %s",sparticle->String().Data()));
-        nextEventType.Reset();
-
-        // Loop on each envenType (see MuMuConfig)
-        //==============================================================================
-        while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
-            {
-            AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
-            nextTrigger.Reset();
-
-            // Loop on each trigger (see MuMuConfig)
-            //==============================================================================
-            while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
-                {
-                AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
-                nextCentrality.Reset();
-
-                // Loop on each centrality (not the ones in MuMuConfig but the ones set)
-                //==============================================================================
-                while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
-                    {
-                    AliDebug(1,Form("--CENTRALITY %s",scentrality->String().Data()));
-                    nextPairCut.Reset();
-
-                    // Loop on each paircut (not the ones in MuMuConfig but the ones set)
-                    //==============================================================================
-                    while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
-                        {
-                        AliDebug(1,Form("---PAIRCUT %s",spairCut->String().Data()));
-                        nextBinType.Reset();
-
-                        // Loop on each binType (PT or Y)
-                        //==============================================================================
-                        while ( ( sbinType = static_cast<TObjString*>(nextBinType()) ) )
-                            {
-                            AliDebug(1,Form("----TYPE %s",sbinType->String().Data()));
-                            // Output message
-                            cout << "---------------------" << endl;
-                            cout << "Looking for spectras ..."<< endl;
-
-                            //________Get spectra
-                            TString spectraPath= Form("/%s/%s/%s/%s/%s-%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),sparticle->String().Data(),sbinType->String().Data());
-                            if (AccEffCorr)spectraPath+="-AccEffCorr";
-
-                            AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
-                            if(!spectra){
-                              AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
-                              return;
-                            }
-                            //________
-
-                            // Create pointer on fitted spectra. Any kind of capsule do the job
-                            AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,"","");
-                            if(!capsule){
-                              AliError("Could not find spetra !");
-                              return;
-                            }
-                            // Draw results
-                            capsule->DrawResults(particle,subresults);
-                            delete capsule;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    delete eventTypeArray ;
-    delete triggerArray ;
-    delete fitfunctionArray ;
-    delete pairCutArray ;
-    delete centralityArray ;
-    delete particleArray ;
-    delete binTypeArray ;
-
+  if (!OC() || !CC()){
+    AliError("No mergeable/counter collection. Consider Upgrade()");
     return ;
+  }
+
+  // Get configuration settings
+
+  TObjArray* pairCutArray    = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+  TObjArray* centralityArray = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
+
+  TObjArray* triggerArray(0x0);
+  if (!mix) triggerArray = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
+  else                              triggerArray = Config()->GetListElements(Config()->MixTriggerKey(),IsSimulation());
+
+  TObjArray* eventTypeArray(0x0);
+  if (!mix) eventTypeArray = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
+  else                              eventTypeArray = Config()->GetListElements(Config()->EventSelectionMixKey(),IsSimulation());
+
+  TString refTrigger(Form("%s",Config()->First(Config()->RefMixTriggerKey(),IsSimulation()).Data()));
+  TString refEvent(Form("%s",Config()->First(Config()->RefMixEventSelectionKey(),IsSimulation()).Data()));
+
+  // Iterater for loops
+  TIter nextTrigger(triggerArray);
+  TIter nextEventType(eventTypeArray);
+  TIter nextPairCut(pairCutArray);
+  TIter nextCentrality(centralityArray);
+
+  // Strings
+  TObjString* strigger;
+  TObjString* seventType;
+  TObjString* spairCut;
+  TObjString* scentrality;
+
+  AliAnalysisMuMuSpectra * spectra=0x0;
+
+  //Loop on particle
+  nextEventType.Reset();
+
+  // Loop on each envenType (see MuMuConfig)
+  while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+  {
+    AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
+    nextTrigger.Reset();
+
+    // Loop on each trigger (see MuMuConfig)
+    while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
+    {
+      AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
+      nextCentrality.Reset();
+
+      // Loop on each centrality (not the ones in MuMuConfig but the ones set)
+      while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
+      {
+        AliDebug(1,Form("--CENTRALITY %s",scentrality->String().Data()));
+        nextPairCut.Reset();
+
+        // Loop on each paircut (not the ones in MuMuConfig but the ones set)
+        while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+        {
+          AliDebug(1,Form("---PAIRCUT %s",spairCut->String().Data()));
+
+          cout << "---------------------" << endl;
+          cout << "Looking for spectras ..."<< endl;
+
+          // Get spectra
+          TString spectraPath ="";
+          if(mix)
+            spectraPath = Form("/FitResults/%s_%s/%s/%s/%s/%s/%s",refEvent.Data(),refTrigger.Data(),seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),spectraName);
+          else
+            spectraPath = Form("/FitResults/%s/%s/%s/%s/%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),spectraName);
+          if (AccEffCorr)spectraPath+="-AccEffCorr";
+
+          AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
+          if(!spectra){
+            AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
+            return;
+          }
+
+          // Create pointer on fitted spectra. Any kind of capsule do the job
+          AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,"","");
+          if(!capsule){
+            AliError("Could not find spetra !");
+            return;
+          }
+          // Draw results
+          TString sspectraName(spectraName);
+          if(sspectraName.Contains("PSI-"))capsule->DrawResults(what,"PSI",subresults);
+          delete capsule;
+        }
+      }
+    }
+  }
+
+
+  delete eventTypeArray ;
+  delete triggerArray ;
+  delete pairCutArray ;
+  delete centralityArray ;
+
+  return ;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::PrintFitParam( const char* particle,
-                                     const char* param,
-                                     const char* binType,
-                                     const char* subresult,
-                                     const char* printDirectoryPath,
-                                     Bool_t AccEffCorr
-                                     )const
+void AliAnalysisMuMu::PrintFitParam(TString spectraName, const char* subresult,const char* param)const
 {
-    /// Draw fit parameter versus bin
+/**
+ * @brief Draw fit parameters
+ *
+ * @param particle   particle name
+ * @param param      Tokenized by ','
+ * @param binType    [description]
+ * @param subresult  If one wants to draw one/several specific results. Tokenized by ','
+ * @param AccEffCorr  Spectra type
+ */
+  if (!OC() || !CC()){
+    AliError("No mergeable/counter collection. Consider Upgrade()");
+    return ;
+  }
 
-    if (!OC() || !CC())
-        {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-        }
+  // Get configuration settings
+  TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
+  TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
+  TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());
+  TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+  TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
+  TObjArray* paramArray       = TString(param).Tokenize(",");
+  TObjArray* subresultArray   = TString(subresult).Tokenize(",");
+  TObjArray* bins;
+
+  // Iterater for loops
+  TIter nextTrigger(triggerArray);
+  TIter nextEventType(eventTypeArray);
+  TIter nextPairCut(pairCutArray);
+  TIter nextparam(paramArray);
+  TIter nextSubResult(subresultArray);
+  TIter nextCentrality(centralityArray);
+
+  // Strings
+  TObjString* strigger;
+  TObjString* seventType;
+  TObjString* spairCut;
+  TObjString* sparam;
+  TObjString* ssubresult;
+  TObjString* scentrality;
+
+  AliAnalysisMuMuSpectra* spectra=0x0;
+  TH1*       h          = 0x0;
+  TH1*       hcent      = 0x0;
+  TH1*       href       = 0x0;
 
 
-    // Get configuration settings
-    TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
-    TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
-    TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());// to add here an entry
-    TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
-    TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
-    TObjArray* paramArray    = TString(param).Tokenize(",");
-    TObjArray* binTypeArray     = TString(binType).Tokenize(",");
-    TObjArray* subresultArray     = TString(subresult).Tokenize(",");
-    TObjArray* bins;
 
-    // Iterater for loops
-    TIter nextTrigger(triggerArray);
-    TIter nextEventType(eventTypeArray);
-    TIter nextPairCut(pairCutArray);
-    TIter nextparam(paramArray);
-    TIter nextBinType(binTypeArray);
-    TIter nextSubResult(subresultArray);
-    TIter nextCentrality(centralityArray);
+  nextEventType.Reset();
+  // Loop on each envenType (see MuMuConfig)
+  while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+  {
+    AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
+    nextTrigger.Reset();
 
-    // Strings
-    TObjString* strigger;
-    TObjString* seventType;
-    TObjString* spairCut;
-    TObjString* sparam;
-    TObjString* sbinType;
-    TObjString* ssubresult;
-    TObjString* scentrality;
-
-    AliAnalysisMuMuSpectra* spectra=0x0;
-    TObjArray* histoArray = new TObjArray(); // For centrality
-    TH1                   *h =0x0;
-    TH1                   *hcent =0x0;
-    TH1                   *href =0x0;
-
-
-    //Loop on param
-    while ( ( sparam = static_cast<TObjString*>(nextparam()) ) )
+    // Loop on each trigger (see MuMuConfig)
+    while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
     {
-      AliDebug(1,Form("param %s",sparam->String().Data()));
-      nextEventType.Reset();
+      AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
 
-      // Loop on each envenType (see MuMuConfig)
-      //==============================================================================
-      while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+      nextPairCut.Reset();
+      // Loop on each paircut (not the ones in MuMuConfig but the ones set)
+      while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
       {
-        AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
-        nextTrigger.Reset();
+        AliDebug(1,Form("---PAIRCUT %s",spairCut->String().Data()));
+        nextCentrality.Reset();
 
-        // Loop on each trigger (see MuMuConfig)
-        //==============================================================================
-        while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
+        // Loop on each centrality (not the ones in MuMuConfig but the ones set)
+        while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
         {
-          AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
-          nextCentrality.Reset();
+          AliDebug(1,Form("--CENTRALITY %s",scentrality->String().Data()));
 
-          // Loop on each paircut (not the ones in MuMuConfig but the ones set)
-          //==============================================================================
-          while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+
+          // Output message
+          cout << "---------------------" << endl;
+          cout << "Looking for spectras ..."<< endl;
+
+          // Get spectra
+          TString spectraPath= Form("/FitResults/%s/%s/%s/%s/%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),spectraName.Data());
+
+          AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
+          if(!spectra) {
+            AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
+            return;
+          }
+
+          TCanvas    * c = new TCanvas;
+          int nparam = paramArray->GetEntries();
+          c->Divide(2,nparam);
+
+          // Loop on param
+          int k = 1;
+          nextparam.Reset();
+          while ( ( sparam = static_cast<TObjString*>(nextparam()) ) )
           {
-          AliDebug(1,Form("---PAIRCUT %s",spairCut->String().Data()));
-          nextBinType.Reset();
+            AliDebug(1,Form("param %s",sparam->String().Data()));
 
-          // Loop on each centrality (not the ones in MuMuConfig but the ones set)
-          //==============================================================================
-          while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
-          {
-            AliDebug(1,Form("--CENTRALITY %s",scentrality->String().Data()));
-            nextPairCut.Reset();
-
-
-            // Loop on each binType (PT or Y)
-            //==============================================================================
-            while ( ( sbinType = static_cast<TObjString*>(nextBinType()) ) )
+            if(c)
             {
-              AliDebug(1,Form("----TYPE %s",sbinType->String().Data()));
-              // Output message
-              cout << "---------------------" << endl;
-              cout << "Looking for spectras ..."<< endl;
+              // --- First canvas ---
+              c->cd(k);
 
-              // Get spectra
-              TString spectraPath= Form("/%s/%s/%s/%s/%s-%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),particle,sbinType->String().Data());
-              if (AccEffCorr)spectraPath+="-AccEffCorr";
+              TLegend*leg = new TLegend(0.1,0.7,0.48,0.9);
+              leg->SetHeader(Form("Fit Parameters %s ",sparam->String().Data()));
+              leg->SetTextSize(0.03);
 
-              AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
-              if(!spectra) {
-                AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
-                return;
+              printf("going to subcanvas %d\n",k );
+              int i = 1;
+              nextSubResult.Reset();
+              while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
+              {
+                //Loop over subresults
+                AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
+                if  ( !spectraName.Contains("VS") )
+                  h = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+                else if ( spectraName.Contains("YVSPT") )
+                  h = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+                else if ( spectraName.Contains("PTVSY") )
+                  h = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+
+                if(!h) {
+                  AliError(Form("Cannot find histo for SubResults %s",ssubresult->String().Data()));
+                  return;
+                }
+
+                // beautifull histo
+                if( i!=3 && i!=5 && i!=10 && i!=11 && i!=12 && i!=13 && i!=14 ) h->SetMarkerColor(i); //nobody likes green and yellow
+                else               h->SetMarkerColor(i+5);
+
+                h->SetMarkerSize(1.);
+                h->SetMarkerStyle(20+i);
+                if(i==11)h->SetMarkerStyle(20+i+3);
+                if(i==1)
+                {
+                  h->GetYaxis()->SetTitleSize(0.05);
+                  h->GetYaxis()->SetLabelSize(0.05);
+                  h->GetXaxis()->SetLabelSize(0.05);
+                  h->GetXaxis()->SetTitleSize(0.05);
+                  h->SetTitle(Form(" %s for bin %s",sparam->String().Data(),spectraName.Data()));
+                  h->GetYaxis()->SetTitle(sparam->String().Data());
+                  if (spectraName.Contains("YVSPT") )
+                    h->GetXaxis()->SetTitle("PT");
+                  else if (spectraName.Contains("PTVSY") )
+                    h->GetXaxis()->SetTitle("Y");
+                }
+
+                if(! sparam->String().Contains("FitChi2PerNDF"))
+                {
+                  if(i==1)h->DrawCopy();
+                  else    h->DrawCopy("same");
+                }
+                else
+                {
+                  if(i==1)h->DrawCopy("p");
+                  else    h->DrawCopy("samep");
+                }
+
+                leg->AddEntry(h,Form("%s with %s",sparam->String().Data(),ssubresult->String().Data()),"p");
+                i++;
               }
 
-              TCanvas *c = 0x0;
-              TLegend * leg = 0x0;
-              new TLegend(0.4,0.7,0.70,0.9);
+              leg->Draw("same");
 
-              // if(!sbinType->String().Contains("INTEGRATED")){
-                c = new TCanvas;
-                leg = new TLegend(0.4,0.7,0.70,0.9);
-                c->Divide(1,2,0,0);
-                leg->SetHeader(Form("Fit Parameters %s ",sparam->String().Data()));
-                leg->SetTextSize(0.03);
-              // }
+              // --- ratio ---
+              c->cd(++k);
 
-              if(c) // Same as !INTEGRATED
+              TLegend * leg2 = new TLegend(0.1,0.7,0.48,0.9);
+              leg2->SetHeader(Form("Ratio"));
+              leg2->SetTextSize(0.03);
+
+              nextSubResult.Reset();
+              int j= 1;
+              TString refName;
+              while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
               {
-                c->cd(1);
+                AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
 
-                nextSubResult.Reset();
-                int i= 1;
-                while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
+                if(j==1)
                 {
-                  //Loop over subresults
-                  AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
-                  if(sparam->String().Contains("NofJPsi") &&  sbinType->String().Contains("PT"))h = spectra->Plot(param,ssubresult->String().Data(),kTRUE);
-                  else h = spectra->Plot(param,ssubresult->String().Data(),kFALSE);
-                  if(!h) {
-                    AliError(Form("Cannot find histo for SubResults %s",ssubresult->String().Data()));
-                    return;
-                  }
-                   // In case of INTEGRATED, create a new Histo
-                  if(sbinType->String().Contains("INTEGRATED")){
-                    histoArray->Add(h->Clone());
-                    continue;
-                  }
+                  href    = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+                  if  ( !spectraName.Contains("VS") ) href = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+                  else if ( spectraName.Contains("YVSPT") )
+                    href = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+                  else if ( spectraName.Contains("PTVSY") )
+                    href = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
 
-                  // beautifull histo
-                  if(i!=3 &&i!=5 )h->SetMarkerColor(i); //nobody likes green and yellow
-                  h->SetMarkerSize(1.);
-                  h->SetMarkerStyle(20+i);
-                  h->SetName(Form(" %s for result %s and bin %s",param,ssubresult->String().Data(),sbinType->String().Data()));
-
-                  if(i==1) h->DrawCopy();
-                  else h->DrawCopy("same");
-                  leg->AddEntry(h,Form("%s with %s",param,ssubresult->String().Data()),"p");
-
-                  if (h) {
-                    printf("Replacing %s",h->GetName());
-                    OC()->Remove(Form("/%s/%s/%s/%s/FITPARAM/%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),h->GetName()));
-                  }
-                  Bool_t adoptOK = OC()->Adopt(Form("/%s/%s/%s/%s/FITPARAM",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data()),h);
-                  if ( adoptOK ) std::cout << "+++projection histo " << h->GetName() << " adopted" << std::endl;
-                  i++;
-                }
-                leg->Draw("same");
-
-                c->cd(2);
-
-                nextSubResult.Reset();
-                TLegend * leg2 = new TLegend(0.4,0.75,0.70,0.9);
-                leg2->SetHeader(Form("Ratio"));
-                leg2->SetTextSize(0.03);
-                int j= 1;
-                TString refName;
-                while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
-                {
-                  if(j==1){
-                    href = spectra->Plot(param,ssubresult->String().Data(),kFALSE);
-                    refName = href->GetName();
-                    j++;
-                    continue;
-                  }
-
-                  AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
-                  h = spectra->Plot(param,ssubresult->String().Data(),kFALSE);
-
-                  if(!h || !href )
-                  {
-                    AliError(Form("Cannot find histos for SubResults  ratio "));
-                    return;
-                  }
-                  if(j!=3 &&j!=5 )h->SetMarkerColor(j); //nobody likes green and yellow
-                  h->SetMarkerSize(1.);
-                  h->SetMarkerStyle(20+j);
-                  h->SetName(Form(" %s %s over %s for %s",param,ssubresult->String().Data(),refName.Data(),sbinType->String().Data()));
-                  h->Divide(href);
-                  if(j==2)h->DrawCopy();
-                  else h->DrawCopy("same");
-
-                  leg2->AddEntry(h,Form("Results %d over Result 1",j),"pe");
+                  refName = href->GetName();
                   j++;
-                  if (h)
-                  {
-                    printf("Replacing %s",h->GetName());
-                    OC()->Remove(Form("/%s/%s/%s/%s/FITPARAM/%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),h->GetName()));
-                  }
-                  Bool_t adoptOK = OC()->Adopt(Form("/%s/%s/%s/%s/FITPARAM",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data()),h);
-                  if ( adoptOK ) std::cout << "+++projection histo " << h->GetName() << " adopted" << std::endl;
+                  continue;
                 }
-                leg2->Draw("same");
-              } else {
-                nextSubResult.Reset();
-                int i= 1;
-                while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
+
+                if  ( !spectraName.Contains("VS") )
+                  h = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+                else if ( spectraName.Contains("YVSPT") )
+                  h = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+                else if ( spectraName.Contains("PTVSY") )
+                  h = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+
+                if(!h || !href )
                 {
-                  //Loop over subresults
-                  AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
-                  h = spectra->Plot(param,ssubresult->String().Data(),kFALSE);
-                  if(!h) {
-                    AliError(Form("Cannot find histo for SubResults %s",ssubresult->String().Data()));
-                    return;
-                  }
-                  // histoArray->Add(h->Clone());
+                  AliError(Form("Cannot find histos for SubResults  ratio "));
+                  return;
+                }
+
+                if( j!=3 && j!=5 && j!= 10 && j!=11 && j!=12 && j!=13 && j!=14 ) h->SetMarkerColor(j); //nobody likes green and yellow
+                else               h->SetMarkerColor(j+5);
+                h->SetMarkerSize(1.);
+                h->SetMarkerStyle(20+j);
+                if(j==11)h->SetMarkerStyle(20+j+3);
+                if(j==2)
+                {
+                  h->GetYaxis()->SetTitleSize(0.05);
+                  h->GetYaxis()->SetLabelSize(0.05);
+                  h->GetXaxis()->SetLabelSize(0.05);
+                  h->GetXaxis()->SetTitleSize(0.05);
+                  h->SetTitle(Form(" %s Ratio over %s for %s",sparam->String().Data(),refName.Data(),spectraName.Data()));
+                  if (spectraName.Contains("YVSPT") ) h->GetXaxis()->SetTitle("PT");
+                  else if (spectraName.Contains("PTVSY") ) h->GetXaxis()->SetTitle("Y");
+                }
+                h->Divide(href);
+                if(! sparam->String().Contains("FitChi2PerNDF"))
+                {
+                  if(j==2)h->DrawCopy();
+                  else    h->DrawCopy("same");
+                }
+                else
+                {
+                  if(j==2)h->DrawCopy("p");
+                  else    h->DrawCopy("samep");
+                }
+                leg2->AddEntry(h,Form("Results %d over Result 1",j),"pe");
+
+                j++;
+              }
+
+              leg2->Draw("same");
+              ++k;
+            } else {
+              nextSubResult.Reset();
+              int i= 1;
+              while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) ){
+                //Loop over subresults
+                AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
+                h = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+                if(!h) {
+                  AliError(Form("Cannot find histo for SubResults %s",ssubresult->String().Data()));
+                  return;
                 }
               }
             }
           }
-
-          //Output for INTEGRATED
         }
       }
     }
@@ -822,23 +681,328 @@ void AliAnalysisMuMu::PrintFitParam( const char* particle,
   delete pairCutArray ;
   delete centralityArray ;
   delete paramArray ;
-  delete binTypeArray ;
-  delete histoArray ;
 
   return ;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::DrawMinv(const char* type,
-                               const char* particle,
-                               const char* trigger,
-                               const char* eventType,
-                               const char* pairCut,
-                               const char* centrality,
-                               const char* subresultname,
-                               const char* flavour) const
+void AliAnalysisMuMu::DivideRawMixHisto(const char* binType, const char* particle, const char* flavour, Bool_t corrected, Double_t Mmin, Double_t Mmax)
 {
-  /// Draw minv spectra for binning of given type
+/**
+ * @brief Divide raw histo with the related mix histo
+ * @details To be run after NormMixEvent (run-by-run) on the merged file.
+ *
+ * Mixed Histograms are selected according to Mix...Key() in config. file. See AliAnalysisMuMuConfig class.
+ *
+ * @param binType    [description]
+ * @param particle   particle name
+ * @param flavour    [description]
+ * @param corrected  If Minv are already AccxEff corrected or not
+ */
+    if(!OC())
+    {
+        AliError("No mergeable. Consider Upgrade()");
+        return;
+    }
+    else
+    {
+        cout <<      " ================================================================ " << endl;
+        cout <<      "                       DivideRawMixHisto                  " << endl;
+        cout <<      " ================================================================ " << endl;
+    }
+
+    // Get configuration settings
+    TObjArray* eventTypeArray    = Config()->GetListElements(Config()->RefMixEventSelectionKey(),IsSimulation());
+    TObjArray* triggerArray      = Config()->GetListElements(Config()->RefMixTriggerKey(),IsSimulation());
+    TObjArray* eventTypeMixArray = Config()->GetListElements(Config()->EventSelectionMixKey(),IsSimulation());
+    TObjArray* triggerMixArray   = Config()->GetListElements(Config()->MixTriggerKey(),IsSimulation());
+    TObjArray* pairCutArray      = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+    TObjArray* centralityArray   = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
+    TObjArray* binTypeArray      = TString(binType).Tokenize(",");
+
+    TObjArray* bins;
+
+    // Iterator for loops
+    TIter nextTrigger(triggerArray);
+    TIter nextTriggerMix(triggerMixArray);
+    TIter nextEventType(eventTypeArray);
+    TIter nextEventTypeMix(eventTypeMixArray);
+    TIter nextPairCut(pairCutArray);
+    TIter nextbinType(binTypeArray);
+    TIter nextCentrality(centralityArray);
+
+    // Strings
+    TObjString* strigger;
+    TObjString* seventType;
+    TObjString* spairCut;
+    TObjString* sbinType;
+    TObjString* scentrality;
+    TObjString* sTriggerMix;
+    TObjString* seventTypeMix;
+
+
+    // For the loop comming
+    TString signFlagMinv[3] ={"","PlusPlus","MinusMinus"};
+    TString signFlagDist[3] ={"","PP","MM"};
+
+    THnSparse* n        =0x0;
+    TObject* o          =0x0;
+
+    // Get Binning
+    AliAnalysisMuMuBinning* binning(0x0);
+
+    // Loop on each envenTypeMix (see MuMuConfig)
+    while ( ( seventTypeMix = static_cast<TObjString*>(nextEventTypeMix())) ){
+      AliDebug(1,Form("EVENTTYPEMIX %s",seventTypeMix->String().Data()));
+      nextTriggerMix.Reset();
+
+      // Loop on each triggerMix (see MuMuConfig)
+      while ( ( sTriggerMix = static_cast<TObjString*>(nextTriggerMix())) ){
+        AliDebug(1,Form("-TRIGGERMIX %s",sTriggerMix->String().Data()));
+        nextEventType.Reset();
+
+        // Loop on each envenType (see MuMuConfig)
+        while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+        {
+          AliDebug(1,Form("--REFEVENTTYPE %s",seventType->String().Data()));
+          nextTrigger.Reset();
+
+          // Loop on each trigger (see MuMuConfig)
+          while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
+          {
+            AliDebug(1,Form("---REFTRIGGER %s",strigger->String().Data()));
+            nextPairCut.Reset();
+
+            // Loop on each paircut (see MuMuConfig)
+            while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+            {
+              AliDebug(1,Form("----PAIRCUT %s",spairCut->String().Data()));
+              nextbinType.Reset();
+
+              // Loop on each type (see MuMuConfig)
+              while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
+              {
+                AliDebug(1,Form("-----TYPE %s",sbinType->String().Data()));
+                nextCentrality.Reset();
+
+                // Loop on each centrality (see MuMuConfig)
+                while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
+                {
+                  AliDebug(1,Form("------CENTRALITY %s",scentrality->String().Data()));
+                  nextbinType.Reset();
+
+                  // Loop on each centrality (see MuMuConfig)
+                  while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
+                  {
+                    AliDebug(1,Form("-------BIN %s",sbinType->String().Data()));
+
+                    // Pointers
+                    TH1* hTableMinv[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
+    //                      {hMinvPM,hMinvPP,hMinvMM,hMinvMixPM,hMinvMixPP,hMinvMixMM};
+                    TH1* hTableDistRaw[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
+    //                      {hpT,hpTPP,hpTMM,hY,hYPP,hYMM};
+                    TH1* hTableDistMix[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
+    //                      {hpTMix,hpTMixPP,hpTMixMM,hYMix,hYMixPP,hYMixMM};
+
+                    // Get binning
+                    if ( fBinning && sbinType->String().Length() > 0 ) binning = fBinning->Project(particle,sbinType->String().Data(),flavour);
+                    else  {
+                      binning = new AliAnalysisMuMuBinning;
+                      binning->AddBin(particle,sbinType->String().Data());
+                    }
+                    if (!binning) {
+                      AliError("oups. binning is NULL");
+                      continue;
+                    }
+
+                    // Create array
+                    TObjArray* bins = binning->CreateBinObjArray(particle);
+                    if (!bins){
+                      AliError(Form("Did not get any bin for particle %s",particle));
+                      delete binning;
+                      continue;
+                    }
+
+                    // Create ID for the fit which will be used to name results
+                    TString idMix(Form("/%s/%s/%s/%s",seventTypeMix->String().Data(),sTriggerMix->String().Data(),scentrality->String().Data(),spairCut->String().Data()));
+                    AliDebug(1,Form("idMix = %s\n",idMix.Data() ));
+                    TString idMinv(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()));
+                    AliDebug(1,Form("idMinv = %s\n",idMinv.Data() ));
+                    TString idDist(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()));
+                    AliDebug(1,Form("idDist = %s\n",idDist.Data() ));
+
+                    // The binning pointer, which point at Pt binning, Y binning etc.
+                    AliAnalysisMuMuBinning::Range* bin;
+                    TIter next(bins);
+
+                    //MAIN PART : Loop on every binning range
+                    while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
+                    {
+                      // Get Minv Histo
+                      for (int j = 0; j < 3; ++j) {
+                        TString hnameraw = corrected ? Form("MinvUS+%s%s_AccEffCorr",bin->AsString().Data(),signFlagMinv[j].Data()) : Form("MinvUS+%s%s",bin->AsString().Data(),signFlagMinv[j].Data());
+                        TString hnamemix = corrected ? Form("MinvUS+%s%sMix_AccEffCorr",bin->AsString().Data(),signFlagMinv[j].Data()) : Form("MinvUS+%s%sMix",bin->AsString().Data(),signFlagMinv[j].Data());
+                        // Pointer to the histo from histo collection (Yes it is discusting )
+                        if ( OC()->Histo(idMinv.Data(),hnameraw.Data()) ) hTableMinv[j] = static_cast<TH1*>(OC()->Histo(idMinv.Data(),hnameraw.Data())->Clone());
+                        else { AliError(Form("Could not find histo %s/%s",idMinv.Data(),hnameraw.Data())); continue ; }
+
+                        if ( OC()->Histo(idMinv.Data(),hnamemix.Data()) ) hTableMinv[j+3] = static_cast<TH1*>(OC()->Histo(idMinv.Data(),hnamemix.Data())->Clone());
+                        else { AliError(Form("Could not find histo %s/%s",idMinv.Data(),hnamemix.Data())); continue ; }
+                      }
+
+                      // Get Dist Histo
+                      for (int j = 0; j < 3; ++j) {
+                        TString hnamePt = corrected ? Form("Pt%s_AccEffCorr_proj_0_%.2f_%.2f",signFlagDist[j].Data(),Mmin,Mmax) : Form("Pt%s_proj_0_%.2f_%.2f",signFlagDist[j].Data(),Mmin,Mmax);
+                        // TString hnamePt = corrected ? Form("Pt%s_AccEffCorr",signFlagDist[j].Data()) : Form("Pt%s",signFlagDist[j].Data());
+                        TString hnameY  = corrected ? Form("Y%s_AccEffCorr_proj_0_%.2f_%.2f",signFlagDist[j].Data(),Mmin,Mmax) : Form("Y%s_proj_0_%.2f_%.2f",signFlagDist[j].Data(),Mmin,Mmax);
+                        // TString hnameY  = corrected ? Form("Y%s_AccEffCorr",signFlagDist[j].Data()) : Form("Y%s",signFlagDist[j].Data());
+
+                        TString hnamePtMix = corrected ? Form("PtMix%s_AccEffCorr_proj_0_%.2f_%.2f",signFlagDist[j].Data(),Mmin,Mmax) : Form("PtMix%s_proj_0_%.2f_%.2f",signFlagDist[j].Data(),Mmin,Mmax);
+                        // TString hnamePtMix = corrected ? Form("PtMix%s_AccEffCorr",signFlagDist[j].Data()) : Form("PtMix%s",signFlagDist[j].Data());
+                        TString hnameYMix  = corrected ? Form("YMix%s_AccEffCorr_proj_0_%.2f_%.2f",signFlagDist[j].Data(),Mmin,Mmax) : Form("YMix%s_proj_0_%.2f_%.2f",signFlagDist[j].Data(),Mmin,Mmax);
+                        // TString hnameYMix  = corrected ? Form("YMix%s_AccEffCorr",signFlagDist[j].Data()) : Form("YMix%s",signFlagDist[j].Data());
+
+                        // Pointer to the histo from histo collection (Yes it is discusting )
+                        if ( OC()->GetObject(idDist.Data(),hnamePt.Data()) ){
+                          hTableDistRaw[j] = static_cast<TH1*>(OC()->Histo(idDist.Data(),hnamePt.Data())->Clone());
+                        } else {
+                          AliError(Form("Could not find GetObject %s/%s",idDist.Data(),hnamePt.Data()));
+                          continue ;
+                        }
+
+                        if ( OC()->GetObject(idDist.Data(),hnameY.Data()) ) {
+                          hTableDistRaw[j+3] = static_cast<TH1*>(OC()->Histo(idDist.Data(),hnameY.Data())->Clone());
+                        } else {
+                          AliError(Form("Could not find GetObject %s/%s",idDist.Data(),hnameY.Data()));
+                          continue ;
+                        }
+
+                        if ( OC()->GetObject(idDist.Data(),hnamePtMix.Data()) ){
+                          hTableDistMix[j] = static_cast<TH1*>(OC()->Histo(idDist.Data(),hnamePtMix.Data())->Clone());
+                        } else {
+                          AliError(Form("Could not find GetObject %s/%s",idDist.Data(),hnamePtMix.Data()));
+                          continue ;
+                        }
+
+                        if ( OC()->GetObject(idDist.Data(),hnameYMix.Data()) ) {
+                          hTableDistMix[j+3] = static_cast<TH1*>(OC()->Histo(idDist.Data(),hnameYMix.Data())->Clone());
+                        } else {
+                          AliError(Form("Could not find GetObject %s/%s",idDist.Data(),hnameYMix.Data()));
+                          continue ;
+                        }
+                      }
+                      // check if we have all the histo
+                      Bool_t okAllHisto = kTRUE;
+                      for (int i = 0; i < 3; ++i)
+                      {
+                        if ( !hTableMinv[i]    || !hTableMinv[i+3])   okAllHisto =kFALSE;
+                        if ( !hTableDistRaw[i] || !hTableDistRaw[i+3])okAllHisto =kFALSE;
+                        if ( !hTableDistMix[i] || !hTableDistMix[i+3])okAllHisto =kFALSE;
+                      }
+                      if(!okAllHisto) continue;
+
+                      // --- remove background and make ratio ---
+
+                      for (int i = 0; i < 3; ++i) {
+                        if ( i==0 ) {
+                          // Make errors by hands in case of empty entries
+                          for (int j = 0; j < hTableMinv[i]->GetEntries(); ++j){
+                            Double_t binContent = hTableMinv[i]->GetBinContent(j);
+                            Double_t binError   = hTableMinv[i]->GetBinError(j);
+                            if(binContent  == 0. && binError==0. ){
+                              hTableMinv[i]->SetBinContent(j,0.);
+                              hTableMinv[i]->SetBinError(j,1.);
+                            }
+                          }
+                          hTableMinv[i]->Add(hTableMinv[i+3],-1); // Norm MinvMix histo
+                          hTableMinv[i]->SetName(Form("%s_wbck",hTableMinv[i]->GetName())); // Norm MinvMix histo
+                        }
+                        else {
+                          hTableMinv[i]->Divide(hTableMinv[i+3]); // Norm pt and rapidy mix histo
+                          hTableMinv[i]->SetName(Form("%s_ratio",hTableMinv[i]->GetName())); // Norm MinvMix histo
+                        }
+                      }
+
+                      for (int i = 0; i < 6; ++i) {
+                        hTableDistRaw[i]->Divide(hTableDistMix[i]); // Norm MinvMix histo
+                        hTableDistRaw[i]->SetName(Form("%s_ratio",hTableDistMix[i]->GetName())); // Norm MinvMix histo
+                      }
+
+                      // save results in mergeable collection
+                      for (int i = 0; i < 6; ++i){
+                        o = 0x0;
+                        // Store mix histo
+                        if ( i<3 ) {
+                          o = fMergeableCollection->GetObject(idMinv.Data(),hTableMinv[i]->GetName());
+                          AliDebug(1,Form("----idMinv=%s o=%p",idMinv.Data(),o));
+
+                          if (o) fMergeableCollection->Remove(Form("%s/%s",idMinv.Data(),hTableMinv[i]->GetName()));
+
+                          Bool_t adoptOK = fMergeableCollection->Adopt(idMinv.Data(),hTableMinv[i]);
+
+                          if ( adoptOK ) std::cout << "\n" << "+++histo " << hTableMinv[i]->GetName() << " adopted in " << idMinv.Data() << std::endl;
+                          else AliError(Form("Could not adopt histo %s",hTableMinv[i]->GetName()));
+                        }
+
+                        o = 0x0;
+                        if ( hTableDistRaw[i] ) {
+                          o = fMergeableCollection->GetObject(idDist.Data(),hTableDistRaw[i]->GetName());
+                          AliDebug(1,Form("----idDist=%s o=%p",idDist.Data(),o));
+
+                          if (o) fMergeableCollection->Remove(Form("%s/%s",idDist.Data(),hTableDistRaw[i]->GetName()));
+
+                          Bool_t adoptOK = fMergeableCollection->Adopt(idDist.Data(),hTableDistRaw[i]);
+
+                          if ( adoptOK ) std::cout << "\n" << "+++histo " << hTableDistRaw[i]->GetName() << " adopted in " << idDist.Data() << std::endl;
+                          else AliError(Form("Could not adopt histo %s",hTableDistRaw[i]->GetName()));
+                        }
+                      }
+
+                       // clean pointers
+                       for (int i = 0; i < 6; ++i)
+                       {
+                          if(hTableMinv[i])hTableMinv[i] = 0x0;
+                          if(hTableDistRaw[i])hTableDistRaw[i] = 0x0;
+                          if(hTableDistMix[i])hTableDistMix[i] = 0x0;
+                       }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    Update();
+
+    delete eventTypeArray;
+    delete eventTypeMixArray;
+    delete triggerMixArray;
+    delete pairCutArray;
+    delete centralityArray;
+    delete triggerArray;
+
+    return;
+}
+
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::DrawMinv(const char* type,const char* particle,const char* trigger,const char* eventType,const char* pairCut,const char* centrality,const char* subresultname,const char* flavour) const
+{
+  /**
+  * @brief   Draw minv spectra
+  *
+  * @param type          'minv','mpt'...
+  * @param particle      particle name
+  * @param trigger       [description]
+  * @param eventType     [description]
+  * @param pairCut       [description]
+  * @param centrality    [description]
+  * @param subresultname If one wants to draw one/several specific results.
+  * @param flavour       [description]
+  */
 
   if (!OC() || !BIN()) return;
 
@@ -966,9 +1130,15 @@ void AliAnalysisMuMu::DrawMinv(const char* type,
 //_____________________________________________________________________________
 void AliAnalysisMuMu::DrawMinv(const char* type, const char* particle, const char* flavour, const char* subresultname) const
 {
-  /// Draw minv spectra for binning of given type
-
-  //  AliWarning("Reimplement me!");
+  /**
+  * @brief   Draw minv spectra for binning of given type
+  * @details Need to be reimplemented !
+  *
+  * @param type          'minv','mpt'...
+  * @param particle      particle name
+  * @param flavour       [description]
+  * @param subresultname If one wants to draw one/several specific results.
+  */
 
   if (!fConfig)
   {
@@ -1042,330 +1212,328 @@ void AliAnalysisMuMu::ExecuteCanvasEvent(Int_t event, Int_t /*px*/, Int_t /*py*/
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::RAAasGraphic(const char* particle,
-                                   const char* binType,
-                                   const char* externfile,
-                                   const char* externfile2,
-                                   const char* RefCent,
-                                   Bool_t print,
-                                   Bool_t AccEffCorr
-                                   )const
+void AliAnalysisMuMu::RAAasGraphic(const char* particle,const char* binType,const char* externfile,const char* externfile2,const char* RefCent,Bool_t print,Bool_t AccEffCorr)const
 {
-    ///
-    /// Function to use after fitting procedure ( Jpsi() for instance ).
-    /// Loops over all combination of /eventype/trigger/centrality (etc.), compute, store and print RAA on terminal.
-    /// <binType> can be either "PT"/"Y"/"INTEGRATED" for the moment.
-    ///
-    /// Some comments: In case of PT/Y/CENTRALITY(single bin), the method implemented in AliAnalysisMuMuSpectraCapsulePbPb does the job, but for RAAvsCENTRALITY,
-    /// we have to create a new TGraph (see inside for details)
-    ///
+  /**
+   * @brief Compute, store and print R_AA
+   * @details Should be used after a fit process (FitJpsi() for instance). Work is delegated to a AliAnalysisMuMuSpectraCapsule class according to beam year.
+   *
+   * @param particle    particle name
+   * @param binType     [description]
+   * @param externfile  Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+   * @param externfile2 Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+   * @param RefCent     Centrality bin from which we get the number of trigger in the counter collection. V0M_00.00_00.90 by default
+   * @param print       Print error details
+   * @param AccEffCorr  Spectra type
+  */
+  if (!OC() || !CC())
+      {
+      AliError("No mergeable/counter collection. Consider Upgrade()");
+      return ;
+      }
+  else
+      {
+      cout <<      " ================================================================ " << endl;
+      cout <<      "                             Computing RAA                             " << endl;
+      cout <<      " ================================================================ " << endl;
+      }
 
-    if (!OC() || !CC())
-        {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-        }
-    else
-        {
-        cout <<      " ================================================================ " << endl;
-        cout <<      "                             Computing RAA                             " << endl;
-        cout <<      " ================================================================ " << endl;
-        }
+  // Get configuration settings
+  TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
+  TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
+  TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());// to add here an entry
+  TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+  TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
+  TObjArray* particleArray    = TString(particle).Tokenize(",");
+  TObjArray* binTypeArray     = TString(binType).Tokenize(",");
+  TObjArray* bins;
 
-    // Get configuration settings
-    TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
-    TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
-    TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());// to add here an entry
-    TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
-    TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
-    TObjArray* particleArray    = TString(particle).Tokenize(",");
-    TObjArray* binTypeArray     = TString(binType).Tokenize(",");
-    TObjArray* bins;
+  // Iterator for loops
+  TIter nextTrigger(triggerArray);
+  TIter nextEventType(eventTypeArray);
+  TIter nextPairCut(pairCutArray);
+  TIter nextParticle(particleArray);
+  TIter nextbinType(binTypeArray);
+  TIter nextCentrality(centralityArray);
 
-    // Iterator for loops
-    TIter nextTrigger(triggerArray);
-    TIter nextEventType(eventTypeArray);
-    TIter nextPairCut(pairCutArray);
-    TIter nextParticle(particleArray);
-    TIter nextbinType(binTypeArray);
-    TIter nextCentrality(centralityArray);
+  // Strings
+  TObjString* strigger;
+  TObjString* seventType;
+  TObjString* spairCut;
+  TObjString* sparticle;
+  TObjString* sbinType;
+  TObjString* scentrality;
 
-    // Strings
-    TObjString* strigger;
-    TObjString* seventType;
-    TObjString* spairCut;
-    TObjString* sparticle;
-    TObjString* sbinType;
-    TObjString* scentrality;
+  // Pointers
+  TGraphErrors* graph=0x0;
+  TGraphErrors* graphErr=0x0;
+  TGraphErrors* graphErrCorr=0x0;
+  TGraphErrors* graphCent=0x0;
+  TGraphErrors* graphCentErr=0x0;
+  TList* list=0x0;
+  AliAnalysisMuMuSpectra spectra=0x0;
 
-    // Pointers
-    TGraphErrors* graph=0x0;
-    TGraphErrors* graphErr=0x0;
-    TGraphErrors* graphErrCorr=0x0;
-    TGraphErrors* graphCent=0x0;
-    TGraphErrors* graphCentErr=0x0;
-    TList* list=0x0;
-    AliAnalysisMuMuSpectra spectra=0x0;
+  //Loop on particle type
+  while ( ( sparticle = static_cast<TObjString*>(nextParticle()) ) )
+      {
+      AliDebug(1,Form("particle %s",sparticle->String().Data()));
+      nextEventType.Reset();
+      // Loop on each envenType (see MuMuConfig)
+      //==============================================================================
+      while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+          {
+          AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
+          nextTrigger.Reset();
+          // Loop on each trigger (see MuMuConfig)
+          //==============================================================================
+          while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
+              {
+              AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
+              nextPairCut.Reset();
+              // Loop on each paircut (not the ones in MuMuConfig but the ones set)
+              //==============================================================================
+              while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+                  {
+                  AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
+                  nextbinType.Reset();
+                  // Loop on each type (pt or y)
+                  //==============================================================================
+                  while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
+                      {
+                      AliDebug(1,Form("---TYPE %s",sbinType->String().Data()));
 
-    //Loop on particle type
-    while ( ( sparticle = static_cast<TObjString*>(nextParticle()) ) )
-        {
-        AliDebug(1,Form("particle %s",sparticle->String().Data()));
-        nextEventType.Reset();
-        // Loop on each envenType (see MuMuConfig)
-        //==============================================================================
-        while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
-            {
-            AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
-            nextTrigger.Reset();
-            // Loop on each trigger (see MuMuConfig)
-            //==============================================================================
-            while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
-                {
-                AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
-                nextPairCut.Reset();
-                // Loop on each paircut (not the ones in MuMuConfig but the ones set)
-                //==============================================================================
-                while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
-                    {
-                    AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
-                    nextbinType.Reset();
-                    // Loop on each type (pt or y)
-                    //==============================================================================
-                    while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
-                        {
-                        AliDebug(1,Form("---TYPE %s",sbinType->String().Data()));
-
-                        //canvas
-                        TCanvas *c1 = new TCanvas;
-                        c1->Draw();
-                        //Divide canvas for pt and y bin
-                        if (!sbinType->String().Contains("INTEGRATED"))
-                        {
-                          Int_t nx(1);
-                          Int_t ny(1);
-                          Int_t nofGraph = centralityArray->GetEntries(); // # of histo
-                          if ( nofGraph == 2 ){
-                            nx=2;
-                            ny=0;
-                          }
-                          else if ( nofGraph > 2 ){
-                            ny = TMath::Nint(TMath::Sqrt(nofGraph));
-                            nx = TMath::Nint((nofGraph/ny) +0.6);
-                          }
-                          c1->Divide(nx,ny);
+                      //canvas
+                      TCanvas *c1 = new TCanvas;
+                      c1->Draw();
+                      //Divide canvas for pt and y bin
+                      if (!sbinType->String().Contains("INTEGRATED"))
+                      {
+                        Int_t nx(1);
+                        Int_t ny(1);
+                        Int_t nofGraph = centralityArray->GetEntries(); // # of histo
+                        if ( nofGraph == 2 ){
+                          nx=2;
+                          ny=0;
                         }
-                        else if (sbinType->String().Contains("INTEGRATED")){
-                          graphCent = new TGraphErrors(centralityArray->GetEntries());
-                          graphCent->SetMinimum(0.);
-                          graphCent->SetMaximum(1.2);
-                          graphCentErr = new TGraphErrors(centralityArray->GetEntries());
-                          graphCentErr->SetMinimum(0.);
-                          graphCentErr->SetMaximum(1.2);
+                        else if ( nofGraph > 2 ){
+                          ny = TMath::Nint(TMath::Sqrt(nofGraph));
+                          nx = TMath::Nint((nofGraph/ny) +0.6);
                         }
-                        gStyle->SetOptStat(0);
+                        c1->Divide(nx,ny);
+                      }
+                      else if (sbinType->String().Contains("INTEGRATED")){
+                        graphCent = new TGraphErrors(centralityArray->GetEntries());
+                        graphCent->SetMinimum(0.);
+                        graphCent->SetMaximum(1.2);
+                        graphCentErr = new TGraphErrors(centralityArray->GetEntries());
+                        graphCentErr->SetMinimum(0.);
+                        graphCentErr->SetMaximum(1.2);
+                      }
+                      gStyle->SetOptStat(0);
 
-                        Int_t n=1; // counter
-                        nextCentrality.Reset();
-                        // Loop on each centrality (not the ones in MuMuConfig but the ones set)
-                        //==============================================================================
-                        while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) ) {
-                            AliDebug(1,Form("---CENTRALITY %s",scentrality->String().Data()));
+                      Int_t n=1; // counter
+                      nextCentrality.Reset();
+                      // Loop on each centrality (not the ones in MuMuConfig but the ones set)
+                      //==============================================================================
+                      while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) ) {
+                          AliDebug(1,Form("---CENTRALITY %s",scentrality->String().Data()));
 
-                            //________Get spectra
-                            TString spectraPath= Form("/%s/%s/%s/%s/%s-%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),sparticle->String().Data(),sbinType->String().Data());
-                            if (AccEffCorr)spectraPath+="-AccEffCorr";
+                          //________Get spectra
+                          TString spectraPath= Form("/%s/%s/%s/%s/%s-%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),sparticle->String().Data(),sbinType->String().Data());
+                          if (AccEffCorr)spectraPath+="-AccEffCorr";
 
-                            AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
-                            if(!spectra){//protection
-                              AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
+                          AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
+                          if(!spectra){//protection
+                            AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
+                            return;
+                          }
+                          //________
+
+                          //________Get Trigger sum
+                          Int_t NofMUL = TMath::Nint(CC()->GetSum(Form("trigger:%s/event:%s/centrality:%s",strigger->String().Data(),seventType->String().Data(),RefCent)));
+                          //________
+
+                          AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,externfile,externfile2);
+                          if(!capsule) continue;
+                          AliDebug(1,Form("Spectra = %p",capsule));
+                          if(print)capsule->SetPrintFlag();
+
+                          // Get Graph with RAA results
+                          list = capsule->RAAasGraphic(NofMUL);
+
+                          if(!list) continue;
+                          AliDebug(1,Form("list = %p",list));
+
+                          // Draw Graph according to bin type
+                          if (!sbinType->String().Contains("INTEGRATED")){ // PT/Y/single centrality
+                            // Select subcanvas
+                            c1->cd(n);
+                            //legend
+                            TLegend * leg = new TLegend(0.2,0.8,0.90,0.9);
+                            leg->SetTextSize(0.04);
+                            leg->SetHeader(Form("ALICE, Pb-Pb #sqrt{s_{NN}}=5.02 TeV, L_{int}=222 #mub^{-1}, %s",scentrality->String().Data()));
+                            //Draw it
+                            graph = static_cast<TGraphErrors*>(list->At(0)->Clone());
+                            graphErr = static_cast<TGraphErrors*>(list->At(1)->Clone());
+                            graphErrCorr = static_cast<TGraphErrors*>(list->At(2)->Clone());
+                            if (!graph || ! graphErr) {
+                                printf("Did not find graph in the list");
+                                return;
+                            }
+
+                            leg->AddEntry(graph,"Inclusive J/#psi","pe");
+                            leg->AddEntry(graphErr,"Syst. uncertainty","f");
+
+                            //Graph1
+                            graph->GetYaxis()->SetRangeUser(0,1.41);
+                            graph->Draw("ap");
+                            // Graph Syst.
+                            graphErr->SetFillColorAlpha(4,0.);
+                            graphErr->Draw("same5");
+                            leg->Draw();
+
+                            // Global box
+                            Double_t global = graphErrCorr->GetErrorY(0)/100.;
+                            TBox *globalBox =0x0;
+                            if(sbinType->String().Contains("PT"))globalBox= new TBox(11.5,1.-global,12,1+global);
+                            if(sbinType->String().Contains("Y"))globalBox= new TBox(-2.6,1.-global,-2.5,1+global);
+                            globalBox->SetFillColor(4);
+                            globalBox->Draw("F");
+                            printf("Global syst : %f\n",global );
+
+                            TLine *l = 0x0;
+                            if(sbinType->String().Contains("PT"))l = new TLine(0.,1.,12.,1.);
+                            if(sbinType->String().Contains("PT"))l = new TLine(-4.0,1.,-2.5,1.);
+                            l->SetLineStyle(2);
+                            l->Draw("same");
+
+                          }
+
+                          else {// Integrated case
+
+                            if(!sbinType->String().Contains("INTEGRATED")) {// Protection
+                              cout << "Cannot plot INTEGRATED  ! Check it please :) " << endl;
+                              delete c1;
                               return;
                             }
-                            //________
 
-                            //________Get Trigger sum
-                            Int_t NofMUL = TMath::Nint(CC()->GetSum(Form("trigger:%s/event:%s/centrality:%s",strigger->String().Data(),seventType->String().Data(),RefCent)));
-                            //________
+                            Double_t x=0;
+                            Double_t y=0;
+                            graph = static_cast<TGraphErrors*>(list->At(0)->Clone());
+                            graphErr = static_cast<TGraphErrors*>(list->At(1)->Clone());
+                            graphErrCorr = static_cast<TGraphErrors*>(list->At(2)->Clone());
 
-                            AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,externfile,externfile2);
-                            if(!capsule) continue;
-                            AliDebug(1,Form("Spectra = %p",capsule));
-                            if(print)capsule->SetPrintFlag();
-
-                            // Get Graph with RAA results
-                            list = capsule->RAAasGraphic(NofMUL);
-
-                            if(!list) continue;
-                            AliDebug(1,Form("list = %p",list));
-
-                            // Draw Graph according to bin type
-                            if (!sbinType->String().Contains("INTEGRATED")){ // PT/Y/single centrality
-                              // Select subcanvas
-                              c1->cd(n);
-                              //legend
-                              TLegend * leg = new TLegend(0.2,0.8,0.90,0.9);
-                              leg->SetTextSize(0.04);
-                              leg->SetHeader(Form("ALICE, Pb-Pb #sqrt{s_{NN}}=5.02 TeV, L_{int}=222 #mub^{-1}, %s",scentrality->String().Data()));
-                              //Draw it
-                              graph = static_cast<TGraphErrors*>(list->At(0)->Clone());
-                              graphErr = static_cast<TGraphErrors*>(list->At(1)->Clone());
-                              graphErrCorr = static_cast<TGraphErrors*>(list->At(2)->Clone());
-                              if (!graph || ! graphErr) {
-                                  printf("Did not find graph in the list");
-                                  return;
-                              }
-
-                              leg->AddEntry(graph,"Inclusive J/#psi","pe");
-                              leg->AddEntry(graphErr,"Syst. uncertainty","f");
-
-                              //Graph1
-                              graph->GetYaxis()->SetRangeUser(0,1.41);
-                              graph->Draw("ap");
-                              // Graph Syst.
-                              graphErr->SetFillColorAlpha(4,0.);
-                              graphErr->Draw("same5");
-                              leg->Draw();
-
-                              // Global box
-                              Double_t global = graphErrCorr->GetErrorY(0)/100.;
-                              TBox *globalBox =0x0;
-                              if(sbinType->String().Contains("PT"))globalBox= new TBox(11.5,1.-global,12,1+global);
-                              if(sbinType->String().Contains("Y"))globalBox= new TBox(-2.6,1.-global,-2.5,1+global);
-                              globalBox->SetFillColor(4);
-                              globalBox->Draw("F");
-                              printf("Global syst : %f\n",global );
-
-                              TLine *l = 0x0;
-                              if(sbinType->String().Contains("PT"))l = new TLine(0.,1.,12.,1.);
-                              if(sbinType->String().Contains("PT"))l = new TLine(-4.0,1.,-2.5,1.);
-                              l->SetLineStyle(2);
-                              l->Draw("same");
-
-                            }
-
-                            else {// Integrated case
-
-                              if(!sbinType->String().Contains("INTEGRATED")) {// Protection
-                                cout << "Cannot plot INTEGRATED  ! Check it please :) " << endl;
-                                delete c1;
+                            if (!graph || ! graphErr) {// Protection
+                                printf("Did not find graph in the list");
                                 return;
-                              }
-
-                              Double_t x=0;
-                              Double_t y=0;
-                              graph = static_cast<TGraphErrors*>(list->At(0)->Clone());
-                              graphErr = static_cast<TGraphErrors*>(list->At(1)->Clone());
-                              graphErrCorr = static_cast<TGraphErrors*>(list->At(2)->Clone());
-
-                              if (!graph || ! graphErr) {// Protection
-                                  printf("Did not find graph in the list");
-                                  return;
-                              }
-
-                              // Get point for each centrality
-                              Double_t dx = graph->GetErrorX(0);
-                              Double_t dy = graph->GetErrorY(0);
-                              Double_t dysys = graphErr->GetErrorY(0);
-                              graph->GetPoint(0,x,y);
-
-                              // Set them to a new graphic
-                              graphCent->SetPoint(n-1,x,y);
-                              graphCent->SetPointError(n-1,dx,dy);
-                              graphCent->SetTitle(graph->GetTitle());
-                              graphCentErr->SetPoint(n-1,x,y);
-                              graphCentErr->SetPointError(n-1,2.5,dysys);
                             }
-                          n++;
-                          delete capsule;
-                        }
-                        cout << "" << endl;
-                        if (sbinType->String().Contains("INTEGRATED")){ //Print
 
-                          graphCent->GetXaxis()->SetTitle("<N_{part}>");
-                          graphCent->GetYaxis()->SetTitle("R_{AA}");
-                          graphCent->GetYaxis()->SetRangeUser(0,1.5);
-                          graphCent->SetMarkerColor(4);
-                          graphCent->SetMarkerStyle(21);
-                          graphCentErr->SetFillColorAlpha(4,0.);
-                          graphCent->SetTitle(Form("%s/%s/%s/%s/%s",seventType->String().Data(),
-                                                   strigger->String().Data(),
-                                                   spairCut->String().Data(),
-                                                   sparticle->String().Data(),
-                                                   sbinType->String().Data()));
-                          TLegend * leg = new TLegend(0.2,0.8,0.90,0.9);
-                          leg->SetHeader("ALICE, Pb-Pb #sqrt{s_{NN}}=5.02 TeV, L_{int}=222 #mub^{-1}, PT/Y integrated");
-                          leg->SetTextSize(0.03);
-                          leg->AddEntry(graphCent,"Inclusive J/#psi","pe");
-                          leg->AddEntry(graphCentErr,"Syst. uncertainty","f");
+                            // Get point for each centrality
+                            Double_t dx = graph->GetErrorX(0);
+                            Double_t dy = graph->GetErrorY(0);
+                            Double_t dysys = graphErr->GetErrorY(0);
+                            graph->GetPoint(0,x,y);
 
-                          graphCent->Draw("ap");
-                          graphCentErr->Draw("same5");
-                          leg->Draw();
-
-                          // Global box
-                          Double_t global = graphErrCorr->GetErrorY(0)/100.;
-                          TBox *globalBox = globalBox= new TBox(420,1.-global,430,1+global);
-                          globalBox->SetFillColor(4);
-                          globalBox->Draw("F");
-                          printf("Global syst : %f\n",global );
-
-                          TLine *l = new TLine(0.,1.,12.,1.);
-                          l->SetLineStyle(2);
-                          l->Draw("same");
-                        }
-                        //________ Update resultes in Mergeable collection
-                        TString id(Form("/RAA-%s/%s/%s/%s/%s",strigger->String().Data(),seventType->String().Data(),spairCut->String().Data(),sbinType->String().Data(),sparticle->String().Data()));
-                        TObject* o = 0x0;
-
-                        if (graph){// first graph
-
-                          o = fMergeableCollection->GetObject(Form("%s/%s",id.Data(),graph->GetName()));
-                          if (o){
-                            AliWarning(Form("Replacing %s/%s",id.Data(),graph->GetName()));
-                            fMergeableCollection->Remove(Form("%s/%s",id.Data(),graph->GetName()));
+                            // Set them to a new graphic
+                            graphCent->SetPoint(n-1,x,y);
+                            graphCent->SetPointError(n-1,dx,dy);
+                            graphCent->SetTitle(graph->GetTitle());
+                            graphCentErr->SetPoint(n-1,x,y);
+                            graphCentErr->SetPointError(n-1,2.5,dysys);
                           }
+                        n++;
+                        delete capsule;
+                      }
+                      cout << "" << endl;
+                      if (sbinType->String().Contains("INTEGRATED")){ //Print
 
-                          Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),graph);
+                        graphCent->GetXaxis()->SetTitle("<N_{part}>");
+                        graphCent->GetYaxis()->SetTitle("R_{AA}");
+                        graphCent->GetYaxis()->SetRangeUser(0,1.5);
+                        graphCent->SetMarkerColor(4);
+                        graphCent->SetMarkerStyle(21);
+                        graphCentErr->SetFillColorAlpha(4,0.);
+                        graphCent->SetTitle(Form("%s/%s/%s/%s/%s",seventType->String().Data(),
+                                                 strigger->String().Data(),
+                                                 spairCut->String().Data(),
+                                                 sparticle->String().Data(),
+                                                 sbinType->String().Data()));
+                        TLegend * leg = new TLegend(0.2,0.8,0.90,0.9);
+                        leg->SetHeader("ALICE, Pb-Pb #sqrt{s_{NN}}=5.02 TeV, L_{int}=222 #mub^{-1}, PT/Y integrated");
+                        leg->SetTextSize(0.03);
+                        leg->AddEntry(graphCent,"Inclusive J/#psi","pe");
+                        leg->AddEntry(graphCentErr,"Syst. uncertainty","f");
 
-                          if ( adoptOK ) std::cout << "+++RAA graph " << graph->GetName() << " adopted" << std::endl;
-                          else AliError(Form("Could not adopt RAA grap %s",graph->GetName()));
+                        graphCent->Draw("ap");
+                        graphCentErr->Draw("same5");
+                        leg->Draw();
+
+                        // Global box
+                        Double_t global = graphErrCorr->GetErrorY(0)/100.;
+                        TBox *globalBox = globalBox= new TBox(420,1.-global,430,1+global);
+                        globalBox->SetFillColor(4);
+                        globalBox->Draw("F");
+                        printf("Global syst : %f\n",global );
+
+                        TLine *l = new TLine(0.,1.,12.,1.);
+                        l->SetLineStyle(2);
+                        l->Draw("same");
+                      }
+                      //________ Update results in Mergeable collection
+                      TString id(Form("/RAA-%s/%s/%s/%s/%s",strigger->String().Data(),seventType->String().Data(),spairCut->String().Data(),sbinType->String().Data(),sparticle->String().Data()));
+                      TObject* o = 0x0;
+
+                      if (graph){// first graph
+
+                        o = fMergeableCollection->GetObject(Form("%s/%s",id.Data(),graph->GetName()));
+                        if (o){
+                          AliWarning(Form("Replacing %s/%s",id.Data(),graph->GetName()));
+                          fMergeableCollection->Remove(Form("%s/%s",id.Data(),graph->GetName()));
                         }
-                        if (graphCent){// second graph
-                          o = fMergeableCollection->GetObject(Form("%s/%s",id.Data(),graphCent->GetName()));
-                          if (o){
-                            AliWarning(Form("Replacing %s/%s",id.Data(),graphCent->GetName()));
-                            fMergeableCollection->Remove(Form("%s/%s",id.Data(),graphCent->GetName()));
-                          }
 
-                          Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),graphCent);
+                        Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),graph);
 
-                          if ( adoptOK ) std::cout << "+++RAA graph " << graphCent->GetName() << " adopted" << std::endl;
-                          else AliError(Form("Could not adopt RAA graph %s",graphCent->GetName()));
+                        if ( adoptOK ) std::cout << "+++RAA graph " << graph->GetName() << " adopted" << std::endl;
+                        else AliError(Form("Could not adopt RAA grap %s",graph->GetName()));
+                      }
+                      if (graphCent){// second graph
+                        o = fMergeableCollection->GetObject(Form("%s/%s",id.Data(),graphCent->GetName()));
+                        if (o){
+                          AliWarning(Form("Replacing %s/%s",id.Data(),graphCent->GetName()));
+                          fMergeableCollection->Remove(Form("%s/%s",id.Data(),graphCent->GetName()));
                         }
-                        //________
-                        }
-                    }
-                }
-            }
-        }
-    delete list;
-    delete eventTypeArray ;
-    delete triggerArray ;
-    delete fitfunctionArray ;
-    delete pairCutArray ;
-    delete centralityArray ;
-    delete particleArray ;
-    delete binTypeArray ;
 
-    return ;
+                        Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),graphCent);
 
+                        if ( adoptOK ) std::cout << "+++RAA graph " << graphCent->GetName() << " adopted" << std::endl;
+                        else AliError(Form("Could not adopt RAA graph %s",graphCent->GetName()));
+                      }
+                      //________
+                      }
+                  }
+              }
+          }
+      }
+  delete list;
+  delete eventTypeArray ;
+  delete triggerArray ;
+  delete fitfunctionArray ;
+  delete pairCutArray ;
+  delete centralityArray ;
+  delete particleArray ;
+  delete binTypeArray ;
+
+  return ;
 }
 
 //_____________________________________________________________________________
-TString
-AliAnalysisMuMu::ExpandPathName(const char* file)
+TString AliAnalysisMuMu::ExpandPathName(const char* file)
 {
-  // An expand method that lives alien URL as they are
+/**
+ * @brief An expand method that lives alien URL as they are
+ *
+ * @param file [description]
+ */
   TString sfile;
 
   if ( !sfile.BeginsWith("alien://") )
@@ -1384,7 +1552,11 @@ AliAnalysisMuMu::ExpandPathName(const char* file)
 //_____________________________________________________________________________
 void AliAnalysisMuMu::TwikiOutputFnorm(const char* series) const
 {
-  /// make a twiki-compatible output of the Fnorm factor(s)
+/**
+ * @brief  Make a twiki-compatible output of the Fnorm factor(s) ( Outdated ?)
+ *
+ * @param series [description]
+ */
   TObjArray* what = TString(series).Tokenize(",");
   TObjString* s;
   TObjArray graphs;
@@ -1498,17 +1670,27 @@ void AliAnalysisMuMu::TwikiOutputFnorm(const char* series) const
 }
 
 //_____________________________________________________________________________
-TFile*
-AliAnalysisMuMu::FileOpen(const char* file)
+TFile* AliAnalysisMuMu::FileOpen(const char* file)
 {
-    /// Open a file after expansion of its name
-
+/**
+ * @brief Open a file after expansion of its name
+ *
+ * @param file [description]
+ * @return [description]
+ */
     return TFile::Open(ExpandPathName(file).Data());
 }
 
 //_____________________________________________________________________________
 TString AliAnalysisMuMu::First(const TString& list) const
 {
+/**
+ * @brief [brief description]
+ * @details [long description]
+ *
+ * @param list [description]
+ * @return [description]
+ */
     TObjArray* a = list.Tokenize(",");
     if ( a->GetLast() < 0 ) return "";
 
@@ -1520,31 +1702,53 @@ TString AliAnalysisMuMu::First(const TString& list) const
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectra*
-AliAnalysisMuMu::FitParticle(const char* particle,
-                             const char* trigger,
-                             const char* eventType,
-                             const char* pairCut,
-                             const char* centrality,
-                             const AliAnalysisMuMuBinning& binning,
-                             const char* spectraType,
-                             Bool_t corrected)
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::FitParticle(const char* particle,const char* trigger,const char* eventType,const char* pairCut,const char* centrality,const AliAnalysisMuMuBinning& binning,Bool_t corrected,const TString* fitMethod,const char* flavour,const char* histoType)
 {
-  // Fit the minv/mpt spectra to find the given particle
-  // Returns an array of AliAnalysisMuMuResult objects
-
-  TProfile::Approximate(); //To avoid bins with error=0 due to low statstics
+/**
+ * @brief Fit minv histo
+ * @details Create and store an AliAnalysisMuMuResult classes ( for the moment, only AliAnalysisMuMuJpsiResult is used and implemented)
+ * which is the class who actually does process the fit.
+ *
+ * @param particle     particle name
+ * @param trigger     [description]
+ * @param eventType   [description]
+ * @param pairCut     [description]
+ * @param centrality  [description]
+ * @param binning     [description]
+ * @param corrected   [description]
+ * @param fitMethod   '' or 'mix'
+ * @return            AliAnalysisMuMuSpectra to be handled by the owner
+ */
+  // To avoid bins with error=0 due to low statstics
+  TProfile::Approximate();
 
   static int n(0);
 
-  //Check Binning list
+  Bool_t mix = kFALSE;
+  TString* id(0x0);
+  TString* refTrigger(0x0);
+  TString* refEvent(0x0);
+  TObjString* fitType;
+
+  // Get number of runs and store it in nruns
+  TObjArray   * runs = fCounterCollection->GetKeyWords("run").Tokenize(",");
+  Int_t nruns = runs->GetEntries();
+  delete runs;
+
+  // ---- Some cross check  with the counter collection----
+
+  // Check Binning list
   TObjArray* bins = binning.CreateBinObjArray(particle);
   if (!bins){
     AliError(Form("Did not get any bin for particle %s",particle));
     return 0x0;
   }
 
-  //Check trigger list
+  // to avoid case sensitive stuff
+  TString seventType(eventType);
+  if(seventType.Contains("PSINT7inMUON")) seventType = "PSINT7INMUON";
+
+  // Check trigger list
   TObjArray* triggers = fCounterCollection->GetKeyWords("trigger").Tokenize(",");
   if ( !triggers->FindObject(trigger) ){
     AliError(Form("Did not find trigger %s",trigger));
@@ -1554,145 +1758,171 @@ AliAnalysisMuMu::FitParticle(const char* particle,
   }
   delete triggers;
 
-  //Check event list
+  // Check event list
   TObjArray* events = fCounterCollection->GetKeyWords("event").Tokenize(",");
-  if ( !events->FindObject(eventType) ){
-    AliError(Form("Did not find eventType %s",eventType));
+  if ( !events->FindObject(seventType.Data()) ){
+    AliError(Form("Did not find eventType %s",seventType.Data()));
     delete bins;
     delete events;
     return 0x0;
   }
   delete events;
 
-  Int_t ntrigger = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s",trigger,eventType)));
+  Int_t ntrigger = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s",trigger,seventType.Data())));
 
-  //Check trigger
-  if  (ntrigger<=0) {
-    AliError(Form("No trigger for trigger:%s/event:%s",trigger,eventType));
+  // Check trigger
+  if  ( ntrigger<=0 ){
+    AliError(Form("No trigger for trigger:%s/event:%s",trigger,seventType.Data()));
     delete bins;
     return 0x0;
   }
 
-  //Get number of runs and store it in nruns
-  TObjArray* runs = fCounterCollection->GetKeyWords("run").Tokenize(",");
-  Int_t nruns = runs->GetEntries();
-  delete runs;
+  // ---- Here we select triggers and the fit method (mix or not) ----
+
+  // Set mix flag
+  if ( fitMethod->Contains("mix") && !IsSimulation() ) mix = kTRUE;
 
   // Create ID for the fit which will be used to name results
-  TString id(Form("/%s/%s/%s/%s",eventType,trigger,centrality,pairCut));
+  if ( !mix ) id = new TString(Form("/%s/%s/%s/%s",eventType,trigger,centrality,pairCut));
+  else {
+    refTrigger = new TString(Form("%s",Config()->First(Config()->RefMixTriggerKey(),IsSimulation()).Data()));
+    refEvent   = new TString(Form("%s",Config()->First(Config()->RefMixEventSelectionKey(),IsSimulation()).Data()));
+    id         = new TString(Form("/MIX/%s_%s/%s/%s/%s/%s",refEvent->Data(),refTrigger->Data(),eventType,trigger,centrality,pairCut));
+  }
 
-  //  binning.Print();
-
-  //The result pointer, will be return at the end
+  // The result pointer, will be return at the end
   AliAnalysisMuMuSpectra* spectra(0x0);
+  TString spectraName(binning.GetName());
+  TString sFlavour(flavour);
+  if( !sFlavour.IsNull()) spectraName += Form("-%s",flavour);
+  if ( corrected )   spectraName += "-AccEffCorr";
 
-  // The binning pointer, which point at Pt binning, Y binning etc.
+  // ---- MAIN PART : Loop on every binning range ----
+
   AliAnalysisMuMuBinning::Range* bin;
   TIter next(bins);
-
-  // Create an array (fitTypeArray) pointing on AliAnalysisMuMuConfig and store kFitTypeList.  Also create pointers and strings for several pointers
-  TObjArray* fitTypeArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());
-  TIter nextFitType(fitTypeArray);// Iterater for every fit types, i.e fitting functions and their config.
-  TObjString* fitType;// To point to the array (??)
-  TString flavour;// Flavour of the binning (ex: "JAVI","IGOR" ...)
-  TString sSpectraType(spectraType);// Make spectratype a string
-
-  // Add some element to ID
-  TString spectraName(binning.GetName());
-  if ( flavour.Length() > 0 ){
-    spectraName += "-";
-    spectraName += flavour;
-  }
-  if ( corrected ){
-    spectraName += "-";
-    spectraName += "AccEffCorr";
-  }
-
-  //  Int_t binN(0);
-
-  //MAIN PART : Loop on every binning range
-  //==============================================================================
+  next.Reset();
   while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
   {
+    Int_t added(0);
+    AliAnalysisMuMuJpsiResult* r    = 0x0;
+    Bool_t adoptOk           = kFALSE;
+    Bool_t adoptMix          = kFALSE;
 
-    // Choose correct histo type with <spectraType> and set it in <hname>
+    TH1* histo(0x0);
+
+    // ---- Here we select the histo name we want/need to proceed the fit ----
+
+    // Get fitType as a string
+    TString sHistoType(histoType);
+
+    // Select name histo
     TString hname;
-    if (!sSpectraType.CompareTo("minv"))hname = corrected ? Form("MinvUS+%s_AccEffCorr",bin->AsString().Data()) : Form("MinvUS+%s",bin->AsString().Data());
-    else if (!sSpectraType.CompareTo("mpt"))hname = corrected ? Form("MeanPtVsMinvUS%s",bin->AsString().Data()) : Form("MeanPtVsMinvUS%s",bin->AsString().Data());
+    TString mixflag1 = mix ? "_wbck" : "" ;
+    if( sHistoType.Contains("minv"))
+      hname = corrected ? Form("MinvUS_AccEffCorr+%s%s",bin->AsString().Data(),mixflag1.Data())  : Form("MinvUS+%s%s",bin->AsString().Data(),mixflag1.Data());
+    else if( sHistoType.Contains("mpt") && !sHistoType.Contains("mpt2") )
+      hname = corrected ? Form("MeanPtVsMinvUS_AccEffCorr+%s%s",bin->AsString().Data(),mixflag1.Data()) : Form("MeanPtVsMinvUS+%s%s",bin->AsString().Data(),mixflag1.Data());
+    else if( sHistoType.Contains("mpt2") )
+      hname = corrected ? Form("MeanPtSquareVsMinvUS_AccEffCorr+%s%s",bin->AsString().Data(),mixflag1.Data()) : Form("MeanPtSquareVsMinvUS+%s%s",bin->AsString().Data(),mixflag1.Data());
     else {
-      AliError("Wrong spectra type choice: Posibilities are: 'minv' or 'mpt' ");
-      return 0x0;
+      AliError("Wrong spectra type choice: Possibilities are: 'minv' or 'mpt' ");
+      continue;
     }
 
     // Print the fitting process on the terminal
     TString isCorr(corrected ? " AccEffCorr " : " ");
+    isCorr += ( mix )  ? " with mixing event method " : " ";
     std::cout << "---------------------------------//---------------------------------" << std::endl;
-    std::cout << "Fitting" << isCorr.Data() << sSpectraType.Data() << " spectra in " << id.Data() << std::endl;
+    std::cout << "Fitting" << isCorr.Data() << sHistoType.Data() << " spectra in " << id->Data() << std::endl;
 
-    // Pointer to the histo from histo collection
-    TH1* histo = OC()->Histo(id.Data(),hname.Data());
-    if (!histo) {
-      AliError(Form("Could not find histo %s",hname.Data()));
+    // Finally gets it
+    if ( OC()->Histo(id->Data(),hname.Data()) ) histo = static_cast<TH1*>(OC()->Histo(id->Data(),hname.Data())->Clone(Form("%s%d",sHistoType.Data(),n++)));
+    if ( !histo ) {
+      AliError(Form("Could not find histo %s/%s",id->Data(),hname.Data()));
       continue;
     }
 
-    // Make a clone of the histo to work with. Pointer changes for every iteration (n++)
-    histo = static_cast<TH1*>(histo->Clone(Form("%s%d",sSpectraType.Data(),n++)));
-
-    const char* particleTmp = IsSimulation() ? GetParticleName() : "JPsi"; //At some point particleTmp should become particle (but for now particle is always = "psi")
-
+    // At some point particleTmp should become particle (but for now particle is always = "psi")
+    const char* particleTmp = IsSimulation() ? GetParticleName() : "JPsi";
     cout << "particleTmp =" << particleTmp << endl;
+    TString sparticleTmp(particleTmp);
 
-    TString sparticleTmp(particleTmp);// Make a string of it
-
-    // Object that fit/work on the histo
-    AliAnalysisMuMuJpsiResult* r = new AliAnalysisMuMuJpsiResult(particleTmp,
-                                                                 *histo, // Result for current bin
-                                                                 trigger,
-                                                                 eventType,
-                                                                 pairCut,
-                                                                 centrality,
-                                                                 *bin);
-
+    // Create the AliAnalysisMuMuResults that will fit the JPsi
+    r = new AliAnalysisMuMuJpsiResult(particleTmp,*histo,trigger,eventType,pairCut,centrality,*bin);
+    if ( !r ){
+      AliError("Cannot create a AliAnalysisMuMuJpsiResult");
+      continue;
+    }
     r->SetNofTriggers(ntrigger);
     r->SetNofRuns(nruns);
 
+    // Create an array (fitTypeArray) pointing on AliAnalysisMuMuConfig and store kFitTypeList.  Also create pointers and strings for several pointers
+    TObjArray* fitTypeArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());
+    TIter nextFitType(fitTypeArray);  // Iterater for every fit types, i.e fitting functions and their config.
     nextFitType.Reset();
-
-    Int_t added(0);
 
     // Loop on every fittype and create a subresult inside the spectra.
     while ( ( fitType = static_cast<TObjString*>(nextFitType())) )
     {
-      // In this loop we create a Subresult for each fit inside the Result for current bin (AddFit will do)
-      TString sFitType(fitType->String());// Get fitType as a string
-
-      if ( !sFitType.Contains(sSpectraType.Data()) ) continue;// Checkpoint
-
-      AliDebug(1,Form("<<<<<< fitType=%s bin=%s",sFitType.Data(),bin->Flavour().Data()));
+      AliDebug(1,Form("<<<<<< fitType=%s bin=%s",fitType->String().Data(),bin->Flavour().Data()));
 
       std::cout << "" << std::endl;
       std::cout << "---------------" << "Fit " << added + 1 << "------------------" << std::endl;
-      std::cout << "Fitting " << hname.Data() << " with " << sFitType.Data() << std::endl;
+      if(!mix) std::cout << "Fitting " << hname.Data() << " with " << fitType->String().Data() << std::endl;
+      else     std::cout << "Fitting " << hname.Data() << " with " << fitType->String().Data() << " and after remmoving backround from mixing " << std::endl;
       std::cout << "" << std::endl;
 
-      // Hard coded until find a smart wayto do it
-      if (sFitType.Contains("PSIPSIPRIMENA60NEWVWG") && sFitType.Contains("range=2.0;4.4") && bin->AsString().Contains("PT_BENJ_03.00_04.00") ){
-        cout << "" << endl;
-        cout << " specific histo with specific parameters" << endl;
-        cout << "" << endl;
-        sFitType += ":binNormJPsi=3.15:binNormPsiP=3.67:sigmaJPsi:0.085";
+      // Look for specific fit param.
+      TObjArray* fitSingle = Config()->GetListElements(Config()->FitSingleKey(),IsSimulation());
+      TIter nextFitSingle(fitSingle);
+      TObjString* specifit;
+      nextFitSingle.Reset();
+      while ( ( specifit = static_cast<TObjString*>(nextFitSingle())) ){
+        // must find a better way to do ...
+        // Here we tokenize the initial FitType string with ":" and see if function names and ranges match
+
+        if ( !specifit->String().Contains(bin->AsString().Data()) ) continue; // Check binning
+
+        TString func   ="";
+        TString range  ="";
+        TString Weight ="";
+        TString mctails="";
+
+        TObjArray* oldFitParam = fitType->String().Tokenize(":");
+        TIter nextoldFitParam(oldFitParam);
+        TObjString* param;
+        nextoldFitParam.Reset();
+        while ( ( param = static_cast<TObjString*>(nextoldFitParam())) ){
+          if ( param->String().Contains("func=") )    func    = param->String().Data();
+          if ( param->String().Contains("range=") )   range   = param->String().Data();
+          if ( param->String().Contains("weight=") )  Weight  = param->String().Data();
+          if ( param->String().Contains("mctails") )  mctails = param->String().Data();
+        }
+        if ( specifit->String().Contains(func.Data())
+          && specifit->String().Contains(range.Data())
+          && specifit->String().Contains(Weight.Data())
+          && specifit->String().Contains(mctails.Data()) ) fitType->String() = specifit->String().Data();
+
+        delete oldFitParam;
+      }
+      delete fitSingle;
+
+      if(  mix != fitType->String().Contains("mix")  )  {
+        printf("skip %s because inconsistant with FitMethod \n",fitType->String().Data() );
+        continue;
       }
 
       // Conf. for MC Tails (see function type)
-      if ( sFitType.Contains("mctails",TString::kIgnoreCase) ) //FIXME: Find a univoque way to determine the correctly the fit type
-      {
-        TString sbin = bin->AsString();
-        TString spectraMCName = spectraName;
-        AliAnalysisMuMuBinning::Range* binMC = bin;
+      if ( fitType->String().Contains("mctails",TString::kIgnoreCase) || fitType->String().Contains("mctails2",TString::kIgnoreCase) ){
 
-        if ((sbin.Contains("MULT") || sbin.Contains("NCH") || sbin.Contains("DNCHDETA") || sbin.Contains("V0A") || sbin.Contains("V0ACENT") || sbin.Contains("V0C") || sbin.Contains("V0M") || sbin.Contains("NTRCORR")|| sbin.Contains("RELNTRCORR")) && !sbin.Contains("NTRCORRPT") && !sbin.Contains("NTRCORRY"))
-        {
+        TString sbin                          = bin->AsString();
+        TString spectraMCName                 = spectraName;
+        AliAnalysisMuMuBinning::Range* binMC  = bin;
+
+        // Javier's Legacy
+        if( (sbin.Contains("MULT") || sbin.Contains("NCH") || sbin.Contains("DNCHDETA") || sbin.Contains("V0A") || sbin.Contains("V0ACENT") || sbin.Contains("V0C") || sbin.Contains("V0M") || sbin.Contains("NTRCORR")|| sbin.Contains("RELNTRCORR")) && !sbin.Contains("NTRCORRPT") && !sbin.Contains("NTRCORRY")){
+
           //-------has to have a better way to do it
           AliAnalysisMuMuBinning* b = new AliAnalysisMuMuBinning;
           b->AddBin("psi","INTEGRATED");
@@ -1702,39 +1932,41 @@ AliAnalysisMuMu::FitParticle(const char* particle,
           spectraMCName = b->GetName();
           delete b;
 
-          if ( corrected )
-          {
+          if ( corrected ){
             spectraMCName += "-";
             spectraMCName += "AccEffCorr";
           }
-          //-----------
         }
 
-        GetParametersFromMC(sFitType,Form("/%s/%s",centrality,pairCut),spectraMCName.Data(),binMC);
+        Bool_t okMCtails = kFALSE;
+        if( !fitType->String().Contains("momo",TString::kIgnoreCase) )
+          okMCtails = GetParametersFromMC(fitType->String(),Form("/%s/%s",centrality,pairCut),spectraMCName.Data(),binMC);
+        else
+          okMCtails = GetParametersFromMC(fitType->String(),Form("/PP/%s",pairCut),spectraMCName.Data(),binMC);
 
-        if (sFitType.Length()>0) added += ( r->AddFit(sFitType.Data()) == kTRUE );
+        if(!okMCtails) continue;
+
+        added += ( r->AddFit(fitType->String().Data()) == kTRUE );
       }
 
-      //Config. for mpt (see function type)
-      else if ( sFitType.Contains("mpt",TString::kIgnoreCase) && !sFitType.Contains("minv",TString::kIgnoreCase) )
-      {
+      // Config. for mpt (see function type)
+      else if ( fitType->String().Contains("histoType=mpt",TString::kIgnoreCase) && !fitType->String().Contains("histoType=minv",TString::kIgnoreCase) && !fitType->String().Contains("MPTPSI_HFUNCTION",TString::kIgnoreCase) ){
+
         std::cout << "++The Minv parameters will be taken from " << spectraName.Data() << std::endl;
         std::cout << "" << std::endl;
 
-        AliAnalysisMuMuSpectra* minvSpectra = dynamic_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(id.Data(),spectraName.Data()));
+        AliAnalysisMuMuSpectra* minvSpectra = dynamic_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/FitResults%s",id->Data()),spectraName.Data()));
 
-        if ( !minvSpectra )
-        {
-          AliError(Form("Cannot fit mean pt: could not get the minv spectra for %s",id.Data()));
-          continue;//return 0x0;
+        if ( !minvSpectra ){
+          AliError(Form("Cannot fit mean pt: could not get the minv spectra for /FitResults%s",id->Data()));
+          continue;
         }
 
         AliAnalysisMuMuJpsiResult* minvResult = static_cast<AliAnalysisMuMuJpsiResult*>(minvSpectra->GetResultForBin(*bin));
 
-        if ( !minvResult )
-        {
-          AliError(Form("Cannot fit mean pt: could not get the minv result for bin %s in %s",bin->AsString().Data(),id.Data()));
-          continue; //return 0x0;
+        if ( !minvResult ){
+          AliError(Form("Cannot fit mean pt: could not get the minv result for bin %s in /FitResults%s",bin->AsString().Data(),id->Data()));
+          continue;
         }
 
         TObjArray* minvSubResults = minvResult->SubResults();
@@ -1743,119 +1975,196 @@ AliAnalysisMuMu::FitParticle(const char* particle,
         TString subResultName;
 
         Int_t nSubFit(0);
-        while ( ( fitMinv = static_cast<AliAnalysisMuMuJpsiResult*>(nextSubResult())) )
-        {
+        while ( ( fitMinv = static_cast<AliAnalysisMuMuJpsiResult*>(nextSubResult())) ){
+
           TString fitMinvName(fitMinv->GetName());
           fitMinvName.Remove(fitMinvName.First("_"),fitMinvName.Sizeof()-fitMinvName.First("_"));
 
-          if ( !sFitType.Contains(fitMinvName) ) continue; //FIXME: Ambiguous, i.e. NA60NEWPOL2EXP & NA60NEWPOL2 (now its ok cause only VWG and POL2EXP are used, but care)
+          if ( !fitType->String().Contains(fitMinvName) ) continue;
 
           std::cout << "" << std::endl;
           std::cout <<  "      /-- SubFit " << nSubFit + 1 << " --/ " << std::endl;
           std::cout << "" << std::endl;
 
-          TString sMinvFitType(sFitType);
+          TString sMinvfitType(fitType->String());
 
-          GetParametersFromResult(sMinvFitType,fitMinv);//FIXME: Think about if this is necessary
+          GetParametersFromResult(sMinvfitType,fitMinv);//FIXME: Think about if this is necessary
 
-          added += ( r->AddFit(sMinvFitType.Data()) == kTRUE );
+          added += ( r->AddFit(sMinvfitType.Data()) == kTRUE );
 
           nSubFit++;
         }
       }
 
-      //Config. for mpt and minv (see function type)
-      else if ( sFitType.Contains("minv&mpt",TString::kIgnoreCase) ) AliWarning("Implement here the method to do the combined minv mpt fits");
-      //FIXME: Shall we use the fitType or spectraType to choose to perform combined fits? Cause we have to check what kind of object is returned by the combined fit in order to decide if we put it in a different spectra(spectraType would be the flag,and here we should update the spectraName) or as a subresult(fitType in this case)
+      // Config. for mpt (see function type)
+      else if ( fitType->String().Contains("histoType=mpt2",TString::kIgnoreCase) && !fitType->String().Contains("histoType=minv",TString::kIgnoreCase) && !fitType->String().Contains("MPTPSI_HFUNCTION",TString::kIgnoreCase) ){
 
+        std::cout << "++The Minv parameters will be taken from " << spectraName.Data() << std::endl;
+        std::cout << "" << std::endl;
+
+        AliAnalysisMuMuSpectra* minvSpectra = dynamic_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/FitResults%s",id->Data()),spectraName.Data()));
+
+        if ( !minvSpectra ){
+          AliError(Form("Cannot fit mean pt: could not get the minv spectra for /FitResults%s",id->Data()));
+          continue;
+        }
+
+        AliAnalysisMuMuJpsiResult* minvResult = static_cast<AliAnalysisMuMuJpsiResult*>(minvSpectra->GetResultForBin(*bin));
+
+        if ( !minvResult ){
+          AliError(Form("Cannot fit mean pt: could not get the minv result for bin %s in /FitResults%s",bin->AsString().Data(),id->Data()));
+          continue;
+        }
+
+        TObjArray* minvSubResults = minvResult->SubResults();
+        TIter nextSubResult(minvSubResults);
+        AliAnalysisMuMuJpsiResult* fitMinv;
+        TString subResultName;
+
+        Int_t nSubFit(0);
+        while ( ( fitMinv = static_cast<AliAnalysisMuMuJpsiResult*>(nextSubResult())) ){
+
+          TString fitMinvName(fitMinv->GetName());
+          fitMinvName.Remove(fitMinvName.First("_"),fitMinvName.Sizeof()-fitMinvName.First("_"));
+
+          if ( !fitType->String().Contains(fitMinvName) ) continue;
+
+          std::cout << "" << std::endl;
+          std::cout <<  "      /-- SubFit " << nSubFit + 1 << " --/ " << std::endl;
+          std::cout << "" << std::endl;
+
+          TString sMinvfitType(fitType->String());
+
+          GetParametersFromResult(sMinvfitType,fitMinv);//FIXME: Think about if this is necessary
+
+          added += ( r->AddFit(sMinvfitType.Data()) == kTRUE );
+
+          nSubFit++;
+        }
+      }
 
       //Config. for the rest (see function type)
-      else
-      {
-        if ( sFitType.Contains("PSICB2",TString::kIgnoreCase) || sFitType.Contains("PSINA60NEW",TString::kIgnoreCase)) std::cout << "+Free tails fit... " << std::endl;
-        else if ( sFitType.Contains("PSICOUNT",TString::kIgnoreCase) )  std::cout << Form("+Just counting %s...",GetParticleName()) << std::endl;
-        else std::cout << "+Using predefined tails... " << std::endl;
+      else {
 
-        if ( sFitType.Contains("minvJPsi") && !sparticleTmp.Contains("JPsi") ){
+        if ( fitType->String().Contains("PSICB2",TString::kIgnoreCase) || fitType->String().Contains("PSINA60NEW",TString::kIgnoreCase))
+          std::cout << "+Free tails fit... " << std::endl;
+        else if ( fitType->String().Contains("PSICOUNT",TString::kIgnoreCase) )
+          std::cout << Form("+Just counting %s...",GetParticleName()) << std::endl;
+        else
+          std::cout << "+Using predefined tails... " << std::endl;
+
+        if ( fitType->String().Contains("minvJPsi") && !sparticleTmp.Contains("JPsi") ){
           std::cout << "This fitting funtion is set to fit JPsi: Skipping fit..." << std::endl;
           continue;
         }
-        if ( sFitType.Contains("minvPsiP") && !sparticleTmp.Contains("PsiP") ){
+
+        if ( fitType->String().Contains("minvPsiP") && !sparticleTmp.Contains("PsiP") ){
           std::cout << "This fitting funtion is set to fit PsiP: Skipping fit..." << std::endl;
           continue;
         }
         // Here we call  FINALLY the fit functions
-        added += ( r->AddFit(sFitType.Data()) == kTRUE );
+        added += ( r->AddFit(fitType->String().Data()) == kTRUE );
       }
 
       std::cout << "-------------------------------------" << std::endl;
       std::cout << "" << std::endl;
     }
+    if ( !added )
+    {
+      delete fitTypeArray;
+      continue;
+    }
 
-    if ( !added ) continue;// checkpoint
-
-
-    flavour = bin->Flavour();// Get <flavour>
+    // Get <flavour>
+    flavour = bin->Flavour();
 
     // Implement <spectra> and set its name
     if (!spectra){
 
       TString spectraSaveName = spectraName;
 
-      if ( !sSpectraType.CompareTo("mpt") ){
+      // Check if we fit meanPt
+      nextFitType.Reset();
+      Bool_t meanptVSminvFlag = kFALSE;
+      Bool_t meanpt2VSminvFlag = kFALSE;
+      while ( ( fitType = static_cast<TObjString*>(nextFitType())) ){
+        meanpt2VSminvFlag = fitType->String().Contains("histoType=mpt2");
+        if(!meanpt2VSminvFlag)meanptVSminvFlag  = fitType->String().Contains("histoType=mpt");
+      }
+      if ( meanptVSminvFlag){
         spectraSaveName += "-";
         spectraSaveName += "MeanPtVsMinvUS";
       }
-
+      if ( meanpt2VSminvFlag){
+        spectraSaveName += "-";
+        spectraSaveName += "MeanPtSquareVsMinvUS";
+      }
       spectra = new AliAnalysisMuMuSpectra(spectraSaveName.Data());
     }
 
-    Bool_t adoptOk = spectra->AdoptResult(*bin,r); // We adopt the Result for current bin into the spectra
+    // We adopt the Result for current bin into the spectra
+    if ( r ) adoptOk = spectra->AdoptResult(*bin,r);
 
-    if ( adoptOk ) std::cout << "Result " << r->GetName() << " adopted in spectra " << spectra->GetName() << std::endl;
-    else AliError(Form("Error adopting result %s in spectra %s",r->GetName(),spectra->GetName()));
-
+    if ( r && spectra && adoptOk ) printf("Result %s adopted in spectra %s  \n",r->GetName(),spectra->GetName());
+    else AliError(Form("Error adopting result "));
 
     if ( IsSimulation() ) {
       std::cout << "Computing AccEff Value Spectra " << std::endl;
-      SetNofInputParticles(*r);
+      SetNofInputParticles(*r,eventType,trigger,centrality);
     }
+    delete fitTypeArray;
+  }
 
-      //    binN++;
-  } // loop on bins
-
-  delete fitTypeArray;
   delete bins;
+  if (refTrigger) delete  refTrigger;
+  if (refEvent)   delete  refEvent;
+  delete  id;
 
   return spectra;
 }
 
 //_____________________________________________________________________________
-void
-AliAnalysisMuMu::GetParametersFromMC(TString& fitType, const char* pathCentrPairCut, const char* spectraName, AliAnalysisMuMuBinning::Range* bin) const
+Bool_t AliAnalysisMuMu::GetParametersFromMC(TString& fitType, const char* pathCentrPairCut, const char* spectraName, AliAnalysisMuMuBinning::Range* bin) const
 {
-    /// Get the parameters from the associated simulation. Is intended to be used in minv fits, where we need the tails from JPsi (and Psi')
-    // We can choose between the 2 associated simulations (a JPsi and Psi' ones) by setting the sim variable to "sim1" (fAssociatedSimulation by default) or "sim2" (fAssociatedSimulation2)
-
+/**
+ * @brief   Get fit tails parameters from the associated simulations file.
+ * @details Intended to be used in minv fits, where we need the tails from JPsi (and Psi').
+ *
+ * @param fitType          'NA60NEW','CB2','INDEPTAILS' implemented at the moment
+ * @param pathCentrPairCut [description]
+ * @param spectraName      [description]
+ * @param bin              [description]
+ */
     if ( !SIM() && !SIM2() )
-        {
-        AliError("Cannot get MC tails without associated simulation(s) file(s) !");
-        fitType = "";
-        return;
-        }
+    {
+      AliError("Cannot get MC tails without associated simulation(s) file(s) !");
+      fitType = "";
+      return kFALSE;
+    }
 
     TString subResultName("");
-    if ( fitType.Contains("NA60NEW",TString::kIgnoreCase) ) subResultName = "PSINA60NEW";//_1.5_4.2
+    if ( fitType.Contains("NA60NEW",TString::kIgnoreCase) )  subResultName = "PSINA60NEW";//_1.5_4.2
     else if ( fitType.Contains("CB2",TString::kIgnoreCase) ) subResultName = "PSICB2";//_2.2_3.9
-    else
-        {
-        AliError("I don't know from which MC subresult take the tails");
-        return;
-        }
+    else {
+      AliError("I don't know from which MC subresult take the tails");
+      return kFALSE;
+    }
 
     TObjArray* simArr = new TObjArray;
-    if ( SIM() ) simArr->Add(SIM());
-    if ( SIM2() && fitType.Contains("INDEPTAILS",TString::kIgnoreCase) ) simArr->Add(SIM2()); // If we have set the key to get the JPsi ans PsiP tails
+    if ( SIM() && !fitType.Contains("mctails2",TString::kIgnoreCase)){
+      printf("Using first mc file ...\n");
+      simArr->Add(SIM());
+    }
+    else if ( SIM2() && fitType.Contains("mctails2",TString::kIgnoreCase)){
+      printf("Using second mc file \n");
+      simArr->Add(SIM2());
+    }
+    else if ( SIM2() && fitType.Contains("INDEPTAILS",TString::kIgnoreCase)   )
+      simArr->Add(SIM2()); // If we have set the key to get the JPsi ans PsiP tails
+    else {
+      AliError("Don't add any SIM file for this test, see inside for details\n");
+      return kFALSE;
+    }
 
     TIter nextSim(simArr);
     AliAnalysisMuMu* currentSIM;
@@ -1865,219 +2174,255 @@ AliAnalysisMuMu::GetParametersFromMC(TString& fitType, const char* pathCentrPair
     spath.Prepend(Form("/%s",Config()->First(Config()->DimuonTriggerKey(),kTRUE).Data()));//FIXME: Care with this when there is more than one selection in the list
     spath.Prepend(Form("/%s",Config()->First(Config()->EventSelectionKey(),kTRUE).Data()));
 
-
+    Bool_t okMCtails = kFALSE;
     while ( (currentSIM = static_cast<AliAnalysisMuMu*>(nextSim())) )
-        {
-        AliAnalysisMuMuSpectra* minvMCSpectra = currentSIM->SPECTRA(Form("%s/%s",spath.Data(),spectraName));
-        if (!minvMCSpectra)
-            {
-            AliError(Form("Could not find spectra %s/%s for associated simulation",spath.Data(),spectraName));
-            currentSIM->OC()->Print("*:Ali*");
-            fitType = "";
-            continue;
-            }
+    {
+      TString sspectraName(spectraName);
+      if (sspectraName.EndsWith("-AccEffCorr"))
+      {
+        sspectraName.ReplaceAll("-AccEffCorr","");
+        sspectraName.Remove(sspectraName.Length());
+      }
+      AliAnalysisMuMuSpectra* minvMCSpectra = 0x0;
+      minvMCSpectra = currentSIM->SPECTRA(Form("/FitResults%s/%s",spath.Data(),sspectraName.Data()));
+      if (!minvMCSpectra){
+       printf("######## LOOKING FOR MOHAMAD4S TAIL ########\n");
+       minvMCSpectra = currentSIM->SPECTRA(Form("/FitResults/ALL/ANY/PP/pALLPAIRYPAIRPTIN0.0-12.0RABSMATCHLOWETA/%s",sspectraName.Data()));
+      }
+      if (!minvMCSpectra)
+      {
+        AliError(Form("Could not find spectra /FitResults%s/%s for associated simulation",spath.Data(),sspectraName.Data()));
+        currentSIM->OC()->Print("*:Ali*");
+        fitType = "";
+        continue;
+      }
 
-        AliAnalysisMuMuJpsiResult* minvMCResult = static_cast<AliAnalysisMuMuJpsiResult*>(minvMCSpectra->GetResultForBin(*bin));
-        if ( !minvMCResult )
-            {
-            AliError(Form("Cannot get MC tails cause the minv result for bin %s in %s/%s was not found",bin->AsString().Data(),spath.Data(),spectraName));
-            fitType = "";
-            continue;
-            }
+      AliAnalysisMuMuJpsiResult* minvMCResult = static_cast<AliAnalysisMuMuJpsiResult*>(minvMCSpectra->GetResultForBin(*bin));
+      if ( !minvMCResult )
+      {
+        AliError(Form("Cannot get MC tails cause the minv result for bin %s in %s/%s was not found",bin->AsString().Data(),spath.Data(),sspectraName.Data()));
+        fitType = "";
+        continue;
+      }
 
-        AliAnalysisMuMuJpsiResult* r = dynamic_cast<AliAnalysisMuMuJpsiResult*>(minvMCResult->SubResult(subResultName.Data())); //FIXME: Find an independet way of naming results
-        if  ( r && subResultName.Contains("PSICB2") )
-            {
-            fitType += Form(":al%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("al%s",currentSIM->GetParticleName())));
-            fitType += Form(":nl%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("nl%s",currentSIM->GetParticleName())));
-            fitType += Form(":au%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("au%s",currentSIM->GetParticleName())));
-            fitType += Form(":nu%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("nu%s",currentSIM->GetParticleName())));
+      AliAnalysisMuMuJpsiResult* r = dynamic_cast<AliAnalysisMuMuJpsiResult*>(minvMCResult->SubResult(subResultName.Data())); //FIXME: Find an independet way of naming results
+      if  ( r && subResultName.Contains("PSICB2") )
+      {
+        fitType += Form(":al%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("al%s",currentSIM->GetParticleName())));
+        fitType += Form(":nl%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("nl%s",currentSIM->GetParticleName())));
+        fitType += Form(":au%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("au%s",currentSIM->GetParticleName())));
+        fitType += Form(":nu%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("nu%s",currentSIM->GetParticleName())));
 
-            std::cout << " Using MC " << currentSIM->GetParticleName() << " CB2 tails... " << std::endl;
-            std::cout << std::endl;
-            }
-        else if ( r && subResultName.Contains("PSINA60NEW") )
-            {
-            fitType += Form(":p1L%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p1L%s",currentSIM->GetParticleName())));
-            fitType += Form(":p2L%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p2L%s",currentSIM->GetParticleName())));
-            fitType += Form(":p3L%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p3L%s",currentSIM->GetParticleName())));
-            fitType += Form(":p1R%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p1R%s",currentSIM->GetParticleName())));
-            fitType += Form(":p2R%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p2R%s",currentSIM->GetParticleName())));
-            fitType += Form(":p3R%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p3R%s",currentSIM->GetParticleName())));
+        std::cout << " Using MC " << currentSIM->GetParticleName() << " CB2 tails... " << std::endl;
+        std::cout << std::endl;
+        okMCtails =kTRUE;
+      }
+      else if ( r && subResultName.Contains("PSINA60NEW") )
+      {
+        fitType += Form(":p1L%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p1L%s",currentSIM->GetParticleName())));
+        fitType += Form(":p2L%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p2L%s",currentSIM->GetParticleName())));
+        fitType += Form(":p3L%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p3L%s",currentSIM->GetParticleName())));
+        fitType += Form(":p1R%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p1R%s",currentSIM->GetParticleName())));
+        fitType += Form(":p2R%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p2R%s",currentSIM->GetParticleName())));
+        fitType += Form(":p3R%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("p3R%s",currentSIM->GetParticleName())));
 
-            fitType += Form(":aL%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("aL%s",currentSIM->GetParticleName())));
-            fitType += Form(":aR%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("aR%s",currentSIM->GetParticleName())));
+        fitType += Form(":aL%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("aL%s",currentSIM->GetParticleName())));
+        fitType += Form(":aR%s=%f",currentSIM->GetParticleName(),r->GetValue(Form("aR%s",currentSIM->GetParticleName())));
 
-            std::cout << " Using MC " << currentSIM->GetParticleName() << " NA60New tails... " << std::endl;
-            std::cout << std::endl;
-            }
-        else
-            {
-            AliError(Form("Cannot get MC tails. MC Subresult %s not found",minvMCResult->GetName()));
-            fitType = "";
-            }
-        }
+        std::cout << " Using MC " << currentSIM->GetParticleName() << " NA60New tails... " << std::endl;
+        std::cout << std::endl;
+        okMCtails =kTRUE;
+      }
+      else
+      {
+        AliError(Form("Cannot get MC tails. MC Subresult %s not found",minvMCResult->GetName()));
+        fitType = "";
+      }
+    }
     delete simArr;
+    return okMCtails;
 }
 
 //_____________________________________________________________________________
-void
-AliAnalysisMuMu::GetParametersFromResult(TString& fitType, AliAnalysisMuMuJpsiResult* minvResult) const
+void AliAnalysisMuMu::GetParametersFromResult(TString& fitType, AliAnalysisMuMuJpsiResult* minvResult) const
 {
-    // Gets the parameters from a result, is intended to be used for mean pt fits where we need the signal and backgroud parameters
-
+/**
+ * @brief   Get parameters from a result
+ * @details intended to be used for mean pt fits where we need the signal and backgroud parameters
+ *
+ * @param fitType    'NA60NEW','CB2','INDEPTAILS' implemented at the moment
+ * @param minvResult [description]
+ */
     AliWarning("Re-implement me !!!"); //FIXME: The parameters to get will depend on the fit function and also in this way is not suitable for other particles (ie Upsilon)(Find a way to get the particle(s) name)
 
     TString msg("");
     if ( minvResult )
+    {
+      // We take the usual parameters (the ones from JPsi and the normalization of the Psi')
+      fitType += minvResult->HasValue("Weight") ? Form(":Weight=%f",minvResult->GetValue("Weight")) : Form(":Weight=%f",1.); //FIXME: Names are not correct
+      fitType += minvResult->HasValue("kJPsi") ? Form(":kJPsi=%f",minvResult->GetValue("kJPsi")) : Form(":kJPsi=%f",1.);
+      fitType += minvResult->HasValue("mJPsi") ? Form(":mJPsi=%f",minvResult->GetValue("mJPsi")) : Form(":mJPsi=%f",1.);
+      fitType += minvResult->HasValue("sJPsi") ? Form(":sJPsi=%f",minvResult->GetValue("sJPsi")) : Form(":sJPsi=%f",1.);
+
+      fitType += minvResult->HasValue("NofJPsi") ? Form(":NofJPsi=%f",minvResult->GetValue("NofJPsi")) :  Form(":NofJPsi=%f",1.) ;
+      fitType += minvResult->HasValue("NofJPsi") ? Form(":ErrStatNofJPsi=%f",minvResult->GetErrorStat("NofJPsi")) : Form(":ErrStatNofJPsi=%f",1.) ;
+
+      fitType += minvResult->HasValue("kPsiP") ? Form(":kPsiP=%f",minvResult->GetValue("kPsiP")) :  Form(":kPsiP=%f",1.) ;
+
+      TString minvName(minvResult->GetName());
+
+      TString minvRangeParam = minvName;
+      minvRangeParam.Remove(0,minvRangeParam.First("_") + 1);
+      fitType += Form(":MinvRS=%s",minvRangeParam.Data());
+
+      fitType += minvResult->HasValue("FSigmaPsiP") ? Form(":FSigmaPsiP=%f",minvResult->GetValue("FSigmaPsiP")) :  Form(":FSigmaPsiP=%f",1.) ;
+
+      if ( fitType.Contains("CB2",TString::kIgnoreCase) )
+      {
+        fitType += minvResult->HasValue("alJPsi") ? Form(":alJPsi=%f",minvResult->GetValue("alJPsi")) :  Form(":alJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("nlJPsi") ? Form(":nlJPsi=%f",minvResult->GetValue("nlJPsi")) :  Form(":nlJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("auJPsi") ? Form(":auJPsi=%f",minvResult->GetValue("auJPsi")) :  Form(":auJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("nuJPsi") ? Form(":nuJPsi=%f",minvResult->GetValue("nuJPsi")) :  Form(":nuJPsi=%f",1.) ;
+
+        msg += "JPsi CB2 signal parameters";
+        //    fitType += minvResult->HasValue("NofPsiP") ? Form(":NofPsiP=%f",minvResult->GetValue("NofPsiP")) :  ? Form(":NofPsiP=%f",1.) ;
+        //    fitType += minvResult->HasValue() ? Form(":ErrStatNofPsiP=%f",minvResult->GetErrorStat("NofPsiP"));
+
+        if ( fitType.Contains("INDEPTAILS") )
         {
-        // We take the usual parameters (the ones from JPsi and the normalization of the Psi')
-        fitType += Form(":kJPsi=%f",minvResult->GetValue("kJPsi")); //FIXME: Names are not correct
-        fitType += Form(":mJPsi=%f",minvResult->GetValue("mJPsi"));
-        fitType += Form(":sJPsi=%f",minvResult->GetValue("sJPsi"));
+          //        minvName = minvResult->GetName();
+          if ( minvName.Contains("INDEPTAILS") )
+          {
+            // In case we use independent parameters tails for JPsi and Psi' we take also the Psi' ones
+            fitType += minvResult->HasValue("alPsiP") ? Form(":alPsiP=%f",minvResult->GetValue("alPsiP")) :  Form(":alPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("nlPsiP") ? Form(":nlPsiP=%f",minvResult->GetValue("nlPsiP")) :  Form(":nlPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("auPsiP") ? Form(":auPsiP=%f",minvResult->GetValue("auPsiP")) :  Form(":auPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("nuPsiP") ? Form(":nuPsiP=%f",minvResult->GetValue("nuPsiP")) :  Form(":nuPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("mPsiP") ? Form(":mPsiP=%f",minvResult->GetValue("mPsiP")) :  Form(":mPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("sPsiP") ? Form(":sPsiP=%f",minvResult->GetValue("sPsiP")) :  Form(":sPsiP=%f",1.) ;
 
-        fitType += Form(":NofJPsi=%f",minvResult->GetValue("NofJPsi"));
-        fitType += Form(":ErrStatNofJPsi=%f",minvResult->GetErrorStat("NofJPsi"));
-
-        fitType += Form(":kPsiP=%f",minvResult->GetValue("kPsiP"));
-
-        TString minvName(minvResult->GetName());
-
-        TString minvRangeParam = minvName;
-        minvRangeParam.Remove(0,minvRangeParam.First("_") + 1);
-        fitType += Form(":MinvRS=%s",minvRangeParam.Data());
-
-        fitType += Form(":FSigmaPsiP=%f",minvResult->GetValue("FSigmaPsiP"));
-
-        if ( fitType.Contains("CB2",TString::kIgnoreCase) )
-            {
-            fitType += Form(":alJPsi=%f",minvResult->GetValue("alJPsi"));
-            fitType += Form(":nlJPsi=%f",minvResult->GetValue("nlJPsi"));
-            fitType += Form(":auJPsi=%f",minvResult->GetValue("auJPsi"));
-            fitType += Form(":nuJPsi=%f",minvResult->GetValue("nuJPsi"));
-
-            msg += "JPsi CB2 signal parameters";
-            //    fitType += Form(":NofPsiP=%f",minvResult->GetValue("NofPsiP"));
-            //    fitType += Form(":ErrStatNofPsiP=%f",minvResult->GetErrorStat("NofPsiP"));
-
-            if ( fitType.Contains("INDEPTAILS") )
-                {
-                //        minvName = minvResult->GetName();
-                if ( minvName.Contains("INDEPTAILS") )
-                    {
-                    // In case we use independent parameters tails for JPsi and Psi' we take also the Psi' ones
-                    fitType += Form(":alPsiP=%f",minvResult->GetValue("alPsiP"));
-                    fitType += Form(":nlPsiP=%f",minvResult->GetValue("nlPsiP"));
-                    fitType += Form(":auPsiP=%f",minvResult->GetValue("auPsiP"));
-                    fitType += Form(":nuPsiP=%f",minvResult->GetValue("nuPsiP"));
-                    fitType += Form(":mPsiP=%f",minvResult->GetValue("mPsiP"));
-                    fitType += Form(":sPsiP=%f",minvResult->GetValue("sPsiP"));
-
-                    msg += " + PsiP CB2 signal parameters";
-                    }
-                else
-                    {
-                    AliError(Form("Cannot get PsiP tails from result. Result %s does not contain PsiP tails info => Fit will fail ",minvResult->GetName()));
-                    fitType = "";
-                    return;
-                    }
-                }
-            }
-        else if ( fitType.Contains("NA60NEW",TString::kIgnoreCase) )
-            {
-            fitType += Form(":p1LJPsi=%f",minvResult->GetValue("p1LJPsi"));
-            fitType += Form(":p2LJPsi=%f",minvResult->GetValue("p2LJPsi"));
-            fitType += Form(":p3LJPsi=%f",minvResult->GetValue("p3LJPsi"));
-            fitType += Form(":p1RJPsi=%f",minvResult->GetValue("p1RJPsi"));
-            fitType += Form(":p2RJPsi=%f",minvResult->GetValue("p2RJPsi"));
-            fitType += Form(":p3RJPsi=%f",minvResult->GetValue("p3RJPsi"));
-
-            fitType += Form(":aLJPsi=%f",minvResult->GetValue("aLJPsi"));
-            fitType += Form(":aRJPsi=%f",minvResult->GetValue("aRJPsi"));
-
-            msg += "JPsi NA60New signal parameters";
-
-            if ( fitType.Contains("INDEPTAILS") )
-                {
-                //        TString minvName(minvResult->GetName());
-                if ( minvName.Contains("INDEPTAILS") )
-                    {
-                    // In case we use independent parameters tails for JPsi and Psi' we take also the Psi' ones
-                    fitType += Form(":p1LPsiP=%f",minvResult->GetValue("p1LPsiP"));
-                    fitType += Form(":p2LPsiP=%f",minvResult->GetValue("p2LPsiP"));
-                    fitType += Form(":p3LPsiP=%f",minvResult->GetValue("p3LPsiP"));
-                    fitType += Form(":p1RPsiP=%f",minvResult->GetValue("p1RPsiP"));
-                    fitType += Form(":p2RPsiP=%f",minvResult->GetValue("p2RPsiP"));
-                    fitType += Form(":p3RPsiP=%f",minvResult->GetValue("p3RPsiP"));
-
-                    fitType += Form(":aLPsiP=%f",minvResult->GetValue("aLPsiP"));
-                    fitType += Form(":aRPsiP=%f",minvResult->GetValue("aRPsiP"));
-
-                    msg += " + PsiP NA60New signal parameters";
-
-                    }
-                else
-                    {
-                    AliError(Form("Cannot get PsiP tails from result. Result %s does not contain PsiP tails info => Fit will fail ",minvResult->GetName()));
-                    fitType = "";
-                    return;
-                    }
-                }
-            }
-        else
-            {
-            AliError(Form("Cannot get the parameters from %s",minvResult->GetName()));
+            msg += " + PsiP CB2 signal parameters";
+          }
+          else
+          {
+            AliError(Form("Cannot get PsiP tails from result. Result %s does not contain PsiP tails info => Fit will fail ",minvResult->GetName()));
             fitType = "";
             return;
-            }
-        // Now we take the background parameters
-        if ( fitType.Contains("VWG_") || fitType.Contains("VWGINDEPTAILS") ) //FIXME: Check that cannot be misunderstood(like Exp x Pol2..). In fact it can be misunderstood since the meanpt function name has also the name of the function to fit the bkg (free parameters). Also add the rest of the BKG functions
-            {
-            fitType += Form(":kVWG=%f",minvResult->GetValue("kVWG"));
-            fitType += Form(":mVWG=%f",minvResult->GetValue("mVWG"));
-            fitType += Form(":sVWG1=%f",minvResult->GetValue("sVWG1"));
-            fitType += Form(":sVWG2=%f",minvResult->GetValue("sVWG2"));
-
-            msg += " + VWG Bkg parameters";
-            }
-        else if ( fitType.Contains("POL2EXP_") || fitType.Contains("POL2EXPINDEPTAILS") )
-            {
-            fitType += Form(":kPol2Exp=%f",minvResult->GetValue("kPol2Exp"));
-            fitType += Form(":pol0=%f",minvResult->GetValue("pol0"));
-            fitType += Form(":pol1=%f",minvResult->GetValue("pol1"));
-            fitType += Form(":pol2=%f",minvResult->GetValue("pol2"));
-            fitType += Form(":exp=%f",minvResult->GetValue("exp"));
-
-            msg += " + Pol2xExp Bkg parameters";
-            }
-        else if ( fitType.Contains("POL4EXP_") || fitType.Contains("POL4EXPINDEPTAILS") )
-            {
-            fitType += Form(":kPol4Exp=%f",minvResult->GetValue("kPol4Exp"));
-            fitType += Form(":pol0=%f",minvResult->GetValue("pol0"));
-            fitType += Form(":pol1=%f",minvResult->GetValue("pol1"));
-            fitType += Form(":pol2=%f",minvResult->GetValue("pol2"));
-            fitType += Form(":pol3=%f",minvResult->GetValue("pol3"));
-            fitType += Form(":pol4=%f",minvResult->GetValue("pol4"));
-            fitType += Form(":exp=%f",minvResult->GetValue("exp"));
-
-            msg += " + Pol4xExp Bkg parameters";
-            }
-        std::cout << "Using " << msg.Data() << " from " << minvResult->GetName() <<  " inv mass result" << std::endl;
-        std::cout << "" << std::endl;
+          }
         }
-    else
+      }
+      else if ( fitType.Contains("NA60NEW",TString::kIgnoreCase) )
+      {
+        fitType += minvResult->HasValue("p1LJPsi") ? Form(":p1LJPsi=%f",minvResult->GetValue("p1LJPsi")) :  Form(":p1LJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("p2LJPsi") ? Form(":p2LJPsi=%f",minvResult->GetValue("p2LJPsi")) :  Form(":p2LJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("p3LJPsi") ? Form(":p3LJPsi=%f",minvResult->GetValue("p3LJPsi")) :  Form(":p3LJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("p1RJPsi") ? Form(":p1RJPsi=%f",minvResult->GetValue("p1RJPsi")) :  Form(":p1RJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("p2RJPsi") ? Form(":p2RJPsi=%f",minvResult->GetValue("p2RJPsi")) :  Form(":p2RJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("p3RJPsi") ? Form(":p3RJPsi=%f",minvResult->GetValue("p3RJPsi")) :  Form(":p3RJPsi=%f",1.) ;
+
+        fitType += minvResult->HasValue("aLJPsi") ? Form(":aLJPsi=%f",minvResult->GetValue("aLJPsi")) :  Form(":aLJPsi=%f",1.) ;
+        fitType += minvResult->HasValue("aRJPsi") ? Form(":aRJPsi=%f",minvResult->GetValue("aRJPsi")) :  Form(":aRJPsi=%f",1.) ;
+
+        msg += "JPsi NA60New signal parameters";
+
+        if ( fitType.Contains("INDEPTAILS") )
         {
-        AliError(Form("Cannot get tails from result. Result %s not found",minvResult->GetName()));
+          //        TString minvName(minvResult->GetName());
+          if ( minvName.Contains("INDEPTAILS") )
+          {
+            // In case we use independent parameters tails for JPsi and Psi' we take also the Psi' ones
+            fitType += minvResult->HasValue("p1LPsiP") ? Form(":p1LPsiP=%f",minvResult->GetValue("p1LPsiP")) :  Form(":p1LPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("p2LPsiP") ? Form(":p2LPsiP=%f",minvResult->GetValue("p2LPsiP")) :  Form(":p2LPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("p3LPsiP") ? Form(":p3LPsiP=%f",minvResult->GetValue("p3LPsiP")) :  Form(":p3LPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("p1RPsiP") ? Form(":p1RPsiP=%f",minvResult->GetValue("p1RPsiP")) :  Form(":p1RPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("p2RPsiP") ? Form(":p2RPsiP=%f",minvResult->GetValue("p2RPsiP")) :  Form(":p2RPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("p3RPsiP") ? Form(":p3RPsiP=%f",minvResult->GetValue("p3RPsiP")) :  Form(":p3RPsiP=%f",1.) ;
+
+            fitType += minvResult->HasValue("aLPsiP") ? Form(":aLPsiP=%f",minvResult->GetValue("aLPsiP")) :  Form(":aLPsiP=%f",1.) ;
+            fitType += minvResult->HasValue("aRPsiP") ? Form(":aRPsiP=%f",minvResult->GetValue("aRPsiP")) :  Form(":aRPsiP=%f",1.) ;
+
+            msg += " + PsiP NA60New signal parameters";
+
+          }
+          else
+          {
+            AliError(Form("Cannot get PsiP tails from result. Result %s does not contain PsiP tails info => Fit will fail ",minvResult->GetName()));
+            fitType = "";
+            return;
+          }
+        }
+      }
+      else
+      {
+        AliError(Form("Cannot get the parameters from %s",minvResult->GetName()));
         fitType = "";
         return;
-        }
+      }
+      // Now we take the background parameters
+      if ( fitType.Contains("VWG_") || fitType.Contains("VWGINDEPTAILS") ) //FIXME: Check that cannot be misunderstood(like Exp x Pol2..). In fact it can be misunderstood since the meanpt function name has also the name of the function to fit the bkg (free parameters). Also add the rest of the BKG functions
+      {
+        fitType += minvResult->HasValue("kVWG") ? Form(":kVWG=%f",minvResult->GetValue("kVWG")) :  Form(":kVWG=%f",1.) ;
+        fitType += minvResult->HasValue("mVWG") ? Form(":mVWG=%f",minvResult->GetValue("mVWG")) :  Form(":mVWG=%f",1.) ;
+        fitType += minvResult->HasValue("sVWG1") ? Form(":sVWG1=%f",minvResult->GetValue("sVWG1")) :  Form(":sVWG1=%f",1.) ;
+        fitType += minvResult->HasValue("sVWG2") ? Form(":sVWG2=%f",minvResult->GetValue("sVWG2")) :  Form(":sVWG2=%f",1.) ;
+
+        msg += " + VWG Bkg parameters";
+      }
+      else if ( fitType.Contains("POL2EXP_") || fitType.Contains("POL2EXPINDEPTAILS") )
+      {
+        fitType += minvResult->HasValue("kPol2Exp") ? Form(":kPol2Exp=%f",minvResult->GetValue("kPol2Exp")) :  Form(":kPol2Exp=%f",1.) ;
+        fitType += minvResult->HasValue("pol0") ? Form(":pol0=%f",minvResult->GetValue("pol0")) :  Form(":pol0=%f",1.) ;
+        fitType += minvResult->HasValue("pol1") ? Form(":pol1=%f",minvResult->GetValue("pol1")) :  Form(":pol1=%f",1.) ;
+        fitType += minvResult->HasValue("pol2") ? Form(":pol2=%f",minvResult->GetValue("pol2")) :  Form(":pol2=%f",1.) ;
+        fitType += minvResult->HasValue("exp") ? Form(":exp=%f",minvResult->GetValue("exp")) :  Form(":exp=%f",1.) ;
+
+        msg += " + Pol2xExp Bkg parameters";
+      }
+      else if ( fitType.Contains("POL4EXP_") || fitType.Contains("POL4EXPINDEPTAILS") )
+      {
+        fitType += minvResult->HasValue("kPol4Exp") ? Form(":kPol4Exp=%f",minvResult->GetValue("kPol4Exp")) :  Form(":kPol4Exp=%f",1.) ;
+        fitType += minvResult->HasValue("pol0") ? Form(":pol0=%f",minvResult->GetValue("pol0")) :  Form(":pol0=%f",1.) ;
+        fitType += minvResult->HasValue("pol1") ? Form(":pol1=%f",minvResult->GetValue("pol1")) :  Form(":pol1=%f",1.) ;
+        fitType += minvResult->HasValue("pol2") ? Form(":pol2=%f",minvResult->GetValue("pol2")) :  Form(":pol2=%f",1.) ;
+        fitType += minvResult->HasValue("pol3") ? Form(":pol3=%f",minvResult->GetValue("pol3")) :  Form(":pol3=%f",1.) ;
+        fitType += minvResult->HasValue("pol4") ? Form(":pol4=%f",minvResult->GetValue("pol4")) :  Form(":pol4=%f",1.) ;
+        fitType += minvResult->HasValue("exp") ? Form(":exp=%f",minvResult->GetValue("exp")) :  Form(":exp=%f",1.) ;
+
+        msg += " + Pol4xExp Bkg parameters";
+      }
+      else if ( fitType.Contains("POL1POL2_") )
+      {
+        fitType += minvResult->HasValue("a") ? Form(":a=%f",minvResult->GetValue("a")) :  Form(":a=%f",1.) ;
+        fitType += minvResult->HasValue("b") ? Form(":b=%f",minvResult->GetValue("b")) :  Form(":b=%f",1.) ;
+        fitType += minvResult->HasValue("a'") ? Form(":a'=%f",minvResult->GetValue("a'")) :  Form(":a'=%f",1.) ;
+        fitType += minvResult->HasValue("b'") ? Form(":b'=%f",minvResult->GetValue("b'")) :  Form(":b'=%f",1.) ;
+        fitType += minvResult->HasValue("c'") ? Form(":c'=%f",minvResult->GetValue("c'")) :  Form(":c'=%f",1.) ;
+
+        msg += " + pol1/pl2 Bkg parameters";
+      }
+
+      std::cout << "Using " << msg.Data() << " from " << minvResult->GetName() <<  " inv mass result" << std::endl;
+      std::cout << "" << std::endl;
+    }
+    else
+    {
+      AliError(Form("Cannot get tails from result. Result %s not found",minvResult->GetName()));
+      fitType = "";
+      return;
+    }
 }
 
 //_____________________________________________________________________________
 ULong64_t AliAnalysisMuMu::GetTriggerScalerCount(const char* triggerList, Int_t runNumber)
 {
-    /// Get the expected (from OCDB scalers) trigger count
-
+/**
+ * @brief Get the expected (from OCDB scalers) trigger count
+ *
+ * @param triggerList Tokenize by ','
+ * @param runNumber   [description]
+ *
+ * @return Counts
+ */
     AliAnalysisTriggerScalers ts(runNumber,Config()->OCDBPath());
 
     TObjArray* triggers = TString(triggerList).Tokenize(",");
@@ -2100,21 +2445,28 @@ ULong64_t AliAnalysisMuMu::GetTriggerScalerCount(const char* triggerList, Int_t 
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetSpectra(const char* what, const char* flavour) const
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetSpectraFromConfig(const char* binType, const char* flavour) const
 {
-    /// get a given spectra
-
-    TString swhat(what);
+/**
+ * @brief Pointer to given spectra
+ * @details The spectra path is selected according to first keys in the config. file. Spectra name should be 'PSI-<binType>'
+ *
+ * @param binType    [description]
+ * @param flavour    [description]
+ *
+ * @return Pointer to the spectra
+ */
+    TString sbinType(binType);
     TString sflavour(flavour);
-    swhat.ToUpper();
+    sbinType.ToUpper();
     sflavour.ToUpper();
 
-    TString spectraName(Form("/%s/%s/%s/%s/PSI-%s",
-                             Config()->First(Config()->EventSelectionKey(),kFALSE).Data(),
-                             Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data(),
-                             Config()->First(Config()->CentralitySelectionKey(),kFALSE).Data(),
-                             Config()->First(Config()->PairSelectionKey(),kFALSE).Data(),
-                             swhat.Data()));
+    TString spectraName(Form("/FitResults/%s/%s/%s/%s/PSI-%s",
+                             Config()->First(Config()->EventSelectionKey(),IsSimulation()).Data(),
+                             Config()->First(Config()->DimuonTriggerKey(),IsSimulation()).Data(),
+                             Config()->First(Config()->CentralitySelectionKey(),IsSimulation()).Data(),
+                             Config()->First(Config()->PairSelectionKey(),IsSimulation()).Data(),
+                             sbinType.Data()));
 
     cout << "spectraName : " << spectraName.Data() << endl;
 
@@ -2127,22 +2479,29 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetSpectra(const char* what, const char
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetMCSpectra(const char* what , const char* EventSelection,  const char* DimuonTrigger,
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetSpectra(const char* binType , const char* EventSelection,  const char* DimuonTrigger,
   const char* Centrality, const char* PairSelectionKey, const char* flavour) const
 {
-    /// get a given spectra
-
-    TString swhat(what);
+/**
+ * @brief Pointer to a given spectra
+ * @details More specific method
+ *
+ * @param binType [description]
+ * @param flavour [description]
+ *
+ * @return AliAnalysisMuMuSpectra
+ */
+    TString sbinType(binType);
     TString sflavour(flavour);
-    swhat.ToUpper();
+    sbinType.ToUpper();
     sflavour.ToUpper();
 
-    TString spectraName(Form("/%s/%s/%s/%s/PSI-%s",
+    TString spectraName(Form("/FitResults/%s/%s/%s/%s/PSI-%s",
                              EventSelection,
                              DimuonTrigger,
                              Centrality,
                              PairSelectionKey,
-                             swhat.Data()));
+                             sbinType.Data()));
 
     cout << "spectraName MC : " << spectraName.Data() << endl;
 
@@ -2156,607 +2515,204 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetMCSpectra(const char* what , const c
 }
 
 //_____________________________________________________________________________
-TH1* AliAnalysisMuMu::PlotAccEfficiency(const char* whatever)
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::MergeSpectra(const char* spectraPath1,const char* spectraPath2,const char* spectraname)
 {
-    //FIXME::Make it general
-    if ( !IsSimulation() )
-        {
-        AliError("Could not get AccxEff histo: Not simulation file");
-        return 0x0;
-        }
 
-    TString path(Form("/%s/%s/%s/%s",
+
+  if (!OC() || !CC())
+  {
+    AliError("No mergeable/counter collection. Consider Upgrade()");
+    return 0x0;
+  }
+  else
+  {
+    cout <<      " ================================================================ " << endl;
+    cout <<      "                             MergeSpectra RAA                             " << endl;
+    cout <<      " ================================================================ " << endl;
+  }
+
+  TString spectraName1(Form("/%s/%s",spectraPath1,spectraname));
+  TString spectraName2(Form("/%s/%s",spectraPath2,spectraname));
+
+  cout << "spectraName 1 : " << spectraName1.Data() << endl;
+  cout << "spectraName 2 : " << spectraName2.Data() << endl;
+
+  AliAnalysisMuMuSpectra* mspectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraName1.Data())->Clone());
+  AliAnalysisMuMuSpectra* spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraName2.Data()));
+  if(!mspectra || !spectra){
+    AliError("Could not get spectras");
+    return 0x0 ;
+  }
+
+  mspectra->Merge(spectra);
+  mspectra->SetName(Form("%s_merged",spectraname));
+
+  TObject* o = fMergeableCollection->GetObject(spectraPath1,mspectra->GetName());
+  if (o) {
+    AliWarning(Form("Replacing %s/%s",spectraPath1,mspectra->GetName()));
+    fMergeableCollection->Remove(Form("/%s/%s",spectraPath1,mspectra->GetName()));
+
+  }
+  Bool_t adoptOK = fMergeableCollection->Adopt(spectraPath1,mspectra);
+
+  if ( adoptOK ) std::cout << "+++Spectra " << mspectra->GetName() << " adopted" << std::endl;
+  else AliError(Form("Could not adopt spectra %s",mspectra->GetName()));
+  Update();
+  return mspectra;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::MergeHistoInCentalityBins(const char* binToMerge, const char* newBin, Bool_t mix, const char* refbin) const
+{
+
+  if (!OC() || !CC())
+  {
+    AliError("No mergeable/counter collection. Consider Upgrade()");
+    return;
+  }
+  else
+  {
+    cout <<      " ================================================================ " << endl;
+    cout <<      "    MergeHistoInCentalityBins "<< binToMerge << " in "<< newBin << endl;
+    cout <<      "    Warning : spectra must have been deleted first (CleanAllSpectra()) 'cause not mergeable  " << endl;
+    cout <<      " ================================================================ " << endl;
+  }
+    // Get configuration settings
+
+    TObjArray* pairCutArray    = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+
+    TObjArray* triggerArray(0x0);
+    if (!mix) triggerArray = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
+    else                              triggerArray = Config()->GetListElements(Config()->MixTriggerKey(),IsSimulation());
+
+    TObjArray* eventTypeArray(0x0);
+    if (!mix) eventTypeArray = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
+    else                              eventTypeArray = Config()->GetListElements(Config()->EventSelectionMixKey(),IsSimulation());
+
+    TString refTrigger(Form("%s",Config()->First(Config()->RefMixTriggerKey(),IsSimulation()).Data()));
+    TString refEvent(Form("%s",Config()->First(Config()->RefMixEventSelectionKey(),IsSimulation()).Data()));
+
+
+
+    TObjArray* bins;
+
+    // Iterator for loops
+    TIter nextTrigger(triggerArray);
+    TIter nextEventType(eventTypeArray);
+    TIter nextPairCut(pairCutArray);
+
+    // Strings
+    TObjString* strigger;
+    TObjString* seventType;
+    TObjString* spairCut;
+    TObjString* sparticle;
+    TObjString* scentrality;
+
+    nextEventType.Reset();
+    // Loop on each envenType (see MuMuConfig)
+    //==============================================================================
+    while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+    {
+      AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
+      nextTrigger.Reset();
+      // Loop on each trigger (see MuMuConfig)
+      //==============================================================================
+      while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
+      {
+      AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
+          TString identifier = Form("/%s/%s",seventType->String().Data(),strigger->String().Data());
+
+        nextPairCut.Reset();
+        // Loop on each paircut (not the ones in MuMuConfig but the ones set)
+        //==============================================================================
+        while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+        {
+          AliDebug(1,Form("---PAIRCUT %s",spairCut->String().Data()));
+
+          TList* list(0x0);
+          if(!mix)     list = OC()->CreateListOfObjectNames(Form("%s/%s/%s/",identifier.Data(),refbin,spairCut->String().Data()));
+          else if (mix)list = OC()->CreateListOfObjectNames(Form("/MIX/%s_%s%s/%s/%s/",refEvent.Data(),refTrigger.Data(),identifier.Data(),refbin,spairCut->String().Data()));
+
+          // printf("%s/%s/%s/",identifier.Data(),refbin,spairCut->String().Data());
+          // printf("list : %p\n",list );
+          // list->Print("");
+          if(list->IsEmpty()) continue;
+
+          TObject* p =0x0;
+
+          for (int j = 0; j < list->GetEntries(); ++j) {
+
+                const char* objName =list->At(j)->GetName();
+
+                TObject * o =0x0;
+                if(!mix) o = OC()->GetSum(Form("%s/%s/%s/%s",identifier.Data(),binToMerge,spairCut->String().Data(),objName));
+                else     o = OC()->GetSum(Form("/MIX/%s_%s%s/%s/%s/%s",refEvent.Data(),refTrigger.Data(),identifier.Data(),binToMerge,spairCut->String().Data(),objName));
+
+                if ( o ) {
+                   if(!mix) p = OC()->GetObject(Form("%s/%s/%s",identifier.Data(),newBin,spairCut->String().Data()),o->GetName());
+                   else     p = OC()->GetObject(Form("/MIX/%s_%s%s/%s/%s",refEvent.Data(),refTrigger.Data(),identifier.Data(),newBin,spairCut->String().Data()),o->GetName());
+
+                    if (p && !mix) OC()->Remove(Form("%s/%s/%s/%s",identifier.Data(),newBin,spairCut->String().Data(),o->GetName()));
+                    if (p &&  mix) OC()->Remove(Form("/MIX/%s_%s%s/%s/%s/%s",refEvent.Data(),refTrigger.Data(),identifier.Data(),newBin,spairCut->String().Data(),objName));
+
+                    Bool_t adoptOK = kFALSE;
+                    if(!mix) adoptOK = OC()->Adopt(Form("%s/%s/%s",identifier.Data(),newBin,spairCut->String().Data()),o->Clone());
+                    else     adoptOK = OC()->Adopt(Form("/MIX/%s_%s%s/%s/%s",refEvent.Data(),refTrigger.Data(),identifier.Data(),newBin,spairCut->String().Data()),o->Clone());
+
+                    if ( adoptOK && !mix) printf(" --- Merge done for %s/%s/%s/%s \n",identifier.Data(),newBin,spairCut->String().Data(),o->GetName());
+                    else if ( adoptOK &&  mix) printf(" --- Merge done for /MIX/%s_%s%s/%s/%s/%s \n",refEvent.Data(),refTrigger.Data(),identifier.Data(),newBin,spairCut->String().Data(),o->GetName());
+                    else printf(" --- A problem occurs \n");
+                } else {
+                  printf("Cannot get object\n");
+                  continue;
+                }
+            }
+
+            delete list;
+        }
+    }
+  }
+
+
+  delete eventTypeArray ;
+  delete triggerArray ;
+  delete pairCutArray ;
+
+  return ;
+}
+
+//_____________________________________________________________________________
+TH1* AliAnalysisMuMu::PlotAccEfficiency(const char* SpectraName, const char* subresultname )
+{
+/**
+ * @brief Plot AccxEff
+ * @details Search for an AliAnalysisMuMuSpectra according to first entry of each keys in the config. file. FIXME : make it general.
+ *
+ * @param SpectraName [description]
+ * @return TH1 to be handle by the user
+ */
+    if ( !IsSimulation() ){
+      AliError("Could not get AccxEff histo: Not simulation file");
+      return 0x0;
+    }
+
+    TString path(Form("/FitResults/%s/%s/%s/%s",
                       Config()->First(Config()->EventSelectionKey(),kTRUE).Data(),
                       Config()->First(Config()->DimuonTriggerKey(),kTRUE).Data(),
                       Config()->First(Config()->CentralitySelectionKey(),kTRUE).Data(),
                       Config()->First(Config()->PairSelectionKey(),kTRUE).Data()));
 
-    AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("%s/%s",path.Data(),whatever)));
+    AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("%s/%s",path.Data(),SpectraName)));
     if ( !s )
         {
-        AliError(Form("No AccEff spectra %s found in %s",whatever,path.Data()));
+        AliError(Form("No AccEff spectra %s found in %s",SpectraName,path.Data()));
         return 0x0;
         }
 
-    return s->Plot(Form("AccEff%s",GetParticleName()),"PSICOUNT",kFALSE);//_2.2_3.9
+    if(!TString(SpectraName).Contains("VS"))return s->Plot(Form("AccEff%s",GetParticleName()),subresultname,kFALSE);//_2.2_3.9
+    else return static_cast<TH2*>(s->Plot(Form("AccEff%s",GetParticleName()),subresultname,kFALSE))->ProjectionX();//_2.2_3.9
 
 }
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::ComputeRelativeValueAndSESystematics(const char* quantity,const char* flavour,const char* value2Test, const char* binListToExclude, const char* fNormType, const char* evSelInt, const char* evSelDiff, const char* triggerCluster)
-{
-    /// Compute the relative (bin/integrated) Jpsi yield or <pT> in "quantity,flavour" bins from the mean value of the relative values of the tests used for the systematic uncertainty of signal extraction computation. Store also the systematic uncertainty tests.
-    ///
-    /// Important considerations:
-    ///   - No corrections can be applied to the yields or x-axis with this method
-    ///
-    ///   - The analysed file must contain the CMUL, CINT, CMSL, CMSL&0MUL and CINT&0MSL triggers to work correctly.
-    ///
-    ///   - The analysed file must contain the event selection PSALL (for the integrated signal extraction) and the one used in the yield analysis (i.e. PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00) to work correctly.
-    ///
-    /// Parameters:
-    ///   - what,quantity and flavour defines the binning to test (output will be 1 plot per bin)
-    /// value2test is the observable we want to test ( i.e. NJpsi(bin)/integratedNJpsi, <pt>(bin)/integrated<pt>... )
-    ///   - value2test == yield -> NJpsi(bin)/integratedNJpsi
-    ///   - value2test == mpt -> <pt>(bin)/integrated<pt>
-    ///   - relative: kTRUE if relative yield (y/y_int) wants to be computed. Note that here the ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios
-    ///   - fNormType: Desired FNorm to use: "offline", "global" or "mean"
-    ///   - evSelInt: Event selection to compute integrated NofJpsi
-    ///   - evSelDiff: Event selection to compute diferential NofJpsi
-    ///   - triggercluster: cluster where the CMSL trigger is ("MUON" for pA but for pp2012 could be also "ALLNOTRD" for certain runs, the option "MUON-ALLNOTRD" accounts for both at the same time). By default is "MUON".
-
-
-    TString sfNormType(fNormType);
-    TString sevSelInt(evSelInt);
-    TString sevSelDiff(evSelDiff);
-
-    if ( IsSimulation() )
-        {
-        AliError("Cannot compute J/Psi yield: Is a simulation file");
-        return;
-        }
-    TString dimuonTriggerClassName = Config()->First(Config()->DimuonTriggerKey(),kFALSE);
-    TString centralitySelection = Config()->First(Config()->CentralitySelectionKey(),kFALSE);
-    TString pairSelection = Config()->First(Config()->PairSelectionKey(),kFALSE);
-
-    TString intPath(Form("%s/%s/%s/%s",
-                         sevSelInt.Data(),
-                         dimuonTriggerClassName.Data(),
-                         centralitySelection.Data(),
-                         pairSelection.Data())); //Path to get/store integrated results from Mergeable Collection
-
-    TString diffPath(Form("%s/%s/%s/%s",
-                          sevSelDiff.Data(),
-                          dimuonTriggerClassName.Data(),
-                          centralitySelection.Data(),
-                          pairSelection.Data())); //Path to get/store differential results from Mergeable Collection
-
-    TString striggerCluster(triggerCluster);
-    if ( striggerCluster.Contains("MUON") && !striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON";
-    else if ( striggerCluster.Contains("ALLNOTRD") && !striggerCluster.Contains("MUON") ) striggerCluster = "ALLNOTRD";
-    else if ( striggerCluster.Contains("MUON") && striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON-ALLNOTRD";
-    else
-        {
-        AliError("Unknown trigger cluster");
-        return;
-        }
-
-    TString svalue2Test(value2Test);
-    TString shName("");
-    TString sObsInt("");
-    TString sObsBin("");
-    TString sflavour(flavour);
-    TString squantity(quantity);
-    squantity.ToUpper();
-
-    TH1* hMB(0x0);
-    Double_t nEqMBTot(0.),nEqMBTotError(0.);
-    if ( !svalue2Test.CompareTo("yield",TString::kIgnoreCase) )
-        {
-        sObsInt = "PSI-INTEGRATED-AccEffCorr";
-        sObsBin = Form("PSI-%s-AccEffCorr",squantity.Data());
-        svalue2Test = "NofJPsi";
-        shName = "N^{J/#psi}_{bin}/N^{J/#psi}_{int}";
-
-        TH1* hMBTot = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNEqMB",striggerCluster.Data(),sevSelInt.Data()));
-        if ( !hMBTot )
-            {
-            AliWarning(Form("No eq Nof MB events found in %s: Yield will not be calculated",Form("/FNORM-%s/%s/V0A/hNEqMB",striggerCluster.Data(),sevSelInt.Data())));
-            }
-        nEqMBTot = hMBTot->GetBinContent(1);
-        nEqMBTotError = hMBTot->GetBinError(1);
-
-
-        if ( sfNormType.Contains("offline") )
-            {
-            hMB = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNofEqMBVS%s",striggerCluster.Data(),sevSelDiff.Data(),quantity));
-            if ( !hMB )
-                {
-                AliWarning(Form("Histo hNofEqMBVS%s not found: Yield will not be calculated",quantity));
-                }
-
-            std::cout << " Using Fnorm from offline method " << std::endl;
-            std::cout <<  std::endl;
-            }
-        else if ( sfNormType.Contains("global") )
-            {
-            hMB = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNofEqMBVS%sFromGlobal",striggerCluster.Data(),sevSelDiff.Data(),quantity));
-            if ( !hMB )
-                {
-                AliError(Form("Histo hNofEqMBVS%sFromGlobal not found: Yield will not be calculated",quantity));
-                }
-
-            std::cout << " Using Fnorm from global method " << std::endl;
-            std::cout <<  std::endl;
-            }
-        else if ( sfNormType.Contains("mean") )
-            {
-            hMB = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNofEqMBVS%sFromMean",striggerCluster.Data(),sevSelDiff.Data(),quantity));
-            if ( !hMB )
-                {
-                AliError(Form("Histo hNofEqMBVS%sFromMean not found: Yield will not be calculated",quantity));
-                }
-
-            std::cout << " Using mean Fnorm " << std::endl;
-            std::cout <<  std::endl;
-            }
-        else
-            {
-            AliWarning("Dont know what Fnorm use: Yield will not be calculated");
-            }
-
-        }
-    else if ( !svalue2Test.CompareTo("mpt",TString::kIgnoreCase) )
-        {
-        sObsInt = "PSI-INTEGRATED-AccEffCorr-MeanPtVsMinvUS";
-        sObsBin = Form("PSI-%s-AccEffCorr-MeanPtVsMinvUS",squantity.Data());
-        svalue2Test = "MeanPtJPsi";
-        shName = "<p_{t}>^{bin}/<p_{t}>^{int}";
-        }
-    else
-        {
-        AliError("unrecognized value to test");
-        return;
-        }
-
-    TString id(Form("/TESTSYST/%s/%s",sevSelInt.Data(),sevSelDiff.Data()));
-
-    //________Get the integrated results
-    AliAnalysisMuMuSpectra* sInt = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",intPath.Data(),sObsInt.Data())));
-    if ( !sInt )
-        {
-        AliError(Form("No integrated spectra %s found in %s",sObsInt.Data(),intPath.Data()));
-        return;
-        }
-
-    TObjArray* bin = BIN()->CreateBinObjArray("psi","integrated","");
-    if ( !bin )
-        {
-        AliError("No integrated bin found");
-        return;
-        }
-    AliAnalysisMuMuBinning::Range* r = static_cast<AliAnalysisMuMuBinning::Range*>(bin->At(0));
-
-    AliAnalysisMuMuJpsiResult* resInt =  static_cast<AliAnalysisMuMuJpsiResult*>(sInt->GetResultForBin(*r));
-    if ( !resInt )
-        {
-        AliError(Form("No integrated result found in spectra %s at %s",sObsInt.Data(),intPath.Data()));
-        return;
-        }
-    TObjArray* sresIntArray = resInt->SubResults();
-
-    delete bin;
-    //_________________________
-
-
-    bin = BIN()->CreateBinObjArray("psi",squantity.Data(),sflavour.Data());
-    if ( !bin )
-        {
-        AliError(Form("%s-%s-%s binning does not exist","psi",squantity.Data(),sflavour.Data()));
-        return;
-        }
-
-    //_______ Exclude desired bins
-    TIter nextBinTest(bin);
-
-    TString sbinListToExclude(binListToExclude);
-    TObjArray* abinListToExclude = sbinListToExclude.Tokenize(",");
-    TIter nextBinToExclude(abinListToExclude);
-    Int_t excl(0);
-    while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBinTest()) ) ) //Bin loop
-        {
-        nextBinToExclude.Reset();
-        TObjString* s(0x0);
-        while ( (s = static_cast<TObjString*>(nextBinToExclude())) )
-            {
-            if ( !r->AsString().CompareTo(s->GetString().Data()) )
-                {
-                std::cout << "Removing bin " << s->GetString().Data() << std::endl;
-                bin->RemoveAt(excl);
-                }
-            }
-        excl++;
-        }
-    std::cout <<  std::endl;
-    bin->Compress();
-    //_________________
-
-
-    //______Create arrays to store values inside
-    Int_t nbin = bin->GetEntries();
-    Int_t nsres = sresIntArray->GetEntries();
-    TObjArray* sResultNameArray= new TObjArray();
-    sResultNameArray->SetOwner();
-    std::vector<std::vector<double> > valuesArr;
-    valuesArr.resize(nbin+1, std::vector<double>(nsres,0));
-    std::vector<std::vector<double> > valuesErrorArr;
-    valuesErrorArr.resize(nbin+1, std::vector<double>(nsres,0));
-    //_________________________
-
-
-    //________Get the integrated values from results
-    TIter nextIntSubResult(sresIntArray);
-    AliAnalysisMuMuResult* sresInt(0x0);
-
-    TString testSig(""); //Strings for testing the name of the subresult to extract the number of tests for the systematics
-    TString testSPsip("");
-    TString testSresIntNameSig("");
-    TString testSresIntNameSPsip("");
-
-    Int_t nFitsSameSignal(0);
-    Int_t j(0);
-    while ( ( sresInt = static_cast<AliAnalysisMuMuResult*>(nextIntSubResult()) ) ) //Integrated SubResult loop
-        {
-        TString sresIntName(sresInt->GetName());
-
-        valuesArr[0][j] = sresInt->GetValue(svalue2Test.Data());
-        valuesErrorArr[0][j] = sresInt->GetErrorStat(svalue2Test.Data());
-        sResultNameArray->Add(new TObjString(sresIntName.Data()));
-
-        if ( j ==0 ) // Get the first and last part of name of the first subresult
-            {
-            testSresIntNameSig = sresIntName.Data();
-            testSresIntNameSPsip = sresIntName.Data();
-
-            testSresIntNameSig.Remove(3,testSresIntNameSig.Sizeof()-3); // Get the first 3 characters which correspond to the signal shape (e.g CB2, NA6(0) ...)
-            testSresIntNameSPsip.Remove(0,testSresIntNameSPsip.Sizeof()-6); // Get the last 5 characters which correspond to the Psi' sigma (e.g. SP0.9 ...)
-            }
-
-        if ( sresIntName.Contains(testSresIntNameSig.Data()) && sresIntName.Contains(testSresIntNameSPsip.Data()) ) //This counts the number of times a fit with the same signal and same SigmaPsiP is repeated. This will be the number of tests for a given signal.
-            {
-            nFitsSameSignal++;
-            }
-        j++;
-        }
-
-    std::cout << "Number of tests per signal/SigmaPsi' combination = " << nFitsSameSignal << std::endl;
-    std::cout <<  std::endl;
-    //____________________________________
-
-    //__________Get the bin per bin results and the values
-    AliAnalysisMuMuSpectra* sBin = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",diffPath.Data(),sObsBin.Data())));
-    if ( !sBin )
-        {
-        AliError(Form("No integrated spectra %s found in %s",sObsBin.Data(),diffPath.Data()));
-        delete bin;
-        delete sResultNameArray;
-        return;
-        }
-
-
-    TIter nextBin(bin);
-    AliAnalysisMuMuJpsiResult* sresBin(0x0);
-    Int_t i(1);
-    while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) ) //Bin loop
-        {
-        sresBin =  static_cast<AliAnalysisMuMuJpsiResult*>(sBin->GetResultForBin(*r));
-        if ( !sresBin )
-            {
-            AliError(Form("No result found in spectra %s at %s for bin %s",sObsInt.Data(),diffPath.Data(),r->AsString().Data()));
-            delete bin;
-            delete sResultNameArray;
-            return;
-            }
-
-        TObjArray* sresBinArray = sresBin->SubResults();
-
-        if ( nsres != sresBinArray->GetEntries() )
-            {
-            AliError("Integrated and bins spectra have different number of subresults");
-            delete bin;
-            delete sResultNameArray;
-            return;
-            }
-
-        TIter nextSubResult(sresBinArray);
-        j = 0;
-        while ( (sresBin = static_cast<AliAnalysisMuMuJpsiResult*>(nextSubResult())) ) // Subresults loop
-            {
-            valuesArr[i][j] = sresBin->GetValue(svalue2Test.Data());
-            valuesErrorArr[i][j] = sresBin->GetErrorStat(svalue2Test.Data());
-
-            j++;
-
-            } //End Subresults loop
-        i++;
-
-        } //End bin loop
-    //___________________________
-
-
-    //____________Compute the value ratios and systematic uncertainties on the ratios bin by bin
-
-    //______ Create histos to store signal extraction systematic uncertainties
-    TH1* hsyst = new TH1F(Form("%s_Systematics",value2Test),Form("%s Systematics results",value2Test),nbin,0,nbin);
-    //_________________________________
-
-    //______ Create histos to store relative Jpsi yield or <p_T> vs bins
-    Int_t size = bin->GetEntriesFast();
-    Double_t* axis = new Double_t[size+1];
-    TIter next(bin);
-    AliAnalysisMuMuBinning::Range* b;
-    TH1* hy(0x0);
-    i = 0;
-    while ( ( b = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
-        {
-        axis[i] = b->Xmin();
-        ++i;
-        }
-
-    b = static_cast<AliAnalysisMuMuBinning::Range*>(bin->At(size-1));
-
-    axis[i] = b->Xmax();
-
-    if ( !svalue2Test.CompareTo("NofJPsi",TString::kIgnoreCase) )
-        {
-        hy = new TH1D(Form("hMeanJPsiYieldVS%sRelative",quantity),Form("Relative J/#psi yield vs %s;%s;Y^{J/#psi}/Y^{J/#psi}_{int}",quantity,quantity)
-                      ,size,axis);
-        }
-    else if ( !svalue2Test.CompareTo("MeanPtJPsi",TString::kIgnoreCase) )
-        {
-        hy = new TH1D(Form("hMeanJPsiMPtVS%sRelative",quantity),Form("Relative J/#psi <p_{T}> vs %s;%s;<p_{T}>^{J/#psi}/<p_{T}>^{J/#psi}_{int}",quantity,quantity)
-                      ,size,axis);
-        }
-
-    if ( !hy )
-        {
-        AliError("No histogram created to store the results");
-        return;
-        }
-    delete[] axis;
-    //_________________________________
-
-    TString binName("");
-    for ( Int_t b = 1 ; b <= size ; b++ ) //Bin loop
-        {
-
-        binName = static_cast<AliAnalysisMuMuBinning::Range*>(bin->At(b-1))->AsString().Data();
-        //    TString savePath(Form("%s/%s",id.Data(),binName.Data()));
-
-        Int_t binUCTotal(1);
-
-        TH1* hratiosBin = new TH1D(Form("SystTests_%s_Bkg_%s",sObsBin.Data(),binName.Data()),
-                                   Form("%s Systematics tests for %s",binName.Data(),shName.Data()),j*nFitsSameSignal,0,
-                                   j*nFitsSameSignal);
-
-        for ( Int_t k = 0 ; k < j ; k++ ) // Subresults loop for integrated values
-            {
-            //__Get the name of the signal and the Psi' sigma for the integrated result
-            TString signalNameInt(sResultNameArray->At(k)->GetName());
-            TString sPsiPNameInt(signalNameInt.Data());
-
-            signalNameInt.Remove(3,signalNameInt.Sizeof()-3); // Get the first 3 characters which correspond to the signal shape (e.g CB2, NA6(0) ...)
-            sPsiPNameInt.Remove(0,sPsiPNameInt.Sizeof()-6); // Get the last 5 characters which correspond to the Psi' sigma (e.g. SP0.9 ...)
-            //__
-
-            //      Int_t sizeName = signalName.Sizeof();
-            //      signalName.Remove(2,sizeName-3);
-            //      Int_t binUC(1);
-
-            for ( Int_t l = 0; l < j ; l++) //Subresults loop for bins values
-                {
-                TString binSignalName(sResultNameArray->At(l)->GetName());
-
-                Double_t ratio,ratioError(0.);
-
-                ratio = valuesArr[b][l] / valuesArr[0][k];
-                //          ratioError = TMath::Sqrt( TMath::Power(valuesErrorArr[b][l] / valuesArr[0][k],2.) + TMath::Power(valuesArr[b][l]*valuesErrorArr[0][k] / TMath::Power(valuesArr[0][k],2.),2.) );
-
-                if ( (valuesErrorArr[b][l] != 0) && (valuesErrorArr[0][k] != 0) ) // We only give an error!=0 if the errors of the int and bin values are both !=0 (Otherwise it means that there was a problem with the fit so we fix the error to 0 to skip the test later on)
-                    {
-                    ratioError = ratio*TMath::Sqrt( TMath::Power(valuesErrorArr[b][l] / valuesArr[b][l],2.) + TMath::Power(valuesErrorArr[0][k] / valuesArr[0][k],2.) );
-                    }
-
-                if ( binSignalName.Contains(signalNameInt.Data()) && binSignalName.Contains(sPsiPNameInt.Data()) ) // In this case the integrated and bin values have the same signal shape and Psi' sigma, so the result is stored
-                    {
-                    hratiosBin->GetXaxis()->SetBinLabel(binUCTotal,Form("%s/%s",sResultNameArray->At(l)->GetName(),sResultNameArray->At(k)->GetName()));
-
-                    hratiosBin->SetBinContent(binUCTotal,ratio);
-                    hratiosBin->SetBinError(binUCTotal,ratioError);
-
-                    binUCTotal++;
-                    }
-
-                }
-
-            }
-        //____ Take the Eq Nof MB events from the histos
-        Double_t nMBRatio(1.),nMBRatioError(0.);
-        if ( !svalue2Test.CompareTo("NofJPsi",TString::kIgnoreCase) )
-            {
-            for (Int_t i = 1 ; i <= hMB->GetNbinsX() ; i++ )
-                {
-
-                if ( !binName.CompareTo(hMB->GetXaxis()->GetBinLabel(i)) )
-                    {
-                    Double_t eqMBBin = hMB->GetBinContent(i);
-
-                    nMBRatio = nEqMBTot/eqMBBin;
-                    nMBRatioError = nMBRatio*TMath::Sqrt( TMath::Power(nEqMBTotError/nEqMBTot,2.) + TMath::Power(hMB->GetBinError(i)/eqMBBin,2.) );
-                    }
-
-                }
-            }
-        //_____________________
-
-        //________Mean, error on the mean and systematic uncertainty(signal extraction) computation for bin
-        //__Mean computation
-        Double_t num(0.),deno(0.);
-        for ( Int_t m = 1 ; m <= hratiosBin->GetNbinsX() ; m++ )
-            {
-            Double_t value = hratiosBin->GetBinContent(m); // Bin/Int value
-            Double_t error = hratiosBin->GetBinError(m); // Before this was divided by TMath::Sqrt(value);
-
-            if ( !(error>0.0 ) ) continue; // Skip values with error=0 (There were problems with the fit)
-
-            num += value; // We do not weight the values anymore with TMath::Power(weight,2.);
-            deno += 1.; // We do not weight the values anymore with 1./TMath::Power(weight,2.);
-            }
-
-        Double_t mean = num/deno;
-        Double_t jpsiMean = mean*nMBRatio ; //Compute relative Jpsi yield
-        //__
-
-        //__Error on the mean
-        Int_t nofvalidResults(0),nofTests(0);
-        Double_t w2err2(0.),sumw(0.);
-        for ( Int_t n = 1 ; n <= hratiosBin->GetNbinsX() ; n++ )
-            {
-            Double_t value = hratiosBin->GetBinContent(n);
-            Double_t error = hratiosBin->GetBinError(n);
-            Double_t weight = 1.; // We do not weight the values anymore with (error*error)/value;
-
-            nofTests++;
-
-            if ( !(error>0.0 ) ) continue; // Skip values with error=0 (There were problems with the fit)
-
-            w2err2 += weight*weight*error*error;
-            sumw += 1./weight;
-
-            nofvalidResults++;
-            }
-
-        std::cout << std::endl;
-        std::cout << "Bin " << b << " number of valid tests = " << nofvalidResults << "(" << nofvalidResults*100./nofTests << "%)" << std::endl;
-        std::cout << std::endl;
-
-        Double_t errorMean = TMath::Sqrt(w2err2*nofvalidResults)/sumw;
-        Double_t jpsiErrorMean = jpsiMean*TMath::Sqrt( TMath::Power(errorMean/mean,2.) + TMath::Power(nMBRatioError/nMBRatio,2.) ); //Compute relative Jpsi yield error
-        //__
-
-        Double_t val(0.),err(0.);
-        if ( !svalue2Test.CompareTo("NofJPsi",TString::kIgnoreCase) )
-            {
-            val = jpsiMean;
-            err = jpsiErrorMean;
-            }
-        else if ( !svalue2Test.CompareTo("MeanPtJPsi",TString::kIgnoreCase) )
-            {
-            val = mean;
-            err = errorMean;
-            }
-
-        hy->SetBinContent(b,val);
-        hy->SetBinError(b,err);
-        hy->GetXaxis()->SetBinLabel(b,binName.Data());
-
-        //__Systematic uncertainty
-        Double_t v1(0.),v2(0.),sum(0.);
-        for ( Int_t l = 1 ; l <= hratiosBin->GetNbinsX() ; l++ )
-            {
-            Double_t value = hratiosBin->GetBinContent(l);
-            Double_t error = hratiosBin->GetBinError(l); // Before this was divided by TMath::Sqrt(value);
-
-            if ( !(error>0.0 ) ) continue; // Skip values with error=0 (There were problems with the fit)
-
-            Double_t wi = 1.; // We do not wight anymore with 1./TMath::Power(error,2.);
-            v1 += wi;
-            v2 += wi*wi;
-            Double_t diff = value - mean;
-            sum += wi*diff*diff;
-
-            }
-
-        Double_t syst = TMath::Sqrt( (v1/(v1*v1-v2)) * sum);
-        //__
-
-        hsyst->GetXaxis()->SetBinLabel(b,binName.Data());
-        hsyst->SetBinContent(b,(syst*100.)/mean);
-        //________
-
-        //___
-        TF1* meanF = new TF1("mean","[0]",0,j*nFitsSameSignal);
-        meanF->SetParameter(0,mean);
-
-        TF1* meanFPS = new TF1("meanPS","[0]",0,j*nFitsSameSignal);
-        meanFPS->SetParameter(0,mean+syst);
-        meanFPS->SetLineStyle(2);
-
-        TF1* meanFMS = new TF1("meanMS","[0]",0,j*nFitsSameSignal);
-        meanFMS->SetParameter(0,mean-syst);
-        meanFMS->SetLineStyle(2);
-
-        hratiosBin->GetListOfFunctions()->Add(meanF);
-        hratiosBin->GetListOfFunctions()->Add(meanFPS);
-        hratiosBin->GetListOfFunctions()->Add(meanFMS);
-
-        //___ Save the signal extraction systematic uncertainty histo for each bin
-        TH1* o = OC()->Histo(Form("%s",id.Data()),hratiosBin->GetName());
-
-        if (o)
-            {
-            AliWarning(Form("Replacing %s/%s",id.Data(),hratiosBin->GetName()));
-            OC()->Remove(Form("%s/%s",id.Data(),hratiosBin->GetName()));
-            }
-
-        Bool_t adoptOK = OC()->Adopt(id.Data(),hratiosBin);
-
-        if ( adoptOK ) std::cout << "+++syst histo " << hratiosBin->GetName() << " adopted" << std::endl;
-        else AliError(Form("Could not adopt syst histo %s",hratiosBin->GetName()));
-        //__________________
-        }
-    //_____________________________________________________________________________
-
-
-    //___ Save the signal extraction systematic uncertainty histo for all the bins
-    TH1* o = OC()->Histo(Form("%s",id.Data()),hsyst->GetName());
-
-    if (o)
-        {
-        AliWarning(Form("Replacing %s/%s",id.Data(),hsyst->GetName()));
-        OC()->Remove(Form("%s/%s",id.Data(),hsyst->GetName()));
-        }
-
-    Bool_t adoptOK = OC()->Adopt(id.Data(),hsyst);
-
-    if ( adoptOK ) std::cout << "+++syst histo " << hsyst->GetName() << " adopted" << std::endl;
-    else AliError(Form("Could not adopt syst histo %s",hsyst->GetName()));
-    //__________________
-
-
-    //___ Save the Jpsi relative yield or <pT> histo
-    o = OC()->Histo(Form("/RESULTS-%s/%s",striggerCluster.Data(),diffPath.Data()),hy->GetName());
-
-    if (o)
-        {
-        AliWarning(Form("Replacing %s/%s","/RESULTS-%s/PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00/V0A",hy->GetName()));
-        OC()->Remove(Form("/RESULTS-%s/%s/%s",striggerCluster.Data(),diffPath.Data(),hy->GetName()));
-        }
-
-    adoptOK = OC()->Adopt(Form("/RESULTS-%s/%s",striggerCluster.Data(),diffPath.Data()),hy);
-
-    if ( adoptOK ) std::cout << "+++Yield histo " << hy->GetName() << " adopted" << std::endl;
-    else AliError(Form("Could not adopt Yield histo %s",hy->GetName()));
-    //__________________
-
-
-    delete bin;
-    delete sResultNameArray;
-
-    return;
-
-}
-
 
 //_____________________________________________________________________________
 UInt_t AliAnalysisMuMu::GetSum(AliCounterCollection& cc, const char* triggerList,
@@ -2767,7 +2723,6 @@ UInt_t AliAnalysisMuMu::GetSum(AliCounterCollection& cc, const char* triggerList
   TObjArray* a = TString(triggerList).Tokenize(" ");
   TIter next(a);
   TObjString* str;
-
   UInt_t n(0);
 
   TString sEventSelection(eventSelection);
@@ -2803,8 +2758,14 @@ void AliAnalysisMuMu::GetCollectionsFromAnySubdir(TDirectory& dir,
                                                     AliCounterCollection*& cc,
                                                     AliAnalysisMuMuBinning*& bin)
 {
-  /// Find, within dir and its sub-directories, the objects OC,CC and BIN
-
+/**
+ * @brief Find, within dir and its sub-directories, the objects OC,CC and BIN
+ *
+ * @param dir [description]
+ * @param oc [description]
+ * @param cc [description]
+ * @param bin [description]
+ */
   TList* keys = dir.GetListOfKeys();
   TIter next(keys);
 
@@ -2846,20 +2807,15 @@ void AliAnalysisMuMu::GetCollectionsFromAnySubdir(TDirectory& dir,
 }
 
 //_____________________________________________________________________________
-Bool_t
-AliAnalysisMuMu::GetCollections(const char* rootfile,
-                                const char* subdir,
-                                AliMergeableCollection*& oc,
-                                AliCounterCollection*& cc,
-                                AliAnalysisMuMuBinning*& bin,
-                                std::set<int>& runnumbers)
+Bool_t AliAnalysisMuMu::GetCollections(const char* rootfile,const char* subdir,AliMergeableCollection*& oc,AliCounterCollection*& cc,AliAnalysisMuMuBinning*& bin,std::set<int>& runnumbers)
 {
-  /// Get access to the mergeable collection, counter collection and binning
-  /// within file rootfile.
-  /// rootfile is a filename, with an optional directory (with the syntax
-  /// (filename.root:directory)
-  /// where the collections are to be found.
-
+/**
+ * @brief Get access to the mergeable collection, counter collection and binning within file rootfile.
+ * @details   rootfile is a filename, with an optional directory (with the syntax filename.root:directory) where the collections are to be found.
+ *
+ * The rootfile should be the outfile of the AliAnalysisTaskMuMu class.
+ *
+ */
   oc = 0x0;
   cc = 0x0;
   bin = 0x0;
@@ -2935,10 +2891,9 @@ AliAnalysisMuMu::GetCollections(const char* rootfile,
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMu::IsSimulation() const
 {
-    /// whether or not we have MC information
-
-    //  return kFALSE;
-
+/**
+ * @brief whether or not we have MC information
+ */
     if (!fMergeableCollection) return kFALSE;
 
     TList* list = fMergeableCollection->CreateListOfKeys(0);
@@ -2955,128 +2910,557 @@ Bool_t AliAnalysisMuMu::IsSimulation() const
 }
 
 //_____________________________________________________________________________
-Int_t
-AliAnalysisMuMu::Jpsi(const char* what, const char* binningFlavour, Bool_t fitmPt, Bool_t onlyCorrected)
+void AliAnalysisMuMu::NormMixedMinv(const char* binType, const char* particle, const char* flavour, Bool_t corrected, Double_t Mmin, Double_t Mmax)
 {
-    /// Fit the J/psi (and psiprime) peaks for the triggers in fDimuonTriggers list
-    /// what="integrated" => fit only fully integrated MinvUS
-    /// what="pt" => fit MinvUS in pt bins
-    /// what="y" => fit MinvUS in y bins
-    /// what="pt,y" => fit MinvUS in (pt,y) bins
+/**
+ * @brief Create normalized mixed unlike-sign minv spectrum.
+ * @details The normalization is made via : int{N_mix_+-} = \int{2*R*\sqrt{N_raw_++ * N_raw_--}}. Raw histograms are selected according to RefMix...Key() in the config. file.
+ *
+ * Mixed Histograms are selected according to Mix...Key() in config. file. See AliAnalysisMuMuConfig class.
+ *
+ * @param binType    [description]
+ * @param particle   particle name
+ * @param flavour    [description]
+ * @param corrected  If Minv are already AccxEff corrected or not
+ */
+    if(!OC())
+    {
+        AliError("No mergeable. Consider Upgrade()");
+        return;
+    }
+    else
+    {
+        cout <<      " ================================================================ " << endl;
+        cout <<      "                       NormMixedMinv                  " << endl;
+        cout <<      " ================================================================ " << endl;
+    }
 
-    TStopwatch timer;
+    // Get configuration settings
+    TObjArray* eventTypeArray    = Config()->GetListElements(Config()->RefMixEventSelectionKey(),IsSimulation());
+    TObjArray* triggerArray      = Config()->GetListElements(Config()->RefMixTriggerKey(),IsSimulation());
+    TObjArray* eventTypeMixArray = Config()->GetListElements(Config()->EventSelectionMixKey(),IsSimulation());
+    TObjArray* triggerMixArray   = Config()->GetListElements(Config()->MixTriggerKey(),IsSimulation());
+    TObjArray* pairCutArray      = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+    TObjArray* centralityArray   = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
+    TObjArray* binTypeArray      = TString(binType).Tokenize(",");
 
-    if (!fMergeableCollection)
-        {
-        AliError("No mergeable collection. Consider Upgrade()");
-        return 0;
-        }
+    TObjArray* bins;
 
-    Int_t nfits(0);
-
-    TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
-    TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
-    TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
-    TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
-    TObjArray* whatArray        = TString(what).Tokenize(",");
-
+    // Iterator for loops
     TIter nextTrigger(triggerArray);
+    TIter nextTriggerMix(triggerMixArray);
     TIter nextEventType(eventTypeArray);
+    TIter nextEventTypeMix(eventTypeMixArray);
     TIter nextPairCut(pairCutArray);
-    TIter nextWhat(whatArray);
+    TIter nextbinType(binTypeArray);
     TIter nextCentrality(centralityArray);
 
-    TObjString* trigger;
-    TObjString* eventType;
-    TObjString* pairCut;
-    TObjString* swhat;
-    TObjString* centrality;
+    // Strings
+    TObjString* strigger;
+    TObjString* seventType;
+    TObjString* spairCut;
+    TObjString* sbinType;
+    TObjString* scentrality;
+    TObjString* sTriggerMix;
+    TObjString* seventTypeMix;
 
-    while ( ( swhat = static_cast<TObjString*>(nextWhat()) ) ) {
-      AliAnalysisMuMuBinning* binning(0x0);
+    // For the loop comming
+    TString signFlagMinv[3] ={"","PlusPlus","MinusMinus"};
+    TString signFlagDist[3] ={"","PP","MM"};
 
-      if ( fBinning && swhat->String().Length() > 0 ) {
-        binning = fBinning->Project("psi",swhat->String().Data(),binningFlavour);
-      } else {
-        binning = new AliAnalysisMuMuBinning;
-        binning->AddBin("psi",swhat->String().Data());
-      }
+    THnSparse* n        =0x0;
+    TObject* o          =0x0;
 
-      StdoutToAliDebug(1,std::cout << "++++++++++++ swhat=" << swhat->String().Data() << std::endl;);
+    // Loop on each envenTypeMix (see MuMuConfig)
+    while ( ( seventTypeMix = static_cast<TObjString*>(nextEventTypeMix())) ){
+      AliDebug(1,Form("EVENTTYPEMIX %s",seventTypeMix->String().Data()));
+      nextTriggerMix.Reset();
 
-      std::cout << "" << std::endl;
-      std::cout << "++++++++++++++++++" << "NEW BIN TYPE" << "+++++++++++++++++++" << std::endl;
-      std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-      std::cout << "++++++++++++ swhat=" << swhat->String().Data() << "++++++++++++++++++++" << std::endl;
-      std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-      std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-      std::cout << "" << std::endl;
-      std::cout << "" << std::endl;
-
-      if (!binning) {
-        AliError("oups. binning is NULL");
-        continue;
-      }
-
-      StdoutToAliDebug(1,binning->Print(););
-      nextTrigger.Reset();
-      // Loop over all trigger
-      while ( ( trigger = static_cast<TObjString*>(nextTrigger())) ) {
-        AliDebug(1,Form("TRIGGER %s",trigger->String().Data()));
+      // Loop on each triggerMix (see MuMuConfig)
+      while ( ( sTriggerMix = static_cast<TObjString*>(nextTriggerMix())) ){
+        AliDebug(1,Form("-TRIGGERMIX %s",sTriggerMix->String().Data()));
         nextEventType.Reset();
-        // Loop over all evenType
-        while ( ( eventType = static_cast<TObjString*>(nextEventType())) ){
-          AliDebug(1,Form("--EVENTTYPE %s",eventType->String().Data()));
-          nextPairCut.Reset();
-          // Loop over all paircut
-          while ( ( pairCut = static_cast<TObjString*>(nextPairCut())) ) {
-            AliDebug(1,Form("----PAIRCUT %s",pairCut->String().Data()));
-            nextCentrality.Reset();
-            // Loop over all centrality
-            while ( ( centrality = static_cast<TObjString*>(nextCentrality()) ) ) {
-              AliDebug(1,"----Fitting...");
 
-              TObject* o;
-              TString id(Form("/%s/%s/%s/%s",eventType->String().Data(),
-                              trigger->String().Data(),
-                              centrality->String().Data(),
-                              pairCut->String().Data()));
+        // Loop on each envenType (see MuMuConfig)
+        while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+        {
+          AliDebug(1,Form("--REFEVENTTYPE %s",seventType->String().Data()));
+          nextTrigger.Reset();
 
-              AliAnalysisMuMuSpectra* spectra(0x0);
+          // Loop on each trigger (see MuMuConfig)
+          while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
+          {
+            AliDebug(1,Form("---REFTRIGGER %s",strigger->String().Data()));
+            nextPairCut.Reset();
 
-              if ( !onlyCorrected ) {
-                spectra = FitParticle("psi",trigger->String().Data(),eventType->String().Data(),pairCut->String().Data(),centrality->String().Data(),*binning);
+            // Loop on each paircut (see MuMuConfig)
+            while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+            {
+              AliDebug(1,Form("----PAIRCUT %s",spairCut->String().Data()));
+              nextbinType.Reset();
 
-                AliDebug(1,Form("----fitting done spectra = %p",spectra));
+              // Loop on each type (see MuMuConfig)
+              while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
+              {
+                AliDebug(1,Form("-----TYPE %s",sbinType->String().Data()));
+                nextCentrality.Reset();
 
-                if ( spectra ) {
-                  ++nfits;
+                // Loop on each centrality (see MuMuConfig)
+                while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
+                {
+                  AliDebug(1,Form("------CENTRALITY %s",scentrality->String().Data()));
+                  nextbinType.Reset();
 
-                  o = fMergeableCollection->GetObject(id.Data(),spectra->GetName());
-                  AliDebug(1,Form("----nfits=%d id=%s o=%p",nfits,id.Data(),o));
+                  // Loop on each centrality (see MuMuConfig)
+                  while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
+                  {
+                    AliDebug(1,Form("-------BIN %s",sbinType->String().Data()));
 
-                  if (o) {
-                    AliWarning(Form("Replacing %s/%s",id.Data(),spectra->GetName()));
-                    fMergeableCollection->Remove(Form("%s/%s",id.Data(),spectra->GetName()));
+                    // Get Binning
+                    AliAnalysisMuMuBinning* binning(0x0);
+                    if ( fBinning && sbinType->String().Length() > 0 ) binning = fBinning->Project(particle,sbinType->String().Data(),flavour);
+                    else  {
+                      binning = new AliAnalysisMuMuBinning;
+                      binning->AddBin(particle,sbinType->String().Data());
+                    }
+                    if (!binning) {
+                      AliError("oups. binning is NULL");
+                      continue;
+                    }
+
+                    // Create array
+                    TObjArray* bins = binning->CreateBinObjArray(particle);
+                    if (!bins){
+                      AliError(Form("Did not get any bin for particle %s",particle));
+                      delete binning;
+                      continue;
+                    }
+
+                    // Create ID for the fit which will be used to name results
+                    TString idraw(Form("/%s/%s/%s/%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data()));
+                    AliDebug(1,Form("idraw = %s\n",idraw.Data() ));
+                    TString idMix(Form("/%s/%s/%s/%s",seventTypeMix->String().Data(),sTriggerMix->String().Data(),scentrality->String().Data(),spairCut->String().Data()));
+                    AliDebug(1,Form("idMix = %s\n",idMix.Data() ));
+
+                    // The binning pointer, which point at Pt binning, Y binning etc.
+                    AliAnalysisMuMuBinning::Range* bin;
+                    TIter next(bins);
+
+                    // Add some element to ID
+                    TString spectraName(binning->GetName());
+                    if ( strcmp(flavour,"") != 0 ){
+                      spectraName += "-";
+                      spectraName += flavour;
+                    }
+                    if ( corrected ){
+                      spectraName += "-";
+                      spectraName += "AccEffCorr";
+                    }
+
+                    //MAIN PART : Loop on every binning range
+                    while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
+                    {
+                      // ---- Here we get all the histos we need ----
+                      TH1* hTableMinv[6]    = {0x0,  0x0,  0x0,  0x0,  0x0,  0x0};
+                      //                      {hMinvPM,  hMinvPP,  hMinvMM,  hMinvMixPM,  hMinvMixPP,  hMinvMixMM};
+                      TH1* hTableDistRaw[6] = {0x0,  0x0,  0x0,  0x0,  0x0,  0x0};
+                      //                      {hpT,  hpTPP,  hpTMM,  hY,  hYPP,  hYMM};
+                      TH1* hTableDistMix[6] = {0x0,  0x0,  0x0,  0x0,  0x0,  0x0};
+                      //                      {hpTMix,  hpTMixPP,  hpTMixMM,  hYMix,  hYMixPP,  hYMixMM};
+                      TH1* hRCoef;
+
+                      // Get Minv Histo
+                      for (int j = 0; j < 3; ++j) {
+                        TString hnameraw = corrected ? Form("MinvUS+%s%s_AccEffCorr",bin->AsString().Data(),signFlagMinv[j].Data()) : Form("MinvUS+%s%s",bin->AsString().Data(),signFlagMinv[j].Data());
+                        TString hnamemix = corrected ? Form("MinvUS+%s%sMix_AccEffCorr",bin->AsString().Data(),signFlagMinv[j].Data()) : Form("MinvUS+%s%sMix",bin->AsString().Data(),signFlagMinv[j].Data());
+                        // Pointer to the histo from histo collection (Yes it is discusting )
+                        if ( OC()->Histo(idraw.Data(),hnameraw.Data()) ) hTableMinv[j] = static_cast<TH1*>(OC()->Histo(idraw.Data(),hnameraw.Data())->Clone());
+                        else {
+                          AliError(Form("Could not find histo %s/%s",idraw.Data(),hnameraw.Data()));
+                          continue ;
+                        }
+
+                        if ( OC()->Histo(idMix.Data(),hnamemix.Data()) ) hTableMinv[j+3] = static_cast<TH1*>(OC()->Histo(idMix.Data(),hnamemix.Data())->Clone());
+                        else {
+                          AliError(Form("Could not find histo %s/%s",idMix.Data(),hnamemix.Data()));
+                          continue;
+                        }
+                      }
+
+                      // Get Dist Histo
+                      for (int j = 0; j < 3; ++j) {
+                        TString hnamePt = corrected ? Form("Pt%s_AccEffCorr",signFlagDist[j].Data()) : Form("Pt%s",signFlagDist[j].Data());
+                        TString hnameY  = corrected ? Form("Y%s_AccEffCorr",signFlagDist[j].Data()) : Form("Y%s",signFlagDist[j].Data());
+
+                        TString hnamePtMix = corrected ? Form("PtMix%s_AccEffCorr",signFlagDist[j].Data()) : Form("PtMix%s",signFlagDist[j].Data());
+                        TString hnameYMix  = corrected ? Form("YMix%s_AccEffCorr",signFlagDist[j].Data()) : Form("YMix%s",signFlagDist[j].Data());
+
+                        // Pointer to the histo from histo collection (Yes it is discusting )
+                        if ( OC()->GetObject(idraw.Data(),hnamePt.Data()) ){
+                          // hTableDistRaw[j] = OC()->Histo(idraw.Data(),hnamePt.Data());
+                          n = static_cast<THnSparse*>(OC()->GetObject(idraw.Data(),hnamePt.Data()));
+                          Int_t binmin = n->GetAxis(1)->FindBin(Mmin);
+                          Int_t binmax = n->GetAxis(1)->FindBin(Mmax);
+                          n->GetAxis(1)->SetRange(binmin,binmax);
+                          hTableDistRaw[j] = n->Projection(0,"e");
+                          hTableDistRaw[j]->SetName(Form("%s_%.2f_%.2f",hTableDistRaw[j]->GetName(),Mmin,Mmax)) ;
+                        } else {
+                          AliError(Form("Could not find GetObject %s/%s",idraw.Data(),hnamePt.Data()));
+                          continue ;
+                        }
+
+                        if ( OC()->GetObject(idraw.Data(),hnameY.Data()) ) {
+                          // hTableDistRaw[j+3] = OC()->Histo(idraw.Data(),hnameY.Data());
+                          n = static_cast<THnSparse*>(OC()->GetObject(idraw.Data(),hnameY.Data()));
+                          Int_t binmin = n->GetAxis(1)->FindBin(Mmin);
+                          Int_t binmax = n->GetAxis(1)->FindBin(Mmax);
+                          n->GetAxis(1)->SetRange(binmin,binmax);
+                          hTableDistRaw[j+3] = n->Projection(0,"e");
+                          hTableDistRaw[j+3]->SetName(Form("%s_%.2f_%.2f",hTableDistRaw[j+3]->GetName(),Mmin,Mmax)) ;
+                        } else {
+                          AliError(Form("Could not find GetObject %s/%s",idraw.Data(),hnameY.Data()));
+                          continue ;
+                        }
+
+                        if ( OC()->GetObject(idMix.Data(),hnamePtMix.Data()) ){
+                          // hTableDistMix[j] = OC()->Histo(idMix.Data(),hnamePtMix.Data());
+                          n = static_cast<THnSparse*>(OC()->GetObject(idMix.Data(),hnamePtMix.Data()));
+                          Int_t binmin = n->GetAxis(1)->FindBin(Mmin);
+                          Int_t binmax = n->GetAxis(1)->FindBin(Mmax);
+                          n->GetAxis(1)->SetRange(binmin,binmax);
+                          hTableDistMix[j] = n->Projection(0,"e");
+                          hTableDistMix[j]->SetName(Form("%s_%.2f_%.2f",hTableDistMix[j]->GetName(),Mmin,Mmax)) ;
+                        } else {
+                          AliError(Form("Could not find GetObject %s/%s",idMix.Data(),hnamePtMix.Data()));
+                          continue ;
+                        }
+
+                        if ( OC()->GetObject(idMix.Data(),hnameYMix.Data()) ) {
+                          // hTableDistMix[j+3] = OC()->Histo(idMix.Data(),hnameYMix.Data());
+                          n = static_cast<THnSparse*>(OC()->GetObject(idMix.Data(),hnameYMix.Data()));
+                          Int_t binmin = n->GetAxis(1)->FindBin(Mmin);
+                          Int_t binmax = n->GetAxis(1)->FindBin(Mmax);
+                          n->GetAxis(1)->SetRange(binmin,binmax);
+                          hTableDistMix[j+3] = n->Projection(0,"e");
+                          hTableDistMix[j+3]->SetName(Form("%s_%.2f_%.2f",hTableDistMix[j+3]->GetName(),Mmin,Mmax)) ;
+                        } else {
+                          AliError(Form("Could not find GetObject %s/%s",idMix.Data(),hnameYMix.Data()));
+                          continue ;
+                        }
+                      }
+
+                      // Check if we have all the histo we need
+                      Bool_t missAnHisto = kFALSE;
+                      for (int i = 0; i < 6; ++i){
+                        if(!hTableMinv[i] || !hTableDistRaw[i] || !hTableDistMix[i]) missAnHisto=kTRUE;
+                      }
+                      if(missAnHisto){
+                        AliError(Form("One histo is missing ... go to next bin\n"));
+                        for (int i=0; i<6; i++){ if (hTableMinv[i]!=0x0) delete hTableMinv[i];  }
+                        for (int i=0; i<6; i++){ if (hTableDistRaw[i]!=0x0) delete hTableDistRaw[i]; }
+                        for (int i=0; i<6; i++){ if (hTableDistMix[i]!=0x0) delete hTableDistMix[i]; }
+                        continue;
+                      }
+
+                      // ---- First part : compute the R Factor ----
+                      hRCoef = static_cast<TH1*>(hTableMinv[3]->Clone());
+                      hRCoef->SetName(Form("RCoefficient_%s",bin->AsString().Data()));
+                      hRCoef->SetTitle("R Coefficient versus M");
+                      hRCoef->GetYaxis()->SetTitle("R");
+
+                      // Copy and Multiply like sign histograms
+                      TH1* hMinvMixPPCopy = static_cast<TH1*>(hTableMinv[4]->Clone());
+                      hMinvMixPPCopy->Multiply(hTableMinv[5]);
+
+                      // Compute and fill square roots of like-signs histo
+                      Int_t nEntries = hMinvMixPPCopy->GetEntries();
+                      for (int j = 0; j < nEntries ; j++) {
+                        Double_t binContent = hMinvMixPPCopy->GetBinContent(j);
+                        Double_t binError   = hMinvMixPPCopy->GetBinError(j);
+                        if( binContent !=0 && binError !=0 ){
+                          hMinvMixPPCopy->SetBinContent(j,TMath::Sqrt(binContent));
+                          hMinvMixPPCopy->SetBinError(j,TMath::Sqrt(binContent)*(binError/binContent));
+                        }/* else {
+                          hMinvMixPPCopy->SetBinContent(j,0.);
+                          hMinvMixPPCopy->SetBinError(j,0.);
+                        }*/
+                      }
+
+                      // Final R Factor
+                      hRCoef->Divide(hMinvMixPPCopy);
+                      hRCoef->Scale(0.5);
+
+                      // Save results in mergeable collection
+                      if ( hRCoef ) {
+                        o = fMergeableCollection->GetObject(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()),hRCoef->GetName());
+                        AliDebug(1,Form("----idMix=MIX_%s_%s%s o=%p",seventType->String().Data(),strigger->String().Data(),idMix.Data(),o));
+
+                        if (o) fMergeableCollection->Remove(Form("/MIX/%s_%s%s/%s",seventType->String().Data(),strigger->String().Data(),idMix.Data(),hRCoef->GetName()));
+
+                        Bool_t adoptOK = fMergeableCollection->Adopt(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()),hRCoef);
+                        if(!adoptOK) AliError(Form("Could not adopt histo %s",hRCoef->GetName()));
+                      } else {
+                        for (int i=0; i<6; i++){ if (hTableMinv[i]!=0x0) delete hTableMinv[i]; }
+                        for (int i=0; i<6; i++){ if (hTableDistRaw[i]!=0x0) delete hTableDistRaw[i]; }
+                        for (int i=0; i<6; i++){ if (hTableDistMix[i]!=0x0) delete hTableDistMix[i]; }
+                        delete hMinvMixPPCopy;
+                        continue;
+                      }
+
+                      // ---- normalize unlike-sign mixed minv histo ----
+
+                      // Copy and Multiply like sign histograms
+                      TH1* hMinvPPCopy = static_cast<TH1*>(hTableMinv[1]->Clone());
+                      hMinvPPCopy->Multiply(hTableMinv[2]);
+                      nEntries = hMinvPPCopy->GetEntries();
+
+                      // Compute and fill square roots of like-signs histo
+                      for (int i = 0; i < nEntries ; i++){
+                        Double_t binContent = hMinvPPCopy->GetBinContent(i);
+                        Double_t binError   = hMinvPPCopy->GetBinError(i);
+                        if( binContent !=0 && binError !=0 ){
+                          hMinvPPCopy->SetBinContent(i,TMath::Sqrt(binContent));
+                          hMinvPPCopy->SetBinError(i,TMath::Sqrt(binContent)*(binError/binContent));
+                        } /*else {
+                          hMinvPPCopy->SetBinContent(i,0.);
+                          hMinvPPCopy->SetBinError(i,0.);
+                        }*/
+                      }
+
+                      // Multiply by 2R
+                      hMinvPPCopy->Multiply(hRCoef);
+                      hMinvPPCopy->Scale(2.);
+
+                      Double_t intMix = 0;
+                      Double_t intRaw = 0;
+
+                      Int_t bmin  = hTableMinv[3]->GetXaxis()->FindBin(Mmin);
+                      Int_t bmax  = hTableMinv[3]->GetXaxis()->FindBin(Mmax);
+                      intMix      = hTableMinv[3]->Integral(bmin,bmax);
+
+                      Int_t bmin2 = hMinvPPCopy->GetXaxis()->FindBin(Mmin);
+                      Int_t bmax2 = hMinvPPCopy->GetXaxis()->FindBin(Mmax);
+                      intRaw      = hMinvPPCopy->Integral(bmin2,bmax2);
+
+                      if ( intMix !=0. && intRaw !=0. && intRaw/intMix !=0. ) {
+                        for (int i = 0; i < 6; ++i) {
+                          if ( i<3 ) hTableMinv[i+3]->Scale(intRaw/intMix); // Norm MinvMix histo
+                          hTableDistMix[i]->Scale(intRaw/intMix); // Norm pt and rapidy mix histo
+                        }
+                      } else {
+                        AliError(Form("\n Cannot compute integral from one of the histos since intRaw = %f and intMix = %f \n",intRaw,intMix));
+                        for (int i=0; i<6; i++){ if (hTableMinv[i]!=0x0) delete hTableMinv[i]; }
+                        for (int i=0; i<6; i++){ if (hTableDistRaw[i]!=0x0) delete hTableDistRaw[i]; }
+                        for (int i=0; i<6; i++){ if (hTableDistMix[i]!=0x0) delete hTableDistMix[i]; }
+                        delete hMinvMixPPCopy;
+                        delete hMinvPPCopy;
+                        continue;
+                      }
+
+                      // ---- save results in mergeable collection ----
+
+                      for (int i = 0; i < 6; ++i){
+                        o = 0x0;
+                        if ( hTableMinv[i] ) {
+                          o = fMergeableCollection->GetObject(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()),hTableMinv[i]->GetName());
+                          AliDebug(1,Form("----idMix=MIX_%s_%s%s o=%p",seventType->String().Data(),strigger->String().Data(),idMix.Data(),o));
+
+                          if (o) fMergeableCollection->Remove(Form("/MIX/%s_%s%s/%s",seventType->String().Data(),strigger->String().Data(),idMix.Data(),hTableMinv[i]->GetName()));
+
+                          Bool_t adoptOK = fMergeableCollection->Adopt(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()),hTableMinv[i]);
+                          if(! adoptOK) AliError(Form("Cannot adopt histo %s ",hTableMinv[i]->GetName()));
+                        }
+                        o = 0x0;
+                        if ( hTableDistRaw[i] ) {
+                          o = fMergeableCollection->GetObject(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()),hTableDistRaw[i]->GetName());
+                          AliDebug(1,Form("----idMix=MIX_%s_%s%s o=%p",seventType->String().Data(),strigger->String().Data(),idMix.Data(),o));
+
+                          if (o) fMergeableCollection->Remove(Form("/MIX/%s_%s%s/%s",seventType->String().Data(),strigger->String().Data(),idMix.Data(),hTableDistRaw[i]->GetName()));
+
+                          Bool_t adoptOK = fMergeableCollection->Adopt(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()),hTableDistRaw[i]);
+                          if(! adoptOK) AliError(Form("Cannot adopt histo %s ",hTableDistRaw[i]->GetName()));
+                        }
+                        o = 0x0;
+                        if ( hTableDistMix[i] ) {
+                          o = fMergeableCollection->GetObject(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()),hTableDistMix[i]->GetName());
+                          AliDebug(1,Form("----idMix=MIX_%s_%s%s o=%p",seventType->String().Data(),strigger->String().Data(),idMix.Data(),o));
+
+                          if (o) fMergeableCollection->Remove(Form("/MIX/%s_%s%s/%s",seventType->String().Data(),strigger->String().Data(),idMix.Data(),hTableDistMix[i]->GetName()));
+
+                          Bool_t adoptOK = fMergeableCollection->Adopt(Form("/MIX/%s_%s%s",seventType->String().Data(),strigger->String().Data(),idMix.Data()),hTableDistMix[i]);
+                          if(! adoptOK) AliError(Form("Cannot adopt histo %s ",hTableDistMix[i]->GetName()));
+                        }
+                      }
+                    }
+                    delete binning;
+                    delete bins;
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
-                  Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),spectra);
+    Update();
 
-                  if ( adoptOK ) std::cout << "+++Spectra " << spectra->GetName() << " adopted" << std::endl;
-                  else AliError(Form("Could not adopt spectra %s",spectra->GetName()));
+    delete eventTypeArray;
+    delete eventTypeMixArray;
+    delete triggerMixArray;
+    delete pairCutArray;
+    delete centralityArray;
+    delete triggerArray;
 
-                  StdoutToAliDebug(1,spectra->Print(););
-                } else AliError("Error creating spectra");
+    return;
+}
+
+//_____________________________________________________________________________
+Int_t AliAnalysisMuMu::FitJpsi(const char* binType, const char* flavour, const TString fitMethod, const char* histoType )
+{
+/**
+ * @brief  Fit the J/psi and Psi(2S) pick.
+ * @details Fit process delegated to AliAnalysisMuMu::FitParticle().
+ *
+ * @param binType  [description]
+ * @param flavour  [description]
+ * @param fitMethod '' or 'mix'
+ * @return number of proceeded fits
+ */
+  TStopwatch timer;
+
+  if (!fMergeableCollection) {
+    AliError("No mergeable collection. Consider Upgrade()");
+    return 0;
+  } else {
+      cout <<      " ================================================================ " << endl;
+      cout <<      "                       FitJpsi                  " << endl;
+      cout <<      " ================================================================ " << endl;
+  }
+
+  const char* particle = "psi";
+
+  Int_t nfits(0);
+
+  TObjArray* pairCutArray    = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+  TObjArray* centralityArray = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
+  TObjArray* binTypeArray    = TString(binType).Tokenize(",");
+
+  TObjArray* TriggerArray(0x0);
+  if ( !fitMethod.Contains("mix") ) TriggerArray = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
+  else                              TriggerArray = Config()->GetListElements(Config()->MixTriggerKey(),IsSimulation());
+
+  TObjArray* eventTypeArray(0x0);
+  if ( !fitMethod.Contains("mix") ) eventTypeArray = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
+  else                              eventTypeArray = Config()->GetListElements(Config()->EventSelectionMixKey(),IsSimulation());
+
+  TString refTrigger(Form("%s",Config()->First(Config()->RefMixTriggerKey(),IsSimulation()).Data()));
+  TString refEvent(Form("%s",Config()->First(Config()->RefMixEventSelectionKey(),IsSimulation()).Data()));
+
+  TIter nextTrigger(TriggerArray);
+  TIter nextEventType(eventTypeArray);
+  TIter nextPairCut(pairCutArray);
+  TIter nextbinType(binTypeArray);
+  TIter nextCentrality(centralityArray);
+
+  TObjString* trigger;
+  TObjString* eventType;
+  TObjString* pairCut;
+  TObjString* sbinType;
+  TObjString* centrality;
+
+  while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
+  {
+    AliAnalysisMuMuBinning* binning(0x0);
+
+    if ( fBinning && sbinType->String().Length() > 0 ) {
+      binning = fBinning->Project(particle,sbinType->String().Data(),flavour);
+    } else {
+      binning = new AliAnalysisMuMuBinning;
+      binning->AddBin(particle,sbinType->String().Data());
+    }
+
+    StdoutToAliDebug(1,std::cout << "++++++++++++ binning=" << sbinType->String().Data() << std::endl;);
+
+    std::cout << "" << std::endl;
+    std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    std::cout << "+++++++++++++++++++ binning  = " << sbinType->String().Data() << std::endl;
+    std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "" << std::endl;
+
+    if (!binning) {
+      AliError("oups. binning is NULL");
+      continue;
+    }
+
+    StdoutToAliDebug(1,binning->Print(););
+
+    // Loop over all trigger
+    while ( ( trigger = static_cast<TObjString*>(nextTrigger())) ) {
+      AliDebug(1,Form("--TRIGGER %s",trigger->String().Data()));
+      nextEventType.Reset();
+
+      // Loop over all evenType
+      while ( ( eventType = static_cast<TObjString*>(nextEventType())) ){
+        AliDebug(1,Form("----EVENTTYPE %s",eventType->String().Data()));
+        nextPairCut.Reset();
+
+        // Loop over all paircut
+        while ( ( pairCut = static_cast<TObjString*>(nextPairCut())) ) {
+          AliDebug(1,Form("------PAIRCUT %s",pairCut->String().Data()));
+          nextCentrality.Reset();
+
+          // Loop over all centrality
+          while ( ( centrality = static_cast<TObjString*>(nextCentrality()) ) ) {
+            AliDebug(1,"------Fitting...");
+
+            // Select stored path
+            TObject* o;
+            TString id = "";
+            if(fitMethod.Contains("mix"))
+              id = Form("/FitResults/%s_%s/%s/%s/%s/%s",refEvent.Data(),refTrigger.Data(),eventType->String().Data(),trigger->String().Data(),centrality->String().Data(),pairCut->String().Data());
+            else
+              id = Form("/FitResults/%s/%s/%s/%s",eventType->String().Data(),trigger->String().Data(),centrality->String().Data(),pairCut->String().Data());
+
+            printf("\n ----- id:%s -----\n",id.Data() );
+            AliAnalysisMuMuSpectra* spectra(0x0);
+            AliAnalysisMuMuSpectra* spectraCorr(0x0);
+
+            // ---- The main part. The fit method is called ----
+
+            AliDebug(1,"------Fitting spectra...");
+            spectra = FitParticle(particle,trigger->String().Data(),eventType->String().Data(),pairCut->String().Data(),centrality->String().Data(),*binning,kFALSE,&fitMethod,flavour,histoType);
+            AliDebug(1,Form("------fitting done spectra = %p",spectra));
+
+            // AliDebug(1,"------Fitting corrected spectra...");
+            // spectraCorr = FitParticle(particle,trigger->String().Data(),eventType->String().Data(),pairCut->String().Data(),centrality->String().Data(),*binning,kTRUE,&fitMethod,flavour,histoType);
+            // AliDebug(1,Form("------fitting done corrected spectra = %p",spectraCorr));
+
+            // ----
+
+            // --- save results in mergeable collection ---
+            if ( spectra ) {
+              ++nfits;
+
+              o = fMergeableCollection->GetObject(id.Data(),spectra->GetName());
+              AliDebug(1,Form("----nfits=%d id=%s o=%p",nfits,id.Data(),o));
+
+              if (o) {
+                AliWarning(Form("Replacing %s/%s",id.Data(),spectra->GetName()));
+                fMergeableCollection->Remove(Form("%s/%s",id.Data(),spectra->GetName()));
               }
 
-              AliDebug(1,"----Fitting corrected spectra...");
-              AliAnalysisMuMuSpectra* spectraCorr = FitParticle("psi",trigger->String().Data(),eventType->String().Data(),pairCut->String().Data(),centrality->String().Data(),*binning,"minv",kTRUE);
+              Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),spectra);
 
-              AliDebug(1,Form("----fitting done corrected spectra = %p",spectraCorr));
+              if ( adoptOK ) std::cout << "+++Spectra " << spectra->GetName() << " adopted" << std::endl;
+              else AliError(Form("Could not adopt spectra %s",spectra->GetName()));
 
-              // save results in mergeable collection
-              o = 0x0;
-              if ( spectraCorr ) {
+              StdoutToAliDebug(1,spectra->Print(););
+            } else AliError("Error creating spectra");
+
+            o = 0x0;
+            if ( spectraCorr ) {
               ++nfits;
 
               o = fMergeableCollection->GetObject(id.Data(),spectraCorr->GetName());
@@ -3093,101 +3477,24 @@ AliAnalysisMuMu::Jpsi(const char* what, const char* binningFlavour, Bool_t fitmP
               else AliError(Form("Could not adopt spectra %s",spectraCorr->GetName()));
 
               StdoutToAliDebug(1,spectraCorr->Print(););
-              } else AliError("Error creating spectra");
-
-
-              if (fitmPt) {
-                AliDebug(1,"----Fitting mean pt...");
-
-                std::cout << "" << std::endl;
-                std::cout << "" << std::endl;
-
-                if ( !onlyCorrected ){
-                  std::cout << "++++++++++++ Fitting mean Pt for " << swhat->String().Data() << " " << "slices" << std::endl; //Uncomment
-                  if ( spectra ) {
-                      AliAnalysisMuMuSpectra* spectraMeanPt = FitParticle("psi",
-                                                                          trigger->String().Data(),
-                                                                          eventType->String().Data(),
-                                                                          pairCut->String().Data(),
-                                                                          centrality->String().Data(),
-                                                                          *binning,"mpt"/*,*spectra*/);
-                      AliDebug(1,Form("----fitting done spectra = %p",spectraMeanPt));
-                      o = 0x0;
-
-                      if ( spectraMeanPt ){
-                        ++nfits; //Review this
-
-                        o = fMergeableCollection->GetObject(id.Data(),spectraMeanPt->GetName());
-                        AliDebug(1,Form("----nfits=%d id=%s o=%p",nfits,id.Data(),o));
-
-                        if (o) {
-                          AliWarning(Form("Replacing %s/%s",id.Data(),spectraMeanPt->GetName()));
-                          fMergeableCollection->Remove(Form("%s/%s",id.Data(),spectraMeanPt->GetName()));
-                        }
-
-                        Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),spectraMeanPt);
-
-                        if ( adoptOK ) std::cout << "+++Spectra " << spectraMeanPt->GetName() << " adopted" << std::endl;
-                        else AliError(Form("Could not adopt spectra %s",spectraMeanPt->GetName()));
-
-                      } else AliError("Error creating spectra");
-
-                  } else std::cout << "Mean pt fit failed: No inv mass spectra for " << swhat->String().Data() << " " << "slices" << std::endl; //Uncomment
-                }
-                std::cout << "++++++++++++ Fitting corrected mean Pt for" << " " << swhat->String().Data() << " " << "slices" << std::endl;
-
-                if ( spectraCorr ){
-
-                  AliAnalysisMuMuSpectra* spectraMeanPtCorr = FitParticle("psi",trigger->String().Data(),eventType->String().Data(),pairCut->String().Data(),centrality->String().Data(),*binning,"mpt"/*,*spectraCorr*/,kTRUE);
-
-                  AliDebug(1,Form("----fitting done spectra = %p",spectraMeanPtCorr));
-
-                  o = 0x0;
-
-                  if ( spectraMeanPtCorr ) {
-                    ++nfits; //Review this
-
-                    o = fMergeableCollection->GetObject(id.Data(),spectraMeanPtCorr->GetName());
-
-                    AliDebug(1,Form("----nfits=%d id=%s o=%p",nfits,id.Data(),o));
-
-                    if (o) {
-                      AliWarning(Form("Replacing %s/%s",id.Data(),spectraMeanPtCorr->GetName()));
-                      fMergeableCollection->Remove(Form("%s/%s",id.Data(),spectraMeanPtCorr->GetName()));
-                    }
-
-                    Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),spectraMeanPtCorr);
-
-                    if ( adoptOK ) std::cout << "+++Spectra " << spectraMeanPtCorr->GetName() << " adopted" << std::endl;
-                    else AliError(Form("Could not adopt spectra %s",spectraMeanPtCorr->GetName()));
-                    } else AliError("Error creating spectra");
-                } else std::cout << "Corrected mean pt fit failed: No corrected inv mass spectra for " << swhat->String().Data() << " " << "slices" << std::endl;
-              }
             }
+            else AliError("Error creating spectra");
           }
         }
       }
     }
+  }
 
-    delete whatArray;
-    delete triggerArray;
-    delete eventTypeArray;
-    delete pairCutArray;
-    delete centralityArray;
+  delete eventTypeArray;
+  delete TriggerArray;
+  delete pairCutArray;
+  delete centralityArray;
 
-    StdoutToAliDebug(1,timer.Print(););
+  StdoutToAliDebug(1,timer.Print(););
 
-    if (nfits)
-        {
-        Update();
-        //    ReOpen(fFilename,"UPDATE");
-        //    fMergeableCollection->Write("MC",TObjArray::kOverwrite);// | TObjArray::kSingleKey);
-        //    ReOpen(fFilename,"READ");
-        }
+  if (nfits) Update();
 
-
-    return nfits;
-
+  return nfits;
 }
 
 //_____________________________________________________________________________
@@ -3196,6 +3503,17 @@ TGraph* AliAnalysisMuMu::PlotEventSelectionEvolution(const char* trigger1, const
                                                      Bool_t drawFills,
                                                      Bool_t asRejection) const
 {
+/**
+ * @brief Plot relative Event Selection Evolution
+ *
+ * @param trigger1    [description]
+ * @param event1      [description]
+ * @param trigger2    [description]
+ * @param event2      [description]
+ * @param drawFills   [description]
+ * @param asRejection [description]
+ * @return TGraph to be handle by the user
+ */
     if (!CC()) return 0x0;
 
     const std::set<int>& runnumbers = RunNumbers();
@@ -3315,27 +3633,28 @@ TGraph* AliAnalysisMuMu::PlotEventSelectionEvolution(const char* trigger1, const
 //_____________________________________________________________________________
 void AliAnalysisMuMu::ShowList(const char* title, const TString& list, const char separator) const
 {
-    /// Show a list of strings
-    TObjArray* parts = list.Tokenize(separator);
+  /**
+   * @brief convenient method to show a string as a list providing the separator.
+   */
+  TObjArray* parts = list.Tokenize(separator);
 
-    std::cout << title << " (" << parts->GetEntries() << ") : " << std::endl;
+  std::cout << title << " (" << parts->GetEntries() << ") : " << std::endl;
 
-    TIter next(parts);
-    TObjString* str;
+  TIter next(parts);
+  TObjString* str;
 
-    while ( ( str = static_cast<TObjString*>(next()) ) ){
-      std::cout << "    " << str->String().Data() << std::endl;
-    }
+  while ( ( str = static_cast<TObjString*>(next()) ) ) std::cout << "    " << str->String().Data() << std::endl;
 
-    if ( parts->GetEntries()==0) std::cout << endl;
+  if ( parts->GetEntries()==0) std::cout << endl;
 
-    delete parts;
+  delete parts;
 }
 
 //_____________________________________________________________________________
 void AliAnalysisMuMu::Print(Option_t* opt) const
 {
   /// printout
+
   std::cout << "Reading from file : " << fFilename.Data() << std::endl;
 
   TString copt(opt);
@@ -3353,8 +3672,7 @@ void AliAnalysisMuMu::Print(Option_t* opt) const
 
   std::cout << std::endl;
   Int_t i(0);
-  for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it )
-  {
+  for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it ){
     std::cout << (*it);
     if ( fCorrectionPerRun ) std::cout << Form("(%e)",fCorrectionPerRun->GetY()[i]);
     std::cout << ",";
@@ -3391,52 +3709,47 @@ void AliAnalysisMuMu::Print(Option_t* opt) const
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::PrintNofParticle(const char* particle, const char* what, const char* binType, Bool_t AccEffCorr) const
+void AliAnalysisMuMu::PrintNofWhat(const char* what, const char* spectraName, Bool_t mix, Bool_t AccEffCorr) const
 {
-    ///
-    /// Function to use after JPsi(). It loops over all combination of centrality/enventype/ trigger (etc.) and
-    /// print RAA on terminal accordingly. Fnorm / <T_AA> / other constants are written in AliAnalysisMuMuSpectraCapsulePbPb.
-    /// <binType> can be either "PT" or "Y" for the moment. This method reads sigma_pp value
-    /// from extern file who's line must be written as :
-    ///
-    /// intervalLow  intervalHight  sigma_pp  dsigma_pp  dsigma_pp_Correl  dsigma_pp_Uncorrel  AccEff  dAccEff;
-    ///
-    /// WATCH OUT FOR UNITS !! Function is written for cross-section in microbarn in externFile
-    ///
-    /// note : For now, this method is set for a single centrality bin 0-90
-    /// TODO : Make it work with different centrality, i.e  need to read also an extra externfile with value who are function of centrality (<T_AA> for instance...)
-    ///
-    ///
+    /**
+    * @brief            Print number of particle. Method to use after FitJPsi() or any other fit process.
+    * @details          Delegate to AliAnalysisMuMuCapsulePbPb::PrintNumberOfWhat().
+    * @param particle   particle name
+    * @param what Quantity stored in the AliAnalysisMuMuSpectra
+    */
 
 
-    if (!OC() || !CC())
-        {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-        }
-    else
-        {
-        cout <<      " ================================================================ " << endl;
-        cout <<      "                       Number of "<< particle << endl;
-        cout <<      " ================================================================ " << endl;
-        }
+    if (!OC() || !CC()){
+      AliError("No me rgeable/counter collection. Consider Upgrade()");
+      return ;
+    } else {
+      cout <<      " ================================================================ " << endl;
+      cout <<      "                       Number of "<< what << endl;
+      cout <<      " ================================================================ " << endl;
+    }
 
     // Get configuration settings
-    TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
-    TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
-    TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());// to add here an entry
-    TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
-    TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
-    TObjArray* particleArray    = TString(particle).Tokenize(",");
-    TObjArray* binTypeArray     = TString(binType).Tokenize(",");
+
+    TObjArray* pairCutArray    = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+    TObjArray* centralityArray = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
+
+    TObjArray* triggerArray(0x0);
+    if (!mix) triggerArray = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
+    else                              triggerArray = Config()->GetListElements(Config()->MixTriggerKey(),IsSimulation());
+
+    TObjArray* eventTypeArray(0x0);
+    if (!mix) eventTypeArray = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
+    else                              eventTypeArray = Config()->GetListElements(Config()->EventSelectionMixKey(),IsSimulation());
+
+    TString refTrigger(Form("%s",Config()->First(Config()->RefMixTriggerKey(),IsSimulation()).Data()));
+    TString refEvent(Form("%s",Config()->First(Config()->RefMixEventSelectionKey(),IsSimulation()).Data()));
+
     TObjArray* bins;
 
     // Iterator for loops
     TIter nextTrigger(triggerArray);
     TIter nextEventType(eventTypeArray);
     TIter nextPairCut(pairCutArray);
-    TIter nextParticle(particleArray);
-    TIter nextbinType(binTypeArray);
     TIter nextCentrality(centralityArray);
 
     // Strings
@@ -3444,91 +3757,80 @@ void AliAnalysisMuMu::PrintNofParticle(const char* particle, const char* what, c
     TObjString* seventType;
     TObjString* spairCut;
     TObjString* sparticle;
-    TObjString* sbinType;
     TObjString* scentrality;
 
-    //Loop on particle type
-    while ( ( sparticle = static_cast<TObjString*>(nextParticle()) ) )
-        {
-        AliDebug(1,Form("particle %s",sparticle->String().Data()));
-        nextEventType.Reset();
-        // Loop on each envenType (see MuMuConfig)
+    nextEventType.Reset();
+    // Loop on each envenType (see MuMuConfig)
+    //==============================================================================
+    while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+    {
+      AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
+      nextTrigger.Reset();
+      // Loop on each trigger (see MuMuConfig)
+      //==============================================================================
+      while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
+      {
+      AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
+      nextCentrality.Reset();
+      // Loop on each centrality (not the ones in MuMuConfig but the ones set)
+      //==============================================================================
+      while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
+      {
+        AliDebug(1,Form("--CENTRALITY %s",scentrality->String().Data()));
+        nextPairCut.Reset();
+        // Loop on each paircut (not the ones in MuMuConfig but the ones set)
         //==============================================================================
-        while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
-            {
-            AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
-            nextTrigger.Reset();
-            // Loop on each trigger (see MuMuConfig)
-            //==============================================================================
-            while ( ( strigger = static_cast<TObjString*>(nextTrigger())) )
-                {
-                AliDebug(1,Form("-TRIGGER %s",strigger->String().Data()));
-                nextCentrality.Reset();
-                // Loop on each centrality (not the ones in MuMuConfig but the ones set)
-                //==============================================================================
-                while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
-                    {
-                    AliDebug(1,Form("--CENTRALITY %s",scentrality->String().Data()));
-                    nextPairCut.Reset();
-                    // Loop on each paircut (not the ones in MuMuConfig but the ones set)
-                    //==============================================================================
-                    while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
-                        {
-                        AliDebug(1,Form("---PAIRCUT %s",spairCut->String().Data()));
-                        nextbinType.Reset();
-                        // Loop on each type (pt or y)
-                        //==============================================================================
-                        while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
-                            {
-                            AliDebug(1,Form("----TYPE %s",sbinType->String().Data()));
+        while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+        {
+          AliDebug(1,Form("---PAIRCUT %s",spairCut->String().Data()));
 
-                            //________Get spectra
-                            TString spectraPath= Form("/%s/%s/%s/%s/%s-%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),sparticle->String().Data(),sbinType->String().Data());
-                            if (AccEffCorr)spectraPath+="-AccEffCorr";
+          //________Get spectra
+          TString spectraPath = "";
+          if(mix)
+            spectraPath = Form("/FitResults/%s_%s/%s/%s/%s/%s/%s",refEvent.Data(),refTrigger.Data(),seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),spectraName);
+          else
+            spectraPath = Form("/FitResults/%s/%s/%s/%s/%s",seventType->String().Data(),strigger->String().Data(),scentrality->String().Data(),spairCut->String().Data(),spectraName);
+          if (AccEffCorr)spectraPath+="-AccEffCorr";
 
-                            AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
+          AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
 
-                            if(!spectra){
-                              AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
-                              continue;
-                            }
-                            //________
+          if(!spectra){
+            AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
+            continue;
+          }
+          //________
 
-                            // Create pointer on fitted spectra
-                            AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,"","");
+          // Create pointer on fitted spectra
+          AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,"","");
+          AliDebug(1,Form("capsule = %p",capsule));
+          if(!capsule){
+            AliError("Could not find spetra !");
+            continue;
+          }
 
-                            if(!capsule){
-                              AliError("Could not find spetra !");
-                              continue;
-                            }
-
-                            AliDebug(1,Form("Spectra = %p",capsule));
-
-                            capsule->PrintNofWhat(what);
-                            delete capsule;
-                            }
-                        }
-                    }
-                }
-            }
+          capsule->PrintNofWhat(what);
+          delete capsule;
         }
+      }
+    }
+  }
 
-    delete eventTypeArray ;
-    delete triggerArray ;
-    delete fitfunctionArray ;
-    delete pairCutArray ;
-    delete centralityArray ;
-    delete particleArray ;
-    delete binTypeArray ;
 
-    return ;
+  delete eventTypeArray ;
+  delete triggerArray ;
+  delete pairCutArray ;
+  delete centralityArray ;
+
+  return ;
 
 }
 
 //_____________________________________________________________________________
 TFile* AliAnalysisMuMu::ReOpen(const char* filename, const char* mode) const
 {
-  /// Tries to reopen the file with a new mode
+  /**
+   * @brief Tries to reopen the file with a new mode
+   */
 
   TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(filename));
   if (f)delete f;
@@ -3546,7 +3848,13 @@ TFile* AliAnalysisMuMu::ReOpen(const char* filename, const char* mode) const
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMu::SetCorrectionPerRun(const TGraph& corr, const char* formula)
 {
-    /// Sets the graph used to correct values per run
+/**
+ * @brief Sets the graph used to correct values per run
+ *
+ * @param corr    [description]
+ * @param formula [description]
+ *
+ */
     delete fCorrectionPerRun;
     fCorrectionPerRun=0x0;
 
@@ -3554,39 +3862,30 @@ Bool_t AliAnalysisMuMu::SetCorrectionPerRun(const TGraph& corr, const char* form
 
     Int_t i(0);
 
-    for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it )
-        {
-        Int_t corrRun = TMath::Nint(corr.GetX()[i]);
-        if (corrRun != *it)
-            {
-            AliError(Form("%d-th run mistmatch %d vs %d",i,corrRun,*it));
+    for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it ){
+      Int_t corrRun = TMath::Nint(corr.GetX()[i]);
 
-            return kFALSE;
-            }
-        ++i;
-        }
+      if (corrRun != *it){
+        AliError(Form("%d-th run mistmatch %d vs %d",i,corrRun,*it));
+        return kFALSE;
+      }
+      ++i;
+    }
 
     fCorrectionPerRun = new TGraphErrors(corr.GetN());
 
     TFormula* tformula(0x0);
-    if ( strlen(formula) > 0 )
-        {
-        tformula = new TFormula("SetCorrectionPerRunFormula",formula);
-        }
+    if ( strlen(formula) > 0 ) tformula = new TFormula("SetCorrectionPerRunFormula",formula);
 
     i = 0;
 
-    for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it )
-        {
-        Double_t y = corr.GetY()[i];
+    for ( std::set<int>::const_iterator it = RunNumbers().begin(); it != RunNumbers().end(); ++it ){
+      Double_t y = corr.GetY()[i];
 
-        if ( tformula )
-            {
-            y = tformula->Eval(y);
-            }
-        fCorrectionPerRun->SetPoint(i,corr.GetX()[i],y);
-        ++i;
-        }
+      if ( tformula ) y = tformula->Eval(y);
+      fCorrectionPerRun->SetPoint(i,corr.GetX()[i],y);
+      ++i;
+    }
 
     delete formula;
 
@@ -3594,25 +3893,30 @@ Bool_t AliAnalysisMuMu::SetCorrectionPerRun(const TGraph& corr, const char* form
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::SetNofInputParticles(AliAnalysisMuMuJpsiResult& r)
+void AliAnalysisMuMu::SetNofInputParticles(AliAnalysisMuMuJpsiResult& r,const char* event, const char* trigger, const char* centrality)
 {
-    /// Set the "NofInput" variable(s) of one result, equivalent to compute AccxEff
+  /// Set the "NofInput" variable(s) of one result
 
-    TString hname(Form("MinvUS+%s",r.Bin().AsString().Data()));
-    TString EventSelectionKey =Config()->First(Config()->EventSelectionKey(),IsSimulation());
-    TString Centrality        =Config()->First(Config()->CentralitySelectionKey(),IsSimulation());
-    TString DimuonTrigger     =Config()->First(Config()->DimuonTriggerKey(),IsSimulation());
+  TString hname(Form("MinvUS+%s",r.Bin().AsString().Data()));
 
-    TH1* hinput = fMergeableCollection->Histo(Form("/%s/%s/%s/%s/INYRANGE",AliAnalysisMuMuBase::MCInputPrefix(),EventSelectionKey.Data(),DimuonTrigger.Data(),Centrality.Data()),hname.Data());
+  TH1* hinput = fMergeableCollection->Histo(Form("/%s/%s/%s/%s/INYRANGE",AliAnalysisMuMuBase::MCInputPrefix(),event,trigger,centrality),hname.Data());
 
-    if (!hinput)AliError(Form("Got a simulation file where I did not find histogram /%s/%s/%s/%s/INYRANGE/%s",AliAnalysisMuMuBase::MCInputPrefix(),EventSelectionKey.Data(),DimuonTrigger.Data(),Centrality.Data(),hname.Data()));
-    else r.SetNofInputParticles(*hinput);
+  if (!hinput)
+  {
+    AliError(Form("Got a simulation file where I did not find histogram /%s/%s/%s/%s/INYRANGE/%s",AliAnalysisMuMuBase::MCInputPrefix(),event,trigger,centrality,hname.Data()));
+  }
+  else
+  {
+    r.SetNofInputParticles(*hinput);
+  }
 }
 
 //_____________________________________________________________________________
 AliAnalysisMuMuSpectra* AliAnalysisMuMu::SPECTRA(const char* fullpath) const
 {
-  /// Shortcut method to get to a spectra
+  /**
+   * @brief Shortcut method to get to a spectra
+   */
   if (!OC()) return 0x0;
 
   return static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(fullpath));
@@ -3621,6 +3925,13 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::SPECTRA(const char* fullpath) const
 //_____________________________________________________________________________
 void AliAnalysisMuMu::SelectRunByTrigger(const char* triggerList)
 {
+  /**
+  *   [AliAnalysisMuMu::SelectRunByTrigger description]
+  *   @brief   Old function with a lot of hard coded things, not sure what it does... Maybe outdated
+  *   @details [long   description]
+  *
+  *   @param   triggerList [description]
+  */
   if (!fMergeableCollection || !fCounterCollection) return;
 
   TObjArray* runs = fCounterCollection->GetKeyWords("run").Tokenize(",");
@@ -3648,10 +3959,7 @@ void AliAnalysisMuMu::SelectRunByTrigger(const char* triggerList)
 
       while ( ( strigger = static_cast<TObjString*>(nextTrigger()) ) )
       {
-        if ( !striggerList.Contains(strigger->String().Data()) )
-            {
-            continue;
-            }
+        if ( !striggerList.Contains(strigger->String().Data()) ) continue;
 
         ULong64_t n = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
                                                                   strigger->String().Data(),"PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00",srun->String().Atoi())));
@@ -3676,9 +3984,14 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
                                            Bool_t compact,
                                            Bool_t orderByTriggerCount)
 {
-  // Give the fraction of triggers (in triggerList) relative
-  // to what is expected in the scalers
-
+/**
+ *   [AliAnalysisMuMu::TriggerCountCoverage description]
+ *   @brief   Give the fraction of triggers (in triggerList) relative to what is expected in the scalers
+ *
+ *   @param   triggerList         [description]
+ *   @param   compact             [description]
+ *   @param   orderByTriggerCount [description]
+ */
   TGrid::Connect("alien://"); // to insure the "Trying to connect to server... message does not pollute our output later on...
 
   AliLog::EType_t oldLevel = static_cast<AliLog::EType_t>(AliLog::GetGlobalLogLevel());
@@ -3707,10 +4020,7 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
   {
     msg.Form("RUN %09d ",srun->String().Atoi());
 
-    if (!compact)
-    {
-        msg += "\n";
-    }
+    if (!compact) msg += "\n";
 
     ULong64_t nmax(0);
 
@@ -3718,10 +4028,7 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
 
     while ( ( strigger = static_cast<TObjString*>(nextTrigger()) ) )
     {
-      if ( !striggerList.Contains(strigger->String().Data()) )
-      {
-        continue;
-      }
+      if ( !striggerList.Contains(strigger->String().Data()) ) continue;
 
       ULong64_t n = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
                                                             strigger->String().Data(),"ALL",srun->String().Atoi())));
@@ -3741,21 +4048,12 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
         msg += TString::Format("fraction %5.1f %%",n*100.0/expected);
       }
 
-      if (!compact)
-      {
-        msg += "\n";
-      }
+      if (!compact) msg += "\n";
     }
-    if (nmax>0)
-    {
-      if (!orderByTriggerCount)
-      {
-        std::cout << msg.Data() << std::endl;
-      }
-      else
-      {
-        messages.insert(std::make_pair(nmax,static_cast<std::string>(msg.Data())));
-      }
+
+    if (nmax>0){
+      if (!orderByTriggerCount) std::cout << msg.Data() << std::endl;
+      else messages.insert(std::make_pair(nmax,static_cast<std::string>(msg.Data())));
     }
   }
 
@@ -3764,8 +4062,7 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
   ULong64_t current(0);
   Int_t n(0);
 
-  for ( it = messages.rbegin(); it != messages.rend(); ++it )
-  {
+  for ( it = messages.rbegin(); it != messages.rend(); ++it ){
     ++n;
     current += it->first;
     Double_t percent = ( total > 0.0 ? current*100.0/total : 0.0);
@@ -3776,13 +4073,12 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
                     total,totalExpected,totalExpected ? total*100.0/totalExpected : 0.0) << std::endl;
 
 
-    for ( it = messages.rbegin(); it != messages.rend(); ++it )
-        {
-        ++n;
-        current += it->first;
-        Double_t percent = ( total > 0.0 ? current*100.0/total : 0.0);
-        std::cout << Form("%10lld",it->first) << " " << it->second << " percentage of total = " << Form("%7.2f %% %3d",percent,n ) << std::endl;
-        }
+    for ( it = messages.rbegin(); it != messages.rend(); ++it ) {
+      ++n;
+      current += it->first;
+      Double_t percent = ( total > 0.0 ? current*100.0/total : 0.0);
+      std::cout << Form("%10lld",it->first) << " " << it->second << " percentage of total = " << Form("%7.2f %% %3d",percent,n ) << std::endl;
+    }
 
     std::cout << Form("--- TOTAL %lld expected %lld fraction %5.1f %%",
                       total,totalExpected,totalExpected ? total*100.0/totalExpected : 0.0) << std::endl;
@@ -3811,12 +4107,8 @@ void AliAnalysisMuMu::Update()
 
   ReOpen(fFilename,"UPDATE");
 
-  if (OC())
-  {
-    if (fDirectory.Length())
-    {
-      gDirectory->cd(fDirectory.Data());
-    }
+  if (OC()){
+    if (fDirectory.Length()) gDirectory->cd(fDirectory.Data());
     OC()->Write("OC",TObject::kSingleKey|TObject::kOverwrite);
   }
 
@@ -3841,79 +4133,70 @@ Bool_t AliAnalysisMuMu::Upgrade()
     /// - from single list to one key per object, if needed
     /// - from histogramCollection to mergeableCollection, if needed
 
-
     AliWarning("Out of date method");
 
     TFile* f = ReOpen(fFilename,"UPDATE");
 
     TList* list = static_cast<TList*>(f->Get("chist"));
 
-    if (list)
-        {
-        // really old file where everything was in a single list
+    if (list) {
+      // really old file where everything was in a single list
 
-        AliHistogramCollection* hc = static_cast<AliHistogramCollection*>(list->At(0));
-        AliCounterCollection* cc = static_cast<AliCounterCollection*>(list->At(1));
+      AliHistogramCollection* hc = static_cast<AliHistogramCollection*>(list->At(0));
+      AliCounterCollection* cc = static_cast<AliCounterCollection*>(list->At(1));
+
+      AliMergeableCollection* mc = hc->Convert();
+
+    AliWarning("Out of date method");
+
+      mc->Write("MC",TObject::kSingleKey);
+      cc->Write("CC",TObject::kSingleKey);
+
+      f->Delete("chist;*");
+
+      f->Write();
+
+    } else {
+      AliHistogramCollection* hc = static_cast<AliHistogramCollection*>(f->Get("HC"));
+
+      if ( hc ) {
+        // old file with histogram collection instead of mergeable collection
 
         AliMergeableCollection* mc = hc->Convert();
 
         f->cd();
 
         mc->Write("MC",TObject::kSingleKey);
-        cc->Write("CC",TObject::kSingleKey);
-
-        f->Delete("chist;*");
-
+        f->Delete("HC;*");
         f->Write();
+      }
+    }
 
-        }
-    else
-        {
-        AliHistogramCollection* hc = static_cast<AliHistogramCollection*>(f->Get("HC"));
-
-        if ( hc )
-            {
-            // old file with histogram collection instead of mergeable collection
-
-            AliMergeableCollection* mc = hc->Convert();
-
-            f->cd();
-
-            mc->Write("MC",TObject::kSingleKey);
-
-            f->Delete("HC;*");
-
-            f->Write();
-            }
-        }
-
-    delete f;
-
-    return kTRUE;
+  delete f;
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::PrintDistribution(const char* binType, const char* what, const char* sResName, const char* ColSys, Bool_t divideByBinWidth, Bool_t AccEffCorr)
+TObjArray* AliAnalysisMuMu::PrintDistribution(const char* spectraName, const char* what, const char* subresultname, Bool_t divideByBinWidth, Bool_t AccEffCorr)
 {
-    /// Compute what distribution vs binType. Delegate procedure to AliAnalysisSpectra object. It can be compute for an specific subresult (fit with an specific background shape, signal, fitting range... combination) or from the mean of all the subresults.
-    ///
-    /// Parameters:
-    ///   -binType    : INTEGRATED, PT, Y (for now)
-    ///   -what       : The quantity (NofJPsi by default, but could be something else...)
-    ///   -AccEffCorr : Just a tag to select right histograms.
-    ///   -sResName   : subresult name to get the yield from. By default is "" (mean of all subresults)
-
-    if (!OC() || !CC())
-        {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-        }
-    else
-        {
-        cout <<      " ================================================================ " << endl;
-        cout <<      "                       PrintDistribution                          " << endl;
-        cout <<      " ================================================================ " << endl;
-        }
+    /**
+     * @brief    Print distribution vs binType.
+     * @details  Delegate procedure to AliAnalysisSpectra object. DimuonTriggerKey is used to select the trigger.
+     *
+     *  @param   binType          [description]
+     *  @param   what               Quantity stored in the AliAnalysisMuMuSpectra
+     *  @param   subresultname    If one wants to draw one/several specific results.
+     *  @param   divideByBinWidth [description]
+     *  @param   AccEffCorr       Spectra type
+    **/
+    if (!OC() || !CC()){
+      AliError("No mergeable/counter collection. Consider Upgrade()");
+      return 0x0;
+    } else {
+      cout <<      " ================================================================ " << endl;
+      cout <<      "                       PrintDistribution                          " << endl;
+      cout <<      " ================================================================ " << endl;
+    }
 
     // Get configuration settings
     TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
@@ -3922,7 +4205,7 @@ void AliAnalysisMuMu::PrintDistribution(const char* binType, const char* what, c
     TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
     TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
     TObjArray* whatArray        = TString(what).Tokenize(",");
-    TObjArray* binTypeArray     = TString(binType).Tokenize(",");
+    TObjArray* spectraNameArray     = TString(spectraName).Tokenize(",");
     TObjArray* bins;
 
     // Iterator for loops
@@ -3930,7 +4213,7 @@ void AliAnalysisMuMu::PrintDistribution(const char* binType, const char* what, c
     TIter nextEventType(eventTypeArray);
     TIter nextPairCut(pairCutArray);
     TIter nextWhat(whatArray);
-    TIter nextbinType(binTypeArray);
+    TIter nextspectraName(spectraNameArray);
     TIter nextCentrality(centralityArray);
 
     // Strings
@@ -3938,91 +4221,99 @@ void AliAnalysisMuMu::PrintDistribution(const char* binType, const char* what, c
     TObjString* seventType;
     TObjString* spairCut;
     TObjString* swhat;
-    TObjString* sbinType;
+    TObjString* sspectraName;
     TObjString* scentrality;
 
-    TString striggerMB  = Config()->First(Config()->MinbiasTriggerKey(),IsSimulation());
-    const TString syear(ColSys);
 
     // Pointers
-    TH1* h= 0x0;
+
+    TObjArray* h= new TObjArray();
+    h->SetOwner(kTRUE);
+    int i_TH1 = 1 ;
+
     AliAnalysisMuMuSpectra spectra=0x0;
 
     //Loop on what type
     while ( ( swhat = static_cast<TObjString*>(nextWhat()) ) )
-        {
-        AliDebug(1,Form("what %s",swhat->String().Data()));
-        nextEventType.Reset();
-        // Loop on each envenType (see MuMuConfig)
+    {
+      AliDebug(1,Form("what %s",swhat->String().Data()));
+      nextEventType.Reset();
+      // Loop on each envenType (see MuMuConfig)
+      //==============================================================================
+      while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+      {
+        AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
+        nextTrigger.Reset();
+        // Loop on each trigger (see MuMuConfig)
         //==============================================================================
-        while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
-            {
-            AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
-            nextTrigger.Reset();
-            // Loop on each trigger (see MuMuConfig)
+        while ( ( striggerDimuon = static_cast<TObjString*>(nextTrigger())) )
+        {
+          AliDebug(1,Form("-TRIGGER %s",striggerDimuon->String().Data()));
+          nextPairCut.Reset();
+          // Loop on each paircut (not the ones in MuMuConfig but the ones set)
+          //==============================================================================
+          while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+          {
+            AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
+            nextspectraName.Reset();
+            // Loop on each type (pt or y)
             //==============================================================================
-            while ( ( striggerDimuon = static_cast<TObjString*>(nextTrigger())) )
-                {
-                AliDebug(1,Form("-TRIGGER %s",striggerDimuon->String().Data()));
-                nextPairCut.Reset();
-                // Loop on each paircut (not the ones in MuMuConfig but the ones set)
-                //==============================================================================
-                while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+            while ( ( sspectraName = static_cast<TObjString*>(nextspectraName()) ) )
+            {
+              AliDebug(1,Form("---TYPE %s",sspectraName->String().Data()));
+
+              // //canvas
+              // TCanvas *c1 = new TCanvas;
+              // c1->Draw();
+              // gStyle->SetOptStat(0);
+
+              nextCentrality.Reset();
+              // Loop on each centrality (not the ones in MuMuConfig but the ones set)
+              //==============================================================================
+              while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
+              {
+                AliDebug(1,Form("---CENTRALITY %s",scentrality->String().Data()));
+
+                //________Get spectra
+                TString spectraPath= Form("/FitResults/%s/%s/%s/%s/%s",seventType->String().Data(),striggerDimuon->String().Data(),scentrality->String().Data(),spairCut->String().Data(),sspectraName->String().Data());
+                if (AccEffCorr)spectraPath+="-AccEffCorr";
+                AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
+                if(!spectra)
                     {
-                    AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
-                    nextbinType.Reset();
-                    // Loop on each type (pt or y)
-                    //==============================================================================
-                    while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
-                        {
-                        AliDebug(1,Form("---TYPE %s",sbinType->String().Data()));
-
-                        // //canvas
-                        // TCanvas *c1 = new TCanvas;
-                        // c1->Draw();
-                        // gStyle->SetOptStat(0);
-
-                        nextCentrality.Reset();
-                        // Loop on each centrality (not the ones in MuMuConfig but the ones set)
-                        //==============================================================================
-                        while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
-                            {
-                            AliDebug(1,Form("---CENTRALITY %s",scentrality->String().Data()));
-
-                            //________Get spectra
-                            TString spectraPath= Form("/%s/%s/%s/%s/%s-%s",seventType->String().Data(),striggerDimuon->String().Data(),scentrality->String().Data(),spairCut->String().Data(),"PSI",sbinType->String().Data());
-                            if (AccEffCorr)spectraPath+="-AccEffCorr";
-                            AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
-                            if(!spectra)
-                                {
-                                AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
-                                return;
-                                }
-                            //________
-
-                            h= spectra->Plot(swhat->String().Data(),sResName,divideByBinWidth);
-                            TCanvas *c = new TCanvas;
-                            c->SetLogy();
-                            h->Draw();
-                            }
-                        }
+                    AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
+                    return 0x0;
                     }
-                }
-            }
-        }
+                //________
 
-    return;
+                h->Add(((TObject*)spectra->Plot(swhat->String().Data(),subresultname,divideByBinWidth)));
+                TCanvas *c = new TCanvas;
+                // c->SetLogy();
+                spectra->Plot(swhat->String().Data(),subresultname,divideByBinWidth)->Draw();
+                ++i_TH1;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return h;
 }
 
+//_____________________________________________________________________________
 void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t rhigh, const char* binType, const char* binRangeExluded, const char* flavour, Bool_t corrected)
 {
-    /// Compute the raw count of dimuon pair
-    /// Parameters:
-    ///   - rlow,rhigh  : intervall in bin for the raw count
-    ///   -binType       : integrated,pt,y ...see your AddTaskMuMu
-    ///   -flavour       : Default is BENJ
-    ///   -corrected     : For nomenclature
-
+/**
+ *   [AliAnalysisMuMu::ComputeDimuonRawCount description]
+ *   @brief   Compute the raw count of dimuon pair
+ *
+ *   @param   rlow            Low intervale limit in bin for the raw count
+ *   @param   rhigh           High intervale limit in bin for the raw count
+ *   @param   binType         [description]
+ *   @param   binRangeExluded Excluded range inside interval
+ *   @param   flavour         [description]
+ *   @param   corrected       histo type
+ */
     if(!OC())
     {
         AliError("No mergeable. Consider Upgrade()");
@@ -4067,25 +4358,21 @@ void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t 
 
 
     // Loop on each envenType (see MuMuConfig)
-    //==============================================================================
     while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
     {
         AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
         nextTrigger.Reset();
         // Loop on each trigger (see MuMuConfig)
-        //==============================================================================
         while ( ( striggerDimuon = static_cast<TObjString*>(nextTrigger())) )
         {
             AliDebug(1,Form("-TRIGGER %s",striggerDimuon->String().Data()));
             nextPairCut.Reset();
             // Loop on each paircut (not the ones in MuMuConfig but the ones set)
-            //==============================================================================
             while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
             {
                 AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
                 nextbinType.Reset();
                 // Loop on each type (pt or y)
-                //==============================================================================
                 while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
                 {
                     AliDebug(1,Form("---TYPE %s",sbinType->String().Data()));
@@ -4104,7 +4391,7 @@ void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t 
                         binning->AddBin("psi",sbinType->String().Data());
                     }
 
-                    //Check Binning list
+                    // Check Binning list
                     TObjArray* bins = binning->CreateBinObjArray("psi");
                     if (!bins)
                     {
@@ -4112,7 +4399,6 @@ void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t 
                         return;
                     }
                     // Loop on each centrality (not the ones in MuMuConfig but the ones set)
-                    //==============================================================================
                     while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
                     {
                         AliDebug(1,Form("----CENTRALITY %s",scentrality->String().Data()));
@@ -4133,7 +4419,6 @@ void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t 
                         hraw->GetXaxis()->SetTitle(sbinType->String().Data());
 
                         // Loop on each range in bin
-                        //==============================================================================
                         while ( ( sbin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
                         {
                             AliDebug(1,Form("-----Bin range %s",sbin->AsString().Data()));
@@ -4148,8 +4433,7 @@ void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t 
 
                             // Pointer to the histo from histo collection
                             h = OC()->Histo(id.Data(),hname.Data());
-                            if (!h)
-                            {
+                            if (!h){
                                 AliError(Form("Could not find histo %s",hname.Data()));
                                 continue;
                             }
@@ -4167,8 +4451,7 @@ void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t 
                             if(binLow==0 || binHight ==0)continue;
                             // Fill
                             Double_t rawCount =0.;
-                            for (Int_t i = binLow; i < binHight; ++i)
-                            {
+                            for (Int_t i = binLow; i < binHight; ++i){
                                 rawCount = rawCount + h->GetBinContent(i);
                                 AliDebug(1,Form("rawCount for %s in bin [%d]= %f \n",h->GetTitle(),i,rawCount));
                             }
@@ -4177,8 +4460,7 @@ void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t 
                         }
                         TH1* o = OC()->Histo(id.Data(),hraw->GetName());
 
-                        if (o)
-                        {
+                        if (o){
                             AliWarning(Form("Replacing %s/%s",id.Data(),hraw->GetName()));
                             OC()->Remove(Form("%s/%s",id.Data(),hraw->GetName()));
                         }
@@ -4190,232 +4472,251 @@ void AliAnalysisMuMu::ComputeDimuonRawCount(const Double_t rlow, const Double_t 
                         else AliError(Form("Could not adopt Yield histo %s",hraw->GetName()));
                         new TCanvas;
                         hraw->DrawCopy("e0");
-
                     }
                     delete binning;
-
                 }
             }
         }
     }
-
     return;
 }
 
-void AliAnalysisMuMu::ComputePPCrossSection(const char* binType, const char* particle, const char* what,const char* externfile, const char* externfile2, Bool_t print, Bool_t AccEffCorr)
+//_____________________________________________________________________________
+void AliAnalysisMuMu::ComputePPCrossSection(const char* spectraName,const char* externfile, const char* externfile2, Bool_t print, const char* what)
 {
-    /// Compute the PP Cross section
-    /// Parameters:
-    ///   -particle   : default is PSI
-    ///   -particle   : default is CorrNofJPsi
-    ///   -binType    : integrated,pt,y ...see your AddTaskMuMu
-    ///   -sResName   : For a particular results
-    ///   -flavour    : Default is BENJ
-    ///   -AccEffCorr : For nomenclature
+/**
+ *   [AliAnalysisMuMu::ComputePPCrossSection description]
+ *   @brief   Compute the PP Cross section. At the moment, only implemented when <what> == CorrNofJPsi
+ *   @details Delegate the process to AliAnalysisMuMuCapsulePP.
+ *
+ *   @param   spectraName spectra Name
+ *   @param   what        Quantity stored in the AliAnalysisMuMuSpectra used for the cross-section. Should always be already Accxeff corrected ("CorrNofJPsi" for instance)
+ *   @param   externfile  Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+ *   @param   externfile2 Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+ *   @param   print       Print more details
+ */
 
-    if(!OC())
-    {
-        AliError("No mergeable. Consider Upgrade()");
-        return;
-    }
-    else
-    {
-        cout <<      " ================================================================ " << endl;
-        cout <<      "                       ComputePPCrossSection                          " << endl;
-        cout <<      " ================================================================ " << endl;
-    }
-
-     // Get configuration settings
-    TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
-    TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
-    TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());// to add here an entry
-    TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
-    TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
-    TObjArray* binTypeArray     = TString(binType).Tokenize(",");
-    TObjArray* bins;
-
-    // Iterator for loops
-    TIter nextTrigger(triggerArray);
-    TIter nextEventType(eventTypeArray);
-    TIter nextPairCut(pairCutArray);
-    TIter nextbinType(binTypeArray);
-    TIter nextCentrality(centralityArray);
-
-    // Strings
-    TObjString* striggerDimuon;
-    TObjString* seventType;
-    TObjString* spairCut;
-    TObjString* sbinType;
-    TObjString* scentrality;
-
-    // Pointers
-    TGraphErrors* graph=0x0;
-    TGraphErrors* graphErr=0x0;
-
-    TList* list=0x0;
-    AliAnalysisMuMuSpectra spectra=0x0;
-
-
-    // Loop on each envenType (see MuMuConfig)
-    //==============================================================================
-    while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
-    {
-        AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
-        nextTrigger.Reset();
-        // Loop on each trigger (see MuMuConfig)
-        //==============================================================================
-        while ( ( striggerDimuon = static_cast<TObjString*>(nextTrigger())) )
-        {
-            AliDebug(1,Form("-TRIGGER %s",striggerDimuon->String().Data()));
-            nextPairCut.Reset();
-            // Loop on each paircut (not the ones in MuMuConfig but the ones set)
-            //==============================================================================
-            while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
-            {
-                AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
-                nextbinType.Reset();
-                // Loop on each type (pt or y)
-                //==============================================================================
-                while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
-                {
-                    AliDebug(1,Form("---TYPE %s",sbinType->String().Data()));
-                    nextCentrality.Reset();
-
-
-                    // Loop on each centrality (not the ones in MuMuConfig but the ones set)
-                    //==============================================================================
-                    while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
-                    {
-                        AliDebug(1,Form("----CENTRALITY %s",scentrality->String().Data()));
-                        // The binning pointer, which point at Pt binning, Y binning etc.
-
-
-                        //________Get spectra
-                        TString spectraPath= Form("/%s/%s/%s/%s/%s-%s",seventType->String().Data(),striggerDimuon->String().Data(),scentrality->String().Data(),spairCut->String().Data(),particle,sbinType->String().Data());
-                        if (AccEffCorr)spectraPath+="-AccEffCorr";
-
-                        AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
-                        if(!spectra){
-                          AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
-                          return;
-                        }
-
-                        // Create capsule who will compute the cross section
-                        AliAnalysisMuMuSpectraCapsulePP * capsule = new AliAnalysisMuMuSpectraCapsulePP(spectra,spectraPath,externfile,externfile2);
-                        if(!capsule) continue;
-                        AliDebug(1,Form("Spectra = %p",capsule));
-                        // capsule->PrintConst();
-                        if(print)capsule->SetPrintFlag();
-
-                        // Get Graph with RAA results
-                        list = capsule->ComputePPCrossSection(what);
-
-                        AliDebug(1,Form("list = %p",list));
-                        if(!list) continue;
-
-
-                        graph = static_cast<TGraphErrors*>(list->At(0)->Clone());
-                        graphErr = static_cast<TGraphErrors*>(list->At(1)->Clone());
-
-
-                        TF1* fit=0x0;
-                        TFitResultPtr Fitpoint=0x0;
-
-                        // if(sbinType->String().Contains("PT")){
-                        //     fit = new TF1("fit","[0]*x/TMath::Power([1] + TMath::Power(x,[2]),[3])",0,12);
-                        //     fit->SetParameters(5.42*4654.3/1.5,12.8133,1.9647,3.66641);
-                        // }
-
-                        // if(sbinType->String().Contains("Y")){
-                        //     fit= new TF1("fit","[0] * TMath::Exp(-0.5*TMath::Power((x-[1])/[2],2.))", -10, 2.5);
-                        //     fit->SetParameters(2.8,0.00,2.9271);
-                        //     fit->FixParameter(1,0.00);
-                        // }
-                        LoadStyles();
-
-                        graph->SetMarkerColor(2);
-                        graph->SetMarkerStyle(8);
-                        graph->SetLineColor(2);
-                        graph->SetLineWidth(2);
-                        graph->SetMarkerSize(1.5);
-
-                        graphErr->SetMarkerColor(2);
-                        graphErr->SetFillColor(0);
-                        graphErr->SetLineColor(2);
-                        graphErr->SetLineWidth(2);
-                        // graphErr->SetFillStyle(3001);
-                        graphErr->SetTitle(Form("J/#psi cross section"));
-
-                        if(sbinType->String().Contains("PT")){
-                          graphErr->GetXaxis()->SetTitle(Form("#it{p}_{T}(GeV/#it{c})"));
-                          graphErr->GetYaxis()->SetTitle(Form("d^{2}#sigma/d#it{y}d#it{p}_{T} (#mub(GeV/#it{c})^{-1})"));
-                          graphErr->GetYaxis()->SetTitleSize(0.06);
-                          graphErr->GetYaxis()->SetRangeUser(10e-4,2);
-                        }
-                        if(sbinType->String().Contains("Y")){
-                          graphErr->GetXaxis()->SetTitle(Form(" #it{y}"));
-                          graphErr->GetXaxis()->SetRangeUser(2.49,4.01);
-                          graphErr->GetYaxis()->SetTitle(Form("d^{2}#sigma/d#it{y}(#muB)"));
-                          graphErr->GetYaxis()->SetTitleSize(0.06);
-                        }
-
-                        graphErr->SetMarkerSize(1.7);
-
-                        TCanvas *c = new TCanvas("c","c",4,132,1024,768);
-                        if(sbinType->String().Contains("PT")) gPad->SetLogy();
-                        c->SetFillColor(0);
-                        c->SetBorderMode(0);
-                        c->SetBorderSize(2);
-                        c->SetLeftMargin(0.15);
-                        c->SetRightMargin(0.03);
-                        c->SetTopMargin(0.03);
-                        c->SetBottomMargin(0.13);
-                        c->SetFrameBorderMode(0);
-
-                        TLegend * leg = 0x0;
-                        // @leg->SetTextSize(0.05);
-                        if(sbinType->String().Contains("PT")) leg = new TLegend(0.2,0.2,0.50,0.4);
-                        else if(sbinType->String().Contains("Y")) leg = new TLegend(0.2,0.2,0.50,0.4);
-                        else leg = new TLegend(0.4,0.4,0.70,0.6);
-
-                        leg->SetHeader(Form("ALICE, pp #sqrt{#it{s}} = 5.02 TeV"));
-                        if(sbinType->String().Contains("PT")) leg->AddEntry(graph,"Inclusive J/#psi , 2.5 < #it{y} < 4 ","pe");
-                        if(sbinType->String().Contains("Y")) leg->AddEntry(graph,"Inclusive J/#psi , 0 < #it{p}_{T} < 12 GeV/#it{c}","pe");
-                        leg->AddEntry((TObject*)0,"L_{int} = 106.3 #pm 2.1% #mub^{-1}","");
-                        // leg->AddEntry(graphErr,"systematic uncertainty ","f");
-                        // if(sbinType->String().Contains("PT") || sbinType->String().Contains("Y"))leg->AddEntry((TObject*)0,"global uncert. : 2 % ","");
-                        leg->SetTextSize(0.04);
-                        TLegendEntry *header = (TLegendEntry*)leg->GetListOfPrimitives()->First();
-                        header->SetTextSize(.055);
-
-                        graphErr->DrawClone("A5.[]");
-
-                        if(fit) Fitpoint = graph->Fit("fit","WLR");
-                        // if(sbinType->String().Contains("PT") && static_cast<int>(Fitpoint)==0) printf("cross section = %f +/- %f \n",fit->Integral(0.,8.),fit->IntegralError(0.,8.));
-                        // if(sbinType->String().Contains("Y")  && static_cast<int>(Fitpoint)==0)  printf("cross section = %f +/- %f \n",fit->Integral(-4.,-2.5),fit->IntegralError(-4.,-2.5));
-
-                        graph->DrawClone("Psame");
-                        leg->DrawClone("same");
-                        gPad->RedrawAxis();
-
-
-
-
-                    }
-                }
-            }
-        }
-    }
-
+  if(!OC()){
+    AliError("No mergeable. Consider Upgrade()");
     return;
+  } else {
+    cout <<      " ================================================================ " << endl;
+    cout <<      "                       ComputePPCrossSection                          " << endl;
+    cout <<      " ================================================================ " << endl;
+  }
+
+   // Get configuration settings
+  TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
+  TObjArray* triggerArray     = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
+  TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());// to add here an entry
+  TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
+  TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
+  TObjArray* bins;
+
+  // Iterator for loops
+  TIter nextTrigger(triggerArray);
+  TIter nextEventType(eventTypeArray);
+  TIter nextPairCut(pairCutArray);
+  TIter nextCentrality(centralityArray);
+
+  // Strings
+  TObjString* striggerDimuon;
+  TObjString* seventType;
+  TObjString* spairCut;
+  TObjString* scentrality;
+
+  // Pointers
+  TGraphErrors* graph=0x0;
+  TGraphErrors* graphErr=0x0;
+
+  TList* list=0x0;
+  AliAnalysisMuMuSpectra spectra=0x0;
+
+
+  // Loop on each envenType (see MuMuConfig)
+  while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+  {
+    AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
+    nextTrigger.Reset();
+
+    // Loop on each trigger (see MuMuConfig)
+    while ( ( striggerDimuon = static_cast<TObjString*>(nextTrigger())) )
+    {
+      AliDebug(1,Form("-TRIGGER %s",striggerDimuon->String().Data()));
+      nextPairCut.Reset();
+
+      // Loop on each paircut (not the ones in MuMuConfig but the ones set)
+      while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
+      {
+        AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
+        nextCentrality.Reset();
+
+        // Loop on each centrality (not the ones in MuMuConfig but the ones set)
+        while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
+        {
+          AliDebug(1,Form("----CENTRALITY %s",scentrality->String().Data()));
+          // The binning pointer, which point at Pt binning, Y binning etc.
+
+
+          //________Get spectra
+          TString spectraPath= Form("/FitResults/%s/%s/%s/%s/%s",seventType->String().Data(),striggerDimuon->String().Data(),scentrality->String().Data(),spairCut->String().Data(),spectraName);
+
+          AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
+          if(!spectra){
+            AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
+            return;
+          }
+
+          // Create capsule who will compute the cross section
+          AliAnalysisMuMuSpectraCapsulePP * capsule = new AliAnalysisMuMuSpectraCapsulePP(spectra,spectraPath,externfile,externfile2);
+          if(!capsule) continue;
+          AliDebug(1,Form("Spectra = %p",capsule));
+
+          if(print)capsule->SetPrintFlag();
+
+          // Get Graph with RAA results
+          list = capsule->ComputeJpsiPPCrossSection(what);
+
+          AliDebug(1,Form("list = %p",list));
+          if(!list) continue;
+
+          graph = static_cast<TGraphErrors*>(list->At(0)->Clone());
+          graphErr = static_cast<TGraphErrors*>(list->At(1)->Clone());
+
+          // --- playground for a beautyfull plot ! ---
+
+          Config()->LoadAliceStyles();
+          //points
+          graph->SetMarkerColor(2);
+          graph->SetMarkerStyle(8);
+          graph->SetLineColor(2);
+          graph->SetLineWidth(2);
+          graph->SetMarkerSize(1.5);
+          //syst.
+          graphErr->SetMarkerColor(2);
+          graphErr->SetFillColor(0);
+          graphErr->SetLineColor(2);
+          graphErr->SetLineWidth(2);
+          graphErr->SetTitle(Form("J/#psi cross section"));
+
+          TCanvas *c = new TCanvas("c","c",4,132,1024,768);
+          c->SetFillColor(0);
+          c->SetBorderMode(0);
+          c->SetBorderSize(2);
+          c->SetLeftMargin(0.15);
+          c->SetRightMargin(0.03);
+          c->SetTopMargin(0.03);
+          c->SetBottomMargin(0.13);
+          c->SetFrameBorderMode(0);
+
+          TLegend * leg = new TLegend(0.2,0.2,0.50,0.4);
+          leg->SetHeader(Form("ALICE, pp #sqrt{#it{s}} = 5.02 TeV"));
+
+          TString sspectraName(spectraName);
+
+          if(sspectraName.Contains("PT") && !sspectraName.Contains("VS"))
+          {
+            graphErr->GetXaxis()->SetTitle(Form("#it{p}_{T}(GeV/#it{c})"));
+            graphErr->GetYaxis()->SetTitle(Form("d^{2}#sigma/d#it{y}d#it{p}_{T} (#mub(GeV/#it{c})^{-1})"));
+            graphErr->GetYaxis()->SetTitleSize(0.06);
+            graphErr->GetYaxis()->SetRangeUser(10e-4,2);
+            gPad->SetLogy();
+            leg->AddEntry(graph,"Inclusive J/#psi , 2.5 < #it{y} < 4 ","pe");
+
+          }
+          else if(sspectraName.Contains("Y") && !sspectraName.Contains("VS"))
+          {
+            graphErr->GetXaxis()->SetTitle(Form(" #it{y}"));
+            graphErr->GetXaxis()->SetRangeUser(2.49,4.01);
+            graphErr->GetYaxis()->SetTitle(Form("d^{2}#sigma/d#it{y}(#muB)"));
+            graphErr->GetYaxis()->SetTitleSize(0.06);
+            leg->AddEntry(graph,"Inclusive J/#psi , 0 < #it{p}_{T} < 12 GeV/#it{c}","pe");
+          }
+          else if(sspectraName.Contains("PTVSY-INT_PT_CUT"))
+          {
+            graphErr->GetXaxis()->SetTitle(Form(" #it{y}"));
+            graphErr->GetXaxis()->SetRangeUser(2.49,4.01);
+            graphErr->GetYaxis()->SetTitle(Form("d^{2}#sigma/d#it{y}(#muB)"));
+            graphErr->GetYaxis()->SetTitleSize(0.06);
+            leg->AddEntry(graph,"Inclusive J/#psi , 0.3 < #it{p}_{T} < 12 GeV/#it{c}","pe");
+          }
+          else if(sspectraName.Contains("PTVSY-FULL_PT_CUT"))
+          {
+            graphErr->GetXaxis()->SetTitle(Form(" #it{y}"));
+            graphErr->GetXaxis()->SetRangeUser(2.49,4.01);
+            graphErr->GetYaxis()->SetTitle(Form("d^{2}#sigma/d#it{y}(#muB)"));
+            graphErr->GetYaxis()->SetTitleSize(0.06);
+            leg->AddEntry(graph,"Inclusive J/#psi , 0.3 < #it{p}_{T} < 12 GeV/#it{c}","pe");
+          }
+          else if(sspectraName.Contains("YVSPT-2DBIN1"))
+          {
+            graphErr->GetXaxis()->SetTitle(Form("#it{p}_{T}(GeV/#it{c})"));
+            graphErr->GetYaxis()->SetTitle(Form("d^{2}#sigma/d#it{y}d#it{p}_{T} (#mub(GeV/#it{c})^{-1})"));
+            graphErr->GetYaxis()->SetTitleSize(0.06);
+            graphErr->GetYaxis()->SetRangeUser(10e-4,2);
+            gPad->SetLogy();
+            leg->AddEntry(graph,"Inclusive J/#psi ,3.25 < #it{y} < 4","pe");
+          }
+          else if(sspectraName.Contains("YVSPT-2DBIN2"))
+          {
+            graphErr->GetXaxis()->SetTitle(Form("#it{p}_{T}(GeV/#it{c})"));
+            graphErr->GetYaxis()->SetTitle(Form("d^{2}#sigma/d#it{y}d#it{p}_{T} (#mub(GeV/#it{c})^{-1})"));
+            graphErr->GetYaxis()->SetTitleSize(0.06);
+            graphErr->GetYaxis()->SetRangeUser(10e-4,2);
+            gPad->SetLogy();
+            leg->AddEntry(graph,"Inclusive J/#psi ,2.5 < #it{y} < 3.25","pe");
+          }
+          graphErr->SetMarkerSize(1.7);
+
+          leg->AddEntry((TObject*)0,"L_{int} = 106.3 #pm 2.1% nb^{-1}","");
+          leg->SetTextSize(0.04);
+          TLegendEntry *header = (TLegendEntry*)leg->GetListOfPrimitives()->First();
+          header->SetTextSize(.055);
+
+          graphErr->DrawClone("A5.[]");
+
+          // --- Playground for a fit ---
+
+          // TF1* fit=0x0;
+          // TFitResultPtr Fitpoint=0x0;
+          // Pt distribution
+          // fit = new TF1("fit","[0]*x/TMath::Power([1] + TMath::Power(x,[2]),[3])",0,12);
+          // fit->SetParameters(5.42*4654.3/1.5,12.8133,1.9647,3.66641);
+          // fit->DrawCopy("same");
+          // Y distribution
+          // fit= new TF1("fit","[0] * TMath::Exp(-0.5*TMath::Power((x-[1])/[2],2.))", -10, 2.5);
+          // fit->SetParameters(2.8,0.00,2.9271);
+          // fit->FixParameter(1,0.00);
+
+          // if(fit) Fitpoint = graph->Fit("fit","WMR");
+          // fit->DrawCopy("same");
+          // if(sspectraName.Contains("PT") && !sspectraName.Contains("YVSPT") && static_cast<int>(Fitpoint)==0) printf("cross section = %f +/- %f \n",fit->Integral(0.,8.),fit->IntegralError(0.,8.));
+          // if(sspectraName.Contains("Y")  && static_cast<int>(Fitpoint)==0)  printf("cross section = %f +/- %f \n",fit->Integral(-4.,-2.5),fit->IntegralError(-4.,-2.5));
+
+          graph->DrawClone("Psame");
+          leg->DrawClone("same");
+          gPad->RedrawAxis();
+        }
+      }
+    }
+  }
+  return;
 }
 
 //_____________________________________________________________________________
 TH2* AliAnalysisMuMu::ComputeSPDCorrection(const char* type, const char* eventSel, const char* triggerSel, Bool_t bkgReject)
 {
-    //FIX ME : make it general
-    //
-    //
+/**
+ *   [AliAnalysisMuMu::ComputeSPDCorrection description]
+ *   @brief   Old method with a lot of hard coded lines, not sure of what it does... Needs to be more general
+ *   @details make it general
+ *
+ *   @param   type       [description]
+ *   @param   eventSel   [description]
+ *   @param   triggerSel [description]
+ *   @param   bkgReject  [description]
+ *   @return             [description]
+ */
     TString stype(type);
     TString evtype(eventSel);
     TString trigtype(triggerSel);
@@ -4506,31 +4807,13 @@ TH2* AliAnalysisMuMu::ComputeSPDCorrection(const char* type, const char* eventSe
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::ComputeFnorm()
-{
-    /// Compute the CMUL to CINT ratio(s)
-
-    if (!CC()) return;
-
-    //Delete precedent Fnorm
-    OC()->Prune("/FNORM");
-    //Create the object
-    AliAnalysisMuMuFnorm computer(*(CC()),*(Config()),AliAnalysisMuMuFnorm::kMUL,Config()->OCDBPath(),Config()->CompactGraphs());
-    //Compute Fnorm
-    computer.ComputeFnorm();
-    //Let go the ownership
-    AliMergeableCollection* fnorm = computer.DetachMC();
-    //Set the new ownership
-    OC()->Attach(fnorm,"/FNORM/");
-    //Update
-    Update();
-}
-
-//_____________________________________________________________________________
 void AliAnalysisMuMu::ComputeNumberOfEvent()
 {
-    /// Compute the CMUL to CINT ratio(s)
-
+/**
+ *   [AliAnalysisMuMu::ComputeNumberOfEvent description]
+ *   @brief   Compute the CMUL to CINT ratio(s)
+ *
+ */
     if (!OC() || !CC()|| !Config())
     {
         AliError("No mergeable/counter collection. Consider Upgrade()");
@@ -4572,24 +4855,26 @@ void AliAnalysisMuMu::ComputeNumberOfEvent()
 //_____________________________________________________________________________
 void AliAnalysisMuMu::ComputeFnormWeightedMeanGraphs(AliAnalysisMuMuFnorm::ETriggerType refTrigger,const char* patternOrList, const char* graphName )
 {
-    /// Compute the FNorm Weighted Mean Graph
-    /// Parameters:
-    ///   - refTrigger    : kMUL, kMB ...
-    ///   - patternOrList : name of the graphs included in the mean proceedur. Two mean graphs are separated by ":" and graphics used to compute a mean graphs are
-    ///                     separated by ',' . For example: FnormOffline2PUPS,FnormOffline1PUPS:FnormOffline2PUPS,FnormOffline1PUPS,FnormScalers1PUPS will compute
-    ///                     one mean graph with  FnormOffline2PUPS - FnormOffline1PUPS, and one mean graph with FnormOffline2PUPS - FnormOffline1PUPS - FnormScalers1PUPS.
-    ///   -  graphName    : name of the output mean graph. Selected by default otherwise
+/**
+ *   [AliAnalysisMuMu::ComputeFnormWeightedMeanGraphs description]
+ *   @brief   Compute the FNorm Weighted Mean Graph.
+ *   @details Delegate to AliAnalysisMuMuFNorm.
+ *
+ *   @param   refTrigger    kMUL, kMB ... See AliAnalysisMuMuFNorm
+ *   @param   patternOrList Name of the graphs included in the mean process. Two mean graphs are separated by ":" and graphics used to compute a mean graphs are
+ *                          separated by ','. Example : "FnormOffline2PUPS,FnormOffline1PUPS:FnormOffline2PUPS,FnormOffline1PUPS,FnormScalers1PUPS" computes
+ *                          mean graph for "FnormOffline2PUPS - FnormOffline1PUPS", another one for "FnormOffline2PUPS - FnormOffline1PUPS - FnormScalers1PUPS".
+ *   @param   graphName     Name of the output mean graph.
+ */
 
     if (!OC() || !CC()|| !Config())
     {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-    }
-    else
-    {
-        cout <<      " ================================================================ " << endl;
-        cout <<      "                     ComputeFnormWeightedMeanGraphs                 " << endl;
-        cout <<      " ================================================================ " << endl;
+      AliError("No mergeable/counter collection. Consider Upgrade()");
+      return ;
+    } else {
+      cout <<      " ================================================================ " << endl;
+      cout <<      "                     ComputeFnormWeightedMeanGraphs                 " << endl;
+      cout <<      " ================================================================ " << endl;
     }
 
     //Delete precedent Fnorm
@@ -4604,13 +4889,7 @@ void AliAnalysisMuMu::ComputeFnormWeightedMeanGraphs(AliAnalysisMuMuFnorm::ETrig
     TIter next(slist);
     TObjString* str(0x0);
 
-
-
-    while ( ( str = static_cast<TObjString*>(next()) ) )
-    {
-        computer.WeightedMeanGraphs(str->String().Data(),graphName,OC());
-    }
-
+    while ( ( str = static_cast<TObjString*>(next()) ) ) computer.WeightedMeanGraphs(str->String().Data(),graphName,OC());
 
     AliMergeableCollection* fnorm = computer.DetachMC();
     //Set the new ownership
@@ -4622,29 +4901,22 @@ void AliAnalysisMuMu::ComputeFnormWeightedMeanGraphs(AliAnalysisMuMuFnorm::ETrig
 //_____________________________________________________________________________
 void AliAnalysisMuMu::ComputeFnormScalers(AliAnalysisMuMuFnorm::ETriggerType refTrigger, Bool_t PileUpCorr)
 {
-  /// Compute the MB to REF ratio using the scalers method (from OCDB)
-  ///
-  /// i.e. Fnorm = L0B(MB) x PS(MB) x Fpile-up / ( L0B(REF) x PS(REF) )
-  ///
-  /// where MB is the minbias trigger
-  /// REF is the fReferenceTrigger
-  /// and PS is the fraction of events selected by the physics selection
-  ///
-  /// The correction factor (the two PS and one Fpile-up) are
-  /// taken from graphs computed in other methods
-  ///
+/**
+ *   [AliAnalysisMuMu::ComputeFnormScalers description]
+ *   @brief   Compute the MB to REF ratio using the scalers method (from OCDB)
+ *   @details Delegate to AliAnalysisMuMuFnorm.
+ *
+ *   @param   refTrigger [description]
+ *   @param   PileUpCorr [description]
+ */
 
-
-    if (!OC() || !CC()|| !Config())
-    {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-    }
-    else
-    {
-        cout <<      " ================================================================ " << endl;
-        cout <<      "                     ComputeFnormScalers                 " << endl;
-        cout <<      " ================================================================ " << endl;
+    if (!OC() || !CC()|| !Config()){
+      AliError("No mergeable/counter collection. Consider Upgrade()");
+      return ;
+    } else {
+      cout <<      " ================================================================ " << endl;
+      cout <<      "                     ComputeFnormScalers                 " << endl;
+      cout <<      " ================================================================ " << endl;
     }
 
     //Delete precedent Fnorm
@@ -4671,17 +4943,16 @@ void AliAnalysisMuMu::ComputeIntFnormFromCounters(AliAnalysisMuMuFnorm::ETrigger
  /// Compute the CMUL to CINT ratio(s) in 1 or 2 steps (Offline method) from the CC(), in bins.
  ///
  /// Important considerations:
+ ///
  ///   - The analysed file must contain the CMUL, CINT, CMSL, CMSL&0MUL and CINT&0MSL triggers to work correctly.
- ///   FIX ME : quantity not define in CC() for "pt" and "y".
+ ///
+ ///    FIX ME : quantity not define in CC() for "pt" and "y".
 
 
-    if (!OC() || !CC()|| !Config())
-    {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-    }
-    else
-    {
+    if (!OC() || !CC()|| !Config()){
+      AliError("No mergeable/counter collection. Consider Upgrade()");
+      return ;
+    } else {
         cout <<      " ================================================================ " << endl;
         cout <<      "                     ComputeIntFnormFromCounters                 " << endl;
         cout <<      " ================================================================ " << endl;
@@ -4703,262 +4974,32 @@ void AliAnalysisMuMu::ComputeIntFnormFromCounters(AliAnalysisMuMuFnorm::ETrigger
     AliMergeableCollection* fnorm = computer.DetachMC();
     //Set the new ownership
     OC()->Attach(fnorm,"/FNORM/Offline/");
-    //Update
     Update();
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::ComputeMeanFnorm(const char* triggerCluster, const char* eventSelection, const char* what,const char* quantity,const char* flavour)
+void AliAnalysisMuMu::PlotJpsiYield(const char* spectraName, const char* subresultname, const char* beamYear, int NofMUL, const char* externfile, const char* externfile2 )
 {
-    /// Compute the mean Fnorm and mean NMB from the "offline" and "rescaled global" methods.
-    ///
-    /// Parameters:
-    ///   -triggercluster: cluster where the CMSL trigger is ("MUON" for pA but for pp2012 could be also "ALLNOTRD" for certain runs, the option "MUON-ALLNOTRD" accounts for both at the same time). By default is "MUON".
-    ///   -eventSelectionFnorm: event selection used for the normalization factor. By default is "PSALL" (only physics selection).
-    ///   -eventSelectionYield: event selection used for the yield analysis. By default is "PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00".
-    ///   -what: what the binning range is about (J/psi, event...). By default is "psi".
-    ///   -quantity: binning type. By default "ntrcorr"
-    ///   -flavour: binning flavour. By default "D2H"
+/**
+ *   [AliAnalysisMuMu::ComputeJpsiYield description]
+ *   @brief   Compute the Jpsi yield, i.e NofJPsi/AccxEff/FNorm/MUL.
+ *   @details Delegate to AliAnalysisMuMuCapsule. It can be compute for an specific subresult (fit with an specific background shape, signal, fitting range... combination) or from the mean of all the subresults.
+ *
+ *   @param binType        [description]
+ *   @param externfile     Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+ *   @param externfile2    Config. file readed by AliAnalysisMuMuSpectraCapsule classes. See AliAnalysisMuMuSpectraCapsule documentation
+ *   @param AccEffCorr     Spectra type
+ *   @param subresultname  If one wants to draw one/several specific results.
+ */
 
-    TString seventSelection(eventSelection);
-    TString striggerCluster(triggerCluster);
-    TString sQuantity(quantity);
-    if ( striggerCluster.Contains("MUON") && !striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON";
-    else if ( striggerCluster.Contains("ALLNOTRD") && !striggerCluster.Contains("MUON") ) striggerCluster = "ALLNOTRD";
-    else if ( striggerCluster.Contains("MUON") && striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON-ALLNOTRD";
-    else
-        {
-        AliError("Unknown trigger cluster");
-        return;
-        }
-
-    TString triggerType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data());
-    if ( triggerType.Contains("7-") ) triggerType = "7";
-    else if ( triggerType.Contains("8-") ) triggerType = "8";
-    else
-        {
-        AliError("Unknown trigger type");
-        return;
-        }
-
-    TString colType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data());
-    if ( colType.Contains("-B-") ) colType = "B";
-    else if ( colType.Contains("-S-") ) colType = "S";
-    else
-        {
-        AliError("Unknown collision type");
-        return;
-        }
-
-    TH1* hMB = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNofEqMBVS%s",striggerCluster.Data(),seventSelection.Data(),sQuantity.Data()));
-    if ( !hMB )
-        {
-        AliError(Form("Histo hNofEqMBVS%s not found",sQuantity.Data()));
-        return;
-        }
-
-    TH1* hMBG = OC()->Histo(Form("/FNORM-%s/%s/V0A/hNofEqMBVS%sFromGlobal",striggerCluster.Data(),seventSelection.Data(),sQuantity.Data()));
-    if ( !hMBG )
-        {
-        AliError(Form("Histo hNofEqMBVS%sFromGlobal not found",sQuantity.Data()));
-        return;
-        }
-
-    TH1* hFnorm = OC()->Histo(Form("/FNORM-%s/%s/V0A/hFNormVS%s",striggerCluster.Data(),seventSelection.Data(),sQuantity.Data()));
-    if ( !hMB )
-        {
-        AliError(Form("Histo hFNormVS%s not found",sQuantity.Data()));
-        return;
-        }
-
-    TH1* hFnormG = OC()->Histo(Form("/FNORM-%s/%s/V0A/hFNormVS%sFromGlobal",striggerCluster.Data(),seventSelection.Data(),sQuantity.Data()));
-    if ( !hMBG )
-        {
-        AliError(Form("Histo hFNormVS%sFromGlobal not found",sQuantity.Data()));
-        return;
-        }
-
-
-    //  AliAnalysisMuMuBinning* binning = BIN()->Project(what,sQuantity.Data(),flavour);
-    //  if ( !binning )
-    //  {
-    //    AliError(Form("%s-%s-%s binning does not exist",what,sQuantity.Data(),flavour));
-    //    return;
-    //  }
-    //  TObjArray* bin = binning->CreateBinObjArray(what,sQuantity.Data(),flavour);
-
-
-    TString id(Form("/FNORM-%s/%s/V0A",striggerCluster.Data(),seventSelection.Data()));
-
-    TH1* hMBMean = static_cast<TH1*>(hMBG->Clone());
-    hMBMean->SetName(Form("hNofEqMBVS%sFromMean",sQuantity.Data()));
-
-    TH1* hFnormMean = static_cast<TH1*>(hFnorm->Clone());
-    hFnormMean->SetName(Form("hFNormVS%sFromMean",sQuantity.Data()));
-
-    for ( Int_t i = 1 ; i <= hMB->GetNbinsX() ; i++ )
-        {
-        //______Mean NofMB computation
-        Double_t Fn = hMB->GetBinContent(i);
-        Double_t Fng = hMBG->GetBinContent(i);
-
-        Double_t FnE = hMB->GetBinError(i);
-        Double_t FngE = hMBG->GetBinError(i);
-        //
-        //    Double_t meanBin = (Fn + Fng) / 2.;
-        //    Double_t meanBinError = TMath::Sqrt( TMath::Power(FnE/2.,2.) + TMath::Power(FngE/2.,2.) );
-        //    Double_t meanBinSys = TMath::Abs( meanBin - Fn );
-
-        Double_t meanBin = (Fn/TMath::Power(FnE,2.) + Fng/TMath::Power(FngE,2.)) / ( 1./TMath::Power(FnE,2.) + 1./TMath::Power(FngE,2.) );
-        Double_t meanBinError = TMath::Sqrt(1. / ( 1./TMath::Power(FnE,2.) + 1./TMath::Power(FngE,2.) ));
-        Double_t meanBinSys = TMath::Sqrt( ( TMath::Power(Fn - meanBin,2.)/TMath::Power(FnE,2.) + TMath::Power(Fng - meanBin,2.)/TMath::Power(FngE,2.) )/( 1./TMath::Power(FnE,2.) + 1./TMath::Power(FngE,2.) ) );
-
-        std::cout << "Bin : " << hMB->GetXaxis()->GetBinLabel(i) << std::endl;
-
-        std::cout << " Mean NMB = " << meanBin << " +- " << meanBinError << " (stat) " << " +- " << meanBinSys << " (syst (" << (meanBinSys/meanBin)*100
-        << "%))" << std::endl;
-
-        hMBMean->SetBinContent(i,meanBin);
-        hMBMean->SetBinError(i,meanBinError);
-        //______
-
-
-        //______Mean FNorm computation
-        Fn = hFnorm->GetBinContent(i);
-        Fng = hFnormG->GetBinContent(i);
-
-        FnE = hFnorm->GetBinError(i);
-        FngE = hFnormG->GetBinError(i);
-
-        meanBin = (Fn/TMath::Power(FnE,2.) + Fng/TMath::Power(FngE,2.)) / ( 1./TMath::Power(FnE,2.) + 1./TMath::Power(FngE,2.) );
-        meanBinError = TMath::Sqrt(1. / ( 1./TMath::Power(FnE,2.) + 1./TMath::Power(FngE,2.) ));
-        meanBinSys = TMath::Sqrt( ( TMath::Power(Fn - meanBin,2.)/TMath::Power(FnE,2.) + TMath::Power(Fng - meanBin,2.)/TMath::Power(FngE,2.) )/( 1./TMath::Power(FnE,2.) + 1./TMath::Power(FngE,2.) ) );
-
-        //    Double_t nCMULBin = CC()->GetSum(Form("/event:%s/trigger:CMUL%s-%s-NOPF-MUON/centrality:V0A/bin:%s",
-        //                                          seventSelection.Data(),triggerType.Data(),colType.Data(),
-        //                                          static_cast<AliAnalysisMuMuBinning::Range*>(bin->At(i-1))->AsString().Data()));
-        //
-        //    if (printout) std::cout << meanBinSys/nCMULBin << std::endl;
-        //
-        //    Double_t meanFnBin = meanBin/nCMULBin;
-        //    Double_t meanFnBinError = TMath::Sqrt( TMath::Power(meanBinError/nCMULBin,2) + TMath::Power(meanBin/TMath::Power(nCMULBin,2.),2) );
-        //
-        //    if (printout) std::cout << meanBinSys/nCMULBin/meanFnBin << std::endl;
-        //
-        //    if (printout) std::cout << meanFnBin << " +- " << meanFnBinError << std::endl;
-
-        std::cout << " Mean FNorm = " << meanBin << " +- " << meanBinError << " (stat) " << " +- " << meanBinSys << " (syst (" << (meanBinSys/meanBin)*100
-        << "%)" << std::endl;
-        std::cout << std::endl;
-
-        hFnormMean->SetBinContent(i,meanBin);
-        hFnormMean->SetBinError(i,meanBinError);
-        //______
-        }
-
-    TH1* o = fMergeableCollection->Histo(id.Data(),hMBMean->GetName());
-
-    if (o)
-        {
-        AliWarning(Form("Replacing %s/%s",id.Data(),hMBMean->GetName()));
-        fMergeableCollection->Remove(Form("%s/%s",id.Data(),hMBMean->GetName()));
-        }
-
-    Bool_t adoptOK = fMergeableCollection->Adopt(id.Data(),hMBMean);
-
-    if ( adoptOK ) std::cout << "+++FNorm histo " << hMBMean->GetName() << " adopted" << std::endl;
-    else AliError(Form("Could not adopt FNorm histo %s",hMBMean->GetName()));
-
-
-    o = fMergeableCollection->Histo(id.Data(),hFnormMean->GetName());
-
-    if (o)
-        {
-        AliWarning(Form("Replacing %s/%s",id.Data(),hFnormMean->GetName()));
-        fMergeableCollection->Remove(Form("%s/%s",id.Data(),hFnormMean->GetName()));
-        }
-
-    adoptOK = fMergeableCollection->Adopt(id.Data(),hFnormMean);
-
-    if ( adoptOK ) std::cout << "+++FNorm histo " << hFnormMean->GetName() << " adopted" << std::endl;
-    else AliError(Form("Could not adopt FNorm histo %s",hFnormMean->GetName()));
-}
-
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::PlotYiedWSyst(const char* triggerCluster)
-{
-    // Add syst. to yield and plot it
-    //
-    // FIX ME : make me more general
-    TString striggerCluster(triggerCluster);
-    if ( striggerCluster.Contains("MUON") && !striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON";
-    else if ( striggerCluster.Contains("ALLNOTRD") && !striggerCluster.Contains("MUON") ) striggerCluster = "ALLNOTRD";
-    else if ( striggerCluster.Contains("MUON") && striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON-ALLNOTRD";
-    else
-        {
-        AliError("Unknown trigger cluster");
-        return;
-        }
-
-
-    TString path(Form("%s/%s/%s/%s",
-                      Config()->First(Config()->EventSelectionKey(),kFALSE).Data(),
-                      Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data(),
-                      Config()->First(Config()->CentralitySelectionKey(),kFALSE).Data(),
-                      Config()->First(Config()->PairSelectionKey(),kFALSE).Data()));
-
-    TH1* hY = OC()->Histo(Form("/RESULTS-%s/%s",striggerCluster.Data(),path.Data()),"hJPsiYieldVSdNchdEtaRelative");
-    if ( !hY )
-        {
-        AliError("No yield found");
-        return;
-        }
-
-    TString id(Form("/TESTSYST/%s",path.Data()));
-
-    TH1* hYSyst = static_cast<TH1*>(hY->Clone("RelYieldSyst"));
-    if ( !hYSyst )
-        {
-        AliError("No systematic found");
-        return;
-        }
-
-    TH1* hS = OC()->Histo(id.Data(),"yield_Systematics");
-
-    for ( Int_t i = 1 ; i <= hY->GetNbinsX() ; i++ )
-        {
-        hYSyst->SetBinError(i,hS->GetBinContent(i)*hY->GetBinContent(i)/100.);
-        }
-
-    hY->Draw();
-    hYSyst->Draw("same");
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::ComputeJpsiYield(const char* binType, const char* what, const char* externfile, const char* externfile2, const char* sResName, const char* beamYear, Bool_t AccEffCorr)
-{
-    /// Compute the Jpsi yield, i.e NofJPsi/Fnorm. Delegate procedure to the right capsule object. It can be compute for an specific subresult (fit with an specific background shape, signal, fitting range... combination) or from the mean of all the subresults.
-    ///
-    /// Parameters:
-    ///   -binType    : INTEGRATED, PT, Y (for now)
-    ///   -what       : The quantity divided by FNorm (NofJPsi by default, but could be something else...)
-    ///   -externfile : For the capsule
-    ///   -externfile2: For the capsule
-    ///   -AccEffCorr : Just a tag to select right histograms.
-    ///   -sResName   : subresult name to get the yield from. By default is "" (mean of all subresults)
-
-    if (!OC() || !CC())
-        {
-        AliError("No mergeable/counter collection. Consider Upgrade()");
-        return ;
-        }
-    else
-        {
-        cout <<      " ================================================================ " << endl;
-        cout <<      "                       ComputeJpsiYield                           " << endl;
-        cout <<      " ================================================================ " << endl;
-        }
+    if (!OC() || !CC()) {
+      AliError("No mergeable/counter collection. Consider Upgrade()");
+      return ;
+    } else {
+      cout <<      " ================================================================ " << endl;
+      cout <<      "                       ComputeJpsiYield                           " << endl;
+      cout <<      " ================================================================ " << endl;
+    }
 
     // Get configuration settings
     TObjArray* eventTypeArray   = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
@@ -4966,8 +5007,6 @@ void AliAnalysisMuMu::ComputeJpsiYield(const char* binType, const char* what, co
     TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());// to add here an entry
     TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
     TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
-    TObjArray* whatArray        = TString(what).Tokenize(",");
-    TObjArray* binTypeArray     = TString(binType).Tokenize(",");
     TObjArray* bins;
 
 
@@ -4975,395 +5014,185 @@ void AliAnalysisMuMu::ComputeJpsiYield(const char* binType, const char* what, co
     TIter nextTrigger(triggerArray);
     TIter nextEventType(eventTypeArray);
     TIter nextPairCut(pairCutArray);
-    TIter nextWhat(whatArray);
-    TIter nextbinType(binTypeArray);
     TIter nextCentrality(centralityArray);
 
     // Strings
     TObjString* striggerDimuon;
     TObjString* seventType;
     TObjString* spairCut;
-    TObjString* swhat;
-    TObjString* sbinType;
     TObjString* scentrality;
 
     TString striggerMB  = Config()->First(Config()->MinbiasTriggerKey(),IsSimulation());
     const TString syear(beamYear);
 
-
-
     // Pointers
-    TH1* h= 0x0;
-    TGraphErrors* graph=0x0;
-    TGraphErrors* graphCent=0x0;
-    AliAnalysisMuMuSpectra spectra=0x0;
+    TH1* h                         = 0x0;
+    TGraphErrors* graph            = 0x0;
+    TGraphErrors* graphCent        = 0x0;
+    AliAnalysisMuMuSpectra spectra = 0x0;
 
-    //Loop on what type
-    while ( ( swhat = static_cast<TObjString*>(nextWhat()) ) )
+    // Loop on each envenType (see MuMuConfig)
+    while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+    {
+      AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
+      nextTrigger.Reset();
+      // Loop on each trigger (see MuMuConfig)
+      while ( ( striggerDimuon = static_cast<TObjString*>(nextTrigger())) )
+      {
+        AliDebug(1,Form("-TRIGGER %s",striggerDimuon->String().Data()));
+        nextPairCut.Reset();
+
+        // Loop on each paircut (not the ones in MuMuConfig but the ones set)
+        while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
         {
-        AliDebug(1,Form("what %s",swhat->String().Data()));
-        nextEventType.Reset();
-        // Loop on each envenType (see MuMuConfig)
-        //==============================================================================
-        while ( ( seventType = static_cast<TObjString*>(nextEventType())) )
+          AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
+          //canvas
+          TCanvas *c1 = new TCanvas;
+          c1->Draw();
+          gStyle->SetOptStat(0);
+
+          nextCentrality.Reset();
+
+          // Loop on each centrality (not the ones in MuMuConfig but the ones set)
+          while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
+          {
+            AliDebug(1,Form("---CENTRALITY %s",scentrality->String().Data()));
+
+            //________Get Fnorm Histo
+            TString id(Form("/FNORM-%s/%s/%s/%s",striggerDimuon->String().Data(),seventType->String().Data(),scentrality->String().Data(),syear.Data())); // Path to save the Fnorm and EqNofMB histos in the mergeable collection
+
+            TString idHisto="";
+            TString sspectraName(spectraName);
+            if (!sspectraName.Contains("INTEGRATED")) idHisto= Form("hNofEqMBVS%s",spectraName);
+            else                                      idHisto= Form("hFNormInt_%s",striggerMB.Data());
+
+            h = OC()->Histo(Form("%s/%s",id.Data(),idHisto.Data()));
+            if (!h) AliError(Form("Could not find histo in %s/%s. Take FNorm from the capsule",id.Data(),idHisto.Data()));
+            //________
+
+            //________Get spectra
+            TString spectraPath= Form("/FitResults/%s/%s/%s/%s/%s",seventType->String().Data(),striggerDimuon->String().Data(),scentrality->String().Data(),spairCut->String().Data(),spectraName);
+            AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
+            if(!spectra)
             {
-            AliDebug(1,Form("EVENTTYPE %s",seventType->String().Data()));
-            nextTrigger.Reset();
-            // Loop on each trigger (see MuMuConfig)
-            //==============================================================================
-            while ( ( striggerDimuon = static_cast<TObjString*>(nextTrigger())) )
-                {
-                AliDebug(1,Form("-TRIGGER %s",striggerDimuon->String().Data()));
-                nextPairCut.Reset();
-                // Loop on each paircut (not the ones in MuMuConfig but the ones set)
-                //==============================================================================
-                while ( ( spairCut = static_cast<TObjString*>(nextPairCut())) )
-                    {
-                    AliDebug(1,Form("--PAIRCUT %s",spairCut->String().Data()));
-                    nextbinType.Reset();
-                    // Loop on each type (pt or y)
-                    //==============================================================================
-                    while ( ( sbinType = static_cast<TObjString*>(nextbinType()) ) )
-                        {
-                        AliDebug(1,Form("---TYPE %s",sbinType->String().Data()));
-
-                        //canvas
-                        TCanvas *c1 = new TCanvas;
-                        c1->Draw();
-                        gStyle->SetOptStat(0);
-
-                        nextCentrality.Reset();
-                        // Loop on each centrality (not the ones in MuMuConfig but the ones set)
-                        //==============================================================================
-                        while ( ( scentrality = static_cast<TObjString*>(nextCentrality()) ) )
-                            {
-                            AliDebug(1,Form("---CENTRALITY %s",scentrality->String().Data()));
-
-                            //________Get Fnorm Histo
-                            TString id(Form("/FNORM-%s/%s/%s/%s",striggerDimuon->String().Data(),seventType->String().Data(),scentrality->String().Data(),syear.Data())); // Path to save the Fnorm and EqNofMB histos in the mergeable collection
-
-                            TString idHisto="";
-                            if (!sbinType->String().Contains("INTEGRATED")) idHisto= Form("hNofEqMBVS%s",sbinType->String().Data());
-                            else if (sbinType->String().Contains("INTEGRATED")) idHisto= Form("hFNormInt_%s",striggerMB.Data());
-
-                            h = OC()->Histo(Form("%s/%s",id.Data(),idHisto.Data()));
-                            if (!h)
-                                {
-                                AliError(Form("Could not find histo in %s/%s",id.Data(),idHisto.Data()));
-                                return;
-                                }
-                            //________
-
-                            //________Get spectra
-                            TString spectraPath= Form("/%s/%s/%s/%s/%s-%s",seventType->String().Data(),striggerDimuon->String().Data(),scentrality->String().Data(),spairCut->String().Data(),"PSI",sbinType->String().Data());
-                            if (AccEffCorr)spectraPath+="-AccEffCorr";
-                            AliAnalysisMuMuSpectra * spectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(spectraPath.Data()));
-                            if(!spectra)
-                                {
-                                AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
-                                return;
-                                }
-                            //________
-
-                            //________Select methods
-                            if(syear.Contains("PbPb"))
-                                {
-
-
-                                    AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,externfile,externfile2);
-                                    AliDebug(1,Form("Spectra = %p",capsule));
-
-                                    // Get Graph with Yield results
-                                    graph = capsule->ComputeYield(swhat->String().Data(),h,sResName);
-
-                                    TLegend * leg = new TLegend(0.4,0.7,0.90,0.9);
-                                    leg->SetHeader(Form("ALICE, Pb-Pb #sqrt{s_{NN}}=2.76 TeV, L_{int}=70 #mub^{-1}, %s",scentrality->String().Data()));
-                                    leg->AddEntry(graph,"Inclusive J/#psi Yield","pe");
-                                    graph->Draw("ap");
-                                    leg->Draw();
-
-                                    delete capsule;
-                                }
-                            else if(syear.Contains("pPb") || syear.Contains("Pbp"))
-                                {
-                                AliAnalysisMuMuSpectraCapsulePbP * capsule = new AliAnalysisMuMuSpectraCapsulePbP(spectra,spectraPath,externfile,externfile2);
-                                AliDebug(1,Form("Spectra = %p",capsule));
-
-                                // Get Graph with Yield results
-                                graph = capsule->ComputeYield(swhat->String().Data(),h,sResName);
-
-                                TLegend * leg = new TLegend(0.4,0.7,0.90,0.9);
-                                leg->SetHeader(Form("ALICE, Pb-Pb #sqrt{s_{NN}}=2.76 TeV, L_{int}=70 #mub^{-1}, %s",scentrality->String().Data()));
-                                leg->AddEntry(graph,"Inclusive J/#psi Yield","pe");
-                                graph->Draw("ap");
-                                leg->Draw();
-
-                                delete capsule;
-                                }
-                            else if(syear.Contains("pp"))
-                                {
-                                AliError("No method implemented for this beam yet, but you're welcome to do it !");
-                                return;
-                                }
-
-                            //________ Update resultes in Mergeable collection
-                            TString id2(Form("/JpsiYield-%s/%s/%s/%s/%s",striggerDimuon->String().Data(),seventType->String().Data(),spairCut->String().Data(),sbinType->String().Data(),swhat->String().Data()));
-
-                            TObject* o = 0x0;
-
-                            if (graph)// first graph
-                                {
-                                o = fMergeableCollection->GetObject(Form("%s/%s",id2.Data(),graph->GetName()));
-
-                                if (o)
-                                    {
-                                    AliWarning(Form("Replacing %s/%s",id2.Data(),graph->GetName()));
-                                    fMergeableCollection->Remove(Form("%s/%s",id2.Data(),graph->GetName()));
-                                    }
-
-                                Bool_t adoptOK = fMergeableCollection->Adopt(id2.Data(),graph);
-
-                                if ( adoptOK ) std::cout << "+++JpsiYield graph " << graph->GetName() << " adopted" << std::endl;
-                                else AliError(Form("Could not adopt JpsiYield grap %s",graph->GetName()));
-                                }
-                            //________
-
-
-
-                            }
-                        }
-                    }
-                }
+              AliError(Form("Cannot find spectra with name %s",spectraPath.Data()));
+              continue;
             }
+            //________
+
+            //________Select methods
+            if(syear.Contains("PbPb"))
+            {
+              printf("there !!\n");
+              AliAnalysisMuMuSpectraCapsulePbPb * capsule = new AliAnalysisMuMuSpectraCapsulePbPb(spectra,spectraPath,externfile,externfile2);
+              AliDebug(1,Form("Spectra = %p",capsule));
+
+              const char* what ="NofJPsi";
+
+              // Get Graph with Yield results
+              printf("coucou !! !!\n");
+              graph = capsule->ComputeYield(what,h,subresultname,NofMUL);
+
+              TLegend * leg = new TLegend(0.4,0.7,0.90,0.9);
+              leg->SetHeader(Form("ALICE, Pb-Pb #sqrt{s_{NN}}=2.76 TeV, L_{int}=70 #mub^{-1}, %s",scentrality->String().Data()));
+              leg->AddEntry(graph,"Inclusive J/#psi Yield","pe");
+              graph->Draw("ap");
+              leg->Draw();
+
+              delete capsule;
+            }
+            else if(syear.Contains("pPb") || syear.Contains("Pbp"))
+            {
+              AliError("Not implemented yet ! You are welcome to do so :D ");
+              return;
+              // AliAnalysisMuMuSpectraCapsulePbP * capsule = new AliAnalysisMuMuSpectraCapsulePbP(spectra,spectraPath,externfile,externfile2);
+              // AliDebug(1,Form("Spectra = %p",capsule));
+
+              // Int_t NofMUL= TMath::Nint(CC()->GetSum(Form("trigger:%s/event:%s/centrality:%s",striggerDimuon->String().Data(),seventType->String().Data(),"V0M_00.00_90.00")));
+              // AliDebug(1,Form("Reference centrality for NofMUL = V0M_00.00_90.00"));
+
+              // // Get Graph with Yield results
+              // graph = capsule->ComputeYield(what,h,subresultname,NofMUL);
+
+              // delete capsule;
+            }
+            else if(syear.Contains("pp"))
+            {
+              const char* what ="CorrNofJPsi";
+
+              AliAnalysisMuMuSpectraCapsulePP * capsule = new AliAnalysisMuMuSpectraCapsulePP(spectra,spectraPath,externfile,externfile2);
+              AliDebug(1,Form("Spectra = %p",capsule));
+
+              Int_t NofMUL= TMath::Nint(CC()->GetSum(Form("trigger:%s/event:%s/centrality:%s",striggerDimuon->String().Data(),seventType->String().Data(),"PP")));
+              AliDebug(1,Form("Reference centrality for NofMUL = PP"));
+
+              // Get Graph with Yield results
+              graph = capsule->ComputeYield(what,h,subresultname,NofMUL);
+
+              TLegend * leg = new TLegend(0.4,0.7,0.90,0.9);
+              leg->SetHeader(Form("ALICE, pp #sqrt{s}=5.02 TeV, L_{int}=116.3 #mub^{-1}, %s",scentrality->String().Data()));
+              leg->AddEntry(graph,"Inclusive J/#psi Yield","pe");
+              graph->Draw("ap");
+              leg->Draw();
+
+              delete capsule;
+            }
+
+            //________ Update resultes in Mergeable collection
+            TString id2(Form("/JpsiYield-%s/%s/%s",striggerDimuon->String().Data(),seventType->String().Data(),spairCut->String().Data()));
+
+            TObject* o = 0x0;
+
+            if (graph)// first graph
+            {
+              o = fMergeableCollection->GetObject(Form("%s/%s",id2.Data(),graph->GetName()));
+
+              if (o)
+              {
+                AliWarning(Form("Replacing %s/%s",id2.Data(),graph->GetName()));
+                fMergeableCollection->Remove(Form("%s/%s",id2.Data(),graph->GetName()));
+              }
+
+              Bool_t adoptOK = fMergeableCollection->Adopt(id2.Data(),graph);
+
+              if ( adoptOK ) std::cout << "+++JpsiYield graph " << graph->GetName() << " adopted" << std::endl;
+              else AliError(Form("Could not adopt JpsiYield grap %s",graph->GetName()));
+            }
+            //________
+          }
         }
+      }
+    }
 
     return;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::ComputeJpsiMPt(Bool_t relative, const char* evSelInt, const char* evSelDiff,const char* spectra, const char* sResName)
-{
-    // ocMBTrigger is the mergeableCollection with the MB trigger dNchdEta plot (migth be the same as oc, in which case we set ocMBTrigger=0x0)
-    //FIXME::Make it general
-    // Note that here the ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios
 
-
-    TString swhat("");
-    TString sres("");
-    TString sspectra(spectra);
-    TString sevSelInt(evSelInt);
-    TString sevSelDiff(evSelDiff);
-
-    if ( sspectra.Contains("DNCHDETA")) swhat = "dnchdeta";   //FIXME::Make it general for any bin quantity (pt,centrality...)
-    else if ( sspectra.Contains("NTRCORR") ) swhat = "ntrcorr";
-
-    if ( strlen(sResName) > 0 ) sres = sResName; //sres = "MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2";
-
-    if ( IsSimulation() )
-        {
-        AliError("Cannot compute J/Psi <pT>: Is a simulation file");
-        return;
-        }
-    TString dimuonTriggerClassName = Config()->First(Config()->DimuonTriggerKey(),kFALSE);
-    TString centralitySelection = Config()->First(Config()->CentralitySelectionKey(),kFALSE);
-    TString pairSelection = Config()->First(Config()->PairSelectionKey(),kFALSE);
-
-    TString intPath(Form("%s/%s/%s/%s",
-                         sevSelInt.Data(),
-                         dimuonTriggerClassName.Data(),
-                         centralitySelection.Data(),
-                         pairSelection.Data())); //Path to store integrated result in Mergeable Collection
-
-    TString diffPath(Form("%s/%s/%s/%s",
-                          sevSelDiff.Data(),
-                          dimuonTriggerClassName.Data(),
-                          centralitySelection.Data(),
-                          pairSelection.Data())); //Path to store differential result in Mergeable Collection
-
-    if ( relative ) AliWarning("The ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios");
-
-    //_________Integrated mean pt
-    AliAnalysisMuMuSpectra* sInt = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",intPath.Data(),"PSI-INTEGRATED-AccEffCorr-MeanPtVsMinvUS")));
-    if ( !sInt )
-        {
-        AliError(Form("No spectra %s found in %s","PSI-INTEGRATED-AccEffCorr-MeanPtVsMinvUS",intPath.Data()));
-        return;
-        }
-
-    AliAnalysisMuMuBinning* b = new AliAnalysisMuMuBinning;
-    b->AddBin("psi","INTEGRATED");
-
-    AliAnalysisMuMuBinning::Range* bin = static_cast<AliAnalysisMuMuBinning::Range*>(b->CreateBinObjArray()->At(0));
-
-    AliAnalysisMuMuResult* result = sInt->GetResultForBin(*bin);
-    if ( !result )
-        {
-        AliError(Form("No result for bin %s found in spectra %s",bin->AsString().Data(),sInt->GetName()));
-        return;
-        }
-
-
-    Double_t JPsiMPtTot = result->GetValue("MeanPtJPsi");
-    Double_t JPsiMPtTotError = result->GetErrorStat("MeanPtJPsi");
-
-    std::cout << "Integrated J/Psi <pT> = " << JPsiMPtTot << " +- " << JPsiMPtTotError << std::endl;
-    std::cout << std::endl;
-
-    TH1* hMPtint = new TH1F("hJPsiMPtInt","Integrated J/#psi mean p_{T}",1,0.,1.);
-    hMPtint->SetBinContent(1,JPsiMPtTot);
-    hMPtint->SetBinError(1,JPsiMPtTotError);
-
-    TH1* o = OC()->Histo(Form("/RESULTS/%s",intPath.Data()),hMPtint->GetName());
-
-    if (o)
-        {
-        AliWarning(Form("Replacing /RESULTS/%s/%s",intPath.Data(),hMPtint->GetName()));
-        OC()->Remove(Form("/RESULTS/%s/%s",intPath.Data(),hMPtint->GetName()));
-        }
-
-    Bool_t adoptOK = OC()->Adopt(Form("/RESULTS/%s",intPath.Data()),hMPtint);
-
-    if ( adoptOK ) std::cout << "+++Mean Pt histo " << hMPtint->GetName() << " adopted" << std::endl;
-    else AliError(Form("Could not adopt Mean Pt histo %s",hMPtint->GetName()));
-
-    delete b;
-
-    //_____Differential mean pt
-
-    AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/%s/%s",diffPath.Data(),spectra)));
-    if ( !s )
-        {
-        AliError(Form("No spectra %s found in %s",spectra,diffPath.Data()));
-        return;
-        }
-
-    std::cout << "Mean pt of J/Psi:" << std::endl;
-    TH1* hrmPt = s->Plot("MeanPtJPsi",sres.Data(),kFALSE); //MPT2CB2VWGPOL2INDEPTAILS//mean pt of Jpsi
-    std::cout << "" << std::endl;
-
-
-    const TArrayD* binArray = hrmPt->GetXaxis()->GetXbins();
-    Int_t size = binArray->GetSize();
-    Double_t* axis = new Double_t[size];
-
-    //  Double_t ptInt,ptIntError;
-    TH1* hmPt;
-    if ( relative )
-        {
-        //    TString path2(Form("/%s/%s/%s",
-        //                       First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-        //                       First(Config()->GetList(AliAnalysisMuMuConfig::kMinbiasTriggerList,kFALSE)).Data(),
-        //                       First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data()));
-        //
-        //    TH1* hdNch = OC()->Histo(path2.Data(),swhat.Data());
-
-
-
-        hmPt = new TH1D(Form("hJPsiMeanPtVS%sRelative",swhat.Data()),Form("Relative J/#psi mean p_{T} vs %s;%s;<p_{T}^{J/#psi}>/<p_{T}^{J/#psi}_{int}>",swhat.Data(),swhat.Data())
-                        ,size-1,axis);
-
-        //
-        //    ptInt = result->GetValue("MeanPtJPsi",sres.Data());
-        //    ptIntError = result->GetErrorStat("MeanPtJPsi",sres.Data());
-
-        }
-    else
-        {
-        hmPt = new TH1D(Form("hJPsiMeanPtVS%s",swhat.Data()),Form("J/#psi <p_{T}> vs %s;%s;<p_{T}>^{J/#psi}",swhat.Data(),swhat.Data())
-                        ,size-1,axis);
-
-        //    hmPt = static_cast<TH1D*>(hrmPt->Clone("hJPsiMeanPtVSdNchdEta"));
-        //    hmPt->SetTitle("J/#psi mean p_{T} vs dN_{ch}/d#eta");
-        //    hmPt->GetXaxis()->SetTitle("dN_{ch}/d#eta");
-        //    hmPt->GetYaxis()->SetTitle("<p_{T}^{J/#psi}>");
-        }
-
-    delete[] axis;
-
-    Double_t systMptInt[12] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}; //FIXME: find a way to give this as input
-    Double_t systMptBin[12] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-
-    Double_t systMptRel[12] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}; //signal extraction pPb
-
-    //  Double_t systMptInt[9] = {0.014,0.014,0.014,0.014,0.014,0.014,0.014,0.014,0.014}; //FIXME: find a way to give this as input
-    //  Double_t systMptBin[9] = {0.014,0.014,0.014,0.014,0.014,0.014,0.014,0.014,0.014};
-    //
-    //  Double_t systMptRel[9] = {0.002,0.001,0.001,0.002,0.002,0.002,0.002,0.004,0.004}; //signal extraction pPb
-
-    //  Double_t systMptRel[9] = {0.002,0.001,0.012,0.001,0.002,0.002,0.001,0.004,0.003}; //signal extraction Pbp
-
-    //  Double_t systMptRel[9] = {0.001,0.002,0.001,0.002,0.002,0.003,0.005,0.000,0.000}; //signal extraction pp|eta|<05
-
-    //  Double_t systMptRel[9] = {0.002,0.002,0.002,0.002,0.001,0.002,0.001,0.012,0.000}; //signal extraction pp|eta|<1
-
-    for ( Int_t i = 1 ; i <= hrmPt->GetNbinsX() ; i++ )
-        {
-        Double_t pt = hrmPt->GetBinContent(i);
-        Double_t ptError = hrmPt->GetBinError(i);
-
-        std::cout << " Computing <pT> in bin " << hrmPt->GetXaxis()->GetBinLabel(i) << std::endl;
-
-        if ( relative )
-            {
-            ptError = TMath::Sqrt(TMath::Power(ptError/JPsiMPtTot,2.) + TMath::Power((pt*JPsiMPtTotError)/TMath::Power(JPsiMPtTot,2.),2.));
-
-            Double_t sMptInt = JPsiMPtTot*systMptInt[i-1];
-            Double_t sMptBin = pt*systMptBin[i-1];
-            Double_t sysMptRel = TMath::Sqrt( TMath::Power(sMptBin/JPsiMPtTot,2) + TMath::Power(pt*sMptInt/TMath::Power(JPsiMPtTot,2.),2.) );
-
-            pt /= JPsiMPtTot;
-
-            //      std::cout << TMath::Sqrt( TMath::Power(sysMptRel/pt,2.) +TMath::Power(systMptRel[i-1],2.) ) << std::endl;
-
-            std::cout << pt << " +- " << ptError << std::endl;
-
-            }
-
-        hmPt->SetBinContent(i,pt);
-        hmPt->SetBinError(i,ptError);
-        }
-
-    o = fMergeableCollection->Histo(Form("/RESULTS/%s",diffPath.Data()),hmPt->GetName());
-
-    if (o)
-        {
-        AliWarning(Form("Replacing /RESULTS/%s/%s",diffPath.Data(),hmPt->GetName()));
-        fMergeableCollection->Remove(Form("/RESULTS/%s/%s",diffPath.Data(),hmPt->GetName()));
-        }
-
-    adoptOK = fMergeableCollection->Adopt(Form("/RESULTS/%s",diffPath.Data()),hmPt);
-
-    if ( adoptOK ) std::cout << "+++Mean Pt histo " << hmPt->GetName() << " adopted" << std::endl;
-    else AliError(Form("Could not adopt mean pt histo %s",hmPt->GetName()));
-
-
-
-    delete hrmPt;
-
-
-    return;
-}
-
-//_____________________________________________________________________________
 void AliAnalysisMuMu::ComputeMBXSectionFractionInBins(const char* filePileUpCorr, const char* eventSelection, const char* what,const char* quantity
                                                       ,const char* flavour)
 {
-    /// Compute the CMUL to CINT ratio(s) in 2 steps (Offline method) from the CC(), in bins.
-    ///
-    /// Important considerations:
-    ///   - The analysed file must contain the CMUL, CINT, CMSL, CMSL&0MUL and CINT&0MSL triggers to work correctly.
-    ///
-    ///   - The analysed file must contain the event selection PSALL and the one used in the yield analysis (i.e. PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00) to work correctly. (the first to compute the Fnorm and the second to get the NofCMUL used in the yield analysis to get the correct NofEqMB = Fnorm*NofCMUL)
-    ///
-    /// Parameters:
-    ///   -filePileUpCorr: txt file with the pile up correction run by run. Each line in the file must have the format:
-    ///                     RUN 195681 PERIOD LHC13d PILE-UP CORRECTION FACTOR (mu/(1-exp(-mu)) =  1.0015
-    ///   -what: what the binning range is about (J/psi, event...). By default is "psi".
-    ///   -quantity: binning type. By default "ntrcorr"
-    ///   -flavour: binning flavour. By default "D2H"
-    ///   -eventSelection: desired event selection. By default is "PSALL" (no event cuts but physics selection).
-
-
+  ////////////////
+  // OLD METHOD //
+  ////////////////
+/**
+ *   [AliAnalysisMuMu::ComputeMBXSectionFractionInBins description]
+ *   @brief   Compute the CMUL to CINT ratio(s) in 2 steps (Offline method) from the CC(), in bins.
+ *   @details Important considerations:
+ *
+ *   - The analysed file must contain the CMUL, CINT, CMSL, CMSL&0MUL and CINT&0MSL triggers to work correctly.
+ *
+ *
+ *   - The analysed file must contain the event selection PSALL and the one used in the yield analysis (i.e. PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00) to work correctly. (the first to compute the Fnorm and the second to get the NofCMUL used in the yield analysis to get the correct NofEqMB = Fnorm*NofCMUL)
+ *
+ *   OLD METHOD WITH A LOT OF HARD CODED LINES, MAY BE OUTDATED
+ *
+ *   @param   filePileUpCorr txt file with the pile up correction run by run. Each line in the file must have the format : RUN 195681 PERIOD LHC13d PILE-UP CORRECTION FACTOR (mu/(1-exp(-mu)) =  1.0015
+ *   @param   eventSelection desired event selection
+ *   @param   what           what the binning range is about (J/psi, event...). By default is "psi".
+ *   @param   quantity       binning type.
+ *   @param   flavour        binning flavour.
+ */
     //________Decoding of the pileup correction file
     Bool_t corrPU(kFALSE);
     TObjArray* pUCorr = new TObjArray();
@@ -5498,10 +5327,22 @@ Double_t AliAnalysisMuMu::ErrorPropagationAxBoverCxD(Double_t a,Double_t b,Doubl
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectra* AliAnalysisMuMu::CorrectSpectra(const char* type, const char* flavour,const char* accEffSubResultName)
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::CorrectSpectra(const char* binType, const char* flavour,const char* accEffSubResultName)
 {
-    /// Correct one spectra
-
+/**
+ *   [AliAnalysisMuMu::CorrectSpectra description]
+ *   @brief   Correct an AliAnalysisMuMuSpectra
+ *   @details Compute AccxEff corrected yield of a 'real' spectra with a 'mc' spectra. Delegate to AliAnalysisMuMuSpectra.
+ *
+ *   Spectra selection made with first entries of config. file keys.
+ *
+ *   DimuonTriggerKey() used to select trigger.
+ *
+ *   @param   binType             [description]
+ *   @param   flavour             [description]
+ *   @param   accEffSubResultName Results from which we take the AccxEff values
+ *   @return  The 'real' spectra with corrected yield values stored in it.
+ */
     if (!SIM()){
       AliError("Cannot compute corrected yield without associated MC file !");
       return 0x0;
@@ -5517,8 +5358,8 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::CorrectSpectra(const char* type, const 
     TString DimuonTrigger =Config()->First(Config()->DimuonTriggerKey(),kTRUE);
     TString PairSelection =Config()->First(Config()->PairSelectionKey(),kTRUE);
 
-    AliAnalysisMuMuSpectra* realSpectra = GetSpectra(type,flavour);
-    AliAnalysisMuMuSpectra* simSpectra = SIM()->GetMCSpectra(type,Event.Data(),DimuonTrigger.Data(),Centrality.Data(),PairSelection.Data(),flavour);
+    AliAnalysisMuMuSpectra* realSpectra = GetSpectraFromConfig(binType,flavour);
+    AliAnalysisMuMuSpectra* simSpectra = SIM()->GetSpectra(binType,Event.Data(),DimuonTrigger.Data(),Centrality.Data(),PairSelection.Data(),flavour);
 
     if ( !realSpectra ){
       AliError("could not get real spectra");
@@ -5538,11 +5379,20 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::CorrectSpectra(const char* type, const 
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* type, const char* flavour,const char* accEffSubResultName)
+AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* binType, const char* flavour,const char* accEffSubResultName)
 {
-    // Compute yield from simulation file
-    //
-    // FIX ME: make it general
+/**
+ *   [AliAnalysisMuMu::ComputeYield description]
+ *   @brief   Compute yield from simulation file
+ *   @details Delegate to AliAnalysisMuMuSpectra. Compute yield using a 'real' spectra and a 'mc' spectra. Spectra are selected using first key entries of the config. file.
+ *
+ *   FIX ME: Make it general.
+ *
+ *   @param   binType             [description]
+ *   @param   flavour             [description]
+ *   @param   accEffSubResultName Results from which we take the AccxEff values
+ *   @return                      The 'real' spectra with a corrected yield entry
+ */
 
     TString Event         =Config()->First(Config()->EventSelectionKey(),kTRUE);
     TString Centrality    =Config()->First(Config()->CentralitySelectionKey(),kTRUE);
@@ -5554,7 +5404,7 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* type, const ch
       return 0x0;
     }
 
-    AliAnalysisMuMuSpectra* realSpectra = GetSpectra(type,flavour);
+    AliAnalysisMuMuSpectra* realSpectra = GetSpectraFromConfig(binType,flavour);
 
     if ( !realSpectra ){
       AliError("could not get real spectra");
@@ -5562,13 +5412,13 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* type, const ch
     }
 
     if (!realSpectra->HasValue("CoffNofJPsi")){
-      if (!CorrectSpectra(type,flavour,accEffSubResultName)){
+      if (!CorrectSpectra(binType,flavour,accEffSubResultName)){
         AliError("Could not get corrected spectra");
         return 0x0;
       }
     }
 
-    AliAnalysisMuMuSpectra* simSpectra = SIM()->GetMCSpectra(type,Event.Data(),DimuonTrigger.Data(),Centrality.Data(),PairSelection.Data(),flavour);
+    AliAnalysisMuMuSpectra* simSpectra = SIM()->GetSpectra(binType,Event.Data(),DimuonTrigger.Data(),Centrality.Data(),PairSelection.Data(),flavour);
 
     if ( !simSpectra){
       AliErrorClass("could not get sim spectra");
@@ -5598,172 +5448,6 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* type, const ch
     delete bins;
     Update();
     return realSpectra;
-}
-
-//_____________________________________________________________________________
-AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* type, const char* direction)
-{
-  /// Compute the RAB...
-
-  if (!SIM()) return 0x0;
-
-  Double_t rapidityShift = 0.465;// 0.5*TMath::Log(208.0/82.0);
-  const Double_t sqrts=5.023;
-  const Double_t ymax=TMath::Log(sqrts*1000.0/3.096916);
-  const Double_t tab = 0.093e-6; // nb^-1
-  const Double_t tabError = 0.0035E-6; // nb^-1
-  const char* accEffSubResultName="PSICOUNT:1";
-
-  TF1 ydist("ydist","[0]*TMath::Exp(-(x*x)/(2.0*0.39*0.39))",0.,0.5);
-  ydist.SetParameter(0,1.);
-
-  //Normalization to the values presented by Zaida and Rosana on January 11th 2013 https://indico.cern.ch/conferenceDisplay.py?confId=224985 slide 22
-  // Normalization is done in the rapidity range 2.75<y<3.25 where Rosanas values is 230.8+212.1
-  Double_t y1_norma= 2.75/ymax;
-  Double_t y2_norma= 3.25/ymax;
-  Double_t normalization = 0.25*(230.8+212.1)/ydist.Integral(y1_norma, y2_norma);
-  ydist.SetParameter(0,normalization);
-  //  AliInfoClass(Form("ymax=%e normalization=%f",ymax,ydist.Integral(y1_norma, y2_norma)));
-
-  AliAnalysisMuMuSpectra* realSpectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
-  AliAnalysisMuMuSpectra* simSpectra = static_cast<AliAnalysisMuMuSpectra*>(SIM()->OC()->GetObject(Form("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
-
-  if ( !realSpectra )
-  {
-    AliErrorClass("could not get real spectra");
-    return 0x0;
-  }
-
-  if ( !simSpectra)
-  {
-    AliErrorClass("could not get sim spectra");
-    return 0x0;
-  }
-
-  AliAnalysisMuMuSpectra* corrSpectra = static_cast<AliAnalysisMuMuSpectra*>(realSpectra->Clone());
-  corrSpectra->Correct(*simSpectra,"Jpsi",accEffSubResultName);
-
-  Double_t nofCMUL7 = CC()->GetSum(Form("trigger:CMUL7-B-NOPF-MUON/event:PSALL"));
-  Double_t nofCINT7 = CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:PSALL"));
-  Double_t nofCINT7w0MUL = CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:PSALL"));
-
-  AliAnalysisMuMuBinning* binning = realSpectra->Binning();
-  TObjArray* bins = binning->CreateBinObjArray();
-  TIter nextBin(bins);
-  AliAnalysisMuMuBinning::Range* bin;
-  Int_t i(0);
-  AliAnalysisMuMuJpsiResult* r;
-
-  Int_t n = bins->GetLast();
-
-  TObjArray finalBins(n+1);
-  finalBins.SetOwner(kTRUE);
-
-  TObjArray finalResults(n+1);
-  finalResults.SetOwner(kFALSE);
-
-  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
-  {
-    Double_t ylowlab = bin->Xmin();
-    Double_t yhighlab = bin->Xmax();
-
-    Double_t ylowcms, yhighcms;
-    Double_t ylownorm, yhighnorm;
-
-    if ( bin->IsIntegrated() )
-    {
-      ylowlab = -4;
-      yhighlab = -2.5;
-    }
-
-    if ( strcmp(direction,"pPb")==0 )
-    {
-      ylowcms = TMath::Abs(yhighlab) -  rapidityShift;
-      yhighcms = TMath::Abs(ylowlab) - rapidityShift;
-      ylownorm = ylowcms/ymax;
-      yhighnorm = yhighcms/ymax;
-    }
-    else
-    {
-      ylowcms = ylowlab - rapidityShift;
-      yhighcms = yhighlab - rapidityShift;
-      ylownorm = -yhighcms/ymax;
-      yhighnorm = -ylowcms/ymax;
-    }
-
-
-    Double_t brsigmapp = ydist.Integral(ylownorm,yhighnorm);
-    Double_t brsigmappError = 0.0; // FIXME
-
-    AliAnalysisMuMuSpectra* realSpectra = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
-    AliAnalysisMuMuSpectra* simSpectra = static_cast<AliAnalysisMuMuSpectra*>(SIM()->OC()->GetObject(Form("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
-
-    if ( !realSpectra )
-        {
-        AliErrorClass("could not get real spectra");
-        return 0x0;
-        }
-
-
-    AliAnalysisMuMuJpsiResult* rsim = static_cast<AliAnalysisMuMuJpsiResult*>(simSpectra->BinContentArray()->At(i));
-
-    Double_t mbeq = nofCINT7w0MUL / ( nofCINT7 * nofCMUL7);
-    Double_t mbeqError = mbeq * AliAnalysisMuMuResult::ErrorABC( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
-                                         nofCINT7,TMath::Sqrt(nofCINT7),
-                                         nofCMUL7,TMath::Sqrt(nofCMUL7));
-
-    r->Set("Fnorm",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
-                                                                      nofCINT7,TMath::Sqrt(nofCINT7)));
-
-    Double_t yield =  r->GetValue("CorrNofJpsi") * mbeq;
-
-    Double_t yieldError = yield * AliAnalysisMuMuResult::ErrorAB( r->GetValue("CorrNofJpsi"), r->GetErrorStat("CorrNofJpsi"),
-                                          mbeq,mbeqError);
-
-    r->Set(Form("Y%sJpsi",direction),yield,yieldError);
-
-    Double_t raa = yield/(tab*brsigmapp);
-    Double_t raaError = AliAnalysisMuMuResult::ErrorABC(yield,yieldError,
-                                                        tab,tabError,
-                                                        brsigmapp,brsigmappError);
-    r->Set(Form("R%sJpsi",direction),raa,raaError);
-
-    r->Set("NofInputJpsi",rsim->GetValue("NofInputJpsi",accEffSubResultName),rsim->GetErrorStat("NofInputJpsi",accEffSubResultName));
-    r->Set("AccEffJpsi",rsim->GetValue("AccEffJpsi",accEffSubResultName),rsim->GetErrorStat("AccEffJpsi",accEffSubResultName));
-
-    AliAnalysisMuMuBinning::Range* bincm = new AliAnalysisMuMuBinning::Range(bin->What(),bin->Quantity(),ylowcms,yhighcms);
-
-    r->SetBin(*bincm);
-
-    finalBins.Add(bincm);
-    finalResults.Add(r);
-
-    ++i;
-  }
-
-  delete bins;
-
-  AliAnalysisMuMuSpectra* spectra = new AliAnalysisMuMuSpectra(type,direction);
-
-  for ( i = 0; i <= n; ++i )
-  {
-    Int_t j(i);
-    if ( strcmp(direction,"pPb")==0 )
-    {
-      j = n-i;
-    }
-
-    r = static_cast<AliAnalysisMuMuJpsiResult*>(finalResults.At(j));
-
-    bin = static_cast<AliAnalysisMuMuBinning::Range*>(finalBins.At(j));
-
-    spectra->AdoptResult(*bin,r);
-  }
-
-
-  delete corrSpectra;
-
-  return spectra;
 }
 
 //_____________________________________________________________________________
@@ -5813,49 +5497,4 @@ void AliAnalysisMuMu::GetFileNameAndDirectory(const char* filename)
     fFilename = fFilename(0,colon);
     fDirectory = fDirectory(colon+1,strlen(filename)-colon);
   }
-}
-
-void  AliAnalysisMuMu::LoadStyles(){
-  int font = 42;
-  gROOT->SetStyle("Plain");
-  gStyle->SetFrameBorderMode(0);
-  gStyle->SetFrameFillColor(0);
-  gStyle->SetCanvasBorderMode(0);
-  gStyle->SetPadBorderMode(0);
-  gStyle->SetPadColor(10);
-  gStyle->SetCanvasColor(10);
-  gStyle->SetTitleFillColor(10);
-  gStyle->SetTitleBorderSize(1);
-  gStyle->SetStatColor(10);
-  gStyle->SetStatBorderSize(1);
-  gStyle->SetLegendBorderSize(1);
-  gStyle->SetDrawBorder(0);
-  gStyle->SetTextFont(font);
-  gStyle->SetStatFont(font);
-  gStyle->SetStatFontSize(0.05);
-  gStyle->SetStatX(0.97);
-  gStyle->SetStatY(0.98);
-  gStyle->SetStatH(0.03);
-  gStyle->SetStatW(0.3);
-  gStyle->SetTickLength(0.02,"y");
-  gStyle->SetEndErrorSize(3);
-  gStyle->SetLabelSize(0.05,"xyz");
-  gStyle->SetLabelFont(font,"xyz");
-  gStyle->SetLabelOffset(0.01,"xyz");
-  gStyle->SetTitleFont(font,"xyz");
-  gStyle->SetTitleOffset(1.1,"xy");
-  gStyle->SetTitleSize(0.05,"xyz");
-  gStyle->SetMarkerSize(1.3);
-  gStyle->SetPalette(1,0);
-  gROOT->ForceStyle();
-  gStyle->SetOptStat(0);
-  gStyle->SetOptTitle(0);
-  gStyle->SetLineWidth(2);
-  gStyle->SetLegendFont(42);
-  gStyle->SetLegendBorderSize(0);
-  gStyle->SetLegendFillColor(10);
-  gStyle->SetPadTickY(1);
-  gStyle->SetPadTickX(1);
-  gStyle->SetEndErrorSize(0);
-
 }

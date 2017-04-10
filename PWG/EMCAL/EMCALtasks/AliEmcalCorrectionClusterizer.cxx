@@ -18,6 +18,7 @@
 // --- Root ---
 #include <TObjArray.h>
 #include <TArrayI.h>
+#include <TStopwatch.h>
 
 // --- AliRoot ---
 #include "AliCDBEntry.h"
@@ -209,6 +210,16 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
 void AliEmcalCorrectionClusterizer::UserCreateOutputObjects()
 {   
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
+
+  if (fCreateHisto){
+    fHistCPUTime = new TH1F("hCPUTime","hCPUTime;CPU Time (ms)", 2000, 0, 1000);
+    fOutput->Add(fHistCPUTime);
+
+    fHistRealTime = new TH1F("hRealTime","hRealTime;Real Time (ms)", 2000, 0, 1000);
+    fOutput->Add(fHistRealTime);
+
+    fTimer = new TStopwatch();
+  }
 }
 
 /**
@@ -216,6 +227,11 @@ void AliEmcalCorrectionClusterizer::UserCreateOutputObjects()
  */
 Bool_t AliEmcalCorrectionClusterizer::Run()
 {
+  // Time the event loop if histogram creation is enabled
+  if (fCreateHisto) {
+    fTimer->Start(kTRUE);
+  }
+
   AliEmcalCorrectionComponent::Run();
   
   fEsd = dynamic_cast<AliESDEvent*>(fEvent);
@@ -276,6 +292,13 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
   UpdateClusters();
   
   CalibrateClusters();
+
+  if (fCreateHisto) {
+    fTimer->Stop();
+    // Ensure that it is stored in ms
+    fHistCPUTime->Fill(fTimer->CpuTime() * 1000.);
+    fHistRealTime->Fill(fTimer->RealTime() * 1000.);
+  }
   
   return kTRUE;
 }

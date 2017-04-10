@@ -1756,7 +1756,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         {//EMCAL
           if(imod<fNModules/2)
           {
-            snprintf(key, buffersize,"hReSameSectorEMCAL_%d",imod) ;
+            snprintf(key, buffersize,"hReSameSectorEMCALMod_%d",imod) ;
             snprintf(title, buffersize,"Real pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
             fhReSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
             fhReSameSectorEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1765,7 +1765,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           }
           if(imod<fNModules-2)
           {
-            snprintf(key, buffersize,"hReSameSideEMCAL_%d",imod) ;
+            snprintf(key, buffersize,"hReSameSideEMCALMod_%d",imod) ;
             snprintf(title, buffersize,"Real pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
             fhReSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
             fhReSameSideEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2937,7 +2937,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           if(fFillAngleHisto)
             fhPrimPi0OpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight()*weightPt);
           
-          if(fNAngleCutBins > 0)
+          if ( fNAngleCutBins > 0 && fFillOpAngleCutHisto )
           {
             Int_t angleBin = -1;
             for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
@@ -2985,7 +2985,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           if(fFillAngleHisto)
             fhPrimEtaOpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight()*weightPt);
           
-          if(fNAngleCutBins > 0)
+          if ( fNAngleCutBins > 0 && fFillOpAngleCutHisto )
           {
             Int_t angleBin = -1;
             for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)

@@ -104,12 +104,14 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   void                        CalculateJetProperties(AliEmcalJet* jet);
   void                        CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
   void                        CalculateJetType_HFMethod(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
-  Double_t                    GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track);
+  Bool_t                      IsStrangeJet(AliEmcalJet* jet);
+  void                        GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Double_t& d0sig, Double_t& z0sig);
   void                        AddSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, AliBasicJet& basicJet);
   void                        AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent);
 
 
   // ################## BASIC EVENT VARIABLES
+  TClonesArray*               fTruthParticleArray;                      //!<! Array of MC particles in event (mcparticles)
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliTrackContainer          *fTracksCont;                              //!<! Tracks
   TTree*                      fJetsTree;                                //!<! Jets that will be saved to a tree (optionally)
@@ -170,7 +172,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractorHF &operator=(const AliAnalysisTaskJetExtractorHF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractorHF, 4) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractorHF, 5) // Jet extraction task
   /// \endcond
 };
 
@@ -228,9 +230,9 @@ class AliBasicPID
 class AliBasicJetConstituent
 {
   public:
-    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0), fVx(0), fVy(0), fVz(0), fImpactParameter(0), fPID(0) {}
-    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t vx, Float_t vy, Float_t vz, Float_t z)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fVx(vx), fVy(vy), fVz(vz), fImpactParameter(z), fPID(0)
+    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0), fVx(0), fVy(0), fVz(0), fImpactParameterD(0), fImpactParameterZ(0), fPID(0) {}
+    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t vx, Float_t vy, Float_t vz, Float_t d0sig, Float_t z0sig)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fVx(vx), fVy(vy), fVz(vz), fImpactParameterD(d0sig), fImpactParameterZ(z0sig), fPID(0)
     {
     }
     ~AliBasicJetConstituent();
@@ -244,7 +246,8 @@ class AliBasicJetConstituent
     Float_t Vy()        { return fVy; }
     Float_t Vz()        { return fVz; }
 
-    Float_t ImpactParameter() { return fImpactParameter; }
+    Float_t ImpactParameterD() { return fImpactParameterD; }
+    Float_t ImpactParameterZ() { return fImpactParameterZ; }
     AliBasicPID* PID()  { return &fPID.at(0); }
 
     void SetPIDSignal(Float_t its, Float_t tpc, Float_t tof, Float_t trd, Short_t truthPID, Short_t recoPID)
@@ -264,7 +267,8 @@ class AliBasicJetConstituent
     Float_t fVy;       ///< production vertex Y
     Float_t fVz;       ///< production vertex Z
 
-    Float_t fImpactParameter; ///< impact parameter z
+    Float_t fImpactParameterD; ///< impact parameter d (transversal IP), devided by sqrt(sigma)
+    Float_t fImpactParameterZ; ///< impact parameter z (longitudional IP), devided by sqrt(sigma)
     std::vector<AliBasicPID> fPID; ///< PID 
 };
 
@@ -356,9 +360,9 @@ class AliBasicJet
 
     // Basic constituent functions
     AliBasicJetConstituent*   GetJetConstituent(Int_t index) { return &fConstituents[index]; }
-    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t vx=0, Float_t vy=0, Float_t vz=0, Float_t z=0)
+    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t vx=0, Float_t vy=0, Float_t vz=0, Float_t d0sig=0, Float_t z0sig=0)
     {
-      AliBasicJetConstituent c (eta, phi, pt, charge, vx, vy, vz, z);
+      AliBasicJetConstituent c (eta, phi, pt, charge, vx, vy, vz, d0sig, z0sig);
       AddJetConstituent(&c);
     }
     void                      AddJetConstituent(AliBasicJetConstituent* constituent) {fConstituents.push_back(*constituent); }

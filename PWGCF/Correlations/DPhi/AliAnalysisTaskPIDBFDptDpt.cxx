@@ -1276,6 +1276,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      spdCentr = centralityObject->GetCentralityPercentile("CL1");   
 	    }
 	}
+
       else if ( fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0C_kMB" || fSystemType == "pp_V0_kMB" )
 	{ 
 	  AliMultSelection *multSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");

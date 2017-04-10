@@ -6,11 +6,10 @@ class TH1;
 class TTree;
 class TList;
 
+class AliVEvent;
+class AliESDEvent;
 class AliESDHeader;
-class AliESDAD;
-class AliESDVZERO;
-
-class AliESDtrack;
+class AliVTrack;
 class AliESDtrackCuts;
 
 #include <TObject.h>
@@ -18,7 +17,7 @@ class AliESDtrackCuts;
 #include <TBits.h>
 #include <TClonesArray.h>
 
-#include "AliESDEvent.h"
+#include "AliAODVertex.h"
 #include "AliESDVertex.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTOFHeader.h"
@@ -44,7 +43,7 @@ public:
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
   void SetTriggerSelectionSPD(TString ts) { fTriggerSelectionSPD = ts; }
   void SetMaxTracksSave(Int_t m);
-
+ 
   TString GetListName() const { return fTrackCutType+"_TL"; }
   TString GetTreeName() const { return fTrackCutType+"_TE"; }
   TString GetResultsFileName() const { return "results.root"; }
@@ -65,9 +64,10 @@ public:
       , fOrbitID(0) {
       for (Int_t i=0; i<4; ++i)
 	fnTrklet[i] = 0;
+      fnFO[0] = fnFO[1] = 0;
     }
 
-    void Fill(const AliESDEvent *);
+    void Fill(const AliVEvent *);
 
     ULong64_t fClassMask;
     ULong64_t fClassMaskNext50;
@@ -79,6 +79,7 @@ public:
     Int_t     fRunNumber;
     UShort_t  fnTrk;
     UShort_t  fnTrklet[4]; // all, C,cent,A
+    UShort_t  fnFO[2];     // inner,outer layer
     Char_t    fCharge;
     UShort_t  fL2Inputs;
     UShort_t  fOrbitID;
@@ -101,8 +102,8 @@ public:
 	fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
     }
 
-    void FillAD(const AliESDEvent *, AliTriggerAnalysis &);
-    void FillV0(const AliESDEvent *, AliTriggerAnalysis &);
+    void FillAD(const AliVEvent *, AliTriggerAnalysis &);
+    void FillV0(const AliVEvent *, AliTriggerAnalysis &);
 
     void FillInvalid();
 
@@ -122,7 +123,7 @@ public:
       : fA(kFALSE)
       , fC(kFALSE) {}
 
-    void Fill(const AliESDEvent *, AliTriggerAnalysis &);
+    void Fill(const AliVEvent *, AliTriggerAnalysis &);
 
     Bool_t fA;
     Bool_t fC;
@@ -147,11 +148,11 @@ public:
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 5);
+    ClassDef(TreeData, 6);
   } ;
 
   struct TrackData : public TObject {
-    TrackData(AliESDtrack *tr=NULL, AliPIDResponse *pidResponse=NULL)
+    TrackData(AliVTrack *tr=NULL, AliPIDResponse *pidResponse=NULL)
       : TObject()
       , fSign(0)
       , fPx(0)
@@ -159,7 +160,8 @@ public:
       , fPz(0)
       , fITSsignal(0)
       , fTPCsignal(0)
-      , fTOFsignal(0) {
+      , fTOFsignal(0)
+      , fFilterMap(0) {
       fPIDStatus[0] = fPIDStatus[1] = fPIDStatus[2] = AliPIDResponse::kDetNoSignal;
       for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
 	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
@@ -169,7 +171,7 @@ public:
       Fill(tr, pidResponse);
     }
 
-    void Fill(AliESDtrack *, AliPIDResponse*);
+    void Fill(AliVTrack *, AliPIDResponse*);
 
     Double32_t fSign;                          //[-1,1,2]
     Float_t    fPx,fPy,fPz;
@@ -180,16 +182,20 @@ public:
     Double32_t fPIDStatus[3];                  //[0,4,2] ITS,TPC,TOF
     Short_t    fChipKey[2];                    // L0,L1 (SPD)
     Int_t      fStatus[2];                     // L0,L1 (SPD)
-    ClassDef(TrackData, 4);
+    UInt_t     fFilterMap;
+    ClassDef(TrackData, 5);
   } ;
 
 
 protected:
-  void SetBranches(TTree* t);
+  void SetBranches(TTree* t, Bool_t isAOD);
   void SetClassMask(TString triggerSel, ULong64_t &mask, ULong64_t &maskNext50);
   static void FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]);
 
+  void FillSPDFOEffiencyHistograms(const AliESDEvent* );
   void FillTH3(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t w=1);
+
+  void FillTriggerIR(const AliESDHeader* );
 
   enum {
     kHistTrig,
@@ -209,6 +215,7 @@ private:
   Bool_t           fIsMC;                //
   TString          fTreeBranchNames;     //
   TString          fTrackCutType;        //
+  UInt_t           fTrackFilterMask;     //
   TString          fTriggerSelection;    //
   TString          fTriggerSelectionSPD; //
   Int_t            fMaxTracksSave;       //
@@ -223,9 +230,10 @@ private:
   TBits            fIR2InteractionMap;   //!
   TBits            fFastOrMap;           //!
   TBits            fFiredChipMap;        //!
-  AliESDVertex     fVertexSPD;           //!
-  AliESDVertex     fVertexTPC;           //!
-  AliESDVertex     fVertexTracks;        //!
+  typedef std::pair<AliESDVertex, AliAODVertex> VtxPairType;
+  VtxPairType      fVertexSPD;           //!
+  VtxPairType      fVertexTPC;           //!
+  VtxPairType      fVertexTracks;        //!
   AliTOFHeader     fTOFHeader;           //!
   TClonesArray     fTriggerIRs;          //!
   TString          fFiredTriggerClasses; //!
@@ -234,7 +242,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 9);
+  ClassDef(AliAnalysisTaskDG, 11);
 } ;
 
 #endif // ALIANALYSISTASKDG_H

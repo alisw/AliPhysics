@@ -21,7 +21,6 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksTree ()
   const char* tname = Form("%s_%1.0f_%1.0f_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
   AliAnalysisTaskCorrelation3p* task = new AliAnalysisTaskCorrelation3p(Form("%sTask", tname), "");
 
-//   task->SetCentralityEstimator(centrality);
   task->SetTrigger(AliAnalysisTaskCorrelation3p::tracks);
   task->SetMinTriggerPt(MinTriggerPt);
   task->SetMaxTriggerPt(MaxTriggerPt);
@@ -33,9 +32,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksTree ()
   task->SetMaxTracksPerEvent(maxntracksmix);
   task->SetMoreOutputs(MoreOutput);
   task->SetLeading(Leading);
-//   task->SetNEvents(NEventsProcessed);
-//   task->SetStartEvent(NFirstEvents);
-  
+
   if(QAonly)  task->SetQA();
   if(QAtask)  task->SetQAtask(true);
   task->SetDstTree(true);

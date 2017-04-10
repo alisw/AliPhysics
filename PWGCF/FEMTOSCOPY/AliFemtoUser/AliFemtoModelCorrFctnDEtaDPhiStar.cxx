@@ -189,17 +189,20 @@ ApplyIdealCalculations(const AliFemtoTrack &t1, const AliFemtoTrack &t2, float r
 
   const AliFemtoThreeVector &p1 = *mc1->GetTrueMomentum(),
                             &p2 = *mc2->GetTrueMomentum();
+
+  // skip no-momentum particles
+  if (p1.Mag2() == 0 || p2.Mag2() == 0) {
+    return {NAN, NAN};
+  }
+
   const Short_t charge1 = t1.Charge(),
                 charge2 = t2.Charge();
 
-  const Float_t delta_eta = AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2);
-  const Float_t delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(
-    p1, charge1,
-    p2, charge2,
-    radius,
-    magfield
-    );
-
+  const Float_t delta_eta = AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2),
+                delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, charge1,
+                                                                            p2, charge2,
+                                                                            radius,
+                                                                            magfield);
   return {delta_eta, delta_phi_star};
 }
 

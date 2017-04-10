@@ -23,7 +23,7 @@ void AnalyzeCTPRecords(Int_t rn, Int_t year, const TString *classNames, Int_t nC
 
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB", year));
-  
+
   TTree *TS = new TTree;
   TS->SetName("TS");
 
@@ -31,7 +31,7 @@ void AnalyzeCTPRecords(Int_t rn, Int_t year, const TString *classNames, Int_t nC
   TMatrixD offset(nClasses,6);
   TTimeStamp *timeStamp = NULL;
   TS->Branch("TimeStamp", "TTimeStamp", &timeStamp, 32000, 1);
-  for (Int_t i=0; i<nClasses; ++i) { 
+  for (Int_t i=0; i<nClasses; ++i) {
     TObjArray *os = classNames[i].Tokenize("-");
     TS->Branch(Form("%s_%s", os->At(0)->GetName(), os->At(1)->GetName()), ns.GetMatrixArray()+6*i, "L0b/D:L0a:L1b:L1a:L2b:L2a");
   }
@@ -39,9 +39,9 @@ void AnalyzeCTPRecords(Int_t rn, Int_t year, const TString *classNames, Int_t nC
 
   AliCDBEntry *entry = man->Get("GRP/CTP/Config");
   AliTriggerConfiguration *triggerConfig  = (AliTriggerConfiguration*)entry->GetObject();
-  
+
   entry = man->Get("GRP/CTP/Scalers");
-  AliTriggerRunScalers    *triggerScalers = (AliTriggerRunScalers*)entry->GetObject();    
+  AliTriggerRunScalers    *triggerScalers = (AliTriggerRunScalers*)entry->GetObject();
 
   TArrayI classIndex(nClasses);
   for (Int_t i=0; i<nClasses; ++i) {
@@ -84,5 +84,5 @@ void AnalyzeCTPRecords(Int_t rn, Int_t year, const TString *classNames, Int_t nC
   TFile::Open(Form("root/scalers_%d.root", rn), "RECREATE");
   TS->Write();
   gFile->Write();
-  gFile->Close();    
+  gFile->Close();
 }

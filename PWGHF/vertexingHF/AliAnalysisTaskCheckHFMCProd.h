@@ -40,7 +40,6 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   Terminate(Option_t *option);
 
-  Int_t CheckLcDecay(Int_t labLc, AliStack* stack) const;
   void SetSearchUpToQuark(Bool_t opt){fSearchUpToQuark=opt;};
 
 

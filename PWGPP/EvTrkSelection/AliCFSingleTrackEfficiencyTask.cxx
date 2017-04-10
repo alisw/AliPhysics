@@ -25,7 +25,6 @@
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
 #include "AliLog.h"
-#include "AliStack.h"
 #include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
 #include "AliCentrality.h"
@@ -48,6 +47,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask() :
   fbit(0),
   fRemoveNegativeLabelTracks(kTRUE),
   fMatchToKinematicTrack(kTRUE),
+  fUseGeneratedKine(kFALSE),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
   fConfiguration(kFast), // default  use the minimal configuration
@@ -71,6 +71,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fbit(0),
   fRemoveNegativeLabelTracks(kTRUE),
   fMatchToKinematicTrack(kTRUE),
+  fUseGeneratedKine(kFALSE),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
   fConfiguration(kFast), // default  use the minimal configuration
@@ -114,6 +115,7 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
     fbit = c.fbit;
     fRemoveNegativeLabelTracks = c.fRemoveNegativeLabelTracks;
     fMatchToKinematicTrack = c.fMatchToKinematicTrack;
+    fUseGeneratedKine = c.fUseGeneratedKine;
 
     fEvalCentrality = c.fEvalCentrality;
     fCentralityEstimator = c.fCentralityEstimator;
@@ -138,6 +140,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fbit(c.fbit),
   fRemoveNegativeLabelTracks(c.fRemoveNegativeLabelTracks),
   fMatchToKinematicTrack(c.fMatchToKinematicTrack),
+  fUseGeneratedKine(c.fUseGeneratedKine),
   fEvalCentrality(c.fEvalCentrality),
   fCentralityEstimator(c.fCentralityEstimator),
   fConfiguration(c.fConfiguration),
@@ -623,6 +626,9 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
 
         if (!fMCCuts->IsMCParticleGenerated(mcPart)) continue;
         //    cout<< "MC matching did work"<<endl;
+	if(fUseGeneratedKine){
+	  for(Int_t ivar=0; ivar<=3; ivar++) containerInput[ivar] = containerInputMC[ivar];
+	}
     }
 
     // for filter bit selection

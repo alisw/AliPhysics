@@ -42,7 +42,7 @@ public TObject
   /*** tools ***/
   static TLorentzVector fgLorentzVector;
 
-  ClassDef(AliAnalysisPIDParticle, 1);
+  ClassDef(AliAnalysisPIDParticle, 2);
 };
 
 #endif /* ALIANALYSISPIDPARTICLE_H */

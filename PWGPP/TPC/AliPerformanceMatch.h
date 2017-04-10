@@ -18,7 +18,6 @@ class TH2F;
 class AliESDVertex;
 class AliESDtrack;
 class AliMCEvent;
-class AliStack;
 class AliTrackReference;
 class AliESDEvent; 
 class AliESDfriend; 
@@ -56,10 +55,10 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process matching
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);
+  void ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack);
   //  void ProcessTPCTRD(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
-  void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPCConstrain(AliStack* const stack, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack); // - 01.11.2011
+  void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliMCEvent* const mcev, AliESDtrack *const esdTrack);
+  void ProcessTPCConstrain(AliMCEvent* const mcev, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack); // - 01.11.2011
 
   // Fill histogrrams
   void FillHistograms(AliESDtrack *const refParam, AliESDtrack *const param, Bool_t isRec);
