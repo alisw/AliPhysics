@@ -97,7 +97,7 @@ fhDispEtaPhiDiffE(0),         fhSphericityE(0),
 fhDispSumEtaDiffE(0),         fhDispSumPhiDiffE(0),
 
 // MC histograms
-fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
+//fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 // Embedding
 fhEmbeddedSignalFractionEnergy(0),
 fhEmbedPhotonELambda0FullSignal(0),   fhEmbedPhotonELambda0MostlySignal(0),
@@ -178,6 +178,9 @@ fhDistance2Hijing(0)
     fhMCMaxCellDiffClusterE[i]           = 0;
     fhLambda0DispEta[i]                  = 0;
     fhLambda0DispPhi[i]                  = 0;
+    
+    for(Int_t iover = 0 ; iover < 3; iover++)
+      fhMCPtLambda0Overlaps[i][iover] = 0;
     
     fhMCLambda0vsClusterMaxCellDiffE0[i] = 0;
     fhMCLambda0vsClusterMaxCellDiffE2[i] = 0;
@@ -1807,6 +1810,18 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     Float_t fraction = 0;
     // printf("check embedding %i\n",GetReader()->IsEmbeddedClusterSelectionOn());
     
+    // Compare the primary depositing more energy with the rest,
+    // if no photon/electron as comon ancestor (conversions), count as other particle
+    const UInt_t nlabels = cluster->GetNLabels();
+    Int_t overpdg[nlabels];
+    Int_t overlab[nlabels];
+    Int_t noverlaps = 0;
+      if(!GetReader()->IsEmbeddedClusterSelectionOn())
+        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg,overlab);
+    
+    //printf("N overlaps %d \n",noverlaps);
+
+    
     if(GetReader()->IsEmbeddedClusterSelectionOn())
     {
       // Only working for EMCAL
@@ -1840,36 +1855,27 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     {
       mcIndex = kmcssPhoton ;
       
-      if(!GetReader()->IsEmbeddedClusterSelectionOn())
-      {
-        //Check particle overlaps in cluster
-        
-        // Compare the primary depositing more energy with the rest,
-        // if no photon/electron as comon ancestor (conversions), count as other particle
-        const UInt_t nlabels = cluster->GetNLabels();
-        Int_t overpdg[nlabels];
-        Int_t overlab[nlabels];
-        Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg,overlab);
-
-        //printf("N overlaps %d \n",noverlaps);
-        
-        if(noverlaps == 0)
-        {
-          fhMCPhotonELambda0NoOverlap  ->Fill(energy, lambda0, GetEventWeight());
-        }
-        else if(noverlaps == 1)
-        {
-          fhMCPhotonELambda0TwoOverlap ->Fill(energy, lambda0, GetEventWeight());
-        }
-        else if(noverlaps > 1)
-        {
-          fhMCPhotonELambda0NOverlap   ->Fill(energy, lambda0, GetEventWeight());
-        }
-        else
-        {
-          AliWarning(Form("n overlaps = %d!!", noverlaps));
-        }
-      } // No embedding
+//      if(!GetReader()->IsEmbeddedClusterSelectionOn())
+//      {
+//        //Check particle overlaps in cluster
+//                
+//        if(noverlaps == 0)
+//        {
+//          fhMCPhotonELambda0NoOverlap  ->Fill(energy, lambda0, GetEventWeight());
+//        }
+//        else if(noverlaps == 1)
+//        {
+//          fhMCPhotonELambda0TwoOverlap ->Fill(energy, lambda0, GetEventWeight());
+//        }
+//        else if(noverlaps > 1)
+//        {
+//          fhMCPhotonELambda0NOverlap   ->Fill(energy, lambda0, GetEventWeight());
+//        }
+//        else
+//        {
+//          AliWarning(Form("n overlaps = %d!!", noverlaps));
+//        }
+//      } // No embedding
       
       // Fill histograms to check shape of embedded clusters
       if(GetReader()->IsEmbeddedClusterSelectionOn())
@@ -1945,6 +1951,20 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     fhMCEDispersion        [mcIndex]->Fill(energy, disp   , GetEventWeight());
     fhMCNCellsE            [mcIndex]->Fill(energy, ncells , GetEventWeight());
     fhMCMaxCellDiffClusterE[mcIndex]->Fill(energy, maxCellFraction, GetEventWeight());
+    
+    // Check particle overlaps in cluster
+    
+    if(!GetReader()->IsEmbeddedClusterSelectionOn())
+    {    
+      if(noverlaps == 0)
+        fhMCPtLambda0Overlaps[mcIndex][0]->Fill(pt, lambda0, GetEventWeight());
+      else if(noverlaps == 1)
+        fhMCPtLambda0Overlaps[mcIndex][1]->Fill(pt, lambda0, GetEventWeight());
+      else if(noverlaps > 1)
+        fhMCPtLambda0Overlaps[mcIndex][2]->Fill(pt, lambda0, GetEventWeight());
+      else
+        AliWarning(Form("n overlaps = %d!!", noverlaps));
+    }
     
     if(!fFillOnlySimpleSSHisto)
     {
@@ -3421,6 +3441,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCPtLambda0[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCPtLambda0[i]) ;
         
+        if(!GetReader()->IsEmbeddedClusterSelectionOn())
+        {
+          for(Int_t iover = 0; iover < 3; iover++)
+          {
+            fhMCPtLambda0Overlaps[i][iover]  = new TH2F(Form("hPtLambda0_MC%s_Overlap%d",pnamess[i].Data(),iover),
+                                                 Form("cluster from %s : #it{p}_{T} vs #lambda_{0}^{2}, N Overlaps = %d",ptypess[i].Data(),iover),
+                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+            fhMCPtLambda0Overlaps[i][iover]->SetYTitle("#lambda_{0}^{2}");
+            fhMCPtLambda0Overlaps[i][iover]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhMCPtLambda0Overlaps[i][iover]) ;
+          }
+        }
+        
         fhMCELambda1[i]  = new TH2F(Form("hELambda1_MC%s",pnamess[i].Data()),
                                     Form("cluster from %s : E vs #lambda_{1}^{2}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
@@ -3557,29 +3590,29 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         }
       }// loop
       
-      if(!GetReader()->IsEmbeddedClusterSelectionOn())
-      {
-        fhMCPhotonELambda0NoOverlap  = new TH2F("hELambda0_MCPhoton_NoOverlap",
-                                                "cluster from Photon : E vs #lambda_{0}^{2}",
-                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCPhotonELambda0NoOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0NoOverlap->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCPhotonELambda0NoOverlap) ;
-        
-        fhMCPhotonELambda0TwoOverlap  = new TH2F("hELambda0_MCPhoton_TwoOverlap",
-                                                 "cluster from Photon : E vs #lambda_{0}^{2}",
-                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCPhotonELambda0TwoOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0TwoOverlap->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCPhotonELambda0TwoOverlap) ;
-        
-        fhMCPhotonELambda0NOverlap  = new TH2F("hELambda0_MCPhoton_NOverlap",
-                                               "cluster from Photon : E vs #lambda_{0}^{2}",
-                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCPhotonELambda0NOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0NOverlap->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCPhotonELambda0NOverlap) ;
-      } // No embedding
+//      if(!GetReader()->IsEmbeddedClusterSelectionOn())
+//      {
+//        fhMCPhotonELambda0NoOverlap  = new TH2F("hELambda0_MCPhoton_NoOverlap",
+//                                                "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhMCPhotonELambda0NoOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0NoOverlap->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhMCPhotonELambda0NoOverlap) ;
+//        
+//        fhMCPhotonELambda0TwoOverlap  = new TH2F("hELambda0_MCPhoton_TwoOverlap",
+//                                                 "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhMCPhotonELambda0TwoOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0TwoOverlap->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhMCPhotonELambda0TwoOverlap) ;
+//        
+//        fhMCPhotonELambda0NOverlap  = new TH2F("hELambda0_MCPhoton_NOverlap",
+//                                               "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhMCPhotonELambda0NOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0NOverlap->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhMCPhotonELambda0NOverlap) ;
+//      } // No embedding
       
       if(GetReader()->IsEmbeddedClusterSelectionOn())
       {
