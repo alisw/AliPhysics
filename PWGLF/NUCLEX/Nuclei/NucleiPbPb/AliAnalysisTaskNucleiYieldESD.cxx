@@ -20,7 +20,7 @@
 #include "AliMultSelection.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliTOFPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 #include "AliVEvent.h"
@@ -309,25 +309,25 @@ void AliAnalysisTaskNucleiYieldESD::UserExec(Option_t *){
   float centrality = fEventCuts.GetCentrality();
   fCentralityClasses->Fill(centrality);
 
-  AliStack* stack = 0x0;
+  AliMCEvent* mcEvent = nullptr;
   if (fIsMC) {
     // get branch "mcparticles"
-    stack = MCEvent()->Stack();
-    if (!stack) {
-      ::Fatal("AliAnalysisTaskNucleiYieldESD::UserExec", "Missing MC stack!");
+    mcEvent = MCEvent();
+    if (!mcEvent) {
+      ::Fatal("AliAnalysisTaskNucleiYieldESD::UserExec", "Missing MC Event!");
       PostData(1, fList);
       return;
     }
 
     /// Making the list of the deuterons we want to measure
-    for (int iMC = 0; iMC < stack->GetNtrack(); ++iMC) {
-      TParticle* part = stack->Particle(iMC);
+    for (int iMC = 0; iMC < mcEvent->GetNumberOfTracks(); ++iMC) {
+      TParticle* part = mcEvent->Particle(iMC);
       const int pdg = part->GetPdgCode();
       int iC = pdg > 0 ? 1 : 0;
       if (TMath::Abs(part->Y()) > fYregion) continue;
       if (TMath::Abs(pdg) == fPDG) {
         fProduction[iC]->Fill(part->P());
-        if (stack->IsPhysicalPrimary(iMC)) fTotal[iC]->Fill(centrality,part->Pt());
+        if (mcEvent->IsPhysicalPrimary(iMC)) fTotal[iC]->Fill(centrality,part->Pt());
       }
     }
   }
@@ -357,22 +357,22 @@ void AliAnalysisTaskNucleiYieldESD::UserExec(Option_t *){
 
     if (fIsMC) {
       const int id = TMath::Abs(track->GetLabel());
-      TParticle* part = stack->Particle(id);
+      TParticle* part = mcEvent->Particle(id);
       if (!part) continue;
       const int pdg = part->GetPdgCode();
       if (TMath::Abs(pdg) == fPDG) {
-        if (stack->IsPhysicalPrimary(id)) 
+        if (mcEvent->IsPhysicalPrimary(id)) 
           fDCAPrimaryTPC[iC]->Fill(centrality,part->Pt(),dca[0]);
-        else if (stack->IsSecondaryFromMaterial(id))
+        else if (mcEvent->IsSecondaryFromMaterial(id))
           fDCASecondaryTPC[iC]->Fill(centrality,part->Pt(),dca[0]);
         fITS_TPC[iC]->Fill(centrality,part->Pt());
         fPtCorrection[iC]->Fill(pT,part->Pt() - pT);
 
         if (beta > 0) {
           fITS_TPC_TOF[iC]->Fill(centrality,part->Pt());
-          if (stack->IsPhysicalPrimary(id)) 
+          if (mcEvent->IsPhysicalPrimary(id)) 
             fDCAPrimaryTOF[iC]->Fill(centrality,part->Pt(),dca[0]);
-          else if (stack->IsSecondaryFromMaterial(id))
+          else if (mcEvent->IsSecondaryFromMaterial(id))
             fDCASecondaryTOF[iC]->Fill(centrality,part->Pt(),dca[0]);
         }
       }
