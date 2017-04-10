@@ -220,8 +220,8 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   Int_t fnPtBinsD0forD0ptbin;
   Int_t fGlobalIndexD0forD0ptbin;
   Float_t * fCutsRDD0forD0ptbin;             //[fGlobalIndexD0forD0ptbin]
-  Float_t * fPtBinLimitsD0forD0ptbin;        //[fnPtBinsD0forD0ptbin]
   Int_t fnPtBinLimitsD0forD0ptbin;
+  Float_t * fPtBinLimitsD0forD0ptbin;        //[fnPtBinsD0forD0ptbin]
   Bool_t * fIsUpperCutD0forD0ptbin;          //[fnVarsD0forD0ptbin]
   Bool_t * fIsCutUsedD0forD0ptbin;           //[fGlobalIndexD0forD0ptbin]
   TString * fVarNamesD0forD0ptbin;           //[fnVarsD0forD0ptbin]
@@ -230,8 +230,8 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   Int_t fnPtBinsD0forDStarptbin;
   Int_t fGlobalIndexD0forDStarptbin;
   Float_t * fCutsRDD0forDStarptbin;          //[fGlobalIndexD0forDStarptbin]
-  Float_t * fPtBinLimitsD0forDStarptbin;     //[fnPtBinsD0forDStarptbin]
   Int_t fnPtBinLimitsD0forDStarptbin;
+  Float_t * fPtBinLimitsD0forDStarptbin;     //[fnPtBinsD0forDStarptbin]
   Bool_t * fIsUpperCutD0forDStarptbin;       //[fnVarsD0forDStarptbin]
   Bool_t * fIsCutUsedD0forDStarptbin;        //[fGlobalIndexD0forDStarptbin]
   TString * fVarNamesD0forDStarptbin;        //[fnVarsD0forDStarptbin]
@@ -240,8 +240,8 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   Int_t fnPtBinsDStarforDStarptbin;
   Int_t fGlobalIndexDStarforDStarptbin;
   Float_t * fCutsRDDStarforDStarptbin;       //[fGlobalIndexDStarforDStarptbin]
-  Float_t * fPtBinLimitsDStarforDStarptbin;  //[fnPtBinsDStarforDStarptbin]
   Int_t fnPtBinLimitsDStarforDStarptbin;
+  Float_t * fPtBinLimitsDStarforDStarptbin;  //[fnPtBinsDStarforDStarptbin]
   Bool_t * fIsUpperCutDStarforDStarptbin;    //[fnVarsDStarforDStarptbin]
   Bool_t * fIsCutUsedDStarforDStarptbin;     //[fGlobalIndexDStarforDStarptbin]
   TString * fVarNamesDStarforDStarptbin;     //[fnVarsDStarforDStarptbin]

@@ -116,6 +116,10 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
   fnPtBinsD0forD0ptbin(0),
   fnPtBinsD0forDStarptbin(0),
   fnPtBinsDStarforDStarptbin(0),
+  fnPtBinLimits(0),
+  fnPtBinsD0forD0ptbinLimits(0),
+  fnPtBinsD0forDStarptbinLimits(0),
+  fnPtBinsDStarforDStarptbinLimits(0),
   fPtBinLimits(0),
   fPtBinLimitsD0forD0ptbin(0),
   fPtBinLimitsD0forDStarptbin(0),
@@ -163,6 +167,10 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   fnPtBinsD0forD0ptbin(0),
   fnPtBinsD0forDStarptbin(0),
   fnPtBinsDStarforDStarptbin(0),
+  fnPtBinLimits(0),
+  fnPtBinsD0forD0ptbinLimits(0),
+  fnPtBinsD0forDStarptbinLimits(0),
+  fnPtBinsDStarforDStarptbinLimits(0),
   fPtBinLimits(0),
   fPtBinLimitsD0forD0ptbin(0),
   fPtBinLimitsD0forDStarptbin(0),
@@ -196,12 +204,18 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   fnPtBinsD0forDStarptbin = fCuts->GetNPtBinsD0forDStarptbin();
   fnPtBinsDStarforDStarptbin = fCuts->GetNPtBinsDStarforDStarptbin();
 
+  fnPtBinLimits = fnPtBins + 1;
+  fnPtBinsD0forD0ptbinLimits = fnPtBinsD0forD0ptbin + 1;
+  fnPtBinsD0forDStarptbinLimits = fnPtBinsD0forDStarptbin + 1;
+  fnPtBinsDStarforDStarptbinLimits = fnPtBinsDStarforDStarptbin + 1;
+
   fPtBinLimits = fCuts->GetPtBinLimits();
   fPtBinLimitsD0forD0ptbin = fCuts->GetPtBinLimitsD0forD0ptbin();
   fPtBinLimitsD0forDStarptbin = fCuts->GetPtBinLimitsD0forDStarptbin();
   fPtBinLimitsDStarforDStarptbin = fCuts->GetPtBinLimitsDStarforDStarptbin();
 
   // we create an array of pointers for the histograms. This method is more CPU efficient than looking up each histogram by name.
+  // this option is now set manualy in the header file
   // const Int_t numberOfDaughters = 4;
   // const Int_t numberOfDaughterHistogramSets = 5;
   // const Int_t numberOfDaughterHistograms = 15;
@@ -308,7 +322,7 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
     return;
   }
 
-  if(fEvents%1000==0){
+  if(fEvents%100==0){
     std::cout << "\r" << "Analysing event number: " << fEvents << std::endl;
   }
 
@@ -347,7 +361,7 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL")) fCEvents->Fill(5);
 
   if(!fCuts->IsEventSelected(aodEvent)) {
-    std::cout << "Event rejected by code: " << fCuts->GetWhyRejection() << std::endl;
+    // std::cout << "Event rejected by code: " << fCuts->GetWhyRejection() << std::endl;
     if(fCuts->GetWhyRejection()==6) {// rejected for Z vertex
       fCEvents->Fill(6);
       return;
@@ -933,23 +947,23 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         if(j==3) add_name = "MCCut";
         if(j==4) add_name = "Result";
         if(j==5) add_name = "MCResult";
-        if(j%2==0 && j>5) {add_name += "_ptbin_"; add_name += fPtBinLimits[-6+j/2]; add_name += "_to_"; add_name += fPtBinLimits[-6+1+j/2];}
-        if(j%2==1 && j>5) {add_name += "MC_ptbin_"; add_name += fPtBinLimits[-6+(j-1)/2]; add_name += "_to_"; add_name += fPtBinLimits[-6+1+(j-1)/2];}
+        if(j%2==0 && j>5) {add_name = "_ptbin_"; add_name += fPtBinLimits[(j-6)/2]; add_name += "_to_"; add_name += fPtBinLimits[(j-6)/2 + 1];}
+        if(j%2==1 && j>5) {add_name = "MC_ptbin_"; add_name += fPtBinLimits[(j-7)/2]; add_name += "_to_"; add_name += fPtBinLimits[(j-7)/2 + 1];}
       }
       if(i==3)
-      {
-        if(j%2==0) {add_name += "_ptbin_"; add_name += fPtBinLimitsD0forD0ptbin[j/2]; add_name += "_to_"; add_name += fPtBinLimitsD0forD0ptbin[1+j/2];}
-        if(j%2==1) {add_name += "MC_ptbin_"; add_name += fPtBinLimitsD0forD0ptbin[(j-1)/2]; add_name += "_to_"; add_name += fPtBinLimitsD0forD0ptbin[1+(j-1)/2];}
+      { 
+        if(j%2==0) {add_name = "_ptbin_"; add_name += fPtBinLimitsD0forD0ptbin[j/2]; add_name += "_to_"; add_name += fPtBinLimitsD0forD0ptbin[1+j/2];}
+        if(j%2==1) {add_name = "MC_ptbin_"; add_name += fPtBinLimitsD0forD0ptbin[(j-1)/2]; add_name += "_to_"; add_name += fPtBinLimitsD0forD0ptbin[1+(j-1)/2];}
       }
       if(i==4)
       {
-        if(j%2==0) {add_name += "_ptbin_"; add_name += fPtBinLimitsD0forDStarptbin[j/2]; add_name += "_to_"; add_name += fPtBinLimitsD0forDStarptbin[1+j/2];}
-        if(j%2==1) {add_name += "MC_ptbin_"; add_name += fPtBinLimitsD0forDStarptbin[(j-1)/2]; add_name += "_to_"; add_name += fPtBinLimitsD0forDStarptbin[1+(j-1)/2];}
+        if(j%2==0) {add_name = "_ptbin_"; add_name += fPtBinLimitsD0forDStarptbin[j/2]; add_name += "_to_"; add_name += fPtBinLimitsD0forDStarptbin[1+j/2];}
+        if(j%2==1) {add_name = "MC_ptbin_"; add_name += fPtBinLimitsD0forDStarptbin[(j-1)/2]; add_name += "_to_"; add_name += fPtBinLimitsD0forDStarptbin[1+(j-1)/2];}
       }
       if(i==5)
       {
-        if(j%2==0) {add_name += "_ptbin_"; add_name += fPtBinLimitsDStarforDStarptbin[j/2]; add_name += "_to_"; add_name += fPtBinLimitsDStarforDStarptbin[1+j/2];}
-        if(j%2==1) {add_name += "MC_ptbin_"; add_name += fPtBinLimitsDStarforDStarptbin[(j-1)/2]; add_name += "_to_"; add_name += fPtBinLimitsDStarforDStarptbin[1+(j-1)/2];}
+        if(j%2==0) {add_name = "_ptbin_"; add_name += fPtBinLimitsDStarforDStarptbin[j/2]; add_name += "_to_"; add_name += fPtBinLimitsDStarforDStarptbin[1+j/2];}
+        if(j%2==1) {add_name = "MC_ptbin_"; add_name += fPtBinLimitsDStarforDStarptbin[(j-1)/2]; add_name += "_to_"; add_name += fPtBinLimitsDStarforDStarptbin[1+(j-1)/2];}
       }
 
 
@@ -999,7 +1013,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         else continue;} 
         if(k==26){if(i==0 || i==3 || i==4){name_Histogram = "d0SecondDaughterToDStar"; discription_Histogram = "d0 second daughter w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 1000; lowerBound = 0; upperBound = 1;}
         else continue;}
-        if(k==27){if(i==0 || i==3 || i==4){name_Histogram = "impactProductToDStar"; discription_Histogram = "impact product w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 10000; lowerBound = -0.01; upperBound = 1;}
+        if(k==27){if(i==0 || i==3 || i==4){name_Histogram = "impactProductToDStar"; discription_Histogram = "impact product w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 10000; lowerBound = -0.1; upperBound = 0.1;}
         else continue;} 
         if(k==28){if(i==0 || i==3 || i==4){name_Histogram = "impactProductXYToDStar"; discription_Histogram = "impact product XY w.r.t. DStar decay vertex; [cm^{2}]; Entries"; numberOfBins = 1000; lowerBound = 0; upperBound = 0.5;}
         else continue;} 
@@ -1147,7 +1161,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     if(k==0) ptBinMother = "";
     if(k==1) ptBinMother = "_ptbin_6_to_inf";
     if(k==2) ptBinMother = "_ptbin_3_to_inf";
-    if(k>2) {ptBinMother += "_ptbin_"; ptBinMother += fPtBinLimitsD0forD0ptbin[k-3]; ptBinMother += "_to_"; ptBinMother += fPtBinLimitsD0forD0ptbin[k-2];}
+    if(k>2) {ptBinMother += "_ptbin_"; ptBinMother += fPtBinLimits[k-3]; ptBinMother += "_to_"; ptBinMother += fPtBinLimits[k-2];}
 
     TString name_deltaMassMother ="deltaInvMassB0";
     name_deltaMassMother += ptBinMother;
@@ -1165,7 +1179,6 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
       if(i==0) signName = "";
       if(i==1) signName = "_SameSign";
       if(i==2) signName = "_SignSum";
-
       TString name_invariantMassMother ="invariantMassB0";
       name_invariantMassMother += ptBinMother + signName;
       TH1F* hist_invariantMassMother = new TH1F(name_invariantMassMother.Data(),"mass mother candidate; m [GeV/c^2]; Entries",2000,0,20);
@@ -1292,28 +1305,22 @@ AliAODVertex* AliAnalysisTaskSEB0toDStarPi::RecalculateVertex(const AliVVertex *
   // Helper function to recalculate a vertex.
   //
   
-  // std::cout<< "1 this is the number fo prongs = "<< tracks->GetEntriesFast()<<std::endl;
   AliESDVertex *vertexESD = 0;
   AliAODVertex *vertexAOD = 0;
-  //Double_t covmatrix[6];
-  // AliVertexerTracks
 
   AliVertexerTracks *vertexer = new AliVertexerTracks(bField);
   // vertexer->SetFinderAlgorithm(finderAlgorithm);
-  // vertexer->SetDCAcut(-1.0);
-  //std::cout<< "a"<<std::endl;
+
   vertexer->SetVtxStart((AliESDVertex*)primary);//primary vertex
-  //std::cout<< "b"<<std::endl;
   vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(tracks);
-  //std::cout<< "c"<<std::endl;
+
   delete vertexer; vertexer=NULL;
 
   if(!vertexESD) return vertexAOD;
 
-  //std::cout<< "2 this is the number fo prongs = "<< vertexESD->GetNContributors()<<std::endl;
 
   if(vertexESD->GetNContributors()!=tracks->GetEntriesFast()) {
-    // std::cout<<"  // vertex fails ------------------------------------------------------------ look at the variables "<< std::endl;
+
     delete vertexESD; vertexESD=NULL;
     return vertexAOD;
   }
@@ -1334,7 +1341,7 @@ AliAODVertex* AliAnalysisTaskSEB0toDStarPi::RecalculateVertex(const AliVVertex *
 
   Double_t vertRadius2=pos[0]*pos[0]+pos[1]*pos[1];
   if(vertRadius2>8.){//(2.82)^2 radius beam pipe
-    //  std::cout<<"  // vertex outside beam pipe, reject candidate to avoid propagation through material "<< std::endl;
+
     delete vertexESD; vertexESD=NULL;
     return vertexAOD;
   }
@@ -2386,17 +2393,23 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
 
       Bool_t bCutArray[25] = {0};
       Int_t cutReturnValue = fCuts->IsD0forD0ptbinSelected(motherRecoDecayHF2Prong, 0, aodEvent, bCutArray);
-      if(fGetCutInfo == kFALSE && cutReturnValue == 0) continue;
+      if(cutReturnValue == -1) cutMother = kTRUE;
+      if(cutReturnValue == 0) cutMother = kTRUE;
 
-      for (Int_t k = 0; k < 25; ++k)
+
+      if(fGetCutInfo == kTRUE)
       {
-        if (bCutArray[k] == kTRUE){
-          if(isDesiredCandidate){
-            ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(k+1);
-          } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(k+1);
-          cutMother = kTRUE;
-        }
+        for (Int_t k = 0; k < 25; ++k)
+        {
+          if (bCutArray[k] == kTRUE){
+            if(isDesiredCandidate){
+              ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(k+1);
+            } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(k+1);
+            cutMother = kTRUE;
+          }
+        } 
       }
+
 
       if(!isDesiredCandidate && fQuickSignalAnalysis) cutMother = kTRUE;
 
@@ -2464,6 +2477,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         //we get the track of the first daughter
         AliAODTrack * trackB0Pion = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(fB0PionTracks->at(k)));
         if(!trackB0Pion) continue;
+
+        // std::cout << "DStar Pion - " << i << "/" << fDStarPionTracks->size() << ", " << "D0 - " << j << "/" << fD0Tracks->GetEntriesFast() << ", " << "D0 Pion - " << k << "/" << fB0PionTracks->size() << ". " << std::endl;
 
         //we check if the IDs of the tracks are different
         AliAODTrack* twoProngdaughter0 = (AliAODTrack*)trackSecondDaughter->GetDaughter(0);
@@ -2559,7 +2574,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         trackDStar->GetSecondaryVtx()->AddDaughter(trackSecondDaughter);
         trackDStar->SetPrimaryVtxRef((AliAODVertex*)aodEvent->GetPrimaryVertex());
         trackDStar->SetProngIDs(2,idDStar);
-        Double_t invariantMassMother = trackDStar->InvMass(2,prongsDStar);
+        
 
         Bool_t isDesiredCandidate = kFALSE;
         Int_t mcLabelB0 = 0;
@@ -2620,29 +2635,36 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
 
         Bool_t bCutArrayDStar[25] = {0};
         Int_t cutReturnValueDStar = fCuts->IsDStarforDStarptbinSelected(trackDStar, 0, aodEvent, bCutArrayDStar);
-        if(fGetCutInfo == kFALSE && cutReturnValueDStar == 0) continue;
+        if(cutReturnValueDStar == -1) cutDStar = kTRUE;
+        if(cutReturnValueDStar == 0) cutDStar = kTRUE;
 
         Bool_t bCutArrayD0[35] = {0};
         Int_t cutReturnValueD0 = fCuts->IsD0forDStarptbinSelected(trackDStar, 0, aodEvent, bCutArrayD0);
-        if(fGetCutInfo == kFALSE && cutReturnValueD0 == 0) continue;
+        if(cutReturnValueD0 == -1) cutDStar = kTRUE;
+        if(cutReturnValueD0 == 0) cutDStar = kTRUE;
 
-        for (Int_t n = 0; n < 25; ++n)
+
+        if(fGetCutInfo == kTRUE)
         {
-          if(bCutArrayDStar[n] == kTRUE){
-            if(isDesiredCandidate){
-              ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1);
-            } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1);
-            cutDStar = kTRUE;
+
+          for (Int_t n = 0; n < 25; ++n)
+          {
+            if(bCutArrayDStar[n] == kTRUE){
+              if(isDesiredCandidate){
+                ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1);
+              } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1);
+              cutDStar = kTRUE;
+            }
           }
-        }
 
-        for (Int_t n = 0; n < 35; ++n)
-        {
-          if(bCutArrayD0[n] == kTRUE){
-            if(isDesiredCandidate){
-              ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1+35);
-            } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1+35);
-            cutDStar = kTRUE;
+          for (Int_t n = 0; n < 35; ++n)
+          {
+            if(bCutArrayD0[n] == kTRUE){
+              if(isDesiredCandidate){
+                ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1+35);
+              } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1+35);
+              cutDStar = kTRUE;
+            }
           }
         }
 
@@ -2753,54 +2775,60 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         Bool_t bCutArray[85] = {0};
         Int_t numberOfCuts = 85;
         Int_t cutReturnValue = fCuts->IsSelected(motherCascadeHF, 0, aodEvent, bCutArray);
-        if(fGetCutInfo == kFALSE && cutReturnValue == 0) continue;
+        if(cutReturnValue == -1) cutMother = kTRUE;
+        if(cutReturnValue == 0) cutMother = kTRUE;
 
-        for (Int_t n = 0; n < 85; ++n)
-        {
-          if(bCutArray[n] == kTRUE){
-            if(isDesiredCandidate){
-              ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1);
-            } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1);
-            cutMother = kTRUE;
-          }
-        }
 
         // We save information about the cuts
         TString histName = "";
+        Double_t invariantMassMother = motherCascadeHF->InvMass(2,prongs);
         Double_t pdgMassMother=TDatabasePDG::Instance()->GetParticle(511)->Mass();
         Double_t massWindow = 0.125; //75; //GeV/c^2
-        if (TMath::Abs(invariantMassMother-pdgMassMother)<massWindow){
-          for (Int_t i = 0; i < numberOfCuts; ++i) //total
+        if(fGetCutInfo == kTRUE)
+        {
+          for (Int_t n = 0; n < 85; ++n)
           {
-            if(bCutArray[i] == kFALSE) continue;
-            for (Int_t j = 0; j < numberOfCuts; ++j)
-            {
-              if(bCutArray[j] == kFALSE) continue;
-              if(isDesiredCandidate == kFALSE) histName ="cutEffectBackground";
-              if(isDesiredCandidate == kTRUE) histName ="cutEffectSignal";
-              ((TH2I*)(fOutputB0MC->FindObject(histName)))->Fill(i,j);
+            if(bCutArray[n] == kTRUE){
+              if(isDesiredCandidate){
+                ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1);
+              } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1);
+              cutMother = kTRUE;
             }
           }
-
-          for (Int_t i = 0; i < numberOfCuts; ++i) //unique
-          {
-            if(bCutArray[i] == kFALSE) continue;
-            Bool_t bFill = kTRUE;
-            for (Int_t j = 0; j < numberOfCuts; ++j)
+       
+          if (TMath::Abs(invariantMassMother-pdgMassMother)<massWindow){
+            for (Int_t i = 0; i < numberOfCuts; ++i) //total
             {
-              if(i==j) continue;
-              if(bCutArray[j] == kTRUE) 
+              if(bCutArray[i] == kFALSE) continue;
+              for (Int_t j = 0; j < numberOfCuts; ++j)
               {
-                bFill = kFALSE;
-                break;
+                if(bCutArray[j] == kFALSE) continue;
+                if(isDesiredCandidate == kFALSE) histName ="cutEffectBackground";
+                if(isDesiredCandidate == kTRUE) histName ="cutEffectSignal";
+                ((TH2I*)(fOutputB0MC->FindObject(histName)))->Fill(i,j);
               }
-
             }
-            if(bFill == kTRUE)
+
+            for (Int_t i = 0; i < numberOfCuts; ++i) //unique
             {
-              if(isDesiredCandidate == kFALSE) histName ="cutEffectUniqueBackground";
-              if(isDesiredCandidate == kTRUE) histName ="cutEffectUniqueSignal";
-              ((TH1I*)(fOutputB0MC->FindObject(histName)))->Fill(i);
+              if(bCutArray[i] == kFALSE) continue;
+              Bool_t bFill = kTRUE;
+              for (Int_t j = 0; j < numberOfCuts; ++j)
+              {
+                if(i==j) continue;
+                if(bCutArray[j] == kTRUE) 
+                {
+                  bFill = kFALSE;
+                  break;
+                }
+
+              }
+              if(bFill == kTRUE)
+              {
+                if(isDesiredCandidate == kFALSE) histName ="cutEffectUniqueBackground";
+                if(isDesiredCandidate == kTRUE) histName ="cutEffectUniqueSignal";
+                ((TH1I*)(fOutputB0MC->FindObject(histName)))->Fill(i);
+              }
             }
           }
         }
@@ -2839,7 +2867,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
 
         // We fill the final cut histograms with the candidates that have an invariant mass close to the PDG value. This way the background we use for optimizing the cuts will not be contaminated with candidates that don't affect the signal region.
         // pdgMassMother=TDatabasePDG::Instance()->GetParticle(511)->Mass();
-        massWindow = 0.125; //75; //GeV/c^2
+        // massWindow = 0.125; //75; //GeV/c^2
         if (TMath::Abs(invariantMassMother-pdgMassMother)<massWindow)
         {
           if(!bSameSign) 
@@ -2861,10 +2889,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         }
 
         //Here we fill the histograms per pt bin and apply the same sign method
-
         TString ptBinMother = "";
         Int_t ptBin = fCuts->PtBin(motherCascadeHF->Pt());
-        ptBinMother += "_ptbin_"; ptBinMother += fPtBinLimits[ptBin]; ptBinMother += "_to_"; ptBinMother += fPtBinLimits[ptBin];
+        ptBinMother += "_ptbin_"; ptBinMother += fPtBinLimits[ptBin]; ptBinMother += "_to_"; ptBinMother += fPtBinLimits[ptBin+1];
         histType = 6 + 2 * ptBin; 
 
         Int_t d0PtBin = fCuts->PtBinD0forD0ptbin(selectedD0->Pt());
@@ -2874,7 +2901,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         Int_t histTypeD0DStar = 2 * d0DStarPtBin;
 
         Int_t dstarPtBin = fCuts->PtBinDStarforDStarptbin(selectedDStar->Pt());
-        Int_t histTypeDStar = 2 * dstarPtBin; 
+        Int_t histTypeDStar = 2 * dstarPtBin;
+
 
         if (TMath::Abs(invariantMassMother-pdgMassMother)<massWindow)
         {
@@ -3433,6 +3461,8 @@ Double_t AliAnalysisTaskSEB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoCascadeHF
 //-------------------------------------------------------------------------------------
 void AliAnalysisTaskSEB0toDStarPi::FillD0Histograms(AliAODRecoDecayHF2Prong * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType){
 
+  if(histType<0) return;
+
   //In this function we fill the histograms of the reconstructed mothers
   Double_t ptMother = 0.0;
   Double_t momentumMother = 0.0;
@@ -3589,6 +3619,8 @@ void AliAnalysisTaskSEB0toDStarPi::FillD0Histograms(AliAODRecoDecayHF2Prong * se
 }
 //-------------------------------------------------------------------------------------
 void AliAnalysisTaskSEB0toDStarPi::FillCascadeMotherHistograms(AliAODRecoCascadeHF * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType){
+
+  if(histType<0) return;
 
   //In this function we fill the histograms of the reconstructed mothers
   Double_t ptMother = 0.0;

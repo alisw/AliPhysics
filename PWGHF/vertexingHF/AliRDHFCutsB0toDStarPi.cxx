@@ -55,20 +55,26 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   fCircRadius(0.),
   fIsCutUsed(0),   
   fCutsRDD0forD0ptbin(0),
+  fnPtBinsD0forD0ptbin(1),
+  fnPtBinLimitsD0forD0ptbin(1),
   fPtBinLimitsD0forD0ptbin(0),
   fIsUpperCutD0forD0ptbin(0),
   fIsCutUsedD0forD0ptbin(0),
   fVarNamesD0forD0ptbin(0),
   fCutsRDD0forDStarptbin(0),
+  fnPtBinsD0forDStarptbin(1),
+  fnPtBinLimitsD0forDStarptbin(1),
   fPtBinLimitsD0forDStarptbin(0),
   fIsUpperCutD0forDStarptbin(0),
   fIsCutUsedD0forDStarptbin(0),
   fVarNamesD0forDStarptbin(0),
   fCutsRDDStarforDStarptbin(0),
+  fnPtBinsDStarforDStarptbin(1),
+  fnPtBinLimitsDStarforDStarptbin(1),
   fPtBinLimitsDStarforDStarptbin(0),
   fIsUpperCutDStarforDStarptbin(0),
   fIsCutUsedDStarforDStarptbin(0),
-  fVarNamesDStarforDStarptbin(0)
+  fVarNamesDStarforDStarptbin(0)  
 {
   //
   // Default Constructor
@@ -347,25 +353,31 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
 //--------------------------------------------------------------------------
 AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const AliRDHFCutsB0toDStarPi &source) :
   AliRDHFCuts(source),
-  fMaxPtPid(9999.),
-  fTPCflag(999.),
-  fCircRadius(0.),
-  fIsCutUsed(0),   
-  fCutsRDD0forD0ptbin(0),
-  fPtBinLimitsD0forD0ptbin(0),
-  fIsUpperCutD0forD0ptbin(0),
-  fIsCutUsedD0forD0ptbin(0),
-  fVarNamesD0forD0ptbin(0),
-  fCutsRDD0forDStarptbin(0),
-  fPtBinLimitsD0forDStarptbin(0),
-  fIsUpperCutD0forDStarptbin(0),
-  fIsCutUsedD0forDStarptbin(0),
-  fVarNamesD0forDStarptbin(0),
-  fCutsRDDStarforDStarptbin(0),
-  fPtBinLimitsDStarforDStarptbin(0),
-  fIsUpperCutDStarforDStarptbin(0),
-  fIsCutUsedDStarforDStarptbin(0),
-  fVarNamesDStarforDStarptbin(0)
+  fMaxPtPid(source.fMaxPtPid),
+  fTPCflag(source.fTPCflag),
+  fCircRadius(source.fCircRadius),
+  fIsCutUsed(source.fIsCutUsed),   
+  fCutsRDD0forD0ptbin(source.fCutsRDD0forD0ptbin),
+  fnPtBinsD0forD0ptbin(source.fnPtBinsD0forD0ptbin),
+  fPtBinLimitsD0forD0ptbin(source.fPtBinLimitsD0forD0ptbin),
+  fIsUpperCutD0forD0ptbin(source.fIsUpperCutD0forD0ptbin),
+  fIsCutUsedD0forD0ptbin(source.fIsCutUsedD0forD0ptbin),
+  fVarNamesD0forD0ptbin(source.fVarNamesD0forD0ptbin),
+  fCutsRDD0forDStarptbin(source.fCutsRDD0forDStarptbin),
+  fnPtBinsD0forDStarptbin(source.fnPtBinsD0forDStarptbin),
+  fPtBinLimitsD0forDStarptbin(source.fPtBinLimitsD0forDStarptbin),
+  fIsUpperCutD0forDStarptbin(source.fIsUpperCutD0forDStarptbin),
+  fIsCutUsedD0forDStarptbin(source.fIsCutUsedD0forDStarptbin),
+  fVarNamesD0forDStarptbin(source.fVarNamesD0forDStarptbin),
+  fCutsRDDStarforDStarptbin(source.fCutsRDDStarforDStarptbin),
+  fnPtBinsDStarforDStarptbin(source.fnPtBinsDStarforDStarptbin),
+  fPtBinLimitsDStarforDStarptbin(source.fPtBinLimitsDStarforDStarptbin),
+  fIsUpperCutDStarforDStarptbin(source.fIsUpperCutDStarforDStarptbin),
+  fIsCutUsedDStarforDStarptbin(source.fIsCutUsedDStarforDStarptbin),
+  fVarNamesDStarforDStarptbin(source.fVarNamesDStarforDStarptbin),  
+  fnPtBinLimitsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin),
+  fnPtBinLimitsD0forDStarptbin(source.fnPtBinLimitsD0forDStarptbin),
+  fnPtBinLimitsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin)
 {
   //
   // Copy constructor
@@ -845,7 +857,7 @@ Int_t AliRDHFCutsB0toDStarPi::IsDStarFromB0Selected(Double_t ptB0, TObject* obj,
     Double_t angleMotherFirstDaughter = (candidateDStar->Px() * candidatePion->Px() + candidateDStar->Py() * candidatePion->Py() + candidateDStar->Pz() * candidatePion->Pz()) /(candidateDStar->P() * candidatePion->P());
     Double_t angleMotherSecondDaughter = (candidateDStar->Px() * candidateD0->Px() + candidateDStar->Py() * candidateD0->Py() + candidateDStar->Pz() * candidateD0->Pz()) /(candidateDStar->P() * candidateD0->P());
 
-    Double_t cosThetaStar = candidateDStar->CosThetaStar(0,413,211,422);
+    Double_t cosThetaStar = candidateDStar->CosThetaStar(0,413,211,421);
     Double_t vertexDistance = vertexDStar->DistanceToVertex(primaryVertex);
     Double_t normDecayLength = candidateDStar->NormalizedDecayLength();
     Double_t pdgMassMother = TDatabasePDG::Instance()->GetParticle(413)->Mass();
@@ -2377,7 +2389,7 @@ Int_t AliRDHFCutsB0toDStarPi::IsDStarforDStarptbinSelected(TObject* obj,Int_t se
 
     // delta mass PDG
     Double_t deltaPDG = mDSPDG-mD0PDG;
-      
+
     // Half width DStar mass
     UInt_t prongs[2];
     prongs[0] = 211; prongs[1] = 421;
@@ -2400,7 +2412,7 @@ Int_t AliRDHFCutsB0toDStarPi::IsDStarforDStarptbinSelected(TObject* obj,Int_t se
     Double_t d0Mother = TMath::Abs(d0[0]);
     Double_t d0firstTrack = TMath::Abs(candidateDStar->Getd0Prong(0));
     Double_t d0secondTrack = TMath::Abs(candidateDStar->Getd0Prong(1));  
-    
+
     Double_t impactProduct = candidateDStar->Prodd0d0();
     Double_t impactProductXY = TMath::Abs(candidateDStar->ImpParXY());  
 
@@ -2408,7 +2420,7 @@ Int_t AliRDHFCutsB0toDStarPi::IsDStarforDStarptbinSelected(TObject* obj,Int_t se
     Double_t angleMotherFirstDaughter = (candidateDStar->Px() * candidatePion->Px() + candidateDStar->Py() * candidatePion->Py() + candidateDStar->Pz() * candidatePion->Pz()) /(candidateDStar->P() * candidatePion->P());
     Double_t angleMotherSecondDaughter = (candidateDStar->Px() * candidateD0->Px() + candidateDStar->Py() * candidateD0->Py() + candidateDStar->Pz() * candidateD0->Pz()) /(candidateDStar->P() * candidateD0->P());
 
-    Double_t cosThetaStar = candidateDStar->CosThetaStar(0,413,211,422);
+    Double_t cosThetaStar = candidateDStar->CosThetaStar(0,413,211,421);
     Double_t vertexDistance = vertexDStar->DistanceToVertex(primaryVertex);
     Double_t normDecayLength = candidateDStar->NormalizedDecayLength();
     Double_t pdgMassMother = TDatabasePDG::Instance()->GetParticle(413)->Mass();
@@ -2930,6 +2942,7 @@ void AliRDHFCutsB0toDStarPi::SetPtBinsD0forD0ptbin(Int_t nPtBinLimits,Float_t *p
   //cout<<"Changing also Global Index -> "<<fGlobalIndex<<endl;
   fPtBinLimitsD0forD0ptbin = new Float_t[fnPtBinLimitsD0forD0ptbin];
   for(Int_t ib=0; ib<nPtBinLimits; ib++) fPtBinLimitsD0forD0ptbin[ib]=ptBinLimits[ib];
+  for(Int_t ib=0; ib<nPtBinLimits; ib++) std::cout << "limit " << ib << " = " << fPtBinLimitsD0forD0ptbin[ib] << std::endl;
 
   return;
 }
@@ -3117,6 +3130,7 @@ Int_t AliRDHFCutsB0toDStarPi::ApplyCutOnVariable(Int_t nCutIndex, Int_t ptbin, F
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsB0toDStarPi::ApplyCutOnVariableD0forD0ptbin(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue, Bool_t bCutArray[25]){
 
+  // std::cout << "index: " << nCutIndex << ", ptbin: " << ptbin << ", used: " << GetIsCutUsedD0forD0ptbin(nCutIndex,ptbin) << ", upper: " << GetIsUpperCutD0forD0ptbin(nCutIndex) << ", value: " << cutVariableValue << ", cutvalue: " << fCutsRDD0forD0ptbin[GetGlobalIndexD0forD0ptbin(nCutIndex,ptbin)] << std::endl;
   if(GetIsCutUsedD0forD0ptbin(nCutIndex,ptbin)==kTRUE)
   {
     Bool_t bCut = kFALSE;
@@ -3276,10 +3290,10 @@ void AliRDHFCutsB0toDStarPi::InitializeCuts(){
   fIsCutUsedD0forD0ptbin = new Bool_t[(GetNPtBinsD0forD0ptbin())*(GetNVarsD0forD0ptbin())];
   for(Int_t iv=0; iv<(GetNPtBinsD0forD0ptbin())*(GetNVarsD0forD0ptbin()); iv++) {
     fIsCutUsedD0forD0ptbin[iv] = kFALSE;
+
   }
 
   if(!fCutsRDD0forD0ptbin)  fCutsRDD0forD0ptbin = new Float_t[fGlobalIndexD0forD0ptbin];
-
 
   for(Int_t iv=0; iv<fnVarsD0forD0ptbin; iv++) 
   {
@@ -3294,7 +3308,6 @@ void AliRDHFCutsB0toDStarPi::InitializeCuts(){
       }
 
       fCutsRDD0forD0ptbin[GetGlobalIndexD0forD0ptbin(iv,ib)] = 0;
-
     }
   }
 
@@ -3366,9 +3379,9 @@ void AliRDHFCutsB0toDStarPi::InitializeCuts(){
 void AliRDHFCutsB0toDStarPi::SetCut(Int_t nCutIndex, Int_t ptBin, AliRDHFCutsB0toDStarPi::EUpperCut cutDirection, Float_t cutValue){
   // Set the cut value and direction
 
-  fIsCutUsed[nCutIndex*ptBin] = kTRUE;
+  fIsCutUsed[GetGlobalIndex(nCutIndex,ptBin)] = kTRUE;
   fIsUpperCut[nCutIndex] = cutDirection;
-  fCutsRD[nCutIndex*ptBin] = cutValue;
+  fCutsRD[GetGlobalIndex(nCutIndex,ptBin)] = cutValue;
 
   return;
 }
@@ -3376,9 +3389,9 @@ void AliRDHFCutsB0toDStarPi::SetCut(Int_t nCutIndex, Int_t ptBin, AliRDHFCutsB0t
 void AliRDHFCutsB0toDStarPi::SetCutD0forD0ptbin(Int_t nCutIndex, Int_t ptBin, AliRDHFCutsB0toDStarPi::EUpperCut cutDirection, Float_t cutValue){
   // Set the cut value and direction
 
-  fIsCutUsedD0forD0ptbin[nCutIndex*ptBin] = kTRUE;
+  fIsCutUsedD0forD0ptbin[GetGlobalIndexD0forD0ptbin(nCutIndex,ptBin)] = kTRUE;
   fIsUpperCutD0forD0ptbin[nCutIndex] = cutDirection;
-  fCutsRDD0forD0ptbin[nCutIndex*ptBin] = cutValue;
+  fCutsRDD0forD0ptbin[GetGlobalIndexD0forD0ptbin(nCutIndex,ptBin)] = cutValue;
 
   return;
 }
@@ -3386,9 +3399,9 @@ void AliRDHFCutsB0toDStarPi::SetCutD0forD0ptbin(Int_t nCutIndex, Int_t ptBin, Al
 void AliRDHFCutsB0toDStarPi::SetCutD0forDStarptbin(Int_t nCutIndex, Int_t ptBin, AliRDHFCutsB0toDStarPi::EUpperCut cutDirection, Float_t cutValue){
   // Set the cut value and direction
 
-  fIsCutUsedD0forDStarptbin[nCutIndex*ptBin] = kTRUE;
+  fIsCutUsedD0forDStarptbin[GetGlobalIndexD0forDStarptbin(nCutIndex,ptBin)] = kTRUE;
   fIsUpperCutD0forDStarptbin[nCutIndex] = cutDirection;
-  fCutsRDD0forDStarptbin[nCutIndex*ptBin] = cutValue;
+  fCutsRDD0forDStarptbin[GetGlobalIndexD0forDStarptbin(nCutIndex,ptBin)] = cutValue;
 
   return;
 }
@@ -3396,9 +3409,9 @@ void AliRDHFCutsB0toDStarPi::SetCutD0forDStarptbin(Int_t nCutIndex, Int_t ptBin,
 void AliRDHFCutsB0toDStarPi::SetCutDStarforDStarptbin(Int_t nCutIndex, Int_t ptBin, AliRDHFCutsB0toDStarPi::EUpperCut cutDirection, Float_t cutValue){
   // Set the cut value and direction
 
-  fIsCutUsedDStarforDStarptbin[nCutIndex*ptBin] = kTRUE;
+  fIsCutUsedDStarforDStarptbin[GetGlobalIndexDStarforDStarptbin(nCutIndex,ptBin)] = kTRUE;
   fIsUpperCutDStarforDStarptbin[nCutIndex] = cutDirection;
-  fCutsRDDStarforDStarptbin[nCutIndex*ptBin] = cutValue;
+  fCutsRDDStarforDStarptbin[GetGlobalIndexDStarforDStarptbin(nCutIndex,ptBin)] = cutValue;
 
   return;
 }

@@ -65,7 +65,7 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
 
   void     FillD0Histograms(AliAODRecoDecayHF2Prong * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType);
   void     FillCascadeMotherHistograms(AliAODRecoCascadeHF * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType);
-  Bool_t   CutSelection(AliAODRecoCascadeHF * selectedB0, AliAODVertex *primaryVertex, Double_t bz, Bool_t isDesiredCandidate);
+  // Bool_t   CutSelection(AliAODRecoCascadeHF * selectedB0, AliAODVertex *primaryVertex, Double_t bz, Bool_t isDesiredCandidate);
 
   // set MC usage
   void     SetMC(Bool_t bUseMCInfo) {fUseMCInfo = bUseMCInfo;}
@@ -115,13 +115,17 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
 
     
   Int_t fnPtBins;
-  Float_t * fPtBinLimits;                    //[fnPtBins]
+  Int_t fnPtBinLimits;
+  Float_t * fPtBinLimits;                    //[fnPtBinLimits]
   Int_t fnPtBinsD0forD0ptbin;
-  Float_t * fPtBinLimitsD0forD0ptbin;        //[fnPtBinsD0forD0ptbin]
+  Int_t fnPtBinsD0forD0ptbinLimits;
+  Float_t * fPtBinLimitsD0forD0ptbin;        //[fnPtBinsD0forD0ptbinLimits]
   Int_t fnPtBinsD0forDStarptbin;
-  Float_t * fPtBinLimitsD0forDStarptbin;     //[fnPtBinsD0forDStarptbin]
+  Int_t fnPtBinsD0forDStarptbinLimits;
+  Float_t * fPtBinLimitsD0forDStarptbin;     //[fnPtBinsD0forDStarptbinLimits]
   Int_t fnPtBinsDStarforDStarptbin;
-  Float_t * fPtBinLimitsDStarforDStarptbin;  //[fnPtBinsDStarforDStarptbin]
+  Int_t fnPtBinsDStarforDStarptbinLimits;
+  Float_t * fPtBinLimitsDStarforDStarptbin;  //[fnPtBinsDStarforDStarptbinLimits]
 
 
   // Int_t** fDaughterHistogramArray;
