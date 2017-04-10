@@ -58,10 +58,12 @@ class AliEventCuts : public TList {
     bool   PassedCut (AliEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
     void   AddQAplotsToList(TList *qaList = 0x0, bool addCorrelationPlots = false);
     void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
+    void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupLHC11h();
     void   SetupLHC15o();
     void   SetupRun2pp();
+    void   SetupRun2pA(int iPeriod);
 
     /// While the general philosophy here is to avoid setters and getters (this is not an API we expose)
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
@@ -90,6 +92,7 @@ class AliEventCuts : public TList {
 
     int           fRequiredSolenoidPolarity;      ///< 0: does not require any particular polarity. Positive numbers -> positive B field, negative numbers -> negative B field
 
+    bool          fUseMultiplicityDependentPileUpCuts; ///< If true fSPDpileupMinContributors is set according to the event multiplicity (automatic setup set it true only if the user does not specify any custom value)
     int           fSPDpileupMinContributors;      ///< Reject all the events with SPD pile-up vertices with more than fRejectPileupSPD contributors
     double        fSPDpileupMinZdist;             ///<
     double        fSPDpileupNsigmaZdist;          ///<
@@ -123,6 +126,8 @@ class AliEventCuts : public TList {
     const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
+    AliEventCuts(const AliEventCuts& copy) {}
+    AliEventCuts operator=(const AliEventCuts& copy) {return *this;}
     void          AutomaticSetup (AliVEvent *ev);
     void          ComputeTrackMultiplicity(AliVEvent *ev);
     template<typename F> F PolN(F x, F* coef, int n);
@@ -140,6 +145,7 @@ class AliEventCuts : public TList {
     bool          fNewEvent;                      ///<  True if the AliVEvent identifier in the AcceptEvent and fIdentifier are different
     /// Overrides
     bool          fOverrideAutoTriggerMask;       ///<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
+    bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1I* fCutStats;               //!<! Cuts statistics

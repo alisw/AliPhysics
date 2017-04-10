@@ -45,6 +45,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fMaxResolutionSPDvertex{1000.f},
   fRejectDAQincomplete{false},
   fRequiredSolenoidPolarity{0},
+  fUseMultiplicityDependentPileUpCuts{false},
   fSPDpileupMinContributors{1000},
   fSPDpileupMinZdist{-1.f},
   fSPDpileupNsigmaZdist{-1.f},
@@ -80,6 +81,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fPrimaryVertex{nullptr},
   fNewEvent{true},
   fOverrideAutoTriggerMask{false},
+  fOverrideAutoPileUpCuts{false},
   fCutStats{nullptr},
   fVtz{nullptr},
   fDeltaTrackSPDvtz{nullptr},
@@ -148,7 +150,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     fFlag |= BIT(kVertexQuality);
   fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 
-  /// SPD pile-up rejection
+  /// Pile-up rejection
+  AliVMultiplicity* mult = ev->GetMultiplicity();
+  const int ntrkl = mult->GetNumberOfTracklets();
+  if (fUseMultiplicityDependentPileUpCuts) {
+    if (ntrkl < 20) fSPDpileupMinContributors = 3;
+    else if (ntrkl < 50) fSPDpileupMinContributors = 4;
+    else fSPDpileupMinContributors = 5;
+  }
+  fUtils.SetMinPlpContribMV(fSPDpileupMinContributors);
   if (!ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ) &&
       (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)) &&
       (!fPileUpCutMV || !fUtils.IsPileUpMV(ev)))
@@ -157,8 +167,6 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// Centrality cuts:
   /// * Check for min and max centrality
   /// * Cross check correlation between two centrality estimators
-  AliVMultiplicity* mult = ev->GetMultiplicity();
-  const int ntrkl = mult->GetNumberOfTracklets();
   if (fCentralityFramework) {
     if (fCentralityFramework == 2) {
       AliCentrality* cent = ev->GetCentrality();
@@ -292,6 +300,18 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
+  /// Run 2 p-Pb
+  if ((fCurrentRun >= 265309 && fCurrentRun <= 265525) || /// LHC16q: p-Pb 5 TeV
+      (fCurrentRun >= 265594 && fCurrentRun <= 266318) || /// LHC16r: p-Pb 8 TeV
+      (fCurrentRun >= 267163 && fCurrentRun <= 267166)) { /// LHC16t: p-Pb 5 TeV
+    SetupRun2pA(0);
+    return;
+  }
+  if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s: Pb-p 5 TeV
+    SetupRun2pA(1);
+    return;
+  }
+
   ::Fatal("AliEventCuts::AutomaticSetup","Automatic period detection failed, please use the manual mode. If you need this period in AliEventCuts send an email to the DPG event selection mailing list.");
 }
 
@@ -405,26 +425,29 @@ void AliEventCuts::SetupRun2pp() {
 
   fRequiredSolenoidPolarity = 0;
 
-  fSPDpileupMinContributors = 3;
-  fSPDpileupMinZdist = 0.8;
-  fSPDpileupNsigmaZdist = 3.;
-  fSPDpileupNsigmaDiamXY = 2.;
-  fSPDpileupNsigmaDiamZ = 5.;
-  fTrackletBGcut = true;
+  if (!fOverrideAutoPileUpCuts) {
+    fUseMultiplicityDependentPileUpCuts = true; // If user specify a value it is not overwritten
+    fSPDpileupMinZdist = 0.8;
+    fSPDpileupNsigmaZdist = 3.;
+    fSPDpileupNsigmaDiamXY = 2.;
+    fSPDpileupNsigmaDiamZ = 5.;
+    fTrackletBGcut = true;
+  }
 
   if (fCentralityFramework > 1)
     ::Fatal("AliEventCutsSetupRun2pp","You cannot use the legacy centrality framework in pp. Please set the fCentralityFramework to 0 to disable the multiplicity selection or to 1 to use AliMultSelection.");
-  fCentEstimators[0] = "V0M";
-  fCentEstimators[1] = "CL0";
-  fMinCentrality = 0.f;
-  fMaxCentrality = 100.f;
+  else if (fCentralityFramework == 1) {
+    fCentEstimators[0] = "V0M";
+    fCentEstimators[1] = "CL0";
+    fMinCentrality = 0.f;
+    fMaxCentrality = 100.f;
+  }
 
   fFB128vsTrklLinearCut[0] = 32.077;
   fFB128vsTrklLinearCut[1] = 0.932;
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
-  fUtils.SetMinPlpContribMV(5);
   fUtils.SetMaxPlpChi2MV(5);
   fUtils.SetMinWDistMV(15);
   fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
@@ -446,12 +469,14 @@ void AliEventCuts::SetupLHC15o() {
 
   fRequiredSolenoidPolarity = 0;
 
-  fSPDpileupMinContributors = 5;
-  fSPDpileupMinZdist = 0.8;
-  fSPDpileupNsigmaZdist = 3.;
-  fSPDpileupNsigmaDiamXY = 2.;
-  fSPDpileupNsigmaDiamZ = 5.;
-  fTrackletBGcut = false;
+  if (!fOverrideAutoPileUpCuts) {
+    fUseMultiplicityDependentPileUpCuts = true; // If user specify a value it is not overwritten
+    fSPDpileupMinZdist = 0.8;
+    fSPDpileupNsigmaZdist = 3.;
+    fSPDpileupNsigmaDiamXY = 2.;
+    fSPDpileupNsigmaDiamZ = 5.;
+    fTrackletBGcut = false;
+  }
 
   fCentralityFramework = 1;
   fCentEstimators[0] = "V0M";
@@ -500,4 +525,28 @@ void AliEventCuts::SetupLHC11h() {
   fUseEstimatorsCorrelationCut = false;
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+}
+
+void AliEventCuts::SetupRun2pA(int iPeriod) {
+  /// iPeriod: 0 p-Pb 5&8 TeV, 1 Pb-p 8 TeV
+  SetupRun2pp();
+  /// p--Pb requires nsigma cuts on primary vertex
+  fMaxDeltaSpdTrackNsigmaSPD = 20.f;
+  fMaxDeltaSpdTrackNsigmaTrack = 40.f;
+
+  /// No centrality cuts by default
+  fCentralityFramework = 1;
+  fUseEstimatorsCorrelationCut = false;
+
+  fCentEstimators[0] = iPeriod ? "ZNC" : "ZNA";
+  fCentEstimators[1] = iPeriod ? "V0C" : "V0A";
+}
+
+void  AliEventCuts::OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov) {
+  fSPDpileupMinContributors = minContrib;
+  fSPDpileupMinZdist = minZdist;
+  fSPDpileupNsigmaZdist = nSigmaZdist;
+  fSPDpileupNsigmaDiamXY = nSigmaDiamXY;
+  fSPDpileupNsigmaDiamZ = nSigmaDiamZ;
+  fOverrideAutoPileUpCuts = ov;
 }
