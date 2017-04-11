@@ -3227,6 +3227,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   return kTRUE;
 }
 
+/*
   //_________________________________________________________________________
 
 void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliAODMCParticle* mcpp, Double_t eta,Double_t phi){
@@ -3304,6 +3305,92 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
     }
   }
 }
+*/
+
+  //_________________________________________________________________________
+
+void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliAODMCParticle* mcpp, Double_t eta,Double_t phi){
+  
+  Double_t etap=mcpp->Eta();
+  Double_t phip=mcpp->Phi();
+  
+  if(!fTPC4Iso){
+    if(TMath::Abs(etap)>=0.7 || (phip<=1.4 || phip>= TMath::Pi()))
+      return;
+    else {
+      switch(fUEMethod)
+	{
+	case 0: // Phi band
+	  if(TMath::Abs(eta-etap)<fIsoConeRadius)
+	    sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
+	  else
+	    return;
+
+	  break;
+
+	case 1: // Eta band
+	  if(TMath::Abs(phi-phip)<fIsoConeRadius)
+	    sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
+	  else
+	    return;
+
+	  break;
+	}
+    }
+  }
+  else {
+    if(TMath::Abs(etap)>=1.0)
+      return;
+    else {
+      switch(fUEMethod)
+	{
+	case 0:{ // Phi band
+	  if(TMath::Abs(eta-etap)<fIsoConeRadius)
+	    sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
+	  else
+	    return;
+
+	  break;
+	}
+	case 1:{ // Eta band
+	  if(TMath::Abs(phi-phip)<fIsoConeRadius)
+	    sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
+	  else
+	    return;
+          
+	  break;
+        }
+	case 2:{ // Orthogonal Cones
+	  double etacone1= eta;
+	  double etacone2= eta;
+	  double phicone1= phi - TMath::PiOver2();
+	  double phicone2= phi + TMath::PiOver2();
+          
+	  if(phicone1 < 0.)
+	    phicone1 += 2*TMath::Pi();
+          
+	  if(TMath::Sqrt(TMath::Power(etap-etacone1,2)+TMath::Power(phip-phicone1,2))< fIsoConeRadius ||
+	     TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2))< fIsoConeRadius)
+	    sumUE += mcpp->Pt();
+	  else
+	    return;
+          
+	  break;
+        }
+	case 3:{ // Full TPC
+        
+	  // Double_t phiup= phi +TMath::Pi()+fIsoConeRadius;
+	  // Double_t phidown= phi +TMath::Pi()-fIsoConeRadius;
+	  //
+	  // if(phip < phidown || phip > phiup ) // TO BE CHECKED
+	  // continue;
+	  break;
+        }
+	}
+    }
+  }
+}
+
   //_________________________________________________________________________
 
 void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t& sumUE){
