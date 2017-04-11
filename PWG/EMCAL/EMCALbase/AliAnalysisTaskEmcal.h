@@ -367,8 +367,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   BeamType                    fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   AliGenHerwigEventHeader    *fHerwigHeader;               //!<!event Herwig header
-  Double_t                    fPtHard;                     //!<!event \f$ p_{t}\f$-hard
+  Float_t                     fPtHard;                     //!<!event \f$ p_{t}\f$-hard
   Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
+  Int_t                       fPtHardBinGlobal;            //!<!event \f$ p_{t}\f$-hard bin, detected from filename
   Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
   TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
   Int_t                       fNTrials;                    //!<!event trials
@@ -384,7 +385,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
   TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
   TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
-  TH1                        *fHistPtHard;                 //!<!pt hard distribution
+  TH1                        *fHistPtHard;                 //!<!\f$ p_{t}\f$-hard distribution
+  TH2                        *fHistPtHardCorr;             //!<!Correlation between \f$ p_{t}\f$-hard value and bin
+  TH2                        *fHistPtHardCorrGlobal;       //!<!Correlation between \f$ p_{t}\f$-hard value and global bin
+  TH2                        *fHistPtHardBinCorr;          //!<!Correlation between global and local (per-event) \f$ p_{t}\f$-hard bin
   TH1                        *fHistCentrality;             //!<!event centrality distribution
   TH1                        *fHistZVertex;                //!<!z vertex position
   TH1                        *fHistEventPlane;             //!<!event plane distribution
