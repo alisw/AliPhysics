@@ -145,11 +145,11 @@ public:
   
   ///
   /// Method to prepare to run with a new TOF calibratin, this initialize from the run, therefore should only once for each run
-  const Bool_t TOFCalibInitRun();
+  Bool_t TOFCalibInitRun();
   
   ///
   /// Method to prepare to run with a new TOF calibratin, this initialize from the event, therefore should once for each event
-  const Bool_t TOFCalibInitEvent();
+  Bool_t TOFCalibInitEvent();
   
   //
   //Mask

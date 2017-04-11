@@ -1419,7 +1419,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   AliAnalysisManager *AnManager = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (AnManager->GetInputEventHandler());
   fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
-  fTOFPIDResponse = fPIDResponse->GetTOFResponse();
+  if(fRecalibrateTOF) fTOFPIDResponse = fESDpid->GetTOFResponse();
+  else fTOFPIDResponse = fPIDResponse->GetTOFResponse();
   
   //
   //Physics Selection
@@ -2985,7 +2986,7 @@ void AliAnalysisTaskTOFSpectra::SetTrackValues(const AliESDtrack *track, const A
 }
 
 //________________________________________________________________________
-const Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
+Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
   if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
   
   // check run already initialized
@@ -3010,7 +3011,7 @@ const Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
 }
 
 //________________________________________________________________________
-const Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
+Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
   if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
   
   // init TOF response
