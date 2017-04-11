@@ -1,5 +1,5 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -90,7 +90,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
 #pragma link C++ class AliAnalysisTaskEmcalRun2QA+;
 #pragma link C++ class AliAnalysisTaskFakeJets+;
-#pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
 #pragma link C++ class AliAnalysisTaskEmcalMissingEnergy+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerPatchJetMatch+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
@@ -214,6 +213,7 @@
 #pragma link C++ class AliEmcalJetFinder+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
+#pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
