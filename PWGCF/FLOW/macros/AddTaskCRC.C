@@ -665,25 +665,28 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     delete ZDCCalibFile;
   } // end of if(bUseZDC)
   
-//  if(bCalculateCRCVZ==kTRUE && sDataSet=="2015") {
-//    TString VZEROCalibFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROcalib_Cen.root";
-//    TFile* VZEROCalibFile = TFile::Open(VZEROCalibFileName,"READ");
-//    if(!VZEROCalibFile) {
-//      cout << "ERROR: VZERO calibration not found!" << endl;
-//      exit(1);
-//    }
-//    gROOT->cd();
-//    TList* VZEROCalibList = (TList*)(VZEROCalibFile->FindObjectAny("Q Vectors"));
-//    if(VZEROCalibList) {
-//      taskQC->SetCRCVZEROCalibList(VZEROCalibList);
-//      cout << "VZERO calibration set (from " <<  VZEROCalibFileName.Data() << ")" << endl;
-//    }
-//    else {
-//      cout << "ERROR: VZEROCalibList not found!" << endl;
-//      exit(1);
-//    }
-//    delete VZEROCalibFile;
-//  }
+  if(bCalculateCRCVZ==kTRUE && sDataSet=="2015") {
+    TString VZEROCalibFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROcalib_Cen.root";
+    if(bSpecialVZERORingSelection) {
+      VZEROCalibFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROcalibVar_Cen.root";
+    }
+    TFile* VZEROCalibFile = TFile::Open(VZEROCalibFileName,"READ");
+    if(!VZEROCalibFile) {
+      cout << "ERROR: VZERO calibration not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* VZEROCalibList = (TList*)(VZEROCalibFile->FindObjectAny("Q Vectors"));
+    if(VZEROCalibList) {
+      taskQC->SetCRCVZEROCalibList(VZEROCalibList);
+      cout << "VZERO calibration set (from " <<  VZEROCalibFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: VZEROCalibList not found!" << endl;
+      exit(1);
+    }
+    delete VZEROCalibFile;
+  }
   
 //  if(bRescaleZDC) {
 //    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCRescaling.root";

@@ -1572,6 +1572,8 @@ private:
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
   TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
+  const static Int_t fkNsteps = 8;
+  TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
@@ -1589,7 +1591,7 @@ private:
   // CRCVZERO
   TList *fCRCVZList; //! VZERO CRC List
   AliFlowVector fVZFlowVect[2][fCRCnHar];
-  const static Int_t fkNHistCRCVZ = 21;
+  const static Int_t fkNHistCRCVZ = 27;
   TProfile *fCRCVZEROetaPro[fCRCMaxnCen][fkNHistCRCVZ]; //!
   TH1D *fCRCVZEROetaHist[fCRCMaxnCen][fkNHistCRCVZ]; //!
   TProfile2D *fCRCVZEROQVec[fCRCMaxnRun][fCRCnHar]; //!
@@ -1695,6 +1697,9 @@ private:
   TH1D *fPOIPtDiffQReEG[2][fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPtDiffQImEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPtDiffMulEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH2D *fPOIEtaPtQRe[2][fFlowNHarmMax]; //!
+  TH2D *fPOIEtaPtQIm[2][fFlowNHarmMax]; //!
+  TH2D *fPOIEtaPtMul[2][fFlowNHarmMax]; //!
   
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
@@ -1722,6 +1727,7 @@ private:
 //  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
+  TProfile2D *fCRCTPCQVecCenEtaCh[6]; //!
   TProfile3D *fTPCQVecProTemp[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
   TProfile *fTPCQVec2ProTemp[fCRCMaxnCen][3][4]; //!
   const static Int_t fkNv1evenCor = 6;
