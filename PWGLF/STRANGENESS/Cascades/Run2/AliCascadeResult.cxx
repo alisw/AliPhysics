@@ -25,6 +25,7 @@ fCutV0Radius(5.0),
 //Cascade Cuts
 fCutDCAV0ToPV(0.05),
 fCutV0Mass(0.010),
+fCutV0MassSigma(1000),
 fCutDCABachToPV(0.03),
 fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
@@ -88,6 +89,7 @@ fCutV0Radius(5.0),
 //Cascade Cuts
 fCutDCAV0ToPV(0.05),
 fCutV0Mass(0.010),
+fCutV0MassSigma(1000),
 fCutDCABachToPV(0.03),
 fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
@@ -153,6 +155,7 @@ fCutV0Radius(5.0),
 //Cascade Cuts
 fCutDCAV0ToPV(0.05),
 fCutV0Mass(0.010),
+fCutV0MassSigma(1000),
 fCutDCABachToPV(0.03),
 fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
@@ -227,6 +230,7 @@ fCutV0Radius(5.0),
 //Cascade Cuts
 fCutDCAV0ToPV(0.05),
 fCutV0Mass(0.010),
+fCutV0MassSigma(1000),
 fCutDCABachToPV(0.03),
 fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
@@ -298,6 +302,7 @@ fCutV0Radius(lCopyMe.fCutV0Radius),
 //Cascade Cuts
 fCutDCAV0ToPV(lCopyMe.fCutDCAV0ToPV),
 fCutV0Mass(lCopyMe.fCutV0Mass),
+fCutV0MassSigma(lCopyMe.fCutV0MassSigma),
 fCutDCABachToPV(lCopyMe.fCutDCABachToPV),
 fCutDCACascDaughters(lCopyMe.fCutDCACascDaughters),
 fCutCascCosPA(lCopyMe.fCutCascCosPA),
@@ -372,6 +377,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     //Cascade Cuts
     fCutDCAV0ToPV = lCopyMe -> GetCutDCAV0ToPV();
     fCutV0Mass    = lCopyMe -> GetCutV0Mass();
+    fCutV0MassSigma    = lCopyMe -> GetCutV0MassSigma();
     fCutDCABachToPV  = lCopyMe -> GetCutDCABachToPV();
     fCutDCACascDaughters = lCopyMe -> GetCutDCACascDaughters();
     fCutCascCosPA  = lCopyMe -> GetCutCascCosPA();
@@ -462,6 +468,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     //Cascade Cuts
     fCutDCAV0ToPV = lCopyMe.GetCutDCAV0ToPV();
     fCutV0Mass    = lCopyMe.GetCutV0Mass();
+    fCutV0MassSigma  = lCopyMe.GetCutV0MassSigma();
     fCutDCABachToPV  = lCopyMe.GetCutDCABachToPV();
     fCutDCACascDaughters = lCopyMe.GetCutDCACascDaughters();
     fCutCascCosPA  = lCopyMe.GetCutCascCosPA();
@@ -583,6 +590,7 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     //Cascade Selection Criteria
     if( TMath::Abs( fCutDCAV0ToPV - lCompareCascade->GetCutDCAV0ToPV() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutV0Mass - lCompareCascade->GetCutV0Mass() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0MassSigma - lCompareCascade->GetCutV0MassSigma() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutDCABachToPV - lCompareCascade->GetCutDCABachToPV() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutDCACascDaughters - lCompareCascade->GetCutDCACascDaughters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutCascCosPA - lCompareCascade->GetCutCascCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
@@ -663,6 +671,7 @@ void AliCascadeResult::Print()
     
     cout<<" DCA V0 to PV.......: "<<fCutDCAV0ToPV<<endl;
     cout<<" V0 Mass............: "<<fCutV0Mass<<endl;
+    cout<<" V0 Mass (in sigma).: "<<fCutV0MassSigma<<endl;
     cout<<" DCA Bach to PV.....: "<<fCutDCABachToPV<<endl;
     cout<<" DCA V0 Daughters.: "<<fCutDCACascDaughters<<endl;
     cout<<" Casc Cos PA........: "<<fCutCascCosPA<<endl;

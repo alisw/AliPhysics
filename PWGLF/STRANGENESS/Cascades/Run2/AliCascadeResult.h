@@ -53,6 +53,7 @@ public:
     //Setters for Cascade Cuts
     void SetCutDCAV0ToPV        ( Double_t lCut ) { fCutDCAV0ToPV         = lCut; }
     void SetCutV0Mass           ( Double_t lCut ) { fCutV0Mass            = lCut; }
+    void SetCutV0MassSigma      ( Double_t lCut ) { fCutV0MassSigma       = lCut; }
     void SetCutDCABachToPV      ( Double_t lCut ) { fCutDCABachToPV       = lCut; }
     void SetCutDCACascDaughters ( Double_t lCut ) { fCutDCACascDaughters  = lCut; }
     void SetCutCascCosPA        ( Double_t lCut ) { fCutCascCosPA         = lCut; }
@@ -149,6 +150,7 @@ public:
     //Getters for Cascade Cuts
     Double_t GetCutDCAV0ToPV        () const { return fCutDCAV0ToPV; }
     Double_t GetCutV0Mass           () const { return fCutV0Mass; }
+    Double_t GetCutV0MassSigma      () const { return fCutV0MassSigma; }
     Double_t GetCutDCABachToPV      () const { return fCutDCABachToPV; }
     Double_t GetCutDCACascDaughters () const { return fCutDCACascDaughters; }
     Double_t GetCutCascCosPA        () const { return fCutCascCosPA; }
@@ -232,6 +234,7 @@ private:
     //Cascade Selection Criteria
     Double_t fCutDCAV0ToPV;        //ca vertexer 1
     Double_t fCutV0Mass;           //ca vertexer 2
+    Double_t fCutV0MassSigma;           //ca vertexer 2bis
     Double_t fCutDCABachToPV;      //ca vertexer 3
     Double_t fCutDCACascDaughters; //ca vertexer 4
     Double_t fCutCascCosPA;        //ca vertexer 5
@@ -292,7 +295,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 23)
+    ClassDef(AliCascadeResult, 24)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -316,5 +319,6 @@ private:
     // 21 - swap v0 meson charge addition
     // 22 - swap v0 baryon charge addition
     // 23 - Parametric Bach Baryon CosPA
+    // 24 - addition of NSigma cut for Lambda mass (requires pre-configured task!) 
 };
 #endif
