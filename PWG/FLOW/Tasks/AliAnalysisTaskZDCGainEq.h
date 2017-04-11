@@ -67,6 +67,7 @@ public:
   void    SetFillCosSin(Bool_t const fillcossin)      {this->bFillCosSin        =   fillcossin;}
   void    SetFillZDCQA(Bool_t const fillzdcQAon)      {this->bFillZDCQAon       =  fillzdcQAon;}
   void    SetFillQnRunAverage(Bool_t const runAvg)    {this->bRunAveragedQn     =       runAvg;}
+  void    SetApplyZDCRecenter(Bool_t const brecent)   {this->bApplyRecent       =      brecent;}
 
 
 
@@ -111,7 +112,7 @@ private:
   Bool_t                 bFillCosSin;    //
   Bool_t                bFillZDCQAon;    //
   Bool_t              bRunAveragedQn;    //
-
+  Bool_t                bApplyRecent;    //
   Int_t                  runNums[90];    //
   Float_t                   VxCut[2];    //
   Float_t                   VyCut[2];    //
@@ -137,20 +138,44 @@ private:
   TH1F           *fHist_ChanWgt_ZDCC;  //!
   TH1F           *fHist_ChanWgt_ZDCA;  //!
 
-  TH1F         *fHist_Vx_ArrayFinder; //!
-  TH1F         *fHist_Vy_ArrayFinder; //!
-  TH1F         *fHist_Vz_ArrayFinder; //!
+  TH2F           *fHist_Recenter_ZDCCx[20]; //!
+  TH2F           *fHist_Recenter_ZDCCy[20]; //!
+  TH2F           *fHist_Recenter_ZDCAx[20]; //!
+  TH2F           *fHist_Recenter_ZDCAy[20]; //!
+
+  TH1F               *fHist_Vx_ArrayFinder; //!
+  TH1F               *fHist_Vy_ArrayFinder; //!
+  TH1F               *fHist_Vz_ArrayFinder; //!
+
+  TH1F                       *fWeight_Cent; //!
+  TH1D            *fFB_Efficiency_Cent[10]; //!
 
   TH1F            *fHist_Psi1_ZDCC_wGainCorr;  //!
   TH1F            *fHist_Psi1_ZDCA_wGainCorr;  //!
+  TH1F            *fHist_Psi1_ZDCC_wRectCorr;  //!
+  TH1F            *fHist_Psi1_ZDCA_wRectCorr;  //!
+
   TProfile     *fHist_Qx_vs_Obs_woCorr[4][5];  //!
   TProfile     *fHist_XX_vs_Obs_woCorr[4][5];  //!
+  TProfile     *fHist_Qx_vs_Obs_wiCorr[4][5];  //!
+  TProfile     *fHist_XX_vs_Obs_wiCorr[4][5];  //!
+
+  TProfile         *fHist_v2xV1_ZDN_Norm_All;  //!
+  TProfile         *fHist_v2xV1_ZDN_Refm_All;  //!
+  TProfile         *fHist_v2xV1_ZDN_Cent_All;  //!
+
+  TProfile         *fHist_ZDN_resol_Norm_All;  //!
+  TProfile         *fHist_ZDN_resol_Refm_All;  //!
+  TProfile         *fHist_ZDN_resol_Cent_All;  //!
+
+  TProfile   *fHist_v2xV1_ZDN_pTDiff_All[10];  //!
 
 
   TProfile2D     *fHist_znCx_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znCy_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znAx_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znAy_V0_VxVy[90][10];  //!
+
 
 
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
