@@ -590,6 +590,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   if(!fReadMC && fDoCutVarHistos) {
     fOutput->Add(fCosPHist3D);
     fOutput->Add(fCosPxyHist3D);
+    fOutput->Add(fDLenHist3D);
     fOutput->Add(fDLenxyHist3D);
     fOutput->Add(fNDLenxyHist3D);
     fOutput->Add(fSigVertHist3D);
