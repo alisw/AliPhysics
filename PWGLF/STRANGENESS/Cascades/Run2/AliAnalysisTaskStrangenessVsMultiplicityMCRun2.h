@@ -57,6 +57,9 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
+    
+    //Fix on-the-fly v0s
+    void CheckChargeV0(AliESDv0 *v0);
  
     void SetSaveV0s                (Bool_t lSaveV0s        = kTRUE ) {
         fkSaveV0Tree        = lSaveV0s;
