@@ -29,7 +29,8 @@ class AliEMCALGeometry;
 
 /**
  * @class AliEMCALTriggerFastOR
- * Trigger FastOR data struct
+ * @brief Trigger FastOR data struct
+ * @ingroup EMCALTriggerBase
  *
  */
 class AliEMCALTriggerFastOR {

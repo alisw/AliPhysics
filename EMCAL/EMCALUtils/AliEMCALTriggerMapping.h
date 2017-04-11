@@ -6,6 +6,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// \class AliEMCALTriggerMapping
+/// \ingroup EMCALUtils
 /// \brief Trigger mapping methods, base class
 ///
 /// Trigger mapping base class

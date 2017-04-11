@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALEMCGeometry
+/// \ingroup EMCALUtils
 /// \brief EMCal geometry SM base, singleton
 ///
 /// Geometry class  for EMCAL : singleton

@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 ///
 /// \class AliEMCALRecParam
+/// \ingroup EMCALbase
 /// \brief Container of reconstruction parameters
 ///
 /// Container of EMCAL reconstruction parameters

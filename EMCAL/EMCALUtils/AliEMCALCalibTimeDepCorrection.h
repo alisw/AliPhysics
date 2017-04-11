@@ -14,6 +14,7 @@ class TTree;
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// \class AliEMCALSuperModuleCalibTimeDepCorrection
+/// \ingroup EMCALUtils
 /// \brief Handle SM objects for temperature dependent corrections.
 ///
 /// \author:  David Silvermyr, <david.silvermyr@cern.ch>

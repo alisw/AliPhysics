@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALShishKebabTrd1Module
+/// \ingroup EMCALUtils
 /// \brief Main class for TRD1 geometry of Shish-Kebab case.
 ///
 /// Sep 20004 - Nov 2006; Apr 2010

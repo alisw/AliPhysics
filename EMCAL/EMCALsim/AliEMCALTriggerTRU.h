@@ -5,6 +5,7 @@
 
 //________________________________________________
 /// \class AliEMCALTriggerTRU
+/// \ingroup EMCALsim
 /// \brief EMCal trigger TRU handling
 ///
 /// Add description

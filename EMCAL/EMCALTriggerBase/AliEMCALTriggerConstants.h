@@ -17,6 +17,7 @@ const Double_t kEMCL1ADCtoGeV = 0.07874;             ///< Conversion from EMCAL 
 
 /**
  * \enum EMCalTriggerType_t
+ * \ingroup EMCALTriggerBase
  * \brief Definition of different trigger patch types
  *
  * This enumeration defines the different trigger patch types

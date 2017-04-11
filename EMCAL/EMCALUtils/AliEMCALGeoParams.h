@@ -4,7 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 ///////////////////////////////////////////////////////////////////////////////
-/// \class AliEMCALGeoParams                                                                          
+/// \class AliEMCALGeoParams
+/// \ingroup EMCALUtils
 /// \brief Class for holding various EMCAL basic parameters.
 ///
 /// * number of towers in each dimension per SuperModule

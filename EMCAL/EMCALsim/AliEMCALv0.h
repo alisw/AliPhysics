@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALv0
+/// \ingroup EMCALsim
 /// \brief EMCal simulation manager class v0
 ///
 /// Implementation version v0 of EMCAL Manager class

@@ -13,6 +13,7 @@
 
 /**
  * @class AliEMCALTriggerRawPatch
+ * @ingroup EMCALTriggerBase
  * @brief Raw patch information used inside the trigger maker kernel
  * for the offline trigger and trigger recalculator
  *

@@ -18,6 +18,7 @@ template<typename T> class AliEMCALTriggerAlgorithm;
 
 /**
  * @class AliEmcalTriggerPatchFinder
+ * @ingroup EMCALTriggerBase
  * @brief Steering class for patch finder
  *
  * This class steers the trigger patch finding by calling

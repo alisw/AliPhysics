@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALCalibTime
+/// \ingroup EMCALbase
 /// \brief Cell time shifts container class 
 ///
 /// Cell time shifts container class. Each channel is assigned by 4 parameters, 
