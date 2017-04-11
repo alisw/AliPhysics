@@ -7,11 +7,13 @@
  Bool_t bUseVZERO = kTRUE, Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Double_t dVertexRange = 10., 
  TString sCentEstimator = "V0", Bool_t bfillZDCQA = kFALSE, Bool_t bfillCosSin = kFALSE, Bool_t bFillRunAvg = kFALSE, 
  Bool_t bSetGainEq = kFALSE, TString sGainEqFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
+ Bool_t bApplyRecent= kFALSE,TString sRecentFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
+ Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/recenter1_zdc_ver1.root",
  const char *suffix = "")
 {
 
-  gSystem->Load("libPWGflowBase.so");
-  gSystem->Load("libPWGflowTasks.so");
+  //gSystem->Load("libPWGflowBase.so");
+  //gSystem->Load("libPWGflowTasks.so");
 
   gSystem->AddIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -g ");
   gSystem->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/OCDB -I$ALICE_ROOT/STEER/macros -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TRD -I$ALICE_ROOT/ZDC -I$ALICE_ROOT/macros -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/OADB $ALICE_PHYSICS/OADB/macros -I$ALICE_PHYSICS/PWGGA -I$ALICE_PHYSICS/PWGCF -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/TENDER -I$ALICE_PHYSICS/TENDER/Tender -I$ALICE_PHYSICS/TENDER/TenderSupplies -I$ALICE_PHYSICS/PARfiles -I$ALICE_PHYSICS/PWGCF/FLOW/macros I$ALICE_PHYSICS/PWGPP/ZDC -g ");
@@ -184,6 +186,7 @@
   taskQC_prot->SetCentEstimator(sCentEstimator);
   taskQC_prot->SetVxVyVzBinForAvgQx(iVxBin,iVyBin,iVzBin);
   taskQC_prot->SetFillQnRunAverage(bFillRunAvg);
+  taskQC_prot->SetApplyZDCRecenter(bApplyRecent);
   taskQC_prot->SetDataSet(sDataSet);   
   taskQC_prot->SetAnalysisSet(sAnalysisDef); 
   taskQC_prot->SetRejectPileUp(bPileUp);  
@@ -194,7 +197,7 @@
   if(bSetGainEq){
      TFile* fZDCGainFile = TFile::Open(sGainEqFile,"READ");
      if(!fZDCGainFile) {
-       printf("\n\n *** ERROR: ZDC Channel wgt file not found! *** \n\n");
+       printf("\n\n *** ERROR: ZDC Channel wgt file not found! **EXIT** \n\n");
        exit(1);
      } 
 
@@ -203,15 +206,45 @@
    //fZDCGainFile->Close();
   
      if(fZDCChanWgtUse) {
-         taskQC_prot->SetZDCChWgtList(fZDCChanWgtUse);
+       taskQC_prot->SetZDCChWgtList(fZDCChanWgtUse);
      }
      else{
-	 std::cout<<"\n\n !!!!**** ERROR:ZDC Channel wgt Histograms not found ****!!!\n\n"<<std::endl;
-         exit(1);
+       printf("\n\n !!!!**** ERROR:ZDC Channel wgt Histograms not found **EXIT**!!!\n\n");
+       exit(1);
      }
   }
 
+  if(bApplyRecent){
+     TFile* fRecentFile = TFile::Open(sRecentFile,"READ");
+     if(!fRecentFile) {
+       printf("\n\n **** ERROR: ZDC Recenter file not found! **EXIT** \n\n");
+       exit(1);
+     }
 
+     TList* fZDCRecentUse = dynamic_cast<TList*>(fRecentFile->FindObjectAny("recenterZDC"));
+  
+     if(fZDCRecentUse) {
+       taskQC_prot->SetZDCESEList(fZDCRecentUse);
+     }
+     else{
+       printf("\n\n !!!!**** ERROR:ZDC Recenter Histograms not found **EXIT**!!!\n\n");
+       exit(1);
+     }
+
+     if(bFBeffi){
+       TFile* FileFBeffi  = TFile::Open(sEfficiencyFB,"READ");
+       TList* FBEffiListUse = dynamic_cast<TList*>(FileFBeffi->FindObjectAny("fMcEffiHij"));
+     
+       if(FBEffiListUse) {
+         //std::cout<<"\n\n Efficiency Histograms found\n:"<<FBEffiListUse->ls()<<"\n\n"<<std::endl;
+          taskQC_prot->SetFBEffiList(FBEffiListUse);
+       }
+       else{
+          std::cout<<"\n\n !!!!**** ERROR: FB Efficiency Histograms not found  *****\n\n"<<std::endl;
+         //exit(1);
+       }
+     }
+  }//if(bApplyRecent)
 
 
 
