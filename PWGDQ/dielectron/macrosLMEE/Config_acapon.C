@@ -171,9 +171,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
         //TPC
         histos->UserHistogram("Track","TPCnCls",";TPC number clusters;#tracks",170,-0.5,169.5,AliDielectronVarManager::kNclsTPC);
         histos->UserHistogram("Track","TPCchi2",";TPC chi2/Cl;#tracks",100,0.,10.,AliDielectronVarManager::kTPCchi2Cl);
-        histos->UserHistogram("Track","NclsSFracTPC",";TPC fraction of shared clusters;#tracks",200,0,10.,AliDielectronVarManager::kNclsSFracTPC);
         histos->UserHistogram("Track","nTPCshared","#shared TPC clusters", 170, 0, 170, AliDielectronVarManager::kNclsSTPC);
-        histos->UserHistogram("Track","TPCcrossedRows",";TPC crossed rows;#tracks",170,-0.5,169.5,AliDielectronVarManager::kNFclsTPCr);
+        histos->UserHistogram("Track","NclsSFracTPC",";TPC fraction of shared clusters;#tracks",200,0,10.,AliDielectronVarManager::kNclsSFracTPC);
+        histos->UserHistogram("Track","TPCfindableClusters",";TPC findable clusters;#tracks",170,-0.5,169.5,AliDielectronVarManager::kNFclsTPCr);
         histos->UserHistogram("Track","TPCcrossedRowsOverFindable",";TPC crossed rows over findable clusters;#tracks",240,0.,1.2,AliDielectronVarManager::kNFclsTPCfCross);
         //Repeats to check for binning issues
         histos->UserHistogram("Track","TPCcrossedRowsOverFindableThin",";TPC crossed rows over findable clusters;#tracks",360,0.,1.2,AliDielectronVarManager::kNFclsTPCfCross);
