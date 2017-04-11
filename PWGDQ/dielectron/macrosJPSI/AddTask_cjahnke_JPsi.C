@@ -76,7 +76,9 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
 	  }
   }
 
-
+	
+	
+		//moved to configuration file
   //Add event filter
 	
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
@@ -152,18 +154,20 @@ if(!isMC){
 		 task->SetTriggerMask(AliVEvent::kAny);
 		 TString triggerClass = "kHighMultV0";
 		 if(! triggerClass.IsNull() ) task->SetFiredTriggerName(triggerClass.Data() );
+		//task->SetFiredTriggerName("HMV0");
 	}
 	
 	
-	if(trigger_index==50){
+	if(trigger_index == 50){
 		task->SetTriggerMask(AliVEvent::kHighMultV0);
 	}
 	
 	
-	
+	//use this line for data, otherwise the physics selection is ignored by my task...
+	task->UsePhysicsSelection();
 	
 }
-	//task->UsePhysicsSelection();
+	
 	
 		
   //----------------------
