@@ -165,6 +165,10 @@ public:
     void SetMaxPt     ( Float_t lMaxPt ) {
         fMaxPtToSave = lMaxPt;
     }
+    void SetLambdaWindowParameters     ( Double_t *fMeanPars, Double_t *fSigmaPars ) {
+        for(Int_t ipar=0; ipar<5; ipar++) fLambdaMassMean[ipar]  = fMeanPars[ipar];
+        for(Int_t ipar=0; ipar<4; ipar++) fLambdaMassSigma[ipar] = fSigmaPars[ipar];
+    }
     //---------------------------------------------------------------------------------------
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
@@ -238,6 +242,12 @@ private:
     
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+    
+    Double_t fLambdaMassMean[5]; //Array to store the lambda mass mean parametrization
+    //[0]+[1]*TMath::Exp([2]*x)+[3]*TMath::Exp([4]*x)
+    
+    Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
+    //[0]+[1]*x+[2]*TMath::Exp([3]*x)
 
 //===========================================================================================
 //   Variables for Event Tree

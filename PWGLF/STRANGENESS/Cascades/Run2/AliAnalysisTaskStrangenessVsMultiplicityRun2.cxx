@@ -501,7 +501,20 @@ fHistCentrality(0)
     fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
     fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
-
+    
+    //[0]+[1]*TMath::Exp(-[2]*x)+[3]*TMath::Exp(-[4]*x)
+    fLambdaMassMean[0]=1.116; //standard fixed
+    fLambdaMassMean[1]=0.0;
+    fLambdaMassMean[2]=0.0;
+    fLambdaMassMean[3]=0.0;
+    fLambdaMassMean[4]=0.0;
+    
+    //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
+    fLambdaMassSigma[0]=0.002; //standard at roughly the integ val
+    fLambdaMassSigma[1]=0.0;
+    fLambdaMassSigma[2]=0.0;
+    fLambdaMassSigma[3]=0.0;
+    
     fkSaveEventTree    = lSaveEventTree;
     fkSaveV0Tree       = lSaveV0Tree;
     fkSaveCascadeTree  = lSaveCascadeTree;
@@ -1760,6 +1773,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                                              + TMath::Power( lNMom[1]+lPMom[1] , 2)
                                              + TMath::Power( lNMom[2]+lPMom[2] , 2) );
 
+        //V0 transverse momentum
+        Float_t lV0Pt = TMath::Sqrt(  TMath::Power( lNMom[0]+lPMom[0] , 2)
+                                    + TMath::Power( lNMom[1]+lPMom[1] , 2) );
+        
         //Calculate V0 lifetime: mL/p
         if( TMath::Abs(lV0TotMomentum)>1e-5 ){
             fTreeCascVarV0Lifetime = 1.115683*lV0DistanceTrav / lV0TotMomentum;
@@ -1990,6 +2007,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             lpipx = fTreeCascVarBachPx;
             lpipy = fTreeCascVarBachPy;
             lpipz = fTreeCascVarBachPz;
+            
+            //For parametric V0 Mass selection 
+            Float_t lExpV0Mass =
+            fLambdaMassMean[0]+
+            fLambdaMassMean[1]*TMath::Exp(fLambdaMassMean[2]*lV0Pt)+
+            fLambdaMassMean[3]*TMath::Exp(fLambdaMassMean[4]*lV0Pt);
+            
+            Float_t lExpV0Sigma =
+            fLambdaMassSigma[0]+fLambdaMassSigma[1]*lV0Pt+
+            fLambdaMassSigma[2]*TMath::Exp(fLambdaMassSigma[3]*lV0Pt);
 
             //========================================================================
             //Setting up: Variable Cascade CosPA
@@ -2121,6 +2148,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeCascVarDCACascDaughters < lCascadeResult->GetCutDCACascDaughters() &&
                 fTreeCascVarCascCosPointingAngle > lCascCosPACut &&
                 fTreeCascVarCascRadius > lCascadeResult->GetCutCascRadius() &&
+                
+                // - Implementation of a parametric V0 Mass cut if requested
+                (
+                 ( lCascadeResult->GetCutV0MassSigma() > 50 ) || //anything goes
+                 (TMath::Abs( (fTreeCascVarV0Mass-lExpV0Mass) / lExpV0Sigma ) < lCascadeResult->GetCutV0MassSigma() )
+                ) &&
 
                 // - Miscellaneous
                 fTreeCascVarDistOverTotMom*lPDGMass < lCascadeResult->GetCutProperLifetime() &&
