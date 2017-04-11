@@ -13,69 +13,66 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
- 
-
-Patch object implementation: one patch is made of subregions (Olivier's nomenclature)
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
-
 #include "AliEMCALTriggerPatch.h"
 #include "AliLog.h"
 
-ClassImp(AliEMCALTriggerPatch)
+/// \cond CLASSIMP
+ClassImp(AliEMCALTriggerPatch) ;
+/// \endcond
 
+///
+/// Default constructor
 //____________
 AliEMCALTriggerPatch::AliEMCALTriggerPatch() : TObject(),
 fPosition(0x0),
 fSum(0),
 fTime(0),
 fPeaks(0)
-{
-	// Default constructor
-}
+{ }
 
+///
+/// Constructor
 //____________
 AliEMCALTriggerPatch::AliEMCALTriggerPatch(Int_t i, Int_t j,  Int_t k, Int_t l) : TObject(),
 fPosition(new TVector2(i, j)),
 fSum(k),
 fTime(l),
 fPeaks(0)
-{
-	//
-}
+{ }
 
+///
+/// Copy constructor
 //____________________________________________________________________
 AliEMCALTriggerPatch::AliEMCALTriggerPatch(const AliEMCALTriggerPatch& other) : TObject(other), 
 fPosition(new TVector2(*other.fPosition)),
 fSum(other.fSum),
 fTime(other.fTime),
 fPeaks(other.fPeaks)
-{	
-	// Copy ctor
-}
+{ }
 
+///
+/// Destructor
 //____________
 AliEMCALTriggerPatch::~AliEMCALTriggerPatch()
 {	
-	//
-	if (fPosition) delete fPosition;
+  if (fPosition) delete fPosition;
 }
 
+///
+/// Peak (add explanation)
 //____________
 void AliEMCALTriggerPatch::SetPeak(Int_t x, Int_t y, Int_t sizeX, Int_t sizeY)
 {
-	//
-	if (sizeX * sizeY > 31) AliError("32b limit exceeded!");
-	
-	fPeaks = (fPeaks | (1 << (y * sizeX + x)));
+  if (sizeX * sizeY > 31) AliError("32b limit exceeded!");
+  
+  fPeaks = (fPeaks | (1 << (y * sizeX + x)));
 }
 
+///
+/// Print patch info
 //____________
 void AliEMCALTriggerPatch::Print(const Option_t*) const
 {
-	//
-	printf("]> Patch at (%2d , %2d) w/ sum %3d time %2d\n",
-		   (int)fPosition->X(), (int)fPosition->Y(), fSum, fTime); 
+  printf("]> Patch at (%2d , %2d) w/ sum %3d time %2d\n",
+         (int)fPosition->X(), (int)fPosition->Y(), fSum, fTime); 
 }
