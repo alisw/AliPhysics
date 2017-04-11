@@ -3344,23 +3344,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
     else {
       switch(fUEMethod)
 	{
-	case 0:{ // Phi band
+	case 0:// { // Phi band
 	  if(TMath::Abs(eta-etap)<fIsoConeRadius)
 	    sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
 	  else
 	    return;
 
 	  break;
-	}
-	case 1:{ // Eta band
+	// }
+	case 1:// { // Eta band
 	  if(TMath::Abs(phi-phip)<fIsoConeRadius)
 	    sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
 	  else
 	    return;
           
 	  break;
-        }
-	case 2:{ // Orthogonal Cones
+        // }
+	case 2:// { // Orthogonal Cones
 	  double etacone1= eta;
 	  double etacone2= eta;
 	  double phicone1= phi - TMath::PiOver2();
@@ -3376,8 +3376,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
 	    return;
           
 	  break;
-        }
-	case 3:{ // Full TPC
+        // }
+	case 3:// { // Full TPC
         
 	  // Double_t phiup= phi +TMath::Pi()+fIsoConeRadius;
 	  // Double_t phidown= phi +TMath::Pi()-fIsoConeRadius;
@@ -3385,7 +3385,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
 	  // if(phip < phidown || phip > phiup ) // TO BE CHECKED
 	  // continue;
 	  break;
-        }
+        // }
 	}
     }
   }
