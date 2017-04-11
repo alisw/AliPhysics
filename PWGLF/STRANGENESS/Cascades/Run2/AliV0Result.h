@@ -85,6 +85,9 @@ public:
         fCutVarV0CosPA_Const     = l5;
     }
     
+    //Use OTF V0s
+    void SetUseOnTheFly ( Bool_t lCut ) { fUseOnTheFly = lCut; } 
+    
     //Feeddown matrix initializer
     void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
                                   Long_t lNXiPtPins, Double_t *lXiPtPins,
@@ -127,6 +130,9 @@ public:
     Double_t GetCutVarV0CosPAExp1Const() const { return fCutVarV0CosPA_Exp1Const; }
     Double_t GetCutVarV0CosPAExp1Slope() const { return fCutVarV0CosPA_Exp1Slope; }
     Double_t GetCutVarV0CosPAConst    () const { return fCutVarV0CosPA_Const;     }
+    
+    //Use OTF V0s
+    Bool_t GetUseOnTheFly() const { return fUseOnTheFly; }
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
@@ -175,10 +181,13 @@ private:
     Double_t fCutVarV0CosPA_Exp1Slope;
     Double_t fCutVarV0CosPA_Const;
     
+    //Master switch to use on-the-fly candidates
+    Bool_t fUseOnTheFly; //if zero -> offline, if kTRUE -> go on-the-fly
+    
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 13)
+    ClassDef(AliV0Result, 14)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -192,5 +201,6 @@ private:
     //11 - Addition of variable CosPA, ITSrefit requirement
     //12 - Addition of eta window selection
     //13 - Max chi2/clusters, min track length for checking
+    //14 - added possibility to select on-the-fly V0 candidates
 };
 #endif

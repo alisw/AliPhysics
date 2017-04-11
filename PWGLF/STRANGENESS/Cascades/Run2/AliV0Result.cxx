@@ -43,7 +43,8 @@ fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
-fCutVarV0CosPA_Const(1)
+fCutVarV0CosPA_Const(1),
+fUseOnTheFly(kFALSE)
 {
     // Dummy Constructor - not to be used! 
     //Main output histogram: Centrality, mass, transverse momentum
@@ -83,7 +84,8 @@ fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
-fCutVarV0CosPA_Const(1)
+fCutVarV0CosPA_Const(1),
+fUseOnTheFly(kFALSE)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -130,7 +132,8 @@ fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
-fCutVarV0CosPA_Const(1)
+fCutVarV0CosPA_Const(1),
+fUseOnTheFly(kFALSE)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -182,7 +185,8 @@ fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
-fCutVarV0CosPA_Const(1)
+fCutVarV0CosPA_Const(1),
+fUseOnTheFly(kFALSE)
 {
     // Constructor
     Double_t lMassWindow = (lMaxMass-lMinMass)/2.0 ;
@@ -229,7 +233,8 @@ fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
 fCutVarV0CosPA_Exp0Slope(lCopyMe.fCutVarV0CosPA_Exp0Slope),
 fCutVarV0CosPA_Exp1Const(lCopyMe.fCutVarV0CosPA_Exp1Const),
 fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
-fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const)
+fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const),
+fUseOnTheFly(lCopyMe.fUseOnTheFly)
 {
     SetName( lNewName.Data() ); 
     
@@ -288,6 +293,9 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutVarV0CosPA_Exp1Const = lCopyMe -> GetCutVarV0CosPAExp1Const();
     fCutVarV0CosPA_Exp1Slope = lCopyMe -> GetCutVarV0CosPAExp1Slope();
     fCutVarV0CosPA_Const = lCopyMe -> GetCutVarV0CosPAConst();
+    
+    //OTF use
+    fUseOnTheFly = lCopyMe -> GetUseOnTheFly();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -355,6 +363,9 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutVarV0CosPA_Exp1Const = lCopyMe.GetCutVarV0CosPAExp1Const();
     fCutVarV0CosPA_Exp1Slope = lCopyMe.GetCutVarV0CosPAExp1Slope();
     fCutVarV0CosPA_Const = lCopyMe.GetCutVarV0CosPAConst();
+    
+    //OTF use
+    fUseOnTheFly = lCopyMe.GetUseOnTheFly();
     
     if (fHisto) {
         delete fHisto;
@@ -453,6 +464,9 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if ( TMath::Abs(fCutVarV0CosPA_Exp1Slope - lCompareV0->GetCutVarV0CosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutVarV0CosPA_Const  - lCompareV0->GetCutVarV0CosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
     
+    //Use OTF
+    if( fUseOnTheFly != lCompareV0->GetUseOnTheFly() ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -465,6 +479,7 @@ void AliV0Result::Print()
     cout<<"    AliV0Result Configuration      "<<endl;
     cout<<"========================================"<<endl;
     cout<<" Object Name........: "<<this->GetName()<<endl;
+    cout<<" Use OTF V0s........: "<<fUseOnTheFly<<endl; 
     cout<<" Histogram Name.....: "<<fHisto->GetName()<<endl;
     if( fMassHypo == AliV0Result::kK0Short      ) cout<<" Mass Hypothesis....: K0Short"<<endl;
     if( fMassHypo == AliV0Result::kLambda       ) cout<<" Mass Hypothesis....: Lambda"<<endl;
