@@ -13,19 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//_________________________________________________________________________
-//*-- Implementation version v2 of EMCAL Manager class; SHASHLYK version
-//*-- An object of this class does not produce digits
-//*-- It is the one to use if you do want to produce outputs in TREEH 
-//*--                  
-//*-- Author : Alexei Pavlinov (WSU)
-//           : Adapted for DCAL by M.L. Wang CCNU Wuhan & Subatech Oct-23-2012
-// This Class not stores information on all particles prior to EMCAL entry - in order to facilitate analysis.
-// This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
-
+// --- Standard library ---
 #include <cassert>
+
 // --- ROOT system ---
 #include <TBrowser.h>
 #include <TClonesArray.h>
@@ -33,8 +23,6 @@
 #include <TParticle.h>
 #include <TROOT.h>
 #include <TVirtualMC.h>
-
-// --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliEMCALv2.h"
@@ -45,31 +33,35 @@
 #include "AliMC.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
-// for TRD1 case only; May 31,2006
 
-ClassImp(AliEMCALv2)
+/// \cond CLASSIMP
+ClassImp(AliEMCALv2) ;
+/// \endcond
 
+///
+/// Default Constructor
 //______________________________________________________________________
-AliEMCALv2::AliEMCALv2()
-  : AliEMCALv1()
-{
-  // ctor
-}
+AliEMCALv2::AliEMCALv2() : AliEMCALv1()
+{}
 
+///
+/// Constructor
+///
+/// \param name: detector name "EMCAL"
+/// \param title: geometry name, see AliEMCALGeometry for options, see AliEMCAL::GetGeometry()
+/// \param checkGeoAndRun: Request automatic setting of geometry depending on run number, see AliEMCAL::GetGeometry()
 //______________________________________________________________________
 AliEMCALv2::AliEMCALv2(const char *name, const char *title, 
                        const Bool_t checkGeoAndRun)
-  : AliEMCALv1(name,title,checkGeoAndRun)
+: AliEMCALv1(name,title,checkGeoAndRun)
 {
-    // Standard Creator.
-
-    //fHits= new TClonesArray("AliEMCALHit",1000); //Already done in ctor of v1
+  //fHits= new TClonesArray("AliEMCALHit",1000); //Already done in ctor of v1
   
-    gAlice->GetMCApp()->AddHitList(fHits);
-
-    fNhits    = 0;
-    fIshunt   = 2; // All hits are associated with particles entering the calorimeter
-    fTimeCut  = 30e-09;
+  gAlice->GetMCApp()->AddHitList(fHits);
+  
+  fNhits    = 0;
+  fIshunt   = 2; // All hits are associated with particles entering the calorimeter
+  fTimeCut  = 30e-09;
   
   //fGeometry = GetGeometry(); 
   // pointer already initialized in AliEMCALv0 ctor, grandmother of this class
@@ -78,56 +70,73 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title,
   AliInfo("Very good, V2 version is used!");
 }
 
+///
+/// Destructor.
+/// The fHits deletion already done in destructor of AliEMCALv1.
 //______________________________________________________________________
-AliEMCALv2::~AliEMCALv2(){
-    // dtor
+AliEMCALv2::~AliEMCALv2()
+{}
 
-  //Already done in dtor of v1
-//  if ( fHits ) {
-//    fHits->Clear();
-//    delete fHits;
-//    fHits = 0;
-//  }
-}
-
+///
+/// Add a hit to the hit list.
+/// An EMCAL hit is the sum of all hits in a tower section
+/// originating from the same entering particle 
+/// See AliEMCALHit.
+///
+/// \param shunt: flag to store more or less primaries (check)
+/// \param primary: Label of primary particle at the origin of the hit
+/// \param tracknumber: reference track number (check)
+/// \param iparent: Label of primary parent particle that entered EMCAL
+/// \param ienergy: Initial energy of parent particle that entered the EMCAL
+/// \param id: Absolute Id number EMCAL tower
+/// \param hits: position, time and energy loss of particle
+/// \param p: momentum of particle
+///
 //______________________________________________________________________
-void AliEMCALv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t iparent, Float_t ienergy, 
-			Int_t id, Float_t * hits,Float_t * p){
-    // Add a hit to the hit list.
-    // An EMCAL hit is the sum of all hits in a tower section
-    //   originating from the same entering particle 
-    static Int_t hitCounter;
-    static AliEMCALHit *newHit, *curHit;
-    static Bool_t deja ;
+void AliEMCALv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, 
+                        Int_t iparent, Float_t ienergy, 
+                        Int_t id, Float_t * hits,Float_t * p)
+{
+  static Int_t hitCounter;
+  static AliEMCALHit *newHit, *curHit;
+  static Bool_t deja ;
   
-    deja = kFALSE;
-
-    newHit = new AliEMCALHit(shunt, primary, tracknumber, iparent, ienergy, id, hits, p);
-    for ( hitCounter = fNhits-1; hitCounter >= 0 && !deja; hitCounter-- ) {
-	curHit = (AliEMCALHit*) (*fHits)[hitCounter];
-	// We add hits with the same tracknumber, while GEANT treats
-	// primaries succesively
-	if(curHit->GetPrimary() != primary) 
-	  break;
-	if( *curHit == *newHit ) {
-	    *curHit = *curHit + *newHit;
-	    deja = kTRUE;
-	    //            break; // 30-aug-04 by PAI 
-	} // end if
-    } // end for hitCounter
+  deja = kFALSE;
+  
+  newHit = new AliEMCALHit(shunt, primary, tracknumber, iparent, ienergy, id, hits, p);
+  
+  for ( hitCounter = fNhits-1; hitCounter >= 0 && !deja; hitCounter-- ) 
+  {
+    curHit = (AliEMCALHit*) (*fHits)[hitCounter];
     
-    if ( !deja ) {
-	new((*fHits)[fNhits]) AliEMCALHit(*newHit);
-	fNhits++;
-    }
-    //    printf(" fNhits %i \n", fNhits); 
-    delete newHit;
+    // We add hits with the same tracknumber, while GEANT treats
+    // primaries succesively
+    if(curHit->GetPrimary() != primary) 
+      break;
+    
+    if( *curHit == *newHit ) 
+    {
+      *curHit = *curHit + *newHit;
+      deja = kTRUE;
+      //            break; // 30-aug-04 by PAI 
+    } // end if
+  } // end for hitCounter
+  
+  if ( !deja ) 
+  {
+    new((*fHits)[fNhits]) AliEMCALHit(*newHit);
+    fNhits++;
+  }
+  
+  //    printf(" fNhits %i \n", fNhits); 
+  delete newHit;
 }
 
+///
+/// Accumulates hits as long as the track stays in a tower.
 //______________________________________________________________________
-void AliEMCALv2::StepManager(void){
-  // Accumulates hits as long as the track stays in a tower
-
+void AliEMCALv2::StepManager(void)
+{
   // position wrt MRS and energy deposited
   static Float_t        xyzte[5]={0.,0.,0.,0.,0.};// position wrt MRS, time and energy deposited
   static Float_t        pmom[4]={0.,0.,0.,0.};
@@ -139,70 +148,87 @@ void AliEMCALv2::StepManager(void){
   static int keyGeom=1;  //real TRD1 geometry
   static const char *vn = "SCMX"; // Apr 13, 2006 - only TRD1 case now
   static Float_t depositedEnergy=0.0; 
-
-  if(keyGeom == 0) {
+  
+  if(keyGeom == 0) 
+  {
     keyGeom = 2;
-    if(fMC->VolId("PBMO")==0 || fMC->VolId("WSUC")==1) {
+    if(fMC->VolId("PBMO")==0 || fMC->VolId("WSUC")==1) 
+    {
       vn      = "SCMX";   // old TRD2(TRD1) or WSUC
       keyGeom = 1;
-    }    
+    } 
+    
     printf("AliEMCALv2::StepManager():  keyGeom %i : Sensetive volume %s \n", 
-    keyGeom, vn); 
+           keyGeom, vn); 
+    
     if(fMC->VolId("WSUC")==1) printf(" WSUC - cosmic ray stand geometry \n");
   }
+  
   Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber();
   Int_t parent=0;
   TParticle* part=0;
-
+  
   curVolName = fMC->CurrentVolName();
-  if(curVolName.Contains(vn) || curVolName.Contains("SCX")) { // We are in a scintillator layer; SCX for 3X3
+  if(curVolName.Contains(vn) || curVolName.Contains("SCX")) 
+  { // We are in a scintillator layer; SCX for 3X3
     
-    if( ((depositedEnergy = fMC->Edep()) > 0.)  && (fMC->TrackTime() < fTimeCut)){// Track is inside a scintillator and deposits some energy
-      //       Info("StepManager "," entry %i DE %f",++ientry, depositedEnergy); // for testing
-       if (fCurPrimary==-1) 
-	fCurPrimary=gAlice->GetMCApp()->GetPrimary(tracknumber);
-
-      if (fCurParent==-1 || tracknumber != fCurTrack) {
-	// Check parentage
-	parent=tracknumber;
-
-	if (fCurParent != -1) {
-	  while (parent != fCurParent && parent != -1) {
-	    //TParticle *part=gAlice->GetMCApp()->Particle(parent);
-	    part=gAlice->GetMCApp()->Particle(parent);
-	    parent=part->GetFirstMother();
-	  }
-	}
-	if (fCurParent==-1 || parent==-1) {
-	  //Int_t parent=tracknumber;
-	  //TParticle *part=gAlice->GetMCApp()->Particle(parent);
-	  parent=tracknumber;
-	  part=gAlice->GetMCApp()->Particle(parent);
-	  while (parent != -1 && fGeometry->IsInEMCALOrDCAL(part->Vx(),part->Vy(),part->Vz())) {
-	    parent=part->GetFirstMother();
-	    if (parent!=-1) 
-	      part=gAlice->GetMCApp()->Particle(parent);
-	  } 
-	  fCurParent=parent;
-	  if (fCurParent==-1)
-	    Error("StepManager","Cannot find parent");
-	  else {
-	    //TParticle *part=gAlice->GetMCApp()->Particle(fCurParent);
-	    part=gAlice->GetMCApp()->Particle(fCurParent);
-	    ienergy = part->Energy(); 
-
-	    //Add reference to parent in TR tree. 	
-	    AddTrackReference(tracknumber, AliTrackReference::kEMCAL);
-
-	  }
-	  while (parent != -1) {
-	    part=gAlice->GetMCApp()->Particle(parent);
-	    part->SetBit(kKeepBit);
-	    parent=part->GetFirstMother();
-	  }
-	}
-	fCurTrack=tracknumber;
-      }    
+    if( ((depositedEnergy = fMC->Edep()) > 0.)  && (fMC->TrackTime() < fTimeCut))
+    {// Track is inside a scintillator and deposits some energy
+     //       Info("StepManager "," entry %i DE %f",++ientry, depositedEnergy); // for testing
+      if (fCurPrimary==-1) 
+        fCurPrimary=gAlice->GetMCApp()->GetPrimary(tracknumber);
+      
+      if (fCurParent==-1 || tracknumber != fCurTrack) 
+      {
+        // Check parentage
+        parent=tracknumber;
+        
+        if (fCurParent != -1) 
+        {
+          while (parent != fCurParent && parent != -1) 
+          {
+            //TParticle *part=gAlice->GetMCApp()->Particle(parent);
+            part=gAlice->GetMCApp()->Particle(parent);
+            parent=part->GetFirstMother();
+          }
+        }
+        
+        if (fCurParent==-1 || parent==-1) 
+        {
+          //Int_t parent=tracknumber;
+          //TParticle *part=gAlice->GetMCApp()->Particle(parent);
+          parent=tracknumber;
+          part=gAlice->GetMCApp()->Particle(parent);
+          while (parent != -1 && fGeometry->IsInEMCALOrDCAL(part->Vx(),part->Vy(),part->Vz())) {
+            parent=part->GetFirstMother();
+            if (parent!=-1) 
+              part=gAlice->GetMCApp()->Particle(parent);
+          } 
+          
+          fCurParent=parent;
+          if (fCurParent==-1)
+            Error("StepManager","Cannot find parent");
+          else 
+          {
+            //TParticle *part=gAlice->GetMCApp()->Particle(fCurParent);
+            part=gAlice->GetMCApp()->Particle(fCurParent);
+            ienergy = part->Energy(); 
+            
+            //Add reference to parent in TR tree. 	
+            AddTrackReference(tracknumber, AliTrackReference::kEMCAL);
+            
+          }
+          while (parent != -1) 
+          {
+            part=gAlice->GetMCApp()->Particle(parent);
+            part->SetBit(kKeepBit);
+            parent=part->GetFirstMother();
+          }
+        }
+        
+        fCurTrack=tracknumber;
+      } 
+      
       fMC->TrackPosition(pos);
       xyzte[0] = pos[0];
       xyzte[1] = pos[1];
@@ -217,92 +243,107 @@ void AliEMCALv2::StepManager(void){
       
       //      if(ientry%200 > 0) return; // testing
       supModuleNumber = moduleNumber = yNumber = xNumber = absid = 0;
-      if(keyGeom >= 1) { // TRD1 case now
+      if(keyGeom >= 1) 
+      { // TRD1 case now
         fMC->CurrentVolOffID(4, supModuleNumber);
         fMC->CurrentVolOffID(3, moduleNumber);
         fMC->CurrentVolOffID(1, yNumber);
         fMC->CurrentVolOffID(0, xNumber); // really x number now
+        
         Int_t CurrentSMType = 0;
-        if(strcmp(fMC->CurrentVolOffName(4),"SMOD")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Standard ;
+        if     (strcmp(fMC->CurrentVolOffName(4),"SMOD")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Standard ;
         else if(strcmp(fMC->CurrentVolOffName(4),"SM10")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Half ;
         else if(strcmp(fMC->CurrentVolOffName(4),"SM3rd")==0) CurrentSMType = AliEMCALGeometry::kEMCAL_3rd  ;
         else if(strcmp(fMC->CurrentVolOffName(4),"DCSM")==0)  CurrentSMType = AliEMCALGeometry::kDCAL_Standard ;
         else if(strcmp(fMC->CurrentVolOffName(4),"DCEXT")==0) CurrentSMType = AliEMCALGeometry::kDCAL_Ext   ;
         else AliError("Unkown SM Type!!");
-
+        
         Int_t preSM = 0;
         while( fGeometry->GetSMType(preSM) != CurrentSMType ) preSM++;
         supModuleNumber += preSM;
-	// Nov 10,2006
+        
+        // Nov 10,2006
         if(strcmp(fMC->CurrentVolOffName(0),vn) != 0) { // 3X3 case
           if     (strcmp(fMC->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
           else if(strcmp(fMC->CurrentVolOffName(0),"SCX2")==0) xNumber=2;
           else if(strcmp(fMC->CurrentVolOffName(0),"SCX3")==0) xNumber=3;
           else Fatal("StepManager()", "Wrong name of sensitive volume in 3X3 case : %s ", fMC->CurrentVolOffName(0));
-	}
-      } else {
+        }
+      } 
+      else 
+      {
         fMC->CurrentVolOffID(5, supModuleNumber);
         fMC->CurrentVolOffID(4, moduleNumber);
         fMC->CurrentVolOffID(1, yNumber);
         fMC->CurrentVolOffID(0, xNumber);
+        
         if     (strcmp(fMC->CurrentVolOffName(5),"SMOP")==0) supModuleNumber = 2*(supModuleNumber-1)+1;
         else if(strcmp(fMC->CurrentVolOffName(5),"SMON")==0) supModuleNumber = 2*(supModuleNumber-1)+2;
         else   assert(0); // something wrong
       }
-		
-      // Due to problem with index ordering conventions the calcultation of absid is no more like this:	
-      //absid = fGeometry->GetAbsCellId(smNumber, moduleNumber-1, yNumber-1, xNumber-1);
       
-      //Swap A side in Phi and C side in Eta due to wrong indexing.
+      // Due to problem with index ordering conventions the calcultation of absid is no more like this:	
+      // absid = fGeometry->GetAbsCellId(smNumber, moduleNumber-1, yNumber-1, xNumber-1);
+      
+      //
+      // Swap A side in Phi and C side in Eta due to wrong indexing.
+      //
       Int_t iphi = -1;
       Int_t ieta = -1;
       Int_t smNumber = supModuleNumber-1;
       Int_t smType   = 1;
       fGeometry->GetCellPhiEtaIndexInSModule(smNumber,moduleNumber-1,yNumber-1,xNumber-1, iphi, ieta);
-      if (smNumber%2 == 0) {
-    if(strcmp(fMC->CurrentVolOffName(4),"DCSM")==0) smType = 3; //DCal supermodule. previous design/idea
+      
+      if (smNumber%2 == 0) 
+      {
+        if(strcmp(fMC->CurrentVolOffName(4),"DCSM")==0) smType = 3; //DCal supermodule. previous design/idea
         else smType = 2;
-	ieta = ((fGeometry->GetCentersOfCellsEtaDir()).GetSize()* 2/smType -1)-ieta;// 47/31-ieta, revert the ordering on A side in order to keep convention.
-      } else {  
-    if(strcmp(fMC->CurrentVolOffName(4),"SM10")==0) smType = 2 ; //half supermodule. previous design/idea
-    if(strcmp(fMC->CurrentVolOffName(4),"SM3rd")==0) smType = 3 ; //one third (installed in 2012) supermodule
-    if(strcmp(fMC->CurrentVolOffName(4),"DCEXT")==0) smType = 3 ; //one third (installed in 2012) supermodule
-	iphi= ((fGeometry->GetCentersOfCellsPhiDir()).GetSize()/smType-1)-iphi;// 23/7-iphi, revert the ordering on C side in order to keep convention.
+        ieta = ((fGeometry->GetCentersOfCellsEtaDir()).GetSize()* 2/smType -1)-ieta;// 47/31-ieta, revert the ordering on A side in order to keep convention.
+      } 
+      else 
+      {  
+        if(strcmp(fMC->CurrentVolOffName(4),"SM10")==0) smType = 2 ; //half supermodule. previous design/idea
+        if(strcmp(fMC->CurrentVolOffName(4),"SM3rd")==0) smType = 3 ; //one third (installed in 2012) supermodule
+        if(strcmp(fMC->CurrentVolOffName(4),"DCEXT")==0) smType = 3 ; //one third (installed in 2012) supermodule
+        iphi= ((fGeometry->GetCentersOfCellsPhiDir()).GetSize()/smType-1)-iphi;// 23/7-iphi, revert the ordering on C side in order to keep convention.
       }
       
-      //Once we know the indexes, calculate the absolute ID
+      // Once we know the indexes, calculate the absolute ID
       absid = fGeometry->GetAbsCellIdFromCellIndexes(smNumber, iphi, ieta);
       
-      if (absid < 0) {
+      if (absid < 0) 
+      {
         printf(" supModuleNumber %i : moduleNumber %i : yNumber %i : xNumber %i \n",
-	       supModuleNumber, moduleNumber, yNumber, xNumber); 
-	Fatal("StepManager()", "Wrong id : %i ", absid) ; 
+               supModuleNumber, moduleNumber, yNumber, xNumber); 
+        Fatal("StepManager()", "Wrong id : %i ", absid) ; 
       }
-
+      
       Float_t lightYield =  depositedEnergy ;
       // Apply Birk's law (copied from G3BIRK)
-
-      if (fMC->TrackCharge()!=0) { // Check
-	  Float_t birkC1Mod = 0;
-	if (fBirkC0==1){ // Apply correction for higher charge states
-      if (TMath::Abs(fMC->TrackCharge())>=2) birkC1Mod = fBirkC1*7.2/12.6;
-	  else                                   birkC1Mod = fBirkC1;
-	}
-
-	Float_t dedxcm=0.;
-    if (fMC->TrackStep()>0)  dedxcm=1000.*fMC->Edep()/fMC->TrackStep();
-	else                     dedxcm=0;
-	lightYield=lightYield/(1.+birkC1Mod*dedxcm+fBirkC2*dedxcm*dedxcm);
+      
+      if (fMC->TrackCharge()!=0) 
+      { // Check
+        Float_t birkC1Mod = 0;
+        if (fBirkC0==1)
+        { // Apply correction for higher charge states
+          if (TMath::Abs(fMC->TrackCharge())>=2) birkC1Mod = fBirkC1*7.2/12.6;
+          else                                   birkC1Mod = fBirkC1;
+        }
+        
+        Float_t dedxcm=0.;
+        if (fMC->TrackStep()>0)  dedxcm=1000.*fMC->Edep()/fMC->TrackStep();
+        else                     dedxcm=0;
+        lightYield=lightYield/(1.+birkC1Mod*dedxcm+fBirkC2*dedxcm*dedxcm);
       } 
-
+      
       // use sampling fraction to get original energy --HG
       //      xyzte[4] = lightYield * fGeometry->GetSampling();
       xyzte[4] = lightYield; // 15-dec-04
-        
+      
       if (gDebug == -2) 
-      printf("#sm %2i #m %3i #x %1i #z %1i -> absid %i : xyzte[4] = %f\n",
-      supModuleNumber,moduleNumber,yNumber,xNumber,absid, xyzte[4]);
-
+        printf("#sm %2i #m %3i #x %1i #z %1i -> absid %i : xyzte[4] = %f\n",
+               supModuleNumber,moduleNumber,yNumber,xNumber,absid, xyzte[4]);
+      
       AddHit(fIshunt, fCurPrimary,tracknumber, fCurParent, ienergy, absid,  xyzte, pmom);
     } // there is deposited energy
   }

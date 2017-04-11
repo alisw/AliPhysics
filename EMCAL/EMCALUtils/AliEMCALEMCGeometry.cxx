@@ -96,7 +96,6 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title
 
   if (AliDebugLevel()>=2)
     PrintGeometry();
-
 }
 
 ///
@@ -771,19 +770,20 @@ Bool_t AliEMCALEMCGeometry::GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phi
 //______________________________________________________________________________
 int AliEMCALEMCGeometry::ParseString(const TString &topt, TObjArray &Opt)
 { 
-	Ssiz_t begin, index, end, end2;
-	begin = index = end = end2 = 0;
-	TRegexp separator("[^ ;,\\t\\s/]+");
-	while ( (begin < topt.Length()) && (index != kNPOS) ) 
+  Ssiz_t begin, index, end, end2;
+  begin = index = end = end2 = 0;
+  TRegexp separator("[^ ;,\\t\\s/]+");
+  while ( (begin < topt.Length()) && (index != kNPOS) ) 
   {
-		// loop over given options
-		index = topt.Index(separator,&end,begin);
-		if (index >= 0 && end >= 1) {
-			TString substring(topt(index,end));
-			Opt.Add(new TObjString(substring.Data()));
-		}
-		begin += end+1;
-	}
-	return Opt.GetEntries();
+    // loop over given options
+    index = topt.Index(separator,&end,begin);
+    if (index >= 0 && end >= 1) 
+    {
+      TString substring(topt(index,end));
+      Opt.Add(new TObjString(substring.Data()));
+    }
+    begin += end+1;
+  }
+  return Opt.GetEntries();
 }
 
