@@ -90,3 +90,14 @@ TH2F* AliITSOnlineSDD::ApplyZeroSuppression(TH2F* hRaw, Float_t basl, Int_t tL, 
   }
   return hZeroSupp;
 }
+//______________________________________________________________________
+Bool_t AliITSOnlineSDD::IsEmptyEvent(TH2F* hrawd) const{
+  // check if an event is empty 
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
+      Float_t cbin=hrawd->GetBinContent(itb+1,ian+1);
+      if(cbin>0.5) return kFALSE;
+    }
+  }
+  return kTRUE;
+}

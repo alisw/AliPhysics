@@ -119,6 +119,7 @@ int main(int argc, char **argv) {
   Int_t iev;
   Int_t ievPed;
   Int_t ievUsed;
+  Bool_t allEvOK=kTRUE;
   Int_t nEvToBeSkipped=5;
 
   for(Int_t iStep=0;iStep<2;iStep++){
@@ -265,6 +266,12 @@ int main(int argc, char **argv) {
 	    Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	    base[index]->ValidateAnodes();
 	    base[index]->WriteToASCII();
+	    Int_t nEmptyEv=base[index]->GetNEmptyEvents();
+	    Int_t nAnalyzedEv=base[index]->GetNEvents();
+	    if(nEmptyEv>0 && nAnalyzedEv>0){
+	      printf("WARNING: SDD module DDL %d CHAN %d SIDE %d transmitted %d empty events, calibration based on %d events\n",iddl,imod,isid,nEmptyEv,nAnalyzedEv);
+	      allEvOK=kFALSE;
+	    }
 	  }
 	}
       }
@@ -275,7 +282,8 @@ int main(int argc, char **argv) {
   TDatime time;
   TObjString timeinfo(Form("%02d%02d%02d%02d%02d%02d",time.GetYear()-2000,time.GetMonth(),time.GetDay(),time.GetHour(),time.GetMinute(),time.GetSecond()));
   printf("Run #%s, received %d calibration events, time %s\n",getenv("DATE_RUN_NUMBER"),ievUsed,timeinfo.GetString().Data());
-
+  if(allEvOK) printf("All events were OK for calibration\n");
+  else printf("WARNING: some events were empty\n");
   /* report progress */
   daqDA_progressReport(90);
 
