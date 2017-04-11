@@ -169,6 +169,17 @@ public:
         for(Int_t ipar=0; ipar<5; ipar++) fLambdaMassMean[ipar]  = fMeanPars[ipar];
         for(Int_t ipar=0; ipar<4; ipar++) fLambdaMassSigma[ipar] = fSigmaPars[ipar];
     }
+    void SetLambdaWindowParametersStandard (){
+        fLambdaMassMean[0] =  1.15768e+00;
+        fLambdaMassMean[1] = -4.15945e-02;
+        fLambdaMassMean[2] = -7.14294e-04;
+        fLambdaMassMean[3] = -1.62793e-02;
+        fLambdaMassMean[4] = -7.84067e+00;
+        fLambdaMassSigma[0] = 1.30345e-03;
+        fLambdaMassSigma[1] = 2.89679e-04;
+        fLambdaMassSigma[2] = 1.52661e-03;
+        fLambdaMassSigma[3] =-2.58251e+00;
+    }
     //---------------------------------------------------------------------------------------
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );

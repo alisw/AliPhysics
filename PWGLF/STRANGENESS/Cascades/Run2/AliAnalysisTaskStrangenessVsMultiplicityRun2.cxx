@@ -502,14 +502,14 @@ fHistCentrality(0)
     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
     fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
     
-    //[0]+[1]*TMath::Exp(-[2]*x)+[3]*TMath::Exp(-[4]*x)
+    //[0]+[1]*TMath::Exp([2]*x)+[3]*TMath::Exp([4]*x)
     fLambdaMassMean[0]=1.116; //standard fixed
     fLambdaMassMean[1]=0.0;
     fLambdaMassMean[2]=0.0;
     fLambdaMassMean[3]=0.0;
     fLambdaMassMean[4]=0.0;
     
-    //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
+    //[0]+[1]*x+[2]*TMath::Exp([3]*x)
     fLambdaMassSigma[0]=0.002; //standard at roughly the integ val
     fLambdaMassSigma[1]=0.0;
     fLambdaMassSigma[2]=0.0;
