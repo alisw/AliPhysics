@@ -2991,7 +2991,7 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
   
   // check run already initialized
   if (fRunNumber == fESD->GetRunNumber()) return kTRUE;//Skip if the run number of the event analysed is the same as the one alreay used for initialization
-  else if(fRunNumber != 0) AliInfo(Form("First initialization of the run %i for TOF calibration", fESD->GetRunNumber()));//First time initialization
+  else if(fRunNumber == 0) AliInfo(Form("First initialization of the run %i for TOF calibration", fESD->GetRunNumber()));//First time initialization
   else AliInfo(Form("Initialization from run %i to run %i for TOF calibration", fRunNumber, fESD->GetRunNumber()));//Already previous initialization
   fRunNumber = fESD->GetRunNumber();
   
