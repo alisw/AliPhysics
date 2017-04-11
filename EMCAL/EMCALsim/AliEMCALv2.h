@@ -5,7 +5,7 @@
 */
 
 //_________________________________________________________________________
-/// \class AliEMCALv2.h
+/// \class AliEMCALv2
 /// \brief EMCal simulation manager class v2
 ///
 /// Implementation version v2 of EMCAL Manager class; SHASHLYK version

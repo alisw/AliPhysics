@@ -5,7 +5,7 @@
 */
 
 //_________________________________________________________________________
-/// \class AliEMCALv1.h
+/// \class AliEMCALv1
 /// \brief EMCal simulation manager class v1
 ///
 /// Implementation version v1 of EMCAL Manager class; 
