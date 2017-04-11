@@ -92,6 +92,7 @@ fMCTrkMask(0),
 fDCAXYshift(0),
 fDCAXY(-999),
 fDCAZ(-999),
+fRunNumber(0),
 fEvtPhysSelected(kFALSE),
 fEvtSelected(kFALSE),
 fTOFout(kFALSE),
@@ -151,16 +152,17 @@ fPdgIndex(-999),
 fRapidityMC(-999),
 fSignMC(kFALSE),
 
-
 fESD(0x0),
 fMCEvt(0x0),
 fMCStack(0x0),
 fEventCut(0),
 fESDtrackCuts(0x0),
 fESDtrackCutsPrm(0x0),
-fESDpid(0x0),
 fMultSel(0x0),
 fTOFcls(0x0),
+fTOFcalib(0x0),
+fTOFT0maker(0x0),
+fTimeResolution(80.),
 fListHist(0x0),
 fTreeTrack(0x0),
 ArrayAnTrk(0x0),
@@ -175,6 +177,7 @@ fSimpleCutmode(simplecuts),
 fBuilTPCTOF(kFALSE),
 fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
+fRecalibrateTOF(kFALSE),
 fPerformance(kFALSE),
 fSelectBit(AliVEvent::kINT7),
 
@@ -183,6 +186,8 @@ hPerformanceTime(0x0),
 hPerformanceCPUTime(0x0),
 
 fPIDResponse(0x0),
+fTOFPIDResponse(),
+fESDpid(0x0),
 hNEvt(0x0),
 hEvtMult(0x0),
 hEvtMultAftEvSel(0x0),
@@ -236,6 +241,12 @@ fChannelLast(157248)
   //Objects for cut variation
   for(Int_t cut = 0; cut < nCutVars; cut++) fCutVar[cut] = 0x0;
   
+  //Objects for TOF calibration
+  if(fRecalibrateTOF){
+    fESDpid = new AliESDpid();
+    fTOFcalib = new AliTOFcalib();
+    fTOFT0maker = new AliTOFT0maker(fESDpid, fTOFcalib);
+  }
   DefineInput(0, TChain::Class());
   DefineAllTheOutput();
   
@@ -282,6 +293,21 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra(){//Destructor
   if (fListHist) {
     delete fListHist;
     fListHist = 0;
+  }
+  
+  if (fTOFT0maker){
+    delete fTOFT0maker;
+    fTOFT0maker = 0;
+  }
+  
+  if (fTOFcalib){
+    delete fTOFcalib;
+    fTOFcalib = 0;
+  }
+  
+  if (fESDpid){
+    delete fESDpid;
+    fESDpid = 0;
   }
   
   AliDebug(2, "**** END OF DESTRUCTOR ****");
@@ -1357,6 +1383,21 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     return;
   }
   
+  if(fRecalibrateTOF){
+    if(!TOFCalibInitRun()){//Done once for all the run
+      AliError("Required Run TOF re-calibration was not successful");
+      // Post output data.
+      PostAllTheData();
+      return;
+    }
+    if(!TOFCalibInitEvent()){//Done for each event
+      AliError("Required Event TOF re-calibration was not successful");
+      // Post output data.
+      PostAllTheData();
+      return;
+    }
+  }
+  
   Int_t EvtStart = 0;
   hNEvt->Fill(EvtStart++);//Number of events opened -->Read from ESD
   
@@ -1369,8 +1410,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   
   hNEvt->Fill(EvtStart++);//Has AliESDtrackCuts
   
-  AliESDInputHandler* esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if (esdH) fESDpid = esdH->GetESDpid();
+  // AliESDInputHandler* esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  // if (esdH) fESDpid = esdH->GetESDpid();
   
   //
   // create PID response
@@ -1378,6 +1419,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   AliAnalysisManager *AnManager = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (AnManager->GetInputEventHandler());
   fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
+  fTOFPIDResponse = fPIDResponse->GetTOFResponse();
   
   //
   //Physics Selection
@@ -1616,13 +1658,15 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     fTOFImpactDX = track->GetTOFsignalDx();  // local x  of track's impact on the TOF pad
     fTOFchan = track->GetTOFCalChannel();    // Channel Index of the TOF Signal
     
-    fT0TrkTime = fPIDResponse->GetTOFResponse().GetStartTime(fP);      // T0best time
-    fT0UsedMask = fPIDResponse->GetTOFResponse().GetStartTimeMask(fP); // T0best used time  ->  mask with the T0 used (0x1=T0-TOF,0x2=T0A,0x3=TOC) for p bins
-    fT0TrkSigma = fPIDResponse->GetTOFResponse().GetStartTimeRes(fP);  // T0best resolution time
+    fT0TrkTime = fTOFPIDResponse.GetStartTime(fP);      // T0best time
+    fT0UsedMask = fTOFPIDResponse.GetStartTimeMask(fP); // T0best used time  ->  mask with the T0 used (0x1=T0-TOF,0x2=T0A,0x3=TOC) for p bins
+    fT0TrkSigma = fTOFPIDResponse.GetStartTimeRes(fP);  // T0best resolution time
     hT0Resolution->Fill(fT0TrkSigma);
     
-    for (Int_t ipart = 0; ipart < kExpSpecies; ipart++) fTOFExpSigma[ipart] = fPIDResponse->GetTOFResponse().GetExpectedSigma(fP, inttime[ipart], AliPID::ParticleMass(ipart));
+    //Get TOF Expected Sigma
+    for (Int_t ipart = 0; ipart < kExpSpecies; ipart++) fTOFExpSigma[ipart] = fTOFPIDResponse.GetExpectedSigma(fP, inttime[ipart], AliPID::ParticleMass(ipart));
     
+    //Get TOF Separation in number of sigmas
     fTOFSigma[ke] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
     fTOFSigma[kmu] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kMuon);
     fTOFSigma[kpi] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
@@ -1630,9 +1674,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     fTOFSigma[kp] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
     fTOFSigma[kd] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron);
     
-    AliPIDResponse::EDetPidStatus pidstatus;
-    pidstatus = fPIDResponse->ComputeTOFProbability(track, kExpSpecies, fTOFPIDProbability);
-    if(pidstatus ==  AliPIDResponse::kDetMismatch) fMismatch = kTRUE;
+    //Compute mismatch Probability
+    if(fPIDResponse->ComputeTOFProbability(track, kExpSpecies, fTOFPIDProbability) ==  AliPIDResponse::kDetMismatch) fMismatch = kTRUE;
     else fMismatch = kFALSE;
     
     //
@@ -1640,6 +1683,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     //
     
     fTPCSignal = track->GetTPCsignal();
+    
+    //Get TPC Separation in number of sigmas
     fTPCSigma[ke] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
     fTPCSigma[kmu] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kMuon);
     fTPCSigma[kpi] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion) - fTPCShift[0][fBinPtIndex];
@@ -1647,14 +1692,16 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     fTPCSigma[kp] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton) - fTPCShift[2][fBinPtIndex];
     fTPCSigma[kd] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
     
-    if(TMath::Abs(fTPCSigma[ke]) < 1.5) SetTPCPIDMaskBit(kIsTPCElectron, 1);//1.5 sigma cut for electrons
-    if(TMath::Abs(fTPCSigma[kmu]) < 1.5) SetTPCPIDMaskBit(kIsTPCMuon, 1);
-    if(TMath::Abs(fTPCSigma[kpi]) < 5) SetTPCPIDMaskBit(kIsTPCPion, 1);
-    if(TMath::Abs(fTPCSigma[kK]) < 5) SetTPCPIDMaskBit(kIsTPCKaon, 1);
-    if(TMath::Abs(fTPCSigma[kp]) < 5) SetTPCPIDMaskBit(kIsTPCProton, 1);
-    if(TMath::Abs(fTPCSigma[kd]) < 1.5) SetTPCPIDMaskBit(kIsTPCDeuteron, 1);
+    //Set the mask flags for TPC PID
+    if(TMath::Abs(fTPCSigma[ke]) < 1.5) SetTPCPIDMaskBit(kIsTPCElectron, 1);//1.5 sigma cut for Electrons
+    if(TMath::Abs(fTPCSigma[kmu]) < 1.5) SetTPCPIDMaskBit(kIsTPCMuon, 1);   //1.5 sigma cut for Muons
+    if(TMath::Abs(fTPCSigma[kpi]) < 5) SetTPCPIDMaskBit(kIsTPCPion, 1);     //5.0 sigma cut for Pions
+    if(TMath::Abs(fTPCSigma[kK]) < 5) SetTPCPIDMaskBit(kIsTPCKaon, 1);      //5.0 sigma cut for Kaons
+    if(TMath::Abs(fTPCSigma[kp]) < 5) SetTPCPIDMaskBit(kIsTPCProton, 1);    //5.0 sigma cut for Protons
+    if(TMath::Abs(fTPCSigma[kd]) < 1.5) SetTPCPIDMaskBit(kIsTPCDeuteron, 1);//1.5 sigma cut for Deuterons
     
     
+    //Get Geometrical Parameters of the track
     AliExternalTrackParam* exttrack = (AliExternalTrackParam *)track->GetOuterParam();
     if(exttrack){
       fPhiout = exttrack->Phi();
@@ -2934,5 +2981,50 @@ void AliAnalysisTaskTOFSpectra::SetTrackValues(const AliESDtrack *track, const A
   //
   //Golden Chi2
   fGoldenChi2 = track->GetChi2TPCConstrainedVsGlobal(vertex);
+  
+}
+
+//________________________________________________________________________
+const Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
+  if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
+  
+  // check run already initialized
+  if (fRunNumber == fESD->GetRunNumber()) return kTRUE;//Skip if the run number of the event analysed is the same as the one alreay used for initialization
+  else if(fRunNumber != 0) AliInfo(Form("First initialization of the run %i for TOF calibration", fESD->GetRunNumber()));//First time initialization
+  else AliInfo(Form("Initialization from run %i to run %i for TOF calibration", fRunNumber, fESD->GetRunNumber()));//Already previous initialization
+  fRunNumber = fESD->GetRunNumber();
+  
+  // init cdb
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage("raw://");
+  cdb->SetRun(fRunNumber);
+  
+  // init TOF calib
+  if (!fTOFcalib->Init()) {
+    AliError("cannot init TOF calib");
+    return kFALSE;
+  }
+  
+  AliInfo(Form("initialized for run %d", fRunNumber));
+  return kTRUE;
+}
+
+//________________________________________________________________________
+const Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
+  if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
+  
+  // init TOF response
+  fESDpid->GetTOFResponse().SetTimeResolution(fTimeResolution);
+  
+  // init TOF-T0 maker
+  fTOFT0maker->SetTimeResolution(fTimeResolution);
+  
+  // calibrate ESD
+  fTOFcalib->CalibrateESD(fESD);
+  
+  // compute T0-TOF and apply it
+  fTOFT0maker->ComputeT0TOF(fESD);
+  
+  return kTRUE;
   
 }
