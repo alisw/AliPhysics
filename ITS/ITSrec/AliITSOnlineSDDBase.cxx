@@ -31,7 +31,19 @@ const Int_t AliITSOnlineSDDBase::fgkMaxCorr=63; // 6 but correction
 
 ClassImp(AliITSOnlineSDDBase)
 //______________________________________________________________________
-  AliITSOnlineSDDBase::AliITSOnlineSDDBase():AliITSOnlineSDD(),fNEvents(0),fMinBaseline(0.),fMaxBaseline(0.),fMinRawNoise(0.),fMaxRawNoise(0.),fNSigmaNoise(0.),fGoldenBaseline(0.),fLowThrFact(0.),fHighThrFact(0.)
+  AliITSOnlineSDDBase::AliITSOnlineSDDBase():
+  AliITSOnlineSDD(),
+  fNReadEvents(0),
+  fNEvents(0),
+  fNEmptyEvents(0),
+  fMinBaseline(0.),
+  fMaxBaseline(0.),
+  fMinRawNoise(0.),
+  fMaxRawNoise(0.),
+  fNSigmaNoise(0.),
+  fGoldenBaseline(0.),
+  fLowThrFact(0.),
+  fHighThrFact(0.)
 {
   // default constructor
   Reset();
@@ -44,7 +56,19 @@ ClassImp(AliITSOnlineSDDBase)
   SetZeroSuppThresholds();
 }
 //______________________________________________________________________
-AliITSOnlineSDDBase::AliITSOnlineSDDBase(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fNEvents(0),fMinBaseline(0.),fMaxBaseline(0.),fMinRawNoise(0.),fMaxRawNoise(0.),fNSigmaNoise(0.),fGoldenBaseline(0.),fLowThrFact(0.),fHighThrFact(0.)
+AliITSOnlineSDDBase::AliITSOnlineSDDBase(Int_t nddl, Int_t ncarlos, Int_t sid):
+  AliITSOnlineSDD(nddl,ncarlos,sid),
+  fNReadEvents(0),
+  fNEvents(0),
+  fNEmptyEvents(0),
+  fMinBaseline(0.),
+  fMaxBaseline(0.),
+  fMinRawNoise(0.),
+  fMaxRawNoise(0.),
+  fNSigmaNoise(0.),
+  fGoldenBaseline(0.),
+  fLowThrFact(0.),
+  fHighThrFact(0.)
 {
   // default constructor
   Reset();
@@ -63,7 +87,10 @@ AliITSOnlineSDDBase::~AliITSOnlineSDDBase(){
 //______________________________________________________________________
 void AliITSOnlineSDDBase::Reset(){
   // reset all counters
+
+  fNReadEvents=0;
   fNEvents=0;
+  fNEmptyEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
     fSumBaseline[i]=0.;
@@ -90,6 +117,12 @@ void  AliITSOnlineSDDBase::ValidateAnodes(){
 //______________________________________________________________________
 void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
   // analyzes one event and adds its ontribution to the various counters
+
+  fNReadEvents++;
+  if(IsEmptyEvent(hrawd)){
+    fNEmptyEvents++;
+    return;
+  }
 
   fNEvents++;
   const Int_t kTimeBins=fLastGoodTB+1;

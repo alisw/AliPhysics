@@ -50,7 +50,9 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
 
   Float_t CalcMeanNoise() const;
   Int_t GetNEvents() const {return fNEvents;}
-  
+  Int_t GetNReadEvents() const {return fNReadEvents;}
+  Int_t GetNEmptyEvents() const {return fNEmptyEvents;}
+ 
   TH1F* GetBaselineAnodeHisto() const;
   TH1F* GetRawNoiseAnodeHisto() const;
   TH1F* GetCorrNoiseAnodeHisto() const;
@@ -66,7 +68,9 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
  protected:
 
  private:
-  Int_t fNEvents;                    // number of events
+  Int_t fNReadEvents;                // number of read events
+  Int_t fNEvents;                    // number of accepted events
+  Int_t fNEmptyEvents;               // number of empty events
   Int_t fLowThreshold;             // low threshold for zero supp.
   Int_t fHighThreshold;            // high threshold for zero supp.
   Bool_t fGoodAnode[fgkNAnodes];     // anode quality: good(1) - bad (0)
@@ -82,6 +86,6 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
   Int_t   fMinNumGoodAnForGoodMod;   // Min. n. good anodes to tag mod as good
   Int_t   fMinClusterOfGoodAn;       // Min. n. of adjacent good anodes
 
-  ClassDef(AliITSOnlineSDDCMN,4);
+  ClassDef(AliITSOnlineSDDCMN,5);
 };
 #endif
