@@ -801,6 +801,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/MONITOR \
                          @CMAKE_SOURCE_DIR@/MONITOR/MONITORzmq \
                          @CMAKE_SOURCE_DIR@/MONITOR/MONITOR \
+                         @CMAKE_SOURCE_DIR@/EMCAL/EMCALUtils \                         
                          @CMAKE_SOURCE_DIR@/EMCAL/EMCALTriggerBase \
                          @CMAKE_SOURCE_DIR@/FMD \
                          @CMAKE_SOURCE_DIR@/FMD/DA \
