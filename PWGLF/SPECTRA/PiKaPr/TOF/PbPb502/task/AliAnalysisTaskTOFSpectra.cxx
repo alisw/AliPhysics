@@ -92,6 +92,7 @@ fMCTrkMask(0),
 fDCAXYshift(0),
 fDCAXY(-999),
 fDCAZ(-999),
+fRunNumber(0),
 fEvtPhysSelected(kFALSE),
 fEvtSelected(kFALSE),
 fTOFout(kFALSE),
@@ -159,6 +160,9 @@ fESDtrackCuts(0x0),
 fESDtrackCutsPrm(0x0),
 fMultSel(0x0),
 fTOFcls(0x0),
+fTOFcalib(0x0),
+fTOFT0maker(0x0),
+fTimeResolution(80.),
 fListHist(0x0),
 fTreeTrack(0x0),
 ArrayAnTrk(0x0),
@@ -173,6 +177,7 @@ fSimpleCutmode(simplecuts),
 fBuilTPCTOF(kFALSE),
 fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
+fRecalibrateTOF(kFALSE),
 fPerformance(kFALSE),
 fSelectBit(AliVEvent::kINT7),
 
@@ -236,6 +241,12 @@ fChannelLast(157248)
   //Objects for cut variation
   for(Int_t cut = 0; cut < nCutVars; cut++) fCutVar[cut] = 0x0;
   
+  //Objects for TOF calibration
+  if(fRecalibrateTOF){
+    fESDpid = new AliESDpid();
+    fTOFcalib = new AliTOFcalib();
+    fTOFT0maker = new AliTOFT0maker(fESDpid, fTOFcalib);
+  }
   DefineInput(0, TChain::Class());
   DefineAllTheOutput();
   
@@ -282,6 +293,21 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra(){//Destructor
   if (fListHist) {
     delete fListHist;
     fListHist = 0;
+  }
+  
+  if (fTOFT0maker){
+    delete fTOFT0maker;
+    fTOFT0maker = 0;
+  }
+  
+  if (fTOFcalib){
+    delete fTOFcalib;
+    fTOFcalib = 0;
+  }
+  
+  if (fESDpid){
+    delete fESDpid;
+    fESDpid = 0;
   }
   
   AliDebug(2, "**** END OF DESTRUCTOR ****");
@@ -1355,6 +1381,21 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     // Post output data.
     PostAllTheData();
     return;
+  }
+  
+  if(fRecalibrateTOF){
+    if(!TOFCalibInitRun()){//Done once for all the run
+      AliError("Required Run TOF re-calibration was not successful");
+      // Post output data.
+      PostAllTheData();
+      return;
+    }
+    if(!TOFCalibInitEvent()){//Done for each event
+      AliError("Required Event TOF re-calibration was not successful");
+      // Post output data.
+      PostAllTheData();
+      return;
+    }
   }
   
   Int_t EvtStart = 0;
@@ -2940,5 +2981,50 @@ void AliAnalysisTaskTOFSpectra::SetTrackValues(const AliESDtrack *track, const A
   //
   //Golden Chi2
   fGoldenChi2 = track->GetChi2TPCConstrainedVsGlobal(vertex);
+  
+}
+
+//________________________________________________________________________
+const Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
+  if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
+  
+  // check run already initialized
+  if (fRunNumber == fESD->GetRunNumber()) return kTRUE;//Skip if the run number of the event analysed is the same as the one alreay used for initialization
+  else if(fRunNumber != 0) AliInfo(Form("First initialization of the run %i for TOF calibration", fESD->GetRunNumber()));//First time initialization
+  else AliInfo(Form("Initialization from run %i to run %i for TOF calibration", fRunNumber, fESD->GetRunNumber()));//Already previous initialization
+  fRunNumber = fESD->GetRunNumber();
+  
+  // init cdb
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage("raw://");
+  cdb->SetRun(fRunNumber);
+  
+  // init TOF calib
+  if (!fTOFcalib->Init()) {
+    AliError("cannot init TOF calib");
+    return kFALSE;
+  }
+  
+  AliInfo(Form("initialized for run %d", fRunNumber));
+  return kTRUE;
+}
+
+//________________________________________________________________________
+const Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
+  if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
+  
+  // init TOF response
+  fESDpid->GetTOFResponse().SetTimeResolution(fTimeResolution);
+  
+  // init TOF-T0 maker
+  fTOFT0maker->SetTimeResolution(fTimeResolution);
+  
+  // calibrate ESD
+  fTOFcalib->CalibrateESD(fESD);
+  
+  // compute T0-TOF and apply it
+  fTOFT0maker->ComputeT0TOF(fESD);
+  
+  return kTRUE;
   
 }
