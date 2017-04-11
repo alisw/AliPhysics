@@ -468,8 +468,9 @@ private:
   AliMCEvent* fMCEvt;                //!<! MC event
   AliStack* fMCStack;                //!<! Stack
   AliESDtrackCuts* fCutVar[nCutVars];//!<! basic cut variables cut variations
-  AliESDpid* fESDpid;                //!<! basic TPC object for n-sigma cuts
   AliMultSelection *fMultSel;        //!<! Multiplicity selection
+  
+  //TOF specific objects
   AliESDTOFCluster *fTOFcls;         //!<! TOF cluster object
   
   //Output containers
@@ -494,7 +495,9 @@ private:
   UInt_t fSelectBit;         ///<  Mask for Trigger selection
   
   //PID utilities
-  AliPIDResponse* fPIDResponse;   //!<! PID response object
+  AliPIDResponse* fPIDResponse;     //!<! PID response object
+  AliTOFPIDResponse fTOFPIDResponse;//!<! TOF PID response object
+  AliESDpid *fESDpid;               //!<! ESD PID
   
   //General Variables
   
