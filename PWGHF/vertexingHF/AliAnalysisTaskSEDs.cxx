@@ -1358,6 +1358,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      fSigVertHist[indexMCKKpi]->Fill(sigvert);
 	      fSumd02Hist[indexMCKKpi]->Fill(sumD02);
 	      fPtMaxHist[indexMCKKpi]->Fill(ptmax);
+	      fPtCandHist[indexMCKKpi]->Fill(ptCand);
 	      fDCAHist[indexMCKKpi]->Fill(dca);
 	      fNormIPHist[indexMCKKpi]->Fill(normIP);
 	      fCosPiDsHist[indexMCKKpi]->Fill(cosPiDs);
@@ -1387,6 +1388,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      fSigVertHist[indexMCpiKK]->Fill(sigvert);
 	      fSumd02Hist[indexMCpiKK]->Fill(sumD02);
 	      fPtMaxHist[indexMCpiKK]->Fill(ptmax);
+	      fPtCandHist[indexMCpiKK]->Fill(ptCand);
 	      fDCAHist[indexMCpiKK]->Fill(dca);
 	      fNormIPHist[indexMCpiKK]->Fill(normIP);
 	      fCosPiDsHist[indexMCpiKK]->Fill(cosPiDs);
