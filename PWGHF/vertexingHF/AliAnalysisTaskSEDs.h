@@ -17,6 +17,7 @@
 #include <TSystem.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <THnSparse.h>
 
 #include "AliAnalysisTaskSE.h"
@@ -80,35 +81,54 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH1F*   fHistNEvents;               //!<! hist. for No. of events
   TH1F*   fChanHist[4];               //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
   TH1F*   fMassHist[4*kMaxPtBins];    //!<! hist. of mass spectra (sig,bkg,tot)
-  TH1F*   fMassHistPhi[4*kMaxPtBins];    //!<! hist. of mass spectra via phi (sig,bkg,tot)
+  TH1F*   fMassHistPhi[4*kMaxPtBins];     //!<! hist. of mass spectra via phi (sig,bkg,tot)
   TH1F*   fMassHistK0st[4*kMaxPtBins];    //!<! hist. of mass spectra via K0* (sig,bkg,tot)
-  TH1F*   fMassHistKK[kMaxPtBins];    //!<! hist. of mass spectra of KK
-  TH1F*   fMassHistKpi[kMaxPtBins];    //!<! hist. of mass spectra of Kpi
+  TH1F*   fMassHistKK[kMaxPtBins];        //!<! hist. of mass spectra of KK
+  TH1F*   fMassHistKpi[kMaxPtBins];       //!<! hist. of mass spectra of Kpi
   TH1F*   fMassRotBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from rot. of the pion
-  TH1F*   fMassLSBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from left phi sideband + pion
-  TH1F*   fMassRSBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from right phi sideband + pion
-  TH1F*   fCosPHist[4*kMaxPtBins];    //!<! hist. of cos pointing angle (sig,bkg,tot)
-  TH1F*   fDLenHist[4*kMaxPtBins];    //!<! hist. of decay length (sig,bkg,tot)
-  TH1F*   fSumd02Hist[4*kMaxPtBins];  //!<! hist. for sum d02 (Prod Cuts)
-  TH1F*   fSigVertHist[4*kMaxPtBins]; //!<! hist. for sigVert (Prod Cuts)
-  TH1F*   fPtMaxHist[4*kMaxPtBins];   //!<! hist. for Pt Max (Prod Cuts)
-  TH1F*   fPtCandHist[4*kMaxPtBins];  //!<! hist. for Pt Max (Prod Cuts)
-  TH1F*   fDCAHist[4*kMaxPtBins];     //!<! hist. for DCA (Prod Cuts)
-  TH1F*   fPtProng0Hist[4*kMaxPtBins]; //!<! hist. for Pt Max (Prod Cuts)
-  TH1F*   fPtProng1Hist[4*kMaxPtBins]; //!<! hist. for DCA (Prod Cuts)
-  TH1F*   fPtProng2Hist[4*kMaxPtBins]; //!<! hist. for DCA (Prod Cuts)
-  TH2F*   fDalitz[4*kMaxPtBins];      //!<! dalitz plot (sig,bkg,tot)
-  TH2F*   fDalitzPhi[4*kMaxPtBins];   //!<! dalitz plot via phi (sig,bkg,tot)
-  TH2F*   fDalitzK0st[4*kMaxPtBins];   //!<! dalitz plot via K0* (sig,bkg,tot)
-  TH2F *fPtVsMass;    //!<! hist. of pt vs. mass (prod. cuts)
+  TH1F*   fMassLSBkgHistPhi[kMaxPtBins];  //!<! hist. of bkg generated from left phi sideband + pion
+  TH1F*   fMassRSBkgHistPhi[kMaxPtBins];  //!<! hist. of bkg generated from right phi sideband + pion
+  TH1F*   fCosPHist[4*kMaxPtBins];        //!<! hist. of cos pointing angle (sig,bkg,tot)
+  TH1F*   fCosPxyHist[4*kMaxPtBins];      //!<! hist. of cosXY pointing angle (sig,bkg,tot)
+  TH1F*   fDLenHist[4*kMaxPtBins];        //!<! hist. of decay length (sig,bkg,tot)
+  TH1F*   fDLenxyHist[4*kMaxPtBins];      //!<! hist. of norm decay length XY (sig,bkg,tot)
+  TH1F*   fNDLenxyHist[4*kMaxPtBins];     //!<! hist. of decay length XY (sig,bkg,tot)
+  TH1F*   fSumd02Hist[4*kMaxPtBins];      //!<! hist. for sum d02 (Prod Cuts)
+  TH1F*   fSigVertHist[4*kMaxPtBins];     //!<! hist. for sigVert (Prod Cuts)
+  TH1F*   fPtMaxHist[4*kMaxPtBins];       //!<! hist. for Pt Max (Prod Cuts)
+  TH1F*   fPtCandHist[4*kMaxPtBins];      //!<! hist. for Pt Max (Prod Cuts)
+  TH1F*   fDCAHist[4*kMaxPtBins];         //!<! hist. for DCA (Prod Cuts)
+  TH1F*   fNormIPHist[4*kMaxPtBins];      //!<! hist. for topomatic variable
+  TH1F*   fCosPiDsHist[4*kMaxPtBins];     //!<! hist. for CosPiDs
+  TH1F*   fCosPiKPhiHist[4*kMaxPtBins];   //!<! hist. for CosPiKPhi
+  TH1F*   fPtProng0Hist[4*kMaxPtBins];    //!<! hist. for Pt Max (Prod Cuts)
+  TH1F*   fPtProng1Hist[4*kMaxPtBins];    //!<! hist. for DCA (Prod Cuts)
+  TH1F*   fPtProng2Hist[4*kMaxPtBins];    //!<! hist. for DCA (Prod Cuts)
+  TH2F*   fDalitz[4*kMaxPtBins];          //!<! dalitz plot (sig,bkg,tot)
+  TH2F*   fDalitzPhi[4*kMaxPtBins];       //!<! dalitz plot via phi (sig,bkg,tot)
+  TH2F*   fDalitzK0st[4*kMaxPtBins];      //!<! dalitz plot via K0* (sig,bkg,tot)
+  TH2F *fPtVsMass;       //!<! hist. of pt vs. mass (prod. cuts)
   TH2F *fPtVsMassPhi;    //!<! hist. of pt vs. mass (phi selection)
   TH2F *fPtVsMassK0st;   //!<! hist. of pt vs. mass (K0* selection)
-  TH2F *fYVsPt;       //!<! hist. of Y vs. Pt (prod. cuts)
-  TH2F *fYVsPtSig;    //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH2F *fYVsPt;          //!<! hist. of Y vs. Pt (prod. cuts)
+  TH2F *fYVsPtSig;       //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
   TH2F *fHistAllV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (all)
   TH2F *fHistSelV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (sel)
-  TH1F *fHistCentrality[3];//!<!hist. for cent distr (all,sel ev, )
-  TH2F *fHistCentralityMult[3];//!<!hist. for cent distr vs mult (all,sel ev, )
+  TH1F *fHistCentrality[3];     //!<!hist. for cent distr (all,sel ev, )
+  TH2F *fHistCentralityMult[3]; //!<!hist. for cent distr vs mult (all,sel ev, )
+  TH3F*   fCosPHist3D;       //!<! cosP vs Ds mass vs pt
+  TH3F*   fCosPxyHist3D;     //!<! cosPxy vs Ds mass vs pt
+  TH3F*   fDLenHist3D;       //!<! Dlen vs Ds mass vs pt
+  TH3F*   fDLenxyHist3D;     //!<! Dlenxy vs Ds mass vs pt
+  TH3F*   fNDLenxyHist3D;    //!<! NDlenxy vs Ds mass vs pt
+  TH3F*   fSigVertHist3D;    //!<! SigVert vs Ds mass vs pt
+  TH3F*   fDCAHist3D;        //!<! DCA vs Ds mass vs pt
+  TH3F*   fNormIPHist3D;     //!<! nIP vs Ds mass vs pt
+  TH3F*   fCosPiDsHist3D;    //!<! cosPiDs vs Ds mass vs pt
+  TH3F*   fCosPiKPhiHist3D;  //!<! cosPiKPhi vs Ds mass vs pt
+  TH3F*   fPtProng0Hist3D;   //!<! Pt prong0 vs Ds mass vs pt
+  TH3F*   fPtProng1Hist3D;   //!<! Pt prong1 vs Ds mass vs pt
+  TH3F*   fPtProng2Hist3D;   //!<! Pt prong2 vs Ds mass vs pt
   TNtuple *fNtupleDs; //!<! output ntuple
   Int_t fFillNtuple;                 /// 0 not to fill ntuple
   /// 1 for filling ntuple for events through Phi
@@ -153,7 +173,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
     
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,22);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,23);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
