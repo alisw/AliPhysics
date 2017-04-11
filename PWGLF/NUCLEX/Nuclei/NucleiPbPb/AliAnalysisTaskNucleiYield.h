@@ -54,7 +54,6 @@ public:
   void SetRequireNoKinks (bool nokinks = true) { fRequireNoKinks = nokinks; }
   void SetRequireITSrecPoints (int rec = 4) { fRequireITSrecPoints = rec; }
   void SetRequireITSsignal (int sig = 3) { fRequireITSsignal = sig; }
-  void SetRequireTPCrecPoints (int rec = 70) { fRequireITSrecPoints = rec; }
   void SetRequireTPCsignal (int sig = 70) { fRequireITSsignal = sig; }
   void SetRequireSDDrecPoints (int rec = 1) { fRequireSDDrecPoints = rec; }
   void SetRequireSPDrecPoints (int rec = 1) { fRequireSPDrecPoints = rec; }
@@ -94,6 +93,8 @@ public:
 
   AliNuclexEventCuts  fEventCut;
   TArrayD             fTOFfunctionPars;
+
+  UInt_t              fFilterBit;       /// AOD filter bit for the tracks used in this analysis
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
@@ -138,7 +139,6 @@ private:
   UShort_t              fRequireITSsignal;      ///<  Cut on tracks: minimum number of required ITS PID recpoints
   UShort_t              fRequireSDDrecPoints;   ///<  Cut on tracks: minimum number of required SDD recpoints
   UShort_t              fRequireSPDrecPoints;   ///<  Cut on tracks: minimum number of required SPD recpoints
-  UShort_t              fRequireTPCrecPoints;   ///<  Cut on tracks: minimum number of required TPC recpoints
   UShort_t              fRequireTPCsignal;      ///<  Cut on tracks: minimum number of required TPC PID recpoints
   Float_t               fRequireEtaMin;         ///<  Cut on tracks: minimum eta for the track
   Float_t               fRequireEtaMax;         ///<  Cut on tracks: maximum eta for the track
