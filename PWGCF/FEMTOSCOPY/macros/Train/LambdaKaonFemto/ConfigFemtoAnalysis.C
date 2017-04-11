@@ -120,7 +120,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
   //Setup the event reader for ALICE AOD
   AliFemtoEventReaderAODChain *rdr = new AliFemtoEventReaderAODChain();
     rdr->SetUseMultiplicity(tMacroConfig.multiplicity);  //Sets the type of the event multiplicity estimator
-    rdr->SetFilterBit(tMacroConfig.filter_bit);
+    if(tAnalysisConfig.analysisType!=AFALK::kProtPiM && tAnalysisConfig.analysisType!=AFALK::kAProtPiP &&
+       tAnalysisConfig.analysisType!=AFALK::kPiPPiM) rdr->SetFilterBit(tMacroConfig.filter_bit);
     //rdr->SetCentralityPreSelection(0, 900);
     if(tAnalysisConfig.analysisType==AFALK::kXiKchP || tAnalysisConfig.analysisType==AFALK::kAXiKchP ||
        tAnalysisConfig.analysisType==AFALK::kXiKchM || tAnalysisConfig.analysisType==AFALK::kAXiKchM) rdr->SetReadCascade(1);
