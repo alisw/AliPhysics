@@ -3875,7 +3875,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     //STEP 3: Creation of output objects
     
     //Just a counter and one array, please. Nothing else needed
-    AliCascadeResult *lCascadeResult[250];
+    AliCascadeResult *lCascadeResult[600];
     Long_t lN = 0;
     
     //Map to mass hypothesis
