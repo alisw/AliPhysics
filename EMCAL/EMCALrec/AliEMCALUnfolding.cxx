@@ -90,7 +90,7 @@ AliEMCALUnfolding::AliEMCALUnfolding(AliEMCALGeometry* geometry):
 ///
 /// \param geometry: pointer to EMCal geometry
 /// \param ecaLocMaxCut: set  fECALocMaxCut, minimum energy difference to distinguish local maxima in a cluster
-/// \param SSPars: set fgSSPars
+/// \param ssPars: set fgSSPars
 /// \param par5: set fgPar5
 /// \param par6: set fgPar6
 //____________________________________________________________________________
