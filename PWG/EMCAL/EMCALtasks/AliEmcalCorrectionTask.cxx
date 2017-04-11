@@ -17,6 +17,7 @@
 #include <TSystem.h>
 #include <TGrid.h>
 #include <TFile.h>
+#include <TUUID.h>
 
 #include "AliVEventHandler.h"
 #include "AliEMCALGeometry.h"
@@ -1494,8 +1495,14 @@ void AliEmcalCorrectionTask::SetupConfigurationFilePath(std::string & filename, 
       std::string localFilename = gSystem->BaseName(filename.c_str());
       // Ensures that the default and user files do not conflict if both are taken from the grid and have the same filename
       if (userFile == true) {
-        localFilename = "user" + localFilename;
+        localFilename = "user." + localFilename;
       }
+      // Add UUID to ensure there are no conflicts if multiple correction tasks have the same configuration file name
+      TUUID tempUUID;
+      localFilename = "." + localFilename;
+      localFilename = tempUUID.AsString() + localFilename;
+
+      // Copy file
       TFile::Cp(filename.c_str(), localFilename.c_str());
 
       // yaml-cpp should only open the local file
