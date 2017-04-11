@@ -139,6 +139,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHerwigHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
+  fPtHardBinGlobal(-1),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -153,6 +154,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHistEvents(nullptr),
   fHistXsection(nullptr),
   fHistPtHard(nullptr),
+  fHistPtHardCorr(nullptr),
+  fHistPtHardCorrGlobal(nullptr),
+  fHistPtHardBinCorr(nullptr),
   fHistCentrality(nullptr),
   fHistZVertex(nullptr),
   fHistEventPlane(nullptr),
@@ -255,6 +259,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHerwigHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
+  fPtHardBinGlobal(-1),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -269,6 +274,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHistEvents(nullptr),
   fHistXsection(nullptr),
   fHistPtHard(nullptr),
+  fHistPtHardCorr(nullptr),
+  fHistPtHardCorrGlobal(nullptr),
+  fHistPtHardBinCorr(nullptr),
   fHistCentrality(nullptr),
   fHistZVertex(nullptr),
   fHistEventPlane(nullptr),
@@ -490,6 +498,22 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistPtHard->GetXaxis()->SetTitle("p_{T,hard} (GeV/c)");
     fHistPtHard->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistPtHard);
+
+    // Pt-hard correlation histograms (debugging)
+    fHistPtHardCorr = new TH2F("fHistPtHardCorr", "Correlation between pt-hard value and binning", fNPtHardBins, -0.5, fNPtHardBins - 0.5, 1000, 0., 500.);
+    fHistPtHardCorr->SetXTitle("p_{T,hard bin}");
+    fHistPtHardCorr->SetYTitle("p_{T,hard value}");
+    fOutput->Add(fHistPtHardCorr);
+
+    fHistPtHardCorrGlobal = new TH2F("fHistPtHardCorrGlobal", "Correlation between global pt-hard value and binning", fNPtHardBins, -0.5, fNPtHardBins - 0.5, 1000, 0., 500.);
+    fHistPtHardCorrGlobal->SetXTitle("p_{T,hard} bin_{global}");
+    fHistPtHardCorrGlobal->SetYTitle("p_{T,hard} value");
+    fOutput->Add(fHistPtHardCorrGlobal);
+
+    fHistPtHardBinCorr = new TH2F("fHistPtHardBinCorr", "Correlation between global and local pt-hard bin", fNPtHardBins, -0.5, fNPtHardBins - 0.5, fNPtHardBins, -0.5, fNPtHardBins);
+    fHistPtHardBinCorr->SetXTitle("p_{T,hard} bin_{local}");
+    fHistPtHardBinCorr->SetYTitle("p_{T,hard} bin_{global}");
+    fOutput->Add(fHistPtHardBinCorr);
   }
 
   fHistZVertex = new TH1F("fHistZVertex","Z vertex position", 60, -30, 30);
@@ -579,6 +603,9 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistTrialsAfterSel->Fill(fPtHardBin, fNTrials);
     fHistXsectionAfterSel->Fill(fPtHardBin, fXsection);
     fHistPtHard->Fill(fPtHard);
+    fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
+    fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
+    fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
   }
 
 
@@ -651,7 +678,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   }
 
   // Apply fallback for pythia cross section if needed
-  if(fIsPythia && fUsePtHardBinScaling && fPythiaHeader){
+  if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){
     AliDebugStream(1) << "Fallback to cross section from pythia header required" << std::endl;
     // Get the pthard bin
     Float_t pthard = fPythiaHeader->GetPtHard();
@@ -824,7 +851,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
 
   // New implementation : pattern matching
   // Reason: Implementation valid only for old productions (new productions swap run number and pt-hard bin)
-  // Idea: Don't use the position in the string but the match differnet informations
+  // Idea: Don't use the position in the string but the match different informations
   // + Year clearly 2000+
   // + Run number can be match to the one in the event
   // + If we know it is not year or run number, it must be the pt-hard bin if we start from the beginning
@@ -842,6 +869,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
         continue;
       } else if(number == fInputEvent->GetRunNumber()){
         // Run number
+        continue;
       } else {
         if(!binfound){
           // the first number that is not one of the two must be the pt-hard bin
@@ -858,6 +886,8 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     AliInfoStream() << "Auto-detecting pt-hard bin " << pthard << std::endl;
   }
 
+  AliInfoStream() << "File: " << file << std::endl;
+
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
   std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
 
@@ -865,6 +895,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     // next trial fetch the histgram file
     fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
     if (!fxsec){
+      AliErrorStream() << "Failed reading cross section from file " << file << std::endl;
       fUseXsecFromHeader = true;
       return kFALSE; // not a severe condition but inciate that we have no information
     }
@@ -883,6 +914,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
       } else {
         // Cross section histogram filled - take it from there
         fXsec = xSecHist->GetBinContent(1);
+        if(!fXsec) AliErrorStream() << GetName() << ": Cross section 0 for file " << file << std::endl;
         fUseXsecFromHeader = false;
       }
       fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
@@ -919,6 +951,9 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
   if (!fIsPythia || !fGeneralHistograms || !fCreateHisto)
     return kTRUE;
 
+  // Debugging:
+  AliInfoStream() << "UserNotify called for run " << InputEvent()->GetRunNumber() << std::endl;
+
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   if (!tree) {
     AliError(Form("%s - UserNotify: No current tree!",GetName()));
@@ -927,7 +962,7 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   Float_t xsection    = 0;
   Float_t trials      = 0;
-  Int_t   pthardbin   = 0;
+  Int_t   pthardbin   = -1;
 
   TFile *curfile = tree->GetCurrentFile();
   if (!curfile) {
@@ -940,11 +975,16 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   Int_t nevents = tree->GetEntriesFast();
 
+  fUseXsecFromHeader = false;
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
+  fPtHardBinGlobal = pthardbin;
 
-  if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)) pthardbin = 0;
+  if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)){
+    AliErrorStream() << GetName() << ": Invalid global pt-hard bin " << pthardbin << " detected" << std::endl;
+    pthardbin = 0;
+  }
   fHistTrials->Fill(pthardbin, trials);
-  if(!fUsePtHardBinScaling){
+  if(!fUseXsecFromHeader){
     AliDebugStream(1) << "Using cross section from file pyxsec.root" << std::endl;
     fHistXsection->Fill(pthardbin, xsection);
   }
@@ -1633,6 +1673,10 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     } else {
       // No pt-hard binning defined for the dataset - leaving the bin to 0
       fPtHardBin = 0;
+    }
+
+    if(fPtHardBin != fPtHardBinGlobal){
+      AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
     }
 
     fXsection = fPythiaHeader->GetXsection();

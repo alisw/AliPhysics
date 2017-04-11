@@ -176,6 +176,8 @@ bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
     if(!CheckMCOutliers()) return false;
   }
 
+  fHistos->FillTH1("hPtHard", fPtHard);
+
 
   // select trigger
   bool isMinBias;
