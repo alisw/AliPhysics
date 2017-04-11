@@ -5,6 +5,7 @@
 
 //______________________________________________________________
 /// \class AliEMCALQADataMakerSim
+/// \ingroup EMCALsim
 /// \brief Simulation QA output maker
 ///
 /// Produces the data needed to calculate the quality assurance. 

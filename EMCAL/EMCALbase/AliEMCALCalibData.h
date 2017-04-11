@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALCalibData
+/// \ingroup EMCALbase
 /// \brief Cell energy calibration factors container class 
 ///
 /// Channel energy calibration factors (ADC to GeV conversion) and pedestal, 

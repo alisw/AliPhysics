@@ -8,6 +8,7 @@
 
 /**
  * @class AliEMCALTriggerPatchADCInfo
+ * @ingroup EMCALTriggerBase
  * @brief Helper class containing all ADC infos for a given trigger patch
  * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
  * @since Oct 13, 2016

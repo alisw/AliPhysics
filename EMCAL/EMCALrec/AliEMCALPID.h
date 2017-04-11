@@ -3,6 +3,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALPID
+/// \ingroup EMCALrec
 /// \brief Compute cluster PID weights 
 ///
 ///   Compute PID weights for all the clusters that are in AliESDs.root file

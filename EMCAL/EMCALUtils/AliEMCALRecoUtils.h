@@ -4,6 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// \class AliEMCALRecoUtils
+/// \ingroup EMCALUtils
 /// \brief Some utilities for cluster and cell treatment.
 ///
 /// This class contains methods to correct and select the clusters and cells:

@@ -23,6 +23,7 @@ class AliEMCALGeometry;
 
 /**
  * @class AliEMCALTriggerQA
+ * @ingroup EMCALTriggerBase
  * @brief Class to generate EMCal trigger QA plots
  */
 

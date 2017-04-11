@@ -3,6 +3,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALQADataMakerRec
+/// \ingroup EMCALrec
 /// \brief EMCal reconstruction QA
 ///
 /// Produces the data needed to calculate the quality assurance. 

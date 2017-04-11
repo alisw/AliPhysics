@@ -6,6 +6,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// \class AliEMCALTriggerMappingV2
+/// \ingroup EMCALUtils
 /// \brief Trigger mapping methods, base class
 ///
 /// Trigger mapping for Run2

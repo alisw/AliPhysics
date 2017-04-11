@@ -10,6 +10,7 @@
 
 /**
  * \class AliEmcalTriggerDataGrid
+ * \ingroup EMCALTriggerBase
  * \brief Container for ADC / Amplitudes from the EMCAL triggers
  *
  * Dynamical-size container for ADC values from the FASTOR

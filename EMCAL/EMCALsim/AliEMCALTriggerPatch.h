@@ -5,6 +5,7 @@
 
 //________________________________________________
 /// \class AliEMCALTriggerPatch
+/// \ingroup EMCALsim
 /// \brief EMCal trigger patch implementation
 ///
 /// Patch object implementation: one patch is made of 

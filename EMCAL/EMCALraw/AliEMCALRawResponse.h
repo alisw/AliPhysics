@@ -20,6 +20,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALRawResponse
+/// \ingroup EMCALraw
 /// \brief Handling of digits to raw data transformation
 ///
 ///  Utility Class for handling simulated digits to Raw data generation

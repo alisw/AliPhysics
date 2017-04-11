@@ -7,6 +7,7 @@
 //========================================================================  
 ///                       
 /// \class AliEMCALTrack 
+/// \ingroup EMCALUtils
 /// \brief Matched track to cluster handling.
 ///
 /// Implementation of a track to be used for EMCAL track matching, 
