@@ -147,13 +147,10 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(TClonesArray *digits){
 //______________________________________________________________________
 void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::vector<int>& bins1, const Int_t map0[], const Int_t map1[], TClonesArray *digits, TClonesArray *clusters, Int_t jitter){
 
-  static AliITSRecoParam *repa = NULL;
+  AliITSRecoParam *repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
   if(!repa){
-    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
-    if(!repa){
-      repa = AliITSRecoParam::GetHighFluxParam();
-      AliWarning("Using default AliITSRecoParam class");
-    }
+    repa = AliITSRecoParam::GetHighFluxParam();
+    AliWarning("Using default AliITSRecoParam class");
   }
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
@@ -495,8 +492,8 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(AliITSRawStream* input){
         }
         for (Int_t s=0; s<2; s++){
           Int_t indexHyb=iMod*2+s;
-	  for(std::vector<int>::size_type i=0;i<fDDLBins[indexHyb].size();++i)
-	    fDDLBins[indexHyb].erase(fDDLBins[indexHyb].begin(),fDDLBins[indexHyb].end());
+	  //	  for(std::vector<int>::size_type i=0;i<fDDLBins[indexHyb].size();++i)
+	  fDDLBins[indexHyb].clear();//  fDDLBins[indexHyb].erase(fDDLBins[indexHyb].begin(),fDDLBins[indexHyb].end());
 	  for(Int_t j=0;j<kMapDim;++j)
 	    mapsDDL[indexHyb][j]=0;
         }
