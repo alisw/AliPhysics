@@ -228,6 +228,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
       fInput.fP += s.fP;
       fInput.fP2 += s.fP2;
       fInput.fBorder |= s.fBorder;
+      fInput.fIsDeconvolutedPad |= s.fIsDeconvolutedPad;
 	  fInput.fEdge |= s.fEdge;
       fInput.fMC.insert(fInput.fMC.end(), s.fMC.begin(), s.fMC.end());
       if (s.fLargestQ > fInput.fLargestQ)
