@@ -38,6 +38,7 @@ class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
+class AliESDFMD;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
@@ -198,6 +199,24 @@ public:
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
 //---------------------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------------------
+    // A simple struct to handle FMD hits information
+    // Nothe: this struct is based on what is implemented in AliAnalysisTaskValidation
+    //        defined as 'Track' (thanks to C. Bourjau). It was slightly changed here and
+    //        renamed to 'FMDhit' in order to avoid any confusion.
+    struct FMDhit {     
+        Float_t eta;     
+        Float_t phi;     
+        Float_t weight;     
+        //Constructor     
+        FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)       
+            :eta(_eta), phi(_phi), weight(_weight) {};   
+    };   
+    typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhit> FMDhits;
+//---------------------------------------------------------------------------------------
+   AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
+//---------------------------------------------------------------------------------------
+
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -270,6 +289,15 @@ private:
     Int_t  fNTracksGlobal2015; //!
     Int_t  fNTracksGlobal2015TriggerPP; //!
 
+    //V0 info for OOB pileup study
+    Float_t fAmplitudeV0A; //!
+    Float_t fAmplitudeV0C; //!
+
+    //FMD info for OOB pileup study
+    Float_t fNHitsFMDA; //!
+    Float_t fNHitsFMDC; //!
+
+
 
 //===========================================================================================
 //   Variables for V0 Tree
@@ -327,6 +355,10 @@ private:
     //Int_t  fTreeVariableNTracksITSsa2010; //!
     //Int_t  fTreeVariableNTracksGlobal2015; //!
     //Int_t  fTreeVariableNTracksGlobal2015TriggerPP; //!
+    Float_t fTreeVariableAmplitudeV0A; //!
+    Float_t fTreeVariableAmplitudeV0C; //!
+    Float_t fTreeVariableNHitsFMDA; //!
+    Float_t fTreeVariableNHitsFMDC; //!
 
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
