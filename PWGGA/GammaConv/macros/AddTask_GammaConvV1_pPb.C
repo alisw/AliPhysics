@@ -619,6 +619,18 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
   } 
     
    
+ // -------------------------A. Marin,   2016 pPb, open cuts --------------------------------------
+
+ // Min Bias
+  } else if (trainConfig == 300) {  
+    cuts.AddCut("80010113", "00200009297302001280004000", "0152103500000000"); // Min Bias
+    cuts.AddCut("80010113", "00200009297302001280004000", "0152101500000000"); // Min Bias , alpha pT dependent
+
+    // TRD trigger
+  } else if (trainConfig == 301) {  
+    cuts.AddCut("80047113", "00200009297302001280004000", "0152103500000000"); // TRD trigger HQU for 8TeV
+    cuts.AddCut("80043113", "00200009297302001280004000", "0152103500000000"); // TRD trigger HSE for 8TeV
+
   
   
   else {

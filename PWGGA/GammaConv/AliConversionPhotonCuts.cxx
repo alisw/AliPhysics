@@ -2232,6 +2232,9 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
   case 7:  // 0.0 GeV
     fSinglePtCut = 0.0;
     break;
+  case 8:  // 0.02 GeV ; equivalent to .05 for the low B field runs 
+    fSinglePtCut = 0.02;
+    break;
   default:
     AliError(Form("singlePtCut not defined %d",singlePtCut));
     return kFALSE;
