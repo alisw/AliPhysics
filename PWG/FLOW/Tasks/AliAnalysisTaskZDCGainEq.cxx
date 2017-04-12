@@ -159,11 +159,25 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
     VyCut[i] = 0;
     VzCut[i] = 0;
   }
+
   for(int i=0;i<10;i++){
     fFB_Efficiency_Cent[i] = NULL;
     fHist_v2xV1_ZDN_pTDiff_All[i] = NULL;
+
+    for(int j=0;j<4;j++){
+      fHist_v1xV1_ZDN_EtaDiff[j][i] = NULL;
+      fHist_v1xV1_ZDN_pTDiff[j][i]  = NULL;
+    }
   }
 
+  for(int i=0;i<4;i++){
+    fHist_v2xV1_ZDN_Norm_Sep[i] = NULL;
+    fHist_v2xV1_ZDN_Cent_Sep[i] = NULL;
+  }
+  for(int i=0;i<2;i++){
+    fHist_ZDN_resol_Norm_Sep[i] = NULL;
+    fHist_ZDN_resol_Cent_Sep[i] = NULL;
+  }
 
   DefineInput(1, AliFlowEventSimple::Class()); // Input slot #1 works with an AliFlowEventSimple
   DefineOutput(1,TList::Class());
@@ -258,9 +272,24 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
     VyCut[i] = 0;
     VzCut[i] = 0;
   }
+
   for(int i=0;i<10;i++){
     fFB_Efficiency_Cent[i] = NULL;
     fHist_v2xV1_ZDN_pTDiff_All[i] = NULL;
+
+    for(int j=0;j<4;j++){
+      fHist_v1xV1_ZDN_EtaDiff[j][i] = NULL;
+      fHist_v1xV1_ZDN_pTDiff[j][i]  = NULL;
+    }
+  }
+
+  for(int i=0;i<4;i++){
+    fHist_v2xV1_ZDN_Norm_Sep[i] = NULL;
+    fHist_v2xV1_ZDN_Cent_Sep[i] = NULL;
+  }
+  for(int i=0;i<2;i++){
+    fHist_ZDN_resol_Norm_Sep[i] = NULL;
+    fHist_ZDN_resol_Cent_Sep[i] = NULL;
   }
 
   fDataSet="2010";
@@ -532,9 +561,11 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
 
   Double_t centRange[12]    = {0,5,10,20,30,40,50,60,70,80,90,100};
   Double_t pTRange[21] = {0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.3,3.6,4.0,4.5,5.0};
+  TString  sNameComp[4] = {"uxCx","uyCy","uxAx","uyAy"};
 
-  //all terms:
+ 
   if(bApplyRecent) {
+  //v2 integrated:
    fHist_v2xV1_ZDN_Norm_All  = new TProfile("fHist_v2xV1_ZDN_Norm_All","v2 X V1^2 (ZDC) all terms",11,centRange,"");
    fHist_v2xV1_ZDN_Norm_All->Sumw2();
    fListHistos->Add(fHist_v2xV1_ZDN_Norm_All);
@@ -555,7 +586,37 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
    fHist_ZDN_resol_Refm_All->Sumw2();
    fListHistos->Add(fHist_ZDN_resol_Refm_All);  
 
-   //differential pT:
+
+   //v1 integrated, 4 terms, normal bin, fine Centr bin
+   for(int i=0; i<4; i++) {
+     sprintf(name,"fHist_v1_%s_ZDN_Norm",static_cast<const char*>(sNameComp[i]));
+     fHist_v2xV1_ZDN_Norm_Sep[i] = new TProfile(name,"v1 vs Cent",11,centRange,"");
+     fHist_v2xV1_ZDN_Norm_Sep[i]->Sumw2();
+     fListHistos->Add(fHist_v2xV1_ZDN_Norm_Sep[i]);
+
+     sprintf(name,"fHist_v1_%s_ZDN_Cent",static_cast<const char*>(sNameComp[i]));
+     fHist_v2xV1_ZDN_Cent_Sep[i] = new TProfile(name,"v1 vs Cent",100,0,100,"");
+     fHist_v2xV1_ZDN_Cent_Sep[i]->Sumw2();
+     fListHistos->Add(fHist_v2xV1_ZDN_Cent_Sep[i]);
+   }
+   //v1 resulution, 2 terms, normal bin, fine Centr bin
+   fHist_ZDN_resol_Norm_Sep[0] = new TProfile("fHist_ZDN_resol_XaXc_Norm"," XaXc vs Cent",11,centRange,"");
+   fHist_ZDN_resol_Norm_Sep[0]->Sumw2();
+   fListHistos->Add(fHist_ZDN_resol_Norm_Sep[0]);
+   fHist_ZDN_resol_Norm_Sep[1] = new TProfile("fHist_ZDN_resol_YaYc_Norm"," YaYc vs Cent",11,centRange,"");
+   fHist_ZDN_resol_Norm_Sep[1]->Sumw2();
+   fListHistos->Add(fHist_ZDN_resol_Norm_Sep[1]);
+
+   fHist_ZDN_resol_Cent_Sep[0] = new TProfile("fHist_ZDN_resol_XaXc_Cent"," XaXc vs Cent",100,0,100,"");
+   fHist_ZDN_resol_Cent_Sep[0]->Sumw2();
+   fListHistos->Add(fHist_ZDN_resol_Cent_Sep[0]);
+   fHist_ZDN_resol_Cent_Sep[1] = new TProfile("fHist_ZDN_resol_YaYc_Cent"," YaYc vs Cent",100,0,100,"");
+   fHist_ZDN_resol_Cent_Sep[1]->Sumw2();
+   fListHistos->Add(fHist_ZDN_resol_Cent_Sep[1]);
+
+
+
+   //v2 differential pT:
    for(int i=0; i<10; i++) {
      sprintf(name,"fHist_v2xV1_ZDN_pTDiff_Cent%d",i);
      fHist_v2xV1_ZDN_pTDiff_All[i]  = new TProfile(name,"v2 X V1^2 pTdiff",20,pTRange);
@@ -563,6 +624,20 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
      fListHistos->Add(fHist_v2xV1_ZDN_pTDiff_All[i]);
    }
 
+   //v1 differential Eta, pT:
+   for(int i=0; i<10; i++) {
+     for(int j=0; j<4; j++) {
+       sprintf(name,"fHist_%s_ZDN_EtaDiff_Cent%d",static_cast<const char*>(sNameComp[j]),i);
+       fHist_v1xV1_ZDN_EtaDiff[j][i] = new TProfile(name,"v1 Eta-diff", 5, -0.8, 0.8);
+       fHist_v1xV1_ZDN_EtaDiff[j][i]->Sumw2();
+       fListHistos->Add(fHist_v1xV1_ZDN_EtaDiff[j][i]);
+
+       sprintf(name,"fHist_%s_ZDN_pTDiff_Cent%d",static_cast<const char*>(sNameComp[j]),i);
+       fHist_v1xV1_ZDN_pTDiff[j][i] = new TProfile(name,"v1 Eta-diff", 20, pTRange);
+       fHist_v1xV1_ZDN_pTDiff[j][i]->Sumw2();
+       fListHistos->Add(fHist_v1xV1_ZDN_pTDiff[j][i]);
+     }
+   }
 
    //------------ calculate centrality weight: ------------
    TH1F *fCent_fromDATA;
@@ -1404,39 +1479,58 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
      if(!pTrack->IsPOItype(1)) continue;
      nRefMult++;
 
-     dUx   =               cos(2.*dPhi);
-     dUy   =               sin(2.*dPhi);
-
      ipTBin = fFB_Efficiency_Cent[cIndex]->FindBin(dPt);
      pTwgt  = 1.0/fFB_Efficiency_Cent[cIndex]->GetBinContent(ipTBin);
+
+
+     dUx   =     cos(dPhi);
+     dUy   =     sin(dPhi);
+
+     fHist_v1xV1_ZDN_EtaDiff[0][cIndex]->Fill(dEta, dUx*xyZNC[0], pTwgt); //uxCx
+     fHist_v1xV1_ZDN_EtaDiff[1][cIndex]->Fill(dEta, dUy*xyZNC[1], pTwgt); //uyCy
+     fHist_v1xV1_ZDN_EtaDiff[2][cIndex]->Fill(dEta, dUx*xyZNA[0], pTwgt); //uxAx
+     fHist_v1xV1_ZDN_EtaDiff[3][cIndex]->Fill(dEta, dUy*xyZNA[1], pTwgt); //uyAy
+
+     fHist_v1xV1_ZDN_pTDiff[0][cIndex]->Fill(dPt, dUx*xyZNC[0], pTwgt); //uxCx
+     fHist_v1xV1_ZDN_pTDiff[1][cIndex]->Fill(dPt, dUy*xyZNC[1], pTwgt); //uyCy
+     fHist_v1xV1_ZDN_pTDiff[2][cIndex]->Fill(dPt, dUx*xyZNA[0], pTwgt); //uxAx
+     fHist_v1xV1_ZDN_pTDiff[3][cIndex]->Fill(dPt, dUy*xyZNA[1], pTwgt); //uyAy
+
+     Qnx_TPC[0] += dUx*pTwgt; 
+     Qny_TPC[0] += dUy*pTwgt;
+
+
+     dUx   =   cos(2.*dPhi);
+     dUy   =   sin(2.*dPhi);
 
      fullTerm = dUx*xyZNA[0]*xyZNC[0]-dUx*xyZNA[1]*xyZNC[1]+dUy*xyZNA[0]*xyZNC[1]+dUy*xyZNA[1]*xyZNC[0];
      fHist_v2xV1_ZDN_pTDiff_All[cIndex]->Fill(dPt,fullTerm,pTwgt);
 
-     Qnx_TPC[0] += dUx*pTwgt;
-     Qny_TPC[0] += dUy*pTwgt;
-     npoiMult   +=     pTwgt;
+     Qnx_TPC[1] += dUx*pTwgt;
+     Qny_TPC[1] += dUy*pTwgt;
 
      //cout<<"i = "<<i<<" iCent = "<<cIndex<<" pTBin "<<ipTBin<<" pt = "<<dPt<<"\t wgt = "<<pTwgt<<endl;
-     
+     npoiMult   +=     pTwgt;
    }
   }
 
 
 
   if(npoiMult>0){
-    dUx = Qnx_TPC[0]/npoiMult;
-    dUy = Qny_TPC[0]/npoiMult;
+   for(int i=0;i<2;i++){
+      Qnx_TPC[i] = Qnx_TPC[i]/npoiMult;
+      Qny_TPC[i] = Qny_TPC[i]/npoiMult;
+    }
   }
   else{
-    dUx = 0;
-    dUy = 0;
+   for(int i=0;i<2;i++){
+      Qnx_TPC[i] = 0;
+      Qny_TPC[i] = 0;
+    }
   }
 
   fullTerm = 0;
   fullReso = 0;
-
-
 
   if(bApplyRecent) {
 
@@ -1445,7 +1539,22 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
     CentWgt  = fWeight_Cent->GetBinContent(iCentBin);
 
-    fullTerm = dUx*xyZNA[0]*xyZNC[0] - dUx*xyZNA[1]*xyZNC[1] + dUy*xyZNA[0]*xyZNC[1] + dUy*xyZNA[1]*xyZNC[0];
+    fHist_ZDN_resol_Norm_Sep[0]->Fill(EvtCent, xyZNA[0]*xyZNC[0]);
+    fHist_ZDN_resol_Cent_Sep[0]->Fill(EvtCent, xyZNA[0]*xyZNC[0]);
+
+    fHist_ZDN_resol_Norm_Sep[1]->Fill(EvtCent, xyZNA[1]*xyZNC[1]);
+    fHist_ZDN_resol_Cent_Sep[1]->Fill(EvtCent, xyZNA[1]*xyZNC[1]);
+
+    Double_t v1FillTerms[4] = {Qnx_TPC[0]*xyZNC[0], Qny_TPC[0]*xyZNC[1], Qnx_TPC[0]*xyZNA[0], Qny_TPC[0]*xyZNA[1]};
+
+
+    for(int i=0; i<4; i++){
+      fHist_v2xV1_ZDN_Norm_Sep[i]->Fill(EvtCent, v1FillTerms[i]);
+      fHist_v2xV1_ZDN_Cent_Sep[i]->Fill(EvtCent, v1FillTerms[i]);
+    }
+
+
+    fullTerm = Qnx_TPC[1]*(xyZNA[0]*xyZNC[0] - xyZNA[1]*xyZNC[1]) + Qny_TPC[1]*(xyZNA[0]*xyZNC[1] + xyZNA[1]*xyZNC[0]);
     fullReso = xyZNA[0]*xyZNC[0] + xyZNA[1]*xyZNC[1];
 
     fHist_v2xV1_ZDN_Norm_All->Fill( EvtCent, fullTerm, CentWgt);
@@ -1469,7 +1578,7 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
   //if(fievent%10==0) {
     //std::cout<<fievent<<" cTPC= "<<EvtCent<<"\t Npoi = "<<npoiMult<<"\tCentWgt = "<<CentWgt<<"\tRefMult = "<<nRefMult<<std::endl;
-    //std::cout<<" cx = "<<meanCx<<"\t cy = "<<meanCy<<"\t Ax = "<<meanAx<<"\t Ay = "<<meanAy<<"\tCentWgt = "<<CentWgt<<std::endl;
+    //std::cout<<" cx = "<<meanCx<<"\t cy = "<<meanCy<<"\t Qnx_TPC[0] = "<<Qnx_TPC[0]<<"\t Qnx_TPC[1] = "<<Qnx_TPC[1]<<std::endl;
   //}
 
 
