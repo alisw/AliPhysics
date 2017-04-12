@@ -583,17 +583,17 @@ void AliEbyEPidEfficiencyContamination::CreateEffCont() {
     
   } //else PID
   
-  
-  const Int_t nDim = 3;
-  Int_t fBinsCh[nDim] = {100, 1900, 1900};
-  Double_t fMinCh[nDim] = { -0.5, -0.5, -0.5 };
-  Double_t fMaxCh[nDim] = { 99.5, 1899.5, 1899.5};
-  fTHnCentNplusNminusCh = new THnSparseI("fTHnCentNplusNminusCh","Cent-NplusChrg-NminusChrg", nDim, fBinsCh, fMinCh, fMaxCh); 
-  fTHnCentNplusNminusCh->GetAxis(0)->SetTitle("Centrality");
-  fTHnCentNplusNminusCh->GetAxis(1)->SetTitle("Nplus");
-  fTHnCentNplusNminusCh->GetAxis(2)->SetTitle("Nminus");
-  fThnList->Add(fTHnCentNplusNminusCh);
-
+  if(fIsQA){
+    const Int_t nDim = 3;
+    Int_t fBinsCh[nDim] = {100, 1900, 1900};
+    Double_t fMinCh[nDim] = { -0.5, -0.5, -0.5 };
+    Double_t fMaxCh[nDim] = { 99.5, 1899.5, 1899.5};
+    fTHnCentNplusNminusCh = new THnSparseI("fTHnCentNplusNminusCh","Cent-NplusChrg-NminusChrg", nDim, fBinsCh, fMinCh, fMaxCh); 
+    fTHnCentNplusNminusCh->GetAxis(0)->SetTitle("Centrality");
+    fTHnCentNplusNminusCh->GetAxis(1)->SetTitle("Nplus");
+    fTHnCentNplusNminusCh->GetAxis(2)->SetTitle("Nminus");
+    fThnList->Add(fTHnCentNplusNminusCh);
+  }
   //cout <<" Hisotgrams booked " << endl;
   
 }
@@ -949,9 +949,10 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
     
     //cout << " Gen positve " << nGen[1] <<" and -ve particle " << nGen[0] << endl;
    
-    
-    Double_t fContainerCh[3] = { (double)fCentrality, nGen[1], nGen[0] };
-    fTHnCentNplusNminusCh->Fill(fContainerCh);
+    if(fIsQA){
+      Double_t fContainerCh[3] = { (double)fCentrality, nGen[1], nGen[0] };
+      fTHnCentNplusNminusCh->Fill(fContainerCh);
+    }
     
     Double_t ptContainerMC[dim+1];
     ptContainerMC[0] = (Double_t) fCentrality;
@@ -1114,17 +1115,17 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   
   //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
   //ITS--------------
-  Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.4  };
-  Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  0.6  };
+  Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
+  Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  0.575  };
   //TPC---------------
-  Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.4,  0.3  };
-  Double_t ptHighTPC[5]      = { 0., 0., 2.0,  2.0,  2.0  };
+  Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.325,   0.425  };
+  Double_t ptHighTPC[5]      = { 0., 0., 2.0,  2.0,   2.0  };
   //TOF----
-  Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.6,  0.3  };
-  Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,  2.0  };
+  Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.625,  0.5  };
+  Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,    2.0  };
   //TPCTOF----------
-  Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,  0.8  };
-  Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,  2.0  };
+  Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.825  };
+  Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
   
 
   //--------------------------TPC PID----------------
@@ -1132,12 +1133,12 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
     
     if(fParticleSpecies == 3){//for kaon only 
-      if( track->Pt() > 0.5 && track->Pt() < 0.6){
-	if (TMath::Abs(pid[1]) < 1.)  // Anywhere withing Max Nsigma TPC
+      if( track->Pt() > 0.525 && track->Pt() < 0.6){
+	if (TMath::Abs(pid[1]) < 1.)  // nsigma < 1
 	  isAcceptedTPC = kTRUE;
       }
       else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
-	if(pid[1] > -0.5 && pid[1] < 1.)  // Anywhere within Max Nsigma TPC
+	if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
 	  isAcceptedTPC = kTRUE;
       }
       else 

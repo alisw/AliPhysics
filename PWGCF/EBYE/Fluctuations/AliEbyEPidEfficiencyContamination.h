@@ -137,7 +137,6 @@ AliEbyEPidEfficiencyContamination( const char *name );
   AliPIDResponse   *fPIDResponse;              //! Ptr to PID response Object
   AliPIDCombined   *fPIDCombined;              //
 
-  Int_t fPIDStrategy; //
   Int_t fPidType; //
   Int_t fMcPid; //
   Float_t          fNSigmaMaxITS;             //  N Sigma for ITS PID
