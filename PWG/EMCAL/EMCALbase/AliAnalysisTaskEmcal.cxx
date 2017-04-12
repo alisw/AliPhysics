@@ -71,6 +71,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
   fLocalInitialized(kFALSE),
+  fFileChanged(kTRUE),
   fCreateHisto(kTRUE),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -191,6 +192,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
   fLocalInitialized(kFALSE),
+  fFileChanged(kFALSE),
   fCreateHisto(histo),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -639,25 +641,6 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
   return kTRUE;
 }
 
-/**
- * Event loop, called for each event. The function consists of three
- * steps:
- * -# Event selection
- * -# Running the user code
- * -# Filling general (QA) histograms
- * The event selection steps are documented in the function IsEventSelected.
- *
- * Users must not overwrite this function. Instead the virtual function Run
- * should be user and implemented by the user. The return value of the Run
- * function decides on whether general histograms are filled.
- *
- * In case the task is not yet initialized, which is the case for the first
- * event, the UserExec performs several basic initilization steps, documented
- * in the functions ExecOnce. Note that this is only done for the first event
- * and only for properties which need the presence of an input event.
- *
- * @param[in] option Not used
- */
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
   if (!fLocalInitialized){
@@ -667,6 +650,11 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 
   if (!fLocalInitialized)
     return;
+
+  if(fFileChanged){
+    FileChanged();
+    fFileChanged = kFALSE;
+  }
 
   if (!RetrieveEventObjects())
     return;
@@ -768,17 +756,6 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
   return cont->AcceptParticle(track, rejectionReason);
 }
 
-/**
- * Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
- * Get the pt hard bin from the file path
- * This is to called in Notify and should provide the path to the AOD/ESD file
- * (Partially copied from AliAnalysisHelperJetTasks)
- * @param[in] currFile Name of the current ESD/AOD file
- * @param[out] fXsec Cross section calculated by PYTHIA
- * @param[out] fTrials Number of trials needed by PYTHIA
- * @param[out] pthard \f$ p_{t} \f$-hard bin, extracted from path name
- * @return True if parameters were obtained successfully, false otherwise
- */
 Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard)
 {
   TString file(currFile);
@@ -867,7 +844,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
       if(number > 2000 && number < 3000){
         // Year
         continue;
-      } else if(number == fInputEvent->GetRunNumber()){
+      } else if(number == fInputHandler->GetEvent()->GetRunNumber()){
         // Run number
         continue;
       } else {
@@ -933,30 +910,21 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   return kTRUE;
 }
 
-/**
- * Notifying the user that the input data file has
- * changed and performing steps needed to be done.
- *
- * This function is of relevance for analysis of
- * Monte-Carlo productions in \f$ p_{t} \f$-hard
- * bins as it reads the pythia cross section and
- * the number of trials from the file pyxsec.root
- * and fills the relevant distributions with
- * the values obtained.
- * @return False if the data tree or the data file
- * doesn't exist, true otherwise
- */
-Bool_t AliAnalysisTaskEmcal::UserNotify()
-{
+Bool_t AliAnalysisTaskEmcal::UserNotify(){
+  fFileChanged = kTRUE;
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskEmcal::FileChanged(){
   if (!fIsPythia || !fGeneralHistograms || !fCreateHisto)
     return kTRUE;
 
   // Debugging:
-  AliInfoStream() << "UserNotify called for run " << InputEvent()->GetRunNumber() << std::endl;
+  AliInfoStream() << "FileChanged called for run " << InputEvent()->GetRunNumber() << std::endl;
 
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   if (!tree) {
-    AliError(Form("%s - UserNotify: No current tree!",GetName()));
+    AliErrorStream() << GetName() << " - FileChanged: No current tree!" << std::endl;
     return kFALSE;
   }
 
@@ -966,7 +934,7 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   TFile *curfile = tree->GetCurrentFile();
   if (!curfile) {
-    AliError(Form("%s - UserNotify: No current file!",GetName()));
+    AliErrorStream() << GetName() << " - FileChanged: No current file!" << std::endl;
     return kFALSE;
   }
 
@@ -1008,16 +976,6 @@ void AliAnalysisTaskEmcal::LoadPythiaInfo(AliVEvent *event)
   }
 }
 
-/**
- * Perform steps needed to initialize the analysis.
- * This function relies on the presence of an input
- * event (ESD or AOD event). Consequently it is called
- * internally by UserExec for the first event.
- *
- * This function connects all containers attached to
- * this task to the corresponding arrays in the
- * input event. Furthermore it initializes the geometry.
- */
 void AliAnalysisTaskEmcal::ExecOnce()
 {
   if (!InputEvent()) {

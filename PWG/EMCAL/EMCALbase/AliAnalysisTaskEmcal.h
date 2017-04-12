@@ -233,7 +233,22 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliEMCALTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doOfflinSimple = kFALSE);
   Bool_t		                  HasTriggerType(TriggerType triggersel);
   ULong_t 		                GetTriggerList();
+
+  /**
+   * @brief Loading PYTHIA information from external cross section file into the task
+   *
+   * Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+   * Get the pt hard bin from the file path
+   * This is to called in Notify and should provide the path to the AOD/ESD file
+   * (Partially copied from AliAnalysisHelperJetTasks)
+   * @param[in] currFile Name of the current ESD/AOD file
+   * @param[out] fXsec Cross section calculated by PYTHIA
+   * @param[out] fTrials Number of trials needed by PYTHIA
+   * @param[out] pthard \f$ p_{t} \f$-hard bin, extracted from path name
+   * @return True if parameters were obtained successfully, false otherwise
+   */
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+
   Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
 
   void                        GeneratePythiaInfoObject(AliMCEvent* mcEvent);
@@ -241,11 +256,83 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   // Overloaded AliAnalysisTaskSE methods
   void                        UserCreateOutputObjects();
+
+  /**
+   * @brief Event loop, called for each event.
+   *
+   * The function consists of three
+   * steps:
+   * -# Event selection
+   * -# Running the user code
+   * -# Filling general (QA) histograms
+   * The event selection steps are documented in the function IsEventSelected.
+   *
+   * Users must not overwrite this function. Instead the virtual function Run
+   * should be user and implemented by the user. The return value of the Run
+   * function decides on whether general histograms are filled.
+   *
+   * In case the task is not yet initialized, which is the case for the first
+   * event, the UserExec performs several basic initialization steps, documented
+   * in the functions ExecOnce. Note that this is only done for the first event
+   * and only for properties which need the presence of an input event.
+   *
+   * Function also steers events triggered by signals
+   * - if a run changed
+   * - if a file changed
+   * Users can implement own actions when overloading the functions UserRunChanged and
+   * UserFileChanged.
+   *
+   * @param[in] option Not used
+   */
   void                        UserExec(Option_t *option);
+
+  /**
+   * @brief Notifying the user that the input data file has
+   * changed and performing steps needed to be done.
+   *
+   * Only set the signal that the file has changed. The steps
+   * for file changed are handled by the function FileChanged,
+   * called by UserExec once it sees the signal fFileChanged.
+   *
+   * @return Always true
+   */
   Bool_t                      UserNotify();
 
+  /**
+   * @brief  Steps to be executed when a few file is loaded into the
+   * input handler
+   *
+   * The method is called in UserExec once it sees the FileChanged signal,
+   * which is set in UserNotify() (as this handled asynchronously). As it
+   * is called within UserExec one can expect that the event is fully initialized.
+   *
+   * This function is of relevance for analysis of  Monte-Carlo productions in
+   * \f$ p_{t} \f$-hard bins as it reads the pythia cross section and the number
+   * of  trials from the file pyxsec.root and fills the relevant distributions with
+   * the values obtained.
+   *
+   * Function UserFileChanged is provided in order to allow for user code in
+   * derived classes to be executed when the file changed.
+   *
+   * @return False if the data tree or the data file
+   * doesn't exist, true otherwise
+   */
+  Bool_t					            FileChanged();
+
   // Virtual functions, to be overloaded in derived classes
+  /**
+   * @brief Perform steps needed to initialize the analysis.
+   *
+   * This function relies on the presence of an input
+   * event (ESD or AOD event). Consequently it is called
+   * internally by UserExec for the first event.
+   *
+   * This function connects all containers attached to
+   * this task to the corresponding arrays in the
+   * input event. Furthermore it initializes the geometry.
+   */
   virtual void                ExecOnce();
+
   virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
@@ -263,6 +350,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * do proper initializations.
    */
   virtual void                UserExecOnce()                    {}
+
+  /**
+   * @brief Virtual method for user code to be executed when a file changed
+   *
+   * The event is expected to be fully configured at that stage
+   */
+  virtual void				  UserFileChanged()					{}
 
   /**
    * This function optionally fills histograms created by the users. Can
@@ -297,6 +391,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   BeamType                    fForceBeamType;              ///< forced beam type
   Bool_t                      fGeneralHistograms;          ///< whether or not it should fill some general histograms
   Bool_t                      fLocalInitialized;           ///< whether or not the task has been already initialized
+  Bool_t					  fFileChanged;				   //!<! Signal triggered when the file has changed
   Bool_t                      fCreateHisto;                ///< whether or not create histograms
   TString                     fCaloCellsName;              ///< name of calo cell collection
   TString                     fCaloTriggersName;           ///< name of calo triggers collection
