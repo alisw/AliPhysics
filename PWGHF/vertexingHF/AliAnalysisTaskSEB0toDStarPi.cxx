@@ -132,7 +132,6 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
   //
   /// Default ctor
   //
-  for(Int_t i=0;i<5;i++) fHistMassPtImpParTCDs[i]=0;
 }
 //___________________________________________________________________________
 AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, AliRDHFCutsB0toDStarPi* cuts) :
@@ -236,7 +235,6 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   // fMotherHistogramArray = new Int_t*[numberOfOutputs][numberOfMotherHistogramSets][numberOfMotherHistograms];
   // fMotherHistogramArray2D = new Int_t*[numberOfOutputs][numberOfMotherHistograms2D];
 
-  for(Int_t i=0;i<5;i++) fHistMassPtImpParTCDs[i]=0;
 
   DefineOutput(1,TList::Class());  //counters
   DefineOutput(2,TList::Class());  //All Entries output
@@ -288,9 +286,6 @@ AliAnalysisTaskSEB0toDStarPi::~AliAnalysisTaskSEB0toDStarPi() {
   // delete [] fDaughterHistogramArray2D;
   // delete [] fMotherHistogramArray;
   // delete [] fMotherHistogramArray2D;
-  for(Int_t i=0; i<5; i++){
-    delete fHistMassPtImpParTCDs[i];
-  }
 }
 //_________________________________________________
 void AliAnalysisTaskSEB0toDStarPi::Init(){

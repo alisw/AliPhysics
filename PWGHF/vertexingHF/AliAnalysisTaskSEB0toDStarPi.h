@@ -23,7 +23,6 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <vector>
-// #include <TVector.h>
 #include "AliAODRecoCascadeHF.h"
 #include "AliAODVertex.h"
 
@@ -65,7 +64,6 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
 
   void     FillD0Histograms(AliAODRecoDecayHF2Prong * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType);
   void     FillCascadeMotherHistograms(AliAODRecoCascadeHF * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType);
-  // Bool_t   CutSelection(AliAODRecoCascadeHF * selectedB0, AliAODVertex *primaryVertex, Double_t bz, Bool_t isDesiredCandidate);
 
   // set MC usage
   void     SetMC(Bool_t bUseMCInfo) {fUseMCInfo = bUseMCInfo;}
@@ -127,12 +125,6 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   Int_t fnPtBinsDStarforDStarptbinLimits;
   Float_t * fPtBinLimitsDStarforDStarptbin;  //[fnPtBinsDStarforDStarptbinLimits]
 
-
-  // Int_t** fDaughterHistogramArray;
-  // Int_t** fDaughterHistogramArray2D;
-  // Int_t** fMotherHistogramArray;
-  // Int_t** fMotherHistogramArray2D;
-
   Int_t* fDaughterHistogramArray[4][5][15];
   Int_t* fDaughterHistogramArray2D[4][6];
   Int_t* fMotherHistogramArray[6][50][46];
@@ -141,11 +133,8 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   Bool_t fQuickSignalAnalysis;
   Bool_t fGetCutInfo;
 
-
-  THnSparseF *fHistMassPtImpParTCDs[5];//!<! histograms for impact paramter studies
-
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEB0toDStarPi,9); /// class for B0 spectra
+  ClassDef(AliAnalysisTaskSEB0toDStarPi,1); /// class for B0 spectra
   /// \endcond
 };
 

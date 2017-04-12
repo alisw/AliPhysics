@@ -41,19 +41,10 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel) {::Error("AliAnalysisTaskB0toDStarPi", "Old selection function"); return 0;}
 
   Int_t IsDStarFromB0Selected(Double_t pt, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
-  // Int_t IsDStarFromB0Selected(Double_t pt, TObject* obj,Int_t selectionLevel) {return IsDStarFromB0Selected(pt,obj,selectionLevel,0);}
-
   Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
-  // Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) {return IsD0FromDStarSelected(pt,obj,selectionLevel,0);}
-
   Int_t IsD0forD0ptbinSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
-  // Int_t IsD0forD0ptbinSelected(TObject* obj,Int_t selectionLevel) {return IsD0forD0ptbinSelected(obj,selectionLevel,0);}
-
   Int_t IsD0forDStarptbinSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
-  // Int_t IsD0forDStarptbinSelected(TObject* obj,Int_t selectionLevel) {return IsD0forDStarptbinSelected(obj,selectionLevel,0);}
-
   Int_t IsDStarforDStarptbinSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
-  // Int_t IsDStarforDStarptbinSelected(TObject* obj,Int_t selectionLevel) {return IsDStarforDStarptbinSelected(obj,selectionLevel,0);}
 
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   virtual Int_t SelectPID(AliAODTrack *track, Int_t type);
