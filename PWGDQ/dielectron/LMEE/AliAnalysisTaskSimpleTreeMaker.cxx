@@ -257,6 +257,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       if( eta < fEtaMin || eta > fEtaMax ){ continue; } 
       fQAhist->Fill("Tracks_KineCuts", 1);
 
+      Double_t phi  = track->Phi();
+
       //Get electron nSigma in TPC for cut (inclusive cut)
       Double_t EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
       if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue; }
@@ -291,17 +293,17 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       Double_t KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon);
       Double_t KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon);
       
-      Double_t phi  = track->Phi();
 
       //Get ITS and TPC signals
       Double_t ITSsignal = track->GetITSsignal();
       Double_t TPCsignal = track->GetTPCsignal();
       Double_t TOFsignal = track->GetTOFsignal();
       
-      Double_t nTPCclusters = track->GetNumberOfTPCClusters(); 
-      Double_t nTPCcrossed = track->GetTPCCrossedRows();
-      Double_t TPCcrossOverFind = track->GetTPCCrossedRows()/track->GetTPCNclsF();
-      Double_t nTPCshared = static_cast<Double_t>(track->GetTPCnclsS());
+      Double_t nTPCclusters = track->GetTPCNcls(); 
+      Double_t nTPCcrossed = track->GetTPCClusterInfo(2,1);
+      Double_t TPCcrossOverFind = nTPCcrossed/track->GetTPCNclsF();
+      Double_t nTPCshared = track->GetTPCnclsS();
+      Double_t chi2TPC = track->GetTPCchi2();
 
       //DCA values
       Float_t DCAxy = 0.;
@@ -320,10 +322,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           }
         fITS_shared /= nITS;
      
-        //Get chi2 values 
         chi2ITS = track->GetITSchi2();
       }
-      Double_t chi2TPC = track->GetTPCchi2();
 
       Int_t fCutMaxChi2TPCConstrainedVsGlobalVertexType = fESDtrackCuts->kVertexTracks | fESDtrackCuts->kVertexSPD;
 
@@ -390,7 +390,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "vertexY="    << primaryVertex[1] <<
         "vertexZ="    << primaryVertex[2] <<
 
-        "nTPC="       << nTPCclusters <<
+        "nTPCclusters=" << nTPCclusters <<
         "nTPCcrossed="<< nTPCcrossed <<
         "TPCcrossFind="<< TPCcrossOverFind <<
         "nTPCshared=" << nTPCshared <<
@@ -437,8 +437,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "vertexY="    << primaryVertex[1] <<
         "vertexZ="    << primaryVertex[2] <<
 
-        "nTPC="       << nTPCclusters <<
-        "nTPCcrossed="<< nTPCcrossed <<
+        "nTPCclusters=" << nTPCclusters <<
+        "nTPCcrossed=" << nTPCcrossed <<
         "TPCcrossFind="<< TPCcrossOverFind <<
         "nTPCshared=" << nTPCshared <<
         "chi2TPC="    << chi2TPC <<
