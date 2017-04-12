@@ -62,6 +62,8 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include <numeric>
+
 #include <Riostream.h>
 #include "TList.h"
 #include "TH1.h"
@@ -98,6 +100,8 @@ class AliAODv0;
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
 
+#include "AliAODForwardMult.h"
+#include "AliForwardUtil.h"
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
 #include "AliAODMCParticle.h"
@@ -132,6 +136,7 @@ fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump( kFALSE ),
+fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
 
 //---> Flags controlling Cascade TTree output
@@ -158,6 +163,10 @@ fNTOFMatches(-1),
 fNTracksITSsa2010(-1),
 fNTracksGlobal2015(-1),
 fNTracksGlobal2015TriggerPP(-1),
+fAmplitudeV0A(-1.),
+fAmplitudeV0C(-1.),
+fNHitsFMDA(-1.),
+fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
 fTreeVariableChi2V0(0),
@@ -209,6 +218,10 @@ fTreeVariablePosTOFExpTDiff(99999),
 //fTreeVariableNTracksITSsa2010(-1),
 //fTreeVariableNTracksGlobal2015(-1),
 //fTreeVariableNTracksGlobal2015TriggerPP(-1),
+fTreeVariableAmplitudeV0A(-1.),
+fTreeVariableAmplitudeV0C(-1.),
+fTreeVariableNHitsFMDA(-1.),
+fTreeVariableNHitsFMDC(-1.),
 
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
@@ -402,6 +415,10 @@ fNTOFMatches(-1),
 fNTracksITSsa2010(-1),
 fNTracksGlobal2015(-1),
 fNTracksGlobal2015TriggerPP(-1),
+fAmplitudeV0A(-1.),
+fAmplitudeV0C(-1.),
+fNHitsFMDA(-1.),
+fNHitsFMDC(-1.),
 
 //---> Variables for fTreeV0
 fTreeVariableChi2V0(0),
@@ -453,6 +470,10 @@ fTreeVariablePosTOFExpTDiff(99999),
 //fTreeVariableNTracksITSsa2010(-1),
 //fTreeVariableNTracksGlobal2015(-1),
 //fTreeVariableNTracksGlobal2015TriggerPP(-1),
+fTreeVariableAmplitudeV0A(-1.),
+fTreeVariableAmplitudeV0C(-1.),
+fTreeVariableNHitsFMDA(-1.),
+fTreeVariableNHitsFMDC(-1.),
 
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
@@ -718,6 +739,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeEvent->Branch("fNTracksITSsa2010",&fNTracksITSsa2010,"fNTracksITSsa2010/I");
             fTreeEvent->Branch("fNTracksGlobal2015",&fNTracksGlobal2015,"fNTracksGlobal2015/I");
             fTreeEvent->Branch("fNTracksGlobal2015TriggerPP",&fNTracksGlobal2015TriggerPP,"fNTracksGlobal2015TriggerPP/I");
+            fTreeEvent->Branch("fAmplitudeV0A",&fAmplitudeV0A,"fAmplitudeV0A/F");
+            fTreeEvent->Branch("fAmplitudeV0C",&fAmplitudeV0C,"fAmplitudeV0C/F");
+            fTreeEvent->Branch("fNHitsFMDA",&fNHitsFMDA,"fNHitsFMDA/F");
+            fTreeEvent->Branch("fNHitsFMDC",&fNHitsFMDC,"fNHitsFMDC/F");
         }
     }
     
@@ -780,6 +805,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             //fTreeV0->Branch("fTreeVariableNTracksITSsa2010",&fTreeVariableNTracksITSsa2010,"fTreeVariableNTracksITSsa2010/I");
             //fTreeV0->Branch("fTreeVariableNTracksGlobal2015",&fTreeVariableNTracksGlobal2015,"fTreeVariableNTracksGlobal2015/I");
             //fTreeV0->Branch("fTreeVariableNTracksGlobal2015TriggerPP",&fTreeVariableNTracksGlobal2015TriggerPP,"fTreeVariableNTracksGlobal2015TriggerPP/I");
+            fTreeV0->Branch("fTreeVariableAmplitudeV0A",&fTreeVariableAmplitudeV0A,"fTreeVariableAmplitudeV0A/F");
+            fTreeV0->Branch("fTreeVariableAmplitudeV0C",&fTreeVariableAmplitudeV0C,"fTreeVariableAmplitudeV0C/F");
+            fTreeV0->Branch("fTreeVariableNHitsFMDA",&fTreeVariableNHitsFMDA,"fTreeVariableNHitsFMDA/F");
+            fTreeV0->Branch("fTreeVariableNHitsFMDC",&fTreeVariableNHitsFMDC,"fTreeVariableNHitsFMDC/F");
         }
         //-----------MC Exclusive info--------------------
         fTreeV0->Branch("fTreeVariablePtMother",&fTreeVariablePtMother,"fTreeVariablePtMother/F");
@@ -1205,6 +1234,24 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             //Warning: 12.5 is appropriate for pp (for Pb-Pb use 30)
             if( TMath::Abs( track->GetTOFExpTDiff() ) < 12.5 ) fNTracksGlobal2015TriggerPP++;
         }
+
+        //VZERO info
+        fAmplitudeV0A = ((AliMultEstimator*)MultSelection->GetEstimator("V0A"))->GetValue();
+        fAmplitudeV0C = ((AliMultEstimator*)MultSelection->GetEstimator("V0C"))->GetValue();
+
+        //FMD info
+        AliAODEvent* aodEvent = AliForwardUtil::GetAODEvent(this);
+        if (!aodEvent) return;
+        FMDhits fmdhits = GetFMDhits(aodEvent);
+        fNHitsFMDA = std::accumulate(fmdhits.begin(), fmdhits.end(), 0, 
+                [](Float_t a, AliAnalysisTaskStrangenessVsMultiplicityMCRun2::FMDhit t) {
+                return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
+                });
+        fNHitsFMDC = std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+                [](Float_t a, AliAnalysisTaskStrangenessVsMultiplicityMCRun2::FMDhit t) {
+                return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
+                });
+
     }
 
     
@@ -1538,6 +1585,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             //fTreeVariableNTracksITSsa2010           = fNTracksITSsa2010;
             //fTreeVariableNTracksGlobal2015          = fNTracksGlobal2015;
             //fTreeVariableNTracksGlobal2015TriggerPP = fNTracksGlobal2015TriggerPP;
+            //Copy VZERO information for this event
+            fTreeVariableAmplitudeV0A = fAmplitudeV0A;
+            fTreeVariableAmplitudeV0C = fAmplitudeV0C;
+            //Copy FMD information for this event
+            fTreeVariableNHitsFMDA = fNHitsFMDA;
+            fTreeVariableNHitsFMDC = fNHitsFMDC;
         }
 
         //===============================================
@@ -4363,4 +4416,32 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::CheckChargeV0(AliESDv0 *v0)
     return;
 }
 
+//______________________________________________________________________
+AliAnalysisTaskStrangenessVsMultiplicityMCRun2::FMDhits AliAnalysisTaskStrangenessVsMultiplicityMCRun2::GetFMDhits(AliAODEvent* aodEvent) const  
+// Relies on the event being vaild (no extra checks if object exists done here)   
+{
+    AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(aodEvent->FindListObject("Forward"));   
+    // Shape of d2Ndetadphi: 200, -4, 6, 20, 0, 2pi   
+    const TH2D& d2Ndetadphi = aodForward->GetHistogram();   
+    Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();   
+    Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();   
+    FMDhits ret_vector;   
+    for (Int_t iEta = 1; iEta <= nEta; iEta++) {     
+        Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));     
+        if (!valid) {        
+            // No data expected for this eta       
+            continue;     
+        }     
+        Float_t eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta);     
+        for (Int_t iPhi = 1; iPhi <= nPhi; iPhi++) {       
+            // Bin content is most likely number of particles!       
+            Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);       
+            if (mostProbableN > 0) { 	
+                Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 	
+                ret_vector.push_back(AliAnalysisTaskStrangenessVsMultiplicityMCRun2::FMDhit(eta, phi, mostProbableN));       
+            }     
+        }   
+    }   
+    return ret_vector; 
+}
 
