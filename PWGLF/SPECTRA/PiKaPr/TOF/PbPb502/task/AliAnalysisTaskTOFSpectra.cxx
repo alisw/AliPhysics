@@ -67,6 +67,7 @@
 #include "AliMultSelectionCuts.h"
 #include "AliPPVsMultUtils.h"
 #include "AliTOFGeometry.h"
+#include "AliCDBManager.h"
 #ifdef USETREECLASS
 #include "TClonesArray.h"
 #include "AliAnTOFtrack.h"
@@ -162,7 +163,7 @@ fMultSel(0x0),
 fTOFcls(0x0),
 fTOFcalib(0x0),
 fTOFT0maker(0x0),
-fTimeResolution(80.),
+fTimeResolution(60.),
 fListHist(0x0),
 fTreeTrack(0x0),
 ArrayAnTrk(0x0),
@@ -1419,8 +1420,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   AliAnalysisManager *AnManager = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (AnManager->GetInputEventHandler());
   fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
-  if(fRecalibrateTOF) fTOFPIDResponse = fESDpid->GetTOFResponse();
-  else fTOFPIDResponse = fPIDResponse->GetTOFResponse();
+  if(fRecalibrateTOF) fPIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
+  fTOFPIDResponse = fPIDResponse->GetTOFResponse();
   
   //
   //Physics Selection
@@ -2051,7 +2052,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       coord[0] = AliTOFGeometry::GetX(det);
       coord[1] = AliTOFGeometry::GetY(det);
       coord[2] = AliTOFGeometry::GetZ(det);
-      hTOFDist->Fill(AliTOFGeometry::GetStrip(coord), AliTOFGeometry::GetSector(coord));
+      hTOFDist->Fill(AliTOFGeometry::GetSector(coord), AliTOFGeometry::GetStrip(coord));
       hTOFResidualX->Fill(fTOFImpactDX);
       hTOFResidualZ->Fill(fTOFImpactDZ);
       hTOFChannel->Fill(fTOFchan);
@@ -2996,12 +2997,11 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
   fRunNumber = fESD->GetRunNumber();
   
   // init cdb
-  AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("raw://");
-  cdb->SetRun(fRunNumber);
+  AliCDBManager::Instance()->SetDefaultStorage("raw://");
+  AliCDBManager::Instance()->SetRun(fRunNumber);
   
   // init TOF calib
-  if (!fTOFcalib->Init()) {
+  if (!fTOFcalib->Init(fRunNumber)) {
     AliError("cannot init TOF calib");
     return kFALSE;
   }
@@ -3013,10 +3013,7 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
   if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
-  
-  // init TOF response
-  fESDpid->GetTOFResponse().SetTimeResolution(fTimeResolution);
-  
+    
   // init TOF-T0 maker
   fTOFT0maker->SetTimeResolution(fTimeResolution);
   
@@ -3025,6 +3022,9 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
   
   // compute T0-TOF and apply it
   fTOFT0maker->ComputeT0TOF(fESD);
+  
+  // Write information in ESD
+  fTOFT0maker->WriteInESD(fESD);
   
   return kTRUE;
   
