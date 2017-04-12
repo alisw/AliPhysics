@@ -24,12 +24,16 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGPP/EMCAL)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                    )
 
 # Sources in alphabetical order
 set(SRCS
     AliAnalysisTaskCaloFilter.cxx
     AliAnalysisTaskESDfilterEMCALEventSelect.cxx
+    AliAnalysisTaskEmcalAlig.cxx
     AliAnalysisTaskEMCALClusterize.cxx
     AliAnalysisTaskEMCALPi0CalibSelection.cxx
     AliAnalysisTaskEMCALTriggerQA.cxx
@@ -49,7 +53,7 @@ set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD EMCALUtils ESD STE
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS PWGEMCALbase PWGEMCALtrigger PWGTools ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
