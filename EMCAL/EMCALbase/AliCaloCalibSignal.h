@@ -6,6 +6,7 @@
 
 //________________________________________________________________________
 /// \class AliCaloCalibSignal
+/// \ingroup EMCALbase
 /// \brief class for signal monitoring and calibration tools
 ///
 ///  A help class for monitoring and calibration tools: MOOD, AMORE etc.,

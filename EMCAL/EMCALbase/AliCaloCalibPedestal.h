@@ -6,6 +6,7 @@
 
 //________________________________________________________________________
 /// \class AliCaloCalibPedestal
+/// \ingroup EMCALbase
 /// \brief pedestal/bad map monitoring and calibration tools
 ///
 /// A help class for monitoring and calibration tools: MOOD, AMORE etc.,
