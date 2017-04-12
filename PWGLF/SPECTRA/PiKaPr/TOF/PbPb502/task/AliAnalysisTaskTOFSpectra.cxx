@@ -3017,9 +3017,6 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
   // init TOF-T0 maker
   fTOFT0maker->SetTimeResolution(fTimeResolution);
   
-  // Set the TOF response with new parameters
-  fTOFT0maker->SetTOFResponse();
-  
   // calibrate ESD
   fTOFcalib->CalibrateESD(fESD);
   
