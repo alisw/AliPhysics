@@ -435,13 +435,14 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	for (Int_t iClock=start; iClock<=end; ++iClock) {
 	  const Bool_t iIntegrator = ((iClock%2) == 0 ? integrator : !integrator);
 	  
-	  const TF1* fExtrapolation = (doExtrapolation[iClock]
-				       ? static_cast<const TF1*>(iIntegrator
-								 ? f_Int1->At(iClock)
-								 : f_Int0->At(iClock))
+	  TF1* fExtrapolation = (doExtrapolation[iClock]
+				 ? static_cast<TF1*>(iIntegrator
+						     ? f_Int1->At(iClock)
+						     : f_Int0->At(iClock))
 				       : NULL);
 	  correctedForSaturation  |= doExtrapolation[iClock];
 	  if (doExtrapolation[iClock]) {
+	    fExtrapolation->Optimize();
 	    AliDebug(3, Form("Ch%02d bc%02d %d tail=%6.1f thr=%6.1f adc=%6.1f adcCorr=%7.1f",
 			     pmNumber, iClock, doExtrapolation[iClock], tail[pmNumber], extrapolationThresholds[iClock],
 			     adcPedSub[iClock], fExtrapolation->Eval(tail[pmNumber])));
