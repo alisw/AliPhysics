@@ -611,7 +611,7 @@ void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key,
   {
     TString& v1 = static_cast<TObjString*>(values.At(0))->String();
     
-    if ( v1.IsDigit() && !(TString(key).Contains("SplitMax")) &&
+    if ( v1.IsDigit() && !(TString(key).Contains("Price")) && !(TString(key).Contains("SplitMax")) &&
         !(TString(key).Contains("TTL")) && !(TString(key).Contains("Arguments")) )
     {
       out << v1.Atoi();
