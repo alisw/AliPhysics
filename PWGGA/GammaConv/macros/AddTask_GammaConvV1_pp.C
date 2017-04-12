@@ -697,6 +697,23 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("03400113", "00200009227302008250400000", "0152103500000000"); // 10-30
     cuts.AddCut("04500113", "00200009227302008250400000", "0152103500000000"); // 30-100
     
+  // -------------------------A. Marin,   2016 pp, open cuts --------------------------------------
+
+ // Min Bias
+  } else if (trainConfig == 300) {  
+    cuts.AddCut("00010113", "00200009297302001280004000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200009297302001280004000", "0152101500000000"); // alpha pT dependent
+
+ // High Mult V0
+  } else if (trainConfig == 301) {  
+    cuts.AddCut("00074113", "00200009297302001280004000", "0152103500000000"); // for V0 High-Mult trigger
+    cuts.AddCut("00074013", "00200009297302001280004000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+
+ // Low B Field
+  } else if (trainConfig == 302) {  
+    cuts.AddCut("00010113", "00200089297302001280004000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200089397302001280004000", "0152103500000000"); // Open dEdx
+   
 
     
   } else {
