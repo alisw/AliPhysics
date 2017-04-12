@@ -1,8 +1,7 @@
 #ifndef ALIEMCALV1_H
 #define ALIEMCALV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                      
-*/
+ * See cxx source for full Copyright notice                               */
 
 //_________________________________________________________________________
 /// \class AliEMCALv1
