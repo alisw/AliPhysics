@@ -192,7 +192,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     Char_t nameEta[10];
     snprintf(nameEta,10,"Eta");
     // NOTE: the additional factors are set back to one as they are not the same for photons and electrons
-    geneta = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kEta, "DUMMY");
+    geneta = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kEta, "DUMMY");
     geneta->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameEta,geneta,maxPtStretchFactor);
@@ -213,7 +213,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     Char_t nameRho[10];
     snprintf(nameRho,10,"Rho");
     // NOTE: the additional factors are set back to one as they are not the same for photons and electrons
-    genrho = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kRho0, "DUMMY");
+    genrho = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kRho0, "DUMMY");
     genrho->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameRho,genrho,maxPtStretchFactor);
@@ -234,7 +234,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     Char_t nameOmega[10];
     snprintf(nameOmega,10,"Omega");
     // NOTE: the additional factors are set back to one as they are not the same for photons and electrons
-    genomega = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kOmega, "DUMMY");
+    genomega = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kOmega, "DUMMY");
     genomega->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameOmega,genomega,maxPtStretchFactor);
@@ -255,7 +255,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     Char_t nameEtaprime[10];
     snprintf(nameEtaprime,10,"Etaprime");
     // NOTE: the additional factors are set back to one as they are not the same for photons and electrons
-    genetaprime = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kEtaprime, "DUMMY");
+    genetaprime = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kEtaprime, "DUMMY");
     genetaprime->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameEtaprime,genetaprime,maxPtStretchFactor);
@@ -276,7 +276,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     Char_t namePhi[10];
     snprintf(namePhi,10,"Phi");
     // NOTE: the additional factors are set back to one as they are not the same for photons and electrons
-    genphi = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kPhi, "DUMMY");
+    genphi = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kPhi, "DUMMY");
     genphi->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(namePhi,genphi,maxPtStretchFactor);
@@ -297,7 +297,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     Char_t nameJpsi[10];
     snprintf(nameJpsi,10,"Jpsi");
     // NOTE: the additional factors are set back to one as they are not the same for photons and electrons
-    genjpsi = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kJpsi, "DUMMY");
+    genjpsi = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kJpsi, "DUMMY");
     genjpsi->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameJpsi,genjpsi,maxPtStretchFactor);
@@ -317,7 +317,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * gensigma=0;
     Char_t nameSigma[10];
     snprintf(nameSigma,10, "Sigma0");
-    gensigma = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kSigma0, "DUMMY");
+    gensigma = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kSigma0, "DUMMY");
     gensigma->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameSigma,gensigma,maxPtStretchFactor);
@@ -337,7 +337,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkzeroshort=0;
     Char_t nameK0short[10];
     snprintf(nameK0short, 10, "K0short");
-    genkzeroshort = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kK0s, "DUMMY");
+    genkzeroshort = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kK0s, "DUMMY");
     genkzeroshort->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameK0short,genkzeroshort,maxPtStretchFactor);
@@ -357,7 +357,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkzerolong=0;
     Char_t nameK0long[10];
     snprintf(nameK0long, 10, "K0long");
-    genkzerolong = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kK0l, "DUMMY");
+    genkzerolong = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kK0l, "DUMMY");
     genkzerolong->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameK0long,genkzerolong,maxPtStretchFactor);
@@ -377,7 +377,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genLambda=0;
     Char_t nameLambda[10];
     snprintf(nameLambda, 10, "Lambda");
-    genLambda = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kLambda, "DUMMY");
+    genLambda = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kLambda, "DUMMY");
     genLambda->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameLambda,genLambda,maxPtStretchFactor);
@@ -397,7 +397,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkdeltaPlPl=0;
     Char_t nameDeltaPlPl[10];
     snprintf(nameDeltaPlPl, 10, "DeltaPlPl");
-    genkdeltaPlPl = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kDeltaPlPl, "DUMMY");
+    genkdeltaPlPl = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kDeltaPlPl, "DUMMY");
     genkdeltaPlPl->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameDeltaPlPl,genkdeltaPlPl,maxPtStretchFactor);
@@ -417,7 +417,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkdeltaPl=0;
     Char_t nameDeltaPl[10];
     snprintf(nameDeltaPl, 10, "DeltaPl");
-    genkdeltaPl = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kDeltaPl, "DUMMY");
+    genkdeltaPl = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kDeltaPl, "DUMMY");
     genkdeltaPl->SetYRange(fYMin, fYMax);
     AddSource2Generator(nameDeltaPl,genkdeltaPl,maxPtStretchFactor);
     TF1 *fPtDeltaPl = genkdeltaPl->GetPt();
@@ -436,7 +436,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkdeltaMi=0;
     Char_t nameDeltaMi[10];
     snprintf(nameDeltaMi, 10, "DeltaMi");
-    genkdeltaMi = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kDeltaMi, "DUMMY");
+    genkdeltaMi = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kDeltaMi, "DUMMY");
     genkdeltaMi->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameDeltaMi,genkdeltaMi,maxPtStretchFactor);
@@ -456,7 +456,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkdeltaZero=0;
     Char_t nameDeltaZero[10];
     snprintf(nameDeltaZero, 10, "DeltaZero");
-    genkdeltaZero = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kDeltaZero, "DUMMY");
+    genkdeltaZero = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kDeltaZero, "DUMMY");
     genkdeltaZero->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameDeltaZero,genkdeltaZero,maxPtStretchFactor);
@@ -476,7 +476,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkrhoPl=0;
     Char_t nameRhoPl[10];
     snprintf(nameRhoPl, 10, "RhoPl");
-    genkrhoPl = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kRhoPl, "DUMMY");
+    genkrhoPl = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kRhoPl, "DUMMY");
     genkrhoPl->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameRhoPl,genkrhoPl,maxPtStretchFactor);
@@ -496,7 +496,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkrhoMi=0;
     Char_t nameRhoMi[10];
     snprintf(nameRhoMi, 10, "RhoMi");
-    genkrhoMi = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kRhoMi, "DUMMY");
+    genkrhoMi = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kRhoMi, "DUMMY");
     genkrhoMi->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameRhoMi,genkrhoMi,maxPtStretchFactor);
@@ -516,7 +516,7 @@ void AliGenEMCocktailV2::CreateCocktail()
     AliGenParam * genkK0star=0;
     Char_t nameK0star[10];
     snprintf(nameK0star, 10, "K0star");
-    genkK0star = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kK0star, "DUMMY");
+    genkK0star = new AliGenParam((Int_t)(maxPtStretchFactor*fNPart), new AliGenEMlibV2(), AliGenEMlibV2::kK0star, "DUMMY");
     genkK0star->SetYRange(fYMin, fYMax);
 
     AddSource2Generator(nameK0star,genkK0star,maxPtStretchFactor);
