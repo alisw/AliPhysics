@@ -31,7 +31,6 @@ class TClonesArray;
 #include "AliTOFT0v1.h"
 #include "AliTOFT0maker.h"
 #include "AliTOFcalib.h"
-#include "AliCDBManager.h"
 #include "AliMultSelection.h"
 #include <TTree.h>
 #include "AliAnalysisTask.h"
@@ -803,7 +802,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 6);
+  ClassDef(AliAnalysisTaskTOFSpectra, 7);
 };
 
 #endif
