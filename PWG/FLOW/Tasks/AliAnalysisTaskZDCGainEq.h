@@ -168,8 +168,14 @@ private:
   TProfile         *fHist_ZDN_resol_Refm_All;  //!
   TProfile         *fHist_ZDN_resol_Cent_All;  //!
 
-  TProfile   *fHist_v2xV1_ZDN_pTDiff_All[10];  //!
+  TProfile       *fHist_v2xV1_ZDN_Norm_Sep[4];  //! 
+  TProfile       *fHist_v2xV1_ZDN_Cent_Sep[4];  //!
+  TProfile       *fHist_ZDN_resol_Norm_Sep[2];  //!
+  TProfile       *fHist_ZDN_resol_Cent_Sep[2];  //!
 
+  TProfile   *fHist_v2xV1_ZDN_pTDiff_All[10];  //!
+  TProfile    *fHist_v1xV1_ZDN_pTDiff[4][10];  //!
+  TProfile   *fHist_v1xV1_ZDN_EtaDiff[4][10];  //!
 
   TProfile2D     *fHist_znCx_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znCy_V0_VxVy[90][10];  //!
