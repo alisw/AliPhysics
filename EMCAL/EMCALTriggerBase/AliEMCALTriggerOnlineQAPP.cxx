@@ -298,7 +298,7 @@ void AliEMCALTriggerOnlineQAPP::ProcessPatch(const AliEMCALTriggerPatchInfo* pat
 
 /**
  * Process a FastOR, filling relevant histograms.
- * \param patch Pointer to a valid trigger FastOR
+ * \param fastor Pointer to a valid trigger FastOR
  */
 void AliEMCALTriggerOnlineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fastor, AliVCaloCells* /*cells*/)
 {

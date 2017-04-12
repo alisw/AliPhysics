@@ -121,9 +121,9 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const char* name):
   memset(fPatchAreas, 0, sizeof(fPatchAreas));
 }
 
-/*
-* Copy Constructor
-*/
+/**
+ * Copy Constructor
+ */
 AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const AliEMCALTriggerOnlineQAPbPb& triggerQA) :
   AliEMCALTriggerQA(triggerQA),
   fBkgPatchType(triggerQA.fBkgPatchType),
@@ -419,7 +419,7 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessBkgPatch(const AliEMCALTriggerPatchInfo
 
 /**
  * Process a FastOR, filling relevant histograms.
- * \param patch Pointer to a valid trigger FastOR
+ * \param fastor Pointer to a valid trigger FastOR
  */
 void AliEMCALTriggerOnlineQAPbPb::ProcessFastor(const AliEMCALTriggerFastOR* fastor, AliVCaloCells* /*cells*/)
 {
