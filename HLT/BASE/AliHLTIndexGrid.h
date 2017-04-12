@@ -329,7 +329,7 @@ class AliHLTIndexGrid {
       if (newArray.get()) {
 	memcpy(newArray.get(), fData, fDataDimension);
 	memset(newArray.get()+fDataDimension, 0, (offset-fDataDimension)*sizeof(V));
-	delete fData;
+	delete[] fData;
 	fData=newArray.release();
 	fDataDimension=offset;
       } else {
