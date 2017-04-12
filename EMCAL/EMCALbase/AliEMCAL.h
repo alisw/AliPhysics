@@ -3,15 +3,21 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-//_________________________________________________________________________
-//  Base Class for EMCAL     
-//  holds all geant information of
-//  materials, etc.
-//                  
-//*-- Author: Yves Schutz (SUBATECH) 
+///////////////////////////////////////////////////////////////////////////////
+///
+/// \class AliEMCAL
+/// \ingroup EMCALbase
+/// \brief Base Class for EMCAL description
+/// 
+/// This class contains material definitions    
+/// for the EMCAL - It does not place the detector in ALICE (who does? AliEMCALv0?)
+///
+/// \author Yves Schutz (SUBATECH) 
+/// \author Sahal Yacoob (LBNL/UCT)
+/// \author Alexei Pavlinov (WSU) 
+//////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-
 class TString ;
 class TFolder ;
 class TRandom ; 
@@ -26,7 +32,8 @@ class AliRawReader;
 #include "AliReconstructor.h"
 class AliEMCALTriggerData;
 
-class AliEMCAL : public AliDetector {
+class AliEMCAL : public AliDetector 
+{
 
  public:
   
@@ -34,48 +41,62 @@ class AliEMCAL : public AliDetector {
   AliEMCAL(const char* name, const char* title="", const Bool_t checkGeoAndRun = kTRUE);
 
   virtual ~AliEMCAL() ; 
-  virtual void   AddHit(Int_t, Int_t*, Float_t *) {
+  
+  /// See in AliEMCALv2 
+  virtual void  AddHit(Int_t, Int_t*, Float_t *) {
     Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
   }
+  
   virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;
+  
   virtual void  CreateMaterials() ;   
+  
   virtual void  Init() ;   
+  
   virtual void  Digits2Raw();
   
   virtual void  FinishRun() {}                  
+  
   virtual AliEMCALGeometry * GetGeometry() const ;
    // {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
-  virtual void    Hits2SDigits();
-  virtual Int_t   IsVersion(void) const = 0 ;   
   
+  virtual void  Hits2SDigits();
+  
+  virtual       Int_t   IsVersion(void) const = 0 ;   
+  virtual const TString   Version()     const { return TString(" ") ; }   
+
    //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
-  virtual const TString Version() const {return TString(" ") ; }   
 
   virtual void  SetCheckRunNumberAndGeoVersion(Bool_t check) { fCheckRunNumberAndGeoVersion = check ; }
 
-  Bool_t Raw2SDigits(AliRawReader* rawReader);
+  Bool_t        Raw2SDigits(AliRawReader* rawReader);
   
 protected:
-  void InitConstants();  //initializes some params
-
-  Int_t    fBirkC0; // constants for Birk's Law implementation
-  Double_t fBirkC1; // constants for Birk's Law implementation
-  Double_t fBirkC2; // constants for Birk's Law implementation
-
-  AliEMCALGeometry* fGeometry;              //!
-  Bool_t   fCheckRunNumberAndGeoVersion;    // Check if run number corresponds to the requested geometry and V1 is used
   
-  //For embedding
-  static AliEMCALRawUtils    * fgRawUtils;        // raw utilities class, for embedding 
-  TClonesArray               * fTriggerData;      // Trigger parameters data container
+  void          InitConstants();  
+
+  Int_t                     fBirkC0;      ///<  Constant 0 for Birk's Law implementation
+  Double_t                  fBirkC1;      ///<  Constant 1 for Birk's Law implementation
+  Double_t                  fBirkC2;      ///<  Constant 2 for Birk's Law implementation
+
+  Bool_t                    fCheckRunNumberAndGeoVersion; ///< Check if run number corresponds to the requested geometry and V1 is used
+  
+  AliEMCALGeometry        * fGeometry;    //!<! EMCal geometry access
+  
+  // For embedding
+  static AliEMCALRawUtils * fgRawUtils;   ///<  Raw utilities class, for embedding 
+  TClonesArray            * fTriggerData; ///<  Trigger parameters data container
 
 private:
-  AliEMCAL(const AliEMCAL& emcal);
+  
+  AliEMCAL              (const AliEMCAL & emcal);
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);
 
-  ClassDef(AliEMCAL,13) // Electromagnetic calorimeter (base class)
-    
+  /// \cond CLASSIMP
+  ClassDef(AliEMCAL,13) ;
+  /// \endcond
+
 } ;
 
 #endif // ALIEMCAL_H

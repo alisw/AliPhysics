@@ -13,29 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-//  The AliEMCALLoader gets the TClonesArray and TObjArray for reading
-//  Hits, Dgits, SDigits and RecPoints. Filling is managed in the GetEvent()
-//  method.
-//  It also provides acces methods to the calibration and simulation OCDB parameters 
-//
-//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
-//*--         Completely redesigned by Dmitri Peressounko March 2001  
-//
-//*-- YS June 2001 : renamed the original AliEMCALIndexToObject and make
-//*--         systematic usage of TFolders without changing the interface
-// 
-//*-- Marco van Leeuwen, Jan 2006: complete revision to simplify reading
-//*--         and fit better in general ALICE scheme
-//*-- GCB: Remove TClonesArrays and TObjArrays data members, they are created elsewhere.
-//*--      Provide access to OCDB calibration and simulation parameters.          
-//
-//////////////////////////////////////////////////////////////////////////////
-
 // --- ROOT system ---
 #include "TMath.h"
 #include "TTree.h"
-// --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliEMCALLoader.h"
@@ -45,46 +25,46 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 
- ClassImp(AliEMCALLoader)
-  
-const TString         AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//Name for branch with ECA Reconstructed Points
-const TString         AliEMCALLoader::fgkECADigitsBranchName("DIGITS");//Name for branch with ECA Digits
-const TString         AliEMCALLoader::fgkECASDigitsBranchName("SDIGITS");//Name for branch with ECA SDigits
+/// \cond CLASSIMP
+ClassImp(AliEMCALLoader);
+/// \endcond
 
-AliEMCALCalibData*    AliEMCALLoader::fgCalibData = 0; //energy calibration data
-AliEMCALCalibTime*    AliEMCALLoader::fgCalibTime = 0; //time calibration data
-AliCaloCalibPedestal* AliEMCALLoader::fgCaloPed   = 0; //dead map data
-AliEMCALSimParam*     AliEMCALLoader::fgSimParam  = 0; //simulation parameters
-AliEMCALRecParam*     AliEMCALLoader::fgRecParam  = 0; //reconstruction parameters
+const TString         AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP"); // Name for branch with ECA Reconstructed Points
+const TString         AliEMCALLoader::fgkECADigitsBranchName("DIGITS");        // Name for branch with ECA Digits
+const TString         AliEMCALLoader::fgkECASDigitsBranchName("SDIGITS");      // Name for branch with ECA SDigits
 
+AliEMCALCalibData*    AliEMCALLoader::fgCalibData = 0; // Energy calibration data
+AliEMCALCalibTime*    AliEMCALLoader::fgCalibTime = 0; // Time calibration data
+AliCaloCalibPedestal* AliEMCALLoader::fgCaloPed   = 0; // Dead map data
+AliEMCALSimParam*     AliEMCALLoader::fgSimParam  = 0; // Simulation parameters
+AliEMCALRecParam*     AliEMCALLoader::fgRecParam  = 0; // Reconstruction parameters
+
+///
+/// Default constructor for EMCAL Loader Class
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
 : fDebug(0)
-{
-  //Default constructor for EMCAL Loader Class
+{ }
 
-}
-
+///
+/// Specific constructor for EMCAL Loader class
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername)
   : AliLoader(detname,eventfoldername), fDebug(0)
-{
-  //Specific constructor for EMCAL Loader class
+{ }
 
-}
-
+///
+/// Specific constructor for EMCAL Loader class
 //____________________________________________________________________________
 AliEMCALLoader::AliEMCALLoader(const Char_t *name, TFolder *topfolder)
   : AliLoader(name,topfolder), fDebug(0)
-{
-  //Specific constructor for EMCAL Loader class
+{ }
 
-}
-
+///
+/// Disconnect trees and remove arrays
 //____________________________________________________________________________ 
 AliEMCALLoader::~AliEMCALLoader()
 {
-  // Disconnect trees and remove arrays
   if (TreeH())
     TreeH()->SetBranchAddress(fDetectorName,0);
 //  if (TreeD())
@@ -99,35 +79,33 @@ AliEMCALLoader::~AliEMCALLoader()
 	Clean(fgkECARecPointsBranchName);
 	
 	AliLoader::CleanFolders();
-		
 }
 
+///
+/// Check if the instance of AliEMCALCalibData exists, if not, create it if 
+/// the OCDB is available, and finally return it.
 //____________________________________________________________________________ 
 AliEMCALCalibData* AliEMCALLoader::CalibData()
-{ 
-  // Check if the instance of AliEMCALCalibData exists, if not, create it if 
-  // the OCDB is available, and finally return it.
-  
+{   
   if(!fgCalibData && (AliCDBManager::Instance()->IsDefaultStorageSet()))
-    {
-      AliCDBEntry *entry = (AliCDBEntry*) 
-	AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
-      if (entry) fgCalibData =  (AliEMCALCalibData*) entry->GetObject();
-    }
+  {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+    AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+    if (entry) fgCalibData =  (AliEMCALCalibData*) entry->GetObject();
+  }
   
   if(!fgCalibData)
     AliFatal("Calibration parameters not found in CDB!");
   
   return fgCalibData;
-  
 }
 
+///
+/// Check if the instance of AliEMCALCalibTime exists, if not, create it if 
+/// the OCDB is available, and finally return it.
 //____________________________________________________________________________ 
 AliEMCALCalibTime* AliEMCALLoader::CalibTime()
-{ 
-  // Check if the instance of AliEMCALCalibTime exists, if not, create it if 
-  // the OCDB is available, and finally return it.
-  
+{   
   if(!fgCalibTime && (AliCDBManager::Instance()->IsDefaultStorageSet()))
   {
     AliCDBEntry *entry = (AliCDBEntry*) 
@@ -142,56 +120,53 @@ AliEMCALCalibTime* AliEMCALLoader::CalibTime()
   
 }
 
-
+///
+/// Check if the instance of AliCaloCalibPedestal exists, if not, create it if 
+/// the OCDB is available, and finally return it.
 //____________________________________________________________________________ 
 AliCaloCalibPedestal* AliEMCALLoader::PedestalData()
 { 
-	// Check if the instance of AliCaloCalibPedestal exists, if not, create it if 
-	// the OCDB is available, and finally return it.
-	
-	if(!fgCaloPed && (AliCDBManager::Instance()->IsDefaultStorageSet()))
-    {
-		AliCDBEntry *entry = (AliCDBEntry*) 
-		AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
-		if (entry) fgCaloPed =  (AliCaloCalibPedestal*) entry->GetObject();
-    }
-	
-	if(!fgCaloPed)
-		AliFatal("Pedestal info not found in CDB!");
-	
-	return fgCaloPed;
-	
+  if(!fgCaloPed && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+  {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+    AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+    if (entry) fgCaloPed =  (AliCaloCalibPedestal*) entry->GetObject();
+  }
+  
+  if(!fgCaloPed)
+    AliFatal("Pedestal info not found in CDB!");
+  
+  return fgCaloPed;
 }
 
+///
+/// Check if the instance of AliEMCALSimParam exists, if not, create it if 
+/// the OCDB is available, and finally return it.
 //____________________________________________________________________________ 
 AliEMCALSimParam* AliEMCALLoader::SimulationParameters()
-{ 
-  // Check if the instance of AliEMCALSimParam exists, if not, create it if 
-  // the OCDB is available, and finally return it.
-  
+{   
   if(!fgSimParam && (AliCDBManager::Instance()->IsDefaultStorageSet()))
-    {
-      AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/Calib/SimParam");
-      if (entry) fgSimParam =  (AliEMCALSimParam*) entry->GetObject();
-      
-    }
+  {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+    AliCDBManager::Instance()->Get("EMCAL/Calib/SimParam");
+    if (entry) fgSimParam =  (AliEMCALSimParam*) entry->GetObject();
+    
+  }
   
   if(!fgSimParam)
     AliFatal("Simulations parameters not found in CDB!");
   
   return fgSimParam;
-  
 }
 
-
+///
+/// Check if the instance of AliEMCALRecParam exists, if not, create it if 
+/// the OCDB is available, and finally return it. 
+/// \param eventType: The event type must be provided 
+///                   (AliRecoParam::kCalib, kLowMult,kHighMult,kCosmic)
 //____________________________________________________________________________ 
 AliEMCALRecParam* AliEMCALLoader::ReconstructionParameters(Int_t eventType = 0)
-{ 
-  // Check if the instance of AliEMCALRecParam exists, if not, create it if 
-  // the OCDB is available, and finally return it. 
-  // The event type must be provided.
-  
+{   
   if(!fgRecParam && (AliCDBManager::Instance()->IsDefaultStorageSet()))
   {
     AliCDBEntry *entry = (AliCDBEntry*) 
@@ -204,29 +179,28 @@ AliEMCALRecParam* AliEMCALLoader::ReconstructionParameters(Int_t eventType = 0)
     AliFatal("Reconstruction parameters not found in CDB!");
   
   return fgRecParam;
-  
 }
 
-
+///
+/// Method to load all of the data
+/// members of the EMCAL for a given
+/// event from the Trees
 //____________________________________________________________________________ 
 Int_t AliEMCALLoader::GetEvent() 
 {
-  //Method to load all of the data
-  //members of the EMCAL for a given
-  //event from the Trees
-
   AliLoader::GetEvent();  // First call AliLoader to do all the groundwork
   
   // *** Hits ***
   // Hits are now handled directly on the AliEMCALSDigitizer, the only place it is requested.
   // together with AliEveEMCALData
-	
+  
   // *** SDigits ***
   // Initialize the SDigits TClonesArray, only if it did not existed before
   MakeSDigitsArray();
   
   TTree *treeS = TreeS();
-  if (treeS) {
+  if (treeS) 
+  {
     TBranch * branchS = treeS->GetBranch(fDetectorName);
     
     // Reset SDigits array and branch
@@ -243,7 +217,8 @@ Int_t AliEMCALLoader::GetEvent()
   MakeDigitsArray();
   
   TTree *treeD = TreeD();
-  if (treeD) {
+  if (treeD) 
+  {
     TBranch * branchD = treeD->GetBranch(fDetectorName);
     
     // Reset Digits array and branch
@@ -260,7 +235,8 @@ Int_t AliEMCALLoader::GetEvent()
   MakeRecPointsArray();
   
   TTree *treeR = TreeR();
-  if (treeR) {
+  if (treeR) 
+  {
     TBranch * branchR = treeR->GetBranch(fgkECARecPointsBranchName);
     
     // Reset RecPoints array and branch
@@ -275,29 +251,44 @@ Int_t AliEMCALLoader::GetEvent()
   return 0;
 }
 
+///
+/// Add SDigits array to the data folder
 //____________________________________________________________________________
-void AliEMCALLoader::MakeSDigitsArray(){
-  // Add SDigits array to the data folder
-  if (SDigits()) return;
+void AliEMCALLoader::MakeSDigitsArray()
+{
+  if (SDigits()) return ;
+  
   TClonesArray* sdigits = new TClonesArray("AliEMCALDigit",0);
+  
   sdigits->SetName(fgkECASDigitsBranchName);
+  
   GetDetectorDataFolder()->Add(sdigits);
 }
 
+///
+/// Add Digits array to the data folder
 //____________________________________________________________________________
-void AliEMCALLoader::MakeDigitsArray(){
-  // Add Digits array to the data folder
+void AliEMCALLoader::MakeDigitsArray()
+{
   if (Digits()) return;
+  
   TClonesArray* digits = new TClonesArray("AliEMCALDigit",0);
+  
   digits->SetName(fgkECADigitsBranchName);
+  
   GetDetectorDataFolder()->Add(digits);
 }
 
+///
+/// Add RecPoints array to the data folder
 //____________________________________________________________________________
-void AliEMCALLoader::MakeRecPointsArray(){
-  // Add RecPoints array to the data folder
+void AliEMCALLoader::MakeRecPointsArray()
+{
   if (RecPoints()) return;
+  
   TObjArray* rp = new TObjArray(0);
+  
   rp->SetName(fgkECARecPointsBranchName);
+  
   GetDetectorDataFolder()->Add(rp);
 }
