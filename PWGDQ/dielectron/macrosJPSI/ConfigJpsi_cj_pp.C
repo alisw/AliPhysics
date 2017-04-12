@@ -48,7 +48,7 @@ AliDielectron* ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD=kFALSE, Int_t 
   // dielelectron framework histograms will be filled
   //
   InitHistogramsDieleData(diele, cutDefinition, isAOD);
-  InitCFDieleData(diele, cutDefinition, isAOD, isMC);
+		// InitCFDieleData(diele, cutDefinition, isAOD, isMC);
 	
 
 //   AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
@@ -184,7 +184,7 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 
   //Invariant mass and rapidity selection
   AliDielectronVarCuts *pairCut=new AliDielectronVarCuts("0<M<5+|Y|<.9","0<M<5 + |Y|<.9");
-  pairCut->AddCut(AliDielectronVarManager::kM,0.,10.);
+  pairCut->AddCut(AliDielectronVarManager::kM,0.,15.);
   pairCut->AddCut(AliDielectronVarManager::kY,-0.9,0.9);
   pairCut->AddCut(AliDielectronVarManager::kPt,1,50.);
 	
@@ -367,7 +367,7 @@ if(cutDefinition==0){
  */
 	
   //histos->UserHistogram("Track","SPDTracklets","SPDTracklets;SPDTracklets;Entries",300,0.,300.,AliDielectronVarManager::kCentralitySPDTracklets);
-  histos->UserHistogram("Track","kNaccTrcklts10Corr","kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries",300,0.,300.,AliDielectronVarManager::kNaccTrcklts10Corr);
+  // histos->UserHistogram("Track","kNaccTrcklts10Corr","kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries",300,0.,300.,AliDielectronVarManager::kNaccTrcklts10Corr);
 	
 
   histos->UserHistogram("Track","dXY","dXY;dXY [cm];#tracks",200,-1.,1.,AliDielectronVarManager::kImpactParXY,kTRUE);
@@ -437,20 +437,15 @@ if(cutDefinition==0){
 						3000,0.,30.,200,0.,2.,AliDielectronVarManager::kPt,AliDielectronVarManager::kEMCALEoverP,kTRUE);
 
   histos->UserHistogram("Pair","OpeningAngle2D","Opening angle vs p_{T} ;p_{T} (GeV/c); angle",
-						3000,0.,30., 2000,-10.,10.,AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
+						300,0.,30., 2000,-10.,10.,AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
 	
   histos->UserHistogram("Pair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",
-                        250,0.0,5.0,AliDielectronVarManager::kM);
-  histos->UserHistogram("Pair","InvMass2D","Inv.Mass;Pt [GeV]; Inv. Mass [GeV]",
-                        20,0.,20.,250,0,5.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kM);
-
-  histos->UserHistogram("Pair","InvMasslong","Inv.Mass;Inv. Mass [GeV];#pairs",
-                        250,0,10.0,AliDielectronVarManager::kM);
-
-  histos->UserHistogram("Pair","InvMass2Dlong","Inv.Mass;Pt [GeV]; Inv. Mass [GeV]",
-                        20,0.,20.,250,0,10.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kM);
-  
+                        375,0.0,15.0,AliDielectronVarManager::kM);
 	
+  histos->UserHistogram("Pair","InvMass2D","Inv.Mass;Pt [GeV]; Inv. Mass [GeV]",
+                        20,0.,20.,375,0,15.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kM);
+	
+  
   histos->UserHistogram("Pair","Rapidity","Rapidity;Rapidity;#pairs",
                         50,-1.,1.,AliDielectronVarManager::kY);
   histos->UserHistogram("Pair","OpeningAngle","Opening angle;angle",
@@ -460,8 +455,8 @@ if(cutDefinition==0){
                           150,-0.3.,0.3,AliDielectronVarManager::kPseudoProperTime);
 	
 	
-		//histos->UserHistogram("Pair","SPDTracklets","SPDTracklets;SPDTracklets;Entries",300,0.,300.,AliDielectronVarManager::kCentralitySPDTracklets);
-  histos->UserHistogram("Pair","kNaccTrcklts10Corr","kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries",300,0.,300.,AliDielectronVarManager::kNaccTrcklts10Corr);
+ //histos->UserHistogram("Pair","SPDTracklets","SPDTracklets;SPDTracklets;Entries",300,0.,300.,AliDielectronVarManager::kCentralitySPDTracklets);
+ //histos->UserHistogram("Pair","kNaccTrcklts10Corr","kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries",300,0.,300.,AliDielectronVarManager::kNaccTrcklts10Corr);
 
 	
 	
@@ -489,11 +484,11 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Bo
   AliDielectronCF *cf=new AliDielectronCF(diele->GetName(),diele->GetTitle());
   //for centrality selection
   // cf->AddVariable(AliDielectronVarManager::kCentralitySPDTracklets, "0,20,40,60,100, 200, 300");
-  cf->AddVariable(AliDielectronVarManager::kNaccTrcklts10Corr, "0,30,60,100,1000");
+  //cf->AddVariable(AliDielectronVarManager::kNaccTrcklts10Corr, "0,30,60,100,1000");
   //pair variables
 	
   cf->AddVariable(AliDielectronVarManager::kPt,"5.0,7.0,9.0,11.0,15.0,20.0");
-  cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
+  cf->AddVariable(AliDielectronVarManager::kM,375,0.,375*.04); //40Mev Steps
   
   cf->AddVariable(AliDielectronVarManager::kPairType,3,0,3);
 	
