@@ -116,6 +116,9 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fBinsEta(0),
   fBinsZv(0),
   fHistMCMultPt(0),
+  fUseCentralityCut(kFALSE),
+  fLowerCentralityBound(0.),
+  fUpperCentralityBound(0.),
   fHistV0Amp(0)
 {
   // Set default binning
@@ -469,7 +472,6 @@ AlidNdPtUnifiedAnalysisTask::~AlidNdPtUnifiedAnalysisTask(){
   //if(fEventCuts){delete fEventCuts; fEventCuts=0;}
 }
 
-///TODO: solve Multiplicity problem
 ///________________________________________________________________________
 void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for each event)
 
@@ -517,6 +519,9 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   Double_t multRecPart = 0;		/// N_acc (of tracks that can be assigned to a real particle)
   Double_t multRecCorrPart = 0;		/// N_acc corrected with trk efficiency
 
+  // for PbPb only use specified centrality interval because particle composition correction depends on centrality
+  if(fUseCentralityCut && !IsSelectedCentrality()){ return; }
+
   /// ==================== Fill Histogramms ======================================
 
   /// -------------------- Generated Events --------------------------------------
@@ -544,9 +549,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
 
   /// ------------------ Reconstructed Events --------------------------------------
-
-  //  commented this out because of mulitplicity ambiguitiy (is filled later on)
-  //  fHistEvent->Fill(eventValues);
 
   if(fIsMC){
     fHistMCRecEvent->Fill(eventValues);
@@ -581,14 +583,11 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
     else multAccCorrTracks = multAccCorrTracks + 1;
 
   }
+  
+  // from now on use actual multipicity in all histograms
+  if (fUseCountedMult) {multEvent = multAccTracks; eventValues[1] = multAccTracks;}
 
-  /// Fill event Histograms (temporary solution...)
-  if (fUseCountedMult){
-    Double_t eventValuesTrueMult[2] = {zVertEvent, multAccTracks};
-    fHistEvent->Fill(eventValuesTrueMult);
-  }else{
-    fHistEvent->Fill(eventValues);
-  }
+  fHistEvent->Fill(eventValues);
 
 
   track = NULL;
@@ -610,8 +609,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
     /// \li Fill Track Histograms
 
     Double_t trackValues[4] = {track->Pt(), track->Eta(), zVertEvent, multEvent};
-    if (fUseCountedMult) trackValues[3] = multAccTracks;
-
     fHistTrack->Fill(trackValues);
 
     Double_t trackChargeValues[4] = {track->Pt(), track->Eta(), multEvent, ((Double_t) track->Charge())/3.};
@@ -637,6 +634,7 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       {
         Double_t mcPrimTrackValue[4] = {mcParticle->Pt(), mcParticle->Eta(), zVertEvent, multEvent};
         fHistMCRecPrimTrack->Fill(mcPrimTrackValue);
+	
         multRecPart++;
 
         Double_t dTrackingEff = fFunTrkEff->Eval(mcParticle->Pt());
@@ -668,43 +666,8 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
   ///------------------- Loop over Generated Tracks (True MC)------------------------------
   if (fIsMC){
-    //  Double_t multGenEvent = GetEventMultCent(fMCEvent);  /// TODO can't obtain mult for some events... why?
-    Double_t multGenEvent = multEvent;
 
-    for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
-      TParticle *mcGenParticle = fMCStack->Particle(iParticle);
-      if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
-
-      /// \li Acceptance cuts for generated particles
-      // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
-      if(!IsTrackAcceptedKinematics(mcGenParticle, kFALSE)) continue;
-
-      if(IsChargedPrimary(iParticle)){
-
-        Double_t mcGenPrimTrackValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), zVertEvent, multGenEvent};
-        fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
-
-        multGenPart++;
-
-      }
-      if(IsChargedPrimaryOrLambda(iParticle))
-      {
-        Double_t mcGenPrimTrackParticleValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), multGenEvent,((Double_t) IdentifyMCParticle(iParticle)) - 0.5};
-        fHistMCGenPrimTrackParticle->Fill(mcGenPrimTrackParticleValue);
-      }
-    }
-
-    Double_t eventGenMultValues[3] = {multGenEvent, multGenPart, multGenPart};//?
-    fHistMultMCGenEvent->Fill(eventGenMultValues);
-
-    Double_t eventMultCorrelValues[2] = {multGenPart, multRecCorrPart};
-    fHistMultCorrelation->Fill(eventMultCorrelValues);
-
-    Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
-    fHistMCResponseMat->Fill(responseMatrixTuple);
-    
-    
-    // now fill multPt hist for MC closure test and generator comparison
+    /// count generated multipicity
     for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
       TParticle *mcGenParticle = fMCStack->Particle(iParticle);
       if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
@@ -715,13 +678,45 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
       if(IsChargedPrimary(iParticle)){
 	
-	Double_t mcMultPt[2] = {multGenPart, mcGenParticle->Pt()};
-	fHistMCMultPt->Fill(mcMultPt);
+        multGenPart++;
 
       }
     }
 
     
+    for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
+      TParticle *mcGenParticle = fMCStack->Particle(iParticle);
+      if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
+
+      /// \li Acceptance cuts for generated particles
+      // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
+      if(!IsTrackAcceptedKinematics(mcGenParticle, kFALSE)) continue;
+
+      if(IsChargedPrimary(iParticle)){
+
+        Double_t mcGenPrimTrackValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), zVertEvent, multEvent};
+        fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
+
+	// multPt hist for MC closure test and generator comparison
+	Double_t mcMultPt[2] = {multGenPart, mcGenParticle->Pt()};
+	fHistMCMultPt->Fill(mcMultPt);
+
+      }
+      if(IsChargedPrimaryOrLambda(iParticle))
+      {
+        Double_t mcGenPrimTrackParticleValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), multEvent,((Double_t) IdentifyMCParticle(iParticle)) - 0.5};
+        fHistMCGenPrimTrackParticle->Fill(mcGenPrimTrackParticleValue);
+      }
+    }
+
+    Double_t eventGenMultValues[3] = {multEvent, multGenPart, multGenPart};//?
+    fHistMultMCGenEvent->Fill(eventGenMultValues);
+
+    Double_t eventMultCorrelValues[2] = {multGenPart, multRecCorrPart};
+    fHistMultCorrelation->Fill(eventMultCorrelValues);
+
+    Double_t responseMatrixTuple[2] = {multEvent, multGenPart};
+    fHistMCResponseMat->Fill(responseMatrixTuple);
     
     
 
@@ -871,6 +866,23 @@ Double_t AlidNdPtUnifiedAnalysisTask::GetEventMultCent(AliVEvent *event)
       AliInfo("Didn't find MultSelection!");
     }
   }
+}
+
+/// Function obtain multipicity percentile
+Bool_t AlidNdPtUnifiedAnalysisTask::IsSelectedCentrality(){
+
+    // centrality determination
+    Float_t centralityF = -1.;
+    AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
+
+
+    if (MultSelection){
+      centralityF = MultSelection->GetMultiplicityPercentile("V0M");	
+      if(centralityF >= fLowerCentralityBound  && centralityF <= fUpperCentralityBound) return kTRUE; 
+    }
+    else{Printf("ERROR: Could not receive mult selection"); AliInfo("Didn't find MultSelection!");}
+
+    return kFALSE;
 }
 
 /// Function to initialize the ESD track cuts
