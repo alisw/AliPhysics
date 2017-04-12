@@ -48,6 +48,7 @@ public:
   virtual void Generate();
   
   // setters
+  void    SetDynamicalPtRange(Bool_t dynamicalPtRange)                { fDynPtRange = dynamicalPtRange;   }
   void    SetParametrizationFile(TString paramFile)                   { fParametrizationFile = paramFile; }
   void    SetParametrizationFileDirectory(TString paramDir)           { fParametrizationDir = paramDir;   }
   void    SetDecayer(AliDecayer* const decayer)                       { fDecayer = decayer;               }
@@ -63,17 +64,18 @@ public:
   static  void    SetMtScalingFactors();
  
   // getters
-  Float_t GetDecayMode()                    const                     { return fDecayMode;                }
-  Float_t GetWeightingMode()                const                     { return fWeightingMode;            }
+  Float_t   GetDecayMode()                    const                   { return fDecayMode;                }
+  Float_t   GetWeightingMode()                const                   { return fWeightingMode;            }
   AliGenEMlibV2::CollisionSystem_t  GetCollisionSystem()  const       { return fCollisionSystem;          }
   AliGenEMlibV2::Centrality_t       GetCentrality()       const       { return fCentrality;               }
-  UInt_t  GetSelectedMothers()              const                     { return fSelectedParticles;        }
-  TString GetParametrizationFile()          const                     { return fParametrizationFile;      }
-  TString GetParametrizationFileDirectory() const                     { return fParametrizationDir;       }
-  Int_t   GetNumberOfParticles()            const                     { return fNPart;                    }
-  void    GetPtRange(Double_t &ptMin, Double_t &ptMax);
-  static TF1*   GetPtParametrization(Int_t np);
-  static TH1D*  GetMtScalingFactors();
+  UInt_t    GetSelectedMothers()              const                   { return fSelectedParticles;        }
+  TString   GetParametrizationFile()          const                   { return fParametrizationFile;      }
+  TString   GetParametrizationFileDirectory() const                   { return fParametrizationDir;       }
+  Int_t     GetNumberOfParticles()            const                   { return fNPart;                    }
+  Double_t  GetMaxPtStretchFactor(Int_t pdgCode);
+  void      GetPtRange(Double_t &ptMin, Double_t &ptMax);
+  static    TF1*   GetPtParametrization(Int_t np);
+  static    TH1D*  GetMtScalingFactors();
   
   //***********************************************************************************************
   // This function allows to select the particle which should be procude based on 1 Integer value
@@ -98,8 +100,8 @@ private:
   AliGenEMCocktailV2(const AliGenEMCocktailV2 &cocktail);
   AliGenEMCocktailV2 & operator=(const AliGenEMCocktailV2 &cocktail);
   
-  void AddSource2Generator(Char_t *nameReso, AliGenParam* const genReso);
-  
+  void AddSource2Generator(Char_t *nameReso, AliGenParam* const genReso, Double_t maxPtStretchFactor = 1.);
+
   AliDecayer*     fDecayer;                             // External decayer
   Decay_t         fDecayMode;                           // decay mode in which resonances are forced to decay, default: kAll
   Weighting_t     fWeightingMode;                       // weighting mode: kAnalog or kNonAnalog
@@ -116,10 +118,11 @@ private:
   AliGenEMlibV2::Centrality_t       fCentrality;        // selected centrality
   AliGenEMlibV2::v2Sys_t            fV2Systematic;      // selected systematic error for v2 parameters
   
+  Bool_t        fDynPtRange;                            // select if the pt range for the generation should be adapted to different mother particle weights dynamically
   Bool_t        fForceConv;                             // select whether you want to force all gammas to convert imidediately
   UInt_t        fSelectedParticles;                     // which particles to simulate, allows to switch on and off 32 different particles
   
-  ClassDef(AliGenEMCocktailV2,5)       // cocktail for EM physics
+  ClassDef(AliGenEMCocktailV2,6)                        // cocktail for EM physics
 };
 
 #endif
