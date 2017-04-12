@@ -55,6 +55,7 @@ public:
   void SetUsePileUpRejection(Bool_t pileup)			{ fUsePileUpRejection = pileup;}  
   void SetUseSPDClusterVsTrackletRejection(Bool_t spdclutrkls)  { fUseSPDClusterVsTrackletRejection = spdclutrkls; }
   void SetUseTOFBunchCrossing(Bool_t tofbunchcross)             { fUseTOFBunch = tofbunchcross; }
+  void SetUseTOFExpectedTimeDiff(Bool_t tofexptimediff)         { fUseTOFExpectedTimeDiff = tofexptimediff; }
   void SetUseKinkMotherRejection(Bool_t kinkmother)             { fUseKinkMother = kinkmother; }               
   void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
@@ -75,6 +76,7 @@ public:
   Bool_t IsUsePileUpRejection() const				{ return fUsePileUpRejection;}
   Bool_t IsUseSPDClusterVsTrackletRejection() const             { return fUseSPDClusterVsTrackletRejection;}
   Bool_t IsUseTOFBunchCrossing() const                          { return fUseTOFBunch;}
+  Bool_t IsUseTOFExpectedTimeDiff() const                       { return fUseTOFExpectedTimeDiff;}
   Bool_t IsRequiredCompleteDAQ() const  { return f2015IsIncompleteDAQ;}
   Bool_t IsUseKinkMotherReject() const                          { return fUseKinkMother; }
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
@@ -113,6 +115,7 @@ private:
   Bool_t fUsePileUpRejection;			// use Pile up rejection (pp)
   Bool_t fUseSPDClusterVsTrackletRejection;     // use SPD Clusters vs Tracklet
   Bool_t fUseTOFBunch;                          // use TOF bunch crossing
+  Bool_t fUseTOFExpectedTimeDiff;		// use TOF expected time difference
   Bool_t fUseKinkMother;                        // use Rejection of Kink Mothers
   Bool_t f2015IsIncompleteDAQ;                  // Needed for Run2-2015 data analysis, where a problem with incomplete events from the daq-side exists -- kFALSE will reject incomplete events
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
