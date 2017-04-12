@@ -880,7 +880,9 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
                 if( track->GetTOFsignal() < 12000)	{continue;} // TOFsignal returns the signal in pico seconds
                 if( track->GetTOFsignal() > 25000)	{continue;} // we want to reject tracks that take longer than the bunch spacing
             }
-
+            if(IsUseTOFExpectedTimeDiff()){
+	      if(TMath::Abs(track->GetTOFExpTDiff())>30) {continue;}
+            }
 
             //
             Double_t values[4] = {vtxESD->GetZ(),track->Pt(),track->Eta(), centralityF};	  
