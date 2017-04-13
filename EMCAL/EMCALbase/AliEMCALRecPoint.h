@@ -2,14 +2,22 @@
 #define ALIEMCALRECPOINT_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-//_________________________________________________________________________
-//  Base Class for EMCAL Reconstructed Points  
-//  A recpoint being equivalent to a cluster in EMCAL terminology
-//  
-//  
-//*-- Author: Yves Schutz (SUBATECH)
-//*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
-//*-- Author: Heather Gray (LBL): merged AliEMCALRecPoint and AliEMCALTowerRecPoint 02/04
+
+////////////////////////////////////////////////////////////////////////////////
+///  
+/// \class AliEMCALRecPoint
+/// \ingroup EMCALbase
+/// \brief EMCal rec_points object  
+///
+///  A recpoint being equivalent to a cluster in EMCAL terminology
+///  A RecPoint is a cluster of digits
+///
+/// \author Yves Schutz (SUBATECH)
+/// \author Dmitri Peressounko (RRC KI & SUBATECH)
+/// \author Heather Gray (LBL): merged AliEMCALRecPoint and AliEMCALTowerRecPoint 02/04
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+///
+////////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 #include <TVector3.h>
@@ -19,10 +27,8 @@ class TPad;
 class TPaveText;
 class TGraph;
 class Riostream;
-// --- Standard library ---
 
 // --- AliRoot header files ---
-
 #include "AliCluster.h"
 class AliEMCALDigit;
 class AliDigitNew;
@@ -30,7 +36,8 @@ class AliEMCALGeometry;
 class AliEMCALHit;
 class AliCaloCalibPedestal;
 
-class AliEMCALRecPoint : public AliCluster {
+class AliEMCALRecPoint : public AliCluster 
+{
 
  public:
   
@@ -152,41 +159,62 @@ protected:
 
 private:
 
-	  AliEMCALGeometry* fGeomPtr;  //! Pointer to geometry for utilities
-
-	  Float_t  fAmp ;              // summed amplitude of digits   
-	  Int_t    fIndexInList ;      // the index of this RecPoint in the
-                                 // list stored in TreeR (to be set by analysis)
-	  TVector3 fGlobPos ;          // global position
-	  TVector3 fLocPos ;           // local  position in the sub-detector coordinate
-	  Int_t    fMaxDigit ;         //! max initial size of digits array (not saved)
-	  Int_t    fMulDigit ;         // total multiplicity of digits       
-	  Int_t    fMaxTrack ;         //! max initial size of tracks array (not saved)
-	  Int_t    fMulTrack ;         // total multiplicity of tracks
-	  Int_t   *fDigitsList ;       //[fMulDigit] list of digit's indexes from which the point was reconstructed
-	  Int_t   *fTracksList ;       //[fMulTrack] list of tracks to which the point was assigned
-
-	  Int_t    fClusterType;       // type of cluster stored: v1
-	  Float_t  fCoreEnergy ;       // energy in a shower core 
-	  Float_t  fLambda[2] ;        // shower ellipse axes
-	  Float_t  fDispersion ;       // shower dispersion
-	  Float_t *fEnergyList ;       //[fMulDigit] energy of digits
-	  Int_t   *fAbsIdList;         //[fMulDigit] absId  of digits
-	  Float_t  fTime ;             // Time of the digit with maximal energy deposition
-	  Short_t  fNExMax ;           // number of (Ex-)maxima before unfolding
-	  Float_t  fCoreRadius;        // The radius in which the core energy is evaluated
-	  Float_t *fDETracksList ;     //[fMulTrack] list of tracks to which the point was assigned
-	  Int_t    fMulParent;         // Multiplicity of the parents
-	  Int_t    fMaxParent;         // Maximum number of parents allowed
-	  Int_t   *fParentsList;       // [fMulParent] list of the parents of the digits
-	  Float_t *fDEParentsList;     // [fMulParent] list of the parents of the digits
-	  Int_t    fSuperModuleNumber; // number identifying supermodule containing recpoint, reference is cell with maximum energy.
-	  Int_t    fDigitIndMax;       // Index of digit with max energy in array fAbsIdList
-	  Float_t  fDistToBadTower;    // Distance to nearest bad tower
-	  Bool_t   fSharedCluster;     // States if cluster is shared by 2 SuperModules in same phi rack (0,1), (2,3) ... (10,11).
+  AliEMCALGeometry* fGeomPtr;  //!<! Pointer to geometry for utilities
+  
+  Float_t  fAmp ;              ///<  Summed amplitude of digits   
+  Int_t    fIndexInList ;      ///<  The index of this RecPoint in the list stored in TreeR (to be set by analysis)
+  
+  TVector3 fGlobPos ;          ///<  Global position
+  TVector3 fLocPos ;           ///<  Local  position in the sub-detector coordinate
+  
+  Int_t    fMaxDigit ;         //!<! Max initial size of digits array (not saved)
+  Int_t    fMulDigit ;         ///<  Total multiplicity of digits       
+  Int_t    fMaxTrack ;         //!<! Max initial size of tracks array (not saved)
+  Int_t    fMulTrack ;         ///<  Total multiplicity of tracks
+  
+  /// List of digit's indexes from which the point was reconstructed
+  Int_t   *fDigitsList ;       //[fMulDigit] 
+  
+  /// List of tracks to which the point was assigned
+  Int_t   *fTracksList ;       //[fMulTrack] 
+  
+  Int_t    fClusterType;       ///<  Type of cluster stored: v1
+  Float_t  fCoreEnergy ;       ///<  Energy in a shower core 
+  
+  Float_t  fLambda[2] ;        ///<  Shower ellipse axes
+  Float_t  fDispersion ;       ///<  Shower dispersion
+  
+  /// List with energy of digits
+  Float_t *fEnergyList ;       //[fMulDigit] 
+  
+  /// List with absId  of digits
+  Int_t   *fAbsIdList;         //[fMulDigit] 
+  
+  Float_t  fTime ;             ///<  Time of the digit with maximal energy deposition
+  Short_t  fNExMax ;           ///<  Number of (Ex-)maxima before unfolding
+  Float_t  fCoreRadius;        ///<  The radius in which the core energy is evaluated
+  
+  /// List of tracks to which the point was assigned
+  Float_t *fDETracksList ;     //[fMulTrack] 
+  
+  Int_t    fMulParent;         ///<  Multiplicity of the parents
+  Int_t    fMaxParent;         ///<  Maximum number of parents allowed
+  
+  /// List of the parents index of the digits
+  Int_t   *fParentsList;       //[fMulParent]
+  
+  /// List of the parents energy deposit of the digits
+  Float_t *fDEParentsList;     //[fMulParent]
+  
+  Int_t    fSuperModuleNumber; ///<  number identifying supermodule containing recpoint, reference is cell with maximum energy.
+  Int_t    fDigitIndMax;       ///<  Index of digit with max energy in array fAbsIdList
+  Float_t  fDistToBadTower;    ///<  Distance to nearest bad tower
+  Bool_t   fSharedCluster;     ///<  States if cluster is shared by 2 SuperModules in same phi rack (0,1), (2,3) ... (10,11).
 	
-  ClassDef(AliEMCALRecPoint,13) // RecPoint for EMCAL (Base Class)
- 
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALRecPoint,13) ;
+  /// \endcond
+
 };
 
 #endif // AliEMCALRECPOINT_H
