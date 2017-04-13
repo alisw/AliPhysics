@@ -34,8 +34,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskSEB0toDStarPi.cxx
-  AliRDHFCutsB0toDStarPi.cxx
   AliAODHFUtil.cxx
   AliAODRecoDecayHF.cxx
   AliAODRecoDecayHF2Prong.cxx
@@ -95,6 +93,7 @@ set(SRCS
   AliAnalysisTaskSEDStarCharmFraction.cxx
   AliAnalysisTaskSESignificance.cxx
   AliAnalysisTaskSEHFQA.cxx
+  AliAnalysisTaskTrackingSysPropagation.cxx
   AliMultiDimVector.cxx
   AliSignificanceCalculator.cxx
   AliHFMassFitter.cxx
