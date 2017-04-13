@@ -23,7 +23,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t MaxFracSharedTPCCl=0.4,
                              TString sSelecCharge="",
                              Bool_t bPtDepDCAxyCut=kFALSE,
-                             Bool_t bCalculateFlow=kFALSE,
+                             Bool_t bResetNegativeZDC=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
                              Bool_t bSpecialVZERORingSelection=kFALSE,
@@ -95,6 +95,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Double_t MaxChi2PerClTPC=4.;
   Bool_t bRequireITSRefit=kFALSE;
   Bool_t bUseTightPileUp=kFALSE;
+  Bool_t bCalculateFlow=kTRUE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -140,6 +141,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskFE->SetRejectPileUpTight(bUseTightPileUp);
  taskFE->SetUseMCCen(bZDCMCCen);
  taskFE->SetZDCGainAlpha(ZDCGainAlpha);
+ taskFE->SetResetNegativeZDC(bResetNegativeZDC);
   if (sDataSet == "2010") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2010);
   if (sDataSet == "2011") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2011);
   if (sDataSet == "2015") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015);

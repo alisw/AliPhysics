@@ -161,6 +161,7 @@ fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
 fRejectPileUpTight(kFALSE),
+fResetNegativeZDC(kFALSE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator(kV0M),
@@ -325,6 +326,7 @@ fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
 fRejectPileUpTight(kFALSE),
+fResetNegativeZDC(kFALSE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator(kV0M),
@@ -1575,11 +1577,19 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         for(Int_t i=0; i<5; i++) {
           if(fTowerGainEq[0][i]) towZNC[i] = towZNCraw[i]*fTowerGainEq[0][i]->GetBinContent(fTowerGainEq[0][i]->FindBin(centrperc));
           if(fTowerGainEq[1][i]) towZNA[i] = towZNAraw[i]*fTowerGainEq[1][i]->GetBinContent(fTowerGainEq[1][i]->FindBin(centrperc));
+          if(fResetNegativeZDC) {
+            if(towZNC[i]<0.) towZNC[i] = 0.;
+            if(towZNA[i]<0.) towZNA[i] = 0.;
+          }
         }
       } else {
         for(Int_t i=0; i<5; i++) {
           towZNC[i] = towZNCraw[i];
           towZNA[i] = towZNAraw[i];
+          if(fResetNegativeZDC) {
+            if(towZNC[i]<0.) towZNC[i] = 0.;
+            if(towZNA[i]<0.) towZNA[i] = 0.;
+          }
           fZNCTower[RunBin][i]->Fill(centrperc,towZNC[i]);
           fZNATower[RunBin][i]->Fill(centrperc,towZNA[i]);
         }
@@ -1617,6 +1627,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
           }
           if(fUseZDCSpectraCorr && EZNC<=0.) fAllChONZNC=kFALSE;
+          
           SumEZNC += EZNC;
           
           // build centroid
