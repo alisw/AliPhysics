@@ -13,23 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- //
- // Base class for the EMCAL simulation parameters.
- //
- //
- */
-
 // --- Root header files ---
 #include "TMath.h"
 // --- AliRoot header files ---
 #include "AliEMCALSimParam.h"
 #include "AliLog.h"
 
-
-ClassImp(AliEMCALSimParam)
+/// \cond CLASSIMP
+ClassImp(AliEMCALSimParam);
+/// \endcond
 
 AliEMCALSimParam  * AliEMCALSimParam::fgSimParam = 0 ;
+
+///
+/// Constructor 
 //-----------------------------------------------------------------------------
 AliEMCALSimParam::AliEMCALSimParam() :
 TNamed(),    
@@ -47,9 +44,7 @@ fA(0.),
 fB(0.),
 fECPrimThreshold(0.) //SDigitizer   
 {
-  //Constructor 
-
-  //Parameters in Digitizer
+  // Parameters in Digitizer
   fMeanPhotonElectron = 4400;    // electrons per GeV 
   fGainFluctuations   = 15.;     // obtained empiricaly to match beam test, from Paraskevi Ganoti   
   fPinNoise           = 0.012;   // APD noise in GeV from analysis test beam data 
@@ -59,17 +54,17 @@ fECPrimThreshold(0.) //SDigitizer
   fTimeResolutionPar1 = 1.45861; // From F. Blanco: 1.20773^2
   fTimeDelay          = 600e-9 ; // 600 ns
   fTimeDelayFromOCDB  = kFALSE ; 
-
+  
   fNADCEC             = (Int_t) TMath::Power(2,16) ; // number of channels in Tower ADC - 65536
-	
+  
   //SDigitizer
   fA                  = 0;
   fB                  = 1.e+6; // Dynamic range now 2 TeV
   fECPrimThreshold    = 0.05;  // GeV	// threshold for deposit energy of hit
-	
 }
 
-
+///
+/// Copy constructor.
 //-----------------------------------------------------------------------------
 AliEMCALSimParam::AliEMCALSimParam(const AliEMCALSimParam& ):
 TNamed(),
@@ -87,42 +82,38 @@ fA(0.),
 fB(0.),
 fECPrimThreshold(0.)//SDigitizer
 {
-  //Copy constructor.
   AliError("Should not use copy constructor for singleton") ;
-
+  
   fgSimParam = this ;
-	
 }
 
+///
+/// Get Instance
 //-----------------------------------------------------------------------------                                                            
-AliEMCALSimParam * AliEMCALSimParam::GetInstance(){
-// Get Instance
-
-  if(!fgSimParam){
-  	fgSimParam = new AliEMCALSimParam() ;
-  }
+AliEMCALSimParam * AliEMCALSimParam::GetInstance()
+{
+  if(!fgSimParam)
+    fgSimParam = new AliEMCALSimParam() ;
   
   return fgSimParam ;
-	
 }
 
+///
+/// Assignment operator.
 //-----------------------------------------------------------------------------
 AliEMCALSimParam& AliEMCALSimParam::operator = (const AliEMCALSimParam& simParam)
 {
-  //Assignment operator.
-
-  if(this != &simParam) {
+  if(this != &simParam) 
     AliError("Should not use operator= for singleton\n") ;
-  }
-
+  
   return *this;
 }
 
+///
+/// Print simulation parameters to stdout
 //-----------------------------------------------------------------------------
 void AliEMCALSimParam::Print(Option_t *) const
-{
-  // Print simulation parameters to stdout
- 
+{ 
   printf("=== Parameters in Digitizer === \n");
   printf("\t Electronics noise in EMC (fPinNoise)       = %f, (fTimeNoise) = %e\n", fPinNoise, fTimeNoise) ;
   printf("\t Threshold  in EMC  (fDigitThreshold)       = %d\n", fDigitThreshold)  ;
@@ -130,7 +121,8 @@ void AliEMCALSimParam::Print(Option_t *) const
   printf("\t Time Resolution (fTimeResolutionPar1)      = %g\n", fTimeResolutionPar1) ;
   printf("\t Time Delay (fTimeDelay)                    = %g\n", fTimeDelay) ;
   printf("\t Time Delay OCDB (fTimeDelayFromOCDB)       = %d\n", fTimeDelayFromOCDB) ;
-  printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d, Gain Fluc. (fGainFluctuations) %2.1f\n", fMeanPhotonElectron,fGainFluctuations)  ;
+  printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d, Gain Fluc. (fGainFluctuations) %2.1f\n", 
+         fMeanPhotonElectron,fGainFluctuations)  ;
   printf("\t N channels in EC section ADC (fNADCEC)     = %d\n", fNADCEC) ;
 
   printf("\n");
@@ -139,6 +131,5 @@ void AliEMCALSimParam::Print(Option_t *) const
   printf("\t sdigitization parameters       A = %f\n",     fA);
   printf("\t                                B = %f\n",     fB);
   printf("\t Threshold for EC Primary assignment  = %f\n", fECPrimThreshold);
-	
 }
 
