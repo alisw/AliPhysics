@@ -179,6 +179,7 @@ fBuilTPCTOF(kFALSE),
 fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
+fRecalibrateTOF(kFALSE),
 fFineTOFReso(kFALSE),
 fSelectBit(AliVEvent::kINT7),
 
@@ -2077,7 +2078,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       coord[0] = AliTOFGeometry::GetX(det);
       coord[1] = AliTOFGeometry::GetY(det);
       coord[2] = AliTOFGeometry::GetZ(det);
-      hTOFDist->Fill(AliTOFGeometry::GetSector(coord), AliTOFGeometry::GetStrip(coord));
+      hTOFDist->Fill(AliTOFGeometry::GetSector(coord), AliTOFGeometry::GetStripNumberPerSM(AliTOFGeometry::GetPlate(coord), AliTOFGeometry::GetStrip(coord)));
       hTOFResidualX->Fill(fTOFImpactDX);
       hTOFResidualZ->Fill(fTOFImpactDZ);
       hTOFChannel->Fill(fTOFchan);
