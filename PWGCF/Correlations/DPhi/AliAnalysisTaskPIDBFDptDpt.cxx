@@ -1014,6 +1014,8 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
         }
     }
     
+  fUtils = new AliAnalysisUtils();
+	
   createHistograms();
 
   PostData(0,_outputHistoList);
@@ -1290,8 +1292,6 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
         }
       else if ( fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" )
 	{
-	  fUtils = new AliAnalysisUtils();
-
 	  //remove Pile-Up events
 	  fUtils->SetUseMVPlpSelection(kTRUE);
 	  fUtils->SetUseOutOfBunchPileUp(kTRUE);
