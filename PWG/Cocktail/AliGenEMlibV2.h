@@ -19,6 +19,7 @@
 #include "TObject.h"
 #include "TF1.h"
 #include "TH1D.h"
+#include "TH2F.h"
 
 class iostream;
 class TRandom;
@@ -61,9 +62,11 @@ public:
   // General functions
   static Bool_t SetPtParametrizations(TString fileName, TString dirName);
   static void   SetMtScalingFactors(TString fileName, TString dirName);
+  static Bool_t SetPtYDistributions(TString fileName, TString dirName);
   static TF1*   GetPtParametrization(Int_t np);
   static TH1D*  GetMtScalingFactors();
-  
+  static TH2F*  GetPtYDistribution(Int_t np);
+
   static Int_t fgSelectedCollisionsSystem;                                                      // selected pT parameter
   static Int_t fgSelectedCentrality;                                                            // selected Centrality
   static Int_t fgSelectedV2Systematic;                                                          // selected v2 systematics, usefully values: -1,0,1
@@ -216,9 +219,9 @@ private:
   static TF1*     fPtParametrization[18];     // pt paramtrizations
   static TF1*     fPtParametrizationProton;   // pt paramtrization
   static TH1D*    fMtFactorHisto;             // mt scaling factors
+  static TH2F*    fPtYDistribution[18];       // pt-y distributions
 
-  ClassDef(AliGenEMlibV2,5);
-  
+  ClassDef(AliGenEMlibV2,6);
 };
 
 #endif
