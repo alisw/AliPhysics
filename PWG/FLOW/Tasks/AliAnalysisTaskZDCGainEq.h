@@ -182,6 +182,8 @@ private:
   TProfile2D     *fHist_znAx_V0_VxVy[90][10];  //!
   TProfile2D     *fHist_znAy_V0_VxVy[90][10];  //!
 
+  TProfile2D  *fHist_ZDCC_En_Run[90];    //!
+  TProfile2D  *fHist_ZDCA_En_Run[90];    //!
 
 
   ClassDef(AliAnalysisTaskZDCGainEq, 3); // example of analysis
