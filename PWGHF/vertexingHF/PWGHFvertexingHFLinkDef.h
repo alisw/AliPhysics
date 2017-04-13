@@ -17,6 +17,7 @@
 #pragma link C++ class AliVertexingHFUtils+;
 #pragma link C++ class AliHFSystErr+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
+#pragma link C++ class AliRDHFCutsB0toDStarPi+;
 #pragma link C++ class AliRDHFCutsJpsitoee+;
 #pragma link C++ class AliRDHFCutsDplustoKpipi+;
 #pragma link C++ class AliRDHFCutsDplustoK0spi+;
@@ -34,6 +35,7 @@
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskMEVertexingHF+;
+#pragma link C++ class AliAnalysisTaskSEB0toDStarPi+;
 #pragma link C++ class AliAnalysisTaskSESelectHF+;
 #pragma link C++ class AliAnalysisTaskSECleanupVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSECompareHF+;
