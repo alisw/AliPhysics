@@ -179,7 +179,7 @@ fBuilTPCTOF(kFALSE),
 fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
-fRecalibrateTOF(kFALSE),
+fFineTOFReso(kFALSE),
 fSelectBit(AliVEvent::kINT7),
 
 tb(),//TBenchmark
@@ -218,6 +218,8 @@ hTimeOfFlightRes(0x0),
 hTimeOfFlightTOFRes(0x0),
 hTimeOfFlightGoodRes(0x0),
 hTimeOfFlightResNoMismatch(0x0),
+hTimeOfFlightResFine(0x0),
+hTimeOfFlightResFinePerEvent(0x0),
 
 fMultiplicityBin(kEvtMultBins+1),
 fEtaRange(0.8),
@@ -298,6 +300,11 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra(){//Destructor
   if (fListHist) {
     delete fListHist;
     fListHist = 0;
+  }
+  
+  if (hTimeOfFlightResFinePerEvent) {
+    delete hTimeOfFlightResFinePerEvent;
+    hTimeOfFlightResFinePerEvent = 0;
   }
   
   if (fTOFT0maker){
@@ -879,6 +886,14 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     
     hTimeOfFlightResNoMismatch = new TH1F("hTimeOfFlightResNoMismatch", "TOF Resolution Wo Mismatch in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 800, -4000, 4000);
     fListHist->AddLast(hTimeOfFlightResNoMismatch);
+    
+    if(fFineTOFReso){
+      hTimeOfFlightResFine = new TH2F("hTimeOfFlightResFine", "TOF Resolution in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500, 100, 0, 100);
+      fListHist->AddLast(hTimeOfFlightResFine);
+      
+      hTimeOfFlightResFinePerEvent = new TH1F("hTimeOfFlightResFinePerEvent", "", 100, -500, 500);//This histogram is not to be added as it is used only to store the information for each event, be sure to have it in the destructor!!!
+      
+    }
     
     hTOFClusters = new TH1F("hTOFClusters", "Number of clusters per track;TOF Clusters;Number of tracks", 50, -.5, 49.5);
     fListHist->AddLast(hTOFClusters);
@@ -2069,6 +2084,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       if((fP>0.9) && (fP<1.1)){//P range selected for TOF resolution measurements
         Float_t deltat = fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion];
         hTimeOfFlightRes->Fill(deltat);
+        if(fFineTOFReso) hTimeOfFlightResFinePerEvent->Fill(deltat);
         for(Int_t i = 0; i < 3; i++){//Loop on pi/k/p
           if(TMath::Abs(fTPCSigma[kpi+i]) < 5 && TMath::Abs(fTOFSigma[kpi+i]) < 5){
             hTimeOfFlightResNoMismatch->Fill(fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion]);
@@ -2105,6 +2121,13 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     StopTimePerformance(6);
   }
   #endif
+  
+  if(fFineTOFReso){
+    for (Int_t bin = 1; bin <= hTimeOfFlightResFinePerEvent->GetNbinsX(); bin++) {
+      hTimeOfFlightResFine->Fill(hTimeOfFlightResFinePerEvent->GetXaxis()->GetBinCenter(bin), hTimeOfFlightResFinePerEvent->GetEntries(), hTimeOfFlightResFinePerEvent->GetBinContent(bin));
+    }
+    hTimeOfFlightResFinePerEvent->Reset();
+  }
   
   FillTimePerformance();
   
@@ -3023,7 +3046,7 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
   if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
-    
+  
   // init TOF-T0 maker
   fTOFT0maker->SetTimeResolution(fTimeResolution);
   

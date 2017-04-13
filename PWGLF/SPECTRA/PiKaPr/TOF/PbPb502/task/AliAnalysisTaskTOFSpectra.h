@@ -507,6 +507,7 @@ private:
   const Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
   const Bool_t fPerformance;    ///<  Flag to fill the performance plots
   const Bool_t fRecalibrateTOF; ///<  Flag to require to recalibrate the TOF signal
+  const Bool_t fFineTOFReso;    ///<  Flag to compute a finer TOF resolution as a function of the number of tracks with TOF signal
   UInt_t fSelectBit;            ///<  Mask for Trigger selection
   
   //PID utilities
@@ -711,6 +712,8 @@ private:
   TH1F* hTimeOfFlightTOFRes;                    ///<  Histogram to compute the Time Of Flight resolution for events without the T0 Fill
   TH1F* hTimeOfFlightGoodRes;                   ///<  Histogram to compute the Time Of Flight resolution for tracks with good matching
   TH1F* hTimeOfFlightResNoMismatch;             ///<  Histogram to compute the Time Of Flight resolution for PID consistent with TPC for Pi K P
+  TH2F* hTimeOfFlightResFine;                   ///<  Histogram to compute the Time Of Flight resolution as a function of the matched tracks to TOF
+  TH1F* hTimeOfFlightResFinePerEvent;           ///<  Histogram to compute the Time Of Flight resolution per event, this particular one should not be added to the output list as it yields no information but it is rather auxiliary to the computation of the TOF resolution as a function of the TOF tracks
   TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
   TH2F* hTOFDist;                               ///<  Histogram with the distributions of the TOF strips and sectors
   TH2I* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
