@@ -1020,6 +1020,11 @@ public:
   void SetFlowSPZDCv1etaNUAPro(TProfile* const TP, Int_t const c, Int_t const k, Int_t const r) {this->fFlowSPZDCv1etaNUAPro[c][k][r] = TP;};
   TProfile* GetFlowSPZDCv1etaNUAPro(Int_t const c, Int_t const k, Int_t const r) const {return this->fFlowSPZDCv1etaNUAPro[c][k][r];};
   
+  void SetFlowSPZDCv1etaPtPro(TProfile2D* const TP, Int_t const c, Int_t const k) {this->fFlowSPZDCv1etaPtPro[c][k] = TP;};
+  TProfile2D* GetFlowSPZDCv1etaPtPro(Int_t const c, Int_t const k) const {return this->fFlowSPZDCv1etaPtPro[c][k];};
+  void SetFlowSPZDCv1etaPtHist(TH2D* const TP, Int_t const c, Int_t const k) {this->fFlowSPZDCv1etaPtHist[c][k] = TP;};
+  TH2D* GetFlowSPZDCv1etaPtHist(Int_t const c, Int_t const k) const {return this->fFlowSPZDCv1etaPtHist[c][k];};
+  
   // Flow SP VZ
   void SetFlowSPVZList(TList* const TL) {this->fFlowSPVZList = TL;};
   void SetFlowSPVZCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPVZCorPro[c][eg][h] = TP;};
@@ -1518,7 +1523,10 @@ private:
   TProfile *fCRCQnImCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
   TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
   TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
-  TH3D* fCRCQVecPhiHist[fCRCMaxnRun]; //! phi ditribution POIs
+  TH3D* fCRCQVecPhiHist; //! phi ditribution POIs
+  TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs
+  TH3D* fCRCQVecHarCosHistCh[2]; //! phi ditribution POIs
+  TH3D* fCRCQVecHarSinHistCh[2]; //! phi ditribution POIs
 //  TH3D* fCRCQVecPhiHistVtxDep[fCRCMaxnRun][fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
@@ -1700,6 +1708,7 @@ private:
   TH2D *fPOIEtaPtQRe[2][fFlowNHarmMax]; //!
   TH2D *fPOIEtaPtQIm[2][fFlowNHarmMax]; //!
   TH2D *fPOIEtaPtMul[2][fFlowNHarmMax]; //!
+  const static Int_t fZDCPtDiffNBins = 3;
   
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
@@ -1723,6 +1732,9 @@ private:
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   TH1D *fFlowSPZDCv1etaHist[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   TProfile *fFlowSPZDCv1etaNUAPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
+  const static Int_t fkNHistv1etaPt = 6;
+  TProfile2D *fFlowSPZDCv1etaPtPro[fCRCMaxnCen][fkNHistv1etaPt]; //!
+  TH2D *fFlowSPZDCv1etaPtHist[fCRCMaxnCen][fkNHistv1etaPt]; //!
   const static Int_t fkNHistQVecCorrv1eta = 10;
 //  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
@@ -1889,7 +1901,7 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   
-  ClassDef(AliFlowAnalysisCRC,46);
+  ClassDef(AliFlowAnalysisCRC,47);
   
 };
 
