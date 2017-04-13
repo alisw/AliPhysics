@@ -2326,6 +2326,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelationsMCKine(AliAODMCPartic
   //Fill of D0 phi distribution
   if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_PhiDistr_D0"))->Fill(d->Phi()); 
   if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_EtaDistr_D0"))->Fill(d->Phi()); 
+  if (!fMixing) ((TH2F*)fOutputStudy->FindObject("hist_PhiVsEtaDistr_D0"))->Fill(d->Phi(),d->Eta()); 
   
   //Origin of D0
   TString orig="";
