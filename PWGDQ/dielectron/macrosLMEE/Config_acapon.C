@@ -14,7 +14,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE; //Needed for LMEEcutlib
 Bool_t isQAtask=kTRUE;
 Int_t selectedPID = -1;
-Bool_t pairCuts = kFALSE;
+Bool_t pairCuts = kTRUE;
 
 AliDielectron* Config_acapon(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t SDDstatus =kFALSE, Bool_t doMixing = kTRUE)
 {
