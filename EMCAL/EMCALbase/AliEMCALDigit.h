@@ -14,7 +14,7 @@
 ///  tracknumbers Digits are created using AliEMCALSDigitizer, followed
 ///  by AliEMCALDigitizer. Based on : AliPHOSDigit
 ///
-/// \author: Sahal Yacoob (LBL)
+/// \author Sahal Yacoob (LBL)
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
 ///
 ////////////////////////////////////////////////////////////////////////////////

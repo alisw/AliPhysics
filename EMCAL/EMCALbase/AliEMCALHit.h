@@ -12,7 +12,7 @@
 /// A hit in EMCAL is the sum of all hits from the same entering particle
 /// Based on AliPHOSHit
 ///
-/// \author: Sahal Yacoob (LBL)
+/// \author Sahal Yacoob (LBL)
 ///
 ////////////////////////////////////////////////////////////////////////////////
 
