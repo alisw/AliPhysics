@@ -212,6 +212,7 @@ hTOFResidualX(0x0),
 hTOFResidualZ(0x0),
 hTOFChannel(0x0),
 //TOF and T0 distributions for resolution
+hT0(0x0),
 hT0Resolution(0x0),
 hTimeOfFlightRes(0x0),
 hTimeOfFlightTOFRes(0x0),
@@ -859,6 +860,9 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     
     hTOFChannel = new TH1F("hTOFChannel", "Channel;Channel;Counts", 500, 0., 170000);
     fListHist->AddLast(hTOFChannel);
+    
+    hT0 = new TH1F("hT0", "hT0;T0", 500, -250, 250);
+    fListHist->AddLast(hT0);
     
     hT0Resolution = new TH1F("hT0Resolution", "T0Resolution;T0 #sigma (ps)", 250, 0, 250);
     fListHist->AddLast(hT0Resolution);
@@ -1668,6 +1672,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     fT0TrkSigma = fTOFPIDResponse.GetStartTimeRes(fP);  // T0best resolution time
     
     //Fill histograms with start-time information
+    hT0->Fill(fT0TrkTime);
     hT0Resolution->Fill(fT0TrkSigma);
     
     //Get TOF Expected Sigma

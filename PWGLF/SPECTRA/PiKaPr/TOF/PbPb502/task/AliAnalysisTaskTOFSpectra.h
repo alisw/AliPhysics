@@ -705,6 +705,7 @@ private:
   TH1F* hTOFResidualZ;                          ///<  Histogram with the Impact Residual Z
   TH1F* hTOFChannel;                            ///<  Histogram with the Channel in the TOF
   TH1F* hTOFTracks;                             ///<  Histogram with the number of tracks Channel in the TOF
+  TH1F* hT0;                                    ///<  Histogram with the T0 used for each track
   TH1F* hT0Resolution;                          ///<  Histogram with the resolution on the T0
   TH1F* hTimeOfFlightRes;                       ///<  Histogram to compute the Time Of Flight resolution
   TH1F* hTimeOfFlightTOFRes;                    ///<  Histogram to compute the Time Of Flight resolution for events without the T0 Fill
