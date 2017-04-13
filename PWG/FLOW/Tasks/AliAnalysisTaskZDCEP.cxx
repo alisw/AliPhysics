@@ -446,7 +446,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   }
   
   Double_t xyZNCfinal[2]={fZDCFlowVect[0]->X(),fZDCFlowVect[0]->Y()};
-  Double_t xyZNAfinal[2]={fZDCFlowVect[1]->X(),fZDCFlowVect[1]->Y()};
+  Double_t xyZNAfinal[2]={-fZDCFlowVect[1]->X(),fZDCFlowVect[1]->Y()}; // this is not a bug: QAReR --> -QAReR
   fFlowEvent->SetZDC2Qsub(xyZNCfinal,denZNC,xyZNAfinal,denZNA);
   
   // save run number
