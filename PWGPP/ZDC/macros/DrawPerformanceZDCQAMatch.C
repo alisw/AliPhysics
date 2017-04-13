@@ -52,7 +52,7 @@ TTree * ttree = (TTree*) fin->Get("trending");  //in
 TTree * tree = new TTree("tree","tree");        //out (to be summed)
 
 if (!ttree){
-  Printf("Invalid trending tree.");
+  Printf("Invalid trending tree!!!!!!!!!!!!!!");
   return 2;
 }
 
@@ -77,7 +77,6 @@ gStyle->SetTickLength(0.02,"y");
 gStyle->SetLabelSize(0.02,"xyz");
 gStyle->SetLabelOffset(0.03,"xyz");
 
-char  outfilename[200]= "trending.root";
 TString plotDir(".");
 
 legend = new TLegend(0.9,0.1,1.0,0.9);
@@ -109,22 +108,22 @@ Double_t ZN_TDC_Diff_err=0;
 Double_t ZNC_TDC=0;
 Double_t ZNA_TDC=0;
 
-TH1F *hZNCpmcUncalib = new TH1F("hZNCpmcUncalib","hZNCpmcUncalib",200.,0.,600.);
-TH1F *hZNApmcUncalib = new TH1F("hZNApmcUncalib","hZNApmcUncalib",200.,0.,600.);
-TH1F *hZPCpmcUncalib = new TH1F("hZPCpmcUncalib","hZPCpmcUncalib",200.,0.,600.);
-TH1F *hZPApmcUncalib = new TH1F("hZPApmcUncalib","hZPApmcUncalib",200.,0.,600.);
-TH1F *hZEM1 = new TH1F("hZEM1","hZEM1",100.,0.,1000.);
-TH1F *hZEM2 = new TH1F("hZEM2","hZEM2",100.,0.,1000.);
+TH1F *hZNCpmcUncalib = new TH1F("hZNCpmcUncalib","hZNCpmcUncalib",200.,0.,2000.);
+TH1F *hZNApmcUncalib = new TH1F("hZNApmcUncalib","hZNApmcUncalib",200.,0.,2000.);
+TH1F *hZPCpmcUncalib = new TH1F("hZPCpmcUncalib","hZPCpmcUncalib",200.,0.,2000.);
+TH1F *hZPApmcUncalib = new TH1F("hZPApmcUncalib","hZPApmcUncalib",200.,0.,2000.);
+TH1F *hZEM1 = new TH1F("hZEM1","hZEM1",200.,0.,2000.);
+TH1F *hZEM2 = new TH1F("hZEM2","hZEM2",200.,0.,2000.);
 
 ttree->SetBranchAddress("run",&runNumber);
 ttree->SetBranchAddress("ZNC_mean_value",&ZNC_mean);
 ttree->SetBranchAddress("ZNA_mean_value",&ZNA_mean);
 ttree->SetBranchAddress("ZPC_mean_value",&ZPC_mean);
 ttree->SetBranchAddress("ZPA_mean_value",&ZPA_mean);
-ttree->SetBranchAddress("ZNCuncalib_mean_value",&ZNCuncalib_mean);
-ttree->SetBranchAddress("ZNAuncalib_mean_value",&ZNAuncalib_mean);
-ttree->SetBranchAddress("ZPCuncalib_mean_value",&ZPCuncalib_mean);
-ttree->SetBranchAddress("ZPAuncalib_mean_value",&ZPAuncalib_mean);
+ttree->SetBranchAddress("ZNCuncalib_mean",&ZNCuncalib_mean);
+ttree->SetBranchAddress("ZNAuncalib_mean",&ZNAuncalib_mean);
+ttree->SetBranchAddress("ZPCuncalib_mean",&ZPCuncalib_mean);
+ttree->SetBranchAddress("ZPAuncalib_mean",&ZPAuncalib_mean);
 ttree->SetBranchAddress("ZEM1_mean_value",&ZEM1_mean);
 ttree->SetBranchAddress("ZEM2_mean_value",&ZEM2_mean);
 ttree->SetBranchAddress("ZNC_X_Centroid",&ZNC_XCent);
@@ -139,8 +138,8 @@ ttree->SetBranchAddress("ZN_TDC_Sum",&ZN_TDC_Sum);
 ttree->SetBranchAddress("ZN_TDC_Diff",&ZN_TDC_Diff);
 ttree->SetBranchAddress("ZN_TDC_Sum_Err",&ZN_TDC_Sum_err);
 ttree->SetBranchAddress("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err);
-ttree->SetBranchAddress("ZNC_TDC",&ZNC_TDC);
-ttree->SetBranchAddress("ZNA_TDC",&ZNA_TDC);
+//ttree->SetBranchAddress("ZNC_TDC",&ZNC_TDC);
+//ttree->SetBranchAddress("ZNA_TDC",&ZNA_TDC);
 
 TH1F *hznc = new TH1F("hznc","ZNC average signal",3,-1,1);
 hznc->GetXaxis()->SetRangeUser(-1.,1.);
@@ -170,28 +169,28 @@ hzpa->SetMarkerStyle(20);
 hzpa->SetMarkerColor(kRed);
 hzpa->SetLineColor(kRed);
 
-TH1F *hzncUncalib = new TH1F("hzncUncalib","ZNC average signal",3,-1,1);
+TH1F *hzncUncalib = new TH1F("hzncUncalib","ZNC uncalibrated average signal",3,-1,1);
 hzncUncalib->GetXaxis()->SetRangeUser(-1.,1.);
 hzncUncalib->SetDrawOption("EP");
 hzncUncalib->SetMarkerStyle(20);
 hzncUncalib->SetMarkerColor(kAzure+10);
 hzncUncalib->SetLineColor(kAzure+10);
 
-TH1F *hznaUncalib = new TH1F("hznaUncalib","ZNA average signal",3,-1,1);
+TH1F *hznaUncalib = new TH1F("hznaUncalib","ZNA uncalibrated average signal",3,-1,1);
 hznaUncalib->GetXaxis()->SetRangeUser(-1.,1.);
 hznaUncalib->SetDrawOption("EP");
 hznaUncalib->SetMarkerStyle(20);
 hznaUncalib->SetMarkerColor(kAzure+10);
 hznaUncalib->SetLineColor(kAzure+10);
 
-TH1F *hzpcUncalib = new TH1F("hzpcUncalib","ZPC average signal",3,-1,1);
+TH1F *hzpcUncalib = new TH1F("hzpcUncalib","ZPC uncalibrated average signal",3,-1,1);
 hzpcUncalib->GetXaxis()->SetRangeUser(-1.,1.);
 hzpcUncalib->SetDrawOption("EP");
 hzpcUncalib->SetMarkerStyle(20);
 hzpcUncalib->SetMarkerColor(kAzure+10);
 hzpcUncalib->SetLineColor(kAzure+10);
 
-TH1F *hzpaUncalib = new TH1F("hzpaUncalib","ZPA average signal",3,-1,1);
+TH1F *hzpaUncalib = new TH1F("hzpaUncalib","ZPA uncalibrated average signal",3,-1,1);
 hzpaUncalib->GetXaxis()->SetRangeUser(-1.,1.);
 hzpaUncalib->SetDrawOption("EP");
 hzpaUncalib->SetMarkerStyle(20);
@@ -314,7 +313,7 @@ hZPApmcUncalib->SetXTitle("ZPA signal ");
 
 hZEM1 = dynamic_cast<TH1F*> (fin->Get("fhZEM1Spectrum"));
 //hZEM1->GetXaxis()->SetRangeUser(0.,2000);
-if(hZEM1->GetEntries()>0.) hZEM1->Scale(1./hZEM1Spectrum->GetEntries());
+if(hZEM1->GetEntries()>0.) hZEM1->Scale(1./hZEM1->GetEntries());
 hZEM1->SetLineColor(kRed);
 hZEM1->SetLineWidth(2);
 hZEM1->SetTitle("ZEM1 spectrum");
@@ -322,7 +321,7 @@ hZEM1->SetXTitle("ZEM1 signal (ADC ch.)");
 
 hZEM2 = dynamic_cast<TH1F*> (fin->Get("fhZEM2Spectrum"));
 //hZEM2->GetXaxis()->SetRangeUser(0.,2000);
-if(hZEM2S->GetEntries()>0.) hZEM2->Scale(1./hZEM2Spectrum->GetEntries());
+if(hZEM2->GetEntries()>0.) hZEM2->Scale(1./hZEM2->GetEntries());
 hZEM2->SetLineColor(kRed);
 hZEM2->SetLineWidth(2);
 hZEM2->SetTitle("ZEM2 spectrum");
@@ -565,27 +564,19 @@ list.Add(cZPC_Spectra_Uncal);
 list.Add(cZPA_Spectra_Uncal);
 list.Add(cZEM1_Spectra);
 list.Add(cZEM2_Spectra);
-list.Add(hznc);
-list.Add(hzna);
-list.Add(hzpc);
-list.Add(hzpa);
-list.Add(hzncUncalib);
-list.Add(hznaUncalib);
-list.Add(hzpcUncalib);
-list.Add(hzpaUncalib);
-list.Add(hzem1);
-list.Add(hzem2);
-list.Add(hzna_Xcentroid);
-list.Add(hzna_Ycentroid);
-list.Add(hznc_Xcentroid);
-list.Add(hznc_Ycentroid);
-list.Add(hzn_TDC_Sum);
-list.Add(hzn_TDC_Diff);
+list.Add(cTimingSum);
+list.Add(cTimingDiff);
+list.Add(cZNA_X_centroid);
+list.Add(cZNA_Y_centroid);
+list.Add(cZNC_X_centroid);
+list.Add(cZNC_Y_centroid);
 
-TFile * fout=new TFile(outfilename,"recreate");
+TFile *fout;
+fout = TFile::Open("prodQAhistos.root", "update");
+if(!fout) fout = new TFile("prodQAhistos.root");
 fout->cd();
 list.Write();
-tree.Write();
+tree->Write();
 fout->Close();
 
 return 0;

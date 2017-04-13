@@ -101,8 +101,8 @@ int MakeTrendZDC(char *infile, int run) {
 
   if (fhZNCpmc->GetEntries()>0) ZNC_mean = fhZNCpmc->GetMean();
   if (fhZNApmc->GetEntries()>0) ZNA_mean = fhZNApmc->GetMean();
-  if fhZPCpmc->GetEntries()) ZPC_mean = fhZPCpmc->GetMean();
-  if (fhZPApmc->GetEntries()) ZPA_mean = fhZPApmc->GetMean();
+  if (fhZPCpmc->GetEntries()>0) ZPC_mean = fhZPCpmc->GetMean();
+  if (fhZPApmc->GetEntries()>0) ZPA_mean = fhZPApmc->GetMean();
   if (fhZNCpmcUncalib->GetEntries()>0) ZNCuncalib_mean = fhZNCpmcUncalib->GetMean();
   if (fhZPCpmcUncalib->GetEntries()>0) ZPCuncalib_mean = fhZPCpmcUncalib->GetMean();
   if (fhZNApmcUncalib->GetEntries()>0) ZNAuncalib_mean = fhZNApmcUncalib->GetMean();
@@ -131,10 +131,10 @@ int MakeTrendZDC(char *infile, int run) {
   ttree->Branch("ZNA_mean_value",&ZNA_mean,"ZNA_mean_value/D");
   ttree->Branch("ZPC_mean_value",&ZPC_mean,"ZPC_mean_value/D");
   ttree->Branch("ZPA_mean_value",&ZPA_mean,"ZPA_mean_value/D");
-  ttree->Branch("ZNCuncalib_mean_value",&ZNCuncalib_mean,"ZNCuncalib_mean_value/D");
-  ttree->Branch("ZNAuncalib_mean_value",&ZNAuncalib_mean,"ZNAuncalib_mean_value/D");
-  ttree->Branch("ZPCuncalib_mean_value",&ZPCuncalib_mean,"ZPCuncalib_mean_value/D");
-  ttree->Branch("ZPAuncalib_mean_value",&ZPAuncalib_mean,"ZPAuncalib_mean_value/D");
+  ttree->Branch("ZNCuncalib_mean",&ZNCuncalib_mean,"ZNCuncalib_mean/D");
+  ttree->Branch("ZNAuncalib_mean",&ZNAuncalib_mean,"ZNAuncalib_mean/D");
+  ttree->Branch("ZPCuncalib_mean",&ZPCuncalib_mean,"ZPCuncalib_mean/D");
+  ttree->Branch("ZPAuncalib_mean",&ZPAuncalib_mean,"ZPAuncalib_mean/D");
   ttree->Branch("ZEM1_mean_value",&ZEM1_mean,"ZEM1_mean_value/D");
   ttree->Branch("ZEM2_mean_value",&ZEM2_mean,"ZEM2_mean_value/D");
   ttree->Branch("ZNC_X_Centroid",&ZNC_XCent,"ZNC_X_Centroid/D");
@@ -157,10 +157,6 @@ int MakeTrendZDC(char *infile, int run) {
 
   printf("==============  Saving histograms for run %i ===============\n",run);
 
-  if (fhTDCZNC) fhTDCZNC->Write();
-  if (fhTDCZNA) fhTDCZNA->Write();
-  if (fhTDCZNSum) fhTDCZNSum->Write();
-  if (fhTDCZNDiff) fhTDCZNDiff->Write();
   if (fhZEM1Spectrum) fhZEM1Spectrum->Write();
   if (fhZEM2Spectrum) fhZEM2Spectrum->Write();
   if (fhZNCpmc) fhZNCpmc->Write();
@@ -178,6 +174,8 @@ int MakeTrendZDC(char *infile, int run) {
   if (fDebunch) fDebunch->Write();
   if (fhTDCZNA) fhTDCZNA->Write();
   if (fhTDCZNC) fhTDCZNC->Write();
+  if (fhTDCZNSum) fhTDCZNSum->Write();
+  if (fhTDCZNDiff) fhTDCZNDiff->Write();
 
   ttree->Fill();
   printf("==============  Saving trending quantities in tree for run %i ===============\n",run);
