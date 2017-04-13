@@ -425,8 +425,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	  tailComplement[pmNumber] += adcPedSub[iClock];
 
 	if (fCorrectForSaturation) {
-	  f_Int0->Clear();
-	  f_Int1->Clear();
+	  f_Int0->Clear("C");
+	  f_Int1->Clear("C");
 	  fSaturationCorrection->GetEntry(pmNumber);
 	}
 
