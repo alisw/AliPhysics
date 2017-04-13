@@ -442,16 +442,11 @@ void AliAnalysisMuMu::PrintFitParam(TString spectraName, const char* subresult,c
   TObjArray* fitfunctionArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());
   TObjArray* pairCutArray     = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
   TObjArray* centralityArray  = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
-  TObjArray* paramArray       = TString(param).Tokenize(",");
-  TObjArray* subresultArray   = TString(subresult).Tokenize(",");
-  TObjArray* bins;
 
   // Iterater for loops
   TIter nextTrigger(triggerArray);
   TIter nextEventType(eventTypeArray);
   TIter nextPairCut(pairCutArray);
-  TIter nextparam(paramArray);
-  TIter nextSubResult(subresultArray);
   TIter nextCentrality(centralityArray);
 
   // Strings
@@ -461,13 +456,6 @@ void AliAnalysisMuMu::PrintFitParam(TString spectraName, const char* subresult,c
   TObjString* sparam;
   TObjString* ssubresult;
   TObjString* scentrality;
-
-  AliAnalysisMuMuSpectra* spectra=0x0;
-  TH1*       h          = 0x0;
-  TH1*       hcent      = 0x0;
-  TH1*       href       = 0x0;
-
-
 
   nextEventType.Reset();
   // Loop on each envenType (see MuMuConfig)
@@ -507,171 +495,8 @@ void AliAnalysisMuMu::PrintFitParam(TString spectraName, const char* subresult,c
             return;
           }
 
-          TCanvas    * c = new TCanvas;
-          int nparam = paramArray->GetEntries();
-          c->Divide(2,nparam);
-
-          // Loop on param
-          int k = 1;
-          nextparam.Reset();
-          while ( ( sparam = static_cast<TObjString*>(nextparam()) ) )
-          {
-            AliDebug(1,Form("param %s",sparam->String().Data()));
-
-            if(c)
-            {
-              // --- First canvas ---
-              c->cd(k);
-
-              TLegend*leg = new TLegend(0.1,0.7,0.48,0.9);
-              leg->SetHeader(Form("Fit Parameters %s ",sparam->String().Data()));
-              leg->SetTextSize(0.03);
-
-              printf("going to subcanvas %d\n",k );
-              int i = 1;
-              nextSubResult.Reset();
-              while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
-              {
-                //Loop over subresults
-                AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
-                if  ( !spectraName.Contains("VS") )
-                  h = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
-                else if ( spectraName.Contains("YVSPT") )
-                  h = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
-                else if ( spectraName.Contains("PTVSY") )
-                  h = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
-
-                if(!h) {
-                  AliError(Form("Cannot find histo for SubResults %s",ssubresult->String().Data()));
-                  return;
-                }
-
-                // beautifull histo
-                if( i!=3 && i!=5 && i!=10 && i!=11 && i!=12 && i!=13 && i!=14 ) h->SetMarkerColor(i); //nobody likes green and yellow
-                else               h->SetMarkerColor(i+5);
-
-                h->SetMarkerSize(1.);
-                h->SetMarkerStyle(20+i);
-                if(i==11)h->SetMarkerStyle(20+i+3);
-                if(i==1)
-                {
-                  h->GetYaxis()->SetTitleSize(0.05);
-                  h->GetYaxis()->SetLabelSize(0.05);
-                  h->GetXaxis()->SetLabelSize(0.05);
-                  h->GetXaxis()->SetTitleSize(0.05);
-                  h->SetTitle(Form(" %s for bin %s",sparam->String().Data(),spectraName.Data()));
-                  h->GetYaxis()->SetTitle(sparam->String().Data());
-                  if (spectraName.Contains("YVSPT") )
-                    h->GetXaxis()->SetTitle("PT");
-                  else if (spectraName.Contains("PTVSY") )
-                    h->GetXaxis()->SetTitle("Y");
-                }
-
-                if(! sparam->String().Contains("FitChi2PerNDF"))
-                {
-                  if(i==1)h->DrawCopy();
-                  else    h->DrawCopy("same");
-                }
-                else
-                {
-                  if(i==1)h->DrawCopy("p");
-                  else    h->DrawCopy("samep");
-                }
-
-                leg->AddEntry(h,Form("%s with %s",sparam->String().Data(),ssubresult->String().Data()),"p");
-                i++;
-              }
-
-              leg->Draw("same");
-
-              // --- ratio ---
-              c->cd(++k);
-
-              TLegend * leg2 = new TLegend(0.1,0.7,0.48,0.9);
-              leg2->SetHeader(Form("Ratio"));
-              leg2->SetTextSize(0.03);
-
-              nextSubResult.Reset();
-              int j= 1;
-              TString refName;
-              while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
-              {
-                AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
-
-                if(j==1)
-                {
-                  href    = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
-                  if  ( !spectraName.Contains("VS") ) href = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
-                  else if ( spectraName.Contains("YVSPT") )
-                    href = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
-                  else if ( spectraName.Contains("PTVSY") )
-                    href = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
-
-                  refName = href->GetName();
-                  j++;
-                  continue;
-                }
-
-                if  ( !spectraName.Contains("VS") )
-                  h = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
-                else if ( spectraName.Contains("YVSPT") )
-                  h = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
-                else if ( spectraName.Contains("PTVSY") )
-                  h = static_cast<TH2*>(spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
-
-                if(!h || !href )
-                {
-                  AliError(Form("Cannot find histos for SubResults  ratio "));
-                  return;
-                }
-
-                if( j!=3 && j!=5 && j!= 10 && j!=11 && j!=12 && j!=13 && j!=14 ) h->SetMarkerColor(j); //nobody likes green and yellow
-                else               h->SetMarkerColor(j+5);
-                h->SetMarkerSize(1.);
-                h->SetMarkerStyle(20+j);
-                if(j==11)h->SetMarkerStyle(20+j+3);
-                if(j==2)
-                {
-                  h->GetYaxis()->SetTitleSize(0.05);
-                  h->GetYaxis()->SetLabelSize(0.05);
-                  h->GetXaxis()->SetLabelSize(0.05);
-                  h->GetXaxis()->SetTitleSize(0.05);
-                  h->SetTitle(Form(" %s Ratio over %s for %s",sparam->String().Data(),refName.Data(),spectraName.Data()));
-                  if (spectraName.Contains("YVSPT") ) h->GetXaxis()->SetTitle("PT");
-                  else if (spectraName.Contains("PTVSY") ) h->GetXaxis()->SetTitle("Y");
-                }
-                h->Divide(href);
-                if(! sparam->String().Contains("FitChi2PerNDF"))
-                {
-                  if(j==2)h->DrawCopy();
-                  else    h->DrawCopy("same");
-                }
-                else
-                {
-                  if(j==2)h->DrawCopy("p");
-                  else    h->DrawCopy("samep");
-                }
-                leg2->AddEntry(h,Form("Results %d over Result 1",j),"pe");
-
-                j++;
-              }
-
-              leg2->Draw("same");
-              ++k;
-            } else {
-              nextSubResult.Reset();
-              int i= 1;
-              while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) ){
-                //Loop over subresults
-                AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
-                h = spectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
-                if(!h) {
-                  AliError(Form("Cannot find histo for SubResults %s",ssubresult->String().Data()));
-                  return;
-                }
-              }
-            }
-          }
+          AliAnalysisMuMuSpectraProcessorPP Processor(spectra);
+          Processor.PrintFitParam(subresult,param);
         }
       }
     }
@@ -680,8 +505,6 @@ void AliAnalysisMuMu::PrintFitParam(TString spectraName, const char* subresult,c
   delete triggerArray ;
   delete pairCutArray ;
   delete centralityArray ;
-  delete paramArray ;
-
   return ;
 }
 
@@ -924,8 +747,16 @@ void AliAnalysisMuMu::DivideRawMixHisto(const char* binType, const char* particl
                       }
 
                       for (int i = 0; i < 6; ++i) {
+                        TCanvas* c =new TCanvas();
+                        c->Divide(1,2);
+                        c->cd(1);
+                        hTableDistRaw[i]->Draw();
+                        hTableDistMix[i]->Draw("same");
+
                         hTableDistRaw[i]->Divide(hTableDistMix[i]); // Norm MinvMix histo
                         hTableDistRaw[i]->SetName(Form("%s_ratio",hTableDistMix[i]->GetName())); // Norm MinvMix histo
+                        c->cd(2);
+                        hTableDistRaw[i]->Draw();
                       }
 
                       // save results in mergeable collection
@@ -3046,17 +2877,6 @@ void AliAnalysisMuMu::NormMixedMinv(const char* binType, const char* particle, c
                     AliAnalysisMuMuBinning::Range* bin;
                     TIter next(bins);
 
-                    // Add some element to ID
-                    TString spectraName(binning->GetName());
-                    if ( strcmp(flavour,"") != 0 ){
-                      spectraName += "-";
-                      spectraName += flavour;
-                    }
-                    if ( corrected ){
-                      spectraName += "-";
-                      spectraName += "AccEffCorr";
-                    }
-
                     //MAIN PART : Loop on every binning range
                     while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
                     {
@@ -5104,16 +4924,6 @@ void AliAnalysisMuMu::PlotJpsiYield(const char* spectraName, const char* subresu
             {
               AliError("Not implemented yet ! You are welcome to do so :D ");
               return;
-              // AliAnalysisMuMuSpectraProcessorPbP * Processor = new AliAnalysisMuMuSpectraProcessorPbP(spectra,spectraPath,externfile,externfile2);
-              // AliDebug(1,Form("Spectra = %p",Processor));
-
-              // Int_t NofMUL= TMath::Nint(CC()->GetSum(Form("trigger:%s/event:%s/centrality:%s",striggerDimuon->String().Data(),seventType->String().Data(),"V0M_00.00_90.00")));
-              // AliDebug(1,Form("Reference centrality for NofMUL = V0M_00.00_90.00"));
-
-              // // Get Graph with Yield results
-              // graph = Processor->ComputeYield(what,h,subresultname,NofMUL);
-
-              // delete Processor;
             }
             else if(syear.Contains("pp"))
             {

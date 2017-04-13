@@ -41,6 +41,8 @@ public:
   virtual void Print(Option_t* opt) const = 0;
   // Print constants used
   virtual void PrintConst() const = 0;
+  // Print Fit Param
+  void PrintFitParam(const char* subresult = "", const char* param = "") const;
   // Number of "what" for all subresults
   void PrintNofWhat(const char* what="") const;
   // Set global constants according to centrality
