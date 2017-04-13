@@ -2,7 +2,7 @@
 
 
  AliAnalysisTaskZDCGainEq* AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=5,Int_t iVyBin=5,Int_t iVzBin=10, 
- TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisDef = "recenter1", 
+ TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisDef = "FillGainEq", 
  TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE, 
  Bool_t bUseVZERO = kTRUE, Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Double_t dVertexRange = 10., 
  TString sCentEstimator = "V0", Bool_t bfillZDCQA = kFALSE, Bool_t bfillCosSin = kFALSE, Bool_t bFillRunAvg = kFALSE, 
@@ -179,6 +179,13 @@
   else{
     taskQC_prot->SelectCollisionCandidates(AliVEvent::kMB);
   }
+
+  //If filling ZDC energy only:
+  if(sAnalysisDef=="FillGainEq"){
+    bApplyRecent= kFALSE;
+    bSetGainEq  = kFALSE;
+  }
+
 
   taskQC_prot->SetHarmonic(2);  
   taskQC_prot->SetFillCosSin(bfillCosSin);
