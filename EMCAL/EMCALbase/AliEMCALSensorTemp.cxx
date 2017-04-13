@@ -13,85 +13,64 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// Class describing EMCAL temperature sensors (including pointers to graphs/fits//
-// Authors: David Silvermyr, copied from TPC (Ivanov, Helstrup, Siska)        //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-// Running instructions:
-/*
-  TClonesArray * arr = AliEMCALSensorTemp::ReadList("TempSensor.txt","emc_PT_%d.Temperature");
-  TFile f("TempSensors.root","RECREATE");
-  TTree * tree = new TTree("TempSensor", "TempSensor");
-  tree->Branch("Temp",&arr);
-  tree->Fill();
-  tree->Write();
-  
-*/
-
-//
-
 #include <strings.h>
+
 #include "AliEMCALSensorTemp.h"
-ClassImp(AliEMCALSensorTemp)
 
+/// \cond CLASSIMP
+ClassImp(AliEMCALSensorTemp) ;
+/// \endcond
+
+///
+/// Default constructor
 //______________________________________________________________________________________________
-
 AliEMCALSensorTemp::AliEMCALSensorTemp(): AliDCSSensor(),
   fSide(0),
   fSector(0),
   fNum(0)
-{
-  //
-  //  Standard constructor
-  //
-}
-//______________________________________________________________________________________________
+{ }
 
+///
+///  Copy constructor
+//______________________________________________________________________________________________
 AliEMCALSensorTemp::AliEMCALSensorTemp(const AliEMCALSensorTemp& source) :
   AliDCSSensor(source),
    fSide(source.fSide),
    fSector(source.fSector),
    fNum(source.fNum)
-
-//
-//  Copy constructor
-//
 { }
-//______________________________________________________________________________________________
 
-AliEMCALSensorTemp& AliEMCALSensorTemp::operator=(const AliEMCALSensorTemp& source){
-//
-// assignment operator
-//
+///
+/// Assignment operator
+//______________________________________________________________________________________________
+AliEMCALSensorTemp& AliEMCALSensorTemp::operator=(const AliEMCALSensorTemp& source)
+{
   if (&source == this) return *this;
+  
   new (this) AliEMCALSensorTemp(source);
   
   return *this;  
 }
-//______________________________________________________________________________________________
 
+///
+/// Read values from ascii file
+//______________________________________________________________________________________________
 TClonesArray * AliEMCALSensorTemp::ReadList(const char *fname,
-                                          const TString& amandaString) {
-  //
-  // read values from ascii file
-  //
+                                            const TString& amandaString) 
+{
   TTree * tree = new TTree("asci","asci");
   tree->ReadFile(fname,"");
   TClonesArray *arr = ReadTree(tree, amandaString);
   delete tree;
   return arr;
 }
-     
-//______________________________________________________________________________________________
 
+///
+/// Read selected info from TTree
+//______________________________________________________________________________________________
 TClonesArray * AliEMCALSensorTemp::ReadTree(TTree *tree, 
-                                          const TString& amandaString) 
-{ // read selected info from TTree
-  
+                                            const TString& amandaString) 
+{
   Int_t nentries = tree->GetEntries();
   Int_t sensor=0;
   Int_t sector=0;
@@ -102,7 +81,7 @@ TClonesArray * AliEMCALSensorTemp::ReadTree(TTree *tree,
   //Double_t y=0;
   //Double_t z=0;
   //String_t namedtp[100];
-
+  
   tree->SetBranchAddress("Sensor",&sensor);
   tree->SetBranchAddress("Side",&side);
   tree->SetBranchAddress("Sec",&sector);
@@ -111,28 +90,32 @@ TClonesArray * AliEMCALSensorTemp::ReadTree(TTree *tree,
   //tree->SetBranchAddress("X",&x);
   //tree->SetBranchAddress("Y",&y);
   //tree->SetBranchAddress("Z",&z);
-
+  
   // firstSensor = (Int_t)tree->GetMinimum("ECha");
   // lastSensor = (Int_t)tree->GetMaximum("ECha");
-
+  
   TClonesArray * array = new TClonesArray("AliEMCALSensorTemp",nentries);
-
-  for (Int_t isensor=0; isensor<nentries; isensor++){
+  
+  for (Int_t isensor=0; isensor<nentries; isensor++)
+  {
     AliEMCALSensorTemp * temp = new ((*array)[isensor])AliEMCALSensorTemp;
     tree->GetEntry(isensor);
+    
     temp->SetId(sensor);
     temp->SetIdDCS(echa);
+    
     TString stringID = Form (amandaString.Data(),echa);
     temp->SetStringID(stringID);
+    
     if (side[0]=='C') temp->SetSide(1);
     temp->SetSector(sector);
     temp->SetNum(num);
-
+    
     // Don't yet know the local or global coordinates for where the sensors will be placed..
     //temp->SetX(x);
     //temp->SetY(y);
     //temp->SetZ(z);
-
   }
+  
   return array;
 }
