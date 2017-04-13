@@ -670,14 +670,14 @@ private:
   TH1F* hPerformanceCPUTime;                    ///<  Histogram with the CPU Time used
   
   //Event Info
-  TH1D* hNEvt;                                  ///<  Histogram with the number of events and all the events that passed each cut
-  TH1D* hEvtMult;                               ///<  Histogram with the event Multiplicity Before any physics selection
-  TH1D* hEvtMultAftEvSel;                       ///<  Histogram with the event Multiplicity After the physics selection
+  TH1F* hNEvt;                                  ///<  Histogram with the number of events and all the events that passed each cut
+  TH1F* hEvtMult;                               ///<  Histogram with the event Multiplicity Before any physics selection
+  TH1F* hEvtMultAftEvSel;                       ///<  Histogram with the event Multiplicity After the physics selection
   TH1F* hEvtVtxXY;                              ///<  Histogram with the linear distance in the XY plane of the primary vertex
   TH1F* hEvtVtxZ;                               ///<  Histogram with the linear distance along the Z axis of the primary vertex
   
   //Track Info
-  TH1D* hNTrk;                                  ///<  Histogram with the number of tracks and all the tracks that passed each cut
+  TH1F* hNTrk;                                  ///<  Histogram with the number of tracks and all the tracks that passed each cut
   //->Track cuts information divided into before [0] and after [1] the cut
   TH1F* hTrkTPCCls[2];                          ///<  Histogram with the number of TPC crossed Rows of all not accepted and accepted tracks
   TH1F* hTrkTPCRows[2];                         ///<  Histogram with the number of TPC crossed Rows of all not accepted and accepted tracks
@@ -701,14 +701,15 @@ private:
   #endif
   TH1F* hCutVariation;                          ///<  Histogram with the number of tracks which pass each cut
   //->TOF information
-  TH1D* hTOFResidualX;                          ///<  Histogram with the Impact Residual X
-  TH1D* hTOFResidualZ;                          ///<  Histogram with the Impact Residual Z
-  TH1D* hTOFChannel;                            ///<  Histogram with the Channel in the TOF
-  TH1D* hT0Resolution;                          ///<  Histogram with the resolution on the T0
-  TH1D* hTimeOfFlightRes;                       ///<  Histogram with the Time Of Flight
-  TH1D* hTimeOfFlightTOFRes;                    ///<  Histogram with the Time Of Flight for events without the T0 Fill
-  TH1D* hTimeOfFlightGoodRes;                   ///<  Histogram with the Time Of Flight for tracks with good matching
-  TH1D* hTimeOfFlightResNoMismatch;             ///<  Histogram with the Time Of Flight for PID consistent with TPC for Pi K P
+  TH1F* hTOFResidualX;                          ///<  Histogram with the Impact Residual X
+  TH1F* hTOFResidualZ;                          ///<  Histogram with the Impact Residual Z
+  TH1F* hTOFChannel;                            ///<  Histogram with the Channel in the TOF
+  TH1F* hTOFTracks;                             ///<  Histogram with the number of tracks Channel in the TOF
+  TH1F* hT0Resolution;                          ///<  Histogram with the resolution on the T0
+  TH1F* hTimeOfFlightRes;                       ///<  Histogram to compute the Time Of Flight resolution
+  TH1F* hTimeOfFlightTOFRes;                    ///<  Histogram to compute the Time Of Flight resolution for events without the T0 Fill
+  TH1F* hTimeOfFlightGoodRes;                   ///<  Histogram to compute the Time Of Flight resolution for tracks with good matching
+  TH1F* hTimeOfFlightResNoMismatch;             ///<  Histogram to compute the Time Of Flight resolution for PID consistent with TPC for Pi K P
   TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
   TH2F* hTOFDist;                               ///<  Histogram with the distributions of the TOF strips and sectors
   TH2I* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
