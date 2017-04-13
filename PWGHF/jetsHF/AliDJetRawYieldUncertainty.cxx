@@ -600,18 +600,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
       TH1F* hchi2t = dynamic_cast<TH1F*>(fil.Get(hchi2name.Data()));
 
       TString hbkgname = histo[j]->GetName();
-      switch (fDmesonSpecie) {
-      case kD0toKpi:
-        hbkgname.ReplaceAll("RawYield","Bkg");
-        if (j==0) Printf("*** Using bkg values in real nSigma region, not in bin edges! (Salvatore) ***");
-        break;
-      case kDStarD0pi:
-        hbkgname.ReplaceAll("RawYield","BkgInBinEdges");
-        if (j==0) Printf("*** Using bkg values in bin edges! (Barbara/Antonio) ***");
-        break;
-      default:
-        break;
-      }
+      hbkgname.ReplaceAll("RawYield","BkgInBinEdges");
       TH1F* hbkg = dynamic_cast<TH1F*>(fil.Get(hbkgname.Data()));
 
       for (Int_t ib = 1; ib <= histo[j]->GetNbinsX(); ib++) {
@@ -931,13 +920,11 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
   Float_t signal_c_min = mean - fnSigmaSignReg * sigma;
   Float_t signal_c_max = mean + fnSigmaSignReg * sigma;
 
-  Double_t scaling = 1;
-
   //extract signal and sideband region spectra
   TH1* tmphjetpt = hInvMassJetPt->ProjectionY(Form("tmphjetpt%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_c_min), hInvMassJetPt->GetXaxis()->FindBin(signal_c_max));
   TH1* tmphjetpt_s1 = hInvMassJetPt->ProjectionY(Form("tmphjetpt_s1%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_l_min), hInvMassJetPt->GetXaxis()->FindBin(signal_l_max));
   TH1* tmphjetpt_s2 = hInvMassJetPt->ProjectionY(Form("tmphjetpt_s2%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_u_min), hInvMassJetPt->GetXaxis()->FindBin(signal_u_max));
-  TH1* tmphjetpt_s = static_cast<TH1F*>(tmphjetpt_s1->Clone(Form("tmphjetpt_s%d",iDbin)));
+  TH1* tmphjetpt_s = static_cast<TH1*>(tmphjetpt_s1->Clone(Form("tmphjetpt_s%d",iDbin)));
   tmphjetpt_s->Add(tmphjetpt_s2);
 
   // scale background from side bands to the background under the peak
@@ -945,8 +932,8 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
     std::cout << "Error! At least one variation with no entries! Exiting..." << std::endl;
     return kFALSE;
   }
-  scaling = bkg / tmphjetpt_s->Integral(tmphjetpt_s->FindBin(jetmin), tmphjetpt_s->FindBin(jetmax)); //integral btw jetmin and jetmax (where you get the bkg from the mass plot)
-
+  Double_t scaling = bkg / tmphjetpt_s->Integral(tmphjetpt_s->FindBin(jetmin+0.0001), tmphjetpt_s->FindBin(jetmax-0.0001)); //integral btw jetmin and jetmax (where you get the bkg from the mass plot)
+  Printf("Background scaling factor = %.6f", scaling);
   for (int j = 1; j <= tmphjetpt->GetNbinsX(); j++) {
     Double_t centerbin = tmphjetpt->GetBinCenter(j); //bin of hjetpt corresponding to j-th bin of THnSparse projection
     hjetpt->Fill(centerbin, tmphjetpt->GetBinContent(j));
@@ -1046,7 +1033,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
     if (fDebug) std::cout << "Default trial" << " TrialExpoFreeS" << std::endl;
     TH1F *hMeanDef = static_cast<TH1F*>(fileMultVar.Get("hMeanTrialExpoFreeS"));
     TH1F *hSigmaDef = static_cast<TH1F*>(fileMultVar.Get("hSigmaTrialExpoFreeS"));
-    TH1F *hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgTrialExpoFreeS"));
+    TH1F *hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgInBinEdgesTrialExpoFreeS"));
     TH1F *hRawYieldDef = static_cast<TH1F*>(fileMultVar.Get("hRawYieldTrialExpoFreeS"));
     fileMultVar.Close();
     if (fDebug) Printf("File '%s' closed successfully.", fname.Data());

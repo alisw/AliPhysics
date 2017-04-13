@@ -307,7 +307,7 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
                 printf("****** START FIT OF HISTO %s WITH REBIN %d FIRST BIN %d MASS RANGE %f-%f BACKGROUND FIT FUNCTION=%d CONFIG SIGMA/MEAN=%d\n",hInvMassHisto->GetName(),rebin,iFirstBin,minMassForFit,maxMassForFit,typeb,igs);
                 out=fitter->MassFitter(0);
                 chisq=fitter->GetReducedChiSquare();
-                fitter->Significance(3,significance,erSignif);
+                fitter->Significance(fnSigmaForBkgEval,significance,erSignif);
                 sigma=fitter->GetSigma();
                 pos=fitter->GetMean();
                 esigma=fitter->GetSigmaUncertainty();
@@ -323,7 +323,7 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
                 fitter->Background(minval,maxval,bkgBEdge,erbkgBEdge);
                 if(out && fDrawIndividualFits && thePad){
                   thePad->Clear();
-                  fitter->DrawHere(thePad);
+                  fitter->DrawHere(thePad, fnSigmaForBkgEval);
                   fMassFitters.push_back(fitter);
                   mustDeleteFitter = kFALSE;
                   for (auto format : fInvMassFitSaveAsFormats) {
