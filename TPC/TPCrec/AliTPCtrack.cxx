@@ -111,7 +111,7 @@ AliTPCtrack::AliTPCtrack(Double_t x, Double_t alpha, const Double_t p[5],
 
   Set(x,alpha,pp,cc);
 
-  SetNumberOfClusters(1);
+  SetNumberOfClusters(0);
   
   fIndex[0]=index;
   for (Int_t i=1; i<kMaxRow;i++) fIndex[i]=-2;
