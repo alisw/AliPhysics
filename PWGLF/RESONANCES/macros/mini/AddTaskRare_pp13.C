@@ -400,8 +400,8 @@ AliRsnMiniAnalysisTask *AddTask_pik0
  
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
    
-   //task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
-   task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
+   task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
+   //task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
 
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
@@ -835,8 +835,8 @@ AliRsnMiniAnalysisTask *AddTask_kxk0
  
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
    
-   //task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
-   task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
+   task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
+   //task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
 
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
@@ -1249,7 +1249,8 @@ AliRsnMiniAnalysisTask * AddTask_pkx
    //if(is2011PbPb)
    //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
    //else
-   task->SelectCollisionCandidates(triggerMask);
+   //task->SelectCollisionCandidates(triggerMask);
+   task->UseESDTriggerMask(AliVEvent::kINT7);
 
    /*
    AliMultSelectionTask *taskm = AddTaskMultSelection();
@@ -1918,8 +1919,8 @@ AliRsnMiniAnalysisTask *AddTask_pk0
  
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
    
-   //task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
-   task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
+   task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
+   //task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
 
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
@@ -2314,6 +2315,8 @@ AliRsnMiniAnalysisTask* AddTask_Lambdapi(TString lname,Bool_t isMC,Int_t system,
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
    ::Info("AddTaskRare_pp13::AddTask_Lambdapi", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+
+   task->UseESDTriggerMask(AliVEvent::kINT7);
    
    mgr->AddTask(task);
    
@@ -2848,6 +2851,8 @@ AliRsnMiniAnalysisTask* AddTask_Lambdakx(TString lname,Bool_t isMC,Int_t system,
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
    ::Info("AddTaskRare_pp13::AddTask_Lambdakx", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+
+   task->UseESDTriggerMask(AliVEvent::kINT7);
    
    mgr->AddTask(task);
    
@@ -3387,6 +3392,8 @@ AliRsnMiniAnalysisTask* AddTask_Lambdak0(TString lname,Bool_t isMC,Int_t system,
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
    ::Info("AddTaskRare_pp13::AddTask_Lambdak0", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+
+   task->UseESDTriggerMask(AliVEvent::kINT7);
    
    mgr->AddTask(task);
    
@@ -3927,6 +3934,8 @@ AliRsnMiniAnalysisTask* AddTask_Lambdap(TString lname,Bool_t isMC,Int_t system,I
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
    ::Info("AddTaskRare_pp13::AddTask_Lambdap", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+
+   task->UseESDTriggerMask(AliVEvent::kINT7);
    
    mgr->AddTask(task);
    
