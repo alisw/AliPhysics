@@ -1,7 +1,7 @@
 #include<TList.h>
 
 
- void AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=5,Int_t iVyBin=5,Int_t iVzBin=10, 
+ AliAnalysisTaskZDCGainEq* AddTaskZDCGainEq(Double_t dcentrMin=0, Double_t dcentrMax=90, Int_t iVxBin=5,Int_t iVyBin=5,Int_t iVzBin=10, 
  TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisDef = "recenter1", 
  TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE, 
  Bool_t bUseVZERO = kTRUE, Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Double_t dVertexRange = 10., 
@@ -300,16 +300,13 @@
   AliAnalysisDataContainer *coutputSP2 = mgr->CreateContainer(fZDCCont2,TList::Class(),AliAnalysisManager::kOutputContainer,outputSP.Data());
   mgr->ConnectOutput(taskQC_prot, 2, coutputSP2);
 
-  if(!mgr->InitAnalysis())  // check if we can initialize the manager
-  {
-   printf("\n\n Rihan, your analysis manager is not set correctly. \n Check AddTaskMacro.C \n\n");
-   return;
-  }
-
-  printf("\n ... AddTaskVnZDC called succesfully ....  \n");
+  //if(!mgr->InitAnalysis())  // check if we can initialize the manager
+  //{
+  //  return;
+  //}
 
 
-  return;
+  return taskQC_prot;
 
 
 }//main ends
