@@ -20,12 +20,16 @@ class TString;
 class TChain;
 class TFile;
 class AliVEvent;
+class AliVHeader;
+class AliGenPythiaEventHeader;
+class AliEmcalList;
 
 #include <iosfwd>
 #include <vector>
 #include <string>
 
 #include <AliAnalysisTaskSE.h>
+#include "THistManager.h"
 
 /**
  * \class AliAnalysisTaskEmcalEmbeddingHelper
@@ -91,10 +95,13 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   TString GetInputFilename()                                const { return fInputFilename; }
   Int_t GetStartingFileIndex()                              const { return fFilenameIndex; }
   TString GetFileListFilename()                             const { return fFileListFilename; }
+  bool GetCreateHistos()                                    const { return fCreateHisto; }
 
   // Set
   /// Set the pt hard bin which will be added into the file pattern. Can also be omitted and set directly in the pattern.
-  void SetPtHardBin(Int_t r)                                      { fPtHardBin           = r; }
+  void SetPtHardBin(Int_t n)                                      { fPtHardBin           = n; }
+  /// Set the number of pt hard bins in the production to properly format the histograms
+  void SetNPtHardBins(Int_t n)                                    { fNPtHardBins         = n; }
   /// Sets the anchor run which will be added into the file pattern. Can also be omitted and set directly in the pattern.
   void SetAnchorRun(Int_t r)                                      { fAnchorRun           = r; }
   /// Set to embed from ESD
@@ -119,6 +126,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetStartingFileIndex(Int_t n)                              { fFilenameIndex = n; }
   /// Set the path to a file containing the list of files to embed
   void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
+  /// Create QA histograms. These are necessary for proper scaling, so be careful disabling them!
+  void SetCreateHistos(bool b)                                    { fCreateHisto = b; }
   /* @} */
 
   /**
@@ -132,6 +141,17 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetTriggerMask(UInt_t triggerMask)                         { fTriggerMask = triggerMask; }
   void SetZVertexCut(Double_t zVertex)                            { fZVertexCut = zVertex; }
   void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
+  /* @} */
+
+  /**
+   * @{
+   * @name Properties of Embedded Event
+   */
+  AliVHeader * GetEventHeader()                             const { return fExternalHeader; }
+  AliGenPythiaEventHeader * GetPythiaHeader()               const { return fPythiaHeader; }
+  double GetPythiaXSection()                                const { return fPythiaXSection; }
+  double GetPythiaTrials()                                  const { return fPythiaTrials; }
+  double GetPythiaPtHard()                                  const { return fPythiaPtHard; }
   /* @} */
 
   /**
@@ -155,6 +175,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
   Bool_t          GetNextEntry()        ;
+  void            SetEmbeddedEventProperties();
+  void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
@@ -170,15 +192,17 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   TString                                       fTreeName         ; ///<  Name of the ESD/AOD tree where the events are to be found
   Int_t                                         fAnchorRun        ; ///<  Anchor run for the given pythia production
+  Int_t                                         fNPtHardBins      ; ///<  Total number of pt hard bins
   Int_t                                         fPtHardBin        ; ///<  ptHard bin for the given pythia production
   Bool_t                                        fRandomEventNumberAccess; ///<  If true, it will start embedding from a random entry in the file rather than from the first
   Bool_t                                        fRandomFileAccess ; ///< If true, it will start embedding from a random file in the input files list
+  bool                                          fCreateHisto      ; ///< If true, create QA histograms
 
   TString                                       fFilePattern      ; ///<  File pattern to select AliEn files using alien_find
   TString                                       fInputFilename    ; ///<  Filename of input root files
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
   Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
-  std::vector <std::string>                     fFilenames        ; ///< Paths to the files to embed
+  std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
   TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
   Int_t                                         fCurrentEntry     ; //!<! Current entry in the current tree
@@ -187,7 +211,15 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t                                         fOffset           ; //!<! Offset from fLowerEntry where the loop over the tree should start
   Int_t                                         fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
   Int_t                                         fFileNumber       ; //!<! File number corresponding to the current tree
+  THistManager                                  fHistManager      ; //!<! Manages access to all histograms
+  AliEmcalList                                 *fOutput           ; //!<! List which owns the output histograms to be saved
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
+  AliVHeader                                   *fExternalHeader   ; //!<! Header of the current external event
+  AliGenPythiaEventHeader                      *fPythiaHeader     ; //!<! Pythia header of the current external event
+
+  double                                        fPythiaTrials     ; //!<! Number of pythia trials for the current event (extracted from the pythia header)
+  double                                        fPythiaXSection   ; //!<! Pythia cross section for the current event (extracted from the pythia header)
+  double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header)
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
 
@@ -196,7 +228,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 2);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 3);
   /// \endcond
 };
 #endif

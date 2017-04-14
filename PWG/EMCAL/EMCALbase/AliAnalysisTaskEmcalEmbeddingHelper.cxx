@@ -35,7 +35,13 @@
 #include <AliVEvent.h>
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
+#include <AliMCEvent.h>
 #include <AliInputEventHandler.h>
+#include <AliVHeader.h>
+#include <AliAODMCHeader.h>
+#include <AliGenPythiaEventHeader.h>
+
+#include "AliEmcalList.h"
 
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
@@ -50,9 +56,11 @@ AliAnalysisTaskEmcalEmbeddingHelper* AliAnalysisTaskEmcalEmbeddingHelper::fgInst
  */
 AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   AliAnalysisTaskSE(),
+  fCreateHisto(true),
   fTreeName(),
   fAnchorRun(169838),
   fPtHardBin(-1),
+  fNPtHardBins(0),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fFilePattern(""),
@@ -74,8 +82,15 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fInitializedEmbedding(false),
   fInitializedNewFile(false),
   fWrappedAroundTree(false),
-  fChain(0),
-  fExternalEvent(0)
+  fChain(nullptr),
+  fExternalEvent(nullptr),
+  fExternalHeader(nullptr),
+  fPythiaHeader(nullptr),
+  fPythiaTrials(0.),
+  fPythiaXSection(0.),
+  fPythiaPtHard(0.),
+  fHistManager(),
+  fOutput(nullptr)
 {
   if (fgInstance != 0) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -92,9 +107,11 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
  */
 AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const char *name) :
   AliAnalysisTaskSE(name),
+  fCreateHisto(true),
   fTreeName("aodTree"),
   fAnchorRun(169838),
   fPtHardBin(-1),
+  fNPtHardBins(0),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fFilePattern(""),
@@ -116,8 +133,15 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fInitializedEmbedding(false),
   fInitializedNewFile(false),
   fWrappedAroundTree(false),
-  fChain(0),
-  fExternalEvent(0)
+  fChain(nullptr),
+  fExternalEvent(nullptr),
+  fExternalHeader(nullptr),
+  fPythiaHeader(nullptr),
+  fPythiaTrials(0.),
+  fPythiaXSection(0.),
+  fPythiaPtHard(0.),
+  fHistManager(name),
+  fOutput(nullptr)
 {
   if (fgInstance != 0) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -125,6 +149,10 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   }
 
   fgInstance = this;
+
+  if (fCreateHisto) {
+    DefineOutput(1, AliEmcalList::Class());
+  }
 }
 
 /**
@@ -201,7 +229,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   {
     // Handle if fPtHardBin or fAnchorRun are set
     // This will require formatting the file pattern in the proper way to support these substitutions
-    if (fPtHardBin != -1) {
+    if (fPtHardBin != -1 && fFilePattern != "") {
       if (fAnchorRun > 0) {
         fFilePattern = TString::Format(fFilePattern, fAnchorRun, fPtHardBin);
       }
@@ -414,6 +442,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
     }
     AliDebug(4, TString::Format("Loading entry %i between %i-%i, starting with offset %i from the lower bound of %i", fCurrentEntry, fLowerEntry, fUpperEntry, fOffset, fLowerEntry));
 
+    // Set relevant event properties
+    SetEmbeddedEventProperties();
+
     // Increment current entry
     fCurrentEntry++;
     
@@ -422,11 +453,60 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
     if (attempts == 1000)
       AliWarning("After 1000 attempts no event has been accepted by the event selection (trigger, centrality...)!");
 
+    // Record event properties
+    if (fCreateHisto) {
+      RecordEmbeddedEventProperties();
+    }
+
   } while (!IsEventSelected());
+
+  if (fCreateHisto) {
+    fHistManager.FillTH1("fHistEventCount", "Accepted");
+    fHistManager.FillTH1("fHistEmbeddingEventsRejected", attempts);
+  }
 
   if (!fChain) return kFALSE;
 
   return kTRUE;
+}
+
+void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
+{
+  AliDebug(4, "Set event properties");
+  fExternalHeader = fExternalEvent->GetHeader();
+
+  // Handle pythia header if AOD
+  AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(fExternalEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+  if (aodMCH) {
+    for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+      if (fPythiaHeader) break;
+    }
+  }
+
+  if (fPythiaHeader)
+  {
+    fPythiaTrials = fPythiaHeader->Trials();
+    fPythiaXSection = fPythiaHeader->GetXsection();
+    fPythiaPtHard = fPythiaHeader->GetPtHard();
+
+    AliDebugStream(4) << "Pythia header is defined!\n";
+    AliDebugStream(4) << "fPythiaXSection: " << fPythiaXSection << "\n";
+  }
+}
+
+/**
+ * Record event properties
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::RecordEmbeddedEventProperties()
+{
+  // Fill trials, xsec, pt hard
+  fHistManager.FillTH1("fHistTrials", fPtHardBin, fPythiaTrials);
+  fHistManager.FillProfile("fHistXsection", fPtHardBin, fPythiaXSection);
+  fHistManager.FillTH1("fHistPtHard", fPythiaPtHard);
+
+  // Keep count of the total number of events
+  fHistManager.FillTH1("fHistEventCount", "Total");
 }
 
 /**
@@ -436,23 +516,6 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
 {
-  // AOD Event selection.
-  // TODO: Can we make centrality make sense here?
-  /*if (!fEsdTreeMode && fAODHeader) {
-    AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
-
-    // Centrality selection
-    if (fMinCentrality >= 0) {
-      AliCentrality *cent = aodHeader->GetCentralityP();
-      Float_t centVal = cent->GetCentralityPercentile("V0M");
-      if (centVal < fMinCentrality || centVal >= fMaxCentrality) {
-	AliDebug(2,Form("Event rejected due to centrality selection. Event centrality: %f, centrality range selection: %f to %f",
-			centVal, fMinCentrality, fMaxCentrality));
-	return kFALSE;
-      }
-    }
-  }*/
-
   // Trigger selection
   if (fTriggerMask != AliVEvent::kAny) {
     UInt_t res = 0;
@@ -539,6 +602,55 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
 void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
   SetupEmbedding();
+
+  if (!fCreateHisto) {
+    return;
+  }
+
+  // Create output list
+  OpenFile(1);
+  fOutput = new AliEmcalList();
+  fOutput->SetOwner();
+
+  // Create histograms
+  TString histName;
+  TString histTitle;
+
+  // Cross section
+  histName = "fHistXsection";
+  histTitle = "Pythia Cross Section;p_{T} hard bin; XSection";
+  fHistManager.CreateTProfile(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+
+  // Trials
+  histName = "fHistTrials";
+  histTitle = "Number of Pythia Trials;p_{T} hard bin;Trials";
+  fHistManager.CreateTH1(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+
+  // Pt hard spectra
+  histName = "fHistPtHard";
+  histTitle = "p_{T} Hard Spectra;p_{T} hard;Counts";
+  fHistManager.CreateTH1(histName, histTitle, 500, 0, 1000);
+
+  // Count of accepted and rejected events
+  histName = "fHistEventCount";
+  histTitle = "fHistEventCount;Result;Count";
+  auto histEventCount = fHistManager.CreateTH1(histName, histTitle, 2, 0, 2);
+  histEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
+  histEventCount->GetXaxis()->SetBinLabel(2,"Total");
+
+  // Rejected events in embedded event selection
+  histName = "fHistEmbeddingEventsRejected";
+  histTitle = "Number of embedded events rejected by event selection before success;Number of rejected events;Counts";
+  fHistManager.CreateTH1(histName, histTitle, 200, 0, 200);
+
+  // Add all histograms to output list
+  TIter next(fHistManager.GetListOfHistograms());
+  TObject* obj = 0;
+  while ((obj = next())) {
+    fOutput->Add(obj);
+  }
+
+  PostData(1, fOutput);
 }
 
 /**
@@ -717,6 +829,10 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
     AliError("Unable to get the event to embed. Nothing will be embedded.");
     return;
   }
+
+  if (fCreateHisto && fOutput) {
+    PostData(1, fOutput);
+  }
 }
 
 /**
@@ -770,16 +886,16 @@ AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::AddTa
   // Create containers for input/output
   AliAnalysisDataContainer* cInput = mgr->GetCommonInputContainer();
 
-  /*TString outputContainerName(name);
+  TString outputContainerName(name);
   outputContainerName += "_histos";
 
   AliAnalysisDataContainer * cOutput = mgr->CreateContainer(outputContainerName.Data(),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s", AliAnalysisManager::GetCommonFileName()));*/
+      Form("%s", AliAnalysisManager::GetCommonFileName()));
 
   mgr->ConnectInput(embeddingHelper, 0, cInput);
-  //mgr->ConnectOutput(embeddingHelper, 1, cOutput);
+  mgr->ConnectOutput(embeddingHelper, 1, cOutput);
 
   return embeddingHelper;
 }
@@ -796,6 +912,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   // Show the correction components
   tempSS << std::boolalpha;
   tempSS << GetName() << ": Embedding helper configuration:\n";
+  tempSS << "Create histos: " << fCreateHisto << "\n";
   tempSS << "Pt Hard Bin: " << fPtHardBin << "\n";
   tempSS << "Anchor Run: " << fAnchorRun << "\n";
   tempSS << "File pattern: \"" << fFilePattern << "\"\n";
