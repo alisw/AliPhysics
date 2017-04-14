@@ -392,7 +392,7 @@ AliCaloRawAnalyzer::CalculateChi2( Double_t amp,    Double_t time,
 ///   \param last: sample array indices to be used 
 /// * Output:
 ///   \param mean: of samples
-///   \param RMS: of samples 
+///   \param rms: of samples 
 ///
 /// To possibly be used to differentiate good signals from bad before fitting.
 //_______________________________________________________________________
