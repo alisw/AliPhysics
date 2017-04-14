@@ -9,7 +9,6 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "TBits.h"
-#define NTRIGGERS 4
 
 class TList;
 class TTree;
@@ -18,6 +17,7 @@ class TH2D;
 class TObjString;
 class TClonesArray;
 class AliMuonTrackCuts;
+class AliPIDCombined;
 
 class AliAnalysisTaskUpcTree : public AliAnalysisTaskSE {
  public: 
@@ -26,21 +26,27 @@ class AliAnalysisTaskUpcTree : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void NotifyRun();
-  void SetMC(Bool_t mc)   { fIsMC  = mc;  }
-
+  void SetMC(Bool_t mc)     { fIsMC  = mc;  }
+  void SetMUP(Bool_t mup=1) { fIsMUP = mup; }
  protected:
   AliAnalysisTaskUpcTree(const  AliAnalysisTaskUpcTree &task);
   AliAnalysisTaskUpcTree& operator=(const  AliAnalysisTaskUpcTree &task);
-  
+  Bool_t fIsMUP;
   Bool_t fIsMC;
   Bool_t fIsAOD;
   AliMuonTrackCuts* fMuonTrackCuts; //
+  AliPIDCombined* fPIDCombined; //
   TList* fListOfHistos;             //! list of output histograms
-  TH1D*  fEventStatistics;          //!
-  TH2D*  fTriggersPerRun;           //!
+  TH2D* fTriggersVsRun;
+  TH1D* fEventStatistics;
   TTree* fTree;                     //! analysis tree
   TObjString* fChunkFileName;       //
-  Bool_t fTriggerFired[NTRIGGERS];
+  TClonesArray* fMcParticles;       //!
+  TClonesArray* fMuons;             //!
+  TClonesArray* fTracks;            //!
+  TClonesArray* fTracklets;         //!
+  TClonesArray* fSATracks;         //!
+  TObjString fClassesFired;
   Int_t fEventInFile;
   UInt_t fPeriod;
   UInt_t fOrbit;
@@ -55,16 +61,18 @@ class AliAnalysisTaskUpcTree : public AliAnalysisTaskSE {
   Float_t fV0CTime[32];
   Bool_t fBBFlag[64];
   Bool_t fBGFlag[64];
+  UInt_t fBBAFlags;
+  UInt_t fBBCFlags;
+  UInt_t fBGAFlags;
+  UInt_t fBGCFlags;
   Bool_t fBBTriggerV0A[32];
   Bool_t fBGTriggerV0A[32];
   Bool_t fBBTriggerV0C[32];
   Bool_t fBGTriggerV0C[32];
-  Bool_t fBBonlineV0A;
-  Bool_t fBGonlineV0A;
-  Bool_t fBBonlineV0C;
-  Bool_t fBGonlineV0C;
   Char_t fV0ADecision;
   Char_t fV0CDecision;
+  Float_t fMTotV0A;
+  Float_t fMTotV0C;
   Float_t fADATime;
   Float_t fADCTime;
   Char_t fADADecision;
@@ -73,12 +81,8 @@ class AliAnalysisTaskUpcTree : public AliAnalysisTaskSE {
   Float_t fMTotADC;
   UShort_t fTriggerChargeADA;
   UShort_t fTriggerChargeADC;
-  Bool_t fZNAtdc;
-  Bool_t fZNCtdc;
-  Bool_t fZPAtdc;
-  Bool_t fZPCtdc;
-  Bool_t fZEM1tdc;
-  Bool_t fZEM2tdc;
+  Float_t fZNATDC[4];
+  Float_t fZNCTDC[4];
   Float_t fZNAenergy;
   Float_t fZNCenergy;
   Float_t fZPAenergy;
@@ -93,41 +97,26 @@ class AliAnalysisTaskUpcTree : public AliAnalysisTaskSE {
   Float_t fVtxY;
   Float_t fVtxZ;
   Bool_t fVtxTPC;
-  UInt_t fNofITSClusters[6];
+  Int_t fNofITSClusters[6];
+  Bool_t fIRproblem;
   TBits fIR1;
   TBits fIR2;
+  TBits fVBA;
+  TBits fVBC;
+  TBits fUBA;
+  TBits fUBC;
+  TBits fSTG;
+  TBits fOM2;
+  TBits fOMU;
   TBits fFOmap;
   TBits fFiredChipMap;
-  Int_t fNofDimuons;
-  Float_t fDimuonM;
-  Float_t fDimuonY;
-  Float_t fDimuonPt;
-  Float_t fEta1;
-  Float_t fEta2;
-  Float_t fPhi1;
-  Float_t fPhi2;
-  Float_t fPt1;
-  Float_t fPt2;
-  Float_t fPx1;
-  Float_t fPy1;
-  Float_t fPz1;
-  Float_t fPx2;
-  Float_t fPy2;
-  Float_t fPz2;
-  Char_t  fCharge1;
-  Char_t  fCharge2;
-  Char_t  fMatch1;
-  Char_t  fMatch2;
-  Float_t fRabs1;
-  Float_t fRabs2;
-  Bool_t fPdca1;
-  Bool_t fPdca2;
-  Float_t fDca1;
-  Float_t fDca2;
-  Float_t fChi2perNDF1;
-  Float_t fChi2perNDF2;
+  UInt_t fTriggerMask[72];
+  Bool_t fPFBBFlagV0[64][21];
+  Bool_t fPFBGFlagV0[64][21];
+  Bool_t fPFBBFlagAD[16][21];
+  Bool_t fPFBGFlagAD[16][21];
 
-  ClassDef(AliAnalysisTaskUpcTree,2)
+  ClassDef(AliAnalysisTaskUpcTree,3)
 };
 
 #endif
