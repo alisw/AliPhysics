@@ -13,19 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- 
- 
- 
- 
- Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
- Author: Jiri Kral, JYU
-*/
-
 #include "AliEMCALTriggerTRUDCSConfig.h"
 
-ClassImp(AliEMCALTriggerTRUDCSConfig)
-  
+/// \cond CLASSIMP
+ClassImp(AliEMCALTriggerTRUDCSConfig) ;
+/// \endcond
+
+///
+/// Default constructor
 //_____________________________________________________________________________
 AliEMCALTriggerTRUDCSConfig::AliEMCALTriggerTRUDCSConfig() : TObject()
 ,fSELPF(0x1e1f)
@@ -35,16 +30,12 @@ AliEMCALTriggerTRUDCSConfig::AliEMCALTriggerTRUDCSConfig() : TObject()
 ,fRLBKSTU(0)
 ,fFw(0x21)
 {
-	//
-	// AliEMCALTriggerTRUDCSConfig default constructor
-	//
 	for (Int_t i=0;i<6;i++) fMaskReg[i] = 0;
 }
 
 //_____________________________________________________________________________
 Int_t AliEMCALTriggerTRUDCSConfig::GetSegmentation()
 {
-	//
 	if (fL0SEL & 0x0001)
 		return 2;
 	else

@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALClusterizerv1
+/// \ingroup EMCALrec
 /// \brief Clusterize neighbour cells, no split, unfolding possible
 ///
 ///  Implementation version 1 of the clusterization algorithm                     

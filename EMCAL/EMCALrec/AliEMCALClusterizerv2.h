@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALClusterizerv2
+/// \ingroup EMCALrec
 /// \brief Clusterize neighbour cells, split if several maxima
 ///
 ///  Implementation version 2 of the clusterization algorithm                     

@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALClusterizerNxN
+/// \ingroup EMCALrec
 /// \brief Create clusters of maximum size NxM
 ///
 /// This class derives from AliEMCALClusterizer but also keeps the API of AliEMCALClusterizerv1

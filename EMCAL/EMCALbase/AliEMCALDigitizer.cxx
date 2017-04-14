@@ -1388,7 +1388,7 @@ Bool_t AliEMCALDigitizer::IsDead(AliEMCALDigit *digit)
 ///
 /// Check if cell absID is defined as dead, so that it is not included
 ///
-/// \param absID: cell absolute ID number
+/// \param absId: cell absolute ID number
 ///
 /// \return true if dead
 //__________________________________________________________________

@@ -13,22 +13,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- 
- 
-EMCal trigger data container
-for data (both raw & rec) persistency
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
-
 #include "AliEMCALTriggerData.h"
-//#include "AliEMCALTriggerPatch.h"
 #include "AliLog.h"
 #include "TIterator.h"
 #include "Riostream.h"
 
-ClassImp(AliEMCALTriggerData)
+/// \cond CLASSIMP
+ClassImp(AliEMCALTriggerData) ;
+/// \endcond
 
+///
+/// Default constructor
 //_____________
 AliEMCALTriggerData::AliEMCALTriggerData() : TObject(),
 fMode(0),
@@ -40,38 +35,37 @@ fL1TriggerType(),
 fL1DataDecoded(0),
 fL1RawData(0),
 fMedian(0)
-{  
-	// Ctor
-		
-	fL1GammaThreshold[0] = fL1GammaThreshold[1] = 0;
-	fL1JetThreshold[0] = fL1JetThreshold[1] = 0;
-	
-	fL1V0[0] = fL1V0[1] = 0;
-	for (Int_t i = 0; i < 19; i++) fL1TriggerType[i] = 0;	
+{  		
+  fL1GammaThreshold[0] = fL1GammaThreshold[1] = 0;
+  fL1JetThreshold[0] = fL1JetThreshold[1] = 0;
+  
+  fL1V0[0] = fL1V0[1] = 0;
+  for (Int_t i = 0; i < 19; i++) fL1TriggerType[i] = 0;	
 }
 
+///
+/// Destructor	
 //_____________
 AliEMCALTriggerData::~AliEMCALTriggerData()
-{
-	// Dtor	
-}
+{ }
 
+///
+/// Dump parameters value
 //_____________
 void AliEMCALTriggerData::Scan() const
 {
-	// Dump
-
-	for (int i = 0; i < 2; i++){
-		printf("\tL1 thresholds[%d]: gamma %d\tjet %d\n", i, fL1GammaThreshold[i], fL1JetThreshold[i]);
-	}
+  for (int i = 0; i < 2; i++)
+  {
+    printf("\tL1 thresholds[%d]: gamma %d\tjet %d\n", i, fL1GammaThreshold[i], fL1JetThreshold[i]);
+  }
 }
 
+///
+/// Reset
 //_____________
 void AliEMCALTriggerData::Reset()
-{
-	// Reset
-	
-	fL1DataDecoded = 0;
+{	
+  fL1DataDecoded = 0;
 }
 
 

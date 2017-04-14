@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliEMCALClusterizerFixedWindow
+/// \ingroup EMCALrec
 /// \brief clusterize in a fixed window
 ///
 /// This class derives from AliEMCALClusterizer

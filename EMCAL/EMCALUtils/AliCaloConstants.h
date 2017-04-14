@@ -22,7 +22,7 @@
 
 //_________________________________________
 ///
-/// \class AliCaloConstants.h
+/// \class AliCaloConstants
 /// \ingroup EMCALUtils
 /// \brief Constants used by HLT/Offline
 ///
