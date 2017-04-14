@@ -27,16 +27,12 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp( AliCaloRawAnalyzerFitter ) ;
-/// \endcond
-
 ///
 /// Constructor
 //_______________________________________________________________________
 AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char *nameshort ) :AliCaloRawAnalyzer( name, nameshort), 
-											      fkEulerSquared(7.389056098930650227),
-											      fTf1(0)
+fkEulerSquared(7.389056098930650227),
+fTf1(0)
 {  
   for(int i=0; i < ALTROMAXSAMPLES; i++)
   {

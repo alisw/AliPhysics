@@ -50,10 +50,6 @@ private:
   AliCaloRawAnalyzerFitter  & operator = (const AliCaloRawAnalyzerFitter & );
   AliCaloRawAnalyzerFitter();
 
-  /// \cond CLASSIMP
-  ClassDef(AliCaloRawAnalyzerFitter, 1);
-  /// \endcond
-
 };
 
 #endif //ALICALORAWANALYZERFITTER_H
