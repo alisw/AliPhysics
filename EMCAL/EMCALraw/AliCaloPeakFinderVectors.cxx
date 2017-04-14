@@ -16,107 +16,111 @@
  * provided "as is" without express or implied warranty.                *
  **************************************************************************/
 
-//Container class for Peak Finder vectors
-
 #include "AliCaloPeakFinderVectors.h"
 #include <iostream>
 
-
 using namespace std;
 
+/// \cond CLASSIMP
+ClassImp( AliCaloPeakFinderVectors ) ;
+/// \endcond
 
-
-ClassImp( AliCaloPeakFinderVectors)
-
-
-
+///
+/// Constructor.
+//_______________________________________________________________________
 AliCaloPeakFinderVectors::AliCaloPeakFinderVectors()
 {
   ResetVectors();
 }
 
-
+///
+/// Destructor.
+//_______________________________________________________________________
 AliCaloPeakFinderVectors::~AliCaloPeakFinderVectors()
-{
-  
-}
+{ }
 
-
+///
+/// Reset vectors.
+//_______________________________________________________________________
 void 
 AliCaloPeakFinderVectors::ResetVectors()
 {
-  // As implied by function name
   for(int i=0; i < PF::MAXSTART; i++ )
+  {
+    for(int j=0; j < PF::SAMPLERANGE; j++)
     {
-      for(int j=0; j < PF::SAMPLERANGE; j++)
-	{
-	  if(i < PF::MAXSTART  && j < PF::SAMPLERANGE )
-	    {
-	      for(int k = 0;  k < 100; k++)
-		{
-		  fPFAmpV[i][j][k]   =  0 ;
-		  fPFTofV[i][j][k]   =  0 ;
-		  fPFAmpVC[i][j][k]  =  0 ;
-		  fPFTofVC[i][j][k]  =  0 ;
-		}
-	    }
-	}	
-    }
+      if(i < PF::MAXSTART  && j < PF::SAMPLERANGE )
+      {
+        for(int k = 0;  k < 100; k++)
+        {
+          fPFAmpV[i][j][k]   =  0 ;
+          fPFTofV[i][j][k]   =  0 ;
+          fPFAmpVC[i][j][k]  =  0 ;
+          fPFTofVC[i][j][k]  =  0 ;
+        }
+      }
+    }	
+  }
 }
 
-
+///
+/// Set vectors.
+//_______________________________________________________________________
 void 
-AliCaloPeakFinderVectors::SetVector(const int i, const int j, const Double_t  *const a, const Double_t *const t,   
-				    const Double_t *const ac, const Double_t *const tc )
+AliCaloPeakFinderVectors::SetVector(const int i, const int j, 
+                                    const Double_t *const  a, const Double_t *const t,   
+                                    const Double_t *const ac, const Double_t *const tc )
 {
-  // As implied by function name
   if(i < PF::MAXSTART  && j < PF::SAMPLERANGE )
+  {
+    for(int k = 0;  k < 100; k++)
     {
-      for(int k = 0;  k < 100; k++)
-	{
-	  fPFAmpV[i][j][k] =  a[k];
-	  fPFTofV[i][j][k] =  t[k];
-	  fPFAmpVC[i][j][k] = ac[k];
-	  fPFTofVC[i][j][k] = tc[k];
-	}
+      fPFAmpV[i][j][k] =  a[k];
+      fPFTofV[i][j][k] =  t[k];
+      fPFAmpVC[i][j][k] = ac[k];
+      fPFTofVC[i][j][k] = tc[k];
     }
+  }
 }
 
-
+///
+/// Get vectors.
+//_______________________________________________________________________
 void 
-AliCaloPeakFinderVectors::GetVector(const int i, const int j, Double_t *const a, Double_t *const t,   
-				    Double_t *const ac, Double_t *const tc ) const
+AliCaloPeakFinderVectors::GetVector(const int i, const int j, 
+                                    Double_t *const  a, Double_t *const t,   
+                                    Double_t *const ac, Double_t *const tc ) const
 {
-  // As implied by function name
   if(i < PF::MAXSTART  && j < PF::SAMPLERANGE )
+  {
+    for( int k = 0;  k < 100; k++)
     {
-      for( int k = 0;  k < 100; k++)
-	{
-	  a[k]  = fPFAmpV[i][j][k];
-	  t[k]  = fPFTofV[i][j][k];
-	  ac[k] = fPFAmpVC[i][j][k];
-	  tc[k] = fPFTofVC[i][j][k];
-	}
+      a[k]  = fPFAmpV[i][j][k];
+      t[k]  = fPFTofV[i][j][k];
+      ac[k] = fPFAmpVC[i][j][k];
+      tc[k] = fPFTofVC[i][j][k];
     }
+  }
 }
 
-
+///
+/// Dump vectors information
+//_______________________________________________________________________
 void 
 AliCaloPeakFinderVectors::PrintVectors() const
 {
-  // As implied by function name
   cout << __FILE__ << __LINE__ << __FUNCTION__ << endl;
   for(int i= 0; i < PF::MAXSTART; i++ )
+  {
+    for(int j=0; j < PF::SAMPLERANGE; j++ )
     {
-      for(int j=0; j < PF::SAMPLERANGE; j++ )
-	{
-	  for(int k=0; k < 10; k++ )
-	    {
-	      cout << fPFAmpV[i][j][k] << "\t";
-	    }
-	  cout << endl;
-	}
-      cout << endl; 
+      for(int k=0; k < 10; k++ )
+      {
+        cout << fPFAmpV[i][j][k] << "\t";
+      }
+      cout << endl;
     }
+    cout << endl; 
+  }
 }  
 

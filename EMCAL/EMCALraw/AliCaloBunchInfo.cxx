@@ -16,52 +16,42 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "AliCaloBunchInfo.h"
 
-// Container class to hold information 
-// about  of bunches.
-// Used by the
-// AliCaloRawAnalyzer
-// classes
+///
+/// Constructor
+//____________________________________________________________________________
 AliCaloBunchInfo::AliCaloBunchInfo( UInt_t start, Int_t length, const UShort_t * data ) :  fStartTimebin(start),
-											     fLength(length),
-											     fkData(data)
-{
+fLength(length),
+fkData(data)
+{ }
 
-
-}
-
-
-
+///
+/// Destructor
+//____________________________________________________________________________
 AliCaloBunchInfo::~AliCaloBunchInfo()
-{
+{ }
 
-  
-}
-
-
-
+///
+/// Default constructor
+//____________________________________________________________________________
 AliCaloBunchInfo::AliCaloBunchInfo( const AliCaloBunchInfo  & rhs) :fStartTimebin( rhs.fStartTimebin ),
-								       fLength(  rhs.fLength ),
-								       fkData( rhs.fkData )
-{
-  
-  
-}
+fLength(  rhs.fLength ),
+fkData( rhs.fkData )
+{ }
 
-
-
-
+///
+/// Assignment operator
+/// This is just to get of compliation warning. It's not really needed
+//____________________________________________________________________________
 AliCaloBunchInfo&  AliCaloBunchInfo::operator = ( const  AliCaloBunchInfo & rhs)
 {
-  //This is just to get of compliation warning. Its not really needed
   if(this != & rhs) 
-    {
-      fStartTimebin  = rhs.fStartTimebin;
-      fLength = rhs.fLength;
-      fkData = rhs.fkData;	
-    }
+  {
+    fStartTimebin  = rhs.fStartTimebin;
+    fLength = rhs.fLength;
+    fkData = rhs.fkData;	
+  }
   return *this;
 }
 
