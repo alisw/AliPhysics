@@ -5,6 +5,7 @@
       
 //_________________________________________________________________________
 /// \class AliEMCALUnfolding
+/// \ingroup EMCALbase
 /// \brief Base class for the cluster unfolding algorithm 
 ///
 ///  Based on unfolding in clusterizerv1 done by Cynthia Hadjidakis

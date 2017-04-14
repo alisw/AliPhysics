@@ -5,6 +5,7 @@
                             
 //_________________________________________________________________________
 /// \class AliEMCALClusterizer
+/// \ingroup EMCALrec
 /// \brief Base class for the clusterization algorithm (pure abstract)
 /// 
 ///  Clusterization mother class. Contains common methods/data members of different 

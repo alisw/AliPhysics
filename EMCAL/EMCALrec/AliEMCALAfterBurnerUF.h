@@ -5,6 +5,7 @@
 
 //-------------------------------------------------------------------------
 /// \class AliEMCALAfterBurnerUF
+/// \ingroup EMCALrec
 /// \brief After-burner for the EMCAL cluster unfolding algorithm
 ///
 /// After-burner for the EMCAL cluster unfolding algorithm
