@@ -7,7 +7,7 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-/// \class AliCaloRawAnalyzerFitter
+/// \class AliCaloRawAnalyzerFactory
 /// \ingroup EMCALraw
 /// \brief  Raw data fitters handling
 ///
