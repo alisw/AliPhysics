@@ -889,7 +889,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   //if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   //if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
   //cout << "fEMCEGA1 = " << fEMCEG1 << endl;
-  cout << "firedTrigger = " << firedTrigger << endl;
+  //cout << "firedTrigger = " << firedTrigger << endl;
 
   //if(trigger==7)if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   //cout << "EG1tr = " << EG1tr << endl;
@@ -900,8 +900,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     }
   //if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
 
-  cout << "Zvertex = " << Zvertex << endl;
-  cout << endl;
+  //cout << "Zvertex = " << Zvertex << endl;
+  //cout << endl;
 
   ////////////////////////
   // Mag. field
@@ -917,7 +917,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   fNevents->Fill(2); //events after z vtx cut
   fCent->Fill(centrality); //centrality dist.
 
-  cout << "check MC in the event ....." << endl;
+  //cout << "check MC in the event ....." << endl;
   if(fMCarray)CheckMCgen(fMCheader);
 
   /////////////////////////////
@@ -1323,13 +1323,13 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //cout << "eop org = " << eop << endl;
       if(fMCarray)  // E/p MC mean shift correction
         {
-         if(fUseTender)
+         if(centrality>=0 && centrality<10)
            { 
-            eop += 0.04; 
+            eop += 0.096; 
            }
          else
            {
-            eop += 0.03; 
+            eop += 0.04; //30-50% 
            } 
         }
       //cout << "eop corr = " << eop << endl;
