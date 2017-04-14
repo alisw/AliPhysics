@@ -13,47 +13,51 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
-
-
+// AliRoot/EMCal system
 #include "AliCaloRawAnalyzerFakeALTRO.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
+#include "AliCaloConstants.h"
 #include "AliLog.h"
+
+// ROOT system
 #include "TMath.h"
-#include <stdexcept>
-#include <iostream>
 #include "TF1.h"
 #include "TGraph.h"
-#include "AliCaloConstants.h"
+
+// Standard libraries
+#include <stdexcept>
+#include <iostream>
 
 using namespace std;
 
-ClassImp( AliCaloRawAnalyzerFakeALTRO )
+/// \cond CLASSIMP
+ClassImp( AliCaloRawAnalyzerFakeALTRO ) ;
+/// \endcond
 
-
+///
+/// Constructor
+//_______________________________________________________________________
 AliCaloRawAnalyzerFakeALTRO::AliCaloRawAnalyzerFakeALTRO() : AliCaloRawAnalyzerFitter("Chi Square Fit", "FakeAltro")
 {
-  // constructor
-  
   fAlgo= Algo::kFakeAltro;
 }
 
+///
+/// Destructor
+//_______________________________________________________________________
 AliCaloRawAnalyzerFakeALTRO::~AliCaloRawAnalyzerFakeALTRO()
-{
-  // destructor
-  
+{  
   //delete fTf1;
 }
 
+///
+/// Extract signal parameters using fitting
+//_______________________________________________________________________
 AliCaloFitResults
 AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector,
                                       UInt_t altrocfg1, UInt_t altrocfg2 )
 {
-  // Extracting signal parameters using fitting
-  
   short maxampindex; //index of maximum amplitude
   short maxamp; //Maximum amplitude
   int index = SelectBunch( bunchvector,  &maxampindex,  &maxamp );
@@ -66,6 +70,7 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
     // timebinOffset is timebin value at maximum (maxrev)
     short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
     Float_t time = (timebinOffset*TIMEBINWITH)-fL1Phase;
+    
     if(  maxf < fAmpCut  ||  maxamp > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
     {
       return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time, (int)time, 0, 0, Ret::kDummy);
@@ -78,43 +83,50 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
       int nsamples =  last - first + 1;
       
       if( ( nsamples  )  >= fNsampleCut )
-	    {
-	      Float_t tmax = (maxrev - first); // local tmax estimate
-	      TGraph *graph =  new TGraph(  nsamples, fXaxis,  &fReversed[first] );
-	      fTf1->SetParameter(0, maxf*fkEulerSquared );
-	      fTf1->SetParameter(1, tmax - fTau);
-	      // set rather loose parameter limits
-	      fTf1->SetParLimits(0, 0.5*maxf*fkEulerSquared, 2*maxf*fkEulerSquared );
-	      fTf1->SetParLimits(1, tmax - fTau - 4, tmax - fTau + 4);
+      {
+        Float_t tmax = (maxrev - first); // local tmax estimate
+        TGraph *graph =  new TGraph(  nsamples, fXaxis,  &fReversed[first] );
+        fTf1->SetParameter(0, maxf*fkEulerSquared );
+        fTf1->SetParameter(1, tmax - fTau);
+        // set rather loose parameter limits
+        fTf1->SetParLimits(0, 0.5*maxf*fkEulerSquared, 2*maxf*fkEulerSquared );
+        fTf1->SetParLimits(1, tmax - fTau - 4, tmax - fTau + 4);
         
-	      if (fFixTau) {
+        if (fFixTau) 
+        {
           fTf1->FixParameter(2, fTau);
-	      }
-	      else {
+        }
+        else 
+        {
           fTf1->ReleaseParameter(2); // allow par. to vary
           fTf1->SetParameter(2, fTau);
-	      }
+        }
         
-	      Short_t tmpStatus = 0;
-	      try {
+        Short_t tmpStatus = 0;
+        try 
+        {
           tmpStatus =  graph->Fit(fTf1, "Q0RW");
-	      }
-	      catch (const std::exception & e) {
+        }
+        catch (const std::exception & e) 
+        {
           AliError( Form("TGraph Fit exception %s, fit status %d", e.what(),tmpStatus) );
           return AliCaloFitResults( maxamp, ped, Ret::kNoFit, maxf, time,
                                    (int)time, Ret::kDummy, Ret::kDummy,  Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
-	      }
+        }
         
-	      if( fVerbose == true )
+        if( fVerbose == true )
         {
           AliCaloRawAnalyzer::PrintBunch( bunchvector.at(index) );
           PrintFitResult( fTf1 ) ;
         }
-	      // global tmax
-	      tmax = fTf1->GetParameter(1) + timebinOffset - (maxrev - first) // abs. t0
+        
+        // global tmax
+        tmax = fTf1->GetParameter(1) + timebinOffset - (maxrev - first) // abs. t0
         + fTf1->GetParameter(2); // +tau, makes sum tmax
-	    Float_t timemax = (tmax*TIMEBINWITH)-fL1Phase;
+        Float_t timemax = (tmax*TIMEBINWITH)-fL1Phase;
+        
         delete graph;
+        
         return AliCaloFitResults( maxamp, ped , Ret::kFitPar,
                                  fTf1->GetParameter(0)/fkEulerSquared,
                                  timemax,
@@ -122,19 +134,21 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
                                  fTf1->GetChisquare(),
                                  fTf1->GetNDF(),
                                  Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
-				
+        
         //     delete graph;
         
-	    }
+      }
       else
-	    {
-	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
-	      Int_t ndf = last - first - 1; // nsamples - 2
-	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time,
+      {
+        Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
+        Int_t ndf = last - first - 1; // nsamples - 2
+        
+        return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time,
                                  (int)time, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
-	    }
+      }
     } // ampcut
   }
+  
   return AliCaloFitResults(  Ret::kInvalid,  Ret::kInvalid );
 }
 

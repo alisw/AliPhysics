@@ -3,11 +3,17 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-/*
 
- 
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
+//_________________________________________________________________________
+/// \class AliCaloRawAnalyzerFakeALTRO
+/// \ingroup EMCALraw
+/// \brief  Raw data fitting: FALTRO
+///
+/// Extraction of Amplitude and peak
+/// position of FastALTRO 
+///
+/// \author Rachid Guernane, < guernane@lpsc.in2p3.fr>, LPSC-IN2P3-CNRS. 
+//_________________________________________________________________________
 
 #include "AliCaloRawAnalyzerFitter.h"
 
@@ -28,8 +34,11 @@ class  AliCaloRawAnalyzerFakeALTRO : public AliCaloRawAnalyzerFitter
   AliCaloRawAnalyzerFakeALTRO();
   AliCaloRawAnalyzerFakeALTRO(               const AliCaloRawAnalyzerFakeALTRO & );
   AliCaloRawAnalyzerFakeALTRO  & operator = (const AliCaloRawAnalyzerFakeALTRO & );
-  ClassDef(AliCaloRawAnalyzerFakeALTRO,1)
+  
+  /// \cond CLASSIMP
+  ClassDef(AliCaloRawAnalyzerFakeALTRO,1) ;
+  /// \endcond
 
 };
 
-#endif
+#endif //ALICALORAWANALYZERFAKEALTRO_H

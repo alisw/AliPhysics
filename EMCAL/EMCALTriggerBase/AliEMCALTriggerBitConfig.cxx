@@ -42,6 +42,7 @@ AliEMCALTriggerBitConfig::AliEMCALTriggerBitConfig():
  * @param jlowbit Trigger bit for jet trigger, low threshold
  * @param ghighbit Trigger bit for gamma trigger, high threshold
  * @param glowbit Trigger bit for gamma trigger, low threshold
+ * @param bkgbit Trigger bit for bkg
  * @param mcoffset Offset for MC
  */
 AliEMCALTriggerBitConfig::AliEMCALTriggerBitConfig(

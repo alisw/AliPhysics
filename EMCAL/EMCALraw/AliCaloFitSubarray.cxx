@@ -13,55 +13,58 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
-
 #include "AliCaloFitSubarray.h"
 
-
-// Container class to hold info from bunches/samples
-// selected for signal fitting.
-// Variables are:
-//  Int_t   fBunchIndex;  // Index for selected bunch
-//  Int_t   fMaxRev;      // Max index in reversed array
-//  Int_t   fFirst;   // first index in array used for fit
-//  Int_t   fLast;    // last index in array used for fit
-
+///
+/// Constructor
+//_____________________________________________________________________
 AliCaloFitSubarray::AliCaloFitSubarray(const Int_t bunchIndex, 
-				       const Int_t maxrev, 
-				       const Int_t first, 
-				       const Int_t last ) : 
-  fBunchIndex(bunchIndex),
-  fMaxRev(maxrev), 
-  fFirst(first), 
-  fLast(last)   
+                                       const Int_t maxrev, 
+                                       const Int_t first, 
+                                       const Int_t last ) : 
+fBunchIndex(bunchIndex),
+fMaxRev(maxrev), 
+fFirst(first), 
+fLast(last)   
 {
 }
 
+///
+/// Constructor
+//_____________________________________________________________________
 AliCaloFitSubarray::AliCaloFitSubarray(const Int_t init) : 
-  fBunchIndex(init),
-  fMaxRev(init), 
-  fFirst(init), 
-  fLast(init)   
+fBunchIndex(init),
+fMaxRev(init), 
+fFirst(init), 
+fLast(init)   
 {
 }
 
+///
+/// Copy constructor
+//_____________________________________________________________________
 AliCaloFitSubarray::AliCaloFitSubarray(const AliCaloFitSubarray & fitS) :
-  fBunchIndex( fitS.fBunchIndex ),
-  fMaxRev( fitS.fMaxRev ), 
-  fFirst( fitS.fFirst ), 
-  fLast( fitS.fLast )   
+fBunchIndex( fitS.fBunchIndex ),
+fMaxRev( fitS.fMaxRev ), 
+fFirst( fitS.fFirst ), 
+fLast( fitS.fLast )   
 {
 }
 
+///
+/// Assignment operator; use copy ctor
 //_____________________________________________________________________
 AliCaloFitSubarray& AliCaloFitSubarray::operator = (const AliCaloFitSubarray &source)
-{ // assignment operator; use copy ctor
+{
   if (&source == this) return *this;
-
+  
   new (this) AliCaloFitSubarray(source);
   return *this;
 }
 
+///
+/// Destructor
+//_____________________________________________________________________
 AliCaloFitSubarray::~AliCaloFitSubarray()
 {
 }
