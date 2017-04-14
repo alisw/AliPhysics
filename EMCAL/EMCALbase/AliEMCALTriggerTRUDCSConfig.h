@@ -3,19 +3,22 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
- 
- 
- 
- 
- Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
- Author: Jiri Kral, JYU
-*/
+//________________________________________________
+/// \class AliEMCALTriggerTRUDCSConfig
+/// \ingroup EMCALbase
+/// \brief TRU DCS Config
+///
+/// Add comment
+///
+/// \author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+/// \author: Jiri Kral, JYU
+//________________________________________________
 
 #include "TObject.h"
 
 class AliEMCALTriggerTRUDCSConfig : public TObject 
 {
+
 public:
 
 	AliEMCALTriggerTRUDCSConfig();
@@ -29,31 +32,35 @@ public:
 	void    SetRLBKSTU(UInt_t rb)              { fRLBKSTU = rb;       }
 	void    SetFw(     UInt_t fw)              { fFw = fw;            }
 			
-	UInt_t   GetSELPF()                       const { return fSELPF;        }
-	UInt_t   GetL0SEL()                       const { return fL0SEL;        }
-	UInt_t   GetL0COSM()                      const { return fL0COSM;       }
-	UInt_t   GetGTHRL0()                      const { return fGTHRL0;       }
-	UInt_t   GetMaskReg(Int_t pos)            const { return fMaskReg[pos]; }
-	UInt_t   GetRLBKSTU()                     const { return fRLBKSTU;      }
-	UInt_t   GetFw()                          const { return fFw;           }
+	UInt_t  GetSELPF()                   const { return fSELPF;       }
+	UInt_t  GetL0SEL()                   const { return fL0SEL;       }
+	UInt_t  GetL0COSM()                  const { return fL0COSM;      }
+	UInt_t  GetGTHRL0()                  const { return fGTHRL0;      }
+	UInt_t  GetMaskReg(Int_t pos)        const { return fMaskReg[pos];}
+	UInt_t  GetRLBKSTU()                 const { return fRLBKSTU;     }
+	UInt_t  GetFw()                      const { return fFw;          }
 	
-	Int_t    GetSegmentation();
+	Int_t   GetSegmentation();
 	
 protected:
 
-	AliEMCALTriggerTRUDCSConfig(const AliEMCALTriggerTRUDCSConfig &cd);
+	AliEMCALTriggerTRUDCSConfig           (const AliEMCALTriggerTRUDCSConfig &cd);
 	AliEMCALTriggerTRUDCSConfig &operator=(const AliEMCALTriggerTRUDCSConfig &cd);
 
 private:
 	
-	UInt_t   fSELPF;                         // PeakFinder setup
-	UInt_t   fL0SEL;                         // L0 Algo selection
-	UInt_t   fL0COSM;                        // 2x2
-	UInt_t   fGTHRL0;                        // 4x4
-	UInt_t   fMaskReg[6];                    // 6*16 = 96 mask bits per TRU
-	UInt_t   fRLBKSTU;                       // TRU circular buffer rollback
-	UInt_t   fFw;                            // TRU fw version
+  UInt_t   fSELPF;                         ///< PeakFinder setup
+  UInt_t   fL0SEL;                         ///< L0 Algo selection
+  UInt_t   fL0COSM;                        ///< 2x2
+  UInt_t   fGTHRL0;                        ///< 4x4
+  UInt_t   fMaskReg[6];                    ///< 6*16 = 96 mask bits per TRU
+  UInt_t   fRLBKSTU;                       ///< TRU circular buffer rollback
+  UInt_t   fFw;                            ///< TRU fw version
 	
-	ClassDef(AliEMCALTriggerTRUDCSConfig,4)  //
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALTriggerTRUDCSConfig,4) ;
+  /// \endcond
+
 };
-#endif
+
+#endif // ALIEMCALTRIGGERTRUDCSCONFIG_H
