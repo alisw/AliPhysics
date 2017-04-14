@@ -405,7 +405,10 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
-  Int_t trackDepth = 100000;
+  Int_t trackDepth = 0;
+  if(fIsPbPb) trackDepth = 100000;
+  if(!fIsPbPb) trackDepth = 5000;
+
   Int_t poolsize   = 1000;
 
   Int_t nZvtxBins  = 6;
@@ -413,8 +416,8 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   Int_t nCentralityBinsPbPb = 6;
   Double_t CentralityBinsPbPb[7];
-  Int_t nCentralityBinspp = 1;
-  Double_t CentralityBinspp[2];
+  Int_t nCentralityBinspp = 4;
+  Double_t CentralityBinspp[5];
 
   if(fIsPbPb){
     if(!fFlagMEBinChange){ //mean of VtxZ is at 0.5
@@ -493,15 +496,18 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   }
   if(!fIsPbPb){
     vertexBins[0] = -10;
-    vertexBins[1] = -5;
-    vertexBins[2] = -2.5;
-    vertexBins[3] = 0;
-    vertexBins[4] = 2.5;
-    vertexBins[5] = 5;
+    vertexBins[1] = -4.6;
+    vertexBins[2] = -1.6;
+    vertexBins[3] = 0.9;
+    vertexBins[4] = 3.4;
+    vertexBins[5] = 6.1;
     vertexBins[6] = 10;
 
-    CentralityBinspp[0] = -2;
-    CentralityBinspp[1] = 100;
+    CentralityBinspp[0] = 0;
+    CentralityBinspp[1] = 25;
+    CentralityBinspp[2] = 50;
+    CentralityBinspp[3] = 75;
+    CentralityBinspp[4] = 100;
   }
 
   if(fIsPbPb)
@@ -697,9 +703,9 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
     fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinspp,CentralityBinspp);
     fOutputList->Add(fMixStatCentVtxz);
   }
-    
-    fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
-    fOutputList->Add(fMixStatVtxZ);
+
+  fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
+  fOutputList->Add(fMixStatVtxZ);
 
   //  fHisHadDphi = new TH2F("fHisHadDphi","Hadron Dphi;p_{T}^{e};#Delta#varphi",50,0,50,64,-TMath::Pi()/2,(3*TMath::Pi())/2);
   //  fOutputList->Add(fHisHadDphi);
@@ -833,14 +839,19 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   //////////////
   if(fUseTender){
     //new branches with calibrated tracks and clusters
-    fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+    fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
+    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
   }
 
   //////////////////////
   //EMcal cluster info//
   //////////////////////
   EMCalClusterInfo();
+
+  /////////////////////
+  //Hadron track info//
+  /////////////////////
+  HadronInfo();
 
   ///////////////
   //Track loop///
@@ -871,7 +882,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     TrkEta = track->Eta();
     TrkP = track->P();
 
-    if(TrkPt > 2) {
+    if(TrkPt > 2){
       ElectronHadCorrel(iTracks, track, fSprsAllHadHCorrl);
       MixedEvent(track, fSprsMixAllHadHCorrl);
     }
@@ -955,7 +966,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       ///////////////////
       //E-H Correlation//
       ///////////////////
-      HadronInfo(iTracks);
+      //HadronInfo(iTracks);
 
       //Inclusive E-H correl
       //ElectronHadCorrel(iTracks, track, fSprsInclusiveEHCorrl, fHisIncEDphi);
@@ -1129,7 +1140,8 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
   }
 }
 //___________________________________________
-void AliAnalysisTaskEHCorrel::HadronInfo(Int_t itrack)
+//void AliAnalysisTaskEHCorrel::HadronInfo(Int_t itrack)
+void AliAnalysisTaskEHCorrel::HadronInfo()
 {
   //Hadron information
 
@@ -1139,7 +1151,7 @@ void AliAnalysisTaskEHCorrel::HadronInfo(Int_t itrack)
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
 
-    if(ktracks == itrack) continue; //do not select the same electron
+    //  if(ktracks == itrack) continue; //do not select the same electron
     AliVParticle* VtrackHad = 0x0;
     if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
     if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
@@ -1356,17 +1368,17 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
   Double_t NcontSPD = vtSPD->GetNContributors();
   if(NcontV<2 || NcontSPD<1)return kFALSE;
 
-    if(!fIsPbPb){
-  Double_t covTrc[6],covSPD[6];
-  fpVtx->GetCovarianceMatrix(covTrc);
-  vtSPD->GetCovarianceMatrix(covSPD);
-  Double_t dz = fpVtx->GetZ() - vtSPD->GetZ();
-  Double_t errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-  Double_t errTrc = TMath::Sqrt(covTrc[5]);
-  Double_t nsigTot = TMath::Abs(dz)/errTot;
-  Double_t nsigTrc = TMath::Abs(dz)/errTrc;
-  if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return kFALSE;// bad vertexing
-    }
+  if(!fIsPbPb){
+    Double_t covTrc[6],covSPD[6];
+    fpVtx->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    Double_t dz = fpVtx->GetZ() - vtSPD->GetZ();
+    Double_t errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    Double_t errTrc = TMath::Sqrt(covTrc[5]);
+    Double_t nsigTot = TMath::Abs(dz)/errTot;
+    Double_t nsigTrc = TMath::Abs(dz)/errTrc;
+    if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return kFALSE;// bad vertexing
+  }
 
   fNevents->Fill(1); //events after vettex cuts
 
@@ -1711,7 +1723,7 @@ TObjArray* AliAnalysisTaskEHCorrel::CloneAndReduceTrackList()
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
     }
-      
+
     AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
     if(!track) continue;
     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
