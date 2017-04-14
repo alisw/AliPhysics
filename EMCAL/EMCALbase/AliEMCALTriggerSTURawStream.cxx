@@ -40,7 +40,7 @@ AliEMCALTriggerSTURawStream::AliEMCALTriggerSTURawStream() : TObject(),
   fRawReader(0x0)         ,
   fDetector(kEMCAL)       ,
   fGetRawData(0)          ,
-  fPayload(V0)            ,
+  fPayload(v0)            ,
   fNL0GammaPatch(0)       ,
   fL0GammaPatchIndex()    ,
   fNL1GammaPatch()        ,
@@ -61,32 +61,32 @@ AliEMCALTriggerSTURawStream::AliEMCALTriggerSTURawStream() : TObject(),
   fFrameReceived(0)       ,
   fFwVersion(0)     
 {
-  for(int i=0;i<max_L0GammaPatchIndex;i++) 
+  for(int i=0;i<maxL0GammaPatchIndex;i++) 
     fL0GammaPatchIndex[i]     = 0 ;
-  for(int i=0;i<max_L1Gamma;          i++)
+  for(int i=0;i<maxL1Gamma;          i++)
     fNL1GammaPatch   [i]      = 0 ;
-  for(int i=0;i<max_L1Gamma;          i++)
+  for(int i=0;i<maxL1Gamma;          i++)
     fL1GammaThreshold[i]      = 0 ;
-  for(int i=0;i<max_L1Gamma;          i++)
-    for(int j=0;j<3;                    j++)
+  for(int i=0;i<maxL1Gamma;          i++)
+    for(int j=0;j<3;                 j++)
       fG[j][i]                  = 0 ;
-  for(int i=0;i<max_L1Gamma;          i++)
-    for(int j=0;j<max_L1GammaPatchIndex;j++)
+  for(int i=0;i<maxL1Gamma;          i++)
+    for(int j=0;j<maxL1GammaPatchIndex;j++)
       fL1GammaPatchIndex[j][i]  = 0 ;
-  for(int i=0;i<max_L1Jet;            i++)
+  for(int i=0;i<maxL1Jet;            i++)
     fNL1JetPatch[i]           = 0 ;
-  for(int i=0;i<max_L1Jet;            i++)
+  for(int i=0;i<maxL1Jet;            i++)
     fL1JetThreshold[i]        = 0 ;
-  for(int i=0;i<max_L1Jet;            i++)
-    for(int j=0;j<3;                    j++)
+  for(int i=0;i<maxL1Jet;            i++)
+    for(int j=0;j<3;                 j++)
       fJ[j][i]                  = 0 ;
-  for(int i=0;i<max_L1Jet;            i++)
-    for(int j=0;j<max_L1JetPatchIndex;  j++)
+  for(int i=0;i<maxL1Jet;            i++)
+    for(int j=0;j<maxL1JetPatchIndex;j++)
       fL1JetPatchIndex[j][i]    = 0 ;
-  for(int i=0;i<max_nmoduleInTRU;     i++)
-    for(int j=0;j<max_nTRU;             j++)
+  for(int i=0;i<maxnmoduleInTRU;     i++)
+    for(int j=0;j<maxnTRU;           j++)
       fADC[j][i]                = 0 ;
-  for(int i=0;i<4;                    i++)
+  for(int i=0;i<4;                   i++)
     fS[i] = 0 ;
 }
 
@@ -97,7 +97,7 @@ AliEMCALTriggerSTURawStream::AliEMCALTriggerSTURawStream(AliRawReader* rawReader
   fRawReader(rawReader)   ,
   fDetector(kEMCAL)       ,
   fGetRawData(0)          ,
-  fPayload(V0)            ,
+  fPayload(v0)            ,
   fNL0GammaPatch(0)       ,
   fL0GammaPatchIndex()    ,
   fNL1GammaPatch()        ,
@@ -118,32 +118,32 @@ AliEMCALTriggerSTURawStream::AliEMCALTriggerSTURawStream(AliRawReader* rawReader
   fFrameReceived(0)       ,
   fFwVersion(0)     
 {
-  for(int i=0;i<max_L0GammaPatchIndex;i++) 
+  for(int i=0;i<maxL0GammaPatchIndex;i++) 
     fL0GammaPatchIndex[i]     = 0 ;
-  for(int i=0;i<max_L1Gamma;          i++)
+  for(int i=0;i<maxL1Gamma;          i++)
     fNL1GammaPatch   [i]      = 0 ;
-  for(int i=0;i<max_L1Gamma;          i++)
+  for(int i=0;i<maxL1Gamma;          i++)
     fL1GammaThreshold[i]      = 0 ;
-  for(int i=0;i<max_L1Gamma;          i++)
-    for(int j=0;j<3;                    j++)
+  for(int i=0;i<maxL1Gamma;          i++)
+    for(int j=0;j<3;                 j++)
       fG[j][i]                  = 0 ;
-  for(int i=0;i<max_L1Gamma;          i++)
-    for(int j=0;j<max_L1GammaPatchIndex;j++)
+  for(int i=0;i<maxL1Gamma;          i++)
+    for(int j=0;j<maxL1GammaPatchIndex;j++)
       fL1GammaPatchIndex[j][i]  = 0 ;
-  for(int i=0;i<max_L1Jet;            i++)
+  for(int i=0;i<maxL1Jet;            i++)
     fNL1JetPatch[i]           = 0 ;
-  for(int i=0;i<max_L1Jet;            i++)
+  for(int i=0;i<maxL1Jet;            i++)
     fL1JetThreshold[i]        = 0 ;
-  for(int i=0;i<max_L1Jet;            i++)
-    for(int j=0;j<3;                    j++)
+  for(int i=0;i<maxL1Jet;            i++)
+    for(int j=0;j<3;                 j++)
       fJ[j][i]                  = 0 ;
-  for(int i=0;i<max_L1Jet;            i++)
-    for(int j=0;j<max_L1JetPatchIndex;  j++)
+  for(int i=0;i<maxL1Jet;            i++)
+    for(int j=0;j<maxL1JetPatchIndex;j++)
       fL1JetPatchIndex[j][i]    = 0 ;
-  for(int i=0;i<max_nmoduleInTRU;     i++)
-    for(int j=0;j<max_nTRU;             j++)
+  for(int i=0;i<maxnmoduleInTRU;     i++)
+    for(int j=0;j<maxnTRU;           j++)
       fADC[j][i]                = 0 ;
-  for(int i=0;i<4;                    i++)
+  for(int i=0;i<4;                   i++)
     fS[i] = 0 ;
 }
 
@@ -162,8 +162,8 @@ void AliEMCALTriggerSTURawStream::Reset()
   
   fNL0GammaPatch = 0;
   
-  for(int i=0;i<max_L1Gamma;i++)fNL1GammaPatch[i] = 0 ;
-  for(int i=0;i<max_L1Jet;  i++)fNL1JetPatch  [i] = 0 ;
+  for(int i=0;i<maxL1Gamma;i++)fNL1GammaPatch[i] = 0 ;
+  for(int i=0;i<maxL1Jet;  i++)fNL1JetPatch  [i] = 0 ;
 }
 
 ///
@@ -171,14 +171,14 @@ void AliEMCALTriggerSTURawStream::Reset()
 //_____________________________________________________________________________
 Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 {
-  UInt_t word32[max_payload_size]; // 32b words
-  for (Int_t i=0; i<max_payload_size; i++) word32[i] = 0;
+  UInt_t word32[maxpayloadSize]; // 32b words
+  for (Int_t i=0; i<maxpayloadSize; i++) word32[i] = 0;
   
   Int_t iword = 0;
   
   fNL0GammaPatch = 0;
-  for(int i=0;i<max_L1Gamma ;i++)    fNL1GammaPatch  [i] = 0 ;
-  for(int i=0;i<max_L1Jet   ;i++)    fNL1JetPatch    [i] = 0 ;
+  for(int i=0;i<maxL1Gamma ;i++)    fNL1GammaPatch  [i] = 0 ;
+  for(int i=0;i<maxL1Jet   ;i++)    fNL1JetPatch    [i] = 0 ;
   
   Int_t eqId    = -1  ;
   Int_t eqSize  =  0  ;
@@ -196,7 +196,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       eqSize = fRawReader->GetEquipmentSize();
     }
     
-    if(iword > max_payload_size -1 )return kFALSE ;
+    if(iword > maxpayloadSize -1 )return kFALSE ;
     word32[iword++] = w32;
     //cout<<dec<<setw(5)<<iword<<" , "<<hex<<setw(10)<<w32<<dec<<setw(10)<<w32<<endl;
   }
@@ -205,68 +205,68 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
   
   //payload type selector
   if(false){}
-  else if(iword==(kPayLoadSizeV0                                 ))
+  else if(iword==(kPayLoadSizeV0                               ))
   {
     poffset         = 0         ;
-    fPayload        = V0        ; 
+    fPayload        = v0        ; 
     fDetector       = kEMCAL    ;
   }
-  else if(iword==(kPayLoadSizeV0       + kPayLoadSizeV0_Raw      ))
+  else if(iword==(kPayLoadSizeV0       + kPayLoadSizeV0Raw     ))
   {
     poffset         = 0         ;
-    fPayload        = V0Raw     ; 
+    fPayload        = v0Raw     ; 
     fDetector       = kEMCAL    ;
   }
-  else if(iword==(kPayLoadSizeV1                                 ))
+  else if(iword==(kPayLoadSizeV1                               ))
   {
     poffset         = 0         ;
-    fPayload        = V1        ; 
+    fPayload        = v1        ; 
     fDetector       = kEMCAL    ;
   }
-  else if(iword==(kPayLoadSizeV1       + kPayLoadSizeV1_Raw      ))
+  else if(iword==(kPayLoadSizeV1       + kPayLoadSizeV1Raw     ))
   {
     poffset         = 0         ;
-    fPayload        = V1Raw     ; 
+    fPayload        = v1Raw     ; 
     fDetector       = kEMCAL    ;
   }
-  else if(iword==(kPayLoadSizeV1_2                               ))
+  else if(iword==(kPayLoadSizeV12                              ))
   {
     poffset         = 0         ;
-    fPayload        = V1_2      ;
+    fPayload        = v12       ;
     fDetector       = kEMCAL    ;
   }
-  else if(iword==(kPayLoadSizeV1_2     + kPayLoadSizeV1_2_Raw    ))
+  else if(iword==(kPayLoadSizeV12     + kPayLoadSizeV12Raw     ))
   {
     poffset         = 0         ;
-    fPayload        = V1_2Raw   ;
+    fPayload        = v12Raw    ;
     fDetector       = kEMCAL    ;
   }
   
-  else if(iword==(kPayLoadSizeV2_DCAL                            ))
+  else if(iword==(kPayLoadSizeV2DCAL                           ))
   {
     poffset         = 0         ;
-    fPayload        = V2DCAL    ;
+    fPayload        = v2DCAL    ;
     fDetector       = kDCAL     ;
   }
   
-  else if(iword==(kPayLoadSizeV2_EMCAL                           ))
+  else if(iword==(kPayLoadSizeV2EMCAL                          ))
   {
     poffset         = 0         ;
-    fPayload        = V2EMCAL   ;
+    fPayload        = v2EMCAL   ;
     fDetector       = kEMCAL    ;
   }
   
-  else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw ))
+  else if(iword==(kPayLoadSizeV2DCAL  + kPayLoadSizeV2DCALRaw  ))
   {
     poffset         = 0           ;
-    fPayload        = V2DCALRaw   ;
+    fPayload        = v2DCALRaw   ;
     fDetector       = kDCAL       ;
   }
   
-  else if(iword==(kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw))
+  else if(iword==(kPayLoadSizeV2EMCAL + kPayLoadSizeV2EMCALRaw ))
   {
     poffset         = 0           ;
-    fPayload        = V2EMCALRaw  ;
+    fPayload        = v2EMCALRaw  ;
     fDetector       = kEMCAL      ;
   }
   
@@ -280,8 +280,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
   
   switch (fPayload)
   {
-    case V0         :    case V1         :    case V2EMCAL    :    case V2DCAL     :  case V1_2    :  {fGetRawData=0;  break;}
-    case V0Raw      :    case V1Raw      :    case V2EMCALRaw :    case V2DCALRaw  :  case V1_2Raw :  {fGetRawData=1;  break;}
+    case v0         :    case v1         :    case v2EMCAL    :    case v2DCAL     :  case v12    :  {fGetRawData=0;  break;}
+    case v0Raw      :    case v1Raw      :    case v2EMCALRaw :    case v2DCALRaw  :  case v12Raw :  {fGetRawData=1;  break;}
     default :    {}
   }//end case
   
@@ -296,8 +296,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
   switch (fPayload)
   {
     //##################################################
-    case  V0         :
-    case  V0Raw      :
+    case  v0         :
+    case  v0Raw      :
     {
       fL1JetThreshold   [0] = ((word32[index]>>16) & 0xFFFF);
       fL1GammaThreshold [0] = ( word32[index]      & 0xFFFF);
@@ -308,8 +308,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       break;
     }
     //##################################################
-    case  V1         :
-    case  V1Raw      :
+    case  v1         :
+    case  v1Raw      :
     {
       fV0A = ((word32[index]>>16) & 0xFFFF);
       fV0C = ( word32[index]      & 0xFFFF);
@@ -328,8 +328,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       break;
     }
     //##################################################
-    case  V1_2    :
-    case  V1_2Raw :
+    case  v12    :
+    case  v12Raw :
     {
       fV0A = ((word32[index]>>16) & 0xFFFF);
       fV0C = ( word32[index]      & 0xFFFF);
@@ -354,8 +354,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       break;
     }
     //##################################################
-    case  V2EMCAL    :
-    case  V2EMCALRaw :
+    case  v2EMCAL    :
+    case  v2EMCALRaw :
     {
       fV0A = ((word32[index]>>16) & 0xFFFF);
       fV0C = ( word32[index]      & 0xFFFF);
@@ -381,8 +381,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       break;
     }
     //##################################################
-    case  V2DCAL     :
-    case  V2DCALRaw  :
+    case  v2DCAL     :
+    case  v2DCALRaw  :
     {
       fV0A = ((word32[index]>>16) & 0xFFFF);
       fV0C = ( word32[index]      & 0xFFFF);
@@ -433,11 +433,11 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
   int L1JetIndexOffset   = (fDetector == kEMCAL)? 11 : 
   (fDetector == kDCAL )? 11 :
   0 ;
-  int L0GammaIndexOffset = (fDetector == kEMCAL)? 6 * nTRU_EMCAL / 2 : 
-  (fDetector == kDCAL )? 6 * nTRU_DCAL  / 2 :
+  int L0GammaIndexOffset = (fDetector == kEMCAL)? 6 * nTRUEMCAL / 2 : 
+  (fDetector == kDCAL )? 6 * nTRUDCAL  / 2 :
   0 ;
-  int L1GammaIndexOffset = (fDetector == kEMCAL)? 8 * nTRU_EMCAL / 2 : 
-  (fDetector == kDCAL )? 8 * nTRU_DCAL  / 2 :
+  int L1GammaIndexOffset = (fDetector == kEMCAL)? 8 * nTRUEMCAL / 2 : 
+  (fDetector == kDCAL )? 8 * nTRUDCAL  / 2 :
   0 ;
   
   //Jet patch index
@@ -469,7 +469,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
     
     //DCAL : PHOSsubregion data
     if(fDetector == kDCAL){
-      offset  += nTRU_DCAL * nMod_DCAL / 2  ;
+      offset  += nTRUDCAL * nModDCAL / 2  ;
       DecodePHOSSubregion(word32, offset);
     }
     return kTRUE;
@@ -482,15 +482,15 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 //_____________________________________________________________________________
 void AliEMCALTriggerSTURawStream::DecodeL0GammaPatchIndexes(UInt_t *word32, const int offset)
 {
-  if(   fPayload == V0         
-     ||  fPayload == V0Raw      
-     ||  fPayload == V1         
-     ||  fPayload == V1Raw      
-     ||  fPayload == V1_2         
-     ||  fPayload == V1_2Raw      
+  if(    fPayload == v0         
+     ||  fPayload == v0Raw      
+     ||  fPayload == v1         
+     ||  fPayload == v1Raw      
+     ||  fPayload == v12         
+     ||  fPayload == v12Raw      
      )
   {
-    unsigned short  truL0indexes[max_nTRU][6];
+    unsigned short  truL0indexes[maxnTRU][6];
     Int_t nTRU  = GetnTRU();
     
     // extraction from stream
@@ -518,7 +518,7 @@ void AliEMCALTriggerSTURawStream::DecodeL0GammaPatchIndexes(UInt_t *word32, cons
         }
       }
     }
-    //V2 : L0 index is filled by 0  => no mean
+    //v2 : L0 index is filled by 0  => no mean
   }
   else
   {
@@ -531,22 +531,22 @@ void AliEMCALTriggerSTURawStream::DecodeL0GammaPatchIndexes(UInt_t *word32, cons
 //_____________________________________________________________________________
 void AliEMCALTriggerSTURawStream::DecodeL1JetPatchIndexes(const int i, UInt_t *word32, const int offset)
 {
-  Int_t nSubregion_eta  = (fDetector == kEMCAL)? nSubregion_eta_EMCAL :
-  (fDetector == kDCAL )? nSubregion_eta_DCAL  :
+  Int_t nSubregionEta  = (fDetector == kEMCAL)? nSubregionEtaEMCAL :
+  (fDetector == kDCAL )? nSubregionEtaDCAL  :
   0 ;
   
-  Int_t nSubregion_phi  = (fDetector == kEMCAL)? nSubregion_phi_EMCAL :
-  (fDetector == kDCAL )? nSubregion_phi_DCAL  :
+  Int_t nSubregionPhi  = (fDetector == kEMCAL)? nSubregionPhiEMCAL :
+  (fDetector == kDCAL )? nSubregionPhiDCAL  :
   0 ;
   
   int jetSize = 2 + fPatchSize ; //0->2x2, 2->4x4
   
-  for (Int_t ix = 0; ix < nSubregion_eta - (jetSize-1) ; ix++)
+  for (Int_t ix = 0; ix < nSubregionEta - (jetSize-1) ; ix++)
   {
     UInt_t currentrow = word32[offset + ix];
-    for (Int_t iy = 0; iy < nSubregion_phi - (jetSize-1); iy++)
+    for (Int_t iy = 0; iy < nSubregionPhi - (jetSize-1); iy++)
     {
-      Int_t bit = (fDetector == kDCAL)? (currentrow & (1 << iy)) : (currentrow & (1<<(nSubregion_phi-jetSize-iy)));
+      Int_t bit = (fDetector == kDCAL)? (currentrow & (1 << iy)) : (currentrow & (1<<(nSubregionPhi-jetSize-iy)));
       //if (currentrow & (1 << iy))
       
       if (bit)
@@ -567,15 +567,15 @@ void AliEMCALTriggerSTURawStream::DecodeL1GammaPatchIndexes(const int i, UInt_t 
 {
   Int_t nTRU  = GetnTRU();
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  if(   fPayload == V0         
-     ||  fPayload == V0Raw      
-     ||  fPayload == V1         
-     ||  fPayload == V1Raw      
-     ||  fPayload == V1_2         
-     ||  fPayload == V1_2Raw      
+  if(    fPayload == v0         
+     ||  fPayload == v0Raw      
+     ||  fPayload == v1         
+     ||  fPayload == v1Raw      
+     ||  fPayload == v12         
+     ||  fPayload == v12Raw      
      )
   {
-    unsigned short  truL1indexes0[max_nTRU][8];
+    unsigned short  truL1indexes0[maxnTRU][8];
     
     // extraction from stream
     for (Int_t index  =0; index   <8      ; index++   )
@@ -612,7 +612,7 @@ void AliEMCALTriggerSTURawStream::DecodeL1GammaPatchIndexes(const int i, UInt_t 
             }            
             fNL1GammaPatch[i] = fNL1GammaPatch[i] + 1;
             fL1GammaPatchIndex[fNL1GammaPatch[i] - 1][i] = (
-                                                            ((indexcopy   << 10) & 0xC00) 
+                                                              ((indexcopy   << 10) & 0xC00) 
                                                             | ((gammacolnum <<  5) & 0x3E0) 
                                                             | ( tru_num            &  0x1F)
                                                             );
@@ -622,10 +622,10 @@ void AliEMCALTriggerSTURawStream::DecodeL1GammaPatchIndexes(const int i, UInt_t 
     } // for tru_num
   }//fPayload  
    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  else if(fPayload == V2EMCAL
-          ||  fPayload == V2EMCALRaw
-          ||  fPayload == V2DCAL
-          ||  fPayload == V2DCALRaw
+  else if(    fPayload == v2EMCAL
+          ||  fPayload == v2EMCALRaw
+          ||  fPayload == v2DCAL
+          ||  fPayload == v2DCALRaw
           )
   {
     Int_t thirdTRU  = (fDetector == kEMCAL)? 30 : 
@@ -633,7 +633,7 @@ void AliEMCALTriggerSTURawStream::DecodeL1GammaPatchIndexes(const int i, UInt_t 
     0 ;
     const Int_t nModPhi = 12  ;
     const Int_t nModEta =  8  ;
-    unsigned short  truL1indexes1[max_nTRU][nModPhi];
+    unsigned short  truL1indexes1[maxnTRU][nModPhi];
     for (Int_t iphi=0; iphi<nModPhi/2 ; iphi++)
     {
       for (Int_t itru=0; itru<nTRU/2    ; itru++)
@@ -659,7 +659,7 @@ void AliEMCALTriggerSTURawStream::DecodeL1GammaPatchIndexes(const int i, UInt_t 
             short ieta_tmp  = (itru >= thirdTRU)? ( ieta   + 8*((int)(iphi/2) % 3 ) ) : ieta  ;
             
             fL1GammaPatchIndex[fNL1GammaPatch[i] - 1][i] = (
-                                                            ((iphi_tmp  << 10) & 0x7C00) 
+                                                              ((iphi_tmp  << 10) & 0x7C00) 
                                                             | ((ieta_tmp  <<  5) & 0x03E0) 
                                                             | ((itru      <<  0) & 0x001F)
                                                             );
@@ -688,9 +688,9 @@ void AliEMCALTriggerSTURawStream::DecodeTRUADC(UInt_t *word32, const int offset)
     }
   }  
   
-  if(   fPayload == V0Raw         
-     ||  fPayload == V1Raw      
-     ||  fPayload == V1_2Raw      
+  if(    fPayload == v0Raw         
+     ||  fPayload == v1Raw      
+     ||  fPayload == v12Raw      
      )
   {
     for (Int_t tru_num=16;tru_num<32;tru_num++)
@@ -733,7 +733,7 @@ Bool_t AliEMCALTriggerSTURawStream::GetL0GammaPatch(const Int_t i, Int_t& tru, I
 Bool_t AliEMCALTriggerSTURawStream::GetL1GammaPatch(const Int_t i, const Int_t j, 
                                                     Int_t& tru, Int_t& col, Int_t& row) const
 {
-  if (j >= max_L1Gamma || i > fNL1GammaPatch[j]) return kFALSE;
+  if (j >= maxL1Gamma || i > fNL1GammaPatch[j]) return kFALSE;
   
   row = (fL1GammaPatchIndex[i][j] >> 10) & 0x1F ;
   col = (fL1GammaPatchIndex[i][j] >>  5) & 0x1F ;
@@ -748,7 +748,7 @@ Bool_t AliEMCALTriggerSTURawStream::GetL1GammaPatch(const Int_t i, const Int_t j
 Bool_t AliEMCALTriggerSTURawStream::GetL1JetPatch(const Int_t i, const Int_t j,
                                                   Int_t& col, Int_t& row) const
 {
-  if (j >= max_L1Jet || i > fNL1JetPatch[j]) return kFALSE;
+  if (j >= maxL1Jet || i > fNL1JetPatch[j]) return kFALSE;
   
   col = (fL1JetPatchIndex[i][j] >> 0) & 0xFF  ;
   row = (fL1JetPatchIndex[i][j] >> 8) & 0xFF  ;
@@ -782,7 +782,7 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
   printf("V0C:             %d\n"  , fV0C              );
   
   printf("Number of L0:    %d\n"  , fNL0GammaPatch    );
-  for (int i = 0; i < max_L1Gamma; i++) 
+  for (int i = 0; i < maxL1Gamma; i++) 
   {
     for (int j = 0; j < 3         ; j++) 
     {
@@ -793,7 +793,7 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
     printf("Number of L1-g[%d]: %d\n", i, fNL1GammaPatch[i]);
   }
   
-  for (int i = 0; i < max_L1Jet; i++) 
+  for (int i = 0; i < maxL1Jet; i++) 
   {
     for (int j = 0; j < 3       ; j++) 
     {
@@ -827,7 +827,7 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
   // 
   if (op.Contains("L1") || op.Contains("ALL")) 
   {
-    for (int j = 0; j < max_L1Gamma; j++)
+    for (int j = 0; j < maxL1Gamma; j++)
     {
       for (Int_t i = 0; i < fNL1GammaPatch[j]; i++) 
       {
@@ -841,7 +841,7 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
       }
     }
     
-    for (int j = 0; j < max_L1Jet; j++)
+    for (int j = 0; j < maxL1Jet; j++)
     {
       for (Int_t i = 0; i < fNL1JetPatch[j]; i++) 
       {
@@ -876,17 +876,17 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 ///
 /// Get threshold 
 //_____________________________________________________________________________
-UShort_t AliEMCALTriggerSTURawStream::GetThreshold(Short_t A, Short_t B, Short_t C, 
-                                                   UShort_t V0A, UShort_t V0C) const
+UShort_t AliEMCALTriggerSTURawStream::GetThreshold(Short_t a, Short_t b, Short_t c, 
+                                                   UShort_t v0A, UShort_t v0C) const
 {
-  ULong64_t v0sum = V0A + V0C;
+  ULong64_t v0sum = v0A + v0C;
   ULong64_t sqrV0 = v0sum * v0sum;          
   
-  sqrV0 *= A;
+  sqrV0 *= a;
   sqrV0 >>= 32;
   
-  v0sum *= B;
+  v0sum *= b;
   v0sum >>= 16;
   
-  return (UShort_t)(sqrV0 + v0sum + C);
+  return (UShort_t)(sqrV0 + v0sum + c);
 }
