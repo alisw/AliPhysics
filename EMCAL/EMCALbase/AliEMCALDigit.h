@@ -3,37 +3,44 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//_________________________________________________________________________
-//  EMCAL digit: 
-//      A Digit is the sum of the energy lost in an EMCAL Tower
-//      It also stores information on Primary, and enterring particle
-//      tracknumbers Digits are created using AliEMCALSDigitizer, followed
-//      by AliEMCALDigitizer 
-//
-//*-- Author: Sahal Yacoob (LBL)
-// based on : AliPHOSDigit
-//__________________________________________________________________________
+////////////////////////////////////////////////////////////////////////////////
+///  
+/// \class AliEMCALDigit
+/// \ingroup EMCALbase
+/// \brief EMCal digits object  
+///
+///  A Digit is the sum of the energy lost in an EMCAL Tower
+///  It also stores information on Primary, and enterring particle
+///  tracknumbers Digits are created using AliEMCALSDigitizer, followed
+///  by AliEMCALDigitizer. Based on : AliPHOSDigit
+///
+/// \author Sahal Yacoob (LBL)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+///
+////////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-
 #include "TObject.h" 
-
-// --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliDigitNew.h"
 
 using std::ostream;
 
-class AliEMCALDigit : public AliDigitNew {
+class AliEMCALDigit : public AliDigitNew 
+{
 
   friend ostream& operator << ( ostream& , const AliEMCALDigit&) ;
 
  public:
   
   AliEMCALDigit() ;
-  AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t digEnergy, Float_t time, Int_t type,Int_t index = -1, Float_t chi2=0, Int_t ndf=0, Float_t dE = 0) ;
+  AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t digEnergy, 
+                Float_t time, Int_t type,Int_t index = -1, 
+                Float_t chi2=0, Int_t ndf=0, Float_t dE = 0) ;
+  
   AliEMCALDigit(const AliEMCALDigit & digit) ;
+  
   virtual ~AliEMCALDigit() ;
 
   Bool_t operator==(const AliEMCALDigit &rValue) const;
@@ -107,42 +114,66 @@ class AliEMCALDigit : public AliDigitNew {
 	
  private: 
 	
-  Float_t  fAmpFloat;     // Cell amplitude, float
-  Int_t    fNSamples;     // Number of time samples, Low Gain for ALTRO, used also for FALTRO 
-  Int_t   *fSamples;	  //[fNSamples], list of time bin constents, Low Gain for ALTRO, used also for FALTRO 
-  Int_t    fNSamplesHG;   // Number of time samples, High Gain for ALTRO
-  Int_t   *fSamplesHG;	  //[fNSamples], list of time bin constents, High Gain for ALTRO, used also for FALTRO 
-	
-  Int_t    fNprimary ;    // Number of primaries
-  Int_t    fNMaxPrimary ; // Max Number of primaries
-  Int_t   *fPrimary ;     //[fNMaxPrimary]  Array of primaries       
-  Float_t *fDEPrimary ;   //[fNMaxPrimary]  Array of primary energy contributions
-    
-  Int_t    fNiparent ;    // Number of initial parents 
-  Int_t    fNMaxiparent ; // Max Number of parents 
-  Int_t   *fIparent ;     //[fNMaxiparent] Array of parents       
-  Float_t *fDEParent;     //[fNMaxiparent]  Array of parent energy contributions
-  Int_t    fMaxIter  ;    // Number to Increment Maxiparent, and MaxPrimary if default is not sufficient
-  Float_t  fTime ;        // Calculated time  
-  Float_t  fTimeR ;       // Earliest time: to be used by Digits2Raw
+  Float_t  fAmpFloat;     ///< Cell amplitude, float
   
-  //Fit quality parameters
-  Float_t  fChi2;         // Fit Chi square	
-  Int_t    fNDF;          // Fit Number of Degrees of Freedom
+  Int_t    fNSamples;     ///< Number of time samples, Low Gain for ALTRO, used also for FALTRO 
+  
+  /// List of time bin constents, Low Gain for ALTRO, used also for FALTRO
+  Int_t   *fSamples;	    //[fNSamples]  
+  
+  Int_t    fNSamplesHG;   ///< Number of time samples, High Gain for ALTRO
+  
+  /// List of time bin constents, High Gain for ALTRO, used also for FALTRO 
+  Int_t   *fSamplesHG;	  //[fNSamples] 
 	
-  Int_t    fDigitType;    // This is a trigger digit(0), HG (1) or LG (3)
-  Float_t  fAmpCalib;     //! Calibrated energy
+  Int_t    fNprimary ;    ///< Number of primaries
+  
+  Int_t    fNMaxPrimary ; ///< Max Number of primaries
+  
+  /// Array of primary labels
+  Int_t   *fPrimary ;     //[fNMaxPrimary]       
+  
+  /// Array of primary energy contributions
+  Float_t *fDEPrimary ;   //[fNMaxPrimary]  
+    
+  Int_t    fNiparent ;    ///< Number of initial parents 
+  
+  Int_t    fNMaxiparent ; ///< Max Number of parents 
+  
+  /// Array of parents labels
+  Int_t   *fIparent ;     //[fNMaxiparent]       
+  
+  /// Array of parent energy contributions
+  Float_t *fDEParent;     //[fNMaxiparent] 
+  
+  Int_t    fMaxIter  ;    ///< Number to Increment Maxiparent, and MaxPrimary if default is not sufficient
+  
+  Float_t  fTime ;        ///< Calculated time  
+  
+  Float_t  fTimeR ;       ///< Earliest time: to be used by Digits2Raw
+  
+  Float_t  fChi2;         ///< Fit quality parameter, chi square	
+  
+  Int_t    fNDF;          ///< Fit quality parameter, number of Degrees of Freedom
+	
+  Int_t    fDigitType;    ///< This is a trigger digit(0), HG (1) or LG (3)
+  
+  Float_t  fAmpCalib;     ///< Calibrated energy
 
-  ClassDef(AliEMCALDigit,7)   // Digit in EMCAL 
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALDigit,7)  ;
+  /// \endcond
+
 } ;
 
 // inline definitions
 
+///
+/// Compares two digits with respect to its Id
+/// to sort according increasing Id
 //____________________________________________________________________________
 inline Int_t AliEMCALDigit::Compare(const TObject * obj) const
 {
-  // Compares two digits with respect to its Id
-  // to sort according increasing Id
   AliEMCALDigit * digit = (AliEMCALDigit *)obj ;
 
   Int_t iddiff = fId - digit->GetId() ;
@@ -154,6 +185,5 @@ inline Int_t AliEMCALDigit::Compare(const TObject * obj) const
   else
     return 0 ;
 }
-
 
 #endif //  ALIEMCALDIGIT_H

@@ -3,15 +3,22 @@
 /* Copyright(c) 2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
-/////////////////////////////////////////////////
-//          class for EMCAL Space Frame        //
-//              Author: Ryan M. Ward           //                                                   
-//     California Polytechnic State Univeristy //                                                   
-//               rmward@calpoly.edu            // 
-/////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+///
+/// \class  AliEMCALSpaceFrame
+/// \ingroup EMCALbase
+/// \brief Space Frame implementation
+///
+/// EMCAL Space Frame implementation
+///
+/// \author Ryan M. Ward, <rmward@calpoly.edu>, Cal Poly
+///
+////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h> 
+
+#include "AliLog.h"
+
 
 class AliEMCALSpaceFrame : public TNamed
 {
@@ -19,19 +26,16 @@ class AliEMCALSpaceFrame : public TNamed
 public:
 
   AliEMCALSpaceFrame();
+  
   virtual      ~AliEMCALSpaceFrame() {}
 
   AliEMCALSpaceFrame(const AliEMCALSpaceFrame& calFrame);
-  AliEMCALSpaceFrame & operator = (const AliEMCALSpaceFrame & /*rvalue*/) {
-    Fatal("operator =", "not implemented");
-    return *this;
-  }
   
-  //This method assembles the Geometries and places them into the
-  //Alice master volume
+  AliEMCALSpaceFrame & operator = (const AliEMCALSpaceFrame & /*rvalue*/) {
+    AliFatal("not implemented");
+    return *this;                                                         }
+  
   void CreateGeometry();
-
-protected:
   
 private:
 
@@ -64,7 +68,10 @@ private:
   Double_t fEndBeamRadThick;	    // Radial Thickness of the End Beams
   Double_t fEndBeamBeginRadius;	    // Starting Radius for End Beams
 
-  ClassDef(AliEMCALSpaceFrame,1)  //Class for EMCAL Space Frame
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALSpaceFrame,1) ;
+  /// \endcond
+
 };
 
 #endif  //ALIEMCALSPACEFRAME_H
