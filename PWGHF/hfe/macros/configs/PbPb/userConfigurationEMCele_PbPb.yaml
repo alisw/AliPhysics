@@ -1,0 +1,55 @@
+configurationName: "EMCAL electron configuration"   # Optional - Simply for user convenience
+pass: ""                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
+inputObjects:                                       # Define all of the input objects for the corrections
+    clusterContainers:                              # Configure clusters
+        defaultClusterContainer:                    # Name of a cluster input
+            branchName: "usedefault"                # Set the branch name. "usedefault" is supported
+        defaultClusterContainer_1:                  # Name of another cluster input which inherits from defaultClusterContainer
+            minE: 0.3                               # Cluster min E. Formerly clusterEMin
+        defaultClusterContainer_2:                  # Name of another cluster input which inherits from defaultClusterContainer
+            minE: 0.3                               # Cluster min E.
+            clusNonLinCorrEnergyCut: 0.3           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask() 
+    trackContainers:                                # Configure tracks
+        defaultTrackContainer:                      # Name of a track input
+            branchName: "usedefault"                # Set the branch name. "usedefault" is supported.
+        defaultTrackContainer_1:                    # Name of another track input which inherits from defaultTrackContainer
+            minPt: 0.3                             # Track min pt.
+            trackFilterType: kNoTrackFilter         # Set the track filter type. Check the documentation for possible values
+sharedParameters:
+    enableMCGenRemovTrack: false                     # apply the MC generators rejection also for track matching
+CellEnergy:                                         # Cell Energy correction component
+    enabled: true                                  # Whether to enable the task
+CellBadChannel:                                     # Bad channel removal at the cell level component
+    enabled: true                                  # Whether to enable the task
+CellTimeCalib:                                      # Cell Time Calibration component
+    enabled: true                                  # Whether to enable the task
+Clusterizer:                                        # Clusterizer component
+    enabled: true                                  # Whether to enable the task
+    clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
+    cellE: 0.05                                     # Minimum cell energy
+    seedE: 0.1                                      # Seed energy threshold
+    cellTimeMin: -1                                 # Min cell time (s)
+    cellTimeMax: +1                                 # Max cell time (s)
+    clusterTimeLength: 1                            # Maximum time difference between the digits inside EMC cluster (s)
+    w0: 4.5                                         # Weighting factor for determing the cluster position
+    recalDistToBadChannels: false                   # True will recalculate the distance to bad channels
+    recalShowerShape: true                          # True will recalculate the shower shape
+    remapMcAod: false                               # Switch for the remaping for the MC labels in AOD productions
+ClusterExotics:                                     # Cluster exotics identification component (actual removal is handled by the cluster container)
+    enabled: true                                  # Whether to enable the task
+    createHistos: true                             # Whether the task should create output histograms    
+ClusterNonLinearity:                                # Cluster non-linearity correction component
+    enabled: true                                  # Whether to enable the task
+    createHistos: true                             # Whether the task should create output histograms        
+    nonLinFunct: kBeamTestCorrectedv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
+ClusterTrackMatcher:                                # Cluster-track matcher component
+    enabled: true                                  # Whether to enable the task
+    createHistos: true                             # Whether the task should create output histograms        
+    maxDist: 0.1                                    # Max distance between a matched cluster and track
+    useDCA: true                                    # Use DCA as starting point for track propagation, rather than primary vertex
+    usePIDmass: true                                # Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
+    updateClusters: true                            # Update the matching information in the cluster
+    updateTracks: true                              # Update the matching information in the track
+ClusterHadronicCorrection:                          # Cluster hadronic correction component
+    enabled: false                                  # Whether to enable the task
+
