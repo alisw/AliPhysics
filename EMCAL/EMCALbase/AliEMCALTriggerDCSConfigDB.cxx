@@ -140,7 +140,7 @@ const TObject *AliEMCALTriggerDCSConfigDB::GetCachedCDBObject(Int_t id)
 }
 
 /// 
-/// Retrieves an entry with path <cdbPath> from the CDB.
+/// Retrieves an entry with path "cdbPath" from the CDB.
 //_____________________________________________________________________________
 AliCDBEntry* AliEMCALTriggerDCSConfigDB::GetCDBEntry(const char *cdbPath)
 {
@@ -156,7 +156,7 @@ AliCDBEntry* AliEMCALTriggerDCSConfigDB::GetCDBEntry(const char *cdbPath)
 }
 
 ///
-/// Caches the entry <id> with cdb path <cdbPath>
+/// Caches the entry "id" with cdb path "cdbPath"
 //_____________________________________________________________________________
 const TObject *AliEMCALTriggerDCSConfigDB::CacheCDBEntry(Int_t id, const char *cdbPath)
 {
