@@ -100,11 +100,6 @@ int main(int argc, char** argv)
     }
   }
 
-  if (!gGrid && !defaultOCDB.Contains("/cvmfs/") )
-  {
-    TGrid::Connect("alien://");
-  }
-
   for ( Int_t i = 0; i <= args.GetLast(); ++i )
   {
     TString a(static_cast<TObjString*>(args.At(i))->String());
@@ -158,6 +153,11 @@ int main(int argc, char** argv)
   }
 
   std::cout << "Using defaultOCDB=" << defaultOCDB.Data() << std::endl;
+
+  if (!gGrid && !defaultOCDB.Contains("/cvmfs/") && !defaultOCDB.BeginsWith("local://"))
+  {
+    TGrid::Connect("alien://");
+  }
 
   AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
   AliCDBManager::Instance()->SetRun(0);
