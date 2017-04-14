@@ -95,6 +95,7 @@ set(SRCS
   AliAnalysisTaskSEDStarCharmFraction.cxx
   AliAnalysisTaskSESignificance.cxx
   AliAnalysisTaskSEHFQA.cxx
+  AliAnalysisTaskTrackingSysPropagation.cxx
   AliMultiDimVector.cxx
   AliSignificanceCalculator.cxx
   AliHFMassFitter.cxx
