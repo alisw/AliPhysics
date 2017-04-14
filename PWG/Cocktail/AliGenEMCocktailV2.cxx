@@ -188,6 +188,9 @@ void AliGenEMCocktailV2::CreateCocktail()
   AliGenEMlibV2::SetPtParametrizations(fParametrizationFile, fParametrizationDir);
   SetPtParametrizations();
 
+  if (fDynPtRange)
+    AliInfo("Dynamical adaption of pT range was chosen, the number of generated particles will also be adapted");
+
   if (fUseYWeighting) {
     AliInfo("Rapidity weighting will be used");
     AliGenEMlibV2::SetPtYDistributions(fParametrizationFile, fParametrizationDir);
