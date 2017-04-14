@@ -13,20 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
-
-//_________________________________________________________________________
-//  Utility Class for Neural Network fit
-//
-//  currently uses 5 input neurons
-//  network configured via TMultiLayerPerceptron
-//
-//*-- Author: Paola La Rocca (Catania)
-//
-
 #include "AliCaloNeuralFit.h"
 #include <cmath>
 
+/// \cond CLASSIMP
+ClassImp( AliCaloNeuralFit ) ;
+/// \endcond
 
 Double_t AliCaloNeuralFit::Value
 (int index, Double_t in0, Double_t in1, Double_t in2, Double_t in3, Double_t in4)

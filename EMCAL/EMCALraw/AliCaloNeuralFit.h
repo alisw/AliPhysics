@@ -4,8 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-/* $Id: $ */
-
 //_________________________________________________________________________
 //  Utility Class for Neural Network fit
 //
@@ -133,7 +131,10 @@ private:
    Double_t Synapse0x8ce6fe8() const;
    Double_t Synapse0x8ce7010() const;
 
-	 ClassDef(AliCaloNeuralFit,1)
+  /// \cond CLASSIMP
+  ClassDef(AliCaloNeuralFit,1) ;
+  /// \endcond
+
 };
 
 #endif // AliCaloNeuralFit_h

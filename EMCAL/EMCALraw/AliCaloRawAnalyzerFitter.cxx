@@ -25,6 +25,9 @@
 using std::cout;
 using std::endl;
 
+/// \cond CLASSIMP
+ClassImp( AliCaloRawAnalyzerFitter ) ;
+/// \endcond
 
 AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char *nameshort ) :AliCaloRawAnalyzer( name, nameshort), 
 											      fkEulerSquared(7.389056098930650227),
