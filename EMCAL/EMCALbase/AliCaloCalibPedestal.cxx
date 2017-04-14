@@ -1264,7 +1264,7 @@ void AliCaloCalibPedestal::ComputeDeadTowers(const char * deadMapFile)
 ///
 /// Check if status info histo exists. Get if tower is well and alive.
 ///
-/// \param imod:super module number
+/// \param imod: super module number
 /// \param icol: cell column number
 /// \param irow: cell row number
 //_____________________________________________________________________
@@ -1287,7 +1287,7 @@ Bool_t AliCaloCalibPedestal::IsBadChannel(int imod, int icol, int irow) const
 ///
 /// Set the status info in histo.
 ///
-/// \param imod:super module number
+/// \param imod: super module number
 /// \param icol: cell column number
 /// \param irow: cell row number
 /// \param status: channel status, types defined in kDeadMapEntry
