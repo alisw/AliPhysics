@@ -8,6 +8,21 @@
 /// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-CNRS ???
 ///
 
+#if !defined(__CINT__)
+#include <TH2D.h>
+#include <TFile.h>
+#include <TObjArray.h>
+//#include <TSystem.h>
+
+#include "AliCaloCalibPedestal.h"
+#include "AliOADBContainer.h"
+
+#include "AliCDBManager.h"
+#include "AliOADBContainer.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#endif
+
 ///
 /// Create OADB Container for EMCal Bad Channels
 /// from local or grid OCDB
@@ -47,7 +62,7 @@ TObjArray GetHistoObject( Int_t runNum, Bool_t localOCDB=0)
   {
 		histo = (TH2D*)(map[i]);
 		printf("\n !!! EMCALBadChannelMap_Mod%d",i );
-		histo->SetName( Form("EMCALBadChannelMap_Mod%d", i ));
+		histo->SetName ( Form("EMCALBadChannelMap_Mod%d", i ));
 		histo->SetTitle( Form("EMCALBadChannelMap_Mod%d", i ));
 	}
 
@@ -70,7 +85,7 @@ void UpdateEMCAL_OADB_BadChannels
   
   //Create OADB container for BadChannels
   AliOADBContainer *con=new AliOADBContainer("");
-  con->InitFromFile(Form(fileNameOADB),"AliEMCALBadChannels"); 
+  con->InitFromFile(fileNameOADB,"AliEMCALBadChannels"); 
   
   //AliOADBContainer* con = new AliOADBContainer("AliEMCALBadChannels");
   
