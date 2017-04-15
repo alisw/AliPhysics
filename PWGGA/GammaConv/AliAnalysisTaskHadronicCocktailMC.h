@@ -31,6 +31,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     void InitializeDecayChannelHist(TH1F* hist, Int_t np);
     void FillPythiaBranchingRatio(TH1F* histo, Int_t np);
     void GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen);
+    void GetAndSetPtYDistributions(AliGenEMCocktailV2* mcCocktailGen);
     void SetHasMother(UInt_t selectedMothers);
     Int_t GetParticlePosLocal(Int_t pdg);
     TH1* SetHist1D(TH1* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Bool_t optSumw2);
@@ -86,14 +87,15 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     TF1*                        fPtParametrization[13];           //!
     TF1*                        fPtParametrizationProton;         //!
     TF1*                        fPtParametrizationPi0;            //!
-    TObjString*                 fCocktailSettings[10];            //!
+    TObjString*                 fCocktailSettings[12];            //!
     TH1D*                       fMtScalingFactors;                //!
+    TH2F*                       fPtYDistributions[13];            //!
   
   private:
     AliAnalysisTaskHadronicCocktailMC(const AliAnalysisTaskHadronicCocktailMC&);              // Prevent copy-construction
     AliAnalysisTaskHadronicCocktailMC &operator=(const AliAnalysisTaskHadronicCocktailMC&);   // Prevent assignment
   
-    ClassDef(AliAnalysisTaskHadronicCocktailMC, 4);
+    ClassDef(AliAnalysisTaskHadronicCocktailMC, 5);
 };
 
 #endif

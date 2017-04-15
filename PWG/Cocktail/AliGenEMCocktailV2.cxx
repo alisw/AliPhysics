@@ -68,6 +68,7 @@ AliGenEMCocktailV2::AliGenEMCocktailV2():AliGenCocktail(),
   fCollisionSystem(AliGenEMlibV2::kpp7TeV),
   fCentrality(AliGenEMlibV2::kpp),
   fV2Systematic(AliGenEMlibV2::kNoV2Sys),
+  fUseYWeighting(kFALSE),
   fDynPtRange(kFALSE),
   fForceConv(kFALSE),
   fSelectedParticles(kGenHadrons)
@@ -79,6 +80,7 @@ AliGenEMCocktailV2::AliGenEMCocktailV2():AliGenCocktail(),
 TF1*  AliGenEMCocktailV2::fPtParametrization[]    = {0x0};
 TF1*  AliGenEMCocktailV2::fParametrizationProton  = NULL;
 TH1D* AliGenEMCocktailV2::fMtScalingFactorHisto   = NULL;
+TH2F* AliGenEMCocktailV2::fPtYDistribution[]      = {0x0};
 
 //_________________________________________________________________________
 AliGenEMCocktailV2::~AliGenEMCocktailV2()
@@ -113,6 +115,15 @@ TH1D* AliGenEMCocktailV2::GetMtScalingFactors() {
 }
 
 //_________________________________________________________________________
+TH2F* AliGenEMCocktailV2::GetPtYDistribution(Int_t np) {
+
+  if (np<18)
+    return fPtYDistribution[np];
+  else
+    return NULL;
+}
+
+//_________________________________________________________________________
 void AliGenEMCocktailV2::GetPtRange(Double_t &ptMin, Double_t &ptMax) {
   ptMin = fPtMin;
   ptMax = fPtMax;
@@ -128,6 +139,28 @@ Double_t AliGenEMCocktailV2::GetMaxPtStretchFactor(Int_t pdgCode) {
   if (factor*fPtMax > 200) factor = 200./fPtMax; // so far the input pt parametrizations are defined up to pt = 200 GeV/c
 
   return factor;
+}
+
+//-------------------------------------------------------------------
+Double_t AliGenEMCocktailV2::GetYWeight(Int_t np, TParticle* part) {
+
+  if (!fUseYWeighting) return 1.;
+
+  Double_t weight = 0.;
+  if (fPtYDistribution[np]) {
+    if (part->Pt() > fPtYDistribution[np]->GetXaxis()->GetXmin() && part->Pt() < fPtYDistribution[np]->GetXaxis()->GetXmin()) {
+      if (part->Y() > fPtYDistribution[np]->GetYaxis()->GetXmin() && part->Y() < fPtYDistribution[np]->GetYaxis()->GetXmin()) {
+        weight = fPtYDistribution[np]->GetBinContent(fPtYDistribution[np]->GetXaxis()->FindBin(part->Pt()), fPtYDistribution[np]->GetYaxis()->FindBin(part->Y()));
+        if (weight)
+          return weight;
+        else
+          return 1.;
+      } else
+        return 1.;
+    } else
+      return 1.;
+  } else
+    return 1.;
 }
 
 //_________________________________________________________________________
@@ -154,6 +187,15 @@ void AliGenEMCocktailV2::CreateCocktail()
   SetMtScalingFactors();
   AliGenEMlibV2::SetPtParametrizations(fParametrizationFile, fParametrizationDir);
   SetPtParametrizations();
+
+  if (fDynPtRange)
+    AliInfo("Dynamical adaption of pT range was chosen, the number of generated particles will also be adapted");
+
+  if (fUseYWeighting) {
+    AliInfo("Rapidity weighting will be used");
+    AliGenEMlibV2::SetPtYDistributions(fParametrizationFile, fParametrizationDir);
+    SetPtYDistributions();
+  }
 
   // Create and add electron sources to the generator
   // pizero
@@ -629,6 +671,21 @@ void AliGenEMCocktailV2::SetMtScalingFactors() {
 }
 
 //_________________________________________________________________________
+Bool_t AliGenEMCocktailV2::SetPtYDistributions() {
+
+  TH2F* tempPtY = NULL;
+  for(Int_t i=0; i<18; i++) {
+    tempPtY = AliGenEMlibV2::GetPtYDistribution(i);
+    if (tempPtY)
+      fPtYDistribution[i] = new TH2F(*tempPtY);
+    else
+      fPtYDistribution[i] = NULL;
+  }
+
+  return kTRUE;
+}
+
+//_________________________________________________________________________
 void AliGenEMCocktailV2::Generate()
 {
   // Generate event
@@ -676,6 +733,7 @@ void AliGenEMCocktailV2::Generate()
   Int_t pdgGrandMother = 0;
   Double_t weight = 0.;
   Double_t dNdy = 0.;
+  Double_t yWeight = 0.;
   Int_t maxPart = partArray->GetEntriesFast();
   for(iPart=0; iPart<maxPart; iPart++){
     TParticle *part = gAlice->GetMCApp()->Particle(iPart);
@@ -706,75 +764,98 @@ void AliGenEMCocktailV2::Generate()
     switch (pdgMother){
       case 111:
         dNdy = fYieldArray[kPizero];
+        yWeight = GetYWeight(kPizero, part);
         break;
       case 221:
         dNdy = fYieldArray[kEta];
+        yWeight = GetYWeight(kEta, part);
         break;
       case 113:
         dNdy = fYieldArray[kRho0];
+        yWeight = GetYWeight(kRho0, part);
         break;
       case 223:
         dNdy = fYieldArray[kOmega];
+        yWeight = GetYWeight(kOmega, part);
         break;
       case 331:
         dNdy = fYieldArray[kEtaprime];
+        yWeight = GetYWeight(kEtaprime, part);
         break;
       case 333:
         dNdy = fYieldArray[kPhi];
+        yWeight = GetYWeight(kPhi, part);
         break;
       case 443:
         dNdy = fYieldArray[kJpsi];
+        yWeight = GetYWeight(kJpsi, part);
         break;
       case 220000:
         dNdy = fYieldArray[kDirectRealGamma];
+        yWeight = 0.;
         break;
       case 220001:
         dNdy = fYieldArray[kDirectVirtGamma];
+        yWeight = 0.;
         break;
       case 3212:
         dNdy = fYieldArray[kSigma0];
+        yWeight = GetYWeight(kSigma0, part);
         break;
       case 310:
         dNdy = fYieldArray[kK0s];
+        yWeight = GetYWeight(kK0s, part);
         break;
       case 130:
         dNdy = fYieldArray[kK0l];
+        yWeight = GetYWeight(kK0l, part);
         break;
       case 3122:
         dNdy = fYieldArray[kLambda];
+        yWeight = GetYWeight(kLambda, part);
         break;
       case 2224:
         dNdy = fYieldArray[kDeltaPlPl];
+        yWeight = GetYWeight(kDeltaPlPl, part);
         break;
       case 2214:
         dNdy = fYieldArray[kDeltaPl];
+        yWeight = GetYWeight(kDeltaPl, part);
         break;
       case 1114:
         dNdy = fYieldArray[kDeltaMi];
+        yWeight = GetYWeight(kDeltaMi, part);
         break;
       case 2114:
         dNdy = fYieldArray[kDeltaZero];
+        yWeight = GetYWeight(kDeltaZero, part);
         break;
       case 213:
         dNdy = fYieldArray[kRhoPl];
+        yWeight = GetYWeight(kRhoPl, part);
         break;
       case -213:
         dNdy = fYieldArray[kRhoMi];
+        yWeight = GetYWeight(kRhoMi, part);
         break;
       case 313:
         dNdy = fYieldArray[kK0star];
+        yWeight = GetYWeight(kK0star, part);
         break;
       default:
         dNdy = 0.;
+        yWeight = 0.;
     }
     
-    weight = dNdy*part->GetWeight();
+    if (fUseYWeighting && yWeight)
+      weight = yWeight*dNdy*part->GetWeight();
+    else
+      weight = dNdy*part->GetWeight();
     part->SetWeight(weight);
   }	
   
   fHeader->SetNProduced(maxPart);
-  
-  
+
   TArrayF eventVertex;
   eventVertex.Set(3);
   for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
