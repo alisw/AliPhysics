@@ -1,9 +1,8 @@
 /// \file PrintEMCALCalibTime.C
-/// \brief Print time parameters in OCDB
+/// \brief Print time calibration parameters in OCDB
 ///
-/// Macro to print the values stored in the OCDB with AliEMCALCalibTime
+/// Macro to print the time calibration values stored in the OCDB with AliEMCALCalibTime
 /// either local file or alien file
-///
 ///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
