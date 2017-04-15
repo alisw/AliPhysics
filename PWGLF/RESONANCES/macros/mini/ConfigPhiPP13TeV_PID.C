@@ -27,6 +27,8 @@ Bool_t ConfigPhiPP13TeV_PID
   // manage suffix
   if(strlen(suffix)>0) suffix=Form("_%s",suffix);
 
+  Bool_t CheckDecay=false;
+
   // set daughter cuts
   AliRsnCutSetDaughterParticle* cutSetQ;
   AliRsnCutSetDaughterParticle* cutSetK;
@@ -76,9 +78,6 @@ Bool_t ConfigPhiPP13TeV_PID
   /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
   /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
   /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
-
-  Int_t phiv = task->CreateValue(AliRsnMiniValue::kPhiV,kFALSE);
-
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -142,6 +141,7 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->SetMotherPDG(333);
     outm->SetMotherMass(1.019461);
     outm->SetPairCuts(cutsPair);
+    outm->SetCheckDecay(CheckDecay);
     outm->AddAxis(imID,215,0.985,1.2);
     outm->AddAxis(ptID,200,0.,20.);
     if(!isPP || MultBins) outm->AddAxis(centID,100,0.,100.);
@@ -155,6 +155,7 @@ Bool_t ConfigPhiPP13TeV_PID
     outmf->SetMotherPDG(333);
     outmf->SetMotherMass(1.019461);
     outmf->SetPairCuts(cutsPair);
+    outmf->SetCheckDecay(CheckDecay);
     outmf->AddAxis(imID,215,0.985,1.2);
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
     if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
@@ -171,6 +172,7 @@ Bool_t ConfigPhiPP13TeV_PID
     outps->SetMotherPDG(333);
     outps->SetMotherMass(1.019461);
     outps->SetPairCuts(cutsPair);
+    outps->SetCheckDecay(CheckDecay);
     outps->AddAxis(fdpt,100,0.,10.);
     outps->AddAxis(sdpt,100,0.,10.);
     outps->AddAxis(ptID,200,0.,20.);
@@ -183,6 +185,7 @@ Bool_t ConfigPhiPP13TeV_PID
     outpsf->SetMotherPDG(333);
     outpsf->SetMotherMass(1.019461);
     outpsf->SetPairCuts(cutsPair);
+    outpsf->SetCheckDecay(CheckDecay);
     outpsf->AddAxis(fdpt,30,0.,3.);
     outpsf->AddAxis(sdpt,30,0.,3.);
     outpsf->AddAxis(ptID,300,0.,3.);
@@ -197,6 +200,7 @@ Bool_t ConfigPhiPP13TeV_PID
       outreflex->SetMotherPDG(333);
       outreflex->SetMotherMass(1.019461);
       outreflex->SetPairCuts(cutsPair);
+      outreflex->SetCheckDecay(CheckDecay);
       outreflex->AddAxis(imID,215,0.985,1.2);
       outreflex->AddAxis(ptID,200,0.,20.);
       if(!isPP) outreflex->AddAxis(centID,100,0.,100.);
