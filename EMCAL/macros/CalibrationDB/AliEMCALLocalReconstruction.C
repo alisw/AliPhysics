@@ -1,11 +1,14 @@
-
-
-//Run EMCAL clusterization using information from calibration database.
-// Author: Gustavo Conesa
+///
+/// \file AliEMCALLocalReconstruction.C
+/// \brief Simple macro to test EMCAL Reconstruction reading local OCDB
+///
+/// Run EMCAL clusterization using information from calibration database.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
 AliEMCALLocalReconstruction()
 {
-
   // Open local calibration data base
   AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
   
