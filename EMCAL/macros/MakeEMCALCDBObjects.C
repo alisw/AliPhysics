@@ -1,3 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+///
+/// \file MakeEMCALCDBObjects.C
+/// \brief Generate OCDB objects
+///
+///  Call the different single macros generating OCDB files with default values
+///
+/// \author Raffaele Grosso, Raffaele.Grosso@cern.ch (CERN)
+///
+////////////////////////////////////////////////////////////////////////////////
+
 #include "EMCAL/macros/CalibrationDB/AliEMCALSetCDB.C"
 #include "EMCAL/macros/mapping/MakeEMCALAltroMapping.C"
 #include "EMCAL/macros/PeakFinder/MakeEMCALPF.C"
@@ -7,6 +18,9 @@
 #include "EMCAL/macros/Shuttle/MakeOCDBConfigPreprocessor.C"
 #include "EMCAL/macros/Shuttle/MakeOCDBTempTree.C"
 
+///
+/// Main method, call all the macros
+///
 void MakeEMCALCDBObjects()
 {
   //AliEMCALSetCDB();
@@ -17,5 +31,4 @@ void MakeEMCALCDBObjects()
   AliEMCALSetSimParamCDB();
   MakeOCDBConfigPreprocessor();
   MakeOCDBTempTree();
-
 }
