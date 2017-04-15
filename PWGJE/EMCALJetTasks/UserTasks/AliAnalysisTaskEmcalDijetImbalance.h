@@ -77,6 +77,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Bool_t                      FillHistograms()                                  ;
   Bool_t                      Run()                                             ;
   Bool_t                      IsEventSelected()                                 ;
+  void                        RunChanged(Int_t run)                             ;
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
@@ -129,6 +130,9 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliEventCuts                fEventCuts;                           ///< event selection utility
   TList                      *fEventCutList;                        //!<! Output list for event cut histograms
   Bool_t                      fUseManualEventCuts;                  ///< Flag to use manual event cuts
+  
+  // Trigger parameters
+  Double_t                    fMBUpscaleFactor;                     //!<! inverse of downscale factor, for MB trigger
   
   // Hist manager
   THistManager                fHistManager;                         ///< Histogram manager
