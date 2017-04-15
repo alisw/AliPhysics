@@ -89,6 +89,7 @@ public:
    void            SetFillHistogramOnlyInRange(Bool_t fillInRangeOnly) { fCheckHistRange = fillInRangeOnly; }
    void            SetMaxNSisters(Short_t n)          {fMaxNSisters = n;}
    void            SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
+   void            SetCheckDecay(Bool_t checkDecay=kTRUE) {fCheckDecay = checkDecay;}
    void            SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
    void            SetDselection(UShort_t originDselection);
    void 	   SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
@@ -131,6 +132,7 @@ private:
    TArrayI          fSel2;             //! list of selected particles for definition 2
    Short_t          fMaxNSisters;      // maximum number of allowed mother's daughter
    Bool_t           fCheckP;           // flag to set in order to check the momentum conservation for daughters
+   Bool_t           fCheckDecay;       // flat to set in order to check if the mother decayed via the requested channel
    Bool_t           fCheckFeedDown;    // flag to set in order to check the particle feed down (specific for D meson analysis)
    UShort_t 	    fOriginDselection; // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty (specific for D meson analysis)
    Bool_t   	    fKeepDfromB;       // flag for the feed down from b quark decay (specific for D meson analysis)			  
