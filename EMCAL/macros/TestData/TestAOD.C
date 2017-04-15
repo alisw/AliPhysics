@@ -39,12 +39,12 @@
 
 // Change the bool depending on what information you want to print
 // when all FALSE, prints minimum cluster information.
-Bool_t kPrintKine         = kFALSE; /// Print MC related information. Do not use for raw data.
-Bool_t kPrintCaloCells    = kFALSE; /// Print cells parameters
-Bool_t kPrintCaloTrigger  = kFALSE; /// Print trigger patches information
-Bool_t kPrintTrackMatches = kFALSE; /// Print cluster-track matching information
-Bool_t kPrintClusterCells = kFALSE; /// Print cells in clusters information
-Bool_t kPrintClusterPID   = kFALSE; /// Print clusters PID (bayesian) weights
+Bool_t kPrintKine         = kFALSE; ///< Print MC related information. Do not use for raw data.
+Bool_t kPrintCaloCells    = kFALSE; ///< Print cells parameters
+Bool_t kPrintCaloTrigger  = kFALSE; ///< Print trigger patches information
+Bool_t kPrintTrackMatches = kFALSE; ///< Print cluster-track matching information
+Bool_t kPrintClusterCells = kFALSE; ///< Print cells in clusters information
+Bool_t kPrintClusterPID   = kFALSE; ///< Print clusters PID (bayesian) weights
  
 ///
 /// Main method to read information stored in AliAODCaloClusters and AliAODCaloCells
