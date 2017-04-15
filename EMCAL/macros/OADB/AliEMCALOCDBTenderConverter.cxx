@@ -1,67 +1,72 @@
-// Script to convert OCDB files to tender used files
-// Author: Jiri Kral
+////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliEMCALOCDBTenderConverter.cxx
+/// \brief Script to convert OCDB files to tender used files
+///
+///  Script to convert OCDB files to tender used files
+///
+/// \author Jiri Kral, Jiri.Kral@cern.ch (Jyvaskyla)
+///
+////////////////////////////////////////////////////////////////////////////////
 
 #if !defined(__CINT__)
-#include <TString.h>
-#include <TH2.h>
-#include <TF1.h>
+#include <TH2D.h>
+#include <TFile.h>
+#include <TObjArray.h>
 
-#include "AliRun.h"
 #include "AliCaloCalibPedestal.h"
-#include "AliEMCALGeoParams.h"
-#include "AliCDBMetaData.h"
-#include "AliCDBId.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #endif
 
-
-void AliEMCALOCDBTenderConverter( Int_t runNum, char *outFileName ){
-	Int_t i;
-	char buf[100];
-
-	TH2D *histo;
-
-	TFile *outFile;
-	
-	AliCDBManager *man;
-	AliCDBStorage *stor;
-	AliCaloCalibPedestal *ped;
-
-	// created the OCDB manager
-	man = AliCDBManager::Instance();
-
-	// point it to local storage
-	// !!! careful, one must build an exact path of OCDB directories
-	// and store the file in those
-	// here "./OCDB/EMCAL/Calib/Pedestals/Run*.root) for masks
-	stor = man->GetStorage( "local://$ALICE_ROOT/OCDB");
-	
-	// load the file data
-	ped = (AliCaloCalibPedestal*)(stor->Get("EMCAL/Calib/Pedestals", runNum)->GetObject());
-
-	// get the array of histos
-	TObjArray map = ped->GetDeadMap();
-
-	outFile = new TFile( outFileName, "RECREATE" );
-
-	// rename the histos and save
-	for( i = 0; i < map.GetEntries(); i++ ){
-		histo = (TH2D*)(map[i]);
-                printf("\n !!! EMCALBadChannelMap_Mod%d",i );
-		sprintf( buf, "EMCALBadChannelMap_Mod%d", i );
-
-		histo->SetName( buf );
-		histo->SetTitle( buf );
-
-		histo->Write();
-	}
-
-	// cleanup
-	delete outFile;
-	delete ped;
-	delete stor;
-	delete man;
-	
+///
+/// Main method:
+/// 
+/// First it opens the OCDB file with bad map
+/// Then it gets the bad map histograms and put it in a file.
+///
+/// \param runNum: reference run number to extract the parameters
+/// \param outFileName: path and file name of output file with histograms
+///
+void AliEMCALOCDBTenderConverter( Int_t runNum, char *outFileName )
+{
+  Int_t i;
+  char buf[100];
+      
+  // Create the OCDB manager
+  AliCDBManager * man = AliCDBManager::Instance();
+  
+  // Point it to local storage
+  // !!! careful, one must build an exact path of OCDB directories
+  // and store the file in those
+  // here "./OCDB/EMCAL/Calib/Pedestals/Run*.root) for masks
+  AliCDBStorage * stor = man->GetStorage( "local://$ALICE_ROOT/OCDB");
+  
+  // Load the file data
+  AliCaloCalibPedestal * ped = (AliCaloCalibPedestal*)(stor->Get("EMCAL/Calib/Pedestals", runNum)->GetObject());
+  
+  // Get the array of histos
+  TObjArray map = ped->GetDeadMap();
+  
+  TFile * outFile = new TFile( outFileName, "RECREATE" );
+  
+  // Rename the histos and save
+  for( i = 0; i < map.GetEntries(); i++ )
+  {
+    TH2D * histo = (TH2D*)(map[i]);
+    printf("\n !!! EMCALBadChannelMap_Mod%d",i );
+    sprintf( buf, "EMCALBadChannelMap_Mod%d", i );
+    
+    histo->SetName( buf );
+    histo->SetTitle( buf );
+    
+    histo->Write();
+  }
+  
+  // Cleanup
+  delete outFile;
+  delete ped;
+  delete stor;
+  delete man;
 }
