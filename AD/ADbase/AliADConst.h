@@ -1,3 +1,4 @@
+// -*- C++ -*-
 #ifndef ALIADCONST_H
 #define ALIADCONST_H
 
@@ -17,11 +18,10 @@ const Float_t kADPMTransparency = 0.25; // Transparency of the first dynode of t
 const Float_t kADPMNbOfSecElec = 6.0;   // Number of secondary electrons emitted from first dynode (per ph.e.)
 const Float_t kPhotoCathodeEfficiency = 0.18; // Photocathode efficiency
 const Int_t   kNCIUBoards = 2; //Number of CIU boards
-/*				    |------------Cside------------|----------Aside-------|   */	
+/*				    |------------Cside------------|----------Aside-------|   */
 const Int_t   kOfflineChannel[16] = {15, 11, 14, 10, 13, 9, 12, 8, 7, 3, 6, 2, 5, 1, 4, 0};
 /*	      Online->Offline								     */
 const Int_t   kOnlineChannel[16] =  {15, 13, 11, 9, 14, 12, 10, 8, 7, 5, 3, 1, 6, 4, 2, 0};
 /*	      Offline->Online								     */
 
 #endif
-

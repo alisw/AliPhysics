@@ -35,37 +35,37 @@
 ClassImp(AliADCalibData);
 
 //________________________________________________________________
-AliADCalibData::AliADCalibData():
-  fLightYields(NULL),
-  fPMGainsA(NULL),
-  fPMGainsB(NULL),
-  fThrCalibA(NULL),
-  fThrCalibB(NULL),
-  fBBAThreshold(0),
-  fBBCThreshold(0) ,  
-  fBGAThreshold(0) ,  
-  fBGCThreshold(0) ,  
-  fBBAForBGThreshold(0) ,  
-  fBBCForBGThreshold(0) ,   
-  fMultADAThrLow(0) ,  
-  fMultADAThrHigh(0) , 
-  fMultADCThrLow(0) ,  
-  fMultADCThrHigh(0)
+AliADCalibData::AliADCalibData()
+  : fBBAThreshold(0)
+  , fBBCThreshold(0)
+  , fBGAThreshold(0)
+  , fBGCThreshold(0)
+  , fBBAForBGThreshold(0)
+  , fBBCForBGThreshold(0)
+  , fMultADAThrLow(0)
+  , fMultADAThrHigh(0)
+  , fMultADCThrLow(0)
+  , fMultADCThrHigh(0)
+  , fLightYields(NULL)
+  , fPMGainsA(NULL)
+  , fPMGainsB(NULL)
+  , fThrCalibA(NULL)
+  , fThrCalibB(NULL)
 {
   // default constructor
-  
+
   for(int t=0; t<16; t++) {
     fMeanHV[t]      = 1400.0;
-    fWidthHV[t]     = 0.0; 
+    fWidthHV[t]     = 0.0;
     fTimeOffset[t]  = 250.0;
     fTimeGain[t]    = 1.0;
     fDeadChannel[t]= kFALSE;
     fDiscriThr[t]  = 2.5;
   }
   for(int t=0; t<32; t++) {
-    fPedestal[t]    = 3.0;     
-    fSigma[t]       = 1.0;        
-    fADCmean[t]     = 0.0;      
+    fPedestal[t]    = 3.0;
+    fSigma[t]       = 1.0;
+    fADCmean[t]     = 0.0;
     fADCsigma[t]    = 0.0;
   }
   for(int i=0; i<kNCIUBoards ;i++) {
@@ -97,26 +97,26 @@ AliADCalibData::AliADCalibData():
 //________________________________________________________________
 void AliADCalibData::Reset()
 {
-  
+
 }
 
 //________________________________________________________________
-AliADCalibData::AliADCalibData(const char* name) :
-  fLightYields(NULL),
-  fPMGainsA(NULL),
-  fPMGainsB(NULL),
-  fThrCalibA(NULL),
-  fThrCalibB(NULL),
-  fBBAThreshold(0),
-  fBBCThreshold(0) ,  
-  fBGAThreshold(0) ,  
-  fBGCThreshold(0) ,  
-  fBBAForBGThreshold(0) ,  
-  fBBCForBGThreshold(0) ,   
-  fMultADAThrLow(0) ,  
-  fMultADAThrHigh(0) , 
-  fMultADCThrLow(0) ,  
-  fMultADCThrHigh(0)
+AliADCalibData::AliADCalibData(const char* name)
+  : fBBAThreshold(0)
+  , fBBCThreshold(0)
+  , fBGAThreshold(0)
+  , fBGCThreshold(0)
+  , fBBAForBGThreshold(0)
+  , fBBCForBGThreshold(0)
+  , fMultADAThrLow(0)
+  , fMultADAThrHigh(0)
+  , fMultADCThrLow(0)
+  , fMultADCThrHigh(0)
+  , fLightYields(NULL)
+  , fPMGainsA(NULL)
+  , fPMGainsB(NULL)
+  , fThrCalibA(NULL)
+  , fThrCalibB(NULL)
 {
   // Constructor
   TString namst = "Calib_";
@@ -125,16 +125,16 @@ AliADCalibData::AliADCalibData(const char* name) :
   SetTitle(namst.Data());
   for(int t=0; t<16; t++) {
     fMeanHV[t]      = 1500.0;
-    fWidthHV[t]     = 0.0; 
+    fWidthHV[t]     = 0.0;
     fTimeOffset[t]  = 5.0;
     fTimeGain[t]    = 1.0;
     fDeadChannel[t]= kFALSE;
     fDiscriThr[t]  = 2.5;
   }
   for(int t=0; t<32; t++) {
-    fPedestal[t]    = 0.0;     
-    fSigma[t]       = 0.0;        
-    fADCmean[t]     = 0.0;      
+    fPedestal[t]    = 0.0;
+    fSigma[t]       = 0.0;
+    fADCmean[t]     = 0.0;
     fADCsigma[t]    = 0.0;
   }
   for(int i=0; i<kNCIUBoards ;i++) {
@@ -164,53 +164,52 @@ AliADCalibData::AliADCalibData(const char* name) :
 }
 
 //________________________________________________________________
-AliADCalibData::AliADCalibData(const AliADCalibData& calibda) :
-  TNamed(calibda),
-  fLightYields(NULL),
-  fPMGainsA(NULL),
-  fPMGainsB(NULL),
-  fThrCalibA(NULL),
-  fThrCalibB(NULL)
+AliADCalibData::AliADCalibData(const AliADCalibData& calibda)
+  : TNamed(calibda)
+  , fLightYields(NULL)
+  , fPMGainsA(NULL)
+  , fPMGainsB(NULL)
+  , fThrCalibA(NULL)
+  , fThrCalibB(NULL)
 {
   // copy constructor
-
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   fBBAThreshold = calibda.GetBBAThreshold();
-  fBBCThreshold = calibda.GetBBCThreshold();  
-  fBGAThreshold = calibda.GetBGAThreshold();  
-  fBGCThreshold = calibda.GetBGCThreshold();  
-  fBBAForBGThreshold = calibda.GetBBAForBGThreshold();  
-  fBBCForBGThreshold = calibda.GetBBCForBGThreshold();   
-  fMultADAThrLow = calibda.GetMultADAThrLow();  
+  fBBCThreshold = calibda.GetBBCThreshold();
+  fBGAThreshold = calibda.GetBGAThreshold();
+  fBGCThreshold = calibda.GetBGCThreshold();
+  fBBAForBGThreshold = calibda.GetBBAForBGThreshold();
+  fBBCForBGThreshold = calibda.GetBBCForBGThreshold();
+  fMultADAThrLow = calibda.GetMultADAThrLow();
   fMultADAThrHigh = calibda.GetMultADAThrHigh();
-  fMultADCThrLow = calibda.GetMultADCThrLow();  
+  fMultADCThrLow = calibda.GetMultADCThrLow();
   fMultADCThrHigh = calibda.GetMultADCThrHigh();
-  
-  for(int t=0; t<32; t++) { 
+
+  for(int t=0; t<32; t++) {
     fPedestal[t] = calibda.GetPedestal(t);
     fSigma[t]    = calibda.GetSigma(t);
     fADCmean[t]  = calibda.GetADCmean(t);
     fADCsigma[t] = calibda.GetADCsigma(t); }
-      
-  for(int t=0; t<16; t++) { 
+
+  for(int t=0; t<16; t++) {
     fMeanHV[t]       = calibda.GetMeanHV(t);
-    fWidthHV[t]      = calibda.GetWidthHV(t);        
+    fWidthHV[t]      = calibda.GetWidthHV(t);
     fTimeOffset[t]   = calibda.GetTimeOffset(t);
-    fTimeGain[t]     = calibda.GetTimeGain(t); 
+    fTimeGain[t]     = calibda.GetTimeGain(t);
     fDeadChannel[t]  = calibda.IsChannelDead(t);
     fDiscriThr[t]    = calibda.GetDiscriThr(t);
-  }  
-  
+  }
+
   for(int i=0; i<kNCIUBoards ;i++) {
     fTimeResolution[i]  = calibda.GetTimeResolution(i);
-    fWidthResolution[i] = calibda.GetWidthResolution(i);	  
+    fWidthResolution[i] = calibda.GetWidthResolution(i);
     fMatchWindow[i] = calibda.GetMatchWindow(i);
     fSearchWindow[i] = calibda.GetSearchWindow(i);
     fTriggerCountOffset[i] = calibda.GetTriggerCountOffset(i);
     fRollOver[i] = calibda.GetRollOver(i);
   }
-  
+
   for(int i=0; i<kNCIUBoards ;i++) {
     fClk1Win1[i] = calibda.GetClk1Win1(i);
     fClk1Win2[i] = calibda.GetClk1Win2(i);
@@ -235,40 +234,39 @@ AliADCalibData::AliADCalibData(const AliADCalibData& calibda) :
     fPedestalCutEven[j] = calibda.GetOnlinePedestal(1,j);
   }
   for(Int_t i = 0; i < 5; ++i) fTriggerSelected[i] = calibda.GetTriggerSelected(i);
-  
+
 }
 
 //________________________________________________________________
 AliADCalibData &AliADCalibData::operator =(const AliADCalibData& calibda)
 {
   // assignment operator
-
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
-  
+
   for(int t=0; t<32; t++) {
     fPedestal[t] = calibda.GetPedestal(t);
     fSigma[t]    = calibda.GetSigma(t);
     fADCmean[t]  = calibda.GetADCmean(t);
     fADCsigma[t] = calibda.GetADCsigma(t); }
-      
+
   for(int t=0; t<16; t++) {
     fMeanHV[t]       = calibda.GetMeanHV(t);
-    fWidthHV[t]      = calibda.GetWidthHV(t);        
+    fWidthHV[t]      = calibda.GetWidthHV(t);
     fTimeOffset[t]   = calibda.GetTimeOffset(t);
-    fTimeGain[t]     = calibda.GetTimeGain(t); 
+    fTimeGain[t]     = calibda.GetTimeGain(t);
     fDeadChannel[t]  = calibda.IsChannelDead(t);
     fDiscriThr[t]    = calibda.GetDiscriThr(t);
-  }   
+  }
   for(int i=0; i<kNCIUBoards ;i++) {
     fTimeResolution[i]  = calibda.GetTimeResolution(i);
-    fWidthResolution[i] = calibda.GetWidthResolution(i);	  
+    fWidthResolution[i] = calibda.GetWidthResolution(i);
     fMatchWindow[i] = calibda.GetMatchWindow(i);
     fSearchWindow[i] = calibda.GetSearchWindow(i);
     fTriggerCountOffset[i] = calibda.GetTriggerCountOffset(i);
     fRollOver[i] = calibda.GetRollOver(i);
   }
-  
+
   for(int i=0; i<kNCIUBoards ;i++) {
     fClk1Win1[i] = calibda.GetClk1Win1(i);
     fClk1Win2[i] = calibda.GetClk1Win2(i);
@@ -292,10 +290,9 @@ AliADCalibData &AliADCalibData::operator =(const AliADCalibData& calibda)
     fPedestalCutOdd[j] = calibda.GetOnlinePedestalCut(0,j);
     fPedestalCutEven[j] = calibda.GetOnlinePedestal(1,j);
   }
-  for(Int_t i = 0; i < 5; ++i) fTriggerSelected[i] = calibda.GetTriggerSelected(i); 
-   
+  for(Int_t i = 0; i < 5; ++i) fTriggerSelected[i] = calibda.GetTriggerSelected(i);
+
   return *this;
-  
 }
 
 //________________________________________________________________
@@ -304,14 +301,19 @@ AliADCalibData::~AliADCalibData()
   // destructor
   if (fLightYields)
     delete [] fLightYields;
+  fLightYields = NULL;
   if (fPMGainsA)
     delete [] fPMGainsA;
+  fPMGainsA = NULL;
   if (fPMGainsB)
     delete [] fPMGainsB;
+  fPMGainsB = NULL;
   if (fThrCalibA)
     delete [] fThrCalibA;
+  fThrCalibA = NULL;
   if (fThrCalibB)
     delete [] fThrCalibB;
+  fThrCalibB = NULL;
 }
 
 //________________________________________________________________
@@ -325,7 +327,7 @@ Float_t AliADCalibData::GetLightYields(Int_t channel)
     return fLightYields[channel];
   }
 
-  AliError(Form("Wrong channel index: %d",channel));
+  AliErrorF("Wrong channel index: %d",channel);
   return 0;
 }
 
@@ -372,7 +374,7 @@ Float_t AliADCalibData::GetGain(Int_t channel)
   // Argument passed is the PM number (aliroot numbering)
   if (!fPMGainsA) InitPMGains();
 
-  // High Voltage retrieval from Calibration Data Base:  
+  // High Voltage retrieval from Calibration Data Base:
   Float_t hv = fMeanHV[channel];
   Float_t gain = 0;
   if (hv>0)
@@ -387,7 +389,7 @@ Float_t AliADCalibData::GetADCperMIP(Int_t channel)
   // Argument passed is the PM number (aliroot numbering)
   if (!fPMGainsA) InitPMGains();
 
-  // High Voltage retrieval from Calibration Data Base:  
+  // High Voltage retrieval from Calibration Data Base:
   Float_t hv = fMeanHV[channel];
   Float_t ADCperMIP = 0;
   if (hv>0)
@@ -419,7 +421,7 @@ Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel)
   // The method returns actual TDC discri threshold
   // extracted from the data.
   if (!fThrCalibA) InitCalibThresholds();
-  
+
   Float_t thr = GetDiscriThr(channel);
 
   Float_t calThr = fThrCalibA[channel]*thr + fThrCalibB[channel];
@@ -430,9 +432,9 @@ Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel)
 void AliADCalibData::FillDCSData(AliADDataDCS * data){
   // Set all parameters from the data get by the shuttle
   TMap * params = data->GetFEEParameters();
-  TIter iter(params);	
+  TIter iter(params);
   TObjString* aliasName;
-	
+
   while ((  aliasName = (TObjString*) iter.Next() ))  {
     AliDCSValue* aValue = (AliDCSValue*) params->GetValue(aliasName);
     UInt_t val;
@@ -440,8 +442,8 @@ void AliADCalibData::FillDCSData(AliADDataDCS * data){
       val = aValue->GetUInt();
       SetParameter(aliasName->String(),val);
     }
-  }	
-	
+  }
+
   SetMeanHV(data->GetMeanHV());
   SetWidthHV(data->GetWidthHV());
   SetDeadMap(data->GetDeadMap());
@@ -449,21 +451,21 @@ void AliADCalibData::FillDCSData(AliADDataDCS * data){
 }
 //_____________________________________________________________________________
 void AliADCalibData::SetADCperMIP(Int_t nADCperMIP){
-  //Sets HV in a way to have uniform gains on PM according  
-  //to number of ADC per MIP 
+  //Sets HV in a way to have uniform gains on PM according
+  //to number of ADC per MIP
   if (!fPMGainsA) InitPMGains();
   Double_t hv = 0;
   for(Int_t channel = 0; channel<16; channel++){
     hv = TMath::Power(nADCperMIP,1/fPMGainsB[channel])*fPMGainsA[channel];
     SetMeanHV(hv,channel);
-    AliInfo(Form("HV on channel %d set to %f V",channel,hv));
+    AliInfoF("HV on channel %d set to %f V",channel,hv);
   }
 }
 
 //_____________________________________________________________________________
 void AliADCalibData::SetParameter(TString name, Int_t val){
   // Set given parameter
-	
+
   Int_t iBoard = -1;
   Int_t iChannel = -1;
 
@@ -475,7 +477,7 @@ void AliADCalibData::SetParameter(TString name, Int_t val){
   Char_t channel[2] ; channel[1] = '\0';
   channel[0] = paramName[paramName.Sizeof()-2];
   sscanf(channel,"%d",&iChannel);
-		
+
   if(name.Contains("TimeResolution")) SetTimeResolution((UShort_t) val,iBoard);
   else if(name.Contains("WidthResolution")) SetWidthResolution((UShort_t) val,iBoard);
   else if(name.Contains("MatchWindow")) SetMatchWindow((UInt_t) val,iBoard);
@@ -484,7 +486,7 @@ void AliADCalibData::SetParameter(TString name, Int_t val){
   else if(name.Contains("RollOver")) SetRollOver((UInt_t) val,iBoard);
   else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,iBoard,(iChannel-1));
   else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-2040.)/112.,iBoard,(iChannel-1));
-		
+
   else if(name.Contains("DelayClk1Win1")) SetDelayClk1Win1((UShort_t) val,iBoard);
   else if(name.Contains("Clk1Win1")) SetClk1Win1((UShort_t) val,iBoard);
   else if(name.Contains("DelayClk1Win2")) SetDelayClk1Win2((UShort_t) val,iBoard);
@@ -515,8 +517,8 @@ void AliADCalibData::SetParameter(TString name, Int_t val){
   else if(name.Contains("PedEven")) SetOnlinePedestal((UShort_t) val, 0, iBoard, iChannel-1);
   else if(name.Contains("PedCutOdd")) SetOnlinePedestalCut((UShort_t) val, 1, iBoard, iChannel-1);
   else if(name.Contains("PedCutEven")) SetOnlinePedestalCut((UShort_t) val, 0, iBoard, iChannel-1);
-	
-  else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
+
+  else AliErrorF("No Setter found for FEE parameter : %s",name.Data());
   //
   delete nameSplit;
 }
@@ -536,35 +538,35 @@ void AliADCalibData::SetSigma(const Float_t* Sigma)
 }
 
 //________________________________________________________________
-void AliADCalibData::SetADCmean(const Float_t* ADCmean) 
+void AliADCalibData::SetADCmean(const Float_t* ADCmean)
 {
   if(ADCmean) for(int t=0; t<32; t++) fADCmean[t] = ADCmean[t];
   else for(int t=0; t<32; t++) fADCmean[t] = 0.0;
 }
 
 //________________________________________________________________
-void AliADCalibData::SetADCsigma(const Float_t* ADCsigma) 
+void AliADCalibData::SetADCsigma(const Float_t* ADCsigma)
 {
   if(ADCsigma) for(int t=0; t<32; t++) fADCsigma[t] = ADCsigma[t];
   else for(int t=0; t<32; t++) fADCsigma[t] = 0.0;
 }
 
 //________________________________________________________________
-void AliADCalibData::SetMeanHV(const Float_t* MeanHV) 
+void AliADCalibData::SetMeanHV(const Float_t* MeanHV)
 {
   if(MeanHV) for(int t=0; t<16; t++) fMeanHV[t] = MeanHV[t];
   else for(int t=0; t<16; t++) fMeanHV[t] = 0.0;
 }
 
 //________________________________________________________________
-void AliADCalibData::SetWidthHV(const Float_t* WidthHV) 
+void AliADCalibData::SetWidthHV(const Float_t* WidthHV)
 {
   if(WidthHV) for(int t=0; t<16; t++) fWidthHV[t] = WidthHV[t];
   else for(int t=0; t<16; t++) fWidthHV[t] = 0.0;
 }
 
 //________________________________________________________________
-void AliADCalibData::SetDeadMap(const Bool_t* deadMap) 
+void AliADCalibData::SetDeadMap(const Bool_t* deadMap)
 {
   if(deadMap) for(int t=0; t<16; t++) fDeadChannel[t] = deadMap[t];
   else for(int t=0; t<16; t++) fDeadChannel[t] = kFALSE;
@@ -580,13 +582,13 @@ void AliADCalibData::SetTimeOffset(Float_t val, Int_t board, Int_t channel)
 }
 
 //________________________________________________________________
-void AliADCalibData::SetTimeOffset(const Float_t* TimeOffset) 
+void AliADCalibData::SetTimeOffset(const Float_t* TimeOffset)
 {
   if(TimeOffset) for(int t=0; t<16; t++) fTimeOffset[t] = TimeOffset[t];
   else for(int t=0; t<16; t++) fTimeOffset[t] = 5.0;
 }
 //________________________________________________________________
-void AliADCalibData::SetTimeGain(const Float_t* TimeGain) 
+void AliADCalibData::SetTimeGain(const Float_t* TimeGain)
 {
   if(TimeGain) for(int t=0; t<16; t++) fTimeGain[t] = TimeGain[t];
   else for(int t=0; t<16; t++) fTimeGain[t] = 0.0;
@@ -596,7 +598,7 @@ void AliADCalibData::SetTimeResolution(UShort_t *resols){
   // Set Time Resolution of the TDC
   if(resols)  for(int t=0; t<kNCIUBoards; t++) SetTimeResolution(resols[t],t);
   else AliError("Time Resolution not defined.");
-	
+
 }
 //________________________________________________________________
 void AliADCalibData::SetTimeResolution(UShort_t resol, Int_t board)
@@ -629,14 +631,14 @@ void AliADCalibData::SetTimeResolution(UShort_t resol, Int_t board)
       fTimeResolution[board] = 12.5;
       break;
     }
-  } else AliError(Form("Board %d is not valid",board));
+  } else AliErrorF("Board %d is not valid",board);
 }
 //________________________________________________________________
 void AliADCalibData::SetWidthResolution(UShort_t *resols){
   // Set Time Width Resolution of the TDC
   if(resols)  for(int t=0; t<kNCIUBoards; t++) SetWidthResolution(resols[t],t);
   else AliError("Width Resolution not defined.");
-	
+
 }
 //________________________________________________________________
 void AliADCalibData::SetWidthResolution(UShort_t resol, Int_t board)
@@ -686,9 +688,9 @@ void AliADCalibData::SetWidthResolution(UShort_t resol, Int_t board)
     case 13:
       fWidthResolution[board] = 800.;
       break;
-				
+
     }
-  }else AliError(Form("Board %d is not valid",board));
+  }else AliErrorF("Board %d is not valid",board);
 }
 
 //________________________________________________________________
@@ -707,7 +709,7 @@ void AliADCalibData::SetMatchWindow(UInt_t window, Int_t board)
   // The units are 25ns
   if((board>=0) && (board<kNCIUBoards)) fMatchWindow[board] = window;
   else
-    AliError(Form("Board %d is not valid",board));
+    AliErrorF("Board %d is not valid",board);
 }
 
 //________________________________________________________________
@@ -726,7 +728,7 @@ void  AliADCalibData::SetSearchWindow(UInt_t window, Int_t board)
   // The units are 25ns
   if((board>=0) && (board<kNCIUBoards)) fSearchWindow[board] = window;
   else
-    AliError(Form("Board %d is not valid",board));
+    AliErrorF("Board %d is not valid",board);
 }
 
 //________________________________________________________________
@@ -745,7 +747,7 @@ void AliADCalibData::SetTriggerCountOffset(UInt_t offset, Int_t board)
   // The units are 25ns
   if((board>=0) && (board<kNCIUBoards)) fTriggerCountOffset[board] = offset;
   else
-    AliError(Form("Board %d is not valid",board));
+    AliErrorF("Board %d is not valid",board);
 }
 
 //________________________________________________________________
@@ -764,7 +766,7 @@ void AliADCalibData::SetRollOver(UInt_t offset, Int_t board)
   // The units are 25ns
   if((board>=0) && (board<kNCIUBoards)) fRollOver[board] = offset;
   else
-    AliError(Form("Board %d is not valid",board));
+    AliErrorF("Board %d is not valid",board);
 }
 
 //________________________________________________________________
@@ -779,7 +781,7 @@ void AliADCalibData::SetDiscriThr(Float_t thr, Int_t board, Int_t channel)
 }
 
 //________________________________________________________________
-void AliADCalibData::SetDiscriThr(const Float_t* thresholds) 
+void AliADCalibData::SetDiscriThr(const Float_t* thresholds)
 {
   // Set the TDC discriminator
   // threshold values expressed in units of ADC
@@ -791,11 +793,11 @@ void AliADCalibData::SetDiscriThr(const Float_t* thresholds)
 //________________________________________________________________
 void AliADCalibData::SetOnlinePedestalCut(UShort_t val,Int_t integrator, Int_t channel)
 {
-  // Set Pedestal Cut of individual channel 
+  // Set Pedestal Cut of individual channel
   if(channel>=0 && channel<16) {
     if(integrator) fPedestalCutOdd[channel] = val;
     else fPedestalCutEven[channel] = val;
-  } else AliError(Form("Impossible to write at : Channel %d",channel));
+  } else AliErrorF("Impossible to write at : Channel %d",channel);
 }
 //________________________________________________________________
 void AliADCalibData::SetOnlinePedestalCut(UShort_t val,Int_t integrator, Int_t board, Int_t channel)
@@ -811,21 +813,21 @@ void AliADCalibData::SetOnlinePedestalCut(UShort_t val,Int_t integrator, Int_t b
 //________________________________________________________________
 UShort_t AliADCalibData::GetOnlinePedestalCut(Int_t integrator, Int_t channel) const
 {
-  // Get Pedestal Cut of individual channel 
+  // Get Pedestal Cut of individual channel
   if(channel>=0 && channel<16) {
     if(integrator) return(fPedestalCutOdd[channel]);
     else return(fPedestalCutEven[channel]);
-  }else AliError(Form("Impossible to read at : Channel %d",channel));
+  }else AliErrorF("Impossible to read at : Channel %d",channel);
   return 0;
 }
 //________________________________________________________________
 void AliADCalibData::SetOnlinePedestal(UShort_t val, Int_t integrator, Int_t channel)
 {
-  // Set Pedestal of individual channel 
+  // Set Pedestal of individual channel
   if(channel>=0 && channel<16) {
     if(integrator) fPedestalOdd[channel] = val;
     else fPedestalEven[channel] = val;
-  } else AliError(Form("Impossible to write at : Channel %d ; Integrator %d ",channel,integrator));
+  } else AliErrorF("Impossible to write at : Channel %d ; Integrator %d ",channel,integrator);
 }
 //________________________________________________________________
 void AliADCalibData::SetOnlinePedestal(UShort_t val,Int_t integrator, Int_t board, Int_t channel)
@@ -841,11 +843,11 @@ void AliADCalibData::SetOnlinePedestal(UShort_t val,Int_t integrator, Int_t boar
 //________________________________________________________________
 UShort_t AliADCalibData::GetOnlinePedestal(Int_t integrator, Int_t channel) const
 {
-  // Get Pedestal of individual channel 
+  // Get Pedestal of individual channel
   if(channel>=0 && channel<16) {
     if(integrator) return(fPedestalOdd[channel]);
     else return(fPedestalEven[channel]);
-  } else AliError(Form("Impossible to read at : Channel %d",channel));
+  } else AliErrorF("Impossible to read at : Channel %d",channel);
   return 0;
 }
 //________________________________________________________________
@@ -853,14 +855,14 @@ void AliADCalibData::SetEnableCharge(Bool_t val, Int_t channel)
 {
   // Set the channels enabled for Charge triggers
   if(channel>=0 && channel<16) fEnableCharge[channel] = val;
-  else AliError(Form("Impossible to write at : Channel %d",channel));
+  else AliErrorF("Impossible to write at : Channel %d",channel);
 }
 //________________________________________________________________
 Bool_t AliADCalibData::GetEnableCharge(Int_t channel) const
 {
   // Get the channels enabled for Charge triggers
   if(channel>=0 && channel<16) return(fEnableCharge[channel]);
-  else AliError(Form("Impossible to read at : Channel %d",channel));
+  else AliErrorF("Impossible to read at : Channel %d",channel);
   return kFALSE;
 }
 //________________________________________________________________
@@ -868,14 +870,14 @@ void AliADCalibData::SetEnableTiming(Bool_t val, Int_t channel)
 {
   // Set the channels enabled for Timing triggers
   if(channel>=0 && channel<16) fEnableTiming[channel] = val;
-  else AliError(Form("Impossible to write at : Channel %d",channel));
+  else AliErrorF("Impossible to write at : Channel %d",channel);
 }
 //________________________________________________________________
 Bool_t AliADCalibData::GetEnableTiming(Int_t channel) const
 {
   // Get the channels enabled for Timing triggers
   if(channel>=0 && channel<16) return(fEnableTiming[channel]);
-  else AliError(Form("Impossible to read at : Channel %d",channel));
+  else AliErrorF("Impossible to read at : Channel %d",channel);
   return kFALSE;
 }
 //________________________________________________________________
@@ -884,7 +886,7 @@ void AliADCalibData::SetEnableCharge(Bool_t val,Int_t board, Int_t channel)
   Int_t ch = AliADCalibData::GetOfflineChannelNumber(board,channel);
   // Set the channels enabled for Charge triggers
   if(ch>=0) fEnableCharge[ch] = val;
-  else AliError(Form("Impossible to write at : Board %d ; Channel %d",board,channel));
+  else AliErrorF("Impossible to write at : Board %d ; Channel %d",board,channel);
 }
 //________________________________________________________________
 void AliADCalibData::SetEnableTiming(Bool_t val,Int_t board, Int_t channel)
@@ -892,14 +894,14 @@ void AliADCalibData::SetEnableTiming(Bool_t val,Int_t board, Int_t channel)
   Int_t ch = AliADCalibData::GetOfflineChannelNumber(board,channel);
   // Set the channels enabled for Timing triggers
   if(ch>=0) fEnableTiming[ch] = val;
-  else AliError(Form("Impossible to write at : Board %d ; Channel %d",board,channel));
+  else AliErrorF("Impossible to write at : Board %d ; Channel %d",board,channel);
 }
 //________________________________________________________________
 void AliADCalibData::SetTriggerSelected(UShort_t trigger, Int_t output)
 {
   // Set the trigger selected on the outputs to CTP
   if(output>=0 && output<5) fTriggerSelected[output] = trigger;
-  else AliError(Form("Trigger output number %d not valid",output));
+  else AliErrorF("Trigger output number %d not valid",output);
 }
 
 //________________________________________________________________
@@ -922,9 +924,9 @@ void AliADCalibData::SetClk1Win1(UShort_t clk, Int_t board)
   // Set Win clock of BB
   if((board>=0) && (board<kNCIUBoards)) {
     fClk1Win1[board] = clk;
-    if(!IsClkValid(clk)) AliWarning(Form("Profil Clock1 Win1 of board %d is not valid : %d",board,clk));
+    if(!IsClkValid(clk)) AliWarningF("Profil Clock1 Win1 of board %d is not valid : %d",board,clk);
   }else {
-    AliError(Form("Impossible to Write at Board %d",board));
+    AliErrorF("Impossible to Write at Board %d",board);
   }
 }
 //________________________________________________________________
@@ -933,9 +935,9 @@ void AliADCalibData::SetClk2Win1(UShort_t clk, Int_t board)
   // Set Win clock of BB
   if((board>=0) && (board<kNCIUBoards)) {
     fClk2Win1[board] = clk;
-    if(!IsClkValid(clk)) AliWarning(Form("Profil Clock2 Win1 of board %d is not valid : %d",board,clk));
+    if(!IsClkValid(clk)) AliWarningF("Profil Clock2 Win1 of board %d is not valid : %d",board,clk);
   }else {
-    AliError(Form("Impossible to Write at Board %d",board));
+    AliErrorF("Impossible to Write at Board %d",board);
   }
 }
 //________________________________________________________________
@@ -958,9 +960,9 @@ void AliADCalibData::SetClk1Win2(UShort_t clk, Int_t board)
   // Set Win clock of BG
   if((board>=0) && (board<kNCIUBoards)) {
     fClk1Win2[board] = clk;
-    if(!IsClkValid(clk)) AliWarning(Form("Profil Clock1 Win2 of board %d is not valid : %d",board,clk));
+    if(!IsClkValid(clk)) AliWarningF("Profil Clock1 Win2 of board %d is not valid : %d",board,clk);
   }else {
-    AliError(Form("Impossible to Write at Board %d",board));
+    AliErrorF("Impossible to Write at Board %d",board);
   }
 }
 //________________________________________________________________
@@ -969,9 +971,9 @@ void AliADCalibData::SetClk2Win2(UShort_t clk, Int_t board)
   // Set Win clock of BG
   if((board>=0) && (board<kNCIUBoards)) {
     fClk2Win2[board] = clk;
-    if(!IsClkValid(clk)) AliWarning(Form("Profil Clock2 Win2 of board %d is not valid : %d",board,clk));
+    if(!IsClkValid(clk)) AliWarningF("Profil Clock2 Win2 of board %d is not valid : %d",board,clk);
   }else {
-    AliError(Form("Impossible to Write at Board %d",board));
+    AliErrorF("Impossible to Write at Board %d",board);
   }
 }
 //________________________________________________________________
@@ -986,11 +988,11 @@ void AliADCalibData::SetDelayClk1Win1(UShort_t delay, Int_t board)
 {
   // Set Delay for Win clock of BB
   if(delay>1023){
-    AliWarning(Form("Profil Clock1 Win1 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay));
+    AliWarningF("Profil Clock1 Win1 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay);
     delay = delay & 0x3FF;
   }
   if((board>=0) && (board<kNCIUBoards))	fDelayClk1Win1[board] = delay;
-  else AliError(Form("Trying to write out of the array Board = %d",board));
+  else AliErrorF("Trying to write out of the array Board = %d",board);
 }
 //________________________________________________________________
 void AliADCalibData::SetDelayClk2Win1(UShort_t* delays)
@@ -1004,11 +1006,11 @@ void AliADCalibData::SetDelayClk2Win1(UShort_t delay, Int_t board)
 {
   // Set Delay for Win clock of BB
   if(delay>1023){
-    AliWarning(Form("Profil Clock2 Win1 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay));
+    AliWarningF("Profil Clock2 Win1 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay);
     delay = delay & 0x3FF;
   }
   if((board>=0) && (board<kNCIUBoards))	fDelayClk2Win1[board] = delay;
-  else AliError(Form("Trying to write out of the array Board = %d",board));
+  else AliErrorF("Trying to write out of the array Board = %d",board);
 }
 //________________________________________________________________
 void AliADCalibData::SetDelayClk1Win2(UShort_t* delays)
@@ -1022,11 +1024,11 @@ void AliADCalibData::SetDelayClk1Win2(UShort_t delay, Int_t board)
 {
   // Set Delay for Win clock of BG
   if(delay>1023){
-    AliWarning(Form("Profil Clock1 Win2 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay));
+    AliWarningF("Profil Clock1 Win2 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay);
     delay = delay & 0x3FF;
   }
   if((board>=0) && (board<kNCIUBoards))	fDelayClk1Win2[board] = delay;
-  else AliError(Form("Trying to write out of the array Board = %d",board));
+  else AliErrorF("Trying to write out of the array Board = %d",board);
 }
 //________________________________________________________________
 void AliADCalibData::SetDelayClk2Win2(UShort_t* delays)
@@ -1040,11 +1042,11 @@ void AliADCalibData::SetDelayClk2Win2(UShort_t delay, Int_t board)
 {
   // Set Delay for Win clock of BG
   if(delay>1023){
-    AliWarning(Form("Profil Clock2 Win2 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay));
+    AliWarningF("Profil Clock2 Win2 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay);
     delay = delay & 0x3FF;
   }
   if((board>=0) && (board<kNCIUBoards))	fDelayClk2Win2[board] = delay;
-  else AliError(Form("Trying to write out of the array Board = %d",board));
+  else AliErrorF("Trying to write out of the array Board = %d",board);
 }
 //________________________________________________________________
 void AliADCalibData::SetLatchWin1(UShort_t *latchs){
@@ -1058,9 +1060,9 @@ void AliADCalibData::SetLatchWin1(UShort_t latch, Int_t board)
   // Set Latch Win clock for BB
   if((board>=0) && (board<kNCIUBoards)) {
     fLatchWin1[board] = latch;
-    if(!IsClkValid(latch)) AliWarning(Form("Latch Win1 of board %d is not valid : %d",board,latch));
+    if(!IsClkValid(latch)) AliWarningF("Latch Win1 of board %d is not valid : %d",board,latch);
   }else {
-    AliError(Form("Impossible to Write at Board %d",board));
+    AliErrorF("Impossible to Write at Board %d",board);
   }
 }
 //________________________________________________________________
@@ -1075,9 +1077,9 @@ void AliADCalibData::SetLatchWin2(UShort_t latch, Int_t board)
   // Set Latch Win clock for BG
   if((board>=0) && (board<kNCIUBoards)) {
     fLatchWin2[board] = latch;
-    if(!IsClkValid(latch)) AliWarning(Form("Latch Win2 of board %d is not valid : %d",board,latch));
+    if(!IsClkValid(latch)) AliWarningF("Latch Win2 of board %d is not valid : %d",board,latch);
   }else {
-    AliError(Form("Impossible to Write at Board %d",board));
+    AliErrorF("Impossible to Write at Board %d",board);
   }
 }
 //________________________________________________________________
@@ -1092,9 +1094,9 @@ void AliADCalibData::SetResetWin1(UShort_t reset, Int_t board)
   // Set Reset Win clock for BB
   if((board>=0) && (board<kNCIUBoards)) {
     fResetWin1[board] = reset;
-    if(!IsClkValid(reset)) AliWarning(Form("Reset Win1 of board %d is not valid : %d",board,reset));
+    if(!IsClkValid(reset)) AliWarningF("Reset Win1 of board %d is not valid : %d",board,reset);
   }else {
-    AliError(Form("Impossible to Write at Board %d",board));
+    AliErrorF("Impossible to Write at Board %d",board);
   }
 }
 //________________________________________________________________
@@ -1109,9 +1111,9 @@ void AliADCalibData::SetResetWin2(UShort_t reset, Int_t board)
   // Set Reset Win clock for BG
   if((board>=0) && (board<kNCIUBoards)) {
     fResetWin2[board] = reset;
-    if(!IsClkValid(reset)) AliWarning(Form("Reset Win2 of board %d is not valid : %d",board,reset));
+    if(!IsClkValid(reset)) AliWarningF("Reset Win2 of board %d is not valid : %d",board,reset);
   }else {
-    AliError(Form("Impossible to Write at Board %d",board));
+    AliErrorF("Impossible to Write at Board %d",board);
   }
 }
 //________________________________________________________________
@@ -1119,14 +1121,14 @@ void AliADCalibData::SetPedestalSubtraction(Bool_t *peds){
   // Set Pedestal Subtraction Parameter
   if(peds)  for(int t=0; t<kNCIUBoards; t++) SetPedestalSubtraction(peds[t],t);
   else AliError("Pedestal Subtraction Not defined.");
-	
+
 }
 //________________________________________________________________
 void AliADCalibData::SetPedestalSubtraction(Bool_t ped, Int_t board)
 {
   // Set Pedestal Subtraction Parameter
   if((board>=0) && (board<kNCIUBoards)) fPedestalSubtraction[board] = ped;
-  else AliError(Form("Board %d is not valid",board));
+  else AliErrorF("Board %d is not valid",board);
 }
 
 //________________________________________________________________
@@ -1137,11 +1139,11 @@ Bool_t	AliADCalibData::IsClkValid(UShort_t clock) const {
   Short_t risingEdge = 0;
   Short_t fallingEdge = 0;
   for(int i=0 ; i<5 ; i++) word[i] = (clock >> i) & 0x1;
-	
+
   if(word[0] != word[4]){
     if(word[4]) fallingEdge++;
     else risingEdge++;
-  }	
+  }
   for(int i=1 ; i<5 ; i++){
     if(word[i] != word[i-1]) {
       if(word[i-1]) fallingEdge++;
@@ -1160,11 +1162,11 @@ Int_t AliADCalibData::GetOfflineChannelNumber(Int_t board, Int_t channel)
   // the FEE board and channel indexes
 
   if (board < 0 || board >= 2) {
-    AliErrorClass(Form("Wrong FEE board number: %d",board));
+    AliErrorClassF("Wrong FEE board number: %d",board);
     return -1;
   }
   if (channel < 0 || channel >= 8) {
-    AliErrorClass(Form("Wrong FEE channel number: %d",channel));
+    AliErrorClassF("Wrong FEE channel number: %d",channel);
     return -1;
   }
 
@@ -1179,7 +1181,7 @@ Int_t AliADCalibData::GetFEEChannelNumber(Int_t channel)
   // from offline channel index
   if (channel >= 0 && channel < 16) return ((kOnlineChannel[channel] % 8));
 
-  AliErrorClass(Form("Wrong channel index: %d",channel));
+  AliErrorClassF("Wrong channel index: %d",channel);
   return -1;
 }
 //________________________________________________________________
@@ -1191,19 +1193,19 @@ Int_t AliADCalibData::GetBoardNumber(Int_t channel)
   if (OnChannel >= 0 && OnChannel < 8) return (0);
   if (OnChannel >= 8 && OnChannel < 16) return (1);
 
-  AliErrorClass(Form("Wrong channel index: %d",channel));
+  AliErrorClassF("Wrong channel index: %d",channel);
   return -1;
 }
 //________________________________________________________________
 void AliADCalibData::PrintConfig()
 {
 
-  printf("\n");  
+  printf("\n");
   printf("======================================================\n");
   printf("=======================CCIU config====================\n");
   printf("======================================================\n");
-  printf("\n"); 
- 
+  printf("\n");
+
   printf("Selected triggers = ");
   for(Int_t i = 0; i<5 ; i++) printf("%d ",GetTriggerSelected(i));
   printf("\n");
@@ -1212,13 +1214,13 @@ void AliADCalibData::PrintConfig()
   printf("BGA thr = %d, BGC thr = %d\n",GetBGAThreshold(),GetBGCThreshold());
   printf("BBAforBG thr = %d, BBCforBG thr = %d\n",GetBBAForBGThreshold(),GetBBCForBGThreshold());
 
-  
-  printf("\n"); 
+
+  printf("\n");
   printf("======================================================\n");
   printf("=======================CIUs config====================\n");
   printf("======================================================\n");
   printf("\n");
- 
+
   for(Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
     printf("CIU= %d, Time Res= %f, Width Res= %f, RollOver= %d, TrigCountOffset= %d, SearchWin= %d, MatchWin= %d\n",
 	   CIUNumber,
@@ -1228,12 +1230,10 @@ void AliADCalibData::PrintConfig()
 	   GetTriggerCountOffset(CIUNumber),
 	   GetSearchWindow(CIUNumber),
 	   GetMatchWindow(CIUNumber));
-	   
-	  
   }
 
   printf("\n");
-  printf("=======================Trigger windows================\n"); 
+  printf("=======================Trigger windows================\n");
   printf("\n");
   Bool_t gatesOpen = kTRUE;
   for (Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
@@ -1250,13 +1250,13 @@ void AliADCalibData::PrintConfig()
       std::cout << "BB Delay1 = " <<GetDelayClk1Win1(CIUNumber)<< "  BG Delay1 = " <<GetDelayClk1Win2(CIUNumber)<<std::endl;
       std::cout << "BB Delay2 = " <<GetDelayClk2Win1(CIUNumber)<< "  BG Delay2 = " <<GetDelayClk2Win2(CIUNumber)<<std::endl;
       printf("\n");
-  
+
       AliADLogicalSignal clk1BB(GetClk1Win1(CIUNumber),GetDelayClk1Win1(CIUNumber),GetLatchWin1(CIUNumber),GetResetWin1(CIUNumber));
       AliADLogicalSignal clk2BB(GetClk2Win1(CIUNumber),GetDelayClk2Win1(CIUNumber),GetLatchWin1(CIUNumber),GetResetWin1(CIUNumber));
       AliADLogicalSignal *fBBGate = new AliADLogicalSignal(clk1BB & clk2BB);
-	
+
       std::cout<<"BB window = ["<<fBBGate->GetStartTime()<<" , "<<fBBGate->GetStopTime()<<"]"<<std::endl;
-	
+
       AliADLogicalSignal clk1BG(GetClk1Win2(CIUNumber),GetDelayClk1Win2(CIUNumber),GetLatchWin2(CIUNumber),GetResetWin2(CIUNumber));
       clk1BG.SetStartTime(clk1BG.GetStartTime()+2);
       clk1BG.SetStopTime(clk1BG.GetStopTime()+2);
@@ -1264,19 +1264,19 @@ void AliADCalibData::PrintConfig()
       clk2BG.SetStartTime(clk2BG.GetStartTime()-2);
       clk2BG.SetStopTime(clk2BG.GetStopTime()-2);
       AliADLogicalSignal *fBGGate = new AliADLogicalSignal(clk1BG & clk2BG);
-	
+
       std::cout<<"BG window = ["<<fBGGate->GetStartTime()<<" , "<<fBGGate->GetStopTime()<<"]"<<std::endl;
-      printf("\n");	  
+      printf("\n");
     }
   }
   else printf("Test window 25ns\n");
 
-  printf("\n");  
+  printf("\n");
   printf("======================================================\n");
   printf("====================Channels config===================\n");
   printf("======================================================\n");
-  printf("\n"); 
- 
+  printf("\n");
+
   for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
     printf("ChOff = %d, ChOn = %d, HV = %.1f, MIP = %.1f ADC, Dead = %s, DelayHit = %.2f, Thr_DCS = %.1f, Thr_Calib = %.1f\n",
 	   pmNumber,
@@ -1289,7 +1289,7 @@ void AliADCalibData::PrintConfig()
 	   GetCalibDiscriThr(pmNumber)
 	   );
   }
-  
+
   printf("\n");
   printf("======================================================\n");
   printf("======================= Pedestal =====================\n");
@@ -1299,24 +1299,20 @@ void AliADCalibData::PrintConfig()
   for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
     for(Int_t integrator = 0; integrator < 2; ++integrator){
       if(integrator == 0)printf("ChOff = %d, ChOn = %d, Int = %d, Pedestal = %.3f, Width = %3f,", pmNumber, kOnlineChannel[pmNumber],integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
-      else printf(" Int = %d, Pedestal = %.3f, Width = %3f\n", integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));	
+      else printf(" Int = %d, Pedestal = %.3f, Width = %3f\n", integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
     }
   }
-
-
-
 }
 
 //________________________________________________________________
 void AliADCalibData::PrintConfigShuttle()
 {
-
-  printf("\n");  
+  printf("\n");
   printf("======================================================\n");
   printf("=======================CCIU config====================\n");
   printf("======================================================\n");
-  printf("\n"); 
- 
+  printf("\n");
+
   printf("Selected triggers = ");
   for(Int_t i = 0; i<5 ; i++) printf("%d ",GetTriggerSelected(i));
   printf("\n");
@@ -1325,13 +1321,12 @@ void AliADCalibData::PrintConfigShuttle()
   printf("BGA thr = %d, BGC thr = %d\n",GetBGAThreshold(),GetBGCThreshold());
   printf("BBAforBG thr = %d, BBCforBG thr = %d\n",GetBBAForBGThreshold(),GetBBCForBGThreshold());
 
-  
-  printf("\n"); 
+  printf("\n");
   printf("======================================================\n");
   printf("=======================CIUs config====================\n");
   printf("======================================================\n");
   printf("\n");
- 
+
   for(Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
     printf("CIU= %d, Time Res= %f, Width Res= %f, RollOver= %d, TrigCountOffset= %d, SearchWin= %d, MatchWin= %d\n",
 	   CIUNumber,
@@ -1341,12 +1336,12 @@ void AliADCalibData::PrintConfigShuttle()
 	   GetTriggerCountOffset(CIUNumber),
 	   GetSearchWindow(CIUNumber),
 	   GetMatchWindow(CIUNumber));
-	   
-	  
+
+
   }
 
   printf("\n");
-  printf("=======================Trigger windows================\n"); 
+  printf("=======================Trigger windows================\n");
   printf("\n");
   Bool_t gatesOpen = kTRUE;
   for (Int_t CIUNumber = 0; CIUNumber < 2; ++CIUNumber) {
@@ -1361,17 +1356,17 @@ void AliADCalibData::PrintConfigShuttle()
       std::cout << "  R   " << std::bitset<5>(GetResetWin1(CIUNumber))<< "     R   " << std::bitset<5>(GetResetWin2(CIUNumber))<< std::endl;
       printf("\n");
       std::cout << "BB Delay1 = " <<GetDelayClk1Win1(CIUNumber)<< "  BG Delay1 = " <<GetDelayClk1Win2(CIUNumber)<<std::endl;
-      std::cout << "BB Delay2 = " <<GetDelayClk2Win1(CIUNumber)<< "  BG Delay2 = " <<GetDelayClk2Win2(CIUNumber)<<std::endl;  
+      std::cout << "BB Delay2 = " <<GetDelayClk2Win1(CIUNumber)<< "  BG Delay2 = " <<GetDelayClk2Win2(CIUNumber)<<std::endl;
     }
   }
   else printf("Test window 25ns\n");
 
-  printf("\n");  
+  printf("\n");
   printf("======================================================\n");
   printf("====================Channels config===================\n");
   printf("======================================================\n");
-  printf("\n"); 
- 
+  printf("\n");
+
   for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
     printf("ChOff = %d, ChOn = %d, HV = %.1f, Dead = %s, DelayHit = %.2f, Thr_DCS = %.1f\n",
 	   pmNumber,
@@ -1382,7 +1377,7 @@ void AliADCalibData::PrintConfigShuttle()
 	   GetDiscriThr(pmNumber)
 	   );
   }
-  
+
   printf("\n");
   printf("======================================================\n");
   printf("======================= Pedestal =====================\n");
@@ -1392,8 +1387,7 @@ void AliADCalibData::PrintConfigShuttle()
   for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
     for(Int_t integrator = 0; integrator < 2; ++integrator){
       if(integrator == 0)printf("ChOff = %d, ChOn = %d, Int = %d, Pedestal = %.3f, Width = %3f,", pmNumber, kOnlineChannel[pmNumber],integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
-      else printf(" Int = %d, Pedestal = %.3f, Width = %3f\n", integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));	
+      else printf(" Int = %d, Pedestal = %.3f, Width = %3f\n", integrator, GetPedestal(pmNumber+16*integrator),GetSigma(pmNumber+16*integrator));
     }
   }
-
 }
