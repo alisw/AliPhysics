@@ -440,12 +440,12 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 				       : NULL);
 	  correctedForSaturation  |= doExtrapolation[iClock];
 	  if (doExtrapolation[iClock]) {
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
 	    fExtrapolation->Optimize();
 #endif
-	    AliDebug(3, Form("Ch%02d bc%02d %d tail=%6.1f thr=%6.1f adc=%6.1f adcCorr=%7.1f",
-			     pmNumber, iClock, doExtrapolation[iClock], tail[pmNumber], extrapolationThresholds[iClock],
-			     adcPedSub[iClock], fExtrapolation->Eval(tail[pmNumber])));
+	    AliDebugF(3, "Ch%02d bc%02d %d tail=%6.1f thr=%6.1f adc=%6.1f adcCorr=%7.1f",
+		      pmNumber, iClock, doExtrapolation[iClock], tail[pmNumber], extrapolationThresholds[iClock],
+		      adcPedSub[iClock], fExtrapolation->Eval(tail[pmNumber]));
 	  }
 
 	  adc[pmNumber] += chargeEqualizationFactor*((doExtrapolation[iClock] && tail[pmNumber] > extrapolationThresholds[iClock])

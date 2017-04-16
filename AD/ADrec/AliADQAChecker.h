@@ -1,3 +1,4 @@
+// -*- C++ -*-
 #ifndef ALIADQACHECKER_H
 #define ALIADQACHECKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -11,10 +12,10 @@
 */
 
 // --- ROOT system ---
-class TFile ; 
-class TH1F ; 
-class TH1I ; 
-class TObjArray ; 
+class TFile ;
+class TH1F ;
+class TH1I ;
+class TObjArray ;
 
 // --- Standard library ---
 
@@ -24,14 +25,13 @@ class TObjArray ;
 class AliADLoader;
 class AliCDBManager;
 class AliCDBStorage;
-class AliADQAParam; 
+class AliADQAParam;
 
 class AliADQAChecker: public AliQACheckerBase {
-
 public:
   AliADQAChecker();
-  virtual ~AliADQAChecker() {;} // destructor
-  
+  virtual ~AliADQAChecker() {} // destructor
+
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det);
 
   AliADQAParam *GetQAParam() const;
@@ -43,17 +43,17 @@ public:
   void SetSatHugeCut(Double_t cut) {fSatHuge = cut;}
   void SetMaxPedDiffCut(Double_t cut) {fMaxPedDiff = cut;}
 
-protected:  
+protected:
   virtual void Check( Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam);
   Double_t CheckRaws(TObjArray * list) const;
   Double_t CheckPedestals(TObjArray * list) const;
   Double_t CheckEsds(TObjArray * list) const;
-  
-  virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ;  
+
+  virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ;
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;
-  
+
 private:
-  AliADQAChecker(const AliADQAChecker& qac); // cpy ctor   
+  AliADQAChecker(const AliADQAChecker& qac); // cpy ctor
   AliADQAChecker &operator=(const AliADQAChecker& qac); // assignment operator
 
   AliADQAParam *fQAParam;
@@ -73,15 +73,14 @@ private:
   Float_t fTimeRatioBGZoomMax; //Max for Zoom time/BG ratio
   Float_t fChargeTrendMin;
   Float_t fChargeTrendMax;
-  Float_t fMaxNoTimeRate; 
+  Float_t fMaxNoTimeRate;
   Float_t fMaxNoFlagRate;
   Float_t fMaxBBVariation;
   Float_t fMaxBGVariation;
   Float_t fAsynchronBB;
-  Float_t fAsynchronBG; 
+  Float_t fAsynchronBG;
 
-  ClassDef(AliADQAChecker,6)  // description 
-
+  ClassDef(AliADQAChecker,6);  // description
 };
 
 #endif // AliADQAChecker_H

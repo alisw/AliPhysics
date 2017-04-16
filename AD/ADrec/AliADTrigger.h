@@ -1,3 +1,4 @@
+// -*- C++ -*-
 #ifndef ALIADTrigger_H
 #define ALIADTrigger_H
 // ---------------------
@@ -14,13 +15,13 @@
 
 class AliADTrigger : public AliTriggerDetector
 {
- public:
-                   AliADTrigger();   // constructor
-   virtual        ~AliADTrigger(){}  // destructor
-   virtual void    CreateInputs();
-   virtual void    Trigger();
+public:
+  AliADTrigger();
+  virtual        ~AliADTrigger() {}
+  virtual void    CreateInputs();
+  virtual void    Trigger();
 
-   ClassDef( AliADTrigger, 1 )  // AD Trigger Detector class
+  ClassDef( AliADTrigger, 1);  // AD Trigger Detector class
 };
 
 #endif // AliADTrigger_H
