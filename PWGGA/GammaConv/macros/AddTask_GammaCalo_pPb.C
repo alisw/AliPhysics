@@ -346,6 +346,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("82600013","1111141053032230000","0163403100000050"); // 20-60% standard NL
     cuts.AddCut("86000013","1111100053032230000","0163403100000050"); // 60-100% no NL
     cuts.AddCut("86000013","1111141053032230000","0163403100000050"); // 60-100% standard NL
+  } else if(trainConfig == 47){ // new default cut
+    cuts.AddCut("80000013","1111141057032230000","0163403100000050"); // default tm pt dependent
 
   //EMC7
   } else if(trainConfig == 50){ // default cutstring and first set of variations nonlinearity

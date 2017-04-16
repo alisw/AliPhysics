@@ -242,7 +242,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
 
 
   } else if (trainConfig == 19){ // EMCAL clusters standard cut
-    cuts.AddCut("80000013","00200009327000008250400000","1111141053032230000","0163103100000010"); // INT7
+    cuts.AddCut("80000013","00200009327000008250400000","1111141057032230000","0163103100000010"); // INT7
 
   } else if (trainConfig == 20){ // EMCAL clusters standard cuts
     cuts.AddCut("80000013","00200009327000008250400000","1111141057032230000","0163103100000010"); // INT7

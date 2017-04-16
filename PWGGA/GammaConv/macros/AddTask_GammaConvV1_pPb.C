@@ -361,6 +361,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("86000113", "00200009500000008260400000", "0162103500000000"); // -5 < kappa < 10
     cuts.AddCut("86000113", "00200009600000008260400000", "0162103500000000"); // -3 < kappa < 10
     cuts.AddCut("86000113", "00200009700000008260400000", "0162103500000000"); //  0 < kappa < 10
+
+  } else if (trainConfig == 130) { // default cut
+    cuts.AddCut("80000113", "00200009217000008260400000", "0162103500000000"); //clean cuts
     
   //--------- purity studies (kappa cut)    -------------------------//
   } else if (trainConfig == 131) {
