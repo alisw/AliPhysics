@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 ///
 /// \file EMCLEDda.cxx
+/// \ingroup EMCAL_DA
 /// \brief LED Detector Algorithm
 ///
 /// EMCAL DA for online calibration: for LED studies
