@@ -13,17 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// AliAnalysisTaskEmcalAlig
-//
-// Matching residual for electrons on EMCal.
-// Both default residual (until the surface) and a improved one, using
-// electron mass hypotehsis and propagation until the cluster, are available
-//
-// Henrique Zanoli, henrique.zanoli@cern.ch, University of Sao Paulo and Utrecht University
-//_________________________________________________________________________
-
-
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -44,6 +33,7 @@
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEmcalAlig)
 /// \endcond
+
 AliAnalysisTaskEmcalAlig::AliAnalysisTaskEmcalAlig() :
 AliAnalysisTaskEmcal(),
 fEMCALRecoUtils(NULL),

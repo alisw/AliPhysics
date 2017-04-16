@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnalysisTaskCaloFilter
+/// \ingroup EMCALPerformance 
 /// \brief Filter Calorimeter ESDs into AODs
 ///
 /// Filter the ESDCaloClusters and ESDCaloCells of EMCAL,

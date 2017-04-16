@@ -1,4 +1,5 @@
 /// \file runEMCALTimeCalibTask.C
+/// \ingroup EMCALPerformanceMacros
 /// \brief macro to run Time Calibration Task
 ///
 /// For Run1 data run in two iterations. 
