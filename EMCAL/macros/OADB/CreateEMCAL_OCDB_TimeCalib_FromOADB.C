@@ -120,7 +120,6 @@ void CreatePeriod(Int_t runmin, Int_t runmax, TString period, Int_t year)
 /// Main method
 /// Create OCDB for different periods at the same time.
 /// 
-/// \param pass: string with pass name
 void CreateEMCAL_OCDB_TimeCalib_FromOADB()
 {  
   // Instantiate EMCAL geometry for the first time

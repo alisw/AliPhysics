@@ -5,7 +5,7 @@
 ///
 /// Example macro to store QA reference data from simulations into OCDB
 ///
-/// All EMCAL.QA.<runnumber>.*.root files are merged by the qas.Merge(runNumber)
+/// All EMCAL.QA.RunNumber.*.root files are merged by the qas.Merge(runNumber)
 /// method, then stored into the local directory
 /// $ALICE_ROOT/EMCAL/Ref/Sim/Run0_999999999_v0_s0.root
 ///

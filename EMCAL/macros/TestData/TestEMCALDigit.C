@@ -34,7 +34,7 @@
 ///
 /// \param ampMin: print digits above this value
 /// \param printMC: print digit MC information
-/// \param printMC: print digit geometrical location
+/// \param printGeo: print digit geometrical location
 ///
 void TestEMCALDigit(Float_t ampMin = 6, Bool_t printMC = kFALSE, Bool_t printGeo = kFALSE)
 {

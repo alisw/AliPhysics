@@ -13,10 +13,10 @@
 ///
 /// \param file: string with location of input file
 ///
-void PrintEMCALSimParam(TString file = 
-                        "alien:///alice/data/2015/OCDB/EMCAL/Calib/SimParam/Run0_999999999_v3_s0.root"
+void PrintEMCALSimParam
+(TString file = "alien:///alice/data/2015/OCDB/EMCAL/Calib/SimParam/Run0_999999999_v3_s0.root"
 //"$ALICE_ROOT/OCDB/EMCAL/Calib/SimParam/Run0_999999999_v0_s0.root"
-                        )
+)
 {
   if(file.Contains("alien://"))
     TGrid::Connect("alien://");

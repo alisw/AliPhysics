@@ -107,7 +107,7 @@ TChain * AliReadESD(const UInt_t eventsToRead,
 /// \param eventsToProcess: number of events to analyze, independently of the real total
 /// \param dirName: name of main folder with files
 /// \param esdTreeName: name of ESD tree
-/// \param patter: pattern of the name of directories containing ESD files
+/// \param pattern: pattern of the name of directories containing ESD files
 //=====================================================================
 void TestESDCaloClusterAndCell
 (
