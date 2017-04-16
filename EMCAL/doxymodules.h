@@ -68,7 +68,7 @@
 /**
  * \defgroup EMCAL_AlignDB EMCAL_AlignDB
  * \ingroup EMCAL_macros
- * \brief EMCAL macros for pedestals/bad map OCDB, setting, print etc.
+ * \brief EMCAL macros for alignement OCDB, setting, print etc.
  */
 
 /**
