@@ -1,13 +1,34 @@
-/* $Id: TestPreprocessor.C 21848 2007-10-29 18:07:14Z acolla $ */
+///
+/// \file  TestPreprocessor.C
+/// \ingroup EMCAL_Shuttle
+/// \brief Test shuttle preprocessor
+///
+/// This class runs the test preprocessor
+/// It uses AliTestShuttle to simulate a full Shuttle process
+///
+/// The input data is created in the functions
+///   CreateDCSAliasMap() creates input that would in the same way come from DCS
+///   ReadDCSAliasMap() reads from a file
+///   CreateInputFilesMap() creates a list of local files, that can be accessed by the shuttle
+///
+/// \author David Silvermyr (ORNL)???
+///
 
-// This class runs the test preprocessor
-// It uses AliTestShuttle to simulate a full Shuttle process
+#if !defined(__CINT__)
+#include <TSystem.h>
 
-// The input data is created in the functions
-//   CreateDCSAliasMap() creates input that would in the same way come from DCS
-//   ReadDCSAliasMap() reads from a file
-//   CreateInputFilesMap() creates a list of local files, that can be accessed by the shuttle
+#include "AliTestShuttle.h"
+#include "AliPreprocessor.h"
+#include "AliShuttleInterface.h"
+#include "AliCDBId.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#endif
 
+///
+/// Main method
+///
 void TestPreprocessor(const int physics = 1)
 {
   // load library 
@@ -42,11 +63,13 @@ void TestPreprocessor(const int physics = 1)
   // the "online" naming convention ALICE-INT-2003-039.
 
   // For now, we only check the files from DAQ
-  if (physics) {  
+  if (physics) 
+  {  
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "EMC", "signal", "MON0", "EMCALLED.root");
     printf("EMCALLED.root added\n");
   }
-  else {
+  else 
+  {
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "EMC", "pedestals", "MON0", "EMCALPED.root");
     printf("EMCALPED.root added\n");
   }
@@ -56,11 +79,13 @@ void TestPreprocessor(const int physics = 1)
   // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
-  if (physics) { 
+  if (physics) 
+  { 
     shuttle->SetInputRunType("PHYSICS"); 
     printf("RunType PHYSICS\n");
   }
-  else { 
+  else 
+  { 
     shuttle->SetInputRunType("PEDESTAL"); 
     printf("RunType PEDESTAL\n");
   }
@@ -82,11 +107,13 @@ void TestPreprocessor(const int physics = 1)
   // Check the file which should have been created
   AliCDBEntry* chkEntry;
 
-  if (physics) {
+  if (physics)
+  {
     chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
       ->Get("EMCAL/Calib/LED", 7);
   }
-  else {
+  else 
+  {
     chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())
       ->Get("EMCAL/Calib/Pedestals", 7);
   }
