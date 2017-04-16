@@ -1,4 +1,6 @@
+///
 /// \file PrintOCDBObject.C
+/// \ingroup EMCAL_AlignDB
 /// \brief Print OCDB alignment matrices
 ///
 /// Macro to print the aligment matrices stored in the OCDB 
@@ -12,10 +14,12 @@
 ///
 /// \param file: string with location of input file
 ///
-void PrintOCDBObject(TString file = 
-                     "$ALICE_ROOT/OCDB/EMCAL/Align/Data/Run0_999999999_v0_s0.root"
-                     //"alien:///alice/data/2015/OCDB/EMCAL/Align/Data/Run0_999999999_v1_s0.root"
-                     )
+void PrintOCDBObject
+(
+ TString file = 
+ "$ALICE_ROOT/OCDB/EMCAL/Align/Data/Run0_999999999_v0_s0.root"
+//"alien:///alice/data/2015/OCDB/EMCAL/Align/Data/Run0_999999999_v1_s0.root"
+)
 {
   if(file.Contains("alien://"))
     TGrid::Connect("alien://");
