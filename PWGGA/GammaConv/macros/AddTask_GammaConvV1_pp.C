@@ -820,7 +820,7 @@ if(!cuts.AreValid()){
     mcInputMultHisto              = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
    
     if (doMultiplicityWeighting){
-      cout << "enableling mult weighting" << endl;
+      cout << "enabling mult weighting" << endl;
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
     }
 

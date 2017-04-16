@@ -58,25 +58,28 @@ class CutHandlerConvCalo{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,                    // change different set of cuts
-                                Int_t     isMC                        = 0,                    // run MC
-                                Int_t     enableQAMesonTask           = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
-                                Int_t     enableQAPhotonTask          = 0,                    // enable additional QA task
-                                TString   fileNameInputForWeighting   = "MCSpectraInput.root",// path to file for weigting input / modified acceptance
-                                Int_t     doWeightingPart             = 0,                    // enable Weighting
-                                TString   generatorName               = "DPMJET",             // generator Name  
-                                TString   cutnumberAODBranch          = "800000006008400000001500000",  // cutnumber for AOD branch
-                                Int_t     enableExtMatchAndQA         = 0,                    // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-                                Bool_t    isUsingTHnSparse            = kTRUE,                // enable or disable usage of THnSparses for background estimation
-                                Bool_t    enableV0findingEffi         = kFALSE,               // enables V0finding efficiency histograms
-                                Bool_t    enableTriggerMimicking      = kFALSE,               // enable trigger mimicking
-                                Bool_t    enableTriggerOverlapRej     = kFALSE,               // enable trigger overlap rejection                  
-                                Float_t   maxFacPtHard                = 3,                    // maximum factor between hardest jet and ptHard generated
-                                TString   periodNameV0Reader          = "",                   // period Name for V0Reader
-                                Bool_t    enableSortingMCLabels       = kTRUE,                // enable sorting for MC cluster labels
-                                Bool_t    runLightOutput              = kFALSE,               // switch to run light output (only essential histograms for afterburner)
-                                Bool_t    doPrimaryTrackMatching      = kTRUE,                // enable basic track matching for all primary tracks to cluster
-                                TString   additionalTrainConfig       = "0"                   // additional counter for trainconfig, this has to be always the last parameter
+void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,                    // change different set of cuts
+                                Int_t     isMC                          = 0,                    // run MC
+                                Int_t     enableQAMesonTask             = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
+                                Int_t     enableQAPhotonTask            = 0,                    // enable additional QA task
+                                TString   fileNameInputForWeighting     = "MCSpectraInput.root",// path to file for weigting input / modified acceptance
+                                Int_t     doWeightingPart               = 0,                    // enable Weighting
+                                TString   generatorName                 = "DPMJET",             // generator Name  
+                                TString   cutnumberAODBranch            = "800000006008400000001500000",  // cutnumber for AOD branch
+                                Int_t     enableExtMatchAndQA           = 0,                    // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+                                Bool_t    isUsingTHnSparse              = kTRUE,                // enable or disable usage of THnSparses for background estimation
+                                Bool_t    enableV0findingEffi           = kFALSE,               // enables V0finding efficiency histograms
+                                Bool_t    enableTriggerMimicking        = kFALSE,               // enable trigger mimicking
+                                Bool_t    enableTriggerOverlapRej       = kFALSE,               // enable trigger overlap rejection                  
+                                Float_t   maxFacPtHard                  = 3,                    // maximum factor between hardest jet and ptHard generated
+                                TString   periodNameV0Reader            = "",                   // period Name for V0Reader
+                                Bool_t    doMultiplicityWeighting       = kFALSE,               // enable multiplicity weights
+                                TString   fileNameInputForMultWeighing  = "Multiplicity.root",  // file for multiplicity weights
+                                TString   periodNameAnchor              = "",                   // anchor period name for mult weighting
+                                Bool_t    enableSortingMCLabels         = kTRUE,                // enable sorting for MC cluster labels
+                                Bool_t    runLightOutput                = kFALSE,               // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    doPrimaryTrackMatching        = kTRUE,                // enable basic track matching for all primary tracks to cluster
+                                TString   additionalTrainConfig         = "0"                   // additional counter for trainconfig, this has to be always the last parameter
 ) {
 
   Bool_t doTreeClusterShowerShape = kFALSE; // enable tree for meson cand EMCal shower shape studies
@@ -751,6 +754,20 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
     }
 
     analysisEventCuts[i] = new AliConvEventCuts();   
+
+    TString dataInputMultHisto  = "";
+    TString mcInputMultHisto    = "";
+    TString triggerString       = cuts.GetEventCut(i);
+    triggerString               = triggerString(3,2);
+
+    dataInputMultHisto          = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
+    mcInputMultHisto            = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
+   
+    if (doMultiplicityWeighting){
+      cout << "enabling mult weighting" << endl;
+      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
+    }
+
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
@@ -759,6 +776,8 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
+
+
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();

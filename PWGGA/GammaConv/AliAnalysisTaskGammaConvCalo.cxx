@@ -785,11 +785,13 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   if(!fV0Reader){printf("Error: No V0 Reader");return;}// GetV0Reader
 
   
-  if (fIsMC > 1){
+  if (fIsMC == 2){
     fDoPhotonQA       = 0;
     fDoClusterQA      = 0;
     fDoTHnSparse      = kFALSE;
-  }
+  } else if (fIsMC == 3){
+    fDoTHnSparse      = kFALSE;
+  }  
   // Create histograms
   if(fOutputContainer != NULL){
     delete fOutputContainer;
@@ -1072,6 +1074,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       if(fIsMC > 0){
         fTreeConvGammaPtDcazCat[iCut]->Branch("photonMCInfo",&fCharPhotonMCInfo,"fCharPhotonMCInfo/b");
       }
+      if (fIsMC > 1){
+        fTreeConvGammaPtDcazCat[iCut]->Branch("weightEvent",&fWeightJetJetMC,"fWeightJetJetMC/b");
+      }  
       fPhotonDCAList[iCut]->Add(fTreeConvGammaPtDcazCat[iCut]);
     }
     
@@ -1844,6 +1849,17 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fClusterOutputList[iCut]->Add(fHistoTrueClusSubLeadingPt[iCut]);
         fHistoTrueClusNMothers[iCut]              = new TH1F("TrueClusNParticles","TrueClusNParticles",20,0,20);
         fClusterOutputList[iCut]->Add(fHistoTrueClusNMothers[iCut]);
+        if (fIsMC > 1){
+          fHistoTrueClusConvGammaFullyPt[iCut]->Sumw2();
+          fHistoTrueClusMergedGammaPt[iCut]->Sumw2();
+          fHistoTrueClusMergedPartConvGammaPt[iCut]->Sumw2();
+          fHistoTrueClusDalitzPt[iCut]->Sumw2();
+          fHistoTrueClusDalitzMergedPt[iCut]->Sumw2();
+          fHistoTrueClusPhotonFromElecMotherPt[iCut]->Sumw2();
+          fHistoTrueClusShowerPt[iCut]->Sumw2();
+          fHistoTrueClusSubLeadingPt[iCut]->Sumw2();
+          fHistoTrueClusNMothers[iCut]->Sumw2();
+        }
       }
 
       if(fDoMesonAnalysis){
@@ -2733,30 +2749,30 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
     if (fDoClusterQA > 0){
       // how many of the converted photons are fully contained in the cluster
       if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && TruePhotonCandidate->IsConversionFullyContained()) 
-        fHistoTrueClusConvGammaFullyPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusConvGammaFullyPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       // how often do we have merged pi0/eta...
       if ( (TruePhotonCandidate->IsMerged() || TruePhotonCandidate->IsDalitzMerged()) || TruePhotonCandidate->IsMergedPartConv() )
-        fHistoTrueClusMergedGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusMergedGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       // how often do we have a merged cluster with at least one conversion
       if (TruePhotonCandidate->IsMergedPartConv())
-        fHistoTrueClusMergedPartConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusMergedPartConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       // how often do we reconstruct Dalitz electrons
       if (TruePhotonCandidate->IsDalitz()) 
-        fHistoTrueClusDalitzPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusDalitzPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       // how often merge Dalitz decays
       if (TruePhotonCandidate->IsDalitzMerged()) 
-        fHistoTrueClusDalitzMergedPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusDalitzMergedPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       // how often do we see Bremstrahlung
       if (TruePhotonCandidate->IsPhotonWithElecMother()) 
-        fHistoTrueClusPhotonFromElecMotherPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusPhotonFromElecMotherPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       // how often do we see a shower in the clusters
       if (TruePhotonCandidate->IsShower()) 
-        fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       // how often is the EM a subleading contributor
       if (TruePhotonCandidate->IsSubLeadingEM())
-        fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       // how many mother particles point to the cluster
-      fHistoTrueClusNMothers[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
+      fHistoTrueClusNMothers[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels(), fWeightJetJetMC);
     }
     
     // Check if we are double counting photons
@@ -2877,22 +2893,22 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
     }
     if (fDoClusterQA > 0){
       if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && TruePhotonCandidate->IsConversionFullyContained()) 
-        fHistoTrueClusConvGammaFullyPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusConvGammaFullyPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       if (TruePhotonCandidate->IsMerged() || TruePhotonCandidate->IsMergedPartConv() || TruePhotonCandidate->IsDalitzMerged())
-        fHistoTrueClusMergedGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusMergedGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       if (TruePhotonCandidate->IsMergedPartConv())
-        fHistoTrueClusMergedPartConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusMergedPartConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       if (TruePhotonCandidate->IsDalitz()) 
-        fHistoTrueClusDalitzPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusDalitzPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       if (TruePhotonCandidate->IsDalitzMerged()) 
-        fHistoTrueClusDalitzMergedPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusDalitzMergedPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       if (TruePhotonCandidate->IsPhotonWithElecMother()) 
-        fHistoTrueClusPhotonFromElecMotherPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusPhotonFromElecMotherPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       if (TruePhotonCandidate->IsShower()) 
-        fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+        fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       if (TruePhotonCandidate->IsSubLeadingEM())
-        fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-      fHistoTrueClusNMothers[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
+        fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
+      fHistoTrueClusNMothers[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels(), fWeightJetJetMC);
       
     }
     Int_t motherLab = Photon->GetMother();
