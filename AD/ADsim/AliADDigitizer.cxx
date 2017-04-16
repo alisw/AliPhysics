@@ -24,6 +24,7 @@
 // --- Standard library ---
 
 // --- ROOT system ---
+#include <RVersion.h>
 #include <TMath.h>
 #include <TTree.h>
 #include <TMap.h>
@@ -75,9 +76,9 @@ AliADDigitizer::AliADDigitizer()
   , fChargeSignalShape(NULL)
   , fTimeSignalShape(NULL)
   , fThresholdShape(NULL)
+  , fTS(NULL)
   , fTailBegin(16)
   , fTailEnd(20)
-  , fTS(NULL)
   , fEvenOrOdd(kFALSE)
   , fTask(kHits2Digits)
   , fAD(NULL)
@@ -96,9 +97,9 @@ AliADDigitizer::AliADDigitizer(AliAD *AD, DigiTask_t task)
   , fChargeSignalShape(NULL)
   , fTimeSignalShape(NULL)
   , fThresholdShape(NULL)
+  , fTS(NULL)
   , fTailBegin(16)
   , fTailEnd(20)
-  , fTS(NULL)
   , fEvenOrOdd(kFALSE)
   , fTask(task)
   , fAD(AD)
@@ -117,9 +118,9 @@ AliADDigitizer::AliADDigitizer(AliDigitizationInput* digInput)
   , fChargeSignalShape(NULL)
   , fTimeSignalShape(NULL)
   , fThresholdShape(NULL)
+  , fTS(NULL)
   , fTailBegin(16)
   , fTailEnd(20)
-  , fTS(NULL)
   , fEvenOrOdd(kFALSE)
   , fTask(kHits2Digits)
   , fAD(NULL)
@@ -217,15 +218,18 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
 	  AliWarning("f0==NULL || f1==NULL");
 	  continue;
 	}
-
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
+	f0->Optimize();
+	f1->Optimize();
+#endif
 	charge0 += TMath::Max(0.0, f0->Eval(tail));
 	charge1 += TMath::Max(0.0, f1->Eval(tail));
       }
       fTailVsTotalCharge[ch][0]->SetPoint(fTailVsTotalCharge[ch][0]->GetN(), charge0, tail);
       fTailVsTotalCharge[ch][1]->SetPoint(fTailVsTotalCharge[ch][1]->GetN(), charge1, tail);
     }
-    f_Int[0]->Clear("C");
-    f_Int[1]->Clear("C");
+    f_Int[0]->Delete(); // TF1 does not implement TObject::Clear
+    f_Int[1]->Delete();
   }
   delete f_Int[0];
   delete f_Int[1];
@@ -587,6 +591,9 @@ void AliADDigitizer::AdjustPulseShapeADC()
 	continue;
       const Bool_t integrator = ((bc+fEvenOrOdd) % 2);
       TF1 *f = dynamic_cast<TF1*>(f_Int[integrator]->At(bc));
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
+      f->Optimize();
+#endif
       chargeLastBC = newADC[bc] = f->Eval(tail);
     }
     // we use a linear function for the tail starting at 80% of the last BC before the tail
@@ -625,8 +632,8 @@ void AliADDigitizer::AdjustPulseShapeADC()
     AliDebugF(5, "Ch%02d: totalCharge,newCharge= %f %f  (tail=%f)", ch, totalCharge, newCharge, tail);
     if (TMath::Abs(totalCharge - newCharge) > 2.0f)
       AliWarningF("Ch%02d: difference between totalCharge=%f and newCharge=%f is too large (tail=%f)", ch, totalCharge, newCharge, tail);
-    f_Int[0]->Clear("C");
-    f_Int[1]->Clear("C");
+    f_Int[0]->Delete(); // TF1 does not implement TObject::Clear
+    f_Int[1]->Delete();
   }
   delete f_Int[0];
   delete f_Int[1];
@@ -672,7 +679,7 @@ void AliADDigitizer::ReadSDigits()
     sdigitsBranch->SetAddress(&sdigitsArray);
 
     int offset = fDigInput->GetMask(inputFile);
-    
+
     // Sum contributions from the sdigits
     // Get number of entries in the tree
     Int_t nentries  = Int_t(sdigitsBranch->GetEntries());
