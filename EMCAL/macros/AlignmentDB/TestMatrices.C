@@ -25,7 +25,7 @@
 ///
 /// Main method, access local or grid file, print its content.
 ///
-/// \param test2011: bool 0, year 2010; 1, year 2011
+/// \param year: bool 0, year 2010; 1, year 2011
 ///
 void TestMatrices(Int_t year = 2011)
 {

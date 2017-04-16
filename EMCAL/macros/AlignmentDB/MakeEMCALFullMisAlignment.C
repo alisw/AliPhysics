@@ -32,6 +32,8 @@ enum SurveyDataType_t { kSurvey = 0, kDummy = 1};
 /// Main method
 ///
 /// \param geoname: string with geometry name
+/// \param surveyFilename: string survey file name
+/// \param type: type of survey kSurvey or kDummy
 ///
 void MakeEMCALFullMisAlignment
 (
