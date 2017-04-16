@@ -94,3 +94,15 @@
  * \ingroup EMCAL_macros
  * \brief EMCAL macros for testing, generating OADB files
  */
+
+/**
+ * \defgroup EMCAL_Shuttle EMCAL_Shuttle
+ * \ingroup EMCAL_macros
+ * \brief EMCAL macros for Shuttle
+ */
+
+/**
+ * \defgroup EMCAL_QARefDB EMCAL_QARefDB
+ * \ingroup EMCAL_macros
+ * \brief EMCAL macros for QA ref OCDB
+ */
