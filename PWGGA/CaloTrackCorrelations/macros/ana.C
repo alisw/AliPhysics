@@ -1,4 +1,5 @@
 /// \file ana.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Example of execution macro
 ///
 /// Example macro to do analysis with the
@@ -8,7 +9,7 @@
 /// Pay attention to the options and definitions
 /// set in the lines below
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 //---------------------------------------------------------------------------

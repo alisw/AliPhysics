@@ -1,4 +1,5 @@
 /// \file AddTaskGenKine.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Analysis at generator level configuration.
 ///
 /// Example of configuration AliAnaGeneratorKine task
@@ -6,7 +7,7 @@
 /// level only on high-pT photon/pi0/eta and correlate with charged particles
 /// jets, partons.
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 /// Global variables to be accessed by the different methods.
 TString  kCalorimeter = "EMCAL"; /// detector acceptance of trigger particle.

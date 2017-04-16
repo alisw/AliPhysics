@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaParticlePartonCorrelation
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Particle-parton correlation
 ///
 /// Class that contains the algorithm for the analysis of particle-parton correlation

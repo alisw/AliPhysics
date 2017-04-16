@@ -1,10 +1,11 @@
 /// \file AddTaskMergedPi0Selection.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Configuration analysis identifying single EMCal clusters as merged decays
 ///
 /// Configuration macro for analysis of merged pi0 spectra analysis
 /// It does the tagging of EMCAL clusters as pi0 via shower shape and splitting criteria in AliAnaPi0EbE
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 /// Global name to be composed of the settings, used to set the AOD branch name
 TString kAnaMergedPi0 = "";

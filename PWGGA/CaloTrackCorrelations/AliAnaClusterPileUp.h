@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaClusterPileUp
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Fill histograms for cluster spectra dependence on pile-up.
 ///
 /// Class for the study of Pile-up effect on

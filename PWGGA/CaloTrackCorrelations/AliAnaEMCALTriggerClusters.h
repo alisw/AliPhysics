@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaEMCALTriggerClusters
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Class for study of EMCAL trigger behaviour.
 ///
 /// Class for study of EMCAL trigger behaviour.

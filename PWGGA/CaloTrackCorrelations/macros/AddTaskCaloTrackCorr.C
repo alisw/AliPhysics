@@ -1,10 +1,11 @@
 /// \file AddTaskCaloTrackCorr.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Example of configuration of CaloTrackCorrelation package.
 ///
 /// Example of configuration of different analysis combinations
 /// of the package CaloTrackCorrelations.
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 /// Global variables to be accessed by the different methods
 Bool_t  kPrint         = kFALSE;    ///< Print setted parameters when configuring

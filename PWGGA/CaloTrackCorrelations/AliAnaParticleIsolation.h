@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaParticleIsolation
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Select clusters/tracks with low particle environment in their vecinity,
 /// isolated within a cone.
 ///

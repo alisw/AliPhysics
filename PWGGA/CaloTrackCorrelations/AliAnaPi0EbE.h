@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaPi0EbE
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Select cluster pairs or single merged clusters with pi0 or eta invariant mass.
 
 /// Class for the analysis of pi0 and eta event by event.
@@ -18,8 +19,6 @@
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
 ///_________________________________________________________________________
-
-
 
 // --- ROOT system ---
 class TList ;

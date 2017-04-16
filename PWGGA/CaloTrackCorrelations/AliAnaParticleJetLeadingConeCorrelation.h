@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaParticleJetLeadingConeCorrelation
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Correlate trigger particle and particles in cone close to a leading hadron
 ///
 /// Class that contains the algorithm for the reconstruction of jet, cone around leading particle

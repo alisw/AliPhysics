@@ -1,4 +1,5 @@
 /// \file AddTaskPi0IMGammaCorrQA.C
+/// \ingroup CaloTrackCorrMacrosQA
 /// \brief Configuration of the analysis QA wagon for PWG-GA EMCal analysis
 ///
 /// Configuration macro of EMCal related PWG-GA  analysis, although it can be
@@ -11,7 +12,7 @@
 ///
 /// Wagon responsible: Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 // Global variables, set externally, uncomment next lines for local tests.
 //const char* kPeriod   = "LHC16t"; // gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
@@ -1035,6 +1036,8 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
 ///
 /// \param simulation: bool with data (0) or MC (1) condition
 /// \param trigger: trigger string name (EMCAL_L0, EMCAL_L1, EMCAL_L2, DCAL_L0, DCAL_L1, DCAL_L2)
+/// \param period: LHCXX
+/// \param year: 2011, ...
 ///
 /// \return True if analysis can be done.
 ///
