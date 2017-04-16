@@ -1,6 +1,6 @@
 ///
 /// \file  makeEMCALQARef.C
-/// \ingroup EMCAL_Shuttle
+/// \ingroup EMCAL_QARefDB
 /// \brief Make QA reference OCDB histograms
 ///
 /// Example macro to store QA reference data from simulations into OCDB
