@@ -6,7 +6,7 @@
 /// Macro to print the aligment matrices stored in the OCDB 
 /// These parameters are used during reconstruction and simulation
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 ///
