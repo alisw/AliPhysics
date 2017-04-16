@@ -517,7 +517,7 @@ void AliADDigitizer::DigitizeSDigits()
       if (clock >= 0 && clock < kADNClocks)
         fAdc[ipmt][clock] += fTime[ipmt][iBin]/kADChargePerADC;
     }
-    AliDebug(1,Form("Channel %d Offset %f Time %f",ipmt,fClockOffset[ipmt],fMCTime[ipmt]));
+    AliDebugF(1,"Channel %d Offset %f Time %f",ipmt,fClockOffset[ipmt],fMCTime[ipmt]);
     const Int_t board = AliADCalibData::GetBoardNumber(ipmt);
     if (ltFound && ttFound) {
       fTimeWidth[ipmt] = fCalibData->GetWidthResolution(board)*
@@ -539,7 +539,7 @@ void AliADDigitizer::DigitizeSDigits()
     Float_t adcClock = 0.0;
     for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
       Int_t integrator = (iClock + fEvenOrOdd) % 2;
-      AliDebug(1,Form("ADC %d %d %f",j,iClock,fAdc[j][iClock]));
+      AliDebugF(1, "ADC %d %d %f",j,iClock,fAdc[j][iClock]);
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
     }
     for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
@@ -693,8 +693,8 @@ void AliADDigitizer::ReadSDigits()
         Int_t pmNumber = sDigit->PMNumber();
         Int_t nbins = sDigit->GetNBins();
         if (nbins != fNBins[pmNumber]) {
-          AliError(Form("Incompatible number of bins between digitizer (%d) and sdigit (%d) for PM %d! Skipping sdigit!",
-                        fNBins[pmNumber],nbins,pmNumber));
+          AliErrorF("Incompatible number of bins between digitizer (%d) and sdigit (%d) for PM %d! Skipping sdigit!",
+		    fNBins[pmNumber],nbins,pmNumber);
           continue;
         }
         // Sum the charges
@@ -914,7 +914,7 @@ void AliADDigitizer::ExtrapolateSplines()
     fTimeSlewingExtpol[i]->SetLineColor(kMagenta);
     Int_t fitStatus =  hTimeVsSignal->Fit(TimeSlewingFitName.Data(),"R"," ",-2.5,-1.5);
     if(fitStatus != 0) {
-      AliWarning(Form("Extrapolation of spline %d not succesfull",i));
+      AliWarningF("Extrapolation of spline %d not succesfull",i);
       fTimeSlewingExtpol[i] = 0x0;
     }
     delete c;
@@ -947,7 +947,7 @@ double AliADDigitizer::TimeSignalShape(double *x, double *par)
   if (xx <= par[3]) return a;
   Double_t b = 1./TMath::Power((xx-par[3])/par[4],1./par[5]);
   Double_t f = a*b/(a+b);
-  AliDebug(100,Form("x=%f func=%f",xx,f));
+  AliDebugF(100,"x=%f func=%f",xx,f);
   return f;
 }
 //____________________________________________________________________
