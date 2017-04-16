@@ -1,5 +1,5 @@
 ///
-/// \file  makeEMCALQARe.C
+/// \file  makeEMCALQARef.C
 /// \ingroup EMCAL_Shuttle
 /// \brief Make QA reference OCDB histograms
 ///
