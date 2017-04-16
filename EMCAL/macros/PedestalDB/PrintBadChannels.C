@@ -1,5 +1,5 @@
 ///
-/// \file PrintEMCALCalibData.C
+/// \file PrintBadChannels.C
 /// \ingroup EMCAL_BadMapDB
 /// \brief Print energy calibration parameters in OCDB
 ///

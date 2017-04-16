@@ -1,5 +1,5 @@
 ///
-/// \file AliEMCALSetCDB.C
+/// \file AliEMCALSetAlignment.C
 /// \ingroup EMCAL_AlignDB
 /// \brief Set the energy calibration parameters in OCDB
 ///
@@ -10,7 +10,7 @@
 /// 3) Geometry small disalignments and disorientations
 /// 
 /// Execute like this:
-///.x $ALICE_ROOT/EMCAL/macros/CalibrationDB/AliEMCALSetCDB.C
+///.x $ALICE_ROOT/EMCAL/macros/AlignmentDB/AliEMCALSetAlignment.C
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
