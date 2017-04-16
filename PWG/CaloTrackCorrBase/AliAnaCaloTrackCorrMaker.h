@@ -5,6 +5,7 @@
 
 //_____________________________________________________________________________
 /// \class AliAnaCaloTrackCorrMaker
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Steering class of package CaloTrackCorrelartions
 ///
 /// Steering class for particle (gamma, hadron) identification and correlation 

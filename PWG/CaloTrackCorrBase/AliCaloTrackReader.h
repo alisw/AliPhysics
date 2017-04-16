@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliCaloTrackReader
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Base class for event, clusters and tracks filtering and preparation for the analysis.
 ///
 /// Base class for accessing/filtering data, MonteCarlo, ESD or AOD, of PHOS, EMCAL and 

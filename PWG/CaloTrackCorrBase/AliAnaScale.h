@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaScale
+/// \ingroup CaloTrackCorrelationsBase 
 /// \brief Scale input histograms
 ///
 /// Take histograms output of other tasks and scale them.

@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliCalorimeterUtils
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class with utils specific to calorimeter clusters/cells.
 ///
 /// Class containing utility methods for calorimeters. It performs calibration,

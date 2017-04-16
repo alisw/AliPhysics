@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliCaloTrackMCReader
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class for filtering generated MC particles and prepare them as input for the analysis.
 ///
 /// Class for filtering generated MC particles and prepare them as input for the analysis.

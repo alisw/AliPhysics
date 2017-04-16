@@ -3,6 +3,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnalysisTaskCounter
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Count events with different selection criteria
 ///
 /// It produces a histogram, fhNEvents, with the number of events with 9 bins
