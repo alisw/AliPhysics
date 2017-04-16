@@ -60,13 +60,25 @@
  */
 
 /**
+ * \defgroup EMCAL_BadMapDB EMCAL_BadMapDB
+ * \ingroup EMCAL_macros
+ * \brief EMCAL macros for pedestals/bad map OCDB, setting, print etc.
+ */
+
+/**
+ * \defgroup EMCAL_AlignDB EMCAL_AlignDB
+ * \ingroup EMCAL_macros
+ * \brief EMCAL macros for pedestals/bad map OCDB, setting, print etc.
+ */
+
+/**
  * \defgroup EMCAL_TestData EMCAL_TestData
  * \ingroup EMCAL_macros
  * \brief EMCAL macros for testing, data files, dump main information stored
  */
 
 /**
- * \defgroup EMCAL_SimRec EMCAL_SimRec
+ * \defgroup EMCAL_TestSimRec EMCAL_TestSimRec
  * \ingroup EMCAL_macros
  * \brief EMCAL macros for testing, simulation and reconstruction
  */
