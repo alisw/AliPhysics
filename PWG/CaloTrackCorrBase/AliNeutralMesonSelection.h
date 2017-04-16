@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliNeutralMesonSelection
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class that contains methods to select candidate cluster pairs to neutral meson.
 ///
 /// Class that contains methods to select candidate pairs to neutral meson. 

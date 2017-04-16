@@ -386,6 +386,7 @@ fhDistance2Hijing(0)
 /// \param en  : selected cluster energy
 /// \param eta : cluster pseudo-rapidity
 /// \param phi : cluster azimuthal angle (0-360 deg)
+/// \param mctag: MC label tagß
 /// \param clusterList: clusters array
 //__________________________________________________________________________
 void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, 

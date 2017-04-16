@@ -1,6 +1,19 @@
 #ifndef AliAnalysisTaskEmcalAlig_H
 #define AliAnalysisTaskEmcalAlig_H
 
+//_________________________________________________________________________
+/// \class AliAnalysisTaskEmcalAlig
+/// \ingroup EMCALPerformance 
+/// \brief Alignment checks
+///
+// Matching residual for electrons on EMCal.
+// Both default residual (until the surface) and a improved one, using
+// electron mass hypotehsis and propagation until the cluster, are available
+///
+/// \author Henrique Zanoli <Henrique.Zanoli@cern.ch>, University of Sao Paulo and Utrecht University
+//_________________________________________________________________________
+
+
 #include "AliAnalysisTaskEmcal.h"
 
 class AliEMCALRecoUtils;
@@ -76,6 +89,9 @@ private:
     AliAnalysisTaskEmcalAlig(const AliAnalysisTaskEmcalAlig&)           ; // not implemented
     AliAnalysisTaskEmcalAlig &operator=(const AliAnalysisTaskEmcalAlig&); // not implemented
     
-    ClassDef(AliAnalysisTaskEmcalAlig, 1);
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskEmcalAlig, 1);
+  /// \endcond
+
 };
 #endif

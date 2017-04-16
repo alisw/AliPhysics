@@ -1,15 +1,6 @@
 //--------------------------------------------------
-// Example macro to do Calorimeters filtering
-// copy ESDs into AODs
-//
-// Pay attention to the options and definitions
-// set in the lines below
-//
-//  Author : Gustavo Conesa Balbastre (INFN-LNF)
-//
-//-------------------------------------------------
-//--------------------------------------------------
 /// \file emcalReclusterize.C
+/// \ingroup EMCALPerformanceMacros
 /// \brief Example of execution macro to run the EMCAL clusterization task locally or on the grid (not plugin)
 ///
 /// Basic example macro to do EMCal reclusterization.

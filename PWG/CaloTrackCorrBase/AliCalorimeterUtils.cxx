@@ -810,6 +810,9 @@ void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
 ///
 /// \param clus: cluster, access to highest energy tower
 /// \param cells: list of cells, needed to find highest energy tower
+/// \param regEta: eta sub-region index
+/// \param regPhi: phi sub-region index
+///
 /// \return integer with location
 //______________________________________________________________________________
 void AliCalorimeterUtils::GetEMCALSubregion(AliVCluster   * clus, AliVCaloCells * cells,
@@ -2030,6 +2033,7 @@ void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVC
 ///
 /// \param event: pointer to input event
 /// \param clusterArray: list of clusters
+/// \param mc: access to MC event
 ///
 //________________________________________________________________________________
 void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event, 

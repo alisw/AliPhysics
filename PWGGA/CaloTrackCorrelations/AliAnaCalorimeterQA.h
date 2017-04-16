@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaCalorimeterQA
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Class for the Calorimeter QA analysis
 ///
 /// Task filling basic histograms to check reconstructed data (real or MC) of calorimeters.

@@ -3,6 +3,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnalysisTaskEMCALTimeCalib
+/// \ingroup EMCALPerformance 
 /// \brief Task to work on Time Calibration for EMCal/DCal.
 ///
 /// Derived from "Exercice with a task to work on T0 from TOF or T0" by Hugues Delagrange (SUBATECH)"

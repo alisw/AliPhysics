@@ -88,6 +88,7 @@ using std::endl;
 
 /// \cond CLASSIMP
 ClassImp(AliAnaPi0Flow);
+/// \endcond
 
 //
 // Constructor

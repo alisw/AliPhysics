@@ -1,4 +1,5 @@
 /// \file DrawAnaCaloTrackQA.C
+/// \ingroup CaloTrackCorrMacrosQA
 /// \brief Plot analysis QA histograms from EMCal PWG-GA wagon
 ///
 /// Macro to plot few selected histograms
@@ -11,7 +12,7 @@
 /// The input list name might change depending on the wagon / data type
 /// In case output file is too large, possiblity to dump the list content in a sepate file:  export = kTRUE
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 // Some global variables

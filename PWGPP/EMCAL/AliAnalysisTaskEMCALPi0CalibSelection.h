@@ -3,6 +3,7 @@
 
 //---------------------------------------------------------------------------
 /// \class AliAnalysisTaskEMCALPi0CalibSelection
+/// \ingroup EMCALPerformance 
 /// \brief This task provides the input for the EMCal energy calibration with pi0 invariant mass analysis per channel
 ///
 /// Fill histograms (one per cell) with two-cluster invariant mass in EMCal

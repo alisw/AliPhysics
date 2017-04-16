@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaPhoton
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Filter EMCal/PHOS clusters for photon analysis.
 ///
 /// Class for the photon identification.

@@ -7854,11 +7854,13 @@ void AliAnaParticleIsolation::SetTriggerDetector(Int_t det)
 /// distribution in shower shape tail.
 ///
 /// \param pt: cluster pT
+/// \param phi: cluster phi
+/// \param eta: cluster eta
 /// \param m02: shower shape long
 /// \param coneptsumTrack: sum of tracks pT in cone
 /// \param coneptsumCluster: sum of clusters pT in cone
 /// \param isolated: bool
-/// \param label: cluster mc label
+/// \param iSM: super module number
 /// 
 //_________________________________________________________
 void AliAnaParticleIsolation::StudyEMCALRegions

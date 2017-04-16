@@ -1,11 +1,12 @@
 /// \file AddTaskCaloTrackCorrM.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Example of configuration of CaloTrackCorrelation within the mixing frame.
 ///
 /// Example of configuration of different analysis combinations
 /// of the package CaloTrackCorrelations when executed in the mixing frame.
 /// Quite old, not used for years.
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 ///
 /// Main method calling all the configuration

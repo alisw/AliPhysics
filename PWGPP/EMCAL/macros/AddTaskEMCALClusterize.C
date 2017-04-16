@@ -1,4 +1,5 @@
 /// \file AddTaskEMCALClusterize.C
+/// \ingroup EMCALPerformanceMacros
 /// \brief Configuration of EMCal re-clusterization analysis task.
 ///
 /// This task reclusterizes on the fly EMCal clusters, creates a new

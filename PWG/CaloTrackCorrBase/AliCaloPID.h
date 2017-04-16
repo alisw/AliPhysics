@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliCaloPID
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class for PID selection with calorimeters
 ///
 /// Class for PID selection with calorimeters

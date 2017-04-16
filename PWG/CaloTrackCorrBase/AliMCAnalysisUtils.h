@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliMCAnalysisUtils
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class with analysis utils for simulations.
 ///
 /// Class containing utility methods for  analysis of simulations, ESD or AOD format.

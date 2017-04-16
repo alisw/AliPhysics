@@ -1,11 +1,12 @@
 /// \file AddTaskCounter.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Counting task configurations.
 ///
 /// Example of configuration of AliAnalysisTaskCounter,
 /// simple task counting events
 /// Gets the cross section from file pyxsec if requested.
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 
 ///

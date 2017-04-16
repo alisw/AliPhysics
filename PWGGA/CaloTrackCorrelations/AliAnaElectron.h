@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaElectron
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Selection of electron clusters in calorimeter.
 ///
 /// Class for the electron identification,

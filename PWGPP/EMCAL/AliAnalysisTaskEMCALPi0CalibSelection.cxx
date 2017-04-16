@@ -1406,7 +1406,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::MaskFrameCluster(Int_t iSM, Int_t 
 /// In all zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
 /// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
-/// \param iSM: supermodule number of the cell.
+/// \param iSupMod: supermodule number of the cell.
 /// \param ieta: column index of the cell.
 /// \param iphi: row index of the cell.
 //______________________________________________________________________________________________________
@@ -1451,7 +1451,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone1(Int_t iSupMod, Int_t iet
 /// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
 /// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
-/// \param iSM: supermodule number of the cell.
+/// \param iSupMod: supermodule number of the cell.
 /// \param ieta: column index of the cell.
 /// \param iphi: row index of the cell.
 //______________________________________________________________________________________________________
@@ -1504,7 +1504,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone2(Int_t iSupMod, Int_t iet
 /// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
 /// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
-/// \param iSM: supermodule number of the cell.
+/// \param iSupMod: supermodule number of the cell.
 /// \param ieta: column index of the cell.
 /// \param iphi: row index of the cell.
 //______________________________________________________________________________________________________
@@ -1549,7 +1549,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone3(Int_t iSupMod, Int_t iet
 /// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
 /// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
-/// \param iSM: supermodule number of the cell.
+/// \param iSupMod: supermodule number of the cell.
 /// \param ieta: column index of the cell.
 /// \param iphi: row index of the cell.
 //______________________________________________________________________________________________________
@@ -1603,7 +1603,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone4(Int_t iSupMod, Int_t iet
 /// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
 /// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
-/// \param iSM: supermodule number of the cell.
+/// \param iSupMod: supermodule number of the cell.
 /// \param ieta: column index of the cell.
 /// \param iphi: row index of the cell.
 //______________________________________________________________________________________________________
@@ -1637,7 +1637,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone5(Int_t iSupMod, Int_t iet
 /// In all these zones we include only rows 2->21 inclues, col 1->46 except cols 6->9 et 35->37 
 /// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
-/// \param iSM: supermodule number of the cell.
+/// \param iSupMod: supermodule number of the cell.
 /// \param ieta: column index of the cell.
 /// \param iphi: row index of the cell.
 //______________________________________________________________________________________________________
@@ -1673,7 +1673,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone6(Int_t iSupMod, Int_t iet
 /// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
 /// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
-/// \param iSM: supermodule number of the cell.
+/// \param iSupMod: supermodule number of the cell.
 /// \param ieta: column index of the cell.
 /// \param iphi: row index of the cell.
 //______________________________________________________________________________________________________

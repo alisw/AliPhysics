@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaParticleJetLeadingConeCorrelation
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Correlate trigger particle and reconstructed jet
 ///
 /// Class that contains the algorithm for the analysis of particle (direct gamma) - jet

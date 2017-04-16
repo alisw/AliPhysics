@@ -1,7 +1,9 @@
 /// \file QAplots.C
+/// \ingroup CaloTrackCorrMacrosQA
 /// \brief Do EMCal QA plots
 ///
-/// Macro to do some EMCAL QA plots (from QA outputs (QAresults.root) of the QA train (AliAnaCalorimeterQA task) )
+/// Macro to do some EMCAL QA plots (from QA outputs (QAresults.root) 
+/// of the QA train (AliAnaCalorimeterQA task) )
 ///
 /// * 1. macro needs AliEMCALGeometry to compute maps
 /// * 2. this macro makes the QA plots for

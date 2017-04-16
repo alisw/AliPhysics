@@ -1,10 +1,11 @@
 /// \file AddTaskGammaJetCorrelation.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief gamma-jet correlation configuration.
 ///
 /// Configuration of the gamma-jet correlation analysis
 /// based on AddTaskIsoPhoton by Gustavo Conesa & Marie Germain.
 ///
-/// \author : Adam Matyja <Adam.Matyja@cern.ch>, INP-PAN-Krakow.
+/// \author Adam Matyja <Adam.Matyja@cern.ch>, INP-PAN-Krakow.
 ///
 
 /// Global name to be composed of the settings, used to set the AOD branch name

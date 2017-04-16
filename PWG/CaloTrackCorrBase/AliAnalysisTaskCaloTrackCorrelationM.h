@@ -6,6 +6,7 @@
  
 //_________________________________________________________________________
 /// \class AliAnalysisTaskCaloTrackCorrelationM
+/// \ingroup CaloTrackCorrelationsBase 
 /// \brief Main class conecting the CaloTrackCorrelations package and Analysis Mixing Frame
 ///
 /// Analysis task that executes the analysis classes
