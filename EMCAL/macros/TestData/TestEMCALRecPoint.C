@@ -1,5 +1,6 @@
 ///
 /// \file TestEMCALRecPoint.C
+/// \ingroup EMCAL_TestData
 /// \brief RecPoints reading example
 ///
 /// Test Macro, shows how to load EMCal RecPoints and Geometry, and how can we get 

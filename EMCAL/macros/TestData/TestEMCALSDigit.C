@@ -1,5 +1,6 @@
 ///
 /// \file TestEMCALSDigit.C
+/// \ingroup EMCAL_TestData
 /// \brief Summable Digits reading example
 ///
 /// Test Macro, shows how to load EMCal SDigits and Geometry, and how can we get 

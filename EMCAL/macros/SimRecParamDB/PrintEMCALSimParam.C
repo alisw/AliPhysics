@@ -1,4 +1,5 @@
 /// \file PrintEMCALSimParam.C
+/// \ingroup EMCAL_SimRecDB
 /// \brief Print OCDB simulation parameters
 ///
 /// Macro to print the values stored in the OCDB with AliEMCALSimParam

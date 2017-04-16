@@ -1,5 +1,6 @@
 ///
 /// \file TestEMCALDigit.C
+/// \ingroup EMCAL_TestData
 /// \brief Digits reading example
 ///
 /// Test Macro, shows how to load EMCal Digits and Geometry, and how can we get 

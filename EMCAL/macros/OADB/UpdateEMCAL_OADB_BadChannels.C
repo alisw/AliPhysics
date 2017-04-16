@@ -1,5 +1,6 @@
 ///
 /// \file UpdateEMCAL_OADB_BadChannels.C
+/// \ingroup EMCAL_OADB
 /// \brief Update OADB file with bad map.
 ///
 /// Read OCDB files with bad map and update the OADB file

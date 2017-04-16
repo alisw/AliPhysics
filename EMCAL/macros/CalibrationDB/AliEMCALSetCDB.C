@@ -1,4 +1,6 @@
+///
 /// \file AliEMCALSetCDB.C
+/// \ingroup EMCAL_CalibDB
 /// \brief Set the energy calibration parameters in OCDB
 ///
 /// Script to create energy calibration parameters and store them into CDB
@@ -10,8 +12,7 @@
 /// Execute like this:
 ///.x $ALICE_ROOT/EMCAL/macros/CalibrationDB/AliEMCALSetCDB.C
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
-/// based on PHOS macro by  Boris Polishchuk (Boris.Polichtchouk at cern.ch)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 #if !defined(__CINT__)
@@ -171,15 +172,14 @@ void SetCC(Int_t flag=0)
   loc->Put(calibda, id, &md);
 }
 
+///
+/// Read calibration coefficients into the Calibration DB
+/// Arguments:
+///   flag=0: all calibration coefficients are equal
+///   flag=1: all calibration coefficients random (decalibration)
 //------------------------------------------------------------------------
 void GetCC(Int_t flag=0)
 {
-  // Read calibration coefficients into the Calibration DB
-  // Arguments:
-  //   flag=0: all calibration coefficients are equal
-  //   flag=1: all calibration coefficients random (decalibration)
-  // Author: Yuri.Kharlov at cern.ch
-  
   TString DBFolder;
   int drawKey=2;
   
@@ -245,7 +245,6 @@ void GetCC(Int_t flag=0)
     cPed4   ->Divide(2,2);
     cGain4  ->Divide(2,2);
     cGainOn4->Divide(2,2);
-
   }
   
   TCanvas *cSum   = new TCanvas("cSum" ,"summary"   , 10,10,600,800);
@@ -274,14 +273,18 @@ void GetCC(Int_t flag=0)
     TString nameGainOnline="hGainOnline";
     nameGain+=supermodule;
     nameGainOnline+=supermodule;
+    
     TString titleGain="Gain factors in supermodule ";
     titleGain+=supermodule;
+    
     TString titleGainOnline="Gain online factors in supermodule ";
     titleGainOnline+=supermodule;
+    
     hGain      [supermodule] = new TH2F(nameGain.Data(),titleGain.Data(),
                                         nCol,1.,1.*nCol,nRow,1.,1.*nRow);
     hGainOnline[supermodule] = new TH2F(nameGainOnline.Data(),titleGainOnline.Data(),
                                         nCol,1.,1.*nCol,nRow,1.,1.*nRow);
+    
     for (Int_t column=0; column<nCol; column++)
     {
       for (Int_t row=0; row<nRow; row++)
@@ -302,6 +305,7 @@ void GetCC(Int_t flag=0)
         nCC++;
       }
     }
+    
     cout<<" Fill cc for SM "<< supermodule << " nCC "<< nCC << endl;
     
     if(drawKey>1)
@@ -365,5 +369,4 @@ void GetCC(Int_t flag=0)
    cPed2  ->Print("pedestals_SM_6_11.eps");
    cGain2 ->Print("gains_SM_6_11.eps");
   }
-  
 }

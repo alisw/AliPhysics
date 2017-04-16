@@ -1,5 +1,6 @@
 ///
 /// \file Config.C
+/// \ingroup EMCAL_TestSimRec
 /// \brief Single particle simulation configuration macro.
 ///
 /// 

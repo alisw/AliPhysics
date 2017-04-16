@@ -1,4 +1,6 @@
+///
 /// \file CreateEMCAL_OCDB_TimeCalib_FromOADB.C
+/// \ingroup EMCAL_OADB
 /// \brief Create time calibration OCDB from OADB
 ///
 /// Compare the contents of the calibration, bad channels, etc in OCDB and AODB

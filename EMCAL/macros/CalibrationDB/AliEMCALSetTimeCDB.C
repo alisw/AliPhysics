@@ -1,4 +1,6 @@
+///
 /// \file AliEMCALSetTimeCDB.C
+/// \ingroup EMCAL_CalibDB
 /// \brief Set the time calibration parameters in OCDB
 ///
 /// Script to create time calibration parameters and store them into CDB
@@ -10,7 +12,7 @@
 /// Execute like this:
 ///.x $ALICE_ROOT/EMCAL/macros/CalibrationDB/AliEMCALSetTimeCDB.C
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 /// based on PHOS macro by  Boris Polishchuk (Boris.Polichtchouk at cern.ch)
 ///
 

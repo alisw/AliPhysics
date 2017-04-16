@@ -1,5 +1,6 @@
 ///
 /// \file CreateEMCAL_OADB_CalibReference.C
+/// \ingroup EMCAL_OADB
 /// \brief Create OADB file with reference calibration parameters from OCDB files
 ///
 /// Create update the OADB for EMCAL reference calibration parameters with already existing

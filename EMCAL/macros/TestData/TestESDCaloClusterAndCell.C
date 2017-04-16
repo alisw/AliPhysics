@@ -1,5 +1,6 @@
 ///
 /// \file TestESDCaloClusterAndCell.C
+/// \ingroup EMCAL_TestData
 /// \brief Read ESDs files and dump cluster and cell info.
 ///
 /// Read ESDs files and dump cluster and cell info.

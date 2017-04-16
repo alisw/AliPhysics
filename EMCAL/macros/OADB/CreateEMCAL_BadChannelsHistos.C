@@ -1,5 +1,6 @@
 ///
 /// \file CreateEMCAL_BadChannelsHistos.C
+/// \ingroup EMCAL_OADB
 /// \brief Create file with bad map histograms from list of bad channels.
 ///
 /// The user needs to provide a vector int with the list of bad channels (by tower ID).
