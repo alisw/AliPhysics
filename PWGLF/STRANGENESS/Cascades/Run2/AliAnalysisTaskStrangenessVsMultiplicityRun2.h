@@ -58,7 +58,7 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
-    
+
     //Fix on-the-fly v0s
     void CheckChargeV0(AliESDv0 *v0);
 
@@ -204,14 +204,14 @@ public:
     // Nothe: this struct is based on what is implemented in AliAnalysisTaskValidation
     //        defined as 'Track' (thanks to C. Bourjau). It was slightly changed here and
     //        renamed to 'FMDhit' in order to avoid any confusion.
-    struct FMDhit {     
-        Float_t eta;     
-        Float_t phi;     
-        Float_t weight;     
-        //Constructor     
-        FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)       
-            :eta(_eta), phi(_phi), weight(_weight) {};   
-    };   
+    struct FMDhit {
+        Float_t eta;
+        Float_t phi;
+        Float_t weight;
+        //Constructor
+        FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)
+            :eta(_eta), phi(_phi), weight(_weight) {};
+    };
     typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhit> FMDhits;
 //---------------------------------------------------------------------------------------
    AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
@@ -266,10 +266,10 @@ private:
 
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
-    
+
     Double_t fLambdaMassMean[5]; //Array to store the lambda mass mean parametrization
     //[0]+[1]*TMath::Exp([2]*x)+[3]*TMath::Exp([4]*x)
-    
+
     Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
     //[0]+[1]*x+[2]*TMath::Exp([3]*x)
 
@@ -281,6 +281,7 @@ private:
 //===========================================================================================
     Float_t fCentrality; //!
     Bool_t fMVPileupFlag; //!
+    Bool_t fOOBPileupFlag; //!
 
     //TOF info for OOB pileuo study
     Int_t  fNTOFClusters;  //!
@@ -347,14 +348,9 @@ private:
     Float_t fTreeVariablePosDCAz; //!
 
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
-    Float_t fTreeVariableNegTOFExpTDiff;      //!
-    Float_t fTreeVariablePosTOFExpTDiff;      //!
-    ////Event info
-    //Int_t  fTreeVariableNTOFClusters;  //!
-    //Int_t  fTreeVariableNTOFMatches;   //!
-    //Int_t  fTreeVariableNTracksITSsa2010; //!
-    //Int_t  fTreeVariableNTracksGlobal2015; //!
-    //Int_t  fTreeVariableNTracksGlobal2015TriggerPP; //!
+    Float_t fTreeVariableNegTOFExpTDiff; //!
+    Float_t fTreeVariablePosTOFExpTDiff; //!
+    //Event info
     Float_t fTreeVariableAmplitudeV0A; //!
     Float_t fTreeVariableAmplitudeV0C; //!
     Float_t fTreeVariableNHitsFMDA; //!
@@ -362,7 +358,8 @@ private:
 
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
-    Bool_t fTreeVariableMVPileupFlag;         //!
+    Bool_t fTreeVariableMVPileupFlag; //!
+    Bool_t fTreeVariableOOBPileupFlag; //!
 
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -450,9 +447,20 @@ private:
     //Event Number (check same-event index mixups)
     ULong64_t fTreeCascVarEventNumber; //!
 
+    //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
+    Float_t fTreeCascVarNegTOFExpTDiff; //!
+    Float_t fTreeCascVarPosTOFExpTDiff; //!
+    Float_t fTreeCascVarBachTOFExpTDiff; //!
+    //Event info
+    Float_t fTreeCascVarAmplitudeV0A; //!
+    Float_t fTreeCascVarAmplitudeV0C; //!
+    Float_t fTreeCascVarNHitsFMDA; //!
+    Float_t fTreeCascVarNHitsFMDC; //!
+
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
-    Bool_t fTreeCascVarMVPileupFlag;         //!
+    Bool_t fTreeCascVarMVPileupFlag; //!
+    Bool_t fTreeCascVarOOBPileupFlag; //!
 
 //===========================================================================================
 //   Histograms
