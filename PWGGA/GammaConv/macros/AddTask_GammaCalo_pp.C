@@ -269,6 +269,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","1111121057032220000","0163103100000050"); // MB
     cuts.AddCut("00003113","1111121058032220000","0163103100000050"); //
     cuts.AddCut("00003113","1111121059032220000","0163103100000050"); //
+  } else if (trainConfig == 11){  // new default
+    cuts.AddCut("00003113","1111121057032220000","0163103100000050"); // MB
   
     
   } else if (trainConfig == 20){  // min Energy EMC1
