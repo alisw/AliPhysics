@@ -200,6 +200,7 @@ struct ESDCutParams
   bool useCustomFilter;
   bool useCustomMisID;
   bool useElectronRejection;
+  bool useCustomElectronRejection;
   bool usePionRejection;
 };
 
@@ -250,7 +251,10 @@ struct XiCutParams
 
   int minTPCnclsV0Daughters;
 
-  bool useCustomFilter;
+  bool useCustomV0Filter;
+  bool useCustomV0MisID;
+  bool useCustomBacPionFilter;
+  bool useCustomBacPionMisID;
 };
 
 struct PairCutParams
@@ -314,6 +318,7 @@ struct PairCutParams
   AliFemtoESDTrackCutNSigmaFilter* CreateESDCut(ESDCutParams &aCutParams);
 
   void AddCustomXiSelectionFilters(ParticlePDGType aXiType, AliFemtoXiTrackCutNSigmaFilter* aCut);
+  void AddCustomXiV0RejectionFilters(ParticlePDGType aXiType, AliFemtoXiTrackCutNSigmaFilter* aCut);
   AliFemtoXiTrackCutNSigmaFilter* CreateXiCut(XiCutParams &aCutParams);
 
   AliFemtoV0PairCut* CreateV0PairCut(PairCutParams &aPairCutParams);

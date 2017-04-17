@@ -49,6 +49,7 @@ public:
   void SetOverrideImproperPionNSigmaFilter(ParticleType aType, bool aOverride);
 
   void SetPionRejection(bool aReject);
+  void SetUseCustomElectronRejection(bool aReject);
 
 private:
   //Used in IsKaonNSigma, IsPionNSigma, and IsProtonNSigma methods
@@ -70,7 +71,7 @@ private:
   bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi);
   bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP);
   bool IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE);
-
+  bool IsProbableElectron(const AliFemtoTrack* aTrack);
 
 #ifdef __ROOT__
   ClassDef(AliFemtoESDTrackCutNSigmaFilter, 1)
@@ -79,5 +80,6 @@ private:
 };
 
 inline void AliFemtoESDTrackCutNSigmaFilter::SetPionRejection(bool aReject) {fPionRejection = aReject;}
+inline void AliFemtoESDTrackCutNSigmaFilter::SetUseCustomElectronRejection(bool aReject) {fUseCustomElectronNSigmaFilter = aReject;}
 
 #endif
