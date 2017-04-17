@@ -766,10 +766,10 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     Double_t lAverageBg = lHisto->Integral(lBinLeftBgLo,lBinLeftBgHi )+lHisto->Integral(lBinRightBgLo,lBinRightBgHi) ;
     lAverageBg = lAverageBg / ( lValLeftBgHi-lValLeftBgLo + lValRightBgHi-lValRightBgLo);
     
-    Double_t lLeftY = lHisto->Integral(lBinLeftBgLo, lBinLeftBgHi  ) / (lValLeftBgHi -lValLeftBgLo );
+    Double_t lLeftY = lHisto->Integral(lBinLeftBgLo, lBinLeftBgHi  ) / (lBinLeftBgHi - lBinLeftBgLo + 1 );
     Double_t lLeftX = 0.5*(lValLeftBgHi+lValLeftBgLo );
     
-    Double_t lRightY = lHisto->Integral(lBinRightBgLo,lBinRightBgHi ) / (lValRightBgHi-lValRightBgLo);
+    Double_t lRightY = lHisto->Integral(lBinRightBgLo,lBinRightBgHi ) / (lBinRightBgHi - lBinRightBgLo + 1 );
     Double_t lRightX = 0.5*(lValRightBgHi+lValRightBgLo );
     
     Double_t lGuessedSlope = (lRightY-lLeftY)/(lRightX-lLeftX);
