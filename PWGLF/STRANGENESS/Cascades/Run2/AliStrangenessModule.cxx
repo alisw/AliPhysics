@@ -764,7 +764,7 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     
     //Get very first guess for linear background
     Double_t lAverageBg = lHisto->Integral(lBinLeftBgLo,lBinLeftBgHi )+lHisto->Integral(lBinRightBgLo,lBinRightBgHi) ;
-    lAverageBg = lAverageBg / ( lValLeftBgHi-lValLeftBgLo + lValRightBgHi-lValRightBgLo);
+    lAverageBg = lAverageBg / ( lBinLeftBgHi - lBinLeftBgLo + lBinRightBgHi - lBinRightBgLo + 2);
     
     Double_t lLeftY = lHisto->Integral(lBinLeftBgLo, lBinLeftBgHi  ) / (lBinLeftBgHi - lBinLeftBgLo + 1 );
     Double_t lLeftX = 0.5*(lValLeftBgHi+lValLeftBgLo );
