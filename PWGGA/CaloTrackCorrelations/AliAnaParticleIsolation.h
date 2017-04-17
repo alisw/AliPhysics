@@ -147,8 +147,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnCheckNeutralClustersForLeading() { fCheckLeadingWithNeutralClusters = kTRUE  ; }
   void         SwitchOffCheckNeutralClustersForLeading(){ fCheckLeadingWithNeutralClusters = kFALSE ; }
   
-  void         SwitchOnUEBandSubtractionHistoFill()  { fFillUEBandSubtractHistograms = kTRUE    ; }
-  void         SwitchOffUEBandSubtractionHistoFill() { fFillUEBandSubtractHistograms = kFALSE   ; }
+  void         SwitchOnUEBandSubtractionHistoFill(Int_t lev = 1)  { fFillUEBandSubtractHistograms = lev ; }
+  void         SwitchOffUEBandSubtractionHistoFill() { fFillUEBandSubtractHistograms = 0   ; }
 
   void         SwitchOnCellHistoFill()               { fFillCellHistograms = kTRUE ; }
   void         SwitchOffCellHistoFill()              { fFillCellHistograms = kFALSE; }
@@ -241,7 +241,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
-  Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
+  Int_t    fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction. 1 fill basic histograms, 2 more detailed
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
