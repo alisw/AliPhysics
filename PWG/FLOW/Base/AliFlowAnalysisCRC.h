@@ -85,6 +85,14 @@ public:
     kAllCh
   };
   
+  enum POIExtraWeights {
+    kNone,
+    kEtaPhi,
+    kEtaPhiCh,
+    kEtaPhiVtx,
+    kEtaPhiChPt,
+  };
+  
   // 0.) methods called in the constructor:
   virtual void InitializeArraysForIntFlow();
   virtual void InitializeArraysForDiffFlow();
@@ -377,6 +385,8 @@ public:
   Bool_t GetUsePhiEtaWeightsChDep() const {return this->fUsePhiEtaWeightsChDep;};
   void SetUsePhiEtaWeightsVtxDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsVtxDep = uPhiEtaW;};
   Bool_t GetUsePhiEtaWeightsVtxDep() const {return this->fUsePhiEtaWeightsVtxDep;};
+  void SetUsePhiEtaWeightsChPtDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsChPtDep = uPhiEtaW;};
+  Bool_t GetUsePhiEtaWeightsChPtDep() const {return this->fUsePhiEtaWeightsChPtDep;};
   void SetUsePhiEtaCuts(Bool_t const uPhiEtaW) {this->fUsePhiEtaCuts = uPhiEtaW;};
   Bool_t GetUsePhiEtaCuts() const {return this->fUsePhiEtaCuts;};
   void SetUseZDCESEMulWeights(Bool_t const uPhiEtaW) {this->fUseZDCESEMulWeights = uPhiEtaW;};
@@ -387,10 +397,6 @@ public:
   TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
   void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
   TH1F* GetPhiWeights() const {return this->fPhiWeightsRPs;};
-  void SetWeightsListChDep(TList* const wlist) {this->fWeightsListChDep = wlist;}
-  TList* GetWeightsListChDep() const {return this->fWeightsListChDep;}
-  void SetWeightsListVtxDep(TList* const wlist) {this->fWeightsListVtxDep = wlist;}
-  TList* GetWeightsListVtxDep() const {return this->fWeightsListVtxDep;}
   
   // 2b.) event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
@@ -1099,6 +1105,8 @@ public:
   InteractionRate GetInteractionRate() const {return this->fInteractionRate;}
   void SetSelectCharge(SelectCharge set) {this->fSelectCharge = set;};
   SelectCharge GetSelectCharge() const {return this->fSelectCharge;}
+  void SetPOIExtraWeights(POIExtraWeights set) {this->fPOIExtraWeights = set;};
+  POIExtraWeights GetPOIExtraWeights() const {return this->fPOIExtraWeights;}
   void SetCorrWeightTPC(CorrelationWeights weights) {this->fCorrWeightTPC = weights;};
   CorrelationWeights GetCorrWeightTPC() const {return this->fCorrWeightTPC;};
   void SetCorrWeightVZ(CorrelationWeights weights) {this->fCorrWeightVZ = weights;};
@@ -1149,8 +1157,6 @@ private:
   
   // 2a.) particle weights:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
-  TList *fWeightsListChDep; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
-  TList *fWeightsListVtxDep; // list
   Bool_t fUsePhiWeights; // use phi weights
   Bool_t fUsePtWeights; // use pt weights
   Bool_t fUseEtaWeights; // use eta weights
@@ -1158,6 +1164,7 @@ private:
   Bool_t fUsePhiEtaWeights; // use phi,eta weights
   Bool_t fUsePhiEtaWeightsChDep; // use phi,eta weights charge dependent
   Bool_t fUsePhiEtaWeightsVtxDep; // use phi,eta weights vertex dependent (vz)
+  Bool_t fUsePhiEtaWeightsChPtDep; // use phi,eta weights vertex dependent (vz)
   Bool_t fUsePhiEtaCuts; // use phi,eta cuts (for NUA)
   Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE spec. weights
@@ -1477,9 +1484,8 @@ private:
   const static Int_t fCRCMaxnRun = 211;
   
   TH3D *fPhiEtaWeights; //!
-  TH3D *fPhiEtaWeightsPos; //!
-  TH3D *fPhiEtaWeightsNeg; //!
-  TH3D *fPhiEtaWeightsVtx[fCRCMaxnCen]; //!
+  TH3D *fPhiEtaWeightsCh[2]; //!
+  TH3D *fPhiEtaWeightsChPt[2][3]; //!
   
   TList *fCRCIntRbRList; //! CRC list of histograms RbR
   TList *fCRCIntRunsList[fCRCMaxnRun]; //! list of runs
@@ -1504,6 +1510,7 @@ private:
   DataSet fDataSet;
   InteractionRate fInteractionRate;
   SelectCharge fSelectCharge;
+  POIExtraWeights fPOIExtraWeights;
   TArrayI fRunList;    // Run list
   TArrayD fAvVtxPosX;    // Run list
   TArrayD fAvVtxPosY;    // Run list
@@ -1524,9 +1531,9 @@ private:
   TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
   TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
   TH3D* fCRCQVecPhiHist; //! phi ditribution POIs
-  TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs
-  TH3D* fCRCQVecHarCosHistCh[2]; //! phi ditribution POIs
-  TH3D* fCRCQVecHarSinHistCh[2]; //! phi ditribution POIs
+  TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs bins ch
+  TProfile3D* fCRCQVecHarCosProCh[2]; //! phi ditribution POIs
+  TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
 //  TH3D* fCRCQVecPhiHistVtxDep[fCRCMaxnRun][fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
@@ -1570,7 +1577,7 @@ private:
   TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
 //  TH2D *fCRCZDCQVecEP[fCRCMaxnRun][4]; //! ZN event planes
-  TH3D* fhZNCenDis[2]; //! ZDC 2D Q-vector distribution vs centrality
+//  TH3D* fhZNCenDis[2]; //! ZDC 2D Q-vector distribution vs centrality
   TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
   const static Int_t fkCRCnCQVecVtxPos = 4;
   Bool_t fStoreZDCQVecVtxPos; //
@@ -1686,7 +1693,8 @@ private:
   const static Int_t fFlowNHarmMax = 14; // WARNING: MIN (2*fFlowNHarm+2)
   const static Int_t fQVecPower = 5;
   Int_t fPtDiffNBins; //
-  Int_t fEtaDiffNBins; //
+  const static Int_t fkEtaDiffNBins = 5;
+  const static Int_t fkEtaDiffMaxNBins = 10;
   TH1D *fPOIPhiDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPhiDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPhiDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
@@ -1709,6 +1717,7 @@ private:
   TH2D *fPOIEtaPtQIm[2][fFlowNHarmMax]; //!
   TH2D *fPOIEtaPtMul[2][fFlowNHarmMax]; //!
   const static Int_t fZDCPtDiffNBins = 3;
+  TH3D* fCRCQVecPhiHistChPt[2][fZDCPtDiffNBins]; //! phi ditribution POIs bins ch and pT
   
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
@@ -1739,8 +1748,7 @@ private:
 //  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
-  TProfile2D *fCRCTPCQVecCenEtaCh[6]; //!
-  TProfile3D *fTPCQVecProTemp[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
+  TProfile3D *fTPCQVecProTemp[2][2]; //!
   TProfile *fTPCQVec2ProTemp[fCRCMaxnCen][3][4]; //!
   const static Int_t fkNv1evenCor = 6;
   TProfile2D *fFlowSPZDCv1evenCorPro[fkNv1evenCor]; //!
@@ -1901,7 +1909,7 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   
-  ClassDef(AliFlowAnalysisCRC,47);
+  ClassDef(AliFlowAnalysisCRC,48);
   
 };
 

@@ -629,10 +629,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  
   if(bUseCRCRecenter) {
     TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-//    if(AODfilterBit==768) QVecWeightsFileName += "15oHI_QnVarCalib_FB768.root";
-//    if(AODfilterBit==96) QVecWeightsFileName += "15oHI_QnVarCalib_FB96.root";
-//    if(AODfilterBit==32) QVecWeightsFileName += "15oHI_QnVarCalib_FB32.root";
-    QVecWeightsFileName += "15oHI_Q1VtxCalibPosNeg_CRC2_FB768.root";
+    if(sDataSet=="2015" && sIntRuns=="high") {
+      if(bUsePtWeights) {
+        if(AODfilterBit==32)  QVecWeightsFileName += "15oHI_FB32_TPCQVecReCen.root";
+        if(AODfilterBit==96)  QVecWeightsFileName += "15oHI_FB96_TPCQVecReCen.root";
+        if(AODfilterBit==768) QVecWeightsFileName += "15oHI_FB768_TPCQVecReCen.root";
+      }
+    }
     TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
     if(!QVecWeightsFile) {
       cout << "ERROR: QVecWeightsFile not found!" << endl;
@@ -690,80 +693,16 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete VZEROCalibFile;
   }
-  
-//  if(bRescaleZDC) {
-//    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCRescaling.root";
-//    TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
-//    if(!ZDCRecFile) {
-//      cout << "ERROR: ZDC calibration (rescaling) not found!" << endl;
-//      exit(1);
-//    }
-//    gROOT->cd();
-//    TList* ZDCRecList = (TList*)(ZDCRecFile->FindObjectAny("ZDC Rescaling"));
-//    if(ZDCRecList) {
-//      taskQC->SetCRCZDCResList(ZDCRecList);
-//      cout << "ZDC calibration (rescaling) set (from " <<  ZDCRecFileName.Data() << ")" << endl;
-//    }
-//    else {
-//      cout << "ERROR: ZDCResList not found!" << endl;
-//      exit(1);
-//    }
-//    delete ZDCRecFile;
-//  }
 
-
-  if(sPhiEtaWeight=="def") {
+  if(sPhiEtaWeight!="") {
     taskQC->SetUsePhiEtaWeights(kTRUE);
+    taskQC->SetPOIExtraWeights(sPhiEtaWeight);
     TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
     if(sDataSet=="2015" && sIntRuns=="high") {
-      if(sSelecCharge != "") {
-        if(bUsePtWeights && AODfilterBit==768) {
-          if(sSelecCharge.EqualTo("pos")) PhiEtaWeightsFileName += "15oHI_FB768_pteff_pch_CenPhiEtaWeights.root";
-          if(sSelecCharge.EqualTo("neg")) PhiEtaWeightsFileName += "15oHI_FB768_pteff_nch_CenPhiEtaWeights.root";
-        }
-      } else {
-        if(!bUsePtWeights) {
-          if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
-          if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
-        } else {
-          if(PtWeightsFileName.Contains("eff.root")) {
-            if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_pteff_CenPhiEtaWeights.root";
-            if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_pteff_CenPhiEtaWeights.root";
-            if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff_CenPhiEtaWeights.root";
-          }
-          else if(PtWeightsFileName.Contains("eff_2.root")) {
-            if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff2_CenPhiEtaWeights.root";
-          }
-          else if(PtWeightsFileName.Contains("eff_CorSec.root")) {
-            if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff3_CenPhiEtaWeights_2.root";
-            if(AODfilterBit==256) PhiEtaWeightsFileName += "15oHI_FB256_pteff_CenPhiEtaWeights.root";
-            if(AODfilterBit==32) PhiEtaWeightsFileName += "15oHI_FB32_pteff3_CenPhiEtaWeights.root";
-            if(AODfilterBit==96) PhiEtaWeightsFileName += "15oHI_FB96_pteff3_CenPhiEtaWeights.root";
-          }
-        }
-      }
-    }
-    if(sDataSet=="2015" && sIntRuns=="low") {
-      if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oLI_FB32_CenPhiEtaWeights.root";
-      if(AODfilterBit==768) PhiEtaWeightsFileName += "15oLI_FB768_CenPhiEtaWeights.root";
-    }
-    if(sDataSet=="2010") {
-      if(sSelecCharge != "") {
-        if(bUsePtWeights && AODfilterBit==768) {
-          if(sSelecCharge.EqualTo("pos")) PhiEtaWeightsFileName += "10h_FB768_pteff_pch_CenPhiEtaWeights.root";
-          if(sSelecCharge.EqualTo("neg")) PhiEtaWeightsFileName += "10h_FB768_pteff_nch_CenPhiEtaWeights.root";
-        }
-      } else {
-        if(PtWeightsFileName.Contains("eff.root")) {
-          if(AODfilterBit==32)  PhiEtaWeightsFileName += "10h_FB32_pteff_CenPhiEtaWeights.root";
-          if(AODfilterBit==96)  PhiEtaWeightsFileName += "10h_FB96_pteff_CenPhiEtaWeights.root";
-          if(AODfilterBit==768) PhiEtaWeightsFileName += "10h_FB768_pteff_CenPhiEtaWeights.root";
-        }
-        else if(PtWeightsFileName.Contains("eff_CorSec.root")) {
-          if(AODfilterBit==768) PhiEtaWeightsFileName += "10h_FB768_pteff3_CenPhiEtaWeights.root";
-          if(AODfilterBit==32) PhiEtaWeightsFileName += "10h_FB32_pteff3_CenPhiEtaWeights.root";
-          if(AODfilterBit==96) PhiEtaWeightsFileName += "10h_FB96_pteff3_CenPhiEtaWeights.root";
-        }
+      if(bUsePtWeights) {
+        if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
+        if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_CenPhiEtaWeights.root";
+        if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
       }
     }
     TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
@@ -782,84 +721,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
     delete PhiEtaWeightsFile;
-  }
-  
-  if(sPhiEtaWeight=="TOF") {
-    taskQC->SetUsePhiEtaWeights(kTRUE);
-    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-    if(sDataSet=="2015" && sIntRuns=="high") {
-      if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff3_TOF_CenPhiEtaWeights.root";
-      if(AODfilterBit==32) PhiEtaWeightsFileName += "15oHI_FB32_pteff3_TOF_CenPhiEtaWeights.root";
-      if(AODfilterBit==96) PhiEtaWeightsFileName += "15oHI_FB96_pteff3_TOF_CenPhiEtaWeights.root";
-    }
-    TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
-    if(!PhiEtaWeightsFile) {
-      cout << "ERROR: PhiEtaWeightsFile not found!" << endl;
-      exit(1);
-    }
-    gROOT->cd();
-    TList* PhiEtaWeightsList = (TList*)(PhiEtaWeightsFile->FindObjectAny("CenPhiEta Weights"));
-    if(PhiEtaWeightsList) {
-      taskQC->SetWeightsList(PhiEtaWeightsList);
-      cout << "CenPhiEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
-    }
-    else {
-      cout << "ERROR: CenPhiEtaWeightsList not found!" << endl;
-      exit(1);
-    }
-    delete PhiEtaWeightsFile;
-  }
-  
-  if(sPhiEtaWeight=="chdep") {
-    taskQC->SetUsePhiEtaWeightsChDep(kTRUE);
-    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-    if(sDataSet=="2015" && sIntRuns=="high") {
-      if(bUsePtWeights && AODfilterBit==768) {
-        PhiEtaWeightsFileName += "15oHI_FB768_pteff_ChDep_CenPhiEtaWeights.root";
-      }
-    }
-    TFile* PhiEtaWeightsFileChDep = TFile::Open(PhiEtaWeightsFileName,"READ");
-    if(!PhiEtaWeightsFileChDep) {
-      cout << "ERROR: PhiEtaWeightsFileChDep not found!" << endl;
-      exit(1);
-    }
-    gROOT->cd();
-    TList* PhiEtaWeightsListChDep = (TList*)(PhiEtaWeightsFileChDep->FindObjectAny("CenPhiEta Weights"));
-    if(PhiEtaWeightsListChDep) {
-      taskQC->SetWeightsListChDep(PhiEtaWeightsListChDep);
-      cout << "ChDep CenPhiEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
-    }
-    else {
-      cout << "ERROR: ChDep CenPhiEtaWeightsList not found!" << endl;
-      exit(1);
-    }
-    delete PhiEtaWeightsFileChDep;
-  }
-  
-  if(sPhiEtaWeight=="vtxdep") {
-    taskQC->SetUsePhiEtaWeightsVtxDep(kTRUE);
-    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-    if(sDataSet=="2015" && sIntRuns=="high") {
-      if(bUsePtWeights && AODfilterBit==768) {
-        PhiEtaWeightsFileName += "15oHI_FB768_pteff3_CenVtxDepPhiEtaWeights.root";
-      }
-    }
-    TFile* PhiEtaWeightsFileVtxDep = TFile::Open(PhiEtaWeightsFileName,"READ");
-    if(!PhiEtaWeightsFileVtxDep) {
-      cout << "ERROR: PhiEtaWeightsFileVtxDep not found!" << endl;
-      exit(1);
-    }
-    gROOT->cd();
-    TList* PhiEtaWeightsListVtxDep = (TList*)(PhiEtaWeightsFileVtxDep->FindObjectAny("CenPhiEta Weights"));
-    if(PhiEtaWeightsListVtxDep) {
-      taskQC->SetWeightsListVtxDep(PhiEtaWeightsListVtxDep);
-      cout << "VtxDep CenPhiEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
-    }
-    else {
-      cout << "ERROR: VtxDep CenPhiEtaWeightsList not found!" << endl;
-      exit(1);
-    }
-    delete PhiEtaWeightsFileVtxDep;
   }
   
   taskQC->SetUsePhiEtaCuts(bUsePhiEtaCuts);
