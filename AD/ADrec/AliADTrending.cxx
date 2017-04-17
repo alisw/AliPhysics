@@ -119,8 +119,8 @@ void AliADTrending::PrintEntry(UInt_t entry)
   if(entry>=fNEntries){
     AliErrorF("maximum entry is %d\n",fNEntries-1);
   } else {
-    AliInfoF("Entry %d @ %f : %f %f %f %f %f %f %f %f \n",entry, fTime[entry],
-	     fData[0][entry],fData[1][entry],fData[2][entry],fData[3][entry],fData[4][entry],fData[5][entry],fData[6][entry],fData[7][entry]);
+    AliInfoF("Entry %d @ %f : %f %f %f %f\n",entry, fTime[entry],
+	     fData[0][entry],fData[1][entry],fData[2][entry],fData[3][entry]);
   }
 }
 

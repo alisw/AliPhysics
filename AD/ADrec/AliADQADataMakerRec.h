@@ -98,7 +98,7 @@ private:
   UInt_t  fCycleStopTime;             // timestamp of QA end-of-cycle
   Float_t fADADist;     	      // Z position of ADA
   Float_t fADCDist;     	      // Z position of ADC
-  UInt_t  fOldRun;
+  Int_t   fOldRun;
 
   ClassDef(AliADQADataMakerRec,4);    // description
 } ;

@@ -904,7 +904,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     Bool_t flagBG[16];
     Float_t charge;
     Int_t  offlineCh;
-    Float_t adc[16], time[16], width[16], timeCorr[16], adcTrig[16];
+    Float_t adc[16], time[16], width[16], adcTrig[16];
     // Int_t  iPair=0; not used
 
     for(Int_t iChannel=0; iChannel<16; iChannel++) { // BEGIN : Loop over channels
@@ -993,8 +993,6 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
         }
       }
       // Fill HPTDC Time Histograms
-      timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
-
       if(time[offlineCh] > 1.e-6){
         FillRawsData(kWidthSlewing,width[offlineCh],adc[offlineCh]);
         Float_t timeErr = 1;

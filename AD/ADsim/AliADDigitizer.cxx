@@ -394,7 +394,6 @@ void AliADDigitizer::DigitizeHits()
   // SDigits (fTime arrays)
   Int_t nTotPhot[16];
   Float_t PMTime[16];
-  Float_t PMTimeWeight[16];
   Int_t nPMHits[16];
 
   for(Int_t i=0; i<16; ++i) {
@@ -402,7 +401,6 @@ void AliADDigitizer::DigitizeHits()
     fLabels[i][0] = fLabels[i][1] = fLabels[i][2] = -1;
     nTotPhot[i] = 0;
     PMTime[i] = 10000;
-    PMTimeWeight[i] = 0;
     nPMHits[i] = 0;
   }
 
@@ -442,7 +440,6 @@ void AliADDigitizer::DigitizeHits()
       nTotPhot[pmt] += nPhot;
       nPMHits[pmt]++;
       //PMTime[pmt] += t*nPhot*nPhot;
-      //PMTimeWeight[pmt] += nPhot*nPhot;
       if (PMTime[pmt]>t) PMTime[pmt] = t;
 
     }//hit loop
@@ -454,7 +451,6 @@ void AliADDigitizer::DigitizeHits()
       PMTime[iPM] = 0.0;
       continue;
     }
-    //PMTime[iPM] = PMTime[iPM]/PMTimeWeight[iPM];
     PMTime[iPM] += fHptdcOffset[iPM];
 
     fChargeSignalShape->SetParameters(fCssOffset[iPM],fCssTau[iPM],fCssSigma[iPM]);
