@@ -87,8 +87,6 @@ fUsePhiEtaCuts(kFALSE),
 fUseZDCESEMulWeights(kFALSE),
 fUseZDCESESpecWeights(kFALSE),
 fWeightsList(NULL),
-fWeightsListChDep(NULL),
-fWeightsListVtxDep(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
 fnBinsForCorrelations(10000),
@@ -125,6 +123,7 @@ fCenBinWidth(10.),
 fDataSet(""),
 fInteractionRate(""),
 fSelectCharge(""),
+fPOIExtraWeights(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
 fCRCZDCCalibList(NULL),
@@ -241,8 +240,6 @@ fUsePhiEtaCuts(kFALSE),
 fUseZDCESEMulWeights(kFALSE),
 fUseZDCESESpecWeights(kFALSE),
 fWeightsList(NULL),
-fWeightsListChDep(NULL),
-fWeightsListVtxDep(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
 fnBinsForCorrelations(0),
@@ -279,6 +276,7 @@ fCenBinWidth(10.),
 fDataSet(""),
 fInteractionRate(""),
 fSelectCharge(""),
+fPOIExtraWeights(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
 fCRCZDCCalibList(NULL),
@@ -425,13 +423,12 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fUsePtWeights){fQC->SetUsePtWeights(fUsePtWeights);}
     if(fUseEtaWeights){fQC->SetUseEtaWeights(fUseEtaWeights);}
     if(fUseTrackWeights){fQC->SetUseTrackWeights(fUseTrackWeights);}
-    if(fUsePhiEtaWeights){fQC->SetUsePhiEtaWeights(fUsePhiEtaWeights);}
-    if(fUsePhiEtaWeightsChDep){fQC->SetUsePhiEtaWeightsChDep(fUsePhiEtaWeightsChDep);}
-    if(fUsePhiEtaWeightsVtxDep){fQC->SetUsePhiEtaWeightsVtxDep(fUsePhiEtaWeightsVtxDep);}
+    if(fPOIExtraWeights.EqualTo("EtaPhi")) fQC->SetPOIExtraWeights(AliFlowAnalysisCRC::kEtaPhi);
+    if(fPOIExtraWeights.EqualTo("EtaPhiCh")) fQC->SetPOIExtraWeights(AliFlowAnalysisCRC::kEtaPhiCh);
+    if(fPOIExtraWeights.EqualTo("EtaPhiVtx")) fQC->SetPOIExtraWeights(AliFlowAnalysisCRC::kEtaPhiVtx);
+    if(fPOIExtraWeights.EqualTo("EtaPhiChPt")) fQC->SetPOIExtraWeights(AliFlowAnalysisCRC::kEtaPhiChPt);
     // Pass the list with weights to class:
     if(fWeightsList) fQC->SetWeightsList(fWeightsList);
-    if(fWeightsListChDep) fQC->SetWeightsListChDep(fWeightsListChDep);
-    if(fWeightsListVtxDep) fQC->SetWeightsListVtxDep(fWeightsListVtxDep);
   }
   if(fUsePhiEtaCuts) fQC->SetUsePhiEtaCuts(fUsePhiEtaCuts);
   // Event weights:
