@@ -20,7 +20,7 @@
 #include "starlight.h"
 #include "upcevent.h"
 #include "AliRunLoader.h"
-#include "AliGenEventHeader.h"
+#include "AliSLEventHeader.h"
 #include "AliGenStarLight.h"
 
 #include "TLorentzVector.h"
@@ -173,11 +173,12 @@ void AliGenStarLight::Generate() {
   if (fHeader)
     delete fHeader;
 
-  fHeader = new AliGenEventHeader("SL");
+  fHeader = new AliSLEventHeader();
   const TArrayF vertexPosition(3, vpos);
   fHeader->SetPrimaryVertex(vertexPosition);
   fHeader->SetInteractionTime(vpos[3]);
   fHeader->SetNProduced(nt);
+  fSLgenerator->ImportEventInfo(fHeader->GetEventInfo());
   AddHeader(fHeader);
   SetHighWaterMark(nt);
   AliRunLoader::Instance()->CdGAFile();

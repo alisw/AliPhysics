@@ -1,3 +1,4 @@
+// -*- C++ -*-
 #ifndef ALIADRECONSTRUCTOR_H
 #define ALIADRECONSTRUCTOR_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.*/
@@ -31,29 +32,33 @@ public:
   AliADReconstructor();
   virtual ~AliADReconstructor();
   virtual void   Init();
-  
-  virtual void   Reconstruct(AliRawReader* /*rawReader*/, 
+
+  virtual void   Reconstruct(AliRawReader* /*rawReader*/,
 		             TTree* /*clustersTree*/) const {
-    AliError("Method not implemented"); return;};
+    AliError("Method not implemented");
+    return;
+  }
   virtual void   Reconstruct(TTree*, TTree*) const {return;};
-  
-  virtual void   FillESD(TTree* digitsTree, TTree* /*clustersTree*/, 
+
+  virtual void   FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 			 AliESDEvent* esd) const;
 
-  virtual void   FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
-			 AliESDEvent* /*esd*/) const { 
-    AliError("Method not implemented"); return;};
-  
+  virtual void   FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/,
+			 AliESDEvent* /*esd*/) const {
+    AliError("Method not implemented");
+    return;
+  }
+
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
   virtual void ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
 
   static const AliADRecoParam* GetRecoParam() { return dynamic_cast<const AliADRecoParam*>(AliReconstructor::GetRecoParam(14)); }
 
-  AliCDBStorage     *SetStorage(const char* uri);
+  AliCDBStorage* SetStorage(const char* uri);
   void GetCollisionMode();
   Double_t GetZPosition(const char* symname);
 
-  const AliADCalibData *GetCalibData() const; 
+  const AliADCalibData* GetCalibData() const;
   void GetTimeSlewingSplines();
   Float_t CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
 
@@ -62,12 +67,12 @@ public:
 
   void SetOption(Option_t *opt);
 
-  AliESDAD*    GetESDAD() { return fESDAD; }
+  AliESDAD* GetESDAD() { return fESDAD; }
 
 protected:
-  AliESDAD       *fESDAD;       // AD ESD object 
+  AliESDAD       *fESDAD;       // AD ESD object
   AliESDEvent    *fESD;         // ESD object
-  AliESDADfriend *fESDADfriend; // AD ESDfriend object  
+  AliESDADfriend *fESDADfriend; // AD ESDfriend object
 
 private:
   AliADReconstructor(const AliADReconstructor &reconstructor); //Not implemented
@@ -85,7 +90,7 @@ private:
 
   Bool_t                fCorrectForSaturation;  //
 
-  ClassDef(AliADReconstructor, 5)  // class for the AD reconstruction
+  ClassDef(AliADReconstructor, 5);  // class for the AD reconstruction
 };
 
 #endif

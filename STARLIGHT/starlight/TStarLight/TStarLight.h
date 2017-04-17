@@ -39,9 +39,10 @@ struct pthread_mutex_t;
 #include "randomgenerator.h"
 
 using std::ostream;
-// 
+//
 class TObjArray;
 class TClonesArray;
+class TList;
 
 class TStarLight : public TGenerator {
  public:
@@ -59,6 +60,8 @@ class TStarLight : public TGenerator {
   virtual TObjArray* ImportParticles(Option_t *opt="");
   virtual void       SetParameter(const char* key, Double_t val);
   virtual Double_t   GetParameter(const char* name) const;
+
+  void ImportEventInfo(TList *) const;
 
   // read configuration from a file
   void ImportConfigurationFromFile(const char* filename){
@@ -136,4 +139,3 @@ class TStarLight : public TGenerator {
 } ;
 
 #endif
-

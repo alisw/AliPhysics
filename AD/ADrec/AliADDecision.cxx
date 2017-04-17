@@ -36,16 +36,16 @@
 #include "AliADReconstructor.h"
 
 //______________________________________________________________________
-ClassImp(AliADDecision)
+ClassImp(AliADDecision);
 
 //______________________________________________________________________
 
 AliADDecision::AliADDecision()
-:TObject(),
-  fADADist(0),
-  fADCDist(0),
-  fRecoParam(NULL),
-  fEarlyHitCutShape(NULL)
+  : TObject()
+  , fADADist(0)
+  , fADCDist(0)
+  , fRecoParam(NULL)
+  , fEarlyHitCutShape(NULL)
 {
   // Default constructor
   //AD has two layers, filling average
@@ -60,26 +60,25 @@ AliADDecision::AliADDecision()
   //fADCDist = 65.1917667655268360;
 
   fEarlyHitCutShape = new TF1("fEarlyHitCutShape", " [0]+(x>[2])*[1]*(x-[2])**2");
-
 }
 
 //______________________________________________________________________
 AliADDecision::~AliADDecision()
 {
-  // d-tor
-  delete fEarlyHitCutShape;
+  if (fEarlyHitCutShape)
+    delete fEarlyHitCutShape;
+  fEarlyHitCutShape = NULL;
 }
-
 
 //________________________________________________________________________________
 Double_t AliADDecision::GetZPosition(const char* symname)
 {
   // Get the global z coordinate of the given AD alignable volume
   //
-  Double_t *tr;
+  Double_t *tr=NULL;
   TGeoPNEntry *pne = gGeoManager->GetAlignableEntry(symname);
   if (!pne) {
-    AliFatalClass(Form("TGeoPNEntry with symbolic name %s does not exist!",symname));
+    AliFatalClassF("TGeoPNEntry with symbolic name %s does not exist!",symname);
     return 0;
   }
 
@@ -87,16 +86,15 @@ Double_t AliADDecision::GetZPosition(const char* symname)
   if(pnode){
     TGeoHMatrix* hm = pnode->GetMatrix();
     tr = hm->GetTranslation();
-  }else{
+  } else {
     const char* path = pne->GetTitle();
     if(!gGeoManager->cd(path)){
-      AliFatalClass(Form("Volume path %s not valid!",path));
+      AliFatalClassF("Volume path %s not valid!",path);
       return 0;
     }
     tr = gGeoManager->GetCurrentMatrix()->GetTranslation();
   }
   return tr[2];
-
 }
 
 //________________________________________________________________________________
@@ -119,7 +117,6 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   Double_t timeBasicADA=0, timeBasicADC=0;
   Double_t weightBasicADA =0., weightBasicADC = 0.;
   UInt_t   ntimeBasicADA=0, ntimeBasicADC=0;
-  UInt_t   itimeBasicADA[8], itimeBasicADC[8];
 
   for (Int_t i = 0; i < 16; ++i) {
     Float_t adc = esdAD->GetAdc(i);
@@ -130,13 +127,10 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
 	if (adc>1) timeErr = 1/adc;
 
 	if (i<8) {
-	  itimeBasicADC[ntimeBasicADC] = i;
 	  ntimeBasicADC++;
 	  timeBasicADC += time/(timeErr*timeErr);
 	  weightBasicADC += 1./(timeErr*timeErr);
-	}
-	else{
-	  itimeBasicADA[ntimeBasicADA] = i-8;
+	} else {
 	  ntimeBasicADA++;
 	  timeBasicADA += time/(timeErr*timeErr);
 	  weightBasicADA += 1./(timeErr*timeErr);
@@ -145,7 +139,6 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
       }
     }
   } // end of loop over channels
-
 
   if(weightBasicADA > 1) timeBasicADA /= weightBasicADA;
   else timeBasicADA = -1024.;
@@ -189,7 +182,6 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
 	}
       }
     }
-
   }
 
   //A-side
@@ -220,7 +212,6 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
 	}
       }
     }
-
   }
 
   if(weightRobustADA > 1) timeRobustADA /= weightRobustADA;
@@ -272,14 +263,14 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   UInt_t aBBtriggerADC = 0; // bit mask for Beam-Beam trigger in ADC
   UInt_t aBGtriggerADC = 0; // bit mask for Beam-Gas trigger in ADC
 
-  for(Int_t i = 0; i < ntimeADA; ++i) {
+  for(UInt_t i = 0; i < ntimeADA; ++i) {
     if (esdAD->GetADADecision() == AliESDAD::kADBB)
       aBBtriggerADA |= (1 << (itimeADA[i]));
     else if (esdAD->GetADADecision() == AliESDAD::kADBG)
       aBGtriggerADA |= (1 << (itimeADA[i]));
   }
 
-  for(Int_t i = 0; i < ntimeADC; ++i) {
+  for(UInt_t i = 0; i < ntimeADC; ++i) {
     if (esdAD->GetADCDecision() == AliESDAD::kADBB)
       aBBtriggerADC |= (1 << (itimeADC[i]));
     else if (esdAD->GetADCDecision() == AliESDAD::kADBG)
@@ -290,6 +281,4 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   esdAD->SetBGtriggerADA(aBGtriggerADA);
   esdAD->SetBBtriggerADC(aBBtriggerADC);
   esdAD->SetBGtriggerADC(aBGtriggerADC);
-
-
 }
