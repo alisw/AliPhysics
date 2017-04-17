@@ -1,16 +1,30 @@
 
+///
+/// \file  TestGeometry.C
+/// \ingroup EMCAL_AlignDB
+/// \brief Print geometry info from simulation files
+///
+/// Print geometry info from simulation files
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
-// Test Macro, shows how to load Digits and Geometry, and how can we get 
-// some of the parameters and variables.
-// Author: Gustavo Conesa
+#if !defined(__CINT__)
+#include <Riostream.h>
+#include <TGeoManager.h>
 
+#include "AliRun.h"
+#include "AliEMCALLoader.h"
+#include "AliEMCALGeometry.h"
+#endif
+
+///
+/// Main method.
+///
 void TestEMCALGeometry()
 {
-   
   // Getting EMCAL Detector and Geometry.
-  
-  AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),
-			  "read");
+  AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),"read");
  
   if (rl == 0x0)
       cout<<"Can not instatiate the Run Loader"<<endl;

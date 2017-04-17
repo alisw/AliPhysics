@@ -1,5 +1,6 @@
 ///
 /// \file TestEMCALHit.C
+/// \ingroup EMCAL_TestData
 /// \brief Hits reading example
 ///
 /// Test Macro, shows how to load EMCal Hits and Geometry, and how can we get 

@@ -1,5 +1,6 @@
 ///
 /// \file UpdateEMCAL_OADB_Recalib11hMC.C
+/// \ingroup EMCAL_OADB
 /// \brief Update OADB file with energy recalibration factors for MC LHC14a1a
 ///
 /// MC production LHC14a1a was screwed up and decalibrated. Here it is the macro 

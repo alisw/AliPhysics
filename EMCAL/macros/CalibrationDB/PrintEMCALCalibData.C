@@ -1,10 +1,12 @@
+///
 /// \file PrintEMCALCalibData.C
+/// \ingroup EMCAL_CalibDB
 /// \brief Print energy calibration parameters in OCDB
 ///
 /// Macro to print the values stored in the OCDB with AliEMCALCalibData, energy calibration,
 /// either local file or alien file
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 ///

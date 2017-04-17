@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 ///
 /// \file EMCPEDda.cxx
+/// \ingroup EMCAL_DA
 /// \brief Pedestals Detector Algorithm
 ///
 /// EMCAL DA for online calibration: for pedestal studies

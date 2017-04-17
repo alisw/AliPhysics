@@ -1,7 +1,37 @@
-void MakeOCDBConfigPreprocessor(const char* storageUri="local://$ALICE_ROOT/../AliRoot/OCDB", Int_t firstRun=0, Int_t lastRun=999999999)
+///
+/// \file  MakeOCDBConfigPreprocessor.C
+/// \ingroup EMCAL_Shuttle
+/// \brief Make Preprocessor OCDB configuration
+///
+/// Make Preprocessor OCDB configuration
+///
+/// \author David Silvermyr?? 
+///
+
+#if !defined(__CINT__)
+#include <TTree.h>
+#include <TEnv.h>
+
+#include "AliCDBMetaData.h"
+#include "AliCDBId.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#endif
+
+///
+/// Main method
+///
+void MakeOCDBConfigPreprocessor
+(
+ const char* storageUri="local://$ALICE_ROOT/../AliRoot/OCDB", 
+ Int_t firstRun=0, 
+ Int_t lastRun=999999999
+)
 {
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(storageUri);
+  
   // create the object and set some values:
   AliCDBEntry *cdbEntry = new AliCDBEntry();
   TEnv *confEnv = new TEnv();
@@ -14,8 +44,6 @@ void MakeOCDBConfigPreprocessor(const char* storageUri="local://$ALICE_ROOT/../A
   cdbEntry->SetObject(confEnv);
 
   // done; now save it..; add some metadata business etc.
-  Int_t firstRun   =  0;
-  Int_t lastRun    =  999999999;
   Int_t beamPeriod =  1;
 
   AliCDBMetaData md;
@@ -28,5 +56,4 @@ void MakeOCDBConfigPreprocessor(const char* storageUri="local://$ALICE_ROOT/../A
   cdbEntry->SetMetaData(&md);
 
   cdb->Put(cdbEntry);
-
 }

@@ -1,10 +1,27 @@
-/*
- Small macro for testing the raw response function used in
- AliEMCALRawUtils
+///
+/// \file TestRawResponse.C
+/// \ingroup EMCAL_TestData
+/// \brief Test raw fitting response
+///
+///  Small macro for testing the raw response function used in AliEMCALRawUtils.
+///
+/// \author : Jenn Klay (Cal Poly)
+///
 
- J.L. Klay (Cal Poly)
+#if !defined(__CINT__) || defined(__MAKECINT__)
 
-*/
+#include <Riostream.h>
+
+//Root include files 
+#include <TF1.h>
+#include <TRandom.h>
+#include <TMath.h>
+#include <TCanvas.h>
+#include <TH1I.h>
+
+#endif
+
+// Response parameters
 const Double_t fgTimeTrigger = 1.5E-06;
 const Double_t fTau = 2.35;
 const Double_t fOrder = 2.;
@@ -15,42 +32,63 @@ const Double_t fHighLowGain = 16.;
 const Double_t fRawFormatTimeMax = 256*fTimeBinWidth;
 const Double_t fgFEENoise = 3.;
 
+///
+/// Response function
+//
+Double_t RawResponseFunction(Double_t *x, Double_t *par)
+{
+  Double_t signal ;
+  Double_t tau =par[2];
+  Double_t N =par[3];
+  Double_t ped = par[4];
+  Double_t xx = ( x[0] - par[1] + tau ) / tau ;
+  
+  if (xx <= 0)
+    signal = ped ;
+  else 
+    signal = ped + par[0] * TMath::Power(xx , N) * TMath::Exp(N * (1 - xx )) ;
+  
+  return signal ;
+}
 
-void TestRawResponse(const Double_t damp = 20, const Double_t dtime = 1e-09) {
-
+///
+/// Main execution method
+///
+void TestRawResponse(const Double_t damp = 20, const Double_t dtime = 1e-09) 
+{
   TH1I* adcHigh = new TH1I("adcHigh","adcHigh",256,0,255);
-  TH1I* adcLow = new TH1I("adcLow","adcLow",256,0,255);
-
+  TH1I* adcLow  = new TH1I("adcLow","adcLow",256,0,255);
+  
   TF1* signalF = new TF1("signal",RawResponseFunction, 0, 256, 5);
   signalF->SetParameter(0,damp);
   signalF->SetParameter(1,(dtime+fgTimeTrigger)/fTimeBinWidth);
   signalF->SetParameter(2,fTau);
   signalF->SetParameter(3,fOrder);
   signalF->SetParameter(4,fgPedestal); 
-
-  for(Int_t itime = 0; itime < 256; itime++) {
+  
+  for(Int_t itime = 0; itime < 256; itime++) 
+  {
     Double_t signal = signalF->Eval(itime);
-
+    
     Double_t noise = gRandom->Gaus(0.,fgFEENoise);
     signal = sqrt(signal*signal + noise*noise);
-
-    cout << "itime = " << itime << " highgain = " << signal << " signalI = " << static_cast<Int_t>(signal +0.5);
-
-    if(static_cast<Int_t>(signal +0.5) > fgOverflow) {
+    
+    cout << "itime = " << itime << " highgain = " << signal 
+         << " signalI = " << static_cast<Int_t>(signal +0.5);
+    
+    if(static_cast<Int_t>(signal +0.5) > fgOverflow) 
       adcHigh->SetBinContent(itime+1,fgOverflow);
-    } else {
+    else 
       adcHigh->SetBinContent(itime+1,static_cast<Int_t>(signal +0.5));
-    }
-
+    
     signal /= fHighLowGain;
-
+    
     cout << " lowgain = " << signal << " signalI = " << static_cast<Int_t>(signal +0.5) << endl;
-
-    if(static_cast<Int_t>(signal +0.5) > fgOverflow) {
+    
+    if(static_cast<Int_t>(signal +0.5) > fgOverflow) 
       adcLow->SetBinContent(itime+1,fgOverflow);
-    } else {
+    else 
       adcLow->SetBinContent(itime+1,static_cast<Int_t>(signal +0.5));      
-    }
   }
   
   TCanvas *c1 = new TCanvas("c1","c1",20,20,600,1000);
@@ -61,21 +99,5 @@ void TestRawResponse(const Double_t damp = 20, const Double_t dtime = 1e-09) {
   adcHigh->Draw();
   c1->cd(3);
   adcLow->Draw();
-  
 }
 
-Double_t RawResponseFunction(Double_t *x, Double_t *par)
-{
-  Double_t signal ;
-  Double_t tau =par[2];
-  Double_t N =par[3];
-  Double_t ped = par[4];
-  Double_t xx = ( x[0] - par[1] + tau ) / tau ;
-
-  if (xx <= 0)
-    signal = ped ;
-  else {
-    signal = ped + par[0] * TMath::Power(xx , N) * TMath::Exp(N * (1 - xx )) ;
-  }
-  return signal ;
-}

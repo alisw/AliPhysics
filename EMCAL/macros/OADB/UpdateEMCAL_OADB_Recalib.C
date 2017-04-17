@@ -1,5 +1,6 @@
 ///
 /// \file UpdateEMCAL_OADB_Recalib.C
+/// \ingroup EMCAL_OADB
 /// \brief Update OADB file with energy recalibration factors.
 ///
 /// The histograms with energy recalibraton Factors are loaded and some TObjarrays 

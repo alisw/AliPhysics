@@ -1,5 +1,6 @@
 ///
 /// \file CreateEMCAL_OADB_Recalib.C
+/// \ingroup EMCAL_OADB
 /// \brief Create OADB file with re-calibration parameters from OCDB files
 ///
 /// This a modification in a code sent by Marco Bregant, which, originally, 

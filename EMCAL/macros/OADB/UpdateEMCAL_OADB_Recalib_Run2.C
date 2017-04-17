@@ -1,5 +1,6 @@
 ///
 /// \file UpdateEMCAL_OADB_Recalib_Run2.C
+/// \ingroup EMCAL_OADB
 /// \brief Update OADB file with energy recalibration factors for Run2.
 ///
 /// The histograms with energy recalibraton Factors are loaded and some TObjarrays 

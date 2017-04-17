@@ -1,4 +1,6 @@
+///
 /// \file TestEMCALSimulation.C
+/// \ingroup EMCAL_TestSimRec
 /// \brief Simple macro to test EMCAL simulation
 ///
 /// Simple macro to test EMCAL simulation

@@ -32,14 +32,15 @@
 
 using namespace std;
 
+///
+/// Constructor
+///
 AliCaloRawAnalyzerComparison::AliCaloRawAnalyzerComparison() : fMod(0),
 							       fMonCol1(1),
 							       fMonRow1(15),
 							       fMonCol2(1),
 							       fMonRow2(16)
-{
-  // ctor
-  
+{  
   fReferenceAnalyzer                       = new  AliCaloRawAnalyzerKStandard();
 
   AliCaloRawAnalyzerCrude *crude           = new AliCaloRawAnalyzerCrude();
@@ -64,16 +65,20 @@ AliCaloRawAnalyzerComparison::AliCaloRawAnalyzerComparison() : fMod(0),
   InitHistograms( fRawAnalyzers, fReferenceAnalyzer );
 } 
 
+///
+/// Evaluate methods
+///
 void 
 AliCaloRawAnalyzerComparison::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  
 					const UInt_t altrocfg2, const int event, const int col, const int row )
-{ // evaluate methods
+{ 
   //  cout << __FILE__ << __LINE__ << endl;
   
   AliCaloFitResults ref = fReferenceAnalyzer->Evaluate( bunchvector, altrocfg1, altrocfg2 );
   //  AliCaloFitResults ref;
   
-  for(int i=0; i < fRawAnalyzers.size(); i++ )
+  Int_t nsize = fRawAnalyzers.size();
+  for(int i=0; i < nsize; i++ )
   {
     AliCaloFitResults an = fRawAnalyzers.at(i)->Evaluate( bunchvector, altrocfg1,  altrocfg2 );
     
@@ -106,10 +111,14 @@ AliCaloRawAnalyzerComparison::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
   }
 }  
 
+///
+/// New event
+///
 void 
 AliCaloRawAnalyzerComparison::EventChanged()
-{ // new event
-  for(int i=0; i < fRawAnalyzers.size(); i++ )
+{ 
+  Int_t nsize = fRawAnalyzers.size();
+  for(int i=0; i < nsize; i++ )
   {
     /*
      if( ( fMon1[i].GetAmp() > 50 &&   fMon2[i].GetAmp() > 50 ) &&  (  fMon1[i].GetAmp() < 1023  &&   fMon2[i].GetAmp() < 1023 )  )
@@ -130,10 +139,12 @@ AliCaloRawAnalyzerComparison::EventChanged()
   }
 }
 
-
+///
+/// Write histograms
+///
 void 
 AliCaloRawAnalyzerComparison::WriteHistograms()
-{ // write histograms
+{ 
   TFile *f = new TFile("comparison2.root", "recreate");
   
   /*
@@ -146,7 +157,8 @@ AliCaloRawAnalyzerComparison::WriteHistograms()
    }
    */
   
-  for(int i=0; i < fRawAnalyzers.size(); i++ )
+  Int_t nsize = fRawAnalyzers.size();
+  for(int i=0; i < nsize; i++ )
   {
     for(int col=0; col < NZCOLSSMOD; col ++ )
     {
@@ -170,10 +182,12 @@ AliCaloRawAnalyzerComparison::WriteHistograms()
   f->Close();
 }
 
-
+///
+/// Init histograms
+///
 void
 AliCaloRawAnalyzerComparison::InitHistograms( vector <AliCaloRawAnalyzer*> analyzers, AliCaloRawAnalyzer* ref )
-{ // init histograms
+{ 
   char tmpname[256];
   
   /*
@@ -188,8 +202,8 @@ AliCaloRawAnalyzerComparison::InitHistograms( vector <AliCaloRawAnalyzer*> analy
    */
   
   // TH1D *fAmpHistograms[NZCOLSSMOD][NXROWSSMOD];
-  
-  for(int i=0; i < analyzers.size(); i++ )
+  Int_t nsize =  analyzers.size();
+  for(int i=0; i < nsize; i++ )
   {
     for(int col=0; col < NZCOLSSMOD; col ++ )
     {
@@ -226,8 +240,6 @@ AliCaloRawAnalyzerComparison::InitHistograms( vector <AliCaloRawAnalyzer*> analy
     sprintf( tmpname, "%s Absolute tof distribution (%d, %d);#sigma_{tof}^{%s}/ns;Counts",  analyzers.at(i)->GetAlgoAbbr(), fMonCol1, fMonRow1, analyzers.at(i)->GetAlgoAbbr() );
     
     fTofResAbsolute[i] = new TH1D(tmpname, tmpname, 2000 , -1000, 7000 );
-    
-    
   }
 }
 

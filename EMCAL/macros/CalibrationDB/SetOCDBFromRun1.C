@@ -1,4 +1,6 @@
+///
 /// \file SetOCDBFromRun1.C
+/// \ingroup EMCAL_CalibDB
 /// \brief Set OCDB for EMCAL energy calibration starting from Run1
 ///
 /// Create OCDB file for a given period from already existing OCDB file

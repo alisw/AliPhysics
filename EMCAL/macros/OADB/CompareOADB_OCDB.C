@@ -1,5 +1,6 @@
 ///
 /// \file CompareOADB_OCDB.C
+/// \ingroup EMCAL_OADB
 /// \brief Compare contents in EMCal OADB and OCDB
 ///
 /// Compare the contents of the calibration, bad channels, etc in OCDB and OADB

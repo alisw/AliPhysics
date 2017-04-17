@@ -1,5 +1,6 @@
 ///
 /// \file CreateEMCAL_OADB_BadChannels.C
+/// \ingroup EMCAL_OADB
 /// \brief Create OADB file with bad map histograms from input files
 ///
 /// This a modification in a code sent by Marco Bregant, which, originally, created the OADB for misalignment matrices

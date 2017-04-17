@@ -1,4 +1,6 @@
+///
 /// \file TestAOD.C
+/// \ingroup EMCAL_TestData
 /// \brief Example to analyze calorimeter AODs
 ///
 /// Example macro to extract calorimeter related information from AODs.

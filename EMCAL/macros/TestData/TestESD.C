@@ -1,4 +1,6 @@
+///
 /// \file TestESD.C
+/// \ingroup EMCAL_TestData
 /// \brief Example to analyze calorimeter ESDs
 ///
 /// Example macro to extract calorimeter related information from ESDs.

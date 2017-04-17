@@ -1,4 +1,6 @@
+///
 /// \file CreateEMCAL_OCDB_TimeCalib_FromOADB.C
+/// \ingroup EMCAL_OADB
 /// \brief Create time calibration OCDB from OADB
 ///
 /// Compare the contents of the calibration, bad channels, etc in OCDB and AODB
@@ -118,7 +120,6 @@ void CreatePeriod(Int_t runmin, Int_t runmax, TString period, Int_t year)
 /// Main method
 /// Create OCDB for different periods at the same time.
 /// 
-/// \param pass: string with pass name
 void CreateEMCAL_OCDB_TimeCalib_FromOADB()
 {  
   // Instantiate EMCAL geometry for the first time

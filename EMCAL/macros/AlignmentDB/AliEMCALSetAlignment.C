@@ -1,17 +1,30 @@
-/* $Id$*/
-
-// Script to create alignment parameters and store them into CDB
-// Three sets of alignment parameters can be created:
-// 1) Ideal geometry
-// 2) Geometry with disalignments and disorientations
-// 3) Geometry small disalignments and disorientations
+///
+/// \file AliEMCALSetAlignment.C
+/// \ingroup EMCAL_AlignDB
+/// \brief Set the energy calibration parameters in OCDB
+///
+/// Script to create alignment parameters and store them into CDB
+/// Three sets of alignment parameters can be created:
+/// 1) Ideal geometry
+/// 2) Geometry with disalignments and disorientations
+/// 3) Geometry small disalignments and disorientations
+/// 
+/// Execute like this:
+///.x $ALICE_ROOT/EMCAL/macros/AlignmentDB/AliEMCALSetAlignment.C
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
 #if !defined(__CINT__)
-#include "TControlBar.h"
-#include "TString.h"
-#include "TRandom.h"
-#include "TClonesArray.h"
+#include <TControlBar.h>
+#include <TString.h>
+#include <TRandom.h>
+#include <TStyle.h>
+#include <TH2.h>
+#include <TF1.h>
+#include <TCanvas.h>
 
+#include "AliRun.h"
 #include "AliAlignObjParams.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
@@ -20,6 +33,10 @@
 #include "AliCDBStorage.h"
 #endif
 
+///
+/// Main method
+/// When execution, menu appears
+//------------------------------------------------------------------------
 
 void AliEMCALSetAlignment()
 {
@@ -40,20 +57,20 @@ void AliEMCALSetAlignment()
 //------------------------------------------------------------------------
 void Help()
 {
-  char *string =
-  "\n\n\nSet EMCAL alignment parameters and write them into ALICE CDB.
-  Press button \"Ideal geometry\" to create EMCAL geometry with ideal geometry.
-  Press button \"Misaligned geometry\" to create EMCAL geometry with fully displaced and disorientated geometry.
-  Press button \"Residual misaligned geometry\" to create EMCAL geometry with infinitesimal displacement and disorientation\n\n\n";
-  printf(string);
+  printf("\n\n\nSet EMCAL alignment parameters and write them into ALICE CDB."
+         "Press button \"Ideal geometry\" to create EMCAL geometry with ideal geometry."
+         "Press button \"Misaligned geometry\" to create EMCAL geometry with fully displaced" 
+         " and disorientated geometry."
+         "Press button \"Residual misaligned geometry\" to create EMCAL geometry with"
+         "infinitesimal displacement and disorientation\n\n\n");
 }
 
+///
+/// Create alignment objects for EMCAL with ideally aligned geometry,
+/// i.e. with zero displacements and zero disorientations
 //------------------------------------------------------------------------
 void IdealAlignment()
 {
-  // Create alignment objects for EMCAL with ideally aligned geometry,
-  // i.e. with zero displacements and zero disorientations
-  
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for EMCAL
   
@@ -118,12 +135,12 @@ void IdealAlignment()
   CDB->Put(array,id, md);
 }
 
+///
+/// Create alignment objects for EMCAL with residual alignment,
+/// i.e. with infinitesimal displacement and disorientation
 //------------------------------------------------------------------------
 void ResidualAlignment()
-{
-  // Create alignment objects for EMCAL with residual alignment,
-  // i.e. with infinitesimal displacement and disorientation
-  
+{  
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for EMCAL
   
@@ -205,11 +222,11 @@ void ResidualAlignment()
   CDB->Put(array,id, md);
 }
 
+///
+/// Create alignment objects for EMCAL with fully misaligned geometry
 //------------------------------------------------------------------------
 void FullMisalignment()
-{
-  // Create alignment objects for EMCAL with fully misaligned geometry
-  
+{  
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for EMCAL
   

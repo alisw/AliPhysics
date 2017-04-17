@@ -1,5 +1,6 @@
 ///
 /// \file TestEMCALData.C
+/// \ingroup EMCAL_TestData
 /// \brief Hits, Digits, RecPoints reading macro.
 ///
 /// Test Macro, shows how to load the different data objects produced by the EMCal

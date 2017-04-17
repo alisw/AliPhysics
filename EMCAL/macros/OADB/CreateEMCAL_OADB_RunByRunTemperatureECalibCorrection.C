@@ -1,5 +1,6 @@
 ///
 /// \file CreateEMCAL_OADB_RunByRunTemperatureECalibCorrection.C
+/// \ingroup EMCAL_OADB
 /// \brief Create OADB file with calibration Temperature corrections
 ///
 /// Example to Create or Read OADB Container 
