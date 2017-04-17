@@ -872,17 +872,13 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         // extra weights: eta, phi, ch, vtx
         if(fPOIExtraWeights==kEtaPhi && fPhiEtaWeights) // determine phieta weight for POI:
         {
-          printf("setting kEtaPhi weights: %e --> ",wPhiEta);
           wt = fPhiEtaWeights->GetBinContent(fPhiEtaWeights->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
-          printf("%e \n",wPhiEta);
         }
         if(fPOIExtraWeights==kEtaPhiCh && fPhiEtaWeightsCh[cw]) // determine phieta weight for POI, ch dep:
         {
-          printf("setting kEtaPhiCh weights: %e --> ",wPhiEta);
           wt = fPhiEtaWeightsCh[cw]->GetBinContent(fPhiEtaWeightsCh[cw]->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
-          printf("%e \n",wPhiEta);
         }
         if(fPOIExtraWeights==kEtaPhiVtx) // determine phieta weight for POI:
         {
@@ -891,10 +887,8 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         Int_t ptbebe = (dPt>1.? 2 : (dPt>0.5 ? 1 : 0)); // hardcoded
         if(fPOIExtraWeights==kEtaPhiChPt && fPhiEtaWeightsChPt[cw][ptbebe]) // determine phieta weight for POI, ch dep:
         {
-          printf("setting kEtaPhiChPt weights: %e --> ",wPhiEta);
           wt = fPhiEtaWeightsChPt[cw][ptbebe]->GetBinContent(fPhiEtaWeightsChPt[cw][ptbebe]->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
-          printf("%e \n",wPhiEta);
         }
         
         if(fUsePhiEtaCuts)
