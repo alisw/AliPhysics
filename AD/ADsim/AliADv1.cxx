@@ -1126,16 +1126,9 @@ void AliADv1::StepManager()
   // ADA 3  =  12-15
   //printf("\n ADsector: %2d | ADlayer: %2d | sect: %2d | x: %8.2f | y: %8.2f | z: %8.2f\n", ADsector, ADlayer, sect, x[0], x[1], x[2]); // Debug ECV
 
-  Double_t lightYield_ad;
-  Double_t photoCathodeEfficiency;
-
-  if( ADlayer <2 )  {
-    lightYield_ad          = fADCLightYield;
-    photoCathodeEfficiency = fADCPhotoCathodeEfficiency;
-  } else  {
-    lightYield_ad          = fADALightYield;
-    photoCathodeEfficiency = fADAPhotoCathodeEfficiency;
-  }
+  Double_t lightYield_ad = (ADlayer < 2
+			    ? fADCLightYield
+			    : fADALightYield);
 
   Float_t destep_ad = fMC->Edep();
   Float_t step_ad   = fMC->TrackStep();

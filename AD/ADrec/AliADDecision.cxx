@@ -117,7 +117,6 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   Double_t timeBasicADA=0, timeBasicADC=0;
   Double_t weightBasicADA =0., weightBasicADC = 0.;
   UInt_t   ntimeBasicADA=0, ntimeBasicADC=0;
-  UInt_t   itimeBasicADA[8], itimeBasicADC[8];
 
   for (Int_t i = 0; i < 16; ++i) {
     Float_t adc = esdAD->GetAdc(i);
@@ -128,12 +127,10 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
 	if (adc>1) timeErr = 1/adc;
 
 	if (i<8) {
-	  itimeBasicADC[ntimeBasicADC] = i;
 	  ntimeBasicADC++;
 	  timeBasicADC += time/(timeErr*timeErr);
 	  weightBasicADC += 1./(timeErr*timeErr);
 	} else {
-	  itimeBasicADA[ntimeBasicADA] = i-8;
 	  ntimeBasicADA++;
 	  timeBasicADA += time/(timeErr*timeErr);
 	  weightBasicADA += 1./(timeErr*timeErr);
@@ -266,14 +263,14 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   UInt_t aBBtriggerADC = 0; // bit mask for Beam-Beam trigger in ADC
   UInt_t aBGtriggerADC = 0; // bit mask for Beam-Gas trigger in ADC
 
-  for(Int_t i = 0; i < ntimeADA; ++i) {
+  for(UInt_t i = 0; i < ntimeADA; ++i) {
     if (esdAD->GetADADecision() == AliESDAD::kADBB)
       aBBtriggerADA |= (1 << (itimeADA[i]));
     else if (esdAD->GetADADecision() == AliESDAD::kADBG)
       aBGtriggerADA |= (1 << (itimeADA[i]));
   }
 
-  for(Int_t i = 0; i < ntimeADC; ++i) {
+  for(UInt_t i = 0; i < ntimeADC; ++i) {
     if (esdAD->GetADCDecision() == AliESDAD::kADBB)
       aBBtriggerADC |= (1 << (itimeADC[i]));
     else if (esdAD->GetADCDecision() == AliESDAD::kADBG)

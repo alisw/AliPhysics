@@ -219,7 +219,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
   if (list->GetEntries() == 0){
     AliWarning("There are no histograms to be checked");
   } else {
-    Float_t nEvents;
+    Float_t nEvents = 0.0f;
     TH1F *hChargeADA = (TH1F*)list->At(AliADQADataMakerRec::kChargeADA);
     if (!hChargeADA) {
       AliWarning("ChargeADA histogram is not found");
@@ -874,7 +874,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       Double_t xRow[nRows];
       xRow[0] = 0.95;
       Double_t xStep = 0.95/((nRows-nLargeRows)+ timesLarger*nLargeRows);
-      for(Int_t iRow = 1; iRow<nRows; iRow++){
+      for(UInt_t iRow = 1; iRow<nRows; iRow++){
 	if(!isLarge[iRow-1]) xRow[iRow] = xRow[iRow-1]-xStep;
 	else xRow[iRow] = xRow[iRow-1]-timesLarger*xStep;
       }
