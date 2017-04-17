@@ -1323,9 +1323,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fMCList[iCut]->Add(fHistoMCSecPi0Source[iCut]);
         fHistoMCSecEtaSource[iCut]      = new TH1F("MC_SecEta_Source","MC_SecEta_Source",5000,0,5000);
         fMCList[iCut]->Add(fHistoMCSecEtaSource[iCut]);
-        fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source","MC_SecPi0_Pt_Source",350,0.0,35.,16,-0.5,15.5);
+        fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source","MC_SecPi0_Pt_Source",nBinsPt, minPt, maxPt,16,-0.5,15.5);
         fMCList[iCut]->Add(fHistoMCSecPi0PtvsSource[iCut]);
-        fHistoMCSecPi0InAccPtvsSource[iCut]  = new TH2F("MC_SecPi0InAcc_Pt_Source","MC_SecPi0InAcc_Pt_Source",350,0.0,35.,16,-0.5,15.5);
+        fHistoMCSecPi0InAccPtvsSource[iCut]  = new TH2F("MC_SecPi0InAcc_Pt_Source","MC_SecPi0InAcc_Pt_Source",nBinsPt, minPt, maxPt, 16,-0.5,15.5);
         fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
         fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt","MC_SecEta_Pt",nBinsPt, minPt, maxPt);
         fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
