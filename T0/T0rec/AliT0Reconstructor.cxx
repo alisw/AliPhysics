@@ -849,10 +849,10 @@ TBits AliT0Reconstructor::SetPileupBits() const
 {
   TBits pileup ;
   Float_t tvdc[5];
-  Int_t pos, bc[21];
+  Int_t pos, bc[23];
   UInt_t ibc;
   pileup.ResetAllBits();
-  for ( Int_t nbc=0; nbc<21; nbc++) bc[nbc]=0;
+  for ( Int_t nbc=0; nbc<23; nbc++) bc[nbc]=0;
   for (Int_t ih=0; ih<5; ih++) 
     {
       tvdc[ih] =  fESDTZERO->GetTVDC(ih);
@@ -861,11 +861,12 @@ TBits AliT0Reconstructor::SetPileupBits() const
 	if(tvdc[ih]<0&&tvdc[ih]>-290)  pos = Int_t (tvdc[ih]-6)/25;	
 	//	printf("AliT0Reconstructor::PileupFlag():: hit %i tvdc %f pos %i bc %i\n",ih,tvdc[ih],pos, bc[pos+10]);
 
-	bc[pos+10] = 1;
+	//	bc[pos+10] = 1;
+	bc[pos+11] = 1;
       }
     }
-  for ( Int_t nbc=0; nbc<21; nbc++) {
-    if(bc[10]>0) {
+  for ( Int_t nbc=0; nbc<23; nbc++) {
+    if(bc[11]>0) {
       ibc=UInt_t(nbc);
       if (bc[nbc]>0)  pileup.SetBitNumber(ibc,kTRUE);
     }
