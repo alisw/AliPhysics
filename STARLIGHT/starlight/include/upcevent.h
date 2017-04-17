@@ -52,10 +52,14 @@ class upcEvent
       void addParticle(starlightParticle &part) { _particles.push_back(part); }
       void addVertex(vector3 &vertex) { _vertices.push_back(vertex); }
       void addGamma(float egamma) { _gammaEnergies.push_back(egamma); }
+      void setBslopeAndt2(double bSlope, double t2) { _bSlope = bSlope; _t2 = t2; }
 
       const std::vector<starlightParticle> * getParticles() const { return &_particles; }
       const std::vector<vector3> * getVertices() const { return &_vertices; }
       const std::vector<float> * getGammaEnergies() const { return &_gammaEnergies; }
+
+      double getBslope() const { return _bSlope; }
+      double gett2() const { return _t2; }
 
       upcEvent & operator=(const upcEvent&);
       upcEvent & operator+(const upcEvent&);
@@ -66,6 +70,8 @@ class upcEvent
       std::vector<starlightParticle> _particles;
       std::vector<vector3> _vertices;
       std::vector<float> _gammaEnergies;
+      double _bSlope;  // gammaavm b-slope
+      double _t2;      // gammaavm t^2
 };
 
 

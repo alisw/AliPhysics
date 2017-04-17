@@ -37,11 +37,15 @@
 upcEvent::upcEvent() :
         _particles(0)
         ,_vertices(0)
+	,_bSlope(0)
+	,_t2(0)
 { }
 
 upcEvent::upcEvent(starlightConstants::event &ev) :
         _particles(0)
         ,_vertices(0)
+	,_bSlope(0)
+	,_t2(0)
 {
   for(int i = 0; i < ev._numberOfTracks; i++)
     {
@@ -70,6 +74,8 @@ upcEvent& upcEvent::operator=(const upcEvent& rhs)
     this->_particles = rhs._particles;
     this->_vertices = rhs._vertices;
     this->_gammaEnergies = rhs._gammaEnergies;
+    _bSlope = rhs._bSlope;
+    _t2 = rhs._t2;
   }
   return *this;
 }
@@ -88,6 +94,7 @@ upcEvent& upcEvent::operator+(const upcEvent& ev)
   {
     this->_gammaEnergies.push_back(ev._gammaEnergies.at(n));
   }
+  // what to do with _bSlope, _t2?
   return *this;
 }
 

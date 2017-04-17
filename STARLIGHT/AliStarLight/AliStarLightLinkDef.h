@@ -14,4 +14,5 @@
 #pragma link C++ class AliGenStarLight+;
 #pragma link C++ class AliDecayerSLEvtGen+;
 #pragma link C++ class AliGenSLEvtGen+;
+#pragma link C++ class AliSLEventHeader+;
 #endif

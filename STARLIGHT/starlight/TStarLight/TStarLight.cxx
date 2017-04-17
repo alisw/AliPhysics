@@ -24,6 +24,8 @@
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TParticle.h>
+#include <TList.h>
+#include <TParameter.h>
 
 #include "inputParameters.h"
 #include "starlight.h"
@@ -43,8 +45,8 @@ TStarLight::TStarLight()
 
 //----------------------------------------------------------------------
 TStarLight::TStarLight(const char* name,         // The name of this object in the root name tables
-		       const char* title,        // A title for this object
-		       const char* slConfigFile) // file used to configure STARlight.
+                       const char* title,        // A title for this object
+                       const char* slConfigFile) // file used to configure STARlight.
   : TGenerator(name, title)       // Default initlization of base class
   , fErrorStatus(0)               // Error status flag 0=OK
   , fConfigFileName(slConfigFile) // Confiuration file name
@@ -53,7 +55,7 @@ TStarLight::TStarLight(const char* name,         // The name of this object in t
   , fEvent()                      // object holding STARlight simulated event.
 {
   // if (NULL == fInputParameters) {
-  //   fErrorStatus = -5; // Init failed. Creating inputParamtere class    
+  //   fErrorStatus = -5; // Init failed. Creating inputParamtere class
   //   Error("TStarLight", "creating inputParameters class failed");
   //   return;
   // } // end if
@@ -81,8 +83,7 @@ TStarLight::~TStarLight()
 
 //----------------------------------------------------------------------
 void TStarLight::GenerateEvent() {
-
-  if (NULL == fStarLight) {
+  if (!fStarLight) {
     fErrorStatus = -1; // generate failed. No generator.
     Fatal("GenerateEvent", "TStarLight class/object not properly constructed");
     return;
@@ -107,8 +108,7 @@ Int_t TStarLight::ImportParticles(TClonesArray *part, // Pointer to array of par
 				  Option_t *opt) {    // A character array of options.
   // Return:
   //   The number of particles added to the TClonesArray *part.
-
-  if (NULL == part)
+  if (!part)
     return 0;
 
   TClonesArray &clonesParticles = *part;
@@ -117,7 +117,7 @@ Int_t TStarLight::ImportParticles(TClonesArray *part, // Pointer to array of par
   Int_t nVtx(0);
   Double_t vtx(0), vty(0), vtz(0), vtt(0);
   const std::vector<vector3>* slVtx = fEvent.getVertices();
-  if (NULL == slVtx) { // not vertex assume 0,0,0,0;
+  if (!slVtx) { // not vertex assume 0,0,0,0;
     vtx = vty = vtz = vtt = 0.0;
   } else { // a vertex exits
     slVtx = fEvent.getVertices();
@@ -291,4 +291,9 @@ Double_t TStarLight::GetParameter(const char* name) const {
   }
   Fatal("GetParameter", "parameter '%s' not found", name);
   return 0.0;
+}
+
+void TStarLight::ImportEventInfo(TList *l) const {
+  l->AddLast(new TParameter<double>("Bslope", fEvent.getBslope()));
+  l->AddLast(new TParameter<double>("t2",     fEvent.gett2()));
 }

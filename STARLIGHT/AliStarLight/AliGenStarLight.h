@@ -16,7 +16,7 @@
 //- AliRoot Includes
 #include "AliGenMC.h"
 
-class AliGenEventHeader;
+class AliSLEventHeader;
 
 class AliGenStarLight : public AliGenMC {
 public:
@@ -57,11 +57,11 @@ public:
   Double_t    fRapidityMotherMax;
   Double_t    fEtaChildMin;       // Max < Min: no cut
   Double_t    fEtaChildMax;
-  TStarLight *fSLgenerator;     //! Pointer to StarLight Generator.
+  TStarLight *fSLgenerator;       //! Pointer to StarLight Generator.
 
-  AliGenEventHeader *fHeader; //!
+  AliSLEventHeader *fHeader;      //!
 
-  ClassDef(AliGenStarLight,4); // STARlight parameterisation generator
+  ClassDef(AliGenStarLight,5);
 } ;
 
 #endif
