@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaCaloTrackCorrBaseClass
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Base class for CaloTrackCorr analysis algorithms
 /// 
 /// All analysis classes in the package CaloTrackCorrelations

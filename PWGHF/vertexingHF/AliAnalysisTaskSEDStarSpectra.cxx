@@ -46,7 +46,6 @@
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
 #include "AliRDHFCutsDStartoKpipi.h"
-#include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliAODMCHeader.h"

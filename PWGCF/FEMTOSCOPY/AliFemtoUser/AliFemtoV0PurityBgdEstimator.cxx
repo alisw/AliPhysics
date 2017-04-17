@@ -248,8 +248,13 @@ void AliFemtoV0PurityBgdEstimator::UseCorrectedDaughterHelices(const AliFemtoTra
 
   //When the helix was built, it assumed that particles come directly from event vertex
   //This is not useful for me, so I build new ones with more correct (hopefully) origins
-  const AliFmThreeVector<double> tOriginPos(tTrackPos->XatDCA(), tTrackPos->YatDCA(), tTrackPos->ZatDCA());
-  const AliFmThreeVector<double> tOriginNeg(tTrackNeg->XatDCA(), tTrackNeg->YatDCA(), tTrackNeg->ZatDCA());
+  //Also, define relative to event vertex, this is necessary in the mixed event case
+  const AliFmThreeVector<double> tOriginPos(tTrackPos->XatDCA()-tHelixPosOG.Origin().x(), 
+                                            tTrackPos->YatDCA()-tHelixPosOG.Origin().y(), 
+                                            tTrackPos->ZatDCA()-tHelixPosOG.Origin().z());
+  const AliFmThreeVector<double> tOriginNeg(tTrackNeg->XatDCA()-tHelixNegOG.Origin().x(), 
+                                            tTrackNeg->YatDCA()-tHelixNegOG.Origin().y(), 
+                                            tTrackNeg->ZatDCA()-tHelixNegOG.Origin().z());
 
   const AliFmPhysicalHelixD tHelixPos(tHelixPosOG.Curvature(), tHelixPosOG.DipAngle(), tHelixPosOG.Phase(), tOriginPos, tHelixPosOG.H());
   const AliFmPhysicalHelixD tHelixNeg(tHelixNegOG.Curvature(), tHelixNegOG.DipAngle(), tHelixNegOG.Phase(), tOriginNeg, tHelixNegOG.H());
@@ -301,11 +306,17 @@ void AliFemtoV0PurityBgdEstimator::BuildV0(AliFemtoPair* aPair)
     delete tTmpTrack;
   }
 
-  double tPrimVtx[3];
-  tTrackPos->GetPrimaryVertex(tPrimVtx);
-  fFemtoV0->SetprimaryVertex(AliFemtoThreeVector(tPrimVtx));
-
   UseCorrectedDaughterHelices(tTrackPos,tTrackNeg);
+
+  //Due to relative shift above in UseCorrectedDaughterHelices, use the primary vertex = {0,0,0} in
+  //decay length etc. calculations below.
+  //  However, still call AliFemtoV0::SetPrimaryVertex to set primary vertex to actual value, 
+  //  as, for now, the position of the event primary vertex is how we distinguish events in IsSameEvent function
+
+  double tEventPrimVtx[3];
+  tTrackPos->GetPrimaryVertex(tEventPrimVtx);
+  fFemtoV0->SetprimaryVertex(AliFemtoThreeVector(tEventPrimVtx));
+  double tPrimVtx[3] = {0., 0., 0.};
 
   double tDecayLengthV0 = (fFemtoV0->DecayVertexV0X()-tPrimVtx[0])*(fFemtoV0->DecayVertexV0X()-tPrimVtx[0]) +
                           (fFemtoV0->DecayVertexV0Y()-tPrimVtx[1])*(fFemtoV0->DecayVertexV0Y()-tPrimVtx[1]) +
@@ -343,6 +354,7 @@ void AliFemtoV0PurityBgdEstimator::BuildV0(AliFemtoPair* aPair)
   fFemtoV0->SetNdofPos(tTrackPos->TPCchi2());
   fFemtoV0->SetStatusPos(tTrackPos->Flags());
   fFemtoV0->SetidPos(tTrackPos->TrackId());
+  fFemtoV0->SetEtaPos(tTrackPos->P().PseudoRapidity());
 
 //  fFemtoV0->SetdcaNegToPrimVertex(sqrt(pow(tTrackNeg->ImpactD(),2)+pow(tTrackNeg->ImpactZ(),2)));  //V0s apparently only use DcaXY here
   fFemtoV0->SetdcaNegToPrimVertex(tTrackNeg->ImpactD());
@@ -356,6 +368,7 @@ void AliFemtoV0PurityBgdEstimator::BuildV0(AliFemtoPair* aPair)
   fFemtoV0->SetNdofNeg(tTrackNeg->TPCchi2());
   fFemtoV0->SetStatusNeg(tTrackNeg->Flags());
   fFemtoV0->SetidNeg(tTrackNeg->TrackId());
+  fFemtoV0->SetEtaNeg(tTrackNeg->P().PseudoRapidity());
 }
 
 

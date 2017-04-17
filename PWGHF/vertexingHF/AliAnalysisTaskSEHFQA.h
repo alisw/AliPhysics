@@ -234,6 +234,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHisTrigMulSel;                       //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH1F* fHisWhyEvRejected;                    //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHisnClsITSvsNtrackletsSel;           //!<!  Histo. of output slot #7 (fOutputEvSelection)
+ TH2F* fHiszvtxvsSPDzvtx;                    //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHiszvtxvsSPDzvtxSel;                 //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHisFEvents;                          //!<!  Histo. of output slot #8 (fOutputFlowObs)
  TH3F* fHisTPCVZE_AngleQ;                    //!<!  Histo. of output slot #8 (fOutputFlowObs)
@@ -243,7 +244,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TProfile2D *fHisQ[3];                       //!<!  Histo. of output slot #8 (fOutputFlowObs)
 
  /// \cond CLASSIMP
- ClassDef(AliAnalysisTaskSEHFQA,15); ///AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,16); ///AnalysisTaskSE for the quality assurance of HF in hadrons
  /// \endcond
 };
 

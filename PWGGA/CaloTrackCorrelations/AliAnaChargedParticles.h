@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaChargedParticles
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Track selection for correlation analysis.
 ///
 /// Class for track selection and identification (not done now)

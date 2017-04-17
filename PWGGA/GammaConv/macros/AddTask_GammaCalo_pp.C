@@ -269,6 +269,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","1111121057032220000","0163103100000050"); // MB
     cuts.AddCut("00003113","1111121058032220000","0163103100000050"); //
     cuts.AddCut("00003113","1111121059032220000","0163103100000050"); //
+  } else if (trainConfig == 11){  // new default
+    cuts.AddCut("00003113","1111121057032220000","0163103100000050"); // MB
   
     
   } else if (trainConfig == 20){  // min Energy EMC1
@@ -973,7 +975,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","2444400040033200000","0163803100000010");
     cuts.AddCut("00003123","2444400040033200000","0163803100000010");
     
-  // 13 TeV direct photon PHOS
+  // 7 TeV direct photon PHOS
   } else if (trainConfig == 351){
     cuts.AddCut("00000113","2444400000013300000","0163803100000010"); // QA
   } else if (trainConfig == 352){
@@ -983,7 +985,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","2444400043013330000","0163803100000010"); // 100ns timing cut, M02<0.5
     cuts.AddCut("00000113","2444400043013320000","0163803100000010"); // 100ns timing cut, M02<0.7
   
-  // 13 TeV PHOS
+  // 7 TeV PHOS
   } else if (trainConfig == 361){
     cuts.AddCut("00000113","2444400000013300000","0163803100000010"); // QA
     cuts.AddCut("00000113","2444400040013300000","0163803100000010"); // 100ns timing cut, no track matching

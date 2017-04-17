@@ -251,7 +251,7 @@ Int_t AliEmcalJetTask::FindJets()
         }
       }
 
-      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", it.current_index(), it->second->GetLabel(), it->first.Pt()));
+      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f, eta = %f, phi = %f, E = %f, m = %f, px = %f, py = %f, pz = %f)", it.current_index(), it->second->GetLabel(), it->first.Pt(), it->first.Eta(), it->first.Phi(), it->first.E(), it->first.M(), it->first.Px(), it->first.Py(), it->first.Pz()));
       Int_t uid = it.current_index() + fgkConstIndexShift * iColl;
       fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
     }

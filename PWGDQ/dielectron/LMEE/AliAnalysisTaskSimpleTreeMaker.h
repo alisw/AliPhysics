@@ -129,8 +129,11 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   void GRIDanalysis(Bool_t answer){
     fIsGRIDanalysis = answer;
   }
-  void createV0tree( Bool_t answer ){
+  void createV0tree(Bool_t answer){
     fIsV0tree = answer;
+  }
+  void setSDDstatus(Bool_t answer){
+    fHasSDD = answer;
   }
   Bool_t isV0daughterAccepted(AliESDtrack* track);
 
@@ -186,6 +189,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   Bool_t fIsIonColl;
 
   Bool_t fIsV0tree;
+  Bool_t fHasSDD;
   TH2F* fArmPlot;
 
   //Grid PID

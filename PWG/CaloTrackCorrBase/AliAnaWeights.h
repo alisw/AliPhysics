@@ -3,6 +3,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaWeights
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Calculate the weight to the event to be applied when filling histograms
 ///
 /// This class is intended to get/calculate the global event weight needed to fill histograms.

@@ -133,6 +133,12 @@ public:
   void SetMinPtTracks(Double_t minpt) { fMinPt = minpt; }
 
   /**
+   * @brief Add histograms for tracks pointing to EMCAL supermodules
+   * @param[in] doStudy If true histograms are added
+   */
+  void SetStudyEMCALgeo(Bool_t doStudy) { fStudyEMCALgeo = doStudy; }
+
+  /**
    * @brief Pre-configure task so that it can be used in subwagons
    * @param[in] suffix Suffix of the subwagon
    * @return Preconfigured task
@@ -216,6 +222,7 @@ protected:
   AliCutValueRange<double>        fPhiCut;                    ///< Cut applied in \f$\phi_{track}\f$
 
   Bool_t                          fStudyPID;                  ///< Use kinematics correlation histograms
+  Bool_t                          fStudyEMCALgeo;             ///< Add histograms for tracks pointing to the EMCAL acceptance
   Bool_t                          fEnableSumw2;               ///< Enable sumw2 during histogram creation
 
 private:

@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index=0, Bool_t isMC, TString cfg = "ConfigJpsi_cj_pp", Bool_t alienconf = kFALSE, Bool_t localconf = kFALSE){
+AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index=0, Bool_t isMC, TString cfg = "ConfigJpsi_cj_pp", Bool_t alienconf = kFALSE, Bool_t localconf = kFALSE,  Int_t MultSel=0){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -68,7 +68,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
 	  
 //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi_cj_pp(i,isAOD, trigger_index, isMC);
+    AliDielectron *jpsi=ConfigJpsi_cj_pp(i,isAOD, trigger_index, isMC, MultSel);
     if (isAOD) jpsi->SetHasMC(isMC);
 	  if (jpsi){
 		  task->AddDielectron(jpsi);
@@ -78,8 +78,9 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
 
 	
 	
-	 
+		//moved to configuration file
   //Add event filter
+	
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
   if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
@@ -88,6 +89,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
   //eventCuts->SetCentralityRange(0.0,80.0);
   task->SetEventFilter(eventCuts);
 
+	
 	
   //pileup rejection
   //task->SetRejectPileup();
@@ -154,8 +156,18 @@ if(!isMC){
 		 if(! triggerClass.IsNull() ) task->SetFiredTriggerName(triggerClass.Data() );
 		//task->SetFiredTriggerName("HMV0");
 	}
+	
+	
+	if(trigger_index == 50){
+		task->SetTriggerMask(AliVEvent::kHighMultV0);
+	}
+	
+	
+	//use this line for data, otherwise the physics selection is ignored by my task...
+	task->UsePhysicsSelection();
+	
 }
-	//task->UsePhysicsSelection();
+	
 	
 		
   //----------------------
@@ -168,15 +180,15 @@ if(!isMC){
   //create output container
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("cjahnke_QA_%d", trigger_index), TList::Class(), AliAnalysisManager::kOutputContainer,
+    mgr->CreateContainer(Form("cjahnke_QA_%d_cent%d", trigger_index, MultSel), TList::Class(), AliAnalysisManager::kOutputContainer,
                          containerName.Data());
   
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("cjahnke_CF_%d", trigger_index), TList::Class(), AliAnalysisManager::kOutputContainer,
+    mgr->CreateContainer(Form("cjahnke_CF_%d_cent%d", trigger_index, MultSel), TList::Class(), AliAnalysisManager::kOutputContainer,
                          containerName.Data());
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("cjahnke_EventStat_%d", trigger_index), TH1D::Class(), AliAnalysisManager::kOutputContainer,
+    mgr->CreateContainer(Form("cjahnke_EventStat_%d_cent%d", trigger_index, MultSel), TH1D::Class(), AliAnalysisManager::kOutputContainer,
                          containerName.Data());
 
 	

@@ -54,7 +54,6 @@
 #include "AliMCParticle.h" 
 #include "AliHeader.h" 
 #include "AliGenEventHeader.h" 
-#include "AliStack.h" 
 #include "AliMCInfoCuts.h" 
 #include "AliRecInfoCuts.h" 
 #include "AliTracker.h" 
@@ -227,7 +226,7 @@ void AliPerformanceMatch::Init(){
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEvent, AliStack* /*const stack*/, AliESDtrack *const esdTrack)
+void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEvent, AliMCEvent* /*const mcev*/, AliESDtrack *const esdTrack)
 {
   //
   // addition to standard analysis - check if ITS stand-alone tracks have a match in the TPC
@@ -276,7 +275,7 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEven
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *const esdTrack)
+void AliPerformanceMatch::ProcessTPCITS(AliMCEvent* /*const mcev*/, AliESDtrack *const esdTrack)
 {
   //
   // Match TPC and ITS min-bias tracks
@@ -307,12 +306,12 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *
 }
 
 //_____________________________________________________________________________
-/*void AliPerformanceMatch::ProcessTPCTRD(AliStack* , AliESDtrack *const esdTrack, AliESDfriendTrack *const esdFriendTrack)
+/*void AliPerformanceMatch::ProcessTPCTRD(AliMCEvent* , AliESDtrack *const esdTrack, AliESDfriendTrack *const esdFriendTrack)
 {
   return;
 }*/
 
-void AliPerformanceMatch::ProcessTPCConstrain(AliStack* /*const stack*/, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack){
+void AliPerformanceMatch::ProcessTPCConstrain(AliMCEvent* /*const mcev*/, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack){
   //
   // Contrain TPC inner track to the vertex
   // then compare to the global tracks
@@ -423,7 +422,6 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esd
   }
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
-  AliStack* stack = 0;
   TArrayF vtxMC(3);
   
   if(bUseMC)
@@ -436,12 +434,6 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esd
     header = mcEvent->Header();
     if (!header) {
       Error("Exec","Header not available");
-      return;
-    }
-    // MC particle stack
-    stack = mcEvent->Stack();
-    if (!stack) {
-      Error("Exec","Stack not available");
       return;
     }
     // get MC vertex
@@ -485,22 +477,22 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esd
 
     if(GetAnalysisMode() == 0){
       if(!IsUseTOFBunchCrossing()){
-	ProcessTPCITS(stack,track);
+	ProcessTPCITS(mcEvent,track);
       }
       else
 	if( track->GetTOFBunchCrossing(esdEvent->GetMagneticField())==0) {
-	  ProcessTPCITS(stack,track);
+	  ProcessTPCITS(mcEvent,track);
 	}
     }
-    /* else if(GetAnalysisMode() == 2) ProcessTPCTRD(stack,track,friendTrack);*/
-    else if(GetAnalysisMode() == 1) {ProcessITSTPC(iTrack,esdEvent,stack,track);}
+    /* else if(GetAnalysisMode() == 2) ProcessTPCTRD(mcev,track,friendTrack);*/
+    else if(GetAnalysisMode() == 1) {ProcessITSTPC(iTrack,esdEvent,mcEvent,track);}
     else if(GetAnalysisMode() == 2){
       if(!IsUseTOFBunchCrossing()){
-	ProcessTPCConstrain(stack,esdEvent,track);
+	ProcessTPCConstrain(mcEvent,esdEvent,track);
       }
       else
 	if( track->GetTOFBunchCrossing(esdEvent->GetMagneticField())==0) {
-	  ProcessTPCConstrain(stack,esdEvent,track);
+	  ProcessTPCConstrain(mcEvent,esdEvent,track);
 	}
     }
     else {

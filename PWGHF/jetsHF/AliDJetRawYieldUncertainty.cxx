@@ -100,7 +100,9 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
   fJetYieldUnc(nullptr),
   fJetSpectrSBVars(nullptr),
   fJetSpectrSBDef(nullptr),
-  fJetPtBinYieldDistribution(nullptr)
+  fJetPtBinYieldDistribution(nullptr),
+  fSuccess(kFALSE),
+  fCanvases()
 {
   memset(fMeanSigmaVar, 0, sizeof(Bool_t)*fgkNSigmaVar);
   memset(fBkgVar, 0, sizeof(Bool_t)*fgkNBkgVar);
@@ -163,7 +165,9 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
   fJetYieldUnc(nullptr),
   fJetSpectrSBVars(nullptr),
   fJetSpectrSBDef(nullptr),
-  fJetPtBinYieldDistribution(nullptr)
+  fJetPtBinYieldDistribution(nullptr),
+  fSuccess(kFALSE),
+  fCanvases()
 {
   if (source.fnDbins > 0) {
     fnDbins = source.fnDbins;
@@ -231,6 +235,7 @@ AliDJetRawYieldUncertainty::~AliDJetRawYieldUncertainty()
     for (int i = 0; i < fnJetbins; i++) delete fJetPtBinYieldDistribution[i];
     delete[] fJetPtBinYieldDistribution;
   }
+  for (auto c : fCanvases) delete c;
 }
 
 /**
@@ -320,7 +325,7 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot()
 /**
  * Run the multi-trial analysis.
  */
-Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
+AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial()
 {
   TH1::AddDirectory(kFALSE);
 
@@ -368,7 +373,7 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
 
   if (sigmaToFix == 0){
     Printf("**** ERROR **** sigmaToFix = 0!!");
-    return kFALSE;
+    return nullptr;
   }
   AliHFMultiTrials* mt = new AliHFMultiTrials();
   mt->SetSuffixForHistoNames("");
@@ -405,49 +410,61 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
   TString cname;
   cname = TString::Format("MassFit_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TCanvas* c0 = new TCanvas(cname,cname);
+  fCanvases.push_back(c0);
 
-  if(fFitRefl) { //reflection treatment
+  if (fFitRefl) { //reflection treatment
     std::cout << " Reflection template file: " << fReflFilenameInput.Data() << " - Reflection histo name:  " << fReflHistoName.Data() << std::endl;
-    TFile *fRefl = TFile::Open(fReflFilenameInput.Data(), "read");
-    if (!fRefl) {
+    TFile fRefl(fReflFilenameInput.Data(), "read");
+    if (fRefl.IsZombie()) {
       std::cout << " Reflection file not found! Exiting... " << std::endl;
-      return kFALSE;
+      delete mt;
+      return nullptr;
     }
-    TH1 *hTemplRefl_temp = dynamic_cast<TH1*>(fRefl->Get(fReflHistoName.Data()));
+    TH1 *hTemplRefl_temp = dynamic_cast<TH1*>(fRefl.Get(fReflHistoName.Data()));
     if (!hTemplRefl_temp) {
       std::cout << " Reflection histo not found! Exiting... " << std::endl;
-      return kFALSE;
+      fRefl.Close();
+      delete mt;
+      return nullptr;
     }
+    Printf("Copying histogram...");
     TH1F *hTemplRefl = new TH1F("temp", "temp", 1, 0, 1); // needed to convert other types of TH1 (TH1D in particular)
     hTemplRefl_temp->Copy(*hTemplRefl);
+    Printf("Histogram '%s' copied successfully", hTemplRefl->GetName());
+    fRefl.Close();
+    Printf("File closed!");
+    hTemplRefl_temp = nullptr;
 
     if (fFixRiflOverS < 0) {
       Double_t factor = -fFixRiflOverS;
       std::cout << " MC signal file: " << fSigMCFilenameInput.Data() << " - MC signal histo name:  " << fSigMCHistoName.Data() << std::endl;
-      TFile *fSigMC = TFile::Open(fSigMCFilenameInput.Data(),"read"); //needed if refl/sigMC ratio is not fixed
-      if (!fSigMC) {
+      TFile fSigMC(fSigMCFilenameInput.Data(),"read"); //needed if refl/sigMC ratio is not fixed
+      if (fSigMC.IsZombie()) {
         std::cout << " MC signal file not found! Exiting... " << std::endl;
-        return kFALSE;
+        delete mt;
+        return nullptr;
       }
-      TH1 *hSignMC = dynamic_cast<TH1*>(fSigMC->Get(fSigMCHistoName.Data()));
+      TH1 *hSignMC = dynamic_cast<TH1*>(fSigMC.Get(fSigMCHistoName.Data()));
       if (!hSignMC) {
         std::cout << " MC signal histo not found! Exiting... " << std::endl;
-        return kFALSE;
+        fSigMC.Close();
+        delete mt;
+        return nullptr;
       }
       fFixRiflOverS = factor * hTemplRefl->Integral(hTemplRefl->FindBin(fReflRangeL + 0.00001), hTemplRefl->FindBin(fReflRangeR - 0.00001)) / hSignMC->Integral(hSignMC->FindBin(fReflRangeL + 0.00001), hSignMC->FindBin(fReflRangeR - 0.00001));
       Printf("Sign over Refl bin %1.1f-%1.1f = %f", fpTmin, fpTmax, fFixRiflOverS);
+      fSigMC.Close();
     }
 
     mt->SetTemplateRefl(hTemplRefl);
     mt->SetFixRefoS(fFixRiflOverS);
-    fRefl->Close();
-    delete fRefl;
   }
 
   Bool_t isOK = mt->DoMultiTrials(fMassPlot, c0);
 
   cname = TString::Format("AllTrials_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
-  TCanvas* cOut =new TCanvas(cname, cname);
+  TCanvas* cOut = new TCanvas(cname, cname);
+  fCanvases.push_back(cOut);
   std::cout << "Has MultiTrial suceeded? " << isOK << std::endl;
 
   if (isOK) {
@@ -455,12 +472,13 @@ Bool_t AliDJetRawYieldUncertainty::RunMultiTrial()
     mt->SaveToRoot(outfilnam.Data(), "recreate");
   }
   else {
-    return kFALSE;
+    delete mt;
+    return nullptr;
   }
 
-  isOK = CombineMultiTrialOutcomes();
+  fSuccess = CombineMultiTrialOutcomes();
 
-  return isOK;
+  return mt;
 }
 
 /**
@@ -471,7 +489,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
   TH1::AddDirectory(kFALSE);
 
   TString infilnam = TString::Format("RawYieldVariations_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
-  TFile* fil = TFile::Open(infilnam.Data());
+  TFile fil(infilnam.Data());
 
   TString confCase[fgkNSigmaVar] = { "", "", "", "", "", "" };
   TString bkgFunc[fgkNBkgVar] = { "", "", "", "", "", "", "", "" };
@@ -513,7 +531,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
   Int_t jh = 0;
   for (Int_t iConf = 0; iConf < nConfigCases; iConf++){
     for( Int_t iType = 0; iType < nBackFuncCases; iType++){
-      histo[jh++] = dynamic_cast<TH1F*>(fil->Get(Form("hRawYieldTrial%s%s", bkgFunc[iType].Data(), confCase[iConf].Data())));
+      histo[jh++] = dynamic_cast<TH1F*>(fil.Get(Form("hRawYieldTrial%s%s", bkgFunc[iType].Data(), confCase[iConf].Data())));
       if (fDebug) std::cout << "Loading histo: " << Form("hRawYieldTrial%s%s",bkgFunc[iType].Data(),confCase[iConf].Data()) << std::endl;
     }
   }
@@ -571,30 +589,19 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
       if (fDebug) Printf("-> Case %d", j);
       TString hmeanname = histo[j]->GetName();
       hmeanname.ReplaceAll("RawYield", "Mean");
-      TH1F* hmeant = dynamic_cast<TH1F*>(fil->Get(hmeanname.Data()));
+      TH1F* hmeant = dynamic_cast<TH1F*>(fil.Get(hmeanname.Data()));
 
       TString hsigmaname = histo[j]->GetName();
       hsigmaname.ReplaceAll("RawYield", "Sigma");
-      TH1F* hsigmat = dynamic_cast<TH1F*>(fil->Get(hsigmaname.Data()));
+      TH1F* hsigmat = dynamic_cast<TH1F*>(fil.Get(hsigmaname.Data()));
 
       TString hchi2name = histo[j]->GetName();
       hchi2name.ReplaceAll("RawYield","Chi2");
-      TH1F* hchi2t = dynamic_cast<TH1F*>(fil->Get(hchi2name.Data()));
+      TH1F* hchi2t = dynamic_cast<TH1F*>(fil.Get(hchi2name.Data()));
 
       TString hbkgname = histo[j]->GetName();
-      switch (fDmesonSpecie) {
-      case kD0toKpi:
-        hbkgname.ReplaceAll("RawYield","Bkg");
-        if (j==0) Printf("*** Using bkg values in real nSigma region, not in bin edges! (Salvatore) ***");
-        break;
-      case kDStarD0pi:
-        hbkgname.ReplaceAll("RawYield","BkgInBinEdges");
-        if (j==0) Printf("*** Using bkg values in bin edges! (Barbara/Antonio) ***");
-        break;
-      default:
-        break;
-      }
-      TH1F* hbkg = dynamic_cast<TH1F*>(fil->Get(hbkgname.Data()));
+      hbkgname.ReplaceAll("RawYield","BkgInBinEdges");
+      TH1F* hbkg = dynamic_cast<TH1F*>(fil.Get(hbkgname.Data()));
 
       for (Int_t ib = 1; ib <= histo[j]->GetNbinsX(); ib++) {
         Double_t ry = histo[j]->GetBinContent(ib);//rawyield
@@ -661,6 +668,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
 
   TString cname = TString::Format("All_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TCanvas* call = new TCanvas(cname, cname, 1400 ,800);
+  fCanvases.push_back(call);
   call->Divide(4,2);
   call->cd(1);
   gPad->SetLeftMargin(0.13);
@@ -793,8 +801,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
     outfile = nullptr;
   }
 
-  fil->Close();
-  delete fil;
+  fil.Close();
 
   Printf("Combine multi-trials done!");
   return kTRUE;
@@ -842,8 +849,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
   for (int ibin = 0; ibin < fnJetbins; ibin++) {
     TString fname = TString::Format("Hist_RawYieldSyst_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]);
     if (fDebug) std::cout << fname.Data() << std::endl;
-    TFile *f = TFile::Open(fname, "read");
-    if (!f) {
+    TFile f(fname, "read");
+    if (f.IsZombie()) {
       std::cout << "Uncertainty file for bin " << fJetbinpTedges[ibin] << " - " << fJetbinpTedges[ibin+1] << " cannot be opened! Did you already evaluate it?" << std::endl;
       return kFALSE;
     }
@@ -851,9 +858,10 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
       if (fDebug) std::cout << "Building uncertainty for bin " << fJetbinpTedges[ibin] << " - " << fJetbinpTedges[ibin+1] << std::endl;
     }
 
-    hUnc = dynamic_cast<TH1D*>(f->Get(Form("hUnc_%1.1fto%1.1f", fJetbinpTedges[ibin], fJetbinpTedges[ibin+1])));
+    hUnc = dynamic_cast<TH1D*>(f.Get(Form("hUnc_%1.1fto%1.1f", fJetbinpTedges[ibin], fJetbinpTedges[ibin+1])));
     if (!hUnc) {
       std::cout << "Histogram with uncertainty from mass plot not found! Returning..." << std::endl;
+      f.Close();
       return kFALSE;
     }
 
@@ -863,8 +871,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
     fJetYieldUnc->SetBinContent(ibin+1, rmsPct);
     fJetYieldCentral->SetBinContent(ibin+1, centrYield);
     fJetYieldCentral->SetBinError(ibin+1, rmsPct);
-    f->Close();
-    delete f;
+    f.Close();
   }
 
   fJetYieldUnc->SetStats(kFALSE);
@@ -876,14 +883,13 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
 
   // print distribution of yields for each variation
   for (int ibin = 0; ibin < fnJetbins; ibin++) {
-    TFile *f2 = TFile::Open(Form("RawYieldSyst_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]), "read");
+    TFile f2(Form("RawYieldSyst_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]), "read");
     TString cname = TString::Format("All_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]);
-    TCanvas *c = dynamic_cast<TCanvas*>(f2->Get(cname));
+    TCanvas *c = dynamic_cast<TCanvas*>(f2.Get(cname));
     TH1F *hDist = dynamic_cast<TH1F*>(c->FindObject("hRawYieldDistAll"));
     hDist->SetStats(kTRUE);
     hDist->SaveAs(Form("YieldDistribution_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]));
-    f2->Close();
-    delete f2;
+    f2.Close();
   }
 
   return kTRUE;
@@ -914,13 +920,11 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
   Float_t signal_c_min = mean - fnSigmaSignReg * sigma;
   Float_t signal_c_max = mean + fnSigmaSignReg * sigma;
 
-  Double_t scaling = 1;
-
   //extract signal and sideband region spectra
   TH1* tmphjetpt = hInvMassJetPt->ProjectionY(Form("tmphjetpt%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_c_min), hInvMassJetPt->GetXaxis()->FindBin(signal_c_max));
   TH1* tmphjetpt_s1 = hInvMassJetPt->ProjectionY(Form("tmphjetpt_s1%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_l_min), hInvMassJetPt->GetXaxis()->FindBin(signal_l_max));
   TH1* tmphjetpt_s2 = hInvMassJetPt->ProjectionY(Form("tmphjetpt_s2%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_u_min), hInvMassJetPt->GetXaxis()->FindBin(signal_u_max));
-  TH1* tmphjetpt_s = static_cast<TH1F*>(tmphjetpt_s1->Clone(Form("tmphjetpt_s%d",iDbin)));
+  TH1* tmphjetpt_s = static_cast<TH1*>(tmphjetpt_s1->Clone(Form("tmphjetpt_s%d",iDbin)));
   tmphjetpt_s->Add(tmphjetpt_s2);
 
   // scale background from side bands to the background under the peak
@@ -928,8 +932,8 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
     std::cout << "Error! At least one variation with no entries! Exiting..." << std::endl;
     return kFALSE;
   }
-  scaling = bkg / tmphjetpt_s->Integral(tmphjetpt_s->FindBin(jetmin), tmphjetpt_s->FindBin(jetmax)); //integral btw jetmin and jetmax (where you get the bkg from the mass plot)
-
+  Double_t scaling = bkg / tmphjetpt_s->Integral(tmphjetpt_s->FindBin(jetmin+0.0001), tmphjetpt_s->FindBin(jetmax-0.0001)); //integral btw jetmin and jetmax (where you get the bkg from the mass plot)
+  Printf("Background scaling factor = %.6f", scaling);
   for (int j = 1; j <= tmphjetpt->GetNbinsX(); j++) {
     Double_t centerbin = tmphjetpt->GetBinCenter(j); //bin of hjetpt corresponding to j-th bin of THnSparse projection
     hjetpt->Fill(centerbin, tmphjetpt->GetBinContent(j));
@@ -993,46 +997,45 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
 
     //open file with summary of variations from MultiTrial - get histos of variations
     fname = TString::Format("RawYieldSyst_%s_%s_%1.1fto%1.1f.root",fDmesonLabel.Data(),fMethodLabel.Data(),fDbinpTedges[iDbin],fDbinpTedges[iDbin+1]);
-    TFile *fileMult = TFile::Open(fname, "read");
-    if (!fileMult || fileMult->IsZombie()) {
+    TFile fileMult(fname, "read");
+    if (fileMult.IsZombie()) {
       std::cout << "Uncertainty file for bin " << fDbinpTedges[iDbin] << " - " << fDbinpTedges[iDbin+1] << " cannot be opened! Did you already evaluate it?" << std::endl;
       return kFALSE;
     }
     if (fDebug) Printf("File '%s' open successfully.", fname.Data());
-    TH2* hInvMassJetPt = dynamic_cast<TH2*>(fileMult->Get("hInvMassJetPt"));
+    TH2* hInvMassJetPt = dynamic_cast<TH2*>(fileMult.Get("hInvMassJetPt"));
     if (!hInvMassJetPt) {
       Printf("Could not find histogram hInvMassJetPt!");
+      fileMult.Close();
       return kFALSE;
     }
     cname = Form("All_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(),fDbinpTedges[iDbin],fDbinpTedges[iDbin+1]);
-    TCanvas *c = dynamic_cast<TCanvas*>(fileMult->Get(cname));
+    TCanvas *c = dynamic_cast<TCanvas*>(fileMult.Get(cname));
     if (!c) {
       Printf("Could not find canvas '%s'!", cname.Data());
+      fileMult.Close();
       return kFALSE;
     }
     TH1F *hMean = dynamic_cast<TH1F*>(c->FindObject("hMeanAll"));
     TH1F *hSigma = dynamic_cast<TH1F*>(c->FindObject("hSigmaAll"));
     TH1F *hBkg = dynamic_cast<TH1F*>(c->FindObject("hBkgAll"));
-    fileMult->Close();
-    delete fileMult;
-    fileMult = 0;
+    fileMult.Close();
+
     if (fDebug) Printf("File '%s' closed successfully.", fname.Data());
 
     fname = TString::Format("RawYieldVariations_Dzero_SideBand_%1.1fto%1.1f.root", fDbinpTedges[iDbin], fDbinpTedges[iDbin + 1]);
-    TFile* fileMultVar = TFile::Open(fname, "read");
-    if (!fileMultVar || fileMultVar->IsZombie()) {
+    TFile fileMultVar(fname, "read");
+    if (fileMultVar.IsZombie()) {
       std::cout << "Uncertainty file for bin " << fDbinpTedges[iDbin] << " - " << fDbinpTedges[iDbin + 1] << " cannot be opened! Did you already evaluate it?" << std::endl;
       return kFALSE;
     }
     if (fDebug) Printf("File '%s' open successfully.", fname.Data());
     if (fDebug) std::cout << "Default trial" << " TrialExpoFreeS" << std::endl;
-    TH1F *hMeanDef = (TH1F*)fileMultVar->Get("hMeanTrialExpoFreeS");
-    TH1F *hSigmaDef = (TH1F*)fileMultVar->Get("hSigmaTrialExpoFreeS");
-    TH1F *hBkgDef = (TH1F*)fileMultVar->Get("hBkgTrialExpoFreeS");
-    TH1F *hRawYieldDef = (TH1F*)fileMultVar->Get("hRawYieldTrialExpoFreeS");
-    fileMultVar->Close();
-    delete fileMultVar;
-    fileMultVar = 0;
+    TH1F *hMeanDef = static_cast<TH1F*>(fileMultVar.Get("hMeanTrialExpoFreeS"));
+    TH1F *hSigmaDef = static_cast<TH1F*>(fileMultVar.Get("hSigmaTrialExpoFreeS"));
+    TH1F *hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgInBinEdgesTrialExpoFreeS"));
+    TH1F *hRawYieldDef = static_cast<TH1F*>(fileMultVar.Get("hRawYieldTrialExpoFreeS"));
+    fileMultVar.Close();
     if (fDebug) Printf("File '%s' closed successfully.", fname.Data());
 
     Double_t meanDef = hMeanDef->GetBinContent(1);
@@ -1175,6 +1178,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       //ADVANCED - save distribution of final jet yields (summing all pT(D) bins) in a single plot
       cname = Form("cDistr_%s_%s", fDmesonLabel.Data(), fMethodLabel.Data());
       TCanvas *cDistr = new TCanvas(cname, cname, 900, 600);
+      fCanvases.push_back(cDistr);
       for (Int_t iTrial = 0; iTrial < fnMaxTrials; iTrial++) {
         for (int l=0; l < fJetSpectrSBVars[iTrial]->GetNbinsX();l++) fJetSpectrSBVars[iTrial]->SetBinError(l + 1, 0.0001);
         fJetSpectrSBVars[iTrial]->SetMarkerColor(iTrial + 1);
@@ -1188,6 +1192,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       for (int iDbin = 0; iDbin < fnDbins; iDbin++) {
         cname = Form("cDistr_%s_%s_%d", fDmesonLabel.Data(), fMethodLabel.Data(), iDbin);
         TCanvas *cDistr1 = new TCanvas(cname, cname, 900, 600);
+        fCanvases.push_back(cDistr1);
         TH1F** hJetSpectrFromSingleDbin = new TH1F*[fnMaxTrials];
         for(Int_t iTrial = 0; iTrial < fnMaxTrials; iTrial++) {
           hJetSpectrFromSingleDbin[iTrial] = static_cast<TH1F*>(fJetSpectrSBVars[0]->Clone(Form("JetRawYieldDistr_Dbin%d",iDbin)));
@@ -1206,6 +1211,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       //ADVANCED - save averages of final jet yields from each single pT(D) bin, with their RMS, without summing them, in a single plot
       cname = Form("cDistrAllAvgs_%s_%s", fDmesonLabel.Data(), fMethodLabel.Data());
       TCanvas *cDistr2 = new TCanvas(cname, cname, 900, 600);
+      fCanvases.push_back(cDistr2);
 
       fJetYieldCentral->SetLineWidth(3);
       fJetYieldCentral->Draw();
@@ -1253,14 +1259,14 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
   TH1::AddDirectory(kFALSE);
 
   Printf("Fitting reflections.");
-  TFile *fReflections = new TFile(inputfile.Data());
+  TFile fReflections(inputfile.Data());
   TString inputfileNoExt = inputfile.ReplaceAll(".root", "");
-  TFile *fFitReflection = new TFile(Form("%s_fitted_%s.root", inputfileNoExt.Data(), fitType.Data()), "recreate");
+  TFile fFitReflection(Form("%s_fitted_%s.root", inputfileNoExt.Data(), fitType.Data()), "recreate");
 
   for (Int_t i = 0; i < nPtBins; i++) {
-    TH1 *hSignMC = dynamic_cast<TH1*>(fReflections->Get(Form("histSgn_%d", i)));
+    TH1 *hSignMC = dynamic_cast<TH1*>(fReflections.Get(Form("histSgn_%d", i)));
     if (hSignMC) {
-      fFitReflection->cd();
+      fFitReflection.cd();
       hSignMC->Write(Form("histSgn_%d", i));
     }
   }
@@ -1274,7 +1280,7 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
 
   for (Int_t iBin = 0; iBin < nPtBins; iBin++) {
     Printf("Bin %d", iBin);
-    TH1 *hfitRefl= dynamic_cast<TH1*>(fReflections->Get(Form("histRfl_%d", iBin)));
+    TH1 *hfitRefl= dynamic_cast<TH1*>(fReflections.Get(Form("histRfl_%d", iBin)));
     hfitRefl->SetName(Form("histoRfl_%d",iBin));
     hfitRefl->SetMarkerStyle(1);
     hfitRefl->SetLineStyle(1);
@@ -1344,11 +1350,13 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
     ratio->Draw("p");
     gPad->Update();
 
-    fFitReflection->cd();
+    fFitReflection.cd();
     hfitRefl->Write();
     hFitReflNewTemp->Write();
     ratio->Write();
   }
+  fReflections.Close();
+  fFitReflection.Close();
 }
 
 /**

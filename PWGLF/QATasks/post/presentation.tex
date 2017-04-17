@@ -1,0 +1,268 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+\documentclass{beamer}
+
+\mode<presentation> {
+   \usetheme{Boadilla}
+   \usecolortheme{beaver}
+   \setbeamertemplate{section in toc}[square]
+   \setbeamercolor{section number projected}{bg=white,fg=black}
+}
+
+\usepackage{graphicx} 
+\usepackage{booktabs} 
+\usepackage{epstopdf}
+
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+    \usebeamerfont{title}\insertsectionhead\par%
+  \end{beamercolorbox}
+  \vfill
+  \end{frame}
+}
+
+
+\usepackage{ifthen}
+\providecommand\ismc{false}
+\providecommand\titlename{LHC16}
+
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+\title[\titlename]{\titlename} 
+
+\author{PWG-LF Analysis QA}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+\titlepage 
+\end{frame}
+
+\begin{frame}
+\frametitle{Overview} % Table of contents slide, comment this block out to remove it
+\tableofcontents      % Throughout your presentation, if you choose to use \section{} and \subsection{} commands, these will automatically be printed on this slide as an overview of your presentation
+\end{frame}
+
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+%_______
+% -- PID
+\section{PID}
+\begin{frame}
+\frametitle{PID}
+  \begin{figure}
+  \includegraphics[width=0.9\textwidth]{./png/ITSnSigmaPID}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{PID}
+  \begin{figure}
+  \includegraphics[width=0.9\textwidth]{./png/TOFnSigmaPID}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{PID}
+  \begin{figure}
+  \includegraphics[width=0.9\textwidth]{./png/TPC_TOFnSigmaPID}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{PID}
+  \begin{figure}
+  \includegraphics[width=0.9\textwidth]{./png/TPCBasicnSigmaPID}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{PID}
+  \begin{figure}
+  \includegraphics[width=0.9\textwidth]{./png/TPCV0nSigmaPID}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{PID}
+  \begin{figure}
+  \includegraphics[width=0.9\textwidth]{./png/TPCSplinesAndConfigInfo}
+  \end{figure}
+\end{frame}
+
+%______________
+% -- RESONANCES
+\section{Resonances ($\phi$)}
+\begin{frame}
+\frametitle{RESONANCES}
+  %\begin{figure}
+  %\includegraphics[width=\textwidth]{../figures/example1.eps}
+  %\end{figure}
+\end{frame}
+
+
+%___________________
+% -- STRANGENESS: V0
+\section{Single-strange particles (V$^{0}$)} 
+\begin{frame}
+\frametitle{STRANGENESS: V$^{0}$}
+  \begin{figure}
+  \includegraphics[width=0.8\textwidth]{./png/LF_QAanalysis_V0_page1}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: V$^{0}$}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_V0_page2}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: V$^{0}$}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_V0_page3}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: V$^{0}$}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_V0_page4}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: V$^{0}$}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_V0_page5}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: V$^{0}$}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_V0_page6}
+  \end{figure}
+\end{frame}
+
+
+%_________________________
+% -- STRANGENESS: Cascades
+\section{Multi-strange particles (Cascades)}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page1_0}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page1_1}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page1_2}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page1_3}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page2_0}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page2_1}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page2_2}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page2_3}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page3_0}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page3_1}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page3_2}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page3_3}
+  \end{figure}
+\end{frame}
+\begin{frame}
+\frametitle{STRANGENESS: Cascades}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{./png/LF_QAanalysis_Multistrange_page4}
+  \end{figure}
+\end{frame}
+% --- in case of MC add further plots
+\ifthenelse{\equal{\ismc}{true}}{
+  \begin{frame}
+  \frametitle{STRANGENESS: Cascades}
+    \begin{figure}
+    \includegraphics[width=\textwidth]{./png/Multistrange_page5}
+    \end{figure}
+  \end{frame}
+  \begin{frame}
+  \frametitle{STRANGENESS: Cascades}
+    \begin{figure}
+    \includegraphics[width=\textwidth]{./png/Multistrange_page6_0}
+    \end{figure}
+  \end{frame}
+  \begin{frame}
+  \frametitle{STRANGENESS: Cascades}
+    \begin{figure}
+    \includegraphics[width=\textwidth]{./png/Multistrange_page6_1}
+    \end{figure}
+  \end{frame}
+  \begin{frame}
+  \frametitle{STRANGENESS: Cascades}
+    \begin{figure}
+    \includegraphics[width=\textwidth]{./png/Multistrange_page6_2}
+    \end{figure}
+  \end{frame}
+  \begin{frame}
+  \frametitle{STRANGENESS: Cascades}
+    \begin{figure}
+    \includegraphics[width=\textwidth]{./png/Multistrange_page6_3}
+    \end{figure}
+  \end{frame}
+}
+
+
+
+
+
+\end{document} 

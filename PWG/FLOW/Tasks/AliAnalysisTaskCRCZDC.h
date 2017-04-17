@@ -153,6 +153,7 @@ public:
   void SetUseMCCen( Bool_t kB ) { fUseMCCen = kB; }
   void SetRejectPileUp( Bool_t kB ) { fRejectPileUp = kB; }
   void SetRejectPileUpTight( Bool_t kB ) { fRejectPileUpTight = kB; }
+  void SetResetNegativeZDC( Bool_t kB ) { fResetNegativeZDC = kB; }
   void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
     fCentrUpLim=centrup;}
   void SetCentralityEstimator(CentrEstimator centrest) {fCentrEstimator=centrest;}
@@ -168,10 +169,12 @@ public:
   TList* GetVZEROQVecRecList() const {return this->fVZEROQVecRecList;};
   void SetZDCSpectraCorrList(TList* const kList) {this->fZDCSpectraCorrList = (TList*)kList->Clone(); fUseZDCSpectraCorr=kTRUE;};
   TList* GetZDCSpectraCorrList() const {return this->fZDCSpectraCorrList;};
+  
   virtual Int_t GetCenBin(Double_t Centrality);
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
   Bool_t plpMV(const AliAODEvent* aod);
   Double_t GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist);
+  void SetWhichVZERORings(int minVZC, int maxVZC, int minVZA, int maxVZA) {fMinRingVZC = minVZC; fMaxRingVZC = maxVZC; fMinRingVZA = minVZA; fMaxRingVZA = maxVZA;}
   
 private:
   AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -261,6 +264,7 @@ private:
   CentrEstimator  fCentrEstimator;     // string for the centrality estimator
   Bool_t   fRejectPileUp;
   Bool_t   fRejectPileUpTight;
+  Bool_t   fResetNegativeZDC;
   //
   TList       *fOutput;	   	//! list send on output slot 0
   //
@@ -352,8 +356,12 @@ private:
   const static Int_t fkVZEROnQAplots = 8;
   TProfile2D *fVZEROQVectorRecFinal[fkVZEROnHar][fkVZEROnQAplots]; //!
   Int_t fCachedRunNum;   //
+  Int_t fMinRingVZC; //
+  Int_t fMaxRingVZC; //
+  Int_t fMinRingVZA; //
+  Int_t fMaxRingVZA; //
   
-  ClassDef(AliAnalysisTaskCRCZDC,8);
+  ClassDef(AliAnalysisTaskCRCZDC,10);
   
 };
 

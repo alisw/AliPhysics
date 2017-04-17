@@ -52,7 +52,6 @@
 #include "AliTracker.h"
 #include "AliMCEvent.h"
 #include "AliESDtrack.h"
-#include "AliStack.h"
 #include "AliLog.h" 
 #include "AliMCInfoCuts.h" 
 #include "AliMathBase.h"
@@ -168,14 +167,14 @@ void AliPerformanceDEdx::Init()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessTPC(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceDEdx::ProcessTPC(AliMCEvent* const /*mcev*/, AliESDtrack *const /*esdTrack*/)
 {
   // Fill dE/dx  comparison information
   AliDebug(AliLog::kWarning, "Warning: Not implemented");
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceDEdx::ProcessInnerTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
  //
  // Fill TPC track information at inner TPC wall
@@ -251,11 +250,11 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,Double_t(ncls),p,Double_t(TPCSignalN),nClsF};
   fDeDxHisto->Fill(vDeDxHisto); 
 
-  if(!stack) return;
+  if(!mcev) return;
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessTPCITS(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceDEdx::ProcessTPCITS(AliMCEvent* const /*mcev*/, AliESDtrack *const /*esdTrack*/)
 {
   // Fill dE/dx  comparison information
   
@@ -263,7 +262,7 @@ void AliPerformanceDEdx::ProcessTPCITS(AliStack* const /*stack*/, AliESDtrack *c
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessConstrained(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceDEdx::ProcessConstrained(AliMCEvent* const /*mcev*/, AliESDtrack *const /*esdTrack*/)
 {
   // Fill dE/dx  comparison information
   
@@ -323,7 +322,6 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
   }
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
-  AliStack* stack = 0;
   TArrayF vtxMC(3);
   
   if(bUseMC)
@@ -337,12 +335,6 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
     header = mcEvent->Header();
     if (!header) {
       AliDebug(AliLog::kError, "Header not available");
-      return;
-    }
-    // MC particle stack
-    stack = mcEvent->Stack();
-    if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
       return;
     }
 
@@ -389,10 +381,10 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
     if(!track) continue;
 
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
-    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
-    else if(GetAnalysisMode() == 3) ProcessInnerTPC(stack,track,esdEvent);
+    if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,track);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,track);
+    else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,track);
+    else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,track,esdEvent);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;

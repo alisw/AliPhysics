@@ -14,15 +14,19 @@
  **************************************************************************/
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
+#include <bitset>
 
 #include <TFile.h>
 #include <TMath.h>
 #include <TRandom.h>
 #include <TChain.h>
 #include <TGrid.h>
+#include <TGridResult.h>
 #include <TSystem.h>
 #include <TUUID.h>
 
@@ -31,7 +35,13 @@
 #include <AliVEvent.h>
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
+#include <AliMCEvent.h>
 #include <AliInputEventHandler.h>
+#include <AliVHeader.h>
+#include <AliAODMCHeader.h>
+#include <AliGenPythiaEventHeader.h>
+
+#include "AliEmcalList.h"
 
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
@@ -46,12 +56,15 @@ AliAnalysisTaskEmcalEmbeddingHelper* AliAnalysisTaskEmcalEmbeddingHelper::fgInst
  */
 AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   AliAnalysisTaskSE(),
+  fCreateHisto(true),
   fTreeName(),
   fAnchorRun(169838),
   fPtHardBin(-1),
+  fNPtHardBins(0),
   fRandomEventNumberAccess(kFALSE),
-  fRandomFileAccess(kFALSE),
+  fRandomFileAccess(kTRUE),
   fFilePattern(""),
+  fInputFilename(""),
   fFileListFilename(""),
   fFilenameIndex(-1),
   fFilenames(),
@@ -65,11 +78,19 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fOffset(0),
   fMaxNumberOfFiles(0),
   fFileNumber(0),
+  fInitializedConfiguration(false),
   fInitializedEmbedding(false),
   fInitializedNewFile(false),
   fWrappedAroundTree(false),
-  fChain(0),
-  fExternalEvent(0)
+  fChain(nullptr),
+  fExternalEvent(nullptr),
+  fExternalHeader(nullptr),
+  fPythiaHeader(nullptr),
+  fPythiaTrials(0.),
+  fPythiaXSection(0.),
+  fPythiaPtHard(0.),
+  fHistManager(),
+  fOutput(nullptr)
 {
   if (fgInstance != 0) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -86,12 +107,15 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
  */
 AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const char *name) :
   AliAnalysisTaskSE(name),
+  fCreateHisto(true),
   fTreeName("aodTree"),
   fAnchorRun(169838),
   fPtHardBin(-1),
+  fNPtHardBins(0),
   fRandomEventNumberAccess(kFALSE),
-  fRandomFileAccess(kFALSE),
+  fRandomFileAccess(kTRUE),
   fFilePattern(""),
+  fInputFilename(""),
   fFileListFilename(""),
   fFilenameIndex(-1),
   fFilenames(),
@@ -105,11 +129,19 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fOffset(0),
   fMaxNumberOfFiles(0),
   fFileNumber(0),
+  fInitializedConfiguration(false),
   fInitializedEmbedding(false),
   fInitializedNewFile(false),
   fWrappedAroundTree(false),
-  fChain(0),
-  fExternalEvent(0)
+  fChain(nullptr),
+  fExternalEvent(nullptr),
+  fExternalHeader(nullptr),
+  fPythiaHeader(nullptr),
+  fPythiaTrials(0.),
+  fPythiaXSection(0.),
+  fPythiaPtHard(0.),
+  fHistManager(name),
+  fOutput(nullptr)
 {
   if (fgInstance != 0) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -117,6 +149,10 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   }
 
   fgInstance = this;
+
+  if (fCreateHisto) {
+    DefineOutput(1, AliEmcalList::Class());
+  }
 }
 
 /**
@@ -132,6 +168,22 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
     fExternalFile->Close();
     delete fExternalFile;
   }
+}
+
+/**
+ * Initialize the Embedding Helper task. *Must* be called after configuring the task,
+ * either during the run macro or wagon configuration.
+ */
+bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize()
+{
+  // Get file list
+  bool result = GetFilenames();
+
+  if (result) {
+    fInitializedConfiguration = true;
+  }
+
+  return result;
 }
 
 /**
@@ -157,14 +209,27 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
  * NOTE: Exercise care if you set both the file pattern and the filename! Doing so will probably cause your
  * file to be overwritten!
  */
-void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
+bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 {
+  // Determine the pattern filename if not yet set
+  if (fInputFilename == "") {
+    if (fTreeName == "aodTree") {
+      fInputFilename = "AliAOD.root";
+    }
+    else if (fTreeName == "esdTree") {
+      fInputFilename = "AliESDs.root";
+    }
+    else {
+      AliFatal(TString::Format("Requested default (pattern) input filename, but could not determine file type from tree name \"%s\". Please check the tree name and set the pattern input filename", fTreeName.Data()));
+    }
+  }
+
   // Retrieve filenames if we don't have them yet.
   if (fFilenames.size() == 0)
   {
     // Handle if fPtHardBin or fAnchorRun are set
     // This will require formatting the file pattern in the proper way to support these substitutions
-    if (fPtHardBin != -1) {
+    if (fPtHardBin != -1 && fFilePattern != "") {
       if (fAnchorRun > 0) {
         fFilePattern = TString::Format(fFilePattern, fAnchorRun, fPtHardBin);
       }
@@ -180,32 +245,52 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
         TGrid::Connect("alien://");
       }
       if (!gGrid) {
-        AliFatal(Form("Cannot access AliEn to retrieve file list with pattern %s!", fFilePattern.Data()));
+        AliFatal(TString::Format("Cannot access AliEn to retrieve file list with pattern %s!", fFilePattern.Data()));
       }
     }
 
     // Retrieve AliEn filenames directly from AliEn
+    bool usedFilePattern = false;
     if (fFilePattern.Contains("alien://")) {
-      AliDebug(2,Form("Trying to retrieve file list from AliEn with pattern file %s...", fFilePattern.Data()));
+      usedFilePattern = true;
+      AliDebug(2, TString::Format("Trying to retrieve file list from AliEn with pattern file %s...", fFilePattern.Data()));
 
       // Create a temporary filename based on a UUID to make sure that it doesn't overwrite any files
       if (fFileListFilename == "") {
         fFileListFilename += GenerateUniqueFileListFilename();
       }
 
-      // Retrieve filenames from alien using alien_find
-      TString command = "alien_find";
-      command += fFilePattern;
-      command += " > ";
-      command += fFileListFilename;
+      // The query command cannot handle "alien://" in the file pattern, so we need to remove it for the command
+      TString filePattern = fFilePattern;
+      filePattern.ReplaceAll("alien://", "");
 
-      // Execute the alien_find command to get the filenames
-      AliDebug(2,Form("Trying to retrieve file list from AliEn with alien_find command \"%s\"", command.Data()));
-      gSystem->Exec(command.Data());
+      // Execute the grid query to get the filenames
+      AliDebug(2, TString::Format("Trying to retrieve file list from AliEn with pattern \"%s\" and input filename \"%s\"", filePattern.Data(), fInputFilename.Data()));
+      auto result = gGrid->Query(filePattern.Data(), fInputFilename.Data());
+
+      if (result) {
+        // Loop over the result to store it in the fileList file
+        std::ofstream outFile(fFileListFilename);
+        for (int i = 0; i < result->GetEntries(); i++)
+        {
+          // "turl" corresponds to the full AliEn url
+          outFile << result->GetKey(i, "turl") << "\n";
+        }
+        outFile.close();
+      }
+      else {
+        AliErrorStream() << "Failed to run grid query\n";
+        return false;
+      }
     }
 
     // Handle a filelist on AliEn
     if (fFileListFilename.Contains("alien://")) {
+      // Check if we already used the file pattern
+      if (usedFilePattern) {
+        AliErrorStream() << "You set both the file pattern and the file list filename! The file list filename will override the pattern! Pattern: \"" << fFilePattern << "\", filename: \"" << fFileListFilename << "\"\nPlease check that this is the desired behavior!\n";
+      }
+
       // Determine the local filename and copy file to local directory
       std::string alienFilename = fFileListFilename.Data();
       fFileListFilename = gSystem->BaseName(alienFilename.c_str());
@@ -221,10 +306,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
     std::copy(std::istream_iterator<std::string>(inputFile),
         std::istream_iterator<std::string>(),
         std::back_inserter(fFilenames));
+
+    inputFile.close();
   }
 
   if (fFilenames.size() == 0) {
-    AliFatal(Form("Filenames from pattern \"%s\" and file list \"%s\" yielded an empty list!", fFilePattern.Data(), fFileListFilename.Data()));
+    AliFatal(TString::Format("Filenames from pattern \"%s\" and file list \"%s\" yielded an empty list!", fFilePattern.Data(), fFileListFilename.Data()));
   }
 
   // Add "#" to files in there are any zip files
@@ -232,6 +319,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   for (auto filename : fFilenames)
   {
     if (filename.find(".zip") != std::string::npos && filename.find("#") == std::string::npos) {
+      filename += "#";
+      filename += fInputFilename;
       if (fTreeName == "aodTree") {
         filename += "#AliAOD.root";
       }
@@ -240,28 +329,13 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       }
       else {
         AliError(TString::Format("Filename %s contains \".zip\" and not \"#\", but tree name %s is not recognized. Please check the file list to ensure that the proper path is set.", filename.c_str(), fTreeName.Data()));
+        return false;
       }
     }
   }
 
-  // Determine the next filename index
-  // This determines which file is added first to the TChain, thus determining the order of processing
-  // Random file access. Only do this if the user has no set the filename index and request random file access
-  if (fFilenameIndex == -1 && fRandomFileAccess) {
-    // - 1 ensures that we it doesn't overflow
-    fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
-    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex));
-  }
-  // If not random file access, then start from the beginning
-  if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
-    // Skip notifying on -1 since it will likely be set there due to constructor.
-    if (fFilenameIndex != -1) {
-      AliWarning(Form("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
-    }
-    fFilenameIndex = 0;
-  }
-
-  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
+  AliInfoStream() << "Found " << fFilenames.size() << " files to embed\n";
+  return true;
 }
 
 /**
@@ -283,6 +357,31 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename(
   tempStr += ".txt";
 
   return tempStr;
+}
+
+/**
+ * Determine the first file to embed and store the index. The index will either be
+ * random or the first file in the list, depending on the task configuration.
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
+{
+  // This determines which file is added first to the TChain, thus determining the order of processing
+  // Random file access. Only do this if the user has no set the filename index and request random file access
+  if (fFilenameIndex == -1 && fRandomFileAccess) {
+    // - 1 ensures that we it doesn't overflow
+    fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
+    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex));
+  }
+  // If not random file access, then start from the beginning
+  if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
+    // Skip notifying on -1 since it will likely be set there due to constructor.
+    if (fFilenameIndex != -1) {
+      AliWarning(TString::Format("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
+    }
+    fFilenameIndex = 0;
+  }
+
+  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
 }
 
 /**
@@ -343,6 +442,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
     }
     AliDebug(4, TString::Format("Loading entry %i between %i-%i, starting with offset %i from the lower bound of %i", fCurrentEntry, fLowerEntry, fUpperEntry, fOffset, fLowerEntry));
 
+    // Set relevant event properties
+    SetEmbeddedEventProperties();
+
     // Increment current entry
     fCurrentEntry++;
     
@@ -351,11 +453,60 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
     if (attempts == 1000)
       AliWarning("After 1000 attempts no event has been accepted by the event selection (trigger, centrality...)!");
 
+    // Record event properties
+    if (fCreateHisto) {
+      RecordEmbeddedEventProperties();
+    }
+
   } while (!IsEventSelected());
+
+  if (fCreateHisto) {
+    fHistManager.FillTH1("fHistEventCount", "Accepted");
+    fHistManager.FillTH1("fHistEmbeddingEventsRejected", attempts);
+  }
 
   if (!fChain) return kFALSE;
 
   return kTRUE;
+}
+
+void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
+{
+  AliDebug(4, "Set event properties");
+  fExternalHeader = fExternalEvent->GetHeader();
+
+  // Handle pythia header if AOD
+  AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(fExternalEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+  if (aodMCH) {
+    for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+      if (fPythiaHeader) break;
+    }
+  }
+
+  if (fPythiaHeader)
+  {
+    fPythiaTrials = fPythiaHeader->Trials();
+    fPythiaXSection = fPythiaHeader->GetXsection();
+    fPythiaPtHard = fPythiaHeader->GetPtHard();
+
+    AliDebugStream(4) << "Pythia header is defined!\n";
+    AliDebugStream(4) << "fPythiaXSection: " << fPythiaXSection << "\n";
+  }
+}
+
+/**
+ * Record event properties
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::RecordEmbeddedEventProperties()
+{
+  // Fill trials, xsec, pt hard
+  fHistManager.FillTH1("fHistTrials", fPtHardBin, fPythiaTrials);
+  fHistManager.FillProfile("fHistXsection", fPtHardBin, fPythiaXSection);
+  fHistManager.FillTH1("fHistPtHard", fPythiaPtHard);
+
+  // Keep count of the total number of events
+  fHistManager.FillTH1("fHistEventCount", "Total");
 }
 
 /**
@@ -365,23 +516,6 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
 {
-  // AOD Event selection.
-  // TODO: Can we make centrality make sense here?
-  /*if (!fEsdTreeMode && fAODHeader) {
-    AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
-
-    // Centrality selection
-    if (fMinCentrality >= 0) {
-      AliCentrality *cent = aodHeader->GetCentralityP();
-      Float_t centVal = cent->GetCentralityPercentile("V0M");
-      if (centVal < fMinCentrality || centVal >= fMaxCentrality) {
-	AliDebug(2,Form("Event rejected due to centrality selection. Event centrality: %f, centrality range selection: %f to %f",
-			centVal, fMinCentrality, fMaxCentrality));
-	return kFALSE;
-      }
-    }
-  }*/
-
   // Trigger selection
   if (fTriggerMask != AliVEvent::kAny) {
     UInt_t res = 0;
@@ -468,6 +602,55 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
 void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
   SetupEmbedding();
+
+  if (!fCreateHisto) {
+    return;
+  }
+
+  // Create output list
+  OpenFile(1);
+  fOutput = new AliEmcalList();
+  fOutput->SetOwner();
+
+  // Create histograms
+  TString histName;
+  TString histTitle;
+
+  // Cross section
+  histName = "fHistXsection";
+  histTitle = "Pythia Cross Section;p_{T} hard bin; XSection";
+  fHistManager.CreateTProfile(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+
+  // Trials
+  histName = "fHistTrials";
+  histTitle = "Number of Pythia Trials;p_{T} hard bin;Trials";
+  fHistManager.CreateTH1(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+
+  // Pt hard spectra
+  histName = "fHistPtHard";
+  histTitle = "p_{T} Hard Spectra;p_{T} hard;Counts";
+  fHistManager.CreateTH1(histName, histTitle, 500, 0, 1000);
+
+  // Count of accepted and rejected events
+  histName = "fHistEventCount";
+  histTitle = "fHistEventCount;Result;Count";
+  auto histEventCount = fHistManager.CreateTH1(histName, histTitle, 2, 0, 2);
+  histEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
+  histEventCount->GetXaxis()->SetBinLabel(2,"Total");
+
+  // Rejected events in embedded event selection
+  histName = "fHistEmbeddingEventsRejected";
+  histTitle = "Number of embedded events rejected by event selection before success;Number of rejected events;Counts";
+  fHistManager.CreateTH1(histName, histTitle, 200, 0, 200);
+
+  // Add all histograms to output list
+  TIter next(fHistManager.GetListOfHistograms());
+  TObject* obj = 0;
+  while ((obj = next())) {
+    fOutput->Add(obj);
+  }
+
+  PostData(1, fOutput);
 }
 
 /**
@@ -478,6 +661,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 {
+  // Determine which file to start with
+  DetermineFirstFileToEmbed();
+
   // Setup TChain
   fChain = new TChain(fTreeName);
 
@@ -551,8 +737,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::SetupEmbedding()
 {
-  // Get file list
-  GetFilenames();
+  if (fInitializedConfiguration == false) {
+    AliFatal("The configuration is not initialized. Check that Initialize() was called!");
+  }
 
   // Setup TChain
   Bool_t res = SetupInputFiles();
@@ -642,6 +829,10 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
     AliError("Unable to get the event to embed. Nothing will be embedded.");
     return;
   }
+
+  if (fCreateHisto && fOutput) {
+    PostData(1, fOutput);
+  }
 }
 
 /**
@@ -695,16 +886,98 @@ AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::AddTa
   // Create containers for input/output
   AliAnalysisDataContainer* cInput = mgr->GetCommonInputContainer();
 
-  /*TString outputContainerName(name);
+  TString outputContainerName(name);
   outputContainerName += "_histos";
 
   AliAnalysisDataContainer * cOutput = mgr->CreateContainer(outputContainerName.Data(),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s", AliAnalysisManager::GetCommonFileName()));*/
+      Form("%s", AliAnalysisManager::GetCommonFileName()));
 
   mgr->ConnectInput(embeddingHelper, 0, cInput);
-  //mgr->ConnectOutput(embeddingHelper, 1, cOutput);
+  mgr->ConnectOutput(embeddingHelper, 1, cOutput);
 
   return embeddingHelper;
+}
+
+/**
+ * Prints information about the correction task.
+ *
+ * @return std::string containing information about the task.
+ */
+std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) const
+{
+  std::stringstream tempSS;
+
+  // Show the correction components
+  tempSS << std::boolalpha;
+  tempSS << GetName() << ": Embedding helper configuration:\n";
+  tempSS << "Create histos: " << fCreateHisto << "\n";
+  tempSS << "Pt Hard Bin: " << fPtHardBin << "\n";
+  tempSS << "Anchor Run: " << fAnchorRun << "\n";
+  tempSS << "File pattern: \"" << fFilePattern << "\"\n";
+  tempSS << "Input filename: \"" << fInputFilename << "\"\n";
+  tempSS << "File list filename: \"" << fFileListFilename << "\"\n";
+  tempSS << "Tree name: " << fTreeName << "\n";
+  tempSS << "Random event number access: " << fRandomEventNumberAccess << "\n";
+  tempSS << "Random file access: " << fRandomFileAccess << "\n";
+  tempSS << "Starting file index: " << fFilenameIndex << "\n";
+  tempSS << "Number of files to embed: " << fFilenames.size() << "\n";
+
+  std::bitset<32> triggerMask(fTriggerMask);
+  tempSS << "\nEmbedded event settings:\n";
+  tempSS << "Trigger mask (binary): " << triggerMask << "\n";
+  tempSS << "Z vertex cut: " << fZVertexCut << "\n";
+  tempSS << "Max vertex distance: " << fMaxVertexDist << "\n";
+
+  if (includeFileList) {
+    tempSS << "\nFiles to embed:\n";
+    for (auto filename : fFilenames) {
+      tempSS << "\t" << filename << "\n";
+    }
+  }
+
+  return tempSS.str();
+}
+
+/**
+ * Print correction task information on an output stream using the string representation provided by
+ * AliAnalysisTaskEmcalEmbeddingHelper::toString(). Used by operator<<
+ *
+ * @param in output stream stream
+ * @return reference to the output stream
+ */
+std::ostream & AliAnalysisTaskEmcalEmbeddingHelper::Print(std::ostream & in) const {
+  in << toString();
+  return in;
+}
+
+/**
+ * Implementation of the output stream operator for AliAnalysisTaskEmcalEmbeddingHelper. Printing
+ * basic correction task information provided by function toString()
+ *
+ * @param in output stream
+ * @param myTask Task which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream & operator<<(std::ostream & in, const AliAnalysisTaskEmcalEmbeddingHelper & myTask)
+{
+  std::ostream & result = myTask.Print(in);
+  return result;
+}
+
+/**
+ * Print basic correction task information using the string representation provided by
+ * AliAnalysisTaskEmcalEmbeddingHelper::toString()
+ *
+ * @param opt If "FILELIST" is passed, then the list of files to embed is also printed
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::Print(Option_t* opt) const
+{
+  std::string temp(opt);
+  bool includeFileList = false;
+  if (temp == "FILELIST") {
+    includeFileList = true;
+  }
+  Printf("%s", toString(includeFileList).c_str());
 }

@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaInsideClusterInvariantMass
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Select clusters with large shower shape, split them and tag them as pi0/eta via invariant mass
 ///
 /// Split clusters with large shower shape and calculate invariant mass

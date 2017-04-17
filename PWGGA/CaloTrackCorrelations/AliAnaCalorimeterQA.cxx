@@ -52,9 +52,10 @@ AliAnaCaloTrackCorrBaseClass(),
 fFillAllCellTimeHisto(kTRUE),
 fFillAllPosHisto(kFALSE),              fFillAllPosHisto2(kFALSE),
 fFillAllTH3(kFALSE),                   
-fFillAllTMHisto(kTRUE),                
+fFillAllTMHisto(kTRUE),                fFillClusterMaxCellHisto(kFALSE),   
 fFillAllPi0Histo(kTRUE),               fFillInvMassOpenAngle(kFALSE),               
 fFillPi0PairDiffTime(kFALSE),          fFillInvMassInEMCALWithPHOSDCalAcc(kFALSE), 
+fFillAllCellHistograms(kTRUE),         fFillAllCellAbsIdHistograms(kTRUE),
 fFillEBinAcceptanceHisto(kFALSE),
 fCorrelate(kTRUE),                     fStudyBadClusters(kFALSE),               
 fStudyClustersAsymmetry(kFALSE),       fStudyExotic(kFALSE),
@@ -76,13 +77,14 @@ fInvMassMinECut(0),                    fInvMassMaxECut(0),
 fInvMassMinM02Cut(0),                  fInvMassMaxM02Cut(0),                    
 fInvMassMaxOpenAngle(0),               fInvMassMaxTimeDifference(0),
 
-// Exotic
-fExoNECrossCuts(0),                    fExoECrossCuts(),
-fExoNDTimeCuts(0),                     fExoDTimeCuts(),    
+//// Exotic
+//fExoNECrossCuts(0),                    fExoECrossCuts(),
+//fExoNDTimeCuts(0),                     fExoDTimeCuts(),    
 
 fClusterMomentum(),                    fClusterMomentum2(),
 fPrimaryMomentum(),
 fConstantTimeShift(0),
+
 // Histograms
 fhE(0),                                fhPt(0),                                
 fhPhi(0),                              fhEta(0),                               
@@ -116,12 +118,15 @@ fhColRowExoticHighE1CellPosTime(0),    fhColRowExoticHighE1CellNegTime(0),     f
 fhEnergyTMEtaResidualExotic(0),        fhEnergyTMPhiResidualExotic(0),
 fhColRowExoticHighEPosTime(0),         fhColRowExoticHighENegTime(0),          fhColRowExoticHighENulTime(0),
 fhColRowHighEPosTime(0),               fhColRowHighENegTime(0),                fhColRowHighENulTime(0),
+fhEnergyTMEtaResidualTCardCorrNoSelection1Cell(0),  fhEnergyTMPhiResidualTCardCorrNoSelection1Cell(0),
+fhEnergyTMEtaResidualTCardCorrNoSelectionExotic(0), fhEnergyTMPhiResidualTCardCorrNoSelectionExotic(0),
+
 
 // bad clusters
 fhBadClusterEnergy(0),                 fhBadClusterTimeEnergy(0),              fhBadClusterEtaPhi(0),            
 fhBadClusterPairDiffTimeE(0),          fhBadCellTimeSpreadRespectToCellMax(0), 
 fhBadClusterMaxCellCloseCellRatio(0),  fhBadClusterMaxCellCloseCellDiff(0),    fhBadClusterMaxCellDiff(0),
-fhBadClusterMaxCellDiffAverageTime(0), fhBadClusterMaxCellDiffWeightedTime(0),
+//fhBadClusterMaxCellDiffAverageTime(0), fhBadClusterMaxCellDiffWeightedTime(0),
 fhBadClusterMaxCellECross(0),
 fhBadClusterLambda0(0),                fhBadClusterLambda1(0),
 fhBadClusterDeltaIEtaDeltaIPhiE0(0),   fhBadClusterDeltaIEtaDeltaIPhiE2(0),          
@@ -187,7 +192,7 @@ fhEMaxCellClusterRatio(0),             fhEMaxCellClusterLogRatio(0),
 fhECellTotalRatio(0),                  fhECellTotalLogRatio(0),
 fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0),
 
-fhExoL0ECross(0),                      fhExoL1ECross(0),
+//fhExoL0ECross(0),                      fhExoL1ECross(0),
 
 // MC and reco
 fhRecoMCE(),                           fhRecoMCPhi(),                          fhRecoMCEta(), 
@@ -245,21 +250,21 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
   fhDeltaIAMC[0]            = 0 ;         fhDeltaIAMC[1]            = 0;
   fhDeltaIAMC[2]            = 0 ;         fhDeltaIAMC[3]            = 0;
   
-  // Exotic
-  for (Int_t ie = 0; ie < 10 ; ie++) 
-  {
-    fhExoDTime[ie] = 0;
-    for (Int_t idt = 0; idt < 5 ; idt++) 
-    {
-      fhExoNCell    [ie][idt] = 0;
-      fhExoL0       [ie][idt] = 0;
-      fhExoL1       [ie][idt] = 0;
-      fhExoECross   [ie][idt] = 0;
-      fhExoTime     [ie][idt] = 0;
-      fhExoL0NCell  [ie][idt] = 0;
-      fhExoL1NCell  [ie][idt] = 0;
-    } 
-  }
+//  // Exotic
+//  for (Int_t ie = 0; ie < 10 ; ie++) 
+//  {
+//    fhExoDTime[ie] = 0;
+//    for (Int_t idt = 0; idt < 5 ; idt++) 
+//    {
+//      fhExoNCell    [ie][idt] = 0;
+//      fhExoL0       [ie][idt] = 0;
+//      fhExoL1       [ie][idt] = 0;
+//      fhExoECross   [ie][idt] = 0;
+//      fhExoTime     [ie][idt] = 0;
+//      fhExoL0NCell  [ie][idt] = 0;
+//      fhExoL1NCell  [ie][idt] = 0;
+//    } 
+//  }
   
   // MC
   
@@ -307,14 +312,23 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     fhColRowExotic2ndCellDiffHighE[tm] = 0 ;
     fhColRowExotic2ndCellSameLowE [tm] = 0 ;
     fhColRowExotic2ndCellSameHighE[tm] = 0 ;
+
+    fhEnergyTimeTCardCorrNoSelection1Cell [tm] = 0;
+    fhEnergyTimeTCardCorrNoSelectionExotic[tm] = 0;
     
     fhColRowTCardCorrNoSelectionExoticLowE [tm] = 0 ;       
     fhColRowTCardCorrNoSelectionExoticHighE[tm] = 0 ;       
+
     fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE [tm] = 0 ;
     fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm] = 0 ;
     fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE [tm] = 0 ;
     fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm] = 0 ;
 
+    fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE [tm] = 0 ;
+    fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm] = 0 ;
+    fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE [tm] = 0 ;
+    fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm] = 0 ;
+    
     fhColRowTCardCorrNoSelectionLowE [tm] = 0 ;       
     fhColRowTCardCorrNoSelectionHighE[tm] = 0 ;  
     
@@ -337,6 +351,13 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm] = 0 ;  
     fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm] = 0 ;
 
+    fhE2ndSameRatNLM1TCardCorrNoSelection[tm] = 0 ;  
+    fhE2ndSameRatNLM2TCardCorrNoSelection[tm] = 0 ;  
+    fhE2ndSameRatNLM3TCardCorrNoSelection[tm] = 0 ;      
+    fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm] = 0 ;  
+    fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm] = 0 ;  
+    fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm] = 0 ;
+    
     fhECellClusRatNLM1TCardCorrNoSelection[tm] = 0 ;  
     fhECellClusRatNLM2TCardCorrNoSelection[tm] = 0 ;  
     fhECellClusRatNLM3TCardCorrNoSelection[tm] = 0 ;         
@@ -346,6 +367,17 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
     fhECellWeightNLM1TCardCorrNoSelection [tm] = 0 ;  
     fhECellWeightNLM2TCardCorrNoSelection [tm] = 0 ;  
     fhECellWeightNLM3TCardCorrNoSelection [tm] = 0 ;      
+
+    fhECellSameClusRatNLM1TCardCorrNoSelection[tm] = 0 ;  
+    fhECellSameClusRatNLM2TCardCorrNoSelection[tm] = 0 ;  
+    fhECellSameClusRatNLM3TCardCorrNoSelection[tm] = 0 ;         
+    fhLogECellSameNLM1TCardCorrNoSelection[tm] = 0 ;  
+    fhLogECellSameNLM2TCardCorrNoSelection[tm] = 0 ;  
+    fhLogECellSameNLM3TCardCorrNoSelection[tm] = 0 ;     
+    fhECellSameWeightNLM1TCardCorrNoSelection [tm] = 0 ;  
+    fhECellSameWeightNLM2TCardCorrNoSelection [tm] = 0 ;  
+    fhECellSameWeightNLM3TCardCorrNoSelection [tm] = 0 ;      
+
     
     fhNCellsTCardCorrNoSelection [tm] = 0 ;        
     fhNCellsTCardCorrWithWeightNoSelection     [tm] = 0 ;  
@@ -500,6 +532,8 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
   {
     fhTMPhiResidualExoticity[i]  = 0;
     fhTMEtaResidualExoticity[i]  = 0;
+    fhTMPhiResidualExoticityLooseCut[i]  = 0;
+    fhTMEtaResidualExoticityLooseCut[i]  = 0;
 //  fhTMPhiResidualExoticityAllSameTCard[i]  = 0;
 //  fhTMEtaResidualExoticityAllSameTCard[i]  = 0;
   }
@@ -533,9 +567,13 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
   
   fhBadClusterEnergy       ->Fill(energy,                  GetEventWeight());
   fhBadClusterTimeEnergy   ->Fill(energy, tof            , GetEventWeight());
-  fhBadClusterMaxCellDiff  ->Fill(energy, maxCellFraction, GetEventWeight());
-  fhBadClusterMaxCellECross->Fill(energy, eCrossFrac     , GetEventWeight());
-
+  
+  if(fFillClusterMaxCellHisto)
+  {
+    fhBadClusterMaxCellDiff  ->Fill(energy, maxCellFraction, GetEventWeight());
+    fhBadClusterMaxCellECross->Fill(energy, eCrossFrac     , GetEventWeight());
+  }
+  
   Float_t phi = fClusterMomentum.Phi();
   if(phi < 0) phi += TMath::TwoPi();
   
@@ -546,58 +584,64 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
   
   if(fStudyClustersAsymmetry) ClusterAsymmetryHistograms(clus,absIdMax,kFALSE);
   
-  // Clusters in event time difference bad minus good
-  
-  for(Int_t iclus2 = 0; iclus2 < caloClusters->GetEntriesFast(); iclus2++ )
+  if(fFillPi0PairDiffTime)
   {
-    AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(iclus2);
+    // Clusters in event time difference bad minus good
     
-    if(clus->GetID() == clus2->GetID()) continue;
-    
-    Float_t maxCellFraction2 = 0.;
-    Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(cells, clus2,maxCellFraction2);
-    
-    if(IsGoodCluster(absIdMax2, clus->GetM02(), clus->GetNCells(), cells) &&  clus2->GetM02() > 0.1 )
+    for(Int_t iclus2 = 0; iclus2 < caloClusters->GetEntriesFast(); iclus2++ )
     {
-      Double_t tof2   = clus2->GetTOF()*1.e9;     
-      if(tof2>400) tof2-=fConstantTimeShift;
+      AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(iclus2);
       
-      fhBadClusterPairDiffTimeE  ->Fill(clus->E(), (tof-tof2), GetEventWeight());
-    }
-  } // loop
-  
-  // Max cell compared to other cells in cluster
-  if(fFillAllCellTimeHisto) 
-  {
-    // Get some time averages
-    Double_t timeAverages[2] = {0.,0.};
-    CalculateAverageTime(clus, cells, timeAverages);
-
-    fhBadClusterMaxCellDiffAverageTime ->Fill(clus->E(), tmax-timeAverages[0], GetEventWeight());
-    fhBadClusterMaxCellDiffWeightedTime->Fill(clus->E(), tmax-timeAverages[1], GetEventWeight());
-  }           
-  
-  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) 
-  {
-    Int_t absId  = clus->GetCellsAbsId()[ipos]; 
-    if(absId!=absIdMax && cells->GetCellAmplitude(absIdMax) > 0.01)
-    {
-      Float_t frac = cells->GetCellAmplitude(absId)/cells->GetCellAmplitude(absIdMax);
+      if(clus->GetID() == clus2->GetID()) continue;
       
-      fhBadClusterMaxCellCloseCellRatio->Fill(clus->E(), frac, GetEventWeight());
-      fhBadClusterMaxCellCloseCellDiff ->Fill(clus->E(), cells->GetCellAmplitude(absIdMax)-cells->GetCellAmplitude(absId), GetEventWeight());
+      Float_t maxCellFraction2 = 0.;
+      Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(cells, clus2,maxCellFraction2);
       
-      if(fFillAllCellTimeHisto) 
+      if(IsGoodCluster(absIdMax2, clus->GetM02(), clus->GetNCells(), cells) &&  clus2->GetM02() > 0.1 )
       {
-        Double_t time  = cells->GetCellTime(absId);
-        GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+        Double_t tof2   = clus2->GetTOF()*1.e9;     
+        if(tof2>400) tof2-=fConstantTimeShift;
         
-        Float_t diff = (tmax-(time*1e9-fConstantTimeShift));
-        fhBadCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff, GetEventWeight());
+        fhBadClusterPairDiffTimeE  ->Fill(clus->E(), (tof-tof2), GetEventWeight());
+      }
+    } // loop
+  }
+  
+//  // Max cell compared to other cells in cluster
+//  if(fFillAllCellTimeHisto && fFillClusterMaxCellHisto) 
+//  {
+//    // Get some time averages
+//    Double_t timeAverages[2] = {0.,0.};
+//    CalculateAverageTime(clus, cells, timeAverages);
+//
+//    fhBadClusterMaxCellDiffAverageTime ->Fill(clus->E(), tmax-timeAverages[0], GetEventWeight());
+//    fhBadClusterMaxCellDiffWeightedTime->Fill(clus->E(), tmax-timeAverages[1], GetEventWeight());
+//  }           
+  
+  if(fFillClusterMaxCellHisto)
+  {
+    for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) 
+    {
+      Int_t absId  = clus->GetCellsAbsId()[ipos]; 
+      if(absId!=absIdMax && cells->GetCellAmplitude(absIdMax) > 0.01)
+      {
+        Float_t frac = cells->GetCellAmplitude(absId)/cells->GetCellAmplitude(absIdMax);
         
-      } 
-    } // Not max
-  } // loop
+        fhBadClusterMaxCellCloseCellRatio->Fill(clus->E(), frac, GetEventWeight());
+        fhBadClusterMaxCellCloseCellDiff ->Fill(clus->E(), cells->GetCellAmplitude(absIdMax)-cells->GetCellAmplitude(absId), GetEventWeight());
+        
+        if(fFillAllCellTimeHisto) 
+        {
+          Double_t time  = cells->GetCellTime(absId);
+          GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+          
+          Float_t diff = (tmax-(time*1e9-fConstantTimeShift));
+          fhBadCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff, GetEventWeight());
+          
+        } 
+      } // Not max
+    } // loop
+  }
 }
 
 //______________________________________________________________________
@@ -672,6 +716,8 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
 //____________________________________________________________
 void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 {
+  if(!fFillAllCellHistograms) return;
+  
   Int_t ncells = cells->GetNumberOfCells();
   if( ncells > 0 ) fhNCells->Fill(ncells, GetEventWeight()) ; // Not ok for PHOS with CPV
 
@@ -762,10 +808,15 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       if(amp>=10)binWidthCorrection=1.0/4;
       if(amp>=20)binWidthCorrection=1.0/10;
       fhAmplitude  ->Fill(amp,          GetEventWeight());
-      fhAmpId      ->Fill(amp, id     , GetEventWeight()*binWidthCorrection);
       fhAmpMod     ->Fill(amp, nModule, GetEventWeight());
       fhAmpWeirdMod->Fill(amp, nModule, GetEventWeight());
-      if(!highG) fhAmpIdLowGain->Fill(amp, id, GetEventWeight());
+     
+      if(fFillAllCellAbsIdHistograms)
+      {
+        fhAmpId->Fill(amp, id     , GetEventWeight()*binWidthCorrection);
+        
+        if(!highG) fhAmpIdLowGain->Fill(amp, id, GetEventWeight());
+      }
         
       if(fFillEBinAcceptanceHisto)
       {
@@ -810,11 +861,17 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 //          GetReader()->GetVertex(v);          
 //          if(amp > 0.5) fhTimeVz   ->Fill(TMath::Abs(v[2]), time, GetEventWeight());
           
-          fhTime         ->Fill(time,             GetEventWeight());
-          fhTimeId       ->Fill(time,       id  , GetEventWeight());
-          fhTimeAmp      ->Fill(amp ,       time, GetEventWeight());
-          if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)fhTimeL1UnCorrId ->Fill(timeL1UnCorr, id  , GetEventWeight());
-
+          fhTime    ->Fill(time,       GetEventWeight());
+          fhTimeAmp ->Fill(amp , time, GetEventWeight());
+          
+          if(fFillAllCellAbsIdHistograms) 
+          {
+            fhTimeId ->Fill(time, id  , GetEventWeight());
+            
+            if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)
+              fhTimeL1UnCorrId ->Fill(timeL1UnCorr, id  , GetEventWeight());
+          }
+          
           Int_t bc = (GetReader()->GetInputEvent()->GetBunchCrossNumber())%4;
           fhTimePerSMPerBC[bc]->Fill(time, nModule, GetEventWeight());
           
@@ -826,7 +883,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           
           if(!highG)
           {
-            fhTimeIdLowGain ->Fill(time, id  , GetEventWeight());
+            if(fFillAllCellAbsIdHistograms) 
+              fhTimeIdLowGain ->Fill(time, id  , GetEventWeight());
             fhTimeAmpLowGain->Fill(amp , time, GetEventWeight());
           }
         }
@@ -1066,6 +1124,12 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
 
   Float_t energy = clus->E();
+  Int_t   ebin = -1;
+  for(Int_t ie = 0; ie < fNEBinCuts; ie++)
+  {
+    if( energy >= fEBinCuts[ie] && energy < fEBinCuts[ie+1] ) ebin = ie;
+  }
+  
   Int_t   ncells = clus->GetNCells();
   Double_t time  = clus->GetTOF()*1.e9;
   time-=fConstantTimeShift;
@@ -1074,53 +1138,61 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   
   //if(clus->GetNCells()==1 && clus->E() > 4)printf("TCard E %f, NCells %d\n",energy,clus->GetNCells());
 
-  if ( ncells == 1 )
+  if(fStudyExotic)
   {
-    if(energy >= 5 && energy < 8)
-      fhColRowExoticLowE1Cell [matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
-    else if(energy >= 8)
+    if ( ncells == 1 )
     {
-      fhColRowExoticHighE1Cell[matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+      if(energy >= 5 && energy < 8)
+        fhColRowExoticLowE1Cell [matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+      else if(energy >= 8)
+      {
+        fhColRowExoticHighE1Cell[matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+        
+        if     ( time >  5) fhColRowExoticHighE1CellPosTime->Fill(icolAbs,irowAbs,GetEventWeight());
+        else if( time < -5) fhColRowExoticHighE1CellNegTime->Fill(icolAbs,irowAbs,GetEventWeight());
+        else                fhColRowExoticHighE1CellNulTime->Fill(icolAbs,irowAbs,GetEventWeight());
+      }
       
-      if     ( time >  5) fhColRowExoticHighE1CellPosTime->Fill(icolAbs,irowAbs,GetEventWeight());
-      else if( time < -5) fhColRowExoticHighE1CellNegTime->Fill(icolAbs,irowAbs,GetEventWeight());
-      else                fhColRowExoticHighE1CellNulTime->Fill(icolAbs,irowAbs,GetEventWeight());
+      fhEnergyTime1Cell[matched]->Fill(energy,time,GetEventWeight());
+      fhEnergyTMEtaResidual1Cell->Fill(energy,deta,GetEventWeight());
+      fhEnergyTMPhiResidual1Cell->Fill(energy,dphi,GetEventWeight());
     }
-    
-    fhEnergyTime1Cell[matched]->Fill(energy,time,GetEventWeight());
-    fhEnergyTMEtaResidual1Cell->Fill(energy,deta,GetEventWeight());
-    fhEnergyTMPhiResidual1Cell->Fill(energy,dphi,GetEventWeight());
-  }
-  else if(exoticity > 0.97)
-  {
-    if(energy >= 5 && energy < 8)
-      fhColRowExoticLowE [matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
-    else if(energy >= 8)
+    else if(exoticity > 0.97)
     {
-      fhColRowExoticHighE[matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
-    
-      if     ( time >  5) fhColRowExoticHighEPosTime->Fill(icolAbs,irowAbs,GetEventWeight());
-      else if( time < -5) fhColRowExoticHighENegTime->Fill(icolAbs,irowAbs,GetEventWeight());
-      else                fhColRowExoticHighENulTime->Fill(icolAbs,irowAbs,GetEventWeight());
-    }
-    
-    fhEnergyTimeExotic[matched]->Fill(energy,time,GetEventWeight());
-    fhEnergyTMEtaResidualExotic->Fill(energy,deta,GetEventWeight());
-    fhEnergyTMPhiResidualExotic->Fill(energy,dphi,GetEventWeight());
-
-    for (Int_t ipos = 0; ipos < ncells; ipos++) 
-    {
-      Int_t absId  = clus->GetCellsAbsId()[ipos];   
+      if(energy >= 5 && energy < 8)
+        fhColRowExoticLowE [matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+      else if(energy >= 8)
+      {
+        fhColRowExoticHighE[matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+        
+        if     ( time >  5) fhColRowExoticHighEPosTime->Fill(icolAbs,irowAbs,GetEventWeight());
+        else if( time < -5) fhColRowExoticHighENegTime->Fill(icolAbs,irowAbs,GetEventWeight());
+        else                fhColRowExoticHighENulTime->Fill(icolAbs,irowAbs,GetEventWeight());
+      }
       
-      Int_t rowDiff = -100, colDiff = -100;
-      Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
+      fhEnergyTimeExotic[matched]->Fill(energy,time,GetEventWeight());
+      fhEnergyTMEtaResidualExotic->Fill(energy,deta,GetEventWeight());
+      fhEnergyTMPhiResidualExotic->Fill(energy,dphi,GetEventWeight());
       
-      // Get the col and row of the secondary cluster cell
-      Int_t icol2 = -1, irow2 = -1, iRCU2 = -1, icolAbs2 = -1, irowAbs2 = -1;
-      GetModuleNumberCellIndexesAbsCaloMap(absId,GetCalorimeter(), icol2, irow2, iRCU2, icolAbs2, irowAbs2);
-      
-      if ( exoticity > 0.97 )
-      {      
+      for (Int_t ipos = 0; ipos < ncells; ipos++) 
+      {
+        Int_t absId  = clus->GetCellsAbsId()[ipos];   
+        
+        Float_t  eCell = cells->GetCellAmplitude(absId);        
+        GetCaloUtils()->RecalibrateCellAmplitude(eCell, GetCalorimeter(), absId);
+              
+        // consider cells with enough energy weight and not the reference one
+        Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
+        
+        if( absId == absIdMax || weight < 0.01 ) continue;
+        
+        Int_t rowDiff = -100, colDiff = -100;
+        Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
+        
+        // Get the col and row of the secondary cluster cell
+        Int_t icol2 = -1, irow2 = -1, iRCU2 = -1, icolAbs2 = -1, irowAbs2 = -1;
+        GetModuleNumberCellIndexesAbsCaloMap(absId,GetCalorimeter(), icol2, irow2, iRCU2, icolAbs2, irowAbs2);
+        
         if ( !sameTCard )
         {
           if(energy >= 5 && energy < 8)
@@ -1136,9 +1208,22 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
             fhColRowExotic2ndCellSameHighE[matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
         }
       }
+      
+    }
+    else if ( energy > 8 )
+    {
+      if     ( time >  5) fhColRowHighEPosTime->Fill(icolAbs,irowAbs,GetEventWeight());
+      else if( time < -5) fhColRowHighENegTime->Fill(icolAbs,irowAbs,GetEventWeight());
+      else                fhColRowHighENulTime->Fill(icolAbs,irowAbs,GetEventWeight());
+    }
+    
+    if(ebin > -1)
+    {
+      fhTMPhiResidualExoticityLooseCut[ebin]->Fill(exoticity,dphi);
+      fhTMEtaResidualExoticityLooseCut[ebin]->Fill(exoticity,deta);
     }
   }
-  else if ( energy > 8 )
+  else if ( energy > 8  && ncells > 1 && exoticity < 0.97)
   {
     if     ( time >  5) fhColRowHighEPosTime->Fill(icolAbs,irowAbs,GetEventWeight());
     else if( time < -5) fhColRowHighENegTime->Fill(icolAbs,irowAbs,GetEventWeight());
@@ -1156,12 +1241,28 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   // Region 0: center of SM ~0.18<|eta|<0.55
   if ( etaRegion !=0 ) return ;
   
+  if(fStudyExotic)
+  {
+    if ( ncells == 1 )
+    {
+      fhEnergyTimeTCardCorrNoSelection1Cell[matched]->Fill(energy,time,GetEventWeight());
+      fhEnergyTMEtaResidualTCardCorrNoSelection1Cell->Fill(energy,deta,GetEventWeight());
+      fhEnergyTMPhiResidualTCardCorrNoSelection1Cell->Fill(energy,dphi,GetEventWeight());
+    }
+    else if(exoticity > 0.97)
+    {
+      fhEnergyTimeTCardCorrNoSelectionExotic[matched]->Fill(energy,time,GetEventWeight());
+      fhEnergyTMEtaResidualTCardCorrNoSelectionExotic->Fill(energy,deta,GetEventWeight());
+      fhEnergyTMPhiResidualTCardCorrNoSelectionExotic->Fill(energy,dphi,GetEventWeight());
+    }
+  }
+  
   Float_t m02    = clus->GetM02();
   Float_t m20    = clus->GetM20();
-//Int_t   nlm    = GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells);
   Int_t   absIdList[ncells]; 
   Float_t maxEList [ncells];
   Int_t nlm  = GetCaloUtils()->GetNumberOfLocalMaxima(clus, cells, absIdList, maxEList) ; 
+//Int_t nlm  = GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells);
 
   //
   // Correlation to max
@@ -1193,7 +1294,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   // Get second highest energy cell
 //  Int_t absId2ndMax = -1;
   Float_t emax2nd = 0;
-//Bool_t sameTCard2ndMax = kFALSE;
+  Bool_t sameTCard2ndMax = kFALSE;
 //Int_t  rowDiff2 = -100;
 //Int_t  colDiff2 = -100;
    
@@ -1243,14 +1344,36 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       fhECellWeightNLM3TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
     }
     
+    Int_t rowDiff = -100, colDiff = -100;
+    Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
+    
+    if(sameTCard)
+    {
+      if     (nlm==1)  
+      {
+        fhECellSameClusRatNLM1TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellSameNLM1TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellSameWeightNLM1TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
+      }
+      else if(nlm==2)  
+      {
+        fhECellSameClusRatNLM2TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellSameNLM2TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellSameWeightNLM2TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
+      }
+      else         
+      {
+        fhECellSameClusRatNLM3TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellSameNLM3TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellSameWeightNLM3TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
+      }
+    }
+    
     //if(eCellMax < eCell) printf("Check: E max %f (id %d), E sec %f (id %d)\n",eCellMax,absIdMax, eCell,absId);
     
     nCellWithWeight++;
             
     //printf("\t cell %d, absId %d, E %2.2f, w %2.2f, tcard %d\n", ipos, absId, eCell, weight, sameTCard);
-    
-    Int_t rowDiff = -100, colDiff = -100;
-    Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
 
     Int_t indexType = -1;
     if ( sameTCard ) 
@@ -1335,7 +1458,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
 //    fhTCardCorrEClusterRat [indexType][matched]->Fill(energy, eClusRat , GetEventWeight());
       fhTCardCorrTCellMaxDiff[indexType][matched]->Fill(energy, tCellDiff, GetEventWeight());
       
-      if(exoticity > 0.97)
+      if ( fStudyExotic && exoticity > 0.97 )
       {
         fhTCardCorrECellMaxDiffExo[indexType][matched]->Fill(energy, eCellDiff, GetEventWeight());
         fhTCardCorrEClusterDiffExo[indexType][matched]->Fill(energy, eClusDiff, GetEventWeight());
@@ -1345,7 +1468,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       }      
     }
     
-    if ( exoticity > 0.97 )
+    if ( fStudyExotic && exoticity > 0.97 )
     {  
       // Get the col and row of the secondary cluster cell
       Int_t icol2 = -1, irow2 = -1, iRCU2 = -1, icolAbs2 = -1, irowAbs2 = -1;
@@ -1370,19 +1493,19 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     if ( eCell > emax2nd ) 
     {
       emax2nd     = eCell;
-//      absId2ndMax = absId;
-//      if(sameTCard)
-//      {
-//        sameTCard2ndMax = kTRUE;
+//    absId2ndMax = absId;
+      if(sameTCard)
+      {
+        sameTCard2ndMax = kTRUE;
 //        rowDiff2 = rowDiff;
 //        colDiff2 = colDiff;
-//      }
-//      else
-//      {
-//        sameTCard2ndMax = kFALSE;
+      }
+      else
+      {
+        sameTCard2ndMax = kFALSE;
 //        rowDiff2 = -100;
 //        colDiff2 = -100;
-//      }
+      }
     }
     
 //    //
@@ -1432,7 +1555,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   else if(energy >= 8)
     fhColRowTCardCorrNoSelectionHighE[matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
   
-  if(exoticity > 0.97)
+  if ( fStudyExotic && exoticity > 0.97 )
   {
     if(energy >= 5 && energy < 8)
       fhColRowTCardCorrNoSelectionExoticLowE [matched]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
@@ -1476,6 +1599,25 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     fhE2ndRatNLM3TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
     fhE2ndEMaxRatNLM3TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
   }
+
+  if(sameTCard2ndMax)
+  {
+    if     (nlm==1)  
+    {
+      fhE2ndSameRatNLM1TCardCorrNoSelection    [matched]->Fill(energy, emax2nd/energy  , GetEventWeight());
+      fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[matched]->Fill(energy, emax2nd/eCellMax, GetEventWeight());
+    }
+    else if(nlm==2)  
+    {
+      fhE2ndSameRatNLM2TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
+      fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+    }
+    else         
+    {
+      fhE2ndSameRatNLM3TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
+      fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+    }
+  }
   
   fhNCellsTCardCorrNoSelection          [matched]->Fill(energy, ncells, GetEventWeight());
   fhNCellsTCardCorrWithWeightNoSelection[matched]->Fill(energy, nCellWithWeight, GetEventWeight());
@@ -1490,7 +1632,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxE[matched]->Fill(eCellMax, eDiff, GetEventWeight());
     fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE  [matched]->Fill(eCellMax, tDiff, GetEventWeight());
     
-    if(exoticity > 0.97)
+    if ( fStudyExotic && exoticity > 0.97 )
     {
       fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[matched]->Fill(energy  , eDiff, GetEventWeight());
       fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo  [matched]->Fill(energy  , tDiff, GetEventWeight());
@@ -1525,11 +1667,14 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     fhLambda0NLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m02, GetEventWeight());
     fhLambda1NLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
   }
+  
   fhLambda0TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m02, GetEventWeight());
   fhLambda1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
 //fhLambdaRTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20/m02, GetEventWeight());
   fhNLocMaxTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, nlm, GetEventWeight());
-  fhExoticTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, exoticity, GetEventWeight());
+  
+  if(fStudyExotic)
+    fhExoticTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, exoticity, GetEventWeight());
   
   if     (nlm==1) 
   {
@@ -1571,8 +1716,31 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     Float_t tDiffMaxSecondary = tCellMax - tCell; 
     //printf("Time max %f, second %f, diff %f\n",tCellMax,tCell,tDiffMaxSecondary);
     fhTimeDiffTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, tDiffMaxSecondary, GetEventWeight());
-    if(exoticity > 0.97) 
+    if ( fStudyExotic && exoticity > 0.97 ) 
+    {
       fhTimeDiffExoTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, tDiffMaxSecondary, GetEventWeight());
+      // Get the col and row of the secondary cluster cell
+      Int_t icol2 = -1, irow2 = -1, iRCU2 = -1, icolAbs2 = -1, irowAbs2 = -1;
+      GetModuleNumberCellIndexesAbsCaloMap(absId,GetCalorimeter(), icol2, irow2, iRCU2, icolAbs2, irowAbs2);
+      
+      Int_t rowDiff = -100, colDiff = -100;
+      Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
+
+      if ( !sameTCard )
+      {
+        if ( energy >= 5 && energy < 8 && nCorr == 0 )
+          fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE [matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+        else if ( energy >= 8 && nCorr == 0 )
+          fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+      }
+      else
+      {
+        if ( energy >= 5 && energy < 8 && nCorrNo == 0 )
+          fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE [matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+        else if ( energy >= 8 && nCorrNo == 0 )
+          fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[matched]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+      }
+    } // exotic
     
     if     (nlm==1)  
     {
@@ -1592,7 +1760,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       fhLogECellNLM3TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
       fhECellWeightNLM3TCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, weight, GetEventWeight());
     }
-  }
+  } //cell loop
   
   // Invariant mass for clusters looking like photons, depending number of cells
   if(m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut)
@@ -1663,7 +1831,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
 
   ///////////////////////////
 
-  if ( exoticity > 0.97 )
+  if ( fStudyExotic && exoticity > 0.97 )
   {
     if ( energy >= 5 && energy < 8) 
       fhColRowTCardCorrelNCellExoticLowE [nCorrInd][nCorrNoInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
@@ -1702,51 +1870,55 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
 //    }
   }
   
-  for(Int_t ie = 0; ie < fNEBinCuts; ie++)
+ 
+  if( ebin > -1 )
   {
-    if( energy >= fEBinCuts[ie] && energy < fEBinCuts[ie+1] )
+    fhLambda0Lambda1        [ebin][matched]->Fill(m20, m02, GetEventWeight());
+    fhNCellsTCardSameAndDiff[ebin][matched]->Fill(nCorrNo, nCorr, GetEventWeight());
+    //  if(nCorrNo == 0)
+    //      fhLambda0Lambda1AllSameTCard  [ebin][matched]->Fill(m20, m02, GetEventWeight());
+    
+    if(fStudyExotic)
     {
-      fhLambda0Exoticity[ie][matched]->Fill(exoticity, m02, GetEventWeight());
-      fhLambda1Exoticity[ie][matched]->Fill(exoticity, m20, GetEventWeight());
-//    fhLambdaRExoticity[ie][matched]->Fill(exoticity, m20/m02, GetEventWeight());
-      fhNCellsExoticity [ie][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
-      fhTimeExoticity   [ie][matched]->Fill(exoticity, tCellMax, GetEventWeight());
-      fhLambda0Lambda1  [ie][matched]->Fill(m20, m02, GetEventWeight());
-
+      fhLambda0Exoticity[ebin][matched]->Fill(exoticity, m02, GetEventWeight());
+      fhLambda1Exoticity[ebin][matched]->Fill(exoticity, m20, GetEventWeight());
+      //fhLambdaRExoticity[ebin][matched]->Fill(exoticity, m20/m02, GetEventWeight());
+      fhNCellsExoticity [ebin][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
+      fhTimeExoticity   [ebin][matched]->Fill(exoticity, tCellMax, GetEventWeight());
+      
       if(energy > 8)
       {
         fhLambda0ExoticityPerNCell[nCorrInd][nCorrNoInd][matched]->Fill(exoticity, m02, GetEventWeight());
         fhLambda1ExoticityPerNCell[nCorrInd][nCorrNoInd][matched]->Fill(exoticity, m20, GetEventWeight());
-//      fhLambdaRExoticityPerNCell[nCorrInd][nCorrNoInd][matched]->Fill(exoticity, m20/m02, GetEventWeight());
+        //fhLambdaRExoticityPerNCell[nCorrInd][nCorrNoInd][matched]->Fill(exoticity, m20/m02, GetEventWeight());
       }
       
-//      if(nCorrNo == 0)
-//      {
-//        fhLambda0ExoticityAllSameTCard[ie][matched]->Fill(exoticity, m02, GetEventWeight());
-//        fhLambda1ExoticityAllSameTCard[ie][matched]->Fill(exoticity, m20, GetEventWeight());
-//        fhLambdaRExoticityAllSameTCard[ie][matched]->Fill(exoticity, m20/m02, GetEventWeight());
-//        fhNCellsExoticityAllSameTCard [ie][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
-//        fhLambda0Lambda1AllSameTCard  [ie][matched]->Fill(m20, m02, GetEventWeight());
-//      }
-        
-      fhNCellsTCardSameAndDiff[ie][matched]->Fill(nCorrNo, nCorr, GetEventWeight());
-      if(exoticity > 0.97 )
-        fhNCellsTCardSameAndDiffExotic[ie][matched]->Fill(nCorrNo, nCorr, GetEventWeight());
+      //      if(nCorrNo == 0)
+      //      {
+      //        fhLambda0ExoticityAllSameTCard[ebin][matched]->Fill(exoticity, m02, GetEventWeight());
+      //        fhLambda1ExoticityAllSameTCard[ebin][matched]->Fill(exoticity, m20, GetEventWeight());
+      //        fhLambdaRExoticityAllSameTCard[ebin][matched]->Fill(exoticity, m20/m02, GetEventWeight());
+      //        fhNCellsExoticityAllSameTCard [ebin][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
+      //      }
+      
+      if ( exoticity > 0.97 )
+        fhNCellsTCardSameAndDiffExotic[ebin][matched]->Fill(nCorrNo, nCorr, GetEventWeight());
+      
+      // Track matching residuals
+      fhTMPhiResidualExoticity[ebin]->Fill(exoticity,dphi);
+      fhTMEtaResidualExoticity[ebin]->Fill(exoticity,deta);
+      
+      //    if(nCorrNo==0)
+      //    {
+      //      fhTMPhiResidualExoticityAllSameTCard[ebin]->Fill(exoticity,dphi);
+      //      fhTMEtaResidualExoticityAllSameTCard[ebin]->Fill(exoticity,deta);
+      //    }
     }
-    
-    // Track matching residuals
-    fhTMPhiResidualExoticity[ie]->Fill(exoticity,dphi);
-    fhTMEtaResidualExoticity[ie]->Fill(exoticity,deta);
-//    if(nCorrNo==0)
-//    {
-//      fhTMPhiResidualExoticityAllSameTCard[ie]->Fill(exoticity,dphi);
-//      fhTMEtaResidualExoticityAllSameTCard[ie]->Fill(exoticity,deta);
-//    }
   }
 
   Float_t nCellRat = nCorr*1. / ((nCorr+nCorrNo)*1.); 
   fhNCellsTCardSameAndDiffFraction[matched]->Fill(energy, nCellRat, GetEventWeight());
-  if(exoticity > 0.97 )
+  if ( fStudyExotic && exoticity > 0.97 )
     fhNCellsTCardSameAndDiffFractionExotic[matched]->Fill(energy, nCellRat, GetEventWeight());
   
 //  if(nCorr > 0)
@@ -1939,17 +2111,19 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
 {
   Double_t tof = clus->GetTOF()*1.e9;
   if(tof>400) tof-=fConstantTimeShift;
-  
-  fhLambda0             ->Fill(clus->E(), clus->GetM02()       , GetEventWeight());
-  fhLambda1             ->Fill(clus->E(), clus->GetM20()       , GetEventWeight());
-  //  fhDispersion          ->Fill(clus->E(), clus->GetDispersion(), GetEventWeight());
-  
-  fhNLocMax             ->Fill(clus->E(), GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells), GetEventWeight());
-
-  fhClusterMaxCellDiff  ->Fill(clus->E(), maxCellFraction, GetEventWeight());
-  fhClusterMaxCellECross->Fill(clus->E(), eCrossFrac     , GetEventWeight());
   fhClusterTimeEnergy   ->Fill(clus->E(), tof            , GetEventWeight());
 
+  fhLambda0             ->Fill(clus->E(), clus->GetM02()       , GetEventWeight());
+  fhLambda1             ->Fill(clus->E(), clus->GetM20()       , GetEventWeight());
+//fhDispersion          ->Fill(clus->E(), clus->GetDispersion(), GetEventWeight());
+  fhNLocMax             ->Fill(clus->E(), GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells), GetEventWeight());
+
+  if(fFillClusterMaxCellHisto)
+  {
+    fhClusterMaxCellDiff  ->Fill(clus->E(), maxCellFraction, GetEventWeight());
+    fhClusterMaxCellECross->Fill(clus->E(), eCrossFrac     , GetEventWeight());
+  }
+  
   if(fStudyM02Dependence)
   {
     fhClusterMaxCellDiffM02  ->Fill(clus->E(), maxCellFraction, clus->GetM02(), GetEventWeight());
@@ -1963,31 +2137,36 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   Int_t    nCaloCellsPerCluster = clus->GetNCells();
   
   // Clusters in event time difference
-  for(Int_t iclus2 = 0; iclus2 < caloClusters->GetEntriesFast(); iclus2++ )
+  if(fFillPi0PairDiffTime)
   {
-    AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(iclus2);
-    
-    if( clus->GetID() == clus2->GetID() ) continue;
-    
-    if( clus->GetM02() > 0.01 && clus2->GetM02() > 0.01 )
+    for(Int_t iclus2 = 0; iclus2 < caloClusters->GetEntriesFast(); iclus2++ )
     {
-      Int_t    nModule2 = GetModuleNumber(clus2);
-
-      Double_t tof2   = clus2->GetTOF()*1.e9;    
-      if(tof2>400) tof2-=fConstantTimeShift;
-
-      fhClusterPairDiffTimeE  ->Fill(clus->E(), tof-tof2, GetEventWeight());
+      AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(iclus2);
       
-      if ( nModule2 == nModule )
-        fhClusterPairDiffTimeESameMod->Fill(clus->E(), tof-tof2, GetEventWeight());
-    }
-  }        
+      if( clus->GetID() == clus2->GetID() ) continue;
+      
+      if( clus->GetM02() > 0.01 && clus2->GetM02() > 0.01 )
+      {
+        Int_t    nModule2 = GetModuleNumber(clus2);
+        
+        Double_t tof2   = clus2->GetTOF()*1.e9;    
+        if(tof2>400) tof2-=fConstantTimeShift;
+        
+        
+        fhClusterPairDiffTimeE  ->Fill(clus->E(), tof-tof2, GetEventWeight());
+        
+        if ( nModule2 == nModule )
+          fhClusterPairDiffTimeESameMod->Fill(clus->E(), tof-tof2, GetEventWeight());
+      }
+    } // loop 
+  } // fill cluster pair time diff        
   
-  if(nCaloCellsPerCluster > 1)
+  if(nCaloCellsPerCluster > 1 && 
+     (fFillClusterMaxCellHisto || fStudyM02Dependence || fFillAllCellTimeHisto))
   {
     // Check time of cells respect to max energy cell
     
-//    if(fFillAllCellTimeHisto) 
+//    if(fFillAllCellTimeHisto && fFillClusterMaxCellHisto) 
 //    {
 //      // Get some time averages
 //      Double_t timeAverages[2] = {0.,0.};
@@ -2003,9 +2182,13 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
       if( absId == absIdMax || cells->GetCellAmplitude(absIdMax) < 0.01 ) continue;
       
       Float_t frac = cells->GetCellAmplitude(absId)/cells->GetCellAmplitude(absIdMax);            
-      fhClusterMaxCellCloseCellRatio->Fill(clus->E(), frac, GetEventWeight());
-      fhClusterMaxCellCloseCellDiff ->Fill(clus->E(), cells->GetCellAmplitude(absIdMax)-cells->GetCellAmplitude(absId), GetEventWeight());
-
+      
+      if(fFillClusterMaxCellHisto)
+      {
+        fhClusterMaxCellCloseCellRatio->Fill(clus->E(), frac, GetEventWeight());
+        fhClusterMaxCellCloseCellDiff ->Fill(clus->E(), cells->GetCellAmplitude(absIdMax)-cells->GetCellAmplitude(absId), GetEventWeight());
+      }
+      
       if(fStudyM02Dependence)
       {
         fhClusterMaxCellCloseCellRatioM02->Fill(clus->E(), frac, clus->GetM02(), GetEventWeight());
@@ -2018,17 +2201,21 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
         GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
         
         Float_t diff = (tmax-(time*1.0e9-fConstantTimeShift));
-        fhCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff, GetEventWeight());
+        
+        if(fFillClusterMaxCellHisto)
+          fhCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff, GetEventWeight());
+        
         if(fStudyM02Dependence) 
           fhCellTimeSpreadRespectToCellMaxM02->Fill(clus->E(), diff, clus->GetM02(), GetEventWeight());
         
-        if(TMath::Abs(TMath::Abs(diff) > 100) && clus->E() > 1 ) fhCellIdCellLargeTimeSpread->Fill(absId, GetEventWeight());
+        if( fFillAllCellAbsIdHistograms && fFillAllCellHistograms && 
+           TMath::Abs(TMath::Abs(diff) > 100) && clus->E() > 1 ) 
+          fhCellIdCellLargeTimeSpread->Fill(absId, GetEventWeight());
       }
       
     } // Fill cell-cluster histogram loop
-    
   } // Check time and energy of cells respect to max energy cell if cluster of more than 1 cell
-    
+  
   Float_t e   = fClusterMomentum.E();
   Float_t pt  = fClusterMomentum.Pt();
   Float_t eta = fClusterMomentum.Eta();
@@ -2199,13 +2386,14 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
         if(clus->E() > 100) fhNCellsPerClusterWeirdModNoCut->Fill(nCaloCellsPerCluster, nModule, GetEventWeight());
       }
       
-      fhClusterMaxCellDiffNoCut->Fill(clus->E(), maxCellFraction, GetEventWeight());
+      if(fFillClusterMaxCellHisto)
+        fhClusterMaxCellDiffNoCut->Fill(clus->E(), maxCellFraction, GetEventWeight());
     }
     
     Float_t ampMax = cells->GetCellAmplitude(absIdMax);
     GetCaloUtils()->RecalibrateCellAmplitude(ampMax,GetCalorimeter(), absIdMax);
     
-    if(fStudyExotic) ExoticHistograms(absIdMax, ampMax, clus, cells);
+    //if(fStudyExotic) ExoticHistograms(absIdMax, ampMax, clus, cells);
 
     // Check bad clusters if requested and rejection was not on
     Bool_t goodCluster = IsGoodCluster(absIdMax, clus->GetM02(), nCaloCellsPerCluster, cells);
@@ -2239,7 +2427,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     {
      nClustersInModule[nModule]++;
      if(clus->E() > 0.5)
-      energyInModule   [nModule] += clus->E();
+      energyInModule  [nModule] += clus->E();
     }
     
     // Cluster weights
@@ -2965,75 +3153,75 @@ TObjString * AliAnaCalorimeterQA::GetAnalysisCuts()
   return new TObjString(parList) ;
 }
 
-//_________________________________________________________________________________
-/// Fill histograms with exoticity parameters.
-//_________________________________________________________________________________
-void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
-                                           AliVCluster *clus, AliVCaloCells* cells)
-{
-  if(ampMax < 0.01) 
-  {
-    AliDebug(1,Form("Low amplitude energy %f",ampMax));
-    return;
-  }
-    
-  Float_t  l0   = clus->GetM02();
-  Float_t  l1   = clus->GetM20();
-  Float_t  en   = clus->E();
-  Int_t    nc   = clus->GetNCells();  
-  Double_t tmax = clus->GetTOF()*1.e9-fConstantTimeShift; // recalibrated elsewhere
-  
-  Float_t eCrossFrac = 1-GetECross(absIdMax,cells, 10000000)/ampMax;
-
-  if(en > 5) 
-  {
-    fhExoL0ECross->Fill(eCrossFrac, l0, GetEventWeight());
-    fhExoL1ECross->Fill(eCrossFrac, l1, GetEventWeight());
-  }
-  
-  for(Int_t ie = 0; ie < fExoNECrossCuts; ie++)
-  {    
-    for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
-    {  
-      eCrossFrac = 1-GetECross(absIdMax,cells, fExoDTimeCuts[idt])/ampMax;
-      
-      if(eCrossFrac > fExoECrossCuts[ie])
-      {
-        // Exotic
-        fhExoL0    [ie][idt]->Fill(en,l0  , GetEventWeight());
-        fhExoL1    [ie][idt]->Fill(en,l1  , GetEventWeight());
-        fhExoTime  [ie][idt]->Fill(en,tmax, GetEventWeight());
-        
-        if(en > 5) 
-        {
-          fhExoL0NCell[ie][idt]->Fill(nc, l0, GetEventWeight());
-          fhExoL1NCell[ie][idt]->Fill(nc, l1, GetEventWeight());
-        } 
-        
-        // Diff time, do for one cut in time
-        if(idt == 0)
-        {
-          for (Int_t icell = 0; icell < clus->GetNCells(); icell++) 
-          {
-            Int_t absId  = clus->GetCellsAbsId()[icell]; 
-            Double_t time  = cells->GetCellTime(absId);
-            GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
-            time *= 1e9;
-            time -= fConstantTimeShift;
-            
-            Float_t diff = tmax-time;
-            fhExoDTime[ie]->Fill(en, diff, GetEventWeight());
-          }
-        }
-      }
-      else
-      {
-        fhExoECross[ie][idt]->Fill(en, eCrossFrac, GetEventWeight());
-        fhExoNCell [ie][idt]->Fill(en, nc        , GetEventWeight());
-      }
-    } // D time cut loop
-  } // e cross cut loop
-}
+////_________________________________________________________________________________
+///// Fill histograms with exoticity parameters.
+////_________________________________________________________________________________
+//void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
+//                                           AliVCluster *clus, AliVCaloCells* cells)
+//{
+//  if(ampMax < 0.01) 
+//  {
+//    AliDebug(1,Form("Low amplitude energy %f",ampMax));
+//    return;
+//  }
+//    
+//  Float_t  l0   = clus->GetM02();
+//  Float_t  l1   = clus->GetM20();
+//  Float_t  en   = clus->E();
+//  Int_t    nc   = clus->GetNCells();  
+//  Double_t tmax = clus->GetTOF()*1.e9-fConstantTimeShift; // recalibrated elsewhere
+//  
+//  Float_t eCrossFrac = 1-GetECross(absIdMax,cells, 10000000)/ampMax;
+//
+//  if(en > 5) 
+//  {
+//    fhExoL0ECross->Fill(eCrossFrac, l0, GetEventWeight());
+//    fhExoL1ECross->Fill(eCrossFrac, l1, GetEventWeight());
+//  }
+//  
+//  for(Int_t ie = 0; ie < fExoNECrossCuts; ie++)
+//  {    
+//    for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
+//    {  
+//      eCrossFrac = 1-GetECross(absIdMax,cells, fExoDTimeCuts[idt])/ampMax;
+//      
+//      if(eCrossFrac > fExoECrossCuts[ie])
+//      {
+//        // Exotic
+//        fhExoL0    [ie][idt]->Fill(en,l0  , GetEventWeight());
+//        fhExoL1    [ie][idt]->Fill(en,l1  , GetEventWeight());
+//        fhExoTime  [ie][idt]->Fill(en,tmax, GetEventWeight());
+//        
+//        if(en > 5) 
+//        {
+//          fhExoL0NCell[ie][idt]->Fill(nc, l0, GetEventWeight());
+//          fhExoL1NCell[ie][idt]->Fill(nc, l1, GetEventWeight());
+//        } 
+//        
+//        // Diff time, do for one cut in time
+//        if(idt == 0)
+//        {
+//          for (Int_t icell = 0; icell < clus->GetNCells(); icell++) 
+//          {
+//            Int_t absId  = clus->GetCellsAbsId()[icell]; 
+//            Double_t time  = cells->GetCellTime(absId);
+//            GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+//            time *= 1e9;
+//            time -= fConstantTimeShift;
+//            
+//            Float_t diff = tmax-time;
+//            fhExoDTime[ie]->Fill(en, diff, GetEventWeight());
+//          }
+//        }
+//      }
+//      else
+//      {
+//        fhExoECross[ie][idt]->Fill(en, eCrossFrac, GetEventWeight());
+//        fhExoNCell [ie][idt]->Fill(en, nc        , GetEventWeight());
+//      }
+//    } // D time cut loop
+//  } // e cross cut loop
+//}
 
 //___________________________________________________
 /// Create histograms to be saved in output file and
@@ -3098,7 +3286,19 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fNRCU     = 4 ;
   }
   
-    
+  Int_t colmaxs = fNMaxCols;
+  Int_t rowmaxs = fNMaxRows;
+  if(GetCalorimeter()==kEMCAL)
+  {
+    colmaxs=2*fNMaxCols;
+    rowmaxs=Int_t(fNModules/2)*fNMaxRows;
+  }
+  else
+  {
+    rowmaxs=fNModules*fNMaxRows;
+  }
+  //96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5
+  
   // Init histograms
     
   fhE  = new TH1F ("hE","#it{E} reconstructed clusters ", nptbins*5,ptmin,ptmax*5);  
@@ -3144,18 +3344,21 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhClusterTimeEnergy->SetYTitle("TOF (ns)");
   outputContainer->Add(fhClusterTimeEnergy);
   
-  fhClusterPairDiffTimeE = new TH2F("hClusterPairDiffTimeE","cluster pair time difference vs E, only good clusters",
-                                    nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
-  fhClusterPairDiffTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhClusterPairDiffTimeE->SetYTitle("#Delta #it{t} (ns)");
-  outputContainer->Add(fhClusterPairDiffTimeE);  
-
-  fhClusterPairDiffTimeESameMod = new TH2F("hClusterPairDiffTimeESameMod","cluster pair time difference vs E, only good clusters",
-                                    nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
-  fhClusterPairDiffTimeESameMod->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhClusterPairDiffTimeESameMod->SetYTitle("#Delta #it{t} (ns)");
-  outputContainer->Add(fhClusterPairDiffTimeESameMod);  
-  
+  if(fFillPi0PairDiffTime)
+  {
+    fhClusterPairDiffTimeE = new TH2F("hClusterPairDiffTimeE","cluster pair time difference vs E, only good clusters",
+                                      nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+    fhClusterPairDiffTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhClusterPairDiffTimeE->SetYTitle("#Delta #it{t} (ns)");
+    outputContainer->Add(fhClusterPairDiffTimeE);  
+    
+    fhClusterPairDiffTimeESameMod = new TH2F("hClusterPairDiffTimeESameMod","cluster pair time difference vs E, only good clusters",
+                                             nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+    fhClusterPairDiffTimeESameMod->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhClusterPairDiffTimeESameMod->SetYTitle("#Delta #it{t} (ns)");
+    outputContainer->Add(fhClusterPairDiffTimeESameMod);  
+  }
+    
 //fhDispersion  = new TH2F ("hDispersion","shower shape, Dispersion^{2} vs E for bad cluster ",
 //                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
 //fhDispersion->SetXTitle("#it{E}_{cluster} (GeV)");
@@ -3182,214 +3385,88 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   if(fStudyTCardCorrelation)
   {
-    fhColRowExoticHighE1CellPosTime = new TH2F
-    ("hColRowExoticHighE1CellPosTime",
-     "column vs row, 1 cell, E > 8 GeV, t > 5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-    fhColRowExoticHighE1CellPosTime->SetYTitle("row");
-    fhColRowExoticHighE1CellPosTime->SetXTitle("column");
-    outputContainer->Add(fhColRowExoticHighE1CellPosTime) ;
-
-    fhColRowExoticHighEPosTime = new TH2F
-    ("hColRowExoticHighEPosTime",
-     "column vs row, exo > 0.97, E > 8 GeV, t > 5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-    fhColRowExoticHighEPosTime->SetYTitle("row");
-    fhColRowExoticHighEPosTime->SetXTitle("column");
-    outputContainer->Add(fhColRowExoticHighEPosTime) ;
-
     fhColRowHighEPosTime = new TH2F
     ("hColRowHighEPosTime",
      "column vs row, exo < 0.97, E > 8 GeV, t > 5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+     colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
     fhColRowHighEPosTime->SetYTitle("row");
     fhColRowHighEPosTime->SetXTitle("column");
     outputContainer->Add(fhColRowHighEPosTime) ;
     
-    fhColRowExoticHighE1CellNegTime = new TH2F
-    ("hColRowExoticHighE1CellNegTime",
-     "column vs row, 1 cell, E > 8 GeV, t < -5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-    fhColRowExoticHighE1CellNegTime->SetYTitle("row");
-    fhColRowExoticHighE1CellNegTime->SetXTitle("column");
-    outputContainer->Add(fhColRowExoticHighE1CellNegTime) ;
-    
-    fhColRowExoticHighENegTime = new TH2F
-    ("hColRowExoticHighENegTime",
-     "column vs row, exo > 0.97, E > 8 GeV, t < -5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-    fhColRowExoticHighENegTime->SetYTitle("row");
-    fhColRowExoticHighENegTime->SetXTitle("column");
-    outputContainer->Add(fhColRowExoticHighENegTime) ;
-
     fhColRowHighENegTime = new TH2F
     ("hColRowHighENegTime",
      "column vs row, exo < 0.97, E > 8 GeV, t < -5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+     colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
     fhColRowHighENegTime->SetYTitle("row");
     fhColRowHighENegTime->SetXTitle("column");
     outputContainer->Add(fhColRowHighENegTime) ;
-    
-    fhColRowExoticHighE1CellNulTime = new TH2F
-    ("hColRowExoticHighE1CellNulTime",
-     "column vs row, 1 cell, E > 8 GeV, -5 < t < 5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-    fhColRowExoticHighE1CellNulTime->SetYTitle("row");
-    fhColRowExoticHighE1CellNulTime->SetXTitle("column");
-    outputContainer->Add(fhColRowExoticHighE1CellNulTime) ;
-    
-    fhColRowExoticHighENulTime = new TH2F
-    ("hColRowExoticHighENulTime",
-     "column vs row, exo > 0.97, E > 8 GeV, -5 < t < 5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-    fhColRowExoticHighENulTime->SetYTitle("row");
-    fhColRowExoticHighENulTime->SetXTitle("column");
-    outputContainer->Add(fhColRowExoticHighENulTime) ;
 
     fhColRowHighENulTime = new TH2F
     ("hColRowHighENulTime",
      "column vs row, exo < 0.97, E > 8 GeV, -5 < t < 5 ns",
-     96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+     colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
     fhColRowHighENulTime->SetYTitle("row");
     fhColRowHighENulTime->SetXTitle("column");
     outputContainer->Add(fhColRowHighENulTime) ;
     
+    if(fStudyExotic)
+    {
+      fhColRowExoticHighE1CellPosTime = new TH2F
+      ("hColRowExoticHighE1CellPosTime",
+       "column vs row, 1 cell, E > 8 GeV, t > 5 ns",
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+      fhColRowExoticHighE1CellPosTime->SetYTitle("row");
+      fhColRowExoticHighE1CellPosTime->SetXTitle("column");
+      outputContainer->Add(fhColRowExoticHighE1CellPosTime) ;
+      
+      fhColRowExoticHighEPosTime = new TH2F
+      ("hColRowExoticHighEPosTime",
+       "column vs row, exo > 0.97, E > 8 GeV, t > 5 ns",
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+      fhColRowExoticHighEPosTime->SetYTitle("row");
+      fhColRowExoticHighEPosTime->SetXTitle("column");
+      outputContainer->Add(fhColRowExoticHighEPosTime) ;
+      
+      fhColRowExoticHighE1CellNegTime = new TH2F
+      ("hColRowExoticHighE1CellNegTime",
+       "column vs row, 1 cell, E > 8 GeV, t < -5 ns",
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+      fhColRowExoticHighE1CellNegTime->SetYTitle("row");
+      fhColRowExoticHighE1CellNegTime->SetXTitle("column");
+      outputContainer->Add(fhColRowExoticHighE1CellNegTime) ;
+      
+      fhColRowExoticHighENegTime = new TH2F
+      ("hColRowExoticHighENegTime",
+       "column vs row, exo > 0.97, E > 8 GeV, t < -5 ns",
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+      fhColRowExoticHighENegTime->SetYTitle("row");
+      fhColRowExoticHighENegTime->SetXTitle("column");
+      outputContainer->Add(fhColRowExoticHighENegTime) ;
+      
+      fhColRowExoticHighE1CellNulTime = new TH2F
+      ("hColRowExoticHighE1CellNulTime",
+       "column vs row, 1 cell, E > 8 GeV, -5 < t < 5 ns",
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+      fhColRowExoticHighE1CellNulTime->SetYTitle("row");
+      fhColRowExoticHighE1CellNulTime->SetXTitle("column");
+      outputContainer->Add(fhColRowExoticHighE1CellNulTime) ;
+      
+      fhColRowExoticHighENulTime = new TH2F
+      ("hColRowExoticHighENulTime",
+       "column vs row, exo > 0.97, E > 8 GeV, -5 < t < 5 ns",
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+      fhColRowExoticHighENulTime->SetYTitle("row");
+      fhColRowExoticHighENulTime->SetXTitle("column");
+      outputContainer->Add(fhColRowExoticHighENulTime) ;
+    }
+    
     TString add[] = {"","TrackMatched"};
     for(Int_t tm = 0; tm < 2; tm++)
-    {
-      fhEnergyTime1Cell[tm]  = new TH2F 
-      (Form("hEnergyTime1Cell%s",add[tm].Data()),
-       Form("#it{t} vs #it{E}, 1 cells cluster %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,300,-150,150); 
-      fhEnergyTime1Cell[tm]->SetXTitle("#it{E} (GeV)");
-      fhEnergyTime1Cell[tm]->SetYTitle("#it{t} (ns)");
-      outputContainer->Add(fhEnergyTime1Cell[tm]); 
-      
-      fhEnergyTimeExotic[tm]  = new TH2F 
-      (Form("hEnergyTimeExotic%s",add[tm].Data()),
-       Form("#it{t} vs #it{E},  exo > 0.97, %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,300,-150,150); 
-      fhEnergyTimeExotic[tm]->SetXTitle("#it{E} (GeV)");
-      fhEnergyTimeExotic[tm]->SetYTitle("#it{t} (ns)");
-      outputContainer->Add(fhEnergyTimeExotic[tm]); 
-      
-      fhColRowExoticLowE1Cell[tm] = new TH2F
-      (Form("hColRowExoticLowE1Cell%s",add[tm].Data()),
-       Form("column vs row, 1 cell, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowExoticLowE1Cell[tm]->SetYTitle("row");
-      fhColRowExoticLowE1Cell[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowExoticLowE1Cell[tm]) ;
-      
-      fhColRowExoticHighE1Cell[tm] = new TH2F
-      (Form("hColRowExoticHighE1Cell%s",add[tm].Data()),
-       Form("column vs row, 1 cell, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowExoticHighE1Cell[tm]->SetYTitle("row");
-      fhColRowExoticHighE1Cell[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowExoticHighE1Cell[tm]) ;
-
-      fhColRowExoticLowE[tm] = new TH2F
-      (Form("hColRowExoticLowE%s",add[tm].Data()),
-       Form("column vs row, max E cell, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowExoticLowE[tm]->SetYTitle("row");
-      fhColRowExoticLowE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowExoticLowE[tm]) ;
-      
-      fhColRowExoticHighE[tm] = new TH2F
-      (Form("hColRowExoticHighE%s",add[tm].Data()),
-       Form("column vs row, max E cell, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowExoticHighE[tm]->SetYTitle("row");
-      fhColRowExoticHighE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowExoticHighE[tm]) ;
-      
-      fhColRowExotic2ndCellDiffLowE[tm] = new TH2F
-      (Form("hColRowExotic2ndCellDiffLowE%s",add[tm].Data()),
-       Form("column vs row, max E cell, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowExotic2ndCellDiffLowE[tm]->SetYTitle("row");
-      fhColRowExotic2ndCellDiffLowE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowExotic2ndCellDiffLowE[tm]) ;
-      
-      fhColRowExotic2ndCellDiffHighE[tm] = new TH2F
-      (Form("hColRowExotic2ndCellDiffHighE%s",add[tm].Data()),
-       Form("column vs row, max E cell, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowExotic2ndCellDiffHighE[tm]->SetYTitle("row");
-      fhColRowExotic2ndCellDiffHighE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowExotic2ndCellDiffHighE[tm]) ;
-      
-      fhColRowExotic2ndCellSameLowE[tm] = new TH2F
-      (Form("hColRowExotic2ndCellSameLowE%s",add[tm].Data()),
-       Form("column vs row, max E cell, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowExotic2ndCellSameLowE[tm]->SetYTitle("row");
-      fhColRowExotic2ndCellSameLowE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowExotic2ndCellSameLowE[tm]) ;
-      
-      fhColRowExotic2ndCellSameHighE[tm] = new TH2F
-      (Form("hColRowExotic2ndCellSameHighE%s",add[tm].Data()),
-       Form("column vs row, max E cell, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowExotic2ndCellSameHighE[tm]->SetYTitle("row");
-      fhColRowExotic2ndCellSameHighE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowExotic2ndCellSameHighE[tm]) ;
-      
-      fhColRowTCardCorrNoSelectionExoticLowE[tm] = new TH2F
-      (Form("hColRowTCardCorrNoSelectionExoticLowE%s",add[tm].Data()),
-       Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowTCardCorrNoSelectionExoticLowE[tm]->SetYTitle("row");
-      fhColRowTCardCorrNoSelectionExoticLowE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowTCardCorrNoSelectionExoticLowE[tm]) ;
-      
-      fhColRowTCardCorrNoSelectionExoticHighE[tm] = new TH2F
-      (Form("hColRowTCardCorrNoSelectionExoticHighE%s",add[tm].Data()),
-       Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowTCardCorrNoSelectionExoticHighE[tm]->SetYTitle("row");
-      fhColRowTCardCorrNoSelectionExoticHighE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowTCardCorrNoSelectionExoticHighE[tm]) ;
-
-      fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE[tm] = new TH2F
-      (Form("hColRowTCardCorrNoSelectionExotic2ndCellDiffLowE%s",add[tm].Data()),
-       Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE[tm]->SetYTitle("row");
-      fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE[tm]) ;
-      
-      fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm] = new TH2F
-      (Form("hColRowTCardCorrNoSelectionExotic2ndCellDiffHighE%s",add[tm].Data()),
-       Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm]->SetYTitle("row");
-      fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm]) ;
-
-      fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE[tm] = new TH2F
-      (Form("hColRowTCardCorrNoSelectionExotic2ndCellSameLowE%s",add[tm].Data()),
-       Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE[tm]->SetYTitle("row");
-      fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE[tm]) ;
-      
-      fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm] = new TH2F
-      (Form("hColRowTCardCorrNoSelectionExotic2ndCellSameHighE%s",add[tm].Data()),
-       Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]->SetYTitle("row");
-      fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]->SetXTitle("column");
-      outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]) ;
-      
-      
+    {      
       fhColRowTCardCorrNoSelectionLowE[tm] = new TH2F
       (Form("hColRowTCardCorrNoSelectionLowE%s",add[tm].Data()),
        Form("column vs row, max E cell for TCard correlation selected clusters, 5 < E < 8  GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
       fhColRowTCardCorrNoSelectionLowE[tm]->SetYTitle("row");
       fhColRowTCardCorrNoSelectionLowE[tm]->SetXTitle("column");
       outputContainer->Add(fhColRowTCardCorrNoSelectionLowE[tm]) ;
@@ -3397,7 +3474,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhColRowTCardCorrNoSelectionHighE[tm] = new TH2F
       (Form("hColRowTCardCorrNoSelectionHighE%s",add[tm].Data()),
        Form("column vs row, max E cell for TCard correlation selected clusters, E > 8 GeV %s",add[tm].Data()),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
       fhColRowTCardCorrNoSelectionHighE[tm]->SetYTitle("row");
       fhColRowTCardCorrNoSelectionHighE[tm]->SetXTitle("column");
       outputContainer->Add(fhColRowTCardCorrNoSelectionHighE[tm]) ;
@@ -3520,7 +3597,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhE2ndRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
       (Form("hE2ndRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
        Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs E, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,0.5); 
+       nptbins,ptmin,ptmax,100,0,1); 
       fhE2ndRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhE2ndRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
       outputContainer->Add(fhE2ndRatNLM1TCardCorrNoSelection[tm]); 
@@ -3528,7 +3605,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhE2ndRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
       (Form("hE2ndRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
        Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,0.5); 
+       nptbins,ptmin,ptmax,100,0,1); 
       fhE2ndRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhE2ndRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
       outputContainer->Add(fhE2ndRatNLM2TCardCorrNoSelection[tm]); 
@@ -3536,7 +3613,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhE2ndRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
       (Form("hE2ndRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
        Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,0.5); 
+       nptbins,ptmin,ptmax,100,0,1); 
       fhE2ndRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhE2ndRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
       outputContainer->Add(fhE2ndRatNLM3TCardCorrNoSelection[tm]);
@@ -3566,11 +3643,63 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
       outputContainer->Add(fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]);
 
+      /////
+      
+      fhE2ndSameRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hE2ndSameRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhE2ndSameRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhE2ndSameRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
+      outputContainer->Add(fhE2ndSameRatNLM1TCardCorrNoSelection[tm]); 
+      
+      fhE2ndSameRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hE2ndSameRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhE2ndSameRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhE2ndSameRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
+      outputContainer->Add(fhE2ndSameRatNLM2TCardCorrNoSelection[tm]); 
+      
+      fhE2ndSameRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hE2ndSameRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhE2ndSameRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhE2ndSameRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
+      outputContainer->Add(fhE2ndSameRatNLM3TCardCorrNoSelection[tm]);
+      
+      
+      fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hE2ndSameEMaxRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max}");
+      outputContainer->Add(fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]); 
+      
+      fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hE2ndSameEMaxRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
+      outputContainer->Add(fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]); 
+      
+      fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hE2ndSameEMaxRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
+      outputContainer->Add(fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]);
+      
+      /////
       
       fhECellClusRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
       (Form("hECellClusRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
        Form("#it{E}_{cell}/#it{E}_{cluster} vs E_{cluster}, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,0.5); 
+       nptbins,ptmin,ptmax,100,0,1); 
       fhECellClusRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhECellClusRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
       outputContainer->Add(fhECellClusRatNLM1TCardCorrNoSelection[tm]); 
@@ -3578,7 +3707,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhECellClusRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
       (Form("hECellClusRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
        Form("#it{E}_{cell}/#it{E}_{cluster} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,0.5); 
+       nptbins,ptmin,ptmax,100,0,1); 
       fhECellClusRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhECellClusRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
       outputContainer->Add(fhECellClusRatNLM2TCardCorrNoSelection[tm]); 
@@ -3586,7 +3715,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhECellClusRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
       (Form("hECellClusRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
        Form("#it{E}_{cell}/#it{E}_{cluster} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,0.5); 
+       nptbins,ptmin,ptmax,100,0,1); 
       fhECellClusRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhECellClusRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
       outputContainer->Add(fhECellClusRatNLM3TCardCorrNoSelection[tm]);
@@ -3639,7 +3768,81 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhECellWeightNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
       fhECellWeightNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
       outputContainer->Add(fhECellWeightNLM3TCardCorrNoSelection[tm]);
+
       
+      fhECellSameClusRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hECellSameClusRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}/#it{E}_{cluster} vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhECellSameClusRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhECellSameClusRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+      outputContainer->Add(fhECellSameClusRatNLM1TCardCorrNoSelection[tm]); 
+      
+      fhECellSameClusRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hECellSameClusRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}/#it{E}_{cluster} vs E, cell from same T-Card as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhECellSameClusRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhECellSameClusRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+      outputContainer->Add(fhECellSameClusRatNLM2TCardCorrNoSelection[tm]); 
+      
+      fhECellSameClusRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hECellSameClusRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{E}_{cell}/#it{E}_{cluster} vs E, cell from same T-Card as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,100,0,1); 
+      fhECellSameClusRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhECellSameClusRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+      outputContainer->Add(fhECellSameClusRatNLM3TCardCorrNoSelection[tm]);
+      
+      fhLogECellSameNLM1TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hLogECellSameNLM1TCardCorrNoSelection%s",add[tm].Data()),
+       Form("log(#it{E}_{cell}) vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1, w > 0.01 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,150,-3,3); 
+      fhLogECellSameNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhLogECellSameNLM1TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+      outputContainer->Add(fhLogECellSameNLM1TCardCorrNoSelection[tm]); 
+      
+      fhLogECellSameNLM2TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hLogECellSameNLM2TCardCorrNoSelection%s",add[tm].Data()),
+       Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}=2, cell from same T-Card as leading, w > 0.01 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,150,-3,3); 
+      fhLogECellSameNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhLogECellSameNLM2TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+      outputContainer->Add(fhLogECellSameNLM2TCardCorrNoSelection[tm]); 
+      
+      fhLogECellSameNLM3TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hLogECellSameNLM3TCardCorrNoSelection%s",add[tm].Data()),
+       Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}>2, cell from same T-Card as leading, w > 0.01 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,150,-3,3); 
+      fhLogECellSameNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhLogECellSameNLM3TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+      outputContainer->Add(fhLogECellSameNLM3TCardCorrNoSelection[tm]);
+      
+      
+      fhECellSameWeightNLM1TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hECellSameWeightNLM1TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,90,0,4.5); 
+      fhECellSameWeightNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhECellSameWeightNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+      outputContainer->Add(fhECellSameWeightNLM1TCardCorrNoSelection[tm]); 
+      
+      fhECellSameWeightNLM2TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hECellSameWeightNLM2TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E,  cell from same T-Card as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,90,0,4.5); 
+      fhECellSameWeightNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhECellSameWeightNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+      outputContainer->Add(fhECellSameWeightNLM2TCardCorrNoSelection[tm]); 
+      
+      fhECellSameWeightNLM3TCardCorrNoSelection[tm]  = new TH2F 
+      (Form("hECellSameWeightNLM3TCardCorrNoSelection%s",add[tm].Data()),
+       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))vs E, cell from same T-Card as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
+       nptbins,ptmin,ptmax,90,0,4.5); 
+      fhECellSameWeightNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhECellSameWeightNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+      outputContainer->Add(fhECellSameWeightNLM3TCardCorrNoSelection[tm]);
+
       fhExoticTCardCorrNoSelection[tm]  = new TH2F 
       (Form("hExoticTCardCorrNoSelection%s",add[tm].Data()),
        Form("exoticity vs #it{E} %s",add[tm].Data()),
@@ -3649,21 +3852,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhExoticTCardCorrNoSelection[tm]); 
       
       fhNCellsTCardSameAndDiffFraction[tm]  = new TH2F 
-      (Form("hNCellsTCardSameAndDiff%s",add[tm].Data()),
+      (Form("hNCellsTCardSameAndDiffFraction%s",add[tm].Data()),
        Form("#it{n}_{cells} same TCard vs diff TCard fraction, w > 0.01, %s",add[tm].Data()),
        nptbins,ptmin,ptmax,100,0,1); 
       fhNCellsTCardSameAndDiffFraction[tm]->SetXTitle("#it{E} (GeV)");
       fhNCellsTCardSameAndDiffFraction[tm]->SetYTitle("#it{n}_{cells} - same TCard / #it{n}_{cells} - total");
-      outputContainer->Add(fhNCellsTCardSameAndDiffFraction[tm]);       
-      
-      fhNCellsTCardSameAndDiffFractionExotic[tm]  = new TH2F 
-      (Form("hNCellsTCardSameAndDiffFraction_Exotic%s",add[tm].Data()),
-       Form("#it{n}_{cells} same TCard vs diff TCard fraction, w > 0.01, exo > 0.97 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1);  
-      fhNCellsTCardSameAndDiffFractionExotic[tm]->SetXTitle("#it{E} (GeV)");
-      fhNCellsTCardSameAndDiffFractionExotic[tm]->SetYTitle("#it{n}_{cells} - same TCard / #it{n}_{cells} - total");
-      outputContainer->Add(fhNCellsTCardSameAndDiffFractionExotic[tm]);       
-      
+      outputContainer->Add(fhNCellsTCardSameAndDiffFraction[tm]);             
       
       fhSameRowDiffColAndTCardCellsEnergyDiffClusterE[tm] = new TH2F 
       (Form("hSameRowDiffColAndTCardCellsEnergyDiffClusterE%s",add[tm].Data()),
@@ -3696,38 +3890,225 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
       fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
       outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxE[tm]); 
-
-      fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm] = new TH2F 
-      (Form("hSameRowDiffColAndTCardCellsEnergyDiffClusterEExo%s",add[tm].Data()),
-       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} vs #it{E}_{cluster}, exo > 0.97 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-10,10); 
-      fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]->SetYTitle("#it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} (GeV)");
-      outputContainer->Add(fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]); 
       
-      fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm] = new TH2F 
-      (Form("hSameRowDiffColAndTCardCellsTimeDiffClusterEExo%s",add[tm].Data()),
-       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cluster}, exo > 0.97 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-100,100); 
-      fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
-      outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]); 
-      
-      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm] = new TH2F 
-      (Form("hSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo%s",add[tm].Data()),
-       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} vs #it{E}_{cell max}, exo > 0.97 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-10,10); 
-      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
-      fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]->SetYTitle("#it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} (GeV)");
-      outputContainer->Add(fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]); 
-      
-      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm] = new TH2F 
-      (Form("hSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo%s",add[tm].Data()),
-       Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cell max}, exo > 0.97 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,200,-100,100); 
-      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
-      fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
-      outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]); 
+      if(fStudyExotic)
+      {
+        fhEnergyTime1Cell[tm]  = new TH2F 
+        (Form("hEnergyTime1Cell%s",add[tm].Data()),
+         Form("#it{t} vs #it{E}, 1 cells cluster %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,300,-150,150); 
+        fhEnergyTime1Cell[tm]->SetXTitle("#it{E} (GeV)");
+        fhEnergyTime1Cell[tm]->SetYTitle("#it{t} (ns)");
+        outputContainer->Add(fhEnergyTime1Cell[tm]); 
+        
+        fhEnergyTimeExotic[tm]  = new TH2F 
+        (Form("hEnergyTimeExotic%s",add[tm].Data()),
+         Form("#it{t} vs #it{E},  exo > 0.97, %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,300,-150,150); 
+        fhEnergyTimeExotic[tm]->SetXTitle("#it{E} (GeV)");
+        fhEnergyTimeExotic[tm]->SetYTitle("#it{t} (ns)");
+        outputContainer->Add(fhEnergyTimeExotic[tm]); 
+        
+        fhEnergyTimeTCardCorrNoSelection1Cell[tm]  = new TH2F 
+        (Form("hEnergyTimeTCardCorrNoSelection1Cell%s",add[tm].Data()),
+         Form("#it{t} vs #it{E}, 1 cells cluster %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,300,-150,150); 
+        fhEnergyTimeTCardCorrNoSelection1Cell[tm]->SetXTitle("#it{E} (GeV)");
+        fhEnergyTimeTCardCorrNoSelection1Cell[tm]->SetYTitle("#it{t} (ns)");
+        outputContainer->Add(fhEnergyTimeTCardCorrNoSelection1Cell[tm]); 
+        
+        fhEnergyTimeTCardCorrNoSelectionExotic[tm]  = new TH2F 
+        (Form("hEnergyTimeTCardCorrNoSelectionExotic%s",add[tm].Data()),
+         Form("#it{t} vs #it{E},  exo > 0.97, %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,300,-150,150); 
+        fhEnergyTimeTCardCorrNoSelectionExotic[tm]->SetXTitle("#it{E} (GeV)");
+        fhEnergyTimeTCardCorrNoSelectionExotic[tm]->SetYTitle("#it{t} (ns)");
+        outputContainer->Add(fhEnergyTimeTCardCorrNoSelectionExotic[tm]); 
+        
+        fhColRowExoticLowE1Cell[tm] = new TH2F
+        (Form("hColRowExoticLowE1Cell%s",add[tm].Data()),
+         Form("column vs row, 1 cell, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowExoticLowE1Cell[tm]->SetYTitle("row");
+        fhColRowExoticLowE1Cell[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowExoticLowE1Cell[tm]) ;
+        
+        fhColRowExoticHighE1Cell[tm] = new TH2F
+        (Form("hColRowExoticHighE1Cell%s",add[tm].Data()),
+         Form("column vs row, 1 cell, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowExoticHighE1Cell[tm]->SetYTitle("row");
+        fhColRowExoticHighE1Cell[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowExoticHighE1Cell[tm]) ;
+        
+        fhColRowExoticLowE[tm] = new TH2F
+        (Form("hColRowExoticLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowExoticLowE[tm]->SetYTitle("row");
+        fhColRowExoticLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowExoticLowE[tm]) ;
+        
+        fhColRowExoticHighE[tm] = new TH2F
+        (Form("hColRowExoticHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowExoticHighE[tm]->SetYTitle("row");
+        fhColRowExoticHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowExoticHighE[tm]) ;
+        
+        fhColRowExotic2ndCellDiffLowE[tm] = new TH2F
+        (Form("hColRowExotic2ndCellDiffLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowExotic2ndCellDiffLowE[tm]->SetYTitle("row");
+        fhColRowExotic2ndCellDiffLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowExotic2ndCellDiffLowE[tm]) ;
+        
+        fhColRowExotic2ndCellDiffHighE[tm] = new TH2F
+        (Form("hColRowExotic2ndCellDiffHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowExotic2ndCellDiffHighE[tm]->SetYTitle("row");
+        fhColRowExotic2ndCellDiffHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowExotic2ndCellDiffHighE[tm]) ;
+        
+        fhColRowExotic2ndCellSameLowE[tm] = new TH2F
+        (Form("hColRowExotic2ndCellSameLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowExotic2ndCellSameLowE[tm]->SetYTitle("row");
+        fhColRowExotic2ndCellSameLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowExotic2ndCellSameLowE[tm]) ;
+        
+        fhColRowExotic2ndCellSameHighE[tm] = new TH2F
+        (Form("hColRowExotic2ndCellSameHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowExotic2ndCellSameHighE[tm]->SetYTitle("row");
+        fhColRowExotic2ndCellSameHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowExotic2ndCellSameHighE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExoticLowE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExoticLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExoticLowE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExoticLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExoticLowE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExoticHighE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExoticHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExoticHighE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExoticHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExoticHighE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellDiffLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellDiffHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellSameLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellSameHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[tm]) ;        
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, 5 < E < 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE[tm]) ;
+        
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm] = new TH2F
+        (Form("hColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE%s",add[tm].Data()),
+         Form("column vs row, max E cell for TCard correlation selected clusters, exo > 0.97, E > 8 GeV %s",add[tm].Data()),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm]->SetYTitle("row");
+        fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm]->SetXTitle("column");
+        outputContainer->Add(fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[tm]) ;
+        
+        fhNCellsTCardSameAndDiffFractionExotic[tm]  = new TH2F 
+        (Form("hNCellsTCardSameAndDiffFraction_Exotic%s",add[tm].Data()),
+         Form("#it{n}_{cells} same TCard vs diff TCard fraction, w > 0.01, exo > 0.97 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1);  
+        fhNCellsTCardSameAndDiffFractionExotic[tm]->SetXTitle("#it{E} (GeV)");
+        fhNCellsTCardSameAndDiffFractionExotic[tm]->SetYTitle("#it{n}_{cells} - same TCard / #it{n}_{cells} - total");
+        outputContainer->Add(fhNCellsTCardSameAndDiffFractionExotic[tm]);   
+        
+        fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm] = new TH2F 
+        (Form("hSameRowDiffColAndTCardCellsEnergyDiffClusterEExo%s",add[tm].Data()),
+         Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} vs #it{E}_{cluster}, exo > 0.97 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,200,-10,10); 
+        fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]->SetYTitle("#it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} (GeV)");
+        outputContainer->Add(fhSameRowDiffColAndTCardCellsEnergyDiffClusterEExo[tm]); 
+        
+        fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm] = new TH2F 
+        (Form("hSameRowDiffColAndTCardCellsTimeDiffClusterEExo%s",add[tm].Data()),
+         Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cluster}, exo > 0.97 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,200,-100,100); 
+        fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
+        outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffClusterEExo[tm]); 
+        
+        fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm] = new TH2F 
+        (Form("hSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo%s",add[tm].Data()),
+         Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} vs #it{E}_{cell max}, exo > 0.97 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,200,-10,10); 
+        fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
+        fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]->SetYTitle("#it{E}_{cell}^{same TCard}-#it{E}_{cell}^{diff TCard} (GeV)");
+        outputContainer->Add(fhSameRowDiffColAndTCardCellsEnergyDiffCellMaxEExo[tm]); 
+        
+        fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm] = new TH2F 
+        (Form("hSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo%s",add[tm].Data()),
+         Form("#Delta row = 0, |#Delta col = 1|, with respect to leading cell, #it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} vs #it{E}_{cell max}, exo > 0.97 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,200,-100,100); 
+        fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetXTitle("#it{E}_{cell max} (GeV)");
+        fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]->SetYTitle("#it{t}_{cell}^{same TCard}-#it{t}_{cell}^{diff TCard} (ns)");
+        outputContainer->Add(fhSameRowDiffColAndTCardCellsTimeDiffCellMaxEExo[tm]); 
+      }
       
       for(Int_t i = 0; i < 6; i++)
       { 
@@ -3825,7 +4206,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hE2ndRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,0.5); 
+           nptbins,ptmin,ptmax,100,0,1); 
           fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
           fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
           outputContainer->Add(fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]); 
@@ -3833,7 +4214,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hE2ndRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,0.5); 
+           nptbins,ptmin,ptmax,100,0,1); 
           fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
           fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
           outputContainer->Add(fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]); 
@@ -3841,7 +4222,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hE2ndRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,0.5); 
+           nptbins,ptmin,ptmax,100,0,1); 
           fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
           fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
           outputContainer->Add(fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]); 
@@ -3874,7 +4255,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hECellClusRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,0.5); 
+           nptbins,ptmin,ptmax,100,0,1); 
           fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
           fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
           outputContainer->Add(fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]); 
@@ -3882,7 +4263,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hECellClusRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,0.5); 
+           nptbins,ptmin,ptmax,100,0,1); 
           fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
           fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
           outputContainer->Add(fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]); 
@@ -3890,7 +4271,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hECellClusRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,0.5); 
+           nptbins,ptmin,ptmax,100,0,1); 
           fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
           fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
           outputContainer->Add(fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]); 
@@ -3959,14 +4340,6 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //          fhMassEPairTCardCorrelNCell[i][j][tm]->SetYTitle("#it{M}_{#gamma #gamma}");
 //          outputContainer->Add(fhMassEPairTCardCorrelNCell[i][j][tm]); 
 
-          fhExoticTCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hExoticTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("exoticity vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,200,-1,1); 
-          fhExoticTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
-          fhExoticTCardCorrelNCell[i][j][tm]->SetYTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-          outputContainer->Add(fhExoticTCardCorrelNCell[i][j][tm]); 
-
           fhTimeDiffTCardCorrelNCell[i][j][tm]  = new TH2F 
           (Form("hTimeDiffTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("#it{t}_{cell}^{max}-#it{t}_{cell}^{other} vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
@@ -3974,19 +4347,11 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhTimeDiffTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
           fhTimeDiffTCardCorrelNCell[i][j][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell}^{other}");
           outputContainer->Add(fhTimeDiffTCardCorrelNCell[i][j][tm]); 
-
-          fhTimeDiffExoTCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hTimeDiffExoTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{t}_{cell}^{max}-#it{t}_{cell}^{other} vs #it{E}, N cells with  w > 0.01, exoticity > 0.97, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,300,-150,150); 
-          fhTimeDiffExoTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
-          fhTimeDiffExoTCardCorrelNCell[i][j][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell}^{other}");
-          outputContainer->Add(fhTimeDiffExoTCardCorrelNCell[i][j][tm]); 
           
           fhColRowTCardCorrelNCellLowE[i][j][tm] = new TH2F
           (Form("hColRowTCardCorrelNCellLowE_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("column vs row, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+           colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
           fhColRowTCardCorrelNCellLowE[i][j][tm]->SetYTitle("row");
           fhColRowTCardCorrelNCellLowE[i][j][tm]->SetXTitle("column");
           outputContainer->Add(fhColRowTCardCorrelNCellLowE[i][j][tm]) ;
@@ -3994,26 +4359,45 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhColRowTCardCorrelNCellHighE[i][j][tm] = new TH2F
           (Form("hColRowTCardCorrelNCellHighE_Same%d_Diff%d%s",i,j,add[tm].Data()),
            Form("column vs row,N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+           colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
           fhColRowTCardCorrelNCellHighE[i][j][tm]->SetYTitle("row");
           fhColRowTCardCorrelNCellHighE[i][j][tm]->SetXTitle("column");
           outputContainer->Add(fhColRowTCardCorrelNCellHighE[i][j][tm]) ;
           
-          fhColRowTCardCorrelNCellExoticLowE[i][j][tm] = new TH2F
-          (Form("hColRowTCardCorrelNCellExoticLowE_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("column vs row, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-          fhColRowTCardCorrelNCellExoticLowE[i][j][tm]->SetYTitle("row");
-          fhColRowTCardCorrelNCellExoticLowE[i][j][tm]->SetXTitle("column");
-          outputContainer->Add(fhColRowTCardCorrelNCellExoticLowE[i][j][tm]) ;
-          
-          fhColRowTCardCorrelNCellExoticHighE[i][j][tm] = new TH2F
-          (Form("hColRowTCardCorrelNCellExoticHighE_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("column vs row,N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-          fhColRowTCardCorrelNCellExoticHighE[i][j][tm]->SetYTitle("row");
-          fhColRowTCardCorrelNCellExoticHighE[i][j][tm]->SetXTitle("column");
-          outputContainer->Add(fhColRowTCardCorrelNCellExoticHighE[i][j][tm]) ;
+          if(fStudyExotic)
+          {
+            fhExoticTCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hExoticTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("exoticity vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,200,-1,1); 
+            fhExoticTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+            fhExoticTCardCorrelNCell[i][j][tm]->SetYTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+            outputContainer->Add(fhExoticTCardCorrelNCell[i][j][tm]); 
+            
+            fhTimeDiffExoTCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hTimeDiffExoTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{t}_{cell}^{max}-#it{t}_{cell}^{other} vs #it{E}, N cells with  w > 0.01, exoticity > 0.97, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,300,-150,150); 
+            fhTimeDiffExoTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+            fhTimeDiffExoTCardCorrelNCell[i][j][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell}^{other}");
+            outputContainer->Add(fhTimeDiffExoTCardCorrelNCell[i][j][tm]); 
+            
+            fhColRowTCardCorrelNCellExoticLowE[i][j][tm] = new TH2F
+            (Form("hColRowTCardCorrelNCellExoticLowE_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("column vs row, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+            fhColRowTCardCorrelNCellExoticLowE[i][j][tm]->SetYTitle("row");
+            fhColRowTCardCorrelNCellExoticLowE[i][j][tm]->SetXTitle("column");
+            outputContainer->Add(fhColRowTCardCorrelNCellExoticLowE[i][j][tm]) ;
+            
+            fhColRowTCardCorrelNCellExoticHighE[i][j][tm] = new TH2F
+            (Form("hColRowTCardCorrelNCellExoticHighE_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("column vs row,N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+            fhColRowTCardCorrelNCellExoticHighE[i][j][tm]->SetYTitle("row");
+            fhColRowTCardCorrelNCellExoticHighE[i][j][tm]->SetXTitle("column");
+            outputContainer->Add(fhColRowTCardCorrelNCellExoticHighE[i][j][tm]) ;
+          }
         }
         
         ///////////
@@ -4046,7 +4430,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelNLowE[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelNLowE_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row, max E cell correl with TCard cell, E > 2 GeV, N corr = %d %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelNLowE[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelNLowE[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelNLowE[i][tm]) ;
@@ -4054,7 +4438,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelNHighE[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelNHighE_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row, max E cell correl with TCard cell, E > 8 GeV, N corr = %d %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelNHighE[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelNHighE[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelNHighE[i][tm]) ;
@@ -4081,7 +4465,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelNLowEExotic[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelNLowEExotic_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row, max E cell correl with TCard cell, exo > 0.97, E > 2 GeV, N corr = %d %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelNLowEExotic[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelNLowEExotic[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelNLowEExotic[i][tm]) ;
@@ -4089,7 +4473,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelNHighEExotic[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelNHighEExotic_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row, max E cell correl with TCard cell, exo > 0.97, E > 8 GeV, N corr = %d %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelNHighEExotic[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelNHighEExotic[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelNHighEExotic[i][tm]) ;
@@ -4124,7 +4508,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelNAllSameTCardLowE[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelNAllSameTCardLowE_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row, max E cell correl with TCard cell, E > 2 GeV, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelNAllSameTCardLowE[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelNAllSameTCardLowE[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelNAllSameTCardLowE[i][tm]) ;
@@ -4132,7 +4516,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelNAllSameTCardHighE[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelNAllSameTCardHighE_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row, max E cell correl with TCard cell, E > 8 GeV, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelNAllSameTCardHighE[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelNAllSameTCardHighE[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelNAllSameTCardHighE[i][tm]) ;
@@ -4158,7 +4542,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelNAllSameTCardLowEExotic[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelNAllSameTCardLowEExotic_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row, max E cell correl with TCard cell, exo > 0.97, E > 2 GeV, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelNAllSameTCardLowEExotic[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelNAllSameTCardLowEExotic[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelNAllSameTCardLowEExotic[i][tm]) ;
@@ -4166,7 +4550,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelNAllSameTCardHighEExotic_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row, max E cell correl with TCard cell, exo > 0.97, E > 8 GeV, N corr = %d, no other TCard cells %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelNAllSameTCardHighEExotic[i][tm]) ;
@@ -4218,23 +4602,26 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        outputContainer->Add(fhNCellsTCardCorrelExotic[i][tm]);
 //      }
       
+    
       for(Int_t i = 0; i < fNEBinCuts; i++)
       {
-        fhLambda0Exoticity[i][tm]  = new TH2F 
-        (Form("hLambda0Exoticity_EBin%d%s",i,add[tm].Data()),
-         Form("#lambda^{2}_{0} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         200,-1,1,ssbins,ssmin,ssmax); 
-        fhLambda0Exoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-        fhLambda0Exoticity[i][tm]->SetYTitle("#lambda^{2}_{0}");
-        outputContainer->Add(fhLambda0Exoticity[i][tm]);    
-
-        fhLambda1Exoticity[i][tm]  = new TH2F 
-        (Form("hLambda1Exoticity_EBin%d%s",i,add[tm].Data()),
-         Form("#lambda^{2}_{1} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         200,-1,1,ssbins,ssmin,ssmax); 
-        fhLambda1Exoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-        fhLambda1Exoticity[i][tm]->SetYTitle("#lambda^{2}_{1}");
-        outputContainer->Add(fhLambda1Exoticity[i][tm]);    
+        if(fStudyExotic)
+        {
+          fhLambda0Exoticity[i][tm]  = new TH2F 
+          (Form("hLambda0Exoticity_EBin%d%s",i,add[tm].Data()),
+           Form("#lambda^{2}_{0} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+           200,-1,1,ssbins,ssmin,ssmax); 
+          fhLambda0Exoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+          fhLambda0Exoticity[i][tm]->SetYTitle("#lambda^{2}_{0}");
+          outputContainer->Add(fhLambda0Exoticity[i][tm]);    
+          
+          fhLambda1Exoticity[i][tm]  = new TH2F 
+          (Form("hLambda1Exoticity_EBin%d%s",i,add[tm].Data()),
+           Form("#lambda^{2}_{1} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+           200,-1,1,ssbins,ssmin,ssmax); 
+          fhLambda1Exoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+          fhLambda1Exoticity[i][tm]->SetYTitle("#lambda^{2}_{1}");
+          outputContainer->Add(fhLambda1Exoticity[i][tm]);    
 
 //        fhLambdaRExoticity[i][tm]  = new TH2F 
 //        (Form("hLambdaRExoticity_EBin%d%s",i,add[tm].Data()),
@@ -4244,30 +4631,30 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhLambdaRExoticity[i][tm]->SetYTitle("#lambda^{2}_{1}/#lambda^{2}_{0}");
 //        outputContainer->Add(fhLambdaRExoticity[i][tm]);    
         
-        fhNCellsExoticity[i][tm]  = new TH2F 
-        (Form("hNCellsExoticity_EBin%d%s",i,add[tm].Data()),
-         Form("#it{n}_{cells} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         200,-1,1,nceclbins,nceclmin,nceclmax); 
-        fhNCellsExoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-        fhNCellsExoticity[i][tm]->SetYTitle("#it{n}_{cells}");
-        outputContainer->Add(fhNCellsExoticity[i][tm]); 
+          fhNCellsExoticity[i][tm]  = new TH2F 
+          (Form("hNCellsExoticity_EBin%d%s",i,add[tm].Data()),
+           Form("#it{n}_{cells} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+           200,-1,1,nceclbins,nceclmin,nceclmax); 
+          fhNCellsExoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+          fhNCellsExoticity[i][tm]->SetYTitle("#it{n}_{cells}");
+          outputContainer->Add(fhNCellsExoticity[i][tm]); 
+          
+          fhTimeExoticity[i][tm]  = new TH2F 
+          (Form("hTimeExoticity_EBin%d%s",i,add[tm].Data()),
+           Form("#it{t} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+           200,-1,1,100,-25,25); 
+          fhTimeExoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+          fhTimeExoticity[i][tm]->SetYTitle("#it{t} (ns)");
+          outputContainer->Add(fhTimeExoticity[i][tm]); 
+        
+          fhNCellsTCardSameAndDiffExotic[i][tm]  = new TH2F 
+          (Form("hNCellsTCardSameAndDiff_Exotic_EBin%d%s",i,add[tm].Data()),
+           Form("#it{n}_{cells} same TCard vs diff TCard, w > 0.01, %2.2f<#it{E}<%2.2f GeV, exo > 0.97 %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+           nceclbins,nceclmin,nceclmax,nceclbins,nceclmin,nceclmax); 
+          fhNCellsTCardSameAndDiffExotic[i][tm]->SetXTitle("#it{n}_{cells} - diff TCard");
+          fhNCellsTCardSameAndDiffExotic[i][tm]->SetYTitle("#it{n}_{cells} - same TCard");
+          outputContainer->Add(fhNCellsTCardSameAndDiffExotic[i][tm]);            
 
-        fhTimeExoticity[i][tm]  = new TH2F 
-        (Form("hTimeExoticity_EBin%d%s",i,add[tm].Data()),
-         Form("#it{t} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         200,-1,1,100,-25,25); 
-        fhTimeExoticity[i][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-        fhTimeExoticity[i][tm]->SetYTitle("#it{t} (ns)");
-        outputContainer->Add(fhTimeExoticity[i][tm]); 
-        
-        fhLambda0Lambda1[i][tm]  = new TH2F 
-        (Form("hLambda0Lambda1_EBin%d%s",i,add[tm].Data()),
-         Form("#lambda^{2}_{0} vs #lambda^{2}_{1}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         ssbins,ssmin,ssmax,ssbins,ssmin,ssmax); 
-        fhLambda0Lambda1[i][tm]->SetXTitle("#lambda^{2}_{1}");
-        fhLambda0Lambda1[i][tm]->SetYTitle("#lambda^{2}_{0}");
-        outputContainer->Add(fhLambda0Lambda1[i][tm]);   
-        
 //        fhLambda0ExoticityAllSameTCard[i][tm]  = new TH2F 
 //        (Form("hLambda0ExoticityAllSameTCard_EBin%d%s",i,add[tm].Data()),
 //         Form("#lambda^{2}_{0} vs #it{exoticity}, all cells same TCard as leading, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
@@ -4300,13 +4687,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhNCellsExoticityAllSameTCard[i][tm]->SetYTitle("#it{n}_{cells}");
 //        outputContainer->Add(fhNCellsExoticityAllSameTCard[i][tm]); 
 //        
-//        fhLambda0Lambda1AllSameTCard[i][tm]  = new TH2F 
-//        (Form("hLambda0Lambda1AllSameTCard_EBin%d%s",i,add[tm].Data()),
-//         Form("#lambda^{2}_{0} vs #lambda^{2}_{1}, , all cells same TCard as leading, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-//         ssbins,ssmin,ssmax,ssbins,ssmin,ssmax); 
-//        fhLambda0Lambda1AllSameTCard[i][tm]->SetXTitle("#lambda^{2}_{1}");
-//        fhLambda0Lambda1AllSameTCard[i][tm]->SetYTitle("#lambda^{2}_{0}");
-//        outputContainer->Add(fhLambda0Lambda1AllSameTCard[i][tm]);   
+        }
         
         fhNCellsTCardSameAndDiff[i][tm]  = new TH2F 
         (Form("hNCellsTCardSameAndDiff_EBin%d%s",i,add[tm].Data()),
@@ -4315,35 +4696,45 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhNCellsTCardSameAndDiff[i][tm]->SetXTitle("#it{n}_{cells} - diff TCard");
         fhNCellsTCardSameAndDiff[i][tm]->SetYTitle("#it{n}_{cells} - same TCard");
         outputContainer->Add(fhNCellsTCardSameAndDiff[i][tm]);       
+
+        fhLambda0Lambda1[i][tm]  = new TH2F 
+        (Form("hLambda0Lambda1_EBin%d%s",i,add[tm].Data()),
+         Form("#lambda^{2}_{0} vs #lambda^{2}_{1}, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+         ssbins,ssmin,ssmax,ssbins,ssmin,ssmax); 
+        fhLambda0Lambda1[i][tm]->SetXTitle("#lambda^{2}_{1}");
+        fhLambda0Lambda1[i][tm]->SetYTitle("#lambda^{2}_{0}");
+        outputContainer->Add(fhLambda0Lambda1[i][tm]);   
         
-        fhNCellsTCardSameAndDiffExotic[i][tm]  = new TH2F 
-        (Form("hNCellsTCardSameAndDiff_Exotic_EBin%d%s",i,add[tm].Data()),
-         Form("#it{n}_{cells} same TCard vs diff TCard, w > 0.01, %2.2f<#it{E}<%2.2f GeV, exo > 0.97 %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
-         nceclbins,nceclmin,nceclmax,nceclbins,nceclmin,nceclmax); 
-        fhNCellsTCardSameAndDiffExotic[i][tm]->SetXTitle("#it{n}_{cells} - diff TCard");
-        fhNCellsTCardSameAndDiffExotic[i][tm]->SetYTitle("#it{n}_{cells} - same TCard");
-        outputContainer->Add(fhNCellsTCardSameAndDiffExotic[i][tm]);            
+//        fhLambda0Lambda1AllSameTCard[i][tm]  = new TH2F 
+//        (Form("hLambda0Lambda1AllSameTCard_EBin%d%s",i,add[tm].Data()),
+//         Form("#lambda^{2}_{0} vs #lambda^{2}_{1}, , all cells same TCard as leading, %2.2f<#it{E}<%2.2f GeV %s",fEBinCuts[i],fEBinCuts[i+1],add[tm].Data()),
+//         ssbins,ssmin,ssmax,ssbins,ssmin,ssmax); 
+//        fhLambda0Lambda1AllSameTCard[i][tm]->SetXTitle("#lambda^{2}_{1}");
+//        fhLambda0Lambda1AllSameTCard[i][tm]->SetYTitle("#lambda^{2}_{0}");
+//        outputContainer->Add(fhLambda0Lambda1AllSameTCard[i][tm]);   
       }
       
-      for(Int_t j = 0; j < 6; j++)
+      if(fStudyExotic)
       {
-        for(Int_t k = 0; k < 6; k++)
+        for(Int_t j = 0; j < 6; j++)
         {
-          fhLambda0ExoticityPerNCell[j][k][tm]  = new TH2F 
-          (Form("hLambda0Exoticity_NCell_Same%d_Diff%d%s",j,k,add[tm].Data()),
-           Form("#lambda^{2}_{0} vs #it{exoticity}, #it{n}_{cell} TCard same = %d, diff =%d, #it{E}>8 GeV %s",j,k,add[tm].Data()),
-           200,-1,1,ssbins,ssmin,ssmax); 
-          fhLambda0ExoticityPerNCell[j][k][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-          fhLambda0ExoticityPerNCell[j][k][tm]->SetYTitle("#lambda^{2}_{0}");
-          outputContainer->Add(fhLambda0ExoticityPerNCell[j][k][tm]);      
-          
-          fhLambda1ExoticityPerNCell[j][k][tm]  = new TH2F 
-          (Form("hLambda1Exoticity_NCell_Same%d_Diff%d%s",j,k,add[tm].Data()),
-           Form("#lambda^{2}_{1} vs #it{exoticity}, #it{n}_{cell} TCard same = %d, diff =%d, #it{E}>8 GeV %s",j,k,add[tm].Data()),
-           200,-1,1,ssbins,ssmin,ssmax); 
-          fhLambda1ExoticityPerNCell[j][k][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-          fhLambda1ExoticityPerNCell[j][k][tm]->SetYTitle("#lambda^{2}_{1}");
-          outputContainer->Add(fhLambda1ExoticityPerNCell[j][k][tm]);  
+          for(Int_t k = 0; k < 6; k++)
+          {
+            fhLambda0ExoticityPerNCell[j][k][tm]  = new TH2F 
+            (Form("hLambda0Exoticity_NCell_Same%d_Diff%d%s",j,k,add[tm].Data()),
+             Form("#lambda^{2}_{0} vs #it{exoticity}, #it{n}_{cell} TCard same = %d, diff =%d, #it{E}>8 GeV %s",j,k,add[tm].Data()),
+             200,-1,1,ssbins,ssmin,ssmax); 
+            fhLambda0ExoticityPerNCell[j][k][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+            fhLambda0ExoticityPerNCell[j][k][tm]->SetYTitle("#lambda^{2}_{0}");
+            outputContainer->Add(fhLambda0ExoticityPerNCell[j][k][tm]);      
+            
+            fhLambda1ExoticityPerNCell[j][k][tm]  = new TH2F 
+            (Form("hLambda1Exoticity_NCell_Same%d_Diff%d%s",j,k,add[tm].Data()),
+             Form("#lambda^{2}_{1} vs #it{exoticity}, #it{n}_{cell} TCard same = %d, diff =%d, #it{E}>8 GeV %s",j,k,add[tm].Data()),
+             200,-1,1,ssbins,ssmin,ssmax); 
+            fhLambda1ExoticityPerNCell[j][k][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+            fhLambda1ExoticityPerNCell[j][k][tm]->SetYTitle("#lambda^{2}_{1}");
+            outputContainer->Add(fhLambda1ExoticityPerNCell[j][k][tm]);  
           
 //          fhLambdaRExoticityPerNCell[j][k][tm]  = new TH2F 
 //          (Form("hLambdaRExoticity_NCell_Same%d_Diff%d%s",j,k,add[tm].Data()),
@@ -4352,9 +4743,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //          fhLambdaRExoticityPerNCell[j][k][tm]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
 //          fhLambdaRExoticityPerNCell[j][k][tm]->SetYTitle("#lambda^{2}_{1}/#lambda^{2}_{0}");
 //          outputContainer->Add(fhLambdaRExoticityPerNCell[j][k][tm]);  
+          }
         }
       }
-
       
 //      for(Int_t i = 0; i < 6; i++)
 //      {
@@ -4423,7 +4814,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelOtherTCardLowE[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelOtherTCardLowE_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row for different 2 TCard correlation cases, E > 2 GeV, case %d %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelOtherTCardLowE[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelOtherTCardLowE[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelOtherTCardLowE[i][tm]) ;
@@ -4431,7 +4822,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhColRowTCardCorrelOtherTCardHighE[i][tm] = new TH2F
 //        (Form("hColRowTCardCorrelOtherTCardHighE_Case%d%s",i,add[tm].Data()),
 //         Form("column vs row for different 2 TCard correlation cases, E > 8 GeV, case %d %s",i,add[tm].Data()),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
 //        fhColRowTCardCorrelOtherTCardHighE[i][tm]->SetYTitle("row");
 //        fhColRowTCardCorrelOtherTCardHighE[i][tm]->SetXTitle("column");
 //        outputContainer->Add(fhColRowTCardCorrelOtherTCardHighE[i][tm]) ;
@@ -4479,21 +4870,23 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhTCardCorrTCellMaxDiff[i][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell} (ns)");
         outputContainer->Add(fhTCardCorrTCellMaxDiff[i][tm]); 
         
-        fhTCardCorrECellMaxDiffExo[i][tm]  = new TH2F 
-        (Form("hTCardCorrECellMaxDiffExo_Case%d%s",i,add[tm].Data()),
-         Form("#it{E}_{cell}^{max}-#it{E}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, exoticity > 0.97, case %d %s",i,add[tm].Data()),
-         nptbins,ptmin,ptmax,210,-1,20); 
-        fhTCardCorrECellMaxDiffExo[i][tm]->SetXTitle("#it{E} (GeV)");
-        fhTCardCorrECellMaxDiffExo[i][tm]->SetYTitle("#it{E}_{cell}^{max}-#it{E}_{cell} (GeV)");
-        outputContainer->Add(fhTCardCorrECellMaxDiffExo[i][tm]); 
-        
-        fhTCardCorrEClusterDiffExo[i][tm]  = new TH2F 
-        (Form("hTCardCorrEClusterDiffExo_Case%d%s",i,add[tm].Data()),
-         Form("#it{E}_{cluster}-#it{E}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, exoticity > 0.97, case %d %s",i,add[tm].Data()),
-         nptbins,ptmin,ptmax,210,-1,20); 
-        fhTCardCorrEClusterDiffExo[i][tm]->SetXTitle("#it{E} (GeV)");
-        fhTCardCorrEClusterDiffExo[i][tm]->SetYTitle("#it{E}_{cluster}-#it{E}_{cell} (GeV)");
-        outputContainer->Add(fhTCardCorrEClusterDiffExo[i][tm]); 
+        if(fStudyExotic)
+        {
+          fhTCardCorrECellMaxDiffExo[i][tm]  = new TH2F 
+          (Form("hTCardCorrECellMaxDiffExo_Case%d%s",i,add[tm].Data()),
+           Form("#it{E}_{cell}^{max}-#it{E}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, exoticity > 0.97, case %d %s",i,add[tm].Data()),
+           nptbins,ptmin,ptmax,210,-1,20); 
+          fhTCardCorrECellMaxDiffExo[i][tm]->SetXTitle("#it{E} (GeV)");
+          fhTCardCorrECellMaxDiffExo[i][tm]->SetYTitle("#it{E}_{cell}^{max}-#it{E}_{cell} (GeV)");
+          outputContainer->Add(fhTCardCorrECellMaxDiffExo[i][tm]); 
+          
+          fhTCardCorrEClusterDiffExo[i][tm]  = new TH2F 
+          (Form("hTCardCorrEClusterDiffExo_Case%d%s",i,add[tm].Data()),
+           Form("#it{E}_{cluster}-#it{E}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, exoticity > 0.97, case %d %s",i,add[tm].Data()),
+           nptbins,ptmin,ptmax,210,-1,20); 
+          fhTCardCorrEClusterDiffExo[i][tm]->SetXTitle("#it{E} (GeV)");
+          fhTCardCorrEClusterDiffExo[i][tm]->SetYTitle("#it{E}_{cluster}-#it{E}_{cell} (GeV)");
+          outputContainer->Add(fhTCardCorrEClusterDiffExo[i][tm]); 
         
 //        fhTCardCorrECellMaxRatExo[i][tm]  = new TH2F 
 //        (Form("hTCardCorrECellMaxRatExo_Case%d%s",i,add[tm].Data()),
@@ -4511,58 +4904,101 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //        fhTCardCorrEClusterRatExo[i][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
 //        outputContainer->Add(fhTCardCorrEClusterRatExo[i][tm]); 
         
-        fhTCardCorrTCellMaxDiffExo[i][tm]  = new TH2F 
-        (Form("hTCardCorrTCellMaxDiffExo_Case%d%s",i,add[tm].Data()),
-         Form("#it{t}_{cell}^{max}-#it{t}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, exoticity > 0.97, case %d %s",i,add[tm].Data()),
-         nptbins,ptmin,ptmax,1000,-100,100); 
-        fhTCardCorrTCellMaxDiffExo[i][tm]->SetXTitle("#it{E} (GeV)");
-        fhTCardCorrTCellMaxDiffExo[i][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell} (ns)");
-        outputContainer->Add(fhTCardCorrTCellMaxDiffExo[i][tm]); 
+          fhTCardCorrTCellMaxDiffExo[i][tm]  = new TH2F 
+          (Form("hTCardCorrTCellMaxDiffExo_Case%d%s",i,add[tm].Data()),
+           Form("#it{t}_{cell}^{max}-#it{t}_{cell} vs #it{E}_{cluster}, for (un)correlated cells in TCard, exoticity > 0.97, case %d %s",i,add[tm].Data()),
+           nptbins,ptmin,ptmax,1000,-100,100); 
+          fhTCardCorrTCellMaxDiffExo[i][tm]->SetXTitle("#it{E} (GeV)");
+          fhTCardCorrTCellMaxDiffExo[i][tm]->SetYTitle("#it{t}_{cell}^{max}-#it{t}_{cell} (ns)");
+          outputContainer->Add(fhTCardCorrTCellMaxDiffExo[i][tm]); 
+        }
       }
     } // neutral or charged
     
-    fhEnergyTMEtaResidual1Cell  = new TH2F("hEnergyTMEtaResidual1Cell","#Delta #eta_{cluster-track} vs #it{E}, n cell = 1",
-                                           nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-    fhEnergyTMEtaResidual1Cell->SetXTitle("#it{E} (GeV)");
-    fhEnergyTMEtaResidual1Cell->SetYTitle("#Delta #eta_{cluster-track}");
-    outputContainer->Add(fhEnergyTMEtaResidual1Cell);    
-    
-    fhEnergyTMPhiResidual1Cell  = new TH2F("hEnergyTMPhiResidual1Cell","#Delta #varphi_{cluster-track} vs #it{E}, n cell = 1",
-                                           nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-    fhEnergyTMPhiResidual1Cell->SetXTitle("#it{E} (GeV)");
-    fhEnergyTMPhiResidual1Cell->SetYTitle("#Delta #varphi_{cluster-track}");
-    outputContainer->Add(fhEnergyTMPhiResidual1Cell);   
- 
-    fhEnergyTMEtaResidualExotic  = new TH2F("hEnergyTMEtaResidualExotic","#Delta #eta_{cluster-track} vs #it{E}, exo > 0.97",
-                                           nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-    fhEnergyTMEtaResidualExotic->SetXTitle("#it{E} (GeV)");
-    fhEnergyTMEtaResidualExotic->SetYTitle("#Delta #eta_{cluster-track}");
-    outputContainer->Add(fhEnergyTMEtaResidualExotic);    
-    
-    fhEnergyTMPhiResidualExotic  = new TH2F("hEnergyTMPhiResidualExotic","#Delta #varphi_{cluster-track} vs #it{E}, exo > 0.97",
-                                           nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-    fhEnergyTMPhiResidualExotic->SetXTitle("#it{E} (GeV)");
-    fhEnergyTMPhiResidualExotic->SetYTitle("#Delta #varphi_{cluster-track}");
-    outputContainer->Add(fhEnergyTMPhiResidualExotic);   
-    
-    for(Int_t i = 0; i < fNEBinCuts; i++)
+    if(fStudyExotic)
     {
-      fhTMPhiResidualExoticity[i]  = new TH2F 
-      (Form("hTMPhiResidual_EBin%d",i),
-       Form("#Delta #varphi_{cluster-track} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV",fEBinCuts[i],fEBinCuts[i+1]),
-       200,-1,1,nresphibins,resphimin,resphimax); 
-      fhTMPhiResidualExoticity[i]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-      fhTMPhiResidualExoticity[i]->SetYTitle("#Delta #varphi_{cluster-track}");
-      outputContainer->Add(fhTMPhiResidualExoticity[i]);    
+      fhEnergyTMEtaResidual1Cell  = new TH2F("hEnergyTMEtaResidual1Cell","#Delta #eta_{cluster-track} vs #it{E}, n cell = 1",
+                                             nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhEnergyTMEtaResidual1Cell->SetXTitle("#it{E} (GeV)");
+      fhEnergyTMEtaResidual1Cell->SetYTitle("#Delta #eta_{cluster-track}");
+      outputContainer->Add(fhEnergyTMEtaResidual1Cell);    
       
-      fhTMEtaResidualExoticity[i]  = new TH2F 
-      (Form("hTMEtaResidual_EBin%d",i),
-       Form("#Delta #eta_{cluster-track} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV",fEBinCuts[i],fEBinCuts[i+1]),
-       200,-1,1,nresetabins,resetamin,resetamax); 
-      fhTMEtaResidualExoticity[i]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
-      fhTMEtaResidualExoticity[i]->SetYTitle("#Delta #eta_{cluster-track}");
-      outputContainer->Add(fhTMEtaResidualExoticity[i]);   
+      fhEnergyTMPhiResidual1Cell  = new TH2F("hEnergyTMPhiResidual1Cell","#Delta #varphi_{cluster-track} vs #it{E}, n cell = 1",
+                                             nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhEnergyTMPhiResidual1Cell->SetXTitle("#it{E} (GeV)");
+      fhEnergyTMPhiResidual1Cell->SetYTitle("#Delta #varphi_{cluster-track}");
+      outputContainer->Add(fhEnergyTMPhiResidual1Cell);   
       
+      fhEnergyTMEtaResidualExotic  = new TH2F("hEnergyTMEtaResidualExotic","#Delta #eta_{cluster-track} vs #it{E}, exo > 0.97",
+                                              nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhEnergyTMEtaResidualExotic->SetXTitle("#it{E} (GeV)");
+      fhEnergyTMEtaResidualExotic->SetYTitle("#Delta #eta_{cluster-track}");
+      outputContainer->Add(fhEnergyTMEtaResidualExotic);    
+      
+      fhEnergyTMPhiResidualExotic  = new TH2F("hEnergyTMPhiResidualExotic","#Delta #varphi_{cluster-track} vs #it{E}, exo > 0.97",
+                                              nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhEnergyTMPhiResidualExotic->SetXTitle("#it{E} (GeV)");
+      fhEnergyTMPhiResidualExotic->SetYTitle("#Delta #varphi_{cluster-track}");
+      outputContainer->Add(fhEnergyTMPhiResidualExotic);   
+      
+      fhEnergyTMEtaResidualTCardCorrNoSelection1Cell  = new TH2F("hEnergyTMEtaResidualTCardCorrNoSelection1Cell","#Delta #eta_{cluster-track} vs #it{E}, n cell = 1",
+                                                                 nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhEnergyTMEtaResidualTCardCorrNoSelection1Cell->SetXTitle("#it{E} (GeV)");
+      fhEnergyTMEtaResidualTCardCorrNoSelection1Cell->SetYTitle("#Delta #eta_{cluster-track}");
+      outputContainer->Add(fhEnergyTMEtaResidualTCardCorrNoSelection1Cell);    
+      
+      fhEnergyTMPhiResidualTCardCorrNoSelection1Cell  = new TH2F("hEnergyTMPhiResidualTCardCorrNoSelection1Cell","#Delta #varphi_{cluster-track} vs #it{E}, n cell = 1",
+                                                                 nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhEnergyTMPhiResidualTCardCorrNoSelection1Cell->SetXTitle("#it{E} (GeV)");
+      fhEnergyTMPhiResidualTCardCorrNoSelection1Cell->SetYTitle("#Delta #varphi_{cluster-track}");
+      outputContainer->Add(fhEnergyTMPhiResidualTCardCorrNoSelection1Cell);   
+      
+      fhEnergyTMEtaResidualTCardCorrNoSelectionExotic  = new TH2F("hEnergyTMEtaResidualTCardCorrNoSelectionExotic","#Delta #eta_{cluster-track} vs #it{E}, exo > 0.97",
+                                                                  nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhEnergyTMEtaResidualTCardCorrNoSelectionExotic->SetXTitle("#it{E} (GeV)");
+      fhEnergyTMEtaResidualTCardCorrNoSelectionExotic->SetYTitle("#Delta #eta_{cluster-track}");
+      outputContainer->Add(fhEnergyTMEtaResidualTCardCorrNoSelectionExotic);    
+      
+      fhEnergyTMPhiResidualTCardCorrNoSelectionExotic  = new TH2F("hEnergyTMPhiResidualTCardCorrNoSelectionExotic","#Delta #varphi_{cluster-track} vs #it{E}, exo > 0.97",
+                                                                  nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhEnergyTMPhiResidualTCardCorrNoSelectionExotic->SetXTitle("#it{E} (GeV)");
+      fhEnergyTMPhiResidualTCardCorrNoSelectionExotic->SetYTitle("#Delta #varphi_{cluster-track}");
+      outputContainer->Add(fhEnergyTMPhiResidualTCardCorrNoSelectionExotic);   
+      
+      for(Int_t i = 0; i < fNEBinCuts; i++)
+      {
+        fhTMPhiResidualExoticity[i]  = new TH2F 
+        (Form("hTMPhiResidual_EBin%d",i),
+         Form("#Delta #varphi_{cluster-track} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV",fEBinCuts[i],fEBinCuts[i+1]),
+         200,-1,1,nresphibins,resphimin,resphimax); 
+        fhTMPhiResidualExoticity[i]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+        fhTMPhiResidualExoticity[i]->SetYTitle("#Delta #varphi_{cluster-track}");
+        outputContainer->Add(fhTMPhiResidualExoticity[i]);    
+        
+        fhTMEtaResidualExoticity[i]  = new TH2F 
+        (Form("hTMEtaResidual_EBin%d",i),
+         Form("#Delta #eta_{cluster-track} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV",fEBinCuts[i],fEBinCuts[i+1]),
+         200,-1,1,nresetabins,resetamin,resetamax); 
+        fhTMEtaResidualExoticity[i]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+        fhTMEtaResidualExoticity[i]->SetYTitle("#Delta #eta_{cluster-track}");
+        outputContainer->Add(fhTMEtaResidualExoticity[i]);   
+        
+        fhTMPhiResidualExoticityLooseCut[i]  = new TH2F 
+        (Form("hTMPhiResidual_LooseCut_EBin%d",i),
+         Form("#Delta #varphi_{cluster-track} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV",fEBinCuts[i],fEBinCuts[i+1]),
+         200,-1,1,nresphibins,resphimin,resphimax); 
+        fhTMPhiResidualExoticityLooseCut[i]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+        fhTMPhiResidualExoticityLooseCut[i]->SetYTitle("#Delta #varphi_{cluster-track}");
+        outputContainer->Add(fhTMPhiResidualExoticityLooseCut[i]);    
+        
+        fhTMEtaResidualExoticityLooseCut[i]  = new TH2F 
+        (Form("hTMEtaResidual_LooseCut_EBin%d",i),
+         Form("#Delta #eta_{cluster-track} vs #it{exoticity}, %2.2f<#it{E}<%2.2f GeV",fEBinCuts[i],fEBinCuts[i+1]),
+         200,-1,1,nresetabins,resetamin,resetamax); 
+        fhTMEtaResidualExoticityLooseCut[i]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
+        fhTMEtaResidualExoticityLooseCut[i]->SetYTitle("#Delta #eta_{cluster-track}");
+        outputContainer->Add(fhTMEtaResidualExoticityLooseCut[i]);   
+        
 //      fhTMPhiResidualExoticityAllSameTCard[i]  = new TH2F 
 //      (Form("hTMPhiResidualAllSameTCard_EBin%d",i),
 //       Form("#Delta #varphi_{cluster-track} vs #it{exoticity}, all cells same TCard as leading, %2.2f<#it{E}<%2.2f GeV",fEBinCuts[i],fEBinCuts[i+1]),
@@ -4578,29 +5014,38 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //      fhTMEtaResidualExoticityAllSameTCard[i]->SetXTitle("#it{F}_{+}=1-#it{E}_{+}/#it{E}_{lead cell}");
 //      fhTMEtaResidualExoticityAllSameTCard[i]->SetYTitle("#Delta #eta_{cluster-track}");
 //      outputContainer->Add(fhTMEtaResidualExoticityAllSameTCard[i]);    
+      }
     }
   } // TCard correlation studies
 
+  if(fFillClusterMaxCellHisto)
+  {
+    fhClusterMaxCellCloseCellRatio  = new TH2F ("hClusterMaxCellCloseCellRatio","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
+                                                nptbins,ptmin,ptmax, 100,0,1.); 
+    fhClusterMaxCellCloseCellRatio->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhClusterMaxCellCloseCellRatio->SetYTitle("#it{E}_{cell i}/#it{E}_{cell max}");
+    outputContainer->Add(fhClusterMaxCellCloseCellRatio);
+    
+    fhClusterMaxCellCloseCellDiff  = new TH2F ("hClusterMaxCellCloseCellDiff","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
+                                               nptbins,ptmin,ptmax, 500,0,100.); 
+    fhClusterMaxCellCloseCellDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhClusterMaxCellCloseCellDiff->SetYTitle("#it{E}_{cell max}-#it{E}_{cell i} (GeV)");
+    outputContainer->Add(fhClusterMaxCellCloseCellDiff);
+    
+    fhClusterMaxCellDiff  = new TH2F ("hClusterMaxCellDiff","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
+                                      nptbins,ptmin,ptmax, 500,0,1.); 
+    fhClusterMaxCellDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhClusterMaxCellDiff->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
+    outputContainer->Add(fhClusterMaxCellDiff);  
+    
+    fhClusterMaxCellECross  = new TH2F ("hClusterMaxCellECross","1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters",
+                                        nptbins,ptmin,ptmax, 400,-1,1.); 
+    fhClusterMaxCellECross->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhClusterMaxCellECross->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell max}");
+    outputContainer->Add(fhClusterMaxCellECross);    
+  }
   
-  fhClusterMaxCellCloseCellRatio  = new TH2F ("hClusterMaxCellCloseCellRatio","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
-                                              nptbins,ptmin,ptmax, 100,0,1.); 
-  fhClusterMaxCellCloseCellRatio->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhClusterMaxCellCloseCellRatio->SetYTitle("#it{E}_{cell i}/#it{E}_{cell max}");
-  outputContainer->Add(fhClusterMaxCellCloseCellRatio);
-  
-  fhClusterMaxCellCloseCellDiff  = new TH2F ("hClusterMaxCellCloseCellDiff","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
-                                             nptbins,ptmin,ptmax, 500,0,100.); 
-  fhClusterMaxCellCloseCellDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhClusterMaxCellCloseCellDiff->SetYTitle("#it{E}_{cell max}-#it{E}_{cell i} (GeV)");
-  outputContainer->Add(fhClusterMaxCellCloseCellDiff);
-  
-  fhClusterMaxCellDiff  = new TH2F ("hClusterMaxCellDiff","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
-                                    nptbins,ptmin,ptmax, 500,0,1.); 
-  fhClusterMaxCellDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhClusterMaxCellDiff->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
-  outputContainer->Add(fhClusterMaxCellDiff);  
-  
-  if(fStudyBadClusters)
+  if(fStudyBadClusters && fFillClusterMaxCellHisto )
   {
     fhClusterMaxCellDiffNoCut  = new TH2F ("hClusterMaxCellDiffNoCut","energy vs difference of cluster energy - max cell energy / cluster energy",
                                            nptbins,ptmin,ptmax, 500,0,1.); 
@@ -4608,13 +5053,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhClusterMaxCellDiffNoCut->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
     outputContainer->Add(fhClusterMaxCellDiffNoCut);  
   }
-  
-  fhClusterMaxCellECross  = new TH2F ("hClusterMaxCellECross","1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters",
-                                       nptbins,ptmin,ptmax, 400,-1,1.); 
-  fhClusterMaxCellECross->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhClusterMaxCellECross->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell max}");
-  outputContainer->Add(fhClusterMaxCellECross);    
-  
+
   if(fStudyBadClusters)
   {
     fhNCellsPerClusterNoCut  = new TH2F ("hNCellsPerClusterNoCut","# cells per cluster vs energy, no bad clusters cut",
@@ -4672,23 +5111,26 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhBadClusterLambda1->SetYTitle("#lambda^{2}_{1}");
     outputContainer->Add(fhBadClusterLambda1); 
     
-    fhBadClusterMaxCellCloseCellRatio  = new TH2F ("hBadClusterMaxCellCloseCellRatio","energy vs ratio of max cell / neighbour cell constributing cell, reconstructed bad clusters",
-                                                   nptbins,ptmin,ptmax, 100,0,1.); 
-    fhBadClusterMaxCellCloseCellRatio->SetXTitle("#it{E}_{cluster} (GeV) ");
-    fhBadClusterMaxCellCloseCellRatio->SetYTitle("ratio");
-    outputContainer->Add(fhBadClusterMaxCellCloseCellRatio);
-    
-    fhBadClusterMaxCellCloseCellDiff  = new TH2F ("hBadClusterMaxCellCloseCellDiff","energy vs ratio of max cell - neighbour cell constributing cell, reconstructed bad clusters",
-                                                  nptbins,ptmin,ptmax, 500,0,100); 
-    fhBadClusterMaxCellCloseCellDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
-    fhBadClusterMaxCellCloseCellDiff->SetYTitle("#it{E}_{cell max} - #it{E}_{cell i} (GeV)");
-    outputContainer->Add(fhBadClusterMaxCellCloseCellDiff);    
-    
-    fhBadClusterMaxCellDiff  = new TH2F ("hBadClusterMaxCellDiff","energy vs difference of cluster energy - max cell energy / cluster energy for bad clusters",
-                                         nptbins,ptmin,ptmax, 500,0,1.); 
-    fhBadClusterMaxCellDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
-    fhBadClusterMaxCellDiff->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max}) / #it{E}_{cluster}");
-    outputContainer->Add(fhBadClusterMaxCellDiff);
+    if( fFillClusterMaxCellHisto)
+    {
+      fhBadClusterMaxCellCloseCellRatio  = new TH2F ("hBadClusterMaxCellCloseCellRatio","energy vs ratio of max cell / neighbour cell constributing cell, reconstructed bad clusters",
+                                                     nptbins,ptmin,ptmax, 100,0,1.); 
+      fhBadClusterMaxCellCloseCellRatio->SetXTitle("#it{E}_{cluster} (GeV) ");
+      fhBadClusterMaxCellCloseCellRatio->SetYTitle("ratio");
+      outputContainer->Add(fhBadClusterMaxCellCloseCellRatio);
+      
+      fhBadClusterMaxCellCloseCellDiff  = new TH2F ("hBadClusterMaxCellCloseCellDiff","energy vs ratio of max cell - neighbour cell constributing cell, reconstructed bad clusters",
+                                                    nptbins,ptmin,ptmax, 500,0,100); 
+      fhBadClusterMaxCellCloseCellDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
+      fhBadClusterMaxCellCloseCellDiff->SetYTitle("#it{E}_{cell max} - #it{E}_{cell i} (GeV)");
+      outputContainer->Add(fhBadClusterMaxCellCloseCellDiff);    
+      
+      fhBadClusterMaxCellDiff  = new TH2F ("hBadClusterMaxCellDiff","energy vs difference of cluster energy - max cell energy / cluster energy for bad clusters",
+                                           nptbins,ptmin,ptmax, 500,0,1.); 
+      fhBadClusterMaxCellDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
+      fhBadClusterMaxCellDiff->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max}) / #it{E}_{cluster}");
+      outputContainer->Add(fhBadClusterMaxCellDiff);
+    }
     
     fhBadClusterTimeEnergy  = new TH2F ("hBadClusterTimeEnergy","energy vs TOF of reconstructed bad clusters",
                                         nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
@@ -4696,117 +5138,121 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhBadClusterTimeEnergy->SetYTitle("#it{t} (ns)");
     outputContainer->Add(fhBadClusterTimeEnergy);    
     
-    fhBadClusterPairDiffTimeE = new TH2F("hBadClusterPairDiffTimeE","cluster pair time difference (bad - good) vs E from bad cluster",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
-    fhBadClusterPairDiffTimeE->SetXTitle("#it{E}_{bad cluster} (GeV)");
-    fhBadClusterPairDiffTimeE->SetYTitle("#Delta #it{t} (ns)");
-    outputContainer->Add(fhBadClusterPairDiffTimeE);    
+    if(fFillPi0PairDiffTime)
+    {
+      fhBadClusterPairDiffTimeE = new TH2F("hBadClusterPairDiffTimeE","cluster pair time difference (bad - good) vs E from bad cluster",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+      fhBadClusterPairDiffTimeE->SetXTitle("#it{E}_{bad cluster} (GeV)");
+      fhBadClusterPairDiffTimeE->SetYTitle("#Delta #it{t} (ns)");
+      outputContainer->Add(fhBadClusterPairDiffTimeE);    
+    }
     
-    fhBadClusterMaxCellECross  = new TH2F ("hBadClusterMaxCellECross","1 - #it{E}_{+} around max energy cell / max energy cell vs cluster energy, bad clusters",
-                                        nptbins,ptmin,ptmax, 400,-1,1.); 
-    fhBadClusterMaxCellECross->SetXTitle("#it{E}_{cluster} (GeV) ");
-    fhBadClusterMaxCellECross->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell max}");
-    outputContainer->Add(fhBadClusterMaxCellECross);        
+    if(fFillClusterMaxCellHisto)
+    {
+      fhBadClusterMaxCellECross  = new TH2F ("hBadClusterMaxCellECross","1 - #it{E}_{+} around max energy cell / max energy cell vs cluster energy, bad clusters",
+                                             nptbins,ptmin,ptmax, 400,-1,1.); 
+      fhBadClusterMaxCellECross->SetXTitle("#it{E}_{cluster} (GeV) ");
+      fhBadClusterMaxCellECross->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell max}");
+      outputContainer->Add(fhBadClusterMaxCellECross);        
+    }
     
-    if(fFillAllCellTimeHisto) 
+    if(fFillAllCellTimeHisto && fFillClusterMaxCellHisto) 
     {
       fhBadCellTimeSpreadRespectToCellMax = new TH2F ("hBadCellTimeSpreadRespectToCellMax","#it{t}_{cell max}-#it{t}_{cell i} from bad cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
       fhBadCellTimeSpreadRespectToCellMax->SetXTitle("#it{E} (GeV)");
       fhBadCellTimeSpreadRespectToCellMax->SetYTitle("#Delta #it{t}_{cell max - i} (ns)");
       outputContainer->Add(fhBadCellTimeSpreadRespectToCellMax);
       
-      fhBadClusterMaxCellDiffAverageTime = new TH2F ("hBadClusterMaxCellDiffAverageTime","#it{t}_{cell max}-#it{t}_{average} from bad cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
-      fhBadClusterMaxCellDiffAverageTime->SetXTitle("#it{E} (GeV)");
-      fhBadClusterMaxCellDiffAverageTime->SetYTitle("#Delta #it{t}_{cell max - average} (ns)");
-      outputContainer->Add(fhBadClusterMaxCellDiffAverageTime);
-            
-      fhBadClusterMaxCellDiffWeightedTime = new TH2F ("hBadClusterMaxCellDiffWeightedTime","#it{t}_{cell max}-#it{t}_{weighted} from bad cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
-      fhBadClusterMaxCellDiffWeightedTime->SetXTitle("#it{E} (GeV)");
-      fhBadClusterMaxCellDiffWeightedTime->SetYTitle("#Delta #it{t}_{cell max - weighted} (ns)");
-      outputContainer->Add(fhBadClusterMaxCellDiffWeightedTime);
-      
+//      fhBadClusterMaxCellDiffAverageTime = new TH2F ("hBadClusterMaxCellDiffAverageTime","#it{t}_{cell max}-#it{t}_{average} from bad cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+//      fhBadClusterMaxCellDiffAverageTime->SetXTitle("#it{E} (GeV)");
+//      fhBadClusterMaxCellDiffAverageTime->SetYTitle("#Delta #it{t}_{cell max - average} (ns)");
+//      outputContainer->Add(fhBadClusterMaxCellDiffAverageTime);
+//            
+//      fhBadClusterMaxCellDiffWeightedTime = new TH2F ("hBadClusterMaxCellDiffWeightedTime","#it{t}_{cell max}-#it{t}_{weighted} from bad cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+//      fhBadClusterMaxCellDiffWeightedTime->SetXTitle("#it{E} (GeV)");
+//      fhBadClusterMaxCellDiffWeightedTime->SetYTitle("#Delta #it{t}_{cell max - weighted} (ns)");
+//      outputContainer->Add(fhBadClusterMaxCellDiffWeightedTime);      
     }  
-    
   }
   
-  if(fStudyExotic)
-  {
-    fhExoL0ECross  = new TH2F("hExoL0_ECross",
-                               "#lambda^{2}_{0} vs 1-#it{E}_{+}/#it{E}_{max} for E > 5 GeV",
-                               400,0,1,ssbins,ssmin,ssmax); 
-    fhExoL0ECross ->SetXTitle("1-#it{E}_{+}/#it{E}_{cell max}");
-    fhExoL0ECross ->SetYTitle("#lambda^{2}_{0}");
-    outputContainer->Add(fhExoL0ECross) ;     
-
-    fhExoL1ECross  = new TH2F("hExoL1_ECross",
-                              "#lambda^{2}_{1} vs 1-#it{E}_{+}/#it{E}_{max} for E > 5 GeV",
-                              400,0,1,ssbins,ssmin,ssmax); 
-    fhExoL1ECross ->SetXTitle("1-#it{E}_{+}/#it{E}_{cell max}");
-    fhExoL1ECross ->SetYTitle("#lambda^{2}_{1}");
-    outputContainer->Add(fhExoL1ECross) ;  
-    
-    for(Int_t ie = 0; ie <fExoNECrossCuts; ie++)
-    {  
-      
-      fhExoDTime[ie]  = new TH2F(Form("hExoDTime_ECross%d",ie),
-                                 Form("#Delta time = t_{max}-t_{cells} vs #it{E}_{cluster} for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f",fExoECrossCuts[ie]),
-                                 nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
-      fhExoDTime[ie] ->SetYTitle("#Delta #it{t} (ns)");
-      fhExoDTime[ie] ->SetXTitle("#it{E} (GeV)");
-      outputContainer->Add(fhExoDTime[ie]) ; 
-      
-      for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
-      {        
-        fhExoNCell[ie][idt]  = new TH2F(Form("hExoNCell_ECross%d_DT%d",ie,idt),
-                                     Form("N cells per cluster vs E cluster, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                     nptbins,ptmin,ptmax,nceclbins,nceclmin,nceclmax); 
-        fhExoNCell[ie][idt] ->SetYTitle("#it{n}_cells");
-        fhExoNCell[ie][idt] ->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhExoNCell[ie][idt]) ; 
-        
-        fhExoL0   [ie][idt]  = new TH2F(Form("hExoL0_ECross%d_DT%d",ie,idt),
-                                     Form("#lambda^{2}_{0} vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhExoL0   [ie][idt] ->SetYTitle("#lambda^{2}_{0}");
-        fhExoL0   [ie][idt] ->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhExoL0[ie][idt]) ; 
-
-        fhExoL1   [ie][idt]  = new TH2F(Form("hExoL1_ECross%d_DT%d",ie,idt),
-                                        Form("#lambda^{2}_{1} vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhExoL1   [ie][idt] ->SetYTitle("#lambda^{2}_{1}");
-        fhExoL1   [ie][idt] ->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhExoL1[ie][idt]) ; 
-        
-        fhExoECross[ie][idt]  = new TH2F(Form("hExoECross_ECross%d_DT%d",ie,idt),
-                                      Form("#it{E} cross for cells vs E cell, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                      nptbins,ptmin,ptmax,400,0,1); 
-        fhExoECross[ie][idt] ->SetYTitle("1-#it{E}_{+}/#it{E}_{cell max}");
-        fhExoECross[ie][idt] ->SetXTitle("#it{E}_{cell} (GeV)");
-        outputContainer->Add(fhExoECross[ie][idt]) ; 
-        
-        fhExoTime  [ie][idt]  = new TH2F(Form("hExoTime_ECross%d_DT%d",ie,idt),
-                                        Form("Time of cluster (max cell) vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                        nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-        fhExoTime  [ie][idt] ->SetYTitle("#it{t}_{max} (ns)");
-        fhExoTime  [ie][idt] ->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhExoTime[ie][idt]) ; 
-
-        fhExoL0NCell[ie][idt]  = new TH2F(Form("hExoL0_NCell%d_DT%d",ie,idt),
-                                          Form("#lambda^{2}_{0} vs N cells per clusters for E > 5 GeV, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-        fhExoL0NCell[ie][idt] ->SetYTitle("#it{n}_{cells}");
-        fhExoL0NCell[ie][idt] ->SetXTitle("#lambda^{2}_{0}");
-        outputContainer->Add(fhExoL0NCell[ie][idt]) ;  
-        
-        fhExoL1NCell[ie][idt]  = new TH2F(Form("hExoL1_NCell%d_DT%d",ie,idt),
-                                          Form("#lambda^{2}_{1} vs N cells per clusters for E > 5 GeV, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
-                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-        fhExoL1NCell[ie][idt] ->SetYTitle("#it{n}_{cells}");
-        fhExoL1NCell[ie][idt] ->SetXTitle("#lambda^{2}_{1}");
-        outputContainer->Add(fhExoL1NCell[ie][idt]) ;  
-      }
-    } 
-  }
+//  if(fStudyExotic)
+//  {
+//    fhExoL0ECross  = new TH2F("hExoL0_ECross",
+//                               "#lambda^{2}_{0} vs 1-#it{E}_{+}/#it{E}_{max} for E > 5 GeV",
+//                               400,0,1,ssbins,ssmin,ssmax); 
+//    fhExoL0ECross ->SetXTitle("1-#it{E}_{+}/#it{E}_{cell max}");
+//    fhExoL0ECross ->SetYTitle("#lambda^{2}_{0}");
+//    outputContainer->Add(fhExoL0ECross) ;     
+//
+//    fhExoL1ECross  = new TH2F("hExoL1_ECross",
+//                              "#lambda^{2}_{1} vs 1-#it{E}_{+}/#it{E}_{max} for E > 5 GeV",
+//                              400,0,1,ssbins,ssmin,ssmax); 
+//    fhExoL1ECross ->SetXTitle("1-#it{E}_{+}/#it{E}_{cell max}");
+//    fhExoL1ECross ->SetYTitle("#lambda^{2}_{1}");
+//    outputContainer->Add(fhExoL1ECross) ;  
+//    
+//    for(Int_t ie = 0; ie <fExoNECrossCuts; ie++)
+//    {  
+//      
+//      fhExoDTime[ie]  = new TH2F(Form("hExoDTime_ECross%d",ie),
+//                                 Form("#Delta time = t_{max}-t_{cells} vs #it{E}_{cluster} for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f",fExoECrossCuts[ie]),
+//                                 nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
+//      fhExoDTime[ie] ->SetYTitle("#Delta #it{t} (ns)");
+//      fhExoDTime[ie] ->SetXTitle("#it{E} (GeV)");
+//      outputContainer->Add(fhExoDTime[ie]) ; 
+//      
+//      for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
+//      {        
+//        fhExoNCell[ie][idt]  = new TH2F(Form("hExoNCell_ECross%d_DT%d",ie,idt),
+//                                     Form("N cells per cluster vs E cluster, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                     nptbins,ptmin,ptmax,nceclbins,nceclmin,nceclmax); 
+//        fhExoNCell[ie][idt] ->SetYTitle("#it{n}_cells");
+//        fhExoNCell[ie][idt] ->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhExoNCell[ie][idt]) ; 
+//        
+//        fhExoL0   [ie][idt]  = new TH2F(Form("hExoL0_ECross%d_DT%d",ie,idt),
+//                                     Form("#lambda^{2}_{0} vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+//        fhExoL0   [ie][idt] ->SetYTitle("#lambda^{2}_{0}");
+//        fhExoL0   [ie][idt] ->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhExoL0[ie][idt]) ; 
+//
+//        fhExoL1   [ie][idt]  = new TH2F(Form("hExoL1_ECross%d_DT%d",ie,idt),
+//                                        Form("#lambda^{2}_{1} vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+//        fhExoL1   [ie][idt] ->SetYTitle("#lambda^{2}_{1}");
+//        fhExoL1   [ie][idt] ->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhExoL1[ie][idt]) ; 
+//        
+//        fhExoECross[ie][idt]  = new TH2F(Form("hExoECross_ECross%d_DT%d",ie,idt),
+//                                      Form("#it{E} cross for cells vs E cell, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                      nptbins,ptmin,ptmax,400,0,1); 
+//        fhExoECross[ie][idt] ->SetYTitle("1-#it{E}_{+}/#it{E}_{cell max}");
+//        fhExoECross[ie][idt] ->SetXTitle("#it{E}_{cell} (GeV)");
+//        outputContainer->Add(fhExoECross[ie][idt]) ; 
+//        
+//        fhExoTime  [ie][idt]  = new TH2F(Form("hExoTime_ECross%d_DT%d",ie,idt),
+//                                        Form("Time of cluster (max cell) vs E cluster for exotic, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                        nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+//        fhExoTime  [ie][idt] ->SetYTitle("#it{t}_{max} (ns)");
+//        fhExoTime  [ie][idt] ->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhExoTime[ie][idt]) ; 
+//
+//        fhExoL0NCell[ie][idt]  = new TH2F(Form("hExoL0_NCell%d_DT%d",ie,idt),
+//                                          Form("#lambda^{2}_{0} vs N cells per clusters for E > 5 GeV, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+//        fhExoL0NCell[ie][idt] ->SetYTitle("#it{n}_{cells}");
+//        fhExoL0NCell[ie][idt] ->SetXTitle("#lambda^{2}_{0}");
+//        outputContainer->Add(fhExoL0NCell[ie][idt]) ;  
+//        
+//        fhExoL1NCell[ie][idt]  = new TH2F(Form("hExoL1_NCell%d_DT%d",ie,idt),
+//                                          Form("#lambda^{2}_{1} vs N cells per clusters for E > 5 GeV, 1-#it{E}_{+}/#it{E}_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+//                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+//        fhExoL1NCell[ie][idt] ->SetYTitle("#it{n}_{cells}");
+//        fhExoL1NCell[ie][idt] ->SetXTitle("#lambda^{2}_{1}");
+//        outputContainer->Add(fhExoL1NCell[ie][idt]) ;  
+//      }
+//    } 
+//  }
   
   // Cluster size in terms of cells
     
@@ -5481,125 +5927,230 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     }
   }
   
-  // Calorimeter cells
-    
-  fhNCells  = new TH1F ("hNCells","# cells", ncebins,ncemin+0.5,ncemax); 
-  fhNCells->SetXTitle("#it{n}_{cells}");
-  outputContainer->Add(fhNCells);
-
-  fhNCellsCutAmpMin  = new TH1F ("hNCellsCutAmpMin",Form("# cells amp > %1.2f-%1.2f",fEMCALCellAmpMin,fPHOSCellAmpMin), ncebins,ncemin+0.5,ncemax);
-  fhNCellsCutAmpMin->SetXTitle("#it{n}_{cells}");
-  outputContainer->Add(fhNCellsCutAmpMin);
-  
-  fhAmplitude  = new TH1F ("hAmplitude","#it{E}_{cell}", nptbins*2,ptmin,ptmax);
-  fhAmplitude->SetXTitle("#it{E}_{cell} (GeV)");
-  outputContainer->Add(fhAmplitude);
-  
-  //..Create the fhAmpId TH2D with increasing binwidth
-  //..0-10 GeV (0.05), 10-20 GeV (0.2), 20-30 GeV (0.5)
-  Double_t binWidth=(ptfinemax-ptfinemin)/nfineptbins;
-  TCustomBinning xBinning;
-  xBinning.SetMinimum(ptfinemin);
-  xBinning.AddStep(ptfinemax,binWidth);     //..first entries of the array are the set ranges and bins
-  xBinning.AddStep(ptfinemax*2,binWidth*4); //..expand the previously defined range by 2 but increase the bin width
-  xBinning.AddStep(ptfinemax*4,binWidth*10);//..expand the previously defined range by 4 but increase the bin width
-
-  TCustomBinning yBinning;
-  yBinning.SetMinimum(0);
-  yBinning.AddStep(fNMaxRows*fNMaxCols*fNModules,1); //..add cells with binwidth 1
-
-  TArrayD xbinsArray;
-  xBinning.CreateBinEdges(xbinsArray);
-  TArrayD ybinsArray;
-  yBinning.CreateBinEdges(ybinsArray);
-
-  fhAmpId  = new TH2F ("hAmpId","#it{E}_{cell}", xbinsArray.GetSize() - 1, xbinsArray.GetArray(), ybinsArray.GetSize() - 1, ybinsArray.GetArray());
-  fhAmpId->SetXTitle("#it{E}_{cell} (GeV)");
-  outputContainer->Add(fhAmpId);
-
-  fhAmpIdLowGain  = new TH2F ("hAmpIdLG","Low gain: #it{E}_{cell}", nfineptbins,15,ptfinemax+15,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
-  fhAmpIdLowGain->SetXTitle("#it{E}_{cell} (GeV)");
-  outputContainer->Add(fhAmpIdLowGain);
-  
-  if(fFillAllCellTimeHisto)
+  if(fFillAllCellTimeHisto && fFillClusterMaxCellHisto)
   {
     fhCellTimeSpreadRespectToCellMax = new TH2F ("hCellTimeSpreadRespectToCellMax","t_{cell max}-t_{cell i} per cluster", nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
     fhCellTimeSpreadRespectToCellMax->SetXTitle("#it{E} (GeV)");
     fhCellTimeSpreadRespectToCellMax->SetYTitle("#Delta #it{t}_{cell max-i} (ns)");
     outputContainer->Add(fhCellTimeSpreadRespectToCellMax);
     
-//    fhClusterMaxCellDiffAverageTime = new TH2F ("hClusterMaxCellDiffAverageTime","t_{cell max}-t_{average} per cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax); 
-//    fhClusterMaxCellDiffAverageTime->SetXTitle("#it{E} (GeV)");
-//    fhClusterMaxCellDiffAverageTime->SetYTitle("#Delta #it{t}_{cell max - average} (ns)");
-//    outputContainer->Add(fhClusterMaxCellDiffAverageTime);
-//        
-//    fhClusterMaxCellDiffWeightedTime = new TH2F ("hClusterMaxCellDiffWeightedTime","t_{cell max}-t_{weighted} per cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax); 
-//    fhClusterMaxCellDiffWeightedTime->SetXTitle("#it{E} (GeV)");
-//    fhClusterMaxCellDiffWeightedTime->SetYTitle("#Delta #it{t}_{cell max - weighted} (ns)");
-//    outputContainer->Add(fhClusterMaxCellDiffWeightedTime);
-    
-    fhCellIdCellLargeTimeSpread= new TH1F ("hCellIdCellLargeTimeSpread","Cells with time 100 ns larger than cell max in cluster ", 
-                                           fNMaxCols*fNMaxRows*fNModules,0,fNMaxCols*fNMaxRows*fNModules); 
-    fhCellIdCellLargeTimeSpread->SetXTitle("Absolute Cell Id");
-    outputContainer->Add(fhCellIdCellLargeTimeSpread);
-    
-    fhTime  = new TH1F ("hTime","#it{t}_{cell}",ntimebins,timemin,timemax); 
-    fhTime->SetXTitle("#it{t}_{cell} (ns)");
-    outputContainer->Add(fhTime);
-    
-//    fhTimeVz  = new TH2F ("hTimeVz","#it{t}_{cell} vs vertex, amplitude > 0.5 GeV",100, 0, 50,ntimebins,timemin,timemax); 
-//    fhTimeVz->SetXTitle("|v_{z}| (cm)");
-//    fhTimeVz->SetYTitle("#it{t}_{cell} (ns)");
-//    outputContainer->Add(fhTimeVz);
-    
-    fhTimeId  = new TH2F ("hTimeId","#it{t}_{cell} vs Absolute Id",
-                          ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules); 
-    fhTimeId->SetXTitle("#it{t}_{cell} (ns)");
-    fhTimeId->SetYTitle("Cell Absolute Id");
-    outputContainer->Add(fhTimeId);
-
-    if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)
-    {
-      fhTimeL1UnCorrId  = new TH2F ("hTimeL1UnCorrId","#it{t}_{cell} vs Absolute Id",
-                          ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
-      fhTimeL1UnCorrId->SetXTitle("#it{t}_{cell} (ns)");
-      fhTimeL1UnCorrId->SetYTitle("Cell Absolute Id");
-      outputContainer->Add(fhTimeL1UnCorrId);
-    }
-
-    fhTimeAmp  = new TH2F ("hTimeAmp","#it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
-    fhTimeAmp->SetYTitle("#it{t}_{cell} (ns)");
-    fhTimeAmp->SetXTitle("#it{E}_{cell} (GeV)");
-    outputContainer->Add(fhTimeAmp);
-    
-    for(Int_t bc = 0; bc < 4; bc++)
-    {
-      fhTimePerSMPerBC[bc]  = new TH2F (Form("hTimePerSM_BC%d",bc),
-                                        Form("#it{t}_{cell} vs super-module, for BC/4=%d",bc),
-                                        ntimebins,timemin,timemax,fNModules,0,fNModules); 
-      fhTimePerSMPerBC[bc]->SetXTitle("#it{t}_{cell} (ns)");
-      fhTimePerSMPerBC[bc]->SetYTitle("Module");
-      outputContainer->Add(fhTimePerSMPerBC[bc]);
-    }
-    
-    fhTimeIdLowGain  = new TH2F ("hTimeIdLG","Low gain: #it{t}_{cell} vs Absolute Id",
-                          ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
-    fhTimeIdLowGain->SetXTitle("#it{t}_{cell} (ns)");
-    fhTimeIdLowGain->SetYTitle("Cell Absolute Id");
-    outputContainer->Add(fhTimeIdLowGain);
-    
-    fhTimeAmpLowGain  = new TH2F ("hTimeAmpLG","Low gain: #it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax);
-    fhTimeAmpLowGain->SetYTitle("#it{t}_{cell} (ns)");
-    fhTimeAmpLowGain->SetXTitle("#it{E}_{cell} (GeV)");
-    outputContainer->Add(fhTimeAmpLowGain);
+    //    fhClusterMaxCellDiffAverageTime = new TH2F ("hClusterMaxCellDiffAverageTime","t_{cell max}-t_{average} per cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax); 
+    //    fhClusterMaxCellDiffAverageTime->SetXTitle("#it{E} (GeV)");
+    //    fhClusterMaxCellDiffAverageTime->SetYTitle("#Delta #it{t}_{cell max - average} (ns)");
+    //    outputContainer->Add(fhClusterMaxCellDiffAverageTime);
+    //        
+    //    fhClusterMaxCellDiffWeightedTime = new TH2F ("hClusterMaxCellDiffWeightedTime","t_{cell max}-t_{weighted} per cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax); 
+    //    fhClusterMaxCellDiffWeightedTime->SetXTitle("#it{E} (GeV)");
+    //    fhClusterMaxCellDiffWeightedTime->SetYTitle("#Delta #it{t}_{cell max - weighted} (ns)");
+    //    outputContainer->Add(fhClusterMaxCellDiffWeightedTime);
   }
   
-  fhCellECross  = new TH2F ("hCellECross","1 - Energy in cross around cell /  cell energy",
-                            nptbins,ptmin,ptmax, 400,-1,1.); 
-  fhCellECross->SetXTitle("#it{E}_{cell} (GeV) ");
-  fhCellECross->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}");
-  outputContainer->Add(fhCellECross);    
-  
+  // Calorimeter cells
+  if(fFillAllCellHistograms)
+  {
+    fhNCells  = new TH1F ("hNCells","# cells", ncebins,ncemin+0.5,ncemax); 
+    fhNCells->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells);
+    
+    fhNCellsCutAmpMin  = new TH1F ("hNCellsCutAmpMin",Form("# cells amp > %1.2f-%1.2f",fEMCALCellAmpMin,fPHOSCellAmpMin), ncebins,ncemin+0.5,ncemax);
+    fhNCellsCutAmpMin->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCellsCutAmpMin);
+    
+    fhAmplitude  = new TH1F ("hAmplitude","#it{E}_{cell}", nptbins*2,ptmin,ptmax);
+    fhAmplitude->SetXTitle("#it{E}_{cell} (GeV)");
+    outputContainer->Add(fhAmplitude);
+    
+    fhAmpMod  = new TH2F ("hAmp_Mod","Cell energy in each present Module",nptbins,ptmin,ptmax,fNModules,0,fNModules); 
+    fhAmpMod->SetXTitle("#it{E} (GeV)");
+    fhAmpMod->SetYTitle("Module");
+    outputContainer->Add(fhAmpMod);
+    
+    fhAmpWeirdMod  = new TH2F ("hAmpWeird_Mod","Cell energy in each present Module, ridiculously large E",200,0,10000,fNModules,0,fNModules); 
+    fhAmpWeirdMod->SetXTitle("#it{E} (GeV)");
+    fhAmpWeirdMod->SetYTitle("Module");
+    outputContainer->Add(fhAmpWeirdMod);
+    
+    if(fFillAllCellTimeHisto) 
+    {
+      fhTimeMod  = new TH2F ("hTime_Mod","Cell time in each present Module",ntimebins,timemin,timemax,fNModules,0,fNModules); 
+      fhTimeMod->SetXTitle("t (ns)");
+      fhTimeMod->SetYTitle("Module");
+      outputContainer->Add(fhTimeMod);
+    }
+    
+    if(fFillAllCellAbsIdHistograms)
+    {
+      //..Create the fhAmpId TH2D with increasing binwidth
+      //..0-10 GeV (0.05), 10-20 GeV (0.2), 20-30 GeV (0.5)
+      Double_t binWidth=(ptfinemax-ptfinemin)/nfineptbins;
+      TCustomBinning xBinning;
+      xBinning.SetMinimum(ptfinemin);
+      xBinning.AddStep(ptfinemax,binWidth);     //..first entries of the array are the set ranges and bins
+      xBinning.AddStep(ptfinemax*2,binWidth*4); //..expand the previously defined range by 2 but increase the bin width
+      xBinning.AddStep(ptfinemax*4,binWidth*10);//..expand the previously defined range by 4 but increase the bin width
+      
+      TCustomBinning yBinning;
+      yBinning.SetMinimum(0);
+      yBinning.AddStep(fNMaxRows*fNMaxCols*fNModules,1); //..add cells with binwidth 1
+      
+      TArrayD xbinsArray;
+      xBinning.CreateBinEdges(xbinsArray);
+      TArrayD ybinsArray;
+      yBinning.CreateBinEdges(ybinsArray);
+      
+      fhAmpId  = new TH2F ("hAmpId","#it{E}_{cell}", xbinsArray.GetSize() - 1, xbinsArray.GetArray(), ybinsArray.GetSize() - 1, ybinsArray.GetArray());
+      fhAmpId->SetXTitle("#it{E}_{cell} (GeV)");
+      outputContainer->Add(fhAmpId);
+      
+      fhAmpIdLowGain  = new TH2F ("hAmpIdLG","Low gain: #it{E}_{cell}", nfineptbins,15,ptfinemax+15,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+      fhAmpIdLowGain->SetXTitle("#it{E}_{cell} (GeV)");
+      outputContainer->Add(fhAmpIdLowGain);
+    }
+    
+    if(fFillAllCellTimeHisto)
+    {
+      fhTime  = new TH1F ("hTime","#it{t}_{cell}",ntimebins,timemin,timemax); 
+      fhTime->SetXTitle("#it{t}_{cell} (ns)");
+      outputContainer->Add(fhTime);
+      
+      //    fhTimeVz  = new TH2F ("hTimeVz","#it{t}_{cell} vs vertex, amplitude > 0.5 GeV",100, 0, 50,ntimebins,timemin,timemax); 
+      //    fhTimeVz->SetXTitle("|v_{z}| (cm)");
+      //    fhTimeVz->SetYTitle("#it{t}_{cell} (ns)");
+      //    outputContainer->Add(fhTimeVz);
+
+      fhTimeAmp  = new TH2F ("hTimeAmp","#it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
+      fhTimeAmp->SetYTitle("#it{t}_{cell} (ns)");
+      fhTimeAmp->SetXTitle("#it{E}_{cell} (GeV)");
+      outputContainer->Add(fhTimeAmp);
+      
+      fhTimeAmpLowGain  = new TH2F ("hTimeAmpLG","Low gain: #it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax);
+      fhTimeAmpLowGain->SetYTitle("#it{t}_{cell} (ns)");
+      fhTimeAmpLowGain->SetXTitle("#it{E}_{cell} (GeV)");
+      outputContainer->Add(fhTimeAmpLowGain);
+
+      if(fFillAllCellAbsIdHistograms)
+      {
+        fhCellIdCellLargeTimeSpread= new TH1F ("hCellIdCellLargeTimeSpread","Cells with time 100 ns larger than cell max in cluster ", 
+                                               fNMaxCols*fNMaxRows*fNModules,0,fNMaxCols*fNMaxRows*fNModules); 
+        fhCellIdCellLargeTimeSpread->SetXTitle("Absolute Cell Id");
+        outputContainer->Add(fhCellIdCellLargeTimeSpread);
+        
+        fhTimeId  = new TH2F ("hTimeId","#it{t}_{cell} vs Absolute Id",
+                              ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules); 
+        fhTimeId->SetXTitle("#it{t}_{cell} (ns)");
+        fhTimeId->SetYTitle("Cell Absolute Id");
+        outputContainer->Add(fhTimeId);
+        
+        fhTimeIdLowGain  = new TH2F ("hTimeIdLG","Low gain: #it{t}_{cell} vs Absolute Id",
+                                     ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+        fhTimeIdLowGain->SetXTitle("#it{t}_{cell} (ns)");
+        fhTimeIdLowGain->SetYTitle("Cell Absolute Id");
+        outputContainer->Add(fhTimeIdLowGain);
+        
+        if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)
+        {
+          fhTimeL1UnCorrId  = new TH2F ("hTimeL1UnCorrId","#it{t}_{cell} vs Absolute Id",
+                                        ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+          fhTimeL1UnCorrId->SetXTitle("#it{t}_{cell} (ns)");
+          fhTimeL1UnCorrId->SetYTitle("Cell Absolute Id");
+          outputContainer->Add(fhTimeL1UnCorrId);
+        }
+      }
+      
+      for(Int_t bc = 0; bc < 4; bc++)
+      {
+        fhTimePerSMPerBC[bc]  = new TH2F (Form("hTimePerSM_BC%d",bc),
+                                          Form("#it{t}_{cell} vs super-module, for BC/4=%d",bc),
+                                          ntimebins,timemin,timemax,fNModules,0,fNModules); 
+        fhTimePerSMPerBC[bc]->SetXTitle("#it{t}_{cell} (ns)");
+        fhTimePerSMPerBC[bc]->SetYTitle("Module");
+        outputContainer->Add(fhTimePerSMPerBC[bc]);
+      }
+    }
+    
+    fhCellECross  = new TH2F ("hCellECross","1 - Energy in cross around cell /  cell energy",
+                              nptbins,ptmin,ptmax, 400,-1,1.); 
+    fhCellECross->SetXTitle("#it{E}_{cell} (GeV) ");
+    fhCellECross->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}");
+    outputContainer->Add(fhCellECross);    
+    
+    fhNCellsMod  = new TH2F ("hNCells_Mod","# cells vs Module", ncebins,ncemin+0.5,ncemax,fNModules,0,fNModules); 
+    fhNCellsMod->SetXTitle("#it{n}_{cells}");
+    fhNCellsMod->SetYTitle("Module");
+    outputContainer->Add(fhNCellsMod);
+    
+    fhSumCellsAmpMod  = new TH2F ("hSumCellsAmp_Mod","# cells vs Module", 1000, 0, 2000,fNModules,0,fNModules); 
+    fhSumCellsAmpMod->SetXTitle("#Sigma_{cells} #it{Amp} (GeV)");
+    fhSumCellsAmpMod->SetYTitle("Module");
+    outputContainer->Add(fhSumCellsAmpMod);
+    
+    fhGridCells  = new TH2F ("hGridCells",Form("Entries in grid of cells"), 
+                             colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5); 
+    fhGridCells->SetYTitle("row (phi direction)");
+    fhGridCells->SetXTitle("column (eta direction)");
+    outputContainer->Add(fhGridCells);
+    
+    fhGridCellsE  = new TH2F ("hGridCellsE","Accumulated energy in grid of cells", 
+                              colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5); 
+    fhGridCellsE->SetYTitle("row (phi direction)");
+    fhGridCellsE->SetXTitle("column (eta direction)");
+    outputContainer->Add(fhGridCellsE);
+    
+    fhGridCellsLowGain  = new TH2F ("hGridCellsLG",Form("Low gain: Entries in grid of cells"),
+                                    colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+    fhGridCellsLowGain->SetYTitle("row (phi direction)");
+    fhGridCellsLowGain->SetXTitle("column (eta direction)");
+    outputContainer->Add(fhGridCellsLowGain);
+    
+    fhGridCellsELowGain  = new TH2F ("hGridCellsELG","Low gain: Accumulated energy in grid of cells",
+                                     colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+    fhGridCellsELowGain->SetYTitle("row (phi direction)");
+    fhGridCellsELowGain->SetXTitle("column (eta direction)");
+    outputContainer->Add(fhGridCellsELowGain);
+    
+    if(fFillAllCellTimeHisto)
+    { 
+      fhGridCellsTime  = new TH2F ("hGridCellsTime","Accumulated time in grid of cells",
+                                   colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+      fhGridCellsTime->SetYTitle("row (phi direction)");
+      fhGridCellsTime->SetXTitle("column (eta direction)");
+      outputContainer->Add(fhGridCellsTime);
+      
+      fhGridCellsTimeLowGain  = new TH2F ("hGridCellsTimeLG","Low gain: Accumulated time in grid of cells",
+                                          colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+      fhGridCellsTimeLowGain->SetYTitle("row (phi direction)");
+      fhGridCellsTimeLowGain->SetXTitle("column (eta direction)");
+      outputContainer->Add(fhGridCellsTimeLowGain);
+    }
+    
+    fhNCellsSumAmpPerMod       = new TH2F*[fNModules];  
+    
+    if(fFillAllCellTimeHisto) 
+      fhTimeAmpPerRCU = new TH2F*[fNModules*fNRCU];  
+    
+    for(Int_t imod = 0; imod < fNModules; imod++)
+    {
+      fhNCellsSumAmpPerMod[imod] = new TH2F (Form("hNCellsSumAmp_Mod%d",imod),
+                                             Form("# cells in SM vs sum of cells energy in Module %d",imod), 
+                                             nptbins,ptmin,ptmax*4, ncebins,ncemin,ncemax); 
+      fhNCellsSumAmpPerMod[imod]->SetXTitle("#Sigma #it{Amplitude} (GeV)");
+      fhNCellsSumAmpPerMod[imod]->SetYTitle("#Sigma #it{n}_{cells}");
+      outputContainer->Add(fhNCellsSumAmpPerMod[imod]);
+      
+      if(fFillAllCellTimeHisto)
+      {
+        for(Int_t ircu = 0; ircu < fNRCU; ircu++)
+        {
+          fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
+                                                        Form("#it{E}_{cell} vs #it{t}_{cell} in Module %d, RCU %d ",imod,ircu), 
+                                                        nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+          fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("#it{E} (GeV)");
+          fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("#it{t} (ns)");
+          outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
+        }
+      }
+    }
+  }
   
   if(fCorrelate)
   {
@@ -5779,103 +6330,22 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhEMod->SetXTitle("#it{E} (GeV)");
   fhEMod->SetYTitle("Module");
   outputContainer->Add(fhEMod);
-  
-  fhAmpMod  = new TH2F ("hAmp_Mod","Cell energy in each present Module",nptbins,ptmin,ptmax,fNModules,0,fNModules); 
-  fhAmpMod->SetXTitle("#it{E} (GeV)");
-  fhAmpMod->SetYTitle("Module");
-  outputContainer->Add(fhAmpMod);
-  
+   
   fhEWeirdMod  = new TH2F ("hEWeird_Mod","Cluster reconstructed Energy in each present Module, ridiculously large E",200,0,10000,fNModules,0,fNModules); 
   fhEWeirdMod->SetXTitle("#it{E} (GeV)");
   fhEWeirdMod->SetYTitle("Module");
   outputContainer->Add(fhEWeirdMod);
-  
-  fhAmpWeirdMod  = new TH2F ("hAmpWeird_Mod","Cell energy in each present Module, ridiculously large E",200,0,10000,fNModules,0,fNModules); 
-  fhAmpWeirdMod->SetXTitle("#it{E} (GeV)");
-  fhAmpWeirdMod->SetYTitle("Module");
-  outputContainer->Add(fhAmpWeirdMod);
-  
-  if(fFillAllCellTimeHisto) 
-  {
-    fhTimeMod  = new TH2F ("hTime_Mod","Cell time in each present Module",ntimebins,timemin,timemax,fNModules,0,fNModules); 
-    fhTimeMod->SetXTitle("t (ns)");
-    fhTimeMod->SetYTitle("Module");
-    outputContainer->Add(fhTimeMod);
-  }
-  
+    
   fhNClustersMod  = new TH2F ("hNClusters_Mod","# clusters vs Module", nclbins,nclmin+0.5,nclmax,fNModules,0,fNModules); 
   fhNClustersMod->SetXTitle("number of clusters");
   fhNClustersMod->SetYTitle("Module");
   outputContainer->Add(fhNClustersMod);
-  
-  fhNCellsMod  = new TH2F ("hNCells_Mod","# cells vs Module", ncebins,ncemin+0.5,ncemax,fNModules,0,fNModules); 
-  fhNCellsMod->SetXTitle("#it{n}_{cells}");
-  fhNCellsMod->SetYTitle("Module");
-  outputContainer->Add(fhNCellsMod);
 
   fhSumClustersEnergyMod  = new TH2F ("hSumClustersEnergy_Mod","# clusters vs Module", 1000, 0, 2000,fNModules,0,fNModules); 
   fhSumClustersEnergyMod->SetXTitle("#Sigma_{clusters} #it{E} (GeV)");
   fhSumClustersEnergyMod->SetYTitle("Module");
   outputContainer->Add(fhSumClustersEnergyMod);
-  
-  fhSumCellsAmpMod  = new TH2F ("hSumCellsAmp_Mod","# cells vs Module", 1000, 0, 2000,fNModules,0,fNModules); 
-  fhSumCellsAmpMod->SetXTitle("#Sigma_{cells} #it{Amp} (GeV)");
-  fhSumCellsAmpMod->SetYTitle("Module");
-  outputContainer->Add(fhSumCellsAmpMod);
-  
-  Int_t colmaxs = fNMaxCols;
-  Int_t rowmaxs = fNMaxRows;
-  if(GetCalorimeter()==kEMCAL)
-  {
-    colmaxs=2*fNMaxCols;
-    rowmaxs=Int_t(fNModules/2)*fNMaxRows;
-  }
-  else
-  {
-    rowmaxs=fNModules*fNMaxRows;
-  }
-  
-  fhGridCells  = new TH2F ("hGridCells",Form("Entries in grid of cells"), 
-                           colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5); 
-  fhGridCells->SetYTitle("row (phi direction)");
-  fhGridCells->SetXTitle("column (eta direction)");
-  outputContainer->Add(fhGridCells);
-  
-  fhGridCellsE  = new TH2F ("hGridCellsE","Accumulated energy in grid of cells", 
-                            colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5); 
-  fhGridCellsE->SetYTitle("row (phi direction)");
-  fhGridCellsE->SetXTitle("column (eta direction)");
-  outputContainer->Add(fhGridCellsE);
-  
-  fhGridCellsLowGain  = new TH2F ("hGridCellsLG",Form("Low gain: Entries in grid of cells"),
-                           colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
-  fhGridCellsLowGain->SetYTitle("row (phi direction)");
-  fhGridCellsLowGain->SetXTitle("column (eta direction)");
-  outputContainer->Add(fhGridCellsLowGain);
-  
-  fhGridCellsELowGain  = new TH2F ("hGridCellsELG","Low gain: Accumulated energy in grid of cells",
-                            colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
-  fhGridCellsELowGain->SetYTitle("row (phi direction)");
-  fhGridCellsELowGain->SetXTitle("column (eta direction)");
-  outputContainer->Add(fhGridCellsELowGain);
-  
-  if(fFillAllCellTimeHisto)
-  { 
-    fhGridCellsTime  = new TH2F ("hGridCellsTime","Accumulated time in grid of cells",
-                                 colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
-    fhGridCellsTime->SetYTitle("row (phi direction)");
-    fhGridCellsTime->SetXTitle("column (eta direction)");
-    outputContainer->Add(fhGridCellsTime);
-    
-    fhGridCellsTimeLowGain  = new TH2F ("hGridCellsTimeLG","Low gain: Accumulated time in grid of cells",
-                                        colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
-    fhGridCellsTimeLowGain->SetYTitle("row (phi direction)");
-    fhGridCellsTimeLowGain->SetXTitle("column (eta direction)");
-    outputContainer->Add(fhGridCellsTimeLowGain);
-  }
-  
-  fhNCellsSumAmpPerMod       = new TH2F*[fNModules];  
-  
+     
   fhNClustersSumEnergyPerMod = new TH2F*[fNModules];
   
   fhIMMod                    = new TH2F*[fNModules];
@@ -5885,18 +6355,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   if(fStudyBadClusters) 
     fhNCellsPerClusterModNoCut = new TH2F*[fNModules];
   
-  if(fFillAllCellTimeHisto) 
-    fhTimeAmpPerRCU = new TH2F*[fNModules*fNRCU];       
   
   for(Int_t imod = 0; imod < fNModules; imod++)
   {
-    fhNCellsSumAmpPerMod[imod] = new TH2F (Form("hNCellsSumAmp_Mod%d",imod),
-                                             Form("# cells in SM vs sum of cells energy in Module %d",imod), 
-                                             nptbins,ptmin,ptmax*4, ncebins,ncemin,ncemax); 
-    fhNCellsSumAmpPerMod[imod]->SetXTitle("#Sigma #it{Amplitude} (GeV)");
-    fhNCellsSumAmpPerMod[imod]->SetYTitle("#Sigma #it{n}_{cells}");
-    outputContainer->Add(fhNCellsSumAmpPerMod[imod]);
-
     fhNClustersSumEnergyPerMod[imod] = new TH2F (Form("hNClustersSumEnergy_Mod%d",imod),
                                            Form("# clusters in SM vs sum of clusters energy in Module %d",imod), 
                                            nptbins,ptmin,ptmax*4, nclbins,nclmin,nclmax); 
@@ -5920,20 +6381,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhNCellsPerClusterModNoCut[imod]->SetYTitle("#it{n}_{cells per cluster}");
       outputContainer->Add(fhNCellsPerClusterModNoCut[imod]);
     }
-    
-    if(fFillAllCellTimeHisto) 
-    {
-      for(Int_t ircu = 0; ircu < fNRCU; ircu++)
-      {
-        fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
-                                                      Form("#it{E}_{cell} vs #it{t}_{cell} in Module %d, RCU %d ",imod,ircu), 
-                                                      nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-        fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("#it{E} (GeV)");
-        fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("#it{t} (ns)");
-        outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
-      }
-    }
-    
+        
     if(fFillAllPi0Histo)
     {
       fhIMMod[imod]  = new TH2F (Form("hIM_Mod%d",imod),
@@ -6156,7 +6604,6 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhMCNeutral1EleEOverP);
   }
   
-  
    if(fFillEBinAcceptanceHisto)
   {
     for(Int_t ie=0; ie<fNEBinCuts; ie++)
@@ -6172,18 +6619,21 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhEBinClusterColRow[ie] = new TH2F
       (Form("hEBin%d_Cluster_ColRow",ie),
        Form("column vs row, cluster max E cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+       colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
       fhEBinClusterColRow[ie]->SetYTitle("row");
       fhEBinClusterColRow[ie]->SetXTitle("column");
       outputContainer->Add(fhEBinClusterColRow[ie]) ;
       
-      fhEBinCellColRow[ie] = new TH2F
-      (Form("hEBin%d_Cell_ColRow",ie),
-       Form("column vs row, cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
-      fhEBinCellColRow[ie]->SetYTitle("row");
-      fhEBinCellColRow[ie]->SetXTitle("column");
-      outputContainer->Add(fhEBinCellColRow[ie]) ;
+      if(fFillAllCellHistograms)
+      {
+        fhEBinCellColRow[ie] = new TH2F
+        (Form("hEBin%d_Cell_ColRow",ie),
+         Form("column vs row, cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
+         colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+        fhEBinCellColRow[ie]->SetYTitle("row");
+        fhEBinCellColRow[ie]->SetXTitle("column");
+        outputContainer->Add(fhEBinCellColRow[ie]) ;
+      }
     }
   }
 
@@ -6669,13 +7119,13 @@ void AliAnaCalorimeterQA::InitParameters()
   
   fInvMassMaxOpenAngle = 100*TMath::DegToRad(); // 100 degrees
   
-  // Exotic studies
-  fExoNECrossCuts  = 10 ;
-  fExoNDTimeCuts   = 4  ;
-  
-  fExoDTimeCuts [0] = 1.e4 ; fExoDTimeCuts [1] = 50.0 ; fExoDTimeCuts [2] = 25.0 ; fExoDTimeCuts [3] = 10.0 ;
-  fExoECrossCuts[0] = 0.80 ; fExoECrossCuts[1] = 0.85 ; fExoECrossCuts[2] = 0.90 ; fExoECrossCuts[3] = 0.92 ; fExoECrossCuts[4] = 0.94 ;
-  fExoECrossCuts[5] = 0.95 ; fExoECrossCuts[6] = 0.96 ; fExoECrossCuts[7] = 0.97 ; fExoECrossCuts[8] = 0.98 ; fExoECrossCuts[9] = 0.99 ;
+//  // Exotic studies
+//  fExoNECrossCuts  = 10 ;
+//  fExoNDTimeCuts   = 4  ;
+//  
+//  fExoDTimeCuts [0] = 1.e4 ; fExoDTimeCuts [1] = 50.0 ; fExoDTimeCuts [2] = 25.0 ; fExoDTimeCuts [3] = 10.0 ;
+//  fExoECrossCuts[0] = 0.80 ; fExoECrossCuts[1] = 0.85 ; fExoECrossCuts[2] = 0.90 ; fExoECrossCuts[3] = 0.92 ; fExoECrossCuts[4] = 0.94 ;
+//  fExoECrossCuts[5] = 0.95 ; fExoECrossCuts[6] = 0.96 ; fExoECrossCuts[7] = 0.97 ; fExoECrossCuts[8] = 0.98 ; fExoECrossCuts[9] = 0.99 ;
 
 //  fNEBinCuts = 14;
 //  fEBinCuts[0] = 0.;  fEBinCuts[1] = 0.3;  fEBinCuts[2] = 0.5;

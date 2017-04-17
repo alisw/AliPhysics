@@ -74,6 +74,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
   fPionPIDcutTPC(kFALSE),
   fIsIonColl(kFALSE),
   fIsMC(kTRUE),
+  fHasSDD(kTRUE),
   fIsGRIDanalysis(kTRUE),
   fIsV0tree(kFALSE),
   fArmPlot(0),
@@ -99,8 +100,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
   fEtaMax(0.8),
   fESigITSMin(-3.),
   fESigITSMax(3.),
-  fESigTPCMin(-5.),
-  fESigTPCMax(5.),
+  fESigTPCMin(-4.),
+  fESigTPCMax(4.),
   fESigTOFMin(-3.),
   fESigTOFMax(3.),
   fPSigTPCMin(-99.),
@@ -110,6 +111,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
   fPionPIDcutTPC(kFALSE),
   fIsIonColl(kFALSE),
   fIsMC(kTRUE),
+  fHasSDD(kTRUE),
   fIsGRIDanalysis(kTRUE),
   fIsV0tree(kFALSE),
   fArmPlot(0),
@@ -138,7 +140,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 //________________________________________________________________________
 
 void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
-
+  
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   inputHandler->SetNeedField();
@@ -255,15 +257,21 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       if( eta < fEtaMin || eta > fEtaMax ){ continue; } 
       fQAhist->Fill("Tracks_KineCuts", 1);
 
+      Double_t phi  = track->Phi();
+
       //Get electron nSigma in TPC for cut (inclusive cut)
       Double_t EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
       if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue; }
       
-      //Get rest of electron nSigma values and apply cuts if requested (inclusive cuts)
-      Double_t EnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron);
-      if(fPIDcutITS){
-        if(EnSigmaITS < fESigITSMin || EnSigmaITS > fESigITSMax){ continue; }
+      Double_t EnSigmaITS = -999;
+      if(fHasSDD){
+        //Get rest of electron nSigma values and apply cuts if requested (inclusive cuts)
+        EnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron);
+        if(fPIDcutITS){
+          if(EnSigmaITS < fESigITSMin || EnSigmaITS > fESigITSMax){ continue; }
+        }
       }
+
       Double_t EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron);
       if(fPIDcutTOF){
         if(EnSigmaTOF < fESigTOFMin || EnSigmaTOF > fESigTOFMax){ continue; }
@@ -285,33 +293,42 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       Double_t KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon);
       Double_t KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon);
       
-      Double_t phi  = track->Phi();
 
       //Get ITS and TPC signals
       Double_t ITSsignal = track->GetITSsignal();
       Double_t TPCsignal = track->GetTPCsignal();
       Double_t TOFsignal = track->GetTOFsignal();
       
-          
+      Double_t nTPCclusters = track->GetTPCNcls(); 
+      Double_t nTPCcrossed = track->GetTPCClusterInfo(2,1);
+      Double_t TPCcrossOverFind = nTPCcrossed/track->GetTPCNclsF();
+      Double_t nTPCshared = track->GetTPCnclsS();
+      Double_t chi2TPC = track->GetTPCchi2();
+
       //DCA values
       Float_t DCAxy = 0.;
       Float_t DCAz = 0.;
       track->GetImpactParameters( &DCAxy, &DCAz);
       
-      //ITS clusters and shared clusters
-      Int_t nITS = track->GetNumberOfITSClusters();
-      Double_t nITS_shared = 0.;
-      for(Int_t d = 0; d < 6; d++){
-              nITS_shared += (Double_t) track->HasSharedPointOnITSLayer(d);
-        }
-      nITS_shared /= nITS;
+      Int_t nITS = 0;
+      Double_t fITS_shared = 0;
+      Double_t chi2ITS = 0;
+      if(fHasSDD){
+        //ITS clusters and shared clusters
+        nITS = track->GetNumberOfITSClusters();
+        fITS_shared = 0.;
+        for(Int_t d = 0; d < 6; d++){
+                fITS_shared += static_cast<Double_t>(track->HasSharedPointOnITSLayer(d));
+          }
+        fITS_shared /= nITS;
      
-      //Get chi2 values 
-      Double_t chi2ITS = track->GetITSchi2();
-      Double_t chi2TPC = track->GetTPCchi2();
+        chi2ITS = track->GetITSchi2();
+      }
 
       Int_t fCutMaxChi2TPCConstrainedVsGlobalVertexType = fESDtrackCuts->kVertexTracks | fESDtrackCuts->kVertexSPD;
+
       const AliESDVertex* vertex = 0;
+
       if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDtrackCuts->kVertexTracks){
         vertex = track->GetESDEvent()->GetPrimaryVertexTracks();}
 
@@ -364,6 +381,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "KsigITS="    << KnSigmaITS <<
         "KsigTPC="    << KnSigmaTPC <<
         "KsigTOF="    << KnSigmaTOF <<
+
         "charge="     << charge <<
         "ITSsignal="  << ITSsignal <<
         "TPCsignal="  << TPCsignal << 
@@ -371,13 +389,21 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "vertexX="    << primaryVertex[0] <<
         "vertexY="    << primaryVertex[1] <<
         "vertexZ="    << primaryVertex[2] <<
+
+        "nTPCclusters=" << nTPCclusters <<
+        "nTPCcrossed="<< nTPCcrossed <<
+        "TPCcrossFind="<< TPCcrossOverFind <<
+        "nTPCshared=" << nTPCshared <<
+        "chi2TPC="    << chi2TPC <<
+
         "nITS="       << nITS <<
-        "nITSshared=" << nITS_shared << 
+        "fITSshared=" << fITS_shared << 
+        "chi2ITS="    << chi2ITS <<
+
         "DCAxy="      << DCAxy <<
         "DCAz="       << DCAz <<
-        "chi2ITS="    << chi2ITS <<
-        "chi2TPC="    << chi2TPC <<
         "goldenChi2=" << goldenChi2 <<
+
         "mcEta="      << mcEta <<
         "mcPhi="      << mcPhi <<
         "mcPt="       << mcPt <<
@@ -402,6 +428,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "KsigITS="    << KnSigmaITS <<
         "KsigTPC="    << KnSigmaTPC <<
         "KsigTOF="    << KnSigmaTOF <<
+
         "charge="     << charge <<
         "ITSsignal="  << ITSsignal <<
         "TPCsignal="  << TPCsignal << 
@@ -409,12 +436,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
         "vertexX="    << primaryVertex[0] <<
         "vertexY="    << primaryVertex[1] <<
         "vertexZ="    << primaryVertex[2] <<
+
+        "nTPCclusters=" << nTPCclusters <<
+        "nTPCcrossed=" << nTPCcrossed <<
+        "TPCcrossFind="<< TPCcrossOverFind <<
+        "nTPCshared=" << nTPCshared <<
+        "chi2TPC="    << chi2TPC <<
+
         "nITS="       << nITS <<
-        "nITSshared=" << nITS_shared << 
+        "fITSshared=" << fITS_shared << 
+        "chi2ITS="    << chi2ITS <<
+
         "DCAxy="      << DCAxy <<
         "DCAz="       << DCAz <<
-        "chi2ITS="    << chi2ITS <<
-        "chi2TPC="    << chi2TPC <<
         "goldenChi2=" << goldenChi2 <<
         "runNumber="  << runNumber << 
         "eventNum="   << eventNum <<
@@ -467,13 +501,18 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       Double_t eta = posTrack->Eta();
       Double_t phi = posTrack->Phi();
 
-      Double_t EnSigmaITS = fPIDResponse->NumberOfSigmasITS(posTrack,(AliPID::EParticleType)AliPID::kElectron);
+      Double_t EnSigmaITS = -999;
+      Double_t PnSigmaITS = -999;
+      Double_t KnSigmaITS = -999;
+      if(fHasSDD){
+        EnSigmaITS = fPIDResponse->NumberOfSigmasITS(posTrack,(AliPID::EParticleType)AliPID::kElectron);
+        PnSigmaITS = fPIDResponse->NumberOfSigmasITS(posTrack,(AliPID::EParticleType)AliPID::kPion);
+        KnSigmaITS = fPIDResponse->NumberOfSigmasITS(posTrack,(AliPID::EParticleType)AliPID::kKaon);
+      }
       Double_t EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(posTrack,(AliPID::EParticleType)AliPID::kElectron);
       Double_t EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(posTrack,(AliPID::EParticleType)AliPID::kElectron);
-      Double_t PnSigmaITS = fPIDResponse->NumberOfSigmasITS(posTrack,(AliPID::EParticleType)AliPID::kPion);
       Double_t PnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(posTrack,(AliPID::EParticleType)AliPID::kPion);
       Double_t PnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(posTrack,(AliPID::EParticleType)AliPID::kPion);
-      Double_t KnSigmaITS = fPIDResponse->NumberOfSigmasITS(posTrack,(AliPID::EParticleType)AliPID::kKaon);
       Double_t KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(posTrack,(AliPID::EParticleType)AliPID::kKaon);
       Double_t KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(posTrack,(AliPID::EParticleType)AliPID::kKaon);
       //DCA values
@@ -481,14 +520,16 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       Float_t ImpParamZ = 0.;
       posTrack->GetImpactParameters( &ImpParamXY, &ImpParamZ);
       
+      Int_t nITS = 0;
+      Double_t fITS_shared = 0;
+      if(fHasSDD){
       //ITS clusters and shared clusters
-      Int_t nITS = posTrack->GetNumberOfITSClusters();
-      Double_t nITS_shared = 0.;
-      for(Int_t d = 0; d < 6; d++){
-              nITS_shared += static_cast<Double_t>(posTrack->HasSharedPointOnITSLayer(d));
+        nITS = posTrack->GetNumberOfITSClusters();
+        for(Int_t d = 0; d < 6; d++){
+          fITS_shared += static_cast<Double_t>(posTrack->HasSharedPointOnITSLayer(d));
         }
-      nITS_shared /= nITS;
-
+        fITS_shared /= nITS;
+      }
       Int_t daughtCharge = posTrack->Charge();
       
       //Declare MC variables
@@ -527,7 +568,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           "KsigTPC="    << KnSigmaTPC <<
           "KsigTOF="    << KnSigmaTOF <<
           "nITS="       << nITS <<
-          "nITSshared=" << nITS_shared << 
+          "fITSshared=" << fITS_shared << 
           "impParamXY=" << ImpParamXY <<
           "impParamZ="  << ImpParamZ <<
           "charge="     << daughtCharge <<
@@ -561,7 +602,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           "KsigTPC="    << KnSigmaTPC <<
           "KsigTOF="    << KnSigmaTOF <<
           "nITS="       << nITS <<
-          "nITSshared=" << nITS_shared << 
+          "nITSshared=" << fITS_shared << 
           "impParamXY=" << ImpParamXY <<
           "impParamZ="  << ImpParamZ <<
           "charge="     << daughtCharge <<
@@ -579,13 +620,15 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       eta = negTrack->Eta();
       phi = negTrack->Phi();
 
-      EnSigmaITS = fPIDResponse->NumberOfSigmasITS(negTrack,(AliPID::EParticleType)AliPID::kElectron);
+      if(fHasSDD){
+        EnSigmaITS = fPIDResponse->NumberOfSigmasITS(negTrack,(AliPID::EParticleType)AliPID::kElectron);
+        PnSigmaITS = fPIDResponse->NumberOfSigmasITS(negTrack,(AliPID::EParticleType)AliPID::kPion);
+        KnSigmaITS = fPIDResponse->NumberOfSigmasITS(negTrack,(AliPID::EParticleType)AliPID::kKaon);
+      }
       EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(negTrack,(AliPID::EParticleType)AliPID::kElectron);
       EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(negTrack,(AliPID::EParticleType)AliPID::kElectron);
-      PnSigmaITS = fPIDResponse->NumberOfSigmasITS(negTrack,(AliPID::EParticleType)AliPID::kPion);
       PnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(negTrack,(AliPID::EParticleType)AliPID::kPion);
       PnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(negTrack,(AliPID::EParticleType)AliPID::kPion);
-      KnSigmaITS = fPIDResponse->NumberOfSigmasITS(negTrack,(AliPID::EParticleType)AliPID::kKaon);
       KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(negTrack,(AliPID::EParticleType)AliPID::kKaon);
       KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(negTrack,(AliPID::EParticleType)AliPID::kKaon);
       //DCA values
@@ -593,13 +636,15 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
       ImpParamZ = 0.;
       negTrack->GetImpactParameters( &ImpParamXY, &ImpParamZ);
       
-      //ITS clusters andared clusters
-      nITS = negTrack->GetNumberOfITSClusters();
-      nITS_shared = 0.;
-      for(Int_t d = 0; d < 6; d++){
-              nITS_shared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
-        }
-      nITS_shared /= nITS;
+      if(fHasSDD){
+        //ITS clusters andared clusters
+        nITS = negTrack->GetNumberOfITSClusters();
+        fITS_shared = 0.;
+        for(Int_t d = 0; d < 6; d++){
+                fITS_shared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
+          }
+        fITS_shared /= nITS;
+      }
       daughtCharge = negTrack->Charge(); 
       //Write negative observales to tree (v0 information written twice. Filter by looking at only pos or neg charge)
       if(fIsMC){
@@ -630,7 +675,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           "KsigTPC="    << KnSigmaTPC <<
           "KsigTOF="    << KnSigmaTOF <<
           "nITS="       << nITS <<
-          "nITSshared=" << nITS_shared << 
+          "nITSshared=" << fITS_shared << 
           "impParamXY=" << ImpParamXY <<
           "impParamZ="  << ImpParamZ <<
           "charge="     << daughtCharge <<
@@ -664,7 +709,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
           "KsigTPC="    << KnSigmaTPC <<
           "KsigTOF="    << KnSigmaTOF <<
           "nITS="       << nITS <<
-          "nITSshared=" << nITS_shared << 
+          "nITSshared=" << fITS_shared << 
           "impParamXY=" << ImpParamXY <<
           "impParamZ="  << ImpParamZ <<
           "charge="     << daughtCharge <<

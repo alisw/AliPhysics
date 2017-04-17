@@ -9,7 +9,9 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
                                   Double_t maxPt              = 20,
                                   Int_t pythiaErrorTolerance  = 2000,
                                   Bool_t externalDecayer      = 0,
-                                  Bool_t decayLongLived       = 0
+                                  Bool_t decayLongLived       = 0,
+                                  Bool_t dynamicalPtRange     = 0,
+                                  Bool_t useYWeights          = 0
                                 )
 {
   // collisions systems defined:
@@ -38,6 +40,8 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
   gener->SetParametrizationFileDirectory(paramFileDir);
   gener->SetNPart(numberOfParticles);                         // source multiplicity per event
   gener->SetPtRange(minPt,maxPt);
+  gener->SetDynamicalPtRange(dynamicalPtRange);
+  gener->SetUseYWeighting(useYWeights);
   gener->SetYRange(-1.,1.);
   gener->SetPhiRange(0., 360.);
   gener->SetOrigin(0.,0.,0.); 

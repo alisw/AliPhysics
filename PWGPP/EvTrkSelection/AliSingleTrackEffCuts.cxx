@@ -13,7 +13,6 @@
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 #include "AliVParticle.h"
-#include "AliStack.h"
 #include "AliMCEventHandler.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
@@ -314,10 +313,9 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
   if(!fisAOD) { // check on ESDs
     AliMCEventHandler* mcinfo = (AliMCEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());  	     
     AliMCEvent* mcevent = mcinfo->MCEvent();
-    AliStack* stack = ((AliMCEvent*)mcevent)->Stack();
     AliMCParticle* mcPart = dynamic_cast<AliMCParticle *>(obj);	
     if (!mcPart) return kFALSE;
-    if(!stack->IsPhysicalPrimary(mcPart->GetLabel())) {
+    if(!mcevent->IsPhysicalPrimary(mcPart->GetLabel())) {
       isSelected = kFALSE;
     }
   } else { // Check on AODs

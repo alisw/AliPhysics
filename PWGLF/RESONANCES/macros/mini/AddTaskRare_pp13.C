@@ -94,7 +94,12 @@ AliRsnMiniAnalysisTask * AddTask_pikx
    
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    //task->SelectCollisionCandidates(AliVEvent::kMB);
-   task->UseESDTriggerMask(AliVEvent::kINT7);
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
+
    if (isPP) 
      task->UseMultiplicity("QUALITY");
    else
@@ -400,8 +405,12 @@ AliRsnMiniAnalysisTask *AddTask_pik0
  
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
    
-   //task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
-   task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
+   //task->SelectCollisionCandidates(triggerMask); //AOD
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
 
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
@@ -834,9 +843,13 @@ AliRsnMiniAnalysisTask *AddTask_kxk0
    TString taskName = Form("%s_%s%s", lname.Data(), ((system==0)? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
  
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-   
-   //task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
-   task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
+
+   //task->SelectCollisionCandidates(triggerMask); //AOD
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
 
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
@@ -1249,7 +1262,12 @@ AliRsnMiniAnalysisTask * AddTask_pkx
    //if(is2011PbPb)
    //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
    //else
-   task->SelectCollisionCandidates(triggerMask);
+   //task->SelectCollisionCandidates(triggerMask);
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
 
    /*
    AliMultSelectionTask *taskm = AddTaskMultSelection();
@@ -1917,9 +1935,13 @@ AliRsnMiniAnalysisTask *AddTask_pk0
    TString taskName = Form("%s_%s%s", lname.Data(), ((system==0)? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
  
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-   
-   //task->UseESDTriggerMask(AliVEvent::kINT7); //ESD ****** check this *****                    
-   task->SelectCollisionCandidates(triggerMask); //AOD                                                                                        
+
+   //task->SelectCollisionCandidates(triggerMask); //AOD
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
 
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
@@ -2167,7 +2189,7 @@ Bool_t Config_pk0
      if (!use[i]) continue;
      //if (collSyst) output[i] = "SPARSE";
      // create output
-     AliRsnMiniOutput *out = task->CreateOutput(Form("pik0_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());
+     AliRsnMiniOutput *out = task->CreateOutput(Form("pk0_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());
      // selection settings
      out->SetCutID(0, cutID1[i]);
      out->SetCutID(1, cutID2[i]);
@@ -2314,6 +2336,12 @@ AliRsnMiniAnalysisTask* AddTask_Lambdapi(TString lname,Bool_t isMC,Int_t system,
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
    ::Info("AddTaskRare_pp13::AddTask_Lambdapi", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
    
    mgr->AddTask(task);
    
@@ -2546,7 +2574,7 @@ Bool_t Config_Lambdapi
    Bool_t   useIM   [18] = { 1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1          ,  1              ,  1              ,  1              ,  1              ,  1              };
    TString  name    [18] = {"LambdapPip"   , "LambdapPim"   , "LambdaaPim"      , "LambdaaPip"      , "LambdapPipMix", "LambdapPimMix", "LambdaaPimMix"   , "LambdaaPipMix"   , "SigmaPt"  , "SigmaMt"  , "ASigmaPt"     , "ASigmaMt"     , "XiM"       , "XiP"           , "Lambda1520P"   , "Lambda1520M"   , "Lambda1520PBar", "Lambda1520MBar"};
    TString  comp    [18] = {"PAIR"     , "PAIR"     , "PAIR"         , "PAIR"         , "MIX"      , "MIX"      , "MIX"          , "MIX"          , "TRUE"     , "TRUE"     , "TRUE"         , "TRUE"         , "TRUE"      , "TRUE"          , "TRUE"          , "TRUE"          , "TRUE"          , "TRUE"          };
-   TString  output  [18] = {"HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"      , "HIST"          , "HIST"          , "HIST"          , "HIST"          , "HIST"          };
+   TString  output  [18] = {"SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"      , "SPARSE"          , "SPARSE"          , "SPARSE"          , "SPARSE"          , "SPARSE"          };
    Char_t   charge1 [18] = {'0'        , '0'        , '0'            , '0'            , '0'        , '0'        , '0'            , '0'            , '0'        , '0'        , '0'            , '0'            , '0'         , '0'             , '0'             , '0'             , '0'             , '0'             };
    Char_t   charge2 [18] = {'+'        , '-'        , '-'            , '+'            , '+'        , '-'        , '-'            , '+'            , '+'        , '-'        , '-'            , '+'            , '-'         , '+'             , '+'             , '-'             , '-'             , '+'             };
    Int_t    cutID1  [18] = { iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda ,  iCutAntiLambda ,  iCutLambda     ,  iCutLambda     ,  iCutAntiLambda ,  iCutAntiLambda };
@@ -2848,6 +2876,12 @@ AliRsnMiniAnalysisTask* AddTask_Lambdakx(TString lname,Bool_t isMC,Int_t system,
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
    ::Info("AddTaskRare_pp13::AddTask_Lambdakx", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
    
    mgr->AddTask(task);
    
@@ -3089,7 +3123,7 @@ Bool_t Config_Lambdakx
    Bool_t   useIM   [18] = { 1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1          ,  1              ,  1              ,  1              ,  1              ,  1              };
    TString  name    [18] = {"LambdapKp"   , "LambdapKm"   , "LambdaaKm"      , "LambdaaKp"      , "LambdapKpMix", "LambdapKmMix", "LambdaaKmMix"   , "LambdaaKpMix"   , "SigmaPt"  , "SigmaMt"  , "ASigmaPt"     , "ASigmaMt"     , "XiM"       , "XiP"           , "Lambda1520P"   , "Lambda1520M"   , "Lambda1520PBar", "Lambda1520MBar"};
    TString  comp    [18] = {"PAIR"     , "PAIR"     , "PAIR"         , "PAIR"         , "MIX"      , "MIX"      , "MIX"          , "MIX"          , "TRUE"     , "TRUE"     , "TRUE"         , "TRUE"         , "TRUE"      , "TRUE"          , "TRUE"          , "TRUE"          , "TRUE"          , "TRUE"          };
-   TString  output  [18] = {"HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"      , "HIST"          , "HIST"          , "HIST"          , "HIST"          , "HIST"          };
+   TString  output  [18] = {"SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"      , "SPARSE"          , "SPARSE"          , "SPARSE"          , "SPARSE"          , "SPARSE"          };
    Char_t   charge1 [18] = {'0'        , '0'        , '0'            , '0'            , '0'        , '0'        , '0'            , '0'            , '0'        , '0'        , '0'            , '0'            , '0'         , '0'             , '0'             , '0'             , '0'             , '0'             };
    Char_t   charge2 [18] = {'+'        , '-'        , '-'            , '+'            , '+'        , '-'        , '-'            , '+'            , '+'        , '-'        , '-'            , '+'            , '-'         , '+'             , '+'             , '-'             , '-'             , '+'             };
    Int_t    cutID1  [18] = { iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda ,  iCutAntiLambda ,  iCutLambda     ,  iCutLambda     ,  iCutAntiLambda ,  iCutAntiLambda };
@@ -3387,6 +3421,12 @@ AliRsnMiniAnalysisTask* AddTask_Lambdak0(TString lname,Bool_t isMC,Int_t system,
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
    ::Info("AddTaskRare_pp13::AddTask_Lambdak0", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
    
    mgr->AddTask(task);
    
@@ -3623,7 +3663,7 @@ Bool_t Config_Lambdak0
    Bool_t   useIM   [4] = { 1         ,  1         ,  1             ,  1};
    TString  name    [4] = {"LambdapK0"   , "LambdaaK0"   , "LambdapK0Mix"      , "LambdaaK0Mix"};
    TString  comp    [4] = {"PAIR"     , "PAIR"     ,  "MIX"      , "MIX"};
-   TString  output  [4] = {"HIST"     , "HIST"     , "HIST"         , "HIST"};
+   TString  output  [4] = {"SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"};
    Char_t   charge1 [4] = {'0'        , '0'        , '0'            , '0'};
    Char_t   charge2 [4] = {'0'        , '0'        , '0'            , '0'};
    Int_t    cutID1  [4] = { iCutLambda,  iCutAntiLambda,  iCutLambda, iCutAntiLambda};
@@ -3927,6 +3967,12 @@ AliRsnMiniAnalysisTask* AddTask_Lambdap(TString lname,Bool_t isMC,Int_t system,I
    task->SetMaxDiffMult(maxDiffMultMix);
    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
    ::Info("AddTaskRare_pp13::AddTask_Lambdap", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+
+   int trigger=EventCuts%10;
+   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMult);
+   else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+   else task->UseESDTriggerMask(AliVEvent::kAny);
    
    mgr->AddTask(task);
    
@@ -4146,7 +4192,7 @@ Bool_t Config_Lambdap
    Bool_t   useIM   [18] = { 1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1         ,  1         ,  1             ,  1             ,  1          ,  1              ,  1              ,  1              ,  1              ,  1              };
    TString  name    [18] = {"LambdapPp"   , "LambdapPm"   , "LambdaaPm"      , "LambdaaPp"      , "LambdapPpMix", "LambdapPmMix", "LambdaaPmMix"   , "LambdaaPpMix"   , "SigmaPt"  , "SigmaMt"  , "ASigmaPt"     , "ASigmaMt"     , "XiM"       , "XiP"           , "Lambda1520P"   , "Lambda1520M"   , "Lambda1520PBar", "Lambda1520MBar"};
    TString  comp    [18] = {"PAIR"     , "PAIR"     , "PAIR"         , "PAIR"         , "MIX"      , "MIX"      , "MIX"          , "MIX"          , "TRUE"     , "TRUE"     , "TRUE"         , "TRUE"         , "TRUE"      , "TRUE"          , "TRUE"          , "TRUE"          , "TRUE"          , "TRUE"          };
-   TString  output  [18] = {"HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"     , "HIST"     , "HIST"         , "HIST"         , "HIST"      , "HIST"          , "HIST"          , "HIST"          , "HIST"          , "HIST"          };
+   TString  output  [18] = {"SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"     , "SPARSE"     , "SPARSE"         , "SPARSE"         , "SPARSE"      , "SPARSE"          , "SPARSE"          , "SPARSE"          , "SPARSE"          , "SPARSE"          };
    Char_t   charge1 [18] = {'0'        , '0'        , '0'            , '0'            , '0'        , '0'        , '0'            , '0'            , '0'        , '0'        , '0'            , '0'            , '0'         , '0'             , '0'             , '0'             , '0'             , '0'             };
    Char_t   charge2 [18] = {'+'        , '-'        , '-'            , '+'            , '+'        , '-'        , '-'            , '+'            , '+'        , '-'        , '-'            , '+'            , '-'         , '+'             , '+'             , '-'             , '-'             , '+'             };
    Int_t    cutID1  [18] = { iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda,  iCutLambda,  iCutAntiLambda,  iCutAntiLambda,  iCutLambda ,  iCutAntiLambda ,  iCutLambda     ,  iCutLambda     ,  iCutAntiLambda ,  iCutAntiLambda };

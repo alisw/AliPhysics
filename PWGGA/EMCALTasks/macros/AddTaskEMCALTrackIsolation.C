@@ -10,11 +10,13 @@
 AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
                                                                const char*     periodstr      = "LHC11c",
                                                                const char*     ntracks        = "EmcalTracks",
+                                                               const char*     nclusters      = "EmcCaloClusters",
                                                                const UInt_t    pSel           = AliVEvent::kEMC7,
                                                                const TString   dType          = "ESD",
                                                                const Bool_t	   bHisto         = kTRUE,
-                                                               const Bool_t	   bIsMC  	       = kFALSE,
+                                                               const Bool_t	   bIsMC  	      = kFALSE,
                                                                const Double_t  PtIso          = 2.,
+                                                               const Int_t     iIsoMethod     = 0,
                                                                const Int_t     iPtIsoMethod   = 0,
                                                                const Int_t     iUEMethod      = 1,
                                                                const Bool_t    bUseofTPC      = kFALSE,
@@ -44,7 +46,7 @@ AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
   else
     myContName = Form("Analysis_Tracks");
   
-  myContName.Append(Form("_PtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_LeadTrack_%s",iPtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,isLTAnalysis?"yes":"no"));
+  myContName.Append(Form("_IsoMethod%d_PtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_LeadTrack_%s",iIsoMethod,iPtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,isLTAnalysis?"yes":"no"));
   
   cout<<myContName<<endl;
     // #### Define analysis task
@@ -96,9 +98,10 @@ AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
   cout<<task<<endl;
     // #### Task preferences
     //  task->SetLCAnalysis(kFALSE);
-  cout<<iIsoConeRadius<<"\t"<<PtIso<<"\t"<<iPtIsoMethod<<"\t"<<iUEMethod<<"\t"<<bUseofTPC<<"\t"<<isLTAnalysis<<"\t"<<bIsMC<<"\t"<<i_pPb<<"\t"<<bmcTruth<<endl;
+  cout<<iIsoConeRadius<<"\t"<<PtIso<<"\t"<<iIsoMethod<<"\t"<<iPtIsoMethod<<"\t"<<iUEMethod<<"\t"<<bUseofTPC<<"\t"<<isLTAnalysis<<"\t"<<bIsMC<<"\t"<<i_pPb<<"\t"<<bmcTruth<<endl;
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetPtIsoThreshold(PtIso); // after should be replace by EtIso
+  task->SetIsoMethod(iIsoMethod);
   task->SetPtIsoMethod(iPtIsoMethod);
   task->SetUEMethod(iUEMethod);
   task->SetUSEofTPC(bUseofTPC);
@@ -122,6 +125,8 @@ AliAnalysisTaskEMCALTrackIsolation* AddTaskEMCALTrackIsolation(
   
   TString name(Form("TrackIsolation_%s", ntracks));
   cout<<"name of the containers  "<<name.Data()<<endl;
+  if(iIsoMethod==1)
+    AliClusterContainer *clustForAnalysis = task->AddClusterContainer(nclusters);
   
     // tracks to be used in the analysis (Hybrid tracks)
   AliTrackContainer * tracksForAnalysis = task->AddTrackContainer("tracks");

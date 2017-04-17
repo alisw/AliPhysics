@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaParticleHadronCorrelation
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Correlate trigger particles (photon, pi0, tracks) and charged tracks: Azimuthal correlations, xE distributions.
 ///
 /// Class that contains the algorithm for the analysis of

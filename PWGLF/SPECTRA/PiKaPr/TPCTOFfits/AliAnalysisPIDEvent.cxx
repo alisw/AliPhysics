@@ -49,7 +49,7 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent() :
   fIsEventSelected(0),
   fIsPileupFromSPD(kFALSE),
   fHasVertex(kFALSE),
-  fVertexZ(0.),
+  fVertexZ(-999.0),
   fCentralityQuality(0),
   fReferenceMultiplicity(0),
   fV0Mmultiplicity(0.),
@@ -62,7 +62,9 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent() :
   fIsINELgtZERO(kTRUE),
   fIsAcceptedVertexPosition(kTRUE),
   fHasNoInconsistentSPDandTrackVertices(kTRUE),
-  fIsMinimumBias(kTRUE)
+  fIsMinimumBias(kTRUE),
+  fMagneticField(0.),
+  fRunNo(0)
 {
   /*
    * default constructor
@@ -105,7 +107,9 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source) :
   fIsINELgtZERO(source.fIsINELgtZERO),
   fIsAcceptedVertexPosition(source.fIsAcceptedVertexPosition),
   fHasNoInconsistentSPDandTrackVertices(source.fHasNoInconsistentSPDandTrackVertices),
-  fIsMinimumBias(source.fIsMinimumBias)
+  fIsMinimumBias(source.fIsMinimumBias),
+  fMagneticField(source.fMagneticField),
+  fRunNo(source.fRunNo)
 {
   /*
    * copy constructor
@@ -153,6 +157,8 @@ AliAnalysisPIDEvent::operator=(const AliAnalysisPIDEvent &source)
   fIsAcceptedVertexPosition=source.fIsAcceptedVertexPosition;
   fHasNoInconsistentSPDandTrackVertices=source.fHasNoInconsistentSPDandTrackVertices;
   fIsMinimumBias=source.fIsMinimumBias;
+  fMagneticField=source.fMagneticField;
+  fRunNo=source.fRunNo;
   return *this;
 }
 
@@ -180,11 +186,14 @@ AliAnalysisPIDEvent::Reset()
   fIsEventSelected = 0;
   fIsPileupFromSPD = kFALSE;
   fHasVertex = 0.;
-  fVertexZ = 0.;
+  fVertexZ = -999.;
   fCentralityQuality = 0;
   fReferenceMultiplicity = 0;
   fMCMultiplicity = 0;
   fV0Mmultiplicity = 0;
+  fIsMinimumBias=0;
+  fMagneticField=0;
+  fRunNo=0;
   for (Int_t i = 0; i < 10; i++) {
     fTimeZeroTOF[i] = 0.;
     fTimeZeroTOFSigma[i] = 0.;

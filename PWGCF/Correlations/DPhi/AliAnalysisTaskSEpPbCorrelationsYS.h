@@ -25,12 +25,13 @@ class AliAODEvent;
 class AliEventPoolManager;
 class AliVParticle;
 class AliPIDResponse;
-class AliPID;
+//class AliPID;
 class AliAODv0;
-class AliAnalyseLeadingTrackUE;
+//class AliAnalyseLeadingTrackUE;
 class THnSparse;
 class AliAODcasdade;
 class AliAODVertex;
+
 
 #ifndef ALIANALYSISTASKSEH
 #include "AliAnalysisTaskSE.h"
@@ -84,7 +85,7 @@ public:
 	void     DefinedQAHistos();
 	
 	TObjArray* GetAcceptedTracksLeading(AliAODEvent*faod);
-	TObjArray* GetAcceptedV0Tracks(AliAODEvent*faod);
+	TObjArray* GetAcceptedV0Tracks(const AliAODEvent*faod);
 	TObjArray* GetAcceptedTracksAssociated(AliAODEvent*faod);
 
 	Bool_t IsAcceptedDaughterTrack(const AliAODTrack  * itrack);
@@ -145,8 +146,10 @@ public:
 	THnSparseF* fHistMass_K0s;
 	THnSparseF* fHistMass_Lambda;
 	THnSparseF* fHistMass_ALambda;
+	THnSparseF* fHistMass_Bump;
+	THnSparseF* fHistMass_Bump1;
 	THnSparseF      *fHist_V0QA; 
-	TH2D*   fHist_AP;
+	TH2D*   fHist_AP[4];
 	TH2D* fHistPosNsig[3];
 	TH2D* fHistNegNsig[3];
 	

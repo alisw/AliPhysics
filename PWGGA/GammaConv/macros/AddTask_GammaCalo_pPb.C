@@ -57,23 +57,26 @@ class CutHandlerCalo{
 //main function
 //***************************************************************************************
 void AddTask_GammaCalo_pPb(  
-                            Int_t      trainConfig                = 1,                // change different set of cuts
-                            Int_t      isMC                       = 0,                // run MC
-                            Int_t      enableQAMesonTask          = 0,                // enable QA in AliAnalysisTaskGammaConvV1
-                            Int_t      enableQAClusterTask        = 0,                // enable additional QA task
-                            TString    fileNameInputForWeighting  = "MCSpectraInput.root",       // path to file for weigting input / modified acceptance
-                            Int_t      doWeightingPart            = 0,                // enable Weighting
-                            TString    generatorName              = "DPMJET",         // generator name for weighting
-                            TString    cutnumberAODBranch         = "800000006008400000001500000",   // cutnumber for AOD branch
-                            Bool_t     isUsingTHnSparse           = kFALSE,           // enable or disable usage of THnSparses for background estimation
-                            Int_t      enableExtMatchAndQA        = 0,                // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-                            Bool_t     enableTriggerMimicking     = kFALSE,           // enable trigger mimicking
-                            Bool_t     enableTriggerOverlapRej    = kTRUE,            // enable trigger overlap rejection
-                            Float_t    maxFacPtHard               = 3,                // maximum factor between hardest jet and ptHard generated
-                            TString    periodNameV0Reader         = "",               // period Name for V0Reader
-                            Bool_t     enableSortingMCLabels      = kTRUE,            // enable sorting for MC cluster labels
-                            Bool_t     runLightOutput             = kFALSE,           // switch to run light output (only essential histograms for afterburner)
-                            TString    additionalTrainConfig      = "0"               // additional counter for trainconfig
+                            Int_t      trainConfig                  = 1,                // change different set of cuts
+                            Int_t      isMC                         = 0,                // run MC
+                            Int_t      enableQAMesonTask            = 0,                // enable QA in AliAnalysisTaskGammaConvV1
+                            Int_t      enableQAClusterTask          = 0,                // enable additional QA task
+                            TString    fileNameInputForWeighting    = "MCSpectraInput.root",       // path to file for weigting input / modified acceptance
+                            Int_t      doWeightingPart              = 0,                // enable Weighting
+                            TString    generatorName                = "DPMJET",         // generator name for weighting
+                            TString    cutnumberAODBranch           = "800000006008400000001500000",   // cutnumber for AOD branch
+                            Bool_t     isUsingTHnSparse             = kFALSE,           // enable or disable usage of THnSparses for background estimation
+                            Int_t      enableExtMatchAndQA          = 0,                // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+                            Bool_t     enableTriggerMimicking       = kFALSE,           // enable trigger mimicking
+                            Bool_t     enableTriggerOverlapRej      = kTRUE,            // enable trigger overlap rejection
+                            Float_t    maxFacPtHard                 = 3,                // maximum factor between hardest jet and ptHard generated
+                            TString    periodNameV0Reader           = "",               // period Name for V0Reader
+                            Bool_t    doMultiplicityWeighting       = kFALSE,           // enable multiplicity weights
+                            TString   fileNameInputForMultWeighing  = "",               // file for multiplicity weights
+                            TString   periodNameAnchor              = "",               // name of anchor period for weighting
+                            Bool_t     enableSortingMCLabels        = kTRUE,            // enable sorting for MC cluster labels
+                            Bool_t     runLightOutput               = kFALSE,           // switch to run light output (only essential histograms for afterburner)
+                            TString    additionalTrainConfig        = "0"               // additional counter for trainconfig
                            ) {
 
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
@@ -343,6 +346,10 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("82600013","1111141053032230000","0163403100000050"); // 20-60% standard NL
     cuts.AddCut("86000013","1111100053032230000","0163403100000050"); // 60-100% no NL
     cuts.AddCut("86000013","1111141053032230000","0163403100000050"); // 60-100% standard NL
+  } else if(trainConfig == 47){ // new default cut
+    cuts.AddCut("80000013","1111141057032230000","0163403100000050"); // default tm pt dependent
+  } else if(trainConfig == 48){ // new default cut
+    cuts.AddCut("80000013","1111141057032230000","0163103100000050"); // default tm pt dependent larger y range
 
   //EMC7
   } else if(trainConfig == 50){ // default cutstring and first set of variations nonlinearity
@@ -440,17 +447,24 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80083013","1111141051032230000","0163403100000050"); // default EG1
     cuts.AddCut("80085013","1111141051032230000","0163403100000050"); // default EG2
     
-
   //************************************************ PHOS clusters *************************************************
-  } else if (trainConfig == 31) {  // min energy = 0.3 GeV/c
-    cuts.AddCut("80000013","2444400040033200000","0163103100000050"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCut("80062013","2444400040033200000","0163103100000050"); //standard cut, kPHI7  // PHOS clusters
-  } else if (trainConfig == 32){ // Validation PHOS
-    cuts.AddCut("80000013","2444400040053200000","0163103100000050");
-  } else if (trainConfig == 33){ // Validation PHOS, only added signals
-    cuts.AddCut("80000023","2444400040053200000","0163103100000050");
+  } else if (trainConfig == 301) {  // min energy = 0.3 GeV/c
+    cuts.AddCut("80000013","2444400040013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCut("80062013","2444400040013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+  } else if (trainConfig == 302){ // Validation PHOS
+    cuts.AddCut("80000013","2444400040013200000","0163103100000010");
+  } else if (trainConfig == 303){ // Validation PHOS, only added signals
+    cuts.AddCut("80000023","2444400040013200000","0163103100000010");
+  } else if (trainConfig == 304){ // min energy = 0.3 GeV/c
+    cuts.AddCut("80000013","2444400040013200000","0163103100000000"); // kINT7 // PHOS clusters no open angle cut
+    cuts.AddCut("80062013","2444400040013200000","0163103100000000"); // kPHI7 // PHOS clusters no open angle cut
+    cuts.AddCut("80000013","2444400040013200000","0163103100000030"); // kINT7 // PHOS clusters open angle cut 0.1
+    cuts.AddCut("80062013","2444400040013200000","0163103100000030"); // kPHI7 // PHOS clusters  open angle cut 0.1
+  } else if (trainConfig == 305){ // timing cut variations
+    cuts.AddCut("80000013","2444400010013200000","0163103100000010"); // 1000ns
+    cuts.AddCut("80000013","2444400030013200000","0163103100000010"); // 200ns
+    cuts.AddCut("80000013","2444400050013200000","0163103100000010"); // 50ns
 
-    
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -505,6 +519,16 @@ void AddTask_GammaCalo_pPb(
     }
 
     analysisEventCuts[i] = new AliConvEventCuts();   
+    
+    TString dataInputMultHisto  = "";
+    TString mcInputMultHisto    = "";
+    TString triggerString       = cuts.GetEventCut(i);
+    triggerString               = triggerString(3,2);    
+    dataInputMultHisto          = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
+    mcInputMultHisto            = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
+   
+    if (doMultiplicityWeighting) analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
+
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);

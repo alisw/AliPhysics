@@ -1,7 +1,6 @@
 /// \file AddTaskGammaHadronCorrelation.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Configuration of gamma-hadron and pi0-hadron + isolation, correlation analysis
-///
-///
 ///
 /// Configuration macro for analysis of gamma-hadron and pi0-hadron correlation analysis
 /// both pi0 and gamma isolated or not.
@@ -15,7 +14,7 @@
 ///   * Correlation of the pi0 and charged tracks, twice, one without isolation condition, and other with isolation condition
 ///   * Optionally, the QA tasks AliAnaCalorimeterQA and AliAnaChargedParticle are executed
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 // Set includes for compilation
 

@@ -21,7 +21,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoCascadeHF.h"
 
-class AliStack;
+class AliMCEvent;
 class AliAODMCParticle;
 class AliAODMCHeader;
 class AliGenEventHeader;
@@ -126,24 +126,24 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
   static Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
-  static Int_t CheckOrigin(AliStack* stack, TParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
+  static Int_t CheckOrigin(AliMCEvent* mcEvent, TParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
-  static Int_t CheckD0Decay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckDplusDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckDplusKKpiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDplusKKpiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDplusKKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckDplusK0spiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
-  static Int_t CheckDsDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDplusK0spiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckDsK0sKDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
-  static Int_t CheckDstarDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDsK0sKDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDstarDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDstarDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckLcpKpiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckLcpKpiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckLcV0bachelorDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
-  static Int_t CheckXicXipipiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
 
  private:
 

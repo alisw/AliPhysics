@@ -5120,14 +5120,13 @@ void AliHFSystErr::InitLctopKpi2013pPb() {
 	for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i,0.05);
 }
 
-
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitLctopKpi2013pPbBDT() {
 	//
 	// Lc->pKpi using BDTs syst errors. Responsible: Jaime Norman
 	//  2013 pPb sample
 	//
-    SetNameTitle("AliHFSystErr","SystErrLctopKpi2013pPbBDT");
+	SetNameTitle("AliHFSystErr","SystErrLctopKpi2013pPbBDT");
 
 	// Normalization
 	fNorm = new TH1F("fNorm","fNorm",12,0,12);
@@ -5141,20 +5140,16 @@ void AliHFSystErr::InitLctopKpi2013pPbBDT() {
 	fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
 	fRawYield->SetBinContent(1,0.);
 	fRawYield->SetBinContent(2,0.);
-	fRawYield->SetBinContent(3,0.08);//2-3
-	fRawYield->SetBinContent(4,0.15);//3-4
-	fRawYield->SetBinContent(5,0.08);//4-5
-	fRawYield->SetBinContent(6,0.08);//5-6
+	for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.06); // 2-4
+	for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.08); // 4-6
 	for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.08); // 6-8
 	for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.04); // 8-12
 
 	fCutsEff = new TH1F("fCutsEff","fCutsEff",12,0,12);
 	fCutsEff->SetBinContent(1,0.);
 	fCutsEff->SetBinContent(2,0.);
-	fCutsEff->SetBinContent(3,0.09);
-	fCutsEff->SetBinContent(4,0.09);
-	fCutsEff->SetBinContent(5,0.08);
-	fCutsEff->SetBinContent(6,0.08);
+	for(Int_t i=3;i<=4;i++) fCutsEff->SetBinContent(i,0.08); // 2-4 
+	for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,0.08); // 4-6 
 	for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.08); // 6-8 
 	for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.06); // 8-12
 
@@ -5167,18 +5162,17 @@ void AliHFSystErr::InitLctopKpi2013pPbBDT() {
 	fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
 	fMCPtShape->SetBinContent(1,0.);
 	fMCPtShape->SetBinContent(2,0.);
-	fMCPtShape->SetBinContent(3,0.);
-	fMCPtShape->SetBinContent(4,0.01);
-	fMCPtShape->SetBinContent(5,0.03);
-	fMCPtShape->SetBinContent(6,0.03);
-	for(Int_t i=7; i<=8; i++) fMCPtShape->SetBinContent(i,0.01);
-	for(Int_t i=9; i<=12; i++) fMCPtShape->SetBinContent(i,0.03);
+	for(Int_t i=3; i<=4; i++) fMCPtShape->SetBinContent(i,0.00); // 2-4 
+	for(Int_t i=5; i<=6; i++) fMCPtShape->SetBinContent(i,0.03); // 4-6 
+	for(Int_t i=7; i<=8; i++) fMCPtShape->SetBinContent(i,0.01); // 6-8 
+	for(Int_t i=9; i<=12; i++) fMCPtShape->SetBinContent(i,0.03); // 8-12
 
 	// BR
 	fBR= new TH1F("fBR","fBR",12,0,12);
 	for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i,0.05);
 }
 
+//--------------------------------------------------------------------------
 void AliHFSystErr::InitLctopK0S2010pp() {
   //
   // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno, P. Pagano
@@ -5264,10 +5258,10 @@ void AliHFSystErr::InitLctopK0S2013pPb() {
 
   // MC dN/dpt 
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nBins,limits); // quadratic sum of ptshape and multiplicity dependence
-  fMCPtShape->SetBinContent(1,0.03);
-  fMCPtShape->SetBinContent(2,0.03);
-  fMCPtShape->SetBinContent(3,0.04);
-  fMCPtShape->SetBinContent(4,0.04);
+  fMCPtShape->SetBinContent(1,0.01);
+  fMCPtShape->SetBinContent(2,0.01);
+  fMCPtShape->SetBinContent(3,0.01);
+  fMCPtShape->SetBinContent(4,0.03);
  
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",nBins,limits);
@@ -5314,8 +5308,7 @@ void AliHFSystErr::InitLctopK0S2013pPbBDT() {
 
   // MC dN/dpt 
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0.,12.);
-  for(Int_t i=1; i<=12;i++) fMCPtShape->SetBinContent(i,0.00);
-  for(Int_t i=7; i<=8;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=1; i<=12;i++) fMCPtShape->SetBinContent(i,0.01); // quadratic sum of ptshape and multiplicity dependence
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);

@@ -123,9 +123,6 @@ Bool_t ConfigureLstar13TeVpp
   /* kmassresolution  */ Int_t resmass  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kFALSE);
 
 
-  /* PhiV   */           Int_t phivID   = task->CreateValue(AliRsnMiniValue::kPhiV, kFALSE);
-
-
 
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -179,9 +176,6 @@ Bool_t ConfigureLstar13TeVpp
 
 
     out->AddAxis(centID, 110, 0.0, 110.0); // adding multiplicity axis
-
-
-    out->AddAxis(phivID, 360, 0.0, 360.0); // phiv
 
 
     if(isPtDaughter) {
@@ -324,7 +318,57 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     return kFALSE;
   }
 
-  
+  // taking from anders' code. 
+
+  if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
+    trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+    Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
+    
+    if(!customFilterBit){//ESD
+      if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
+      else if(customQualityCutsID==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
+      else if(customQualityCutsID==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
+      else if(customQualityCutsID==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
+      else if(customQualityCutsID==7){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(5.);}
+      else if(customQualityCutsID==8){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.3);}
+      else if(customQualityCutsID==9){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
+      else if(customQualityCutsID==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
+      else if(customQualityCutsID==11){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
+      else if(customQualityCutsID==12){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
+      else if(customQualityCutsID==13){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(49.);}
+      else if(customQualityCutsID==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4.);}
+      else if(customQualityCutsID==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
+      else if(customQualityCutsID==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
+      else if(customQualityCutsID==17){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
+      else if(customQualityCutsID==56){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
+      else if(customQualityCutsID==58){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
+      else if(customQualityCutsID==60){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
+      else if(customQualityCutsID==64){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
+    }else{//AOD
+      trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
+      if(customQualityCutsID==4){trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");}
+      else if(customQualityCutsID==6){trkQualityCut->SetDCAZmax(0.2);}
+      else if(customQualityCutsID==8){trkQualityCut->SetTrackMaxChi2(2.3);}
+      else if(customQualityCutsID==10){trkQualityCut->SetMinNCrossedRowsTPC(100,kTRUE);}
+      else if(customQualityCutsID==12){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9,kTRUE);}
+      else if(customQualityCutsID==56){trkQualityCut->SetDCAZmax(1.);}
+      else if(customQualityCutsID==58){trkQualityCut->SetTrackMaxChi2(3.5);}
+      else if(customQualityCutsID==60){trkQualityCut->SetMinNCrossedRowsTPC(80,kTRUE);}
+    }
+    
+    trkQualityCut->Print();
+    return kTRUE;
+  }else{
+    Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
+    return kFALSE;
+  }
+
+
+
+
+
+  // was using earlier.
+  /*
   //for pA 2013
   //trkQualityCut->SetDefaults2011();//with filter bit=10
   //reset filter bit to very loose cuts 
@@ -354,17 +398,17 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");
   }
 
-  if (customQualityCutsID==3){
-    trkQualityCut->SetDCARPtFormula("0.0150+0.0500/pt^1.1");
-  }
+  //  if (customQualityCutsID==3){
+    //    trkQualityCut->SetDCARPtFormula("0.0150+0.0500/pt^1.1");
+  //  }
 
 
   if (customQualityCutsID==4){
-    trkQualityCut->SetDCAZmax(3.2);
+    trkQualityCut->SetDCAZmax(0.2);
   } 
 
   if (customQualityCutsID==5) {
-    trkQualityCut->SetDCAZmax(5.0); 
+    trkQualityCut->SetDCAZmax(1.0); 
   }
 
   
@@ -375,10 +419,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   if (customQualityCutsID==7){
     trkQualityCut->SetMinNCrossedRowsTPC(80, kTRUE);
   }
-
   
-
-
   if (customQualityCutsID==8){
     trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9, kTRUE);
   }
@@ -389,6 +430,18 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
 
 
 
+  if (customQualityCutsID==10){
+    trkQualityCut->SetTrackMaxChi2(2.3);
+  }
+  
+  if (customQualityCutsID==11){
+    trkQualityCut->SetTrackMaxChi2(3.5);
+  }
+
+  */
+
+
+  /*
   if (customQualityCutsID==10){
     trkQualityCut->SetTPCmaxChi2(5.0);
   }
@@ -407,41 +460,8 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   if (customQualityCutsID==13){
     trkQualityCut->SetITSmaxChi2(40.0);
   }
-
-
-
-  /*
-  if (customQualityCutsID==3){
-    trkQualityCut->SetDCAZmax(3.2);
-  } else {
-    trkQualityCut->SetDCAZmax(2.0); 
-  }
-  
-  if (customQualityCutsID==4){
-    trkQualityCut->SetMinNCrossedRowsTPC(60, kTRUE);
-  }
-  
-  if (customQualityCutsID==5){
-    trkQualityCut->SetMinNCrossedRowsTPC(80, kTRUE);
-  }
-  
-  if (customQualityCutsID==6){
-    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.75, kTRUE);
-  }
-  
-  if (customQualityCutsID==7){
-    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.85, kTRUE);
-  }
-  
-  if (customQualityCutsID==8){
-    trkQualityCut->SetAODTestFilterBit(10);
-    trkQualityCut->SetTPCminNClusters(70);
-  }
-  
-  if (customQualityCutsID==9){
-    trkQualityCut->SetTPCmaxChi2(3.5);
-  }
   */
+
 
   trkQualityCut->SetPtRange(0.15, 100.0);
   trkQualityCut->SetEtaRange(-0.8, 0.8);

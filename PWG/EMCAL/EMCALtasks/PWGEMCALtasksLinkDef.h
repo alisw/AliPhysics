@@ -46,4 +46,5 @@
 #pragma link C++ class  AliEmcalCorrectionClusterExotics+;
 #pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
+#pragma link C++ class  AliAnalysisTaskEmcalOccupancy+;
 #endif

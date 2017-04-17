@@ -137,7 +137,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
   //Setup the event reader for ALICE AOD
   AliFemtoEventReaderAODChain *rdr = new AliFemtoEventReaderAODChain();
     rdr->SetUseMultiplicity(tMacroConfig.multiplicity);  //Sets the type of the event multiplicity estimator
-    rdr->SetFilterBit(tMacroConfig.filter_bit);
+    if(tAnalysisConfig.analysisType!=AFALK::kProtPiM && tAnalysisConfig.analysisType!=AFALK::kAProtPiP &&
+       tAnalysisConfig.analysisType!=AFALK::kPiPPiM) rdr->SetFilterBit(tMacroConfig.filter_bit);
     //rdr->SetCentralityPreSelection(0, 900);
     rdr->SetReadV0(1);  //Read V0 information from the AOD and put it into V0Collection
     if(tAnalysisConfig.analysisType==AFALK::kXiKchP || tAnalysisConfig.analysisType==AFALK::kAXiKchP ||

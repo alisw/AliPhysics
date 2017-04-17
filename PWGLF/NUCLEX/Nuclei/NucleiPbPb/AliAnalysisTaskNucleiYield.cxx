@@ -28,7 +28,6 @@
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEventHandler.h"
-#include "AliStack.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
@@ -87,6 +86,7 @@ static void BinLogAxis(const TH1 *h) {
 AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
    ,fEventCut{false}
+   ,fFilterBit{BIT(4)}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -113,14 +113,13 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireITSsignal{0u}
    ,fRequireSDDrecPoints{0u}
    ,fRequireSPDrecPoints{1u}
-   ,fRequireTPCrecPoints{70u}
-   ,fRequireTPCsignal{50u}
+   ,fRequireTPCsignal{70u}
    ,fRequireEtaMin{-0.8f}
    ,fRequireEtaMax{0.8f}
    ,fRequireYmin{-0.5f}
    ,fRequireYmax{0.5f}
    ,fRequireMaxChi2{4.f}
-   ,fRequireMaxDCAxy{0.5f}
+   ,fRequireMaxDCAxy{0.12f}
    ,fRequireMaxDCAz{1.f}
    ,fRequireTPCpidSigmas{3.f}
    ,fRequireITSpidSigmas{-1.f}
@@ -341,6 +340,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
     if (track->GetID() <= 0) continue;
     Double_t dca[2];
+    if (!track->TestBit(fFilterBit)) continue;
     if (!AcceptTrack(track,dca)) continue;
     const float beta = HasTOF(track,fPID);
     const int iTof = beta > EPS ? 1 : 0;
@@ -377,7 +377,9 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       float tof_n_sigma = iTof ? fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, fParticle) : -999.f;
 
       for (int iR = iTof; iR >= 0; iR--) {
-        if (fabs(tpc_n_sigma) < 4 && (fabs(tof_n_sigma) < 4. || !iTof)) {
+        /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
+        /// to compensate for the shift in the sigma (to be rechecked in case of update of TOF PID response)
+        if (tpc_n_sigma > -2. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {
           fDCAxy[iR][iC]->Fill(centrality, pT, dca[0]);
           fDCAz[iR][iC]->Fill(centrality, pT, dca[1]);
         }

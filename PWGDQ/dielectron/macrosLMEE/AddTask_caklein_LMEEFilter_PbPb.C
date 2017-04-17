@@ -85,7 +85,7 @@ AliAnalysisTask *AddTask_caklein_LMEEFilter_PbPb(
     aodHandler->SetNeedsJetsBranchReplication();
     aodHandler->SetNeedsFMDClustersBranchReplication();
     //aodHandler->SetNeedsMCParticlesBranchReplication();
-    aodHandler->SetNeedsDimuonsBranchReplication();*/
+    aodHandler->SetNeedsDimuonsBranchReplication();*/ // deactivates several branches
     //    if(hasMC) aodHandler->SetNeedsV0sBranchReplication();
     if(hasMC) aodHandler->SetNeedsMCParticlesBranchReplication();
     diEle->SetHasMC(hasMC);
@@ -100,8 +100,9 @@ AliAnalysisTask *AddTask_caklein_LMEEFilter_PbPb(
   task->SetDielectron(diEle);
   if(storeLS) task->SetStoreLikeSignCandidates(storeLS);
   task->SetCreateNanoAODs(kTRUE);
-  task->SetStoreEventsWithSingleTracks(kTRUE);
-  //task->SetStoreHeader(kTRUE);
+  task->SetStoreEventplanes(kTRUE);
+  task->SetStoreEventsWithSingleTracks(kTRUE); 
+  // task->SetStoreHeader(kTRUE);
   mgr->AddTask(task);
 
   //----------------------

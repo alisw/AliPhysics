@@ -66,6 +66,7 @@ fEMCALRecoUtils(new AliEMCALRecoUtils),
 fIsoConeRadius(0.4),
 fptIsoMethod(0),
 fptIsoThreshold(2),
+fIsoMethod(0),
 fdetacut(0.025),
 fdphicut(0.03),
 fQA(0),
@@ -140,6 +141,7 @@ fEMCALRecoUtils(new AliEMCALRecoUtils),
 fIsoConeRadius(0.4),
 fptIsoMethod(0),
 fptIsoThreshold(2),
+fIsoMethod(0),
 fdetacut(0.025),
 fdphicut(0.03),
 fQA(0),
@@ -335,7 +337,7 @@ void AliAnalysisTaskEMCALTrackIsolation::UserCreateOutputObjects(){
     
     Double_t xminbismix[] = {0., -3000, -400,  0.,-1., -1., -10.,-10.};
     Double_t xmaxbismix[] = {70., 3000,  400, 70., 1.,  1., 100.,100.};
-    fOutTrackMC = new THnSparseF ("fOutTracktMC", "E_{T}^{track}, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",ndimsMCQA,binsSMC);
+    fOutTrackMC = new THnSparseF ("fOutTracktMC", "E_{T}^{track}, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso,reco} (Gev/c);E_{T}^{iso,truth} (Gev/c)",ndimsMCQA,binsSMC);
     fOutTrackMC->SetBinEdges(0,fBinsPt.data());
     fOutTrackMC->SetBinEdges(1,fBinsTrackPDG.data());
     fOutTrackMC->SetBinEdges(2,fBinsMomPDG.data());
@@ -447,7 +449,14 @@ void AliAnalysisTaskEMCALTrackIsolation::ExecOnce()
     AliError(Form("%s: This task needs a 2particle container!", GetName()));
     return;
   }
-  
+  if(fIsoMethod==1){
+    AliClusterContainer *clusters = GetClusterContainer(0);
+    if (!clusters) {
+      AliError(Form("%s: This task needs a cluster container!", GetName()));
+      return;
+    }
+  }
+    
     //Init the EMCAL Framework
   AliAnalysisTaskEmcal::ExecOnce();
   if (!fLocalInitialized) {
@@ -734,6 +743,88 @@ void AliAnalysisTaskEMCALTrackIsolation::FillQAHistograms(AliAODTrack *toi){
   //  }
   //  return kFALSE;
   //}
+
+  //__________________________________________________________________________
+void AliAnalysisTaskEMCALTrackIsolation::EtIsoClusOnlyEtaBand(AliAODTrack *t, Double_t &ptIso, Double_t &etaBandtrack, Int_t index){
+    // Underlying events study with tracks in eta band in EMCAL acceptance
+    //Printf("Inside EtaBand");
+  
+    //INSERT BOUNDARIES ACCORDING TO THE FLAG WE WANT TO USE
+  Double_t sumpTConeClust=0., sumpTEtaBandClust=0.;
+  Double_t minPhi= 0., maxPhi= 2*TMath::Pi(), minEta = -0.87, maxEta= 0.87;
+  AliTrackContainer* tracks = GetTrackContainer(0);
+
+  if(!fTPC4Iso){
+    minEta = -0.67;
+    maxEta = 0.67;
+    minPhi = 1.4;
+    maxPhi = 3.15;
+  }
+  AliClusterContainer *clustAna = GetClusterContainer(0);
+
+    //Printf("tracks ANA : %d" ,tracksAna);
+  
+  if(!clustAna){
+    AliError(Form("Could not retrieve clusters !"));
+    return;
+  }
+  
+    //  //Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
+  Double_t phiClust,etaClust,radius,eTcluster,distCT;
+  Int_t nbMObj;
+  AliAODCaloCluster *aodClust=0x0;
+  TLorentzVector nClust;
+  for(auto it : clustAna->accepted()){
+    AliAODCaloCluster* coi = static_cast<AliAODCaloCluster*>(it);
+    
+    coi->GetMomentum(nClust,fVertex);
+
+    phiClust =nClust.Phi();
+    etaClust= nClust.Eta();
+    eTcluster=0;
+    
+    Double_t clustTOF = coi->GetTOF()*1e9;
+    if(!fIsMC)
+      if(clustTOF<-30. || clustTOF>30.) continue;
+      //taking off CPV cluster
+    Bool_t matched=0;
+    nbMObj = coi -> GetNTracksMatched();
+    if(nbMObj> 0){
+      AliVTrack *mt =0;
+      UInt_t rejectionReason = 0;
+
+      for(Int_t i=0;i<nbMObj;i++){
+        mt= static_cast<AliVTrack*>(coi->GetTrackMatched(i));
+        if (!tracks->AcceptParticle(mt, rejectionReason)) mt = 0;
+        
+        if(!mt) continue;
+        Double_t deltaEta,deltaPhi;
+        Double_t veta = mt->GetTrackEtaOnEMCal();
+        Double_t vphi = mt->GetTrackPhiOnEMCal();
+        deltaEta= veta-etaClust;
+        deltaPhi= vphi-phiClust;
+        if(!matched && (TMath::Abs(deltaEta)<fdetacut && TMath::Abs(deltaPhi)<fdphicut)){
+          matched=kTRUE;
+        }
+        else
+          continue;
+      }
+    }
+    if(matched) continue;
+    
+    if(nClust.Pt()<0.3) continue;
+      //computing distance cluster from *candidate* track.
+    radius=TMath::Sqrt(TMath::Power(t->Eta()-etaClust,2)+TMath::Power(t->Phi()-phiClust,2));
+    if(radius<fIsoConeRadius && radius!=0.) //In-Cone
+      sumpTConeClust += nClust.Pt();
+    else
+      if(TMath::Abs(etaClust - t->Eta()) < fIsoConeRadius) //Eta band
+        sumpTEtaBandClust += nClust.Pt();
+  }
+  ptIso = sumpTConeClust;
+  etaBandtrack = sumpTEtaBandClust;
+    //Printf("Returning to FillGeneralHistograms");
+}
 
 
   //__________________________________________________________________________
@@ -1133,6 +1224,7 @@ void AliAnalysisTaskEMCALTrackIsolation::LookforParticle(Int_t tracklabel, Doubl
     //    return;
   
   particle2Check=static_cast<AliAODMCParticle*>(fAODMCParticles->At(TMath::Abs(tracklabel)));
+  
   trackPDG=particle2Check->GetPdgCode();
   etaTrue=particle2Check->Eta();
   phiTrue=particle2Check->Phi();
@@ -1157,6 +1249,11 @@ void AliAnalysisTaskEMCALTrackIsolation::LookforParticle(Int_t tracklabel, Doubl
     if(part->GetStatus()>10 || (!part->IsPrimary()) || (!part->IsPhysicalPrimary()))
       continue;
     
+    if(fIsoMethod==0 && part->Charge()==0)
+      continue;
+    if(fIsoMethod==1 && part->Charge()!=0)
+      continue;
+
     Float_t phiPart = part->Phi();
     Float_t etaPart = part->Eta();
     
@@ -1240,7 +1337,11 @@ void AliAnalysisTaskEMCALTrackIsolation::IsolationAndUEinEMCAL(AliAODTrack *toi,
         //      }
       break;
     case 1: //eta band
-      PtIsoTrackEtaBand(toi, isolation, ue, index);
+      if(fIsoMethod==1)
+        EtIsoClusOnlyEtaBand(toi, isolation, ue, index);
+      else
+        PtIsoTrackEtaBand(toi, isolation, ue, index);
+      
       fEtaBandUETracks->Fill(toi->Pt() , ue);
         //Normalisation ue wrt Area - TO DO-
         //      ue = ue * (isoConeArea / etaBandAreaTr);
@@ -1630,13 +1731,16 @@ void AliAnalysisTaskEMCALTrackIsolation::AddParticleToUEMC(Double_t& sumUE,AliAO
 void AliAnalysisTaskEMCALTrackIsolation::CalculateUEDensityMC(Double_t& sumUE){
   
   Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
-  
-  Double_t etaBandAreaTr = (1.8 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
-  Double_t phiBandAreaTr = (2.*TMath::Pi() - 4.*fIsoConeRadius)*2.*fIsoConeRadius;//there is a 2 more because of the JET CONE B2B
-  Double_t perpConesArea = 2.*isoConeArea;
-  Double_t fullTPCArea = 1.8*2.*TMath::Pi()-fIsoConeRadius*(TMath::Pi()*fIsoConeRadius + 3.6);
-  
-  
+  Double_t etaBandAreaTr,phiBandAreaTr,perpConesArea,fullTPCArea;
+  if(fIsoMethod==0){
+    etaBandAreaTr = (1.8 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
+    phiBandAreaTr = (2.*TMath::Pi() - 4.*fIsoConeRadius)*2.*fIsoConeRadius;//there is a 2 more because of the JET CONE B2B
+    perpConesArea = 2.*isoConeArea;
+    fullTPCArea = 1.8*2.*TMath::Pi()-fIsoConeRadius*(TMath::Pi()*fIsoConeRadius + 3.6);
+  }
+  else{
+    etaBandAreaTr = (1.4 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
+  }
   switch (fUEMethod){
     case 0:
       sumUE = sumUE * (isoConeArea / phiBandAreaTr);
@@ -1757,13 +1861,18 @@ void AliAnalysisTaskEMCALTrackIsolation::AnalyzeMC(){
       if(iTrack==indexmaxpT) continue;
       
       mcpp= static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
-      phip = mcpp->Phi();
-      etap = mcpp->Eta();
       if(!mcpp)
         continue;
       
+      if(fIsoMethod==0 && mcpp->Charge()==0) continue;
+      if(fIsoMethod==1 && mcpp->Charge()!=0) continue;
+      
+      phip = mcpp->Phi();
+      etap = mcpp->Eta();
+      
       if(mcpp->GetStatus()>10) continue;
-      if(!mcpp->IsPrimary())continue;
+      if(fIsoMethod==0 && !mcpp->IsPrimary())continue;
+      if(fIsoMethod==1 && !mcpp->IsPhysicalPrimary()) continue;
       
       distance=0.;
       distance= TMath::Sqrt((mcFirstPhi- phip)*(mcFirstPhi- phip) + (mcFirstEta- etap)*(mcFirstEta- etap));
@@ -1873,8 +1982,10 @@ void AliAnalysisTaskEMCALTrackIsolation::AnalyzeMC(){
         
         if(!mcpp) {continue;}
         
+        if(fIsoMethod==0 && mcpp->Charge()==0) continue;
+        if(fIsoMethod==1 && mcpp->Charge()!=0) continue;
         
-        if(mcpp->Charge()!=0 && mcpp->GetStatus()<10)
+        if(mcpp->GetStatus()<10)
           fPtTracksVSpTTR_MC->Fill(pT,mcpp->Pt());
         else
           continue;

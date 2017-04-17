@@ -56,6 +56,10 @@ class AliAnalysisTaskZDCpA : public AliAnalysisTaskSE {
   TH1F    *fhZNApmc;		//! ZNA PMCs
   TH1F    *fhZPCpmc;		//! ZPC PMCs
   TH1F    *fhZPApmc;		//! ZPA PMCs
+  TH1F    *fhZNCpmcUncalib;	//! uncalibrated ZNC PMCs
+  TH1F    *fhZNApmcUncalib;	//! uncalibrated ZNA PMCs
+  TH1F    *fhZPCpmcUncalib;	//! uncalibrated ZPC PMCs
+  TH1F    *fhZPApmcUncalib;	//! uncalibrated ZPA PMCs
   TH2F    *fhZNCCentroid;       //! ZNC centroid
   TH2F    *fhZNACentroid;       //! ZNA centroid
   TH1F    *fhPMCZNCemdUncalib;  //! ZNC PMC low gain chain
@@ -67,7 +71,7 @@ class AliAnalysisTaskZDCpA : public AliAnalysisTaskSE {
   TH1F    *fhTDCZNCcorr;      	//! ZNC corrected TDC
 
 
-  ClassDef(AliAnalysisTaskZDCpA,3);
+  ClassDef(AliAnalysisTaskZDCpA,4);
 
 };
 

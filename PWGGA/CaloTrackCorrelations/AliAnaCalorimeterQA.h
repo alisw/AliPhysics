@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaCalorimeterQA
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Class for the Calorimeter QA analysis
 ///
 /// Task filling basic histograms to check reconstructed data (real or MC) of calorimeters.
@@ -89,8 +90,8 @@ public:
 
   void         Correlate();
   
-  void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
-                                AliVCluster *clus, AliVCaloCells* cells);
+//  void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
+//                                AliVCluster *clus, AliVCaloCells* cells);
   
   void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax, Float_t exoticity) ;
   
@@ -169,6 +170,12 @@ public:
   void SwitchOnFillAllPi0Histogram()            { fFillAllPi0Histo  = kTRUE  ; }
   void SwitchOffFillAllPi0Histogram()           { fFillAllPi0Histo  = kFALSE ; }
 
+  void SwitchOnFillAllCellHistogram()           { fFillAllCellHistograms  = kTRUE  ; }
+  void SwitchOffFillAllCellHistogram()          { fFillAllCellHistograms  = kFALSE ; }
+  
+  void SwitchOnFillAllCellAbsIdHistogram()      { fFillAllCellAbsIdHistograms = kTRUE  ; }
+  void SwitchOffFillAllCellAbsIdHistogram()     { fFillAllCellAbsIdHistograms = kFALSE ; }
+  
   void SwitchOnFillInvMassOpAngleHistogram()    { fFillInvMassOpenAngle = kTRUE  ; }
   void SwitchOffFillInvMassOpAngleHistogram()   { fFillInvMassOpenAngle = kFALSE ; }  
 
@@ -183,6 +190,10 @@ public:
 
   void SwitchOnStudyBadClusters()               { fStudyBadClusters = kTRUE  ; }
   void SwitchOffStudyBadClusters()              { fStudyBadClusters = kFALSE ; }
+
+  void SwitchOnFillClusterCellMaxHisto()        { fFillClusterMaxCellHisto = kTRUE  ; }
+  void SwitchOffFillClusterCellMaxHisto()       { fFillClusterMaxCellHisto = kFALSE ; }
+
   
   // Analysis not to be used in QA
   //==============================
@@ -205,11 +216,11 @@ public:
   void SwitchOffStudyExotic()                   { fStudyExotic      = kFALSE ; }
   //===============================
 
-  void SetNECrossCuts(Int_t n)                  { fExoNECrossCuts   = n      ; }
-  void SetNDTimeCuts (Int_t n)                  { fExoNDTimeCuts    = n      ; }
-  
-  void SetExoECrossCuts (Int_t i, Float_t c)    { if (i<fExoNECrossCuts) fExoECrossCuts[i] = c ; }
-  void SetExoDTimeCuts  (Int_t i, Float_t c)    { if (i<fExoNDTimeCuts ) fExoDTimeCuts [i] = c ; }
+//  void SetNECrossCuts(Int_t n)                  { fExoNECrossCuts   = n      ; }
+//  void SetNDTimeCuts (Int_t n)                  { fExoNDTimeCuts    = n      ; }
+//  
+//  void SetExoECrossCuts (Int_t i, Float_t c)    { if (i<fExoNECrossCuts) fExoECrossCuts[i] = c ; }
+//  void SetExoDTimeCuts  (Int_t i, Float_t c)    { if (i<fExoNDTimeCuts ) fExoDTimeCuts [i] = c ; }
   
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
 
@@ -223,13 +234,17 @@ public:
   Bool_t   fFillAllPosHisto2;                   ///<  Fill all the position related histograms 2
   Bool_t   fFillAllTH3 ;                        ///<  Fill TH3 histograms
   Bool_t   fFillAllTMHisto ;                    ///<  Fill track matching histograms
-  
+
+  Bool_t   fFillClusterMaxCellHisto ;           ///<  Fill cluster cell max histograms
   Bool_t   fFillAllPi0Histo ;                   ///<  Fill invariant mass histograms
   Bool_t   fFillInvMassOpenAngle;               ///<  Fill opening angle histograms of cluster pairs, only if  fFillAllPi0Histo=kTRUE
   Bool_t   fFillPi0PairDiffTime;                ///<  Fill time difference histograms of cluster pairs in pi0 mass window, only if  fFillAllPi0Histo=kTRUE
   Bool_t   fFillInvMassInEMCALWithPHOSDCalAcc;  ///<  Fill invariant mass histograms of EMCal clusters in DCal and PHOS eta acceptance each, only if  fFillAllPi0Histo=kTRUE
   
   Bool_t   fFillEBinAcceptanceHisto;            ///<  Fill histograms with cluster eta-phi distribution and column-row cell, for different energy bins
+  
+  Bool_t   fFillAllCellHistograms;              ///<  Fill all cell related histograms
+  Bool_t   fFillAllCellAbsIdHistograms;         ///<  Fill all cell related histograms where one axis is the cell absId
   
   Bool_t   fCorrelate   ;                       ///<  Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
   Bool_t   fStudyBadClusters;                   ///<  Study bad clusters not passing selection criteria (exotic, shower shape, n cells). 
@@ -270,12 +285,13 @@ public:
   Float_t  fInvMassMaxM02Cut;                   ///<  Maximum M02 shower shape cut value for clusters entering the invariant mass calculation
   Float_t  fInvMassMaxOpenAngle;                ///<  Combine clusters within with a maximum opening angle between them. In radians.
   Float_t  fInvMassMaxTimeDifference;           ///<  Maximum difference between the time of the 2 clusters to be considered in invariant mass. In ns.
-  // Exotic studies
-    
-  Float_t  fExoNECrossCuts   ;                  ///<  Number of ecross cuts
-  Float_t  fExoECrossCuts[10];                  ///<  List of ecross cuts
-  Float_t  fExoNDTimeCuts    ;                  ///<  Number of time cuts
-  Float_t  fExoDTimeCuts[5]  ;                  ///<  List of time cuts
+
+//  // Exotic studies
+// 
+//  Float_t  fExoNECrossCuts   ;                  ///<  Number of ecross cuts
+//  Float_t  fExoECrossCuts[10];                  ///<  List of ecross cuts
+//  Float_t  fExoNDTimeCuts    ;                  ///<  Number of time cuts
+//  Float_t  fExoDTimeCuts[5]  ;                  ///<  List of time cuts
   
   TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
   TLorentzVector fClusterMomentum2;             //!<! Cluster momentum, temporary container
@@ -375,16 +391,29 @@ public:
   TH2F *   fhColRowHighENegTime;                            //!<! cluster col-row cluster cell max, E > 8 GeV, t < -5 ns exo < 0.97, n cell > 1
   TH2F *   fhColRowHighENulTime;                            //!<! cluster col-row cluster cell max, E > 8 GeV, -5 < t < 5 ns exo < 0.97, n cell > 1
   
-  TH2F *   fhColRowTCardCorrNoSelectionExoticLowE[2];       //!<! col-row cluster cell max for those selected for TCard correlation studies, 5 < E < 8 GeV, exoticity > 0.97
+  TH2F *   fhColRowTCardCorrNoSelectionExoticLowE [2];      //!<! col-row cluster cell max for those selected for TCard correlation studies, 5 < E < 8 GeV, exoticity > 0.97
   TH2F *   fhColRowTCardCorrNoSelectionExoticHighE[2];      //!<! col-row cluster cell max for those selected for TCard correlation studies, E > 8 GeV, exoticity > 0.97
+  
   TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellDiffLowE [2];//!<! secondary cell in diff TCard col vs row, 5 < E < 8 GeV, exo > 0.97
   TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellDiffHighE[2];//!<! secondary cell in diff TCard col vs row, E > 8 GeV, exo > 0.97
   TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellSameLowE [2];//!<! secondary cell in same TCard col vs row, 5 < E < 8 GeV, exo > 0.97
   TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellSameHighE[2];//!<! secondary cell in same TCard col vs row, E > 8 GeV, exo > 0.97
- 
+  
+  TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameLowE [2];//!<! secondary cell in diff TCard col vs row, 5 < E < 8 GeV, exo > 0.97, 0 cells in same T-Card
+  TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellDiffNoSameHighE[2];//!<! secondary cell in diff TCard col vs row, E > 8 GeV, exo > 0.97, 0 cells in same T-Card
+  TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffLowE [2];//!<! secondary cell in same TCard col vs row, 5 < E < 8 GeV, exo > 0.97, 0 cells in diff T-Card
+  TH2F *   fhColRowTCardCorrNoSelectionExotic2ndCellSameNoDiffHighE[2];//!<! secondary cell in same TCard col vs row, E > 8 GeV, exo > 0.97, 0 cells in diff T-Card
+  
   TH2F *   fhColRowTCardCorrNoSelectionLowE[2];             //!<! col-row cluster cell max for those selected for TCard correlation studies, 5 < E < 8 GeV
   TH2F *   fhColRowTCardCorrNoSelectionHighE[2];            //!<! col-row cluster cell max for those selected for TCard correlation studies, E > 8 GeV
-    
+ 
+  TH2F *   fhEnergyTimeTCardCorrNoSelection1Cell[2];        //!<! 1 cell cluster energy vs time, T-Card strict cuts
+  TH2F *   fhEnergyTMEtaResidualTCardCorrNoSelection1Cell;  //!<! 1 cell cluster energy vs eta track-cluster residual, T-Card strict cuts
+  TH2F *   fhEnergyTMPhiResidualTCardCorrNoSelection1Cell;  //!<! 1 cell cluster energy vs phi track-cluster residual, T-Card strict cuts
+  TH2F *   fhEnergyTimeTCardCorrNoSelectionExotic[2];       //!<! cluster energy vs time, exo > 0.97, T-Card strict cuts
+  TH2F *   fhEnergyTMEtaResidualTCardCorrNoSelectionExotic; //!<! cluster energy vs eta track-cluster residual, exo > 0.97, T-Card strict cuts 
+  TH2F *   fhEnergyTMPhiResidualTCardCorrNoSelectionExotic; //!<! cluster energy vs phi track-cluster residual, exo > 0.97, T-Card strict cuts
+  
   TH2F *   fhLambda0TCardCorrNoSelection[2];                //!<! Cluster m02 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLambda1TCardCorrNoSelection[2];                //!<! Cluster m20 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLambda0NLM1TCardCorrNoSelection[2];            //!<! Cluster m02 vs E for clusters selected for TCard correlation studies, nlm=1
@@ -393,6 +422,7 @@ public:
   TH2F *   fhLambda1NLM2TCardCorrNoSelection[2];            //!<! Cluster m20 vs E for clusters selected for TCard correlation studies, nlm=2
   TH2F *   fhLambdaRTCardCorrNoSelection[2];                //!<! Cluster m20/m02 vs E for clusters selected for TCard correlation studies
   TH2F *   fhNLocMaxTCardCorrNoSelection[2];                //!<! Cluster Number of local Maxima vs E for clusters selected for TCard correlation studies
+ 
   TH2F *   fhEMaxRatNLM1TCardCorrNoSelection[2];            //!<! Cluster E cell max / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies
   TH2F *   fhEMaxRatNLM2TCardCorrNoSelection[2];            //!<! Cluster E cell max / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies
   TH2F *   fhEMaxRatNLM3TCardCorrNoSelection[2];            //!<! Cluster E cell max / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies
@@ -403,6 +433,13 @@ public:
   TH2F *   fhE2ndEMaxRatNLM2TCardCorrNoSelection[2];        //!<! Cluster E cell second loc max / E Max for NLM=2 vs E for clusters selected for TCard correlation studies
   TH2F *   fhE2ndEMaxRatNLM3TCardCorrNoSelection[2];        //!<! Cluster E cell second loc max / E Max for NLM>2 vs E for clusters selected for TCard correlation studies
 
+  TH2F *   fhE2ndSameRatNLM1TCardCorrNoSelection[2];        //!<! Cluster E cell second max / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameRatNLM2TCardCorrNoSelection[2];        //!<! Cluster E cell second loc max / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameRatNLM3TCardCorrNoSelection[2];        //!<! Cluster E cell second loc max / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[2];    //!<! Cluster E cell second loc max / E Max for NLM=1 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[2];    //!<! Cluster E cell second loc max / E Max for NLM=2 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[2];    //!<! Cluster E cell second loc max / E Max for NLM>2 vs E for clusters selected for TCard correlation studies
+
   TH2F *   fhECellClusRatNLM1TCardCorrNoSelection[2];       //!<! Cluster E cell / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies
   TH2F *   fhECellClusRatNLM2TCardCorrNoSelection[2];       //!<! Cluster E cell / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies
   TH2F *   fhECellClusRatNLM3TCardCorrNoSelection[2];       //!<! Cluster E cell / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies
@@ -412,6 +449,17 @@ public:
   TH2F *   fhLogECellNLM1TCardCorrNoSelection[2];           //!<! Cluster Log E cell for NLM=1 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLogECellNLM2TCardCorrNoSelection[2];           //!<! Cluster Log E cell for NLM=2 vs E for clusters selected for TCard correlation studies
   TH2F *   fhLogECellNLM3TCardCorrNoSelection[2];           //!<! Cluster Log E cell for NLM>2 vs E for clusters selected for TCard correlation studies
+
+  TH2F *   fhECellSameClusRatNLM1TCardCorrNoSelection[2];   //!<! Cluster E cell / E cluster for NLM=1 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameClusRatNLM2TCardCorrNoSelection[2];   //!<! Cluster E cell / E cluster for NLM=2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameClusRatNLM3TCardCorrNoSelection[2];   //!<! Cluster E cell / E cluster for NLM>2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameWeightNLM1TCardCorrNoSelection[2];    //!<! Cluster E cell weight for NLM=1 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameWeightNLM2TCardCorrNoSelection[2];    //!<! Cluster E cell weight for NLM=2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhECellSameWeightNLM3TCardCorrNoSelection[2];    //!<! Cluster E cell weight for NLM>2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhLogECellSameNLM1TCardCorrNoSelection[2];       //!<! Cluster Log E cell for NLM=1 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhLogECellSameNLM2TCardCorrNoSelection[2];       //!<! Cluster Log E cell for NLM=2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+  TH2F *   fhLogECellSameNLM3TCardCorrNoSelection[2];       //!<! Cluster Log E cell for NLM>2 vs E for clusters selected for TCard correlation studies, same Tcard as leading
+
   
   TH2F *   fhNCellsTCardCorrNoSelection[2];                 //!<! Ncells per cluster vs cluster energy, clusters selected for TCard correlation studies
   TH2F *   fhNCellsTCardCorrWithWeightNoSelection[2];       //!<! Ncells per cluster vs cluster energy, select cells with w>0.01, clusters selected for TCard correlation studies
@@ -464,6 +512,8 @@ public:
 
   TH2F *   fhTMPhiResidualExoticity[14];                    //!<! Cluster-track matching residual in phi vs exoticity              
   TH2F *   fhTMEtaResidualExoticity[14];                    //!<! Cluster-track matching residual in phi vs exoticity             
+  TH2F *   fhTMPhiResidualExoticityLooseCut[14];            //!<! Cluster-track matching residual in phi vs exoticity, loose acceptance cut              
+  TH2F *   fhTMEtaResidualExoticityLooseCut[14];            //!<! Cluster-track matching residual in phi vs exoticity, loose acceptance cut             
 //  TH2F *   fhTMPhiResidualExoticityAllSameTCard[14];        //!<! Cluster-track matching residual in phi vs exoticity, all cells in same TCard as leading                
 //  TH2F *   fhTMEtaResidualExoticityAllSameTCard[14];        //!<! Cluster-track matching residual in phi vs exoticity, all cells in same TCard as leading                
 
@@ -558,8 +608,8 @@ public:
   TH2F *   fhBadClusterMaxCellCloseCellDiff ;   //!<! Difference between max cell energy and cell energy of the same cluster for bad clusters
   TH2F *   fhBadClusterMaxCellDiff;             //!<! Difference between cluster energy and energy of cell with more energy
   
-  TH2F *   fhBadClusterMaxCellDiffAverageTime;  //!<! Difference between cluster average time and time of cell with more energy
-  TH2F *   fhBadClusterMaxCellDiffWeightedTime; //!<! Difference between cluster weighted time and time of cell with more energy
+//TH2F *   fhBadClusterMaxCellDiffAverageTime;  //!<! Difference between cluster average time and time of cell with more energy
+//TH2F *   fhBadClusterMaxCellDiffWeightedTime; //!<! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhBadClusterMaxCellECross;           //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, bad clusters
 
   TH2F *   fhBadClusterLambda0;                 //!<! Cluster Lambda0 vs Energy, clusters declared bad
@@ -727,16 +777,16 @@ public:
 
   // Exotic studies
   
-  TH2F *   fhExoNCell  [10][5] ;                //!<! Number of cells per cluster for different cuts
-  TH2F *   fhExoL0     [10][5] ;                //!<! Long shower shape axis for exotic
-  TH2F *   fhExoL1     [10][5] ;                //!<! Short shower shape axis for exotic
-  TH2F *   fhExoECross [10][5] ;                //!<! E cross for max cell in cluster, for different cuts
-  TH2F *   fhExoTime   [10][5] ;                //!<! Time of exotic cluster, for different cuts
-  TH2F *   fhExoDTime  [10]    ;                //!<! Difference in time between cell with max energy and rest of cells for exotic
-  TH2F *   fhExoL0NCell[10][5] ;                //!<! Lambda0 vs n cells in cluster for several E cross cuts and cluster with E > 5
-  TH2F *   fhExoL0ECross      ;                 //!<! Lambda0 vs E cross fraction for clusters with E > 5 GeV
-  TH2F *   fhExoL1NCell[10][5] ;                //!<! Lambda1 vs n cells in cluster for several E cross cuts and cluster with E > 5
-  TH2F *   fhExoL1ECross      ;                 //!<! Lambda1 vs E cross fraction for clusters with E > 5 GeV
+//  TH2F *   fhExoNCell  [10][5] ;                //!<! Number of cells per cluster for different cuts
+//  TH2F *   fhExoL0     [10][5] ;                //!<! Long shower shape axis for exotic
+//  TH2F *   fhExoL1     [10][5] ;                //!<! Short shower shape axis for exotic
+//  TH2F *   fhExoECross [10][5] ;                //!<! E cross for max cell in cluster, for different cuts
+//  TH2F *   fhExoTime   [10][5] ;                //!<! Time of exotic cluster, for different cuts
+//  TH2F *   fhExoDTime  [10]    ;                //!<! Difference in time between cell with max energy and rest of cells for exotic
+//  TH2F *   fhExoL0NCell[10][5] ;                //!<! Lambda0 vs n cells in cluster for several E cross cuts and cluster with E > 5
+//  TH2F *   fhExoL0ECross      ;                 //!<! Lambda0 vs E cross fraction for clusters with E > 5 GeV
+//  TH2F *   fhExoL1NCell[10][5] ;                //!<! Lambda1 vs n cells in cluster for several E cross cuts and cluster with E > 5
+//  TH2F *   fhExoL1ECross      ;                 //!<! Lambda1 vs E cross fraction for clusters with E > 5 GeV
    
   // Pure MC histograms
 

@@ -24,7 +24,7 @@ AliFemtoXi::AliFemtoXi():
   fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0),
   fCTauXi(0), fCTauOmega(0),
   fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
-  fKeyBac(0), fCosPointingAngleXi(0), fPhiXi(0),
+  fKeyBac(0), fCosPointingAngleXi(0), fCosPointingAngleV0toXi(0), fPhiXi(0),
   fEtaXi(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0),
   fEtaBac(0), fIdBac(0), fBacNSigmaTPCK(-999),fBacNSigmaTPCPi(-999),
   fBacNSigmaTPCP(-999), fBacNSigmaTOFK(-999), fBacNSigmaTOFPi(-999),
@@ -49,7 +49,7 @@ AliFemtoXi::AliFemtoXi(const AliFemtoV0* aV0):
   fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0),
   fCTauXi(0), fCTauOmega(0),
   fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
-  fKeyBac(0), fCosPointingAngleXi(0), fPhiXi(0),
+  fKeyBac(0), fCosPointingAngleXi(0), fCosPointingAngleV0toXi(0), fPhiXi(0),
   fEtaXi(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0),
   fEtaBac(0), fIdBac(0), fBacNSigmaTPCK(-999),fBacNSigmaTPCPi(-999),
   fBacNSigmaTPCP(-999), fBacNSigmaTOFK(-999), fBacNSigmaTOFPi(-999),
@@ -71,7 +71,7 @@ AliFemtoXi::AliFemtoXi(const AliFemtoXi& aXi) :
   fMomXi(0), fAlphaXi(0), fPtArmXi(0), fEXi(0), fEOmega(0), fEBacPion(0), 
   fEBacKaon(0), fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0), 
   fCTauXi(0), fCTauOmega(0), fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0), 
-  fKeyBac(aXi.fKeyBac), fCosPointingAngleXi(aXi.fCosPointingAngleXi), fPhiXi(aXi.fPhiXi), fEtaXi(aXi.fEtaXi), 
+  fKeyBac(aXi.fKeyBac), fCosPointingAngleXi(aXi.fCosPointingAngleXi), fCosPointingAngleV0toXi(aXi.fCosPointingAngleV0toXi), fPhiXi(aXi.fPhiXi), fEtaXi(aXi.fEtaXi), 
   fTPCNclsBac(aXi.fTPCNclsBac), fNdofBac(aXi.fNdofBac), fStatusBac(aXi.fStatusBac), fEtaBac(aXi.fEtaBac), fIdBac(aXi.fIdBac), 
   fBacNSigmaTPCK(aXi.fBacNSigmaTPCK), fBacNSigmaTPCPi(aXi.fBacNSigmaTPCPi), fBacNSigmaTPCP(aXi.fBacNSigmaTPCP),
   fBacNSigmaTOFK(aXi.fBacNSigmaTOFK), fBacNSigmaTOFPi(aXi.fBacNSigmaTOFPi), fBacNSigmaTOFP(aXi.fBacNSigmaTOFP), fTPCMomentumBac(aXi.fTPCMomentumBac),
@@ -133,6 +133,7 @@ AliFemtoXi& AliFemtoXi::operator=(const AliFemtoXi& aXi)
   fPtotBac = 0; 
   fKeyBac = aXi.fKeyBac;
   fCosPointingAngleXi = aXi.fCosPointingAngleXi;
+  fCosPointingAngleV0toXi = aXi.fCosPointingAngleV0toXi;
   fPhiXi = aXi.fPhiXi;
   fEtaXi = aXi.fEtaXi; 
   fTPCNclsBac = aXi.fTPCNclsBac;

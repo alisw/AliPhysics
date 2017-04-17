@@ -86,6 +86,7 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack() :
   fMCPdgCode(0),
   fMCMotherPrimary(kFALSE),
   fMCMotherPdgCode(0),
+  fMCMotherLabel(0),
   fMCTOFMatchPrimary(kFALSE),
   fMCTOFMatchPdgCode(0),
   fMCTOFMatchLevel(-1),
@@ -103,7 +104,10 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack() :
   nSigmaProtonTOF(0.),
   fTPCchi2(0.),
   fITSFakeFlag(kFALSE),
-  fPassedTrackCuts(kTRUE),
+  fTrackCutFlag(0),
+  fEMCalE(-999),
+  fEMCalP(-999),
+  fHasEMCal(kFALSE),
   fTimeZeroSigma(0.)
 {
   /*
@@ -165,6 +169,7 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack(const AliAnalysisPIDTrack &source) :
   fMCPdgCode(source.fMCPdgCode),
   fMCMotherPrimary(source.fMCMotherPrimary),
   fMCMotherPdgCode(source.fMCMotherPdgCode),
+  fMCMotherLabel(source.fMCMotherLabel),
   fMCTOFMatchPrimary(source.fMCTOFMatchPrimary),
   fMCTOFMatchPdgCode(source.fMCTOFMatchPdgCode),
   fMCTOFMatchLevel(source.fMCTOFMatchLevel),
@@ -182,7 +187,10 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack(const AliAnalysisPIDTrack &source) :
   nSigmaProtonTOF(source.nSigmaProtonTOF),
   fTPCchi2(source.fTPCchi2),
   fITSFakeFlag(source.fITSFakeFlag),
-  fPassedTrackCuts(source.fPassedTrackCuts),
+  fTrackCutFlag(source.fTrackCutFlag),
+  fEMCalE(source.fEMCalE),
+  fEMCalP(source.fEMCalP),
+  fHasEMCal(source.fHasEMCal),
   fTimeZeroSigma(source.fTimeZeroSigma)
 {
   /*
@@ -234,6 +242,7 @@ AliAnalysisPIDTrack::operator=(const AliAnalysisPIDTrack &source)
   fMCPdgCode = source.fMCPdgCode;
   fMCMotherPrimary = source.fMCMotherPrimary;
   fMCMotherPdgCode = source.fMCMotherPdgCode;
+  fMCMotherLabel = source.fMCMotherLabel;
   fMCTOFMatchPrimary = source.fMCTOFMatchPrimary;
   fMCTOFMatchPdgCode = source.fMCTOFMatchPdgCode;
   fMCTOFMatchLevel = source.fMCTOFMatchLevel;
@@ -251,7 +260,10 @@ AliAnalysisPIDTrack::operator=(const AliAnalysisPIDTrack &source)
   nSigmaProtonTOF = source.nSigmaProtonTOF;
   fTPCchi2 = source.fTPCchi2;
   fITSFakeFlag = source.fITSFakeFlag;
-  fPassedTrackCuts = source.fPassedTrackCuts;
+  fTrackCutFlag = source.fTrackCutFlag;
+  fEMCalE = source.fEMCalE;
+  fEMCalP = source.fEMCalP;
+  fHasEMCal = source.fHasEMCal;
   fTimeZeroSigma = source.fTimeZeroSigma;
 
   return *this;
@@ -302,6 +314,7 @@ AliAnalysisPIDTrack::Reset()
   fMCPdgCode = 0;
   fMCMotherPrimary = kFALSE;
   fMCMotherPdgCode = 0;
+  fMCMotherLabel = 0;
   fMCTOFMatchPrimary = kFALSE;
   fMCTOFMatchPdgCode = 0;
   fMCTOFMatchLevel = -1;
@@ -319,7 +332,7 @@ AliAnalysisPIDTrack::Reset()
   nSigmaProtonTOF = 0;
   fTPCchi2 = 0.;
   fITSFakeFlag = kFALSE;
-  fPassedTrackCuts = kTRUE;
+  fTrackCutFlag = 0;
   fTimeZeroSigma = 0.;
   
 }
@@ -327,7 +340,7 @@ AliAnalysisPIDTrack::Reset()
 //___________________________________________________________
 
 void
-AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Bool_t PassTrackCuts)
+AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag)
 {
   /*
    * update
@@ -364,7 +377,7 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mce
   fTOFDeltaX = track->GetTOFsignalDx();
   fTOFDeltaZ = track->GetTOFsignalDz();
   track->GetTOFLabel(fTOFLabel);
-  fPassedTrackCuts = PassTrackCuts;
+  fTrackCutFlag = TrackCutFlag;
   //fHMPIDmomentum = track->GetOuterHmpParam() ? track->GetOuterHmpParam()->P() : 0.;
   /* HMPID signal with cuts */
   /*Float_t xPc=0., yPc=0., xMip=0., yMip=0., thetaTrk=0., phiTrk=0.;
@@ -424,6 +437,7 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mce
       TParticle *particlem = stack->Particle(indexm);
       fMCMotherPrimary = stack->IsPhysicalPrimary(indexm);
       fMCMotherPdgCode = particlem->GetPdgCode();
+      fMCMotherLabel = indexm;
     }
 
     /* check TOF match */
@@ -435,25 +449,15 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mce
       particle = stack->Particle(index);
       fMCTOFMatchPrimary = stack->IsPhysicalPrimary(index);
       fMCTOFMatchPdgCode = particle->GetPdgCode();
-      /* check match level */
       Int_t tracklabel = TMath::Abs(fLabel);
       Int_t matchlevel = -1;
-      //      printf("entering match level loop\n");
-      //      printf("track is a:\n");
-      //      stack->Particle(tracklabel)->Print();
       for (Int_t ilevel = 0; index > 0; ilevel++) {
-	//	printf("ilevel = %d, index = %d, tracklabel = %d\n", ilevel, index, tracklabel);
-	//	stack->Particle(index)->Print();
 	if (index == tracklabel) {
 	  matchlevel = ilevel;
-	  //	  printf("break match loop at level %d\n", ilevel);
 	  break;
 	}
 	index = stack->Particle(index)->GetFirstMother();
       }
-      //      printf("out of match level loop: matchlevel = %d\n", matchlevel);
-      //      if (matchlevel != 0 && matchlevel != 1)
-      //	getchar();
       fMCTOFMatchLevel = matchlevel;
     }
     

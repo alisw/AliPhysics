@@ -87,6 +87,7 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fPtParametrizationProton(NULL),
   fCocktailSettings{NULL},
   fMtScalingFactors(NULL),
+  fPtYDistributions{NULL},
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
@@ -128,6 +129,7 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fPtParametrizationProton(NULL),
   fCocktailSettings{NULL},
   fMtScalingFactors(NULL),
+  fPtYDistributions{NULL},
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
@@ -202,11 +204,19 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     fCocktailSettings[7] = new TObjString(Form("ptMin_%.2f",ptMin));
     fCocktailSettings[8] = new TObjString(Form("ptMax_%.2f",ptMax));
     fCocktailSettings[9] = new TObjString(Form("weightMode_%.0f",fMCCocktailGen->GetWeightingMode()));
-    for (Int_t i=0; i<10; i++) fUserInfo->Add(fCocktailSettings[i]);
+    fCocktailSettings[10] = new TObjString(Form("dynamicalPtRang_%d",fMCCocktailGen->GetDynamicalPtRangeOption()));
+    fCocktailSettings[11] = new TObjString(Form("yWeights_%d",fMCCocktailGen->GetYWeightOption()));
+    for (Int_t i=0; i<12; i++) fUserInfo->Add(fCocktailSettings[i]);
     
     // mt scaling params
     fMtScalingFactors = (TH1D*)fMCCocktailGen->GetMtScalingFactors();
     fUserInfo->Add(fMtScalingFactors);
+
+    // pt-y distributions
+    GetAndSetPtYDistributions(fMCCocktailGen);
+    for (Int_t i=0; i<17; i++) {
+      if (fHasMother[i]) fUserInfo->Add(fPtYDistributions[i]);
+    }
   } else {
     for (Int_t i=0; i<17; i++) fHasMother[i] = kTRUE;
   }
@@ -392,6 +402,40 @@ void AliAnalysisTaskGammaCocktailMC::GetAndSetPtParametrizations(AliGenEMCocktai
       if (fctName.BeginsWith("130_pt")  && fHasMother[15]) fPtParametrization[15]  = fct;
       if (fctName.BeginsWith("3122_pt") && fHasMother[16]) fPtParametrization[16]  = fct;
       if (fctName.BeginsWith("2212_pt")) fPtParametrizationProton = fct;
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskGammaCocktailMC::GetAndSetPtYDistributions(AliGenEMCocktailV2* fMCCocktailGen)
+{
+  if (!fMCCocktailGen) return;
+
+  for (Int_t i=0; i<17; i++) fPtYDistributions[i] = NULL;
+
+  TH2F* tempPtY = NULL;
+  TString tempPtYName = "";
+  for (Int_t i=0; i<18; i++) {
+    tempPtY = (TH2F*)fMCCocktailGen->GetPtYDistribution(i);
+    if (tempPtY) {
+      tempPtYName = tempPtY->GetName();
+      if (tempPtYName.BeginsWith("111_pt_y")  && fHasMother[0])  fPtYDistributions[0]   = tempPtY;
+      if (tempPtYName.BeginsWith("221_pt_y")  && fHasMother[1])  fPtYDistributions[1]   = tempPtY;
+      if (tempPtYName.BeginsWith("331_pt_y")  && fHasMother[2])  fPtYDistributions[2]   = tempPtY;
+      if (tempPtYName.BeginsWith("223_pt_y")  && fHasMother[3])  fPtYDistributions[3]   = tempPtY;
+      if (tempPtYName.BeginsWith("113_pt_y")  && fHasMother[4])  fPtYDistributions[4]   = tempPtY;
+      if (tempPtYName.BeginsWith("213_pt_y")  && fHasMother[5])  fPtYDistributions[5]   = tempPtY;
+      if (tempPtYName.BeginsWith("-213_pt_y") && fHasMother[6])  fPtYDistributions[6]   = tempPtY;
+      if (tempPtYName.BeginsWith("333_pt_y")  && fHasMother[7])  fPtYDistributions[7]   = tempPtY;
+      if (tempPtYName.BeginsWith("443_pt_y")  && fHasMother[8])  fPtYDistributions[8]   = tempPtY;
+      if (tempPtYName.BeginsWith("1114_pt_y") && fHasMother[9])  fPtYDistributions[9]   = tempPtY;
+      if (tempPtYName.BeginsWith("2114_pt_y") && fHasMother[10]) fPtYDistributions[10]  = tempPtY;
+      if (tempPtYName.BeginsWith("2214_pt_y") && fHasMother[11]) fPtYDistributions[11]  = tempPtY;
+      if (tempPtYName.BeginsWith("2224_pt_y") && fHasMother[12]) fPtYDistributions[12]  = tempPtY;
+      if (tempPtYName.BeginsWith("3212_pt_y") && fHasMother[13]) fPtYDistributions[13]  = tempPtY;
+      if (tempPtYName.BeginsWith("310_pt_y")  && fHasMother[14]) fPtYDistributions[14]  = tempPtY;
+      if (tempPtYName.BeginsWith("130_pt_y")  && fHasMother[15]) fPtYDistributions[15]  = tempPtY;
+      if (tempPtYName.BeginsWith("3122_pt_y") && fHasMother[16]) fPtYDistributions[16]  = tempPtY;
     }
   }
 }

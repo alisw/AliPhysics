@@ -203,6 +203,8 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  // *.) Testing new ways to calculate correlation functions:
  fCorrelationFunctionsTESTList(NULL),
  fCorrelationFunctionsTESTFlagsPro(NULL),
+ fBoost(kFALSE),
+ fBoostVelocity(0.,0.,0.),
  fnQ2bins(100),
  fnQ2min(0.),
  fnQ2max(10.),
@@ -433,6 +435,8 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  // *.) Testing new ways to calculate correlation functions:
  fCorrelationFunctionsTESTList(NULL),
  fCorrelationFunctionsTESTFlagsPro(NULL),
+ fBoost(kFALSE),
+ fBoostVelocity(0.,0.,0.),
  fnQ2bins(-44),
  fnQ2min(-44.),
  fnQ2max(-44.),
@@ -5372,7 +5376,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
 
-   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto l, for x, y and z components separately", not Lorentz invariant
+   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto k, for x, y and z components separately", not Lorentz invariant
    if(fFillCorrelationFunctionsTEST[0])
    {
     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
@@ -5423,6 +5427,59 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
 
     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
    } // if(fFillCorrelationFunctionsTEST[1])
+
+   // Test 4: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q2, where energy prefactors have been taken into account, to make correlations and cumulants manifestly Lorenz invariant, even before projection"
+   if(fFillCorrelationFunctionsTEST[4])
+   {
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+
+     Double_t E1 = agtrack1->E(); // energy of 1st track TBI check the mass hypothesis
+     Double_t E2 = agtrack2->E(); // energy of 2nd track TBI check the mass hypothesis
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     singleEventAverageCorrelationsVsQ2[4][0][0]->Fill(dQ2,E1); // <X1>
+     singleEventAverageCorrelationsVsQ2[4][1][0]->Fill(dQ2,E2); // <X2>
+     singleEventAverageCorrelationsVsQ2[4][2][0]->Fill(dQ2,E1*E2); // <X1X2>
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+   } // if(fFillCorrelationFunctionsTEST[4])
+
+   // Test 5: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q2, where energy prefactors have been taken into account, to make correlations and cumulants manifestly Lorenz invariant, even before projection. Here I am boosting all particles to a new frame, to check whether the final results are Lorentz invariant:"
+   if(fFillCorrelationFunctionsTEST[5])
+   {
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+     // p_1:
+     Double_t p1x = agtrack1->Px();
+     Double_t p1y = agtrack1->Py();
+     Double_t p1z = agtrack1->Pz();
+     Double_t e1  = agtrack1->E();
+     // p_2:
+     Double_t p2x = agtrack2->Px();
+     Double_t p2y = agtrack2->Py();
+     Double_t p2z = agtrack2->Pz();
+     Double_t e2  = agtrack2->E();  
+
+     // Corresponding energy-momentum four-vectors:
+     TLorentzVector track1(p1x,p1y,p1z,e1);
+     TLorentzVector track2(p2x,p2y,p2z,e2);
+
+     // Boosting both energy-momentum four-vectors:
+     // N.B. I have a flag fBoost, for future cases...
+     track1.Boost(fBoostVelocity);
+     track2.Boost(fBoostVelocity);
+
+     Double_t E1 = track1.E(); // energy of 1st track TBI check the mass hypothesis
+     Double_t E2 = track2.E(); // energy of 2nd track TBI check the mass hypothesis
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     singleEventAverageCorrelationsVsQ2[5][0][0]->Fill(dQ2,E1); // <X1>
+     singleEventAverageCorrelationsVsQ2[5][1][0]->Fill(dQ2,E2); // <X2>
+     singleEventAverageCorrelationsVsQ2[5][2][0]->Fill(dQ2,E1*E2); // <X1X2>
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+   } // if(fFillCorrelationFunctionsTEST[5])
 
    // Loop over the 3rd particle:
    for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -5568,13 +5625,72 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
      } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
     } // if(fFillCorrelationFunctionsTEST[2])
 
-    // Test 3:
-    /*
-    if(fFillCorrelationFunctionsTEST[3])
+    // Test 4: "Same charge pions, 3p correlations and cumulants projected onto Lorentz invariant Q3, where energy prefactors have been taken into account, to make correlations and cumulants manifestly Lorenz invariant, even before projection"
+    if(fFillCorrelationFunctionsTEST[4])
     {
+     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+     {
+      Double_t E1 = agtrack1->E(); // energy of 1st track TBI check the mass hypothesis
+      Double_t E2 = agtrack2->E(); // energy of 2nd track TBI check the mass hypothesis
+      Double_t E3 = agtrack3->E(); // energy of 2nd track TBI check the mass hypothesis
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // Lorentz invariant Q3
 
-    }
-    */
+      singleEventAverageCorrelationsVsQ3[4][0][0]->Fill(dQ3,E1); // <X1>_x
+      singleEventAverageCorrelationsVsQ3[4][1][0]->Fill(dQ3,E2); // <X2>_x
+      singleEventAverageCorrelationsVsQ3[4][2][0]->Fill(dQ3,E3); // <X3>_x
+      singleEventAverageCorrelationsVsQ3[4][3][0]->Fill(dQ3,E1*E2); // <X1X2>_x
+      singleEventAverageCorrelationsVsQ3[4][4][0]->Fill(dQ3,E1*E3); // <X1X3>_x
+      singleEventAverageCorrelationsVsQ3[4][5][0]->Fill(dQ3,E2*E3); // <X2X3>_x
+      singleEventAverageCorrelationsVsQ3[4][6][0]->Fill(dQ3,E1*E2*E3); // <X1X2X3>_x
+     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+
+    } // if(fFillCorrelationFunctionsTEST[4]) 
+
+    // Test 5: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q2, where energy prefactors have been taken into account, to make correlations and cumulants manifestly Lorenz invariant, even before projection. Here I am boosting all particles to a new frame, to check whether the final results are Lorentz invariant:"
+    if(fFillCorrelationFunctionsTEST[5])
+    {
+     // p_1:
+     Double_t p1x = agtrack1->Px();
+     Double_t p1y = agtrack1->Py();
+     Double_t p1z = agtrack1->Pz();
+     Double_t e1  = agtrack1->E();
+     // p_2:
+     Double_t p2x = agtrack2->Px();
+     Double_t p2y = agtrack2->Py();
+     Double_t p2z = agtrack2->Pz();
+     Double_t e2  = agtrack2->E();  
+     // p_3:
+     Double_t p3x = agtrack3->Px();
+     Double_t p3y = agtrack3->Py();
+     Double_t p3z = agtrack3->Pz();
+     Double_t e3  = agtrack3->E();  
+
+     // Corresponding energy-momentum four-vectors:
+     TLorentzVector track1(p1x,p1y,p1z,e1);
+     TLorentzVector track2(p2x,p2y,p2z,e2);
+     TLorentzVector track3(p3x,p3y,p3z,e3);
+
+     // Boosting both energy-momentum four-vectors:
+     // N.B. I have a flag fBoost, for future cases...
+     track1.Boost(fBoostVelocity);
+     track2.Boost(fBoostVelocity);
+     track3.Boost(fBoostVelocity);
+
+     Double_t E1 = track1.E(); // energy of 1st track TBI check the mass hypothesis
+     Double_t E2 = track2.E(); // energy of 2nd track TBI check the mass hypothesis
+     Double_t E3 = track3.E(); // energy of 3rd track TBI check the mass hypothesis
+
+     Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // Lorentz invariant Q3
+
+     singleEventAverageCorrelationsVsQ3[5][0][0]->Fill(dQ3,E1); // <X1>_x
+     singleEventAverageCorrelationsVsQ3[5][1][0]->Fill(dQ3,E2); // <X2>_x
+     singleEventAverageCorrelationsVsQ3[5][2][0]->Fill(dQ3,E3); // <X3>_x
+     singleEventAverageCorrelationsVsQ3[5][3][0]->Fill(dQ3,E1*E2); // <X1X2>_x
+     singleEventAverageCorrelationsVsQ3[5][4][0]->Fill(dQ3,E1*E3); // <X1X3>_x
+     singleEventAverageCorrelationsVsQ3[5][5][0]->Fill(dQ3,E2*E3); // <X2X3>_x
+     singleEventAverageCorrelationsVsQ3[5][6][0]->Fill(dQ3,E1*E2*E3); // <X1X2X3>_x
+
+    } // if(fFillCorrelationFunctionsTEST[5])
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
   } // for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++)
@@ -5585,7 +5701,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
  {
   if(!fFillCorrelationFunctionsTEST[t]){continue;}
   Int_t nBins = singleEventAverageCorrelationsVsQ2[t][0][0]->GetXaxis()->GetNbins();
-  for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+  for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use the same binning for Q2 and Q3
   {
    for(Int_t xyz=0;xyz<3;xyz++)
    {
@@ -6040,51 +6156,51 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    //  a1) pi+pi+ [2][2]:
    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][2]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a2) pi-pi- [7][7]:
    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[7][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a3) pi+pi- || pi-pi+ [2][7]:
    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,1,kTRUE)))
    {
-    f2pBackground[2][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][7]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // b) kaon-kaon:
    //  b1) K+K+ [3][3]:
    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    f2pBackground[3][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][3]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b2) K-K- [8][8]:
    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[8][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[8][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b3) K+K- || K-K+ [3][8]:
    if((Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE)) || (Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,1,kTRUE)))
    {
-    f2pBackground[3][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][8]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // c) proton-proton:
    //  c1) p+p+ [4][4]:
    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[4][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[4][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c2) p-p- [9][9]:
    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[9][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[9][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c3) p+p- || p-p+ [4][9]:
    if((Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE)) || (Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,1,kTRUE)))
    {
-    f2pBackground[4][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[4][9]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // 2.) Mixed particle species:
@@ -6092,64 +6208,64 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    //  a1) pi+K+ [2][3]:
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][3]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a2) pi+K- [2][8]
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[2][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a3) K+pi- [3][7]
    if(Kaon(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[3][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[7][8]->Fill(Q2(agtrack1,agtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b2) pi+p- [2][9]
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[2][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b3) p+pi- [4][7]
    if(Proton(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[4][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[4][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b4) pi-p- [7][9]
    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[7][9]->Fill(Q2(agtrack1,agtrack2));
    }
    // c) kaon-proton
    //  c1) K+p+ [3][4]:
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[3][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c2) K+p- [3][9]
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[3][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c3) p+K- [4][8]
    if(Proton(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[4][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[4][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c4) K-p- [8][9]
    if(Kaon(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[8][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[8][9]->Fill(Q2(agtrack1,agtrack2));
    }
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
@@ -6232,52 +6348,52 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    //  a1) pi+pi+ [2][2]:
    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][2]->Fill(Q2(agtrack1,agtrack2));
    }
 
    //  a2) pi-pi- [7][7]:
    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[7][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a3) pi+pi- || pi-pi+ [2][7]:
    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,1,kTRUE)))
    {
-    f2pBackground[2][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][7]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // b) kaon-kaon:
    //  b1) K+K+ [3][3]:
    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    f2pBackground[3][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][3]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b2) K-K- [8][8]:
    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[8][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[8][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b3) K+K- || K-K+ [3][8]:
    if((Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE)) || (Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,1,kTRUE)))
    {
-    f2pBackground[3][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][8]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // c) proton-proton:
    //  c1) p+p+ [4][4]:
    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[4][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[4][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c2) p-p- [9][9]:
    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[9][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[9][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c3) p+p- || p-p+ [4][9]:
    if((Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE)) || (Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,1,kTRUE)))
    {
-    f2pBackground[4][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[4][9]->Fill(Q2(agtrack1,agtrack2));
    }
 
    // 2.) Mixed particle species:
@@ -6285,64 +6401,64 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    //  a1) pi+K+ [2][3]:
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][3]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a2) pi+K- [2][8]
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[2][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a3) K+pi- [3][7]
    if(Kaon(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[3][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[7][8]->Fill(Q2(agtrack1,agtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b2) pi+p- [2][9]
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[2][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[2][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b3) p+pi- [4][7]
    if(Proton(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[4][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[4][7]->Fill(Q2(agtrack1,agtrack2));
    }
    //  b4) pi-p- [7][9]
    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[7][9]->Fill(Q2(agtrack1,agtrack2));
    }
    // c) kaon-proton
    //  c1) K+p+ [3][4]:
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[3][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][4]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c2) K+p- [3][9]
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[3][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[3][9]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c3) p+K- [4][8]
    if(Proton(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[4][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[4][8]->Fill(Q2(agtrack1,agtrack2));
    }
    //  c4) K-p- [8][9]
    if(Kaon(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[8][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
+    f2pBackground[8][9]->Fill(Q2(agtrack1,agtrack2));
    }
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
@@ -6438,7 +6554,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
 
-   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto k, for x, y and z components separately"
+   // Test 0: "Same charge pions, 2p correlations and cumulants projected onto k, for x, y and z components separately, not Lorentz invariant"
    if(fFillBackgroundTEST[0])
    {
     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
@@ -6491,6 +6607,24 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
 
     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
    } // if(fFillBackgroundTEST[1])
+
+   // Test 4: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q2, where energy prefactors have been taken into account, to make correlations and cumulants manifestly Lorenz invariant, even before projection"
+   if(fFillBackgroundTEST[4])
+   {
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+
+     Double_t E1 = agtrack1->E(); // energy of 1st track TBI check the mass hypothesis
+     Double_t E2 = agtrack2->E(); // energy of 2nd track TBI check the mass hypothesis
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     singleEventAverageCorrelationsVsQ2[4][0][0]->Fill(dQ2,E1); // <X1>
+     singleEventAverageCorrelationsVsQ2[4][1][0]->Fill(dQ2,E2); // <X2>
+     singleEventAverageCorrelationsVsQ2[4][2][0]->Fill(dQ2,E1*E2); // <X1X2>
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+
+   } // if(fFillBackgroundTEST[4])
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
@@ -6793,6 +6927,26 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
     } // if(fFillBackgroundTEST[2])
 
 
+   // Test 4: "Same charge pions, 2p correlations and cumulants projected onto Lorentz invariant Q2, where energy prefactors have been taken into account, to make correlations and cumulants manifestly Lorenz invariant, even before projection"
+    if(fFillBackgroundTEST[4])
+    {
+     if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+     {
+      // Q3:
+      Double_t E1 = agtrack1->E(); // energy of 1st track TBI check the mass hypothesis
+      Double_t E2 = agtrack2->E(); // energy of 2nd track TBI check the mass hypothesis
+      Double_t E3 = agtrack3->E(); // energy of 2nd track TBI check the mass hypothesis
+      Double_t dQ3 = Q3(agtrack1,agtrack2,agtrack3); // This is Lorentz invariant
+
+      singleEventAverageCorrelationsVsQ3[4][0][0]->Fill(dQ3,E1); // <X1>
+      singleEventAverageCorrelationsVsQ3[4][1][0]->Fill(dQ3,E2); // <X2>
+      singleEventAverageCorrelationsVsQ3[4][2][0]->Fill(dQ3,E3); // <X3>
+      singleEventAverageCorrelationsVsQ3[4][3][0]->Fill(dQ3,E1*E2); // <X1X2>
+      singleEventAverageCorrelationsVsQ3[4][4][0]->Fill(dQ3,E1*E3); // <X1X3>
+      singleEventAverageCorrelationsVsQ3[4][5][0]->Fill(dQ3,E2*E3); // <X2X3>
+      singleEventAverageCorrelationsVsQ3[4][6][0]->Fill(dQ3,E1*E2*E3); // <X1X2X3>
+     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE)))
+    } // if(fFillBackgroundTEST[4])
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)

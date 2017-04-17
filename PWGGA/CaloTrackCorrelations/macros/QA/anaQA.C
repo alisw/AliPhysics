@@ -1,4 +1,5 @@
 /// \file anaQA.C
+/// \ingroup CaloTrackCorrMacrosQA
 /// \brief Example of execution macro for calorimeter QA analysis
 ///
 /// Example macro to do for calorimeter QA analysis
@@ -7,7 +8,7 @@
 /// Pay attention to the options and definitions
 /// set in the lines below
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 //---------------------------------------------------------------------------

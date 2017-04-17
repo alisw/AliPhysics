@@ -113,7 +113,7 @@ class AliAnalysisTaskForStudents : public AliAnalysisTaskSE{
 
   // new end
 
-  ClassDef(AliAnalysisTaskForStudents,0);
+  ClassDef(AliAnalysisTaskForStudents,1);
 
 };
 

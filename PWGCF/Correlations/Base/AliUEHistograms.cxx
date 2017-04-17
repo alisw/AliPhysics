@@ -649,8 +649,6 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    particle = (AliVParticle*) mixed->UncheckedAt(j);
 	  
 	  // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event)
-	  if (mixed && triggerParticle->IsEqual(particle))
-	    continue;
 	  if (fCheckEventNumberInCorrelation)
 	  {
 	    AliBasicParticle* triggerParticleBasic = dynamic_cast<AliBasicParticle*>(triggerParticle);
@@ -664,6 +662,8 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    if(triggerParticleBasic->IsInSameEvent(particleBasic))
 	      continue;
 	  }
+	  else if (mixed && triggerParticle->IsEqual(particle))
+	    continue;
 	  
 	  if (triggerParticle->Charge() * particle->Charge() > 0)
 	    continue;
@@ -725,8 +725,6 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
           particle = (AliVParticle*) mixed->UncheckedAt(j);
         
         // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event)
-        if (mixed && triggerParticle->IsEqual(particle))
-          continue;
         if (fCheckEventNumberInCorrelation)
         {
           AliBasicParticle* triggerParticleBasic = dynamic_cast<AliBasicParticle*>(triggerParticle);
@@ -737,6 +735,8 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
           if(triggerParticleBasic->IsInSameEvent(particleBasic))
             continue;
         }
+        else if (mixed && triggerParticle->IsEqual(particle))
+          continue;
         
         if (fPtOrder)
 	  if (particle->Pt() >= triggerParticle->Pt())

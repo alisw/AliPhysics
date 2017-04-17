@@ -1,5 +1,6 @@
 ///
 /// \file DrawProductionComparison.C
+/// \ingroup CaloTrackCorrMacrosQA
 /// \brief Plot N productions comparison analysis of QA histograms from EMCal PWG-GA wagon
 ///
 ///
@@ -17,7 +18,7 @@
 ///     const Int_t nProd = 3;
 /// There is no limitation to the amount of productions
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 // Some global variables

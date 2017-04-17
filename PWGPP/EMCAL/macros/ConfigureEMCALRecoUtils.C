@@ -1,5 +1,6 @@
 ///
 /// \file ConfigureEMCALRecoUtils.C
+/// \ingroup EMCALPerformanceMacros
 /// \brief Configuration of AliEMCALRecoUtils.
 ///
 /// Example of configuration of AliEMCALRecoUtils. Called in different analysis configuration macros.
@@ -13,6 +14,7 @@
 /// \param bRecalE: Bool, indicates if energy recalibration is applied.
 /// \param bBad: Bool, indicates if bad channels/clusters are removed.
 /// \param bRecalT: Bool, indicates if time is calibrated.
+/// \param debug: int debug level, print info on settings in the macro
 ///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
@@ -22,15 +24,16 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bNonLin= kFALSE,
                              Bool_t  bRecalE= kTRUE,
                              Bool_t  bBad   = kTRUE,
-                             Bool_t  bRecalT= kTRUE)
+                             Bool_t  bRecalT= kTRUE,
+                             Int_t   debug  = -1)
 {
-  printf("**** Configure AliEMCALRecoUtils ***\n");
+  if ( debug > 0 ) printf("**** Configure AliEMCALRecoUtils ***\n");
   
   // Exotic cells removal
   
   if(bExotic)
   {
-    printf("Remove exotics in EMCAL\n");
+    if ( debug > 0 ) printf("Remove exotics in EMCAL\n");
     reco->SwitchOnRejectExoticCell() ;
     reco->SwitchOnRejectExoticCluster(); 
     
@@ -73,18 +76,18 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   { 
     if(!bMC)
     {
-      printf("xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      if ( debug > 0 ) printf("xxx SET Non linearity correction kBeamTestCorrected xxx\n");
       reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
     }
     else
     {       
-      printf("xxx SET Non linearity correction kPi0MCv3 xxx\n");
+      if ( debug > 0 ) printf("xxx SET Non linearity correction kPi0MCv3 xxx\n");
       reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
     }
   }
   else 
   {
-    printf("xxx DON'T SET Non linearity correction xxx\n");
+    if ( debug > 0 ) printf("xxx DON'T SET Non linearity correction xxx\n");
     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
   }
   

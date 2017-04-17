@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnalysisTaskEMCALClusterize
+/// \ingroup EMCALPerformance 
 /// \brief Reclusterize EMCal clusters, put them in a new branch for other following analysis
 ///
 /// This analysis provides a new list of clusters to be used in other analysis running right after this task. The clusters

@@ -3,6 +3,7 @@
 
 //------------------------------------------------------------------------
 /// \class AliAnalysisTaskEMCALTriggerQA
+/// \ingroup EMCALPerformance 
 /// \brief Fill histograms with basic QA information for EMCAL offline trigger.
 ///
 ///  Fill histograms with basic QA information for EMCAL offline trigger.

@@ -19,7 +19,6 @@ class AliESDEvent;
 class AliESDfriend; 
 class AliMCEvent;
 class AliESDtrack;
-class AliStack; 
 class AliRecInfoCuts;
 class AliMCInfoCuts;
 
@@ -57,10 +56,10 @@ public :
   TFolder *ExportToFolder(TObjArray * array=0);
 
   // Process events
-  void  ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack); // not implemented
-  void  ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
-  void  ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);      // not implemented
-  void  ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack); // not implemented
+  void  ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack); // not implemented
+  void  ProcessInnerTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
+  void  ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack);      // not implemented
+  void  ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack); // not implemented
 
   
   // produce summary (currently not used)

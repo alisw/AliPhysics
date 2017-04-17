@@ -1,4 +1,4 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 100, Float_t etaCut = 0.8, Float_t upperPtCut = 10., Bool_t is2015Data = kTRUE, Bool_t oldTrigger = kFALSE)
+AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 100, Float_t etaCut = 0.8, Float_t upperPtCut = 10., Bool_t is2015Data = kTRUE, Bool_t oldTrigger = kFALSE, Bool_t isPbPbAnalysis = kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -25,6 +25,8 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(Int_t nBinsMultiplicity = 
   task->SetUseMultiplicity();
   task->SetUseCountedMult();
 
+  if(isPbPbAnalysis) task->SetCentralityCut(60., 80.);
+  
   task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetTriggerMask(AliVEvent::kINT7 );
   

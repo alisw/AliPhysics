@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliFiducialCut
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Store the acceptance cuts for clusters and tracks or particle objects
 ///
 /// Class for track/cluster/particle acceptance selection

@@ -31,7 +31,6 @@ class TClonesArray;
 #include "AliTOFT0v1.h"
 #include "AliTOFT0maker.h"
 #include "AliTOFcalib.h"
-#include "AliCDBManager.h"
 #include "AliMultSelection.h"
 #include <TTree.h>
 #include "AliAnalysisTask.h"
@@ -140,6 +139,16 @@ public:
   ///
   /// Method to obtain in a common way the vertex information, this also checks the vertex quality
   const AliESDVertex * ObtainVertex();
+  
+  // TOF calibration methods
+  
+  ///
+  /// Method to prepare to run with a new TOF calibratin, this initialize from the run, therefore should only once for each run
+  Bool_t TOFCalibInitRun();
+  
+  ///
+  /// Method to prepare to run with a new TOF calibratin, this initialize from the event, therefore should once for each event
+  Bool_t TOFCalibInitEvent();
   
   //
   //Mask
@@ -468,9 +477,15 @@ private:
   AliMCEvent* fMCEvt;                //!<! MC event
   AliStack* fMCStack;                //!<! Stack
   AliESDtrackCuts* fCutVar[nCutVars];//!<! basic cut variables cut variations
-  AliESDpid* fESDpid;                //!<! basic TPC object for n-sigma cuts
   AliMultSelection *fMultSel;        //!<! Multiplicity selection
+  
+  //TOF specific objects
   AliESDTOFCluster *fTOFcls;         //!<! TOF cluster object
+  AliTOFcalib *fTOFcalib;            //!<! TOF calibration object
+  AliTOFT0maker *fTOFT0maker;        //!<! TOF T0 maker object
+  
+  //TOF specific parameters
+  const Double_t fTimeResolution;    ///  TOF time resolutions expected
   
   //Output containers
   //TList
@@ -481,20 +496,23 @@ private:
   TTree* fTreeTrackMC;      //!<! TTree to store MC information of the single track
   
   //Configuration Flags
-  Bool_t fHImode;            ///<  Flag for the Heavy Ion Mode
-  Bool_t fMCmode;            ///<  Flag for the Monte Carlo Mode
-  Bool_t fTreemode;          ///<  Flag for the Tree analysis Mode
-  Bool_t fChannelmode;       ///<  Flag to set the analysis only on channel TOF
-  Bool_t fCutmode;           ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
-  const Int_t fSimpleCutmode;///<  Index to set simple configuration of the track cuts
-  const Bool_t fBuilTPCTOF;  ///<  Flag to build the TPC TOF separation
-  const Bool_t fBuilDCAchi2; ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
-  const Bool_t fUseTPCShift; ///<  Flag to use the Shift of the TPC nsigma
-  const Bool_t fPerformance; ///<  Flag to fill the performance plots
-  UInt_t fSelectBit;         ///<  Mask for Trigger selection
+  Bool_t fHImode;               ///<  Flag for the Heavy Ion Mode
+  Bool_t fMCmode;               ///<  Flag for the Monte Carlo Mode
+  Bool_t fTreemode;             ///<  Flag for the Tree analysis Mode
+  Bool_t fChannelmode;          ///<  Flag to set the analysis only on channel TOF
+  Bool_t fCutmode;              ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
+  const Int_t fSimpleCutmode;   ///<  Index to set simple configuration of the track cuts
+  const Bool_t fBuilTPCTOF;     ///<  Flag to build the TPC TOF separation
+  const Bool_t fBuilDCAchi2;    ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
+  const Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
+  const Bool_t fPerformance;    ///<  Flag to fill the performance plots
+  const Bool_t fRecalibrateTOF; ///<  Flag to require to recalibrate the TOF signal
+  UInt_t fSelectBit;            ///<  Mask for Trigger selection
   
   //PID utilities
-  AliPIDResponse* fPIDResponse;   //!<! PID response object
+  AliPIDResponse* fPIDResponse;     //!<! PID response object
+  AliTOFPIDResponse fTOFPIDResponse;//!<! TOF PID response object
+  AliESDpid *fESDpid;               //!<! ESD PID
   
   //General Variables
   
@@ -542,6 +560,8 @@ private:
   const Double_t fLengthmin;   ///<  Min length for tracks
   const Double_t fRapidityCut; ///<  Max rapidity for tracks
   
+  //Run variables
+  Int_t fRunNumber;        ///<  Run number under analysis
   
   //Event flags
   Bool_t fEvtPhysSelected; ///<  Event is selected by the Physics Selection
@@ -782,7 +802,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 6);
+  ClassDef(AliAnalysisTaskTOFSpectra, 7);
 };
 
 #endif

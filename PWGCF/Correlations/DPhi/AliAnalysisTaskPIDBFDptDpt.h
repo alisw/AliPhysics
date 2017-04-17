@@ -24,6 +24,7 @@ class TH2D;
 class TH2D;
 class TH3D;
 class TProfile;
+class AliAnalysisUtils;
 
 class AliAnalysisTaskPIDBFDptDpt : public AliAnalysisTaskSE
 {
@@ -48,6 +49,9 @@ private:
     Double_t ptTOFlowerBoundary; // pt value which is the boundary between TPC & TOF.
     Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
+
+    //AliAnalysisUtils
+    AliAnalysisUtils *fUtils;//AliAnalysisUtils
     
     AliAnalysisTaskPIDBFDptDpt(const  AliAnalysisTaskPIDBFDptDpt&);
     const AliAnalysisTaskPIDBFDptDpt& operator=(const  AliAnalysisTaskPIDBFDptDpt&);

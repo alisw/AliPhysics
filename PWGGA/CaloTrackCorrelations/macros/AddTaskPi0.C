@@ -1,9 +1,10 @@
 /// \file AddTaskPi0.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Configuration of invariant mass analysis with calorimeters
 ///
 /// Configuration macro for analysis calorimeter clusters invariant mass.
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 /// Global name to be composed of the settings, used to set the AOD branch name
 TString kAnaPi0 = "";
@@ -19,6 +20,7 @@ TString kAnaPi0 = "";
 /// \param col: A string with the colliding system
 /// \param trigger : A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param muonCaloPass: in case of muon_calo passes, deactivate some checks
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param tender : A bool indicating if the tender was running before this analysis
 /// \param nonLinOn : A bool to set the use of the non linearity correction

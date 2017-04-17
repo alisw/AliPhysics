@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaPhoton
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Filter EMCal/PHOS clusters for photon analysis.
 ///
 /// Class for the photon identification.
@@ -327,9 +328,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCELambda1   [fgkNssTypes] ;             //!<! E vs Lambda1     from MC particle
   TH2F * fhMCEDispersion[fgkNssTypes] ;             //!<! E vs Dispersion  from MC particle
   
-  TH2F * fhMCPhotonELambda0NoOverlap ;              //!<! E vs Lambda0     from MC photons, no overlap
-  TH2F * fhMCPhotonELambda0TwoOverlap ;             //!<! E vs Lambda0     from MC photons, 2 particles overlap
-  TH2F * fhMCPhotonELambda0NOverlap ;               //!<! E vs Lambda0     from MC photons, N particles overlap
+  TH2F * fhMCPtLambda0Overlaps[fgkNssTypes][3] ;          //!<! pT vs Lambda0 from MC particle, check if there were 0, 1 or +1 overlaps
+  
+//  TH2F * fhMCPhotonELambda0NoOverlap ;              //!<! E vs Lambda0     from MC photons, no overlap
+//  TH2F * fhMCPhotonELambda0TwoOverlap ;             //!<! E vs Lambda0     from MC photons, 2 particles overlap
+//  TH2F * fhMCPhotonELambda0NOverlap ;               //!<! E vs Lambda0     from MC photons, N particles overlap
   
   TH2F * fhMCLambda0vsClusterMaxCellDiffE0[fgkNssTypes]; //!<! Lambda0 vs fraction of energy of max cell for E < 2 GeV
   TH2F * fhMCLambda0vsClusterMaxCellDiffE2[fgkNssTypes]; //!<! Lambda0 vs fraction of energy of max cell for 2< E < 6 GeV

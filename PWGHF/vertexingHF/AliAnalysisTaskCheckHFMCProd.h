@@ -24,7 +24,6 @@ class TTree;
 class TString;
 class AliESDEvent;
 class AliESDfriend;
-class AliStack;
 class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
@@ -40,7 +39,6 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   Terminate(Option_t *option);
 
-  Int_t CheckLcDecay(Int_t labLc, AliStack* stack) const;
   void SetSearchUpToQuark(Bool_t opt){fSearchUpToQuark=opt;};
 
 

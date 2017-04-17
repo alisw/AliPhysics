@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliIsolationCut
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class with utils to perform Isolation Cuts.
 ///
 /// Class containing methods for the isolation cut.

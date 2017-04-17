@@ -97,7 +97,7 @@ fhDispEtaPhiDiffE(0),         fhSphericityE(0),
 fhDispSumEtaDiffE(0),         fhDispSumPhiDiffE(0),
 
 // MC histograms
-fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
+//fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 // Embedding
 fhEmbeddedSignalFractionEnergy(0),
 fhEmbedPhotonELambda0FullSignal(0),   fhEmbedPhotonELambda0MostlySignal(0),
@@ -178,6 +178,9 @@ fhDistance2Hijing(0)
     fhMCMaxCellDiffClusterE[i]           = 0;
     fhLambda0DispEta[i]                  = 0;
     fhLambda0DispPhi[i]                  = 0;
+    
+    for(Int_t iover = 0 ; iover < 3; iover++)
+      fhMCPtLambda0Overlaps[i][iover] = 0;
     
     fhMCLambda0vsClusterMaxCellDiffE0[i] = 0;
     fhMCLambda0vsClusterMaxCellDiffE2[i] = 0;
@@ -383,6 +386,7 @@ fhDistance2Hijing(0)
 /// \param en  : selected cluster energy
 /// \param eta : cluster pseudo-rapidity
 /// \param phi : cluster azimuthal angle (0-360 deg)
+/// \param mctag: MC label tagß
 /// \param clusterList: clusters array
 //__________________________________________________________________________
 void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, 
@@ -1382,7 +1386,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
       
       GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,amp,tcell,cells);
       tcell*=1e9;
-      tcell-=fConstantTimeShift;
+      if(tcell > 400)tcell-=fConstantTimeShift;
       
       Float_t diff = (time-tcell);
       
@@ -1466,8 +1470,12 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
   fhLam0Pt->Fill(pt    , lambda0, GetEventWeight());
   fhLam1E ->Fill(energy, lambda1, GetEventWeight());
   fhLam1Pt->Fill(pt    , lambda1, GetEventWeight());
-  fhDispE ->Fill(energy, disp   , GetEventWeight());
-  fhDispPt->Fill(pt    , disp   , GetEventWeight());
+  
+  if(!fFillOnlySimpleSSHisto)
+  {
+    fhDispE ->Fill(energy, disp   , GetEventWeight());
+    fhDispPt->Fill(pt    , disp   , GetEventWeight());
+  }
   
   if(fFillSSNLocMaxHisto)
   {
@@ -1489,7 +1497,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     fhLam0ETRD ->Fill(energy, lambda0, GetEventWeight());
     fhLam0PtTRD->Fill(pt    , lambda0, GetEventWeight());
     fhLam1ETRD ->Fill(energy, lambda1, GetEventWeight());
-    fhDispETRD ->Fill(energy, disp,    GetEventWeight());
+    if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
+      fhDispETRD ->Fill(energy, disp,    GetEventWeight());
   }
   
   //
@@ -1583,7 +1592,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
 
       GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,cellE,cellTime,cells);
       cellTime*=1e9;
-      cellTime-=fConstantTimeShift;
+      if(cellTime > 400)cellTime-=fConstantTimeShift;
       
       enerList[icell] = cellE;
       timeList[icell] = cellTime;
@@ -1756,7 +1765,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
       fhLam0ETM ->Fill(energy, lambda0, GetEventWeight());
       fhLam0PtTM->Fill(pt    , lambda0, GetEventWeight());
       fhLam1ETM ->Fill(energy, lambda1, GetEventWeight());
-      fhDispETM ->Fill(energy, disp   , GetEventWeight());
+      if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
+        fhDispETM ->Fill(energy, disp   , GetEventWeight());
       
       if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
          GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
@@ -1764,7 +1774,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
         fhLam0ETMTRD ->Fill(energy, lambda0, GetEventWeight());
         fhLam0PtTMTRD->Fill(pt    , lambda0, GetEventWeight());
         fhLam1ETMTRD ->Fill(energy, lambda1, GetEventWeight());
-        fhDispETMTRD ->Fill(energy, disp   , GetEventWeight());
+        if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
+          fhDispETMTRD ->Fill(energy, disp   , GetEventWeight());
       }
     }
   } // If track-matching was off, check effect of matching residual cut
@@ -1807,6 +1818,18 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     Float_t fraction = 0;
     // printf("check embedding %i\n",GetReader()->IsEmbeddedClusterSelectionOn());
     
+    // Compare the primary depositing more energy with the rest,
+    // if no photon/electron as comon ancestor (conversions), count as other particle
+    const UInt_t nlabels = cluster->GetNLabels();
+    Int_t overpdg[nlabels];
+    Int_t overlab[nlabels];
+    Int_t noverlaps = 0;
+      if(!GetReader()->IsEmbeddedClusterSelectionOn())
+        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg,overlab);
+    
+    //printf("N overlaps %d \n",noverlaps);
+
+    
     if(GetReader()->IsEmbeddedClusterSelectionOn())
     {
       // Only working for EMCAL
@@ -1840,36 +1863,27 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     {
       mcIndex = kmcssPhoton ;
       
-      if(!GetReader()->IsEmbeddedClusterSelectionOn())
-      {
-        //Check particle overlaps in cluster
-        
-        // Compare the primary depositing more energy with the rest,
-        // if no photon/electron as comon ancestor (conversions), count as other particle
-        const UInt_t nlabels = cluster->GetNLabels();
-        Int_t overpdg[nlabels];
-        Int_t overlab[nlabels];
-        Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg,overlab);
-
-        //printf("N overlaps %d \n",noverlaps);
-        
-        if(noverlaps == 0)
-        {
-          fhMCPhotonELambda0NoOverlap  ->Fill(energy, lambda0, GetEventWeight());
-        }
-        else if(noverlaps == 1)
-        {
-          fhMCPhotonELambda0TwoOverlap ->Fill(energy, lambda0, GetEventWeight());
-        }
-        else if(noverlaps > 1)
-        {
-          fhMCPhotonELambda0NOverlap   ->Fill(energy, lambda0, GetEventWeight());
-        }
-        else
-        {
-          AliWarning(Form("n overlaps = %d!!", noverlaps));
-        }
-      } // No embedding
+//      if(!GetReader()->IsEmbeddedClusterSelectionOn())
+//      {
+//        //Check particle overlaps in cluster
+//                
+//        if(noverlaps == 0)
+//        {
+//          fhMCPhotonELambda0NoOverlap  ->Fill(energy, lambda0, GetEventWeight());
+//        }
+//        else if(noverlaps == 1)
+//        {
+//          fhMCPhotonELambda0TwoOverlap ->Fill(energy, lambda0, GetEventWeight());
+//        }
+//        else if(noverlaps > 1)
+//        {
+//          fhMCPhotonELambda0NOverlap   ->Fill(energy, lambda0, GetEventWeight());
+//        }
+//        else
+//        {
+//          AliWarning(Form("n overlaps = %d!!", noverlaps));
+//        }
+//      } // No embedding
       
       // Fill histograms to check shape of embedded clusters
       if(GetReader()->IsEmbeddedClusterSelectionOn())
@@ -1942,9 +1956,27 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     fhMCELambda0           [mcIndex]->Fill(energy, lambda0, GetEventWeight());
     fhMCPtLambda0          [mcIndex]->Fill(pt    , lambda0, GetEventWeight());
     fhMCELambda1           [mcIndex]->Fill(energy, lambda1, GetEventWeight());
-    fhMCEDispersion        [mcIndex]->Fill(energy, disp   , GetEventWeight());
     fhMCNCellsE            [mcIndex]->Fill(energy, ncells , GetEventWeight());
-    fhMCMaxCellDiffClusterE[mcIndex]->Fill(energy, maxCellFraction, GetEventWeight());
+
+    if(!fFillOnlySimpleSSHisto) 
+    {
+      fhMCMaxCellDiffClusterE[mcIndex]->Fill(energy, maxCellFraction, GetEventWeight());
+      fhMCEDispersion        [mcIndex]->Fill(energy, disp   , GetEventWeight());
+    }
+    
+    // Check particle overlaps in cluster
+    
+    if(!GetReader()->IsEmbeddedClusterSelectionOn())
+    {    
+      if(noverlaps == 0)
+        fhMCPtLambda0Overlaps[mcIndex][0]->Fill(pt, lambda0, GetEventWeight());
+      else if(noverlaps == 1)
+        fhMCPtLambda0Overlaps[mcIndex][1]->Fill(pt, lambda0, GetEventWeight());
+      else if(noverlaps > 1)
+        fhMCPtLambda0Overlaps[mcIndex][2]->Fill(pt, lambda0, GetEventWeight());
+      else
+        AliWarning(Form("n overlaps = %d!!", noverlaps));
+    }
     
     if(!fFillOnlySimpleSSHisto)
     {
@@ -2266,11 +2298,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhTimePt->SetYTitle("#it{time} (ns)");
   outputContainer->Add(fhTimePt);
   
-  fhMaxCellDiffClusterE  = new TH2F ("hMaxCellDiffClusterE","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
-                                     nptbins,ptmin,ptmax, 500,0,1.);
-  fhMaxCellDiffClusterE->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhMaxCellDiffClusterE->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
-  outputContainer->Add(fhMaxCellDiffClusterE);
+  if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
+  {
+    fhMaxCellDiffClusterE  = new TH2F ("hMaxCellDiffClusterE","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
+                                       nptbins,ptmin,ptmax, 500,0,1.);
+    fhMaxCellDiffClusterE->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhMaxCellDiffClusterE->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
+    outputContainer->Add(fhMaxCellDiffClusterE);
+  }
   
   fhEPhoton  = new TH1F("hEPhoton","Number of #gamma over calorimeter vs energy",nptbins,ptmin,ptmax);
   fhEPhoton->SetYTitle("#it{counts}");
@@ -2356,15 +2391,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhLam1Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhLam1Pt);
 
-    fhDispE  = new TH2F ("hDispE"," dispersion^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-    fhDispE->SetYTitle("D^{2}");
-    fhDispE->SetXTitle("#it{E} (GeV) ");
-    outputContainer->Add(fhDispE);
-
-    fhDispPt  = new TH2F ("hDispPt"," dispersion^{2} vs #it{p}_{T}", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-    fhDispPt->SetYTitle("D^{2}");
-    fhDispPt->SetXTitle("#it{p}_{T} (GeV/#it{c}) ");
-    outputContainer->Add(fhDispPt);
+    if(!fFillOnlySimpleSSHisto)
+    {
+      fhDispE  = new TH2F ("hDispE"," dispersion^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhDispE->SetYTitle("D^{2}");
+      fhDispE->SetXTitle("#it{E} (GeV) ");
+      outputContainer->Add(fhDispE);
+      
+      fhDispPt  = new TH2F ("hDispPt"," dispersion^{2} vs #it{p}_{T}", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhDispPt->SetYTitle("D^{2}");
+      fhDispPt->SetXTitle("#it{p}_{T} (GeV/#it{c}) ");
+      outputContainer->Add(fhDispPt);
+    }
     
     if(fFillSSNLocMaxHisto)
     {
@@ -2406,10 +2444,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhLam1ETM->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam1ETM);
       
-      fhDispETM  = new TH2F ("hDispETM"," dispersion^{2} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhDispETM->SetYTitle("D^{2}");
-      fhDispETM->SetXTitle("#it{E} (GeV) ");
-      outputContainer->Add(fhDispETM);
+      if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
+      {
+        fhDispETM  = new TH2F ("hDispETM"," dispersion^{2} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhDispETM->SetYTitle("D^{2}");
+        fhDispETM->SetXTitle("#it{E} (GeV) ");
+        outputContainer->Add(fhDispETM);
+      }
     }
     
     if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0)
@@ -2429,10 +2470,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhLam1ETRD->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam1ETRD);
       
-      fhDispETRD  = new TH2F ("hDispETRD"," dispersion^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhDispETRD->SetYTitle("Dispersion^{2}");
-      fhDispETRD->SetXTitle("#it{E} (GeV) ");
-      outputContainer->Add(fhDispETRD);
+      if(fFillSSHistograms && !fFillOnlySimpleSSHisto)
+      {
+        fhDispETRD  = new TH2F ("hDispETRD"," dispersion^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhDispETRD->SetYTitle("Dispersion^{2}");
+        fhDispETRD->SetXTitle("#it{E} (GeV) ");
+        outputContainer->Add(fhDispETRD);
+      }
       
       if(!fRejectTrackMatch &&  GetFirstSMCoveredByTRD() >=0 )
       {
@@ -2451,10 +2495,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhLam1ETMTRD->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhLam1ETMTRD);
         
-        fhDispETMTRD  = new TH2F ("hDispETMTRD"," dispersion^{2} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhDispETMTRD->SetYTitle("Dispersion^{2}");
-        fhDispETMTRD->SetXTitle("#it{E} (GeV) ");
-        outputContainer->Add(fhDispETMTRD);
+        if(fFillSSHistograms && !fFillOnlySimpleSSHisto)
+        {
+          fhDispETMTRD  = new TH2F ("hDispETMTRD"," dispersion^{2} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhDispETMTRD->SetYTitle("Dispersion^{2}");
+          fhDispETMTRD->SetXTitle("#it{E} (GeV) ");
+          outputContainer->Add(fhDispETMTRD);
+        }
       }
     }
     
@@ -3421,19 +3468,25 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCPtLambda0[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCPtLambda0[i]) ;
         
+        if(!GetReader()->IsEmbeddedClusterSelectionOn())
+        {
+          for(Int_t iover = 0; iover < 3; iover++)
+          {
+            fhMCPtLambda0Overlaps[i][iover]  = new TH2F(Form("hPtLambda0_MC%s_Overlap%d",pnamess[i].Data(),iover),
+                                                 Form("cluster from %s : #it{p}_{T} vs #lambda_{0}^{2}, N Overlaps = %d",ptypess[i].Data(),iover),
+                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+            fhMCPtLambda0Overlaps[i][iover]->SetYTitle("#lambda_{0}^{2}");
+            fhMCPtLambda0Overlaps[i][iover]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhMCPtLambda0Overlaps[i][iover]) ;
+          }
+        }
+        
         fhMCELambda1[i]  = new TH2F(Form("hELambda1_MC%s",pnamess[i].Data()),
                                     Form("cluster from %s : E vs #lambda_{1}^{2}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhMCELambda1[i]->SetYTitle("#lambda_{1}^{2}");
         fhMCELambda1[i]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCELambda1[i]) ;
-        
-        fhMCEDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pnamess[i].Data()),
-                                       Form("cluster from %s : E vs dispersion^{2}",ptypess[i].Data()),
-                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCEDispersion[i]->SetYTitle("D^{2}");
-        fhMCEDispersion[i]->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCEDispersion[i]) ;
         
         fhMCNCellsE[i]  = new TH2F (Form("hNCellsE_MC%s",pnamess[i].Data()),
                                     Form("# of cells in cluster from %s vs E of clusters",ptypess[i].Data()),
@@ -3442,15 +3495,22 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCNCellsE[i]->SetYTitle("# of cells in cluster");
         outputContainer->Add(fhMCNCellsE[i]);
         
-        fhMCMaxCellDiffClusterE[i]  = new TH2F (Form("hMaxCellDiffClusterE_MC%s",pnamess[i].Data()),
-                                                Form("energy vs difference of cluster energy from %s - max cell energy / cluster energy, good clusters",ptypess[i].Data()),
-                                                nptbins,ptmin,ptmax, 500,0,1.);
-        fhMCMaxCellDiffClusterE[i]->SetXTitle("#it{E}_{cluster} (GeV) ");
-        fhMCMaxCellDiffClusterE[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
-        outputContainer->Add(fhMCMaxCellDiffClusterE[i]);
-        
         if(!fFillOnlySimpleSSHisto)
-        {
+        {          
+          fhMCEDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pnamess[i].Data()),
+                                         Form("cluster from %s : E vs dispersion^{2}",ptypess[i].Data()),
+                                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhMCEDispersion[i]->SetYTitle("D^{2}");
+          fhMCEDispersion[i]->SetXTitle("#it{E} (GeV)");
+          outputContainer->Add(fhMCEDispersion[i]) ;
+
+          fhMCMaxCellDiffClusterE[i]  = new TH2F (Form("hMaxCellDiffClusterE_MC%s",pnamess[i].Data()),
+                                                  Form("energy vs difference of cluster energy from %s - max cell energy / cluster energy, good clusters",ptypess[i].Data()),
+                                                  nptbins,ptmin,ptmax, 500,0,1.);
+          fhMCMaxCellDiffClusterE[i]->SetXTitle("#it{E}_{cluster} (GeV) ");
+          fhMCMaxCellDiffClusterE[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
+          outputContainer->Add(fhMCMaxCellDiffClusterE[i]);
+          
           fhMCLambda0vsClusterMaxCellDiffE0[i]  = new TH2F(Form("hLambda0vsClusterMaxCellDiffE0_MC%s",pnamess[i].Data()),
                                                            Form("cluster from %s : #lambda^{2}_{0} vs fraction of energy carried by max cell, E < 2 GeV",ptypess[i].Data()),
                                                            ssbins,ssmin,ssmax,500,0,1.);
@@ -3557,29 +3617,29 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         }
       }// loop
       
-      if(!GetReader()->IsEmbeddedClusterSelectionOn())
-      {
-        fhMCPhotonELambda0NoOverlap  = new TH2F("hELambda0_MCPhoton_NoOverlap",
-                                                "cluster from Photon : E vs #lambda_{0}^{2}",
-                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCPhotonELambda0NoOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0NoOverlap->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCPhotonELambda0NoOverlap) ;
-        
-        fhMCPhotonELambda0TwoOverlap  = new TH2F("hELambda0_MCPhoton_TwoOverlap",
-                                                 "cluster from Photon : E vs #lambda_{0}^{2}",
-                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCPhotonELambda0TwoOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0TwoOverlap->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCPhotonELambda0TwoOverlap) ;
-        
-        fhMCPhotonELambda0NOverlap  = new TH2F("hELambda0_MCPhoton_NOverlap",
-                                               "cluster from Photon : E vs #lambda_{0}^{2}",
-                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCPhotonELambda0NOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0NOverlap->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCPhotonELambda0NOverlap) ;
-      } // No embedding
+//      if(!GetReader()->IsEmbeddedClusterSelectionOn())
+//      {
+//        fhMCPhotonELambda0NoOverlap  = new TH2F("hELambda0_MCPhoton_NoOverlap",
+//                                                "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhMCPhotonELambda0NoOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0NoOverlap->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhMCPhotonELambda0NoOverlap) ;
+//        
+//        fhMCPhotonELambda0TwoOverlap  = new TH2F("hELambda0_MCPhoton_TwoOverlap",
+//                                                 "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhMCPhotonELambda0TwoOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0TwoOverlap->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhMCPhotonELambda0TwoOverlap) ;
+//        
+//        fhMCPhotonELambda0NOverlap  = new TH2F("hELambda0_MCPhoton_NOverlap",
+//                                               "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhMCPhotonELambda0NOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0NOverlap->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhMCPhotonELambda0NOverlap) ;
+//      } // No embedding
       
       if(GetReader()->IsEmbeddedClusterSelectionOn())
       {
@@ -4576,12 +4636,14 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       fhPtPhotonSM->Fill(pt, nSM, GetEventWeight());
     }
     
-    fhNLocMax->Fill(calo->E(),nMaxima);
     
     // Few more control histograms for selected clusters
-    fhMaxCellDiffClusterE->Fill(en, maxCellFraction    , GetEventWeight());
     fhNCellsE            ->Fill(en, calo->GetNCells()  , GetEventWeight());
     fhTimePt             ->Fill(pt, time               , GetEventWeight());
+    fhNLocMax            ->Fill(en, nMaxima            , GetEventWeight());
+
+    if(!fFillOnlySimpleSSHisto)
+      fhMaxCellDiffClusterE->Fill(en, maxCellFraction, GetEventWeight());
     
     if(cells)
     {

@@ -161,6 +161,7 @@ fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
 fRejectPileUpTight(kFALSE),
+fResetNegativeZDC(kFALSE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator(kV0M),
@@ -259,6 +260,10 @@ fhZNBCCorr(0x0)
   for (Int_t c=0; c<2; c++) {
     fhZNCenDis[c] = NULL;
   }
+  fMinRingVZC=1;
+  fMaxRingVZC=4;
+  fMinRingVZA=5;
+  fMaxRingVZA=8;
 }
 
 //________________________________________________________________________
@@ -321,6 +326,7 @@ fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
 fRejectPileUpTight(kFALSE),
+fResetNegativeZDC(kFALSE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator(kV0M),
@@ -432,6 +438,10 @@ fhZNBCCorr(0x0)
   for (Int_t c=0; c<2; c++) {
     fhZNCenDis[c] = NULL;
   }
+  fMinRingVZC=1;
+  fMaxRingVZC=4;
+  fMinRingVZA=5;
+  fMaxRingVZA=8;
 }
 
 //________________________________________________________________________
@@ -1438,7 +1448,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Double_t QxTot[fkVZEROnHar] = {0.}, QyTot[fkVZEROnHar] = {0.};
       Double_t denom = 0.;
       Double_t V0TotQC[fkVZEROnHar][2] = {{0.}}, V0TotQA[fkVZEROnHar][2] = {{0.}};
-      Double_t MultC=0., MultA=0.;
+      Double_t MultC[fkVZEROnHar] = {0.}, MultA[fkVZEROnHar] = {0.};
       
       for(Int_t i=0; i<64; i++) {
         
@@ -1472,18 +1482,19 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 //            fVZEROQVectorRecQy[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QyRec);
             // do re-centering
             if(fVZEROQVectorRecQxStored[k]) {
-              QxRec -= fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
-              QyRec -= fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
+              if(!std::isnan(fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QxRec -= fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
+              if(!std::isnan(fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QyRec -= fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
             }
             // sum of Q-vectors over all rings (total V0 Q-vector)
-            if (CachednRing <= 4) {
+            if (CachednRing >= fMinRingVZC && CachednRing <= fMaxRingVZC) {
               V0TotQC[k][0] += QxRec*denom;
               V0TotQC[k][1] += QyRec*denom;
-              MultC += denom;
-            } else {
+              MultC[k] += denom;
+            }
+            if (CachednRing >= fMinRingVZA && CachednRing <= fMaxRingVZA) {
               V0TotQA[k][0] += QxRec*denom;
               V0TotQA[k][1] += QyRec*denom;
-              MultA += denom;
+              MultA[k] += denom;
             }
             QxTot[k] = 0.;
             QyTot[k] = 0.;
@@ -1497,19 +1508,27 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         }
         denom += mult;
       }
-    
-    for (Int_t k=0; k<fkVZEROnHar; k++) {
-      Double_t QCx = V0TotQC[k][0]/MultC, QCy = V0TotQC[k][1]/MultC, QAx = V0TotQA[k][0]/MultA, QAy = V0TotQA[k][1]/MultA;
-      fFlowEvent->SetV02Qsub(QCx,QCy,MultC,QAx,QAy,MultA,k+1);
-      fVZEROQVectorRecFinal[k][0]->Fill(RunBin+0.5,centrperc,QCx);
-      fVZEROQVectorRecFinal[k][1]->Fill(RunBin+0.5,centrperc,QCy);
-      fVZEROQVectorRecFinal[k][2]->Fill(RunBin+0.5,centrperc,QAx);
-      fVZEROQVectorRecFinal[k][3]->Fill(RunBin+0.5,centrperc,QAy);
-      fVZEROQVectorRecFinal[k][4]->Fill(RunBin+0.5,centrperc,QCx*QAx);
-      fVZEROQVectorRecFinal[k][5]->Fill(RunBin+0.5,centrperc,QCy*QAy);
-      fVZEROQVectorRecFinal[k][6]->Fill(RunBin+0.5,centrperc,QCx*QAy);
-      fVZEROQVectorRecFinal[k][7]->Fill(RunBin+0.5,centrperc,QCy*QAx);
-    }
+      
+      for (Int_t k=0; k<fkVZEROnHar; k++) {
+        if(MultC[k]>0. && MultA[k]>0.) {
+          Double_t QCx = V0TotQC[k][0]/MultC[k], QCy = V0TotQC[k][1]/MultC[k], QAx = V0TotQA[k][0]/MultA[k], QAy = V0TotQA[k][1]/MultA[k];
+          if(!std::isnan(QCx) && !std::isnan(QCy) && !std::isnan(QAx) && !std::isnan(QAy)) {
+            fFlowEvent->SetV02Qsub(QCx,QCy,MultC[k],QAx,QAy,MultA[k],k+1);
+            fVZEROQVectorRecFinal[k][0]->Fill(RunBin+0.5,centrperc,QCx);
+            fVZEROQVectorRecFinal[k][1]->Fill(RunBin+0.5,centrperc,QCy);
+            fVZEROQVectorRecFinal[k][2]->Fill(RunBin+0.5,centrperc,QAx);
+            fVZEROQVectorRecFinal[k][3]->Fill(RunBin+0.5,centrperc,QAy);
+            fVZEROQVectorRecFinal[k][4]->Fill(RunBin+0.5,centrperc,QCx*QAx);
+            fVZEROQVectorRecFinal[k][5]->Fill(RunBin+0.5,centrperc,QCy*QAy);
+            fVZEROQVectorRecFinal[k][6]->Fill(RunBin+0.5,centrperc,QCx*QAy);
+            fVZEROQVectorRecFinal[k][7]->Fill(RunBin+0.5,centrperc,QCy*QAx);
+          } else {
+            fFlowEvent->SetV02Qsub(0.,0.,0.,0.,0.,0.,k+1);
+          }
+        } else {
+          fFlowEvent->SetV02Qsub(0.,0.,0.,0.,0.,0.,k+1);
+        }
+      }
     
     
     
@@ -1558,11 +1577,19 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         for(Int_t i=0; i<5; i++) {
           if(fTowerGainEq[0][i]) towZNC[i] = towZNCraw[i]*fTowerGainEq[0][i]->GetBinContent(fTowerGainEq[0][i]->FindBin(centrperc));
           if(fTowerGainEq[1][i]) towZNA[i] = towZNAraw[i]*fTowerGainEq[1][i]->GetBinContent(fTowerGainEq[1][i]->FindBin(centrperc));
+          if(fResetNegativeZDC) {
+            if(towZNC[i]<0.) towZNC[i] = 0.;
+            if(towZNA[i]<0.) towZNA[i] = 0.;
+          }
         }
       } else {
         for(Int_t i=0; i<5; i++) {
           towZNC[i] = towZNCraw[i];
           towZNA[i] = towZNAraw[i];
+          if(fResetNegativeZDC) {
+            if(towZNC[i]<0.) towZNC[i] = 0.;
+            if(towZNA[i]<0.) towZNA[i] = 0.;
+          }
           fZNCTower[RunBin][i]->Fill(centrperc,towZNC[i]);
           fZNATower[RunBin][i]->Fill(centrperc,towZNA[i]);
         }
@@ -1600,6 +1627,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
           }
           if(fUseZDCSpectraCorr && EZNC<=0.) fAllChONZNC=kFALSE;
+          
           SumEZNC += EZNC;
           
           // build centroid

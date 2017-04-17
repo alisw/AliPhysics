@@ -215,7 +215,7 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
 /// Given the cluster ID stored in AliAODPWG4Particle, get the originator cluster 
 /// and its index in the array. Input parameters:
 /// \param clusters: Full TObjarray of clusters.
-/// \param id: Integer with the searched cluster ID.
+/// \param clId: Integer with the searched cluster ID.
 /// \param iclus: Integer with index of cluster in cluster array.
 /// \param first: Integer with the first index to consider in the array of clusters.
 /// \return pointer to cluster.
@@ -370,8 +370,11 @@ TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()
 /// deposited more energy. Assign a tag.
 ///
 /// \param cluster: pointer to AliVCluster
+/// \param mctag: MC tag
 /// \param genName: name of generator main contributor to the cluster
+/// \param index: label
 /// \param genNameBkg: name of generators overlapped to the cluster
+/// \param indexBkg: bkg label
 /// \return tag : 0-no other generator, 1 hijing, 2 other generator, 3 both hijing and other
 //_____________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluster * cluster, Int_t mctag,

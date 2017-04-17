@@ -197,6 +197,7 @@ private:
   TObjArray* GetParticlesFromDetector(AliVEvent* inputEvent, Int_t idet);
   Bool_t IsMuEvent();
   Bool_t InitiateEventPlane(Double_t& evtPlanePhi, AliVEvent* inputEvent);
+  Long64_t GetUniqueEventID(AliVEvent* inputEvent);
 
   // General configuration
   Int_t               fDebug;           //  Debug flag

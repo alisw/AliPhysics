@@ -27,8 +27,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
-            		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
-            		    ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Nuclei/NucleiPbPb
+            	    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
 		    ${AliPhysics_SOURCE_DIR}/PWG/TRD
@@ -66,6 +65,7 @@ set(SRCS
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDParticle.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDTrack.cxx
+  PiKaPr/TPCTOFfits/AliAnalysisPIDV0.cxx
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
   PiKaPr/TOF/pp7/AliAnalysisCombinedHadronSpectra2MC.cxx

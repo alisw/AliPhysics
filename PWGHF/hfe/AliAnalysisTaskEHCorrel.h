@@ -53,7 +53,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
     Bool_t  PassEIDCuts(AliVTrack *track, AliVCluster *clust, Bool_t &Hadtrack);
     Bool_t  PassHadronCuts(AliAODTrack *HadTrack);
-    void    HadronInfo(Int_t itrack);
+    void    HadronInfo();
+    //void    HadronInfo(Int_t itrack);
     //void    ElectronHadCorrel(Int_t itrack, AliVTrack *track, THnSparse *SparseEHCorrl, TH2F *HisDphi);
     void    ElectronHadCorrel(Int_t itrack, AliVTrack *track, THnSparse *SparseEHCorrl);
     void    ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtrack, AliVTrack *track, THnSparse *SparseEHCorrlNoPartner);

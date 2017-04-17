@@ -43,6 +43,7 @@ ClassImp(AliGenEMlibV2)
 TF1*  AliGenEMlibV2::fPtParametrization[]       = {0x0};
 TF1*  AliGenEMlibV2::fPtParametrizationProton   = NULL;
 TH1D* AliGenEMlibV2::fMtFactorHisto             = NULL;
+TH2F* AliGenEMlibV2::fPtYDistribution[]         = {0x0};
 Int_t AliGenEMlibV2::fgSelectedCollisionsSystem = AliGenEMlibV2::kpp7TeV;
 Int_t AliGenEMlibV2::fgSelectedCentrality       = AliGenEMlibV2::kpp;
 Int_t AliGenEMlibV2::fgSelectedV2Systematic     = AliGenEMlibV2::kNoV2Sys;
@@ -1134,6 +1135,57 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
 //--------------------------------------------------------------------------
 TH1D* AliGenEMlibV2::GetMtScalingFactors() {
   return fMtFactorHisto;
+}
+
+
+//--------------------------------------------------------------------------
+//
+//                        set pt-y distributions
+//
+//--------------------------------------------------------------------------
+Bool_t AliGenEMlibV2::SetPtYDistributions(TString fileName, TString dirName) {
+
+  // open parametrizations file
+  TFile* fPtYDistributionFile = TFile::Open(fileName.Data());
+  if (!fPtYDistributionFile) AliFatalClass(Form("File %s not found",fileName.Data()));
+  TDirectory* fPtYDistributionDir = (TDirectory*)fPtYDistributionFile->Get(dirName.Data());
+  if (!fPtYDistributionDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
+
+  // check for pt-y parametrizations
+  AliGenEMlibV2 lib;
+  TRandom* rndm;
+  TH2F* ptYTemp = NULL;
+  for (Int_t i=0; i<18; i++) {
+    Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
+    ptYTemp = (TH2F*)fPtYDistributionDir->Get(Form("%d_pt_y", ip));
+    if (ptYTemp) {
+      fPtYDistribution[i] = new TH2F(*ptYTemp);
+      fPtYDistribution[i]->SetName(Form("%d_pt_y", ip));
+      fPtYDistribution[i]->SetDirectory(0);
+    } else {
+      fPtYDistribution[i] = NULL;
+    }
+  }
+
+  if (!fPtYDistribution[0]) AliFatalClass(Form("File %s doesn't contain pi0 pt-y distribution",fileName.Data()));
+
+  fPtYDistributionFile->Close();
+  delete fPtYDistributionFile;
+
+  return kTRUE;
+}
+
+
+//--------------------------------------------------------------------------
+//
+//                     return pt-y distribution
+//
+//--------------------------------------------------------------------------
+TH2F* AliGenEMlibV2::GetPtYDistribution(Int_t np) {
+  if (np<18 && fPtYDistribution[np])
+    return fPtYDistribution[np];
+  else
+    return NULL;
 }
 
 

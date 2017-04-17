@@ -200,6 +200,7 @@ struct ESDCutParams
   bool useCustomFilter;
   bool useCustomMisID;
   bool useElectronRejection;
+  bool useCustomElectronRejection;
   bool usePionRejection;
 };
 
@@ -219,6 +220,7 @@ struct XiCutParams
 
   double maxDecayLengthXi;
   double minCosPointingAngleXi;
+  double minCosPointingAngleV0toXi;
   double maxDcaXi;
   double maxDcaXiDaughters;
 
@@ -232,7 +234,7 @@ struct XiCutParams
   double minDcaV0;
   double minInvMassV0,
          maxInvMassV0;
-  double minCosPointingAngleV0;
+  double minCosPointingAngleV0;  //this is V0 to primary vertex, not terribly useful for Xi analysis
   double etaV0;
   double minPtV0,
          maxPtV0;
@@ -249,7 +251,10 @@ struct XiCutParams
 
   int minTPCnclsV0Daughters;
 
-  bool useCustomFilter;
+  bool useCustomV0Filter;
+  bool useCustomV0MisID;
+  bool useCustomBacPionFilter;
+  bool useCustomBacPionMisID;
 };
 
 struct PairCutParams
@@ -313,6 +318,7 @@ struct PairCutParams
   AliFemtoESDTrackCutNSigmaFilter* CreateESDCut(ESDCutParams &aCutParams);
 
   void AddCustomXiSelectionFilters(ParticlePDGType aXiType, AliFemtoXiTrackCutNSigmaFilter* aCut);
+  void AddCustomXiV0RejectionFilters(ParticlePDGType aXiType, AliFemtoXiTrackCutNSigmaFilter* aCut);
   AliFemtoXiTrackCutNSigmaFilter* CreateXiCut(XiCutParams &aCutParams);
 
   AliFemtoV0PairCut* CreateV0PairCut(PairCutParams &aPairCutParams);

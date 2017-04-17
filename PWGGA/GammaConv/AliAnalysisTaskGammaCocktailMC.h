@@ -30,6 +30,7 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     void InitializeDecayChannelHist(TH1F* hist, Int_t np);
     void FillPythiaBranchingRatio(TH1F* histo, Int_t np);
     void GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen);
+    void GetAndSetPtYDistributions(AliGenEMCocktailV2* mcCocktailGen);
     void SetHasMother(UInt_t selectedMothers);
     Int_t GetParticlePosLocal(Int_t pdg);
     TH1* SetHist1D(TH1* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Bool_t optSumw2);
@@ -82,14 +83,15 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
   
     TF1*                        fPtParametrization[17];         //!
     TF1*                        fPtParametrizationProton;       //!
-    TObjString*                 fCocktailSettings[10];          //!
+    TObjString*                 fCocktailSettings[12];          //!
     TH1D*                       fMtScalingFactors;              //!
+    TH2F*                       fPtYDistributions[17];          //!
 
   private:
     AliAnalysisTaskGammaCocktailMC(const AliAnalysisTaskGammaCocktailMC&);            // Prevent copy-construction
     AliAnalysisTaskGammaCocktailMC &operator=(const AliAnalysisTaskGammaCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCocktailMC, 3);
+    ClassDef(AliAnalysisTaskGammaCocktailMC, 4);
 };
 
 #endif

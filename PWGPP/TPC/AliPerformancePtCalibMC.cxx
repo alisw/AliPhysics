@@ -66,7 +66,6 @@ fout.Close();
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
 #include "AliESDfriendTrack.h"
 #include "AliESDfriend.h"
 
@@ -337,9 +336,7 @@ void AliPerformancePtCalibMC::SetPtShift(const Double_t shiftVal ) {
 void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const /*esdFriend*/, const Bool_t /*bUseMC*/, const Bool_t /*bUseESDfriend*/)
 {
    //exec: read MC and esd or tpc tracks
-   
-   AliStack* stack = NULL;
- 
+    
    if (!esdEvent) {
       Printf("ERROR: Event not available");
       return;
@@ -352,12 +349,6 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
       Printf("ERROR: Could not retrieve MC event");
       return;
    }    
-   stack = mcEvent->Stack();
-   if (!stack) {
-      Printf("ERROR: Could not retrieve stack");
-      return;
-   }
-
    
    //vertex info for cut
    //const AliESDVertex *vtx = esdEvent->GetPrimaryVertex();
@@ -394,7 +385,7 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
       // get MC info 
       Int_t esdLabel = esdTrack->GetLabel();
       if(esdLabel<0) continue;	
-      TParticle *  partMC = stack->Particle(esdLabel);
+      TParticle *  partMC = ((AliMCParticle*)mcEvent->GetTrack(esdLabel))->Particle();
       if (!partMC) continue;
   
       // fill correlation histos MC ESD

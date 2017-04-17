@@ -64,6 +64,19 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fYVsPtSig(0),
   fHistAllV0multNTPCout(0),
   fHistSelV0multNTPCout(0),
+  fCosPHist3D(0x0),
+  fCosPxyHist3D(0x0),
+  fDLenHist3D(0x0),
+  fDLenxyHist3D(0x0),
+  fNDLenxyHist3D(0x0),
+  fSigVertHist3D(0x0),
+  fDCAHist3D(0x0),
+  fNormIPHist3D(0x0),
+  fCosPiDsHist3D(0x0),
+  fCosPiKPhiHist3D(0x0),
+  fPtProng0Hist3D(0x0),
+  fPtProng1Hist3D(0x0),
+  fPtProng2Hist3D(0x0),
   fNtupleDs(0),
   fFillNtuple(0),
   fSystem(0),
@@ -147,6 +160,19 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fYVsPtSig(0),
   fHistAllV0multNTPCout(0),
   fHistSelV0multNTPCout(0),
+  fCosPHist3D(0x0),
+  fCosPxyHist3D(0x0),
+  fDLenHist3D(0x0),
+  fDLenxyHist3D(0x0),
+  fNDLenxyHist3D(0x0),
+  fSigVertHist3D(0x0),
+  fDCAHist3D(0x0),
+  fNormIPHist3D(0x0),
+  fCosPiDsHist3D(0x0),
+  fCosPiKPhiHist3D(0x0),
+  fPtProng0Hist3D(0x0),
+  fPtProng1Hist3D(0x0),
+  fPtProng2Hist3D(0x0),
   fNtupleDs(0),
   fFillNtuple(fillNtuple),
   fSystem(0),
@@ -266,6 +292,20 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     delete fHistNEvents;
     delete fHistAllV0multNTPCout;
     delete fHistSelV0multNTPCout;
+    delete  fCosPHist3D;
+    delete  fCosPxyHist3D;
+    delete  fDLenHist3D;
+    delete  fDLenxyHist3D;
+    delete  fNDLenxyHist3D;
+    delete  fSigVertHist3D;
+    delete  fDCAHist3D;
+    delete  fNormIPHist3D;
+    delete  fCosPiDsHist3D;
+    delete  fCosPiKPhiHist3D;
+    delete  fPtProng0Hist3D;
+    delete  fPtProng1Hist3D;
+    delete  fPtProng2Hist3D;
+      
     for(Int_t i=0;i<4;i++){
       delete fChanHist[i];
     }
@@ -439,9 +479,18 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       hisname.Form("hCosP%sPt%d",htype.Data(),i);
       fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
       fCosPHist[index]->Sumw2();
+      hisname.Form("hCosPxy%sPt%d",htype.Data(),i);
+      fCosPxyHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+      fCosPxyHist[index]->Sumw2();
       hisname.Form("hDLen%sPt%d",htype.Data(),i);
       fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
       fDLenHist[index]->Sumw2();
+      hisname.Form("hDLenxy%sPt%d",htype.Data(),i);
+      fDLenxyHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+      fDLenxyHist[index]->Sumw2();
+      hisname.Form("hNDLenxy%sPt%d",htype.Data(),i);
+      fNDLenxyHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,11.);
+      fNDLenxyHist[index]->Sumw2();
       hisname.Form("hSumd02%sPt%d",htype.Data(),i);
       fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
       fSumd02Hist[index]->Sumw2();
@@ -457,6 +506,15 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       hisname.Form("hDCA%sPt%d",htype.Data(),i);
       fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
       fDCAHist[index]->Sumw2();
+      hisname.Form("hNormIP%sPt%d",htype.Data(),i);
+      fNormIPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,6.);
+      fNormIPHist[index]->Sumw2();
+      hisname.Form("hCosPiDs%sPt%d",htype.Data(),i);
+      fCosPiDsHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+      fCosPiDsHist[index]->Sumw2();
+      hisname.Form("hCosPiKPhi%sPt%d",htype.Data(),i);
+      fCosPiKPhiHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+      fCosPiKPhiHist[index]->Sumw2();
       hisname.Form("hPtProng0%sPt%d",htype.Data(),i);
       fPtProng0Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
       fPtProng0Hist[index]->Sumw2();
@@ -485,11 +543,17 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fPtCandHist[i]);
     if(fDoCutVarHistos){
       fOutput->Add(fCosPHist[i]);
+      fOutput->Add(fCosPxyHist[i]);
       fOutput->Add(fDLenHist[i]);
+      fOutput->Add(fDLenxyHist[i]);
+      fOutput->Add(fNDLenxyHist[i]);
       fOutput->Add(fSumd02Hist[i]);
       fOutput->Add(fSigVertHist[i]);
       fOutput->Add(fPtMaxHist[i]);
       fOutput->Add(fDCAHist[i]);
+      fOutput->Add(fNormIPHist[i]);
+      fOutput->Add(fCosPiDsHist[i]);
+      fOutput->Add(fCosPiKPhiHist[i]);
       fOutput->Add(fPtProng0Hist[i]);
       fOutput->Add(fPtProng1Hist[i]);
       fOutput->Add(fPtProng2Hist[i]);
@@ -509,7 +573,36 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fChanHist[i]);
   }
     
+  fCosPHist3D     = new TH3F("fCosPHist3D","CosP vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.5,1.);
+  fCosPxyHist3D   = new TH3F("fCosPxyHist3D","CosPxy vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.5,1.);
+  fDLenHist3D     = new TH3F("fDLenHist3D","DLen vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.,0.5);
+  fDLenxyHist3D   = new TH3F("fDLenxyHist3D","DLenxy vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.,0.5);
+  fNDLenxyHist3D  = new TH3F("fNDLenxyHist3D","NDLenxy vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.,11.);
+  fSigVertHist3D  = new TH3F("fSigVertHist3D","SigVert vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.,0.1);
+  fDCAHist3D      = new TH3F("fDCAHist3D","DCA vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.,0.1);
+  fNormIPHist3D   = new TH3F("fNormIPHist3D","nIP vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.,6.);
+  fCosPiDsHist3D  = new TH3F("fCosPiDsHist3D","CosPiDs vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.5,1.);
+  fCosPiKPhiHist3D = new TH3F("fCosPiKPhiHist3D","CosPiKPhi vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.,0.5);
+  fPtProng0Hist3D  = new TH3F("fPtProng0Hist3D","Pt prong0 vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.0,20.);
+  fPtProng1Hist3D  = new TH3F("fPtProng1Hist3D","Pt prong1 vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.0,20.);
+  fPtProng2Hist3D  = new TH3F("fPtProng2Hist3D","Pt prong2 vs Ds mass",nInvMassBins,minMass,maxMass,20,0.,20.,100,0.0,20.);
     
+  if(!fReadMC && fDoCutVarHistos) {
+    fOutput->Add(fCosPHist3D);
+    fOutput->Add(fCosPxyHist3D);
+    fOutput->Add(fDLenHist3D);
+    fOutput->Add(fDLenxyHist3D);
+    fOutput->Add(fNDLenxyHist3D);
+    fOutput->Add(fSigVertHist3D);
+    fOutput->Add(fDCAHist3D);
+    fOutput->Add(fNormIPHist3D);
+    fOutput->Add(fCosPiDsHist3D);
+    fOutput->Add(fCosPiKPhiHist3D);
+    fOutput->Add(fPtProng0Hist3D);
+    fOutput->Add(fPtProng1Hist3D);
+    fOutput->Add(fPtProng2Hist3D);
+  }
+
   fPtVsMass=new TH2F("hPtVsMass","PtVsMass (prod. cuts)",nInvMassBins,minMass,maxMass,40,0.,20.);
   fPtVsMassPhi=new TH2F("hPtVsMassPhi","PtVsMass (phi selection)",nInvMassBins,minMass,maxMass,200,0.,20.);
   fPtVsMassK0st=new TH2F("hPtVsMassK0st","PtVsMass (K0* selection)",nInvMassBins,minMass,maxMass,200,0.,20.);
@@ -1106,24 +1199,25 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
           
 	///////////////////// CODE FOR NSPARSE /////////////////////////
           
+	const Int_t nProng = 3;
+	Double_t deltaMassKK=999.;
+	Double_t dlen=d->DecayLength();
+	Double_t dlenxy=d->DecayLengthXY();
+	Double_t normdl=d->NormalizedDecayLength();
+	Double_t normdlxy=d->NormalizedDecayLengthXY();
+	Double_t cosp=d->CosPointingAngle();
+	Double_t cospxy=d->CosPointingAngleXY();
+	Double_t pt0=d->PtProng(0);
+	Double_t pt1=d->PtProng(1);
+	Double_t pt2=d->PtProng(2);
+	Double_t sigvert=d->GetSigmaVert();
+	Double_t cosPiDs=-99.;
+	Double_t cosPiKPhi=-99.;
+	Double_t normIP;                     //to store the maximum topomatic var. among the 3 prongs
+	Double_t normIPprong[nProng];        //to store IP of k,k,pi
+
 	if(fFillSparse) {
                     
-	  const Int_t nProng = 3;
-	  Double_t deltaMassKK=999.;
-	  Double_t dlen=d->DecayLength();
-	  Double_t dlenxy=d->DecayLengthXY();
-	  Double_t normdl=d->NormalizedDecayLength();
-	  Double_t normdlxy=d->NormalizedDecayLengthXY();
-	  Double_t cosp=d->CosPointingAngle();
-	  Double_t cospxy=d->CosPointingAngleXY();
-	  Double_t pt0=d->PtProng(0);
-	  Double_t pt1=d->PtProng(1);
-	  Double_t pt2=d->PtProng(2);
-	  Double_t sigvert=d->GetSigmaVert();
-	  Double_t cosPiDs=-99.;
-	  Double_t cosPiKPhi=-99.;
-	  Double_t normIP;                     //to store the maximum topomatic var. among the 3 prongs
-	  Double_t normIPprong[nProng];        //to store IP of k,k,pi
 	  if(isPhiKKpi) {
 	    Double_t tmpNormIP[nProng];
                         
@@ -1210,27 +1304,43 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	////////////////////////////////////////////////////////////////
                 
 	if(fDoCutVarHistos){
-	  Double_t dlen=d->DecayLength();
-	  Double_t cosp=d->CosPointingAngle();
-	  Double_t pt0=d->PtProng(0);
-	  Double_t pt1=d->PtProng(1);
-	  Double_t pt2=d->PtProng(2);
-	  Double_t sigvert=d->GetSigmaVert();
 	  Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
 	  Double_t dca=d->GetDCA();
 	  Double_t ptmax=0;
+              
 	  for(Int_t i=0;i<3;i++){
 	    if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
 	  }
 	  fCosPHist[index]->Fill(cosp);
+	  fCosPxyHist[index]->Fill(cospxy);
 	  fDLenHist[index]->Fill(dlen);
+	  fDLenxyHist[index]->Fill(dlenxy);
+	  fNDLenxyHist[index]->Fill(normdlxy);
 	  fSigVertHist[index]->Fill(sigvert);
 	  fSumd02Hist[index]->Fill(sumD02);
 	  fPtMaxHist[index]->Fill(ptmax);
 	  fDCAHist[index]->Fill(dca);
+	  fNormIPHist[index]->Fill(normIP);
+	  fCosPiDsHist[index]->Fill(cosPiDs);
+	  fCosPiKPhiHist[index]->Fill(cosPiKPhi);
 	  fPtProng0Hist[index]->Fill(pt0);
 	  fPtProng1Hist[index]->Fill(pt1);
 	  fPtProng2Hist[index]->Fill(pt2);
+	  if(!fReadMC) {
+	    fCosPHist3D->Fill(invMass,ptCand,cosp);
+	    fCosPxyHist3D->Fill(invMass,ptCand,cospxy);
+	    fDLenHist3D->Fill(invMass,ptCand,dlen);
+	    fDLenxyHist3D->Fill(invMass,ptCand,dlenxy);
+	    fNDLenxyHist3D->Fill(invMass,ptCand,normdlxy);
+	    fSigVertHist3D->Fill(invMass,ptCand,sigvert);
+	    fDCAHist3D->Fill(invMass,ptCand,dca);
+	    fNormIPHist3D->Fill(invMass,ptCand,normIP);
+	    fCosPiDsHist3D->Fill(invMass,ptCand,cosPiDs);
+	    fCosPiKPhiHist3D->Fill(invMass,ptCand,cosPiKPhi);
+	    fPtProng0Hist3D->Fill(invMass,ptCand,pt0);
+	    fPtProng1Hist3D->Fill(invMass,ptCand,pt1);
+	    fPtProng2Hist3D->Fill(invMass,ptCand,pt2);
+	  }
 	  if(isKKpi){
 	    Double_t massKK=d->InvMass2Prongs(0,1,321,321);
 	    Double_t massKp=d->InvMass2Prongs(1,2,321,211);
@@ -1242,12 +1352,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	      if(isPhiKKpi) fDalitzPhi[indexMCKKpi]->Fill(massKK,massKp);
 	      if(isK0starKKpi) fDalitzK0st[indexMCKKpi]->Fill(massKK,massKp);
 	      fCosPHist[indexMCKKpi]->Fill(cosp);
+	      fCosPxyHist[indexMCKKpi]->Fill(cospxy);
 	      fDLenHist[indexMCKKpi]->Fill(dlen);
+	      fDLenxyHist[indexMCKKpi]->Fill(dlenxy);
+	      fNDLenxyHist[indexMCKKpi]->Fill(normdlxy);
 	      fSigVertHist[indexMCKKpi]->Fill(sigvert);
 	      fSumd02Hist[indexMCKKpi]->Fill(sumD02);
 	      fPtMaxHist[indexMCKKpi]->Fill(ptmax);
 	      fPtCandHist[indexMCKKpi]->Fill(ptCand);
 	      fDCAHist[indexMCKKpi]->Fill(dca);
+	      fNormIPHist[indexMCKKpi]->Fill(normIP);
+	      fCosPiDsHist[indexMCKKpi]->Fill(cosPiDs);
+	      fCosPiKPhiHist[indexMCKKpi]->Fill(cosPiKPhi);
 	      fPtProng0Hist[indexMCKKpi]->Fill(pt0);
 	      fPtProng1Hist[indexMCKKpi]->Fill(pt1);
 	      fPtProng2Hist[indexMCKKpi]->Fill(pt2);
@@ -1259,26 +1375,30 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    fDalitz[index]->Fill(massKK,massKp);
 	    if(isPhipiKK) fDalitzPhi[index]->Fill(massKK,massKp);
 	    if(isK0starpiKK) fDalitzK0st[index]->Fill(massKK,massKp);
-                        
-                        
+                  
+                  
 	    if(fReadMC && indexMCpiKK!=-1){
 	      fDalitz[indexMCpiKK]->Fill(massKK,massKp);
 	      if(isPhipiKK) fDalitzPhi[indexMCpiKK]->Fill(massKK,massKp);
 	      if(isK0starpiKK) fDalitzK0st[indexMCpiKK]->Fill(massKK,massKp);
 	      fCosPHist[indexMCpiKK]->Fill(cosp);
+	      fCosPxyHist[indexMCpiKK]->Fill(cospxy);
 	      fDLenHist[indexMCpiKK]->Fill(dlen);
+	      fDLenxyHist[indexMCpiKK]->Fill(dlenxy);
+	      fNDLenxyHist[indexMCpiKK]->Fill(normdlxy);
 	      fSigVertHist[indexMCpiKK]->Fill(sigvert);
 	      fSumd02Hist[indexMCpiKK]->Fill(sumD02);
 	      fPtMaxHist[indexMCpiKK]->Fill(ptmax);
 	      fPtCandHist[indexMCpiKK]->Fill(ptCand);
 	      fDCAHist[indexMCpiKK]->Fill(dca);
+	      fNormIPHist[indexMCpiKK]->Fill(normIP);
+	      fCosPiDsHist[indexMCpiKK]->Fill(cosPiDs);
+	      fCosPiKPhiHist[indexMCpiKK]->Fill(cosPiKPhi);
 	      fPtProng0Hist[indexMCpiKK]->Fill(pt0);
 	      fPtProng1Hist[indexMCpiKK]->Fill(pt1);
 	      fPtProng2Hist[indexMCpiKK]->Fill(pt2);
 	    }
 	  }
-                    
-                    
 	}
                 
 	Float_t tmp[37];

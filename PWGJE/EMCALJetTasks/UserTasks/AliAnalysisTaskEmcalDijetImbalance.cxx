@@ -31,6 +31,7 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 
 #include "AliAnalysisTaskEmcalDijetImbalance.h"
 
@@ -62,7 +63,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fDoGeometricalMatching(kFALSE),
   fMatchingJetR(0.2),
   fTrackConstituentThreshold(0),
-  fClusterConstituentThreshold(0)
+  fClusterConstituentThreshold(0),
+  fMBUpscaleFactor(1.)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -95,7 +97,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fDoGeometricalMatching(kFALSE),
   fMatchingJetR(0.2),
   fTrackConstituentThreshold(0),
-  fClusterConstituentThreshold(0)
+  fClusterConstituentThreshold(0),
+  fMBUpscaleFactor(1.)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -201,6 +204,11 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c})";
     fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -0.5, 0.5, 101, 0, TMath::Pi() * 2.02, 75, 0, maxPtBin);
     
+    // pT upscaled
+    histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c})";
+    fHistManager.CreateTH1(histname.Data(), title.Data(), 75, 0, maxPtBin, "s");
+    
     // pT-leading vs. pT
     histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";
@@ -248,6 +256,11 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     }
     
   }
+  
+  // MB downscale factor histogram
+  histname = "Trigger/hMBDownscaleFactor";
+  title = histname + ";Downscale factor;counts";
+  TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 200);
   
 }
 
@@ -587,6 +600,40 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
   AliInfo(Form("Leading hadron threshold (for dijet leading jet): %f GeV", fDijetLeadingHadronPt));
   AliInfo(Form("Momentum balance study: %d", fDoMomentumBalance));
   AliInfo(Form("Geometrical matching study: %d", fDoGeometricalMatching));
+  
+}
+
+/**
+ * This function is called automatically when the run number changes.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::RunChanged(Int_t run){
+  
+  // Get the downscaling factors for MB triggers (to be used to calculate trigger efficiency)
+  
+  // Get instance of the downscale factor helper class
+  AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
+  downscaleOCDB->SetRun(InputEvent()->GetRunNumber());
+  
+  // There are two possible min bias triggers for LHC15o
+  TString triggerNameMB1 = "CINT7-B-NOPF-CENT";
+  TString triggerNameMB2 = "CV0L7-B-NOPF-CENT";
+  TString triggerNameJE = "CINT7EJ1-B-NOPF-CENTNOPMD";
+  
+  // Get the downscale factor for whichever MB trigger exists in the given run
+  std::vector<TString> runtriggers = downscaleOCDB->GetTriggerClasses();
+  Double_t downscalefactor;
+  for (auto i : runtriggers) {
+    if (i.EqualTo(triggerNameMB1) || i.EqualTo(triggerNameMB2)) {
+      downscalefactor = downscaleOCDB->GetDownscaleFactorForTriggerClass(i.Data());
+      break;
+    }
+  }
+  
+  // Store the inverse of the downscale factor, used later to weight the pT spectrum
+  fMBUpscaleFactor = 1/downscalefactor;
+  
+  TString histname = "Trigger/hMBDownscaleFactor";
+  fHistManager.FillTH1(histname.Data(), fMBUpscaleFactor);
   
 }
 
@@ -1141,6 +1188,10 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
       // pT vs. eta vs. phi
       histname = TString::Format("%s/JetHistograms/hPtVsEtaVsPhi", jets->GetArrayName().Data());
       fHistManager.FillTH3(histname.Data(), jet->Eta(), jet->Phi_0_2pi(), corrPt);
+      
+      // pT un-downscaled
+      histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
+      fHistManager.FillTH1(histname.Data(), corrPt, fMBUpscaleFactor);
       
       // pT-leading vs. pT
       histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
