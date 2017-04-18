@@ -4,6 +4,7 @@ Class for fitting of distortion maps using phsyical models
 */
 
 /*
+  .x $NOTES/aux/NimStyle.C(2)
   gSystem->AddIncludePath("-I$AliRoot_SRC/TPC/TPCcalib/");
   .L $AliRoot_SRC/TPC/TPCcalib/AliTPCDistortionFit.cxx+
   AliTPCDistortionFit::RegisterFitters();
@@ -34,11 +35,16 @@ Class for fitting of distortion maps using phsyical models
 #include "AliCDBEntry.h"
 #include "AliGRPObject.h"
 #include "AliTMinuitToolkit.h"
+#include "TStyle.h"
+#include "AliTPCROC.h"
+#include "AliLumiTools.h"
+#include "AliTPCRecoParam.h"
 
 #include "AliTPCDistortionFit.h"
 using namespace std;
  
 using std::cout;
+
 
 ClassImp(AliTPCDistortionFit)
 
@@ -46,6 +52,7 @@ map<string,int>    AliTPCDistortionFit::fgkMapNameHash;              // map  nam
 map<int,string>  AliTPCDistortionFit::fgkMapHashName;                // map  index->name
 map<int,const AliTPCChebCorr *> AliTPCDistortionFit::fgkMapCheb;     // map  index->Cheb param
 TTree *  AliTPCDistortionFit::fgkDistortionTree;     
+
 
 Double_t AliTPCDistortionFit::LineFieldLocal(const Double_t *x, const Double_t *param){
   // Simple E filed
@@ -55,6 +62,8 @@ Double_t AliTPCDistortionFit::LineFieldLocal(const Double_t *x, const Double_t *
   //     1    - Erphi
   //     2    - Dr
   //     3    - Drphi
+  //     4    - Dr-bckg
+  //     5    - Drphi-bckg
   //
   //   x[1]   - r
   //   x[2]   - rphi
@@ -65,9 +74,30 @@ Double_t AliTPCDistortionFit::LineFieldLocal(const Double_t *x, const Double_t *
   //      [2] - rphi0
   //      [3] - scale
   //      [4] - wt
-  //      [5] - symmetry plane for mirror charge
+  //      [5] - symmetry plane for mirror charge - not used
   //      [6] - E nominal
-  // 
+  //
+  if (x[0]==4 || x[0]==5 ){
+    Double_t drphi=TMath::Pi()*0.3*x[1]/9.;    
+    Double_t values[4], distance2[4];
+    Double_t xxx[4];
+    for (Int_t i=0; i<4; i++){
+      xxx[0]=x[0]-2;   xxx[1]=x[1]; xxx[2]=0; xxx[3]=x[3];
+      xxx[1]=(i<2)?    x[1]-10:x[1]+10;
+      xxx[2]=(i%2==0)? -drphi:drphi;
+      values[i]=AliTPCDistortionFit::LineFieldLocal(xxx,param);
+      distance2[i]=(x[1]-xxx[1])*(x[1]-xxx[1])+  (x[2]-xxx[2])*(x[2]-xxx[2]); 
+    }
+    Double_t sum=0, sumw=0;
+    for (Int_t i=0; i<4; i++){
+      sum+=values[i]/(1.+distance2[i]);
+      sumw+=1/(1.+distance2[i]);
+    }
+    Double_t bckg=sum/sumw;
+    xxx[0]=x[0]-2;  xxx[1]=x[1]; xxx[2]=x[2]; xxx[3]=x[3];
+    Double_t val=AliTPCDistortionFit::LineFieldLocal(xxx,param);
+    return val-bckg;
+  }
 
   Double_t rdist2= (x[1]-param[1])*(x[1]-param[1])+(x[2]-param[2])*(x[2]-param[2]);
   Double_t eField=param[0]/TMath::Sqrt(rdist2+param[3]*param[3]);
@@ -82,11 +112,55 @@ Double_t AliTPCDistortionFit::LineFieldLocal(const Double_t *x, const Double_t *
   //
   eR+=eRM;
   eRPhi+=eRPhiM;
+  //
   if (x[0]==0) return eR;
   if (x[0]==1) return eRPhi;
   Double_t drift=250-TMath::Abs(x[3]);
-  Double_t dR=    drift*(eR+param[4]*eRPhi)/param[6];
+  Double_t dR=    drift*(eR-param[4]*eRPhi)/param[6];
   Double_t dRPhi= drift*(eR*param[4]+eRPhi)/param[6];
+  if (x[0]==2) return dR;
+  if (x[0]==3) return dRPhi;
+}
+
+Double_t AliTPCDistortionFit::NLinesFieldLocal(const Double_t *x, const Double_t *param){
+  // Simple E filed
+  // x        - input vector
+  //   x[0]   - return vector description
+  //     0    - Er
+  //     1    - Erphi
+  //     2    - Dr
+  //     3    - Drphi
+  //
+  //   x[1]   - r
+  //   x[2]   - rphi
+  //   x[3]   - z
+  // param    - description of charge
+  //      [0] - scale
+  //      [1] - wt
+  //      [2] - E nominal
+  //      [3] - nLines
+  //      [4+i*3] - line Q_i
+  //      [5+i*3] - r0_i
+  //      [6+i*3] - rphi0_i
+
+  
+  Int_t nLines=TMath::Nint(param[3]);
+  Double_t eR=0;
+  Double_t eRPhi=0;
+  Double_t dR=0;
+  Double_t dRPhi=0;
+  for (Int_t iLine=0; iLine<nLines; iLine++){
+    Int_t    offset=4+iLine*3;
+    Double_t rdist2= (x[1]-param[offset+1])*(x[1]-param[offset+1])+(x[2]-param[offset+2])*(x[2]-param[offset+2]);
+    Double_t eField=param[offset+0]/TMath::Sqrt(rdist2+param[0]*param[0]);
+    eR+=eField*(x[1]-param[offset+1])/TMath::Sqrt(rdist2);
+    eRPhi+=eField*(x[2]-param[offset+2])/TMath::Sqrt(rdist2);
+  }
+  if (x[0]==0) return eR;
+  if (x[0]==1) return eRPhi;
+  Double_t drift=250-TMath::Abs(x[3]);
+  dR=    drift*(eR-param[1]*eRPhi)/param[2];
+  dRPhi= drift*(eR*param[1]+eRPhi)/param[2];
   if (x[0]==2) return dR;
   if (x[0]==3) return dRPhi;
 }
@@ -129,7 +203,7 @@ Int_t AliTPCDistortionFit::LoadDistortionMaps(Int_t run, const char *storage){
 }
 
 
-void AliTPCDistortionFit::LoadDistortionTree(const char *chinput){
+TString AliTPCDistortionFit::LoadDistortionTree(const char *chinput){
   //
   // Load distortion tree and set metadata
   /*
@@ -141,7 +215,7 @@ void AliTPCDistortionFit::LoadDistortionTree(const char *chinput){
   TTree * treeLoad =(TTree*)finput->Get("voxRes");
   if (treeLoad==NULL){
     ::Error(" AliTPCDistortionFit::LoadDistortionTree","File or tree not available %s",chinput);
-    return;
+    return "";
   }
   AliTPCChebCorr * cheb=0;    
   for (Int_t i=0; i<finput->GetListOfKeys()->GetEntries(); i++){             // name of Cheb can be different - but should be only one
@@ -153,7 +227,7 @@ void AliTPCDistortionFit::LoadDistortionTree(const char *chinput){
   }
   if (cheb==NULL){
     ::Error(" AliTPCDistortionFit::LoadDistortionTree","Cheb map not avalible in file  %s",chinput);
-    return;
+    return "";
   }
   Int_t run=cheb->GetRun();
   RegisterMap(cheb->GetName(),cheb);
@@ -163,11 +237,14 @@ void AliTPCDistortionFit::LoadDistortionTree(const char *chinput){
     TFile * finput2=TFile::Open(chinput);
     fgkDistortionTree=(TTree*)finput2->Get("voxRes");
     SetMetadata(fgkDistortionTree,"",run);
+    fgkDistortionTree->SetMarkerStyle(25);
+    fgkDistortionTree->SetMarkerSize(0.4);
   }  
   TString refMap=TString::Format("R%d.refMap",run);
   if (GetCheb(refMap.Data())==NULL) LoadDistortionMaps(run,NULL);
   fgkDistortionTree->AddFriend(treeLoad,cheb->GetName());
   SetMetadata(fgkDistortionTree,cheb->GetName(),run); 
+  return cheb->GetName();
 }
 
 
@@ -177,6 +254,8 @@ void  AliTPCDistortionFit::SetMetadata(TTree * tree, TString friendName, Int_t r
   //
   TString  refMap=TString::Format("R%d.refMap",run);
   Int_t hashRef=refMap.Hash();
+  Int_t    friendRef=friendName.Hash();
+
   TString prefix="";
   if (friendName.Length()>0) {
     prefix=friendName+".";
@@ -187,9 +266,18 @@ void  AliTPCDistortionFit::SetMetadata(TTree * tree, TString friendName, Int_t r
       if (matchF.Match(alist->At(i)->GetName())) continue;
       ftree->SetAlias((alist->At(i)->GetName()),alist->At(i)->GetTitle());
     }
-    ftree->SetAlias("dX",TString::Format("%s.D[1]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,0+0)",friendName.Data(),hashRef).Data());
-    ftree->SetAlias("dY",TString::Format("%s.D[1]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,1+0)",friendName.Data(),hashRef).Data());
-    ftree->SetAlias("dZ",TString::Format("%s.D[1]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,2+0)",friendName.Data(),hashRef).Data());
+    ftree->SetAlias("ddX",TString::Format("%s.D[0]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,0+0)",friendName.Data(),hashRef).Data());
+    ftree->SetAlias("ddY",TString::Format("%s.D[1]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,1+0)",friendName.Data(),hashRef).Data());
+    ftree->SetAlias("ddZ",TString::Format("%s.D[2]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,2+0)",friendName.Data(),hashRef).Data());
+    ftree->SetAlias("ddXS",TString::Format("%s.DS[0]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,0+0)",friendName.Data(),hashRef).Data());
+    ftree->SetAlias("ddYS",TString::Format("%s.DS[1]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,1+0)",friendName.Data(),hashRef).Data());
+    ftree->SetAlias("ddZS",TString::Format("%s.DS[2]-AliTPCDistortionFit::Eval(%d,sector,x,y2xAV,z2xAV,2+0)",friendName.Data(),hashRef).Data());
+    //
+    ftree->SetAlias("dXBckg",TString::Format("AliTPCDistortionFit::EvalSectorBckg(%d,%d,fsector,x,z2xAV,0+0,10,0.3)",friendRef,hashRef).Data());
+    ftree->SetAlias("dYBckg",TString::Format("AliTPCDistortionFit::EvalSectorBckg(%d,%d,fsector,x,z2xAV,1+0,10,0.3)",friendRef,hashRef).Data());
+    ftree->SetAlias("dXCorr",TString::Format("AliTPCDistortionFit::EvalSector(%d,%d,fsector,x,z2xAV,0+0)-dXBckg",friendRef,hashRef).Data());
+    ftree->SetAlias("dYCorr",TString::Format("AliTPCDistortionFit::EvalSector(%d,%d,fsector,x,z2xAV,1+0)-dYBckg",friendRef,hashRef).Data());
+    //
   }else{
     tree->SetAlias("epsilonfCCM","(8.85418781762e+1)");  //epsilon fC/(V.cm)  https://en.wikipedia.org/wiki/Vacuum_permittivity
     tree->SetAlias("nDiv","(30.+0)");                    // rphi division to extract parameterization
@@ -215,6 +303,15 @@ void  AliTPCDistortionFit::SetMetadata(TTree * tree, TString friendName, Int_t r
     TStatToolkit::AddMetadata(tree,"padrow.AxisTitle","pad-row");
   }
   //  
+  TStatToolkit::AddMetadata(tree,prefix+"dXdX.AxisTitle","#Delta_{x}(row+2)-#Delta_{x}(row-2) (cm)");
+  TStatToolkit::AddMetadata(tree,prefix+"dYdY.AxisTitle","#Delta_{y}(fsec+0.05)-#Delta_{y}(fsec-0.05) (cm)");
+
+  TStatToolkit::AddMetadata(tree,prefix+"ddX.AxisTitle","#Delta_{x}-#Delta_{xref} (cm)");
+  TStatToolkit::AddMetadata(tree,prefix+"ddY.AxisTitle","#Delta_{y}-#Delta_{yref} (cm)");
+  TStatToolkit::AddMetadata(tree,prefix+"ddZ.AxisTitle","#Delta_{z}-#Delta_{zref} (cm)");
+  TStatToolkit::AddMetadata(tree,prefix+"ddXS.AxisTitle","#Delta_{x}-#Delta_{xref} (cm)");
+  TStatToolkit::AddMetadata(tree,prefix+"ddYS.AxisTitle","#Delta_{y}-#Delta_{yref} (cm)");
+  TStatToolkit::AddMetadata(tree,prefix+"ddZS.AxisTitle","#Delta_{z}-#Delta_{zref} (cm)");
   TStatToolkit::AddMetadata(tree,prefix+"dX.AxisTitle","#Delta_{x} (cm)");
   TStatToolkit::AddMetadata(tree,prefix+"dXS.AxisTitle","smoothed #Delta_{x} (cm)");
   TStatToolkit::AddMetadata(tree,prefix+"dXC.AxisTitle","cheb. #Delta_{x} (cm)");
@@ -327,6 +424,38 @@ Double_t AliTPCDistortionFit::EvalRho(Int_t hashIndex, Int_t hashref, int sector
   // (V/cm)/cm
   //   tree.Draw("EvalRho(hashIndex,hashRefIndex,  sector, padrow, y2xAV, z2xAV, polarity, omegatau,5,5,5,EZnorm):fsector:padrow","fitOK&&z2x==1","colz");
   return derdr+derphidr;
+}
+
+Double_t AliTPCDistortionFit::EvalSectorBckg(Int_t hashIndex, Int_t hashRef, Double_t fsector, int row, float z2x, int dimOut, Double_t dRow, Double_t dSec){
+  //
+  // evaluate sector backround caluclating weighted mean for 4 points around point of interest
+  //
+  AliTPCROC *roc = AliTPCROC::Instance();
+  Int_t nRowsAll=roc->GetNRows(0)+roc->GetNRows(36);
+  Double_t fsectorM=TMath::Nint(fsector);
+  Double_t r0=(row<Int_t(roc->GetNRows(0))) ?  roc->GetPadRowRadii(0, row): roc->GetPadRowRadii(36, row-roc->GetNRows(0));
+  Double_t rphi0=(fsector-fsectorM)*r0;  
+  Double_t values[4], distance2[4];
+  for (Int_t i=0; i<4; i++){
+    Double_t rowC=(i<2)? row-dRow:row+dRow;
+    Double_t secC=(i%2==0)? fsectorM-dSec:fsectorM+dSec;
+    if (rowC<0) rowC=0;
+    if (rowC>=nRowsAll) rowC=nRowsAll-1;
+    Double_t rC=(rowC<Int_t(roc->GetNRows(0))) ?  roc->GetPadRowRadii(0, rowC): roc->GetPadRowRadii(36, rowC-roc->GetNRows(0));
+    Double_t rphiC=(secC-fsectorM)*r0;
+    values[i]=AliTPCDistortionFit::EvalSector(hashIndex, hashRef, secC, rowC, z2x,dimOut);
+    distance2[i]=((rC-r0)*(rC-r0)+(rphi0-rphiC)*(rphi0-rphiC));    
+  }
+  Double_t sum=0, sumw=0;
+  for (Int_t i=0; i<4; i++){
+    sum+=values[i]/(1.+distance2[i]);
+    sumw+=1/(1.+distance2[i]);
+  }
+  return sum/sumw;
+}
+
+Double_t AliTPCDistortionFit::EvalSector(Int_t hashIndex, Int_t hashRef, Double_t fsector, int row, float z2x, int dimOut){
+  return AliTPCDistortionFit::EvalSector(hashIndex, fsector, row, z2x,dimOut,0,0)-AliTPCDistortionFit::EvalSector(hashRef, fsector, row, z2x,dimOut,0,0);
 }
 
 Double_t AliTPCDistortionFit::EvalSector(Int_t hashIndex, Double_t fsector, int row, float z2x, int dimOut, int interpol, Double_t mndiv){  
@@ -462,7 +591,7 @@ Int_t AliTPCDistortionFit::RegisterFitters(){
   //
   //  
   TF1 *likeGausCachy = new TF1("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike,-10,10,2);
-  likeGausCachy->SetParameters(0.95,1);
+  likeGausCachy->SetParameters(0.8,1);
   //  1 line function
   TF1 *funLine1 = new TF1("funLine1",AliTPCDistortionFit::LineFieldLocal,-20,20,7);
   AliTMinuitToolkit * fitterLine1 = new AliTMinuitToolkit();
@@ -472,50 +601,450 @@ Int_t AliTPCDistortionFit::RegisterFitters(){
   initPar1(0,0)=1;   initPar1(0,1)=1;    initPar1(0,2)=0;    initPar1(0,3)=0;            // q
   initPar1(1,0)=120; initPar1(1,1)=10;   initPar1(1,2)=80;   initPar1(1,3)=140;          // r
   initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=0;    initPar1(2,3)=0;            // rphi
-  initPar1(3,0)=1;   initPar1(3,1)=1;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
-  initPar1(4,0)=0.3; initPar1(4,1)=0.1;  initPar1(4,2)=0.05; initPar1(4,3)=0.5;          // wt   
-  initPar1(5,0)=80;  initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=0.0;          // symetry plane
+  initPar1(3,0)=1;   initPar1(3,1)=0;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
+  initPar1(4,0)=0.3; initPar1(4,1)=0.1;  initPar1(4,2)=-0.5; initPar1(4,3)=0.5;          // wt   
+  initPar1(5,0)=40;  initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=0.0;          // symetry plane
   initPar1(6,0)=400; initPar1(6,1)=0;    initPar1(6,2)=0;    initPar1(6,3)=0.0;          // Ez 
   for (Int_t ipar=0; ipar<7; ipar++) {funLine1->SetParameter(ipar, initPar1(ipar,0)); param1(ipar,0)=initPar1(ipar,0);}
   fitterLine1->SetInitialParam(&initPar1);
   AliTMinuitToolkit::SetPredefinedFitter("fitterLine1",fitterLine1);  
+  //
+  //  N line function
+  TF1 *funLineN = new TF1("funLineN",AliTPCDistortionFit::NLinesFieldLocal,-20,20,21);
+  AliTMinuitToolkit * fitterLineN = new AliTMinuitToolkit();
+  fitterLineN->SetVerbose(0x1); fitterLineN->SetFitFunction(funLineN,kTRUE);
+  TMatrixD initParN(21,4),   paramN(21,1);            // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
+  initParN(0,0)=1;   initParN(0,1)=0;    initParN(0,2)=0.01; initParN(0,3)=5;            // scale distance
+  initParN(1,0)=0.3; initParN(1,1)=0.1;  initParN(1,2)=-0.5; initParN(1,3)=0.5;          // wt   
+  initParN(2,0)=400; initParN(2,1)=0;    initParN(2,2)=0;    initParN(2,3)=0.0;          // Ez 
+  initParN(3,0)=1;   initParN(3,1)=0;    initParN(3,2)=0;    initParN(3,3)=0.0;          // Ez 
+  for (Int_t ipar=4; ipar<21; ipar++) {initParN(ipar,1)=1;}
+  for (Int_t ipar=0; ipar<21; ipar++) {funLineN->SetParameter(ipar, initParN(ipar,0));}
+  fitterLineN->SetInitialParam(&initParN);
+  AliTMinuitToolkit::SetPredefinedFitter("fitterLineN",fitterLineN);  
+  //
+
 }
 
-void MakeFitExample1(){
-  //   gSystem->AddIncludePath("-I$AliRoot_SRC/TPC/TPCcalib/");
-  //.L $AliRoot_SRC/TPC/TPCcalib/AliTPCDistortionFit.cxx+
+void AliTPCDistortionFit::MakeFitExample1(Int_t run, const char * chinput){
+  /*
+    Int_t run=245683; const char * chinput="/data/alien/alice/data/2015/LHC15o/000245683/cpass0_pass1/ResidualMerge/TPCSPCalibration/1448920523_1448922567_000245683/voxelResTree.root"
+    AliTPCDistortionFit::MakeFitExample1(run,chinput);
+  */
+  TTreeSRedirector *pcstream = new TTreeSRedirector("makeFitExample1.root","recreate");
+  // 1 line fitter  - working for sectors with one hotspots
+  //
   AliTPCDistortionFit::RegisterFitters();
-  AliTPCDistortionFit::LoadDistortionMaps(245683, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
-  AliTPCDistortionFit::LoadDistortionMaps(246855, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
-  AliTPCDistortionFit::LoadDistortionTree("/data/alien/alice/data/2015/LHC15o/000245683/cpass0_pass1/ResidualMerge/TPCSPCalibration/1448920523_1448922567_000245683/voxelResTree.root");
+  AliTPCDistortionFit::LoadDistortionMaps(run, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
+  TString fName =AliTPCDistortionFit::LoadDistortionTree(chinput);
+  TObjString oName(fName.Data());
+  Int_t hashID=fName.Hash();
   AliTMinuitToolkit * fitter = AliTMinuitToolkit::GetPredefinedFitter("fitterLine1");
-  // AliTPCDistortionFit::fgkDistortionTree->Draw("run245683_1448920523_1448922567.dY:fsector","x==30&&z2x==2&&abs(fsector-9)<1","*",1000000)
-   
+  TGraph * lumiGraphMap = AliLumiTools::GetLumiGraph(AliTPCRecoParam::kCorrMapNoScaling,run);
+  
 
-  fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"run245683_1448920523_1448922567.dY:1", "3:lx:lx*pi*(fsector-9)/9:lz","abs(fsector-9)<0.5&&lx<150",0,10000000);
-  TMatrixD initPar1(7,4),   param1(7,1);       // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
-  initPar1(0,0)=1;   initPar1(0,1)=1;    initPar1(0,2)=0;    initPar1(0,3)=0;            // q
-  initPar1(1,0)=120; initPar1(1,1)=10;   initPar1(1,2)=80;   initPar1(1,3)=140;          // r
-  initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=0;    initPar1(2,3)=0;            // rphi
-  initPar1(3,0)=1;   initPar1(3,1)=1;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
-  initPar1(4,0)=0.3; initPar1(4,1)=0.1;  initPar1(4,2)=0.05; initPar1(4,3)=0.5;          // wt   
-  initPar1(5,0)=80;  initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=0.0;          // symetry plane
+  TMatrixD initPar1(9,4),   param1(9,1);       // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
+  initPar1(0,0)=10;   initPar1(0,1)=1;    initPar1(0,2)=0;    initPar1(0,3)=0;            // q
+  initPar1(1,0)=110; initPar1(1,1)=5;   initPar1(1,2)=80;   initPar1(1,3)=140;          // r
+  initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=-4;   initPar1(2,3)=4;            // rphi
+  initPar1(3,0)=0.1; initPar1(3,1)=0;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
+  initPar1(4,0)=0.35; initPar1(4,1)=0;    initPar1(4,2)=0;    initPar1(4,3)=0.0;          // wt   
+  initPar1(5,0)=0;   initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=80;            // symetry plane
   initPar1(6,0)=400; initPar1(6,1)=0;    initPar1(6,2)=0;    initPar1(6,3)=0.0;          // Ez 
   fitter->SetInitialParam(&initPar1);
-
-  fitter->SetStreamer("testFitLine1.root");
-  fitter->SetVerbose( AliTMinuitToolkit::kPrintAll| AliTMinuitToolkit::kStreamFcn);
-  fitter->Fit();
+  //
+  fitter->SetVerbose(AliTMinuitToolkit::kPrintAll); 
+  AliTPCDistortionFit::fgkDistortionTree->SetAlias("fx","(((Entry$%2)==0)+0)");
+  AliTPCDistortionFit::fgkDistortionTree->SetAlias("fy","(((Entry$%2)!=0)+0)");
+  AliTPCDistortionFit::fgkDistortionTree->SetAlias("fitCut",TString::Format("lx<150&&%s.fitOK&&%s.dispOK",fName.Data(),fName.Data()));  
+  Int_t fsectors[16]={2,   4,  6,   7,    9,   10,  11,  13,   16,  19,  20,   29, 30,   31,   35};
+  Int_t frows[16]   ={116, 104,104, 107,  114, 122, 130, 110,  95,  110, 117,  100, 110,  111,  122};
   Double_t chi2=0;
   Int_t flag= Int_t(AliTMinuitToolkit::kStreamFcnPoint);
   Int_t npar=4;
-  AliTMinuitToolkit::FitterFCN(npar,0,chi2,(Double_t*)(fitter->GetParameters()->GetMatrixArray()), flag);
-  ((*(fitter->GetStreamer())).GetFile())->Flush();
+  TLatex latex;
+  latex.SetTextSize(0.035);
 
-  TTree * t = ((*(fitter->GetStreamer()))<<"fcnDebugPoint").GetTree();
-  t->ResetBranchAddresses();
+  for (Int_t isec=0; isec<15; isec++){
+    Int_t jsec=fsectors[isec];
+    initPar1(1,0)=frows[isec];
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("sectorCut",TString::Format("abs(fsector-%d)<0.25",jsec).Data());
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("dYSector",TString::Format("lx*pi*(fsector-%d)/9+%s.dYS",jsec,fName.Data()).Data());
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("lXCorr",TString::Format("lx+%s.dXS",fName.Data()));
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("dXRun",TString::Format("%s.dXCorr",fName.Data()));
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("dYRun",TString::Format("%s.dYCorr",fName.Data()));
+    {
+      //fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dXRun:0.0025", "4:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000, kTRUE);
+      //fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dYRun:1.", "5:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000, kFALSE);
+      fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dYRun:1.", "5:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000, kTRUE);
+      fitter->Fit(); printf("Fit++\t%f\n",sqrt(fitter->GetChisquare()/fitter->GetPoints()->GetNrows()));
+      fitter->SetVerbose(0);
+      fitter->Bootstrap(10,0,0);
+      if ((*(fitter->GetRMSEstimator()))[1]>1.) {
+	fitter->Fit(); printf("Fit++\t%f\n",sqrt(fitter->GetChisquare()/fitter->GetPoints()->GetNrows()));
+      }
+    }  
+    fitter->SetStreamer("testFitLine1.root");
+    fitter->SetVerbose( AliTMinuitToolkit::kPrintAll| AliTMinuitToolkit::kStreamFcn);
+    fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dXRun:1", "4:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000);
+    AliTMinuitToolkit::FitterFCN(npar,0,chi2,(Double_t*)(fitter->GetParameters()->GetMatrixArray()), flag);
+    fitter->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dYRun:1", "5:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000);
+    AliTMinuitToolkit::FitterFCN(npar,0,chi2,(Double_t*)(fitter->GetParameters()->GetMatrixArray()), flag);
+    ((*(fitter->GetStreamer())).GetFile())->Flush();
+    TTree * t = ((*(fitter->GetStreamer()))<<"fcnDebugPoint").GetTree();
+    t->ResetBranchAddresses();
+    t->SetMarkerStyle(25); t->SetMarkerSize(0.5);    
+    t->SetAlias("xlocal","x.fElements[1]");
+    t->SetAlias("yedge","100*x.fElements[2]/xlocal");
+    TCanvas * canvasFit = new TCanvas("canvasFit","canvasFit",1300,900);
+    canvasFit->Divide(3,2);
+    Double_t maxY,minY;
+    // Retrieve the stat box
+    gStyle->SetTitleOffset(0.92,"X");
+    gStyle->SetTitleOffset(1.2,"Y");
+    gStyle->SetTitleOffset(1,"Z");
+    for (Int_t ipad=0; ipad<6;ipad++){
+      Int_t icol=ipad%3;
+      Int_t irow=ipad/3;
+      TVirtualPad *vpad=canvasFit->cd(ipad+1);
+      vpad->SetPad(icol/3., irow/2., (icol+1)/3., (irow+1)/2.);
+      if (irow==1) {
+	vpad->SetBottomMargin(0);
+	vpad->SetTopMargin(0);
+      }else{
+	vpad->SetTopMargin(0);
+	vpad->SetBottomMargin(0.15);
+      }
+      if (icol<2) {
+	vpad->SetRightMargin(0);
+      }else {
+	vpad->SetRightMargin(0.2);
+      }
+      if (icol>0) {
+	vpad->SetLeftMargin(0); 
+      }else{
+	vpad->SetLeftMargin(0.2); 
+      }
+
+      vpad->Draw();
+      canvasFit->cd();
+    }
+    TVectorD rmsEstimator(*(fitter->GetRMSEstimator()));
+    {       
+      canvasFit->cd(4);
+      t->Draw("val:xlocal:yedge","x.fElements[0]==4&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      maxY=TMath::Nint(TMath::MaxElement(t->GetSelectedRows(), t->GetV1())+0.5)+0.5;
+      minY=TMath::Nint(TMath::MinElement(t->GetSelectedRows(), t->GetV1())-0.5)-0.5;
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetYaxis()->SetTitle("#Delta_{R} (cm)"); 
+      latex.DrawLatexNDC(0.25,0.85,"Data");
+      canvasFit->cd(5);
+      t->Draw("fun:xlocal:yedge","x.fElements[0]==4&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      latex.DrawLatexNDC(0.15,0.85,"Line charge fit");
+      canvasFit->cd(6);
+      t->Draw("val-fun:xlocal:yedge","x.fElements[0]==4&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetZaxis()->SetTitle("100 #Delta_{edge}/x_{L} (unit)");
+      latex.DrawLatexNDC(0.15,0.85,"Data-Fit");
+      canvasFit->cd(1);
+      t->Draw("val:xlocal:yedge","x.fElements[0]==5&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      maxY=TMath::Nint(TMath::MaxElement(t->GetSelectedRows(), t->GetV1())+0.5)+0.5;
+      minY=TMath::Nint(TMath::MinElement(t->GetSelectedRows(), t->GetV1())-0.5)-0.5;
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetYaxis()->SetTitle("#Delta_{R#phi} (cm)");
+      t->GetHistogram()->GetXaxis()->SetTitle("local X (cm)");
+      canvasFit->cd(2);
+      t->Draw("fun:xlocal:yedge","x.fElements[0]==5&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetXaxis()->SetTitle("local X (cm)");
+      canvasFit->cd(3);
+      t->Draw("val-fun:xlocal:yedge","x.fElements[0]==5&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetZaxis()->SetTitle("100 #Delta_{edge}/x_{L} (unit)");
+      t->GetHistogram()->GetXaxis()->SetTitle("local X (cm)");
+      //t->GetHistogram()->GetListOfFunctions()->Add(fitter->GetFormula());
+      //t->GetHistogram()->Draw("colz");
+      latex.DrawLatexNDC(0.05,0.9,fName.Data());
+      latex.DrawLatexNDC(0.05,0.85,TString::Format("Sector=%d",jsec).Data());
+      latex.DrawLatexNDC(0.05,0.8,TString::Format("Q=%2.2f#pm%2.2f",(*(fitter->GetParameters()))[0],rmsEstimator[0]).Data());
+      latex.DrawLatexNDC(0.05,0.75,TString::Format("R=%2.2f#pm%2.2f (cm)",(*(fitter->GetParameters()))[1],rmsEstimator[1]).Data());
+      latex.DrawLatexNDC(0.05,0.70,TString::Format("R#phi=%2.2f#pm%2.2f (cm)",(*(fitter->GetParameters()))[2],rmsEstimator[2]).Data());
+      //      latex.DrawLatexNDC(0.05,0.65,TString::Format("scale=%2.2f#pm%2.2f (cm)",(*(fitter->GetParameters()))[3],rmsEstimator[3]).Data());
+      latex.DrawLatexNDC(0.05,0.65,TString::Format("#omega#tau=%2.2f#pm%2.2f",(*(fitter->GetParameters()))[4],rmsEstimator[4]).Data());
+    }
+    canvasFit->SaveAs(TString::Format("canvasDistortionFitLine1_Sec%d.png",fsectors[isec]).Data());
+    const AliTPCChebCorr *cheb = AliTPCDistortionFit::GetCheb(fName.Data());
+    TVectorD *param= (TVectorD *)fitter->GetParameters();
+    TMatrixD *covar=(TMatrixD*)fitter->GetCovarianceMatrix();
+    TVectorD *rms= (TVectorD *)fitter->GetRMSEstimator();
+    Double_t chi2=fitter->GetChisquare();
+    Double_t tC=cheb->GetTimeStampCenter();
+    Double_t tB=cheb->GetTimeStampStart();
+    Double_t tE= cheb->GetTimeStampEnd();
+    Double_t lumi = cheb->GetLuminosityCOG(lumiGraphMap,tB,tE);
+    pcstream->GetFile()->cd();
+    {
+      (*pcstream)<<"fit1D"<<
+	"run="<<run<<
+	"name.="<<&oName<<
+	"hashID="<<hashID<<
+	"sec="<<jsec<<
+	"par.="<<param<<
+	"cov.="<<covar<<
+	"rms.="<<rms<<
+	"chi2="<<chi2<<
+	"tC="<<tC<<
+	"tB="<<tB<<
+	"tE="<<tE<<
+	"lumi="<<lumi<<
+	"\n";      
+    }
+  } 
+  (((*pcstream)<<"fit1D").GetTree())->Write();
+  pcstream->GetFile()->Flush();
+  delete pcstream;
+}
 
 
+
+void MakeFitExample4(Int_t run=245683, const char * chinput="/data/alien/alice/data/2015/LHC15o/000245683/cpass0_pass1/ResidualMerge/TPCSPCalibration/1448920523_1448922567_000245683/voxelResTree.root"){
+  //
+  // N(4) line fitter  - working for sectors with 0-N  hotspots
+  //
+  AliTPCDistortionFit::RegisterFitters();
+  AliTPCDistortionFit::LoadDistortionMaps(run, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/");
+  TString fName =AliTPCDistortionFit::LoadDistortionTree(chinput);
+  AliTMinuitToolkit * fitterN = AliTMinuitToolkit::GetPredefinedFitter("fitterLineN");
+   
+  TMatrixD initParN(21,4),   paramN(21,1);       // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
+  initParN(0,0)=1;   initParN(0,1)=0;    initParN(0,2)=0.01; initParN(0,3)=5;            // scale distance
+  initParN(1,0)=0.3; initParN(1,1)=0;    initParN(1,2)=-0.5; initParN(1,3)=0.5;          // wt   
+  initParN(2,0)=400; initParN(2,1)=0;    initParN(2,2)=0;    initParN(2,3)=0.0;          // Ez 
+  initParN(3,0)=4;   initParN(3,1)=0;    initParN(3,2)=0;    initParN(3,3)=0.0;          // Ez 
+  Double_t deltaR=(134-85)/8.;
+  Double_t r0=85+deltaR;
+  for (Int_t ir=0; ir<4; ir++){
+    Int_t offset=4+ir*3;   
+    Double_t R=r0+deltaR*ir*2;
+    initParN(offset+0,0)=3;     initParN(offset+0,1)=1;    initParN(offset+0,2)=0;            initParN(offset+0,3)=1000.0;     // q
+    initParN(offset+1,0)=R;     initParN(offset+1,1)=5;    initParN(offset+1,2)=R-deltaR+1;   initParN(offset+1,3)=R+deltaR-1;    // q
+    initParN(offset+2,0)=0;     initParN(offset+2,1)=0;    initParN(offset+2,2)=-2;           initParN(offset+2,3)=2;            // q
+  }
+  fitterN->SetInitialParam(&initParN);
+  //
+  fitterN->SetVerbose(AliTMinuitToolkit::kPrintAll); 
+  AliTPCDistortionFit::fgkDistortionTree->SetAlias("fx","(((Entry$%2)==0)+0)");
+  AliTPCDistortionFit::fgkDistortionTree->SetAlias("fy","(((Entry$%2)!=0)+0)");
+  AliTPCDistortionFit::fgkDistortionTree->SetAlias("fitCut",TString::Format("lx<150&&%s.fitOK&&%s.dispOK",fName.Data(),fName.Data()));  
+  Int_t fsectors[12]={2,4,6,7,9,10, 16,20,29, 30,31,35};
+  Double_t chi2=0;
+  Int_t flag= Int_t(AliTMinuitToolkit::kStreamFcnPoint);
+  Int_t npar=4;
+  TLatex latex;
+  latex.SetTextSize(0.035);
+
+  for (Int_t isec=0; isec<12; isec++){
+    Int_t jsec=fsectors[isec];
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("sectorCut",TString::Format("abs(fsector-%d)<0.3",jsec).Data());
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("dYSector",TString::Format("lx*pi*(fsector-%d)/9+%s.dYS",jsec,fName.Data()).Data());
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("lXCorr",TString::Format("lx+%s.dXS",fName.Data()));
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("dXRun",TString::Format("%s.ddXS",fName.Data()));
+    AliTPCDistortionFit::fgkDistortionTree->SetAlias("dYRun",TString::Format("%s.ddYS",fName.Data()));
+    {
+      //      fitterN->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"fx*dXRun+fy*dYRun:1+fy", "2+(fy>0):lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000, kFALSE);
+      //fitterN->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dXRun:0.5", "2:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000, kTRUE);
+      //      fitterN->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dYRun:1.", "3:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000, kFALSE);
+      fitterN->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dYRun:1.", "3:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000, kTRUE);
+      fitterN->Fit(); printf("Fit++\t%f\n",sqrt(fitterN->GetChisquare()/fitterN->GetPoints()->GetNrows()));
+      fitterN->SetVerbose(0);
+      fitterN->Bootstrap(10,0,0);
+    }  
+    fitterN->SetStreamer("testFitLine1.root");
+    fitterN->SetVerbose( AliTMinuitToolkit::kPrintAll| AliTMinuitToolkit::kStreamFcn);
+    fitterN->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dXRun:1", "2:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000);
+    AliTMinuitToolkit::FitterFCN(npar,0,chi2,(Double_t*)(fitterN->GetParameters()->GetMatrixArray()), flag);
+    fitterN->FillFitter(AliTPCDistortionFit::fgkDistortionTree,"dYRun:1", "3:lXCorr:dYSector:lz","sectorCut&&fitCut",0,10000000);
+    AliTMinuitToolkit::FitterFCN(npar,0,chi2,(Double_t*)(fitterN->GetParameters()->GetMatrixArray()), flag);
+    ((*(fitterN->GetStreamer())).GetFile())->Flush();
+    TTree * t = ((*(fitterN->GetStreamer()))<<"fcnDebugPoint").GetTree();
+    t->ResetBranchAddresses();
+    t->SetMarkerStyle(25); t->SetMarkerSize(0.5);    
+    t->SetAlias("xlocal","x.fElements[1]");
+    t->SetAlias("yedge","100*x.fElements[2]/xlocal");
+    TCanvas * canvasFit = new TCanvas("canvasFit","canvasFit",1400,900);
+    canvasFit->Divide(3,2);
+    Double_t maxY,minY;
+    // Retrieve the stat box
+    gStyle->SetTitleOffset(0.92,"X");
+    gStyle->SetTitleOffset(1.2,"Y");
+    gStyle->SetTitleOffset(1,"Z");
+    for (Int_t ipad=0; ipad<6;ipad++){
+      Int_t icol=ipad%3;
+      Int_t irow=ipad/3;
+      TVirtualPad *vpad=canvasFit->cd(ipad+1);
+      vpad->SetPad(icol/3., irow/2., (icol+1)/3., (irow+1)/2.);
+      if (irow==1) {
+	vpad->SetBottomMargin(0);
+	vpad->SetTopMargin(0);
+      }else{
+	vpad->SetTopMargin(0);
+	vpad->SetBottomMargin(0.15);
+      }
+      if (icol<2) {
+	vpad->SetRightMargin(0);
+      }else {
+	vpad->SetRightMargin(0.2);
+      }
+      if (icol>0) {
+	vpad->SetLeftMargin(0); 
+      }else{
+	vpad->SetLeftMargin(0.2); 
+      }
+
+      vpad->Draw();
+      canvasFit->cd();
+    }
+    TVectorD rmsEstimator(*(fitterN->GetRMSEstimator()));
+    {       
+      canvasFit->cd(4);
+      t->Draw("val:xlocal:yedge","x.fElements[0]==2&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      maxY=TMath::Nint(TMath::MaxElement(t->GetSelectedRows(), t->GetV1())+0.5)+0.5;
+      minY=TMath::Nint(TMath::MinElement(t->GetSelectedRows(), t->GetV1())-0.5)-0.5;
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetYaxis()->SetTitle("#Delta_{R} (cm)"); 
+      latex.DrawLatexNDC(0.25,0.85,"Data");
+      canvasFit->cd(5);
+      t->Draw("fun:xlocal:yedge","x.fElements[0]==2&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      latex.DrawLatexNDC(0.15,0.85,"Line charge fit");
+      canvasFit->cd(6);
+      t->Draw("val-fun:xlocal:yedge","x.fElements[0]==2&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetZaxis()->SetTitle("100 #Delta_{edge}/x_{L} (unit)");
+      latex.DrawLatexNDC(0.15,0.85,"Data-Fit");
+      canvasFit->cd(1);
+      t->Draw("val:xlocal:yedge","x.fElements[0]==3&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      maxY=TMath::Nint(TMath::MaxElement(t->GetSelectedRows(), t->GetV1())+0.5)+0.5;
+      minY=TMath::Nint(TMath::MinElement(t->GetSelectedRows(), t->GetV1())-0.5)-0.5;
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetYaxis()->SetTitle("#Delta_{R#phi} (cm)");
+      t->GetHistogram()->GetXaxis()->SetTitle("local X (cm)");
+      canvasFit->cd(2);
+      t->Draw("fun:xlocal:yedge","x.fElements[0]==3&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetXaxis()->SetTitle("local X (cm)");
+      canvasFit->cd(3);
+      t->Draw("val-fun:xlocal:yedge","x.fElements[0]==3&&abs(abs(x.fElements[3]/xlocal)-0.1)<0.1","colz");
+      t->GetHistogram()->GetYaxis()->SetLimits(minY,maxY);
+      t->GetHistogram()->GetZaxis()->SetTitle("100 #Delta_{edge}/x_{L} (unit)");
+      t->GetHistogram()->GetXaxis()->SetTitle("local X (cm)");
+      //t->GetHistogram()->GetListOfFunctions()->Add(fitterN->GetFormula());
+      //t->GetHistogram()->Draw("colz");
+      latex.DrawLatexNDC(0.05,0.9,fName.Data());
+      latex.DrawLatexNDC(0.05,0.85,TString::Format("Sector=%d",jsec).Data());
+      latex.DrawLatexNDC(0.05,0.8,TString::Format("Q=%2.2f#pm%2.2f",(*(fitterN->GetParameters()))[0],rmsEstimator[0]).Data());
+      latex.DrawLatexNDC(0.05,0.75,TString::Format("R=%2.2f#pm%2.2f (cm)",(*(fitterN->GetParameters()))[1],rmsEstimator[1]).Data());
+      latex.DrawLatexNDC(0.05,0.70,TString::Format("R#phi=%2.2f#pm%2.2f (cm)",(*(fitterN->GetParameters()))[2],rmsEstimator[2]).Data());
+      //      latex.DrawLatexNDC(0.05,0.65,TString::Format("scale=%2.2f#pm%2.2f (cm)",(*(fitterN->GetParameters()))[3],rmsEstimator[3]).Data());
+      latex.DrawLatexNDC(0.05,0.65,TString::Format("#omega#tau=%2.2f#pm%2.2f",(*(fitterN->GetParameters()))[4],rmsEstimator[4]).Data());
+    }
+    canvasFit->SaveAs(TString::Format("canvasDistortionFitLineN_Sec%d.png",fsectors[isec]).Data());
+  }
 
 
 }
+
+
+void DrawSummary(const char * period, const char *pass){
+  //
+  // const char * period="LHC15o"; 
+  // 
+  TFile *ff = TFile::Open("makeFitExample1.root");
+  TTree * tree = (TTree*)ff->Get("fit1D");
+  AliExternalInfo info;
+  TTree * treeLogbook= info.GetTree("Logbook",period,"");
+  tree->AddFriend(treeLogbook,"Logbook");
+  TLine lineGap, lineROC, lineMedian;
+  lineGap->SetLineStyle(2); lineGap->SetLineWidth(2);  lineGap->SetLineColor(3);
+  lineROC->SetLineStyle(2); lineROC->SetLineWidth(2);   lineROC->SetLineColor(4);    
+  lineMedian->SetLineStyle(1); lineMedian->SetLineWidth(3);   lineMedian->SetLineColor(2);    
+  TLatex latex, latexMed;
+  latex.SetTextSize(0.15);
+  latexMed.SetTextSize(0.15);  latexMed.SetTextColor(2);
+  Int_t fsectors[16]={2,   4,  6,   7,    9,   10, 19,  20,    29, 30,   31,   35};
+  TCanvas *canvasInfo  = new TCanvas("canvasInfo","canvasInfo",1400,1000);
+  canvasInfo->SetLeftMargin(0.12);
+  canvasInfo->SetBottomMargin(0.2);
+  canvasInfo->Divide(2,6,0,0);  
+  gStyle->SetOptTitle(0);
+  //
+  gStyle->SetTitleSize(0.12,"Y");
+  gStyle->SetLabelSize(0.12,"Y");
+  gStyle->SetTitleYOffset(0.4);
+
+  for (Int_t iSec=0;iSec<12; iSec++){
+    canvasInfo->cd(iSec+1);
+    TCut cut = TString::Format("sec==%d",fsectors[iSec]).Data();    
+    TGraph *gr = TStatToolkit::MakeGraphSparse(tree,"par.fElements[2]:run:rms.fElements[2]",cut,25,1,0);
+    gr->SetMaximum(2.5);
+    gr->SetMinimum(-2.5);
+    gr->GetXaxis()->SetTitle("run");
+    gr->GetYaxis()->SetTitle("hot spot r#phi (cm)");
+    Double_t median=TMath::Mean(gr->GetN(),gr->GetY());    
+    gr->Draw("ap");
+    Int_t npoints=gr->GetN();
+    lineMedian->DrawLine(0.0,median,npoints,median);
+    lineGap->DrawLine(0.0,0.2,npoints,0.2);
+    lineGap->DrawLine(0.0,-0.2,npoints,-0.2);
+    lineROC->DrawLine(0.0,1.3,npoints,1.3);
+    lineROC->DrawLine(0.0,-1.3,npoints,-1.3);
+    latex.DrawLatexNDC(0.2,0.85 , TString::Format("sector %d",fsectors[iSec]).Data());
+    latexMed.DrawLatexNDC(0.2,0.7 , TString::Format("#Delta_{R#phi}=%2.2f (cm)",median).Data());
+  }
+  canvasInfo->SaveAs("hotSpotsRPhiPos.png");
+  
+  for (Int_t iSec=0;iSec<12; iSec++){
+    canvasInfo->cd(iSec+1);
+    TCut cut = TString::Format("sec==%d",fsectors[iSec]).Data();    
+    TGraph *gr = TStatToolkit::MakeGraphSparse(tree,"par.fElements[1]:run:rms.fElements[2]",cut,25,1,0);
+    gr->GetXaxis()->SetTitle("run");
+    gr->GetYaxis()->SetTitle("hot spot r(cm)");
+    Double_t median=TMath::Mean(gr->GetN(),gr->GetY());
+    Double_t medianI=TMath::Nint(median);
+    gr->SetMinimum(medianI-5);
+    gr->SetMaximum(medianI+5);
+    gr->Draw("ap");
+    lineMedian->DrawLine(0.0,median,npoints,median);
+    latex.DrawLatexNDC(0.2,0.85 , TString::Format("Sector %d",fsectors[iSec]).Data());
+    latexMed.DrawLatexNDC(0.2,0.7 , TString::Format("R=%2.2f (cm)",median).Data());
+  }
+  canvasInfo->SaveAs("hotSpotsRPos.png");
+
+  gStyle->SetOptFit(1);
+  for (Int_t iSec=0;iSec<12; iSec++){
+    canvasInfo->cd(iSec+1);
+    TCut cutP = TString::Format("sec==%d&&L3_magnetCurrent>0",fsectors[iSec]).Data();    
+    TCut cutN = TString::Format("sec==%d&&L3_magnetCurrent<0",fsectors[iSec]).Data();    
+    TGraph *grP = TStatToolkit::MakeGraphErrors(tree,"par.fElements[0]:lumi:rms.fElements[0]",cutP,25,2,0.6);
+    TGraph *grN = TStatToolkit::MakeGraphErrors(tree,"par.fElements[0]:lumi:rms.fElements[0]",cutN,21,4,0.6);
+    grP->GetXaxis()->SetTitle("lumi");
+    grP->GetYaxis()->SetTitle("charge density (V)");
+    grP->Draw("ap");
+    grN->Draw("p");
+    //grP->Fit("pol1");
+    //grN->Fit("pol1");
+    grP->SetMaximum(TMath::Max( grP->GetMaximum(), grN->GetMaximum()));
+    grP->Draw("ap");
+    grN->Draw("p");    
+    latex.DrawLatexNDC(0.3,0.7 , TString::Format("sector %d",fsectors[iSec]).Data());
+  }
+  canvasInfo->SaveAs("hotSpotsLumi.png");
+
+
+}
+
+
+
+
+

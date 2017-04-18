@@ -10,10 +10,12 @@ public:
   // static interface to distortion map - AliTPCChebCorr - used for TTree and TFormula evaluation  
   static Int_t RegisterFitters();
   static Double_t LineFieldLocal(const Double_t *x, const Double_t *param);  
+  static Double_t NLinesFieldLocal(const Double_t *x, const Double_t *param);  
   static Int_t LoadDistortionMaps(Int_t run, const char *storage=NULL);
-  static void  LoadDistortionTree(const char *chinput);
+  static TString   LoadDistortionTree(const char *chinput);
   static void  SetMetadata(TTree * tree, TString friendName,Int_t run);
   static void  PrintMap(TPRegexp *filter=NULL);
+  static void MakeFitExample1(Int_t run, const char * chinput);
   //
   static void   RegisterMap(TString mapName,  AliTPCChebCorr *map);
   static Int_t  GetNameHash(string name){  return fgkMapNameHash[name];}
@@ -26,6 +28,8 @@ public:
   static Double_t EvalRho(Int_t hashIndex, Int_t hashref, int sector, int row, float y2x, float z, Int_t dir, Double_t wt, Double_t dz,  Double_t dr, Double_t drphi,  Double_t Ez);
   // static eval with interpolation
   static Double_t EvalSector(Int_t hashIndex, Double_t fsector, int row, float z2x, int dimOut, int interpol, Double_t mndiv);  
+  static Double_t EvalSector(Int_t hashIndex, Int_t hashRef,  Double_t fsector, int row, float z2x, int dimOut);  
+  static Double_t EvalSectorBckg(Int_t hashIndex, Int_t hashRef, Double_t fsector, int row, float z2x, int dimOut, Double_t dRow, Double_t dSec);  
   static Double_t EvalEfieldSector(Int_t hashIndex, Int_t hashref, Float_t fsector, int row, float z2x, int dimOut, Int_t polarity, Double_t wt, Double_t dz, Double_t Ez, Int_t interpolationType, Double_t mBinSize);
   static Double_t EvalRhoSector(Int_t hashIndex, Int_t hashref, Float_t fsector, int row, float z2x, Int_t polarity, Double_t wt, Double_t dz,  Double_t dr, Double_t drphi,  Double_t Ez, Int_t interpolationType, Double_t mBinSize);
 protected:
