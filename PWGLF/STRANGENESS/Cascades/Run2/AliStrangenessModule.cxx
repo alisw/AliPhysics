@@ -605,8 +605,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     f3dHistGenMC->Sumw2();
     //Project this into a 1D histogram, please
     TH1D* fHistGeneratedOriginal = f3dHistGenMC -> ProjectionX( "fHistGeneratedOriginal",
-                                                       f3dHistGenMC->GetYaxis()->FindBin(-0.5+1e-5),
-                                                       f3dHistGenMC->GetYaxis()->FindBin(+0.5-1e-5),
+                                                       f3dHistGenMC->GetYaxis()->FindBin(lDataResult->GetCutMinRapidity()+1e-5),
+                                                       f3dHistGenMC->GetYaxis()->FindBin(lDataResult->GetCutMaxRapidity()-1e-5),
                                                        f3dHistGenMC->GetZaxis()->FindBin( lLoMult+1e-5 ),
                                                        f3dHistGenMC->GetZaxis()->FindBin( lHiMult-1e-5 )
                                                        );
@@ -632,8 +632,17 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     //Generate Corrected Spectrum
     TH1D *fHistSpectra = (TH1D*) fHistRawVsPt->Clone("fHistSpectra");
     fHistSpectra->SetDirectory(0);
+    
+    //Efficiency correction
     fHistSpectra->Divide(fHistEfficiency);
+    
+    //Normalize by number of events
     fHistSpectra->Scale(1.0/lNEvents, "width");
+    
+    //Scale with rapidity window size (default: no scale)
+    fHistSpectra->Scale(1.0/(lDataResult->GetCutMaxRapidity()-lDataResult->GetCutMinRapidity()));
+    
+    //Add to output 
     fListOutput->Add(fHistSpectra);
     
     TH1D *fHistSpectraToReturn = (TH1D*) fHistSpectra->Clone("fHistSpectraToReturn");

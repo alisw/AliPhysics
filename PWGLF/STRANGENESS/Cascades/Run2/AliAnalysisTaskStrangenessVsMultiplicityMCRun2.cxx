@@ -76,6 +76,7 @@ class AliAODv0;
 #include "TMath.h"
 #include "TLegend.h"
 #include "TRandom3.h"
+#include "TProfile.h"
 //#include "AliLog.h"
 
 #include "AliESDEvent.h"
@@ -1829,7 +1830,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //Check 2: Basic Acceptance cuts
                 lV0Result->GetCutMinEtaTracks() < fTreeVariableNegEta && fTreeVariableNegEta < lV0Result->GetCutMaxEtaTracks() &&
                 lV0Result->GetCutMinEtaTracks() < fTreeVariablePosEta && fTreeVariablePosEta < lV0Result->GetCutMaxEtaTracks() &&
-                TMath::Abs(lRap) < 0.5 &&
+                lRap > lV0Result->GetCutMinRapidity() &&
+                lRap < lV0Result->GetCutMaxRapidity() &&
 
                 //Check 3: Topological Variables
                 fTreeVariableV0Radius > lV0Result->GetCutV0Radius() &&
@@ -2358,8 +2360,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         Int_t lPID_NegMother = 0;
         Int_t lPID_PosMother = 0;
         fTreeCascVarIsPhysicalPrimary = 0; // 0: not defined, any candidate may have this
-        //fTreeCascVarPosTransvMomentumMC = -1;
-        //fTreeCascVarNegTransvMomentumMC = -1;
+        Double_t fTreeCascVarPosTransvMomentumMC = -1;
+        Double_t fTreeCascVarNegTransvMomentumMC = -1;
         fTreeCascVarPIDPositive = -9999;
         fTreeCascVarPIDNegative = -9999;
         fTreeCascVarPIDBachelor = -9999;
@@ -2458,8 +2460,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if( lMCstack->IsPhysicalPrimary( lblPosV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryPositive = kTRUE;
         if( lMCstack->IsPhysicalPrimary( lblBach        ) ) fTreeCascVarIsPhysicalPrimaryBachelor = kTRUE;
 
-        //fTreeCascVarPosTransvMomentumMC = mcPosV0Dghter->Pt();
-        //fTreeCascVarNegTransvMomentumMC = mcNegV0Dghter->Pt();
+        fTreeCascVarPosTransvMomentumMC = mcPosV0Dghter->Pt();
+        fTreeCascVarNegTransvMomentumMC = mcNegV0Dghter->Pt();
 
         fTreeCascVarPIDPositive = mcPosV0Dghter -> GetPdgCode();
         fTreeCascVarPIDNegative = mcNegV0Dghter -> GetPdgCode();
@@ -2799,11 +2801,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         Int_t lNumberOfConfigurationsCascade = fListCascade->GetEntries();
         //AliWarning(Form("[Cascade Analyses] Processing different configurations (%i detected)",lNumberOfConfigurationsCascade));
         TH3F *histoout         = 0x0;
+        TProfile *histoProtonProfile         = 0x0;
         AliCascadeResult *lCascadeResult = 0x0;
         for(Int_t lcfg=0; lcfg<lNumberOfConfigurationsCascade; lcfg++){
             lCascadeResult = (AliCascadeResult*) fListCascade->At(lcfg);
             histoout  = lCascadeResult->GetHistogram();
-
+            histoProtonProfile  = lCascadeResult->GetProtonProfile();
+            
             Float_t lMass = 0;
             Float_t lRap  = 0;
             Float_t lPDGMass = -1;
@@ -2816,6 +2820,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             lpipx = fTreeCascVarBachPx;
             lpipy = fTreeCascVarBachPy;
             lpipz = fTreeCascVarBachPz;
+            Float_t lBaryonTransvMom;
 
             //For parametric V0 Mass selection
             Float_t lExpV0Mass =
@@ -2896,6 +2901,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lprpx = fTreeCascVarPosPx;
                 lprpy = fTreeCascVarPosPy;
                 lprpz = fTreeCascVarPosPz;
+                lBaryonTransvMom = fTreeCascVarPosTransvMomentumMC;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiPlus      ){
                 lCharge  = +1;
@@ -2909,6 +2915,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lprpx = fTreeCascVarNegPx;
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
+                lBaryonTransvMom = fTreeCascVarNegTransvMomentumMC;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaMinus     ){
                 lCharge  = -1;
@@ -2922,6 +2929,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lprpx = fTreeCascVarPosPx;
                 lprpy = fTreeCascVarPosPy;
                 lprpz = fTreeCascVarPosPz;
+                lBaryonTransvMom = fTreeCascVarPosTransvMomentumMC;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaPlus      ){
                 lCharge  = +1;
@@ -2935,6 +2943,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lprpx = fTreeCascVarNegPx;
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
+                lBaryonTransvMom = fTreeCascVarNegTransvMomentumMC;
             }
 
             //Override rapidity for true rapidity if requested to do so
@@ -2949,7 +2958,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarPosEta && fTreeCascVarPosEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarNegEta && fTreeCascVarNegEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarBachEta && fTreeCascVarBachEta < lCascadeResult->GetCutMaxEtaTracks() &&
-                TMath::Abs(lRap) < 0.5 &&
+                lRap > lCascadeResult->GetCutMinRapidity() &&
+                lRap < lCascadeResult->GetCutMaxRapidity() &&
 
                 //Check 3: Topological Variables
                 // - V0 Selections
@@ -3036,8 +3046,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //This satisfies all my conditionals! Fill histogram
                 if( !lCascadeResult -> GetCutMCUseMCProperties() ){
                     histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
+                    if(histoProtonProfile)
+                        histoProtonProfile -> Fill( fTreeCascVarPt, lBaryonTransvMom );
                 }else{
                     histoout -> Fill ( fCentrality, fTreeCascVarPtMC, lMass );
+                    if(histoProtonProfile)
+                        histoProtonProfile -> Fill( fTreeCascVarPtMC, lBaryonTransvMom );
                 }
             }
         }

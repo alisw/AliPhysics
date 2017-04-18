@@ -42,6 +42,10 @@ public:
     
     Long64_t Merge(TCollection *hlist);
     
+    //Acceptance
+    void SetCutMinRapidity      ( Double_t lCut ) { fCutMinRapidity       = lCut; }
+    void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
+    
     void SetCutV0Radius       ( Double_t lCut ) { fCutV0Radius         = lCut; }
     void SetCutDCANegToPV     ( Double_t lCut ) { fCutDCANegToPV       = lCut; }
     void SetCutDCAPosToPV     ( Double_t lCut ) { fCutDCAPosToPV       = lCut; }
@@ -95,7 +99,11 @@ public:
     
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
-    TString GetParticleName() const; 
+    TString GetParticleName() const;
+    
+    //Getters for V0 Cuts
+    Double_t GetCutMinRapidity     () const { return fCutMinRapidity; }
+    Double_t GetCutMaxRapidity     () const { return fCutMaxRapidity; }
     
     Double_t GetCutV0Radius       () const { return fCutV0Radius; }
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
@@ -136,6 +144,10 @@ public:
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
+    
+    //Proton Profile - not implemented for V0s so far
+    TProfile* GetProtonProfile       ()       { return 0x0; }
+    TProfile* GetProtonProfileToCopy () const { return 0x0; }
 
     TH3F* GetHistogramFeeddown       ()       { return fHistoFeeddown; }
     TH3F* GetHistogramFeeddownToCopy () const { return fHistoFeeddown; }
@@ -147,6 +159,10 @@ private:
     //V0 Selection Criteria
     AliV0Result::EMassHypo fMassHypo; //For determining invariant mass
 
+    //Basic acceptance criteria
+    Double_t fCutMinRapidity; //min rapidity
+    Double_t fCutMaxRapidity; //max rapidity
+    
     Double_t fCutV0Radius;
     Double_t fCutDCANegToPV;
     Double_t fCutDCAPosToPV;
@@ -187,7 +203,7 @@ private:
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 14)
+    ClassDef(AliV0Result, 15)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -202,5 +218,6 @@ private:
     //12 - Addition of eta window selection
     //13 - Max chi2/clusters, min track length for checking
     //14 - added possibility to select on-the-fly V0 candidates
+    //15 - added proton profile (dummy as of now) 
 };
 #endif

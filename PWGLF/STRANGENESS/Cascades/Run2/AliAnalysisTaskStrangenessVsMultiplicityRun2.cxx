@@ -77,6 +77,7 @@ class AliAODv0;
 #include "TLegend.h"
 #include "TRandom3.h"
 #include "TLorentzVector.h"
+#include "TProfile.h"
 //#include "AliLog.h"
 
 #include "AliESDEvent.h"
@@ -1447,8 +1448,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 //Check 2: Basic Acceptance cuts
                 lV0Result->GetCutMinEtaTracks() < fTreeVariableNegEta && fTreeVariableNegEta < lV0Result->GetCutMaxEtaTracks() &&
                 lV0Result->GetCutMinEtaTracks() < fTreeVariablePosEta && fTreeVariablePosEta < lV0Result->GetCutMaxEtaTracks() &&
-                TMath::Abs(lRap) < 0.5 &&
-
+                lRap > lV0Result->GetCutMinRapidity() &&
+                lRap < lV0Result->GetCutMaxRapidity() &&
+                
                 //Check 3: Topological Variables
                 fTreeVariableV0Radius > lV0Result->GetCutV0Radius() &&
                 fTreeVariableDcaNegToPrimVertex > lV0Result->GetCutDCANegToPV() &&
@@ -2218,7 +2220,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarPosEta && fTreeCascVarPosEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarNegEta && fTreeCascVarNegEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarBachEta && fTreeCascVarBachEta < lCascadeResult->GetCutMaxEtaTracks() &&
-                TMath::Abs(lRap) < 0.5 &&
+                lRap > lCascadeResult->GetCutMinRapidity() &&
+                lRap < lCascadeResult->GetCutMaxRapidity() &&
 
                 //Check 3: Topological Variables
                 // - V0 Selections
