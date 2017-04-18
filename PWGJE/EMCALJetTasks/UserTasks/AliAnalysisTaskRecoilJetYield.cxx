@@ -117,7 +117,8 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fhPhiTriggerHadronEventPlaneTPC(0x0),
   fhDetJetPt_Incl(0x0),
   fhDetJetPt_Matched(0x0),
-  fReclusterAlgo(0)
+  fReclusterAlgo(0),
+  fSubMatching(kFALSE)
 
 {
   for(Int_t i=0;i<nBranch;i++){
@@ -180,7 +181,8 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fhPhiTriggerHadronEventPlaneTPC(0x0),
   fhDetJetPt_Incl(0x0),
   fhDetJetPt_Matched(0x0),
-  fReclusterAlgo(0)
+  fReclusterAlgo(0),
+  fSubMatching(kFALSE)
   
 {
   // Standard constructor.
@@ -456,8 +458,11 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	if(JetNumber==-1) continue;
 	JetHybridUS=JetContHybridUS->GetJet(JetNumber);
 	//if(JetHybridUS) cout<<"Matched to jet i = "<< JetNumber<<endl;
-	if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS,JetContHybridUS->GetParticleContainer())<fSharedFractionPtMin) {
+	if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<fSharedFractionPtMin && !fSubMatching) {
 	  //cout<<"Fraction shared pt below cut = "<<JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<<endl;
+	  continue;
+	}
+	else if(GetFractionSharedPt_SubMatching(JetHybridUS,JetContHybridUS->GetParticleContainer())<fSharedFractionPtMin && fSubMatching){
 	  continue;
 	}
 	JetPythDet=JetHybridUS->ClosestJet();
@@ -761,6 +766,59 @@ Int_t AliAnalysisTaskRecoilJetYield::SelectTriggerHadron(Float_t PtMin, Float_t 
   RandomNumber = Random->Integer(Trigger_Counter);
   Index = Trigger_Index[RandomNumber];
   return Index; 
+}
+
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskRecoilJetYield::GetFractionSharedPt_SubMatching(const AliEmcalJet *jet1, AliParticleContainer *cont2) const
+{
+  AliEmcalJet *jet2 = jet1->ClosestJet();
+  if (!jet2) return -1;
+
+  Double_t jetPt2 = jet2->Pt();
+  if (jetPt2 <= 0) return -1;
+
+  Int_t bgeom = kTRUE;
+  if (!cont2) bgeom = kFALSE;
+  Double_t sumPt = 0.;
+  AliVParticle *vpf = 0x0;
+  Int_t iFound = 0;
+  for (Int_t icc = 0; icc < jet2->GetNumberOfTracks(); icc++) {
+    Int_t idx = (Int_t)jet2->TrackAt(icc);
+    //get particle
+    AliVParticle *p2 = 0x0;
+    if (bgeom) p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, cont2->GetArray()));
+    iFound = 0;
+    for (Int_t icf = 0; icf < jet1->GetNumberOfTracks(); icf++) {
+      if (!bgeom && idx == jet1->TrackAt(icf) && iFound == 0 ) {
+        iFound = 1;
+        vpf = jet1->Track(icf);
+        if (vpf) sumPt += vpf->Pt();
+        continue;
+      }
+      if (bgeom){
+        vpf = jet1->Track(icf);
+        if (!vpf) continue;
+        if (!SameParticle(vpf, p2, 1.e-4)) continue; //not the same particle
+        sumPt += vpf->Pt();
+      }
+    }
+  }
+
+  Double_t fraction = sumPt / jetPt2;
+
+  return fraction;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskRecoilJetYield::SameParticle(const AliVParticle* part1, const AliVParticle* part2, Double_t dist)
+{
+  if(!part1) return kFALSE;
+  if(!part2) return kFALSE;
+  Double_t dPhi = TMath::Abs(part1->Phi() - part2->Phi());
+  dPhi = TVector2::Phi_mpi_pi(dPhi);
+  if (dPhi > dist) return kFALSE;
+  return kTRUE;
 }
 
 //________________________________________________________________________

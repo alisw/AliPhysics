@@ -86,7 +86,7 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   }
   else{
     trackContData = task->AddTrackContainer(ntracksData);
-    trackContDet = task->AddTrackContainer(ntracksDet);
+    trackContDet = task->AddMCParticleContainer(ntracksDet);
   }
   if ((jetShapeType==AliAnalysisTaskRecoilJetYield::kData || jetShapeType==AliAnalysisTaskRecoilJetYield::kSim) && (jetShapeSub == AliAnalysisTaskRecoilJetYield::kConstSub)){
     trackContTrue = task->AddTrackContainer(ntracksTrue); //Unsubtracted tracks branch
