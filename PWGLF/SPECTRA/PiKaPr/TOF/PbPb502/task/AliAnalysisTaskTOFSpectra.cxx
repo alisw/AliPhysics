@@ -178,8 +178,9 @@ fSimpleCutmode(simplecuts),
 fBuilTPCTOF(kFALSE),
 fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
-fRecalibrateTOF(kFALSE),
 fPerformance(kFALSE),
+fRecalibrateTOF(kFALSE),
+fFineTOFReso(kFALSE),
 fSelectBit(AliVEvent::kINT7),
 
 tb(),//TBenchmark
@@ -207,14 +208,20 @@ hBetaNoMismatchCentralEtaCut(0x0),
 hBetaNoMismatchCentralEtaCutOut(0x0),
 hTPCdEdx(0x0),
 hCutVariation(0x0),
+//TOF Geometrical information
 hTOFResidualX(0x0),
 hTOFResidualZ(0x0),
 hTOFChannel(0x0),
+//TOF and T0 distributions for resolution
+hT0(0x0),
 hT0Resolution(0x0),
 hTimeOfFlightRes(0x0),
 hTimeOfFlightTOFRes(0x0),
-hTimeOfFlightGoodRes (0x0),
-hTimeOfFlightResNoMismatch (0x0),
+hTimeOfFlightGoodRes(0x0),
+hTimeOfFlightResNoMismatch(0x0),
+hTimeOfFlightResFine(0x0),
+hTimeOfFlightResFinePerEvent(0x0),
+
 fMultiplicityBin(kEvtMultBins+1),
 fEtaRange(0.8),
 fTOFmin(10000),
@@ -294,6 +301,11 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra(){//Destructor
   if (fListHist) {
     delete fListHist;
     fListHist = 0;
+  }
+  
+  if (hTimeOfFlightResFinePerEvent) {
+    delete hTimeOfFlightResFinePerEvent;
+    hTimeOfFlightResFinePerEvent = 0;
   }
   
   if (fTOFT0maker){
@@ -603,7 +615,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     
     Int_t binstart = 1;
     
-    hNEvt = new TH1D("hNEvt", "Number of processed events;Evt. Sel. Step;Counts", 15, -.5, 14.5);
+    hNEvt = new TH1F("hNEvt", "Number of processed events;Evt. Sel. Step;Counts", 15, -.5, 14.5);
     hNEvt->Sumw2();
     hNEvt->SetMinimum(0);
     hNEvt->GetXaxis()->SetBinLabel(binstart++, "Read from ESD");
@@ -639,12 +651,12 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     if(binstart > hNEvt->GetNbinsX() + 1) AliFatal(Form("binstart out of bounds!!"));
     fListHist->AddLast(hNEvt);
     
-    hEvtMult = new TH1D("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
+    hEvtMult = new TH1F("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
     if(hEvtMult->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMult->GetXaxis()->GetBinWidth(100)));
     if(hEvtMult->GetXaxis()->GetBinCenter(hEvtMult->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMult->GetXaxis()->GetBinCenter(1)));
     fListHist->AddLast(hEvtMult);
     
-    hEvtMultAftEvSel = new TH1D("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
+    hEvtMultAftEvSel = new TH1F("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
     if(hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100)));
     if(hEvtMultAftEvSel->GetXaxis()->GetBinCenter(hEvtMultAftEvSel->GetXaxis()->FindBin(-0.5)) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1)));
     fListHist->AddLast(hEvtMultAftEvSel);
@@ -657,7 +669,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     
     binstart = 1;
     
-    hNTrk = new TH1D("hNTrk", "Number of processed tracks;Trk. Sel. Step;Counts", 20, -0.5, 19.5);
+    hNTrk = new TH1F("hNTrk", "Number of processed tracks;Trk. Sel. Step;Counts", 20, -0.5, 19.5);
     hNTrk->Sumw2();
     hNTrk->SetMinimum(0);
     hNTrk->GetXaxis()->SetBinLabel(binstart++, "Reconstructed tracks");
@@ -848,30 +860,41 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hCutVariation = new TH1F("hCutVariation", "CutCounter;CutSet;Tracks", 20, 0. -.5, 20. -.5);
     fListHist->AddLast(hCutVariation);
     
-    hTOFResidualX = new TH1D("hTOFResidualX", "X Residual;#DeltaX_{pad} (cm)", 150, -10, 10);
+    hTOFResidualX = new TH1F("hTOFResidualX", "X Residual;#DeltaX_{pad} (cm)", 150, -10, 10);
     fListHist->AddLast(hTOFResidualX);
     
-    hTOFResidualZ = new TH1D("hTOFResidualZ", "Z Residual;#DeltaZ_{pad} (cm)", 150, -10, 10);
+    hTOFResidualZ = new TH1F("hTOFResidualZ", "Z Residual;#DeltaZ_{pad} (cm)", 150, -10, 10);
     fListHist->AddLast(hTOFResidualZ);
     
-    hTOFChannel = new TH1D("hTOFChannel", "Channel;Channel;Counts", 500, 0., 170000);
+    hTOFChannel = new TH1F("hTOFChannel", "Channel;Channel;Counts", 500, 0., 170000);
     fListHist->AddLast(hTOFChannel);
     
-    hT0Resolution = new TH1D("hT0Resolution", "T0Resolution;T0 #sigma", 500, -250, 250);
+    hT0 = new TH1F("hT0", "hT0;T0", 500, -250, 250);
+    fListHist->AddLast(hT0);
+    
+    hT0Resolution = new TH1F("hT0Resolution", "T0Resolution;T0 #sigma (ps)", 250, 0, 250);
     fListHist->AddLast(hT0Resolution);
     
-    hTimeOfFlightRes = new TH1D("hTimeOfFlightRes", "TOF Resolution in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500);
+    hTimeOfFlightRes = new TH1F("hTimeOfFlightRes", "TOF Resolution in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500);
     fListHist->AddLast(hTimeOfFlightRes);
     
-    hTimeOfFlightTOFRes = new TH1D("hTimeOfFlightTOFRes", "TOF Resolution with TOF T0 in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500);
+    hTimeOfFlightTOFRes = new TH1F("hTimeOfFlightTOFRes", "TOF Resolution with TOF T0 in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500);
     fListHist->AddLast(hTimeOfFlightTOFRes);
     
-    hTimeOfFlightGoodRes = new TH1D("hTimeOfFlightGoodRes", "TOF Resolution Good in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500);
+    hTimeOfFlightGoodRes = new TH1F("hTimeOfFlightGoodRes", "TOF Resolution Good in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500);
     hTimeOfFlightGoodRes->Sumw2();
     fListHist->AddLast(hTimeOfFlightGoodRes);
     
-    hTimeOfFlightResNoMismatch = new TH1D("hTimeOfFlightResNoMismatch", "TOF Resolution Wo Mismatch in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 800, -4000, 4000);
+    hTimeOfFlightResNoMismatch = new TH1F("hTimeOfFlightResNoMismatch", "TOF Resolution Wo Mismatch in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 800, -4000, 4000);
     fListHist->AddLast(hTimeOfFlightResNoMismatch);
+    
+    if(fFineTOFReso){
+      hTimeOfFlightResFine = new TH2F("hTimeOfFlightResFine", "TOF Resolution in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500, 100, 0, 100);
+      fListHist->AddLast(hTimeOfFlightResFine);
+      
+      hTimeOfFlightResFinePerEvent = new TH1F("hTimeOfFlightResFinePerEvent", "", 100, -500, 500);//This histogram is not to be added as it is used only to store the information for each event, be sure to have it in the destructor!!!
+      
+    }
     
     hTOFClusters = new TH1F("hTOFClusters", "Number of clusters per track;TOF Clusters;Number of tracks", 50, -.5, 49.5);
     fListHist->AddLast(hTOFClusters);
@@ -1663,6 +1686,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     fT0TrkTime = fTOFPIDResponse.GetStartTime(fP);      // T0best time
     fT0UsedMask = fTOFPIDResponse.GetStartTimeMask(fP); // T0best used time  ->  mask with the T0 used (0x1=T0-TOF,0x2=T0A,0x3=TOC) for p bins
     fT0TrkSigma = fTOFPIDResponse.GetStartTimeRes(fP);  // T0best resolution time
+    
+    //Fill histograms with start-time information
+    hT0->Fill(fT0TrkTime);
     hT0Resolution->Fill(fT0TrkSigma);
     
     //Get TOF Expected Sigma
@@ -2052,13 +2078,14 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       coord[0] = AliTOFGeometry::GetX(det);
       coord[1] = AliTOFGeometry::GetY(det);
       coord[2] = AliTOFGeometry::GetZ(det);
-      hTOFDist->Fill(AliTOFGeometry::GetSector(coord), AliTOFGeometry::GetStrip(coord));
+      hTOFDist->Fill(AliTOFGeometry::GetSector(coord), AliTOFGeometry::GetStripNumberPerSM(AliTOFGeometry::GetPlate(coord), AliTOFGeometry::GetStrip(coord)));
       hTOFResidualX->Fill(fTOFImpactDX);
       hTOFResidualZ->Fill(fTOFImpactDZ);
       hTOFChannel->Fill(fTOFchan);
       if((fP>0.9) && (fP<1.1)){//P range selected for TOF resolution measurements
         Float_t deltat = fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion];
         hTimeOfFlightRes->Fill(deltat);
+        if(fFineTOFReso) hTimeOfFlightResFinePerEvent->Fill(deltat);
         for(Int_t i = 0; i < 3; i++){//Loop on pi/k/p
           if(TMath::Abs(fTPCSigma[kpi+i]) < 5 && TMath::Abs(fTOFSigma[kpi+i]) < 5){
             hTimeOfFlightResNoMismatch->Fill(fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion]);
@@ -2095,6 +2122,13 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     StopTimePerformance(6);
   }
   #endif
+  
+  if(fFineTOFReso){
+    for (Int_t bin = 1; bin <= hTimeOfFlightResFinePerEvent->GetNbinsX(); bin++) {
+      hTimeOfFlightResFine->Fill(hTimeOfFlightResFinePerEvent->GetXaxis()->GetBinCenter(bin), hTimeOfFlightResFinePerEvent->GetEntries(), hTimeOfFlightResFinePerEvent->GetBinContent(bin));
+    }
+    hTimeOfFlightResFinePerEvent->Reset();
+  }
   
   FillTimePerformance();
   
@@ -2242,7 +2276,7 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
     return;
   }
   if(hNEvt){
-    hNEvt = dynamic_cast<TH1D*>(fListHist->FindObject("hNEvt"));
+    hNEvt = dynamic_cast<TH1F*>(fListHist->FindObject("hNEvt"));
     AliInfo("Printing Event Stats");
     for(Int_t bin = 1; bin  <=  hNEvt->GetNbinsX(); bin++) if(!((TString) hNEvt->GetXaxis()->GetBinLabel(bin)).EqualTo("")) printf("%s = %.0f\n", hNEvt->GetXaxis()->GetBinLabel(bin), hNEvt->GetBinContent(bin));
     
@@ -2253,7 +2287,7 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
   }
   
   if(hNTrk){
-    hNTrk = dynamic_cast<TH1D*>(fListHist->FindObject("hNTrk"));
+    hNTrk = dynamic_cast<TH1F*>(fListHist->FindObject("hNTrk"));
     AliInfo("Printing Track Stats");
     for(Int_t bin = 1; bin  <=  hNTrk->GetNbinsX(); bin++) if(!((TString) hNTrk->GetXaxis()->GetBinLabel(bin)).EqualTo("")) printf("%s = %.0f\n", hNTrk->GetXaxis()->GetBinLabel(bin), hNTrk->GetBinContent(bin));
   }else{
@@ -3013,7 +3047,7 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitRun() {
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent() {
   if(!fRecalibrateTOF) AliFatal("Requiring TOF recalibration, without the fRecalibrateTOF flag on");
-    
+  
   // init TOF-T0 maker
   fTOFT0maker->SetTimeResolution(fTimeResolution);
   
