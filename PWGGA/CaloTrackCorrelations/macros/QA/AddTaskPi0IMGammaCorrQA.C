@@ -989,9 +989,9 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   histoRanges->SetHistoDiffTimeRangeAndNBins(-150, 150, 150);
   
   // track-cluster residuals
-  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.10,0.10,200);
-  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.10,0.10,200);
-  histoRanges->SetHistodRRangeAndNBins(0.,0.10,100);//QA
+  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.06,0.06,120);
+  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.06,0.06,120);
+  histoRanges->SetHistodRRangeAndNBins(0.,0.06,60);//QA
 
   // QA, electron, charged
   histoRanges->SetHistoPOverERangeAndNBins(0,  2. ,100);
