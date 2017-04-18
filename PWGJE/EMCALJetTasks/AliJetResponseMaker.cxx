@@ -1543,7 +1543,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
       d1 -= track->Pt();
 
       if (!track2Found) {
-        AliVParticle *MCpart = jet2->Track(index2);
+        AliVParticle *MCpart = jet2->Track(iTrack2);
         AliDebug(3,Form("Track %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
             iTrack,track->Pt(),track->Eta(),track->Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
         d2 -= MCpart->Pt();
@@ -1584,7 +1584,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
           d1 -= part.Pt() * cellFrac;
 
           if (!track2Found) { // only if it is not already found among charged tracks (charged particles are most likely already found)
-            AliVParticle *MCpart = jet2->Track(index2);
+            AliVParticle *MCpart = jet2->Track(iTrack2);
             AliDebug(3,Form("Cell %d belonging to cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
                 iCell,iClus,part.Pt(),part.Eta(),part.Phi_0_2pi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
             d2 -= MCpart->Pt() * cellFrac;
@@ -1622,7 +1622,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
         d1 -= part.Pt();
 
         if (!track2Found) { // only if it is not already found among charged tracks (charged particles are most likely already found)
-          AliVParticle *MCpart = jet2->Track(index2);
+          AliVParticle *MCpart = jet2->Track(iTrack2);
           AliDebug(3,Form("Cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
               iClus,part.Pt(),part.Eta(),part.Phi_0_2pi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
 
