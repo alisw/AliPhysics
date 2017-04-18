@@ -1,5 +1,6 @@
 /*
-   .L  $ALICE_ROOT/../src/STAT/test/AliTMinuitToolkitTest.C+
+   .L  $AliRoot_SRC/STAT/test/AliTMinuitToolkitTest.C+
+
    Demonstrate performance of the AliTMinuitToolkitTest.C
    later also alarms base on invaraints should be implemented
 
@@ -100,12 +101,12 @@ void TestHistogram() {
   TF1 *ffit3 = new TF1("ffit3", "[0]*TMath::Exp(-[1]*x)", 0, 6); 
   TVectorD oParam(2);
   TMatrixD initParam(2,4); // param,error,min,max
-  initParam(0,0)=1; initParam(0,1)=1; initParam(0,2)=0; initParam(0,3)=100000;
+  initParam(0,0)=20000; initParam(0,1)=100; initParam(0,2)=0; initParam(0,3)=100000;
   initParam(1,0)=1; initParam(1,1)=1; initParam(1,2)=0; initParam(1,3)=10;
 
   // 1.) example fit without robust option
   AliTMinuitToolkit * tool = new AliTMinuitToolkit();
-  TFormula *aFormExp = new TFormula("formExp", "[0]*TMath::Exp(-[1]*x)");
+  TF1 *aFormExp = new TF1("formExp", "[0]*TMath::Exp(-[1]*x)");
   tool->SetFitFunction(aFormExp,0);
   tool->SetInitialParam(&initParam);
   tool->FitHistogram(hist);
@@ -145,8 +146,8 @@ void Test1D(Int_t bootStrapIter){
   //
   TVectorD oParam(2); oParam[0]=0; oParam[1]=2;
   TMatrixD initParam(2,4); // param,error,min,max
-  initParam(0,0)=1; initParam(0,1)=1; initParam(0,0)=0; initParam(0,1)=100000;
-  initParam(1,0)=1; initParam(1,1)=1; initParam(1,0)=0; initParam(1,1)=20;
+  initParam(0,0)=1; initParam(0,1)=1; initParam(0,2)=0; initParam(0,3)=100000;
+  initParam(1,0)=1; initParam(1,1)=1; initParam(1,2)=0; initParam(1,3)=20;
 
   TF1 *fitFunctions[5];
   TH1 *resHistograms[5];
@@ -168,7 +169,7 @@ void Test1D(Int_t bootStrapIter){
   // 1.1)  Standard fit
   tool1D->EnableRobust(kFALSE); 
   tool1D->SetInitialParam(&initParam);
-  tool1D->Fit(kTRUE); 
+  tool1D->Fit(""); 
   inputTree->SetAlias("fitChi2Norm",tool1D->GetFitFunctionAsAlias().Data());
   formula1D.SetParameters(tool1D->GetParameters()->GetMatrixArray());
   fitFunctions[1]= (TF1*)formula1D.DrawClone("same");
@@ -177,7 +178,7 @@ void Test1D(Int_t bootStrapIter){
   // 1.2)   Huber cost function 
   tool1D->EnableRobust(kTRUE); 
   tool1D->SetInitialParam(&initParam);
-  tool1D->Fit(kTRUE);
+  tool1D->Fit("");
   inputTree->SetAlias("fitHuberNorm",tool1D->GetFitFunctionAsAlias().Data());
   formula1D.SetParameters(tool1D->GetParameters()->GetMatrixArray());
   fitFunctions[2]= (TF1*)formula1D.DrawClone("same");
@@ -185,7 +186,7 @@ void Test1D(Int_t bootStrapIter){
   tool1D->TwoFoldCrossValidation(bootStrapIter,"cvHuberNorm");
   // 1.3)  User cost function
  tool1D->SetLogLikelihoodFunction(&likeAbs);
-  tool1D->Fit(kTRUE);
+  tool1D->Fit("");
   inputTree->SetAlias("fitLikeAbs",tool1D->GetFitFunctionAsAlias().Data());
   formula1D.SetParameters(tool1D->GetParameters()->GetMatrixArray());
   fitFunctions[3]= (TF1*)formula1D.DrawClone("same");
@@ -194,7 +195,7 @@ void Test1D(Int_t bootStrapIter){
   // 1.3)  User cost function
   likeGausCachy.SetParameters(0.8,1);
   tool1D->SetLogLikelihoodFunction(&likeGausCachy);
-  tool1D->Fit();
+  tool1D->Fit("");
   inputTree->SetAlias("fitUserGausAndCachy",tool1D->GetFitFunctionAsAlias().Data());
   formula1D.SetParameters(tool1D->GetParameters()->GetMatrixArray());
   fitFunctions[4]= (TF1*)formula1D.DrawClone("same");
@@ -286,38 +287,3 @@ void Test1D(Int_t bootStrapIter){
 
 }
 
-
-
-void TestND(Int_t bootStrapIter){
-  //
-  // 1D fit example
-  //    chi2, huber norm, abs(norm) and gaus+cachy log likelihood function
-  //
-  TVectorD oParam(2); oParam[0]=0; oParam[1]=5;
-  TMatrixD initParam(kNDim+1,4); // param,error,min,max
-  for (Int_t iDim=0; iDim<kNDim+1; iDim++){
-    initParam(0,0)=iDim; initParam(0,1)=1; initParam(0,0)=0; initParam(0,1)=100000;
-  }
-  TF1 *fitFunctions[5];
-  TH1 *resHistograms[5];
-  TString strXND="[0]";
-  TString strYND="";
-  for (Int_t iDim=0; iDim<kNDim; iDim++){
-    inputTree->SetAlias(TString::Format("X%d",iDim).Data(),TString::Format("x.fElements[%d]",iDim).Data());
-    strXND+=TString::Format("+[%d]*x[%d]",iDim+1, iDim);  // formula
-    strYND+=TString::Format("+(%.1f)*x[%d]",iDim+1., iDim);  // formula
-  }
-
-  TFormula formulaND("formulaND",strXND.Data());
-  inputTree->SetAlias("test1D","5*X0");
-  inputTree->SetAlias("noise","(rndm<0.7)?nosieG:4*noiseL");
-  TString  selection="1";
-  AliTMinuitToolkit * tool1D = new AliTMinuitToolkit("AliTMinutiTookitTest1D.root");
-  tool1D->SetVerbose(0x1);
-  tool1D->SetFitFunction(&formula1D,kTRUE);
-  tool1D->SetInitialParam(&initParam);
-  tool1D->FillFitter(inputTree,"test1D+noise:1/sqrt(12.+0)","testx0", "", 0,fitEntries);
-  //
-  formula1D.SetParameters(oParam.GetMatrixArray());
-  fitFunctions[0]= (TF1*)formula1D.DrawClone("same");
-}
