@@ -2793,14 +2793,16 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 	  bname<<binVector[idim]<<      // current bin values
 	  cname<<centerVector[idim];    // current bin centers
        }      
-    }
+    } 
     (*pcstream)<<tname<<"\n";
     if (hDump)	(*pcstream)<<TString::Format("%sDump", tname).Data()<<"\n";
     // << ------------- do fit
     //
-    if (((++fitCount)%fitProgress)==0) {
-      printf("fit %lld %4.1f%% done\n",fitCount,100*double(fitCount)/nfits); 
-      AliSysInfo::AddStamp("fitCout", 1,fitCount,100*double(fitCount)/nfits);
+    if ( fitProgress>0 && nfits>0) { 
+      if   (((++fitCount)%fitProgress)==0) {
+	printf("fit %lld %4.1f%% done\n",fitCount,100*double(fitCount)/nfits); 
+	AliSysInfo::AddStamp("fitCout", 1,fitCount,100*double(fitCount)/nfits);
+      }
     }
     //
     //next global bin in which target dimention will be looped
