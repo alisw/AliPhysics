@@ -83,6 +83,7 @@ fDmesonFitterSignificanceError(0x0),
 fDmesonFitterSOverB(0x0),
 fSignalSigmas(2),
 fAutoSBRange(kFALSE),
+fAutoSignRange(kTRUE),
 fSBOuterSigmas(8),
 fSBInnerSigmas(4),
 fSBSingleBin(kTRUE),
@@ -172,6 +173,7 @@ fDmesonFitterSignificanceError(source.fDmesonFitterSignificanceError),
 fDmesonFitterSOverB(source.fDmesonFitterSOverB),
 fSignalSigmas(source.fSignalSigmas),
 fAutoSBRange(source.fAutoSBRange),
+fAutoSignRange(source.fAutoSignRange),
 fSBOuterSigmas(source.fSBOuterSigmas),
 fSBInnerSigmas(source.fSBInnerSigmas),
 fSBSingleBin(source.fSBSingleBin),
@@ -353,8 +355,6 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
 
   fSignalCorrel = new Double_t[fNpTbins]; 
   fBackgrCorrel = new Double_t[fNpTbins]; 
-  fRangesSignL = new Double_t[fNpTbins];
-  fRangesSignR = new Double_t[fNpTbins];
   fScaleFactor = new Double_t[fNpTbins];
 
   fMassFit = new TF1*[fNpTbins];
@@ -369,7 +369,7 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
       return kFALSE;
   }
 
-  Double_t LSBLowLim[fNpTbins], LSBUppLim[fNpTbins], RSBLowLim[fNpTbins], RSBUppLim[fNpTbins];
+  Double_t LSBLowLim[fNpTbins], LSBUppLim[fNpTbins], RSBLowLim[fNpTbins], RSBUppLim[fNpTbins], SignLowLim[fNpTbins], SignUppLim[fNpTbins];
  
   //Loop on pT bins
   for(int i=0; i<fNpTbins; i++) {
@@ -484,8 +484,12 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
 
     //Set Signal region and sideband region (if no external range is passed)
     // *** WARNING! Ranges are rounded so that they match bin edges of mass histograms!
-    fRangesSignL[i] = fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fDmesonFitterMean[i] - fSignalSigmas*fDmesonFitterSigma[i]));
-    fRangesSignR[i] = fMassHisto[i]->GetXaxis()->GetBinUpEdge(fMassHisto[i]->FindBin(fDmesonFitterMean[i] + fSignalSigmas*fDmesonFitterSigma[i]));
+    if(fAutoSignRange) {
+        SignLowLim[i] = fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fDmesonFitterMean[i] - fSignalSigmas*fDmesonFitterSigma[i]));
+        SignUppLim[i] = fMassHisto[i]->GetXaxis()->GetBinUpEdge(fMassHisto[i]->FindBin(fDmesonFitterMean[i] + fSignalSigmas*fDmesonFitterSigma[i]));
+        SetSignRanges(SignLowLim,SignUppLim);
+    }
+
     if(fAutoSBRange) {
       if (fDmesonSpecies!=kDStarD0pi) {
 	LSBLowLim[i] = fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fDmesonFitterMean[i] - fSBOuterSigmas*fDmesonFitterSigma[i]));
@@ -2050,6 +2054,7 @@ void AliDhCorrelationExtraction::SetSBRanges(Double_t* rangesSB1L, Double_t* ran
 if(!fAutoSBRange && !fSBSingleBin) {
   printf("*** WARNING! You are passing external SB ranges to the framework, and in the THnSparse the sidebands are mass-binned ***\n");
   printf("*** This is perfectly fine, provided that you match mass bins of THnSparse and of invariant mass plots! ***\n");
+  getchar();
   if(fRebinMassPlots!=1) {
     printf("*** You are rebinning the mass plots! external SB ranges WILL bias the SB normalization factor! ***\n");
     printf("*** To remove the bias, you shall adapt the SB ranges to the rebinned edges of the mass histos (they must also be THnSparse mass edges) ***\n");
@@ -2076,6 +2081,28 @@ if(!fAutoSBRange && !fSBSingleBin) {
     } 
   }
 }
+
+//___________________________________________________________________________________________
+void AliDhCorrelationExtraction::SetSignRanges(Double_t* rangesSignL, Double_t* rangesSignR) {
+
+if(!fAutoSignRange) {
+  printf("*** WARNING! You are passing external signal ranges to the framework! ***\n");
+  printf("*** This is perfectly fine, provided that you match mass bins of THnSparse and of invariant mass plots! ***\n");
+  if(fRebinMassPlots!=1) {
+    printf("*** You are rebinning the mass plots! external Signal ranges WILL bias the Signal normalization factor and Yield normalization value! ***\n");
+    printf("*** To remove the bias, you shall adapt the Signal ranges to the rebinned edges of the mass histos (they must also be THnSparse mass edges) ***\n");
+    getchar();
+  }
+}
+
+  fRangesSignL = new Double_t[fNpTbins];
+  fRangesSignR = new Double_t[fNpTbins];
+  for(int i=0;i<fNpTbins;i++) {
+    fRangesSignL[i]=rangesSignL[i];
+    fRangesSignR[i]=rangesSignR[i];
+  }
+}
+
 
 //___________________________________________________________________________________________
 void AliDhCorrelationExtraction::GetSignalAndBackgroundForNorm(Int_t i, TH1F* &histo) {
