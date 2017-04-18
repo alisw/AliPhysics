@@ -494,11 +494,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
   
-  fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -4 , 4  ) ;
+  fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -1 , 1  ) ;
   fhXVertex->SetXTitle("v_{x} (cm)");
   fOutputContainer->Add(fhXVertex);
   
-  fhYVertex      = new TH1F("hYVertex", " Y vertex distribution"   , 200 , -4 , 4  ) ;
+  fhYVertex      = new TH1F("hYVertex", " Y vertex distribution"   , 200 , -1 , 1  ) ;
   fhYVertex->SetXTitle("v_{y} (cm)");
   fOutputContainer->Add(fhYVertex);
   
@@ -736,11 +736,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
         fOutputContainer->Add(fhClusterTriggerBCExoticUnMatchReMatch[j]);
       }
       
-      fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
+      fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -1 , 1  ) ;
       fhXVertexExotic->SetXTitle("v_{x} (cm)");
       fOutputContainer->Add(fhXVertexExotic);
       
-      fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
+      fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -1 , 1  ) ;
       fhYVertexExotic->SetXTitle("v_{y} (cm)");
       fOutputContainer->Add(fhYVertexExotic);
       
