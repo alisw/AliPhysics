@@ -43,7 +43,7 @@ public:
   void  FitHistogram(TH1 *const his,  Option_t* option = "");
   void  FitGraph(TGraph *const gr, Option_t* option = "");
   //  Int_t UnbinnedFit(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
-  Int_t FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
+  Int_t FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries, Bool_t doReset=kTRUE);
   TString GetFitFunctionAsAlias();
   void Bootstrap(Int_t nIter, const char* reportName, Option_t  *option=0);
   void TwoFoldCrossValidation(Int_t nIter, const char*reportName, Option_t *option=0);
