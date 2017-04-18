@@ -98,8 +98,8 @@ private:
   Bool_t AddMetadataToUserInfo(); // Function to add ProdInfo to Nano AOD Tree
   Bool_t Notify();				// Function to add ProdInfo to Nano AOD Tree
 
-
   AliAnalysisCuts *fEventFilter;     // event filter
+  TList *fQnList; //! List for the storage of the output of the QnFramework needed for event-plane analysis since 2016
 
   AliAnalysisTaskDielectronFilter(const AliAnalysisTaskDielectronFilter &c);
   AliAnalysisTaskDielectronFilter& operator= (const AliAnalysisTaskDielectronFilter &c);
