@@ -211,7 +211,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t                                         fOffset           ; //!<! Offset from fLowerEntry where the loop over the tree should start
   Int_t                                         fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
   Int_t                                         fFileNumber       ; //!<! File number corresponding to the current tree
-  THistManager                                  fHistManager      ; //!<! Manages access to all histograms
+  THistManager                                  fHistManager      ; ///< Manages access to all histograms
   AliEmcalList                                 *fOutput           ; //!<! List which owns the output histograms to be saved
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
   AliVHeader                                   *fExternalHeader   ; //!<! Header of the current external event
