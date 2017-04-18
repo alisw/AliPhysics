@@ -16,6 +16,9 @@ ClassImp(AliCascadeResult);
 AliCascadeResult::AliCascadeResult() :
   AliVWeakResult(),
 fMassHypo(AliCascadeResult::kXiMinus),
+//Acceptance Cuts
+fCutMinRapidity(-0.5),
+fCutMaxRapidity(+0.5),
 //V0 Cuts
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
@@ -80,6 +83,9 @@ fCutVarBBCosPA_Const(1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+//Acceptance Cuts
+fCutMinRapidity(-0.5),
+fCutMaxRapidity(+0.5),
 //V0 Cuts
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
@@ -146,6 +152,9 @@ fCutVarBBCosPA_Const(1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+//Acceptance Cuts
+fCutMinRapidity(-0.5),
+fCutMaxRapidity(+0.5),
 //V0 Cuts
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
@@ -221,6 +230,9 @@ fCutVarBBCosPA_Const(1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+//Acceptance Cuts
+fCutMinRapidity(-0.5),
+fCutMaxRapidity(+0.5),
 //V0 Cuts
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
@@ -293,6 +305,9 @@ fCutVarBBCosPA_Const(1)
 AliCascadeResult::AliCascadeResult(const AliCascadeResult& lCopyMe, TString lNewName)
 : AliVWeakResult(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
+//Acceptance Cuts
+fCutMinRapidity(lCopyMe.fCutMinRapidity),
+fCutMaxRapidity(lCopyMe.fCutMaxRapidity),
 //V0 Cuts
 fCutDCANegToPV(lCopyMe.fCutDCANegToPV),
 fCutDCAPosToPV(lCopyMe.fCutDCAPosToPV),
@@ -368,6 +383,9 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
 {
     SetName(lNewName.Data());
     fMassHypo = lCopyMe->GetMassHypothesis();
+    //V0 Cuts
+    fCutMinRapidity     = lCopyMe->GetCutMinRapidity();
+    fCutMaxRapidity     = lCopyMe->GetCutMaxRapidity();
     //V0 Cuts
     fCutDCANegToPV     = lCopyMe->GetCutDCANegToPV();
     fCutDCAPosToPV     = lCopyMe->GetCutDCAPosToPV();
@@ -459,6 +477,9 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     SetTitle(lCopyMe.GetTitle());
 
     fMassHypo = lCopyMe.GetMassHypothesis();
+    //Acceptance cuts
+    fCutMinRapidity = lCopyMe.GetCutMinRapidity();
+    fCutMaxRapidity = lCopyMe.GetCutMaxRapidity(),
     //V0 Cuts
     fCutDCANegToPV = lCopyMe.GetCutDCANegToPV();
     fCutDCAPosToPV = lCopyMe.GetCutDCAPosToPV(),
@@ -579,6 +600,10 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     AliCascadeResult *lCompareCascade = (AliCascadeResult*) lCompare;
     
     if( fMassHypo != lCompareCascade->GetMassHypothesis() ) lReturnValue = kFALSE;
+
+    //Acceptance
+    if( TMath::Abs( fCutMinRapidity - lCompareCascade->GetCutMinRapidity() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxRapidity - lCompareCascade->GetCutMaxRapidity() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //V0 Selection Criteria
     if( TMath::Abs( fCutDCANegToPV - lCompareCascade->GetCutDCANegToPV() ) > 1e-6 ) lReturnValue = kFALSE;
@@ -654,6 +679,8 @@ void AliCascadeResult::Print()
     if( fMassHypo == AliCascadeResult::kOmegaMinus   ) cout<<" Mass Hypothesis....: OmegaMinus"<<endl;
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) cout<<" Mass Hypothesis....: OmegaPlus"<<endl;
     cout<<" Expected mass......: "<<GetMass()<<endl; 
+    cout<<" Min y..............: "<<fCutMinRapidity<<endl;
+    cout<<" Max y..............: "<<fCutMaxRapidity<<endl;
     
     cout<<" DCA Neg to PV......: "<<fCutDCANegToPV<<endl;
     cout<<" DCA Pos to PV......: "<<fCutDCAPosToPV<<endl;

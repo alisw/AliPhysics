@@ -2218,7 +2218,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarPosEta && fTreeCascVarPosEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarNegEta && fTreeCascVarNegEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarBachEta && fTreeCascVarBachEta < lCascadeResult->GetCutMaxEtaTracks() &&
-                TMath::Abs(lRap) < 0.5 &&
+                lRap > lCascadeResult->GetCutMinRapidity() &&
+                lRap < lCascadeResult->GetCutMaxRapidity() &&
 
                 //Check 3: Topological Variables
                 // - V0 Selections

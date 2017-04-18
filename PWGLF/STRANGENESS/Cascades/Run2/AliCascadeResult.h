@@ -43,6 +43,10 @@ public:
     
     Long64_t Merge(TCollection *hlist);
     
+    //Acceptance
+    void SetCutMinRapidity      ( Double_t lCut ) { fCutMinRapidity       = lCut; }
+    void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
+    
     //Setters for V0 Cuts
     void SetCutDCANegToPV     ( Double_t lCut ) { fCutDCANegToPV       = lCut; }
     void SetCutDCAPosToPV     ( Double_t lCut ) { fCutDCAPosToPV       = lCut; }
@@ -139,6 +143,10 @@ public:
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
     TString GetParticleName() const; 
+
+    //Getters for V0 Cuts
+    Double_t GetCutMinRapidity     () const { return fCutMinRapidity; }
+    Double_t GetCutMaxRapidity     () const { return fCutMaxRapidity; }
     
     //Getters for V0 Cuts
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
@@ -224,6 +232,10 @@ private:
 
     AliCascadeResult::EMassHypo fMassHypo; //For determining invariant mass
 
+    //Basic acceptance criteria
+    Double_t fCutMinRapidity; //min rapidity
+    Double_t fCutMaxRapidity; //max rapidity
+    
     //V0 Selection Criteria
     Double_t fCutDCANegToPV;    //v0 vertexer 1
     Double_t fCutDCAPosToPV;    //v0 vertexer 2
@@ -295,7 +307,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 24)
+    ClassDef(AliCascadeResult, 25)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -319,6 +331,7 @@ private:
     // 21 - swap v0 meson charge addition
     // 22 - swap v0 baryon charge addition
     // 23 - Parametric Bach Baryon CosPA
-    // 24 - addition of NSigma cut for Lambda mass (requires pre-configured task!) 
+    // 24 - addition of NSigma cut for Lambda mass (requires pre-configured task!)
+    // 25 - addition of rapidity selection (to enable 2.76 TeV re-analysis corrections)
 };
 #endif
