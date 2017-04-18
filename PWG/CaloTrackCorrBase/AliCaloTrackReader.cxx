@@ -1182,9 +1182,11 @@ void AliCaloTrackReader::InitParameters()
   fWeightUtils = new AliAnaWeights() ;
   fEventWeight = 1 ;
     
-  fTrackMultNPtCut = 5;
+  fTrackMultNPtCut = 8;
   fTrackMultPtCut[0] = 0.15; fTrackMultPtCut[1] = 0.5;  fTrackMultPtCut[2] = 1.0; 
-  fTrackMultPtCut[2] = 2.0 ; fTrackMultPtCut[1] = 4.0;  
+  fTrackMultPtCut[3] = 2.0 ; fTrackMultPtCut[4] = 4.0;  fTrackMultPtCut[5] = 6.0;  
+  fTrackMultPtCut[6] = 8.0 ; fTrackMultPtCut[7] = 10.;  
+  fTrackMultPtCut[8] = 15.0; fTrackMultPtCut[9] = 20.;  
 }
 
 //__________________________________________________________________________
