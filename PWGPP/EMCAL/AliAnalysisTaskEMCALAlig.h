@@ -1,8 +1,8 @@
-#ifndef AliAnalysisTaskEmcalAlig_H
-#define AliAnalysisTaskEmcalAlig_H
+#ifndef AliAnalysisTaskEMCALAlig_H
+#define AliAnalysisTaskEMCALAlig_H
 
 //_________________________________________________________________________
-/// \class AliAnalysisTaskEmcalAlig
+/// \class AliAnalysisTaskEMCALAlig
 /// \ingroup EMCALPerformance 
 /// \brief Alignment checks
 ///
@@ -22,12 +22,12 @@ class TH1F;
 class TH2F;
 class AliEMCALGeometry;
 
-class AliAnalysisTaskEmcalAlig : public AliAnalysisTaskEmcal {
+class AliAnalysisTaskEMCALAlig : public AliAnalysisTaskEmcal {
 public:
     
-    AliAnalysisTaskEmcalAlig();
-    AliAnalysisTaskEmcalAlig(const char *name);
-    virtual ~AliAnalysisTaskEmcalAlig();
+    AliAnalysisTaskEMCALAlig();
+    AliAnalysisTaskEMCALAlig(const char *name);
+    virtual ~AliAnalysisTaskEMCALAlig();
     
     void                        UserCreateOutputObjects();
     void                        Terminate(Option_t *option);
@@ -40,57 +40,57 @@ protected:
     void                        DoTrackLoop();
     
     
-    AliEMCALRecoUtils *fEMCALRecoUtils;
-    AliEMCALGeometry *fEMCALGeo;
-    AliPIDResponse *fPIDResponse;
+    AliEMCALRecoUtils *fEMCALRecoUtils; //! EMCAL Reco utils used to recalculate the matching
+    AliEMCALGeometry *fEMCALGeo; //! EMCAL geometry class
+    AliPIDResponse *fPIDResponse; //! PID response task used to perform electron identification
     
     //Negative Particle Histograms;
-    TH1F *fNPartPt; //!
-    TH1F *fNPartPhi; //!
-    TH1F *fNPartEta; //!
+    TH1F *fNPartPt; //! Electron transverse momemtum distribution
+    TH1F *fNPartPhi; //! Electron azimuthal angle distribution
+    TH1F *fNPartEta; //! Electron pseudorapidity distribution
     
     //Positive Particle Histograms;
-    TH1F *fPPartPt; //!
-    TH1F *fPPartPhi; //!
-    TH1F *fPPartEta; //!
+    TH1F *fPPartPt; //! Positron transverse momemtum distribution
+    TH1F *fPPartPhi; //! Positron azimuthal angle distribution
+    TH1F *fPPartEta; //! Positron pseudorapidity distribution
     
     //PID Plots
     TH2F* fTPCnSgima; //! TPC Nsigma as function of pT
     TH2F* fEOverP; //! E/p as function of pT
     
     //Matching Residual Plots
-    TH2F        **fElectronPhiRes; //!
-    TH2F        **fElectronEtaRes; //!
-    TH2F        **fElectronXRes; //!
-    TH2F        **fElectronYRes; //!
-    TH2F        **fElectronPositronZRes; //!
+    TH2F        **fElectronPhiRes; //! Electron matching residual in phi as function of EMCAL SuperModule using propagation to EMCAL surface
+    TH2F        **fElectronEtaRes; //! Electron matching residual in eta as function of EMCAL SuperModule using propagation to EMCAL surface
+    TH2F        **fElectronXRes; //! Electron matching residual in x as function of EMCAL SuperModule using propagation to EMCAL surface
+    TH2F        **fElectronYRes; //! Electron matching residual in y as function of EMCAL SuperModule using propagation to EMCAL surface
+    TH2F        **fElectronPositronZRes; //! Electron and positron matching residual in z as function of EMCAL SuperModule using propagation to EMCAL surface
     
-    TH2F        **fPositronPhiRes; //!
-    TH2F        **fPositronEtaRes; //!
-    TH2F        **fPositronXRes; //!
-    TH2F        **fPositronYRes; //!
+    TH2F        **fPositronPhiRes; //! Positron matching residual in phi as function of EMCAL SuperModule using propagation to EMCAL surface
+    TH2F        **fPositronEtaRes; //! Positron matching residual in eta as function of EMCAL SuperModule using propagation to EMCAL surface
+    TH2F        **fPositronXRes; //! Positron matching residual in x as function of EMCAL SuperModule using propagation to EMCAL surface
+    TH2F        **fPositronYRes; //! Positron  matching residual in y as function of EMCAL SuperModule using propagation to EMCAL surface
     
-    TH2F        **fAllMatchedTracksPhiRes; //!
-    TH2F        **fAllMatchedTracksEtaRes; //!
+    TH2F        **fAllMatchedTracksPhiRes; //! All tracks mathing residual in Phi
+    TH2F        **fAllMatchedTracksEtaRes; //! All tracks mathing residual in Eta
     
-    TH2F        **fElectronPhiResRU; //!
-    TH2F        **fElectronEtaResRU; //!
-    TH2F        **fElectronXResRU; //!
-    TH2F        **fElectronYResRU; //!
-    TH2F        **fElectronPositronZResRU; //!
+    TH2F        **fElectronPhiResRU; //! Electron matching residual in phi as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
+    TH2F        **fElectronEtaResRU; //! Electron matching residual in eta as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
+    TH2F        **fElectronXResRU; //! Electron matching residual in x as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
+    TH2F        **fElectronYResRU; //! Electron matching residual in y as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
+    TH2F        **fElectronPositronZResRU; //! Electron and positron matching residual in z as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
     
-    TH2F        **fPositronPhiResRU; //!
-    TH2F        **fPositronEtaResRU; //!
-    TH2F        **fPositronXResRU; //!
-    TH2F        **fPositronYResRU; //!
+    TH2F        **fPositronPhiResRU; //! Positron matching residual in phi as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
+    TH2F        **fPositronEtaResRU; //! Positron matching residual in eta as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
+    TH2F        **fPositronXResRU; //! Positron matching residual in x as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
+    TH2F        **fPositronYResRU; //! Positron  matching residual in y as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
 
     
 private:
-    AliAnalysisTaskEmcalAlig(const AliAnalysisTaskEmcalAlig&)           ; // not implemented
-    AliAnalysisTaskEmcalAlig &operator=(const AliAnalysisTaskEmcalAlig&); // not implemented
+    AliAnalysisTaskEMCALAlig(const AliAnalysisTaskEMCALAlig&)           ; // not implemented
+    AliAnalysisTaskEMCALAlig &operator=(const AliAnalysisTaskEMCALAlig&); // not implemented
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalAlig, 1);
+  ClassDef(AliAnalysisTaskEMCALAlig, 1);
   /// \endcond
 
 };
