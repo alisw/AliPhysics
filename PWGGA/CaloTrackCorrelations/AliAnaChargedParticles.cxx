@@ -41,9 +41,11 @@ AliAnaChargedParticles::AliAnaChargedParticles() :
 AliAnaCaloTrackCorrBaseClass(),
 fFillTrackBCHistograms(0), fFillVertexBC0Histograms(0),
 fFillEtaPhiRegionHistograms(0),
+fFillTrackMultHistograms(0),
 fMomentum(),
 // Histograms
-fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
+fhNTracks(0),      fhSumPtTracks(0),
+fhPt(0),           fhPtNoCut(0),
 fhPtCutDCA(0),     fhPtCutDCABCOK(0),
 fhPtNotPrimary(),  fhPtNotSharedClusterCut(0),
 fhPhiNeg(0),       fhEtaNeg(0),
@@ -120,6 +122,12 @@ fhPtNPileUpSPDVtxBC0(0), fhPtNPileUpTrkVtxBC0(0)
     fhPhiMCPrimPart[imcPart] = 0;
     fhEtaMCPart    [imcPart] = 0;
     fhEtaMCPrimPart[imcPart] = 0;
+  }
+  
+  for(Int_t icut = 0; icut < 10; icut++)
+  {
+    fhPtTrackNTracks    [icut] = 0;  
+    fhPtTrackSumPtTracks[icut] = 0;     
   }
   
   //Initialize parameters
@@ -247,10 +255,59 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
   Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
 
-  fhNtracks  = new TH1F ("hNtracks","# of tracks", 1000,0,1000); 
-  fhNtracks->SetXTitle("# of tracks");
-  outputContainer->Add(fhNtracks);
-    
+  Int_t nmultbin = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
+  Int_t multmax  = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
+  Int_t multmin  = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
+  
+  Int_t   nsumbin  = GetHistogramRanges()->GetHistoNPtSumBins() ;
+  Float_t summin   = GetHistogramRanges()->GetHistoPtSumMin()   ;
+  Float_t summax   = GetHistogramRanges()->GetHistoPtSumMax()   ;
+
+  Int_t nptcuts =  GetReader()->GetTrackMultiplicityNPtCut();
+  fhNTracks  = new TH2F 
+  ("hNTracks",
+   Form("Number of tracks per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
+   nmultbin,multmin,multmax, nptcuts,0,nptcuts); 
+  fhNTracks->SetXTitle("# of tracks");
+  fhNTracks->SetYTitle("#it{p}_{T} > Y GeV/#it{c}");
+  for(Int_t icut = 0; icut<nptcuts; icut++)
+    fhNTracks->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
+  outputContainer->Add(fhNTracks);
+
+  fhSumPtTracks  = new TH2F 
+  ("hSumPtTracks",
+   Form("#Sigma #it{p}_{T} per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
+   nsumbin,summin,summax, nptcuts,0,nptcuts); 
+  fhSumPtTracks->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+  fhSumPtTracks->SetYTitle("#it{p}_{T} > Y GeV/#it{c}");
+  for(Int_t icut = 0; icut<nptcuts; icut++)
+    fhSumPtTracks->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
+  outputContainer->Add(fhSumPtTracks);
+  
+  if(fFillTrackMultHistograms)
+  {
+    for(Int_t icut = 0; icut < nptcuts; icut++)
+    {
+      fhPtTrackNTracks[icut]  = new TH2F 
+      (Form("hPtTrackNTracks_PtCut%d",icut),
+       Form("Number of tracks per event with |#eta|<%2.2f and #it{p}_{T} > %2.2f GeV/#it{c}",
+            GetReader()->GetTrackMultiplicityEtaCut(),GetReader()->GetTrackMultiplicityPtCut(icut)), 
+       nptbins,ptmin,ptmax, nmultbin,multmin,multmax); 
+      fhPtTrackNTracks[icut]->SetYTitle("# of tracks");
+      fhPtTrackNTracks[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtTrackNTracks[icut]);
+      
+      fhPtTrackSumPtTracks[icut]  = new TH2F 
+      (Form("hPtTrackSumPtTracks_PtCut%d",icut),
+       Form("#Sigma #it{p}_{T} per event with |#eta|<%2.2f and #it{p}_{T} > %2.2f GeV/#it{c}",
+            GetReader()->GetTrackMultiplicityEtaCut(),GetReader()->GetTrackMultiplicityPtCut(icut)), 
+       nptbins,ptmin,ptmax, nsumbin,summin,summax); 
+      fhPtTrackSumPtTracks[icut]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhPtTrackSumPtTracks[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtTrackSumPtTracks[icut]);
+    }
+  }
+  
   fhPt  = new TH1F ("hPt","#it{p}_{T} distribution", nptbins,ptmin,ptmax); 
   fhPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPt);
@@ -1324,10 +1381,16 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
 {
   if(IsDataMC()) FillPrimaryHistograms();
   
-  //Loop on stored AODParticles
+  // Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   
-  fhNtracks->Fill(GetReader()->GetTrackMultiplicity(), GetEventWeight()) ;
+  // Fill event track multiplicity and sum pT histograms
+  // Calculated in the reader to be used everywhere, so not redone here.
+  for(Int_t icut = 0; icut < GetReader()->GetTrackMultiplicityNPtCut(); icut++)
+  {
+    fhNTracks    ->Fill(GetReader()->GetTrackMultiplicity(icut),icut, GetEventWeight()) ;
+    fhSumPtTracks->Fill(GetReader()->GetTrackSumPt       (icut),icut, GetEventWeight()) ;
+  }
   
   AliDebug(1,Form("AOD branch entries %d", naod));
   
@@ -1349,6 +1412,17 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     phi = track->Phi();
     
     fhPt->Fill(pt, GetEventWeight());
+    
+    // Fill event track multiplicity and sum pT histograms vs track pT
+    // Calculated in the reader to be used everywhere, so not redone here.
+    if(fFillTrackMultHistograms)
+    {
+      for(Int_t icut = 0; icut < GetReader()->GetTrackMultiplicityNPtCut(); icut++)
+      {
+        fhPtTrackNTracks    [icut]->Fill(pt, GetReader()->GetTrackMultiplicity(icut), GetEventWeight()) ;
+        fhPtTrackSumPtTracks[icut]->Fill(pt, GetReader()->GetTrackSumPt       (icut), GetEventWeight()) ;
+      }
+    }
     
     if(fFillEtaPhiRegionHistograms)
     {
