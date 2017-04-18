@@ -1830,7 +1830,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //Check 2: Basic Acceptance cuts
                 lV0Result->GetCutMinEtaTracks() < fTreeVariableNegEta && fTreeVariableNegEta < lV0Result->GetCutMaxEtaTracks() &&
                 lV0Result->GetCutMinEtaTracks() < fTreeVariablePosEta && fTreeVariablePosEta < lV0Result->GetCutMaxEtaTracks() &&
-                TMath::Abs(lRap) < 0.5 &&
+                lRap > lV0Result->GetCutMinRapidity() &&
+                lRap < lV0Result->GetCutMaxRapidity() &&
 
                 //Check 3: Topological Variables
                 fTreeVariableV0Radius > lV0Result->GetCutV0Radius() &&

@@ -27,6 +27,10 @@ public:
     //Basic Functionality
     virtual Double_t GetMass() const { return 0; }
     virtual TString GetParticleName() const { return ""; }
+    //Make sure to have getters available no matter what result 
+    virtual Double_t GetCutMinRapidity() const { return -100; }
+    virtual Double_t GetCutMaxRapidity() const { return -100; }
+    
     //Main Result
     virtual TH3F* GetHistogram       ()       { return 0x0; }
     virtual TH3F* GetHistogramToCopy () const { return 0x0; }

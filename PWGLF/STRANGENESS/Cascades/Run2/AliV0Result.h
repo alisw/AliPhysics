@@ -42,6 +42,10 @@ public:
     
     Long64_t Merge(TCollection *hlist);
     
+    //Acceptance
+    void SetCutMinRapidity      ( Double_t lCut ) { fCutMinRapidity       = lCut; }
+    void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
+    
     void SetCutV0Radius       ( Double_t lCut ) { fCutV0Radius         = lCut; }
     void SetCutDCANegToPV     ( Double_t lCut ) { fCutDCANegToPV       = lCut; }
     void SetCutDCAPosToPV     ( Double_t lCut ) { fCutDCAPosToPV       = lCut; }
@@ -95,7 +99,11 @@ public:
     
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
-    TString GetParticleName() const; 
+    TString GetParticleName() const;
+    
+    //Getters for V0 Cuts
+    Double_t GetCutMinRapidity     () const { return fCutMinRapidity; }
+    Double_t GetCutMaxRapidity     () const { return fCutMaxRapidity; }
     
     Double_t GetCutV0Radius       () const { return fCutV0Radius; }
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
@@ -151,6 +159,10 @@ private:
     //V0 Selection Criteria
     AliV0Result::EMassHypo fMassHypo; //For determining invariant mass
 
+    //Basic acceptance criteria
+    Double_t fCutMinRapidity; //min rapidity
+    Double_t fCutMaxRapidity; //max rapidity
+    
     Double_t fCutV0Radius;
     Double_t fCutDCANegToPV;
     Double_t fCutDCAPosToPV;

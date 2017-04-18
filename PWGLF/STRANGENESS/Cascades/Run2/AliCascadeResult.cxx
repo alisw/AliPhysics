@@ -391,7 +391,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
 {
     SetName(lNewName.Data());
     fMassHypo = lCopyMe->GetMassHypothesis();
-    //V0 Cuts
+    //Acceptance Cuts
     fCutMinRapidity     = lCopyMe->GetCutMinRapidity();
     fCutMaxRapidity     = lCopyMe->GetCutMaxRapidity();
     //V0 Cuts
