@@ -1749,7 +1749,6 @@ private:
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
   TProfile3D *fTPCQVecProTemp[2][2]; //!
-  TProfile *fTPCQVec2ProTemp[fCRCMaxnCen][3][4]; //!
   const static Int_t fkNv1evenCor = 6;
   TProfile2D *fFlowSPZDCv1evenCorPro[fkNv1evenCor]; //!
   
