@@ -56,6 +56,7 @@ fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillEMCALRegionSSHistograms(0), 
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
 fFillSSNLocMaxHisto(0),
+fFillTrackMultHistograms(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fProdVertex(),
@@ -200,6 +201,12 @@ fhDistance2Hijing(0)
   {
     fhClusterCutsE [i] = 0;
     fhClusterCutsPt[i] = 0;
+  }
+  
+  for(Int_t icut = 0; icut < 10; icut++)
+  {
+    fhPtPhotonNTracks    [icut] = 0;  
+    fhPtPhotonSumPtTracks[icut] = 0;     
   }
   
   // Track matching residuals
@@ -2234,6 +2241,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Float_t difmin   = GetHistogramRanges()->GetHistoEDiffMin() ;
   Float_t difmax   = GetHistogramRanges()->GetHistoEDiffMax() ;
 
+  Int_t nmultbin   = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
+  Int_t multmax    = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
+  Int_t multmin    = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
+  
+  Int_t   nsumbin  = GetHistogramRanges()->GetHistoNPtSumBins() ;
+  Float_t summin   = GetHistogramRanges()->GetHistoPtSumMin()   ;
+  Float_t summax   = GetHistogramRanges()->GetHistoPtSumMax()   ;
   
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies
   
@@ -2282,6 +2296,32 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhPtPhotonSM->SetYTitle("SuperModule ");
   fhPtPhotonSM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtPhotonSM) ;
+  
+  if(fFillTrackMultHistograms)
+  {
+    printf("Bins Mult: n %d, min %d, max %d; Sum: n %d, min %f, max %f\n",
+           nmultbin,multmin,multmax,nsumbin,summin, summax);
+    for(Int_t icut = 0; icut < GetReader()->GetTrackMultiplicityNPtCut(); icut++)
+    {
+      fhPtPhotonNTracks[icut]  = new TH2F 
+      (Form("hPtPhotonNTracks_PtCut%d",icut),
+       Form("Number of tracks per event with |#eta|<%2.2f and #it{p}_{T} > %2.2f GeV/#it{c}",
+            GetReader()->GetTrackMultiplicityEtaCut(),GetReader()->GetTrackMultiplicityPtCut(icut)), 
+       nptbins,ptmin,ptmax, nmultbin,multmin,multmax); 
+      fhPtPhotonNTracks[icut]->SetYTitle("# of tracks");
+      fhPtPhotonNTracks[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtPhotonNTracks[icut]);
+      
+      fhPtPhotonSumPtTracks[icut]  = new TH2F 
+      (Form("hPtPhotonSumPtTracks_PtCut%d",icut),
+       Form("#Sigma #it{p}_{T} of tracks per event with |#eta|<%2.2f and #it{p}_{T} > %2.2f GeV/#it{c}",
+            GetReader()->GetTrackMultiplicityEtaCut(),GetReader()->GetTrackMultiplicityPtCut(icut)), 
+       nptbins,ptmin,ptmax, nsumbin,summin,summax); 
+      fhPtPhotonSumPtTracks[icut]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhPtPhotonSumPtTracks[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtPhotonSumPtTracks[icut]);
+    }
+  }
   
   fhNCellsE  = new TH2F ("hNCellsE","# of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nbins,nmin,nmax);
   fhNCellsE->SetXTitle("#it{E} (GeV)");
@@ -4716,6 +4756,17 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight());
     fhEtaPhoton ->Fill(ptcluster, etacluster, GetEventWeight());
       
+    // Fill event track multiplicity and sum pT histograms vs track pT
+    // Calculated in the reader to be used everywhere, so not redone here.
+    if(fFillTrackMultHistograms)
+    {
+      for(Int_t icut = 0; icut < GetReader()->GetTrackMultiplicityNPtCut(); icut++)
+      {
+        fhPtPhotonNTracks    [icut]->Fill(ptcluster, GetReader()->GetTrackMultiplicity(icut), GetEventWeight()) ;
+        fhPtPhotonSumPtTracks[icut]->Fill(ptcluster, GetReader()->GetTrackSumPt       (icut), GetEventWeight()) ;
+      }
+    }
+    
     if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight());
     else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster, GetEventWeight());
     
