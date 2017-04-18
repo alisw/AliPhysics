@@ -367,6 +367,7 @@ private:
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
+  Float_t		      fPtHardbin;
   TH1D                       *fHistoTrials;
   TH1D                       *fHEvents;
   TProfile                   *fProfXsection;
@@ -376,7 +377,7 @@ private:
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,11);
+  ClassDef(AlidNdPtAnalysis,12);
 };
 
 #endif
