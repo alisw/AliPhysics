@@ -136,6 +136,10 @@ public:
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
+    
+    //Proton Profile - not implemented for V0s so far
+    TProfile* GetProtonProfile       ()       { return 0x0; }
+    TProfile* GetProtonProfileToCopy () const { return 0x0; }
 
     TH3F* GetHistogramFeeddown       ()       { return fHistoFeeddown; }
     TH3F* GetHistogramFeeddownToCopy () const { return fHistoFeeddown; }
@@ -187,7 +191,7 @@ private:
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 14)
+    ClassDef(AliV0Result, 15)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -202,5 +206,6 @@ private:
     //12 - Addition of eta window selection
     //13 - Max chi2/clusters, min track length for checking
     //14 - added possibility to select on-the-fly V0 candidates
+    //15 - added proton profile (dummy as of now) 
 };
 #endif

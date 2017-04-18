@@ -77,6 +77,7 @@ class AliAODv0;
 #include "TLegend.h"
 #include "TRandom3.h"
 #include "TLorentzVector.h"
+#include "TProfile.h"
 //#include "AliLog.h"
 
 #include "AliESDEvent.h"

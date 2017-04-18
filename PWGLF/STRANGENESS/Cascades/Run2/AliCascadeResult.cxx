@@ -4,6 +4,7 @@
 
 #include "TList.h"
 #include "TH3F.h"
+#include "TProfile.h"
 #include "AliVWeakResult.h"
 #include "AliCascadeResult.h"
 #include "AliLog.h"
@@ -16,6 +17,7 @@ ClassImp(AliCascadeResult);
 AliCascadeResult::AliCascadeResult() :
   AliVWeakResult(),
 fMassHypo(AliCascadeResult::kXiMinus),
+fProtonProfile(0x0),
 //Acceptance Cuts
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
@@ -83,6 +85,7 @@ fCutVarBBCosPA_Const(1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 //Acceptance Cuts
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
@@ -152,6 +155,7 @@ fCutVarBBCosPA_Const(1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 //Acceptance Cuts
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
@@ -230,6 +234,7 @@ fCutVarBBCosPA_Const(1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 //Acceptance Cuts
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
@@ -375,6 +380,9 @@ fCutVarBBCosPA_Const(lCopyMe.fCutVarBBCosPA_Const)
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
+    if( lCopyMe.GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe.GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
 }
 //________________________________________________________________
 AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
@@ -459,6 +467,10 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe->GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
+    
+    if( lCopyMe->GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe->GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
 }
 //________________________________________________________________
 AliCascadeResult::~AliCascadeResult(){
@@ -466,6 +478,10 @@ AliCascadeResult::~AliCascadeResult(){
     if (fHisto) {
         delete fHisto;
         fHisto = 0x0;
+    }
+    if (fProtonProfile) {
+        delete fProtonProfile;
+        fProtonProfile = 0x0;
     }
 }
 
@@ -552,12 +568,19 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
         delete fHisto;
         fHisto = 0;
     }
+    if (fProtonProfile) {
+        delete fProtonProfile;
+        fProtonProfile = 0;
+    }
     // Constructor
     Double_t lThisMass = GetMass();
     
-    //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
-    fHisto->Sumw2();
+    //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
+    fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
+    
+    if( lCopyMe.GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe.GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
     
     return *this;
 }
@@ -674,6 +697,8 @@ void AliCascadeResult::Print()
     cout<<"========================================"<<endl;
     cout<<" Object Name........: "<<this->GetName()<<endl;
     cout<<" Histogram Name.....: "<<fHisto->GetName()<<endl;
+    if( fProtonProfile )
+        cout<<" Proton profile.....: will be saved"<<endl;
     if( fMassHypo == AliCascadeResult::kXiMinus      ) cout<<" Mass Hypothesis....: XiMinus"<<endl;
     if( fMassHypo == AliCascadeResult::kXiPlus       ) cout<<" Mass Hypothesis....: XiPlus"<<endl;
     if( fMassHypo == AliCascadeResult::kOmegaMinus   ) cout<<" Mass Hypothesis....: OmegaMinus"<<endl;
@@ -776,6 +801,16 @@ TString AliCascadeResult::GetParticleName () const
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lName = "OmegaPlus";
     return lName;
 }
+
+
+//________________________________________________________________
+void AliCascadeResult::InitializeProtonProfile (Long_t lNPtBins, Double_t *lPtBins)
+//Initialize TProfile to do bookkeeping of proton momenta
+{
+    if(!fProtonProfile) fProtonProfile = new TProfile( Form("fProtonProfile_%s",GetName()), "", lNPtBins, lPtBins); 
+}
+
+
 
 
 

@@ -3,6 +3,7 @@
 #include <TNamed.h>
 #include <TList.h>
 #include <TH3F.h>
+#include <TProfile.h>
 #include "AliVWeakResult.h"
 
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -219,6 +220,10 @@ public:
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
     
+    TProfile *GetProtonProfile       ()       { return fProtonProfile; }
+    TProfile *GetProtonProfileToCopy () const { return fProtonProfile; }
+    void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //Initialize profile, otherwise not stored
+    
     //No such thing as feeddown corrections for this result
     //Kept to satisfy AliVWeakResult published interface, don't use in this case
     TH3F* GetHistogramFeeddown       ()       { return 0x0; }
@@ -307,7 +312,9 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 25)
+    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
+    
+    ClassDef(AliCascadeResult, 26)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -333,5 +340,6 @@ private:
     // 23 - Parametric Bach Baryon CosPA
     // 24 - addition of NSigma cut for Lambda mass (requires pre-configured task!)
     // 25 - addition of rapidity selection (to enable 2.76 TeV re-analysis corrections)
+    // 26 - addition of proton momenta histogram (for G3/F correction, 2.76 TeV re-analysis corrections)
 };
 #endif

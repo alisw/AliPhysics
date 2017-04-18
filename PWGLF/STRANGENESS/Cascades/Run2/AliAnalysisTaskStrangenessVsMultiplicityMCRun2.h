@@ -32,6 +32,7 @@ class TH3F;
 class TVector3;
 class THnSparse;
 class TRandom3;
+class TProfile; 
 
 class AliESDpid;
 class AliESDtrackCuts;
