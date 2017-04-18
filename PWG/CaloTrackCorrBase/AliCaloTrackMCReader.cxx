@@ -213,15 +213,20 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
 {  
   fEventNumber     = iEntry;
   //fCurrentFileName = TString(currentFileName);
-  fTrackMult       = 0;
   
-  //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
+  for(Int_t iptCut = 0; iptCut < fTrackMultNPtCut; iptCut++ )
+  {
+    fTrackMult [iptCut] = 0;
+    fTrackSumPt[iptCut] = 0;
+  }  
+  
+  // In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
   if(fComparePtHardAndJetPt && GetStack()) 
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
   }
 	
-  //Fill Vertex array
+  // Fill Vertex array
   FillVertexArray();
   
   Int_t iParticle  = 0 ;
@@ -252,11 +257,23 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
       //---------- Charged particles ----------------------
       if(charge != 0)
       {
-        if(TMath::Abs(eta)< fTrackMultEtaCut) fTrackMult++;
-        
-        if(fFillCTS && (pt > fCTSPtMin))
+//      if(TMath::Abs(eta)< fTrackMultEtaCut) fTrackMult++;
+        if(TMath::Abs(eta)< fTrackMultEtaCut) 
         {
-          //Particles in CTS acceptance
+          for(Int_t iptCut = 0; iptCut < fTrackMultNPtCut; iptCut++ )
+          {
+            if(pt > fTrackMultPtCut[iptCut]) 
+            {
+              fTrackMult [iptCut]++;
+              fTrackSumPt[iptCut]+=pt;
+            }
+          }
+        }
+
+//      if(fFillCTS && (pt > fCTSPtMin))
+        if(fFillCTS && (fCTSPtMin > pt || fCTSPtMax < pt)) continue ;
+        {
+          // Particles in CTS acceptance
           
           if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(eta,phi,kCTS)) continue;
           

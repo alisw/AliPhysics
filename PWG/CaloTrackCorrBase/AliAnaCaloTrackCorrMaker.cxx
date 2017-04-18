@@ -514,7 +514,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
   fOutputContainer->Add(fhEventPlaneAngle) ;
 
-  fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events", 2000 , 0 , 2000) ;
+  fhTrackMult    = new TH1F
+  ("hTrackMult", 
+   Form("Number of tracks per event with #it{p}_{T} > %2.2f GeV/#it{c} and |#eta|<%2.2f",
+        GetReader()->GetTrackMultiplicityPtCut(),GetReader()->GetTrackMultiplicityEtaCut()), 
+   2000 , 0 , 2000) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
   
@@ -547,7 +551,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhEventPlaneAngleWeighted->SetXTitle("EP angle (rad)");
     fOutputContainer->Add(fhEventPlaneAngleWeighted) ;
       
-    fhTrackMultWeighted       = new TH1F("hTrackMultWeighted", "Number of tracks per events weighted by centrality", 2000 , 0 , 2000) ;
+    fhTrackMultWeighted       = new TH1F
+    ("hTrackMultWeighted", 
+     Form("Number of tracks per weighted event with #it{p}_{T} > %2.2f GeV/#it{c} and |#eta|<%2.2f",
+          GetReader()->GetTrackMultiplicityPtCut(),GetReader()->GetTrackMultiplicityEtaCut()), 
+     2000 , 0 , 2000) ;
     fhTrackMultWeighted->SetXTitle("# tracks");
     fOutputContainer->Add(fhTrackMultWeighted);
   }
