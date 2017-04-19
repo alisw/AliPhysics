@@ -15,4 +15,6 @@
 #pragma link C++ class AliDecayerSLEvtGen+;
 #pragma link C++ class AliGenSLEvtGen+;
 #pragma link C++ class AliSLEventHeader+;
+#pragma link C++ function AliSLEventHeader::GetEventInfo<Double_t>;
+#pragma link C++ function AliSLEventHeader::GetEventInfo<TVector2>;
 #endif

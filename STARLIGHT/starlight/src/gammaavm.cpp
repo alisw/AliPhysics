@@ -384,13 +384,13 @@ double Gammaavectormeson::getSpin()
 
 //______________________________________________________________________________
 void Gammaavectormeson::momenta(double W,double Y,double &E,double &px,double &py,double &pz,int &tcheck,
-				double& bslope_tdist, double& t2)
+				double& bslope_tdist, double& t2, double ptGam[2], double &Egam, double ptPom[2], double &Epom)
 {
 	//     This subroutine calculates momentum and energy of vector meson
 	//     given W and Y,   without interference.  Subroutine vmpt handles
 	//     production with interference
  
-	double Egam,Epom,tmin,pt1,pt2,phi1,phi2;
+	double tmin,pt1,pt2,phi1,phi2;
 	double px1,py1,px2,py2;
 	double pt,xt,xtest,ytest;
 
@@ -552,6 +552,8 @@ void Gammaavectormeson::momenta(double W,double Y,double &E,double &px,double &p
 	E  = sqrt(W*W+pt*pt)*cosh(Y);
 	pz = sqrt(W*W+pt*pt)*sinh(Y);
 
+	ptGam[0] = px1; ptGam[1] = py1;
+	ptPom[0] = px2; ptPom[1] = py2;
 }
 
 //______________________________________________________________________________
@@ -773,13 +775,12 @@ upcEvent Gammaavectormeson::produceEvent()
 		double        mom[3]    = {0, 0, 0};
 		double        E         = 0;
 		lorentzVector decayVecs[4];
-		double        bslope    = 0.0;
-		double        t2        = 0.0;
 		do {
 			double rapidity = 0;
 			pickwy(comenergy, rapidity);
 			if (_VMinterferencemode == 0)
-			  momenta(comenergy, rapidity, E, mom[0], mom[1], mom[2], tcheck, bslope, t2);
+			  momenta(comenergy, rapidity, E, mom[0], mom[1], mom[2], tcheck,
+				  event._bSlope, event._t, event._ptGam, event._Egam, event._ptPom, event._Epom);
 			else if (_VMinterferencemode==1)
 			  vmpt(comenergy, rapidity, E, mom[0], mom[1], mom[2], tcheck);
 		} while (!fourBodyDecay(ipid, E, comenergy, mom, decayVecs, iFbadevent));
@@ -793,8 +794,8 @@ upcEvent Gammaavectormeson::produceEvent()
 				                           ipid,
 				                           (i < 2) ? -1 : +1);
 				event.addParticle(daughter);
+				event._isGammaavm = true;
 			}
-		event.setBslopeAndt2(bslope, t2);
 	} else {
 		double comenergy = 0.;
 		double rapidity = 0.;
@@ -802,14 +803,13 @@ upcEvent Gammaavectormeson::produceEvent()
 		double momx=0.,momy=0.,momz=0.;
 
 		double px2=0.,px1=0.,py2=0.,py1=0.,pz2=0.,pz1=0.;
-		double bslope = 0.0;
-		double t2     = 0.0;
 		bool accepted = false;
 		do{
 			pickwy(comenergy,rapidity);
 
 			if (_VMinterferencemode==0){
-			  momenta(comenergy,rapidity,E,momx,momy,momz,tcheck,bslope,t2);
+			  momenta(comenergy,rapidity,E,momx,momy,momz,tcheck,
+				  event._bSlope, event._t, event._ptGam, event._Egam, event._ptPom, event._Epom);
 			
 			} else if (_VMinterferencemode==1){
 				vmpt(comenergy,rapidity,E,momx,momy,momz,tcheck);
@@ -879,7 +879,7 @@ upcEvent Gammaavectormeson::produceEvent()
 			starlightParticle particle2(px2, py2, pz2, Ed2, starlightConstants::UNKNOWN, ipid2, q2);
 			event.addParticle(particle2);
 
-			event.setBslopeAndt2(bslope, t2);
+			event._isGammaavm = true;
 		}
 	}
 
