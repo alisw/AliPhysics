@@ -120,7 +120,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fPad = fkBunch->fPad;
   fOutput.fBranch = fkBunch->fBranch;
   fOutput.fBorder = fkBunch->fBorder;
-  fOutput.fEdge = fkBunch->fEdge;
+  fOutput.fEdge = 0; //Set below with some more constraints
   fOutput.fQmax = 0;
   fOutput.fQ = 0;
   fOutput.fT = 0;
@@ -262,6 +262,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
     fOutput.fP2+= q*fkBunch->fPad*fkBunch->fPad;
     fOutput.fMC.push_back(d.fMC);
   }
+  fOutput.fEdge = fkBunch->fEdge && iEnd > iStart + 2 && qPeak > 5;
   fOutput.fLargestQ = fOutput.fQ;
   fOutput.fLargestQPad = fOutput.fPad;
   
