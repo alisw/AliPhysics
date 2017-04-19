@@ -48,7 +48,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 								 TString                L1triggerName             = ""
                                                                  )
 {
-  Printf("Preparing neutral cluster analysis\n"); // Should be modified into Printf("Preparing photon isolation analysis\n"), don't you think?
+  Printf("Preparing neutral cluster analysis\n");
   
   // #### Define manager and data container names
   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
@@ -198,7 +198,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
-  TString name(Form("PhotonIsolation_%s_%s", trackName.Data(), clusName.Data())); // Is this variable still useful?
+  TString name(Form("PhotonIsolation_%s_%s", trackName.Data(), clusName.Data()));
   cout<<"Name of the container "<<name.Data()<<endl;
   
   // Tracks to be used for the track matching (already used in TM task, TPC only tracks)
