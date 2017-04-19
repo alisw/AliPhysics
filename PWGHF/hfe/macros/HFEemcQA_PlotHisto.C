@@ -576,7 +576,7 @@ void SetTrigQA(char *name0, char *name1, Bool_t &iMC)
     if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8_EMC");  //HFEemcQAINT8_woTender
     if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7_EMC");  //HFEemcQAEMC7_woTender
     if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_EMC");  //HFEemcQAEMC8_woTender
-    if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA_EMC");  //HFEemcQATrigGA_woTender
+    if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGAEG1_EMC");  //HFEemcQATrigGA_woTender
     if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE_EMC");  //HFEemcQATrigJE_woTender
   
     if(iTender==0)
@@ -585,7 +585,7 @@ void SetTrigQA(char *name0, char *name1, Bool_t &iMC)
        if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_EMC");
        if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_EMC");
        if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_EMC");
-       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_EMC");
+       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG1_woTender_EMC");
        if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_EMC");
      }
     else
@@ -594,7 +594,7 @@ void SetTrigQA(char *name0, char *name1, Bool_t &iMC)
        if(itrig==1)sprintf(name1,"HFEemcQAINT8_wTender_EMC");
        if(itrig==2)sprintf(name1,"HFEemcQAEMC7_wTender_EMC");
        if(itrig==3)sprintf(name1,"HFEemcQAEMC8_wTender_EMC");
-       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_wTender_EMC");
+       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG1_wTender_EMC");
        if(itrig==5)sprintf(name1,"HFEemcQATrigJE_wTender_EMC");
      }
    }
@@ -604,7 +604,7 @@ void SetTrigQA(char *name0, char *name1, Bool_t &iMC)
     if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8_DCAL");  //HFEemcQAINT8_woTender
     if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7_DCAL");  //HFEemcQAEMC7_woTender
     if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_DCAL");  //HFEemcQAEMC8_woTender
-    if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA_DCAL");  //HFEemcQATrigGA_woTender
+    if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGAEG1_DCAL");  //HFEemcQATrigGA_woTender
     if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE_DCAL");  //HFEemcQATrigJE_woTender
 
     if(iTender==0)
@@ -613,7 +613,7 @@ void SetTrigQA(char *name0, char *name1, Bool_t &iMC)
        if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_DCAL");
        if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_DCAL");
        if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_DCAL");
-       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_DCAL");
+       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG1_woTender_DCAL");
        if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_DCAL");
       }
       else
@@ -622,7 +622,7 @@ void SetTrigQA(char *name0, char *name1, Bool_t &iMC)
        if(itrig==1)sprintf(name1,"HFEemcQAINT8_wTender_DCAL");
        if(itrig==2)sprintf(name1,"HFEemcQAEMC7_wTender_DCAL");
        if(itrig==3)sprintf(name1,"HFEemcQAEMC8_wTender_DCAL");
-       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_wTender_DCAL");
+       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG1_wTender_DCAL");
        if(itrig==5)sprintf(name1,"HFEemcQATrigJE_wTender_DCAL");
       }
    }
