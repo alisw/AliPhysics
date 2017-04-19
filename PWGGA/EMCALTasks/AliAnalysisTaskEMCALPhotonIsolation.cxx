@@ -1115,7 +1115,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   
-  if(fVertex[2]>10. || fVertex[2]<-10.) return kFALSE;
+  if(fVertex[2]>10. || fVertex[2]<-10.)
+    return kFALSE;
   
   AliClusterContainer* clusters = GetClusterContainer(0);
   Int_t nbTracksEvent;
@@ -1138,7 +1139,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       }
     }
     // AliError(Form("EMCAL L1 trigger for MC simulation anchored to LHC13 data"));
-    if(!MCSimTrigger(fVevent,fTriggerLevel1) && fAnalysispPb) return kFALSE;
+    if(!MCSimTrigger(fVevent,fTriggerLevel1) && fAnalysispPb)
+      return kFALSE;
   }
   
   fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
@@ -1988,7 +1990,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   
   Float_t sumEnergyEtaBandClus =0., sumEnergyConeClus=0., sumpTConeCharged=0, sumpTEtaBandTracks=0.;
   Double_t clustTOF=0;
-  Double_t minEta = -0.67, maxEta = 0.67, minPhi=1.398,maxPhi=TMath::Pi();
+  Double_t minEta = -0.67, maxEta = 0.67, minPhi=1.398,maxPhi=TMath::Pi(); // maxPhi-minPhi != (5/9)*pi !! Anyway, minPhi = 1.4 elsewhere in the task
   
   // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
@@ -2153,7 +2155,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Double_t &ptIso, Double_t &phiBandtrack){
 
-    // Underlying events study with tracks in phi band in EMCal acceptance
+    // Underlying events study with tracks in phi band
   
   // INSERT BOUNDARIES ACCORDING TO THE FLAG WE WANT TO USE
   Double_t sumpTConeCharged=0., sumpTPhiBandTrack=0.;
@@ -2236,7 +2238,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Double_t &ptIso, Double_t &etaBandtrack){
 
-    // Underlying events study with tracks in eta band in EMCal acceptance
+    // Underlying events study with tracks in eta band
   
   // INSERT BOUNDARIES ACCORDING TO THE FLAG WE WANT TO USE
   Double_t sumpTConeCharged=0., sumpTEtaBandTrack=0.;
@@ -2405,7 +2407,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full){
 
-    // Underlying events study with tracks in full TPC except back to back bands
+    // Underlying events study with tracks in full TPC except a back to back band
   
   Double_t sumpTConeCharged=0., sumpTTPCexceptB2B=0.;
   
@@ -2492,7 +2494,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
     if(!fAnalysispPb) // Normally 110° but shorter cut to avoid EMCal border
       maxPhiBound = 2.740;
     else
-      maxPhiBound = 3.15;
+      maxPhiBound = 3.15; // Maybe better to set as minPhiBound + (5./9.)*TMath::Pi()
     
     minEtaBound = -0.87+fIsoConeRadius; // ""
     maxEtaBound = 0.87-fIsoConeRadius; // ""
@@ -2799,8 +2801,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
   // Printf("Inside IsolationAncUEinEMCal");
 
   Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
-  Double_t etaBandArea = 1.4*2.*fIsoConeRadius-isoConeArea;
-  Double_t phiBandArea = 1.75*2.*fIsoConeRadius-isoConeArea;
+  Double_t etaBandArea = 1.34*2.*fIsoConeRadius-isoConeArea;                // 1.34 = 2*0.67
+  Double_t phiBandArea = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea; // (5./9.)*TMath::Pi() = 100 deg = 5 SM, 20 deg each
   
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI,fVertex);
@@ -2978,11 +2980,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
   
     // EMCal + TPC (Only tracks for the Isolation since IsoCone Goes Out of EMCal)
   
-  Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
-  Double_t etaBandAreaTr = 1.74*2.*fIsoConeRadius-isoConeArea;
+  Double_t isoConeArea   = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
+  Double_t etaBandAreaTr = 1.74*2.*fIsoConeRadius-isoConeArea; // 1.74 = 2*0.87
   Double_t phiBandAreaTr = 2.*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
   Double_t perpConesArea = 2.*isoConeArea;
-  Double_t fullTPCArea = (1.8*2.*TMath::Pi())-(fIsoConeRadius*2*1.8)-isoConeArea;
+  Double_t fullTPCArea   = 1.74*2.*TMath::Pi()-1.74*2.*fIsoConeRadius-isoConeArea;
   
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI,fVertex);
@@ -3335,7 +3337,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
   Double_t phip=mcpp->Phi();
   
   if(!fTPC4Iso){
-    if(TMath::Abs(etap)>=0.7 || (phip<=1.4 || phip>= TMath::Pi()))
+    if(TMath::Abs(etap)>=0.67 || (phip<=1.4 || phip>= TMath::Pi()))
       return;
     else{
       switch(fUEMethod)
@@ -3414,14 +3416,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
 
 void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t& sumUE){
   
-  Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
-  Double_t etaBandArea = (1.4 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
-  Double_t phiBandArea = ((5./9.)*TMath::Pi()- 2.*fIsoConeRadius)*2.*fIsoConeRadius;
-  Double_t etaBandAreaTr = (1.8 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
-  Double_t phiBandAreaTr = (2.*TMath::Pi() - 4.*fIsoConeRadius)*2.*fIsoConeRadius; // There is a 2 more because of the JET CONE B2B
+  Double_t isoConeArea   = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
+  Double_t etaBandArea   = 1.34*2.*fIsoConeRadius-isoConeArea;
+  Double_t phiBandArea   = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
+  Double_t etaBandAreaTr = 1.74*2.*fIsoConeRadius-isoConeArea;
+  Double_t phiBandAreaTr = 2.*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
   Double_t perpConesArea = 2.*isoConeArea;
-  Double_t fullTPCArea = 1.8*2.*TMath::Pi()-fIsoConeRadius*(TMath::Pi()*fIsoConeRadius + 3.6);
-  
+  Double_t fullTPCArea   = 1.74*2.*TMath::Pi()-1.74*2.*fIsoConeRadius-isoConeArea;
+
   if(!fTPC4Iso){
     switch(fUEMethod)
       {
@@ -3489,7 +3491,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     multTracks = static_cast<AliAODMCParticle*>(fAODMCParticles->At(a));
     
     if(multTracks->IsPrimary() && multTracks->IsPhysicalPrimary() && multTracks->GetStatus()<10){
-      if(TMath::Abs(multTracks->Eta())<=0.9 && multTracks->Charge() != 0)
+      if(TMath::Abs(multTracks->Eta())<=0.87 && multTracks->Charge() != 0)
         nFSParticles++;
       else
         continue;
