@@ -420,7 +420,7 @@ void AliAD::Digits2Raw()
   fAD->SetTreeAddress();
   digits->GetBranch("ADDigit")->SetAddress(&ADdigits);
 
-  const char *fileName    = AliDAQ::DdlFileName("AD",0);
+  const char *fileName = AliDAQ::DdlFileName("AD",0);
   AliADBuffer* buffer  = new AliADBuffer(fileName);
 
   // Get Trigger information first
@@ -431,18 +431,18 @@ void AliAD::Digits2Raw()
   AliTriggerDetector* trgdet = (AliTriggerDetector*)dataLoader->GetDirectory()->Get("Trigger");
   UInt_t triggerInfo = 0;
   if(trgdet) {
-    triggerInfo = trgdet->GetMask() & 0xffff;
+    triggerInfo = UInt_t(trgdet->GetMask() & 0xffff);
   } else {
     AliErrorF("There is no trigger object for %s",fLoader->GetName());
   }
 
-  buffer->WriteTriggerInfo((UInt_t)triggerInfo);
+  buffer->WriteTriggerInfo(triggerInfo);
   buffer->WriteTriggerScalers();
   buffer->WriteBunchNumbers();
 
   // Now retrieve the channel information: charge smaples + time and
   // dump it into ADC and Time arrays
-  Int_t nEntries = Int_t(digits->GetEntries());
+  Long64_t nEntries = digits->GetEntries();
   Short_t aADC[16][kADNClocks];
   Short_t aTime[16];
   Short_t aWidth[16];
@@ -450,7 +450,7 @@ void AliAD::Digits2Raw()
   Bool_t  aBBflag[16];
   Bool_t  aBGflag[16];
 
-  for (Int_t i = 0; i < nEntries; i++) {
+  for (Long64_t i = 0; i < nEntries; i++) {
     fAD->ResetDigits();
     digits->GetEvent(i);
     Int_t ndig = ADdigits->GetEntriesFast();
