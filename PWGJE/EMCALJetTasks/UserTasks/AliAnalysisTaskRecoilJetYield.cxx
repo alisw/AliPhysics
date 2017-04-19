@@ -304,19 +304,20 @@ Bool_t AliAnalysisTaskRecoilJetYield::Run()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 {
-  AliMultSelection *MultSelection = 0x0;
+  //AliMultSelection *MultSelection = 0x0;
   AliAODEvent *fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent) {
     Error("UserExec","AOD not available");
     return 0;
   }
-  MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
+  /*MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
   if(!MultSelection) {
     AliWarning("AliMultSelection object not found!");
   }
   else{
     Percentile_1 = MultSelection->GetMultiplicityPercentile("V0M");
   }
+  */
   if (fCentSelectOn){
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   }
@@ -328,18 +329,29 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     Int_t TriggerHadronLabel = SelectTriggerHadron(fPtMinTriggerHadron, fPtMaxTriggerHadron);
     if (TriggerHadronLabel==-99999) return 0;  //Trigger Hadron Not Found
     AliTrackContainer *PartCont =NULL;
-    if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
-    else PartCont = GetTrackContainer(0);
-    TClonesArray *TrackArray = PartCont->GetArray();
-    TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
+    AliParticleContainer *PartContMC = NULL;
+    if (fJetShapeSub==kConstSub){
+      if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) PartContMC = GetParticleContainer(1);
+      else PartCont = GetTrackContainer(1);
+    }
+    else {
+      if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) PartContMC = GetParticleContainer(0);
+      else PartCont = GetTrackContainer(0);
+    }
+    TClonesArray *TrackArray = NULL;
+    TClonesArray *TrackArrayMC = NULL;
+    if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) TrackArrayMC = PartContMC->GetArray();
+    else TrackArray = PartCont->GetArray();
+    if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) TriggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(TriggerHadronLabel));
+    else TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
     if (!TriggerHadron) return 0;//No trigger hadron with label found   
     if(fSemigoodCorrect){
       Double_t HoleDistance=RelativePhi(TriggerHadron->Phi(),fHolePos);
       if(TMath::Abs(HoleDistance)+fHoleWidth+fJetRadius>TMath::Pi()-fRecoilAngularWindow) return 0;
     }
     fhPtTriggerHadron->Fill(TriggerHadron->Pt()); //Needed for per trigger Normalisation
-    fhPhiTriggerHadronEventPlane->Fill(TMath::Abs(RelativePhiEventPlane(fEPV0,TriggerHadron->Phi()))); //fEPV0 is the event plane from AliAnalysisTaskEmcal
-    fhPhiTriggerHadronEventPlaneTPC->Fill(TMath::Abs(RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),TriggerHadron->Phi()))); //TPC event plane 
+    if (fJetShapeType != AliAnalysisTaskRecoilJetYield::kGenOnTheFly) fhPhiTriggerHadronEventPlane->Fill(TMath::Abs(RelativePhiEventPlane(fEPV0,TriggerHadron->Phi()))); //fEPV0 is the event plane from AliAnalysisTaskEmcal
+    if (fJetShapeType != AliAnalysisTaskRecoilJetYield::kGenOnTheFly) fhPhiTriggerHadronEventPlaneTPC->Fill(TMath::Abs(RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),TriggerHadron->Phi()))); //TPC event plane 
   }
 
   ////////////////////kData////////////////////
@@ -509,6 +521,77 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       fTreeJetInfo->Fill();
     }
     
+  }
+
+  if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
+    AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                         
+    AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
+    Int_t JetCounter=0; //Counts number of jets in event  
+    Double_t JetPhi=0;
+    Bool_t EventCounter=kFALSE;
+    Double_t JetPt_ForThreshold=0;
+    AliEmcalJet *Jet2= NULL;
+    if(JetCont) {
+      JetCont->ResetCurrentID();
+      while((Jet1=JetCont->GetNextAcceptJet())) {
+	if(!Jet1) continue;
+	if (fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	else JetPt_ForThreshold = Jet1->Pt();
+	if(JetPt_ForThreshold<fPtThreshold) {
+	  continue;
+	}
+	else {
+	  Float_t RecoilDeltaPhi = 0.;
+	  if (fJetSelection == kRecoil){
+	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi()); 
+	    if (TMath::Abs(RecoilDeltaPhi) < (TMath::Pi() - fRecoilAngularWindow)) continue;  //accept the jet only if it overlaps with the recoil phi area of the trigger
+	    fh2PtTriggerHadronJet->Fill(TriggerHadron->Pt(), Jet1->Pt());
+	    fhPhiTriggerHadronJet->Fill(RelativePhi(TriggerHadron->Phi(), Jet1->Phi()));
+	  }
+          if (!EventCounter){
+            EventCounter=kTRUE;
+          }
+	  JetCounter++;
+	  fhJetPt->Fill(Jet1->Pt());
+	  fhJetArea->Fill(Jet1->Area());
+	  JetPhi=Jet1->Phi();
+	  if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
+	  else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
+	  fhJetPhi->Fill(JetPhi);
+	  fhJetEta->Fill(Jet1->Eta());
+	  fhJetMass->Fill(Jet1->M());
+	  fhJetRadius->Fill(TMath::Sqrt((Jet1->Area()/TMath::Pi()))); //Radius of Jets per event
+          fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());
+	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	  else fJetInfoVar[0]=Jet1->Pt();
+	  fJetInfoVar[1]=0;
+	  if(fDoSoftDrop) {
+	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kFALSE);
+	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kTRUE);
+	  }
+	  else{
+	    fJetInfoVar[2]=0;
+	    fJetInfoVar[3]=0;
+	    fJetInfoVar[4]=0;
+	    fJetInfoVar[5]=0;
+	    fJetInfoVar[6]=0;
+	    fJetInfoVar[7]=0;
+	    fJetInfoVar[12]=0;
+	    fJetInfoVar[13]=0;
+	    fJetInfoVar[14]=0;
+	    fJetInfoVar[15]=0;
+	    fJetInfoVar[16]=0;
+	    fJetInfoVar[17]=0;
+	  }		    
+	  fJetInfoVar[8]=PTD(Jet1,0);
+	  fJetInfoVar[9]=0;
+	  fJetInfoVar[10]=Angularity(Jet1,0);
+	  fJetInfoVar[11]=0;
+	  fTreeJetInfo->Fill();
+	}
+      }
+      fhJetCounter->Fill(JetCounter); //Number of Jets in Each Event
+    }
   }
 
   
@@ -740,28 +823,64 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   
 }
 
-//________________________________________________________________________
+//--------------------------------------------------------------------------
 Int_t AliAnalysisTaskRecoilJetYield::SelectTriggerHadron(Float_t PtMin, Float_t PtMax){
+
   AliTrackContainer *PartCont = NULL;
-  if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
-  else PartCont = GetTrackContainer(0);
-  TClonesArray *TracksArray = PartCont->GetArray();
-  if(!PartCont || !TracksArray) return -99999;
+  AliParticleContainer *PartContMC = NULL;
+
+
+  if (fJetShapeSub==kConstSub){
+    if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) PartContMC = GetParticleContainer(1);
+    else PartCont = GetTrackContainer(1);
+  }
+  else{
+    if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) PartContMC = GetParticleContainer(0);
+    else PartCont = GetTrackContainer(0);
+  }
+  
+  TClonesArray *TracksArray = NULL;
+  TClonesArray *TracksArrayMC = NULL;
+  if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) TracksArrayMC = PartContMC->GetArray();
+  else TracksArray = PartCont->GetArray();
+ 
+  if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
+    if(!PartContMC || !TracksArrayMC) return -99999;
+  }
+  else {
+    if(!PartCont || !TracksArray) return -99999;
+  }
+    
   AliAODTrack *Track = 0x0;
-  Int_t Trigger_Index[10000];
+  Int_t Trigger_Index[100];
   for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
   Int_t Trigger_Counter = 0;
-  for(Int_t i=0; i < TracksArray->GetEntriesFast(); i++){  
-    if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
-      if (!Track) continue;
-      fhTrackPt->Fill(Track->Pt());
-      if(TMath::Abs(Track->Eta())>0.9) continue;
-      if (Track->Pt()<0.15) continue;
-      if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
-	Trigger_Index[Trigger_Counter] = i;
-	Trigger_Counter++;
+  Int_t NTracks=0;
+  if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) NTracks = TracksArrayMC->GetEntriesFast();
+  else NTracks = TracksArray->GetEntriesFast();
+  for(Int_t i=0; i < NTracks; i++){
+    if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
+      if((Track = static_cast<AliAODTrack*>(PartContMC->GetAcceptParticle(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
+	  Trigger_Index[Trigger_Counter] = i;
+	  Trigger_Counter++;
+	}
       }
     }
+    else{ 
+      if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
+	  Trigger_Index[Trigger_Counter] = i;
+	  Trigger_Counter++;
+	}
+      }
+    } 
   }
   if (Trigger_Counter == 0) return -99999;
   Int_t RandomNumber = 0, Index = 0 ; 
