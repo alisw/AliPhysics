@@ -549,7 +549,7 @@ goCPass()
       else
         collisionSystem=$(run2collisionSystem "$runNumber")
         printExec ./runPPass_${collisionSystem}.sh "/$infile" "SPLIT" "$nEvents" "$runNumber" "$ocdbPath"
-	[[ -f AliESDs_Barrel.root ]] && echo AliESDs.root > filtered.list
+	[[ -f AliESDs.root ]] && echo AliESDs.root > filtered.list
 	printExec goMakeFilteredTrees $PWD $runNumber "$PWD/filtered.list" $filteringFactorHighPt \
                             $filteringFactorV0s $ocdbPath 1000000 0 10000000 0 \
                             $configFile AliESDs.root "${extraOpts[@]}"
