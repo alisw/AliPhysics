@@ -871,8 +871,9 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     InitRaws() ;
 
   rawReader->Reset() ;
-  AliADRawStream* rawStream  = new AliADRawStream(rawReader);
-  if(!(rawStream->Next())){ delete rawStream; rawStream = NULL; return;}
+  AliADRawStream rawStream(rawReader);
+  if (!rawStream.Next())
+    return;
 
   eventTypeType eventType = rawReader->GetType();
 
@@ -914,13 +915,13 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       // Fill Pedestal histograms
       iFlag = 0;
       for(Int_t j=0; j<=20; j++) {
-        if((rawStream->GetBGFlag(iChannel,j) || rawStream->GetBBFlag(iChannel,j))) iFlag++;
+        if((rawStream.GetBGFlag(iChannel,j) || rawStream.GetBBFlag(iChannel,j))) iFlag++;
       }
 
       if(iFlag == 0){ //No Flag found
         for(Int_t j=11; j<=17; j++){
-          pedestal= (Int_t) rawStream->GetPedestal(iChannel, j);
-          integrator[offlineCh] = rawStream->GetIntegratorFlag(iChannel, j);
+          pedestal= (Int_t) rawStream.GetPedestal(iChannel, j);
+          integrator[offlineCh] = rawStream.GetIntegratorFlag(iChannel, j);
           OCDBdiff = pedestal - fCalibData->GetPedestal(offlineCh+16*integrator[offlineCh]);
 
           FillRawsData((integrator[offlineCh] == 0 ? kPedestalInt0 : kPedestalInt1),offlineCh,pedestal);
@@ -937,10 +938,10 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Int_t imax = -1;
       Float_t adcPedSub[21];
       for(Int_t iClock=0; iClock<21; iClock++){
-        Bool_t iIntegrator = rawStream->GetIntegratorFlag(iChannel,iClock);
+        Bool_t iIntegrator = rawStream.GetIntegratorFlag(iChannel,iClock);
         Int_t k = offlineCh+16*iIntegrator;
 
-        adcPedSub[iClock] = rawStream->GetPedestal(iChannel,iClock) - fCalibData->GetPedestal(k);
+        adcPedSub[iClock] = rawStream.GetPedestal(iChannel,iClock) - fCalibData->GetPedestal(k);
         if(adcPedSub[iClock] <= fRecoParam->GetNSigmaPed()*fCalibData->GetSigma(k)) {
           adcPedSub[iClock] = 0;
           continue;
@@ -961,17 +962,17 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
         for(Int_t iClock = start; iClock <= end; iClock++) {
           adc[offlineCh] += adcPedSub[iClock];
         }
-        charge = rawStream->GetPedestal(iChannel,imax); // Charge at the maximum
+        charge = rawStream.GetPedestal(iChannel,imax); // Charge at the maximum
       }
       else charge = -1024;
 
       if(charge != -1024) FillRawsData(kMaxChargeClock,offlineCh,imax-10);
 
-      integrator[offlineCh] = rawStream->GetIntegratorFlag(iChannel,imax);
+      integrator[offlineCh] = rawStream.GetIntegratorFlag(iChannel,imax);
 
       Int_t board = AliADCalibData::GetBoardNumber(offlineCh);
-      time[offlineCh] = rawStream->GetTime(iChannel)*fCalibData->GetTimeResolution(board);
-      width[offlineCh] = rawStream->GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
+      time[offlineCh] = rawStream.GetTime(iChannel)*fCalibData->GetTimeResolution(board);
+      width[offlineCh] = rawStream.GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
 
       FillRawsData(kChargeEoI,offlineCh,adc[offlineCh]);
 
@@ -1016,14 +1017,14 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       // Fill Flag and Charge Versus LHC-Clock histograms
       Int_t nbbFlag = 0;
       Int_t nbgFlag = 0;
-      flagBB[offlineCh] = rawStream->GetBBFlag(iChannel,10);
-      flagBG[offlineCh] = rawStream->GetBGFlag(iChannel,10);
+      flagBB[offlineCh] = rawStream.GetBBFlag(iChannel,10);
+      flagBG[offlineCh] = rawStream.GetBGFlag(iChannel,10);
 
       for(Int_t iEvent=0; iEvent<21; iEvent++){
-        charge = rawStream->GetPedestal(iChannel,iEvent);
-        Int_t intgr = rawStream->GetIntegratorFlag(iChannel,iEvent);
-        Bool_t bbFlag     = rawStream->GetBBFlag(iChannel,iEvent);
-        Bool_t bgFlag     = rawStream->GetBGFlag(iChannel,iEvent);
+        charge = rawStream.GetPedestal(iChannel,iEvent);
+        Int_t intgr = rawStream.GetIntegratorFlag(iChannel,iEvent);
+        Bool_t bbFlag     = rawStream.GetBBFlag(iChannel,iEvent);
+        Bool_t bgFlag     = rawStream.GetBGFlag(iChannel,iEvent);
         if(bbFlag) nbbFlag++;
         if(bgFlag) nbgFlag++;
 
@@ -1103,7 +1104,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     for(Int_t iChannel=0; iChannel<16; iChannel++) {
       for(Int_t iEvent=0; iEvent<21; iEvent++){
         offlineCh = kOfflineChannel[iChannel];
-        Bool_t bbFlag = rawStream->GetBBFlag(iChannel,iEvent);
+        Bool_t bbFlag = rawStream.GetBBFlag(iChannel,iEvent);
         if(pBBmulADA>0 || pBBmulADC>0)FillRawsData(kBBFlagVsClock_ADOR, offlineCh,(float)iEvent-10,(float)bbFlag);
       }
     }
@@ -1180,8 +1181,6 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     break;
   } // END of SWITCH : EVENT TYPE
 
-  delete rawStream; rawStream = NULL;
-  //
   IncEvCountCycleRaws();
   IncEvCountTotalRaws();
   //

@@ -42,7 +42,7 @@ using std::ostream;
 //
 class TObjArray;
 class TClonesArray;
-class TList;
+class TMap;
 
 class TStarLight : public TGenerator {
  public:
@@ -61,7 +61,7 @@ class TStarLight : public TGenerator {
   virtual void       SetParameter(const char* key, Double_t val);
   virtual Double_t   GetParameter(const char* name) const;
 
-  void ImportEventInfo(TList *) const;
+  void ImportEventInfo(TMap *) const;
 
   // read configuration from a file
   void ImportConfigurationFromFile(const char* filename){
