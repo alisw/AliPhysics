@@ -386,6 +386,19 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTrackMatchedDEtaNeg[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts
   TH2F * fhTrackMatchedDPhiNeg[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts
   TH2F * fhTrackMatchedDEtaDPhiNeg[2]    ;          //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before photon cuts
+
+  TH2F * fhTrackMatchedDEtaTrackPt[2]    ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDPhiTrackPt[2]    ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhiTrackPt[2];          //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before
+  
+  TH2F * fhTrackMatchedDEtaPosTrackPt[2] ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDPhiPosTrackPt[2] ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhiPosTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before
+  
+  TH2F * fhTrackMatchedDEtaNegTrackPt[2] ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDPhiNegTrackPt[2] ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhiNegTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before photon cuts
+
   
   TH2F * fhTrackMatchedDEtaTRD[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
   TH2F * fhTrackMatchedDPhiTRD[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
