@@ -216,8 +216,12 @@ fhPtClusterInConePerRCut(0),         fhPtClusterInConePerRCutLargePtTrig(0),
 fhPtTrackInConePerRCut(0),           fhPtTrackInConePerRCutLargePtTrig(0),
 fhConeSumPtClusterPerRCut(0),        fhConeSumPtClusterPerRCutLargePtTrig(0),
 fhConeSumPtTrackPerRCut(0),          fhConeSumPtTrackPerRCutLargePtTrig(0),
+fhConeNClusterPerMinPtCut(0),        fhConeNClusterPerMinPtCutLargePtTrig(0),
+fhConeNTrackPerMinPtCut(0),          fhConeNTrackPerMinPtCutLargePtTrig(0),
+fhPerpConeNTrackPerMinPtCut(0),      fhPerpConeNTrackPerMinPtCutLargePtTrig(0),
 fhConeSumPtClusterPerMinPtCut(0),    fhConeSumPtClusterPerMinPtCutLargePtTrig(0),
 fhConeSumPtTrackPerMinPtCut(0),      fhConeSumPtTrackPerMinPtCutLargePtTrig(0),
+fhPerpConeSumPtTrackPerMinPtCut(0),  fhPerpConeSumPtTrackPerMinPtCutLargePtTrig(0),
 fhConeSumPtClusterPerMaxPtCut(0),    fhConeSumPtClusterPerMaxPtCutLargePtTrig(0),
 fhConeSumPtTrackPerMaxPtCut(0),      fhConeSumPtTrackPerMaxPtCutLargePtTrig(0),
 fhConeSumPtTrackPerEtaCut(0),        fhConeSumPtTrackPerEtaCutLargePtTrig(0),
@@ -673,6 +677,19 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
   Double_t sumptPerpBC0 = 0. ;
   Double_t sumptPerpITSSPD = 0. ;
   Double_t sumptPerpBC0ITSSPD = 0.;
+  
+  Float_t coneptsumPerpTrackPerMinCut[20];
+  Float_t coneNPerpTrackPerMinCut    [20];
+  
+  if(fStudyPtCutInCone)
+  {
+    for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
+    {
+      coneptsumPerpTrackPerMinCut[icut] = 0;
+      coneNPerpTrackPerMinCut    [icut] = 0;
+    }
+  }
+  
   Float_t ptTrig    = pCandidate->Pt() ;
   Float_t phiTrig   = pCandidate->Phi();
   Float_t etaTrig   = pCandidate->Eta();
@@ -795,6 +812,18 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
     {
       sumptPerp+=track->Pt();
 
+      if(fStudyPtCutInCone)
+      {
+        for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
+        {
+          if ( track->Pt() > fMinPtCutInCone[icut] ) 
+          {
+            coneptsumPerpTrackPerMinCut[icut]+=track->Pt();
+            coneNPerpTrackPerMinCut    [icut]++;
+          }          
+        }
+      }
+      
       fhPtInPerpCone->Fill(ptTrig, track->Pt(), GetEventWeight());
             
       if(fStudyTracksInCone)
@@ -838,6 +867,22 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
   fhPerpConeSumPt           ->Fill(ptTrig, sumptPerp   , GetEventWeight());
   fhConeSumPtEtaBandUETrack ->Fill(ptTrig, etaBandPtSum, GetEventWeight());
   fhConeSumPtPhiBandUETrack ->Fill(ptTrig, phiBandPtSum, GetEventWeight());
+  
+  if(fStudyPtCutInCone)
+  {
+    for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
+    {
+      fhPerpConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumPerpTrackPerMinCut[icut], GetEventWeight());
+      fhPerpConeNTrackPerMinPtCut    ->Fill(icut+1, coneNPerpTrackPerMinCut    [icut], GetEventWeight());
+      
+      if ( ptTrig > 10 ) 
+      {
+        fhPerpConeSumPtTrackPerMinPtCutLargePtTrig->Fill(icut+1, coneptsumPerpTrackPerMinCut[icut], GetEventWeight());   
+        fhPerpConeNTrackPerMinPtCutLargePtTrig    ->Fill(icut+1, coneNPerpTrackPerMinCut    [icut], GetEventWeight());   
+      }
+    }
+  }
+
   
   if(fFillUEBandSubtractHistograms > 1)
   {
@@ -1174,6 +1219,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     GetReader()->GetVertex(vertex);
   
   Float_t ptcone = 0;
+  Float_t coneNClusterPerMinCut    [20];
   Float_t coneptsumClusterPerMinCut[20];
   Float_t coneptsumClusterPerMaxCut[20];
   Float_t coneptsumClusterPerRCut  [10];
@@ -1185,6 +1231,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++)
     {
+      coneNClusterPerMinCut    [icut] = 0;
       coneptsumClusterPerMinCut[icut] = 0;
       coneptsumClusterPerMaxCut[icut] = 0;
     }
@@ -1248,7 +1295,12 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     {
       for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
       {
-        if ( ptcone > fMinPtCutInCone[icut] ) coneptsumClusterPerMinCut[icut]+=ptcone;
+        if ( ptcone > fMinPtCutInCone[icut] ) 
+        {
+          coneptsumClusterPerMinCut[icut]+=ptcone;
+          coneNClusterPerMinCut    [icut]++;
+        }
+        
         if ( ptcone < fMaxPtCutInCone[icut] ) coneptsumClusterPerMaxCut[icut]+=ptcone;
       }
     }
@@ -1303,11 +1355,16 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
+      fhConeNClusterPerMinPtCut    ->Fill(icut, coneNClusterPerMinCut    [icut], GetEventWeight());
       fhConeSumPtClusterPerMinPtCut->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtClusterPerMinPtCutLargePtTrig->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventWeight());
-      
       fhConeSumPtClusterPerMaxPtCut->Fill(icut, coneptsumClusterPerMaxCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtClusterPerMaxPtCutLargePtTrig->Fill(icut, coneptsumClusterPerMaxCut[icut], GetEventWeight());
+
+      if ( ptTrig > 10 ) 
+      {
+        fhConeNClusterPerMinPtCutLargePtTrig    ->Fill(icut, coneNClusterPerMinCut    [icut], GetEventWeight());
+        fhConeSumPtClusterPerMinPtCutLargePtTrig->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventWeight());
+        fhConeSumPtClusterPerMaxPtCutLargePtTrig->Fill(icut, coneptsumClusterPerMaxCut[icut], GetEventWeight());
+      }
     }
   }
 
@@ -1461,6 +1518,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   Float_t pTtrack  = 0;
   Float_t phitrack = 0;
   Float_t etatrack = 0;
+  Float_t coneNTrackPerMinCut    [20];
   Float_t coneptsumTrackPerMinCut[20];
   Float_t coneptsumTrackPerMaxCut[20];
   Float_t coneptsumTrackPerEtaCut[10];
@@ -1481,6 +1539,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     {
       coneptsumTrackPerMinCut[icut] = 0;
       coneptsumTrackPerMaxCut[icut] = 0;
+      coneNTrackPerMinCut    [icut] = 0;
     }
   }
   
@@ -1581,7 +1640,12 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     {
       for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
       {
-        if ( pTtrack > fMinPtCutInCone[icut] ) coneptsumTrackPerMinCut[icut]+=pTtrack;
+        if ( pTtrack > fMinPtCutInCone[icut] ) 
+        {
+          coneptsumTrackPerMinCut[icut]+=pTtrack;
+          coneNTrackPerMinCut    [icut]++;
+        }
+        
         if ( pTtrack < fMaxPtCutInCone[icut] ) coneptsumTrackPerMaxCut[icut]+=pTtrack;
       }
     }
@@ -1775,11 +1839,16 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      fhConeSumPtTrackPerMinPtCut ->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtTrackPerMinPtCutLargePtTrig->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight());   
-      
-      fhConeSumPtTrackPerMaxPtCut ->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtTrackPerMaxPtCutLargePtTrig->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight());
+      fhConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight());
+      fhConeSumPtTrackPerMaxPtCut->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight());
+      fhConeNTrackPerMinPtCut    ->Fill(icut+1, coneNTrackPerMinCut    [icut], GetEventWeight());
+
+      if ( ptTrig > 10 ) 
+      {
+        fhConeSumPtTrackPerMinPtCutLargePtTrig->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight());   
+        fhConeSumPtTrackPerMaxPtCutLargePtTrig->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight());
+        fhConeNTrackPerMinPtCutLargePtTrig    ->Fill(icut+1, coneNTrackPerMinCut    [icut], GetEventWeight());   
+      }
     }
   }
   
@@ -2704,6 +2773,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Float_t ptinconemax   = GetHistogramRanges()->GetHistoPtInConeMax();
   Float_t ptinconemin   = GetHistogramRanges()->GetHistoPtInConeMin();
   
+  Int_t   nmultbin = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
+  Int_t   multmax  = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
+  Int_t   multmin  = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
+  
   //Float_t ptthre    = GetIsolationCut()->GetPtThreshold();
   //Float_t ptsumthre = GetIsolationCut()->GetSumPtThreshold();
   //Float_t ptfrac    = GetIsolationCut()->GetPtFraction();
@@ -3537,6 +3610,26 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(fStudyPtCutInCone)
       {
+        fhConeNClusterPerMinPtCut = new TH2F
+        ("hConeNClusterPerMinPtCut",
+         Form("N clusters, different min #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
+         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax);
+        fhConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
+        fhConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+          fhConeNClusterPerMinPtCut->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
+        outputContainer->Add(fhConeNClusterPerMinPtCut) ;
+        
+        fhConeNClusterPerMinPtCutLargePtTrig = new TH2F
+        ("hConeNClusterPerMinPtCutLargePtTrig",
+         Form("N cluster, different min #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax);
+        fhConeNClusterPerMinPtCutLargePtTrig->SetYTitle("#it{N}^{cluster}");
+        fhConeNClusterPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+          fhConeNClusterPerMinPtCutLargePtTrig->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
+        outputContainer->Add(fhConeNClusterPerMinPtCutLargePtTrig) ;
+
         fhConeSumPtClusterPerMinPtCut = new TH2F
         ("hConePtSumClusterPerMinPtCut",
          Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
@@ -3556,6 +3649,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         for(Int_t i = 1; i <= fNPtCutsInCone; i++)
           fhConeSumPtClusterPerMinPtCutLargePtTrig->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtClusterPerMinPtCutLargePtTrig) ;
+
         
         fhConeSumPtClusterPerMaxPtCut = new TH2F
         ("hConePtSumClusterPerMaxPtCut",
@@ -4156,6 +4250,26 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(fStudyPtCutInCone)
       {
+        fhConeNTrackPerMinPtCut = new TH2F
+        ("hConeNTrackPerMinPtCut",
+         Form("N tracks, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+        fhConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
+        fhConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+          fhConeNTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
+        outputContainer->Add(fhConeNTrackPerMinPtCut) ;
+        
+        fhConeNTrackPerMinPtCutLargePtTrig = new TH2F
+        ("hConeNTrackPerMinPtCutLargePtTrig",
+         Form("N tracks, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+        fhConeNTrackPerMinPtCutLargePtTrig->SetYTitle("#it{N}^{track}");
+        fhConeNTrackPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+          fhConeNTrackPerMinPtCutLargePtTrig->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
+        outputContainer->Add(fhConeNTrackPerMinPtCutLargePtTrig) ;
+
         fhConeSumPtTrackPerMinPtCut = new TH2F
         ("hConePtSumTrackPerMinPtCut",
          Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
@@ -4175,6 +4289,49 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         for(Int_t i = 1; i <= fNPtCutsInCone; i++)
           fhConeSumPtTrackPerMinPtCutLargePtTrig->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtTrackPerMinPtCutLargePtTrig) ;
+
+        if(fFillUEBandSubtractHistograms)
+        {
+          fhPerpConeNTrackPerMinPtCut = new TH2F
+          ("hPerpConeNTrackPerMinPtCut",
+           Form("N tracks, different #it{p}_{T} cuts in perpendicular cone for #it{R} = %2.2f",r),
+           fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+          fhPerpConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
+          fhPerpConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+          for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+            fhPerpConeNTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
+          outputContainer->Add(fhPerpConeNTrackPerMinPtCut) ;
+          
+          fhPerpConeNTrackPerMinPtCutLargePtTrig = new TH2F
+          ("hPerpConeNTrackPerMinPtCutLargePtTrig",
+           Form("N tracks, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+           fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+          fhPerpConeNTrackPerMinPtCutLargePtTrig->SetYTitle("#it{N}^{track}");
+          fhPerpConeNTrackPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+          for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+            fhPerpConeNTrackPerMinPtCutLargePtTrig->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
+          outputContainer->Add(fhPerpConeNTrackPerMinPtCutLargePtTrig) ;
+          
+          fhPerpConeSumPtTrackPerMinPtCut = new TH2F
+          ("hPerpConePtSumTrackPerMinPtCut",
+           Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in perpendicular cone for #it{R} = %2.2f",r),
+           fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+          fhPerpConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhPerpConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+          for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+            fhPerpConeSumPtTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
+          outputContainer->Add(fhPerpConeSumPtTrackPerMinPtCut) ;
+          
+          fhPerpConeSumPtTrackPerMinPtCutLargePtTrig = new TH2F
+          ("hPerpConePtSumTrackPerMinPtCutLargePtTrig",
+           Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in perpendicular cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+           fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+          fhPerpConeSumPtTrackPerMinPtCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhPerpConeSumPtTrackPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+          for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+            fhPerpConeSumPtTrackPerMinPtCutLargePtTrig->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
+          outputContainer->Add(fhPerpConeSumPtTrackPerMinPtCutLargePtTrig) ;
+        }
         
         fhConeSumPtTrackPerMaxPtCut = new TH2F
         ("hConePtSumTrackPerMaxPtCut",
