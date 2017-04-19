@@ -4287,6 +4287,7 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
         Double_t sy2=kcl->GetSigmaY2()*2.,     sz2=kcl->GetSigmaZ2()*2.;
         if (kr1[is]->GetType()<0) {sy1 += 0.25;sz1 += 0.25;} // edge cluster
         if (kcl->GetType()<0) {sy2 += 0.25;sz2 += 0.25;} // edge cluster
+        if (sy1 < 0.2) sy1 = 0.2;if (sy2 < 0.2) sy2 = 0.2;if (sz1 < 0.1) sz1 = 0.1;if (sz2 < 0.1) sz2 = 0.1; //Minimum error for small edge clusters / single pad clusters
 
 	//Double_t sy3=400*3./12., sy=0.1, sz=0.1;
 	Double_t sy3=25000*x[4]*x[4]+0.1, sy=0.1, sz=0.1;
@@ -4617,6 +4618,7 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
         Double_t sy2=kcl->GetSigmaY2()*2.,     sz2=kcl->GetSigmaZ2()*2.;
         if (kr1[is]->GetType()<0) {sy1 += 0.25;sz1 += 0.25;} // edge cluster
         if (kcl->GetType()<0) {sy2 += 0.25;sz2 += 0.25;} // edge cluster
+        if (sy1 < 0.2) sy1 = 0.2;if (sy2 < 0.2) sy2 = 0.2;if (sz1 < 0.1) sz1 = 0.1;if (sz2 < 0.1) sz2 = 0.1; //Minimum error for small edge clusters / single pad clusters
 	//Double_t sy3=400*3./12., sy=0.1, sz=0.1;
 	Double_t sy3=25000*x[4]*x[4]+0.1, sy=0.1, sz=0.1;
 	//Double_t sy3=25000*x[4]*x[4]*60+0.5, sy=0.1, sz=0.1;
