@@ -161,9 +161,8 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   
   if (fTagEdgeClusters)
   {
-    if (fkInput->fBorder) fOutput.fRowQ |= (0x1 << 23);
+    if (fkInput->fBorder) fOutput.fRowQ |= (0x1 << 23); //We actually tag with the border flag, because also the clusters at branch borders and interleaved rows have edge effects.
   }
-  
 
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;
   *((AliHLTFloat32_t*)&fOutput.fT) = (float)fkInput->fT/q;
@@ -178,7 +177,10 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
       AliHLTFloat32_t peak = (float)fkInput->fLargestQPad;
       if (cog < 30 ? (cog > peak) : (cog < peak))
       {
-        cog = peak;  
+        AliHLTFloat32_t& sigmay = *((AliHLTFloat32_t*)&fOutput.fP2);
+        //printf("Difference %f SHIFTING %f --> %f\n", fabs(peak - cog), cog, peak);
+        sigmay += peak * peak - cog * cog;
+        cog = peak;
       }
     }
   }
