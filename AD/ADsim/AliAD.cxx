@@ -329,17 +329,16 @@ void AliAD::SetTreeAddress()
   //
   // Sets tree address for hits.
   //
-
   TBranch *branch;
   char branchname[20];
   snprintf(branchname,19,"%s",GetName());
   // Branch address for hit tree
   TTree *treeH = fLoader->TreeH();
-  if (treeH )
-    {
-      branch = treeH->GetBranch(branchname);
-      if (branch) branch->SetAddress(&fHits);
-    }
+  if (treeH) {
+    branch = treeH->GetBranch(branchname);
+    if (branch)
+      branch->SetAddress(&fHits);
+  }
 }
 
 
@@ -356,7 +355,6 @@ void AliAD::MakeBranch(Option_t* opt)
 //_____________________________________________________________________________
 AliLoader* AliAD::MakeLoader(const char* topfoldername)
 {
-
   AliDebugF(1, "Creating AliADLoader, Top folder is %s ",topfoldername);
   fLoader = new AliADLoader(GetName(),topfoldername);
   return fLoader;
@@ -421,49 +419,47 @@ void AliAD::Digits2Raw()
   digits->GetBranch("ADDigit")->SetAddress(&ADdigits);
 
   const char *fileName = AliDAQ::DdlFileName("AD",0);
-  AliADBuffer* buffer  = new AliADBuffer(fileName);
+  AliADBuffer buffer(fileName);
 
   // Get Trigger information first
   // Read trigger inputs from trigger-detector object
   AliDataLoader * dataLoader = fLoader->GetDigitsDataLoader();
-  if( !dataLoader->IsFileOpen() )
+  if (!dataLoader->IsFileOpen())
     dataLoader->OpenFile("READ");
+
   AliTriggerDetector* trgdet = (AliTriggerDetector*)dataLoader->GetDirectory()->Get("Trigger");
   UInt_t triggerInfo = 0;
-  if(trgdet) {
+  if (trgdet) {
     triggerInfo = UInt_t(trgdet->GetMask() & 0xffff);
   } else {
     AliErrorF("There is no trigger object for %s",fLoader->GetName());
   }
 
-  buffer->WriteTriggerInfo(triggerInfo);
-  buffer->WriteTriggerScalers();
-  buffer->WriteBunchNumbers();
+  buffer.WriteTriggerInfo(triggerInfo);
+  buffer.WriteTriggerScalers();
+  buffer.WriteBunchNumbers();
 
   // Now retrieve the channel information: charge smaples + time and
   // dump it into ADC and Time arrays
-  Long64_t nEntries = digits->GetEntries();
   Short_t aADC[16][kADNClocks];
   Short_t aTime[16];
   Short_t aWidth[16];
   Bool_t  aIntegrator[16];
   Bool_t  aBBflag[16];
   Bool_t  aBGflag[16];
-
-  for (Long64_t i = 0; i < nEntries; i++) {
+  for (Long64_t i=0, nEntries = digits->GetEntries(); i < nEntries; i++) {
     fAD->ResetDigits();
     digits->GetEvent(i);
-    Int_t ndig = ADdigits->GetEntriesFast();
 
-    if(ndig == 0) continue;
-    for(Int_t k=0; k<ndig; k++){
+    for (Int_t k=0, ndig=ADdigits->GetEntriesFast(); k<ndig; k++){
       AliADdigit* fADDigit = (AliADdigit*) ADdigits->At(k);
 
       Int_t iChannel       = kOnlineChannel[fADDigit->PMNumber()];
+      for (Int_t iClock = 0; iClock < kADNClocks; ++iClock)
+	aADC[iChannel][iClock] = fADDigit->ChargeADC(20-iClock);
 
-      for(Int_t iClock = 0; iClock < kADNClocks; ++iClock) aADC[iChannel][iClock] = fADDigit->ChargeADC(20-iClock);
-      Int_t board = AliADCalibData::GetBoardNumber(iChannel);
-      aTime[iChannel]      = TMath::Nint(fADDigit->Time() / fCalibData->GetTimeResolution(board));
+      const Int_t board = AliADCalibData::GetBoardNumber(iChannel);
+      aTime[iChannel]      = TMath::Nint(fADDigit->Time()  / fCalibData->GetTimeResolution(board));
       aWidth[iChannel]     = TMath::Nint(fADDigit->Width() / fCalibData->GetWidthResolution(board));
       aIntegrator[iChannel]= fADDigit->Integrator();
       aBBflag[iChannel]    = fADDigit->GetBBflag();
@@ -477,29 +473,27 @@ void AliAD::Digits2Raw()
   // Now fill raw data
   Int_t iCIU=0;
   for (Int_t  iV0CIU = 0; iV0CIU < 8; iV0CIU++) {
-    if(iV0CIU != 2 && iV0CIU != 5) {
-      buffer->WriteEmptyCIU();
+    if (iV0CIU != 2 && iV0CIU != 5) {
+      buffer.WriteEmptyCIU();
       continue;
     }
     // decoding of one Channel Interface Unit numbered iCIU - there are 8 channels per CIU (and 2 CIUs) :
-    for(Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) {
-      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-        buffer->WriteChannel(iChannel, aADC[iChannel], aIntegrator[iChannel]);
+    for (Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) {
+      for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        buffer.WriteChannel(iChannel, aADC[iChannel], aIntegrator[iChannel]);
       }
-      buffer->WriteBeamFlags(&aBBflag[iChannel_Offset],&aBGflag[iChannel_Offset]);
-      buffer->WriteMBInfo();
-      buffer->WriteMBFlags();
-      buffer->WriteBeamScalers();
+      buffer.WriteBeamFlags(&aBBflag[iChannel_Offset],&aBGflag[iChannel_Offset]);
+      buffer.WriteMBInfo();
+      buffer.WriteMBFlags();
+      buffer.WriteBeamScalers();
     }
 
-    for(Int_t iChannel = iCIU*8 + 7; iChannel >= iCIU*8; iChannel--) {
-      buffer->WriteTiming(aTime[iChannel], aWidth[iChannel]);
+    for (Int_t iChannel = iCIU*8 + 7; iChannel >= iCIU*8; iChannel--) {
+      buffer.WriteTiming(aTime[iChannel], aWidth[iChannel]);
     } // End of decoding of one CIU card
     iCIU++;
   } // end of decoding the eight CIUs
 
-
-  delete buffer;
   fLoader->UnloadDigits();
 }
 
@@ -517,11 +511,12 @@ void AliAD::GetCalibData()
 {
   // Gets calibration object for AD set
   // Do nothing in case it is already loaded
-  if (fCalibData) return;
+  if (fCalibData)
+    return;
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("AD/Calib/Data");
-  if (entry) fCalibData = (AliADCalibData*) entry->GetObject();
-  if (!fCalibData)  AliFatal("No calibration data from calibration database !");
-
-  return;
+  if (entry)
+    fCalibData = (AliADCalibData*)entry->GetObject();
+  if (!fCalibData)
+    AliFatal("No calibration data from calibration database !");
 }
