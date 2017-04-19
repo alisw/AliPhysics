@@ -33,7 +33,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliAnalysisTaskCaloFilter.cxx
     AliAnalysisTaskESDfilterEMCALEventSelect.cxx
-    AliAnalysisTaskEmcalAlig.cxx
+    AliAnalysisTaskEMCALAlig.cxx
     AliAnalysisTaskEMCALClusterize.cxx
     AliAnalysisTaskEMCALPi0CalibSelection.cxx
     AliAnalysisTaskEMCALTriggerQA.cxx
