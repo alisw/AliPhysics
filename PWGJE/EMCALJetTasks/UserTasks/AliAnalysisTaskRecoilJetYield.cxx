@@ -676,12 +676,12 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     if(!fTruthJet){
       fJetInfoVar[4]=NSubjettinessResult[1];
       fJetInfoVar[6]=NSubjettinessResult[2];
-      fJetInfoVar[12]=DelR;
+      // fJetInfoVar[12]=DelR;
     }
     else {
       fJetInfoVar[5]=NSubjettinessResult[1];
       fJetInfoVar[7]=NSubjettinessResult[2];
-      fJetInfoVar[13]=DelR;
+      // fJetInfoVar[13]=DelR;
     }
 
     
@@ -727,10 +727,13 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
   if(!fTruthJet) fJetInfoVar[2]=SymParam;
   else fJetInfoVar[3]=SymParam;
+  if(!fTruthJet) fJetInfoVar[12] = DeltaR;
+  else fJetInfoVar[13] = DeltaR;
   if(!fTruthJet) fJetInfoVar[14]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   else fJetInfoVar[15]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   if(!fTruthJet) fJetInfoVar[16]=finaljet.perp();
   else fJetInfoVar[17]=finaljet.perp();
+  
   
   return;
 
