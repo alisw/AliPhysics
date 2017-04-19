@@ -85,9 +85,18 @@ AliADTriggerSimulator::AliADTriggerSimulator()
 AliADTriggerSimulator::~AliADTriggerSimulator(){
   // Destructor
   for (Int_t i=0; i<kNCIUBoards; i++) {
-    if (fBBGate[i]) delete fBBGate[i]; fBBGate[i] = NULL;
-    if (fBGGate[i]) delete fBGGate[i]; fBGGate[i] = NULL;
-    if (fBCMask[i]) delete fBCMask[i]; fBCMask[i] = NULL;
+    if (fBBGate[i]) {
+      delete fBBGate[i];
+      fBBGate[i] = NULL;
+    }
+    if (fBGGate[i]) {
+      delete fBGGate[i];
+      fBGGate[i] = NULL;
+    }
+    if (fBCMask[i]) {
+      delete fBCMask[i];
+      fBCMask[i] = NULL;
+    }
   }
 }
 
