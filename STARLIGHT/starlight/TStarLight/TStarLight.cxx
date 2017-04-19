@@ -301,10 +301,10 @@ void TStarLight::ImportEventInfo(TMap *m) const {
   if (!fEvent.isGammaavm())
     return;
 
-  m->Add(new TNamed("b-slope", "(GeV/c)^-2"),               new TParameter<double>("bslope", fEvent.getBslope()));
-  m->Add(new TNamed("t",       "(GeV/c)^2"),                new TParameter<double>("t",      fEvent.gett()));
-  m->Add(new TNamed("Egam",    "photon energy (GeV/c^2)"),  new TParameter<double>("Egam",   fEvent.getEgam()));
-  m->Add(new TNamed("Epom",    "pomeron energy (GeV/c^2)"), new TParameter<double>("Epom",   fEvent.getEpom()));
-  m->Add(new TNamed("ptGam",   "photon pt (GeV/c)"),        new TVector2(const_cast<double*>(fEvent.getPtGam())));
-  m->Add(new TNamed("ptPom",   "pomeron pt (GeV/c)"),       new TVector2(const_cast<double*>(fEvent.getPtPom())));
+  m->Add(new TNamed("b-slope", "(GeV/c)^-2"),           new TParameter<double>("bslope", fEvent.getBslope()));
+  m->Add(new TNamed("t",       "(GeV/c)^2"),            new TParameter<double>("t",      fEvent.gett()));
+  m->Add(new TNamed("Egam",    "photon energy (GeV)"),  new TParameter<double>("Egam",   fEvent.getEgam()));
+  m->Add(new TNamed("Epom",    "pomeron energy (GeV)"), new TParameter<double>("Epom",   fEvent.getEpom()));
+  m->Add(new TNamed("ptGam",   "photon pt (GeV/c)"),    new TVector2(const_cast<double*>(fEvent.getPtGam())));
+  m->Add(new TNamed("ptPom",   "pomeron pt (GeV/c)"),   new TVector2(const_cast<double*>(fEvent.getPtPom())));
 }
