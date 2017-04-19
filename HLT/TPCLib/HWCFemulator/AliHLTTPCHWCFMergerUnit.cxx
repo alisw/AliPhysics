@@ -145,8 +145,8 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
       // flush the search range
   
       if( fSearchStart[ib]<fSearchEnd[ib] ){
-      fSearchStart[ib]++;
-      return &(fSearchRange[ib][fSearchStart[ib]-1]);
+        fSearchStart[ib]++;
+        return &(fSearchRange[ib][fSearchStart[ib]-1]);
       }    
     
       fInsertRow[ib] = -1;
@@ -204,7 +204,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
   
   AliHLTTPCHWCFClusterFragment *ret = 0;
   
-  if( fSearchStart[ib]<fSearchEnd[ib]  && fSearchRange[ib][fSearchStart[ib]].fTMean+fMatchDistance>fInput.fTMean ){
+  if( fSearchStart[ib]<fSearchEnd[ib] && fSearchRange[ib][fSearchStart[ib]].fTMean+fMatchDistance>fInput.fTMean ){
     AliHLTTPCHWCFClusterFragment &s = fSearchRange[ib][fSearchStart[ib]++];
     if( fDeconvolute && s.fSlope && s.fLastQ<fInput.fLastQ ){
       //cout<<"push from search range at "<<fSearchStart[ib]-1<<" of "<<fSearchEnd[ib]<<endl;
@@ -229,12 +229,12 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
       fInput.fP2 += s.fP2;
       fInput.fBorder |= s.fBorder;
       fInput.fIsDeconvolutedPad |= s.fIsDeconvolutedPad;
-	  fInput.fEdge |= s.fEdge;
+      fInput.fEdge |= s.fEdge;
       fInput.fMC.insert(fInput.fMC.end(), s.fMC.begin(), s.fMC.end());
       if (s.fLargestQ > fInput.fLargestQ)
       {
-	fInput.fLargestQ = s.fLargestQ;
-	fInput.fLargestQPad = s.fLargestQPad;      
+        fInput.fLargestQ = s.fLargestQ;
+        fInput.fLargestQPad = s.fLargestQPad;      
       }
       if( !fMatchTimeFollow ) fInput.fTMean = s.fTMean;    
       ret = 0;

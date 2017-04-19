@@ -132,6 +132,8 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fNDeconvolutedTime = 0;
   fOutput.fIsDeconvolutedPad = 0;
   fOutput.fConsecutiveTimeDeconvolution = 0;
+  fOutput.fLargestQ = 0;
+  fOutput.fLargestQPad = 0;
   fOutput.fMC.clear();
   
   if( fkBunch->fFlag==2 && fkBunch->fData.size()==1 ){ // rcu trailer word, forward it 
