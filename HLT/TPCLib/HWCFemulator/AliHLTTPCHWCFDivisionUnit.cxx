@@ -174,8 +174,8 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
     if (fkInput->fEdge)
     {
       AliHLTFloat32_t& cog = *((AliHLTFloat32_t*)&fOutput.fP);
-      AliHLTFloat32_t peak = (float)fkInput->fLargestQPad;
-      if (cog < 30 ? (cog > peak) : (cog < peak))
+      AliHLTFloat32_t peak = (float) fkInput->fLargestQPad;
+      if ((cog < 30 ? (cog > peak) : (cog < peak)) && fkInput->fLargestQPad != 0xFFFFFFFF && fkInput->fLargestQ * 2 >= fkInput->fLargestQ2 * 3)
       {
         AliHLTFloat32_t& sigmay = *((AliHLTFloat32_t*)&fOutput.fP2);
         //printf("Difference %f SHIFTING %f --> %f\n", fabs(peak - cog), cog, peak);

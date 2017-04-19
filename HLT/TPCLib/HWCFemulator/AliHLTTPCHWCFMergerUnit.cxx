@@ -233,8 +233,13 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
       fInput.fMC.insert(fInput.fMC.end(), s.fMC.begin(), s.fMC.end());
       if (s.fLargestQ > fInput.fLargestQ)
       {
+        fInput.fLargestQ2 = fInput.fLargestQ;
         fInput.fLargestQ = s.fLargestQ;
         fInput.fLargestQPad = s.fLargestQPad;      
+      }
+      else if (s.fLargestQ > fInput.fLargestQ2)
+      {
+        fInput.fLargestQ2 = s.fLargestQ;
       }
       if( !fMatchTimeFollow ) fInput.fTMean = s.fTMean;    
       ret = 0;

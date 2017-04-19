@@ -133,6 +133,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fIsDeconvolutedPad = 0;
   fOutput.fConsecutiveTimeDeconvolution = 0;
   fOutput.fLargestQ = 0;
+  fOutput.fLargestQ2 = 0;
   fOutput.fLargestQPad = 0;
   fOutput.fMC.clear();
   
@@ -264,7 +265,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   }
   fOutput.fEdge = fkBunch->fEdge && iEnd > iStart + 2 && qPeak > 5;
   fOutput.fLargestQ = fOutput.fQ;
-  fOutput.fLargestQPad = fOutput.fPad;
+  fOutput.fLargestQPad = fkBunch->fEdge ? fkBunch->fPad : 0xFFFFFFFF; //We only correct if the largest charge is at the edge cluster. Mark other pads as -1
   
   if( fkBunch->fData.size()==1 && fOutput.fQ < fSingleSeqLimit ) return 0;  
   
