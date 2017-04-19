@@ -461,7 +461,6 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
             if(fQnList != NULL){
               fQnList->SetName("qnVectorList");
               if(!t->GetBranch("qnVectorList")){
-                printf("Hallo Welt Filter %d",__LINE__);
                 aodH->AddBranch("TList",&fQnList);
               }
             }
