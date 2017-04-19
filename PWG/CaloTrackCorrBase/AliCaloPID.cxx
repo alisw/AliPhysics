@@ -55,6 +55,10 @@ fPHOSPi0WeightFormulaExpression(""),
 //PID calculation
 fEMCALL0CutMax(100.),     fEMCALL0CutMin(0),           
 fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
+fEMCALUseTrackPtDepMatchingCut(0), 
+fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
+fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
+fEMCALFuncTrackPtDepDEtaNParam(0) , fEMCALFuncTrackPtDepDPhiNParam(0),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
 //Split
@@ -92,6 +96,9 @@ fPHOSPi0WeightFormulaExpression(""),
 //PID calculation
 fEMCALL0CutMax(100.),     fEMCALL0CutMin(0),           
 fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
+fEMCALUseTrackPtDepMatchingCut(0), 
+fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
+fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
 //Split
@@ -130,6 +137,9 @@ fPHOSPi0WeightFormulaExpression(""),
 //PID calculation
 fEMCALL0CutMax(100.),        fEMCALL0CutMin(0),   
 fEMCALDEtaCut(2000.),        fEMCALDPhiCut(2000.),
+fEMCALUseTrackPtDepMatchingCut(0), 
+fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
+fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
 fTOFCut(0.), 
 fPHOSDispersionCut(1000),    fPHOSRCut(1000),
 //Split
@@ -143,7 +153,6 @@ fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
 fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
-
 {
   InitParameters();
 }
@@ -156,6 +165,10 @@ AliCaloPID::~AliCaloPID()
   delete fPHOSPhotonWeightFormula ;
   delete fPHOSPi0WeightFormula ;
   delete fEMCALPIDUtils ;
+  delete fEMCALFuncTrackPtDepDEta;
+  delete fEMCALFuncTrackPtDepDPhi;
+  delete [] fEMCALFuncTrackPtDepDEtaParam;
+  delete [] fEMCALFuncTrackPtDepDPhiParam;
 }
 
 //_______________________________
@@ -197,13 +210,19 @@ void AliCaloPID::InitParameters()
   
   //PID recalculation, not bayesian
   
-  //EMCAL
+  //EMCAL  
   fEMCALL0CutMax = 0.3 ;
   fEMCALL0CutMin = 0.01;
   
+  // Fix Track Matching
   fEMCALDPhiCut  = 0.05; // Same cut as in AliEMCALRecoUtils
   fEMCALDEtaCut  = 0.025;// Same cut as in AliEMCALRecoUtils
 
+  // Pt dependent track matching
+  // In case we change the default setting to true
+  if(fEMCALUseTrackPtDepMatchingCut) 
+    InitParamTrackMatchPtDependent();
+  
   // PHOS / EMCAL, not used
   fTOFCut        = 1.e-6;
   
@@ -306,10 +325,36 @@ void AliCaloPID::InitParameters()
   fSubClusterEMin[1]  = 0.0; // 1 GeV
   fSubClusterEMin[2]  = 0.0; // 1 GeV
   
-  
   fSplitWidthSigma = 3. ;
 }
 
+
+//_______________________________
+/// Initialize the default parameters of the pT dep track matching.
+///
+/// Borrowed from PWGGA/GammaCong/AliCaloPhotonCuts::SetTrackMatchingCut() case 7
+/// Used in neutral mesons analysis at 2.76 and 8 TeV (F. Bock and D. Mulheim)
+///
+/// Called in InitParameters() and SwitchOnEMCTrackPtDepReaMatching()
+//_______________________________
+void AliCaloPID::InitParamTrackMatchPtDependent()
+{
+  fEMCALFuncTrackPtDepDEtaString = "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])" ;
+  fEMCALFuncTrackPtDepDPhiString = "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])" ;
+  
+  fEMCALFuncTrackPtDepDEtaNParam = 3;
+  fEMCALFuncTrackPtDepDPhiNParam = 3;
+  
+  fEMCALFuncTrackPtDepDEtaParam = new Float_t[fEMCALFuncTrackPtDepDEtaNParam];
+  fEMCALFuncTrackPtDepDPhiParam = new Float_t[fEMCALFuncTrackPtDepDPhiNParam];
+  
+  fEMCALFuncTrackPtDepDEtaParam[0] = 0.04;
+  fEMCALFuncTrackPtDepDPhiParam[0] = 0.09;
+  fEMCALFuncTrackPtDepDEtaParam[1] = 0.010;
+  fEMCALFuncTrackPtDepDPhiParam[1] = 0.015;
+  fEMCALFuncTrackPtDepDEtaParam[2] = 2.5;
+  fEMCALFuncTrackPtDepDPhiParam[2] = 2.;
+}
 
 //_________________________________________________________________________________________
 /// Select the appropriate asymmetry range for pi0 selection in splitting method.
@@ -1062,6 +1107,48 @@ void AliCaloPID::SetPIDBits(AliVCluster * cluster,
 }
 
 //_________________________________________________________
+/// \return function with eta residual matching cut.
+///
+/// Consider as charged clusters those with a eta residual larger 
+/// than the value of the function for a given track pT.
+///
+/// Init the function here the first time it is called.
+//_________________________________________________________
+TF1 * AliCaloPID::GetEMCALFuncTrackPtDepDEta()      
+{ 
+  if( !fEMCALFuncTrackPtDepDEta ) 
+  {
+    fEMCALFuncTrackPtDepDEta = new TF1("emc_dEta",fEMCALFuncTrackPtDepDEtaString) ;
+    
+    for(Int_t iparam = 0; iparam < fEMCALFuncTrackPtDepDEtaNParam; iparam++)
+      fEMCALFuncTrackPtDepDEta->SetParameter(iparam,fEMCALFuncTrackPtDepDEtaParam[iparam]);
+  }
+  
+  return fEMCALFuncTrackPtDepDEta ; 
+} 
+
+//_________________________________________________________
+/// \return function with phi residual matching cut.
+///
+/// Consider as charged clusters those with a phi residual larger 
+/// than the value of the function for a given track pT.
+///
+/// Init the function here the first time it is called.
+//_________________________________________________________
+TF1 * AliCaloPID::GetEMCALFuncTrackPtDepDPhi()      
+{ 
+  if ( !fEMCALFuncTrackPtDepDPhi ) 
+  {
+    fEMCALFuncTrackPtDepDPhi = new TF1("emc_dPhi",fEMCALFuncTrackPtDepDPhiString) ;
+    
+    for(Int_t iparam = 0; iparam < fEMCALFuncTrackPtDepDPhiNParam; iparam++)
+      fEMCALFuncTrackPtDepDPhi->SetParameter(iparam,fEMCALFuncTrackPtDepDPhiParam[iparam]);
+  }
+  
+  return fEMCALFuncTrackPtDepDPhi; 
+} 
+
+//_________________________________________________________
 /// Check if there is any track attached to this cluster.
 /// \param cluster: pointer to calorimeter cluster.
 /// \param cu: pointer to AliCalorimeterUtils, needed if track matching is recalculated in the fly
@@ -1070,7 +1157,7 @@ void AliCaloPID::SetPIDBits(AliVCluster * cluster,
 //_________________________________________________________
 Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
                                   AliCalorimeterUtils * cu,
-                                  AliVEvent* event) const
+                                  AliVEvent* event) 
 {  
   Int_t nMatches = cluster->GetNTracksMatched();
   AliVTrack * track = 0;
@@ -1107,8 +1194,8 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     }
   }   // AODs
   
-  Float_t dZ  = cluster->GetTrackDz();
-  Float_t dR  = cluster->GetTrackDx();
+  Float_t dEta  = cluster->GetTrackDz();
+  Float_t dPhi  = cluster->GetTrackDx();
   
   // Comment out, new value already set in AliCalorimeterUtils::RecalculateClusterTrackMatching()
   // when executed in the reader.
@@ -1124,17 +1211,47 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
   {
     Int_t charge = track->Charge();
     Double_t mf  = event->GetMagneticField();
-    if(TestPHOSChargedVeto(dR, dZ, track->Pt(), charge, mf ) < fPHOSRCut) return kTRUE;
-    else                                                                  return kFALSE;
+    if(TestPHOSChargedVeto(dPhi, dEta, track->Pt(), charge, mf ) < fPHOSRCut) 
+      return kTRUE;
+    else                                                                  
+      return kFALSE;
     
   }    // PHOS
   else // EMCAL
   {
-    AliDebug(1,Form("EMCAL dR %f < %f, dZ %f < %f ",dR, fEMCALDPhiCut, dZ, fEMCALDEtaCut));
+    AliDebug(1,Form("EMCAL dPhi %f < %f, dEta %f < %f ",dPhi, fEMCALDPhiCut, dEta, fEMCALDEtaCut));
     
-    if(TMath::Abs(dR) < fEMCALDPhiCut &&
-       TMath::Abs(dZ) < fEMCALDEtaCut)   return kTRUE;
-    else                                 return kFALSE;
+    if(!fEMCALUseTrackPtDepMatchingCut)
+    {
+      if(TMath::Abs(dPhi) < fEMCALDPhiCut &&
+         TMath::Abs(dEta) < fEMCALDEtaCut)   return kTRUE;
+      else                                   return kFALSE;
+    }
+    else
+    {
+      Float_t trackPt = track->Pt();
+
+      Bool_t matchDEta = kFALSE;
+      if( TMath::Abs(dEta) < GetEMCALFuncTrackPtDepDEta()->Eval(trackPt)) 
+        matchDEta = kTRUE;
+      else 
+        matchDEta = kFALSE;
+      
+      Bool_t matchDPhi = kFALSE;
+      if( TMath::Abs(dPhi) < GetEMCALFuncTrackPtDepDPhi()->Eval(trackPt)) 
+        matchDPhi = kTRUE;
+      else 
+        matchDPhi = kFALSE;
+
+//      printf("Cluster E %2.2f, track pT %2.2f, dEta %2.2f, dPhi %2.2f, cut eta %2.2f, cut phi %2.2f, match eta %d, match phi %d\n",
+//             cluster->E(),trackPt,dEta,dPhi,
+//             GetEMCALFuncTrackPtDepDEta()->Eval(trackPt), GetEMCALFuncTrackPtDepDPhi()->Eval(trackPt),
+//             matchDEta, matchDPhi);
+      
+      if(matchDPhi && matchDEta) return kTRUE ;
+      else                       return kFALSE;
+      
+    }
   }// EMCAL cluster
 }
 
