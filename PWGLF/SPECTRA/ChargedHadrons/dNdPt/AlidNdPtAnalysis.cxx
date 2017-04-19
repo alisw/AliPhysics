@@ -1240,8 +1240,8 @@ void AlidNdPtAnalysis::Init()
         fProfXsection->GetYaxis()->SetTitle("xsection");
         fProfXsection->Sumw2();
 
-        const Int_t ptHardLo[21] = {0, 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235};
-        const Int_t ptHardHi[21] = {5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, -1};
+        const Double_t ptHardLo[21] = {0, 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235};
+        const Double_t ptHardHi[21] = {5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, -1};
 
         //const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
         //const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
@@ -1319,11 +1319,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	
         PythiaInfoFromFile(curfile->GetName(),ftrials, pthardbin);
         Bool_t testing=0;
-	
-	cout<<"       "<<endl;
-	cout<<"=======> pthardbin :"<<pthardbin<<", "<<pthardbin<<endl;
-	cout<<"=======> fNTrials :"<<fNTrials<<endl;
-	cout<<"=======> fXsection :"<<fXsection<<endl;	
 	
         fHistoTrials->Fill(pthardbin, fNTrials);
         fProfXsection->Fill(pthardbin, fXsection);
