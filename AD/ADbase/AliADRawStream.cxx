@@ -46,20 +46,20 @@ AliADRawStream::AliADRawStream(AliRawReader* rawReader)
   fRawReader->Select("AD");
 
   // Initalize the containers
-  for(Int_t i = 0; i < kNChannels; i++) {
+  for (Int_t i = 0; i < kNChannels; i++) {
     fTime[i] = fWidth[i] = 0;
-    for(Int_t j = 0; j < kNEvOfInt; j++) {
+    for (Int_t j = 0; j < kNEvOfInt; j++) {
       fADC[i][j] = 0;
       fIsInt[i][j] = fIsBB[i][j] = fIsBG[i][j] = kFALSE;
     }
     fBBScalers[i] = fBGScalers[i] = 0;
-    for(Int_t j = 0; j < kNBunches; j++) {
+    for (Int_t j = 0; j < kNBunches; j++) {
       fChargeMB[i][j] = 0;
       fIsIntMB[i][j] = fIsBBMB[i][j] = fIsBGMB[i][j] = kFALSE;
     }
   }
-  for(Int_t i = 0; i < kNScalers; i++) fScalers[i] = 0;
-  for(Int_t i = 0; i < kNBunches; i++) fBunchNumbers[i] = 0;
+  for (Int_t i = 0; i < kNScalers; i++) fScalers[i] = 0;
+  for (Int_t i = 0; i < kNBunches; i++) fBunchNumbers[i] = 0;
 }
 
 //_____________________________________________________________________________
@@ -73,20 +73,20 @@ void AliADRawStream::Reset()
   // reset raw stream params
 
   // Reinitalize the containers
-  for(Int_t i = 0; i < kNChannels; i++) {
+  for (Int_t i = 0; i < kNChannels; i++) {
     fTime[i] = fWidth[i] = 0;
-    for(Int_t j = 0; j < kNEvOfInt; j++) {
+    for (Int_t j = 0; j < kNEvOfInt; j++) {
       fADC[i][j] = 0;
       fIsInt[i][j] = fIsBB[i][j] = fIsBG[i][j] = kFALSE;
     }
     fBBScalers[i] = fBGScalers[i] = 0;
-    for(Int_t j = 0; j < kNBunches; j++) {
+    for (Int_t j = 0; j < kNBunches; j++) {
       fChargeMB[i][j] = 0;
       fIsIntMB[i][j] = fIsBBMB[i][j] = fIsBGMB[i][j] = kFALSE;
     }
   }
-  for(Int_t i = 0; i < kNScalers; i++) fScalers[i] = 0;
-  for(Int_t i = 0; i < kNBunches; i++) fBunchNumbers[i] = 0;
+  for (Int_t i = 0; i < kNScalers; i++) fScalers[i] = 0;
+  for (Int_t i = 0; i < kNBunches; i++) fBunchNumbers[i] = 0;
 
   fTrigger = fTriggerMask = 0;
   fPosition = -1;
@@ -114,38 +114,39 @@ Bool_t AliADRawStream::Next()
 
   fPosition = 0;
 
-  fTrigger = GetNextWord() & 0xffff;
+  fTrigger     = GetNextWord() & 0xffff;
   fTriggerMask = GetNextWord() & 0xffff;
 
-  for(Int_t iScaler = 0; iScaler < kNScalers; iScaler++)
+  for (Int_t iScaler = 0; iScaler < kNScalers; iScaler++)
     fScalers[iScaler] = GetNextWord();
 
-  for(Int_t iBunch = 0; iBunch < kNBunches; iBunch++)
+  for (Int_t iBunch = 0; iBunch < kNBunches; iBunch++)
     fBunchNumbers[iBunch] = GetNextWord();
 
   Int_t iCIU=0;
   for (Int_t iV0CIU = 0; iV0CIU < 8; iV0CIU++) {
 
-    if(iV0CIU != 2 && iV0CIU != 5) {
-      for(Int_t iWord = 0; iWord<182; iWord++) GetNextWord();
+    if (iV0CIU != 2 && iV0CIU != 5) {
+      for (Int_t iWord = 0; iWord<182; iWord++)
+	GetNextWord();
       continue;
     }
 
     // decoding of one Channel Interface Unit numbered iCIU - there are 8 channels per CIU (and 2 CIUs) :
     for (Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) {
-      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-        for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt++) {
-          UShort_t data = GetNextShort();
+      for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        for (Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt++) {
+          const UShort_t data = GetNextShort();
           fADC[iChannel][iEvOfInt] = data & 0x3ff;
           fIsInt[iChannel][iEvOfInt] = (data >> 10) & 0x1;
         }
       }
-      for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt=iEvOfInt+2) {
-        UShort_t data = GetNextShort();
-        for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+      for (Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt=iEvOfInt+2) {
+        const UShort_t data = GetNextShort();
+        for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
           fIsBB[iChannel][iEvOfInt] = (data >>  2*(iChannel-iChannel_Offset)) & 0x1;
           fIsBG[iChannel][iEvOfInt] = (data >> (2*(iChannel-iChannel_Offset)+1)) & 0x1;
-	  if(iEvOfInt < (kNEvOfInt - 1)) {
+	  if (iEvOfInt < (kNEvOfInt - 1)) {
 	    fIsBB[iChannel][iEvOfInt+1] = (data >> (8+ 2*(iChannel-iChannel_Offset))) & 0x1;
 	    fIsBG[iChannel][iEvOfInt+1] = (data >> (8+ 2*(iChannel-iChannel_Offset)+1)) & 0x1;
 	  }
@@ -154,20 +155,20 @@ Bool_t AliADRawStream::Next()
 
       GetNextShort();
 
-      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-        for(Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
-          UShort_t data = GetNextShort();
+      for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        for (Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
+          const UShort_t data = GetNextShort();
           fChargeMB[iChannel][iBunch] = data & 0x3ff;
           fIsIntMB[iChannel][iBunch] = (data >> 10) & 0x1;
         }
       }
 
-      for(Int_t iBunch = 0; iBunch < kNBunches; iBunch=iBunch+2) {
-        UShort_t data = GetNextShort();
-        for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+      for (Int_t iBunch = 0; iBunch < kNBunches; iBunch=iBunch+2) {
+        const UShort_t data = GetNextShort();
+        for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
           fIsBBMB[iChannel][iBunch] = (data >>  2*iBunch) & 0x1;
           fIsBGMB[iChannel][iBunch] = (data >> (2*iBunch+1)) & 0x1;
-	  if(iBunch < (kNBunches - 1)) {
+	  if (iBunch < (kNBunches - 1)) {
 	    fIsBBMB[iChannel][iBunch+1] = (data >> (8+2*iBunch)) & 0x1;
 	    fIsBGMB[iChannel][iBunch+1] = (data >> (8+2*iBunch+1)) & 0x1;
 	  }
@@ -176,17 +177,16 @@ Bool_t AliADRawStream::Next()
 
       GetNextShort();
 
-      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-        fBBScalers[iChannel] = ((ULong64_t)GetNextWord()) << 32;
+      for (Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        fBBScalers[iChannel]  = ((ULong64_t)GetNextWord()) << 32;
         fBBScalers[iChannel] |= GetNextWord();
-        fBGScalers[iChannel] = ((ULong64_t)GetNextWord()) << 32;
+        fBGScalers[iChannel]  = ((ULong64_t)GetNextWord()) << 32;
         fBGScalers[iChannel] |= GetNextWord();
       }
-
     }
 
-    for(Int_t iChannel = (iCIU*8) + 7; iChannel >= iCIU*8; iChannel--) {
-      UInt_t time = GetNextWord();
+    for (Int_t iChannel = (iCIU*8) + 7; iChannel >= iCIU*8; iChannel--) {
+      const UInt_t time = GetNextWord();
       fTime[iChannel]  = time & 0xfff;
       fWidth[iChannel] = ((time >> 12) & 0x7f); // HPTDC used in pairing mode
     }
