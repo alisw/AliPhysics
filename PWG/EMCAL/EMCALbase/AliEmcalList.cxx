@@ -95,7 +95,7 @@ void AliEmcalList::ScaleAllHistograms(TCollection *hlist, Double_t scalingFactor
     }
 
     // Otherwise, scale TH1-derived / THnBase-derived histograms
-    if (!listObject->InheritsFrom(TH1::Class()) || !listObject->InheritsFrom(THnBase::Class()))
+    if (!(listObject->InheritsFrom(TH1::Class()) || listObject->InheritsFrom(THnBase::Class())))
       continue;
 
     // Don't scale profiles and histograms used for scaling
