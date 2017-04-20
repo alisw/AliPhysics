@@ -131,6 +131,7 @@ set(SRCS
   AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
   AliAnalysisTaskSEDvsEventShapes.cxx
   AliAnalysisTaskSEB0toDminuspi.cxx
+  AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
   )
 
