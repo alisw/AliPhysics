@@ -786,7 +786,6 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
   
   if (fIsMC == 2){
-    fDoPhotonQA       = 0;
     fDoClusterQA      = 0;
     fDoTHnSparse      = kFALSE;
   } else if (fIsMC == 3){
