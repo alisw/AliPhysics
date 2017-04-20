@@ -457,32 +457,24 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       if (fJetShapeSub==kConstSub) JetPtThreshold=JetHybridS->Pt();
       else JetPtThreshold=JetHybridS->Pt()-(GetRhoVal(0)*JetHybridS->Area());
       if ( (!JetHybridS) || (JetPtThreshold<fPtThreshold)) continue;
-      if (fJetShapeSub==kConstSub){
-	Int_t JetNumber=-1;
-	for(Int_t i = 0; i<JetContHybridUS->GetNJets(); i++) {
-	  JetHybridUS = JetContHybridUS->GetJet(i);
-	  if (!JetHybridUS) continue;
+      Int_t JetNumber=-1;
+      for(Int_t i = 0; i<JetContHybridUS->GetNJets(); i++) {
+	JetHybridUS = JetContHybridUS->GetJet(i);
+	if (!JetHybridUS) continue;
 	    
-	  if(JetHybridUS->GetLabel()==JetHybridS->GetLabel()) {
-	    JetNumber=i;
-	  }
+	if(JetHybridUS->GetLabel()==JetHybridS->GetLabel()) {
+	  JetNumber=i;
 	}
-	if(JetNumber==-1) continue;
-	JetHybridUS=JetContHybridUS->GetJet(JetNumber);
-	//if(JetHybridUS) cout<<"Matched to jet i = "<< JetNumber<<endl;
-	if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<fSharedFractionPtMin && !fSubMatching) {
-	  //cout<<"Fraction shared pt below cut = "<<JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<<endl;
-	  continue;
-	}
-	else if(GetFractionSharedPt_SubMatching(JetHybridUS,JetContHybridUS->GetParticleContainer())<fSharedFractionPtMin && fSubMatching){
-	  continue;
-	}
-	JetPythDet=JetHybridUS->ClosestJet();
       }
-      if(!(fJetShapeSub==kConstSub)){
-	if (JetContHybridS->AliJetContainer::GetFractionSharedPt(JetHybridS)<fSharedFractionPtMin) continue;
-	    JetPythDet = JetHybridS->ClosestJet();
+      if(JetNumber==-1) continue;
+      JetHybridUS=JetContHybridUS->GetJet(JetNumber);
+      if (JetContHybridUS->AliJetContainer::GetFractionSharedPt(JetHybridUS)<fSharedFractionPtMin && !fSubMatching) {
+	continue;
       }
+      else if(GetFractionSharedPt_SubMatching(JetHybridUS,JetContHybridUS->GetParticleContainer())<fSharedFractionPtMin && fSubMatching){
+	continue;
+      }
+      JetPythDet=JetHybridUS->ClosestJet();
       if (!JetHybridUS) {
 	Printf("Unsubtracted embedded jet does not exist, returning");
 	continue;
