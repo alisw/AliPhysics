@@ -1532,6 +1532,8 @@ private:
   TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
   TH3D* fCRCQVecPhiHist; //! phi ditribution POIs
   TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs bins ch
+  TH3D* fCRCQVecPhiRbRHist[fCRCMaxnRun]; //! phi ditribution POIs run-by-run
+  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
   TProfile3D* fCRCQVecHarCosProCh[2]; //! phi ditribution POIs
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
 //  TH3D* fCRCQVecPhiHistVtxDep[fCRCMaxnRun][fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
@@ -1582,11 +1584,11 @@ private:
   const static Int_t fkCRCnCQVecVtxPos = 4;
   Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
-  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+//  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
   TProfile3D *fCRCVZQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! VZERO Vtx positions re-centered Qvec in cen bins
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
-  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
+//  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkNsteps = 8;
   TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
@@ -1597,9 +1599,9 @@ private:
   Double_t fEvPlDPsiA;
   
   // test
-  TProfile2D *fCRCZDCQVecResvsEAsym; //!
-  TProfile2D *fCRCZDCQVecResvsETot; //!
-  TProfile2D *fCRCZDCQVecResvsESum; //!
+//  TProfile2D *fCRCZDCQVecResvsEAsym; //!
+//  TProfile2D *fCRCZDCQVecResvsETot; //!
+//  TProfile2D *fCRCZDCQVecResvsESum; //!
   
   // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
   
@@ -1609,7 +1611,7 @@ private:
   const static Int_t fkNHistCRCVZ = 27;
   TProfile *fCRCVZEROetaPro[fCRCMaxnCen][fkNHistCRCVZ]; //!
   TH1D *fCRCVZEROetaHist[fCRCMaxnCen][fkNHistCRCVZ]; //!
-  TProfile2D *fCRCVZEROQVec[fCRCMaxnRun][fCRCnHar]; //!
+//  TProfile2D *fCRCVZEROQVec[fCRCMaxnRun][fCRCnHar]; //!
   
   // CRCZDC
   TList *fCRCZDCList; //! ZDCERO CRC List
@@ -1908,7 +1910,7 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   
-  ClassDef(AliFlowAnalysisCRC,48);
+  ClassDef(AliFlowAnalysisCRC,49);
   
 };
 
