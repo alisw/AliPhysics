@@ -10,7 +10,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUseZDC=kFALSE,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
-                             Bool_t bCorrectForBadChannel=kFALSE,
+                             Bool_t bExcludeTPCSecBound=kFALSE,
                              Bool_t bUseCRCRecenter=kFALSE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
@@ -90,12 +90,14 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bZDCMCCen=kTRUE;
   Bool_t bRequireTOFSignal=kFALSE;
   Int_t bCutTPCbound=0;
+  if(bExcludeTPCSecBound) bCutTPCbound=1;
   Bool_t bUsePhiEtaCuts=kFALSE;
   Bool_t bSetQAZDC=kTRUE;
   Double_t MaxChi2PerClTPC=4.;
   Bool_t bRequireITSRefit=kFALSE;
   Bool_t bUseTightPileUp=kFALSE;
   Bool_t bCalculateFlow=kTRUE;
+  Bool_t bCorrectForBadChannel=kFALSE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
