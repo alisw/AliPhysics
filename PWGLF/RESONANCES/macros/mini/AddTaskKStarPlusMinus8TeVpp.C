@@ -24,7 +24,7 @@ enum eventMixConfig { kDisabled = -1,
 };
 
 
-AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
+AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
 (
  Bool_t      isMC,
  Bool_t      isPP,
@@ -39,7 +39,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Float_t     piPIDCut = 3.0,
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
- Float_t     massTolVeto = 0.004,//here
+ Float_t     massTolVeto = 0.006,//here
  Float_t     pLife = 20,  
  Float_t     radiuslow = 0.5,
  Float_t     radiushigh = 200,    
@@ -82,7 +82,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskKStarPlusMinus5TeVpp", "No analysis manager to connect to.");
+      ::Error("AddTaskKStarPlusMinus8TeVpp", "No analysis manager to connect to.");
       return NULL;
    } 
    
@@ -90,8 +90,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    TString taskName = Form("KStarPlusMinus%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pi_k0s_PIDCut,massTol,k0sDCA,k0sCosPoinAn,k0sDaughDCA);
    //TString taskName=Form("TOFKstar%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);                   
-   //   task->SelectCollisionCandidates(triggerMask);                                                                       
    task->UseESDTriggerMask(triggerMask);
+
    //if(isPP) 
    task->UseMultiplicity("QUALITY");
    //else task->UseCentrality("V0M");
@@ -114,16 +114,9 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE);
-   cutVertex->SetCheckZResolutionSPD();
-   cutVertex->SetCheckDispersionSPD(); 
-   cutVertex->SetCheckZDifferenceSPDTrack();
+   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE, kTRUE);
    
-   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-   cutEventUtils->SetCheckIncompleteDAQ();
-   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
-   
-   if(!isMC){ //assume pp data
+   if(isPP && (!isMC)){ //assume pp data
      cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup                                                                  
      ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
    }
@@ -131,9 +124,9 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    
    // define and fill cut set for event cut                                                                                          
    AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
-   eventCuts->AddCut(cutEventUtils);
+   //eventCuts->AddCut(cutEventUtils);
    eventCuts->AddCut(cutVertex);
-   eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
+   eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
    task->SetEventCuts(eventCuts);
 
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------                                       
@@ -170,21 +163,21 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinus5TeVpp.C");
-   //gROOT->LoadMacro("ConfigKStarPlusMinus5TeVpp.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinus8TeVpp.C");
+   //gROOT->LoadMacro("ConfigKStarPlusMinus8TeVpp.C");
    if (isMC) {
      Printf("========================== MC analysis - PID cuts not used"); 
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigKStarPlusMinus8TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, massTolVeto, pLife, radiuslow, radiushigh,MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
    //
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //  outputFileName += ":Rsn";
-   Printf("AddTaskKStarPlusMinus5TeVpp - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   Printf("AddTaskKStarPlusMinus8TeVpp - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    
    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s", outNameSuffix.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
