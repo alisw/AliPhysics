@@ -84,6 +84,7 @@
 #pragma link C++ class AliEventPlaneResolutionHandler+;
 #pragma link C++ class AliAnalysisTaskSEHFv2+;
 #pragma link C++ class AliAnalysisTaskSEHFvn+;
+#pragma link C++ class AliAnalysisTaskHFv1+;
 #pragma link C++ class AliAnalysisTaskFlowD2H+;
 #pragma link C++ class AliHFAfterBurner+;
 #pragma link C++ class AliAnalysisTaskSELambdacUp+;

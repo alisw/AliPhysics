@@ -112,6 +112,7 @@ set(SRCS
   charmFlow/AliEventPlaneResolutionHandler.cxx
   charmFlow/AliAnalysisTaskSEHFv2.cxx
   charmFlow/AliAnalysisTaskSEHFvn.cxx
+  charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
   charmFlow/AliAnalysisTaskFlowD2H.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
