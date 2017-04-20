@@ -58,6 +58,7 @@ fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fEMCALUseTrackPtDepMatchingCut(0), 
 fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
 fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
+fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
 fEMCALFuncTrackPtDepDEtaNParam(0) , fEMCALFuncTrackPtDepDPhiNParam(0),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
@@ -99,6 +100,8 @@ fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fEMCALUseTrackPtDepMatchingCut(0), 
 fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
 fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
+fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
+fEMCALFuncTrackPtDepDEtaNParam(0) , fEMCALFuncTrackPtDepDPhiNParam(0),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
 //Split
@@ -140,6 +143,8 @@ fEMCALDEtaCut(2000.),        fEMCALDPhiCut(2000.),
 fEMCALUseTrackPtDepMatchingCut(0), 
 fEMCALFuncTrackPtDepDEta(0), fEMCALFuncTrackPtDepDPhi(0),
 fEMCALFuncTrackPtDepDEtaString(""), fEMCALFuncTrackPtDepDPhiString(""), 
+fEMCALFuncTrackPtDepDEtaParam (0) , fEMCALFuncTrackPtDepDPhiParam (0),
+fEMCALFuncTrackPtDepDEtaNParam(0) , fEMCALFuncTrackPtDepDPhiNParam(0),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000),    fPHOSRCut(1000),
 //Split
@@ -339,11 +344,17 @@ void AliCaloPID::InitParameters()
 //_______________________________
 void AliCaloPID::InitParamTrackMatchPtDependent()
 {
+  AliInfo("Init track matching residual pt dependent cuts;"
+          " careful if another initialization is done before this call!");
+  
   fEMCALFuncTrackPtDepDEtaString = "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])" ;
   fEMCALFuncTrackPtDepDPhiString = "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])" ;
   
   fEMCALFuncTrackPtDepDEtaNParam = 3;
   fEMCALFuncTrackPtDepDPhiNParam = 3;
+  
+  if(fEMCALFuncTrackPtDepDEtaParam) delete [] fEMCALFuncTrackPtDepDEtaParam;
+  if(fEMCALFuncTrackPtDepDPhiParam) delete [] fEMCALFuncTrackPtDepDPhiParam;
   
   fEMCALFuncTrackPtDepDEtaParam = new Float_t[fEMCALFuncTrackPtDepDEtaNParam];
   fEMCALFuncTrackPtDepDPhiParam = new Float_t[fEMCALFuncTrackPtDepDPhiNParam];
