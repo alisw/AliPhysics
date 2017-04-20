@@ -168,6 +168,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
       cutnumberPhoton="00200009227302008250400400";
       cutnumberEvent ="00010113";
     }
+    if(trainConfig>=60 && trainConfig<80) fV0ReaderV1->SetImprovedPsiPair(0); //switch off for 8TeV as AODs are used for which improved psipair is not available
+
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;

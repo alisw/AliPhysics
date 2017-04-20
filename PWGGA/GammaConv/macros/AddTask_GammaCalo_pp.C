@@ -149,6 +149,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+    if(trainConfig>=99 && trainConfig<200) fV0ReaderV1->SetImprovedPsiPair(0); //switch off for 8TeV as AODs are used for which improved psipair is not available
 
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
