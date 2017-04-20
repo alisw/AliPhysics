@@ -1005,7 +1005,10 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 	THnF * phis = new THnF(hName.Data(),hName.Data(), hisDims[iHis],nBins, xMin,xMax);
 	hisArray->AddAt(phis,iHis);
 	for (Int_t iDim=0;iDim<hisDims[iHis]; iDim++){
-	  phis->GetAxis(iDim)->SetTitle(varArray->At(iDim)->GetName());
+	  phis->GetAxis(iDim)->SetName(varArray->At(iDim)->GetName());	  
+	  phis->GetAxis(iDim)->SetTitle(varArray->At(iDim)->GetName());	  
+	  TNamed *axisTitle=TStatToolkit::GetMetadata(tree,TString::Format("%s.AxisTitle",varArray->At(iDim)->GetName()).Data());
+	  if (axisTitle)  phis->GetAxis(iDim)->SetTitle(axisTitle->GetTitle());	
 	}
       }      
     }
