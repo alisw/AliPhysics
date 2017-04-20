@@ -77,6 +77,7 @@ public:
     TString GetGoodFitOption( TH1D *lHisto, Int_t ilow, Int_t ihigh );
     Double_t BgPol1(const Double_t *x, const Double_t *par);
     Double_t BgPol2(const Double_t *x, const Double_t *par);
+    Double_t BgPol3(const Double_t *x, const Double_t *par);
     
 private:
     //Data holders (set via setters)

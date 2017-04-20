@@ -838,8 +838,8 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         
         lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
         lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
-        //lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
-        lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
+        lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
+        //lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
     }
     
     if ( lOption.Contains("quadratic") ){
@@ -870,8 +870,42 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         
         lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
         lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
-        //lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
-        lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
+        lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
+        //lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
+    }
+    
+    if ( lOption.Contains("cubic") ){
+        //Step 2: Perform Quadratic Fit to improve results
+        TString lNameCubic = lHisto->GetName();
+        lNameCubic.Append("_CubicFit");
+        fit = new TF1(lNameCubic, this, &AliStrangenessModule::BgPol3,
+                      lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 6 , "AliStrangenessModule", "BgPol3");
+        
+        //Start with parameters from initial fit: probably a good initial guess
+        fit->FixParameter(0, lMean + lHiLeftBg*lSigma );
+        fit->FixParameter(1, lMean + lLoRightBg*lSigma);
+        fit->SetParameter(2, lBgConst );
+        fit->SetParameter(3, lBgSlope );
+        fit->SetParameter(4, 0.000 );
+        fit->SetParameter(5, 0.000 );
+        
+        //Perform fit - otherwise stick to initial (linear) guess
+        TFitResultPtr fitResultPtr = lHisto->Fit( lNameCubic.Data(), lFitOptions.Data());
+        if ( !fitResultPtr->IsValid() ) lReturnValue = kFALSE; //went bad
+        
+        TString lNameToSubtract = lHisto->GetName();
+        lNameToSubtract.Append("_FitToSubtract");
+        fitToSubtract = new TF1(lNameToSubtract.Data(), "[0]+[1]*x+[2]*x*x+[3]*x*x*x",
+                                lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma);
+        fitToSubtract->SetParameter( 0, fit->GetParameter(2) );
+        fitToSubtract->SetParameter( 1, fit->GetParameter(3) );
+        fitToSubtract->SetParameter( 2, fit->GetParameter(4) );
+        fitToSubtract->SetParameter( 3, fit->GetParameter(5) );
+        
+        lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
+        lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
+        lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
+        //lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
     }
     
     if ( lOption.Contains("bincounting") || lOption.Contains("MC") ){
@@ -961,7 +995,6 @@ Double_t AliStrangenessModule::BgPol1(const Double_t *x, const Double_t *par)
     return par[2] + par[3]*x[0];
 }
 
-
 //________________________________________________________________
 Double_t AliStrangenessModule::BgPol2(const Double_t *x, const Double_t *par)
 {
@@ -974,6 +1007,21 @@ Double_t AliStrangenessModule::BgPol2(const Double_t *x, const Double_t *par)
     }
     return par[2] + par[3]*x[0] + par[4]*x[0]*x[0];
 }
+
+//________________________________________________________________
+Double_t AliStrangenessModule::BgPol3(const Double_t *x, const Double_t *par)
+{
+    //Function for background fitting, rejects peak region
+    //Parameter [0] -> Hi LeftBg Boundary
+    //Parameter [1] -> Lo RightBg Boundary
+    if ( x[0] > par[0] && x[0] < par[1]) {
+        TF1::RejectPoint();
+        return 0;
+    }
+    return par[2] + par[3]*x[0] + par[4]*x[0]*x[0] + par[5]*x[0]*x[0]*x[0];
+}
+
+
 
 
 
