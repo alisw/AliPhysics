@@ -42,7 +42,7 @@ class TArrayC;
  *   word 0: header (big endian 32bit unsigned)
  *           bit 31-30: 0x11 indicates cluster
  *           bit 29-24: row number in partition
- *           bit 23: is set when the cluster is an edge cluster
+ *           bit 23: is set when the cluster is a border (edge cluster or at branch borders or interleaved row) cluster
  *           bit 22-0: Qmax, fixed point number with 6 bits after the point
  *   word 1: bit 31: is set when cluster is deconvoluted in pad direction
  *           bit 30: is set when cluster is deconvoluted in time direction
