@@ -46,7 +46,7 @@ public:
 private:
     ClassDef(AliVWeakResult, 3)
     // 1 - original implementation
-    // 2 - ajustments for general-purpose functionality
+    // 2 - adjustments for general-purpose functionality
     // 3 - adjustments for proton profile
 };
 #endif
