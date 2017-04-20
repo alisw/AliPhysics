@@ -6,7 +6,7 @@
 // for a given eta-phi windows
 
 // Authors : Andrey Ivanov, Igor Altsybeev, St.Petersburg State University
-// Email: Igor.Altsybeev.ch
+// Email: Igor.Altsybeev@cern.ch
 
 
 #include <AliPIDResponse.h>
