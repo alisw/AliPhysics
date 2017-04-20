@@ -23,6 +23,8 @@
 #include "AliHFAfterBurner.h"
 #include "AliQnCorrectionsQnVector.h"
 #include "AliAnalysisTaskZDCEP.h"
+#include "AliFlowVector.h"
+
 
 class TH1F;
 class TH2F;
@@ -31,6 +33,8 @@ class AliMultiDimVector;
 class AliRDHFCuts;
 class TVector2;
 class AliAnalysisTaskZDCEP;
+class AliFlowVector;
+
 
 class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
 {
