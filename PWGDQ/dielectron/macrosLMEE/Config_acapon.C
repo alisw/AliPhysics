@@ -181,8 +181,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
     histos->UserHistogram("Track","Eta_Phi","",100,-1,1,120,0,TMath::TwoPi(),AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
     //Check ITS hits per run
-    histos->UserHistogram("Track", "nITS vs run","", GetVector(kRuns), BinsToVector(6, -0.5, 6.5), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kNclsITS);
-    histos->UserHistogram("Track", "ITSclutserMap vs run","", GetVector(kRuns), BinsToVector(70, 0, 70), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kITSclusterMap);
+    /*histos->UserHistogram("Track", "nITS vs run","", GetVector(kRuns), BinsToVector(6, -0.5, 6.5), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kNclsITS);
+    histos->UserHistogram("Track", "ITSclusterMap vs run","", GetVector(kRuns), BinsToVector(70, 0, 70), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kITSclusterMap);*/
 
     if(isQAtask){
         // DCA
@@ -477,7 +477,8 @@ TVectorD *GetVector(Int_t var)
       //2.50, 2.55, 2.60, 2.65, 2.70, 2.75, 2.80, 2.85, 2.90, 2.95, 
       //3.00, 3.05, 3.10, 3.15, 3.20, 3.25, 3.30, 3.35, 3.40, 3.45, 
     case kCent: return AliDielectronHelper::MakeLinBinning(10,0.,100.);
-      
+    
+    //First and lasts bins added for clearer plotting
     case kRuns:   return AliDielectronHelper::MakeArbitraryBinning("265300, 265309, 265332, 265334, 265335, 265336, 265338, 265339, 265342, 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385, 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425, 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525, 265530");
 
     default: cout << "ERROR: in 'GetVector(...var)' variable for axis range not defined!" << endl;
