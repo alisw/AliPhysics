@@ -115,6 +115,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
 
   void FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, Double_t centralityF, Double_t chi2TPCInnerC);
   static void SetDefaultAliasesV0(TTree *treeV0);
+  static void SetDefaultAliasesHighPt(TTree *treeV0);
  private:
 
   AliESDEvent *fESD;    //! ESD event

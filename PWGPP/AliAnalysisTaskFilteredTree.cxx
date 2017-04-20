@@ -2954,5 +2954,50 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree){
   tree->SetAlias("ALLike","ALLike0/(K0Like0+LLike0+ALLike0+ELike0+BkgLike)");
   //
   tree->SetAlias("K0PIDPull","(abs(track0.fTPCsignal/dEdx0DPion-50)+abs(track1.fTPCsignal/dEdx1DPion-50))/5.");
+  tree->SetAlias("tglV0","v0.Pz()/v0.Pt()");                 // 
+  tree->SetAlias("alphaV0","atan2(v0.Py(),v0.Px()+0)");
+  tree->SetAlias("dalphaV0","alphaV0-((int(36+9*(alphaV0/pi))-36)*pi/9.)");
 
 }
+
+void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
+  //
+  // set shortcut aliases for some variables
+  //
+  tree->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
+  tree->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
+  tree->SetAlias("deltaP0","(extInnerParamV.fP[0]-esdTrack.fP[0])");
+  tree->SetAlias("pullP0","(extInnerParamV.fP[0]-esdTrack.fP[0])/sqrt(extInnerParamV.fC[0]+esdTrack.fC[0])");
+  tree->SetAlias("deltaP0C","(extInnerParamC.fP[0]-esdTrack.fCp.fP[0])");
+  tree->SetAlias("pullP0C","(extInnerParamC.fP[0]-esdTrack.fCp.fP[0])/sqrt(extInnerParamC.fC[0]+esdTrack.fCp.fC[0])");
+
+  tree->SetAlias("deltaP2","(extInnerParamV.fP[2]-esdTrack.fP[2])");
+  tree->SetAlias("pullP2","(extInnerParamV.fP[2]-esdTrack.fP[2])/sqrt(extInnerParamV.fC[5]+esdTrack.fC[5])");
+  tree->SetAlias("deltaP2C","(extInnerParamC.fP[2]-esdTrack.fCp.fP[2])");
+  tree->SetAlias("pullP2C","(extInnerParamC.fP[2]-esdTrack.fCp.fP[2])/sqrt(extInnerParamC.fC[5]+esdTrack.fCp.fC[5])");
+  tree->SetAlias("deltaP4","(extInnerParam.fP[4]-esdTrack.fP[4])");
+  tree->SetAlias("pullP4","(extInnerParam.fP[4]-esdTrack.fP[4])/sqrt(extInnerParam.fC[14]+esdTrack.fC[14])");
+  tree->SetAlias("deltaP4C","(extInnerParamC.fP[4]-esdTrack.fCp.fP[4])");
+  tree->SetAlias("pullP4C","(extInnerParamC.fP[4]-esdTrack.fCp.fP[4])/sqrt(extInnerParamC.fC[14]+esdTrack.fCp.fC[14])");
+  //
+  tree->SetAlias("normChi2ITS","sqrt(esdTrack.fITSchi2/esdTrack.fITSncls)");
+  tree->SetAlias("normChi2TPC","esdTrack.fTPCchi2/esdTrack.fTPCncls");
+  tree->SetAlias("normDCAR","esdTrack.fdTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("normDCAZ","esdTrack.fzTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("TPCASide","esdTrack.fIp.fP[1]>0");
+  tree->SetAlias("TPCCSide","esdTrack.fIp.fP[1]<0");
+  tree->SetAlias("TPCCross","esdTrack.fIp.fP[1]*esdTrack.fIp.fP[3]<0");
+  tree->SetAlias("qPt","esdTrack.fP[4]");
+  tree->SetAlias("tgl","esdTrack.fP[3]");
+  tree->SetAlias("alphaV","esdTrack.fAlpha");
+  //
+  tree->SetAlias("ITSOn","((esdTrack.fFlags&0x1)>0)");
+  tree->SetAlias("TPCOn","((esdTrack.fFlags&0x10)>0)");
+  tree->SetAlias("ITSRefit","((esdTrack.fFlags&0x4)>0)");
+  tree->SetAlias("TPCRefit","((esdTrack.fFlags&0x40)>0)");
+  tree->SetAlias("TOFOn","((esdTrack.fFlags&0x2000)>0)");
+  tree->SetAlias("TRDOn","((esdTrack.fFlags&0x400)>0)");
+  tree->SetAlias("ITSOn0","esdTrack.fITSncls>4&&esdTrack.HasPointOnITSLayer(0)&&esdTrack.HasPointOnITSLayer(1)");
+  tree->SetAlias("nclCut","(esdTrack.GetTPCClusterInfo(3,1)+esdTrack.fTRDncls)>140-5*(abs(esdTrack.fP[4]))");
+  tree->SetAlias("IsPrim4","abs(esdTrack.fD/sqrt(esdTrack.fCdd))<4");
+} 
