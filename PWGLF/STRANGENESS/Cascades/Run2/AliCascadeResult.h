@@ -314,7 +314,7 @@ private:
     
     TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
     
-    ClassDef(AliCascadeResult, 26)
+    ClassDef(AliCascadeResult, 27)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -341,5 +341,6 @@ private:
     // 24 - addition of NSigma cut for Lambda mass (requires pre-configured task!)
     // 25 - addition of rapidity selection (to enable 2.76 TeV re-analysis corrections)
     // 26 - addition of proton momenta histogram (for G3/F correction, 2.76 TeV re-analysis corrections)
+    // 27 - bugfix
 };
 #endif

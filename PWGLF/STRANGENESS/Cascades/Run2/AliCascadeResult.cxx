@@ -387,7 +387,7 @@ fCutVarBBCosPA_Const(lCopyMe.fCutVarBBCosPA_Const)
 //________________________________________________________________
 AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     : AliVWeakResult(*lCopyMe),
-      fHisto(0)
+      fHisto(0), fProtonProfile(0)
 {
     SetName(lNewName.Data());
     fMassHypo = lCopyMe->GetMassHypothesis();
