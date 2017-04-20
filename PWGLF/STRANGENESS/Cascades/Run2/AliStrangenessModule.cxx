@@ -837,9 +837,8 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         fitToSubtract->SetParameter( 1, fit->GetParameter(3) );
         
         lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
-        lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
+        lBgEstimate     /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
         lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
-        //lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
     }
     
     if ( lOption.Contains("quadratic") ){
@@ -869,9 +868,8 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         fitToSubtract->SetParameter( 2, fit->GetParameter(4) );
         
         lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
-        lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
+        lBgEstimate     /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
         lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
-        //lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
     }
     
     if ( lOption.Contains("cubic") ){
@@ -903,9 +901,8 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         fitToSubtract->SetParameter( 3, fit->GetParameter(5) );
         
         lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
-        lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
+        lBgEstimate     /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
         lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
-        //lBgEstimateError = fit->IntegralError( lValPeakLo, lValPeakHi );
     }
     
     if ( lOption.Contains("bincounting") || lOption.Contains("MC") ){
