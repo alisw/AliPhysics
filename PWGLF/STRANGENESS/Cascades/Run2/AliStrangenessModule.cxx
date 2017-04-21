@@ -138,12 +138,13 @@ void AliStrangenessModule::SetSigExtTech ( TString lRecSigExtTech ) {
     if( !lRecSigExtTech.Contains("bincounting") &&
        !lRecSigExtTech.Contains("linear") &&
        !lRecSigExtTech.Contains("quadratic") &&
+       !lRecSigExtTech.Contains("cubic") &&
        !lRecSigExtTech.Contains("MC") ){
-        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         AliWarning(Form(" Sig. ext. mode \"%s\" not recognized!",lRecSigExtTech.Data() ) );
-        AliWarning("   Accepted modes: \"bincounting\", \"linear\" or \"quadratic\"");
-        AliWarning("               WARNING: Will set to linear! ");
-        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning("   Accepted modes: \"bincounting\", \"linear\", \"quadratic\" or \"cubic\"");
+        AliWarning("                     WARNING: Will set to linear! ");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         lRecSigExtTech = "linear";
     }
     for(Int_t ibin = 0; ibin<100; ibin++){
@@ -158,11 +159,12 @@ void AliStrangenessModule::SetVariableSigExtTech ( Long_t lRecNPtBins, TString *
         if( !lRecSigExtTech[ibin].Contains("bincounting") &&
            !lRecSigExtTech[ibin].Contains("linear") &&
            !lRecSigExtTech[ibin].Contains("quadratic") &&
+           !lRecSigExtTech[ibin].Contains("cubic") &&
            !lRecSigExtTech[ibin].Contains("MC") ){
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
             AliWarning(Form(" Sig. ext. mode \"%s\" not recognized!",lRecSigExtTech[ibin].Data() ) );
-            AliWarning("   Accepted modes: \"bincounting\", \"linear\" or \"quadratic\"");
-            AliWarning("               WARNING: Will set to linear! ");
+            AliWarning("   Accepted modes: \"bincounting\", \"linear\", \"quadratic\" or \"cubic\"");
+            AliWarning("                     WARNING: Will set to linear! ");
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
             lRecSigExtTech[ibin] = "linear";
         }
