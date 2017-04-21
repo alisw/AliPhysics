@@ -91,6 +91,8 @@ public:
     kEtaPhiCh,
     kEtaPhiVtx,
     kEtaPhiChPt,
+    kEtaPhiRbR,
+    kEtaPhiChRbR,
   };
   
   // 0.) methods called in the constructor:
@@ -1486,6 +1488,8 @@ private:
   TH3D *fPhiEtaWeights; //!
   TH3D *fPhiEtaWeightsCh[2]; //!
   TH3D *fPhiEtaWeightsChPt[2][3]; //!
+  TH3D *fPhiEtaRbRWeights; //!
+  TH3D *fPhiEtaRbRWeightsCh[2]; //!
   
   TList *fCRCIntRbRList; //! CRC list of histograms RbR
   TList *fCRCIntRunsList[fCRCMaxnRun]; //! list of runs
@@ -1910,7 +1914,7 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   
-  ClassDef(AliFlowAnalysisCRC,49);
+  ClassDef(AliFlowAnalysisCRC,50);
   
 };
 

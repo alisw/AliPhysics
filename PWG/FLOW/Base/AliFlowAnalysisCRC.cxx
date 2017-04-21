@@ -698,6 +698,27 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     }
   }
   
+  // run-by-run corrections ********************************************************************************************
+  
+  if(fRunNum!=fCachedRunNum) {
+    if(fPOIExtraWeights==AliFlowAnalysisCRC::kEtaPhiRbR) {
+      if(fWeightsList->FindObject(Form("fCRCQVecPhiHistRbR[%d]",fRunNum))) {
+        fPhiEtaRbRWeights = (TH3D*)(fWeightsList->FindObject(Form("fCRCQVecPhiRbRHist[%d]",fRunNum)));
+      } else {
+        AliWarning("WARNING: POIExtraWeights (kEtaPhiRbR) not found ! \n");
+      }
+    }
+    if(fPOIExtraWeights==AliFlowAnalysisCRC::kEtaPhiChRbR) {
+      for (Int_t i=0; i<2; i++) {
+        if(fWeightsList->FindObject(Form("fCRCQVecPhiRbRHistCh[%d][%d]",fRunNum,i))) {
+          fPhiEtaRbRWeightsCh[i] = (TH3D*)(fWeightsList->FindObject(Form("fCRCQVecPhiRbRHistCh[%d][%d]",fRunNum,i)));
+        } else {
+          AliWarning("WARNING: POIExtraWeights (kEtaPhiChRbR) not found ! \n");
+        }
+      }
+    }
+  }
+  
   // loop over particles **********************************************************************************************
   
   for(Int_t i=0;i<nPrim;i++) {
@@ -753,6 +774,17 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if(fPOIExtraWeights==kEtaPhiChPt && fPhiEtaWeightsChPt[cw][ptbebe]) // determine phieta weight for POI, ch dep:
         {
           wt = fPhiEtaWeightsChPt[cw][ptbebe]->GetBinContent(fPhiEtaWeightsChPt[cw][ptbebe]->FindBin(fCentralityEBE,dPhi,dEta));
+          if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+        }
+        // run-by-run
+        if(fPOIExtraWeights==kEtaPhiRbR && fPhiEtaRbRWeights) // determine phieta weight for POI:
+        {
+          wt = fPhiEtaRbRWeights->GetBinContent(fPhiEtaRbRWeights->FindBin(fCentralityEBE,dPhi,dEta));
+          if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+        }
+        if(fPOIExtraWeights==kEtaPhiChRbR && fPhiEtaRbRWeightsCh[cw]) // determine phieta weight for POI, ch dep:
+        {
+          wt = fPhiEtaRbRWeightsCh[cw]->GetBinContent(fPhiEtaRbRWeightsCh[cw]->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         
@@ -888,6 +920,17 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if(fPOIExtraWeights==kEtaPhiChPt && fPhiEtaWeightsChPt[cw][ptbebe]) // determine phieta weight for POI, ch dep:
         {
           wt = fPhiEtaWeightsChPt[cw][ptbebe]->GetBinContent(fPhiEtaWeightsChPt[cw][ptbebe]->FindBin(fCentralityEBE,dPhi,dEta));
+          if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+        }
+        // run-by-run
+        if(fPOIExtraWeights==kEtaPhiRbR && fPhiEtaRbRWeights) // determine phieta weight for POI:
+        {
+          wt = fPhiEtaRbRWeights->GetBinContent(fPhiEtaRbRWeights->FindBin(fCentralityEBE,dPhi,dEta));
+          if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+        }
+        if(fPOIExtraWeights==kEtaPhiChRbR && fPhiEtaRbRWeightsCh[cw]) // determine phieta weight for POI, ch dep:
+        {
+          wt = fPhiEtaRbRWeightsCh[cw]->GetBinContent(fPhiEtaRbRWeightsCh[cw]->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         
@@ -17332,8 +17375,10 @@ void AliFlowAnalysisCRC::InitializeArraysForParticleWeights()
 {
   fWeightsList = new TList();
   fPhiEtaWeights = NULL;
+  fPhiEtaRbRWeights = NULL;
   for (Int_t i=0; i<2; i++) {
     fPhiEtaWeightsCh[i] = NULL;
+    fPhiEtaRbRWeightsCh[i] = NULL;
   }
   for (Int_t i=0; i<2; i++) {
     for (Int_t j=0; j<3; j++) {
@@ -23784,16 +23829,64 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
   
   for (Int_t h=0; h<fCRCnCen; h++) {
     for (Int_t k=0; k<fkNHarv1eta; k++) {
+      for (Int_t j=0; j<fkNHistv1eta; j++) {
+        for(Int_t c=1;c<=fFlowSPZDCv1etaPro[h][k][j]->GetNbinsX();c++) {
+          
+          Double_t SumTwo=0., SumTwoCorr=0., SumWeig=0., SumWeigCorr=0., SumTwoSq=0., SumWeigSq=0.;
+          Double_t stats[6]={0.};
+          
+          fFlowSPZDCv1etaPro[h][k][j]->GetXaxis()->SetRange(c,c);
+          fFlowSPZDCv1etaPro[h][k][j]->GetStats(stats);
+          Double_t sumw   = stats[0];
+          Double_t sumw2  = stats[1];
+          Double_t sumwx  = stats[4];
+          Double_t sumwx2 = stats[5];
+          
+          if(sumw>0.) {
+            SumTwo    += sumwx;
+            SumWeig   += sumw;
+            SumTwoSq  += sumwx2;
+            SumWeigSq += sumw2;
+            SumTwoCorr += sumwx;
+            SumWeigCorr += sumw;
+          } // end of if(sumw>0.)
+          
+          if(!SumWeig) continue;
+          
+          Double_t Corr = SumTwo/SumWeig;
+          Double_t SqCorr = SumTwoSq/SumWeig;
+          Double_t Weig = SumWeig;
+          Double_t SqWeig = SumWeigSq;
+          Double_t spread=0., termA=0., termB=0.;
+          if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
+          if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
+          if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
+          Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+          
+          if(CorrErr) {
+            fFlowSPZDCv1etaHist[h][k][j]->SetBinContent(c,Corr);
+            fFlowSPZDCv1etaHist[h][k][j]->SetBinError(c,CorrErr);
+          }
+          
+        } // end of for(Int_t c=1;c<=fFlowSPZDCv1etaPro[h][k][j]->GetNbinsX();c++)
+        fFlowSPZDCv1etaPro[h][k][j]->GetXaxis()->SetRange(1.,fFlowSPZDCv1etaPro[h][k][j]->GetNbinsX());
+      }
+    }
+  }
+  
+  
+  for (Int_t h=0; h<fCRCnCen; h++) {
+    for (Int_t k=0; k<fkNHarv1eta; k++) {
       
       if(k==0) {
         for (Int_t eb=0; eb<fkEtaDiffNBins; eb++) {
           
-          Double_t v1P = fFlowSPZDCv1etaPro[h][k][0]->GetBinContent(eb+1);
-          Double_t v1Per = fFlowSPZDCv1etaPro[h][k][0]->GetBinError(eb+1);
-          Double_t v1T = fFlowSPZDCv1etaPro[h][k][1]->GetBinContent(eb+1);
-          Double_t v1Ter = fFlowSPZDCv1etaPro[h][k][1]->GetBinError(eb+1);
-          Double_t QAQB = fFlowSPZDCv1etaPro[h][k][2]->GetBinContent(eb+1);
-          Double_t QAQBer = fFlowSPZDCv1etaPro[h][k][2]->GetBinError(eb+1);
+          Double_t v1P = fFlowSPZDCv1etaHist[h][k][0]->GetBinContent(eb+1);
+          Double_t v1Per = fFlowSPZDCv1etaHist[h][k][0]->GetBinError(eb+1);
+          Double_t v1T = fFlowSPZDCv1etaHist[h][k][1]->GetBinContent(eb+1);
+          Double_t v1Ter = fFlowSPZDCv1etaHist[h][k][1]->GetBinError(eb+1);
+          Double_t QAQB = fFlowSPZDCv1etaHist[h][k][2]->GetBinContent(eb+1);
+          Double_t QAQBer = fFlowSPZDCv1etaHist[h][k][2]->GetBinError(eb+1);
           
           Double_t QetRe = fFlowSPZDCv1etaNUAPro[h][0][0]->GetBinContent(eb+1);
           Double_t QetIm = fFlowSPZDCv1etaNUAPro[h][0][1]->GetBinContent(eb+1);
@@ -23821,10 +23914,10 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
           fFlowSPZDCv1etaHist[h][k][1]->SetBinError(eb+1,v1eveer);
           
           //positive particles
-          v1P = fFlowSPZDCv1etaPro[h][k][3]->GetBinContent(eb+1);
-          v1Per = fFlowSPZDCv1etaPro[h][k][3]->GetBinError(eb+1);
-          v1T = fFlowSPZDCv1etaPro[h][k][4]->GetBinContent(eb+1);
-          v1Ter = fFlowSPZDCv1etaPro[h][k][4]->GetBinError(eb+1);
+          v1P = fFlowSPZDCv1etaHist[h][k][3]->GetBinContent(eb+1);
+          v1Per = fFlowSPZDCv1etaHist[h][k][3]->GetBinError(eb+1);
+          v1T = fFlowSPZDCv1etaHist[h][k][4]->GetBinContent(eb+1);
+          v1Ter = fFlowSPZDCv1etaHist[h][k][4]->GetBinError(eb+1);
           
           Double_t QetPRe = fFlowSPZDCv1etaNUAPro[h][0][2]->GetBinContent(eb+1);
           Double_t QetPIm = fFlowSPZDCv1etaNUAPro[h][0][3]->GetBinContent(eb+1);
@@ -23846,10 +23939,10 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
           fFlowSPZDCv1etaHist[h][k][3]->SetBinError(eb+1,v1eveer);
           
           //negative particles
-          v1P = fFlowSPZDCv1etaPro[h][k][5]->GetBinContent(eb+1);
-          v1Per = fFlowSPZDCv1etaPro[h][k][5]->GetBinError(eb+1);
-          v1T = fFlowSPZDCv1etaPro[h][k][6]->GetBinContent(eb+1);
-          v1Ter = fFlowSPZDCv1etaPro[h][k][6]->GetBinError(eb+1);
+          v1P = fFlowSPZDCv1etaHist[h][k][5]->GetBinContent(eb+1);
+          v1Per = fFlowSPZDCv1etaHist[h][k][5]->GetBinError(eb+1);
+          v1T = fFlowSPZDCv1etaHist[h][k][6]->GetBinContent(eb+1);
+          v1Ter = fFlowSPZDCv1etaHist[h][k][6]->GetBinError(eb+1);
           
           Double_t QetNRe = fFlowSPZDCv1etaNUAPro[h][0][4]->GetBinContent(eb+1);
           Double_t QetNIm = fFlowSPZDCv1etaNUAPro[h][0][5]->GetBinContent(eb+1);
@@ -23877,12 +23970,12 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
         // real part: 0,1,12,2,3,4,5
         for (Int_t eb=0; eb<fkEtaDiffNBins; eb++) {
           
-          Double_t v1P = fFlowSPZDCv1etaPro[h][k][0]->GetBinContent(eb+1);
-          Double_t v1Per = fFlowSPZDCv1etaPro[h][k][0]->GetBinError(eb+1);
-          Double_t v1T = fFlowSPZDCv1etaPro[h][k][1]->GetBinContent(eb+1);
-          Double_t v1Ter = fFlowSPZDCv1etaPro[h][k][1]->GetBinError(eb+1);
-          Double_t QAQB = fFlowSPZDCv1etaPro[h][k][12]->GetBinContent(eb+1);
-          Double_t QAQBer = fFlowSPZDCv1etaPro[h][k][12]->GetBinError(eb+1);
+          Double_t v1P = fFlowSPZDCv1etaHist[h][k][0]->GetBinContent(eb+1);
+          Double_t v1Per = fFlowSPZDCv1etaHist[h][k][0]->GetBinError(eb+1);
+          Double_t v1T = fFlowSPZDCv1etaHist[h][k][1]->GetBinContent(eb+1);
+          Double_t v1Ter = fFlowSPZDCv1etaHist[h][k][1]->GetBinError(eb+1);
+          Double_t QAQB = fFlowSPZDCv1etaHist[h][k][12]->GetBinContent(eb+1);
+          Double_t QAQBer = fFlowSPZDCv1etaHist[h][k][12]->GetBinError(eb+1);
           
           Double_t v1odd = (v1P-v1T)/(sqrt(fabs(QAQB))*2.);
           Double_t den = sqrt(fabs(QAQB));
@@ -23898,10 +23991,10 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
           fFlowSPZDCv1etaHist[h][k][1]->SetBinError(eb+1,v1eveer);
           
           //positive particles
-          v1P = fFlowSPZDCv1etaPro[h][k][2]->GetBinContent(eb+1);
-          v1Per = fFlowSPZDCv1etaPro[h][k][2]->GetBinError(eb+1);
-          v1T = fFlowSPZDCv1etaPro[h][k][3]->GetBinContent(eb+1);
-          v1Ter = fFlowSPZDCv1etaPro[h][k][3]->GetBinError(eb+1);
+          v1P = fFlowSPZDCv1etaHist[h][k][2]->GetBinContent(eb+1);
+          v1Per = fFlowSPZDCv1etaHist[h][k][2]->GetBinError(eb+1);
+          v1T = fFlowSPZDCv1etaHist[h][k][3]->GetBinContent(eb+1);
+          v1Ter = fFlowSPZDCv1etaHist[h][k][3]->GetBinError(eb+1);
           
           v1odd = (v1P-v1T)/(sqrt(fabs(QAQB))*2.);
           v1oddSq = pow(v1Per/den,2.) + pow(v1Ter/den,2.) + pow(QAQBer*0.5*(v1P-v1T)/pow(fabs(QAQB),1.5),2.);
@@ -23915,10 +24008,10 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
           fFlowSPZDCv1etaHist[h][k][3]->SetBinError(eb+1,v1eveer);
           
           //negative particles
-          v1P = fFlowSPZDCv1etaPro[h][k][4]->GetBinContent(eb+1);
-          v1Per = fFlowSPZDCv1etaPro[h][k][4]->GetBinError(eb+1);
-          v1T = fFlowSPZDCv1etaPro[h][k][5]->GetBinContent(eb+1);
-          v1Ter = fFlowSPZDCv1etaPro[h][k][5]->GetBinError(eb+1);
+          v1P = fFlowSPZDCv1etaHist[h][k][4]->GetBinContent(eb+1);
+          v1Per = fFlowSPZDCv1etaHist[h][k][4]->GetBinError(eb+1);
+          v1T = fFlowSPZDCv1etaHist[h][k][5]->GetBinContent(eb+1);
+          v1Ter = fFlowSPZDCv1etaHist[h][k][5]->GetBinError(eb+1);
           
           v1odd = (v1P-v1T)/(sqrt(fabs(QAQB))*2.);
           v1oddSq = pow(v1Per/den,2.) + pow(v1Ter/den,2.) + pow(QAQBer*0.5*(v1P-v1T)/pow(fabs(QAQB),1.5),2.);
@@ -23936,12 +24029,12 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
         // imaginary part: 6,7,13,8,9,10,11
         for (Int_t eb=0; eb<fkEtaDiffNBins; eb++) {
           
-          Double_t v1P = fFlowSPZDCv1etaPro[h][k][6]->GetBinContent(eb+1);
-          Double_t v1Per = fFlowSPZDCv1etaPro[h][k][6]->GetBinError(eb+1);
-          Double_t v1T = fFlowSPZDCv1etaPro[h][k][7]->GetBinContent(eb+1);
-          Double_t v1Ter = fFlowSPZDCv1etaPro[h][k][7]->GetBinError(eb+1);
-          Double_t QAQB = fFlowSPZDCv1etaPro[h][k][13]->GetBinContent(eb+1);
-          Double_t QAQBer = fFlowSPZDCv1etaPro[h][k][13]->GetBinError(eb+1);
+          Double_t v1P = fFlowSPZDCv1etaHist[h][k][6]->GetBinContent(eb+1);
+          Double_t v1Per = fFlowSPZDCv1etaHist[h][k][6]->GetBinError(eb+1);
+          Double_t v1T = fFlowSPZDCv1etaHist[h][k][7]->GetBinContent(eb+1);
+          Double_t v1Ter = fFlowSPZDCv1etaHist[h][k][7]->GetBinError(eb+1);
+          Double_t QAQB = fFlowSPZDCv1etaHist[h][k][13]->GetBinContent(eb+1);
+          Double_t QAQBer = fFlowSPZDCv1etaHist[h][k][13]->GetBinError(eb+1);
           
           Double_t v1odd = (v1P-v1T)/(sqrt(fabs(QAQB))*2.);
           Double_t den = sqrt(fabs(QAQB));
@@ -23957,10 +24050,10 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
           fFlowSPZDCv1etaHist[h][k][7]->SetBinError(eb+1,v1eveer);
           
           //positive particles
-          v1P = fFlowSPZDCv1etaPro[h][k][8]->GetBinContent(eb+1);
-          v1Per = fFlowSPZDCv1etaPro[h][k][8]->GetBinError(eb+1);
-          v1T = fFlowSPZDCv1etaPro[h][k][9]->GetBinContent(eb+1);
-          v1Ter = fFlowSPZDCv1etaPro[h][k][9]->GetBinError(eb+1);
+          v1P = fFlowSPZDCv1etaHist[h][k][8]->GetBinContent(eb+1);
+          v1Per = fFlowSPZDCv1etaHist[h][k][8]->GetBinError(eb+1);
+          v1T = fFlowSPZDCv1etaHist[h][k][9]->GetBinContent(eb+1);
+          v1Ter = fFlowSPZDCv1etaHist[h][k][9]->GetBinError(eb+1);
           
           v1odd = (v1P-v1T)/(sqrt(fabs(QAQB))*2.);
           v1oddSq = pow(v1Per/den,2.) + pow(v1Ter/den,2.) + pow(QAQBer*0.5*(v1P-v1T)/pow(fabs(QAQB),1.5),2.);
@@ -23974,10 +24067,10 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
           fFlowSPZDCv1etaHist[h][k][9]->SetBinError(eb+1,v1eveer);
           
           //negative particles
-          v1P = fFlowSPZDCv1etaPro[h][k][10]->GetBinContent(eb+1);
-          v1Per = fFlowSPZDCv1etaPro[h][k][10]->GetBinError(eb+1);
-          v1T = fFlowSPZDCv1etaPro[h][k][11]->GetBinContent(eb+1);
-          v1Ter = fFlowSPZDCv1etaPro[h][k][11]->GetBinError(eb+1);
+          v1P = fFlowSPZDCv1etaHist[h][k][10]->GetBinContent(eb+1);
+          v1Per = fFlowSPZDCv1etaHist[h][k][10]->GetBinError(eb+1);
+          v1T = fFlowSPZDCv1etaHist[h][k][11]->GetBinContent(eb+1);
+          v1Ter = fFlowSPZDCv1etaHist[h][k][11]->GetBinError(eb+1);
           
           v1odd = (v1P-v1T)/(sqrt(fabs(QAQB))*2.);
           v1oddSq = pow(v1Per/den,2.) + pow(v1Ter/den,2.) + pow(QAQBer*0.5*(v1P-v1T)/pow(fabs(QAQB),1.5),2.);
@@ -29479,14 +29572,6 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   fEvPlDPsiC=0.;
   fEvPlZDCAflat=0.;
   fEvPlDPsiA=0.;
-  
-  enum POIExtraWeights {
-    kNone,
-    kEtaPhi,
-    kEtaPhiCh,
-    kEtaPhiVtx,
-    kEtaPhiChPt,
-  };
   
   if(fPOIExtraWeights==AliFlowAnalysisCRC::kEtaPhi) {
     if(fWeightsList->FindObject("fCRCQVecPhiHist")) {
