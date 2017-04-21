@@ -401,7 +401,15 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fJetInfoVar[1]=0;
 	  if(fDoSoftDrop) {
 	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kFALSE);
-	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kTRUE);
+	    //SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kTRUE);
+	    
+	    fJetInfoVar[3]=0;
+	    fJetInfoVar[5]=0;
+	    fJetInfoVar[7]=0;
+	    fJetInfoVar[13]=0;
+	    fJetInfoVar[15]=0;
+	    fJetInfoVar[17]=0;
+	    
 	  }
 	  else{
 	    fJetInfoVar[2]=0;
@@ -480,6 +488,8 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	continue;
       }
       if (!JetPythDet) continue;
+      UInt_t rejectionReason = 0;
+      if (!(JetContPythDet->AcceptJet(JetPythDet,rejectionReason))) continue;
       fhDetJetPt_Matched->Fill(JetPythDet->Pt()); //Fill only matched detector level jets for tagging efficiency comparison
       JetPythTrue=JetPythDet->ClosestJet();
       if(!JetPythTrue) continue;
@@ -685,7 +695,6 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     }
   fastjet::JetDefinition                *fJetDef;         
   fastjet::ClusterSequence              *fClustSeqSA;
-  
 
 
   fJetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
@@ -700,14 +709,13 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   std::vector<fastjet::PseudoJet>       fOutputJets;
   fOutputJets.clear();
   fOutputJets=fClustSeqSA->inclusive_jets(0);
- 
-
+				
   std::vector<fastjet::PseudoJet> jet_constituents = fOutputJets[0].constituents();
   Float_t NSubjettinessResult[3], NSubBeta = 1, R0=0.4;
   std::vector<fastjet::PseudoJet> Subjet_Axes;
   fastjet::PseudoJet SubJet1_Axis,SubJet2_Axis;
   Double_t DelR=-5;
-	
+  				
   
   for(Int_t j=1; j<3; j++){
     if(jet_constituents.size() < j){
