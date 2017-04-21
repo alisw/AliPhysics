@@ -591,7 +591,7 @@ const TString AliExternalInfo::CreatePath(TString type, TString period, TString 
   // Create the local path from the type, period and pass of the resource
   TString internalLocation;
   //Check if period is MC and adjust storage hierarchy
-  if (period.Length() == 6 || (period == "" && type != "MonALISA.MC") || type == "MonALISA.ProductionCycleID" || type == "TriggerClasses") { // put everything in the form LHCYYx or with empty period and pass in "data"
+  if (period.Length() == 6 || (period == "" && type != "MonALISA.MC") || type == "MonALISA.ProductionCycleID"  || type == "MonALISA.RCT"|| type == "TriggerClasses") { // put everything in the form LHCYYx or with empty period and pass in "data"
     internalLocation.Append("/data/");
   }
   else { // everything which is not in the form "LHCYYx" put in /sim/
