@@ -97,7 +97,7 @@ class AliHFInvMassFitter : public TNamed {
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t nSigma=3., Int_t option=0, Int_t pdgCode=0) const;
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option=0) const;
 
-  Bool_t   MassFitter(Bool_t draw=kTRUE);
+  Int_t   MassFitter(Bool_t draw=kTRUE);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
   Double_t FitFunction4Refl(Double_t *x,Double_t *par);
