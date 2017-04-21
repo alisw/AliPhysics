@@ -156,6 +156,10 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
     fHist_Recenter_ZDCAx[i] = NULL;
     fHist_Recenter_ZDCAy[i] = NULL;
   }
+  for(int i=0;i<20;i++){
+    fHist_ZDCC_En_CommonCh[i] = NULL;
+    fHist_ZDCA_En_CommonCh[i] = NULL;
+  }
 
   for(int i=0;i<2;i++){
     VxCut[i] = 0;
@@ -271,7 +275,10 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
     fHist_Recenter_ZDCAx[i] = NULL;
     fHist_Recenter_ZDCAy[i] = NULL;
   }
-
+  for(int i=0;i<20;i++){
+    fHist_ZDCC_En_CommonCh[i] = NULL;
+    fHist_ZDCA_En_CommonCh[i] = NULL;
+  }
 
   for(int i=0;i<2;i++){
     VxCut[i] = 0;
@@ -470,10 +477,25 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
      exit(1);
   }
 
+  const int NbinVt =  (vyBin-1)*vxBin + vxBin;
+
+  fHist_Vx_ArrayFinder = new TH1F("fHist_Vx_ArrayFinder","",vxBin,VxCut[0],VxCut[1]);
+  fHist_Vy_ArrayFinder = new TH1F("fHist_Vy_ArrayFinder","",vyBin,VyCut[0],VyCut[1]);
+  fHist_Vz_ArrayFinder = new TH1F("fHist_Vz_ArrayFinder","",vzBin,VzCut[0],VzCut[1]);
+
+
+
   char name[100];
 
 
   if(fAnalysisSet=="FillGainEq") {
+
+    for(int i=0;i<vzBin;i++) {
+      fHist_ZDCC_En_CommonCh[i] = new TProfile2D(Form("fHist_ZDCC_En_CommonCh_Vz%d",i+1),"",100,0,100,NbinVt,0,NbinVt,"");
+      fHist_ZDCA_En_CommonCh[i] = new TProfile2D(Form("fHist_ZDCA_En_CommonCh_Vz%d",i+1),"",100,0,100,NbinVt,0,NbinVt,"");
+      fListHistos->Add(fHist_ZDCC_En_CommonCh[i]);
+      fListHistos->Add(fHist_ZDCA_En_CommonCh[i]);
+    }
     for(int i=0;i<frunflag;i++) {
       //store: ZDC energy for gain calibration:
       fHist_ZDCA_En_Run[i]  = new TProfile2D(Form("fHist_ZDCA_En_Run%d",runNums[i]),"",100,0,100,5,0,5,"");
@@ -546,13 +568,6 @@ void AliAnalysisTaskZDCGainEq::UserCreateOutputObjects()
      }
    }
   }
-
-
-  const int NbinVt =  (vyBin-1)*vxBin + vxBin;
-
-  fHist_Vx_ArrayFinder = new TH1F("fHist_Vx_ArrayFinder","",vxBin,VxCut[0],VxCut[1]);
-  fHist_Vy_ArrayFinder = new TH1F("fHist_Vy_ArrayFinder","",vyBin,VyCut[0],VyCut[1]);
-  fHist_Vz_ArrayFinder = new TH1F("fHist_Vz_ArrayFinder","",vzBin,VzCut[0],VzCut[1]);
 
 
   if(vzBin>20){
@@ -1162,14 +1177,22 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
   Int_t iCentBin = abs(EvtCent) + 1;
   Int_t iWgtBin = -1;
+  Int_t iCommon = -1;
 
   if(fAnalysisSet=="DoGainEq") {
     if(fHist_ChanWgt_ZDCC && fHist_ChanWgt_ZDCA){
-      for(int ich=1; ich<=4;  ich++){
+
+     for(int ich=1; ich<=4;  ich++){
         iWgtBin = 4*(iCentBin-1) + ich;
         ChanWgtZDCC[ich-1] = fHist_ChanWgt_ZDCC->GetBinContent(iWgtBin);
         ChanWgtZDCA[ich-1] = fHist_ChanWgt_ZDCA->GetBinContent(iWgtBin);
       }
+      /*for(int ich=1; ich<=4;  ich++){
+        iWgtBin = 5*(iCentBin-1) + ich;
+        iCommon = 5*(iCentBin-1) + 1;  
+        ChanWgtZDCC[ich-1] = (1./4*fHist_ChanWgt_ZDCC->GetBinContent(iCommon))/fHist_ChanWgt_ZDCC->GetBinContent(iWgtBin+1);
+        ChanWgtZDCA[ich-1] = (1./4*fHist_ChanWgt_ZDCA->GetBinContent(iCommon))/fHist_ChanWgt_ZDCA->GetBinContent(iWgtBin+1);
+      }*/
     }
     else{
       //printf("\n\n **WARNING**\n ZDC Channel Weights not found. Using weights = 1.0 \n\n");
@@ -1306,12 +1329,30 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   }
 
 
+
+  Int_t indexVx = fHist_Vx_ArrayFinder->FindBin(Vxyz[0]);
+  Int_t indexVy = fHist_Vy_ArrayFinder->FindBin(Vxyz[1]);
+  Int_t indexVz = fHist_Vz_ArrayFinder->FindBin(Vxyz[2]);
+
+
+  Double_t tVertexBin1 = 0;
+  tVertexBin1 = (Double_t) (indexVy-1)*vxBin + (Double_t)indexVx - 0.5 ; 
+
+
   if(fAnalysisSet=="FillGainEq") {
+
+    fHist_ZDCC_En_CommonCh[indexVz-1]->Fill(EvtCent,tVertexBin1,towCalibZNC[0]);
+    fHist_ZDCA_En_CommonCh[indexVz-1]->Fill(EvtCent,tVertexBin1,towCalibZNA[0]);
+
     for(int ich=0; ich<5; ich++) {
        fHist_ZDCC_En_Run[runindex]->Fill(EvtCent,ich,towCalibZNC[ich]);
        fHist_ZDCA_En_Run[runindex]->Fill(EvtCent,ich,towCalibZNA[ich]);
     }
   }
+
+
+
+
 
 
 
@@ -1393,11 +1434,6 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
   fHist_Event_count->Fill(stepCount);
   stepCount++;
 
-
-  Int_t indexVx = fHist_Vx_ArrayFinder->FindBin(Vxyz[0]);
-  Int_t indexVy = fHist_Vy_ArrayFinder->FindBin(Vxyz[1]);
-  Int_t indexVz = fHist_Vz_ArrayFinder->FindBin(Vxyz[2]);
-  Double_t tVertexBin1 = 0;
 
 
   Double_t psi1C = TMath::ATan2(xyZNC[1],xyZNC[0]);
