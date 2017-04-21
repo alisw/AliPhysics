@@ -218,52 +218,13 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   //task->SetBranches("AOD:header,tracks,vertices,emcalCells,caloClusters");
   task->SetAnalysisMaker(maker);
   
-  
   //
   // Select events trigger depending on trigger
   //
   if(!simulation)
   {
-    if( trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default") )
-    {
-      task->SelectCollisionCandidates( AliVEvent::kINT7 | AliVEvent::kMB );
-    }
-    else if(trigger.Contains("EMCAL_L0"))
-    {
-      task ->SelectCollisionCandidates( AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 );
-      maker->GetReader()->SetFiredTriggerClassName("EMC");
-    }
-    else if(trigger.Contains("DCAL_L0"))
-    {
-      task ->SelectCollisionCandidates( AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 );
-      maker->GetReader()->SetFiredTriggerClassName("DMC");
-    }
-    else if(trigger.Contains("EMCAL_L1"))
-    {
-      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
-      if(year > 2012) maker->GetReader()->SetFiredTriggerClassName("EG1");
-      // before 2013 only one kind of L1 trigger
-    }
-    else if(trigger.Contains("DCAL_L1"))
-    {
-      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
-      maker->GetReader()->SetFiredTriggerClassName("DG1");
-    }
-    else if(trigger.Contains("EMCAL_L1_Run1"))
-    {
-      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
-      //maker->GetReader()->SetFiredTriggerClassName("EGA");
-    }
-    else if(trigger.Contains("EMCAL_L2"))
-    {
-      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
-      maker->GetReader()->SetFiredTriggerClassName("EG2");
-    }
-    else if(trigger.Contains("DCAL_L2"))
-    {
-      task ->SelectCollisionCandidates( AliVEvent::kEMCEGA );
-      maker->GetReader()->SetFiredTriggerClassName("DG2");
-    }
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureEventTriggerCaloTrackCorr.C");
+    ConfigureEventTriggerCaloTrackCorr(task,trigger,year);
   }
 
   mgr->AddTask(task);
