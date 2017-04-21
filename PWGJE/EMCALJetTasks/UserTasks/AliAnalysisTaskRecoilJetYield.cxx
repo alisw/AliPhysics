@@ -367,7 +367,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     AliEmcalJet *Jet2= NULL;
     if(JetCont) {
       JetCont->ResetCurrentID();
-      while((Jet1=JetCont->GetNextJet())) {
+      while((Jet1=JetCont->GetNextAcceptJet())) {
 	if(!Jet1) continue;
 	if (fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	else JetPt_ForThreshold = Jet1->Pt();
