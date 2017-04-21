@@ -215,7 +215,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliConversionMesonCuts,16)
+    ClassDef(AliConversionMesonCuts,17)
 };
 
 
