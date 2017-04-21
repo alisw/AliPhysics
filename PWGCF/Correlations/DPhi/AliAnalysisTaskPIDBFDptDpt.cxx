@@ -1278,16 +1278,26 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      spdCentr = centralityObject->GetCentralityPercentile("CL1");   
 	    }
 	}
-
-      else if ( fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0C_kMB" || fSystemType == "pp_V0_kMB" )
+      else if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "pp_V0A_kMB_kTRUE" || fSystemType == "pp_V0C_kMB_kTRUE" || fSystemType == "pp_V0_kMB_kTRUE" )
 	{ 
 	  AliMultSelection *multSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");
 	  //If get this warning, please check that the AliMultSelectionTask actually ran (before your task)
 	  if (!multSelection)    AliWarning("MultSelection not found in input event");
 	  else{
-	    v0Centr  = multSelection->GetMultiplicityPercentile("V0M");
-	    v0ACentr = multSelection->GetMultiplicityPercentile("V0A");
-	    v0CCentr = multSelection->GetMultiplicityPercentile("V0C");
+	    v0Centr  = multSelection->GetMultiplicityPercentile("V0M", kTRUE);
+	    v0ACentr = multSelection->GetMultiplicityPercentile("V0A", kTRUE);
+	    v0CCentr = multSelection->GetMultiplicityPercentile("V0C", kTRUE);
+	  }
+        }
+      else if ( fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kFALSE" )
+	{ 
+	  AliMultSelection *multSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");
+	  //If get this warning, please check that the AliMultSelectionTask actually ran (before your task)
+	  if (!multSelection)    AliWarning("MultSelection not found in input event");
+	  else{
+	    v0Centr  = multSelection->GetMultiplicityPercentile("V0M", kFALSE);
+	    v0ACentr = multSelection->GetMultiplicityPercentile("V0A", kFALSE);
+	    v0CCentr = multSelection->GetMultiplicityPercentile("V0C", kFALSE);
 	  }
         }
       else if ( fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" )
@@ -1302,7 +1312,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	  v0ACentr = fUtils->GetMultiplicityPercentile(fAODEvent,"V0AEq");
 	  v0CCentr = fUtils->GetMultiplicityPercentile(fAODEvent,"V0CEq");
         }
-
+      else    return;
       
       _nTracks  = fAODEvent -> GetNumberOfTracks();
         
@@ -1331,7 +1341,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
       
       if      ( fSystemType == "PbPb" )
 	{ if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
-      else if ( fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB" || fSystemType == "pp_V0_kMB" || fSystemType == "pp_V0C_kMB" || fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" )
+      else if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB_kTRUE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kTRUE" || fSystemType == "pp_V0_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kTRUE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" )
 	{ if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
       else    return;
 	
