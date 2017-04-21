@@ -115,7 +115,7 @@ TString kAnaGammaHadronCorr = "";
 /// \param isoMethod : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
 /// \param isoContent : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
 /// \param leading : An int setting the type of leading particle selection: 0, select all;l 1: absolute  leading of charged; 2: absolute  leading of charged and neutral; 3: near side leading absolute of charged; 4: near side leading absolute of charged and neutral
-/// \param tm : A bool to select neutral clusters as triggers
+/// \param tm : track matching options: 0- no matching; 1-fixed residual cuts; 2-pT track dependent cut
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param mixOn : A bool to switch the correlation mixing analysis
@@ -142,7 +142,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
  Int_t    isoMethod     = AliIsolationCut::kPtThresIC,
  Int_t    isoContent    = AliIsolationCut::kNeutralAndCharged,
  Int_t    leading       = 0,
- Bool_t   tm            = kTRUE,
+ Int_t    tm            = 1,
  Int_t    minCen        = -1,
  Int_t    maxCen        = -1,
  Bool_t   mixOn         = kTRUE,
@@ -736,8 +736,12 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   caloPID->SetEMCALLambda0CutMin(0.10);
   
   // Track matching
+  // tm = 1, fixed cuts
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
+  
+  // pT track dependent cuts
+  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
   // PHOS
   caloPID->SetPHOSDispersionCut(2.5);
@@ -878,6 +882,14 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     
     AliCaloPID* caloPID = ana->GetCaloPID();
     
+    // Track matching
+    // tm = 1, fixed cuts
+    caloPID->SetEMCALDEtaCut(0.025);
+    caloPID->SetEMCALDPhiCut(0.030);
+    
+    // pT track dependent cuts
+    if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
+
     caloPID->SetSplitWidthSigma(3); // cut at 3 sigma of the mean pi0 peak.
     
     if(!useSSIso)
@@ -1090,9 +1102,15 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     ana->SwitchOffSeveralIsolation() ;
   
   AliCaloPID* caloPID = ana->GetCaloPID();
+ 
+  // Track matching 
+  // tm = 1, fixed cuts
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
   
+  // pT track dependent cuts
+  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
+
   //Set Histograms name tag, bins and ranges
   
   if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
