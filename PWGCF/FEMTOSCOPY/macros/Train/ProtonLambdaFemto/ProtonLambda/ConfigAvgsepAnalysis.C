@@ -291,11 +291,11 @@ AliFemtoV0TrackPairCut* GetV0TrackPairCut(ESys system)
         
         if(system == kPL)
         {
-            pairCut->SetKstarCut(0.04,AliFemtoV0TrackPairCut::kELambda,AliFemtoV0TrackPairCut::kEProton); //0 - lambda, 2 - proton
+            pairCut->SetKstarCut(0.04,AliFemtoV0TrackPairCut::kLambda,AliFemtoV0TrackPairCut::kProton); //0 - lambda, 2 - proton
         }
         else if(system == kAPAL)
         {
-            pairCut->SetKstarCut(0.04,AliFemtoV0TrackPairCut::kEAntiLambda,AliFemtoV0TrackPairCut::kEAntiProton); //1 - antilambda, 3 - antiproton
+            pairCut->SetKstarCut(0.04,AliFemtoV0TrackPairCut::kAntiLambda,AliFemtoV0TrackPairCut::kAntiProton); //1 - antilambda, 3 - antiproton
         }
         
         if(separationCuts)
