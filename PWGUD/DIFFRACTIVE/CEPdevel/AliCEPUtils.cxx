@@ -26,15 +26,18 @@
 //  Paul Buehler <paul.buehler@oeaw.ac.at>
 
 
+#include "TGraph.h"
 #include "AliCEPUtils.h"
 
 //------------------------------------------------------------------------------
 AliCEPUtils::AliCEPUtils():
     fTPCnclsS()
+  , fTrackDCA()
   , fTrackDCAz()
   , fTrackEtaMin()
   , fTrackEtaMax()
   , fTrackCutListPrim(0x0)
+  , fnV0dp(0)
 {
   
   // initialize the track cuts
@@ -129,22 +132,22 @@ TList* AliCEPUtils::GetBBFlagQAHists()
   // define the histograms and and add them to the list lhh
   printf("Preparing QABBFlag histograms\n");
   // number of input events
-  TH2F* fhh01 = new TH2F("V0ABBFlag","V0ABBFlag",32,0,31,21,0,20);
+  TH2F* fhh01 = new TH2F("V0ABBFlag","V0ABBFlag",32,0,32,21,0,21);
   lhh->Add(fhh01);
-  TH2F* fhh02 = new TH2F("V0CBBFlag","V0CBBFlag",32,0,31,21,0,20);
+  TH2F* fhh02 = new TH2F("V0CBBFlag","V0CBBFlag",32,0,32,21,0,21);
   lhh->Add(fhh02);
-  TH2F* fhh03 = new TH2F("ADABBFlag","ADABBFlag",8,0,7,21,0,20);
+  TH2F* fhh03 = new TH2F("ADABBFlag","ADABBFlag", 8,0,8,21,0,21);
   lhh->Add(fhh03);
-  TH2F* fhh04 = new TH2F("ADCBBFlag","ADCBBFlag",8,0,7,21,0,20);
+  TH2F* fhh04 = new TH2F("ADCBBFlag","ADCBBFlag", 8,0,8,21,0,21);
   lhh->Add(fhh04);
 
-  TH2F* fhh05 = new TH2F("V0ABGFlag","V0ABGFlag",32,0,31,21,0,20);
+  TH2F* fhh05 = new TH2F("V0ABGFlag","V0ABGFlag",32,0,32,21,0,21);
   lhh->Add(fhh05);
-  TH2F* fhh06 = new TH2F("V0CBGFlag","V0CBGFlag",32,0,31,21,0,20);
+  TH2F* fhh06 = new TH2F("V0CBGFlag","V0CBGFlag",32,0,32,21,0,21);
   lhh->Add(fhh06);
-  TH2F* fhh07 = new TH2F("ADABGFlag","ADABGFlag",8,0,7,21,0,20);
+  TH2F* fhh07 = new TH2F("ADABGFlag","ADABGFlag", 8,0,8,21,0,21);
   lhh->Add(fhh07);
-  TH2F* fhh08 = new TH2F("ADCBGFlag","ADCBGFlag",8,0,7,21,0,20);
+  TH2F* fhh08 = new TH2F("ADCBGFlag","ADCBGFlag", 8,0,8,21,0,21);
   lhh->Add(fhh08);
   
   return lhh;
@@ -255,6 +258,34 @@ TList* AliCEPUtils::GetVtxQAHists()
   TH1F* fhh04 = new TH1F("VtxZ","VtxZ",200,0.,50.);
   lhh->Add(fhh04);
 
+  return lhh;
+  
+}
+
+//------------------------------------------------------------------------------
+// definition of QA histograms used in
+// AliCEPUtils::V0Analysis
+// the histogram contains the armenteros-podolanski distribution
+TList* AliCEPUtils::GetV0QAHists()
+{
+  // initialisations
+  TList *lhh = new TList();
+  lhh->SetOwner();
+  
+  // define histograms and graphs and add them to the list lhh
+  TH1F* fhh01 = new TH1F("V0pointang","V0pointang",100,0.95,1.0);
+  lhh->Add(fhh01);
+  TH1F* fhh02 = new TH1F("V0daughDCA","V0daughDCA",100,0.0,0.1);
+  lhh->Add(fhh02);
+  TH1F* fhh03 = new TH1F("V0decLen","V0decLen",300,0.0,30.);
+  lhh->Add(fhh03);
+  TH1F* fhh04 = new TH1F("V0mass","V0mass",100,0.0,5.);
+  lhh->Add(fhh04);
+
+  TGraph* fgr01 = new TGraph();
+  fgr01->SetName("Armenteros");
+  lhh->Add(fgr01);
+  
   return lhh;
   
 }
@@ -394,16 +425,16 @@ void AliCEPUtils::BBFlagAnalysis (
     // side A
     for (Int_t ch=0; ch<8; ch++) {
       for (Int_t bc=0; bc<21; bc++) {
-        if (esdAD->GetPFBBFlag(ch+8,bc)>0) ((TH2F*)lhh->At(2))->Fill(ch,bc);
-        if (esdAD->GetPFBGFlag(ch+8,bc)>0) ((TH2F*)lhh->At(6))->Fill(ch,bc);
+        if (esdAD->GetPFBBFlag(ch+8,bc)>0)  ((TH2F*)lhh->At(2))->Fill(ch,bc);
+        if (esdAD->GetPFBGFlag(ch+8,bc)>0)  ((TH2F*)lhh->At(6))->Fill(ch,bc);
       }
     }
 
     // side C
     for (Int_t ch=0; ch<8; ch++){
       for (Int_t bc=0; bc<21; bc++) {
-        if (esdAD->GetPFBBFlag(ch,bc)>0)   ((TH2F*)lhh->At(3))->Fill(ch,bc);
-        if (esdAD->GetPFBGFlag(ch,bc)>0)   ((TH2F*)lhh->At(7))->Fill(ch,bc);
+        if (esdAD->GetPFBBFlag(ch,bc)>0)    ((TH2F*)lhh->At(3))->Fill(ch,bc);
+        if (esdAD->GetPFBGFlag(ch,bc)>0)    ((TH2F*)lhh->At(7))->Fill(ch,bc);
       }
     }
   }
@@ -542,7 +573,6 @@ void AliCEPUtils::VtxAnalysis (
   const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(Event);
   if (!esd) return;
 
-    
   const AliESDVertex *trkVertex = esd->GetPrimaryVertexTracks();
   const AliESDVertex *spdVertex = esd->GetPrimaryVertexSPD();
   
@@ -565,6 +595,87 @@ void AliCEPUtils::VtxAnalysis (
   ((TH1F*)lhh->At(3))->Fill(TMath::Abs(vertex->GetZ()));
   
   return;
+  
+}
+
+//------------------------------------------------------------------------------
+// computes armenteros-podolanski plot for V0s
+void AliCEPUtils::V0Analysis (
+  AliESDEvent *Event,
+  TList *lhh)
+{
+  if (!lhh) return;
+  
+  // initialisations
+  AliESDv0 *V0;
+  AliESDtrack *trackPos, *trackNeg;
+  Bool_t goodPair = kFALSE;
+  Double_t pos0[3], pos1[3];
+  Double_t d, cosTh;
+  Double_t mom1[3], mom2[3];
+  TVector3 p0,pV0;
+
+  Double_t pointingAngle;
+  Double_t daughtersDCA;
+  Double_t decayLength;
+  Double_t v0mass;
+
+  // get the cut object
+  AliESDtrackCuts *cut = (AliESDtrackCuts*)fTrackCutListPrim->At(0);
+
+  // retrieve main vertex
+  const AliVVertex *vtx = Event->GetPrimaryVertex();
+  vtx->GetXYZ(pos0);
+
+  // loop over V0s
+  Int_t nV0  = Event->GetNumberOfV0s();
+  for (Int_t ii=0; ii<nV0; ii++) {
+    V0 = Event->GetV0(ii);
+    if (!V0) continue;
+
+    // positive and negative daughters
+    trackPos = (AliESDtrack*) Event->GetTrack(V0->GetPindex());
+    trackNeg = (AliESDtrack*) Event->GetTrack(V0->GetNindex());
+    if (!trackPos || !trackNeg) continue;
+
+    // check if both daughter tracks pass standard ITSTPC cuts
+    goodPair = kFALSE;
+    if (cut->AcceptTrack(trackPos) && cut->AcceptTrack(trackNeg))
+      goodPair = kTRUE;
+    if (!goodPair) continue;
+    
+    // check distance to main vertex and pointing direction of V0
+    V0->XvYvZv(pos1);
+    d = sqrt(
+      (pos0[0]-pos1[0])*(pos0[0]-pos1[0])+
+      (pos0[1]-pos1[1])*(pos0[1]-pos1[1])+
+      (pos0[2]-pos1[2])*(pos0[2]-pos1[2]) );
+    // printf("d = %f\n",d);
+    
+    // compute further cut parameters and fill them into the histograms
+    pointingAngle = V0->GetV0CosineOfPointingAngle();
+    daughtersDCA  = V0->GetDcaV0Daughters();
+    decayLength   = V0->GetRr();
+    v0mass        = V0->GetEffMass(4,2);  // assume proton+pion
+
+    // cuts on V0 topological quantities
+    if ( pointingAngle < 0.99 || daughtersDCA > 0.005 || decayLength < 6.0 ||
+      v0mass < 0.90 || v0mass > 1.33 ) continue;
+
+    ((TH1F*)lhh->At(0))->Fill(pointingAngle);
+    ((TH1F*)lhh->At(1))->Fill(daughtersDCA);
+    ((TH1F*)lhh->At(2))->Fill(decayLength);
+    ((TH1F*)lhh->At(3))->Fill(v0mass);
+    printf("%f %f %f %f\n",pointingAngle,daughtersDCA,decayLength,v0mass);
+    
+    // update armenteros alpha vs pT histogram
+    TGraph* gr = (TGraph*)lhh->At(4);
+    gr->Expand(fnV0dp+1,10);
+    gr->SetPoint(fnV0dp,V0->AlphaV0(),V0->PtArmV0());
+    fnV0dp++;
+    printf("alpha/pT = %f/%f\n",V0->AlphaV0(),V0->PtArmV0());
+    
+  }
   
 }
 
@@ -632,6 +743,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     // positive and negative daughters
     v0daughters->SetAt(kTRUE,V0->GetPindex());
     v0daughters->SetAt(kTRUE,V0->GetNindex());
+    // printf("V0 daughters: %i - %i %i\n",nTracks,V0->GetPindex(),V0->GetNindex());
   }
   
   // loop over all tracks of fESDEvent

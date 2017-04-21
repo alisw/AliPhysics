@@ -4,6 +4,9 @@
 #include "TObject.h"
 #include "TObjArray.h"
 #include "TArrayI.h"
+#include "AliVEvent.h"
+#include "AliVVZERO.h"
+#include "AliESDAD.h"
 #include "AliCEPBase.h"
 #include "CEPTrackBuffer.h"
 
@@ -19,6 +22,11 @@ class CEPEventBuffer : public TObject {
     Double_t fMagnField;
     TString fFiredTriggerClasses;
     
+    Bool_t fPFBBFlagV0[21];
+    Bool_t fPFBGFlagV0[21];
+    Bool_t fPFBBFlagAD[21];
+    Bool_t fPFBGFlagAD[21];
+
     // general event features
     Bool_t fEventCutsel;
     Bool_t fPhysel;
@@ -65,6 +73,7 @@ class CEPEventBuffer : public TObject {
     void SetCollissionType(Int_t coltype) { fCollissionType = coltype; }
     void SetMagnField(Double_t magnf)   { fMagnField = magnf; }
     void SetFiredTriggerClasses(TString ftc)   { fFiredTriggerClasses = ftc; }
+    void SetPFFlags(AliVEvent *Event);
 
     void SetEventCondition(UInt_t evcond) { fEventCondition = evcond; }
  
