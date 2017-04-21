@@ -92,6 +92,7 @@
 //                                              Bool_t printSettings, Int_t debug);
 //UInt_t SetTriggerMaskFromName                (TString trigger);
 
+
 /// Global name to be composed of the settings, used to set the AOD branch name
 TString kAnaGammaHadronCorr = "";
 
@@ -104,7 +105,6 @@ TString kAnaGammaHadronCorr = "";
 /// \param simulation : A bool identifying the data as simulation
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param col: A string with the colliding system
-/// \param trigger : A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param tender : A bool indicating if the tender was running before this analysis
@@ -115,7 +115,7 @@ TString kAnaGammaHadronCorr = "";
 /// \param isoMethod : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
 /// \param isoContent : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
 /// \param leading : An int setting the type of leading particle selection: 0, select all;l 1: absolute  leading of charged; 2: absolute  leading of charged and neutral; 3: near side leading absolute of charged; 4: near side leading absolute of charged and neutral
-/// \param tm : A bool to select neutral clusters as triggers
+/// \param tm : track matching options: 0- no matching; 1-fixed residual cuts; 2-pT track dependent cut
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param mixOn : A bool to switch the correlation mixing analysis
@@ -124,6 +124,7 @@ TString kAnaGammaHadronCorr = "";
 /// \param outputfile : A string to change the name of the histograms output file, default is AnalysisResults.root
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
+/// \param trigSuffix :  A string with the trigger class, abbreviated, defined in ConfigureEventTriggerCaloTrackCorr()
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
 (
@@ -131,7 +132,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
  Bool_t   simulation    = kFALSE,
  Int_t    year          = 2011,
  TString  col           = "pp",
- TString  trigger       = "EMC7",
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
  Bool_t   tender        = kFALSE,
@@ -142,7 +142,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
  Int_t    isoMethod     = AliIsolationCut::kPtThresIC,
  Int_t    isoContent    = AliIsolationCut::kNeutralAndCharged,
  Int_t    leading       = 0,
- Bool_t   tm            = kTRUE,
+ Int_t    tm            = 1,
  Int_t    minCen        = -1,
  Int_t    maxCen        = -1,
  Bool_t   mixOn         = kTRUE,
@@ -150,17 +150,18 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
  Bool_t   chargedAn     = kFALSE,
  TString  outputfile    = "",
  Bool_t   printSettings = kFALSE,
- Int_t    debug         = 0  // Debug level
+ Int_t    debug         = 0,  
+ const char *trigSuffix = "EMC7"
 )
-
 {
-  // Get the pointer to the existing analysis manager via the static access method.
+  TString trigger = trigSuffix;
   
   printf("Passed settings:\n calorimeter <%s>, simulation <%d>, year <%d>,\n col <%s>, trigger <%s>, reject EMC <%d>, clustersArray <%s>, tender <%d>, non linearity <%d>\n shshMax <%2.2f>, isoCone <%2.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,\n leading <%d>, tm <%d>, minCen <%d>, maxCen <%d>, mixOn <%d>,\n qaAn <%d>, chargedAn <%d>, outputfile <%s>, printSettings <%d>, debug <%d>\n",
          calorimeter.Data(),simulation,year,col.Data(),trigger.Data(), rejectEMCTrig, clustersArray.Data(),tender, nonLinOn, shshMax,
          isoCone,isoPtTh,isoMethod,isoContent,leading,tm,
          minCen,maxCen,mixOn,qaAn,chargedAn,outputfile.Data(),printSettings,debug);
   
+  // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
@@ -279,7 +280,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
     // Add control histogram with pT hard to control aplication of weights 
     maker->SwitchOnPtHardHistogram();
   }
-
   
   if(printSettings) maker->Print("");
   
@@ -295,6 +295,15 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   //task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   
   task->SetAnalysisMaker(maker);
+  
+  //
+  // Select events trigger depending on trigger
+  //
+  if(!simulation && !mixOn)
+  {
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureEventTriggerCaloTrackCorr.C");
+    ConfigureEventTriggerCaloTrackCorr(task,trigger,year);
+  }
   
   mgr->AddTask(task);
   
@@ -317,12 +326,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   //if(!kData.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
   mgr->ConnectOutput (task, 2, cout_cuts);
-  
-  if(!mixOn)
-  {
-    UInt_t mask =  SetTriggerMaskFromName(trigger);
-    task->SelectCollisionCandidates(mask);
-  }
   
   return task;
 }
@@ -733,8 +736,12 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   caloPID->SetEMCALLambda0CutMin(0.10);
   
   // Track matching
+  // tm = 1, fixed cuts
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
+  
+  // pT track dependent cuts
+  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
   // PHOS
   caloPID->SetPHOSDispersionCut(2.5);
@@ -875,6 +882,14 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     
     AliCaloPID* caloPID = ana->GetCaloPID();
     
+    // Track matching
+    // tm = 1, fixed cuts
+    caloPID->SetEMCALDEtaCut(0.025);
+    caloPID->SetEMCALDPhiCut(0.030);
+    
+    // pT track dependent cuts
+    if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
+
     caloPID->SetSplitWidthSigma(3); // cut at 3 sigma of the mean pi0 peak.
     
     if(!useSSIso)
@@ -1087,9 +1102,15 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     ana->SwitchOffSeveralIsolation() ;
   
   AliCaloPID* caloPID = ana->GetCaloPID();
+ 
+  // Track matching 
+  // tm = 1, fixed cuts
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
   
+  // pT track dependent cuts
+  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
+
   //Set Histograms name tag, bins and ranges
   
   if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
@@ -1514,83 +1535,4 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   if(printSettings) ana->Print("");
   
   ana->SetDebug(debug); // 10 for lots of messages
-}
-
-///
-/// Set the trigger requested for the analysis,
-/// depending on a string given
-///
-UInt_t SetTriggerMaskFromName(TString trigger)
-{
-  if(trigger=="EMC7")
-  {
-    printf("CaloTrackCorr trigger EMC7\n");
-    return AliVEvent::kEMC7;
-  }
-  else if (trigger=="INT7")
-  {
-    printf("CaloTrackCorr trigger INT7\n");
-    return AliVEvent::kINT7;
-  }
-  else if(trigger=="EMC1")
-  {
-    printf("CaloTrackCorr trigger EMC1\n");
-    return AliVEvent::kEMC1;
-  }
-  else if(trigger=="MB")
-  {
-    printf("CaloTrackCorr trigger MB\n");
-    return AliVEvent::kMB;
-  }
-  else if(trigger=="PHOS")
-  {
-    printf("CaloTrackCorr trigger PHOS\n");
-    return AliVEvent::kPHI7;
-  }
-  else if(trigger=="PHOSPb")
-  {
-    printf("CaloTrackCorr trigger PHOSPb\n");
-    return AliVEvent::kPHOSPb;
-  }
-  else if(trigger=="AnyINT")
-  {
-    printf("CaloTrackCorr trigger AnyINT\n");
-    return AliVEvent::kAnyINT;
-  }
-  else if(trigger=="INT")
-  {
-    printf("CaloTrackCorr trigger AnyINT\n");
-    return AliVEvent::kAny;
-  }
-  else if(trigger=="EMCEGA")
-  {
-    printf("CaloTrackCorr trigger EMC Gamma\n");
-    return AliVEvent::kEMCEGA;
-  }
-  else if(trigger=="EMCEJE")
-  {
-    printf("CaloTrackCorr trigger EMC Jet\n");
-    return AliVEvent::kEMCEJE;
-  }
-  else if(trigger=="Central")
-  {
-    printf("CaloTrackCorr trigger Central\n");
-    return AliVEvent::kCentral;
-  }
-  else if(trigger=="CentralEGA")
-  {
-    printf("CaloTrackCorr trigger Central+EMCEGA\n");
-    return (AliVEvent::kCentral | AliVEvent::kEMCEGA);
-  }
-  else if(trigger=="SemiCentral")
-  {
-    printf("CaloTrackCorr trigger SemiCentral\n");
-    return AliVEvent::kSemiCentral;
-  }
-  else if(trigger=="SemiOrCentral")
-  {
-    printf("CaloTrackCorr trigger SemiCentral Or Central\n");
-    return (AliVEvent::kSemiCentral | AliVEvent::kCentral);
-  }
-  else return AliVEvent::kAny;
 }
