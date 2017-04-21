@@ -407,7 +407,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   ////////////////////////
   Int_t trackDepth = 0;
   if(fIsPbPb) trackDepth = 100000;
-  if(!fIsPbPb) trackDepth = 5000;
+  if(!fIsPbPb) trackDepth = 100000;
 
   Int_t poolsize   = 1000;
 
@@ -683,7 +683,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fNoMixedEvents = new TH1F("fNoMixedEvents","No of mixing events",1,-0.5,0.5);
   fOutputList->Add(fNoMixedEvents);
 
-  Int_t nEventBins =200;
+  Int_t nEventBins =500;
   Double_t EventBins[nEventBins+1];
   for(int i=0; i < nEventBins+1; i++)
     EventBins[i] = i;
