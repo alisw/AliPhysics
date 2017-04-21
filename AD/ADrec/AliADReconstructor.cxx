@@ -508,9 +508,9 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
       fESDADfriend->SetTime (pmNumber, digit->Time());
       fESDADfriend->SetWidth(pmNumber, digit->Width());
 
-      if (fCorrectForSaturation) {
-	f_Int0->Delete(); // TF1 does not implement TObject::Clear()
-	f_Int1->Delete();
+      if (fCorrectForSaturation ) {
+	if (f_Int0) f_Int0->Delete(); // TF1 does not implement TObject::Clear()
+	if (f_Int1) f_Int1->Delete();
       }
     } // end of loop over digits
   } // end of loop over events in digits tree
