@@ -78,6 +78,7 @@
 #pragma link C++ class AliFemtoV0TrackPairCut+;
 #pragma link C++ class AliFemtoCutMonitorCollections+;
 #pragma link C++ class AliFemtoV0SharedDaughterCut+;
+#pragma link C++ class AliFemtoXiSharedDaughterCut+;
 #pragma link C++ class AliFemtoCorrFctnDPhiStarDEta+;
 #pragma link C++ class AliFemtoCorrFctnDPhiStarDEtaStar+;
 #pragma link C++ class AliFemtoCorrFctnDPhiStarKStarMergedFraction+;
