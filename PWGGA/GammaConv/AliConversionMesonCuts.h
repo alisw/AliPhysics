@@ -136,6 +136,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     
     // Request Flags
     Bool_t   UseRotationMethod(){return fUseRotationMethodInBG;}
+    Bool_t   UsePtmaxMethod(){return fUsePtmaxMethodForBG;}
     Bool_t   UseTrackMultiplicity(){return fUseTrackMultiplicityForBG;}
     Int_t    GetNumberOfBGEvents(){return fNumberOfBGEvents;}
     Int_t    NDegreesRotation(){return fnDegreeRotationPMForBG;}
@@ -164,6 +165,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t  fAlphaCutMeson;             // max value for meson alpha cut
     Double_t  fRapidityCutMeson;          // max value for meson rapidity
     Bool_t    fUseRotationMethodInBG;     // flag to apply rotation method for meson bg estimation
+    Bool_t    fUsePtmaxMethodForBG;       // flag to apply Ptmax method
     Bool_t    fDoBG;                      // flag to intialize BG
     Bool_t    fdoBGProbability;           // flag to use probability method for meson bg estimation
     Bool_t    fUseTrackMultiplicityForBG; // flag to use track multiplicity for meson bg estimation (else V0 mult)
@@ -213,7 +215,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliConversionMesonCuts,16)
+    ClassDef(AliConversionMesonCuts,17)
 };
 
 
