@@ -446,6 +446,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80052013","1111141051032230000","0163403100000050"); // default EMC7
     cuts.AddCut("80083013","1111141051032230000","0163403100000050"); // default EG1
     cuts.AddCut("80085013","1111141051032230000","0163403100000050"); // default EG2
+  //testing different event mix methods
+  } else if(trainConfig == 81){
+    cuts.AddCut("80000013","1111141057032230000","0163403100000050"); // default (V0 mult)
+    cuts.AddCut("80000013","1111141057032230000","0263403100000050"); // using track mult
+    cuts.AddCut("80000013","1111141057032230000","0963403100000050"); // using PtMax method DeltaR < 0.2
     
   //************************************************ PHOS clusters *************************************************
   } else if (trainConfig == 301) {  // min energy = 0.3 GeV/c

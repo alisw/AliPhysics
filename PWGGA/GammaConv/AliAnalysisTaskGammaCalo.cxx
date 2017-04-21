@@ -3891,6 +3891,48 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
         }
       }
     }
+  } else if ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UsePtmaxMethod() ) {
+
+    Double_t currentPtMax = 0; Double_t previousPtMax = 0;
+    Double_t currentEta = 0;   Double_t previousEta = 0;
+    Double_t currentPhi = 0;   Double_t previousPhi = 0;
+    Bool_t acceptedPtMax = kFALSE;
+
+    for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
+      AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
+      if(previousEventV0s){
+        acceptedPtMax = kFALSE;
+        currentPtMax = 0; previousPtMax = 0; currentEta = 0; previousEta = 0; currentPhi = 0; previousPhi = 0;
+        for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
+          AliAODConversionPhoton *currentV0 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
+          if(currentV0->GetPhotonPt() > currentPtMax){ currentPtMax = currentV0->GetPhotonPt(); currentEta = currentV0->GetPhotonEta(); currentPhi = currentV0->GetPhotonPhi(); }
+          for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+            AliAODConversionPhoton *previousV0 = (AliAODConversionPhoton*)(previousEventV0s->at(iPrevious));
+            if(previousV0->GetPhotonPt() > previousPtMax){ previousPtMax = previousV0->GetPhotonPt(); previousEta = previousV0->GetPhotonEta(); previousPhi = previousV0->GetPhotonPhi(); }
+          }
+        }
+        if(currentPtMax > 0 && previousPtMax > 0){
+         if(TMath::Sqrt(pow((currentEta-previousEta),2)+pow((currentPhi-previousPhi),2)) < 0.2) acceptedPtMax = kTRUE;
+        }
+        if(acceptedPtMax){
+          for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
+            AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
+            for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+              AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
+              AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
+              backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
+
+              if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
+                ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+                fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
+              }
+              delete backgroundCandidate;
+              backgroundCandidate = 0x0;
+            }
+          }
+        }
+      }
+    }
   } else {
     for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
       AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
