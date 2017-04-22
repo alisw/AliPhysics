@@ -53,6 +53,8 @@ AliForwardBackwardAnalysis::AliForwardBackwardAnalysis(const char *name)
     //    , fAOD(0)
     , fOutputList(0)
 
+    , fCentralityEstimator("V0M")
+    , fAODTrackCutBit(128)
     , fRunNumber(0)
     , fNumberOfTracks(0)
     , fVertexX(0)
@@ -331,7 +333,7 @@ void AliForwardBackwardAnalysis::UserExec(Option_t *)
     const double cBinMin_dptdpt[] = { 0, };// 5, 10, 20,    30, 40, 50, 60,     70, 0 };
     const double cBinMax_dptdpt[] = { 5, };// 10, 20, 30,   40, 50, 60, 70,     80, 2 };
 
-    const int myFilterBit = 128; //768
+    const int myFilterBit = fAODTrackCutBit;//128; //768
 
     // Post output data.
     AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -356,7 +358,7 @@ void AliForwardBackwardAnalysis::UserExec(Option_t *)
         fHistLog->Fill(3);
         return;
     }
-    double centr = fCentPercentile[0];
+    double centr = (Float_t)centrality->GetCentralityPercentile( fCentralityEstimator.Data() );
     //  cout<<" Got Event of Centrality by V0M = "<<fCentPercentile[0]<<endl;
 
     // ##### choose a particular trigger
