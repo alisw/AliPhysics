@@ -50,10 +50,15 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
 
+    void SetCentralityEstimator(const char* centralityEstimator) { fCentralityEstimator = centralityEstimator; }
+    void SetAODtrackCutBit(Int_t bit){ fAODTrackCutBit = bit; }
 private:
     //  AliESDEvent *fESD;    //! ESD object
     //  AliAODEvent *fAOD;    //! AOD object
     TList       *fOutputList; //! Output list
+
+    TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
+    Int_t fAODTrackCutBit;//track cut bit from track selection (only used for AODs)
 
     Int_t fRunNumber, fNumberOfTracks; //
     // There are 3 centrlaity information for each event
@@ -152,10 +157,10 @@ private:
         void reset()
         {
             if(0)cout << "reset(): eta: " << eta[0] << "..." << eta[1] << ", " << eta[2] << "..." << eta[3]
-                 << ", phi: " << phi[0] << "..." << phi[1] << ", " << phi[2] << "..." << phi[3]
-                 << ", pt: " << pt[0] << "..." << pt[1] << ", " << pt[2] << "..." << pt[3]
-                 << ", nF=" << nF << ", nB=" << nB << ", PtF=" << PtF << ", PtB=" << PtB
-                 << endl;
+                      << ", phi: " << phi[0] << "..." << phi[1] << ", " << phi[2] << "..." << phi[3]
+                      << ", pt: " << pt[0] << "..." << pt[1] << ", " << pt[2] << "..." << pt[3]
+                      << ", nF=" << nF << ", nB=" << nB << ", PtF=" << PtF << ", PtB=" << PtB
+                      << endl;
 
             nF = 0;
             nB = 0;
