@@ -346,8 +346,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     adcTrigger[i]     = 0.0f;
   }
 
-  TClonesArray *f_Int0 = new TClonesArray;
-  TClonesArray *f_Int1 = new TClonesArray;
+  TClonesArray *f_Int0 = new TClonesArray("TF1");
+  TClonesArray *f_Int1 = new TClonesArray("TF1");
   Int_t chOffline=0, chOnline=0;
   Float_t extrapolationThresholds[kADNClocks];
   Bool_t  doExtrapolation[kADNClocks];
@@ -518,6 +518,9 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   if (fCorrectForSaturation)
     fSaturationCorrection->ResetBranchAddresses();
 
+  delete f_Int0;
+  delete f_Int1;
+  
   fESDAD->SetBit(AliESDAD::kCorrectedLeadingTime,   kTRUE);
   fESDAD->SetBit(AliESDAD::kCorrectedForSaturation, correctedForSaturation);
   fESDAD->SetMultiplicity(mult);
