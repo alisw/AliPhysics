@@ -55,6 +55,12 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistNEvents{nullptr},
   fHistNTracks{nullptr},
   fHistFilterBits{nullptr},
+  fHistITSnClusTPCsel{nullptr},
+  fHistITSnClusITSsa{nullptr},
+  fHistITSnClusITSPureSA{nullptr},
+  fHistITSCluInLayTPCsel{nullptr},
+  fHistITSCluInLayITSsa{nullptr},
+  fHistITSCluInLayITSPureSA{nullptr},
   fHistNtracksFb4VsV0befEvSel{nullptr},
   fHistNtracksFb5VsV0befEvSel{nullptr},
   fHistNtracksFb4VsV0aftEvSel{nullptr},
@@ -141,6 +147,12 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistNEvents;
     delete fHistNTracks;
     delete fHistFilterBits;
+    delete fHistITSnClusTPCsel;
+    delete fHistITSnClusITSsa;
+    delete fHistITSnClusITSPureSA;
+    delete fHistITSCluInLayTPCsel;
+    delete fHistITSCluInLayITSsa;
+    delete fHistITSCluInLayITSPureSA;
     delete fHistNtracksFb4VsV0befEvSel;
     delete fHistNtracksFb5VsV0befEvSel;
     delete fHistNtracksFb4VsV0aftEvSel;
@@ -274,7 +286,20 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistFilterBits->GetYaxis()->SetBinLabel(1,"Neg. ID");
   fHistFilterBits->GetYaxis()->SetBinLabel(2,"Pos. ID");
   fOutput->Add(fHistFilterBits);
-  
+
+  fHistITSnClusTPCsel=new TH1F("hITSnClusTPCsel","N ITS clusters (TPC+ITS)",7,-0.5,6.5);
+  fHistITSnClusITSsa=new TH1F("hITSnClusITSsa","N ITS clusters (TPC+ITS)",7,-0.5,6.5);
+  fHistITSnClusITSPureSA=new TH1F("hITSnClusITSPureSA","N ITS clusters (TPC+ITS)",7,-0.5,6.5);
+  fOutput->Add(fHistITSnClusTPCsel);
+  fOutput->Add(fHistITSnClusITSsa);
+  fOutput->Add(fHistITSnClusITSPureSA);
+  fHistITSCluInLayTPCsel = new TH1F("hITSCluInLayTPCsel", "N tracks with point on Layer (TPC+ITS); Layer; N tracks",6, -0.5, 5.5);
+  fHistITSCluInLayITSsa  = new TH1F("hITSCluInLayITSsa", "N tracks with point on Layer (ITSsa); Layer; N tracks",6, -0.5, 5.5);
+  fHistITSCluInLayITSPureSA  = new TH1F("hITSCluInLayITSPureSA", "N tracks with point on Layer (ITSsa); Layer; N tracks",6, -0.5, 5.5);
+  fOutput->Add(fHistITSCluInLayTPCsel);
+  fOutput->Add(fHistITSCluInLayITSsa);
+  fOutput->Add(fHistITSCluInLayITSPureSA);
+
   fHistNtracksFb4VsV0befEvSel=new TH2F("hNtracksFb4VsV0befEvSel"," ; V0 signal ; N_{tracks,FilBit4}",250,0.,15000.,250,0.,5000.);
   fHistNtracksFb5VsV0befEvSel=new TH2F("hNtracksFb5VsV0befEvSel"," ; V0 signal ; N_{tracks,FilBit5}",250,0.,15000.,250,0.,5000.);
   fHistNtracksFb4VsV0aftEvSel=new TH2F("hNtracksFb4VsV0aftEvSel"," ; V0 signal ; N_{tracks,FilBit4}",250,0.,15000.,250,0.,5000.);
@@ -520,6 +545,19 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     if(statusTrack&AliESDtrack::kITSrefit) itsRefit=kTRUE; 
     Int_t nITSclus=track->GetNcls(0);
     UChar_t clumap=track->GetITSClusterMap();
+    if(itsRefit && !(statusTrack&AliESDtrack::kTPCin)){
+      if(statusTrack&AliESDtrack::kITSpureSA){
+	fHistITSnClusITSPureSA->Fill(nITSclus);
+	for(Int_t layer=0; layer<6; layer++) {
+	  if(TESTBIT(clumap,layer)) fHistITSCluInLayITSPureSA->Fill(layer);
+	}
+      }else{
+	fHistITSnClusITSsa->Fill(nITSclus);
+	for(Int_t layer=0; layer<6; layer++) {
+	  if(TESTBIT(clumap,layer)) fHistITSCluInLayITSsa->Fill(layer);
+	}
+      }
+    }
     Int_t nSPDclus=0;
     if(track->HasPointOnITSLayer(0)) nSPDclus+=1;
     if(track->HasPointOnITSLayer(1)) nSPDclus+=2;
@@ -634,6 +672,11 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     esdTrack.RelateToVertex(&vESD,0.,3.);
     if(!fTrCutsTPC->AcceptTrack(&esdTrack)) continue;
     if(track->GetTPCsignalN()<fMinNumOfTPCPIDclu) continue;
+
+    fHistITSnClusTPCsel->Fill(nITSclus);
+    for(Int_t layer=0; layer<6; layer++) {
+      if(TESTBIT(clumap,layer)) fHistITSCluInLayTPCsel->Fill(layer);
+    }
 
     fHistEtaPhiPtTPCsel->Fill(etatrack,phitrack,pttrack);
     if(tofBC==0) fHistEtaPhiPtTPCselTOFbc->Fill(etatrack,phitrack,pttrack);
