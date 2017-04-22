@@ -1,6 +1,6 @@
 /***************************************************************************
               fbellini@cern.ch - last modified on 02/07/2014
-
+//modified for K*(892)0 at 8 TeV
  *** Configuration script for K*, anti-K* analysis of 2010 pp 7TeV datasets ***
 This analysis task is used to extend the pT reach of the K* spectra published in Eur.
 Phys. J. C72(2012)2183. 
@@ -33,14 +33,26 @@ Bool_t ConfigKStarPP8TeV_PID
   AliRsnCutSetDaughterParticle * cutSetQ;
   AliRsnCutSetDaughterParticle * cutSetPi;
   AliRsnCutSetDaughterParticle * cutSetK;
+
+
+ Float_t nsigmaPiTPC=fmod(nsigmaPi,1000.);
+ Float_t nsigmaPiTOF=(nsigmaPi-fmod(nsigmaPi,1000.))/1000.;
+ if(nsigmaPiTOF<1.e-10) nsigmaPiTOF=-1.;
+ 
+ Float_t nsigmaKaTPC=fmod(nsigmaKa,1000.);
+ Float_t nsigmaKaTOF=(nsigmaKa-fmod(nsigmaKa,1000.))/1000.;
+ if(nsigmaKaTOF<1.e-10) nsigmaKaTOF=-1.;
+
+
   
   AliRsnCutTrackQuality * trkQualityCut =  new AliRsnCutTrackQuality("myQualityCut");
   if (SetCustomQualityCut(trkQualityCut, customQualityCutsID, aodFilterBit)) {
     //Set custom quality cuts for systematic checks
     cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0);
-    cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutPiCandidate, nsigmaPi), trkQualityCut, cutPiCandidate, AliPID::kPion, nsigmaPi);
-    cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutPiCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKa);
+    cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutPiCandidate, nsigmaPi), trkQualityCut, cutPiCandidate, AliPID::kPion, nsigmaPiTPC,nsigmaPiTOF);
+    cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutPiCandidate, nsigmaKa), trkQualityCut, cutKaCandidate, AliPID::kKaon, nsigmaKaTPC,nsigmaKaTOF);
   } else {
+
     //use default quality cuts std 2010 with crossed rows TPC
     Bool_t useCrossedRows = 1;
     cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit, useCrossedRows);
@@ -110,19 +122,20 @@ Bool_t ConfigKStarPP8TeV_PID
       out->AddAxis(resID, 200, -0.02, 0.02);
     
     // axis Y: transverse momentum of pair as default - else chosen value
-    if (yaxisVar==AliRsnMiniValue::kFirstDaughterPt)
-      out->AddAxis(fdpt, 100, 0.0, 10.0);
-    else
-      if (yaxisVar==AliRsnMiniValue::kSecondDaughterPt)
-	out->AddAxis(sdpt, 100, 0.0, 10.0);
-      else
-	if (yaxisVar==AliRsnMiniValue::kFirstDaughterP)
-	  out->AddAxis(fdp, 100, 0.0, 10.0);
-	else
-	  if (yaxisVar==AliRsnMiniValue::kSecondDaughterP)
-	    out->AddAxis(sdp, 100, 0.0, 10.0);
-	  else 
-	    out->AddAxis(ptID, 200, 0.0, 20.0); //default use mother pt
+    // if (yaxisVar==AliRsnMiniValue::kFirstDaughterPt)
+    //   out->AddAxis(fdpt, 100, 0.0, 10.0);
+    // else
+    //   if (yaxisVar==AliRsnMiniValue::kSecondDaughterPt)
+    // 	out->AddAxis(sdpt, 100, 0.0, 10.0);
+    //   else
+    // 	if (yaxisVar==AliRsnMiniValue::kFirstDaughterP)
+    // 	  out->AddAxis(fdp, 100, 0.0, 10.0);
+    // 	else
+    // 	  if (yaxisVar==AliRsnMiniValue::kSecondDaughterP)
+    // 	    out->AddAxis(sdp, 100, 0.0, 10.0);
+    // 	  else
+    
+    out->AddAxis(ptID, 500, 0.0, 50.0); //default use mother pt
     
     // axis Z: centrality-multiplicity
     if (!isPP)
@@ -144,7 +157,7 @@ Bool_t ConfigKStarPP8TeV_PID
     outm->SetMotherMass(0.89594);
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID, 90, 0.6, 1.5);
-    outm->AddAxis(ptID, 200, 0.0, 20.0);
+    outm->AddAxis(ptID, 500, 0.0, 50.0);
     if (!isPP){
       outm->AddAxis(centID, 100, 0.0, 100.0);
     }   else    { 
@@ -159,7 +172,7 @@ Bool_t ConfigKStarPP8TeV_PID
     outam->SetMotherMass(0.89594);
     outam->SetPairCuts(cutsPair);
     outam->AddAxis(imID, 90, 0.6, 1.5);
-    outam->AddAxis(ptID, 200, 0.0, 20.0);
+    outam->AddAxis(ptID, 500, 0.0, 50.0);
     if (!isPP){
       outam->AddAxis(centID, 100, 0.0, 100.0);
     }   else    { 
@@ -177,7 +190,7 @@ Bool_t ConfigKStarPP8TeV_PID
     outps->SetPairCuts(cutsPair);
     outps->AddAxis(fdpt, 50, 0.0, 5.0);
     outps->AddAxis(sdpt, 50, 0.0, 5.0);
-    outps->AddAxis(ptID, 200, 0.0, 20.0);
+    outps->AddAxis(ptID, 500, 0.0, 50.0);
     
     AliRsnMiniOutput *outaps = task->CreateOutput(Form("antiKs_phaseSpace%s", suffix), "HIST", "TRUE");
     outaps->SetDaughter(0, AliRsnDaughter::kKaon);
@@ -189,7 +202,7 @@ Bool_t ConfigKStarPP8TeV_PID
     outaps->SetPairCuts(cutsPair);
     outaps->AddAxis(fdpt, 50, 0.0, 5.0);
     outaps->AddAxis(sdpt, 50, 0.0, 5.0);
-    outaps->AddAxis(ptID, 200, 0.0, 20.0);
+    outaps->AddAxis(ptID, 500, 0.0, 50.0);
    
     //get reflections
     if (checkReflex) { 
@@ -203,7 +216,7 @@ Bool_t ConfigKStarPP8TeV_PID
       outreflex->SetMotherMass(0.89594);
       outreflex->SetPairCuts(cutsPair);
       outreflex->AddAxis(imID, 90, 0.6, 1.5);
-      outreflex->AddAxis(ptID, 200, 0.0, 20.0);
+      outreflex->AddAxis(ptID, 500, 0.0, 50.0);
       if (!isPP){
 	outreflex->AddAxis(centID, 100, 0.0, 100.0);
       }   else    { 
@@ -219,7 +232,7 @@ Bool_t ConfigKStarPP8TeV_PID
       outareflex->SetMotherMass(0.89594);
       outareflex->SetPairCuts(cutsPair);
       outareflex->AddAxis(imID, 90, 0.6, 1.5);
-      outareflex->AddAxis(ptID, 200, 0.0, 20.0);
+      outareflex->AddAxis(ptID, 500, 0.0, 50.0);
       if (!isPP){
 	outareflex->AddAxis(centID, 100, 0.0, 100.0);
       }   else    { 
@@ -266,6 +279,8 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
 
   if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+    trkQualityCut->SetPtRange(0.15, 2000.0);
+    trkQualityCut->SetEtaRange(-0.8, 0.8);
     Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
 
     if(!customFilterBit){//ESD
