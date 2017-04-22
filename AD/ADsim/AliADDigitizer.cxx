@@ -185,8 +185,11 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
   if (!fTS)
     AliFatal("!fTS");
 
-  Int_t chOffline,chOnline;
-  TClonesArray *f_Int[2] = { NULL, NULL };
+  Int_t chOffline=0, chOnline=0;
+  TClonesArray *f_Int[2] = {
+    new TClonesArray("TF1", 21),
+    new TClonesArray("TF1", 21)
+  };
   Bool_t  doExtrapolation[kADNClocks];
   Float_t extrapolationThresholds[kADNClocks];
   fTS->SetBranchAddress("chOffline", &chOffline);
