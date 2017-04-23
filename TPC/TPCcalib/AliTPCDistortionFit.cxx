@@ -39,6 +39,8 @@ Class for fitting of distortion maps using phsyical models
 #include "AliTPCROC.h"
 #include "AliLumiTools.h"
 #include "AliTPCRecoParam.h"
+#include "TLine.h"
+#include "AliExternalInfo.h"
 
 #include "AliTPCDistortionFit.h"
 using namespace std;
@@ -631,7 +633,7 @@ void AliTPCDistortionFit::MakeFitExample1(Int_t run, const char * chinput){
     Int_t run=245683; const char * chinput="/data/alien/alice/data/2015/LHC15o/000245683/cpass0_pass1/ResidualMerge/TPCSPCalibration/1448920523_1448922567_000245683/voxelResTree.root"
     AliTPCDistortionFit::MakeFitExample1(run,chinput);
   */
-  TTreeSRedirector *pcstream = new TTreeSRedirector("makeFitExample1.root","recreate");
+  TTreeSRedirector *pcstream = new TTreeSRedirector("makeFit1D.root","recreate");
   // 1 line fitter  - working for sectors with one hotspots
   //
   AliTPCDistortionFit::RegisterFitters();
@@ -641,14 +643,17 @@ void AliTPCDistortionFit::MakeFitExample1(Int_t run, const char * chinput){
   Int_t hashID=fName.Hash();
   AliTMinuitToolkit * fitter = AliTMinuitToolkit::GetPredefinedFitter("fitterLine1");
   TGraph * lumiGraphMap = AliLumiTools::GetLumiGraph(AliTPCRecoParam::kCorrMapNoScaling,run);
-  
+  const AliTPCChebCorr *cheb = AliTPCDistortionFit::GetCheb(fName.Data());
+  Double_t polarity=0;
+  if (cheb->GetFieldType()== AliTPCChebCorr::kFieldPos) polarity=1;
+  if (cheb->GetFieldType()== AliTPCChebCorr::kFieldNeg) polarity=-1;
 
   TMatrixD initPar1(9,4),   param1(9,1);       // initial parameters of 1D fits  - see functionAliTPCDistortionFit::LineFieldLocal
   initPar1(0,0)=10;   initPar1(0,1)=1;    initPar1(0,2)=0;    initPar1(0,3)=0;            // q
   initPar1(1,0)=110; initPar1(1,1)=5;   initPar1(1,2)=80;   initPar1(1,3)=140;          // r
   initPar1(2,0)=0;   initPar1(2,1)=1;    initPar1(2,2)=-4;   initPar1(2,3)=4;            // rphi
   initPar1(3,0)=0.1; initPar1(3,1)=0;    initPar1(3,2)=0.01; initPar1(3,3)=5;            // scale distance
-  initPar1(4,0)=0.35; initPar1(4,1)=0;    initPar1(4,2)=0;    initPar1(4,3)=0.0;          // wt   
+  initPar1(4,0)=polarity*0.35; initPar1(4,1)=0;    initPar1(4,2)=0;    initPar1(4,3)=0.0;          // wt   
   initPar1(5,0)=0;   initPar1(5,1)=0;    initPar1(5,2)=0;    initPar1(5,3)=80;            // symetry plane
   initPar1(6,0)=400; initPar1(6,1)=0;    initPar1(6,2)=0;    initPar1(6,3)=0.0;          // Ez 
   fitter->SetInitialParam(&initPar1);
@@ -774,7 +779,7 @@ void AliTPCDistortionFit::MakeFitExample1(Int_t run, const char * chinput){
       latex.DrawLatexNDC(0.05,0.65,TString::Format("#omega#tau=%2.2f#pm%2.2f",(*(fitter->GetParameters()))[4],rmsEstimator[4]).Data());
     }
     canvasFit->SaveAs(TString::Format("canvasDistortionFitLine1_Sec%d.png",fsectors[isec]).Data());
-    const AliTPCChebCorr *cheb = AliTPCDistortionFit::GetCheb(fName.Data());
+    //const AliTPCChebCorr *cheb = AliTPCDistortionFit::GetCheb(fName.Data());
     TVectorD *param= (TVectorD *)fitter->GetParameters();
     TMatrixD *covar=(TMatrixD*)fitter->GetCovarianceMatrix();
     TVectorD *rms= (TVectorD *)fitter->GetRMSEstimator();
@@ -966,9 +971,9 @@ void DrawSummary(const char * period, const char *pass){
   TTree * treeLogbook= info.GetTree("Logbook",period,"");
   tree->AddFriend(treeLogbook,"Logbook");
   TLine lineGap, lineROC, lineMedian;
-  lineGap->SetLineStyle(2); lineGap->SetLineWidth(2);  lineGap->SetLineColor(3);
-  lineROC->SetLineStyle(2); lineROC->SetLineWidth(2);   lineROC->SetLineColor(4);    
-  lineMedian->SetLineStyle(1); lineMedian->SetLineWidth(3);   lineMedian->SetLineColor(2);    
+  lineGap.SetLineStyle(2); lineGap.SetLineWidth(2);  lineGap.SetLineColor(3);
+  lineROC.SetLineStyle(2); lineROC.SetLineWidth(2);   lineROC.SetLineColor(4);    
+  lineMedian.SetLineStyle(1); lineMedian.SetLineWidth(3);   lineMedian.SetLineColor(2);    
   TLatex latex, latexMed;
   latex.SetTextSize(0.15);
   latexMed.SetTextSize(0.15);  latexMed.SetTextColor(2);
@@ -982,7 +987,7 @@ void DrawSummary(const char * period, const char *pass){
   gStyle->SetTitleSize(0.12,"Y");
   gStyle->SetLabelSize(0.12,"Y");
   gStyle->SetTitleYOffset(0.4);
-
+  Int_t npoints=0;
   for (Int_t iSec=0;iSec<12; iSec++){
     canvasInfo->cd(iSec+1);
     TCut cut = TString::Format("sec==%d",fsectors[iSec]).Data();    
@@ -993,12 +998,12 @@ void DrawSummary(const char * period, const char *pass){
     gr->GetYaxis()->SetTitle("hot spot r#phi (cm)");
     Double_t median=TMath::Mean(gr->GetN(),gr->GetY());    
     gr->Draw("ap");
-    Int_t npoints=gr->GetN();
-    lineMedian->DrawLine(0.0,median,npoints,median);
-    lineGap->DrawLine(0.0,0.2,npoints,0.2);
-    lineGap->DrawLine(0.0,-0.2,npoints,-0.2);
-    lineROC->DrawLine(0.0,1.3,npoints,1.3);
-    lineROC->DrawLine(0.0,-1.3,npoints,-1.3);
+    npoints=gr->GetN();
+    lineMedian.DrawLine(0.0,median,npoints,median);
+    lineGap.DrawLine(0.0,0.2,npoints,0.2);
+    lineGap.DrawLine(0.0,-0.2,npoints,-0.2);
+    lineROC.DrawLine(0.0,1.3,npoints,1.3);
+    lineROC.DrawLine(0.0,-1.3,npoints,-1.3);
     latex.DrawLatexNDC(0.2,0.85 , TString::Format("sector %d",fsectors[iSec]).Data());
     latexMed.DrawLatexNDC(0.2,0.7 , TString::Format("#Delta_{R#phi}=%2.2f (cm)",median).Data());
   }
@@ -1015,7 +1020,7 @@ void DrawSummary(const char * period, const char *pass){
     gr->SetMinimum(medianI-5);
     gr->SetMaximum(medianI+5);
     gr->Draw("ap");
-    lineMedian->DrawLine(0.0,median,npoints,median);
+    lineMedian.DrawLine(0.0,median,npoints,median);
     latex.DrawLatexNDC(0.2,0.85 , TString::Format("Sector %d",fsectors[iSec]).Data());
     latexMed.DrawLatexNDC(0.2,0.7 , TString::Format("R=%2.2f (cm)",median).Data());
   }
