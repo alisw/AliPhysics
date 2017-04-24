@@ -59,7 +59,12 @@ public:
   float PtotBac() const ;                 // Total momentum of bac. daughter		     
   float DedxBac() const;                  // dedx of Bac track				     
   unsigned short   IdBac() const;         // Id of bac. track				     
-  unsigned short   KeyBac() const;        // Id of bac. track                                
+  unsigned short   KeyBac() const;        // Id of bac. track    
+
+  AliFemtoThreeVector NominalTpcEntrancePointBac() const;
+  AliFemtoThreeVector NominalTpcPointBac(int i) const;
+  AliFemtoThreeVector NominalTpcExitPointBac() const;        
+  AliFemtoThreeVector NominalTpcPointBacShifted() const;                    
 
   void SetdecayLengthXi(const float x);  
   void SetdecayVertexXi(const AliFemtoThreeVector v);  
@@ -102,7 +107,10 @@ public:
   void SetdedxBac(float x);
   void SetkeyBac(const unsigned short& s);
 
-
+  void SetNominalTpcEntrancePointBac(AliFemtoThreeVector x);
+  void SetNominalTpcPointBac(AliFemtoThreeVector *x);
+  void SetNominalTpcExitPointBac(AliFemtoThreeVector x);
+  void SetNominalTpcPointBacShifted(AliFemtoThreeVector x);
 
   //!!!!!!!!!!! new below 1.09.2015
   void SetCosPointingAngleXi(double x);
@@ -200,6 +208,11 @@ protected:
 
   unsigned short   fKeyBac;   // Key of bac. track
 
+  AliFemtoThreeVector fNominalTpcEntrancePointBac; ///< Nominal bachelor pion track entrance point into TPC
+  AliFemtoThreeVector fNominalTpcPointsBac[9];
+  AliFemtoThreeVector fNominalTpcExitPointBac;     ///< Nominal bachelor pion track exit point from TPC
+  AliFemtoThreeVector fNominalTpcPointBacShifted;     ///< Nominal bachelor pion track at given point from TPC
+
 
   //!!!!!!!!! new below 1.09.2015
   double fCosPointingAngleXi; // Cosine of Xi pointing angle
@@ -272,6 +285,10 @@ inline unsigned long    AliFemtoXi::TrackTopologyMapBac(unsigned int word) const
 inline unsigned short   AliFemtoXi::IdBac() const { return fKeyBac; }
 inline unsigned short   AliFemtoXi::KeyBac() const { return fKeyBac; }
 
+inline AliFemtoThreeVector AliFemtoXi::NominalTpcEntrancePointBac() const {return fNominalTpcEntrancePointBac;}
+inline AliFemtoThreeVector AliFemtoXi::NominalTpcExitPointBac() const {return fNominalTpcExitPointBac;}
+inline AliFemtoThreeVector AliFemtoXi::NominalTpcPointBacShifted() const  {return fNominalTpcPointBacShifted;}
+
 inline void AliFemtoXi::SetdecayLengthXi(const float x){ fDecayLengthXi= x;}   
 inline void AliFemtoXi::SetdecayVertexXiX(const float x){ fDecayVertexXi.SetX(x);}
 inline void AliFemtoXi::SetdecayVertexXiY(const float x){ fDecayVertexXi.SetY(x);}
@@ -310,6 +327,11 @@ inline void AliFemtoXi::SetidBac(const unsigned short& s){ fKeyBac= s;}
 inline void AliFemtoXi::SetkeyBac(const unsigned short& s){ fKeyBac= s;}
 inline void AliFemtoXi::SettpcHitsBac(const int& i){fTpcHitsBac=i;} 
 inline void AliFemtoXi::SetdedxBac(float x){fDedxBachelor=x;}
+
+inline void AliFemtoXi::SetNominalTpcEntrancePointBac(AliFemtoThreeVector x) {fNominalTpcEntrancePointBac=x;}
+inline void AliFemtoXi::SetNominalTpcPointBac(AliFemtoThreeVector *x) {for(int i=0;i<9;i++) fNominalTpcPointsBac[i]=x[i];}
+inline void AliFemtoXi::SetNominalTpcExitPointBac(AliFemtoThreeVector x) {fNominalTpcExitPointBac=x;}
+inline void AliFemtoXi::SetNominalTpcPointBacShifted(AliFemtoThreeVector x) {fNominalTpcPointBacShifted=x;}
 
 //!!!!!!!!! new below 1.09.2015
 inline void AliFemtoXi::SetCosPointingAngleXi(double x) {fCosPointingAngleXi = x;}
