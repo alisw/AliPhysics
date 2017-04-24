@@ -99,7 +99,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   else
   {
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
-    if(fAnalysisType!=kXiKchP && fAnalysisType!=kAXiKchP && fAnalysisType!=kXiKchM && fAnalysisType!=kAXiKchM) fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
+    fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
     if(fAnalysisType==kProtPiM || fAnalysisType==kAProtPiP || fAnalysisType==kPiPPiM) fCollectionOfCfs->push_back((AliFemtoV0PurityBgdEstimator*)CreateV0PurityBgdEstimator());
   }
 
@@ -167,7 +167,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
     KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],200,0.,1.0);
     AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[fAnalysisType],200,0.,20.);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
-    if(fAnalysisType!=kXiKchP && fAnalysisType!=kAXiKchP && fAnalysisType!=kXiKchM && fAnalysisType!=kAXiKchM) fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
+    fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
     if(fAnalysisType==kProtPiM || fAnalysisType==kAProtPiP || fAnalysisType==kPiPPiM) fCollectionOfCfs->push_back((AliFemtoV0PurityBgdEstimator*)CreateV0PurityBgdEstimator());
   }
 
@@ -1245,7 +1245,7 @@ AliFemtoAvgSepCorrFctn* AliFemtoAnalysisLambdaKaon::CreateAvgSepCorrFctn(const c
     break;
 
   case AliFemtoAnalysisLambdaKaon::kXiTrack:
-    cf->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0); //TODO
+    cf->SetPairType(AliFemtoAvgSepCorrFctn::kTrackXi);
     break;
 
   case AliFemtoAnalysisLambdaKaon::kTrackTrack:
