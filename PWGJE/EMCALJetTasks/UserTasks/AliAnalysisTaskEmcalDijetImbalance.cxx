@@ -52,7 +52,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
   fDijetLeadingHadronPt(0),
-  fMaxPt(250),
+  fMaxPt(200),
   fNCentHistBins(0),
   fCentHistBins(0),
   fPlotJetHistograms(kFALSE),
@@ -86,7 +86,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
   fDijetLeadingHadronPt(0),
-  fMaxPt(250),
+  fMaxPt(200),
   fNCentHistBins(0),
   fCentHistBins(0),
   fPlotJetHistograms(kFALSE),
@@ -174,8 +174,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
   TString title;
   
   Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
-  Int_t minPtBin = -fMaxPt/2 + 25;
-  Int_t maxPtBin = fMaxPt/2 + 25;
   
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
@@ -197,47 +195,47 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     // Centrality vs. pT
     histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});Centrality (%);counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, 10, 0, 100);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 10, 0, 100);
     
     // pT vs. eta vs. phi
     histname = TString::Format("%s/JetHistograms/hPtVsEtaVsPhi", jets->GetArrayName().Data());
     title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c})";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -0.5, 0.5, 101, 0, TMath::Pi() * 2.02, 75, 0, maxPtBin);
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -0.5, 0.5, 101, 0, TMath::Pi() * 2.02, nPtBins, 0, fMaxPt);
     
     // pT upscaled
     histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c})";
-    fHistManager.CreateTH1(histname.Data(), title.Data(), 75, 0, maxPtBin, "s");
+    fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, "s");
     
     // pT-leading vs. pT
     histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, 150, 0, 150);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, 0, fMaxPt);
     
     // A vs. pT
     histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/3, 0, 1.5);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 1.5);
     
     // NEF vs. pT
     histname = TString::Format("%s/JetHistograms/hNEFVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF;";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, 1.0);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
     
     // z-leading (charged) vs. pT
     histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, 1.0);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
     
     // z (charged) vs. pT
     histname = TString::Format("%s/JetHistograms/hZVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, 1.0);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
 
     // Nconst vs. pT
     histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, fMaxPt);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, fMaxPt);
     
     // Allocate background subtraction histograms, if enabled
     if (fComputeBackground) {
@@ -304,42 +302,42 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetCandHistograms()
     dim++;
     
     axisTitle[dim] = "#it{p}_{T,trig jet} (GeV/#it{c})";
-    nbins[dim] = fMaxPt/3;
-    min[dim] = -fMaxPt/2 + 25;
-    max[dim] = fMaxPt/2 + 25;
+    nbins[dim] = TMath::CeilNint(fMaxPt/2);
+    min[dim] = 0;
+    max[dim] = fMaxPt;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     axisTitle[dim] = "#it{p}_{T,ass jet} (GeV/#it{c})";
-    nbins[dim] = fMaxPt/3;
-    min[dim] = -fMaxPt/2 + 25;
-    max[dim] = fMaxPt/2 + 25;
+    nbins[dim] = TMath::CeilNint(fMaxPt/2);
+    min[dim] = 0;
+    max[dim] = fMaxPt;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     axisTitle[dim] = "#phi_{trig jet}";
-    nbins[dim] = fMaxPt/3;
+    nbins[dim] = TMath::CeilNint(fMaxPt/2);
     min[dim] = 0;
     max[dim] = TMath::TwoPi();
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     axisTitle[dim] = "#phi_{ass jet}";
-    nbins[dim] = fMaxPt/3;
+    nbins[dim] = TMath::CeilNint(fMaxPt/2);
     min[dim] = 0;
     max[dim] = TMath::TwoPi();
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     axisTitle[dim] = "#eta_{trig jet}";
-    nbins[dim] = fMaxPt/3;
+    nbins[dim] = TMath::CeilNint(fMaxPt/2);
     min[dim] = -1;
     max[dim] = 1;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     axisTitle[dim] = "#eta_{ass jet}";
-    nbins[dim] = fMaxPt/3;
+    nbins[dim] = TMath::CeilNint(fMaxPt/2);
     min[dim] = -1;
     max[dim] = 1;
     binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
