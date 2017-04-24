@@ -214,36 +214,6 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     if (currentBins%10 == 1)((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->GetXaxis()->SetBinLabel(currentBins,Form("%d:%02d:%02d",currentTime.GetHour(),currentTime.GetMinute(),currentTime.GetSecond()));
     ((TH1F*)GetRawsData(kChargeADA_PC))->Reset("ICES");
 
-
-    Int_t nCorrelation = 0;
-    Int_t nPair = 1;
-    for(Int_t i=0;i<8;i++){
-      for(Int_t j=7;j>i;j--){
-        if( (j - i) == 4){
-          Float_t Mean = ((TH1F*)GetRawsData(kNTimeDiffADC + nCorrelation))->GetMean();
-          Float_t RMS = ((TH1F*)GetRawsData(kNTimeDiffADC + nCorrelation))->GetRMS();
-          SetRawsDataBinContent(kPairTimeDiffMean,nPair,Mean);
-          SetRawsDataBinContent(kPairTimeDiffRMS,nPair,RMS);
-          nPair++;
-        }
-        nCorrelation++;
-      }
-    }
-    nCorrelation = 0;
-    for(Int_t i=0;i<8;i++){
-      for(Int_t j=7;j>i;j--){
-        if( (j - i) == 4){
-          Float_t Mean = ((TH1F*)GetRawsData(kNTimeDiffADA + nCorrelation))->GetMean();
-          Float_t RMS = ((TH1F*)GetRawsData(kNTimeDiffADA + nCorrelation))->GetRMS();
-          SetRawsDataBinContent(kPairTimeDiffMean,nPair,Mean);
-          SetRawsDataBinContent(kPairTimeDiffRMS,nPair,RMS);
-          nPair++;
-        }
-        nCorrelation++;
-      }
-    }
-
-
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if (! IsValidEventSpecie(specie, list)) continue ;
       SetEventSpecie(AliRecoParam::ConvertIndex(specie));
@@ -531,14 +501,6 @@ void AliADQADataMakerRec::InitRaws()
   const Int_t kChargeCorrMin   = fQAParam->GetChargeCorrMin();
   const Int_t kChargeCorrMax   = fQAParam->GetChargeCorrMax();
 
-  const Int_t   kNPairTimeCorrBins = fQAParam->GetNPairTimeCorrBins();
-  const Float_t kPairTimeCorrMin =  fQAParam->GetPairTimeCorrMin();
-  const Float_t kPairTimeCorrMax =  fQAParam->GetPairTimeCorrMax();
-
-  const Int_t kNPairTimeDiffBins = fQAParam->GetNPairTimeDiffBins();
-  const Float_t kPairTimeDiffMin = fQAParam->GetPairTimeDiffMin();
-  const Float_t kPairTimeDiffMax = fQAParam->GetPairTimeDiffMax();
-
   const Int_t   kNMeanTimeCorrBins = fQAParam->GetNMeanTimeCorrBins();
   const Float_t kMeanTimeCorrMin =   fQAParam->GetMeanTimeCorrMin();
   const Float_t kMeanTimeCorrMax =   fQAParam->GetMeanTimeCorrMax();
@@ -811,50 +773,6 @@ void AliADQADataMakerRec::InitRaws()
   h1d->SetLineWidth(3);
   h1d->SetLineColor(kRed);
 
-  //Correlation histograms
-  Int_t nCorrelation = 0;
-  for(Int_t i=0;i<8;i++){
-    for(Int_t j=7;j>i;j--){
-      h2d = new TH2F(Form("ChargeCorr/H2D_kNChargeCorrADA_%d_%d",i,j),Form("Charge Correlation ADA module%d - module%d",i,j),kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax,kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax);
-      Add2RawsList(h2d,kNChargeCorrADA+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
-    }
-  }
-  nCorrelation = 0;
-  for(Int_t i=0;i<8;i++){
-    for(Int_t j=7;j>i;j--){
-      h2d = new TH2F(Form("ChargeCorr/H2D_kNChargeCorrADC_%d_%d",i,j),Form("Charge Correlation ADC module%d - module%d",i,j),kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax,kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax);
-      Add2RawsList(h2d,kNChargeCorrADC+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
-    }
-  }
-  nCorrelation = 0;
-  for(Int_t i=0;i<8;i++){
-    for(Int_t j=7;j>i;j--){
-      h2d = new TH2F(Form("TimeCorr/H2D_kNTimeCorrADA_%d_%d",i,j),Form("Time Correlation ADA module%d - module%d",i,j),kNPairTimeCorrBins,kPairTimeCorrMin,kPairTimeCorrMax,kNPairTimeCorrBins,kPairTimeCorrMin,kPairTimeCorrMax);
-      Add2RawsList(h2d,kNTimeCorrADA+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
-    }
-  }
-  nCorrelation = 0;
-  for(Int_t i=0;i<8;i++){
-    for(Int_t j=7;j>i;j--){
-      h2d = new TH2F(Form("TimeCorr/H2D_kNTimeCorrADC_%d_%d",i,j),Form("Time Correlation ADC module%d - module%d",i,j),kNPairTimeCorrBins,kPairTimeCorrMin,kPairTimeCorrMax,kNPairTimeCorrBins,kPairTimeCorrMin,kPairTimeCorrMax);
-      Add2RawsList(h2d,kNTimeCorrADC+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
-    }
-  }
-  nCorrelation = 0;
-  for(Int_t i=0;i<8;i++){
-    for(Int_t j=7;j>i;j--){
-      h1d = new TH1F(Form("TimeDiff/H1D_kNTimeDiffADA_%d_%d",i,j),Form("Time Difference ADA module%d - module%d",i,j),kNPairTimeDiffBins,kPairTimeDiffMin,kPairTimeDiffMax);
-      Add2RawsList(h1d,kNTimeDiffADA+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
-    }
-  }
-  nCorrelation = 0;
-  for(Int_t i=0;i<8;i++){
-    for(Int_t j=7;j>i;j--){
-      h1d = new TH1F(Form("TimeDiff/H1D_kNTimeDiffADC_%d_%d",i,j),Form("Time Difference ADC module%d - module%d",i,j),kNPairTimeDiffBins,kPairTimeDiffMin,kPairTimeDiffMax);
-      Add2RawsList(h1d,kNTimeDiffADC+nCorrelation, expert, !image, !saveCorr); iHisto++; nCorrelation++;
-    }
-  }
-
   AliDebugF(AliQAv1::GetQADebugLevel(), "%d Histograms has been added to the Raws List",iHisto);
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
@@ -1063,27 +981,6 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 
     }// END of Loop over channels
-
-    //Correlation Cside
-    Int_t nCorrelation = 0;
-    for(Int_t iChannel=0; iChannel<8; iChannel++) {
-      for(Int_t jChannel=7; jChannel>iChannel; jChannel--) {
-        FillRawsData(kNChargeCorrADC+nCorrelation,adc[iChannel],adc[jChannel]);
-        FillRawsData(kNTimeCorrADC+nCorrelation,time[iChannel],time[jChannel]);
-        if(time[iChannel]>1e-6 && time[jChannel]>1e-6) FillRawsData(kNTimeDiffADC+nCorrelation,time[iChannel]-time[jChannel]);
-        nCorrelation++;
-      }
-    }
-    //Correlation Aside
-    nCorrelation = 0;
-    for(Int_t iChannel=8; iChannel<16; iChannel++) {
-      for(Int_t jChannel=15; jChannel>iChannel; jChannel--) {
-        FillRawsData(kNChargeCorrADA+nCorrelation,adc[iChannel],adc[jChannel]);
-        FillRawsData(kNTimeCorrADA+nCorrelation,time[iChannel],time[jChannel]);
-        if(time[iChannel]>1e-6 && time[jChannel]>1e-6) FillRawsData(kNTimeDiffADA+nCorrelation,time[iChannel]-time[jChannel]);
-        nCorrelation++;
-      }
-    }
 
     for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs of pads
       //Enable time is used to turn off the coincidence
