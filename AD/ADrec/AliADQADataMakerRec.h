@@ -51,13 +51,7 @@ public:
     kChargeADA_PC,kChargeADC_PC,
     kTrend_TriggerChargeQuantileADA,kTrend_TriggerChargeQuantileADC,
 
-    kPairTimeDiffMean,kPairTimeDiffRMS,
-    kNChargeCorrADA,
-    kNChargeCorrADC = kNChargeCorrADA + 28,
-    kNTimeCorrADA = kNChargeCorrADC + 28,
-    kNTimeCorrADC = kNTimeCorrADA + 28,
-    kNTimeDiffADA = kNTimeCorrADC + 28,
-    kNTimeDiffADC = kNTimeDiffADA + 28};
+    kPairTimeDiffMean,kPairTimeDiffRMS};
 
 
   enum HESDType_t {kCellMultiADA,kCellMultiADC,
