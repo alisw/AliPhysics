@@ -367,7 +367,6 @@ void AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary::Reset()
 void AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary::Set(const AliJetInfo& source)
 {
   AliJetInfoSummary::Set(source);
-  Printf("OKKKKK");
   fArea = source.fArea;
   fCorrPt = source.fCorrPt;
 }
