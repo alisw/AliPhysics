@@ -27,7 +27,8 @@ Bool_t ConfigPhiPP13TeV_PID
   // manage suffix
   if(strlen(suffix)>0) suffix=Form("_%s",suffix);
 
-  Bool_t CheckDecay=false;
+  Bool_t CheckDecay=true;
+  if(customQualityCutsID==99){customQualityCutsID=1; CheckDecay=false;}
 
   // set daughter cuts
   AliRsnCutSetDaughterParticle* cutSetQ;
