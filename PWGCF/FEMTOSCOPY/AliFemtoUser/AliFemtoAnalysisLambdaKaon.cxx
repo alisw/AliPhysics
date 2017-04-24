@@ -725,6 +725,7 @@ AliFemtoV0TrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateV0Cut(V0CutPar
   AliFemtoV0TrackCutNSigmaFilter* tV0Cut = new AliFemtoV0TrackCutNSigmaFilter();
 
   tV0Cut->SetParticleType(aCutParams.v0Type);
+  tV0Cut->SetCTauHistoV0();
   tV0Cut->SetMass(aCutParams.mass);
   tV0Cut->SetInvariantMassLambda(aCutParams.minInvariantMass,aCutParams.maxInvariantMass);
   tV0Cut->SetLooseInvMassCut(aCutParams.useLooseInvMassCut, aCutParams.minLooseInvMass, aCutParams.maxLooseInvMass);
@@ -981,11 +982,6 @@ void AliFemtoAnalysisLambdaKaon::AddCustomXiSelectionFilters(ParticlePDGType aXi
 //___________________________________________________________________
 void AliFemtoAnalysisLambdaKaon::AddCustomXiV0RejectionFilters(ParticlePDGType aXiType, AliFemtoXiTrackCutNSigmaFilter* aCut)
 {
-  bool tDaughterV0FilterExists = false;
-  AliFemtoV0TrackCutNSigmaFilter *tDaughterV0Filter;
-  if(aCut->GetDaughterV0Filter() != NULL) {tDaughterV0FilterExists = true; tDaughterV0Filter = aCut->GetDaughterV0Filter();}
-  else tDaughterV0Filter = new AliFemtoV0TrackCutNSigmaFilter();
-
   ParticlePDGType tV0Type;
   if(aXiType==AliFemtoAnalysisLambdaKaon::kPDGXiC) tV0Type = AliFemtoAnalysisLambdaKaon::kPDGLam;
   else if(aXiType==AliFemtoAnalysisLambdaKaon::kPDGAXiC) tV0Type = AliFemtoAnalysisLambdaKaon::kPDGALam;
@@ -993,27 +989,27 @@ void AliFemtoAnalysisLambdaKaon::AddCustomXiV0RejectionFilters(ParticlePDGType a
 
   switch(tV0Type) {
   case AliFemtoAnalysisLambdaKaon::kPDGLam:
-    tDaughterV0Filter->CreateCustomV0Rejection(AliFemtoV0TrackCut::kK0s);
-    tDaughterV0Filter->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
+    aCut->CreateCustomV0Rejection(AliFemtoV0TrackCut::kK0s);
+    aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
                                          0.,0.5,3.,  //positive daughter
                                          0.,0.5,3.); //negative daughter
-    tDaughterV0Filter->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
+    aCut->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
                                                0.5,1000.,3.,3.,  //positive daughter
                                                0.5,1000.,3.,3.); //negative daughter
-    tDaughterV0Filter->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
+    aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
                                          0.5,1000.,3.,  //positive daughter
                                          0.5,1000.,3.); //negative daughter
     break;
 
   case AliFemtoAnalysisLambdaKaon::kPDGALam:
-    tDaughterV0Filter->CreateCustomV0Rejection(AliFemtoV0TrackCut::kK0s);
-    tDaughterV0Filter->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
+    aCut->CreateCustomV0Rejection(AliFemtoV0TrackCut::kK0s);
+    aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
                                          0.,0.5,3.,  //positive daughter
                                          0.,0.5,3.); //negative daughter
-    tDaughterV0Filter->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
+    aCut->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
                                                0.5,1000.,3.,3.,  //positive daughter
                                                0.5,1000.,3.,3.); //negative daughter
-    tDaughterV0Filter->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
+    aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
                                          0.5,1000.,3.,  //positive daughter
                                          0.5,1000.,3.); //negative daughter
     break;
@@ -1021,7 +1017,6 @@ void AliFemtoAnalysisLambdaKaon::AddCustomXiV0RejectionFilters(ParticlePDGType a
   default:
     cerr << "E-AliFemtoAnalysisLambdaKaon::AddCustomV0RejectionFilters" << endl;
   }
-  if(!tDaughterV0FilterExists) aCut->SetDaughterV0Filter(new AliFemtoV0TrackCutNSigmaFilter(*tDaughterV0Filter));
 }
 
 
@@ -1060,6 +1055,7 @@ AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutPar
 
   //Lambda cuts (regular V0)
   tXiCut->SetParticleType(aCutParams.v0Type); //0=lambda
+  tXiCut->SetCTauHistoV0();
   tXiCut->SetMinDcaV0(aCutParams.minDcaV0);
   tXiCut->SetInvariantMassLambda(aCutParams.minInvMassV0,aCutParams.maxInvMassV0);
   tXiCut->SetMinCosPointingAngle(aCutParams.minCosPointingAngleV0);
@@ -1210,6 +1206,34 @@ AliFemtoV0TrackPairCut* AliFemtoAnalysisLambdaKaon::CreateV0TrackPairCut(PairCut
 AliFemtoXiTrackPairCut* AliFemtoAnalysisLambdaKaon::CreateXiTrackPairCut(PairCutParams &aPairCutParams)
 {
   AliFemtoXiTrackPairCut *tXiTrackPairCut = new AliFemtoXiTrackPairCut();
+
+  double tTrackPos=0., tTrackNeg=0., tTrackBac=0.;
+  if(fImplementAvgSepCuts)
+  {
+    switch(fAnalysisType) {
+    case AliFemtoAnalysisLambdaKaon::kXiKchP:
+    case AliFemtoAnalysisLambdaKaon::kAXiKchP:
+      tTrackPos = aPairCutParams.minAvgSepTrackPos;
+      tTrackNeg = aPairCutParams.minAvgSepTrackNeg;
+      tTrackBac = aPairCutParams.minAvgSepTrackBacPion;
+      break;
+
+    case AliFemtoAnalysisLambdaKaon::kXiKchM:
+    case AliFemtoAnalysisLambdaKaon::kAXiKchM:
+      tTrackPos = aPairCutParams.minAvgSepTrackNeg;
+      tTrackNeg = aPairCutParams.minAvgSepTrackPos;
+      tTrackBac = aPairCutParams.minAvgSepTrackBacPion;
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  tXiTrackPairCut->GetV0TrackPairCut()->SetMinAvgSeparation(0,tTrackPos);
+  tXiTrackPairCut->GetV0TrackPairCut()->SetMinAvgSeparation(1,tTrackNeg);
+
+  tXiTrackPairCut->SetMinAvgSepTrackBacPion(tTrackBac);
 
   return tXiTrackPairCut;
 }
@@ -1917,7 +1941,7 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.minTPCnclsV0Daughters = 70;
 
   tReturnParams.useCustomV0Filter = true;
-  tReturnParams.useCustomV0MisID = false;
+  tReturnParams.useCustomV0MisID = true;
   tReturnParams.useCustomBacPionFilter = true;
   tReturnParams.useCustomBacPionMisID = false;
 
@@ -1977,7 +2001,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.minTPCnclsV0Daughters = 70;
 
   tReturnParams.useCustomV0Filter = true;
-  tReturnParams.useCustomV0MisID = false;
+  tReturnParams.useCustomV0MisID = true;
   tReturnParams.useCustomBacPionFilter = false;
   tReturnParams.useCustomBacPionMisID = false;
 
@@ -2007,6 +2031,9 @@ AliFemtoAnalysisLambdaKaon::DefaultPairParams()
   //Default for LamKchP and ALamKchP
   tReturnParams.minAvgSepTrackPos = 8.;
   tReturnParams.minAvgSepTrackNeg = 0.;
+
+  //Default for XiKchP and AXiKchP, etc
+  tReturnParams.minAvgSepTrackBacPion = 0.;
 
   return tReturnParams;
 }

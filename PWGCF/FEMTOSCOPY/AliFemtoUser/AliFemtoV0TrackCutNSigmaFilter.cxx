@@ -35,6 +35,7 @@ AliFemtoV0TrackCutNSigmaFilter::AliFemtoV0TrackCutNSigmaFilter():
   , fLambdaRejectionFilters(0)
   , fAntiLambdaRejectionFilters(0)
 
+  , fBuildCTau(false)
   , fCTau(0)
 
 
@@ -55,7 +56,8 @@ AliFemtoV0TrackCutNSigmaFilter::AliFemtoV0TrackCutNSigmaFilter(const AliFemtoV0T
 
   fK0sRejectionFilters(aCut.fK0sRejectionFilters),
   fLambdaRejectionFilters(aCut.fLambdaRejectionFilters),
-  fAntiLambdaRejectionFilters(aCut.fAntiLambdaRejectionFilters)
+  fAntiLambdaRejectionFilters(aCut.fAntiLambdaRejectionFilters),
+  fBuildCTau(aCut.fBuildCTau)
 {
   if(aCut.fPionNSigmaFilter) fPionNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fPionNSigmaFilter);
   if(aCut.fKaonNSigmaFilter) fKaonNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fKaonNSigmaFilter);
@@ -83,6 +85,8 @@ AliFemtoV0TrackCutNSigmaFilter& AliFemtoV0TrackCutNSigmaFilter::operator=(const 
   fK0sRejectionFilters = aCut.fK0sRejectionFilters;
   fLambdaRejectionFilters = aCut.fLambdaRejectionFilters;
   fAntiLambdaRejectionFilters = aCut.fAntiLambdaRejectionFilters;
+
+  fBuildCTau = aCut.fBuildCTau;
 
   if(aCut.fPionNSigmaFilter) fPionNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fPionNSigmaFilter);
   if(aCut.fKaonNSigmaFilter) fKaonNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fKaonNSigmaFilter);
@@ -321,7 +325,7 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
   }
 
   if (!pid_check) return false;
-  fCTau->Fill(GetCTau(aV0));
+  if(fBuildCTau) fCTau->Fill(GetCTau(aV0));
   return true;
 }
 
@@ -707,16 +711,16 @@ bool AliFemtoV0TrackCutNSigmaFilter::IsMisIDAntiLambda(const AliFemtoV0* aV0)
 
 }
 
-void AliFemtoV0TrackCutNSigmaFilter::SetParticleType(short x)
+void AliFemtoV0TrackCutNSigmaFilter::SetCTauHistoV0(int aNbins, double aMin, double aMax)
 {
-  fParticleType = x;
+  fBuildCTau = true;
   TString tName = "fCTau";
-  if(x==kLambda || x==kLambdaMC) tName += TString("Lambda");
-  else if(x==kAntiLambda || x==kAntiLambdaMC) tName += TString("AntiLambda");
-  else if(x==kK0s || x==kK0sMC) tName += TString("K0Short");
+  if(fParticleType==kLambda || fParticleType==kLambdaMC) tName += TString("Lambda");
+  else if(fParticleType==kAntiLambda || fParticleType==kAntiLambdaMC) tName += TString("AntiLambda");
+  else if(fParticleType==kK0s || fParticleType==kK0sMC) tName += TString("K0Short");
   else {}
 
-  fCTau = new TH1D(tName, "CTau of V0", 500, 0.0, 50.0);
+  fCTau = new TH1D(tName, "CTau of V0", aNbins, aMin, aMax);
   fCTau->Sumw2();
 }
 
@@ -738,7 +742,7 @@ double AliFemtoV0TrackCutNSigmaFilter::GetCTau(const AliFemtoV0* aV0)
 TList *AliFemtoV0TrackCutNSigmaFilter::GetOutputList()
 {
   TList* tOutputList = AliFemtoV0TrackCut::GetOutputList();  //add all of typical objects
-  tOutputList->Add(fCTau);
+  if(fBuildCTau) tOutputList->Add(fCTau);
 
   return tOutputList;
 }

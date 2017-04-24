@@ -114,6 +114,8 @@ public:
 
   virtual TList *GetOutputList();  //include fMinvPurityAidHistoV0 and fK0sMassOfMisIDV0 etc. in the output list 
 
+  bool GetBuildMisIDHistograms();
+
  protected:   // here are the quantities I want to cut on...
 
   double fInvMassLambdaMin;        ///< invariant mass Lambda min
@@ -198,4 +200,6 @@ public:
 };
 
 inline TH1D* AliFemtoV0TrackCut::GetMinvPurityAidHistoV0() {return fMinvPurityAidHistoV0;}
+inline bool AliFemtoV0TrackCut::GetBuildMisIDHistograms() {return fBuildMisIDHistograms;}
+
 #endif
