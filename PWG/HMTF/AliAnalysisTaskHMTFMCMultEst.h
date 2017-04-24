@@ -18,6 +18,7 @@ class AliAnalysisTaskHMTFMCMultEst : public AliAnalysisTaskSE {
 
   // set the name of the global trigger in the AddTask marcro through this function
   void SetGlobalTrigger(Int_t triggerEnum) {fGlobalTrigger = triggerEnum;};
+  void SetGlobalSystem(Int_t systemEnum) {fGlobalSystem = systemEnum;}
  private:
   TList *fMyOut;                          // Output list
   std::vector<AliEventClassifierBase*> fClassifiers;
@@ -25,6 +26,8 @@ class AliAnalysisTaskHMTFMCMultEst : public AliAnalysisTaskSE {
 
   Int_t fGlobalTrigger;
   enum {kINEL, kINELGT0, kV0AND};
+  Int_t fGlobalSystem;
+  enum {kPP, kPPB, kPBPB};
 
   void SetupInelAsGlobalTrigger();
   void SetupInelGt0AsGlobalTrigger(AliEventClassifierBase* etaLt1);
@@ -40,7 +43,7 @@ class AliAnalysisTaskHMTFMCMultEst : public AliAnalysisTaskSE {
   AliAnalysisTaskHMTFMCMultEst(const AliAnalysisTaskHMTFMCMultEst&); // not implemented
   AliAnalysisTaskHMTFMCMultEst& operator=(const AliAnalysisTaskHMTFMCMultEst&); // not implemented
 
-  ClassDef(AliAnalysisTaskHMTFMCMultEst, 1); // example of analysis
+  ClassDef(AliAnalysisTaskHMTFMCMultEst, 2); // example of analysis
 };
 
 #endif
