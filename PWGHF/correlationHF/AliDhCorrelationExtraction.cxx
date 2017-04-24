@@ -2216,7 +2216,7 @@ void AliDhCorrelationExtraction::PrintRanges() {
   for(int i=0; i<fNpTbins; i++) {
     if(fIntegratePtBins && i>0) continue;
     printf("****************** Bin %d *****************\n",i+fFirstpTbin);
-    printf("  Signal region = %1.4f - %1.4f (bins %d-%d)\n",fRangesSignL[i],fRangesSignR[i],fMassHisto[i]->FindBin(fDmesonFitterMean[i] - fSignalSigmas*fDmesonFitterSigma[i]),fMassHisto[i]->FindBin(fDmesonFitterMean[i] + fSignalSigmas*fDmesonFitterSigma[i]));
+    printf("  Signal region = %1.4f - %1.4f (bins %d-%d)\n",fRangesSignL[i],fRangesSignR[i],fMassHisto[i]->FindBin(fRangesSignL[i]+0.0001),fMassHisto[i]->FindBin(fRangesSignR[i]-0.0001));
     printf("  SB1 region: = %1.4f - %1.4f\n",fRangesSB1L[i],fRangesSB1R[i]);
     if(fDmesonSpecies!=kDStarD0pi) printf("  SB2 region: = %1.4f - %1.4f\n",fRangesSB2L[i],fRangesSB2R[i]);
   }

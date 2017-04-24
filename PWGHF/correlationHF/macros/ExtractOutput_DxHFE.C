@@ -110,7 +110,7 @@ void ExtractOutput(
   plotter->SetFitRanges(leftRng,rightRng); //
   plotter->SetBkgFitFunction(funcBkg); //
   plotter->SetNumberOfSigmasFitter(nsigmaFitter);
-  if(autoSign) plotter->SetAutoSignRange(autoSign);
+  if(!autoSign) plotter->SetAutoSignRange(autoSign);
   plotter->SetSignalSigmas(nsigmaS);
   plotter->SetAutoSBRange(autoSB,insigma,outsigma);
   plotter->SetSBSingleBin(singleBinSB);

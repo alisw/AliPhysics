@@ -45,7 +45,7 @@ void ExtractOutput_Dplus(
     plotter->SetFitRanges(leftRng,rightRng); //use 1.7-2.1 for D0 and D+, 0.14-0.16 for D*
     plotter->SetBkgFitFunction(funcBkg); //use kExpo for D0 and D+, kPowEx for D*
     plotter->SetNumberOfSigmasFitter(nsigmaFitter);
-    if(autoSign) plotter->SetAutoSignRange(autoSign);
+    if(!autoSign) plotter->SetAutoSignRange(autoSign);
     plotter->SetSignalSigmas(nsigmaS);
     plotter->SetAutoSBRange(autoSB,insigma,outsigma); //kTRUE = evaluate SB range automatically (give inner and outer sigma as 2° and 3° args); kFALSE = use ranges provided via SetSBRanges
     plotter->SetSBSingleBin(singleBinSB);
