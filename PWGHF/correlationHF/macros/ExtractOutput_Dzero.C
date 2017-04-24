@@ -33,8 +33,8 @@ void ExtractOutput(
    Int_t npools=9, //number of pools for the event-mixing
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions  
-   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100., //***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
-   Bool_t subtractSoftPiME=kTRUE) //***NOTE: ONLY FOR ONLINE APPROACH*** remove likely soft pions (via inv.mass cut) also in ME distributions (for OFFLINE, is done via CorrelateOffline.C)
+   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100., // ***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
+   Bool_t subtractSoftPiME=kTRUE) // ***NOTE: ONLY FOR ONLINE APPROACH*** remove likely soft pions (via inv.mass cut) also in ME distributions (for OFFLINE, is done via CorrelateOffline.C)
 {
 
   //Create and set the correlation plotter class
@@ -46,7 +46,7 @@ void ExtractOutput(
   plotter->SetFitRanges(leftRng,rightRng); //
   plotter->SetBkgFitFunction(funcBkg); //
   plotter->SetNumberOfSigmasFitter(nsigmaFitter);
-  if(autoSign) plotter->SetAutoSignRange(autoSign);
+  if(!autoSign) plotter->SetAutoSignRange(autoSign);
   plotter->SetSignalSigmas(nsigmaS);
   plotter->SetAutoSBRange(autoSB,insigma,outsigma);
   plotter->SetSBSingleBin(singleBinSB);
