@@ -52,7 +52,7 @@ void AliEventClassifierSphericity::CalculateClassifierValue(AliMCEvent *event, A
     s11 += (py * py) / track->Pt();
     totalpt += track->Pt();
   }
-  // did we have valid tracks or did we never reach the bottome of the for loop?
+  // did we have valid tracks or did we never reach the bottom of the for loop?
   if (!(totalpt > 0)) {
     fClassifierValue = -1;
     return;
