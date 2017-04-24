@@ -494,11 +494,13 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             AliESDtrack *ptrk=event->GetTrack(pidx);
             
             //Pre-select dE/dx: only proceed if at least one of these tracks looks like a proton
+            /*
             if(fkPreselectDedxLambda){
                 Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( ptrk, AliPID::kProton ));
                 Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( ntrk, AliPID::kProton ));
                 if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue; 
             }
+             */
             
             //Track pre-selection: clusters
             if (ptrk->GetTPCNcls() < 70 &&fkExtraCleanup ) continue;
@@ -599,59 +601,60 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ){
                 continue;
             }
-            //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            //Pre-filter on-the-fly candidates for CPU time reduction
-            //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            
-            //1) DCA V0 Dau
-            if( v->GetDcaV0Daughters() > fV0VertexerSels[3] ) continue;
-            
-            //2) CosPA
-            if( v->GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)< fV0VertexerSels[4] ) continue;
-            
-            //3) DCA neg/pos to PV
-            UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
-            UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
-            AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
-            AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
-            
-            Double_t lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(xPrimaryVertex,
-                                                                   yPrimaryVertex,
-                                                                   b) );
-            
-            Double_t lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(xPrimaryVertex,
-                                                                   yPrimaryVertex,
-                                                                   b) );
-            if(lDcaNegToPrimVertex<fV0VertexerSels[1]||lDcaPosToPrimVertex<fV0VertexerSels[2]) continue; //ignore if too close
-            
-            //4) V0 Decay Radius
-            Double_t tDecayVertexV0[3];
-            v->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
-            Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
-            if(lV0Radius<fV0VertexerSels[5]) continue;
-            
-            //5) kTPC refit check
-            // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-            if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-            if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-            
-            //6) 70 clusters
-            if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
-            
-            //7) Daughter eta
-            Double_t lNegEta = nTrack->Eta();
-            Double_t lPosEta = pTrack->Eta();
-            if( TMath::Abs(lNegEta)>0.8 || TMath::Abs(lPosEta)>0.8 ) continue;
-            
-            //8) dE/dx
-            //Pre-select dE/dx: only proceed if at least one of these tracks looks like a proton
-            if(fkPreselectDedxLambda){
-                Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
-                Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
-                if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
-            }
-            //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         }
+        
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        //Pre-filter candidates for CPU time reduction
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        
+        //1) DCA V0 Dau
+        if( v->GetDcaV0Daughters() > fV0VertexerSels[3] ) continue;
+        
+        //2) CosPA
+        if( v->GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)< fV0VertexerSels[4] ) continue;
+        
+        //3) DCA neg/pos to PV
+        UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
+        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
+        AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+        AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+        
+        Double_t lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(xPrimaryVertex,
+                                                               yPrimaryVertex,
+                                                               b) );
+        
+        Double_t lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(xPrimaryVertex,
+                                                               yPrimaryVertex,
+                                                               b) );
+        if(lDcaNegToPrimVertex<fV0VertexerSels[1]||lDcaPosToPrimVertex<fV0VertexerSels[2]) continue; //ignore if too close
+        
+        //4) V0 Decay Radius
+        Double_t tDecayVertexV0[3];
+        v->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
+        Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+        if(lV0Radius<fV0VertexerSels[5]) continue;
+        
+        //5) kTPC refit check
+        // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+        if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        
+        //6) 70 clusters
+        if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+        
+        //7) Daughter eta
+        Double_t lNegEta = nTrack->Eta();
+        Double_t lPosEta = pTrack->Eta();
+        if( TMath::Abs(lNegEta)>0.8 || TMath::Abs(lPosEta)>0.8 ) continue;
+        
+        //8) dE/dx
+        //Pre-select dE/dx: only proceed if at least one of these tracks looks like a proton
+        if(fkPreselectDedxLambda){
+            Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
+            Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
+            if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+        }
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
         if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fCascadeVertexerSels[1]) continue;
         vtcs.AddLast(v);

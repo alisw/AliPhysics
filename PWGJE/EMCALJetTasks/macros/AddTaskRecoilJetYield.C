@@ -80,7 +80,7 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   AliParticleContainer *trackContDet=0x0;
   AliParticleContainer *trackContTrue=0x0;
 
-  if (jetShapeSub == AliAnalysisTaskRecoilJetYield::kConstSub){
+  if (jetShapeSub == AliAnalysisTaskRecoilJetYield::kConstSub || jetShapeType == AliAnalysisTaskRecoilJetYield::kDetEmbPart){
     trackContData = task->AddParticleContainer(ntracksData);
     trackContDet = task->AddParticleContainer(ntracksDet);
   }

@@ -986,8 +986,8 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
     if(!fESDtrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))  return kFALSE;
   }
   
-  //Double_t ptot = track->P();
-  //if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+  Double_t ptot = track->P();
+  if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
   if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE; 
   if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 
 
@@ -999,8 +999,8 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
 Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle) const {
   if(!particle) return kFALSE;
   if (particle->Charge() == 0.0) return kFALSE; 
-  //Double_t ptotMC = particle->P();
-  //if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+  Double_t ptotMC = particle->P();
+  if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
   if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
   if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
   

@@ -583,8 +583,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
   TClonesArray f_Int1("TF1", 21);
   t->Branch("f_Int0", &f_Int0, 32000, 0);
   t->Branch("f_Int1", &f_Int1, 32000, 0);
-  f_Int0.BypassStreamer();
-  f_Int1.BypassStreamer();
+  f_Int0.BypassStreamer(kFALSE);
+  f_Int1.BypassStreamer(kFALSE);
 
   Float_t extrapolationThresholds[21];
   Bool_t  doExtrapolation[21];
@@ -622,8 +622,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
 
   // (3) fill TTree
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
-    f_Int0.Clear();
-    f_Int1.Clear();
+    f_Int0.Clear("C");
+    f_Int1.Clear("C");
 
     chOffline = ch;
     chOnline  = gOffline2Online[ch];

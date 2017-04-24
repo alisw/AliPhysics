@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaParticleIsolation
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Select clusters/tracks with low particle environment in their vecinity,
 /// isolated within a cone.
 ///
@@ -146,8 +147,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnCheckNeutralClustersForLeading() { fCheckLeadingWithNeutralClusters = kTRUE  ; }
   void         SwitchOffCheckNeutralClustersForLeading(){ fCheckLeadingWithNeutralClusters = kFALSE ; }
   
-  void         SwitchOnUEBandSubtractionHistoFill()  { fFillUEBandSubtractHistograms = kTRUE    ; }
-  void         SwitchOffUEBandSubtractionHistoFill() { fFillUEBandSubtractHistograms = kFALSE   ; }
+  void         SwitchOnUEBandSubtractionHistoFill(Int_t lev = 1)  { fFillUEBandSubtractHistograms = lev ; }
+  void         SwitchOffUEBandSubtractionHistoFill() { fFillUEBandSubtractHistograms = 0   ; }
 
   void         SwitchOnCellHistoFill()               { fFillCellHistograms = kTRUE ; }
   void         SwitchOffCellHistoFill()              { fFillCellHistograms = kFALSE; }
@@ -240,7 +241,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
-  Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
+  Int_t    fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction. 1 fill basic histograms, 2 more detailed
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
@@ -746,10 +747,21 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterPerRCutLargePtTrig;         //!<! Clusters Sum Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerRCut;                      //!<! Tracks Sum Pt in the cone for different cone sizes, x axis.
   TH2F *   fhConeSumPtTrackPerRCutLargePtTrig;           //!<! Tracks Sum Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
+
+  TH2F *   fhConeNClusterPerMinPtCut;                    //!<! N Clusters in the cone for different min pT cuts, x axis.
+  TH2F *   fhConeNClusterPerMinPtCutLargePtTrig;         //!<! N Clusters in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeNTrackPerMinPtCut;                      //!<! N Tracks in the cone for different min pT cuts, x axis.
+  TH2F *   fhConeNTrackPerMinPtCutLargePtTrig;           //!<! N Tracks in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhPerpConeNTrackPerMinPtCut;                  //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis.
+  TH2F *   fhPerpConeNTrackPerMinPtCutLargePtTrig;       //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+
   TH2F *   fhConeSumPtClusterPerMinPtCut;                //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhConeSumPtClusterPerMinPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerMinPtCut;                  //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhConeSumPtTrackPerMinPtCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhPerpConeSumPtTrackPerMinPtCut;              //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis.
+  TH2F *   fhPerpConeSumPtTrackPerMinPtCutLargePtTrig;   //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  
   TH2F *   fhConeSumPtClusterPerMaxPtCut;                //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis.
   TH2F *   fhConeSumPtClusterPerMaxPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerMaxPtCut;                  //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis.
@@ -761,6 +773,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtClusterInConePerNCellCutLargePtTrig;      //!<! Clusters Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerNCellCut;                   //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis.
   TH2F *   fhPtTrackInConePerNCellCutLargePtTrig;        //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
+
   TH2F *   fhConeSumPtClusterPerNCellCut;                //!<! Clusters Sum Pt in the cone for different min cluster n cell cut, x axis.
   TH2F *   fhConeSumPtClusterPerNCellCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerNCellCut;                  //!<! Tracks Sum Pt in the cone for different min cluster n cell cut, x axis.
@@ -770,6 +783,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtClusterInConePerExoCutLargePtTrig;        //!<! Clusters Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerExoCut;                     //!<! Tracks Pt in the cone for different exoticity cut, x axis.
   TH2F *   fhPtTrackInConePerExoCutLargePtTrig;          //!<! Tracks Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
+
   TH2F *   fhConeSumPtClusterPerExoCut;                  //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis.
   TH2F *   fhConeSumPtClusterPerExoCutLargePtTrig;       //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerExoCut;                    //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis.

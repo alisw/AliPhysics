@@ -242,7 +242,8 @@ bool AliFemtoESDTrackCutNSigmaFilter::Pass(const AliFemtoTrack* track)
   {
     if(fUseCustomElectronNSigmaFilter)
     {
-      if(IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE())) return false;
+//      if(IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE())) return false;
+      if(IsProbableElectron(track)) return false;
     }
     else
     {
@@ -634,5 +635,23 @@ bool AliFemtoESDTrackCutNSigmaFilter::IsProtonNSigma(float mom, float nsigmaTPCP
 bool AliFemtoESDTrackCutNSigmaFilter::IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE)
 {
   return fElectronNSigmaFilter->Pass(mom, nsigmaTPCE, nsigmaTOFE);
+}
+
+//________________________________________________________________________________________________________________
+bool AliFemtoESDTrackCutNSigmaFilter::IsProbableElectron(const AliFemtoTrack* track)
+{
+  float mom, nsigmaTPCPoi, nsigmaTOFPoi, nsigmaTPCE, nsigmaTOFE; //Poi = particle of interest
+  mom = track->P().Mag();
+  nsigmaTPCE = track->NSigmaTPCE();
+  nsigmaTOFE = track->NSigmaTOFE();
+
+  if(fMostProbable==2) {nsigmaTPCPoi = track->NSigmaTPCPi(); nsigmaTOFPoi = track->NSigmaTOFPi();}
+  else if(fMostProbable==3) {nsigmaTPCPoi = track->NSigmaTPCK(); nsigmaTOFPoi = track->NSigmaTOFK();}
+  else if(fMostProbable==4) {nsigmaTPCPoi = track->NSigmaTPCP(); nsigmaTOFPoi = track->NSigmaTOFP();}
+  else{nsigmaTPCPoi = 0.; nsigmaTOFPoi = 0.;}
+
+  if(!fElectronNSigmaFilter->Pass(mom, nsigmaTPCE, nsigmaTOFE)) return false;
+  else if((nsigmaTPCPoi > nsigmaTPCE) && (nsigmaTOFPoi > nsigmaTOFE)) return true;
+  else return false;
 }
 

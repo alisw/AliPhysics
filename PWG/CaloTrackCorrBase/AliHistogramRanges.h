@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliHistogramRanges
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class containing more common histogram axis types.
 ///
 /// Class containing more common histogram type settings:

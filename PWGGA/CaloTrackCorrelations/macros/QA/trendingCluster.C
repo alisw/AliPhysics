@@ -1,23 +1,33 @@
+/// \file trendingCluster.C
+/// \ingroup CaloTrackCorrMacrosQA
+/// \brief Do EMCal QA  trending plots
+///
+/// Example macro to check QA outputs from the histograms itself
+/// Executed with Root 
+///
+/// The input file needs: 
+/// 1.  the root output from AliAnaCalorimeterQA (or QA train) run by run ie runnumber.root 
+/// placed in the directory period/pass/
+/// 2.  the run list (runlist.txt) of these run output placed in the directory period/pass/ runlist mean : index runnumber//
+/// Trigger 
+/// 2 trigger options " MB"  : CaloQA_default output from train
+///                   " EMC" : CaloQA_EMC7
+///
+/// Configured by options of EMCAL  checker with:
+/// a. cell multiplicity
+/// b. cluster multiplicity/event
+/// c. Cells per Cluster 
+/// d. mean cluster energy 
+///
+/// more checker values could be added based on request (more canvas)
+///
+/// \author Yaxian Mao, Wuhan
+/// \author Marie Germain,  SUBATECH
+
+
 /* $Id:  $ */
 //--------------------------------------------------
-// Example macro to check QA outputs from the histograms itself
-// Executed with Root 
 
-//The input file needs: 
-// 1.  the root output from AliAnaCalorimeterQA (or QA train) run by run ie runnumber.root 
-// placed in the directory period/pass/
-// 2.  the run list (runlist.txt) of these run output placed in the directory period/pass/ runlist mean : index runnumber//
-// Trigger
-// 2 trigger options " MB"  : CaloQA_default output from train
-//                   " EMC" : CaloQA_EMC7
-
-// Configured by options of EMCAL  checker with:
-// a. cell multiplicity
-// b. cluster multiplicity/event
-// c. Cells per Cluster 
-// d. mean cluster energy 
-
-// more checker valuse could be added based on request (more canvas)
 //
 // Author: Yaxian Mao
 // Modified M. Germain

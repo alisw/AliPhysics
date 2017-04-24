@@ -87,6 +87,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fAlphaCutMeson(1),
   fRapidityCutMeson(1),
   fUseRotationMethodInBG(kFALSE),
+  fUsePtmaxMethodForBG(kFALSE),
   fDoBG(kTRUE),
   fdoBGProbability(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
@@ -161,6 +162,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fAlphaCutMeson(ref.fAlphaCutMeson),
   fRapidityCutMeson(ref.fRapidityCutMeson),
   fUseRotationMethodInBG(ref.fUseRotationMethodInBG),
+  fUsePtmaxMethodForBG(ref.fUsePtmaxMethodForBG),
   fDoBG(ref.fDoBG),
   fdoBGProbability(ref.fdoBGProbability),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
@@ -1144,6 +1146,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
     if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG & !fBackgroundHandler) printf("\t BG scheme: mixing V0 mult \n");
     if (!fUseRotationMethodInBG  & fUseTrackMultiplicityForBG & !fBackgroundHandler) printf("\t BG scheme: mixing track mult \n");
     if (fUseRotationMethodInBG )printf("\t BG scheme: rotation \n");
+    if (fUsePtmaxMethodForBG )printf("\t BG scheme: Ptmax \n");
     if (fdoBGProbability) printf("\t -> use BG probability \n");
     if (fBackgroundHandler) printf("\t -> use new BG handler \n");
     printf("\t depth of pool: %d\n", fNumberOfBGEvents);
@@ -1909,6 +1912,12 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fUseRotationMethodInBG      = kTRUE;
     fdoBGProbability            = kTRUE;
     fBackgroundHandler          = 1;
+    break;
+  case 9: // mixed event with Ptmax method
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fdoBGProbability            = kFALSE;
+    fUsePtmaxMethodForBG        = kTRUE;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;

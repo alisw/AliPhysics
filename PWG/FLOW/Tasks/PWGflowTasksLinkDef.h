@@ -44,5 +44,6 @@
 #pragma link C++ class AliAnalysisTaskForStudents+;
 #pragma link C++ class AliAnalysisTaskVnZDC+;
 #pragma link C++ class AliAnalysisTaskZDCGainEq+;
+#pragma link C++ class AliAnalysisTaskZDCEP+;
 #endif
 

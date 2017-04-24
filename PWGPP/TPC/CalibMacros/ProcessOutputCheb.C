@@ -132,7 +132,7 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     if (corr) { 
       AliTPCChebCorr* c = dcalibRes->GetChebCorrObject();
       if (!c) {
-	::Error("ProcessOutput","Did not find %s Cheb.parm in %s",corr ? "Correction":"Distortion" ,snextfile.Data());
+	::Error("ProcessOutput","Did not find %s Cheb.parm in %s","Correction",snextfile.Data());
 	PrintProcStatus(kStatusFail);
 	exit(1);
       }
@@ -141,7 +141,7 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     if (dist) { // 
       AliTPCChebDist* d = dcalibRes->GetChebDistObject();
       if (!d) {
-	::Error("ProcessOutput","Did not find %s Cheb.parm in %s",corr ? "Correction":"Distortion" ,snextfile.Data());
+	::Error("ProcessOutput","Did not find %s Cheb.parm in %s","Distortion" ,snextfile.Data());
 	//PrintProcStatus(kStatusFail);
 	//exit(1);
       }

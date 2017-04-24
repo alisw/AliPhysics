@@ -619,12 +619,13 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fMCneutral = new TH2F("fMCneutral","pi0 and eta pT from Hijing and enhance",6,-0.5,5.5,500,0,50);
     fOutputList->Add(fMCneutral);
     
+    if(fFlagSparse){
     Int_t bins[9]=      {8, 280, 160, 40, 200, 200,    3, 100,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
     Double_t xmin[9]={-0.5,   2,  -8,   0,   0,   0, -0.5,  -5,   0};
     Double_t xmax[9]={ 7.5,  30,   8,   2,   2,   2,  2.5,  15, 100};
     fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;eID;nSigma_Pi;cent;",9,bins,xmin,xmax);
     fOutputList->Add(fSparseElectron);
-
+    }
     PostData(1,fOutputList);
 }
 

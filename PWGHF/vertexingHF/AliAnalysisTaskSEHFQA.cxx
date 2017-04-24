@@ -139,6 +139,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHisnClsITS(0)
   , fHisnClsITSselTr(0)
   , fHisnClsITSSA(0)
+  , fHisnClsITSSAspdAny(0)
+  , fHisnClsITSSAspdIn(0)
+  , fHisnClsITSSAspdOut(0)
   , fHisnLayerITS(0)
   , fHisnLayerITSselTr(0)
   , fHisnLayerITSsa(0)
@@ -317,6 +320,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHisnClsITS(0)
   , fHisnClsITSselTr(0)
   , fHisnClsITSSA(0)
+  , fHisnClsITSSAspdAny(0)
+  , fHisnClsITSSAspdIn(0)
+  , fHisnClsITSSAspdOut(0)
   , fHisnLayerITS(0)
   , fHisnLayerITSselTr(0)
   , fHisnLayerITSsa(0)
@@ -795,6 +801,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     hname="hnClsITS-SA";
     fHisnClsITSSA=new TH1F(hname.Data(),"Distribution of number of ITS clusters(ITS-SA);nITScls;Entries",7,-0.5,6.5);
+    hname="hnClsITS-SA-SPDAny";
+    fHisnClsITSSAspdAny=new TH1F(hname.Data(),"Distribution of number of ITS clusters(ITS-SA) - SPD kAny;nITScls;Entries",7,-0.5,6.5);
+    hname="hnClsITS-SA-SPDIn";
+    fHisnClsITSSAspdIn=new TH1F(hname.Data(),"Distribution of number of ITS clusters(ITS-SA) - SPDin;nITScls;Entries",7,-0.5,6.5);
+    hname="hnClsITS-SA-SPDOut";
+    fHisnClsITSSAspdOut=new TH1F(hname.Data(),"Distribution of number of ITS clusters(ITS-SA) - SPDout;nITScls;Entries",7,-0.5,6.5);
 
 
     hname="hnLayerITS";
@@ -1043,6 +1055,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(fHisnClsITS);
     fOutputTrack->Add(fHisnClsITSselTr);
     fOutputTrack->Add(fHisnClsITSSA);
+    fOutputTrack->Add(fHisnClsITSSAspdAny);
+    fOutputTrack->Add(fHisnClsITSSAspdIn);
+    fOutputTrack->Add(fHisnClsITSSAspdOut);
     fOutputTrack->Add(fHisnLayerITS);
     fOutputTrack->Add(fHisnLayerITSselTr);
     fOutputTrack->Add(fHisnLayerITSsa);
@@ -2570,6 +2585,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	}
 	if(!(track->GetStatus()&AliESDtrack::kTPCin) && track->GetStatus()&AliESDtrack::kITSrefit && !(track->GetStatus()&AliESDtrack::kITSpureSA)){//tracks retrieved in the ITS and not reconstructed in the TPC
 	  fHisnClsITSSA->Fill(nclsTot);
+     if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+       fHisnClsITSSAspdAny->Fill(nclsTot);
+     if(track->HasPointOnITSLayer(0))
+       fHisnClsITSSAspdIn->Fill(nclsTot);
+     if(track->HasPointOnITSLayer(1))
+       fHisnClsITSSAspdOut->Fill(nclsTot);
 	  fHisnLayerITSsa->Fill(-1);
 	  for(Int_t l=0;l<6;l++) {
 	    if(TESTBIT(track->GetITSClusterMap(),l)) {

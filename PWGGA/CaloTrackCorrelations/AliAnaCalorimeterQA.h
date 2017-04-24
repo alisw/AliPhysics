@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaCalorimeterQA
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Class for the Calorimeter QA analysis
 ///
 /// Task filling basic histograms to check reconstructed data (real or MC) of calorimeters.
@@ -169,6 +170,12 @@ public:
   void SwitchOnFillAllPi0Histogram()            { fFillAllPi0Histo  = kTRUE  ; }
   void SwitchOffFillAllPi0Histogram()           { fFillAllPi0Histo  = kFALSE ; }
 
+  void SwitchOnFillAllCellHistogram()           { fFillAllCellHistograms  = kTRUE  ; }
+  void SwitchOffFillAllCellHistogram()          { fFillAllCellHistograms  = kFALSE ; }
+  
+  void SwitchOnFillAllCellAbsIdHistogram()      { fFillAllCellAbsIdHistograms = kTRUE  ; }
+  void SwitchOffFillAllCellAbsIdHistogram()     { fFillAllCellAbsIdHistograms = kFALSE ; }
+  
   void SwitchOnFillInvMassOpAngleHistogram()    { fFillInvMassOpenAngle = kTRUE  ; }
   void SwitchOffFillInvMassOpAngleHistogram()   { fFillInvMassOpenAngle = kFALSE ; }  
 
@@ -183,6 +190,10 @@ public:
 
   void SwitchOnStudyBadClusters()               { fStudyBadClusters = kTRUE  ; }
   void SwitchOffStudyBadClusters()              { fStudyBadClusters = kFALSE ; }
+
+  void SwitchOnFillClusterCellMaxHisto()        { fFillClusterMaxCellHisto = kTRUE  ; }
+  void SwitchOffFillClusterCellMaxHisto()       { fFillClusterMaxCellHisto = kFALSE ; }
+
   
   // Analysis not to be used in QA
   //==============================
@@ -223,13 +234,17 @@ public:
   Bool_t   fFillAllPosHisto2;                   ///<  Fill all the position related histograms 2
   Bool_t   fFillAllTH3 ;                        ///<  Fill TH3 histograms
   Bool_t   fFillAllTMHisto ;                    ///<  Fill track matching histograms
-  
+
+  Bool_t   fFillClusterMaxCellHisto ;           ///<  Fill cluster cell max histograms
   Bool_t   fFillAllPi0Histo ;                   ///<  Fill invariant mass histograms
   Bool_t   fFillInvMassOpenAngle;               ///<  Fill opening angle histograms of cluster pairs, only if  fFillAllPi0Histo=kTRUE
   Bool_t   fFillPi0PairDiffTime;                ///<  Fill time difference histograms of cluster pairs in pi0 mass window, only if  fFillAllPi0Histo=kTRUE
   Bool_t   fFillInvMassInEMCALWithPHOSDCalAcc;  ///<  Fill invariant mass histograms of EMCal clusters in DCal and PHOS eta acceptance each, only if  fFillAllPi0Histo=kTRUE
   
   Bool_t   fFillEBinAcceptanceHisto;            ///<  Fill histograms with cluster eta-phi distribution and column-row cell, for different energy bins
+  
+  Bool_t   fFillAllCellHistograms;              ///<  Fill all cell related histograms
+  Bool_t   fFillAllCellAbsIdHistograms;         ///<  Fill all cell related histograms where one axis is the cell absId
   
   Bool_t   fCorrelate   ;                       ///<  Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
   Bool_t   fStudyBadClusters;                   ///<  Study bad clusters not passing selection criteria (exotic, shower shape, n cells). 
@@ -593,8 +608,8 @@ public:
   TH2F *   fhBadClusterMaxCellCloseCellDiff ;   //!<! Difference between max cell energy and cell energy of the same cluster for bad clusters
   TH2F *   fhBadClusterMaxCellDiff;             //!<! Difference between cluster energy and energy of cell with more energy
   
-  TH2F *   fhBadClusterMaxCellDiffAverageTime;  //!<! Difference between cluster average time and time of cell with more energy
-  TH2F *   fhBadClusterMaxCellDiffWeightedTime; //!<! Difference between cluster weighted time and time of cell with more energy
+//TH2F *   fhBadClusterMaxCellDiffAverageTime;  //!<! Difference between cluster average time and time of cell with more energy
+//TH2F *   fhBadClusterMaxCellDiffWeightedTime; //!<! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhBadClusterMaxCellECross;           //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, bad clusters
 
   TH2F *   fhBadClusterLambda0;                 //!<! Cluster Lambda0 vs Energy, clusters declared bad

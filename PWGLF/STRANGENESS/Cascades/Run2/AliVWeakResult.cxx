@@ -5,6 +5,7 @@
 
 #include "TList.h"
 #include "TH3F.h"
+#include "TProfile.h"
 #include "AliVWeakResult.h"
 #include "AliLog.h"
 #include <iostream>

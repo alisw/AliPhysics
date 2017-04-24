@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliCaloTrackESDReader
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class for event, clusters and tracks filtering and preparation for the ESD analysis.
 ///
 /// Class for accessing/filtering ESD data. Most of the job is done in the mother class

@@ -13,17 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// AliAnalysisTaskEmcalAlig
-//
-// Matching residual for electrons on EMCal.
-// Both default residual (until the surface) and a improved one, using
-// electron mass hypotehsis and propagation until the cluster, are available
-//
-// Henrique Zanoli, henrique.zanoli@cern.ch, University of Sao Paulo and Utrecht University
-//_________________________________________________________________________
-
-
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -34,7 +23,7 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliPIDResponse.h"
-#include "AliAnalysisTaskEmcalAlig.h"
+#include "AliAnalysisTaskEMCALAlig.h"
 #include "AliInputEventHandler.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
@@ -42,9 +31,10 @@
 #include "TVector3.h"
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalAlig)
+ClassImp(AliAnalysisTaskEMCALAlig)
 /// \endcond
-AliAnalysisTaskEmcalAlig::AliAnalysisTaskEmcalAlig() :
+
+AliAnalysisTaskEMCALAlig::AliAnalysisTaskEMCALAlig() :
 AliAnalysisTaskEmcal(),
 fEMCALRecoUtils(NULL),
 fEMCALGeo(NULL),
@@ -81,7 +71,7 @@ fPositronYResRU(NULL)
     
 }
 
-AliAnalysisTaskEmcalAlig::AliAnalysisTaskEmcalAlig(const char *name) :
+AliAnalysisTaskEMCALAlig::AliAnalysisTaskEMCALAlig(const char *name) :
 AliAnalysisTaskEmcal(name, kTRUE),
 fEMCALRecoUtils(NULL),
 fEMCALGeo(NULL),
@@ -120,13 +110,13 @@ fPositronYResRU(NULL)
 }
 
 
-AliAnalysisTaskEmcalAlig::~AliAnalysisTaskEmcalAlig()
+AliAnalysisTaskEMCALAlig::~AliAnalysisTaskEMCALAlig()
 {
     
 }
 
 
-void AliAnalysisTaskEmcalAlig::UserCreateOutputObjects()
+void AliAnalysisTaskEMCALAlig::UserCreateOutputObjects()
 {
     AliAnalysisTaskEmcal::UserCreateOutputObjects();
     
@@ -256,13 +246,13 @@ void AliAnalysisTaskEmcalAlig::UserCreateOutputObjects()
 }
 
 
-Bool_t AliAnalysisTaskEmcalAlig::FillHistograms()
+Bool_t AliAnalysisTaskEMCALAlig::FillHistograms()
 {
     DoTrackLoop();
     return kTRUE;
 }
 
-void AliAnalysisTaskEmcalAlig::DoTrackLoop()
+void AliAnalysisTaskEMCALAlig::DoTrackLoop()
 {
     AliClusterContainer* clusCont = GetClusterContainer(0);
     AliVCaloCells *cells = InputEvent()->GetEMCALCells();
@@ -430,7 +420,7 @@ void AliAnalysisTaskEmcalAlig::DoTrackLoop()
     }
 }
 
-void AliAnalysisTaskEmcalAlig::ExecOnce()
+void AliAnalysisTaskEMCALAlig::ExecOnce()
 {
     AliAnalysisTaskEmcal::ExecOnce();
     
@@ -440,11 +430,11 @@ void AliAnalysisTaskEmcalAlig::ExecOnce()
     fEMCALRecoUtils->InitParameters();
 }
 
-Bool_t AliAnalysisTaskEmcalAlig::Run()
+Bool_t AliAnalysisTaskEMCALAlig::Run()
 {
     return kTRUE;
 }
 
-void AliAnalysisTaskEmcalAlig::Terminate(Option_t *)
+void AliAnalysisTaskEMCALAlig::Terminate(Option_t *)
 {
 }

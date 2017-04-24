@@ -48,7 +48,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 								 TString                L1triggerName             = ""
                                                                  )
 {
-  
   Printf("Preparing neutral cluster analysis\n");
   
   // #### Define manager and data container names
@@ -57,8 +56,38 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     ::Error("AddTaskEMCALPhotonIsolation", "No analysis manager to connect to.");
     return NULL;
   }
-  
-  printf("Creating container name for cluster analysis\n");
+
+  // Use the input containers naming convention with "usedefault" (already used in several EMCal tasks and new correction framework)
+  TString trackName(ntracks);
+  TString clusName(nclusters);
+
+  if(trackName == "usedefault"){
+    if(dType == "ESD"){
+      trackName = "Tracks";
+    }
+    else if(dType == "AOD"){
+      trackName = "tracks";
+    }
+    else{
+      trackName = "";
+    }
+  }
+
+  if(clusName == "usedefault"){
+    if(dType == "ESD"){
+      clusName = "CaloClusters";
+    }
+    else if(dType == "AOD"){
+      clusName = "caloClusters";
+    }
+    else{
+      clusName = "";
+    }
+  }
+
+  // Set the task output container name
+  Printf("Creating container name for cluster analysis\n");
+
   TString myContName("");
   if(bIsMC){
     myContName = Form("Analysis_Neutrals_MC");
@@ -127,7 +156,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
   TString configFilePath(configBasePath+"/"+configFileMD5);
   gROOT->LoadMacro(configFilePath.Data());
-  printf("Path of config file: %s\n",configFilePath.Data());
+  Printf("Path of config file: %s\n",configFilePath.Data());
   
   // #### Task preferences
   task->SetOutputFormat(iOutput);
@@ -169,35 +198,37 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
-  TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
+  TString name(Form("PhotonIsolation_%s_%s", trackName.Data(), clusName.Data()));
   cout<<"Name of the container "<<name.Data()<<endl;
   
   // Tracks to be used for the track matching (already used in TM task, TPC only tracks)
-  AliTrackContainer *trackCont  = task->AddTrackContainer("tracks");
-  if(!trackCont) Printf("Error with TPCOnly!!");
+  AliTrackContainer *trackCont = task->AddTrackContainer(trackName);
+  if(!trackCont) Printf("Error with TPC-Only Tracks!!");
   trackCont->SetName("tpconlyMatch");
   trackCont->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);
-
-  // Clusters to be used in the analysis already filtered
-  AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
   
-  // Tracks to be used in the analysis (Hybrid tracks)
-  AliTrackContainer * tracksForAnalysis = task->AddTrackContainer("tracks");
-  if(!tracksForAnalysis) Printf("Error with Hybrids!!");
+  // Tracks to be used in the analysis (Hybrid Tracks)
+  AliTrackContainer * tracksForAnalysis = task->AddTrackContainer(trackName);
+  if(!tracksForAnalysis) Printf("Error with Hybrids Tracks!!");
   tracksForAnalysis->SetName("filterTracksAna");
   tracksForAnalysis->SetFilterHybridTracks(kTRUE);
   if(!bIsMC){
     tracksForAnalysis->SetTrackCutsPeriod(periodstr);
     tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
   }
-  Printf("Name of tracks for matching: %s \nName of tracks for isolation: %s",trackCont->GetName(),tracksForAnalysis->GetName());
+
+  // Clusters to be used in the analysis (already filtered)
+  AliClusterContainer *clusterCont = task->AddClusterContainer(clusName);
+
+  Printf("Name of track container for matching: %s \nName of track container for isolation: %s \nName of cluster container: %s",trackCont->GetName(),tracksForAnalysis->GetName(),clusterCont->GetName());
   
-  printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
   // #### Add analysis task
+  Printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
   manager->AddTask(task);
   
   AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralClusters",AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
+
+  AliAnalysisDataContainer *cinput = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);
   

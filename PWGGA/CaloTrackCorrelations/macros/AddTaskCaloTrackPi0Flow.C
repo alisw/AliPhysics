@@ -1,41 +1,45 @@
-//
-// AddTask macro for AliAnaPi0Flow within the framework of CaloTrackCorrelation,
-// similar to AddTaskCaloTrackCorr.C
-//
+
+/// \file AddTaskPi0Flow.C
+/// \ingroup CaloTrackCorrMacros
+/// \brief Configuration of pi0 flow analysis with calorimeters
+///
+/// Configuration macro for analysis pi0 flow.
+///
+/// \author Qyie Shou, <qiye.shou@cern.ch> Wuhan 
 
 // Global variables to be accessed by the different methods
-TString kData          = "";                                    //< Declare data MC or deltaAOD
-TString kInputDataType = "AOD";                                 //< Declare data ESD/AOD
-TString kCalorimeter   = "EMCAL";                               //< Use main analysis detector EMCal or PHOS or CTS
-Bool_t  kSimulation    = kFALSE;                                //< Declare the analysis simulation
-Bool_t  kEventSelection= kFALSE;                                //< Remove bad events
-Bool_t  kExotic        = kTRUE;                                 //< Remove exotic clusters
-Bool_t  kNonLinearity  = kFALSE;                                //< Correct cluster non linearity
-Int_t   kYears         = 2011;                                  //< Declare the year of the data
-TString kCollisions    = "PbPb";                                //< Declare the collision type of the data
-TString kClusterArray  = "V1_Ecell150_Eseed300_DT0_WT0";        //< Name of branch with clusters, from AliAnalysisTaskEMCALClusterize
-Bool_t  kRecalTM       = kFALSE;                                //< Recalculate track-cluster matching
-Bool_t  kTM            = kTRUE;                                 //< Remove matched clusters to tracks
-Int_t   kMinCen        = -1;                                    //< Set the minimum centrality to be analyzed
-Int_t   kMaxCen        = -1;                                    //< Set the maximum centrality to be analyzed
-Bool_t  kCalibE        = kTRUE;                                 //< Calibrate energy of clusters
-Bool_t  kBadMap        = kTRUE;                                 //< Reject bad cells/clusters
-Bool_t  kCalibT        = kTRUE;                                 //< Calibrate time of clusters
-Bool_t  kTender        = kFALSE;                                //< Declare that tender was executed
-Bool_t  kOutputAOD     = kFALSE;                                //< Create output AOD with generated particle AOD objects
-Bool_t  kPrint         = kFALSE;                                //< Print setted parameters when configuring
+TString kData          = "";                                    ///< Declare data MC or deltaAOD
+TString kInputDataType = "AOD";                                 ///< Declare data ESD/AOD
+TString kCalorimeter   = "EMCAL";                               ///< Use main analysis detector EMCal or PHOS or CTS
+Bool_t  kSimulation    = kFALSE;                                ///< Declare the analysis simulation
+Bool_t  kEventSelection= kFALSE;                                ///< Remove bad events
+Bool_t  kExotic        = kTRUE;                                 ///< Remove exotic clusters
+Bool_t  kNonLinearity  = kFALSE;                                ///< Correct cluster non linearity
+Int_t   kYears         = 2011;                                  ///< Declare the year of the data
+TString kCollisions    = "PbPb";                                ///< Declare the collision type of the data
+TString kClusterArray  = "V1_Ecell150_Eseed300_DT0_WT0";        ///< Name of branch with clusters, from AliAnalysisTaskEMCALClusterize
+Bool_t  kRecalTM       = kFALSE;                                ///< Recalculate track-cluster matching
+Bool_t  kTM            = kTRUE;                                 ///< Remove matched clusters to tracks
+Int_t   kMinCen        = -1;                                    ///< Set the minimum centrality to be analyzed
+Int_t   kMaxCen        = -1;                                    ///< Set the maximum centrality to be analyzed
+Bool_t  kCalibE        = kTRUE;                                 ///< Calibrate energy of clusters
+Bool_t  kBadMap        = kTRUE;                                 ///< Reject bad cells/clusters
+Bool_t  kCalibT        = kTRUE;                                 ///< Calibrate time of clusters
+Bool_t  kTender        = kFALSE;                                ///< Declare that tender was executed
+Bool_t  kOutputAOD     = kFALSE;                                ///< Create output AOD with generated particle AOD objects
+Bool_t  kPrint         = kFALSE;                                ///< Print setted parameters when configuring
 Int_t   kRunNumber     = -1;                                    //< Declare the run number
-Bool_t  kPhosCali      = kTRUE;                                 //< Switch on EP flattening by phos 
-Bool_t  kCentFlat      = kFALSE;                                //< Switch on Centrality flattening
-Int_t   kDebug         = 0;                                     //< Do the analysis with this debug level
+Bool_t  kPhosCali      = kTRUE;                                 ////< Switch on EP flattening by phos 
+Bool_t  kCentFlat      = kFALSE;                                ///< Switch on Centrality flattening
+Int_t   kDebug         = 0;                                     ///< Do the analysis with this debug level
 
-Bool_t  kUseKinematics = kFALSE;                                //< Use the MC information
-TString kName          = "";                                    //< Name of the analysis, used in created AOD branches and histo container
+Bool_t  kUseKinematics = kFALSE;                                ///< Use the MC information
+TString kName          = "";                                    ///< Name of the analysis, used in created AOD branches and histo container
 
-//
-// Main method calling all the configuration
-// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
-//
+///
+/// Main method calling all the configuration
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data          = "",
                                                              const TString  dataType      = "AOD",
                                                              const TString  calorimeter   = "EMCAL", 
@@ -180,9 +184,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
   return task;
 }
 
-//
-// Configure the class handling the events and cluster/tracks filtering.
-//
+///
+/// Configure the class handling the events and cluster/tracks filtering.
+///
 AliCaloTrackReader * ConfigureReader()
 {
   AliCaloTrackReader * reader = 0;
@@ -402,9 +406,9 @@ AliCaloTrackReader * ConfigureReader()
   return reader;
 }
 
-//
-// Configure the class handling the calorimeter clusters specific methods
-//
+///
+/// Configure the class handling the calorimeter clusters specific methods
+///
 AliCalorimeterUtils* ConfigureCaloUtils()
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
@@ -493,11 +497,11 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   return cu;
 }
 
-//
-// Configure the task doing the pi0 even by event selection via the split method.
-// Here the pairs, clusters, are added to an AOD branch to be used by other analysis
-// unlike in ConfigurePi0Analysis.
-//
+///
+/// Configure the task doing the pi0 even by event selection via the split method.
+/// Here the pairs, clusters, are added to an AOD branch to be used by other analysis
+/// unlike in ConfigurePi0Analysis.
+///
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
                                       Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE,
                                       Int_t nlmMin = 1, Int_t nlmMax = 2, 
@@ -605,10 +609,10 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   return  ana;
 }
 
-//
-// Configure the task doing the pi0 flow.
-// Input AOD branch is from task AliAnaPi0EbE.
-//
+///
+/// Configure the task doing the pi0 flow.
+/// Input AOD branch is from task AliAnaPi0EbE.
+///
 AliAnaPi0Flow* ConfigurePi0Flow()
 {
   AliAnaPi0Flow *ana = new AliAnaPi0Flow();
@@ -624,9 +628,9 @@ AliAnaPi0Flow* ConfigurePi0Flow()
   return ana;
 }
 
-//
-// Set common histograms binning and ranges
-//
+///
+/// Set common histograms binning and ranges
+///
 void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
 {
   // Set common bins for all analysis and MC histograms filling

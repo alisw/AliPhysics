@@ -5,6 +5,7 @@
 
 //_____________________________________________________________________________
 /// \class AliAnaCaloTrackCorrMaker
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Steering class of package CaloTrackCorrelartions
 ///
 /// Steering class for particle (gamma, hadron) identification and correlation 
@@ -68,8 +69,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   void    SwitchOnAODsMaker()              { fMakeAOD = kTRUE      ; }
   void    SwitchOffAODsMaker()             { fMakeAOD = kFALSE     ; }
   	
-  void    SwitchOnDataControlHistograms()  { fFillDataControlHisto = kTRUE  ; }
-  void    SwitchOffDataControlHistograms() { fFillDataControlHisto = kFALSE ; }
+  void    SwitchOnDataControlHistograms(Int_t lev = 1) { fFillDataControlHisto = lev ; }
+  void    SwitchOffDataControlHistograms()             { fFillDataControlHisto = 0   ; }
 
   void    SwitchOnSumw2Histograms()        { fSumw2 = kTRUE        ; }
   void    SwitchOffSumw2Histograms()       { fSumw2 = kFALSE       ; }
@@ -124,7 +125,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
     
   Double_t fScaleFactor ;                            ///<  Scaling factor needed for normalization.
     
-  Bool_t   fFillDataControlHisto;                    ///<  Fill histograms only interesting with data.
+  Int_t    fFillDataControlHisto;                    ///<  Fill histograms only interesting with data. 0 not filled; 1 basic control; 2+ trigger related
     
   Bool_t   fSumw2 ;                                  ///<  Call the histograms method Sumw2() after initialization, off by default, too large memory booking, use carefully
     

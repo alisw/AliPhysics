@@ -168,6 +168,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
       cutnumberPhoton="00200009227302008250400400";
       cutnumberEvent ="00010113";
     }
+    if(trainConfig>=60 && trainConfig<80) fV0ReaderV1->SetImprovedPsiPair(0); //switch off for 8TeV as AODs are used for which improved psipair is not available
+
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;
@@ -820,7 +822,7 @@ if(!cuts.AreValid()){
     mcInputMultHisto              = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
    
     if (doMultiplicityWeighting){
-      cout << "enableling mult weighting" << endl;
+      cout << "enabling mult weighting" << endl;
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
     }
 

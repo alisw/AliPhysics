@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliCaloTrackReader
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Base class for event, clusters and tracks filtering and preparation for the analysis.
 ///
 /// Base class for accessing/filtering data, MonteCarlo, ESD or AOD, of PHOS, EMCAL and 
@@ -483,7 +484,18 @@ public:
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
   
-  Int_t            GetTrackMultiplicity()            const { return fTrackMult            ; }
+  Int_t            GetTrackMultiplicity(Int_t cut=0) const 
+  {  if(cut < 10)  return fTrackMult [cut] ; else return 0 ; }
+  Float_t          GetTrackSumPt(Int_t cut=0) const 
+  {  if(cut < 10)  return fTrackSumPt[cut] ; else return 0 ; }
+
+  void             SetTrackMultiplicityNPtCut(Float_t ncut){ fTrackMultNPtCut = ncut      ; }
+  Int_t            GetTrackMultiplicityNPtCut() const      { return fTrackMultNPtCut      ; }
+
+  void             SetTrackMultiplicityPtCut(Int_t cut, Float_t  pt) {  if(cut < 10)  fTrackMultPtCut[cut] = pt; }
+  Float_t          GetTrackMultiplicityPtCut(Int_t cut=0) const 
+  {  if(cut < 10)  return fTrackMultPtCut[cut] ;  else return 0 ; }
+ 
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut      ; }
   void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta       ; }		
   
@@ -803,9 +815,14 @@ public:
   Int_t            fSmearNLMMin ;                  ///< Do smearing for clusters with at least this value 
   Int_t            fSmearNLMMax ;                  ///< Do smearing for clusters with at maximum this value
   
+  // Track selection and counting
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers.
-  Int_t            fTrackMult          ;           ///<  Track multiplicity.
+  
+  Int_t            fTrackMult[10]      ;           ///<  Track multiplicity, count for different pT cuts
+  Float_t          fTrackSumPt[10]     ;           ///<  Track sum pT, count for different pT cuts
+  Int_t            fTrackMultNPtCut    ;           ///<  Track multiplicty, number of pt cuts
+  Float_t          fTrackMultPtCut[10] ;           ///<  Track multiplicity and sum pt cuts list
   Float_t          fTrackMultEtaCut    ;           ///<  Track multiplicity eta cut.
   
   Bool_t           fReadStack          ;           ///<  Access kine information from stack.
@@ -936,7 +953,7 @@ public:
   // cut control histograms
   
   TList *          fOutputContainer;               //!<! Output container with cut control histograms.
-
+  TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
   TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT

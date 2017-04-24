@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliCaloTrackAODReader
+/// \ingroup CaloTrackCorrelationsBase
 /// \brief Class for event, clusters and tracks filtering and preparation for the AOD analysis.
 ///
 /// Class for accessing/filtering AOD data. Most of the job is done in the mother class

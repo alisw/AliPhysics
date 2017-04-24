@@ -31,6 +31,7 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 
 #include "AliAnalysisTaskEmcalDijetImbalance.h"
 
@@ -62,7 +63,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fDoGeometricalMatching(kFALSE),
   fMatchingJetR(0.2),
   fTrackConstituentThreshold(0),
-  fClusterConstituentThreshold(0)
+  fClusterConstituentThreshold(0),
+  fMBUpscaleFactor(1.)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -95,7 +97,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fDoGeometricalMatching(kFALSE),
   fMatchingJetR(0.2),
   fTrackConstituentThreshold(0),
-  fClusterConstituentThreshold(0)
+  fClusterConstituentThreshold(0),
+  fMBUpscaleFactor(1.)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -201,6 +204,11 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c})";
     fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -0.5, 0.5, 101, 0, TMath::Pi() * 2.02, 75, 0, maxPtBin);
     
+    // pT upscaled
+    histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c})";
+    fHistManager.CreateTH1(histname.Data(), title.Data(), 75, 0, maxPtBin, "s");
+    
     // pT-leading vs. pT
     histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";
@@ -211,20 +219,25 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
     fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/3, 0, 1.5);
     
-    // NEF vs. pT
-    histname = TString::Format("%s/JetHistograms/hNEFVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, 1.0);
+    // Cent vs. NEF vs. pT
+    histname = TString::Format("%s/JetHistograms/hCentVsNEFVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF;Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, 1.0, 50, 0, 100);
     
-    // z-leading vs. pT
-    histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, 1.0);
+    // Cent vs. z-leading (charged) vs. pT
+    histname = TString::Format("%s/JetHistograms/hCentVsZLeadingVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading};Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, 1.0, 50, 0, 100);
     
-    // Nconst vs. pT
-    histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, fMaxPt);
+    // Cent vs. z (charged) vs. pT
+    histname = TString::Format("%s/JetHistograms/hCentVsZVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{z};Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, 1.0, 50, 0, 100);
+
+    // Cent vs. Nconst vs. pT
+    histname = TString::Format("%s/JetHistograms/hCentVsNConstVsPt", jets->GetArrayName().Data());
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents;Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nPtBins, minPtBin, maxPtBin, fMaxPt/5, 0, fMaxPt, 50, 0, 100);
     
     // Allocate background subtraction histograms, if enabled
     if (fComputeBackground) {
@@ -248,6 +261,11 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     }
     
   }
+  
+  // MB downscale factor histogram
+  histname = "Trigger/hMBDownscaleFactor";
+  title = histname + ";Downscale factor;counts";
+  TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 200);
   
 }
 
@@ -587,6 +605,40 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
   AliInfo(Form("Leading hadron threshold (for dijet leading jet): %f GeV", fDijetLeadingHadronPt));
   AliInfo(Form("Momentum balance study: %d", fDoMomentumBalance));
   AliInfo(Form("Geometrical matching study: %d", fDoGeometricalMatching));
+  
+}
+
+/**
+ * This function is called automatically when the run number changes.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::RunChanged(Int_t run){
+  
+  // Get the downscaling factors for MB triggers (to be used to calculate trigger efficiency)
+  
+  // Get instance of the downscale factor helper class
+  AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
+  downscaleOCDB->SetRun(InputEvent()->GetRunNumber());
+  
+  // There are two possible min bias triggers for LHC15o
+  TString triggerNameMB1 = "CINT7-B-NOPF-CENT";
+  TString triggerNameMB2 = "CV0L7-B-NOPF-CENT";
+  TString triggerNameJE = "CINT7EJ1-B-NOPF-CENTNOPMD";
+  
+  // Get the downscale factor for whichever MB trigger exists in the given run
+  std::vector<TString> runtriggers = downscaleOCDB->GetTriggerClasses();
+  Double_t downscalefactor;
+  for (auto i : runtriggers) {
+    if (i.EqualTo(triggerNameMB1) || i.EqualTo(triggerNameMB2)) {
+      downscalefactor = downscaleOCDB->GetDownscaleFactorForTriggerClass(i.Data());
+      break;
+    }
+  }
+  
+  // Store the inverse of the downscale factor, used later to weight the pT spectrum
+  fMBUpscaleFactor = 1/downscalefactor;
+  
+  TString histname = "Trigger/hMBDownscaleFactor";
+  fHistManager.FillTH1(histname.Data(), fMBUpscaleFactor);
   
 }
 
@@ -1142,26 +1194,38 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
       histname = TString::Format("%s/JetHistograms/hPtVsEtaVsPhi", jets->GetArrayName().Data());
       fHistManager.FillTH3(histname.Data(), jet->Eta(), jet->Phi_0_2pi(), corrPt);
       
+      // pT un-downscaled
+      histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
+      fHistManager.FillTH1(histname.Data(), corrPt, fMBUpscaleFactor);
+      
       // pT-leading vs. pT
       histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
       
-      // NEF vs. pT
-      histname = TString::Format("%s/JetHistograms/hNEFVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, jet->NEF());
+      // Cent vs. NEF vs. pT
+      histname = TString::Format("%s/JetHistograms/hCentVsNEFVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH3(histname.Data(), corrPt, jet->NEF(), fCent);
       
-      // z-leading vs. pT
+      // Cent vs. z-leading (charged) vs. pT
       TLorentzVector leadPart;
       jets->GetLeadingHadronMomentum(leadPart, jet);
       Double_t z = GetParallelFraction(leadPart.Vect(), jet);
       if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
-      histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, z);
+      histname = TString::Format("%s/JetHistograms/hCentVsZLeadingVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH3(histname.Data(), corrPt, z, fCent);
       
-      // Nconst vs. pT
-      histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, jet->GetNumberOfConstituents());
-    
+      // Cent vs. z (charged) vs. pT
+      histname = TString::Format("%s/JetHistograms/hCentVsZVsPt", jets->GetArrayName().Data());
+      AliVTrack* track;
+      for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
+        track = static_cast<AliVTrack*>(jet->Track(i));
+        z = track->Pt() / corrPt;
+        fHistManager.FillTH3(histname.Data(), corrPt, z, fCent);
+      }
+      
+      // Cent vs. Nconst vs. pT
+      histname = TString::Format("%s/JetHistograms/hCentVsNConstVsPt", jets->GetArrayName().Data());
+      fHistManager.FillTH3(histname.Data(), corrPt, jet->GetNumberOfConstituents(), fCent);
       
     } //jet loop
     

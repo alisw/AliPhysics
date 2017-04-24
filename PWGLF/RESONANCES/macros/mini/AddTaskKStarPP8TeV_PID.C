@@ -14,13 +14,18 @@ enum eventCutSet { kEvtDefault=0,
 		   kDefaultVtx12,//=2
 		   kDefaultVtx8, //=3
 		   kDefaultVtx5, //=4                    
-		   kMCEvtDefault //=5
+		   kMCEvtDefault, //=5
+		   kSpecial1, //=6                   
+		   kSpecial2, //=7
+		   kNoEvtSel, //=8 
+		   kSpecial3//=9
                  };
 
 enum eventMixConfig { kDisabled = -1,
 		      kMixDefault,//=0 //10 events, Dvz = 1cm, DC = 10
 		      k5Evts, //=1 //5 events, Dvz = 1cm, DC = 10
 		      k5Cent,  //=2 //10 events, Dvz = 1cm, DC = 5
+		      k5Evts5Cent
                     };
 
 
@@ -52,6 +57,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask = AliVEvent::kINT7;//A Khuntia
+  if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp = kTRUE; //
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
@@ -62,6 +68,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
   if (evtCutSetID==eventCutSet::kDefaultVtx5){vtxZcut = 5.0;}//cm
     
   if (evtCutSetID==eventCutSet::kNoPileUpCut){rejectPileUp=kFALSE;}//cm
+  
+  if(evtCutSetID==eventCutSet::kSpecial2) vtxZcut=1.e6;//off
 
   //-------------------------------------------
   //pair cuts
@@ -85,6 +93,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
   if (mixingConfigID == eventMixConfig::k5Evts) {nmix = 5;}
   
   if (mixingConfigID == eventMixConfig::k5Cent) {maxDiffMultMix = 5;}
+  
+  if(mixingConfigID==eventMixConfig::k5Evts5Cent){nmix=5; maxDiffMultMix=5;}
 
   //
   // -- INITIALIZATION ----------------------------------------------------------------------------
@@ -121,7 +131,14 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
    // - 2nd argument --> |Vz| range
    // - 3rd argument --> minimum required number of contributors to vtx
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", vtxZcut, 0, kFALSE);
+   AliRsnCutPrimaryVertex *cutVertex=0;
+    if (evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel){
+    cutVertex = new AliRsnCutPrimaryVertex("cutVertex", vtxZcut, 0, kFALSE);
+    if (evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
+
+     }//vertex loop
+
+
    
    if (isPP && (!isMC)) { 
      cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup  
@@ -129,7 +146,10 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
      //cutVertex->SetCheckZResolutionSPD();//A Khuntia
      //cutVertex->SetCheckDispersionSPD();//A Khuntia
      //cutVertex->SetCheckZDifferenceSPDTrack();//A Khuntia
-  }
+   }
+  
+
+  
    ///////----------AKhuntia----------//////
    /*AliRsnCutEventUtils* cutEventUtils=0;
    cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
@@ -168,6 +188,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
    //
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
+   
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
    cutY->SetRangeD(minYlab, maxYlab);
    
@@ -178,7 +199,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP8TeV_PID.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP8TeV_PID.C");
+   //gROOT->LoadMacro("ConfigKStarPP8TeV_PID.C");
    if (!ConfigKStarPP8TeV_PID(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
    
    

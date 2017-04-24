@@ -1,5 +1,5 @@
 /***************************************************************************
-//            Modified by Pragati Sahoo - 8/3/2017
+//            Modified by Pragati Sahoo - 20/4/2017
 //            Modified by Enrico Fragiacomo - 15/01/2014
 //            Based on AddAnalysisTaskRsnMini
 //
@@ -39,10 +39,11 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Float_t     piPIDCut = 3.0,
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
- Float_t     massTolVeto = 0.006,//here
+ Float_t     massTolVeto = 0.004,//here
  Float_t     pLife = 20,  
  Float_t     radiuslow = 0.5,
  Float_t     radiushigh = 200,    
+ Float_t     MinDCAXY = 0.15,
  Bool_t      Switch = kFALSE,//here
  Float_t     k0sDCA = 0.3,
  Float_t     k0sCosPoinAn = 0.97,
@@ -176,7 +177,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, massTolVeto, pLife, radiuslow, radiushigh, MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

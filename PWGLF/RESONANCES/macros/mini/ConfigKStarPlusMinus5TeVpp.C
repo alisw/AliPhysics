@@ -25,6 +25,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Float_t                 pLife, 
    Float_t                 radiuslow,
    Float_t                 radiushigh,    
+   Float_t                 MinDCAXY,
    Bool_t                  Switch,
    Float_t                 k0sDCA,
    Float_t                 k0sCosPoinAn,
@@ -46,43 +47,12 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    
    cutPi->SetPIDCut(piPIDCut);    // fPIDCut used in IsSelected() after the call to trkQualityCut
 
-   if(enableSys)
-     {
-       AliRsnCutTrackQuality *trkQualityCut = (AliRsnCutTrackQuality*) cutPi->CutQuality();
+   AliRsnCutTrackQuality *trkQualityCut = (AliRsnCutTrackQuality*) cutPi->CutQuality();
 
-       trkQualityCut->SetDefaults2011(kTRUE,1);// psahoo                                                 
-       trkQualityCut->SetPtRange(0.15, 30.0);// psahoo                                                  
-       trkQualityCut->SetEtaRange(-0.8, 0.8);// psahoo
+   trkQualityCut->SetDefaults2011(kTRUE,1);// psahoo                                                                                                    
+   trkQualityCut->SetPtRange(0.15, 30.0);// psahoo                                                                                                      
+   trkQualityCut->SetEtaRange(-0.8, 0.8);// psahoo     
 
-       if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
-       else if(Sys==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
-       else if(Sys==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
-       else if(Sys==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
-       else if(Sys==7){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(5.);}
-       else if(Sys==8){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.3);}
-       else if(Sys==9){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
-       else if(Sys==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
-       else if(Sys==11){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
-       else if(Sys==12){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
-       else if(Sys==13){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(49.);}
-       else if(Sys==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4.);}
-       else if(Sys==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
-       else if(Sys==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
-       else if(Sys==17){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
-       else if(Sys==56){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
-       else if(Sys==58){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
-       else if(Sys==60){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
-       else if(Sys==64){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
-     }
-   else
-     {
-       AliRsnCutTrackQuality *trkQualityCut = (AliRsnCutTrackQuality*) cutPi->CutQuality();
-       trkQualityCut->SetDefaults2011(kTRUE,1);// psahoo              
-       trkQualityCut->SetPtRange(0.15, 30.0);// psahoo                                                  
-       trkQualityCut->SetEtaRange(-0.8, 0.8);// psahoo      
-     }
-   
-   
    
    AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForKStarPlusMinus", AliRsnTarget::kDaughter);
    cutSetPi->AddCut(cutPi);
@@ -100,8 +70,8 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    esdTrackCuts->SetRequireTPCRefit(); // Standard
    esdTrackCuts->SetAcceptKinkDaughters(0); // Standard
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
-   esdTrackCuts->SetMaxChi2PerClusterTPC(5.);
-   esdTrackCuts->SetMinDCAToVertexXY(0.06); // 0.06 cm Standard   
+   esdTrackCuts->SetMaxChi2PerClusterTPC(4.);
+   esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); // 0.06 cm Standard   
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
    //
    /////////////////////////////////////////////////
@@ -115,12 +85,64 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
    cutK0s->SetMaxRapidity(0.5);
    cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
-   cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
+   //cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
    cutK0s->SetSwitch(Switch);    
    cutK0s->SetfLife(pLife); 
    cutK0s->SetfLowRadius(radiuslow); 
    cutK0s->SetfHighRadius(radiushigh);
    //
+
+   if(enableSys)
+     {
+
+       if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
+       else if(Sys==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
+       else if(Sys==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
+       else if(Sys==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
+       else if(Sys==7){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(5.);}
+       else if(Sys==8){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.3);}
+       else if(Sys==9){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
+       else if(Sys==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
+       else if(Sys==11){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
+       else if(Sys==12){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
+       else if(Sys==13){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(49.);}
+       else if(Sys==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4.);}
+       else if(Sys==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
+       else if(Sys==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
+       else if(Sys==17){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
+       else if(Sys==18){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
+       else if(Sys==19){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
+       else if(Sys==20){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
+       else if(Sys==21){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
+     
+       //K0S Systematic cuts............................                                                                                                   
+
+       else if(Sys==31){cutK0s->SetPIDCutPion(pi_k0s_PIDCut-1);}
+       else if(Sys==32){cutK0s->SetPIDCutPion(pi_k0s_PIDCut+1);}
+       else if(Sys==33){cutK0s->SetMaxDaughtersDCA(k0sDaughDCA-0.1);}
+       else if(Sys==34){cutK0s->SetMaxDaughtersDCA(k0sDaughDCA+0.1);}
+       else if(Sys==35){cutK0s->SetMaxDCAVertex(k0sDCA-0.25);}
+       else if(Sys==36){cutK0s->SetMaxDCAVertex(k0sDCA-0.5);}
+       else if(Sys==37){cutK0s->SetMaxDCAVertex(k0sDCA+0.25);}
+       else if(Sys==38){cutK0s->SetMaxDCAVertex(k0sDCA+0.5);}
+       else if(Sys==39){cutK0s->SetMinCosPointingAngle(k0sCosPoinAn-0.01);}
+       else if(Sys==40){cutK0s->SetMinCosPointingAngle(k0sCosPoinAn-0.02);}
+       else if(Sys==41){cutK0s->SetMinCosPointingAngle(k0sCosPoinAn+0.01);}
+       else if(Sys==42){cutK0s->SetMinCosPointingAngle(k0sCosPoinAn+0.02);}
+       else if(Sys==43){cutK0s->SetTolerance(massTol-0.01);}
+       else if(Sys==44){cutK0s->SetTolerance(massTol-0.02);}
+       else if(Sys==45){cutK0s->SetTolerance(massTol+0.01);}
+       else if(Sys==46){cutK0s->SetTolerance(massTol+0.02);}
+       else if(Sys==47){cutK0s->SetfLife(pLife-8);}
+       else if(Sys==48){cutK0s->SetfLife(pLife+10);}
+       else if(Sys==49){cutK0s->SetfLife(pLife+20);}
+       else if(Sys==50){cutK0s->SetfLowRadius(radiuslow-0.1);}
+       else if(Sys==51){cutK0s->SetfLowRadius(radiuslow-0.2);}
+       else if(Sys==52){cutK0s->SetfLowRadius(radiuslow+0.1);}
+       else if(Sys==53){cutK0s->SetfLowRadius(radiuslow+0.2);}
+       else if(Sys==54){cutK0s->SetfHighRadius(100);}                                                                                                     
+}
+
    AliRsnCutSet *cutSetK0s = new AliRsnCutSet("setK0s", AliRsnTarget::kDaughter);
    cutSetK0s->AddCut(cutK0s);
    cutSetK0s->SetCutScheme(cutK0s->GetName());

@@ -5,6 +5,7 @@
 
 //___________________________________________________________________________
 /// \class AliAnaGeneratorKine
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Get trigger particles/partons/jets and correlations at generator level.
 ///
 /// Do direct photon/decay photon (eta, pi0, other)/pi0/eta isolation

@@ -17,10 +17,6 @@
 //
 ****************************************************************************/
 
-
-
-
-
 enum eventCutSet { kDefaultVtx = 0,
 		   kDefaultVtx12,//=1
 		   kDefaultVtx8 //=2
@@ -50,7 +46,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    Bool_t      useMixLS = 0,
    Int_t       nmix = 5,
    Float_t     maxDiffVzMix = 1.0,
-   Float_t     maxDiffMultMix = 5.0,
+   Float_t     maxDiffMultMix = 10.0,
    TString     outNameSuffix = "Default"
 )
 
@@ -100,9 +96,6 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
      }
    */
 
-   //   task->UseMultiplicity("QUALITY");
-
-   
    if (isPP) {
      //     task->UseMultiplicity("QUALITY");
      if (MultBins == 1) task->UseMultiplicity("AliMultSelection_V0M"); // for multiplicity percentile
@@ -111,7 +104,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    }
    else
      task->UseCentrality("V0M");   
-   
+
 
 
 
@@ -208,43 +201,14 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    cutsPair->AddCut(cutY);
    cutsPair->SetCutScheme(cutY->GetName());
    
-
-   //   AliRsnValuePair * openangle = new AliRsnValuePair("openangle", AliRsnValuePair::kDipAngle);
-   //   openangle->DipAngle(1);
-
-//   AliRsnMiniPair * pairangle = new AliRsnMiniPair();
-//   Double_t openangle = pairangle->PhiV(isMC);
-//   cout<<"--------- Opening Angle ----------------- "<<openangle<<endl;
-
-
-//     AliRsnCutMiniPair *cutPhiV = new AliRsnCutMiniPair("cutPhiV", AliRsnCutMiniPair::kPhiVRange);
-     AliRsnCutMiniPair *cutPhiV = new AliRsnCutMiniPair("cutPhiV", 7);
-     cutPhiV->SetRangeD(0.0, 360);
-
-    AliRsnCutSet *cutsPhiV = new AliRsnCutSet("pairCutsPhiV", AliRsnTarget::kMother);
-    cutsPhiV->AddCut(cutPhiV);
-    cutsPhiV->SetCutScheme(cutPhiV->GetName());
-
-
-
-
-
-
-   //   AliRsnMiniOutput *outangle = task->CreateOutput("OpeningAngle", "HIST", "Daughter");
-   //   if (isPP && !MultBins)   outangle->AddAxis(openangle, 300, 0.0, 300.0);
-   //   else  outMult->AddAxis(openangle, 110, 0.0, 110.0);
-
-
-
-
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
    
    //for systematic checks
      {
-       //       gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
-       //gROOT->LoadMacro("ConfigureLstar13TeVpp.C");
+       //gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
+       //   gROOT->LoadMacro("ConfigureLstar13TeVpp.C");
        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp.C");
        if (!ConfigureLstar13TeVpp(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly, signedPdg, monitorOpt, useCrossedRows, yaxisVar ,useMixLS)) 
 return 0x0;  

@@ -3,6 +3,7 @@
 
 //______________________________________________________
 /// \class AliAnalysisTaskESDfilterEMCALEventSelect
+/// \ingroup EMCALPerformance 
 /// \brief Filter ESDs events into AODs with some significant calorimeter signal
 ///
 /// Filter the ESD Events to AODs, only those events with

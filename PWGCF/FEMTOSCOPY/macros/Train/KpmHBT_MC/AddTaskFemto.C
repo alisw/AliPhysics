@@ -47,7 +47,9 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
   //  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters);
   //local------<
   //train::::::::::::::::::::::::::::>
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
+  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
+  // line above rerurn error in LEGO Train, try to remove last argument:
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters);//20apr2017
   //train::::::::::::::::::::::::::::<
   mgr->AddTask(taskfemto);
 

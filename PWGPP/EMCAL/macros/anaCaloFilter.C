@@ -1,5 +1,6 @@
 //--------------------------------------------------
 /// \file anaCaloFilter.C
+/// \ingroup EMCALPerformanceMacros
 /// \brief Example of execution macro to run the Calorimeter filter task locally or on the grid (not plugin)
 ///
 /// Basic example macro to do Calorimeters filtering

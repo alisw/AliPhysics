@@ -3,6 +3,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
+//_________________________________________________________________________
+/// \class AliAnaPi0Flow
+/// \ingroup CaloTrackCorrelationsAnalysis 
+/// \brief Flow analysis
+///
+/// Class for the analysis of pi0 and eta flow.
+///
+/// \author Qyie Shou, <qiye.shou@cern.ch> Wuhan 
+///_________________________________________________________________________
+
 // Root
 class TList;
 class TH3F;
@@ -26,7 +36,8 @@ class AliEPFlattener;
 // Analysis
 #include "AliAnaCaloTrackCorrBaseClass.h"
 
-class AliAnaPi0Flow : public AliAnaCaloTrackCorrBaseClass {
+class AliAnaPi0Flow : public AliAnaCaloTrackCorrBaseClass 
+{
   
  public:   
   

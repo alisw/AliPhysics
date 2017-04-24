@@ -17,6 +17,7 @@
 #pragma link C++ class AliVertexingHFUtils+;
 #pragma link C++ class AliHFSystErr+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
+#pragma link C++ class AliRDHFCutsB0toDStarPi+;
 #pragma link C++ class AliRDHFCutsJpsitoee+;
 #pragma link C++ class AliRDHFCutsDplustoKpipi+;
 #pragma link C++ class AliRDHFCutsDplustoK0spi+;
@@ -34,6 +35,7 @@
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskMEVertexingHF+;
+#pragma link C++ class AliAnalysisTaskSEB0toDStarPi+;
 #pragma link C++ class AliAnalysisTaskSESelectHF+;
 #pragma link C++ class AliAnalysisTaskSECleanupVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSECompareHF+;
@@ -55,6 +57,7 @@
 #pragma link C++ class AliAnalysisTaskSEXic2eleXifromAODtracks+;
 #pragma link C++ class AliAnalysisTaskSEDvsEventShapes+;
 #pragma link C++ class AliAnalysisTaskSEB0toDminuspi+;
+#pragma link C++ class AliAnalysisTaskSEDstoK0sK+;
 #pragma link C++ class AliCFVertexingHF+;
 #pragma link C++ class AliCFVertexingHF2Prong+;
 #pragma link C++ class AliCFVertexingHF3Prong+;
@@ -68,6 +71,7 @@
 #pragma link C++ class AliAnalysisTaskSEDStarCharmFraction+;
 #pragma link C++ class AliAnalysisTaskSESignificance+;
 #pragma link C++ class AliAnalysisTaskSEHFQA+;
+#pragma link C++ class AliAnalysisTaskTrackingSysPropagation+;
 #pragma link C++ class AliMultiDimVector+;
 #pragma link C++ class AliSignificanceCalculator+;
 #pragma link C++ class AliHFMassFitter+;
@@ -81,6 +85,7 @@
 #pragma link C++ class AliEventPlaneResolutionHandler+;
 #pragma link C++ class AliAnalysisTaskSEHFv2+;
 #pragma link C++ class AliAnalysisTaskSEHFvn+;
+#pragma link C++ class AliAnalysisTaskHFv1+;
 #pragma link C++ class AliAnalysisTaskFlowD2H+;
 #pragma link C++ class AliHFAfterBurner+;
 #pragma link C++ class AliAnalysisTaskSELambdacUp+;

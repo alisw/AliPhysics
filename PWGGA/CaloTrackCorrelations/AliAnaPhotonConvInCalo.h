@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaPhotonConvInCalo
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Conversions pairs clusters analysis.
 ///
 /// Conversions pairs clusters analysis.

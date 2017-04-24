@@ -1,5 +1,13 @@
+/// \file AddTaskEmcalAlig
+/// \ingroup EMCALPerformanceMacros
+/// \brief Configuration analysis task on alignment checks.
+///
+/// The configuration of alignment checks analysis
+///
+/// \author Henrique Zanoli <Henrique.Zanoli@cern.ch>, University of Sao Paulo and Utrecht University
+///
 
-AliAnalysisTaskEmcalAlig* AddTaskEmcalAlig(
+AliAnalysisTaskEMCALAlig* AddTaskEmcalAlig(
                                            const char *ntracks            = "usedefault",
                                            const char *nclusters          = "usedefault",
                                            const char* ncells             = "usedefault",
@@ -113,7 +121,7 @@ AliAnalysisTaskEmcalAlig* AddTaskEmcalAlig(
         }
     }
     
-    TString name("AliAnalysisTaskEmcalAlig");
+    TString name("AliAnalysisTaskEMCALAlig");
     if (!trackName.IsNull()) {
         name += "_";
         name += trackName;
@@ -131,7 +139,7 @@ AliAnalysisTaskEmcalAlig* AddTaskEmcalAlig(
         name += suffix;
     }
     
-    AliAnalysisTaskEmcalAlig* sampleTask = new AliAnalysisTaskEmcalAlig(name);
+    AliAnalysisTaskEMCALAlig* sampleTask = new AliAnalysisTaskEMCALAlig(name);
     sampleTask->SetCaloCellsName(cellName);
     sampleTask->SetVzRange(-10,10);
     

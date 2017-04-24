@@ -48,6 +48,7 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
    fSel2(0),
    fMaxNSisters(-1),
    fCheckP(kFALSE),
+   fCheckDecay(kTRUE),
    fCheckFeedDown(kFALSE),   
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
@@ -81,6 +82,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
    fSel2(0),
    fMaxNSisters(-1),
    fCheckP(kFALSE),
+   fCheckDecay(kTRUE),
    fCheckFeedDown(kFALSE),   
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
@@ -114,6 +116,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
    fSel2(0),
    fMaxNSisters(-1),
    fCheckP(kFALSE),
+   fCheckDecay(kTRUE),
    fCheckFeedDown(kFALSE),   
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
@@ -196,6 +199,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    fSel2(0),
    fMaxNSisters(-1),
    fCheckP(kFALSE),
+   fCheckDecay(copy.fCheckDecay),
    fCheckFeedDown(kFALSE),   
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
@@ -244,6 +248,7 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
    fSel2.Set(0);
    fMaxNSisters = copy.fMaxNSisters;
    fCheckP = copy.fCheckP;
+   fCheckDecay = copy.fCheckDecay;
    fCheckFeedDown = copy.fCheckFeedDown;
    fOriginDselection = copy.fOriginDselection;
    fKeepDfromB = copy.fOriginDselection;
@@ -559,7 +564,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
                decayMatch = kTRUE;
             if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
                decayMatch = kTRUE;
-            if (!decayMatch) continue;
+            if (fCheckDecay && !decayMatch) continue;
 	    if ( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;
 	    if ( fCheckP &&(TMath::Abs(fPair.PmotherX()-(p1->Px(1)+p2->Px(1)))/(TMath::Abs(fPair.PmotherX())+1.e-13)) > 0.00001 && 	  
 		          (TMath::Abs(fPair.PmotherY()-(p1->Py(1)+p2->Py(1)))/(TMath::Abs(fPair.PmotherY())+1.e-13)) > 0.00001 &&

@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaRandomTrigger
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Gerenate a random trigger.
 ///
 /// Generate a random trigger, input for other analysis

@@ -1225,25 +1225,28 @@ void AlidNdPtAnalysis::Init()
 
     if (fIsPythia)
     {
-        fHistoTrials = new TH1D("fHistTrials","fHistTrials",11,0,11);
+        fHistoTrials = new TH1D("fHistTrials","fHistTrials",21,0,21);
         fHistoTrials->GetXaxis()->SetTitle("p_{T} hard bin");
         fHistoTrials->GetYaxis()->SetTitle("trials");
         fHistoTrials->Sumw2();
 
-        fHEvents = new TH1D("fHistEvents", "fHistEvents", 11, 0, 11);
+        fHEvents = new TH1D("fHistEvents", "fHistEvents", 21, 0, 21);
         fHEvents->GetXaxis()->SetTitle("p_{T} hard bin");
         fHEvents->GetYaxis()->SetTitle("total events");
         fHEvents->Sumw2();
 
-        fProfXsection = new TProfile("fProfXsection", "fProfXsection", 11, 0, 11);
+        fProfXsection = new TProfile("fProfXsection", "fProfXsection", 21, 0, 21);
         fProfXsection->GetXaxis()->SetTitle("p_{T} hard bin");
         fProfXsection->GetYaxis()->SetTitle("xsection");
         fProfXsection->Sumw2();
 
-        const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-        const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+        const Double_t ptHardLo[21] = {0, 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235};
+        const Double_t ptHardHi[21] = {5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, -1};
 
-        for (Int_t i = 1; i < 12; i++) {
+        //const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+        //const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+
+        for (Int_t i = 1; i <= 21; i++) {
             fHistoTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
             fProfXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
             fHEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
@@ -1309,12 +1312,14 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
         Int_t nevents = tree->GetEntriesFast();
         fXsection = fPythiaHeader->GetXsection();
         fNTrials = fPythiaHeader->Trials();
-
+	fPtHardbin = fPythiaHeader->GetPtHard();
+	
         Float_t ftrials=0;  
         Int_t   pthardbin   = 0;   
-        PythiaInfoFromFile(curfile->GetName(), ftrials, pthardbin);
+	
+        PythiaInfoFromFile(curfile->GetName(),ftrials, pthardbin);
         Bool_t testing=0;
-
+	
         fHistoTrials->Fill(pthardbin, fNTrials);
         fProfXsection->Fill(pthardbin, fXsection);
         fHEvents->Fill(pthardbin, nevents);
@@ -1636,13 +1641,18 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
                 // only negative charged 
                 if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
                     continue;
-
+		Bool_t tofOK=kTRUE;
                 if(IsUseTOFBunchCrossing()){
                     //       Int_t TOFBunchCrossing = track->GetTOFBunchCrossing(esdEvent->GetMagneticField(),kTRUE); 
                     //       if(TOFBunchCrossing != 0) continue; 
+		   /*
                     if(TMath::Abs(track->GetTOFsignalDz()>10)) continue;
                     if((track->GetTOFsignal())<12000) continue;
-                    if((track->GetTOFsignal())>25000) continue; 
+                    if((track->GetTOFsignal())>25000) continue; */
+
+		   if( TMath::Abs(track->GetTOFExpTDiff())>12.5) tofOK=kFALSE;
+		   if(!tofOK) continue;
+		    
                 }
 
                 //Rejecting Kink Mothers
@@ -3321,6 +3331,8 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
                         TString strPthard(file);
                         strPthard.Remove(strPthard.Last('/'));
                         strPthard.Remove(strPthard.Last('/'));
+			strPthard.Remove(strPthard.Last('/'));
+		
 
                         if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
                         strPthard.Remove(0,strPthard.Last('/')+1);

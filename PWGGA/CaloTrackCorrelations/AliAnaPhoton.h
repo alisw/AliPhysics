@@ -6,6 +6,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaPhoton
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Filter EMCal/PHOS clusters for photon analysis.
 ///
 /// Class for the photon identification.
@@ -84,6 +85,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnOnlySimpleSSHistoFill()            { fFillOnlySimpleSSHisto = kTRUE  ; }
   void         SwitchOffOnlySimpleHistoFill()             { fFillOnlySimpleSSHisto = kFALSE ; }
+  
+  void         SwitchOnFillTrackMultiplicityHistograms()  { fFillTrackMultHistograms = kTRUE  ; }
+  void         SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
   void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut);
   
@@ -197,6 +201,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
     
   Bool_t   fFillSSNLocMaxHisto;                     ///<  Fill shower shape histograms for different NLM
   
+  Bool_t   fFillTrackMultHistograms;             ///<  Fill cluster/photon pT spectrum histograms vs track multiplicity or track sum pt
+
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
@@ -235,6 +241,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtCentralityPhoton    ;                  //!<! centrality  vs photon pT
   TH2F * fhPtEventPlanePhoton    ;                  //!<! event plane vs photon pT
   
+  TH2F * fhPtPhotonNTracks    [10];                 //!<! Track multiplicity distribution per event vs track pT, different pT cuts
+  TH2F * fhPtPhotonSumPtTracks[10];                 //!<! Track sum pT distribution per event vs track pT, different pT cuts  
+
   // Shower shape
   TH2F * fhNLocMax;                                 //!<! number of maxima in selected clusters
 
@@ -377,6 +386,19 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTrackMatchedDEtaNeg[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts
   TH2F * fhTrackMatchedDPhiNeg[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts
   TH2F * fhTrackMatchedDEtaDPhiNeg[2]    ;          //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before photon cuts
+
+  TH2F * fhTrackMatchedDEtaTrackPt[2]    ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDPhiTrackPt[2]    ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhiTrackPt[2];          //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before
+  
+  TH2F * fhTrackMatchedDEtaPosTrackPt[2] ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDPhiPosTrackPt[2] ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhiPosTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before
+  
+  TH2F * fhTrackMatchedDEtaNegTrackPt[2] ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDPhiNegTrackPt[2] ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhiNegTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before photon cuts
+
   
   TH2F * fhTrackMatchedDEtaTRD[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
   TH2F * fhTrackMatchedDPhiTRD[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
@@ -556,7 +578,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,45) ;
+  ClassDef(AliAnaPhoton,46) ;
   /// \endcond
 
 } ;

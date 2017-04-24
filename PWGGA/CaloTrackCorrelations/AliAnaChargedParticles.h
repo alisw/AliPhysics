@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaChargedParticles
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Track selection for correlation analysis.
 ///
 /// Class for track selection and identification (not done now)
@@ -57,16 +58,26 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
 
   void    SwitchOnFillEtaPhiRegionsHistograms()  { fFillEtaPhiRegionHistograms = kTRUE  ; }
   void    SwitchOffFillEtaPhiRegionsHistograms() { fFillEtaPhiRegionHistograms = kFALSE ; }
+
+  void    SwitchOnFillTrackMultiplicityHistograms()  { fFillTrackMultHistograms = kTRUE  ; }
+  void    SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
   Bool_t  fFillVertexBC0Histograms;         ///<  Fill histograms for tracks with vertex BC=0 or not related histograms
   Bool_t  fFillEtaPhiRegionHistograms;      ///<  Fill track pT spectrum histograms in different eta-phi windows
+  Bool_t  fFillTrackMultHistograms;      ///<  Fill track pT spectrum histograms vs track multiplicity or track sum pt
+  
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   
   //Histograms
-  TH1F * fhNtracks;                         //!<! Track multiplicity distribution
+  TH2F * fhNTracks;                         //!<! Track multiplicity distribution per event, different pT cuts
+  TH2F * fhSumPtTracks;                     //!<! Track sum pT distribution per event, different pT cuts
+  
+  TH2F * fhPtTrackNTracks    [10];          //!<! Track multiplicity distribution per event vs track pT, different pT cuts
+  TH2F * fhPtTrackSumPtTracks[10];          //!<! Track sum pT distribution per event vs track pT, different pT cuts  
+  
   TH1F * fhPt;                              //!<! pT distribution
   TH1F * fhPtNoCut;                         //!<! pT distribution, no cut
   TH1F * fhPtCutDCA;                        //!<! pT distribution, Apply DCA cut
@@ -175,7 +186,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaChargedParticles,11) ;
+  ClassDef(AliAnaChargedParticles,12) ;
   /// \endcond
 
 } ;

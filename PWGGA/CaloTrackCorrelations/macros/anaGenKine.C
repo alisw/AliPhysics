@@ -1,11 +1,12 @@
 /// \file anaGenKine.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Example of execution macro for analysis at generation level
 ///
 /// Example of simple analysis of a single file
 /// accessing directly the MC kinematics information
 /// nothing else.
 /// Execute the analysis in class AliAnaGeneratorKine
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 //___________________________

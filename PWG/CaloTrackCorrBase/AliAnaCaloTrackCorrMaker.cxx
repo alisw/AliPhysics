@@ -47,7 +47,7 @@ fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
-fFillDataControlHisto(kTRUE), fSumw2(0),
+fFillDataControlHisto(1),     fSumw2(0),
 fCheckPtHard(0),
 // Control histograms
 fhNEventsIn(0),               fhNEvents(0),
@@ -367,7 +367,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
 //___________________________________________________________
 void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
 {
-  if(!fFillDataControlHisto) return;
+  if ( fFillDataControlHisto < 2 ) return;
   
   Int_t  triggerBC   = fReader->GetTriggerClusterBC() ;
   Bool_t exotic      = fReader->IsExoticEvent();
@@ -494,11 +494,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
   
-  fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -4 , 4  ) ;
+  fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -1 , 1  ) ;
   fhXVertex->SetXTitle("v_{x} (cm)");
   fOutputContainer->Add(fhXVertex);
   
-  fhYVertex      = new TH1F("hYVertex", " Y vertex distribution"   , 200 , -4 , 4  ) ;
+  fhYVertex      = new TH1F("hYVertex", " Y vertex distribution"   , 200 , -1 , 1  ) ;
   fhYVertex->SetXTitle("v_{y} (cm)");
   fOutputContainer->Add(fhYVertex);
   
@@ -514,7 +514,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
   fOutputContainer->Add(fhEventPlaneAngle) ;
 
-  fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events", 2000 , 0 , 2000) ;
+  fhTrackMult    = new TH1F
+  ("hTrackMult", 
+   Form("Number of tracks per event with #it{p}_{T} > %2.2f GeV/#it{c} and |#eta|<%2.2f",
+        GetReader()->GetTrackMultiplicityPtCut(),GetReader()->GetTrackMultiplicityEtaCut()), 
+   2000 , 0 , 2000) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
   
@@ -547,191 +551,210 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhEventPlaneAngleWeighted->SetXTitle("EP angle (rad)");
     fOutputContainer->Add(fhEventPlaneAngleWeighted) ;
       
-    fhTrackMultWeighted       = new TH1F("hTrackMultWeighted", "Number of tracks per events weighted by centrality", 2000 , 0 , 2000) ;
+    fhTrackMultWeighted       = new TH1F
+    ("hTrackMultWeighted", 
+     Form("Number of tracks per weighted event with #it{p}_{T} > %2.2f GeV/#it{c} and |#eta|<%2.2f",
+          GetReader()->GetTrackMultiplicityPtCut(),GetReader()->GetTrackMultiplicityEtaCut()), 
+     2000 , 0 , 2000) ;
     fhTrackMultWeighted->SetXTitle("# tracks");
     fOutputContainer->Add(fhTrackMultWeighted);
   }
     
   if(fFillDataControlHisto)
   {
-    fhNExoticEvents      = new TH1F("hNExoticEvents",   "Number of analyzed events triggered by exotic cluster"     , 1 , 0 , 1  ) ;
-    fhNExoticEvents->SetYTitle("# exotic events");
-    fOutputContainer->Add(fhNExoticEvents);
-    
-    fhNEventsNoTriggerFound      = new TH1F("hNEventsNoTriggerFound",   "Number of analyzed events triggered but no trigger found"     , 1 , 0 , 1  ) ;
-    fhNEventsNoTriggerFound->SetYTitle("# exotic events");
-    fOutputContainer->Add(fhNEventsNoTriggerFound);
-    
-    
-    Int_t   nbin   = 11;
-    Float_t minbin =-5.5;
-    Float_t maxbin = 5.5;
-    Int_t  labelshift = 6;
-    
-    fhClusterTriggerBCEventBC      = new TH2F("hClusterTriggerBCEventBC", "Found trigger BC and  Event BC",
-                                              nbin , minbin ,maxbin,4,0, 4) ;
-    fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
-    for(Int_t i = 0; i < 4; i++)
-      fhClusterTriggerBCEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-    fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fhClusterTriggerBCEventBC->SetYTitle("Event BC%4");
-    fOutputContainer->Add(fhClusterTriggerBCEventBC);
-    
-    fhClusterTriggerBCExoticEventBC      = new TH2F("hClusterTriggerBCExoticEventBC", "Found exotic trigger BC and  Event BC",
-                                                    nbin , minbin ,maxbin,4,1, 4) ;
-    for(Int_t i = 0; i < 4; i++)
-      fhClusterTriggerBCExoticEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-    fhClusterTriggerBCExoticEventBC->SetXTitle("cluster trigger BC");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCExoticEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fhClusterTriggerBCExoticEventBC->SetYTitle("Event BC%4");
-    fOutputContainer->Add(fhClusterTriggerBCExoticEventBC);
-    
-    fhClusterTriggerBCEventBCUnMatch      = new TH2F("hClusterTriggerBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
-                                                     nbin , minbin ,maxbin,4,1, 4) ;
-    for(Int_t i = 0; i < 4; i++)
-      fhClusterTriggerBCEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-    fhClusterTriggerBCEventBCUnMatch->SetXTitle("cluster trigger BC");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fhClusterTriggerBCEventBCUnMatch->SetYTitle("Event BC%4");
-    fOutputContainer->Add(fhClusterTriggerBCEventBCUnMatch);
-    
-    fhClusterTriggerBCExoticEventBCUnMatch      = new TH2F("hClusterTriggerExoticBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
-                                                           nbin , minbin ,maxbin,4,1, 4) ;
-    for(Int_t i = 0; i < 4; i++)
-      fhClusterTriggerBCExoticEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-    fhClusterTriggerBCExoticEventBCUnMatch->SetXTitle("cluster trigger BC");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCExoticEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fhClusterTriggerBCExoticEventBCUnMatch->SetYTitle("Event BC%4");
-    fOutputContainer->Add(fhClusterTriggerBCExoticEventBCUnMatch);
-    
-    fhClusterTriggerBC              = new TH1F("hClusterTriggerBC",
-                                               "Number of analyzed events triggered by a cluster in a given BC",
-                                               nbin , minbin ,maxbin) ;
-    fhClusterTriggerBC->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBC);
-    
-    fhClusterTriggerBCExotic        = new TH1F("hClusterTriggerBCExotic",
-                                               "Number of analyzed events triggered by a exotic cluster in a given BC",
-                                               nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCExotic->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCExotic);
-    
-    
-    fhClusterTriggerBCBadCell         = new TH1F("hClusterTriggerBCBadCell",
-                                                 "Number of analyzed events triggered by a bad cell in a given BC",
-                                                 nbin , minbin ,maxbin) ;
-    
-    fhClusterTriggerBCBadCell->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCBadCell->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCBadCell);
-    
-    fhClusterTriggerBCBadCellExotic    = new TH1F("hClusterTriggerBCBadCellExotic",
-                                                  "Number of analyzed events triggered by a bad cell & exotic cluster in a given BC",
-                                                  nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCBadCellExotic->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCBadCellExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCBadCellExotic);
-    
-    fhClusterTriggerBCBadCluster           = new TH1F("hClusterTriggerBCBadCluster",
-                                                      "Number of analyzed events triggered by a bad cluster in a given BC",
-                                                      nbin , minbin ,maxbin) ;
-    
-    fhClusterTriggerBCBadCluster->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCBadCluster->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCBadCluster);
-    
-    
-    fhClusterTriggerBCBadClusterExotic    = new TH1F("hClusterTriggerBCBadClusterExotic",
-                                                     "Number of analyzed events triggered by a bad cluster & exotic cluster in a given BC",
-                                                     nbin , minbin ,maxbin) ;
-    
-    fhClusterTriggerBCBadClusterExotic->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCBadClusterExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCBadClusterExotic);
-    
-    fhClusterTriggerBCUnMatch       = new TH1F("hClusterTriggerBCUnMatch",
-                                               "Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC",
-                                               nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCUnMatch->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCUnMatch);
-    
-    fhClusterTriggerBCExoticUnMatch = new TH1F("hClusterTriggerBCExoticUnMatch",
-                                               "Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC",
-                                               nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCExoticUnMatch->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCExoticUnMatch);
-    
-    
-    fhClusterTriggerBCBadCellUnMatch    = new TH1F("hClusterTriggerBCBadCellUnMatch",
-                                                   "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
-                                                   nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCBadCellUnMatch->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCBadCellUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCBadCellUnMatch);
-    
-    
-    fhClusterTriggerBCBadCellExoticUnMatch = new TH1F("hClusterTriggerBCBadCellExoticUnMatch",
-                                                      "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
-                                                      nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCBadCellExoticUnMatch->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCBadCellExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCBadCellExoticUnMatch);
-    
-    
-    fhClusterTriggerBCBadClusterUnMatch    = new TH1F("hClusterTriggerBCBadClusterUnMatch",
-                                                      "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
-                                                      nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCBadClusterUnMatch->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCBadClusterUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCBadClusterUnMatch);
-    
-    
-    fhClusterTriggerBCBadClusterExoticUnMatch = new TH1F("hClusterTriggerBCBadClusterExoticUnMatch",
-                                                         "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
-                                                         nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCBadClusterExoticUnMatch->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCBadClusterExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCBadClusterExoticUnMatch);
-    
-    TString rematch[] = {"OpenTime","CheckNeighbours","Both"};
-    for(Int_t j = 0; j < 3; j++)
+    // Trigger and exoticity related histograms
+    if(fFillDataControlHisto > 1)
     {
-      fhClusterTriggerBCUnMatchReMatch[j]       = new TH1F(Form("hClusterTriggerBCUnMatch_ReMatch_%s",rematch[j].Data()),
-                                                           Form("Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
-                                                           nbin , minbin ,maxbin) ;
-      fhClusterTriggerBCUnMatchReMatch[j]->SetYTitle("# events");
-      for(Int_t i = 1; i < 12; i++)
-        fhClusterTriggerBCUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-      fOutputContainer->Add(fhClusterTriggerBCUnMatchReMatch[j]);
+      fhNExoticEvents      = new TH1F("hNExoticEvents",   "Number of analyzed events triggered by exotic cluster"     , 1 , 0 , 1  ) ;
+      fhNExoticEvents->SetYTitle("# exotic events");
+      fOutputContainer->Add(fhNExoticEvents);
       
-      fhClusterTriggerBCExoticUnMatchReMatch[j] = new TH1F(Form("hClusterTriggerBCExoticUnMatch_ReMatch_%s",rematch[j].Data()),
-                                                           Form("Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
-                                                           nbin , minbin ,maxbin) ;
-      fhClusterTriggerBCExoticUnMatchReMatch[j]->SetYTitle("# events");
+      fhNEventsNoTriggerFound      = new TH1F("hNEventsNoTriggerFound",   "Number of analyzed events triggered but no trigger found"     , 1 , 0 , 1  ) ;
+      fhNEventsNoTriggerFound->SetYTitle("# exotic events");
+      fOutputContainer->Add(fhNEventsNoTriggerFound);
+      
+      Int_t   nbin   = 11;
+      Float_t minbin =-5.5;
+      Float_t maxbin = 5.5;
+      Int_t  labelshift = 6;
+      
+      fhClusterTriggerBCEventBC      = new TH2F("hClusterTriggerBCEventBC", "Found trigger BC and  Event BC",
+                                                nbin , minbin ,maxbin,4,0, 4) ;
+      fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
+      for(Int_t i = 0; i < 4; i++)
+        fhClusterTriggerBCEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
+      fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
       for(Int_t i = 1; i < 12; i++)
-        fhClusterTriggerBCExoticUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-      fOutputContainer->Add(fhClusterTriggerBCExoticUnMatchReMatch[j]);
+        fhClusterTriggerBCEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fhClusterTriggerBCEventBC->SetYTitle("Event BC%4");
+      fOutputContainer->Add(fhClusterTriggerBCEventBC);
+      
+      fhClusterTriggerBCExoticEventBC      = new TH2F("hClusterTriggerBCExoticEventBC", "Found exotic trigger BC and  Event BC",
+                                                      nbin , minbin ,maxbin,4,1, 4) ;
+      for(Int_t i = 0; i < 4; i++)
+        fhClusterTriggerBCExoticEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
+      fhClusterTriggerBCExoticEventBC->SetXTitle("cluster trigger BC");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCExoticEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fhClusterTriggerBCExoticEventBC->SetYTitle("Event BC%4");
+      fOutputContainer->Add(fhClusterTriggerBCExoticEventBC);
+      
+      fhClusterTriggerBCEventBCUnMatch      = new TH2F("hClusterTriggerBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
+                                                       nbin , minbin ,maxbin,4,1, 4) ;
+      for(Int_t i = 0; i < 4; i++)
+        fhClusterTriggerBCEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
+      fhClusterTriggerBCEventBCUnMatch->SetXTitle("cluster trigger BC");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fhClusterTriggerBCEventBCUnMatch->SetYTitle("Event BC%4");
+      fOutputContainer->Add(fhClusterTriggerBCEventBCUnMatch);
+      
+      fhClusterTriggerBCExoticEventBCUnMatch      = new TH2F("hClusterTriggerExoticBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
+                                                             nbin , minbin ,maxbin,4,1, 4) ;
+      for(Int_t i = 0; i < 4; i++)
+        fhClusterTriggerBCExoticEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
+      fhClusterTriggerBCExoticEventBCUnMatch->SetXTitle("cluster trigger BC");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCExoticEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fhClusterTriggerBCExoticEventBCUnMatch->SetYTitle("Event BC%4");
+      fOutputContainer->Add(fhClusterTriggerBCExoticEventBCUnMatch);
+      
+      fhClusterTriggerBC              = new TH1F("hClusterTriggerBC",
+                                                 "Number of analyzed events triggered by a cluster in a given BC",
+                                                 nbin , minbin ,maxbin) ;
+      fhClusterTriggerBC->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBC);
+      
+      fhClusterTriggerBCExotic        = new TH1F("hClusterTriggerBCExotic",
+                                                 "Number of analyzed events triggered by a exotic cluster in a given BC",
+                                                 nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCExotic->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCExotic);
+      
+      
+      fhClusterTriggerBCBadCell         = new TH1F("hClusterTriggerBCBadCell",
+                                                   "Number of analyzed events triggered by a bad cell in a given BC",
+                                                   nbin , minbin ,maxbin) ;
+      
+      fhClusterTriggerBCBadCell->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCBadCell->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCBadCell);
+      
+      fhClusterTriggerBCBadCellExotic    = new TH1F("hClusterTriggerBCBadCellExotic",
+                                                    "Number of analyzed events triggered by a bad cell & exotic cluster in a given BC",
+                                                    nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCBadCellExotic->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCBadCellExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCBadCellExotic);
+      
+      fhClusterTriggerBCBadCluster           = new TH1F("hClusterTriggerBCBadCluster",
+                                                        "Number of analyzed events triggered by a bad cluster in a given BC",
+                                                        nbin , minbin ,maxbin) ;
+      
+      fhClusterTriggerBCBadCluster->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCBadCluster->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCBadCluster);
+      
+      
+      fhClusterTriggerBCBadClusterExotic    = new TH1F("hClusterTriggerBCBadClusterExotic",
+                                                       "Number of analyzed events triggered by a bad cluster & exotic cluster in a given BC",
+                                                       nbin , minbin ,maxbin) ;
+      
+      fhClusterTriggerBCBadClusterExotic->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCBadClusterExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCBadClusterExotic);
+      
+      fhClusterTriggerBCUnMatch       = new TH1F("hClusterTriggerBCUnMatch",
+                                                 "Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC",
+                                                 nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCUnMatch->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCUnMatch);
+      
+      fhClusterTriggerBCExoticUnMatch = new TH1F("hClusterTriggerBCExoticUnMatch",
+                                                 "Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC",
+                                                 nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCExoticUnMatch->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCExoticUnMatch);
+      
+      
+      fhClusterTriggerBCBadCellUnMatch    = new TH1F("hClusterTriggerBCBadCellUnMatch",
+                                                     "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
+                                                     nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCBadCellUnMatch->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCBadCellUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCBadCellUnMatch);
+      
+      
+      fhClusterTriggerBCBadCellExoticUnMatch = new TH1F("hClusterTriggerBCBadCellExoticUnMatch",
+                                                        "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
+                                                        nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCBadCellExoticUnMatch->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCBadCellExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCBadCellExoticUnMatch);
+      
+      
+      fhClusterTriggerBCBadClusterUnMatch    = new TH1F("hClusterTriggerBCBadClusterUnMatch",
+                                                        "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
+                                                        nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCBadClusterUnMatch->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCBadClusterUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCBadClusterUnMatch);
+      
+      
+      fhClusterTriggerBCBadClusterExoticUnMatch = new TH1F("hClusterTriggerBCBadClusterExoticUnMatch",
+                                                           "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
+                                                           nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCBadClusterExoticUnMatch->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCBadClusterExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCBadClusterExoticUnMatch);
+      
+      TString rematch[] = {"OpenTime","CheckNeighbours","Both"};
+      for(Int_t j = 0; j < 3; j++)
+      {
+        fhClusterTriggerBCUnMatchReMatch[j]       = new TH1F(Form("hClusterTriggerBCUnMatch_ReMatch_%s",rematch[j].Data()),
+                                                             Form("Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
+                                                             nbin , minbin ,maxbin) ;
+        fhClusterTriggerBCUnMatchReMatch[j]->SetYTitle("# events");
+        for(Int_t i = 1; i < 12; i++)
+          fhClusterTriggerBCUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+        fOutputContainer->Add(fhClusterTriggerBCUnMatchReMatch[j]);
+        
+        fhClusterTriggerBCExoticUnMatchReMatch[j] = new TH1F(Form("hClusterTriggerBCExoticUnMatch_ReMatch_%s",rematch[j].Data()),
+                                                             Form("Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
+                                                             nbin , minbin ,maxbin) ;
+        fhClusterTriggerBCExoticUnMatchReMatch[j]->SetYTitle("# events");
+        for(Int_t i = 1; i < 12; i++)
+          fhClusterTriggerBCExoticUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+        fOutputContainer->Add(fhClusterTriggerBCExoticUnMatchReMatch[j]);
+      }
+      
+      fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -1 , 1  ) ;
+      fhXVertexExotic->SetXTitle("v_{x} (cm)");
+      fOutputContainer->Add(fhXVertexExotic);
+      
+      fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -1 , 1  ) ;
+      fhYVertexExotic->SetXTitle("v_{y} (cm)");
+      fOutputContainer->Add(fhYVertexExotic);
+      
+      fhZVertexExotic      = new TH1F("hZVertexExotic", " Z vertex distribution in exotic events"   , 200 , -50 , 50  ) ;
+      fhZVertexExotic->SetXTitle("v_{z} (cm)");
+      fOutputContainer->Add(fhZVertexExotic);
     }
     
     fhNPileUpEvents      = new TH1F("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
@@ -793,18 +816,6 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     for(Int_t i = 1; i < 20; i++)
       fhEMCalBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
     fOutputContainer->Add(fhEMCalBCEventCut);
-    
-    fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
-    fhXVertexExotic->SetXTitle("v_{x} (cm)");
-    fOutputContainer->Add(fhXVertexExotic);
-    
-    fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
-    fhYVertexExotic->SetXTitle("v_{y} (cm)");
-    fOutputContainer->Add(fhYVertexExotic);
-    
-    fhZVertexExotic      = new TH1F("hZVertexExotic", " Z vertex distribution in exotic events"   , 200 , -50 , 50  ) ;
-    fhZVertexExotic->SetXTitle("v_{z} (cm)");
-    fOutputContainer->Add(fhZVertexExotic);
     
     fhPileUpClusterMult    = new TH1F("hPileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100  ) ;
     fhPileUpClusterMult->SetXTitle("# clusters");

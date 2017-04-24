@@ -5,6 +5,7 @@
 
 //_________________________________________________________________________
 /// \class AliAnaPi0
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Selected photon clusters invariant mass analysis.
 ///
 /// Class to collect two-photon invariant mass distributions for

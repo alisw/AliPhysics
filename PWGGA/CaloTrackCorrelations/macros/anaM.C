@@ -1,4 +1,5 @@
 /// \file anaM.C
+/// \ingroup CaloTrackCorrMacros
 /// \brief Example of execution macro for mixing frame analysis
 ///
 /// Example macro to do analysis with the
@@ -8,7 +9,7 @@
 /// Not being used for long time, keep it in case it is useful in future
 ///
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 //-------------------------------------------------

@@ -24,6 +24,7 @@
 #include "AliGenParam.h"
 #include "TF1.h"
 #include "TH1D.h"
+#include "TH2F.h"
 
 class AliGenCocktailEntry;
 
@@ -48,6 +49,7 @@ public:
   virtual void Generate();
   
   // setters
+  void    SetUseYWeighting(Bool_t useYWeighting)                      { fUseYWeighting = useYWeighting;   }
   void    SetDynamicalPtRange(Bool_t dynamicalPtRange)                { fDynPtRange = dynamicalPtRange;   }
   void    SetParametrizationFile(TString paramFile)                   { fParametrizationFile = paramFile; }
   void    SetParametrizationFileDirectory(TString paramDir)           { fParametrizationDir = paramDir;   }
@@ -62,8 +64,11 @@ public:
   void    SetHeaviestHadron(ParticleGenerator_t part);
   static  Bool_t  SetPtParametrizations();
   static  void    SetMtScalingFactors();
+  static  Bool_t  SetPtYDistributions();
  
   // getters
+  Bool_t    GetDynamicalPtRangeOption()       const                   { return fDynPtRange;               }
+  Bool_t    GetYWeightOption()                const                   { return fUseYWeighting;            }
   Float_t   GetDecayMode()                    const                   { return fDecayMode;                }
   Float_t   GetWeightingMode()                const                   { return fWeightingMode;            }
   AliGenEMlibV2::CollisionSystem_t  GetCollisionSystem()  const       { return fCollisionSystem;          }
@@ -73,9 +78,11 @@ public:
   TString   GetParametrizationFileDirectory() const                   { return fParametrizationDir;       }
   Int_t     GetNumberOfParticles()            const                   { return fNPart;                    }
   Double_t  GetMaxPtStretchFactor(Int_t pdgCode);
+  Double_t  GetYWeight(Int_t pdgCode, TParticle* part);
   void      GetPtRange(Double_t &ptMin, Double_t &ptMax);
-  static    TF1*   GetPtParametrization(Int_t np);
-  static    TH1D*  GetMtScalingFactors();
+  static    TF1*    GetPtParametrization(Int_t np);
+  static    TH1D*   GetMtScalingFactors();
+  static    TH2F*   GetPtYDistribution(Int_t np);
   
   //***********************************************************************************************
   // This function allows to select the particle which should be procude based on 1 Integer value
@@ -113,16 +120,18 @@ private:
   static TF1*     fPtParametrization[18];               // pt paramtrizations
   static TF1*     fParametrizationProton;               //
   static TH1D*    fMtScalingFactorHisto;                // mt scaling factors
+  static TH2F*    fPtYDistribution[18];                 // pt-y distribution
   
   AliGenEMlibV2::CollisionSystem_t  fCollisionSystem;   // selected collision system
   AliGenEMlibV2::Centrality_t       fCentrality;        // selected centrality
   AliGenEMlibV2::v2Sys_t            fV2Systematic;      // selected systematic error for v2 parameters
   
+  Bool_t        fUseYWeighting;                         // select if input pt-y distributions should be used for weighting in generation
   Bool_t        fDynPtRange;                            // select if the pt range for the generation should be adapted to different mother particle weights dynamically
   Bool_t        fForceConv;                             // select whether you want to force all gammas to convert imidediately
   UInt_t        fSelectedParticles;                     // which particles to simulate, allows to switch on and off 32 different particles
   
-  ClassDef(AliGenEMCocktailV2,6)                        // cocktail for EM physics
+  ClassDef(AliGenEMCocktailV2,7)                        // cocktail for EM physics
 };
 
 #endif

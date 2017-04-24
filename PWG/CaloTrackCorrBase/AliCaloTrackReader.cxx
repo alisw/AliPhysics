@@ -88,7 +88,7 @@ fSelectEmbeddedClusters(kFALSE),
 fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
 fSmearingFunction(0),        fSmearNLMMin(0),                 fSmearNLMMax(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
-fTrackMult(0),               fTrackMultEtaCut(0.9),
+fTrackMultNPtCut(0),         fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
 
@@ -133,7 +133,8 @@ fNonStandardJets(new TClonesArray("AliAODJet",100)),          fInputNonStandardJ
 fFillInputBackgroundJetBranch(kFALSE), 
 fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
-fMomentum(),                 fOutputContainer(0x0),           fEnergyHistogramNbins(0),
+fMomentum(),                 fOutputContainer(0x0),           fhEMCALClusterTimeE(0),
+fEnergyHistogramNbins(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept("")
 {
   for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
@@ -728,7 +729,7 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     for(Int_t i = 0; i < 8; i++)
     {
       TString names[] = {"NoCut", "Corrected", "GoodCluster", "NonLinearity", 
-        "EnergyAndFidutial", "Time", "NCells", "BadDist"};
+        "EnergyAndFidutial","NCells", "BadDist","Time"};
       
       fhEMCALClusterCutsE[i] = new TH1F(Form("hEMCALReaderClusterCuts_%d_%s",i,names[i].Data()),
                                         Form("EMCal %d, %s",i,names[i].Data()),   
@@ -737,6 +738,12 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
       fhEMCALClusterCutsE[i]->SetXTitle("#it{E} (GeV)");
       fOutputContainer->Add(fhEMCALClusterCutsE[i]);
     }
+    
+    fhEMCALClusterTimeE  = new TH2F 
+    ("hEMCALReaderTimeE","time vs #it{E} after cuts (if no calib, shifted -615 ns)", 100,0,100,400,-400,400);
+    fhEMCALClusterTimeE->SetXTitle("#it{E} (GeV)");
+    fhEMCALClusterTimeE->SetYTitle("#it{time} (ns)");
+    fOutputContainer->Add(fhEMCALClusterTimeE);
   }
   
   if(fFillPHOS)
@@ -799,9 +806,11 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Check: calo fid cut %d; ",fCheckFidCut) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Track: status %d, multip. eta cut %1.1f, SPD hit %d; ",(Int_t) fTrackStatus, fTrackMultEtaCut, fSelectSPDHitTracks) ;
+  snprintf(onePar,buffersize,"Track: status %d, SPD hit %d; ",(Int_t) fTrackStatus, fSelectSPDHitTracks) ;
   parList+=onePar ;
-
+  snprintf(onePar,buffersize,"multip. eta cut %1.1f; npt cuts %d;",fTrackMultEtaCut, fTrackMultNPtCut) ;
+  parList+=onePar ;
+  
   if(fUseTrackDCACut)
   {
     snprintf(onePar,buffersize,"DCA cut ON, param (%2.4f,%2.4f,%2.4f); ",fTrackDCACut[0],fTrackDCACut[1],fTrackDCACut[2]) ;
@@ -1180,6 +1189,11 @@ void AliCaloTrackReader::InitParameters()
   fWeightUtils = new AliAnaWeights() ;
   fEventWeight = 1 ;
     
+  fTrackMultNPtCut = 8;
+  fTrackMultPtCut[0] = 0.15; fTrackMultPtCut[1] = 0.5;  fTrackMultPtCut[2] = 1.0; 
+  fTrackMultPtCut[3] = 2.0 ; fTrackMultPtCut[4] = 4.0;  fTrackMultPtCut[5] = 6.0;  
+  fTrackMultPtCut[6] = 8.0 ; fTrackMultPtCut[7] = 10.;  
+  fTrackMultPtCut[8] = 15.0; fTrackMultPtCut[9] = 20.;  
 }
 
 //__________________________________________________________________________
@@ -1465,7 +1479,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   {
     FillInputCTS();
     //Accept events with at least one track
-    if(fTrackMult == 0 && fDoRejectNoTrackEvents) return kFALSE ;
+    if(fTrackMult[0] == 0 && fDoRejectNoTrackEvents) return kFALSE ;
     
     fhNEventsAfterCut->Fill(17.5);
     
@@ -1681,7 +1695,6 @@ void AliCaloTrackReader::FillInputCTS()
   Double_t pTrack[3] = {0,0,0};
   
   Int_t nTracks = fInputEvent->GetNumberOfTracks() ;
-  fTrackMult    = 0;
   Int_t nstatus = 0;
   Double_t bz   = GetInputEvent()->GetMagneticField();
   
@@ -1689,6 +1702,12 @@ void AliCaloTrackReader::FillInputCTS()
   {
     fTrackBCEvent   [i] = 0;
     fTrackBCEventCut[i] = 0;
+  }
+  
+  for(Int_t iptCut = 0; iptCut < fTrackMultNPtCut; iptCut++ )
+  {
+    fTrackMult [iptCut] = 0;
+    fTrackSumPt[iptCut] = 0;
   }
   
   Bool_t   bc0  = kFALSE;
@@ -1783,10 +1802,21 @@ void AliCaloTrackReader::FillInputCTS()
     //-------------------------
     // Kinematic/acceptance cuts
     //
-    // Count the tracks in eta < 0.9
-    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
+    // Count the tracks in eta < 0.9 and different pT cuts
+    Float_t ptTrack = fMomentum.Pt();
+    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) 
+    {
+      for(Int_t iptCut = 0; iptCut < fTrackMultNPtCut; iptCut++ )
+      {
+        if(ptTrack > fTrackMultPtCut[iptCut]) 
+        {
+          fTrackMult [iptCut]++;
+          fTrackSumPt[iptCut]+=ptTrack;
+        }
+      }
+    }
     
-    if(fCTSPtMin > fMomentum.Pt() || fCTSPtMax < fMomentum.Pt()) continue ;
+    if(fCTSPtMin > ptTrack || fCTSPtMax < ptTrack) continue ;
     
     // Check effect of cuts on track BC
     if(fAccessTrackTOF && okTOF) SetTrackEventBCcut(trackBC+9);
@@ -1813,7 +1843,7 @@ void AliCaloTrackReader::FillInputCTS()
     else      fVertexBC = AliVTrack::kTOFBCNA ;
   }
   
-  AliDebug(1,Form("AOD entries %d, input tracks %d, pass status %d, multipliticy %d", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult));//fCTSTracksNormalInputEntries);
+  AliDebug(1,Form("AOD entries %d, input tracks %d, pass status %d, multipliticy %d", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult[0]));//fCTSTracksNormalInputEntries);
 }
 
 //_______________________________________________________________________________
@@ -2020,37 +2050,13 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Check effect of energy and fiducial cuts
   fhEMCALClusterCutsE[4]->Fill(clus->E());
   
-  
-  //------------------------------------------
-  // Apply time cut, count EMCal BC before cut
-  //
-  SetEMCalEventBCcut(bc);
-  
-  if(!IsInTimeWindow(tof,clus->E()))
-  {
-    fNPileUpClusters++ ;
-    if(fUseEMCALTimeCut) 
-    {
-      AliDebug(2,Form("Out of time window E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, time %e",
-                      fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(),tof));
-
-      return ;
-    }
-  }
-  else
-    fNNonPileUpClusters++;
-    
-  // Check effect of time cut
-  fhEMCALClusterCutsE[5]->Fill(clus->E());
-  
-  
   //----------------------------------------------------
   // Apply N cells cut
   //
   if(clus->GetNCells() <= fEMCALNCellsCut && fDataType != AliCaloTrackReader::kMC) return ;
 
   // Check effect of n cells cut
-  fhEMCALClusterCutsE[6]->Fill(clus->E());
+  fhEMCALClusterCutsE[5]->Fill(clus->E());
 
   //----------------------------------------------------
   // Apply distance to bad channel cut
@@ -2062,8 +2068,36 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   if(distBad < fEMCALBadChMinDist) return  ;
   
   // Check effect distance to bad channel cut
+  fhEMCALClusterCutsE[6]->Fill(clus->E());
+
+  //------------------------------------------
+  // Apply time cut, count EMCal BC before cut
+  //
+  SetEMCalEventBCcut(bc);
+
+  // Shift time in case of no calibration with rough factor
+  Double_t tofShift = tof;
+  if(tof > 400) tofShift-=615;
+  fhEMCALClusterTimeE->Fill(clus->E(),tofShift);
+  
+  if(!IsInTimeWindow(tof,clus->E()))
+  {
+    fNPileUpClusters++ ;
+    if(fUseEMCALTimeCut) 
+    {
+      AliDebug(2,Form("Out of time window E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, time %e",
+                      fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(),tof));
+      
+      return ;
+    }
+  }
+  else
+    fNNonPileUpClusters++;
+  
+  // Check effect of time cut
   fhEMCALClusterCutsE[7]->Fill(clus->E());
 
+  
   //----------------------------------------------------
   // Smear the SS to try to match data and simulations,
   // do it only for simulations.
@@ -3011,6 +3045,11 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
 
   printf("Track Mult Eta Cut =  %2.2f\n",  fTrackMultEtaCut) ;
+
+  printf("Track Mult Pt Cuts:") ;
+  for(Int_t icut = 0; icut < fTrackMultNPtCut; icut++) printf(" %2.2f GeV;",fTrackMultPtCut[icut]);
+  printf("    \n") ;
+ 
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d, E linearity = %d\n",    fRecalculateClusters, fCorrectELinearity) ;
   

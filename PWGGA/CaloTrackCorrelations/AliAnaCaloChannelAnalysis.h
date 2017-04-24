@@ -2,6 +2,7 @@
 #define ALIANACALOCHANNELANALYSIS_H
 
 /// \class AliAnaCaloChannelAnalysis
+/// \ingroup CaloTrackCorrelationsAnalysis 
 /// \brief Analyses cell properties and identifies bad cells
 ///
 /// This is used for bad channel identification in EMCal and DCal.
