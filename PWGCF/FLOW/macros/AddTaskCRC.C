@@ -31,7 +31,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
                              Bool_t bCorrSpecZDC=kFALSE,
-                             Bool_t bSetStoreZDCQVecVtxPos=kFALSE,
+                             Bool_t bUseTightPileUp=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
                              Bool_t bCenFlattening=kTRUE,
@@ -95,9 +95,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bSetQAZDC=kTRUE;
   Double_t MaxChi2PerClTPC=4.;
   Bool_t bRequireITSRefit=kFALSE;
-  Bool_t bUseTightPileUp=kFALSE;
   Bool_t bCalculateFlow=kTRUE;
   Bool_t bCorrectForBadChannel=kFALSE;
+  Bool_t bSetStoreZDCQVecVtxPos=kTRUE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -311,7 +311,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   // vertex-z cut
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
-  if (sDataSet.Contains("2015")) cutsEvent->SetPrimaryVertexZrange(-dVertexRange+3.596504e-01,dVertexRange+3.596504e-01);
+  if (sDataSet.Contains("2015")) cutsEvent->SetPrimaryVertexZrange(-dVertexRange+3.596504e-01,dVertexRange-3.596504e-01);
   // enable the qa plots
   cutsEvent->SetQA(bCutsQA);
   // explicit multiplicity outlier cut
