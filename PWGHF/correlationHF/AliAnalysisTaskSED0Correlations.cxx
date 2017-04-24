@@ -2576,7 +2576,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
     Bool_t allowD0 = 0;
     Bool_t allowD0bar = 0;
     if(fSpeed) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
-      if(ptbin<9) {	    
+      if(ptbin<PtBinCorr(8.)) {	    
         if(mD0 > fSignLeft_LowPt && mD0 < fSignRight_LowPt) allowD0 = 1;
         if(mD0bar > fSignLeft_LowPt && mD0bar < fSignRight_LowPt) allowD0bar = 1;
       } else {
@@ -2684,7 +2684,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
     Bool_t allowD0 = 0;
     Bool_t allowD0bar = 0;
     if(fSpeed) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
-      if(ptbin<9) {	    
+      if(ptbin<PtBinCorr(8.)) {	    
         if(mD0 > fSignLeft_LowPt && mD0 < fSignRight_LowPt) allowD0 = 1;
         if(mD0bar > fSignLeft_LowPt && mD0bar < fSignRight_LowPt) allowD0bar = 1;
       } else {
@@ -2919,7 +2919,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
   if(fCutsD0->GetUseCentrality()) centEv = fCutsD0->GetCentrality(aod); //get event centrality with current estimator
 
   if(fSpeed) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
-    if(ptbin<9) {	    
+    if(ptbin<PtBinCorr(8.)) {	    
       if(mD0 > fSignLeft_LowPt && mD0 < fSignRight_LowPt) allowD0 = 1;
       if(mD0bar > fSignLeft_LowPt && mD0bar < fSignRight_LowPt) allowD0bar = 1;
     } else {
