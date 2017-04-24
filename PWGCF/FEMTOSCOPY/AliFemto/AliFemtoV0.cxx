@@ -63,7 +63,7 @@ AliFemtoV0::AliFemtoV0():
 }
 // -----------------------------------------------------------------------
 AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
-  fDecayLengthV0(v.fDecayLengthV0), fDecayVertexV0(v.fDecayVertexV0), fPrimaryVertex(0),
+  fDecayLengthV0(v.fDecayLengthV0), fDecayVertexV0(v.fDecayVertexV0), fPrimaryVertex(v.fPrimaryVertex),
   fDcaV0Daughters(v.fDcaV0Daughters), fDcaV0ToPrimVertex(v.fDcaV0ToPrimVertex),
   fDcaPosToPrimVertex(v.fDcaPosToPrimVertex), fDcaNegToPrimVertex(v.fDcaNegToPrimVertex),
   fMomPos(v.fMomPos), fMomNeg(v.fMomNeg),

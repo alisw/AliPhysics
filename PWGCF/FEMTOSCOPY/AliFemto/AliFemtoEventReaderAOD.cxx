@@ -1424,6 +1424,65 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
     //    tFemtoXi->SetTPCMomentumBac(trackbac->GetTPCmomentum());
     //    if (fShiftPosition > 0.)
 
+    float bfield = 5 * fMagFieldSign;
+    float globalPositionsAtRadiiBac[9][3];
+    GetGlobalPositionAtGlobalRadiiThroughTPC(trackbac, bfield, globalPositionsAtRadiiBac);
+    double tpcEntranceBac[3] = {globalPositionsAtRadiiBac[0][0], globalPositionsAtRadiiBac[0][1], globalPositionsAtRadiiBac[0][2]};
+    double tpcExitBac[3] = {globalPositionsAtRadiiBac[8][0], globalPositionsAtRadiiBac[8][1], globalPositionsAtRadiiBac[8][2]};
+
+
+    if (fPrimaryVertexCorrectionTPCPoints) {
+      tpcEntranceBac[0] -= fV1[0];
+      tpcEntranceBac[1] -= fV1[1];
+      tpcEntranceBac[2] -= fV1[2];
+
+      tpcExitBac[0] -= fV1[0];
+      tpcExitBac[1] -= fV1[1];
+      tpcExitBac[2] -= fV1[2];
+    }
+
+    AliFemtoThreeVector tmpVec;
+    tmpVec.SetX(tpcEntranceBac[0]);
+    tmpVec.SetY(tpcEntranceBac[1]);
+    tmpVec.SetZ(tpcEntranceBac[2]);
+    tFemtoXi->SetNominalTpcEntrancePointBac(tmpVec);
+
+    tmpVec.SetX(tpcExitBac[0]);
+    tmpVec.SetY(tpcExitBac[1]);
+    tmpVec.SetZ(tpcExitBac[2]);
+    tFemtoXi->SetNominalTpcExitPointBac(tmpVec);
+
+
+    AliFemtoThreeVector vecTpcBac[9];
+    for (int i = 0; i < 9; i++) {
+      vecTpcBac[i].SetX(globalPositionsAtRadiiBac[i][0]);
+      vecTpcBac[i].SetY(globalPositionsAtRadiiBac[i][1]);
+      vecTpcBac[i].SetZ(globalPositionsAtRadiiBac[i][2]);
+    }
+
+    if (fPrimaryVertexCorrectionTPCPoints) {
+      AliFemtoThreeVector tmpVertexVec;
+      tmpVertexVec.SetX(fV1[0]);
+      tmpVertexVec.SetY(fV1[1]);
+      tmpVertexVec.SetZ(fV1[2]);
+
+      for (int i = 0; i < 9; i ++) {
+        vecTpcBac[i] -= tmpVertexVec;
+      }
+    }
+
+    tFemtoXi->SetNominalTpcPointBac(vecTpcBac);
+
+    if (fShiftPosition > 0.) {
+      Float_t posShiftedBac[3];
+      SetShiftedPositions(trackbac, bfield, posShiftedBac, fShiftPosition);
+      AliFemtoThreeVector tmpVecBac;
+      tmpVecBac.SetX(posShiftedBac[0]);
+      tmpVecBac.SetY(posShiftedBac[1]);
+      tmpVecBac.SetZ(posShiftedBac[2]);
+      tFemtoXi->SetNominalTpcPointBacShifted(tmpVecBac);
+    }
+    tFemtoXi->SetTPCMomentumBac(trackbac->GetTPCmomentum());
     tFemtoXi->SetdedxBac(trackbac->GetTPCsignal());
 
     Float_t probMisBac = 1.0;

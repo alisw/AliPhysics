@@ -167,6 +167,9 @@ AliFemtoV0PurityBgdEstimator::~AliFemtoV0PurityBgdEstimator()
   delete fNumerator;
   delete fDenominator;
   delete fRatio;
+
+  delete fFemtoV0;
+  delete fFemtoV0TrackCut;
 }
 
 //____________________________
