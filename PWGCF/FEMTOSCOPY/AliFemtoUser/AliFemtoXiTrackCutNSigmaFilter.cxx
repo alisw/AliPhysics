@@ -4,6 +4,7 @@
 
 
 #include "AliFemtoXiTrackCutNSigmaFilter.h"
+#include <TObjArray.h>
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -222,10 +223,13 @@ TList *AliFemtoXiTrackCutNSigmaFilter::ListSettings()
 TList *AliFemtoXiTrackCutNSigmaFilter::GetOutputList()
 {
   TList *tOutputList = AliFemtoCutMonitorHandler::GetOutputList();  //add all of the typical objects
-  tOutputList->Add(fDaughterV0Filter->GetOutputList());
   if(fBuildPurityAidXi) tOutputList->Add(fMinvPurityAidHistoXi);
+  if(fBuildPurityAidV0) tOutputList->Add(fDaughterV0Filter->GetMinvPurityAidHistoV0());
 
+  if(fDaughterV0Filter->GetCTauHist()!=NULL) tOutputList->Add(fDaughterV0Filter->GetCTauHist());
   tOutputList->Add(fCTauXi);
+
+  if(fDaughterV0Filter->GetBuildMisIDHistograms()) tOutputList->Add(fDaughterV0Filter->GetMisIDHistos());
 
   return tOutputList;
 }
@@ -328,6 +332,10 @@ void AliFemtoXiTrackCutNSigmaFilter::AddTOFNSigmaCut(XiDaughterParticleType aDau
 
 void AliFemtoXiTrackCutNSigmaFilter::CreateCustomV0Rejection(AliFemtoV0Type aV0TypeToReject)
 {
+  UpdateDaughterV0Filter();
+  fIsDaughterV0FilterUpdated = false;  //In case any further changes are made before running,
+                                       //but fDaughterV0Filter needs to know its type to know which MisID histos to build
+  if(!fDaughterV0Filter->GetBuildMisIDHistograms()) fDaughterV0Filter->SetBuildMisIDHistograms(true);
   fDaughterV0Filter->CreateCustomV0Rejection(aV0TypeToReject);
 }
 
@@ -381,4 +389,17 @@ double AliFemtoXiTrackCutNSigmaFilter::GetCTauXi(const AliFemtoXi* aXi)
 
   return tCTauXi;
 }
+
+void AliFemtoXiTrackCutNSigmaFilter::SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
+{
+  fBuildPurityAidV0 = true;
+  fDaughterV0Filter->SetMinvPurityAidHistoV0(name,title,nbins,aInvMassMin,aInvMassMax);
+}
+
+void AliFemtoXiTrackCutNSigmaFilter::SetCTauHistoV0(int aNbins, double aMin, double aMax)
+{
+  fDaughterV0Filter->SetCTauHistoV0(aNbins,aMin,aMax);
+}
+
+
 

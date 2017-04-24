@@ -16,13 +16,15 @@
 
 /// \class AliFemtoXiTrackCutNSigmaFilter
 /// \brief A class designed to help track cuts test particle calculated NSigma values
-/// \See AliFemtoNSigmaFilter.h for detailed description of how to use filter
-/// \
-/// \It seems more appropriate for this class to inherit from
-/// \AliFemtoV0TrackCutNSigmaFilter instead of AliFemtoXiTrackCut,
-/// \but it must inherit from AliFemtoXiTrackCut in order to fit well in AliFemtoSimpleAnalysis etc.
-/// \As such, this class is much longer than initially envisioned
-/// \
+/// See AliFemtoNSigmaFilter.h for detailed description of how to use filter
+/// 
+/// It seems more appropriate for this class to inherit from
+/// AliFemtoV0TrackCutNSigmaFilter instead of AliFemtoXiTrackCut,
+/// but it must inherit from AliFemtoXiTrackCut in order to fit well in AliFemtoSimpleAnalysis etc.
+/// As such, this class is much longer than initially envisioned
+/// 
+/// NOTE:  Not so user friendly right now, but will be revisited after WPCF 2017
+
 /// \author Jesse Buxton <jesse.thomas.buxton@cern.ch>
 ///
 class AliFemtoXiTrackCutNSigmaFilter : public AliFemtoXiTrackCut {
@@ -87,6 +89,9 @@ public:
                                                             double aMomMinNeg, double aMomMaxNeg, double aNSigmaValueTOFNeg);
 
   double GetCTauXi(const AliFemtoXi* aXi);
+  void SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax); //Set this for fDaughterV0Filter
+                                                                                                                                           //Not member from parent AliFemtoV0TrackCut
+  void SetCTauHistoV0(int aNbins=500, double aMin=0.0, double aMax=50.0);
 
  protected:
   bool fIsDaughterV0FilterUpdated;
@@ -98,6 +103,7 @@ public:
   bool fUseCustomBacPionNSigmaFilter;
   AliFemtoNSigmaFilter *fBacPionNSigmaFilter;
 
+//  bool fBuildCTauXi;
   TH1D* fCTauXi;  //Currently in development, if useful, will be added to AliFemtoV0TrackCut,
 		  // or to the cut monitor
 
