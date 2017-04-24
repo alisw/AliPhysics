@@ -1441,30 +1441,30 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
   } else if ( trainConfig == 225){ // chi2 + psi pair - phi
     cuts.AddCut("52400013", "00216609847005008950404000", "0152501500000000"); // 15+0.1 2D
     cuts.AddCut("52400013", "00216609847005008770404000", "0152501500000000"); // 10+0.07 2D
-  } else if ( trainConfig == 226){ // asym & cosPA
+  } else if ( trainConfig == 226){ // asym 1D & cosPA
     cuts.AddCut("50100013", "00200009847005008757404000", "0152501500000000"); // asym > 8GeV
     cuts.AddCut("50100013", "00200009847005008750004000", "0152501500000000"); // cosPA off
-  } else if ( trainConfig == 227){ // asym & cosPA
+  } else if ( trainConfig == 227){ // asym 1D & cosPA
     cuts.AddCut("52400013", "00200009847005008757404000", "0152501500000000"); // asym > 8GeV
     cuts.AddCut("52400013", "00200009847005008750004000", "0152501500000000"); // cosPA off
-  } else if ( trainConfig == 228){ // asym & cosPA - phi
+  } else if ( trainConfig == 228){ // asym 1D & cosPA - phi
     cuts.AddCut("50100013", "00216609847005008757404000", "0152501500000000"); // asym > 8GeV
     cuts.AddCut("50100013", "00216609847005008750004000", "0152501500000000"); // cosPA off
-  } else if ( trainConfig == 229){ // asym & cosPA - phi
+  } else if ( trainConfig == 229){ // asym 1D & cosPA - phi
     cuts.AddCut("52400013", "00216609847005008757404000", "0152501500000000"); // asym > 8GeV
     cuts.AddCut("52400013", "00216609847005008750004000", "0152501500000000"); // cosPA off
-  } else if ( trainConfig == 230){ // asym 1 & 2
+  } else if ( trainConfig == 230){ // asym 1D  & proton rejection
     cuts.AddCut("50100013", "00200009847005008756404000", "0152501500000000"); // asym > 6GeV
-    cuts.AddCut("50100013", "00200009847005008754404000", "0152501500000000"); // asym 2D
-  } else if ( trainConfig == 231){ // asym 1 & 2
+    cuts.AddCut("50100013", "00200009847085008750404000", "0152501500000000"); // asym > 8GeV
+  } else if ( trainConfig == 231){ // asym 1D  & proton rejection
     cuts.AddCut("52400013", "00200009847005008756404000", "0152501500000000"); // asym > 6GeV
-    cuts.AddCut("52400013", "00200009847005008754404000", "0152501500000000"); // asym 2D
-  } else if ( trainConfig == 232){ // asym 1 & 2 - phi
+    cuts.AddCut("52400013", "00200009847085008750404000", "0152501500000000"); // asym > 8GeV
+  } else if ( trainConfig == 232){ // asym 1D  & proton rejection - phi
     cuts.AddCut("50100013", "00216609847005008756404000", "0152501500000000"); // asym > 6GeV
-    cuts.AddCut("50100013", "00216609847005008754404000", "0152501500000000"); // asym 2D
-  } else if ( trainConfig == 233){ // asym 1 & 2 - phi
+    cuts.AddCut("50100013", "00216609847085008750404000", "0152501500000000"); // asym > 8GeV
+  } else if ( trainConfig == 233){ // asym 1D  & proton rejection - phi
     cuts.AddCut("52400013", "00216609847005008756404000", "0152501500000000"); // asym > 6GeV
-    cuts.AddCut("52400013", "00216609847005008754404000", "0152501500000000"); // asym 2D
+    cuts.AddCut("52400013", "00216609847085008750404000", "0152501500000000"); // asym > 8GeV
 
   } else if ( trainConfig == 237){ // K on the signal -3, 5
     cuts.AddCut("50100013", "00200009300000008250404000", "0152501500000000"); // 0-10%
