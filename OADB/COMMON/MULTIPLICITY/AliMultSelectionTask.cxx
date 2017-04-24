@@ -1297,10 +1297,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
         const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
         const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
         const Double_t *ZPCtower = lESDZDC->GetZPCTowerEnergy();
-        if (fZnaFired->GetValueInteger() > 0) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-        if (fZncFired->GetValueInteger() > 0) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-        if (fZpaFired->GetValueInteger() > 0) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-        if (fZpcFired->GetValueInteger() > 0) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+        fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+        fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+        fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+        fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
 
     } else if (lVevent->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
@@ -1320,10 +1320,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
         const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
         const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
         const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
-        if (fZnaFired->GetValueInteger() > 0) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-        if (fZncFired->GetValueInteger() > 0) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-        if (fZpaFired->GetValueInteger() > 0) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-        if (fZpcFired->GetValueInteger() > 0) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+        fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+        fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+        fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+        fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
     }
     
     fHistEventSelections -> Fill ( fEvSel_Triggered     , 0.5 ); 
