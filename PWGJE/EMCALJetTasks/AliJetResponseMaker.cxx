@@ -34,6 +34,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 ClassImp(AliJetResponseMaker)
 
@@ -45,6 +46,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fMatchingPar2(0),
   fUseCellsToMatch(kFALSE),
   fMinJetMCPt(1),
+  fEmbeddingQA(),
   fHistoType(0),
   fDeltaPtAxis(0),
   fDeltaEtaDeltaPhiAxis(0),
@@ -133,6 +135,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fMatchingPar2(0),
   fUseCellsToMatch(kFALSE),
   fMinJetMCPt(1),
+  fEmbeddingQA(),
   fHistoType(0),
   fDeltaPtAxis(0),
   fDeltaEtaDeltaPhiAxis(0),
@@ -1022,6 +1025,15 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   else 
     AllocateTHnSparse();
 
+  // Initialize
+  const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingHelper) {
+    bool res = fEmbeddingQA.Initialize();
+    if (res) {
+      fEmbeddingQA.AddQAPlotsToList(fOutput);
+    }
+  }
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here, to get at least an empty histogram
 }
 
@@ -1355,7 +1367,6 @@ void AliJetResponseMaker::ExecOnce()
 Bool_t AliJetResponseMaker::Run()
 {
   // Find the closest jets
-
   if (fMatching == kNoMatching) 
     return kTRUE;
   else
@@ -1369,6 +1380,14 @@ Bool_t AliJetResponseMaker::DoJetMatching()
   AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
   if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return kFALSE;
+
+  // Only fill the embedding qa plots if:
+  //  - We are using the embedding helper
+  //  - The class has been initialized
+  //  - Both jet collections are available
+  if (fEmbeddingQA.IsInitialized()) {
+    fEmbeddingQA.RecordEmbeddedEventProperties();
+  }
 
   DoJetLoop();
 

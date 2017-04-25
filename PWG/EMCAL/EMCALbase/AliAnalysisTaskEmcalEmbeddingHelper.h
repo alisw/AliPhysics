@@ -87,6 +87,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   // Get
   Int_t GetPtHardBin()                                      const { return fPtHardBin; }
+  Int_t GetNPtHardBins()                                    const { return fNPtHardBins; }
   Int_t GetAnchorRun()                                      const { return fAnchorRun; }
   TString GetTreeName()                                     const { return fTreeName; }
   Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
@@ -179,6 +180,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
+  Bool_t          CheckIsEmbeddedEventIsSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);

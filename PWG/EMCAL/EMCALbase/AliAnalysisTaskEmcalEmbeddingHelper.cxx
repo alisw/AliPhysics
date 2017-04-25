@@ -531,17 +531,33 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RecordEmbeddedEventProperties()
   fHistManager.FillTH1("fHistTrials", fPtHardBin, fPythiaTrials);
   fHistManager.FillProfile("fHistXsection", fPtHardBin, fPythiaCrossSection);
   fHistManager.FillTH1("fHistPtHard", fPythiaPtHard);
-
-  // Keep count of the total number of events
-  fHistManager.FillTH1("fHistEventCount", "Total");
 }
 
 /**
- * Performs an event selection on the current external event.
+ * Handles (ie wraps) event selection and proper event counting.
  *
  * @return kTRUE if the event successfully passes all criteria.
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
+{
+  if (CheckIsEmbeddedEventIsSelected()) {
+    return kTRUE;
+  }
+
+  if (fCreateHisto) {
+    // Keep count of number of rejected events
+    fHistManager.FillTH1("fHistEventCount", "Rejected");
+  }
+
+  return kFALSE;
+}
+
+/**
+ * Performs the embedded event selection on the current external event.
+ *
+ * @return kTRUE if the event successfully passes all criteria.
+ */
+Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventIsSelected()
 {
   // Trigger selection
   if (fTriggerMask != AliVEvent::kAny) {
@@ -659,19 +675,21 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   fHistManager.CreateTH1(histName, histTitle, 500, 0, 1000);
 
   // Count of accepted and rejected events
-  // NOTE: This is slightly different than the one from AliAnalysisTaskEmcal due to the difficultly in
-  //       properly counting the number of rejected directly. Instead, we count the total, and then
-  //       rejected in just total-accepted.
   histName = "fHistEventCount";
   histTitle = "fHistEventCount;Result;Count";
   auto histEventCount = fHistManager.CreateTH1(histName, histTitle, 2, 0, 2);
   histEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
-  histEventCount->GetXaxis()->SetBinLabel(2,"Total");
+  histEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
 
   // Rejected events in embedded event selection
   histName = "fHistEmbeddingEventsRejected";
   histTitle = "Number of embedded events rejected by event selection before success;Number of rejected events;Counts";
   fHistManager.CreateTH1(histName, histTitle, 200, 0, 200);
+
+  // Number of files embedded
+  histName = "fHistNumberOfFilesEmbedded";
+  histTitle = "Number of files which contributed events to be embeeded";
+  fHistManager.CreateTH1(histName, histTitle, 1, 0, 2);
 
   // Add all histograms to output list
   TIter next(fHistManager.GetListOfHistograms());
@@ -754,7 +772,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
     // Handle the pythia cross section (if it exists)
     // Determiner which file it exists in (if it does exist)
     if (pythiaBaseFilename == "" && failedEntirelyToFindFile == false) {
-      AliDebugStream(4) << "Attempting to determine pythia cross section filename.\n";
+      AliInfoStream() << "Attempting to determine pythia cross section filename. It can be normal to see some TFile::Init() errors!\n";
       for (auto name : pythiaBaseFilenames) {
         pythiaXSecFilename = DeterminePythiaXSecFilename(baseFileName, name, true);
         if (pythiaXSecFilename != "") {
@@ -924,6 +942,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
   if (fLowerEntry > 0) {
     fFileNumber++;
   }
+
+  // Add to the count the number of files which were embedded
+  fHistManager.FillTH1("fHistNumberOfFilesEmbedded", 1);
 
   // Check for pythia cross section and extract if possible
   // fFileNumber corresponds to the next file
