@@ -258,7 +258,7 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   
     }
 
-  if (fJetShapeType==AliAnalysisTaskRecoilJetYield::kData || fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart || kGenOnTheFly){
+   if (fJetShapeType==AliAnalysisTaskRecoilJetYield::kData || fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart || fJetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
     
     fhJetPt= new TH1F("fhJetPt", "Jet Pt",150,-0.5,149.5 );   
     fOutput->Add(fhJetPt);
