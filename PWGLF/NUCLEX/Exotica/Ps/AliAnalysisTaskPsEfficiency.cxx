@@ -16,26 +16,36 @@
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
 
-using TMath::TwoPi;
+// std includes
+#include <climits>
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskPsEfficiency);
 ///\endcond
+
+struct mother_struct{
+  int id;
+  bool tof;
+  int n_daughters;
+  float Px;
+  float Py;
+  bool operator==(const mother_struct& m1) const {return id==m1.id;}
+  bool operator==(const int &id_comp) const {return id==id_comp;}
+};
 
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task
 /// \param partname Name of the analysed particle
 ///
-AliAnalysisTaskPsEfficiency::AliAnalysisTaskPsEfficiency(TString taskname) : AliAnalysisTaskSE(taskname.Data()),
-  fEventCut{false},
-  fFilterBit{BIT(8)},
-  fPDG{9322134},
-  fList{nullptr},
-  fProduction{nullptr},
-  fReconstructed{{nullptr}},
-  fTotal{nullptr}
+AliAnalysisTaskPsEfficiency::AliAnalysisTaskPsEfficiency(const char* taskname) : AliAnalysisTaskSE(taskname),
+  fEventCut(false),
+  fList(),
+  fProduction(),
+  fReconstructed(),
+  fTotal()
 {
+  fFilterBit = BIT(8);
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
@@ -58,14 +68,14 @@ void AliAnalysisTaskPsEfficiency::UserCreateOutputObjects() {
   string tpctof[2] = {"TPC","TOF"};
   string tpctofMC[2] = {"TPC","TPC_TOF"};
 
-  fProduction = new TH2F("fProduction",";P_{s} state;#it{p} (GeV/#it{c});Entries",2,-0.5,1.5,100,-10,10);
+  fProduction = new TH2F("fProduction",";P_{s} state;#it{p} (GeV/#it{c});Entries",2,-0.5,1.5,100,-10,10);
   fList->Add(fProduction);
 
   for (int iC = 0; iC < 2; ++iC) {
-    fTotal[iC] = new TH2F(Form("f%cTotal",letter[iC]),";P_{s} state;#it{p}_{T} (GeV/#it{c}); Counts",2,-0.5,1.5,20,0,10);
+    fTotal[iC] = new TH2F(Form("fTotal_%c",letter[iC]),";P_{s} state;#it{p}_{T} (GeV/#it{c}); Counts",2,-0.5,1.5,20,0,10);
     fList->Add(fTotal[iC]);
     for (int iT = 0; iT < 2; ++iT) {
-      fReconstructed[iT][iC] = new TH2F(Form("f%cITS_%s",letter[iC],tpctofMC[iT].data()),";P_{s} state;#it{p}_{T} (GeV/#it{c}); Counts",2,-0.5,1.5,20,0,10);
+      fReconstructed[iT][iC] = new TH2F(Form("fRec_%c_ITS_%s",letter[iC],tpctofMC[iT].data()),";P_{s} state;#it{p}_{T} (GeV/#it{c}); Counts",2,-0.5,1.5,20,0,10);
       fList->Add(fReconstructed[iT][iC]);
     }
   }
@@ -104,25 +114,22 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
     const int mult = -1 + 2 * iC;
     const int iS = pdg == 9322134 ? 0 : pdg == 9322136 ? 1 : -1;
     if (iS == -1) continue;
-    fProduction->Fill(iS,mult * part->P());
+    fProduction->Fill(0.,mult * part->P());
     if (TMath::Abs(part->Y()) > 0.5) continue;
-    if (part->IsPhysicalPrimary()) fTotal[iC]->Fill(iS,part->Pt());
+    if (part->IsPrimary()) fTotal[iC]->Fill((float)iS,part->Pt());
   }
 
   /// Checking how many pentaquarks in acceptance are reconstructed well
-  std::vector<AliAnalysisTaskPsEfficiency::mother_struct> mothers;
+  std::vector<mother_struct> mothers;
   mothers.reserve(40);
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliAODTrack *track = static_cast<AliAODTrack*>(ev->GetTrack(iT));
-
     if (track->GetID() <= 0) continue;
-    if (!track->TestBit(fFilterBit)) continue;
-
+    if (!track->TestFilterBit(fFilterBit)) continue;
     AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
     if (!part) continue;
     const int pdg = TMath::Abs(part->GetPdgCode());
-    if (pdg != 321 || pdg != 2212) continue;
-
+    if (pdg != 321 && pdg != 2212) continue;
     const int mother_id = part->GetMother();
     AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)stack->At(mother_id) : nullptr;
     if (!mother) continue;
@@ -157,13 +164,6 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
       }
     }
 
-    //const int iTof = int(HasTOF(track));
-    //float pT = track->Pt() * fCharge;
-    //const int iC = part->Charge() > 0 ? 1 : 0;
-    //for (int iR = iTof; iR >= 0; iR--) {
-    //  fReconstructed[iR][iC]->Fill(centrality,part->Pt());
-    //}
-
   } // End AOD track loop
 
   for (const auto& mum : mothers) {
@@ -172,8 +172,7 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
     const int iC = part->Charge() > 0 ? 1 : 0;
     const int pdg = TMath::Abs(part->GetPdgCode());
     const int iS = pdg == 9322134 ? 0 : pdg == 9322136 ? 1 : -1;
-    const int mult = -1 + 2 * iC;
-    const float pt_rec = mult*TMath::Sqrt(mum.Px*mum.Px+mum.Py*mum.Py);
+    const float pt_rec = TMath::Sqrt(mum.Px*mum.Px+mum.Py*mum.Py);
     fReconstructed[0][iC]->Fill(iS,pt_rec);
     if(mum.tof) fReconstructed[1][iC]->Fill(iS,pt_rec);
   }
