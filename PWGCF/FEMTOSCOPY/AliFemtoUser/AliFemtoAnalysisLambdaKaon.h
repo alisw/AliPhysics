@@ -102,6 +102,7 @@ struct AnalysisParams
   bool monitorPart1CutPassOnly;
   bool monitorPart2CutPassOnly;
   bool monitorPairCutPassOnly;
+  bool useMCWeightGenerator;
 };
 
 struct EventCutParams

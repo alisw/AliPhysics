@@ -846,12 +846,95 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (aodxi->CosPointingAngle(fV1) < 0.9) continue;
       if (aodxi->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]) < 0.98) continue;
 
-      const AliAODTrack *daughterTrackPos = (AliAODTrack *)aodxi->GetDaughter(0), // getting positive daughter track
-                        *daughterTrackNeg = (AliAODTrack *)aodxi->GetDaughter(1); // getting negative daughter track
-      if (daughterTrackPos == NULL || daughterTrackNeg == NULL) continue;         // daughter tracks must exist
+      AliAODTrack *daughterTrackPos = (AliAODTrack *)aodxi->GetDaughter(0), // getting positive daughter track
+                        *daughterTrackNeg = (AliAODTrack *)aodxi->GetDaughter(1), // getting negative daughter track
+                        *bachTrack = (AliAODTrack *)aodxi->GetDecayVertexXi()->GetDaughter(0);
+
+      if (daughterTrackPos == NULL || daughterTrackNeg == NULL || bachTrack == NULL) continue;         // daughter tracks must exist
       if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue;     // and have different charge
 
       AliFemtoXi *trackCopyXi = CopyAODtoFemtoXi(aodxi);
+
+      //TODO for now, in AliFemtoHiddenInfo, consider V0 as positive daughter and bachelor pion as negative daughter
+      //Methods will either be added to AliFemtoHiddenInfo to handle the Cascade case, or a new class will be constructed
+      if (mcP) {
+        daughterTrackPos->SetAODEvent(fEvent);
+        daughterTrackNeg->SetAODEvent(fEvent);
+        bachTrack->SetAODEvent(fEvent);
+        if (daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0 && bachTrack->GetLabel()) {
+          // get the MC data for the two daughter particles
+          const AliAODMCParticle *mcParticlePos = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackPos->GetLabel())),
+                                 *mcParticleNeg = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackNeg->GetLabel()));
+
+          //TODO double check this
+          const AliAODMCParticle *mcParticleBac;
+          if(bachTrack->GetLabel() > -1) mcParticleBac = static_cast<AliAODMCParticle*>(mcP->At(bachTrack->GetLabel()));
+          else mcParticleBac = static_cast<AliAODMCParticle*>(mcP->At(-1-bachTrack->GetLabel()));
+
+          // They daughter info MUST exist for both
+          if ((mcParticlePos != NULL) && (mcParticleNeg != NULL) && (mcParticleBac != NULL)) {
+            // Get the mother ID of the two daughters
+            const int motherOfPosID = mcParticlePos->GetMother(),
+                      motherOfNegID = mcParticleNeg->GetMother(),
+                      motherOfBacID = mcParticleBac->GetMother();
+
+            // If both daughter tracks refer to the same mother, we can continue
+            if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)) {
+
+              // Our V0 particle
+              const AliAODMCParticle *v0 = static_cast<AliAODMCParticle*>(mcP->At(motherOfPosID));
+              const int motherOfV0ID = v0->GetMother();
+              // If both V0 and bachelor pion trakcs refer to the same mother, we can continue
+              if((motherOfV0ID > -1) && (motherOfV0ID == motherOfBacID))
+              {
+                // Create the MC data store
+                AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+                const AliAODMCParticle *xi = static_cast<AliAODMCParticle*>(mcP->At(motherOfV0ID));
+
+                if (xi == NULL) {
+                  tInfo->SetPDGPid(0);
+                  tInfo->SetTrueMomentum(0.0, 0.0, 0.0);
+                  tInfo->SetMass(0);
+                } else {
+                  //-----xi particle-----
+                  const int xiMotherId = xi->GetMother();
+                  if (xiMotherId > -1) { //V0 particle has a mother
+                    AliAODMCParticle *motherOfXi = static_cast<AliAODMCParticle*>(mcP->At(xiMotherId));
+                    tInfo->SetMotherPdgCode(motherOfXi->GetPdgCode());
+                  }
+                  tInfo->SetPDGPid(xi->GetPdgCode());
+                  tInfo->SetMass(xi->GetCalcMass());
+                  tInfo->SetTrueMomentum(xi->Px(), xi->Py(), xi->Pz());
+                  tInfo->SetEmissionPoint(xi->Xv(), xi->Yv(), xi->Zv(), xi->T());
+
+		  if(xi->IsPhysicalPrimary())
+		    tInfo->SetOrigin(0);
+		  else if(xi->IsSecondaryFromWeakDecay())
+		    tInfo->SetOrigin(1);
+		  else if(xi->IsSecondaryFromMaterial())
+		    tInfo->SetOrigin(2);
+		  else
+		    tInfo->SetOrigin(-1);
+		
+                  //-----Positive daughter (//TODO for now, V0 daughter) of xi-----
+                  tInfo->SetPDGPidPos(v0->GetPdgCode());
+                  tInfo->SetMassPos(v0->GetCalcMass());
+                  tInfo->SetTrueMomentumPos(v0->Px(), v0->Py(), v0->Pz());
+                  tInfo->SetEmissionPointPos(v0->Xv(), v0->Yv(), v0->Zv(), v0->T());
+
+                  //-----Negative daughter (//TODO for now, bachelor pion) of xi-----
+                  tInfo->SetPDGPidNeg(mcParticleBac->GetPdgCode());
+                  tInfo->SetMassNeg(mcParticleBac->GetCalcMass());
+                  tInfo->SetTrueMomentumNeg(mcParticleBac->Px(), mcParticleBac->Py(), mcParticleBac->Pz());
+                  tInfo->SetEmissionPointNeg(mcParticleBac->Xv(), mcParticleBac->Yv(), mcParticleBac->Zv(), mcParticleBac->T());
+                }
+                trackCopyXi->SetHiddenInfo(tInfo);
+              }
+            }
+          }
+        }
+      }
+
       tEvent->XiCollection()->push_back(trackCopyXi);
       count_pass++;
     }
