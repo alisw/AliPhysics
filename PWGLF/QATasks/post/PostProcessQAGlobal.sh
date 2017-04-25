@@ -22,21 +22,40 @@ collsys="0"                       # 0 = PbPb, 1 = pp/pPb
 ismc="kFALSE"                     # kTRUE if MC production
 log=AnalysisResults.log           # log file
 
+kpid="false"                      # "true" if want to apply QA anslysis on PID
+kresonances="false"               # "true" if want to apply QA anslysis on resonances
+ksinglestrange="true"             # "true" if want to apply QA anslysis on single-strange particles
+kmultistrange="true"              # "true" if want to apply QA anslysis on multi-strange particles
+kpdf="true"                       # "true" if want to produce the pdf presentation
+
 
 #//////////////////////////////////
 #  CHOOSE FUNCTIONS TO BE EXECUTED
 #//////////////////////////////////
 
 main (){
-
-pid
-resonances
-singlestrange
-multistrange
-movepng
-presentation
-cleanfolder
-
+  if [ $kpid == "true" ]
+    then pid
+    else echo "QA analysis on PID not executed!!"
+  fi
+  if [ $kresonances == "true" ]
+    then resonances
+    else echo "QA analysis on resonsnces not executed!!"
+  fi
+  if [ $ksinglestrange == "true" ]
+    then singlestrange
+    else echo "QA analysis on single-strange particles not executed!!"
+  fi
+  if [ $kmultistrange == "true" ]
+    then multistrange
+    else echo "QA analysis on multi-strange particles not executed!!"
+  fi
+  if [ $kpdf == "true" ]; then
+    movepng
+    presentation
+    cleanfolder
+    else echo "The pdf presentation creation has not been executed!!"
+  fi
 }
 
 
