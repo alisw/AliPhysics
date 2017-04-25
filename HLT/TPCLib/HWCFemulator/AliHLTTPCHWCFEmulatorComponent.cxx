@@ -75,6 +75,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fNoiseSuppression(0),
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
+  fPadNoiseReduction(0),
   fSmoothing(0),
   fSmoothingThreshold(0),
   fIORatioCorrection(1.),
@@ -119,6 +120,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fNoiseSuppression(0),
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
+  fPadNoiseReduction(0),
   fSmoothing(0),
   fSmoothingThreshold(0),
   fIORatioCorrection(1.),
@@ -416,6 +418,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fNoiseSuppressionNeighbor  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       HLTInfo( "Noise Suppression neighbor parameter is set to: %d", fNoiseSuppressionNeighbor );
+      continue;
+    }
+
+    if ( argument.CompareTo( "-pad-noise-reduction" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fPadNoiseReduction  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Pad Noise Reduction parameter is set to: %d", fPadNoiseReduction );
       continue;
     }
 
@@ -719,6 +728,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 		fCFEmulator.SetNoiseSuppression(fNoiseSuppression);
 		fCFEmulator.SetNoiseSuppressionMinimum(fNoiseSuppressionMinimum);
 		fCFEmulator.SetNoiseSuppressionNeighbor(fNoiseSuppressionNeighbor);
+		fCFEmulator.SetPadNoiseReduction(fPadNoiseReduction);
 		fCFEmulator.SetSmoothing(fSmoothing);
 		fCFEmulator.SetSmoothingThreshold(fSmoothingThreshold);
 		fCFEmulator.SetClusterQMaxLowerLimit(fClusterQMaxLowerLimit);

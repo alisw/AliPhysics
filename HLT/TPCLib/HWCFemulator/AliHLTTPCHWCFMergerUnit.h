@@ -43,6 +43,9 @@ class AliHLTTPCHWCFMergerUnit
   /** update MeanTime value when merging fragments */
   void SetMatchTimeFollow( bool val ){ fMatchTimeFollow = val; }
 
+  //Set noise reduction setting
+  void SetNoiseReduction( bool val ){ fNoiseReduction = val; }
+
  /** initialise */
   int Init();
   
@@ -63,6 +66,7 @@ class AliHLTTPCHWCFMergerUnit
   unsigned int fMatchDistance; // max distance in timebins for matching fragments
   bool fMatchTimeFollow;    // update MeanTime value when merging fragments 
   bool fDeconvolute; // do cluster deconvolution in pad direction
+  bool fNoiseReduction; //Simple filter in state machine to reduce splitting due to noise
   bool fByPassMerger;// bypass the merger 
   AliHLTTPCHWCFClusterFragment fInput; // current input
   AliHLTTPCHWCFClusterFragment fMemory[2][AliHLTTPCHWCFDefinitions::kMaxNTimeBins*2]; // memory for 2 channels
