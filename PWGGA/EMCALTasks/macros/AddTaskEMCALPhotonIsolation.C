@@ -163,6 +163,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetLCAnalysis(isLCAnalysis);
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetEtIsoThreshold(EtIso);
+  task->SetTMClusterRejection(bTMClusterRejection);
+  task->SetTMClusterRejectioninCone(bTMClusterRejectionInCone);
   task->SetCTMdeltaEta(TMdeta);
   task->SetCTMdeltaPhi(TMdphi);
   task->SetCTMdeltaEtaIso(TMdetaIso);
