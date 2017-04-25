@@ -1286,7 +1286,7 @@ AliFemtoAvgSepCorrFctn* AliFemtoAnalysisLambdaKaon::CreateAvgSepCorrFctn(const c
 //___________________________________________________________________
 AliFemtoModelCorrFctnKStarFull* AliFemtoAnalysisLambdaKaon::CreateModelCorrFctnKStarFull(const char* name, unsigned int bins, double min, double max)
 {
-  bool tUseWeightGenerator = true;
+  bool tUseWeightGenerator = fAnalysisParams.useMCWeightGenerator;
 
   AliFemtoModelCorrFctnKStarFull *cf = new AliFemtoModelCorrFctnKStarFull(TString::Format("KStarModelCf_%s",name),bins,min,max);
     cf->SetRemoveMisidentified(fAnalysisParams.removeMisidentifiedMCParticles);
@@ -1607,6 +1607,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.monitorPart1CutPassOnly = false;
   tReturnParams.monitorPart2CutPassOnly = false;
   tReturnParams.monitorPairCutPassOnly = false;
+  tReturnParams.useMCWeightGenerator = false;
 
   return tReturnParams;
 }
