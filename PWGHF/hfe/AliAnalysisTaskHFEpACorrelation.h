@@ -71,6 +71,7 @@ class AliAnalysisTaskHFEpACorrelation : public AliAnalysisTaskSE
 {
     //______________________________________________________________________
 public:
+    
     AliAnalysisTaskHFEpACorrelation();
     AliAnalysisTaskHFEpACorrelation(const char *name);
     virtual ~AliAnalysisTaskHFEpACorrelation();
@@ -94,14 +95,14 @@ public:
     void SetEtaCut(Double_t EtaCutMin,Double_t EtaCutMax ) { fEtaCutMin = EtaCutMin; fEtaCutMax = EtaCutMax; };
     void SetpTBins(Int_t n, Float_t* array) { fpTBins.Set(n,array); };
     
-    
     void SetNonHFEangleCut(Double_t AngleCut) { fAngleCut = AngleCut; fAngleCutFlag = kTRUE;};
     void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
     void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
     
     void SetEfficiencyHadron(TH3F *hMap){if(fEffHadron) delete fEffHadron;fEffHadron = (TH3F*)hMap->Clone();}
-    void SetEfficiencyInclusive(TH3F *hMap){if(fEffInc) delete fEffInc; fEffInc = (TH3F*)hMap->Clone();}
-    void SetEfficiencyBackground(TH3F *hMap){if(fEffBkg) delete fEffBkg; fEffBkg = (TH3F*)hMap->Clone();}
+    
+    void SetBackgroundPi0Weight(TH1F *hBkgPi0W) {if(fBkgPi0Weight) delete fBkgPi0Weight; fBkgPi0Weight = (TH1F*) hBkgPi0W->Clone("fBkgPi0Weight");}
+    void SetBackgroundEtaWeight(TH1F *hBkgEtaW) {if(fBkgEtaWeight) delete fBkgEtaWeight; fBkgEtaWeight = (TH1F*) hBkgEtaW->Clone("fBkgEtaWeight");}
     
     //DCA cut main particle
     void SetdcaCut(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutr = DCAcutr; fDCAcutz = DCAcutz;};
@@ -131,6 +132,14 @@ public:
     //______________________________________________________________________
 private:
     
+    enum CocktailType_t{
+        kNoCoktail = 0,
+        kHijing = 1,
+        kHFEnhanced = 2,
+        kBackgroundEnhanced = 3,
+        kUndefined = 4
+    } ;
+    
     //Function to process track cuts
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     //Function to process eh analysis
@@ -143,6 +152,17 @@ private:
     Double_t GetHadronEfficiency(Double_t pT, Double_t eta, Double_t zvtx);
     
     Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
+    Double_t CalculateWeightRun2(Int_t pdg_particle, Double_t pt);
+    
+    void ComputeWeightInEnhancedSample();
+    CocktailType_t FindTrackGenerator(Int_t label, AliAODMCHeader *header,TClonesArray *arrayMC);
+    void GetTrackPrimaryGenerator(Int_t lab,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
+    TString GetGenerator(Int_t label, AliAODMCHeader* header);
+
+    void TaggingEfficiencyCalculation(AliVTrack *track,Bool_t *lIsNHFe,Bool_t *lIsHFe,Bool_t *lIsOther, Bool_t *lHasMother);
+    void TaggingEfficiencyCalculationRun1(AliVTrack *track, Bool_t *lIsNHFe,Bool_t *lIsHFe,Bool_t *lIsOther, Bool_t *lHasMother);
+    void TaggingEfficiencyCalculationRun2(AliVTrack *track, Bool_t *lIsNHFe,Bool_t *lIsHFe,Bool_t *lIsOther, Bool_t *lHasMother);
+    
     //Flags for specifics analysis
     Bool_t 				fCorrelationFlag; //
     Bool_t              fUseKF;
@@ -191,8 +211,6 @@ private:
     Bool_t                  fUseDCACutforHadrons;
     
     //Efficiency Maps
-    TH3F                    *fEffInc;
-    TH3F                    *fEffBkg;
     TH3F                    *fEffHadron;
     
     //Histograms
@@ -398,12 +416,14 @@ private:
     TH1F                *fEtaCutElectronBKLSMainSources_WithMotherW; //!
     TH1F                *fEtaCutElectronBKLSMainSources_WithMotherW_NW; //!
     //Background weight calculation
-    TH1F                *fPtMCpi0_all; //!
-    TH1F                *fPtMCeta_all; //!
-    TH1F                *fPtMCpi0_PhysicalPrimary; //!
-    TH1F                *fPtMCeta_PhysicalPrimary; //!
-    TH1F                *fPtMCpi0_Primary; //!
-    TH1F                *fPtMCeta_Primary; //!
+    
+    TH1F                *fPtMCpi0_NoMother; //!
+    TH1F                *fPtMCpi0_PureHijing; //!
+    TH1F                *fPtMCEta_NoMother; //!
+    TH1F                *fPtMCEta_PureHijing; //!
+    
+    TH1F                *fBkgPi0Weight; //
+    TH1F                *fBkgEtaWeight; //
     
     //DPhi MC
     TH2F                **fCEtaPhiNoEtaCutInclusive;  //!
@@ -434,7 +454,7 @@ private:
     AliAnalysisTaskHFEpACorrelation(const AliAnalysisTaskHFEpACorrelation&); 			// not implemented
     AliAnalysisTaskHFEpACorrelation& operator=(const AliAnalysisTaskHFEpACorrelation&); 		// not implemented
     
-    ClassDef(AliAnalysisTaskHFEpACorrelation, 2); 								// example of analysis
+    ClassDef(AliAnalysisTaskHFEpACorrelation, 3); 								// example of analysis
     //______________________________________________________________________
 };
 
