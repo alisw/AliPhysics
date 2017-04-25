@@ -2779,7 +2779,7 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
     }
     
     //Total number of NHFe in the enh. sample
-    Double_t MotherW = 1.;
+    Double_t MotherW = CalculateWeightRun2(TMath::Abs(MCMother->GetPdgCode()),pT);
     
     fEtaCutElectronBKNoTag->Fill(track->Pt());
     fEtaCutElectronBKNoTag_WithMotherW->Fill(track->Pt(),MotherW);
