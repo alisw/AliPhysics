@@ -849,6 +849,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fEvents->Sumw2();
   fOutput->Add(fEvents);
   
+  fClusEvsClusT = new TH2D("fClustTimeVSClustEn", "Distribution of cluster Time as a function of the cluster Energy", 70, 0., 70., 120, -40., 80.);
+  fClusEvsClusT->SetXTitle("E_{T,clus} (GeV/c)    ");
+  fClusEvsClusT->SetYTitle("Time_{clus} (ns)    ");
+  fClusEvsClusT->Sumw2();
+  fOutput->Add(fClusEvsClusT);
+  
   fPtaftTime = new TH1D("hPtaftTime_NC","p_{T} distribution for Clusters after cluster time cut",200,0.,100.);
   fPtaftTime->Sumw2();
   fOutput->Add(fPtaftTime);
@@ -1016,6 +1022,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   Double_t coiTOF = coi->GetTOF()*1e9;
   index=coi->GetID();
+  fClusEvsClusT->Fill(vecCOI.Pt(),coiTOF);
   if(!fIsMC){
     if(coiTOF< -30. || coiTOF > 30.)
       return kFALSE;
@@ -1193,6 +1200,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     coi->GetMomentum(vecCOI,fVertex);
 
     if(fQA)  FillQAHistograms(coi,vecCOI);
+    
     
     Bool_t isSelected = SelectCandidate(coi);
 
