@@ -109,7 +109,7 @@ class AliAnalysisTaskForStudents : public AliAnalysisTaskSE{
 
   // new start
   Int_t  num, fhr2bin, fsize, fbinnum, fcounter1, fcounter2, fcounter3, fmult;
-  Double_t c2, fhr2min, fhr2max, fper2, fper4, fvarb, fmu, fymin, fymax, fc4, fc3, fc22, fc24, fc23, fper3 ;
+  Double_t c2, fhr2min, fhr2max, fper2, fper3, fper4, fvarb, fmu, fymin, fymax, fc4, fc3, fc22, fc24, fc23;
   
   Double_t fsc4[9], fcentral[9], fyerr[9]; // [0] = x, [1] = y
 
@@ -129,7 +129,7 @@ class AliAnalysisTaskForStudents : public AliAnalysisTaskSE{
    
   // new end
 
-  ClassDef(AliAnalysisTaskForStudents,2);
+  ClassDef(AliAnalysisTaskForStudents,3);
 
 };
 
