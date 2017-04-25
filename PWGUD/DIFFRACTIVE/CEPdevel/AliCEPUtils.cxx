@@ -611,7 +611,7 @@ void AliCEPUtils::V0Analysis (
   AliESDtrack *trackPos, *trackNeg;
   Bool_t goodPair = kFALSE;
   Double_t pos0[3], pos1[3];
-  Double_t d, cosTh;
+  Double_t d, cosTh, pTArm, alphaArm;
   Double_t mom1[3], mom2[3];
   TVector3 p0,pV0;
 
@@ -644,6 +644,7 @@ void AliCEPUtils::V0Analysis (
       goodPair = kTRUE;
     if (!goodPair) continue;
     
+    /*
     // check distance to main vertex and pointing direction of V0
     V0->XvYvZv(pos1);
     d = sqrt(
@@ -651,6 +652,7 @@ void AliCEPUtils::V0Analysis (
       (pos0[1]-pos1[1])*(pos0[1]-pos1[1])+
       (pos0[2]-pos1[2])*(pos0[2]-pos1[2]) );
     // printf("d = %f\n",d);
+    */
     
     // compute further cut parameters and fill them into the histograms
     pointingAngle = V0->GetV0CosineOfPointingAngle();
@@ -659,8 +661,7 @@ void AliCEPUtils::V0Analysis (
     v0mass        = V0->GetEffMass(4,2);  // assume proton+pion
 
     // cuts on V0 topological quantities
-    if ( pointingAngle < 0.99 || daughtersDCA > 0.005 || decayLength < 6.0 ||
-      v0mass < 0.90 || v0mass > 1.33 ) continue;
+    if ( pointingAngle < 0.99 || daughtersDCA > 0.005 || decayLength < 6.0 ) continue;
 
     ((TH1F*)lhh->At(0))->Fill(pointingAngle);
     ((TH1F*)lhh->At(1))->Fill(daughtersDCA);
@@ -669,11 +670,14 @@ void AliCEPUtils::V0Analysis (
     printf("%f %f %f %f\n",pointingAngle,daughtersDCA,decayLength,v0mass);
     
     // update armenteros alpha vs pT histogram
+    pTArm    = V0->PtArmV0();
+    alphaArm = V0->AlphaV0();
+    
     TGraph* gr = (TGraph*)lhh->At(4);
     gr->Expand(fnV0dp+1,10);
     gr->SetPoint(fnV0dp,V0->AlphaV0(),V0->PtArmV0());
     fnV0dp++;
-    printf("alpha/pT = %f/%f\n",V0->AlphaV0(),V0->PtArmV0());
+    printf("V0[%i] alpha/pT = %f/%f\n",fnV0dp,alphaArm,pTArm);
     
   }
   
@@ -961,14 +965,18 @@ Int_t AliCEPUtils::countstatus(TArrayI *stats,
 
   for (Int_t ii=0; ii<nstats; ii++) {
     
+    // printf("status[%i]: %i\n",ii,stats->At(ii));
     ktmp = kFALSE;
     for (Int_t jj=0; jj<ntests;jj++) {
-      
+      // printf("test[%i]: %i / %i - %i\n",
+      //  jj,masks->At(jj),patterns->At(jj),
+      //  checkstatus(stats->At(ii),masks->At(jj),patterns->At(jj)));
       if (checkstatus(stats->At(ii),masks->At(jj),patterns->At(jj))) {
         ktmp = kTRUE;
         break;
       }
     }
+    // printf("\n");
       
     if (ktmp) {
       // increment the counter
@@ -1038,32 +1046,35 @@ Int_t AliCEPUtils::GetCEPTracks(
   // nTrackSel>=npureITSTracks && nTrackSel>=nTracklets
   const AliMultiplicity *mult = ESDEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
-  if (nTrackSel<npureITSTracks || nTrackSel<nTracklets) return -2;
+  if (nTrackSel<npureITSTracks || nTrackSel<nTracklets) return -4;
   
   // further track tests
   Int_t nTrackAccept;
-  mask += AliCEPBase::kTTeta;
-  pattern += AliCEPBase::kTTeta;
+  mask = AliCEPBase::kTTeta;
+  pattern = AliCEPBase::kTTeta;
   masks->Set(2);
   patterns->Set(2);
-  masks->AddAt(mask+AliCEPBase::kTTAccITSTPC,0);
-  masks->AddAt(mask+AliCEPBase::kTTAccITSSA, 1);
+  masks->AddAt(mask | AliCEPBase::kTTAccITSTPC,0);
+  masks->AddAt(mask | AliCEPBase::kTTAccITSSA, 1);
   patterns->AddAt(pattern+AliCEPBase::kTTAccITSTPC,0);
   patterns->AddAt(pattern+AliCEPBase::kTTAccITSSA, 1);
   nTrackAccept = countstatus(stats,masks,patterns,indices);
+  // printf("nTrackSel, nTrackAccept: %i, %i\n",nTrackSel,nTrackAccept);
   if (nTrackAccept<nTrackSel) return -3;
   
   // FiredChips test
   Bool_t fpassedFiredChipsTest = TestFiredChips(ESDEvent,indices);
-  if (!fpassedFiredChipsTest) return -4;
+  if (!fpassedFiredChipsTest) return -5;
 
+  /*
   printf("<I - UserExec> nBad            : %i\n",nbad);
   printf("<I - UserExec> nTracklets      : %i\n",nTracklets);
   printf("<I - UserExec> npureITSTracks  : %i\n",npureITSTracks);
   printf("<I - UserExec> nTrackSel       : %i\n",nTrackSel);
   printf("<I - UserExec> FiredChipsTest  : %i\n",fpassedFiredChipsTest);
   printf("<I - UserExec> nTrackAccept    : %i\n",nTrackAccept);
-
+  */
+  
   // clean up
   if (masks) {
     delete masks;
@@ -1077,6 +1088,8 @@ Int_t AliCEPUtils::GetCEPTracks(
     delete indices;
     indices = 0x0;
   }
+  
+  return nTrackAccept;
   
 }
 
