@@ -5,7 +5,6 @@
 
 //________________________________________________
 /// \class AliEMCALTriggerElectronics
-/// \ingroup EMCALsim
 /// \brief EMCal trigger electronics manager L0/L1
 ///
 /// EMCal trigger electronics manager L0/L1
@@ -45,10 +44,16 @@ private:
   AliEMCALTriggerElectronics(const AliEMCALTriggerElectronics& other);            // Not implemented
   AliEMCALTriggerElectronics& operator=(const AliEMCALTriggerElectronics& other); // Not implemented
   
+  Int_t                 fNTRU;     //< Total number of TRUs
   TClonesArray*         fTRU;      ///< 32 TRU
   AliEMCALTriggerSTU*   fSTU;      ///<  1 STU
   AliEMCALGeometry     *fGeometry; ///< EMCal geometry
-  
+ 
+  Int_t                fEMCALFw;  //< EMCAL STU firmware version
+  Int_t                fDCALFw;   //<  DCAL STU firmware version
+  TClonesArray*        fTRUDCAL;  //< 14 TRU
+  AliEMCALTriggerSTU*  fSTUDCAL;  //< 1 STU for DCAL
+ 
   /// \cond CLASSIMP
   ClassDef(AliEMCALTriggerElectronics,1) ;
   /// \endcond
