@@ -24,7 +24,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode)
   task->SetUseMultiplicity();
   task->SetTriggerMask(AliVEvent::kINT7); 
   task->SelectCollisionCandidates(AliVEvent::kINT7); // kINT7 or kMB
-  if(hasMC) task->SetMCParticleType(AlidNdPtUnifiedAnalysisTask::ParticleType::kPrimary); //only if MC, particle dependent MC analysis
+//  if(hasMC) task->SetMCParticleType(AlidNdPtUnifiedAnalysisTask::ParticleType::kPrimary); //only if MC, particle dependent MC analysis
 
 
   Int_t multNbins = 252;  
