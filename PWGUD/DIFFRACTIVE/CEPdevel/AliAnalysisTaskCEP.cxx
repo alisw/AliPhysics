@@ -137,9 +137,12 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 	, fTrackCuts(0x0)
   , fMartinSel(0x0)
   , fMCCEPSystem(TLorentzVector(0,0,0,0))
+  , flQArnum(0x0)
+  , flBBFlag(0x0)
 	, flSPDpileup(0x0)
 	, flnClunTra(0x0)
 	, flVtx(0x0)
+  , flV0(0x0)
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
@@ -237,6 +240,10 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
   if (flVtx) {
     delete flVtx;
     flVtx = 0x0;
+  }
+  if (flV0) {
+    delete flV0;
+    flV0 = 0x0;
   }
 
   // delete fHist and fCEPtree
@@ -431,12 +438,12 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
     // add histograms to the output list
     for (Int_t ii=0; ii<flVtx->GetEntries(); ii++)
       fHist->Add((TObject*)flVtx->At(ii));
-  }
+  } else flVtx = NULL;
   
   // histograms for Armenteros-Podolanski plot
   if (fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitV0Study,AliCEPBase::kBitV0Study)) {
-    
+            
     // get list of histograms
     flV0 = new TList();
     flV0 = fCEPUtil->GetV0QAHists();
@@ -444,7 +451,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
     // add histograms to the output list
     for (Int_t ii=0; ii<flV0->GetEntries(); ii++)
       fHist->Add((TObject*)flV0->At(ii));
-  }
+  } else flV0 = NULL;
   
   // histogram for event statistics
   fhStatsFlow = fCEPUtil->GetHistStatsFlow();
@@ -706,9 +713,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //printf("<I - UserExec> nMartinSel: %i\n",nMartinSel);
     
   // use the AliCEPUtils::GetCEPTracks method
-  //TArrayI *Pindices  = new TArrayI();
-  //Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
-  //if (nMartinSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
+  TArrayI *Pindices  = new TArrayI();
+  Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
+  // if (nMartinSel>0 || nPaulSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
 
   // get the tracks which meet the TT conditions
   // the TT mask and pattern are given as input parameter

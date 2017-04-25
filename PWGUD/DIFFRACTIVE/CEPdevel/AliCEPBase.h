@@ -139,7 +139,7 @@ class AliCEPBase : public TObject {
     kBitVtxStudy              = (1<< 7), // Vtx study
     kBitTrackCutStudy         = (1<< 8), // track cut study
     kBitBBFlagStudy           = (1<< 9), // BBFlag study
-    kBitV0Study               = (1<<10), // BBFlag study
+    kBitV0Study               = (1<<10), // V0 study
 		kBitConfigurationVersion  = (1<<11)  // always set, last bit
 	
   };
