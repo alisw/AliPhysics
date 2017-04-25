@@ -603,6 +603,10 @@ Long64_t AliCascadeResult::Merge(TCollection *hlist)
             }
             //... if all fine, add this histogram
             GetHistogram()->Add(xh->GetHistogram());
+            
+            //... if proton profiles are both defined, merge that as well, please
+            if ( fProtonProfile && xh->GetProtonProfileToCopy() )
+                GetProtonProfile()->Add(xh->GetProtonProfile());
         }
     }
     return (Long64_t) GetHistogram()->GetEntries();
