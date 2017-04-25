@@ -34,23 +34,23 @@ kpdf="true"                       # "true" if want to produce the pdf presentati
 #//////////////////////////////////
 
 main (){
-  if [ $kpid == "true" ]
+  if [ "$kpid" = "true" ]
     then pid
     else echo "QA analysis on PID not executed!!"
   fi
-  if [ $kresonances == "true" ]
+  if [ "$kresonances" = "true" ]
     then resonances
     else echo "QA analysis on resonsnces not executed!!"
   fi
-  if [ $ksinglestrange == "true" ]
+  if [ "$ksinglestrange" = "true" ]
     then singlestrange
     else echo "QA analysis on single-strange particles not executed!!"
   fi
-  if [ $kmultistrange == "true" ]
+  if [ "$kmultistrange" = "true" ]
     then multistrange
     else echo "QA analysis on multi-strange particles not executed!!"
   fi
-  if [ $kpdf == "true" ]; then
+  if [ "$kpdf" = "true" ]; then
     movepng
     presentation
     cleanfolder
@@ -105,7 +105,7 @@ function movepng(){
 # CREATE THE PDF USING LATEX
 function presentation(){
   echo " \n STARTING TO PRODUCE THE PDF FILE"
-  pdflatex "\providecommand{\ismc}{"$ismc"}\providecommand{\titlename}{"$presentationtitle"}\input{presentation.tex}"
+  pdflatex "\providecommand{\ismc}{"$ismc"}\providecommand{\titlename}{"$presentationtitle"}\providecommand\pidon{"$kpid"}\providecommand\resonanceson{"$kresonances"}\providecommand\singlestrangeon{"$ksinglestrange"}\providecommand\multistrange{"$kmultistrange"}\input{presentation.tex}"
   mv presentation.pdf "PWG-LF_QAanalysis_$outputfilename".pdf
 }
 #_________________
