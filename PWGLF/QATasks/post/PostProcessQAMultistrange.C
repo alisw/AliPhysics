@@ -463,7 +463,7 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
         TList *l = (TList*) f->Get("PWGLFStrangeness.outputCheckCascade/fListHistMultistrangeQA");
         Char_t *histoname[4] = {"fHistCascadeMultiplicityXiMinusForMC","fHistCascadeMultiplicityXiPlusForMC","fHistCascadeMultiplicityOmegaMinusForMC","fHistCascadeMultiplicityOmegaPlusForMC"}; 
         TCanvas *c5 = new TCanvas("c5","",1200,800);
-        c6->Divide(2,2);
+        c5->Divide(2,2);
         TH1D** hvar18 = new TH1D*[4];
         Double_t mean[4] = {};
         Double_t integral[4] = {};
