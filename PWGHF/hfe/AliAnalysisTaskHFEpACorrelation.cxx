@@ -2019,7 +2019,8 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     Bool_t fLsIsPartner = kFALSE;
     ///#################################################################
     
-    TaggingEfficiencyCalculation(track,&lIsNHFe,&lIsHFe,&lIsOther,&lHasMother);
+    if (fIsMC)
+        TaggingEfficiencyCalculation(track,&lIsNHFe,&lIsHFe,&lIsOther,&lHasMother);
     
     
     if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
