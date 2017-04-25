@@ -164,6 +164,23 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhDetJetPt_Incl;
   TH1F                                *fhDetJetPt_Matched;
   TTree                               *fTreeJetInfo;  //Tree with tagging variables subtracted MC or true MC or raw
+
+  TH1F                                *fhJetPt_Det;
+  TH1F                                *fhJetPt_True;
+  TH1F                                *fhJetPhi_Det;
+  TH1F                                *fhJetPhi_True;
+  TH1F                                *fhJetEta_Det;
+  TH1F                                *fhJetEta_True;
+  TH1F                                *fhJetMass_Det;
+  TH1F                                *fhJetMass_True;
+  TH1F                                *fhJetRadius_Det;
+  TH1F                                *fhJetRadius_True;
+  TH1F                                *fhJetCounter_Det;
+  TH1F                                *fhJetCounter_True;
+  TH1F                                *fhNumberOfJetTracks_Det;
+  TH1F                                *fhNumberOfJetTracks_True;
+  TH2F                                *fh2PtRatio; 
+    
   
 
  private:
