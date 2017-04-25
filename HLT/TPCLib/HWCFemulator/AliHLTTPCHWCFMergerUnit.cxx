@@ -35,6 +35,7 @@ AliHLTTPCHWCFMergerUnit::AliHLTTPCHWCFMergerUnit()
   fMatchTimeFollow(0),
   fDeconvolute(0),
   fByPassMerger(0),
+  fNoiseReduction(0),
   fInput()
 {
   //constructor 
@@ -54,6 +55,7 @@ AliHLTTPCHWCFMergerUnit::AliHLTTPCHWCFMergerUnit(const AliHLTTPCHWCFMergerUnit&)
   fMatchTimeFollow(0),
   fDeconvolute(0),
   fByPassMerger(0),
+  fNoiseReduction(0),
   fInput()
 {
   // dummy
@@ -215,7 +217,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
     } else {
       // cout<<"merge search range at "<<fSearchStart-1<<" of "<<fSearchEnd<<endl;
       fInput.fSlope = s.fSlope;
-      if( !fInput.fSlope && s.fLastQ > fInput.fQ ) fInput.fSlope = 1;
+      if( !fInput.fSlope && (fNoiseReduction ? (s.fLargestQ * 7 / 8 > fInput.fQ) : (s.fLastQ > fInput.fQ)) ) fInput.fSlope = 1;
       if (fInput.fQmax < s.fQmax) fInput.fQmax = s.fQmax;
       fInput.fNPads += s.fNPads;
       if( s.fConsecutiveTimeDeconvolution == 2 ) fInput.fConsecutiveTimeDeconvolution = 2;
