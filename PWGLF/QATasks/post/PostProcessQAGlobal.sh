@@ -114,6 +114,10 @@ function cleanfolder(){
    rm -rf presentation.aux presentation.log presentation.nav presentation.out presentation.snm presentation.toc
 }
 
+#__________________________
+# Execute the main function
+main "$@"
+
 
 
 		 
