@@ -214,7 +214,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
       for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
         emcalTriggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
         emc8Triggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
-        if(fRequireL0forL1 || !bool(selectionstatus & (AliVEvent::kEMC7|AliVEvent::kEMC8))) {
+        if(fRequireL0forL1 && !bool(selectionstatus & (AliVEvent::kEMC7|AliVEvent::kEMC8))) {
           emcalTriggers[iclass] = false;
           emc8Triggers[iclass] = false;
         }
