@@ -1,8 +1,8 @@
 void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", char* eventTrigger="kINT7"){
-  
+
   TString stEventTrigger(eventTrigger);
   TString stParticleMode(particleMode);
-  
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {Error("AddTask_dNdPtpp_TPCITS", "No analysis manager found.");return 0;}
 
@@ -12,8 +12,8 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   AliLog::SetGlobalLogLevel(AliLog::kError);
   mgr->SetDebugLevel(0);
 
-  
-  /// Create event cuts  
+
+  /// Create event cuts
   Float_t zvWindow = 30. ;
 
   AlidNdPtEventCuts *evtCuts = new AlidNdPtEventCuts("AlidNdPtEventCuts","Event cuts");
@@ -21,7 +21,7 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   evtCuts->SetMeanXYZv(0.0,0.0,0.0);
   evtCuts->SetSigmaMeanXYZv(1.0,1.0,10.0);
   evtCuts->SetTriggerRequired(kTRUE);
-  
+
   // Create geom. acceptance cuts
 
   Float_t etaWindow = 1. ;
@@ -30,12 +30,12 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   AlidNdPtAcceptanceCuts *accCuts = new AlidNdPtAcceptanceCuts("AlidNdPtAcceptanceCuts","Geom. acceptance cuts");
   accCuts->SetEtaRange(-etaWindow,etaWindow);
   accCuts->SetPtRange(ptMin,1.e10);
-  
+
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,hasMC);
   if (!esdTrackCuts) { printf("ERROR: esdTrackCuts could not be created\n"); return; }
   esdTrackCuts->SetHistogramsOn(kTRUE);
-  
+
   // Create task
   AlidNdPtTask *task = new AlidNdPtTask("AlidNdPtTask");
   task->SetUseMCInfo(hasMC);
@@ -45,7 +45,7 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   else if(stEventTrigger.Contains("kMB")) task->SelectCollisionCandidates(AliVEvent::kMB);
 
 
-  // Create cut analysis object  
+  // Create cut analysis object
   AlidNdPtAnalysis *fdNdPtAnalysispp = new AlidNdPtAnalysis("dNdPtAnalysis","dN/dPt Analysis");
   fdNdPtAnalysispp->SetEventCuts(evtCuts);
   fdNdPtAnalysispp->SetAcceptanceCuts(accCuts);
@@ -54,20 +54,14 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   if(stEventTrigger.Contains("kINT7")) fdNdPtAnalysispp->SetTriggerMask(AliVEvent::kINT7);
   else if(stEventTrigger.Contains("kMB")) fdNdPtAnalysispp->SetTriggerMask(AliVEvent::kMB);
 
- if(hasMC) 
-  {
-    fdNdPtAnalysispp->SetUseMCInfo(kTRUE);
-    fdNdPtAnalysispp->SetHistogramsOn(kTRUE);
-    fdNdPtAnalysispp->SetIsPythia(kTRUE);
-    //fdNdPtAnalysis->SetHistogramsOn(kFALSE);
-  }
-  
+
   // SetParticleMode
   if(stParticleMode.Contains("Pion")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCPion);}
   else if (stParticleMode.Contains("Proton")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCProton);}
   else if (stParticleMode.Contains("Kaon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCKaon);}
   else if (stParticleMode.Contains("RemainingRest")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
   else if (stParticleMode.Contains("Rest")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCRest);}
+  else if (stParticleMode.Contains("Lambda")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCLambda);}
   else if (stParticleMode.Contains("SigmaPlus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
   else if (stParticleMode.Contains("SigmaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
   else if (stParticleMode.Contains("XiMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
@@ -76,6 +70,7 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   else if (stParticleMode.Contains("Minus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMinus);}
   else if (stParticleMode.Contains("Electron")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCElectron);}
   else if (stParticleMode.Contains("Muon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCMuon);}
+  else if (stParticleMode.Contains("InclWoSigma")) {fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kInclWoSimga);}
   else{fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kAllPart);}
   // Change binning
   const Int_t ptNbins = 81;
@@ -83,11 +78,11 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   Double_t* binsPt = new Double_t[82];
   for (int i=0; i<82; i++) {binsPt[i] = bins[i];}
   fdNdPtAnalysispp->SetBinsPt(ptNbins, binsPt);
-  fdNdPtAnalysispp->SetBinsPtCorr(ptNbins, binsPt);  
+  fdNdPtAnalysispp->SetBinsPtCorr(ptNbins, binsPt);
   fdNdPtAnalysispp->SetUseMCInfo(hasMC);
   fdNdPtAnalysispp->SetHistogramsOn(hasMC);
- 
-  
+
+
   task->AddAnalysisObject( fdNdPtAnalysispp );
 
   // Add task
@@ -103,9 +98,9 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", 
   if(!stParticleMode.Contains("default")) {
     stContainerName = stContainerName + "_" +stParticleMode;
   }
-    
+
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(stContainerName,TList::Class(),AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
-    
+
   mgr->ConnectOutput(task, 1, coutput);
 }
 
