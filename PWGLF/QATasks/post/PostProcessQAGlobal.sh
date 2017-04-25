@@ -23,6 +23,23 @@ ismc="kFALSE"                     # kTRUE if MC production
 log=AnalysisResults.log           # log file
 
 
+#//////////////////////////////////
+#  CHOOSE FUNCTIONS TO BE EXECUTED
+#//////////////////////////////////
+
+main (){
+
+pid
+resonances
+singlestrange
+multistrange
+movepng
+presentation
+cleanfolder
+
+}
+
+
 #//////////////////////////
 #  DEFINE USEFUL FUNCTIONS
 #/////////////////////////
@@ -75,39 +92,9 @@ function presentation(){
 #_________________
 # CLEAN THE FOLDER
 function cleanfolder(){
-   rm presentation.aux presentation.log presentation.nav presentation.out presentation.snm presentation.toc
+   rm -rf presentation.aux presentation.log presentation.nav presentation.out presentation.snm presentation.toc
 }
 
-#//////////////////////////////////
-#  CHOOSE FUNCTIONS TO BE EXECUTED
-#//////////////////////////////////
-#pid
-#resonances
-#singlestrange
-multistrange
-movepng
-presentation
-cleanfolder
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#_________________________
-# DELETE SOURCE LATEX FILE
-#rm presentation.tex
 
 
 		 
