@@ -715,8 +715,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // use the AliCEPUtils::GetCEPTracks method
   TArrayI *Pindices  = new TArrayI();
   Int_t nPaulSel = fCEPUtil->GetCEPTracks(fESDEvent,fTrackStatus,Pindices);
-  // if (nMartinSel>0 || nPaulSel>0)
-  printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
+  // if (nMartinSel>0 || nPaulSel>0) printf("%i/%i good CEP tracks\n", nPaulSel,nMartinSel);
 
   // get the tracks which meet the TT conditions
   // the TT mask and pattern are given as input parameter

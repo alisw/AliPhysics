@@ -997,7 +997,7 @@ Int_t AliCEPUtils::countstatus(TArrayI *stats,
 }
 
 // ------------------------------------------------------------------------------
-Int_t AliCEPUtils::GetCEPTracks(
+Int_t AliCEPUtils::GetCEPTracks (
   AliESDEvent *ESDEvent, TArrayI *stats, TArrayI* indices)
 {
 
