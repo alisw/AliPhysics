@@ -641,14 +641,14 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         TString lPartName = lDataResult->GetParticleName();
         if( lPartName.Contains("Lambda")||lPartName.Contains("XiMinus")||lPartName.Contains("OmegaMinus") ){
             //Initialize correction function for protons...
-            lFuncG3FCorr = new TF1("lFuncG3FCorr", "1 - [0]*TMath::Exp([1]*x) + [2]",     0.25, 1.1);
+            lFuncG3FCorr = new TF1("lFuncG3FCorr", "1 - [0]*TMath::Exp([1]*x) + [2]",     0.25, 10.0);
             lFuncG3FCorr->SetParameter(0, 4.11235e+03);
             lFuncG3FCorr->SetParameter(1,-3.28947e+01);
             lFuncG3FCorr->SetParameter(2,-9.38341e-03);
         }
         if( lPartName.Contains("AntiLambda")||lPartName.Contains("XiPlus")||lPartName.Contains("OmegaPlus") ){
             //Initialize correction function for antiprotons...
-            lFuncG3FCorr = new TF1("lFuncG3FCorr", "1 - [0]*TMath::Exp([1]*x) + [2] + [3]*1/TMath::Power(x, 0.2)*TMath::Log(x)", 0.25, 1.1);
+            lFuncG3FCorr = new TF1("lFuncG3FCorr", "1 - [0]*TMath::Exp([1]*x) + [2] + [3]*1/TMath::Power(x, 0.2)*TMath::Log(x)", 0.25, 10.0);
             lFuncG3FCorr->SetParameter(0, 1.77339e+02);
             lFuncG3FCorr->SetParameter(1,-2.20242e+01);
             lFuncG3FCorr->SetParameter(2,-6.53769e-02);
@@ -657,6 +657,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         if( !lFuncG3FCorr ) {
             AliWarning("Something went wrong with the determination of the G3/F correction!"); return 0x0;
         }
+        fListOutput->Add(lFuncG3FCorr); //add function to output for completeness
         //=====================================================================================
         //the geant3/fluka logic:
         // --- in geant3: excessive antiparticle yield due to underestimated efficiencies
@@ -664,7 +665,31 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         //     -> divide eff by lFuncG3FCorr at appropriate pT
         //=====================================================================================
         
+        TH1D *fHistG3FCorrection = new TH1D("fHistG3FCorrection", "", lNPtBins, lPtBins);
+        TProfile * fProfProtonComplete = (TProfile*) lMCResult->GetProtonProfileToCopy()->Clone("fProfProtonComplete");
         
+        //rebin to match
+        TProfile *fProfProton = (TProfile*) fProfProtonComplete->Rebin( lNPtBins, "fProfProton", lPtBins );
+        
+        fListOutput -> Add(fProfProtonComplete);
+        fListOutput -> Add(fProfProton);
+        
+        for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
+            Double_t lProtonMomentum = 1.0;
+            //Temporary: fraction of bin center (to be fixed once proton profile is OK)
+            lProtonMomentum = fHistG3FCorrection->GetBinCenter(ibin+1) * 0.75;
+            
+            //Final: use proton profile information from MC (commented for now)
+            //lProtonMomentum = fProfProton->GetBinContent(ibin+1);
+            fHistG3FCorrection -> SetBinContent(ibin+1, lFuncG3FCorr->Eval(lProtonMomentum) );
+            
+            //Apply correction on a bin-by-bin basis
+            fHistEfficiency->SetBinContent(ibin+1, fHistEfficiency->GetBinContent(ibin+1) / lFuncG3FCorr->Eval(lProtonMomentum) );
+            fHistEfficiency->SetBinError  (ibin+1, fHistEfficiency->GetBinError(ibin+1)   / lFuncG3FCorr->Eval(lProtonMomentum) );
+        }
+        
+        //Store histogram with the correction
+        fListOutput->Add(fHistG3FCorrection);
     }
     
     fListOutput->Add(fHistEfficiency);
