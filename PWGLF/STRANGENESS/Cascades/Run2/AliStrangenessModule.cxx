@@ -60,6 +60,7 @@ lObjectToUseForLS(""),
 fF1Mean(0x0),
 fF1Sigma(0x0),
 lVerbose(kFALSE),
+lUseGeant3FlukaCorrection(kFALSE),
 lDoOnlyData(kFALSE)
 {
     // Dummy Constructor - not to be used!
@@ -97,6 +98,7 @@ lObjectToUseForLS(""),
 fF1Mean(0x0),
 fF1Sigma(0x0),
 lVerbose(kFALSE),
+lUseGeant3FlukaCorrection(kFALSE),
 lDoOnlyData(kFALSE)
 {
     // Main constructor
@@ -410,6 +412,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
             
             if ( TMath::Abs(lIntegralLSData) > 1e-5 ) lLSScalingRatio = lIntegralData/lIntegralLSData;
             
+            //Beware error propagation!
             lHistoLSData[ibin] -> Scale( lLSScalingRatio );
             
             //_____________________________________________
@@ -629,6 +632,41 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     TH1D* fHistEfficiency = (TH1D*) fHistRawVsPtMC -> Clone ("fHistEfficiency") ;
     fHistEfficiency->SetDirectory(0);
     fHistEfficiency->Divide(fHistGenerated);
+    
+    //Check if g3/f correction enabled 
+    if( lUseGeant3FlukaCorrection ){
+        //=====================================================================================
+        //Step 1: check which correction function is needed
+        TF1 *lFuncG3FCorr = 0x0;
+        TString lPartName = lDataResult->GetParticleName();
+        if( lPartName.Contains("Lambda")||lPartName.Contains("XiMinus")||lPartName.Contains("OmegaMinus") ){
+            //Initialize correction function for protons...
+            lFuncG3FCorr = new TF1("lFuncG3FCorr", "1 - [0]*TMath::Exp([1]*x) + [2]",     0.25, 1.1);
+            lFuncG3FCorr->SetParameter(0, 4.11235e+03);
+            lFuncG3FCorr->SetParameter(1,-3.28947e+01);
+            lFuncG3FCorr->SetParameter(2,-9.38341e-03);
+        }
+        if( lPartName.Contains("AntiLambda")||lPartName.Contains("XiPlus")||lPartName.Contains("OmegaPlus") ){
+            //Initialize correction function for antiprotons...
+            lFuncG3FCorr = new TF1("lFuncG3FCorr", "1 - [0]*TMath::Exp([1]*x) + [2] + [3]*1/TMath::Power(x, 0.2)*TMath::Log(x)", 0.25, 1.1);
+            lFuncG3FCorr->SetParameter(0, 1.77339e+02);
+            lFuncG3FCorr->SetParameter(1,-2.20242e+01);
+            lFuncG3FCorr->SetParameter(2,-6.53769e-02);
+            lFuncG3FCorr->SetParameter(3, 4.43007e-02);
+        }
+        if( !lFuncG3FCorr ) {
+            AliWarning("Something went wrong with the determination of the G3/F correction!"); return 0x0;
+        }
+        //=====================================================================================
+        //the geant3/fluka logic:
+        // --- in geant3: excessive antiparticle yield due to underestimated efficiencies
+        // --- correction therefore has to increase efficiencies
+        //     -> divide eff by lFuncG3FCorr at appropriate pT
+        //=====================================================================================
+        
+        
+    }
+    
     fListOutput->Add(fHistEfficiency);
     
     //Generate Corrected Spectrum
