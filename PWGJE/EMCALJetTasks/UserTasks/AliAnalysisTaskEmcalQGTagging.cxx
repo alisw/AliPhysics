@@ -200,7 +200,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
  
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 18;
+  const Int_t nVar = 19;
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
@@ -215,21 +215,21 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[4] = "angularity";
   fShapesVarNames[5] = "circularity";
   fShapesVarNames[6] = "lesub";
-  //fShapesVarNames[6] = "sigma2";
+  fShapesVarNames[7] = "coronna";
 
-  fShapesVarNames[7] = "ptJetMatch"; 
-  fShapesVarNames[8] = "ptDJetMatch"; 
-  fShapesVarNames[9] = "mJetMatch";
+  fShapesVarNames[8] = "ptJetMatch"; 
+  fShapesVarNames[9] = "ptDJetMatch"; 
+  fShapesVarNames[10] = "mJetMatch";
   // fShapesVarNames[12] = "nbOfConstMatch";
-  fShapesVarNames[10] = "angularityMatch";
-  fShapesVarNames[11] = "circularityMatch";
-  fShapesVarNames[12] = "lesubMatch";
-  //fShapesVarNames[12] = "sigma2Match";
-  fShapesVarNames[13]="weightPythia";
-  fShapesVarNames[14]="ntrksEvt";
-  fShapesVarNames[15]="rhoVal";
-  fShapesVarNames[16]="rhoMassVal";
-  fShapesVarNames[17]="ptUnsub";
+  fShapesVarNames[11] = "angularityMatch";
+  fShapesVarNames[12] = "circularityMatch";
+  fShapesVarNames[13] = "lesubMatch";
+  fShapesVarNames[14] = "coronnaMatch";
+  fShapesVarNames[15]="weightPythia";
+  //fShapesVarNames[14]="ntrksEvt";
+  fShapesVarNames[16]="rhoVal";
+  fShapesVarNames[17]="rhoMassVal";
+  fShapesVarNames[18]="ptUnsub";
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
@@ -272,11 +272,28 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       //Printf ("Trigger Hadron not found, return");
       return 0;}
 
-   
-    AliParticleContainer *partContAn = GetParticleContainer(0);
-    TClonesArray *trackArrayAn = partContAn->GetArray();
-    triggerHadron = static_cast<AliAODTrack*>(trackArrayAn->At(triggerHadronLabel));
-  
+    AliTrackContainer *PartCont =NULL;
+    AliParticleContainer *PartContMC=NULL;
+
+    if (fJetShapeSub==kConstSub){
+      if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) PartContMC = GetParticleContainer(1);
+      else PartCont = GetTrackContainer(1);
+    }
+    else{
+      if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) PartContMC = GetParticleContainer(0);
+      else PartCont = GetTrackContainer(0);
+    }
+    TClonesArray *TrackArray = NULL;
+    TClonesArray *TrackArrayMC = NULL;
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) TrackArrayMC = PartContMC->GetArray();
+    else TrackArray = PartCont->GetArray();    
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) triggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(triggerHadronLabel));
+    else triggerHadron = static_cast<AliAODTrack*>(TrackArray->At(triggerHadronLabel));
+
+
+
+
+    
     if (!triggerHadron) {
       //Printf("No Trigger hadron with the found label!!");
       return 0;
@@ -502,9 +519,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[4] = GetJetAngularity(jet1,0);
       fShapesVar[5] = GetJetCircularity(jet1,0);
       fShapesVar[6] = GetJetLeSub(jet1,0);
- 
+      fShapesVar[6] = GetJetCoronna(jet1,0);
 
-      Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0.;
+      Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0., coronnaMatch=0;
       Int_t kMatched = 0;
 
        if (fJetShapeType==kPythiaDef) {
@@ -518,6 +535,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
          angulMatch=GetJetAngularity(jet3, kMatched);
         circMatch=GetJetCircularity(jet3, kMatched);
          lesubMatch=GetJetLeSub(jet3, kMatched);
+	 coronnaMatch=GetJetCoronna(jet3,kMatched); 
          //sigma2Match = GetSigma2(jet2, kMatched);
        }
       
@@ -531,7 +549,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         angulMatch=GetJetAngularity(jet3, kMatched);
         circMatch=GetJetCircularity(jet3, kMatched);
         lesubMatch=GetJetLeSub(jet3, kMatched);
-        //sigma2Match = GetSigma2(jet3, kMatched)
+        coronnaMatch = GetJetCoronna(jet3, kMatched);
         
       }
 
@@ -546,23 +564,24 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         angulMatch=0.;
         circMatch=0.;
         lesubMatch=0.;
-        //sigma2Match =0.;
+        coronnaMatch =0.;
         
       }
       
     
 
-      fShapesVar[7] = ptMatch;
-      fShapesVar[8] = ptDMatch;
-      fShapesVar[9] = massMatch;
-      fShapesVar[10] = angulMatch;
-      fShapesVar[11] = circMatch;
-      fShapesVar[12] = lesubMatch;
-      fShapesVar[13] = kWeight;
-      fShapesVar[14] = ntracksEvt;
-      fShapesVar[15] = rhoVal;
-      fShapesVar[16] = rhoMassVal;
-      fShapesVar[17] = jet1->Pt();
+      fShapesVar[8] = ptMatch;
+      fShapesVar[9] = ptDMatch;
+      fShapesVar[10] = massMatch;
+      fShapesVar[11] = angulMatch;
+      fShapesVar[12] = circMatch;
+      fShapesVar[13] = lesubMatch;
+       fShapesVar[14] = coronnaMatch;
+      fShapesVar[15] = kWeight;
+      //fShapesVar[16] = ntracksEvt;
+      fShapesVar[16] = rhoVal;
+      fShapesVar[17] = rhoMassVal;
+      fShapesVar[18] = jet1->Pt();
 
 
       fTreeObservableTagging->Fill();
@@ -625,6 +644,89 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetAngularity(AliEmcalJet *jet, Int_t 
     return Angularity(jet, jetContNb);
  
 }
+
+//____________________________________________________________________________
+
+Float_t AliAnalysisTaskEmcalQGTagging::Coronna(AliEmcalJet *jet, Int_t jetContNb = 0){
+
+  AliTrackContainer *PartCont = NULL;
+  AliParticleContainer *PartContMC = NULL;
+
+
+ if (fJetShapeSub==kConstSub){
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) PartContMC = GetParticleContainer(1);
+    else PartCont = GetTrackContainer(1);
+  }
+  else{
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) PartContMC = GetParticleContainer(0);
+    else PartCont = GetTrackContainer(0);
+  }
+
+  TClonesArray *TracksArray = NULL;
+  TClonesArray *TracksArrayMC = NULL;
+
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) TracksArrayMC = PartContMC->GetArray();
+  else TracksArray = PartCont->GetArray();
+ 
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly){
+    if(!PartContMC || !TracksArrayMC) return -2;
+  }
+  else {
+    if(!PartCont || !TracksArray) return -2;
+  }
+
+
+  AliAODTrack *Track = 0x0;
+  Float_t sumpt=0;
+  Int_t NTracks=0;
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) NTracks = TracksArrayMC->GetEntriesFast();
+  else NTracks = TracksArray->GetEntriesFast();
+
+  for(Int_t i=0; i < NTracks; i++){
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly){
+      if((Track = static_cast<AliAODTrack*>(PartContMC->GetAcceptParticle(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	  Double_t dphi = RelativePhi(Track->Phi(),jet->Phi());
+          Double_t dr2 = (Track->Eta()-jet->Eta())*(Track->Eta()-jet->Eta()) + dphi*dphi;
+          Double_t dr = TMath::Sqrt(dr2);
+	  if((dr>=0.8) && (dr<1)) sumpt=sumpt+Track->Pt();
+      }
+    }
+    else{ 
+      if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	  Double_t dphi = RelativePhi(Track->Phi(),jet->Phi());
+          Double_t dr2 = (Track->Eta()-jet->Eta())*(Track->Eta()-jet->Eta()) + dphi*dphi;
+          Double_t dr = TMath::Sqrt(dr2);
+	  if((dr>=0.8) && (dr<1)) sumpt=sumpt+Track->Pt();
+
+      }
+    } 
+  }
+ 
+
+  
+  return sumpt; 
+ 
+
+
+  
+} 
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskEmcalQGTagging::GetJetCoronna(AliEmcalJet *jet, Int_t jetContNb = 0){
+
+  if((fJetShapeSub==kDerivSub) && (jetContNb==0)) return -2;
+  else
+    return Coronna(jet, jetContNb);
+ 
+}
+
+
+
 
 
 //________________________________________________________________________
@@ -894,55 +996,75 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetSigma2(AliEmcalJet *jet, Int_t jetCont
 //________________________________________________________________________
 Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT){
 
-  AliParticleContainer *partCont = GetParticleContainer(0);
-  TClonesArray *tracksArray = partCont->GetArray();
-  
-  if(!partCont || !tracksArray) return -99999;
-  AliAODTrack *track = 0x0;
-  AliEmcalParticle *emcPart = 0x0;
+  AliTrackContainer *PartCont = NULL;
+  AliParticleContainer *PartContMC = NULL;
+
+
+ if (fJetShapeSub==kConstSub){
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) PartContMC = GetParticleContainer(1);
+    else PartCont = GetTrackContainer(1);
+  }
+  else{
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) PartContMC = GetParticleContainer(0);
+    else PartCont = GetTrackContainer(0);
+  }
+
+  TClonesArray *TracksArray = NULL;
+  TClonesArray *TracksArrayMC = NULL;
+
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) TracksArrayMC = PartContMC->GetArray();
+  else TracksArray = PartCont->GetArray();
+ 
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly){
+    if(!PartContMC || !TracksArrayMC) return -99999;
+  }
+  else {
+    if(!PartCont || !TracksArray) return -99999;
+  }
+
+
+  AliAODTrack *Track = 0x0;
+
  
   
   TList *trackList = new TList();
   Int_t triggers[100];
   for (Int_t iTrigger=0; iTrigger<100; iTrigger++) triggers[iTrigger] = 0;
   Int_t iTT = 0;
-  
-  for(Int_t iTrack=0; iTrack <= tracksArray->GetEntriesFast(); iTrack++){
-    
-  
-    if (fJetShapeSub == kConstSub){
-      emcPart = static_cast<AliEmcalParticle*>(tracksArray->At(iTrack));
-      if (!emcPart) continue;
-      if(TMath::Abs(emcPart->Eta())>0.9) continue;
-      if (emcPart->Pt()<0.15) continue;
-      
-      if ((emcPart->Pt() >= minpT) && (emcPart->Pt()< maxpT)) {
-        trackList->Add(emcPart);
-        triggers[iTT] = iTrack;
-        iTT++;
+  Int_t NTracks=0;
+  if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly) NTracks = TracksArrayMC->GetEntriesFast();
+  else NTracks = TracksArray->GetEntriesFast();
+
+  for(Int_t i=0; i < NTracks; i++){
+    if (fJetShapeType == AliAnalysisTaskEmcalQGTagging::kGenOnTheFly){
+      if((Track = static_cast<AliAODTrack*>(PartContMC->GetAcceptParticle(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	if ((Track->Pt() >= minpT) && (Track->Pt()< maxpT)) {
+	  triggers[iTT] = i;
+	  iTT++;
+	}
       }
     }
-    else{
-      track = static_cast<AliAODTrack*>(tracksArray->At(iTrack));
-      if (!track) continue;
-      if(TMath::Abs(track->Eta())>0.9) continue;
-      if (track->Pt()<0.15) continue;
-      if (!(track->TestFilterBit(768))) continue;
-      
-      if ((track->Pt() >= minpT) && (track->Pt()< maxpT)) {
-        trackList->Add(track);
-        triggers[iTT] = iTrack;
-        iTT++;
-        
+    else{ 
+      if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	if ((Track->Pt() >= minpT) && (Track->Pt()< maxpT)) {
+	  triggers[iTT] = i;
+	  iTT++;
+	}
       }
-    }
+    } 
   }
+ 
 
   if (iTT == 0) return -99999;
   Int_t nbRn = 0, index = 0 ; 
   TRandom3* random = new TRandom3(0); 
   nbRn = random->Integer(iTT);
-
   index = triggers[nbRn];
   //Printf("iTT Total= %d, nbRn = %d, Index = %d",iTT, nbRn, index );
   return index; 
