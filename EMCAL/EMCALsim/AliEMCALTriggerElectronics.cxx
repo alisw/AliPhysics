@@ -216,7 +216,7 @@ AliEMCALTriggerElectronics::~AliEMCALTriggerElectronics()
 /// Digits to trigger
 //__________________
 void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_t V0M[], AliEMCALTriggerData* data)
-<<<<<<< 60cc34719a2039638351deca1c8a53523f1d8797
+//<<<<<<< 60cc34719a2039638351deca1c8a53523f1d8797
 {
   // Digits to trigger
   Int_t pos, px, py, id; 

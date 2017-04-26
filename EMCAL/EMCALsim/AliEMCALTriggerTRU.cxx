@@ -529,6 +529,9 @@ void AliEMCALTriggerTRU::SaveRegionADC(Int_t iTRU, Int_t iEvent)
 {
   gSystem->Exec(Form("mkdir -p Event%d",iEvent));
   
+  Int_t nphi    = Int_t(fRegionSize->X());
+  Int_t neta    = Int_t(fRegionSize->Y());
+
   ofstream outfile(Form("Event%d/data_TRU%d.txt",iEvent,iTRU),ios_base::trunc);
   
   for (Int_t i=0;i<96;i++) 

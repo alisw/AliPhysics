@@ -26,7 +26,7 @@ public:
                 AliEMCALTriggerSTU(AliEMCALTriggerSTUDCSConfig *dcsConf, const TVector2& rsize);
   virtual      ~AliEMCALTriggerSTU();
   
-  virtual void  Build(TString& str, Int_t i, Int_t** Map, const TVector2* rSize);
+  virtual void  Build(TString& str, Int_t i, Int_t** Map, const TVector2* rSize, Int_t triggerMapping);
   virtual void  L1(int type);
   
   virtual void  ComputeThFromV0(int type, const Int_t M[]);
