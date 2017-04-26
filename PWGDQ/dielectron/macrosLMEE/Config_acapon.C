@@ -350,13 +350,21 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
         histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
         histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
         histos->UserHistogram("Pair","PhiV","", GetVector(kPhiV), AliDielectronVarManager::kPhivPair);
+        histos->UserHistogram("Pair","dXY abs (sqrt)",""    ,200 ,0,2.0 , AliDielectronVarManager::kPairDCAabsXY); 
+        histos->UserHistogram("Pair","dZ abs (sqrt)",""     ,500 ,0,5.0 , AliDielectronVarManager::kPairDCAabsZ); 
+        histos->UserHistogram("Pair","dXY sigma (sqrt)",""  ,1500,0,15.0, AliDielectronVarManager::kPairDCAsigXY); 
+        histos->UserHistogram("Pair","dZ sigma (sqrt)",""   ,1500,0,15.0, AliDielectronVarManager::kPairDCAsigZ); 
+        histos->UserHistogram("Pair","dXY abs (linear)",""  ,100 ,0,1.0 , AliDielectronVarManager::kPairLinDCAabsXY); 
+        histos->UserHistogram("Pair","dZ abs (linear)",""   ,500 ,0,5.0 , AliDielectronVarManager::kPairLinDCAabsZ); 
+        histos->UserHistogram("Pair","dXY sigma (linear)","",1000,0,10.0, AliDielectronVarManager::kPairLinDCAsigXY); 
+        histos->UserHistogram("Pair","dZ sigma (linear)","" ,1000,0,10.0, AliDielectronVarManager::kPairLinDCAsigZ); 
 
-        //2D and 3D histograms
+                //2D and 3D histograms
         histos->UserHistogram("Pair","InvMass_PairPt",";Inv. Mass [GeV];Pair Pt [GeV];#pairs",
                               GetVector(kMee), GetVector(kPtee),
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
         histos->UserHistogram("Pair","Eta_Phi_Pair",";Eta;Phi;#pairs",
-                              100,-1.,1., 120,0.,TMath::TwoPi(),
+                              200,-2.,2, 120,0.,TMath::TwoPi(),
                               AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
         histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass [GeV];Pair Pt [GeV];PhiV",
                               GetVector(kMee), GetVector(kPtee), GetVector(kPhiV), 
