@@ -876,9 +876,9 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
             if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0){continue;}
 
             if(IsUseTOFBunchCrossing()){
-                if( abs(track->GetTOFsignalDz())>10)	{continue;}
-                if( track->GetTOFsignal() < 12000)	{continue;} // TOFsignal returns the signal in pico seconds
-                if( track->GetTOFsignal() > 25000)	{continue;} // we want to reject tracks that take longer than the bunch spacing
+	      if( abs(track->GetTOFsignalDz())>10)	{continue;}
+              if( track->GetTOFsignal() < 12000)	{continue;} // TOFsignal returns the signal in pico seconds
+              if( track->GetTOFsignal() > 25000)	{continue;} // we want to reject tracks that take longer than the bunch spacing
             }
             if(IsUseTOFExpectedTimeDiff()){
 	      if(TMath::Abs(track->GetTOFExpTDiff())>30) {continue;}
