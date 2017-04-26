@@ -71,6 +71,8 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void SetMinAssJetPt(Double_t p)                           { fMinAssJetPt = p; }
   void SetDijetLeadingHadronPt(Double_t pt)                 { fDijetLeadingHadronPt = pt; }
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
+  void SetNEtaBins(Int_t n)                                 { fNEtaBins = n; }
+  void SetNPhiBins(Int_t n)                                 { fNPhiBins = n; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -112,6 +114,10 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Double_t                    fClusterConstituentThreshold;         ///< constituent threshold for matching study
   Dijet_t                     fDijet;                               //!<! dijet candidate (per event)
   Dijet_t                     fMatchingDijet;                       //!<! low-threshold matching dijet, for matching study
+  Int_t                       fNEtaBins;                            ///< Number of eta bins in DCal region (for background/correction)
+  Int_t                       fNPhiBins;                            ///< Number of phi bins in DCal region (for background/correction)
+  TH1D*                       fBackgroundScalingWeights;            ///< Histogram storing eta-phi weights for full-jet background scale factors
+  TH1D*                       fGapJetScalingWeights;                ///< Histogram storing eta-phi weights scaling jets near the gap region
 
   // Analysis configuration and plotting options
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
@@ -142,7 +148,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 5);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 6);
   /// \endcond
 };
 #endif
