@@ -1585,6 +1585,7 @@ private:
 //  TH2D *fCRCZDCQVecEP[fCRCMaxnRun][4]; //! ZN event planes
 //  TH3D* fhZNCenDis[2]; //! ZDC 2D Q-vector distribution vs centrality
   TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
+  TProfile *fCRCZDCQVecTest[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
   const static Int_t fkCRCnCQVecVtxPos = 4;
   Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
