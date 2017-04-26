@@ -111,16 +111,16 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   // Add some selection criteria
   //-------------------------------------------------------
-  AnalysisTask->SetOffTrigger(evtTriggerType|evtMixingType); //..select only evets of type evtTriggerType and evtMixingType
   //..for Run1 pPb
-  //AnalysisTask->SetUseManualEvtCuts(kTRUE);
-  //AnalysisTask->SetUseAliAnaUtils(kTRUE);
+  //AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
   //AnalysisTask->SetVzRange(-10,10);
-  //AnalysisTask->SetCentRange(0.0,100.0);
+  //AnalysisTask->SetZvertexDiffValue(0.2); //for SPD vertex distance
+  //AnalysisTask->SetCentRange(0.0,90.0);
 
   //..new task for run2
-  //AnalysisTask->SetNCentBins(5);
+  //AnalysisTask->SetNCentBins(5);     //for PbPb run2 data
   //AnalysisTask->SetUseNewCentralityEstimation(kTRUE);
+  AnalysisTask->SetOffTrigger(evtTriggerType|evtMixingType); //..select only evets of type evtTriggerType and evtMixingType
 
   if(AnalysisTask->GetTrackContainer(trackName))
   {
@@ -132,8 +132,8 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   {
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusECut(0);                 //by default set to 0
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(clusptcut);        //by default set to 0.15
-	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,0);
-	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr,0);
+	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
 //    AnalysisTask->GetClusterContainer(clusName)->SetClusTimeCut(,);
 //	  AnalysisTask->GetClusterContainer(clusName)->SetEtaLimits(-clusterEta,clusterEta);
 //	  AnalysisTask->GetClusterContainer(clusName)->SetPhiLimits(68*phiToR,174*phiToR);
