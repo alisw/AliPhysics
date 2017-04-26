@@ -10,6 +10,7 @@
 //   ------------------------
 //   --  collidingsystem   =  0) PbPb  1) pp/pPb
 //   --  isMC              =  kTRUE if running on MC production 
+//   --  mcass             =  kTRUE if want association for MC reconstructed particles
 //   --  fileDir           =  "Input file directory"
 //
 //
@@ -37,10 +38,10 @@
 //   --  16  = Proper length distribution for the cascade
 //   --  17  = Proper length distribution for the V0
 //   --  18  = Min V0 Cosine Of PA To Xi Vertex  
-//   The last two variables are empty in the case proton-proton collisions.
-//   In case of MC production one more CFContainer is produced, containing infos on the 
-//   generated particles. As the previous container, this one is composed by 4 steps, one
-//   for each cascade and 6 variables:
+//   In case of MC production a second equivalent CFContainer is produced but requiring
+//   the MC association to the reconstructed casacde candidates and one more CFContainer 
+//   is produced, containing infos on the generated particles. As the previous containers, 
+//   this one is composed by 4 steps, one for each cascade and 6 variables:
 //    -- 0   = Total momentum
 //    -- 1   = Transverse momentum
 //    -- 2   = Rapidity
@@ -94,6 +95,7 @@ class AliCFContainer;
 //=================
 void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                             // 0) PbPb  1) pp/pPb
                                Bool_t  isMC            = kFALSE,                        // kTRUE-->MC and kFALSE-->Exp.
+                               Bool_t  mcass           = kFALSE,                         // if kTRUE use container with MC association
                                Char_t *fileDir         = ".",                           // Input file directory
                                Char_t *output          = "pdf"                          // "eps", "png" or "pdf"
                               ) {
@@ -115,7 +117,9 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
      //_________________________________
      //SOURCE THE FILE AND THE CONTAINER
      TFile *f = new TFile(Form("%s/AnalysisResults.root",fileDir));
-     AliCFContainer *cf = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));  
+     AliCFContainer *cf = 0x0;
+     if (isMC && mcass) cf = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeMCCuts"));
+     else               cf = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));  
 
      //___________
      //DEFINE TEXT
