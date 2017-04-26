@@ -67,7 +67,7 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
         Float_t         fMinPtCutOnDaughterTracks;      // minimum pt cut on daughter tracks
         Float_t         fEtaCutOnDaughterTracks;        // pseudorapidity cut on daughter tracks
        
-        TList      *fListHistMultistrangeQA;            //! List of Cascade histograms
+        TList  *fListHistMultistrangeQA;                //! List of Cascade histograms
         TH1F *fHistEventSel;                            //! Gives the number of the events after each event selection
         TH1F *fHistMassXiMinus;                         //! Gives the invariant mass distr. for the Xi minus without PID info on daughter tracks
         TH1F *fHistMassXiPlus;                          //! Gives the invariant mass distr. for the Xi plus without PID info on daughter tracks
@@ -78,13 +78,14 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
         TH1F *fHistCascadeMultiplicityOmegaMinus;       //! Gives the distribution of the number of Omega minus per event
         TH1F *fHistCascadeMultiplicityOmegaPlus;        //! Gives the distribution of the number of Omega plus per event  
 	AliCFContainer  *fCFContCascadeCuts;            //! Container meant to store all the relevant distributions corresponding to the cut variables
+        AliCFContainer  *fCFContCascadeMCCuts;          //! Container meant to store all the relevant distributions corresponding to the cut variables with Association for MC productions
         AliCFContainer  *fCFContCascadeMCgen;           //! Container meant to store general variables for MC generated particles 
 	
 
   AliAnalysisTaskQAMultistrange(const AliAnalysisTaskQAMultistrange&);            // not implemented
   AliAnalysisTaskQAMultistrange& operator=(const AliAnalysisTaskQAMultistrange&); // not implemented
   
-  ClassDef(AliAnalysisTaskQAMultistrange, 9);
+  ClassDef(AliAnalysisTaskQAMultistrange, 10);
 };
 
 #endif

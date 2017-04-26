@@ -87,6 +87,7 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange()
       fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
       fHistCascadeMultiplicityXiMinus(0), fHistCascadeMultiplicityXiPlus(0), fHistCascadeMultiplicityOmegaMinus(0), fHistCascadeMultiplicityOmegaPlus(0),
       fCFContCascadeCuts(0),
+      fCFContCascadeMCCuts(0),
       fCFContCascadeMCgen(0)
 
 {
@@ -112,6 +113,7 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange(const char *name)
       fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
       fHistCascadeMultiplicityXiMinus(0), fHistCascadeMultiplicityXiPlus(0), fHistCascadeMultiplicityOmegaMinus(0), fHistCascadeMultiplicityOmegaPlus(0),
       fCFContCascadeCuts(0),
+      fCFContCascadeMCCuts(0),
       fCFContCascadeMCgen(0) 
 
 {
@@ -120,6 +122,7 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange(const char *name)
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliCFContainer::Class());
   DefineOutput(3, AliCFContainer::Class());
+  DefineOutput(4, AliCFContainer::Class());
 
   AliLog::SetClassDebugLevel("AliAnalysisTaskQAMultistrange",1);
 }
@@ -137,6 +140,7 @@ AliAnalysisTaskQAMultistrange::~AliAnalysisTaskQAMultistrange()
   // Because of TList::SetOwner() ...
   if (fListHistMultistrangeQA && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fListHistMultistrangeQA; fListHistMultistrangeQA = 0x0; }
   if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())      { delete fCFContCascadeCuts;      fCFContCascadeCuts      = 0x0; }
+  if (fCFContCascadeMCCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())    { delete fCFContCascadeMCCuts;    fCFContCascadeMCCuts    = 0x0; }
   if (fCFContCascadeMCgen && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())     { delete fCFContCascadeMCgen;     fCFContCascadeMCgen     = 0x0; }
 }
 
@@ -333,6 +337,134 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
   }
 
 
+  //_________________________________________________________________________
+  // Define the container for the topological variables (with MC association) 
+  if(! fCFContCascadeMCCuts) {
+      // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
+      const Int_t  lNbStepsMCAss      =  4;
+      const Int_t  lNbVariablesMCAss  =  19;
+      //Array for the number of bins in each dimension :
+      Int_t lNbBinsPerVarMCAss[lNbVariablesMCAss] = {0};
+      lNbBinsPerVarMCAss[0]  = 25;     //DcaCascDaughters             :  [0.0,2.4,3.0]       -> Rec.Cut = 2.0;
+      lNbBinsPerVarMCAss[1]  = 25;     //DcaBachToPrimVertex          :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01; 
+      lNbBinsPerVarMCAss[2]  = 30;     //CascCosineOfPointingAngle    :  [0.97,1.0]          -> Rec.Cut = 0.98;
+      lNbBinsPerVarMCAss[3]  = 40;     //CascRadius                   :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
+      lNbBinsPerVarMCAss[4]  = 30;     //InvMassLambdaAsCascDghter    :  [1.1,1.3]           -> Rec.Cut = 0.008;
+      lNbBinsPerVarMCAss[5]  = 20;     //DcaV0Daughters               :  [0.0,2.0]           -> Rec.Cut = 1.5;
+      lNbBinsPerVarMCAss[6]  = 201;    //V0CosineOfPointingAngleToPV  :  [0.89,1.0]          -> Rec.Cut = 0.9;
+      lNbBinsPerVarMCAss[7]  = 40;     //V0Radius                     :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
+      lNbBinsPerVarMCAss[8]  = 40;     //DcaV0ToPrimVertex            :  [0.0,0.39,110.0]    -> Rec.Cut = 0.01;  
+      lNbBinsPerVarMCAss[9]  = 25;     //DcaPosToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05;
+      lNbBinsPerVarMCAss[10] = 25;     //DcaNegToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05
+      lNbBinsPerVarMCAss[11] = 150;    //InvMassXi                    :   2-MeV/c2 bins
+      lNbBinsPerVarMCAss[12] = 120;    //InvMassOmega                 :   2-MeV/c2 bins
+      lNbBinsPerVarMCAss[13] = 250;    //XiTransvMom                  :  [0.0,25.0]
+      lNbBinsPerVarMCAss[14] = 110;    //Y(Xi)                        :   0.02 in rapidity units
+      lNbBinsPerVarMCAss[15] = 110;    //Y(Omega)                     :   0.02 in rapidity units
+      lNbBinsPerVarMCAss[16] = 112;    //Proper lenght of cascade       
+      lNbBinsPerVarMCAss[17] = 112;    //Proper lenght of V0
+      lNbBinsPerVarMCAss[18] = 201;    //V0CosineOfPointingAngleToXiV
+      //define the container
+      fCFContCascadeMCCuts = new AliCFContainer("fCFContCascadeMCCuts","Container for Cascade cuts MC", lNbStepsMCAss, lNbVariablesMCAss, lNbBinsPerVarMCAss );
+      //Setting the bin limits 
+       //0 -  DcaXiDaughters
+      Double_t *lBinLim0MCAss  = new Double_t[ lNbBinsPerVarMCAss[0] + 1 ];
+         for(Int_t i=0; i< lNbBinsPerVarMCAss[0]; i++) lBinLim0MCAss[i] = (Double_t)0.0 + (2.4 - 0.0)/(lNbBinsPerVarMCAss[0] - 1) * (Double_t)i;
+         lBinLim0MCAss[ lNbBinsPerVarMCAss[0] ] = 3.0;
+      fCFContCascadeMCCuts -> SetBinLimits(0, lBinLim0MCAss);
+      delete [] lBinLim0MCAss;
+       //1 - DcaToPrimVertexXi
+      Double_t *lBinLim1MCAss  = new Double_t[ lNbBinsPerVarMCAss[1] + 1 ];
+         for(Int_t i=0; i<lNbBinsPerVarMCAss[1]; i++) lBinLim1MCAss[i] = (Double_t)0.0 + (0.24  - 0.0)/(lNbBinsPerVarMCAss[1] - 1) * (Double_t)i;
+         lBinLim1MCAss[ lNbBinsPerVarMCAss[1] ] = 100.0;
+      fCFContCascadeMCCuts -> SetBinLimits(1, lBinLim1MCAss);
+      delete [] lBinLim1MCAss;
+       //2 - CascCosineOfPointingAngle 
+      fCFContCascadeMCCuts->SetBinLimits(2, 0.97, 1.);
+       //3 - CascRadius
+      Double_t *lBinLim3MCAss  = new Double_t[ lNbBinsPerVarMCAss[3]+1 ];
+         for(Int_t i=0; i< lNbBinsPerVarMCAss[3]; i++)   lBinLim3MCAss[i]  = (Double_t)0.0   + (3.9  - 0.0 )/(lNbBinsPerVarMCAss[3] - 1)  * (Double_t)i ;
+         lBinLim3MCAss[ lNbBinsPerVarMCAss[3] ] = 1000.0;
+      fCFContCascadeMCCuts -> SetBinLimits(3,  lBinLim3MCAss );
+      delete [] lBinLim3MCAss;
+       //4 - InvMassLambdaAsCascDghter
+      fCFContCascadeMCCuts->SetBinLimits(4, 1.1, 1.13);
+       //5 - DcaV0Daughters
+      fCFContCascadeMCCuts -> SetBinLimits(5, 0., 2.);
+       //6 - V0CosineOfPointingAngleToPV
+      fCFContCascadeMCCuts -> SetBinLimits(6, 0.8, 1.001);
+       //7 - V0Radius
+      Double_t *lBinLim7MCAss = new Double_t[ lNbBinsPerVarMCAss[7] + 1];
+         for(Int_t i=0; i< lNbBinsPerVarMCAss[7];i++) lBinLim7MCAss[i] = (Double_t)0.0 + (3.9 - 0.0)/(lNbBinsPerVarMCAss[7] - 1) * (Double_t)i;
+         lBinLim7MCAss[ lNbBinsPerVarMCAss[7] ] = 1000.0;
+      fCFContCascadeMCCuts -> SetBinLimits(7, lBinLim7MCAss);
+      delete [] lBinLim7MCAss;
+       //8 - DcaV0ToPrimVertex
+      Double_t *lBinLim8MCAss = new Double_t[ lNbBinsPerVarMCAss[8]+1 ];
+         for(Int_t i=0; i< lNbBinsPerVarMCAss[8];i++)   lBinLim8MCAss[i]  = (Double_t)0.0 + (0.39 - 0.0 )/(lNbBinsPerVarMCAss[8]-1) * (Double_t)i ;
+         lBinLim8MCAss[ lNbBinsPerVarMCAss[8]  ] = 100.0;
+      fCFContCascadeMCCuts -> SetBinLimits(8,  lBinLim8MCAss );
+      delete [] lBinLim8MCAss;
+       //9 - DcaPosToPrimVertex
+      Double_t *lBinLim9MCAss = new Double_t[ lNbBinsPerVarMCAss[9]+1 ];
+         for(Int_t i=0; i< lNbBinsPerVarMCAss[9];i++)   lBinLim9MCAss[i] = (Double_t)0.0   + (0.24  - 0.0 )/(lNbBinsPerVarMCAss[9]-1)  * (Double_t)i ;
+         lBinLim9MCAss[ lNbBinsPerVarMCAss[9]  ] = 100.0;
+      fCFContCascadeMCCuts -> SetBinLimits(9,  lBinLim9MCAss );
+      delete [] lBinLim9MCAss;
+       //10 - DcaNegToPrimVertex
+      Double_t *lBinLim10MCAss  = new Double_t[ lNbBinsPerVarMCAss[10]+1 ];
+         for(Int_t i=0; i< lNbBinsPerVarMCAss[10];i++)   lBinLim10MCAss[i]  = (Double_t)0.0 + (0.24 - 0.0 )/(lNbBinsPerVarMCAss[10]-1) * (Double_t)i ;
+         lBinLim10MCAss[ lNbBinsPerVarMCAss[10]  ] = 100.0;
+      fCFContCascadeMCCuts -> SetBinLimits(10,  lBinLim10MCAss );
+      delete [] lBinLim10MCAss;
+       //11 - InvMassXi
+      fCFContCascadeMCCuts->SetBinLimits(11, 1.25, 1.40);
+       //12 - InvMassOmega
+      fCFContCascadeMCCuts->SetBinLimits(12, 1.62, 1.74);
+       //13 - XiTransvMom
+      fCFContCascadeMCCuts->SetBinLimits(13, 0.0, 25.0);
+       //14 - Y(Xi)
+      fCFContCascadeMCCuts->SetBinLimits(14, -1.1, 1.1);
+       //15 - Y(Omega)
+      fCFContCascadeMCCuts->SetBinLimits(15, -1.1, 1.1);
+       //16 - Proper time of cascade
+      Double_t *lBinLim16MCAss  = new Double_t[ lNbBinsPerVarMCAss[16]+1 ];
+         for(Int_t i=0; i< lNbBinsPerVarMCAss[16];i++) lBinLim16MCAss[i] = (Double_t) -1. + (110. + 1.0 ) / (lNbBinsPerVarMCAss[16] - 1) * (Double_t) i;
+         lBinLim16MCAss[ lNbBinsPerVarMCAss[16] ] = 2000.0;
+      fCFContCascadeMCCuts->SetBinLimits(16, lBinLim16MCAss);
+       //17 - Proper time of V0
+      fCFContCascadeMCCuts->SetBinLimits(17, lBinLim16MCAss);
+       //18 - V0CosineOfPointingAngleToXiV
+      fCFContCascadeMCCuts -> SetBinLimits(18, 0.8, 1.001);
+      // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
+      fCFContCascadeMCCuts->SetStepTitle(0, "#Xi^{-} candidates");
+      fCFContCascadeMCCuts->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
+      fCFContCascadeMCCuts->SetStepTitle(2, "#Omega^{-} candidates");
+      fCFContCascadeMCCuts->SetStepTitle(3, "#bar{#Omega}^{+} candidates");
+      // Setting the variable title, per axis
+      fCFContCascadeMCCuts->SetVarTitle(0,  "Dca(cascade daughters) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(1,  "ImpactParamToPV(bachelor) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(2,  "cos(cascade PA)");
+      fCFContCascadeMCCuts->SetVarTitle(3,  "R_{2d}(cascade decay) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(4,  "M_{#Lambda}(as casc dghter) (GeV/c^{2})");
+      fCFContCascadeMCCuts->SetVarTitle(5,  "Dca(V0 daughters) in Xi (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(6,  "cos(V0 PA) in cascade to PV");
+      fCFContCascadeMCCuts->SetVarTitle(7,  "R_{2d}(V0 decay) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(8,  "ImpactParamToPV(V0) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(9,  "ImpactParamToPV(Pos) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(10, "ImpactParamToPV(Neg) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(11, "Inv. Mass(Xi) (GeV/c^{2})");
+      fCFContCascadeMCCuts->SetVarTitle(12, "Inv. Mass(Omega) (GeV/c^{2})");
+      fCFContCascadeMCCuts->SetVarTitle(13, "pt(cascade) (GeV/c)");
+      fCFContCascadeMCCuts->SetVarTitle(14, "Y(Xi)");
+      fCFContCascadeMCCuts->SetVarTitle(15, "Y(Omega)");
+      fCFContCascadeMCCuts->SetVarTitle(16, "mL/p (cascade) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(17, "mL/p (V0) (cm)");
+      fCFContCascadeMCCuts->SetVarTitle(18, "cos(V0 PA) in cascade to XiV");
+  }
+
+
+
   //_______________________________________________
   // Define the Container for the MC generated info
   if(! fCFContCascadeMCgen) {
@@ -378,7 +510,8 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
  
   PostData(1, fListHistMultistrangeQA);
   PostData(2, fCFContCascadeCuts);
-  PostData(3, fCFContCascadeMCgen);
+  PostData(3, fCFContCascadeMCCuts);
+  PostData(4, fCFContCascadeMCgen);
 
 
 }// end UserCreateOutputObjects
@@ -443,7 +576,8 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
           AliWarning("AliMultSelection object not found!");  //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
           PostData(1, fListHistMultistrangeQA);
           PostData(2, fCFContCascadeCuts);
-          PostData(3, fCFContCascadeMCgen);
+          PostData(3, fCFContCascadeMCCuts);
+          PostData(4, fCFContCascadeMCgen);
           return;
    } else {
           AliWarning("AliMultSelection object found!");
@@ -454,7 +588,8 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
           AliWarning(Form("lEvSelCode value = %i. Run Not good! REMOVE",lEvSelCode));
           PostData(1, fListHistMultistrangeQA);
           PostData(2, fCFContCascadeCuts);
-          PostData(3, fCFContCascadeMCgen);
+          PostData(3, fCFContCascadeMCCuts);
+          PostData(4, fCFContCascadeMCgen);
           return;
    }
 
@@ -477,7 +612,8 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
              AliWarning("No prim. vertex in ESD... return!");
              PostData(1, fListHistMultistrangeQA);
              PostData(2, fCFContCascadeCuts);
-             PostData(3, fCFContCascadeMCgen);
+             PostData(3, fCFContCascadeMCCuts);
+             PostData(4, fCFContCascadeMCgen);
              return;
        }
        lPrimaryBestESDVtx->GetXYZ(lBestPrimaryVtxPos);
@@ -487,7 +623,8 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
              AliWarning("No prim. vertex in AOD... return!");
              PostData(1, fListHistMultistrangeQA);
              PostData(2, fCFContCascadeCuts);
-             PostData(3, fCFContCascadeMCgen);
+             PostData(3, fCFContCascadeMCCuts);
+             PostData(4, fCFContCascadeMCgen);
              return;
        }
        lPrimaryBestAODVtx->GetXYZ(lBestPrimaryVtxPos);
@@ -625,6 +762,35 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
     Bool_t   lIsPosPionForTPC      = kFALSE; 
     Bool_t   lIsNegProtonForTPC    = kFALSE; 
     Bool_t   lIsPosProtonForTPC    = kFALSE; 
+    // -- MC Association
+    Int_t    lblPosV0Dghter         = 0; 
+    Int_t    lblNegV0Dghter         = 0;
+    Int_t    lblMotherPosV0Dghter   = 0;
+    Int_t    lblMotherNegV0Dghter   = 0; 
+    Int_t    lblBach                = 0;
+    Int_t    lblGdMotherPosV0Dghter = 0;
+    Int_t    lblGdMotherNegV0Dghter = 0; 
+    Int_t    lblMotherBach          = 0;
+    Bool_t   lAssoXiMinus    = kFALSE;
+    Bool_t   lAssoXiPlus     = kFALSE;
+    Bool_t   lAssoOmegaMinus = kFALSE;
+    Bool_t   lAssoOmegaPlus  = kFALSE;
+    TParticle *mcPosV0Dghter         = 0x0;
+    TParticle *mcNegV0Dghter         = 0x0; 
+    TParticle *mcMotherPosV0Dghter   = 0x0; 
+    TParticle *mcMotherNegV0Dghter   = 0x0; 
+    TParticle *mcBach                = 0x0;
+    TParticle *mcGdMotherPosV0Dghter = 0x0; 
+    TParticle *mcGdMotherNegV0Dghter = 0x0; 
+    TParticle *mcMotherBach          = 0x0;
+    AliAODMCParticle *mcPosV0Dghteraod         = 0x0;
+    AliAODMCParticle *mcNegV0Dghteraod         = 0x0;
+    AliAODMCParticle *mcMotherPosV0Dghteraod   = 0x0;
+    AliAODMCParticle *mcMotherNegV0Dghteraod   = 0x0;
+    AliAODMCParticle *mcBachaod                = 0x0;
+    AliAODMCParticle *mcGdMotherPosV0Dghteraod = 0x0;
+    AliAODMCParticle *mcGdMotherNegV0Dghteraod = 0x0;
+    AliAODMCParticle *mcMotherBachaod          = 0x0;
     // -- More container variables and quality checks
     Double_t lXiMomX           = 0.;                               //Useful to define other variables: lXiTransvMom, lXiTotMom
     Double_t lXiMomY           = 0.;                               //Useful to define other variables: lXiTransvMom, lXiTotMom
@@ -650,6 +816,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
     Float_t  etaBach           = 0.;                               //Selection on the eta range
     Float_t  etaPos            = 0.;                               //Selection on the eta range
     Float_t  etaNeg            = 0.;                               //Selection on the eta range
+    Double_t cascadeMass       = 0.;
     // --  variables for the AliCFContainer dedicated to cascade cut optmisiation: ESD and AOD 
     if (fAnalysisType == "ESD") { 
   
@@ -760,6 +927,39 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
            // Positive V0 daughter
            if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
            if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
+
+           // -----------------------------------------
+           // - MC Association in case of MC production 
+           if (fisMC) {
+             lblPosV0Dghter = 0;  lblPosV0Dghter = (Int_t) TMath::Abs( pTrackXi->GetLabel() );
+             lblNegV0Dghter = 0;  lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
+             mcPosV0Dghter = 0x0; mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
+             mcNegV0Dghter = 0x0; mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );               
+             lblMotherPosV0Dghter = 0.;  lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
+             lblMotherNegV0Dghter = 0.;  lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
+             if (lblMotherPosV0Dghter != lblMotherNegV0Dghter) continue; // must have same mother
+             if (lblMotherPosV0Dghter < 0) continue;                     // this particle is primary, no mother   
+             if (lblMotherNegV0Dghter < 0) continue;                     // this particle is primary, no mother
+             mcMotherPosV0Dghter = 0x0; mcMotherPosV0Dghter = lMCstack->Particle( lblMotherPosV0Dghter );
+             mcMotherNegV0Dghter = 0x0; mcMotherNegV0Dghter = lMCstack->Particle( lblMotherNegV0Dghter );  
+             lblBach = 0; lblBach = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
+             mcBach = 0x0; mcBach = lMCstack->Particle( lblBach );
+             lblGdMotherPosV0Dghter = 0; lblGdMotherPosV0Dghter = mcMotherPosV0Dghter->GetFirstMother() ;
+             lblGdMotherNegV0Dghter = 0; lblGdMotherNegV0Dghter = mcMotherNegV0Dghter->GetFirstMother() ;
+             lblMotherBach = 0; lblMotherBach = (Int_t) TMath::Abs( mcBach->GetFirstMother() );
+             if(lblGdMotherPosV0Dghter != lblGdMotherNegV0Dghter) continue; // must have same grand-mother
+             if(lblGdMotherPosV0Dghter < 0) continue;                       // primary lambda ...   
+             if(lblGdMotherNegV0Dghter < 0) continue;                       // primary lambda ...                            
+             if(lblMotherBach != lblGdMotherPosV0Dghter) continue;          // must have same mother bach and V0 daughters
+             mcGdMotherPosV0Dghter = 0x0; mcGdMotherPosV0Dghter = lMCstack->Particle( lblGdMotherPosV0Dghter );
+             mcGdMotherNegV0Dghter = 0x0; mcGdMotherNegV0Dghter = lMCstack->Particle( lblGdMotherNegV0Dghter );
+             mcMotherBach          = 0x0; mcMotherBach          = lMCstack->Particle( lblMotherBach );
+             if (!(lMCstack->IsPhysicalPrimary(lblMotherBach))) continue;
+             if      (mcMotherBach->GetPdgCode() == 3312  && mcGdMotherPosV0Dghter->GetPdgCode() == 3312  && mcGdMotherNegV0Dghter->GetPdgCode() == 3312)  {lAssoXiMinus    = kTRUE; cascadeMass = 1.321;}
+             else if (mcMotherBach->GetPdgCode() == -3312 && mcGdMotherPosV0Dghter->GetPdgCode() == -3312 && mcGdMotherNegV0Dghter->GetPdgCode() == -3312) {lAssoXiPlus     = kTRUE; cascadeMass = 1.321;}
+             else if (mcMotherBach->GetPdgCode() == 3334  && mcGdMotherPosV0Dghter->GetPdgCode() == 3334  && mcGdMotherNegV0Dghter->GetPdgCode() == 3334)  {lAssoOmegaMinus = kTRUE; cascadeMass = 1.672;}
+             else if (mcMotherBach->GetPdgCode() == -3334 && mcGdMotherPosV0Dghter->GetPdgCode() == -3334 && mcGdMotherNegV0Dghter->GetPdgCode() == -3334) {lAssoOmegaPlus  = kTRUE; cascadeMass = 1.672;}
+           }
         
            // ------------------------------
            // - Miscellaneous pieces of info that may help regarding data quality assessment.
@@ -869,7 +1069,42 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
            if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
            if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
 
-           //---------------------------------
+           // -----------------------------------------
+           // - MC Association in case of MC production 
+           if (fisMC) {
+             lblPosV0Dghter = 0; lblPosV0Dghter = (Int_t) TMath::Abs( pTrackXi->GetLabel() );
+             lblNegV0Dghter = 0; lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
+             mcPosV0Dghteraod = 0x0; mcPosV0Dghteraod = (AliAODMCParticle*) arrayMC->At( lblPosV0Dghter );
+             mcNegV0Dghteraod = 0x0; mcNegV0Dghteraod = (AliAODMCParticle*) arrayMC->At( lblNegV0Dghter );
+             lblMotherPosV0Dghter = 0;  lblMotherPosV0Dghter = mcPosV0Dghteraod->GetMother();
+             lblMotherNegV0Dghter = 0;  lblMotherNegV0Dghter = mcNegV0Dghteraod->GetMother();
+             if (lblMotherPosV0Dghter != lblMotherNegV0Dghter) continue; // must have same mother
+             if (lblMotherPosV0Dghter < 0 ) continue;                    // this particle is primary, no mother
+             if (lblMotherNegV0Dghter < 0 ) continue;                    // this particle is primary, no mother
+             mcMotherPosV0Dghteraod = 0x0; mcMotherPosV0Dghteraod = (AliAODMCParticle*) arrayMC->At( lblMotherPosV0Dghter );
+             mcMotherNegV0Dghteraod = 0x0; mcMotherNegV0Dghteraod = (AliAODMCParticle*) arrayMC->At( lblMotherNegV0Dghter );
+             lblBach = 0;  lblBach = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
+             mcBachaod = 0x0; mcBachaod = (AliAODMCParticle*) arrayMC->At( lblBach );
+             lblGdMotherPosV0Dghter = 0; lblGdMotherPosV0Dghter = mcMotherPosV0Dghteraod->GetMother() ;
+             lblGdMotherNegV0Dghter = 0; lblGdMotherNegV0Dghter = mcMotherNegV0Dghteraod->GetMother() ;
+             lblMotherBach = 0; lblMotherBach = (Int_t) TMath::Abs( mcBachaod->GetMother() );
+             if (lblGdMotherPosV0Dghter != lblGdMotherNegV0Dghter ) continue;
+             if (lblGdMotherPosV0Dghter < 0 ) continue;                    // primary lambda ...
+             if (lblGdMotherNegV0Dghter < 0 ) continue;                    // primary lambda ...
+             if (lblMotherBach != lblGdMotherPosV0Dghter ) continue;       //same mother for bach and V0 daughters
+             mcGdMotherPosV0Dghteraod = 0x0; mcGdMotherPosV0Dghteraod = (AliAODMCParticle*) arrayMC->At( lblGdMotherPosV0Dghter );
+             mcGdMotherNegV0Dghteraod = 0x0; mcGdMotherNegV0Dghteraod = (AliAODMCParticle*) arrayMC->At( lblGdMotherNegV0Dghter );
+             mcMotherBachaod          = 0x0; mcMotherBachaod          = (AliAODMCParticle*) arrayMC->At( lblMotherBach );
+             // - Check if cascade is primary
+             if (!(mcMotherBachaod->IsPhysicalPrimary())) continue;
+             // - Manage boolean for association
+             if      (mcMotherBachaod->GetPdgCode() == 3312  && mcGdMotherPosV0Dghteraod->GetPdgCode() == 3312  && mcGdMotherNegV0Dghteraod->GetPdgCode() == 3312 ) {lAssoXiMinus = kTRUE;    cascadeMass = 1.321;}
+             else if (mcMotherBachaod->GetPdgCode() == -3312 && mcGdMotherPosV0Dghteraod->GetPdgCode() == -3312 && mcGdMotherNegV0Dghteraod->GetPdgCode() == -3312) {lAssoXiPlus = kTRUE;     cascadeMass = 1.321;}
+             else if (mcMotherBachaod->GetPdgCode() == 3334  && mcGdMotherPosV0Dghteraod->GetPdgCode() == 3334  && mcGdMotherNegV0Dghteraod->GetPdgCode() == 3334 ) {lAssoOmegaMinus = kTRUE; cascadeMass = 1.672;}
+             else if (mcMotherBachaod->GetPdgCode() == -3334 && mcGdMotherPosV0Dghteraod->GetPdgCode() == -3334 && mcGdMotherNegV0Dghteraod->GetPdgCode() == -3334) {lAssoOmegaPlus = kTRUE;  cascadeMass = 1.672;}
+           }
+
+           // ---------------------------------
            // - Extra info for QA (AOD)
            // Miscellaneous pieces of info that may help regarding data quality assessment.
            // Cascade transverse and total momentum     
@@ -899,27 +1134,28 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
     }// end of AOD treatment
 
 
-    //---------------------------------------
+    // ---------------------------------------
     // Cut on pt of the three daughter tracks
     if (lBachTransvMom<fMinPtCutOnDaughterTracks)   { AliWarning("ERROR: bachelor pT < lowlimit");          continue; }
     if (lpTrackTransvMom<fMinPtCutOnDaughterTracks) { AliWarning("ERROR: positive daughter pT < lowlimit"); continue; }
     if (lnTrackTransvMom<fMinPtCutOnDaughterTracks) { AliWarning("ERROR: negative daughter pT < lowlimit"); continue; }
 
 
-    //---------------------------------------------------
+    // ---------------------------------------------------
     // Cut on pseudorapidity of the three daughter tracks
     if (TMath::Abs(etaBach) > 0.8) { AliWarning("ERROR: bachelor eta > maxlimit");          continue; }
     if (TMath::Abs(etaPos)  > 0.8) { AliWarning("ERROR: positive daughter eta > maxlimit"); continue; }
     if (TMath::Abs(etaNeg)  > 0.8) { AliWarning("ERROR: negative daughter eta > maxlimit"); continue; }
 
 
-    //----------------------------------
+    // ----------------------------------
     // Calculate proper time for cascade
-    Double_t cascadeMass = 0.;
-    if ( ( (lChargeXi<0) && lIsBachelorPionForTPC && lIsPosProtonForTPC && lIsNegPionForTPC ) ||
-         ( (lChargeXi>0) && lIsBachelorPionForTPC && lIsNegProtonForTPC && lIsPosPionForTPC )  ) cascadeMass = 1.321;
-    if ( ( (lChargeXi<0) && lIsBachelorKaonForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC ) ||
-         ( (lChargeXi>0) && lIsBachelorKaonForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )  ) cascadeMass = 1.672; 
+    if (!fisMC) {
+      if ( ( (lChargeXi<0) && lIsBachelorPionForTPC && lIsPosProtonForTPC && lIsNegPionForTPC ) ||
+           ( (lChargeXi>0) && lIsBachelorPionForTPC && lIsNegProtonForTPC && lIsPosPionForTPC )  ) cascadeMass = 1.321;
+      if ( ( (lChargeXi<0) && lIsBachelorKaonForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC ) ||
+           ( (lChargeXi>0) && lIsBachelorKaonForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )  ) cascadeMass = 1.672; 
+    }
     Double_t lctau =  TMath::Sqrt(TMath::Power((lPosXi[0]-lBestPrimaryVtxPos[0]),2)+TMath::Power((lPosXi[1]-lBestPrimaryVtxPos[1]),2)+TMath::Power(( lPosXi[2]-lBestPrimaryVtxPos[2]),2));
     if (lXiTotMom!=0)         lctau = lctau*cascadeMass/lXiTotMom;
     else lctau = -1.;
@@ -928,15 +1164,19 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
     Float_t distV0Xi =  TMath::Sqrt(TMath::Power((lPosV0Xi[0]-lPosXi[0]),2)+TMath::Power((lPosV0Xi[1]-lPosXi[1]),2)+TMath::Power((lPosV0Xi[2]-lPosXi[2]),2));
     Float_t lctauV0 = -1.;
     if (lV0TotMom!=0) lctauV0 = distV0Xi*lambdaMass/lV0TotMom;
+
+    // ------------------------------
     // Fill the TH1F without PID info
     if        ( lChargeXi < 0 ) {
-         fHistMassXiMinus->Fill( lInvMassXiMinus );
-         fHistMassOmegaMinus->Fill( lInvMassOmegaMinus );
+      fHistMassXiMinus->Fill( lInvMassXiMinus );
+      fHistMassOmegaMinus->Fill( lInvMassOmegaMinus );
     } else if ( lChargeXi > 0 ) {
       fHistMassXiPlus->Fill( lInvMassXiPlus );
       fHistMassOmegaPlus->Fill( lInvMassOmegaPlus );
     }
-    // Fill the AliCFContainer (optimisation of topological selections)
+
+    // ----------------------- 
+    // Fill the AliCFContainer 
     Double_t lContainerCutVars[20] = {0.0};
     lContainerCutVars[0]  = lDcaXiDaughters;
     lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
@@ -977,6 +1217,53 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
          if (lIsBachelorKaonForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,3); // for Omega+ 
     }
 
+    // ----------------------- 
+    // Fill the AliCFContainer 
+    if (fisMC) {
+      Double_t lContainerMCCutVars[20] = {0.0};
+      lContainerMCCutVars[0]  = lDcaXiDaughters;
+      lContainerMCCutVars[1]  = lDcaBachToPrimVertexXi;
+      lContainerMCCutVars[2]  = lXiCosineOfPointingAngle;
+      lContainerMCCutVars[3]  = lXiRadius;
+      lContainerMCCutVars[4]  = lInvMassLambdaAsCascDghter;
+      lContainerMCCutVars[5]  = lDcaV0DaughtersXi;
+      lContainerMCCutVars[6]  = lV0CosineOfPointingAngle;
+      lContainerMCCutVars[7]  = lV0RadiusXi;
+      lContainerMCCutVars[8]  = lDcaV0ToPrimVertexXi;
+      lContainerMCCutVars[9]  = lDcaPosToPrimVertexXi;
+      lContainerMCCutVars[10] = lDcaNegToPrimVertexXi;
+      lContainerMCCutVars[13] = lXiTransvMom;
+      lContainerMCCutVars[16] = lctau;
+      lContainerMCCutVars[17] = lctauV0;
+      lContainerMCCutVars[18] = lV0toXiCosineOfPointingAngle;
+      if ( lChargeXi < 0 ) {
+           lContainerMCCutVars[11] = lInvMassXiMinus;
+           lContainerMCCutVars[12] = lInvMassOmegaMinus;
+           lContainerMCCutVars[14] = lRapXi;
+           lContainerMCCutVars[15] = -1.;
+           if (lAssoXiMinus) fCFContCascadeMCCuts->Fill(lContainerMCCutVars,0); // for Xi-
+           lContainerMCCutVars[11] = lInvMassXiMinus;
+           lContainerMCCutVars[12] = lInvMassOmegaMinus;
+           lContainerMCCutVars[14] = -1.;
+           lContainerMCCutVars[15] = lRapOmega;
+           if (lAssoOmegaMinus) fCFContCascadeMCCuts->Fill(lContainerMCCutVars,2); // for Omega-
+      } else {
+           lContainerMCCutVars[11] = lInvMassXiPlus;
+           lContainerMCCutVars[12] = lInvMassOmegaPlus;
+           lContainerMCCutVars[14] = lRapXi;
+           lContainerMCCutVars[15] = -1.;
+           if (lAssoXiPlus) fCFContCascadeMCCuts->Fill(lContainerMCCutVars,1); // for Xi+
+           lContainerMCCutVars[11] = lInvMassXiPlus;
+           lContainerMCCutVars[12] = lInvMassOmegaPlus;
+           lContainerMCCutVars[14] = -1.;
+           lContainerMCCutVars[15] = lRapOmega;
+           if (lAssoOmegaPlus) fCFContCascadeMCCuts->Fill(lContainerMCCutVars,3); // for Omega+ 
+      }
+    }
+
+
+
+
 
   }// end of the Cascade loop (ESD or AOD)
     
@@ -984,7 +1271,8 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
   // Post output data.
   PostData(1, fListHistMultistrangeQA);
   PostData(2, fCFContCascadeCuts); 
-  PostData(3, fCFContCascadeMCgen);
+  PostData(3, fCFContCascadeMCCuts);
+  PostData(4, fCFContCascadeMCgen);
 
 }// End UserExec
 
