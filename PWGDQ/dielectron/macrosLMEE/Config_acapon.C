@@ -181,8 +181,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
     histos->UserHistogram("Track","Eta_Phi","",100,-1,1,120,0,TMath::TwoPi(),AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
     //Check ITS hits per run
-    histos->UserHistogram("Track", "nITS vs run","", GetVector(kRuns), BinsToVector(6, -0.5, 6.5), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kNclsITS);
-    histos->UserHistogram("Track", "ITSclutserMap vs run","", GetVector(kRuns), BinsToVector(70, 0, 70), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kITSclusterMap);
+    /*histos->UserHistogram("Track", "nITS vs run","", GetVector(kRuns), BinsToVector(6, -0.5, 6.5), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kNclsITS);
+    histos->UserHistogram("Track", "ITSclusterMap vs run","", GetVector(kRuns), BinsToVector(70, 0, 70), AliDielectronVarManager::kRunNumber, AliDielectronVarManager::kITSclusterMap);*/
 
     if(isQAtask){
         // DCA
@@ -350,13 +350,21 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t doMixing = k
         histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
         histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
         histos->UserHistogram("Pair","PhiV","", GetVector(kPhiV), AliDielectronVarManager::kPhivPair);
+        histos->UserHistogram("Pair","dXY abs (sqrt)",""    ,200 ,0,2.0 , AliDielectronVarManager::kPairDCAabsXY); 
+        histos->UserHistogram("Pair","dZ abs (sqrt)",""     ,500 ,0,5.0 , AliDielectronVarManager::kPairDCAabsZ); 
+        histos->UserHistogram("Pair","dXY sigma (sqrt)",""  ,2000,0,20.0, AliDielectronVarManager::kPairDCAsigXY); 
+        histos->UserHistogram("Pair","dZ sigma (sqrt)",""   ,2000,0,20.0, AliDielectronVarManager::kPairDCAsigZ); 
+        histos->UserHistogram("Pair","dXY abs (linear)",""  ,100 ,0,1.0 , AliDielectronVarManager::kPairLinDCAabsXY); 
+        histos->UserHistogram("Pair","dZ abs (linear)",""   ,500 ,0,5.0 , AliDielectronVarManager::kPairLinDCAabsZ); 
+        histos->UserHistogram("Pair","dXY sigma (linear)","",2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigXY); 
+        histos->UserHistogram("Pair","dZ sigma (linear)","" ,2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigZ); 
 
-        //2D and 3D histograms
+                //2D and 3D histograms
         histos->UserHistogram("Pair","InvMass_PairPt",";Inv. Mass [GeV];Pair Pt [GeV];#pairs",
                               GetVector(kMee), GetVector(kPtee),
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
         histos->UserHistogram("Pair","Eta_Phi_Pair",";Eta;Phi;#pairs",
-                              100,-1.,1., 120,0.,TMath::TwoPi(),
+                              200,-2.,2, 120,0.,TMath::TwoPi(),
                               AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi);
         histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass [GeV];Pair Pt [GeV];PhiV",
                               GetVector(kMee), GetVector(kPtee), GetVector(kPhiV), 
@@ -477,7 +485,8 @@ TVectorD *GetVector(Int_t var)
       //2.50, 2.55, 2.60, 2.65, 2.70, 2.75, 2.80, 2.85, 2.90, 2.95, 
       //3.00, 3.05, 3.10, 3.15, 3.20, 3.25, 3.30, 3.35, 3.40, 3.45, 
     case kCent: return AliDielectronHelper::MakeLinBinning(10,0.,100.);
-      
+    
+    //First and lasts bins added for clearer plotting
     case kRuns:   return AliDielectronHelper::MakeArbitraryBinning("265300, 265309, 265332, 265334, 265335, 265336, 265338, 265339, 265342, 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385, 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425, 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525, 265530");
 
     default: cout << "ERROR: in 'GetVector(...var)' variable for axis range not defined!" << endl;

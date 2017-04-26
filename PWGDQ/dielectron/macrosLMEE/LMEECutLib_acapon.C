@@ -240,6 +240,17 @@ AliAnalysisCuts* LMEECutLib::GetKineCutsAna(Int_t cutSet){
     cout << "Kinemtaic cuts could not be setup!" << endl;
     return 0x0;
   }
+    switch(cutSet){
+        case kAllSpecies:
+        case kElectrons:
+            kineCuts->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+            kineCuts->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
+            break;
+        default:
+            kineCuts->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+            kineCuts->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
+  }
+
   return kineCuts;
   
 }
