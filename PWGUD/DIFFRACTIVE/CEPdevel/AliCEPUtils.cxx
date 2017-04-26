@@ -1016,9 +1016,9 @@ Int_t AliCEPUtils::GetCEPTracks (
   // possible return values:
   //  >0: number of selected CEP tracks
   //  -1: tracks with !kTTTPCScluster
-  //  -2: more tracklets or ITSpure tracks than selected tracks
+  //  -4: more tracklets or ITSpure tracks than selected tracks
   //  -3: one of the selected tracks has missed a further tests
-  //  -4: not all fired chips are associated with a selected track
+  //  -5: not all fired chips are associated with a selected track
   
   // initialisations
   UInt_t mask, pattern;
