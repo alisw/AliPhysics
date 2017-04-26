@@ -348,8 +348,6 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86000013","1111141057032230000","0163103100000050"); // 60-100% standard NL
   } else if(trainConfig == 47){ // new default cut
     cuts.AddCut("80000013","1111141057032230000","0163103100000050"); // default tm pt dependent
-  } else if(trainConfig == 48){ // new default cut
-    cuts.AddCut("80000013","1111141057032230000","0163103100000050"); // default tm pt dependent larger y range
 
   //EMC7
   } else if(trainConfig == 50){ // default cutstring and first set of variations nonlinearity
@@ -394,8 +392,6 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86052013","1111141057032230000","0163103100000050"); // 60-100% standard NL
   } else if(trainConfig == 57){ // new default cut
     cuts.AddCut("80052013","1111141057032230000","0163103100000050"); // default tm pt dependent
-  } else if(trainConfig == 58){ // new default cut
-    cuts.AddCut("80052013","1111141057032230000","0163103100000050"); // default tm pt dependent larger y range
 
   //EG1
   } else if(trainConfig == 60){ // default cutstring and first set of variations nonlinearity
@@ -440,8 +436,6 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86083013","1111141057032230000","0163103100000050"); // 60-100% standard NL
   } else if(trainConfig == 67){ // new default cut
     cuts.AddCut("80083013","1111141057032230000","0163103100000050"); // default tm pt dependent
-  } else if(trainConfig == 68){ // new default cut
-    cuts.AddCut("80083013","1111141057032230000","0163103100000050"); // default tm pt dependent larger y range
    //EG2
   } else if(trainConfig == 70){ // default cutstring and first set of variations nonlinearity
     cuts.AddCut("80085013","1111141057032230000","0163103100000050"); // default
@@ -485,8 +479,6 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86085013","1111141057032230000","0163103100000050"); // 60-100% standard NL
   } else if(trainConfig == 77){ // new default cut
     cuts.AddCut("80085013","1111141057032230000","0163103100000050"); // default tm pt dependent
-  } else if(trainConfig == 78){ // new default cut
-    cuts.AddCut("80085013","1111141057032230000","0163103100000050"); // default tm pt dependent larger y range
 
   //all default triggers
   } else if(trainConfig == 80){
