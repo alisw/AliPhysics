@@ -41,8 +41,10 @@ void AliGenReaderLHE::Init()
 
   Bool_t foundEvent = kFALSE;
   fXMLChild = fXMLEngine.GetChild(xmlMainNode);
-  while (fXMLChild && !foundEvent) {
+  while (fXMLChild) {
     foundEvent = (TString(fXMLEngine.GetNodeName(fXMLChild)) == "event");
+    if (foundEvent)
+      break;
     fXMLChild  = fXMLEngine.GetNext(fXMLChild);
   }
   if (!fXMLChild || !foundEvent)
@@ -51,9 +53,14 @@ void AliGenReaderLHE::Init()
 
 Int_t AliGenReaderLHE::NextEvent()
 {
+  if (!fXMLChild) {
+    AliError("no new event found");
+    return 0;
+  }
+
   const char* content = fXMLEngine.GetNodeContent(fXMLChild);
   if (!content) {
-    AliError("empty event");
+    AliError("event is empty");
     return 0;
   }
   fStrStream.str(content);
@@ -66,6 +73,10 @@ Int_t AliGenReaderLHE::NextEvent()
 
   // todo: xwgtup, scalup, aqedup, aqcdup -> event header
   fPosTracksBegin = fStrStream.tellg();
+
+  // advance to the next event
+  fXMLChild  = fXMLEngine.GetNext(fXMLChild);
+
   return nup;
 }
 
