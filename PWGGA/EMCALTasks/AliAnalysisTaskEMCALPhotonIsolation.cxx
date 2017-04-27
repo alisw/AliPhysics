@@ -1022,7 +1022,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   Double_t coiTOF = coi->GetTOF()*1e9;
   index=coi->GetID();
-  fClusEvsClusT->Fill(vecCOI.Pt(),coiTOF);
+  if(coi->GetM02()>=0.1)
+    fClusEvsClusT->Fill(vecCOI.Pt(),coiTOF);
   if(!fIsMC){
     if(coiTOF< -30. || coiTOF > 30.)
       return kFALSE;

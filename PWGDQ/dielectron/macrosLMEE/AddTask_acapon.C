@@ -51,14 +51,14 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("DielectronTask");
   //if (!hasMC) 
   
-  task->UsePhysicsSelection();
+  //task->UsePhysicsSelection();
 
   //Add event filter
   Int_t triggerNames=(AliVEvent::kINT7);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies));
   task->SelectCollisionCandidates(triggerNames);
   task->SetTriggerMask(triggerNames);
-  task->SetRejectPileup();
+  //task->SetRejectPileup();
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 
   // Add the task to the manager

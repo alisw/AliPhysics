@@ -1,8 +1,8 @@
 void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default", char* eventTrigger="kINT7"){
-  
+
   TString stEventTrigger(eventTrigger);
   TString stControlString(controlString);
-  
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {Error("AddTask_dNdPtPbPb_TPCITS", "No analysis manager found.");return 0;}
 
@@ -12,8 +12,8 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   AliLog::SetGlobalLogLevel(AliLog::kError);
   mgr->SetDebugLevel(0);
 
-  
-  /// Create event cuts  
+
+  /// Create event cuts
   Float_t zvWindow = 30. ;
 
   AlidNdPtEventCuts *evtCuts = new AlidNdPtEventCuts("AlidNdPtEventCuts","Event cuts");
@@ -21,7 +21,7 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   evtCuts->SetMeanXYZv(0.0,0.0,0.0);
   evtCuts->SetSigmaMeanXYZv(1.0,1.0,10.0);
   evtCuts->SetTriggerRequired(kTRUE);
-  
+
   // Create geom. acceptance cuts
 
   Float_t etaWindow = 1. ;
@@ -30,12 +30,12 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   AlidNdPtAcceptanceCuts *accCuts = new AlidNdPtAcceptanceCuts("AlidNdPtAcceptanceCuts","Geom. acceptance cuts");
   accCuts->SetEtaRange(-etaWindow,etaWindow);
   accCuts->SetPtRange(ptMin,1.e10);
-  
+
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,hasMC);
   if (!esdTrackCuts) { printf("ERROR: esdTrackCuts could not be created\n"); return; }
   esdTrackCuts->SetHistogramsOn(kTRUE);
-  
+
   // Create task
   AlidNdPtTask *task = new AlidNdPtTask("AlidNdPtTask");
   task->SetUseMCInfo(hasMC);
@@ -45,7 +45,7 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   else if(stEventTrigger.Contains("kMB")) task->SelectCollisionCandidates(AliVEvent::kMB);
 
 
-  // Create cut analysis object  
+  // Create cut analysis object
   AlidNdPtAnalysisPbPb *fdNdPtAnalysisPbPb = new AlidNdPtAnalysisPbPb("dNdPtAnalysisPbPb","dN/dPt Analysis");
   fdNdPtAnalysisPbPb->SetEventCuts(evtCuts);
   fdNdPtAnalysisPbPb->SetAcceptanceCuts(accCuts);
@@ -67,6 +67,7 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   else if (stControlString.Contains("Kaon")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCKaon);}
   else if (stControlString.Contains("RemainingRest")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
   else if (stControlString.Contains("Rest")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCRest);}
+  else if (stControlString.Contains("Lambda")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCLambda);}
   else if (stControlString.Contains("SigmaPlus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
   else if (stControlString.Contains("SigmaMinus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
   else if (stControlString.Contains("XiMinus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
@@ -75,6 +76,7 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   else if (stControlString.Contains("Minus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMinus);}
   else if (stControlString.Contains("Electron")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCElectron);}
   else if (stControlString.Contains("Muon")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCMuon);}
+  else if (stControlString.Contains("InclWoSigma")) {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kInclWoSimga);}
   else{fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kAllPart);}
   
   
@@ -84,11 +86,11 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   Double_t* binsPt = new Double_t[82];
   for (int i=0; i<82; i++) {binsPt[i] = bins[i];}
   fdNdPtAnalysisPbPb->SetBinsPt(ptNbins, binsPt);
-  fdNdPtAnalysisPbPb->SetBinsPtCorr(ptNbins, binsPt);  
+  fdNdPtAnalysisPbPb->SetBinsPtCorr(ptNbins, binsPt);
   fdNdPtAnalysisPbPb->SetUseMCInfo(hasMC);
   fdNdPtAnalysisPbPb->SetHistogramsOn(hasMC);
- 
-  
+
+
   task->AddAnalysisObject( fdNdPtAnalysisPbPb );
 
   // Add task
@@ -104,9 +106,9 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   if(!stControlString.Contains("default")) {
     stContainerName = stContainerName + "_" + stControlString;
   }
-    
+
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(stContainerName,TList::Class(),AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
-    
+
   mgr->ConnectOutput(task, 1, coutput);
 }
 
