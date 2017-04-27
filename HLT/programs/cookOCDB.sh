@@ -3,6 +3,7 @@ SOURCE=/cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB
 TARGET=/opt/HLT/data/HCDB_new_2016-09-02
 FUTURE_RUN=500000
 SOURCE_RUN=260014
+UPDATE_MAGNETIC_FIELD=0
 
 if [ "0$1" != "0" ]; then
     echo Using Source $1
@@ -19,6 +20,10 @@ fi
 if [ "0$4" != "0" ]; then
     echo Reference run for extending objects: $4
     SOURCE_RUN=$4
+fi
+if [ "0$5" == "01" ]; then
+    echo Setting update of magnetic field
+    UPDATE_MAGNETIC_FIELD=1
 fi
 
 #Download default CDB entries for future run
@@ -85,12 +90,28 @@ $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGE
 #Fetch CTP Aliases to make offline reco work with trigger class filter
 $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGET cdbEntries="GRP/CTP/Aliases" sourceRun=$SOURCE_RUN
 
+if [ $UPDATE_MAGNETIC_FIELD == 1 ]; then
+    let START_SHIFT=`date +%s`-300
+    END_SHIFT=`date +%s`
+    DIM_DNS_HOST=aldaqecs.cern.ch DIM_DNS_NODE=alidcsdimdns.cern.ch ALIHLT_T_HCDBDIR=$TARGET aliroot -l -q -b "$ALICE_ROOT/HLT/createGRP/AliHLTCreateGRP.C($SOURCE_RUN, \"TPC\", \"pp\", \"PHYSICS\", $START_SHIFT, $END_SHIFT, 0)"
+    retVal=$?
+    echo $ALICE_ROOT/HLT/createGRP/AliHLTCreateGRP.C returns with $retVal
+    if [ ! $retVal -eq 2 ]; then
+        echo ERROR creating GRP with up to date magnet state
+        exit 1
+    fi
+fi
+
 #Create TPC Fast transform object
 rm -f $ALICE_ROOT/OCDB/HLT/ConfigTPC/TPCFastTransform/*
 aliroot -l -q -b $ALICE_SOURCE/HLT/TPCLib/macros/makeTPCFastTransformOCDBObject.C"(\"local://$TARGET\", $SOURCE_RUN, $SOURCE_RUN)"
 SRCFILE=`ls $ALICE_ROOT/OCDB/HLT/ConfigTPC/TPCFastTransform | tail -n 1`
 aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$ALICE_ROOT/OCDB/HLT/ConfigTPC/TPCFastTransform/$SRCFILE\", \"local://$TARGET\", 0)"
 rm -f $ALICE_ROOT/OCDB/HLT/ConfigTPC/TPCFastTransform/*
+
+if [ $UPDATE_MAGNETIC_FIELD == 1 ]; then
+    rm -f $TARGET/GRP/GRP/Data/Run${SOURCE_RUN}_${SOURCE_RUN}*.root
+fi
 
 #Use all TPC Compression objects from cvmfs, to have correct behavior for all runs
 rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressor/*
