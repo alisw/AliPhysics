@@ -567,7 +567,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // this is doing a lot more than the physics selection (by default uses kAny)
   // run number > 225000
   Bool_t isEventCutsel = kFALSE;
-  if (fRun > 225000) {
+  if (fRun >= 225000 && fRun <= 260187) {
     isEventCutsel = fEventCuts->AcceptEvent(fEvent);
   }
   if (isEventCutsel) fhStatsFlow->Fill(AliCEPBase::kBinEventCut);
