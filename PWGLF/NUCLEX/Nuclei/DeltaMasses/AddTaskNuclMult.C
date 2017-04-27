@@ -1,6 +1,6 @@
 AliAnalysisTaskSE *AddTaskNuclMult(Bool_t isMC=kFALSE,
-				   Bool_t isNTPCclsVaried=kFALSE, Bool_t isNsigmaTPCVaried=kFALSE,
-				   Bool_t isDCAzMaxVaried=kFALSE){
+				     Bool_t isNTPCclsVaried=kFALSE, Bool_t isNsigmaTPCVaried=kFALSE,
+				     Bool_t isDCAzMaxVaried=kFALSE){
 
   /*
     I can enable ONE of the last 3 arguments at a time
@@ -39,26 +39,34 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t isMC=kFALSE,
     task[i]->SetDCAzMax(DCAzMax[i]);
   }
   
+  AliAnalysisDataContainer *cinput[Ntask];
   AliAnalysisDataContainer *cOutputL[Ntask];
   for(Int_t i=0;i<Ntask;i++) {
-   Char_t name[1000];
-   
-   if(!isNTPCclsVaried && !isNsigmaTPCVaried && !isDCAzMaxVaried) {
-     snprintf(name,1000,"out_DCAxyMax=%.1f",DCAxyMax[i]);
-   }
-   else if(isNTPCclsVaried) {
-     snprintf(name,1000,"out_DCAxyMax=%.1f_nTPCclsMin=%d",DCAxyMax[i],nTPCclustersMin[i]);
-   }
-   else if(isNsigmaTPCVaried) {
-     snprintf(name,1000,"out_DCAxyMax=%.1f_nsigmaTPCMax=%.1f",DCAxyMax[i],nsigmaTPCMax[i]);
-   }
-   else if(isDCAzMaxVaried) {
-     snprintf(name,1000,"out_DCAxyMax=%.1f_DCAzMax=%.1f",DCAxyMax[i],DCAzMax[i]);
-   }
-   
-   cOutputL[i] = mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
-   mgr->ConnectInput(task[i],0,mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(task[i],1,cOutputL[i]);
+    Char_t nameIn[1000];
+    Char_t nameOut[1000];
+    
+    if(!isNTPCclsVaried && !isNsigmaTPCVaried && !isDCAzMaxVaried) {
+      snprintf(nameIn,1000,"cchain1_out_DCAxyMax=%.1f",DCAxyMax[i]);
+      snprintf(nameOut,1000,"out_DCAxyMax=%.1f",DCAxyMax[i]);
+    }
+    else if(isNTPCclsVaried) {
+      snprintf(nameIn,1000,"cchain1_out_DCAxyMax=%.1f_nTPCclsMin=%d",DCAxyMax[i],nTPCclustersMin[i]);
+      snprintf(nameOut,1000,"out_DCAxyMax=%.1f_nTPCclsMin=%d",DCAxyMax[i],nTPCclustersMin[i]);
+    }
+    else if(isNsigmaTPCVaried) {
+      snprintf(nameIn,1000,"cchain1_out_DCAxyMax=%.1f_nsigmaTPCMax=%.1f",DCAxyMax[i],nsigmaTPCMax[i]);
+      snprintf(nameOut,1000,"out_DCAxyMax=%.1f_nsigmaTPCMax=%.1f",DCAxyMax[i],nsigmaTPCMax[i]);
+    }
+    else if(isDCAzMaxVaried) {
+      snprintf(nameIn,1000,"cchain1_out_DCAxyMax=%.1f_DCAzMax=%.1f",DCAxyMax[i],DCAzMax[i]);
+      snprintf(nameOut,1000,"out_DCAxyMax=%.1f_DCAzMax=%.1f",DCAxyMax[i],DCAzMax[i]);
+    }
+    
+    cinput[i] = mgr->CreateContainer(nameIn,TChain::Class(),AliAnalysisManager::kInputContainer);
+    mgr->ConnectInput(task[i],0,mgr->GetCommonInputContainer());
+    
+    cOutputL[i] = mgr->CreateContainer(nameOut,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
+    mgr->ConnectOutput(task[i],1,cOutputL[i]);
   }
   
   return task[0];
