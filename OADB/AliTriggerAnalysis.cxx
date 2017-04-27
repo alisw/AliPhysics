@@ -736,6 +736,9 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliVEvent* ev
     Int_t end   = (side == kASide) ? 64 : 32;
     for (Int_t i=begin; i<end; i++) if (vzero->GetBBFlag(i)) return kV0BB;
     for (Int_t i=begin; i<end; i++) if (vzero->GetBGFlag(i)) return kV0BG;
+    // Workaround for high multiplicity in V0C (Pb-Pb 2015):
+    // high-mult events drop out from online beam-beam trigger window in MC
+    if (fMC && side==kCSide && vzero->GetMTotV0C()>1000) return kV0BB;
   } else {
     if (fillHists==1) {
       if (side == kASide) fHistV0AAll->Fill(vzero->GetV0ATime());
