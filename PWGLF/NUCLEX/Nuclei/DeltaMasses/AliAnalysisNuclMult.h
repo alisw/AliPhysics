@@ -184,7 +184,7 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   Bool_t IsTOFgoodmatching(AliVTrack *track, Int_t label, Double_t nsigmaTOF[9], Int_t kSpec, Double_t t_pt, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
   //---
   
-  ClassDef(AliAnalysisNuclMult, 11);
+  ClassDef(AliAnalysisNuclMult, 12);
 };
 
 #endif
