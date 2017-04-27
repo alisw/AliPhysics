@@ -969,8 +969,8 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   SymParam=(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry());
   Mu=(finaljet.structure_of<fastjet::contrib::SoftDrop>().mu());
   DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
-  fhGroomedPtvJetPt->Fill(finaljet.perp(),fJet->Pt());
-  fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
+  //fhGroomedPtvJetPt->Fill(finaljet.perp(),fJet->Pt());
+  //fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
   if(!fTruthJet) fJetInfoVar[2]=SymParam;
   else fJetInfoVar[3]=SymParam;
   if(!fTruthJet) fJetInfoVar[12] = DeltaR;
