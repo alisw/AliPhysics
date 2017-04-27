@@ -93,7 +93,7 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *title,
   char tTitNumBac[101] = "NumXiTrackBac";
   strncat(tTitNumBac, title, 100);
   fNumeratorBac = new TH1D(tTitNumBac, title, nbins, Low, High);
-  char tTitDenBac[101] = "DenV0TrackBac";
+  char tTitDenBac[101] = "DenXiTrackBac";
   strncat(tTitDenBac, title, 100);
   fDenominatorBac = new TH1D(tTitDenBac, title, nbins, Low, High);
 
