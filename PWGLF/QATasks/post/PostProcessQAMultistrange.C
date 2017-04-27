@@ -94,8 +94,8 @@ class AliCFContainer;
 // - MAIN FUNCTION
 //=================
 void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                             // 0) PbPb  1) pp/pPb
-                               Bool_t  isMC            = kFALSE,                        // kTRUE-->MC and kFALSE-->Exp.
-                               Bool_t  mcass           = kFALSE,                         // if kTRUE use container with MC association
+                               Bool_t  isMC            = kTRUE,                        // kTRUE-->MC and kFALSE-->Exp.
+                               Bool_t  mcass           = kTRUE,                         // if kTRUE use container with MC association
                                Char_t *fileDir         = ".",                           // Input file directory
                                Char_t *output          = "pdf"                          // "eps", "png" or "pdf"
                               ) {
@@ -118,8 +118,8 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
      //SOURCE THE FILE AND THE CONTAINER
      TFile *f = new TFile(Form("%s/AnalysisResults.root",fileDir));
      AliCFContainer *cf = 0x0;
-     if (isMC && mcass) cf = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeMCCuts"));
-     else               cf = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));  
+     if (isMC && mcass) cf = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeMCCuts"));  
+     else               cf = (AliCFContainer*) (f->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));
 
      //___________
      //DEFINE TEXT
@@ -457,7 +457,7 @@ void PostProcessQAMultistrange(Int_t   collidingsystem = 1,                     
      if      (output == "png") c4->SaveAs("LF_QAanalysis_Multistrange_page4.png");
      else if (output == "eps") c4->SaveAs("LF_QAanalysis_Multistrange_page4.eps");
      else if (output == "pdf" && isMC)  c4->SaveAs("LF_QAanalysis_Multistrange.pdf");
-     else if (output == "pdf" && !isMC) c4->SaveAs("LF_QAanalysis_Multistrange.pdf)");
+     else if (output == "pdf" && !isMC) c4->SaveAs("LF_QAanalysis_Multistrange.pdf");
 
 
      //_____________________________________________
