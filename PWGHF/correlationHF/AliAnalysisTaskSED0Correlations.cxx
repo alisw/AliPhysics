@@ -1129,7 +1129,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
           fillthis="histSgn_WeigD0Eff_c_";
           fillthis+=ptbin;
           Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-          if(!fUseDeff) effD0=1.;
+          if(!fUseDeff || !effD0) effD0=1.;
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
   	} else{ //it was a D0bar
 	  fillthis="histRfl_c_";
@@ -1138,7 +1138,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
           fillthis="histRfl_WeigD0Eff_c_";
           fillthis+=ptbin;
           Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-          if(!fUseDeff) effD0=1.;          
+          if(!fUseDeff || !effD0) effD0=1.;          
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
   	}
       } else if(labD0>=0 && CheckD0Origin(arrMC,(AliAODMCParticle*)arrMC->At(labD0))==5) {
@@ -1151,7 +1151,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
             fillthis="histSgn_WeigD0Eff_b_";
             fillthis+=ptbin;
             Double_t effD0 = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
-            if(!fUseDeff) effD0=1.;            
+            if(!fUseDeff || !effD0) effD0=1.;            
             ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
   	  } else{ //it was a D0bar
 	    fillthis="histRfl_b_";
@@ -1160,7 +1160,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
             fillthis="histRfl_WeigD0Eff_b_";
             fillthis+=ptbin;
             Double_t effD0 = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
-            if(!fUseDeff) effD0=1.;          
+            if(!fUseDeff || !effD0) effD0=1.;          
             ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
 	  }
       } else {//background
@@ -1170,7 +1170,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
         fillthis="histBkg_WeigD0Eff_c_";
         fillthis+=ptbin;
         Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-        if(!fUseDeff) effD0=1.; 
+        if(!fUseDeff || !effD0) effD0=1.; 
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
       }
     }else{ //on data
@@ -1180,7 +1180,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       fillthis="histMass_WeigD0Eff_";
       fillthis+=ptbin;
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-      if(!fUseDeff) effD0=1.; 
+      if(!fUseDeff || !effD0) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
       if(fFillTrees>0) {
 	Double_t centFill = 0.;
@@ -1205,7 +1205,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
           fillthis="histSgn_WeigD0Eff_c_";
           fillthis+=ptbin;
           Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-          if(!fUseDeff) effD0=1.; 
+          if(!fUseDeff || !effD0) effD0=1.; 
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
   	} else{ //it was a D0bar
 	  fillthis="histRfl_c_";
@@ -1214,7 +1214,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
           fillthis="histRfl_WeigD0Eff_c_";
           fillthis+=ptbin;
           Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-          if(!fUseDeff) effD0=1.; 
+          if(!fUseDeff || !effD0) effD0=1.; 
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
   	}
       } else if(labD0>=0 && CheckD0Origin(arrMC,(AliAODMCParticle*)arrMC->At(labD0))==5) {
@@ -1227,7 +1227,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
             fillthis="histSgn_WeigD0Eff_b_";
             fillthis+=ptbin;
             Double_t effD0 = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
-            if(!fUseDeff) effD0=1.; 
+            if(!fUseDeff || !effD0) effD0=1.; 
             ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
   	  } else{ //it was a D0bar
 	    fillthis="histRfl_b_";
@@ -1236,7 +1236,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
             fillthis="histRfl_WeigD0Eff_b_";
             fillthis+=ptbin;
             Double_t effD0 = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
-            if(!fUseDeff) effD0=1.; 
+            if(!fUseDeff || !effD0) effD0=1.; 
             ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
 	  }
       } else {//background
@@ -1246,7 +1246,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
         fillthis="histBkg_WeigD0Eff_c_";
         fillthis+=ptbin;
         Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-        if(!fUseDeff) effD0=1.; 
+        if(!fUseDeff || !effD0) effD0=1.; 
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
       }
     }else{ //on data
@@ -1256,7 +1256,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       fillthis="histMass_WeigD0Eff_";
       fillthis+=ptbin;
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-      if(!fUseDeff) effD0=1.; 
+      if(!fUseDeff || !effD0) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
       if(fFillTrees>0) {
 	Double_t centFill = 0.;
@@ -1789,6 +1789,14 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hCentralEvts->SetMinimum(0);
   fOutputStudy->Add(hCentralEvts);  
 
+  TH1F *hZeroEff = new TH1F("hZeroEff","Efficiency debug plot (0-eff cases); # Events",4,0.,4.);
+  hZeroEff->GetXaxis()->SetBinLabel(1,"D0 ok eff");
+  hZeroEff->GetXaxis()->SetBinLabel(2,"D0 0 eff");
+  hZeroEff->GetXaxis()->SetBinLabel(3,"Track ok eff");
+  hZeroEff->GetXaxis()->SetBinLabel(4,"Track 0 eff");
+  hZeroEff->SetMinimum(0);
+  fOutputStudy->Add(hZeroEff);  
+
   if (fReadMC) {
     TH1D *hEventTypeMC = new TH1D("EventTypeMC","EventTypeMC",100,-0.5,99.5);
     fOutputStudy->Add(hEventTypeMC); 
@@ -2121,6 +2129,14 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       if(!fUseDeff) effD0=1.; 
       if(!fUseTrackeff) effTr=1.; 
       Double_t eff = effTr*effD0;
+      if(!eff) eff = 1; //safety check
+
+      //debug histogram
+      if(!effD0) ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(1.5); 
+        else ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(0.5);
+      if(!effTr) ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(3.5); 
+        else ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(2.5);
+
 
       if(!fMixing) {
         if(fSoftPiCut && !track->CheckSoftPi()) { //removal of soft pions
