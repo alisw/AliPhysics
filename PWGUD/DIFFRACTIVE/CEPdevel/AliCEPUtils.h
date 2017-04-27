@@ -127,7 +127,7 @@ class AliCEPUtils : public TObject {
     Double_t fTrackEtaMax;  // EtaMax, used in second loop
     TList *fTrackCutListPrim; // TList with primary track selection cuts
     
-    Int_t fnV0dp;           // number of data points in armenteros graph
+    Int_t fnV0dp[5];        // number of data points in armenteros graph
 
     TArrayI *v0daughters;   //! 
 
