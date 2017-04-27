@@ -878,6 +878,8 @@ public:
   
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+  void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
+  TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
   TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
   void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
@@ -1746,6 +1748,7 @@ private:
   const static Int_t fkNHistv1eta = 14;
   const static Int_t fkNHarv1eta = 3;
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
+  TProfile2D *fFlowSPZDCv1etaProPhi[fkNHistv1eta]; //!
   TH1D *fFlowSPZDCv1etaHist[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   TProfile *fFlowSPZDCv1etaNUAPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   const static Int_t fkNHistv1etaPt = 6;
@@ -1866,6 +1869,7 @@ private:
   TH1D *fEventCounter; //! Event counter for different methods
   TH2F *fVtxHist[3]; //! primary vertex
   TH1D* fCenWeightsHist; //! Centrality weights
+  TH2D* fPhiExclZoneHist; //!
   TH1D* fCenWeigCalHist; //! Centrality weights
   TH1D* fPtWeightsHist[10]; //! Pt weights
   TH1D* fEtaWeightsHist[10][21][2]; //! Eta weights

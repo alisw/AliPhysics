@@ -26,7 +26,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bResetNegativeZDC=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
-                             Bool_t bSpecialVZERORingSelection=kFALSE,
+                             Bool_t bPhiExclZone=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
@@ -98,6 +98,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bCalculateFlow=kTRUE;
   Bool_t bCorrectForBadChannel=kFALSE;
   Bool_t bSetStoreZDCQVecVtxPos=kTRUE;
+  Bool_t bSpecialVZERORingSelection=kFALSE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -548,6 +549,26 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    exit(1);
   }
  } // end of if(bCenFlattening)
+  
+  if(bPhiExclZone) {
+    TString PhiExclFileName = "alien:///alice/cern.ch/user/j/jmargutt/PhiExclZone_15o.root";
+    TFile* PhiExclFile = TFile::Open(PhiExclFileName,"READ");
+    gROOT->cd();
+    if(!PhiExclFile) {
+      cout << "ERROR: PhiExclFile not found!" << endl;
+      exit(1);
+    }
+    TH2D* PhiExclZoneHist = (TH2D*)(PhiExclFile->Get("PhiExclZoneHist"));
+    if(PhiExclZoneHist) {
+      taskQC->SetPhiExclZoneHist(PhiExclZoneHist);
+      cout << "PhiExclZone set (from " <<  PhiExclFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: PhiExclZoneHist not found!" << endl;
+      exit(1);
+    }
+    delete PhiExclFile;
+  }
  
  if(bUsePtWeights) {
   taskQC->SetUsePtWeights(bUsePtWeights);
