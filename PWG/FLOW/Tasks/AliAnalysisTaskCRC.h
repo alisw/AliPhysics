@@ -229,6 +229,8 @@ public:
   TString GetCorrWeight() const {return this->fCorrWeight;};
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+  void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
+  TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
   TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
   void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
@@ -353,6 +355,7 @@ private:
   TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
   TH2F* fZDCESEMultWeightsHist[5];
   TH2F* fZDCESESpecWeightsHist[5];
+  TH2D* fPhiExclZoneHist;
   Bool_t fQAZDCCuts;
   Int_t fMinMulZN;
   Float_t fMaxDevZN;

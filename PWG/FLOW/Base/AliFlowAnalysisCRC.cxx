@@ -402,6 +402,7 @@ AliFlowAnalysisCRC::~AliFlowAnalysisCRC()
   delete[] fCorrMap;
   delete[] fchisqVA;
   delete[] fchisqVC;
+  if(fPhiExclZoneHist) delete fPhiExclZoneHist;
 } // end of AliFlowAnalysisCRC::~AliFlowAnalysisCRC()
 
 //================================================================================================================
@@ -799,6 +800,10 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         
+        if(fPhiExclZoneHist) {
+          if(fPhiExclZoneHist->GetBinContent(fPhiExclZoneHist->FindBin(dEta,dPhi))<0.5) continue;
+        }
+        
         // Calculate Re[Q_{m*n,k}] and Im[Q_{m*n,k}] for this event (m = 1,2,...,12, k = 0,1,...,8):
         for(Int_t m=0;m<12;m++) // to be improved - hardwired 6
         {
@@ -1132,6 +1137,30 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           } else {
             fFlowSPZDCv1etaPro[fCenBin][0][11]->Fill(dEta,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
             fFlowSPZDCv1etaPro[fCenBin][0][12]->Fill(dEta,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+          }
+          
+          if(fCentralityEBE>5. && fCentralityEBE<40.) {
+            if(fbFlagIsPosMagField) {
+              fFlowSPZDCv1etaProPhi[0]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+              fFlowSPZDCv1etaProPhi[1]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              if(cw==0) {
+                fFlowSPZDCv1etaProPhi[2]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+                fFlowSPZDCv1etaProPhi[3]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              } else {
+                fFlowSPZDCv1etaProPhi[4]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+                fFlowSPZDCv1etaProPhi[5]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              }
+            } else {
+              fFlowSPZDCv1etaProPhi[6]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+              fFlowSPZDCv1etaProPhi[7]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              if(cw==0) {
+                fFlowSPZDCv1etaProPhi[8]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+                fFlowSPZDCv1etaProPhi[9]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              } else {
+                fFlowSPZDCv1etaProPhi[10]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+                fFlowSPZDCv1etaProPhi[11]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              }
+            }
           }
           
           // all runs
@@ -16761,6 +16790,9 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowSPZDC()
   for(Int_t j=0; j<4; j++) {
     fFlowSPZDCv1Pro[j] = NULL;
   }
+  for(Int_t j=0; j<fkNHistv1eta; j++) {
+    fFlowSPZDCv1etaProPhi[j] = NULL;
+  }
   for (Int_t h=0; h<fCRCnCen; h++) {
     for (Int_t k=0; k<fkNHarv1eta; k++) {
       for(Int_t j=0; j<fkNHistv1eta; j++) {
@@ -17343,6 +17375,7 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
 //  }
   fCenWeightsHist = NULL;
   fCenWeigCalHist = NULL;
+  fPhiExclZoneHist = NULL;
   fVtxPos[0]=0.;
   fVtxPos[1]=0.;
   fVtxPos[2]=0.;
@@ -29895,6 +29928,12 @@ void AliFlowAnalysisCRC::BookEverythingForFlowSPZDC()
 {
   if(!fCalculateFlowZDC){return;}
   if(!fUseZDC){return;}
+  
+  for(Int_t j=0; j<fkNHistv1eta; j++) {
+    fFlowSPZDCv1etaProPhi[j] = new TProfile2D(Form("fFlowSPZDCv1etaProPhi[%d]",j),Form("fFlowSPZDCv1etaProPhi[%d]",j),5,-0.8,0.8,50,0.,TMath::TwoPi());
+    fFlowSPZDCv1etaProPhi[j]->Sumw2();
+    fFlowSPZDCList->Add(fFlowSPZDCv1etaProPhi[j]);
+  }
   
   for (Int_t h=0; h<fCRCnCen; h++) {
     for(Int_t i=0; i<fFlowNHarmZDC; i++) {
