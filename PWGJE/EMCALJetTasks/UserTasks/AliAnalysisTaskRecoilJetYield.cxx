@@ -979,7 +979,7 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   else fJetInfoVar[15]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   if(!(fJetShapeSub==kConstSub)){
     if(!fTruthJet) fJetInfoVar[16]=(finaljet.perp()-(GetRhoVal(0)*fJet->Area()));
-    else fJetInfoVar[17]=(finaljet.perp()-(GetRhoVal(0)*fJet->Area()));
+    else fJetInfoVar[17]=finaljet.perp();
   }
   else{
     if(!fTruthJet) fJetInfoVar[16]=(finaljet.perp());
