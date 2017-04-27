@@ -21,6 +21,8 @@
 #include <TList.h>
 #include <THnSparse.h>
 #include <TRandom3.h>
+#include <TGrid.h>
+#include <TFile.h>
 
 #include <AliVCluster.h>
 #include <AliVParticle.h>
@@ -67,8 +69,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fTrackConstituentThreshold(0),
   fClusterConstituentThreshold(0),
   fMBUpscaleFactor(1.),
-  fNEtaBins(20),
-  fNPhiBins(100),
+  fNEtaBins(40),
+  fNPhiBins(200),
   fBackgroundScalingWeights(0),
   fGapJetScalingWeights(0)
 {
@@ -105,8 +107,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fTrackConstituentThreshold(0),
   fClusterConstituentThreshold(0),
   fMBUpscaleFactor(1.),
-  fNEtaBins(20),
-  fNPhiBins(100),
+  fNEtaBins(40),
+  fNPhiBins(200),
   fBackgroundScalingWeights(0),
   fGapJetScalingWeights(0)
 {
@@ -171,6 +173,9 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   fEventCuts.AddQAplotsToList(fEventCutList);
   fOutput->Add(fEventCutList);
   
+  // Load eta-phi background scale factors from histogram on AliEn
+  LoadBackgroundScalingHistogram();
+  
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -207,10 +212,13 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});Centrality (%);counts";
     fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 10, 0, 100);
     
-    // pT vs. eta vs. phi
-    histname = TString::Format("%s/JetHistograms/hPtVsEtaVsPhi", jets->GetArrayName().Data());
-    title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c})";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -0.5, 0.5, 101, 0, TMath::Pi() * 2.02, nPtBins, 0, fMaxPt);
+    // NEF vs. pT vs. eta vs. phi
+    histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
+    title = histname + ";#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    Int_t nbins[4]  = {fNEtaBins, fNPhiBins, nPtBins, 50};
+    Double_t min[4] = {-0.5,1., 0, 0};
+    Double_t max[4] = {0.5,6., fMaxPt, 1.};
+    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins, min, max);
     
     // pT upscaled
     histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
@@ -226,11 +234,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
     fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 1.5);
-    
-    // NEF vs. pT
-    histname = TString::Format("%s/JetHistograms/hNEFVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF;";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/5, 0, 1.0);
     
     // z-leading (charged) vs. pT
     histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
@@ -255,8 +258,8 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
       fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
       
       histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jets->GetArrayName().Data());
-      title = histname + ";#delta#it{p}_{T} (GeV/#it{c});counts";
-      fHistManager.CreateTH1(histname.Data(), title.Data(), 400, -100, 100);
+      title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -100, 100);
       
       histname = TString::Format("%s/BackgroundHistograms/hScaleFactorDCalRegion", jets->GetArrayName().Data());
       title = histname + ";#eta;#phi;Centrality;Scale factor;";
@@ -603,6 +606,41 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateGeometricalMatchingHistograms()
 }
 
 /**
+ * Load histogram of eta-phi background scale factors from AliEn
+ */
+void AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram(const char* path, const char* name)
+{
+  
+  TString fname(path);
+  if (fname.BeginsWith("alien://")) {
+    TGrid::Connect("alien://");
+  }
+  
+  TFile* file = TFile::Open(path);
+  
+  if (!file || file->IsZombie()) {
+    ::Error("AliAnalysisTaskEmcalDijetImbalance", "Could not open background scaling histogram");
+    return;
+  }
+  
+  TH1D* h = dynamic_cast<TH1D*>(file->Get(name));
+  
+  if (h) {
+    ::Info("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram %s loaded from file %s.", name, path);
+  }
+  else {
+    ::Error("AliAnalysisTaskEmcalDijetImbalance::LoadBackgroundScalingHistogram", "Background histogram  %s not found in file %s.", name, path);
+    return;
+  }
+  
+  fBackgroundScalingWeights = static_cast<TH1D*>(h->Clone());
+  
+  file->Close();
+  delete file;
+  
+}
+
+/**
  * This function is executed automatically for the first event.
  * Some extra initialization can be performed here.
  */
@@ -746,11 +784,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FindDijet(AliJetContainer* jetCont, Int
   fDijet.leadingHadronCutType = leadingHadronCutBin;
   
   // Get trigger jet
-  AliEmcalJet* trigJet = 0;
-  if (jetCont->GetRhoParameter())
-    trigJet = jetCont->GetLeadingJet("rho");
-  else
-    trigJet = jetCont->GetLeadingJet();
+  AliEmcalJet* trigJet = GetLeadingJet(jetCont);
   if(!trigJet) return;
   
   // Skip the event if the leading jet doesn't satisfy the pT threshold
@@ -1097,11 +1131,16 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
   Double_t rho = jetCont->GetRhoVal();
   Double_t deltaPt = trackPtSumEMCalRC + clusESumEMCalRC - rho * TMath::Pi() * jetR * jetR;
   histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jetCont->GetArrayName().Data());
-  fHistManager.FillTH1(histname, deltaPt);
+  fHistManager.FillTH2(histname, fCent, deltaPt);
   
   // Compute delta pT for DCalRegion in each eta-phi bin
+  Double_t sf;
   for (Int_t etaBin=0; etaBin < fNEtaBins; etaBin++) {
     for (Int_t phiBin=0; phiBin < fNPhiBins; phiBin++) {
+      if (fBackgroundScalingWeights) {
+        sf = fBackgroundScalingWeights->GetBinContent(etaDCalRC[etaBin], phiDCalRC[phiBin]);
+        rho = sf * rho;
+      }
       deltaPt = trackPtSumDCalRC[etaBin][phiBin] + clusESumDCalRC[etaBin][phiBin] - rho * accRC;
       histname = TString::Format("%s/BackgroundHistograms/hDeltaPtDCalRegion", jetCont->GetArrayName().Data());
       fHistManager.FillTH3(histname, etaDCalRC[etaBin], phiDCalRC[phiBin], deltaPt);
@@ -1115,10 +1154,48 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
  */
 Double_t AliAnalysisTaskEmcalDijetImbalance::GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet)
 {
-  Double_t pT = jet->Pt() - jetCont->GetRhoVal() * jet->Area();
+  
+  Double_t rho = jetCont->GetRhoVal();
+  
+  // Get eta-phi dependent scale factor
+  if (fBackgroundScalingWeights) {
+    Double_t sf = fBackgroundScalingWeights->GetBinContent(jet->Eta(), jet->Phi_0_2pi());
+    rho = sf * rho;
+  }
+  
+  // Compute pT
+  Double_t pT = jet->Pt() - rho * jet->Area();
+  
+  // If hard-core jet, don't subtract background
   TString jetContName = jetCont->GetName();
   if (jetContName.Contains("HardCore")) pT = jet->Pt();
+  
   return pT;
+}
+
+/**
+ * Get leading jet
+ */
+AliEmcalJet* AliAnalysisTaskEmcalDijetImbalance::GetLeadingJet(AliJetContainer* jetCont)
+{
+  AliEmcalJet* leadingJet = 0;
+  
+  if (jetCont->GetRhoParameter()) {
+    for(auto jetCand : jetCont->accepted()) {
+      if (!jetCand) continue;
+      Double_t jetCandPt = GetJetPt(jetCont, jetCand);
+      if (leadingJet) {
+        Double_t leadingJetPt = GetJetPt(jetCont, leadingJet);
+        if ( jetCandPt < leadingJetPt ) continue;
+      }
+      leadingJet = jetCand;
+    }
+  }
+  else {
+    leadingJet = jetCont->GetLeadingJet();
+  }
+  
+  return leadingJet;
 }
 
 /**
@@ -1178,7 +1255,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
     for (auto jet : jets->all()) {
       
       Float_t ptLeading = jets->GetLeadingHadronPt(jet);
-      Float_t corrPt = jet->Pt() - rhoVal * jet->Area();
+      Float_t corrPt = GetJetPt(jets, jet);
       
       // A vs. pT (fill before area cut)
       histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
@@ -1197,9 +1274,10 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
       histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), corrPt, fCent);
       
-      // pT vs. eta vs. phi
-      histname = TString::Format("%s/JetHistograms/hPtVsEtaVsPhi", jets->GetArrayName().Data());
-      fHistManager.FillTH3(histname.Data(), jet->Eta(), jet->Phi_0_2pi(), corrPt);
+      // NEF vs. pT vs. eta vs. phi
+      histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
+      Double_t x[4] = {jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF()};
+      fHistManager.FillTHnSparse(histname, x);
       
       // pT un-downscaled
       histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
@@ -1208,10 +1286,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
       // pT-leading vs. pT
       histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
-      
-      // NEF vs. pT
-      histname = TString::Format("%s/JetHistograms/hNEFVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, jet->NEF());
       
       // z-leading (charged) vs. pT
       TLorentzVector leadPart;
