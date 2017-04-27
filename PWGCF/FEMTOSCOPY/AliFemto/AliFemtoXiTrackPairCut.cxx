@@ -111,11 +111,15 @@ bool AliFemtoXiTrackPairCut::Pass(const AliFemtoPair *pair)
   double tLambdaMass = 1.115683;
   double tPionMass = 0.19357018;
   AliFemtoPair *tPair = new AliFemtoPair();
-  tPair->SetTrack1(new AliFemtoParticle((AliFemtoV0*)Xi, tLambdaMass));
-  tPair->SetTrack2(new AliFemtoParticle(track, tPionMass));
+  AliFemtoParticle* tV0 = new AliFemtoParticle((AliFemtoV0*)Xi, tLambdaMass);
+  AliFemtoParticle* tTrack = new AliFemtoParticle(track, tPionMass);
+  tPair->SetTrack1(tV0);
+  tPair->SetTrack2(tTrack);
   bool tPassV0 = false;
   tPassV0 = fV0TrackPairCut->Pass(tPair);
   delete tPair;
+  delete tV0;
+  delete tTrack;
   if(!tPassV0) return false;
 
   return true;
