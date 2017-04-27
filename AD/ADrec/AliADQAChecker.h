@@ -12,10 +12,12 @@
 */
 
 // --- ROOT system ---
-class TFile ;
-class TH1F ;
-class TH1I ;
-class TObjArray ;
+class TFile;
+class TH1;
+class TH2;
+class TObjArray;
+class TVirtualPad;
+class TLegend;
 
 // --- Standard library ---
 
@@ -30,7 +32,7 @@ class AliADQAParam;
 class AliADQAChecker: public AliQACheckerBase {
 public:
   AliADQAChecker();
-  virtual ~AliADQAChecker() {} // destructor
+  virtual ~AliADQAChecker(); // destructor
 
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det);
 
@@ -79,8 +81,33 @@ private:
   Float_t fMaxBGVariation;
   Float_t fAsynchronBB;
   Float_t fAsynchronBG;
+  
+  TVirtualPad* pCharge;
+  TVirtualPad* pChargeZoom;
+  TVirtualPad* pTime;
+  TVirtualPad* pTimeRatio;
+  TVirtualPad* pMeanTime;
+  TVirtualPad* pClockFg;
+  TVirtualPad* pPed;
+  TVirtualPad* pMaxCh;
+  TVirtualPad* pCoinc;
+  TVirtualPad* pTrigger;
+  TVirtualPad* pDecision;
+  TVirtualPad* pChargeTrend;
+  
+  TH1* histo;
+  TH1* histoBlue;
+  TH1* histoRed;
+  TH1* histoDenominator;
+  TH1* histoRatio;
+  TH2* histo2D;
+  TH2* histo2DCopy;
+  
+  TLegend *myLegend1;
+  TLegend *myLegend2;
+  TLegend *myLegend3;
 
-  ClassDef(AliADQAChecker,6);  // description
+  ClassDef(AliADQAChecker,7);  // description
 };
 
 #endif // AliADQAChecker_H
