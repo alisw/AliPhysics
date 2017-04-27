@@ -135,16 +135,16 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
             femtoAnalysis[anIter]->AddCorrFctn(avgSepCF[anIter]);
             
             // add femtoscopic correlation function (identical or non-identical)
-            if(iSys==kPL || iSys==kAPL || iSys==kPAL || iSys==kAPAL || iSys==kPAP || iSys==kLAL)
-            {
-                nonIdenticalCF[anIter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%iPsi6", sysNames[iSys], imult), 100, 0.0,1.0);
-                femtoAnalysis[anIter]->AddCorrFctn(nonIdenticalCF[anIter]);
-            }
-            else
-            {
+//            if(iSys==kPL || iSys==kAPL || iSys==kPAL || iSys==kAPAL || iSys==kPAP || iSys==kLAL)
+//            {
+//                nonIdenticalCF[anIter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%iPsi6", sysNames[iSys], imult), 100, 0.0,1.0);
+//                femtoAnalysis[anIter]->AddCorrFctn(nonIdenticalCF[anIter]);
+//            }
+//            else // kPP, kLL, kAPAP, kALAL
+//            {
                 identicalCF[anIter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%iPsi6", sysNames[iSys], imult),100,0.0,1.0);
                 femtoAnalysis[anIter]->AddCorrFctn(identicalCF[anIter]);
-            }
+//            }
         
             // add correlation function on model data
             if(mcAnalysis)
