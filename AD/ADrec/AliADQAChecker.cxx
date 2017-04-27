@@ -77,7 +77,55 @@ AliADQAChecker::AliADQAChecker()
   , fMaxBGVariation(5)
   , fAsynchronBB(0.5)
   , fAsynchronBG(0.5)
+  , pCharge(0)
+  , pChargeZoom(0)
+  , pTime(0)
+  , pTimeRatio(0)
+  , pMeanTime(0)
+  , pClockFg(0)
+  , pPed(0)
+  , pMaxCh(0)
+  , pCoinc(0)
+  , pTrigger(0)
+  , pDecision(0)
+  , pChargeTrend(0)
+  , histo(0)
+  , histoBlue(0)
+  , histoRed(0)
+  , histoDenominator(0)
+  , histoRatio(0)
+  , histo2D(0)
+  , histo2DCopy(0)
+  , myLegend1(0)
+  , myLegend2(0)
+  , myLegend3(0)
 {
+}
+//____________________________________________________________________________
+AliADQAChecker::~AliADQAChecker()
+{
+  delete pCharge;
+  delete pChargeZoom;
+  delete pTime;
+  delete pTimeRatio;
+  delete pMeanTime;
+  delete pClockFg;
+  delete pPed;
+  delete pMaxCh;
+  delete pCoinc;
+  delete pTrigger;
+  delete pDecision;
+  delete pChargeTrend;
+  delete histo;
+  delete histoBlue;
+  delete histoRed;
+  delete histoDenominator;
+  delete histoRatio;
+  delete histo2D;
+  delete histo2DCopy;
+  delete myLegend1;
+  delete myLegend2;
+  delete myLegend3;
 }
 
 //____________________________________________________________________________
@@ -826,46 +874,24 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     if(!allHistosPresent) continue;
     for(Int_t iHisto=0; iHisto<(&histosToDraw)[1]-histosToDraw; iHisto++)((TH1*)list[esIndex]->At(histosToDraw[iHisto]))->SetStats(kFALSE);
 
-    const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex));
+    if ( !fImage[esIndex] ){
+      const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex));
+      fImage[esIndex] = new TCanvas(title, title,2500,5500);
+      fImage[esIndex]->cd();
 
-    if ( !fImage[esIndex] ) {
-      if(AliRecoParam::ConvertIndex(esIndex) != AliRecoParam::kCalib) fImage[esIndex] = new TCanvas(title, title,2500,5500);
-      else fImage[esIndex] = new TCanvas(title, title,400,600);
-    }
+      TLatex topText;
+      topText.SetTextAlign(23);
+      topText.SetTextSize(.038);
+      topText.SetTextFont(42);
+      topText.SetTextColor(kBlue+3);
+      topText.DrawLatexNDC(0.5, 0.99,Form("%s, %s, Run: %d", AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex),AliQAChecker::Instance()->GetRunNumber()));
 
-    fImage[esIndex]->cd();
-
-    const char* topT = Form("%s, %s, Run: %d", AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex),AliQAChecker::Instance()->GetRunNumber());
-    TLatex* topText = new TLatex(0.5, 0.99, topT);
-    topText->SetTextAlign(23);
-    topText->SetTextSize(.038);
-    topText->SetTextFont(42);
-    topText->SetTextColor(kBlue+3);
-    topText->SetNDC();
-    topText->Draw();
-
-    //gStyle->SetOptStat(0);
-    gStyle->SetLabelSize(1.1,"xyz");
-    gStyle->SetLabelFont(42,"xyz");
-    gStyle->SetLabelOffset(0.01,"xyz");
-    gStyle->SetTitleFont(42,"xyz");
-    gStyle->SetTitleOffset(1.0,"xyz");
-    gStyle->SetTitleSize(1.1,"xyz");
-
-    if(AliRecoParam::ConvertIndex(esIndex) != AliRecoParam::kCalib) {
-      TVirtualPad* pCharge = 0;
-      TVirtualPad* pTime  = 0;
-      TVirtualPad* pClockFg  = 0;
-      // TVirtualPad* pClockCh  = 0; not used
-      TVirtualPad* pCoinc  = 0;
-      TVirtualPad* pPed  = 0;
-      TVirtualPad* pMaxCh  = 0;
-      TVirtualPad* pMeanTime  = 0;
-      TVirtualPad* pTrigger  = 0;
-      TVirtualPad* pChargeZoom = 0;
-      TVirtualPad* pTimeRatio = 0;
-      TVirtualPad* pDecision = 0;
-      TVirtualPad* pChargeTrend = 0;
+      gStyle->SetLabelSize(1.1,"xyz");
+      gStyle->SetLabelFont(42,"xyz");
+      gStyle->SetLabelOffset(0.01,"xyz");
+      gStyle->SetTitleFont(42,"xyz");
+      gStyle->SetTitleOffset(1.0,"xyz");
+      gStyle->SetTitleSize(1.1,"xyz");
 
       const UInt_t nRows = 11;
       const UInt_t nLargeRows = 1;
@@ -875,81 +901,33 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       xRow[0] = 0.95;
       Double_t xStep = 0.95/((nRows-nLargeRows)+ timesLarger*nLargeRows);
       for(UInt_t iRow = 1; iRow<nRows; iRow++){
-	if(!isLarge[iRow-1]) xRow[iRow] = xRow[iRow-1]-xStep;
-	else xRow[iRow] = xRow[iRow-1]-timesLarger*xStep;
+        if(!isLarge[iRow-1]) xRow[iRow] = xRow[iRow-1]-xStep;
+        else xRow[iRow] = xRow[iRow-1]-timesLarger*xStep;
       }
 
       UInt_t iRow = 0;
-
-      TPad* pCh = new TPad("Charge", "Charge Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pCh->Draw();
-      pCharge = pCh;
+      pCharge = new TPad("Charge", "Charge Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pChZ = new TPad("ChargeZoom", "Charge Zoom Pad", 0.0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pChZ->Draw();
-      pChargeZoom = pChZ;
+      pChargeZoom = new TPad("ChargeZoom", "Charge Zoom Pad", 0.0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pT = new TPad("Time", "Time Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pT->Draw();
-      pTime = pT;
+      pTime = new TPad("Time", "Time Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pTR = new TPad("TimeRatio", "Time Ratio Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pTR->Draw();
-      pTimeRatio = pTR;
+      pTimeRatio = new TPad("TimeRatio", "Time Ratio Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pMT = new TPad("Mean time", "Mean time Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pMT->Draw();
-      pMeanTime = pMT;
+      pMeanTime = new TPad("Mean time", "Mean time Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pClFg = new TPad("ClockFg", "ClockFg Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pClFg->Draw();
-      pClockFg = pClFg;
+      pClockFg = new TPad("ClockFg", "ClockFg Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0, xRow[iRow+1], 0.5, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pP->Draw();
-      pPed = pP;
-
-      TPad* pM = new TPad("Max Charge", "Max Charge Pad", 0.5, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pM->Draw();
-      pMaxCh = pM;
+      pPed = new TPad("Pedestal", "Pedestal Pad", 0, xRow[iRow+1], 0.5, xRow[iRow]);
+      pMaxCh = new TPad("Max Charge", "Max Charge Pad", 0.5, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pCo = new TPad("Coincidences", "Coincidences Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pCo->Draw();
-      pCoinc = pCo;
+      pCoinc = new TPad("Coincidences", "Coincidences Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pTr = new TPad("Triggers", "Triggers Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pTr->Draw();
-      pTrigger = pTr;
+      pTrigger = new TPad("Triggers", "Triggers Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pD = new TPad("Decisions", "Decisions Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pD->Draw();
-      pDecision = pD;
+      pDecision = new TPad("Decisions", "Decisions Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
-
-      TPad* pCT = new TPad("Charge Trend", "Charge Trend Pad", 0, 0, 1.0, xRow[iRow]);
-      fImage[esIndex]->cd();
-      pCT->Draw();
-      pChargeTrend = pCT;
+      pChargeTrend = new TPad("Charge Trend", "Charge Trend Pad", 0, 0, 1.0, xRow[iRow]);
 
       pCharge->Divide(2, 1);
       pChargeZoom->Divide(6, 1);
@@ -960,35 +938,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       pPed->Divide(2, 1);
       pMeanTime->Divide(4, 1);
       pDecision->Divide(3, 1);
-
-      Float_t nEvents = 0;
-      TH1* histo = 0;
-      TH1* histoBlue = 0;
-      TH1* histoRed = 0;
-      // TH1* histoNumerator = 0; not used
-      TH1* histoDenominator = 0;
-      TH1* histoRatio = 0;
-      TH2* histo2D = 0;
-      TH2* histo2DCopy = 0;
-
-      //Charge pad
-      pCharge->cd(1);
-      gPad->SetLogy();
-      histoBlue=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADA);
-      nEvents = histoBlue->Integral(-1,-1);
-      histoRed=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADC);
-      Float_t max[2];
-      max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
-      max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
-      Float_t min[2];
-      min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
-      min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
-
-      histoBlue->GetYaxis()->SetRangeUser(TMath::MinElement(2,min)+1 ,2*TMath::MaxElement(2,max));
-      histoBlue->DrawCopy();
-      histoRed->DrawCopy("same");
-
-      TLegend *myLegend1 = new TLegend(0.70,0.67,0.97,0.82);
+      
+      myLegend1 = new TLegend(0.70,0.67,0.97,0.82);
       myLegend1->SetTextFont(42);
       myLegend1->SetBorderSize(0);
       myLegend1->SetFillStyle(0);
@@ -998,57 +949,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       myLegend1->SetEntrySeparation(0.5);
       myLegend1->AddEntry(histoBlue,"ADA","l");
       myLegend1->AddEntry(histoRed,"ADC","l");
-      myLegend1->Draw();
-      pCharge->cd(2);
-      gPad->SetLogz();
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoIBB);
-      histo->DrawCopy("COLZ");
-      //Zoommed charge pad
-      pChargeZoom->cd(5);
-      gPad->SetLogz();
-      histoRatio = (TH1*)histo->Clone("histoRatio");
-      histoRatio->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
-      histoRatio->DrawCopy("COLZ");
-      pChargeZoom->cd(4);
-      gPad->SetLogz();
-      histoDenominator=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoI);
-      histoDenominator->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
-      histoDenominator->DrawCopy("COLZ");
-      pChargeZoom->cd(6);
-      gPad->SetLogz();
-      histoRatio->Divide(histoDenominator);
-      histoRatio->SetTitle("Ratio: w_BB_Flag/All");
-      histoRatio->DrawCopy("COLZ");
-
-      for(Int_t iHist = 0; iHist<3; iHist++){
-	pChargeZoom->cd(iHist+1);
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeVsClockInt0+iHist);
-	if(iHist==2)gPad->SetLogz();
-	histo->DrawCopy("COLZ");
-      }
-
-      //Time pad
-      for(Int_t iHist = 0; iHist<4; iHist++){
-	pTime->cd(iHist+1);
-	if(iHist==3)gPad->SetLogz();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTime+iHist);
-	histo->DrawCopy("COLZ");
-      }
-      //Time ratio pad
-      pTimeRatio->cd(1);
-      //gPad->SetLogy();
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kFlagNoTime);
-      histoBlue = (TH1*)histo->Clone("histoBlue");
-      if(nEvents != 0) histoBlue->Scale(1/nEvents);
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTimeNoFlag);
-      histoRed = (TH1*)histo->Clone("histoRed");
-      if(nEvents != 0) histoRed->Scale(1/nEvents);
-      max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
-      max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
-      histoBlue->GetYaxis()->SetRangeUser(0,2*TMath::MaxElement(2,max));
-      histoBlue->DrawCopy();
-      histoRed->DrawCopy("same");
-      TLegend *myLegend2 = new TLegend(0.15,0.78,0.85,0.88);
+      
+      myLegend2 = new TLegend(0.15,0.78,0.85,0.88);
       myLegend2->SetTextFont(42);
       myLegend2->SetBorderSize(0);
       myLegend2->SetFillStyle(0);
@@ -1058,43 +960,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       myLegend2->SetEntrySeparation(0.5);
       myLegend2->AddEntry(histoBlue,"Events with BB/BG flag but no time","l");
       myLegend2->AddEntry(histoRed,"Events with time but no BB/BG flag","l");
-      myLegend2->Draw();
-
-      histoDenominator=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin);
-
-      for(Int_t iHist = 1; iHist<3; iHist++){
-	pTimeRatio->cd(1+iHist);
-	gPad->SetLogz();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin + iHist);
-	histoRatio = (TH1*)histo->Clone("histoRatio");
-	histoRatio->Divide(histoDenominator);
-	if(iHist == 1)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
-	if(iHist == 2)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBGZoomMin,fTimeRatioBGZoomMax);
-	histoRatio->DrawCopy("COLZ");
-      }
-      pTimeRatio->cd(4);
-      //gPad->SetLogy();
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBBFlag);
-      histoBlue = (TH1*)histo->Clone("histoBlue");
-      histoBlue->Sumw2();
-      if(nEvents != 0) histoBlue->Scale(1/nEvents);
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBGFlag);
-      histoRed = (TH1*)histo->Clone("histoRed");
-      histoRed->Sumw2();
-      if(nEvents != 0) histoRed->Scale(1/nEvents);
-
-      max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
-      max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
-
-      min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
-      min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
-
-      histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.8*TMath::MaxElement(2,max));
-      histoBlue->DrawCopy("e");
-      //histoBlue->DrawCopy("esame");
-      //histoRed->DrawCopy("samehist");
-      histoRed->DrawCopy("esame");
-      TLegend *myLegend3 = new TLegend(0.15,0.78,0.85,0.88);
+      
+      myLegend3 = new TLegend(0.15,0.78,0.85,0.88);
       myLegend3->SetTextFont(42);
       myLegend3->SetBorderSize(0);
       myLegend3->SetFillStyle(0);
@@ -1104,163 +971,263 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       myLegend3->SetEntrySeparation(0.5);
       myLegend3->AddEntry(histoBlue,"Events with BB flag","l");
       myLegend3->AddEntry(histoRed,"Events with BG flag","l");
-      myLegend3->Draw();
-
-      //Clock Flags pad
-      for(Int_t iHist = 0; iHist<5; iHist++){
-	pClockFg->cd(iHist+1);
-	if(iHist>1)gPad->SetLogz();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kBBFlagVsClock+iHist);
-	histo->DrawCopy("COLZ");
       }
+    
+    fImage[esIndex]->cd();
+    pCharge->Draw();
+    pChargeZoom->Draw();
+    pTime->Draw();
+    pTimeRatio->Draw();
+    pMeanTime->Draw();
+    pClockFg->Draw();
+    pPed->Draw();
+    pMaxCh->Draw();
+    pCoinc->Draw();
+    pTrigger->Draw();
+    pDecision->Draw();
+    pChargeTrend->Draw();
+    
+    Float_t nEvents = 0;
+    //Charge pad
+    pCharge->cd(1);
+    gPad->SetLogy();
+    histoBlue=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADA);
+    nEvents = histoBlue->Integral(-1,-1);
+    histoRed=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeADC);
+    Float_t max[2];
+    max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+    max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+    Float_t min[2];
+    min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
+    min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
 
-      //Coincidences pad
-      for(Int_t iHist = 0; iHist<2; iHist++){
-	pCoinc->cd(iHist+1);
-	gPad->SetLogy();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADC+2*iHist);
-	histo->DrawCopy();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADA+2*iHist);
-	histo->DrawCopy("same");
-	myLegend1->Draw();
-      }
-      for(Int_t iHist = 0; iHist<2; iHist++){
-	pCoinc->cd(iHist+3);
-	gPad->SetLogz();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincCorr+iHist);
-	histo->DrawCopy("COLZ");
-      }
-      //Pedestal monitoring pad
-      for(Int_t iHist = 0; iHist<2; iHist++){
-	pPed->cd(iHist+1);
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalDiffInt0+iHist);
-	histo->DrawCopy("COLZ");
-      }
-      //Saturation monitoring pad
-      pMaxCh->cd();
-      gPad->SetLogz();
-      histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kChargeSaturation);
-      histo2DCopy = (TH2*)histo2D->Clone("histoBlue");
-      histo2DCopy->RebinY(64);
-      histo2DCopy->DrawCopy("COLZ");
+    histoBlue->GetYaxis()->SetRangeUser(TMath::MinElement(2,min)+1 ,2*TMath::MaxElement(2,max));
+    histoBlue->DrawCopy();
+    histoRed->DrawCopy("same");
 
-      //Trigger inputs pad
-      pTrigger->cd();
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTriggers);
-      gPad->SetLogy();
-      histo->DrawCopy("HIST");
-      histo->DrawCopy("TEXT0SAME");
-      //Mean time pad
-      pMeanTime->cd(1);
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);
-      histoBlue = (TH1*)histo->Clone("histoBlue");
+    myLegend1->Draw();
+    pCharge->cd(2);
+    gPad->SetLogz();
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoIBB);
+    histo->DrawCopy("COLZ");
+    //Zoommed charge pad
+    pChargeZoom->cd(5);
+    gPad->SetLogz();
+    histoRatio = (TH1*)histo->Clone("histoRatio");
+    histoRatio->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
+    histoRatio->DrawCopy("COLZ");
+    pChargeZoom->cd(4);
+    gPad->SetLogz();
+    histoDenominator=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoI);
+    histoDenominator->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
+    histoDenominator->DrawCopy("COLZ");
+    pChargeZoom->cd(6);
+    gPad->SetLogz();
+    histoRatio->Divide(histoDenominator);
+    histoRatio->SetTitle("Ratio: w_BB_Flag/All");
+    histoRatio->DrawCopy("COLZ");
 
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADC);
-      histoRed = (TH1*)histo->Clone("histoRed");
-      max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
-      max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
-      histoBlue->GetYaxis()->SetRangeUser(0,1.1*TMath::MaxElement(2,max));
-      histoBlue->DrawCopy();
-      histoRed->DrawCopy("same");
-      myLegend1->Draw();
-      for(Int_t iHist = 0; iHist<3; iHist++){
-	pMeanTime->cd(iHist+2);
-	gPad->SetLogz();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeDiff+iHist);
-	histo->DrawCopy("COLZ");
-      }
-      //Decisions pad
-      TH1D *hTimeSlice = 0x0;
-      TH1F *hMeanTimeVsChargeADA = new TH1F("hMeanTimeVsChargeADA","hMeanTimeVsChargeADA",200,-4,0);
-
-      pDecision->cd(1);
-      gPad->SetLogz();
-      histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingADA);
-      histo2DCopy = (TH2*)histo2D->Clone("histo2DCopy");
-      histo2DCopy->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
-      histo2DCopy->SetTitle("Time slewing ADA");
-
-      for(Int_t j=0; j<200;j++){
-	hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
-	if(hTimeSlice->GetEntries()<100 && j>100){
-	  hMeanTimeVsChargeADA->SetBinContent(j+1,hMeanTimeVsChargeADA->GetBinContent(j));
-	  hMeanTimeVsChargeADA->SetBinError(j+1,hMeanTimeVsChargeADA->GetBinError(j));
-	} else {
-	  hMeanTimeVsChargeADA->SetBinContent(j+1,hTimeSlice->GetMean());
-	  if(hTimeSlice->GetEntries()>0)hMeanTimeVsChargeADA->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
-	}
-      }
-      TSpline3 *fTimeSlewingSplineADA = new TSpline3(hMeanTimeVsChargeADA);
-      fTimeSlewingSplineADA->SetLineWidth(3);
-      fTimeSlewingSplineADA->SetLineColor(kPink);
-
-      histo2DCopy->DrawCopy("COLZ");
-      fTimeSlewingSplineADA->Draw("Psame");
-      delete hMeanTimeVsChargeADA;
-
-      TH1F *hMeanTimeVsChargeADC = new TH1F("hMeanTimeVsChargeADC","hMeanTimeVsChargeADC",200,-4,0);
-      pDecision->cd(3);
-      gPad->SetLogz();
-      histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingADC);
-      histo2DCopy = (TH2*)histo2D->Clone("histo2DCopy");
-      histo2DCopy->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
-      histo2DCopy->SetTitle("Time slewing ADC");
-
-      for(Int_t j=0; j<200;j++){
-	hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
-	if(hTimeSlice->GetEntries()<100 && j>100){
-	  hMeanTimeVsChargeADC->SetBinContent(j+1,hMeanTimeVsChargeADC->GetBinContent(j));
-	  hMeanTimeVsChargeADC->SetBinError(j+1,hMeanTimeVsChargeADC->GetBinError(j));
-	} else {
-	  hMeanTimeVsChargeADC->SetBinContent(j+1,hTimeSlice->GetMean());
-	  if(hTimeSlice->GetEntries()>0)hMeanTimeVsChargeADC->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
-	}
-      }
-      TSpline3 *fTimeSlewingSplineADC = new TSpline3(hMeanTimeVsChargeADC);
-      fTimeSlewingSplineADC->SetLineWidth(3);
-      fTimeSlewingSplineADC->SetLineColor(kPink);
-
-      histo2DCopy->DrawCopy("COLZ");
-      fTimeSlewingSplineADC->Draw("Psame");
-      delete hMeanTimeVsChargeADC;
-
-
-      pDecision->cd(2);
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kDecisions);
-      histo->Draw("COLZTEXT");
-
-      pChargeTrend->cd();
-      histoBlue = (TH1*)list[esIndex]->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADA);
-      histoRed = (TH1*)list[esIndex]->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADC);
-      histoBlue->GetYaxis()->SetRangeUser(fChargeTrendMin,fChargeTrendMax);
-      histoBlue->GetYaxis()->SetTitle("Quantile 0.9");
-      histoBlue->GetXaxis()->SetRange(1,histoBlue->GetNbinsX()-1);
-      histoBlue->DrawCopy();
-      histoRed->DrawCopy("same");
-      myLegend1->Draw();
-    } else {
-      TVirtualPad* pPed  = 0;
-      TH1* histo = 0;
-
-      TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0.0, 0.1, 1.0, 0.95);
-      fImage[esIndex]->cd();
-      pP->Draw();
-      pPed = pP;
-      pPed->Divide(1, 2);
-
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalInt0);
-      histo->SetStats(kFALSE);
-      pPed->cd(1);
-      histo->DrawCopy("colz");
-
-      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalInt1);
-      histo->SetStats(kFALSE);
-      pPed->cd(2);
-      histo->DrawCopy("colz");
-
+    for(Int_t iHist = 0; iHist<3; iHist++){
+      pChargeZoom->cd(iHist+1);
+      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeVsClockInt0+iHist);
+      if(iHist==2)gPad->SetLogz();
+      histo->DrawCopy("COLZ");
     }
 
-    //fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
+    //Time pad
+    for(Int_t iHist = 0; iHist<4; iHist++){
+      pTime->cd(iHist+1);
+      if(iHist==3)gPad->SetLogz();
+      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTime+iHist);
+      histo->DrawCopy("COLZ");
+    }
+    //Time ratio pad
+    pTimeRatio->cd(1);
+    //gPad->SetLogy();
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kFlagNoTime);
+    histoBlue = (TH1*)histo->Clone("histoBlue");
+    if(nEvents != 0) histoBlue->Scale(1/nEvents);
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTimeNoFlag);
+    histoRed = (TH1*)histo->Clone("histoRed");
+    if(nEvents != 0) histoRed->Scale(1/nEvents);
+    max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+    max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+    histoBlue->GetYaxis()->SetRangeUser(0,2*TMath::MaxElement(2,max));
+    histoBlue->DrawCopy();
+    histoRed->DrawCopy("same");
+    myLegend2->Draw();
+
+    histoDenominator=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin);
+
+    for(Int_t iHist = 1; iHist<3; iHist++){
+      pTimeRatio->cd(1+iHist);
+      gPad->SetLogz();
+      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin + iHist);
+      histoRatio = (TH1*)histo->Clone("histoRatio");
+      histoRatio->Divide(histoDenominator);
+      if(iHist == 1)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
+      if(iHist == 2)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBGZoomMin,fTimeRatioBGZoomMax);
+      histoRatio->DrawCopy("COLZ");
+    }
+    pTimeRatio->cd(4);
+    //gPad->SetLogy();
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBBFlag);
+    histoBlue = (TH1*)histo->Clone("histoBlue");
+    histoBlue->Sumw2();
+    if(nEvents != 0) histoBlue->Scale(1/nEvents);
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBGFlag);
+    histoRed = (TH1*)histo->Clone("histoRed");
+    histoRed->Sumw2();
+    if(nEvents != 0) histoRed->Scale(1/nEvents);
+
+    max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+    max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+
+    min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
+    min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
+
+    histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.8*TMath::MaxElement(2,max));
+    histoBlue->DrawCopy("e");
+    //histoBlue->DrawCopy("esame");
+    //histoRed->DrawCopy("samehist");
+    histoRed->DrawCopy("esame");
+    myLegend3->Draw();
+
+    //Clock Flags pad
+    for(Int_t iHist = 0; iHist<5; iHist++){
+      pClockFg->cd(iHist+1);
+      if(iHist>1)gPad->SetLogz();
+      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kBBFlagVsClock+iHist);
+      histo->DrawCopy("COLZ");
+    }
+
+    //Coincidences pad
+    for(Int_t iHist = 0; iHist<2; iHist++){
+      pCoinc->cd(iHist+1);
+      gPad->SetLogy();
+      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADC+2*iHist);
+      histo->DrawCopy();
+      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADA+2*iHist);
+      histo->DrawCopy("same");
+      myLegend1->Draw();
+    }
+    for(Int_t iHist = 0; iHist<2; iHist++){
+      pCoinc->cd(iHist+3);
+      gPad->SetLogz();
+      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincCorr+iHist);
+      histo->DrawCopy("COLZ");
+    }
+    //Pedestal monitoring pad
+    for(Int_t iHist = 0; iHist<2; iHist++){
+      pPed->cd(iHist+1);
+      if(AliRecoParam::ConvertIndex(esIndex) == AliRecoParam::kCalib) histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalInt0+iHist);
+      else histo=(TH1*) list[esIndex]->At(AliADQADataMakerRec::kPedestalDiffInt0+iHist);
+      histo->DrawCopy("COLZ");
+    }
+    //Saturation monitoring pad
+    pMaxCh->cd();
+    gPad->SetLogz();
+    histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kChargeSaturation);
+    histo2DCopy = (TH2*)histo2D->Clone("histoBlue");
+    histo2DCopy->RebinY(64);
+    histo2DCopy->DrawCopy("COLZ");
+
+    //Trigger inputs pad
+    pTrigger->cd();
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTriggers);
+    gPad->SetLogy();
+    histo->DrawCopy("HIST");
+    histo->DrawCopy("TEXT0SAME");
+    //Mean time pad
+    pMeanTime->cd(1);
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);
+    histoBlue = (TH1*)histo->Clone("histoBlue");
+
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADC);
+    histoRed = (TH1*)histo->Clone("histoRed");
+    max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+    max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+    histoBlue->GetYaxis()->SetRangeUser(0,1.1*TMath::MaxElement(2,max));
+    histoBlue->DrawCopy();
+    histoRed->DrawCopy("same");
+    myLegend1->Draw();
+    for(Int_t iHist = 0; iHist<3; iHist++){
+      pMeanTime->cd(iHist+2);
+      gPad->SetLogz();
+      histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeDiff+iHist);
+      histo->DrawCopy("COLZ");
+    }
+    //Decisions pad
+    TH1D *hTimeSlice = 0x0;
+    TH1F *hMeanTimeVsChargeADA = new TH1F("hMeanTimeVsChargeADA","hMeanTimeVsChargeADA",200,-4,0);
+
+    pDecision->cd(1);
+    gPad->SetLogz();
+    histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingADA);
+    histo2DCopy = (TH2*)histo2D->Clone("histo2DCopy");
+    histo2DCopy->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
+    histo2DCopy->SetTitle("Time slewing ADA");
+
+    for(Int_t j=0; j<200;j++){
+      hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
+      if(hTimeSlice->GetEntries()<100 && j>100){
+        hMeanTimeVsChargeADA->SetBinContent(j+1,hMeanTimeVsChargeADA->GetBinContent(j));
+        hMeanTimeVsChargeADA->SetBinError(j+1,hMeanTimeVsChargeADA->GetBinError(j));
+      } else {
+        hMeanTimeVsChargeADA->SetBinContent(j+1,hTimeSlice->GetMean());
+        if(hTimeSlice->GetEntries()>0)hMeanTimeVsChargeADA->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
+      }
+    }
+    TSpline3 *fTimeSlewingSplineADA = new TSpline3(hMeanTimeVsChargeADA);
+    fTimeSlewingSplineADA->SetLineWidth(3);
+    fTimeSlewingSplineADA->SetLineColor(kPink);
+
+    histo2DCopy->DrawCopy("COLZ");
+    fTimeSlewingSplineADA->Draw("Psame");
+    delete hMeanTimeVsChargeADA;
+
+    TH1F *hMeanTimeVsChargeADC = new TH1F("hMeanTimeVsChargeADC","hMeanTimeVsChargeADC",200,-4,0);
+    pDecision->cd(3);
+    gPad->SetLogz();
+    histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingADC);
+    histo2DCopy = (TH2*)histo2D->Clone("histo2DCopy");
+    histo2DCopy->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
+    histo2DCopy->SetTitle("Time slewing ADC");
+
+    for(Int_t j=0; j<200;j++){
+      hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
+      if(hTimeSlice->GetEntries()<100 && j>100){
+        hMeanTimeVsChargeADC->SetBinContent(j+1,hMeanTimeVsChargeADC->GetBinContent(j));
+        hMeanTimeVsChargeADC->SetBinError(j+1,hMeanTimeVsChargeADC->GetBinError(j));
+      } else {
+        hMeanTimeVsChargeADC->SetBinContent(j+1,hTimeSlice->GetMean());
+        if(hTimeSlice->GetEntries()>0)hMeanTimeVsChargeADC->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
+      }
+    }
+    TSpline3 *fTimeSlewingSplineADC = new TSpline3(hMeanTimeVsChargeADC);
+    fTimeSlewingSplineADC->SetLineWidth(3);
+    fTimeSlewingSplineADC->SetLineColor(kPink);
+
+    histo2DCopy->DrawCopy("COLZ");
+    fTimeSlewingSplineADC->Draw("Psame");
+    delete hMeanTimeVsChargeADC;
+    delete hTimeSlice;
+
+    pDecision->cd(2);
+    histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kDecisions);
+    histo->Draw("COLZTEXT");
+
+    pChargeTrend->cd();
+    histoBlue = (TH1*)list[esIndex]->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADA);
+    histoRed = (TH1*)list[esIndex]->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADC);
+    histoBlue->GetYaxis()->SetRangeUser(fChargeTrendMin,fChargeTrendMax);
+    histoBlue->GetYaxis()->SetTitle("Quantile 0.9");
+    histoBlue->GetXaxis()->SetRange(1,histoBlue->GetNbinsX()-1);
+    histoBlue->DrawCopy();
+    histoRed->DrawCopy("same");
+    myLegend1->Draw();
+
+    fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
     //fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps");
   }
 }
