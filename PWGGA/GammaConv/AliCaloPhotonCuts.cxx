@@ -203,6 +203,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterIncludedCellsTimingEnergyAfterQA(NULL),
   fHistClusterDistanceInTimeCut(NULL),
   fHistClusterDistanceOutTimeCut(NULL),
+  fHistClusterDistance1DInTimeCut(NULL),
   fHistClusterRBeforeQA(NULL),
   fHistClusterRAfterQA(NULL),
   fHistClusterdEtadPhiBeforeQA(NULL),
@@ -371,6 +372,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterIncludedCellsTimingEnergyAfterQA(NULL),
   fHistClusterDistanceInTimeCut(NULL),
   fHistClusterDistanceOutTimeCut(NULL),
+  fHistClusterDistance1DInTimeCut(NULL),
   fHistClusterRBeforeQA(NULL),
   fHistClusterRAfterQA(NULL),
   fHistClusterdEtadPhiBeforeQA(NULL),
@@ -716,6 +718,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterDistanceOutTimeCut  = new TH2F(Form("ClusterDistanceTo_outsideTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_outsideTimingCut; dist row; dist col",20,-10,10,20,-10,10);
       fHistClusterDistanceOutTimeCut->Sumw2();
       fHistExtQA->Add(fHistClusterDistanceOutTimeCut);
+      fHistClusterDistance1DInTimeCut   = new TH1F(Form("Cluster1D_DistanceTo_withinTimingCut %s",GetCutNumber().Data()),"Cluster1D_DistanceTo_withinTimingCut; dist 1D; #entries",200,0.,0.5);
+      fHistClusterDistance1DInTimeCut->Sumw2();
+      fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
 
       // detailed cell QA histos for EMCAL
       if(fExtendedMatchAndQA > 3){
@@ -769,6 +774,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterDistanceOutTimeCut  = new TH2F(Form("ClusterDistanceTo_outsideTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_outsideTimingCut; dist row; dist col",20,-10,10,20,-10,10);
       fHistClusterDistanceOutTimeCut->Sumw2();
       fHistExtQA->Add(fHistClusterDistanceOutTimeCut);
+      fHistClusterDistance1DInTimeCut   = new TH1F(Form("Cluster1D_DistanceTo_withinTimingCut %s",GetCutNumber().Data()),"Cluster1D_DistanceTo_withinTimingCut; dist 1D; #entries",200,0.,0.5);
+      fHistClusterDistance1DInTimeCut->Sumw2();
+      fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
       
       // detailed cell QA histos for PHOS
       if(fExtendedMatchAndQA > 3){
@@ -822,6 +830,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterDistanceOutTimeCut  = new TH2F(Form("ClusterDistanceTo_outsideTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_outsideTimingCut; dist row; dist col",20,-10,10,20,-10,10);
       fHistClusterDistanceOutTimeCut->Sumw2();
       fHistExtQA->Add(fHistClusterDistanceOutTimeCut);
+      fHistClusterDistance1DInTimeCut   = new TH1F(Form("Cluster1D_DistanceTo_withinTimingCut %s",GetCutNumber().Data()),"Cluster1D_DistanceTo_withinTimingCut; dist 1D; #entries",200,0.,0.5);
+      fHistClusterDistance1DInTimeCut->Sumw2();
+      fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
 
       // detailed cell QA histos for DCAL
       if(fExtendedMatchAndQA > 3){
@@ -1951,10 +1962,17 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
 //      cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n" << endl;
       //cluster outside timing cut
       if( calculatedDiff ){
+        Float_t dist1D = TMath::Sqrt(TMath::Power(etaCluster-etaclusterMatched,2)+TMath::Power(phiCluster-phiclusterMatched,2));
         if( !(isMC>0) ){
-          if( (clusterMatched->GetTOF() > fMinTimeDiff && clusterMatched->GetTOF() < fMaxTimeDiff) ) fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
+          if( (clusterMatched->GetTOF() > fMinTimeDiff && clusterMatched->GetTOF() < fMaxTimeDiff) ){
+            fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
+            fHistClusterDistance1DInTimeCut->Fill(dist1D);
+          }
           else fHistClusterDistanceOutTimeCut->Fill(rowdiff,coldiff);
-        }else fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
+        }else{
+          fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
+          fHistClusterDistance1DInTimeCut->Fill(dist1D);
+        }
       }
       delete clusterMatched;
     }

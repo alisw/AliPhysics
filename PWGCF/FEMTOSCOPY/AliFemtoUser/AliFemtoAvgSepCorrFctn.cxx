@@ -187,6 +187,9 @@ AliFemtoAvgSepCorrFctn::~AliFemtoAvgSepCorrFctn()
   delete fNumeratorNegNeg;
   delete fDenominatorNegNeg;
 
+  delete fNumeratorBac;
+  delete fDenominatorBac;
+
   delete fRatio;
 }
 //_________________________

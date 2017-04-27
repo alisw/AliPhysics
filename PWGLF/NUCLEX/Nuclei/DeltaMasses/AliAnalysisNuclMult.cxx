@@ -72,8 +72,6 @@ AliAnalysisNuclMult::AliAnalysisNuclMult():
   hTrackletsVsV0mult(NULL),
   hCheckTrackSel(NULL)
 {
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
   fList->SetName("results");
 }
 //______________________________________________________________________________
@@ -100,7 +98,6 @@ AliAnalysisNuclMult::AliAnalysisNuclMult(const char *name):
   hTrackletsVsV0mult(NULL),
   hCheckTrackSel(NULL)
 {
-  DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   fList->SetName("results");
 }
