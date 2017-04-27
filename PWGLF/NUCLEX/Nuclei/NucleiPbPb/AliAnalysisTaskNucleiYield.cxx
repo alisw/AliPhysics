@@ -340,7 +340,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
     if (track->GetID() <= 0) continue;
     Double_t dca[2];
-    if (!track->TestBit(fFilterBit)) continue;
+    if (!track->TestFilterBit(fFilterBit)) continue;
     if (!AcceptTrack(track,dca)) continue;
     const float beta = HasTOF(track,fPID);
     const int iTof = beta > EPS ? 1 : 0;
