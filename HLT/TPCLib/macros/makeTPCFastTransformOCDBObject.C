@@ -95,7 +95,7 @@ void makeTPCFastTransformOCDBObject( const Char_t* cdbUri=NULL,
   
   TStopwatch timer;
   timer.Start();
-  int err = hltTransform.Init( bz, timestamp );
+  int err = hltTransform.Init( bz, timestamp, 0 );
   timer.Stop();
   cout<<"\n\n Initialisation: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
   if( err!=0 ){
