@@ -482,7 +482,7 @@ void AddMonitorOutput_K0sMass(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 {
 
    // Mass
-   AliRsnValueDaughter *axisMass = new kV0MassAliRsnValueDaughter("k0s_mass", AliRsnValueDaughter::kV0Mass);
+   AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("k0s_mass", AliRsnValueDaughter::kV0Mass);
    axisMass->SetBins(0.4,0.6,0.001);
 
    // output: 2D histogram
