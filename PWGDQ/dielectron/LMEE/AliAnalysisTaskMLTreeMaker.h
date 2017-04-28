@@ -136,12 +136,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Int_t n;
   Double_t cent;
   
-  Double_t IsEventAccepted(AliESDEvent *event);
+  Double_t IsEventAccepted(AliVEvent *event);
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
+  Bool_t GetDCA(const AliVEvent* event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0);
   
   AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
 
   AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented
+
 
   TList *fList;//output list for QA histograms
 
