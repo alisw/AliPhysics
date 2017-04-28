@@ -4238,7 +4238,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhPtTrackInConeMCSecondary[imc]  = new TH2F
           (Form("hPtTrackInCone_Secondary_%s",mcChPartName[imc].Data()),
-           Form("reconstructed #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, primary MC %s",r,mcChPartName[imc].Data()),
+           Form("reconstructed #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, secondary MC %s",r,mcChPartName[imc].Data()),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtTrackInConeMCSecondary[imc]->SetYTitle("#it{p}_{T in cone}^{reco} (GeV/#it{c})");
           fhPtTrackInConeMCSecondary[imc]->SetXTitle("#it{p}_{T}^{reco} (GeV/#it{c})");
@@ -4254,7 +4254,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhPtTrackInConeMCSecondaryGener[imc]  = new TH2F
           (Form("hPtTrackInCone_Gener_Secondary_%s",mcChPartName[imc].Data()),
-           Form("generated #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, primary MC %s",r,mcChPartName[imc].Data()),
+           Form("generated #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, secondary MC %s",r,mcChPartName[imc].Data()),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtTrackInConeMCSecondaryGener[imc]->SetYTitle("#it{p}_{T in cone}^{gener} (GeV/#it{c})");
           fhPtTrackInConeMCSecondaryGener[imc]->SetXTitle("#it{p}_{T}^{gener} (GeV/#it{c})");
