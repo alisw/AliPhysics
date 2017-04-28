@@ -41,6 +41,10 @@ ClassImp(AliAnaCaloTrackCorrBaseClass) ;
 //__________________________________________________________
 AliAnaCaloTrackCorrBaseClass::AliAnaCaloTrackCorrBaseClass() : 
 TObject(), 
+fNModules(20),                fNRCU(2),        
+fFirstModule(0),              fLastModule(19),
+fNMaxCols(48),                fNMaxRows(24),  
+fNMaxColsFull(48),            fNMaxRowsFull(24),  
 fDataMC(0),                   fDebug(0),
 fCalorimeter(-1),             fCalorimeterString(""),
 fCheckFidCut(0),              fCheckRealCaloAcc(0),
@@ -738,6 +742,80 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   
   for(Int_t igen = 0; igen < 10; igen++)
     fCocktailGenIndeces[igen] = -1;
+}
+
+//_________________________________________________
+/// Initialize the parameters related to the calorimeters
+/// number of modules and modules to analyze.
+/// Mainly used to set histogram ranges. Add the line at 
+/// the Init() or GetCreateOutputObjects() methods of derived classes
+//_________________________________________________
+void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
+{
+  fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
+  if(GetCalorimeter()==kPHOS && fNModules > 4) fNModules = 4;
+  
+  fFirstModule = 0; 
+  fLastModule  = fNModules-1;
+  if(GetCaloUtils()->GetFirstSuperModuleUsed() >= 0)
+  {
+    fFirstModule = GetCaloUtils()->GetFirstSuperModuleUsed();
+    fLastModule  = GetCaloUtils()->GetLastSuperModuleUsed();
+  }
+  else if ( IsFiducialCutOn() )
+  {
+    if(GetCalorimeter() != kPHOS)
+    {
+      Int_t nSections = GetFiducialCut()->GetEMCALFidCutMaxPhiArray()->GetSize();
+      if( nSections == 1 )
+      {
+        Float_t minPhi = GetFiducialCut()->GetEMCALFidCutMinPhiArray()->At(0);
+        Float_t maxPhi = GetFiducialCut()->GetEMCALFidCutMaxPhiArray()->At(0);
+        //printf("sections %d, min %f, max %f\n",nSections,minPhi,maxPhi);
+        
+        if     ( minPhi > 70  && maxPhi < 190) // EMCal
+        {
+          fFirstModule = 0;
+          fLastModule  = 11;
+        }
+        else if( minPhi > 250 && maxPhi < 330) // DCal
+        {
+          fFirstModule = 12;
+          fLastModule  = 19;
+        }
+      }
+    }
+  }
+
+  // EMCAL
+  fNMaxCols = 48;
+  fNMaxRows = 24;
+  fNRCU     = 2 ;
+  // PHOS
+  if(GetCalorimeter()==kPHOS)
+  {
+    fNMaxCols = 56;
+    fNMaxRows = 64;
+    fNRCU     = 4 ;
+  }
+  
+  fNMaxColsFull = fNMaxCols;
+  fNMaxRowsFull = fNMaxRows;
+  if(GetCalorimeter()==kEMCAL)
+  {
+    fNMaxColsFull=2*fNMaxCols;
+    fNMaxRowsFull=Int_t(fNModules/2)*fNMaxRows;
+  }
+  else
+  {
+    fNMaxRowsFull=fNModules*fNMaxRows;
+  }
+  //96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5
+  
+  AliDebug(1,Form("N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d) ",
+                  fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, fNMaxColsFull,fNMaxRowsFull));
+
+  
 }
 
 //__________________________________________________________________
