@@ -72,7 +72,9 @@ fPlotCluster(0),                  fOADBSet(kFALSE),
 fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
 fOADBFilePathEMCAL(""),           fOADBFilePathPHOS(""),
 fImportGeometryFromFile(0),       fImportGeometryFilePath(""),
-fNSuperModulesUsed(0),            fRunNumber(0),
+fNSuperModulesUsed(0),            
+fFirstSuperModuleUsed(-1),        fLastSuperModuleUsed(-1),
+fRunNumber(0),
 fMCECellClusFracCorrOn(0),        fMCECellClusFracCorrParam()
 {
   InitParameters();

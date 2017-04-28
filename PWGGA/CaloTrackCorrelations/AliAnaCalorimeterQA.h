@@ -256,14 +256,7 @@ public:
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations, not QA related
   Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
   Bool_t   fStudyM02Dependence;                 ///<  TH3 histograms where M02 and energy are 2 axes and 
-  
-  // Parameters
     
-  Int_t    fNModules    ;                       ///<  Number of EMCAL/PHOS modules
-  Int_t    fNRCU        ;                       ///<  Number of EMCAL/PHOS RCU
-  Int_t    fNMaxCols    ;                       ///<  Number of EMCAL/PHOS rows
-  Int_t    fNMaxRows    ;                       ///<  Number of EMCAL/PHOS columns
-  
   // Cuts
   
   Double_t fTimeCutMin  ;                       ///<  Remove clusters/cells with time smaller than this value, in ns
@@ -883,7 +876,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,36) ;
+  ClassDef(AliAnaCalorimeterQA,37) ;
   /// \endcond
 
 } ;
