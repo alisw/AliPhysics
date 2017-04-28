@@ -99,11 +99,14 @@ AliADQAChecker::AliADQAChecker()
   , myLegend1(0)
   , myLegend2(0)
   , myLegend3(0)
+  , fTimeSlewingSplineADA(0)
+  , fTimeSlewingSplineADC(0)
 {
 }
 //____________________________________________________________________________
 AliADQAChecker::~AliADQAChecker()
 {
+  AliInfo("========================================");
   delete pCharge;
   delete pChargeZoom;
   delete pTime;
@@ -116,16 +119,18 @@ AliADQAChecker::~AliADQAChecker()
   delete pTrigger;
   delete pDecision;
   delete pChargeTrend;
-  delete histo;
-  delete histoBlue;
-  delete histoRed;
-  delete histoDenominator;
-  delete histoRatio;
-  delete histo2D;
-  delete histo2DCopy;
+  // delete histo;
+  // delete histoBlue;
+  // delete histoRed;
+  // delete histoDenominator;
+  // delete histoRatio;
+  // delete histo2D;
+  // delete histo2DCopy;
   delete myLegend1;
   delete myLegend2;
   delete myLegend3;
+  delete fTimeSlewingSplineADA;
+  delete fTimeSlewingSplineADC;
 }
 
 //____________________________________________________________________________
@@ -185,11 +190,10 @@ Double_t AliADQAChecker::CheckPedestals(TObjArray * list) const
 	    QAbox->SetFillColor(kYellow);
 	    QAbox->AddText("Is this AD pedestal run?");
 	  } else {
-	    TH1D *hPedestalSlice;
 	    Int_t NbadChannels = 0;
 	    TString badChannels = " ";
 	    for(Int_t i=0; i<16; i++){
-	      hPedestalSlice = hPedestalInt0->ProjectionY("hPedestalSlice",i+1,i+1);
+	      TH1* hPedestalSlice = hPedestalInt0->ProjectionY("hPedestalSlice",i+1,i+1);
 	      Double_t RMS = hPedestalSlice->GetRMS();
 	      if(RMS > fMaxPedWidth) {
 		test = 0.1;
@@ -202,6 +206,7 @@ Double_t AliADQAChecker::CheckPedestals(TObjArray * list) const
 		NbadChannels++;
 	      }
 	      if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+          delete hPedestalSlice;
 	    }
 	    if(NbadChannels == 0){
 	      QAbox->Clear();
@@ -227,11 +232,10 @@ Double_t AliADQAChecker::CheckPedestals(TObjArray * list) const
 	    QAbox->SetFillColor(kYellow);
 	    QAbox->AddText("Is this AD pedestal run?");
 	  } else {
-	    TH1D *hPedestalSlice;
 	    Int_t NbadChannels = 0;
 	    TString badChannels = " ";
 	    for(Int_t i=0; i<16; i++){
-	      hPedestalSlice = hPedestalInt1->ProjectionY("hPedestalSlice",i+1,i+1);
+	      TH1* hPedestalSlice = hPedestalInt1->ProjectionY("hPedestalSlice",i+1,i+1);
 	      Double_t RMS = hPedestalSlice->GetRMS();
 	      if(RMS > fMaxPedWidth) {
 		test = 0.1;
@@ -244,6 +248,7 @@ Double_t AliADQAChecker::CheckPedestals(TObjArray * list) const
 		NbadChannels++;
 	      }
 	      if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+          delete hPedestalSlice;
 	    }
 	    if(NbadChannels == 0){
 	      QAbox->Clear();
@@ -343,7 +348,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	if(funcName.Contains("TPaveText")){
 	  TPaveText *QAbox = (TPaveText*)hFlagNoTime->GetListOfFunctions()->At(i);
 
-	  TH1F *histoRate = (TH1F*)hFlagNoTime->Clone("histoRate");
+	  TH1F *histoRate = (TH1F*)hFlagNoTime->Clone("histoRateCloned");
 	  histoRate->Sumw2();
 	  if(nEvents != 0) histoRate->Scale(1/nEvents);
 	  Int_t NbadChannels = 0;
@@ -381,7 +386,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	if(funcName.Contains("TPaveText")){
 	  TPaveText *QAbox = (TPaveText*)hTimeNoFlag->GetListOfFunctions()->At(i);
 
-	  TH1F *histoRate = (TH1F*)hTimeNoFlag->Clone("histoRate");
+	  TH1F *histoRate = (TH1F*)hTimeNoFlag->Clone("histoRateCloned");
 	  histoRate->Sumw2();
 	  if(nEvents != 0) histoRate->Scale(1/nEvents);
 	  Int_t NbadChannels = 0;
@@ -418,7 +423,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	if(funcName.Contains("TPaveText")){
 	  TPaveText *QAbox = (TPaveText*)hNEventsBBFlag->GetListOfFunctions()->At(i);
 
-	  TH1F *histoRate = (TH1F*)hNEventsBBFlag->Clone("histoRate");
+	  TH1F *histoRate = (TH1F*)hNEventsBBFlag->Clone("histoRateCloned");
 	  histoRate->Sumw2();
 	  if(nEvents != 0) histoRate->Scale(1/nEvents);
 
@@ -462,7 +467,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	if(funcName.Contains("TPaveText")){
 	  TPaveText *QAbox = (TPaveText*)hNEventsBGFlag->GetListOfFunctions()->At(i);
 
-	  TH1F *histoRate = (TH1F*)hNEventsBGFlag->Clone("histoRate");
+	  TH1F *histoRate = (TH1F*)hNEventsBGFlag->Clone("histoRateCloned");
 	  histoRate->Sumw2();
 	  if(nEvents != 0) histoRate->Scale(1/nEvents);
 
@@ -508,7 +513,6 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	  TPaveText *QAbox = (TPaveText*)hChargeSaturation->GetListOfFunctions()->At(i);
 	  QAbox->Clear();
 
-	  TH1D *hChargeSlice;
 	  TString satText = "    ";
 	  // Char_t satValue[5]; not used
 	  Bool_t	medSat = kFALSE;
@@ -516,7 +520,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	  Bool_t	hugeSat = kFALSE;
 
 	  for(Int_t i=0; i<16; i++){
-	    hChargeSlice = hChargeSaturation->ProjectionY("hChargeSlice",i+1,i+1);
+	    TH1* hChargeSlice = hChargeSaturation->ProjectionY("hChargeSlice",i+1,i+1);
 	    Double_t saturation=0.0;
 	    if(hChargeSlice->Integral() != 0) saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
 	    satText += TString::Format("%1.3f ", saturation);
@@ -533,8 +537,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	      test = 0.1;
 	      hugeSat = kTRUE;
 	    }
+        delete hChargeSlice;
 	  }
-	  delete hChargeSlice;
 	  if(!medSat && !highSat && !hugeSat){
 	    QAbox->Clear();
 	    QAbox->SetFillColor(kGreen);
@@ -573,14 +577,13 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	  TPaveText *QAbox = (TPaveText*)hBBFlagVsClock->GetListOfFunctions()->At(i);
 	  QAbox->Clear();
 
-	  TH1D *hClockSlice;
 	  Bool_t notConfgADA = kFALSE;
 	  Bool_t notConfgADC = kFALSE;
 	  Bool_t notSynchADA = kFALSE;
 	  Bool_t notSynchADC = kFALSE;
 
 	  for(Int_t i=0; i<16; i++){
-	    hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
+	    TH1* hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
 	    Double_t center = hClockSlice->GetBinContent(11);
 	    Double_t flagArray[21];
 	    for(Int_t iClock = 0; iClock<21; iClock++)flagArray[iClock] = hClockSlice->GetBinContent(iClock+1);
@@ -588,14 +591,15 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	    if(center == 0){
 	      if(i>7)notConfgADA = kTRUE;
 	      if(i<8)notConfgADC = kTRUE;
+          delete hClockSlice;
 	      continue;
 	    }
 	    if(maxClock != 10) {
 	      if(i>7)notSynchADA = kTRUE;
 	      if(i<8)notSynchADC = kTRUE;
 	    }
+        delete hClockSlice;
 	  }
-	  delete hClockSlice;
 	  if(notConfgADA || notConfgADC){
 	    QAbox->Clear();
 	    QAbox->SetFillColor(kViolet);
@@ -633,7 +637,6 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	  TPaveText *QAbox = (TPaveText*)hBBFlagVsClock_ADOR->GetListOfFunctions()->At(i);
 	  QAbox->Clear();
 
-	  TH1D *hClockSlice;
 	  Bool_t notConfgADA = kFALSE;
 	  Bool_t notConfgADC = kFALSE;
 	  Bool_t notSynchADA = kFALSE;
@@ -644,7 +647,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	    QAbox->AddText("Low statistics");
 	  } else {
 	    for(Int_t i=0; i<16; i++){
-	      hClockSlice = hBBFlagVsClock_ADOR->ProjectionY("hClockSlice",i+1,i+1);
+	      TH1* hClockSlice = hBBFlagVsClock_ADOR->ProjectionY("hClockSlice",i+1,i+1);
 	      Double_t center = hClockSlice->GetBinContent(11);
 	      Double_t flagArray[19];
 	      for(Int_t iClock = 1; iClock<20; iClock++)flagArray[iClock-1] = hClockSlice->GetBinContent(iClock+1);
@@ -652,14 +655,15 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	      if(center == 0){
 		if(i>7)notConfgADA = kTRUE;
 		if(i<8)notConfgADC = kTRUE;
+          delete hClockSlice;
 		continue;
 	      }
 	      if(maxClock != 9) {
 		if(i>7)notSynchADA = kTRUE;
 		if(i<8)notSynchADC = kTRUE;
 	      }
+          delete hClockSlice;
 	    }
-	    delete hClockSlice;
 	    if(notConfgADA || notConfgADC){
 	      QAbox->Clear();
 	      QAbox->SetFillColor(kViolet);
@@ -697,11 +701,10 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	  TPaveText *QAbox = (TPaveText*)hPedestalDiffInt0->GetListOfFunctions()->At(i);
 	  QAbox->Clear();
 
-	  TH1D *hPedestalSlice;
 	  Int_t NbadChannels = 0;
 	  TString badChannels = " ";
 	  for(Int_t i=0; i<16; i++){
-	    hPedestalSlice = hPedestalDiffInt0->ProjectionY("hPedestalSlice",i+1,i+1);
+	    TH1* hPedestalSlice = hPedestalDiffInt0->ProjectionY("hPedestalSlice",i+1,i+1);
 	    Double_t mean = hPedestalSlice->GetMean();
 	    if(TMath::Abs(mean)>fMaxPedDiff) {
 	      test = 0.3;
@@ -714,8 +717,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	      NbadChannels++;
 	    }
 	    if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+        delete hPedestalSlice;
 	  }
-	  delete hPedestalSlice;
 	  if(NbadChannels == 0){
 	    QAbox->Clear();
 	    QAbox->SetFillColor(kGreen);
@@ -735,11 +738,10 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	  TPaveText *QAbox = (TPaveText*)hPedestalDiffInt1->GetListOfFunctions()->At(i);
 	  QAbox->Clear();
 
-	  TH1D *hPedestalSlice;
 	  Int_t NbadChannels = 0;
 	  TString badChannels = " ";
 	  for(Int_t i=0; i<16; i++){
-	    hPedestalSlice = hPedestalDiffInt1->ProjectionY("hPedestalSlice",i+1,i+1);
+	    TH1* hPedestalSlice = hPedestalDiffInt1->ProjectionY("hPedestalSlice",i+1,i+1);
 	    Double_t mean = hPedestalSlice->GetMean();
 	    if(TMath::Abs(mean)>fMaxPedDiff) {
 	      test = 0.3;
@@ -752,8 +754,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 	      NbadChannels++;
 	    }
 	    if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
+        delete hPedestalSlice;
 	  }
-	  delete hPedestalSlice;
 	  if(NbadChannels == 0){
 	    QAbox->Clear();
 	    QAbox->SetFillColor(kGreen);
@@ -848,12 +850,14 @@ void AliADQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
 //____________________________________________________________________________
 void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
 {
+  AliInfoF("task=%d mode=%d", task, mode);
   // makes the QA image for sim and rec
   for (Int_t esIndex = 0; esIndex < AliRecoParam::kNSpecies; esIndex++) {
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) continue;
-    Bool_t allHistosPresent = kTRUE;
 
-    Int_t histosToDraw[] = {AliADQADataMakerRec::kChargeADA,AliADQADataMakerRec::kChargeADC,AliADQADataMakerRec::kChargeEoI,AliADQADataMakerRec::kChargeEoIBB,AliADQADataMakerRec::kChargeEoIBG,
+    AliInfoF("esIndex=%d", esIndex);
+
+    const Int_t histosToDraw[] = {AliADQADataMakerRec::kChargeADA,AliADQADataMakerRec::kChargeADC,AliADQADataMakerRec::kChargeEoI,AliADQADataMakerRec::kChargeEoIBB,AliADQADataMakerRec::kChargeEoIBG,
 			    AliADQADataMakerRec::kHPTDCTime,AliADQADataMakerRec::kHPTDCTimeBB,AliADQADataMakerRec::kHPTDCTimeBG,AliADQADataMakerRec::kWidth,
 			    AliADQADataMakerRec::kHPTDCTimeRebin,AliADQADataMakerRec::kHPTDCTimeRebinBB,AliADQADataMakerRec::kHPTDCTimeRebinBG,
 			    AliADQADataMakerRec::kBBFlagVsClock,AliADQADataMakerRec::kBBFlagVsClock_ADOR,AliADQADataMakerRec::kBGFlagVsClock,AliADQADataMakerRec::kBBFlagsPerChannel,AliADQADataMakerRec::kBGFlagsPerChannel,
@@ -870,9 +874,14 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 			    AliADQADataMakerRec::kTimeSlewingADA,AliADQADataMakerRec::kTimeSlewingADC,
 			    AliADQADataMakerRec::kTrend_TriggerChargeQuantileADA,AliADQADataMakerRec::kTrend_TriggerChargeQuantileADC};
 
-    for(Int_t iHisto=0; iHisto<(&histosToDraw)[1]-histosToDraw; iHisto++)if(!list[esIndex]->At(histosToDraw[iHisto])) allHistosPresent = kFALSE;
-    if(!allHistosPresent) continue;
-    for(Int_t iHisto=0; iHisto<(&histosToDraw)[1]-histosToDraw; iHisto++)((TH1*)list[esIndex]->At(histosToDraw[iHisto]))->SetStats(kFALSE);
+    Bool_t allHistosPresent = kTRUE;
+    for(Int_t iHisto=0; iHisto<(&histosToDraw)[1]-histosToDraw && allHistosPresent; iHisto++)
+      if (!list[esIndex]->At(histosToDraw[iHisto]))
+        allHistosPresent = kFALSE;
+    if (!allHistosPresent) continue;
+    for(Int_t iHisto=0; iHisto<(&histosToDraw)[1]-histosToDraw; iHisto++) {
+      ((TH1*)list[esIndex]->At(histosToDraw[iHisto]))->SetStats(kFALSE);
+    }
 
     if ( !fImage[esIndex] ){
       const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex));
@@ -971,7 +980,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       myLegend3->SetEntrySeparation(0.5);
       myLegend3->AddEntry(histoBlue,"Events with BB flag","l");
       myLegend3->AddEntry(histoRed,"Events with BG flag","l");
-      }
+    }
     
     fImage[esIndex]->cd();
     pCharge->Draw();
@@ -1013,7 +1022,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     //Zoommed charge pad
     pChargeZoom->cd(5);
     gPad->SetLogz();
-    histoRatio = (TH1*)histo->Clone("histoRatio");
+    histoRatio = (TH1*)histo->Clone("histoRatioCloned");
     histoRatio->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
     histoRatio->DrawCopy("COLZ");
     pChargeZoom->cd(4);
@@ -1026,6 +1035,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     histoRatio->Divide(histoDenominator);
     histoRatio->SetTitle("Ratio: w_BB_Flag/All");
     histoRatio->DrawCopy("COLZ");
+    delete histoRatio;
 
     for(Int_t iHist = 0; iHist<3; iHist++){
       pChargeZoom->cd(iHist+1);
@@ -1045,10 +1055,10 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     pTimeRatio->cd(1);
     //gPad->SetLogy();
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kFlagNoTime);
-    histoBlue = (TH1*)histo->Clone("histoBlue");
+    histoBlue = (TH1*)histo->Clone("histoBlueCloned");
     if(nEvents != 0) histoBlue->Scale(1/nEvents);
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTimeNoFlag);
-    histoRed = (TH1*)histo->Clone("histoRed");
+    histoRed = (TH1*)histo->Clone("histoRedCloned");
     if(nEvents != 0) histoRed->Scale(1/nEvents);
     max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
     max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
@@ -1056,27 +1066,29 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     histoBlue->DrawCopy();
     histoRed->DrawCopy("same");
     myLegend2->Draw();
-
+    delete histoBlue;
+    delete histoRed;
     histoDenominator=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin);
 
     for(Int_t iHist = 1; iHist<3; iHist++){
       pTimeRatio->cd(1+iHist);
       gPad->SetLogz();
       histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin + iHist);
-      histoRatio = (TH1*)histo->Clone("histoRatio");
+      histoRatio = (TH1*)histo->Clone("histoRatioCloned");
       histoRatio->Divide(histoDenominator);
       if(iHist == 1)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
       if(iHist == 2)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBGZoomMin,fTimeRatioBGZoomMax);
       histoRatio->DrawCopy("COLZ");
+      delete histoRatio;
     }
     pTimeRatio->cd(4);
     //gPad->SetLogy();
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBBFlag);
-    histoBlue = (TH1*)histo->Clone("histoBlue");
+    histoBlue = (TH1*)histo->Clone("histoBlueCloned");
     histoBlue->Sumw2();
     if(nEvents != 0) histoBlue->Scale(1/nEvents);
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBGFlag);
-    histoRed = (TH1*)histo->Clone("histoRed");
+    histoRed = (TH1*)histo->Clone("histoRedCloned");
     histoRed->Sumw2();
     if(nEvents != 0) histoRed->Scale(1/nEvents);
 
@@ -1092,6 +1104,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     //histoRed->DrawCopy("samehist");
     histoRed->DrawCopy("esame");
     myLegend3->Draw();
+    delete histoBlue;
+    delete histoRed;
 
     //Clock Flags pad
     for(Int_t iHist = 0; iHist<5; iHist++){
@@ -1128,9 +1142,10 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     pMaxCh->cd();
     gPad->SetLogz();
     histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kChargeSaturation);
-    histo2DCopy = (TH2*)histo2D->Clone("histoBlue");
+    histo2DCopy = (TH2*)histo2D->Clone("histoBlueCloned");
     histo2DCopy->RebinY(64);
     histo2DCopy->DrawCopy("COLZ");
+    delete histo2DCopy;
 
     //Trigger inputs pad
     pTrigger->cd();
@@ -1141,16 +1156,18 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     //Mean time pad
     pMeanTime->cd(1);
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);
-    histoBlue = (TH1*)histo->Clone("histoBlue");
+    histoBlue = (TH1*)histo->Clone("histoBlueCloned");
 
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADC);
-    histoRed = (TH1*)histo->Clone("histoRed");
+    histoRed = (TH1*)histo->Clone("histoRedCloned");
     max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
     max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
     histoBlue->GetYaxis()->SetRangeUser(0,1.1*TMath::MaxElement(2,max));
     histoBlue->DrawCopy();
     histoRed->DrawCopy("same");
     myLegend1->Draw();
+    delete histoBlue;
+    delete histoRed;
     for(Int_t iHist = 0; iHist<3; iHist++){
       pMeanTime->cd(iHist+2);
       gPad->SetLogz();
@@ -1158,18 +1175,17 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       histo->DrawCopy("COLZ");
     }
     //Decisions pad
-    TH1D *hTimeSlice = 0x0;
     TH1F *hMeanTimeVsChargeADA = new TH1F("hMeanTimeVsChargeADA","hMeanTimeVsChargeADA",200,-4,0);
 
     pDecision->cd(1);
     gPad->SetLogz();
     histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingADA);
-    histo2DCopy = (TH2*)histo2D->Clone("histo2DCopy");
+    histo2DCopy = (TH2*)histo2D->Clone("histo2DCopyCloned");
     histo2DCopy->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
     histo2DCopy->SetTitle("Time slewing ADA");
 
     for(Int_t j=0; j<200;j++){
-      hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
+      TH1* hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
       if(hTimeSlice->GetEntries()<100 && j>100){
         hMeanTimeVsChargeADA->SetBinContent(j+1,hMeanTimeVsChargeADA->GetBinContent(j));
         hMeanTimeVsChargeADA->SetBinError(j+1,hMeanTimeVsChargeADA->GetBinError(j));
@@ -1177,12 +1193,15 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
         hMeanTimeVsChargeADA->SetBinContent(j+1,hTimeSlice->GetMean());
         if(hTimeSlice->GetEntries()>0)hMeanTimeVsChargeADA->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
       }
+      delete hTimeSlice;
     }
-    TSpline3 *fTimeSlewingSplineADA = new TSpline3(hMeanTimeVsChargeADA);
+    delete fTimeSlewingSplineADA;
+    fTimeSlewingSplineADA = new TSpline3(hMeanTimeVsChargeADA);
     fTimeSlewingSplineADA->SetLineWidth(3);
     fTimeSlewingSplineADA->SetLineColor(kPink);
 
     histo2DCopy->DrawCopy("COLZ");
+    delete histo2DCopy;
     fTimeSlewingSplineADA->Draw("Psame");
     delete hMeanTimeVsChargeADA;
 
@@ -1190,12 +1209,12 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     pDecision->cd(3);
     gPad->SetLogz();
     histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingADC);
-    histo2DCopy = (TH2*)histo2D->Clone("histo2DCopy");
+    histo2DCopy = (TH2*)histo2D->Clone("histo2DCopyCloned");
     histo2DCopy->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
     histo2DCopy->SetTitle("Time slewing ADC");
 
     for(Int_t j=0; j<200;j++){
-      hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
+      TH1* hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
       if(hTimeSlice->GetEntries()<100 && j>100){
         hMeanTimeVsChargeADC->SetBinContent(j+1,hMeanTimeVsChargeADC->GetBinContent(j));
         hMeanTimeVsChargeADC->SetBinError(j+1,hMeanTimeVsChargeADC->GetBinError(j));
@@ -1203,15 +1222,17 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
         hMeanTimeVsChargeADC->SetBinContent(j+1,hTimeSlice->GetMean());
         if(hTimeSlice->GetEntries()>0)hMeanTimeVsChargeADC->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
       }
+      delete hTimeSlice;
     }
-    TSpline3 *fTimeSlewingSplineADC = new TSpline3(hMeanTimeVsChargeADC);
+    delete fTimeSlewingSplineADC;
+    fTimeSlewingSplineADC = new TSpline3(hMeanTimeVsChargeADC);
     fTimeSlewingSplineADC->SetLineWidth(3);
     fTimeSlewingSplineADC->SetLineColor(kPink);
 
     histo2DCopy->DrawCopy("COLZ");
+    delete histo2DCopy;
     fTimeSlewingSplineADC->Draw("Psame");
     delete hMeanTimeVsChargeADC;
-    delete hTimeSlice;
 
     pDecision->cd(2);
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kDecisions);
@@ -1229,5 +1250,5 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 
     fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
     //fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps");
-  }
+  } // next species
 }
