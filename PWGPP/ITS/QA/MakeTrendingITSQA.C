@@ -1234,48 +1234,6 @@ void FillSSDBranches(TList * SSDList){
                     mpv[i]=1;
                 }	
             }
-/*            //
-                {
-                tmpQ+="fit";
-                Float_t range=fHist1DQ->GetBinCenter(fHist1DQ->GetMaximumBin());
-                TF1 *f1 = new TF1(tmpQ,LangausFun,range*0.45,range*3.0,4);
-                f1->SetParameters(7.0,range,1.0,5.5);
-                Float_t normalization=fHist1DQ->GetEntries()*fHist1DQ->GetXaxis()->GetBinWidth(2)/f1->Integral(range*0.45,range*3.0);
-                f1->SetParameters(7.0,range,normalization,5.5);
-                //f1->SetParameters(7.0,range,fHist1DQ->GetMaximum(),5.5);
-                f1->SetParNames("sigma Landau","MPV","N","sigma Gaus");
-                f1->SetParLimits(0,2.0,100.0);
-                f1->SetParLimits(3,0.0,100.0);
-//                if(fHist1DQ->Fit(tmpQ,"BRQON")==0)
-                TFitResultPtr r = fHist1DQ->Fit(tmpQ,"BRQON");
-                Int_t fitStatus = (Int_t)r;
-                if(fitStatus==0)
-                {
-                    mpv[i]=f1->GetParameter(1);
-                    fHistMPVs->Fill(mpv[i]);
-                    fMPVGraph->SetBinContent(i+1,f1->GetParameter(1));
-                    fMPVGraph->SetBinError(i+1,f1->GetParError(1));
-                    if(mpv[i]<75.0)
-                    {
-                        //outfiletxtbad<<"MPV lower than 75 \t module="<<i<<endl;
-                    }	
-                    if(mpv[i]>100.0)
-                    {
-                        // outfiletxtbad<<"MPV higher than 100 \t module="<<i<<endl;		  
-                    }
-                    if(f1->GetParError(1)>1.0)
-                    {
-                        //outfiletxtbad<<"MPV high error on MPV  \t module="<<i<<endl;				
-                    }
-                }
-                else
-                {
-                    mpv[i]=1;
-                    //outfiletxtbad<<"BAD FIT \t module="<<i<<endl;
-                    continue;
-                }	
-            }
-//*/
         }   // for 1698
  
 
@@ -2290,6 +2248,7 @@ void FillITSsaBranches(TList * ITSsaList){
     TH1D* clus_eta_1, *clus_eta_2, *clus_eta_3, *clus_eta_4, *clus_eta_5, *clus_eta_6;
 
     if(hEtaPhiTracksLay1TPCITS){
+        if(hEtaPhiTracksLay1TPCITS->GetEntries()>0){
         clus_phi_1 = hEtaPhiTracksLay1TPCITS->ProjectionY();
         clus_phi_1->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2302,9 +2261,11 @@ void FillITSsaBranches(TList * ITSsaList){
             occ_eta_1[etabin]=clus_eta_1->GetBinContent(etabin+1)/clus_eta_1->GetEntries();
             //            erocc_eta_1[etabin]= TMath::Sqrt(occ_eta_1[etabin]*(1-occ_eta_1[etabin])/clus_eta_1->GetEntries());
         }
+        }
     }
 
     if(hEtaPhiTracksLay2TPCITS){
+        if(hEtaPhiTracksLay2TPCITS->GetEntries()>0){
         clus_phi_2 = hEtaPhiTracksLay2TPCITS->ProjectionY();
         clus_phi_2->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2315,9 +2276,11 @@ void FillITSsaBranches(TList * ITSsaList){
         for(Int_t etabin=0;etabin<2;etabin++){
             occ_eta_2[etabin]=clus_eta_2->GetBinContent(etabin+1)/clus_eta_2->GetEntries();
         }
+        }
     }
     
     if(hEtaPhiTracksLay3TPCITS){
+        if(hEtaPhiTracksLay3TPCITS->GetEntries()>0){
         clus_phi_3 = hEtaPhiTracksLay3TPCITS->ProjectionY();
         clus_phi_3->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2329,8 +2292,10 @@ void FillITSsaBranches(TList * ITSsaList){
             occ_eta_3[etabin]=clus_eta_3->GetBinContent(etabin+1)/clus_eta_3->GetEntries();
         }
     }
+    }
     
     if(hEtaPhiTracksLay4TPCITS){
+        if(hEtaPhiTracksLay4TPCITS->GetEntries()>0){
         clus_phi_4 = hEtaPhiTracksLay4TPCITS->ProjectionY();
         clus_phi_4->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2341,9 +2306,11 @@ void FillITSsaBranches(TList * ITSsaList){
         for(Int_t etabin=0;etabin<2;etabin++){
             occ_eta_4[etabin]=clus_eta_4->GetBinContent(etabin+1)/clus_eta_4->GetEntries();
         }
+        }
     }
     
     if(hEtaPhiTracksLay5TPCITS){
+        if(hEtaPhiTracksLay5TPCITS->GetEntries()>0){
         clus_phi_5 = hEtaPhiTracksLay5TPCITS->ProjectionY();
         clus_phi_5->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2355,8 +2322,10 @@ void FillITSsaBranches(TList * ITSsaList){
             occ_eta_5[etabin]=clus_eta_5->GetBinContent(etabin+1)/clus_eta_5->GetEntries();
         }
     }
+    }
     
     if(hEtaPhiTracksLay6TPCITS){
+        if(hEtaPhiTracksLay6TPCITS->GetEntries()>0){
         clus_phi_6 = hEtaPhiTracksLay6TPCITS->ProjectionY();
         clus_phi_6->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2366,6 +2335,7 @@ void FillITSsaBranches(TList * ITSsaList){
         clus_eta_6->Rebin(25); // 2 bins in phi, HS, HL
         for(Int_t etabin=0;etabin<2;etabin++){
             occ_eta_6[etabin]=clus_eta_6->GetBinContent(etabin+1)/clus_eta_6->GetEntries();
+        }
         }
     }
 
@@ -2861,6 +2831,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
     //
     
     TH1F *fHistPtTPCInAcc = (TH1F*)ITSList->FindObject("fHistPtTPCInAcc");
+    if(fHistPtTPCInAcc){
     if(fHistPtTPCInAcc->GetEntries()>0){
     TH1F *fHistPtITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI6InAcc");
     TH1F *fHistPtITSMI5InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI5InAcc");
@@ -2930,11 +2901,13 @@ void DrawMatching(TList *SPDList, TList *ITSList)
             spdFrac0->Draw("p");
             spdFrac1->Draw("p");
 //        }
+       } // if(fHistPtTPCInAcc->GetEntries()>0){
     } // if(fHistPtTPCInAcc){
     
     // TOFITS vs pt
     
     TH1F *fHistPtTPCInAccTOF = (TH1F*)ITSList->FindObject("fHistPtTPCInAccTOFbc0");
+    if(fHistPtTPCInAccTOF){
     if(fHistPtTPCInAccTOF->GetEntries()>0){
     TH1F *fHistPtITSMI6InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI6InAccTOFbc0");
     TH1F *fHistPtITSMI5InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI5InAccTOFbc0");
@@ -3004,6 +2977,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
             spdFrac0->Draw("p");
             spdFrac1->Draw("p");
 //        }
+        } //if(fHistPtTPCInAccTOF->GetEntries()>0)
     } // if(fHistPtTPCInAccTOF)
     
     if(fHistPtTPCInAcc){
@@ -3015,7 +2989,8 @@ void DrawMatching(TList *SPDList, TList *ITSList)
         // TPCITS vs phi
         
     TH1F *fHistPhiTPCInAcc = (TH1F*)ITSList->FindObject("fHistPhiTPCInAcc");
-    if(fHistPhiTPCInAcc->GetEntries()>0){
+    if(fHistPhiTPCInAcc){
+        if(fHistPhiTPCInAcc->GetEntries()>0){
         fHistPhiTPCInAcc->Rebin(2);
         TH1F *fHistPhiITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMI6InAcc");
         fHistPhiITSMI6InAcc->Rebin(2);
@@ -3187,13 +3162,15 @@ void DrawMatching(TList *SPDList, TList *ITSList)
         l2phi->AddEntry(spdFrac1phi,"Frac. active SPD1","p");
         l2phi->Draw();
         //        }
+        } // if(fHistPhiTPCInAcc->GetEntries()>0)
     } // if(fHistPhiTPCInAcc){
 
 
         // TPCITS vs eta
         
         TH1F *fHistEtaTPCInAcc = (TH1F*)ITSList->FindObject("fHistEtaTPCInAcc");
-        if(fHistEtaTPCInAcc->GetEntries()>0){
+        if(fHistEtaTPCInAcc){
+            if(fHistEtaTPCInAcc->GetEntries()>0){
             fHistEtaTPCInAcc->Rebin(2);
             TH1F *fHistEtaITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMI6InAcc");
             fHistEtaITSMI6InAcc->Rebin(2);
@@ -3369,8 +3346,9 @@ void DrawMatching(TList *SPDList, TList *ITSList)
             spdFrac0->Draw("p");
             spdFrac1->Draw("p");
             //        }
+            } // if(fHistEtaTPCInAcc->GetEntries()>0){
         } // if(fHistEtaTPCInAcc){
-        
+
         if(fHistEtaTPCInAcc){
 //            cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.pdf");
             cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.png");
