@@ -26,7 +26,7 @@
 #include <TLegend.h>
 #endif
 
-Int_t DrawPerformanceZDCQAMatch(const char* inFile){
+Int_t DrawPerformanceZDCQAMatch(TString inFile="trending.root"){
 
 // Draw control histograms and generate output pictures
 
@@ -47,17 +47,23 @@ gStyle->SetOptStat(0);
 gStyle->SetTitleSize(0.025);
 TH1::AddDirectory(kFALSE);
 
-TFile * fin = TFile::Open(inFile);
+TFile * fin = TFile::Open(inFile.Data());
+if (!fin){
+  Printf("File not found !!!");
+  return -1;
+}
 TTree * ttree = (TTree*) fin->Get("trending");  //in
+
 TTree * tree = new TTree("tree","tree");        //out (to be summed)
 
 if (!ttree){
   Printf("Invalid trending tree!!!!!!!!!!!!!!");
-  return 2;
+  return -2;
 }
 
-Int_t nRuns=ttree->GetEntries();
+Int_t nRuns = ttree->GetEntries();
 TList list;
+printf(" nRuns %d\n", nRuns);
 
 /*set graphic style*/
 gStyle->SetCanvasColor(kWhite);
@@ -79,7 +85,7 @@ gStyle->SetLabelOffset(0.03,"xyz");
 
 TString plotDir(".");
 
-legend = new TLegend(0.9,0.1,1.0,0.9);
+TLegend *legend = new TLegend(0.9,0.1,1.0,0.9);
 legend->SetFillColor(kWhite);
 
 Int_t runNumber=0;
@@ -140,6 +146,8 @@ ttree->SetBranchAddress("ZN_TDC_Sum_Err",&ZN_TDC_Sum_err);
 ttree->SetBranchAddress("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err);
 //ttree->SetBranchAddress("ZNC_TDC",&ZNC_TDC);
 //ttree->SetBranchAddress("ZNA_TDC",&ZNA_TDC);
+
+printf(" branch addresses set\n");
 
 TH1F *hznc = new TH1F("hznc","ZNC average signal",3,-1,1);
 hznc->GetXaxis()->SetRangeUser(-1.,1.);
@@ -267,7 +275,7 @@ hzna_TDC->SetMarkerStyle(20);
 hzna_TDC->SetMarkerColor(kRed);
 hzna_TDC->SetLineColor(kRed);
 
-char runlabel[10];
+char runlabel[40];
 
 for (Int_t irun=0;irun<nRuns;irun++){
   ttree->GetEntry(irun);
@@ -280,52 +288,58 @@ sprintf(runlabel,"%i",runNumber);
 //----------------------------------------------------------------------
 
 hZNCpmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZNCpmcUncalib"));
-//hZNCpmc->GetXaxis()->SetRangeUser(0.,2000);
+if(hZNCpmcUncalib){
 if(hZNCpmcUncalib->GetEntries()>0. ) hZNCpmcUncalib->Scale(1./hZNCpmcUncalib->GetEntries());
 hZNCpmcUncalib->SetLineColor(kRed);
 hZNCpmcUncalib->SetLineWidth(2);
 hZNCpmcUncalib->SetTitle("ZNC spectrum");
 hZNCpmcUncalib->SetXTitle("ZNC signal ");
+}
 
 hZNApmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZNApmcUncalib"));
-//hZNApmc->GetXaxis()->SetRangeUser(0.,2000);
+if(hZNApmcUncalib){
 if(hZNApmcUncalib->GetEntries()>0. ) hZNApmcUncalib->Scale(1./hZNApmcUncalib->GetEntries());
 hZNApmcUncalib->SetLineColor(kRed);
 hZNApmcUncalib->SetLineWidth(2);
 hZNApmcUncalib->SetTitle("ZNA spectrum");
 hZNApmcUncalib->SetXTitle("ZNA signal ");
+}
 
 hZPCpmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZPCpmcUncalib"));
-//hZPCpmc->GetXaxis()->SetRangeUser(0.,2000);
-if(hZPCpmcUncalib->GetEntries()>0. ) hZPCpmcUncalib->Scale(1./hZPCpmcUncalib->GetEntries());
+if(hZPCpmcUncalib){
+  if(hZPCpmcUncalib->GetEntries()>0. ) hZPCpmcUncalib->Scale(1./hZPCpmcUncalib->GetEntries());
 hZPCpmcUncalib->SetLineColor(kRed);
 hZPCpmcUncalib->SetLineWidth(2);
 hZPCpmcUncalib->SetTitle("ZPC spectrum");
 hZPCpmcUncalib->SetXTitle("ZPC signal ");
+}
 
 hZPApmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZPApmcUncalib"));
-//hZPApmc->GetXaxis()->SetRangeUser(0.,2000);
+if(hZPApmcUncalib){
 if(hZPApmcUncalib->GetEntries()>0. ) hZPApmcUncalib->Scale(1./hZPApmcUncalib->GetEntries());
 hZPApmcUncalib->SetLineColor(kRed);
 hZPApmcUncalib->SetLineWidth(2);
 hZPApmcUncalib->SetTitle("ZPA spectrum");
 hZPApmcUncalib->SetXTitle("ZPA signal ");
+}
 
 hZEM1 = dynamic_cast<TH1F*> (fin->Get("fhZEM1Spectrum"));
-//hZEM1->GetXaxis()->SetRangeUser(0.,2000);
+if(hZEM1){
 if(hZEM1->GetEntries()>0.) hZEM1->Scale(1./hZEM1->GetEntries());
 hZEM1->SetLineColor(kRed);
 hZEM1->SetLineWidth(2);
 hZEM1->SetTitle("ZEM1 spectrum");
 hZEM1->SetXTitle("ZEM1 signal (ADC ch.)");
+}
 
 hZEM2 = dynamic_cast<TH1F*> (fin->Get("fhZEM2Spectrum"));
-//hZEM2->GetXaxis()->SetRangeUser(0.,2000);
+if(hZEM2){
 if(hZEM2->GetEntries()>0.) hZEM2->Scale(1./hZEM2->GetEntries());
 hZEM2->SetLineColor(kRed);
 hZEM2->SetLineWidth(2);
 hZEM2->SetTitle("ZEM2 spectrum");
 hZEM2->SetXTitle("ZEM2 signal (ADC ch.)");
+}
 
 //----------------------------------------------------------------------
 //variables vs run
@@ -423,39 +437,46 @@ hzna_TDC->GetYaxis()->SetTitle("(ns)");
 //----------------------------------------------------------------------
 
 TCanvas* cZNC_Spectra_Uncal = new TCanvas("cZNC_Spectra_Uncal","cZNC_Spectra_Uncal",0,0,1200,900);
-gPad->SetLogy();
-hZNCpmcUncalib->Draw();
-cZNC_Spectra_Uncal->Print(Form("%s/cZNC_Spectra_Uncal.png",plotDir.Data()));
+if(hZNCpmcUncalib){
+  gPad->SetLogy();
+  hZNCpmcUncalib->Draw();
+  cZNC_Spectra_Uncal->Print(Form("%s/cZNC_Spectra_Uncal.png",plotDir.Data()));
+}
 
 TCanvas* cZNA_Spectra_Uncal = new TCanvas("cZNA_Spectra_Uncal","cZNA_Spectra_Uncal",0,0,1200,900);
+if(hZNApmcUncalib){
 gPad->SetLogy();
 hZNApmcUncalib->Draw();
 cZNA_Spectra_Uncal->Print(Form("%s/cZNA_Spectra_Uncal.png",plotDir.Data()));
+}
 
 TCanvas* cZPC_Spectra_Uncal = new TCanvas("cZPC_Spectra_Uncal","cZPC_Spectra_Uncal",0,0,1200,900);
+if(hZPCpmcUncalib){
 gPad->SetLogy();
 hZPCpmcUncalib->Draw();
 cZPC_Spectra_Uncal->Print(Form("%s/cZPC_Spectra_Uncal.png",plotDir.Data()));
+}
 
 TCanvas* cZPA_Spectra_Uncal = new TCanvas("cZPA_Spectra_Uncal","cZPA_Spectra_Uncal",0,0,1200,900);
+if(hZPApmcUncalib){
 gPad->SetLogy();
 hZPApmcUncalib->Draw();
 cZPA_Spectra_Uncal->Print(Form("%s/cZPA_Spectra_Uncal.png",plotDir.Data()));
+}
 
 TCanvas* cZEM1_Spectra = new TCanvas("cZEM1_Spectra","cZEM1_Spectra",0,0,1200,900);
+if(hZEM1){
 gPad->SetLogy();
 hZEM1->Draw();
 cZEM1_Spectra->Print(Form("%s/cZEM1_Spectra.png",plotDir.Data()));
+}
 
 TCanvas* cZEM2_Spectra = new TCanvas("cZEM2_Spectra","cZEM2_Spectra",0,0,1200,900);
+if(hZEM2){
 gPad->SetLogy();
 hZEM2->Draw();
 cZEM2_Spectra->Print(Form("%s/cZEM2_Spectra.png",plotDir.Data()));
-
-
-//---------------------------------------------------------------------------------------------------
-//variables
-//---------------------------------------------------------------------------------------------------
+}
 
 //---------------------------------------------------------------------------------------------------
 //means
@@ -533,6 +554,7 @@ cTimingDiff->Print(Form("%s/cTimingDiff.png",plotDir.Data()));
 //----------------------------------------------------------------------
 //out
 //----------------------------------------------------------------------
+printf(" preparing output tree\n");
 tree->Branch("run",&runNumber,"runNumber/I");
 tree->Branch("ZNC_mean_value",&ZNC_mean,"ZNC_mean/D");
 tree->Branch("ZNA_mean_value",&ZNA_mean,"ZNA_mean/D");
@@ -558,10 +580,10 @@ tree->Branch("ZN_TDC_Sum_Err",&ZN_TDC_Sum_err,"ZN_TDC_Sum_err/D");
 tree->Branch("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err,"ZN_TDC_Diff_err/D");
 tree->Fill();
 
-list.Add(cZNC_Spectra_Uncal);
-list.Add(cZNA_Spectra_Uncal);
-list.Add(cZPC_Spectra_Uncal);
-list.Add(cZPA_Spectra_Uncal);
+if(hZNCpmcUncalib) list.Add(cZNC_Spectra_Uncal);
+if(hZNApmcUncalib) list.Add(cZNA_Spectra_Uncal);
+if(hZPCpmcUncalib) list.Add(cZPC_Spectra_Uncal);
+if(hZPApmcUncalib) list.Add(cZPA_Spectra_Uncal);
 list.Add(cZEM1_Spectra);
 list.Add(cZEM2_Spectra);
 list.Add(cTimingSum);
