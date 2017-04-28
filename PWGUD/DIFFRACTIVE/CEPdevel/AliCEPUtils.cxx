@@ -37,12 +37,14 @@ AliCEPUtils::AliCEPUtils():
   , fTrackEtaMin()
   , fTrackEtaMax()
   , fTrackCutListPrim(0x0)
-  , fnV0dp(0)
 {
   
   // initialize the track cuts
   fTrackCutListPrim = new TList();
 	fTrackCutListPrim->SetOwner();
+  
+  // initialise the V0 counters
+  for (Int_t ii=0; ii<5; ii++) fnV0dp[ii] = 0;
   
 }
 
@@ -66,6 +68,7 @@ TH1F* AliCEPUtils::GetHistStatsFlow()
     AliCEPBase::kBinLastValue,0,AliCEPBase::kBinLastValue);
 	TAxis* axis = hist->GetXaxis();
 
+  printf("Preparing SatsFlow histogram\n");
 	axis->SetBinLabel(AliCEPBase::kBinTotalInput+1,   "total input");
 	axis->SetBinLabel(AliCEPBase::kBinGoodInput+1,    "good input");
 	axis->SetBinLabel(AliCEPBase::kBinMCEvent+1,      "MC");
@@ -165,6 +168,7 @@ TList* AliCEPUtils::GetSPDPileupQAHists()
   lhh->SetOwner();
   
   // define the histograms and and add them to the list lhh
+  printf("Preparing SPDVtxAnalysis histograms\n");
   TH1F* fhh01 = new TH1F("nContr","nContr",200,0,200);
   lhh->Add(fhh01);
   
@@ -223,6 +227,7 @@ TList* AliCEPUtils::GetnClunTraQAHists()
   lhh->SetOwner();
   
   // define the histograms and and add them to the list lhh
+  printf("Preparing SPDClusterVsTrackletBGAnalysis histograms\n");
   TH1F* fhh01 = new TH1F("nClusters[0]","nClusters[0]",200,0,200);
   lhh->Add(fhh01);
   TH1F* fhh02 = new TH1F("nClusters[1]","nClusters[1]",200,0,200);
@@ -249,6 +254,7 @@ TList* AliCEPUtils::GetVtxQAHists()
   lhh->SetOwner();
   
   // define the histograms and and add them to the list lhh
+  printf("Preparing VtxAnalysis histograms\n");
   TH1F* fhh01 = new TH1F("SPDVtxDisp","SPDVtxDisp",200,0.,0.5);
   lhh->Add(fhh01);
   TH1F* fhh02 = new TH1F("SPDVtxZRes","SPDVtxZRes",200,0.,0.5);
@@ -273,18 +279,33 @@ TList* AliCEPUtils::GetV0QAHists()
   lhh->SetOwner();
   
   // define histograms and graphs and add them to the list lhh
+  printf("Preparing V0Analysis histograms\n");
   TH1F* fhh01 = new TH1F("V0pointang","V0pointang",100,0.95,1.0);
   lhh->Add(fhh01);
   TH1F* fhh02 = new TH1F("V0daughDCA","V0daughDCA",100,0.0,0.1);
   lhh->Add(fhh02);
   TH1F* fhh03 = new TH1F("V0decLen","V0decLen",300,0.0,30.);
   lhh->Add(fhh03);
-  TH1F* fhh04 = new TH1F("V0mass","V0mass",100,0.0,5.);
+  TH1F* fhh04 = new TH1F("d","d",300,0.0,30.);
   lhh->Add(fhh04);
+  TH1F* fhh05 = new TH1F("V0mass","V0mass",100,0.0,5.);
+  lhh->Add(fhh05);
 
   TGraph* fgr01 = new TGraph();
-  fgr01->SetName("Armenteros");
+  fgr01->SetName("Armenteros full");
   lhh->Add(fgr01);
+  TGraph* fgr02 = new TGraph();
+  fgr02->SetName("Armenteros cut1");
+  lhh->Add(fgr02);
+  TGraph* fgr03 = new TGraph();
+  fgr03->SetName("Armenteros cut2");
+  lhh->Add(fgr03);
+  TGraph* fgr04 = new TGraph();
+  fgr04->SetName("Armenteros cut3");
+  lhh->Add(fgr04);
+  TGraph* fgr05 = new TGraph();
+  fgr05->SetName("Armenteros cut4");
+  lhh->Add(fgr05);
   
   return lhh;
   
@@ -609,12 +630,13 @@ void AliCEPUtils::V0Analysis (
   // initialisations
   AliESDv0 *V0;
   AliESDtrack *trackPos, *trackNeg;
-  Bool_t goodPair = kFALSE;
   Double_t pos0[3], pos1[3];
   Double_t d, cosTh, pTArm, alphaArm;
   Double_t mom1[3], mom2[3];
-  TVector3 p0,pV0;
+  Double_t pV0;
+  Bool_t goodPair = kFALSE;
 
+  TGraph* gr = NULL;
   Double_t pointingAngle;
   Double_t daughtersDCA;
   Double_t decayLength;
@@ -639,45 +661,73 @@ void AliCEPUtils::V0Analysis (
     if (!trackPos || !trackNeg) continue;
 
     // check if both daughter tracks pass standard ITSTPC cuts
-    goodPair = kFALSE;
-    if (cut->AcceptTrack(trackPos) && cut->AcceptTrack(trackNeg))
-      goodPair = kTRUE;
-    if (!goodPair) continue;
+    // the standard cuts can be constructed with selPrimaries =kTRUE/kFALSE,
+    // if selPrimaries=kTRUE then the V0 tracks are eliminated
+    // therefore one needs to use selPrimaries=kTRUE
+    // modify the parameter in the respective call in AliCEPUtils::InitTrackCuts
+    // or comment the next line
+    goodPair = cut->AcceptTrack(trackPos) && cut->AcceptTrack(trackNeg);
     
-    /*
-    // check distance to main vertex and pointing direction of V0
+    // check distance to main vertex
     V0->XvYvZv(pos1);
     d = sqrt(
       (pos0[0]-pos1[0])*(pos0[0]-pos1[0])+
       (pos0[1]-pos1[1])*(pos0[1]-pos1[1])+
       (pos0[2]-pos1[2])*(pos0[2]-pos1[2]) );
-    // printf("d = %f\n",d);
-    */
     
     // compute further cut parameters and fill them into the histograms
+    pV0           = V0->P();
     pointingAngle = V0->GetV0CosineOfPointingAngle();
     daughtersDCA  = V0->GetDcaV0Daughters();
     decayLength   = V0->GetRr();
     v0mass        = V0->GetEffMass(4,2);  // assume proton+pion
 
-    // cuts on V0 topological quantities
-    if ( pointingAngle < 0.99 || daughtersDCA > 0.005 || decayLength < 6.0 ) continue;
-
     ((TH1F*)lhh->At(0))->Fill(pointingAngle);
     ((TH1F*)lhh->At(1))->Fill(daughtersDCA);
     ((TH1F*)lhh->At(2))->Fill(decayLength);
-    ((TH1F*)lhh->At(3))->Fill(v0mass);
-    printf("%f %f %f %f\n",pointingAngle,daughtersDCA,decayLength,v0mass);
-    
+    ((TH1F*)lhh->At(3))->Fill(d);
+    ((TH1F*)lhh->At(4))->Fill(v0mass);
+    printf("%f %f %f %f %f %f\n",
+      pV0,pointingAngle,daughtersDCA,decayLength,d,v0mass);
+
     // update armenteros alpha vs pT histogram
     pTArm    = V0->PtArmV0();
     alphaArm = V0->AlphaV0();
+    printf("V0[%i] alpha/pT = %f/%f\n",fnV0dp[0],alphaArm,pTArm);
     
-    TGraph* gr = (TGraph*)lhh->At(4);
-    gr->Expand(fnV0dp+1,10);
-    gr->SetPoint(fnV0dp,V0->AlphaV0(),V0->PtArmV0());
-    fnV0dp++;
-    printf("V0[%i] alpha/pT = %f/%f\n",fnV0dp,alphaArm,pTArm);
+    // not cuts
+    gr = (TGraph*)lhh->At(5);
+    gr->Expand(fnV0dp[0]+1,10);
+    gr->SetPoint(fnV0dp[0],V0->AlphaV0(),V0->PtArmV0());
+    fnV0dp[0]++;
+    
+    // cuts 1
+    if ( pointingAngle < 0.99 ) continue;
+    gr = (TGraph*)lhh->At(6);
+    gr->Expand(fnV0dp[1]+1,10);
+    gr->SetPoint(fnV0dp[1],V0->AlphaV0(),V0->PtArmV0());
+    fnV0dp[1]++;
+    
+    // cuts 2
+    if ( daughtersDCA > 0.005 ) continue;
+    gr = (TGraph*)lhh->At(7);
+    gr->Expand(fnV0dp[2]+1,10);
+    gr->SetPoint(fnV0dp[2],V0->AlphaV0(),V0->PtArmV0());
+    fnV0dp[2]++;
+    
+    // cuts 3
+    if ( d < 0.2 ) continue;
+    gr = (TGraph*)lhh->At(8);
+    gr->Expand(fnV0dp[3]+1,10);
+    gr->SetPoint(fnV0dp[3],V0->AlphaV0(),V0->PtArmV0());
+    fnV0dp[3]++;
+    
+    // cuts 4
+    if ( !goodPair ) continue;
+    gr = (TGraph*)lhh->At(9);
+    gr->Expand(fnV0dp[4]+1,10);
+    gr->SetPoint(fnV0dp[4],V0->AlphaV0(),V0->PtArmV0());
+    fnV0dp[4]++;
     
   }
   
@@ -1016,9 +1066,9 @@ Int_t AliCEPUtils::GetCEPTracks (
   // possible return values:
   //  >0: number of selected CEP tracks
   //  -1: tracks with !kTTTPCScluster
-  //  -2: more tracklets or ITSpure tracks than selected tracks
+  //  -4: more tracklets or ITSpure tracks than selected tracks
   //  -3: one of the selected tracks has missed a further tests
-  //  -4: not all fired chips are associated with a selected track
+  //  -5: not all fired chips are associated with a selected track
   
   // initialisations
   UInt_t mask, pattern;
@@ -1340,11 +1390,15 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
   Double_t maxchi2perTPCcl = 4.;
   Double_t maxdcazITSTPC = 2.0;
   
+  // with selPrimaries=kTRUE tracks associated with V0s are suppressed
+  // to study V0s this needs be set to kFALSE
+  Bool_t  selPrimaries = kFALSE;
+  
   // Run2
   if (IsRun1) {
 
     // ITS+TPC
-    AliESDtrackCuts *fcutITSTPC_P = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, clusterCut);
+    AliESDtrackCuts *fcutITSTPC_P = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selPrimaries,clusterCut);
     
     fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 		if (clusterCut == 1) {
@@ -1356,7 +1410,7 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 		AddTrackCut(fcutITSTPC_P);
 		
     // ITS
-    AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
+    AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(selPrimaries, 0);
 		fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 		fcutITSSA_P->SetName("ITSSA");
 		AddTrackCut(fcutITSSA_P);
@@ -1373,14 +1427,17 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 		fcutITSTPC_P -> SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
 		fcutITSTPC_P -> SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
 		fcutITSTPC_P -> SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
-		fcutITSTPC_P -> SetMaxChi2TPCConstrainedGlobal(36);
     
 		fcutITSTPC_P -> SetRequireITSRefit(kTRUE);
 		fcutITSTPC_P -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
 		fcutITSTPC_P -> SetMaxChi2PerClusterITS(36);
     
-		fcutITSTPC_P -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
-		fcutITSTPC_P -> SetMaxDCAToVertexZ(maxdcazITSTPC);
+    if (selPrimaries) {
+		  fcutITSTPC_P -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
+		  fcutITSTPC_P -> SetMaxChi2TPCConstrainedGlobal(36);
+    }
+		
+    fcutITSTPC_P -> SetMaxDCAToVertexZ(maxdcazITSTPC);
     
 		fcutITSTPC_P -> SetEtaRange(-2.0,2.0);
 		fcutITSTPC_P -> SetPtRange(0.15);

@@ -346,7 +346,6 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   // Main loop
 
   // Called for each event
-  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(InputEvent());
   AliVEvent* event = dynamic_cast<AliVEvent*>(InputEvent()); 
   
   fQAHist->Fill("Events_all",1);
@@ -357,7 +356,7 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   }
 
   // check event cuts
-  if( IsEventAccepted(esdevent) == 0){ 
+  if( IsEventAccepted(event) == 0){ 
     return;
   }
 
@@ -398,6 +397,8 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     fTree->Fill();
     fQAHist->Fill("Events_track_selected",1);
   }
+
+  PostData(1, fList);
 }
 
 //~ //________________________________________________________________________
@@ -427,22 +428,26 @@ void AliAnalysisTaskMLTreeMaker::Terminate(Option_t *) {
 
 //________________________________________________________________________
 
-Double_t AliAnalysisTaskMLTreeMaker::IsEventAccepted(AliESDEvent *event){
+Double_t AliAnalysisTaskMLTreeMaker::IsEventAccepted(AliVEvent *event){
 
-  
-    if (TMath::Abs(event->GetVertex()->GetZ()) < 10  &&  event->GetPrimaryVertexSPD() ){
-      if (event->GetPrimaryVertexSPD()->GetNContributors() >0) return 1;
-      else return 0;}
-    return 0;
+  if(event->GetPrimaryVertexSPD()){
+    if (TMath::Abs(event->GetPrimaryVertexSPD()->GetZ()) < 10){
+      if (event->GetPrimaryVertexSPD()->GetNContributors() > 0)
+	return 1;
+    }
+  }
+  return 0;
 }
 
 
 //________________________________________________________________________
 
 Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t gCentrality){
+  
   ev++;
   Int_t acceptedTracks = 0;
-
+  Bool_t isAOD         = kFALSE;
+  
   eta.clear();
   phi.clear();
   pt.clear(); 
@@ -487,10 +492,20 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   AliMCParticle* mcMTrack;
   
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
-      AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(event->GetTrack(iTracks));
-      if (!esdTrack) {
+      AliVTrack* track = dynamic_cast<AliVTrack *>(event->GetTrack(iTracks));
+      if (!track) {
 	      AliError(Form("Could not receive ESD track %d", iTracks));
 	      continue;
+      }
+
+      // check for the first track if AOD or ESD track
+      if (iTracks==0){
+	if( ((TString)track->ClassName()).Contains("AliAODTrack") ){
+	  isAOD = kTRUE;
+	}
+	else{
+	  isAOD = kFALSE;
+	}
       }
       
       fQAHist->Fill("After ESD check, bef. MC",1); 
@@ -507,7 +522,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
           Rej=kFALSE;
 
-                mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
+                mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
                 temppdg = mcMTrack->PdgCode(); 
                 
                 if(!(mcMTrack->GetMother() < 0)){       //get direct mother
@@ -532,31 +547,37 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
 
       fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
-      
-      
-      if(!fESDTrackCuts->AcceptTrack(esdTrack))   continue;
-      
+
+      // track cuts have to be done separately
+      if(isAOD){
+	if(!((AliAODTrack*)track)->TestFilterBit(fFilterBit))
+	  continue;
+      }
+      else{
+       	if(!fESDTrackCuts->AcceptTrack((AliESDtrack*)track))
+	  continue;
+      }
       
 //      Alberto Cut on TPC signal N (number of TPC clusters used for dE/dx)
-      if(cutonTPCsignalN && esdTrack->GetTPCsignalN()<50) continue; 
+      if(cutonTPCsignalN && track->GetTPCsignalN()<50) continue; 
       
       
       // Kinematic cuts
-      Double_t pttemp = esdTrack->Pt();
-      Double_t etatemp = esdTrack->Eta();
+      Double_t pttemp = track->Pt();
+      Double_t etatemp = track->Eta();
       
       if( pttemp > fPtMax || pttemp < fPtMin ) continue;
       if( etatemp > fEtaMax || etatemp < fEtaMin ) continue;
  
-      Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 0);
-      Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 0);
-      Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 0);
+      Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 0);
+      Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 0);
+      Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 0);
       
       if(fUsePionPIDTPC){
-        if (fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2)  < fPSigTPCMax){ continue;} //exclude pions in TPC
+        if (fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2)  < fPSigTPCMax){ continue;} //exclude pions in TPC
       }
 
-      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,esdTrack)==AliPIDResponse::kDetPidOk && (tempEsigTOF < fESigTOFMin || tempEsigTOF > fESigTOFMax)) continue;  
+      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track)==AliPIDResponse::kDetPidOk && (tempEsigTOF < fESigTOFMin || tempEsigTOF > fESigTOFMax)) continue;  
       if (tempEsigITS < fESigITSMin || tempEsigITS > fESigITSMax) continue;  
       if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) continue;
       
@@ -566,7 +587,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 //      printf("Found %d with Mother %d originated from %d generated by %s  \n",temppdg,tempmpdg,mcMTrack->PdgCode(),(mcEvent->GetGenerator(mcTrackIndex)).Data()); 
       //Fill Tree with MC data
       if(hasMC){ 
-        AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
+        AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
         pdg.push_back( mcTrack->PdgCode());
         if(Rej) enh.push_back(1);
@@ -609,49 +630,58 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       EsigITS.push_back(tempEsigITS);
       EsigTOF.push_back(tempEsigTOF);
       if(fPionSigmas){
-        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2);
-        Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 2);
-        Double_t tempPsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 2);
+        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
+        Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 2);
+        Double_t tempPsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 2);
         PsigTPC.push_back(tempPsigTPC);
         PsigITS.push_back(tempPsigITS);
         PsigTOF.push_back(tempPsigTOF);
       }
       if(fKaonSigmas){
-        Double_t tempKsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 3);
-        Double_t tempKsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 3);
-        Double_t tempKsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 3);
+        Double_t tempKsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 3);
+        Double_t tempKsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 3);
+        Double_t tempKsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 3);
         KsigTPC.push_back(tempKsigTPC);
         KsigITS.push_back(tempKsigITS);
         KsigTOF.push_back(tempKsigTOF);
       }
       eta.push_back(etatemp);
-      phi.push_back(esdTrack->Phi());
+      phi.push_back(track->Phi());
       pt.push_back(pttemp);
-      charge.push_back(esdTrack->Charge());   
+      charge.push_back(track->Charge());   
 
-      NCrossedRowsTPC.push_back(esdTrack->GetTPCCrossedRows());
-      NClustersTPC.push_back(esdTrack->GetNumberOfTPCClusters());
-      HasSPDfirstHit.push_back(esdTrack->HasPointOnITSLayer(0)); 
-      RatioCrossedRowsFindableClusters.push_back((Double_t) esdTrack->GetTPCCrossedRows()/ (Double_t) esdTrack->GetTPCNclsF());       
-      NTPCSignal.push_back(esdTrack->GetTPCsignalN());
+      NCrossedRowsTPC.push_back(track->GetTPCCrossedRows());
+      NClustersTPC.push_back(track->GetNumberOfTPCClusters());
+      HasSPDfirstHit.push_back(track->HasPointOnITSLayer(0)); 
+      RatioCrossedRowsFindableClusters.push_back((Double_t) track->GetTPCCrossedRows()/ (Double_t) track->GetTPCNclsF());       
+      NTPCSignal.push_back(track->GetTPCsignalN());
       
        //Get DCA position
+      if(isAOD){
+	Double_t tempdcaD[2] = {0.,0.};
+      	GetDCA(event,(AliAODTrack*)track,tempdcaD,0);
+	dcar.push_back(tempdcaD[0]);
+	dcaz.push_back(tempdcaD[1]);
+      }
+      else{
+	Float_t tempdca[2] = {0.,0.};
+      	track->GetImpactParameters( &tempdca[0], &tempdca[1]); //GetImpactParameter is also used in AliESDtrackCuts.cxx to cut on DCA to vertex
+	dcar.push_back(tempdca[0]);
+	dcaz.push_back(tempdca[1]);
+      }
+      
       //cout<<num<<"  track:  "<<iTracks<<"  "<<" pt "<<pttemp;
-      Float_t tempdca[2] = {0};
-       esdTrack->GetImpactParameters( &tempdca[0], &tempdca[1]); //GetImpactParameter is also used in AliESDtrackCuts.cxx to cut on DCA to verte
+      //cout<<"  dcaxy: "<<tempdca[0]<<" "<<tempdca[1]<<" "<<endl;  
 
-//       cout<<"  dcaxy: "<<tempdca[0]<<endl;  
+ 
 
-      dcar.push_back(tempdca[0]);
-      dcaz.push_back(tempdca[1]);
-
-      Int_t tempnits = esdTrack->GetNcls(0);    // 0 = ITS 
+      Int_t tempnits = track->GetNcls(0);    // 0 = ITS 
       nITS.push_back(tempnits);        
       Double_t nitssharedtemp = 0.;
  
       if(tempnits){
         for(int d = 0; d<6;d++){
-          nitssharedtemp+= (Double_t) esdTrack->HasSharedPointOnITSLayer(d);
+          nitssharedtemp+= (Double_t) track->HasSharedPointOnITSLayer(d);
         }
 //              if(nitssharedtemp) cout<<"frac: "<<nitssharedtemp<<endl;
         nitssharedtemp/=tempnits;
@@ -659,23 +689,28 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
       nITSshared.push_back(nitssharedtemp);
       
-      chi2ITS.push_back(esdTrack->GetITSchi2());
-      chi2TPC.push_back(esdTrack->GetTPCchi2());
+      chi2ITS.push_back(track->GetITSchi2());
+      chi2TPC.push_back(track->GetTPCchi2());//this variable will be always 0 for AODs (not yet in)
       
       fCutMaxChi2TPCConstrainedVsGlobalVertexType = fESDTrackCuts->kVertexTracks | fESDTrackCuts->kVertexSPD;
 
-      const AliESDVertex* vertex = 0;
+      const AliVVertex* vertex = 0;
       if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexTracks){
-        vertex = esdTrack->GetESDEvent()->GetPrimaryVertexTracks();}
+        vertex = track->GetEvent()->GetPrimaryVertexTracks();}
       
       if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexSPD){
-	      vertex = esdTrack->GetESDEvent()->GetPrimaryVertexSPD();}
+	      vertex = track->GetEvent()->GetPrimaryVertexSPD();}
 	
       if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexTPC){
-	      vertex = esdTrack->GetESDEvent()->GetPrimaryVertexTPC();}
+	      vertex = track->GetEvent()->GetPrimaryVertexTPC();}
 
+      // golden chi2 has to be done separately
       if (vertex->GetStatus()){
-        chi2GlobalvsTPC.push_back(esdTrack->GetChi2TPCConstrainedVsGlobal(vertex));}
+	if(isAOD)
+	  chi2GlobalvsTPC.push_back(((AliAODTrack*)track)->GetChi2TPCConstrainedVsGlobal());
+	else
+	  chi2GlobalvsTPC.push_back(((AliESDtrack*)track)->GetChi2TPCConstrainedVsGlobal((AliESDVertex*)vertex));
+      }
  
       // count tracks
       acceptedTracks++;
@@ -685,3 +720,35 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   return acceptedTracks;  
 }
 
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0)
+// this is a copy of the AliDielectronVarManager
+{
+  if(track->TestBit(AliAODTrack::kIsDCA)){
+    d0z0[0]=track->DCA();
+    d0z0[1]=track->ZAtDCA();
+    // the covariance matrix is not stored in case of AliAODTrack::kIsDCA
+    return kTRUE;
+  }
+
+  Bool_t ok=kFALSE;
+  if(event) {
+    AliExternalTrackParam etp; etp.CopyFromVTrack(track);
+
+    Float_t xstart = etp.GetX();
+    if(xstart>3.) {
+      d0z0[0]=-999.;
+      d0z0[1]=-999.;
+      return kFALSE;
+    }
+
+    AliAODVertex *vtx =(AliAODVertex*)(event->GetPrimaryVertex());
+    Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
+    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+  }
+  if(!ok){
+    d0z0[0]=-999.;
+    d0z0[1]=-999.;
+  }
+  return ok;
+}

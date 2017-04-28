@@ -269,7 +269,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
    Form("Number of tracks per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
    nmultbin,multmin,multmax, nptcuts,0,nptcuts); 
   fhNTracks->SetXTitle("# of tracks");
-  fhNTracks->SetYTitle("#it{p}_{T} > Y GeV/#it{c}");
+  fhNTracks->SetYTitle("#it{p}_{min, T} GeV/#it{c}");
   for(Int_t icut = 0; icut<nptcuts; icut++)
     fhNTracks->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
   outputContainer->Add(fhNTracks);
@@ -279,7 +279,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
    Form("#Sigma #it{p}_{T} per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
    nsumbin,summin,summax, nptcuts,0,nptcuts); 
   fhSumPtTracks->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-  fhSumPtTracks->SetYTitle("#it{p}_{T} > Y GeV/#it{c}");
+  fhSumPtTracks->SetYTitle("#it{p}_{min, T} GeV/#it{c}");
   for(Int_t icut = 0; icut<nptcuts; icut++)
     fhSumPtTracks->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
   outputContainer->Add(fhSumPtTracks);
@@ -1419,8 +1419,12 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     {
       for(Int_t icut = 0; icut < GetReader()->GetTrackMultiplicityNPtCut(); icut++)
       {
-        fhPtTrackNTracks    [icut]->Fill(pt, GetReader()->GetTrackMultiplicity(icut), GetEventWeight()) ;
-        fhPtTrackSumPtTracks[icut]->Fill(pt, GetReader()->GetTrackSumPt       (icut), GetEventWeight()) ;
+        fhPtTrackNTracks[icut]->Fill(pt, GetReader()->GetTrackMultiplicity(icut), GetEventWeight()) ;
+        
+        // discount the "trigger" pT from the sum pT if not cutted already
+        Float_t shift = pt;
+        if ( pt > GetReader()->GetTrackMultiplicityPtCut(icut) ) shift = 0;
+        fhPtTrackSumPtTracks[icut]->Fill(pt, GetReader()->GetTrackSumPt(icut)-shift, GetEventWeight()) ; 
       }
     }
     

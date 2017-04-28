@@ -406,16 +406,18 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   
   TH2F* hPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefPion");
   TH2F* hPtResidVsPtTPCselITSrefKaon=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefKaon");
-  TH2F* hPtResidVsPtTPCselITSrefProton=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefProton");
-  hPtResidVsPtTPCselITSrefPion->SetStats(0);
-  hPtResidVsPtTPCselITSrefKaon->SetStats(0);
-  hPtResidVsPtTPCselITSrefProton->SetStats(0);
-  hPtResidVsPtTPCselITSrefPion->GetYaxis()->SetTitleOffset(1.5);
-  hPtResidVsPtTPCselITSrefKaon->GetYaxis()->SetTitleOffset(1.5);
-  hPtResidVsPtTPCselITSrefProton->GetYaxis()->SetTitleOffset(1.5);
-  hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetTitleOffset(1.1);
-  hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetTitleOffset(1.1);
-  hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetTitleOffset(1.1);
+  TH2F* hPtResidVsPtTPCselITSrefProton=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefProton");  
+  if(hPtResidVsPtTPCselITSrefPion){
+    hPtResidVsPtTPCselITSrefPion->SetStats(0);
+    hPtResidVsPtTPCselITSrefKaon->SetStats(0);
+    hPtResidVsPtTPCselITSrefProton->SetStats(0);
+    hPtResidVsPtTPCselITSrefPion->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefKaon->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefProton->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetTitleOffset(1.1);
+  }
 
   TGraphErrors* gMeanPi=new TGraphErrors(0);
   TGraphErrors* gMeanK=new TGraphErrors(0);
@@ -445,7 +447,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gRelK->SetTitle("");
   gRelProt->SetTitle("");
 
-  if(hPtResidVsPtTPCselITSrefPion->Integral()>0){
+  if(hPtResidVsPtTPCselITSrefPion && hPtResidVsPtTPCselITSrefPion->Integral()>0){
     FillMeanAndRms(hPtResidVsPtTPCselITSrefPion,gMeanPi,gRmsPi,gRelPi);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefKaon,gMeanK,gRmsK,gRelK);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefProton,gMeanProt,gRmsProt,gRelProt);

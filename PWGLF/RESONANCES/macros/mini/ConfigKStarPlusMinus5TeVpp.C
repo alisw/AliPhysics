@@ -70,7 +70,7 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    esdTrackCuts->SetRequireTPCRefit(); // Standard
    esdTrackCuts->SetAcceptKinkDaughters(0); // Standard
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
-   esdTrackCuts->SetMaxChi2PerClusterTPC(4.);
+   //esdTrackCuts->SetMaxChi2PerClusterTPC(4.); //not standard Cut 
    esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); // 0.06 cm Standard   
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
    //
@@ -80,12 +80,12 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
    cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s  5sigma // Standard
    cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);// 1.0 sigma
-   cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S 
+   //cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S not in the standard Cut 
    cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
    cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
    cutK0s->SetMaxRapidity(0.5);
    cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
-   //cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
+   cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
    cutK0s->SetSwitch(Switch);    
    cutK0s->SetfLife(pLife); 
    cutK0s->SetfLowRadius(radiuslow); 

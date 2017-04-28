@@ -578,10 +578,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             cout<<"Done! MC..."<<flush;
             lEvalMe = fSelection->GetEstimator(iEst)->GetDefinition();
             //Ignore fired condition ONLY in MC
-            lEvalMe.ReplaceAll("fZnaFired", 1);
-            lEvalMe.ReplaceAll("fZncFired", 1);
-            lEvalMe.ReplaceAll("fZpaFired", 1);
-            lEvalMe.ReplaceAll("fZpcFired", 1);
+            lEvalMe.ReplaceAll("fZnaFired", "1");
+            lEvalMe.ReplaceAll("fZncFired", "1");
+            lEvalMe.ReplaceAll("fZpaFired", "1");
+            lEvalMe.ReplaceAll("fZpcFired", "1");
             lEvalMe.Append(Form(":fnTracklets>>l2dTrackletVsEstimatorMC_%i_%s",lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()));
             sTreeMC[iRun] -> Draw( lEvalMe.Data() , "", "goff" );
             cout<<"Done!"<<endl;
@@ -718,10 +718,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             TString lTempDef;
             for(Int_t iEst=0; iEst<lNEstimators; iEst++){
                 lTempDef = fsels->GetEstimator( iEst )->GetDefinition();
-                lTempDef.ReplaceAll("fZnaFired", 1);
-                lTempDef.ReplaceAll("fZncFired", 1);
-                lTempDef.ReplaceAll("fZpaFired", 1);
-                lTempDef.ReplaceAll("fZpcFired", 1);
+                lTempDef.ReplaceAll("fZnaFired", "1");
+                lTempDef.ReplaceAll("fZncFired", "1");
+                lTempDef.ReplaceAll("fZpaFired", "1");
+                lTempDef.ReplaceAll("fZpcFired", "1");
                 lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
                 lTempDef.Append(")"); //don't forget parentheses...
                 fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
@@ -765,10 +765,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                     lTempDef.Append(")"); //don't forget parentheses...
                     
                     //if ZxxFired included in the estimator, ignore it
-                    lTempDef.ReplaceAll("fZnaFired", 1);
-                    lTempDef.ReplaceAll("fZncFired", 1);
-                    lTempDef.ReplaceAll("fZpaFired", 1);
-                    lTempDef.ReplaceAll("fZpcFired", 1);
+                    lTempDef.ReplaceAll("fZnaFired", "1");
+                    lTempDef.ReplaceAll("fZncFired", "1");
+                    lTempDef.ReplaceAll("fZpaFired", "1");
+                    lTempDef.ReplaceAll("fZpcFired", "1");
                     
                     fselsdef->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
                 }

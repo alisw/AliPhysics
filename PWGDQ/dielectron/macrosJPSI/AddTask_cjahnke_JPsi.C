@@ -162,6 +162,9 @@ if(!isMC){
 		task->SetTriggerMask(AliVEvent::kHighMultV0);
 	}
 	
+	if(trigger_index == 100){
+		task->SetTriggerMask(AliVEvent::kINT7);
+	}
 	
 	//use this line for data, otherwise the physics selection is ignored by my task...
 	task->UsePhysicsSelection();
