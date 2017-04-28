@@ -854,6 +854,13 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fEtaCutElectronBKLSMainSources_WithMotherW = new TH1F("fEtaCutElectronBKLSMainSources_WithMotherW", "", 110,0.5,6);
         fEtaCutElectronBKLSMainSources_WithMotherW_NW = new TH1F("fEtaCutElectronBKLSMainSources_WithMotherW_NW", "", 110,0.5,6);
         
+        fElectronBKGNoEnhTotalNumber = new TH1F("fElectronBKGNoEnhTotalNumber", "", 110,0.5,6);
+        fElectronBKGNoEnhULS = new TH1F("fElectronBKGNoEnhULS", "", 110,0.5,6);
+        fElectronBKGNoEnhLS = new TH1F("fElectronBKGNoEnhLS", "", 110,0.5,6);
+        
+        fOutputList->Add(fElectronBKGNoEnhTotalNumber);
+        fOutputList->Add(fElectronBKGNoEnhULS);
+        fOutputList->Add(fElectronBKGNoEnhLS);
         
         fOutputList->Add(fEtaCutElectronBKULSMainSources_NW);
         fOutputList->Add(fEtaCutElectronBKLSMainSources_NW);
@@ -2802,8 +2809,9 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
     //Calculate using only the NON-enhanced sample
     if ( (Type == kNoCoktail) || (Type == kHijing) )
     {
+        
         AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
-        if (MCParticle->GetMother())
+        if (MCParticle->GetMother()>=0)
         {
             AliAODMCParticle* MCMother = (AliAODMCParticle*) fMCarray->At(MCParticle->GetMother());
             Int_t MotherPDGAfterReco = TMath::Abs(MCMother->GetPdgCode());
