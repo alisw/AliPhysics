@@ -1392,7 +1392,7 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
   
   // with selPrimaries=kTRUE tracks associated with V0s are suppressed
   // to study V0s this needs be set to kFALSE
-  Bool_t  selPrimaries = kTRUE;
+  Bool_t  selPrimaries = kFALSE;
   
   // Run2
   if (IsRun1) {
