@@ -1480,7 +1480,9 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
       if (TMath::Abs(DCAxy)>fMaxDCAxyAOD) pass=kFALSE;
     }
     if (fCutDCAToVertexXYPtDepAOD) {
-      Double_t MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
+      Double_t MaxDCAPtDep = 2.4;
+      if (fAODFilterBit!=128) MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
+      else MaxDCAPtDep = 0.5+0.5/pow(track->Pt(),0.7);
       if (TMath::Abs(DCAxy)>MaxDCAPtDep) pass=kFALSE;
     }
     if (fCutDCAToVertexZAOD) {
