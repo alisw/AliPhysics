@@ -818,7 +818,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     trackstat = AliCEPBase::kTTBaseLine;
     
     // TOFBunchCrossing
-    if (track->GetTOFBunchCrossing() ==0) ;
+    if (track->GetTOFBunchCrossing() == 0) ;
       trackstat |=  AliCEPBase::kTTTOFBunchCrossing;
 
     // number of TPC shared clusters <= fTPCnclsS(3)    
@@ -1419,7 +1419,6 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
   
     // ITS+TPC
 		AliESDtrackCuts *fcutITSTPC_P = new AliESDtrackCuts;
-    //fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 		fcutITSTPC_P -> SetRequireTPCRefit(kTRUE);
 		fcutITSTPC_P -> SetAcceptKinkDaughters(kFALSE);
 
@@ -1430,15 +1429,14 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
     
 		fcutITSTPC_P -> SetRequireITSRefit(kTRUE);
 		fcutITSTPC_P -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-		fcutITSTPC_P -> SetMaxChi2PerClusterITS(36);
     
     if (selPrimaries) {
 		  fcutITSTPC_P -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
 		  fcutITSTPC_P -> SetMaxChi2TPCConstrainedGlobal(36);
     }
 		
+		fcutITSTPC_P -> SetMaxChi2PerClusterITS(36);
     fcutITSTPC_P -> SetMaxDCAToVertexZ(maxdcazITSTPC);
-    
 		fcutITSTPC_P -> SetEtaRange(-2.0,2.0);
 		fcutITSTPC_P -> SetPtRange(0.15);
     
