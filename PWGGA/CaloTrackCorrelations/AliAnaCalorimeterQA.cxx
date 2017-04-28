@@ -1257,8 +1257,11 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     }
   }
   
-  Float_t m02    = clus->GetM02();
-  Float_t m20    = clus->GetM20();
+  Float_t m02   = clus->GetM02();
+  Float_t m20   = clus->GetM20();
+  Float_t lamR  = 0;
+  if ( m02 > 0.001 ) lamR = m20/m02;
+  
   Int_t   absIdList[ncells]; 
   Float_t maxEList [ncells];
   Int_t nlm  = GetCaloUtils()->GetNumberOfLocalMaxima(clus, cells, absIdList, maxEList) ; 
@@ -1543,6 +1546,13 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   
   // If only one relevant cell, it makes no sense to continue
   if ( nCellWithWeight <= 1 ) return;
+
+  // It should not happen, unless very exotic clusters
+  if ( m02 < 0.001 )
+  {
+    printf("AliAnaCalorimeterQA: M02 %f, M20 %f, E %2.3f, ncell %d, n with weight %d; max cell E %2.3f\n",
+           m02,m20,energy,ncells,nCellWithWeight,eCellMax);
+  }
   
   //printf("\t Same col %d, same row %d, diff other %d\n",sameCol,sameRow,other);
   //printf("\t Second cell: E %2.2f, absId %d, correl %d, rowDiff %d, rowCol %d\n",emax,absId2ndMax,sameTCard2,rowDiff2, colDiff2);
@@ -1577,7 +1587,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     fhLambda1NLM2TCardCorrNoSelection[matched]->Fill(energy, m20, GetEventWeight()); 
   }
   
-  fhLambdaRTCardCorrNoSelection[matched]->Fill(energy, m20/m02, GetEventWeight());
+  fhLambdaRTCardCorrNoSelection[matched]->Fill(energy,lamR, GetEventWeight());
   fhNLocMaxTCardCorrNoSelection[matched]->Fill(energy, nlm, GetEventWeight());
   fhExoticTCardCorrNoSelection [matched]->Fill(energy, exoticity, GetEventWeight());
   
@@ -1670,7 +1680,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   
   fhLambda0TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m02, GetEventWeight());
   fhLambda1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
-//fhLambdaRTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20/m02, GetEventWeight());
+//fhLambdaRTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy,lamR, GetEventWeight());
   fhNLocMaxTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, nlm, GetEventWeight());
   
   if(fStudyExotic)
@@ -1882,7 +1892,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     {
       fhLambda0Exoticity[ebin][matched]->Fill(exoticity, m02, GetEventWeight());
       fhLambda1Exoticity[ebin][matched]->Fill(exoticity, m20, GetEventWeight());
-      //fhLambdaRExoticity[ebin][matched]->Fill(exoticity, m20/m02, GetEventWeight());
+    //fhLambdaRExoticity[ebin][matched]->Fill(exoticity,lamR, GetEventWeight());
       fhNCellsExoticity [ebin][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
       fhTimeExoticity   [ebin][matched]->Fill(exoticity, tCellMax, GetEventWeight());
       
@@ -1890,14 +1900,14 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
       {
         fhLambda0ExoticityPerNCell[nCorrInd][nCorrNoInd][matched]->Fill(exoticity, m02, GetEventWeight());
         fhLambda1ExoticityPerNCell[nCorrInd][nCorrNoInd][matched]->Fill(exoticity, m20, GetEventWeight());
-        //fhLambdaRExoticityPerNCell[nCorrInd][nCorrNoInd][matched]->Fill(exoticity, m20/m02, GetEventWeight());
+      //fhLambdaRExoticityPerNCell[nCorrInd][nCorrNoInd][matched]->Fill(exoticity,lamR, GetEventWeight());
       }
       
       //      if(nCorrNo == 0)
       //      {
       //        fhLambda0ExoticityAllSameTCard[ebin][matched]->Fill(exoticity, m02, GetEventWeight());
       //        fhLambda1ExoticityAllSameTCard[ebin][matched]->Fill(exoticity, m20, GetEventWeight());
-      //        fhLambdaRExoticityAllSameTCard[ebin][matched]->Fill(exoticity, m20/m02, GetEventWeight());
+      //        fhLambdaRExoticityAllSameTCard[ebin][matched]->Fill(exoticity,lamR, GetEventWeight());
       //        fhNCellsExoticityAllSameTCard [ebin][matched]->Fill(exoticity, nCellWithWeight, GetEventWeight());
       //      }
       

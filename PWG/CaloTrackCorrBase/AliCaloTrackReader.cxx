@@ -1843,7 +1843,7 @@ void AliCaloTrackReader::FillInputCTS()
     else      fVertexBC = AliVTrack::kTOFBCNA ;
   }
   
-  AliDebug(1,Form("AOD entries %d, input tracks %d, pass status %d, multipliticy %d", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult[0]));//fCTSTracksNormalInputEntries);
+  AliDebug(1,Form("CTS entries %d, input tracks %d, pass status %d, multipliticy %d", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult[0]));//fCTSTracksNormalInputEntries);
 }
 
 //_______________________________________________________________________________
@@ -1867,7 +1867,7 @@ void AliCaloTrackReader::FillInputCTS()
 //_______________________________________________________________________________
 void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus)
 {
-  // Accept clusters with the proper label
+  // Accept clusters with the proper label, only applicable for MC
   if ( clus->GetLabel() >= 0 )  // -1 corresponds to noisy MC
   { 
     if ( !AcceptParticleMCLabel(clus->GetLabel()) ) return ;
@@ -1959,7 +1959,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   if(!goodCluster)
   {
     //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
-    AliDebug(2,Form("Bad cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+    AliDebug(1,Form("Bad cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
                     fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
 
     return;
@@ -2281,7 +2281,10 @@ void AliCaloTrackReader::FillInputEMCAL()
     
   }
   
-  AliDebug(1,Form("AOD entries %d, n pile-up clusters %d, n non pile-up %d", fEMCALClusters->GetEntriesFast(),fNPileUpClusters,fNNonPileUpClusters));
+  AliDebug(1,Form("EMCal selected clusters %d", 
+                  fEMCALClusters->GetEntriesFast()));
+  AliDebug(2,Form("\t n pile-up clusters %d, n non pile-up %d", 
+                  fNPileUpClusters,fNNonPileUpClusters));
 }
 
 //_______________________________________
@@ -2400,7 +2403,7 @@ void AliCaloTrackReader::FillInputPHOS()
     
   } // esd/aod cluster loop
   
-  AliDebug(1,Form("AOD entries %d",fPHOSClusters->GetEntriesFast())) ;  
+  AliDebug(1,Form("PHOS selected clusters %d",fPHOSClusters->GetEntriesFast())) ;  
 }
 
 //____________________________________________
@@ -3007,10 +3010,15 @@ void AliCaloTrackReader::SetEMCALTriggerThresholds()
   { 
     // Revise for periods > LHC11d 
     Int_t runNumber = fInputEvent->GetRunNumber();
-    if     (runNumber < 146861) fTriggerL0EventThreshold = 3. ;
-    else if(runNumber < 154000) fTriggerL0EventThreshold = 4. ;
-    else if(runNumber < 165000) fTriggerL0EventThreshold = 5.5;
-    else                        fTriggerL0EventThreshold = 2  ;
+    if     (runNumber < 146861) fTriggerL0EventThreshold = 3. ;  // LHC11a
+    else if(runNumber < 154000) fTriggerL0EventThreshold = 4. ;  // LHC11b,c
+    else if(runNumber < 165000) fTriggerL0EventThreshold = 5.5;  // LHC11c,d,e
+    else if(runNumber < 194000) fTriggerL0EventThreshold = 2  ;  // LHC12
+    else if(runNumber < 197400) fTriggerL0EventThreshold = 3  ;  // LHC13def 
+    else if(runNumber < 197400) fTriggerL0EventThreshold = 2  ;  // LHC13g 
+    else if(runNumber < 244300) fTriggerL0EventThreshold = 5  ;  // LHC15 in, phys 1, 5 in phys2 
+    else if(runNumber < 266400) fTriggerL0EventThreshold = 2.5;  // LHC16ir 
+    else                        fTriggerL0EventThreshold = 3.5;  // LHC16s 
   }  
 }
 
