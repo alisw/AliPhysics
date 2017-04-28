@@ -279,7 +279,13 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   else if (run>=244913 && run<=246994) { refSigma=4600.; refEff = 0.60; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // estimates from Cvetan and Alberica
   else if (run>=246995 && run<=256147) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   else if (run>=256148 && run<=256157) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
-  else if (run>=256158               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=256158 && run<=265301) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=265304 && run<=265586) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
+  else if (run>=265587 && run<=267131) { refSigma=1715.; refEff = 0.82; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // T0 efficiency estimate from MC, refSigma assuming cs(INEL) = 2092
+  else if (run>=267132 && run<=267166) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // taken from old p-Pb
+  else if (run>=267167               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+
+  
   Double_t orbitRate = 11245.;
   TString partition;
   TString lhcState;
@@ -348,28 +354,51 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
       delete tokens;
     }
   }
+
   // special treatment for DG
   if (run>=256504) {
     Int_t iCUP13=-1;
     Int_t iCTRUE_NOPF=-1;
     Int_t iCTRUE_SPD1=-1;
     Int_t iCEMC7=-1;
+    Int_t iCPHI7=-1;
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
       if (TString(cl->GetName()).EqualTo("CCUP13-B-SPD1-CENTNOTRD")  ) iCUP13=i;
       if (TString(cl->GetName()).EqualTo("CTRUE-B-SPD1-CENTNOTRD")   ) iCTRUE_SPD1=i;
       if (TString(cl->GetName()).EqualTo("CTRUE-B-NOPF-CENTNOTRD")   ) iCTRUE_NOPF=i;
       if (TString(cl->GetName()).EqualTo("CEMC7EG1-B-NOPF-CENTNOTRD")) iCEMC7=i;
+      if (TString(cl->GetName()).EqualTo("CPHI7-B-NOPF-CENTNOTRD"))    iCPHI7=i;
     }
-    if (iCUP13>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iCEMC7>=0) {
-      class_lifetime[iCUP13] =class_lifetime[iCEMC7];
+    Int_t iREF = iCEMC7>=0 ? iCEMC7 : (iCPHI7>=0 ? iCPHI7 : iCTRUE_NOPF);
+    if (iCUP13>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iREF>=0) {
+      class_lifetime[iCUP13] = (class_ds[iREF]>1e-7 && class_l0b[iREF]>0) ? (Double_t(class_l0a[iREF])/class_l0b[iREF]/class_ds[iREF]) : (Double_t(class_l0a[iCTRUE_NOPF])/class_l0b[iCTRUE_NOPF]/class_ds[iCTRUE_NOPF]);
       class_lifetime[iCUP13]*=class_l2a[iCTRUE_SPD1];
       class_lifetime[iCUP13]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
       class_lifetime[iCUP13]*=1-TMath::Power(1-class_ds[iCUP13],4.);
       class_lumi[iCUP13] = lumi_seen*class_lifetime[iCUP13];
-      printf("lumi=%f\n",class_lumi[iCUP13]);
+    }
+    if (iCUP13>=0) printf("lumi=%f\n",class_lumi[iCUP13]);
+  }
+  
+  // special treatment for UPC central barrel in p-Pb
+  if (run>=265589) {
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (!cl) continue;
+      TString name = cl->GetName();
+      if (!(name.Contains("CCUP") && name.Contains("-CENTNOTRD"))) continue;
+      Bool_t pf = name.Contains("-SPD2-");
+      TObject* emc = classes.FindObject(pf ? "CEMC7EG1-B-SPD2-CENTNOTRD" : "CEMC7EG1-B-NOPF-CENTNOTRD");
+      TObject* phs = classes.FindObject(pf ? "CPHI7PHL-B-SPD2-CENTNOTRD" : "CPHI7PHL-B-NOPF-CENTNOTRD");
+      if (!emc && !phs) continue;
+      Int_t ilt = emc!=0 ? classes.IndexOf(emc) : classes.IndexOf(phs);
+      if (ilt<0) continue;
+      class_lifetime[i] = class_lifetime[ilt];
+      class_lumi[i] = lumi_seen*class_lifetime[i]*class_ds[i];
     }
   }
+
   
   TFile* fin = new TFile(qafilename);
   if (!fin) {
