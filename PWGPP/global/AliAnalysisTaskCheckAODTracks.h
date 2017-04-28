@@ -59,6 +59,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SeMinNumOfTPCPIDclu(Int_t minc){
     fMinNumOfTPCPIDclu=minc;
   }
+  void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
+    fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
+  }
 
  private:
 
