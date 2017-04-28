@@ -34,6 +34,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fIsQuarkFound = kFALSE;
    fCutBits = 0x0;
    fPsim[0] = fPrec[0] = fPmother[0] = fPsim[1] = fPrec[1] = fPmother[1] = fPsim[2] = fPrec[2] = fPmother[2] = 0.0;
+   fIndexV0[0] = fIndexV0[1] = -1;
 
    // charge
    if (daughter->IsPos())
@@ -67,7 +68,8 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    }
    if (event->IsAOD()){
      // DCA to Primary Vertex for AOD
-     AliAODTrack *track = (AliAODTrack*) daughter->Ref2AODtrack();   
+     AliAODTrack *track = daughter->Ref2AODtrack();  
+     AliAODv0 *v0 = daughter->Ref2AODv0();     
      AliAODEvent *aodEvent = (AliAODEvent*) event->GetRefAOD();
      if (track && aodEvent) {
        AliVVertex *vertex = (AliVVertex*) aodEvent->GetPrimaryVertex();
@@ -77,8 +79,13 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 	   if (track->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b, cov))
 	     fDCA = b[0];
 	 }
-       }
+       } 
      }
+      if (v0 && aodEvent) {
+          fIndexV0[0] = v0->GetPosID();
+          fIndexV0[1] = v0->GetNegID();
+          // Printf("!!!!!!!! RSN index=%d v0Pos=%d v0Neg=%d", fIndex, fIndexV0[0], fIndexV0[1]);
+       }
      // Number of Daughters from MC and Momentum of the Mother
      if (event->GetRefMC()) {
        TClonesArray * list = event->GetAODList();
@@ -115,7 +122,8 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    } else {
      if (event->IsESD()){
        //DCA to Primary Vertex for ESD
-       AliESDtrack *track = (AliESDtrack*) daughter->Ref2ESDtrack();   
+       AliESDtrack *track = daughter->Ref2ESDtrack(); 
+       AliESDv0 *v0 = daughter->Ref2ESDv0();    
        AliESDEvent *esdEvent = (AliESDEvent*) event->GetRefESD();
        if (track && esdEvent) {
 	 AliVVertex *vertex = (AliVVertex*) esdEvent->GetPrimaryVertex();
@@ -125,7 +133,11 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 	     if (track->PropagateToDCA(vertex, esdEvent->GetMagneticField(), kVeryBig, b, cov))
 	       fDCA = b[0];
 	   }
-	 }
+	 }      
+       }
+       if (v0 && esdEvent) {
+          fIndexV0[0] = v0->GetPindex();
+          fIndexV0[1] = v0->GetNindex();
        }
        // Number of Daughters from MC and Momentum of the Mother
        if (event->GetRefMC()) {

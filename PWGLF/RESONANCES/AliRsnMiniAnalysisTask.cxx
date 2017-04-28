@@ -896,9 +896,10 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    for (ip = 0; ip < npart; ip++) {
       // point cursor to next particle
       fRsnEvent.SetDaughter(cursor, ip);
+      // set id of particle
+      miniParticle.Index() = ip;
       // copy momentum and MC info if present
       miniParticle.CopyDaughter(&cursor);
-      miniParticle.Index() = ip;
       // switch on the bits corresponding to passed cuts
       for (ic = 0; ic < ncuts; ic++) {
          AliRsnCutSet *cuts = (AliRsnCutSet *)fTrackCuts[ic];
