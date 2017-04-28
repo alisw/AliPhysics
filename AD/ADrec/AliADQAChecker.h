@@ -18,6 +18,7 @@ class TH2;
 class TObjArray;
 class TVirtualPad;
 class TLegend;
+class TSpline3;
 
 // --- Standard library ---
 
@@ -107,7 +108,10 @@ private:
   TLegend *myLegend2;
   TLegend *myLegend3;
 
-  ClassDef(AliADQAChecker,7);  // description
+  TSpline3 *fTimeSlewingSplineADA;
+  TSpline3 *fTimeSlewingSplineADC;
+
+  ClassDef(AliADQAChecker,8);  // description
 };
 
 #endif // AliADQAChecker_H
