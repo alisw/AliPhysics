@@ -2545,7 +2545,7 @@ Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeightRun2(Int_t pdg_particle
     }
     
     return 1.0;
-
+    
 }
 
 void AliAnalysisTaskHFEpACorrelation::ComputeWeightInEnhancedSample()
@@ -2575,7 +2575,7 @@ void AliAnalysisTaskHFEpACorrelation::ComputeWeightInEnhancedSample()
             if (IsEnhancedPi0Eta)
             {
                 if (particle->GetMother()<0)
-                fPtMCpi0_NoMother->Fill(particle->Pt());
+                    fPtMCpi0_NoMother->Fill(particle->Pt());
             }
             else if (!IsEnhancedHF)
                 fPtMCpi0_PureHijing->Fill(particle->Pt());
@@ -2768,37 +2768,61 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
     Int_t LabelMC = TMath::Abs(track->GetLabel());
     CocktailType_t Type = FindTrackGenerator(LabelMC, fMCheader, fMCarray);
     
-    if (Type != kBackgroundEnhanced)
-        return;
-    
-    //Find Particle first mother
-    AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
-    AliAODMCParticle* MCMother = (AliAODMCParticle*) fMCarray->At(MCParticle->GetMother());
-    
-    while (MCMother->GetMother()>=0){
-        MCMother = (AliAODMCParticle*) fMCarray->At(MCMother->GetMother());
-    }
-    
-    //Total number of NHFe in the enh. sample
-    Double_t MotherW = CalculateWeightRun2(TMath::Abs(MCMother->GetPdgCode()),MCMother->Pt());
-    
-    fEtaCutElectronBKNoTag->Fill(track->Pt());
-    fEtaCutElectronBKNoTag_WithMotherW->Fill(track->Pt(),MotherW);
-    
-    
-    if (fNonHFE->IsULS())
+    //Calculate using only the enhanced sample
+    if (Type == kBackgroundEnhanced)
     {
-        fEtaCutElectronBKULSMainSources->Fill(track->Pt(),fNonHFE->GetNULS());
-        fEtaCutElectronBKULSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNULS()*MotherW);
+        //Find Particle first mother
+        AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
+        AliAODMCParticle* MCMother = (AliAODMCParticle*) fMCarray->At(MCParticle->GetMother());
+        
+        while (MCMother->GetMother()>=0){
+            MCMother = (AliAODMCParticle*) fMCarray->At(MCMother->GetMother());
+        }
+        
+        //Total number of NHFe in the enh. sample
+        Double_t MotherW = CalculateWeightRun2(TMath::Abs(MCMother->GetPdgCode()),MCMother->Pt());
+        
+        fEtaCutElectronBKNoTag->Fill(track->Pt());
+        fEtaCutElectronBKNoTag_WithMotherW->Fill(track->Pt(),MotherW);
+        
+        
+        if (fNonHFE->IsULS())
+        {
+            fEtaCutElectronBKULSMainSources->Fill(track->Pt(),fNonHFE->GetNULS());
+            fEtaCutElectronBKULSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNULS()*MotherW);
+        }
+        
+        if (fNonHFE->IsLS())
+        {
+            fEtaCutElectronBKLSMainSources->Fill(track->Pt(),fNonHFE->GetNLS());
+            fEtaCutElectronBKLSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNLS()*MotherW);
+        }
     }
     
-    if (fNonHFE->IsLS())
+    //Calculate using only the NON-enhanced sample
+    if ( (Type == kNoCoktail) || (Type == kHijing) )
     {
-        fEtaCutElectronBKLSMainSources->Fill(track->Pt(),fNonHFE->GetNLS());
-        fEtaCutElectronBKLSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNLS()*MotherW);
-    }
-    
+        AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
+        if (MCParticle->GetMother())
+        {
+            AliAODMCParticle* MCMother = (AliAODMCParticle*) fMCarray->At(MCParticle->GetMother());
+            Int_t MotherPDGAfterReco = TMath::Abs(MCMother->GetPdgCode());
+            
+            if( MotherPDGAfterReco==22 || MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
+            {
+                fElectronBKGNoEnhTotalNumber->Fill(track->Pt());
+                
+                if (fNonHFE->IsULS())
+                    fElectronBKGNoEnhULS->Fill(track->Pt(),fNonHFE->GetNULS());
+                
+                if (fNonHFE->IsLS())
+                    fElectronBKGNoEnhLS->Fill(track->Pt(),fNonHFE->GetNLS());
+            }
 
+        }
+    }
+    
+    
 }
 
 //Classes to get the generator type and check if the particle is enhanced (adapted from AliVertexingHFUtils)
@@ -2848,7 +2872,7 @@ void AliAnalysisTaskHFEpACorrelation::GetTrackPrimaryGenerator(Int_t lab, AliAOD
 AliAnalysisTaskHFEpACorrelation::CocktailType_t AliAnalysisTaskHFEpACorrelation::FindTrackGenerator(Int_t label,AliAODMCHeader *header,TClonesArray *arrayMC){
     TString nameGen;
     GetTrackPrimaryGenerator(label,header,arrayMC,nameGen);
-   
+    
     if (nameGen.IsWhitespace())
         return kNoCoktail;
     if (nameGen.Contains("Hijing"))
