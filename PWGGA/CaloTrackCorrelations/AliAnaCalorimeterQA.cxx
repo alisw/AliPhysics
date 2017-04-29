@@ -750,7 +750,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     if ( cells->GetCellNumber(iCell) < 0 ) continue; // CPV 
     
     AliDebug(2,Form("Cell : amp %f, absId %d", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell)));
-   
+    
     Int_t nModule = GetModuleNumberCellIndexesAbsCaloMap(cells->GetCellNumber(iCell),GetCalorimeter(), 
                                                          icol   , irow, iRCU,
                                                          icolAbs, irowAbs    );
@@ -763,188 +763,186 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     
     AliDebug(2,Form("\t module %d, column %d (%d), row %d (%d)", nModule,icolAbs,icol,irowAbs,irow));
     
-    if(nModule < fNModules) 
-    {	
-      //Check if the cell is a bad channel
-      if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn())
+    // Check if the cell is a bad channel
+    if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn())
+    {
+      if(GetCalorimeter()==kEMCAL)
       {
-        if(GetCalorimeter()==kEMCAL)
-        {
-          if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
-        }
-        else 
-        {
-          if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow) ) continue;
-        }
-      } // use bad channel map
-      
-      amp     = cells->GetAmplitude(iCell)*recalF;
-      time    = cells->GetTime(iCell);
-      id      = cells->GetCellNumber(iCell);
-      highG   = cells->GetCellHighGain(id);
-      if(IsDataMC()) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
-
-      // Amplitude recalibration if set
-      GetCaloUtils()->RecalibrateCellAmplitude(amp,  GetCalorimeter(), id);
-
-      // Time recalibration if set
-      GetCaloUtils()->RecalibrateCellTime     (time, GetCalorimeter(), id, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
-      timeL1UnCorr=time;
-      // Correction of L1 phase if set
-      GetCaloUtils()->RecalibrateCellTimeL1Phase(time,0 , nModule, GetReader()->GetInputEvent()->GetBunchCrossNumber());
-      // Transform time to ns
-      time *= 1.0e9;
-      time-=fConstantTimeShift;
-      timeL1UnCorr *= 1.0e9;
-      timeL1UnCorr-=fConstantTimeShift;
-
-      if(time < fTimeCutMin || time > fTimeCutMax)
-      {
-        AliDebug(1,Form("Remove cell with Time %f",time));
-        continue;
+        if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
       }
-      
-      // Remove exotic cells, defined only for EMCAL
-      if(GetCalorimeter()==kEMCAL && 
-         GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
-
-      Double_t binWidthCorrection=1;
-      if(amp>=10)binWidthCorrection=1.0/4;
-      if(amp>=20)binWidthCorrection=1.0/10;
-      fhAmplitude  ->Fill(amp,          GetEventWeight());
-      fhAmpMod     ->Fill(amp, nModule, GetEventWeight());
-      fhAmpWeirdMod->Fill(amp, nModule, GetEventWeight());
-     
-      if(fFillAllCellAbsIdHistograms)
+      else 
       {
-        fhAmpId->Fill(amp, id     , GetEventWeight()*binWidthCorrection);
-        
-        if(!highG) fhAmpIdLowGain->Fill(amp, id, GetEventWeight());
+        if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow) ) continue;
       }
-        
-      if(fFillEBinAcceptanceHisto)
+    } // use bad channel map
+    
+    amp     = cells->GetAmplitude(iCell)*recalF;
+    time    = cells->GetTime(iCell);
+    id      = cells->GetCellNumber(iCell);
+    highG   = cells->GetCellHighGain(id);
+    if(IsDataMC()) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
+    
+    // Amplitude recalibration if set
+    GetCaloUtils()->RecalibrateCellAmplitude(amp,  GetCalorimeter(), id);
+    
+    // Time recalibration if set
+    GetCaloUtils()->RecalibrateCellTime     (time, GetCalorimeter(), id, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
+    timeL1UnCorr=time;
+    // Correction of L1 phase if set
+    GetCaloUtils()->RecalibrateCellTimeL1Phase(time,0 , nModule, GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    // Transform time to ns
+    time *= 1.0e9;
+    time-=fConstantTimeShift;
+    timeL1UnCorr *= 1.0e9;
+    timeL1UnCorr-=fConstantTimeShift;
+    
+    if(time < fTimeCutMin || time > fTimeCutMax)
+    {
+      AliDebug(1,Form("Remove cell with Time %f",time));
+      continue;
+    }
+    
+    // Remove exotic cells, defined only for EMCAL
+    if(GetCalorimeter()==kEMCAL && 
+       GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
+    
+    Double_t binWidthCorrection=1;
+    if(amp>=10)binWidthCorrection=1.0/4;
+    if(amp>=20)binWidthCorrection=1.0/10;
+    fhAmplitude  ->Fill(amp,          GetEventWeight());
+    fhAmpMod     ->Fill(amp, nModule, GetEventWeight());
+    fhAmpWeirdMod->Fill(amp, nModule, GetEventWeight());
+    
+    if(fFillAllCellAbsIdHistograms)
+    {
+      fhAmpId->Fill(amp, id     , GetEventWeight()*binWidthCorrection);
+      
+      if(!highG) fhAmpIdLowGain->Fill(amp, id, GetEventWeight());
+    }
+    
+    if(fFillEBinAcceptanceHisto)
+    {
+      for(Int_t ie = 0; ie < fNEBinCuts; ie++)
       {
-        for(Int_t ie = 0; ie < fNEBinCuts; ie++)
-        {
-          if( amp >= fEBinCuts[ie] && amp < fEBinCuts[ie+1] )
-          {            
-            fhEBinCellColRow[ie]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
-          }
+        if( amp >= fEBinCuts[ie] && amp < fEBinCuts[ie+1] )
+        {            
+          fhEBinCellColRow[ie]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
         }
       }
-  
-      // E cross for exotic cells
-      if(amp > 0.05)
+    }
+    
+    // E cross for exotic cells
+    if(amp > 0.05)
+    {
+      fhCellECross->Fill(amp, 1-GetECross(id,cells)/amp, GetEventWeight());
+      ecellsCut+=amp ;
+      if(fStudyWeight) eCellsInModule[nModule]+=amp ;
+    }
+    
+    if ( amp > fCellAmpMin )
+    {
+      ncellsCut++    ;
+      nCellsInModule[nModule]++    ;
+      
+      if(!fStudyWeight) eCellsInModule[nModule]+=amp ;
+      
+      fhGridCells ->Fill(icolAbs, irowAbs, GetEventWeight());
+      fhGridCellsE->Fill(icolAbs, irowAbs, amp             );
+      
+      if(!highG)
       {
-        fhCellECross->Fill(amp, 1-GetECross(id,cells)/amp, GetEventWeight());
-        ecellsCut+=amp ;
-        if(fStudyWeight) eCellsInModule[nModule]+=amp ;
+        fhGridCellsLowGain ->Fill(icolAbs, irowAbs, GetEventWeight());
+        fhGridCellsELowGain->Fill(icolAbs, irowAbs, amp             );
       }
       
-      if ( amp > fCellAmpMin )
+      if(fFillAllCellTimeHisto)
       {
-        ncellsCut++    ;
-        nCellsInModule[nModule]++    ;
-
-        if(!fStudyWeight) eCellsInModule[nModule]+=amp ;
+        //printf("%s: time %g\n",GetCalorimeterString().Data(), time);
         
-        fhGridCells ->Fill(icolAbs, irowAbs, GetEventWeight());
-        fhGridCellsE->Fill(icolAbs, irowAbs, amp             );
+        //          Double_t v[3] = {0,0,0}; //vertex ;
+        //          GetReader()->GetVertex(v);          
+        //          if(amp > 0.5) fhTimeVz   ->Fill(TMath::Abs(v[2]), time, GetEventWeight());
+        
+        fhTime    ->Fill(time,       GetEventWeight());
+        fhTimeAmp ->Fill(amp , time, GetEventWeight());
+        
+        if(fFillAllCellAbsIdHistograms) 
+        {
+          fhTimeId ->Fill(time, id  , GetEventWeight());
+          
+          if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)
+            fhTimeL1UnCorrId ->Fill(timeL1UnCorr, id  , GetEventWeight());
+        }
+        
+        Int_t bc = (GetReader()->GetInputEvent()->GetBunchCrossNumber())%4;
+        fhTimePerSMPerBC[bc]->Fill(time, nModule, GetEventWeight());
+        
+        fhGridCellsTime->Fill(icolAbs, irowAbs, time);
+        if(!highG) fhGridCellsTimeLowGain->Fill(icolAbs, irowAbs, time);
+        
+        fhTimeMod->Fill(time, nModule, GetEventWeight());
+        fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time, GetEventWeight());
         
         if(!highG)
         {
-          fhGridCellsLowGain ->Fill(icolAbs, irowAbs, GetEventWeight());
-          fhGridCellsELowGain->Fill(icolAbs, irowAbs, amp             );
-        }
-        
-        if(fFillAllCellTimeHisto)
-        {
-          //printf("%s: time %g\n",GetCalorimeterString().Data(), time);
-          
-//          Double_t v[3] = {0,0,0}; //vertex ;
-//          GetReader()->GetVertex(v);          
-//          if(amp > 0.5) fhTimeVz   ->Fill(TMath::Abs(v[2]), time, GetEventWeight());
-          
-          fhTime    ->Fill(time,       GetEventWeight());
-          fhTimeAmp ->Fill(amp , time, GetEventWeight());
-          
           if(fFillAllCellAbsIdHistograms) 
-          {
-            fhTimeId ->Fill(time, id  , GetEventWeight());
-            
-            if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)
-              fhTimeL1UnCorrId ->Fill(timeL1UnCorr, id  , GetEventWeight());
-          }
-          
-          Int_t bc = (GetReader()->GetInputEvent()->GetBunchCrossNumber())%4;
-          fhTimePerSMPerBC[bc]->Fill(time, nModule, GetEventWeight());
-          
-          fhGridCellsTime->Fill(icolAbs, irowAbs, time);
-          if(!highG) fhGridCellsTimeLowGain->Fill(icolAbs, irowAbs, time);
-            
-          fhTimeMod->Fill(time, nModule, GetEventWeight());
-          fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time, GetEventWeight());
-          
-          if(!highG)
-          {
-            if(fFillAllCellAbsIdHistograms) 
-              fhTimeIdLowGain ->Fill(time, id  , GetEventWeight());
-            fhTimeAmpLowGain->Fill(amp , time, GetEventWeight());
-          }
+            fhTimeIdLowGain ->Fill(time, id  , GetEventWeight());
+          fhTimeAmpLowGain->Fill(amp , time, GetEventWeight());
         }
       }
-      
-      // Get Eta-Phi position of Cell
-      if(fFillAllPosHisto)
+    }
+    
+    // Get Eta-Phi position of Cell
+    if(fFillAllPosHisto)
+    {
+      if ( GetCalorimeter() == kEMCAL && GetCaloUtils()->IsEMCALGeoMatrixSet() )
       {
-        if ( GetCalorimeter() == kEMCAL && GetCaloUtils()->IsEMCALGeoMatrixSet() )
-        {
-          Float_t celleta = 0.;
-          Float_t cellphi = 0.;
-          GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
-
-          if ( cellphi < 0 ) cellphi+=TMath::TwoPi();
-          
-          if(fFillAllTH3)
-            fhEtaPhiAmpCell->Fill(celleta, cellphi, amp, GetEventWeight());
-          else
-            fhEtaPhiCell   ->Fill(celleta, cellphi,      GetEventWeight());
-          
-          Double_t cellpos[] = {0, 0, 0};
-          GetEMCALGeometry()->GetGlobal(id, cellpos);
-            
-          fhXCellE->Fill(cellpos[0], amp, GetEventWeight())  ;
-          fhYCellE->Fill(cellpos[1], amp, GetEventWeight())  ;
-          fhZCellE->Fill(cellpos[2], amp, GetEventWeight())  ;
-            
-          Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
-          fhRCellE ->Fill(rcell, amp, GetEventWeight())  ;
-            
-          fhXYZCell->Fill(cellpos[0], cellpos[1], cellpos[2], GetEventWeight())  ;
-        } // EMCAL Cells
-        else if ( GetCalorimeter() == kPHOS && GetCaloUtils()->IsPHOSGeoMatrixSet() )
-        {
-          TVector3 xyz;
-          Int_t relId[4], module;
-          Float_t xCell, zCell;
-          
-          GetPHOSGeometry()->AbsToRelNumbering(id,relId);
-          module = relId[0];
-          GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-          GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
-          
-          Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());
-          
-          fhXCellE ->Fill(xyz.X(), amp, GetEventWeight())  ;
-          fhYCellE ->Fill(xyz.Y(), amp, GetEventWeight())  ;
-          fhZCellE ->Fill(xyz.Z(), amp, GetEventWeight())  ;
-          fhRCellE ->Fill(rcell  , amp, GetEventWeight())  ;
-            
-          fhXYZCell->Fill(xyz.X(), xyz.Y(), xyz.Z(), GetEventWeight())  ;
-        } // PHOS cells
-      } // Fill cell position histograms
-      
-    } // N modules
+        Float_t celleta = 0.;
+        Float_t cellphi = 0.;
+        GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
+        
+        if ( cellphi < 0 ) cellphi+=TMath::TwoPi();
+        
+        if(fFillAllTH3)
+          fhEtaPhiAmpCell->Fill(celleta, cellphi, amp, GetEventWeight());
+        else
+          fhEtaPhiCell   ->Fill(celleta, cellphi,      GetEventWeight());
+        
+        Double_t cellpos[] = {0, 0, 0};
+        GetEMCALGeometry()->GetGlobal(id, cellpos);
+        
+        fhXCellE->Fill(cellpos[0], amp, GetEventWeight())  ;
+        fhYCellE->Fill(cellpos[1], amp, GetEventWeight())  ;
+        fhZCellE->Fill(cellpos[2], amp, GetEventWeight())  ;
+        
+        Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
+        fhRCellE ->Fill(rcell, amp, GetEventWeight())  ;
+        
+        fhXYZCell->Fill(cellpos[0], cellpos[1], cellpos[2], GetEventWeight())  ;
+      } // EMCAL Cells
+      else if ( GetCalorimeter() == kPHOS && GetCaloUtils()->IsPHOSGeoMatrixSet() )
+      {
+        TVector3 xyz;
+        Int_t relId[4], module;
+        Float_t xCell, zCell;
+        
+        GetPHOSGeometry()->AbsToRelNumbering(id,relId);
+        module = relId[0];
+        GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
+        GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
+        
+        Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());
+        
+        fhXCellE ->Fill(xyz.X(), amp, GetEventWeight())  ;
+        fhYCellE ->Fill(xyz.Y(), amp, GetEventWeight())  ;
+        fhZCellE ->Fill(xyz.Z(), amp, GetEventWeight())  ;
+        fhRCellE ->Fill(rcell  , amp, GetEventWeight())  ;
+        
+        fhXYZCell->Fill(xyz.X(), xyz.Y(), xyz.Z(), GetEventWeight())  ;
+      } // PHOS cells
+    } // Fill cell position histograms
+    
+    
   } // Cell loop
   
   // Fill the cells after the cut on min amplitude and bad/exotic channels
@@ -5320,6 +5318,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       
       for(Int_t imod = 0; imod < fNModules; imod++)
       {
+        if(imod < fFirstModule || imod > fLastModule) continue;
+
         fhECellTotalRatioMod[imod]  = new TH2F (Form("hECellTotalRatio_Mod%d",imod),
                                                 Form("#cell energy / sum all energy vs all energy in Module %d",imod),
                                                 nptbins*2,ptmin,ptmax*2, 100,0,1.);
