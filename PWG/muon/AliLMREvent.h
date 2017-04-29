@@ -27,6 +27,7 @@ public:
 	void SetVtxContributors(Int_t nContributors){fNVtxContributors=nContributors;};
 	void SetTriggerString(TString val) { fTriggerString = val;};
 	void SetMultiplicity(TString method,Double_t multiplicity);
+	void SetPhysicsSelectionMask(UShort_t mask){fPhysicsSelectionMask=mask;};
 	Double_t GetEventPlane() {return fEventPlane ;};
 	Int_t GetRunNumber() {return fRunNb ;};
 	Double_t GetXVertex() {return fVertex[0] ;};
@@ -35,6 +36,7 @@ public:
 	Double_t*GetVertex()  {return fVertex    ;};
 	TString GetTriggerString() {return fTriggerString ;};
 	Int_t GetNVtxContributors(){return fNVtxContributors;};
+	UShort_t GetPhysicsSelectionMask(){return fPhysicsSelectionMask;};
 	Double_t GetMultiplicity(TString method);
 	
 	AliLMRMuon *AddMuon();
@@ -52,6 +54,7 @@ private:
 	Double_t fMultiplicity_RefMult08;
 	Int_t fRunNb;
 	Short_t fNMuons;
+	UShort_t fPhysicsSelectionMask;
 	Double_t fVertex[3];
 	Int_t fNVtxContributors;
 	TString fTriggerString;
