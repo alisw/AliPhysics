@@ -52,6 +52,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fEventCuts(0),
   fEventCutList(0),
   fUseManualEventCuts(kFALSE),
+  fUseAliEventCuts(kTRUE),
   fDeltaPhiMin(0),
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
@@ -71,8 +72,10 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fMBUpscaleFactor(1.),
   fNEtaBins(40),
   fNPhiBins(200),
+  fLoadBackgroundScalingWeights(kTRUE),
   fBackgroundScalingWeights(0),
-  fGapJetScalingWeights(0)
+  fGapJetScalingWeights(0),
+  fComputeMBDownscaling(kFALSE)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -90,6 +93,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fEventCuts(0),
   fEventCutList(0),
   fUseManualEventCuts(kFALSE),
+  fUseAliEventCuts(kTRUE),
   fDeltaPhiMin(0),
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
@@ -109,8 +113,10 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fMBUpscaleFactor(1.),
   fNEtaBins(40),
   fNPhiBins(200),
+  fLoadBackgroundScalingWeights(kTRUE),
   fBackgroundScalingWeights(0),
-  fGapJetScalingWeights(0)
+  fGapJetScalingWeights(0),
+  fComputeMBDownscaling(kFALSE)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -159,22 +165,26 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   }
   
   // Intialize AliEventCuts
-  fEventCutList = new TList();
-  fEventCutList ->SetOwner();
-  fEventCutList ->SetName("EventCutOutput");
-  
-  fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
-  if(fUseManualEventCuts==1)
-  {
-    fEventCuts.SetManualMode();
-    // Configure manual settings here
-    // ...
+  if (fUseAliEventCuts) {
+    fEventCutList = new TList();
+    fEventCutList ->SetOwner();
+    fEventCutList ->SetName("EventCutOutput");
+    
+    fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
+    if(fUseManualEventCuts==1)
+    {
+      fEventCuts.SetManualMode();
+      // Configure manual settings here
+      // ...
+    }
+    fEventCuts.AddQAplotsToList(fEventCutList);
+    fOutput->Add(fEventCutList);
   }
-  fEventCuts.AddQAplotsToList(fEventCutList);
-  fOutput->Add(fEventCutList);
   
   // Load eta-phi background scale factors from histogram on AliEn
-  LoadBackgroundScalingHistogram();
+  if (fLoadBackgroundScalingWeights) {
+    LoadBackgroundScalingHistogram();
+  }
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
@@ -197,14 +207,14 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
     // Jet rejection reason
     histname = TString::Format("%s/JetHistograms/hJetRejectionReason", jets->GetArrayName().Data());
     title = histname + ";Rejection reason;#it{p}_{T,jet} (GeV/#it{c});counts";
-    TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 50, 0, 250);
+    TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 50, 0, fMaxPt);
     SetRejectionReasonLabels(hist->GetXaxis());
     
     // Rho vs. Centrality
     if (!jets->GetRhoName().IsNull()) {
       histname = TString::Format("%s/JetHistograms/hRhoVsCent", jets->GetArrayName().Data());
       title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 101, 0, 101, 100, 0, 500);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
     }
     
     // Centrality vs. pT
@@ -277,9 +287,11 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
   }
   
   // MB downscale factor histogram
-  histname = "Trigger/hMBDownscaleFactor";
-  title = histname + ";Downscale factor;counts";
-  TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 200);
+  if (fComputeMBDownscaling) {
+    histname = "Trigger/hMBDownscaleFactor";
+    title = histname + ";Downscale factor;counts";
+    TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 200);
+  }
   
 }
 
@@ -664,7 +676,7 @@ void AliAnalysisTaskEmcalDijetImbalance::RunChanged(Int_t run){
   
   // Get the downscaling factors for MB triggers (to be used to calculate trigger efficiency)
   
-  if (fPlotJetHistograms) {
+  if (fPlotJetHistograms && fComputeMBDownscaling) {
   
     // Get instance of the downscale factor helper class
     AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
@@ -700,10 +712,15 @@ void AliAnalysisTaskEmcalDijetImbalance::RunChanged(Int_t run){
  */
 Bool_t AliAnalysisTaskEmcalDijetImbalance::IsEventSelected()
 {
-  if (!fEventCuts.AcceptEvent(InputEvent()))
-  {
-    PostData(1, fOutput);
-    return kFALSE;
+  if (fUseAliEventCuts) {
+    if (!fEventCuts.AcceptEvent(InputEvent()))
+    {
+      PostData(1, fOutput);
+      return kFALSE;
+    }
+  }
+  else {
+    AliAnalysisTaskEmcal::IsEventSelected();
   }
   return kTRUE;
 }
@@ -1146,6 +1163,8 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground(AliJetContainer* jetC
       fHistManager.FillTH3(histname, etaDCalRC[etaBin], phiDCalRC[phiBin], deltaPt);
     }
   }
+  
+  delete r;
 
 }
 

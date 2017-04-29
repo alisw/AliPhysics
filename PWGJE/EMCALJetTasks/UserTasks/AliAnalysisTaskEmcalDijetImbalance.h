@@ -68,9 +68,12 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void SetDoMomentumBalance(Bool_t b)                       { fDoMomentumBalance = b; }
   void SetDoGeometricalMatching(Bool_t b, Double_t r, Double_t trackThresh, Double_t clusThresh)
     { fDoGeometricalMatching = b; fMatchingJetR = r; fTrackConstituentThreshold = trackThresh; fClusterConstituentThreshold = clusThresh;}
+  void SetLoadBackgroundScalingWeights(Bool_t b)            { fLoadBackgroundScalingWeights = b; }
+  void SetComputeMBDownscaling(Bool_t b)                    { fComputeMBDownscaling = b; }
   void SetMinTrigJetPt(Double_t p)                          { fMinTrigJetPt = p; }
   void SetMinAssJetPt(Double_t p)                           { fMinAssJetPt = p; }
   void SetDijetLeadingHadronPt(Double_t pt)                 { fDijetLeadingHadronPt = pt; }
+  void SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts = b; }
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
   void SetNEtaBins(Int_t n)                                 { fNEtaBins = n; }
   void SetNPhiBins(Int_t n)                                 { fNPhiBins = n; }
@@ -128,6 +131,8 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fComputeBackground;                   ///< Set whether to enable study of background
   Bool_t                      fDoMomentumBalance;                   ///< Set whether to enable momentum balance study
   Bool_t                      fDoGeometricalMatching;               ///< Set whether to enable constituent study with geometrical matching
+  Bool_t                      fLoadBackgroundScalingWeights;        ///< Flag to load eta-phi weights for full-jet background scale factors
+  Bool_t                      fComputeMBDownscaling;                ///< Set whether to compute and plot MB downscaling factors
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -135,6 +140,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Double_t*                   fCentHistBins;                        //!<! cent bins
   
   // Event selection
+  Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
   AliEventCuts                fEventCuts;                           ///< event selection utility
   TList                      *fEventCutList;                        //!<! Output list for event cut histograms
   Bool_t                      fUseManualEventCuts;                  ///< Flag to use manual event cuts
@@ -150,7 +156,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 6);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 7);
   /// \endcond
 };
 #endif
