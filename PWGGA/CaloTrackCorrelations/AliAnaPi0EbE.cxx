@@ -561,7 +561,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
   
   if(fFillAllNLMHistograms)
   {
-    if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
+    if(nSM < fNModules && nSM >=0)
       fhNLocMaxPtSM[nSM]->Fill(pt, nMaxima, GetEventWeight());
     
     fhPtLambda0LocMax   [indexMax]->Fill(pt, l0, GetEventWeight());
@@ -950,6 +950,10 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   Float_t timemax     = GetHistogramRanges()->GetHistoTimeMax();
   Float_t timemin     = GetHistogramRanges()->GetHistoTimeMin();
   
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  //
+  InitCaloParameters(); // See AliCaloTrackCorrBaseClass
+  
   TString nlm[]   = {"1 Local Maxima","2 Local Maxima", "NLM > 2"};
   
   TString ptype [] = {"#pi^{0}", "#eta", "#gamma (direct)","#gamma (#pi^{0})", "#gamma (#eta)", "#gamma (other)",  "e^{#pm}"  , "hadron/other combinations"};
@@ -1193,8 +1197,10 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       
       if(fFillAllNLMHistograms)
       {
-        for(Int_t iSM = 0; iSM < GetCaloUtils()->GetNumberOfSuperModulesUsed(); iSM++)
+        for(Int_t iSM = 0; iSM < fNModules; iSM++)
         {
+          if(iSM < fFirstModule || iSM > fLastModule) continue;
+
           fhSelectedMassPtLocMaxSM[inlm][iSM]  = new TH2F
           (Form("hSelectedMassPtLocMax%d_SM%d",inlm+1,iSM),Form("Selected #pi^{0} (#eta) pairs #it{M}: #it{p}_{T} vs #it{M}, NLM=%s for SM=%d",nlm[inlm].Data(),iSM),nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
           fhSelectedMassPtLocMaxSM[inlm][iSM]->SetYTitle("#it{M} (GeV/#it{c}^{2})");
@@ -1408,8 +1414,10 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     if(fFillAllNLMHistograms)
     {
-      for(Int_t iSM = 0; iSM < GetCaloUtils()->GetNumberOfSuperModulesUsed(); iSM++)
+      for(Int_t iSM = 0; iSM < fNModules; iSM++)
       {
+        if(iSM < fFirstModule || iSM > fLastModule) continue;
+
         fhNLocMaxPtSM[iSM] = new TH2F(Form("hNLocMaxPt_SM%d",iSM),Form("Number of local maxima in cluster, selected clusters in SM %d",iSM),
                                       nptbins,ptmin,ptmax,20,0,20);
         fhNLocMaxPtSM[iSM] ->SetYTitle("N maxima");
@@ -3717,7 +3725,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedMassPtLocMax[indexMax]->Fill(fMomentum.Pt(), mass, GetEventWeight());
     
     Int_t   nSM  = GetModuleNumber(calo);
-    if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0 && fFillAllNLMHistograms)
+    if(nSM < fNModules && nSM >=0 && fFillAllNLMHistograms)
     {
       fhSelectedMassPtLocMaxSM   [indexMax][nSM]->Fill(fMomentum.Pt(), mass, GetEventWeight());
       fhSelectedLambda0PtLocMaxSM[indexMax][nSM]->Fill(fMomentum.Pt(), l0  , GetEventWeight());

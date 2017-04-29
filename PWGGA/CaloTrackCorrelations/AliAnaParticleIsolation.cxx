@@ -2789,6 +2789,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Int_t   multmax  = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
   Int_t   multmin  = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
   
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  //
+  InitCaloParameters(); // See AliCaloTrackCorrBaseClass
+  
   //Float_t ptthre    = GetIsolationCut()->GetPtThreshold();
   //Float_t ptsumthre = GetIsolationCut()->GetSumPtThreshold();
   //Float_t ptfrac    = GetIsolationCut()->GetPtFraction();
@@ -5659,8 +5663,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 //              outputContainer->Add(fhLam0EMCALRegionTRD[iso][ieta][iphi]) ;
 //            } // TRD
             
-            for(Int_t ism = 0; ism < GetCaloUtils()->GetNumberOfSuperModulesUsed(); ism++) 
+            for(Int_t ism = 0; ism < fNModules; ism++) 
             {
+              if(ism < fFirstModule || ism> fLastModule) continue;
+
               fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism] = 
               new TH2F(Form("hLam0_%s_eta%d_phi%d_sm%d",isoName[iso].Data(),ieta,iphi,ism),
                        Form("%s, #it{p}_{T} vs #lambda_{0}^{2}, sm %d, region #eta %d, #varphi %d",

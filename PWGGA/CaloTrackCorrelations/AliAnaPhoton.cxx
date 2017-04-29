@@ -855,7 +855,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster, GetEventWeight());
   
   Int_t   nSM  = GetModuleNumber(calo);
-  if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
+  if(nSM < fNModules && nSM >=0)
   {
     fhEClusterSM ->Fill(ecluster , nSM, GetEventWeight());
     fhPtClusterSM->Fill(ptcluster, nSM, GetEventWeight());
@@ -2229,7 +2229,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 {
   TList * outputContainer = new TList() ;
   outputContainer->SetName("PhotonHistos") ;
-	
+	  
   Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();
   Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Float_t phimax = GetHistogramRanges()->GetHistoPhiMax(); Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
   Int_t netabins = GetHistogramRanges()->GetHistoEtaBins(); Float_t etamax = GetHistogramRanges()->GetHistoEtaMax(); Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();
@@ -2266,6 +2266,24 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Float_t summin   = GetHistogramRanges()->GetHistoPtSumMin()   ;
   Float_t summax   = GetHistogramRanges()->GetHistoPtSumMax()   ;
   
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  //
+  InitCaloParameters(); // See AliCaloTrackCorrBaseClass
+  
+  Int_t totalSM = fLastModule-fFirstModule+1;
+  
+  //printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
+
+  // Cell column-row histograms, see base class for data members setting
+  //fNMaxColsFull+2,-1.5,fNMaxColsFull+0.5, fNMaxRowsFull+2,-1.5,fNMaxRowsFull+0.5
+  Int_t   ncolcell   = fNMaxColsFull+2;
+  Float_t colcellmin = -1.5;
+  Float_t colcellmax = fNMaxColsFull+0.5;
+  
+  Int_t   nrowcell   = fNMaxRowsFullMax-fNMaxRowsFullMin+2;
+  Float_t rowcellmin = fNMaxRowsFullMin-1.5;
+  Float_t rowcellmax = fNMaxRowsFullMax+0.5;
+  
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies
   
   TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID"};
@@ -2288,28 +2306,28 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   fhEClusterSM = new TH2F("hEClusterSM","Raw clusters E and super-module number",
                           nptbins,ptmin,ptmax,
-                          GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
+                          totalSM,fFirstModule-0.5,fLastModule+0.5);
   fhEClusterSM->SetYTitle("SuperModule ");
   fhEClusterSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhEClusterSM) ;
 
   fhPtClusterSM = new TH2F("hPtClusterSM","Raw clusters #it{p}_{T} and super-module number",
                           nptbins,ptmin,ptmax,
-                          GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
+                          totalSM,fFirstModule-0.5,fLastModule+0.5);
   fhPtClusterSM->SetYTitle("SuperModule ");
   fhPtClusterSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhPtClusterSM) ;
   
   fhEPhotonSM = new TH2F("hEPhotonSM","Selected clusters E and super-module number",
                           nptbins,ptmin,ptmax,
-                          GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
+                          totalSM,fFirstModule-0.5,fLastModule+0.5);
   fhEPhotonSM->SetYTitle("SuperModule ");
   fhEPhotonSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhEPhotonSM) ;
   
   fhPtPhotonSM = new TH2F("hPtPhotonSM","Selected clusters #it{p}_{T} and super-module number",
                            nptbins,ptmin,ptmax,
-                           GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
+                           totalSM,fFirstModule-0.5,fLastModule+0.5);
   fhPtPhotonSM->SetYTitle("SuperModule ");
   fhPtPhotonSM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtPhotonSM) ;
@@ -3091,8 +3109,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //          outputContainer->Add(fhLam0EMCALRegionTRD[ieta][iphi]) ;
 //        } // TRD
         
-        for(Int_t ism = 0; ism < GetCaloUtils()->GetNumberOfSuperModulesUsed(); ism++) 
+        for(Int_t ism = 0; ism < fNModules; ism++) 
         {
+          if(ism < fFirstModule || ism > fLastModule) continue;
+
           fhLam0EMCALRegionPerSM[ieta][iphi][ism] = 
           new TH2F(Form("hLam0_eta%d_phi%d_sm%d",ieta,iphi,ism),
                    Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, sm %d, region eta %d, phi %d",ism,ieta,iphi),
@@ -3132,7 +3152,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%d",il0,ipt),
          Form("row vs column in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s, w > 0",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5); // fix to generalize to other periods
+         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
         fhColRowLam0BinPtBin[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBin[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBin[il0][ipt]) ;   
@@ -3141,7 +3161,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%dWeighted",il0,ipt),
          Form("cluster cell row vs column weighted in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5); // fix to generalize to other periods
+         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
         fhColRowLam0BinPtBinWeighted[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBinWeighted[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBinWeighted[il0][ipt]) ;
@@ -3150,7 +3170,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%d_LargeTimeInClusterCell",il0,ipt),
          Form("row vs column in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s, |t| > 50 ns, w > 0",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5); // fix to generalize to other periods
+         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
         fhColRowLam0BinPtBinLargeTime[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBinLargeTime[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBinLargeTime[il0][ipt]) ;  
@@ -3168,7 +3188,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //        (Form("hColRowLam0Bin%d_PtBin%d_SMShared",il0,ipt),
 //         Form("row vs column in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s, w > 0",
 //              ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-//         96,0,96,5*24,0,5*24); // fix to generalize to other periods
+//         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
 //        fhColRowLam0BinPtBinSMShared[il0][ipt]->SetYTitle("row");
 //        fhColRowLam0BinPtBinSMShared[il0][ipt]->SetXTitle("column");
 //        outputContainer->Add(fhColRowLam0BinPtBinSMShared[il0][ipt]) ;  
@@ -3210,8 +3230,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhCellClusterEFracAndTime[il0][ipt] ) ;            
       } // pt bin
       
-      for(Int_t ism = 0; ism < GetCaloUtils()->GetNumberOfSuperModulesUsed(); ism++)
+      for(Int_t ism = 0; ism < fNModules; ism++)
       {
+        if(ism < fFirstModule || ism > fLastModule) continue;
+
         fhLam1Lam0BinPerSM[il0][ism] = new TH2F
         (Form("hLam1Lam0Bin%d_sm%d",il0,ism),
          Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, %s",ism,l0bin[il0].Data()),
@@ -3337,8 +3359,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       } // sm
     } // l0 bin 
     
-    for(Int_t ism = 0; ism < GetCaloUtils()->GetNumberOfSuperModulesUsed(); ism++)
+    for(Int_t ism = 0; ism < fNModules; ism++)
     {
+      if(ism < fFirstModule || ism > fLastModule) continue;
+
       fhLam0PerSM[ism] = new TH2F
       (Form("hLam0_sm%d",ism),
        Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d",ism),
@@ -3950,7 +3974,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhEBinClusterColRow[ie] = new TH2F
       (Form("hEBin%d_Cluster_ColRow",ie),
        Form("column vs row, cluster max E cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
       fhEBinClusterColRow[ie]->SetYTitle("row");
       fhEBinClusterColRow[ie]->SetXTitle("column");
       outputContainer->Add(fhEBinClusterColRow[ie]) ;
@@ -3966,7 +3990,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhEBinClusterColRowPID[ie] = new TH2F
       (Form("hEBin%d_Cluster_ColRow_PID",ie),
        Form("column vs row, cluster max E cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}, PID cut",fEBinCuts[ie],fEBinCuts[ie+1]),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
       fhEBinClusterColRowPID[ie]->SetYTitle("row");
       fhEBinClusterColRowPID[ie]->SetXTitle("column");
       outputContainer->Add(fhEBinClusterColRowPID[ie]) ;
@@ -4763,12 +4787,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       }
     }
     
-    if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
+    if(nSM < fNModules && nSM >=0)
     {
       fhEPhotonSM ->Fill(en, nSM, GetEventWeight());
       fhPtPhotonSM->Fill(pt, nSM, GetEventWeight());
     }
-    
     
     // Few more control histograms for selected clusters
     fhNCellsE            ->Fill(en, calo->GetNCells()  , GetEventWeight());
