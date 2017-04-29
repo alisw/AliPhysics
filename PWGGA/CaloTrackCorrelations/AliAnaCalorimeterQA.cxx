@@ -3197,7 +3197,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   Int_t totalSM = fLastModule-fFirstModule+1;
 
-  printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
+  //printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
   
   // Histogram binning and ranges
   // 
@@ -3234,7 +3234,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();
   Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
   
-  // Cell column-row histograms
+  // Cell column-row histograms, see base class for data members setting
   //fNMaxColsFull+2,-1.5,fNMaxColsFull+0.5, fNMaxRowsFull+2,-1.5,fNMaxRowsFull+0.5
   Int_t   ncolcell   = fNMaxColsFull+2;
   Float_t colcellmin = -1.5;
@@ -5997,11 +5997,11 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhNCellsCutAmpMin->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCellsCutAmpMin);
     
-    fhAmplitude  = new TH1F ("hAmplitude","#it{E}_{cell}", nptbins*2,ptmin,ptmax);
+    fhAmplitude  = new TH1F ("hAmplitude","#it{E}_{cell}", nptbins,ptmin,ptmax/2);
     fhAmplitude->SetXTitle("#it{E}_{cell} (GeV)");
     outputContainer->Add(fhAmplitude);
     
-    fhAmpMod  = new TH2F ("hAmp_Mod","Cell energy in each present Module",nptbins,ptmin,ptmax,totalSM,fFirstModule-0.5,fLastModule+0.5); 
+    fhAmpMod  = new TH2F ("hAmp_Mod","Cell energy in each present Module",nptbins,ptmin,ptmax/2,totalSM,fFirstModule-0.5,fLastModule+0.5); 
     fhAmpMod->SetXTitle("#it{E} (GeV)");
     fhAmpMod->SetYTitle("Module");
     outputContainer->Add(fhAmpMod);
@@ -6059,12 +6059,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       //    fhTimeVz->SetYTitle("#it{t}_{cell} (ns)");
       //    outputContainer->Add(fhTimeVz);
       
-      fhTimeAmp  = new TH2F ("hTimeAmp","#it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
+      fhTimeAmp  = new TH2F ("hTimeAmp","#it{t}_{cell} vs #it{E}_{cell}",nptbins,ptmin,ptmax/2,ntimebins,timemin,timemax); 
       fhTimeAmp->SetYTitle("#it{t}_{cell} (ns)");
       fhTimeAmp->SetXTitle("#it{E}_{cell} (GeV)");
       outputContainer->Add(fhTimeAmp);
       
-      fhTimeAmpLowGain  = new TH2F ("hTimeAmpLG","Low gain: #it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax);
+      fhTimeAmpLowGain  = new TH2F ("hTimeAmpLG","Low gain: #it{t}_{cell} vs #it{E}_{cell}",nptbins,ptmin,ptmax/2,ntimebins,timemin,timemax);
       fhTimeAmpLowGain->SetYTitle("#it{t}_{cell} (ns)");
       fhTimeAmpLowGain->SetXTitle("#it{E}_{cell} (GeV)");
       outputContainer->Add(fhTimeAmpLowGain);
@@ -6110,7 +6110,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     }
     
     fhCellECross  = new TH2F ("hCellECross","1 - Energy in cross around cell /  cell energy",
-                              nptbins,ptmin,ptmax, 400,-1,1.); 
+                              nptbins,ptmin,ptmax/2, 400,-1,1.); 
     fhCellECross->SetXTitle("#it{E}_{cell} (GeV) ");
     fhCellECross->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}");
     outputContainer->Add(fhCellECross);    
@@ -6184,9 +6184,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       {
         for(Int_t ircu = 0; ircu < fNRCU; ircu++)
         {
+          if( ircu ==1 && 
+             (imod == 10 || imod== 11 || imod == 18 || imod == 19) 
+            ) continue;
+          
           fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
                                                         Form("#it{E}_{cell} vs #it{t}_{cell} in Module %d, RCU %d ",imod,ircu), 
-                                                        nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+                                                        nptbins,ptmin,ptmax/2,ntimebins,timemin,timemax); 
           fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("#it{E} (GeV)");
           fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("#it{t} (ns)");
           outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
