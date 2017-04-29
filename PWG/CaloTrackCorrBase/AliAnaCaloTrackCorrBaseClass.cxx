@@ -45,6 +45,7 @@ fNModules(20),                fNRCU(2),
 fFirstModule(0),              fLastModule(19),
 fNMaxCols(48),                fNMaxRows(24),  
 fNMaxColsFull(48),            fNMaxRowsFull(24),  
+fNMaxRowsFullMin(0),          fNMaxRowsFullMax(24),  
 fDataMC(0),                   fDebug(0),
 fCalorimeter(-1),             fCalorimeterString(""),
 fCheckFidCut(0),              fCheckRealCaloAcc(0),
@@ -757,13 +758,13 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
   
   fFirstModule = 0; 
   fLastModule  = fNModules-1;
-  if(GetCaloUtils()->GetFirstSuperModuleUsed() >= 0)
+  
+  // Set First/Last SM depending on CaloUtils or fiducial cut settings
+   
+  if ( IsFiducialCutOn() )
   {
-    fFirstModule = GetCaloUtils()->GetFirstSuperModuleUsed();
-    fLastModule  = GetCaloUtils()->GetLastSuperModuleUsed();
-  }
-  else if ( IsFiducialCutOn() )
-  {
+    //printf("Get SM range from FiducialCut\n");
+
     if(GetCalorimeter() != kPHOS)
     {
       Int_t nSections = GetFiducialCut()->GetEMCALFidCutMaxPhiArray()->GetSize();
@@ -787,6 +788,20 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
     }
   }
 
+  // Overwrite what used in FidCut, if more strict on CaloUtils
+  // Needed for special case in QA analysis train
+  if ( GetCaloUtils()->GetFirstSuperModuleUsed() >= 0 )
+  {
+    if(fFirstModule < GetCaloUtils()->GetFirstSuperModuleUsed() || 
+       fLastModule  > GetCaloUtils()->GetLastSuperModuleUsed())
+    {
+      //printf("Get SM range from CaloUtils\n");
+      
+      fFirstModule = GetCaloUtils()->GetFirstSuperModuleUsed();
+      fLastModule  = GetCaloUtils()->GetLastSuperModuleUsed();
+    }
+  }
+  
   // EMCAL
   fNMaxCols = 48;
   fNMaxRows = 24;
@@ -801,19 +816,45 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
   
   fNMaxColsFull = fNMaxCols;
   fNMaxRowsFull = fNMaxRows;
+  
+  fNMaxRowsFullMax = fNMaxRowsFull;
+  fNMaxRowsFullMin = 0;
+  
   if(GetCalorimeter()==kEMCAL)
   {
     fNMaxColsFull=2*fNMaxCols;
+    
     fNMaxRowsFull=Int_t(fNModules/2)*fNMaxRows;
+    if(fNMaxRowsFull > 208) 
+      fNMaxRowsFull = 208; //  8*24+2/3.*24, reduce since 1/3 SM should not be counted full.
+    
+    fNMaxRowsFullMin = 0;
+    fNMaxRowsFullMax = fNMaxRowsFull; 
+
+    if(fLastModule < 12)
+    {
+      fNMaxRowsFullMax = Int_t((fLastModule-fFirstModule+1)/2)*fNMaxRows;
+      if(fNMaxRowsFullMax > 127) fNMaxRowsFullMax = 127; // 24*5+8
+      fNMaxRowsFullMin = 0; 
+    }
+    else if (fFirstModule > 11)
+    {
+      fNMaxRowsFullMax = fNMaxRowsFull; 
+      fNMaxRowsFullMin = Int_t(fFirstModule/2)*fNMaxRows-Int_t(2./3.*fNMaxRows); // remove 2/3*24
+    }    
   }
   else
   {
     fNMaxRowsFull=fNModules*fNMaxRows;
   }
-  //96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5
   
-  AliDebug(1,Form("N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d) ",
-                  fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, fNMaxColsFull,fNMaxRowsFull));
+//  printf("%s: N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d) \n",
+//                  GetName(),fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
+//                  fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax);
+
+  AliDebug(1,Form("N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d)",
+                  fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
+                  fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax));
 
   
 }
