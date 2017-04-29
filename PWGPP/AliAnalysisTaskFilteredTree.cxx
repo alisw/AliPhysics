@@ -2970,6 +2970,7 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   tree->SetAlias("tgl","esdTrack.fP[3]");
   tree->SetAlias("alphaV","esdTrack.fAlpha");
   tree->SetAlias("qPt","esdTrack.fP[4]");
+  tree->SetAlias("dalphaQ","sign(esdTrack.fP[4])*(esdTrack.fIp.fP[0]/esdTrack.fIp.fX)");
   TStatToolkit::AddMetadata(tree,"phiInner.Title","#phi_{TPCin}");
   TStatToolkit::AddMetadata(tree,"secInner.Title","sector_{TPCin}");
   TStatToolkit::AddMetadata(tree,"tgl.Title","p_{z}/p_{t}");
@@ -3009,16 +3010,17 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   const char * chName[5]={"r#phi","z","sin(#phi)","tan(#theta)", "q/p_{t}"};
   const char * chUnit[5]={"cm","cm","","", "(1/GeV)"};
   for (Int_t iPar=0; iPar<5; iPar++){
+    tree->SetAlias(TString::Format("covarP%dITS",iPar).Data(),TString::Format("sqrt(esdTrack.fC[%d]+0)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());    
     tree->SetAlias(TString::Format("covarP%d",iPar).Data(),TString::Format("sqrt(extInnerParamV.fC[%d]+0)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
     tree->SetAlias(TString::Format("covarCP%d",iPar).Data(),TString::Format("sqrt(extInnerParamC.fC[%d]+0)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
 
-    tree->SetAlias(TString::Format("deltaP%d",iPar).Data(),TString::Format("(extInnerParamV.fP[%d]-esdTrack.fP[%d])",iPar,iPar).Data());
-    tree->SetAlias(TString::Format("deltaPC%d",iPar).Data(),TString::Format("(extInnerParamC.fP[%d]-esdTrack.fP[%d])",iPar,iPar).Data());
+    tree->SetAlias(TString::Format("deltaP%d",iPar).Data(),TString::Format("(extInnerParamV.fP[%d]-esdTrack.fCp.fP[%d])",iPar,iPar).Data());
+    tree->SetAlias(TString::Format("deltaPC%d",iPar).Data(),TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])",iPar,iPar).Data());
     tree->SetAlias(TString::Format("pullP%d",iPar).Data(),
-		   TString::Format("(extInnerParamV.fP[%d]-esdTrack.fP[%d])/sqrt(extInnerParamV.fC[%d]+esdTrack.fC[%d])",
+		   TString::Format("(extInnerParamV.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(extInnerParamV.fC[%d]+esdTrack.fCp.fC[%d])",
 				   iPar,iPar,AliExternalTrackParam::GetIndex(iPar,iPar),AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
     tree->SetAlias(TString::Format("pullPC%d",iPar).Data(),
-		   TString::Format("(extInnerParamC.fP[%d]-esdTrack.fP[%d])/sqrt(extInnerParamC.fC[%d]+esdTrack.fC[%d])",
+		   TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(extInnerParamC.fC[%d]+esdTrack.fCp.fC[%d])",
 				   iPar,iPar,AliExternalTrackParam::GetIndex(iPar,iPar),AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
     TStatToolkit::AddMetadata(tree,TString::Format("deltaP%d.AxisTitle",iPar).Data(),TString::Format("%s (%s)",chName[iPar], chUnit[iPar]).Data());
     TStatToolkit::AddMetadata(tree,TString::Format("deltaPC%d.AxisTitle",iPar).Data(),TString::Format("%s (%s)",chName[iPar], chUnit[iPar]).Data());
