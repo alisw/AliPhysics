@@ -41,9 +41,9 @@ private:
   TList       *fList;                   ///<  Output list
 
   // MC only histograms
-  TH2F        *fProduction;             //!<! *(MC only)* Total number of produced particles
-  TH2F        *fReconstructed[2][2];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF)
-  TH2F        *fTotal[2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance
+  TH2F        *fProduction[2];             //!<! *(MC only)* Total number of produced particles
+  TH2F        *fReconstructed[2][2][3];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF,ITS-TPC-(TOF)) [Ps state][Matter-Antimatter][Detector]
+  TH2F        *fTotal[2][2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance : [Ps state][Matter-Antimatter]
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskPsEfficiency,1)
