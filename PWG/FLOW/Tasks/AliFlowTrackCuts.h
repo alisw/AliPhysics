@@ -304,7 +304,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesTPCbayesianCut(const AliAODTrack* track);
   Bool_t PassesTOFbayesianCut(const AliAODTrack* track);
   Bool_t PassesTOFbetaCut(const AliAODTrack* track);
-
+  Int_t  GetITStype(const AliAODTrack* track) const;
+  
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);
     

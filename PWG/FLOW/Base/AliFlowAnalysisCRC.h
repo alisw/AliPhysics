@@ -1749,6 +1749,9 @@ private:
   const static Int_t fkNHarv1eta = 3;
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   TProfile2D *fFlowSPZDCv1etaProPhi[fkNHistv1eta]; //!
+  const static Int_t fkNITStypes = 16;
+  TProfile2D *fFlowSPZDCv1etaProITS[fkNHistv1eta]; //!
+  TH2D *fFlowSPZDCv1etaProITSDis[fkNITStypes];//!
   TH1D *fFlowSPZDCv1etaHist[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   TProfile *fFlowSPZDCv1etaNUAPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   const static Int_t fkNHistv1etaPt = 6;

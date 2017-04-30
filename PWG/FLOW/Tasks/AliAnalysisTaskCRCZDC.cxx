@@ -1126,26 +1126,20 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       // to select primaries
       Int_t lp = TMath::Abs(track->GetLabel());
       
-      // general kinematic & quality cuts
-      if (track->Pt() < .2 || track->Pt() > 20. || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70)  continue;
+      // general kinematic cuts
+      if (track->Pt() < .2 || track->Pt() > 20. || TMath::Abs(track->Eta()) > 0.8) continue;
       
-      //      Double_t DCAxy = track->DCA();
-      //      Double_t DCAz = track->ZAtDCA();
-      //      if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
-      //        // re-evaluate the dca as it seems to not be natively present
-      //        // allowed only for tracks inside the beam pipe
-      //        Double_t pos[3] = {-99., -99., -99.};
-      //        track->GetPosition(pos);
-      //        if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
-      //          AliAODTrack copy(*track);       // stack copy
-      //          Double_t b[2] = {-99., -99.};
-      //          Double_t bCov[3] = {-99., -99., -99.};
-      //          if(copy.PropagateToDCA(aod->GetPrimaryVertex(), aod->GetMagneticField(), 100., b, bCov)) {
-      //            DCAxy = b[0];
-      //            DCAz = b[1];
-      //          }
-      //        }
-      //      }
+      // cut on DCA
+      Double_t DCAxy = track->DCA();
+      Double_t DCAz = track->ZAtDCA();
+      if(fabs(DCAxy)>2.4 || fabs(DCAz)>3.2) continue;
+      
+      // various cuts on TPC clusters
+      if (track->GetTPCNcls() < 70) continue;
+      Double_t chi2_per_tpc = track->Chi2perNDF();
+      if (chi2_per_tpc < 0.1 || chi2_per_tpc > 4.) continue;
+      Double_t fraction_shared_tpccls = 1.*track->GetTPCnclsS()/track->GetTPCncls();
+      if (fraction_shared_tpccls > 0.4) continue;
       
       // test filter bits
       if (((AliAODMCParticle*)fStack->At(lp))->IsPhysicalPrimary()) {

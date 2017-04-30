@@ -1380,6 +1380,44 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 }
 
 //_______________________________________________________________________
+Int_t AliFlowTrackCuts::GetITStype(const AliAODTrack* track) const
+{
+  // set ITStype (test purpose only)
+  Int_t ITStype=0;
+  Bool_t bHITs[6] = {kFALSE};
+  Int_t hitcnt=0;
+  Bool_t isSPD=kFALSE, isSDD=kFALSE, isSSD=kFALSE;
+  for (Int_t i=0; i<6; i++) {
+    if(track->HasPointOnITSLayer(i)) {
+      if(i<2) isSPD=kTRUE;
+      if(i>2 && i<4) isSDD=kTRUE;
+      if(i>4) isSSD=kTRUE;
+      bHITs[i]=kTRUE;
+      hitcnt++;
+    }
+  }
+  if(hitcnt==1) {
+    for (Int_t i=0; i<6; i++) {
+      if(bHITs[i]) ITStype = i+1;
+    }
+  }
+  if(hitcnt>=2) {
+    if(isSPD  & !isSDD & !isSSD) ITStype = 7;
+    if(isSPD  &  isSDD & !isSSD) ITStype = 8;
+    if(isSPD  & !isSDD &  isSSD) ITStype = 9;
+    if(!isSPD & isSDD  & !isSSD) ITStype = 10;
+    if(!isSPD & isSDD  &  isSSD) ITStype = 11;
+    if(!isSPD & !isSDD &  isSSD) ITStype = 12;
+    if(isSPD  &  isSDD &  isSSD) {
+      if(bHITs[0]  && !bHITs[1]) ITStype = 13;
+      if(!bHITs[0] &&  bHITs[1]) ITStype = 14;
+      if(bHITs[0]  &&  bHITs[1]) ITStype = 15;
+    }
+  }
+  return ITStype;
+}
+
+//_______________________________________________________________________
 Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFid)
 {
   //check cuts for AOD
@@ -1485,7 +1523,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (fCutDCAToVertexXYPtDepAOD) {
       Double_t MaxDCAPtDep = 2.4;
       if (fAODFilterBit!=128) MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
-      else MaxDCAPtDep = 0.5+0.5/pow(track->Pt(),0.7);
+      else MaxDCAPtDep = 0.4+0.2/pow(track->Pt(),0.3);
       if (TMath::Abs(DCAxy)>MaxDCAPtDep) pass=kFALSE;
     }
     if (fCutDCAToVertexZAOD) {
@@ -2295,6 +2333,8 @@ Bool_t AliFlowTrackCuts::FillFlowTrackVParticle(AliFlowTrack* flowtrack) const
     else                                              // XZhang 20120604
       flowtrack->SetSource(AliFlowTrack::kFromAOD);   // XZhang 20120604
     flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fTrack);
+    flowtrack->SetITStype(GetITStype(aodTrack));
   }
   else if (dynamic_cast<AliMCParticle*>(fTrack)) 
   {
