@@ -16,9 +16,13 @@ class AliRsnDaughter;
 class AliRsnMiniParticle : public TObject {
 public:
 
-   AliRsnMiniParticle() : fIndex(-1), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0) {Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;}
+   AliRsnMiniParticle() : fIndex(-1), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0) {
+       Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;fIndexV0[0]=-1;fIndexV0[1]=-1;
+   }
 
    Int_t         &Index()                    {return fIndex;}
+   Int_t         &IndexV0Pos()               {return fIndexV0[0];}
+   Int_t         &IndexV0Neg()               {return fIndexV0[1];}
    Char_t        &Charge()                   {return fCharge;}
    Float_t       &PsimX()                    {return fPsim[0];}
    Float_t       &PsimY()                    {return fPsim[1];}
@@ -52,6 +56,7 @@ public:
 private:
 
    Int_t     fIndex;        // ID of track in its event
+   Int_t     fIndexV0[2];   // V0 daugher inxes (0:pos, 1:neg) (if not V0 then 0:ESD/AOD label, 1:(-1))
    Char_t    fCharge;       // track charge *character*: '+', '-', '0' (whatever else = undefined)
    Float_t   fPsim[3];      // MC momentum of the track
    Float_t   fPrec[3];      // reconstructed momentum of the track
@@ -65,7 +70,7 @@ private:
    Bool_t    fIsQuarkFound; // is the particle from a quark flag (used to reject or accept Hijing event)
    UShort_t  fCutBits;      // list of bits used to know what cuts were passed by this track
 
-   ClassDef(AliRsnMiniParticle,6)
+   ClassDef(AliRsnMiniParticle,7)
 };
 
 #endif
