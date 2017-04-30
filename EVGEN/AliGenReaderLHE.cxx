@@ -98,8 +98,8 @@ TParticle* AliGenReaderLHE::NextParticle()
   const TLorentzVector vp(p);
   fParticle.SetPdgCode(idup);
   fParticle.SetStatusCode(istup);
-  fParticle.SetFirstMother(mothup[0]);
-  fParticle.SetLastMother (mothup[1]);
+  fParticle.SetFirstMother(mothup[0] - 1); // FORTRAN->C counting convention
+  fParticle.SetLastMother (mothup[1] - 1); // FORTRAN->C counting convention
   fParticle.SetMomentum(vp);
   fParticle.SetProductionVertex(mass ? vp*(vtimup/mass) : TLorentzVector(0,0,0,0)); // TODO: check unit
   fParticle.SetBit(kTransportBit, istup == 1);
