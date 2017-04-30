@@ -64,6 +64,8 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
     AliFemtoCorrFctnNonIdDR       *nonIdenticalCF[nSys*nMult];
     AliFemtoQinvCorrFctn          *identicalCF[nSys*nMult];
     AliFemtoModelCorrFctn         *modelCF[nSys*nMult];
+    AliFemtoPairOriginMonitor     *pairOriginPass[nSys*nMult];
+    AliFemtoPairOriginMonitor     *pairOriginFail[nSys*nMult];
     
     // setup analysis
     int anIter = 0;
@@ -97,10 +99,18 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
             AliFemtoV0TrackPairCut          *V0trackPairCut = GetV0TrackPairCut((ESys)iSys);
             AliFemtoPairCutRadialDistance   *tracksPairCut  = GetTracksPairCut((ESys)iSys);
             
+            // create monitors
+            if(mcAnalysis)
+            {
+             pairOriginPass[anIter] = new AliFemtoPairOriginMonitor(Form("Pass%stpcM%i", sysNames[iSys], imult));
+             pairOriginFail[anIter] = new AliFemtoPairOriginMonitor(Form("Fail%stpcM%i", sysNames[iSys], imult));
+            }
+                
             // setup anallysis cuts
             femtoAnalysis[anIter]->SetEventCut(eventCut[anIter]);
             femtoAnalysis[anIter]->SetV0SharedDaughterCut(true);
             femtoAnalysis[anIter]->SetEnablePairMonitors(false);
+            
             if(firstV0TrackCut)
                 femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut);
             else
@@ -110,12 +120,20 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
             else
                 femtoAnalysis[anIter]->SetSecondParticleCut(secondESDTrackCut);
             
-            if(V0pairCut)
+            if(V0pairCut){
+                if(mcAnalysis) V0pairCut->AddCutMonitor(pairOriginPass[anIter], pairOriginFail[anIter]);
                 femtoAnalysis[anIter]->SetPairCut(V0pairCut);
-            else if(V0trackPairCut)
+                
+            }
+            else if(V0trackPairCut){
+                if(mcAnalysis) V0trackPairCut->AddCutMonitor(pairOriginPass[anIter], pairOriginFail[anIter]);
                 femtoAnalysis[anIter]->SetPairCut(V0trackPairCut);
+            }
             else
+            {
+                if(mcAnalysis) tracksPairCut->AddCutMonitor(pairOriginPass[anIter], pairOriginFail[anIter]);
                 femtoAnalysis[anIter]->SetPairCut(tracksPairCut);
+            }
             
             if(iSys==kLL || iSys == kALAL || iSys == kLAL || iSys == kPL || iSys == kAPL || iSys == kPAL || iSys == kAPAL)
             {
@@ -154,6 +172,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
                 modelCF[anIter] = new AliFemtoModelCorrFctn(Form("CF_qinv_Model_%sM%i", sysNames[iSys],imult),100,0.0,2.0);
                 modelCF[anIter]->ConnectToManager(modelMgr);
                 femtoAnalysis[anIter]->AddCorrFctn(modelCF[anIter]);
+                femtoAnalysis[anIter]->SetEnablePairMonitors(true);
             }
             
             Manager->AddAnalysis(femtoAnalysis[anIter]);
