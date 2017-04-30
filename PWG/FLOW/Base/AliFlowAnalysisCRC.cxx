@@ -897,6 +897,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         dPt  = aftsTrack->Pt();
         dEta = aftsTrack->Eta();
         dCharge = aftsTrack->Charge();
+        Int_t ITStype = aftsTrack->ITStype();
         
         if(fSelectCharge==kPosCh && dCharge<0.) continue;
         if(fSelectCharge==kNegCh && dCharge>0.) continue;
@@ -1161,6 +1162,31 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
                 fFlowSPZDCv1etaProPhi[11]->Fill(dEta,dPhi,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
               }
             }
+          }
+          if(fCentralityEBE>5. && fCentralityEBE<40.) {
+            Double_t dITStype = ITStype+0.5;
+            if(fbFlagIsPosMagField) {
+              fFlowSPZDCv1etaProITS[0]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+              fFlowSPZDCv1etaProITS[1]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              if(cw==0) {
+                fFlowSPZDCv1etaProITS[2]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+                fFlowSPZDCv1etaProITS[3]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              } else {
+                fFlowSPZDCv1etaProITS[4]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+                fFlowSPZDCv1etaProITS[5]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              }
+            } else {
+              fFlowSPZDCv1etaProITS[6]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+              fFlowSPZDCv1etaProITS[7]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              if(cw==0) {
+                fFlowSPZDCv1etaProITS[8]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+                fFlowSPZDCv1etaProITS[9]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              } else {
+                fFlowSPZDCv1etaProITS[10]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZARe+TMath::Sin(dPhi)*ZAIm,wPhiEta);
+                fFlowSPZDCv1etaProITS[11]->Fill(dEta,dITStype,TMath::Cos(dPhi)*ZCRe+TMath::Sin(dPhi)*ZCIm,wPhiEta);
+              }
+            }
+            fFlowSPZDCv1etaProITSDis[ITStype]->Fill(dEta,dPhi,wPhiEta);
           }
           
           // all runs
@@ -16792,6 +16818,10 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowSPZDC()
   }
   for(Int_t j=0; j<fkNHistv1eta; j++) {
     fFlowSPZDCv1etaProPhi[j] = NULL;
+    fFlowSPZDCv1etaProITS[j] = NULL;
+  }
+  for (Int_t i=0; i<fkNITStypes; i++) {
+    fFlowSPZDCv1etaProITSDis[i] = NULL;
   }
   for (Int_t h=0; h<fCRCnCen; h++) {
     for (Int_t k=0; k<fkNHarv1eta; k++) {
@@ -29933,6 +29963,14 @@ void AliFlowAnalysisCRC::BookEverythingForFlowSPZDC()
     fFlowSPZDCv1etaProPhi[j] = new TProfile2D(Form("fFlowSPZDCv1etaProPhi[%d]",j),Form("fFlowSPZDCv1etaProPhi[%d]",j),5,-0.8,0.8,50,0.,TMath::TwoPi());
     fFlowSPZDCv1etaProPhi[j]->Sumw2();
     fFlowSPZDCList->Add(fFlowSPZDCv1etaProPhi[j]);
+    fFlowSPZDCv1etaProITS[j] = new TProfile2D(Form("fFlowSPZDCv1etaProITS[%d]",j),Form("fFlowSPZDCv1etaProITS[%d]",j),5,-0.8,0.8,fkNITStypes,0.,1.*fkNITStypes);
+    fFlowSPZDCv1etaProITS[j]->Sumw2();
+    fFlowSPZDCList->Add(fFlowSPZDCv1etaProITS[j]);
+  }
+  for (Int_t i=0; i<fkNITStypes; i++) {
+    fFlowSPZDCv1etaProITSDis[i] = new TH2D(Form("fFlowSPZDCv1etaProITSDis[%d]",i),Form("fFlowSPZDCv1etaProITSDis[%d]",i),10,-0.8,0.8,100,0.,TMath::TwoPi());
+    fFlowSPZDCv1etaProITSDis[i]->Sumw2();
+    fFlowSPZDCList->Add(fFlowSPZDCv1etaProITSDis[i]);
   }
   
   for (Int_t h=0; h<fCRCnCen; h++) {
