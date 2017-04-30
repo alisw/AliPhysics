@@ -51,7 +51,7 @@ enum eventMixConfig { kDisabled = -1,
 };
 
 
-AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
+Ali:RsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
 (
  Bool_t      isMC,
  Bool_t      isPP,
@@ -203,12 +203,15 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
    cutY->SetRangeD(minYlab, maxYlab);
    
-   AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
-
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
-   cutsPair->AddCut(cutV0);
-   cutsPair->SetCutScheme(TString::Format("%s&%s",cutY->GetName(),cutV0->GetName()).Data());
+   if (ptDep) {
+     cutsPair->SetCutScheme(cutY->GetName()); 
+   } else {
+     AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
+     cutsPair->AddCut(cutV0);
+     cutsPair->SetCutScheme(TString::Format("%s&!%s",cutY->GetName(),cutV0->GetName()).Data());
+   }
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
