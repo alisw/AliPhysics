@@ -978,7 +978,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     
   // 7 TeV direct photon PHOS
   } else if (trainConfig == 351){
-    cuts.AddCut("00000113","2444400000013300000","0163803100000010"); // QA
+    cuts.AddCut("00000113","2444400000013300000","0163803100000010"); // no nonlinearity
+    cuts.AddCut("00000113","2444401000013300000","0163803100000010"); // with PHOS nonlinearity
   } else if (trainConfig == 352){
     cuts.AddCut("00000113","2444400040013300000","0163803100000010"); // 100ns timing cut, no track matching
     cuts.AddCut("00000113","2444400043013300000","0163803100000010"); // 100ns timing cut

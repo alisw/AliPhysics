@@ -170,6 +170,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC);
 
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
+    Float_t     FunctionNL_PHOS(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
     //predefined functions
