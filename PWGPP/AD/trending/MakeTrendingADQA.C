@@ -27,7 +27,7 @@
 
 bool IsADReady(Int_t run);
 
-Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 264078,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE, Bool_t doRebin = kTRUE)
+Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 244619,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE, Bool_t doRebin = kTRUE)
 {
   
   TTree *ttree=new TTree("trending","tree of trending variables");
@@ -1108,8 +1108,10 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 26
 
     c12->Print(Form("ADQA_Run_%d.pdf)",runNumber));
     
-    AliCDBEntry *entTrends = man->Get("AD/Calib/PMTrends");
-    if(entTrends){
+    if(runNumber > 251861){
+        AliCDBEntry *entTrends = 0x0;
+        entTrends = man->Get("AD/Calib/PMTrends");
+	
     	TClonesArray *fGraphs = (TClonesArray*)entTrends->GetObject();
     	TGraph *fGraphPM[32];
   
