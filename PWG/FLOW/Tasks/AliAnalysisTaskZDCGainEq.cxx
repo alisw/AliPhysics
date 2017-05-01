@@ -1177,7 +1177,17 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
         }
        }
       }
+     else {
+       if(fListZDCQxy) {
+        for(int i=0; i<vzBin; i++) {
+          fHist_Recenter_ZDCCx[i] = (TH2F *) fListZDCQxy->FindObject(Form("fHist2F_znCx_V0_Run%d_Vz%d",0,i+1));
+          fHist_Recenter_ZDCCy[i] = (TH2F *) fListZDCQxy->FindObject(Form("fHist2F_znCy_V0_Run%d_Vz%d",0,i+1));
+          fHist_Recenter_ZDCAx[i] = (TH2F *) fListZDCQxy->FindObject(Form("fHist2F_znAx_V0_Run%d_Vz%d",0,i+1));
+          fHist_Recenter_ZDCAy[i] = (TH2F *) fListZDCQxy->FindObject(Form("fHist2F_znAy_V0_Run%d_Vz%d",0,i+1));
+        }
+       }
      }
+    }
     fcheckOnce++;
     fOldRunNum = runNumber;
   }
@@ -1549,14 +1559,12 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
   if(bApplyRecent) {
    Int_t tVertexBin2 = (indexVy-1)*vxBin + indexVx; 
-   if(!bRunAveragedQn) {
     if(fListZDCQxy) {
       meanCx = fHist_Recenter_ZDCCx[indexVz-1]->GetBinContent(tVertexBin2,iCentBin);
       meanCy = fHist_Recenter_ZDCCy[indexVz-1]->GetBinContent(tVertexBin2,iCentBin);
       meanAx = fHist_Recenter_ZDCAx[indexVz-1]->GetBinContent(tVertexBin2,iCentBin);
       meanAy = fHist_Recenter_ZDCAy[indexVz-1]->GetBinContent(tVertexBin2,iCentBin);
     }
-   }
   }
 
   xyZNC[0] = xyZNC[0] - meanCx;
@@ -1734,8 +1742,8 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
 
   //if(fievent%10==0) {
-  //std::cout<<fievent<<" cTPC= "<<EvtCent<<"\t wZDA1 = "<<ChanWgtZDCA[1]<<"\t wZDA2 = "<<ChanWgtZDCA[2]<<"\tRefMult = "<<nRefMult<<std::endl;
-  //std::cout<<" cx = "<<meanCx<<"\t cy = "<<meanCy<<"\t Qnx_TPC[0] = "<<Qnx_TPC[0]<<"\t Qnx_TPC[1] = "<<Qnx_TPC[1]<<std::endl;
+    //std::cout<<fievent<<" cTPC= "<<EvtCent<<"\t wZDA1 = "<<ChanWgtZDCA[1]<<"\t wZDA2 = "<<ChanWgtZDCA[2]<<"\tRefMult = "<<nRefMult<<std::endl;
+    //std::cout<<" cx = "<<meanCx<<"\t cy = "<<meanCy<<"\t Qnx_TPC[0] = "<<Qnx_TPC[0]<<"\t Qnx_TPC[1] = "<<Qnx_TPC[1]<<std::endl;
   //}
 
 
