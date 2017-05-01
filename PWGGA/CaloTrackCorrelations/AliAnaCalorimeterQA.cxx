@@ -881,7 +881,9 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         if(!highG) fhGridCellsTimeLowGain->Fill(icolAbs, irowAbs, time);
         
         fhTimeMod->Fill(time, nModule, GetEventWeight());
-        fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time, GetEventWeight());
+        
+        if(fFillAllCellAbsIdHistograms)
+          fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time, GetEventWeight());
         
         if(!highG)
         {
@@ -958,7 +960,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     fhNCellsMod     ->Fill(nCellsInModule[imod], imod, GetEventWeight()) ;
     fhSumCellsAmpMod->Fill(eCellsInModule[imod], imod, GetEventWeight()) ;
     
-    fhNCellsSumAmpPerMod[imod]->Fill(eCellsInModule[imod], nCellsInModule[imod], GetEventWeight());
+    if(fFillAllCellAbsIdHistograms)
+      fhNCellsSumAmpPerMod[imod]->Fill(eCellsInModule[imod], nCellsInModule[imod], GetEventWeight());
   }
   
   // Check energy distribution in calorimeter for selected cells
@@ -6164,29 +6167,33 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhGridCellsTimeLowGain);
     }
     
-    fhNCellsSumAmpPerMod       = new TH2F*[fNModules];  
-    
-    if(fFillAllCellTimeHisto) 
-      fhTimeAmpPerRCU = new TH2F*[fNModules*fNRCU];  
-    
-    for(Int_t imod = 0; imod < fNModules; imod++)
+    if(fFillAllCellAbsIdHistograms)
     {
-      if(imod < fFirstModule || imod > fLastModule) continue;
-
-      fhNCellsSumAmpPerMod[imod] = new TH2F (Form("hNCellsSumAmp_Mod%d",imod),
-                                             Form("# cells in SM vs sum of cells energy in Module %d",imod), 
-                                             nptbins,ptmin,ptmax*4, ncebins,ncemin,ncemax); 
-      fhNCellsSumAmpPerMod[imod]->SetXTitle("#Sigma #it{Amplitude} (GeV)");
-      fhNCellsSumAmpPerMod[imod]->SetYTitle("#Sigma #it{n}_{cells}");
-      outputContainer->Add(fhNCellsSumAmpPerMod[imod]);
+      fhNCellsSumAmpPerMod       = new TH2F*[fNModules];  
       
-      if(fFillAllCellTimeHisto)
+      for(Int_t imod = 0; imod < fNModules; imod++)
+      {
+        if(imod < fFirstModule || imod > fLastModule) continue;
+        
+        fhNCellsSumAmpPerMod[imod] = new TH2F (Form("hNCellsSumAmp_Mod%d",imod),
+                                               Form("# cells in SM vs sum of cells energy in Module %d",imod), 
+                                               nptbins,ptmin,ptmax*4, ncebins,ncemin,ncemax); 
+        fhNCellsSumAmpPerMod[imod]->SetXTitle("#Sigma #it{Amplitude} (GeV)");
+        fhNCellsSumAmpPerMod[imod]->SetYTitle("#Sigma #it{n}_{cells}");
+        outputContainer->Add(fhNCellsSumAmpPerMod[imod]);}
+    } 
+    
+    if(fFillAllCellTimeHisto && fFillAllCellAbsIdHistograms) 
+    {
+      fhTimeAmpPerRCU = new TH2F*[fNModules*fNRCU];  
+      
+      for(Int_t imod = 0; imod < fNModules; imod++)
       {
         for(Int_t ircu = 0; ircu < fNRCU; ircu++)
         {
           if( ircu ==1 && 
              (imod == 10 || imod== 11 || imod == 18 || imod == 19) 
-            ) continue;
+             ) continue;
           
           fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
                                                         Form("#it{E}_{cell} vs #it{t}_{cell} in Module %d, RCU %d ",imod,ircu), 
@@ -6194,6 +6201,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
           fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("#it{E} (GeV)");
           fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("#it{t} (ns)");
           outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
+          
         }
       }
     }
