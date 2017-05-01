@@ -1,9 +1,9 @@
 AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
                     const char* taskName        = "PHOSTenderTask",
-				    const char* tenderName      = "PHOStender",
-				    const char* options         = "",
-				    Int_t pass                  = 1,
-				    Bool_t isMC                 = kFALSE,
+                    const char* tenderName      = "PHOStender",
+                    const char* options         = "",
+                    Int_t pass                  = 1,
+                    Bool_t isMC                 = kFALSE,
                     Bool_t forceBadChannelMap   = kFALSE,
                     TString specificBCMap       = ""
 )
