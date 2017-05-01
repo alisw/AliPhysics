@@ -302,7 +302,7 @@ void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
 
     // Multiplicity correlation (no correction for downscaling)
     double data[5] = {v0amult, trackletmult,emctrackletmult, emcclustermult, emccellocc};
-    fHistos->FillTHnSparse("hMultiplicityCorrelation", data);
+    fHistos->FillTHnSparse("hMultiplicityCorrelation" + t, data);
   }
 }
 
