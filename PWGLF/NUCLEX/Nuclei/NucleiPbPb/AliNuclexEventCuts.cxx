@@ -35,6 +35,7 @@ ClassImp(AliNuclexEventCuts);
 ///
 AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fUtils{},
+  fGreenLight{false},
   fMC{false},
   fRequireTrackVertex{false},
   fMinVtz{-1000.f},
@@ -98,6 +99,8 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
 }
 
 bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
+  if (fGreenLight) return true; /// Bypass all the selections
+
   /// If not specified the cuts are set according to the run period
   const int current_run = ev->GetRunNumber();
   if (!fManualMode && current_run != fCurrentRun) {
