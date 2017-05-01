@@ -227,6 +227,14 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     cuts.AddCut("80000123", "00200009217000008260404000", "0162103500000000");   //standard Eta
   } else if (trainConfig == 24) {  
     cuts.AddCut("80000113", "00200009217000008260400000", "0162103500000000");
+  } else if (trainConfig == 25) {
+    cuts.AddCut("80000113", "00200009317000008250404000", "0162103500900000");  // new PsiPair new edEdx: (-4.,5), old PidEdx(0,> 0.4GeV)
+  } else if (trainConfig == 26) {
+    cuts.AddCut("80000113", "00200009327000008250404000", "0162103500900000");  // new PsiPair, new edEdx: (-4.,5), new PidEdx(1, >0.4GeV)
+  } else if (trainConfig == 27) {
+    cuts.AddCut("80000113", "00200009317000008250400000", "0162103500900000");  // new PsiPair new edEdx: (-4.,5), old PidEdx(0,> 0.4GeV), no DC
+  } else if (trainConfig == 28) {
+    cuts.AddCut("80000113", "00200009327000008250400000", "0162103500900000");  // new PsiPair, new edEdx: (-4.,5), new PidEdx(1, >0.4GeV), no DC  
     
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
