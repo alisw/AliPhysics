@@ -2533,6 +2533,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
     //Select PHOS cluster
     if (fClusterType == 2 && !cluster->IsPHOS()){
       FillClusterCutIndex(kDetector);
+      // Apply nonlinearity on PHOS cluster
       if(fHistEnergyOfClusterBeforeNL) fHistEnergyOfClusterBeforeNL->Fill(cluster->E(),weight);
       CorrectEMCalNonLinearity(cluster,isMC);
       if(fHistEnergyOfClusterAfterNL) fHistEnergyOfClusterAfterNL->Fill(cluster->E(),weight);
@@ -4118,11 +4119,12 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
     // Standard NonLinearity - standard kPi0MCv5 for MC and kSDMv5 for data from Jason
     case 1:
-      if( fClusterType == 0 || fClusterType == 1|| fClusterType == 3){
+      if( fClusterType == 1|| fClusterType == 3){
         energy *= FunctionNL_kPi0MCv5(energy);
         if(isMC == 0) energy *= FunctionNL_kSDMv5(energy);
       }
       else if ( fClusterType == 2 ){
+	// NonLinearity correction from PHOS group for LHC10b-f
         if(isMC>0)
           energy = FunctionNL_PHOS(energy, 1.008, 0.015, 0.4);
       }
