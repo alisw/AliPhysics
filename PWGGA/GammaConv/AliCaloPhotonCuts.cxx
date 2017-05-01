@@ -2533,6 +2533,10 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
     //Select PHOS cluster
     if (fClusterType == 2 && !cluster->IsPHOS()){
       FillClusterCutIndex(kDetector);
+      // Apply nonlinearity on PHOS cluster
+      if(fHistEnergyOfClusterBeforeNL) fHistEnergyOfClusterBeforeNL->Fill(cluster->E(),weight);
+      CorrectEMCalNonLinearity(cluster,isMC);
+      if(fHistEnergyOfClusterAfterNL) fHistEnergyOfClusterAfterNL->Fill(cluster->E(),weight);
       return kFALSE;
     }
   }
@@ -4115,8 +4119,15 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
     // Standard NonLinearity - standard kPi0MCv5 for MC and kSDMv5 for data from Jason
     case 1:
-      energy *= FunctionNL_kPi0MCv5(energy);
-      if(isMC == 0) energy *= FunctionNL_kSDMv5(energy);
+      if( fClusterType == 1|| fClusterType == 3){
+        energy *= FunctionNL_kPi0MCv5(energy);
+        if(isMC == 0) energy *= FunctionNL_kSDMv5(energy);
+      }
+      else if ( fClusterType == 2 ){
+	// NonLinearity correction from PHOS group for LHC10b-f
+        if(isMC>0)
+          energy = FunctionNL_PHOS(energy, 1.008, 0.015, 0.4);
+      }
       break;
 
     // kPi0MCv3 for MC and kTestBeamv3 for data
@@ -4157,6 +4168,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
       if(isMC == 0) energy *= FunctionNL_kSDMv6(energy);
       else energy *= FunctionNL_kPi0MCv6(energy);
       break;
+
 //----------------------------------------------------------------------------------------------------------
 
 // *************** 10 + x **** default tender settings - pp 
@@ -4550,6 +4562,11 @@ Float_t AliCaloPhotonCuts::FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Fl
     return ret;
   else 
     return 1.;
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_PHOS(Float_t e, Float_t p0, Float_t p1, Float_t p2){
+  return (0.0241+1.0504*e+0.000249*e*e)*p0*(1+p1/(1.+e*e/p2/p2)) ;
 }
 
 //************************************************************************
