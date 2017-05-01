@@ -1741,10 +1741,10 @@ void AliAnalysisTaskZDCGainEq::UserExec(Option_t *)
 
 
 
-  if(fievent%10==0) {
+  //if(fievent%10==0) {
     //std::cout<<fievent<<" cTPC= "<<EvtCent<<"\t wZDA1 = "<<ChanWgtZDCA[1]<<"\t wZDA2 = "<<ChanWgtZDCA[2]<<"\tRefMult = "<<nRefMult<<std::endl;
-    std::cout<<" cx = "<<meanCx<<"\t cy = "<<meanCy<<"\t Qnx_TPC[0] = "<<Qnx_TPC[0]<<"\t Qnx_TPC[1] = "<<Qnx_TPC[1]<<std::endl;
-  }
+    //std::cout<<" cx = "<<meanCx<<"\t cy = "<<meanCy<<"\t Qnx_TPC[0] = "<<Qnx_TPC[0]<<"\t Qnx_TPC[1] = "<<Qnx_TPC[1]<<std::endl;
+  //}
 
 
   PostData(1,fListHistos);
