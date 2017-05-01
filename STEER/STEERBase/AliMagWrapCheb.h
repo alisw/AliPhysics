@@ -102,6 +102,10 @@ class AliMagWrapCheb: public TNamed
   AliCheb3D* GetParamTPCInt(Int_t ipar)                   const {return (AliCheb3D*)fParamsTPC->UncheckedAt(ipar);}
   AliCheb3D* GetParamDip(Int_t ipar)                      const {return (AliCheb3D*)fParamsDip->UncheckedAt(ipar);}
   //
+  
+  Int_t GetDipSegmentsForZSlice(int zid, TObjArray& arr)  const;
+  Float_t* GetDipZSegArray()                              const {return fSegZDip;}
+
   virtual void Print(Option_t * = "")                     const;
   //
   virtual void Field(const Double_t *xyz, Double_t *b)    const;

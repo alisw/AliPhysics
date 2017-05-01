@@ -99,6 +99,7 @@ set(SRCS
     AliGenPerformance.cxx
     AliGenReadersEMD.cxx
     AliGenToy.cxx
+    AliGenReaderLHE.cxx
 )
 
 # Headers from sources
@@ -114,7 +115,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD TEvtGen FASTSIM THepMCParser)
+set(LIBDEPS STEERBase STEER ESD TEvtGen FASTSIM THepMCParser XMLIO)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

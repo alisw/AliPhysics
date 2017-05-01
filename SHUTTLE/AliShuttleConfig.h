@@ -111,7 +111,9 @@ public:
 
 	virtual void Print(Option_t* option = NULL) const;
 
+#if !defined(G__ROOT) && !defined(__CINT__) && !defined(G__DICTIONARY)
 private:
+#endif
 
 	class AliShuttleDCSConfigHolder: public TObject {
 	public:
@@ -185,7 +187,7 @@ private:
 		ClassDef(AliShuttleDetConfigHolder, 0);
 	};
 
-
+private:
 	AliShuttleConfig(const AliShuttleConfig& other);
 	AliShuttleConfig& operator= (const AliShuttleConfig& other);
 	UInt_t SetGlobalConfig(TList* globalList);
