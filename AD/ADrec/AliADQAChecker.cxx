@@ -1016,9 +1016,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 
     histoBlue->GetYaxis()->SetRangeUser(TMath::MinElement(2,min)+1 ,2*TMath::MaxElement(2,max));
     hcp = histoBlue->DrawCopy();
-    //delete hcp;
     hcp = histoRed->DrawCopy("same");
-    //delete hcp;
 
     myLegend1->Draw();
 
@@ -1026,7 +1024,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     gPad->SetLogz();
     histo=(TH1*)(list[esIndex]->At(AliADQADataMakerRec::kChargeEoIBB));
     hcp = histo->DrawCopy("COLZ");
-    //delete hcp;
 
     //Zoommed charge pad
     pChargeZoom->cd(5);
@@ -1034,19 +1031,16 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     histoRatio = (TH1*)(histo->Clone("histoRatioCloned"));
     histoRatio->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
     hcp = histoRatio->DrawCopy("COLZ");
-    //delete hcp;
     pChargeZoom->cd(4);
     gPad->SetLogz();
     histoDenominator=(TH1*)(list[esIndex]->At(AliADQADataMakerRec::kChargeEoI));
     histoDenominator->GetYaxis()->SetRangeUser(fChargeChannelZoomMin,fChargeChannelZoomMax);
     hcp = histoDenominator->DrawCopy("COLZ");
-    //delete hcp;
     pChargeZoom->cd(6);
     gPad->SetLogz();
     histoRatio->Divide(histoDenominator);
     histoRatio->SetTitle("Ratio: w_BB_Flag/All");
     hcp = histoRatio->DrawCopy("COLZ");
-    //delete hcp;
     delete histoRatio;
 
     for(Int_t iHist = 0; iHist<3; iHist++){
@@ -1054,7 +1048,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       histo2D=(TH2*)(list[esIndex]->At(AliADQADataMakerRec::kChargeVsClockInt0+iHist));
       if(iHist==2)gPad->SetLogz();
       hcp = histo2D->DrawCopy("COLZ");
-      //delete hcp;
     }
 
     //Time pad
@@ -1063,7 +1056,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       if(iHist==3)gPad->SetLogz();
       histo2D=(TH2*)(list[esIndex]->At(AliADQADataMakerRec::kHPTDCTime+iHist));
       hcp = histo2D->DrawCopy("COLZ");
-      //delete hcp;
     }
 
     //Time ratio pad
@@ -1079,9 +1071,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
     histoBlue->GetYaxis()->SetRangeUser(0,2*TMath::MaxElement(2,max));
     hcp = histoBlue->DrawCopy();
-    //delete hcp;
     hcp = histoRed->DrawCopy("same");
-    //delete hcp;
     myLegend2->Draw();
     delete histoBlue;
     delete histoRed;
@@ -1096,7 +1086,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       if(iHist == 1)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
       if(iHist == 2)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBGZoomMin,fTimeRatioBGZoomMax);
       hcp = histoRatio->DrawCopy("COLZ");
-      //delete hcp;
       delete histoRatio;
     }
     pTimeRatio->cd(4);
@@ -1118,13 +1107,9 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 
     histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.8*TMath::MaxElement(2,max));
     hcp = histoBlue->DrawCopy("e");
-    //delete hcp;
     hcp = histoBlue->DrawCopy("esame");
-    //delete hcp;
     hcp = histoRed->DrawCopy("samehist");
-    //delete hcp;
     hcp = histoRed->DrawCopy("esame");
-    //delete hcp;
     myLegend3->Draw();
     delete histoBlue;
     delete histoRed;
@@ -1135,7 +1120,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       if(iHist>1)gPad->SetLogz();
       histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kBBFlagVsClock+iHist);
       hcp = histo->DrawCopy("COLZ");
-      //delete hcp;
     }
 
     //Coincidences pad
@@ -1144,10 +1128,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       gPad->SetLogy();
       histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADC+2*iHist);
       hcp = histo->DrawCopy();
-      //delete hcp;
       histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincADA+2*iHist);
       hcp = histo->DrawCopy("same");
-      //delete hcp;
       myLegend1->Draw();
     }
     for(Int_t iHist = 0; iHist<2; iHist++){
@@ -1155,7 +1137,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       gPad->SetLogz();
       histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNBBCoincCorr+iHist);
       hcp = histo->DrawCopy("COLZ");
-      //delete hcp;
     }
     //Pedestal monitoring pad
     for(Int_t iHist = 0; iHist<2; iHist++){
@@ -1163,7 +1144,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       if(AliRecoParam::ConvertIndex(esIndex) == AliRecoParam::kCalib) histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kPedestalInt0+iHist);
       else histo=(TH1*) list[esIndex]->At(AliADQADataMakerRec::kPedestalDiffInt0+iHist);
       hcp = histo->DrawCopy("COLZ");
-      //delete hcp;
     }
 
     //Saturation monitoring pad
@@ -1173,7 +1153,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     histo2DCopy = (TH2*)histo2D->Clone("histoBlueCloned");
     histo2DCopy->RebinY(64);
     hcp = histo2DCopy->DrawCopy("COLZ");
-    //delete hcp;
     delete histo2DCopy;
 
     //Trigger inputs pad
@@ -1181,9 +1160,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTriggers);
     gPad->SetLogy();
     hcp = histo->DrawCopy("HIST");
-    //delete hcp;
     hcp = histo->DrawCopy("TEXT0SAME");
-    //delete hcp;
     //Mean time pad
     pMeanTime->cd(1);
     histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);
@@ -1195,9 +1172,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
     histoBlue->GetYaxis()->SetRangeUser(0,1.1*TMath::MaxElement(2,max));
     hcp = histoBlue->DrawCopy();
-    //delete hcp;
     hcp = histoRed->DrawCopy("same");
-    //delete hcp;
     myLegend1->Draw();
     delete histoBlue;
     delete histoRed;
@@ -1206,7 +1181,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       gPad->SetLogz();
       histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeDiff+iHist);
       hcp = histo->DrawCopy("COLZ");
-      //delete hcp;
     }
 
     //Decisions pad
@@ -1236,7 +1210,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     fTimeSlewingSplineADA->SetLineColor(kPink);
 
     hcp = histo2DCopy->DrawCopy("COLZ");
-    //delete hcp;
     delete histo2DCopy;
     fTimeSlewingSplineADA->Draw("Psame");
     delete hMeanTimeVsChargeADA;
@@ -1282,7 +1255,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     histoBlue->GetYaxis()->SetTitle("Quantile 0.9");
     histoBlue->GetXaxis()->SetRange(1,histoBlue->GetNbinsX()-1);
     hcp = histoBlue->DrawCopy();
-    //delete hcp;
     hcp = histoRed->DrawCopy("same");
     delete hcp;
     myLegend1->Draw();
