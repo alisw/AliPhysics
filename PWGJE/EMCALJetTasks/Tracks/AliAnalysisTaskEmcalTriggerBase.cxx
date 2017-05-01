@@ -128,6 +128,15 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
 
   fHistos = new THistManager(Form("Histos_%s", GetName()));
 
+  // Create trigger correlation histogram
+  fHistos->CreateTH2("hTriggerCorrelation", "Correlation selected trigger classes", 6, -0.5, 5.5, 6, -0.5, 5.5);
+  std::array<TString, 6> binlabels = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2"};
+  TH1 *correlationHist = static_cast<TH1 *>(fHistos->FindObject("hTriggerCorrelation"));
+  for(int ib = 0; ib < 6; ib++){
+    correlationHist->GetXaxis()->SetBinLabel(ib+1, binlabels[ib]);
+    correlationHist->GetYaxis()->SetBinLabel(ib+1, binlabels[ib]);
+  }
+
   CreateUserObjects();
   CreateUserHistos();
 
@@ -161,6 +170,20 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
     if(!CheckMCOutliers()){
       AliDebugStream(1) << GetName() << ": Reject MC outliers" << std::endl;
       return false;
+    }
+  }
+
+  // Fill histogram with trigger correlation
+  // self-correlations included
+  std::array<TString, 6> kAbsTriggers = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2"};
+  for(int itrg = 0; itrg < 6; itrg++){
+    bool hasTriggerA = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kAbsTriggers[itrg]) != fSelectedTriggers.end());
+    if(hasTriggerA) {
+      for(int jtrg = 0; jtrg < 6; jtrg++){
+        bool hasTriggerB = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kAbsTriggers[jtrg]) != fSelectedTriggers.end());
+        if(hasTriggerB)
+          fHistos->FillTH2("hTriggerCorrelation", kAbsTriggers[itrg], kAbsTriggers[jtrg]);
+      }
     }
   }
 

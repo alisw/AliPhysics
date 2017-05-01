@@ -564,6 +564,19 @@ public:
 	 */
 	void FillTH2(const char *hname, double x, double y, double weight = 1., Option_t *opt = "");
 
+  /**
+   * @brief Fill a 2D histogram within the container.
+   *
+   * The histogram name also contains the parent group(s)
+   * according to the common group notation.
+   * @param[in] name Name of the histogram
+   * @param[in] labelX x-coordinate
+   * @param[in] labelY y-coordinate
+   * @param[in] weight optional weight of the entry (default 1)
+   * @param[in] option Optional filling arguments
+   */
+	void FillTH2(const char *name, const char *labelX, const char *labelY, double weight = 1., Option_t *opt = "");
+
 	/**
 	 * @brief Fill a 2D histogram within the container.
 	 *
