@@ -80,9 +80,9 @@ fL0Time(0)
   Int_t nPhi = rSize.X();
   Int_t nEta = rSize.Y();
 
-  for (Int_t iphim=0;iphim<4;iphim++)
+  for (Int_t iphim=0;iphim<nPhi;iphim++)
   {
-    for (Int_t ietam=0;ietam<24;ietam++)
+    for (Int_t ietam=0;ietam<nEta;ietam++)
     {
       // idx: 0..95 since iphim: 0..11 ietam: 0..23
 //      Int_t idx = ( !mapType ) ? ( 3 - iphim ) + ietam * 4 : iphim + (23 - ietam) * 4;	
