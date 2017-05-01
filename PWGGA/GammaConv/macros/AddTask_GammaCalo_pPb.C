@@ -223,6 +223,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000013","1111142057032230000","0163103100000050"); // calo nonlinearity variation
     cuts.AddCut("80000013","1111151057032230000","0163103100000050"); // calo nonlinearity variation
     cuts.AddCut("80000013","1111152057032230000","0163103100000050"); // calo nonlinearity variation
+    cuts.AddCut("80000013","1111100057032230000","0163103100000050"); // no non-lin
   } else if(trainConfig == 41){ // second set of variations CLUSTER
     cuts.AddCut("80000013","1111141057022230000","0163103100000050"); // min energy cluster variation 1  600 MeV
     cuts.AddCut("80000013","1111141057042230000","0163103100000050"); // min energy cluster variation 2  800 MeV
@@ -276,6 +277,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80052013","1111142057032230000","0163103100000050"); // calo nonlinearity variation
     cuts.AddCut("80052013","1111151057032230000","0163103100000050"); // calo nonlinearity variation
     cuts.AddCut("80052013","1111152057032230000","0163103100000050"); // calo nonlinearity variation
+    cuts.AddCut("80052013","1111100057032230000","0163103100000050"); // no non-lin
   } else if(trainConfig == 51){ // second set of variations CLUSTER
     cuts.AddCut("80052013","1111141057022230000","0163103100000050"); // min energy cluster variation 1  600 MeV
     cuts.AddCut("80052013","1111141057042230000","0163103100000050"); // min energy cluster variation 2  800 MeV
@@ -320,6 +322,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80083013","1111142057032230000","0163103100000050"); // calo nonlinearity variation
     cuts.AddCut("80083013","1111151057032230000","0163103100000050"); // calo nonlinearity variation
     cuts.AddCut("80083013","1111152057032230000","0163103100000050"); // calo nonlinearity variation
+    cuts.AddCut("80083013","1111100057032230000","0163103100000050"); // no non-lin
   } else if(trainConfig == 61){ // second set of variations CLUSTER
     cuts.AddCut("80083013","1111141057022230000","0163103100000050"); // min energy cluster variation 1  600 MeV
     cuts.AddCut("80083013","1111141057042230000","0163103100000050"); // min energy cluster variation 2  800 MeV
@@ -363,6 +366,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80085013","1111142057032230000","0163103100000050"); // calo nonlinearity variation
     cuts.AddCut("80085013","1111151057032230000","0163103100000050"); // calo nonlinearity variation
     cuts.AddCut("80085013","1111152057032230000","0163103100000050"); // calo nonlinearity variation
+    cuts.AddCut("80085013","1111100057032230000","0163103100000050"); // no non-lin
   } else if(trainConfig == 71){ // second set of variations CLUSTER
     cuts.AddCut("80085013","1111141057022230000","0163103100000050"); // min energy cluster variation 1  600 MeV
     cuts.AddCut("80085013","1111141057042230000","0163103100000050"); // min energy cluster variation 2  800 MeV
