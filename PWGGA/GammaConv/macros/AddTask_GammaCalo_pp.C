@@ -986,6 +986,12 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","2444400043013350000","0163803100000010"); // 100ns timing cut, M02<0.3
     cuts.AddCut("00000113","2444400043013330000","0163803100000010"); // 100ns timing cut, M02<0.5
     cuts.AddCut("00000113","2444400043013320000","0163803100000010"); // 100ns timing cut, M02<0.7
+  } else if (trainConfig == 353){ // same as 352 but with PHOS nonlinearity
+    cuts.AddCut("00000113","2444401040013300000","0163803100000010"); // 100ns timing cut, no track matching
+    cuts.AddCut("00000113","2444401043013300000","0163803100000010"); // 100ns timing cut
+    cuts.AddCut("00000113","2444401043013350000","0163803100000010"); // 100ns timing cut, M02<0.3
+    cuts.AddCut("00000113","2444401043013330000","0163803100000010"); // 100ns timing cut, M02<0.5
+    cuts.AddCut("00000113","2444401043013320000","0163803100000010"); // 100ns timing cut, M02<0.7
   
   // 7 TeV PHOS
   } else if (trainConfig == 361){
