@@ -294,6 +294,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     //_________________________________________________
     // Process TH3Fs and expand into histograms of interest
     TH3F *f3dHistData = (TH3F*) lDataResult->GetHistogram()->Clone("f3dHistData");
+    f3dHistData->SetDirectory(0);
+    fListData->Add(f3dHistData);
     
     //Check if multiplicity interval requested is possible
     Bool_t lCheckMult = CheckCompatibleMultiplicity ( f3dHistData );
@@ -365,6 +367,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         //_________________________________________________
         // Process TH3Fs and expand into histograms of interest
         TH3F *f3dHistLSData = (TH3F*) lLSDataResult->GetHistogram()->Clone("f3dHistLSData");
+        f3dHistLSData->SetDirectory(0);
+        fListData->Add(f3dHistLSData);
         //Check if multiplicity interval requested is possible
         Bool_t lCheckMult = CheckCompatibleMultiplicity ( f3dHistLSData );
         if ( !lCheckMult ){
@@ -531,6 +535,12 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     TString lMCName = lConfiguration.Data();
     lMCName.Append("_MC");
     AliVWeakResult *lMCResult = (AliVWeakResult*) lMCInput->FindObject(lConfiguration.Data())->Clone( lMCName.Data() ) ;
+    
+    //============================================================================
+    //Do bookkeeping of base input
+    fListMC->Add(lMCResult);
+    //============================================================================
+    
     if(lVerbose) lMCResult->Print();
     
     //Compatibility check 1: check if generated with the same cuts
@@ -546,6 +556,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     //_________________________________________________
     // Process TH3Fs and expand into histograms of interest
     TH3F *f3dHistMC = (TH3F*) lMCResult->GetHistogram()->Clone("f3dHistMC");
+    f3dHistMC->SetDirectory(0);
+    fListMC->Add(f3dHistMC);
     
     //Check if multiplicity interval requested is possible
     Bool_t lCheckMultMC = CheckCompatibleMultiplicity ( f3dHistMC );
@@ -608,6 +620,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     lGenObjName.Append( lDataResult->GetParticleName() ) ;
     TH3F *f3dHistGenMC = (TH3F*) lMCCountersInput->FindObject( lGenObjName.Data() )->Clone("f3dHistGenMC");
     f3dHistGenMC->Sumw2();
+    f3dHistGenMC->SetDirectory(0);
+    fListMC->Add(f3dHistGenMC);
     //Project this into a 1D histogram, please
     TH1D* fHistGeneratedOriginal = f3dHistGenMC -> ProjectionX( "fHistGeneratedOriginal",
                                                        f3dHistGenMC->GetYaxis()->FindBin(lDataResult->GetCutMinRapidity()+1e-5),
@@ -617,16 +631,13 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
                                                        );
     fHistGeneratedOriginal->SetDirectory(0);
     
-    //Save this as a very relevant histogram
-    fListOutput->Add(fHistGeneratedOriginal);
-    
     //Rebin
     TH1D* fHistGenerated = (TH1D*) fHistGeneratedOriginal->Rebin( lNPtBins, "fHistGenerated", lPtBins );
     fHistGenerated->SetDirectory(0);
     
     //Save this as a very relevant histogram
-    fListOutput->Add(fHistGeneratedOriginal);
-    fListOutput->Add(fHistGenerated);
+    fListMC->Add(fHistGeneratedOriginal);
+    fListMC->Add(fHistGenerated);
     
     //Generate Efficiency Histogram
     TH1D* fHistEfficiency = (TH1D*) fHistRawVsPtMC -> Clone ("fHistEfficiency") ;
@@ -657,7 +668,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         if( !lFuncG3FCorr ) {
             AliWarning("Something went wrong with the determination of the G3/F correction!"); return 0x0;
         }
-        fListOutput->Add(lFuncG3FCorr); //add function to output for completeness
+        
+        fListMC->Add(lFuncG3FCorr); //add function to output for completeness
         //=====================================================================================
         //the geant3/fluka logic:
         // --- in geant3: excessive antiparticle yield due to underestimated efficiencies
@@ -667,20 +679,20 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         
         TH1D *fHistG3FCorrection = new TH1D("fHistG3FCorrection", "", lNPtBins, lPtBins);
         TProfile * fProfProtonComplete = (TProfile*) lMCResult->GetProtonProfileToCopy()->Clone("fProfProtonComplete");
+        fProfProtonComplete->SetDirectory(0);
         
         //rebin to match
         TProfile *fProfProton = (TProfile*) fProfProtonComplete->Rebin( lNPtBins, "fProfProton", lPtBins );
+        fProfProton->SetDirectory(0);
         
-        fListOutput -> Add(fProfProtonComplete);
-        fListOutput -> Add(fProfProton);
+        fListMC -> Add(fProfProtonComplete);
+        fListMC -> Add(fProfProton);
         
         for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
             Double_t lProtonMomentum = 1.0;
-            //Temporary: fraction of bin center (to be fixed once proton profile is OK)
-            lProtonMomentum = fHistG3FCorrection->GetBinCenter(ibin+1) * 0.75;
             
-            //Final: use proton profile information from MC (commented for now)
-            //lProtonMomentum = fProfProton->GetBinContent(ibin+1);
+            //use proton profile information from MC
+            lProtonMomentum = fProfProton->GetBinContent(ibin+1);
             fHistG3FCorrection -> SetBinContent(ibin+1, lFuncG3FCorr->Eval(lProtonMomentum) );
             
             //Apply correction on a bin-by-bin basis
