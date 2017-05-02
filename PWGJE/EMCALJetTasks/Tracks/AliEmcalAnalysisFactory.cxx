@@ -72,7 +72,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
       esdcuts->SetMaxChi2PerClusterITS(cutvalue);
       trackcuts.push_back(esdcuts);
     }
-    if(cut.Contains("VarTPCchi2")){
+    if(cut.Contains("VarTPCchi2") && !cut.Contains("Constrained")){
       double cutvalue = ValueDecoder(cut, "VarTPCchi2");
       AliESDtrackCuts *esdcuts = GenerateDefaultCutsESD();
       esdcuts->SetName(TString::Format("VarTPCchi2Cut%04d", static_cast<int>(cutvalue * 10.)));
