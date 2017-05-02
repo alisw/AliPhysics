@@ -37,7 +37,10 @@ void runPsTask(const char* mode = "test", bool isMC=true){
   mgr->SetInputEventHandler(aodH);
   // Compile the class
   gROOT->LoadMacro("AliAnalysisTaskPsEfficiency.cxx++g");
-  // Load the addtask macro
+  // PID response
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AliAnalysisTaskPIDResponse *pidTask = AddTaskPIDResponse(isMC); // useMC
+  // Ps efficiency task
   gROOT->LoadMacro("AddTaskPsEfficiency.C");
   AliAnalysisTaskPsEfficiency *task = AddTaskPsEfficiency(isMC);
   // Disbale debug printouts
