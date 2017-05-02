@@ -975,7 +975,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       myLegend3->AddEntry(histoRed,"Events with BG flag","l");
     }
     
-    fImage[esIndex]->Clear("D");
+    fImage[esIndex]->Clear();
     fImage[esIndex]->cd();
     
     TLatex topText;
