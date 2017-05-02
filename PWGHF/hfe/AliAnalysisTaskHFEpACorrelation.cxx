@@ -2566,7 +2566,7 @@ void AliAnalysisTaskHFEpACorrelation::ComputeWeightInEnhancedSample()
         Bool_t IsEnhancedHF = kFALSE;
         
         Double_t Eta = particle->Eta();
-        if (Eta<-1.2 || Eta > 1.2)
+        if (Eta<-0.8 || Eta > 0.8)
             continue;
         
         CocktailType_t Type = FindTrackGenerator(MCIndex, fMCheader,fMCarray);
