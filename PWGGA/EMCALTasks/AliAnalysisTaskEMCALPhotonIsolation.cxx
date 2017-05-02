@@ -2880,15 +2880,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
 
   Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
   Double_t etaBandArea = ((fGeom->GetArm1EtaMax()-0.03)-(fGeom->GetArm1EtaMin()+0.03))*2.*fIsoConeRadius-isoConeArea;
+  Double_t phiBandArea = 0.;
 
   if(fPeriod != ""){
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      Double_t phiBandArea = (((fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
+      phiBandArea = (((fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
     else
-      Double_t phiBandArea = (((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
+      phiBandArea = (((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
   }
   else{
-    Double_t phiBandArea = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
+    phiBandArea = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
   }
 
   TLorentzVector vecCOI;
