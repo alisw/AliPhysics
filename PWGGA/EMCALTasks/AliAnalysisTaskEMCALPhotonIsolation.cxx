@@ -97,6 +97,7 @@ fTriggerLevel1(0),
 fTest1(0),
 fTest2(0),
 fMCtruth(0),
+fPeriod(""),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -268,6 +269,7 @@ fTriggerLevel1(0),
 fTest1(0),
 fTest2(0),
 fMCtruth(0),
+fPeriod(""),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -1835,8 +1837,25 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   
   Double_t sumEnergyPhiBandClus=0., sumEnergyConeClus=0., sumpTConeCharged=0., sumpTPhiBandTracks=0.;
   Double_t clustTOF,phiClust,etaClust, radius;
-  Double_t minPhi = 1.4, maxPhi = 3.15, minEta=-0.67, maxEta=0.67;
-  
+  Double_t minPhi = 0., maxPhi = 0., minEta = 0., maxEta = 0.;
+
+  if(fPeriod != ""){
+    minEta = fGeom->GetArm1EtaMin()+0.03;
+    maxEta = fGeom->GetArm1EtaMax()-0.03;
+    minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+
+    if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+      maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+    else
+      maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+  }
+  else{
+    minPhi = (4./9.)*TMath::Pi()+0.03;
+    maxPhi = TMath::Pi()-0.03;
+    minEta = -0.67;
+    maxEta = 0.67;
+  }
+
   // Needs a check on the same cluster
   // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
@@ -1999,7 +2018,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   
   Float_t sumEnergyEtaBandClus =0., sumEnergyConeClus=0., sumpTConeCharged=0, sumpTEtaBandTracks=0.;
   Double_t clustTOF=0;
-  Double_t minEta = -0.67, maxEta = 0.67, minPhi=1.398,maxPhi=TMath::Pi(); // maxPhi-minPhi != (5/9)*pi !! Anyway, minPhi = 1.4 elsewhere in the task
+  Double_t minPhi = 0., maxPhi = 0., minEta = 0., maxEta = 0.;
+
+  if(fPeriod != ""){
+    minEta = fGeom->GetArm1EtaMin()+0.03;
+    maxEta = fGeom->GetArm1EtaMax()-0.03;
+    minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+
+    if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+      maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+    else
+      maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+  }
+  else{
+    minPhi = (4./9.)*TMath::Pi()+0.03;
+    maxPhi = TMath::Pi()-0.03;
+    minEta = -0.67;
+    maxEta = 0.67;
+  }
   
   // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
@@ -2166,15 +2202,26 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
 
     // Underlying events study with tracks in phi band
   
-  // INSERT BOUNDARIES ACCORDING TO THE FLAG WE WANT TO USE
   Double_t sumpTConeCharged=0., sumpTPhiBandTrack=0.;
-  Double_t minPhi= 0., maxPhi= 2*TMath::Pi(), minEta = -0.87, maxEta= 0.87;
+  Double_t minPhi = 0., maxPhi = 2.*TMath::Pi(), minEta = -0.87, maxEta = 0.87;
   
   if(!fTPC4Iso){
-    minEta = -0.67;
-    maxEta = 0.67;
-    minPhi = 1.4;
-    maxPhi = 3.15;
+    if(fPeriod != ""){
+      minEta = fGeom->GetArm1EtaMin()+0.03;
+      maxEta = fGeom->GetArm1EtaMax()-0.03;
+      minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+
+      if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+      else
+	maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+    }
+    else{
+      minEta = -0.67;
+      maxEta = 0.67;
+      minPhi = (4./9.)*TMath::Pi()+0.03;
+      maxPhi = TMath::Pi()-0.03;
+    }
   }
   
   AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
@@ -2249,15 +2296,26 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
 
     // Underlying events study with tracks in eta band
   
-  // INSERT BOUNDARIES ACCORDING TO THE FLAG WE WANT TO USE
   Double_t sumpTConeCharged=0., sumpTEtaBandTrack=0.;
-  Double_t minPhi= 0., maxPhi= 2*TMath::Pi(), minEta = -0.87, maxEta= 0.87;
+  Double_t minPhi = 0., maxPhi = 2.*TMath::Pi(), minEta = -0.87, maxEta = 0.87;
   
   if(!fTPC4Iso){
-    minEta = -0.67;
-    maxEta = 0.67;
-    minPhi = 1.4;
-    maxPhi = 3.15;
+    if(fPeriod != ""){
+      minEta = fGeom->GetArm1EtaMin()+0.03;
+      maxEta = fGeom->GetArm1EtaMax()-0.03;
+      minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+
+      if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+      else
+	maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+    }
+    else{
+      minEta = -0.67;
+      maxEta = 0.67;
+      minPhi = (4./9.)*TMath::Pi()+0.03;
+      maxPhi = TMath::Pi()-0.03;
+    }
   }
 
   AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");  
@@ -2494,31 +2552,42 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
     // Check if the cone around the considered cluster is in EMCal acceptance
   // AliInfo("Inside CheckBoundaries\n");
   
-  Double_t minPhiBound= 0. , minEtaBound= 0., maxPhiBound= 0., maxEtaBound= 0.;
+  Double_t minPhiBound = 0. , minEtaBound = 0., maxPhiBound = 0., maxEtaBound = 0.;
   Bool_t isINBoundaries;
   
-  if(fTPC4Iso){ // In order not to have the isolation partially outside the TPC eta acceptance
-    minPhiBound = 1.4;
-    
-    if(!fAnalysispPb) // Normally 110° but shorter cut to avoid EMCal border
-      maxPhiBound = 2.740;
-    else
-      maxPhiBound = 3.15; // Maybe better to set as minPhiBound + (5./9.)*TMath::Pi()
-    
-    minEtaBound = -0.87+fIsoConeRadius; // ""
-    maxEtaBound = 0.87-fIsoConeRadius; // ""
-  }
-  else{
-    minEtaBound = -0.67+fIsoConeRadius; // ""
-    maxEtaBound = 0.67-fIsoConeRadius; // ""
-    
-    if(!fAnalysispPb){ // Normally 110° but shorter cut to avoid EMCal border
-      minPhiBound = 1.798;
-      maxPhiBound = 2.740;
+  if(fTPC4Iso){
+    minEtaBound = -0.87+fIsoConeRadius;
+    maxEtaBound = 0.87-fIsoConeRadius;
+
+    if(fPeriod != ""){
+      minPhiBound = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+
+      if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	maxPhiBound = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03;
+      else
+	maxPhiBound = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
     }
     else{
-      minPhiBound = 1.4+fIsoConeRadius;
-      maxPhiBound = 3.15-fIsoConeRadius;
+      minPhiBound = (4./9.)*TMath::Pi()+0.03;
+      maxPhiBound = TMath::Pi()-0.03;
+    }
+  }
+  else{
+    if(fPeriod != ""){
+      minEtaBound = fGeom->GetArm1EtaMin()+0.03+fIsoConeRadius;
+      maxEtaBound = fGeom->GetArm1EtaMax()-0.03-fIsoConeRadius;
+      minPhiBound = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fIsoConeRadius;
+
+      if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	maxPhiBound = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03-fIsoConeRadius;
+      else
+	maxPhiBound = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03-fIsoConeRadius;
+    }
+    else{
+      minEtaBound = -0.67+fIsoConeRadius;
+      maxEtaBound = 0.67-fIsoConeRadius;
+      minPhiBound = (4./9.)*TMath::Pi()+0.03+fIsoConeRadius;
+      maxPhiBound = TMath::Pi()-0.03-fIsoConeRadius;
     }
   }
   
@@ -2810,9 +2879,19 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
   // Printf("Inside IsolationAncUEinEMCal");
 
   Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
-  Double_t etaBandArea = 1.34*2.*fIsoConeRadius-isoConeArea;                // 1.34 = 2*0.67
-  Double_t phiBandArea = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea; // (5./9.)*TMath::Pi() = 100 deg = 5 SM, 20 deg each
-  
+  Double_t etaBandArea = ((fGeom->GetArm1EtaMax()-0.03)-(fGeom->GetArm1EtaMin()+0.03))*2.*fIsoConeRadius-isoConeArea;
+  Double_t phiBandArea = 0.;
+
+  if(fPeriod != ""){
+    if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+      phiBandArea = (((fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
+    else
+      phiBandArea = (((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
+  }
+  else{
+    phiBandArea = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
+  }
+
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI,fVertex);
   Double_t m02COI=coi->GetM02();
@@ -3344,9 +3423,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
   
   Double_t etap=mcpp->Eta();
   Double_t phip=mcpp->Phi();
-  
+
   if(!fTPC4Iso){
-    if(TMath::Abs(etap)>=0.67 || (phip<=1.4 || phip>= TMath::Pi()))
+    if(TMath::Abs(etap)>=(fGeom->GetArm1EtaMax()-0.03) || (phip<=((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03) || phip>= ((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)))
       return;
     else{
       switch(fUEMethod)
@@ -3426,7 +3505,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
 void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t& sumUE){
   
   Double_t isoConeArea   = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
-  Double_t etaBandArea   = 1.34*2.*fIsoConeRadius-isoConeArea;
+  Double_t etaBandArea   = ((fGeom->GetArm1EtaMax()-0.03)-(fGeom->GetArm1EtaMin()+0.03))*2.*fIsoConeRadius-isoConeArea;
   Double_t phiBandArea   = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
   Double_t etaBandAreaTr = 1.74*2.*fIsoConeRadius-isoConeArea;
   Double_t phiBandAreaTr = 2.*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
@@ -3542,14 +3621,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       
       eta = mcpart->Eta();
       phi = mcpart->Phi();
-      
+
       // Check photons in EMCal
       if(!fTPC4Iso){
-        if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.398 + fIsoConeRadius || phi>(TMath::Pi()-fIsoConeRadius-0.03)))
+        if((TMath::Abs(eta)>(fGeom->GetArm1EtaMax()-0.03)-fIsoConeRadius ) || (phi < ((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fIsoConeRadius) || phi>((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03-fIsoConeRadius)))
           continue;
       }
       else{
-        if((TMath::Abs(eta)>0.87-fIsoConeRadius ) || (phi < 1.398 || phi>(TMath::Pi()-0.03)))
+        if((TMath::Abs(eta)>0.87-fIsoConeRadius ) || (phi < ((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03) || phi>((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)))
           continue;
       }
       
@@ -3685,11 +3764,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 	continue;
 
       if(!fTPC4Iso){
-        if((TMath::Abs(mcsearch->Eta())>0.67-fIsoConeRadius ) || (mcsearch->Phi() < 1.398 + fIsoConeRadius || mcsearch->Phi()>(TMath::Pi()-fIsoConeRadius-0.03)))
+        if((TMath::Abs(mcsearch->Eta())>(fGeom->GetArm1EtaMax()-0.03)-fIsoConeRadius ) || (mcsearch->Phi() < ((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fIsoConeRadius) || mcsearch->Phi()>((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03-fIsoConeRadius)))
           continue;
       }
       else{
-        if((TMath::Abs(mcsearch->Eta())>0.87-fIsoConeRadius ) || (mcsearch->Phi() < 1.398 || mcsearch->Phi()>(TMath::Pi()-0.03)))
+        if((TMath::Abs(mcsearch->Eta())>0.87-fIsoConeRadius ) || (mcsearch->Phi() < ((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03) || mcsearch->Phi()>((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)))
           continue;
       }
 
