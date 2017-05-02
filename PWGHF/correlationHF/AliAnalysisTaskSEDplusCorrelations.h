@@ -60,13 +60,14 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void SetTCConfig(Bool_t TCcong=kFALSE){fTCconfig=TCcong;}
     void SetTrackEffActive(Bool_t effTrack=kFALSE){fEffTrack=effTrack;}
     void SetDplusEffActive(Bool_t effDplus=kFALSE){fEffDplus=effDplus;}
-    void SetUseCentrality(Bool_t flag, Int_t estimator){fEvalCentrality=flag; fCentralityEstimator=estimator;}
+    void SetUseCentrality(Bool_t flag, Int_t estimator, Bool_t flag2){fEvalCentrality=flag; fCentralityEstimator=estimator; fPoolbyCent=flag2;}
     void SetBinWidth(Float_t BinW){fBinWidth=BinW;}
     void SetMCGevEventType(Bool_t sel1=kFALSE){fMCGenEvType=sel1;}
     void SetPoolByPoolCorr(Bool_t sel2=kFALSE){fPoolByPool=sel2;}
     void SetCheckCutDistandChoice(Bool_t sel3=kFALSE, Bool_t sel4=kFALSE){fCheckCutDist=sel3;fRawCutQA=sel4;}
     void SetAODMismatchProtection(Int_t sel5=1) {fAODProtection=sel5;}
     void SetLeadPartCorrelation(Bool_t Sel){fLeadPartCorr = Sel;}
+    void SetAutoSignalSBRange(Bool_t autosignalSBrange){fAutoSignalSBRange = autosignalSBrange;}
     
     //void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
     
@@ -137,6 +138,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Double_t fCentrOrMult; // Multiplicity of Event for D eff
     Bool_t fTCconfig; //  TC Cuts option
     Bool_t fUseBit; //  filterbit option
+    Bool_t fAutoSignalSBRange; // mainly for offline correlation
     AliHFCorrelator  *fCorrelator; //object for correlations
     Int_t fNPtBins; // number of event at different Stages
     TH1F *fHistNEvents; //!hist. for No. of events
@@ -148,6 +150,8 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Float_t fBinWidth;//width of one bin in output histos
     Bool_t  fPoolByPool;
     Int_t  fWhichPool;
+    Bool_t fPoolbyCent;
+    Int_t fEvtMult;
     Bool_t fCheckCutDist;
     Int_t fAODProtection; //New by Fabio
     TString fCutSuffix; //suffix for cut
@@ -180,7 +184,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     std::vector<Double_t>  fRSBLowLim;      // Right SB upper lim
     std::vector<Double_t>  fRSBUppLim;      // Right SB upper lim
     
-    ClassDef(AliAnalysisTaskSEDplusCorrelations,8); // class for D+ meson correlations
+    ClassDef(AliAnalysisTaskSEDplusCorrelations,9); // class for D+ meson correlations
     
 };
 
