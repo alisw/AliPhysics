@@ -256,9 +256,13 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
   Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
 
-  Int_t nmultbin = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
-  Int_t multmax  = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
-  Int_t multmin  = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
+  Int_t   ntofbins = GetHistogramRanges()->GetHistoTimeBins();
+  Int_t   maxtof   = GetHistogramRanges()->GetHistoTimeMax();
+  Int_t   mintof   = GetHistogramRanges()->GetHistoTimeMin();
+  
+  Int_t   nmultbin = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
+  Int_t   multmax  = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
+  Int_t   multmin  = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
   
   Int_t   nsumbin  = GetHistogramRanges()->GetHistoNPtSumBins() ;
   Float_t summin   = GetHistogramRanges()->GetHistoPtSumMin()   ;
@@ -491,11 +495,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhProductionVertexBC->SetXTitle("Bunch crossing");
     outputContainer->Add(fhProductionVertexBC);
   }
-  
-  Int_t ntofbins = 1000;
-  Int_t mintof = -500;
-  Int_t maxtof =  500;
-  
+    
   fhTOFSignal  = new TH1F ("hTOFSignal","TOF signal", ntofbins,mintof,maxtof);
   fhTOFSignal->SetXTitle("TOF signal (ns)");
   outputContainer->Add(fhTOFSignal);
