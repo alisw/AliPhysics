@@ -197,7 +197,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetSmearForClusters(bWhichToSmear);
   task->SetNeedEmcalGeom(kTRUE);
   task->SetMCtruth(bmcTruth);
-  
+  task->SetPeriod(periodstr);
+
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
   TString name(Form("PhotonIsolation_%s_%s", trackName.Data(), clusName.Data()));

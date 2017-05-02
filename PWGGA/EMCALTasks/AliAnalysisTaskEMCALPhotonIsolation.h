@@ -111,6 +111,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void			   SetDzBinning(vector<Double_t> binedges)			   { fBinsDz = binedges; }
   void			   SetDecayBinning(vector<Double_t> binedges)			   { fBinsDecay = binedges; }
   void                     SetMCtruth(Bool_t mctruth)                                      { fMCtruth = mctruth; }
+  void                     SetPeriod(const char *period)                                   { fPeriod = period; }
   
  protected:
   
@@ -202,6 +203,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Int_t       fTest1;
   Int_t       fTest2;
   Bool_t      fMCtruth;                        // Enable/disable MC truth analysis
+  TString     fPeriod;                         // String containing the LHC period
   
   // Initialization for TTree variables
   Double_t    fEClustersT;                     // E for all clusters
