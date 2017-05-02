@@ -1837,19 +1837,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   
   Double_t sumEnergyPhiBandClus=0., sumEnergyConeClus=0., sumpTConeCharged=0., sumpTPhiBandTracks=0.;
   Double_t clustTOF,phiClust,etaClust, radius;
+  Double_t minPhi = 0., maxPhi = 0., minEta = 0., maxEta = 0.;
 
   if(fPeriod != ""){
-    Double_t minEta = fGeom->GetArm1EtaMin()+0.03;
-    Double_t maxEta = fGeom->GetArm1EtaMax()-0.03;
-    Double_t minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+    minEta = fGeom->GetArm1EtaMin()+0.03;
+    maxEta = fGeom->GetArm1EtaMax()-0.03;
+    minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      Double_t maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+      maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
     else
-      Double_t maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+      maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
   }
   else{
-    Double_t minPhi = (4./9.)*TMath::Pi()+0.03, maxPhi = TMath::Pi()-0.03, minEta = -0.67, maxEta = 0.67;
+    minPhi = (4./9.)*TMath::Pi()+0.03;
+    maxPhi = TMath::Pi()-0.03;
+    minEta = -0.67;
+    maxEta = 0.67;
   }
 
   // Needs a check on the same cluster
@@ -2014,19 +2018,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   
   Float_t sumEnergyEtaBandClus =0., sumEnergyConeClus=0., sumpTConeCharged=0, sumpTEtaBandTracks=0.;
   Double_t clustTOF=0;
+  Double_t minPhi = 0., maxPhi = 0., minEta = 0., maxEta = 0.;
 
   if(fPeriod != ""){
-    Double_t minEta = fGeom->GetArm1EtaMin()+0.03;
-    Double_t maxEta = fGeom->GetArm1EtaMax()-0.03;
-    Double_t minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+    minEta = fGeom->GetArm1EtaMin()+0.03;
+    maxEta = fGeom->GetArm1EtaMax()-0.03;
+    minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      Double_t maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+      maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
     else
-      Double_t maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+      maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
   }
   else{
-    Double_t minPhi = (4./9.)*TMath::Pi()+0.03, maxPhi = TMath::Pi()-0.03, minEta = -0.67, maxEta = 0.67;
+    minPhi = (4./9.)*TMath::Pi()+0.03;
+    maxPhi = TMath::Pi()-0.03;
+    minEta = -0.67;
+    maxEta = 0.67;
   }
   
   // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
