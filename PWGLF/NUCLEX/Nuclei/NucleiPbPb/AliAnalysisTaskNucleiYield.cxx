@@ -360,7 +360,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (std::abs(part->GetPdgCode()) == fPDG) {
         for (int iR = iTof; iR >= 0; iR--) {
           if (part->IsPhysicalPrimary()) {
-            fReconstructed[iR][iC]->Fill(centrality,part->Pt());
+            if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy) fReconstructed[iR][iC]->Fill(centrality,part->Pt());
             fDCAPrimary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
             if (!iR) fPtCorrection[iC]->Fill(pT,part->Pt()-pT); // Fill it only once.
           } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
