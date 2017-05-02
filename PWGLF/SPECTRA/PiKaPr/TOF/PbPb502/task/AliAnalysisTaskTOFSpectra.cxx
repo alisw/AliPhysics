@@ -1445,6 +1445,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
   if(fRecalibrateTOF) fPIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
   fTOFPIDResponse = fPIDResponse->GetTOFResponse();
+  if(fRecalibrateTOF) fTOFPIDResponse.SetTimeResolution(fTimeResolution);
   
   //
   //Physics Selection
