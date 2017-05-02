@@ -28,6 +28,8 @@
 #include "TStatToolkit.h"
 #endif
 
+#include "TStatToolkit.h"
+
 TTree *tree;
 
 void DrawPerformanceZDCQAMatchTrends(const char* inFile = "prodQAhistos.root"){
@@ -114,7 +116,7 @@ tree->SetBranchAddress("ZN_TDC_Sum_Err",&ZN_TDC_Sum_err);
 tree->SetBranchAddress("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err);
 
   Int_t offset_signals=50;
-  Int_t offset_centroids=1.5;
+  Float_t offset_centroids=1.5;
   Int_t offset_tdc=6;
 
   //create plots of trending variables as a function of the run
@@ -135,12 +137,12 @@ tree->SetBranchAddress("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err);
   TGraphErrors *gr_zntdcsum = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"ZN_TDC_Sum:run","",20,kPink,1.2);
   TGraphErrors *gr_zntdcdiff = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"ZN_TDC_Diff:run","",20,kBlue+3,1.2);
 
-  Double_t ZNC_mean=0;   Double_t ZNC_tot=0;    Double_t ZNC_avg=0;
-  Double_t ZNA_mean=0;   Double_t ZNA_tot=0;    Double_t ZNA_avg=0;
-  Double_t ZPC_mean=0;   Double_t ZPC_tot=0;    Double_t ZPC_avg=0;
-  Double_t ZPA_mean=0;   Double_t ZPA_tot=0;    Double_t ZPA_avg=0;
-  Double_t ZEM1_mean=0;  Double_t ZEM1_tot=0;   Double_t ZEM1_avg=0;
-  Double_t ZEM2_mean=0;  Double_t ZEM2_tot=0;   Double_t ZEM2_avg=0;
+  Double_t ZNC_tot=0;    Double_t ZNC_avg=0;
+  Double_t ZNA_tot=0;    Double_t ZNA_avg=0;
+  Double_t ZPC_tot=0;    Double_t ZPC_avg=0;
+  Double_t ZPA_tot=0;    Double_t ZPA_avg=0;
+  Double_t ZEM1_tot=0;   Double_t ZEM1_avg=0;
+  Double_t ZEM2_tot=0;   Double_t ZEM2_avg=0;
   Double_t ZNC_mean_uncal=0;   Double_t ZNC_uncal_tot=0;    Double_t ZNC_uncal_avg=0;
   Double_t ZNA_mean_uncal=0;   Double_t ZNA_uncal_tot=0;    Double_t ZNA_uncal_avg=0;
   Double_t ZPC_mean_uncal=0;   Double_t ZPC_uncal_tot=0;    Double_t ZPC_uncal_avg=0;
