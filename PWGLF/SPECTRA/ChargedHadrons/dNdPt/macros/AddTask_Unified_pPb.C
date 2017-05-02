@@ -166,6 +166,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode)
   mgr->ConnectInput(task, 0, cinput);  
   mgr->ConnectOutput(task, 1, coutput);
   
+  return task;
 }
 
 
