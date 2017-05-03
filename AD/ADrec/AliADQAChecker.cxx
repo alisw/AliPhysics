@@ -255,16 +255,15 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
 	test = 0.3;
 	badChannels += TString::Format("%d, ", ch);
       }
-      delete histoRate;
-      if (badChannels != "") {
+    }
+    delete histoRate;
 	qaBox->Clear();
+      if (badChannels != "") {
 	qaBox->SetFillColor(kRed);
 	qaBox->AddText("No time rate too high, ch:" + badChannels);
       } else {
-	qaBox->Clear();
 	qaBox->SetFillColor(kGreen);
 	qaBox->AddText("No time rate OK");
-      }
     }
   }
 
@@ -288,12 +287,11 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
     }
     delete histoRate;
 
-    if (badChannels != "") {
       qaBox->Clear();
+    if (badChannels != "") {
       qaBox->SetFillColor(kRed);
       qaBox->AddText("No flag rate too high, ch: " + badChannels);
     } else {
-      qaBox->Clear();
       qaBox->SetFillColor(kGreen);
       qaBox->AddText("No flag rate OK");
     }
@@ -341,12 +339,11 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
     }
     delete histoRate;
 
+    qaBox->Clear();
     if (highVar) {
-      qaBox->Clear();
       qaBox->SetFillColor(kYellow);
       qaBox->AddText(TString::Format("%s rate variation too high", flagNames[flagType]));
     } else {
-      qaBox->Clear();
       qaBox->SetFillColor(kGreen);
       qaBox->AddText(TString::Format("%s rate variation OK", flagNames[flagType]));
     }
@@ -495,6 +492,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
       qaBox->AddText("OK");
     } else {
       qaBox->SetFillColor(kYellow);
+      qaBox->AddText("Unstable pedestal for channel");
       qaBox->AddText(badChannels);
     }
   } // next integrator
@@ -578,8 +576,9 @@ TH1* MakeRatioHistogram(TH1* h1, TH1* h2) { // returns h1 / h2
   return h;
 }
 // (H3)
-TH1* MakeScaledHistogram(TH1 *h1, Double_t norm) { // returns h1 / norm
+TH1* MakeScaledHistogram(TH1 *h1, Double_t norm, Bool_t sumw2=kFALSE) { // returns h1 / norm
   TH1 *h = dynamic_cast<TH1*>(h1->Clone(Form("Scaled_%s", h1->GetName())));
+  h->Sumw2(sumw2);
   h->SetBit(TObject::kCanDelete); // will be deleted by TCanvas::Clear();
   if (norm)
     h->Scale(1.0/norm);
@@ -628,7 +627,7 @@ TCanvas* AliADQAChecker::CreatePads(TCanvas *c1) const {
     {"ClockCfg",      5, 0.0, xRow[ 6], 1.0, xRow[ 5]},
     {"Pedestal",      2, 0.0, xRow[ 7], 0.5, xRow[ 6]},
     {"MaxCharge",     1, 0.5, xRow[ 7], 1.0, xRow[ 6]},
-    {"Coincidences",  1, 0.0, xRow[ 8], 1.0, xRow[ 7]},
+    {"Coincidences",  4, 0.0, xRow[ 8], 1.0, xRow[ 7]},
     {"Triggers",      1, 0.0, xRow[ 9], 1.0, xRow[ 8]},
     {"Decisions",     3, 0.0, xRow[10], 1.0, xRow[ 9]},
     {"ChargeTrend",   1, 0.0, 0.0,      1.0, xRow[10]}
@@ -703,7 +702,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       const TString title = TString::Format("QA_%s_%s_%s", GetName(),
 					    AliQAv1::GetTaskName(task).Data(),
 					    AliRecoParam::GetEventSpecieName(esIndex));
-      fImage[esIndex] = new TCanvas(title, title, 2500, 2500);
+      fImage[esIndex] = new TCanvas(title, title, 2500, 5500);
     }
     // clear all objects associated with the canvas
     TCanvas *c1 = fImage[esIndex];
@@ -727,7 +726,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
     Float_t nEvents = 0;
 
     // (1) Charge pad
-    GetPadByName(c1, "Charge")->cd()->SetLogy();
+    GetPadByName(c1, "Charge")->cd(1)->SetLogy();
     TH1* hChargeADA = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeADA));
     TH1* hChargeADC = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeADC));
     if (hChargeADA && hChargeADC) {
@@ -745,7 +744,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       leg->Draw();
     }
 
-    GetPadByName(c1, "Charge")->cd(2)->SetLogz(); // Charge pad
+    GetPadByName(c1, "Charge")->cd(2)->SetLogz();
     TH1* hChargeBB = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeEoIBB));
     if (hChargeBB)
       hChargeBB->DrawCopy("COLZ");
@@ -753,14 +752,18 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
     // (1) Charge pad - zoomed
     GetPadByName(c1, "ChargeZoom")->cd(5)->SetLogz();
     if (hChargeBB) {
+      hChargeBB = dynamic_cast<TH1*>(hChargeBB->Clone(Form("%s_copy", hChargeBB->GetName())));
+      hChargeBB->SetBit(TObject::kCanDelete);
       hChargeBB->GetYaxis()->SetRangeUser(fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax());
-      hChargeBB->DrawCopy("COLZ");
+      hChargeBB->Draw("COLZ");
     }
     GetPadByName(c1, "ChargeZoom")->cd(4)->SetLogz();
     TH1* hChargeAll = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeEoI));
     if (hChargeAll) {
+      hChargeAll = dynamic_cast<TH1*>(hChargeAll->Clone(Form("%s_copy", hChargeAll->GetName())));
+      hChargeAll->SetBit(TObject::kCanDelete);
       hChargeAll->GetYaxis()->SetRangeUser(fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax());
-      hChargeAll->DrawCopy("COLZ");
+      hChargeAll->Draw("COLZ");
     }
     GetPadByName(c1, "ChargeZoom")->cd(6)->SetLogz();
     if (hChargeBB && hChargeAll) {
@@ -793,7 +796,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       hFlagNoTimeScaled->GetYaxis()->SetRangeUser(0, 2*TMath::Max(hFlagNoTimeScaled->GetBinContent(hFlagNoTimeScaled->GetMaximumBin()),
                                                                   hTimeNoFlagScaled->GetBinContent(hTimeNoFlag->GetMaximumBin())));
       hFlagNoTimeScaled->Draw();
-      hTimeNoFlagScaled->Draw();
+      hTimeNoFlagScaled->Draw("SAME");
       TLegend *leg = MakeLegend(0.15,0.78,0.85,0.88, 0.04);
       leg->AddEntry(hFlagNoTimeScaled, "Events with BB/BG flag but no time", "L");
       leg->AddEntry(hTimeNoFlagScaled, "Events with time but no BB/BG flag", "L");
@@ -814,22 +817,20 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
 	hTimeRatio->Draw("COLZ");
       }
     }
-    GetPadByName(c1, "TimeRatio")->cd(4)->SetLogy();
+    GetPadByName(c1, "TimeRatio")->cd(4);
     TH1 *hTimeBB = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kNEventsBBFlag));
     TH1 *hTimeBG = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kNEventsBGFlag));
     if (hTimeBB && hTimeBG) {
-      TH1* hTimeBBScaled = MakeScaledHistogram(hTimeBB, nEvents);
-      TH1* hTimeBGScaled = MakeScaledHistogram(hTimeBG, nEvents);
+      TH1* hTimeBBScaled = MakeScaledHistogram(hTimeBB, nEvents, kTRUE);
+      TH1* hTimeBGScaled = MakeScaledHistogram(hTimeBG, nEvents, kTRUE);
       hTimeBBScaled->GetYaxis()->SetRangeUser(0.8*TMath::Min(hTimeBBScaled->GetBinContent(hTimeBBScaled->GetMinimumBin()),
 							     hTimeBGScaled->GetBinContent(hTimeBGScaled->GetMinimumBin())),
 					      1.8*TMath::Max(hTimeBBScaled->GetBinContent(hTimeBBScaled->GetMaximumBin()),
 							     hTimeBGScaled->GetBinContent(hTimeBGScaled->GetMaximumBin())));
-      hTimeBBScaled->Sumw2();
-      hTimeBGScaled->Sumw2();
       hTimeBBScaled->Draw("E");
-      hTimeBBScaled->Draw("SAMEHIST");
+      // hTimeBBScaled->Draw("ESAME");
+      // hTimeBGScaled->DrawCopy("SAMEHIST");
       hTimeBGScaled->Draw("ESAME");
-      hTimeBGScaled->Draw("SAMEHIST");
       TLegend *leg = MakeLegend(0.15,0.78,0.85,0.88, 0.04);
       leg->AddEntry(hTimeBBScaled, "Events with BB flag", "L");
       leg->AddEntry(hTimeBGScaled, "Events with BG flag", "L");

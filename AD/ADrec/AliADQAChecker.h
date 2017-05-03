@@ -67,7 +67,7 @@ private:
   Float_t fORvsANDCut;  //! AD OR vs AD AND counters cut
   Float_t fBGvsBBCut;   //! AD beam-gas vs beam-beam counters cut
 
-  ClassDef(AliADQAChecker,8);
+  ClassDef(AliADQAChecker, 9);
 } ;
 
 #endif // AliADQAChecker_H
