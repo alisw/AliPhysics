@@ -3527,13 +3527,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     }
     
     //STEP 6: V0 Mass sweep
-    for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t isweep=0; isweep<20;isweep++){
-            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_V0MassSweep_%i",lParticleName[i].Data(),isweep) );
-            lCascadeResult[lN]->SetCutV0MassSigma( ((Double_t)(isweep)/4000.0)); //in GeV/c^2
-            lN++;
-        }
-    }
+    //for(Int_t i = 0 ; i < 4 ; i ++){
+    //    for(Int_t isweep=0; isweep<20;isweep++){
+    //        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_V0MassSweep_%i",lParticleName[i].Data(),isweep) );
+    //        lCascadeResult[lN]->SetCutV0MassSigma( ((Double_t)(isweep)/4000.0)); //in GeV/c^2
+    //        lN++;
+    //    }
+    //}
     
     Float_t lLifetimeCut[4];
     lLifetimeCut[0] = 15.0;
