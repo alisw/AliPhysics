@@ -130,7 +130,10 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   fHist_Vx_vs_runnum(NULL),
   fHist_Vy_vs_runnum(NULL),
   fHist_Vz_vs_runnum(NULL),
-  fWeight_Cent(NULL)
+  fWeight_Cent(NULL),
+  fDataSet("2010"),
+  fAnalysisSet("DoGainEq"),
+  sCentEstimator("V0")
 {
   for(int i=0;i<90;i++){
     runNums[i] = 0;
@@ -193,9 +196,9 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq(const char *name) :
   DefineOutput(1,TList::Class());
   DefineOutput(2,TList::Class());
 
-  fDataSet="2010";
-  fAnalysisSet="DoGainEq";
-  sCentEstimator="V0";
+  //fDataSet="2010";
+  //fAnalysisSet="DoGainEq";
+  //sCentEstimator="V0";
 
  //fTotalQvector = new TString("QaQb");         // "QaQb" (means Qa+Qb), "Qa"  or "Qb"
 
@@ -252,7 +255,10 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
   fHist_Vx_vs_runnum(NULL),
   fHist_Vy_vs_runnum(NULL),
   fHist_Vz_vs_runnum(NULL),
-  fWeight_Cent(NULL)
+  fWeight_Cent(NULL),
+  fDataSet("2010"),
+  fAnalysisSet("DoGainEq"),
+  sCentEstimator("V0")
 {
   for(int i=0;i<90;i++){
     runNums[i] = 0;
@@ -311,9 +317,9 @@ AliAnalysisTaskZDCGainEq::AliAnalysisTaskZDCGainEq() :
     fHist_ZDN_resol_Cent_Sep[i] = NULL;
   }
 
-  fDataSet="2010";
-  fAnalysisSet="DoGainEq";
-  sCentEstimator="V0";
+  //fDataSet="2010";
+  //fAnalysisSet="DoGainEq";
+  //sCentEstimator="V0";
 }
 
 
