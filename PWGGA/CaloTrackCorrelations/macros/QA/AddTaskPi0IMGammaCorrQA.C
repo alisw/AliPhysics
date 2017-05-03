@@ -88,16 +88,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     else if(period.Contains("10")) year = 2010;
   }
   
-  // Do not create the analysis for certain analysis combinations
-  // But create the task so that the sub-wagon train can run
-  //
-  Bool_t doAnalysis = CheckAnalysisTrigger(simulation,trigger,period,year);
-  if(!doAnalysis) 
-  {
-    AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation(Form("Pi0IM_GammaTrackCorr_%s",trigger.Data()));
-    return task;
-  }
-  
   // Get the pointer to the existing analysis manager via the static access method.
   //
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -106,7 +96,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     ::Error("AddTaskPi0IMGammaCorrQA", "No analysis manager to connect to.");
     return NULL;
   }  
-
+  
   // Check the analysis type using the event handlers connected to the analysis manager.
   //
   if (!mgr->GetInputEventHandler()) 
@@ -114,7 +104,64 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     ::Error("AddTaskPi0IMGammaCorrQA", "This task requires an input event handler");
     return NULL;
   }
+  
+  //
+  // Create task
+  //
 
+  // Name for containers
+  TString containerName = Form("%s_Trig_%s",calorimeter.Data(), trigger.Data());
+  
+  if(collision!="pp" && maxCen>=0) containerName+=Form("Cen%d_%d",minCen,maxCen);
+
+  TString taskName =Form("Pi0IM_GammaTrackCorr_%s",containerName.Data());
+    
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (taskName);
+  task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
+  task->SetDebugLevel(debugLevel);
+  //task->SetBranches("ESD:AliESDRun.,AliESDHeader");
+  //task->SetBranches("AOD:header,tracks,vertices,emcalCells,caloClusters");
+  
+  //
+  // Init main analysis maker and pass it to the task
+  AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
+  task->SetAnalysisMaker(maker);
+
+  //
+  // Pass the task to the analysis manager
+  mgr->AddTask(task);
+
+  //
+  // Create containers
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(trigger, TList::Class(),
+                                                             AliAnalysisManager::kOutputContainer, 
+                                                             Form("%s:%s",outputfile.Data(),Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
+  
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",trigger.Data()), TList::Class(),
+                                                             AliAnalysisManager::kParamContainer, 
+                                                             Form("%s_Parameters.root",Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
+  
+  // Create ONLY the output containers for the data produced by the task.
+  // Get and connect other common input/output containers via the manager as below
+  mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput (task, 1, cout_pc);
+  mgr->ConnectOutput (task, 2, cout_cuts);
+  //==============================================================================
+  
+  // Do not configure the wagon for certain analysis combinations
+  // But create the task so that the sub-wagon train can run
+  //
+  Bool_t doAnalysis = CheckAnalysisTrigger(simulation,trigger,period,year);
+  if(!doAnalysis) 
+  {
+    maker->SwitchOffProcessEvent();
+    return task;
+  }
+  
+  // #### Start analysis configuration ####
+  //  
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
   // Make sure the B field is enabled for track selection, some cuts need it
@@ -123,22 +170,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   
   // Print settings to check all is as expected
   //
+  printf("AddTaskPi0IMGammaCorrQA - Task NAME: %s \n",taskName.Data());
+
   printf("AddTaskPi0IMGammaCorrQA - Settings: data <%s>, calo <%s>, MC <%d>, collision <%s>, trigger <%s>, period <%s>, year <%d>,\n"
          "\t \t \t  CaloQA on <%d>, Track QA on <%d>, Make corrections <%d>, %5.1f < time < %5.1f, %2.1f < cen < %2.1f, debug level <%d> \n", 
          inputDataType.Data(), calorimeter.Data(),simulation, collision.Data(),trigger.Data(), period.Data(), year,
          qaan , hadronan, calibrate, minTime, maxTime, minCen, maxCen, debugLevel);
   //
 
-  // Name for containers
-  //
-  TString containerName = Form("%s_Trig_%s",calorimeter.Data(), trigger.Data());
-  
-  if(collision!="pp" && maxCen>=0) containerName+=Form("Cen%d_%d",minCen,maxCen);
-      
-  // #### Configure analysis ####
-  //  
-  AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
-  
   // General frame setting and configuration
   maker->SetReader   ( ConfigureReader   (inputDataType,collision,calibrate,minTime,maxTime,minCen,maxCen,simulation,year,debugLevel) );
   if(hadronan)maker->GetReader()->SwitchOnCTS();
@@ -210,20 +249,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   }
   
   if(debugLevel > 0) maker->Print("");
-  
-  // Create task
-  
-  TString taskName =Form("Pi0IM_GammaTrackCorr_%s",containerName.Data());
-  
-  printf("AddTaskPi0IMGammaCorrQA - Task NAME: %s \n",taskName.Data());
-  
-  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (taskName);
-  task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
-  task->SetDebugLevel(debugLevel);
-  //task->SetBranches("ESD:AliESDRun.,AliESDHeader");
-  //task->SetBranches("AOD:header,tracks,vertices,emcalCells,caloClusters");
-  task->SetAnalysisMaker(maker);
-  
+    
   //
   // Select events trigger depending on trigger
   //
@@ -232,27 +258,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureEventTriggerCaloTrackCorr.C");
     ConfigureEventTriggerCaloTrackCorr(task,trigger,year);
   }
-
-  mgr->AddTask(task);
-  
-  //Create containers
-  
-  TString outputfile = AliAnalysisManager::GetCommonFileName();
-  
-  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(trigger, TList::Class(),
-                                                             AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:%s",outputfile.Data(),Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
-	
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",trigger.Data()), TList::Class(),
-                                                             AliAnalysisManager::kParamContainer, 
-                                                             Form("%s_Parameters.root",Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
-  
-  // Create ONLY the output containers for the data produced by the task.
-  // Get and connect other common input/output containers via the manager as below
-  //==============================================================================
-  mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (task, 1, cout_pc);
-  mgr->ConnectOutput (task, 2, cout_cuts);
   
   return task;
 }
