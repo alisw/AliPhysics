@@ -105,6 +105,10 @@ Int_t MakeTrendingTOFQA(char * runlist,
   Int_t runNumber=-1;
   char infile[300];
   FILE * files = fopen(runlist, "r") ;
+  if (files == NULL){
+    ::Error("MakeTrendingTOFQA", "Error opening file %s", runlist);
+    return -1;
+  }
   while (fscanf(files,"%d",&runNumber)==1 ){
 
     //get QAtrain output
@@ -776,7 +780,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   if(hT0AvsNtracks){
     hT0AvsNtracks->Draw("colz");
     hT0AProfile->Draw("same");
-  } 
+  }
   else AddMissingLabel("hT0AvsNtrk");
 
   cT0vsMultiplicity->cd(4);
