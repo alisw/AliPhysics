@@ -87,6 +87,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
    ,fEventCut{false}
    ,fFilterBit{BIT(4)}
+   ,fPropagateTracks{true}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -339,8 +340,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
 
     if (track->GetID() <= 0) continue;
-    Double_t dca[2];
-    if (!track->TestFilterBit(fFilterBit)) continue;
+    Double_t dca[2] = {0.};
+    if (!track->TestFilterBit(fFilterBit) && fFilterBit) continue;
     if (!AcceptTrack(track,dca)) continue;
     const float beta = HasTOF(track,fPID);
     const int iTof = beta > EPS ? 1 : 0;
@@ -452,7 +453,8 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
     if (nSDD < fRequireSDDrecPoints) return false;
     if (fRequireVetoSPD && nSPD > 0) return false;
     Double_t cov[3];
-    if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return false;
+    if (fPropagateTracks)
+      if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return false;
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return false;
     //if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return false;
   }
