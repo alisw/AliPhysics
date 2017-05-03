@@ -930,16 +930,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       pDecision = new TPad("Decisions", "Decisions Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
       iRow++;
       pChargeTrend = new TPad("Charge Trend", "Charge Trend Pad", 0, 0, 1.0, xRow[iRow]);
-
-      pCharge->Divide(2, 1);
-      pChargeZoom->Divide(6, 1);
-      pTime->Divide(4, 1);
-      pTimeRatio->Divide(4, 1);
-      pClockFg->Divide(5, 1);
-      pCoinc->Divide(4, 1);
-      pPed->Divide(2, 1);
-      pMeanTime->Divide(4, 1);
-      pDecision->Divide(3, 1);
       
       myLegend1 = new TLegend(0.70,0.67,0.97,0.82);
       myLegend1->SetTextFont(42);
@@ -975,7 +965,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
       myLegend3->AddEntry(histoRed,"Events with BG flag","l");
     }
     
-    fImage[esIndex]->Clear();
+    fImage[esIndex]->Clear("D");
     fImage[esIndex]->cd();
     
     TLatex topText;
@@ -984,6 +974,16 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     topText.SetTextFont(42);
     topText.SetTextColor(kBlue+3);
     topText.DrawLatexNDC(0.5, 0.99,Form("%s, %s, Run: %d", AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex),AliQAChecker::Instance()->GetRunNumber()));
+    
+    pCharge->Divide(2, 1);
+    pChargeZoom->Divide(6, 1);
+    pTime->Divide(4, 1);
+    pTimeRatio->Divide(4, 1);
+    pClockFg->Divide(5, 1);
+    pCoinc->Divide(4, 1);
+    pPed->Divide(2, 1);
+    pMeanTime->Divide(4, 1);
+    pDecision->Divide(3, 1);
       
     pCharge->Draw();
     pChargeZoom->Draw();
