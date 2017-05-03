@@ -292,7 +292,7 @@ void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
   double v0amult = fInputEvent->GetVZEROData()->GetMTotV0A(),
          trackletmult = static_cast<double>(CountTracklets(-0.8, 0.8, 0., TMath::TwoPi())),
          emctrackletmult = static_cast<double>(CountTracklets(-0.8, 0.8, 1.4, TMath::Pi())),
-         itsclustermult = fInputEvent->GetMultiplicity()->GetNumberOfSPDClusters();
+         itsclustermult = fInputEvent->GetMultiplicity()->GetNumberOfSPDClusters(),
          emcclustermult = static_cast<double>(CountEmcalClusters(0.5)),
          emccellocc = static_cast<double>(this->GetEMCALCellOccupancy(0.1));
   for(const auto &t : fSelectedTriggers){
@@ -302,7 +302,7 @@ void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
     fHistos->FillTH1("hVertexZ" + t, fVertex[2], weight);
 
     // Multiplicity correlation (no correction for downscaling)
-    double data[5] = {v0amult, trackletmult,emctrackletmult, emcclustermult, emccellocc};
+    double data[6] = {v0amult, trackletmult, emctrackletmult, itsclustermult, emcclustermult, emccellocc};
     fHistos->FillTHnSparse("hMultiplicityCorrelation" + t, data);
   }
 }
