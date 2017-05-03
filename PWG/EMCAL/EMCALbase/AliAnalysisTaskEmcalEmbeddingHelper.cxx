@@ -64,7 +64,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fTreeName(),
   fAnchorRun(169838),
   fPtHardBin(-1),
-  fNPtHardBins(0),
+  fNPtHardBins(1),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fFilePattern(""),
@@ -118,7 +118,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fTreeName("aodTree"),
   fAnchorRun(169838),
   fPtHardBin(-1),
-  fNPtHardBins(0),
+  fNPtHardBins(1),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fFilePattern(""),
@@ -564,11 +564,11 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
     if (eev) {
-      res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+      res = (dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+        res = (dynamic_cast<AliVAODHeader*>(aev->GetHeader()))->GetOfflineTrigger();
       }
     }
 
@@ -671,12 +671,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   // Cross section
   histName = "fHistXsection";
   histTitle = "Pythia Cross Section;p_{T} hard bin; XSection";
-  fHistManager.CreateTProfile(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+  fHistManager.CreateTProfile(histName, histTitle, fNPtHardBins, 0, fNPtHardBins);
 
   // Trials
   histName = "fHistTrials";
   histTitle = "Number of Pythia Trials;p_{T} hard bin;Trials";
-  fHistManager.CreateTH1(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+  fHistManager.CreateTH1(histName, histTitle, fNPtHardBins, 0, fNPtHardBins);
 
   // Pt hard spectra
   histName = "fHistPtHard";
