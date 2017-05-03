@@ -391,7 +391,7 @@ int AliAnalysisTaskEmcalClustersRef::GetEMCALCellOccupancy(double ecut){
   for(short icell = 0; icell < emccells->GetNumberOfCells(); icell++){
     if(emccells->GetAmplitude(icell) > ecut){
       int cellID = emccells->GetCellNumber(icell);
-      if(cellIDs.find(cellID) != cellIDs.end()) cellIDs.insert(cellID);
+      if(cellIDs.find(cellID) == cellIDs.end()) cellIDs.insert(cellID);
     }
   }
   return cellIDs.size();
