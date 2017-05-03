@@ -554,7 +554,7 @@ void AliADQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
   }
 }
 
-// helper functions for drawing histograms H1-H3
+// helper functions for drawing histograms H1-H4
 // (H1)
 TLegend* MakeLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Double_t textSize) {
   TLegend *leg = new TLegend(x1, y1, x2, y2);
@@ -583,6 +583,19 @@ TH1* MakeScaledHistogram(TH1 *h1, Double_t norm, Bool_t sumw2=kFALSE) { // retur
   if (norm)
     h->Scale(1.0/norm);
   return h;
+}
+// (H4) Clone + set kCanDelete bit + SetRangeUser
+TH1* SetRangeUser(TH1* h, TString axis, Double_t aMin, Double_t aMax) {
+  h = dynamic_cast<TH1*>(h->Clone(Form("%s_RangeUser%s", h->GetName(), axis.Data())));
+  h->SetBit(TObject::kCanDelete);
+  if (axis == "X")
+    h->GetXaxis()->SetRangeUser(aMin, aMax);
+  if (axis == "Y")
+    h->GetYaxis()->SetRangeUser(aMin, aMax);
+  return h;
+}
+TH2* SetRangeUser(TH2* h, TString axis, Double_t aMin, Double_t aMax) {
+  return static_cast<TH2*>(SetRangeUser(static_cast<TH1*>(h), axis, aMin, aMax));
 }
 
 TCanvas* AliADQAChecker::CreatePads(TCanvas *c1) const {
@@ -735,8 +748,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
 				      hChargeADC->GetBinContent(hChargeADC->GetMaximumBin()));
       const Float_t minY = TMath::Min(hChargeADA->GetBinContent(hChargeADA->GetMinimumBin()),
 				      hChargeADC->GetBinContent(hChargeADC->GetMinimumBin()));
-      hChargeADA->GetYaxis()->SetRangeUser(minY+1 ,2*maxY);
-      hChargeADA->DrawCopy();
+      SetRangeUser(hChargeADA, "Y", minY+1 ,2*maxY)->Draw();
       hChargeADC->DrawCopy("SAME");
       TLegend *leg = MakeLegend(0.70,0.67,0.97,0.82, 0.05);
       leg->AddEntry(hChargeADA, "ADA", "L");
@@ -752,18 +764,12 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
     // (1) Charge pad - zoomed
     GetPadByName(c1, "ChargeZoom")->cd(5)->SetLogz();
     if (hChargeBB) {
-      hChargeBB = dynamic_cast<TH1*>(hChargeBB->Clone(Form("%s_copy", hChargeBB->GetName())));
-      hChargeBB->SetBit(TObject::kCanDelete);
-      hChargeBB->GetYaxis()->SetRangeUser(fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax());
-      hChargeBB->Draw("COLZ");
+      SetRangeUser(hChargeBB, "Y", fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax())->Draw("COLZ");
     }
     GetPadByName(c1, "ChargeZoom")->cd(4)->SetLogz();
     TH1* hChargeAll = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeEoI));
     if (hChargeAll) {
-      hChargeAll = dynamic_cast<TH1*>(hChargeAll->Clone(Form("%s_copy", hChargeAll->GetName())));
-      hChargeAll->SetBit(TObject::kCanDelete);
-      hChargeAll->GetYaxis()->SetRangeUser(fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax());
-      hChargeAll->Draw("COLZ");
+      SetRangeUser(hChargeAll, "Y", fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax())->Draw("COLZ");
     }
     GetPadByName(c1, "ChargeZoom")->cd(6)->SetLogz();
     if (hChargeBB && hChargeAll) {
@@ -898,9 +904,8 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
     TH1 *hMeanTimeADA = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kMeanTimeADA));
     TH1 *hMeanTimeADC = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kMeanTimeADC));
     if (hMeanTimeADA && hMeanTimeADC) {
-      hMeanTimeADA->GetYaxis()->SetRangeUser(0, 1.1*TMath::Max(hMeanTimeADA->GetBinContent(hMeanTimeADA->GetMaximumBin()),
-							       hMeanTimeADC->GetBinContent(hMeanTimeADC->GetMaximumBin())));
-      hMeanTimeADA->DrawCopy();
+      SetRangeUser(hMeanTimeADA, "Y", 0, 1.1*TMath::Max(hMeanTimeADA->GetBinContent(hMeanTimeADA->GetMaximumBin()),
+							hMeanTimeADC->GetBinContent(hMeanTimeADC->GetMaximumBin())))->Draw();
       hMeanTimeADC->DrawCopy("SAME");
       TLegend *leg = MakeLegend(0.70,0.67,0.97,0.82, 0.05);
       leg->AddEntry(hMeanTimeADA, "ADA", "L");
@@ -924,9 +929,9 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       GetPadByName(c1, "Decisions")->cd(1+2*side)->SetLogz();
       if (!hTimeSlewing[side])
 	continue;
-      hTimeSlewing[side]->GetYaxis()->SetRangeUser(fQAParam->GetTdcTimeMinBBFlag(), fQAParam->GetTdcTimeMaxBBFlag());
+      hTimeSlewing[side] = SetRangeUser(hTimeSlewing[side], "Y", fQAParam->GetTdcTimeMinBBFlag(), fQAParam->GetTdcTimeMaxBBFlag());
       hTimeSlewing[side]->SetTitle(TString::Format("Time slewing %s", sideName[side]));
-      hTimeSlewing[side]->DrawCopy("COLZ");
+      hTimeSlewing[side]->Draw("COLZ");
       MakeTimeSlewingSpline(hTimeSlewing[side])->Draw("PSAME");
     }
     GetPadByName(c1, "Decisions")->cd(2);
@@ -939,10 +944,10 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
     TH1* hChargeQuantileADA = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADA));
     TH1* hChargeQuantileADC = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADC));
     if (hChargeQuantileADA && hChargeQuantileADC) {
-      hChargeQuantileADA->GetYaxis()->SetRangeUser(fQAParam->GetChargeTrendMin(), fQAParam->GetChargeTrendMax());
+      hChargeQuantileADA = SetRangeUser(hChargeQuantileADA, "Y", fQAParam->GetChargeTrendMin(), fQAParam->GetChargeTrendMax());
       hChargeQuantileADA->GetYaxis()->SetTitle("Quantile 0.9");
       hChargeQuantileADA->GetXaxis()->SetRange(1, hChargeQuantileADC->GetNbinsX()-1);
-      hChargeQuantileADA->DrawCopy();
+      hChargeQuantileADA->Draw();
       hChargeQuantileADC->DrawCopy("SAME");
       TLegend *leg = MakeLegend(0.70,0.67,0.97,0.82, 0.05);
       leg->AddEntry(hChargeQuantileADA, "ADA", "L");
