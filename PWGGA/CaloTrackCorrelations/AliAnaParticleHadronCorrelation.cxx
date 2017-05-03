@@ -1493,7 +1493,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   Float_t massmax   = GetHistogramRanges()->GetHistoMassMax();
   
   TString nameMC[]     = {"Photon","Pi0","Pi0Decay","Eta","EtaDecay","OtherDecay","Electron","Hadron","Pi0DecayLostPair","EtaDecayLostPair"};
-  TString mcPartType[] = { "#gamma", "#pi^{0} (merged #gamma)", "#gamma_{#pi decay}","#eta (merged #gamma)"   , "#gamma_{#eta decay}", "#gamma_{other decay}"   , "e^{#pm}" , "hadrons?" , "#gamma_{#pi decay} lost companion", "#gamma_{#eta decay} lost companion"} ;
+  TString mcPartType[] = {"#gamma", "#pi^{0} (merged #gamma)", "#gamma_{#pi decay}","#eta (merged #gamma)"   , "#gamma_{#eta decay}", "#gamma_{other decay}", 
+    "e^{#pm}" , "hadrons?" , "#gamma_{#pi decay} lost companion", "#gamma_{#eta decay} lost companion"} ;
   TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
   
   TString parTitle = Form("#it{R} = %2.2f",GetIsolationCut()->GetConeSize());
@@ -3367,7 +3368,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fMaxLeadHadPt  = 100;
   
   fMCGenTypeMin =  0;
-  fMCGenTypeMax = 10;
+  fMCGenTypeMax = fgkNmcTypes-1;
   
   fNDecayBits = 1;
   fDecayBits[0] = AliNeutralMesonSelection::kPi0;

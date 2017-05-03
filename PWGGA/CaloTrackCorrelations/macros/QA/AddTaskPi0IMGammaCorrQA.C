@@ -711,6 +711,8 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString conta
   ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 120) ;
   ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.*etacut, 1.*etacut, etacut*100) ;
   
+  if(simulation) ana->SwitchOnDataMC();
+  
   if(debugLevel > 0) ana->Print("");
   
   return ana;
@@ -934,7 +936,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
 //  
 //  ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
   
-  if(simulation) ana->SwitchOnDataMC();
+  //if(simulation) ana->SwitchOnDataMC();
   
   if(debugLevel > 0) ana->Print("");
   
