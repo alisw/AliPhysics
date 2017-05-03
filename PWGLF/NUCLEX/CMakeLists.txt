@@ -41,6 +41,7 @@ set(SRCS
   Exotica/NOmega/AliAnalysisTaskNOmegaLPK.cxx
   Exotica/NOmega/AliAnalysisTaskOmegaOmegaOX.cxx
   Exotica/NOmega/AliAnalysisTaskNOmegaLX.cxx
+  Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiAOD.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
