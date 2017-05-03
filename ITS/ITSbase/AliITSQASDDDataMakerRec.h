@@ -54,7 +54,7 @@ public:
 		  kSDDRawLadModLay3Norm,kSDDRawLadModLay4Norm,
 		  kSDDNofDigits,kSDDNofDigitsVsMod,
 		  kActiveModLay3,kActiveModLay4,kSDDRawDataCheck,
-		  kSDDOnlineDDLPattern,kSDDDataSize,kChargeMapFirstMod};
+		  kSDDDataSize,kSDDOnlineDDLPattern,kChargeMapFirstMod};
 
   enum DIGITHISTOS {kSDDDigModPattern,kSDDDigAnode,
 		    kSDDDigTimeBin,kSDDDigADC, kNumOfSDDDigitHistos};
@@ -96,8 +96,6 @@ private:
   Int_t   fSDDhRawsTask;                       // number of histo booked for each the Raws Task SDD
   Int_t   fSDDhDigitsTask;                     // number of histo booked for each the RecPoints Task SDD
   Int_t   fSDDhRecPointsTask;                  // number of histo booked for each the RecPoints Task SDD
-  Int_t   fOnlineOffsetRaws;					// index for starting online histograms for Raws
-  Int_t   fOnlineOffsetRecPoints;					// index for starting online histograms for RecPoints
   Int_t   *fGenRawsOffset;                     // QAchecking Raws offset       
   Int_t   *fGenDigitsOffset;                   // QAchecking RecPoints offset       
   Int_t   *fGenRecPointsOffset;                // QAchecking RecPoints offset       
@@ -106,7 +104,7 @@ private:
   TObjArray *fCalibration;                     //Array of Calibration Object
   TObjArray *fHistoCalibration;                //Array of the Calibration histograms for the normalization
   Int_t fPulserRun;                            // pulser run number (to identify calibration)
-  ClassDef(AliITSQASDDDataMakerRec,14)         // description 
+  ClassDef(AliITSQASDDDataMakerRec,15)         // description 
 
 };
 
