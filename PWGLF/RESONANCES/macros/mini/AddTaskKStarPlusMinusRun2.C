@@ -51,7 +51,7 @@ enum eventMixConfig { kDisabled = -1,
 };
 
 
-Ali:RsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
+AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
 (
  Bool_t      isMC,
  Bool_t      isPP,
