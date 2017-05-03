@@ -474,7 +474,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
 
   if (fCreateHisto) {
     fHistManager.FillTH1("fHistEventCount", "Accepted");
-    fHistManager.FillTH1("fHistEmbeddingEventsRejected", attempts);
+    fHistManager.FillTH1("fHistEmbeddedEventsAttempted", attempts);
   }
 
   if (!fChain) return kFALSE;
@@ -540,7 +540,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RecordEmbeddedEventProperties()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
 {
-  if (CheckIsEmbeddedEventIsSelected()) {
+  if (CheckIsEmbeddedEventSelected()) {
     return kTRUE;
   }
 
@@ -557,9 +557,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
  *
  * @return kTRUE if the event successfully passes all criteria.
  */
-Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventIsSelected()
+Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
 {
-  // Trigger selection
+  // Physics selection
   if (fTriggerMask != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -575,6 +575,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventIsSelected()
     if ((res & fTriggerMask) == 0) {
       AliDebug(3, Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.",
                       res, fTriggerMask));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "PhysSel", 1);
+      }
       return kFALSE;
     }
   }
@@ -591,6 +594,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventIsSelected()
     if (TMath::Abs(externalVertex[2]) > fZVertexCut) {
       AliDebug(3, Form("Event rejected due to Z vertex selection. Event Z vertex: %f, Z vertex cut: %f",
        externalVertex[2], fZVertexCut));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "Vz", 1);
+      }
       return kFALSE;
     }
     Double_t dist = TMath::Sqrt((externalVertex[0]-inputVertex[0])*(externalVertex[0]-inputVertex[0])+(externalVertex[1]-inputVertex[1])*(externalVertex[1]-inputVertex[1])+(externalVertex[2]-inputVertex[2])*(externalVertex[2]-inputVertex[2]));
@@ -598,6 +604,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventIsSelected()
       AliDebug(3, Form("Event rejected because the distance between the current and embedded vertices is > %f. "
        "Current event vertex (%f, %f, %f), embedded event vertex (%f, %f, %f). Distance = %f",
        fMaxVertexDist, inputVertex[0], inputVertex[1], inputVertex[2], externalVertex[0], externalVertex[1], externalVertex[2], dist));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "VertexDist", 1);
+      }
       return kFALSE;
     }
   }
@@ -681,8 +690,19 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   histEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
   histEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
 
+  // Event rejection reason
+  histName = "fHistEmbeddedEventRejection";
+  histTitle = "Reasons to reject embedded event";
+  std::vector<std::string> binLabels = {"PhysSel", "Vz", "VertexDist"};
+  auto fHistEmbeddedEventRejection = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
+  // Set label names
+  for (unsigned int i = 1; i <= binLabels.size(); i++) {
+    fHistEmbeddedEventRejection->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+  }
+  fHistEmbeddedEventRejection->GetYaxis()->SetTitle("Counts");
+
   // Rejected events in embedded event selection
-  histName = "fHistEmbeddingEventsRejected";
+  histName = "fHistEmbeddedEventsAttempted";
   histTitle = "Number of embedded events rejected by event selection before success;Number of rejected events;Counts";
   fHistManager.CreateTH1(histName, histTitle, 200, 0, 200);
 

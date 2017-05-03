@@ -180,7 +180,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
-  Bool_t          CheckIsEmbeddedEventIsSelected();
+  Bool_t          CheckIsEmbeddedEventSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
