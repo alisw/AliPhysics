@@ -35,8 +35,8 @@ public:
   unsigned int fFilterBit;              /// AOD filter bit for the tracks used in this analysis
 
 private:
-  AliAnalysisTaskPsEfficiency (const AliAnalysisTaskPsEfficiency&) {}
-  AliAnalysisTaskPsEfficiency& operator=(const AliAnalysisTaskPsEfficiency&) {}
+  AliAnalysisTaskPsEfficiency (const AliAnalysisTaskPsEfficiency&);
+  AliAnalysisTaskPsEfficiency& operator=(const AliAnalysisTaskPsEfficiency&) {return *this;}
 
   bool HasTOF(AliVTrack *track);
 
