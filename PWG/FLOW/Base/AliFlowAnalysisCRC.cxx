@@ -279,6 +279,7 @@ fUseCRCRecenter(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
 fCRCTestSin(kFALSE),
+fVtxRbR(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.),
 fRunNum(0),
@@ -443,19 +444,21 @@ void AliFlowAnalysisCRC::Init()
   this->BookEverythingForControlHistograms();
   this->BookEverythingForBootstrap();
   this->SetRunList();
-  this->BookEverythingForCRC();
-  this->BookEverythingForCRCVZ();
-  this->BookEverythingForCRCZDC();
-  this->BookEverythingForCRCPt();
-  this->BookEverythingForCRC2();
-  this->BookEverythingForQVec();
-  this->BookEverythingForCME();
-  this->BookEverythingForFlowEbE();
-  this->BookEverythingForFlowQC();
-  this->BookEverythingForFlowQCHighOrders();
-  this->BookEverythingForFlowSPZDC();
-  this->BookEverythingForFlowSPVZ();
-  this->BookEverythingForEbEFlow();
+  if(fCalculateCRC) {
+    this->BookEverythingForCRC();
+    this->BookEverythingForCRCVZ();
+    this->BookEverythingForCRCZDC();
+    this->BookEverythingForCRCPt();
+    this->BookEverythingForCRC2();
+    this->BookEverythingForQVec();
+    this->BookEverythingForCME();
+    this->BookEverythingForFlowEbE();
+    this->BookEverythingForFlowQC();
+    this->BookEverythingForFlowQCHighOrders();
+    this->BookEverythingForFlowSPZDC();
+    this->BookEverythingForFlowSPVZ();
+    this->BookEverythingForEbEFlow();
+  }
   this->BookEverythingForVarious();
   
   this->SetCentralityWeights();
@@ -473,8 +476,10 @@ void AliFlowAnalysisCRC::Init()
   this->StoreControlHistogramsFlags();
   // i) Store bootstrap flags:
   this->StoreBootstrapFlags();
-  // j) Store CRC flags:
-  this->StoreCRCFlags();
+  if(fCalculateCRC) {
+    // j) Store CRC flags:
+    this->StoreCRCFlags();
+  }
   
   TH1::AddDirectory(oldHistAddStatus);
   
@@ -901,6 +906,11 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         
         if(fSelectCharge==kPosCh && dCharge<0.) continue;
         if(fSelectCharge==kNegCh && dCharge>0.) continue;
+        
+        if(fCRCTestSin) {
+          if(dCharge > 0.) dPt += 1.E-3;
+          else dPt -= 1.E-3;
+        }
         
         cw = (dCharge > 0. ? 0 : 1);
         wPhi = 1.;
@@ -18981,14 +18991,14 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 //    }
     
     // correct for run-by-run variations
-//    if (fZDCVtxHist[0]) {
-//      QCReR -= fZDCVtxHist[0]->GetBinContent(fZDCVtxHist[0]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
-//      QCImR -= fZDCVtxHist[1]->GetBinContent(fZDCVtxHist[1]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
-//      fZDCFlowVect[0].Set(QCReR,QCImR);
-//      QAReR -= fZDCVtxHist[2]->GetBinContent(fZDCVtxHist[2]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
-//      QAImR -= fZDCVtxHist[3]->GetBinContent(fZDCVtxHist[3]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
-//      fZDCFlowVect[1].Set(QAReR,QAImR);
-//    }
+    if (fZDCVtxHist[0] && fVtxRbR) {
+      QCReR -= fZDCVtxHist[0]->GetBinContent(fZDCVtxHist[0]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+      QCImR -= fZDCVtxHist[1]->GetBinContent(fZDCVtxHist[1]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+      fZDCFlowVect[0].Set(QCReR,QCImR);
+      QAReR -= fZDCVtxHist[2]->GetBinContent(fZDCVtxHist[2]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+      QAImR -= fZDCVtxHist[3]->GetBinContent(fZDCVtxHist[3]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
+      fZDCFlowVect[1].Set(QAReR,QAImR);
+    }
     
     fillstep=3.5;
     if(fZDCVtxCenHist[fCenBin][0]->GetBinEntries(fZDCVtxCenHist[fCenBin][0]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]))>100) {
@@ -19029,44 +19039,6 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   //    for (Int_t k=0; k<3; k++) {
   //      if(fZDCEPweightEbE[k]==0) fZDCEPweightEbE[k]=1.;
   //    }
-  
-  // final recentering vs centrality (if needed)
-  if (fZDCQHist[4]) {
-    //      Double_t EvPlZDCC = TMath::ATan2(QCImR,QCReR);
-    //      Double_t AvCos2C = fZDCFitSec[0]->Eval(fCentralityEBE);
-    //      Double_t AvSin2C = fZDCFitSec[1]->Eval(fCentralityEBE);
-    //      EvPlZDCC += -AvSin2C*cos(2.*EvPlZDCC) + AvCos2C*sin(2.*EvPlZDCC);
-    //      if(EvPlZDCC<-TMath::Pi()) EvPlZDCC += TMath::TwoPi();
-    //      if(EvPlZDCC> TMath::Pi()) EvPlZDCC -= TMath::TwoPi();
-    //      fZDCFlowVect[0].SetMagPhi(sqrt(QCReR*QCReR+QCImR*QCImR),EvPlZDCC,QMC);
-    //      QCReR = fZDCFlowVect[0].X();
-    //      QCImR = fZDCFlowVect[0].Y();
-    //
-    //      Double_t EvPlZDCA = TMath::ATan2(QAImR,QAReR);
-    //      Double_t AvCos2A = fZDCFitSec[2]->Eval(fCentralityEBE);
-    //      Double_t AvSin2A = fZDCFitSec[3]->Eval(fCentralityEBE);
-    //      EvPlZDCA += -AvSin2A*cos(2.*EvPlZDCA) + AvCos2A*sin(2.*EvPlZDCA);
-    //      if(EvPlZDCA<-TMath::Pi()) EvPlZDCA += TMath::TwoPi();
-    //      if(EvPlZDCA> TMath::Pi()) EvPlZDCA -= TMath::TwoPi();
-    //      fZDCFlowVect[1].SetMagPhi(sqrt(QAReR*QAReR+QAImR*QAImR),EvPlZDCA,QMA);
-    //      QAReR = fZDCFlowVect[1].X();
-    //      QAImR = fZDCFlowVect[1].Y();
-    
-    Double_t AvQCRe = fZDCQHist[4]->GetBinContent(fZDCQHist[0]->FindBin(fCentralityEBE));
-    Double_t AvQCIm = fZDCQHist[5]->GetBinContent(fZDCQHist[1]->FindBin(fCentralityEBE));
-    
-    Double_t AvQARe = fZDCQHist[6]->GetBinContent(fZDCQHist[2]->FindBin(fCentralityEBE));
-    Double_t AvQAIm = fZDCQHist[7]->GetBinContent(fZDCQHist[3]->FindBin(fCentralityEBE));
-    
-    QCReR -= AvQCRe;
-    QCImR -= AvQCIm;
-    fZDCFlowVect[0].Set(QCReR,QCImR);
-    
-    QAReR -= AvQARe;
-    QAImR -= AvQAIm;
-    fZDCFlowVect[1].Set(QAReR,QAImR);
-  }
-  
   
 //  // store cos/sin terms of event planes
 //  if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6) {
@@ -19170,6 +19142,43 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 //    fCRCZDCQVecEComTot[9]->Fill(fCentralityEBE,fZNCen,fVtxPosCor[2],QCImR);
 //    fCRCZDCQVecEComTot[10]->Fill(fCentralityEBE,fZNAen,fVtxPosCor[2],QAReR);
 //    fCRCZDCQVecEComTot[11]->Fill(fCentralityEBE,fZNAen,fVtxPosCor[2],QAImR);
+  }
+  
+  // final recentering vs centrality (if needed)
+  if (fZDCQHist[4]) {
+    //      Double_t EvPlZDCC = TMath::ATan2(QCImR,QCReR);
+    //      Double_t AvCos2C = fZDCFitSec[0]->Eval(fCentralityEBE);
+    //      Double_t AvSin2C = fZDCFitSec[1]->Eval(fCentralityEBE);
+    //      EvPlZDCC += -AvSin2C*cos(2.*EvPlZDCC) + AvCos2C*sin(2.*EvPlZDCC);
+    //      if(EvPlZDCC<-TMath::Pi()) EvPlZDCC += TMath::TwoPi();
+    //      if(EvPlZDCC> TMath::Pi()) EvPlZDCC -= TMath::TwoPi();
+    //      fZDCFlowVect[0].SetMagPhi(sqrt(QCReR*QCReR+QCImR*QCImR),EvPlZDCC,QMC);
+    //      QCReR = fZDCFlowVect[0].X();
+    //      QCImR = fZDCFlowVect[0].Y();
+    //
+    //      Double_t EvPlZDCA = TMath::ATan2(QAImR,QAReR);
+    //      Double_t AvCos2A = fZDCFitSec[2]->Eval(fCentralityEBE);
+    //      Double_t AvSin2A = fZDCFitSec[3]->Eval(fCentralityEBE);
+    //      EvPlZDCA += -AvSin2A*cos(2.*EvPlZDCA) + AvCos2A*sin(2.*EvPlZDCA);
+    //      if(EvPlZDCA<-TMath::Pi()) EvPlZDCA += TMath::TwoPi();
+    //      if(EvPlZDCA> TMath::Pi()) EvPlZDCA -= TMath::TwoPi();
+    //      fZDCFlowVect[1].SetMagPhi(sqrt(QAReR*QAReR+QAImR*QAImR),EvPlZDCA,QMA);
+    //      QAReR = fZDCFlowVect[1].X();
+    //      QAImR = fZDCFlowVect[1].Y();
+    
+    Double_t AvQCRe = fZDCQHist[4]->GetBinContent(fZDCQHist[4]->FindBin(fCentralityEBE));
+    Double_t AvQCIm = fZDCQHist[5]->GetBinContent(fZDCQHist[5]->FindBin(fCentralityEBE));
+    
+    Double_t AvQARe = fZDCQHist[6]->GetBinContent(fZDCQHist[6]->FindBin(fCentralityEBE));
+    Double_t AvQAIm = fZDCQHist[7]->GetBinContent(fZDCQHist[7]->FindBin(fCentralityEBE));
+    
+    QCReR -= AvQCRe;
+    QCImR -= AvQCIm;
+    fZDCFlowVect[0].Set(QCReR,QCImR);
+    
+    QAReR -= AvQARe;
+    QAImR -= AvQAIm;
+    fZDCFlowVect[1].Set(QAReR,QAImR);
   }
   
   // ***************************************************************************
@@ -28042,7 +28051,23 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
     fUsePhiEtaCuts = (Bool_t)fCRCFlags->GetBinContent(17);
   } else {
     cout<<"WARNING: CRCFlags is NULL in AFAWQC::GPFCRC() !!!!"<<endl;
-    exit(0);
+    fHarmonic = kFALSE;
+    fCalculateCRCPt = kFALSE;
+    fUseVZERO = kFALSE;
+    fNUAforCRC = kFALSE;
+    fUseCRCRecenter = kFALSE;
+    fUseZDC = kFALSE;
+    fRecenterZDC = kFALSE;
+    fDivSigma = kFALSE;
+    fInvertZDC = kFALSE;
+    fCalculateCRCInt = kFALSE;
+    fCalculateCRC2 = kFALSE;
+    fCalculateCRCVZ = kFALSE;
+    fCalculateCRCZDC = kFALSE;
+    fCalculateFlowQC = kFALSE;
+    fCalculateFlowZDC = kFALSE;
+    fCalculateFlowVZ = kFALSE;
+    fUsePhiEtaCuts = kFALSE;
   }
   
   if(!fCalculateCRCInt){return;}
