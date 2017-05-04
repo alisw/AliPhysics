@@ -238,7 +238,7 @@ void AlimPtMatrixZDC::UserCreateOutputObjects()
 	fNaccNch->GetYaxis()->SetTitle("n_{acc}");
 
 
-	fEvtsCent = new TH1F("fEvtsCent","Centrality;Number of Events",11,-1,10);
+	fEvtsCent = new TH1F("fEvtsCent","Centrality;Number of Events",12,-1.5,10.5);
 
 	fNaccZDCNC = new TH2F("fNaccZDCNC","Nacc:ZDCNC",260,0.,2600,100,0,100000);
 	fNaccZDCNC->GetXaxis()->SetTitle("n_{acc}");
