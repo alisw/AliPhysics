@@ -106,6 +106,10 @@ class CEPEventBuffer : public TObject {
     Int_t GetCollissionType()const { return fCollissionType; }
     Double_t GetMagnField()  const { return fMagnField; }
     TString GetFiredTriggerClasses() const { return fFiredTriggerClasses; }
+    Bool_t* GetPFBBFlagV0() { return fPFBBFlagV0; }
+    Bool_t* GetPFBGFlagV0() { return fPFBGFlagV0; }
+    Bool_t* GetPFBBFlagAD() { return fPFBBFlagAD; }
+    Bool_t* GetPFBGFlagAD() { return fPFBGFlagAD; }
 
     // different ways of retrieving number of tracks
     Int_t GetnTracksTotal()  const { return fnTracksTotal; }
