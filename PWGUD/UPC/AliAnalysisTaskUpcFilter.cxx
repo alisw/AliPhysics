@@ -611,7 +611,7 @@ void AliAnalysisTaskUpcFilter::RunAODMC(TClonesArray *arrayMC, AliAODMCHeader *h
     AliAODMCParticle *aodmc = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imc));
     if(!aodmc) continue;
 
-    if(aodmc->GetMother() >= 0) continue;
+    //if(aodmc->GetMother() >= 0) continue;
 
     TParticle *part = fUPCEvent->AddMCParticle();
     part->SetMomentum(aodmc->Px(), aodmc->Py(), aodmc->Pz(), aodmc->E());
