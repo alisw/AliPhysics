@@ -756,6 +756,8 @@ public:
   Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
   void SetTestSin(Bool_t const cCRC) {this->fCRCTestSin = cCRC;};
   Bool_t GetTestSin() const {return this->fCRCTestSin;};
+  void SetRecenterZDCVtxRbR(Bool_t const cCRC) {this->fVtxRbR = cCRC;};
+  Bool_t GetRecenterZDCVtxRbR() const {return this->fVtxRbR;};
   void SetNUAforCRC(Bool_t const cCRC) {this->fNUAforCRC = cCRC;};
   Bool_t GetNUAforCRC() const {return this->fNUAforCRC;};
   void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -1470,6 +1472,7 @@ private:
   Bool_t fDivSigma;
   Bool_t fInvertZDC;
   Bool_t fCRCTestSin;
+  Bool_t fVtxRbR;
   Double_t fCRCEtaMin;
   Double_t fCRCEtaMax;
   Int_t fRunNum;

@@ -194,6 +194,8 @@ public:
   Bool_t GetInvertZDC() const {return this->fInvertZDC;};
   void SetTestSin(Bool_t const cCRC) {this->fCRCTestSin = cCRC;};
   Bool_t GetTestSin() const {return this->fCRCTestSin;};
+  void SetRecenterZDCVtxRbR(Bool_t const cCRC) {this->fVtxRbR = cCRC;};
+  Bool_t GetRecenterZDCVtxRbR() const {return this->fVtxRbR;};
   void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
   Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
   void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -331,6 +333,7 @@ private:
   Bool_t fDivSigma;
   Bool_t fInvertZDC;
   Bool_t fCRCTestSin;
+  Bool_t fVtxRbR;
   Bool_t fUseNUAforCRC;
   Bool_t fUseCRCRecenter;
   Double_t fCRCEtaMin;
