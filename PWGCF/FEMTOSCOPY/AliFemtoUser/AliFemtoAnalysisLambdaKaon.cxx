@@ -1064,6 +1064,7 @@ AliFemtoXiTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutPar
   tXiCut->SetEta(aCutParams.etaV0);
   tXiCut->SetPt(aCutParams.minPtV0,aCutParams.maxPtV0);
   tXiCut->SetOnFlyStatus(aCutParams.onFlyStatusV0);
+  tXiCut->SetIgnoreOnFlyStatus(aCutParams.ignoreOnFlyStatusV0);
   tXiCut->SetMaxV0DecayLength(aCutParams.maxV0DecayLength);
     //Lambda daughter cuts
     tXiCut->SetMinDaughtersToPrimVertex(aCutParams.minV0PosDaughterToPrimVertex,aCutParams.minV0NegDaughterToPrimVertex);
@@ -1929,14 +1930,14 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.maxDcaXi = 0.3;
   tReturnParams.maxDcaXiDaughters = 0.3;
 
-  tReturnParams.minDcaXiBac = 0.03;
+  tReturnParams.minDcaXiBac = 0.1;
   tReturnParams.etaBac = 0.8;
   tReturnParams.minTPCnclsBac = 70;
   tReturnParams.minPtBac = 0.;
   tReturnParams.maxPtBac = 100.;
 
   tReturnParams.v0Type = 0;
-  tReturnParams.minDcaV0 = 0.1;
+  tReturnParams.minDcaV0 = 0.2;
   tReturnParams.minInvMassV0 = LambdaMass-0.005;
   tReturnParams.maxInvMassV0 = LambdaMass+0.005;
   tReturnParams.minCosPointingAngleV0 = 0.;  //TODO was 0.998, might need to revert back
@@ -1961,6 +1962,8 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.useCustomV0MisID = true;
   tReturnParams.useCustomBacPionFilter = true;
   tReturnParams.useCustomBacPionMisID = false;
+
+  tReturnParams.ignoreOnFlyStatusV0 = false;
 
   return tReturnParams;
 }
@@ -1989,14 +1992,14 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.maxDcaXi = 0.3;
   tReturnParams.maxDcaXiDaughters = 0.3;
 
-  tReturnParams.minDcaXiBac = 0.03;
+  tReturnParams.minDcaXiBac = 0.1;
   tReturnParams.etaBac = 0.8;
   tReturnParams.minTPCnclsBac = 70;
   tReturnParams.minPtBac = 0.;
   tReturnParams.maxPtBac = 100.;
 
   tReturnParams.v0Type = 1;
-  tReturnParams.minDcaV0 = 0.1;
+  tReturnParams.minDcaV0 = 0.2;
   tReturnParams.minInvMassV0 = LambdaMass-0.005;
   tReturnParams.maxInvMassV0 = LambdaMass+0.005;
   tReturnParams.minCosPointingAngleV0 = 0.;  //TODO was 0.998, might need to revert back
@@ -2021,6 +2024,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.useCustomV0MisID = true;
   tReturnParams.useCustomBacPionFilter = false;
   tReturnParams.useCustomBacPionMisID = false;
+
+  tReturnParams.ignoreOnFlyStatusV0 = false;
 
   return tReturnParams;
 }

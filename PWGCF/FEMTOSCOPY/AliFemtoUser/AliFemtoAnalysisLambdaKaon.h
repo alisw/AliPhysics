@@ -256,6 +256,8 @@ struct XiCutParams
   bool useCustomV0MisID;
   bool useCustomBacPionFilter;
   bool useCustomBacPionMisID;
+
+  bool ignoreOnFlyStatusV0;
 };
 
 struct PairCutParams
