@@ -112,6 +112,7 @@ fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
 fCRCTestSin(kFALSE),
+fVtxRbR(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -266,6 +267,7 @@ fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
 fCRCTestSin(kFALSE),
+fVtxRbR(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -403,6 +405,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetMinMulZN(fMinMulZN);
   fQC->SetMaxDevZN(fMaxDevZN);
   fQC->SetTestSin(fCRCTestSin);
+  fQC->SetRecenterZDCVtxRbR(fVtxRbR);
   fQC->SetNUAforCRC(fUseNUAforCRC);
   fQC->SetUseCRCRecenter(fUseCRCRecenter);
   fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);

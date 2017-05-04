@@ -202,6 +202,7 @@ fVZEROQVecRecList(NULL),
 fUseZDCSpectraCorr(kFALSE),
 fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
+fTrackQAList(NULL),
 fBadTowerStuffList(NULL),
 fVZEROStuffList(NULL),
 fCachedRunNum(0),
@@ -264,6 +265,17 @@ fhZNBCCorr(0x0)
   fMaxRingVZC=4;
   fMinRingVZA=5;
   fMaxRingVZA=8;
+  for(Int_t fb=0; fb<fKNFBs; fb++){
+    for (Int_t i=0; i<4; i++) {
+      fTrackQADCAxy[fb][i] = NULL;
+      fTrackQADCAz[fb][i] = NULL;
+      fTrackQApT[fb][i] = NULL;
+      fTrackQADphi[fb][i] = NULL;
+      fEbEQRe[fb][i] = NULL;
+      fEbEQIm[fb][i] = NULL;
+      fEbEQMu[fb][i] = NULL;
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -372,6 +384,7 @@ fVZEROQVecRecList(NULL),
 fUseZDCSpectraCorr(kFALSE),
 fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
+fTrackQAList(NULL),
 fBadTowerStuffList(NULL),
 fVZEROStuffList(NULL),
 fCachedRunNum(0),
@@ -442,6 +455,17 @@ fhZNBCCorr(0x0)
   fMaxRingVZC=4;
   fMinRingVZA=5;
   fMaxRingVZA=8;
+  for(Int_t fb=0; fb<fKNFBs; fb++){
+    for (Int_t i=0; i<4; i++) {
+      fTrackQADCAxy[fb][i] = NULL;
+      fTrackQADCAz[fb][i] = NULL;
+      fTrackQApT[fb][i] = NULL;
+      fTrackQADphi[fb][i] = NULL;
+      fEbEQRe[fb][i] = NULL;
+      fEbEQIm[fb][i] = NULL;
+      fEbEQMu[fb][i] = NULL;
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -488,9 +512,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 {
   // Create the output containers
   
-  if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "MCAOD" || fAnalysisType == "AUTOMATIC" || fAnalysisType == "MCESD"))
+  if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "MCAOD" || fAnalysisType == "AUTOMATIC" || fAnalysisType == "MCESD" || fAnalysisType == "TrackQA"))
   {
-    AliError("WRONG ANALYSIS TYPE! only MCESD, MCkine, MCAOD, AOD and AUTOMATIC are allowed.");
+    AliError("WRONG ANALYSIS TYPE! only TrackQA, MCESD, MCkine, MCAOD, AOD and AUTOMATIC are allowed.");
     exit(1);
   }
   
@@ -707,9 +731,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   Int_t dRun11h[] = {167902, 167903, 167915, 167920, 167985, 167987, 167988, 168066, 168068, 168069, 168076, 168104, 168105, 168107, 168108, 168115, 168212, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168461, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168984, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169143, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 169965, 170027, 170036,170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593};
   
-  // 12 low IR: 244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392
-  // 80 high IR ("CentralBarrelTracking" good runs): 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246540, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683
-  
   Int_t dRun15o[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
   
   Int_t dRun15ov6[] = {244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
@@ -766,6 +787,47 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 //    fVZEROQVectorRecQy[k]->Sumw2();
 //    fVZEROStuffList->Add(fVZEROQVectorRecQy[k]);
 //  }
+  
+  // track QA
+  
+  if(fAnalysisType == "TrackQA") {
+    
+    fTrackQAList = new TList();
+    fTrackQAList->SetOwner(kTRUE);
+    fTrackQAList->SetName("TrackQA");
+    fOutput->Add(fTrackQAList);
+    
+    Int_t nBinsEta=10;
+    Double_t dBinsEta[]={-0.8,-0.64,-0.48,-0.32,-0.16,0.,0.16,0.32,0.48,0.64,0.8};
+    Int_t nBinsPt = 26;
+    Double_t dBinsPt[] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,8.,10.,14.,20.,30.,50.};
+    
+    for(Int_t fb=0; fb<fKNFBs; fb++){
+      for (Int_t i=0; i<4; i++) {
+        // DCA
+        fTrackQADCAxy[fb][i] = new TH3D(Form("fTrackQADCAxy[%d][%d]",fb,i),";#eta;p_{T} [GeV/c];DCAxy [cm]",10,-0.8,0.8,10,0.,5.,480,-2.4,2.4);
+        fTrackQAList->Add(fTrackQADCAxy[fb][i]);
+        fTrackQADCAz[fb][i] = new TH3D(Form("fTrackQADCAz[%d][%d]",fb,i),";#eta;p_{T} [GeV/c];DCAz [cm]",10,-0.8,0.8,10,0.,5.,640,-3.2,3.2);
+        fTrackQAList->Add(fTrackQADCAz[fb][i]);
+        // pT
+        fTrackQApT[fb][i] = new TH2D(Form("fTrackQApT[%d][%d]",fb,i),";#eta;p_{T} [GeV/c]",nBinsEta,dBinsEta,nBinsPt,dBinsPt);
+        fTrackQAList->Add(fTrackQApT[fb][i]);
+        // Dphi
+        fTrackQADphi[fb][i] = new TProfile2D(Form("fTrackQADphi[%d][%d]",fb,i),";#eta;p_{T} [GeV/c];cos(#Delta#phi)",nBinsEta,dBinsEta,nBinsPt,dBinsPt);
+        fTrackQAList->Add(fTrackQADphi[fb][i]);
+        // EbE
+        fEbEQRe[fb][i] = new TH2D(Form("fEbEQRe[%d][%d]",fb,i),";#eta;p_{T} [GeV/c];QRe(EbE)",nBinsEta,dBinsEta,nBinsPt,dBinsPt);
+        fTrackQAList->Add(fEbEQRe[fb][i]);
+        fEbEQIm[fb][i] = new TH2D(Form("fEbEQIm[%d][%d]",fb,i),";#eta;p_{T} [GeV/c];QRe(EbE)",nBinsEta,dBinsEta,nBinsPt,dBinsPt);
+        fTrackQAList->Add(fEbEQIm[fb][i]);
+        fEbEQMu[fb][i] = new TH2D(Form("fEbEQMu[%d][%d]",fb,i),";#eta;p_{T} [GeV/c];QRe(EbE)",nBinsEta,dBinsEta,nBinsPt,dBinsPt);
+        fTrackQAList->Add(fEbEQMu[fb][i]);
+      }
+    }
+    
+  }
+  
+  // run-by-run stuff
   
   Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
   Double_t phimin[] = {0.,TMath::Pi()/8.,2*TMath::Pi()/8.,3*TMath::Pi()/8.,4*TMath::Pi()/8.,5*TMath::Pi()/8.,6*TMath::Pi()/8.,7*TMath::Pi()/8.,8*TMath::Pi()/8.,9*TMath::Pi()/8.,10*TMath::Pi()/8.,11*TMath::Pi()/8.,12*TMath::Pi()/8.,13*TMath::Pi()/8.,14*TMath::Pi()/8.,15*TMath::Pi()/8.,16*TMath::Pi()/8.};
@@ -854,184 +916,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if (InputEvent()) {
       if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
       if(fRejectPileUp) {
-        if(fDataSet!=k2015 && fDataSet!=k2015v6) {
-          
-          Bool_t BisPileup=kFALSE;
-          
-          // check anyway pileup
-          if (plpMV(aod)) {
-            fPileUpCount->Fill(0.5);
-            BisPileup=kTRUE;
-          }
-          
-          Short_t isPileup = aod->IsPileupFromSPD(3);
-          if (isPileup != 0) {
-            fPileUpCount->Fill(1.5);
-            BisPileup=kTRUE;
-          }
-          
-          if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
-            fPileUpCount->Fill(2.5);
-            BisPileup=kTRUE;
-          }
-          
-          if (aod->IsIncompleteDAQ())  {
-            fPileUpCount->Fill(3.5);
-            BisPileup=kTRUE;
-          }
-          
-          // check vertex consistency
-          const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
-          const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
-          
-          if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
-            fPileUpCount->Fill(5.5);
-            BisPileup=kTRUE;
-          }
-          
-          double covTrc[6], covSPD[6];
-          vtTrc->GetCovarianceMatrix(covTrc);
-          vtSPD->GetCovarianceMatrix(covSPD);
-          
-          double dz = vtTrc->GetZ() - vtSPD->GetZ();
-          
-          double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-          double errTrc = TMath::Sqrt(covTrc[5]);
-          double nsigTot = dz/errTot;
-          double nsigTrc = dz/errTrc;
-          
-          if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
-            fPileUpCount->Fill(6.5);
-            BisPileup=kTRUE;
-          }
-          
-          if (fAnalysisUtil->IsPileUpEvent(InputEvent())) {
-            fPileUpCount->Fill(7.5);
-            BisPileup=kTRUE;
-          }
-          
-//        if(BisPileup) return;
-        } else {
-          // pileup from AliMultSelection
-          if(!fMultSelection->GetThisEventIsNotPileup()) fPileUpMultSelCount->Fill(0.5);
-          if(!fMultSelection->GetThisEventIsNotPileupMV()) fPileUpMultSelCount->Fill(1.5);
-          if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) fPileUpMultSelCount->Fill(2.5);
-          if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) fPileUpMultSelCount->Fill(3.5);
-          if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) fPileUpMultSelCount->Fill(4.5);
-          if(!fMultSelection->GetThisEventIsNotAsymmetricInVZERO()) fPileUpMultSelCount->Fill(5.5);
-          if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) fPileUpMultSelCount->Fill(6.5);
-          if(!fMultSelection->GetThisEventHasGoodVertex2016()) fPileUpMultSelCount->Fill(7.5);
-          
-          Bool_t BisPileup=kFALSE;
-          
-          // pile-up a la Dobrin for LHC15o
-          if (plpMV(aod)) {
-            fPileUpCount->Fill(0.5);
-            BisPileup=kTRUE;
-          }
-          
-          Short_t isPileup = aod->IsPileupFromSPD(3);
-          if (isPileup != 0) {
-            fPileUpCount->Fill(1.5);
-            BisPileup=kTRUE;
-          }
-          
-          if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
-            fPileUpCount->Fill(2.5);
-            BisPileup=kTRUE;
-          }
-          
-          if (aod->IsIncompleteDAQ())  {
-            fPileUpCount->Fill(3.5);
-            BisPileup=kTRUE;
-          }
-          
-          if(fabs(centrV0M-centrCL1)>7.5)  {
-            fPileUpCount->Fill(4.5);
-            BisPileup=kTRUE;
-          }
-          
-          // check vertex consistency
-          const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
-          const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
-          
-          if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
-            fPileUpCount->Fill(5.5);
-            BisPileup=kTRUE;
-          }
-          
-          double covTrc[6], covSPD[6];
-          vtTrc->GetCovarianceMatrix(covTrc);
-          vtSPD->GetCovarianceMatrix(covSPD);
-          
-          double dz = vtTrc->GetZ() - vtSPD->GetZ();
-          
-          double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-          double errTrc = TMath::Sqrt(covTrc[5]);
-          double nsigTot = dz/errTot;
-          double nsigTrc = dz/errTrc;
-          
-          if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
-            fPileUpCount->Fill(6.5);
-            BisPileup=kTRUE;
-          }
-          
-          // cuts on tracks
-          const Int_t nTracks = aod->GetNumberOfTracks();
-          Int_t multEsd = ((AliAODHeader*)aod->GetHeader())->GetNumberOfESDTracks();
-
-          Int_t multTrk = 0;
-          Int_t multTrkBefC = 0;
-          Int_t multTrkTOFBefC = 0;
-          Int_t multTPC = 0;
-          
-          for (Int_t it = 0; it < nTracks; it++) {
-            
-            AliAODTrack* aodTrk = (AliAODTrack*)aod->GetTrack(it);
-            if (!aodTrk){
-              delete aodTrk;
-              continue;
-            }
-            
-//            if (aodTrk->TestFilterBit(32)){
-//              multTrkBefC++;
-//              
-//              if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
-//                multTrkTOFBefC++;
-//              
-//              if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2) && (aodTrk->Pt() < 20.))
-//                multTrk++;
-//            }
-            
-            if (aodTrk->TestFilterBit(128))
-              multTPC++;
-            
-          } // end of for (Int_t it = 0; it < nTracks; it++)
-          
-          Double_t multTPCn = multTPC;
-          Double_t multEsdn = multEsd;
-          Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
-          
-          if (multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
-            fPileUpCount->Fill(7.5);
-            BisPileup=kTRUE;
-          }
-          
-          if(fRejectPileUpTight) {
-            if(BisPileup==kFALSE) {
-              if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
-              if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
-              if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
-              if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
-              if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
-              if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
-              if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
-              if(BisPileup) fPileUpCount->Fill(8.5);
-            }
-          }
-          
-          if(BisPileup) return;
-        }
+        Bool_t IsPileUp = SelectPileup(aod);
+        if(IsPileUp) return;
       }
     }
     
@@ -1078,6 +964,132 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
   }
   
+  if (fAnalysisType == "TrackQA") {
+    
+    // empty flow event
+    fFlowEvent->ClearFast();
+    
+    // get centrality
+    Double_t centrV0M=300;
+    if(fDataSet!=k2015 && fDataSet!=k2015v6) {
+      centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+    } else {
+      fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+      if(!fMultSelection) {
+        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+        AliWarning("AliMultSelection object not found!");
+      } else {
+        centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+      }
+    }
+    if(centrV0M<10. || centrV0M>40.) return;
+    
+    //check event cuts
+    if (InputEvent()) {
+      if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
+      if(fRejectPileUp) {
+        Bool_t IsPileUp = SelectPileup(aod);
+        if(IsPileUp) return;
+      }
+    }
+    
+    Double_t BField = aod->GetMagneticField();
+    
+    for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
+      
+      AliAODTrack* track = (AliAODTrack*)aod->GetTrack(jTracks);
+      if(!track) continue;
+      
+      Double_t dPt = track->Pt();
+      Double_t dEta = track->Eta();
+      Double_t dPhi = track->Phi();
+      Double_t dCharge = track->Charge();
+      Int_t cw = 0;
+      if(BField>0. && dCharge>0.) cw=0;
+      if(BField>0. && dCharge<0.) cw=1;
+      if(BField<0. && dCharge>0.) cw=2;
+      if(BField<0. && dCharge<0.) cw=3;
+      
+      // general kinematic cuts
+      if (dPt < .2 || dPt > 50. || TMath::Abs(dEta) > 0.8) continue;
+      
+      // cut on DCA
+      Double_t DCAxy = track->DCA();
+      Double_t DCAz = track->ZAtDCA();
+      if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
+        // re-evaluate the dca as it seems to not be natively present
+        // allowed only for tracks inside the beam pipe
+        Double_t pos[3] = {-99., -99., -99.};
+        track->GetPosition(pos);
+        if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
+          AliAODTrack copy(*track);       // stack copy
+          Double_t b[2] = {-99., -99.};
+          Double_t bCov[3] = {-99., -99., -99.};
+          if(copy.PropagateToDCA(aod->GetPrimaryVertex(), aod->GetMagneticField(), 100., b, bCov)) {
+            DCAxy = b[0];
+            DCAz = b[1];
+          }
+        }
+      }
+      if(fabs(DCAxy)>2.4 || fabs(DCAz)>3.2) continue;
+      
+      // various cuts on TPC clusters
+      if (track->GetTPCNcls() < 70) continue;
+      Double_t chi2_per_tpc = track->Chi2perNDF();
+      if (chi2_per_tpc < 0.1 || chi2_per_tpc > 4.) continue;
+      Double_t fraction_shared_tpccls = 1.*track->GetTPCnclsS()/track->GetTPCncls();
+      if (fraction_shared_tpccls > 0.4) continue;
+      
+      Int_t FBarray[4] = {32,96,128,768};
+      
+      // test filter bits
+      for(Int_t fb=0; fb<fKNFBs; fb++){
+        if (track->TestFilterBit(FBarray[fb])) {
+          fTrackQADCAxy[fb][cw]->Fill(dEta,dPt,DCAxy);
+          fTrackQADCAz[fb][cw]->Fill(dEta,dPt,DCAz);
+          fTrackQApT[fb][cw]->Fill(dEta,dPt);
+          fEbEQRe[fb][cw]->Fill(dEta,dPt,TMath::Cos(dPhi));
+          fEbEQIm[fb][cw]->Fill(dEta,dPt,TMath::Sin(dPhi));
+          fEbEQMu[fb][cw]->Fill(dEta,dPt);
+        }
+      }
+    }
+    
+    // compute cos(#Delta#phi)
+    for(Int_t bx=1; bx<=fEbEQRe[0][0]->GetXaxis()->GetNbins(); bx++) {
+      for(Int_t by=1; by<=fEbEQRe[0][0]->GetYaxis()->GetNbins(); by++) {
+        
+        Double_t dEta = fEbEQRe[0][0]->GetXaxis()->GetBinCenter(bx);
+        Double_t dPt  = fEbEQRe[0][0]->GetYaxis()->GetBinCenter(by);
+        
+        for(Int_t fb=0; fb<fKNFBs; fb++){
+          for(Int_t c=0; c<4; c++){
+            
+            Double_t QRe = fEbEQRe[fb][c]->GetBinContent(bx,by);
+            Double_t QIm = fEbEQIm[fb][c]->GetBinContent(bx,by);
+            Double_t M   = 1.*fEbEQMu[fb][c]->GetBinContent(bx,by);
+            
+            if(M>1.) {
+              Double_t c1 = (QRe*QRe+QIm*QIm-M*M)/(M*(M-1.));
+              fTrackQADphi[fb][c]->Fill(dEta,dPt,c1);
+            }
+          }
+        }
+        
+      }
+    }
+    
+    // reset EbE histograms
+    for(Int_t fb=0; fb<fKNFBs; fb++){
+      for(Int_t c=0; c<4; c++){
+        fEbEQRe[fb][c]->Reset();
+        fEbEQIm[fb][c]->Reset();
+        fEbEQMu[fb][c]->Reset();
+      }
+    }
+    
+  }
+  
   if (fAnalysisType == "MCAOD") {
     
     //check event cuts
@@ -1116,6 +1128,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     Int_t CenBin = -1;
     CenBin = GetCenBin(centr);
     if(CenBin==-1) return;
+    fCenDis->Fill(centr);
     
     // reconstructed
     for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
@@ -1154,7 +1167,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         if (track->TestFilterBit(768)) fPtSpecFB768[1][CenBin]->Fill(track->Pt());
       }
       
-      fCenDis->Fill(centr);
     }
     
     // generated (physical primaries)
@@ -1773,6 +1785,204 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   PostData(2, fOutput);
 }
+//________________________________________________________________________
+
+Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
+{
+  Bool_t BisPileup=kFALSE;
+  Double_t centrV0M=300., centrCL1=300.;
+  
+  if(fDataSet!=k2015 && fDataSet!=k2015v6) {
+    
+    // pileup for LHC10h and LHC11h
+    
+    centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+    centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
+    
+    // check anyway pileup
+    if (plpMV(aod)) {
+      fPileUpCount->Fill(0.5);
+      BisPileup=kTRUE;
+    }
+    
+    Short_t isPileup = aod->IsPileupFromSPD(3);
+    if (isPileup != 0) {
+      fPileUpCount->Fill(1.5);
+      BisPileup=kTRUE;
+    }
+    
+    if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
+      fPileUpCount->Fill(2.5);
+      BisPileup=kTRUE;
+    }
+    
+    if (aod->IsIncompleteDAQ())  {
+      fPileUpCount->Fill(3.5);
+      BisPileup=kTRUE;
+    }
+    
+    // check vertex consistency
+    const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
+    const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
+    
+    if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
+      fPileUpCount->Fill(5.5);
+      BisPileup=kTRUE;
+    }
+    
+    double covTrc[6], covSPD[6];
+    vtTrc->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    
+    double dz = vtTrc->GetZ() - vtSPD->GetZ();
+    
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = dz/errTot;
+    double nsigTrc = dz/errTrc;
+    
+    if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
+      fPileUpCount->Fill(6.5);
+      BisPileup=kTRUE;
+    }
+    
+    if (fAnalysisUtil->IsPileUpEvent(InputEvent())) {
+      fPileUpCount->Fill(7.5);
+      BisPileup=kTRUE;
+    }
+    
+  }
+  else {
+    
+    // pileup for LHC15o, using AliMultSelection
+    
+    if(fMultSelection) {
+      centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+      centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+    } else {
+      BisPileup=kTRUE;
+    }
+    
+    // pileup from AliMultSelection
+    if(!fMultSelection->GetThisEventIsNotPileup()) fPileUpMultSelCount->Fill(0.5);
+    if(!fMultSelection->GetThisEventIsNotPileupMV()) fPileUpMultSelCount->Fill(1.5);
+    if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) fPileUpMultSelCount->Fill(2.5);
+    if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) fPileUpMultSelCount->Fill(3.5);
+    if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) fPileUpMultSelCount->Fill(4.5);
+    if(!fMultSelection->GetThisEventIsNotAsymmetricInVZERO()) fPileUpMultSelCount->Fill(5.5);
+    if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) fPileUpMultSelCount->Fill(6.5);
+    if(!fMultSelection->GetThisEventHasGoodVertex2016()) fPileUpMultSelCount->Fill(7.5);
+    
+    // pile-up a la Dobrin for LHC15o
+    if (plpMV(aod)) {
+      fPileUpCount->Fill(0.5);
+      BisPileup=kTRUE;
+    }
+    
+    Short_t isPileup = aod->IsPileupFromSPD(3);
+    if (isPileup != 0) {
+      fPileUpCount->Fill(1.5);
+      BisPileup=kTRUE;
+    }
+    
+    if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
+      fPileUpCount->Fill(2.5);
+      BisPileup=kTRUE;
+    }
+    
+    if (aod->IsIncompleteDAQ())  {
+      fPileUpCount->Fill(3.5);
+      BisPileup=kTRUE;
+    }
+    
+    if(fabs(centrV0M-centrCL1)>7.5)  {
+      fPileUpCount->Fill(4.5);
+      BisPileup=kTRUE;
+    }
+    
+    // check vertex consistency
+    const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
+    const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
+    
+    if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
+      fPileUpCount->Fill(5.5);
+      BisPileup=kTRUE;
+    }
+    
+    double covTrc[6], covSPD[6];
+    vtTrc->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    
+    double dz = vtTrc->GetZ() - vtSPD->GetZ();
+    
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = dz/errTot;
+    double nsigTrc = dz/errTrc;
+    
+    if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
+      fPileUpCount->Fill(6.5);
+      BisPileup=kTRUE;
+    }
+    
+    // cuts on tracks
+    const Int_t nTracks = aod->GetNumberOfTracks();
+    Int_t multEsd = ((AliAODHeader*)aod->GetHeader())->GetNumberOfESDTracks();
+    
+    Int_t multTrk = 0;
+    Int_t multTrkBefC = 0;
+    Int_t multTrkTOFBefC = 0;
+    Int_t multTPC = 0;
+    
+    for (Int_t it = 0; it < nTracks; it++) {
+      
+      AliAODTrack* aodTrk = (AliAODTrack*)aod->GetTrack(it);
+      if (!aodTrk){
+        delete aodTrk;
+        continue;
+      }
+      
+//      if (aodTrk->TestFilterBit(32)){
+//        multTrkBefC++;
+//        
+//        if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
+//          multTrkTOFBefC++;
+//        
+//        if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2) && (aodTrk->Pt() < 20.))
+//          multTrk++;
+//      }
+      
+      if (aodTrk->TestFilterBit(128))
+        multTPC++;
+      
+    } // end of for (Int_t it = 0; it < nTracks; it++)
+    
+    Double_t multTPCn = multTPC;
+    Double_t multEsdn = multEsd;
+    Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+    
+    if (multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
+      fPileUpCount->Fill(7.5);
+      BisPileup=kTRUE;
+    }
+    
+    if(fRejectPileUpTight) {
+      if(BisPileup==kFALSE) {
+        if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
+        if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
+        if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
+        if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
+        if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
+        if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
+        if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
+        if(BisPileup) fPileUpCount->Fill(8.5);
+      }
+    }
+  }
+  
+  return BisPileup;
+}
+
 //________________________________________________________________________
 
 Double_t AliAnalysisTaskCRCZDC::GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist)
