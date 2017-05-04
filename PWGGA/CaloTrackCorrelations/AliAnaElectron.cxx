@@ -1381,30 +1381,13 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   // Access MC information in stack if requested, check that it exists.
 
   TParticle        * primary     = 0x0;   
-  TClonesArray     * mcparticles = 0x0;
   AliAODMCParticle * aodprimary  = 0x0; 
   
-  if(IsDataMC())
+  if( IsDataMC() && !GetMC() )
   {
-    if(GetReader()->ReadStack())
-    {
-      if ( !GetMC() )
-      {
-        AliFatal("Stack not available, is the MC handler called? STOP");
-        return;
-      }
-    }
-    else if(GetReader()->ReadAODMCParticles())
-    {
-      // Get the list of MC particles
-      mcparticles = GetReader()->GetAODMCParticles();
-      if ( !mcparticles )
-      {
-        AliFatal("Standard MCParticles not available! STOP");
-        return;
-      }
-    }
-  } // is data and MC
+    AliFatal("MCEvent not available! STOP");
+    return;
+  } 
   
   // Get vertex
   Double_t v[3] = {0,0,0}; //vertex ;
@@ -1460,17 +1443,17 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         continue;
       }
       
+      Int_t nprim = GetMC()->GetNumberOfTracks();
+      if ( label >=  nprim )
+      {
+        AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, nprim));
+        continue ;
+      }
+      
       Float_t eprim   = 0;
       //Float_t ptprim  = 0;
       if( GetReader()->ReadStack() )
       {
-        Int_t nprim = GetMC()->GetNumberOfTracks();
-        if ( label >=  nprim )
-        {
-          AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, nprim));
-          continue ;
-        }
-        
         primary = GetMC()->Particle(label);
         if(!primary)
         {
@@ -1483,13 +1466,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       }
       else if( GetReader()->ReadAODMCParticles() )
       {
-        if(label >=  mcparticles->GetEntriesFast())
-        {
-          AliDebug(1,Form("*** large label ***:  label %d, n tracks %d",label, mcparticles->GetEntriesFast()));
-          continue ;
-        }
-        //Get the particle
-        aodprimary = (AliAODMCParticle*) mcparticles->At(label);
+        aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(label);
         
         if(!aodprimary)
         {

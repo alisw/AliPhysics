@@ -96,8 +96,6 @@ private:
   Float_t          fMinChargedPt;           //!<! Minimum energy for charged particles in correlation
   Float_t          fMinNeutralPt;           //!<! Minimum energy for neutral particles in correlation
   
-  TClonesArray   * fAODMCparticles ;        //!<! access AOD stack
-
 //  TParticle      * fParton2;              //!<! Initial state Parton
 //  TParticle      * fParton3;              //!<! Initial state Parton
   

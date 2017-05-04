@@ -2533,6 +2533,8 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
 //________________________________________
 void AliAnaPi0::FillAcceptanceHistograms()
 {
+  if ( !GetMC() ) return;
+
   Double_t mesonY   = -100 ;
   Double_t mesonE   = -1 ;
   Double_t mesonPt  = -1 ;
@@ -2540,7 +2542,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
   Double_t mesonYeta= -1 ;
   
   Int_t    pdg     = 0 ;
-  Int_t    nprim   = 0 ;
+  Int_t    nprim   = GetMC()->GetNumberOfTracks();
   Int_t    nDaught = 0 ;
   Int_t    iphot1  = 0 ;
   Int_t    iphot2  = 0 ;
@@ -2552,22 +2554,6 @@ void AliAnaPi0::FillAcceptanceHistograms()
   AliAODMCParticle * primAOD   = 0;
   
   TString genName = "";
-  
-  // Get the ESD MC particles container
-  if( GetReader()->ReadStack() )
-  {
-    if ( !GetMC() ) return;
-    nprim = GetMC()->GetNumberOfTracks();
-  }
-  
-  // Get the AOD MC particles container
-  TClonesArray * mcparticles = 0;
-  if( GetReader()->ReadAODMCParticles() )
-  {
-    mcparticles = GetReader()->GetAODMCParticles();
-    if( !mcparticles ) return;
-    nprim = mcparticles->GetEntriesFast();
-  }
   
   for(Int_t i=0 ; i < nprim; i++)
   {
@@ -2618,7 +2604,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     }
     else // AODs
     {
-      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
       if(!primAOD)
       {
         AliWarning("AOD primaries pointer not available!!");
@@ -2773,11 +2759,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
           momstatus = mother->GetStatusCode();
           momR      = mother->R();
         }
-        
-        if(GetReader()->ReadAODMCParticles())
+        else if(GetReader()->ReadAODMCParticles())
         {
           status = primAOD->GetStatus();
-          AliAODMCParticle* mother = (AliAODMCParticle*) mcparticles->At(momindex);
+          AliAODMCParticle* mother = (AliAODMCParticle*) GetMC()->GetTrack(momindex);
           mompdg    = TMath::Abs(mother->GetPdgCode());
           momstatus = mother->GetStatus();
           momR      = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
@@ -2879,8 +2864,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(GetReader()->ReadAODMCParticles())
     {
-      AliAODMCParticle * phot1 = (AliAODMCParticle *) mcparticles->At(iphot1) ;
-      AliAODMCParticle * phot2 = (AliAODMCParticle *) mcparticles->At(iphot2) ;
+      AliAODMCParticle * phot1 = (AliAODMCParticle *) GetMC()->GetTrack(iphot1) ;
+      AliAODMCParticle * phot2 = (AliAODMCParticle *) GetMC()->GetTrack(iphot2) ;
       
       if(!phot1 || !phot2) continue ;
       
@@ -3216,8 +3201,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           if(GetReader()->ReadStack())
           {
             TParticle* ancestor = GetMC()->Particle(ancLabel);
-            status = ancestor->GetStatusCode();
-            momindex  = ancestor->GetFirstMother();
+            status   = ancestor->GetStatusCode();
+            momindex = ancestor->GetFirstMother();
             if(momindex >= 0) 
             {
               TParticle* mother = GetMC()->Particle(momindex);
@@ -3230,13 +3215,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           }
           else
           {
-            TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
-            status = ancestor->GetStatus();
-            momindex  = ancestor->GetMother();
+            AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(ancLabel);
+            status   = ancestor->GetStatus();
+            momindex = ancestor->GetMother();
             if(momindex >= 0) 
             {
-              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+              AliAODMCParticle* mother = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatus();
               prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
@@ -3375,12 +3359,11 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           }
           else
           {
-            TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+            AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(ancLabel);
             momindex  = ancestor->GetMother();
             if(momindex >= 0) 
             {
-              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+              AliAODMCParticle* mother = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatus();
               prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());

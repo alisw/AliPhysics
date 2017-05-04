@@ -2525,15 +2525,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   }
   
   AliDebug(1,Form("Primaries: nlabels %d",nLabels));
-  
-  Float_t e   = fClusterMomentum.E();
-  Float_t eta = fClusterMomentum.Eta();
-  Float_t phi = fClusterMomentum.Phi();
-  if(phi < 0) phi +=TMath::TwoPi();
-  
-  AliAODMCParticle * aodprimary  = 0x0;
-  TParticle * primary = 0x0;
-  
+    
   // Play with the MC stack if available
   Int_t label = labels[0];
   
@@ -2543,6 +2535,20 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
     return kFALSE;
   }
   
+  if( label >= GetMC()->GetNumberOfTracks()) 
+  {
+    AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, GetMC()->GetNumberOfTracks()));
+    return kFALSE;
+  }
+
+  Float_t e   = fClusterMomentum.E();
+  Float_t eta = fClusterMomentum.Eta();
+  Float_t phi = fClusterMomentum.Phi();
+  if(phi < 0) phi +=TMath::TwoPi();
+  
+  AliAODMCParticle * aodprimary  = 0x0;
+  TParticle * primary = 0x0;
+
   Int_t pdg0    =-1; Int_t status = -1; Int_t iMother = -1; Int_t iParent = -1;
   Float_t vxMC  = 0; Float_t vyMC  = 0;
   Float_t eMC   = 0; //Float_t ptMC= 0;
@@ -2554,14 +2560,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   
   if     ( GetReader()->ReadStack() && 
           !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown))
-  { // If MC stack and known tag
-    
-    if( label >= GetMC()->GetNumberOfTracks()) 
-    {
-      AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, GetMC()->GetNumberOfTracks()));
-      return kFALSE;
-    }
-    
+  { 
     primary = GetMC()->Particle(label);
     iMother = label;
     pdg0    = TMath::Abs(primary->GetPdgCode());
@@ -2573,7 +2572,6 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
     
     AliDebug(1,"Cluster most contributing mother:");
     AliDebug(1,Form("\t Mother label %d, pdg %d, %s, status %d, parent %d",iMother, pdg0, primary->GetName(),status, iParent));
-    
     
     // Get final particle, no conversion products
     if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
@@ -2654,13 +2652,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   }
   else if( GetReader()->ReadAODMCParticles() && 
           !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown))
-  {
-    // If MC AOD and known tag
-    // Get the list of MC particles
-    if(!GetReader()->GetAODMCParticles())
-      AliFatal("MCParticles not available!");
-    
-    aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
+  {    
+    aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(label);
     iMother = label;
     pdg0    = TMath::Abs(aodprimary->GetPdgCode());
     pdg     = pdg0;
@@ -2679,14 +2672,14 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
       AliDebug(2,"Converted cluster!. Find before conversion:");
       
       // Get the parent
-      aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iParent);
+      aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(iParent);
       pdg = TMath::Abs(aodprimary->GetPdgCode());
         
       while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) 
       {
         Int_t iMotherOrg = iMother;
         iMother    = iParent;
-        aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iMother);
+        aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(iMother);
         status     = aodprimary->IsPrimary();
         iParent    = aodprimary->GetMother();
         pdg        = TMath::Abs(aodprimary->GetPdgCode());
@@ -2695,7 +2688,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
         // there are other possible decays, ignore them for the moment
         if( pdg == 111 || pdg == 221 )
         {
-          aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iMotherOrg);
+          aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(iMotherOrg);
           break;
         }        
         
@@ -2724,7 +2717,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
       while(pdg != 111 && pdg != 221)
       {
         iMother    = iParent;
-        aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iMother);
+        aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(iMother);
         status     = aodprimary->IsPrimary();
         iParent    = aodprimary->GetMother();
         pdg        = TMath::Abs(aodprimary->GetPdgCode());
@@ -7160,31 +7153,15 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 /// Not dependent on cluster/cell.
 //______________________________________
 void AliAnaCalorimeterQA::MCHistograms()
-{
+{  
+  if ( !GetMC() ) return;
+ 
   Int_t    pdg    =  0 ;
   Int_t    status =  0 ;
-  Int_t    nprim  =  0 ;
+  Int_t    nprim  = GetMC()->GetNumberOfTracks();
   
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  
-  // Get the MC arrays and do some checks before filling MC histograms
-    
-  // Get the ESD MC particles container
-  if( GetReader()->ReadStack() )
-  {
-    if(!GetMC() ) return;
-    nprim = GetMC()->GetNumberOfTracks();
-  }
-  
-  // Get the AOD MC particles container
-  TClonesArray * mcparticles = 0;
-  if( GetReader()->ReadAODMCParticles() )
-  {
-    mcparticles = GetReader()->GetAODMCParticles();
-    if( !mcparticles ) return;
-    nprim = mcparticles->GetEntriesFast();
-  }
   
   //printf("N primaries %d\n",nprim);
   for(Int_t i=0 ; i < nprim; i++)
@@ -7221,7 +7198,7 @@ void AliAnaCalorimeterQA::MCHistograms()
     }
     else
     {
-      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
       if(!primAOD)
       {
         AliWarning("AOD primaries pointer not available!!");

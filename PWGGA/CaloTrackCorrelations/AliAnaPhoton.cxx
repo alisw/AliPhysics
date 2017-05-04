@@ -960,6 +960,12 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
 //___________________________________________
 void AliAnaPhoton::FillAcceptanceHistograms()
 {
+  if( !GetMC() )
+  {
+    AliFatal("MCEvent not available, is the MC handler called? STOP");
+    return;
+  }
+  
   Double_t photonY   = -100 ;
   Double_t photonE   = -1 ;
   Double_t photonPt  = -1 ;
@@ -970,35 +976,11 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   Int_t    tag       =  0 ;
   Int_t    status    =  0 ;
   Int_t    mcIndex   =  0 ;
-  Int_t    nprim     =  0 ;
+  Int_t    nprim     =  GetMC()->GetNumberOfTracks();
   Bool_t   inacceptance = kFALSE ;
   
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  
-  // Get the ESD MC particles container
-  if( GetReader()->ReadStack() )
-  {
-    if( !GetMC() )
-    {
-      AliFatal("Stack not available, is the MC handler called? STOP");
-      return;
-    }
-    nprim = GetMC()->GetNumberOfTracks();
-  }
-  
-  // Get the AOD MC particles container
-  TClonesArray * mcparticles = 0;
-  if( GetReader()->ReadAODMCParticles() )
-  {
-    mcparticles = GetReader()->GetAODMCParticles();
-    if( !mcparticles )
-    {
-      AliFatal("Standard MCParticles not available!");
-      return;
-    }
-    nprim = mcparticles->GetEntriesFast();
-  }
   
   for(Int_t i=0 ; i < nprim; i++)
   {
@@ -1031,7 +1013,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     }
     else
     {
-      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
       if(!primAOD)
       {
         AliWarning("AOD primaries pointer not available!!");
@@ -1095,7 +1077,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     }
   
     //if(fStudyActivityNearCluster  && photonE > 5) // cut at 5 GeV to avoid too many iterations
-     // DistanceToAddedSignalAtGeneratorLevel(i,nprim, GetMC(), mcparticles, photonE,photonEta,photonPhi);
+     // DistanceToAddedSignalAtGeneratorLevel(i,nprim, GetMC(), photonE,photonEta,photonPhi);
     
     // Consider only final state particles, but this depends on generator,
     // status 1 is the usual one, in case of not being ok, leave the possibility
@@ -1192,7 +1174,6 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 ///
 //________________________________________________________________________________
 //void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim, 
-//                                         TClonesArray*  mcparticles,
 //                                         Float_t photonE, Float_t photonEta, Float_t photonPhi)
 //{
 //  //Double_t addedY   = -100 ;
@@ -1267,7 +1248,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //    }
 //    else
 //    {
-//      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+//      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
 //      if(!primAOD)
 //      {
 //        AliWarning("AOD primaries pointer not available!!");
@@ -1290,7 +1271,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //      
 //      if(momLabel >= 0)
 //      {
-//        primAODMom = (AliAODMCParticle *) mcparticles->At(momLabel);
+//        primAODMom = (AliAODMCParticle *) GetMC()->GetTrack(momLabel);
 //        grandMomLabel = primAODMom->GetMother();
 //      }
 //    }

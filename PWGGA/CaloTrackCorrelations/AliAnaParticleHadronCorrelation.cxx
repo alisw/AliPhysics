@@ -4706,41 +4706,41 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     return;
   }
   
+  if ( !GetMC() )
+  {
+    AliFatal("Stack not available, is the MC handler called? STOP");
+    return;
+  }
+  
+  //Int_t nTracks = GetMC()->GetNumberOfTracks() ;
+  Int_t nTracks = GetMC()->GetNumberOfPrimaries();
+  
+  if( label >= nTracks )
+  {
+    if(GetDebug() > 2)
+      AliInfo(Form(" *** large label ***:  label %d, n prim tracks %d", label,nTracks));
+    
+    return;
+  }
+
   // Do MC correlation for a given particle type range.
   // Types defined in GetMCTagHistogramIndex:
   // 0 direct gamma; 1 pi0; 2 pi0 decay; 3 eta decay; 4 other decay; 5 electron; 6 other (hadron)
   if(histoIndex < fMCGenTypeMin || histoIndex > fMCGenTypeMax) return ;
   
-  TParticle        * primary      = 0x0 ;
-  TClonesArray     * mcparticles  = 0x0 ;
-  AliAODMCParticle * aodprimary   = 0x0 ;
+  TParticle        * primary    = 0x0 ;
+  AliAODMCParticle * aodprimary = 0x0;
   
   Double_t eprim   = 0 ;
   Double_t ptprim  = 0 ;
   Double_t phiprim = 0 ;
   Double_t etaprim = 0 ;
-  Int_t    nTracks = 0 ;
   Int_t iParticle  = 0 ;
   
   Bool_t leadTrig = kTRUE;
   
   if( GetReader()->ReadStack() )
   {
-    if(!GetMC())
-    {
-      AliFatal("Stack not available, is the MC handler called? STOP");
-      return;
-    }
-    
-    //nTracks = GetMC()->GetNumberOfTracks() ;
-    nTracks = GetMC()->GetNumberOfPrimaries();
-    if( label >=  GetMC()->GetNumberOfTracks() )
-    {
-      if(GetDebug() > 2)
-        AliInfo(Form("*** large label ***:  label %d, n tracks %d", label, GetMC()->GetNumberOfTracks()));
-      return ;
-    }
-    
     primary = GetMC()->Particle(label);
     if ( !primary )
     {
@@ -4794,21 +4794,8 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
   } // ESD MC
   else if( GetReader()->ReadAODMCParticles() )
   {
-    // Get the list of MC particles
-    mcparticles = GetReader()->GetAODMCParticles();
-    if( !mcparticles ) return;
-    
-    nTracks = mcparticles->GetEntriesFast() ;
-    
-    if( label >= nTracks )
-    {
-      if(GetDebug() > 2)
-        AliInfo(Form(" *** large label ***:  label %d, n tracks %d", label,nTracks));
-      return;
-    }
-    
     // Get the particle
-    aodprimary = (AliAODMCParticle*) mcparticles->At(label);
+    aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(label);
     if( !aodprimary )
     {
       AliInfo(Form(" *** no AOD primary ***:  label %d", label));
@@ -4827,7 +4814,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     {
       if ( !GetReader()->AcceptParticleMCLabel( iParticle ) ) continue ;
       
-      AliAODMCParticle *part = (AliAODMCParticle*) mcparticles->At(iParticle);
+      AliAODMCParticle *part = (AliAODMCParticle*) GetMC()->GetTrack(iParticle);
       
       if (!part->IsPhysicalPrimary() ) continue; // same as part->GetStatus() !=1
       
@@ -4845,7 +4832,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
       if ( indexmother > -1 )
       {
         Int_t pdg = part->GetPdgCode();
-        Int_t mPdg = ((AliAODMCParticle*) mcparticles->At(indexmother)) ->GetPdgCode();
+        Int_t mPdg = ((AliAODMCParticle*) GetMC()->GetTrack(indexmother)) ->GetPdgCode();
         if (TMath::Abs(pdg) == 11 && mPdg == 22) continue;
       }
       

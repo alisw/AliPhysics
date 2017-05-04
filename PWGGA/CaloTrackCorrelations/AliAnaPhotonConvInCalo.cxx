@@ -877,23 +877,24 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
           {
             //....................................................................
             // Access MC information in stack if requested, check that it exists.
+            
             Int_t label =calo->GetLabel();
-            if(label < 0)
+            if ( label < 0 )
             {
               AliDebug(1,Form("*** bad label ***:  label %d", label));
               continue;
+            }
+            
+            if ( label >=  GetMC()->GetNumberOfTracks() )
+            {
+              AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, GetMC()->GetNumberOfTracks()));
+              continue ;
             }
             
             //Float_t eprim   = 0;
             //Float_t ptprim  = 0;
             if(GetReader()->ReadStack())
             {
-              if(label >=  GetMC()->GetNumberOfTracks())
-              {
-                AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, GetMC()->GetNumberOfTracks()));
-                continue ;
-              }
-              
               TParticle* primary = GetMC()->Particle(label);
               if(!primary)
               {
@@ -904,24 +905,15 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
               //ptprim  = primary->Pt();
             }
             else if(GetReader()->ReadAODMCParticles())
-            {
-              TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-
-              if(label >=  mcparticles->GetEntriesFast())
-              {
-                AliDebug(2,Form("*** large label ***:  label %d, n tracks %d",label, mcparticles->GetEntriesFast()));
-                continue ;
-              }
-              
+            {              
               // Get the particle
-              AliAODMCParticle* aodprimary = (AliAODMCParticle*) mcparticles->At(label);
+              AliAODMCParticle* aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(label);
               
               if(!aodprimary)
               {
                 AliDebug(2,Form("*** no primary ***:  label %d", label));
                 continue;
               }
-              
               //eprim   = aodprimary->E();
               //ptprim  = aodprimary->Pt();
             }
