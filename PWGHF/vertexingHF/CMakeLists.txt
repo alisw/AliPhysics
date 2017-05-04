@@ -131,6 +131,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
   AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
+  AliAnalysisTaskCharmBaryonsMC.cxx
   AliAnalysisTaskSEDvsEventShapes.cxx
   AliAnalysisTaskSEB0toDminuspi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx
