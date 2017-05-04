@@ -48,7 +48,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
     Float_t deltaDipMaxPt = 0.;
     Bool_t TPCStandAloneTracks = kFALSE; // deprecated
     Bool_t useGlobalRPCuts = kTRUE; // deprecated
-    Float_t vertexZ = 5.;
+    Float_t vertexZ = 10.;
     Float_t POIEtaMin = -0.8;
     Float_t POIEtaMax = 0.8;
     // start of macro
