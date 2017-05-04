@@ -33,7 +33,7 @@
 #include "AliVCluster.h"
 #include "AliMCAnalysisUtils.h"
 #include "TParticle.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliMixedEvent.h"
 #include "AliAnalysisManager.h"
@@ -4711,7 +4711,6 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
   // 0 direct gamma; 1 pi0; 2 pi0 decay; 3 eta decay; 4 other decay; 5 electron; 6 other (hadron)
   if(histoIndex < fMCGenTypeMin || histoIndex > fMCGenTypeMax) return ;
   
-  AliStack         * stack        = 0x0 ;
   TParticle        * primary      = 0x0 ;
   TClonesArray     * mcparticles  = 0x0 ;
   AliAODMCParticle * aodprimary   = 0x0 ;
@@ -4727,23 +4726,22 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
   
   if( GetReader()->ReadStack() )
   {
-    stack =  GetMCStack() ;
-    if(!stack)
+    if(!GetMC())
     {
       AliFatal("Stack not available, is the MC handler called? STOP");
       return;
     }
     
-    //nTracks = stack->GetNtrack() ;
-    nTracks = stack->GetNprimary();
-    if( label >=  stack->GetNtrack() )
+    //nTracks = GetMC()->GetNumberOfTracks() ;
+    nTracks = GetMC()->GetNumberOfPrimaries();
+    if( label >=  GetMC()->GetNumberOfTracks() )
     {
       if(GetDebug() > 2)
-        AliInfo(Form("*** large label ***:  label %d, n tracks %d", label, stack->GetNtrack()));
+        AliInfo(Form("*** large label ***:  label %d, n tracks %d", label, GetMC()->GetNumberOfTracks()));
       return ;
     }
     
-    primary = stack->Particle(label);
+    primary = GetMC()->Particle(label);
     if ( !primary )
     {
       AliInfo(Form(" *** no primary ***:  label %d", label));
@@ -4762,7 +4760,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     {
       if ( !GetReader()->AcceptParticleMCLabel( iParticle ) ) continue ;
       
-      TParticle * particle = stack->Particle(iParticle);
+      TParticle * particle = GetMC()->Particle(iParticle);
       
       //keep only final state particles
       if( particle->GetStatusCode() != 1 ) continue ;
@@ -4780,7 +4778,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
       if( !inCTS ) continue;
       
       // Remove conversions
-      if ( TMath::Abs(pdg) == 11 && stack->Particle(particle->GetFirstMother())->GetPdgCode() == 22 ) continue ;
+      if ( TMath::Abs(pdg) == 11 && GetMC()->Particle(particle->GetFirstMother())->GetPdgCode() == 22 ) continue ;
       
       if ( label == iParticle ) continue; // avoid trigger particle
       

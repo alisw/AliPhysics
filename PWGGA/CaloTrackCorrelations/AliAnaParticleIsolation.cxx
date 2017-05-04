@@ -27,7 +27,7 @@
 // --- Analysis system ---
 #include "AliAnaParticleIsolation.h"
 #include "AliCaloTrackReader.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliIsolationCut.h"
 #include "AliFiducialCut.h"
 #include "AliMCAnalysisUtils.h"
@@ -1595,9 +1595,9 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
       Bool_t physPrimary = kFALSE;
       Int_t trackLabel = TMath::Abs(track->GetLabel());
       
-      if( GetReader()->ReadStack() && GetMCStack())
+      if( GetReader()->ReadStack() && GetMC())
       {
-        TParticle  * mcpartESD = static_cast<TParticle*>(GetMCStack()->Particle(trackLabel));
+        TParticle  * mcpartESD = GetMC()->Particle(trackLabel);
         if( mcpartESD ) 
         {
           partInConePDG    = mcpartESD->GetPdgCode();
@@ -7112,12 +7112,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   }
   
   // Get the ESD MC particles container
-  AliStack * stack = 0;
   if( GetReader()->ReadStack() )
   {
-    stack = GetMCStack();
-    if(!stack ) return;
-    nprim = stack->GetNtrack();
+    if(!GetMC() ) return;
+    nprim = GetMC()->GetNumberOfTracks();
   }
   
   // Get the AOD MC particles container
@@ -7135,7 +7133,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     if(GetReader()->ReadStack())
     {
-      primStack = stack->Particle(i) ;
+      primStack = GetMC()->Particle(i) ;
       if(!primStack)
       {
         AliWarning("ESD primaries pointer not available!!");
@@ -7150,7 +7148,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           (primStack->Energy() - primStack->Pz()) < 1e-3      ||
           (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
-      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
       //       primStack->GetName(), primStack->GetPdgCode());
       
       //photonY   = 0.5*TMath::Log((prim->Energy()+prim->Pz())/(prim->Energy()-prim->Pz())) ;
@@ -7313,7 +7311,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       if( GetReader()->ReadStack() )
       {
-        mcisopStack = static_cast<TParticle*>(stack->Particle(ip));
+        mcisopStack = GetMC()->Particle(ip);
         if( !mcisopStack ) continue;
         partInConeStatus = mcisopStack->GetStatusCode();
         

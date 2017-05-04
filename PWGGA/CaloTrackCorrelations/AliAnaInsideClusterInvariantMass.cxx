@@ -24,7 +24,6 @@
 #include "AliAnaInsideClusterInvariantMass.h" 
 #include "AliCaloTrackReader.h"
 #include "AliMCAnalysisUtils.h"
-#include "AliStack.h"
 #include "AliFiducialCut.h"
 #include "TParticle.h"
 #include "AliVCluster.h"

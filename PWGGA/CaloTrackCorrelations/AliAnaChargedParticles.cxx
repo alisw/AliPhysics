@@ -22,7 +22,7 @@
 #include "AliAnaChargedParticles.h"
 #include "AliCaloTrackReader.h"
 #include "AliAODPWG4Particle.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliFiducialCut.h"
 #include "AliVTrack.h"
 #include "AliAODMCParticle.h"
@@ -147,12 +147,10 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
   AliAODMCParticle * primAOD   = 0;
   
   // Get the ESD MC particles container
-  AliStack * stack = 0;
   if( GetReader()->ReadStack() )
   {
-    stack = GetMCStack();
-    if(!stack ) return;
-    nprim = stack->GetNtrack();
+    if(!GetMC() ) return;
+    nprim = GetMC()->GetNumberOfTracks();
   }
   
   // Get the AOD MC particles container
@@ -170,7 +168,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
     
     if(GetReader()->ReadStack())
     {
-      primStack = stack->Particle(i) ;
+      primStack = GetMC()->Particle(i) ;
       if(!primStack)
       {
         AliWarning("ESD primaries pointer not available!!");
@@ -189,7 +187,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
           (primStack->Energy() - primStack->Pz()) < 1e-3      ||
           (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
-      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
       //       prim->GetName(), prim->GetPdgCode());
       
       //Charged kinematics
@@ -1509,9 +1507,9 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       
       if(label >= 0)
       {
-        if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
+        if( GetReader()->ReadStack() && label < GetMC()->GetNumberOfTracks())
         {
-          TParticle * mom = GetMCStack()->Particle(label);
+          TParticle * mom = GetMC()->Particle(label);
           mompdg =TMath::Abs(mom->GetPdgCode());
         }
         else if(GetReader()->ReadAODMCParticles())

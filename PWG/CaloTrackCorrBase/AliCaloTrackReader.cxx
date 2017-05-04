@@ -35,7 +35,6 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliAODMCParticle.h"
-#include "AliStack.h"
 #include "AliLog.h"
 #include "AliMultSelection.h"
 
@@ -865,20 +864,6 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   return new TObjString(parList) ;
 }
 
-
-//____________________________________________
-/// \return pointer to stack (AliStack)
-//____________________________________________
-AliStack* AliCaloTrackReader::GetStack() const
-{
-  if(fMC)
-    return fMC->Stack();
-  else
-  {
-    AliDebug(1,"Stack is not available");
-    return 0x0 ;
-  }
-}
 
 //______________________________________________
 /// \return pointer to header (AliHeader)

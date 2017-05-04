@@ -28,7 +28,6 @@ class TObjString;
 
 // --- ANALYSIS system ---
 #include "AliAnaCaloTrackCorrBaseClass.h"
-class AliStack;
 class TParticle;
 
 class TList ;

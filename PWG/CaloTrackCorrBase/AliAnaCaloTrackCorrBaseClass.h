@@ -43,7 +43,7 @@ class TObjString;
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliMixedEvent.h" 
 class AliVCaloCells;
-class AliStack ; 
+class AliMCEvent ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
 class AliEMCALGeometry;
@@ -317,7 +317,7 @@ public:
   
   // MC event acces methods
   
-  virtual AliStack *                 GetMCStack()          const ;
+  virtual AliMCEvent *               GetMC()               const ;
   
   virtual AliHeader*                 GetMCHeader()         const ;
   
