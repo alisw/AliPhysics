@@ -140,27 +140,13 @@ fhPtNPileUpSPDVtxBC0(0), fhPtNPileUpTrkVtxBC0(0)
 //__________________________________________________
 void AliAnaChargedParticles::FillPrimaryHistograms()
 {
-  Int_t    pdg       =  0 ;
-  Int_t    nprim     =  0 ;
-  
+  if ( !GetMC() ) return;
+
+  Int_t    pdg   =  0 ;
+  Int_t    nprim = GetMC()->GetNumberOfTracks() ;
+
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  
-  // Get the ESD MC particles container
-  if( GetReader()->ReadStack() )
-  {
-    if(!GetMC() ) return;
-    nprim = GetMC()->GetNumberOfTracks();
-  }
-  
-  // Get the AOD MC particles container
-  TClonesArray * mcparticles = 0;
-  if( GetReader()->ReadAODMCParticles() )
-  {
-    mcparticles = GetReader()->GetAODMCParticles();
-    if( !mcparticles ) return;
-    nprim = mcparticles->GetEntriesFast();
-  }
   
   for(Int_t i=0 ; i < nprim; i++)
   {
@@ -195,7 +181,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
     }
     else
     {
-      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
       if(!primAOD)
       {
         AliWarning("AOD primaries pointer not available!!");
@@ -1514,9 +1500,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
         }
         else if(GetReader()->ReadAODMCParticles())
         {
-          AliAODMCParticle * aodmom = 0;
-          //Get the list of MC particles
-          aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
+          AliAODMCParticle * aodmom = (AliAODMCParticle*) GetMC()->GetTrack(label);
           mompdg =TMath::Abs(aodmom->GetPdgCode());
         }
       }

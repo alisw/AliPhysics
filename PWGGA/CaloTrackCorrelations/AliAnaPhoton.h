@@ -65,7 +65,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         FillAcceptanceHistograms();
   
 //  void         DistanceToAddedSignalAtGeneratorLevel(Int_t label, Int_t nprim, 
-//                                     TClonesArray*  mcparticles,
 //                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
   
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t nlm,
