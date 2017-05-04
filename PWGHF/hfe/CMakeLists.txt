@@ -112,6 +112,7 @@ set(SRCS
   AliAnalysisTaskBeautyCal.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
   AliAnalysisTaskHFEMulti.cxx
+  AliAnalysisTaskHFEMultiplicity.cxx
   AliAnalysisTaskHFEtemplate.cxx
   AliHFEhadronicbackground.cxx
   AliHFEUnfolding.cxx	
