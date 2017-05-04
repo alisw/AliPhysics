@@ -111,16 +111,16 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   // Add some selection criteria
   //-------------------------------------------------------
+  AnalysisTask->SetOffTrigger(evtTriggerType|evtMixingType); //..select only evets of type evtTriggerType and evtMixingType
   //..for Run1 pPb
-  //AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
+  //AnalysisTask->SetUseManualEvtCuts(kTRUE);
+  //AnalysisTask->SetUseAliAnaUtils(kTRUE);
   //AnalysisTask->SetVzRange(-10,10);
-  //AnalysisTask->SetZvertexDiffValue(0.2); //for SPD vertex distance
-  //AnalysisTask->SetCentRange(0.0,90.0);
+  //AnalysisTask->SetCentRange(0.0,100.0);
 
   //..new task for run2
-  //AnalysisTask->SetNCentBins(5);     //for PbPb run2 data
+  //AnalysisTask->SetNCentBins(5);
   //AnalysisTask->SetUseNewCentralityEstimation(kTRUE);
-  AnalysisTask->SetOffTrigger(evtTriggerType|evtMixingType); //..select only evets of type evtTriggerType and evtMixingType
 
   if(AnalysisTask->GetTrackContainer(trackName))
   {
