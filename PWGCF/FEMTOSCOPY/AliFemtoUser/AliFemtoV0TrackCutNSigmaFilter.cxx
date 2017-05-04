@@ -175,7 +175,7 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
 
 
   //quality cuts
-  if (aV0->OnFlyStatusV0() != fOnFlyStatus) return false;
+  if(!fIgnoreOnFlyStatus) {if (aV0->OnFlyStatusV0() != fOnFlyStatus) return false;}
   if (aV0->StatusNeg() == 999 || aV0->StatusPos() == 999) return false;
   if (aV0->TPCNclsPos() < fTPCNclsDaughters) return false;
   if (aV0->TPCNclsNeg() < fTPCNclsDaughters) return false;
