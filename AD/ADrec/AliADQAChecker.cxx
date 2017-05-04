@@ -616,7 +616,7 @@ TCanvas* AliADQAChecker::CreatePads(TCanvas *c1) const {
     xRow[iRow] = xRow[iRow-1] - xStep*(isLarge[iRow-1] ? timesLarger : 1.0);
 
   const Int_t nPads = 12;
-  const struct PadInfo {
+  struct PadInfo {
     PadInfo(const char* name, Int_t divX, Double_t x1, Double_t y1, Double_t x2, Double_t y2)
       : fName(name)
       , fDivX(divX)
@@ -631,19 +631,21 @@ TCanvas* AliADQAChecker::CreatePads(TCanvas *c1) const {
     Double_t fY1;
     Double_t fX2;
     Double_t fY2;
-  } padInfo[12] = {
-    {"Charge",        2, 0.0, xRow[ 1], 1.0, xRow[ 0]},
-    {"ChargeZoom",    6, 0.0, xRow[ 2], 1.0, xRow[ 1]},
-    {"Time",          4, 0.0, xRow[ 3], 1.0, xRow[ 2]},
-    {"TimeRatio",     4, 0.0, xRow[ 4], 1.0, xRow[ 3]},
-    {"MeanTime",      4, 0.0, xRow[ 5], 1.0, xRow[ 4]},
-    {"ClockCfg",      5, 0.0, xRow[ 6], 1.0, xRow[ 5]},
-    {"Pedestal",      2, 0.0, xRow[ 7], 0.5, xRow[ 6]},
-    {"MaxCharge",     1, 0.5, xRow[ 7], 1.0, xRow[ 6]},
-    {"Coincidences",  4, 0.0, xRow[ 8], 1.0, xRow[ 7]},
-    {"Triggers",      1, 0.0, xRow[ 9], 1.0, xRow[ 8]},
-    {"Decisions",     3, 0.0, xRow[10], 1.0, xRow[ 9]},
-    {"ChargeTrend",   1, 0.0, 0.0,      1.0, xRow[10]}
+  };
+
+  const struct PadInfo padInfo[12] = {
+    PadInfo("Charge",        2, 0.0, xRow[ 1], 1.0, xRow[ 0]),
+    PadInfo("ChargeZoom",    6, 0.0, xRow[ 2], 1.0, xRow[ 1]),
+    PadInfo("Time",          4, 0.0, xRow[ 3], 1.0, xRow[ 2]),
+    PadInfo("TimeRatio",     4, 0.0, xRow[ 4], 1.0, xRow[ 3]),
+    PadInfo("MeanTime",      4, 0.0, xRow[ 5], 1.0, xRow[ 4]),
+    PadInfo("ClockCfg",      5, 0.0, xRow[ 6], 1.0, xRow[ 5]),
+    PadInfo("Pedestal",      2, 0.0, xRow[ 7], 0.5, xRow[ 6]),
+    PadInfo("MaxCharge",     1, 0.5, xRow[ 7], 1.0, xRow[ 6]),
+    PadInfo("Coincidences",  4, 0.0, xRow[ 8], 1.0, xRow[ 7]),
+    PadInfo("Triggers",      1, 0.0, xRow[ 9], 1.0, xRow[ 8]),
+    PadInfo("Decisions",     3, 0.0, xRow[10], 1.0, xRow[ 9]),
+    PadInfo("ChargeTrend",   1, 0.0, 0.0,      1.0, xRow[10])
   };
 
   for (Int_t iPad=0; iPad<nPads; ++iPad) {
