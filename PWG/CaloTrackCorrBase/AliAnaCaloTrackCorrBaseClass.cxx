@@ -27,6 +27,7 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliVCaloCells.h" 
+#include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODPWG4Particle.h"
@@ -511,11 +512,11 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventNumber() const
 }
 
 //__________________________________________________________
-/// \return  Stack pointer from AliCaloTrackReader.
+/// \return  AliMCEvent pointer from AliCaloTrackReader.
 //__________________________________________________________
-AliStack *  AliAnaCaloTrackCorrBaseClass::GetMCStack() const 
+AliMCEvent *  AliAnaCaloTrackCorrBaseClass::GetMC() const 
 {  
-  return fReader->GetStack(); 
+  return fReader->GetMC(); 
 }
 
 //____________________________________________________________

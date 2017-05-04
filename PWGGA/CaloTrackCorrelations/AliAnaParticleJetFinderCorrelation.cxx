@@ -32,7 +32,6 @@
 #include "AliAODJetEventBackground.h"
 #include "TRandom2.h"
 //MC access
-#include "AliStack.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliAODMCParticle.h"
 

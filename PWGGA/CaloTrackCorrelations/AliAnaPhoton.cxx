@@ -23,7 +23,7 @@
 // --- Analysis system ---
 #include "AliAnaPhoton.h"
 #include "AliCaloTrackReader.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
@@ -977,16 +977,14 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   AliAODMCParticle * primAOD   = 0;
   
   // Get the ESD MC particles container
-  AliStack * stack = 0;
   if( GetReader()->ReadStack() )
   {
-    stack = GetMCStack();
-    if( !stack )
+    if( !GetMC() )
     {
       AliFatal("Stack not available, is the MC handler called? STOP");
       return;
     }
-    nprim = stack->GetNtrack();
+    nprim = GetMC()->GetNumberOfTracks();
   }
   
   // Get the AOD MC particles container
@@ -1008,7 +1006,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     
     if(GetReader()->ReadStack())
     {
-      primStack = stack->Particle(i) ;
+      primStack = GetMC()->Particle(i) ;
       if(!primStack)
       {
         AliWarning("ESD primaries pointer not available!!");
@@ -1023,7 +1021,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
           (primStack->Energy() - primStack->Pz()) < 1e-3      ||
           (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
-      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
       //       prim->GetName(), prim->GetPdgCode());
       
       // Photon kinematics
@@ -1097,7 +1095,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     }
   
     //if(fStudyActivityNearCluster  && photonE > 5) // cut at 5 GeV to avoid too many iterations
-     // DistanceToAddedSignalAtGeneratorLevel(i,nprim, stack, mcparticles, photonE,photonEta,photonPhi);
+     // DistanceToAddedSignalAtGeneratorLevel(i,nprim, GetMC(), mcparticles, photonE,photonEta,photonPhi);
     
     // Consider only final state particles, but this depends on generator,
     // status 1 is the usual one, in case of not being ok, leave the possibility
@@ -1194,7 +1192,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 ///
 //________________________________________________________________________________
 //void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim, 
-//                                         AliStack * stack, TClonesArray*  mcparticles,
+//                                         TClonesArray*  mcparticles,
 //                                         Float_t photonE, Float_t photonEta, Float_t photonPhi)
 //{
 //  //Double_t addedY   = -100 ;
@@ -1218,7 +1216,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //  AliAODMCParticle * primAODMom   = 0;
 //
 //  TString genName;
-//  (GetReader()->GetMC())->GetCocktailGenerator(label,genName);
+//  (GetMC())->GetCocktailGenerator(label,genName);
 //  
 //  for(Int_t i=0 ; i < nprim; i++)
 //  {
@@ -1238,7 +1236,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //    Int_t grandMomLabel = -1;
 //    if(GetReader()->ReadStack())
 //    {
-//      primStack = stack->Particle(i) ;
+//      primStack = GetMC()->Particle(i) ;
 //      if(!primStack)
 //      {
 //        AliWarning("ESD primaries pointer not available!!");
@@ -1253,7 +1251,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
 //          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
 //      
-//      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+//      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
 //      //       prim->GetName(), prim->GetPdgCode());
 //      
 //      // Photon kinematics
@@ -1263,7 +1261,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //      
 //      if(momLabel >= 0)
 //      {
-//        primStackMom = stack->Particle(momLabel) ;
+//        primStackMom = GetMC()->Particle(momLabel) ;
 //        grandMomLabel = primStackMom->GetFirstMother();      
 //      }
 //    }
@@ -1330,7 +1328,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //    if(!inacceptance) continue;
 //    
 //    TString genName2;
-//    (GetReader()->GetMC())->GetCocktailGenerator(i,genName2);
+//    (GetMC())->GetCocktailGenerator(i,genName2);
 //    
 //    Float_t dEta = photonEta-addedEta;
 //    Float_t dPhi = photonPhi-addedPhi;

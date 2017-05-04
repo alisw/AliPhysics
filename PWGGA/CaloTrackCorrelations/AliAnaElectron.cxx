@@ -26,7 +26,7 @@
 // --- Analysis system --- 
 #include "AliAnaElectron.h" 
 #include "AliCaloTrackReader.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
@@ -46,7 +46,7 @@ AliAnaElectron::AliAnaElectron() :
     fMinDist(0.),                         fMinDist2(0.),                         fMinDist3(0.), 
     fTimeCutMin(-1),                      fTimeCutMax(999999),         
     fNCellsCut(0),                        fNLMCutMin(-1),                        fNLMCutMax(10),
-    fFillSSHistograms(kFALSE),             fFillOnlySimpleSSHisto(1),
+    fFillSSHistograms(kFALSE),            fFillOnlySimpleSSHisto(1),
     fFillWeightHistograms(kFALSE),        fNOriginHistograms(8), 
     fdEdxMin(0.),                         fdEdxMax (200.), 
     fEOverPMin(0),                        fEOverPMax (2),
@@ -1380,7 +1380,6 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 {
   // Access MC information in stack if requested, check that it exists.
 
-  AliStack         * stack       = 0x0;
   TParticle        * primary     = 0x0;   
   TClonesArray     * mcparticles = 0x0;
   AliAODMCParticle * aodprimary  = 0x0; 
@@ -1389,8 +1388,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   {
     if(GetReader()->ReadStack())
     {
-      stack =  GetMCStack() ;
-      if ( !stack )
+      if ( !GetMC() )
       {
         AliFatal("Stack not available, is the MC handler called? STOP");
         return;
@@ -1466,13 +1464,14 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       //Float_t ptprim  = 0;
       if( GetReader()->ReadStack() )
       {
-        if(label >=  stack->GetNtrack())
+        Int_t nprim = GetMC()->GetNumberOfTracks();
+        if ( label >=  nprim )
         {
-          AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, stack->GetNtrack()));
+          AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, nprim));
           continue ;
         }
         
-        primary = stack->Particle(label);
+        primary = GetMC()->Particle(label);
         if(!primary)
         {
           AliWarning(Form("*** no primary ***:  label %d", label));

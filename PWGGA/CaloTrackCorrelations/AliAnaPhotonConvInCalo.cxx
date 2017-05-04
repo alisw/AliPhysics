@@ -24,7 +24,7 @@
 // --- Analysis system --- 
 #include "AliAnaPhotonConvInCalo.h" 
 #include "AliCaloTrackReader.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
@@ -888,13 +888,13 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
             //Float_t ptprim  = 0;
             if(GetReader()->ReadStack())
             {
-              if(label >=  GetMCStack()->GetNtrack())
+              if(label >=  GetMC()->GetNumberOfTracks())
               {
-                AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, GetMCStack()->GetNtrack()));
+                AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, GetMC()->GetNumberOfTracks()));
                 continue ;
               }
               
-              TParticle* primary = GetMCStack()->Particle(label);
+              TParticle* primary = GetMC()->Particle(label);
               if(!primary)
               {
                 AliDebug(1,Form("*** no primary ***:  label %d", label));

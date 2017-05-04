@@ -25,7 +25,7 @@ class TROOT;
 #include "AliAnaOmegaToPi0Gamma.h"
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
@@ -315,7 +315,6 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   // Fill the MC AOD if needed first.
   //-----------
   //need to be further implemented
-  AliStack * stack = 0x0;
   // TParticle * primary = 0x0;
   TClonesArray * mcparticles0 = 0x0;
   //TClonesArray * mcparticles1 = 0x0;
@@ -328,13 +327,15 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   {
     if(GetReader()->ReadStack())
     {
-      stack =  GetMCStack() ;
-      if(!stack){
+      if(!GetMC())
+      {
         printf("AliAnaAcceptance::MakeAnalysisFillHistograms() - There is no stack!\n");
       }
-      else{
-        for(Int_t i=0 ; i<stack->GetNtrack(); i++){
-          TParticle * prim = stack->Particle(i) ;
+      else
+      {
+        for(Int_t i=0 ; i<GetMC()->GetNumberOfTracks(); i++)
+        {
+          TParticle * prim = GetMC()->Particle(i) ;
           pdg = prim->GetPdgCode() ;
           eta=prim->Eta();
           pt=prim->Pt();

@@ -20,7 +20,7 @@
 
 //---- ANALYSIS system ----
 #include "AliAnaParticlePartonCorrelation.h" 
-#include "AliStack.h"  
+#include "AliMCEvent.h"  
 #include "AliAODPWG4ParticleCorrelation.h"
 
 /// \cond CLASSIMP
@@ -153,16 +153,15 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
   {
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
-    AliStack * stack =  GetMCStack() ;
-    if(!stack)
+    if(!GetMC())
     {
       AliFatal("No Stack available, STOP");
       return; // coverity
     }
     
-    if(stack->GetNtrack() < 8)
+    if(GetMC()->GetNumberOfTracks() < 8)
     {
-      AliWarning(Form("*** small number of particles, not a PYTHIA simulation? ***:  n tracks %d", stack->GetNprimary()));
+      AliWarning(Form("*** small number of particles, not a PYTHIA simulation? ***:  n tracks %d", GetMC()->GetNumberOfPrimaries()));
       continue ;
     }
     
@@ -174,7 +173,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     
     TParticle * parton    = NULL ;
     for(Int_t ipr = 0;ipr < 8; ipr ++ ){
-      parton = stack->Particle(ipr) ;
+      parton = GetMC()->Particle(ipr) ;
       nrefs++;
       if(nrefs==1){
         objarray = new TObjArray(0);
@@ -205,8 +204,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
   AliDebug(1,"Begin parton correlation analysis, fill histograms");
   AliDebug(1,Form("In particle branch aod entries %d", GetInputAODBranch()->GetEntriesFast()));
   
-  AliStack * stack =  GetMCStack() ;
-  if(!stack)
+  if(!GetMC())
   {
     AliFatal("No Stack available, STOP");
     return;// coverity
@@ -234,15 +232,20 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     }
     
     // Check and get indeces of mother and parton
-    if(imom < 8 ) iparent = imom ;   //mother is already a parton
-    else if (imom <  stack->GetNtrack()) {
-      mom =  stack->Particle(imom);
-      if(mom){
+    if      (imom < 8 ) 
+      iparent = imom ;   //mother is already a parton
+    else if (imom <  GetMC()->GetNumberOfTracks()) 
+    {
+      mom =  GetMC()->Particle(imom);
+      if(mom)
+      {
         iparent=mom->GetFirstMother();
         //cout<<" iparent "<<iparent<<endl;
-        while(iparent > 7 ){
-          mom = stack->Particle(iparent);
-          if (mom) {
+        while(iparent > 7 )
+        {
+          mom = GetMC()->Particle(iparent);
+          if (mom)
+          {
             imom = iparent ; //Mother label is of the inmediate parton daughter
             iparent = mom->GetFirstMother();
           }
