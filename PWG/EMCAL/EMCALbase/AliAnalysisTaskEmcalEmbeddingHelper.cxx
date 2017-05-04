@@ -64,7 +64,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fTreeName(),
   fAnchorRun(169838),
   fPtHardBin(-1),
-  fNPtHardBins(0),
+  fNPtHardBins(1),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fFilePattern(""),
@@ -73,6 +73,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fFilenameIndex(-1),
   fFilenames(),
   fTriggerMask(AliVEvent::kAny),
+  fMCRejectOutliers(false),
+  fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
   fExternalFile(0),
@@ -118,7 +120,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fTreeName("aodTree"),
   fAnchorRun(169838),
   fPtHardBin(-1),
-  fNPtHardBins(0),
+  fNPtHardBins(1),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fFilePattern(""),
@@ -127,6 +129,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fFilenameIndex(-1),
   fFilenames(),
   fTriggerMask(AliVEvent::kAny),
+  fMCRejectOutliers(false),
+  fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
   fExternalFile(0),
@@ -474,7 +478,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
 
   if (fCreateHisto) {
     fHistManager.FillTH1("fHistEventCount", "Accepted");
-    fHistManager.FillTH1("fHistEmbeddingEventsRejected", attempts);
+    fHistManager.FillTH1("fHistEmbeddedEventsAttempted", attempts);
   }
 
   if (!fChain) return kFALSE;
@@ -540,7 +544,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RecordEmbeddedEventProperties()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
 {
-  if (CheckIsEmbeddedEventIsSelected()) {
+  if (CheckIsEmbeddedEventSelected()) {
     return kTRUE;
   }
 
@@ -557,24 +561,27 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
  *
  * @return kTRUE if the event successfully passes all criteria.
  */
-Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventIsSelected()
+Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
 {
-  // Trigger selection
+  // Physics selection
   if (fTriggerMask != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
     if (eev) {
-      res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+      res = (dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+        res = (dynamic_cast<AliVAODHeader*>(aev->GetHeader()))->GetOfflineTrigger();
       }
     }
 
     if ((res & fTriggerMask) == 0) {
       AliDebug(3, Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.",
                       res, fTriggerMask));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "PhysSel", 1);
+      }
       return kFALSE;
     }
   }
@@ -591,6 +598,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventIsSelected()
     if (TMath::Abs(externalVertex[2]) > fZVertexCut) {
       AliDebug(3, Form("Event rejected due to Z vertex selection. Event Z vertex: %f, Z vertex cut: %f",
        externalVertex[2], fZVertexCut));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "Vz", 1);
+      }
       return kFALSE;
     }
     Double_t dist = TMath::Sqrt((externalVertex[0]-inputVertex[0])*(externalVertex[0]-inputVertex[0])+(externalVertex[1]-inputVertex[1])*(externalVertex[1]-inputVertex[1])+(externalVertex[2]-inputVertex[2])*(externalVertex[2]-inputVertex[2]));
@@ -598,14 +608,44 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventIsSelected()
       AliDebug(3, Form("Event rejected because the distance between the current and embedded vertices is > %f. "
        "Current event vertex (%f, %f, %f), embedded event vertex (%f, %f, %f). Distance = %f",
        fMaxVertexDist, inputVertex[0], inputVertex[1], inputVertex[2], externalVertex[0], externalVertex[1], externalVertex[2], dist));
+      if (fCreateHisto) {
+        fHistManager.FillTH1("fHistEmbeddedEventRejection", "VertexDist", 1);
+      }
       return kFALSE;
     }
   }
 
-  // TODO: Can we do selection based on the contents of the external event input objects?
-  //       The previous embedding task could do so by directly accessing the elements.
-  //       Certainly can't do jets (say minPt of leading jet) because this has to be embedded before them.
-  //       See AliJetEmbeddingFromAODTask::IsAODEventSelected()
+  // Check for pt hard bin outliers
+  if (fPythiaHeader && fMCRejectOutliers)
+  {
+    // Pythia jet / pT-hard > factor
+    // This corresponds to "condition 1" in AliAnalysisTaskEmcal
+    // NOTE: The other "conditions" defined there are not really suitable to define here, since they
+    //       depend on the input objects of the event
+    if (fPtHardJetPtRejectionFactor > 0.) {
+      TLorentzVector jet;
+
+      Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
+
+      AliDebugStream(4) << "Pythia Njets: " << nTriggerJets << ", pT Hard: " << fPythiaPtHard << "\n";
+
+      Float_t tmpjet[]={0,0,0,0};
+      for (Int_t iJet = 0; iJet< nTriggerJets; iJet++) {
+        fPythiaHeader->TriggerJet(iJet, tmpjet);
+
+        jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
+
+        AliDebugStream(5) << "Pythia jet " << iJet << ", pycell jet pT: " << jet.Pt() << "\n";
+
+        //Compare jet pT and pt Hard
+        if (jet.Pt() > fPtHardJetPtRejectionFactor * fPythiaPtHard) {
+          AliDebugStream(3) << "Event rejected because of MC outlier removal. Pythia header jet with: pT Hard " << fPythiaPtHard << ", pycell jet pT " << jet.Pt() << ", rejection factor " << fPtHardJetPtRejectionFactor << "\n";
+          fHistManager.FillTH1("fHistEmbeddedEventRejection", "MCOutlier", 1);
+          return kFALSE;
+        }
+      }
+    }
+  }
 
   return kTRUE;
 }
@@ -662,12 +702,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   // Cross section
   histName = "fHistXsection";
   histTitle = "Pythia Cross Section;p_{T} hard bin; XSection";
-  fHistManager.CreateTProfile(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+  fHistManager.CreateTProfile(histName, histTitle, fNPtHardBins, 0, fNPtHardBins);
 
   // Trials
   histName = "fHistTrials";
   histTitle = "Number of Pythia Trials;p_{T} hard bin;Trials";
-  fHistManager.CreateTH1(histName, histTitle, fNPtHardBins + 1, -1, fNPtHardBins);
+  fHistManager.CreateTH1(histName, histTitle, fNPtHardBins, 0, fNPtHardBins);
 
   // Pt hard spectra
   histName = "fHistPtHard";
@@ -681,8 +721,19 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   histEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
   histEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
 
+  // Event rejection reason
+  histName = "fHistEmbeddedEventRejection";
+  histTitle = "Reasons to reject embedded event";
+  std::vector<std::string> binLabels = {"PhysSel", "MCOutlier", "Vz", "VertexDist"};
+  auto fHistEmbeddedEventRejection = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
+  // Set label names
+  for (unsigned int i = 1; i <= binLabels.size(); i++) {
+    fHistEmbeddedEventRejection->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+  }
+  fHistEmbeddedEventRejection->GetYaxis()->SetTitle("Counts");
+
   // Rejected events in embedded event selection
-  histName = "fHistEmbeddingEventsRejected";
+  histName = "fHistEmbeddedEventsAttempted";
   histTitle = "Number of embedded events rejected by event selection before success;Number of rejected events;Counts";
   fHistManager.CreateTH1(histName, histTitle, 200, 0, 200);
 
@@ -1161,6 +1212,8 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
   tempSS << "Trigger mask (binary): " << triggerMask << "\n";
+  tempSS << "Reject outliers: " << fMCRejectOutliers << "\n";
+  tempSS << "Pt hard jet pt rejection factor: " << fPtHardJetPtRejectionFactor << "\n";
   tempSS << "Z vertex cut: " << fZVertexCut << "\n";
   tempSS << "Max vertex distance: " << fMaxVertexDist << "\n";
 

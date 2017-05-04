@@ -136,10 +136,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @name Options for the embedded event
    */
   UInt_t GetTriggerMask()                                   const { return fTriggerMask; }
+  bool GetMCRejectOutliers()                                const { return fMCRejectOutliers; }
+  Double_t GetPtHardJetPtRejectionFactor()                  const { return fPtHardJetPtRejectionFactor; }
   Double_t GetZVertexCut()                                  const { return fZVertexCut; }
   Double_t GetMaxVertexDistance()                           const { return fMaxVertexDist; }
 
   void SetTriggerMask(UInt_t triggerMask)                         { fTriggerMask = triggerMask; }
+  void SetMCRejectOutliers(bool reject = true)                    { fMCRejectOutliers = reject; }
+  void SetPtHardJetPtRejectionFactor(double factor)               { fPtHardJetPtRejectionFactor = factor; }
   void SetZVertexCut(Double_t zVertex)                            { fZVertexCut = zVertex; }
   void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
   /* @} */
@@ -180,12 +184,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
-  Bool_t          CheckIsEmbeddedEventIsSelected();
+  Bool_t          CheckIsEmbeddedEventSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
 
   UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
+  bool                                          fMCRejectOutliers;  ///<  If true, MC outliers will be rejected
+  Double_t                                      fPtHardJetPtRejectionFactor; ///<  Factor which the pt hard bin is multiplied by to compare against pythia header jets pt
   Double_t                                      fZVertexCut;        ///<  Z vertex cut on embedded event
   Double_t                                      fMaxVertexDist;     ///<  Max distance between Z vertex of internal and embedded event
 
@@ -235,7 +241,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 3);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 4);
   /// \endcond
 };
 #endif
