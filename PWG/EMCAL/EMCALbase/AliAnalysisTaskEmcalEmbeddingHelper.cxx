@@ -73,6 +73,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fFilenameIndex(-1),
   fFilenames(),
   fTriggerMask(AliVEvent::kAny),
+  fMCRejectOutliers(false),
+  fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
   fExternalFile(0),
@@ -127,6 +129,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fFilenameIndex(-1),
   fFilenames(),
   fTriggerMask(AliVEvent::kAny),
+  fMCRejectOutliers(false),
+  fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
   fExternalFile(0),
@@ -611,10 +615,37 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
     }
   }
 
-  // TODO: Can we do selection based on the contents of the external event input objects?
-  //       The previous embedding task could do so by directly accessing the elements.
-  //       Certainly can't do jets (say minPt of leading jet) because this has to be embedded before them.
-  //       See AliJetEmbeddingFromAODTask::IsAODEventSelected()
+  // Check for pt hard bin outliers
+  if (fPythiaHeader && fMCRejectOutliers)
+  {
+    // Pythia jet / pT-hard > factor
+    // This corresponds to "condition 1" in AliAnalysisTaskEmcal
+    // NOTE: The other "conditions" defined there are not really suitable to define here, since they
+    //       depend on the input objects of the event
+    if (fPtHardJetPtRejectionFactor > 0.) {
+      TLorentzVector jet;
+
+      Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
+
+      AliDebugStream(4) << "Pythia Njets: " << nTriggerJets << ", pT Hard: " << fPythiaPtHard << "\n";
+
+      Float_t tmpjet[]={0,0,0,0};
+      for (Int_t iJet = 0; iJet< nTriggerJets; iJet++) {
+        fPythiaHeader->TriggerJet(iJet, tmpjet);
+
+        jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
+
+        AliDebugStream(5) << "Pythia jet " << iJet << ", pycell jet pT: " << jet.Pt() << "\n";
+
+        //Compare jet pT and pt Hard
+        if (jet.Pt() > fPtHardJetPtRejectionFactor * fPythiaPtHard) {
+          AliDebugStream(3) << "Event rejected because of MC outlier removal. Pythia header jet with: pT Hard " << fPythiaPtHard << ", pycell jet pT " << jet.Pt() << ", rejection factor " << fPtHardJetPtRejectionFactor << "\n";
+          fHistManager.FillTH1("fHistEmbeddedEventRejection", "MCOutlier", 1);
+          return kFALSE;
+        }
+      }
+    }
+  }
 
   return kTRUE;
 }
@@ -693,7 +724,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
   // Event rejection reason
   histName = "fHistEmbeddedEventRejection";
   histTitle = "Reasons to reject embedded event";
-  std::vector<std::string> binLabels = {"PhysSel", "Vz", "VertexDist"};
+  std::vector<std::string> binLabels = {"PhysSel", "MCOutlier", "Vz", "VertexDist"};
   auto fHistEmbeddedEventRejection = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
   // Set label names
   for (unsigned int i = 1; i <= binLabels.size(); i++) {
@@ -1181,6 +1212,8 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
   tempSS << "Trigger mask (binary): " << triggerMask << "\n";
+  tempSS << "Reject outliers: " << fMCRejectOutliers << "\n";
+  tempSS << "Pt hard jet pt rejection factor: " << fPtHardJetPtRejectionFactor << "\n";
   tempSS << "Z vertex cut: " << fZVertexCut << "\n";
   tempSS << "Max vertex distance: " << fMaxVertexDist << "\n";
 
