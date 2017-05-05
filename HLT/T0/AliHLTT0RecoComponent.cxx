@@ -99,6 +99,7 @@ void AliHLTT0RecoComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& 
   // see header file for class documentation
   list.push_back(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginT0);
   list.push_back(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS);
+  list.push_back(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD);
 }
 
 // #################################################################################
@@ -390,6 +391,7 @@ Int_t AliHLTT0RecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/
   AliESDVertex *vtx=0;
   {
     const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS);
+    if (iter == NULL) iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD);
     if(iter) vtx = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) );   
   }
   //printf("@@@@@@@@ vertex  \n");
