@@ -53,8 +53,10 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);//5May2017 from Malina
   //train::::::::::::::::::::::::::::<
   
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
-  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);// this a new line for train
+  taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this line for Run1
+  // or AliVEvent::kMB | AliVEvent::kCentral
+
+  //taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);// this line for Run2
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
