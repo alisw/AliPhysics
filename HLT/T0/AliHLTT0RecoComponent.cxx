@@ -301,7 +301,7 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
     fT0CalibHisto ->AddAtAndExpand( fhTimeDiff[i],i+24); //24 - 48
     fT0CalibHisto ->AddAtAndExpand(fhCFD[i], i); //24 - 48
   }  
-  for (Int_t i=0; i<4; i++)
+  for (Int_t i=0; i<3; i++)
     fT0CalibHisto ->AddAtAndExpand(fhT0[i],i+48); // 48 -52
 
   fT0CalibHisto->Print();
