@@ -795,9 +795,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtTrackInConeTOFBC0;                        //!<! track with TOF hit, pt, tof in BC0 
   TH2F *   fhPtTrackInConeTOFBCN;                        //!<! track with TOF hit, pt, tof not in BC0 
   TH2F *   fhPtTrackInConeTOFNo ;                        //!<! track without TOF hit, pt 
+
   TH2F *   fhPhiTrackInCone;                             //!<! track azhimuthal angle
   TH2F *   fhEtaTrackInCone;                             //!<! track pseudo-rapidity
   TH2F *   fhEtaPhiTrackInCone;                          //!<! track azhimuthal angle vs pseudo-rapidity
+  
   TH2F *   fhPhiTrackInConeTOFBC0;                       //!<! track with TOF hit, phi, tof in BC0 
   TH2F *   fhPhiTrackInConeTOFBCN;                       //!<! track with TOF hit, phi, tof not in BC0 
   TH2F *   fhPhiTrackInConeTOFNo ;                       //!<! track without TOF hit, phi 
@@ -841,6 +843,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtInPerpConeTOFBC0ITSRefitOnSPDOn ;         //!<! track Pt  in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
   TH2F *   fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn ;     //!<! tracl eta vs phi in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
   
+  TH2F *   fhPtTrackInConeDCA[3];                        //!<! track DCAxy,z,constrained vs track pT, in cone with trigger pT > 10 GeV
+  TH2F *   fhPtTrackInPerpConeDCA[3];                    //!<! track DCAxy,z,constrained vs track pT, in perpendicular cone trigger pT > 10 GeV
+   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
     
