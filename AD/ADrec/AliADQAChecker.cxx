@@ -21,12 +21,8 @@
 */
 
 // --- ROOT system ---
-#include <TClass.h>
 #include <TH2.h>
 #include <TH1.h>
-#include <TIterator.h>
-#include <TKey.h>
-#include <TFile.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TLatex.h>
@@ -47,7 +43,6 @@
 #include "AliADQAChecker.h"
 #include "AliADQADataMakerRec.h"
 #include "AliADQAParam.h"
-
 
 ClassImp(AliADQAChecker);
 
@@ -103,7 +98,7 @@ const AliADQAParam* AliADQAChecker::GetQAParam() const
   return &fQAParamDefault;
 }
 //__________________________________________________________________
-void AliADQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
+void AliADQAChecker::Check(Double_t *check, AliQAv1::ALITASK_t index, TObjArray **list, const AliDetectorRecoParam * /*recoParam*/)
 {
   // Main check function: Depending on the TASK, different checks will be applied
   // Check for missing channels and check on the trigger type for raw data
@@ -125,14 +120,14 @@ void AliADQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray
   }
 }
 
-
 // returns the QA box of a given histogram, if it does not exists it is created
 TPaveText* GetQABox(TH1* h, Float_t x1, Float_t y1, Float_t x2, Float_t y2, Option_t *opt) {
-  TList  *lHistFcn = h->GetListOfFunctions();
-  TPaveText* qaBox = dynamic_cast<TPaveText*>(lHistFcn->FindObject("QABox"));
+  TList *lHistFcn = h->GetListOfFunctions();
+  const TString nameOfQABox = TString::Format("QABox_%s", h->GetName());
+  TPaveText *qaBox = dynamic_cast<TPaveText*>(lHistFcn->FindObject(nameOfQABox));
   if (!qaBox) {
     qaBox = new TPaveText(x1, y1, x2, y2, opt);
-    qaBox->SetName(Form("QABox_%s", h->GetName()));
+    qaBox->SetName(nameOfQABox);
     lHistFcn->Add(qaBox);
   }
   return qaBox;
@@ -287,7 +282,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
     }
     delete histoRate;
 
-      qaBox->Clear();
+    qaBox->Clear();
     if (badChannels != "") {
       qaBox->SetFillColor(kRed);
       qaBox->AddText("No flag rate too high, ch: " + badChannels);
@@ -315,8 +310,6 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
       AliWarningF("NEvents%sFlag histogram is not found", flagNames[flagType]);
       continue;
     }
-    // if(hNEventsBBFlag->GetListOfFunctions()->GetEntries()<1) hNEventsBBFlag->GetListOfFunctions()->Add(new TPaveText(0.15,0.67,0.85,0.76,"NDC"));
-    // if(hNEventsBGFlag->GetListOfFunctions()->GetEntries()<1) hNEventsBGFlag->GetListOfFunctions()->Add(new TPaveText(0.15,0.56,0.85,0.65,"NDC"));
     TPaveText *qaBox = GetQABox(hFlag, 0.15, y1[flagType], 0.85, y2[flagType], "NDC");
     TH1 *histoRate = dynamic_cast<TH1*>(hFlag->Clone("histoRateCloned"));
     histoRate->Sumw2();
@@ -425,7 +418,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
     for (Int_t ch=0; ch<16; ++ch) {
       TH1* hClockSlice = hFlag->ProjectionY("hClockSlice", ch+1, ch+1);
       Double_t center = hClockSlice->GetBinContent(11);
-      Double_t flagArray[21] = { 0 };;
+      Double_t flagArray[21] = { 0 };
       for (Int_t iClock = 0; iClock<21; ++iClock)
 	flagArray[iClock] = hClockSlice->GetBinContent(iClock+1);
 
@@ -692,7 +685,7 @@ TSpline3* AliADQAChecker::MakeTimeSlewingSpline(TH2* h) const {
 }
 
 //____________________________________________________________________________
-void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
+void AliADQAChecker::MakeImage(TObjArray **list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
 {
   //AliInfoF("task=%d mode=%d", task, mode);
   // makes the QA image for sim and rec

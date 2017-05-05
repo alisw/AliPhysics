@@ -12,13 +12,10 @@
 */
 
 // --- ROOT system ---
-class TFile;
-class TH1;
 class TH2;
 class TObjArray;
 class TVirtualPad;
 class TCanvas;
-class TLegend;
 class TSpline3;
 
 // --- Standard library ---
@@ -27,21 +24,14 @@ class TSpline3;
 #include "AliQACheckerBase.h"
 #include "AliADQAParam.h"
 
-class AliADLoader;
-class AliCDBManager;
-class AliCDBStorage;
-
 class AliADQAChecker: public AliQACheckerBase {
 public:
   AliADQAChecker();
   virtual ~AliADQAChecker(); // destructor
 
-  virtual void   Init(const AliQAv1::DETECTORINDEX_t det);
+  virtual void Init(const AliQAv1::DETECTORINDEX_t det);
 
   const AliADQAParam *GetQAParam() const;
-  // void SetLowEventCut(Int_t nEvents) { fLowEventCut = nEvents; }
-  // void SetORvsANDCut(Double_t cut)   { fORvsANDCut  = cut; }
-  // void SetBGvsBBCut(Double_t cut)    { fBGvsBBCut   = cut; }
 
 protected:
   virtual void Check(Double_t* test, AliQAv1::ALITASK_t index, TObjArray** list, const AliDetectorRecoParam* recoParam);
