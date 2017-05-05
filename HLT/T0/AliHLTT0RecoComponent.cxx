@@ -60,17 +60,20 @@ AliHLTT0RecoComponent::AliHLTT0RecoComponent() :
   fRunInfo(NULL),  
   fT0RecoParam(NULL),
   fT0Reconstructor(NULL),
-  fRawReader(NULL) {
-  // an example component which implements the ALICE HLT processor
-  // interface and does some analysis on the input raw data
-  //
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  //
-  // NOTE: all helper classes should be instantiated in DoInit()
+  fRawReader(NULL),
+  fESDTZERO(NULL),
+  fNevent(0),
+  fVertexSPDz(0.),
+  fWalk(NULL),
+  fT0CalibHisto(NULL)
+{
+	for (int i = 0;i < 24;i++) fhTimeDiff[i] = NULL;
+	for (int i = 0;i < 24;i++) fhCFD[i] = NULL;
+	for (int i = 0;i < 4;i++) fhT0[i] = NULL;
+	for (int i = 0;i < 24;i++) fMeanCFD[i] = 0.f;
+    for (int i = 0;i < 24;i++) fDiffCFD[i] = 0.f;
+    for (int i = 0;i < 4;i++) fT0shift[i] = 0.f;
+
 }
 
 // #################################################################################
