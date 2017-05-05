@@ -78,6 +78,9 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistTPCchi2PerClusPhiPtTPCsel{nullptr},
   fHistTPCchi2PerClusPhiPtTPCselITSref{nullptr},
   fHistTPCchi2PerClusPhiPtTPCselSPDany{nullptr},
+  fHistTPCsig1ptPerClusPhiPtTPCsel{nullptr},
+  fHistTPCsig1ptPerClusPhiPtTPCselITSref{nullptr},
+  fHistTPCsig1ptPerClusPhiPtTPCselSPDany{nullptr},
   fHistEtaPhiPtGoodHypProtTPCsel{nullptr},
   fHistEtaPhiPtGoodHypProtTPCselITSref{nullptr},
   fHistEtaPhiPtGoodHypProtTPCselSPDany{nullptr},
@@ -199,6 +202,9 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistTPCchi2PerClusPhiPtTPCsel;
     delete fHistTPCchi2PerClusPhiPtTPCselITSref;
     delete fHistTPCchi2PerClusPhiPtTPCselSPDany;
+    delete fHistTPCsig1ptPerClusPhiPtTPCsel;
+    delete fHistTPCsig1ptPerClusPhiPtTPCselITSref;
+    delete fHistTPCsig1ptPerClusPhiPtTPCselSPDany;
     delete fHistEtaPhiPtGoodHypProtTPCsel;
     delete fHistEtaPhiPtGoodHypProtTPCselITSref;
     delete fHistEtaPhiPtGoodHypProtTPCselSPDany;
@@ -414,6 +420,13 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselITSref);
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselSPDany);
   
+  fHistTPCsig1ptPerClusPhiPtTPCsel = new TH3F("hTPCsig1ptPerClusPhiPtTPCsel"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fHistTPCsig1ptPerClusPhiPtTPCselITSref = new TH3F("hTPCsig1ptPerClusPhiPtTPCselITSref"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fHistTPCsig1ptPerClusPhiPtTPCselSPDany = new TH3F("hTPCsig1ptPerClusPhiPtTPCselSPDany"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fOutput->Add(fHistTPCsig1ptPerClusPhiPtTPCsel);
+  fOutput->Add(fHistTPCsig1ptPerClusPhiPtTPCselITSref);
+  fOutput->Add(fHistTPCsig1ptPerClusPhiPtTPCselSPDany);
+ 
   fHistEtaPhiPtGoodHypProtTPCsel = new TH3F("hEtaPhiPtGoodHypProtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtGoodHypProtTPCselITSref = new TH3F("hEtaPhiPtGoodHypProtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtGoodHypProtTPCselSPDany = new TH3F("hEtaPhiPtGoodHypProtTPCselSPDany"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -677,6 +690,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     if(statusTrack&AliESDtrack::kITSrefit) itsRefit=kTRUE; 
     UChar_t clumap=track->GetITSClusterMap();
     Double_t chi2clus=track->GetTPCchi2()/track->GetTPCNcls();
+    Double_t curvrelerr = TMath::Sqrt(track->GetSigma1Pt2())/track->OneOverPt();
     Bool_t spdAny=kFALSE;
     if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) spdAny=kTRUE;
     Int_t nTPCclus=track->GetNcls(1);
@@ -813,11 +827,14 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     }
 
     fHistTPCchi2PerClusPhiPtTPCsel->Fill(chi2clus,pttrack,phitrack);
+    fHistTPCsig1ptPerClusPhiPtTPCsel->Fill(curvrelerr,pttrack,phitrack);
     if(itsRefit){
       if(pidtr>=0 && pidtr<9) fHistdEdxVsPTPCselITSref[pidtr]->Fill(ptrackTPC,dedx);
       fHistTPCchi2PerClusPhiPtTPCselITSref->Fill(chi2clus,pttrack,phitrack);
+      fHistTPCsig1ptPerClusPhiPtTPCselITSref->Fill(curvrelerr,pttrack,phitrack);
       if(spdAny){ 
 	fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
+	fHistTPCsig1ptPerClusPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
       }
     }
 
