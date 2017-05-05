@@ -483,7 +483,9 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
   AliT0RawReader myrawreader(rawReader);
   UInt_t type =rawReader->GetType();
   if (!myrawreader.Next())
-    HLTInfo(" no raw data found!!");
+  {
+    HLTInfo("No T0 raw data found!!");
+  }
   else
     {  
       for (Int_t i=0; i<24; i++) { 
