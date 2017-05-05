@@ -90,7 +90,7 @@ Int_t AliHLTT0Agent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // -- Define the T0 raw publisher
     // -----------------------------------
-    TString arg("-equipmentid 3328 -datatype 'DDL_RAW ' 'TZRO' -dataspec 0x01");
+    TString arg("-equipmentid 3328 -datatype 'DDL_RAW ' 'T0  ' -dataspec 0x01");
     handler->CreateConfiguration("T0-DP", "AliRawReaderPublisher", NULL , arg.Data());
 
     // -- Define the T0 reconstruction components
