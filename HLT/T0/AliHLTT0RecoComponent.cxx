@@ -309,6 +309,8 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
     fNevent=0;
   }
   
+  fESDTZERO = new AliESDTZERO;
+  
   return iResult;
 }
 
@@ -352,6 +354,9 @@ Int_t AliHLTT0RecoComponent::DoDeinit() {
   
   delete fWalk;
   fWalk = NULL;
+  
+  delete fESDTZERO;
+  fESDTZERO = NULL;
   
   return 0;
 }
@@ -573,7 +578,7 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
 	if(fNevent<1000)
 	  for(int iii=0; iii<3; iii++) fT0shift[iii]=0;
 	fESDTZERO->SetT0time(time);
-	fESDTZERO->SetT0amplitude(qt);   
+	fESDTZERO->SetT0amplitude(qt);
 	if (fNevent>1000) 
 	  {	  
 	    if(besttimeA < 999999 && besttimeA!=0 &&  besttimeC < 999999 && besttimeC!=0 ) {
