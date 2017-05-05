@@ -205,7 +205,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     Bool_t fIsGRIDanalysis;
     Int_t fGridPID;
     
-    ClassDef(AliAnalysisTaskSimpleTreeMaker, 1); //
+    ClassDef(AliAnalysisTaskSimpleTreeMaker, 2); //
 
 };
 

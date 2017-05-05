@@ -63,6 +63,9 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
        case kPhiVRange:
           fCutValueD = pair->PhiV(kFALSE);
           return OkRangeD();
+      case kContainsV0Daughter:
+          return pair->ContainsV0Daughter();
+
    default:
          AliWarning("Undefined enum value");
          return kTRUE;

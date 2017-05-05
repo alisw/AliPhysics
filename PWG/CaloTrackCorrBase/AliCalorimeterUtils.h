@@ -378,6 +378,12 @@ class AliCalorimeterUtils : public TObject {
   void          SetNumberOfSuperModulesUsed(Int_t nSM)          { fNSuperModulesUsed  = nSM     ; }
   Int_t         GetNumberOfSuperModulesUsed()             const { return fNSuperModulesUsed     ; }
 
+  void          SetFirstSuperModuleUsed(Int_t first)            { fFirstSuperModuleUsed = first ; }
+  Int_t         GetFirstSuperModuleUsed()                 const { return fFirstSuperModuleUsed  ; }
+  void          SetLastSuperModuleUsed (Int_t last )            { fLastSuperModuleUsed  = last  ; }
+  Int_t         GetLastSuperModuleUsed ()                 const { return fLastSuperModuleUsed   ; }
+
+  
   void          SetRunNumber(Int_t run)                         { fRunNumber  = run             ; }
   Int_t         GetRunNumber()                            const { return fRunNumber             ; }
   
@@ -459,6 +465,8 @@ class AliCalorimeterUtils : public TObject {
   TString            fImportGeometryFilePath;   ///<  Path fo geometry.root file.
 
   Int_t              fNSuperModulesUsed;        ///<  Number of supermodules to be used in analysis, can be different than the real geo, to be used at initialization of histograms.
+  Int_t              fFirstSuperModuleUsed;     ///<  Number of first supermodule to be used in analysis, to activate only certain range (DCal or EMCal)
+  Int_t              fLastSuperModuleUsed;      ///<  Number of last  supermodule to be used in analysis, to activate only certain range (DCal or EMCal)
   
   Int_t              fRunNumber;                ///<  Run number of the data, take it from data itself unless set by user.
 
@@ -473,7 +481,7 @@ class AliCalorimeterUtils : public TObject {
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCalorimeterUtils,19) ;
+  ClassDef(AliCalorimeterUtils,20) ;
   /// \endcond
 
 } ;

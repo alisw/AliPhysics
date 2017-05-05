@@ -34,7 +34,6 @@ class TArrayI ;
 //--- ANALYSIS system ---
 #include "AliVEvent.h"
 class AliVCaloCells;
-class AliStack; 
 class AliHeader; 
 class AliGenEventHeader; 
 class AliAODEvent;
@@ -635,7 +634,6 @@ public:
   
   // Kinematics and galice.root available
   
-  virtual AliStack*          GetStack()              const ;
   virtual AliHeader*         GetHeader()             const ;
   virtual AliGenEventHeader* GetGenEventHeader() const ;
   

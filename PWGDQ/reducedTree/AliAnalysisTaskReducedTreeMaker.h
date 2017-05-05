@@ -169,7 +169,7 @@ public:
   AliReducedPairInfo* FillV0PairInfo(AliESDv0* v0, Int_t id, AliESDtrack* legPos, AliESDtrack* legNeg, AliKFVertex* vtxKF, Bool_t chargesAreCorrect);
   UChar_t EncodeTPCClusterMap(AliVParticle* track, Bool_t isAOD);
   void FillCaloClusters();
-  void FillFMDInfo();
+  void FillFMDInfo(Bool_t isAOD);
   Int_t GetSPDTrackletMultiplicity(AliVEvent* event, Float_t lowEta, Float_t highEta);
 
   

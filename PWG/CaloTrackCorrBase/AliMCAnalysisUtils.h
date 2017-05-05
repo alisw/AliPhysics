@@ -26,10 +26,10 @@
 class TList ;
 class TVector3;
 class TClonesArray;
+class AliMCEvent;
 
 //--- AliRoot system ---
 class AliCaloTrackReader ;
-class AliStack ;
 
 class AliMCAnalysisUtils : public TObject {
 	
@@ -69,14 +69,14 @@ class AliMCAnalysisUtils : public TObject {
   
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
   Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, Int_t calorimeter) ;
-  Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, AliStack * stack               , const TObjArray *arrayCluster) ; // ESD
-  Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const TClonesArray* mcparticles, const TObjArray *arrayCluster) ; // AOD
+  Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, const AliMCEvent* mcevent, const TObjArray *arrayCluster) ; // ESD
+  Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const AliMCEvent* mcevent, const TObjArray *arrayCluster) ; // AOD
   
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, AliStack * stack,                Int_t & tag); // ESD
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const TClonesArray* mcparticles, Int_t & tag); // AOD
+  void    CheckOverlapped2GammaDecayESD(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
+  void    CheckOverlapped2GammaDecayAOD(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
   
-  void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, AliStack* stack,                 Int_t & tag); // ESD
-  void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const TClonesArray* mcparticles, Int_t & tag); // AOD
+  void    CheckLostDecayPairESD(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const AliMCEvent* mcevent, Int_t & tag); 
+  void    CheckLostDecayPairAOD(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const AliMCEvent* mcevent, Int_t & tag); 
   
   TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
   TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok);

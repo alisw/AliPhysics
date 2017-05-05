@@ -216,6 +216,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80052013","1111100057032230000","0163103100000050");
     cuts.AddCut("80085013","1111100057032230000","0163103100000050");
     cuts.AddCut("80083013","1111100057032230000","0163103100000050");
+  } else if (trainConfig == 2){ // no non lin
+    cuts.AddCut("80000013","1111100057032230000","0163103100000050");
     
   // SYSTEMATIC STUDY NEUTRAl MESON MEASUREMENTS MIKE SAS 26-04-2017
   } else if(trainConfig == 40){ // default cutstring and first set of variations nonlinearity

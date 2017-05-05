@@ -17,41 +17,37 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode)
 
   
   AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask("AlidNdPtUnifiedAnalysisTask");  
-  
+
   task->SetUseMC(hasMC);
   if(type.Contains("ESD")) task->SetUseESD();
   else task->SetUseAOD();
   task->SetUseMultiplicity();
-  task->SetTriggerMask(AliVEvent::kINT7); 
+  task->SetTriggerMask(AliVEvent::kINT7);
   task->SelectCollisionCandidates(AliVEvent::kINT7); // kINT7 or kMB
 //  if(hasMC) task->SetMCParticleType(AlidNdPtUnifiedAnalysisTask::ParticleType::kPrimary); //only if MC, particle dependent MC analysis
 
 
-  Int_t multNbins = 252;  
-  Double_t binsMult[253];
-  for (int i=0; i<=multNbins; i++) { binsMult[i] = -0.5 + i; }
-  binsMult[252] = 1000.;  
+  // change mult bins
+  const Int_t multNbins = 20;  
+  Double_t binsMult[multNbins+1];
+  for (int i=0; i<=multNbins; i++) { binsMult[i] = 10. * i; }
   task->SetBinsMultCent(multNbins,binsMult);
-    
+
 
   // change pt binning
-  const Int_t ptNbins = 81;
-  Double_t bins[82] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 180.0, 200.0};
-  Double_t* binsPt = new Double_t[82];
-  for (int i=0; i<82; i++) {binsPt[i] = bins[i];}
-  task->SetBinsPt(ptNbins, binsPt);
+  const Int_t ptNbins = 73;
+  Double_t bins[ptNbins+1] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0};
+  task->SetBinsPt(ptNbins, bins);
 
- 
+
   // y shift -0.465409 only for pPb!!!!
-  const Int_t EtaNbins = 30;
-  Double_t binse[31] = {-1.465409,-1.365409,-1.265409,-1.165409,-1.065409,-0.965409,-0.865409,-0.765409,-0.665409,-0.565409,-0.465409,-0.365409,-0.265409,-0.165409,-0.065409,0.034591,0.134591,0.234591,0.334591,0.434591,0.534591,0.634591,0.734591,0.834591,0.934591,1.034591,1.134591,1.234591,1.334591,1.434591,1.534591};
-  Double_t* binsEta = new Double_t[31];
-  for (int i=0; i<31; i++) {binsEta[i] = binse[i];}
-  task->SetBinsEta(EtaNbins,binsEta);     
+  const Int_t EtaNbins = 18;
+  Double_t binse[EtaNbins+1] = {-0.865409,-0.765409,-0.665409,-0.565409,-0.465409,-0.365409,-0.265409,-0.165409,-0.065409,0.034591,0.134591,0.234591,0.334591,0.434591,0.534591,0.634591,0.734591,0.834591,0.934591};
+  task->SetBinsEta(EtaNbins,binse);    
   
+    
   task->SetMinEta(-0.765409);//cms -0.3
   task->SetMaxEta(+0.834591);//cms +1.3
-
   
   task->SetMinPt(0.10);
   task->SetMaxPt(1.e10);
@@ -62,7 +58,6 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode)
   task->SetEventTriggerRequired(kTRUE);
     
   task->Set2013pA(kTRUE);    //only p-Pb 2013!!!
-
     
   //According to 223 for study of systematic uncertanties. Change to fit the default cuts for 5TeV analysis 
   //Just like the 4000 but now with intiger increasing numbers. 
@@ -166,6 +161,8 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode)
   mgr->ConnectInput(task, 0, cinput);  
   mgr->ConnectOutput(task, 1, coutput);
   
+  return task;
+
 }
 
 

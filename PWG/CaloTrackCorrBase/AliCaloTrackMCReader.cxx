@@ -23,7 +23,7 @@
 //---- ANALYSIS system ----
 #include "AliCaloTrackMCReader.h" 
 #include "AliGenEventHeader.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliVCluster.h"
 #include "AliAODTrack.h"
 #include "AliAODEvent.h"
@@ -124,13 +124,13 @@ void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
   
   if(pdg!=22) return;
   
-  TParticle *meson = GetStack()->Particle(imom);
+  TParticle *meson = GetMC()->Particle(imom);
   Int_t mepdg  = meson->GetPdgCode();
   Int_t idaug1 = meson->GetFirstDaughter();
   if((mepdg == 111 || mepdg == 221 ) && meson->GetNDaughters() == 2)
   { //Check only decay in 2 photons
-    TParticle * d1 = GetStack()->Particle(idaug1);
-    TParticle * d2 = GetStack()->Particle(idaug1+1);
+    TParticle * d1 = GetMC()->Particle(idaug1  );
+    TParticle * d2 = GetMC()->Particle(idaug1+1);
     if(d1->GetPdgCode() == 22 && d2->GetPdgCode() == 22 )
     {
       d1->Momentum(fGamDecayMom1);
@@ -221,7 +221,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
   }  
   
   // In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
-  if(fComparePtHardAndJetPt && GetStack()) 
+  if(fComparePtHardAndJetPt && GetMC()) 
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
   }
@@ -231,13 +231,13 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
   
   Int_t iParticle  = 0 ;
   Double_t charge  = 0.;
-  Int_t nparticles = GetStack()->GetNtrack() ;
+  Int_t nparticles = GetMC()->GetNumberOfTracks() ;
   
-  if(fOnlyGeneratorParticles) nparticles=GetStack()->GetNprimary();
+  if(fOnlyGeneratorParticles) nparticles=GetMC()->GetNumberOfPrimaries();
   
   for (iParticle = 0 ; iParticle <  nparticles ; iParticle++) 
   {
-    TParticle * particle = GetStack()->Particle(iParticle);
+    TParticle * particle = GetMC()->Particle(iParticle);
     Float_t p[3];
     Float_t x[3];
     Int_t pdg = particle->GetPdgCode();						
@@ -277,7 +277,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
           
           if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(eta,phi,kCTS)) continue;
           
-          if(TMath::Abs(pdg) == 11 && GetStack()->Particle(particle->GetFirstMother())->GetPdgCode()==22) continue ;
+          if(TMath::Abs(pdg) == 11 && (GetMC()->Particle(particle->GetFirstMother()))->GetPdgCode()==22) continue ;
           
           AliDebug(2,Form("CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
                           en,pt,phi*TMath::RadToDeg(),eta));

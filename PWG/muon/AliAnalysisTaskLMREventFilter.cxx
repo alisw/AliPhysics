@@ -71,23 +71,44 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   fhTriggers(0),
   fhL0TriggerInputMLL(0),
   fhL0TriggerInputMUL(0),
+  fhL0TriggerInputMSL(0),
   fhNMu(0)
 {
   //
   // Default constructor
   //
-  fNTrigClass=7;
-  for(Int_t i=0;i<7;i++)
+  fNTrigClass=23;
+  for(Int_t i=0;i<23;i++)
     fTriggerMask[i]=1<<i;
   fTriggerClasses[0]="-B-";
   fTriggerClasses[1]="CMSL7";
   fTriggerClasses[2]="CMSH7";
   fTriggerClasses[3]="CMUL7";
   fTriggerClasses[4]="CMLL7";
-  fTriggerClasses[5]="CMSL7 & 0MLL";
-  fTriggerClasses[6]="CMSL7 & 0MUL";
+  fTriggerClasses[5]="CINT7";
+  fTriggerClasses[6]="C0TVX";
+
+  fTriggerClasses[7]="CINT7 (PS)";
+  fTriggerClasses[8]="C0TVX (PS)";
+  fTriggerClasses[9]="CMSL7 (PS CINT7)";
+  fTriggerClasses[10]="CMSH7 (PS CINT7)";
+  fTriggerClasses[11]="CMUL7 (PS CINT7)";
+  fTriggerClasses[12]="CMLL7 (PS CINT7)";
+  fTriggerClasses[13]="CMSL7 (PS C0TVX)";
+  fTriggerClasses[14]="CMSH7 (PS C0TVX)";
+  fTriggerClasses[15]="CMUL7 (PS C0TVX)";
+  fTriggerClasses[16]="CMLL7 (PS C0TVX)";
+
+  fTriggerClasses[17]="CMSL7 & 0MLL";
+  fTriggerClasses[18]="CMSL7 & 0MUL";
+  fTriggerClasses[19]="CINT7 & 0MUL";
+  fTriggerClasses[20]="C0TVX & 0MUL";
+  fTriggerClasses[21]="CINT7 & 0MSL";
+  fTriggerClasses[22]="C0TVX & 0MSL";
+
   fL0TriggerInputMLL = 20; // reference to MLL L0 trigger
   fL0TriggerInputMUL = 21; // reference to MUL L0 trigger
+  fL0TriggerInputMSL = 18; // reference to MSL L0 trigger
 }
 
 
@@ -102,21 +123,42 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name,
   fhTriggers(0),
   fhL0TriggerInputMLL(0),
   fhL0TriggerInputMUL(0),
+  fhL0TriggerInputMSL(0),
   fhNMu(0)
 {
   // Constructor
-  fNTrigClass=7;
-  for(Int_t i=0;i<7;i++)
+  fNTrigClass=23;
+  for(Int_t i=0;i<23;i++)
     fTriggerMask[i]=1<<i;
   fTriggerClasses[0]="-B-";
   fTriggerClasses[1]="CMSL7";
   fTriggerClasses[2]="CMSH7";
   fTriggerClasses[3]="CMUL7";
   fTriggerClasses[4]="CMLL7";
-  fTriggerClasses[5]="CMSL7 & 0MLL";
-  fTriggerClasses[6]="CMSL7 & 0MUL";
+  fTriggerClasses[5]="CINT7";
+  fTriggerClasses[6]="C0TVX";
+
+  fTriggerClasses[7]="CINT7 (PS)";
+  fTriggerClasses[8]="C0TVX (PS)";
+  fTriggerClasses[9]="CMSL7 (PS CINT7)";
+  fTriggerClasses[10]="CMSH7 (PS CINT7)";
+  fTriggerClasses[11]="CMUL7 (PS CINT7)";
+  fTriggerClasses[12]="CMLL7 (PS CINT7)";
+  fTriggerClasses[13]="CMSL7 (PS C0TVX)";
+  fTriggerClasses[14]="CMSH7 (PS C0TVX)";
+  fTriggerClasses[15]="CMUL7 (PS C0TVX)";
+  fTriggerClasses[16]="CMLL7 (PS C0TVX)";
+
+  fTriggerClasses[17]="CMSL7 & 0MLL";
+  fTriggerClasses[18]="CMSL7 & 0MUL";
+  fTriggerClasses[19]="CINT7 & 0MUL";
+  fTriggerClasses[20]="C0TVX & 0MUL";
+  fTriggerClasses[21]="CINT7 & 0MSL";
+  fTriggerClasses[22]="C0TVX & 0MSL";
+
   fL0TriggerInputMLL = 20; // reference to MLL L0 trigger
   fL0TriggerInputMUL = 21; // reference to MUL L0 trigger
+  fL0TriggerInputMSL = 18; // reference to MSL L0 trigger
 
   // Define input and output slots here
   DefineOutput(1, TList::Class());
@@ -139,6 +181,7 @@ AliAnalysisTaskLMREventFilter::~AliAnalysisTaskLMREventFilter()
   delete fhTriggers;
   delete fhL0TriggerInputMLL;
   delete fhL0TriggerInputMUL;
+  delete fhL0TriggerInputMSL;
   delete fhNMu;
   fhTriggers=NULL;
   fhNMu=NULL;
@@ -175,6 +218,10 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fOutputList->Add(fhL0TriggerInputMUL);
   fhL0TriggerInputMUL->Sumw2();
 
+  fhL0TriggerInputMSL = new TH1D("fhL0TriggerInputMSL","",120,-0.5,119.5);
+  fOutputList->Add(fhL0TriggerInputMSL);
+  fhL0TriggerInputMSL->Sumw2();
+
   for (Int_t i=0;i<fNTrigClass;i++)
     {
       fhTriggers->GetXaxis()->SetBinLabel(i+1,fTriggerClasses[i]);
@@ -205,9 +252,12 @@ void AliAnalysisTaskLMREventFilter::NotifyRun()
 	fL0TriggerInputMUL = inp->GetIndexCTP(); // reference to MUL L0 trigger
       if(name.Contains("0MLL"))
 	fL0TriggerInputMLL = inp->GetIndexCTP(); // reference to MLL L0 trigger
+      if(name.Contains("0MSL"))
+	fL0TriggerInputMSL = inp->GetIndexCTP(); // reference to MSL L0 trigger
     }
   fhL0TriggerInputMLL->Fill(fL0TriggerInputMLL);
   fhL0TriggerInputMUL->Fill(fL0TriggerInputMUL);
+  fhL0TriggerInputMSL->Fill(fL0TriggerInputMSL);
 }
 //====================================================================================================================================================
 
@@ -215,17 +265,18 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
  {
   //   Main loop
   //   Called for each event
-  UShort_t evtTrigSelect=0;
+  UInt_t evtTrigSelect=0;
+  UShort_t physicsSelectionMask=1<<0;
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(InputEvent());  
   if (!fAOD) 
     return;
-
-  if (!IsSelectedTrigger(fAOD, kTRUE,evtTrigSelect)) 
+  
+  if (!IsSelectedTrigger(fAOD, kTRUE,evtTrigSelect,physicsSelectionMask)) 
     return; 
   
   if (!fAOD->GetNumberOfTracks())
     return;
-    
+  
   Int_t nmu = fAOD->GetNumberOfMuonTracks();
   
   if(evtTrigSelect&fTriggerMask[0])
@@ -292,7 +343,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   fAliLMREvent->SetMultiplicity("RefMult05",Multiplicity_RefMult05);
   fAliLMREvent->SetMultiplicity("RefMult08",Multiplicity_RefMult08);
   fAliLMREvent->SetTriggerString(triggerWord);
-
+  fAliLMREvent->SetPhysicsSelectionMask(physicsSelectionMask);
   if (nmu>0)
     {
       Int_t ntotTr = fAOD->GetNumberOfTracks(); 
@@ -354,7 +405,7 @@ void AliAnalysisTaskLMREventFilter::Terminate(Option_t *)
 
 //====================================================================================================================================================
 
-Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_t fillHisto,UShort_t &evtTrigSelect)
+Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_t fillHisto,UInt_t &evtTrigSelect,UShort_t &physicsSelectionMask)
 {
   Bool_t evtToBeProcessed = kFALSE;
   // -- Check Trigger 
@@ -365,7 +416,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   Bool_t goodTrig = kFALSE;
   for (Int_t itoken = 0; itoken < ntokens; ++itoken)
     {
-      if ((((TObjString*)tokens->At(itoken))->String()).Contains(fTriggerClasses[0])) 
+      if ((((TObjString*)tokens->At(itoken))->String()).Contains(fTriggerClasses[0])) //for -B-
 	{
 	  goodTrig = kTRUE;
 	  mask=1<<0;
@@ -374,12 +425,13 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
     }
   if(!goodTrig)
     return evtToBeProcessed;
-
   evtToBeProcessed = kTRUE;
+
   if (fillHisto) 
     fhTriggers->Fill(fTriggerClasses[0].Data(),1);
+
   
-  for(Int_t i=1;i<fNTrigClass-2;i++)
+  for(Int_t i=1;i<=6;i++) // check constructor for fTriggerClasses[*]; 6 is the last basic data trigger name
     {
       goodTrig = kFALSE;
       for (Int_t itoken = 0; itoken < ntokens; ++itoken)
@@ -395,19 +447,106 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	if (fillHisto) 
 	  fhTriggers->Fill(fTriggerClasses[i].Data(),1);
     }
-  
+
+  UInt_t fSelectedMaskMuonINT7=AliVEvent::kMuonSingleLowPt7|AliVEvent::kMuonSingleHighPt7|AliVEvent::kMuonLikeLowPt7|AliVEvent::kMuonUnlikeLowPt7;
+  UInt_t fSelectedMaskMuonINT8=AliVEvent::kMuonSingleLowPt8|AliVEvent::kMuonSingleHighPt8|AliVEvent::kMuonLikeLowPt8|AliVEvent::kMuonUnlikeLowPt8;
+
+  UInt_t fSelectMask=fInputHandler->IsEventSelected(); 
+  Bool_t isMuonINT7selected  = fSelectMask&fSelectedMaskMuonINT7; 
+  Bool_t isMuonC0TVXselected = fSelectMask&fSelectedMaskMuonINT8; 
+
+  if(fSelectMask&AliVEvent::kINT7)
+    physicsSelectionMask|=1<<1;
+  if(fSelectMask&AliVEvent::kINT8)
+    physicsSelectionMask|=1<<2;
+  if(isMuonINT7selected)
+    physicsSelectionMask|=1<<3;
+  if(isMuonC0TVXselected)
+    physicsSelectionMask|=1<<4;
+
+  UInt_t inpmask = fAOD->GetHeader()->GetL0TriggerInputs();
+
   if(trigStr.Contains("CMSL7"))
     {
-      UInt_t inpmask = fAOD->GetHeader()->GetL0TriggerInputs();
+      if(isMuonINT7selected)
+	{
+	  fhTriggers->Fill(fTriggerClasses[9].Data(),1);
+	  tmpMask|=fTriggerMask[9];
+	} 
+      if(isMuonC0TVXselected)
+	{
+	  fhTriggers->Fill(fTriggerClasses[13].Data(),1);
+	  tmpMask|=fTriggerMask[13];
+	} 
+
       Int_t is0MLLfired = (inpmask & (1<<(fL0TriggerInputMLL-1)));
       Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
-      
+      //WARNING it is done without PS
       if(is0MLLfired)
 	{
 	  fhTriggers->Fill(fTriggerClasses[fNTrigClass-2].Data(),1);
 	  tmpMask|=fTriggerMask[fNTrigClass-2];
 	}
       if(is0MULfired)
+	{
+	  fhTriggers->Fill(fTriggerClasses[fNTrigClass-1].Data(),1);
+	  tmpMask|=fTriggerMask[fNTrigClass-1];
+	}
+    }
+  for(Int_t i=2;i<=4;i++)
+    {
+      if(trigStr.Contains(fTriggerClasses[i].Data()))
+	{
+	  if(isMuonINT7selected)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[8+i].Data(),1);
+	      tmpMask|=fTriggerMask[8+i]; 
+	    }
+	  if(isMuonC0TVXselected)
+	    {
+	      fhTriggers->Fill(fTriggerClasses[12+i].Data(),1);
+	      tmpMask|=fTriggerMask[12+i]; 
+	    }
+	}
+    }
+
+  if(trigStr.Contains("CINT7"))
+    {
+      if(fSelectMask&AliVEvent::kINT7)
+	{
+	  fhTriggers->Fill(fTriggerClasses[7].Data(),1);
+	  tmpMask|=fTriggerMask[7];
+	}
+      Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
+      Int_t is0MSLfired = (inpmask & (1<<(fL0TriggerInputMSL-1)));
+      //WARNING it is done without PS
+      if(is0MULfired)
+	{
+	  fhTriggers->Fill(fTriggerClasses[fNTrigClass-4].Data(),1);
+	  tmpMask|=fTriggerMask[fNTrigClass-4];
+	}
+      if(is0MSLfired)
+	{
+	  fhTriggers->Fill(fTriggerClasses[fNTrigClass-3].Data(),1);
+	  tmpMask|=fTriggerMask[fNTrigClass-3];
+	}
+    }
+  if(trigStr.Contains("C0TVX"))
+    {
+      if(fSelectMask&AliVEvent::kINT8)
+	{
+	  fhTriggers->Fill(fTriggerClasses[8].Data(),1);
+	  tmpMask|=fTriggerMask[8];
+	}
+      Int_t is0MULfired = (inpmask & (1<<(fL0TriggerInputMUL-1)));
+      Int_t is0MSLfired = (inpmask & (1<<(fL0TriggerInputMSL-1)));
+      //WARNING it is done without PS
+      if(is0MULfired)
+	{
+	  fhTriggers->Fill(fTriggerClasses[fNTrigClass-2].Data(),1);
+	  tmpMask|=fTriggerMask[fNTrigClass-2];
+	}
+      if(is0MSLfired)
 	{
 	  fhTriggers->Fill(fTriggerClasses[fNTrigClass-1].Data(),1);
 	  tmpMask|=fTriggerMask[fNTrigClass-1];

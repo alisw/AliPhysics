@@ -167,7 +167,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   emcalQA->SetCalorimeter("EMCAL");
   if(simulation)
   {
-    emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+    // Access MC stack and fill more histograms
+    emcalQA->SwitchOnDataMC() ;
+    
     emcalQA->SwitchOffStudyBadClusters();
     emcalQA->SwitchOffFillAllCellTimeHisto();
   }

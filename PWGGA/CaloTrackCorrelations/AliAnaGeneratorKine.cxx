@@ -20,7 +20,7 @@
 
 //---- ANALYSIS system ----
 #include "AliAnaGeneratorKine.h" 
-#include "AliStack.h"  
+#include "AliMCEvent.h"  
 #include "AliGenPythiaEventHeader.h"
 #include "AliAODMCParticle.h"
 
@@ -36,7 +36,6 @@ AliAnaCaloTrackCorrBaseClass(),
 fTriggerDetector(),    fTriggerDetectorString(),
 fFidCutTrigger(0),
 fMinChargedPt(0),      fMinNeutralPt(0),
-fStack(0),             fAODMCparticles(0),
 //fParton2(0),           fParton3(0),
 fParton6(),            fParton7(),
 fParton6PDG(0),        fParton7PDG(0),
@@ -114,10 +113,10 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   //
   // Get the index of the mother
   //
-  if(fStack) // ESD
+  if     ( GetReader()->ReadStack() )
   {
-    iparton =  (fStack->Particle(indexTrig))->GetFirstMother();
-    TParticle * mother = fStack->Particle(iparton);
+    iparton =  (GetMC()->Particle(indexTrig))->GetFirstMother();
+    TParticle * mother = GetMC()->Particle(iparton);
     while (iparton > 7)
     {
       iparton = mother->GetFirstMother();
@@ -126,13 +125,13 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
         AliDebug(1,"Negative index, skip ESD event");
         return kFALSE;
       }
-      mother = fStack->Particle(iparton);
+      mother = GetMC()->Particle(iparton);
     }
   }
-  else // AOD
+  else if( GetReader()->ReadAODMCParticles() )
   {
-    iparton =  ((AliAODMCParticle*) fAODMCparticles->At(indexTrig))->GetMother();
-    AliAODMCParticle * mother = (AliAODMCParticle*) fAODMCparticles->At(iparton);
+    iparton =  ((AliAODMCParticle*) GetMC()->GetTrack(indexTrig))->GetMother();
+    AliAODMCParticle * mother = (AliAODMCParticle*) GetMC()->GetTrack(iparton);
     while (iparton > 7)
     {
       iparton   = mother->GetMother();
@@ -141,7 +140,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
         AliDebug(1,"Negative index, skip AOD event");
         return kFALSE;
       }
-      mother = (AliAODMCParticle*) fAODMCparticles->At(iparton);
+      mother = (AliAODMCParticle*) GetMC()->GetTrack(iparton);
     }
   }
   
@@ -611,8 +610,8 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
 {
   AliDebug(1,"Start");
   
-//  if( nPrimary > 2 ) fParton2 = fStack->Particle(2) ;
-//  if( nPrimary > 3 ) fParton3 = fStack->Particle(3) ;
+//  if( nPrimary > 2 ) fParton2 = GetMC()->Particle(2) ;
+//  if( nPrimary > 3 ) fParton3 = GetMC()->Particle(3) ;
   
   Float_t p6phi = -1 ;
   Float_t p6eta = -10;
@@ -734,9 +733,9 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
     if(ipr==indexTrig) continue;
 
     // Get ESD particle kinematics
-    if(fStack)
+    if     ( GetReader()->ReadStack() )
     {
-      TParticle * particle = fStack->Particle(ipr) ;
+      TParticle * particle = GetMC()->Particle(ipr) ;
       
       pdg    = particle->GetPdgCode();
       status = particle->GetStatusCode();
@@ -748,9 +747,9 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
       
       charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
     }
-    else // AOD particle kinematics
+    else if( GetReader()->ReadAODMCParticles() )
     {
-      AliAODMCParticle * particle = (AliAODMCParticle*) fAODMCparticles->At(ipr) ;
+      AliAODMCParticle * particle = (AliAODMCParticle*) GetMC()->GetTrack(ipr) ;
       
       pdg    = particle->GetPdgCode();
       status = particle->GetStatus();
@@ -779,38 +778,38 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
     // ---------------------------------------------------
     // Get the index of the mother, get from what parton
     // ESD
-    if(fStack)
+    if     ( GetReader()->ReadStack() )
     {
-      ipartonAway =  fStack->Particle(ipr)->GetFirstMother();
+      ipartonAway =  GetMC()->Particle(ipr)->GetFirstMother();
       if(ipartonAway < 0)
       {
         AliDebug(1,"End, no mother index");
         return;
       }
       
-      TParticle * mother = fStack->Particle(ipartonAway);
+      TParticle * mother = GetMC()->Particle(ipartonAway);
       while (ipartonAway > 7)
       {
         ipartonAway   = mother->GetFirstMother();
         if(ipartonAway < 0) break;
-        mother = fStack->Particle(ipartonAway);
+        mother = GetMC()->Particle(ipartonAway);
       }
     }
-    else // AOD
+    else if( GetReader()->ReadAODMCParticles() )
     {
-      ipartonAway =  ((AliAODMCParticle*) fAODMCparticles->At(ipr))->GetMother();
+      ipartonAway =  ((AliAODMCParticle*) GetMC()->GetTrack(ipr))->GetMother();
       if(ipartonAway < 0)
       {
         AliDebug(1,"End, no mother index");
         return;
       }
       
-      AliAODMCParticle * mother = (AliAODMCParticle*) fAODMCparticles->At(ipartonAway);
+      AliAODMCParticle * mother = (AliAODMCParticle*) GetMC()->GetTrack(ipartonAway);
       while (ipartonAway > 7)
       {
         ipartonAway   = mother->GetMother();
         if(ipartonAway < 0) break;
-        mother = (AliAODMCParticle*) fAODMCparticles->At(ipartonAway);
+        mother = (AliAODMCParticle*) GetMC()->GetTrack(ipartonAway);
       }
     }
     
@@ -930,9 +929,9 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
   {
     if(ipr == indexTrig) continue;
     
-    if(fStack) // ESD
+    if     ( GetReader()->ReadStack() )
     {
-      TParticle * particle = fStack->Particle(ipr) ;
+      TParticle * particle = GetMC()->Particle(ipr) ;
       
       imother = particle->GetFirstMother();
       pdg     = particle->GetPdgCode();
@@ -944,9 +943,9 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
       charge  = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
       particle->Momentum(fLVTmp);
     }
-    else // AOD
+    else if( GetReader()->ReadAODMCParticles() )
     {
-      AliAODMCParticle * particle = (AliAODMCParticle*) fAODMCparticles->At(ipr) ;
+      AliAODMCParticle * particle = (AliAODMCParticle*) GetMC()->GetTrack(ipr) ;
       
       imother = particle->GetMother();
       pdg     = particle->GetPdgCode();
@@ -1098,56 +1097,44 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
 //_____________________________________________________
 void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
 {
+  if( !GetMC() )
+  {
+    AliFatal("MCEvent not available, is the MC handler called? STOP");
+    return;
+  }
+  
   AliDebug(1,"Start");
   
   fParton6.SetPxPyPzE(0,0,0,0);
   fParton7.SetPxPyPzE(0,0,0,0);
   fParton6PDG = 0;
   fParton7PDG = 0;
+
+  AliAODMCParticle * primAOD = 0;
   
+  fNPrimaries = GetMC()->GetNumberOfPrimaries(); // GetNtrack();
+
   //
   // Get the ESD MC particles container
-  fStack = 0;
   if( GetReader()->ReadStack() )
   {
-    fStack = GetMCStack();
-    if( !fStack )
-    {
-      AliFatal("Stack not available, is the MC handler called? STOP");
-      return;
-    }
-    
-    fNPrimaries = fStack->GetNprimary(); // GetNtrack();
-    
     if(fNPrimaries > 6)
     {
-      (fStack->Particle(6))->Momentum(fParton6) ;
-      fParton6PDG =  (fStack->Particle(6))->GetPdgCode();
+      (GetMC()->Particle(6))->Momentum(fParton6) ;
+      fParton6PDG =  (GetMC()->Particle(6))->GetPdgCode();
     }
     
     if(fNPrimaries > 7)
     {
-      (fStack->Particle(7))->Momentum(fParton7) ;
-      fParton7PDG =  (fStack->Particle(7))->GetPdgCode();
+      (GetMC()->Particle(7))->Momentum(fParton7) ;
+      fParton7PDG =  (GetMC()->Particle(7))->GetPdgCode();
     }
   }
-  
-  // Get the AOD MC particles container
-  fAODMCparticles = 0;
-  if( GetReader()->ReadAODMCParticles() )
+  else if( GetReader()->ReadAODMCParticles() )
   {
-    fAODMCparticles = GetReader()->GetAODMCParticles();
-    if( !fAODMCparticles )
-    {
-      AliFatal("Standard MCParticles not available!");
-      return;
-    }
-    
-    fNPrimaries = fAODMCparticles->GetEntriesFast();
-    AliAODMCParticle * primAOD = 0;
     if(fNPrimaries > 6)
     {
-      primAOD = (AliAODMCParticle *) fAODMCparticles->At(6);
+      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(6);
       fParton6.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
       fParton6PDG =  primAOD->GetPdgCode();
@@ -1155,7 +1142,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     
     if(fNPrimaries > 7)
     {
-      primAOD = (AliAODMCParticle *) fAODMCparticles->At(7);
+      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(7);
       fParton7.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
       fParton7PDG =  primAOD->GetPdgCode();
@@ -1181,9 +1168,9 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
   
   for(Int_t ipr = 0; ipr < fNPrimaries; ipr ++ )
   {
-    if(fStack) // ESD
+    if( GetReader()->ReadStack() )
     {
-      TParticle * particle = fStack->Particle(ipr) ;
+      TParticle * particle = GetMC()->Particle(ipr) ;
       
       pdgTrig    = particle->GetPdgCode();
       statusTrig = particle->GetStatusCode();
@@ -1194,9 +1181,9 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       // Recover the kinematics:
       particle->Momentum(fTrigger);
     }
-    else // AOD
+    else if( GetReader()->ReadAODMCParticles() )
     {
-      AliAODMCParticle* particle = (AliAODMCParticle*) fAODMCparticles->At(ipr) ;
+      AliAODMCParticle* particle = (AliAODMCParticle*) GetMC()->GetTrack(ipr) ;
       
       pdgTrig    = particle->GetPdgCode();
       statusTrig = particle->GetStatus();
@@ -1227,7 +1214,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     ptTrig  = fTrigger.Pt();
     
     if( ptTrig < GetMinPt() ) continue ;
-
+    
     //
     // Select and tag the particles being, direct photon (prompt, fragmentation or isr)
     // decay photon from pi0, eta or other, and pi0 or eta
@@ -1238,19 +1225,19 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     {
       if(imother > 0 )
       {
-        if(fStack) // ESD
+        if( GetReader()->ReadStack() )
         {
-          momStatus = (fStack->Particle(imother))->GetStatusCode();
-          momPdg    = (fStack->Particle(imother))->GetPdgCode();
-          momNDaugh = (fStack->Particle(imother))->GetNDaughters();
-          momImom   = (fStack->Particle(imother))->GetFirstMother();
+          momStatus = (GetMC()->Particle(imother))->GetStatusCode();
+          momPdg    = (GetMC()->Particle(imother))->GetPdgCode();
+          momNDaugh = (GetMC()->Particle(imother))->GetNDaughters();
+          momImom   = (GetMC()->Particle(imother))->GetFirstMother();
         }
-        else // AOD
+        else if( GetReader()->ReadAODMCParticles() )
         {
-          momStatus = ((AliAODMCParticle*) fAODMCparticles->At(imother))->GetStatus();
-          momPdg    = ((AliAODMCParticle*) fAODMCparticles->At(imother))->GetPdgCode();
-          momNDaugh = ((AliAODMCParticle*) fAODMCparticles->At(imother))->GetNDaughters();
-          momImom   = ((AliAODMCParticle*) fAODMCparticles->At(imother))->GetMother();
+          momStatus = ((AliAODMCParticle*) GetMC()->GetTrack(imother))->GetStatus();
+          momPdg    = ((AliAODMCParticle*) GetMC()->GetTrack(imother))->GetPdgCode();
+          momNDaugh = ((AliAODMCParticle*) GetMC()->GetTrack(imother))->GetNDaughters();
+          momImom   = ((AliAODMCParticle*) GetMC()->GetTrack(imother))->GetMother();
         }
         
         if     (imother < 8 && statusTrig == 1)
@@ -1273,15 +1260,15 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     }
     else if( (pdgTrig==111 || pdgTrig==221) && nDaughters == 2 )
     {
-      if(fStack) // ESD
+      if( GetReader()->ReadStack() )
       {
-        pdg0 = fStack->Particle(id0)->GetPdgCode();
-        pdg1 = fStack->Particle(id1)->GetPdgCode();
+        pdg0 = GetMC()->Particle(id0)->GetPdgCode();
+        pdg1 = GetMC()->Particle(id1)->GetPdgCode();
       }
-      else // AOD
+      else if( GetReader()->ReadAODMCParticles() )
       {
-        pdg0 = ((AliAODMCParticle*) fAODMCparticles->At(id0))->GetPdgCode();
-        pdg1 = ((AliAODMCParticle*) fAODMCparticles->At(id1))->GetPdgCode();
+        pdg0 = ((AliAODMCParticle*) GetMC()->GetTrack(id0))->GetPdgCode();
+        pdg1 = ((AliAODMCParticle*) GetMC()->GetTrack(id1))->GetPdgCode();
       }
       
       if( pdg0 == 22 && pdg1== 22 )
@@ -1301,7 +1288,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     }
     
     if(partType < 0 ) continue ;
-
+    
     //
     // Fill particle acceptance histograms
     //
@@ -1329,7 +1316,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     //
     Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(eta,phi,fTriggerDetector) ;
     if(! in )  continue ;
-
+    
     
     AliDebug(1,Form("Select trigger particle %d: pdg %d, type %d, status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f",
                     ipr, pdgTrig, partType, statusTrig, imother, ptTrig, fTrigger.Eta(), fTrigger.Phi()*TMath::RadToDeg()));
@@ -1376,36 +1363,36 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       else if(momPdg    == 130) fhPtOtherDecayMesonId->Fill(ptTrig, 3.5, GetEventWeight());//k0L
       else                      fhPtOtherDecayMesonId->Fill(ptTrig, 4.5, GetEventWeight());//other?
     }
-
+    
     //
     // Origin of particle, which mother of the pi0 or eta or
     // the eta or pi0 or other meson at the origin of the decay photon
     //
     Int_t momOrgPdg    = -1;
     Int_t momOrgStatus = -1;
-    if(fStack)
+    if( GetReader()->ReadStack() )
     {
       if(momImom >=0 || imother >=0)
       {
         TParticle* mother = 0;
         if(partType < 4 && partType!=0 )
-          mother = fStack->Particle(momImom);
+          mother = GetMC()->Particle(momImom);
         else
-          mother = fStack->Particle(imother);
+          mother = GetMC()->Particle(imother);
         
         momOrgPdg    = TMath::Abs(mother->GetPdgCode());
         momOrgStatus = mother->GetStatusCode();
       }
     }
-    else
+    else if( GetReader()->ReadAODMCParticles() )
     {
       if(momImom >=0 || imother >=0)
       {
         AliAODMCParticle* mother = 0;
         if(partType < 4 && partType!=0 )
-          mother = (AliAODMCParticle*) fAODMCparticles->At(momImom);
+          mother = (AliAODMCParticle*) GetMC()->GetTrack(momImom);
         else
-          mother = (AliAODMCParticle*) fAODMCparticles->At(imother);
+          mother = (AliAODMCParticle*) GetMC()->GetTrack(imother);
         
         momOrgPdg    = TMath::Abs(mother->GetPdgCode());
         momOrgStatus = mother->GetStatus();
@@ -1426,33 +1413,33 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     else if(momOrgStatus == 11 || momOrgStatus  == 12 )
                                  fhPtOrigin[partType]->Fill(ptTrig, 3.5, GetEventWeight());//resonances
     else                         fhPtOrigin[partType]->Fill(ptTrig, 7.5, GetEventWeight());//other?
-
-   if(statusTrig == 0)
-   {
-     // Histogram will not be filled for photons, leave it like this for now
-     // in case we leave not final photons in the future
-     if     (momOrgStatus  == 21) fhPtOriginNotFinal[partType]->Fill(ptTrig, 0.5, GetEventWeight());//parton
-     else if(momOrgPdg     < 22 ) fhPtOriginNotFinal[partType]->Fill(ptTrig, 1.5, GetEventWeight());//quark
-     else if(momOrgPdg     > 2100  && momOrgPdg   < 2210)
-                                  fhPtOriginNotFinal[partType]->Fill(ptTrig, 2.5, GetEventWeight());// resonances
-     else if(momOrgPdg    == 221) fhPtOriginNotFinal[partType]->Fill(ptTrig, 8.5, GetEventWeight());//eta
-     else if(momOrgPdg    == 331) fhPtOriginNotFinal[partType]->Fill(ptTrig, 9.5, GetEventWeight());//eta prime
-     else if(momOrgPdg    == 213) fhPtOriginNotFinal[partType]->Fill(ptTrig, 4.5, GetEventWeight());//rho
-     else if(momOrgPdg    == 223) fhPtOriginNotFinal[partType]->Fill(ptTrig, 5.5, GetEventWeight());//omega
-     else if(momOrgPdg    >= 310   && momOrgPdg    <= 323)
-                                  fhPtOriginNotFinal[partType]->Fill(ptTrig, 6.5, GetEventWeight());//k0S, k+-,k*
-     else if(momOrgPdg    == 130) fhPtOriginNotFinal[partType]->Fill(ptTrig, 6.5, GetEventWeight());//k0L
-     else if(momOrgStatus == 11 || momOrgStatus  == 12 )
-                                  fhPtOriginNotFinal[partType]->Fill(ptTrig, 3.5, GetEventWeight());//resonances
-     else                         fhPtOriginNotFinal[partType]->Fill(ptTrig, 7.5, GetEventWeight());//other?
-   }
+    
+    if(statusTrig == 0)
+    {
+      // Histogram will not be filled for photons, leave it like this for now
+      // in case we leave not final photons in the future
+      if     (momOrgStatus  == 21) fhPtOriginNotFinal[partType]->Fill(ptTrig, 0.5, GetEventWeight());//parton
+      else if(momOrgPdg     < 22 ) fhPtOriginNotFinal[partType]->Fill(ptTrig, 1.5, GetEventWeight());//quark
+      else if(momOrgPdg     > 2100  && momOrgPdg   < 2210)
+                                   fhPtOriginNotFinal[partType]->Fill(ptTrig, 2.5, GetEventWeight());// resonances
+      else if(momOrgPdg    == 221) fhPtOriginNotFinal[partType]->Fill(ptTrig, 8.5, GetEventWeight());//eta
+      else if(momOrgPdg    == 331) fhPtOriginNotFinal[partType]->Fill(ptTrig, 9.5, GetEventWeight());//eta prime
+      else if(momOrgPdg    == 213) fhPtOriginNotFinal[partType]->Fill(ptTrig, 4.5, GetEventWeight());//rho
+      else if(momOrgPdg    == 223) fhPtOriginNotFinal[partType]->Fill(ptTrig, 5.5, GetEventWeight());//omega
+      else if(momOrgPdg    >= 310   && momOrgPdg    <= 323)
+                                   fhPtOriginNotFinal[partType]->Fill(ptTrig, 6.5, GetEventWeight());//k0S, k+-,k*
+      else if(momOrgPdg    == 130) fhPtOriginNotFinal[partType]->Fill(ptTrig, 6.5, GetEventWeight());//k0L
+      else if(momOrgStatus == 11 || momOrgStatus  == 12 )
+                                   fhPtOriginNotFinal[partType]->Fill(ptTrig, 3.5, GetEventWeight());//resonances
+      else                         fhPtOriginNotFinal[partType]->Fill(ptTrig, 7.5, GetEventWeight());//other?
+    }
     
     //
     // Check if it is leading or isolated
     //
     Bool_t leading [fgkNIso] ;
     Bool_t isolated[fgkNIso] ;
-
+    
     IsLeadingAndIsolated(ipr, partType, leading, isolated);
     
     //

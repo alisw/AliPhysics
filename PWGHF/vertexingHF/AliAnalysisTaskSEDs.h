@@ -56,6 +56,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
   
+  void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
   void SetPtWeightsFromFONLL5overLHC16i2abc();
   void SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc();
   void SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc();

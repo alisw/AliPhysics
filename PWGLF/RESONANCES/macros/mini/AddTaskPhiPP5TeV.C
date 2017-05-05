@@ -1,5 +1,6 @@
 /***************************************************************************
             adash@cern.ch - last modified on 03/04/2013
+last modification by rsingh@cern.ch 30/04/2017
 // General macro to configure the RSN analysis task.
 // It calls all configs desired by the user, by means
 // of the boolean switches defined in the first lines.
@@ -91,9 +92,6 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV
    eventCuts->AddCut(cutEventUtils);
    eventCuts->AddCut(cutVertex);
    eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
-   // set cuts in task
-   task->SetEventCuts(eventCuts);
-   
    // set cuts in task
    task->SetEventCuts(eventCuts);
    

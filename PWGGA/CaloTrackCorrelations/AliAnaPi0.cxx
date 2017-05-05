@@ -28,7 +28,7 @@
 #include "AliAnaPi0.h"
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliFiducialCut.h"
 #include "TParticle.h"
 #include "AliVEvent.h"
@@ -53,7 +53,6 @@ ClassImp(AliAnaPi0) ;
 //______________________________________________________
 AliAnaPi0::AliAnaPi0() : AliAnaCaloTrackCorrBaseClass(),
 fEventsList(0x0),
-fNModules(22),
 fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(0.),
 fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),      fMultiCutAnaAcc(kFALSE),
 fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0), fNAngleCutBins(0),
@@ -331,8 +330,6 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Calorimeter: %s;",GetCalorimeterString().Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Number of modules: %d:",fNModules) ;
-  parList+=onePar ;
   if(fMultiCutAna || fMultiCutAnaAcc)
   {
     snprintf(onePar, buffersize," pT cuts: n = %d, pt > ",fNPtCuts) ;
@@ -400,6 +397,24 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
   Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
+  
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  //
+  InitCaloParameters(); // See AliCaloTrackCorrBaseClass
+  
+  Int_t totalSM = fLastModule-fFirstModule+1;
+  
+  //printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
+  
+  // Cell column-row histograms, see base class for data members setting
+  //fNMaxColsFull+2,-1.5,fNMaxColsFull+0.5, fNMaxRowsFull+2,-1.5,fNMaxRowsFull+0.5
+  Int_t   ncolcell   = fNMaxColsFull+2;
+  Float_t colcellmin = -1.5;
+  Float_t colcellmax = fNMaxColsFull+0.5;
+  
+  Int_t   nrowcell   = fNMaxRowsFullMax-fNMaxRowsFullMin+2;
+  Float_t rowcellmin = fNMaxRowsFullMin-1.5;
+  Float_t rowcellmax = fNMaxRowsFullMax+0.5;
   
   // Start with pure MC kinematics histograms
   // In case other tasks just need this info like AliAnaPi0EbE
@@ -800,10 +815,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  // Init the number of modules, set in the class AliCalorimeterUtils
-  fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
-  if(GetCalorimeter()==kPHOS && fNModules > 4) fNModules = 4;
-  
+  // Init the number of modules, set in the class AliCalorimeterUtils  
   fhReMod                = new TH2F*[fNModules]   ;
   fhMiMod                = new TH2F*[fNModules]   ;
   
@@ -1112,7 +1124,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPtBinClusterColRow[ipt] = new TH2F
       (Form("hPtBin%d_Cluster_ColRow",ipt),
        Form("column vs row, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fPtCuts[ipt],fPtCuts[ipt+1]),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
       fhPtBinClusterColRow[ipt]->SetYTitle("row");
       fhPtBinClusterColRow[ipt]->SetXTitle("column");
       outputContainer->Add(fhPtBinClusterColRow[ipt]) ;
@@ -1134,6 +1146,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     {
       for(Int_t iSM = 0; iSM < fNModules; iSM++) 
       {
+        if(iSM < fFirstModule || iSM > fLastModule) continue;
+
         fhRePtNCellAsymCutsSM[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
         if(fFillAngleHisto) fhRePtNCellAsymCutsSMOpAngle[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
       }
@@ -1173,7 +1187,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             for(Int_t iSM = 0; iSM < fNModules; iSM++)
             {
               //printf("\t sm %d\n",iSM);
-              
+              if(iSM < fFirstModule || iSM > fLastModule) continue;
+
               snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
               snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f, SM %d ",
                        fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
@@ -1213,6 +1228,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
               {
                 for(Int_t iSM = 0; iSM < fNModules; iSM++)
                 {
+                  if(iSM < fFirstModule || iSM > fLastModule) continue;
+
                   snprintf(key,   buffersize,"hReOpAngle_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
                   snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f, SM %d ",
                            fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
@@ -1733,47 +1750,19 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   {
     if(!fPairWithOtherDetector)
     {
-      TString pairnamePHOS[] = {"(0-1)","(0-2)","(1-2)","(0-3)","(0-4)","(1-3)","(1-4)","(2-3)","(2-4)","(3-4)"};
+      // Single super modules
+      //
       for(Int_t imod=0; imod<fNModules; imod++)
       {
-        //Module dependent invariant mass
+        if(imod < fFirstModule || imod > fLastModule) continue;
+        
+        // Module dependent invariant mass
         snprintf(key, buffersize,"hReMod_%d",imod) ;
         snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for Module %d",imod) ;
         fhReMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
         fhReMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhReMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhReMod[imod]) ;
-        if(GetCalorimeter()==kPHOS)
-        {
-          snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
-          snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
-          fhReDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhReDiffPHOSMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhReDiffPHOSMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-          outputContainer->Add(fhReDiffPHOSMod[imod]) ;
-        }
-        else
-        {//EMCAL
-          if(imod<fNModules/2)
-          {
-            snprintf(key, buffersize,"hReSameSectorEMCALMod_%d",imod) ;
-            snprintf(title, buffersize,"Real pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
-            fhReSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-            fhReSameSectorEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            fhReSameSectorEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-            outputContainer->Add(fhReSameSectorEMCALMod[imod]) ;
-          }
-          if(imod<fNModules-2)
-          {
-            snprintf(key, buffersize,"hReSameSideEMCALMod_%d",imod) ;
-            snprintf(title, buffersize,"Real pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
-            fhReSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-            fhReSameSideEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            fhReSameSideEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-            outputContainer->Add(fhReSameSideEMCALMod[imod]) ;
-          }
-        }//EMCAL
-        
         if(DoOwnMix())
         {
           snprintf(key, buffersize,"hMiMod_%d",imod) ;
@@ -1782,39 +1771,110 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           fhMiMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhMiMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
           outputContainer->Add(fhMiMod[imod]) ;
+        }
+      }
+      
+      // Super modules combinations
+      //
+      if(GetCalorimeter()==kPHOS)
+      { 
+        TString pairnamePHOS[] = {"(0-1)","(0-2)","(1-2)","(0-3)","(1-3)","(2-3)","(0-4)","(1-4)","(2-4)","(3-4)"};
+        
+        for(Int_t imod=0; imod<10; imod++)
+        {
+          if(fNModules == 3 && imod > 2) continue;
+          if(fNModules == 4 && imod > 5) continue;
           
-          if(GetCalorimeter()==kPHOS)
-          {
+          snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
+          snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
+          fhReDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhReDiffPHOSMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhReDiffPHOSMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+          outputContainer->Add(fhReDiffPHOSMod[imod]) ;
+          
+          if(DoOwnMix())
+          {          
             snprintf(key, buffersize,"hMiDiffPHOSMod_%d",imod) ;
             snprintf(title, buffersize,"Mixed pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
             fhMiDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
             fhMiDiffPHOSMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             fhMiDiffPHOSMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
             outputContainer->Add(fhMiDiffPHOSMod[imod]) ;
-          }//PHOS
-          else
-          {//EMCAL
-            if(imod<fNModules/2)
-            {
-              snprintf(key, buffersize,"hMiSameSectorEMCALMod_%d",imod) ;
-              snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
-              fhMiSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-              fhMiSameSectorEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-              fhMiSameSectorEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-              outputContainer->Add(fhMiSameSectorEMCALMod[imod]) ;
-            }
-            if(imod<fNModules-2){
-              
-              snprintf(key, buffersize,"hMiSameSideEMCALMod_%d",imod) ;
-              snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
-              fhMiSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-              fhMiSameSideEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-              fhMiSameSideEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-              outputContainer->Add(fhMiSameSideEMCALMod[imod]) ;
-            }
-          } // EMCAL
-        } // own mix
-      } // loop combinations
+          }
+        }
+      }
+      else
+      {
+        // EMCAL
+        
+        // Sectors
+        //
+        Int_t maxSector = (Int_t) fLastModule /2 ;
+        Int_t minSector = (Int_t) fFirstModule/2 ;
+        for(Int_t isector=minSector; isector<=maxSector; isector++)
+        {
+          snprintf(key, buffersize,"hReSameSectorEMCALMod_%d",isector) ;
+          snprintf(title, buffersize,"Real pairs EMCAL, clusters in same sector, SM(%d,%d)",isector*2,isector*2+1) ;
+          fhReSameSectorEMCALMod[isector]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhReSameSectorEMCALMod[isector]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhReSameSectorEMCALMod[isector]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+          outputContainer->Add(fhReSameSectorEMCALMod[isector]) ;
+          
+          if(DoOwnMix())
+          {         
+            snprintf(key, buffersize,"hMiSameSectorEMCALMod_%d",isector) ;
+            snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same sector, SM(%d,%d)",isector*2,isector*2+1) ;
+            fhMiSameSectorEMCALMod[isector]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhMiSameSectorEMCALMod[isector]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhMiSameSectorEMCALMod[isector]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+            outputContainer->Add(fhMiSameSectorEMCALMod[isector]) ;
+          } 
+        }// sectors
+        
+        // Sides 
+        //
+        Int_t minSide = 0;
+        Int_t maxSide = fNModules-2;
+        
+        if(fLastModule > 11)
+          maxSide = fNModules-4;
+        else
+          maxSide = fLastModule-1;
+  
+        if(fFirstModule > 11)
+          minSide = 10;
+        //printf("** Last %d, First %d, min %d, max %d\n",fLastModule,fFirstModule,minSide,maxSide);
+        for(Int_t iside=minSide; iside<maxSide; iside++)
+        {
+          Int_t ism1 = iside;
+          Int_t ism2 = iside+2;
+          if(iside > 9) // skip EMCal-DCal combination
+          {
+            ism1 = iside+2;
+            ism2 = iside+4;
+          }
+          
+          //printf("iside %d, sm1 %d, sm2 %d\n",iside,ism1,ism2);
+          
+          snprintf(key, buffersize,"hReSameSideEMCALMod_%d",iside) ;
+          snprintf(title, buffersize,"Real pairs EMCAL, clusters in same side SM(%d,%d)",ism1, ism2) ;
+          fhReSameSideEMCALMod[iside]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhReSameSideEMCALMod[iside]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhReSameSideEMCALMod[iside]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+          outputContainer->Add(fhReSameSideEMCALMod[iside]) ;
+          
+          if(DoOwnMix())
+          {         
+            snprintf(key, buffersize,"hMiSameSideEMCALMod_%d",iside) ;
+            snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same side SM(%d,%d)",ism1, ism2) ;
+            fhMiSameSideEMCALMod[iside]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhMiSameSideEMCALMod[iside]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhMiSameSideEMCALMod[iside]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+            outputContainer->Add(fhMiSameSideEMCALMod[iside]) ;
+          } // mix
+        } // sides
+        
+      }//EMCAL
     } // Not pair of detectors
     else
     {
@@ -1888,7 +1948,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhReOpAngleBinMinClusterColRow[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMin_ColRow",icut),
        Form("highest #it{E} cell, column vs row, cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
       fhReOpAngleBinMinClusterColRow[icut]->SetYTitle("row");
       fhReOpAngleBinMinClusterColRow[icut]->SetXTitle("column");
       outputContainer->Add(fhReOpAngleBinMinClusterColRow[icut]) ;
@@ -1896,7 +1956,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhReOpAngleBinMaxClusterColRow[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMax_ColRow",icut),
        Form("highest #it{E} cell, column vs row, cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
-       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
       fhReOpAngleBinMaxClusterColRow[icut]->SetYTitle("row");
       fhReOpAngleBinMaxClusterColRow[icut]->SetXTitle("column");
       outputContainer->Add(fhReOpAngleBinMaxClusterColRow[icut]) ;
@@ -2039,7 +2099,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 //        fhMiOpAngleBinMinClusterColRow[icut] = new TH2F
 //        (Form("hMiOpAngleBin%d_ClusterMin_ColRow",icut),
 //         Form("highest #it{E} cell, column vs row, mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
 //        fhMiOpAngleBinMinClusterColRow[icut]->SetYTitle("row");
 //        fhMiOpAngleBinMinClusterColRow[icut]->SetXTitle("column");
 //        outputContainer->Add(fhMiOpAngleBinMinClusterColRow[icut]) ;
@@ -2047,7 +2107,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 //        fhMiOpAngleBinMaxClusterColRow[icut] = new TH2F
 //        (Form("hMiOpAngleBin%d_ClusterMax_ColRow",icut),
 //         Form("highest #it{E} cell, column vs row, mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
-//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
 //        fhMiOpAngleBinMaxClusterColRow[icut]->SetYTitle("row");
 //        fhMiOpAngleBinMaxClusterColRow[icut]->SetXTitle("column");
 //        outputContainer->Add(fhMiOpAngleBinMaxClusterColRow[icut]) ;
@@ -2473,6 +2533,8 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
 //________________________________________
 void AliAnaPi0::FillAcceptanceHistograms()
 {
+  if ( !GetMC() ) return;
+
   Double_t mesonY   = -100 ;
   Double_t mesonE   = -1 ;
   Double_t mesonPt  = -1 ;
@@ -2480,7 +2542,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
   Double_t mesonYeta= -1 ;
   
   Int_t    pdg     = 0 ;
-  Int_t    nprim   = 0 ;
+  Int_t    nprim   = GetMC()->GetNumberOfTracks();
   Int_t    nDaught = 0 ;
   Int_t    iphot1  = 0 ;
   Int_t    iphot2  = 0 ;
@@ -2493,24 +2555,6 @@ void AliAnaPi0::FillAcceptanceHistograms()
   
   TString genName = "";
   
-  // Get the ESD MC particles container
-  AliStack * stack = 0;
-  if( GetReader()->ReadStack() )
-  {
-    stack = GetMCStack();
-    if(!stack ) return;
-    nprim = stack->GetNtrack();
-  }
-  
-  // Get the AOD MC particles container
-  TClonesArray * mcparticles = 0;
-  if( GetReader()->ReadAODMCParticles() )
-  {
-    mcparticles = GetReader()->GetAODMCParticles();
-    if( !mcparticles ) return;
-    nprim = mcparticles->GetEntriesFast();
-  }
-  
   for(Int_t i=0 ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
@@ -2519,7 +2563,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(GetReader()->ReadStack())
     {
-      primStack = stack->Particle(i) ;
+      primStack = GetMC()->Particle(i) ;
       if(!primStack)
       {
         AliWarning("ESD primaries pointer not available!!");
@@ -2542,7 +2586,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           (primStack->Energy() - primStack->Pz()) < 1e-3      ||
           (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
-      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
       //       prim->GetName(), prim->GetPdgCode());
       
       //Photon kinematics
@@ -2560,7 +2604,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     }
     else // AODs
     {
-      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
       if(!primAOD)
       {
         AliWarning("AOD primaries pointer not available!!");
@@ -2607,7 +2651,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     ////
     Int_t genType = GetNCocktailGenNamesToCheck()-2; // bin 0 is not null 
     Int_t index   = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
-    //(GetReader()->GetMC())->GetCocktailGenerator(i,genName);
+    //(GetMC())->GetCocktailGenerator(i,genName);
     
     Float_t weightPt = GetParticlePtWeight(mesonPt, pdg, genName, index) ; 
     
@@ -2710,16 +2754,15 @@ void AliAnaPi0::FillAcceptanceHistograms()
         if(GetReader()->ReadStack())
         {
           status = primStack->GetStatusCode();
-          TParticle* mother = stack->Particle(momindex);
+          TParticle* mother = GetMC()->Particle(momindex);
           mompdg    = TMath::Abs(mother->GetPdgCode());
           momstatus = mother->GetStatusCode();
           momR      = mother->R();
         }
-        
-        if(GetReader()->ReadAODMCParticles())
+        else if(GetReader()->ReadAODMCParticles())
         {
           status = primAOD->GetStatus();
-          AliAODMCParticle* mother = (AliAODMCParticle*) mcparticles->At(momindex);
+          AliAODMCParticle* mother = (AliAODMCParticle*) GetMC()->GetTrack(momindex);
           mompdg    = TMath::Abs(mother->GetPdgCode());
           momstatus = mother->GetStatus();
           momR      = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
@@ -2800,8 +2843,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(GetReader()->ReadStack())
     {
-      TParticle * phot1 = stack->Particle(iphot1) ;
-      TParticle * phot2 = stack->Particle(iphot2) ;
+      TParticle * phot1 = GetMC()->Particle(iphot1) ;
+      TParticle * phot2 = GetMC()->Particle(iphot2) ;
       
       if(!phot1 || !phot2) continue ;
       
@@ -2821,8 +2864,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(GetReader()->ReadAODMCParticles())
     {
-      AliAODMCParticle * phot1 = (AliAODMCParticle *) mcparticles->At(iphot1) ;
-      AliAODMCParticle * phot2 = (AliAODMCParticle *) mcparticles->At(iphot2) ;
+      AliAODMCParticle * phot1 = (AliAODMCParticle *) GetMC()->GetTrack(iphot1) ;
+      AliAODMCParticle * phot2 = (AliAODMCParticle *) GetMC()->GetTrack(iphot2) ;
       
       if(!phot1 || !phot2) continue ;
       
@@ -3157,12 +3200,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           //Int_t uniqueId = -1;
           if(GetReader()->ReadStack())
           {
-            TParticle* ancestor = GetMCStack()->Particle(ancLabel);
-            status = ancestor->GetStatusCode();
-            momindex  = ancestor->GetFirstMother();
+            TParticle* ancestor = GetMC()->Particle(ancLabel);
+            status   = ancestor->GetStatusCode();
+            momindex = ancestor->GetFirstMother();
             if(momindex >= 0) 
             {
-              TParticle* mother = GetMCStack()->Particle(momindex);
+              TParticle* mother = GetMC()->Particle(momindex);
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatusCode();
               prodR = mother->R();
@@ -3172,13 +3215,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           }
           else
           {
-            TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
-            status = ancestor->GetStatus();
-            momindex  = ancestor->GetMother();
+            AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(ancLabel);
+            status   = ancestor->GetStatus();
+            momindex = ancestor->GetMother();
             if(momindex >= 0) 
             {
-              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+              AliAODMCParticle* mother = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatus();
               prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
@@ -3304,11 +3346,11 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           
           if(GetReader()->ReadStack())
           {
-            TParticle* ancestor = GetMCStack()->Particle(ancLabel);
+            TParticle* ancestor = GetMC()->Particle(ancLabel);
             momindex  = ancestor->GetFirstMother();
             if(momindex >= 0) 
             {
-              TParticle* mother = GetMCStack()->Particle(momindex);
+              TParticle* mother = GetMC()->Particle(momindex);
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatusCode();
               prodR = mother->R();
@@ -3317,12 +3359,11 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           }
           else
           {
-            TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+            AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(ancLabel);
             momindex  = ancestor->GetMother();
             if(momindex >= 0) 
             {
-              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+              AliAODMCParticle* mother = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatus();
               prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
@@ -3909,7 +3950,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         {
           TString genName;
           Int_t index   = GetReader()->GetCocktailGeneratorAndIndex(ancLabel, genName);
-          //(GetReader()->GetMC())->GetCocktailGenerator(i,genName);
+          //(GetMC())->GetCocktailGenerator(i,genName);
           
           weightPt = GetParticlePtWeight(fMCPrimMesonMom.Pt(), ancPDG, genName, index) ; 
         }
@@ -3918,36 +3959,125 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //-------------------------------------------------------------------------------------------------
       // Fill module dependent histograms, put a cut on assymmetry on the first available cut in the array
       //-------------------------------------------------------------------------------------------------
-      if(a < fAsymCuts[0] && fFillSMCombinations)
+      if ( a < fAsymCuts[0] && fFillSMCombinations &&
+          module1 >=0 && module1<fNModules        && 
+          module2 >=0 && module2<fNModules           )
+      {
+        if ( !fPairWithOtherDetector )
+        {
+          if ( module1==module2 )
+          {
+            fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
+            if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
+          }
+          else if ( GetCalorimeter()==kEMCAL )
+          {
+            // Same sector
+            Int_t isector1 = module1/2;
+            Int_t isector2 = module2/2;
+            if ( isector1==isector2 ) 
+            {
+              fhMiSameSectorEMCALMod[isector1]->Fill(pt, m, GetEventWeight()) ;
+            }
+            // Same side
+            else if ( TMath::Abs(isector2-isector1) == 1 )
+            {
+              Int_t iside1 = module1;
+              Int_t iside2 = module2;
+              // skip EMCal/DCal combination
+              if(module1 > 11) iside1-=2; 
+              if(module2 > 11) iside2-=2;
+              
+              if     ( module1 < module2 && module2-module1==2 ) 
+                fhMiSameSideEMCALMod[iside1]->Fill(pt, m, GetEventWeight());
+              else if( module2 < module1 && module1-module2==2 ) 
+                fhMiSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
+            }
+          } // EMCAL
+          else
+          { // PHOS
+            if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==0 && module2==3) || (module1==3 && module2==0)) fhMiDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==1 && module2==3) || (module1==3 && module2==1)) fhMiDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==2 && module2==3) || (module1==3 && module2==2)) fhMiDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==0 && module2==4) || (module1==4 && module2==0)) fhMiDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==1 && module2==4) || (module1==4 && module2==1)) fhMiDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==2 && module2==4) || (module1==4 && module2==2)) fhMiDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==3 && module2==4) || (module1==4 && module2==3)) fhMiDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()) ;
+          } // PHOS
+        }
+        else
+        {
+          Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+          Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+          Bool_t etaside = 0;
+          if(   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
+             || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
+          
+          if      (    phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280))  fhMiSameSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());
+          else if (    phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300))  fhMiSameSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight());
+          else if (    phi1 > DegToRad(300) && phi2 > DegToRad(300) && phi1 < DegToRad(320) && phi2 < DegToRad(320))  fhMiSameSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight());
+          else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(280) && phi1 < DegToRad(280) && phi2 < DegToRad(300)) 
+                   || (phi1 > DegToRad(280) && phi2 > DegToRad(260) && phi1 < DegToRad(300) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());  
+          else if (   (phi1 > DegToRad(280) && phi2 > DegToRad(300) && phi1 < DegToRad(300) && phi2 < DegToRad(320)) 
+                   || (phi1 > DegToRad(300) && phi2 > DegToRad(280) && phi1 < DegToRad(320) && phi2 < DegToRad(300))) fhMiDiffSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight()); 
+          else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(300) && phi1 < DegToRad(280) && phi2 < DegToRad(320)) 
+                   || (phi1 > DegToRad(300) && phi2 > DegToRad(260) && phi1 < DegToRad(320) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight()); 
+          else                                                                                                            fhMiDiffSectorDCALPHOSMod[6+etaside]->Fill(pt, m, GetEventWeight());
+        }            
+      } //  different SM combinations
+
+      
+      
+      if ( a < fAsymCuts[0] && fFillSMCombinations &&
+           module1 >=0 && module1<fNModules        && 
+           module2 >=0 && module2<fNModules           )
       {
         if(!fPairWithOtherDetector)
         {
-          if(module1==module2 && module1 >=0 && module1<fNModules)
+          if ( module1==module2 )
           {
             fhReMod[module1]->Fill(pt, m, GetEventWeight()*weightPt) ;
             if(fFillAngleHisto) fhRealOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight()*weightPt);
           }
-          
-          if (GetCalorimeter() == kEMCAL )
+          else if (GetCalorimeter() == kEMCAL )
           {
             // Same sector
-            Int_t j=0;
-            for(Int_t i = 0; i < fNModules/2; i++)
+            Int_t isector1 = module1/2;
+            Int_t isector2 = module2/2;
+            if ( isector1==isector2 ) 
             {
-              j=2*i;
-              if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhReSameSectorEMCALMod[i]->Fill(pt, m, GetEventWeight()*weightPt) ;
+              fhReSameSectorEMCALMod[isector1]->Fill(pt, m, GetEventWeight()) ;
             }
-            
             // Same side
-            for(Int_t i = 0; i < fNModules-2; i++){
-              if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhReSameSideEMCALMod[i]->Fill(pt, m, GetEventWeight()*weightPt);
-            }
+            else if ( TMath::Abs(isector2-isector1) == 1 )
+            {
+              Int_t iside1 = module1;
+              Int_t iside2 = module2;
+              // skip EMCal/DCal combination
+              if(module1 > 11) iside1-=2; 
+              if(module2 > 11) iside2-=2;
+              
+              if     ( module1 < module2 && module2-module1==2 ) 
+                fhReSameSideEMCALMod[iside1]->Fill(pt, m, GetEventWeight());
+              else if( module2 < module1 && module1-module2==2 ) 
+                fhReSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
+            } // side
           } // EMCAL
           else
           { // PHOS
             if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()*weightPt) ;
             if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()*weightPt) ;
             if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if((module1==0 && module2==3) || (module1==3 && module2==0)) fhReDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if((module1==1 && module2==3) || (module1==3 && module2==1)) fhReDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if((module1==2 && module2==3) || (module1==3 && module2==2)) fhReDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if((module1==0 && module2==4) || (module1==4 && module2==0)) fhReDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if((module1==1 && module2==4) || (module1==4 && module2==1)) fhReDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if((module1==2 && module2==4) || (module1==4 && module2==2)) fhReDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if((module1==3 && module2==4) || (module1==4 && module2==3)) fhReDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()*weightPt) ;
           } // PHOS
         }
         else
@@ -4315,30 +4445,39 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           //-------------------------------------------------------------------------------------------------
           // Fill module dependent histograms, put a cut on assymmetry on the first available cut in the array
           //-------------------------------------------------------------------------------------------------
-          if(a < fAsymCuts[0] && fFillSMCombinations)
+          if ( a < fAsymCuts[0] && fFillSMCombinations &&
+               module1 >=0 && module1<fNModules        && 
+               module2 >=0 && module2<fNModules           )
           {
-            if(!fPairWithOtherDetector)
+            if ( !fPairWithOtherDetector )
             {
-              if(module1==module2 && module1 >=0 && module1<fNModules)
+              if ( module1==module2 )
               {
                 fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
                 if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
               }
-              
-              if(GetCalorimeter()==kEMCAL)
+              else if ( GetCalorimeter()==kEMCAL )
               {
                 // Same sector
-                Int_t j=0;
-                for(Int_t i = 0; i < fNModules/2; i++)
+                Int_t isector1 = module1/2;
+                Int_t isector2 = module2/2;
+                if ( isector1==isector2 ) 
                 {
-                  j=2*i;
-                  if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhMiSameSectorEMCALMod[i]->Fill(pt, m, GetEventWeight()) ;
+                  fhMiSameSectorEMCALMod[isector1]->Fill(pt, m, GetEventWeight()) ;
                 }
-                
                 // Same side
-                for(Int_t i = 0; i < fNModules-2; i++)
+                else if ( TMath::Abs(isector2-isector1) == 1 )
                 {
-                  if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhMiSameSideEMCALMod[i]->Fill(pt, m, GetEventWeight());
+                  Int_t iside1 = module1;
+                  Int_t iside2 = module2;
+                  // skip EMCal/DCal combination
+                  if(module1 > 11) iside1-=2; 
+                  if(module2 > 11) iside2-=2;
+                  
+                  if     ( module1 < module2 && module2-module1==2 ) 
+                    fhMiSameSideEMCALMod[iside1]->Fill(pt, m, GetEventWeight());
+                  else if( module2 < module1 && module1-module2==2 ) 
+                    fhMiSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
                 }
               } // EMCAL
               else
@@ -4346,6 +4485,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
                 if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
                 if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==0 && module2==3) || (module1==3 && module2==0)) fhMiDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==1 && module2==3) || (module1==3 && module2==1)) fhMiDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==2 && module2==3) || (module1==3 && module2==2)) fhMiDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==0 && module2==4) || (module1==4 && module2==0)) fhMiDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==1 && module2==4) || (module1==4 && module2==1)) fhMiDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==2 && module2==4) || (module1==4 && module2==2)) fhMiDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==3 && module2==4) || (module1==4 && module2==3)) fhMiDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()) ;
               } // PHOS
             }
             else
@@ -4367,7 +4513,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                        || (phi1 > DegToRad(300) && phi2 > DegToRad(260) && phi1 < DegToRad(320) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight()); 
               else                                                                                                            fhMiDiffSectorDCALPHOSMod[6+etaside]->Fill(pt, m, GetEventWeight());
             }            
-          }
+          } //  different SM combinations
           
           Bool_t ok = kTRUE;          
           if(fSameSM)

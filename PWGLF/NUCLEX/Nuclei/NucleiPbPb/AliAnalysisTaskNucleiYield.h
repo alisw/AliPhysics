@@ -94,7 +94,8 @@ public:
   AliNuclexEventCuts  fEventCut;
   TArrayD             fTOFfunctionPars;
 
-  UInt_t              fFilterBit;       /// AOD filter bit for the tracks used in this analysis
+  UInt_t              fFilterBit;       /// AOD filter bit for the tracks used in this analysis (set to 0 to skip the cut)
+  bool                fPropagateTracks; /// Workaround for troublesome productions
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);

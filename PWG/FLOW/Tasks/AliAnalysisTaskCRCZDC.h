@@ -111,6 +111,7 @@ public:
   TList*        GetQAList()      const      {return fQAList; }
   void          SetQAOn(Bool_t kt)        {fQAon = kt; }
   Bool_t        GetQAOn()   const         {return fQAon; }
+  Bool_t        SelectPileup(AliAODEvent* aod);
   
   void          SetShuffleTracks(Bool_t b)  {fShuffleTracks=b;}
   
@@ -360,6 +361,17 @@ private:
   Int_t fMaxRingVZC; //
   Int_t fMinRingVZA; //
   Int_t fMaxRingVZA; //
+  
+  // TrackQA
+  TList *fTrackQAList; //!
+  const static Int_t fKNFBs = 4;
+  TH3D* fTrackQADCAxy[fKNFBs][4]; //!
+  TH3D* fTrackQADCAz[fKNFBs][4]; //!
+  TH2D* fTrackQApT[fKNFBs][4]; //!
+  TProfile2D* fTrackQADphi[fKNFBs][4]; //!
+  TH2D* fEbEQRe[fKNFBs][4]; //!
+  TH2D* fEbEQIm[fKNFBs][4]; //!
+  TH2D* fEbEQMu[fKNFBs][4]; //!
   
   ClassDef(AliAnalysisTaskCRCZDC,10);
   

@@ -170,6 +170,9 @@ public:
   void SwitchOnFillAllPi0Histogram()            { fFillAllPi0Histo  = kTRUE  ; }
   void SwitchOffFillAllPi0Histogram()           { fFillAllPi0Histo  = kFALSE ; }
 
+  void SwitchOnFillAllClusterHistogram()        { fFillAllClusterHistograms = kTRUE  ; }
+  void SwitchOffFillAllClusterHistogram()       { fFillAllClusterHistograms = kFALSE ; }
+  
   void SwitchOnFillAllCellHistogram()           { fFillAllCellHistograms  = kTRUE  ; }
   void SwitchOffFillAllCellHistogram()          { fFillAllCellHistograms  = kFALSE ; }
   
@@ -214,16 +217,8 @@ public:
   
   void SwitchOnStudyExotic()                    { fStudyExotic      = kTRUE  ; }
   void SwitchOffStudyExotic()                   { fStudyExotic      = kFALSE ; }
-  //===============================
-
-//  void SetNECrossCuts(Int_t n)                  { fExoNECrossCuts   = n      ; }
-//  void SetNDTimeCuts (Int_t n)                  { fExoNDTimeCuts    = n      ; }
-//  
-//  void SetExoECrossCuts (Int_t i, Float_t c)    { if (i<fExoNECrossCuts) fExoECrossCuts[i] = c ; }
-//  void SetExoDTimeCuts  (Int_t i, Float_t c)    { if (i<fExoNDTimeCuts ) fExoDTimeCuts [i] = c ; }
   
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
-
   
  private:
   
@@ -243,6 +238,7 @@ public:
   
   Bool_t   fFillEBinAcceptanceHisto;            ///<  Fill histograms with cluster eta-phi distribution and column-row cell, for different energy bins
   
+  Bool_t   fFillAllClusterHistograms;           ///<  Fill all cluster related histograms
   Bool_t   fFillAllCellHistograms;              ///<  Fill all cell related histograms
   Bool_t   fFillAllCellAbsIdHistograms;         ///<  Fill all cell related histograms where one axis is the cell absId
   
@@ -256,14 +252,7 @@ public:
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations, not QA related
   Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
   Bool_t   fStudyM02Dependence;                 ///<  TH3 histograms where M02 and energy are 2 axes and 
-  
-  // Parameters
     
-  Int_t    fNModules    ;                       ///<  Number of EMCAL/PHOS modules
-  Int_t    fNRCU        ;                       ///<  Number of EMCAL/PHOS RCU
-  Int_t    fNMaxCols    ;                       ///<  Number of EMCAL/PHOS rows
-  Int_t    fNMaxRows    ;                       ///<  Number of EMCAL/PHOS columns
-  
   // Cuts
   
   Double_t fTimeCutMin  ;                       ///<  Remove clusters/cells with time smaller than this value, in ns
@@ -285,13 +274,6 @@ public:
   Float_t  fInvMassMaxM02Cut;                   ///<  Maximum M02 shower shape cut value for clusters entering the invariant mass calculation
   Float_t  fInvMassMaxOpenAngle;                ///<  Combine clusters within with a maximum opening angle between them. In radians.
   Float_t  fInvMassMaxTimeDifference;           ///<  Maximum difference between the time of the 2 clusters to be considered in invariant mass. In ns.
-
-//  // Exotic studies
-// 
-//  Float_t  fExoNECrossCuts   ;                  ///<  Number of ecross cuts
-//  Float_t  fExoECrossCuts[10];                  ///<  List of ecross cuts
-//  Float_t  fExoNDTimeCuts    ;                  ///<  Number of time cuts
-//  Float_t  fExoDTimeCuts[5]  ;                  ///<  List of time cuts
   
   TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
   TLorentzVector fClusterMomentum2;             //!<! Cluster momentum, temporary container
@@ -775,19 +757,6 @@ public:
   TH2F **  fhECellTotalRatioMod;                //!<! e cell / e total vs e total, per SM
   TH2F **  fhECellTotalLogRatioMod;             //!<! log (e cell / e total)  vs e total, per SM
 
-  // Exotic studies
-  
-//  TH2F *   fhExoNCell  [10][5] ;                //!<! Number of cells per cluster for different cuts
-//  TH2F *   fhExoL0     [10][5] ;                //!<! Long shower shape axis for exotic
-//  TH2F *   fhExoL1     [10][5] ;                //!<! Short shower shape axis for exotic
-//  TH2F *   fhExoECross [10][5] ;                //!<! E cross for max cell in cluster, for different cuts
-//  TH2F *   fhExoTime   [10][5] ;                //!<! Time of exotic cluster, for different cuts
-//  TH2F *   fhExoDTime  [10]    ;                //!<! Difference in time between cell with max energy and rest of cells for exotic
-//  TH2F *   fhExoL0NCell[10][5] ;                //!<! Lambda0 vs n cells in cluster for several E cross cuts and cluster with E > 5
-//  TH2F *   fhExoL0ECross      ;                 //!<! Lambda0 vs E cross fraction for clusters with E > 5 GeV
-//  TH2F *   fhExoL1NCell[10][5] ;                //!<! Lambda1 vs n cells in cluster for several E cross cuts and cluster with E > 5
-//  TH2F *   fhExoL1ECross      ;                 //!<! Lambda1 vs E cross fraction for clusters with E > 5 GeV
-   
   // Pure MC histograms
 
   /// Enumerator with indeces for MC histograms array indicating the particle type generating the cluster
@@ -883,7 +852,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,36) ;
+  ClassDef(AliAnaCalorimeterQA,37) ;
   /// \endcond
 
 } ;

@@ -38,6 +38,7 @@ class AliSelectNonHFE;
 class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
+class TF1;
 //Lucile
 class AliCaloTrackAODReader;
 class AliCaloTrackReader;
@@ -104,6 +105,10 @@ public:
     void SetBackgroundPi0Weight(TH1F *hBkgPi0W) {if(fBkgPi0Weight) delete fBkgPi0Weight; fBkgPi0Weight = (TH1F*) hBkgPi0W->Clone("fBkgPi0Weight");}
     void SetBackgroundEtaWeight(TH1F *hBkgEtaW) {if(fBkgEtaWeight) delete fBkgEtaWeight; fBkgEtaWeight = (TH1F*) hBkgEtaW->Clone("fBkgEtaWeight");}
     
+    void SetBackgroundPi0WeightToData(TF1 *Wpion) {fBkgPi0WeightToData = (TF1*) Wpion->Clone("PionWToData");}
+    void SetBackgroundEtaWeightToData(TF1 *WEta) {fBkgEtaWeightToData = (TF1*) WEta->Clone("EtaWToData");}
+
+    
     //DCA cut main particle
     void SetdcaCut(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutr = DCAcutr; fDCAcutz = DCAcutz;};
     
@@ -152,7 +157,9 @@ private:
     Double_t GetHadronEfficiency(Double_t pT, Double_t eta, Double_t zvtx);
     
     Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
-    Double_t CalculateWeightRun2(Int_t pdg_particle, Double_t pt);
+    Double_t CalculateWeightRun2(Int_t pdg_particle, Double_t pT);
+    Double_t CalculateWeightRun2ToData(Int_t pdg_particle, Double_t pT);
+    void FillHistBkgWtoData(AliAODMCParticle* MCMotheWtoData, AliVTrack* track);
     
     void ComputeWeightInEnhancedSample();
     CocktailType_t FindTrackGenerator(Int_t label, AliAODMCHeader *header,TClonesArray *arrayMC);
@@ -419,6 +426,9 @@ private:
     TH1F                *fElectronBKGNoEnhULS; //!
     TH1F                *fElectronBKGNoEnhLS; //!
     TH1F                *fElectronBKGNoEnhTotalNumber; //!
+    TH1F                *fElectronBKGWToDataTotal; //!
+    TH1F                *fElectronBKGWToDataULS; //!
+    TH1F                *fElectronBKGWToDataLS; //!
     
     //Background weight calculation
     
@@ -429,6 +439,10 @@ private:
     
     TH1F                *fBkgPi0Weight; //
     TH1F                *fBkgEtaWeight; //
+    TF1                 *fBkgPi0WeightToData; //
+    TF1                 *fBkgEtaWeightToData; //
+    
+   
     
     //DPhi MC
     TH2F                **fCEtaPhiNoEtaCutInclusive;  //!
@@ -459,7 +473,7 @@ private:
     AliAnalysisTaskHFEpACorrelation(const AliAnalysisTaskHFEpACorrelation&); 			// not implemented
     AliAnalysisTaskHFEpACorrelation& operator=(const AliAnalysisTaskHFEpACorrelation&); 		// not implemented
     
-    ClassDef(AliAnalysisTaskHFEpACorrelation, 4); 								// example of analysis
+    ClassDef(AliAnalysisTaskHFEpACorrelation, 5); 								// example of analysis
     //______________________________________________________________________
 };
 

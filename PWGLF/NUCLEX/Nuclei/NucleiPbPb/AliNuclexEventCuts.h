@@ -79,6 +79,7 @@ class AliNuclexEventCuts : public TList {
 
     AliAnalysisUtils fUtils;                      ///< Analysis utils for the pileup rejection
 
+    bool          fGreenLight;                    ///< If true it will bypass all the selections.
     bool          fMC;                            ///< Set to true by the automatic setup when analysing MC (in manual mode *you* are responsible for it). In MC the correlations cuts are disabled.
     bool          fRequireTrackVertex;            ///< if true all the events with only the SPD vertex are rejected
     float         fMinVtz;                        ///< Min z position for the primary vertex

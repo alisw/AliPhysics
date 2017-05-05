@@ -10,7 +10,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUseZDC=kFALSE,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
-                             Bool_t bExcludeTPCSecBound=kFALSE,
+                             Int_t bCutTPCbound=0,
                              Bool_t bUseCRCRecenter=kFALSE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
@@ -23,10 +23,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t MaxFracSharedTPCCl=0.4,
                              TString sSelecCharge="",
                              Bool_t bPtDepDCAxyCut=kFALSE,
-                             Bool_t bResetNegativeZDC=kFALSE,
-                             Int_t NumCenBins=100,
+                             Bool_t bRequireITSRefit=kFALSE,
+                             Bool_t bTestSin=kFALSE,
                              Double_t DeltaEta=0.4,
-                             Bool_t bPhiExclZone=kFALSE,
+                             Bool_t bRecZDCVtxRbR=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
@@ -77,6 +77,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Bool_t bCalculateCRCInt=kFALSE;
  Bool_t bCalculateCRC2=kTRUE;
  Float_t MaxDevZN=10.;
+  Int_t NumCenBins=100;
+  Bool_t bCalculateCRC=kTRUE;
+  if(analysisTypeUser == "TrackQA") bCalculateCRC=kFALSE;
  Bool_t bCalculateCRCVZ=kFALSE;
  TString PhiEtaWeightsFileName="";
   Bool_t bCutsQA=kTRUE;
@@ -89,16 +92,15 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bMimicGlobalCuts=kFALSE;
   Bool_t bZDCMCCen=kTRUE;
   Bool_t bCorrSpecZDC=kFALSE;
-  Int_t bCutTPCbound=0;
-  if(bExcludeTPCSecBound) bCutTPCbound=2;
   Bool_t bUsePhiEtaCuts=kFALSE;
   Bool_t bSetQAZDC=kTRUE;
   Double_t MaxChi2PerClTPC=4.;
-  Bool_t bRequireITSRefit=kFALSE;
   Bool_t bCalculateFlow=kTRUE;
   Bool_t bCorrectForBadChannel=kFALSE;
   Bool_t bSetStoreZDCQVecVtxPos=kTRUE;
   Bool_t bSpecialVZERORingSelection=kFALSE;
+  Bool_t bResetNegativeZDC=kFALSE;
+  Bool_t bPhiExclZone=kFALSE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -285,7 +287,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
       cutsEvent->SetQA(bCutsQA);
   }
- else if (analysisTypeUser == "AOD") {
+ else if (analysisTypeUser == "AOD" || analysisTypeUser == "TrackQA") {
    if (sDataSet == "2010" || sDataSet == "2011") {
      cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
    }
@@ -344,7 +346,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetQA(bCutsQA);
  }
- if (analysisTypeUser == "AOD" || analysisTypeUser == "MCAOD") {
+ if (analysisTypeUser == "AOD" || analysisTypeUser == "MCAOD" || analysisTypeUser == "TrackQA") {
   // Track cuts for RPs
   if(bUseVZERO) {
    if (sDataSet == "2011")
@@ -398,7 +400,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
      cutsPOI->SetCutChi2PerClusterITS(36.);
      cutsPOI->SetCutITSClusterGlobal(kTRUE);
   }
-  if(bRequireITSRefit) cutsPOI->SetRequireITSRefit(kTRUE);
+  if(bRequireITSRefit) {
+    cutsPOI->SetRequireITSRefit(kTRUE);
+    cutsPOI->SetCutChi2PerClusterITS(36.);
+  }
   if(bPtDepDCAxyCut) cutsPOI->SetMaxDCAToVertexXYPtDepAOD(kTRUE);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
@@ -484,7 +489,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetBookOnlyBasicCCH(kTRUE); // book only basic common control histograms
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
- taskQC->SetCalculateCRC(kTRUE);
+ taskQC->SetCalculateCRC(bCalculateCRC);
  taskQC->SetCalculateCRCInt(bCalculateCRCInt);
  taskQC->SetCalculateCRC2(bCalculateCRC2);
  taskQC->SetCalculateCRCVZ(bCalculateCRCVZ);
@@ -513,6 +518,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetMinMulZN(MinMulZN);
  taskQC->SetMaxDevZN(MaxDevZN);
  taskQC->SetZDCGainAlpha(ZDCGainAlpha);
+ taskQC->SetTestSin(bTestSin);
+ taskQC->SetRecenterZDCVtxRbR(bRecZDCVtxRbR);
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();
@@ -656,6 +663,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       if(bUsePtWeights) {
         if(AODfilterBit==32)  QVecWeightsFileName += "15oHI_FB32_TPCQVecReCen.root";
         if(AODfilterBit==96)  QVecWeightsFileName += "15oHI_FB96_TPCQVecReCen.root";
+        if(AODfilterBit==128) QVecWeightsFileName += "15oHI_FB128_TPCQVecReCen.root";
         if(AODfilterBit==768 && !bPtDepDCAxyCut) QVecWeightsFileName += "15oHI_FB768_TPCQVecReCen.root";
         if(AODfilterBit==768 &&  bPtDepDCAxyCut) QVecWeightsFileName += "15oHI_FB768_DCAcut_TPCQVecReCen.root";
       }

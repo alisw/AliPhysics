@@ -205,7 +205,13 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
-   cutsPair->SetCutScheme(cutY->GetName());
+   if (ptDep) {
+     cutsPair->SetCutScheme(cutY->GetName()); 
+   } else {
+     AliRsnCutMiniPair *cutV0 = new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
+     cutsPair->AddCut(cutV0);
+     cutsPair->SetCutScheme(TString::Format("%s&!%s",cutY->GetName(),cutV0->GetName()).Data());
+   }
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------

@@ -25,7 +25,7 @@
 #include "AliNeutralMesonSelection.h"
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliFiducialCut.h"
 #include "TParticle.h"
 #include "AliVCluster.h"
@@ -561,7 +561,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
   
   if(fFillAllNLMHistograms)
   {
-    if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
+    if(nSM < fNModules && nSM >=0)
       fhNLocMaxPtSM[nSM]->Fill(pt, nMaxima, GetEventWeight());
     
     fhPtLambda0LocMax   [indexMax]->Fill(pt, l0, GetEventWeight());
@@ -950,6 +950,10 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   Float_t timemax     = GetHistogramRanges()->GetHistoTimeMax();
   Float_t timemin     = GetHistogramRanges()->GetHistoTimeMin();
   
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  //
+  InitCaloParameters(); // See AliCaloTrackCorrBaseClass
+  
   TString nlm[]   = {"1 Local Maxima","2 Local Maxima", "NLM > 2"};
   
   TString ptype [] = {"#pi^{0}", "#eta", "#gamma (direct)","#gamma (#pi^{0})", "#gamma (#eta)", "#gamma (other)",  "e^{#pm}"  , "hadron/other combinations"};
@@ -1193,8 +1197,10 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       
       if(fFillAllNLMHistograms)
       {
-        for(Int_t iSM = 0; iSM < GetCaloUtils()->GetNumberOfSuperModulesUsed(); iSM++)
+        for(Int_t iSM = 0; iSM < fNModules; iSM++)
         {
+          if(iSM < fFirstModule || iSM > fLastModule) continue;
+
           fhSelectedMassPtLocMaxSM[inlm][iSM]  = new TH2F
           (Form("hSelectedMassPtLocMax%d_SM%d",inlm+1,iSM),Form("Selected #pi^{0} (#eta) pairs #it{M}: #it{p}_{T} vs #it{M}, NLM=%s for SM=%d",nlm[inlm].Data(),iSM),nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
           fhSelectedMassPtLocMaxSM[inlm][iSM]->SetYTitle("#it{M} (GeV/#it{c}^{2})");
@@ -1408,8 +1414,10 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     if(fFillAllNLMHistograms)
     {
-      for(Int_t iSM = 0; iSM < GetCaloUtils()->GetNumberOfSuperModulesUsed(); iSM++)
+      for(Int_t iSM = 0; iSM < fNModules; iSM++)
       {
+        if(iSM < fFirstModule || iSM > fLastModule) continue;
+
         fhNLocMaxPtSM[iSM] = new TH2F(Form("hNLocMaxPt_SM%d",iSM),Form("Number of local maxima in cluster, selected clusters in SM %d",iSM),
                                       nptbins,ptmin,ptmax,20,0,20);
         fhNLocMaxPtSM[iSM] ->SetYTitle("N maxima");
@@ -2699,17 +2707,17 @@ void AliAnaPi0EbE::HasPairSameMCMother(Int_t label1 , Int_t label2,
     {
       if ( label1 >= 0 )
       {
-        TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
+        TParticle * mother1 = GetMC()->Particle(label1);//photon in kine tree
         label1 = mother1->GetFirstMother();
-        mother1 = GetMCStack()->Particle(label1);//pi0
+        mother1 = GetMC()->Particle(label1);//pi0
         pdg1=mother1->GetPdgCode();
         ndaugh1 = mother1->GetNDaughters();
       }
       if ( label2 >= 0 )
       {
-        TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
+        TParticle * mother2 = GetMC()->Particle(label2);//photon in kine tree
         label2 = mother2->GetFirstMother();
-        mother2 = GetMCStack()->Particle(label2);//pi0
+        mother2 = GetMC()->Particle(label2);//pi0
         //pdg2=mother2->GetPdgCode();
         ndaugh2 = mother2->GetNDaughters();
       }
@@ -2718,17 +2726,18 @@ void AliAnaPi0EbE::HasPairSameMCMother(Int_t label1 , Int_t label2,
     {//&& (input > -1)){
       if ( label1 >= 0 )
       {
-        AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label1);//photon in kine tree
+        AliAODMCParticle * mother1 = (AliAODMCParticle *) GetMC()->GetTrack(label1);//photon in kine tree
         label1 = mother1->GetMother();
-        mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label1);//pi0
+        mother1 = (AliAODMCParticle *) GetMC()->GetTrack(label1);//pi0
         pdg1=mother1->GetPdgCode();
         ndaugh1 = mother1->GetNDaughters();
       }
+      
       if ( label2 >= 0 )
       {
-        AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label2);//photon in kine tree
+        AliAODMCParticle * mother2 = (AliAODMCParticle *) GetMC()->GetTrack(label2);//photon in kine tree
         label2 = mother2->GetMother();
-        mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label2);//pi0
+        mother2 = (AliAODMCParticle *) GetMC()->GetTrack(label2);//pi0
         //pdg2=mother2->GetPdgCode();
         ndaugh2 = mother2->GetNDaughters();
       }
@@ -3717,7 +3726,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedMassPtLocMax[indexMax]->Fill(fMomentum.Pt(), mass, GetEventWeight());
     
     Int_t   nSM  = GetModuleNumber(calo);
-    if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0 && fFillAllNLMHistograms)
+    if(nSM < fNModules && nSM >=0 && fFillAllNLMHistograms)
     {
       fhSelectedMassPtLocMaxSM   [indexMax][nSM]->Fill(fMomentum.Pt(), mass, GetEventWeight());
       fhSelectedLambda0PtLocMaxSM[indexMax][nSM]->Fill(fMomentum.Pt(), l0  , GetEventWeight());
@@ -3982,25 +3991,24 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         Int_t status      = -1;
         if(GetReader()->ReadStack())
         {
-          TParticle* ancestor = GetMCStack()->Particle(label);
+          TParticle* ancestor = GetMC()->Particle(label);
           status = ancestor->GetStatusCode();
           momindex  = ancestor->GetFirstMother();
           if(momindex < 0) return;
-          TParticle* mother = GetMCStack()->Particle(momindex);
+          TParticle* mother = GetMC()->Particle(momindex);
           mompdg    = TMath::Abs(mother->GetPdgCode());
           momstatus = mother->GetStatusCode();
           prodR = mother->R();
         }
         else
         {
-          TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-          AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(label);
+          AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(label);
           status    = ancestor->GetStatus();
           momindex  = ancestor->GetMother();
           
           if(momindex < 0) return;
             
-          AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+          AliAODMCParticle* mother   = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
           mompdg    = TMath::Abs(mother->GetPdgCode());
           momstatus = mother->GetStatus();
           prodR     = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());

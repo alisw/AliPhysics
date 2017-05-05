@@ -2105,7 +2105,22 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             Float_t lExpV0Sigma =
             fLambdaMassSigma[0]+fLambdaMassSigma[1]*lV0Pt+
             fLambdaMassSigma[2]*TMath::Exp(fLambdaMassSigma[3]*lV0Pt);
-
+            
+            //========================================================================
+            //For 2.76TeV-like parametric V0 CosPA
+            Float_t l276TeVV0CosPA = 0.998;
+            Float_t pThr=1.5;
+            if (lV0TotMomentum<pThr) {
+                //Below the threshold "pThr", try a momentum dependent cos(PA) cut
+                const Double_t bend=0.03; // approximate Xi bending angle
+                const Double_t qt=0.211;  // max Lambda pT in Omega decay
+                const Double_t cpaThr=TMath::Cos(TMath::ATan(qt/pThr) + bend);
+                Double_t
+                cpaCut=(0.998/cpaThr)*TMath::Cos(TMath::ATan(qt/lV0TotMomentum) + bend);
+                l276TeVV0CosPA = cpaCut;
+            }
+            //========================================================================
+            
             //========================================================================
             //Setting up: Variable Cascade CosPA
             Float_t lCascCosPACut = lCascadeResult -> GetCutCascCosPA();
@@ -2211,18 +2226,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
             }
-
+            
             if (
                 //Check 1: Charge consistent with expectations
                 fTreeCascVarCharge == lCharge &&
-
+                
                 //Check 2: Basic Acceptance cuts
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarPosEta && fTreeCascVarPosEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarNegEta && fTreeCascVarNegEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarBachEta && fTreeCascVarBachEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 lRap > lCascadeResult->GetCutMinRapidity() &&
                 lRap < lCascadeResult->GetCutMaxRapidity() &&
-
+                
                 //Check 3: Topological Variables
                 // - V0 Selections
                 fTreeCascVarDCANegToPrimVtx > lCascadeResult->GetCutDCANegToPV() &&
@@ -2237,36 +2252,36 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeCascVarDCACascDaughters < lCascadeResult->GetCutDCACascDaughters() &&
                 fTreeCascVarCascCosPointingAngle > lCascCosPACut &&
                 fTreeCascVarCascRadius > lCascadeResult->GetCutCascRadius() &&
-
+                
                 // - Implementation of a parametric V0 Mass cut if requested
                 (
                  ( lCascadeResult->GetCutV0MassSigma() > 50 ) || //anything goes
                  (TMath::Abs( (fTreeCascVarV0Mass-lExpV0Mass) / lExpV0Sigma ) < lCascadeResult->GetCutV0MassSigma() )
-                ) &&
-
+                 ) &&
+                
                 // - Miscellaneous
                 fTreeCascVarDistOverTotMom*lPDGMass < lCascadeResult->GetCutProperLifetime() &&
                 fTreeCascVarLeastNbrClusters > lCascadeResult->GetCutLeastNumberOfClusters() &&
-
+                
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx )<lCascadeResult->GetCutTPCdEdx() &&
                 TMath::Abs(lPosdEdx )<lCascadeResult->GetCutTPCdEdx() &&
                 TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx() &&
-
+                
                 //Check 5: Xi rejection for Omega analysis
                 ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus && lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) ) &&
-
+                
                 //Check 6: Experimental DCA Bachelor to Baryon cut
                 ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
-
+                
                 //Check 7: Experimental Bach Baryon CosPA
                 ( fTreeCascVarWrongCosPA < lBBCosPACut  ) &&
-
+                
                 //Check 8: Min/Max V0 Lifetime cut
                 ( ( fTreeCascVarV0Lifetime > lCascadeResult->GetCutMinV0Lifetime() ) &&
-                ( fTreeCascVarV0Lifetime < lCascadeResult->GetCutMaxV0Lifetime() ||
-                 lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) ) &&
-
+                 ( fTreeCascVarV0Lifetime < lCascadeResult->GetCutMaxV0Lifetime() ||
+                  lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) ) &&
+                
                 //Check 9: kITSrefit track selection if requested
                 (
                  ( (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) &&
@@ -2276,15 +2291,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                  ||
                  !lCascadeResult->GetCutUseITSRefitTracks()
                  ) &&
-
+                
                 //Check 10: Max Chi2/Clusters if not absurd
                 ( lCascadeResult->GetCutMaxChi2PerCluster()>1e+3 ||
                  fTreeCascVarMaxChi2PerCluster < lCascadeResult->GetCutMaxChi2PerCluster()
                  )&&
-
+                
                 //Check 11: Min Track Length if positive
                 ( lCascadeResult->GetCutMinTrackLength()<0 || //this is a bit paranoid...
                  fTreeCascVarMinTrackLength > lCascadeResult->GetCutMinTrackLength()
+                 )&&
+                
+                //Check 12: Check if special V0 CosPA cut used
+                //either don't use the cut at all, or make sure it's above threshold
+                ( lCascadeResult->GetCutUse276TeVV0CosPA()==kFALSE ||
+                 fTreeCascVarV0CosPointingAngle>l276TeVV0CosPA
                  )
                 ){
                 //This satisfies all my conditionals! Fill histogram
@@ -3362,6 +3383,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lN++;
     }
     
+    //Explore restricted rapidity range check
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_Central_y03",lParticleName[i].Data() ) );
+        
+        lCascadeResult[lN] -> SetCutMinRapidity(-0.3);
+        lCascadeResult[lN] -> SetCutMaxRapidity(+0.3);
+        
+        //Add result to pool
+        lN++;
+    }
+    
     // STEP 4: Creation of objects to be used in systematics
     // Optimized via use of copy constructors
     for(Int_t i = 0 ; i < 4 ; i ++){
@@ -3495,13 +3527,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     }
     
     //STEP 6: V0 Mass sweep
-    for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t isweep=0; isweep<20;isweep++){
-            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_V0MassSweep_%i",lParticleName[i].Data(),isweep) );
-            lCascadeResult[lN]->SetCutV0MassSigma( ((Double_t)(isweep)/4000.0)); //in GeV/c^2
-            lN++;
-        }
-    }
+    //for(Int_t i = 0 ; i < 4 ; i ++){
+    //    for(Int_t isweep=0; isweep<20;isweep++){
+    //        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_V0MassSweep_%i",lParticleName[i].Data(),isweep) );
+    //        lCascadeResult[lN]->SetCutV0MassSigma( ((Double_t)(isweep)/4000.0)); //in GeV/c^2
+    //        lN++;
+    //    }
+    //}
     
     Float_t lLifetimeCut[4];
     lLifetimeCut[0] = 15.0;

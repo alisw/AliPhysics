@@ -27,7 +27,6 @@
 #include "AliCalorimeterUtils.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
 #include "AliAODPWG4Particle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
@@ -72,7 +71,9 @@ fPlotCluster(0),                  fOADBSet(kFALSE),
 fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
 fOADBFilePathEMCAL(""),           fOADBFilePathPHOS(""),
 fImportGeometryFromFile(0),       fImportGeometryFilePath(""),
-fNSuperModulesUsed(0),            fRunNumber(0),
+fNSuperModulesUsed(0),            
+fFirstSuperModuleUsed(-1),        fLastSuperModuleUsed(-1),
+fRunNumber(0),
 fMCECellClusFracCorrOn(0),        fMCECellClusFracCorrParam()
 {
   InitParameters();
@@ -1140,18 +1141,9 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
     {
       Int_t mod =-1;
       Double_t z = 0., x=0.;
-      TParticle* primary = 0x0;
-      AliStack * stack = ((AliMCEvent*)inputEvent)->Stack();
-      
-      if(stack)
-      {
-        primary = stack->Particle(particle->GetCaloLabel(0));
-      }
-      else
-      {
-        AliFatal("Stack not available, stop!");
-      }
-      
+     
+      TParticle* primary = ((AliMCEvent*)inputEvent)->Particle(particle->GetCaloLabel(0));
+     
       if(primary)
       {
         fPHOSGeo->ImpactOnEmc(primary,mod,z,x) ;

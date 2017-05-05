@@ -405,9 +405,9 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
 
 
-  fHistInvMassK0s = new TH2F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ",200,0.4,0.6,25,0.,5.);
-  fHistInvMassLambda = new TH3F("hInvMassLambda"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; p_{T,TPC}(p)",200,1.0,1.2,25,0.,5.,50,0.,5.);
-  fHistInvMassAntiLambda = new TH3F("hInvMassAntiLambda"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; p_{T,TPC}(p)",200,1.0,1.2,25,0.,5.,50,0.,5.);
+  fHistInvMassK0s = new TH3F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ; R (cm)",200,0.4,0.6,50,0.,10.,50,0.,50.);
+  fHistInvMassLambda = new TH3F("hInvMassLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
+  fHistInvMassAntiLambda = new TH3F("hInvMassAntiLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
   fOutput->Add(fHistInvMassK0s);
   fOutput->Add(fHistInvMassLambda);
   fOutput->Add(fHistInvMassAntiLambda);
@@ -755,6 +755,9 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Double_t invMassLambda = v0->MassLambda();
     Double_t invMassAntiLambda = v0->MassAntiLambda();
     Double_t ptv0=v0->Pt();
+    Double_t xv0=v0->Xv();
+    Double_t yv0=v0->Yv();
+    Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
 
     AliESDtrack pEsdTrack(pTrack);
     pEsdTrack.SetTPCClusterMap(pTrack->GetTPCClusterMap());
@@ -808,12 +811,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       keepAntiLambda=kFALSE;
     }
 
-    if(keepK0s) fHistInvMassK0s->Fill(invMassK0s,ptv0);
+    if(keepK0s) fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
     if(keepLambda){
-      fHistInvMassLambda->Fill(invMassLambda,ptv0,pTrack->Pt());
+      fHistInvMassLambda->Fill(invMassLambda,ptv0,rv0);
     }
     if(keepAntiLambda){
-      fHistInvMassAntiLambda->Fill(invMassAntiLambda,ptv0,nTrack->Pt());
+      fHistInvMassAntiLambda->Fill(invMassAntiLambda,ptv0,rv0);
     }
   }
   PostData(1,fOutput);
