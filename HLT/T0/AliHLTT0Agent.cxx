@@ -95,7 +95,7 @@ Int_t AliHLTT0Agent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // -- Define the T0 reconstruction components
     // -----------------------------------------------
-    handler->CreateConfiguration("T0-RECO", "T0Reconstruction", "T0-DP", "");
+    handler->CreateConfiguration("T0-RECO", "T0Reconstruction", "T0-DP ITS-SPD-vertexer", "");
   }
   else if (runloader && !rawReader) {
     // indicates AliSimulation with no RawReader available -> run on digits
