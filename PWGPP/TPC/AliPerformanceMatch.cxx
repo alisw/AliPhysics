@@ -132,9 +132,12 @@ AliPerformanceMatch::~AliPerformanceMatch()
   delete fTrackingEffHisto;
   delete fTPCConstrain;
 
-  delete fAnalysisFolder;
-  if(fFolderObj) { fFolderObj->Delete(); }
+  if (fFolderObj && fAnalysisFolder && !fAnalysisFolder->IsOwner()) {
+    fFolderObj->Delete();
+  } //delete the registered non-sparse histograms
+
   delete fFolderObj;
+  delete fAnalysisFolder;
 }
 
 //_____________________________________________________________________________
@@ -845,5 +848,14 @@ void AliPerformanceMatch::ResetOutputData(){
         if(h_tpc_constrain_tpc_0_2_3) h_tpc_constrain_tpc_0_2_3->Reset("ICE");
     }
 
+}
+
+//_____________________________________________________________________________
+TCollection* AliPerformanceMatch::GetListOfDrawableObjects() 
+{
+  TObjArray* tmp = fFolderObj;
+  fFolderObj = NULL;
+  if (fAnalysisFolder) { fAnalysisFolder->SetOwner(kFALSE); }
+  return tmp;
 }
 
