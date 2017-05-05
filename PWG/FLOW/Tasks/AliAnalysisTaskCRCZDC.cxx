@@ -1070,7 +1070,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             Double_t M   = 1.*fEbEQMu[fb][c]->GetBinContent(bx,by);
             
             if(M>1.) {
-              Double_t c1 = (QRe*QRe+QIm*QIm-M*M)/(M*(M-1.));
+              Double_t c1 = (QRe*QRe+QIm*QIm-M)/(M*(M-1.));
               fTrackQADphi[fb][c]->Fill(dEta,dPt,c1);
             }
           }
