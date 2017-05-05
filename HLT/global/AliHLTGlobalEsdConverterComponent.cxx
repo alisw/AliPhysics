@@ -122,8 +122,8 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeTrackMC);
   list.push_back(kAliHLTDataTypeCaloCluster);
   list.push_back(kAliHLTDataTypeCaloTrigger);
-  list.push_back(kAliHLTDataTypedEdx );
-  list.push_back(kAliHLTDataTypeESDVertex );
+  list.push_back(kAliHLTDataTypedEdx);
+  list.push_back(kAliHLTDataTypeESDVertex);
   list.push_back(kAliHLTDataTypeESDObject);
   list.push_back(kAliHLTDataTypeTObject);
   list.push_back(kAliHLTDataTypeGlobalVertexer);
@@ -132,7 +132,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypePrimaryFinder); // array of track ids for prim vertex
   list.push_back(kAliHLTDataTypeESDContent);
   list.push_back(kAliHLTDataTypeESDFriendContent);
-  list.push_back( AliHLTTPCDefinitions::RawClustersDataType() );
+  list.push_back(AliHLTTPCDefinitions::RawClustersDataType() );
   list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
@@ -443,7 +443,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // 4) extract TRD tracks and add to ESD
   //    TODO 2010-07-12 at the moment there is no matching or merging of TPC and TRD tracks
   // 5) Add Trigger Detectors 
-  //    VZERO, ZDC
+  //    VZERO, T0, ZDC
 
   // read the clusters
   // ---------- Access to clusters --------------------//
@@ -610,7 +610,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	const AliESDVZEROfriend *esdVZEROfriend = dynamic_cast<const AliESDVZEROfriend*>( pObject );
 	if (esdVZEROfriend) {
 	  pESDfriend->SetVZEROfriend( esdVZEROfriend );
- 	} else {
+	} else {
 	  ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZEROfriend",
 			   DataType2Text(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO).c_str());
 	}
@@ -1249,7 +1249,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
   
   // 5) Add Trigger Detectors 
-  //    VZERO, ZDC
+  //    VZERO, T0, ZDC
 
   // FIXME: the size of all input blocks can be added in one loop
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
@@ -1257,15 +1257,25 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     fBenchmark.AddInput(pBlock->fSize);
   }
 
-  for ( const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO); 
-	pObject != NULL; pObject = GetNextInputObject() ) {
+  for ( const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO); pObject != NULL; pObject = GetNextInputObject() ) {
     AliESDVZERO *esdVZERO = dynamic_cast<AliESDVZERO*>(const_cast<TObject*>( pObject ) );  
     if (esdVZERO) {
       pESD->SetVZEROData( esdVZERO );
-     break;
+      break;
     } else {
       ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZERO",
 		       DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO).c_str());
+    }
+  }
+
+  for ( const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginT0); pObject != NULL; pObject = GetNextInputObject() ) {
+    AliESDTZERO *esdTZERO = dynamic_cast<AliESDTZERO*>(const_cast<TObject*>( pObject ) );  
+    if (esdTZERO) {
+      pESD->SetTZEROData( esdTZERO );
+      break;
+    } else {
+      ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDTZERO",
+		       DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginT0).c_str());
     }
   }
 
