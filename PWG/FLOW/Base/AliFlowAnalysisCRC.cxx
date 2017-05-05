@@ -19214,7 +19214,6 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     Double_t EvPlZDCA = TMath::ATan2(QAImR,QAReR);
 //    fCRCZDCQVecEP[fRunBin][1]->Fill(fCentralityEBE,EvPlZDCA,fZDCEPweightEbE[1]);
 
-
     if( fInvertZDC ) QAReR = -QAReR;
     
 //    fhZNCenDis[0]->Fill(fCentralityEBE,QCReR,QCImR);
@@ -19236,15 +19235,6 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
       fCRCZDCQVecCov[fRunBin][16]->Fill(fVtxPosCor[1],QCImR*QAImR);
       fCRCZDCQVecCov[fRunBin][17]->Fill(fVtxPosCor[2],QCImR*QAImR);
     }
-    
-    // test:
-//    Double_t Norm = QMC*QMA;
-    // resolution vs energy asymmetry
-//    fCRCZDCQVecResvsEAsym->Fill(fCentralityEBE,(QMC-QMA)/2.,(QCReR*QAReR+QCImR*QAImR)/Norm);
-    // resolution vs energy sum
-//    fCRCZDCQVecResvsESum->Fill(fCentralityEBE,(QMC+QMA)/2.,(QCReR*QAReR+QCImR*QAImR)/Norm);
-    // resolution vs total energy
-//    fCRCZDCQVecResvsETot->Fill(fCentralityEBE,(fZNCen+fZNAen)/2.,(QCReR*QAReR+QCImR*QAImR)/Norm);
     
   } else {
     fQAZDCCutsFlag = kFALSE;
@@ -29814,6 +29804,7 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
 //    fCRCQVecList->Add(fCRCZDCQVecResvsETot);
     
     for(Int_t r=0;r<fCRCnRun;r++) {
+      
       for(Int_t i=0;i<2;i++) {
         fCRCZDCQVecA[r][i] = new TProfile(Form("fCRCZDCQVecA[%d][%d]",fRunList[r],i),
                                           Form("fCRCZDCQVecA[%d][%d]",fRunList[r],i),100,0.,100.,"s");
