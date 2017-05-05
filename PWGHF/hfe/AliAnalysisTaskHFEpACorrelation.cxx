@@ -328,6 +328,15 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fPtMCEta_PureHijing(0)
 ,fBkgPi0Weight(0)
 ,fBkgEtaWeight(0)
+,fElectronBKGNoEnhULS(0)
+,fElectronBKGNoEnhLS(0)
+,fElectronBKGNoEnhTotalNumber(0)
+,fElectronBKGWToDataTotal(0)
+,fElectronBKGWToDataULS(0)
+,fElectronBKGWToDataLS(0)
+,fBkgPi0WeightToData(0)
+,fBkgEtaWeightToData(0)
+
 {
     //Named constructor
     // Define input and output slots here
@@ -560,6 +569,14 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fPtMCEta_PureHijing(0)
 ,fBkgPi0Weight(0)
 ,fBkgEtaWeight(0)
+,fElectronBKGNoEnhULS(0)
+,fElectronBKGNoEnhLS(0)
+,fElectronBKGNoEnhTotalNumber(0)
+,fElectronBKGWToDataTotal(0)
+,fElectronBKGWToDataULS(0)
+,fElectronBKGWToDataLS(0)
+,fBkgPi0WeightToData(0)
+,fBkgEtaWeightToData(0)
 
 {
     DefineInput(0, TChain::Class());
@@ -909,6 +926,13 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fPtMCEta_NoMother = new TH1F("fPtMCEta_NoMother","#eta distribution from MC with No Mother;p_{t} (GeV/c);Count",2000,0,100);
         fPtMCEta_PureHijing = new TH1F("fPtMCEta_PureHijing","#eta distribution from MC with no Enh. ;p_{t} (GeV/c);Count",2000,0,100);
         
+        fElectronBKGWToDataTotal = new TH1F("fElectronBKGWToDataTotal","Total Bkg weighted to data;p_{t} (GeV/c);Count",110,0.5,6);
+        fElectronBKGWToDataULS = new TH1F("fElectronBKGWToDataULS","Bkg ULS weighted to data;p_{t} (GeV/c);Count",110,0.5,6);
+        fElectronBKGWToDataLS = new TH1F("fElectronBKGWToDataLS","Bkg LS weighted to data;p_{t} (GeV/c);Count",110,0.5,6);
+        
+        fOutputList->Add(fElectronBKGWToDataTotal);
+        fOutputList->Add(fElectronBKGWToDataULS);
+        fOutputList->Add(fElectronBKGWToDataLS);
         
         fOutputList->Add(fPtMCpi0_NoMother);
         fOutputList->Add(fPtMCpi0_PureHijing);
@@ -2566,7 +2590,7 @@ void AliAnalysisTaskHFEpACorrelation::ComputeWeightInEnhancedSample()
         Bool_t IsEnhancedHF = kFALSE;
         
         Double_t Eta = particle->Eta();
-        if (Eta<-1.2 || Eta > 1.2)
+        if (Eta<-0.8 || Eta > 0.8)
             continue;
         
         CocktailType_t Type = FindTrackGenerator(MCIndex, fMCheader,fMCarray);
@@ -2830,10 +2854,124 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
         }
     }
     
+    //Calculate tagging efficiency using all the produced Pi0 and eta weighted to data (that were obtained using mT scaling)
+    
+    AliAODMCParticle* MCParticleWtoData = (AliAODMCParticle*) fMCarray->At(LabelMC);
+    
+    if (MCParticleWtoData->GetMother()>=0)
+    {
+        AliAODMCParticle* MCMotheWtoData = (AliAODMCParticle*) fMCarray->At(MCParticleWtoData->GetMother());
+        Int_t MotherPDGAfterReco = TMath::Abs(MCMotheWtoData->GetPdgCode());
+        
+        if( MotherPDGAfterReco==22 || MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
+        {
+            //Eta-> No decay from Pi0 or gamma
+            if (MotherPDGAfterReco ==221)
+                FillHistBkgWtoData(MCMotheWtoData, track);
+            
+            //pi0
+            if (MotherPDGAfterReco ==111)
+            {
+                if (MCMotheWtoData->GetMother() >=0 )
+                {
+                    AliAODMCParticle* MCGMotheWtoData = (AliAODMCParticle*) fMCarray->At(MCMotheWtoData->GetMother());
+                    //Check if the mother is a Eta. If not, use the normal one
+                    if (TMath::Abs(MCGMotheWtoData->GetMother()) == 221)
+                        FillHistBkgWtoData(MCGMotheWtoData, track);
+                    else
+                        FillHistBkgWtoData(MCMotheWtoData, track);
+                    
+                }
+                else
+                     FillHistBkgWtoData(MCMotheWtoData, track);
+            }
+            
+            //Photon
+            if (MotherPDGAfterReco==22)
+            {
+                //Check if photon comes from pi0 or eta
+                if (MCMotheWtoData->GetMother() >=0 )
+                {
+                    AliAODMCParticle* MCGMotheWtoData = (AliAODMCParticle*) fMCarray->At(MCMotheWtoData->GetMother());
+                    
+                    if (TMath::Abs(MCGMotheWtoData->GetMother()) == 111)
+                    {
+                        //Check if GGmother is an eta
+                        if (MCGMotheWtoData->GetMother()>=0)
+                        {
+                            AliAODMCParticle* MCGGMotheWtoData = (AliAODMCParticle*) fMCarray->At(MCGMotheWtoData->GetMother());
+                            if (TMath::Abs(MCGGMotheWtoData->GetMother()) == 221)
+                                FillHistBkgWtoData(MCGGMotheWtoData, track);
+                            else
+                                FillHistBkgWtoData(MCGMotheWtoData, track);
+                            
+                        }
+                        else
+                             FillHistBkgWtoData(MCGMotheWtoData, track);
+                        
+                    }
+                    else if (TMath::Abs(MCGMotheWtoData->GetMother()) == 221)
+                    {
+                        FillHistBkgWtoData(MCGMotheWtoData, track);
+                    }
+                    
+                }
+                
+            }
+            
+            
+        }
+        
+    }
+    
+    //Calculate HFe efficiency in any case of Cocktail type
+    
+    AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
+    
+    if (MCParticle->GetMother()>=0)
+    {
+        AliAODMCParticle* MCMother = (AliAODMCParticle*) fMCarray->At(MCParticle->GetMother());
+        Int_t MotherPDGAfterReco = TMath::Abs(MCMother->GetPdgCode());
+        Int_t MotherPDGHeavy  = Int_t (MotherPDGAfterReco / TMath::Power(10, Int_t(TMath::Log10(MotherPDGAfterReco))));
+        
+        //HFe
+        if (MotherPDGHeavy >3)
+            fEtaCutElectronRecoHFEMC->Fill(track->Pt());
+
+    }
     
 }
 
-//Classes to get the generator type and check if the particle is enhanced (adapted from AliVertexingHFUtils)
+
+void AliAnalysisTaskHFEpACorrelation::FillHistBkgWtoData(AliAODMCParticle* ParticleToUseForW, AliVTrack *track)
+{
+    Double_t Weight = CalculateWeightRun2ToData(TMath::Abs(ParticleToUseForW->GetPdgCode()), track->Pt());
+    
+    fElectronBKGWToDataTotal->Fill(track->Pt(),Weight);
+    
+    if (fNonHFE->IsULS())
+        fElectronBKGWToDataULS->Fill(track->Pt(),fNonHFE->GetNULS()*Weight);
+    if (fNonHFE->IsLS())
+        fElectronBKGWToDataLS->Fill(track->Pt(),fNonHFE->GetNULS()*Weight);
+}
+
+
+Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeightRun2ToData(Int_t pdg_particle, Double_t pT)
+{
+    //Using a TF1 to get the weight
+    if (!fBkgPi0WeightToData || fBkgEtaWeightToData)
+        return 1.0;
+    
+    if (pdg_particle == 111)
+        return fBkgPi0WeightToData->Eval(pT);
+    else if (pdg_particle == 221)
+        return fBkgEtaWeightToData->Eval(pT);
+    
+    return 1.0;
+    
+}
+
+//Methods to get the generator type and check if the particle is enhanced (adapted from AliVertexingHFUtils)
 
 TString AliAnalysisTaskHFEpACorrelation::GetGenerator(Int_t label, AliAODMCHeader* header){
     Int_t nsumpart=0;
