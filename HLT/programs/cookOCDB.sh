@@ -46,6 +46,9 @@ aliroot -l -q -b $ALICE_SOURCE/HLT/exa/makeComponentConfigurationObject.C"(\"HLT
     \"local://$TARGET\")"
 #ATTENTION: the -rcu2-data flag is NOT set for the HCDB!!!!!! This is set by the chain configuration not by the HCDB!!!!!! Thus, the setting is not applied running aliroot!!!!!!
 
+#Create empty string dummy HLT configuration objects to suppress CDB Manager warnings
+aliroot -l -q -b $ALICE_SOURCE/HLT/exa/makeComponentConfigurationObject.C"(\"HLT/ConfigT0/T0Reconstruction\", \"\", \"local://$TARGET\")"
+
 #Create Global Trigger Configuration
 aliroot -l -q -b $ALICE_SOURCE/HLT/programs/create-globaltrigger-HM-TPC-comp.C"(\"local://$TARGET\")"
 
