@@ -405,7 +405,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["vZEROTriggerChargeA"].set( 100, 0., 30e3, &fvZEROTriggerChargeA );
     fAxes["vZEROTriggerChargeC"].set( 100, 0., 30e3, &fvZEROTriggerChargeC );
     fAxes["vZEROTriggerChargeAC"].set( 100, 0., 60e3, &fvZEROTriggerChargeAC );
-    fAxes["tZEROAmplitude"].set( 100, 0., 2e3, &ftZEROAmplitude );
+    fAxes["tZEROAmplitude"].set( 100, 0., 20e3, &ftZEROAmplitude );
     fAxes["zdcZNC"].set( 100, 0., 20e3, &fzdcZNC );
     fAxes["zdcZNA"].set( 100, 0., 20e3, &fzdcZNA );
     fAxes["zdcZNAC"].set( 100, 0., 40e3, &fzdcZNAC );
@@ -454,7 +454,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["vZEROTriggerChargeA"].set( 100, 0., 3.5e3, &fvZEROTriggerChargeA );
     fAxes["vZEROTriggerChargeC"].set( 100, 0., 3.5e3, &fvZEROTriggerChargeC );
     fAxes["vZEROTriggerChargeAC"].set( 100, 0., 7e3, &fvZEROTriggerChargeAC );
-    fAxes["tZEROAmplitude"].set( 100, 0., 2e3, &ftZEROAmplitude );
+    fAxes["tZEROAmplitude"].set( 100, 0., 20e3, &ftZEROAmplitude );
     fAxes["zdcZNC"].set( 100, 0., 1e3, &fzdcZNC );
     fAxes["zdcZNA"].set( 100, 0., 1e3, &fzdcZNA );
     fAxes["zdcZNAC"].set( 100, 0., 2e3, &fzdcZNAC );
@@ -500,7 +500,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["vZEROTriggerChargeA"].set( 100, 0., 2e3, &fvZEROTriggerChargeA );
     fAxes["vZEROTriggerChargeC"].set( 100, 0., 2e3, &fvZEROTriggerChargeC );
     fAxes["vZEROTriggerChargeAC"].set( 100, 0., 4e3, &fvZEROTriggerChargeAC );
-    fAxes["tZEROAmplitude"].set( 100, 0., 2e3, &ftZEROAmplitude );
+    fAxes["tZEROAmplitude"].set( 100, 0., 20e3, &ftZEROAmplitude );
     fAxes["zdcZNC"].set( 100, 0., 500., &fzdcZNC );
     fAxes["zdcZNA"].set( 100, 0., 500., &fzdcZNA );
     fAxes["zdcZNAC"].set( 100, 0., 1e3, &fzdcZNAC );
@@ -1477,6 +1477,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   fvZEROTriggerChargeA = vZEROTriggerChargeA;
   fvZEROTriggerChargeC = vZEROTriggerChargeC;
   fvZEROTriggerChargeAC = vZEROTriggerChargeA+vZEROTriggerChargeC;
+  ftZEROAmplitude = tZEROAmplitude;
   fzdcZNC = zdcZNC;
   fzdcZNA = zdcZNA;
   fzdcZNAC = zdcZNA+zdcZNC;
