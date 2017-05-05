@@ -381,14 +381,14 @@ Int_t AliHLTT0RecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/
     const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS);
     if(iter) vtx = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) );   
   }
-    //printf("@@@@@@@@ vertex  \n");
-    if(vtx) { 
-      vtx->Print();
-      fVertexSPDz = vtx->GetZ();
-    }
-    else HLTInfo("No vertex from SPD in this event...");
+  //printf("@@@@@@@@ vertex  \n");
+  if(vtx) { 
+    vtx->Print();
+    fVertexSPDz = vtx->GetZ();
+  }
+  else HLTInfo("No vertex from SPD in this event...");
 
-    if (iResult >= 0) {
+  if (iResult >= 0) {
     //cout<<"ok 1"<<endl;
     // -- Set T0 EquipmentID
     fRawReader->SetEquipmentID(3328);
@@ -486,7 +486,7 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
       }
       //trigger selection      if(allData[50][0]==0) return; 
       //   if (allData[50][0] > 0)
-	{
+      {
 	fNevent++;
 	//printf("@@@@@@event %i \n", fNevent);
 	for (Int_t in=0; in<12; in++)  
@@ -593,7 +593,7 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
 	  //printf(" @@@@@ T0AC %f T0A %f  T0C %f SPDshift %f \n",fT0shift[0] , fT0shift[1],fT0shift[2], shift  );
 	}	
 	
-	}
+      }
     }
  
 }
