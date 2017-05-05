@@ -817,13 +817,13 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     }
   }
   
-  fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
+  fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","#it{p}_{T} of track vs N pile-up SPD vertex",
                                  nptbins,ptmin,ptmax,20,0,20);
   fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
   fhPtNPileUpSPDVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNPileUpSPDVtx);
   
-  fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex",
+  fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","#it{p}_{T} of track vs N pile-up Tracks vertex",
                                  nptbins,ptmin,ptmax, 20,0,20 );
   fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
   fhPtNPileUpTrkVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -831,13 +831,13 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   
   if(fFillVertexBC0Histograms)
   {
-    fhPtNPileUpSPDVtxBC0  = new TH2F ("hPt_NPileUpVertSPD_BC0","pT of cluster vs N pile-up SPD vertex",
+    fhPtNPileUpSPDVtxBC0  = new TH2F ("hPt_NPileUpVertSPD_BC0","#it{p}_{T} of track vs N pile-up SPD vertex",
                                    nptbins,ptmin,ptmax,20,0,20);
     fhPtNPileUpSPDVtxBC0->SetYTitle("# vertex ");
     fhPtNPileUpSPDVtxBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpSPDVtxBC0);
   
-    fhPtNPileUpTrkVtxBC0  = new TH2F ("hPt_NPileUpVertTracks_BC0","pT of cluster vs N pile-up Tracks vertex",
+    fhPtNPileUpTrkVtxBC0  = new TH2F ("hPt_NPileUpVertTracks_BC0","#it{p}_{T} of track vs N pile-up Tracks vertex",
                                    nptbins,ptmin,ptmax, 20,0,20 );
     fhPtNPileUpTrkVtxBC0->SetYTitle("# vertex ");
     fhPtNPileUpTrkVtxBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");

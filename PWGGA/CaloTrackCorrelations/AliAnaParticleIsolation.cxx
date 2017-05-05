@@ -419,6 +419,11 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     fhPtNoIsoPileUp [i] = 0 ;
   }
   
+  for(Int_t i = 0 ; i < 3 ; i++)
+  {
+    fhPtTrackInConeDCA    [i] = 0 ;
+    fhPtTrackInPerpConeDCA[i] = 0 ;
+  }
 }
 
 //_______________________________________________________________________________________________
@@ -868,9 +873,37 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
           
           sumptPerpBC0ITSSPD+=track->Pt();
         }
-      }
-    }
-  }
+        
+        if(ptTrig > 10)
+        {
+          Double_t dca[2]   = {1e6,1e6};
+          Double_t covar[3] = {1e6,1e6,1e6};
+          
+          Double_t dcaCons  = -999;
+          if ( GetReader()->GetDataType() == AliCaloTrackReader::kAOD )
+          {
+            AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
+            dcaCons = aodTrack->DCA();
+          }
+          
+          track->PropagateToDCA(GetReader()->GetInputEvent()->GetPrimaryVertex(),bz,100.,dca,covar);
+          
+          Float_t trackDCA = dca[0];
+          
+          if(dcaCons == -999)
+          {
+            fhPtTrackInPerpConeDCA[0]->Fill(track->Pt(),  dca[0], GetEventWeight());
+            fhPtTrackInPerpConeDCA[1]->Fill(track->Pt(),  dca[1], GetEventWeight());
+          }
+          else
+          {
+            fhPtTrackInPerpConeDCA[2]->Fill(track->Pt(), dcaCons, GetEventWeight());
+          }
+        } // trigger pt cut for DCA
+        
+      } // study tracks in cone
+    } // r in cone
+  } // track loop
   
   fhPerpConeSumPt           ->Fill(ptTrig, sumptPerp   , GetEventWeight());
   fhConeSumPtEtaBandUETrack ->Fill(ptTrig, etaBandPtSum, GetEventWeight());
@@ -1795,6 +1828,35 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
         fhEtaPhiTrackInConeTOFBC0ITSRefitOnSPDOn->Fill(etatrack, phitrack, GetEventWeight());
         coneptsumTrackTOFBC0ITSRefitOnSPDOn += pTtrack;
       }
+      
+      // DCA
+      //
+      if(ptTrig > 10)
+      {
+        Double_t dca[2]   = {1e6,1e6};
+        Double_t covar[3] = {1e6,1e6,1e6};
+        
+        Double_t dcaCons  = -999;
+        if ( GetReader()->GetDataType() == AliCaloTrackReader::kAOD )
+        {
+          AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
+          dcaCons = aodTrack->DCA();
+        }
+        
+        track->PropagateToDCA(GetReader()->GetInputEvent()->GetPrimaryVertex(),bz,100.,dca,covar);
+        
+        Float_t trackDCA = dca[0];
+        
+        if(dcaCons == -999)
+        {
+          fhPtTrackInConeDCA[0]->Fill(pTtrack,  dca[0], GetEventWeight());
+          fhPtTrackInConeDCA[1]->Fill(pTtrack,  dca[1], GetEventWeight());
+        }
+        else
+        {
+          fhPtTrackInConeDCA[2]->Fill(pTtrack, dcaCons, GetEventWeight());
+        }
+      } // trigger pt cut
     }
     
     if(IsPileUpAnalysisOn())
@@ -4848,6 +4910,31 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPhiTrackInConeTOFBC0ITSRefitOnSPDOn->SetYTitle("#varphi (rad)");
         fhPhiTrackInConeTOFBC0ITSRefitOnSPDOn->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPhiTrackInConeTOFBC0ITSRefitOnSPDOn) ;  
+        
+        //
+        // DCA
+        //
+        TString dcaName[] = {"xy","z","Cons"} ;
+        Int_t ndcabins = 400;
+        Int_t mindca = -2;
+        Int_t maxdca =  2;
+        
+        for(Int_t i = 0 ; i < 3 ; i++)
+        {
+          fhPtTrackInConeDCA[i]  = new TH2F(Form("hPtTrackInConeDCA%s",dcaName[i].Data()),
+                                 Form("Track DCA%s vs #it{p}_{T}^{track} in cone for trigger #it{p}_{T} >10 GeV/#it{c}",dcaName[i].Data()),
+                                 nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
+          fhPtTrackInConeDCA[i]->SetXTitle("#it{p}_{T}^{} (GeV/#it{c})");
+          fhPtTrackInConeDCA[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
+          outputContainer->Add(fhPtTrackInConeDCA[i]);
+          
+          fhPtTrackInPerpConeDCA[i]  = new TH2F(Form("hPtTrackInPerpConeDCA%s",dcaName[i].Data()),
+                                            Form("Track DCA%s vs #it{p}_{T}^{track} in perpendicular cone for trigger #it{p}_{T} >10 GeV/#it{c}",dcaName[i].Data()),
+                                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
+          fhPtTrackInPerpConeDCA[i]->SetXTitle("#it{p}_{T}^{} (GeV/#it{c})");
+          fhPtTrackInPerpConeDCA[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
+          outputContainer->Add(fhPtTrackInPerpConeDCA[i]);
+        }
       }
       
       if(fFillUEBandSubtractHistograms)
