@@ -165,6 +165,8 @@ struct V0CutParams
   double maxDcaV0Daughters;
   double minPosDaughterToPrimVertex,
          minNegDaughterToPrimVertex;
+
+  bool ignoreOnFlyStatus;
 };
 
 struct ESDCutParams

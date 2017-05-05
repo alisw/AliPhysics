@@ -749,6 +749,8 @@ AliFemtoV0TrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateV0Cut(V0CutPar
   tV0Cut->SetMaxDcaV0Daughters(aCutParams.maxDcaV0Daughters);
   tV0Cut->SetMinDaughtersToPrimVertex(aCutParams.minPosDaughterToPrimVertex,aCutParams.minNegDaughterToPrimVertex);
 
+  tV0Cut->SetIgnoreOnFlyStatus(aCutParams.ignoreOnFlyStatus);
+
   if(aCutParams.useCustomFilter) AddCustomV0SelectionFilters(aCutParams.particlePDGType,tV0Cut);
 
   //Misidentification cuts -----*****-----*****-----*****-----*****-----*****-----*****
@@ -1701,6 +1703,8 @@ AliFemtoAnalysisLambdaKaon::DefaultLambdaCutParams()
   tReturnParams.minPosDaughterToPrimVertex = 0.1;
   tReturnParams.minNegDaughterToPrimVertex = 0.3;
 
+  tReturnParams.ignoreOnFlyStatus = false;
+
   return tReturnParams;
 }
 
@@ -1755,6 +1759,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAntiLambdaCutParams()
   tReturnParams.minPosDaughterToPrimVertex = 0.3;
   tReturnParams.minNegDaughterToPrimVertex = 0.1;
 
+  tReturnParams.ignoreOnFlyStatus = false;
+
   return tReturnParams;
 }
 
@@ -1808,6 +1814,8 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
   tReturnParams.maxDcaV0Daughters = 0.3;
   tReturnParams.minPosDaughterToPrimVertex = 0.3;
   tReturnParams.minNegDaughterToPrimVertex = 0.3;
+
+  tReturnParams.ignoreOnFlyStatus = false;
 
   return tReturnParams;
 }
