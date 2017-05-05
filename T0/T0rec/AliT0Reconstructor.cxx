@@ -72,7 +72,8 @@ ClassImp(AliT0Reconstructor)
                                              fMeanOrA(0),
                                              fMeanOrC(0),
                                              fMeanTVDC(0),
-                                             fLHCperiod(kFALSE)
+                                             fLHCperiod(kFALSE),
+                                             fLHCperiod16(kFALSE)
 {
   for (Int_t i=0; i<24; i++)  { fTime0vertex[i] =0; fQT1mean[i]=0;}
 
