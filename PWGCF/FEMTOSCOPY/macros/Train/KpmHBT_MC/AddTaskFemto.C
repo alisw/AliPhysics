@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnalysis.C", const char *containerName="femtolist", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
 
@@ -49,8 +49,12 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
   //train::::::::::::::::::::::::::::>
   //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
   // line above rerurn error in LEGO Train, try to remove last argument:
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters);//20apr2017
+  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters);//20apr2017
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);//5May2017 from Malina
   //train::::::::::::::::::::::::::::<
+  
+  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
+  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);// this a new line for train
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
