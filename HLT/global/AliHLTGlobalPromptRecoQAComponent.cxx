@@ -554,7 +554,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram(",fHistZNA_VZEROTrigChargeA,ZNA vs. VZERO Trigger Charge A,vZEROTriggerChargeA,zdcZNA");
   NewHistogram(",fHistZNC_VZEROTrigChargeC,ZNC vs. VZERO Trigger Charge C,vZEROTriggerChargeC,zdcZNC");
   NewHistogram(",fHistZNT_VZEROTrigChargeT,ZN (A+C) vs. VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,zdcZNAC");
-  NewHistogram(",fHistTZERO_ITSSAPTracks,TZERO Amplitude vs ITS SAP Tracks,nITSSAPtracks,tZEROAmplitude,zdcZNAC");
+  NewHistogram(",fHistTZERO_ITSSAPTracks,TZERO Amplitude vs ITS SAP Tracks,nITSSAPtracks,tZEROAmplitude");
   NewHistogram(",fHistVZERO_SPDClusters,SPD Clusters vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nClustersSPD");
   NewHistogram(",fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
 
