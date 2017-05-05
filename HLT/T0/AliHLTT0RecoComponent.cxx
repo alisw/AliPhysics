@@ -125,8 +125,8 @@ void AliHLTT0RecoComponent::GetOCDBObjectDescription( TMap* const targetMap) {
   // see header file for class documentation
 
   if (!targetMap) return;
-  targetMap->Add(new TObjString("HLT/ConfigT0/T0Reconstruction"),
-		 new TObjString("configuration object"));
+  //targetMap->Add(new TObjString("HLT/ConfigT0/T0Reconstruction"),
+  //		 new TObjString("configuration object"));
 
   targetMap->Add(new TObjString("GRP/GRP/Data"),
 		 new TObjString("GRP object - run information"));
@@ -176,7 +176,7 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
   // -- Read configuration object : HLT/ConfigT0/T0Reconstruction
   TString cdbPath="HLT/ConfigT0/";
   cdbPath+=GetComponentID();
-  iResult=ConfigureFromCDBTObjString(cdbPath);
+  iResult=ConfigureFromCDBTObjString(cdbPath, NULL, true);
 
   // -- Read the component arguments
   if (iResult>=0) {
