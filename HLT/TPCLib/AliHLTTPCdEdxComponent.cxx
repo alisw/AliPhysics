@@ -18,7 +18,7 @@
 ///  @file   AliHLTTPCdEdxComponent.cxx
 ///  @author Sergey Gorbunov <sergey.gorbunov@kip.uni-heidelberg.de>
 ///  @date   June 2009
-///  @brief  An ITS tracker processing component for the HLT
+///  @brief  dEdx calculation component for the HLT TPC
 
 
 /////////////////////////////////////////////////////
