@@ -305,7 +305,7 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
   for (Int_t i=0; i<3; i++)
     fT0CalibHisto ->AddAtAndExpand(fhT0[i],i+48); // 48 -52
 
-  fT0CalibHisto->Print();
+  //fT0CalibHisto->Print();
   fNevent=0;
   }
   
@@ -371,7 +371,6 @@ Int_t AliHLTT0RecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/
   // -- Get T0 raw dat a input block and set up the rawreader
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginT0);
   if (!pBlock) {
-    //cout<<"No T0 input block at event"<<endl;
     HLTInfo("No T0 input block at event %d", GetEventCount());
     return 0;
   }
@@ -380,7 +379,6 @@ Int_t AliHLTT0RecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/
  
   // -- Add input block to raw reader
   if (!fRawReader->SetMemory((UChar_t*) pBlock->fPtr, pBlock->fSize )){
-    cout<<"Could not add buffer of data block to rawreader"<<endl;
     HLTError("Could not add buffer of data block  %s, 0x%08x to rawreader",
 	     DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification);
     iResult = -1;
@@ -396,7 +394,7 @@ Int_t AliHLTT0RecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/
   }
   //printf("@@@@@@@@ vertex  \n");
   if(vtx) { 
-    vtx->Print();
+    //vtx->Print();
     fVertexSPDz = vtx->GetZ();
   }
   else HLTInfo("No vertex from SPD in this event...");
@@ -404,7 +402,7 @@ Int_t AliHLTT0RecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/
   if (iResult >= 0) {
     //cout<<"ok 1"<<endl;
     // -- Set T0 EquipmentID
-    fRawReader->SetEquipmentID(3328);
+     fRawReader->SetEquipmentID(3328);
      RecT0Raw (fRawReader);
  
     /*
