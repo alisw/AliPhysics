@@ -79,6 +79,7 @@ AliHLTT0RecoComponent::AliHLTT0RecoComponent() :
 // #################################################################################
 AliHLTT0RecoComponent::~AliHLTT0RecoComponent() {
   // see header file for class documentation
+  DoDeinit(); //At least try to clean up, although DoDeinit should have been called beforehand anyway
 }
 
 /*
@@ -357,6 +358,17 @@ Int_t AliHLTT0RecoComponent::DoDeinit() {
   
   delete fESDTZERO;
   fESDTZERO = NULL;
+  
+  for (Int_t i=0; i<24; i++) {
+    delete fhTimeDiff[i];
+    delete fhCFD[i];
+    fhTimeDiff[i] = NULL;
+    fhCFD[i] = NULL;
+  }
+  for (int i = 0;i < 3;i++) {
+    delete fhT0[i];
+    fhT0[i] = NULL;
+  }
   
   return 0;
 }
