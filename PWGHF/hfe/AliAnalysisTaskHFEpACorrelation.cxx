@@ -926,13 +926,13 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fPtMCEta_NoMother = new TH1F("fPtMCEta_NoMother","#eta distribution from MC with No Mother;p_{t} (GeV/c);Count",2000,0,100);
         fPtMCEta_PureHijing = new TH1F("fPtMCEta_PureHijing","#eta distribution from MC with no Enh. ;p_{t} (GeV/c);Count",2000,0,100);
         
-        //fBkgPi0WeightToData = new TH1F("fBkgPi0WeightToData","#eta distribution from MC with No Mother;p_{t} (GeV/c);Count",2000,0,100);
-        //fBkgEtaWeightToData = new TH1F("fBkgEtaWeightToData","#eta distribution from MC with No Mother;p_{t} (GeV/c);Count",2000,0,100);
-        
         fElectronBKGWToDataTotal = new TH1F("fElectronBKGWToDataTotal","Total Bkg weighted to data;p_{t} (GeV/c);Count",110,0.5,6);
         fElectronBKGWToDataULS = new TH1F("fElectronBKGWToDataULS","Bkg ULS weighted to data;p_{t} (GeV/c);Count",110,0.5,6);
         fElectronBKGWToDataLS = new TH1F("fElectronBKGWToDataLS","Bkg LS weighted to data;p_{t} (GeV/c);Count",110,0.5,6);
         
+        fOutputList->Add(fElectronBKGWToDataTotal);
+        fOutputList->Add(fElectronBKGWToDataULS);
+        fOutputList->Add(fElectronBKGWToDataLS);
         
         fOutputList->Add(fPtMCpi0_NoMother);
         fOutputList->Add(fPtMCpi0_PureHijing);
