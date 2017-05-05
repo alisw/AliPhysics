@@ -617,13 +617,15 @@ int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char*
 	  iResult=-EINVAL;
 	}
       } else {
-	HLTError("can not fetch object \"%s\" from OCDB", path);
 	if (defaultToEmptyString)
 	{
+	    
+	    HLTInfo("can not fetch object \"%s\" from OCDB, defaulting to empty string", path);
 	    arguments = "";
 	}
 	else
 	{
+	    HLTError("can not fetch object \"%s\" from OCDB", path);
 	    iResult=-ENOENT;
 	}
       }
