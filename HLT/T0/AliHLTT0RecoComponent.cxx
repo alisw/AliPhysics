@@ -280,8 +280,8 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
       delete fRunInfo;
     fRunInfo = NULL;
 	
-	delete fWalk;
-	fWalk = NULL;
+  	delete fWalk;
+  	fWalk = NULL;
   }
 
   if (iResult>=0) {
@@ -289,24 +289,24 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
     fT0Reconstructor->Init();
 
     //alla    fT0Reconstructor->SetRecoParam(fT0RecoParam);
-   fT0CalibHisto  = new TObjArray(100);
-  for (Int_t i=0; i<24; i++) {
-    fhTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",100, -300, 300);
-    fhCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",100, 2000, 3000);
-  }
-  
-  fhT0[0] = new TH1F("fTzeroORAplusORC","T0A+T0C /2",200,-2000,2000);   //or A plus or C 
-  fhT0[1] = new TH1F("fTzeroORA","T0A",200,-2000,2000);// or A spectrum
-  fhT0[2] = new TH1F("fTzeroORC","T0C",200,-2000,2000);// or C spectrum
-  for (Int_t i=0; i<24; i++) {
-    fT0CalibHisto ->AddAtAndExpand( fhTimeDiff[i],i+24); //24 - 48
-    fT0CalibHisto ->AddAtAndExpand(fhCFD[i], i); //24 - 48
-  }  
-  for (Int_t i=0; i<3; i++)
-    fT0CalibHisto ->AddAtAndExpand(fhT0[i],i+48); // 48 -52
+    fT0CalibHisto  = new TObjArray(100);
+    for (Int_t i=0; i<24; i++) {
+      fhTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",100, -300, 300);
+      fhCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",100, 2000, 3000);
+    }
+    
+    fhT0[0] = new TH1F("fTzeroORAplusORC","T0A+T0C /2",200,-2000,2000);   //or A plus or C 
+    fhT0[1] = new TH1F("fTzeroORA","T0A",200,-2000,2000);// or A spectrum
+    fhT0[2] = new TH1F("fTzeroORC","T0C",200,-2000,2000);// or C spectrum
+    for (Int_t i=0; i<24; i++) {
+      fT0CalibHisto ->AddAtAndExpand( fhTimeDiff[i],i+24); //24 - 48
+      fT0CalibHisto ->AddAtAndExpand(fhCFD[i], i); //24 - 48
+    }  
+    for (Int_t i=0; i<3; i++)
+      fT0CalibHisto ->AddAtAndExpand(fhT0[i],i+48); // 48 -52
 
-  //fT0CalibHisto->Print();
-  fNevent=0;
+    //fT0CalibHisto->Print();
+    fNevent=0;
   }
   
   return iResult;
@@ -572,10 +572,10 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
  	
 	if(fNevent<1000)
 	  for(int iii=0; iii<3; iii++) fT0shift[iii]=0;
+	fESDTZERO->SetT0time(time);
+	fESDTZERO->SetT0amplitude(qt);   
 	if (fNevent>1000) 
 	  {	  
-	    fESDTZERO->SetT0time(time);
-	    fESDTZERO->SetT0amplitude(qt);   
 	    if(besttimeA < 999999 && besttimeA!=0 &&  besttimeC < 999999 && besttimeC!=0 ) {
 	      meanAC=channelWidth* (besttimeA+besttimeC)/2.-fT0shift[0];
 	      fhT0[0]->Fill(meanAC);
