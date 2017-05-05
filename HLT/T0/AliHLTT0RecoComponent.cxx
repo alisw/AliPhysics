@@ -381,12 +381,12 @@ Int_t AliHLTT0RecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/
     const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS);
     if(iter) vtx = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) );   
   }
-    printf("@@@@@@@@ vertex  \n");
+    //printf("@@@@@@@@ vertex  \n");
     if(vtx) { 
       vtx->Print();
       fVertexSPDz = vtx->GetZ();
     }
-    else printf("\nWhat the fuck? No vertex from SPD...\n\n");
+    else HLTInfo("No vertex from SPD in this event...");
 
     if (iResult >= 0) {
     //cout<<"ok 1"<<endl;
@@ -448,7 +448,7 @@ Int_t AliHLTT0RecoComponent::ReadPreprocessorValues(const Char_t* /*modules*/) {
 }
 void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
 {
-  printf("@@@@@@@@@@@@@@2 AliHLTT0RecoComponent::RecT0Raw \n");
+  //printf("@@@@@@@@@@@@@@2 AliHLTT0RecoComponent::RecT0Raw \n");
   
   Int_t timeCFD[24], chargeQT0[24], chargeQT1[24];
   Float_t  meanA, meanC, meanAC, sigmacfd[24];
@@ -472,7 +472,7 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
   AliT0RawReader myrawreader(rawReader);
   UInt_t type =rawReader->GetType();
   if (!myrawreader.Next())
-    printf(" no raw data found!!");
+    HLTInfo(" no raw data found!!");
   else
     {  
       for (Int_t i=0; i<24; i++) { 
@@ -488,7 +488,7 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
       //   if (allData[50][0] > 0)
 	{
 	fNevent++;
-	printf("@@@@@@event %i \n", fNevent);
+	//printf("@@@@@@event %i \n", fNevent);
 	for (Int_t in=0; in<12; in++)  
 	  {
 	    chargeQT0[in]=allData[2*in+25][0];
@@ -499,8 +499,7 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
 	      if(chargeQT1[in] >(fMeanCFD[in]+2000) &&
 		 chargeQT1[in] <(fMeanCFD[in]+3000) ) {
 		qt[in] = Float_t(chargeQT0[in]  - chargeQT1[in]);
-		printf(" readed Raw  pmt %i QT0 %i QT1 %i qt %f\n",
-		       in, chargeQT0[in],chargeQT1[in], qt[in]);
+		//printf(" readed Raw  pmt %i QT0 %i QT1 %i qt %f\n", in, chargeQT0[in],chargeQT1[in], qt[in]);
 	      }
 	    }
 	  }
@@ -516,8 +515,7 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
 	      if (chargeQT1[in] >(fMeanCFD[in]+2000) &&
 		  chargeQT1[in] <(fMeanCFD[in]+3000) ) {
 		qt[in] = Float_t(chargeQT0[in]  - chargeQT1[in]);
-		printf(" readed Raw  pmt %i QT0 %i QT1 %i qt %f\n",
-		       in, chargeQT0[in],chargeQT1[in], qt[in]);
+		//printf(" readed Raw  pmt %i QT0 %i QT1 %i qt %f\n", in, chargeQT0[in],chargeQT1[in], qt[in]);
 	      }
 	    }
 	  }
@@ -539,16 +537,14 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
 		  fhTimeDiff[ipmt] ->Fill(timeCFD[ipmt]-timeCFD[fRefPMTA]); 
 		fhCFD[ipmt]->Fill( timeCFD[ipmt]);
 		nent=fhCFD[ipmt]->GetEntries();
-		printf("ipmt %i  timeCFD %i  walk %f fMeanCFD %f entries %i \n",
-		       ipmt, timeCFD[ipmt],walk, fMeanCFD[ipmt], nent);
+		//printf("ipmt %i  timeCFD %i  walk %f fMeanCFD %f entries %i \n", ipmt, timeCFD[ipmt],walk, fMeanCFD[ipmt], nent);
 		
 		if (fNevent==1000) {
 		  nent=fhCFD[ipmt]->GetEntries();
 		  if (nent>200) 
 		    GetMeanAndSigma( fhCFD[ipmt], fMeanCFD[ipmt], sigmacfd[ipmt]);
 		  //	      GetMeanAndSigma( fhTimeDiff[ipmt], fDiffCFD[ipmt], sigmadiff[ipmt]);
-		  printf("ipmt %i  meancfd %f  sigmacfd %f entries %i \n",
-			 ipmt, fMeanCFD[ipmt], sigmacfd[ipmt], nent );
+		  //printf("ipmt %i  meancfd %f  sigmacfd %f entries %i \n", ipmt, fMeanCFD[ipmt], sigmacfd[ipmt], nent );
 		}
 	  
 		
@@ -570,13 +566,13 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
 	    if(besttimeA < 999999 && besttimeA!=0 &&  besttimeC < 999999 && besttimeC!=0 ) {
 	      meanAC=channelWidth* (besttimeA+besttimeC)/2.-fT0shift[0];
 	      fhT0[0]->Fill(meanAC);
-	      printf(" BEST A %f C %f AC %f T0shift %f\n", besttimeA, besttimeC, meanAC, fT0shift[0]) ;
+	      //printf(" BEST A %f C %f AC %f T0shift %f\n", besttimeA, besttimeC, meanAC, fT0shift[0]) ;
 
 	    }
 	    shift = fVertexSPDz/c;
 	    if(besttimeA < 999999 && besttimeA!=0 ) {
 	      meanA=channelWidth*besttimeA +shift-fT0shift[1];
-	      printf(" Best Time A %f SPDshift %f T0shift %f\n",meanA,  shift,fT0shift[1] ); 
+	      //printf(" Best Time A %f SPDshift %f T0shift %f\n",meanA,  shift,fT0shift[1] ); 
 	      fhT0[1]->Fill(meanA);
 	      if(fNevent>300)  fESDTZERO->SetT0TOF(1,meanA);
 	    } 	    
@@ -584,17 +580,17 @@ void AliHLTT0RecoComponent::RecT0Raw(AliRawReader *rawReader)
 	    if( besttimeC < 999999 && besttimeC!=0) 
 	      {
 		meanC=channelWidth*besttimeA -shift-fT0shift[2];
-		printf(" Best Time C %f SPDshift %f T0shift %f \n",meanC, shift,fT0shift[2]  );
+		//printf(" Best Time C %f SPDshift %f T0shift %f \n",meanC, shift,fT0shift[2]  );
 		fhT0[2]->Fill(meanC);
 		if(fNevent>300)  fESDTZERO->SetT0TOF(2,meanC); 	 
 	      }
 	  }
 	
 	if(fNevent==2000) {
-	  printf(" @@@event 200 \n");
+	  //printf(" @@@event 200 \n");
 	  for (int ii=0; ii<3; ii++) 
 	    GetMeanAndSigma(fhT0[ii], fT0shift[ii], sigmaT0shift[ii]);
-	  printf(" @@@@@ T0AC %f T0A %f  T0C %f SPDshift %f \n",fT0shift[0] , fT0shift[1],fT0shift[2], shift  );
+	  //printf(" @@@@@ T0AC %f T0A %f  T0C %f SPDshift %f \n",fT0shift[0] , fT0shift[1],fT0shift[2], shift  );
 	}	
 	
 	}
