@@ -115,7 +115,7 @@ ClassImp(AliT0Reconstructor)
     fTime0vertex[i] = fParam->GetCFD(i);
     fQT1mean[i] = fParam->GetQT1(i);
     fPedestal[i] = fParam->GetPedestalOld(i);
-    printf(" OCDB fTime0vertex %f fQT1mean %f pedestal %f \n",fTime0vertex[i], fQT1mean[i],fPedestal[i] );
+    AliInfo(Form(" OCDB fTime0vertex %f fQT1mean %f pedestal %f",fTime0vertex[i], fQT1mean[i],fPedestal[i] ));
   }
   fMeanOrA = fParam->GetMeanOrA();
   fMeanOrC = fParam->GetMeanOrC();
@@ -138,7 +138,7 @@ ClassImp(AliT0Reconstructor)
   //here real Z position
   fdZonC = TMath::Abs(fParam->GetZPosition("T0/C/PMT1"));
   fdZonA = TMath::Abs(fParam->GetZPosition("T0/A/PMT15"));
-  printf("!!!!fdZonC %f fdZonA %f \n",fdZonC, fdZonA);
+  AliInfo(Form("!!!!fdZonC %f fdZonA %f",fdZonC, fdZonA));
   
   fCalib = new AliT0Calibrator();
   fESDTZERO  = new AliESDTZERO();
@@ -148,7 +148,7 @@ ClassImp(AliT0Reconstructor)
   if (!grpData) {printf("Failed to get GRP data for run"); return;}
   TString LHCperiod = grpData->GetLHCPeriod();
   if(LHCperiod.Contains("LHC15")|| LHCperiod.Contains("LHC16")|| LHCperiod.Contains("LHC17") ) fLHCperiod=kTRUE;
-  printf(" LHCperiod %i\n",fLHCperiod);
+  AliInfo(Form(" LHCperiod %i",fLHCperiod));
 }
 
 //_____________________________________________________________________________
