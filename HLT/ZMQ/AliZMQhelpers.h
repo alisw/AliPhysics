@@ -114,22 +114,22 @@ const int kDataTypeTopicSize = kDataTypefIDsize+kDataTypefOriginSize;
 
 //Helper functions
 bool Topicncmp(const char* topic, const char* reference, int topicSize=kDataTypeTopicSize, int referenceSize=kDataTypeTopicSize);
-uint64_t CharArr2uint32(const char* str);
-uint64_t CharArr2uint64(const char* str);
+ULong64_t CharArr2uint32(const char* str);
+ULong64_t CharArr2uint64(const char* str);
 
 struct BaseDataTopic
 {
-  static const uint32_t fgkMagicNumber;
-  uint32_t fMagicNumber;
-  uint32_t fHeaderSize;
-  uint32_t fFlags;
-  uint32_t fBaseHeaderVersion;
-  uint64_t fHeaderDescription;
-  uint64_t fHeaderSerialization;
+  static const UInt_t fgkMagicNumber;
+  UInt_t fMagicNumber;
+  UInt_t fHeaderSize;
+  UInt_t fFlags;
+  UInt_t fBaseHeaderVersion;
+  ULong64_t fHeaderDescription;
+  ULong64_t fHeaderSerialization;
   BaseDataTopic();
-  BaseDataTopic(uint32_t size, uint64_t desc, uint64_t seri);
+  BaseDataTopic(UInt_t size, ULong64_t desc, ULong64_t seri);
   static BaseDataTopic* Get(void* buf) {
-    return (*reinterpret_cast<uint32_t*>(buf)==fgkMagicNumber)?
+    return (*reinterpret_cast<UInt_t*>(buf)==fgkMagicNumber)?
            reinterpret_cast<BaseDataTopic*>(buf):
            NULL;
   }
@@ -138,14 +138,14 @@ struct BaseDataTopic
 //the data header, describes the data frame
 struct DataTopic : public BaseDataTopic
 {
-  static const uint64_t fgkDataTopicDescription;
-  static const uint32_t fgkTopicSerialization;
-  uint64_t fDataDescription[2];
-  uint32_t fDataOrigin;
-  uint32_t fReserved;
-  uint64_t fDataSerialization;
-  uint64_t fSpecification;                  /// data specification of the data block
-  uint64_t fPayloadSize;
+  static const ULong64_t fgkDataTopicDescription;
+  static const UInt_t fgkTopicSerialization;
+  ULong64_t fDataDescription[2];
+  UInt_t fDataOrigin;
+  UInt_t fReserved;
+  ULong64_t fDataSerialization;
+  ULong64_t fSpecification;                  /// data specification of the data block
+  ULong64_t fPayloadSize;
 
   //ctor
   DataTopic()
@@ -201,17 +201,17 @@ struct DataTopic : public BaseDataTopic
     std::string id(GetIDstr(), sizeof(fDataDescription[1]));
     return id;
   }
-  uint32_t GetSpecification() const {return fSpecification;}
-  inline const uint64_t* GetIDptr() const {return &fDataDescription[1];}
+  UInt_t GetSpecification() const {return fSpecification;}
+  inline const ULong64_t* GetIDptr() const {return &fDataDescription[1];}
   inline const char* GetIDstr() const {return reinterpret_cast<const char*>(GetIDptr());}
-  inline const uint32_t* GetOriginPtr() const {return &fDataOrigin;}
+  inline const UInt_t* GetOriginPtr() const {return &fDataOrigin;}
   inline const char* GetOriginStr() const {return reinterpret_cast<const char*>(GetOriginPtr());}
-  inline void SetID(uint64_t id) {fDataDescription[1]=id;}
-  inline void SetOrigin(uint32_t origin) {fDataOrigin = origin;}
-  inline void SetID(const char* s) {fDataDescription[1]=*reinterpret_cast<const uint64_t*>(s);}
-  inline void SetOrigin(const char* s) {fDataOrigin = *reinterpret_cast<const uint32_t*>(s);}
-  inline void SetSpecification(uint32_t spec) {fSpecification=spec;}
-  inline void SetSerialization(uint64_t s) {fDataSerialization=s;}
+  inline void SetID(ULong64_t id) {fDataDescription[1]=id;}
+  inline void SetOrigin(UInt_t origin) {fDataOrigin = origin;}
+  inline void SetID(const char* s) {fDataDescription[1]=*reinterpret_cast<const ULong64_t*>(s);}
+  inline void SetOrigin(const char* s) {fDataOrigin = *reinterpret_cast<const UInt_t*>(s);}
+  inline void SetSpecification(UInt_t spec) {fSpecification=spec;}
+  inline void SetSerialization(ULong64_t s) {fDataSerialization=s;}
   static DataTopic* Get(void* buf) {
     BaseDataTopic* bdt = BaseDataTopic::Get(buf);
     return (bdt && bdt->fHeaderDescription==fgkDataTopicDescription)?
@@ -226,7 +226,7 @@ const DataTopic kDataTypeConfig("CONFIG__","***\n",0);
 const DataTopic kDataTypeTObject("ROOTTOBJ","***\n",0);
 const DataTopic kDataTypeTH1("ROOTHIST","***\n",0);
 
-extern const uint64_t kSerializationROOT;
+extern const ULong64_t kSerializationROOT;
 
 //a general utility to tokenize strings
 std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
@@ -241,25 +241,25 @@ int LoadROOTlibs(std::string libstring, bool verbose=false);
 void hexDump (const char* desc, void* addr, int len);
 
 //______________________________________________________________________________
-inline uint64_t CharArr2uint64(const char* str)
+inline ULong64_t CharArr2uint64(const char* str)
 {
-	return((uint64_t) str[0] |
-         (str[0] ? ((uint64_t) str[1] << 8 |
-         (str[1] ? ((uint64_t) str[2] << 16 |
-         (str[2] ? ((uint64_t) str[3] << 24 |
-         (str[3] ? ((uint64_t) str[4] << 32 |
-         (str[4] ? ((uint64_t) str[5] << 40 |
-         (str[5] ? ((uint64_t) str[6] << 48 |
-         (str[6] ? ((uint64_t) str[7] << 56 )
+	return((ULong64_t) str[0] |
+         (str[0] ? ((ULong64_t) str[1] << 8 |
+         (str[1] ? ((ULong64_t) str[2] << 16 |
+         (str[2] ? ((ULong64_t) str[3] << 24 |
+         (str[3] ? ((ULong64_t) str[4] << 32 |
+         (str[4] ? ((ULong64_t) str[5] << 40 |
+         (str[5] ? ((ULong64_t) str[6] << 48 |
+         (str[6] ? ((ULong64_t) str[7] << 56 )
           : 0)) : 0)) : 0)) : 0)) : 0)) : 0)) : 0));
 }
 
-inline uint64_t CharArr2uint32(const char* str)
+inline ULong64_t CharArr2uint32(const char* str)
 {
-	return((uint32_t) str[0] |
-         (str[0] ? ((uint32_t) str[1] << 8 |
-         (str[1] ? ((uint32_t) str[2] << 16 |
-         (str[2] ? ((uint32_t) str[3] << 24)
+	return((UInt_t) str[0] |
+         (str[0] ? ((UInt_t) str[1] << 8 |
+         (str[1] ? ((UInt_t) str[2] << 16 |
+         (str[2] ? ((UInt_t) str[3] << 24)
           : 0)) : 0)) : 0));
 }
 
