@@ -626,13 +626,18 @@ void  AliHLTT0RecoComponent::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t
   maxBin        =  hist->GetMaximumBin(); //position of maximum
   meanEstimate  =  hist->GetBinCenter( maxBin); // mean of gaussian sitting in maximum
   sigmaEstimate = hist->GetRMS();
+  if (sigmaEstimate < 0.001)
+  {
+      mean = meanEstimate;
+      sigma = sigmaEstimate;
+      return;
+  }
   // sigmaEstimate = 10;
   TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
   fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
-  hist->Fit("fit","R","");
+  hist->Fit("fit","R Q","");
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);
-
   delete fit;
 }
