@@ -118,10 +118,13 @@ AliPerformanceDEdx::~AliPerformanceDEdx()
 {
   // destructor
   delete fDeDxHisto;
-  delete fAnalysisFolder;
 
-  if (fFolderObj) { fFolderObj->Delete(); }
+  if (fFolderObj && fAnalysisFolder && !fAnalysisFolder->IsOwner()) {
+    fFolderObj->Delete();
+  } //delete the registered non-sparse histograms
+
   delete fFolderObj;
+  delete fAnalysisFolder;
 }
 
 //_____________________________________________________________________________
@@ -703,3 +706,13 @@ void AliPerformanceDEdx::ResetOutputData(){
     }
     
 }
+
+//_____________________________________________________________________________
+TCollection* AliPerformanceDEdx::GetListOfDrawableObjects()
+{
+  TObjArray* tmp = fFolderObj;
+  fFolderObj = NULL;
+  if (fAnalysisFolder) { fAnalysisFolder->SetOwner(kFALSE); }
+  return tmp;
+}
+

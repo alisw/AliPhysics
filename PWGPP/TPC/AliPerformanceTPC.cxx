@@ -253,9 +253,13 @@ AliPerformanceTPC::~AliPerformanceTPC()
     delete fTPCClustHisto;
     delete fTPCEventHisto;
     delete fTPCTrackHisto;
-    delete fAnalysisFolder;
-    if (fFolderObj) { fFolderObj->Delete(); } //delete the registered non-sparse histograms
+
+    if (fFolderObj && fAnalysisFolder && !fAnalysisFolder->IsOwner()) {
+      fFolderObj->Delete();
+    } //delete the registered non-sparse histograms
+
     delete fFolderObj;
+    delete fAnalysisFolder;
 }
 
 
@@ -1172,3 +1176,13 @@ void AliPerformanceTPC::ResetOutputData(){
     
 
 }
+
+//_____________________________________________________________________________
+TCollection* AliPerformanceTPC::GetListOfDrawableObjects() 
+{
+  TObjArray* tmp = fFolderObj;
+  fFolderObj = NULL;
+  if (fAnalysisFolder) { fAnalysisFolder->SetOwner(kFALSE); }
+  return tmp;
+}
+
