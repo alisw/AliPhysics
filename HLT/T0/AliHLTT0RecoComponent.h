@@ -228,13 +228,13 @@ private:
   Int_t fNevent;
   TH1F* fhTimeDiff[24];
   TH1F* fhCFD[24];
-  TH1F* fhT0[4];
+  TH1F* fhT0[3];
   Double_t fVertexSPDz;
   TObjArray  *fWalk;   //walk correction function
   TObjArray  *fT0CalibHisto;
   Float_t fMeanCFD[24];
   Float_t fDiffCFD[24];
-  Float_t fT0shift[4];
+  Float_t fT0shift[3];
   
   ClassDef(AliHLTT0RecoComponent, 0)
 };

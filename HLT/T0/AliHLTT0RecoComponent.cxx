@@ -69,10 +69,10 @@ AliHLTT0RecoComponent::AliHLTT0RecoComponent() :
 {
 	for (int i = 0;i < 24;i++) fhTimeDiff[i] = NULL;
 	for (int i = 0;i < 24;i++) fhCFD[i] = NULL;
-	for (int i = 0;i < 4;i++) fhT0[i] = NULL;
+	for (int i = 0;i < 3;i++) fhT0[i] = NULL;
 	for (int i = 0;i < 24;i++) fMeanCFD[i] = 0.f;
     for (int i = 0;i < 24;i++) fDiffCFD[i] = 0.f;
-    for (int i = 0;i < 4;i++) fT0shift[i] = 0.f;
+    for (int i = 0;i < 3;i++) fT0shift[i] = 0.f;
 
 }
 
@@ -208,6 +208,7 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
   TObject* pOCDBEntryT0slew=LoadAndExtractOCDBObject("T0/Calib/Slewing_Walk");
   AliT0CalibWalk* pT0slew = pOCDBEntryT0slew?dynamic_cast<AliT0CalibWalk*>(pOCDBEntryT0slew):NULL;
   if (pT0slew) {
+    fWalk = new TObjArray(24);
    for (Int_t i=0; i<24; i++){
     TGraph* fu = pT0slew->GetWalk(i);
       fWalk->AddAtAndExpand(fu,i);
@@ -277,6 +278,9 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
     if (fRunInfo)
       delete fRunInfo;
     fRunInfo = NULL;
+	
+	delete fWalk;
+	fWalk = NULL;
   }
 
   if (iResult>=0) {
@@ -290,9 +294,9 @@ Int_t AliHLTT0RecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
     fhCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",100, 2000, 3000);
   }
   
-  fhT0[0] =   new TH1F("fTzeroORAplusORC","T0A+T0C /2",200,-2000,2000);   //or A plus or C 
-  fhT0[1]        = new TH1F("fTzeroORA","T0A",200,-2000,2000);// or A spectrum
-  fhT0[2]        = new TH1F("fTzeroORC","T0C",200,-2000,2000);// or C spectrum
+  fhT0[0] = new TH1F("fTzeroORAplusORC","T0A+T0C /2",200,-2000,2000);   //or A plus or C 
+  fhT0[1] = new TH1F("fTzeroORA","T0A",200,-2000,2000);// or A spectrum
+  fhT0[2] = new TH1F("fTzeroORC","T0C",200,-2000,2000);// or C spectrum
   for (Int_t i=0; i<24; i++) {
     fT0CalibHisto ->AddAtAndExpand( fhTimeDiff[i],i+24); //24 - 48
     fT0CalibHisto ->AddAtAndExpand(fhCFD[i], i); //24 - 48
@@ -344,6 +348,9 @@ Int_t AliHLTT0RecoComponent::DoDeinit() {
   if (fRunInfo)
     delete fRunInfo;
   fRunInfo = NULL;
+  
+  delete fWalk;
+  fWalk = NULL;
   
   return 0;
 }
