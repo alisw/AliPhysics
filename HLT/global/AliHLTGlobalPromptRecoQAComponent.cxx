@@ -55,6 +55,7 @@
 #include "AliHLTCaloClusterReader.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDVZERO.h"
+#include "AliESDTZERO.h"
 #include "AliESDZDC.h"
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTVertexFinderBase.h"
@@ -134,6 +135,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fvZEROTriggerChargeA(0.)
   , fvZEROTriggerChargeC(0.)
   , fvZEROTriggerChargeAC(0.)
+  , ftZEROAmplitude(0.)
   , fzdcZNC(0.)
   , fzdcZNA(0.)
   , fzdcZNAC(0.)
@@ -302,6 +304,8 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginVZERO);
   list.push_back(kAliHLTDataTypeESDContent | kAliHLTDataOriginZDC); //ZDC-RECO output
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginZDC);
+  list.push_back(kAliHLTDataTypeESDContent | kAliHLTDataOriginT0); //T0-RECO output
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginT0);
 
   list.push_back(AliHLTEMCALDefinitions::fgkTriggerPatchDataType); //EMCAL-RECO output
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginEMCAL);
@@ -316,7 +320,6 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD);
 
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginFMD); //All the other detectors where we do not have reco yet
-  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginT0);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginACORDE);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRG);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginAD);
@@ -402,6 +405,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["vZEROTriggerChargeA"].set( 100, 0., 30e3, &fvZEROTriggerChargeA );
     fAxes["vZEROTriggerChargeC"].set( 100, 0., 30e3, &fvZEROTriggerChargeC );
     fAxes["vZEROTriggerChargeAC"].set( 100, 0., 60e3, &fvZEROTriggerChargeAC );
+    fAxes["tZEROAmplitude"].set( 100, 0., 2e3, &ftZEROAmplitude );
     fAxes["zdcZNC"].set( 100, 0., 20e3, &fzdcZNC );
     fAxes["zdcZNA"].set( 100, 0., 20e3, &fzdcZNA );
     fAxes["zdcZNAC"].set( 100, 0., 40e3, &fzdcZNAC );
@@ -450,6 +454,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["vZEROTriggerChargeA"].set( 100, 0., 3.5e3, &fvZEROTriggerChargeA );
     fAxes["vZEROTriggerChargeC"].set( 100, 0., 3.5e3, &fvZEROTriggerChargeC );
     fAxes["vZEROTriggerChargeAC"].set( 100, 0., 7e3, &fvZEROTriggerChargeAC );
+    fAxes["tZEROAmplitude"].set( 100, 0., 2e3, &ftZEROAmplitude );
     fAxes["zdcZNC"].set( 100, 0., 1e3, &fzdcZNC );
     fAxes["zdcZNA"].set( 100, 0., 1e3, &fzdcZNA );
     fAxes["zdcZNAC"].set( 100, 0., 2e3, &fzdcZNAC );
@@ -495,6 +500,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["vZEROTriggerChargeA"].set( 100, 0., 2e3, &fvZEROTriggerChargeA );
     fAxes["vZEROTriggerChargeC"].set( 100, 0., 2e3, &fvZEROTriggerChargeC );
     fAxes["vZEROTriggerChargeAC"].set( 100, 0., 4e3, &fvZEROTriggerChargeAC );
+    fAxes["tZEROAmplitude"].set( 100, 0., 2e3, &ftZEROAmplitude );
     fAxes["zdcZNC"].set( 100, 0., 500., &fzdcZNC );
     fAxes["zdcZNA"].set( 100, 0., 500., &fzdcZNA );
     fAxes["zdcZNAC"].set( 100, 0., 1e3, &fzdcZNAC );
@@ -517,7 +523,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fAxes["tpcSplitRatioPad"].set( 20, 0., 1., &fTPCSplitRatioPad );
   fAxes["tpcSplitRatioTime"].set( 20, 0., 1., &fTPCSplitRatioTime );
   //End Common Axes
-
 
   //fixed axes - used by fixed histograms
   //set nbins to 0 to disable the histograms using an axis
@@ -549,6 +554,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram(",fHistZNA_VZEROTrigChargeA,ZNA vs. VZERO Trigger Charge A,vZEROTriggerChargeA,zdcZNA");
   NewHistogram(",fHistZNC_VZEROTrigChargeC,ZNC vs. VZERO Trigger Charge C,vZEROTriggerChargeC,zdcZNC");
   NewHistogram(",fHistZNT_VZEROTrigChargeT,ZN (A+C) vs. VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,zdcZNAC");
+  NewHistogram(",fHistTZERO_ITSSAPTracks,TZERO Amplitude vs ITS SAP Tracks,nITSSAPtracks,tZEROAmplitude,zdcZNAC");
   NewHistogram(",fHistVZERO_SPDClusters,SPD Clusters vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nClustersSPD");
   NewHistogram(",fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
 
@@ -937,6 +943,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   float vZEROMultiplicity = 0.;
   UShort_t vZEROTriggerChargeA = 0;
   UShort_t vZEROTriggerChargeC = 0;
+  double tZEROAmplitude = 0;
 
   Double_t zdcZNC = 0.;
   Double_t zdcZNA = 0.;
@@ -1049,6 +1056,21 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         }
       }
     }
+
+    //VZERO Multiplicity
+    if (iter->fDataType == (kAliHLTDataTypeESDContent | kAliHLTDataOriginT0))
+    {
+      const TObject* o = GetInputObjectFromIndex(ndx);
+      if (o)
+      {
+        const AliESDTZERO* esdTZERO = dynamic_cast<const AliESDTZERO*>(o);
+        if (esdTZERO)
+        {
+          for (int i = 0;i < 24;i++) tZEROAmplitude += esdTZERO->GetT0amplitude()[i];
+        }
+      }
+    }
+
 
     //EMCAL Reco Size
     if (iter->fDataType == AliHLTEMCALDefinitions::fgkTriggerPatchDataType)
@@ -1496,10 +1518,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   if (fPrintStats && (fPrintStats == 2 || (pushed_something && nPrinted++ % fPrintDownscale == 0))) //Don't print this for every event if we use a pushback period
   {
     HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %'d / %'d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %'d (%'d / %'d / %'d / %'d), TPC-Comp %5.3fx / %5.3fx / %.1f (%'d)"
-      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %'d / %'d (%'d / %'d)   -   (TRD %'d, FMD %'d, T0 %'d, ACO %'d, CTP %'d, AD %'d, TOF %'d, PHO %'d, CPV %'d, HMP %'d, PMD %'d, MTK %'d, MTG %'d)",
+      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), T0 %5.3f (%'d), ESD %'d / %'d (%'d / %'d)   -   (TRD %'d, FMD %'d, ACO %'d, CTP %'d, AD %'d, TOF %'d, PHO %'d, CPV %'d, HMP %'d, PMD %'d, MTK %'d, MTG %'d)",
       nEvents, nBlocks, nHLTInSize, nHLTOutSize, hltRatio * 100, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, clusterSizeTPCtransformed, compressionRatio, compressionRatioFull, totalEntropy, compressedSizeTPC,
-      nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, emcalRecoSize, emcalTRU, emcalSTU, rawSizeEMCAL, zdcRecoSize, rawSizeZDC, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize,
-      rawSizeTRD, rawSizeFMD, rawSizeTZERO, rawSizeACORDE, rawSizeCTP, rawSizeAD, rawSizeTOF, rawSizePHOS, rawSizeCPV, rawSizeHMPID, rawSizePMD, rawSizeMUTK, rawSizeMUTG);
+      nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, emcalRecoSize, emcalTRU, emcalSTU, rawSizeEMCAL, zdcRecoSize, rawSizeZDC, tZEROAmplitude, rawSizeTZERO, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize,
+      rawSizeTRD, rawSizeFMD, rawSizeACORDE, rawSizeCTP, rawSizeAD, rawSizeTOF, rawSizePHOS, rawSizeCPV, rawSizeHMPID, rawSizePMD, rawSizeMUTK, rawSizeMUTG);
   }
 
   return iResult;
