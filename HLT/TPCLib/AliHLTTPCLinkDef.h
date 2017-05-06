@@ -77,6 +77,7 @@
 #pragma link C++ class AliHLTTPCClusterDumpComponent+;
 #pragma link C++ class AliHLTTPCTrackMCMarkerComponent+;
 #pragma link C++ class AliHLTTPCdEdxComponent+;
+#pragma link C++ class AliHLTTPCFastdEdxComponent+;
 #pragma link C++ class AliHLTTPCdEdxMonitoringComponent+;
 #pragma link C++ class AliHLTTPCHWCFExtractorUnit+;
 #pragma link C++ class AliHLTTPCHWCFPeakFinderUnit+;

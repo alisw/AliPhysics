@@ -64,6 +64,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCClusterTransformationComponent.h"
 #include "AliHLTTPCClusterTransformationPrepareComponent.h"
 #include "AliHLTTPCOfflinePreprocessorWrapperComponent.h"
+#include "AliHLTTPCFastdEdxComponent.h"
 #include "test/AliHLTTPCRawClusterDumpComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -407,6 +408,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCCAGlobalMergerComponent);
   pHandler->AddComponent(new AliHLTTPCTrackMCMarkerComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxComponent);
+  pHandler->AddComponent(new AliHLTTPCFastdEdxComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxMonitoringComponent);
   pHandler->AddComponent(new AliHLTTPCDigitPublisherComponent);
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);

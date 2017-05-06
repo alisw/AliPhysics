@@ -123,6 +123,9 @@ public:
   /** HW cluster data */
   static const AliHLTComponentDataType fgkHWClustersDataType;           // see above
   static const AliHLTComponentDataType& HWClustersDataType(); 
+  /** TPC DEDX Data (new format) */
+  static const AliHLTComponentDataType fgkTPCdEdxNew;           // see above
+  static const AliHLTComponentDataType& TPCdEdxNew(); 
   /** track segments in local coordinates */
   static const AliHLTComponentDataType fgkTrackSegmentsDataType;        // see above
   static const AliHLTComponentDataType& TrackSegmentsDataType();

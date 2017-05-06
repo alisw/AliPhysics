@@ -76,6 +76,7 @@ set(SRCS
     AliHLTTPCDataCheckerComponent.cxx
     AliHLTTPCDataPublisherComponent.cxx
     AliHLTTPCdEdxComponent.cxx
+    AliHLTTPCFastdEdxComponent.cxx
     AliHLTTPCdEdxMonitoringComponent.cxx
     AliHLTTPCDefinitions.cxx
     AliHLTTPCDigitDumpComponent.cxx
