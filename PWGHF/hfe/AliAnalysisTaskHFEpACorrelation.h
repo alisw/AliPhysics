@@ -105,8 +105,8 @@ public:
     void SetBackgroundPi0Weight(TH1F *hBkgPi0W) {if(fBkgPi0Weight) delete fBkgPi0Weight; fBkgPi0Weight = (TH1F*) hBkgPi0W->Clone("fBkgPi0Weight");}
     void SetBackgroundEtaWeight(TH1F *hBkgEtaW) {if(fBkgEtaWeight) delete fBkgEtaWeight; fBkgEtaWeight = (TH1F*) hBkgEtaW->Clone("fBkgEtaWeight");}
     
-    void SetBackgroundPi0WeightToData(TF1 *Wpion) {fBkgPi0WeightToData = (TF1*) Wpion->Clone("PionWToData");}
-    void SetBackgroundEtaWeightToData(TF1 *WEta) {fBkgEtaWeightToData = (TF1*) WEta->Clone("EtaWToData");}
+    void SetBackgroundPi0WeightToData(TH1F *Wpion) {fBkgPi0WeightToData = (TH1F*) Wpion->Clone("PionWToData");}
+    void SetBackgroundEtaWeightToData(TH1F *WEta) {fBkgEtaWeightToData = (TH1F*) WEta->Clone("EtaWToData");}
 
     
     //DCA cut main particle
@@ -439,8 +439,8 @@ private:
     
     TH1F                *fBkgPi0Weight; //
     TH1F                *fBkgEtaWeight; //
-    TF1                 *fBkgPi0WeightToData; //
-    TF1                 *fBkgEtaWeightToData; //
+    TH1F                *fBkgPi0WeightToData; //
+    TH1F                *fBkgEtaWeightToData; //
     
    
     
@@ -473,7 +473,7 @@ private:
     AliAnalysisTaskHFEpACorrelation(const AliAnalysisTaskHFEpACorrelation&); 			// not implemented
     AliAnalysisTaskHFEpACorrelation& operator=(const AliAnalysisTaskHFEpACorrelation&); 		// not implemented
     
-    ClassDef(AliAnalysisTaskHFEpACorrelation, 5); 								// example of analysis
+    ClassDef(AliAnalysisTaskHFEpACorrelation, 6); 								// example of analysis
     //______________________________________________________________________
 };
 

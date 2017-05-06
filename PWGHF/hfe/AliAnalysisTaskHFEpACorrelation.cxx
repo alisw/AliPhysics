@@ -2958,14 +2958,23 @@ void AliAnalysisTaskHFEpACorrelation::FillHistBkgWtoData(AliAODMCParticle* Parti
 
 Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeightRun2ToData(Int_t pdg_particle, Double_t pT)
 {
-    //Using a TF1 to get the weight
-    if (!fBkgPi0WeightToData || fBkgEtaWeightToData)
-        return 1.0;
     
-    if (pdg_particle == 111)
-        return fBkgPi0WeightToData->Eval(pT);
-    else if (pdg_particle == 221)
-        return fBkgEtaWeightToData->Eval(pT);
+    if (TMath::Abs(pdg_particle) == 111)
+    {
+        if (!fBkgPi0WeightToData)
+            return 1.0;
+        
+        Int_t bin = fBkgPi0WeightToData->FindBin(pT);
+        return fBkgPi0WeightToData->GetBinContent(bin);
+    }
+    else if (TMath::Abs(pdg_particle) == 221)
+    {
+        if (!fBkgEtaWeightToData)
+            return 1.0;
+        
+        Int_t bin = fBkgEtaWeightToData->FindBin(pT);
+        return fBkgEtaWeightToData->GetBinContent(bin);
+    }
     
     return 1.0;
     
