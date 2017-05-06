@@ -18,6 +18,7 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3.h>
 #include <TList.h>
 #include <THnSparse.h>
 #include <TRandom3.h>
@@ -36,6 +37,8 @@
 #include "AliClusterContainer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalDownscaleFactorsOCDB.h"
+#include "AliPHOSGeometry.h"
+#include "AliOADBContainer.h"
 
 #include "AliAnalysisTaskEmcalDijetImbalance.h"
 
@@ -60,6 +63,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fMaxPt(200),
   fNCentHistBins(0),
   fCentHistBins(0),
+  fNPtHistBins(0),
+  fPtHistBins(0),
   fPlotJetHistograms(kFALSE),
   fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
@@ -75,7 +80,9 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
   fLoadBackgroundScalingWeights(kTRUE),
   fBackgroundScalingWeights(0),
   fGapJetScalingWeights(0),
-  fComputeMBDownscaling(kFALSE)
+  fComputeMBDownscaling(kFALSE),
+  fDoCaloStudy(kFALSE),
+  fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -101,6 +108,8 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fMaxPt(200),
   fNCentHistBins(0),
   fCentHistBins(0),
+  fNPtHistBins(0),
+  fPtHistBins(0),
   fPlotJetHistograms(kFALSE),
   fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
@@ -116,7 +125,9 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fLoadBackgroundScalingWeights(kTRUE),
   fBackgroundScalingWeights(0),
   fGapJetScalingWeights(0),
-  fComputeMBDownscaling(kFALSE)
+  fComputeMBDownscaling(kFALSE),
+  fDoCaloStudy(kFALSE),
+  fPHOSGeo(nullptr)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -142,6 +153,16 @@ void AliAnalysisTaskEmcalDijetImbalance::GenerateHistoBins()
   fCentHistBins[2] = 30;
   fCentHistBins[3] = 50;
   fCentHistBins[4] = 90;
+  
+  fNPtHistBins = 82;
+  fPtHistBins = new Double_t[fNPtHistBins+1];
+  GenerateFixedBinArray(6, 0, 0.3, fPtHistBins);
+  GenerateFixedBinArray(7, 0.3, 1, fPtHistBins+6);
+  GenerateFixedBinArray(10, 1, 3, fPtHistBins+13);
+  GenerateFixedBinArray(14, 3, 10, fPtHistBins+23);
+  GenerateFixedBinArray(10, 10, 20, fPtHistBins+37);
+  GenerateFixedBinArray(15, 20, 50, fPtHistBins+47);
+  GenerateFixedBinArray(20, 50, 150, fPtHistBins+62);
 }
 
 /**
@@ -157,6 +178,7 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   if (fPlotDijetImbalanceHistograms) AllocateDijetImbalanceHistograms();
   if (fDoMomentumBalance) AllocateMomentumBalanceHistograms();
   if (fDoGeometricalMatching) AllocateGeometricalMatchingHistograms();
+  if (fDoCaloStudy) AllocateCaloHistograms();
 
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
@@ -620,6 +642,181 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateGeometricalMatchingHistograms()
   TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 2, -0.5, 1.5);
 }
 
+/*
+ * This function allocates the histograms for the calorimeter performance study.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::AllocateCaloHistograms()
+{
+  TString histname;
+  TString htitle;
+  
+  Double_t* clusType = new Double_t[3+1];
+  GenerateFixedBinArray(3, -0.5, 2.5, clusType);
+  const Int_t nRejBins = 32;
+  Double_t* rejReasonBins = new Double_t[nRejBins+1];
+  GenerateFixedBinArray(nRejBins, 0, nRejBins, rejReasonBins);
+  
+  AliEmcalContainer* cont = 0;
+  TIter nextClusColl(&fClusterCollArray);
+  while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
+    
+    // rejection reason plot, to make efficiency correction
+    histname = TString::Format("%s/hClusterRejectionReasonEMCal", cont->GetArrayName().Data());
+    htitle = histname + ";Rejection reason;#it{E}_{clus} (GeV/)";
+    TH2* hist = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nRejBins, rejReasonBins, fNPtHistBins, fPtHistBins);
+    SetRejectionReasonLabels(hist->GetXaxis());
+    
+    histname = TString::Format("%s/hClusterRejectionReasonPHOS", cont->GetArrayName().Data());
+    htitle = histname + ";Rejection reason;#it{E}_{clus} (GeV/)";
+    TH2* histPhos = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nRejBins, rejReasonBins, fNPtHistBins, fPtHistBins);
+    SetRejectionReasonLabels(histPhos->GetXaxis());
+    
+    // plot by SM
+    const Int_t nEmcalSM = 20;
+    for (Int_t sm = 0; sm < nEmcalSM; sm++) {
+      histname = TString::Format("%s/BySM/hEmcalClusEnergy_SM%d", cont->GetArrayName().Data(), sm);
+      htitle = histname + ";#it{E}_{cluster} (GeV);counts";
+      fHistManager.CreateTH1(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins);
+    }
+    
+    for (Int_t sm = 1; sm < 5; sm++) {
+      histname = TString::Format("%s/BySM/hPhosClusEnergy_SM%d", cont->GetArrayName().Data(), sm);
+      htitle = histname + ";#it{E}_{cluster} (GeV);counts";
+      fHistManager.CreateTH1(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins);
+    }
+  
+    // Plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
+    Int_t dim = 0;
+    TString title[20];
+    Int_t nbins[20] = {0};
+    Double_t min[30] = {0.};
+    Double_t max[30] = {0.};
+    Double_t *binEdges[20] = {0};
+    
+    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+      title[dim] = "Centrality %";
+      nbins[dim] = fNCentHistBins;
+      binEdges[dim] = fCentHistBins;
+      min[dim] = fCentHistBins[0];
+      max[dim] = fCentHistBins[fNCentHistBins];
+      dim++;
+    }
+    
+    title[dim] = "cluster type";
+    nbins[dim] = 3;
+    min[dim] = -0.5;
+    max[dim] = 2.5;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    title[dim] = "#it{E}_{clus} (GeV)";
+    nbins[dim] = fNPtHistBins;
+    binEdges[dim] = fPtHistBins;
+    min[dim] = fPtHistBins[0];
+    max[dim] = fPtHistBins[fNPtHistBins];
+    dim++;
+    
+    title[dim] = "#it{E}_{clus, hadcorr} (GeV)";
+    nbins[dim] = fNPtHistBins;
+    binEdges[dim] = fPtHistBins;
+    min[dim] = fPtHistBins[0];
+    max[dim] = fPtHistBins[fNPtHistBins];
+    dim++;
+    
+    title[dim] = "Matched track";
+    nbins[dim] = 2;
+    min[dim] = -0.5;
+    max[dim] = 1.5;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    title[dim] = "M02";
+    nbins[dim] = 100;
+    min[dim] = 0;
+    max[dim] = 10;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    title[dim] = "Ncells";
+    nbins[dim] = 40;
+    min[dim] = -0.5;
+    max[dim] = 49.5;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
+    
+    TString thnname = TString::Format("%s/clusterObservables", cont->GetArrayName().Data());
+    THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
+    for (Int_t i = 0; i < dim; i++) {
+      hn->GetAxis(i)->SetTitle(title[i]);
+      hn->SetBinEdges(i, binEdges[i]);
+    }
+  }
+
+  // plot neutral jets
+  AliJetContainer* jets = 0;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+    
+    TString axisTitle[30]= {""};
+    Int_t nbinsJet[30]  = {0};
+    Double_t minJet[30] = {0.};
+    Double_t maxJet[30] = {0.};
+    Double_t *binEdgesJet[20] = {0};
+    Int_t dimJet = 0;
+    
+    if (fForceBeamType != kpp) {
+      axisTitle[dimJet] = "Centrality (%)";
+      nbinsJet[dimJet] = fNCentHistBins;
+      binEdgesJet[dimJet] = fCentHistBins;
+      minJet[dimJet] = fCentHistBins[0];
+      maxJet[dimJet] = fCentHistBins[fNCentHistBins];
+      dimJet++;
+    }
+    
+    axisTitle[dimJet] = "#eta_{jet}";
+    nbinsJet[dimJet] = 28;
+    minJet[dimJet] = -0.7;
+    maxJet[dimJet] = 0.7;
+    binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
+    dimJet++;
+    
+    axisTitle[dimJet] = "#phi_{jet} (rad)";
+    nbinsJet[dimJet] = 100;
+    minJet[dimJet] = 1.;
+    maxJet[dimJet] = 6.;
+    binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
+    dimJet++;
+    
+    axisTitle[dimJet] = "#it{E}_{T} (GeV)";
+    nbinsJet[dimJet] = fNPtHistBins;
+    binEdgesJet[dimJet] = fPtHistBins;
+    minJet[dimJet] = fPtHistBins[0];
+    maxJet[dimJet] = fPtHistBins[fNPtHistBins];
+    dimJet++;
+    
+    axisTitle[dimJet] = "N_{clusters}";
+    nbinsJet[dimJet] = 20;
+    minJet[dimJet] = -0.5;
+    maxJet[dimJet] = 19.5;
+    binEdgesJet[dimJet] = GenerateFixedBinArray(nbinsJet[dimJet], minJet[dimJet], maxJet[dimJet]);
+    dimJet++;
+    
+    TString thnname = TString::Format("%s/hClusterJetObservables", jets->GetArrayName().Data());
+    THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dimJet, nbinsJet, minJet, maxJet);
+    for (Int_t i = 0; i < dimJet; i++) {
+      hn->GetAxis(i)->SetTitle(axisTitle[i]);
+      hn->SetBinEdges(i, binEdgesJet[i]);
+    }
+
+  }
+  
+  // plot centrality vs. emcal cell energy vs. cell type
+  histname = TString::Format("Cells/hCellEnergy");
+  htitle = histname + ";#it{E}_{cell} (GeV);Centrality (%), Cluster type";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNCentHistBins, fCentHistBins, 3, clusType);
+  
+}
+
 /**
  * Load histogram of eta-phi background scale factors from AliEn
  */
@@ -664,6 +861,34 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
   AliAnalysisTaskEmcalJet::ExecOnce();
   
   fNeedEmcalGeom = kTRUE;
+  
+  // Load the PHOS geometry
+  if (fDoCaloStudy) {
+    fPHOSGeo = AliPHOSGeometry::GetInstance();
+    if (fPHOSGeo) {
+      AliInfo("Found instance of PHOS geometry!");
+    }
+    else {
+      AliInfo("Creating PHOS geometry!");
+      Int_t runNum = InputEvent()->GetRunNumber();
+      if(runNum<209122) //Run1
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP");
+      else
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2");
+      
+      if (fPHOSGeo) {
+        AliOADBContainer geomContainer("phosGeo");
+        geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
+        TObjArray* matrixes = (TObjArray*)geomContainer.GetObject(runNum,"PHOSRotationMatrixes");
+        for(Int_t mod=0; mod<6; mod++) {
+          if(!matrixes->At(mod)) continue;
+          fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod);
+          printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo);
+          ((TGeoHMatrix*)matrixes->At(mod))->Print();
+        }
+      }
+    }
+  }
   
   AliInfo(Form("Trigger jet threshold = %f, Associated jet threshold = %f", fMinTrigJetPt, fMinAssJetPt));
   AliInfo(Form("Leading hadron threshold (for dijet leading jet): %f GeV", fDijetLeadingHadronPt));
@@ -1252,6 +1477,7 @@ Double_t AliAnalysisTaskEmcalDijetImbalance::GetDeltaR(AliTLorentzVector* part, 
 Bool_t AliAnalysisTaskEmcalDijetImbalance::FillHistograms()
 {
   if (fPlotJetHistograms) FillJetHistograms();
+  if (fDoCaloStudy) FillCaloHistograms();
   
   return kTRUE;
 }
@@ -1473,5 +1699,185 @@ void AliAnalysisTaskEmcalDijetImbalance::FillGeometricalMatchingHistograms()
   else {
     fHistManager.FillTH1(histname.Data(), 0.);
   }
+}
+
+/*
+ * This function fills the histograms for the calorimeter performance study.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
+{
+  
+  // Plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
+  
+  TString histname;
+  AliClusterContainer* clusters = 0;
+  TIter nextClusColl(&fClusterCollArray);
+  while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
+    AliClusterIterableMomentumContainer itcont = clusters->all_momentum();
+    for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+    
+      // Determine cluster type (EMCal/DCal/Phos)
+      ClusterType clusType = kNA;
+      if (it->second->IsEMCAL()) {
+        Double_t phi = it->first.Phi_0_2pi();
+        Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
+        if (isDcal == 0) {
+          clusType = kEMCal;
+        } else if (isDcal == 1) {
+          clusType = kDCal;
+        }
+      } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
+        clusType = kPHOS;
+      }
+      
+      // rejection reason plots, to make efficiency correction
+      if (it->second->IsEMCAL()) {
+        histname = TString::Format("%s/hClusterRejectionReasonEMCal", clusters->GetArrayName().Data());
+        UInt_t rejectionReason = 0;
+        if (!clusters->AcceptCluster(it.current_index(), rejectionReason)) {
+          fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(rejectionReason), it->first.E());
+          continue;
+        }
+      } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
+        histname = TString::Format("%s/hClusterRejectionReasonPHOS", clusters->GetArrayName().Data());
+        UInt_t rejectionReason = 0;
+        if (!clusters->AcceptCluster(it.current_index(), rejectionReason)) {
+          fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(rejectionReason), it->first.E());
+          continue;
+        }
+      } else {
+        continue;
+      }
+
+      
+      // Fill cluster spectra by SM
+      Double_t Enonlin;
+      Double_t Ehadcorr;
+      if (it->second->IsEMCAL()) {
+        
+        Ehadcorr = it->second->GetHadCorrEnergy();
+        Ehadcorr = it->second->GetNonLinCorrEnergy();
+        
+        Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
+        if (sm >=0 && sm < 20) {
+          histname = TString::Format("%s/BySM/hEmcalClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
+          fHistManager.FillTH1(histname, it->second->E());
+        }
+        else {
+          AliError(Form("Supermodule %d does not exist!", sm));
+        }
+        
+      } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
+        
+        Ehadcorr = it->second->E();
+        Enonlin = it->second->E();
+        
+        Int_t relid[4];
+        if (fPHOSGeo) {
+          fPHOSGeo->AbsToRelNumbering(it->second->GetCellAbsId(0), relid);
+          Int_t sm = relid[0];
+          if (sm >=1 && sm < 5) {
+            histname = TString::Format("%s/BySM/hPhosClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
+            fHistManager.FillTH1(histname, it->second->E());
+          }
+          else {
+            AliError(Form("Supermodule %d does not exist!", sm));
+          }
+        }
+      }
+      
+      // Check if the cluster has a matched track
+      Int_t hasMatchedTrack = -1;
+      Int_t nMatchedTracks = it->second->GetNTracksMatched();
+      if (nMatchedTracks == 0) {
+        hasMatchedTrack = 0;
+      } else if (nMatchedTracks > 0) {
+        hasMatchedTrack = 1;
+      }
+      
+      Double_t contents[30]={0};
+      histname = TString::Format("%s/clusterObservables", clusters->GetArrayName().Data());
+      THnSparse* histClusterObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+      if (!histClusterObservables) return;
+      for (Int_t i = 0; i < histClusterObservables->GetNdimensions(); i++) {
+        TString title(histClusterObservables->GetAxis(i)->GetTitle());
+        if (title=="Centrality %")
+        contents[i] = fCent;
+        else if (title=="cluster type")
+        contents[i] = clusType;
+        else if (title=="#it{E}_{clus} (GeV)")
+        contents[i] = Enonlin;
+        else if (title=="#it{E}_{clus, hadcorr} (GeV)")
+        contents[i] = Ehadcorr;
+        else if (title=="Matched track")
+        contents[i] = hasMatchedTrack;
+        else if (title=="M02")
+        contents[i] = it->second->GetM02();
+        else if (title=="Ncells")
+        contents[i] = it->second->GetNCells();
+        else
+        AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+      }
+      histClusterObservables->Fill(contents);
+        
+    }
+  
+  }
+  
+  // plot neutral jets THnSparse (centrality, eta, phi, E, Nclusters)
+  AliJetContainer* jets = 0;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+    
+    for (auto jet : jets->accepted()) {
+
+      Double_t contents[30]={0};
+      histname = TString::Format("%s/hClusterJetObservables", jets->GetArrayName().Data());
+      THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+      if (!histJetObservables) return;
+      for (Int_t i = 0; i < histJetObservables->GetNdimensions(); i++) {
+        TString title(histJetObservables->GetAxis(i)->GetTitle());
+        if (title=="Centrality (%)")
+        contents[i] = fCent;
+        else if (title=="#eta_{jet}")
+        contents[i] = jet->Eta();
+        else if (title=="#phi_{jet} (rad)")
+        contents[i] = jet->Phi_0_2pi();
+        else if (title=="#it{E}_{T} (GeV)")
+        contents[i] = jet->Pt();
+        else if (title=="N_{clusters}")
+        contents[i] = jet->GetNumberOfClusters();
+        else
+        AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+      }
+      histJetObservables->Fill(contents);
+      
+    }
+    
+  }
+    
+  // Get the cells from the event, and plot centrality vs. emcal cell energy vs. cell type
+  histname = TString::Format("Cells/hCellEnergy");
+  
+  fCaloCells = InputEvent()->GetEMCALCells();
+  AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
+    
+  Short_t  absId = -1;
+  Double_t ecell = 0;
+  Double_t ecellPhos = 0;
+  Double_t tcell = 0;
+  Double_t efrac = 0;
+  Int_t  mclabel = -1;
+    
+  for (Int_t iCell = 0; iCell < fCaloCells->GetNumberOfCells(); iCell++){
+    fCaloCells->GetCell(iCell, absId, ecell, tcell, mclabel, efrac);
+    fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // note: I don't distinguish EMCal from DCal for cells
+  }
+  
+  for (Int_t iCellPhos = 0; iCellPhos < phosCaloCells->GetNumberOfCells(); iCellPhos++){
+    phosCaloCells->GetCell(iCellPhos, absId, ecellPhos, tcell, mclabel, efrac);
+    fHistManager.FillTH3(histname, ecellPhos, fCent, kPHOS);
+  }
+
 }
 
