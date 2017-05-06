@@ -66,6 +66,7 @@
 #include "tracking-ca/AliHLTTPCCASliceOutput.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTTPCHWCFData.h"
+#include "AliHLTTPCdEdxData.h"
 #include "AliGRPManager.h"
 #include "AliGRPObject.h"
 #include "TMath.h"
@@ -163,16 +164,12 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fHistTPCCallClustersRowPhi(NULL)
   , fHistDeDxOffline(NULL)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
+  for (int i = 0;i < 10;i++) fHistDeDxNew[i] = NULL;
 }
 
 //__________________________________________________________________________________________________
 AliHLTGlobalPromptRecoQAComponent::~AliHLTGlobalPromptRecoQAComponent()
 {
-  // see header file for class documentation
 }
 
 //__________________________________________________________________________________________________
@@ -333,6 +330,7 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   
   //dEdx
   list.push_back(kAliHLTDataTypedEdx | kAliHLTDataOriginTPC);
+  list.push_back(AliHLTTPCDefinitions::TPCdEdxNew());
 
   //All this is TPC Data compression
   list.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
@@ -599,6 +597,7 @@ void AliHLTGlobalPromptRecoQAComponent::DeleteFixedHistograms()
   delete fHistTPCCallClustersRowPhi; fHistTPCCallClustersRowPhi=NULL;
   delete fHistTPCCattachedClustersRowPhi; fHistTPCCattachedClustersRowPhi=NULL;
   delete fHistDeDxOffline; fHistDeDxOffline = NULL;
+  for (int i = 0;i < 10;i++) {delete fHistDeDxNew[i];fHistDeDxNew[i] = NULL;}
 }
 
 //__________________________________________________________________________________________________
@@ -629,6 +628,13 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
   if (axisTrackP.bins > 0 && axisDeDx.bins > 0)
   {
     fHistDeDxOffline = new TH2F("fHistTPCdEdxOffline", "TPC dE/dx v.s. P", axisTrackP.bins, axisTrackP.low, axisTrackP.high, axisDeDx.bins, axisDeDx.low, axisDeDx.high);
+    const char* tmpNames[10] = {"fHistTPCdEdxTotIROC", "fHistTPCdEdxTotOROC1", "fHistTPCdEdxTotOROC2", "fHistTPCdEdxTotOROCAll", "fHistTPCdEdxTotTPCAll", "fHistTPCdEdxMaxIROC", "fHistTPCdEdxMaxOROC1", "fHistTPCdEdxMaxOROC2", "fHistTPCdEdxMaxOROCAll", "fHistTPCdEdxMaxTPCAll"};
+    const char* tmpTitles[10] = {"TPC dE/dx v.s. P (qTot, IROC)", "TPC dE/dx v.s. P (qTot, OROC1)", "TPC dE/dx v.s. P (qTot, OROC2)", "TPC dE/dx v.s. P (qTot, OROC all)", "TPC dE/dx v.s. P (qTot, full TPC)",
+                             "TPC dE/dx v.s. P (qMax, IROC)", "TPC dE/dx v.s. P (qMax, OROC1)", "TPC dE/dx v.s. P (qMax, OROC2)", "TPC dE/dx v.s. P (qMax, OROC all)", "TPC dE/dx v.s. P (qMax, full TPC)"};
+    for (int i = 0;i < 10;i++)
+    {
+      fHistDeDxNew[i] = new TH2F(tmpNames[i], tmpTitles[i], axisTrackP.bins, axisTrackP.low, axisTrackP.high, axisDeDx.bins, axisDeDx.low, axisDeDx.high);
+    }
   }
 
   //cluster occupancies (attached and non)
@@ -995,6 +1001,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
   AliHLTFloat32_t *dEdxTPCOffline = NULL; 
   Int_t ndEdxTPCOffline = 0;
+  AliHLTTPCdEdxData* dEdxInfo = NULL;
 
   nEvents++;
 
@@ -1053,6 +1060,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
         dEdxTPCOffline = reinterpret_cast<AliHLTFloat32_t*>( iter->fPtr );
         ndEdxTPCOffline = iter->fSize / (3 * sizeof(AliHLTFloat32_t));
+    }
+
+    if (iter->fDataType == (AliHLTTPCDefinitions::TPCdEdxNew()))
+    {
+        dEdxInfo = (AliHLTTPCdEdxData*) iter->fPtr;
     }
 
     if (iter->fDataType == AliHLTTPCDefinitions::DataCompressionDescriptorDataType() ||
@@ -1334,15 +1346,20 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       for (unsigned i = 0;i < tracks->fCount;i++)
       {
         const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(pCurrent);
-        
+
         if (fHistTPCTrackPt)
         {
-            fHistTPCTrackPt->Fill(1. / track->fq1Pt);
+          fHistTPCTrackPt->Fill(1. / track->fq1Pt);
         }
 
+        float trackP = sqrt(1.+ track->fTgl*track->fTgl)/fabs(track->fq1Pt);
         if (fHistDeDxOffline && ndEdxTPCOffline > i)
         {
-            fHistDeDxOffline->Fill(sqrt(1.+ track->fTgl*track->fTgl)/fabs(track->fq1Pt), dEdxTPCOffline[3 * i]);
+          fHistDeDxOffline->Fill(trackP, dEdxTPCOffline[3 * i]);
+        }
+        if (fHistDeDxNew[0] && dEdxInfo && dEdxInfo->fCount > i)
+        {
+          for (int j = 0;j < 10;j++) fHistDeDxNew[j]->Fill(trackP, dEdxInfo->fdEdxInfo[i * dEdxInfo->fValuesPerTrack + j]);
         }
 
         pCurrent += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
