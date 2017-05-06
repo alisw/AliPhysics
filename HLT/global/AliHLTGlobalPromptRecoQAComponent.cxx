@@ -1477,28 +1477,31 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   }
 
   //push fixed histograms
-  if (fHistDeDxOffline->GetEntries() && PushBack(fHistDeDxOffline, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+  if (fHistDeDxOffline && fHistDeDxOffline->GetEntries() && PushBack(fHistDeDxOffline, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistDeDxOffline->Reset();
   }
-  if (fHistTPCTrackPt->GetEntries() && PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+  for (int i = 0;i < 10;i++) if (fHistDeDxNew[i] && fHistDeDxNew[i]->GetEntries() && PushBack(fHistDeDxNew[i], kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    if (fResetAfterPush) fHistDeDxNew[i]->Reset();
+  }
+  if (fHistTPCTrackPt && fHistTPCTrackPt->GetEntries() && PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistTPCTrackPt->Reset();
   }
-  if (fHistClusterChargeTot->GetEntries() && PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+  if (fHistClusterChargeTot && fHistClusterChargeTot->GetEntries() && PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistClusterChargeTot->Reset();
   }
-  if (fHistClusterChargeMax->GetEntries() && PushBack(fHistClusterChargeMax, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+  if (fHistClusterChargeMax && fHistClusterChargeMax->GetEntries() && PushBack(fHistClusterChargeMax, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistClusterChargeMax->Reset();
   }
-  if (fHistTPCAattachedClustersRowPhi->GetEntries() && PushBack(fHistTPCAattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+  if (fHistTPCAattachedClustersRowPhi && fHistTPCAattachedClustersRowPhi->GetEntries() && PushBack(fHistTPCAattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistTPCAattachedClustersRowPhi->Reset();
   }
-  if (fHistTPCCattachedClustersRowPhi->GetEntries() && PushBack(fHistTPCCattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+  if (fHistTPCCattachedClustersRowPhi && fHistTPCCattachedClustersRowPhi->GetEntries() && PushBack(fHistTPCCattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistTPCCattachedClustersRowPhi->Reset();
   }
-  if (fHistTPCAallClustersRowPhi->GetEntries() && PushBack(fHistTPCAallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+  if (fHistTPCAallClustersRowPhi && fHistTPCAallClustersRowPhi->GetEntries() && PushBack(fHistTPCAallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistTPCAallClustersRowPhi->Reset();
   }
-  if (fHistTPCCallClustersRowPhi->GetEntries() && PushBack(fHistTPCCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+  if (fHistTPCCallClustersRowPhi && fHistTPCCallClustersRowPhi->GetEntries() && PushBack(fHistTPCCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistTPCCallClustersRowPhi->Reset();
   }
 
