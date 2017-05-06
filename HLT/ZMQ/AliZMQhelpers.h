@@ -120,12 +120,12 @@ ULong64_t CharArr2uint64(const char* str);
 struct BaseDataTopic
 {
   static const UInt_t fgkMagicNumber;
-  UInt_t fMagicNumber;
-  UInt_t fHeaderSize;
-  UInt_t fFlags;
-  UInt_t fBaseHeaderVersion;
-  ULong64_t fHeaderDescription;
-  ULong64_t fHeaderSerialization;
+  UInt_t fMagicNumber;  // 4 bytes
+  UInt_t fHeaderSize;   // 4 bytes
+  UInt_t fFlags;        // 4 bytes
+  UInt_t fBaseHeaderVersion;  // 4 bytes
+  ULong64_t fHeaderDescription; // 8 bytes
+  ULong64_t fHeaderSerialization; // 8 bytes
   BaseDataTopic();
   BaseDataTopic(UInt_t size, ULong64_t desc, ULong64_t seri);
   static BaseDataTopic* Get(void* buf) {
@@ -140,12 +140,12 @@ struct DataTopic : public BaseDataTopic
 {
   static const ULong64_t fgkDataTopicDescription;
   static const UInt_t fgkTopicSerialization;
-  ULong64_t fDataDescription[2];
-  UInt_t fDataOrigin;
-  UInt_t fReserved;
-  ULong64_t fDataSerialization;
-  ULong64_t fSpecification;                  /// data specification of the data block
-  ULong64_t fPayloadSize;
+  ULong64_t fDataDescription[2]; // 2*8 bytes
+  UInt_t fDataOrigin; // 4 bytes
+  UInt_t fReserved;   // 4 bytes
+  ULong64_t fDataSerialization; // 8 bytes
+  ULong64_t fSpecification;     // 8 bytes data specification of the data block
+  ULong64_t fPayloadSize;       // 8 bytes
 
   //ctor
   DataTopic()
