@@ -122,8 +122,8 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
         
         if (fileBkgWToData)
         {
-            TF1 *Pi0W = (TF1*) fileBkgWToData->Get("Pi0W");
-            TF1 *EtaW = (TF1*) fileBkgWToData->Get("EtaW");
+            TH1F *Pi0W = (TH1F*) fileBkgWToData->Get("Pi0");
+            TH1F *EtaW = (TH1F*) fileBkgWToData->Get("Eta");
             
             if (Pi0W)
                 task->SetBackgroundPi0WeightToData(Pi0W);
