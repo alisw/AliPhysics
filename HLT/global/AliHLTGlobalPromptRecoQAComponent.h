@@ -216,6 +216,7 @@ protected:
   TH2F* fHistTPCAallClustersRowPhi;
   TH2F* fHistTPCCattachedClustersRowPhi;
   TH2F* fHistTPCCallClustersRowPhi;
+  TH2F* fHistDeDxOffline;
 
   ClassDef(AliHLTGlobalPromptRecoQAComponent, 0)
 };
