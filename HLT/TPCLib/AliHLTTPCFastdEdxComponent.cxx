@@ -320,6 +320,7 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
       outFill[7] = GetSortTruncMean(fBufMax + countIROC + countOROC1, countOROC2, countOROC2 * 100 / truncLow, countOROC2 * 100 / truncHigh);
       outFill[8] = GetSortTruncMean(fBufMax + countIROC             , countOROC , countOROC  * 100 / truncLow, countOROC  * 100 / truncHigh);
       outFill[9] = GetSortTruncMean(fBufMax                         , count     , count      * 100 / truncLow, count      * 100 / truncHigh);
+      outFill += outPtr->fValuesPerTrack;
 
       unsigned int step = sizeof(AliHLTExternalTrackParam) + currTrack->fNPoints * sizeof(unsigned int);
       currTrack = (AliHLTExternalTrackParam*) (((Byte_t*) currTrack) + step);  

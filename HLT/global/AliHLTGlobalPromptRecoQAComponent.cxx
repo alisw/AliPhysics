@@ -1355,11 +1355,16 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         float trackP = sqrt(1.+ track->fTgl*track->fTgl)/fabs(track->fq1Pt);
         if (fHistDeDxOffline && ndEdxTPCOffline > i)
         {
-          fHistDeDxOffline->Fill(trackP, dEdxTPCOffline[3 * i]);
+          float val = dEdxTPCOffline[3 * i];
+          if (val > 0.) fHistDeDxOffline->Fill(trackP, val);
         }
         if (fHistDeDxNew[0] && dEdxInfo && dEdxInfo->fCount > i)
         {
-          for (int j = 0;j < 10;j++) fHistDeDxNew[j]->Fill(trackP, dEdxInfo->fdEdxInfo[i * dEdxInfo->fValuesPerTrack + j]);
+          for (int j = 0;j < 10;j++)
+          {
+            float val = dEdxInfo->fdEdxInfo[i * dEdxInfo->fValuesPerTrack + j];
+            if (val > 0.) fHistDeDxNew[j]->Fill(trackP, val);
+          }
         }
 
         pCurrent += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
