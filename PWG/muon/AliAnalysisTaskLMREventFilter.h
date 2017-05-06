@@ -49,9 +49,9 @@ private:
   Int_t fL0TriggerInputMUL;
   Int_t fL0TriggerInputMSL;
   Int_t fNTrigClass;
-  TString fTriggerClasses[23];
-  UInt_t fTriggerMask[23];
-
+  TString fTriggerClasses[29];
+  UInt_t fTriggerMask[29];
+  Int_t minContributorsPileUp;
   ClassDef(AliAnalysisTaskLMREventFilter, 1) // example of analysis
 
 };
