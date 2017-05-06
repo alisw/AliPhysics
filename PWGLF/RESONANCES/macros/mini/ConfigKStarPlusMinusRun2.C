@@ -35,7 +35,9 @@ Bool_t ConfigKStarPlusMinusRun2
    AliRsnCutSet           *cutsPair,
    Bool_t                  ptDep,
    Float_t                 DCAxy,
-    Bool_t                 enableSys,
+   Bool_t                  enableSys,
+   Float_t                 crossedRows,
+   Float_t                 rowsbycluster,
    Int_t                   Sys
 )
     //kTPCpidphipp2015
@@ -76,16 +78,16 @@ Bool_t ConfigKStarPlusMinusRun2
    /////////////////////////////////////////////////////////////
    // 
    // selections for pion daugthers of K0s
-   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterK0s");   
-   esdTrackCuts->SetPtRange(0.15,1.E10);
+   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterK0s");
    esdTrackCuts->SetEtaRange(-0.8,0.8);
    esdTrackCuts->SetRequireTPCRefit();
    esdTrackCuts->SetAcceptKinkDaughters(0); //
-   esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
+   esdTrackCuts->SetMinNCrossedRowsTPC(crossedRows);
+   esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster);  
    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
     
     if(ptDep){
-   esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+   esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0105+0.0350/pt^1.01");
     }else
    esdTrackCuts->SetMinDCAToVertexXY(DCAxy); //Use one of the two - pt dependent or fixed value cut.
   
@@ -205,7 +207,7 @@ Bool_t ConfigKStarPlusMinusRun2
      out->SetPairCuts(cutsPair);
      // axis X: invmass
      if (useIM[i]) 
-       out->AddAxis(imID, 900, 0.6, 1.5);
+       out->AddAxis(imID, 90, 0.6, 1.5);
      //  out->AddAxis(imID, 700, 1.2, 4.0);
      // axis Y: transverse momentum
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -257,7 +259,7 @@ Bool_t ConfigKStarPlusMinusRun2
      // pair cuts
      out->SetPairCuts(cutsPair);
      // binnings
-     out->AddAxis(imID, 900, 0.6, 1.5);
+     out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
      //out->AddAxis(k0sDCA, 10, 0.0, 1.0);
      
@@ -275,7 +277,7 @@ Bool_t ConfigKStarPlusMinusRun2
      // pair cuts
      out->SetPairCuts(cutsPair);
      // binnings
-     out->AddAxis(imID, 900, 0.6, 1.5);
+     out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
      //out->AddAxis(k0sDCA, 10, 0.0, 1.0);
      //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);

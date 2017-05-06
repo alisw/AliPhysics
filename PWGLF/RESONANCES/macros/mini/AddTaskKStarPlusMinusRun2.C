@@ -85,6 +85,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Bool_t      ptDep = kTRUE,
  Float_t     DCAxy = 0.06,
  Bool_t      enableSys = kFALSE,
+ Float_t     crossedRows = 70,
+ Float_t     rowsbycluster = 0.08,
  Int_t       Sys= 0
  )
 {  
@@ -222,7 +224,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, piPIDCut, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair, ptDep, DCAxy, enableSys, Sys)) return 0x0;
+   if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, piPIDCut, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, pLife, radiuslow, radiushigh, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair, ptDep, DCAxy, enableSys, crossedRows, rowsbycluster, Sys)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
