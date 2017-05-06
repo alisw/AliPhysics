@@ -39,6 +39,7 @@
 #include "Riostream.h"
 #include "TRandom3.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"
 
@@ -66,6 +67,8 @@ fSSsmearing(0),
 fSSsmearwidth(0),
 fSSsmear_mean(0),
 fWhich(0),
+fRejectPileUpEvent(kFALSE),
+fNContrToPileUp(3),
 // fOutputList(0),
 fIsoConeRadius(0.4),
 fEtIsoMethod(0),
@@ -238,6 +241,8 @@ fSSsmearing(0),
 fSSsmearwidth(0),
 fSSsmear_mean(0),
 fWhich(0),
+fRejectPileUpEvent(kFALSE),
+fNContrToPileUp(3),
 // fOutputList(0),
 fIsoConeRadius(0.4),
 fEtIsoMethod(0),
@@ -1126,6 +1131,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   
   if(fVertex[2]>10. || fVertex[2]<-10.)
+    return kFALSE;
+  
+  if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.))
     return kFALSE;
   
   AliClusterContainer* clusters = GetClusterContainer(0);
