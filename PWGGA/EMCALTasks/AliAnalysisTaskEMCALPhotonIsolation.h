@@ -112,7 +112,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void			   SetDecayBinning(vector<Double_t> binedges)			   { fBinsDecay = binedges; }
   void                     SetMCtruth(Bool_t mctruth)                                      { fMCtruth = mctruth; }
   void                     SetPeriod(const char *period)                                   { fPeriod = period; }
-  
+  void                     SetRejectPileUpEvent(Bool_t rpue)                               { fRejectPileUpEvent = rpue; }
+  void                     SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
  protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI);                           // Fill some QA histograms
@@ -169,6 +170,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Float_t                  fSSsmearwidth;
   Float_t                  fSSsmear_mean;
   Int_t                    fWhich;
+  Bool_t                   fRejectPileUpEvent;
+  Int_t                    fNContrToPileUp;
   
   // TList       *fOutputList;                    //!<! Output list
   // TGeoHMatrix *fGeomMatrix[12];                //!<! Geometry misalignment matrices for EMCal
@@ -339,7 +342,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 14); // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 15); // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif
