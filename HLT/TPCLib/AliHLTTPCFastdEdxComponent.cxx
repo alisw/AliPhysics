@@ -308,18 +308,18 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
       int countOROC2 = count - countIROC - countOROC1;
       int countOROC = countOROC1 + countOROC2;
-      int truncLow = 5;
-      int truncHigh = 40;
-      outFill[0] = GetSortTruncMean(fBufTot                         , countIROC , countIROC  * 100 / truncLow, countIROC  * 100 / truncHigh);
-      outFill[1] = GetSortTruncMean(fBufTot + countIROC             , countOROC1, countOROC1 * 100 / truncLow, countOROC1 * 100 / truncHigh);
-      outFill[2] = GetSortTruncMean(fBufTot + countIROC + countOROC1, countOROC2, countOROC2 * 100 / truncLow, countOROC2 * 100 / truncHigh);
-      outFill[3] = GetSortTruncMean(fBufTot + countIROC             , countOROC , countOROC  * 100 / truncLow, countOROC  * 100 / truncHigh);
-      outFill[4] = GetSortTruncMean(fBufTot                         , count     , count      * 100 / truncLow, count      * 100 / truncHigh);
-      outFill[5] = GetSortTruncMean(fBufMax                         , countIROC , countIROC  * 100 / truncLow, countIROC  * 100 / truncHigh);
-      outFill[6] = GetSortTruncMean(fBufMax + countIROC             , countOROC1, countOROC1 * 100 / truncLow, countOROC1 * 100 / truncHigh);
-      outFill[7] = GetSortTruncMean(fBufMax + countIROC + countOROC1, countOROC2, countOROC2 * 100 / truncLow, countOROC2 * 100 / truncHigh);
-      outFill[8] = GetSortTruncMean(fBufMax + countIROC             , countOROC , countOROC  * 100 / truncLow, countOROC  * 100 / truncHigh);
-      outFill[9] = GetSortTruncMean(fBufMax                         , count     , count      * 100 / truncLow, count      * 100 / truncHigh);
+      int truncLow = 6; //fractions of 128
+      int truncHigh = 50;
+      outFill[0] = GetSortTruncMean(fBufTot                         , countIROC , truncLow, truncHigh);
+      outFill[1] = GetSortTruncMean(fBufTot + countIROC             , countOROC1, truncLow, truncHigh);
+      outFill[2] = GetSortTruncMean(fBufTot + countIROC + countOROC1, countOROC2, truncLow, truncHigh);
+      outFill[3] = GetSortTruncMean(fBufTot + countIROC             , countOROC , truncLow, truncHigh);
+      outFill[4] = GetSortTruncMean(fBufTot                         , count     , truncLow, truncHigh);
+      outFill[5] = GetSortTruncMean(fBufMax                         , countIROC , truncLow, truncHigh);
+      outFill[6] = GetSortTruncMean(fBufMax + countIROC             , countOROC1, truncLow, truncHigh);
+      outFill[7] = GetSortTruncMean(fBufMax + countIROC + countOROC1, countOROC2, truncLow, truncHigh);
+      outFill[8] = GetSortTruncMean(fBufMax + countIROC             , countOROC , truncLow, truncHigh);
+      outFill[9] = GetSortTruncMean(fBufMax                         , count     , truncLow, truncHigh);
       outFill += outPtr->fValuesPerTrack;
 
       unsigned int step = sizeof(AliHLTExternalTrackParam) + currTrack->fNPoints * sizeof(unsigned int);
@@ -335,6 +335,8 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
 float AliHLTTPCFastdEdxComponent::GetSortTruncMean(float* array, int count, int trunclow, int trunchigh)
 {
+  trunclow = count * trunclow / 128;
+  trunchigh = count * trunchigh / 128;
   if (count - trunclow - trunchigh <= 0) return(0.);
   std::sort(array, array + count);
   float mean = 0;
