@@ -2712,10 +2712,14 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 
 
     Bool_t isFitValid=kFALSE; 
-    if (nrm>=kMinEntries && rms>0) {      
+    if (nrm>=kMinEntries && rms>hfit->GetBinWidth(nbins1D)/TMath::Sqrt(12.)) {      
       fgaus.SetParameters(nrm/(rms/hfit->GetBinWidth(nbins1D)),mean,rms);
+      fgaus.SetParError(0,nrm/(rms/hfit->GetBinWidth(nbins1D)));
+      fgaus.SetParError(1,rms);
+      fgaus.SetParError(2,rms);
       //grafFit.Fit(&fgaus,/*maxVal<kUseLLFrom ? "qnrl":*/"qnr");
       TFitResultPtr fitPtr= hfit->Fit(&fgaus,maxVal<kUseLLFrom ? "qnrlS":"qnrS");
+      //TFitResultPtr fitPtr= hfit->Fit(&fgaus,"qnrlS");
       entriesG = fgaus.GetParameter(0);
       meanG = fgaus.GetParameter(1);
       rmsG  = fgaus.GetParameter(2);
