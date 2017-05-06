@@ -39,19 +39,19 @@
 ClassImp( AliHLTTPCFastdEdxComponent )
 AliHLTTPCFastdEdxComponent::AliHLTTPCFastdEdxComponent() : AliHLTProcessor(), fBz(0.), fBufMax(NULL), fBufTot(NULL), fMaxClusterCount(1000)
 {
-  for (int i = 0;i < 36 * 6;i++)
+  for (int i = 0;i < 36;i++) for (int j = 0;j < 6;j++)
   {
-    fNPatchClusters[0][i] = 0;    
-    fPatchClusters[0][i] = NULL;
+    fNPatchClusters[i][j] = 0;    
+    fPatchClusters[i][j] = NULL;
   }
 }
 
 AliHLTTPCFastdEdxComponent::AliHLTTPCFastdEdxComponent( const AliHLTTPCFastdEdxComponent& ) : AliHLTProcessor(), fBz(0.), fBufMax(NULL), fBufTot(NULL), fMaxClusterCount(1000)
 {
-  for (int i = 0;i < 36 * 6;i++)
+  for (int i = 0;i < 36;i++) for (int j = 0;j < 6;j++)
   {
-    fPatchClusters[0][i] = 0;    
-    fPatchClusters[0][i] = NULL;
+    fPatchClusters[i][j] = 0;    
+    fPatchClusters[i][j] = NULL;
   }
 }
 
@@ -61,10 +61,10 @@ AliHLTTPCFastdEdxComponent& AliHLTTPCFastdEdxComponent::operator=( const AliHLTT
   fBufMax = NULL;
   fBufTot = NULL;
   fMaxClusterCount = 1000;
-  for (int i = 0; i < 36*6;i++)
+  for (int i = 0; i < 36;i++) for (int j = 0;j < 6;j++)
   {
-    fPatchClusters[0][i] = 0;    
-    fPatchClusters[0][i] = NULL;
+    fPatchClusters[i][j] = 0;    
+    fPatchClusters[i][j] = NULL;
   }
   return *this;
 }
@@ -201,9 +201,9 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
   if (!IsDataEvent()) return 0;
 
-  for(int i = 0;i < 36 * 6;i++)
+  for(int i = 0;i < 36;i++) for (int j = 0;j < 6;j++)
   {
-    fNPatchClusters[0][i] = 0;
+    fNPatchClusters[i][j] = 0;
   }
 
   int nBlocks = (int) evtData.fBlockCnt;
