@@ -2965,7 +2965,7 @@ Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeightRun2ToData(Int_t pdg_pa
             return 1.0;
         
         Int_t bin = fBkgPi0WeightToData->FindBin(pT);
-        return fBkgPi0WeightToData->GetBinContent(bin);
+        return 1./fBkgPi0WeightToData->GetBinContent(bin);
     }
     else if (TMath::Abs(pdg_particle) == 221)
     {
@@ -2973,7 +2973,7 @@ Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeightRun2ToData(Int_t pdg_pa
             return 1.0;
         
         Int_t bin = fBkgEtaWeightToData->FindBin(pT);
-        return fBkgEtaWeightToData->GetBinContent(bin);
+        return 1./fBkgEtaWeightToData->GetBinContent(bin);
     }
     
     return 1.0;
