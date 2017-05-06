@@ -999,7 +999,8 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 	    }
 	  }
 	  if (xMax[iDim]<=xMin[iDim]){
-	    ::Error("xxx","Invalid range specification %s\t%s",descriptionArray->At(3*iDim+2)->GetName(), descriptionArray->At(3*iDim+3)->GetName() );
+	    ::Error("AliTreePlayer::MakeHistograms","Invalid hstogram range specification for histogram  %s: %s\t%s",hisDescription.Data(), \
+		    descriptionArray->At(3*iDim+2)->GetName(), descriptionArray->At(3*iDim+3)->GetName() );
 	  }
 	}
 	THnF * phis = new THnF(hName.Data(),hName.Data(), hisDims[iHis],nBins, xMin,xMax);
