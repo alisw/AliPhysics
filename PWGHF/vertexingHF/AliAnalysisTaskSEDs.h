@@ -88,7 +88,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
     
   TList*  fOutput;                    //!<! list send on output slot 0
   TH1F*   fHistNEvents;               //!<! hist. for No. of events
-  TH1F*   fHistoPtWeight;             //!<! user-defined histogram to calculate the Pt weights
+  TH1F*   fHistoPtWeight;             //-> user-defined histogram to calculate the Pt weights
   TH1F*   fChanHist[4];               //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
   TH1F*   fMassHist[4*kMaxPtBins];    //!<! hist. of mass spectra (sig,bkg,tot)
   TH1F*   fMassHistPhi[4*kMaxPtBins];     //!<! hist. of mass spectra via phi (sig,bkg,tot)
