@@ -21,12 +21,8 @@
 */
 
 // --- ROOT system ---
-#include <TClass.h>
 #include <TH2.h>
 #include <TH1.h>
-#include <TIterator.h>
-#include <TKey.h>
-#include <TFile.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TLatex.h>
@@ -47,7 +43,6 @@
 #include "AliADQAChecker.h"
 #include "AliADQADataMakerRec.h"
 #include "AliADQAParam.h"
-
 
 ClassImp(AliADQAChecker);
 
@@ -103,7 +98,7 @@ const AliADQAParam* AliADQAChecker::GetQAParam() const
   return &fQAParamDefault;
 }
 //__________________________________________________________________
-void AliADQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
+void AliADQAChecker::Check(Double_t *check, AliQAv1::ALITASK_t index, TObjArray **list, const AliDetectorRecoParam * /*recoParam*/)
 {
   // Main check function: Depending on the TASK, different checks will be applied
   // Check for missing channels and check on the trigger type for raw data
@@ -125,14 +120,14 @@ void AliADQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray
   }
 }
 
-
 // returns the QA box of a given histogram, if it does not exists it is created
 TPaveText* GetQABox(TH1* h, Float_t x1, Float_t y1, Float_t x2, Float_t y2, Option_t *opt) {
-  TList  *lHistFcn = h->GetListOfFunctions();
-  TPaveText* qaBox = dynamic_cast<TPaveText*>(lHistFcn->FindObject("QABox"));
+  TList *lHistFcn = h->GetListOfFunctions();
+  const TString nameOfQABox = TString::Format("QABox_%s", h->GetName());
+  TPaveText *qaBox = dynamic_cast<TPaveText*>(lHistFcn->FindObject(nameOfQABox));
   if (!qaBox) {
     qaBox = new TPaveText(x1, y1, x2, y2, opt);
-    qaBox->SetName(Form("QABox_%s", h->GetName()));
+    qaBox->SetName(nameOfQABox);
     lHistFcn->Add(qaBox);
   }
   return qaBox;
@@ -287,7 +282,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
     }
     delete histoRate;
 
-      qaBox->Clear();
+    qaBox->Clear();
     if (badChannels != "") {
       qaBox->SetFillColor(kRed);
       qaBox->AddText("No flag rate too high, ch: " + badChannels);
@@ -315,8 +310,6 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
       AliWarningF("NEvents%sFlag histogram is not found", flagNames[flagType]);
       continue;
     }
-    // if(hNEventsBBFlag->GetListOfFunctions()->GetEntries()<1) hNEventsBBFlag->GetListOfFunctions()->Add(new TPaveText(0.15,0.67,0.85,0.76,"NDC"));
-    // if(hNEventsBGFlag->GetListOfFunctions()->GetEntries()<1) hNEventsBGFlag->GetListOfFunctions()->Add(new TPaveText(0.15,0.56,0.85,0.65,"NDC"));
     TPaveText *qaBox = GetQABox(hFlag, 0.15, y1[flagType], 0.85, y2[flagType], "NDC");
     TH1 *histoRate = dynamic_cast<TH1*>(hFlag->Clone("histoRateCloned"));
     histoRate->Sumw2();
@@ -425,7 +418,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray* list) const
     for (Int_t ch=0; ch<16; ++ch) {
       TH1* hClockSlice = hFlag->ProjectionY("hClockSlice", ch+1, ch+1);
       Double_t center = hClockSlice->GetBinContent(11);
-      Double_t flagArray[21] = { 0 };;
+      Double_t flagArray[21] = { 0 };
       for (Int_t iClock = 0; iClock<21; ++iClock)
 	flagArray[iClock] = hClockSlice->GetBinContent(iClock+1);
 
@@ -554,7 +547,7 @@ void AliADQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
   }
 }
 
-// helper functions for drawing histograms H1-H4
+// helper functions for drawing histograms H1-H3
 // (H1)
 TLegend* MakeLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Double_t textSize) {
   TLegend *leg = new TLegend(x1, y1, x2, y2);
@@ -583,19 +576,6 @@ TH1* MakeScaledHistogram(TH1 *h1, Double_t norm, Bool_t sumw2=kFALSE) { // retur
   if (norm)
     h->Scale(1.0/norm);
   return h;
-}
-// (H4) Clone + set kCanDelete bit + SetRangeUser
-TH1* SetRangeUser(TH1* h, TString axis, Double_t aMin, Double_t aMax) {
-  h = dynamic_cast<TH1*>(h->Clone(Form("%s_RangeUser%s", h->GetName(), axis.Data())));
-  h->SetBit(TObject::kCanDelete);
-  if (axis == "X")
-    h->GetXaxis()->SetRangeUser(aMin, aMax);
-  if (axis == "Y")
-    h->GetYaxis()->SetRangeUser(aMin, aMax);
-  return h;
-}
-TH2* SetRangeUser(TH2* h, TString axis, Double_t aMin, Double_t aMax) {
-  return static_cast<TH2*>(SetRangeUser(static_cast<TH1*>(h), axis, aMin, aMax));
 }
 
 TCanvas* AliADQAChecker::CreatePads(TCanvas *c1) const {
@@ -692,7 +672,7 @@ TSpline3* AliADQAChecker::MakeTimeSlewingSpline(TH2* h) const {
 }
 
 //____________________________________________________________________________
-void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
+void AliADQAChecker::MakeImage(TObjArray **list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
 {
   //AliInfoF("task=%d mode=%d", task, mode);
   // makes the QA image for sim and rec
@@ -750,8 +730,8 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
 				      hChargeADC->GetBinContent(hChargeADC->GetMaximumBin()));
       const Float_t minY = TMath::Min(hChargeADA->GetBinContent(hChargeADA->GetMinimumBin()),
 				      hChargeADC->GetBinContent(hChargeADC->GetMinimumBin()));
-      SetRangeUser(hChargeADA, "Y", minY+1 ,2*maxY)->Draw();
-      hChargeADC->DrawCopy("SAME");
+      hChargeADA->DrawCopy()->GetYaxis()->SetRangeUser(minY+1 ,2*maxY);
+      hChargeADC->Draw("SAME");
       TLegend *leg = MakeLegend(0.70,0.67,0.97,0.82, 0.05);
       leg->AddEntry(hChargeADA, "ADA", "L");
       leg->AddEntry(hChargeADC, "ADC", "L");
@@ -759,23 +739,27 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
     }
 
     GetPadByName(c1, "Charge")->cd(2)->SetLogz();
-    TH1* hChargeBB = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeEoIBB));
+    TH1* hChargeBB       = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeEoIBB));
+    TH1 *hChargeBB_zoomY = NULL;
     if (hChargeBB)
-      hChargeBB->DrawCopy("COLZ");
+      hChargeBB->Draw("COLZ");
 
     // (1) Charge pad - zoomed
     GetPadByName(c1, "ChargeZoom")->cd(5)->SetLogz();
     if (hChargeBB) {
-      SetRangeUser(hChargeBB, "Y", fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax())->Draw("COLZ");
+      hChargeBB_zoomY = hChargeBB->DrawCopy("COLZ");
+      hChargeBB_zoomY->GetYaxis()->SetRangeUser(fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax());
     }
     GetPadByName(c1, "ChargeZoom")->cd(4)->SetLogz();
-    TH1* hChargeAll = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeEoI));
+    TH1 *hChargeAll       = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeEoI));
+    TH1 *hChargeAll_zoomY = NULL;
     if (hChargeAll) {
-      SetRangeUser(hChargeAll, "Y", fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax())->Draw("COLZ");
+      hChargeAll_zoomY = hChargeAll->DrawCopy("COLZ");
+      hChargeAll_zoomY->GetYaxis()->SetRangeUser(fQAParam->GetChargeChannelZoomMin(), fQAParam->GetChargeChannelZoomMax());
     }
     GetPadByName(c1, "ChargeZoom")->cd(6)->SetLogz();
-    if (hChargeBB && hChargeAll) {
-      TH1* hRatioBBToAll = MakeRatioHistogram(hChargeBB, hChargeAll);
+    if (hChargeBB_zoomY && hChargeAll_zoomY) {
+      TH1* hRatioBBToAll = MakeRatioHistogram(hChargeBB_zoomY, hChargeAll_zoomY);
       hRatioBBToAll->SetTitle("Ratio: w_BB_Flag/All");
       hRatioBBToAll->Draw("COLZ"); // will be deleted in c1->Clear()
     }
@@ -783,7 +767,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       GetPadByName(c1, "ChargeZoom")->cd(iHist+1)->SetLogz(iHist == 2);
       TH1 *h =dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kChargeVsClockInt0+iHist));
       if (h)
-	h->DrawCopy("COLZ");
+	h->Draw("COLZ");
     }
 
     // (3) Time pad
@@ -791,7 +775,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       GetPadByName(c1, "Time")->cd(iHist+1)->SetLogz(iHist == 3);
       TH1 *h = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kHPTDCTime+iHist));
       if (h)
-	h->DrawCopy("COLZ");
+	h->Draw("COLZ");
     }
 
     // (4) Time ratio pad
@@ -850,7 +834,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       GetPadByName(c1, "ClockCfg")->cd(iHist+1)->SetLogz(iHist > 1);
       TH2* hFlagVsClock = dynamic_cast<TH2*>(listEs->At(AliADQADataMakerRec::kBBFlagVsClock+iHist));
       if (hFlagVsClock)
-	hFlagVsClock->DrawCopy("COLZ");
+	hFlagVsClock->Draw("COLZ");
     }
 
     // (6) Coincidences pad
@@ -859,8 +843,8 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       TH1* hCoincADC = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kNBBCoincADC+2*iHist));
       TH1* hCoincADA = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kNBBCoincADA+2*iHist));
       if (hCoincADC && hCoincADA) {
-	hCoincADC->DrawCopy();
-	hCoincADA->DrawCopy("SAME");
+	hCoincADC->Draw();
+	hCoincADA->Draw("SAME");
 	TLegend *leg = MakeLegend(0.70,0.67,0.97,0.82, 0.05);
 	leg->AddEntry(hCoincADA, "ADA", "L");
 	leg->AddEntry(hCoincADC, "ADC", "L");
@@ -871,7 +855,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       GetPadByName(c1, "Coincidences")->cd(iHist+3)->SetLogz();
       TH1 *hBBCoinc = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kNBBCoincCorr+iHist));
       if (hBBCoinc)
-	hBBCoinc->DrawCopy("COLZ");
+	hBBCoinc->Draw("COLZ");
     }
 
     // (7) Pedestal monitoring pad
@@ -881,7 +865,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
 		   ? dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kPedestalInt0+iHist))
 		   : dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kPedestalDiffInt0+iHist)));
       if (hPed)
-	hPed->DrawCopy("COLZ");
+	hPed->Draw("COLZ");
     }
 
     // (8) Saturation monitoring pad
@@ -897,8 +881,8 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
     GetPadByName(c1, "Triggers")->cd()->SetLogy();
     TH1 *hTrig = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kTriggers));
     if (hTrig) {
-      hTrig->DrawCopy("HIST");
-      hTrig->DrawCopy("TEXT0SAME");
+      hTrig->Draw("HIST");
+      hTrig->Draw("TEXT0SAME");
     }
 
     // (10) Mean time pad
@@ -906,9 +890,9 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
     TH1 *hMeanTimeADA = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kMeanTimeADA));
     TH1 *hMeanTimeADC = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kMeanTimeADC));
     if (hMeanTimeADA && hMeanTimeADC) {
-      SetRangeUser(hMeanTimeADA, "Y", 0, 1.1*TMath::Max(hMeanTimeADA->GetBinContent(hMeanTimeADA->GetMaximumBin()),
-							hMeanTimeADC->GetBinContent(hMeanTimeADC->GetMaximumBin())))->Draw();
-      hMeanTimeADC->DrawCopy("SAME");
+      hMeanTimeADA->DrawCopy()->GetYaxis()->SetRangeUser(0, 1.1*TMath::Max(hMeanTimeADA->GetBinContent(hMeanTimeADA->GetMaximumBin()),
+									   hMeanTimeADC->GetBinContent(hMeanTimeADC->GetMaximumBin())));
+      hMeanTimeADC->Draw("SAME");
       TLegend *leg = MakeLegend(0.70,0.67,0.97,0.82, 0.05);
       leg->AddEntry(hMeanTimeADA, "ADA", "L");
       leg->AddEntry(hMeanTimeADC, "ADC", "L");
@@ -918,7 +902,7 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       GetPadByName(c1, "MeanTime")->cd(iHist+2)->SetLogz();
       TH1* hMeanTimeDiff = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kMeanTimeDiff+iHist));
       if (hMeanTimeDiff)
-	hMeanTimeDiff->DrawCopy("COLZ");
+	hMeanTimeDiff->Draw("COLZ");
     }
 
     // (11) time slewing and Decisions pad
@@ -931,26 +915,26 @@ void AliADQAChecker::MakeImage(TObjArray** list, AliQAv1::TASKINDEX_t task, AliQ
       GetPadByName(c1, "Decisions")->cd(1+2*side)->SetLogz();
       if (!hTimeSlewing[side])
 	continue;
-      hTimeSlewing[side] = SetRangeUser(hTimeSlewing[side], "Y", fQAParam->GetTdcTimeMinBBFlag(), fQAParam->GetTdcTimeMaxBBFlag());
+      hTimeSlewing[side] = dynamic_cast<TH2*>(hTimeSlewing[side]->DrawCopy("COLZ"));
+      hTimeSlewing[side]->GetYaxis()->SetRangeUser(fQAParam->GetTdcTimeMinBBFlag(), fQAParam->GetTdcTimeMaxBBFlag());
       hTimeSlewing[side]->SetTitle(TString::Format("Time slewing %s", sideName[side]));
-      hTimeSlewing[side]->Draw("COLZ");
       MakeTimeSlewingSpline(hTimeSlewing[side])->Draw("PSAME");
     }
     GetPadByName(c1, "Decisions")->cd(2);
     TH1* hDecisions = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kDecisions));
     if (hDecisions)
-      hDecisions->DrawCopy("COLZTEXT");
+      hDecisions->Draw("COLZTEXT");
 
     // (12) charge trend
     GetPadByName(c1, "ChargeTrend")->cd();
     TH1* hChargeQuantileADA = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADA));
     TH1* hChargeQuantileADC = dynamic_cast<TH1*>(listEs->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADC));
     if (hChargeQuantileADA && hChargeQuantileADC) {
-      hChargeQuantileADA = SetRangeUser(hChargeQuantileADA, "Y", fQAParam->GetChargeTrendMin(), fQAParam->GetChargeTrendMax());
+      hChargeQuantileADA = hChargeQuantileADA->DrawCopy();
+      hChargeQuantileADA->GetYaxis()->SetRangeUser(fQAParam->GetChargeTrendMin(), fQAParam->GetChargeTrendMax());
       hChargeQuantileADA->GetYaxis()->SetTitle("Quantile 0.9");
       hChargeQuantileADA->GetXaxis()->SetRange(1, hChargeQuantileADC->GetNbinsX()-1);
-      hChargeQuantileADA->Draw();
-      hChargeQuantileADC->DrawCopy("SAME");
+      hChargeQuantileADC->Draw("SAME");
       TLegend *leg = MakeLegend(0.70,0.67,0.97,0.82, 0.05);
       leg->AddEntry(hChargeQuantileADA, "ADA", "L");
       leg->AddEntry(hChargeQuantileADC, "ADC", "L");
