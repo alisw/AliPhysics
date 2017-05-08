@@ -1769,8 +1769,8 @@ private:
   const static Int_t fkNHistv1etaPt = 6;
   TProfile2D *fFlowSPZDCv1etaPtPro[fCRCMaxnCen][fkNHistv1etaPt]; //!
   TH2D *fFlowSPZDCv1etaPtHist[fCRCMaxnCen][fkNHistv1etaPt]; //!
-  const static Int_t fkNHistQVecCorrv1eta = 10;
-//  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
+  const static Int_t fkNHistQVecCorrv1eta = 6;
+  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
   TProfile3D *fTPCQVecProTemp[2][2]; //!
