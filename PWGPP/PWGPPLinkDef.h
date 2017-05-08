@@ -186,4 +186,8 @@
 #pragma link C++ class  AliAnalysisTrackingUncertaintiesAOT+;
 #pragma link C++ class  AliAnalysisTrackingUncertainties+;
 #pragma link C++ class  AliAnalysisTaskEventCutsValidation+;
+
+// vdM task
+#pragma link C++ class  AliAnalysisTaskVdM+;
+
 #endif
