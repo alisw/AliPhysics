@@ -839,8 +839,8 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if(fSelectCharge==kNegCh && dCharge>0.) continue;
         
         if(fCRCTestSin) {
-          if(dCharge > 0.) dPt += 1.E-3;
-          else dPt -= 1.E-3;
+          if(dCharge > 0.) dPt += 1.E-2;
+          else dPt -= 1.E-2;
         }
         
         cw = (dCharge > 0. ? 0 : 1);
