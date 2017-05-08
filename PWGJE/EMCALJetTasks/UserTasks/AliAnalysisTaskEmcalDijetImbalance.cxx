@@ -1710,6 +1710,8 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
   // Plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
   
   TString histname;
+  Double_t Enonlin;
+  Double_t Ehadcorr;
   AliClusterContainer* clusters = 0;
   TIter nextClusColl(&fClusterCollArray);
   while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
@@ -1751,12 +1753,12 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
 
       
       // Fill cluster spectra by SM
-      Double_t Enonlin;
-      Double_t Ehadcorr;
+      Enonlin = 0;
+      Ehadcorr = 0;
       if (it->second->IsEMCAL()) {
         
         Ehadcorr = it->second->GetHadCorrEnergy();
-        Ehadcorr = it->second->GetNonLinCorrEnergy();
+        Enonlin = it->second->GetNonLinCorrEnergy();
         
         Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
         if (sm >=0 && sm < 20) {
