@@ -1,7 +1,7 @@
 // Important do not use this FilterTask for final Filtered AOD productions!
 // Due to the variability of the used config file, it is to easy to loose track of the used settings!
 
-AliAnalysisTask *AddTask_caklein_LMEEFilter_PbPb(
+AliAnalysisTask *AddTaskLMEEFilter_PbPb(
   TString cfg="ConfigLMEE_nano_PbPb.C",
   Bool_t gridconf=kFALSE,
   TString period="",
