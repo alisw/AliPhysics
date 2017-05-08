@@ -124,24 +124,24 @@ void AliAnalysisTaskdEdxSSDQA::UserCreateOutputObjects()
   fHist6sa=new TH2F("QNvQPSA",";QN;QP",160,0,1600,1600,0,1600);
   fListOfHistos->Add(fHist6sa);
 	
-  fHist7=new TH2F("ZetaPhiLay5"," : z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
+  fHist7=new TH2F("ZetaPhiLay5","Layer 5 - global tracks ; z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
   fListOfHistos->Add(fHist7);
-  fHist7sa=new TH2F("ZetaPhiLay5sa"," : z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
+  fHist7sa=new TH2F("ZetaPhiLay5sa","Layer 5 - ITSsa tracks ; z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
   fListOfHistos->Add(fHist7sa);
 
-  fHist8=new TH2F("ZetaPhiLay6"," : z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
+  fHist8=new TH2F("ZetaPhiLay6","Layer 6 - global tracks ; z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
   fListOfHistos->Add(fHist8);
-  fHist8sa=new TH2F("ZetaPhiLay6sa"," : z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
+  fHist8sa=new TH2F("ZetaPhiLay6sa","Layer 6 - ITSsa tracks ; z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
   fListOfHistos->Add(fHist8sa);
 
-  fHist9=new TH2F("LadModLay5"," : module : ladder",22,0.5,22.5,34,0.5,34.5);
+  fHist9=new TH2F("LadModLay5","Layer 5 - global tracks ; Detector ; Ladder",22,0.5,22.5,34,0.5,34.5);
   fListOfHistos->Add(fHist9);
-  fHist9sa=new TH2F("LadModLay5sa"," : module : ladder",22,0.5,22.5,34,0.5,34.5);
+  fHist9sa=new TH2F("LadModLay5sa","Layer 5 - ITSsa tracks ; Detector ; Ladder",22,0.5,22.5,34,0.5,34.5);
   fListOfHistos->Add(fHist9sa);
 
-  fHist10=new TH2F("LadModLay6"," : module : ladder",25,0.5,25.5,38,0.5,38.5);
+  fHist10=new TH2F("LadModLay6","Layer 6 - global tracks ; Detector ; Ladder",25,0.5,25.5,38,0.5,38.5);
   fListOfHistos->Add(fHist10);
-  fHist10sa=new TH2F("LadModLay6sa"," : module : ladder",25,0.5,25.5,38,0.5,38.5);
+  fHist10sa=new TH2F("LadModLay6sa","Layer 6 - ITSsa tracks ;  Detector ; Ladder",25,0.5,25.5,38,0.5,38.5);
   fListOfHistos->Add(fHist10sa);
 
 
