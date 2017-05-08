@@ -2600,9 +2600,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
 
     // pT binning
     Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
-    0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
+        0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
         2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
-       4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
+        4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
     //Double_t lPtbinlimits[] = {0.2,0.3, 0.4, 0.5, 0.6,
     //    0.7,0.8,.9,1.0,1.2, 1.4, 1.6, 1.8 ,2.0,
     //    2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,
@@ -3140,8 +3140,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     // STEP 1: Decide on binning (needed to improve on memory consumption)
     
     // pT binning
-    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6, 0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
-        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
+    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
+        0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
+        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
+        4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
     
     // centrality binning
@@ -3394,6 +3396,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lN++;
     }
     
+    Float_t lLowRap = -0.6;
+    Float_t lHighRap = -0.5;
+    for(Int_t i=0;i<4;i++){
+        lLowRap = -0.6;
+        lHighRap = -0.5;
+        for(Int_t irapbin=0;irapbin<12;irapbin++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%f_%f",lParticleName[i].Data(),"DefaultRapiditySweep",lLowRap,lHighRap ) );
+            lCascadeResult[lN]->SetCutMinRapidity(lLowRap);
+            lCascadeResult[lN]->SetCutMaxRapidity(lHighRap);
+            lN++;
+            lLowRap+=0.1;
+            lHighRap+=0.1;
+        }
+    }
+    
     // STEP 4: Creation of objects to be used in systematics
     // Optimized via use of copy constructors
     for(Int_t i = 0 ; i < 4 ; i ++){
@@ -3633,8 +3650,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfiguration276TeV
     // STEP 1: Decide on binning (needed to improve on memory consumption)
 
     // pT binning
-    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6, 0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
-        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
+    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
+        0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
+        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
+        4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
 
     // centrality binning
@@ -3645,7 +3664,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfiguration276TeV
     TString lParticleName[] = {"XiMinus", "XiPlus",  "OmegaMinus", "OmegaPlus"};
 
     //Just a counter and one array, please. Nothing else needed
-    AliCascadeResult *lCascadeResult[4];
+    AliCascadeResult *lCascadeResult[100];
     Long_t lN = 0;
 
     //Map to mass hypothesis
@@ -3663,7 +3682,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfiguration276TeV
         lCascadeResult[lN]->SetCutDCANegToPV            ( 0.1    ) ;
         lCascadeResult[lN]->SetCutDCAPosToPV            ( 0.1    ) ;
         lCascadeResult[lN]->SetCutDCAV0Daughters        ( 0.8    ) ;
-        lCascadeResult[lN]->SetCutV0CosPA               ( 0.998  ) ;
+        lCascadeResult[lN]->SetCutV0CosPA               ( 0.95   ) ; // + variable
+        lCascadeResult[lN]->SetCutUse276TeVV0CosPA      ( kTRUE  ) ; 
         lCascadeResult[lN]->SetCutV0Radius              ( 3.0    ) ;
         //Setters for Cascade Cuts
         lCascadeResult[lN]->SetCutDCAV0ToPV             ( 0.1    ) ;
@@ -3687,7 +3707,33 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfiguration276TeV
         //Add result to pool
         lN++;
     }
-
+    
+    //Explore restricted rapidity range check
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_276TeV_y03",lParticleName[i].Data() ) );
+        
+        lCascadeResult[lN] -> SetCutMinRapidity(-0.3);
+        lCascadeResult[lN] -> SetCutMaxRapidity(+0.3);
+        
+        //Add result to pool
+        lN++;
+    }
+    
+    Float_t lLowRap = -0.6;
+    Float_t lHighRap = -0.5;
+    for(Int_t i=0;i<4;i++){
+        lLowRap = -0.6;
+        lHighRap = -0.5;
+        for(Int_t irapbin=0;irapbin<12;irapbin++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%f_%f",lParticleName[i].Data(),"276TeVRapiditySweep",lLowRap,lHighRap ) );
+            lCascadeResult[lN]->SetCutMinRapidity(lLowRap);
+            lCascadeResult[lN]->SetCutMaxRapidity(lHighRap);
+            lN++;
+            lLowRap+=0.1;
+            lHighRap+=0.1;
+        }
+    }
+    
     for (Int_t iconf = 0; iconf<lN; iconf++)
         AddConfiguration(lCascadeResult[iconf]);
 

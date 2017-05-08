@@ -1055,37 +1055,37 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
 
     if(! fHistGeneratedPtVsYVsCentralityK0Short ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",200,0,20,80,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityK0Short);
     }
     if(! fHistGeneratedPtVsYVsCentralityLambda ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",200,0,20,80,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityLambda);
     }
     if(! fHistGeneratedPtVsYVsCentralityAntiLambda ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",200,0,20,80,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityAntiLambda);
     }
     if(! fHistGeneratedPtVsYVsCentralityXiMinus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",200,0,20,80,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityXiMinus);
     }
     if(! fHistGeneratedPtVsYVsCentralityXiPlus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",200,0,20,80,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityXiPlus);
     }
     if(! fHistGeneratedPtVsYVsCentralityOmegaMinus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",200,0,20,80,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaMinus);
     }
     if(! fHistGeneratedPtVsYVsCentralityOmegaPlus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",200,0,20,80,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaPlus);
     }
 
@@ -3366,7 +3366,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
         0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
         2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
-        4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
+        4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
     //Double_t lPtbinlimits[] = {0.2,0.3, 0.4, 0.5, 0.6,
     //    0.7,0.8,.9,1.0,1.2, 1.4, 1.6, 1.8 ,2.0,
     //    2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,
@@ -3912,8 +3912,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     // STEP 1: Decide on binning (needed to improve on memory consumption)
     
     // pT binning
-    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6, 0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
-        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
+    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
+        0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
+        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
+        4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
     
     // centrality binning
@@ -4172,6 +4174,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         lN++;
     }
     
+    Float_t lLowRap = -0.6;
+    Float_t lHighRap = -0.5;
+    for(Int_t i=0;i<4;i++){
+        lLowRap = -0.6;
+        lHighRap = -0.5;
+        for(Int_t irapbin=0;irapbin<12;irapbin++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%f_%f",lParticleName[i].Data(),"DefaultRapiditySweep",lLowRap,lHighRap ) );
+            lCascadeResult[lN]->SetCutMinRapidity(lLowRap);
+            lCascadeResult[lN]->SetCutMaxRapidity(lHighRap);
+            lN++;
+            lLowRap+=0.1;
+            lHighRap+=0.1;
+        }
+    }
+    
     // STEP 4: Creation of objects to be used in systematics
     // Optimized via use of copy constructors
     for(Int_t i = 0 ; i < 4 ; i ++){
@@ -4413,8 +4430,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddCascadeConfiguration276T
     // STEP 1: Decide on binning (needed to improve on memory consumption)
 
     // pT binning
-    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6, 0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
-        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
+    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
+        0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
+        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
+        4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
 
     // centrality binning
@@ -4425,7 +4444,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddCascadeConfiguration276T
     TString lParticleName[] = {"XiMinus", "XiPlus",  "OmegaMinus", "OmegaPlus"};
 
     //Just a counter and one array, please. Nothing else needed
-    AliCascadeResult *lCascadeResult[4];
+    AliCascadeResult *lCascadeResult[100];
     Long_t lN = 0;
 
     //Map to mass hypothesis
@@ -4467,6 +4486,32 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddCascadeConfiguration276T
 
         //Add result to pool
         lN++;
+    }
+    
+    //Explore restricted rapidity range check
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_276TeV_y03",lParticleName[i].Data() ) );
+        
+        lCascadeResult[lN] -> SetCutMinRapidity(-0.3);
+        lCascadeResult[lN] -> SetCutMaxRapidity(+0.3);
+        
+        //Add result to pool
+        lN++;
+    }
+    
+    Float_t lLowRap = -0.6;
+    Float_t lHighRap = -0.5;
+    for(Int_t i=0;i<4;i++){
+        lLowRap = -0.6;
+        lHighRap = -0.5;
+        for(Int_t irapbin=0;irapbin<12;irapbin++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%f_%f",lParticleName[i].Data(),"276TeVRapiditySweep",lLowRap,lHighRap ) );
+            lCascadeResult[lN]->SetCutMinRapidity(lLowRap);
+            lCascadeResult[lN]->SetCutMaxRapidity(lHighRap);
+            lN++;
+            lLowRap+=0.1;
+            lHighRap+=0.1;
+        }
     }
 
     for (Int_t iconf = 0; iconf<lN; iconf++)
