@@ -213,6 +213,8 @@ AliAnalysisTaskVdM::AliAnalysisTaskVdM(const char *name)
   , fVertexTracks()
   , fVertexTracksUnconstrained()
   , fTriggerIRs("AliTriggerIR", 3)
+  , fFiredTriggerClasses()
+  , fTreeData()
 {
   for (Int_t i=0; i<kNHist;++i) {
     fHist[i] = nullptr;
