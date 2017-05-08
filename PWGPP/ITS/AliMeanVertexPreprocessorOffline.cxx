@@ -37,13 +37,15 @@
 #include <TNamed.h>
 #include "TClass.h"
 #include <TCanvas.h>
+#include "TString.h"
 
 #include "AliESDVertex.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TF1.h"
 #include "TProfile.h"
-
+#include "TFitResultPtr.h"
+#include "TFitResult.h"
 
 ClassImp(AliMeanVertexPreprocessorOffline)
 
@@ -57,6 +59,7 @@ const Char_t *AliMeanVertexPreprocessorOffline::fgkStatusCodeName[AliMeanVertexP
   "write MeanVertex computed online",
   "write SPD vtx offline",
   "lumi region or cov matrix computation problems, default values set"
+  "problme in the fit of Z coordinate for Cpass1 update"
 };
 
 
@@ -224,25 +227,30 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     vertexerSPD3Doff = kTRUE;
     AliWarning("Vertexer SPD 3D off");
   }
+
+
+  const char* whichpass = gSystem->Getenv("ALIEN_JDL_LPMCPASSMODE");
   
-  Double_t xMeanVtx=0., yMeanVtx=0., zMeanVtx=0.;
-  Double_t xSigmaVtx=0., ySigmaVtx=0., zSigmaVtx=0.;
-  
-  
-  TF1 *fitVtxX, *fitVtxY, *fitVtxZ;
-  
-  if (useTRKvtx || useITSSAvtx){
-    histTRKvtxX ->Fit("gaus", "M", "", -0.3, 0.3);
-    fitVtxX = histTRKvtxX -> GetFunction("gaus");
-    xMeanVtx = fitVtxX -> GetParameter(1);
-    if (TMath::Abs(xMeanVtx) > 2.) {
-      xMeanVtx = 0.;
-      writeMeanVertexSPD=kTRUE;
-      fStatus=kWriteMeanVertexSPD;
-    }
+  if (strcmp(whichpass, "0") == 0){
+   
+    Double_t xMeanVtx=0., yMeanVtx=0., zMeanVtx=0.;
+    Double_t xSigmaVtx=0., ySigmaVtx=0., zSigmaVtx=0.;
     
-    histTRKvtxY ->Fit("gaus", "M", "", -0.4, 0.7);
-    fitVtxY = histTRKvtxY -> GetFunction("gaus");
+    
+    TF1 *fitVtxX, *fitVtxY, *fitVtxZ;
+    
+    if (useTRKvtx || useITSSAvtx){
+      histTRKvtxX ->Fit("gaus", "M", "", -0.3, 0.3);
+      fitVtxX = histTRKvtxX -> GetFunction("gaus");
+      xMeanVtx = fitVtxX -> GetParameter(1);
+      if (TMath::Abs(xMeanVtx) > 2.) {
+	xMeanVtx = 0.;
+	writeMeanVertexSPD=kTRUE;
+	fStatus=kWriteMeanVertexSPD;
+      }
+      
+      histTRKvtxY ->Fit("gaus", "M", "", -0.4, 0.7);
+      fitVtxY = histTRKvtxY -> GetFunction("gaus");
     yMeanVtx = fitVtxY -> GetParameter(1);
     if (TMath::Abs(yMeanVtx) > 2.) {
       yMeanVtx = 0.;
@@ -260,40 +268,38 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       writeMeanVertexSPD=kTRUE;
       fStatus=kWriteMeanVertexSPD;
     }
+    }
     
-  }
-  
-  
   //check fits: compare histo mean with fit mean value
-  Double_t xHistoMean, yHistoMean, zHistoMean;
-  Double_t xHistoRMS, yHistoRMS, zHistoRMS;
-  
-  if (useTRKvtx || useITSSAvtx){
-    xHistoMean = histTRKvtxX -> GetMean();
-    xHistoRMS = histTRKvtxX ->GetRMS();
+    Double_t xHistoMean, yHistoMean, zHistoMean;
+    Double_t xHistoRMS, yHistoRMS, zHistoRMS;
     
-    if ((TMath::Abs(xHistoMean-xMeanVtx) > 0.5)){
-      AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
-      useTRKvtx = kFALSE;
-      useITSSAvtx = kFALSE;
-      useSPDvtx = kTRUE;
+    if (useTRKvtx || useITSSAvtx){
+      xHistoMean = histTRKvtxX -> GetMean();
+      xHistoRMS = histTRKvtxX ->GetRMS();
+      
+      if ((TMath::Abs(xHistoMean-xMeanVtx) > 0.5)){
+	AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
+	useTRKvtx = kFALSE;
+	useITSSAvtx = kFALSE;
+	useSPDvtx = kTRUE;
       fStatus=kUseOfflineSPDvtx;
-    }
-    
-    yHistoMean = histTRKvtxY ->GetMean();
-    yHistoRMS = histTRKvtxY ->GetRMS();
-    
-    if ((TMath::Abs(yHistoMean-yMeanVtx) > 0.5)){
-      AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
-      useTRKvtx = kFALSE;
-      useITSSAvtx = kFALSE;
-      useSPDvtx = kTRUE;
-      fStatus=kUseOfflineSPDvtx;
-    }
-    
-    zHistoMean = histTRKvtxZ -> GetMean();
-    zHistoRMS = histTRKvtxZ ->GetRMS();
-    
+      }
+      
+      yHistoMean = histTRKvtxY ->GetMean();
+      yHistoRMS = histTRKvtxY ->GetRMS();
+      
+      if ((TMath::Abs(yHistoMean-yMeanVtx) > 0.5)){
+	AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
+	useTRKvtx = kFALSE;
+	useITSSAvtx = kFALSE;
+	useSPDvtx = kTRUE;
+	fStatus=kUseOfflineSPDvtx;
+      }
+      
+      zHistoMean = histTRKvtxZ -> GetMean();
+      zHistoRMS = histTRKvtxZ ->GetRMS();
+      
     if ((TMath::Abs(zHistoMean-zMeanVtx) > 1.)){
       AliWarning(Form("Possible problems with the fit mean very different from histo mean... using SPD vertex"));
       useTRKvtx = kFALSE;
@@ -302,251 +308,247 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       fStatus=kUseOfflineSPDvtx;
     }
     AliDebug(2, Form("xHistoRMS = %f, yHistoRMS = %f, zHistoRMS = %f", xHistoRMS, yHistoRMS, zHistoRMS));
-  }
-  
-  
-  if ((useSPDvtx) && (spdAvailable) && (!vertexerSPD3Doff)){
-    
-    histSPDvtxX ->Fit("gaus", "M");
-    fitVtxX = histSPDvtxX -> GetFunction("gaus");
-    xMeanVtx = fitVtxX -> GetParameter(1);
-    xSigmaVtx = fitVtxX -> GetParameter(2);
-    if (TMath::Abs(xMeanVtx) > 2.) {
-      xMeanVtx = 0.;
-      writeMeanVertexSPD=kTRUE;
     }
     
-    histSPDvtxY ->Fit("gaus", "M");
-    fitVtxY = histSPDvtxY -> GetFunction("gaus");
-    yMeanVtx = fitVtxY -> GetParameter(1);
-    ySigmaVtx = fitVtxY -> GetParameter(2);
-    if (TMath::Abs(yMeanVtx) > 2.) {
+    
+    if ((useSPDvtx) && (spdAvailable) && (!vertexerSPD3Doff)){
+      
+      histSPDvtxX ->Fit("gaus", "M");
+      fitVtxX = histSPDvtxX -> GetFunction("gaus");
+      xMeanVtx = fitVtxX -> GetParameter(1);
+      xSigmaVtx = fitVtxX -> GetParameter(2);
+      if (TMath::Abs(xMeanVtx) > 2.) {
+	xMeanVtx = 0.;
+	writeMeanVertexSPD=kTRUE;
+      }
+      
+      histSPDvtxY ->Fit("gaus", "M");
+      fitVtxY = histSPDvtxY -> GetFunction("gaus");
+      yMeanVtx = fitVtxY -> GetParameter(1);
+      ySigmaVtx = fitVtxY -> GetParameter(2);
+      if (TMath::Abs(yMeanVtx) > 2.) {
       yMeanVtx = 0.;
       writeMeanVertexSPD=kTRUE;
-    }
-    
-    histSPDvtxZ ->Fit("gaus", "M", "", -12, 12);
-    fitVtxZ = histSPDvtxZ -> GetFunction("gaus");
-    zMeanVtx = fitVtxZ -> GetParameter(1);
-    zSigmaVtx = fitVtxZ -> GetParameter(2);
-    if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
+      }
+      
+      histSPDvtxZ ->Fit("gaus", "M", "", -12, 12);
+      fitVtxZ = histSPDvtxZ -> GetFunction("gaus");
+      zMeanVtx = fitVtxZ -> GetParameter(1);
+      zSigmaVtx = fitVtxZ -> GetParameter(2);
+      if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
       zMeanVtx = histSPDvtxZ ->GetMean();
       zSigmaVtx = histSPDvtxZ->GetRMS();
       writeMeanVertexSPD = kTRUE;
-    }
-    
-  }
-  else if ((useSPDvtx) && (!spdAvailable)){
-    AliError(Form("Difference between trkVtx and online one, SPD histos not enough entry or SPD 3D vertex off. Writing Mean Vertex SPD"));
-    writeMeanVertexSPD = kTRUE;
-  }
-  
-  
-  //check with online position
-  
-  Double_t posOnline[3], sigmaOnline[3];
-  
-  if (useTRKvtx || useITSSAvtx || writeMeanVertexSPD){
-    AliCDBManager *manCheck = AliCDBManager::Instance();
-    manCheck->SetDefaultStorage("raw://");
-    manCheck->SetRun(runNb);
-    
-    AliCDBEntry *entr = manCheck->Get("GRP/Calib/MeanVertexSPD");
-    if(entr) {
-      AliESDVertex *vtxOnline = (AliESDVertex*)entr->GetObject();
-      
-      posOnline[0] = vtxOnline->GetX();
-      posOnline[1] = vtxOnline->GetY();
-      posOnline[2] = vtxOnline->GetZ();
-      
-      sigmaOnline[0] = vtxOnline->GetXRes();
-      sigmaOnline[1] = vtxOnline->GetYRes();
-      sigmaOnline[2] = vtxOnline->GetZRes();
-      
-      AliDebug(2, Form("sigmaOnline[0] = %f, sigmaOnline[1] = %f, sigmaOnline[2] = %f", sigmaOnline[0], sigmaOnline[1], sigmaOnline[2]));
-      //vtxOnline->GetSigmaXYZ(sigmaOnline);
-      
-      if ((TMath::Abs(posOnline[0]-xMeanVtx) > 0.1) || (TMath::Abs(posOnline[1]-yMeanVtx) > 0.1) || (TMath::Abs(posOnline[2]-zMeanVtx) > 1.)){
-        AliWarning(Form("vertex offline far from the online one"));
       }
+      
     }
-  }
-  
-  
-  
-  if (writeMeanVertexSPD){
-    
-    AliWarning(Form("Writing Mean Vertex SPD, Mean Vertex not available"));
-    
-    Double_t sigma[3]={0.0150, 0.0150, zSigmaVtx};
-    
-    AliESDVertex  *vertex =  new AliESDVertex(posOnline, sigma, "vertex");
-    
-    AliCDBId id("GRP/Calib/MeanVertex", runNb, runNb);
-    
-    AliCDBMetaData metaData;
-    metaData.SetBeamPeriod(0); //check!!!!
-    metaData.SetResponsible("Davide Caffarri");
-    metaData.SetComment("Mean Vertex object used in reconstruction");
-    
-    if (!db->Put(vertex, id, &metaData)) {
-      AliError(Form("Error while putting object in storage %s", db->GetURI().Data()));
+    else if ((useSPDvtx) && (!spdAvailable)){
+      AliError(Form("Difference between trkVtx and online one, SPD histos not enough entry or SPD 3D vertex off. Writing Mean Vertex SPD"));
+      writeMeanVertexSPD = kTRUE;
     }
     
-    delete vertex;
-    return;
-  }
-  
-  
-  Bool_t highMultEnvironment = kFALSE;
-  Bool_t highMultppEnvironment = kFALSE;
-  Bool_t lowMultppEnvironment = kFALSE;
-  
-  
-  AliCDBEntry *grpEntry = manCheck->Get("GRP/GRP/Data");
-  if(!grpEntry) {
-    Printf("GRP entry not found!");
-    return;
-  }
-  
-  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(grpEntry->GetObject());
-  if(!grpData) {
-    Printf("GRP Data file not found");
-    return;
-  }
-  
-  TString beamType(grpData->GetBeamType());
-  if(beamType == "A-A") highMultEnvironment = kTRUE;
-  else
-    if((beamType == "p-A")||(beamType == "A-p")) highMultppEnvironment = kTRUE;
-    else lowMultppEnvironment = kTRUE;
-  
-  Float_t meanMult = 38.;
-  Float_t p2 = 1.3;
-  Float_t resolVtx = 0.04;
-  
-  Double_t xSigmaMult, ySigmaMult, corrXZ, corrYZ, lumiRegSquaredX, lumiRegSquaredY;
-  Double_t covarXZ=0., covarYZ=0.;
-  
-  TF1 *corrFit;
-  
+    
+    //check with online position
+    
+    Double_t posOnline[3], sigmaOnline[3];
+    
+    if (useTRKvtx || useITSSAvtx || writeMeanVertexSPD){
+      AliCDBManager *manCheck = AliCDBManager::Instance();
+      manCheck->SetDefaultStorage("raw://");
+      manCheck->SetRun(runNb);
+    
+      AliCDBEntry *entr = manCheck->Get("GRP/Calib/MeanVertexSPD");
+      if(entr) {
+	AliESDVertex *vtxOnline = (AliESDVertex*)entr->GetObject();
+	
+	posOnline[0] = vtxOnline->GetX();
+	posOnline[1] = vtxOnline->GetY();
+	posOnline[2] = vtxOnline->GetZ();
+	
+	sigmaOnline[0] = vtxOnline->GetXRes();
+	sigmaOnline[1] = vtxOnline->GetYRes();
+	sigmaOnline[2] = vtxOnline->GetZRes();
+	
+	AliDebug(2, Form("sigmaOnline[0] = %f, sigmaOnline[1] = %f, sigmaOnline[2] = %f", sigmaOnline[0], sigmaOnline[1], sigmaOnline[2]));
+      //vtxOnline->GetSigmaXYZ(sigmaOnline);
+	
+	if ((TMath::Abs(posOnline[0]-xMeanVtx) > 0.1) || (TMath::Abs(posOnline[1]-yMeanVtx) > 0.1) || (TMath::Abs(posOnline[2]-zMeanVtx) > 1.)){
+	  AliWarning(Form("vertex offline far from the online one"));
+	}
+      }
+    }  
+
+    if (writeMeanVertexSPD){
+      
+      AliWarning(Form("Writing Mean Vertex SPD, Mean Vertex not available"));
+      
+      Double_t sigma[3]={0.0150, 0.0150, zSigmaVtx};
+      
+      AliESDVertex  *vertex =  new AliESDVertex(posOnline, sigma, "vertex");
+      
+      AliCDBId id("GRP/Calib/MeanVertex", runNb, runNb);
+      
+      AliCDBMetaData metaData;
+      metaData.SetBeamPeriod(0); //check!!!!
+      metaData.SetResponsible("Davide Caffarri");
+      metaData.SetComment("Mean Vertex object used in reconstruction");
+      
+      if (!db->Put(vertex, id, &metaData)) {
+	AliError(Form("Error while putting object in storage %s", db->GetURI().Data()));
+      }
+      
+      delete vertex;
+      return;
+    }
+    
+    
+    Bool_t highMultEnvironment = kFALSE;
+    Bool_t highMultppEnvironment = kFALSE;
+    Bool_t lowMultppEnvironment = kFALSE;
+    
+    
+    AliCDBEntry *grpEntry = manCheck->Get("GRP/GRP/Data");
+    if(!grpEntry) {
+      Printf("GRP entry not found!");
+      return;
+    }
+    
+    AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(grpEntry->GetObject());
+    if(!grpData) {
+      Printf("GRP Data file not found");
+      return;
+    }
+    
+    TString beamType(grpData->GetBeamType());
+    if(beamType == "A-A") highMultEnvironment = kTRUE;
+    else
+      if((beamType == "p-A")||(beamType == "A-p")) highMultppEnvironment = kTRUE;
+      else lowMultppEnvironment = kTRUE;
+    
+    Float_t meanMult = 38.;
+    Float_t p2 = 1.3;
+    Float_t resolVtx = 0.04;
+    
+    Double_t xSigmaMult, ySigmaMult, corrXZ, corrYZ, lumiRegSquaredX, lumiRegSquaredY;
+    Double_t covarXZ=0., covarYZ=0.;
+    
+    TF1 *corrFit;
+    
   //TH1F *histTRKdefMultX=0;
   //TH1F *histTRKdefMultY=0;
-  TH1F *histTRKHighMultX=0;
-  TH1F *histTRKHighMultY=0;
-  TH2F *histTRKVertexXZ=0;
-  TH2F *histTRKVertexYZ=0;
-  
-  TH2F *histTRKvsMultX=0x0;
-  TH2F *histTRKvsMultY=0x0;
-  
-  if (useTRKvtx){
-    if (list){
-      //histTRKdefMultX = (TH1F*)list->FindObject("hTRKVertexXdefMult");
+    TH1F *histTRKHighMultX=0;
+    TH1F *histTRKHighMultY=0;
+    TH2F *histTRKVertexXZ=0;
+    TH2F *histTRKVertexYZ=0;
+    
+    TH2F *histTRKvsMultX=0x0;
+    TH2F *histTRKvsMultY=0x0;
+    
+    if (useTRKvtx){
+      if (list){
+	//histTRKdefMultX = (TH1F*)list->FindObject("hTRKVertexXdefMult");
       //histTRKdefMultY = (TH1F*)list->FindObject("hTRKVertexYdefMult");
-      histTRKHighMultX = (TH1F*)list->FindObject("hTRKVertexXHighMult");
-      histTRKHighMultY = (TH1F*)list->FindObject("hTRKVertexYHighMult");
+	histTRKHighMultX = (TH1F*)list->FindObject("hTRKVertexXHighMult");
+	histTRKHighMultY = (TH1F*)list->FindObject("hTRKVertexYHighMult");
+	
+	histTRKvsMultX = (TH2F*)list->FindObject("hTRKVertexXvsMult");
+	histTRKvsMultY = (TH2F*)list->FindObject("hTRKVertexYvsMult");
+	
+	histTRKVertexXZ = (TH2F*)list->FindObject("hTRKVertexXZ");
+	histTRKVertexYZ = (TH2F*)list->FindObject("hTRKVertexYZ");
+      }
       
-      histTRKvsMultX = (TH2F*)list->FindObject("hTRKVertexXvsMult");
-      histTRKvsMultY = (TH2F*)list->FindObject("hTRKVertexYvsMult");
+      else {
+	//histTRKdefMultX = (TH1F*)file->Get("hTRKVertexXdefMult");
+	//histTRKdefMultY = (TH1F*)file->Get("hTRKVertexYdefMult");
+	histTRKHighMultX = (TH1F*)file->Get("hTRKVertexXHighMult");
+	histTRKHighMultY = (TH1F*)file->Get("hTRKVertexYHighMult");
+	
+	histTRKvsMultX = (TH2F*)file->FindObject("hTRKVertexXvsMult");
+	histTRKvsMultY = (TH2F*)file->FindObject("hTRKVertexYvsMult");
+	
+	histTRKVertexXZ = (TH2F*)file->Get("hTRKVertexXZ");
+	histTRKVertexYZ = (TH2F*)file->Get("hTRKVertexYZ");
+      }
       
-      histTRKVertexXZ = (TH2F*)list->FindObject("hTRKVertexXZ");
-      histTRKVertexYZ = (TH2F*)list->FindObject("hTRKVertexYZ");
     }
     
-    else {
-      //histTRKdefMultX = (TH1F*)file->Get("hTRKVertexXdefMult");
-      //histTRKdefMultY = (TH1F*)file->Get("hTRKVertexYdefMult");
-      histTRKHighMultX = (TH1F*)file->Get("hTRKVertexXHighMult");
-      histTRKHighMultY = (TH1F*)file->Get("hTRKVertexYHighMult");
-      
-      histTRKvsMultX = (TH2F*)file->FindObject("hTRKVertexXvsMult");
-      histTRKvsMultY = (TH2F*)file->FindObject("hTRKVertexYvsMult");
-      
-      histTRKVertexXZ = (TH2F*)file->Get("hTRKVertexXZ");
-      histTRKVertexYZ = (TH2F*)file->Get("hTRKVertexYZ");
+    if (useITSSAvtx){
+      if (list){
+	//histTRKdefMultX = (TH1F*)list->FindObject("hITSSAVertexXdefMult");
+	//histTRKdefMultY = (TH1F*)list->FindObject("hITSSAVertexYdefMult");
+	histTRKHighMultX = (TH1F*)list->FindObject("hITSSAVertexXHighMult");
+	histTRKHighMultY = (TH1F*)list->FindObject("hITSSAVertexYHighMult");
+	
+	histTRKvsMultX = (TH2F*)file->FindObject("hITSSAVertexXvsMult");
+	histTRKvsMultY = (TH2F*)file->FindObject("hITSSAVertexYvsMult");
+	
+	histTRKVertexXZ = (TH2F*)list->FindObject("hITSSAVertexXZ");
+	histTRKVertexYZ = (TH2F*)list->FindObject("hITSSAVertexYZ");
+      }
+    
+      else {
+	//histTRKdefMultX = (TH1F*)file->Get("hITSSAVertexXdefMult");
+	//histTRKdefMultY = (TH1F*)file->Get("hITSSAVertexYdefMult");
+	histTRKHighMultX = (TH1F*)file->Get("hITSSAVertexXHighMult");
+	histTRKHighMultY = (TH1F*)file->Get("hITSSAVertexYHighMult");
+	
+	histTRKvsMultX = (TH2F*)file->FindObject("hITSSAVertexXvsMult");
+	histTRKvsMultY = (TH2F*)file->FindObject("hITSSAVertexYvsMult");
+	
+	histTRKVertexXZ = (TH2F*)file->Get("hITSSAVertexXZ");
+	histTRKVertexYZ = (TH2F*)file->Get("hITSSAVertexYZ");
+      }
     }
     
-  }
-  
-  if (useITSSAvtx){
-    if (list){
-      //histTRKdefMultX = (TH1F*)list->FindObject("hITSSAVertexXdefMult");
-      //histTRKdefMultY = (TH1F*)list->FindObject("hITSSAVertexYdefMult");
-      histTRKHighMultX = (TH1F*)list->FindObject("hITSSAVertexXHighMult");
-      histTRKHighMultY = (TH1F*)list->FindObject("hITSSAVertexYHighMult");
+    
+    TH1D *projXvsMult;
+    TH1D *projYvsMult;
+    
+    Float_t nEntriesMultX=0, nEntriesMultY=0.;
+    
+    if(highMultEnvironment==kTRUE){
+    
+      projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 15, 300);
+      projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 15, 300);
       
-      histTRKvsMultX = (TH2F*)file->FindObject("hITSSAVertexXvsMult");
-      histTRKvsMultY = (TH2F*)file->FindObject("hITSSAVertexYvsMult");
+      nEntriesMultX = projXvsMult->GetEffectiveEntries();
+      nEntriesMultY = projYvsMult->GetEffectiveEntries();
       
-      histTRKVertexXZ = (TH2F*)list->FindObject("hITSSAVertexXZ");
-      histTRKVertexYZ = (TH2F*)list->FindObject("hITSSAVertexYZ");
+      if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
+	AliWarning(Form("Setting High Mulitplicity environment"));
+	highMultEnvironment = kTRUE;
+      }
     }
-    
-    else {
-      //histTRKdefMultX = (TH1F*)file->Get("hITSSAVertexXdefMult");
-      //histTRKdefMultY = (TH1F*)file->Get("hITSSAVertexYdefMult");
-      histTRKHighMultX = (TH1F*)file->Get("hITSSAVertexXHighMult");
-      histTRKHighMultY = (TH1F*)file->Get("hITSSAVertexYHighMult");
+    else if (highMultppEnvironment==kTRUE) {
       
-      histTRKvsMultX = (TH2F*)file->FindObject("hITSSAVertexXvsMult");
-      histTRKvsMultY = (TH2F*)file->FindObject("hITSSAVertexYvsMult");
+      projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 10, 30);
+      projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 10, 30);
       
-      histTRKVertexXZ = (TH2F*)file->Get("hITSSAVertexXZ");
-      histTRKVertexYZ = (TH2F*)file->Get("hITSSAVertexYZ");
+      nEntriesMultX = projXvsMult->GetEffectiveEntries();
+      nEntriesMultY = projYvsMult->GetEffectiveEntries();
+      
+      if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
+	AliWarning(Form("Setting high pp Mulitplicity environment or p-A high multiplicity"));
+	highMultppEnvironment=kTRUE;
+      }
     }
-  }
-  
-  
-  TH1D *projXvsMult;
-  TH1D *projYvsMult;
-  
-  Float_t nEntriesMultX=0, nEntriesMultY=0.;
-  
-  if(highMultEnvironment==kTRUE){
-    
-    projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 15, 300);
-    projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 15, 300);
-    
-    nEntriesMultX = projXvsMult->GetEffectiveEntries();
-    nEntriesMultY = projYvsMult->GetEffectiveEntries();
-    
-    if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
-      AliWarning(Form("Setting High Mulitplicity environment"));
-      highMultEnvironment = kTRUE;
-    }
-  }
-  else if (highMultppEnvironment==kTRUE) {
-    
-    projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 10, 30);
-    projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 10, 30);
-    
-    nEntriesMultX = projXvsMult->GetEffectiveEntries();
-    nEntriesMultY = projYvsMult->GetEffectiveEntries();
-    
-    if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
-      AliWarning(Form("Setting high pp Mulitplicity environment or p-A high multiplicity"));
-      highMultppEnvironment=kTRUE;
-    }
-  }
-  else if (lowMultppEnvironment==kTRUE) {
-    
-    projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 3, 5);
-    projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 3, 5);
-    
-    nEntriesMultX = projXvsMult->GetEffectiveEntries();
-    nEntriesMultY = projYvsMult->GetEffectiveEntries();
-    
-    if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
-      AliWarning(Form("Setting low pp Mulitplicity environment"));
-      lowMultppEnvironment=kTRUE;
+    else if (lowMultppEnvironment==kTRUE) {
+      
+      projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 3, 5);
+      projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 3, 5);
+      
+      nEntriesMultX = projXvsMult->GetEffectiveEntries();
+      nEntriesMultY = projYvsMult->GetEffectiveEntries();
+      
+      if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
+	AliWarning(Form("Setting low pp Mulitplicity environment"));
+	lowMultppEnvironment=kTRUE;
+      }
     }
     
-  }
-  
-  
-  if (lowMultppEnvironment==kTRUE) {
-    
+    if (lowMultppEnvironment==kTRUE) {
+      
     if ((projXvsMult->GetEntries() < 40.) || (projYvsMult->GetEntries() < 40.)){
       AliWarning(Form("histos for lumi reg calculation not found, default value set"));
       xSigmaVtx=0.0120;
@@ -776,6 +778,40 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
   }
   
   delete vertex;
+  }
+  
+  if (strcmp(whichpass, "1") == 0)  {
+   
+  TF1* gs = new TF1("gs","gaus",-30,30);
+  gs->SetParameters(histSPDvtxZ->GetMaximum(),histSPDvtxZ->GetMean(),histSPDvtxZ->GetRMS());
+  TFitResultPtr rSPD = histSPDvtxZ->Fit(gs,"ons");
+  gs->SetParameters(histTRKvtxZ->GetMaximum(),histTRKvtxZ->GetMean(),histTRKvtxZ->GetRMS());
+  TFitResultPtr rTRK = histTRKvtxZ->Fit(gs,"ons");
+  //
+  int ndfSPD = rSPD->Ndf(), ndfTRK = rTRK->Ndf();
+  double chiSPD = rSPD->Chi2(), chiTRK = rTRK->Chi2();
+  //
+  Bool_t okSPD=kFALSE,okTRK=kFALSE;
+  //
+  if (ndfSPD>1 && (chiSPD=(chiSPD/ndfSPD))<2) okSPD = kTRUE;
+  if (ndfTRK>1 && (chiTRK=(chiTRK/ndfTRK))<2) okTRK = kTRUE;  
+  //
+  if (!okSPD && !okTRK) {
+    printf("Neither histos fits have converged\n");
+    fStatus=kFitUpdateZFailed;
+  }
+  
+  if      (!okSPD) rSPD = rTRK;
+  else if (!okTRK) rTRK = rSPD;
+  
+  if ( okTRK || okSPD ) {
+    
+    ModObject("GRP/Calib/MeanVertex",rTRK->GetParams()[1],rTRK->GetParams()[2], "ZcoordUpdated");
+    ModObject("GRP/Calib/MeanVertexSPD",rSPD->GetParams()[1],rSPD->GetParams()[2], "ZcoordUpdated");
+
+  }
+  }
+  
   
   Int_t status=GetStatus();
   if (status == 0) {
@@ -787,7 +823,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
   else if (status < 0) {
     AliInfo(Form("MeanVertex calibration but not fatal error: %s (status=%d)", fgkStatusCodeName[fStatus], status));
   }
-  
+
+
   
 }
 
@@ -809,6 +846,7 @@ Int_t AliMeanVertexPreprocessorOffline::GetStatus(){
     case kWriteMeanVertexSPD:
     case kUseOfflineSPDvtx:
     case kLumiRegCovMatrixProblem:
+    case kFitUpdateZFailed:
       return -fStatus;
       break;
       
@@ -828,3 +866,37 @@ Int_t AliMeanVertexPreprocessorOffline::GetStatus(){
   return -999;
 }
 
+//_______________________________________________________________________________________________
+void AliMeanVertexPreprocessorOffline::ModObject(const char* url, double zv, double zs, const char* commentAdd)
+{
+  AliCDBManager* man = AliCDBManager::Instance();
+  AliCDBEntry* entry = man->Get(url);
+  AliESDVertex* vtx = (AliESDVertex*)entry->GetObject();
+  double zvOld = vtx->GetZ(), zsOld = vtx->GetZRes(), covm[6];
+  vtx->GetCovarianceMatrix(covm);
+  covm[5] = zs*zs;
+  vtx->SetZv(zv);
+  vtx->SetCovarianceMatrix(covm);
+  //
+  printf("run %d %s %+e/%e -> %+e/%e\n",man->GetRun(),url,zvOld,zsOld,zv,zs);
+
+  AliCDBMetaData* mdold = entry->GetMetaData();
+  AliCDBMetaData* mdnew = new AliCDBMetaData();
+  AliCDBId&idOld = entry->GetId();
+  int firstRun = idOld.GetFirstRun(), lastRun = idOld.GetLastRun();
+  
+  TString commComb = "";
+  if (mdold) {
+    mdnew->SetResponsible(mdold->GetResponsible());
+    mdnew->SetBeamPeriod(mdold->GetBeamPeriod());
+    mdnew->SetAliRootVersion(mdold->GetAliRootVersion());
+    commComb += mdold->GetComment();
+  }
+  commComb += commentAdd;
+  mdnew->SetComment(commComb.Data());
+  //
+  man->SetSpecificStorage(url,"local://");
+  AliCDBId id(url,firstRun,lastRun);
+  man->Put(vtx,id,mdnew); 
+  //
+}
