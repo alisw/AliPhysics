@@ -826,8 +826,8 @@ public:
 //  TH2D* GetCRCZDCQVecEP(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecEP[r][c];};
   void SetCRCZDCQVecRes(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecRes[r][c] = TH;};
   TProfile* GetCRCZDCQVecRes(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecRes[r][c];};
-  void SetCRCZDCQVecCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCZDCQVecCov[r][i] = TH;};
-  TProfile* GetCRCZDCQVecCov(Int_t const r, Int_t const i) const {return this->fCRCZDCQVecCov[r][i];};
+  void SetCRCZDCQVecCov(TProfile2D* const TH, Int_t const r, Int_t const i) {this->fCRCZDCQVecCov[r][i] = TH;};
+  TProfile2D* GetCRCZDCQVecCov(Int_t const r, Int_t const i) const {return this->fCRCZDCQVecCov[r][i];};
   
   // void SetCRCVZvsZDCCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCVZvsZDCCov[r][i] = TH;};
   // TProfile* GetCRCVZvsZDCCov(Int_t const r, Int_t const i) const {return this->fCRCVZvsZDCCov[r][i];};
@@ -1546,8 +1546,8 @@ private:
   TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
   TH3D* fCRCQVecPhiHist; //! phi ditribution POIs
   TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs bins ch
-  TH3D* fCRCQVecPhiRbRHist[fCRCMaxnRun]; //! phi ditribution POIs run-by-run
-  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
+//  TH3D* fCRCQVecPhiRbRHist[fCRCMaxnRun]; //! phi ditribution POIs run-by-run
+//  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
   TProfile3D* fCRCQVecHarCosProCh[2]; //! phi ditribution POIs
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
 //  TH3D* fCRCQVecPhiHistVtxDep[fCRCMaxnRun][fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
@@ -1585,8 +1585,8 @@ private:
   
   TProfile *fCRCVZQVecA[fCRCMaxnRun][2]; //! Q Vectors VZERO-A
   TProfile *fCRCVZQVecC[fCRCMaxnRun][2]; //! Q Vectors VZERO-C
-  const static Int_t fCRCQVecnCov = 18;
-  TProfile *fCRCZDCQVecCov[fCRCMaxnRun][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
+  const static Int_t fCRCQVecnCov = 12;
+  TProfile2D *fCRCZDCQVecCov[fCRCMaxnRun][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
   
   TProfile *fCRCZDCQVecA[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
@@ -1595,12 +1595,11 @@ private:
 //  TH2D *fCRCZDCQVecEP[fCRCMaxnRun][4]; //! ZN event planes
 //  TH3D* fhZNCenDis[2]; //! ZDC 2D Q-vector distribution vs centrality
   TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
-//  TProfile *fCRCZDCQVecTest[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
-  const static Int_t fkCRCnCQVecVtxPos = 4;
+  TProfile *fCRCZDCQVecTest[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
+  const static Int_t fkCRCnCQVecVtxPos = 8;
   Bool_t fStoreZDCQVecVtxPos; //
-  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
-//  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
-  TProfile3D *fCRCVZQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! VZERO Vtx positions re-centered Qvec in cen bins
+//  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
+  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
@@ -1936,7 +1935,7 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   
-  ClassDef(AliFlowAnalysisCRC,51);
+  ClassDef(AliFlowAnalysisCRC,52);
   
 };
 
