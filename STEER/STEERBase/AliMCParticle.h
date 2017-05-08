@@ -17,6 +17,7 @@
 
 #include "AliTrackReference.h"
 #include "AliVParticle.h"
+#include "AliStack.h"
 
 class AliMCParticle: public AliVParticle {
 public:
@@ -34,6 +35,8 @@ public:
     virtual Double_t P()         const;
     virtual Bool_t   PxPyPz(Double_t p[3]) const;
    
+    virtual void     Momentum(TLorentzVector & lv)  { fParticle->Momentum(lv) ; }
+  
     virtual Double_t OneOverPt() const;
     virtual Double_t Phi()       const;
     virtual Double_t Theta()     const;
@@ -43,7 +46,8 @@ public:
     virtual Double_t Zv()        const;
     virtual Bool_t   XvYvZv(Double_t x[3]) const;  
     virtual Double_t T()         const;
-
+    virtual Double_t Tv()        const;
+  
     virtual Double_t E()          const;
     virtual Double_t M()          const;
     
@@ -52,10 +56,11 @@ public:
     
     virtual Short_t Charge()      const;
 
-    virtual Int_t    Label()         const;
-    virtual Int_t    GetLabel()      const {return Label();}
-    virtual Int_t    PdgCode()       const {return fParticle->GetPdgCode();}
-    virtual TParticle* Particle() const {return fParticle;}
+    virtual Int_t    Label()       const;
+    virtual Int_t    GetLabel()    const  {return Label();}
+    virtual Int_t    PdgCode()     const  {return fParticle->GetPdgCode();}
+    virtual UInt_t   MCStatusCode() const {return fParticle->GetStatusCode();}
+    virtual TParticle* Particle()  const  {return fParticle;}
     
     // PID
     virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
@@ -68,16 +73,25 @@ public:
     // "Trackable" criteria
     Float_t  GetTPCTrackLength(Float_t bz, Float_t ptmin, Int_t &counter, Float_t deadWidth, Float_t zMax=230. );
     // Navigation
-    virtual Int_t GetMother()        const {return fMother;}
-    Int_t GetFirstDaughter() const {return fFirstDaughter;}
-    Int_t GetLastDaughter()  const {return fLastDaughter;}
+    virtual Int_t GetMother()       const {return fMother;}
+    Int_t GetFirstDaughter()        const {return fFirstDaughter;}
+    Int_t GetLastDaughter()         const {return fLastDaughter;}
+    Int_t GetDaughterLabel(Int_t i) const {return fParticle->GetDaughter(i) ;}
+    Int_t GetNDaughters()           const {return fParticle->GetNDaughters();}
+    
     void  SetMother(Int_t idx)        {fMother        = idx;}
     void  SetFirstDaughter(Int_t idx) {fFirstDaughter = idx;}
     void  SetLastDaughter(Int_t idx)  {fLastDaughter  = idx;}
     void  SetLabel(Int_t label)       {fLabel         = label;}
     virtual void    SetGeneratorIndex(Short_t i) {fGeneratorIndex = i;}
     virtual Short_t GetGeneratorIndex() const {return fGeneratorIndex;}
-    
+
+    const AliStack*  GetStack()           const {return fStack;}
+    void             SetStack(AliStack* st)     {fStack = st  ;}
+    Bool_t     IsPhysicalPrimary()        const {return fStack->IsPhysicalPrimary(fLabel);} 
+    Bool_t     IsSecondaryFromWeakDecay() const {return fStack->IsSecondaryFromWeakDecay(fLabel);}
+    Bool_t     IsSecondaryFromMaterial()  const {return fStack->IsSecondaryFromMaterial(fLabel);}
+
  private:
     TParticle *fParticle;             // The wrapped TParticle
     TObjArray *fTrackReferences;      // Array to track references
@@ -87,7 +101,9 @@ public:
     Int_t      fFirstDaughter;        // First daughter
     Int_t      fLastDaughter;         // LastDaughter
     Short_t    fGeneratorIndex;       // !Generator index in cocktail  
-  ClassDef(AliMCParticle,0)  // AliVParticle realisation for MCParticles
+    AliStack*  fStack;                //! stack the particle belongs to
+
+  ClassDef(AliMCParticle,1)  // AliVParticle realisation for MCParticles
 };
 
 inline Double_t AliMCParticle::Px()        const {return fParticle->Px();}
@@ -103,7 +119,8 @@ inline Double_t AliMCParticle::Xv()        const {return fParticle->Vx();}
 inline Double_t AliMCParticle::Yv()        const {return fParticle->Vy();}
 inline Double_t AliMCParticle::Zv()        const {return fParticle->Vz();}
 inline Bool_t   AliMCParticle::XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
-inline Double_t AliMCParticle::T()        const {return fParticle->T();}
+inline Double_t AliMCParticle::T()         const {return fParticle->T();}
+inline Double_t AliMCParticle::Tv()        const {return fParticle->T();}
 inline Double_t AliMCParticle::E()         const {return fParticle->Energy();}
 inline Double_t AliMCParticle::Eta()       const {return fParticle->Eta();}
 

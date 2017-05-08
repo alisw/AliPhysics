@@ -585,7 +585,8 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
 	Int_t imo  = part->GetFirstMother();
 	Int_t id1  = part->GetFirstDaughter();
 	Int_t id2  = part->GetLastDaughter();
-	mcParticle->SetLabel(i); // RS mcParticle should refer to its position in its parent stack
+       mcParticle->SetLabel(i); // RS mcParticle should refer to its position in its parent stack
+       mcParticle->SetStack(fStack);
 	if (fPrimaryOffset > 0 || fSecondaryOffset > 0) {
 	  // Remapping of the mother and daughter indices
 	  if (imo>=0) {
