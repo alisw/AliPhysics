@@ -1,7 +1,5 @@
-AliAnalysisTask* AddTaskAnalysisOnlineQA()
+AliAnalysisTask* AddTaskAnalysisOnlineQA(bool useSparse = 0)
 {
-  
-    bool useSparse = 0;
     
     //get the analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
