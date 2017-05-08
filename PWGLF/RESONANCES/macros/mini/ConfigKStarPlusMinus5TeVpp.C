@@ -32,7 +32,8 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Float_t                 k0sDaughDCA,
    Int_t                   NTPCcluster,
    const char             *suffix,
-   AliRsnCutSet           *cutsPair
+   AliRsnCutSet           *cutsPair,
+   Bool_t                  ptDep
 )
 {
    // manage suffix
@@ -71,8 +72,16 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    esdTrackCuts->SetAcceptKinkDaughters(0); // Standard
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
    //esdTrackCuts->SetMaxChi2PerClusterTPC(4.); //not standard Cut 
-   esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); // 0.06 cm Standard   
+
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
+
+   if(ptDep){
+     esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+   }else
+     esdTrackCuts->SetMinDCAToVertexXY(MinDCAXY); //Use one of the two - pt dependent or fixed value cut. // 0.06 cm Standard 
+  
+
+
    //
    /////////////////////////////////////////////////
    // selections for K0s
@@ -240,7 +249,6 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AddMonitorOutput_K0sfpLife(cutSetK0s->GetMonitorOutput());   
 
    AddMonitorOutput_MinDCAToVertexXYPtDep(cutSetK0s->GetMonitorOutput());
-
 
    if (isMC) {
      
