@@ -38,6 +38,7 @@ Bool_t ConfigKStarPlusMinusRun2
    Bool_t                  enableSys,
    Float_t                 crossedRows,
    Float_t                 rowsbycluster,
+   Float_t                 chi2tpc,
    Int_t                   Sys
 )
     //kTPCpidphipp2015
@@ -84,7 +85,7 @@ Bool_t ConfigKStarPlusMinusRun2
    esdTrackCuts->SetAcceptKinkDaughters(0); //
    esdTrackCuts->SetMinNCrossedRowsTPC(crossedRows);
    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster);  
-   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+   esdTrackCuts->SetMaxChi2PerClusterTPC(chi2tpc);
     
     if(ptDep){
    esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0105+0.0350/pt^1.01");
