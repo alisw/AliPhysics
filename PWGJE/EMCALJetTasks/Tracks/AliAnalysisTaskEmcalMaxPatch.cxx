@@ -64,10 +64,10 @@ void AliAnalysisTaskEmcalMaxPatch::UserCreateOutputObjects(){
   fHistos->CreateTH1("hTrueEventCount", "Maximum energy patch in the event", 1, 0.5, 1.5);
 
   const std::map<std::string, std::string> triggers {
-    {"EGAOffline", "offline EGA"}, {"EJEOffline", "offline EJE"}, {"EGARecalc", "recalc EGA"},
-    {"EJERecalc", "recalc EJE"}, {"EG1Online", "online EG1"}, {"EG2Online", "online EG2"},
-    {"DG1Online", "online DG1"}, {"DG2Online", "online DG2"}, {"EJ1Online", "online EJ1"},
-    {"EJ2Online", "online EJ2"}, {"DJ1Online", "online DJ1"}, {"DJ2Online", "online DJ2"},
+    {"EGAOffline", "offline EGA"}, {"EJEOffline", "offline EJE"}, {"DGAOffline", "offline DGA"}, {"DJEOffline", "offline DJE"},
+    {"EGARecalc", "recalc EGA"}, {"EJERecalc", "recalc EJE"}, {"DGARecalc", "recalc DGA"}, {"DJERecalc", "recalc DJE"},
+    {"EG1Online", "online EG1"}, {"EG2Online", "online EG2"}, {"DG1Online", "online DG1"}, {"DG2Online", "online DG2"},
+    {"EJ1Online", "online EJ1"}, {"EJ2Online", "online EJ2"}, {"DJ1Online", "online DJ1"}, {"DJ2Online", "online DJ2"},
   };
   // Calibrated FEE energy
   for(const auto &t : triggers)
@@ -119,8 +119,12 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
   const AliEMCALTriggerPatchInfo *currentpatch(nullptr),
        *maxOfflineEGA(nullptr),
        *maxOfflineEJE(nullptr),
+       *maxOfflineDGA(nullptr),
+       *maxOfflineDJE(nullptr),
        *maxRecalcEGA(nullptr),
        *maxRecalcEJE(nullptr),
+       *maxRecalcDGA(nullptr),
+       *maxRecalcDJE(nullptr),
        *maxOnlineEG1(nullptr),
        *maxOnlineEG2(nullptr),
        *maxOnlineDG1(nullptr),
@@ -137,22 +141,42 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
     // Offline patches - make cut on energy
     if(currentpatch->IsOfflineSimple()){
       if(currentpatch->IsGammaHighSimple()){
-        if(!maxOfflineEGA || currentpatch->GetPatchE() > maxOfflineEGA->GetPatchE())
-          maxOfflineEGA = currentpatch;
+        if(currentpatch->IsEMCal()){
+          if(!maxOfflineEGA || currentpatch->GetPatchE() > maxOfflineEGA->GetPatchE())
+            maxOfflineEGA = currentpatch;
+        } else {
+          if(!maxOfflineDGA || currentpatch->GetPatchE() > maxOfflineDGA->GetPatchE())
+            maxOfflineDGA = currentpatch;
+        }
       } else if(currentpatch->IsJetHighSimple()) {
-        if(!maxOfflineEJE || currentpatch->GetPatchE() > maxOfflineEJE->GetPatchE())
-          maxOfflineEJE = currentpatch;
+        if(currentpatch->IsEMCal()){
+          if(!maxOfflineEJE || currentpatch->GetPatchE() > maxOfflineEJE->GetPatchE())
+            maxOfflineEJE = currentpatch;
+        } else {
+          if(!maxOfflineDJE || currentpatch->GetPatchE() > maxOfflineDJE->GetPatchE())
+            maxOfflineDJE = currentpatch;
+        }
       }
     }
 
     // Recalc patches - make cut on FastOR ADC
     if(currentpatch->IsRecalc()){
       if(currentpatch->IsGammaHighRecalc()){
-        if(!maxRecalcEGA || currentpatch->GetADCAmp() > maxRecalcEGA->GetADCAmp())
-          maxRecalcEGA = currentpatch;
+        if(currentpatch->IsEMCal()){
+          if(!maxRecalcEGA || currentpatch->GetADCAmp() > maxRecalcEGA->GetADCAmp())
+            maxRecalcEGA = currentpatch;
+        } else {
+          if(!maxRecalcDGA || currentpatch->GetADCAmp() > maxRecalcDGA->GetADCAmp())
+            maxRecalcDGA = currentpatch;
+        }
       } else if(currentpatch->IsJetHighSimple()) {
-        if(!maxRecalcEJE || currentpatch->GetADCAmp() > maxRecalcEJE->GetADCAmp())
-          maxRecalcEJE = currentpatch;
+        if(currentpatch->IsEMCal()){
+          if(!maxRecalcEJE || currentpatch->GetADCAmp() > maxRecalcEJE->GetADCAmp())
+            maxRecalcEJE = currentpatch;
+        } else {
+          if(!maxRecalcDJE || currentpatch->GetADCAmp() > maxRecalcDJE->GetADCAmp())
+            maxRecalcDJE = currentpatch;
+        }
       }
     }
 
@@ -210,8 +234,12 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
 
   FillHistos(maxOfflineEGA, "EGAOffline");
   FillHistos(maxOfflineEJE, "EJEOffline");
+  FillHistos(maxOfflineDGA, "DGAOffline");
+  FillHistos(maxOfflineDJE, "DJEOffline");
   FillHistos(maxRecalcEGA, "EGARecalc");
   FillHistos(maxRecalcEJE, "EJERecalc");
+  FillHistos(maxRecalcDGA, "DGARecalc");
+  FillHistos(maxRecalcDJE, "DJERecalc");
   FillHistos(maxOnlineEG1, "EG1Online");
   FillHistos(maxOnlineEG2, "EG2Online");
   FillHistos(maxOnlineDG1, "DG1Online");
