@@ -65,7 +65,7 @@ void AliAnalysisTaskEmcalMaxPatch::UserCreateOutputObjects(){
 
   const std::map<std::string, std::string> triggers {
     {"EGAOffline", "offline EGA"}, {"EJEOffline", "offline EJE"}, {"DGAOffline", "offline DGA"}, {"DJEOffline", "offline DJE"},
-    {"EGARecalc", "recalc EGA"}, {"EJERecalc", "recalc EJE"}, {"DGARecalc", "recalc DGA"}, {"EJERecalc", "recalc DJE"},
+    {"EGARecalc", "recalc EGA"}, {"EJERecalc", "recalc EJE"}, {"DGARecalc", "recalc DGA"}, {"DJERecalc", "recalc DJE"},
     {"EG1Online", "online EG1"}, {"EG2Online", "online EG2"}, {"DG1Online", "online DG1"}, {"DG2Online", "online DG2"},
     {"EJ1Online", "online EJ1"}, {"EJ2Online", "online EJ2"}, {"DJ1Online", "online DJ1"}, {"DJ2Online", "online DJ2"},
   };
@@ -234,8 +234,8 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
 
   FillHistos(maxOfflineEGA, "EGAOffline");
   FillHistos(maxOfflineEJE, "EJEOffline");
-  FillHistos(maxOfflineEGA, "DGAOffline");
-  FillHistos(maxOfflineEJE, "DJEOffline");
+  FillHistos(maxOfflineDGA, "DGAOffline");
+  FillHistos(maxOfflineDJE, "DJEOffline");
   FillHistos(maxRecalcEGA, "EGARecalc");
   FillHistos(maxRecalcEJE, "EJERecalc");
   FillHistos(maxRecalcDGA, "DGARecalc");
