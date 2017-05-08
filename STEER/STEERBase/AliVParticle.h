@@ -14,6 +14,9 @@
 #include <TObject.h>
 #include "AliVMisc.h"
 
+class TLorentzVector;
+class TParticle;
+
 #include <float.h>
 
 const Double_t kAlmost1=1. - Double_t(FLT_EPSILON);
@@ -41,10 +44,14 @@ public:
   virtual Double_t P()  const = 0;
   virtual Bool_t   PxPyPz(Double_t p[3]) const = 0;
 
+  virtual void     Momentum(TLorentzVector &)  { ; }
+  
   virtual Double_t Xv() const = 0;
   virtual Double_t Yv() const = 0;
   virtual Double_t Zv() const = 0;
   virtual Bool_t   XvYvZv(Double_t x[3]) const = 0;  
+//virtual Double_t T()          const { return -1; } // Conflicts with AliAODTrack.h
+  virtual Double_t Tv()         const { return 0 ; } 
 
   virtual Double_t OneOverPt()  const = 0;
   virtual Double_t Phi()        const = 0;
@@ -58,13 +65,19 @@ public:
   virtual Double_t Y()          const = 0;
   
   virtual Short_t Charge()      const = 0;
+  
+  virtual Int_t   Label()       const { return -1; } 
   virtual Int_t   GetLabel()    const = 0;
   // PID
   virtual Int_t   PdgCode()     const = 0;       
   virtual const Double_t *PID() const = 0; // return PID object (to be defined, still)
 
-
+  // Not possible GetStatus(), Long in AliVTrack, Int in AliMCParticle  
+//virtual UInt_t  GetStatus()    const { return 0  ; }
+  virtual UInt_t  MCStatusCode() const { return 0  ; }
   
+  virtual TParticle *Particle()  const { return NULL ; }
+
   /** Compare this class with an other instance of this class
    *  used in a TCollection::Sort()/TClonesArray::Sort()
    *  @param   obj  ptr to other instance
@@ -78,7 +91,7 @@ public:
    *  @return     always kTRUE;
    */
   Bool_t IsSortable() const  { return kTRUE; }
-  virtual Bool_t IsPrimary()  const  { return kFALSE; }
+
   virtual void    SetFlag(UInt_t) {;}
   virtual UInt_t  GetFlag() const {return 0;}  
 
@@ -92,9 +105,27 @@ public:
   virtual Int_t   GetMother()   const {return -1;}
   virtual Int_t   GetFirstDaughter()   const {return -1;}
   virtual Int_t   GetLastDaughter()    const {return -1;}
+  // Cannot use GetDaughter because of AliAODRecoDecay
+//virtual Int_t   GetDaughter(Int_t)      const {return -1;}
+  virtual Int_t   GetDaughterLabel(Int_t) const {return -1;}
+  virtual Int_t   GetNDaughters  ()       const {return 0 ;}
+  
   virtual void    SetGeneratorIndex(Short_t) {;}
   virtual Short_t GetGeneratorIndex() const {return -1;}
-  ClassDef(AliVParticle, 3)  // base class for particles
+  
+  virtual void    SetPrimary(Bool_t)   { ; }
+  virtual Bool_t  IsPrimary()          const { return 0  ; }
+  
+  virtual void    SetPhysicalPrimary(Bool_t ) { ; }
+  virtual Bool_t  IsPhysicalPrimary()  const { return 0  ; }
+  
+  virtual void    SetSecondaryFromWeakDecay(Bool_t ) { ; }
+  virtual Bool_t  IsSecondaryFromWeakDecay() const { return 0  ; }
+  
+  virtual void    SetSecondaryFromMaterial(Bool_t ) { ; }
+  virtual Bool_t  IsSecondaryFromMaterial() const { return 0  ; }
+  
+  ClassDef(AliVParticle, 4)  // base class for particles
 };
 
 #endif
