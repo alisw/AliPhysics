@@ -253,18 +253,9 @@ AliAnalysisTaskDG::~AliAnalysisTaskDG()
   fTrackData.Delete();
   fMCTracks.Delete();
 
-  if (fList)
-    delete fList;
-  fList = nullptr;
-
-  if (fTE)
-    delete fTE;
-  fTE = nullptr;
-
-  if (fTrackCuts)
-    delete fTrackCuts;
-  fTrackCuts = nullptr;
-
+  SafeDelete(fList);
+  SafeDelete(fTE);
+  SafeDelete(fTrackCuts);
 }
 
 void AliAnalysisTaskDG::SetBranches(TTree* t, Bool_t isAOD) {
