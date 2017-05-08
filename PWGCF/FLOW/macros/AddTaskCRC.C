@@ -284,8 +284,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     if (sDataSet.Contains("2015")) {
       cutsEvent->SetCentralityPercentileRange(centrMin,centrMax,kTRUE);
     }
-      cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
-      cutsEvent->SetQA(bCutsQA);
+    // vertex-z cut
+    cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
+    cutsEvent->SetQA(bCutsQA);
   }
  else if (analysisTypeUser == "AOD" || analysisTypeUser == "TrackQA") {
    if (sDataSet == "2010" || sDataSet == "2011") {
@@ -312,9 +313,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    RefMultCuts->SetAcceptKinkDaughters(kFALSE);
   cutsEvent->SetRefMultCuts(RefMultCuts);
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
-  // vertex-z cut
-  cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
-  if (sDataSet.Contains("2015")) cutsEvent->SetPrimaryVertexZrange(-dVertexRange+3.596504e-01,dVertexRange-3.596504e-01);
   // enable the qa plots
   cutsEvent->SetQA(bCutsQA);
   // explicit multiplicity outlier cut
