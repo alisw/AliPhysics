@@ -322,6 +322,9 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
   }
   
+  AliDielectronVarManager::SetFillMap(fUsedVars);
+  AliDielectronVarManager::SetEvent(InputEvent());
+  
   if(fFillMCInfo) {
     Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
     if(hasMC) AliDielectronMC::Instance()->ConnectMCEvent();
@@ -379,9 +382,6 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     }
   }
   
-  AliDielectronVarManager::SetFillMap(fUsedVars);
-  AliDielectronVarManager::SetEvent(event);
-
   if(fUseAnalysisUtils) {
     if(fAnalysisUtils->IsVertexSelected2013pA(event))  // 2013 p-Pb event selection    
       fReducedEvent->fEventTag |= (ULong64_t(1)<<0);
