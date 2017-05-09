@@ -864,9 +864,9 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
                 } //end if(bUseVfriend && vfriendEvent && ...)
             }
     }
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,vTrack,vEvent,vertStatus);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,vTrack,vEvent,vertStatus);
-    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,vTrack,vEvent);
+    if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,vTrack,vEvent,vertStatus);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,vTrack,vEvent,vertStatus);
+    else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,vTrack,vEvent);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
