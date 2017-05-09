@@ -378,7 +378,7 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliVEvent *const v
     // get MC info 
     Int_t label = vTrack->GetLabel();
     if(label<0) continue;	
-    TParticle *  partMC = ((AliMCParticle*)mcEvent->GetTrack(esdLabel))->Particle();
+    TParticle *  partMC = ((AliMCParticle*)mcEvent->GetTrack(label))->Particle();
     if (!partMC) continue;
   
     // fill correlation histos MC Recon
