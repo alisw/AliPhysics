@@ -692,6 +692,8 @@ if(!skipCentrality) {
     Float_t multV01=0;
     AliESDVZERO* esdV01 = esd->GetVZEROData();
     multV01 = esdV01->GetMTotV0A()+esdV01->GetMTotV0C();
+    multV01 *= fMCV0Scale;
+
     //    centPercentile = hMCcalib1->Interpolate(multV01);
 
     centPercentile = fHcalib3->Interpolate(multV01);
