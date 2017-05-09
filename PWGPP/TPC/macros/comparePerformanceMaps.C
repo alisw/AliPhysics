@@ -30,8 +30,8 @@ TPRegexp regTreeDelta("^(his|qahis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist$");  
 TPRegexp regTreeNotDeltaInt("his.*(lpha|DSec)");
 //
 TPRegexp regCovar("hisCovar");
-TPRegexp regTreeDeltaAlpha("(his|qahis)(Delta|Pull|Covar).*alphaVDist$");
-TPRegexp regTreeDeltaDAlphaQ("(his|qahis)(Delta|Pull|Covar).*_dalphaQDist$");
+TPRegexp regTreeDeltaAlpha("(his|qahis)(Delta|Pull|Covar|ncl|Chi2).*alphaVDist$");
+TPRegexp regTreeDeltaDAlphaQ("(his|qahis)(Delta|Pull|Covarr|ncl|Chi2).*_dalphaQDist$");
 
 TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha;
 TCanvas *canvasDraw=0;
