@@ -26,7 +26,7 @@ class TRootIOCtor;
 #include "AliRecInfoCuts.h"
 #include "AliMCInfoCuts.h"
 
-class AliPerformanceObject : public AliMergeable, public TNamed {
+class AliPerformanceObject : public TNamed, public AliMergeable {
 public :
   AliPerformanceObject(TRootIOCtor*); 
   AliPerformanceObject(const char* name="AliPerformanceObject", const char* title="AliPerformanceObject", Int_t run=-1, Bool_t highMult=kFALSE); 
@@ -155,7 +155,7 @@ protected:
   AliRecInfoCuts fCutsRC;  // selection cuts for reconstructed tracks
   AliMCInfoCuts  fCutsMC;  // selection cuts for MC tracks
 
-  ClassDef(AliPerformanceObject,10);
+  ClassDef(AliPerformanceObject,11);
 };
 
 #endif
