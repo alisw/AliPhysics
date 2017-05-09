@@ -2,7 +2,7 @@
   gSystem->AddIncludePath("-I$AliPhysics_SRC/PWGPP/ -I$AliPhysics_SRC/OADB/");  // ? why not in the alienv,  why not available ?
 
   .x $NOTES/aux/NimStyle.C  
-  .L $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+
+  .L $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+ 
   gStyle->SetOptStat(0);
   //
   //
@@ -84,7 +84,11 @@ void performanceFiltered(Int_t maxEvents, Int_t action=0){
     MakeResidualDistortionMaps();
     return;
   }
-  InitAnalysis(); 
+  InitAnalysis();
+  if (chain==NULL) {
+    ::Error("performanceFiltered","Empty input chain");
+    return;
+  }
   hisArray = FillPerfomanceHisto(maxEvents);
   keepArray=new TObjArray();
   //GetNclReport(hisArray,keepArray);
@@ -120,24 +124,25 @@ void SetMetadata(){
   //
   chain->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
   chain->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
-  tree->SetAlias("dalphaQ","sign(esdTrack.fP[4])*(esdTrack.fIp.fP[0]/esdTrack.fIp.fX)");
-
+  chain->SetAlias("dalphaQ","sign(esdTrack.fP[4])*(esdTrack.fIp.fP[0]/esdTrack.fIp.fX)");
   //
-  chain->SetAlias("deltaP0","(extInnerParamV.fP[0]-esdTrack.fP[0])");
-  chain->SetAlias("pullP0","(extInnerParamV.fP[0]-esdTrack.fP[0])/sqrt(extInnerParamV.fC[0]+esdTrack.fC[0])");
-  chain->SetAlias("deltaP0C","(extInnerParamC.fP[0]-esdTrack.fCp.fP[0])");
-  chain->SetAlias("pullP0C","(extInnerParamC.fP[0]-esdTrack.fCp.fP[0])/sqrt(extInnerParamC.fC[0]+esdTrack.fCp.fC[0])");
-  chain->SetAlias("deltaP2","(extInnerParamV.fP[2]-esdTrack.fP[2])");
-  chain->SetAlias("pullP2","(extInnerParamV.fP[2]-esdTrack.fP[2])/sqrt(extInnerParamV.fC[5]+esdTrack.fC[5])");
-  chain->SetAlias("deltaP2C","(extInnerParamC.fP[2]-esdTrack.fCp.fP[2])");
-  chain->SetAlias("pullP2C","(extInnerParamC.fP[2]-esdTrack.fCp.fP[2])/sqrt(extInnerParamC.fC[5]+esdTrack.fCp.fC[5])");
-  chain->SetAlias("deltaP4","(extInnerParam.fP[4]-esdTrack.fP[4])");
-  chain->SetAlias("pullP4","(extInnerParam.fP[4]-esdTrack.fP[4])/sqrt(extInnerParam.fC[14]+esdTrack.fC[14])");
-  chain->SetAlias("deltaP4C","(extInnerParamC.fP[4]-esdTrack.fCp.fP[4])");
-  chain->SetAlias("pullP4C","(extInnerParamC.fP[4]-esdTrack.fCp.fP[4])/sqrt(extInnerParamC.fC[14]+esdTrack.fCp.fC[14])");
+  chain->SetAlias("nclROCA","esdTrack.GetTPCClusterInfo(3,1,0,159)");
+  chain->SetAlias("nclROC0","esdTrack.GetTPCClusterInfo(3,1,0,62)");
+  chain->SetAlias("nclROC1","esdTrack.GetTPCClusterInfo(3,1,63,126)");
+  chain->SetAlias("nclROC2","esdTrack.GetTPCClusterInfo(3,1,127,159)");
+  chain->SetAlias("nclFROCA","esdTrack.GetTPCClusterInfo(3,0,0,159)");
+  chain->SetAlias("nclFROC0","esdTrack.GetTPCClusterInfo(3,0,0,62)");
+  chain->SetAlias("nclFROC1","esdTrack.GetTPCClusterInfo(3,0,63,126)");
+  chain->SetAlias("nclFROC2","esdTrack.GetTPCClusterInfo(3,0,127,159)");
+  chain->SetAlias("nclTPC","esdTrack.fTPCncls");
+  chain->SetAlias("nclTRD","esdTrack.fTRDncls");
+  chain->SetAlias("nclITS","esdTrack.fITSncls");
+  chain->SetAlias("mdEdx","40./max(esdTrack.fTPCsignal,40.)");
+  chain->SetAlias("smdEdx","sqrt(40./max(esdTrack.fTPCsignal,40.))");
   //
   chain->SetAlias("normChi2ITS","sqrt(esdTrack.fITSchi2/esdTrack.fITSncls)");
   chain->SetAlias("normChi2TPC","esdTrack.fTPCchi2/esdTrack.fTPCncls");
+  chain->SetAlias("normChi2TRD","esdTrack.fTRDchi2/esdTrack.fTRDncls");
   chain->SetAlias("normDCAR","esdTrack.fdTPC/sqrt(1+esdTrack.fP[4]**2)");
   chain->SetAlias("normDCAZ","esdTrack.fzTPC/sqrt(1+esdTrack.fP[4]**2)");
   chain->SetAlias("TPCASide","esdTrack.fIp.fP[1]>0");
@@ -232,13 +237,41 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
   TString timeRange=TString::Format( "%d,%.0f,%.0f",timeBins,timeStart, timeEnd);
   //
   TString defaultCut="esdTrack.fTPCncls>60&&esdTrack.IsOn(0x1)>0";
+  const Int_t nqaHistos=14;
+  const char * qaHistos[nqaHistos]={"nclITS","nclTPC","nclTRD",		\
+				    "normChi2ITS","normChi2TPC","normChi2TRD", \
+				    "nclROC0","nclROC1","nclROC2", "nclROCA", \
+				    "nclFROC0","nclFROC1","nclFROC2","nclFROCA"};
+  const Int_t histosBins[nqaHistos]={8,160,160,	\
+				     100,100,100,	\
+				     64,64,32,160,	\
+				     55,55,55,55};
+  const Double_t histosMax[nqaHistos]={8,160,160,	\
+				    20,20,20,	\
+				    64,64,32,160,	\
+				    1.1,1.1,1.1,1.1};
+ 
   TString hisString="";
   {
+    // Standard kinematic histograms
     hisString+="esdTrack.Pt():#esdTrack.fTPCncls>60>>hisPtAll(100,0,30);"; 
     hisString+="esdTrack.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtITS(100,1,30);";    
     hisString+="esdTrack.fIp.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtTPCOnly(100,1,30);";  
-    // Kinematic histograms
     hisString+="esdTrack.fP[4]:tgl:secInner:#esdTrack.fTPCncls>60>>hisQptTglSecAll(40,-2,2,10,-1,1,90,0,18);"; 
+  }
+  for (Int_t iPar=0; iPar<nqaHistos; iPar++){
+    // 
+    hisString+=TString::Format("%s:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl(%d,0,%f,200,-5,5,10,-1,1);", \
+			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:smdEdx:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_smdEdx(%d,0,%f,50,-5,5,10,-1,1,10,0,1);", \
+			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_dalphaQ(%d,0,%f,48,-3,3,10,-1,1,50,-0.18,0.18);", \
+			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_alphaV(%d,0,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",\
+			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMax[iPar]);
+  }
+
+  {
     // N clusters per time;
     hisString+=TString::Format("esdTrack.fTPCncls:secInner:evtTimeStamp:#TPCASide>>hisTPCNclSecTimeA(100,60,160,180,0,18,%s);",timeRange.Data());
     hisString+=TString::Format("esdTrack.fTPCncls:secInner:evtTimeStamp:#TPCCSide>>hisTPCNclSecTimeC(100,60,160,180,0,18,%s);",timeRange.Data());
@@ -268,52 +301,50 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
     hisString+=TString::Format("normDCAZ:secInner:evtTimeStamp:#TPCCSide&&abs(esdTrack.fD)<0.2>>hisTPCDCAZSecTimeC(100,-3,3,180,0,18,%s);",timeRange.Data());
     hisString+=TString::Format("normDCAZ:secInner:evtTimeStamp:#TPCCross&&abs(esdTrack.fD)<0.2>>hisTPCDCAZSecTimeCross(100,-3,3,180,0,18,%s);",timeRange.Data());
   }
-  //
+//
+  // Kinematics matching
   Double_t range[5]={3,3,0.01,0.01,0.05};
   Double_t rangeP[5]={8,8,8,8,8};
   Double_t rangeCITS[5]={0.2,0.2,0.01,0.01,0.05};
-  //
+  Double_t fnull=0;
   for (Int_t iPar=0; iPar<5; iPar++){
+    // 
     hisString+=TString::Format("deltaP%d:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,-range[iPar],range[iPar]);
     hisString+=TString::Format("deltaP%d:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisDeltaP%d_TRDv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,-range[iPar],range[iPar]);
     hisString+=TString::Format("pullP%d:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisPullP%d_Allv_qPt_tgl(400,-8,8,200,-5,5,10,-1,1);",iPar,iPar);
     hisString+=TString::Format("pullP%d:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisPullP%d_TRDv_qPt_tgl(400,-8,8,200,-5,5,10,-1,1);",iPar,iPar);
-    hisString+=TString::Format("covarP%d:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%d_Allv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,0,range[iPar]);
-    hisString+=TString::Format("covarP%d:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,0,range[iPar]);
-    hisString+=TString::Format("covarP%dITS:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,0,rangeCITS[iPar]);
-    hisString+=TString::Format("covarP%dITS:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,0,rangeCITS[iPar]);
-    //
+    hisString+=TString::Format("covarP%d:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%d_Allv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,fnull,range[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,fnull,range[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,fnull,rangeCITS[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl(400,%f,%f,200,-5,5,10,-1,1);",iPar,iPar,fnull,rangeCITS[iPar]);
     // Residual calibration histogramming
-    //
-    hisString+=TString::Format("deltaP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl_alphaV(100,%f,%f,12,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -range[iPar],range[iPar]);
-    hisString+=TString::Format("deltaP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisDeltaP%d_TRDv_qPt_tgl_alphaV(100,%f,%f,12,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -range[iPar],range[iPar]);
-    hisString+=TString::Format("pullP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisPullP%d_Allv_qPt_tgl_alphaV(100,%f,%f,12,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
-    hisString+=TString::Format("pullP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisPullP%d_TRDv_qPt_tgl_alphaV(100,%f,%f,12,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
-    //
-    hisString+=TString::Format("covarP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%d_Allv_qPt_tgl_alphaV(100,%f,%f,12,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, 0,range[iPar]);
-    hisString+=TString::Format("covarP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl_alphaV(100,%f,%f,12,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, 0,range[iPar]);
-    hisString+=TString::Format("covarP%dITS:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_alphaV(100,%f,%f,12,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, 0,rangeCITS[iPar]);
-    hisString+=TString::Format("covarP%dITS:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_alphaV(100,%f,%f,12,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, 0,rangeCITS[iPar]);
+    hisString+=TString::Format("deltaP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("deltaP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisDeltaP%d_TRDv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisPullP%d_Allv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisPullP%d_TRDv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%d_Allv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,rangeCITS[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,rangeCITS[iPar]);
+    // Edge Effect histogramming
+    hisString+=TString::Format("deltaP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("deltaP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisDeltaP%d_TRDv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisPullP%d_Allv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisPullP%d_TRDv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%d_Allv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,rangeCITS[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,rangeCITS[iPar]);
 
   }
-
-
-  {
-    // covariance (TPC+TRD - ITS+TPF+TRD)
-    hisString+=TString::Format("covarP4:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisCovarP4CQPtTglAll(400,-0.05,0.05,200,-2.5,2.5,10,-1,1);");
-    hisString+=TString::Format("covarP4:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisCovarP4CQPtTglTRD(400,-0.05,0.05,200,-2.5,2.5,10,-1,1);");
-    hisString+=TString::Format("covarCP4:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&nclCut>>hisCovarP4ConstCQPtTglAll(400,-0.05,0.05,200,-2.5,2.5,10,-1,1);");
-    hisString+=TString::Format("covarCP4:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn0&&TRDOn&&nclCut>>hisCovarP4ConstCQPtTglTRD(400,-0.05,0.05,200,-2.5,2.5,10,-1,1);");
-  }
-
 
   TString hisV0String="";
   chainV0->SetAlias("K0cut","abs(K0PIDPull)<2&&(abs(LPull)>2.&&abs(ALPull)>2.)");
   
   {
     // K0 performance
-    hisV0String+="K0Delta:mpt:tglV0:#K0cut>>hisK0DMassQPtTgl(100,-0.03,0.03,80,0,2,5,10,-1,1);";  
-    hisV0String+="K0Pull:mpt:tglV0:#K0cut>>hisK0PullQPtTgl(100,-6.0,6.0,80,0,2,5,10,-1,1);";
+    hisV0String+="K0Delta:mpt:tglV0:#K0cut>>hisK0DMassQPtTgl(100,-0.03,0.03,80,0,2,10,-1,1);";  
+    hisV0String+="K0Pull:mpt:tglV0:#K0cut>>hisK0PullQPtTgl(100,-6.0,6.0,80,0,2,10,-1,1);";
     // K0 resolution/maps - in respec to sector edge
     hisV0String+="K0Delta:mpt:tglV0:dalphaV0:#K0cut>>hisK0DMassQPtTglDSec(100,-0.03,0.03,10,0,1,10,-1,1,10,0.0,0.35);";  
     hisV0String+="K0Pull:mpt:tglV0:dalphaV0:#K0cut>>hisK0PullQPtTglDSec(100,-6.0,6.0,10,0,1,10,-1,1,10,0.0,0.35);";
@@ -616,7 +647,7 @@ void MakeResidualDistortionMaps(){
     }
   }
   // Track performance maps
-  TPRegexp regexpPerf("(eltaP|ullP|hisCovar).*");  
+  TPRegexp regexpPerf("(eltaP|ullP|hisCovar|qa).*");  
   for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
     if ( (regexpPerf.Match(TString(hisArray->At(iHis)->GetName()))>0) && (regexpDelta.Match(TString(hisArray->At(iHis)->GetName()))==0) ){
       hisArray->At(iHis)->Print(); 
