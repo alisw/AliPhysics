@@ -2,9 +2,9 @@
   .x $NOTES/aux/NimStyle.C(1) 
   NimStyleBig()
   .L $AliPhysics_SRC/PWGPP/TPC/macros/comparePerformanceMaps.C+
-  InitTrees();
+   InitTrees();  
   
-
+ 
 
  */
 #include "TFile.h"
@@ -17,21 +17,35 @@
 #include "TStyle.h"
 
 TTree *  InitMapTree(TPRegexp regExp,  TPRegexp notReg, TString axisAlias,  TString axisTitle);
-TObjArray * samples=new TObjArray();
+TObjArray * samples=new TObjArray(1000);
 
 
 TPRegexp dummy("^!");
 TPRegexp regTreeK0Qpt("hisK0.*proj_0_1");
 TPRegexp regTreeNotK0Qpt("hisK0.*(Alpha|DSec)");
 TPRegexp regTreeK0QptDSec("hisK0.*QPtTglDSec_1_1_5_1Dist");
-TPRegexp regTreeDelta("his(Delta|Pull).*TRD");
+TPRegexp regTreeK0Alpha("hisK0.*AlphaDist");
+//TPRegexp regTreeDelta("(his|qahis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist");  // regular expression for standard trees
+TPRegexp regTreeDelta("^(his|qahis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist$");  // regular expression for standard trees
 TPRegexp regTreeNotDeltaInt("his.*(lpha|DSec)");
 //
 TPRegexp regCovar("hisCovar");
-TPRegexp regTreeDeltaAlpha("his(Delta|Pull).*lpha.*");
+TPRegexp regTreeDeltaAlpha("(his|qahis)(Delta|Pull|Covar).*alphaVDist$");
+TPRegexp regTreeDeltaDAlphaQ("(his|qahis)(Delta|Pull|Covar).*_dalphaQDist$");
 
-TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha;
+TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha;
+TCanvas *canvasDraw=0;
 
+
+void makeCanvas(){
+  canvasDraw = new TCanvas("xxx","xxx",1100,500);
+  canvasDraw->SetRightMargin(0.15);
+  canvasDraw->SetBottomMargin(0.15);
+  canvasDraw->SetLeftMargin(0.1);
+  gStyle->SetTitleOffset(0.8,"Z");
+  gStyle->SetTitleOffset(1.0,"X");
+  gStyle->SetTitleOffset(0.6,"Y");
+}
 
 void InitTrees(){
   treeDelta0= InitMapTree(regTreeDelta,regTreeNotDeltaInt,"qPt:tgl","q/p_{t}(1/GeV):unit");
@@ -39,6 +53,9 @@ void InitTrees(){
   treeK0QptDSec= InitMapTree(regTreeK0QptDSec,dummy , "mpt:side:dsec","1/p_{t} (1/GeV): side:dsec");
   treeCovar= InitMapTree(regCovar,dummy , "qPt:tgl","q/p_{t} (1/GeV): tan(#lambda)");
   treeDeltaAlpha= InitMapTree(regTreeDeltaAlpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha");
+  treeDeltaDAlphaQ= InitMapTree(regTreeDeltaDAlphaQ,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):dalphaQ");
+  treeK0Alpha= InitMapTree(regTreeK0Alpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha");
+
 }
 
 
@@ -67,6 +84,13 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
 	treeBase= (TTree*)finput2->Get(keys->At(iKey)->GetName());
       }
       treeBase->AddFriend(tree,TString::Format("%s.%s",name0.Data(),keys->At(iKey)->GetName()).Data());
+      Int_t entriesF=tree->GetEntries();
+      Int_t entriesB=treeBase->GetEntries();
+      if (entriesB==entriesF){
+	::Info("InitMapTree", "%s\t%s.%s:\t%d\t%d",treeBase->GetName(),name0.Data(),keys->At(iKey)->GetName(),entriesB, entriesF);
+      }else{
+	::Error("InitMapTree","%s\t%s.%s:\t%d\t%d",treeBase->GetName(),name0.Data(),keys->At(iKey)->GetName(),entriesB, entriesF);
+      }
     }
   }
   if (treeBase){
@@ -226,7 +250,7 @@ void PreliminaryPlot(){
   //
   //
   //
-  treeDelta0->SetMarkerStyle(21); treeDelta0->SetMarkerColor(0.2); 
+  treeDelta0->SetMarkerStyle(21); treeDelta0->SetMarkerColor(2); 
   TLatex  latex;
   //
   //
@@ -341,3 +365,7 @@ void errorComp(){
 
 }
 
+
+
+void xxx(){
+}
