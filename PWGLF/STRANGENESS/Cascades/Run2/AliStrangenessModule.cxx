@@ -696,13 +696,18 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
             fHistG3FCorrection -> SetBinContent(ibin+1, lFuncG3FCorr->Eval(lProtonMomentum) );
             
             //Apply correction on a bin-by-bin basis
-            fHistEfficiency->SetBinContent(ibin+1, fHistEfficiency->GetBinContent(ibin+1) / lFuncG3FCorr->Eval(lProtonMomentum) );
-            fHistEfficiency->SetBinError  (ibin+1, fHistEfficiency->GetBinError(ibin+1)   / lFuncG3FCorr->Eval(lProtonMomentum) );
+            // ...if the bin content isn't zero. Otherwise, don't touch it or there'll be... trouble
+            if( fHistEfficiency->GetBinContent(ibin+1)>1e-6){
+                fHistEfficiency->SetBinContent(ibin+1, fHistEfficiency->GetBinContent(ibin+1) / lFuncG3FCorr->Eval(lProtonMomentum) );
+                fHistEfficiency->SetBinError  (ibin+1, fHistEfficiency->GetBinError(ibin+1)   / lFuncG3FCorr->Eval(lProtonMomentum) );
+            }
         }
         
         //Store histogram with the correction
         fListOutput->Add(fHistG3FCorrection);
     }
+    
+    
     
     fListOutput->Add(fHistEfficiency);
     
