@@ -2798,16 +2798,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhTrackMatchedDEtaDPhiNeg[i]->SetYTitle("#Delta #varphi (rad)");
       fhTrackMatchedDEtaDPhiNeg[i]->SetXTitle("#Delta #eta");
       
-//      outputContainer->Add(fhTrackMatchedDEta[i]) ;
-//      outputContainer->Add(fhTrackMatchedDPhi[i]) ;
-//      outputContainer->Add(fhTrackMatchedDEtaDPhi[i]) ;
-      outputContainer->Add(fhTrackMatchedDEtaPos[i]) ;
-      outputContainer->Add(fhTrackMatchedDPhiPos[i]) ;
-      outputContainer->Add(fhTrackMatchedDEtaDPhiPos[i]) ;
-      outputContainer->Add(fhTrackMatchedDEtaNeg[i]) ;
-      outputContainer->Add(fhTrackMatchedDPhiNeg[i]) ;
-      outputContainer->Add(fhTrackMatchedDEtaDPhiNeg[i]) ;
-
       fhdEdx[i]  = new TH2F (Form("hdEdx%s",cutTM[i].Data()),Form("matched track <dE/dx> vs cluster #it{E}, %s",cutTM[i].Data()),
                              nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
       fhdEdx[i]->SetXTitle("#it{E}^{cluster} (GeV)");
@@ -2818,6 +2808,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhEOverP[i]->SetXTitle("#it{E}^{cluster} (GeV)");
       fhEOverP[i]->SetYTitle("E/p");
 
+//    outputContainer->Add(fhTrackMatchedDEta[i]) ;
+//    outputContainer->Add(fhTrackMatchedDPhi[i]) ;
+//    outputContainer->Add(fhTrackMatchedDEtaDPhi[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaPos[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiPos[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaDPhiPos[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaNeg[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiNeg[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaDPhiNeg[i]) ;
+      outputContainer->Add(fhdEdx[i]);
+      outputContainer->Add(fhEOverP[i]);
       
       if(fFillTMHistoTrackPt)
       {
@@ -2883,17 +2884,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
          nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
         fhTrackMatchedDEtaDPhiNegTrackPt[i]->SetYTitle("#Delta #varphi (rad)");
         fhTrackMatchedDEtaDPhiNegTrackPt[i]->SetXTitle("#Delta #eta");
-        
-//      outputContainer->Add(fhTrackMatchedDEtaTrackPt[i]) ;
-//      outputContainer->Add(fhTrackMatchedDPhiTrackPt[i]) ;
-//      outputContainer->Add(fhTrackMatchedDEtaDPhiTrackPt[i]) ;
-        outputContainer->Add(fhTrackMatchedDEtaPosTrackPt[i]) ;
-        outputContainer->Add(fhTrackMatchedDPhiPosTrackPt[i]) ;
-        outputContainer->Add(fhTrackMatchedDEtaDPhiPosTrackPt[i]) ;
-        outputContainer->Add(fhTrackMatchedDEtaNegTrackPt[i]) ;
-        outputContainer->Add(fhTrackMatchedDPhiNegTrackPt[i]) ;
-        outputContainer->Add(fhTrackMatchedDEtaDPhiNegTrackPt[i]) ;
-        
+                
         fhdEdxTrackPt[i]  = new TH2F (Form("hdEdxTrackPt%s",cutTM[i].Data()),Form("matched track <dE/dx> vs track #it{p}_{T}, %s",cutTM[i].Data()),
                                       nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
         fhdEdxTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
@@ -2904,8 +2895,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEOverPTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV)^{track/#it{c}}");
         fhEOverPTrackPt[i]->SetYTitle("E/p");
         
-        outputContainer->Add(fhdEdx[i]);
-        outputContainer->Add(fhEOverP[i]);
+//      outputContainer->Add(fhTrackMatchedDEtaTrackPt[i]) ;
+//      outputContainer->Add(fhTrackMatchedDPhiTrackPt[i]) ;
+//      outputContainer->Add(fhTrackMatchedDEtaDPhiTrackPt[i]) ;
+        outputContainer->Add(fhTrackMatchedDEtaPosTrackPt[i]) ;
+        outputContainer->Add(fhTrackMatchedDPhiPosTrackPt[i]) ;
+        outputContainer->Add(fhTrackMatchedDEtaDPhiPosTrackPt[i]) ;
+        outputContainer->Add(fhTrackMatchedDEtaNegTrackPt[i]) ;
+        outputContainer->Add(fhTrackMatchedDPhiNegTrackPt[i]) ;
+        outputContainer->Add(fhTrackMatchedDEtaDPhiNegTrackPt[i]) ;
         outputContainer->Add(fhdEdxTrackPt[i]);
         outputContainer->Add(fhEOverPTrackPt[i]);
       }
