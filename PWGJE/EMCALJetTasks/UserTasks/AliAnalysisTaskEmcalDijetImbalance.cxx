@@ -1709,7 +1709,15 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
   
   // Plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
   
+  // Get cells from event
+  fCaloCells = InputEvent()->GetEMCALCells();
+  AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
+  
   TString histname;
+  Double_t Enonlin;
+  Double_t Ehadcorr;
+  Int_t absId;
+  Double_t ecell;
   AliClusterContainer* clusters = 0;
   TIter nextClusColl(&fClusterCollArray);
   while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
@@ -1751,12 +1759,12 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
 
       
       // Fill cluster spectra by SM
-      Double_t Enonlin;
-      Double_t Ehadcorr;
+      Enonlin = 0;
+      Ehadcorr = 0;
       if (it->second->IsEMCAL()) {
         
         Ehadcorr = it->second->GetHadCorrEnergy();
-        Ehadcorr = it->second->GetNonLinCorrEnergy();
+        Enonlin = it->second->GetNonLinCorrEnergy();
         
         Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
         if (sm >=0 && sm < 20) {
@@ -1765,6 +1773,14 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
         }
         else {
           AliError(Form("Supermodule %d does not exist!", sm));
+        }
+        
+        // Get cells from each accepted cluster, and plot centrality vs. cell energy vs. cell type
+        histname = TString::Format("Cells/hCellEnergy");
+        for (Int_t iCell = 0; iCell < it->second->GetNCells(); iCell++){
+          absId = it->second->GetCellAbsId(iCell);
+          ecell = fCaloCells->GetCellAmplitude(absId);
+          fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // Note: I don't distinguish EMCal from DCal cells
         }
         
       } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
@@ -1783,6 +1799,14 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
           else {
             AliError(Form("Supermodule %d does not exist!", sm));
           }
+        }
+        
+        // Get cells from each accepted cluster, and plot centrality vs. cell energy vs. cell type
+        histname = TString::Format("Cells/hCellEnergy");
+        for (Int_t iCell = 0; iCell < it->second->GetNCells(); iCell++){
+          absId = it->second->GetCellAbsId(iCell);
+          ecell = phosCaloCells->GetCellAmplitude(absId);
+          fHistManager.FillTH3(histname, ecell, fCent, kPHOS);
         }
       }
       
@@ -1821,7 +1845,7 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
       histClusterObservables->Fill(contents);
         
     }
-  
+
   }
   
   // plot neutral jets THnSparse (centrality, eta, phi, E, Nclusters)
@@ -1854,29 +1878,6 @@ void AliAnalysisTaskEmcalDijetImbalance::FillCaloHistograms()
       
     }
     
-  }
-    
-  // Get the cells from the event, and plot centrality vs. emcal cell energy vs. cell type
-  histname = TString::Format("Cells/hCellEnergy");
-  
-  fCaloCells = InputEvent()->GetEMCALCells();
-  AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
-    
-  Short_t  absId = -1;
-  Double_t ecell = 0;
-  Double_t ecellPhos = 0;
-  Double_t tcell = 0;
-  Double_t efrac = 0;
-  Int_t  mclabel = -1;
-    
-  for (Int_t iCell = 0; iCell < fCaloCells->GetNumberOfCells(); iCell++){
-    fCaloCells->GetCell(iCell, absId, ecell, tcell, mclabel, efrac);
-    fHistManager.FillTH3(histname, ecell, fCent, kEMCal); // note: I don't distinguish EMCal from DCal for cells
-  }
-  
-  for (Int_t iCellPhos = 0; iCellPhos < phosCaloCells->GetNumberOfCells(); iCellPhos++){
-    phosCaloCells->GetCell(iCellPhos, absId, ecellPhos, tcell, mclabel, efrac);
-    fHistManager.FillTH3(histname, ecellPhos, fCent, kPHOS);
   }
 
 }
