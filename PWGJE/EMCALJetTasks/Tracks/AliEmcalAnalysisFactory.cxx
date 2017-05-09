@@ -269,6 +269,8 @@ AliESDtrackCuts *AliEmcalAnalysisFactory::GenerateDefaultCutsESD() {
   esdcuts->DefineHistograms(kRed);
   esdcuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.0, 0.0);
   esdcuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+  esdcuts->SetMaxFractionSharedTPCClusters(0.4);
+  // esdcuts->SetMinNCrossedRowsTPC(0.); // Replaced by geometrical cut
   return esdcuts;
 
 }
