@@ -98,15 +98,15 @@ fAOD(0), fOutputList(0), fPIDResponse(0), fHistPt(0),  cent_ntracks(0),
     
     m_squared_pos(0),       beta_vs_mom_pos(0),        deltat_vs_mom_pos(0),
     m_squared_neg(0),       beta_vs_mom_neg(0),        deltat_vs_mom_neg(0),
-    dedx_vs_mom_pos(0),     dedx_vs_deltat_pos(0),     dedx_mom_deltat_pos(0),//         dedx_mom_m2_pos(0),
-    dedx_vs_mom_neg(0),     dedx_vs_deltat_neg(0),     dedx_mom_deltat_neg(0),//         dedx_mom_m2_neg(0),
+    dedx_vs_mom_pos(0),     dedx_vs_deltat_pos(0),     dedx_mom_deltat_pos(0),      //     dedx_mom_m2_pos(0),
+    dedx_vs_mom_neg(0),     dedx_vs_deltat_neg(0),     dedx_mom_deltat_neg(0),      //     dedx_mom_m2_neg(0),
 
     m_squared_pos_cut(0),   beta_vs_mom_pos_cut(0),    deltat_vs_mom_pos_cut(0),
     m_squared_neg_cut(0),   beta_vs_mom_neg_cut(0),    deltat_vs_mom_neg_cut(0),
-    dedx_vs_mom_pos_cut(0), dedx_vs_deltat_pos_cut(0), dedx_mom_deltat_pos_cut(0),//     dedx_mom_m2_pos_cut(0),
-    dedx_vs_mom_neg_cut(0), dedx_vs_deltat_neg_cut(0), dedx_mom_deltat_neg_cut(0),//     dedx_mom_m2_neg_cut(0),
+    dedx_vs_mom_pos_cut(0), dedx_vs_deltat_pos_cut(0), dedx_mom_deltat_pos_cut(0),  //     dedx_mom_m2_pos_cut(0),
+    dedx_vs_mom_neg_cut(0), dedx_vs_deltat_neg_cut(0), dedx_mom_deltat_neg_cut(0)   //     dedx_mom_m2_neg_cut(0),
 
-    path_length(0), ttof(0), theta(0)
+//    path_length(0), ttof(0), theta(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -117,15 +117,15 @@ fAOD(0), fOutputList(0), fPIDResponse(0), fHistPt(0),  cent_ntracks(0),
 
     m_squared_pos(0),       beta_vs_mom_pos(0),        deltat_vs_mom_pos(0),
     m_squared_neg(0),       beta_vs_mom_neg(0),        deltat_vs_mom_neg(0),
-    dedx_vs_mom_pos(0),     dedx_vs_deltat_pos(0),     dedx_mom_deltat_pos(0),//         dedx_mom_m2_pos(0),
-    dedx_vs_mom_neg(0),     dedx_vs_deltat_neg(0),     dedx_mom_deltat_neg(0),//         dedx_mom_m2_neg(0),
+    dedx_vs_mom_pos(0),     dedx_vs_deltat_pos(0),     dedx_mom_deltat_pos(0),      //     dedx_mom_m2_pos(0),
+    dedx_vs_mom_neg(0),     dedx_vs_deltat_neg(0),     dedx_mom_deltat_neg(0),      //     dedx_mom_m2_neg(0),
 
     m_squared_pos_cut(0),   beta_vs_mom_pos_cut(0),    deltat_vs_mom_pos_cut(0),
     m_squared_neg_cut(0),   beta_vs_mom_neg_cut(0),    deltat_vs_mom_neg_cut(0),
-    dedx_vs_mom_pos_cut(0), dedx_vs_deltat_pos_cut(0), dedx_mom_deltat_pos_cut(0),//     dedx_mom_m2_pos_cut(0),
-    dedx_vs_mom_neg_cut(0), dedx_vs_deltat_neg_cut(0), dedx_mom_deltat_neg_cut(0),//     dedx_mom_m2_neg_cut(0),
+    dedx_vs_mom_pos_cut(0), dedx_vs_deltat_pos_cut(0), dedx_mom_deltat_pos_cut(0),  //     dedx_mom_m2_pos_cut(0),
+    dedx_vs_mom_neg_cut(0), dedx_vs_deltat_neg_cut(0), dedx_mom_deltat_neg_cut(0)   //     dedx_mom_m2_neg_cut(0),
 
-    path_length(0), ttof(0), theta(0)
+//    path_length(0), ttof(0), theta(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -177,6 +177,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
     fHistPt                 = new TH1F("fHistPt",                   "Pt()",                   1000,     0,     10);
     cent_ntracks            = new TH2F("cent_vs_ntracks",           "cent_vs_ntracks",         100,     0,    100,     100,      0,    800);
+    
     m_squared_pos           = new TH2F("m_squared_pos",             "m_squared_pos",           320,   0.0,    8.0,    2400,   -1.0,    7.0);
     m_squared_neg           = new TH2F("m_squared_neg",             "m_squared_neg",           320,   0.0,    8.0,    2400,   -1.0,    7.0);
    
@@ -211,24 +212,22 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
 //    dedx_mom_m2_pos_cut     = new TH3F("dedx_mom_m2_pos_cut",       "dedx_mom_m2_pos_cut",     250,   0.0,  500.0,     156,    0.2,    8.0,      240, -1.0,  7.0);  //// (dedx, mom, m2)
 //    dedx_mom_m2_neg_cut     = new TH3F("dedx_mom_m2_neg_cut",       "dedx_mom_m2_neg_cut",     250,   0.0,  500.0,     156,    0.2,    8.0,      240, -1.0,  7.0);  //// (dedx, mom, m2)
-    path_length             = new TH1F("path_length",               "path_length",             200, 382.0,  398.0);
-    ttof                    = new TH1F("ttof",                      "time of flight",          500,  12.0,   20.0);
 
-    alpha                   = new TH1F("alpha",                     "alpha",                  1000,     0,    4.0);
-
-    theta                   = new TH1F("theta",                     "theta",                   100,  -7.0,    7.0);
-    dca                     = new TH2F("dca",                       "dca",                     100,  -5.0,    5.0,     100,   -5.0,    5.0);
-
-    generic                 = new TH1F("generic",                   "generic",                 4, -1,3);
+//    path_length             = new TH1F("path_length",               "path_length",             200, 382.0,  398.0);
+//    ttof                    = new TH1F("ttof",                      "time of flight",          500,  12.0,   20.0);
+//    alpha                   = new TH1F("alpha",                     "alpha",                  1000,     0,    4.0);
+//    theta                   = new TH1F("theta",                     "theta",                   100,  -7.0,    7.0);
+//    dca                     = new TH2F("dca",                       "dca",                     100,  -5.0,    5.0,     100,   -5.0,    5.0);
+//    generic                 = new TH1F("generic",                   "generic",                 4, -1,3);
     //markc
 
 
-    fOutputList->Add(generic);
-    fOutputList->Add(dca);
-    fOutputList->Add(alpha);
-    fOutputList->Add(theta);
-    fOutputList->Add(path_length);
-    fOutputList->Add(ttof);
+//    fOutputList->Add(generic);
+//    fOutputList->Add(dca);
+//    fOutputList->Add(alpha);
+//    fOutputList->Add(theta);
+//    fOutputList->Add(path_length);
+//    fOutputList->Add(ttof);
     
     fOutputList->Add(fHistPt);                                                                      // objects added to output file
     fOutputList->Add(cent_ntracks);
@@ -345,7 +344,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
         if(!track) continue;                                                       // if we failed, skip this track
 //	if(!(track->IsHybridGlobalConstrainedGlobal())){   continue;   }
 
-	generic->Fill(track->IsPrimaryCandidate());
+//	generic->Fill(track->IsPrimaryCandidate());
 	
 	if(!track->IsPrimaryCandidate())   continue;
 
@@ -365,7 +364,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 	if(fabs(dcaxy) > 3.0)   continue;
 	if(fabs(dcaz)  > 2.0)   continue;
-	dca->Fill(dcaxy, dcaz);
+//	dca->Fill(dcaxy, dcaz);
 
 
 	UChar_t map = track->GetITSClusterMap();
@@ -456,7 +455,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 	fHistPt->Fill(pt);
-	if(pt >= 0.3  &&  pt < 5)   alpha->Fill(1/pt);
+//	if(pt >= 0.3  &&  pt < 5)   alpha->Fill(1/pt);
 
 //	if(pt >= 1.0  &&  pt < 1.05)   cout<<fPIDResponse->GetTOFResponse().GetTOFchannel(track)<<endl;
 
@@ -469,7 +468,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    {
 		Double_t track_theta    = 0.0;
 		track_theta             = track->Theta();
-		theta->Fill(track_theta);
+//		theta->Fill(track_theta);
 		Double_t c              = TMath::C()*1.E-9;                                                             // in m/ns
 		Double_t length         = 0.0;
 		length                  = fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion)*1E-3*c; // in meters
@@ -487,8 +486,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    Double_t time_of_flight = stop_time - start_time;
 		    time_of_flight          = time_of_flight * 0.001;                                                       // convert ps to ns
 
-		    path_length->Fill(length);
-		    ttof->Fill(time_of_flight);
+//		    path_length->Fill(length);
+//		    ttof->Fill(time_of_flight);
 		}
 	    }
 	    
