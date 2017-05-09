@@ -12,7 +12,7 @@
 class AliAODTrack;
 //class AliEmcalTrackSelection;
 
-//namespace BSchaefer_devel{ 
+//namespace BSchaefer_devel{
     
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
 {
@@ -38,7 +38,7 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
         TList*                  fOutputList;        //! output list
 	AliPIDResponse*         fPIDResponse;
 	
-	TH1F*                   fHistPt;
+	TH1F*                   fHistPt; 
 	TH2F*                   cent_ntracks;
 
 	TH2F*                   m_squared_pos;
@@ -76,15 +76,14 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 //	TH3F*                   dedx_mom_m2_neg_cut;
 
 	
-	TH2F*                   mom_compare_pos;
-	TH2F*                   mom_compare_neg;
-	TH1F*                   path_length;
-	TH1F*                   ttof;
-	TH1F*                   alpha;
-	TH1F*                   theta;
-	TH2F*                   dca;
-
-	TH1F*                   generic;
+//	TH2F*                   mom_compare_pos;
+//	TH2F*                   mom_compare_neg;
+//	TH1F*                   path_length;
+//	TH1F*                   ttof;
+//	TH1F*                   alpha;
+//	TH1F*                   theta;
+//	TH2F*                   dca;
+//	TH1F*                   generic;
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
