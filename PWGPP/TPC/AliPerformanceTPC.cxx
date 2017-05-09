@@ -167,99 +167,97 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   Init();
 }
 
-//_____________________________________________________________________________
-AliPerformanceTPC::AliPerformanceTPC(const AliPerformanceTPC& that):
-  AliPerformanceObject(that),
-  fTPCClustHisto(that.fTPCClustHisto),
-  fTPCEventHisto(that.fTPCEventHisto),
-  fTPCTrackHisto(that.fTPCTrackHisto),
-  fFolderObj(NULL),
-  fAnalysisFolder(NULL),
-  fUseHLT(that.fUseHLT),
-  h_tpc_clust_0_1_2(NULL),
-  h_tpc_event_recvertex_0(NULL),
-  h_tpc_event_recvertex_1(NULL),
-  h_tpc_event_recvertex_2(NULL),
-  h_tpc_event_recvertex_3(NULL),
-  h_tpc_event_recvertex_4(NULL),
-  h_tpc_event_recvertex_5(NULL),
-  h_tpc_event_6(NULL),
-  h_tpc_track_pos_recvertex_2_5_6(NULL),
-  h_tpc_track_neg_recvertex_2_5_6(NULL),
-  h_tpc_track_all_recvertex_5_8(NULL),
-  h_tpc_track_all_recvertex_0_5_7(NULL),
-  h_tpc_track_pos_recvertex_0_5_7(NULL),
-  h_tpc_track_neg_recvertex_0_5_7(NULL),
-  h_tpc_track_all_recvertex_1_5_7(NULL),
-  h_tpc_track_all_recvertex_2_5_7(NULL),
-  h_tpc_track_all_recvertex_3_5_7(NULL),
-  h_tpc_track_pos_recvertex_3_5_7(NULL),
-  h_tpc_track_neg_recvertex_3_5_7(NULL),
-  h_tpc_track_all_recvertex_4_5_7(NULL),
-  h_tpc_track_pos_recvertex_4_5_7(NULL),
-  h_tpc_track_neg_recvertex_4_5_7(NULL),
-  h_tpc_track_pos_recvertex_3_5_6(NULL),
-  h_tpc_track_pos_recvertex_4_5_6(NULL),
-  h_tpc_track_neg_recvertex_3_5_6(NULL),
-  h_tpc_track_neg_recvertex_4_5_6(NULL)
-{
-}
-
-//_____________________________________________________________________________
-AliPerformanceTPC& AliPerformanceTPC::operator=(const AliPerformanceTPC& that)
-{
-  AliPerformanceObject::operator=(that);
-  fTPCClustHisto = that.fTPCClustHisto;
-  fTPCEventHisto = that.fTPCEventHisto;
-  fTPCTrackHisto = that.fTPCTrackHisto;
-  fFolderObj = NULL;
-  fAnalysisFolder = NULL;
-  fUseHLT = that.fUseHLT;
-  h_tpc_clust_0_1_2=NULL;
-  h_tpc_event_recvertex_0=NULL;
-  h_tpc_event_recvertex_1=NULL;
-  h_tpc_event_recvertex_2=NULL;
-  h_tpc_event_recvertex_3=NULL;
-  h_tpc_event_recvertex_4=NULL;
-  h_tpc_event_recvertex_5=NULL;
-  h_tpc_event_6=NULL;
-  h_tpc_track_pos_recvertex_2_5_6=NULL;
-  h_tpc_track_neg_recvertex_2_5_6=NULL;
-  h_tpc_track_all_recvertex_5_8=NULL;
-  h_tpc_track_all_recvertex_0_5_7=NULL;
-  h_tpc_track_pos_recvertex_0_5_7=NULL;
-  h_tpc_track_neg_recvertex_0_5_7=NULL;
-  h_tpc_track_all_recvertex_1_5_7=NULL;
-  h_tpc_track_all_recvertex_2_5_7=NULL;
-  h_tpc_track_all_recvertex_3_5_7=NULL;
-  h_tpc_track_pos_recvertex_3_5_7=NULL;
-  h_tpc_track_neg_recvertex_3_5_7=NULL;
-  h_tpc_track_all_recvertex_4_5_7=NULL;
-  h_tpc_track_pos_recvertex_4_5_7=NULL;
-  h_tpc_track_neg_recvertex_4_5_7=NULL;
-  h_tpc_track_pos_recvertex_3_5_6=NULL;
-  h_tpc_track_pos_recvertex_4_5_6=NULL;
-  h_tpc_track_neg_recvertex_3_5_6=NULL;
-  h_tpc_track_neg_recvertex_4_5_6=NULL;
-  return *this;
-}
+////_____________________________________________________________________________
+//AliPerformanceTPC::AliPerformanceTPC(const AliPerformanceTPC& that):
+//  AliPerformanceObject(that),
+//  fTPCClustHisto(*that.fTPCClustHisto),
+//  fTPCEventHisto(*that.fTPCEventHisto),
+//  fTPCTrackHisto(*that.fTPCTrackHisto),
+//  fFolderObj(NULL),
+//  fAnalysisFolder(NULL),
+//  fUseHLT(that.fUseHLT),
+//  h_tpc_clust_0_1_2(NULL),
+//  h_tpc_event_recvertex_0(NULL),
+//  h_tpc_event_recvertex_1(NULL),
+//  h_tpc_event_recvertex_2(NULL),
+//  h_tpc_event_recvertex_3(NULL),
+//  h_tpc_event_recvertex_4(NULL),
+//  h_tpc_event_recvertex_5(NULL),
+//  h_tpc_event_6(NULL),
+//  h_tpc_track_pos_recvertex_2_5_6(NULL),
+//  h_tpc_track_neg_recvertex_2_5_6(NULL),
+//  h_tpc_track_all_recvertex_5_8(NULL),
+//  h_tpc_track_all_recvertex_0_5_7(NULL),
+//  h_tpc_track_pos_recvertex_0_5_7(NULL),
+//  h_tpc_track_neg_recvertex_0_5_7(NULL),
+//  h_tpc_track_all_recvertex_1_5_7(NULL),
+//  h_tpc_track_all_recvertex_2_5_7(NULL),
+//  h_tpc_track_all_recvertex_3_5_7(NULL),
+//  h_tpc_track_pos_recvertex_3_5_7(NULL),
+//  h_tpc_track_neg_recvertex_3_5_7(NULL),
+//  h_tpc_track_all_recvertex_4_5_7(NULL),
+//  h_tpc_track_pos_recvertex_4_5_7(NULL),
+//  h_tpc_track_neg_recvertex_4_5_7(NULL),
+//  h_tpc_track_pos_recvertex_3_5_6(NULL),
+//  h_tpc_track_pos_recvertex_4_5_6(NULL),
+//  h_tpc_track_neg_recvertex_3_5_6(NULL),
+//  h_tpc_track_neg_recvertex_4_5_6(NULL)
+//{
+//}
+//
+////_____________________________________________________________________________
+//AliPerformanceTPC& AliPerformanceTPC::operator=(const AliPerformanceTPC& that)
+//{
+//  AliPerformanceObject::operator=(that);
+//  fTPCClustHisto = *that.fTPCClustHisto;
+//  fTPCEventHisto = *that.fTPCEventHisto;
+//  fTPCTrackHisto = *that.fTPCTrackHisto;
+//  fFolderObj = NULL;
+//  fAnalysisFolder = NULL;
+//  fUseHLT = that.fUseHLT;
+//  h_tpc_clust_0_1_2=NULL;
+//  h_tpc_event_recvertex_0=NULL;
+//  h_tpc_event_recvertex_1=NULL;
+//  h_tpc_event_recvertex_2=NULL;
+//  h_tpc_event_recvertex_3=NULL;
+//  h_tpc_event_recvertex_4=NULL;
+//  h_tpc_event_recvertex_5=NULL;
+//  h_tpc_event_6=NULL;
+//  h_tpc_track_pos_recvertex_2_5_6=NULL;
+//  h_tpc_track_neg_recvertex_2_5_6=NULL;
+//  h_tpc_track_all_recvertex_5_8=NULL;
+//  h_tpc_track_all_recvertex_0_5_7=NULL;
+//  h_tpc_track_pos_recvertex_0_5_7=NULL;
+//  h_tpc_track_neg_recvertex_0_5_7=NULL;
+//  h_tpc_track_all_recvertex_1_5_7=NULL;
+//  h_tpc_track_all_recvertex_2_5_7=NULL;
+//  h_tpc_track_all_recvertex_3_5_7=NULL;
+//  h_tpc_track_pos_recvertex_3_5_7=NULL;
+//  h_tpc_track_neg_recvertex_3_5_7=NULL;
+//  h_tpc_track_all_recvertex_4_5_7=NULL;
+//  h_tpc_track_pos_recvertex_4_5_7=NULL;
+//  h_tpc_track_neg_recvertex_4_5_7=NULL;
+//  h_tpc_track_pos_recvertex_3_5_6=NULL;
+//  h_tpc_track_pos_recvertex_4_5_6=NULL;
+//  h_tpc_track_neg_recvertex_3_5_6=NULL;
+//  h_tpc_track_neg_recvertex_4_5_6=NULL;
+//  return *this;
+//}
 
 //_____________________________________________________________________________
 AliPerformanceTPC::~AliPerformanceTPC()
 {
   // destructor
+  delete fTPCClustHisto;
+  delete fTPCEventHisto;
+  delete fTPCTrackHisto;
 
-  //members
-    delete fTPCClustHisto;
-    delete fTPCEventHisto;
-    delete fTPCTrackHisto;
+  if (fFolderObj && fAnalysisFolder && !fAnalysisFolder->IsOwner()) {
+    fFolderObj->Delete();
+  } //delete the registered non-sparse histograms
 
-    if (fFolderObj && fAnalysisFolder && !fAnalysisFolder->IsOwner()) {
-      fFolderObj->Delete();
-    } //delete the registered non-sparse histograms
-
-    delete fFolderObj;
-    delete fAnalysisFolder;
+  delete fFolderObj;
+  delete fAnalysisFolder;
 }
 
 
