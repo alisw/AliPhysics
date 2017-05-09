@@ -310,7 +310,7 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *cons
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessTPCITS(AliMCEvent* const /*mcev*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceDEdx::ProcessTPCITS(AliMCEvent* const /*mcev*/, AliVTrack *const /*vTrack*/)
 {
   // Fill dE/dx  comparison information
   

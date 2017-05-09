@@ -404,7 +404,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *cons
 	  }
 	
 	// Only 5 charged particle species (e,mu,pi,K,p)
-	if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) continue; 
+	if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) continue; 
 	
 	// transform Pdg to Pid
 	Int_t pid = TransformToPID(particle);
@@ -522,19 +522,19 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliVEvent *cons
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC.IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) continue; 
 
     // transform Pdg to Pid
-    Int_t pid = TransformToPID(mcPart);
+    Int_t pid = TransformToPID(particle);
 
-    Float_t mceta =  mcPart->Eta();
-    Float_t mcphi =  mcPart->Phi();
+    Float_t mceta =  particle->Eta();
+    Float_t mcphi =  particle->Phi();
     if(mcphi<0) mcphi += 2.*TMath::Pi();
-    Float_t mcpt = mcPart->Pt();
+    Float_t mcpt = particle->Pt();
 
     Float_t charge = 0.;
-    if (mcPart->GetPDG()->Charge() < 0)  charge = -1.;    
-    else if (mcPart->GetPDG()->Charge() > 0)  charge = 1.;
+    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
     
     // Fill histograms
     Double_t vEffHisto[9] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes)}; 
@@ -626,17 +626,17 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliVEvent 
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC.IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) continue; 
 
     // transform Pdg to Pid
-    Int_t pid = TransformToPID(mcPart);
-    Float_t mceta =  mcPart->Eta();
-    Float_t mcphi =  mcPart->Phi();
+    Int_t pid = TransformToPID(particle);
+    Float_t mceta =  particle->Eta();
+    Float_t mcphi =  particle->Phi();
     if(mcphi<0) mcphi += 2.*TMath::Pi();
-    Float_t mcpt = mcPart->Pt();
+    Float_t mcpt = particle->Pt();
     Float_t charge = 0.;
-    if (mcPart->GetPDG()->Charge() < 0)  charge = -1.;    
-    else if (mcPart->GetPDG()->Charge() > 0)  charge = 1.;
+    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
 
     // Fill histograms
     Double_t vEffHisto[9] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes) }; 
@@ -708,7 +708,7 @@ void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
 }
 
 //_____________________________________________________________________________
-Int_t AliPerformanceEff::TransformToPID(TParticle *mcPart) 
+Int_t AliPerformanceEff::TransformToPID(TParticle *particle) 
 {
 
   
@@ -717,11 +717,11 @@ Int_t AliPerformanceEff::TransformToPID(TParticle *mcPart)
 // (e.g. K+/K- = 321/-321; e+/e- = -11/11 ) 
 
   Int_t pid = -1;
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetEM() ) pid = 0; 
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetMuM() ) pid = 1; 
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetPiP() ) pid = 2; 
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetKP() ) pid = 3; 
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetProt() ) pid = 4; 
+  if( TMath::Abs(particle->GetPdgCode())==fCutsMC.GetEM() ) pid = 0; 
+  if( TMath::Abs(particle->GetPdgCode())==fCutsMC.GetMuM() ) pid = 1; 
+  if( TMath::Abs(particle->GetPdgCode())==fCutsMC.GetPiP() ) pid = 2; 
+  if( TMath::Abs(particle->GetPdgCode())==fCutsMC.GetKP() ) pid = 3; 
+  if( TMath::Abs(particle->GetPdgCode())==fCutsMC.GetProt() ) pid = 4; 
 
 return pid;
 }
