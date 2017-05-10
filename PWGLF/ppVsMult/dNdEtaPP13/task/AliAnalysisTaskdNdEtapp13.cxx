@@ -813,7 +813,7 @@ for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
 }
 }
 
-((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel2+fCurrCentBin))->Fill(totalNch, totalNtr2);
+((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel2+fCurrCentBin))->Fill(totalNch, totalNtr2); // response matrix for trigger efficiency
 
 
 
