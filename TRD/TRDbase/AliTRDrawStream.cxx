@@ -2099,7 +2099,16 @@ void AliTRDrawStream::EquipmentError(ErrorCode_t err, const char *const msg, ...
   (this->*fStoreError)();
 
   va_list ap;
-  if (fgErrorDebugLevel[err] > 10)
+  static int hltOnlineMode = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
+  bool suppressError = false;
+  if (hltOnlineMode)
+  {
+    static int hltErrorCounter = 0;
+    if (!fgErrorDebugLevel[err] > 10) hltErrorCounter++;
+    if (hltErrorCounter >= 100) suppressError = true;
+  }
+  
+  if (suppressError || fgErrorDebugLevel[err] > 10)
     AliDebug(fgErrorDebugLevel[err],
 	     Form("Event %6i: Eq. %2d - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgkErrorMessages[err],
