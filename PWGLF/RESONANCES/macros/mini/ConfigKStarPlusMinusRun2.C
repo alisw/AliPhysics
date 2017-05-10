@@ -88,7 +88,7 @@ Bool_t ConfigKStarPlusMinusRun2
    esdTrackCuts->SetMaxChi2PerClusterTPC(chi2tpc);
     
     if(ptDep){
-   esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0105+0.0350/pt^1.01");
+   esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", d1, d2));
     }else
    esdTrackCuts->SetMinDCAToVertexXY(DCAxy); //Use one of the two - pt dependent or fixed value cut.
   
