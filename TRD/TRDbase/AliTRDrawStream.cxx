@@ -2104,19 +2104,21 @@ void AliTRDrawStream::EquipmentError(ErrorCode_t err, const char *const msg, ...
   if (hltOnlineMode)
   {
     static int hltErrorCounter = 0;
-    if (!fgErrorDebugLevel[err] > 10) hltErrorCounter++;
-    if (hltErrorCounter >= 100) suppressError = true;
+    if (hltErrorCounter++ >= 10) suppressError = true;
   }
   
-  if (suppressError || fgErrorDebugLevel[err] > 10)
-    AliDebug(fgErrorDebugLevel[err],
+  if (!suppressError)
+  {
+    if (fgErrorDebugLevel[err] > 10)
+      AliDebug(fgErrorDebugLevel[err],
 	     Form("Event %6i: Eq. %2d - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
-  else
-    AliError(Form("Event %6i: Eq. %2d - %s : %s",
+    else
+      AliError(Form("Event %6i: Eq. %2d - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgkErrorMessages[err],
 		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
+  }
   fErrorFlags |= fgErrorBehav[err];
 }
 
