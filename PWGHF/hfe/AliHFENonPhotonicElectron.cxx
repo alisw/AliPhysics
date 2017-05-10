@@ -679,8 +679,8 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
     fkPIDRespons = fPIDBackground->GetPIDResponse();
 
     //Set Fill-Arrays for THnSparse
-    Double_t valueIncElectron[6]	= { (Double_t) binct, track1->Pt(), (Double_t)source, track1->Eta(), track1->Phi(), track1->Charge()};	//Centrality	Pt	Source  eta phi charge
-    Double_t valueSign[11]		= { deltaphi, (Double_t)binct, track1->Pt(), -1, (Double_t)source, -1, -1, track1->Eta(), -1, track1->Phi(), track1->Charge()};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	OpeningAngle	Pt_assoc, eta_inc, eta_assoc, phi_inc, charge_inc
+    Double_t valueIncElectron[6]	= { (Double_t) binct, track1->Pt(), (Double_t)source, track1->Eta(), track1->Phi(), (Double_t)track1->Charge()};	//Centrality	Pt	Source  eta phi charge
+    Double_t valueSign[11]		= { deltaphi, (Double_t)binct, track1->Pt(), -1, (Double_t)source, -1, -1, track1->Eta(), -1, track1->Phi(), (Double_t)track1->Charge()};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	OpeningAngle	Pt_assoc, eta_inc, eta_assoc, phi_inc, charge_inc
     //Double_t valueAngle[3]	= { -1, binct, source};	
     Double_t valueradius[4]	= { (Double_t)binct, track1->Pt(), 0.,(Double_t)source};	
 
