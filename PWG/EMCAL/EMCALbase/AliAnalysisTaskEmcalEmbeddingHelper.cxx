@@ -871,7 +871,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 }
 
 /**
- * Check if yhe file pythia base filename can be found in the folder or archive corresponding where
+ * Check if the file pythia base filename can be found in the folder or archive corresponding where
  * the external event input file is found.
  *
  * @param baseFileName Path to external event input file with "#*.root" already remove (it if existed).
@@ -1002,10 +1002,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
   // If there are pythia filenames, the number of match the file number of the tree.
   // If we previously gave up on extracting then there should be no entires
   if (fPythiaCrossSectionFilenames.size() > 0) {
-    bool success = PythiaInfoFromCrossSectionFile(fPythiaCrossSectionFilenames.at(fFileNumber));
+    // Need to check that fFileNumber is smaller than the size of the vector because we don't check if
+    if (fFileNumber < fPythiaCrossSectionFilenames.size()) {
+      bool success = PythiaInfoFromCrossSectionFile(fPythiaCrossSectionFilenames.at(fFileNumber));
 
-    if (!success) {
-      AliDebugStream(3) << "Failed to retrieve cross section from xsec file. Will still attempt to get the information from the header.\n";
+      if (!success) {
+        AliDebugStream(3) << "Failed to retrieve cross section from xsec file. Will still attempt to get the information from the header.\n";
+      }
+    }
+    else {
+      AliErrorStream() << "Attempted to read past the end of the pythia cross section filenames vector. File number: " << fFileNumber << ", vector size: " << fPythiaCrossSectionFilenames.size() << ".\nThis should only occur if we have run out of files to embed!\n";
     }
   }
 
