@@ -112,6 +112,8 @@ class AliHFENonPhotonicElectron : public TNamed {
   void SetPtBinning(Int_t nbins, const Double_t *const binning) { fPtBinning.Set(nbins+1, binning); }
   void SetEtaBinning(const TArrayD &binning) { fEtaBinning = binning; }
   void SetEtaBinning(Int_t nbins, const Double_t *const binning) { fEtaBinning.Set(nbins+1, binning); }
+    void SetPhiBinning(const TArrayD &binning) { fPhiBinning = binning; }
+    void SetPhiBinning(Int_t nbins, const Double_t *const binning) { fPhiBinning.Set(nbins+1, binning); }
   void SetInvMassBinning(const TArrayD &binning) { fInvMassBinning = binning; }
   void SetInvMassBinning(Int_t nbins, const Double_t *const binning) { fInvMassBinning.Set(nbins+1, binning); }
 
@@ -143,6 +145,7 @@ class AliHFENonPhotonicElectron : public TNamed {
   const AliPIDResponse      *fkPIDRespons;                  // PID response
   TArrayD                   fPtBinning;                     // pt binning
   TArrayD                   fEtaBinning;                    // eta binning
+    TArrayD                   fPhiBinning;                  // phi binning
   TArrayD                   fInvMassBinning;                // Inv mass binning
   Bool_t                    fStudyRadius;                   // Study radius
   Bool_t                    fAlgorithmMA;                   // algorithm MA
@@ -165,9 +168,9 @@ class AliHFENonPhotonicElectron : public TNamed {
   Int_t                     fnumberfound;                   // number of inclusive  electrons
   TList                     *fListOutput;                   // List of histos
   THnSparseF                *fAssElectron;                  //! centrality, pt, Source MC, P, TPCsignal
-  THnSparseF                *fIncElectron;                  //! centrality, pt, Source MC, P, TPCsignal
-  THnSparseF                *fUSign;                        //! delta phi, c, pt, inv, source
-  THnSparseF                *fLSign;                        //! delta phi, c, pt, inv, source
+  THnSparseF                *fIncElectron;                  //! centrality, pt, Source MC, eta, phi, charge
+  THnSparseF                *fUSign;                        //! delta phi, c, pt, inv. mass, source, opening angle, pt_assoc, eta_inc, eta_assoc, phi_inc, charge_inc
+  THnSparseF                *fLSign;                        //! delta phi, c, pt, inv. mass, source, opening angle, pt_assoc, eta_inc, eta_assoc, phi_inc, charge_inc
   THnSparseF                *fUSmatches;                    //! number of matched tracks with oposite sign per inclusive track after inv mass cut
   THnSparseF                *fLSmatches;                    //! number of matched tracks with same sign per inclusive track after inv mass cut
   TH2F                      *fHnsigmaITS;                    //! Control histogram for ITS pid of category 2 tracks
