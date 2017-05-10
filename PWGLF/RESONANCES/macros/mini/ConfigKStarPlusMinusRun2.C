@@ -39,6 +39,8 @@ Bool_t ConfigKStarPlusMinusRun2
    Float_t                 crossedRows,
    Float_t                 rowsbycluster,
    Float_t                 chi2tpc,
+   Double_t                pt1,
+   Double_t                pt2,
    Int_t                   Sys
 )
     //kTPCpidphipp2015
@@ -88,7 +90,7 @@ Bool_t ConfigKStarPlusMinusRun2
    esdTrackCuts->SetMaxChi2PerClusterTPC(chi2tpc);
     
     if(ptDep){
-   esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", d1, d2));
+   esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", pt1, pt2));
     }else
    esdTrackCuts->SetMinDCAToVertexXY(DCAxy); //Use one of the two - pt dependent or fixed value cut.
   
