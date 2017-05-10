@@ -229,9 +229,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliGenPythiaEventHeader                      *fPythiaHeader     ; //!<! Pythia header of the current external event
 
   int                                           fPythiaTrials     ; //!<! Number of pythia trials for the current event (extracted from the pythia header).
-  int                                           fPythiaTrialsAvg  ; //!<! Average number of trials extracted from a xsec file.
+  int                                           fPythiaTrialsFromFile; //!<! Average number of trials extracted from a xsec file.
   double                                        fPythiaCrossSection; //!<! Pythia cross section for the current event (extracted from the pythia header).
-  double                                        fPythiaCrossSectionAvg; //!<! Average pythia cross section extracted from a xsec file.
+  double                                        fPythiaCrossSectionFromFile; //!<! Average pythia cross section extracted from a xsec file.
   double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header).
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
@@ -241,7 +241,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 4);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 5);
   /// \endcond
 };
 #endif

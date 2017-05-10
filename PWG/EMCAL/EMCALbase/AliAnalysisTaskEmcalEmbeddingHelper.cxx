@@ -93,9 +93,9 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
   fPythiaTrials(0),
-  fPythiaTrialsAvg(0),
+  fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
-  fPythiaCrossSectionAvg(0.),
+  fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.),
   fPythiaCrossSectionFilenames(),
   fHistManager(),
@@ -149,9 +149,9 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
   fPythiaTrials(0),
-  fPythiaTrialsAvg(0),
+  fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
-  fPythiaCrossSectionAvg(0.),
+  fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.),
   fPythiaCrossSectionFilenames(),
   fHistManager(name),
@@ -512,12 +512,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
     // It is identically zero if the available is not available
     if (fPythiaCrossSection == 0.) {
       AliDebugStream(4) << "Taking the pythia cross section avg from the xsec file.\n";
-      fPythiaCrossSection = fPythiaCrossSectionAvg;
+      fPythiaCrossSection = fPythiaCrossSectionFromFile;
     }
     // It is identically zero if the available is not available
     if (fPythiaTrials == 0.) {
       AliDebugStream(4) << "Taking the pythia trials avg from the xsec file.\n";
-      fPythiaTrials = fPythiaTrialsAvg;
+      fPythiaTrials = fPythiaTrialsFromFile;
     }
     // Pt hard is inherently event-by-event and cannot by taken as a avg quantity.
 
@@ -1084,8 +1084,9 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
     // We do not want to just use the overall value because some of the events may be rejected by various
     // event selections, so we only want that ones that were actually use. The easiest way to do so is by
     // filling it for each event.
-    fPythiaTrialsAvg = trials/nEvents;
-    fPythiaCrossSectionAvg = crossSection/nEvents;
+    fPythiaTrialsFromFile = trials/nEvents;
+    // Do __NOT__ divide by nEvents here! The value is already from a TProfile and therefore is already the mean!
+    fPythiaCrossSectionFromFile = crossSection;
 
     return true;
   }
