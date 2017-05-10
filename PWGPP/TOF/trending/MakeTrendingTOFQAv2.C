@@ -107,7 +107,7 @@ Int_t MakeTrendingTOFQA(char * runlist,
   FILE * files = fopen(runlist, "r") ;
   if (files == NULL){
     ::Error("MakeTrendingTOFQA", "Error opening file %s", runlist);
-    return -1;
+    return 1;
   }
   while (fscanf(files,"%d",&runNumber)==1 ){
 
@@ -602,7 +602,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 
   //--------------------------------- T0 vs multiplicity plots ----------------------------------//
   TList *ListOfOutput_T0 = new TList();///List of output for all plots related to T0
-  ListOfOutput_T0->SetOwner();
   
   TH2F * hT0TOFvsNtracks=(TH2F*)timeZeroList->FindObject("hT0TOFvsNtrk");
   TProfile* hT0TOFProfile = 0x0;
