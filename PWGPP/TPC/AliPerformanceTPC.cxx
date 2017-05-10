@@ -164,6 +164,9 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   SetAnalysisMode(analysisMode);
   SetHptGenerator(hptGenerator);
   fUseSparse = useSparse;
+  fMult = 0;
+  fMultP = 0;
+  fMultN = 0;
   Init();
 }
 
@@ -176,6 +179,9 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
 //  fFolderObj(NULL),
 //  fAnalysisFolder(NULL),
 //  fUseHLT(that.fUseHLT),
+//  fMult(that.fMult),
+//  fMultP(that.fMultP),
+//  fMultN(that.fMultN),
 //  h_tpc_clust_0_1_2(NULL),
 //  h_tpc_event_recvertex_0(NULL),
 //  h_tpc_event_recvertex_1(NULL),
@@ -215,6 +221,9 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
 //  fFolderObj = NULL;
 //  fAnalysisFolder = NULL;
 //  fUseHLT = that.fUseHLT;
+//  fMult(that.fMult),
+//  fMultP(that.fMultP),
+//  fMultN(that.fMultN),
 //  h_tpc_clust_0_1_2=NULL;
 //  h_tpc_event_recvertex_0=NULL;
 //  h_tpc_event_recvertex_1=NULL;
@@ -243,7 +252,6 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
 //  h_tpc_track_neg_recvertex_4_5_6=NULL;
 //  return *this;
 //}
-
 //_____________________________________________________________________________
 AliPerformanceTPC::~AliPerformanceTPC()
 {
@@ -330,7 +338,7 @@ void AliPerformanceTPC::Init()
         fFolderObj->Add(h_tpc_clust_0_1_2);
     }
     
-  Float_t scaleVxy = 1.0;
+  Float_t scaleVxy = 0.05;
   if(fAnalysisMode !=0) scaleVxy = 0.1; 
 
   Int_t maxMult;
@@ -599,6 +607,9 @@ void AliPerformanceTPC::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
   Double_t vTPCTrackHisto[10] = {static_cast<Double_t>(nClust),static_cast<Double_t>(chi2PerCluster),static_cast<Double_t>(clustPerFindClust),static_cast<Double_t>(dca[0]),static_cast<Double_t>(dca[1]),static_cast<Double_t>(eta),static_cast<Double_t>(phi),static_cast<Double_t>(pt),static_cast<Double_t>(q),static_cast<Double_t>(vertStatus)};
   
   //nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+    fMult++;
+    if(q > 0.000001) fMultP++;
+    else if(q < 0.000001) fMultN++;
     
     if(fUseSparse) fTPCTrackHisto->Fill(vTPCTrackHisto);
     else {
@@ -694,6 +705,10 @@ void AliPerformanceTPC::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
   if(nClust < fCutsRC.GetMinNClustersTPC()) return;
 
   Double_t vTPCTrackHisto[10] = {static_cast<Double_t>(nClust),static_cast<Double_t>(chi2PerCluster),static_cast<Double_t>(clustPerFindClust),static_cast<Double_t>(dca[0]),static_cast<Double_t>(dca[1]),static_cast<Double_t>(eta),static_cast<Double_t>(phi),static_cast<Double_t>(pt),static_cast<Double_t>(q),static_cast<Double_t>(vertStatus)};
+
+    fMult++;
+    if(q > 0.000001) fMultP++;
+    else if(q < 0.000001) fMultN++;
     
     if(fUseSparse) fTPCTrackHisto->Fill(vTPCTrackHisto);
     else {
@@ -795,7 +810,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
 
     
   //  events with rec. vertex
-  Int_t mult=0; Int_t multP=0; Int_t multN=0;
+    fMult = 0; fMultP = 0; fMultN = 0;
   
   // store vertex status
   Bool_t vertStatus = vVertex->GetStatus();
@@ -870,34 +885,11 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
       return;
     }
     // TPC only
-    if(!fUseHLT && (GetAnalysisMode() == 0)){
-       AliESDtrack *tpcTrack = AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(vEvent,iTrack);
-        if(!tpcTrack) continue;
-      // track selection
-       if(fCutsRC.AcceptVTrack(vTrack) ) {
-          mult++;
-          if(tpcTrack->Charge()>0.) multP++;
-          if(tpcTrack->Charge()<0.) multN++;
-      }
-    }
-    else{//Implementing FlatESD cuts
-        if(fCutsRC.AcceptFTrack(vTrack,vEvent) ){
-            mult++;
-            AliExternalTrackParam trackParams;
-            vTrack->GetTrackParam(trackParams);
-            AliExternalTrackParam *etpTrack = &trackParams;
-            if(!etpTrack) continue;
-            if(etpTrack->Charge()>0.) multP++;
-            if(etpTrack->Charge()<0.) multN++;
-        }
-    }
-
-
   } //end iTrack iteration
 
     Double_t vtxPosition[3]= {0.,0.,0.};
-  vertex.GetXYZ(vtxPosition);
-  Double_t vTPCEvent[7] = {vtxPosition[0],vtxPosition[1],vtxPosition[2],static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vertStatus)};
+    vertex.GetXYZ(vtxPosition);
+    Double_t vTPCEvent[7] = {vtxPosition[0],vtxPosition[1],vtxPosition[2],static_cast<Double_t>(fMult),static_cast<Double_t>(fMultP),static_cast<Double_t>(fMultN),static_cast<Double_t>(vertStatus)};
     
     if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
     else {

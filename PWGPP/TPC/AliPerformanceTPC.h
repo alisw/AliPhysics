@@ -98,7 +98,10 @@ private:
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   Bool_t fUseHLT; // use HLT ESD
-
+  Int_t fMult;
+  Int_t fMultP;
+  Int_t fMultN;
+    
   //Cluster Histograms
   TH3D *h_tpc_clust_0_1_2;//!
   //Event Histograms - Xv:Yv:Zv:mult:multP:multN:vertStatus
@@ -129,11 +132,7 @@ private:
   TH3D *h_tpc_track_neg_recvertex_3_5_6;//!
   TH3D *h_tpc_track_neg_recvertex_4_5_6;//!
 
-  AliPerformanceTPC(const AliPerformanceTPC&);
-  AliPerformanceTPC& operator=(const AliPerformanceTPC&);
-
-
-  ClassDef(AliPerformanceTPC,14);
+  ClassDef(AliPerformanceTPC,15);
 };
 
 #endif
