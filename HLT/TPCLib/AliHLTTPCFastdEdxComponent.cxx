@@ -232,17 +232,15 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
     AliHLTTracksData* dataPtr = (AliHLTTracksData*) pBlock->fPtr;
     int nTracks = dataPtr->fCount;
 
-    const int outSize = sizeof(AliHLTTPCdEdxData) + nTracks * 10 * sizeof(float);
+    const int outSize = sizeof(AliHLTTPCdEdxData) + nTracks * sizeof(AliHLTTPCdEdxInfo);
     AliHLTTPCdEdxData* outPtr = (AliHLTTPCdEdxData*) (outputPtr + size);
-    if (size + outSize > maxBufferSize) //Check output size for current fValuesPerTrack = 10 (see below)
+    if (size + outSize > maxBufferSize)
     {
 	HLTWarning("Output buffer size exceeded");
 	return(-ENOSPC);
     }
-    outPtr->fVersion = 1;
-    outPtr->fValuesPerTrack = 10;
     outPtr->fCount = nTracks;
-    float* outFill = outPtr->fdEdxInfo;
+    AliHLTTPCdEdxInfo* outFill = outPtr->fdEdxInfo;
     
     AliHLTComponentBlockData outBlock;
     FillBlockData(outBlock);
@@ -310,17 +308,23 @@ int AliHLTTPCFastdEdxComponent::DoEvent(const AliHLTComponentEventData& evtData,
       int countOROC = countOROC1 + countOROC2;
       int truncLow = 6; //fractions of 128
       int truncHigh = 50;
-      outFill[0] = GetSortTruncMean(fBufTot                         , countIROC , truncLow, truncHigh);
-      outFill[1] = GetSortTruncMean(fBufTot + countIROC             , countOROC1, truncLow, truncHigh);
-      outFill[2] = GetSortTruncMean(fBufTot + countIROC + countOROC1, countOROC2, truncLow, truncHigh);
-      outFill[3] = GetSortTruncMean(fBufTot + countIROC             , countOROC , truncLow, truncHigh);
-      outFill[4] = GetSortTruncMean(fBufTot                         , count     , truncLow, truncHigh);
-      outFill[5] = GetSortTruncMean(fBufMax                         , countIROC , truncLow, truncHigh);
-      outFill[6] = GetSortTruncMean(fBufMax + countIROC             , countOROC1, truncLow, truncHigh);
-      outFill[7] = GetSortTruncMean(fBufMax + countIROC + countOROC1, countOROC2, truncLow, truncHigh);
-      outFill[8] = GetSortTruncMean(fBufMax + countIROC             , countOROC , truncLow, truncHigh);
-      outFill[9] = GetSortTruncMean(fBufMax                         , count     , truncLow, truncHigh);
-      outFill += outPtr->fValuesPerTrack;
+      outFill->fdEdxTotIROC  = GetSortTruncMean(fBufTot                         , countIROC , truncLow, truncHigh);
+      outFill->fdEdxTotOROC1 = GetSortTruncMean(fBufTot + countIROC             , countOROC1, truncLow, truncHigh);
+      outFill->fdEdxTotOROC2 = GetSortTruncMean(fBufTot + countIROC + countOROC1, countOROC2, truncLow, truncHigh);
+      outFill->fdEdxTotOROC  = GetSortTruncMean(fBufTot + countIROC             , countOROC , truncLow, truncHigh);
+      outFill->fdEdxTotTPC   = GetSortTruncMean(fBufTot                         , count     , truncLow, truncHigh);
+      outFill->fdEdxMaxIROC  = GetSortTruncMean(fBufMax                         , countIROC , truncLow, truncHigh);
+      outFill->fdEdxMaxOROC1 = GetSortTruncMean(fBufMax + countIROC             , countOROC1, truncLow, truncHigh);
+      outFill->fdEdxMaxOROC2 = GetSortTruncMean(fBufMax + countIROC + countOROC1, countOROC2, truncLow, truncHigh);
+      outFill->fdEdxMaxOROC  = GetSortTruncMean(fBufMax + countIROC             , countOROC , truncLow, truncHigh);
+      outFill->fdEdxMaxTPC   = GetSortTruncMean(fBufMax                         , count     , truncLow, truncHigh);
+      outFill->nHitsIROC = countIROC;
+      outFill->nHitsSubThresholdIROC = countIROC;
+      outFill->nHitsOROC1 = countOROC1;
+      outFill->nHitsSubThresholdOROC1 = countOROC1;
+      outFill->nHitsOROC2 = countOROC2;
+      outFill->nHitsSubThresholdOROC2 = countOROC2;
+      outFill++;;
 
       unsigned int step = sizeof(AliHLTExternalTrackParam) + currTrack->fNPoints * sizeof(unsigned int);
       currTrack = (AliHLTExternalTrackParam*) (((Byte_t*) currTrack) + step);  

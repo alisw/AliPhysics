@@ -1406,7 +1406,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         {
           for (int j = 0;j < 10;j++)
           {
-            float val = dEdxInfo->fdEdxInfo[i * dEdxInfo->fValuesPerTrack + j];
+            AliHLTTPCdEdxInfo* info = &dEdxInfo->fdEdxInfo[i];
+            float val = ((float*) info)[j];
             if (val > 0.) fHistDeDxNew[j]->Fill(trackP, val);
           }
         }

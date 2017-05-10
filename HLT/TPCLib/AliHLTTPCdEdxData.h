@@ -8,15 +8,33 @@
 #ifndef ALIHLTTPCDEDXDATA_H
 #define ALIHLTTPCDEDXDATA_H
 
+struct AliHLTTPCdEdxInfo
+{
+  float fdEdxTotIROC; //Do not change the order, elements are accessed as array float[10]
+  float fdEdxTotOROC1;
+  float fdEdxTotOROC2;
+  float fdEdxTotOROC;
+  float fdEdxTotTPC;
+  float fdEdxMaxIROC;
+  float fdEdxMaxOROC1;
+  float fdEdxMaxOROC2;
+  float fdEdxMaxOROC;
+  float fdEdxMaxTPC;
+  short nHitsIROC;
+  short nHitsOROC1;
+  short nHitsOROC2;
+  short nHitsSubThresholdIROC;
+  short nHitsSubThresholdOROC1;
+  short nHitsSubThresholdOROC2;
+};
+
 struct AliHLTTPCdEdxData
 {
-  int fVersion; //Currently, only version 1 present
-  int fValuesPerTrack; //Version 1: 10 values: qTot - IROC OROC OROCLONG OROCALL TPCALL ; qMax - IROC OROC OROCLONG OROCALL TPCALL
-  int fCount; // Number of tracks for which we have information
+  int fCount; // Number of tracks we have dedx info for
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  float fdEdxInfo[1]; // array of clusters  
+  AliHLTTPCdEdxInfo fdEdxInfo[1]; // array of dedx info 
 #else
-  float fdEdxInfo[0]; // array of clusters 
+  AliHLTTPCdEdxInfo fdEdxInfo[0]; // array of dedx info
 #endif
 
 };
