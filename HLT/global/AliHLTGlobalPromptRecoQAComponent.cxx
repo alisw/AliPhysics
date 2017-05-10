@@ -544,8 +544,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fAxes["tpcClusterChargeMax"].set( 100, 0, 199, &fakePtr );
   fAxes["phiAngles"].set(180, 0., TMath::TwoPi(), &fakePtr, "phi(rad)");
   fAxes["tpcPadRows"].set(159, 0., 159., &fakePtr, "padrow" );
-  fAxes["tpcTrackP"].set( 100, 0.05, 5., &fakePtr );
-  fAxes["dEdx"].set( 100, 0., 3000., &fakePtr );
+  fAxes["tpcTrackP"].set( 300, 0.05, 10., &fakePtr );
+  fAxes["dEdx"].set( 300, 10., 3000., &fakePtr );
   fAxes["tpcClusterFlags"].set( 8, 0, 7, &fakePtr );
   fAxes["trdHCId"].set( 1080, 0, 1079, &fakePtr );
 
@@ -615,6 +615,21 @@ void AliHLTGlobalPromptRecoQAComponent::DeleteFixedHistograms()
   for (int i = 0;i < 10;i++) {delete fHistDeDxNew[i];fHistDeDxNew[i] = NULL;}
 }
 
+static void ReBinLogX(TAxis* axis)
+{
+  int bins = axis->GetNbins();
+  Axis_t from = TMath::Log10(axis->GetXmin());
+  Axis_t to = TMath::Log10(axis->GetXmax());
+  Axis_t width = (to - from) / bins;
+  Axis_t *new_bins = new Axis_t[bins + 1];
+  for (int i = 0; i <= bins; i++)
+  {
+    new_bins[i] = TMath::Power(10, from + i * width);
+  }
+  axis->Set(bins, new_bins);
+  delete new_bins;
+} 
+
 //__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
 {
@@ -657,12 +672,17 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
   if (axisTrackP.bins > 0 && axisDeDx.bins > 0)
   {
     fHistDeDxOffline = new TH2F("fHistTPCdEdxOffline", "TPC dE/dx v.s. P", axisTrackP.bins, axisTrackP.low, axisTrackP.high, axisDeDx.bins, axisDeDx.low, axisDeDx.high);
+    ReBinLogX(fHistDeDxOffline->GetXaxis());
+    ReBinLogX(fHistDeDxOffline->GetYaxis());
+
     const char* tmpNames[10] = {"fHistTPCdEdxTotIROC", "fHistTPCdEdxTotOROC1", "fHistTPCdEdxTotOROC2", "fHistTPCdEdxTotOROCAll", "fHistTPCdEdxTotTPCAll", "fHistTPCdEdxMaxIROC", "fHistTPCdEdxMaxOROC1", "fHistTPCdEdxMaxOROC2", "fHistTPCdEdxMaxOROCAll", "fHistTPCdEdxMaxTPCAll"};
     const char* tmpTitles[10] = {"TPC dE/dx v.s. P (qTot, IROC)", "TPC dE/dx v.s. P (qTot, OROC1)", "TPC dE/dx v.s. P (qTot, OROC2)", "TPC dE/dx v.s. P (qTot, OROC all)", "TPC dE/dx v.s. P (qTot, full TPC)",
                              "TPC dE/dx v.s. P (qMax, IROC)", "TPC dE/dx v.s. P (qMax, OROC1)", "TPC dE/dx v.s. P (qMax, OROC2)", "TPC dE/dx v.s. P (qMax, OROC all)", "TPC dE/dx v.s. P (qMax, full TPC)"};
     for (int i = 0;i < 10;i++)
     {
       fHistDeDxNew[i] = new TH2F(tmpNames[i], tmpTitles[i], axisTrackP.bins, axisTrackP.low, axisTrackP.high, axisDeDx.bins, axisDeDx.low, axisDeDx.high);
+      ReBinLogX(fHistDeDxNew[i]->GetXaxis());
+      ReBinLogX(fHistDeDxNew[i]->GetYaxis());
     }
   }
 
