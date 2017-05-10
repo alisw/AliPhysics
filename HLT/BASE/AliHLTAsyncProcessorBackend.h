@@ -117,9 +117,16 @@ public:
 	{
 		struct timespec ts;
 #ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
-    return (sem_wait(&fMutexes[i]));
+		clock_serv_t cclock;
+		mach_timespec_t mts;
+		host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+		clock_get_time(cclock, &mts);
+		mach_port_deallocate(mach_task_self(), cclock);
+		ts.tv_sec = mts.tv_sec;
+		ts.tv_nsec = mts.tv_nsec;
 #else
 		clock_gettime(CLOCK_REALTIME, &ts);
+#endif
 		int sec = msec / 1000;
 		ts.tv_sec += sec;
 		msec -= sec * 1000;
@@ -143,7 +150,6 @@ public:
 		if (retVal == ETIMEDOUT) return(ETIMEDOUT);
 		else if (retVal) return(-1);
 		else return(0);
-#endif
 #endif
 	}
 

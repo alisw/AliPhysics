@@ -50,7 +50,7 @@ public:
 	//Must not be called whily async tasks are running, will return NULL in that case
 	//In principle, the interface is the same as QueueAsyncTask below, but the function will wait for the task
 	//to finish, collect the result, and return it automatically.
-	int InitializeAsyncTask(void* (*initFunction)(void*), void* data, void** pRetVal = NULL);
+	int InitializeAsyncTask(void* (*initFunction)(void*), void* data, void** pRetVal = NULL, int msTimeOut = 0);
 
 	//Queue an asynchronous task. Provide a function pointer to the processing function and a pointer to a data object.
 	//The asynchronous task shall take ownership of this data object, so the main task may no longer use it.
@@ -73,7 +73,8 @@ public:
 	//Wait for n async tasks to finish, where n is the argument passed.
 	//If n=0, the function waits for all queued tasks to finish.
 	//If n is greater than the number of queued tasks, it will also wait for all tasks.
-	void WaitForTasks(int);
+	//Returns 0 on success, -1 on a timeout
+	int WaitForTasks(int nTasks, int msTimeOut = 0);
 
 	//The mutex can be used to serialize execution of the main task and the asynchronous task for non-thread-save parts.
 	//This should be used carefully.
