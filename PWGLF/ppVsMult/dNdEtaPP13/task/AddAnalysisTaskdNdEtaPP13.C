@@ -56,7 +56,7 @@ float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used 
   Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
   Int_t BCmod4      = 2,              // set Bunch crossing mode 4
   Bool_t phicuts      = kFALSE,       // set cut on affected phi regions
-  TString calibfile = "$HOME/alice/ali-master/AliPhysics/PWGLF/ppVsMult/dNdEtaPP13/task/V0M_bins_LHC15g3a3.root",
+  TString calibfile = "$ALICE_PHYSICS/PWGLF/ppVsMult/dNdEtaPP13/task/V0M_bins_LHC15g3a3.root",
   Float_t mcscale = 1.0
 
 )
