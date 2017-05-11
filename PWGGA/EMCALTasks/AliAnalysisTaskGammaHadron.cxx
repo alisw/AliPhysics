@@ -888,7 +888,8 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 			if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
 			return kFALSE;
 		}
-
+     /* // For some wired reason gives an error in alibild when doing pull request
+        // need to check that later again because it's an exact copy from "AliAnalysisTaskEmcal"
 		std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
 		if (!arr)
 		{
@@ -940,8 +941,9 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 		{
 			if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
 			return kFALSE;
-		}
+		}*/
 	}
+
 	if (fTriggerTypeSel != kND)
 	{
 		if (!HasTriggerType(fTriggerTypeSel))
