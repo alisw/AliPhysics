@@ -128,6 +128,7 @@ virtual ~AliAnalysisTaskGammaHadron();
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
+  Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
   Double_t                    GetEff(AliTLorentzVector ParticleVec)                         ;
 
   Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
@@ -222,6 +223,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH2                      **fHistClusterShape4;       //!<! Cluster shape vs energy
   TH2                      **fHistClusterTime;         //!<! Cluster time vs energy
   THnSparseF                *fCorrVsManyThings;        //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
+  THnSparseF                *fCorrVsManyThingsME;      //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
   THnSparseF                *fClusterProp;             //!<! Thn sparse filled with cluster properties
   TH2                	    *fHPoolReady;              //!<! Check how many Jobs start mixing
   //

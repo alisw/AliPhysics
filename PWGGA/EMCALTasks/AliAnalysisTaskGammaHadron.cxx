@@ -65,7 +65,7 @@ fHistCellsCluster(0),fHistClusterShape(0),fHistClusterShape0(0),fHistClusterShap
 //fAODfilterBits(0),fHistptAssHadronG(0),fHistptAssHadronZt(0),fHistptAssHadronXi(0),fHistDEtaDPhiG(0),fHistDEtaDPhiZT(0),fHistDEtaDPhiXI(0)
 //fHistptTriggG(),fHistptTriggZt(),fHistptTriggXi(),
 thisEvent(),
-fCorrVsManyThings(0),fClusterProp(0),
+fCorrVsManyThings(0),fCorrVsManyThingsME(0), fClusterProp(0),
 fHPoolReady(0x0)
 {
 	//..Initialize by defult for
@@ -104,7 +104,7 @@ fHistCellsCluster(0),fHistClusterShape(0),fHistClusterShape0(0),fHistClusterShap
 //fAODfilterBits(0),fHistptAssHadronG(0),fHistptAssHadronZt(0),fHistptAssHadronXi(0),fHistDEtaDPhiG(0),fHistDEtaDPhiZT(0),fHistDEtaDPhiXI(0)
 //fHistptTriggG(),fHistptTriggZt(),fHistptTriggXi(),
 thisEvent(),
-fCorrVsManyThings(0),fClusterProp(0),
+fCorrVsManyThings(0), fCorrVsManyThingsME(0), fClusterProp(0),
 fHPoolReady(0x0)
 {
 	InitArrays();
@@ -234,7 +234,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fEventCutList ->SetOwner();
 	fEventCutList ->SetName("EventCutOutput");
 
-	fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
+	fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger); //..otherwise only kINT7 events are used for the analysis
 	if(fUseManualEventCuts==1)
 	{
 	    //..Enable manual mode.
@@ -516,36 +516,40 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
     if(fForceBeamType != AliAnalysisTaskEmcal::kpp)
     {
- /*   	    //..Event plane
-     	static const Int_t nCentEvtPlane=3; //ELI??
-     	Double_t centEvtPlane[nCentEvtPlane+1] = {XX,YY,ZZ};
+     	static const Int_t nEvtPlaneBins=45; //ELI??
+    		Double_t evtPlaneArray[nEvtPlaneBins+1];// = {0,10,20,30,};
+        static const Int_t nCentHistBins=4;
+     	Double_t centBinArray[nCentHistBins+1] = {0.0,10.0,30.0,60.0,100.0};
 
-     	titleThn[dimThn] = "event plane";
-     	nbinsThn[dimThn] = nCentEvtPlane;
-     	binEdgesThn[dimThn] = centEvtPlane;
-     	minThn[dimThn] = centEvtPlane[0];
-     	maxThn[dimThn] = centEvtPlane[nCentHistBins];
+     	//..Event plane
+     	titleThn[dimThn] = "#Delta#varphi^{#gamma-Evt. Pl.}";
+     	nbinsThn[dimThn] = nEvtPlaneBins;
+     	binEdgesThn[dimThn] = evtPlaneArray;
+        GenerateFixedBinArray(nEvtPlaneBins,-90.,270.,evtPlaneArray);
+        minThn[dimThn] = evtPlaneArray[0];
+     	maxThn[dimThn] = evtPlaneArray[nEvtPlaneBins];
      	dimThn++;
-*/
-     	//..Centrality
-     	static const Int_t nCentHistBins=4;
-     	Double_t centBins[nCentHistBins+1] = {0.0,10.0,30.0,60.0,100.0};
 
+     	//..Centrality
      	titleThn[dimThn] = "Centrality %";
      	nbinsThn[dimThn] = nCentHistBins;
-     	binEdgesThn[dimThn] = centBins;
-     	minThn[dimThn] = centBins[0];
-     	maxThn[dimThn] = centBins[nCentHistBins];
+     	binEdgesThn[dimThn] = centBinArray;
+     	minThn[dimThn] = centBinArray[0];
+     	maxThn[dimThn] = centBinArray[nCentHistBins];
      	dimThn++;
     }
-    fCorrVsManyThings = new THnSparseF("CorrVsManyThings", "CorrVsManyThings", dimThn, nbinsThn, minThn, maxThn);
+    fCorrVsManyThings   = new THnSparseF("CorrVsManyThings", "CorrVsManyThings", dimThn, nbinsThn, minThn, maxThn);
+    fCorrVsManyThingsME = new THnSparseF("CorrVsManyThingsME", "CorrVsManyThingsME", dimThn, nbinsThn, minThn, maxThn);
     for(Int_t i=0;i<dimThn;i++)
     {
-    		fCorrVsManyThings->GetAxis(i)->SetTitle(titleThn[i]);
-    		fCorrVsManyThings->SetBinEdges(i, binEdgesThn[i]);
+		fCorrVsManyThings->GetAxis(i)->SetTitle(titleThn[i]);
+		fCorrVsManyThings->SetBinEdges(i, binEdgesThn[i]);
+		fCorrVsManyThingsME->GetAxis(i)->SetTitle(titleThn[i]);
+		fCorrVsManyThingsME->SetBinEdges(i, binEdgesThn[i]);
     }
     //fCorrVsManyThings->Sumw2();
     fOutput->Add(fCorrVsManyThings);
+    fOutput->Add(fCorrVsManyThingsME);
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   THn Sparse for the Cluster properties
@@ -1709,19 +1713,26 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,AliTLorentzVec
 		XI_Value   = TMath::Log(1.0/ZT_Value);
 	}
 	Double_t zVertex = fVertex[2];
+	//..all from EMcal base class : fEPV0,fEPV0A,fEPV0C
+    //fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
+    // fEPV0A = aliEP->GetEventplane("V0A",InputEvent());
+    // fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
+	Double_t evtPlaneAngle= DeltaPhi(ClusterVec,fEPV0);
 
-	Double_t valueArray[7];
+	Double_t valueArray[8];
 	valueArray[0]=deltaPhi;
 	valueArray[1]=deltaEta;
 	valueArray[2]=G_PT_Value;
 	valueArray[3]=ZT_Value;
 	valueArray[4]=XI_Value;
 	valueArray[5]=zVertex;
-	valueArray[6]=fCent;
+	valueArray[6]=evtPlaneAngle;
+	valueArray[7]=fCent;
 
 	if(G_PT_Value>=ClusterEcut && TrackVec->Pt()>=TrackPcut)
 	{
-		if(identifier==1)fCorrVsManyThings->Fill(valueArray,Weight);
+		if(identifier==1)fCorrVsManyThings  ->Fill(valueArray,Weight);
+		if(identifier==0)fCorrVsManyThingsME->Fill(valueArray,Weight);
 		//..Histograms to test the binning
 		fHistBinCheckPt[identifier] ->Fill(G_PT_Value,Weight);
 		fHistBinCheckZt[identifier] ->Fill(ZT_Value,Weight);
@@ -1863,6 +1874,25 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,AliVP
 	Double_t pi = TMath::Pi();
 
 	dPhi = Phi_g-Phi_h;
+	//--shift the second peak over the fist peak: \--Æ--/   --> -Æ--
+	//--to create a histogram that starts at -pi/2 and ends at 3/2pi
+	if (dPhi <= -TMath::Pi()/2)    dPhi += 2*pi;
+	if (dPhi > 3.0*TMath::Pi()/2.0)dPhi -= 2*pi;
+
+	//--change from rad to degree:
+	dPhi*= fRtoD;
+
+	return dPhi;
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)
+{
+	Double_t phi_g = ClusterVec.Phi_0_2pi();
+
+	Double_t dPhi = -999;
+	Double_t pi = TMath::Pi();
+
+	dPhi = phi_g-phi_EVP;
 	//--shift the second peak over the fist peak: \--Æ--/   --> -Æ--
 	//--to create a histogram that starts at -pi/2 and ends at 3/2pi
 	if (dPhi <= -TMath::Pi()/2)    dPhi += 2*pi;
