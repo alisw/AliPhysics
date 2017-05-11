@@ -111,7 +111,10 @@ kHZVResMC=kHZVrEtaPrimMC+50,      // zv resolution
 
 kHCorrMatrix=kHZVResMC+50, // correlation matrix
 
-kHCorrMatrixSel = kHCorrMatrix+50 // correlation matrix with events sel
+kHCorrMatrixSel = kHCorrMatrix+50, // correlation matrix with events sel
+
+kHCorrMatrixSel2 = kHCorrMatrixSel+50 // correlation matrix 2 with tracklets (triggered + Selected)
+
 
 }; // custom histos
 
