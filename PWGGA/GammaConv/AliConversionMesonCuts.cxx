@@ -1133,11 +1133,11 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   } else {
     printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh);
   }
-  if (!fMinOpanPtDepCut) printf("\t theta_{open} > %3.2f\n", fMinOpanCutMeson);
+  if (!fMinOpanPtDepCut) printf("\t theta_{open} > %3.4f\n", fMinOpanCutMeson);
   else printf("\t Min theta_{open} pT-dep cut active\n");
-  if (!fMaxOpanPtDepCut) printf("\t %3.2f < theta_{open}\n", fMaxOpanCutMeson);
+  if (!fMaxOpanPtDepCut) printf("\t %3.4f < theta_{open}\n", fMaxOpanCutMeson);
   else printf("\t Max theta_{open} pT-dep cut active\n");
-  printf("\t Running mode for cutselection (0 std, 2 PCM-Calo): %d\n", fMode);
+  printf("\t Running mode for cutselection (0 std, 2 PCM-Calo, 4 Calo-Calo mode): %d\n", fMode);
   
   printf("Meson BG settings \n");
   if (!fDoBG){
@@ -2328,56 +2328,105 @@ Bool_t AliConversionMesonCuts::SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx){
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
   // Set Cut
-  switch(minOpanMesonCut){
-  case 0:      //
-    fMinOpanCutMeson  = 0;
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 1:      //
-    fMinOpanCutMeson  = 0.005;
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 2:
-    if( fFMinOpanCut ) delete fFMinOpanCut;
-    fFMinOpanCut      = new TF1("fFMinOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
-    fFMinOpanCut->SetParameter(0,1.5);
-    fFMinOpanCut->SetParameter(1,1.35);
-    fFMinOpanCut->SetParameter(2,0.02);
-    fMinOpanCutMeson  = 0;
-    fMinOpanPtDepCut  = kTRUE;
-    break;
-  case 3:      //
-    fMinOpanCutMeson  = 0.01;
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 4:      //
-    fMinOpanCutMeson  = 0.0152; // minimum 0.75 EMCal cell diagonals
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 5:      //
-    fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 6:      //
-    fMinOpanCutMeson  = 0.0404; // minimum 2 EMCal cell diagonals
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 7:      //
-    fMinOpanCutMeson  = 0.0303; // minimum 1.5 EMCal cell diagonal
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 8:      //
-    fMinOpanCutMeson  = 0.02525; // minimum 1.25 EMCal cell diagonal
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  case 9:      //
-    fMinOpanCutMeson  = 0.03535; // minimum 1.75 EMCal cell diagonal
-    fMinOpanPtDepCut  = kFALSE;
-    break;
-  default:
-    cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
-    return kFALSE;
+  if(fMode == 4){
+    switch(minOpanMesonCut){
+    case 0:      //
+      fMinOpanCutMeson  = 0;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 1:      //
+      fMinOpanCutMeson  = 0.0152;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 2:
+      fMinOpanCutMeson  = 0.016;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 3:      //
+      fMinOpanCutMeson  = 0.0165;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 4:      //
+      fMinOpanCutMeson  = 0.017;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 5:      //
+      fMinOpanCutMeson  = 0.0175;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 6:      //
+      fMinOpanCutMeson  = 0.018;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 7:      //
+      fMinOpanCutMeson  = 0.0185;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 8:      //
+      fMinOpanCutMeson  = 0.019;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 9:      //
+      fMinOpanCutMeson  = 0.0202;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    default:
+      cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
+      return kFALSE;
+    }
+  }else{
+    switch(minOpanMesonCut){
+    case 0:      //
+      fMinOpanCutMeson  = 0;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 1:      //
+      fMinOpanCutMeson  = 0.005;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 2:
+      if( fFMinOpanCut ) delete fFMinOpanCut;
+      fFMinOpanCut      = new TF1("fFMinOpanCut","[0]*exp(-[1]*x)+[2]",0.,100.);
+      fFMinOpanCut->SetParameter(0,1.5);
+      fFMinOpanCut->SetParameter(1,1.35);
+      fFMinOpanCut->SetParameter(2,0.02);
+      fMinOpanCutMeson  = 0;
+      fMinOpanPtDepCut  = kTRUE;
+      break;
+    case 3:      //
+      fMinOpanCutMeson  = 0.01;
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 4:      //
+      fMinOpanCutMeson  = 0.0152; // minimum 0.75 EMCal cell diagonals
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 5:      //
+      fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 6:      //
+      fMinOpanCutMeson  = 0.0404; // minimum 2 EMCal cell diagonals
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 7:      //
+      fMinOpanCutMeson  = 0.0303; // minimum 1.5 EMCal cell diagonal
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 8:      //
+      fMinOpanCutMeson  = 0.02525; // minimum 1.25 EMCal cell diagonal
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    case 9:      //
+      fMinOpanCutMeson  = 0.03535; // minimum 1.75 EMCal cell diagonal
+      fMinOpanPtDepCut  = kFALSE;
+      break;
+    default:
+      cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
+      return kFALSE;
+    }
   }
+
   return kTRUE;
 }
 

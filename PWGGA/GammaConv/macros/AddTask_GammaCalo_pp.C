@@ -799,6 +799,42 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 160){ // EMCAL clusters pp 8 TeV
     cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
 
+  } else if (trainConfig == 161){ // EMCAL clusters open angle variation
+    cuts.AddCut("00010113","1111111067032220000","0163103100000010");
+    cuts.AddCut("00010113","1111111067032220000","0163103100000020");
+    cuts.AddCut("00010113","1111111067032220000","0163103100000030");
+    cuts.AddCut("00010113","1111111067032220000","0163103100000040");
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050");
+  } else if (trainConfig == 162){ // EMCAL clusters open angle variation
+    cuts.AddCut("00010113","1111111067032220000","0163103100000060");
+    cuts.AddCut("00010113","1111111067032220000","0163103100000070");
+    cuts.AddCut("00010113","1111111067032220000","0163103100000080");
+    cuts.AddCut("00010113","1111111067032220000","0163103100000090");
+
+  } else if (trainConfig == 163){ // EMCAL clusters open angle variation
+    cuts.AddCut("00052113","1111111067032220000","0163103100000010");
+    cuts.AddCut("00052113","1111111067032220000","0163103100000020");
+    cuts.AddCut("00052113","1111111067032220000","0163103100000030");
+    cuts.AddCut("00052113","1111111067032220000","0163103100000040");
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050");
+  } else if (trainConfig == 164){ // EMCAL clusters open angle variation
+    cuts.AddCut("00052113","1111111067032220000","0163103100000060");
+    cuts.AddCut("00052113","1111111067032220000","0163103100000070");
+    cuts.AddCut("00052113","1111111067032220000","0163103100000080");
+    cuts.AddCut("00052113","1111111067032220000","0163103100000090");
+
+  } else if (trainConfig == 165){ // EMCAL clusters open angle variation
+    cuts.AddCut("00081113","1111111067032220000","0163103100000010");
+    cuts.AddCut("00081113","1111111067032220000","0163103100000020");
+    cuts.AddCut("00081113","1111111067032220000","0163103100000030");
+    cuts.AddCut("00081113","1111111067032220000","0163103100000040");
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050");
+  } else if (trainConfig == 166){ // EMCAL clusters open angle variation
+    cuts.AddCut("00081113","1111111067032220000","0163103100000060");
+    cuts.AddCut("00081113","1111111067032220000","0163103100000070");
+    cuts.AddCut("00081113","1111111067032220000","0163103100000080");
+    cuts.AddCut("00081113","1111111067032220000","0163103100000090");
+
   // diff eta/rap cuts
   } else if (trainConfig == 170){ // EMCAL clusters pp 8 TeV, |eta| < 0.7, y < 0.7
     cuts.AddCut("00010113","1551111067032220000","0163203100000050"); //
@@ -1266,6 +1302,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
+    if(trainConfig>160 && trainConfig<170) analysisMesonCuts[i]->SetRunningMode(4); //specify certain opening angle cuts
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
