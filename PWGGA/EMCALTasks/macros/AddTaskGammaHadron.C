@@ -8,6 +8,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   Double_t    clusterEta             = 0.7,               //..+- eta range for cluster acceptance
   UInt_t      evtTriggerType         = AliVEvent::kEMCEGA,//..use this type of events to combine gammas(trigger) with hadrons
   UInt_t      evtMixingType          = AliVEvent::kAnyINT,//..use only this type of events to fill your mixed event pool with tracks
+  Bool_t      isRun2                 = 1,                 //..changes some settigs and cuts depending on 2013 or 2015/2016 data
   Double_t    trackptcut             = 0.15,              //..
   Double_t    clusptcut              = 0.30,              //..
   Bool_t      SavePool               = 0,                 //..saves a mixed event pool to the output event
@@ -111,16 +112,23 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   // Add some selection criteria
   //-------------------------------------------------------
+  //..set the beamtype and the run2 flag
   AnalysisTask->SetOffTrigger(evtTriggerType|evtMixingType); //..select only evets of type evtTriggerType and evtMixingType
   //..for Run1 pPb
-  //AnalysisTask->SetUseManualEvtCuts(kTRUE);
-  //AnalysisTask->SetUseAliAnaUtils(kTRUE);
-  //AnalysisTask->SetVzRange(-10,10);
-  //AnalysisTask->SetCentRange(0.0,100.0);
-
+  if(isRun2==0)
+  {
+	  AnalysisTask->SetUseManualEvtCuts(kTRUE);
+	  AnalysisTask->SetUseAliAnaUtils(kTRUE);
+	  AnalysisTask->SetVzRange(-10,10);
+	  AnalysisTask->SetCentRange(0.0,100.0);
+	 // AnalysisTask->SetCentralityEstimator("ZNA");
+  }
   //..new task for run2
-  //AnalysisTask->SetNCentBins(5);
-  //AnalysisTask->SetUseNewCentralityEstimation(kTRUE);
+  if(isRun2==1)
+  {
+	  AnalysisTask->SetNCentBins(5);
+	  AnalysisTask->SetUseNewCentralityEstimation(kTRUE);
+  }
 
   if(AnalysisTask->GetTrackContainer(trackName))
   {
