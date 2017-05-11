@@ -84,10 +84,10 @@ void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
     fHistos->CreateTH1("hPtRawNeutralJetR02DCAL" + t, "Raw pt spectrum for neutral jets with R=0.2 in DCAL for trigger " + t, 200, 0., 200);
     fHistos->CreateTH1("hPtRawNeutralJetR04DCAL" + t, "Raw pt spectrum for neutral jets with R=0.4 in DCAL for trigger " + t, 200, 0., 200);
   }
-  for(auto h : *(fHistos)){
+  for(auto h : *(fHistos->GetListOfHistograms())){
     fOutput->Add(h);
   }
-  PostData(1, fHistos);
+  PostData(1, fOutput);
 }
 
 bool AliAnalysisTaskEmcalTriggerJets::Run(){
