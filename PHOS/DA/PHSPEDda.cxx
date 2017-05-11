@@ -33,6 +33,7 @@ extern "C" {
 #include "AliCaloAltroMapping.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliLog.h"
+#include "AliDAQ.h"
 
 int main(int argc, char **argv) 
 {
@@ -288,7 +289,8 @@ int main(int argc, char **argv)
       
       reader = new AliRawReaderDate((void*)event);
       stream =  new AliCaloRawStreamV3(reader,"PHOS",mapping);
-
+      reader->Select("PHOS",0,AliDAQ::NumberOfDdls("PHOS")-2);
+      
       runNum = reader->GetRunNumber();
       while (stream->NextDDL()) {
 	while (stream->NextChannel()) {
