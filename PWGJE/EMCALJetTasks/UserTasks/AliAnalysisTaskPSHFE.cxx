@@ -2606,7 +2606,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         }
         
         
-        if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1&&aodtrackassoc->GetTyoe==AliAODTrack::kPrimary){
+        if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1&&aodtrackassoc->GetType()==AliAODTrack::kPrimary){
             aodtrackassoc->Print();
             for(Int_t k=0;k<ntracks;k++){
                 if(i==k || j==k){continue;}
