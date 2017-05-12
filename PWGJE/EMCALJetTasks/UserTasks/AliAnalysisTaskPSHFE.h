@@ -295,6 +295,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTestTPCdEdx;
     TH1F            *fHistTestEOP;
     TH1F            *fHistTestOGDPhi;
+    TH1F            *fHistTestInvMass;
+    TH1F            *fHistTestPt;
     
     AliAnalysisTaskPSHFE(const AliAnalysisTaskPSHFE&); // not implemented
     AliAnalysisTaskPSHFE& operator=(const AliAnalysisTaskPSHFE&); // not implemented
