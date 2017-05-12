@@ -430,6 +430,10 @@ private:
     TH1F                *fElectronBKGWToDataULS; //!
     TH1F                *fElectronBKGWToDataLS; //!
     
+    TH1F                *fElectronBKGNoEnhULS_WithW; //!
+    TH1F                *fElectronBKGNoEnhLS_WithW; //!
+    TH1F                *fElectronBKGNoEnhTotalNumber_WithW; //!
+    
     //Background weight calculation
     
     TH1F                *fPtMCpi0_NoMother; //!
