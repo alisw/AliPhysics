@@ -261,7 +261,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       if(fReadOnlyPrimaries)
 	{
 	  //take only primaries
-	  if(abs(kinetrack->GetPdgCode())!=3122) && !fStack->IsPhysicalPrimary(i)) {continue;}
+	  if(abs(kinetrack->GetPdgCode())!=3122 && !fStack->IsPhysicalPrimary(i)) {continue;}
 	}
       else if(fReadPrimariesSecWeakMaterial)
 	{
