@@ -86,9 +86,9 @@ set(SRCS
   Kinks/AliAnalysisTaskKinksFilimon.cxx
   Kinks/AliAnalysisKinkESDat13.cxx
   Kinks/AliAnalysisKinkESDMC13.cxx
-Kinks/AliAnalysisTaskKinkpp5TeV.cxx
+  Kinks/AliAnalysisTaskKinkpp5TeV.cxx
   Kinks/AliAnalysisTaskKinkpp5TeVMC.cxx  
-PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
+  PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothEventCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx
   PiKaPr/TestAOD/AliSpectraBothPID.cxx
