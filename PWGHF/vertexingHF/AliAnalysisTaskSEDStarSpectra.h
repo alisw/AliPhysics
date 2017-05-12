@@ -111,7 +111,7 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   THnSparseF *fHistMassPtImpParTCDs[5];//!<! histograms for impact paramter studies
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDStarSpectra,9); /// class for D* spectra
+  ClassDef(AliAnalysisTaskSEDStarSpectra,10); /// class for D* spectra
   /// \endcond
 };
 
