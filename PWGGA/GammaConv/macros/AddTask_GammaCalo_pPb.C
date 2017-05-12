@@ -436,7 +436,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000013","2444401041013200000","0163103100000010"); // PHOS group standard
     cuts.AddCut("80000013","2444451041013200000","0163103100000010"); // CCMF PHOS
     cuts.AddCut("80000013","2444452041013200000","0163103100000010"); // CMF PHOS
-  } else if (trainConfig == 306) {  // PHOS non lin var PHI7
+  } else if (trainConfig == 307) {  // PHOS non lin var PHI7
     cuts.AddCut("80062013","2444401041013200000","0163103100000010"); // PHOS group standard
     cuts.AddCut("80062013","2444451041013200000","0163103100000010"); // CCMF PHOS
     cuts.AddCut("80062013","2444452041013200000","0163103100000010"); // CMF PHOS
