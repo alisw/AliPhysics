@@ -18,7 +18,6 @@
 #include <TMath.h>
 #include <TH2F.h>
 #include <TDatabasePDG.h>
-#include "TParticle.h"
 #include <TClonesArray.h>
 #include <TList.h>
 #include <TObjString.h>
@@ -32,9 +31,8 @@
 #include "AliVTrack.h"
 #include "AliVCluster.h"
 #include "AliMCAnalysisUtils.h"
-#include "TParticle.h"
 #include "AliMCEvent.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliMixedEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -4727,126 +4725,68 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
   // Types defined in GetMCTagHistogramIndex:
   // 0 direct gamma; 1 pi0; 2 pi0 decay; 3 eta decay; 4 other decay; 5 electron; 6 other (hadron)
   if(histoIndex < fMCGenTypeMin || histoIndex > fMCGenTypeMax) return ;
-  
-  TParticle        * primary    = 0x0 ;
-  AliAODMCParticle * aodprimary = 0x0;
-  
+    
   Double_t eprim   = 0 ;
   Double_t ptprim  = 0 ;
   Double_t phiprim = 0 ;
   Double_t etaprim = 0 ;
   Int_t iParticle  = 0 ;
-  
-  Bool_t leadTrig = kTRUE;
-  
-  if( GetReader()->ReadStack() )
+    
+  // Get the particle
+  AliVParticle * primary = GetMC()->GetTrack(label);
+  if( !primary )
   {
-    primary = GetMC()->Particle(label);
-    if ( !primary )
+    AliInfo(Form(" *** no primary ***:  label %d", label));
+    return;
+  }
+  
+  eprim   = primary->E();
+  ptprim  = primary->Pt();
+  etaprim = primary->Eta();
+  phiprim = primary->Phi();
+  if(phiprim < 0) phiprim+=TMath::TwoPi();
+  
+  if(ptprim < 0.01 || eprim < 0.01) return ;
+  
+  Bool_t leadTrig = kTRUE; 
+
+  for (iParticle = 0; iParticle < nTracks; iParticle++)
+  {
+    if ( !GetReader()->AcceptParticleMCLabel( iParticle ) ) continue ;
+    
+    AliVParticle * particle = GetMC()->GetTrack(iParticle);
+    
+    if ( !particle->IsPhysicalPrimary() ) continue; // same as particle->MCStatusCode() !=1
+    
+    if (  particle->Charge() == 0 ) continue;
+    
+    particle->Momentum(fMomentum);
+    //fMomentum.SetPxPyPzE(part->Px(),part->Py(),part->Pz(),part->E());
+    
+    // Particles in CTS acceptance, make sure to use the same selection as in the reader
+    Bool_t inCTS = GetReader()->GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS);
+    //printf("Accepted? %d; pt %2.2f, eta %2.2f, phi %2.2f\n",inCTS,fMomentum.Pt(),fMomentum.Eta(),fMomentum.Phi()*TMath::RadToDeg());
+    if( !inCTS ) continue;
+    
+    // Remove conversions
+    Int_t indexmother = particle->GetMother();
+    if ( indexmother > -1 )
     {
-      AliInfo(Form(" *** no primary ***:  label %d", label));
-      return;
+      Int_t pdg = particle->PdgCode();
+      Int_t mPdg = (GetMC()->GetTrack(indexmother))->PdgCode();
+      if (TMath::Abs(pdg) == 11 && mPdg == 22) continue;
     }
     
-    eprim    = primary->Energy();
-    ptprim   = primary->Pt();
-    etaprim  = primary->Eta();
-    phiprim  = primary->Phi();
-    if(phiprim < 0) phiprim+=TMath::TwoPi();
+    if ( label == iParticle ) continue; // avoid trigger particle
     
-    if(ptprim < 0.01 || eprim < 0.01) return ;
+    Float_t phi = particle->Phi();
+    if(phi < 0) phi+=TMath::TwoPi();
     
-    for (iParticle = 0 ; iParticle <  nTracks ; iParticle++)
-    {
-      if ( !GetReader()->AcceptParticleMCLabel( iParticle ) ) continue ;
-      
-      TParticle * particle = GetMC()->Particle(iParticle);
-      
-      //keep only final state particles
-      if( particle->GetStatusCode() != 1 ) continue ;
-      
-      //---------- Charged particles ----------------------
-      Int_t pdg    = particle->GetPdgCode();
-      Int_t charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-      if(charge == 0) continue;
-      
-      particle->Momentum(fMomentum);
-      
-      //Particles in CTS acceptance, make sure to use the same selection as in the reader
-      Bool_t inCTS =  GetReader()->GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS);
-      //printf("Accepted? %d; pt %2.2f, eta %2.2f, phi %2.2f\n",inCTS,fMomentum.Pt(),fMomentum.Eta(),fMomentum.Phi()*TMath::RadToDeg());
-      if( !inCTS ) continue;
-      
-      // Remove conversions
-      if ( TMath::Abs(pdg) == 11 && GetMC()->Particle(particle->GetFirstMother())->GetPdgCode() == 22 ) continue ;
-      
-      if ( label == iParticle ) continue; // avoid trigger particle
-      
-      Float_t phi = particle->Phi();
-      if(phi < 0) phi+=TMath::TwoPi();
-      
-      Bool_t lead = FillChargedMCCorrelationHistograms(particle->Pt(),phi,particle->Eta(),ptprim,phiprim,etaprim,histoIndex,lostDecayPair);
-      
-      if ( !lead ) leadTrig = kFALSE;
-      
-      //    if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading) ) return;
-    } // track loop
-  } // ESD MC
-  else if( GetReader()->ReadAODMCParticles() )
-  {
-    // Get the particle
-    aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(label);
-    if( !aodprimary )
-    {
-      AliInfo(Form(" *** no AOD primary ***:  label %d", label));
-      return;
-    }
+    Bool_t lead = FillChargedMCCorrelationHistograms(particle->Pt(),phi,particle->Eta(),ptprim,phiprim,etaprim, histoIndex,lostDecayPair);
     
-    eprim   = aodprimary->E();
-    ptprim  = aodprimary->Pt();
-    etaprim = aodprimary->Eta();
-    phiprim = aodprimary->Phi();
-    if(phiprim < 0) phiprim+=TMath::TwoPi();
-    
-    if(ptprim < 0.01 || eprim < 0.01) return ;
-    
-    for (iParticle = 0; iParticle < nTracks; iParticle++)
-    {
-      if ( !GetReader()->AcceptParticleMCLabel( iParticle ) ) continue ;
-      
-      AliAODMCParticle *part = (AliAODMCParticle*) GetMC()->GetTrack(iParticle);
-      
-      if (!part->IsPhysicalPrimary() ) continue; // same as part->GetStatus() !=1
-      
-      if ( part->Charge() == 0 ) continue;
-      
-      fMomentum.SetPxPyPzE(part->Px(),part->Py(),part->Pz(),part->E());
-      
-      //Particles in CTS acceptance, make sure to use the same selection as in the reader
-      Bool_t inCTS =  GetReader()->GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS);
-      //printf("Accepted? %d; pt %2.2f, eta %2.2f, phi %2.2f\n",inCTS,fMomentum.Pt(),fMomentum.Eta(),fMomentum.Phi()*TMath::RadToDeg());
-      if( !inCTS ) continue;
-      
-      // Remove conversions
-      Int_t indexmother = part->GetMother();
-      if ( indexmother > -1 )
-      {
-        Int_t pdg = part->GetPdgCode();
-        Int_t mPdg = ((AliAODMCParticle*) GetMC()->GetTrack(indexmother)) ->GetPdgCode();
-        if (TMath::Abs(pdg) == 11 && mPdg == 22) continue;
-      }
-      
-      if ( label == iParticle ) continue; // avoid trigger particle
-      
-      Float_t phi = part->Phi();
-      if(phi < 0) phi+=TMath::TwoPi();
-      
-      Bool_t lead = FillChargedMCCorrelationHistograms(part->Pt(),phi,part->Eta(),ptprim,phiprim,etaprim, histoIndex,lostDecayPair);
-      
-      if ( !lead ) leadTrig = kFALSE;
-      //    if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
-    }  //MC particle loop
-  }// AOD MC
+    if ( !lead ) leadTrig = kFALSE;
+    //    if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
+  }  //MC particle loop
   
   // Trigger MC particle histograms
   //if (!lead  && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
