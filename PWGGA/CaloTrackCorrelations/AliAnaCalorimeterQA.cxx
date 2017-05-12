@@ -15,7 +15,6 @@
 
 // --- ROOT system ---
 #include <TObjArray.h>
-#include <TParticle.h>
 #include <TDatabasePDG.h>
 #include <TH3F.h>
 #include <TObjString.h>
@@ -30,7 +29,7 @@
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliVEventHandler.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliMCAnalysisUtils.h"
 #include "TCustomBinning.h"
 
@@ -2546,8 +2545,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   Float_t phi = fClusterMomentum.Phi();
   if(phi < 0) phi +=TMath::TwoPi();
   
-  AliAODMCParticle * aodprimary  = 0x0;
-  TParticle * primary = 0x0;
+  AliVParticle * primary = 0x0;
 
   Int_t pdg0    =-1; Int_t status = -1; Int_t iMother = -1; Int_t iParent = -1;
   Float_t vxMC  = 0; Float_t vyMC  = 0;
@@ -2558,44 +2556,44 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   // Check the origin.
   Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabels, GetReader(),GetCalorimeter());
   
-  if     ( GetReader()->ReadStack() && 
-          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown))
+  if ( !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown) )
   { 
-    primary = GetMC()->Particle(label);
+    primary = GetMC()->GetTrack(label);
     iMother = label;
-    pdg0    = TMath::Abs(primary->GetPdgCode());
+    pdg0    = TMath::Abs(primary->PdgCode());
     pdg     = pdg0;
-    status  = primary->GetStatusCode();
-    vxMC    = primary->Vx();
-    vyMC    = primary->Vy();
-    iParent = primary->GetFirstMother();
+    status  = primary->MCStatusCode();
+    vxMC    = primary->Xv();
+    vyMC    = primary->Yv();
+    iParent = primary->GetMother();
     
     AliDebug(1,"Cluster most contributing mother:");
-    AliDebug(1,Form("\t Mother label %d, pdg %d, %s, status %d, parent %d",iMother, pdg0, primary->GetName(),status, iParent));
+    AliDebug(1,Form("\t Mother label %d, pdg %d, %s, status %d, Primary? %d, Physical Primary? %d, parent %d",
+                    iMother, pdg0, primary->GetName(),status, primary->IsPrimary(), primary->IsPhysicalPrimary(), iParent));
     
     // Get final particle, no conversion products
     if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
     {
       // Get the parent
-      primary = GetMC()->Particle(iParent);
-      pdg = TMath::Abs(primary->GetPdgCode());
+      primary = GetMC()->GetTrack(iParent);
+      pdg = TMath::Abs(primary->PdgCode());
       
       AliDebug(2,"Converted cluster!. Find before conversion:");
 
-      while((pdg == 22 || pdg == 11) && status != 1)
+      while((pdg == 22 || pdg == 11) && status != 1) //&& !aodprimary->IsPhysicalPrimary()
       {
         Int_t iMotherOrg = iMother;
         iMother = iParent;
-        primary = GetMC()->Particle(iMother);
-        status  = primary->GetStatusCode();
-        pdg     = TMath::Abs(primary->GetPdgCode());
-        iParent = primary->GetFirstMother();
+        primary = GetMC()->GetTrack(iMother);
+        status  = primary->MCStatusCode();
+        pdg     = TMath::Abs(primary->PdgCode());
+        iParent = primary->GetMother();
         
         // If gone too back and non stable, assign the decay photon/electron
         // there are other possible decays, ignore them for the moment
         if(pdg==111 || pdg==221)
         {
-          primary = GetMC()->Particle(iMotherOrg);
+          primary = GetMC()->GetTrack(iMotherOrg);
           break;
         }
         
@@ -2609,7 +2607,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
       }	
 
       AliDebug(1,"Converted Cluster mother before conversion:");
-      AliDebug(1,Form("\t Mother label %d, pdg %d, %s, status %d, parent %d",iMother, pdg, primary->GetName(), status, iParent));
+      AliDebug(1,Form("\t Mother label %d, pdg %d, %s, status %d, Primary? %d, Physical Primary? %d, parent %d",
+                      iMother, pdg, primary->GetName(), status, primary->IsPrimary(), primary->IsPhysicalPrimary(), iParent));
       
     }
     
@@ -2623,10 +2622,10 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
       {     
         //printf("iMother %d, pdg %d, iParent %d, pdg %d\n",iMother,pdg,iParent,GetMC()->Particle(iParent)->GetPdgCode());
         iMother = iParent;
-        primary = GetMC()->Particle(iMother);
-        status  = primary->GetStatusCode();
-        pdg     = TMath::Abs(primary->GetPdgCode());
-        iParent = primary->GetFirstMother();
+        primary = GetMC()->GetTrack(iMother);
+        status  = primary->MCStatusCode();
+        pdg     = TMath::Abs(primary->PdgCode());
+        iParent = primary->GetMother();
 
         if( iParent < 0 ) break;
         
@@ -2642,107 +2641,13 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
       AliDebug(2,Form("Overlapped %s decay, label %d",primary->GetName(),iMother));
     }
     
-    eMC    = primary->Energy();
+    eMC    = primary->E();
     //ptMC   = primary->Pt();
     phiMC  = primary->Phi();
     etaMC  = primary->Eta();
-    pdg    = TMath::Abs(primary->GetPdgCode());
-    charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-    
-  }
-  else if( GetReader()->ReadAODMCParticles() && 
-          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown))
-  {    
-    aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(label);
-    iMother = label;
-    pdg0    = TMath::Abs(aodprimary->GetPdgCode());
-    pdg     = pdg0;
-    status  = aodprimary->IsPrimary();
-    vxMC    = aodprimary->Xv();
-    vyMC    = aodprimary->Yv();
-    iParent = aodprimary->GetMother();
-    
-    AliDebug(1,"Cluster most contributing mother:");
-    AliDebug(1,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d, parent %d",
-                    iMother, pdg0, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), iParent));
-    
-    //Get final particle, no conversion products
-    if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion) )
-    {
-      AliDebug(2,"Converted cluster!. Find before conversion:");
-      
-      // Get the parent
-      aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(iParent);
-      pdg = TMath::Abs(aodprimary->GetPdgCode());
-        
-      while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) 
-      {
-        Int_t iMotherOrg = iMother;
-        iMother    = iParent;
-        aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(iMother);
-        status     = aodprimary->IsPrimary();
-        iParent    = aodprimary->GetMother();
-        pdg        = TMath::Abs(aodprimary->GetPdgCode());
-
-        // If gone too back and non stable, assign the decay photon/electron
-        // there are other possible decays, ignore them for the moment
-        if( pdg == 111 || pdg == 221 )
-        {
-          aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(iMotherOrg);
-          break;
-        }        
-        
-        if( iParent < 0 )
-        {
-          iParent = iMother;
-          break;
-        }
-        
-        AliDebug(2,Form("\t pdg %d, index %d, Primary? %d, Physical Primary? %d",
-                        pdg, iMother, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary()));
-      }	
-      
-      AliDebug(1,"Converted Cluster mother before conversion:");
-      AliDebug(1,Form("\t Mother label %d, pdg %d, parent %d, Primary? %d, Physical Primary? %d",
-                      iMother, pdg, iParent, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary()));
-    
-    }
-    
-    //Overlapped pi0 (or eta, there will be very few), get the meson
-    if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
-       GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta))
-    {
-      AliDebug(2,Form("Overlapped Meson decay!, Find it: PDG %d, mom %d",pdg, iMother));
-  
-      while(pdg != 111 && pdg != 221)
-      {
-        iMother    = iParent;
-        aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(iMother);
-        status     = aodprimary->IsPrimary();
-        iParent    = aodprimary->GetMother();
-        pdg        = TMath::Abs(aodprimary->GetPdgCode());
-
-        if( iParent < 0 ) break;
-        
-        AliDebug(2,Form("\t pdg %d, index %d",pdg, iMother));
-        
-        if(iMother==-1) 
-        {
-          AliWarning("Tagged as Overlapped photon but meson not found, why?");
-          //break;
-        }
-      }	
-      
-      AliDebug(2,Form("Overlapped %s decay, label %d",aodprimary->GetName(),iMother));
-    }	
-    
-    status = aodprimary->IsPrimary();
-    eMC    = aodprimary->E();
-    //ptMC   = aodprimary->Pt();
-    phiMC  = aodprimary->Phi();
-    etaMC  = aodprimary->Eta();
-    pdg    = TMath::Abs(aodprimary->GetPdgCode());
-    charge = aodprimary->Charge();
+    pdg    = TMath::Abs(primary->PdgCode());
+    //charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+    charge = primary->Charge();
   }
   
   //Float_t vz = primary->Vz();
@@ -2806,8 +2711,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
     fhRecoMCDeltaEta[mcIndex][(matched)]->Fill(e  , etaMC-eta, GetEventWeight());
   }
   
-  if( primary || aodprimary ) return kTRUE ;
-  else                        return kFALSE;
+  if( primary ) return kTRUE ;
+  else          return kFALSE;
 }
 
 //_________________________________________________________________________________________________________
@@ -7160,8 +7065,7 @@ void AliAnaCalorimeterQA::MCHistograms()
   Int_t    status =  0 ;
   Int_t    nprim  = GetMC()->GetNumberOfTracks();
   
-  TParticle        * primStack = 0;
-  AliAODMCParticle * primAOD   = 0;
+  AliVParticle * primary= 0;
   
   //printf("N primaries %d\n",nprim);
   for(Int_t i=0 ; i < nprim; i++)
@@ -7170,61 +7074,33 @@ void AliAnaCalorimeterQA::MCHistograms()
     
     // Get the generated particles, check that it is primary (not parton, resonance)
     // and get its momentum. Different way to recover from ESD or AOD
-    if(GetReader()->ReadStack())
-    {
-      primStack = GetMC()->Particle(i) ;
-      if(!primStack)
-      {
-        AliWarning("ESD primaries pointer not available!!");
-        continue;
-      }
-      
-      pdg    = primStack->GetPdgCode();
-      status = primStack->GetStatusCode();
-      
-      //printf("Input: i %d, %s, pdg %d, status %d \n",i, primStack->GetName(), pdg, status);
-      
-      if ( status > 11 ) continue; //Working for PYTHIA and simple generators, check for HERWIG, HIJING?
-      
-      // Protection against floating point exception
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) ||
-          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
-          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
-      
-      //printf("Take : i %d, %s, pdg %d, status %d \n",i, primStack->GetName(), pdg, status);
-      
-      // Photon kinematics
-      primStack->Momentum(fPrimaryMomentum);
-    }
-    else
-    {
-      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
-      if(!primAOD)
-      {
-        AliWarning("AOD primaries pointer not available!!");
-        continue;
-      }
-      
-      pdg    = primAOD->GetPdgCode();
-      status = primAOD->GetStatus();
-      
-      //printf("Input: i %d, %s, pdg %d, status %d \n",i, primAOD->GetName(), pdg, status);
-
-      if (!primAOD->IsPrimary()) continue; //accept all which is not MC transport generated. Don't know how to avoid partons
-      
-      if ( status > 11 ) continue; //Working for PYTHIA and simple generators, check for HERWIG
    
-      //Protection against floating point exception
-      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
-          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
-          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
-
-      //printf("Take : i %d, %s, pdg %d, status %d \n",i, primAOD->GetName(), pdg, status);
-      
-      // Kinematics
-      fPrimaryMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+    primary = GetMC()->GetTrack(i) ;
+    if(!primary)
+    {
+      AliWarning("Primaries pointer not available!!");
+      continue;
     }
-
+    
+    pdg    = primary->PdgCode();
+    status = primary->MCStatusCode();
+    
+    //printf("Input: i %d, %s, pdg %d, status %d \n",i, primStack->GetName(), pdg, status);
+    
+    //if (!primAOD->IsPrimary()) continue; //accept all which is not MC transport generated. Don't know how to avoid partons
+    
+    if ( status > 11 ) continue; //Working for PYTHIA and simple generators, check for HERWIG, HIJING?
+    
+    // Protection against floating point exception
+    if ( primary->E() == TMath::Abs(primary->Pz()) ||
+        (primary->E() - primary->Pz()) < 1e-3      ||
+        (primary->E() + primary->Pz()) < 0           )  continue ; 
+    
+    //printf("Take : i %d, %s, pdg %d, status %d \n",i, primStack->GetName(), pdg, status);
+    
+    // Photon kinematics
+    primary->Momentum(fPrimaryMomentum);
+    
     Float_t eMC    = fPrimaryMomentum.E();
     if(eMC < 0.2) continue;
     
@@ -7256,12 +7132,9 @@ void AliAnaCalorimeterQA::MCHistograms()
       if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(fPrimaryMomentum.Eta(),fPrimaryMomentum.Phi(),GetCalorimeter()) )
         inacceptance = kFALSE ;
       
-      if(IsRealCaloAcceptanceOn()) // defined on base class
+      if ( IsRealCaloAcceptanceOn() ) // defined on base class
       {
-        if(GetReader()->ReadStack()          &&
-           !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primStack)) inacceptance = kFALSE ;
-        if(GetReader()->ReadAODMCParticles() &&
-           !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primAOD  )) inacceptance = kFALSE ;
+        if ( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primary) ) inacceptance = kFALSE ;
       }
       
       if(!inacceptance) continue;
