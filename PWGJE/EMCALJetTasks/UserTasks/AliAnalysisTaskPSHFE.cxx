@@ -84,7 +84,7 @@ fHistTestTPCdEdx(0),
 fHistTestEOP(0),
 fHistTestOGDPhi(0),
 fHistTestPt(0),
-fHIstTestInvMass(0),
+fHistTestInvMass(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -317,7 +317,7 @@ fHistTestTPCdEdx(0),
 fHistTestEOP(0),
 fHistTestOGDPhi(0),
 fHistTestPt(0),
-fHIstTestInvMass(0),
+fHistTestInvMass(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -1638,7 +1638,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistTestEOP);
     fOutputMB->Add(fHistTestOGDPhi);
     fOutputMB->Add(fHistTestPt);
-    fOUtputMB->Add(fHIstTestInvMass);
+    fOutputMB->Add(fHIstTestInvMass);
 
     fOutputMB->Add(fHistPhotoMismatch_MB);
     fOutputMB->Add(fHistPtAssoc_MB);
@@ -2548,7 +2548,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         Double_t DEta=aodtrackassoc->Eta()-aodtrack->Eta();
         
         if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1){
-            cout<<aodtrackassoc->Print()<<'\n';
+            aodtrackassoc->Print();
             for(Int_t k=0;k<ntracks;k++){
                 if(i==k || j==k){continue;}
                 
