@@ -83,6 +83,8 @@ fHistTestEMCEnergy(0),
 fHistTestTPCdEdx(0),
 fHistTestEOP(0),
 fHistTestOGDPhi(0),
+fHistTestPt(0),
+fHIstTestInvMass(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -314,6 +316,8 @@ fHistTestEMCEnergy(0),
 fHistTestTPCdEdx(0),
 fHistTestEOP(0),
 fHistTestOGDPhi(0),
+fHistTestPt(0),
+fHIstTestInvMass(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -1616,6 +1620,14 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistTestOGDPhi->GetXaxis()->SetTitle("DPhi[rad]");
     fHistTestOGDPhi->GetYaxis()->SetTitle("Counts");
     
+    fHistTestPt = new TH1F("fHistTestPt", "Pt distribution for associated particles nearly on top of tagged particle", 30, 0, 8);
+    fHistTestPt->GetXaxis()->SetTitle("Pt[Gev/c]");
+    fHistTestPt->GetYaxis()->SetTitle("Cts");
+    
+    fHistTestInvMass = new TH1F("fHistTestInvMass", "Invariant Mass distribution for associated particles nearly on top of tagged particle", 30, 0, 8);
+    fHistTestInvMass->GetXaxis()->SetTitle("Mass[Gev/c^2]");
+    fHistTestInvMass->GetYaxis()->SetTitle("Cts");
+    
     //Add rejection plots to MB plots since it is the easiest place
     fOutputMB->Add(fHistPIDRejection);
     fOutputMB->Add(fHistNElecPerEvent);
@@ -1625,6 +1637,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistTestTPCdEdx);
     fOutputMB->Add(fHistTestEOP);
     fOutputMB->Add(fHistTestOGDPhi);
+    fOutputMB->Add(fHistTestPt);
+    fOUtputMB->Add(fHIstTestInvMass);
 
     fOutputMB->Add(fHistPhotoMismatch_MB);
     fOutputMB->Add(fHistPtAssoc_MB);
@@ -2533,18 +2547,50 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
 
         Double_t DEta=aodtrackassoc->Eta()-aodtrack->Eta();
         
-        if(DPhi<0.2&&DPhi>-0.2&&DEta<0.1&&DEta>-0.1){
-            Int_t cid = aodtrackassoc->GetEMCALcluster();
-            if(cid > 0){
-                AliAODCaloCluster *aodcl = aod->GetCaloCluster(cid);
-                fHistTestOGDPhi->Fill(aodtrackassoc->Phi()-aodtrack->Phi());
-                fHistTestDCA->Fill(aodtrackassoc->DCA());
-                fHistTestEMCEnergy->Fill(aodcl->E());
-                fHistTestEOP->Fill(aodcl->E()/aodtrackassoc->Pt());
-                fHistTestTPCdEdx->Fill(aodtrackassoc->Pt(), aodtrackassoc->GetTPCsignal());
-            }
-        }
+        if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1){
+            cout<<aodtrackassoc->Print()<<'\n';
+            for(Int_t k=0;k<ntracks;k++){
+                if(i==k || j==k){continue;}
+                
+                AliAODtTrack* aodtrackassoc2 = (AliAODTrack*)aod->GetTrack(k);
+                
+                Double_t DPhi=aodtrackassoc2->Phi()-aodtrack->Phi();
 
+                if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
+
+                if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
+
+                Double_t DEta=aodtrackassoc2->Eta()-aodtrack->Eta();
+                
+                
+                
+                Double_t PionMass=.139;
+                //fill inv mass plot
+
+                Double_t assocE1=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+PionMass*PionMass);
+                Double_t assocE2=TMath::Sqrt(aodtrackassoc2->P()*aodtrackassoc2->P()+PionMass*PionMass);
+
+                TLorentzVector assoc1(aodtrackassoc->Px(), aodtrackassoc->Py(), aodtrackassoc->Pz(), elecE1);
+                TLorentzVector assoc2(aodtrackassoc2->Px(), aodtrackassoc2->Py(), aodtrackassoc2->Pz(), elecE2);
+
+                Double_t InvMass=(assoc1+assoc2).M();
+
+                fHistTestInvMass->Fill(InvMass);
+            }
+                //Fill other plots
+                Int_t cid = aodtrackassoc->GetEMCALcluster();
+                if(cid > 0){
+                    AliAODCaloCluster *aodcl = aod->GetCaloCluster(cid);
+                    fHistTestPt->Fill(aodtrackassoc->Pt());
+                    fHistTestOGDPhi->Fill(aodtrackassoc->Phi()-aodtrack->Phi());
+                    fHistTestDCA->Fill(aodtrackassoc->DCA());
+                    fHistTestEMCEnergy->Fill(aodcl->E());
+                    fHistTestEOP->Fill(aodcl->E()/aodtrackassoc->Pt());
+                    fHistTestTPCdEdx->Fill(aodtrackassoc->Pt(), aodtrackassoc->GetTPCsignal());
+                }
+                else{cout<<"No EMCal cluster for this anamolous Peak\n";}
+            
+        }
         Int_t PID=0;
         cout<<"most probPID"<<AliAODTrack::kElectron<<":"<<aodtrackassoc->GetMostProbablePID()<<'\n';
         switch(aodtrackassoc->GetMostProbablePID()){
