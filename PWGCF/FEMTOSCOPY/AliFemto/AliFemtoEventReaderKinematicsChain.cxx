@@ -251,10 +251,17 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   double previousTrackPt = 0;
   for (int i=0;i<nofTracks;i++)	
     {	
+     
+
+      AliFemtoTrack* trackCopy = new AliFemtoTrack();
+
+      	  //getting next track
+      TParticle *kinetrack= fStack->Particle(i);
+
       if(fReadOnlyPrimaries)
 	{
 	  //take only primaries
-	  if(!fStack->IsPhysicalPrimary(i)) {continue;}
+	  if(abs(kinetrack->GetPdgCode())!=3122 && !fStack->IsPhysicalPrimary(i)) {continue;}
 	}
       else if(fReadPrimariesSecWeakMaterial)
 	{
@@ -262,11 +269,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	  if(!(fStack->IsPhysicalPrimary(i) || fStack->IsSecondaryFromWeakDecay(i) || fStack->IsSecondaryFromMaterial(i))) {continue;}
 	}
 
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();
-
-      	  //getting next track
-      TParticle *kinetrack= fStack->Particle(i);
-            
+      
 	if(fIsMisalignment){
        TParticle *motherParticle1;
        Int_t motherIndex1 = kinetrack->GetFirstMother();
