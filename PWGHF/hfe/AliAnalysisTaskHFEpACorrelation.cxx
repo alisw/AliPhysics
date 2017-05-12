@@ -336,7 +336,9 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fElectronBKGWToDataLS(0)
 ,fBkgPi0WeightToData(0)
 ,fBkgEtaWeightToData(0)
-
+,fElectronBKGNoEnhULS_WithW(0)
+,fElectronBKGNoEnhLS_WithW(0)
+,fElectronBKGNoEnhTotalNumber_WithW(0)
 {
     //Named constructor
     // Define input and output slots here
@@ -577,6 +579,9 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fElectronBKGWToDataLS(0)
 ,fBkgPi0WeightToData(0)
 ,fBkgEtaWeightToData(0)
+,fElectronBKGNoEnhULS_WithW(0)
+,fElectronBKGNoEnhLS_WithW(0)
+,fElectronBKGNoEnhTotalNumber_WithW(0)
 
 {
     DefineInput(0, TChain::Class());
@@ -878,6 +883,15 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fOutputList->Add(fElectronBKGNoEnhTotalNumber);
         fOutputList->Add(fElectronBKGNoEnhULS);
         fOutputList->Add(fElectronBKGNoEnhLS);
+        
+        fElectronBKGNoEnhTotalNumber_WithW = new TH1F("fElectronBKGNoEnhTotalNumber_WithW", "", 110,0.5,6);
+        fElectronBKGNoEnhULS_WithW = new TH1F("fElectronBKGNoEnhULS_WithW", "", 110,0.5,6);
+        fElectronBKGNoEnhLS_WithW = new TH1F("fElectronBKGNoEnhLS_WithW", "", 110,0.5,6);
+        
+        fOutputList->Add(fElectronBKGNoEnhTotalNumber_WithW);
+        fOutputList->Add(fElectronBKGNoEnhULS_WithW);
+        fOutputList->Add(fElectronBKGNoEnhLS_WithW);
+        
         
         fOutputList->Add(fEtaCutElectronBKULSMainSources_NW);
         fOutputList->Add(fEtaCutElectronBKLSMainSources_NW);
@@ -2842,6 +2856,8 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
             
             if( MotherPDGAfterReco==22 || MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
             {
+                //No weight
+                
                 fElectronBKGNoEnhTotalNumber->Fill(track->Pt());
                 
                 if (fNonHFE->IsULS())
@@ -2849,7 +2865,50 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
                 
                 if (fNonHFE->IsLS())
                     fElectronBKGNoEnhLS->Fill(track->Pt(),fNonHFE->GetNLS());
+                
+                //Add Weight for Non-Enhanced sample
+                
+                if (MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
+                {
+                    Double_t Weight = CalculateWeightRun2ToData(MotherPDGAfterReco,MCMother->Pt());
+                    fElectronBKGNoEnhTotalNumber_WithW->Fill(track->Pt(), Weight);
+                    
+                    if (fNonHFE->IsULS())
+                        fElectronBKGNoEnhULS_WithW->Fill(track->Pt(),fNonHFE->GetNULS()*Weight);
+                    
+                    if (fNonHFE->IsLS())
+                        fElectronBKGNoEnhLS_WithW->Fill(track->Pt(),fNonHFE->GetNLS()*Weight);
+                    
+                }
+                else if (MotherPDGAfterReco==22)
+                {
+                    if (MCMother->GetMother()>=0)
+                    {
+                        AliAODMCParticle* MCGMother = (AliAODMCParticle*) fMCarray->At(MCMother->GetMother());
+                        Int_t GMotherPDGAfterReco = TMath::Abs(MCGMother->GetPdgCode());
+                        
+                        if (GMotherPDGAfterReco ==111 || GMotherPDGAfterReco ==221)
+                        {
+                            Double_t Weight = CalculateWeightRun2ToData(GMotherPDGAfterReco,MCGMother->Pt());
+                            
+                            fElectronBKGNoEnhTotalNumber_WithW->Fill(track->Pt(), Weight);
+                            
+                            if (fNonHFE->IsULS())
+                                fElectronBKGNoEnhULS_WithW->Fill(track->Pt(),fNonHFE->GetNULS()*Weight);
+                            
+                            if (fNonHFE->IsLS())
+                                fElectronBKGNoEnhLS_WithW->Fill(track->Pt(),fNonHFE->GetNLS()*Weight);
+                            
+                        }
+
+                        
+                    }
+                    
+                }
+
             }
+            
+            
 
         }
     }
