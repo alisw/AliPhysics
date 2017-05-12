@@ -2552,7 +2552,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             for(Int_t k=0;k<ntracks;k++){
                 if(i==k || j==k){continue;}
                 
-                AliAODtTrack* aodtrackassoc2 = (AliAODTrack*)aod->GetTrack(k);
+                AliAODTrack* aodtrackassoc2 = (AliAODTrack*)aod->GetTrack(k);
                 
                 Double_t DPhi=aodtrackassoc2->Phi()-aodtrack->Phi();
 
