@@ -1295,7 +1295,6 @@ Float_t AliAnalysisTaskKinkpp5TeVMC::GetVertex(AliESDEvent* aod) const
 void AliAnalysisTaskKinkpp5TeVMC::Terminate(Option_t *) 
 {
   // Draw result to the screen
-  
 }
 
 //-------------primary vertex-------
