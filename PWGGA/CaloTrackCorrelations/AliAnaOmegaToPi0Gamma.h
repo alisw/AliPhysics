@@ -24,7 +24,6 @@ class TLorentzVector;
 
 //Analysis
 #include "AliAnaCaloTrackCorrBaseClass.h"
-class TParticle;
 
 class AliAnaOmegaToPi0Gamma : public AliAnaCaloTrackCorrBaseClass {
   
