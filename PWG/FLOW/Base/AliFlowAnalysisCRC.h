@@ -1477,6 +1477,7 @@ private:
   Double_t fCRCEtaMax;
   Int_t fRunNum;
   Int_t fCachedRunNum;
+  Int_t fRbREventCounter;
   Int_t fRunBin;
   Int_t fCenBin;
   CorrelationWeights fCorrWeightTPC;
@@ -1529,6 +1530,7 @@ private:
   TArrayD fAvVtxPosX;    // Run list
   TArrayD fAvVtxPosY;    // Run list
   TArrayD fAvVtxPosZ;    // Run list
+  TArrayI fnEvRbR; // number of events in each run
   TList *fCRCQVecList; //! Q Vectors list
   TList *fCRCQVecListTPC; //! Q Vectors list TPC
   TList *fCRCQVecListVZ; //! Q Vectors list VZERO
@@ -1573,6 +1575,14 @@ private:
   TProfile2D *fZDCEcomHist[4];//! Run-by-run vtxZDCQvec
   TProfile2D *fZDCEcomTotHist[4];//! Run-by-run vtxZDCQvec
   TProfile3D *fZDCEcomTotvsVtxHist[12];//! Run-by-run vtxZDCQvec
+  
+  TProfile2D *fCRCZDCQVecCenEComTot[2][4]; //!
+  TProfile2D *fCRCZDCQVecCenRefMulTot[2][4]; //!
+  TProfile3D *fCRCZDCQVecVtxEComTot[2][3][4]; //!
+  TProfile2D *fCRCTPCQVecCenEComTot[2][4]; //!
+  TProfile2D *fCRCTPCQVecCenRefMulTot[2][4]; //!
+  TProfile3D *fCRCTPCQVecVtxEComTot[2][3][4]; //!
+  
   TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
   TProfile3D *fZDCVtxCenHistMagPol[10][8]; //! Run-by-run vtxZDCQvec
   TProfile2D *fVZEROCenHist[3];//! Run-by-run VZERO Q-vector (harmonics 1-3)
@@ -1775,7 +1785,9 @@ private:
   TProfile2D *fFlowSPZDCv1etaPtPro[fCRCMaxnCen][fkNHistv1etaPt]; //!
   TH2D *fFlowSPZDCv1etaPtHist[fCRCMaxnCen][fkNHistv1etaPt]; //!
   const static Int_t fkNHistQVecCorrv1eta = 6;
-  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
+//  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
+  TProfile2D *fCRCTPCQVecCenVtxTime[fCRCMaxnRun][3][4]; //!
+  TProfile2D *fCRCZDCQVecCenVtxTime[fCRCMaxnRun][3][4]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
   TProfile3D *fTPCQVecProTemp[2][2]; //!

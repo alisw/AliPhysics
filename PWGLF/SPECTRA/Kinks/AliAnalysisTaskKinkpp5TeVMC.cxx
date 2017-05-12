@@ -38,11 +38,6 @@
 #include "AliCentrality.h"
 #include "iostream"
 #include "AliMultSelection.h"
-using namespace std;
-
-ofstream myfile("input.txt");
-
-
 
 ClassImp(AliAnalysisTaskKinkpp5TeVMC)
 
@@ -509,11 +504,6 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
   //initialized values
 	Float_t dca1[2], cov1[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
 	
-
-
-
-
-
 	AliVEvent *event = InputEvent();
   	if (!event) {
      	Printf("ERROR: Could not retrieve event");
@@ -873,10 +863,6 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
 
  }
    }
-
-
-
-
 
 	for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
@@ -1309,8 +1295,6 @@ Float_t AliAnalysisTaskKinkpp5TeVMC::GetVertex(AliESDEvent* aod) const
 void AliAnalysisTaskKinkpp5TeVMC::Terminate(Option_t *) 
 {
   // Draw result to the screen
-  // Called once at the end of the query
-
 }
 
 //-------------primary vertex-------

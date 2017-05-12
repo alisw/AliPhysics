@@ -175,7 +175,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
                                         // if requested (dont worry about this now)
 
 
-    fHistPt                 = new TH1F("fHistPt",                   "Pt()",                   1000,     0,     10);
+    fHistPt                 = new TH1F("fHistPt",                   "Pt()",                  10000,     0,     10);
     cent_ntracks            = new TH2F("cent_vs_ntracks",           "cent_vs_ntracks",         100,     0,    100,     100,      0,    800);
     
     m_squared_pos           = new TH2F("m_squared_pos",             "m_squared_pos",           320,   0.0,    8.0,    2400,   -1.0,    7.0);
@@ -183,8 +183,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
    
     beta_vs_mom_pos         = new TH2F("beta_vs_mom_pos",           "beta_vs_mom_pos",         780,   0.0,    8.0,    3000,    0.1,    1.1);
     beta_vs_mom_neg         = new TH2F("beta_vs_mom_neg",           "beta_vs_mom_neg",         780,   0.0,    8.0,    3000,    0.1,    1.1);
-    deltat_vs_mom_pos       = new TH2F("deltat_vs_mom_pos",         "deltat_vs_mom_pos",     27000,   0.3,    3.0,    1000,   -1.0,    9.0);
-    deltat_vs_mom_neg       = new TH2F("deltat_vs_mom_neg",         "deltat_vs_mom_neg",     27000,   0.3,    3.0,    1000,   -1.0,    9.0);
+    deltat_vs_mom_pos       = new TH2F("deltat_vs_mom_pos",         "deltat_vs_mom_pos",     17000,   0.3,    2.0,    1500,   -2.5,   12.5);
+    deltat_vs_mom_neg       = new TH2F("deltat_vs_mom_neg",         "deltat_vs_mom_neg",     17000,   0.3,    2.0,    1500,   -2.5,   12.5);
 
     dedx_vs_mom_pos         = new TH2F("dedx_vs_mom_pos",           "dedx_vs_mom_pos",         780,   0.2,    8.0,     250,    0.0,  500.0);
     dedx_vs_mom_neg         = new TH2F("dedx_vs_mom_neg",           "dedx_vs_mom_neg",         780,   0.2,    8.0,     250,    0.0,  500.0);
@@ -193,15 +193,15 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     dedx_mom_deltat_pos     = new TH3F("dedx_mom_deltat_pos",       "dedx_mom_deltat_pos",     250,   0.0,  500.0,     156,    0.2,    8.0,      420, -1.0, 20.0);  //// (dedx, mom, deltat)
     dedx_mom_deltat_neg     = new TH3F("dedx_mom_deltat_neg",       "dedx_mom_deltat_neg",     250,   0.0,  500.0,     156,    0.2,    8.0,      420, -1.0, 20.0);  //// (dedx, mom, deltat)
 
-//    dedx_mom_m2_pos         = new TH3F("dedx_mom_m2_pos",           "dedx_mom_m2_pos",         250,   0.0,  500.0,     156,    0.2,    8.0,      240, -1.0,  7.0);  //// (dedx, mom, m2)
-//    dedx_mom_m2_neg         = new TH3F("dedx_mom_m2_neg",           "dedx_mom_m2_neg",         250,   0.0,  500.0,     156,    0.2,    8.0,      240, -1.0,  7.0);  //// (dedx, mom, m2)
+//  dedx_mom_m2_pos         = new TH3F("dedx_mom_m2_pos",           "dedx_mom_m2_pos",         250,   0.0,  500.0,     156,    0.2,    8.0,      240, -1.0,  7.0);  //// (dedx, mom, m2)
+//  dedx_mom_m2_neg         = new TH3F("dedx_mom_m2_neg",           "dedx_mom_m2_neg",         250,   0.0,  500.0,     156,    0.2,    8.0,      240, -1.0,  7.0);  //// (dedx, mom, m2)
     
     m_squared_pos_cut       = new TH2F("m_squared_pos_cut",         "m_squared_pos_cut",       320,   0.0,    8.0,    2400,   -1.0,    7.0);
     m_squared_neg_cut       = new TH2F("m_squared_neg_cut",         "m_squared_neg_cut",       320,   0.0,    8.0,    2400,   -1.0,    7.0);
     beta_vs_mom_pos_cut     = new TH2F("beta_vs_mom_pos_cut",       "beta_vs_mom_pos_cut",     780,   0.0,    8.0,    3000,    0.1,    1.1);
     beta_vs_mom_neg_cut     = new TH2F("beta_vs_mom_neg_cut",       "beta_vs_mom_neg_cut",     780,   0.0,    8.0,    3000,    0.1,    1.1);
-    deltat_vs_mom_pos_cut   = new TH2F("deltat_vs_mom_pos_cut",     "deltat_vs_mom_pos_cut", 27000,   0.3,    3.0,    1000,   -1.0,    9.0);
-    deltat_vs_mom_neg_cut   = new TH2F("deltat_vs_mom_neg_cut",     "deltat_vs_mom_neg_cut", 27000,   0.3,    3.0,    1000,   -1.0,    9.0);
+    deltat_vs_mom_pos_cut   = new TH2F("deltat_vs_mom_pos_cut",     "deltat_vs_mom_pos_cut", 17000,   0.3,    2.0,    1500,   -2.5,   12.5);
+    deltat_vs_mom_neg_cut   = new TH2F("deltat_vs_mom_neg_cut",     "deltat_vs_mom_neg_cut", 17000,   0.3,    2.0,    1500,   -2.5,   12.5);
 
     dedx_vs_mom_pos_cut     = new TH2F("dedx_vs_mom_pos_cut",       "dedx_vs_mom_pos_cut",     780,   0.2,    8.0,     250,    0.0,  500.0);
     dedx_vs_mom_neg_cut     = new TH2F("dedx_vs_mom_neg_cut",       "dedx_vs_mom_neg_cut",     780,   0.2,    8.0,     250,    0.0,  500.0);
