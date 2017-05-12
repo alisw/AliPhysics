@@ -1638,7 +1638,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistTestEOP);
     fOutputMB->Add(fHistTestOGDPhi);
     fOutputMB->Add(fHistTestPt);
-    fOutputMB->Add(fHIstTestInvMass);
+    fOutputMB->Add(fHistTestInvMass);
 
     fOutputMB->Add(fHistPhotoMismatch_MB);
     fOutputMB->Add(fHistPtAssoc_MB);
