@@ -37,6 +37,7 @@ class AliPHOSGeoUtils;
 class AliEMCALGeometry;
 class AliAODMCParticle;
 class TParticle;
+class AliVParticle;
 
 #include "AliEMCALRecoUtils.h"
 
@@ -117,6 +118,7 @@ class AliCalorimeterUtils : public TObject {
                                                              fImportGeometryFromFile = import    ;
                                                              fImportGeometryFilePath = path      ; } // EMCAL
   
+  Bool_t        IsMCParticleInCalorimeterAcceptance(Int_t calo, AliVParticle* particle);
   Bool_t        IsMCParticleInCalorimeterAcceptance(Int_t calo, TParticle* particle);
   Bool_t        IsMCParticleInCalorimeterAcceptance(Int_t calo, AliAODMCParticle* particle);
   Bool_t        IsMCParticleInCalorimeterAcceptance(Int_t calo, Float_t eta, Float_t theta, Float_t phi, Int_t & absID);
