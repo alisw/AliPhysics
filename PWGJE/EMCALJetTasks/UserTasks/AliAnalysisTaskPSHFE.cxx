@@ -85,6 +85,7 @@ fHistTestEOP(0),
 fHistTestOGDPhi(0),
 fHistTestPt(0),
 fHistTestInvMass(0),
+fHistTestDPhiSpeNoSec(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -318,6 +319,7 @@ fHistTestEOP(0),
 fHistTestOGDPhi(0),
 fHistTestPt(0),
 fHistTestInvMass(0),
+fHistTestDPhiSpeNoSec(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
@@ -1628,6 +1630,19 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistTestInvMass->GetXaxis()->SetTitle("Mass[Gev/c^2]");
     fHistTestInvMass->GetYaxis()->SetTitle("Cts");
     
+    //DPhi by dEdx for triggered particles 2-8 gev and assoc. particles >2gev
+    fHistTestDPhiSpeNoSec = new TH2F("fHistTestDPhiSpeNoSec", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev with no secondary tracks", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistTestDPhiSpeNoSec->GetXaxis()->SetTitle("Delta-Phi");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetTitle("Species");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(1, "Unkown");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(2, "Electron");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(3, "Muon");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(4, "Pion");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(5, "Kaon");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(6, "Proton");
+    fHistTestDPhiSpeNoSec->GetYaxis()->SetBinLabel(7, "Deuteron");
+    fHistTestDPhiSpeNoSec->GetZaxis()->SetTitle("Cts");
+    
     //Add rejection plots to MB plots since it is the easiest place
     fOutputMB->Add(fHistPIDRejection);
     fOutputMB->Add(fHistNElecPerEvent);
@@ -1639,6 +1654,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistTestOGDPhi);
     fOutputMB->Add(fHistTestPt);
     fOutputMB->Add(fHistTestInvMass);
+    fOutputMB->Add(fHistTestDPhiSpeNoSec);
 
     fOutputMB->Add(fHistPhotoMismatch_MB);
     fOutputMB->Add(fHistPtAssoc_MB);
@@ -2547,7 +2563,50 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
 
         Double_t DEta=aodtrackassoc->Eta()-aodtrack->Eta();
         
-        if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1){
+        
+        Int_t PID=0;
+        cout<<"most probPID"<<AliAODTrack::kElectron<<":"<<aodtrackassoc->GetMostProbablePID()<<'\n';
+        switch(aodtrackassoc->GetMostProbablePID()){
+            case AliAODTrack::kElectron:
+            PID=1;
+            break;
+            case AliAODTrack::kMuon:
+            PID=2;
+            break;
+            case AliAODTrack::kPion:
+            PID=3;
+            break;
+            case AliAODTrack::kKaon:
+            PID=4;
+            break;
+            case AliAODTrack::kProton:
+            PID=5;
+            break;
+            case AliAODTrack::kDeuteron:
+            PID=6;
+            break;
+            case AliAODTrack::kUnknown:
+            PID=0;
+            break;
+        }
+
+        if(MBtrg){
+            fHistDPhi18Spe_MB->Fill(DPhi, PID);
+        }
+        switch(trigVal){
+            case(EMC7):
+            fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+            break;
+            case(EMCEGA):
+            fHistDPhi18Spe_EMCEGA->Fill(DPhi, PID);
+            break;
+            case(EMCJE):
+            fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+            break;
+        }
+        
+        
+        if(DPhi<0.1&&DPhi>-0.1&&DEta<0.1&&DEta>-0.1&&aodtrackassoc->fType==kPrimary){
             aodtrackassoc->Print();
             for(Int_t k=0;k<ntracks;k++){
                 if(i==k || j==k){continue;}
@@ -2590,46 +2649,11 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 }
                 else{cout<<"No EMCal cluster for this anamolous Peak\n";}
             
+             if(MBtrg){
+            fHistDPhiSpeNoSec->Fill(DPhi, PID);
         }
-        Int_t PID=0;
-        cout<<"most probPID"<<AliAODTrack::kElectron<<":"<<aodtrackassoc->GetMostProbablePID()<<'\n';
-        switch(aodtrackassoc->GetMostProbablePID()){
-            case AliAODTrack::kElectron:
-            PID=1;
-            break;
-            case AliAODTrack::kMuon:
-            PID=2;
-            break;
-            case AliAODTrack::kPion:
-            PID=3;
-            break;
-            case AliAODTrack::kKaon:
-            PID=4;
-            break;
-            case AliAODTrack::kProton:
-            PID=5;
-            break;
-            case AliAODTrack::kDeuteron:
-            PID=6;
-            break;
-            case AliAODTrack::kUnknown:
-            PID=0;
-            break;
-        }
-
-        if(MBtrg){
-            fHistDPhi18Spe_MB->Fill(DPhi, PID);
-        }
-        switch(trigVal){
-            case(EMC7):
-            fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
-            break;
-            case(EMCEGA):
-            fHistDPhi18Spe_EMCEGA->Fill(DPhi, PID);
-            break;
-            case(EMCJE):
-            fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
-            break;
+        
+            
         }
 
         if(PID==1||PID==2||PID==0){continue;}
