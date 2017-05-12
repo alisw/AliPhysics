@@ -30,14 +30,13 @@
 #include "AliCaloPID.h"
 #include "AliMCEvent.h"
 #include "AliFiducialCut.h"
-#include "TParticle.h"
 #include "AliVEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliMixedEvent.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliMCEvent.h"
 
 // --- Detectors ---
@@ -2550,97 +2549,54 @@ void AliAnaPi0::FillAcceptanceHistograms()
   Float_t cen = GetEventCentrality();
   Float_t ep  = GetEventPlaneAngle();
   
-  TParticle        * primStack = 0;
-  AliAODMCParticle * primAOD   = 0;
+  AliVParticle * primary = 0;
   
   TString genName = "";
   
   for(Int_t i=0 ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
+        
+    primary = GetMC()->GetTrack(i) ;
+    if(!primary)
+    {
+      AliWarning("Primaries pointer not available!!");
+      continue;
+    }
+    
+    // If too small  skip
+    if( primary->E() < 0.4 ) continue;
+    
+    pdg       = primary->PdgCode();
+    // Select only pi0 or eta
+    if( pdg != 111 && pdg != 221) continue ;
+    
+    nDaught   = primary->GetNDaughters();
+    iphot1    = primary->GetDaughterLabel(0) ;
+    iphot2    = primary->GetDaughterLabel(1) ;
+    
+    // Protection against floating point exception
+    if ( primary->E() == TMath::Abs(primary->Pz()) || 
+        (primary->E() - primary->Pz()) < 1e-3      ||
+        (primary->E() + primary->Pz()) < 0           )  continue ; 
+    
+    //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
+    //       prim->GetName(), prim->GetPdgCode());
+    
+    //Photon kinematics
+    primary->Momentum(fMCPrimMesonMom);
+    
+    mesonY = 0.5*TMath::Log((primary->E()+primary->Pz())/(primary->E()-primary->Pz())) ;
     
     Bool_t inacceptance = kTRUE;
+    if ( IsFiducialCutOn() || IsRealCaloAcceptanceOn() ) 
+    {
+      // Check if pi0 enters the calo
+      if(IsRealCaloAcceptanceOn() && !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), primary )) inacceptance = kFALSE;
+      if(IsFiducialCutOn() && inacceptance && !GetFiducialCut()->IsInFiducialCut(fMCPrimMesonMom.Eta(), fMCPrimMesonMom.Phi(), GetCalorimeter())) inacceptance = kFALSE;
+    }
+    else inacceptance = kFALSE;
     
-    if(GetReader()->ReadStack())
-    {
-      primStack = GetMC()->Particle(i) ;
-      if(!primStack)
-      {
-        AliWarning("ESD primaries pointer not available!!");
-        continue;
-      }
-      
-      // If too small  skip
-      if( primStack->Energy() < 0.4 ) continue;
-      
-      pdg       = primStack->GetPdgCode();
-      // Select only pi0 or eta
-      if( pdg != 111 && pdg != 221) continue ;
-      
-      nDaught   = primStack->GetNDaughters();
-      iphot1    = primStack->GetDaughter(0) ;
-      iphot2    = primStack->GetDaughter(1) ;
-
-      // Protection against floating point exception
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
-          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
-          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
-      
-      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
-      //       prim->GetName(), prim->GetPdgCode());
-      
-      //Photon kinematics
-      primStack->Momentum(fMCPrimMesonMom);
-      
-      mesonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
-      
-      if ( IsFiducialCutOn() || IsRealCaloAcceptanceOn() ) 
-      {
-        // Check if pi0 enters the calo
-        if(IsRealCaloAcceptanceOn() && !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), primStack )) inacceptance = kFALSE;
-        if(IsFiducialCutOn() && inacceptance && !GetFiducialCut()->IsInFiducialCut(fMCPrimMesonMom.Eta(), fMCPrimMesonMom.Phi(), GetCalorimeter())) inacceptance = kFALSE;
-      }
-      else inacceptance = kFALSE;
-    }
-    else // AODs
-    {
-      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
-      if(!primAOD)
-      {
-        AliWarning("AOD primaries pointer not available!!");
-        continue;
-      }
-      
-      // If too small  skip
-      if( primAOD->E() < 0.4 ) continue;
-      
-      pdg     = primAOD->GetPdgCode();
-      // Select only pi0 or eta
-      if( pdg != 111 && pdg != 221) continue ;
-      
-      nDaught = primAOD->GetNDaughters();
-      iphot1  = primAOD->GetFirstDaughter() ;
-      iphot2  = primAOD->GetLastDaughter() ;
-      
-      // Protection against floating point exception
-      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
-          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
-          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
-      
-      // Photon kinematics
-      fMCPrimMesonMom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
-      
-      mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
-      
-      if ( IsFiducialCutOn() || IsRealCaloAcceptanceOn() ) 
-      {
-        // Check if pi0 enters the calo
-        if(IsRealCaloAcceptanceOn() && !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), primAOD )) inacceptance = kFALSE;
-        if(IsFiducialCutOn() && inacceptance && !GetFiducialCut()->IsInFiducialCut(fMCPrimMesonMom.Eta(), fMCPrimMesonMom.Phi(), GetCalorimeter())) inacceptance = kFALSE;
-      }
-      else inacceptance = kFALSE;
-    }
-        
     mesonPt  = fMCPrimMesonMom.Pt () ;
     mesonE   = fMCPrimMesonMom.E  () ;
     mesonYeta= fMCPrimMesonMom.Eta() ;
@@ -2741,32 +2697,20 @@ void AliAnaPi0::FillAcceptanceHistograms()
     // Origin of meson
     if(fFillOriginHisto && TMath::Abs(mesonY) < 0.7)
     {
-      Int_t momindex  = -1;
+      Int_t momindex = primary->GetMother();
       Int_t mompdg    = -1;
       Int_t momstatus = -1;
       Int_t status    = -1;
       Float_t momR    =  0;
-      if(GetReader()->ReadStack())          momindex = primStack->GetFirstMother();
-      if(GetReader()->ReadAODMCParticles()) momindex = primAOD  ->GetMother();
       
       if(momindex >= 0 && momindex < nprim)
       {
-        if(GetReader()->ReadStack())
-        {
-          status = primStack->GetStatusCode();
-          TParticle* mother = GetMC()->Particle(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatusCode();
-          momR      = mother->R();
-        }
-        else if(GetReader()->ReadAODMCParticles())
-        {
-          status = primAOD->GetStatus();
-          AliAODMCParticle* mother = (AliAODMCParticle*) GetMC()->GetTrack(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatus();
-          momR      = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-        }
+        status = primary->MCStatusCode();
+        AliVParticle* mother = GetMC()->GetTrack(momindex);
+        mompdg    = TMath::Abs(mother->PdgCode());
+        momstatus = mother->MCStatusCode();
+        //momR      = mother->R();
+        momR      = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
         
         if(pdg == 111)
         {
@@ -2840,47 +2784,23 @@ void AliAnaPi0::FillAcceptanceHistograms()
     Int_t pdg2 = 0;
     Bool_t inacceptance1 = kTRUE;
     Bool_t inacceptance2 = kTRUE;
+        
+    AliVParticle * phot1 = GetMC()->GetTrack(iphot1) ;
+    AliVParticle * phot2 = GetMC()->GetTrack(iphot2) ;
     
-    if(GetReader()->ReadStack())
-    {
-      TParticle * phot1 = GetMC()->Particle(iphot1) ;
-      TParticle * phot2 = GetMC()->Particle(iphot2) ;
-      
-      if(!phot1 || !phot2) continue ;
-      
-      pdg1 = phot1->GetPdgCode();
-      pdg2 = phot2->GetPdgCode();
-      
-      phot1->Momentum(fPhotonMom1);
-      phot2->Momentum(fPhotonMom2);
-      
-      // Check if photons hit the Calorimeter acceptance
-      if(IsRealCaloAcceptanceOn())
-      {
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot1 )) inacceptance1 = kFALSE ;
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot2 )) inacceptance2 = kFALSE ;
-      }
-    }
+    if(!phot1 || !phot2) continue ;
     
-    if(GetReader()->ReadAODMCParticles())
+    pdg1 = phot1->PdgCode();
+    pdg2 = phot2->PdgCode();
+    
+    fPhotonMom1.SetPxPyPzE(phot1->Px(),phot1->Py(),phot1->Pz(),phot1->E());
+    fPhotonMom2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
+    
+    // Check if photons hit the Calorimeter acceptance
+    if(IsRealCaloAcceptanceOn())
     {
-      AliAODMCParticle * phot1 = (AliAODMCParticle *) GetMC()->GetTrack(iphot1) ;
-      AliAODMCParticle * phot2 = (AliAODMCParticle *) GetMC()->GetTrack(iphot2) ;
-      
-      if(!phot1 || !phot2) continue ;
-      
-      pdg1 = phot1->GetPdgCode();
-      pdg2 = phot2->GetPdgCode();
-      
-      fPhotonMom1.SetPxPyPzE(phot1->Px(),phot1->Py(),phot1->Pz(),phot1->E());
-      fPhotonMom2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
-      
-      // Check if photons hit the Calorimeter acceptance
-      if(IsRealCaloAcceptanceOn())
-      {
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot1 )) inacceptance1 = kFALSE ;
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot2 )) inacceptance2 = kFALSE ;
-      }
+      if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot1 )) inacceptance1 = kFALSE ;
+      if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot2 )) inacceptance2 = kFALSE ;
     }
     
     if( pdg1 != 22 || pdg2 !=22) continue ;
@@ -3196,37 +3116,20 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
         {
           fhMCPi0PtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
           
-          Float_t momOK = kFALSE;
-          //Int_t uniqueId = -1;
-          if(GetReader()->ReadStack())
+          AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
+          status   = ancestor->MCStatusCode();
+          momindex = ancestor->GetMother();
+          
+          Bool_t momOK = kFALSE;
+          if(momindex >= 0) 
           {
-            TParticle* ancestor = GetMC()->Particle(ancLabel);
-            status   = ancestor->GetStatusCode();
-            momindex = ancestor->GetFirstMother();
-            if(momindex >= 0) 
-            {
-              TParticle* mother = GetMC()->Particle(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatusCode();
-              prodR = mother->R();
-              //uniqueId = mother->GetUniqueID();
-              momOK = kTRUE;
-            }
-          }
-          else
-          {
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(ancLabel);
-            status   = ancestor->GetStatus();
-            momindex = ancestor->GetMother();
-            if(momindex >= 0) 
-            {
-              AliAODMCParticle* mother = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatus();
-              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-              //uniqueId = mother->GetUniqueID();
-              momOK = kTRUE;
-            }
+            AliVParticle* mother = GetMC()->GetTrack(momindex);
+            mompdg    = TMath::Abs(mother->PdgCode());
+            momstatus = mother->MCStatusCode();
+            prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+            //prodR = mother->R();
+            //uniqueId = mother->GetUniqueID();
+            momOK = kTRUE;
           }
           
           if(momOK)
@@ -3344,31 +3247,16 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           
           Float_t momOK = kFALSE;
           
-          if(GetReader()->ReadStack())
+          AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
+          momindex  = ancestor->GetMother();
+          if(momindex >= 0) 
           {
-            TParticle* ancestor = GetMC()->Particle(ancLabel);
-            momindex  = ancestor->GetFirstMother();
-            if(momindex >= 0) 
-            {
-              TParticle* mother = GetMC()->Particle(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatusCode();
-              prodR = mother->R();
-              momOK = kTRUE;
-            }
-          }
-          else
-          {
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(ancLabel);
-            momindex  = ancestor->GetMother();
-            if(momindex >= 0) 
-            {
-              AliAODMCParticle* mother = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatus();
-              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-              momOK = kTRUE;
-            }
+            AliVParticle* mother = GetMC()->GetTrack(momindex);
+            mompdg    = TMath::Abs(mother->PdgCode());
+            momstatus = mother->MCStatusCode();
+            //prodR = mother->R();
+            prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+            momOK = kTRUE;
           }
           
           if(momOK)
