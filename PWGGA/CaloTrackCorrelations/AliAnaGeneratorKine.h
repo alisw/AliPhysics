@@ -21,7 +21,7 @@
 
 // --- ROOT ---
 class TH2F ;
-class TParticle ;
+//class TParticle ;
 class TLorentzVector ;
 
 // --- ANALYSIS ---

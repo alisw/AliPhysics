@@ -25,10 +25,8 @@
 #include "AliCaloTrackReader.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
-#include "TParticle.h"
 #include "AliVCluster.h"
 #include "AliAODEvent.h"
-#include "AliAODMCParticle.h"
 #include "AliEMCALGeoParams.h"
 
 // --- Detectors ---
