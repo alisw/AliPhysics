@@ -34,6 +34,7 @@
 #include "AliOADBContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliLog.h"
 
 // --- Detector ---
