@@ -690,7 +690,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   Int_t pdg = 0, status = 0, momLabel = -1;
   
   //fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
-  fPrimaryMom = GetMCAnalysisUtils()->GetMother(calo->GetLabel(),GetReader(), pdg, status, ok, momLabel);     
+  fPrimaryMom = GetMCAnalysisUtils()->GetMother(calo->GetLabel(),GetMC(), pdg, status, ok, momLabel);     
   
   if(ok)
   {
@@ -1160,7 +1160,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //    
 //  Int_t pdgMomOrg = 0, statusMomOrg = -1, momLabelOrg = -1;
 //  Bool_t okMomOrg = kFALSE;
-//  GetMCAnalysisUtils()->GetMother(label,GetReader(), pdgMomOrg, statusMomOrg, okMomOrg, momLabelOrg);     
+//  GetMCAnalysisUtils()->GetMother(label,GetMC(), pdgMomOrg, statusMomOrg, okMomOrg, momLabelOrg);     
 //  
 //  AliVParticle        * primary = 0;
 //  AliVParticle        * primaryMom = 0;
@@ -1178,7 +1178,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //    
 //    Int_t pdgMom = 0, statusMom = -1, momLabel = -1;
 //    Bool_t okMom = kFALSE;
-//    GetMCAnalysisUtils()->GetMother(i,GetReader(), pdgMom, statusMom, okMom, momLabel);    
+//    GetMCAnalysisUtils()->GetMother(i,GetMC(), pdgMom, statusMom, okMom, momLabel);    
 //    //printf("\t mom label %d\n",momLabel);
 //
 //    if(momLabel < 0) continue;
@@ -1751,7 +1751,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     Int_t overlab[nlabels];
     Int_t noverlaps = 0;
       if(!GetReader()->IsEmbeddedClusterSelectionOn())
-        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg,overlab);
+        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetMC(),overpdg,overlab);
     
     //printf("N overlaps %d \n",noverlaps);
 
@@ -4867,7 +4867,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Int_t pdg = 0, status = 0, momLabel = -1;
       
       //fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(), pdg, status, ok, momLabel);     
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetMC(), pdg, status, ok, momLabel);     
       
       if(ok)
       {
@@ -4910,7 +4910,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           Bool_t okD = kFALSE;
           
           //fMomentum = 
-          GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetReader(),pdgD, statusD, okD, daugLabel, fProdVertex);
+          GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetMC(),pdgD, statusD, okD, daugLabel, fProdVertex);
           
           if(okD)
           {
