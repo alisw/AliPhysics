@@ -26,10 +26,11 @@
 class TList ;
 class TVector3;
 class TClonesArray;
-class AliMCEvent;
 
 //--- AliRoot system ---
 class AliCaloTrackReader ;
+class AliMCEvent;
+class AliGenEventHeader;
 
 class AliMCAnalysisUtils : public TObject {
 	
@@ -112,7 +113,7 @@ class AliMCAnalysisUtils : public TObject {
   //--------------------------------------
     
   // Method to recover MC jets stored in generator
-  TList * GetJets(const AliCaloTrackReader * reader) ;
+  TList * GetJets(AliMCEvent* mcevent, AliGenEventHeader * mcheader, Int_t eventNumber) ;
   
   void    SetDebug(Int_t deb)           { fDebug=deb           ; }
   Int_t   GetDebug()              const { return fDebug        ; }	
@@ -128,11 +129,11 @@ class AliMCAnalysisUtils : public TObject {
 
  private:
 
-  Int_t          fCurrentEvent;        ///<  Current Event number
+  Int_t          fCurrentEvent;        ///<  Current Event number - GetJets()
   
   Int_t          fDebug;               ///<  Debug level
   
-  TList        * fJetsList;            ///<  List of jets
+  TList        * fJetsList;            ///<  List of jets - GetJets()
   
   Int_t          fMCGenerator;         ///<  MC generator used to generate data in simulation
   
@@ -153,7 +154,7 @@ class AliMCAnalysisUtils : public TObject {
   AliMCAnalysisUtils(              const AliMCAnalysisUtils & mcu) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliMCAnalysisUtils,6) ;
+  ClassDef(AliMCAnalysisUtils,7) ;
   /// \endcond
 
 } ;

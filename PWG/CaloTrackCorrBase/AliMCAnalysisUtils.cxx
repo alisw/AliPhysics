@@ -769,149 +769,163 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
 //_____________________________________________________________________
 /// \return list of jets (TParticles) and index of most likely parton that originated it.
 //_____________________________________________________________________
-TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
-{  
-  AliMCEvent * mcevent = reader->GetMC();
-  Int_t iEvent = reader->GetEventNumber();	
-  AliGenEventHeader * geh = reader->GetGenEventHeader();
+TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, AliGenEventHeader * mcheader, Int_t eventNumber)
+{    
+  if(fCurrentEvent==eventNumber) return fJetsList ;
   
-  if(fCurrentEvent!=iEvent)
-  {
-    fCurrentEvent = iEvent;
-    fJetsList = new TList;
-    Int_t nTriggerJets = 0;
-    Float_t tmpjet[]={0,0,0,0};
+  fCurrentEvent = eventNumber;
+  
+  if (fJetsList) fJetsList->Clear();
+  else           fJetsList = new TList;
+  
+  Int_t nTriggerJets = 0;
+  Float_t tmpjet[]={0,0,0,0};
 		
-    //printf("Event %d %d\n",fCurrentEvent,iEvent);
-    //Get outgoing partons
-    if(mcevent->GetNumberOfTracks() < 8) return fJetsList;
-    TParticle * parton1 =  mcevent->Particle(6);
-    TParticle * parton2 =  mcevent->Particle(7);
-    
-    AliDebug(2,Form("Parton 6 : %s, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
-                    parton1->GetName(),parton1->Pt(),parton1->Energy(),parton1->Phi()*TMath::RadToDeg(),parton1->Eta()));
-    AliDebug(2,Form("Parton 7 : %s, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
-                    parton2->GetName(),parton2->Pt(),parton2->Energy(),parton2->Phi()*TMath::RadToDeg(),parton2->Eta()));
-    
-    // 		//Trace the jet from the mother parton
-    // 		Float_t pt  = 0;
-    // 		Float_t pt1 = 0;
-    // 		Float_t pt2 = 0;
-    // 		Float_t e   = 0;
-    // 		Float_t e1  = 0;
-    // 		Float_t e2  = 0;
-    // 		TParticle * tmptmp = new TParticle;
-    // 		for(Int_t i = 0; i< stack->GetNprimary(); i++){
-    // 			tmptmp = stack->Particle(i);
+  //printf("Event %d %d\n",fCurrentEvent,iEvent);
+  
+  // Get outgoing partons
+  if(mcevent->GetNumberOfTracks() < 8) return fJetsList;
+  
+  AliVParticle * parton1 =  mcevent->GetTrack(6);
+  AliVParticle * parton2 =  mcevent->GetTrack(7);
+  
+  AliDebug(2,Form("Parton 6 : %s, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
+                  parton1->GetName(),parton1->Pt(),parton1->E(),parton1->Phi()*TMath::RadToDeg(),parton1->Eta()));
+  AliDebug(2,Form("Parton 7 : %s, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
+                  parton2->GetName(),parton2->Pt(),parton2->E(),parton2->Phi()*TMath::RadToDeg(),parton2->Eta()));
+  
+  // 		//Trace the jet from the mother parton
+  // 		Float_t pt  = 0;
+  // 		Float_t pt1 = 0;
+  // 		Float_t pt2 = 0;
+  // 		Float_t e   = 0;
+  // 		Float_t e1  = 0;
+  // 		Float_t e2  = 0;
+  // 		TParticle * tmptmp = new TParticle;
+  // 		for(Int_t i = 0; i< stack->GetNprimary(); i++){
+  // 			tmptmp = stack->Particle(i);
 		
-    // 			if(tmptmp->GetStatusCode() == 1){
-    // 				pt = tmptmp->Pt();
-    // 				e =  tmptmp->Energy();			
-    // 				Int_t imom = tmptmp->GetMother();
-    // 				Int_t imom1 = 0;
-    // 				//printf("1st imom %d\n",imom);
-    // 				while(imom > 5){
-    // 					imom1=imom;
-    // 					tmptmp = stack->Particle(imom);
-    // 					imom = tmptmp->GetMother();
-    // 					//printf("imom %d	\n",imom);
-    // 				}
-    // 				//printf("Last imom %d %d\n",imom1, imom);
-    // 				if(imom1 == 6) {
-    // 					pt1+=pt;
-    // 					e1+=e;				
-    // 				}
-    // 				else if (imom1 == 7){
-    // 					pt2+=pt;
-    // 					e2+=e;					}
-    // 			}// status 1
-    
-    // 		}// for
+  // 			if(tmptmp->GetStatusCode() == 1){
+  // 				pt = tmptmp->Pt();
+  // 				e =  tmptmp->Energy();			
+  // 				Int_t imom = tmptmp->GetMother();
+  // 				Int_t imom1 = 0;
+  // 				//printf("1st imom %d\n",imom);
+  // 				while(imom > 5){
+  // 					imom1=imom;
+  // 					tmptmp = stack->Particle(imom);
+  // 					imom = tmptmp->GetMother();
+  // 					//printf("imom %d	\n",imom);
+  // 				}
+  // 				//printf("Last imom %d %d\n",imom1, imom);
+  // 				if(imom1 == 6) {
+  // 					pt1+=pt;
+  // 					e1+=e;				
+  // 				}
+  // 				else if (imom1 == 7){
+  // 					pt2+=pt;
+  // 					e2+=e;					}
+  // 			}// status 1
+  
+  // 		}// for
 		
-    // 		printf("JET 1, pt %2.2f, e %2.2f; JET 2, pt %2.2f, e %2.2f \n",pt1,e1,pt2,e2);
+  // 		printf("JET 1, pt %2.2f, e %2.2f; JET 2, pt %2.2f, e %2.2f \n",pt1,e1,pt2,e2);
 		
 		//Get the jet, different way for different generator
-		//PYTHIA
-    if(fMCGenerator == kPythia)
+    //PYTHIA
+  if(fMCGenerator == kPythia)
+  {
+    TParticle * jet =  0x0;
+    AliGenPythiaEventHeader* pygeh = (AliGenPythiaEventHeader*) mcheader;
+    nTriggerJets =  pygeh->NTriggerJets();
+    AliDebug(2,Form("PythiaEventHeader: Njets: %d",nTriggerJets));
+    
+    for(Int_t i = 0; i< nTriggerJets; i++)
     {
-      TParticle * jet =  0x0;
-      AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) geh;
-      nTriggerJets =  pygeh->NTriggerJets();
-      AliDebug(2,Form("PythiaEventHeader: Njets: %d",nTriggerJets));
+      pygeh->TriggerJet(i, tmpjet);
       
-      for(Int_t i = 0; i< nTriggerJets; i++)
-      {
-        pygeh->TriggerJet(i, tmpjet);
-        jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-        //Assign an outgoing parton as mother
-        Float_t phidiff1 = TMath::Abs(jet->Phi()-parton1->Phi());		
-        Float_t phidiff2 = TMath::Abs(jet->Phi()-parton2->Phi());
-        if(phidiff1 > phidiff2) jet->SetFirstMother(7);
-        else  jet->SetFirstMother(6);
-        //jet->Print();
-        AliDebug(1,Form("PYTHIA Jet %d: mother %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
-                        i, jet->GetFirstMother(),jet->Pt(),jet->Energy(),jet->Phi()*TMath::RadToDeg(),jet->Eta()));
-        fJetsList->Add(jet);			
-      }
-    }//Pythia triggered jets
-    //HERWIG
-    else if (fMCGenerator == kHerwig)
+      jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+      
+      // Assign an outgoing parton as mother
+      Float_t phidiff1 = TMath::Abs(jet->Phi()-parton1->Phi());		
+      Float_t phidiff2 = TMath::Abs(jet->Phi()-parton2->Phi());
+      
+      if(phidiff1 > phidiff2) jet->SetFirstMother(7);
+      else                    jet->SetFirstMother(6);
+      
+      //jet->Print();
+      AliDebug(1,Form("PYTHIA Jet %d: mother %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
+                      i, jet->GetFirstMother(),jet->Pt(),jet->Energy(),jet->Phi()*TMath::RadToDeg(),jet->Eta()));
+      fJetsList->Add(jet);			
+    }
+  }//Pythia triggered jets
+   //HERWIG
+  else if (fMCGenerator == kHerwig)
+  {
+    Int_t pdg = -1;		
+    
+    // Check parton 1
+    AliVParticle * tmp = parton1;
+    if(parton1->PdgCode()!=22)
     {
-      Int_t pdg = -1;		
-      //Check parton 1
-      TParticle * tmp = parton1;
-      if(parton1->GetPdgCode()!=22)
+      while(pdg != 94)
       {
-        while(pdg != 94){
-          if(tmp->GetFirstDaughter()==-1) return fJetsList;
-          tmp = mcevent->Particle(tmp->GetFirstDaughter());
-          pdg = tmp->GetPdgCode();
-        }//while
+        if(tmp->GetFirstDaughter()==-1) return fJetsList;
         
-        //Add found jet to list
-        TParticle *jet1 = new TParticle(*tmp);
-        jet1->SetFirstMother(6);
-        fJetsList->Add(jet1);
-        //printf("jet 1:  first daughter %d, last daughter %d\n", tmp->GetFirstDaughter(), tmp->GetLastDaughter());
-        //tmp = stack->Particle(tmp->GetFirstDaughter());
-        //tmp->Print();
-        //jet1->Print();
-        AliDebug(1,Form("HERWIG Jet 1: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
-                        jet1->GetFirstMother(),jet1->GetStatusCode(),jet1->Pt(),jet1->Energy(),jet1->Phi()*TMath::RadToDeg(),jet1->Eta()));
-      }//not photon
+        tmp = mcevent->GetTrack(tmp->GetFirstDaughter());
+        pdg = tmp->PdgCode();
+      }//while
       
-      //Check parton 2
-      pdg = -1;
-      tmp = parton2;
-      if(parton2->GetPdgCode()!=22)
+      // Add found jet to list
+      TParticle *jet1 =  new TParticle(94, 21, -1, -1, -1, -1, tmp->Px(),tmp->Py(),tmp->Pz(),tmp->E(), 0,0,0,0);//new TParticle(*tmp);
+      
+      jet1->SetFirstMother(6);
+      
+      fJetsList->Add(jet1);
+      
+      //printf("jet 1:  first daughter %d, last daughter %d\n", tmp->GetFirstDaughter(), tmp->GetLastDaughter());
+      //tmp = stack->Particle(tmp->GetFirstDaughter());
+      //tmp->Print();
+      //jet1->Print();
+      AliDebug(1,Form("HERWIG Jet 1: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
+                      jet1->GetFirstMother(),jet1->GetStatusCode(),jet1->Pt(),jet1->Energy(),jet1->Phi()*TMath::RadToDeg(),jet1->Eta()));
+    }//not photon
+    
+    // Check parton 2
+    pdg = -1;
+    tmp = parton2;
+    if(parton2->PdgCode()!=22)
+    {
+      while(pdg != 94)
       {
-        while(pdg != 94)
-        {
-          if(tmp->GetFirstDaughter()==-1) return fJetsList;
-          tmp = mcevent->Particle(tmp->GetFirstDaughter());
-          pdg = tmp->GetPdgCode();
-        }//while
+        if(tmp->GetFirstDaughter()==-1) return fJetsList;
         
-        //Add found jet to list
-        TParticle *jet2 = new TParticle(*tmp);
-        jet2->SetFirstMother(7);
-        fJetsList->Add(jet2);
-        //jet2->Print();
-        AliDebug(2,Form("HERWIG Jet 2: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
-                        jet2->GetFirstMother(),jet2->GetStatusCode(),jet2->Pt(),jet2->Energy(),jet2->Phi()*TMath::RadToDeg(),jet2->Eta()));
-        //Int_t first =  tmp->GetFirstDaughter();
-        //Int_t last  =  tmp->GetLastDaughter();
-        //printf("jet 2:  first daughter %d, last daughter %d, pdg %d\n",first, last, tmp->GetPdgCode());
-				//	for(Int_t d = first ; d < last+1; d++){
-        //						tmp = stack->Particle(d);
-        //						if(i == tmp->GetMother())
-        //							printf("Daughter n %d, Mother %d, name %s, status %d, pT %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
-        //							d,tmp->GetMother(), tmp->GetName(), tmp->GetStatusCode(),tmp->Pt(),tmp->Energy(),tmp->Phi()*TMath::RadToDeg(),tmp->Eta());			   
-        //			   }
-        //tmp->Print();
-      }//not photon
-    }//Herwig generated jets
-  }
+        tmp = mcevent->GetTrack(tmp->GetFirstDaughter());
+        pdg = tmp->PdgCode();
+      }//while
+      
+      // Add found jet to list
+      TParticle *jet2 =  new TParticle(94, 21, -1, -1, -1, -1, tmp->Px(),tmp->Py(),tmp->Pz(),tmp->E(), 0,0,0,0);//new TParticle(*tmp);
+
+      jet2->SetFirstMother(7);
+      
+      fJetsList->Add(jet2);
+      
+      //jet2->Print();
+      AliDebug(2,Form("HERWIG Jet 2: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
+                      jet2->GetFirstMother(),jet2->GetStatusCode(),jet2->Pt(),jet2->Energy(),jet2->Phi()*TMath::RadToDeg(),jet2->Eta()));
+      //Int_t first =  tmp->GetFirstDaughter();
+      //Int_t last  =  tmp->GetLastDaughter();
+      //printf("jet 2:  first daughter %d, last daughter %d, pdg %d\n",first, last, tmp->GetPdgCode());
+      //	for(Int_t d = first ; d < last+1; d++){
+      //						tmp = stack->Particle(d);
+      //						if(i == tmp->GetMother())
+      //							printf("Daughter n %d, Mother %d, name %s, status %d, pT %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
+      //							d,tmp->GetMother(), tmp->GetName(), tmp->GetStatusCode(),tmp->Pt(),tmp->Energy(),tmp->Phi()*TMath::RadToDeg(),tmp->Eta());			   
+      //			   }
+      //tmp->Print();
+    }//not photon
+  }//Herwig generated jets
   
   return fJetsList;
 }
