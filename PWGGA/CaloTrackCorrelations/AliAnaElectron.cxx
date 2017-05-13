@@ -351,7 +351,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
         Int_t noverlaps = 1;      
         for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
         {
-          ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetReader(),
+          ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetMC(),
                                                                ancPDG,ancStatus,fMomentumMC,fProdVertex);
           if(ancPDG!=22 && TMath::Abs(ancPDG)!=11) noverlaps++;
         }

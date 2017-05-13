@@ -3833,7 +3833,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if(IsDataMC())
       {
         ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(p1->GetLabel(), p2->GetLabel(),
-                                                             GetReader(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
+                                                             GetMC(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
         if( ancLabel >= 0 )
         {
           TString genName;

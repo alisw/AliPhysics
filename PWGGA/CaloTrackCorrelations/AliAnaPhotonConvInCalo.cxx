@@ -750,7 +750,7 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
           // Check the origin of the pair, look for conversion, antinucleons or jet correlations (strings)
           
           ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(calo->GetLabel(), calo2->GetLabel(),
-                                                                GetReader(), ancPDG, ancStatus, fMomentum, fProdVertex);
+                                                                GetMC(), ancPDG, ancStatus, fMomentum, fProdVertex);
           
           // printf("AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms() - Common ancestor label %d, pdg %d, name %s, status %d; \n",
           //                          ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);

@@ -3612,19 +3612,19 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       Bool_t ok      = kFALSE;
       Int_t  mcLabel = calo->GetLabel();
       
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel,GetMC(),ok);
       
       
       if(mcIndex == kmcPi0 || mcIndex == kmcEta)
       {
         if(mcIndex == kmcPi0)
         {
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok,mesonLabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetMC(),ok,mesonLabel);
           if(fGrandMotherMom.E() > 0 && ok) ptprim =  fGrandMotherMom.Pt();
         }
         else
         {
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok,mesonLabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetMC(),ok,mesonLabel);
           if(fGrandMotherMom.E() > 0 && ok) ptprim = fGrandMotherMom.Pt();
         }
       }
@@ -3632,7 +3632,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       const UInt_t nlabels = calo->GetNLabels();
       Int_t overpdg[nlabels];
       Int_t overlab[nlabels];
-      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels, tag, mesonLabel, GetReader(), overpdg, overlab);
+      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels, tag, mesonLabel, GetMC(), overpdg, overlab);
       
       fhMCMassPt     [mcIndex]->Fill(fMomentum.Pt(), mass, GetEventWeight());
       fhMCMassSplitPt[mcIndex]->Fill(ptSplit       , mass, GetEventWeight());
@@ -3910,12 +3910,12 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         Int_t   momlabel  = -1;
         Bool_t  ok        = kFALSE;
         
-        fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+        fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetMC(),ok);
         if(!ok) continue;
         
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
         {
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok,momlabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetMC(),ok,momlabel);
           if(fGrandMotherMom.E() > 0 && ok)
           {
             efracMC =  fGrandMotherMom.E()/ener;
@@ -3925,7 +3925,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
         {
           fhMCPi0DecayPt->Fill(pt, GetEventWeight());
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok,momlabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetMC(),ok,momlabel);
             
           if(fGrandMotherMom.E() > 0 && ok)
           {
@@ -3935,7 +3935,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta))
         {
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok,momlabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetMC(),ok,momlabel);
           if(fGrandMotherMom.E() > 0 && ok)
           {
             efracMC =  fGrandMotherMom.E()/ener;
@@ -3945,7 +3945,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
         {
           fhMCEtaDecayPt->Fill(pt, GetEventWeight());
-          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok,momlabel);
+          fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetMC(),ok,momlabel);
             
           if(fGrandMotherMom.E() > 0 && ok)
           {
