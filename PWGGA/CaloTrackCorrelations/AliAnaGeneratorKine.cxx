@@ -704,7 +704,7 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
   Float_t phiTrig = fTrigger.Phi();
   if(phiTrig < 0 ) phiTrig += TMath::TwoPi();
   
-  Int_t  pdg    = 0;
+//Int_t  pdg    = 0;
   Int_t  status = 0;
   Int_t  ipartonAway = 0;
   Int_t  charge = 0;
@@ -715,7 +715,7 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
 
     AliVParticle * particle =  GetMC()->GetTrack(ipr) ;
     
-    pdg    = particle->PdgCode();
+  //pdg    = particle->PdgCode();
     status = particle->MCStatusCode();
     
     // Compare trigger with final state particles
