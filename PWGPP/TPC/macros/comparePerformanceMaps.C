@@ -26,12 +26,12 @@ TPRegexp regTreeNotK0Qpt("hisK0.*(Alpha|DSec)");
 TPRegexp regTreeK0QptDSec("hisK0.*QPtTglDSec_1_1_5_1Dist");
 TPRegexp regTreeK0Alpha("hisK0.*AlphaDist");
 //TPRegexp regTreeDelta("(his|qahis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist");  // regular expression for standard trees
-TPRegexp regTreeDelta("^(his|qahis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist$");  // regular expression for standard trees
+TPRegexp regTreeDelta("^(his|qahis).*(Delta|Pull|Covar|ncl|Chi2|covar|delta|pull).*_tglDist$");  // regular expression for standard trees
 TPRegexp regTreeNotDeltaInt("his.*(lpha|DSec)");
 //
 TPRegexp regCovar("hisCovar");
-TPRegexp regTreeDeltaAlpha("(his|qahis)(Delta|Pull|Covar|ncl|Chi2).*alphaVDist$");
-TPRegexp regTreeDeltaDAlphaQ("(his|qahis)(Delta|Pull|Covarr|ncl|Chi2).*_dalphaQDist$");
+TPRegexp regTreeDeltaAlpha("(his|qahis)(Delta|Pull|Covar|ncl|Chi2|covar|delta|pull).*alphaVDist$");
+TPRegexp regTreeDeltaDAlphaQ("(his|qahis)(Delta|Pull|Covarr|ncl|Chi2|covar|delta|pull).*_dalphaQDist$");
 
 TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha;
 TCanvas *canvasDraw=0;
