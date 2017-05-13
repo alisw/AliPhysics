@@ -1,5 +1,6 @@
 //Date:11/05/2017
-//Author :: Nur Hussain, Buddhadeb Bhattacharjee, Gauhati University 
+
+//Author :: Nur Hussain and Buddhadeb Bhattacharjee, Gauhati University 
 // Thanks to Martha Spyropoulou-Stassinaki for her suggestions for the modification
 //purpose::Charged kaon identification using "Kink topology" for pp-5.02 TeV
 
@@ -117,9 +118,6 @@ void AliAnalysisTaskKinkpp5TeV::UserCreateOutputObjects()
 	const Float_t kDcaBinsTPConlyFactor = 5; //need to change binning of DCA plot for tpconly
 	// sort pT-bins ..
 
-
-
-
 	 Double_t binsPt2[77] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0};
 	 Double_t binsPt[77] = { 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0};
 
@@ -135,8 +133,6 @@ void AliAnalysisTaskKinkpp5TeV::UserCreateOutputObjects()
 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4,
 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0,5.5, 6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0
  };
-
-
 
   	Double_t gPt13K0PKal[45]=    { 0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,//  9bins 
                                  0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.,       //12 bins
