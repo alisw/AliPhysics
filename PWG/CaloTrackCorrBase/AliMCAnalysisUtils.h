@@ -28,7 +28,7 @@ class TVector3;
 class TClonesArray;
 
 //--- AliRoot system ---
-class AliCaloTrackReader ;
+class AliCaloTrackReader;
 class AliMCEvent;
 class AliGenEventHeader;
 
@@ -63,37 +63,36 @@ class AliMCAnalysisUtils : public TObject {
   // Methods to check origin of clusters
   //--------------------------------------
   
-  Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliCaloTrackReader* reader, 
+  Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliMCEvent* mcevent, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) ;
   
-  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader, Int_t calorimeter) ;
+  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader* mcevent, Int_t calorimeter) ;
   
   // Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin(const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, Int_t calorimeter) ;
+  Int_t   CheckOrigin(const Int_t *label,  Int_t nlabels, const AliCaloTrackReader* mcevent, Int_t calorimeter) ;
   Int_t   CheckOrigin(const Int_t *labels, Int_t nlabels, const AliMCEvent* mcevent, const TObjArray *arrayCluster) ; 
   
   void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
   
   void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const AliMCEvent* mcevent, Int_t & tag); 
   
-  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
-  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok);
-  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momLabel);
-  TLorentzVector GetGrandMother(Int_t label,const AliCaloTrackReader* reader,
-                                Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & grandMomLabel, Int_t & greatMomLabel);
+  TLorentzVector GetMother     (Int_t label,const AliMCEvent* mcevent, Bool_t & ok);
+  TLorentzVector GetMother     (Int_t label,const AliMCEvent* mcevent, Int_t & pdg, Int_t & status, Bool_t & ok);
+  TLorentzVector GetMother     (Int_t label,const AliMCEvent* mcevent, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetGrandMother(Int_t label,const AliMCEvent* mcevent, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & grandMomLabel, Int_t & greatMomLabel);
 
-  TLorentzVector GetMotherWithPDG(Int_t label, Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetMotherWithPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel);
   
-  void GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg,const AliCaloTrackReader* reader,
+  void GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent,
                                       Float_t & asy, Float_t & angle, Bool_t & ok);
 
-  Int_t          GetNDaughters(Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
-  TLorentzVector GetDaughter  (Int_t daughter, Int_t label,const AliCaloTrackReader* reader,
+  Int_t          GetNDaughters(Int_t label,const AliMCEvent* mcevent, Bool_t & ok);
+  TLorentzVector GetDaughter  (Int_t daughter, Int_t label,const AliMCEvent* mcevent,
                                Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daugLabel, TVector3 & prodVertex);
 
   Int_t          GetNOverlaps(const Int_t * label, UInt_t nlabels,
                               Int_t mctag, Int_t mesonLabel,
-                              AliCaloTrackReader * reader,
+                              AliMCEvent* mcevent,
                               Int_t *overpdg, Int_t *overlabel);
   
   //Check or set the bits produced in the above methods
