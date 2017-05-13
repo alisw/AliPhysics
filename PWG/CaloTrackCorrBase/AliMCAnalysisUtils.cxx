@@ -25,7 +25,7 @@
 #include "AliCaloTrackReader.h"
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -88,7 +88,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
     while(label > -1 && counter1 < 99)
     {
       counter1++;
-      AliAODMCParticle * mom = (AliAODMCParticle *) (reader->GetMC())->GetTrack(label);
+      AliVParticle * mom = (AliVParticle *) (reader->GetMC())->GetTrack(label);
       if(mom)
       {
         label  = mom->GetMother() ;
@@ -104,7 +104,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
     while(label > -1 && counter2 < 99)
     {
       counter2++;
-      AliAODMCParticle * mom = (AliAODMCParticle *) (reader->GetMC())->GetTrack(label);
+      AliVParticle * mom = (AliVParticle *) (reader->GetMC())->GetTrack(label);
       if(mom)
       {
         label  = mom->GetMother() ;
@@ -130,12 +130,12 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
         ancLabel = label1[c1];
         commonparents++;
         
-        AliAODMCParticle * mom = (AliAODMCParticle *) (reader->GetMC())->GetTrack(label1[c1]);
+        AliVParticle * mom = (AliVParticle *) (reader->GetMC())->GetTrack(label1[c1]);
         
         if (mom)
         {
-          ancPDG    = mom->GetPdgCode();
-          ancStatus = mom->GetStatus();
+          ancPDG    = mom->PdgCode();
+          ancStatus = mom->MCStatusCode();
           momentum.SetPxPyPzE(mom->Px(),mom->Py(),mom->Pz(),mom->E());
           prodVertex.SetXYZ(mom->Xv(),mom->Yv(),mom->Zv());
         }
@@ -234,21 +234,21 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
   Int_t label=labels[0];
     
   // Mother
-  AliAODMCParticle * mom = (AliAODMCParticle *) mcevent->GetTrack(label);
+  AliVParticle * mom = (AliVParticle *) mcevent->GetTrack(label);
   Int_t iMom     = label;
-  Int_t mPdgSign = mom->GetPdgCode();
+  Int_t mPdgSign = mom->PdgCode();
   Int_t mPdg     = TMath::Abs(mPdgSign);
   Int_t iParent  = mom->GetMother() ;
   
   //if(label < 8 && fMCGenerator != kBoxLike) AliDebug(1,Form("Mother is parton %d\n",iParent));
   
   //GrandParent
-  AliAODMCParticle * parent = NULL ;
+  AliVParticle * parent = NULL ;
   Int_t pPdg = -1;
   if(iParent >= 0)
   {
-    parent = (AliAODMCParticle *) mcevent->GetTrack(iParent);
-    pPdg = TMath::Abs(parent->GetPdgCode());
+    parent = (AliVParticle *) mcevent->GetTrack(iParent);
+    pPdg = TMath::Abs(parent->PdgCode());
   }
   else AliDebug(1,Form("Parent with label %d",iParent));
   
@@ -273,8 +273,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
         break;
       }
       
-      mom      = (AliAODMCParticle *) mcevent->GetTrack(iMom);
-      mPdgSign = mom->GetPdgCode();
+      mom      = (AliVParticle *) mcevent->GetTrack(iMom);
+      mPdgSign = mom->PdgCode();
       mPdg     = TMath::Abs(mPdgSign);
       iParent  = mom->GetMother() ;
       //if(label < 8 ) AliDebug(1, Form("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent));
@@ -282,8 +282,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       // GrandParent
       if(iParent >= 0 && parent)
       {
-        parent = (AliAODMCParticle *) mcevent->GetTrack(iParent);
-        pPdg = TMath::Abs(parent->GetPdgCode());
+        parent = (AliVParticle *) mcevent->GetTrack(iParent);
+        pPdg = TMath::Abs(parent->PdgCode());
       }
       // printf("\t While Mother label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary());
       // printf("\t While Parent label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary()); 
@@ -310,8 +310,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       }
       else
       {
-        mom      = (AliAODMCParticle *) mcevent->GetTrack(iMom);
-        mPdgSign = mom->GetPdgCode();
+        mom      = (AliVParticle *) mcevent->GetTrack(iMom);
+        mPdgSign = mom->PdgCode();
         mPdg     = TMath::Abs(mPdgSign);
         
         AliDebug(2,"AliMCAnalysisUtils::CheckOriginInAOD() - Converted hadron:");
@@ -325,8 +325,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
     
     //GrandParent
     //if(iParent >= 0){
-    //	parent = (AliAODMCParticle *) mcevent->GetTrack(iParent);
-    //	pPdg = TMath::Abs(parent->GetPdgCode());
+    //	parent = (AliVParticle *) mcevent->GetTrack(iParent);
+    //	pPdg = TMath::Abs(parent->PdgCode());
     //}
   }  
   
@@ -394,9 +394,10 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
     else if( mom->IsPhysicalPrimary() && ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) ) //undecayed particle
     {
       if(iParent < 8 && iParent > 5 )
-      {//outgoing partons
+      {
+        //outgoing partons
         if(pPdg == 22) SetTagBit(tag,kMCPrompt);
-        else SetTagBit(tag,kMCFragmentation);
+        else           SetTagBit(tag,kMCFragmentation);
       }//Outgoing partons
       else if( iParent <= 5 && ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) )
       {
@@ -410,14 +411,15 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
   
   // Electron check.  Where did that electron come from?
   else if(mPdg == 11)
-  { //electron
+  { 
+    //electron
     if(pPdg == 11 && parent)
     {
       Int_t iGrandma = parent->GetMother();
       if(iGrandma >= 0)
       {
-        AliAODMCParticle* gma = (AliAODMCParticle*) mcevent->GetTrack(iGrandma);
-        Int_t gPdg = TMath::Abs(gma->GetPdgCode());
+        AliVParticle * gma =  mcevent->GetTrack(iGrandma);
+        Int_t gPdg = TMath::Abs(gma->PdgCode());
         
         if      (gPdg == 23) { SetTagBit(tag,kMCZDecay); } //parent is Z-boson
         else if (gPdg == 24) { SetTagBit(tag,kMCWDecay); } //parent is W-boson
@@ -432,14 +434,15 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
     else if (pPdg == 221) { SetTagBit(tag,kMCEtaDecay); SetTagBit(tag,kMCDecayDalitz);} //Eta Dalitz decay
     else if((499 < pPdg && pPdg < 600)||(4999 < pPdg && pPdg < 6000)) { SetTagBit(tag,kMCEFromB);} //b-hadron decay
     else if((399 < pPdg && pPdg < 500)||(3999 < pPdg && pPdg < 5000))
-    { //c-hadron decay check
+    { 
+      //c-hadron decay check
       if(parent)
       {
         Int_t iGrandma = parent->GetMother();
         if(iGrandma >= 0)
         {
-          AliAODMCParticle* gma = (AliAODMCParticle*) mcevent->GetTrack(iGrandma); //charm's mother
-          Int_t gPdg = TMath::Abs(gma->GetPdgCode());
+          AliVParticle * gma =  mcevent->GetTrack(iGrandma); //charm's mother
+          Int_t gPdg = TMath::Abs(gma->PdgCode());
           if((499 < gPdg && gPdg < 600)||(4999 < gPdg && gPdg < 6000)) SetTagBit(tag,kMCEFromCFromB); //b-->c-->e decay
           else SetTagBit(tag,kMCEFromC); //c-hadron decay
         }
@@ -469,7 +472,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
 
 //_________________________________________________________________________________________
 /// Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. 
-/// Input are AOD AliAODMCParticles.
+/// Input are AOD AliVParticles.
 //_________________________________________________________________________________________
 void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, 
                                                     Int_t mesonIndex, const AliMCEvent* mcevent, 
@@ -481,8 +484,8 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
     return;
   }
   
-  AliAODMCParticle * meson = (AliAODMCParticle *) mcevent->GetTrack(mesonIndex);
-  Int_t mesonPdg = meson->GetPdgCode();
+  AliVParticle * meson = (AliVParticle *) mcevent->GetTrack(mesonIndex);
+  Int_t mesonPdg = meson->PdgCode();
   if(mesonPdg != 111 && mesonPdg != 221)
   {
     AliWarning(Form("Wrong pi0/eta PDG : %d",mesonPdg));
@@ -498,20 +501,20 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
     return;
   }
   
-  Int_t iPhoton0 = meson->GetDaughter(0);
-  Int_t iPhoton1 = meson->GetDaughter(1);
+  Int_t iPhoton0 = meson->GetDaughterLabel(0);
+  Int_t iPhoton1 = meson->GetDaughterLabel(1);
   //if((iPhoton0 == -1) || (iPhoton1 == -1)){
   //	if(fDebug > 2) 
   //		printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Exit : Not overlapped. At least a daughter do not exists : d1 %d, d2 %d \n", iPhoton0, iPhoton1);
   //	return;
   //}	
-  AliAODMCParticle *photon0 = (AliAODMCParticle *) mcevent->GetTrack(iPhoton0);
-  AliAODMCParticle *photon1 = (AliAODMCParticle *) mcevent->GetTrack(iPhoton1);
+  AliVParticle *photon0 = (AliVParticle *) mcevent->GetTrack(iPhoton0);
+  AliVParticle *photon1 = (AliVParticle *) mcevent->GetTrack(iPhoton1);
     
   //Check if both daughters are photons
-  if(photon0->GetPdgCode() != 22 && photon1->GetPdgCode()!=22)
+  if(photon0->PdgCode() != 22 && photon1->PdgCode()!=22)
   {
-    AliWarning(Form("Not overlapped. PDG:  daughter 1 = %d, of daughter 2 = %d",photon0->GetPdgCode(),photon1->GetPdgCode()));
+    AliWarning(Form("Not overlapped. PDG:  daughter 1 = %d, of daughter 2 = %d",photon0->PdgCode(),photon1->PdgCode()));
     return;
   }
   
@@ -554,7 +557,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
       continue;
     }
     
-    AliAODMCParticle * daught = (AliAODMCParticle*) mcevent->GetTrack(index);
+    AliVParticle * daught =  mcevent->GetTrack(index);
     Int_t tmpindex = daught->GetMother();
     AliDebug(3,Form("Conversion? : mother %d",tmpindex));
     
@@ -562,7 +565,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
       
       //MC particle of interest is the mother
       AliDebug(3,Form("\t parent index %d",tmpindex));
-      daught   = (AliAODMCParticle*) mcevent->GetTrack(tmpindex);
+      daught   =  mcevent->GetTrack(tmpindex);
       //printf("tmpindex %d\n",tmpindex);
       if      (iPhoton0 == tmpindex)
       {
@@ -609,7 +612,7 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
 {
   if(!arrayCluster || iMom < 0 || iParent < 0|| !mcevent) return;
   
-  AliAODMCParticle * parent = (AliAODMCParticle*) mcevent->GetTrack(iParent);
+  AliVParticle * parent =  mcevent->GetTrack(iParent);
   
   //printf("*** Check label %d with parent %d\n",iMom, iParent);
   
@@ -621,8 +624,8 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
   }
   
   Int_t pairLabel = -1;
-  if     ( iMom != parent->GetDaughter(0) ) pairLabel = parent->GetDaughter(0);
-  else if( iMom != parent->GetDaughter(1) ) pairLabel = parent->GetDaughter(1);
+  if     ( iMom != parent->GetDaughterLabel(0) ) pairLabel = parent->GetDaughterLabel(0);
+  else if( iMom != parent->GetDaughterLabel(1) ) pairLabel = parent->GetDaughterLabel(1);
   
   if(pairLabel<0)
   {
@@ -656,7 +659,7 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
       }
       else // check the ancestry
       {
-        AliAODMCParticle * mother = (AliAODMCParticle*) mcevent->GetTrack(label);
+        AliVParticle * mother =  mcevent->GetTrack(label);
         
         if ( !mother )
         {
@@ -664,18 +667,18 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
           continue;
         }
         
-        Int_t momPDG = TMath::Abs(mother->GetPdgCode());
+        Int_t momPDG = TMath::Abs(mother->PdgCode());
         if ( momPDG!=11 && momPDG!=22 ) continue;
         
         // Check if "mother" of entity is converted, if not, get the first non converted mother
         Int_t iParentClus = mother->GetMother();
         if(iParentClus < 0) continue;
         
-        AliAODMCParticle * parentClus =  (AliAODMCParticle*) mcevent->GetTrack(iParentClus);
+        AliVParticle * parentClus =   mcevent->GetTrack(iParentClus);
         if(!parentClus) continue;
         
-        Int_t parentClusPDG    = TMath::Abs(parentClus->GetPdgCode());
-        Int_t parentClusStatus = parentClus->GetStatus();
+        Int_t parentClusPDG    = TMath::Abs(parentClus->PdgCode());
+        Int_t parentClusStatus = parentClus->MCStatusCode();
         
         if ( parentClusPDG != 22 && parentClusPDG != 11 && parentClusStatus != 0 )
         {
@@ -695,11 +698,11 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
           iParentClus      = parentClus->GetMother();
           if ( iParentClus < 0 ) break;
           
-          parentClus       =  (AliAODMCParticle*) mcevent->GetTrack(iParentClus);
+          parentClus       =   mcevent->GetTrack(iParentClus);
           if ( !parentClus ) break;
           
-          parentClusPDG    = TMath::Abs(parentClus->GetPdgCode());
-          parentClusStatus = parentClus->GetStatus() ;
+          parentClusPDG    = TMath::Abs(parentClus->PdgCode());
+          parentClusStatus = parentClus->MCStatusCode() ;
         }//while
         
         if ( (momPDG == 22 || parentClusPDG ==22) && (label==pairLabel || iParentClus == pairLabel) )
@@ -896,8 +899,8 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
     return fDaughMom;
   }
   
-  AliAODMCParticle * momP = (AliAODMCParticle *) reader->GetMC()->GetTrack(label);
-  daughlabel              = momP->GetDaughter(idaugh);
+  AliVParticle * momP = (AliVParticle *) reader->GetMC()->GetTrack(label);
+  daughlabel          = momP->GetDaughterLabel(idaugh);
   
   if(daughlabel < 0 || daughlabel >= nprimaries)
   {
@@ -905,10 +908,10 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
     return fDaughMom;
   }
   
-  AliAODMCParticle * daughP = (AliAODMCParticle *) reader->GetMC()->GetTrack(daughlabel);
+  AliVParticle * daughP = (AliVParticle *) reader->GetMC()->GetTrack(daughlabel);
   fDaughMom.SetPxPyPzE(daughP->Px(),daughP->Py(),daughP->Pz(),daughP->E());
-  pdg    = daughP->GetPdgCode();
-  status = daughP->GetStatus();
+  pdg    = daughP->PdgCode();
+  status = daughP->MCStatusCode();
   prodVertex.SetXYZ(daughP->Xv(),daughP->Yv(),daughP->Zv());
   
   ok = kTRUE;
@@ -960,10 +963,10 @@ TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackRead
     return fMotherMom;
   }
  
-  AliAODMCParticle * momP = (AliAODMCParticle *) reader->GetMC()->GetTrack(label);
+  AliVParticle * momP = (AliVParticle *) reader->GetMC()->GetTrack(label);
   fMotherMom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->E());
-  pdg      = momP->GetPdgCode();
-  status   = momP->GetStatus();
+  pdg      = momP->PdgCode();
+  status   = momP->MCStatusCode();
   momlabel = momP->GetMother();
   
   ok = kTRUE;
@@ -996,9 +999,9 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
   }
   
   
-  AliAODMCParticle * momP = (AliAODMCParticle *) reader->GetMC()->GetTrack(label);
+  AliVParticle * momP = (AliVParticle *) reader->GetMC()->GetTrack(label);
   
-  if(momP->GetPdgCode()==pdg)
+  if(momP->PdgCode()==pdg)
   {
     AliDebug(2,"PDG of mother is already the one requested!");
     fGMotherMom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->E());
@@ -1009,12 +1012,12 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
   
   Int_t grandmomLabel = momP->GetMother();
   Int_t grandmomPDG   = -1;
-  AliAODMCParticle * grandmomP = 0x0;
+  AliVParticle * grandmomP = 0x0;
   
   while (grandmomLabel >=0 ) 
   {
-    grandmomP   = (AliAODMCParticle *) reader->GetMC()->GetTrack(grandmomLabel);
-    grandmomPDG = grandmomP->GetPdgCode();
+    grandmomP   = (AliVParticle *) reader->GetMC()->GetTrack(grandmomLabel);
+    grandmomPDG = grandmomP->PdgCode();
     if(grandmomPDG==pdg)
     {
       //printf("AliMCAnalysisUtils::GetMotherWithPDG(AOD) - mother with PDG %d FOUND! \n",pdg);
@@ -1057,17 +1060,17 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliCaloTrac
     return fGMotherMom;
   }
   
-  AliAODMCParticle * momP = (AliAODMCParticle *) reader->GetMC()->GetTrack(label);
+  AliVParticle * momP = (AliVParticle *) reader->GetMC()->GetTrack(label);
   
   grandMomLabel = momP->GetMother();
   
-  AliAODMCParticle * grandmomP = 0x0;
+  AliVParticle * grandmomP = 0x0;
   
   if(grandMomLabel >=0 )
   {
-    grandmomP   = (AliAODMCParticle *) reader->GetMC()->GetTrack(grandMomLabel);
-    pdg    = grandmomP->GetPdgCode();
-    status = grandmomP->GetStatus();
+    grandmomP   = (AliVParticle *) reader->GetMC()->GetTrack(grandMomLabel);
+    pdg    = grandmomP->PdgCode();
+    status = grandmomP->MCStatusCode();
     
     fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
     greatMomLabel =  grandmomP->GetMother();
@@ -1100,16 +1103,16 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
     return ;
   }
   
-  AliAODMCParticle * momP = (AliAODMCParticle *) reader->GetMC()->GetTrack(label);
+  AliVParticle * momP = (AliVParticle *) reader->GetMC()->GetTrack(label);
   
   Int_t grandmomLabel = momP->GetMother();
   Int_t grandmomPDG   = -1;
-  AliAODMCParticle * grandmomP = 0x0;
+  AliVParticle * grandmomP = 0x0;
   
   while (grandmomLabel >=0 ) 
   {
-    grandmomP   = (AliAODMCParticle *) reader->GetMC()->GetTrack(grandmomLabel);
-    grandmomPDG = grandmomP->GetPdgCode();
+    grandmomP   = (AliVParticle *) reader->GetMC()->GetTrack(grandmomLabel);
+    grandmomPDG = grandmomP->PdgCode();
     
     if(grandmomPDG==pdg) break;
     
@@ -1118,10 +1121,10 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
   
   if(grandmomPDG==pdg && grandmomP->GetNDaughters()==2) 
   {
-    AliAODMCParticle * d1 = (AliAODMCParticle *) reader->GetMC()->GetTrack(grandmomP->GetDaughter(0));
-    AliAODMCParticle * d2 = (AliAODMCParticle *) reader->GetMC()->GetTrack(grandmomP->GetDaughter(1));
+    AliVParticle * d1 = (AliVParticle *) reader->GetMC()->GetTrack(grandmomP->GetDaughterLabel(0));
+    AliVParticle * d2 = (AliVParticle *) reader->GetMC()->GetTrack(grandmomP->GetDaughterLabel(1));
     
-    if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
+    if(d1->PdgCode() == 22 && d1->PdgCode() == 22)
     {
       asym = (d1->E()-d2->E())/grandmomP->E();
       fDaughMom .SetPxPyPzE(d1->Px(),d1->Py(),d1->Pz(),d1->E());
@@ -1159,7 +1162,7 @@ Int_t AliMCAnalysisUtils::GetNDaughters(Int_t label, const AliCaloTrackReader* r
     return -1;
   }
   
-  AliAODMCParticle * momP = (AliAODMCParticle *) reader->GetMC()->GetTrack(label);
+  AliVParticle * momP = (AliVParticle *) reader->GetMC()->GetTrack(label);
   
   ok = kTRUE;
   
