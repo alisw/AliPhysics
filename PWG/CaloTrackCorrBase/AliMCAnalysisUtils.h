@@ -69,13 +69,10 @@ class AliMCAnalysisUtils : public TObject {
   
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
   Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, Int_t calorimeter) ;
-  Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, const AliMCEvent* mcevent, const TObjArray *arrayCluster) ; // ESD
   Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const AliMCEvent* mcevent, const TObjArray *arrayCluster) ; // AOD
   
-  void    CheckOverlapped2GammaDecayESD(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
   void    CheckOverlapped2GammaDecayAOD(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
   
-  void    CheckLostDecayPairESD(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const AliMCEvent* mcevent, Int_t & tag); 
   void    CheckLostDecayPairAOD(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const AliMCEvent* mcevent, Int_t & tag); 
   
   TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
