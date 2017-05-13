@@ -1236,7 +1236,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }
   
   if(isMC){
-  	fJPsiTree ->Fill();
+  	//fJPsiTree ->Fill();
 	fPsi2sTree ->Fill();
   }
   
