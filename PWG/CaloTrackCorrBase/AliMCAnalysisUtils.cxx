@@ -238,6 +238,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
   Int_t iMom     = label;
   Int_t mPdgSign = mom->PdgCode();
   Int_t mPdg     = TMath::Abs(mPdgSign);
+  Int_t mStatus  = mom->MCStatusCode() ;
   Int_t iParent  = mom->GetMother() ;
   
   //if(label < 8 && fMCGenerator != kBoxLike) AliDebug(1,Form("Mother is parton %d\n",iParent));
@@ -245,19 +246,23 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
   //GrandParent
   AliVParticle * parent = NULL ;
   Int_t pPdg = -1;
+  Int_t pStatus =-1;
   if(iParent >= 0)
   {
     parent = (AliVParticle *) mcevent->GetTrack(iParent);
     pPdg = TMath::Abs(parent->PdgCode());
+    pStatus = parent->MCStatusCode();  
   }
   else AliDebug(1,Form("Parent with label %d",iParent));
   
   AliDebug(2,"Cluster most contributing mother and its parent:");
-  AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
-  AliDebug(2,Form("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d",iParent, pPdg, parent?parent->IsPrimary():-1, parent?parent->IsPhysicalPrimary():-1));
+  AliDebug(2,Form("\t Mother label %d, pdg %d, status %d, Primary? %d, Physical Primary? %d",
+                  iMom   , mPdg, mStatus, mom->IsPrimary()             , mom->IsPhysicalPrimary()));
+  AliDebug(2,Form("\t Parent label %d, pdg %d, status %d, Primary? %d, Physical Primary? %d",
+                  iParent, pPdg, pStatus, parent?parent->IsPrimary():-1, parent?parent->IsPhysicalPrimary():-1));
   
   //Check if mother is converted, if not, get the first non converted mother
-  if((mPdg == 22 || mPdg == 11) && (pPdg == 22 || pPdg == 11) && !mom->IsPrimary())
+  if((mPdg == 22 || mPdg == 11) && (pPdg == 22 || pPdg == 11) && mStatus==0)
   {
     SetTagBit(tag,kMCConversion);
     
@@ -276,6 +281,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       mom      = (AliVParticle *) mcevent->GetTrack(iMom);
       mPdgSign = mom->PdgCode();
       mPdg     = TMath::Abs(mPdgSign);
+      mStatus  = mom->MCStatusCode() ;
       iParent  = mom->GetMother() ;
       //if(label < 8 ) AliDebug(1, Form("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent));
       
@@ -284,18 +290,21 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       {
         parent = (AliVParticle *) mcevent->GetTrack(iParent);
         pPdg = TMath::Abs(parent->PdgCode());
+        pStatus = parent->MCStatusCode();  
       }
       // printf("\t While Mother label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary());
       // printf("\t While Parent label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary()); 
       
     }//while	
     
-    AliDebug(2,"AliMCAnalysisUtils::CheckOriginInAOD() - Converted photon/electron:");
-    AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
-    AliDebug(2,Form("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d",iParent, pPdg, parent?parent->IsPrimary():-1, parent?parent->IsPhysicalPrimary():-1));
+    AliDebug(2,"Converted photon/electron:");
+    AliDebug(2,Form("\t Mother label %d, pdg %d, status %d, Primary? %d, Physical Primary? %d"
+                    ,iMom   , mPdg, mStatus, mom->IsPrimary()             , mom->IsPhysicalPrimary()));
+    AliDebug(2,Form("\t Parent label %d, pdg %d, status %d, Primary? %d, Physical Primary? %d"
+                    ,iParent, pPdg, pStatus, parent?parent->IsPrimary():-1, parent?parent->IsPhysicalPrimary():-1));
     
   } // mother and parent are electron or photon and have status 0 and parent is photon or electron
-  else if((mPdg == 22 || mPdg == 11) && !mom->IsPrimary())
+  else if((mPdg == 22 || mPdg == 11) && mStatus==0)
   {
     // Still a conversion but only one electron/photon generated. Just from hadrons
     if(pPdg == 2112 ||  pPdg == 211 ||  pPdg == 321 ||  
@@ -313,9 +322,11 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
         mom      = (AliVParticle *) mcevent->GetTrack(iMom);
         mPdgSign = mom->PdgCode();
         mPdg     = TMath::Abs(mPdgSign);
-        
-        AliDebug(2,"AliMCAnalysisUtils::CheckOriginInAOD() - Converted hadron:");
-        AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
+        mStatus  = mom->MCStatusCode() ;
+
+        AliDebug(2,"Converted hadron:");
+        AliDebug(2,Form("\t Mother label %d, pdg %d, status %d, Primary? %d, Physical Primary? %d",
+                        iMom, mPdg, mStatus, mom->IsPrimary(), mom->IsPhysicalPrimary()));
       }
     } // hadron converted
     
@@ -371,8 +382,10 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       
       AliDebug(2,"Generator pi0 decay photon");
       
-      CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcevent, tag); //set to kMCPi0 if 2 gammas in same cluster
-                                                                            // In case it did not merge, check if the decay companion is lost
+      // Set to kMCPi0 if 2 gammas in same cluster
+      CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcevent, tag); 
+                                                                            
+      // In case it did not merge, check if the decay companion is lost
       if(!CheckTagBit(tag, kMCPi0) && !CheckTagBit(tag,kMCDecayPairInCalo) && !CheckTagBit(tag,kMCDecayPairLost))
       {
         CheckLostDecayPair(arrayCluster,iMom, iParent, mcevent, tag);
@@ -386,8 +399,10 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       
       AliDebug(2,"Generator eta decay photon");
       
-      CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcevent, tag); //set to kMCEta if 2 gammas in same cluster
-                                                                            // In case it did not merge, check if the decay companion is lost
+      // Set to kMCEta if 2 gammas in same cluster
+      CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcevent, tag); 
+      
+      // In case it did not merge, check if the decay companion is lost
       if(!CheckTagBit(tag, kMCEta) && !CheckTagBit(tag,kMCDecayPairInCalo) && !CheckTagBit(tag,kMCDecayPairLost))
         CheckLostDecayPair(arrayCluster,iMom, iParent, mcevent, tag);
     }
@@ -407,6 +422,33 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
     }//Physical primary
     else SetTagBit(tag,kMCOtherDecay);
     
+//    //Old Herwig selection for ESDs, maybe should be considered.
+//    if(fMCGenerator == kHerwig)
+//    {
+//      if(pStatus < 197)
+//      {//Not decay
+//        while(1)
+//        {
+//          if(parent)
+//          {
+//            if(parent->GetMother()<=5) break;
+//            iParent = parent->GetMother();
+//            parent  =  mcevent->GetTrack(iParent);
+//            pStatus = parent->MCStatusCode();
+//            pPdg = TMath::Abs(parent->PdgCode());
+//          } else break;
+//        }//Look for the parton
+//        
+//        if(iParent < 8 && iParent > 5)
+//        {
+//          if(pPdg == 22) SetTagBit(tag,kMCPrompt);
+//          else           SetTagBit(tag,kMCFragmentation);
+//        }
+//        else SetTagBit(tag,kMCISR);//Initial state radiation
+//      }//Not decay
+//      else  SetTagBit(tag,kMCUnknown);
+//    }//HERWIG
+
   } // Mother Photon
   
   // Electron check.  Where did that electron come from?
@@ -494,7 +536,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
   
   AliDebug(2,Form("pdg %d, label %d, ndaughters %d", mesonPdg, mesonIndex, meson->GetNDaughters()));
   
-  //Get the daughters
+  // Get the daughters
   if(meson->GetNDaughters() != 2)
   {
     AliDebug(2,Form("Not overalapped. Number of daughters is %d, not 2",meson->GetNDaughters()));
@@ -511,7 +553,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
   AliVParticle *photon0 = (AliVParticle *) mcevent->GetTrack(iPhoton0);
   AliVParticle *photon1 = (AliVParticle *) mcevent->GetTrack(iPhoton1);
     
-  //Check if both daughters are photons
+  // Check if both daughters are photons
   if(photon0->PdgCode() != 22 && photon1->PdgCode()!=22)
   {
     AliWarning(Form("Not overlapped. PDG:  daughter 1 = %d, of daughter 2 = %d",photon0->PdgCode(),photon1->PdgCode()));
@@ -520,7 +562,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
   
   AliDebug(2,Form("Daughter labels : photon0 = %d, photon1 = %d",iPhoton0,iPhoton1));
   
-  //Check if both photons contribute to the cluster
+  // Check if both photons contribute to the cluster
   Bool_t okPhoton0 = kFALSE;
   Bool_t okPhoton1 = kFALSE;
   
@@ -534,7 +576,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
     
     if(labels[i]<0) continue;
     
-    //If we already found both, break the loop
+    // If we already found both, break the loop
     if(okPhoton0 && okPhoton1) break;
     
     Int_t index = 	labels[i];
@@ -549,8 +591,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
       continue;
     }
     
-    //Trace back the mother in case it was a conversion
-    
+    // Trace back the mother in case it was a conversion
     if(index >= mcevent->GetNumberOfTracks())
     {
       AliWarning(Form("Particle index %d larger than size of list %d!!",index,mcevent->GetNumberOfTracks()));
@@ -561,9 +602,9 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
     Int_t tmpindex = daught->GetMother();
     AliDebug(3,Form("Conversion? : mother %d",tmpindex));
     
-    while(tmpindex>=0){
-      
-      //MC particle of interest is the mother
+    while(tmpindex>=0)
+    {
+      // MC particle of interest is the mother
       AliDebug(3,Form("\t parent index %d",tmpindex));
       daught   =  mcevent->GetTrack(tmpindex);
       //printf("tmpindex %d\n",tmpindex);
@@ -640,6 +681,7 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
   {
     AliVCluster * cluster = (AliVCluster*) arrayCluster->At(iclus);
     //printf("\t \t ** Cluster %d, nlabels %d\n",iclus,cluster->GetNLabels());
+    
     for(UInt_t ilab = 0; ilab< cluster->GetNLabels(); ilab++)
     {
       Int_t label = cluster->GetLabels()[ilab];
