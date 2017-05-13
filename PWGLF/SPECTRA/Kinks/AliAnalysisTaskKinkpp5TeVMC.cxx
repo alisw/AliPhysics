@@ -39,6 +39,8 @@
 #include "iostream"
 #include "AliMultSelection.h"
 
+
+
 ClassImp(AliAnalysisTaskKinkpp5TeVMC)
 
 //________________________________________________________________________
@@ -504,6 +506,11 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
   //initialized values
 	Float_t dca1[2], cov1[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
 	
+
+
+
+
+
 	AliVEvent *event = InputEvent();
   	if (!event) {
      	Printf("ERROR: Could not retrieve event");
@@ -848,7 +855,6 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
     	}
 //	
         Int_t indexKinkDau=trackD->GetKinkIndex(0);
-//if (myfile.is_open()) myfile<<indexKinkDau<<endl;
 // daughter kink 
 //        AliESDkink *kink=esd->GetKink(TMath::Abs(indexKinkDau)-1);
       	if ( indexKinkDau > 0 )    {
@@ -863,6 +869,10 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
 
  }
    }
+
+
+
+
 
 	for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
@@ -1021,7 +1031,6 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
 
 	fptKink->Fill(motherMfromKink.Pt()); /// pt from kink
            Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
-//if (myfile.is_open()) 	myfile<<kinkAngle<<endl;
 
  	if(  (TMath::Abs(rapiditK )) > 0.5 ) continue;  
         if ( (track->Pt())<.200)continue;  
@@ -1295,7 +1304,8 @@ Float_t AliAnalysisTaskKinkpp5TeVMC::GetVertex(AliESDEvent* aod) const
 void AliAnalysisTaskKinkpp5TeVMC::Terminate(Option_t *) 
 {
   // Draw result to the screen
-  
+  // Called once at the end of the query
+
 }
 
 //-------------primary vertex-------
