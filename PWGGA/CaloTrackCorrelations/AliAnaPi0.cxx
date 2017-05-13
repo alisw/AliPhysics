@@ -401,8 +401,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   //
   InitCaloParameters(); // See AliCaloTrackCorrBaseClass
   
-  Int_t totalSM = fLastModule-fFirstModule+1;
-  
+  //Int_t totalSM = fLastModule-fFirstModule+1;
   //printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
   
   // Cell column-row histograms, see base class for data members setting

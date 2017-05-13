@@ -225,7 +225,6 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
   FillVertexArray();
   
   Int_t iParticle  = 0 ;
-  Double_t charge  = 0.;
   Int_t nparticles = GetMC()->GetNumberOfTracks() ;
   
   if(fOnlyGeneratorParticles) nparticles=GetMC()->GetNumberOfPrimaries();

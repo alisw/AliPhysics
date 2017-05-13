@@ -886,9 +886,7 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
           }
           
           track->PropagateToDCA(GetReader()->GetInputEvent()->GetPrimaryVertex(),bz,100.,dca,covar);
-          
-          Float_t trackDCA = dca[0];
-          
+                    
           if(dcaCons == -999)
           {
             fhPtTrackInPerpConeDCA[0]->Fill(track->Pt(),  dca[0], GetEventWeight());
@@ -1827,9 +1825,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
         }
         
         track->PropagateToDCA(GetReader()->GetInputEvent()->GetPrimaryVertex(),bz,100.,dca,covar);
-        
-        Float_t trackDCA = dca[0];
-        
+                
         if(dcaCons == -999)
         {
           fhPtTrackInConeDCA[0]->Fill(pTtrack,  dca[0], GetEventWeight());
