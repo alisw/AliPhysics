@@ -48,10 +48,10 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   
   /// Background simulation
-  void     SideBandBackground(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout);
+  void     SideBandBackground(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout, TH1F** histlist);
   void     WrongSignForDStar(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
     /// histos
-  void   FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout);
+  void   FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout,TH1F** histlist);
   void     DefineHistograms();
   Int_t CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const;
   void CreateImpactParameterHistos();
@@ -78,7 +78,12 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   
   AliAnalysisTaskSEDStarSpectra(const AliAnalysisTaskSEDStarSpectra &source);
   AliAnalysisTaskSEDStarSpectra& operator=(const AliAnalysisTaskSEDStarSpectra& source); 
-  
+
+  enum{kDzMass, kDstarMass, kDeltaMass,kptMass, ketaMass,kDzSgn, kDstarSgn, kDeltaSgn,kptSgn, ketaSgn,kDzBkg, kDstarBkg, kDeltaBkg,kptBkg, ketaBkg, kSideBandMass, kWrongSignMass};
+
+  TH1F** fAllhist;               // Histogramlist all
+  TH1F** fPIDhist;               // Histogramlist with PID
+  Int_t fNPtBins;                // Number of ptbins specified in the cutfile
   Int_t  fEvents;                ///  n. of events
   Int_t  fAnalysis;		 ///  0: HD;	1: UU;
   Double_t fD0Window;		 ///  select width on D0Mass
@@ -106,7 +111,7 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   THnSparseF *fHistMassPtImpParTCDs[5];//!<! histograms for impact paramter studies
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDStarSpectra,9); /// class for D* spectra
+  ClassDef(AliAnalysisTaskSEDStarSpectra,10); /// class for D* spectra
   /// \endcond
 };
 

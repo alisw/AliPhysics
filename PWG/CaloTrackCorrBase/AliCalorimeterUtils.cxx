@@ -34,6 +34,7 @@
 #include "AliOADBContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliLog.h"
 
 // --- Detector ---
@@ -1772,6 +1773,48 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliA
       if(status > 0) ok = kFALSE;
     }
 
+    return ok ;
+  }
+  
+  return kFALSE ;
+}
+
+//______________________________________________________________________________________________________
+/// Check that a MC AOD is in the calorimeter acceptance.
+//______________________________________________________________________________________________________
+Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliVParticle* particle)
+{  
+  if(!particle || (calo!=AliFiducialCut::kEMCAL && calo!=AliFiducialCut::kPHOS)) return kFALSE ;
+  
+  if( (!IsPHOSGeoMatrixSet () && calo == AliFiducialCut::kPHOS ) ||
+      (!IsEMCALGeoMatrixSet() && calo == AliFiducialCut::kEMCAL)   )
+  {
+    AliFatal(Form("Careful Geo Matrix for calo <%d> is not set, use AliFidutialCut instead",calo));
+    return kFALSE ;
+  }
+  
+  Float_t phi = particle->Phi();
+  if(phi < 0) phi+=TMath::TwoPi();
+  
+  if(calo == AliFiducialCut::kPHOS )
+  {
+    Int_t mod = 0 ;
+    Double_t x = 0, z = 0 ;
+    Double_t vtx[]={ particle->Xv(), particle->Yv(), particle->Zv() } ;
+    return GetPHOSGeometry()->ImpactOnEmc(vtx, particle->Theta(), phi, mod, z, x) ;
+  }
+  else if(calo == AliFiducialCut::kEMCAL)
+  {
+    Int_t absID = 0 ;
+    Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
+    if(ok)
+    {
+      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
+      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
+      if(status > 0) ok = kFALSE;
+    }
+    
     return ok ;
   }
   

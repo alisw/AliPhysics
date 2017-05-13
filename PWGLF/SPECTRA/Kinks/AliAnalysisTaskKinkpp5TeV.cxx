@@ -1,4 +1,5 @@
 //Date:11/05/2017
+
 //Author :: Nur Hussain and Buddhadeb Bhattacharjee, Gauhati University 
 // Thanks to Martha Spyropoulou-Stassinaki for her suggestions for the modification
 //purpose::Charged kaon identification using "Kink topology" for pp-5.02 TeV
@@ -394,21 +395,6 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 //	 fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
      	fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 
-// V0 trigger
-/*
-
- // Physics selection
-  AliAnalysisManager *mgr= AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *hdr=(AliInputEventHandler*)mgr->GetInputEventHandler();
-  UInt_t maskIsSelected = hdr->IsEventSelected();
-  Bool_t isSelected = (maskIsSelected & AliVEvent::kMB);
-  if (!isSelected) return;
-*/
-//fESD = dynamic_cast<AliESDEvent *>(InputEvent());
-//...
-//Float_t cent = -999;
-//AliMultSelection *fMultSel = (AliMultSelection *) fESD->FindListObject("MultSelection");
-//Float_t cent = fMultSel->GetMultiplicityPercentile("V0M", kTRUE); //fEvtMult is initialized to -999
 
 
 //centrality for Pb-Pb 
@@ -461,7 +447,6 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
     	}
 //	
         Int_t indexKinkDau=trackD->GetKinkIndex(0);
-//if (myfile.is_open()) myfile<<indexKinkDau<<endl;
 // daughter kink 
 //        AliESDkink *kink=esd->GetKink(TMath::Abs(indexKinkDau)-1);
       	if ( indexKinkDau > 0 )    {
@@ -606,7 +591,6 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 
 	fptKink->Fill(motherMfromKink.Pt()); /// pt from kink
            Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
-//if (myfile.is_open()) 	myfile<<kinkAngle<<endl;
 
  	if(  (TMath::Abs(rapiditK )) > 0.5 ) continue;  
         if ( (track->Pt())<.200)continue;  
@@ -774,7 +758,6 @@ Float_t AliAnalysisTaskKinkPbPb::GetVertex(AliESDEvent* aod) const
 void AliAnalysisTaskKinkpp5TeV::Terminate(Option_t *) 
 {
   // Draw result to the screen
-  
 }
 
 

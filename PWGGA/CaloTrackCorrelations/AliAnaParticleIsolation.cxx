@@ -21,7 +21,6 @@
 //#include <TH3F.h>
 #include <TClass.h>
 #include <TH2F.h>
-#include "TParticle.h"
 #include "TDatabasePDG.h"
 
 // --- Analysis system ---
@@ -32,7 +31,7 @@
 #include "AliFiducialCut.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliNeutralMesonSelection.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliVTrack.h"
@@ -1624,30 +1623,14 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     
     if( IsDataMC() && GetMC() )
     {
-      Int_t partInConeCharge = 0, partInConePDG = 0;
-      Bool_t physPrimary = kFALSE;
       Int_t trackLabel = TMath::Abs(track->GetLabel());
       
-      if( GetReader()->ReadStack() )
-      {
-        TParticle  * mcpartESD = GetMC()->Particle(trackLabel);
-        if( mcpartESD ) 
-        {
-          partInConePDG    = mcpartESD->GetPdgCode();
-          partInConeCharge = TMath::Abs((Int_t) TDatabasePDG::Instance()->GetParticle(partInConePDG)->Charge());
-          physPrimary      = mcpartESD->IsPrimary(); // Check?
-        }
-      }
-      else
-      {
-        AliAODMCParticle * mcpartAOD = (AliAODMCParticle *) GetMC()->GetTrack(trackLabel);
-        if( mcpartAOD )  
-        {
-          partInConeCharge = TMath::Abs(mcpartAOD->Charge());
-          partInConePDG    = mcpartAOD->GetPdgCode();
-          physPrimary      = mcpartAOD->IsPhysicalPrimary();
-        }
-      }
+      AliVParticle * mcpart = GetMC()->GetTrack(trackLabel);
+      if( !mcpart ) continue;
+      
+      Int_t  partInConeCharge = TMath::Abs(mcpart->Charge());
+      Int_t  partInConePDG    = mcpart->PdgCode();
+      Bool_t physPrimary      = mcpart->IsPhysicalPrimary();
       
       if ( partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
       {
@@ -7177,8 +7160,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   Int_t    mcIndex   =  0 ;
   Int_t    nprim     = GetMC()->GetNumberOfTracks();
   
-  TParticle        * primStack = 0;
-  AliAODMCParticle * primAOD   = 0;
+  AliVParticle * primary = 0;
   
   // Calorimeter cluster merging angle
   // angle smaller than 3 cells  6 cm (0.014) in EMCal, 2.2 cm in PHOS (0.014*(2.2/6))
@@ -7199,54 +7181,30 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
-    if(GetReader()->ReadStack())
+    
+    primary = GetMC()->GetTrack(i) ;
+    if(!primary)
     {
-      primStack = GetMC()->Particle(i) ;
-      if(!primStack)
-      {
-        AliWarning("ESD primaries pointer not available!!");
-        continue;
-      }
+      AliWarning("primaries pointer not available!!");
+      continue;
+    }
       
-      pdg    = primStack->GetPdgCode();
-      status = primStack->GetStatusCode();
+      pdg    = primary->PdgCode();
+      status = primary->MCStatusCode();
       
       // Protection against floating point exception
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
-          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
-          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
+      if ( primary->E() == TMath::Abs(primary->Pz()) || 
+          (primary->E() - primary->Pz()) < 1e-3      ||
+          (primary->E() + primary->Pz()) < 0           )  continue ; 
       
       //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
-      //       primStack->GetName(), primStack->GetPdgCode());
+      //       primary->GetName(), primary->GetPdgCode());
       
-      //photonY   = 0.5*TMath::Log((prim->Energy()+prim->Pz())/(prim->Energy()-prim->Pz())) ;
-      
-      //Photon kinematics
-      primStack->Momentum(fMomentum);
-    }
-    else
-    {
-      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
-      if(!primAOD)
-      {
-        AliWarning("AOD primaries pointer not available!!");
-        continue;
-      }
-      
-      pdg    = primAOD->GetPdgCode();
-      status = primAOD->GetStatus();
-      
-      // Protection against floating point exception
-      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
-          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
-          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
-      
-      //photonY   = 0.5*TMath::Log((prim->Energy()+prim->Pz())/(prim->Energy()-prim->Pz())) ;
+      //photonY   = 0.5*TMath::Log((primary->E()+primary->Pz())/(primary->Energy()-prim->Pz())) ;
       
       //Photon kinematics
-      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
-    }
-    
+      primary->Momentum(fMomentum);
+        
     // Select only photons in the final state
     if(pdg != 22  && pdg!=111 && pdg !=221) continue ;
     
@@ -7270,10 +7228,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     // Check if photons hit the Calorimeter acceptance
     if(IsRealCaloAcceptanceOn() && fIsoDetector!=kCTS) // defined on base class
     {
-      if(GetReader()->ReadStack()          &&
-         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fIsoDetector, primStack)) continue ;
-      if(GetReader()->ReadAODMCParticles() &&
-         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fIsoDetector, primAOD  )) continue ;
+      if ( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fIsoDetector, primary) ) continue ;
     }
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
@@ -7362,8 +7317,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     // ////////////////////ISO MC/////////////////////////
     Double_t sumPtInCone = 0; Double_t dR=0. ;
     
-    TParticle        * mcisopStack = 0;
-    AliAODMCParticle * mcisopAOD   = 0;
+    AliVParticle * mcisop = 0;
     
     Int_t partInConeStatus = -1, partInConeMother = -1;
     Double_t partInConePt = 0, partInConeE = 0, partInConeEta = 0, partInConePhi = 0;
@@ -7380,62 +7334,33 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         continue;
       }
       
-      if( GetReader()->ReadStack() )
-      {
-        mcisopStack = GetMC()->Particle(ip);
-        if( !mcisopStack ) continue;
-        partInConeStatus = mcisopStack->GetStatusCode();
-        
-        // Consider only final state particles, but this depends on generator,
-        // status 1 is the usual one, in case of not being ok, leave the possibility
-        // to not consider this.
-        if( partInConeStatus  > 1 &&
-            GetMCAnalysisUtils()->GetMCGenerator()!= AliMCAnalysisUtils::kBoxLike ) continue ;
-        
-        // Protection against floating point exception
-        if ( mcisopStack->Energy() == TMath::Abs(mcisopStack->Pz()) ||
-            (mcisopStack->Energy() - mcisopStack->Pz()) < 1e-3      ||
-              mcisopStack->Pt() < 0.01  || mcisopStack->Eta() > 10  || 
-            (mcisopStack->Energy() + mcisopStack->Pz()) < 0           )  continue ; 
-        
-        partInConeMother = mcisopStack->GetMother(0);
-        partInConePt     = mcisopStack->Pt();
-        partInConeE      = mcisopStack->Energy();
-        partInConeEta    = mcisopStack->Eta();
-        partInConePhi    = mcisopStack->Phi();
-        partInConePDG    = mcisopStack->GetPdgCode();
-        partInConeCharge = TMath::Abs((Int_t) TDatabasePDG::Instance()->GetParticle(partInConePDG)->Charge());
-        physPrimary      = mcisopStack->IsPrimary(); // Check?
-        mcisopStack->Momentum(fMomIso);
-      }
-      else
-      {
-        mcisopAOD   = (AliAODMCParticle *) GetMC()->GetTrack(ip);
-        if( !mcisopAOD )   continue;
-        
-        partInConeStatus = mcisopAOD->GetStatus();
-        // Consider only final state particles, but this depends on generator,
-        // status 1 is the usual one, in case of not being ok, leave the possibility
-        // to not consider this.
-        if( partInConeStatus > 1 &&
-            GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) continue ;
-        
-        // Protection against floating point exception
-        if ( mcisopAOD->E() == TMath::Abs(mcisopAOD->Pz())   || 
-            (mcisopAOD->E() - mcisopAOD->Pz()) < 1e-3        ||
-             mcisopAOD->Pt() < 0.01 || mcisopAOD->Eta() > 10 ||
-            (mcisopAOD->E() + mcisopAOD->Pz()) < 0             )  continue ; 
-        
-        partInConeMother = mcisopAOD->GetMother();
-        partInConePt     = mcisopAOD->Pt();
-        partInConeE      = mcisopAOD->E();
-        partInConeEta    = mcisopAOD->Eta();
-        partInConePhi    = mcisopAOD->Phi();
-        partInConeCharge = TMath::Abs(mcisopAOD->Charge());
-        partInConePDG    = mcisopAOD->GetPdgCode();
-        physPrimary      = mcisopAOD->IsPhysicalPrimary();
-        fMomIso.SetPxPyPzE(mcisopAOD->Px(),mcisopAOD->Py(),mcisopAOD->Pz(),mcisopAOD->E());
-      }
+      mcisop = GetMC()->GetTrack(ip);
+      if( !mcisop ) continue;
+      
+      partInConeStatus = mcisop->MCStatusCode();
+      
+      // Consider only final state particles, but this depends on generator,
+      // status 1 is the usual one, in case of not being ok, leave the possibility
+      // to not consider this.
+      if( partInConeStatus  > 1 &&
+         GetMCAnalysisUtils()->GetMCGenerator()!= AliMCAnalysisUtils::kBoxLike ) continue ;
+      
+      // Protection against floating point exception
+      if ( mcisop->E() == TMath::Abs(mcisop->Pz())    ||
+          (mcisop->E() - mcisop->Pz()) < 1e-3         ||
+          mcisop->Pt() < 0.01  || mcisop->Eta() > 10  || 
+          (mcisop->E() + mcisop->Pz()) < 0               )  continue ; 
+      
+      partInConeMother = mcisop->GetMother();
+      partInConePt     = mcisop->Pt();
+      partInConeE      = mcisop->E();
+      partInConeEta    = mcisop->Eta();
+      partInConePhi    = mcisop->Phi();
+      partInConePDG    = mcisop->PdgCode();
+      //partInConeCharge = TMath::Abs((Int_t) TDatabasePDG::Instance()->GetParticle(partInConePDG)->Charge());
+      partInConeCharge = TMath::Abs(mcisop->Charge());
+      physPrimary      = mcisop->IsPhysicalPrimary(); 
+      mcisop->Momentum(fMomIso);
       
       if( partInConeMother == i ) continue;
       
@@ -7461,10 +7386,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           if(IsRealCaloAcceptanceOn()) // defined on base class
           {
-            if(GetReader()->ReadStack()          &&
-               !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), mcisopStack)) continue ;
-            if(GetReader()->ReadAODMCParticles() &&
-               !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), mcisopAOD  )) continue ;
+            if ( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), mcisop) ) continue ;
           }
         }
       }

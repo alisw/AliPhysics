@@ -14,9 +14,8 @@
  **************************************************************************/
 
 // --- ROOT system ---
-#include "TParticle.h"
-#include "TH2F.h"
-#include "TDatabasePDG.h"
+#include <TH2F.h>
+#include <TDatabasePDG.h>
 
 //---- AliRoot system ----
 #include "AliAnaChargedParticles.h"
@@ -25,7 +24,7 @@
 #include "AliMCEvent.h"
 #include "AliFiducialCut.h"
 #include "AliVTrack.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliAODTrack.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -145,63 +144,34 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
   Int_t    pdg   =  0 ;
   Int_t    nprim = GetMC()->GetNumberOfTracks() ;
 
-  TParticle        * primStack = 0;
-  AliAODMCParticle * primAOD   = 0;
+  AliVParticle  * primary = 0;
   
   for(Int_t i=0 ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
-    if(GetReader()->ReadStack())
+    primary = GetMC()->GetTrack(i) ;
+    if ( !primary )
     {
-      primStack = GetMC()->Particle(i) ;
-      if(!primStack)
-      {
-        AliWarning("ESD primaries pointer not available!!");
-        continue;
-      }
-      
-      if( primStack->GetStatusCode() != 1 ) continue;
-
-      Int_t charge = (Int_t )TDatabasePDG::Instance()->GetParticle(primStack->GetPdgCode())->Charge();
-      if( TMath::Abs(charge) == 0 ) continue;
-
-      pdg  = TMath::Abs(primStack->GetPdgCode());
-      
-      // Protection against floating point exception
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
-          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
-          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
-      
-      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
-      //       prim->GetName(), prim->GetPdgCode());
-      
-      //Charged kinematics
-      primStack->Momentum(fMomentum);
+      AliWarning("Primaries pointer not available!!");
+      continue;
     }
-    else
-    {
-      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
-      if(!primAOD)
-      {
-        AliWarning("AOD primaries pointer not available!!");
-        continue;
-      }
-
-      if( primAOD->GetStatus() != 1 ) continue;
-      
-      if(TMath::Abs(primAOD->Charge()) == 0 ) continue;
-      
-      pdg = TMath::Abs(primAOD->GetPdgCode());
-      
-      // Protection against floating point exception
-      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
-          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
-          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
-      
-      //Charged kinematics
-      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
-    }
+    
+    if( primary->MCStatusCode() != 1 ) continue;
+    
+    //Int_t charge = (Int_t )TDatabasePDG::Instance()->GetParticle(primary->GetPdgCode())->Charge();
+    //  if( TMath::Abs(charge) == 0 ) continue;
+    if(TMath::Abs(primary->Charge()) == 0 ) continue;
+    
+    pdg  = TMath::Abs(primary->PdgCode());
+    
+    // Protection against floating point exception
+    if ( primary->E() == TMath::Abs(primary->Pz()) || 
+        (primary->E() - primary->Pz()) < 1e-3      ||
+        (primary->E() + primary->Pz()) < 0           )  continue ; 
+    
+    // Charged kinematics
+    primary->Momentum(fMomentum);
     
     Int_t mcType = kmcUnknown;
     if     (pdg==211 ) mcType = kmcPion;
@@ -1493,16 +1463,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       
       if(label >= 0)
       {
-        if( GetReader()->ReadStack() && label < GetMC()->GetNumberOfTracks())
-        {
-          TParticle * mom = GetMC()->Particle(label);
-          mompdg =TMath::Abs(mom->GetPdgCode());
-        }
-        else if(GetReader()->ReadAODMCParticles())
-        {
-          AliAODMCParticle * aodmom = (AliAODMCParticle*) GetMC()->GetTrack(label);
-          mompdg =TMath::Abs(aodmom->GetPdgCode());
-        }
+        AliVParticle * mom = GetMC()->GetTrack(label);
+        mompdg =TMath::Abs(mom->PdgCode());
       }
       
       Int_t mcType = kmcUnknown;
