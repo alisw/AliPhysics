@@ -50,6 +50,7 @@
 #include "TEntryList.h"
 #include "THn.h"
 #include "TLegend.h"
+#include "AliSysInfo.h"
 
 ClassImp(AliTreePlayer)
 
@@ -889,6 +890,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   Int_t nExpressions=hisString.CountChar(':')+hisString.CountChar(';')+1;
   TObjArray * formulaArray   = new TObjArray(nExpressions);    // array of all expressions  - OWNER
   TString queryString = "";
+  Int_t hisSizeFull=0;
   //
   //  1.) Analyze formula, book list of TObjString
   //
@@ -949,6 +951,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   //
   Int_t tNumber=-1;
   for (Int_t bEntry=firstEntry; bEntry<lastEntry; bEntry+=chunkSize){  // chunks loop
+    AliSysInfo::AddStamp(TString::Format("Begin.%s",tree->GetName()).Data(),0, bEntry);
     Int_t toQuery=TMath::Min(chunkSize, lastEntry-bEntry);
     Int_t qLength = tree->Draw(queryString,defaultCut,"goffpara",toQuery, bEntry); // query varaibles
     if (qLength>tree->GetEstimate()){
@@ -1005,13 +1008,21 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 	}
 	THnF * phis = new THnF(hName.Data(),hName.Data(), hisDims[iHis],nBins, xMin,xMax);
 	hisArray->AddAt(phis,iHis);
+	AliSysInfo::AddStamp(hName.Data(),10, phis->GetNbins());
+	if (verbose&0x1) {
+	  ::Info("AliTreePlayer::MakeHistograms","%s: size=%d",hisDescription.Data(), phis->GetNbins());
+	}
+	hisSizeFull+= phis->GetNbins();
 	for (Int_t iDim=0;iDim<hisDims[iHis]; iDim++){
 	  phis->GetAxis(iDim)->SetName(varArray->At(iDim)->GetName());	  
 	  phis->GetAxis(iDim)->SetTitle(varArray->At(iDim)->GetName());	  
 	  TNamed *axisTitle=TStatToolkit::GetMetadata(tree,TString::Format("%s.AxisTitle",varArray->At(iDim)->GetName()).Data());
 	  if (axisTitle)  phis->GetAxis(iDim)->SetTitle(axisTitle->GetTitle());	
 	}
-      }      
+      }
+      if (verbose&0x1) {
+	::Info("AliTreePlayer::MakeHistograms","Total size=%d",hisSizeFull);
+      }
     }
     //    2.3 fill histograms
     Double_t values[kMaxDim];
@@ -1039,7 +1050,8 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 	Double_t weight=(indexW<0)? 1: tree->GetVal(indexW)[cEvent]; 
 	if (weight>0) his->Fill(values,weight);
       }
-    }    
+    }
+    AliSysInfo::AddStamp(TString::Format("End.%s",tree->GetName()).Data(),0, bEntry);    
   }
   //
   delete hisDescriptionArray;
