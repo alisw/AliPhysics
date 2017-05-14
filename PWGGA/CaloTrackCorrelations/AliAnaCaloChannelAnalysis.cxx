@@ -792,7 +792,7 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 
 	if(crit==2 && inputBins!=-1)
 	{
-		// calculate and print the "median"
+		//..calculate and print the "median"
 		Int_t numBins = inhisto->GetXaxis()->GetNbins();
 		Double_t *x = new Double_t[numBins];
 		Double_t* y = new Double_t[numBins];
@@ -807,6 +807,7 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 		//..range will be too large -> reduce the range
 		if(medianOfHisto*10<dmaxVal)
 		{
+			//cout<<"- - - median too far away from max range"<<endl;
 			dmaxVal=medianOfHisto+0.2*(dmaxVal-medianOfHisto);  //..reduce the distance between max and mean drastically to cut out the outliers
 		}
 		dnbins=dmaxVal-dminVal;
@@ -919,24 +920,21 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//. . .fit histogram
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	Int_t higherbin=0,i;
-	for(i = 2; i <= dnbins; i++)
-	{
-		if(distrib->GetBinContent(higherbin) < distrib->GetBinContent(i))  higherbin = i ;
-	}
+
+	//..to exclude first 2 bins from max finding
+	distrib->GetXaxis()->SetRangeUser(distrib->GetBinCenter(2),distrib->GetBinCenter(dnbins));
 	Double_t maxDistr  = distrib->GetMaximum();
-	Int_t    maxBin    = distrib->FindBin(maxDistr);
+	Int_t    maxBin    = distrib->GetMaximumBin();
 	Double_t maxCenter = distrib->GetBinCenter(maxBin);
 
-	maxBin=higherbin;
 	//..good range is around the max value as long as the
 	//..bin content is larger than 2 entries
-	for(i = maxBin ; i<=dnbins ; i++)
+	for(Int_t i = maxBin ; i<=dnbins ; i++)
 	{
 		if(distrib->GetBinContent(i)<2) break ;
 		goodmax = distrib->GetBinCenter(i);
 	}
-	for(i = maxBin ; i>2 ; i--)
+	for(Int_t i = maxBin ; i>2 ; i--)
 	{
 		if(distrib->GetBinContent(i)<2) break ;
 		goodmin = distrib->GetBinLowEdge(i);
@@ -957,7 +955,7 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 	TF1 *fit2 = new TF1("fit2", "gaus",minFitRange,maxFitRange);
 	//..start the fit with a mean of the highest value
 	fit2->SetParLimits(0,0,maxDistr); //..do not allow negative ampl values
-	fit2->SetParameter(1,maxCenter);
+	fit2->SetParameter(1,maxCenter);  //..set the start value for the mean
 	fit2->SetParLimits(1,0,dmaxVal);  //..do not allow negative mean values
 
 	//..ELI - TO DO: eventually fit with TRD and without TRD seperatley
@@ -1160,11 +1158,8 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	aliceTwikiTable = Form("%s/%s/%s_TwikiTable_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial); ;
 
 	cout<<"    o Final results o "<<endl;
-
-
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Create a masked version of the Amp vs. ID and Time vs. ID histograms
-	//..And Fill the histograms with the flag information
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	for (Int_t cell = 0; cell < fNoOfCells; cell++)
 	{
@@ -1186,10 +1181,7 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 				cellTime_masked->SetBinContent(time,cell+1,0);
 			}
 		}
-		fhCellFlag->SetBinContent(cell+1,fFlag[cell]);
-		fhCellWarm->SetBinContent(cell+1,fWarmCell[cell]);
 	}
-
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Plot some summary canvases
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -1246,20 +1238,6 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	projTime->DrawCopy("same hist");
 	c1_proj->Update();
 
-	TCanvas *c2 = new TCanvas("CellFlag","summary of cell flags",1200,800);
-	c2->ToggleEventStatus();
-	c2->Divide(1,2);
-	c2->cd(1);
-	fhCellFlag->SetTitle("cell flag");
-	fhCellFlag->SetXTitle("Abs. Cell Id");
-	fhCellFlag->SetYTitle("flag by which cell was excluded");
-	fhCellFlag->DrawCopy("hist");
-	c2->cd(2);
-	fhCellWarm->SetTitle("Warm cells");
-	fhCellWarm->SetXTitle("Abs. Cell Id");
-	fhCellWarm->SetYTitle("warm=1");
-	fhCellWarm->DrawCopy("hist");
-	c2->Update();
 
 	//..Scale the histogtams by the number of events
 	//..so that they are more comparable for a run-by-run
@@ -1352,6 +1330,28 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	if(fTestRoutine==1)SaveBadCellsToPDF(2,goodCells) ;   //..Special case all good cells to check, should all have a flag naming them *Candidate*
 	if(fTestRoutine==1)SaveBadCellsToPDF(20,goodCellsRatio) ;   //..Special case all good cells to check, should all have a flag naming them *Candidate*
 
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Fill the histograms with the flag information
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	for (Int_t cell = 0; cell < fNoOfCells; cell++)
+	{
+		fhCellFlag->SetBinContent(cell+1,fFlag[cell]);
+		fhCellWarm->SetBinContent(cell+1,fWarmCell[cell]);
+	}
+	TCanvas *c2 = new TCanvas("CellFlag","summary of cell flags",1200,800);
+	c2->ToggleEventStatus();
+	c2->Divide(1,2);
+	c2->cd(1);
+	fhCellFlag->SetTitle("cell flag");
+	fhCellFlag->SetXTitle("Abs. Cell Id");
+	fhCellFlag->SetYTitle("flag by which cell was excluded");
+	fhCellFlag->DrawCopy("hist");
+	c2->cd(2);
+	fhCellWarm->SetTitle("Warm cells");
+	fhCellWarm->SetXTitle("Abs. Cell Id");
+	fhCellWarm->SetYTitle("warm=1");
+	fhCellWarm->DrawCopy("hist");
+	c2->Update();
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Plot the 2D distribution of cells by flag
