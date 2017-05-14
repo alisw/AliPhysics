@@ -1590,6 +1590,10 @@ private:
   TH1D *fZDCVtxFitCenProjHist[4][3]; //!
   TH3D *fZDCVtxFitHist2[4]; //!
   TH1D *fZDCVtxFitCenProjHist2[4][3]; //!
+  TH3D *fZDCBinsRunVtx[10][4]; //!
+  TH1D *fZDCBinsRunVtxProjHist[10][4][3]; //!
+  TH3D *fZDCBinsCenRefMult[10]; //!
+  
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
   TH1D *fZDCESEMaxHist[2]; //!
