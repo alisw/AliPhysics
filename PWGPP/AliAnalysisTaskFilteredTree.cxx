@@ -1041,8 +1041,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         isOKtrackInnerC&= ConstrainTrackInner(trackInnerC,vtxESD,track->GetMass(),b);
         isOKtrackInnerC&= trackInnerC->Rotate(track->GetAlpha());
         isOKtrackInnerC&= trackInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
-      } 
-
+      }       
       //
       // calculate chi2 between vi and vj vectors
       // with covi and covj covariance matrices
@@ -1082,8 +1081,17 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         chi2trackC = deltatrackC*mat2trackC; 
         //chi2trackC.Print();
       }
-
-
+      //
+      // Find nearest combined and ITS standaalone tracks
+      AliExternalTrackParam paramITS;     // nearest ITS track  -   chi2 distance at vertex
+      AliExternalTrackParam paramITSC;    // nearest ITS track  -   to constrained track   chi2 distance at vertex
+      AliExternalTrackParam paramComb;    // nearest comb. tack -   chi2 distance at inner wall
+      Int_t indexNearestITS   = GetNearestTrack((trackInnerV!=NULL)? trackInnerV:track, iTrack, esdEvent,0,0,paramITS); 
+      if (indexNearestITS<0)  indexNearestITS   = GetNearestTrack((trackInnerV!=NULL)? trackInnerV:track, iTrack, esdEvent,2,0,paramITS);
+      Int_t indexNearestITSC  = GetNearestTrack((trackInnerC!=NULL)? trackInnerC:track, iTrack, esdEvent,0,0,paramITSC);  
+      if (indexNearestITSC<0)  indexNearestITS   = GetNearestTrack((trackInnerC!=NULL)? trackInnerC:track, iTrack, esdEvent,2,0,paramITSC);
+      Int_t indexNearestComb  = GetNearestTrack(track->GetInnerParam(), iTrack, esdEvent,1,1,paramComb);  
+      
       //
       // Propagate ITSout to TPC inner wall 
       // and calculate chi2 distance to track (InnerParams)
@@ -1463,6 +1471,16 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             "chi2InnerC="<<chi2trackC(0,0)<<        // chi2s  of tracks TPCinner to the combined
             "chi2OuterITS="<<chi2OuterITS(0,0)<<    // chi2s  of tracks TPC at inner wall to the ITSout
             "centralityF="<<centralityF;
+	  // info for 2 track resolution studies and matching efficency studies 
+	  //
+	  (*fTreeSRedirector)<<"highPt"<<
+	    "paramITS.="<<&paramITS<<                // nearest ITS track  -   chi2 distance at vertex
+	    "paramITSC.="<<&paramITSC<<              // nearest ITS track  -  to constrained track   chi2 distance at vertex
+	    "paramComb.="<<&paramComb<<              // nearest comb. tack -   chi2 distance at inner wall
+	    "indexNearestITS="<<indexNearestITS<<    // index of  nearest ITS track
+	    "indexNearestITSC="<<indexNearestITSC<<  // index of  nearest ITS track for constrained track
+	    "indexNearestComb="<<indexNearestComb;   // index of  nearest track for constrained track
+
           if (mcEvent){
             static AliTrackReference refDummy;
             if (!refITS) refITS = &refDummy;
@@ -2879,15 +2897,20 @@ void AliAnalysisTaskFilteredTree::ProcessTrackMatch(AliESDEvent *const /*esdEven
 */
 }
 
-Int_t   AliAnalysisTaskFilteredTree::GetNearestTrackAtVertex(AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType){
+Int_t   AliAnalysisTaskFilteredTree::GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType, AliExternalTrackParam & paramNearest){
   //
   // Find track with closest chi2 distance  (assume all track ae propagated to the DCA)
   //   trackType = 0 - find closets ITS standalone
   //               1 - find closest track with TPC
+  //               2 - closest track with ITS and TPC
   //   paramType = 0 - global track
   //               1 - track at inner wall of TPC
   //
   //          
+  if (trackMatch==NULL){
+    ::Error("AliAnalysisTaskFilteredTree::GetNearestTrack","invalid track pointer");
+    return -1;
+  }
   Int_t ntracks=event->GetNumberOfTracks();
   const Double_t ktglCut=0.1;
   const Double_t kqptCut=0.4;
@@ -2898,28 +2921,37 @@ Int_t   AliAnalysisTaskFilteredTree::GetNearestTrackAtVertex(AliExternalTrackPar
   for (Int_t itrack=0; itrack<ntracks; itrack++){
     if (itrack==indexSkip) continue;
     AliESDtrack *ptrack=event->GetTrack(itrack);
-    if (trackType==0 && ptrack->IsOn(0x10)>0)  continue; // looks for track without TPC information
-    if (trackType==1 && ptrack->IsOn(0x10)==0) continue; // looks for tracks with TPC information
-    if (ptrack->GetKinkIndex(0)<0) continue;         // skip kink daughters
-    const AliExternalTrackParam * track=0;
-    if (trackType==0) track=ptrack;
-    if (trackType==1) track=ptrack->GetInnerParam();
+    if (ptrack==NULL) continue;
+    if (trackType==0 && (ptrack->IsOn(0x1)==kFALSE || ptrack->IsOn(0x10)==kTRUE))  continue;     // looks for track without TPC information
+    if (trackType==1 && (ptrack->IsOn(0x10)==kFALSE))   continue;                                // looks for tracks with   TPC information
+    if (trackType==2 && (ptrack->IsOn(0x1)==kFALSE || ptrack->IsOn(0x10)==kFALSE)) continue;      // looks for tracks with   TPC+ITS information
+    
+    if (ptrack->GetKinkIndex(0)<0) continue;              // skip kink daughters
+    const AliExternalTrackParam * track=0;                // 
+    if (paramType==0) track=ptrack;                       // Global track         
+    if (paramType==1) track=ptrack->GetInnerParam();      // TPC only track at inner wall of TPC
+    if (track==NULL) {
+      continue;
+    }
+    // first rough cuts
     // fP3 cut
     if (TMath::Abs((track->GetTgl()-trackMatch->GetTgl()))>ktglCut) continue; 
     // fP4 cut 
     if (TMath::Abs((track->GetSigned1Pt()-trackMatch->GetSigned1Pt()))>kqptCut) continue; 
     // fAlpha cut
-    Double_t alphaDist=TMath::Abs((track->GetAlpha()-trackMatch->GetAlpha()));
+    //Double_t alphaDist=TMath::Abs((track->GetAlpha()-trackMatch->GetAlpha()));
+    Double_t alphaDist=TMath::Abs(TMath::ATan2(track->Py(),track->Px())-TMath::ATan2(trackMatch->Py(),trackMatch->Py()));
     if (alphaDist>TMath::Pi()) alphaDist-=TMath::TwoPi();
     if (alphaDist>kAlphaCut) continue;
     // calculate and extract track with smallest chi2 distance
     AliExternalTrackParam param(*track);
-    param.Rotate(trackMatch->GetAlpha());
-    param.PropagateTo(trackMatch->GetX(),trackMatch->GetBz());
+    if (param.Rotate(trackMatch->GetAlpha())==kFALSE) continue;
+    if (param.PropagateTo(trackMatch->GetX(),trackMatch->GetBz())==kFALSE) continue;
     Double_t chi2=trackMatch->GetPredictedChi2(&param);
     if (chi2<chi2Min){
       indexMin=itrack;
       chi2Min=chi2;
+      paramNearest=param;
     }
   }
   return indexMin;
@@ -3050,7 +3082,8 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   tree->SetAlias("ITSOn0","esdTrack.fITSncls>4&&esdTrack.HasPointOnITSLayer(0)&&esdTrack.HasPointOnITSLayer(1)");
   tree->SetAlias("ITSOn01","esdTrack.fITSncls>3&&(esdTrack.HasPointOnITSLayer(0)||esdTrack.HasPointOnITSLayer(1))");
   tree->SetAlias("nclCut","(esdTrack.GetTPCClusterInfo(3,1)+esdTrack.fTRDncls)>140-5*(abs(esdTrack.fP[4]))");
-  tree->SetAlias("IsPrim4","abs(esdTrack.fD/sqrt(esdTrack.fCdd))<4");
+  tree->SetAlias("IsPrim4","sqrt((esdTrack.fD**2)/esdTrack.fCdd+(esdTrack.fZ**2)/esdTrack.fCzz)<4");
+  tree->SetAlias("IsPrim4TPC","sqrt((esdTrack.fdTPC**2)/esdTrack.fCddTPC+(esdTrack.fzTPC**2)/esdTrack.fCzzTPC)<4");
   
 
   const char * chName[5]={"r#phi","z","sin(#phi)","tan(#theta)", "q/p_{t}"};
@@ -3060,10 +3093,17 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   for (Int_t iPar=0; iPar<5; iPar++){
     tree->SetAlias(TString::Format("covarP%dITS",iPar).Data(),TString::Format("sqrt(esdTrack.fC[%d]+0)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());    
     tree->SetAlias(TString::Format("covarP%d",iPar).Data(),TString::Format("sqrt(%s.fC[%d]+0)",refBranch,AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
-    tree->SetAlias(TString::Format("covarCP%d",iPar).Data(),TString::Format("sqrt(extInnerParamC.fC[%d]+0)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+    tree->SetAlias(TString::Format("covarPC%d",iPar).Data(),TString::Format("sqrt(extInnerParamC.fC[%d]+0)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+    tree->SetAlias(TString::Format("covarP%dNorm",iPar).Data(),TString::Format("sqrt(%s.fC[%d]+0)/sqrt(1+(1*esdTrack.fP[4])**2)/sqrt(1+(1*esdTrack.fP[4])**2)",refBranch,AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+    tree->SetAlias(TString::Format("covarPC%dNorm",iPar).Data(),TString::Format("sqrt(extInnerParamC.fC[%d]+0)/sqrt(1+(5*esdTrack.fP[4])**2)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
 
     tree->SetAlias(TString::Format("deltaP%d",iPar).Data(),TString::Format("(%s.fP[%d]-esdTrack.fCp.fP[%d])",refBranch,iPar,iPar).Data());
     tree->SetAlias(TString::Format("deltaPC%d",iPar).Data(),TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])",iPar,iPar).Data());
+    // rough  normalization of the residual sigma ~ sqrt(1+*k/pt)^2) 
+    // histogramming pt normalized deltas enable us to use wider bins in q/pt and also less bins in deltas 
+    tree->SetAlias(TString::Format("deltaP%dNorm",iPar).Data(),TString::Format("(%s.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(1+(1*esdTrack.fP[4])**2)",refBranch,iPar,iPar).Data());
+    tree->SetAlias(TString::Format("deltaPC%dNorm",iPar).Data(),TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(1.+(5.*esdTrack.fP[4])**2)",iPar,iPar).Data());
+    //
     tree->SetAlias(TString::Format("pullP%d",iPar).Data(),
 		   TString::Format("(%s.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(%s.fC[%d]+esdTrack.fCp.fC[%d])",refBranch,
 				   iPar,iPar,refBranch,AliExternalTrackParam::GetIndex(iPar,iPar),AliExternalTrackParam::GetIndex(iPar,iPar)).Data());

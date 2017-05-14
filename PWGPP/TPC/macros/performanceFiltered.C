@@ -230,27 +230,46 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
   //      return array of histograms
   //
   /*
-    Int_t maxEntries=200000;
+    Int_t maxEntries=200000; 
   */
   Int_t nTracks=chain->GetEntries();
   chain->SetEstimate(chain->GetEntries());
   TString timeRange=TString::Format( "%d,%.0f,%.0f",timeBins,timeStart, timeEnd);
   //
-  TString defaultCut="esdTrack.fTPCncls>60&&esdTrack.IsOn(0x1)>0";
-  const Int_t nqaHistos=14;
+  TString defaultCut="esdTrack.GetTPCClusterInfo(3,1)>60&&esdTrack.IsOn(0x1)>0";
+  TString defaultCutMatch="esdTrack.GetTPCClusterInfo(3,1)>60";
+  const Int_t nqaHistos=23;
   const char * qaHistos[nqaHistos]={"nclITS","nclTPC","nclTRD",		\
 				    "normChi2ITS","normChi2TPC","normChi2TRD", \
 				    "nclROC0","nclROC1","nclROC2", "nclROCA", \
-				    "nclFROC0","nclFROC1","nclFROC2","nclFROCA"};
-  const Int_t histosBins[nqaHistos]={8,160,160,	\
-				     100,100,100,	\
+				    "nclFROC0","nclFROC1","nclFROC2","nclFROCA", \
+				    "deltaPC2Norm", "deltaPC3Norm", "deltaPC4Norm", \
+				    "pullPC2", "pullPC3", "pullPC4", \
+				    "covarPC2Norm", "covarPC3Norm", "covarPC4Norm"};
+
+  const Int_t histosBins[nqaHistos]={8,80,80,	\
+				     50,50,50,	\
 				     64,64,32,160,	\
-				     55,55,55,55};
+				     55,55,55,55,\
+				     60,60,50, \
+				     50,50,50, \
+				     50,50,50 };
+  const Double_t histosMin[nqaHistos]={0,0,0,	\
+				       0,0,0,	\
+				       0,0,0,0,	\
+				       0,0,0,0, \
+				       -0.015,-0.015,-0.1, \
+				       -10,-10,-10, \
+				       0.00,0.00,0.0};
   const Double_t histosMax[nqaHistos]={8,160,160,	\
-				    20,20,20,	\
-				    64,64,32,160,	\
-				    1.1,1.1,1.1,1.1};
- 
+				       20,20,20,	\
+				       64,64,32,160,	\
+				       1.1,1.1,1.1,1.1, \
+				       0.015,0.015,0.1, \
+				       10,10,10, \
+				       0.01,0.01,0.1};
+  
+
   TString hisString="";
   {
     // Standard kinematic histograms
@@ -259,17 +278,36 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
     hisString+="esdTrack.fIp.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtTPCOnly(100,1,30);";  
     hisString+="esdTrack.fP[4]:tgl:secInner:#esdTrack.fTPCncls>60>>hisQptTglSecAll(40,-2,2,10,-1,1,90,0,18);"; 
   }
+  // QA variables histograms
   for (Int_t iPar=0; iPar<nqaHistos; iPar++){
     // 
-    hisString+=TString::Format("%s:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl(%d,0,%f,200,-5,5,10,-1,1);", \
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMax[iPar]);
-    hisString+=TString::Format("%s:qPt:tgl:smdEdx:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_smdEdx(%d,0,%f,50,-5,5,10,-1,1,10,0,1);", \
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMax[iPar]);
-    hisString+=TString::Format("%s:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_dalphaQ(%d,0,%f,48,-3,3,10,-1,1,50,-0.18,0.18);", \
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMax[iPar]);
-    hisString+=TString::Format("%s:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_alphaV(%d,0,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",\
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl(%d,%f,%f,200,-5,5,10,-1,1);", \
+			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:smdEdx:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_smdEdx(%d,%f,%f,50,-5,5,10,-1,1,10,0,1);", \
+			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_dalphaQ(%d,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);", \
+			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_alphaV(%d,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",\
+			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
   }
+  // Matchin efficiency histograms for primary +-4 sigma tracks
+  //
+  const Int_t nmatchHistos=4;
+  const char * matchHistos[nmatchHistos]={"ITSOn","ITSRefit","TPCRefit","TRDOn"};
+   // QA variables histograms 
+  TString hisMatch="";
+  for (Int_t iPar=0; iPar<nmatchHistos; iPar++){
+    // 
+    hisMatch+=TString::Format("%s:qPt:tgl:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl(2,-0.5,1.5,200,-5,5,10,-1,1);", \
+			       matchHistos[iPar],matchHistos[iPar]);
+    hisMatch+=TString::Format("%s:qPt:tgl:dalphaQ:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_dalphaQ(2,-0.5,1.5,48,-3,3,10,-1,1,50,-0.18,0.18);", \
+			       matchHistos[iPar],matchHistos[iPar]);
+    hisMatch+=TString::Format("%s:qPt:tgl:alphaV:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_alphaV(2,-0.5,1.5,48,-3,3,10,-1,1,90,-3.145,3.145);", \
+			       matchHistos[iPar],matchHistos[iPar]);
+  }
+  
+
+
 
   {
     // N clusters per time;
@@ -356,12 +394,17 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
   TStopwatch timer;
 
   timer.Start();
-  hisArrayV0 = AliTreePlayer::MakeHistograms(chainV0, hisV0String, "",0,maxEntries,10000000,15);
+  hisArrayV0 = AliTreePlayer::MakeHistograms(chainV0, hisV0String, "",0,maxEntries,200000,15);
   timer.Print();
 
   timer.Start();
-  hisArray = AliTreePlayer::MakeHistograms(chain, hisString, defaultCut,0,maxEntries,10000000,15);
+  hisArray = AliTreePlayer::MakeHistograms(chain, hisString, defaultCut,0,maxEntries,200000,15);
   timer.Print();
+  
+  timer.Start();
+  TObjArray * hisArrayMatch = AliTreePlayer::MakeHistograms(chain, hisMatch, defaultCutMatch,0,maxEntries,200000,15);
+  timer.Print();
+  hisArray->AddAll(hisArrayMatch);
 
 
   (*pcstream).GetFile()->cd();
@@ -633,32 +676,58 @@ void MakeResidualDistortionMaps(){
   }
   TTreeSRedirector * pcstream = new TTreeSRedirector("residualMap.root","recreate");
   // Residual histogram -> maps creation
-  TPRegexp regexpDelta("(eltaP|ullP|covar).*phaV");    // make residual maps for each delta histogram  
+  TPRegexp regexpHis("^(his|matchhis|qahis)");    // make residual maps for each delta histogram  
+  TPRegexp regexpMatch("^matchhis");  
+  TPRegexp regexpK0("hisK0");   
+  //
+  //
   TMatrixD projectionInfo(4,5);
   projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;   
   projectionInfo(1,0)=1;  projectionInfo(1,1)=1;  projectionInfo(1,2)=0; 
   projectionInfo(2,0)=2;  projectionInfo(2,1)=0;  projectionInfo(2,2)=0;  
   projectionInfo(3,0)=3;  projectionInfo(3,1)=1;  projectionInfo(3,2)=0;    
   for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
-    if (regexpDelta.Match(TString(hisArray->At(iHis)->GetName()))){
+    Int_t proj[5]={0,1,2,3,4,5};
+    THn * hisInput=(THn*)hisArray->At(iHis);    
+    THnBase *hisProj=0;
+    if (regexpHis.Match(TString(hisArray->At(iHis)->GetName())) && regexpK0.Match(TString(hisArray->At(iHis)->GetName()))==0){
+      Double_t fraction=(regexpMatch.Match(TString(hisInput->GetName()))>0)?0.0:0.1;
       hisArray->At(iHis)->Print(); 
-      THn * hisInput=(THn*)hisArray->At(iHis);
-      TStatToolkit::MakeDistortionMapFast(hisInput,pcstream,projectionInfo,1,0.1);
+      TStatToolkit::MakeDistortionMapFast(hisInput,pcstream,projectionInfo,0,fraction);
+      Int_t nDim=hisInput->GetNdim();
+      hisProj=hisInput->ProjectionND(nDim-1,proj);
+      hisProj->SetName(TString::Format("%sProj%d",hisInput->GetName(),nDim).Data());
+      TStatToolkit::MakeDistortionMapFast(hisProj,pcstream,projectionInfo,0,fraction);
+      delete hisProj;
     }
   }
   // Track performance maps
-  TPRegexp regexpPerf("(eltaP|ullP|hisCovar|qa).*");  
+  TPRegexp regexpPerf("_qPt_tgl$");  
   for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
-    if ( (regexpPerf.Match(TString(hisArray->At(iHis)->GetName()))>0) && (regexpDelta.Match(TString(hisArray->At(iHis)->GetName()))==0) ){
+    THnBase *hisProj=0;
+    Int_t proj[5]={0,1};
+    if ( (regexpPerf.Match(TString(hisArray->At(iHis)->GetName()))>0) && (regexpK0.Match(TString(hisArray->At(iHis)->GetName()))==0) ){
       hisArray->At(iHis)->Print(); 
       THn * hisInput=(THn*)hisArray->At(iHis);
-      TStatToolkit::MakeDistortionMapFast(hisInput,pcstream,projectionInfo,0,0.1);
+      Double_t fraction=(regexpMatch.Match(TString(hisInput->GetName()))>0)?0.0:0.1;
+      //A side
+      hisInput->GetAxis(2)->SetRangeUser(0,1);
+      hisProj=hisInput->ProjectionND(2,proj);
+      hisProj->SetName(TString::Format("%sASide",hisInput->GetName()).Data());
+      TStatToolkit::MakeDistortionMapFast(hisProj,pcstream,projectionInfo,0,fraction);
+      delete hisProj;
+      //C side
+      hisInput->GetAxis(2)->SetRangeUser(-1,0);
+      hisProj=hisInput->ProjectionND(2,proj);
+      hisProj->SetName(TString::Format("%sCSide",hisInput->GetName()).Data());
+      TStatToolkit::MakeDistortionMapFast(hisProj,pcstream,projectionInfo,0,fraction);
+      delete hisProj;
     }
   }
   //
   // V0 performance maps
   //
-  TPRegexp regexpK0("hisK0");  
+  //  TPRegexp regexpK0("hisK0");  
   projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;   // merge pt bins
   projectionInfo(1,0)=1;  projectionInfo(1,1)=0;  projectionInfo(1,2)=0; 
   projectionInfo(2,0)=2;  projectionInfo(2,1)=1;  projectionInfo(2,2)=0;  
