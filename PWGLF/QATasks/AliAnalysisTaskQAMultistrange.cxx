@@ -264,19 +264,19 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
   }
   // --- CascCosineOfPointingAngle (30 bins, [0.97,1.0])
   if (!fHistVarCascCosineOfPointingAngleXiMinus) {
-     fHistVarCascCosineOfPointingAngleXiMinus = new TH2F("fHistVarCascCosineOfPointingAngleXiMinus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 30, 0.97, 1.0);
+     fHistVarCascCosineOfPointingAngleXiMinus = new TH2F("fHistVarCascCosineOfPointingAngleXiMinus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 120, 0.97, 1.0);
      fListHistMultistrangeQA->Add(fHistVarCascCosineOfPointingAngleXiMinus);
   }
   if (!fHistVarCascCosineOfPointingAngleXiPlus) {
-     fHistVarCascCosineOfPointingAngleXiPlus = new TH2F("fHistVarCascCosineOfPointingAngleXiPlus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 30, 0.97, 1.0);
+     fHistVarCascCosineOfPointingAngleXiPlus = new TH2F("fHistVarCascCosineOfPointingAngleXiPlus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 120, 0.97, 1.0);
      fListHistMultistrangeQA->Add(fHistVarCascCosineOfPointingAngleXiPlus);
   }
   if (!fHistVarCascCosineOfPointingAngleOmegaMinus) {
-     fHistVarCascCosineOfPointingAngleOmegaMinus = new TH2F("fHistVarCascCosineOfPointingAngleOmegaMinus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 30, 0.97, 1.0);
+     fHistVarCascCosineOfPointingAngleOmegaMinus = new TH2F("fHistVarCascCosineOfPointingAngleOmegaMinus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 120, 0.97, 1.0);
      fListHistMultistrangeQA->Add(fHistVarCascCosineOfPointingAngleOmegaMinus);
   }
   if (!fHistVarCascCosineOfPointingAngleOmegaPlus) {
-     fHistVarCascCosineOfPointingAngleOmegaPlus = new TH2F("fHistVarCascCosineOfPointingAngleOmegaPlus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 30, 0.97, 1.0);
+     fHistVarCascCosineOfPointingAngleOmegaPlus = new TH2F("fHistVarCascCosineOfPointingAngleOmegaPlus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 120, 0.97, 1.0);
      fListHistMultistrangeQA->Add(fHistVarCascCosineOfPointingAngleOmegaPlus);
   }
   // --- CascRadius (40 bins, [0.0,4.0)
@@ -349,36 +349,36 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
   }
   // --- V0Radius (40 bins, [0.0,4.0])
   if (!fHistVarV0RadiusXiMinus) {
-     fHistVarV0RadiusXiMinus = new TH2F("fHistVarV0RadiusXiMinus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 100, 0.9, 1.0);
+     fHistVarV0RadiusXiMinus = new TH2F("fHistVarV0RadiusXiMinus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
      fListHistMultistrangeQA->Add(fHistVarV0RadiusXiMinus);
   }
   if (!fHistVarV0RadiusXiPlus) {
-     fHistVarV0RadiusXiPlus = new TH2F("fHistVarV0RadiusXiPlus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 100, 0.9, 1.0);
+     fHistVarV0RadiusXiPlus = new TH2F("fHistVarV0RadiusXiPlus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
      fListHistMultistrangeQA->Add(fHistVarV0RadiusXiPlus);
   }
   if (!fHistVarV0RadiusOmegaMinus) {
-     fHistVarV0RadiusOmegaMinus = new TH2F("fHistVarV0RadiusOmegaMinus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 100, 0.9, 1.0);
+     fHistVarV0RadiusOmegaMinus = new TH2F("fHistVarV0RadiusOmegaMinus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
      fListHistMultistrangeQA->Add(fHistVarV0RadiusOmegaMinus);
   }
   if (!fHistVarV0RadiusOmegaPlus) {
-     fHistVarV0RadiusOmegaPlus = new TH2F("fHistVarV0RadiusOmegaPlus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 100, 0.9, 1.0);
+     fHistVarV0RadiusOmegaPlus = new TH2F("fHistVarV0RadiusOmegaPlus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
      fListHistMultistrangeQA->Add(fHistVarV0RadiusOmegaPlus);
   }
   // --- DcaV0ToPrimVertex (40 bins, [0.0,0.4])
   if (!fHistVarDcaV0ToPrimVertexXiMinus) {
-     fHistVarDcaV0ToPrimVertexXiMinus = new TH2F("fHistVarDcaV0ToPrimVertexXiMinus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fHistVarDcaV0ToPrimVertexXiMinus = new TH2F("fHistVarDcaV0ToPrimVertexXiMinus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 0.4);
      fListHistMultistrangeQA->Add(fHistVarDcaV0ToPrimVertexXiMinus);
   }
   if (!fHistVarDcaV0ToPrimVertexXiPlus) {
-     fHistVarDcaV0ToPrimVertexXiPlus = new TH2F("fHistVarDcaV0ToPrimVertexXiPlus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fHistVarDcaV0ToPrimVertexXiPlus = new TH2F("fHistVarDcaV0ToPrimVertexXiPlus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 0.4);
      fListHistMultistrangeQA->Add(fHistVarDcaV0ToPrimVertexXiPlus);
   }
   if (!fHistVarDcaV0ToPrimVertexOmegaMinus) {
-     fHistVarDcaV0ToPrimVertexOmegaMinus = new TH2F("fHistVarDcaV0ToPrimVertexOmegaMinus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fHistVarDcaV0ToPrimVertexOmegaMinus = new TH2F("fHistVarDcaV0ToPrimVertexOmegaMinus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 0.4);
      fListHistMultistrangeQA->Add(fHistVarDcaV0ToPrimVertexOmegaMinus);
   }
   if (!fHistVarDcaV0ToPrimVertexOmegaPlus) {
-     fHistVarDcaV0ToPrimVertexOmegaPlus = new TH2F("fHistVarDcaV0ToPrimVertexOmegaPlus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fHistVarDcaV0ToPrimVertexOmegaPlus = new TH2F("fHistVarDcaV0ToPrimVertexOmegaPlus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 0.4);
      fListHistMultistrangeQA->Add(fHistVarDcaV0ToPrimVertexOmegaPlus);
   }
   // --- DcaPosToPrimVertex (25 bins, [0.0,0.25])
