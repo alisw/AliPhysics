@@ -22,7 +22,6 @@
 
 //---- ANALYSIS system ----
 #include "AliMCAnalysisUtils.h"
-#include "AliCaloTrackReader.h"
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliVParticle.h"
@@ -158,65 +157,18 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
   return ancLabel;
 }
 
-//________________________________________________________________________________________
-/// \return tag with primary particle at the origin of the cluster/track.
-/// Recover here the list of clusters from the calorimeter and pass it to the main method
-/// calculating the tag. Also do here first checks on the passed parameters.
-//________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * labels, Int_t nlabels,
-                                      const AliCaloTrackReader* reader, Int_t calorimeter)
-{
-  if( nlabels <= 0 )
-  {
-    AliWarning("No MC labels available, please check!!!");
-    return kMCBadLabel;
-  }
-  
-  if ( !reader->GetMC() )
-  {
-    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file, do nothing with MC!!");
-    return -1;
-  }
-  
-  Int_t tag = 0;
-  Int_t nprimaries = reader->GetMC()->GetNumberOfTracks();
-
-  // Bad label
-  if ( labels[0] < 0 || labels[0] >= nprimaries )
-  {
-    if(labels[0] < 0)
-      AliWarning(Form("*** bad label ***:  label %d", labels[0]));
-    
-    if(labels[0] >=  nprimaries)
-      AliWarning(Form("*** large label ***:  label %d, n tracks %d", labels[0], nprimaries));
-    
-    SetTagBit(tag,kMCUnknown);
-    
-    return tag; 
-  } // Bad label
-  
-  TObjArray* arrayCluster = 0;
-  if      ( calorimeter == AliCaloTrackReader::kEMCAL ) arrayCluster = reader->GetEMCALClusters();
-  else if ( calorimeter == AliCaloTrackReader::kPHOS  ) arrayCluster = reader->GetPHOSClusters ();
-      
-  return CheckOrigin(labels, nlabels, reader->GetMC(), arrayCluster); ;
-}
-
 //____________________________________________________________________________________________________
 /// \return tag with primary particle at the origin of the cluster/track.
 /// Here we have only one input MC label not multiple. 
+///
+/// \param labels: list of MC labels of cluster
+/// \param mcevent: pointer to MCEvent()
 //_____________________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* reader, Int_t calorimeter)
-{    
-  if( label < 0 )
-  {
-    AliWarning("No MC labels available, please check!!!");
-    return kMCBadLabel;
-  }
-  
+Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliMCEvent* mcevent)
+{      
   Int_t labels[] = { label };
   
-  return CheckOrigin(labels, 1, reader, calorimeter);  
+  return CheckOrigin(labels, 1, mcevent);  
 }	
 
 //__________________________________________________________________________________________
@@ -226,11 +178,46 @@ Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* rea
 /// entity (track, cluster, etc) for which we want to know something 
 /// about its heritage, but one can also use it directly with stack 
 /// particles not connected to reconstructed entities.
+///
+/// Array of clusters needed in case we want to check if the cluster originated from a 
+/// pi0/eta meson has the companion decay photon in the list of clusters.
+///
+/// \param labels: list of MC labels of cluster
+/// \param nlabels: total number of labels attached to cluster
+/// \param mcevent: pointer to MCEvent()
+/// \param arrayCluster: list of calorimeter clusters, needed to check lost meson decays
 //__________________________________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
                                       const AliMCEvent* mcevent, const TObjArray* arrayCluster)
-{  
+{    
+  if( nlabels <= 0 )
+  {
+    AliWarning("No MC labels available, please check!!!");
+    return kMCBadLabel;
+  }
+  
+  if ( !mcevent )
+  {
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file, do nothing with MC!!");
+    return -1;
+  }
+  
   Int_t tag = 0;
+  Int_t nprimaries = mcevent->GetNumberOfTracks();
+  
+  // Bad label
+  if ( labels[0] < 0 || labels[0] >= nprimaries )
+  {
+    if(labels[0] < 0)
+      AliWarning(Form("*** bad label ***:  label %d", labels[0]));
+    
+    if(labels[0] >=  nprimaries)
+      AliWarning(Form("*** large label ***:  label %d, n tracks %d", labels[0], nprimaries));
+    
+    SetTagBit(tag,kMCBadLabel);
+    
+    return tag; 
+  } // Bad label
   
   // Most significant particle contributing to the cluster
   Int_t label=labels[0];
