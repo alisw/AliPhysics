@@ -28,7 +28,6 @@ class TVector3;
 class TClonesArray;
 
 //--- AliRoot system ---
-class AliCaloTrackReader;
 class AliMCEvent;
 class AliGenEventHeader;
 
@@ -66,11 +65,8 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliMCEvent* mcevent, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) ;
   
-  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader* mcevent, Int_t calorimeter) ;
-  
-  // Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin(const Int_t *label,  Int_t nlabels, const AliCaloTrackReader* mcevent, Int_t calorimeter) ;
-  Int_t   CheckOrigin(const Int_t *labels, Int_t nlabels, const AliMCEvent* mcevent, const TObjArray *arrayCluster) ; 
+  Int_t   CheckOrigin(Int_t label, const AliMCEvent* mcevent) ;  
+  Int_t   CheckOrigin(const Int_t *labels, Int_t nlabels, const AliMCEvent* mcevent, const TObjArray *arrayCluster = 0x0) ; 
   
   void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
   

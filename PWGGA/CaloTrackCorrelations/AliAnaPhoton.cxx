@@ -833,8 +833,9 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 /// \return kTRUE of cluster is accepted
 /// \param calo: cluster pointer.
 /// \param nMaxima: number of local maxima.
+/// \param mctag: tag containing MC origin of cluster.
 //_____________________________________________________________________
-Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
+Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima, Int_t mctag)
 {
   Float_t ptcluster  = fMomentum.Pt();
   Float_t ecluster   = fMomentum.E();
@@ -913,7 +914,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   //Skip matched clusters with tracks
   
   // Fill matching residual histograms before PID cuts
-  if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,0);
+  if(fFillTMHisto) FillTrackMatchingResidualHistograms(calo,0,mctag);
   
   if(fRejectTrackMatch)
   {
@@ -1037,7 +1038,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
-    tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(),GetCalorimeter());
+    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC());
     
     if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -1848,7 +1849,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     {
       mcIndex = kmcssPi0 ;
       
-      //Fill histograms to check shape of embedded clusters
+      // Fill histograms to check shape of embedded clusters
       if(GetReader()->IsEmbeddedClusterSelectionOn())
       {
         if     (fraction > 0.9)
@@ -1954,9 +1955,10 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
 /// Residual filled for different cuts:
 /// \param cluster: pointer to cluster info.
 /// \param cut: 0, No cut, 1, after cluster selection cuts.
+/// \param tag: tag containing MC origin of cluster.
 //__________________________________________________________________________
 void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
-                                                       Int_t cut)
+                                                       Int_t cut, Int_t tag)
 {
   Float_t dEta = cluster->GetTrackDz();
   Float_t dPhi = cluster->GetTrackDx();
@@ -2048,9 +2050,6 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
       
       if(IsDataMC())
       {
-        
-        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(),GetReader(),GetCalorimeter());
-        
         if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  )
         {
           if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
@@ -4570,11 +4569,25 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       calo->GetMomentum(fMomentum,vertex) ;
     }
     
+    //-------------------------------------
+    // Play with the MC stack if available
+    //-------------------------------------
+    
+    // Check origin of the candidates
+    Int_t tag = -1;
+    
+    if ( IsDataMC() )
+    {
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), pl); // check lost decays
+          
+      AliDebug(1,Form("Origin of candidate, bit map %d",tag));
+    }// Work with stack also
+    
     //-----------------------------
     // Cluster selection
     //-----------------------------
     Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
-    if(!ClusterSelected(calo,nMaxima)) continue;
+    if(!ClusterSelected(calo,nMaxima,tag)) continue;
     
     //----------------------------
     // Create AOD for analysis
@@ -4586,6 +4599,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Int_t label = calo->GetLabel();
     aodph.SetLabel(label);
     aodph.SetCaloLabel(calo->GetID(),-1);
+    aodph.SetTag(tag);
     aodph.SetDetectorTag(GetCalorimeter());
     //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());
     
@@ -4596,21 +4610,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     else if(distBad > fMinDist2) aodph.SetDistToBad(1) ;
     else                         aodph.SetDistToBad(0) ;
     //printf("DistBad %f Bit %d\n",distBad, aodph.DistToBad());
-    
-    //-------------------------------------
-    // Play with the MC stack if available
-    //-------------------------------------
-    
-    // Check origin of the candidates
-    Int_t tag = -1;
-    
-    if(IsDataMC())
-    {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
-      aodph.SetTag(tag);
-      
-      AliDebug(1,Form("Origin of candidate, bit map %d",aodph.GetTag()));
-    }//Work with stack also
     
     //--------------------------------------------------------
     // Fill some shower shape histograms before PID is applied
@@ -4744,7 +4743,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     }
     
     // Matching after cuts
-    if( fFillTMHisto )         FillTrackMatchingResidualHistograms(calo,1);
+    if( fFillTMHisto )         FillTrackMatchingResidualHistograms(calo,1,tag);
     
     // Fill histograms to undertand pile-up before other cuts applied
     // Remember to relax time cuts in the reader

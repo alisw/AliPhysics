@@ -3286,7 +3286,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       if(IsDataMC())
       {
         Int_t	label2 = photon2->GetLabel();
-        if(label2 >= 0 )photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(),kCTS));
+        if ( label2 >= 0 ) photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetMC()));
         
         HasPairSameMCMother(photon1->GetLabel(), photon2->GetLabel(),
                             photon1->GetTag()  , photon2->GetTag(),
@@ -3478,8 +3478,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t tag	= 0 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
-      //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC());
       AliDebug(1,Form("Origin of candidate %d",tag));
     }
     
