@@ -95,7 +95,7 @@ public:
   TTree*  GetTreeAliVersRD();
   TTree*  GetTreeAliVersMC();
   TTree*  GetTreeMCPassGuess();
-//  TString GetMCPassGuess();
+  TString GetMCPassGuess(TString MCprodname);
   
   TChain* GetChain(TString type, TString period, TString pass);
   TChain* GetChainMC()                                                  {return GetChain("MonALISA.MC", "", "");}

@@ -851,7 +851,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
 
     TFile *outfile= TFile::Open(fLocalStorageDirectory+"/dumptree_RD.root","RECREATE");
     dumptree->Write("dumptree_RD");
-    dumptree->Scan();
+//    dumptree->Scan();
     delete outfile;
 
     return dumptree; 
@@ -919,7 +919,7 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    }
 
    dumptree->Write("dumptree_MC");
-   dumptree->Scan();
+//   dumCptree->Scan();
    delete treeMC;
    
    return dumptree;
@@ -976,9 +976,21 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     RDTree->GetBranch("prodName")->SetAddress((void*)RDprodname);
     RDTree->GetBranch("passName")->SetAddress((void*)RDpassname);  
 
-    TFile *MCFile= TFile::Open(fLocalStorageDirectory+"/dumptree_MC.root","READ");
-    if(MCFile!=NULL) MCTree = dynamic_cast<TTree*>(MCFile->Get("dumptree_MC"));
-    else MCTree = info.GetTreeAliVersMC();
+    TFile *MCFile= TFile::Open(fLocalStorageDirectory+"/dumptree_MC.root","UPDATE");
+    
+    if(MCFile!=NULL && MCFile->GetListOfKeys()->Contains("dumptree_MC_guess")){
+        cout<<"Guesses already available - done."<<endl;
+        return(dynamic_cast<TTree*>(MCFile->Get("dumptree_MC_guess")));
+    } 
+    else if(MCFile!=NULL && MCFile->GetListOfKeys()->Contains("dumptree_MC")) {
+        cout<<"found dumptree_MC.root -> getting dumptree_MC and make guesses"<<endl;
+        MCTree = dynamic_cast<TTree*>(MCFile->Get("dumptree_MC"));}
+    else{
+        cout<<"dumptree_MC.root not available -> run GetTreeAliVersMC()..."<<endl;
+        MCTree = info.GetTreeAliVersMC();
+    }
+
+    MCTree->SetName("dumptree_MC_guess");
 
     char MCaliroot[1000];
     char MCaliphysics[1000];
@@ -1059,7 +1071,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
                 list.insert(tempprod);
 
             }            
-            if(sanchprod==srdprod && (( smcaliphys!="" && smcaliphys==srdaliphys)  || (smcaliphys=="" && srdaliroot==smcaliroot)  )){      //check for perfect match, i.e. prodname and aliphys/aliroot match
+            if(sanchprod==srdprod && (( smcaliphys!="" && smcaliphys==srdaliphys)  || (smcaliphys=="" && srdaliroot==smcaliroot)  ) && !srdpass.Contains("cpass")){      //check for perfect match, i.e. prodname and aliphys/aliroot match
                  for(int k=0;k<(int)srdpass.Sizeof();k++)   MCanchpassname[k] = srdpass[k];
                  for(int k=0;k<(int)srdaliroot.Sizeof();k++)   MCanchaliroot[k] = srdaliroot[k];
                  for(int k=0;k<(int)srdaliphys.Sizeof();k++)   MCanchaliphys[k] = srdaliphys[k];
@@ -1082,18 +1094,23 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
                              }
                              --it;
                            int l =0;
+                           
                            cout<<"Complete match: no -> take closest aliversion as guess from RD productions: "<<endl;
                            for (set<anchprod>::iterator iter=list.begin(); iter!=list.end(); ++iter){
                              l++;
                              cout<<l<<" RDprodname: "<<(*iter).anchprodname<<" AliPhys: "<<(*iter).aliphys<<" AliRoot: "<<" "<<(*iter).aliroot<<" RDpass: "<<(*iter).anchpass<<endl;
                            }
 
+                           for (set<anchprod>::iterator iter=list.end(); iter!=list.begin(); --iter){       //go backwards through list and take first pass guess that is not a cpass
     //                       cout<<"Looking for MC aliphys: "<<tempprod.aliphys<<" MC aliroot: "<<tempprod.aliroot<<endl;
-                           cout<<"Used for guess: RDphys:"<<(*it).aliphys<<" RDroot: "<<(*it).aliroot<<" RDpass: "<<(*it).anchpass<<endl;
-
-                             for(int k=0;k<(int)(*it).anchpass.Sizeof();k++)  MCanchpassname[k] = (*it).anchpass.Data()[k];
-                             for(int k=0;k<(int)(*it).aliroot.Sizeof();k++)   MCanchaliroot[k] = (*it).aliroot.Data()[k];
-                             for(int k=0;k<(int)(*it).aliphys.Sizeof();k++)   MCanchaliphys[k] = (*it).aliphys.Data()[k];
+                               if(!((*it).anchpass).Contains("cpass")){
+                               cout<<"Used for guess: RDphys:"<<(*it).aliphys<<" RDroot: "<<(*it).aliroot<<" RDpass: "<<(*it).anchpass<<endl;
+                               for(int k=0;k<(int)(*it).anchpass.Sizeof();k++)  MCanchpassname[k] = (*it).anchpass.Data()[k];
+                               for(int k=0;k<(int)(*it).aliroot.Sizeof();k++)   MCanchaliroot[k] = (*it).aliroot.Data()[k];
+                               for(int k=0;k<(int)(*it).aliphys.Sizeof();k++)   MCanchaliphys[k] = (*it).aliphys.Data()[k];
+                               break;
+                               }
+                           }
 
             }
 
@@ -1110,8 +1127,48 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
         branchroot->Fill();		
         }
 
-    MCFile->Write("MCPassGuess");
-
+    
+    MCFile->Write("dumptree_MC_guess");
+    MCFile->Delete("dumptree_MC;*");
+    return(MCTree);
     
 }
       
+TString  AliExternalInfo::GetMCPassGuess(TString sMCprodname){
+
+ AliExternalInfo info;
+    
+ TFile *MCFile= TFile::Open(fLocalStorageDirectory+"/dumptree_MC.root","UPDATE");
+ TTree* guesstree;
+ 
+ if(MCFile==NULL || !MCFile->GetListOfKeys()->Contains("dumptree_MC_guess")){
+        cout<<"Guesses not available - get them!"<<endl;
+        guesstree = info.GetTreeMCPassGuess();
+ }
+ 
+ else guesstree = dynamic_cast<TTree*>(MCFile->Get("dumptree_MC_guess"));
+ 
+ char MCprodname_temp[1000];
+ char MCpassguess[1000];
+ 
+ TString sMCprodname_temp;
+ TString sMCpassguess;
+// TString MCanchorprodname;
+ 
+ guesstree->GetBranch("prodName")->SetAddress((void*)MCprodname_temp);
+ guesstree->GetBranch("anchorPassName_guess")->SetAddress((void*)MCpassguess);
+ 
+ for(int i=0;i<guesstree->GetEntries();i++){
+     guesstree->GetEntry(i);
+     sMCprodname_temp=TString(MCprodname_temp);
+     sMCpassguess=TString(MCpassguess);
+     
+     if(sMCprodname_temp==sMCprodname){
+         cout<<"Anchor Pass guess for"<<sMCprodname_temp<<": "<<sMCpassguess<<endl;
+         return(sMCpassguess);
+     }
+ }
+ cout<<sMCprodname<<" was not found in list of MC productions"<<endl;
+ return(TString::Format("MC production not found"));
+ 
+}
