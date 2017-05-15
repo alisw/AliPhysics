@@ -88,7 +88,7 @@ virtual ~AliAnalysisTaskGammaHadron();
 //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
   void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
-  void                        SetRmvMatchedTrack(Bool_t input)                      { fRmvMTrack  = input;}
+  void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
 
   //Functions for mixed event purposes
@@ -119,7 +119,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight);
   void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
-
+  Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster);
   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
     TObjArray*                  CloneClustersTObjArray(AliClusterContainer* clusters)          ;
     void GetMulClassPi0(Int_t&);
@@ -160,6 +160,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   Double_t                    fClShapeMax;               ///< Maximum cluster shape
   Int_t                       fMaxNLM;                   ///< Maximum number of local maxima
   Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
+  Double_t                    fTrackMatchEta;            ///< eta range in which a track is called a match to a cluster
+  Double_t                    fTrackMatchPhi;            ///< phi range in which a track is called a match to a cluster
   //..Event pool variables
   TAxis                      *fMixBCent;                 ///< Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 ///< Number of vertex bins for the mixed event
@@ -221,6 +223,9 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH2                      **fHistClusterShape2;       //!<! Cluster shape vs energy
   TH2                      **fHistClusterShape3;       //!<! Cluster shape vs energy
   TH2                      **fHistClusterShape4;       //!<! Cluster shape vs energy
+  TH2                       *fHistMatchEtaPhiAllCl2;   //!<! matched track distance for 2 cell clusters
+  TH2                       *fHistMatchEtaPhiAllCl3;   //!<! matched track distance for 3 cell clusters
+  TH2                       *fHistMatchEtaPhiAllCl4;   //!<! matched track distance for 4 cell clusters
   TH2                      **fHistClusterTime;         //!<! Cluster time vs energy
   THnSparseF                *fCorrVsManyThings;        //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
   THnSparseF                *fCorrVsManyThingsME;      //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
