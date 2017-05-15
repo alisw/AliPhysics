@@ -671,7 +671,7 @@ Bool_t AliAnalysisTaskNucleiYield::Flatten(float cent) {
 ///
 void AliAnalysisTaskNucleiYield::PtCorrection(float &pt, bool positiveCharge) {
   Float_t *par = (positiveCharge) ? fPtCorrectionM.GetArray() : fPtCorrectionA.GetArray();
-  const Float_t correction = par[0] + par[1] * TMath::Exp(par[2] * pt);
+  const Float_t correction = par[0] + par[1] * TMath::Exp(par[2] * pt * pt * pt);
   pt -= correction;
 }
 
