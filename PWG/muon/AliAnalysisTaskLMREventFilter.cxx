@@ -457,7 +457,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   TString trigStr(((AliAODHeader*) fAOD->GetHeader())->GetFiredTriggerClasses());
   TObjArray * tokens = trigStr.Tokenize(" ");
   Int_t ntokens = tokens->GetEntriesFast();
-  UShort_t mask=0,tmpMask=0;
+  UInt_t mask=0,tmpMask=0;
   Bool_t goodTrig = kFALSE;
   for (Int_t itoken = 0; itoken < ntokens; ++itoken)
     {
