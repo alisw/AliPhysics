@@ -46,6 +46,7 @@ class AliESDtrackCuts;
 //class AliTriggerAnalysis;
 class AliEventplane;
 class AliVCluster;
+#include "AliLog.h"
 
 // --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
@@ -649,13 +650,11 @@ public:
   virtual AliMixedEvent*    GetMixedEvent()          const { return fMixedEvent            ; }
   virtual Int_t             GetNMixedEvent()         const { return fNMixedEvent           ; } 
   
-  void             SwitchOnStack()                         { fReadStack          = kTRUE   ; }
-  void             SwitchOffStack()                        { fReadStack          = kFALSE  ; }
-  void             SwitchOnAODMCParticles()                { fReadAODMCParticles = kTRUE   ; }
-  void             SwitchOffAODMCParticles()               { fReadAODMCParticles = kFALSE  ; }
-  Bool_t           ReadStack()                       const { return fReadStack             ; }
-  Bool_t           ReadAODMCParticles()              const { return fReadAODMCParticles    ; }
-	
+  void             SwitchOnStack()                         { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOffStack()                        { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOnAODMCParticles()                { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOffAODMCParticles()               { AliError("Obsolete, remove this setting in AddTask") ; }
+
   void             RemapMCLabelForAODs(Int_t &label);
   
   // Select generated events, depending on comparison of pT hard and jets
@@ -822,10 +821,7 @@ public:
   Int_t            fTrackMultNPtCut    ;           ///<  Track multiplicty, number of pt cuts
   Float_t          fTrackMultPtCut[10] ;           ///<  Track multiplicity and sum pt cuts list
   Float_t          fTrackMultEtaCut    ;           ///<  Track multiplicity eta cut.
-  
-  Bool_t           fReadStack          ;           ///<  Access kine information from stack.
-  Bool_t           fReadAODMCParticles ;           ///<  Access kine information from filtered AOD MC particles.
-	
+  	
   TString          fDeltaAODFileName   ;           ///<  Delta AOD file name.
   TString          fFiredTriggerClassName;         ///<  Name of trigger event type used to do the analysis.
 
@@ -975,7 +971,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,76) ;
+  ClassDef(AliCaloTrackReader,77) ;
   /// \endcond
 
 } ;

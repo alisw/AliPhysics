@@ -36,8 +36,6 @@ AliCaloTrackReader(), fConstrainTrack(0),
 fESDtrackCuts(0), fESDtrackComplementaryCuts(0)
 {
   fDataType           = kESD;
-  fReadStack          = kTRUE;
-  fReadAODMCParticles = kFALSE;
   fConstrainTrack     = kFALSE ; // constrain tracks to vertex
 }
 

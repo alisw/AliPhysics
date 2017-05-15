@@ -37,9 +37,6 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
   fSelectFractionTPCSharedClusters(0), fCutTPCSharedClustersFraction(0)
 {
   fDataType = kAOD;
-  
-  fReadStack          = kTRUE;
-  fReadAODMCParticles = kFALSE;
  
   fTrackFilterMask = 128;
   fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method

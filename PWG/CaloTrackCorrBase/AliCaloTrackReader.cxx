@@ -35,7 +35,6 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliAODMCParticle.h"
-#include "AliLog.h"
 #include "AliMultSelection.h"
 
 // ---- Detectors ----
@@ -88,7 +87,6 @@ fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
 fSmearingFunction(0),        fSmearNLMMin(0),                 fSmearNLMMax(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
 fTrackMultNPtCut(0),         fTrackMultEtaCut(0.9),
-fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
 
 fEventTriggerMask(0),        fMixEventTriggerMask(0),         fEventTriggerAtSE(0),
@@ -886,7 +884,7 @@ AliHeader* AliCaloTrackReader::GetHeader() const
 //______________________________________________________________
 AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
 {
-  if     (ReadStack() && fMC)
+  if     (fDataType==kESD && fMC)
   {
     AliGenEventHeader * eventHeader = fMC->GenEventHeader();
     
@@ -913,7 +911,7 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
     return 0x0;
     
   }
-  else if(ReadAODMCParticles() && GetAODMCHeader())
+  else if(fDataType==kAOD && GetAODMCHeader())
   {
     Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
 
@@ -1033,13 +1031,6 @@ Int_t AliCaloTrackReader::GetTrackID(AliVTrack* track)
 //_____________________________
 void AliCaloTrackReader::Init()
 {  
-  if(fReadStack && fReadAODMCParticles)
-  {
-    AliInfo("Cannot access stack and mcparticles at the same time, change them");
-    fReadStack          = kFALSE;
-    fReadAODMCParticles = kFALSE;
-  }
-
   // Activate debug level in AliAnaWeights
   if( fWeightUtils->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fWeightUtils->ClassName(), fWeightUtils->GetDebug());
@@ -1078,8 +1069,6 @@ void AliCaloTrackReader::InitParameters()
   fFillEMCALCells = kFALSE;
   fFillPHOSCells  = kFALSE;
   
-  fReadStack             = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
-  fReadAODMCParticles    = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
   fDeltaAODFileName      = "deltaAODPartCorr.root";
   fFiredTriggerClassName = "";
   fEventTriggerMask      = AliVEvent::kAny;
@@ -3055,7 +3044,6 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   if(fComparePtHardAndClusterPt)
     printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
   
-  printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
   printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n", fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
   
