@@ -201,6 +201,8 @@ void AliPerformanceTask::UserExec(Option_t *)
     if(!fVEvent) {
       AliInfo("ERROR: HLTEvent unavailable from ESDInputHandler");
       return;
+    } else {
+      AliInfo("Using the HLT ESD event");
     }
   }// end if fUseHLT
   else {
