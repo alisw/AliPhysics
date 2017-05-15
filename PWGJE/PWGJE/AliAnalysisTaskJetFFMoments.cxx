@@ -132,6 +132,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fkRejectFastOnly(kFALSE),
   fkRequireVZEROAC(kFALSE),
   fkRequireTZEROvtx(kFALSE),
+  fkRejectPileup(kFALSE),
   fCentCutUp(0),
   fCentCutLo(0),
   fVtxZMax(8),
@@ -165,6 +166,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fJetEtaMax(0.5),
   fJetDeltaPhiCut(TMath::Pi()/3.),
   fkDoJetMatching(kFALSE),
+  fkUseClosestJetsforMatching(kFALSE),
   fkFillMismatchHisto(kFALSE),
   fJetMatchingFractionMin(0.5),
   fJetMatchedDistMax(0.3),
@@ -240,6 +242,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
     if( fAnaJetType.Contains("DIJET")) fh1Asy_DiJets[iJetBranch] = 0x0;
 	fh2MatchedJetsRDPtVSPt[iJetBranch] = 0x0;
 	fh2MatchedJetsAreaVSPt[iJetBranch] = 0x0;
+        fh2MatchedJetsUE[iJetBranch] = 0x0;
     for( Int_t iAxis = 0; iAxis < 5; iAxis++) fh1JetPr_Mismatched[iJetBranch][iAxis] = 0x0;
 	fh2MismatchedJetsAreaVSPt[iJetBranch] = 0x0;
 	for( Int_t iAxis = 0; iAxis < 7; iAxis++) fh2TracksInJets[iJetBranch][iAxis] = 0x0;
@@ -304,8 +307,9 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fnBinsAxis[25] = 21; fBinMinAxis[25] = 0.;		   fBinMaxAxis[25] = 1.05;
   fnBinsAxis[26] = 80; fBinMinAxis[26] = -1.;		   fBinMaxAxis[26] = 0.6;
   fnBinsAxis[27] = 400; fBinMinAxis[27] = -10.;              fBinMaxAxis[27] = 10;
+  fnBinsAxis[28] = 500; fBinMinAxis[28] = 0.;              fBinMaxAxis[28] = 50;
 
-  for( Int_t i = 28; i < 32; i ++) {
+  for( Int_t i = 29; i < 32; i ++) {
     fnBinsAxis[i] = 0; fBinMinAxis[i] = 0.;    fBinMaxAxis[i] = 0.;
   }
 
@@ -327,6 +331,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fkRejectFastOnly(kFALSE),
   fkRequireVZEROAC(kFALSE),
   fkRequireTZEROvtx(kFALSE),
+  fkRejectPileup(kFALSE),
   fCentCutUp(0),
   fCentCutLo(0),
   fVtxZMax(8),
@@ -360,6 +365,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fJetEtaMax(0.5),
   fJetDeltaPhiCut(TMath::Pi()/3.),
   fkDoJetMatching(kFALSE),
+  fkUseClosestJetsforMatching(kFALSE),
   fkFillMismatchHisto(kFALSE),
   fJetMatchingFractionMin(0.5),
   fJetMatchedDistMax(0.3),
@@ -435,6 +441,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
     if( fAnaJetType.Contains("DIJET")) fh1Asy_DiJets[iJetBranch] = 0x0;
     fh2MatchedJetsRDPtVSPt[iJetBranch] = 0x0;
     fh2MatchedJetsAreaVSPt[iJetBranch] = 0x0;
+    fh2MatchedJetsUE[iJetBranch] = 0x0;
     for( Int_t iAxis = 0; iAxis < 5; iAxis++) fh1JetPr_Mismatched[iJetBranch][iAxis] = 0x0;
     fh2MismatchedJetsAreaVSPt[iJetBranch] = 0x0;
     for( Int_t iAxis = 0; iAxis < 7; iAxis++) fh2TracksInJets[iJetBranch][iAxis] =0x0;
@@ -499,7 +506,9 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fnBinsAxis[25] = 21;		 fBinMinAxis[25] = 0.;		   fBinMaxAxis[25] = 1.05;
   fnBinsAxis[26] = 80;		 fBinMinAxis[26] = -1.;		  fBinMaxAxis[26] = 0.6;
   fnBinsAxis[27] = 400;          fBinMinAxis[27] = -10.;              fBinMaxAxis[27] = 10;
-  for( Int_t i = 28; i < 32; i ++) {
+  fnBinsAxis[28] = 500;          fBinMinAxis[28] = 0.;              fBinMaxAxis[28] = 50;
+
+  for( Int_t i = 29; i < 32; i ++) {
     fnBinsAxis[i] = 0; fBinMinAxis[i] = 0.;    fBinMaxAxis[i] = 0.;
   }
 
@@ -801,6 +810,9 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
           selectEvent = false;
         }
       }
+     if(fkRejectPileup && AliAnalysisHelperJetTasks::IsPileUp()){
+        selectEvent = false;
+     }
     }else{
       selectEvent = true;
     }
@@ -1025,7 +1037,8 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
   if(fkDoJetMatching){
     fListMatchedJets[0]->Clear("nodelete");
     fListMatchedJets[1]->Clear("nodelete");
-    GetListOfMatchedJets(fListJets,nUsedJets,*&(fListMatchedJets[0]),*&(fListMatchedJets[1]),ifirstBr);
+    if(!fkUseClosestJetsforMatching) GetListOfMatchedJets(fListJets,nUsedJets,*&(fListMatchedJets[0]),*&(fListMatchedJets[1]),ifirstBr);
+    else GetListOfClosestJets(fListJets,nUsedJets,*&(fListMatchedJets[0]),*&(fListMatchedJets[1]),ifirstBr);
     listUsedJets[0] = fListMatchedJets[0];
     listUsedJets[1] = fListMatchedJets[1];
   } // End kDoJetMatching
@@ -1123,14 +1136,21 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
         TArrayI inAOD; TArrayI inMC; TArrayS inTEST;
         CalcFFAndFFMFromTracksInJet(uRecJet, jettracklistReconstructed, 0, 0, inAOD, 0, 0 ,kFALSE, fh2TracksInJets[iJetBranch],fp2TracksInJetFFM[iJetBranch]);
 
-
+        Double_t jetBkgPtRec = 0;
+        Double_t jetBkgPtGen = 0;
+         if(ijet == 0 && fFFBckgMode) {
+           GetTracksTiltedwrpJetAxis(TMath::Pi()/2., &ParticleList[0],0x0,uGenJet,fRparam,jetBkgPtGen);
+           GetTracksTiltedwrpJetAxis(TMath::Pi()/2., &ParticleList[1],0x0,uRecJet,fRparam,jetBkgPtRec);
+           fh2MatchedJetsUE[0]->Fill(uGenJet->Pt(),jetBkgPtGen);
+           fh2MatchedJetsUE[iJetBranch]->Fill(uRecJet->Pt(),jetBkgPtRec);
+          }
       
       //*********************************************
       // MC <---> Reco Jet info
       //*********************************************
        Double_t jetEntriesMatch[10] = {
-          uGenJet->Pt(), uGenJet->Eta(), uGenJet->Phi(), uGenJet->EffectiveAreaCharged(), (Double_t)( (TRefArray *) (uGenJet->GetRefTracks()) )->GetEntries(),
-          uRecJet->Pt(), uRecJet->Eta(), uRecJet->Phi(), uRecJet->EffectiveAreaCharged(), (Double_t)( (TRefArray *) (uRecJet->GetRefTracks()) )->GetEntries(),
+          uGenJet->Pt() - jetBkgPtGen , uGenJet->Eta(), uGenJet->Phi(), uGenJet->EffectiveAreaCharged(), (Double_t)( (TRefArray *) (uGenJet->GetRefTracks()) )->GetEntries(),
+          uRecJet->Pt() - jetBkgPtRec , uRecJet->Eta(), uRecJet->Phi(), uRecJet->EffectiveAreaCharged(), (Double_t)( (TRefArray *) (uRecJet->GetRefTracks()) )->GetEntries(),
         };
         for(Int_t iAxis=0; iAxis<5; iAxis++) fh2MatchedJets[iAxis]->Fill(jetEntriesMatch[iAxis], jetEntriesMatch[iAxis+5]);
 
@@ -1870,7 +1890,43 @@ Int_t AliAnalysisTaskJetFFMoments::GetListOfMatchedJets(TList* listJets[fgkFFMNJ
   return listJets[1]->GetEntries();
 
 }
+//_______________________________________________________________________________
+Int_t AliAnalysisTaskJetFFMoments::GetListOfClosestJets(TList* listJets[fgkFFMNJetBranches], Int_t nUsedJets[fgkFFMNJetBranches], TList* list1, TList* list2, Int_t ifirstBr)
+{
 
+  TList* listMatchedJets[fgkFFMNJetBranches];
+  listMatchedJets[0] = list1; //MC
+  listMatchedJets[1] = list2;
+
+  TArrayI aGenIndex;
+  aGenIndex.Set(TMath::Max(nUsedJets[0],nUsedJets[1]));
+  TArrayI aRecIndex;
+  aRecIndex.Set(TMath::Max(nUsedJets[0],nUsedJets[1]));
+  // See comments in AliAnalysisHeplerTasks:
+  // aRecIndex: index of the reconstructed jet which matches the generated one. If -1, no matching
+  // aGenIndex: index of the generated jet which matches the reconstructed one. If -1, no matching
+  AliAnalysisHelperJetTasks::GetClosestJets(listJets[0], nUsedJets[0], listJets[1], nUsedJets[1],
+                                            aGenIndex, aRecIndex, fDebug, fJetMatchedDistMax);
+
+
+
+
+  // Fill the mismatched histograms and remove the unmatched jets from the jet list
+  for( Int_t iJetBranch = ifirstBr; iJetBranch < fgkFFMNJetBranches; iJetBranch++) {
+    for( Int_t ijet = 0; ijet < nUsedJets[iJetBranch]; ijet++ ) {
+      if(fDebug>2 && iJetBranch==0 && aRecIndex[ijet]!=-1)  printf("gen branch jets: %2d matched with rec jet: %2d\n", ijet, aRecIndex[ijet]);
+
+      // Fill the lists of matched generated and reconstructed jets
+      if((iJetBranch==0)&&(aRecIndex[ijet]!=-1) ){
+        listMatchedJets[iJetBranch]->Add( ((AliAODJet*) listJets[iJetBranch]->At(ijet)));
+        listMatchedJets[1]->Add(((AliAODJet*) listJets[1]->At(aRecIndex[ijet])));
+      }
+   } // End loop on jets
+  } // End loop on jet branches
+ 
+ return listJets[1]->GetEntries();
+
+}
 //_______________________________________________________________________________
 void AliAnalysisTaskJetFFMoments::AssociateGenRec(TList* tracksAODMCCharged, TList* tracksRec, TArrayI& indexAODTr, TArrayI& indexMCTr,  TArrayS& isRefGen, TH2D** fh2RecVsGen)
 {
@@ -2321,6 +2377,9 @@ void AliAnalysisTaskJetFFMoments::CreateHistos()
     }
 	fh2MatchedJetsRDPtVSPt[iJetBranch] = CreateTH2D(Form("h2Matched_%s_%s_RelativeDeltaPt", fAnaJetType.Data(), fAnaObjectType.Data()), 26, 10+iJetBranch*5, fkHighResolution);
 	fh2MatchedJetsRDPtVSPt[iJetBranch]->SetXTitle(Form("%s/%s", fh2MatchedJetsRDPtVSPt[iJetBranch]->GetXaxis()->GetTitle(), fh2MatchedJetsRDPtVSPt[iJetBranch]->GetYaxis()->GetTitle()));
+
+        fh2MatchedJetsUE[iJetBranch] = CreateTH2D(Form("h2MatchedUE_%s_%s_pt", "LEADING", fAnaObjectType.Data()), 10+iJetBranch*5, 28 ,0);
+
 	fh2MatchedJetsAreaVSPt[iJetBranch] = CreateTH2D(Form("h2Matched_%s_%s_Area", fAnaJetType.Data(), fAnaObjectType.Data()), 13+iJetBranch*5, 10+iJetBranch*5, fkHighResolution);
 
     fh1Njets[iJetBranch] = new TH1F(Form("h1Njets_%s", fAnaObjectType.Data()), "Number of jets after cut and before matching", 9, 0.5 , 9.5);
@@ -2384,6 +2443,7 @@ void AliAnalysisTaskJetFFMoments::CreateHistos()
     if( fAnaJetType.Contains("DIJET")) fHistListJets[iJetBranch]->Add(fh1Asy_DiJets[iJetBranch]);
 	fHistListJets[iJetBranch]->Add(fh2MatchedJetsRDPtVSPt[iJetBranch]);
 	fHistListJets[iJetBranch]->Add(fh2MatchedJetsAreaVSPt[iJetBranch]);
+        fHistListJets[iJetBranch]->Add(fh2MatchedJetsUE[iJetBranch]);
 	for( Int_t iAxis = 0; iAxis < 7; iAxis++) fHistListJets[iJetBranch]->Add(fh2TracksInJets[iJetBranch][iAxis]);
 	if((fJetBranch[0].Contains("MC") || fkDoJetReco) && ( !fkDoJetReco ||(fTrackType[0] == kTrackAODMCCharged || fTrackType[0] ==  kTrackAODMCChargedAcceptance  || fTrackType[0] == kTrackAODMCextra || fTrackType[0] == kTrackAODMCextraonly))){
 	  for( Int_t iAxis = 0; iAxis < 7; iAxis++) fHistListJets[iJetBranch]->Add(fh2AssociatedTracksInJets[iJetBranch][iAxis]);
@@ -2790,8 +2850,9 @@ void AliAnalysisTaskJetFFMoments::GetDimParams(Int_t iEntry, Bool_t highres, con
 	label = "(p^{Rec}_{T}-p^{Gen}_{T})";
   } else if( iEntry == 27) {
         label = "p_{T} Resolution";
+  } else if (iEntry == 28) {
+        label = "UE p_{T} density (GeV/c)"; 
   }
-
   nbins = fnBinsAxis[iEntry];
   xmin = fBinMinAxis[iEntry];
   xmax = fBinMaxAxis[iEntry];
@@ -3224,11 +3285,10 @@ void AliAnalysisTaskJetFFMoments::GetTracksTiltedwrpJetAxis(Float_t alpha, TList
   Double_t dR = TMath::Sqrt(deta * deta + dphi * dphi);
 
     if(dR<=radius){
-      outputlist->Add(track);
+     if (outputlist) outputlist->Add(track);
       sumPt += track->Pt();
     }
   }
-
 }
 
 // _____________________________________________________________________________________________________________________________________________________________________
