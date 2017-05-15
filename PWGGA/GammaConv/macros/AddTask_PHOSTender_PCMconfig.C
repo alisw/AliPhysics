@@ -5,7 +5,8 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
                     Int_t pass                  = 1,
                     Bool_t isMC                 = kFALSE,
                     Bool_t forceBadChannelMap   = kFALSE,
-                    TString specificBCMap       = ""
+                    TString specificBCMap       = "",
+                    Bool_t useStandardPHOSNL    = kTRUE
 )
 {
   //Add a task with PHOS tender which works with AOD to the analysis train
@@ -31,6 +32,8 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
   AliPHOSTenderTask * tenderTask = new AliPHOSTenderTask(taskName) ;
   AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply(tenderName) ;
   PHOSSupply->SetReconstructionPass(pass) ;
+  if(!useStandardPHOSNL)
+    PHOSSupply->SetNonlinearityVersion("NoCorrection") ;
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
   if(isMC) //handle MC data
     PHOSSupply->SetMCProduction(options) ;
