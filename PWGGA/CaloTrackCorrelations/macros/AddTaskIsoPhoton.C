@@ -239,9 +239,9 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
 
   reader->SwitchOffWriteDeltaAOD()  ;
 
-if(SSsmearing != 0)
-{
-  reader->SwitchOnShowerShapeSmearing();
+  if(SSsmearing != 0)
+  {
+    reader->SwitchOnShowerShapeSmearing();
     if(SSsmearing == 1) //Gustavo's settings
     { 
       reader->SetSmearingFunction(AliCaloTrackReader::kSmearingLandau);
@@ -251,20 +251,6 @@ if(SSsmearing != 0)
     { 
       reader->SetSmearingFunction(AliCaloTrackReader::kSmearingLandauShift);
       reader->SetShowerShapeSmearWidth(0.035);
-    }
-}
-  // MC settings
-  if(useKinematics)
-  {
-    if(inputDataType == "ESD")
-    {
-      reader->SwitchOnStack();
-      reader->SwitchOffAODMCParticles();
-    }
-    else if(inputDataType == "AOD")
-    {
-      reader->SwitchOffStack();
-      reader->SwitchOnAODMCParticles();
     }
   }
 

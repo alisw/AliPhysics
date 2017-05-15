@@ -281,21 +281,6 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, B
   
   reader->SetDebug(debugLevel);//10 for lots of messages
 
-  // MC settings
-  if(simulation)
-  {
-    if(inputDataType == "ESD")
-    {
-      reader->SwitchOnStack();
-      reader->SwitchOffAODMCParticles();
-    }
-    else if(inputDataType == "AOD")
-    {
-      reader->SwitchOffStack();
-      reader->SwitchOnAODMCParticles();
-    }
-  }
-  
   //------------------------
   // Detector input filling
   //------------------------
