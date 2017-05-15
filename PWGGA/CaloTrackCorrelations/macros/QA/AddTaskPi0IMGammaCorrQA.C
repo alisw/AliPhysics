@@ -280,7 +280,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, B
            inputDataType.Data());
   
   reader->SetDebug(debugLevel);//10 for lots of messages
-
+  
   //------------------------
   // Detector input filling
   //------------------------
@@ -619,8 +619,16 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, Bool_t caloType, TString co
   ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
   
   // Cuts 
-  if(calorimeter=="EMCAL") ana->SetPairTimeCut(100);
+  if(calorimeter=="EMCAL") 
+  {
+    ana->SetPairTimeCut(100);
     
+    // Angle cut, avoid pairs with too large angle
+    ana->SwitchOnAngleSelection(); 
+    ana->SetAngleMaxCut(TMath::DegToRad()*80.); // EMCal: 4 SM in phi, 2 full SMs in eta
+    ana->SetAngleCut(0.016); // Minimum angle open, ~cell size
+  }
+  
   ana->SetNPIDBits(1);
   ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
   // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.

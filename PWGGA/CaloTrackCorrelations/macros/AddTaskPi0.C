@@ -722,7 +722,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
   // Angle cut, avoid pairs with too large angle
   ana->SwitchOnAngleSelection(); 
   ana->SetAngleMaxCut(TMath::DegToRad()*80.); // EMCal: 4 SM in phi, 2 full SMs in eta
-  ana->SetAngleCut(0.014); // Minimum angle open, cell size
+  ana->SetAngleCut(0.016); // Minimum angle open, cell size
   
   //if(!bothCalo) ana->SwitchOnSMCombinations();
   ana->SwitchOnSMCombinations();
