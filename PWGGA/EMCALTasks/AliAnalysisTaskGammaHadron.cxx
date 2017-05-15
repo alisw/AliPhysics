@@ -51,7 +51,7 @@ AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 fGammaOrPi0(0),fDoMixing(0),fMCorData(0),fDebug(0),fSavePool(0),
 fEventCuts(0),fHistEffGamma(0x0),fHistEffHadron(0x0),
 fRtoD(0),
-fClShapeMin(0),fClShapeMax(10),fMaxNLM(10),fRmvMTrack(0),
+fClShapeMin(0),fClShapeMax(10),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),
 fMixBCent(0),fMixBZvtx(),fPoolMgr(0x0),fTrackDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),
@@ -59,6 +59,7 @@ fEventCutList(0),fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputL
 
 fHistNoClusPt(0),fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fHistClusPairInvarMasspTMIX(0),fHistClusPairInvarMasspTMIXolap(0),fMAngle(0),fMAngleMIX(0),fPtAngle(0),fPtAngleMIX(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 
+fHistMatchEtaPhiAllCl2(0),fHistMatchEtaPhiAllCl3(0),fHistMatchEtaPhiAllCl4(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
 fHistCellsCluster(0),fHistClusterShape(0),fHistClusterShape0(0),fHistClusterShape1(0),fHistClusterShape2(0),fHistClusterShape3(0),fHistClusterShape4(0),fHistClusterTime(0),
 
@@ -90,7 +91,7 @@ AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 fGammaOrPi0(0),fDoMixing(0),fMCorData(0),fDebug(0),fSavePool(0),
 fEventCuts(0),fHistEffGamma(0x0),fHistEffHadron(0x0),
 fRtoD(0),
-fClShapeMin(0),fClShapeMax(10),fMaxNLM(10),fRmvMTrack(0),
+fClShapeMin(0),fClShapeMax(10),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),
 fMixBCent(0),fMixBZvtx(),fPoolMgr(0x0),fTrackDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),
@@ -98,6 +99,7 @@ fEventCutList(0),fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputL
 
 fHistNoClusPt(0),fHistPi0(0),fHistEvsPt(0),fHistClusPairInvarMasspT(0),fHistClusPairInvarMasspTMIX(0),fHistClusPairInvarMasspTMIXolap(0),fMAngle(0),fMAngleMIX(0),fPtAngle(0),fPtAngleMIX(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 
+fHistMatchEtaPhiAllCl2(0),fHistMatchEtaPhiAllCl3(0),fHistMatchEtaPhiAllCl4(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
 fHistCellsCluster(0),fHistClusterShape(0),fHistClusterShape0(0),fHistClusterShape1(0),fHistClusterShape2(0),fHistClusterShape3(0),fHistClusterShape4(0),fHistClusterTime(0),
 
@@ -672,6 +674,13 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Special QA histograms (also to get more info what is going on in mixed event for trigger data)
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	fHistMatchEtaPhiAllCl2 = new TH2F("fHistMatchEtaPhiAllCl2", "fHistMatchEtaPhiAllCl2;#Delta#eta;#Delta#phi", 100, -0.1, 0.1, 100, -0.1, 0.1);
+	fOutput->Add(fHistMatchEtaPhiAllCl2);
+	fHistMatchEtaPhiAllCl3 = new TH2F("fHistMatchEtaPhiAllCl3", "fHistMatchEtaPhiAllCl3;#Delta#eta;#Delta#phi", 100, -0.1, 0.1, 100, -0.1, 0.1);
+	fOutput->Add(fHistMatchEtaPhiAllCl3);
+	fHistMatchEtaPhiAllCl4 = new TH2F("fHistMatchEtaPhiAllCl4", "fHistMatchEtaPhiAllCl4;#Delta#eta;#Delta#phi", 100, -0.1, 0.1, 100, -0.1, 0.1);
+	fOutput->Add(fHistMatchEtaPhiAllCl4);
+
 	for(Int_t identifier=0;identifier<kNIdentifier+2;identifier++)
 	{
 		//..geometrical hit distribution of clusters
@@ -1789,7 +1798,7 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
     //..ID array -  1 - leading, 2- track matched, 3 - leading & track matched
 	Int_t gammaInfo=0;
 	if(caloCluster==leadingClus)gammaInfo=1;
-	if(caloCluster->GetNTracksMatched()>0)gammaInfo=2;
+	if(DetermineMatchedTrack(caloCluster))gammaInfo=2;
 	if(gammaInfo==2 && caloCluster==leadingClus)gammaInfo=3;
 	valueArray[4]=gammaInfo;
 
@@ -1817,9 +1826,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 {
 	TLorentzVector caloClusterVec;
 	clusters->GetMomentum(caloClusterVec,caloCluster);
-	Double_t deltaPhi=2;   //..phi away from detector edges.
-	Double_t deltaEta=0.0; //..eta away from detector edges.
-    //!!!! eventually transform to AliTLorentzvector
+	//!!!! eventually transform to AliTLorentzvector
 
 	//..Accepts clusters if certain conditions are fulfilled
 	Bool_t Accepted=1; //..By default accepted
@@ -1849,11 +1856,10 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	}
 	//-----------------------------
 	//..remove clusters with a matched track
-	if(fRmvMTrack==1 && caloCluster->GetNTracksMatched()!=0)
+	if(fRmvMTrack==1 && DetermineMatchedTrack(caloCluster))
 	{
 		return 0;
 	}
-
 	//-----------------------------
 	//..Do we need a distance to bad channel cut?
 	//caloCluster->GetDistanceToBadChannel()
@@ -1861,6 +1867,8 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 
 	//-----------------------------
 	//..Do fiducial volume cut
+	Double_t deltaPhi=2;   //..phi away from detector edges.
+	Double_t deltaEta=0.0; //..eta away from detector edges.
 
 
 
@@ -1904,6 +1912,48 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,Doubl
 	dPhi*= fRtoD;
 
 	return dPhi;
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluster)
+{
+	Bool_t foundTrackMatched=0;
+	Int_t Ntrks = caloCluster->GetNTracksMatched();
+	if(Ntrks==0) return foundTrackMatched; //..if no matched track removal is wanted set it to 0.
+
+	//..loop over matched tracks
+	for (Int_t i = 0; i < Ntrks; ++i)
+	{
+		AliVTrack* track = static_cast<AliVTrack*>(caloCluster->GetTrackMatched(i));
+
+		Double_t veta = track->GetTrackEtaOnEMCal();
+		Double_t vphi = track->GetTrackPhiOnEMCal();
+
+		Float_t pos[3] = {0};
+		caloCluster->GetPosition(pos);
+		TVector3 cpos(pos);
+		Double_t ceta     = cpos.Eta();
+		Double_t cphi     = cpos.Phi();
+		Double_t etadiff=veta-ceta;
+		Double_t phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
+		if(caloCluster->GetNCells()==2)fHistMatchEtaPhiAllCl2->Fill(etadiff, phidiff);
+		if(caloCluster->GetNCells()==3)fHistMatchEtaPhiAllCl3->Fill(etadiff, phidiff);
+		if(caloCluster->GetNCells()==4)fHistMatchEtaPhiAllCl4->Fill(etadiff, phidiff);
+
+		//?  // check if track also points to cluster
+		//?   Int_t cid = track->GetEMCALcluster();
+		//?   if (fDoTrackClus && (cid != icluster)) return energyclus;
+
+		//..check if the track was matchec within a stricter criteria
+		if(TMath::Abs(etadiff)<fTrackMatchEta && TMath::Abs(phidiff)<fTrackMatchPhi)
+		{
+			if (track->GetLabel() > fMinMCLabel)
+			{
+				foundTrackMatched=1;
+				break;
+			}
+		}
+	}
+	return foundTrackMatched;
 }
 //________________________________________________________________________
 Double_t AliAnalysisTaskGammaHadron::GetEff(AliTLorentzVector ClusterVec)
