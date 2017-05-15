@@ -1856,7 +1856,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	}
 	//-----------------------------
 	//..remove clusters with a matched track
-	if(DetermineMatchedTrack(caloCluster))
+	if(fRmvMTrack==1 && DetermineMatchedTrack(caloCluster))
 	{
 		return 0;
 	}
@@ -1918,7 +1918,7 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 {
 	Bool_t foundTrackMatched=0;
 	Int_t Ntrks = caloCluster->GetNTracksMatched();
-	if(fRmvMTrack==0 || Ntrks==0) return foundTrackMatched; //..if no matched track removal is wanted set it to 0.
+	if(Ntrks==0) return foundTrackMatched; //..if no matched track removal is wanted set it to 0.
 
 	//..loop over matched tracks
 	for (Int_t i = 0; i < Ntrks; ++i)
