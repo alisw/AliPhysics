@@ -89,7 +89,7 @@ public :
 
   // trigger class selection
   void SetTriggerClass(const Char_t *triggerClass) { fTriggerClass = triggerClass; }
-  const Char_t* GetTriggerClass() const { return fTriggerClass.Data(); }
+  const Char_t* GetTriggerClass() const { return fTriggerClass.IsNull()?NULL:fTriggerClass.Data(); }
 
   // use track vertex
   void SetUseTrackVertex(Bool_t trackVtx = kTRUE) { fUseTrackVertex = trackVtx; }
