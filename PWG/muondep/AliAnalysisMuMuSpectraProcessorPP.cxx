@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliAnalysisMuMuSpectraCapsulePP.h"
+#include "AliAnalysisMuMuSpectraProcessorPP.h"
 
-ClassImp(AliAnalysisMuMuSpectraCapsulePP)
+ClassImp(AliAnalysisMuMuSpectraProcessorPP)
 
 #include "TF1.h"
 #include "TProfile.h"
@@ -39,7 +39,7 @@ ClassImp(AliAnalysisMuMuSpectraCapsulePP)
 #include "AliAnalysisMuMuSpectra.h"
 #include "AliAnalysisMuMuResult.h"
 #include "AliAnalysisMuMuJpsiResult.h"
-#include "AliAnalysisMuMuSpectraCapsulePP.h"
+#include "AliAnalysisMuMuSpectraProcessorPP.h"
 #include <fstream>
 #include <string>
 
@@ -65,31 +65,31 @@ namespace
 
 
 //_____________________________________________________________________________
- AliAnalysisMuMuSpectraCapsulePP::AliAnalysisMuMuSpectraCapsulePP(
+ AliAnalysisMuMuSpectraProcessorPP::AliAnalysisMuMuSpectraProcessorPP(
 const AliAnalysisMuMuSpectra*  spectra,
 const TString                 spectraPath,
 const char                  * externFile,
 const char                  * externFile2)
 :
-  AliAnalysisMuMuSpectraCapsule(spectra,spectraPath,externFile,externFile2)
+  AliAnalysisMuMuSpectraProcessor(spectra,spectraPath,externFile,externFile2)
 {
 
 
-  if(!AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
+  if(!AliAnalysisMuMuSpectraProcessor::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
   {
     AliWarning(Form("No extern file readed"));
   }
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectraCapsulePP::~AliAnalysisMuMuSpectraCapsulePP()
+AliAnalysisMuMuSpectraProcessorPP::~AliAnalysisMuMuSpectraProcessorPP()
 {
   // dtor
 }
 
 
 //_____________________________________________________________________________
-TList* AliAnalysisMuMuSpectraCapsulePP::ComputeJpsiPPCrossSection(const char* what) const
+TList* AliAnalysisMuMuSpectraProcessorPP::ComputeJpsiPPCrossSection(const char* what) const
 {
   /// Compute the PP cross section
   /// Warning : the cross-section is normalized to bin width only if bin width > 2
@@ -310,7 +310,7 @@ TList* AliAnalysisMuMuSpectraCapsulePP::ComputeJpsiPPCrossSection(const char* wh
 }
 
 //_____________________________________________________________________________
-TGraphErrors* AliAnalysisMuMuSpectraCapsulePP::ComputeYield( const char* what, const TH1* histo, const char* sResName, Double_t MUL)
+TGraphErrors* AliAnalysisMuMuSpectraProcessorPP::ComputeYield( const char* what, const TH1* histo, const char* sResName, Double_t MUL)
 {
   /// @brief Compute Yield.
   /// @argument what  the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
@@ -463,7 +463,7 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePP::ComputeYield( const char* what, c
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePP::DrawResults( const char* particle,const char* subresults) const
+void AliAnalysisMuMuSpectraProcessorPP::DrawResults( const char* particle,const char* subresults) const
 {
   /**
    *
@@ -630,7 +630,7 @@ void AliAnalysisMuMuSpectraCapsulePP::DrawResults( const char* particle,const ch
 
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePP::Print(Option_t* opt) const
+void AliAnalysisMuMuSpectraProcessorPP::Print(Option_t* opt) const
 {
   /**
    *
@@ -644,7 +644,7 @@ void AliAnalysisMuMuSpectraCapsulePP::Print(Option_t* opt) const
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePP::PrintConst() const
+void AliAnalysisMuMuSpectraProcessorPP::PrintConst() const
 {
     ///
     /// Print member constants on the terminal
@@ -675,7 +675,7 @@ void AliAnalysisMuMuSpectraCapsulePP::PrintConst() const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuSpectraCapsulePP::ReadFromFile(TString sbin, float valueArray[]) const
+Bool_t AliAnalysisMuMuSpectraProcessorPP::ReadFromFile(TString sbin, float valueArray[]) const
 {
     ///
     /// Read extern file lines and store associated values. Exemple of line :

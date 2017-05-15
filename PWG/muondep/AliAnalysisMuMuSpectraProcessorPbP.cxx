@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliAnalysisMuMuSpectraCapsulePbP.h"
+#include "AliAnalysisMuMuSpectraProcessorPbP.h"
 
-ClassImp(AliAnalysisMuMuSpectraCapsulePbP)
+ClassImp(AliAnalysisMuMuSpectraProcessorPbP)
 
 #include "TF1.h"
 #include "TProfile.h"
@@ -39,7 +39,7 @@ ClassImp(AliAnalysisMuMuSpectraCapsulePbP)
 #include "AliAnalysisMuMuSpectra.h"
 #include "AliAnalysisMuMuResult.h"
 #include "AliAnalysisMuMuJpsiResult.h"
-#include "AliAnalysisMuMuSpectraCapsulePbP.h"
+#include "AliAnalysisMuMuSpectraProcessorPbP.h"
 #include <iostream>
 #include <string>
 
@@ -80,13 +80,13 @@ namespace
 
 
 //_____________________________________________________________________________
- AliAnalysisMuMuSpectraCapsulePbP::AliAnalysisMuMuSpectraCapsulePbP(
+ AliAnalysisMuMuSpectraProcessorPbP::AliAnalysisMuMuSpectraProcessorPbP(
 const AliAnalysisMuMuSpectra*  spectra,
 const TString                 spectraPath,
 const char                  * externFile,
 const char                  * externFile2)
 :
-  AliAnalysisMuMuSpectraCapsule(spectra,spectraPath,externFile,externFile2)
+  AliAnalysisMuMuSpectraProcessor(spectra,spectraPath,externFile,externFile2)
   // fSpectra(spectra),
   // fSpectraName(spectraPath),
   // fExternFile(externFile),
@@ -107,7 +107,7 @@ const char                  * externFile2)
   //   return;
   // }
 
-  if(!AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
+  if(!AliAnalysisMuMuSpectraProcessor::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
   {
     AliWarning(Form("No extern file readed"));
   }
@@ -115,13 +115,13 @@ const char                  * externFile2)
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectraCapsulePbP::~AliAnalysisMuMuSpectraCapsulePbP()
+AliAnalysisMuMuSpectraProcessorPbP::~AliAnalysisMuMuSpectraProcessorPbP()
 {
   // dtor
 }
 
 //_____________________________________________________________________________
-TGraphErrors* AliAnalysisMuMuSpectraCapsulePbP::ComputeYield( const char* what, const TH1* histo, const char* sResName)
+TGraphErrors* AliAnalysisMuMuSpectraProcessorPbP::ComputeYield( const char* what, const TH1* histo, const char* sResName)
 {
   /// @brief Compute Yield.
   /// @argument what  the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
@@ -277,7 +277,7 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePbP::ComputeYield( const char* what, 
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePbP::DrawResults( const char* particle,const char* subresults) const
+void AliAnalysisMuMuSpectraProcessorPbP::DrawResults( const char* particle,const char* subresults) const
 {
   /**
    *
@@ -440,7 +440,7 @@ void AliAnalysisMuMuSpectraCapsulePbP::DrawResults( const char* particle,const c
 
 
 //_____________________________________________________________________________
-TGraphErrors * AliAnalysisMuMuSpectraCapsulePbP::RpAAsGraphic(Double_t MUL) const
+TGraphErrors * AliAnalysisMuMuSpectraProcessorPbP::RpAAsGraphic(Double_t MUL) const
 {
   /**
    *
@@ -608,7 +608,7 @@ TGraphErrors * AliAnalysisMuMuSpectraCapsulePbP::RpAAsGraphic(Double_t MUL) cons
 
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePbP::GetValuesFromExternFile(TString sbin, Double_t numArray[], Double_t MUL) const
+void AliAnalysisMuMuSpectraProcessorPbP::GetValuesFromExternFile(TString sbin, Double_t numArray[], Double_t MUL) const
 {
   /**
    *
@@ -768,7 +768,7 @@ void AliAnalysisMuMuSpectraCapsulePbP::GetValuesFromExternFile(TString sbin, Dou
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePbP::Print(Option_t* opt) const
+void AliAnalysisMuMuSpectraProcessorPbP::Print(Option_t* opt) const
 {
   /**
    *
@@ -782,7 +782,7 @@ void AliAnalysisMuMuSpectraCapsulePbP::Print(Option_t* opt) const
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePbP::PrintConst() const
+void AliAnalysisMuMuSpectraProcessorPbP::PrintConst() const
 {
   /**
    *

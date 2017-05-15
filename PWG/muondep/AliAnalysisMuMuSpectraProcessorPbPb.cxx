@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliAnalysisMuMuSpectraCapsulePbPb.h"
+#include "AliAnalysisMuMuSpectraProcessorPbPb.h"
 
-ClassImp(AliAnalysisMuMuSpectraCapsulePbPb)
+ClassImp(AliAnalysisMuMuSpectraProcessorPbPb)
 
 #include "TF1.h"
 #include "TProfile.h"
@@ -43,7 +43,7 @@ ClassImp(AliAnalysisMuMuSpectraCapsulePbPb)
 #include "AliAnalysisMuMuSpectra.h"
 #include "AliAnalysisMuMuResult.h"
 #include "AliAnalysisMuMuJpsiResult.h"
-#include "AliAnalysisMuMuSpectraCapsulePbPb.h"
+#include "AliAnalysisMuMuSpectraProcessorPbPb.h"
 #include <fstream>
 #include <string>
 
@@ -94,13 +94,13 @@ namespace
 
 
 //_____________________________________________________________________________
- AliAnalysisMuMuSpectraCapsulePbPb::AliAnalysisMuMuSpectraCapsulePbPb(
+ AliAnalysisMuMuSpectraProcessorPbPb::AliAnalysisMuMuSpectraProcessorPbPb(
 const AliAnalysisMuMuSpectra*  spectra,
 const TString                 spectraPath,
 const char                  * externFile,
 const char                  * externFile2)
 :
-  AliAnalysisMuMuSpectraCapsule(spectra,spectraPath,externFile,externFile2)
+  AliAnalysisMuMuSpectraProcessor(spectra,spectraPath,externFile,externFile2)
   // fSpectra(spectra),
   // fSpectraName(spectraPath),
   // fExternFile(externFile),
@@ -122,7 +122,7 @@ const char                  * externFile2)
   //   return;
   // }
 
-  if(!AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
+  if(!AliAnalysisMuMuSpectraProcessor::SetConstantFromExternFile(fExternFile2,&fConstArray[0],&fSpectraName))
   {
     AliWarning(Form("No extern file readed"));
   }
@@ -130,13 +130,13 @@ const char                  * externFile2)
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectraCapsulePbPb::~AliAnalysisMuMuSpectraCapsulePbPb()
+AliAnalysisMuMuSpectraProcessorPbPb::~AliAnalysisMuMuSpectraProcessorPbPb()
 {
   // dtor
 }
 
 //_____________________________________________________________________________
-TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what, const TH1* histo, const char* sResName, Double_t MUL)
+TGraphErrors* AliAnalysisMuMuSpectraProcessorPbPb::ComputeYield( const char* what, const TH1* histo, const char* sResName, Double_t MUL)
 {
   /// @brief Compute Yield.
   /// @argument  what  the yield nominator, i.e NofJPsi, meanPT etc. (null by default)
@@ -306,7 +306,7 @@ TGraphErrors* AliAnalysisMuMuSpectraCapsulePbPb::ComputeYield( const char* what,
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePbPb::DrawResults( const char* what, const char* particle,const char* subresults) const
+void AliAnalysisMuMuSpectraProcessorPbPb::DrawResults( const char* what, const char* particle,const char* subresults) const
 {
   /**
    *
@@ -587,7 +587,7 @@ void AliAnalysisMuMuSpectraCapsulePbPb::DrawResults( const char* what, const cha
 
 
 //_____________________________________________________________________________
-TList * AliAnalysisMuMuSpectraCapsulePbPb::RAAasGraphic(Double_t MUL) const
+TList * AliAnalysisMuMuSpectraProcessorPbPb::RAAasGraphic(Double_t MUL) const
 {
    ///
    /// Run over each bin, calculate RAA according to fBinType throught GetValuesFromExternFiles() :
@@ -786,7 +786,7 @@ TList * AliAnalysisMuMuSpectraCapsulePbPb::RAAasGraphic(Double_t MUL) const
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuSpectraCapsulePbPb::ComputeRAA(TString sbin, Double_t numArray[], Double_t MUL, Double_t binwidth) const
+Bool_t AliAnalysisMuMuSpectraProcessorPbPb::ComputeRAA(TString sbin, Double_t numArray[], Double_t MUL, Double_t binwidth) const
 {
    ///
    /// Checks bin type and read files (or not) accordingly. Then computes and stores several results in numArray.
@@ -928,7 +928,7 @@ Bool_t AliAnalysisMuMuSpectraCapsulePbPb::ComputeRAA(TString sbin, Double_t numA
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePbPb::Print(Option_t* opt) const
+void AliAnalysisMuMuSpectraProcessorPbPb::Print(Option_t* opt) const
 {
   /**
    *
@@ -942,7 +942,7 @@ void AliAnalysisMuMuSpectraCapsulePbPb::Print(Option_t* opt) const
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsulePbPb::PrintConst() const
+void AliAnalysisMuMuSpectraProcessorPbPb::PrintConst() const
 {
     ///
     /// Print member constants on the terminal
@@ -971,7 +971,7 @@ void AliAnalysisMuMuSpectraCapsulePbPb::PrintConst() const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuSpectraCapsulePbPb::ReadFromFile(TString sbin, float valueArray[]) const
+Bool_t AliAnalysisMuMuSpectraProcessorPbPb::ReadFromFile(TString sbin, float valueArray[]) const
 {
     ///
     /// Read extern file lines and store associated values. Exemple of line :
@@ -1024,7 +1024,7 @@ Bool_t AliAnalysisMuMuSpectraCapsulePbPb::ReadFromFile(TString sbin, float value
 }
 
 //_____________________________________________________________________________
-void  AliAnalysisMuMuSpectraCapsulePbPb::SetCanvasStyle(TCanvas *can) const {
+void  AliAnalysisMuMuSpectraProcessorPbPb::SetCanvasStyle(TCanvas *can) const {
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
 
