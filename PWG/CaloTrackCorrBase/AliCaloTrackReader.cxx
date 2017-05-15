@@ -22,8 +22,7 @@
 #include "AliMCEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliGenCocktailEventHeader.h"
-#include "AliGenHijingEventHeader.h"
+#include "AliGenEventHeader.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliVTrack.h"
@@ -876,65 +875,6 @@ AliHeader* AliCaloTrackReader::GetHeader() const
   {
     AliInfo("Header is not available");
     return 0x0 ;
-  }
-}
-
-//______________________________________________________________
-/// \return pointer to Generated event header (AliGenEventHeader)
-//______________________________________________________________
-AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
-{
-  if     (fDataType==kESD && fMC)
-  {
-    AliGenEventHeader * eventHeader = fMC->GenEventHeader();
-    
-    if(fMCGenerEventHeaderToAccept=="") return eventHeader ;
-        
-    AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
-    
-    if(!cocktail) return 0x0 ;
-    
-    TList *genHeaders = cocktail->GetHeaders();
-    
-    Int_t nGenerators = genHeaders->GetEntries();
-    
-    for(Int_t igen = 0; igen < nGenerators; igen++)
-    {
-      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
-      TString name = eventHeader2->GetName();
-      //printf("ESD Event header %d %s\n",igen,name.Data());
-
-      if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase)) 
-        return eventHeader2 ;
-    }
-
-    return 0x0;
-    
-  }
-  else if(fDataType==kAOD && GetAODMCHeader())
-  {
-    Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
-
-    if( nGenerators <= 0)        return 0x0;
-    
-    if(fMCGenerEventHeaderToAccept=="") return GetAODMCHeader()->GetCocktailHeader(0);
-        
-    for(Int_t igen = 0; igen < nGenerators; igen++)
-    {
-      AliGenEventHeader * eventHeader = GetAODMCHeader()->GetCocktailHeader(igen) ;
-      TString name = eventHeader->GetName();
-      //printf("AOD Event header %d %s\n",igen,name.Data());
-      
-      if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase))
-        return eventHeader ;
-    }
-    
-    return 0x0;
-        
-  }
-  else
-  {
-    return 0x0;
   }
 }
 

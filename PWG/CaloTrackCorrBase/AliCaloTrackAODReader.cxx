@@ -21,6 +21,7 @@
 #include "AliAnalysisManager.h"
 #include "AliMixedEvent.h"
 #include "AliAODEvent.h"
+#include "AliGenEventHeader.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -157,6 +158,34 @@ AliAODMCHeader* AliCaloTrackAODReader::GetAODMCHeader() const
   if(aod) mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
   
   return mch;
+}
+
+//______________________________________________________________
+/// \return pointer to Generated event header (AliGenEventHeader)
+//______________________________________________________________
+AliGenEventHeader* AliCaloTrackAODReader::GetGenEventHeader() const
+{
+  if ( !GetAODMCHeader() ) return 0x0;
+  
+  Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
+  
+  if ( nGenerators <= 0  ) return 0x0;
+  
+  if ( fMCGenerEventHeaderToAccept=="" ) 
+    return GetAODMCHeader()->GetCocktailHeader(0);
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+  {
+    AliGenEventHeader * eventHeader = GetAODMCHeader()->GetCocktailHeader(igen) ;
+   
+    TString name = eventHeader->GetName();
+    //printf("AOD Event header %d %s\n",igen,name.Data());
+    
+    if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase))
+      return eventHeader ;
+  }
+  
+  return 0x0;
 }
 
 //_____________________________

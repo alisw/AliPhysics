@@ -636,7 +636,8 @@ public:
   // Kinematics and galice.root available
   
   virtual AliHeader*         GetHeader()             const ;
-  virtual AliGenEventHeader* GetGenEventHeader() const ;
+  virtual AliGenEventHeader* GetGenEventHeader()     const { return 0x0                    ; }
+  // See implementation in AOD and ESD readers
   
   // Filtered kinematics in AOD
   
