@@ -55,17 +55,6 @@ AliAnalysisTaskCaloTrackCorrelationM *AddTaskCaloTrackCorrM(TString data, TStrin
     reader->SwitchOffEMCALCells(); 
     reader->SwitchOffPHOSCells(); 
   }
-	
-  if(kUseKinematics){
-    if(data == "ESD"){
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(data == "AOD"){
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
-  }
   
   reader->SetZvertexCut(10.);
   

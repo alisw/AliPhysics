@@ -114,9 +114,6 @@ AliCaloTrackReader * ConfigureReader()
 
   reader->SwitchOffWriteDeltaAOD()  ;
   
-  reader->SwitchOnStack();          
-  reader->SwitchOffAODMCParticles(); 
-  
   //------------------------
   // Detector input filling
   //------------------------
