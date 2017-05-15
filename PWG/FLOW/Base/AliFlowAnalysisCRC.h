@@ -1576,12 +1576,11 @@ private:
   TProfile2D *fZDCEcomTotHist[4];//! Run-by-run vtxZDCQvec
   TProfile3D *fZDCEcomTotvsVtxHist[12];//! Run-by-run vtxZDCQvec
   
-  TProfile2D *fCRCZDCQVecCenEComTot[2][4]; //!
-  TProfile2D *fCRCZDCQVecCenRefMulTot[2][4]; //!
-  TProfile3D *fCRCZDCQVecVtxEComTot[2][3][4]; //!
-  TProfile2D *fCRCTPCQVecCenEComTot[2][4]; //!
-  TProfile2D *fCRCTPCQVecCenRefMulTot[2][4]; //!
-  TProfile3D *fCRCTPCQVecVtxEComTot[2][3][4]; //!
+//  TProfile2D *fCRCZDCQVecCenEComTot[fCRCMaxnRun][4]; //!
+  TProfile2D *fCRCZDCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
+//  TProfile2D *fCRCTPCQVecCenEComTot[fCRCMaxnRun][4]; //!
+  TProfile2D *fCRCTPCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
+  TH2D *fMulvsCenRbR[fCRCMaxnRun]; //!
   
   TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
   TProfile3D *fZDCVtxCenHistMagPol[10][8]; //! Run-by-run vtxZDCQvec
@@ -1613,7 +1612,7 @@ private:
   TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
 //  TH2D *fCRCZDCQVecEP[fCRCMaxnRun][4]; //! ZN event planes
 //  TH3D* fhZNCenDis[2]; //! ZDC 2D Q-vector distribution vs centrality
-  TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
+  TProfile *fCRCZDCQVecRes[fCRCMaxnRun][4]; //! Q Vectors Resolution Terms
   TProfile *fCRCZDCQVecTest[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
   const static Int_t fkCRCnCQVecVtxPos = 8;
   Bool_t fStoreZDCQVecVtxPos; //
@@ -1622,7 +1621,7 @@ private:
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
-  const static Int_t fkNsteps = 9;
+  const static Int_t fkNsteps = 11;
   TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
