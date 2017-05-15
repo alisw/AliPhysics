@@ -89,9 +89,9 @@ private:
   static Bool_t fgUseMergeTHnSparse;  
 
   // TPC histogram
-  THnSparseF *fTPCClustHisto; // padRow:phi:TPCside
-  THnSparseF *fTPCEventHisto;  // Xv:Yv:Zv:mult:multP:multN:vertStatus
-  THnSparseF *fTPCTrackHisto;  // nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+  THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCside
+  THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
+  THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
   TObjArray* fFolderObj; // array of analysed histograms
 
   // analysis folder 
