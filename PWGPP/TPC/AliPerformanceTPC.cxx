@@ -279,7 +279,6 @@ void AliPerformanceTPC::Init()
     fAnalysisFolder = CreateFolder("folderTPC","Analysis Resolution Folder");
     if(!fUseSparse) fFolderObj = new TObjArray;
  
-    
   // set pt bins
   Int_t nPtBins = 50;
   Double_t ptMin = 1.e-2, ptMax = 20.;
@@ -797,7 +796,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   if(!bUseMC && GetTriggerClass()) {
     Bool_t isEventTriggered = vEvent->IsTriggerClassFired(GetTriggerClass());
     if(!isEventTriggered) {
-      printf("ERROR: Could not determine trigger class");
+      printf("ERROR: Could not determine trigger class (requested: %s)\n", GetTriggerClass());
       return;
     }
   }
