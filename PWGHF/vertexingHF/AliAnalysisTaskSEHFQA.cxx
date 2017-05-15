@@ -2437,7 +2437,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    tofTime-=startTime;
 	    for (Int_t type=0;type<AliPID::kSPECIES;type++) tofRes[type]=tofResp.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMassZ(type));
 	  }
-	  fHisTOFtime->Fill(times[AliPID::kProton]);
+	  fHisTOFtime->Fill(times[AliPID::kKaon]);
 	  fHisTOFtimeKaonHyptime->Fill(track->P(),tofTime-times[3]); //3 is kaon
 	  fHisTOFsig->Fill(tofTime);
 	  if (pid->GetTOFsignal()< 0) fHisTOFsig->Fill(-1);
