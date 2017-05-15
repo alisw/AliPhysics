@@ -64,10 +64,8 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
     return NULL;
   }
   
-  AliMCEventHandler* mchandler = new AliMCEventHandler;
-    mchandler->SetReadTR(kFALSE);
-    mgr->SetMCtruthEventHandler(mchandler);
-  if (!mchandler && bUseMCInfo) {
+  AliMCEventHandler *mcH = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
+  if (!mcH && bUseMCInfo) {
     Error("AddTaskPerformanceTPCdEdxQA", "MC input handler needed!");
     return NULL;
   }
