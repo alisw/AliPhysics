@@ -4470,8 +4470,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ){
           if(fClusterType==1) energy /= ( FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) * 
-                                          FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) * 
-                                          FunctionNL_kSDM(energy, 0.994667, -4.96515, -0.908031));// with TM pt dep
+                                          FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) );// with TM pt dep
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1) energy /= ( FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) * 
                                           FunctionNL_kSDM(energy, 0.987931, -4.13218, -0.583746) * 
@@ -4488,8 +4487,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
           if(fClusterType==1) energy /= ( FunctionNL_kSDM(energy, 0.973301, -3.66136, -1.20116) * 
-                                          FunctionNL_kSDM(energy, 0.987611, -4.14227, -0.282541) * 
-                                          FunctionNL_kSDM(energy, 0.995857, -5.05621, -0.510663));//with TM pt dep
+                                          FunctionNL_kSDM(energy, 0.987611, -4.14227, -0.282541));//with TM pt dep
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1) energy /= ( FunctionNL_kSDM(energy, 0.962047, -3.18433, -0.586904) * 
                                           FunctionNL_kSDM(energy, 0.990771, -4.29086, -0.27403) * 
@@ -4521,8 +4519,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
           if(fClusterType==1) energy /= ( FunctionNL_DExp(energy, 0.9910691195, 0.4901455923, -3.6647921806, 1.0255088817, 0.3070452373, -2.9149185308) * 
-                                          FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192) * 
-                                          FunctionNL_kSDM(energy, 0.99466, -5.02854, -0.851432));//with TM pt dep
+                                          FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192));//with TM pt dep
           if(fClusterType==2) energy /= ( 0.997 );
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1) energy /= ( FunctionNL_DExp(energy, 0.9978241421, 0.2054669115, -3.7888984452, 1.0255088817, 0.3070452373, -2.9149185308) * 
@@ -4539,8 +4536,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) {
           if(fClusterType==1) energy /= ( FunctionNL_DExp(energy, 0.9795532189, 0.8578583955, -2.3447892540, 1.0165873637, 0.6999387334, -2.1324782465) * 
-                                          FunctionNL_kSDM(energy, 0.990609, -4.37834, -0.304314) * 
-                                          FunctionNL_kSDM(energy, 0.99759, -4.43991, -1.57672));//with TM pt dep
+                                          FunctionNL_kSDM(energy, 0.990609, -4.37834, -0.304314) );//with TM pt dep
           if(fClusterType==2) energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) );
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1) energy /= ( FunctionNL_DExp(energy, 0.9746342307, 0.9576270870, -2.5098585110, 1.0165871862, 0.6999571530, -2.1324658480) * 
