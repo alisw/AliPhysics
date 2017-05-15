@@ -1120,8 +1120,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     {
       for(Int_t iSM = 0; iSM < fNModules; iSM++) 
       {
-        if(iSM < fFirstModule || iSM > fLastModule) continue;
-
+        if ( iSM < fFirstModule || iSM > fLastModule ) 
+        {
+          fhRePtNCellAsymCutsSM[iSM] = 0x0;
+          if ( fFillAngleHisto ) 
+            fhRePtNCellAsymCutsSMOpAngle[iSM] = 0x0;
+          continue;
+        }
+        
         fhRePtNCellAsymCutsSM[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
         if(fFillAngleHisto) fhRePtNCellAsymCutsSMOpAngle[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
       }
@@ -1156,13 +1162,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             outputContainer->Add(fhMiPtNCellAsymCuts[index]) ;
           }
           
-          if(fFillSMCombinations)
+          if ( fFillSMCombinations )
           {
             for(Int_t iSM = 0; iSM < fNModules; iSM++)
             {
               //printf("\t sm %d\n",iSM);
-              if(iSM < fFirstModule || iSM > fLastModule) continue;
-
+              if ( iSM < fFirstModule || iSM > fLastModule ) 
+              {
+                fhRePtNCellAsymCutsSM[iSM][index] = 0x0;
+                continue;
+              }
+              
               snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
               snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f, SM %d ",
                        fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
@@ -1172,7 +1182,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
               outputContainer->Add(fhRePtNCellAsymCutsSM[iSM][index]) ;
             }
             
-            if(fFillAngleHisto)
+            if ( fFillAngleHisto )
             {
               snprintf(key,   buffersize,"hReOpAngle_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
               snprintf(title, buffersize,"Real #theta_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f ",
@@ -1186,7 +1196,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
               fhRePtNCellAsymCutsOpAngle[index]->SetYTitle("#theta_{#gamma,#gamma} (rad)");
               outputContainer->Add(fhRePtNCellAsymCutsOpAngle[index]) ;
               
-              if(DoOwnMix())
+              if ( DoOwnMix() )
               {
                 snprintf(key,   buffersize,"hMiOpAngle_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
                 snprintf(title, buffersize,"Mixed #theta_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f",
@@ -1197,13 +1207,16 @@ TList * AliAnaPi0::GetCreateOutputObjects()
                 outputContainer->Add(fhMiPtNCellAsymCutsOpAngle[index]) ;
               }
             
-              //printf("\t %p, %p\n", fhRePtNCellAsymCutsOpAngle[index],  fhMiPtNCellAsymCutsOpAngle[index]);
-              if(fFillSMCombinations)
+              if ( fFillSMCombinations )
               {
                 for(Int_t iSM = 0; iSM < fNModules; iSM++)
                 {
-                  if(iSM < fFirstModule || iSM > fLastModule) continue;
-
+                  if ( iSM < fFirstModule || iSM > fLastModule )
+                  {
+                    fhRePtNCellAsymCutsSMOpAngle[iSM][index] = 0x0;
+                    continue;
+                  }
+                  
                   snprintf(key,   buffersize,"hReOpAngle_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
                   snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f, SM %d ",
                            fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
@@ -1720,33 +1733,53 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
+  
   if ( fFillSMCombinations )
-  {    
+  {  
+    AliDebug(1,Form("*** NMod = %d first %d last %d\n",fNModules, fFirstModule, fLastModule));
+    if(fLastModule >= fNModules)
+      AliError(Form("Last module number <%d> is larger than total SM number <%d>, please check configuration \n",fLastModule,fNModules));
+
     if(!fPairWithOtherDetector)
     {
       // Init the number of modules, set in the class AliCalorimeterUtils  
       fhReMod  = new TH2F*[fNModules] ;
-      fhMiMod  = new TH2F*[fNModules] ;
       
       if(GetCalorimeter() == kPHOS)
       {
         fhReDiffPHOSMod        = new TH2F*[fNModules]   ;
-        fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
       }
       else
       {
         fhReSameSectorEMCALMod = new TH2F*[fNModules/2] ;
         fhReSameSideEMCALMod   = new TH2F*[fNModules-2] ;
-        fhMiSameSectorEMCALMod = new TH2F*[fNModules/2] ;
-        fhMiSameSideEMCALMod   = new TH2F*[fNModules-2] ;
       }
-
+      
+      if(DoOwnMix())
+      {
+        fhMiMod  = new TH2F*[fNModules] ;
+        if(GetCalorimeter() == kPHOS)
+        {
+          fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
+        }
+        else
+        {
+          fhMiSameSectorEMCALMod = new TH2F*[fNModules/2] ;
+          fhMiSameSideEMCALMod   = new TH2F*[fNModules-2] ;
+        }
+      }
+      
       // Single super modules
-      //
+      //      
       for(Int_t imod=0; imod<fNModules; imod++)
       {
-        if(imod < fFirstModule || imod > fLastModule) continue;
-        
+        if ( imod < fFirstModule || imod > fLastModule )
+        {
+          fhReMod[imod] = 0x0;
+          if ( DoOwnMix() )
+            fhMiMod[imod] = 0x0;
+          continue;
+        }
         // Module dependent invariant mass
         snprintf(key, buffersize,"hReMod_%d",imod) ;
         snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for Module %d",imod) ;
@@ -1764,7 +1797,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           outputContainer->Add(fhMiMod[imod]) ;
         }
       }
-      
+
       // Super modules combinations
       //
       if(GetCalorimeter()==kPHOS)
@@ -1773,8 +1806,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         for(Int_t imod=0; imod<10; imod++)
         {
-          if(fNModules == 3 && imod > 2) continue;
-          if(fNModules == 4 && imod > 5) continue;
+          if ( (fNModules == 3 && imod > 2) || (fNModules == 4 && imod > 5) )
+          {
+            fhReDiffPHOSMod[imod]  = 0x0;
+            if ( DoOwnMix() )
+              fhMiDiffPHOSMod[imod] = 0x0;
+            continue;
+          }
           
           snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
           snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
@@ -1864,7 +1902,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             outputContainer->Add(fhMiSameSideEMCALMod[iside]) ;
           } // mix
         } // sides
-        
+
       }//EMCAL
     } // Not pair of detectors
     else
@@ -1898,7 +1936,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           outputContainer->Add(fhMiDiffSectorDCALPHOSMod[icombi]) ;
         }
         
-        if(icombi > 5) continue ;
+        if ( icombi > 5 ) continue ;
         
         snprintf(key, buffersize,"hReSameSectorDCALPHOS_%d",icombi) ;
         snprintf(title, buffersize,"Real pairs DCAL-PHOS, clusters in same sector, SM(%d,%d)",dcSameSM[icombi],phSameSM[icombi]) ;
@@ -2469,10 +2507,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-//  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
-//
-//    printf("Histogram %d, name: %s\n ",i, outputContainer->At(i)->GetName());
-//
+//  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
+//  {
+//    printf("Histogram %d, name: %s\n",i, outputContainer->At(i)->GetName());
 //  }
   
   return outputContainer;
