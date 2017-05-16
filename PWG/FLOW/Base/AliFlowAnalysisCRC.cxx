@@ -1165,9 +1165,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           
 //          fCRCTPCQVecCenEComTot[fRunBin][0+cw*2]->Fill(fCentralityEBE,(ZCM+ZAM)/2.,TMath::Cos(dPhi),wPhiEta);
 //          fCRCTPCQVecCenEComTot[fRunBin][1+cw*2]->Fill(fCentralityEBE,(ZCM+ZAM)/2.,TMath::Sin(dPhi),wPhiEta);
-          fCRCTPCQVecCenRefMulTot[fRunBin][0+cw*2]->Fill(fCentralityEBE,fReferenceMultiplicityEBE,TMath::Cos(dPhi),wPhiEta);
-          fCRCTPCQVecCenRefMulTot[fRunBin][1+cw*2]->Fill(fCentralityEBE,fReferenceMultiplicityEBE,TMath::Sin(dPhi),wPhiEta);
-          fMulvsCenRbR[fRunBin]->Fill(fCentralityEBE,fReferenceMultiplicityEBE);
+          Double_t recRefMul = fReferenceMultiplicityEBE-fMultCutAv->GetBinContent(fMultCutAv->FindBin(fCentralityEBE));
+          fCRCTPCQVecCenRefMulTot[fRunBin][0+cw*2]->Fill(fCentralityEBE,recRefMul,TMath::Cos(dPhi),wPhiEta);
+          fCRCTPCQVecCenRefMulTot[fRunBin][1+cw*2]->Fill(fCentralityEBE,recRefMul,TMath::Sin(dPhi),wPhiEta);
           
 //          if(fnEvRbR[fRunBin]) {
 //            Double_t FracRun = (Double_t)fRbREventCounter/fnEvRbR[fRunBin];
@@ -16737,6 +16737,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
   for(Int_t c=0; c<10; c++) {
     fZDCBinsCenRefMult[c] = NULL;
   }
+  for(Int_t k=0; k<4; k++) {
+    fZDCBinsCenRefMultFine[k] = NULL;
+  }
   for(Int_t k=0; k<12; k++) {
     fZDCEcomTotvsVtxHist[k] = NULL;
   }
@@ -17473,6 +17476,7 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
   fhZNvsMul = NULL;
   fMultCutMin = NULL;
   fMultCutMax = NULL;
+  fMultCutAv = NULL;
   fEZNCutMin = NULL;
   fEZNCutMax = NULL;
   for(Int_t k=0; k<2; k++) {
@@ -17630,6 +17634,12 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
   Double_t xcutmax[] = {2.977831e+03, 2.789981e+03, 2.672021e+03, 2.563939e+03, 2.463466e+03, 2.368142e+03, 2.279347e+03, 2.194917e+03, 2.114559e+03, 2.037801e+03, 1.964346e+03, 1.894544e+03, 1.827056e+03, 1.762559e+03, 1.699773e+03, 1.640634e+03, 1.582244e+03, 1.526511e+03, 1.472669e+03, 1.420538e+03, 1.369823e+03, 1.321126e+03, 1.274265e+03, 1.228004e+03, 1.183782e+03, 1.140569e+03, 1.098898e+03, 1.058714e+03, 1.019339e+03, 9.809862e+02, 9.442490e+02, 9.083504e+02, 8.735706e+02, 8.394027e+02, 8.070248e+02, 7.755483e+02, 7.442536e+02, 7.149877e+02, 6.864865e+02, 6.583045e+02, 6.312841e+02, 6.048965e+02, 5.792457e+02, 5.545794e+02, 5.306581e+02, 5.079286e+02, 4.853815e+02, 4.638178e+02, 4.430323e+02, 4.228056e+02, 4.034712e+02, 3.844499e+02, 3.667303e+02, 3.490117e+02, 3.322493e+02, 3.164227e+02, 3.005651e+02, 2.856931e+02, 2.713716e+02, 2.575504e+02, 2.443261e+02, 2.315942e+02, 2.193395e+02, 2.075676e+02, 1.964631e+02, 1.857374e+02, 1.755505e+02, 1.657988e+02, 1.563373e+02, 1.475873e+02, 1.390231e+02, 1.310338e+02, 1.233011e+02, 1.159695e+02, 1.090223e+02, 1.024656e+02, 9.602331e+01, 9.007991e+01, 8.425771e+01, 7.879926e+01, 7.353029e+01, 6.864368e+01, 6.395624e+01, 5.952758e+01, 5.516085e+01, 5.105927e+01, 4.718699e+01, 4.349916e+01, 4.015761e+01, 3.710833e+01};
   for (Int_t i=1; i<=90; i++) { fMultCutMax->SetBinContent(i,xcutmax[i-1]); }
   fVariousList->Add(fMultCutMax);
+  fMultCutAv = new TH1F("fMultCutAv","fMultCutAv",90,0.,90.);
+  Double_t xav[] = {2.324784e+03, 2.212053e+03, 2.120706e+03, 2.034993e+03, 1.954277e+03, 1.877610e+03, 1.804846e+03, 1.735610e+03, 1.669782e+03, 1.606641e+03, 1.545644e+03, 1.487097e+03, 1.431140e+03, 1.377076e+03, 1.324829e+03, 1.274444e+03, 1.226002e+03, 1.178903e+03, 1.133614e+03, 1.089623e+03, 1.047356e+03, 1.006281e+03, 9.667492e+02, 9.278635e+02, 8.907950e+02, 8.548160e+02, 8.197275e+02, 7.861789e+02, 7.532557e+02, 7.216491e+02, 6.908557e+02, 6.611987e+02, 6.324036e+02, 6.047124e+02, 5.777042e+02, 5.517775e+02, 5.266738e+02, 5.023742e+02, 4.790001e+02, 4.563775e+02, 4.344788e+02, 4.133227e+02, 3.928839e+02, 3.732591e+02, 3.542738e+02, 3.362057e+02, 3.186165e+02, 3.017719e+02, 2.855503e+02, 2.700526e+02, 2.550622e+02, 2.407724e+02, 2.271138e+02, 2.139625e+02, 2.014145e+02, 1.894186e+02, 1.779280e+02, 1.670108e+02, 1.565556e+02, 1.466505e+02, 1.371798e+02, 1.281117e+02, 1.195846e+02, 1.115543e+02, 1.038702e+02, 9.662303e+01, 8.979202e+01, 8.334000e+01, 7.720447e+01, 7.142981e+01, 6.605105e+01, 6.101889e+01, 5.625787e+01, 5.185071e+01, 4.768692e+01, 4.382575e+01, 4.016922e+01, 3.681930e+01, 3.370155e+01, 3.076244e+01, 2.804824e+01, 2.552284e+01, 2.315275e+01, 2.098654e+01, 1.904220e+01, 1.729321e+01, 1.574531e+01, 1.437631e+01, 1.320221e+01, 1.218386e+01};
+  for (Int_t i=1; i<=90; i++) { fMultCutAv->SetBinContent(i,xav[i-1]); }
+  fVariousList->Add(fMultCutAv);
+  
+  
   fEZNCutMin = new TH1F("fEZNCutMin","fEZNCutMin",90,0.,90.);
   Double_t ecutmin[] = {5.679458e+00, 7.607178e+00, 1.068261e+01, 1.404126e+01, 1.738144e+01, 2.053910e+01, 2.374938e+01, 2.678917e+01, 2.969818e+01, 3.224316e+01, 3.484165e+01, 3.706608e+01, 3.916280e+01, 4.150452e+01, 4.349076e+01, 4.506416e+01, 4.706689e+01, 4.854908e+01, 4.999278e+01, 5.126242e+01, 5.268097e+01, 5.404030e+01, 5.528360e+01, 5.611058e+01, 5.719087e+01, 5.779483e+01, 5.885472e+01, 5.962037e+01, 5.999710e+01, 6.095082e+01, 6.131383e+01, 6.178263e+01, 6.213514e+01, 6.273090e+01, 6.296995e+01, 6.341473e+01, 6.347308e+01, 6.371836e+01, 6.378971e+01, 6.374707e+01, 6.363084e+01, 6.344150e+01, 6.365763e+01, 6.374055e+01, 6.311442e+01, 6.304190e+01, 6.244914e+01, 6.215758e+01, 6.182734e+01, 6.109873e+01, 6.081862e+01, 6.007977e+01, 5.950013e+01, 5.840487e+01, 5.762088e+01, 5.683201e+01, 5.579488e+01, 5.453968e+01, 5.337461e+01, 5.212841e+01, 5.088454e+01, 4.925251e+01, 4.765313e+01, 4.580473e+01, 4.431336e+01, 4.231223e+01, 4.012934e+01, 3.824709e+01, 3.588116e+01, 3.379921e+01, 3.105872e+01, 2.873682e+01, 2.618550e+01, 2.325735e+01, 2.037027e+01, 1.757194e+01, 1.411580e+01, 1.130037e+01, 8.275737e+00, 5.348862e+00, 2.500213e+00, -3.652928e-01, -2.176934e+00, -5.381661e+00, -7.183125e+00, -9.352529e+00, -1.137439e+01, -1.380040e+01, -1.547430e+01, -1.662124e+01};
   for (Int_t i=1; i<=90; i++) { fEZNCutMin->SetBinContent(i,ecutmin[i-1]); }
@@ -18901,6 +18911,9 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     for(Int_t c=0; c<10; c++) {
       fZDCBinsCenRefMult[c] = (TH3D*)(fCRCZDCCalibList->FindObject(Form("ZDCQVecCenRefMul[%d]",c)));
     }
+    for(Int_t k=0; k<4; k++) {
+      fZDCBinsCenRefMultFine[k] = (TH2D*)(fCRCZDCCalibList->FindObject(Form("fZDCBinsCenRefMultFine[%d]",k)));
+    }
   }
   
   // ZDCN-C
@@ -19300,17 +19313,29 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 //      fZDCFlowVect[1].Set(QAReR,QAImR);
 //    }
 
+//  if(fVtxRbR) {
+//    if(fZDCBinsCenRefMult[fCenBin]) {
+//      Double_t magfilfi = (fbFlagIsPosMagField==kTRUE?0.5:1.5);
+//      Int_t bin = fZDCBinsCenRefMult[fCenBin]->FindBin(magfilfi,0.5,fReferenceMultiplicityEBE);
+//      QCReR -= fZDCBinsCenRefMult[fCenBin]->GetBinContent(bin);
+//      bin = fZDCBinsCenRefMult[fCenBin]->FindBin(magfilfi,1.5,fReferenceMultiplicityEBE);
+//      QCImR -= fZDCBinsCenRefMult[fCenBin]->GetBinContent(bin);
+//      bin = fZDCBinsCenRefMult[fCenBin]->FindBin(magfilfi,2.5,fReferenceMultiplicityEBE);
+//      QAReR -= fZDCBinsCenRefMult[fCenBin]->GetBinContent(bin);
+//      bin = fZDCBinsCenRefMult[fCenBin]->FindBin(magfilfi,3.5,fReferenceMultiplicityEBE);
+//      QAImR -= fZDCBinsCenRefMult[fCenBin]->GetBinContent(bin);
+//      fZDCFlowVect[0].Set(QCReR,QCImR);
+//      fZDCFlowVect[1].Set(QAReR,QAImR);
+//    }
+//  }
+  
   if(fVtxRbR) {
-    if(fZDCBinsCenRefMult[fCenBin]) {
-      Double_t magfilfi = (fbFlagIsPosMagField==kTRUE?0.5:1.5);
-      Int_t bin = fZDCBinsCenRefMult[fCenBin]->FindBin(magfilfi,0.5,fReferenceMultiplicityEBE);
-      QCReR -= fZDCBinsCenRefMult[fCenBin]->GetBinContent(bin);
-      bin = fZDCBinsCenRefMult[fCenBin]->FindBin(magfilfi,1.5,fReferenceMultiplicityEBE);
-      QCImR -= fZDCBinsCenRefMult[fCenBin]->GetBinContent(bin);
-      bin = fZDCBinsCenRefMult[fCenBin]->FindBin(magfilfi,2.5,fReferenceMultiplicityEBE);
-      QAReR -= fZDCBinsCenRefMult[fCenBin]->GetBinContent(bin);
-      bin = fZDCBinsCenRefMult[fCenBin]->FindBin(magfilfi,3.5,fReferenceMultiplicityEBE);
-      QAImR -= fZDCBinsCenRefMult[fCenBin]->GetBinContent(bin);
+    if(fZDCBinsCenRefMultFine[0]) {
+      Int_t bin = fZDCBinsCenRefMultFine[0]->FindBin(fCentralityEBE,fReferenceMultiplicityEBE);
+      QCReR -= fZDCBinsCenRefMultFine[0]->GetBinContent(bin);
+      QCImR -= fZDCBinsCenRefMultFine[1]->GetBinContent(bin);
+      QAReR -= fZDCBinsCenRefMultFine[2]->GetBinContent(bin);
+      QAImR -= fZDCBinsCenRefMultFine[3]->GetBinContent(bin);
       fZDCFlowVect[0].Set(QCReR,QCImR);
       fZDCFlowVect[1].Set(QAReR,QAImR);
     }
@@ -19367,10 +19392,12 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 //    fCRCZDCQVecCenEComTot[fRunBin][2]->Fill(fCentralityEBE,QMA,QAReR);
 //    fCRCZDCQVecCenEComTot[fRunBin][3]->Fill(fCentralityEBE,QMA,QAImR);
 
-    fCRCZDCQVecCenRefMulTot[fRunBin][0]->Fill(fCentralityEBE,fReferenceMultiplicityEBE,QCReR);
-    fCRCZDCQVecCenRefMulTot[fRunBin][1]->Fill(fCentralityEBE,fReferenceMultiplicityEBE,QCImR);
-    fCRCZDCQVecCenRefMulTot[fRunBin][2]->Fill(fCentralityEBE,fReferenceMultiplicityEBE,QAReR);
-    fCRCZDCQVecCenRefMulTot[fRunBin][3]->Fill(fCentralityEBE,fReferenceMultiplicityEBE,QAImR);
+    Double_t recRefMul = fReferenceMultiplicityEBE-fMultCutAv->GetBinContent(fMultCutAv->FindBin(fCentralityEBE));
+    fCRCZDCQVecCenRefMulTot[fRunBin][0]->Fill(fCentralityEBE,recRefMul,QCReR);
+    fCRCZDCQVecCenRefMulTot[fRunBin][1]->Fill(fCentralityEBE,recRefMul,QCImR);
+    fCRCZDCQVecCenRefMulTot[fRunBin][2]->Fill(fCentralityEBE,recRefMul,QAReR);
+    fCRCZDCQVecCenRefMulTot[fRunBin][3]->Fill(fCentralityEBE,recRefMul,QAImR);
+    fMulvsCenRbR[fRunBin]->Fill(fCentralityEBE,recRefMul);
     
 //    if(fnEvRbR[fRunBin]) {
 //      Double_t FracRun = (Double_t)fRbREventCounter/fnEvRbR[fRunBin];
@@ -29707,6 +29734,10 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
     fZDCBinsCenRefMult[c] = new TH3D();
     fTempList->Add(fZDCBinsCenRefMult[c]);
   }
+  for(Int_t k=0; k<4; k++) {
+    fZDCBinsCenRefMultFine[k] = new TH2D();
+    fTempList->Add(fZDCBinsCenRefMultFine[k]);
+  }
   
   for(Int_t k=0; k<12; k++) {
     fZDCEcomTotvsVtxHist[k] = new TProfile3D();
@@ -30121,9 +30152,14 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
       for (Int_t v=0; v<91; v++) {
         finecenbins[v] = v*1.;
       }
+      Double_t cenbins[] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.};
+//      Double_t RefMulbins[101] = {0.};
+//      for (Int_t i=0; i<101; i++) {
+//        RefMulbins[i] = i*30.;
+//      }
       Double_t RefMulbins[101] = {0.};
       for (Int_t i=0; i<101; i++) {
-        RefMulbins[i] = i*30.;
+        RefMulbins[i] = -600 + i*12.;
       }
       Double_t ZDCEbins[101] = {0.};
       for (Int_t i=0; i<101; i++) {
@@ -30139,16 +30175,16 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
 //        fCRCTPCQVecCenEComTot[r][k]->Sumw2();
 //        fCRCQVecListRun[r]->Add(fCRCTPCQVecCenEComTot[r][k]);
         
-        fCRCZDCQVecCenRefMulTot[r][k] = new TProfile2D(Form("fCRCZDCQVecCenRefMulTot[%d][%d]",fRunList[r],k),Form("fCRCZDCQVecCenRefMulTot[%d][%d]",fRunList[r],k),90,finecenbins,100,RefMulbins);
+        fCRCZDCQVecCenRefMulTot[r][k] = new TProfile2D(Form("fCRCZDCQVecCenRefMulTot[%d][%d]",fRunList[r],k),Form("fCRCZDCQVecCenRefMulTot[%d][%d]",fRunList[r],k),10,cenbins,100,RefMulbins);
         fCRCZDCQVecCenRefMulTot[r][k]->Sumw2();
         fCRCQVecListRun[r]->Add(fCRCZDCQVecCenRefMulTot[r][k]);
         
-        fCRCTPCQVecCenRefMulTot[r][k] = new TProfile2D(Form("fCRCTPCQVecCenRefMulTot[%d][%d]",fRunList[r],k),Form("fCRCTPCQVecCenRefMulTot[%d][%d]",fRunList[r],k),90,finecenbins,100,RefMulbins);
+        fCRCTPCQVecCenRefMulTot[r][k] = new TProfile2D(Form("fCRCTPCQVecCenRefMulTot[%d][%d]",fRunList[r],k),Form("fCRCTPCQVecCenRefMulTot[%d][%d]",fRunList[r],k),10,cenbins,100,RefMulbins);
         fCRCTPCQVecCenRefMulTot[r][k]->Sumw2();
         fCRCQVecListRun[r]->Add(fCRCTPCQVecCenRefMulTot[r][k]);
       }
       
-      fMulvsCenRbR[r] = new TH2D(Form("fMulvsCenRbR[%d]",fRunList[r]),Form("fMulvsCenRbR[%d]",fRunList[r]),90,0.,90.,100,0.,3000.);
+      fMulvsCenRbR[r] = new TH2D(Form("fMulvsCenRbR[%d]",fRunList[r]),Form("fMulvsCenRbR[%d]",fRunList[r]),10,cenbins,100,RefMulbins);
       fCRCQVecListRun[r]->Add(fMulvsCenRbR[r]);
       
       for(Int_t c=0;c<fkCRCnCQVecVtxPos;c++) {
