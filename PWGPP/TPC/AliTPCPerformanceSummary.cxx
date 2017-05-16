@@ -35,7 +35,7 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TError.h"
-#include <iostream>
+
 #include "AliGRPObject.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCcalibDButil.h"
@@ -67,7 +67,7 @@ ClassImp(AliTPCPerformanceSummary)
 
 Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;
 
-Bool_t AliTPCPerformanceSummary::GetStatInfo(TH1 * histo, TVectorF &statInfo, Int_t axis){
+Bool_t  AliTPCPerformanceSummary::GetStatInfo(TH1 * histo, TVectorF &statInfo, Int_t axis){
   //
   // fill basic statistical information
   // 
@@ -185,21 +185,26 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
     if (pTPC) {
         if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
         if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
-        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);
-        AnalyzeNCL(pTPC, pcstream);
-        MakeRawOCDBQAPlot(pcstream);
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);    
+        AnalyzeNCL(pTPC, pcstream);    
+	MakeRawOCDBQAPlot(pcstream);
         AnalyzeDrift(pTPC, pcstream);
         AnalyzeDriftPos(pTPC, pcstream);
-        AnalyzeDriftNeg(pTPC, pcstream);
+        AnalyzeDriftNeg(pTPC, pcstream);    
         AnalyzeDCARPhi(pTPC, pcstream);
         AnalyzeDCARPhiPos(pTPC, pcstream);
         AnalyzeDCARPhiNeg(pTPC, pcstream);
-        AnalyzeEvent(pTPC, pcstream);
-        AnalyzePt(pTPC,pcstream);
-        AnalyzeChargeOverPt(pTPC,pcstream);
-        AnalyzeQAPosNegDpT(pTPC,pcstream);
-        AnalyzeQADCAFitParameter(pTPC,pcstream);
-        AnalyzeOcc(pTPC,pcstream);
+        AnalyzeEvent(pTPC, pcstream);         
+
+	AnalyzePt(pTPC,pcstream);
+	AnalyzeChargeOverPt(pTPC,pcstream); 
+	AnalyzeQAPosNegDpT(pTPC,pcstream);
+	AnalyzeQADCAFitParameter(pTPC,pcstream);
+	AnalyzeOcc(pTPC,pcstream);
+
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(-10,10);
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0,100);
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-10,10); 
     }
     AnalyzeGain(pTPCgain, pcstream);
     AnalyzeMatch(pTPCMatch, pcstream);
@@ -987,6 +992,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     if (!pTPC) return 1;
  
     // variables:
+    static TVectorF infoTPCncl(5);
+    static TVectorF infoTPCnclF(5);
+    static TVectorF infoTPCChi2(5);
+
     static Double_t meanTPCnclF=0;
     static Double_t rmsTPCnclF=0;
     static Double_t meanTPCChi2=0;
@@ -1045,16 +1054,18 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
  
     meanTPCncl= his1D->GetMean();
     rmsTPCncl= his1D->GetRMS();
+    GetStatInfo(his1D,infoTPCncl,0);
     delete his1D;
     
     if (his3D1 && !fgForceTHnSparse) {
-         his1D = his3D1->Project3D("x"); 
+      his1D = his3D1->Project3D("x"); 
     } else {
-         his1D = pTPC->GetTPCTrackHisto()->Projection(1);
+      his1D = pTPC->GetTPCTrackHisto()->Projection(1);
     }
           
     meanTPCChi2= his1D->GetMean();
     rmsTPCChi2= his1D->GetRMS();
+    GetStatInfo(his1D,infoTPCChi2,0);
     delete his1D;  
     
    if (his3D0 && !fgForceTHnSparse) {
@@ -1085,6 +1096,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
         
     meanTPCnclF= his1D->GetMean();
     rmsTPCnclF= his1D->GetRMS();
+    GetStatInfo(his1D,infoTPCnclF,0);
     delete his1D;
     
    if (his3D2 && !fgForceTHnSparse) { 
@@ -1120,6 +1132,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     // dump results to the tree
     //
     (*pcstream)<<"tpcQA"<<
+      "infoTPCnclF.="<<&infoTPCnclF <<   // number of found/findable clusters statistic information
+      "infoTPCncl.="<<&infoTPCncl <<     // number of findable clusters statistic information
+      "infoTPCchi2.="<<&infoTPCChi2 <<   // chi2   statistic c information
       "meanTPCnclF="<<meanTPCnclF <<   
       "rmsTPCnclF="<<rmsTPCnclF <<
       "meanTPCChi2="<<meanTPCChi2 <<
@@ -1521,6 +1536,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     static TVectorD meanMIPvsSector(36);
     static TVectorD sigmaRelMIPvsSector(36);
     static TVectorD sector(36);
+    static TVectorF fitMIP(7);
+    static TVectorF fitEle(7);
     static Float_t meanMIP = 0;
     static Float_t resolutionMIP = 0;
     static Float_t attachSlopeC = 0;
@@ -1554,7 +1571,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     }
     if(!his1D) return 4;
     his1D->Fit(&gausFit,"QN","QN");
-
+    GetFitInfo(&gausFit,fitMIP);
     meanMIP = gausFit.GetParameter(1);
     resolutionMIP = 0;
     if (meanMIP!=0) resolutionMIP = gausFit.GetParameter(2)/meanMIP;
@@ -1674,6 +1691,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     his1D->Fit(&gausFitEle,"QN","QN");
 
     meanMIPele = gausFitEle.GetParameter(1);
+    GetFitInfo(&gausFitEle,fitEle);
+
     resolutionMIPele = 0;
     if (meanMIPele!=0) resolutionMIPele = gausFitEle.GetParameter(2)/meanMIPele;
     
@@ -1698,6 +1717,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     // 
     
     (*pcstream)<<"tpcQA"<<
+      "fitMIP.="<<&fitMIP<<        // MIP position fit parameters, errors and chi2 
+      "fitElectron.="<<&fitEle<<   // electorn peak  fit parameters, errors and chi2 
+      //
       "MIPattachSlopeC="<<attachSlopeC<<
       "MIPattachSlopeA="<<attachSlopeA<<
       "resolutionMIP="<<resolutionMIP<<
@@ -1729,7 +1751,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     static TVectorF infoMult(5);
     static TVectorF infoMultPos(5);
     static TVectorF infoMultNeg(5);
-    
+
     static Double_t entriesVertX=0;
     static Double_t meanVertX=0;
     static Double_t rmsVertX=0;
@@ -1766,6 +1788,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     if (vertAll>=1) {
             vertStatus = vertOK / vertAll;
     }
+    
     delete his1D;
     
     if(fgForceTHnSparse) pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(2,2);
@@ -1779,7 +1802,11 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     entriesVertX = his1D->GetEntries(); 
     meanVertX = his1D->GetMean();    
     rmsVertX    = his1D->GetRMS();
+    GetStatInfo(his1D,infoVertexX,0);
     delete his1D;
+    
+    
+    
     
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_1") && !fgForceTHnSparse) {    
         his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_1")->Clone());
@@ -1791,15 +1818,16 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     entriesVertY = his1D->GetEntries();
     meanVertY = his1D->GetMean();
     rmsVertY    = his1D->GetRMS();
+    GetStatInfo(his1D,infoVertexY,0);
     delete his1D;
     
     
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2") && !fgForceTHnSparse) {    
         hc = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2"));
-        if(!hc) return 1;
+	if(!hc) return 1;
+        //his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2")->Clone());
         his1D = (TH1*)hc->Clone();
-    }
-    else {
+    } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(2);
     }    
     if(!his1D) return 1;
@@ -1807,22 +1835,24 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     entriesVertZ = his1D->GetEntries();
     meanVertZ = his1D->GetMean();
     rmsVertZ    = his1D->GetRMS();
+    GetStatInfo(his1D,infoVertexZ,0);
     delete his1D;
     
     
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3") && !fgForceTHnSparse) {    
         hc = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3"));
 	if(!hc) return 1;
+        //his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3")->Clone());
         his1D = (TH1*)hc->Clone();
-    }
-    else {
+    } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(3);
     }
     if(!his1D) return 1;
 
     entriesMult = his1D->GetEntries();
     meanMult    = his1D->GetMean();
-    rmsMult     = his1D->GetRMS();
+    rmsMult     = his1D->GetRMS(); 
+    GetStatInfo(his1D,infoMult,0);
     delete his1D;
     
     
@@ -1837,7 +1867,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     rmsMultPos     = his1D->GetRMS();
     errorMultPos   = his1D->GetRMS() / TMath::Sqrt(his1D->GetEntries());
     GetStatInfo(his1D,infoMultPos,0);
-
     delete his1D;
     
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_5") && !fgForceTHnSparse) {    
@@ -1853,8 +1882,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     GetStatInfo(his1D,infoMultNeg,0);
 
     delete his1D;
+    
+    //pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(1,2);
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "infoVertX.="<<&infoVertexX <<       // vertex X stat information
       "infoVertY.="<<&infoVertexY <<       // vertex Y stat information
       "infoVertZ.="<<&infoVertexZ <<       // vertex Z stat information
@@ -1883,30 +1914,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
       "meanMultNeg="<<meanMultNeg<<
       "rmsMultNeg="<<rmsMultNeg<<          
       "errorMultNeg="<<errorMultNeg;
-    
-    if(fgForceTHnSparse) pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(1,2);
-    //
-    (*pcstream)<<"tpcQA"<<
-        "entriesVertX="<<entriesVertX<<
-        "meanVertX="<<meanVertX<<
-        "rmsVertX="<<rmsVertX<<
-        "entriesVertY="<<entriesVertY<<
-        "meanVertY="<<meanVertY<<
-        "rmsVertY="<<rmsVertY<<
-        "entriesVertZ="<<entriesVertZ<<
-        "meanVertZ="<<meanVertZ<<
-        "rmsVertZ="<<rmsVertZ<<
-        "vertStatus="<<vertStatus<<
-        "vertAll="<<vertAll<<
-        "vertOK="<<vertOK<<
-        "entriesMult="<<entriesMult<<
-        "meanMult="<<meanMult<<
-        "rmsMult="<<rmsMult<<
-        "meanMultPos="<<meanMultPos<<
-        "rmsMultPos="<<rmsMultPos<<
-        "meanMultNeg="<<meanMultNeg<<
-        "rmsMultNeg="<<rmsMultNeg;     
-     
     return 0;
 }
 
@@ -1914,8 +1921,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
 Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
-    // Analyse DCA R imperfections for positive particles
-    //
+    // Mean Pt analysis
+    // Never used for any statement 
     
     if (!pcstream) return 256;
     if (!pTPC) return 256;
@@ -2009,11 +2016,11 @@ Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSR
       "meanPtANeg="<< meanPtANeg<<
       "mediumPtANeg="<< mediumPtANeg<<
       "highPtANeg="<< highPtANeg<<
-        //
+      //
       "meanPtCNeg="<< meanPtCNeg<<
       "mediumPtCNeg="<< mediumPtCNeg<<
       "highPtCNeg="<< highPtCNeg;
-
+    
         
     return 0;
 }
@@ -2159,9 +2166,23 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
 {
   /* if ((pPull == 0) or (0 == pcstream)) { printf("this will not work anyway..."); }
      printf("funtion not implemented");*/
-
+  //
+  // TPC-ITS matching pulls
+  //
   if (!pcstream) return 2048;
   if (!pPull) return 2048;
+
+  static TVectorF infophiPull(5);
+  static TVectorF infophiPullHighPt(5); 
+  static TVectorF infoptPull(5);
+  static TVectorF infoptPullHighPt(5); 
+  static TVectorF infoyPull(5);
+  static TVectorF infoyPullHighPt(5); 
+  static TVectorF infozPull(5);
+  static TVectorF infozPullHighPt(5); 
+  static TVectorF infolambdaPull(5);
+  static TVectorF infolambdaPullHighPt(5); 
+
   static Double_t phiPull = 0;
   static Double_t phiPullHighPt = 0; 
   static Double_t ptPull = 0;
@@ -2178,8 +2199,10 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
     h2D1 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_2_7"));
     if(!h2D1) return 4;
     phiPull = h2D1->GetMean(2);
+    GetStatInfo(h2D1,infophiPull,2);
     h2D1->SetAxisRange(0.0,1.0/5.0,"X");
-    phiPullHighPt = h2D1->GetMean(2);
+    phiPullHighPt = h2D1->GetMean(2); 
+    GetStatInfo(h2D1,infophiPullHighPt,2);
     h2D1->SetAxisRange(0.0,10.0,"X");
     //    delete h2D1;
   }
@@ -2189,9 +2212,11 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
     h2D2 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_4_7"));
     if(!h2D2) return 4;
     ptPull = h2D2->GetMean(2);
+    GetStatInfo(h2D2,infoptPull,2);
 
     h2D2->SetAxisRange(0.0,1.0/5.0,"X");
     ptPullHighPt = h2D2->GetMean(2);
+    GetStatInfo(h2D2,infoptPullHighPt,2);
     h2D2->SetAxisRange(0.0,10.0,"X");
     //    delete h2D2;
   }
@@ -2201,9 +2226,11 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
     h2D3 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_0_7"));
     if(!h2D3) return 4;
     yPull = h2D3->GetMean(2);
+    GetStatInfo(h2D3,infoyPull,2);
 
     h2D3->SetAxisRange(0.0,1.0/5.0,"X");
     yPullHighPt = h2D3->GetMean(2);
+    GetStatInfo(h2D3,infoyPullHighPt,2);
     h2D3->SetAxisRange(0.0,10.0,"X");
     //    delete h2D3;
   }
@@ -2213,10 +2240,12 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
     h2D4 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_1_7"));
     if(!h2D4) return 4;
     zPull = h2D4->GetMean(2);
+    GetStatInfo(h2D4,infozPull,2);
 
     h2D4->SetAxisRange(0.0,1.0/5.0,"X");
     zPullHighPt = h2D4->GetMean(2);
     h2D4->SetAxisRange(0.0,10.0,"X");
+    GetStatInfo(h2D3,infozPullHighPt,2);
     //    delete h2D4;
  }
 
@@ -2225,13 +2254,15 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
     h2D5 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_3_7"));
     if(!h2D5) return 4;
     lambdaPull = h2D5->GetMean(2);
+    GetStatInfo(h2D5,infolambdaPull,2);
 
     h2D5->SetAxisRange(0.0,1.0/5.0,"X");
     lambdaPullHighPt = h2D5->GetMean(2);
+    GetStatInfo(h2D5,infolambdaPullHighPt,2);
     h2D5->SetAxisRange(0.0,10.0,"X");
     //    delete h2D5;
-}
-
+  }
+  
   (*pcstream)<<"tpcQA"<<
     "phiPull="<< phiPull<<
     "phiPullHighPt="<< phiPullHighPt<<
@@ -2242,33 +2273,54 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
     "zPull="<< zPull<<
     "zPullHighPt="<< zPullHighPt<<
     "lambdaPull="<< lambdaPull<<
-    "lambdaPullHighPt="<< lambdaPullHighPt;
+    "lambdaPullHighPt="<< lambdaPullHighPt<<
+    //
+    "infophiPull.="<< &infophiPull<<                 // TPC-ITS phi pull
+    "infophiPullHighPt.="<< &infophiPullHighPt<<     // TPC-ITS high pt pull
+    "infoptPull.="<< &infoptPull<<                   // TPC-ITS pt pull
+    "infoptPullHighPt.="<< &infoptPullHighPt<<       // TPC-ITS high pt pull
+    "infoyPull.="<< &infoyPull<<                     // TPC-ITS y pull
+    "infoyPullHighPt.="<< &infoyPullHighPt<<         // TPC-ITS high pt local y pull
+    "infozPull.="<< &infozPull<<
+    "infozPullHighPt.="<< &infozPullHighPt<<
+    "infolambdaPull.="<< &infolambdaPull<<
+    "infolambdaPullHighPt.="<< &infolambdaPullHighPt;
     
   return 0;
 }
+
+
+
 Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pConstrain, TTreeSRedirector* pcstream)
 {
   if (!pcstream) return 5126;
   if (!pConstrain) return 5126;
-
-    TH3* his3D=0;
-    static Double_t tpcConstrainPhiA = 0;
-    static Double_t tpcConstrainPhiC = 0;
+  
+  TH3* his3D=0;
+  static Double_t tpcConstrainPhiA = 0;
+  static Double_t tpcConstrainPhiC = 0;
+  static TVectorF infotpcConstrainPhiA(5);
+  static TVectorF infotpcConstrainPhiC(5);
+  
+  if (pConstrain->GetHistos()->FindObject("h_tpc_constrain_tpc_0_2_3")) {    
     
-    if (pConstrain->GetHistos()->FindObject("h_tpc_constrain_tpc_0_2_3")) {    
-      
-      his3D = dynamic_cast<TH3*>(pConstrain->GetHistos()->FindObject("h_tpc_constrain_tpc_0_2_3"));//phi pull:pt:eta
-      if(!his3D) return 5126;
-      
-      his3D->GetZaxis()->SetRangeUser(0.0,1.0);
-      tpcConstrainPhiA = his3D->GetMean(1);
-      his3D->GetZaxis()->SetRangeUser(-1.0,-0.001);
-      tpcConstrainPhiC = his3D->GetMean(1);
-    }
+    his3D = dynamic_cast<TH3*>(pConstrain->GetHistos()->FindObject("h_tpc_constrain_tpc_0_2_3"));//phi pull:pt:eta
+    if(!his3D) return 5126;
+    
+    his3D->GetZaxis()->SetRangeUser(0.0,1.0);
+    tpcConstrainPhiA = his3D->GetMean(1); 
+    GetStatInfo(his3D,infotpcConstrainPhiA,1);
+    his3D->GetZaxis()->SetRangeUser(-1.0,-0.001);
+    tpcConstrainPhiC = his3D->GetMean(1);
+    GetStatInfo(his3D,infotpcConstrainPhiC,1);
 
+  }
+  
   (*pcstream)<<"tpcQA"<<
     "tpcConstrainPhiA="<<tpcConstrainPhiA <<
-    "tpcConstrainPhiC="<< tpcConstrainPhiC;
+    "tpcConstrainPhiC="<< tpcConstrainPhiC<<
+    "infotpcConstrainPhiA.="<< &infotpcConstrainPhiA <<
+    "infotpcConstrainPhiC.="<< &infotpcConstrainPhiC;
   
   return 0;
 }
@@ -2304,7 +2356,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
   static Double_t deltaPtC_Err = 0;
 
 
-//C side
+  //C side
 
   if(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_0_5_7"))
     {
@@ -2325,120 +2377,120 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
     negA = neg3->ProjectionZ("negA",71,-1,16,25);
 }
 
-if(!pos) return 512; 
-if(!neg) return 512; 
-if(!posA) return 512; 
-if(!negA) return 512; 
-if(!posC) return 512; 
-if(!negC) return 512; 
-
-pos->Sumw2();
-neg->Sumw2();
-posA->Sumw2();
-negA->Sumw2();
-posC->Sumw2();
-negC->Sumw2();
-
-pos->Scale(1.,"width");
-neg->Scale(1.,"width");
-posA->Scale(1.,"width");
-negA->Scale(1.,"width");
-posC->Scale(1.,"width");
-negC->Scale(1.,"width");
-
-//both sides
-
-TF1 fpt("fpt","[1]*exp(-1/((1/x))*[0])",0.1,10);
-TF1 fpt2("fpt2","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fpt.SetParameters(1,0.5);
-fpt2.SetParameters(1,0.5);
-pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4);
-neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4);
-
-slope = (fpt.GetParameter(0)+fpt2.GetParameter(0))/2.;
-
-TH1D* ratio = new TH1D(*pos); 
-ratio->Divide(neg);
-
-ratio->Draw();
-TF1 fptRatio("fptratio","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
-fptRatio.SetParameters(0.5,0.006,1);
-fptRatio.FixParameter(0,slope);
-fptRatio.Draw();
-ratio->Fit(&fptRatio,"","",1,4); ratio->Fit(&fptRatio,"","",1,4); 
-ratio->Fit(&fptRatio,"","",1,4);
-
-deltaPt = fptRatio.GetParameter(1);
-deltaPtchi2 = fptRatio.GetChisquare();
-
-//get the errors
-deltaPt_Err = fptRatio.GetParError(1);
-
-
-//A side
-
-TF1 fptA("fptA","[1]*exp(-1/((1/x))*[0])",0.1,10);
-TF1 fpt2A("fpt2A","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fptA.SetParameters(1,0.5);
-fpt2A.SetParameters(1,0.5);
-posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4);
-negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4);
-
-slopeA = (fptA.GetParameter(0)+fpt2A.GetParameter(0))/2.;
-
-TH1D* ratioA = new TH1D(*posA); 
-ratioA->Divide(negA);
-
-ratioA->Draw();
-TF1 fptRatioA("fptratioA","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
-fptRatioA.SetParameters(0.5,0.006,1);
-fptRatioA.FixParameter(0,slopeA);
-fptRatioA.Draw();
-ratioA->Fit(&fptRatioA,"","",1,4); ratio->Fit(&fptRatioA,"","",1,4); 
-ratioA->Fit(&fptRatioA,"","",1,4);
-
-deltaPtA = fptRatioA.GetParameter(1);
-deltaPtchi2A = fptRatioA.GetChisquare();
-
-//get the errors
-deltaPtA_Err = fptRatioA.GetParError(1);
-
- delete ratioA;
- delete pos;
- delete neg;
-
-
-//C side
-TF1 fptC("fptC","[1]*exp(-1/((1/x))*[0])",0.1,10);
-TF1 fpt2C("fpt2C","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fptC.SetParameters(1,0.5);
-fpt2C.SetParameters(1,0.5);
-posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4);
-negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4);
-
-slopeC = (fptC.GetParameter(0)+fpt2C.GetParameter(0))/2.;
-
-TH1D* ratioC = new TH1D(*posC); 
-ratioC->Divide(negC);
-
-ratioC->Draw();
-TF1 fptRatioC("fptratioC","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
-fptRatioC.SetParameters(0.5,0.006,1);
-fptRatioC.FixParameter(0,slopeC);
-fptRatioC.Draw();
-ratioC->Fit(&fptRatioC,"","",1,4); ratio->Fit(&fptRatioC,"","",1,4); 
-ratioC->Fit(&fptRatioC,"","",1,4);
-
-deltaPtC = fptRatioC.GetParameter(1);
-deltaPtchi2C = fptRatioC.GetChisquare();
-
-//get the errors
-deltaPtC_Err = fptRatioC.GetParError(1);
-
-
- delete posC;
- delete negC;
- delete ratioC;
+    if(!pos) return 512; 
+    if(!neg) return 512; 
+    if(!posA) return 512; 
+    if(!negA) return 512; 
+    if(!posC) return 512; 
+    if(!negC) return 512; 
+    
+    pos->Sumw2();
+    neg->Sumw2();
+    posA->Sumw2();
+    negA->Sumw2();
+    posC->Sumw2();
+    negC->Sumw2();
+    
+    pos->Scale(1.,"width");
+    neg->Scale(1.,"width");
+    posA->Scale(1.,"width");
+    negA->Scale(1.,"width");
+    posC->Scale(1.,"width");
+    negC->Scale(1.,"width");
+    
+    //both sides
+    
+    TF1 fpt("fpt","[1]*exp(-1/((1/x))*[0])",0.1,10);
+    TF1 fpt2("fpt2","[1]*exp(-1/((1/x))*[0])",0.1,10);
+    fpt.SetParameters(1,0.5);
+    fpt2.SetParameters(1,0.5);
+    pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4);
+    neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4);
+    
+    slope = (fpt.GetParameter(0)+fpt2.GetParameter(0))/2.;
+    
+    TH1D* ratio = new TH1D(*pos); 
+    ratio->Divide(neg);
+    
+    ratio->Draw();
+    TF1 fptRatio("fptratio","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
+    fptRatio.SetParameters(0.5,0.006,1);
+    fptRatio.FixParameter(0,slope);
+    fptRatio.Draw();
+    ratio->Fit(&fptRatio,"","",1,4); ratio->Fit(&fptRatio,"","",1,4); 
+    ratio->Fit(&fptRatio,"","",1,4);
+    
+    deltaPt = fptRatio.GetParameter(1);
+    deltaPtchi2 = fptRatio.GetChisquare();
+    
+    //get the errors
+    deltaPt_Err = fptRatio.GetParError(1);
+    
+    
+    //A side
+    
+    TF1 fptA("fptA","[1]*exp(-1/((1/x))*[0])",0.1,10);
+    TF1 fpt2A("fpt2A","[1]*exp(-1/((1/x))*[0])",0.1,10);
+    fptA.SetParameters(1,0.5);
+    fpt2A.SetParameters(1,0.5);
+    posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4);
+    negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4);
+    
+    slopeA = (fptA.GetParameter(0)+fpt2A.GetParameter(0))/2.;
+    
+    TH1D* ratioA = new TH1D(*posA); 
+    ratioA->Divide(negA);
+    
+    ratioA->Draw();
+    TF1 fptRatioA("fptratioA","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
+    fptRatioA.SetParameters(0.5,0.006,1);
+    fptRatioA.FixParameter(0,slopeA);
+    fptRatioA.Draw();
+    ratioA->Fit(&fptRatioA,"","",1,4); ratio->Fit(&fptRatioA,"","",1,4); 
+    ratioA->Fit(&fptRatioA,"","",1,4);
+    
+    deltaPtA = fptRatioA.GetParameter(1);
+    deltaPtchi2A = fptRatioA.GetChisquare();
+    
+    //get the errors
+    deltaPtA_Err = fptRatioA.GetParError(1);
+    
+    delete ratioA;
+    delete pos;
+    delete neg;
+    
+    
+    //C side
+    TF1 fptC("fptC","[1]*exp(-1/((1/x))*[0])",0.1,10);
+    TF1 fpt2C("fpt2C","[1]*exp(-1/((1/x))*[0])",0.1,10);
+    fptC.SetParameters(1,0.5);
+    fpt2C.SetParameters(1,0.5);
+    posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4);
+    negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4);
+    
+    slopeC = (fptC.GetParameter(0)+fpt2C.GetParameter(0))/2.;
+    
+    TH1D* ratioC = new TH1D(*posC); 
+    ratioC->Divide(negC);
+    
+    ratioC->Draw();
+    TF1 fptRatioC("fptratioC","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
+    fptRatioC.SetParameters(0.5,0.006,1);
+    fptRatioC.FixParameter(0,slopeC);
+    fptRatioC.Draw();
+    ratioC->Fit(&fptRatioC,"","",1,4); ratio->Fit(&fptRatioC,"","",1,4); 
+    ratioC->Fit(&fptRatioC,"","",1,4);
+    
+    deltaPtC = fptRatioC.GetParameter(1);
+    deltaPtchi2C = fptRatioC.GetChisquare();
+    
+    //get the errors
+    deltaPtC_Err = fptRatioC.GetParError(1);
+    
+    
+    delete posC;
+    delete negC;
+    delete ratioC;
     
     (*pcstream)<<"tpcQA"<<      
       "deltaPt="<< deltaPt<<
@@ -2450,7 +2502,7 @@ deltaPtC_Err = fptRatioC.GetParError(1);
       "deltaPt_Err="<< deltaPt_Err<<
       "deltaPtA_Err="<< deltaPtA_Err<<
       "deltaPtC_Err="<< deltaPtC_Err;    
-      
+    
     return 0;
 }
 
@@ -2539,15 +2591,15 @@ deltaPtC_Err = fptRatioC.GetParError(1);
     dcar_pos3 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6"));
   }
   
-  if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_4_5_6")) {
+  if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6")) {  
     dcaz_pos3 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_4_5_6"));
   }
   
-  if (pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_6")) {
+  if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6")) {  
     dcar_neg3 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_6")); 
   }
   
-  if (pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_4_5_6")) {
+  if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6")) {  
     dcaz_neg3 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_4_5_6"));
   }
 
@@ -2803,10 +2855,11 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   static TVectorF meanOccArray_iroc(36);
   static TVectorF meanOccArray_oroc(36);
 
-  if (pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2")) {
-      h3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2"));
+ if (pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2")) {  
+    h3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2"));
+  } else { 
+    h3D_1 = pTPC->GetTPCClustHisto()->Projection(0,1,2);
   }
-  else h3D_1 = pTPC->GetTPCClustHisto()->Projection(0,1,2);
   if(!h3D_1) {
     printf("E-AliTPCPerformanceSummary::AnalyzeOcc: h_tpc_clust_0_1_2 not found");
     return 4;
