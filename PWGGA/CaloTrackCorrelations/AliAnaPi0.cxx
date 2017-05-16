@@ -448,9 +448,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimPi0YetaYcut   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0YetaYcut) ;
     
-    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",
+    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#varphi of primary #pi^{0}, |#it{Y}|<1",
                                nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
-    fhPrimPi0Phi->SetYTitle("#phi (deg)");
+    fhPrimPi0Phi->SetYTitle("#varphi (deg)");
     fhPrimPi0Phi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Phi) ;
     
@@ -488,10 +488,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0AccYeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPrimPi0AccYeta) ;
       
-      fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#phi of primary #pi^{0} with accepted daughters",
+      fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#varphi of primary #pi^{0} with accepted daughters",
                                  nptbins,ptmin,ptmax,
                                  nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
-      fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
+      fhPrimPi0AccPhi->SetYTitle("#varphi (deg)");
       fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPrimPi0AccPhi) ;
     }
@@ -528,7 +528,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
     fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary #eta",
                                nptbins,ptmin,ptmax, nphibinsopen,0,360) ;
-    fhPrimEtaPhi->SetYTitle("#phi (deg)");
+    fhPrimEtaPhi->SetYTitle("#varphi (deg)");
     fhPrimEtaPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaPhi) ;
     
@@ -556,7 +556,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary #eta with accepted daughters",
                                  nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
-      fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
+      fhPrimEtaAccPhi->SetYTitle("#varphi (deg)");
       fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPrimEtaAccPhi) ;
       
@@ -1089,9 +1089,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     {
       fhPtBinClusterEtaPhi[ipt] = new TH2F
       (Form("hPtBin%d_Cluster_EtaPhi",ipt),
-       Form("#eta vs #phi, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fPtCuts[ipt],fPtCuts[ipt+1]),
+       Form("#eta vs #varphi, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fPtCuts[ipt],fPtCuts[ipt+1]),
        netabins,etamin,etamax,nphibins,phimin,phimax);
-      fhPtBinClusterEtaPhi[ipt]->SetYTitle("#phi (rad)");
+      fhPtBinClusterEtaPhi[ipt]->SetYTitle("#varphi (rad)");
       fhPtBinClusterEtaPhi[ipt]->SetXTitle("#eta");
       outputContainer->Add(fhPtBinClusterEtaPhi[ipt]) ;
       
@@ -1451,10 +1451,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMCOrgDeltaEta[i]->SetYTitle("#Delta #eta");
         outputContainer->Add(fhMCOrgDeltaEta[i]) ;
         
-        fhMCOrgDeltaPhi[i]= new TH2F(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #phi of pair vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+        fhMCOrgDeltaPhi[i]= new TH2F(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #varphi of pair vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
                                      nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
         fhMCOrgDeltaPhi[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #phi (rad)");
+        fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #varphi (rad)");
         outputContainer->Add(fhMCOrgDeltaPhi[i]) ;
       }
       
@@ -1965,17 +1965,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     {
       fhReOpAngleBinMinClusterEtaPhi[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMin_EtaPhi",icut),
-       Form("#eta vs #phi, cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("#eta vs #varphi, cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        netabins,etamin,etamax,nphibins,phimin,phimax);
-      fhReOpAngleBinMinClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
+      fhReOpAngleBinMinClusterEtaPhi[icut]->SetYTitle("#varphi (rad)");
       fhReOpAngleBinMinClusterEtaPhi[icut]->SetXTitle("#eta");
       outputContainer->Add(fhReOpAngleBinMinClusterEtaPhi[icut]) ;
 
       fhReOpAngleBinMaxClusterEtaPhi[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMax_EtaPhi",icut),
-       Form("#eta vs #phi, cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("#eta vs #varphi, cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        netabins,etamin,etamax,nphibins,phimin,phimax);
-      fhReOpAngleBinMaxClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
+      fhReOpAngleBinMaxClusterEtaPhi[icut]->SetYTitle("#varphi (rad)");
       fhReOpAngleBinMaxClusterEtaPhi[icut]->SetXTitle("#eta");
       outputContainer->Add(fhReOpAngleBinMaxClusterEtaPhi[icut]) ;
 
@@ -2116,17 +2116,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       {
         fhMiOpAngleBinMinClusterEtaPhi[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMin_EtaPhi",icut),
-         Form("#eta vs #phi, mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("#eta vs #varphi, mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          netabins,etamin,etamax,nphibins,phimin,phimax);
-        fhMiOpAngleBinMinClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
+        fhMiOpAngleBinMinClusterEtaPhi[icut]->SetYTitle("#varphi (rad)");
         fhMiOpAngleBinMinClusterEtaPhi[icut]->SetXTitle("#eta");
         outputContainer->Add(fhMiOpAngleBinMinClusterEtaPhi[icut]) ;
         
         fhMiOpAngleBinMaxClusterEtaPhi[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMax_EtaPhi",icut),
-         Form("#eta vs #phi, mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("#eta vs #varphi, mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          netabins,etamin,etamax,nphibins,phimin,phimax);
-        fhMiOpAngleBinMaxClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
+        fhMiOpAngleBinMaxClusterEtaPhi[icut]->SetYTitle("#varphi (rad)");
         fhMiOpAngleBinMaxClusterEtaPhi[icut]->SetXTitle("#eta");
         outputContainer->Add(fhMiOpAngleBinMaxClusterEtaPhi[icut]) ;
         
@@ -2267,9 +2267,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhPrimPi0PhiPerGenerator[igen-1]    = new TH2F
         (Form("hPrimPi0Phi%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-         Form("#phi of primary #pi^{0}, |#it{Y}|<1, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+         Form("#varphi of primary #pi^{0}, |#it{Y}|<1, generator %s",GetCocktailGenNameToCheck(igen).Data()),
          nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
-        fhPrimPi0PhiPerGenerator[igen-1]->SetYTitle("#phi (deg)");
+        fhPrimPi0PhiPerGenerator[igen-1]->SetYTitle("#varphi (deg)");
         fhPrimPi0PhiPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPrimPi0PhiPerGenerator[igen-1]) ;
         
@@ -2317,9 +2317,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhPrimEtaPhiPerGenerator[igen-1]    = new TH2F
         (Form("hPrimEtaPhi%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-         Form("#phi of primary #eta, |#it{Y}|<1, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+         Form("#varphi of primary #eta, |#it{Y}|<1, generator %s",GetCocktailGenNameToCheck(igen).Data()),
          nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
-        fhPrimEtaPhiPerGenerator[igen-1]->SetYTitle("#phi (deg)");
+        fhPrimEtaPhiPerGenerator[igen-1]->SetYTitle("#varphi (deg)");
         fhPrimEtaPhiPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPrimEtaPhiPerGenerator[igen-1]) ;
         
