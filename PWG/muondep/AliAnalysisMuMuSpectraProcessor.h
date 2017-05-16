@@ -1,6 +1,6 @@
 
-#ifndef ALINANALYSISMUMUSPECTRACAPSULE_H
-#define ALINANALYSISMUMUSPECTRACAPSULE_H
+#ifndef ALINANALYSISMUMUSPECTRAPROCESSOR_H
+#define ALINANALYSISMUMUSPECTRAPROCESSOR_H
 
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -9,8 +9,8 @@
 // $Id$
 
 /// @ingroup pwg_muondep_mumu
-/// @class AliAnalysisMuMuSpectraCapsule
-/// @bried Mother class to all capsule class.
+/// @class AliAnalysisMuMuSpectraProcessor
+/// @bried Mother class to all processor class.
 ///
 /// author : Benjamin Audurier (Subatech)
 
@@ -23,24 +23,26 @@
 #include "AliMergeableCollection.h"
 
 class TGraphErrors;
-class AliAnalysisMuMuSpectraCapsule : public TObject
+class AliAnalysisMuMuSpectraProcessor : public TObject
 {
 
 public:
   //ctor
-  AliAnalysisMuMuSpectraCapsule(
+  AliAnalysisMuMuSpectraProcessor(
     const AliAnalysisMuMuSpectra            *  spectra=0x0,
     const TString                           spectraPath ="",
     const char                              * externFile="",
     const char                              * externFile2="");
   //dctor
-  virtual ~AliAnalysisMuMuSpectraCapsule();
+  virtual ~AliAnalysisMuMuSpectraProcessor();
   // Compute Yield
   virtual TGraphErrors* ComputeYield(const char* what, const TH1* histo, const char* sResName, Double_t MUL) = 0;
   // Print some data members
   virtual void Print(Option_t* opt) const = 0;
   // Print constants used
   virtual void PrintConst() const = 0;
+  // Print Fit Param
+  void PrintFitParam(const char* subresult = "", const char* param = "") const;
   // Number of "what" for all subresults
   void PrintNofWhat(const char* what="") const;
   // Set global constants according to centrality
@@ -55,8 +57,8 @@ public:
 
   private:
   // Equality operator
-  AliAnalysisMuMuSpectraCapsule(const AliAnalysisMuMuSpectraCapsule& rhs);// not implemented on purpose
-  AliAnalysisMuMuSpectraCapsule& operator=(const AliAnalysisMuMuSpectraCapsule& rhs);// not implemented on purpose
+  AliAnalysisMuMuSpectraProcessor(const AliAnalysisMuMuSpectraProcessor& rhs);// not implemented on purpose
+  AliAnalysisMuMuSpectraProcessor& operator=(const AliAnalysisMuMuSpectraProcessor& rhs);// not implemented on purpose
 
   protected:
   const AliAnalysisMuMuSpectra* fSpectra;     // Spectra with result and subresults
@@ -69,7 +71,7 @@ public:
 
 
 /// \cond CLASSIMP
-ClassDef(AliAnalysisMuMuSpectraCapsule,2)
+ClassDef(AliAnalysisMuMuSpectraProcessor,1)
 /// \endcond;
 };
 

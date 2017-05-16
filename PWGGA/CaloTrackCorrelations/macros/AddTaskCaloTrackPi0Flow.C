@@ -33,7 +33,7 @@ Bool_t  kPhosCali      = kTRUE;                                 ////< Switch on 
 Bool_t  kCentFlat      = kFALSE;                                ///< Switch on Centrality flattening
 Int_t   kDebug         = 0;                                     ///< Do the analysis with this debug level
 
-Bool_t  kUseKinematics = kFALSE;                                ///< Use the MC information
+//Bool_t  kUseKinematics = kFALSE;                                ///< Use the MC information
 TString kName          = "";                                    ///< Name of the analysis, used in created AOD branches and histo container
 
 ///
@@ -116,12 +116,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
   kInputDataType = "AOD";
   if(!kData.Contains("delta"))
     kInputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if(kSimulation) 
-  { 
-    kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
-    if (!kUseKinematics && data=="AOD" && kInputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
-  }   
-  cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
+
+//  if(kSimulation) 
+//  { 
+//    kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
+//    if (!kUseKinematics && data=="AOD" && kInputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
+//  }   
+//  cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
+
   // Name for containers
   kName = Form("%s_Cl%s_TM%d",kCalorimeter.Data(), kClusterArray.Data(), kTM);
   if (kCollisions=="PbPb" && kMaxCen>=0) kName+=Form("Cen%d_%d",kMinCen,kMaxCen);
@@ -204,18 +206,6 @@ AliCaloTrackReader * ConfigureReader()
   //Delta AOD?
   //reader->SetDeltaAODFileName("");
   if(kOutputAOD) reader->SwitchOnWriteDeltaAOD()  ;
-  
-  // MC settings
-  if(kUseKinematics){
-    if(kInputDataType == "ESD"){
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(kInputDataType == "AOD"){
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
-  }  
   
   //------------------------
   // Detector input filling

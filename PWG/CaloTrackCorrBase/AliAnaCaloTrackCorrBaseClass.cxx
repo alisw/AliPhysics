@@ -446,7 +446,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
   // check overlap with same generator, but not hijing
   Int_t overpdg[nlabels];
   Int_t overlab[nlabels];
-  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetReader(),overpdg,overlab);
+  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetMC(),overpdg,overlab);
   Bool_t sameGenOverlap   = kFALSE;
   Bool_t sameGenOverlapHI = kFALSE;
   for(Int_t iover = 0; iover < noverlaps; iover++)

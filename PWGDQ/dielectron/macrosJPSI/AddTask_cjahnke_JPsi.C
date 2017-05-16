@@ -88,6 +88,10 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char* period = "11d",  Int_t trigger_index
   eventCuts->SetVertexZ(-10.,10.);
   //eventCuts->SetCentralityRange(0.0,80.0);
   task->SetEventFilter(eventCuts);
+	
+
+
+	
 
 	
 	

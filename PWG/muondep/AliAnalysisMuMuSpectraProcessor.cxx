@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliAnalysisMuMuSpectraCapsule.h"
+#include "AliAnalysisMuMuSpectraProcessor.h"
 
-ClassImp(AliAnalysisMuMuSpectraCapsule)
+ClassImp(AliAnalysisMuMuSpectraProcessor)
 
 
 #include "AliLog.h"
@@ -29,6 +29,8 @@ ClassImp(AliAnalysisMuMuSpectraCapsule)
 #include "TObjArray.h"
 #include "TStyle.h"
 #include "TH1F.h"
+#include "TH1.h"
+#include "TH2.h"
 #include "TLine.h"
 #include "TCanvas.h"
 #include "TLegend.h"
@@ -46,7 +48,7 @@ using std::ifstream;
 
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectraCapsule::AliAnalysisMuMuSpectraCapsule(
+AliAnalysisMuMuSpectraProcessor::AliAnalysisMuMuSpectraProcessor(
 const AliAnalysisMuMuSpectra*  spectra,
 const TString                 spectraPath,
 const char                  * externFile,
@@ -76,13 +78,13 @@ fPrintFlag(kFALSE)
 }
 
 //_____________________________________________________________________________
-AliAnalysisMuMuSpectraCapsule::~AliAnalysisMuMuSpectraCapsule()
+AliAnalysisMuMuSpectraProcessor::~AliAnalysisMuMuSpectraProcessor()
 {
   // dtor
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(const char* file, Double_t* constantArray, const TString* spectraName)
+Bool_t AliAnalysisMuMuSpectraProcessor::SetConstantFromExternFile(const char* file, Double_t* constantArray, const TString* spectraName)
 {
   /// Set member constants depending on centrality bin from an ewternfile.
   /// If values are empty and can be obtained from a graph provided by the AliAnalysisMuMu Framework, this value is set by default
@@ -159,7 +161,215 @@ Bool_t AliAnalysisMuMuSpectraCapsule::SetConstantFromExternFile(const char* file
 
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSpectraCapsule::PrintNofWhat(const char* what) const
+
+void AliAnalysisMuMuSpectraProcessor::PrintFitParam(const char* subresult, const char* param) const
+{
+  /**
+   *   [AliAnalysisMuMuSpectraProcessor::PrintFitParam description]
+   *   @brief   [bief description]
+   *   @details [long description]
+   *
+   *   @param   subresult [description]
+   *   @param   param     [description]
+   */
+
+  TCanvas * c = new TCanvas;
+  TH1*       h          = 0x0;
+  TH1*       hcent      = 0x0;
+  TH1*       href       = 0x0;
+
+  // Get param as string
+  TString par(param);
+  TObjArray * paramArray = par.Tokenize(",");
+  int nparam = paramArray->GetEntries();
+
+  // Get subresults as string
+  TString ssubres(subresult);
+  TObjArray * subresultArray = new TObjArray;
+  // Get the name of the subresults if chains empty
+  if(ssubres.IsNull()){
+    printf("toto\n");
+    subresultArray = static_cast<AliAnalysisMuMuResult*>(fSpectra->BinContentArray()->At(0))->SubResults();
+    // subresultArray->Print();
+    // return;
+  } else subresultArray = ssubres.Tokenize(",");
+  TObjString* ssubresult;
+  TIter nextSubResult(subresultArray);
+
+  c->Divide(2,nparam);
+
+  // Loop on param
+  int k = 1;
+  TObjString* sparam;
+  TIter nextparam(paramArray);
+  nextparam.Reset();
+  while ( ( sparam = static_cast<TObjString*>(nextparam()) ) )
+  {
+    AliDebug(1,Form("param %s",sparam->String().Data()));
+
+    if(c)
+    {
+      // --- First canvas ---
+      c->cd(k);
+
+      TLegend*leg = new TLegend(0.1,0.7,0.48,0.9);
+      leg->SetHeader(Form("Fit Parameters %s ",sparam->String().Data()));
+      leg->SetTextSize(0.03);
+
+      printf("going to subcanvas %d\n",k );
+      int i = 1;
+      nextSubResult.Reset();
+      while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
+      {
+        //Loop over subresults
+        AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
+        if  ( !fSpectraName.Contains("VS") )
+          h = fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+        else if ( fSpectraName.Contains("YVSPT") )
+          h = static_cast<TH2*>(fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+        else if ( fSpectraName.Contains("PTVSY") )
+          h = static_cast<TH2*>(fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+
+        if(!h) {
+          AliError(Form("Cannot find histo for SubResults %s",ssubresult->String().Data()));
+          return;
+        }
+
+        // beautifull histo
+        if( i!=3 && i!=5 && i!=10 && i!=11 && i!=12 && i!=13 && i!=14 ) h->SetMarkerColor(i); //nobody likes green and yellow
+        else               h->SetMarkerColor(i+5);
+
+        h->SetMarkerSize(1.);
+        h->SetMarkerStyle(20+i);
+        if(i==11)h->SetMarkerStyle(20+i+3);
+        if(i==1)
+        {
+          h->GetYaxis()->SetTitleSize(0.05);
+          h->GetYaxis()->SetLabelSize(0.05);
+          h->GetXaxis()->SetLabelSize(0.05);
+          h->GetXaxis()->SetTitleSize(0.05);
+          h->SetTitle(Form(" %s for bin %s",sparam->String().Data(),fSpectraName.Data()));
+          h->GetYaxis()->SetTitle(sparam->String().Data());
+          if (fSpectraName.Contains("YVSPT") )
+            h->GetXaxis()->SetTitle("PT");
+          else if (fSpectraName.Contains("PTVSY") )
+            h->GetXaxis()->SetTitle("Y");
+        }
+
+        if(! sparam->String().Contains("FitChi2PerNDF"))
+        {
+          if(i==1)h->DrawCopy();
+          else    h->DrawCopy("same");
+        }
+        else
+        {
+          if(i==1)h->DrawCopy("p");
+          else    h->DrawCopy("samep");
+        }
+
+        leg->AddEntry(h,Form("%s with %s",sparam->String().Data(),ssubresult->String().Data()),"p");
+        i++;
+      }
+
+      leg->Draw("same");
+
+      // --- ratio ---
+      c->cd(++k);
+
+      TLegend * leg2 = new TLegend(0.1,0.7,0.48,0.9);
+      leg2->SetHeader(Form("Ratio"));
+      leg2->SetTextSize(0.03);
+
+      nextSubResult.Reset();
+      int j= 1;
+      TString refName;
+      while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) )
+      {
+        AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
+
+        if(j==1)
+        {
+          href    = fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+          if  ( !fSpectraName.Contains("VS") ) href = fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+          else if ( fSpectraName.Contains("YVSPT") )
+            href = static_cast<TH2*>(fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+          else if ( fSpectraName.Contains("PTVSY") )
+            href = static_cast<TH2*>(fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+
+          refName = href->GetName();
+          j++;
+          continue;
+        }
+
+        if  ( !fSpectraName.Contains("VS") )
+          h = fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+        else if ( fSpectraName.Contains("YVSPT") )
+          h = static_cast<TH2*>(fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+        else if ( fSpectraName.Contains("PTVSY") )
+          h = static_cast<TH2*>(fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE))->ProjectionX();
+
+        if(!h || !href )
+        {
+          AliError(Form("Cannot find histos for SubResults  ratio "));
+          return;
+        }
+
+        if( j!=3 && j!=5 && j!= 10 && j!=11 && j!=12 && j!=13 && j!=14 ) h->SetMarkerColor(j); //nobody likes green and yellow
+        else               h->SetMarkerColor(j+5);
+        h->SetMarkerSize(1.);
+        h->SetMarkerStyle(20+j);
+        if(j==11)h->SetMarkerStyle(20+j+3);
+        if(j==2)
+        {
+          h->GetYaxis()->SetTitleSize(0.05);
+          h->GetYaxis()->SetLabelSize(0.05);
+          h->GetXaxis()->SetLabelSize(0.05);
+          h->GetXaxis()->SetTitleSize(0.05);
+          h->SetTitle(Form(" %s Ratio over %s for %s",sparam->String().Data(),refName.Data(),fSpectraName.Data()));
+          if (fSpectraName.Contains("YVSPT") ) h->GetXaxis()->SetTitle("PT");
+          else if (fSpectraName.Contains("PTVSY") ) h->GetXaxis()->SetTitle("Y");
+        }
+        h->Divide(href);
+        if(! sparam->String().Contains("FitChi2PerNDF"))
+        {
+          if(j==2)h->DrawCopy();
+          else    h->DrawCopy("same");
+        }
+        else
+        {
+          if(j==2)h->DrawCopy("p");
+          else    h->DrawCopy("samep");
+        }
+        leg2->AddEntry(h,Form("Results %d over Result 1",j),"pe");
+
+        j++;
+      }
+
+      leg2->Draw("same");
+      ++k;
+    } else {
+      nextSubResult.Reset();
+      int i= 1;
+      while ( ( ssubresult = static_cast<TObjString*>(nextSubResult()) ) ){
+        //Loop over subresults
+        AliDebug(1,Form("-----SubResults %s",ssubresult->String().Data()));
+        h = fSpectra->Plot(sparam->String().Data(),ssubresult->String().Data(),kFALSE);
+        if(!h) {
+          AliError(Form("Cannot find histo for SubResults %s",ssubresult->String().Data()));
+          return;
+        }
+      }
+    }
+  }
+
+  delete paramArray;
+  delete subresultArray;
+
+
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuSpectraProcessor::PrintNofWhat(const char* what) const
 {
   /// Print what number for each results on terminal.
 
@@ -214,7 +424,7 @@ void AliAnalysisMuMuSpectraCapsule::PrintNofWhat(const char* what) const
     Double_t subNofWhatStatError[result->SubResults()->GetEntries()];
     const char * srName[result->SubResults()->GetEntries()];
 
-    cout << Form(" -_-_-_-_- %s --- %s -_-_-_-_- ",binAsString.Data(),GetSpectraName().Data()) << endl;
+    cout << Form(" -_-_-_-_- %s --- %s -_-_-_-_- ",binAsString.Data(),fSpectraName.Data()) << endl;
 
     int excludedResults =0;
 
@@ -295,7 +505,7 @@ void AliAnalysisMuMuSpectraCapsule::PrintNofWhat(const char* what) const
 
     cout << Form(" -------- ") << endl;
     cout << Form(" ------ Mean :  %.0f +/- %.0f (%.1f %%) +/- %.0f (%.1f %%) ------ ",
-      result->GetValue(what),result->GetErrorStat(what),100*result->GetErrorStat(what)/result->GetValue(what),result->GetRMS(what),100*result->GetRMS(what)/result->GetValue(what)) 
+      result->GetValue(what),result->GetErrorStat(what),100*result->GetErrorStat(what)/result->GetValue(what),result->GetRMS(what),100*result->GetRMS(what)/result->GetValue(what))
     << " with " <<excludedResults << " excluded results" << endl;
     cout << "" << endl;
     nofResult++;

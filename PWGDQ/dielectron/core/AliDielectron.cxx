@@ -1766,7 +1766,7 @@ void AliDielectron::SetWidthCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t var
       AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
       // clone temporare histogram, otherwise it will not be streamed to file!
       fPostPIDWdthCorrArr->Add((TH1*)fun->GetHistogram()->Clone(key.Data()));
-      TH1 *histo = (TH1*) fPostPIDWdthCorrArr->At(i);
+      histo = (TH1*) fPostPIDWdthCorrArr->At(i);
       histo->GetListOfFunctions()->AddAt(fun, 0);
     }
     // if TH1s are stored in the array
@@ -1775,7 +1775,7 @@ void AliDielectron::SetWidthCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t var
       AliDielectronHistos::StoreVariables(fun, valType);
       // clone temporare histogram, otherwise it will not be streamed to file!
       fPostPIDWdthCorrArr->Add((TH1*)fun->Clone(key.Data()));
-      TH1 *histo = (TH1*) fPostPIDWdthCorrArr->At(i);
+      histo = (TH1*) fPostPIDWdthCorrArr->At(i);
     }
     if(histo){
       // check for corrections and add their variables to the fill map

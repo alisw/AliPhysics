@@ -307,7 +307,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   fReducedEvent->ClearEvent();
   
   if(isSelected==0) {
-    cout << "AliAnalysisTaskReducedTreeMaker::UserExec() event is not selected" << endl;
+    //cout << "AliAnalysisTaskReducedTreeMaker::UserExec() event is not selected" << endl;
     //PostData(1, fReducedEvent);
     return;
   }

@@ -93,9 +93,9 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
   fPythiaTrials(0),
-  fPythiaTrialsAvg(0),
+  fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
-  fPythiaCrossSectionAvg(0.),
+  fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.),
   fPythiaCrossSectionFilenames(),
   fHistManager(),
@@ -149,9 +149,9 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
   fPythiaTrials(0),
-  fPythiaTrialsAvg(0),
+  fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
-  fPythiaCrossSectionAvg(0.),
+  fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.),
   fPythiaCrossSectionFilenames(),
   fHistManager(name),
@@ -512,12 +512,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
     // It is identically zero if the available is not available
     if (fPythiaCrossSection == 0.) {
       AliDebugStream(4) << "Taking the pythia cross section avg from the xsec file.\n";
-      fPythiaCrossSection = fPythiaCrossSectionAvg;
+      fPythiaCrossSection = fPythiaCrossSectionFromFile;
     }
     // It is identically zero if the available is not available
     if (fPythiaTrials == 0.) {
       AliDebugStream(4) << "Taking the pythia trials avg from the xsec file.\n";
-      fPythiaTrials = fPythiaTrialsAvg;
+      fPythiaTrials = fPythiaTrialsFromFile;
     }
     // Pt hard is inherently event-by-event and cannot by taken as a avg quantity.
 
@@ -871,7 +871,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 }
 
 /**
- * Check if yhe file pythia base filename can be found in the folder or archive corresponding where
+ * Check if the file pythia base filename can be found in the folder or archive corresponding where
  * the external event input file is found.
  *
  * @param baseFileName Path to external event input file with "#*.root" already remove (it if existed).
@@ -1002,10 +1002,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
   // If there are pythia filenames, the number of match the file number of the tree.
   // If we previously gave up on extracting then there should be no entires
   if (fPythiaCrossSectionFilenames.size() > 0) {
-    bool success = PythiaInfoFromCrossSectionFile(fPythiaCrossSectionFilenames.at(fFileNumber));
+    // Need to check that fFileNumber is smaller than the size of the vector because we don't check if
+    if (fFileNumber < fPythiaCrossSectionFilenames.size()) {
+      bool success = PythiaInfoFromCrossSectionFile(fPythiaCrossSectionFilenames.at(fFileNumber));
 
-    if (!success) {
-      AliDebugStream(3) << "Failed to retrieve cross section from xsec file. Will still attempt to get the information from the header.\n";
+      if (!success) {
+        AliDebugStream(3) << "Failed to retrieve cross section from xsec file. Will still attempt to get the information from the header.\n";
+      }
+    }
+    else {
+      AliErrorStream() << "Attempted to read past the end of the pythia cross section filenames vector. File number: " << fFileNumber << ", vector size: " << fPythiaCrossSectionFilenames.size() << ".\nThis should only occur if we have run out of files to embed!\n";
     }
   }
 
@@ -1078,8 +1084,9 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
     // We do not want to just use the overall value because some of the events may be rejected by various
     // event selections, so we only want that ones that were actually use. The easiest way to do so is by
     // filling it for each event.
-    fPythiaTrialsAvg = trials/nEvents;
-    fPythiaCrossSectionAvg = crossSection/nEvents;
+    fPythiaTrialsFromFile = trials/nEvents;
+    // Do __NOT__ divide by nEvents here! The value is already from a TProfile and therefore is already the mean!
+    fPythiaCrossSectionFromFile = crossSection;
 
     return true;
   }

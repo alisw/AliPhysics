@@ -18,7 +18,6 @@
 #include <TH3D.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-#include "TParticle.h"
 #include "TDatabasePDG.h"
 
 // --- Analysis system --- 
@@ -29,7 +28,7 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
 #include "AliVCluster.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaPhotonConvInCalo) ;
@@ -751,7 +750,7 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
           // Check the origin of the pair, look for conversion, antinucleons or jet correlations (strings)
           
           ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(calo->GetLabel(), calo2->GetLabel(),
-                                                                GetReader(), ancPDG, ancStatus, fMomentum, fProdVertex);
+                                                                GetMC(), ancPDG, ancStatus, fMomentum, fProdVertex);
           
           // printf("AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms() - Common ancestor label %d, pdg %d, name %s, status %d; \n",
           //                          ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
@@ -893,30 +892,17 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
             
             //Float_t eprim   = 0;
             //Float_t ptprim  = 0;
-            if(GetReader()->ReadStack())
+                     
+            // Get the particle
+            AliVParticle* primary = GetMC()->GetTrack(label);
+            
+            if(!primary)
             {
-              TParticle* primary = GetMC()->Particle(label);
-              if(!primary)
-              {
-                AliDebug(1,Form("*** no primary ***:  label %d", label));
-                continue;
-              }
-              //eprim   = primary->Energy();
-              //ptprim  = primary->Pt();
+              AliDebug(2,Form("*** no primary ***:  label %d", label));
+              continue;
             }
-            else if(GetReader()->ReadAODMCParticles())
-            {              
-              // Get the particle
-              AliAODMCParticle* aodprimary = (AliAODMCParticle*) GetMC()->GetTrack(label);
-              
-              if(!aodprimary)
-              {
-                AliDebug(2,Form("*** no primary ***:  label %d", label));
-                continue;
-              }
-              //eprim   = aodprimary->E();
-              //ptprim  = aodprimary->Pt();
-            }
+            //eprim   = aodprimary->E();
+            //ptprim  = aodprimary->Pt();
             
             Int_t tag = calo ->GetTag();
             if(ancLabel >=0 )

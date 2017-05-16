@@ -34,7 +34,7 @@
 #include "TRandom2.h"
 //MC access
 #include "AliMCAnalysisUtils.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 
 // --- Detectors ---
 #include "AliEMCALGeometry.h"
@@ -2393,7 +2393,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo()
   Double_t photonPhi =  100 ;
   Double_t photonEta = -1 ;
   Bool_t   inacceptance = kFALSE;
-  AliAODMCParticle * primTmp = NULL;
+  AliVParticle * primTmp = NULL;
   
   // jet counters
   Int_t nParticlesInJet=0;
@@ -2445,261 +2445,253 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo()
   
   std::vector<Int_t> jetParticleIndex;
   
-  if(GetReader()->ReadStack()) 
-  {//ESD
-    AliDebug(3,"I use stack");
-  }//end Stack 
-  else if(GetReader()->ReadAODMCParticles()) 
-  {//AOD
-   //jet origin
-   //index =6 and 7 is hard scattering (jet-quark or photon)
-    primTmp = (AliAODMCParticle *) GetMC()->GetTrack(6);
-    pdg=primTmp->GetPdgCode();
-    AliDebug(3,Form("id 6 pdg %d, pt %f ",pdg,primTmp->Pt() ));
+  //jet origin
+  //index =6 and 7 is hard scattering (jet-quark or photon)
+  primTmp =  GetMC()->GetTrack(6);
+  pdg=primTmp->PdgCode();
+  AliDebug(3,Form("id 6 pdg %d, pt %f ",pdg,primTmp->Pt() ));
+  
+  if(TMath::Abs(pdg)<=6 ||pdg==21) 
+  {
+    fhMCJetOrigin->Fill(pdg, GetEventWeight());
+    fMCPartonType=pdg;
+  }
+  
+  primTmp =  GetMC()->GetTrack(7);
+  pdg=primTmp->PdgCode();
+  
+  AliDebug(3,Form("id 7 pdg %d, pt %f",pdg,primTmp->Pt() ));
+  
+  if(TMath::Abs(pdg)<=6 ||pdg==21) 
+  {
+    fhMCJetOrigin->Fill(pdg, GetEventWeight());
+    fMCPartonType=pdg;
+  }
+  //end of jet origin
+  
+  Int_t nprim = GetMC()->GetNumberOfTracks();
+  for(Int_t i=0; i < nprim; i++) 
+  {
+    if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
-    if(TMath::Abs(pdg)<=6 ||pdg==21) 
-    {
-      fhMCJetOrigin->Fill(pdg, GetEventWeight());
-      fMCPartonType=pdg;
-    }
+    AliVParticle * prim =  GetMC()->GetTrack(i);
     
-    primTmp = (AliAODMCParticle *) GetMC()->GetTrack(7);
-    pdg=primTmp->GetPdgCode();
+    pdg = prim->PdgCode();
+    mother=prim->GetMother();
     
-    AliDebug(3,Form("id 7 pdg %d, pt %f",pdg,primTmp->Pt() ));
-    
-    if(TMath::Abs(pdg)<=6 ||pdg==21) 
-    {
-      fhMCJetOrigin->Fill(pdg, GetEventWeight());
-      fMCPartonType=pdg;
-    }
-    //end of jet origin
-    
-    Int_t nprim = GetMC()->GetNumberOfTracks();
-    for(Int_t i=0; i < nprim; i++) 
-    {
-      if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
+    //photon=22, gluon=21, quarks=(1,...,6), antiquarks=(-1,...,-6)
+    if(pdg == 22)
+    {//photon
+      fhMCPhotonCuts->Fill(0., GetEventWeight());
       
-      AliAODMCParticle * prim = (AliAODMCParticle *) GetMC()->GetTrack(i);
+      if(prim->MCStatusCode()!=1) continue;
       
-      pdg = prim->GetPdgCode();
-      mother=prim->GetMother();
+      fhMCPhotonCuts->Fill(1., GetEventWeight());
       
-      //photon=22, gluon=21, quarks=(1,...,6), antiquarks=(-1,...,-6)
-      if(pdg == 22)
-      {//photon
-        fhMCPhotonCuts->Fill(0., GetEventWeight());
+      AliDebug(5,Form("id %d, prim %d, physPrim %d, status %d\n",i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->MCStatusCode()));
+      while(mother>7)
+      {
+        primTmp =  GetMC()->GetTrack(mother);
+        mother=primTmp->GetMother();
+      }
+      
+      if(mother<6)continue;
+      
+      fhMCPhotonCuts->Fill(2., GetEventWeight());
+      
+      primTmp =  GetMC()->GetTrack(mother);
+      
+      if(primTmp->PdgCode()!=22)continue;
+      
+      fhMCPhotonCuts->Fill(3., GetEventWeight());
+      
+      //Get photon kinematics
+      photonPt  = prim->Pt() ;
+      photonPhi = prim->Phi() ;
+      if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+      photonEta = prim->Eta() ;
+      
+      fhMCPhotonPt    ->Fill(photonPt, GetEventWeight());
+      fhMCPhotonEtaPhi->Fill(photonPhi, photonEta, GetEventWeight());
+      
+      //Check if photons hit the Calorimeter
+      fMomentum.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
+      inacceptance = kFALSE;
+      if(GetCaloUtils()->IsEMCALGeoMatrixSet())
+      {
+        fhMCPhotonCuts->Fill(4, GetEventWeight());
         
-        if(prim->GetStatus()!=1) continue;
-        
-        fhMCPhotonCuts->Fill(1., GetEventWeight());
-        
-        AliDebug(5,Form("id %d, prim %d, physPrim %d, status %d\n",i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus()));
-        while(mother>7)
+        //check if in EMCAL
+        if(GetEMCALGeometry())
         {
-          primTmp = (AliAODMCParticle *) GetMC()->GetTrack(mother);
-          mother=primTmp->GetMother();
+          GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
+          if(absID >= 0) inacceptance = kTRUE;
+          AliDebug(3,Form("In EMCAL Real acceptance? %d",inacceptance));
         }
-        
-        if(mother<6)continue;
-        
-        fhMCPhotonCuts->Fill(2., GetEventWeight());
-        
-        primTmp = (AliAODMCParticle *) GetMC()->GetTrack(mother);
-        
-        if(primTmp->GetPdgCode()!=22)continue;
-        
-        fhMCPhotonCuts->Fill(3., GetEventWeight());
-        
-        //Get photon kinematics
-        photonPt  = prim->Pt() ;
-        photonPhi = prim->Phi() ;
-        if(photonPhi < 0) photonPhi+=TMath::TwoPi();
-        photonEta = prim->Eta() ;
-        
-        fhMCPhotonPt    ->Fill(photonPt, GetEventWeight());
-        fhMCPhotonEtaPhi->Fill(photonPhi, photonEta, GetEventWeight());
-        
-        //Check if photons hit the Calorimeter
-        fMomentum.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
-        inacceptance = kFALSE;
-        if(GetCaloUtils()->IsEMCALGeoMatrixSet())
-        {
-          fhMCPhotonCuts->Fill(4, GetEventWeight());
-          
-          //check if in EMCAL
-          if(GetEMCALGeometry())
-          {
-            GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
-            if(absID >= 0) inacceptance = kTRUE;
-            AliDebug(3,Form("In EMCAL Real acceptance? %d",inacceptance));
-          }
-          else{
-            if(GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL)) inacceptance = kTRUE ;
-            AliDebug(1,Form("In EMCAL fiducial cut acceptance? %d",inacceptance));
-          }
+        else{
+          if(GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL)) inacceptance = kTRUE ;
+          AliDebug(1,Form("In EMCAL fiducial cut acceptance? %d",inacceptance));
         }
-        else
-        {//no EMCAL nor EMCALGeoMatrixSet
-          AliWarning("not EMCALGeoMatrix set");
-        }//end of check if EMCAL
-        
-        if(inacceptance)fhMCPhotonCuts->Fill(5, GetEventWeight());
-        
-        AliDebug(5,Form("Photon Energy %f, Pt %f",prim->E(),prim->Pt()));
-        fMCGamPt=photonPt;
-        fMCGamEta=photonEta;
-        fMCGamPhi=photonPhi;
-      }//end of check if photon
+      }
       else
-      {//not photon
-        if(prim->GetStatus()!=1) continue;
-        
-        AliDebug(5,Form("id %d, prim %d, physPrim %d, status %d, pdg %d, E %f",
-                        i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus(),prim->GetPdgCode(),prim->E()));
-        
-        while(mother>7)
-        {
-          primTmp = (AliAODMCParticle *) GetMC()->GetTrack(mother);
-          mother=primTmp->GetMother();
-          AliDebug(5,Form("next mother %d",mother));
-        }
-        
-        if(mother<6)continue;//soft part
-        
-        primTmp = (AliAODMCParticle *) GetMC()->GetTrack(mother);
-        pdg=primTmp->GetPdgCode();
-        if( !(TMath::Abs(pdg)<=6 || pdg==21) ) continue;//origin not hard q or g
-        
-        //jetParticleIndex.Add(&i);
-        jetParticleIndex.push_back(i);
-        
-        nParticlesInJet++;
-        eneParticlesInJet+=prim->E();
-        pxParticlesInJet+=prim->Px();
-        pyParticlesInJet+=prim->Py();
-        etaParticlesInJet+=(prim->E()*prim->Eta());
-        photonPhi = prim->Phi() ;
-        if(photonPhi < 0) photonPhi+=TMath::TwoPi();
-        phiParticlesInJet+=(prim->E()*photonPhi);
-        
-        
-        if(prim->Charge()!=0)
-        {
-          nChargedParticlesInJet++;
-          eneChargedParticlesInJet+=prim->E();
-          pxChargedParticlesInJet+=prim->Px();
-          pyChargedParticlesInJet+=prim->Py();
-          etaChargedParticlesInJet+=(prim->E()*prim->Eta());
-          phiChargedParticlesInJet+=(prim->E()*photonPhi);
-        }
-        
-        if(prim->Pt()>0.150 && TMath::Abs(prim->Eta())<0.9 ) 
-        {//in TPC acceptance :)
-          nParticlesInJet150++;
-          eneParticlesInJet150+=prim->E();
-          pxParticlesInJet150+=prim->Px();
-          pyParticlesInJet150+=prim->Py();
-          etaParticlesInJet150+=(prim->E()*prim->Eta());
-          phiParticlesInJet150+=(prim->E()*photonPhi);
-        }
-        
-        if(prim->Charge()!=0 && prim->Pt()>0.150 && TMath::Abs(prim->Eta())<0.9 )
-        {//in TPC acceptance :)
-          nChargedParticlesInJet150++;
-          eneChargedParticlesInJet150+=prim->E();
-          pxChargedParticlesInJet150+=prim->Px();
-          pyChargedParticlesInJet150+=prim->Py();
-          etaChargedParticlesInJet150+=(prim->E()*prim->Eta());
-          phiChargedParticlesInJet150+=(prim->E()*photonPhi);
-        }
-        
-      }//end of check pdg
-    }//end of loop over primaries
-    
-    if(eneParticlesInJet != 0.) {
-      etaParticlesInJet/=eneParticlesInJet ;
-      phiParticlesInJet/=eneParticlesInJet ;
-    }
-    if(eneChargedParticlesInJet != 0) {
-      etaChargedParticlesInJet/=eneChargedParticlesInJet;
-      phiChargedParticlesInJet/=eneChargedParticlesInJet;
-    }
-    if(eneParticlesInJet150 != 0) {
-      etaParticlesInJet150/=eneParticlesInJet150;
-      phiParticlesInJet150/=eneParticlesInJet150;
-    }
-    if(eneChargedParticlesInJet150 != 0) {
-      etaChargedParticlesInJet150/=eneChargedParticlesInJet150;
-      phiChargedParticlesInJet150/=eneChargedParticlesInJet150;
-    }
-    
-    ptParticlesInJet=TMath::Sqrt(pxParticlesInJet*pxParticlesInJet+pyParticlesInJet*pyParticlesInJet);
-    ptChargedParticlesInJet=TMath::Sqrt(pxChargedParticlesInJet*pxChargedParticlesInJet+pyChargedParticlesInJet*pyChargedParticlesInJet);
-    ptParticlesInJet150=TMath::Sqrt(pxParticlesInJet150*pxParticlesInJet150+pyParticlesInJet150*pyParticlesInJet150);
-    ptChargedParticlesInJet150=TMath::Sqrt(pxChargedParticlesInJet150*pxChargedParticlesInJet150+pyChargedParticlesInJet150*pyChargedParticlesInJet150);
-    
-    Double_t distance=0.;
-    Double_t eta=0.;
-    Double_t phi=0.;
-    Double_t mostPtCharged=0.;
-    Int_t mostmostPtChargedId=-1;
-    std::vector<Int_t>::iterator it;
-    for( it=jetParticleIndex.begin(); it!=jetParticleIndex.end(); ++it )
-    {
-      AliAODMCParticle * prim = (AliAODMCParticle *) GetMC()->GetTrack(*it);
-      eta = prim->Eta();
-      phi = prim->Phi();
-      if(phi < 0) phi+=TMath::TwoPi();
-      //full jet
-      distance=TMath::Sqrt((eta-etaParticlesInJet)*(eta-etaParticlesInJet)+(phi-phiParticlesInJet)*(phi-phiParticlesInJet));
-      if(distance>coneJet) coneJet=distance;
-      //charged jet
-      distance=TMath::Sqrt((eta-etaChargedParticlesInJet)*(eta-etaChargedParticlesInJet)+(phi-phiChargedParticlesInJet)*(phi-phiChargedParticlesInJet));
-      if(distance>coneChargedJet) coneChargedJet=distance;
-      //
-      distance=TMath::Sqrt((eta-etaParticlesInJet150)*(eta-etaParticlesInJet150)+(phi-phiParticlesInJet150)*(phi-phiParticlesInJet150));
-      if(distance>coneJet150 && TMath::Abs(eta)<0.9 ) coneJet150=distance;
-      //
-      distance=TMath::Sqrt((eta-etaChargedParticlesInJet150)*(eta-etaChargedParticlesInJet150)+(phi-phiChargedParticlesInJet150)*(phi-phiChargedParticlesInJet150));
-      if(distance>coneChargedJet150 && TMath::Abs(eta)<0.9) coneChargedJet150=distance;
+      {//no EMCAL nor EMCALGeoMatrixSet
+        AliWarning("not EMCALGeoMatrix set");
+      }//end of check if EMCAL
       
+      if(inacceptance)fhMCPhotonCuts->Fill(5, GetEventWeight());
+      
+      AliDebug(5,Form("Photon Energy %f, Pt %f",prim->E(),prim->Pt()));
+      fMCGamPt=photonPt;
+      fMCGamEta=photonEta;
+      fMCGamPhi=photonPhi;
+    }//end of check if photon
+    else
+    {//not photon
+      if(prim->MCStatusCode()!=1) continue;
+      
+      AliDebug(5,Form("id %d, prim %d, physPrim %d, status %d, pdg %d, E %f",
+                      i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->MCStatusCode(),prim->PdgCode(),prim->E()));
+      
+      while(mother>7)
+      {
+        primTmp =  GetMC()->GetTrack(mother);
+        mother=primTmp->GetMother();
+        AliDebug(5,Form("next mother %d",mother));
+      }
+      
+      if(mother<6)continue;//soft part
+      
+      primTmp =  GetMC()->GetTrack(mother);
+      pdg=primTmp->PdgCode();
+      if( !(TMath::Abs(pdg)<=6 || pdg==21) ) continue;//origin not hard q or g
+      
+      //jetParticleIndex.Add(&i);
+      jetParticleIndex.push_back(i);
+      
+      nParticlesInJet++;
+      eneParticlesInJet+=prim->E();
+      pxParticlesInJet+=prim->Px();
+      pyParticlesInJet+=prim->Py();
+      etaParticlesInJet+=(prim->E()*prim->Eta());
+      photonPhi = prim->Phi() ;
+      if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+      phiParticlesInJet+=(prim->E()*photonPhi);
+      
+      
+      if(prim->Charge()!=0)
+      {
+        nChargedParticlesInJet++;
+        eneChargedParticlesInJet+=prim->E();
+        pxChargedParticlesInJet+=prim->Px();
+        pyChargedParticlesInJet+=prim->Py();
+        etaChargedParticlesInJet+=(prim->E()*prim->Eta());
+        phiChargedParticlesInJet+=(prim->E()*photonPhi);
+      }
+      
+      if(prim->Pt()>0.150 && TMath::Abs(prim->Eta())<0.9 ) 
+      {//in TPC acceptance :)
+        nParticlesInJet150++;
+        eneParticlesInJet150+=prim->E();
+        pxParticlesInJet150+=prim->Px();
+        pyParticlesInJet150+=prim->Py();
+        etaParticlesInJet150+=(prim->E()*prim->Eta());
+        phiParticlesInJet150+=(prim->E()*photonPhi);
+      }
+      
+      if(prim->Charge()!=0 && prim->Pt()>0.150 && TMath::Abs(prim->Eta())<0.9 )
+      {//in TPC acceptance :)
+        nChargedParticlesInJet150++;
+        eneChargedParticlesInJet150+=prim->E();
+        pxChargedParticlesInJet150+=prim->Px();
+        pyChargedParticlesInJet150+=prim->Py();
+        etaChargedParticlesInJet150+=(prim->E()*prim->Eta());
+        phiChargedParticlesInJet150+=(prim->E()*photonPhi);
+      }
+      
+    }//end of check pdg
+  }//end of loop over primaries
+  
+  if(eneParticlesInJet != 0.) {
+    etaParticlesInJet/=eneParticlesInJet ;
+    phiParticlesInJet/=eneParticlesInJet ;
+  }
+  if(eneChargedParticlesInJet != 0) {
+    etaChargedParticlesInJet/=eneChargedParticlesInJet;
+    phiChargedParticlesInJet/=eneChargedParticlesInJet;
+  }
+  if(eneParticlesInJet150 != 0) {
+    etaParticlesInJet150/=eneParticlesInJet150;
+    phiParticlesInJet150/=eneParticlesInJet150;
+  }
+  if(eneChargedParticlesInJet150 != 0) {
+    etaChargedParticlesInJet150/=eneChargedParticlesInJet150;
+    phiChargedParticlesInJet150/=eneChargedParticlesInJet150;
+  }
+  
+  ptParticlesInJet=TMath::Sqrt(pxParticlesInJet*pxParticlesInJet+pyParticlesInJet*pyParticlesInJet);
+  ptChargedParticlesInJet=TMath::Sqrt(pxChargedParticlesInJet*pxChargedParticlesInJet+pyChargedParticlesInJet*pyChargedParticlesInJet);
+  ptParticlesInJet150=TMath::Sqrt(pxParticlesInJet150*pxParticlesInJet150+pyParticlesInJet150*pyParticlesInJet150);
+  ptChargedParticlesInJet150=TMath::Sqrt(pxChargedParticlesInJet150*pxChargedParticlesInJet150+pyChargedParticlesInJet150*pyChargedParticlesInJet150);
+  
+  Double_t distance=0.;
+  Double_t eta=0.;
+  Double_t phi=0.;
+  Double_t mostPtCharged=0.;
+  Int_t mostmostPtChargedId=-1;
+  std::vector<Int_t>::iterator it;
+  for( it=jetParticleIndex.begin(); it!=jetParticleIndex.end(); ++it )
+  {
+    AliVParticle * prim = GetMC()->GetTrack(*it);
+    eta = prim->Eta();
+    phi = prim->Phi();
+    if(phi < 0) phi+=TMath::TwoPi();
+    //full jet
+    distance=TMath::Sqrt((eta-etaParticlesInJet)*(eta-etaParticlesInJet)+(phi-phiParticlesInJet)*(phi-phiParticlesInJet));
+    if(distance>coneJet) coneJet=distance;
+    //charged jet
+    distance=TMath::Sqrt((eta-etaChargedParticlesInJet)*(eta-etaChargedParticlesInJet)+(phi-phiChargedParticlesInJet)*(phi-phiChargedParticlesInJet));
+    if(distance>coneChargedJet) coneChargedJet=distance;
+    //
+    distance=TMath::Sqrt((eta-etaParticlesInJet150)*(eta-etaParticlesInJet150)+(phi-phiParticlesInJet150)*(phi-phiParticlesInJet150));
+    if(distance>coneJet150 && TMath::Abs(eta)<0.9 ) coneJet150=distance;
+    //
+    distance=TMath::Sqrt((eta-etaChargedParticlesInJet150)*(eta-etaChargedParticlesInJet150)+(phi-phiChargedParticlesInJet150)*(phi-phiChargedParticlesInJet150));
+    if(distance>coneChargedJet150 && TMath::Abs(eta)<0.9) coneChargedJet150=distance;
+    
+    if(prim->Charge()!=0 && prim->Pt()>0.150 && TMath::Abs(eta)<0.9) {
+      if(prim->Pt()>mostPtCharged) {
+        mostPtCharged=prim->Pt();
+        mostmostPtChargedId=(*it);
+      }
+    }
+    
+    if(distance<=0.4){
       if(prim->Charge()!=0 && prim->Pt()>0.150 && TMath::Abs(eta)<0.9) {
-        if(prim->Pt()>mostPtCharged) {
-          mostPtCharged=prim->Pt();
-          mostmostPtChargedId=(*it);
-        }
+        nChargedParticlesInJet150Cone++;
+        eneChargedParticlesInJet150Cone+=prim->E();
+        pxChargedParticlesInJet150Cone+=prim->Px();
+        pyChargedParticlesInJet150Cone+=prim->Py();
+        etaChargedParticlesInJet150Cone+=(prim->E()*eta);
+        phiChargedParticlesInJet150Cone+=(prim->E()*phi);
       }
       
-      if(distance<=0.4){
-        if(prim->Charge()!=0 && prim->Pt()>0.150 && TMath::Abs(eta)<0.9) {
-          nChargedParticlesInJet150Cone++;
-          eneChargedParticlesInJet150Cone+=prim->E();
-          pxChargedParticlesInJet150Cone+=prim->Px();
-          pyChargedParticlesInJet150Cone+=prim->Py();
-          etaChargedParticlesInJet150Cone+=(prim->E()*eta);
-          phiChargedParticlesInJet150Cone+=(prim->E()*phi);
-        }
-        
-      }
-      
-    }//end of loop over jet particle indexes
-    if(eneChargedParticlesInJet150Cone != 0) {
-      etaChargedParticlesInJet150Cone/=eneChargedParticlesInJet150Cone;
-      phiChargedParticlesInJet150Cone/=eneChargedParticlesInJet150Cone;
     }
     
-    ptChargedParticlesInJet150Cone=TMath::Sqrt(pxChargedParticlesInJet150Cone*pxChargedParticlesInJet150Cone+pyChargedParticlesInJet150Cone*pyChargedParticlesInJet150Cone);
-    
-    if(nChargedParticlesInJet150>0 && nChargedParticlesInJet150Cone<1)
-    {//no particles in cone? take the most energetic one
-      nChargedParticlesInJet150Cone=1;
-      etaChargedParticlesInJet150Cone=((AliAODMCParticle *)GetMC()->GetTrack(mostmostPtChargedId))->Eta();
-      phiChargedParticlesInJet150Cone=((AliAODMCParticle *)GetMC()->GetTrack(mostmostPtChargedId))->Phi();
-      ptChargedParticlesInJet150Cone =((AliAODMCParticle *)GetMC()->GetTrack(mostmostPtChargedId))->Pt();
-    }
-    
-  }// read AOD MC
+  }//end of loop over jet particle indexes
+  if(eneChargedParticlesInJet150Cone != 0) {
+    etaChargedParticlesInJet150Cone/=eneChargedParticlesInJet150Cone;
+    phiChargedParticlesInJet150Cone/=eneChargedParticlesInJet150Cone;
+  }
+  
+  ptChargedParticlesInJet150Cone=TMath::Sqrt(pxChargedParticlesInJet150Cone*pxChargedParticlesInJet150Cone+pyChargedParticlesInJet150Cone*pyChargedParticlesInJet150Cone);
+  
+  if(nChargedParticlesInJet150>0 && nChargedParticlesInJet150Cone<1)
+  {//no particles in cone? take the most energetic one
+    nChargedParticlesInJet150Cone=1;
+    etaChargedParticlesInJet150Cone=(GetMC()->GetTrack(mostmostPtChargedId))->Eta();
+    phiChargedParticlesInJet150Cone=(GetMC()->GetTrack(mostmostPtChargedId))->Phi();
+    ptChargedParticlesInJet150Cone =(GetMC()->GetTrack(mostmostPtChargedId))->Pt();
+  }
   
   jetParticleIndex.clear();
   

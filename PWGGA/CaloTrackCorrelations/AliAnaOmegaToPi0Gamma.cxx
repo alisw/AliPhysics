@@ -17,7 +17,6 @@
 class TROOT;
 #include "TH2F.h"
 #include "TLorentzVector.h"
-#include "TParticle.h"
 #include "TCanvas.h"
 #include "TFile.h"
 
@@ -28,7 +27,7 @@ class TROOT;
 #include "AliMCEvent.h"
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaOmegaToPi0Gamma) ;
@@ -315,8 +314,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   // Fill the MC AOD if needed first.
   //-----------
   //need to be further implemented
-  TParticle        * prim = 0x0;
-  AliAODMCParticle * aodprimary = 0x0;
+  AliVParticle * primary = 0x0;
   Int_t    pdg   = 0;
   Double_t pt    = 0;
   Double_t eta   = 0;
@@ -326,38 +324,19 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   {
     nprim = GetMC()->GetNumberOfTracks();
     
-    if(GetReader()->ReadStack())
+    for(Int_t i=0;i<nprim;i++)
     {
-      for(Int_t i=0 ; i<nprim; i++)
+      primary = GetMC()->GetTrack(i);
+      
+      pdg = primary->PdgCode() ;
+      eta = primary->Eta();
+      pt  = primary->Pt();
+      
+      if(TMath::Abs(eta)<0.5)
       {
-        prim = GetMC()->Particle(i) ;
-        
-        pdg  = prim->GetPdgCode() ;
-        eta  = prim->Eta();
-        pt   = prim->Pt();
-        
-        if(TMath::Abs(eta)<0.5) 
-        {
-          if(pdg==223) fhOmegaPriPt->Fill(pt, GetEventWeight());
-        }
+        if(pdg==223) fhOmegaPriPt->Fill(pt, GetEventWeight());
       }
     }
-    else if(GetReader()->ReadAODMCParticles())
-    {
-      for(Int_t i=0;i<nprim;i++)
-      {
-        aodprimary =(AliAODMCParticle*) GetMC()->GetTrack(i);
-        
-        pdg = aodprimary->GetPdgCode() ;
-        eta = aodprimary->Eta();
-        pt  = aodprimary->Pt();
-        
-        if(TMath::Abs(eta)<0.5)
-        {
-          if(pdg==223) fhOmegaPriPt->Fill(pt, GetEventWeight());
-        }
-      }
-    }//AOD MC Particles
   }// is data and MC
   
   //process event from AOD brach 

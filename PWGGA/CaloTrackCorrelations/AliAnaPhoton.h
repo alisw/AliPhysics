@@ -60,7 +60,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, Int_t nlm) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t nlm, Int_t mctag) ;
   
   void         FillAcceptanceHistograms();
   
@@ -88,7 +88,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillTrackMultiplicityHistograms()  { fFillTrackMultHistograms = kTRUE  ; }
   void         SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
-  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut);
+  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t mctag);
   
   void         SwitchOnTMHistoFill()                      { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                     { fFillTMHisto           = kFALSE ; }

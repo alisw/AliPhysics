@@ -7,11 +7,11 @@
 #include <THn.h>
 #include "AliStaObjects.h"//<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 #include "AliEventCuts.h"
+#include <THnSparse.h>
 
 class TH1;
 class TH2;
 class TH3;
-class THnSparse;
 class AliVVZERO;
 class AliEvtPoolManager;
 
@@ -30,6 +30,12 @@ class EmcHitPi0 {
 
   Int_t NCells;
   std::vector<int> CellRay;
+
+   // UShort_t *CellIDArray;
+  // Int_t GetNCells() {return NCells;}
+
+  //  void SetCellIDArray(const UShort_t *cellid);
+  // UShort_t GetCellIDArray() {return *CellIDArray;}
 
 public:
   //virtual ~EmcHit();
@@ -82,7 +88,7 @@ virtual ~AliAnalysisTaskGammaHadron();
 //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
   void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
-  void                        SetRmvMatchedTrack(Bool_t input)                      { fRmvMTrack  = input;}
+  void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
 
   //Functions for mixed event purposes
@@ -113,16 +119,16 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight);
   void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
-
+  Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster);
   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
     TObjArray*                  CloneClustersTObjArray(AliClusterContainer* clusters)          ;
     void GetMulClassPi0(Int_t&);
-    void GetZVtxClassPi0(Int_t&);
     void AddMixEventPi0(const Int_t, const Int_t, const Int_t, Int_t&, const Float_t&, const Float_t&);
   //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
+  Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
   Double_t                    GetEff(AliTLorentzVector ParticleVec)                         ;
 
   Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
@@ -131,6 +137,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
+
   //..Input histograms
   THnF                       *fHistEffGamma;             ///< ??input efficiency for trigger particles
   THnF                       *fHistEffHadron;            ///< ??input efficiency for associate particles
@@ -153,6 +160,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   Double_t                    fClShapeMax;               ///< Maximum cluster shape
   Int_t                       fMaxNLM;                   ///< Maximum number of local maxima
   Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
+  Double_t                    fTrackMatchEta;            ///< eta range in which a track is called a match to a cluster
+  Double_t                    fTrackMatchPhi;            ///< phi range in which a track is called a match to a cluster
   //..Event pool variables
   TAxis                      *fMixBCent;                 ///< Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 ///< Number of vertex bins for the mixed event
@@ -209,23 +218,28 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH2                      **fHistDEtaDPhiTrackQA;     //!<! Distribution of tracks in delta phi delta eta
   TH2                      **fHistCellsCluster;        //!<! Number of cells in cluster as function of energy
   TH2                      **fHistClusterShape;        //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape0;        //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape1;        //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape2;        //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape3;        //!<! Cluster shape vs energy
-  TH2                      **fHistClusterShape4;        //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape0;       //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape1;       //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape2;       //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape3;       //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape4;       //!<! Cluster shape vs energy
+  TH2                       *fHistMatchEtaPhiAllCl2;   //!<! matched track distance for 2 cell clusters
+  TH2                       *fHistMatchEtaPhiAllCl3;   //!<! matched track distance for 3 cell clusters
+  TH2                       *fHistMatchEtaPhiAllCl4;   //!<! matched track distance for 4 cell clusters
   TH2                      **fHistClusterTime;         //!<! Cluster time vs energy
-
+  THnSparseF                *fCorrVsManyThings;        //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
+  THnSparseF                *fCorrVsManyThingsME;      //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
+  THnSparseF                *fClusterProp;             //!<! Thn sparse filled with cluster properties
   TH2                	    *fHPoolReady;              //!<! Check how many Jobs start mixing
   //
   //
 
 
-  const static int nMulClass =   8;  // <<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
-  const static int nZClass   =   6;
+  const static int nMulClass =   5;  // <<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
+  const static int nZClass   =   3;
   const static int nPtClass = 1;
   int iEvt[nMulClass][nZClass][nPtClass];
-  const static int nEvt      =   10;//30; // mixing "depth"
+  const static int nEvt      =   3;//30; // mixing "depth"
 
   EmcEventPi0 evt;
   EmcEventPi0 EmcEventList[nMulClass][nZClass][nPtClass][nEvt];

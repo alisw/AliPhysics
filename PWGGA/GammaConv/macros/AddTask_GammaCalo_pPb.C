@@ -432,7 +432,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000013","2444400011013200000","0163103100000010"); // 1000ns
     cuts.AddCut("80000013","2444400031013200000","0163103100000010"); // 200ns
     cuts.AddCut("80000013","2444400051013200000","0163103100000010"); // 50ns
-
+  } else if (trainConfig == 306) {  // PHOS non lin var INT7
+    cuts.AddCut("80000013","2444401041013200000","0163103100000010"); // PHOS group standard
+    cuts.AddCut("80000013","2444451041013200000","0163103100000010"); // CCMF PHOS
+    cuts.AddCut("80000013","2444452041013200000","0163103100000010"); // CMF PHOS
+  } else if (trainConfig == 307) {  // PHOS non lin var PHI7
+    cuts.AddCut("80062013","2444401041013200000","0163103100000010"); // PHOS group standard
+    cuts.AddCut("80062013","2444451041013200000","0163103100000010"); // CCMF PHOS
+    cuts.AddCut("80062013","2444452041013200000","0163103100000010"); // CMF PHOS
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

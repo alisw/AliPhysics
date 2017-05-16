@@ -25,10 +25,8 @@
 #include "AliCaloTrackReader.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
-#include "TParticle.h"
 #include "AliVCluster.h"
 #include "AliAODEvent.h"
-#include "AliAODMCParticle.h"
 #include "AliEMCALGeoParams.h"
 
 // --- Detectors ---
@@ -571,7 +569,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //      Int_t   mpdg = -999999;
 //      Int_t   mstatus = -1;
 //      Int_t   grandLabel = -1;
-//      fPrimaryMom = GetMCAnalysisUtils()->GetMother(mclabel,GetReader(),mpdg,mstatus,mOK,grandLabel);
+//      fPrimaryMom = GetMCAnalysisUtils()->GetMother(mclabel,GetMC(),mpdg,mstatus,mOK,grandLabel);
 //      
 //      printf("******** mother %d : Label %d, pdg %d; status %d, E %2.2f, Eta %2.2f, Phi %2.2f, ok %d, mother label %d\n",
 //             ilab, mclabel, mpdg, mstatus,fPrimaryMom.E(), fPrimaryMom.Eta(),fPrimaryMom.Phi()*TMath::RadToDeg(),mOK,grandLabel);
@@ -581,7 +579,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //        while( ( mpdg == 22 || TMath::Abs(mpdg)==11 ) && grandLabel >=0 )
 //        {
 //          Int_t newLabel = -1;
-//          TLorentzVector grandmother = GetMCAnalysisUtils()->GetMother(grandLabel,GetReader(),mpdg,mstatus,mOK,newLabel);
+//          TLorentzVector grandmother = GetMCAnalysisUtils()->GetMother(grandLabel,GetMC(),mpdg,mstatus,mOK,newLabel);
 //          printf("\t grandmother %d : Label %d, pdg %d; status %d, E %2.2f, Eta %2.2f, Phi %2.2f, ok %d, mother label %d\n",
 //                 ilab, grandLabel, mpdg, mstatus,grandmother.E(), grandmother.Eta(), grandmother.Phi()*TMath::RadToDeg(),mOK,newLabel);
 //          grandLabel = newLabel;
@@ -712,9 +710,9 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //    Int_t gpdg   = -22222, gstatus  = -1;
 //    Int_t ggpdg  = -22222, ggstatus = -1;
 //    Int_t gLabel = -1, ggLabel = -1;
-//    TLorentzVector primary   =GetMCAnalysisUtils()->GetMother     (mcLabel1,GetReader(),  pdg,  status, ok);
-//    TLorentzVector gprimary  =GetMCAnalysisUtils()->GetGrandMother(mcLabel1,GetReader(), gpdg, gstatus,gok, gLabel,ggLabel);
-//    TLorentzVector ggprimary =GetMCAnalysisUtils()->GetMother(ggLabel  ,GetReader(),ggpdg,ggstatus,gok);
+//    TLorentzVector primary   =GetMCAnalysisUtils()->GetMother     (mcLabel1,GetMC(),  pdg,  status, ok);
+//    TLorentzVector gprimary  =GetMCAnalysisUtils()->GetGrandMother(mcLabel1,GetMC(), gpdg, gstatus,gok, gLabel,ggLabel);
+//    TLorentzVector ggprimary =GetMCAnalysisUtils()->GetMother     (ggLabel ,GetMC(),ggpdg,ggstatus,gok);
 //    printf("Max index %d; mother: Label %d; PDG %d; E %2.2f - grand mother label %d; PDG %d; E %2.2f- great grand mother label %d; PDG %d; E %2.2f\n",
 //           i,mcLabel1,pdg,primary.E(), gLabel,gpdg,gprimary.E(), ggLabel,ggpdg,ggprimary.E());
 //  }
@@ -736,7 +734,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       }
       
       ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(mcLabel1,mcLabel2,
-                                                           GetReader(),ancPDG,ancStatus,fPrimaryMom,fProdVertex);
+                                                           GetMC(),ancPDG,ancStatus,fPrimaryMom,fProdVertex);
       if(ancPDG==111)
       {
         if((i==imax && j==imax2) ||  (j==imax && i==imax2))
@@ -757,7 +755,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
      
       Bool_t ok  =kFALSE;
       Int_t pdg = -22222, status = -1;
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(ancLabel,GetReader(), pdg, status, ok);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(ancLabel,GetMC(), pdg, status, ok);
       //printf("\t i %d label %d - j %d label %d; ancestor label %d, PDG %d-%d; E %2.2f; high %d, any %d \n",i,mcLabel1,j,mcLabel2, ancLabel, ancPDG,pdg, primary.E(), high, low);
     }
   }
@@ -818,7 +816,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   while( pdg!=111 && label >=0 )
   {
-    fPrimaryMom = GetMCAnalysisUtils()->GetGrandMother(label,GetReader(),pdg,status,ok, label,gLabel);
+    fPrimaryMom = GetMCAnalysisUtils()->GetGrandMother(label,GetMC(),pdg,status,ok, label,gLabel);
   }
   
   if(pdg!=111 || label < 0)
@@ -827,7 +825,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
     return;
   }
   
-  Int_t nDaugthers = GetMCAnalysisUtils()->GetNDaughters(label,GetReader(),ok);
+  Int_t nDaugthers = GetMCAnalysisUtils()->GetNDaughters(label,GetMC(),ok);
   
   if(nDaugthers != 2)
   {
@@ -837,9 +835,9 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   // Get daughter photon kinematics
   Int_t pdg0 = -22222, status0   = -1; Int_t label0 = -1;
-  fMCDaughMom1 = GetMCAnalysisUtils()->GetDaughter(0,label,GetReader(),pdg0,status0,ok,label0,fProdVertex);
+  fMCDaughMom1 = GetMCAnalysisUtils()->GetDaughter(0,label,GetMC(),pdg0,status0,ok,label0,fProdVertex);
   Int_t pdg1 = -22222, status1   = -1; Int_t label1 = -1;
-  fMCDaughMom2 = GetMCAnalysisUtils()->GetDaughter(1,label,GetReader(),pdg1,status1,ok,label1,fProdVertex);
+  fMCDaughMom2 = GetMCAnalysisUtils()->GetDaughter(1,label,GetMC(),pdg1,status1,ok,label1,fProdVertex);
 
   if(pdg1!=22 || pdg0 != 22)
   {
@@ -963,7 +961,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       Int_t tmplabel   = mclabel;
       while((secLabel0 < 0 || secLabel1 < 0) && tmplabel > 0 )
       {
-        fPrimaryMom = GetMCAnalysisUtils()->GetMother(tmplabel,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+        fPrimaryMom = GetMCAnalysisUtils()->GetMother(tmplabel,GetMC(),secpdg,secstatus,secOK,secgrandLabel);
         
         //printf("\t \t while secLabel %d, mom %d, granmom %d\n",mclabel,tmplabel,secgrandLabel);
         
@@ -983,7 +981,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
     // Get the position of the found secondaries mother
     if(!match0 && secLabel0 > 0)
     {
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(secLabel0,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(secLabel0,GetMC(),secpdg,secstatus,secOK,secgrandLabel);
       
       //Float_t eta = fPrimaryMom.Eta();
       //Float_t phi = fPrimaryMom.Phi();
@@ -998,7 +996,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 
     if(!match1 && secLabel1 > 0)
     {
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(secLabel1,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(secLabel1,GetMC(),secpdg,secstatus,secOK,secgrandLabel);
       
       //Float_t eta = fPrimaryMom.Eta();
       //Float_t phi = fPrimaryMom.Phi();
@@ -6259,7 +6257,8 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
 void AliAnaInsideClusterInvariantMass::GetMCIndex(AliVCluster* cluster,
                                                   Int_t & mcindex, Int_t & tag)
 {
-  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader(),GetCalorimeter());
+//tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(), cluster->GetNLabels(), GetReader(), GetCalorimeter());
+  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(), cluster->GetNLabels(), GetMC());
   
   if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
            !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPi0;
@@ -6285,7 +6284,7 @@ void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, In
   Bool_t ok      = kFALSE;
   Int_t  mcLabel = cluster->GetLabel();
   
-  fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
+  fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel,GetMC(),ok);
   eprim = fPrimaryMom.E();
   
   Int_t mesonLabel = -1;
@@ -6294,16 +6293,16 @@ void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, In
   {
     if(mcindex == kmcPi0 || mcindex == kmcPi0Conv)
     {
-      GetMCAnalysisUtils()->GetMCDecayAsymmetryAngleForPDG(mcLabel,111,GetReader(),asymGen,angleGen,ok);
+      GetMCAnalysisUtils()->GetMCDecayAsymmetryAngleForPDG(mcLabel,111,GetMC(),asymGen,angleGen,ok);
       asymGen = TMath::Abs(asymGen);
-      fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok,mesonLabel);
+      fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetMC(),ok,mesonLabel);
       if(fGrandMotherMom.E() > 0 && ok) eprim =  fGrandMotherMom.E();
     }
     else
     {
-      GetMCAnalysisUtils()->GetMCDecayAsymmetryAngleForPDG(mcLabel,221,GetReader(),asymGen,angleGen,ok);
+      GetMCAnalysisUtils()->GetMCDecayAsymmetryAngleForPDG(mcLabel,221,GetMC(),asymGen,angleGen,ok);
       asymGen = TMath::Abs(asymGen);
-      fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok,mesonLabel);
+      fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetMC(),ok,mesonLabel);
       if(fGrandMotherMom.E() > 0 && ok) eprim =  fGrandMotherMom.E();
     }
   }
@@ -6314,7 +6313,7 @@ void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, In
   Int_t overpdg[nlabels];
   Int_t overlab[nlabels];
   noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,mesonLabel,
-                                                 GetReader(),overpdg,overlab);
+                                                 GetMC(),overpdg,overlab);
 
   for(Int_t iover = 0; iover < noverlaps; iover++)
   {

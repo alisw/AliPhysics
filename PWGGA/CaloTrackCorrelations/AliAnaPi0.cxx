@@ -30,14 +30,13 @@
 #include "AliCaloPID.h"
 #include "AliMCEvent.h"
 #include "AliFiducialCut.h"
-#include "TParticle.h"
 #include "AliVEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliMixedEvent.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliMCEvent.h"
 
 // --- Detectors ---
@@ -402,8 +401,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   //
   InitCaloParameters(); // See AliCaloTrackCorrBaseClass
   
-  Int_t totalSM = fLastModule-fFirstModule+1;
-  
+  //Int_t totalSM = fLastModule-fFirstModule+1;
   //printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
   
   // Cell column-row histograms, see base class for data members setting
@@ -814,109 +812,28 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       }
     }
   }
-  
-  // Init the number of modules, set in the class AliCalorimeterUtils  
-  fhReMod                = new TH2F*[fNModules]   ;
-  fhMiMod                = new TH2F*[fNModules]   ;
-  
-  if(!fPairWithOtherDetector)
-  {
-    if(GetCalorimeter() == kPHOS)
-    {
-      fhReDiffPHOSMod        = new TH2F*[fNModules]   ;
-      fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
-    }
-    else
-    {
-      fhReSameSectorEMCALMod = new TH2F*[fNModules/2] ;
-      fhReSameSideEMCALMod   = new TH2F*[fNModules-2] ;
-      fhMiSameSectorEMCALMod = new TH2F*[fNModules/2] ;
-      fhMiSameSideEMCALMod   = new TH2F*[fNModules-2] ;
-    }
-  }
-  else
-  {
-    fhReSameSectorDCALPHOSMod = new TH2F*[6] ;
-    fhReDiffSectorDCALPHOSMod = new TH2F*[8] ;
-    fhMiSameSectorDCALPHOSMod = new TH2F*[6] ;
-    fhMiDiffSectorDCALPHOSMod = new TH2F*[8] ;
-  }
-  
+      
   fhRe1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
   fhMi1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
-  if(fFillBadDistHisto)
+  if ( fFillBadDistHisto )
   {
     fhRe2 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     fhRe3 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     fhMi2 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     fhMi3 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
   }
-  if(fMakeInvPtPlots)
+
+  if ( fMakeInvPtPlots )
   {
     fhReInvPt1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     fhMiInvPt1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
-    if(fFillBadDistHisto){
+    
+    if(fFillBadDistHisto)
+    {
       fhReInvPt2 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
       fhReInvPt3 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
       fhMiInvPt2 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
       fhMiInvPt3 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
-    }
-  }
-  
-  if ( fFillSecondaryCellTiming )
-  {
-    fhReSecondaryCellInTimeWindow = new TH2F("hReSecondaryCellInTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
-                                             nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-    fhReSecondaryCellInTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhReSecondaryCellInTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-    outputContainer->Add(fhReSecondaryCellInTimeWindow) ;
-    
-    fhReSecondaryCellOutTimeWindow = new TH2F("hReSecondaryCellOutTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
-                                              nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-    fhReSecondaryCellOutTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhReSecondaryCellOutTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-    outputContainer->Add(fhReSecondaryCellOutTimeWindow) ;
-    
-    if ( DoOwnMix() )
-    {
-      fhMiSecondaryCellInTimeWindow = new TH2F("hMiSecondaryCellInTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
-                                               nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMiSecondaryCellInTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhMiSecondaryCellInTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-      outputContainer->Add(fhMiSecondaryCellInTimeWindow) ;
-      
-      fhMiSecondaryCellOutTimeWindow = new TH2F("hMiSecondaryCellOutTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
-                                                nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMiSecondaryCellOutTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhMiSecondaryCellOutTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-      outputContainer->Add(fhMiSecondaryCellOutTimeWindow) ;
-      
-    }
-  }
-  
-  if ( fCheckConversion )
-  {
-    fhReConv = new TH2F("hReConv","Real Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-    fhReConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhReConv->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-    outputContainer->Add(fhReConv) ;
-    
-    fhReConv2 = new TH2F("hReConv2","Real Pair with 2 recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-    fhReConv2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhReConv2->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-    outputContainer->Add(fhReConv2) ;
-    
-    if ( DoOwnMix() )
-    {
-      fhMiConv = new TH2F("hMiConv","Mixed Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMiConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhMiConv->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-      outputContainer->Add(fhMiConv) ;
-      
-      fhMiConv2 = new TH2F("hMiConv2","Mixed Pair with 2 recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMiConv2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhMiConv2->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-      outputContainer->Add(fhMiConv2) ;
     }
   }
   
@@ -1063,7 +980,64 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhEPairDiffTime->SetYTitle("#Delta t (ns)");
   outputContainer->Add(fhEPairDiffTime);
   
-  if(fFillAsymmetryHisto)
+  if ( fFillSecondaryCellTiming )
+  {
+    fhReSecondaryCellInTimeWindow = new TH2F("hReSecondaryCellInTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
+                                             nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+    fhReSecondaryCellInTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhReSecondaryCellInTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+    outputContainer->Add(fhReSecondaryCellInTimeWindow) ;
+    
+    fhReSecondaryCellOutTimeWindow = new TH2F("hReSecondaryCellOutTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
+                                              nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+    fhReSecondaryCellOutTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhReSecondaryCellOutTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+    outputContainer->Add(fhReSecondaryCellOutTimeWindow) ;
+    
+    if ( DoOwnMix() )
+    {
+      fhMiSecondaryCellInTimeWindow = new TH2F("hMiSecondaryCellInTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
+                                               nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+      fhMiSecondaryCellInTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiSecondaryCellInTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMiSecondaryCellInTimeWindow) ;
+      
+      fhMiSecondaryCellOutTimeWindow = new TH2F("hMiSecondaryCellOutTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
+                                                nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+      fhMiSecondaryCellOutTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiSecondaryCellOutTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMiSecondaryCellOutTimeWindow) ;
+      
+    }
+  }
+  
+  if ( fCheckConversion )
+  {
+    fhReConv = new TH2F("hReConv","Real Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+    fhReConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhReConv->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+    outputContainer->Add(fhReConv) ;
+    
+    fhReConv2 = new TH2F("hReConv2","Real Pair with 2 recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+    fhReConv2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhReConv2->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+    outputContainer->Add(fhReConv2) ;
+    
+    if ( DoOwnMix() )
+    {
+      fhMiConv = new TH2F("hMiConv","Mixed Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+      fhMiConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiConv->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMiConv) ;
+      
+      fhMiConv2 = new TH2F("hMiConv2","Mixed Pair with 2 recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+      fhMiConv2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiConv2->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMiConv2) ;
+    }
+  }
+
+  if ( fFillAsymmetryHisto )
   {
     fhRePtAsym = new TH2F("hRePtAsym","#it{Asymmetry} vs #it{p}_{T}, for pairs",
                           nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
@@ -1109,7 +1083,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  if(fMultiCutAnaAcc)
+  if  ( fMultiCutAnaAcc )
   {
     for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
     {
@@ -1131,7 +1105,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  if(fMultiCutAna)
+  if ( fMultiCutAna )
   {    
     fhRePtNCellAsymCuts    = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
     fhMiPtNCellAsymCuts    = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
@@ -1146,8 +1120,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     {
       for(Int_t iSM = 0; iSM < fNModules; iSM++) 
       {
-        if(iSM < fFirstModule || iSM > fLastModule) continue;
-
+        if ( iSM < fFirstModule || iSM > fLastModule ) 
+        {
+          fhRePtNCellAsymCutsSM[iSM] = 0x0;
+          if ( fFillAngleHisto ) 
+            fhRePtNCellAsymCutsSMOpAngle[iSM] = 0x0;
+          continue;
+        }
+        
         fhRePtNCellAsymCutsSM[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
         if(fFillAngleHisto) fhRePtNCellAsymCutsSMOpAngle[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
       }
@@ -1182,13 +1162,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             outputContainer->Add(fhMiPtNCellAsymCuts[index]) ;
           }
           
-          if(fFillSMCombinations)
+          if ( fFillSMCombinations )
           {
             for(Int_t iSM = 0; iSM < fNModules; iSM++)
             {
               //printf("\t sm %d\n",iSM);
-              if(iSM < fFirstModule || iSM > fLastModule) continue;
-
+              if ( iSM < fFirstModule || iSM > fLastModule ) 
+              {
+                fhRePtNCellAsymCutsSM[iSM][index] = 0x0;
+                continue;
+              }
+              
               snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
               snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f, SM %d ",
                        fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
@@ -1198,7 +1182,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
               outputContainer->Add(fhRePtNCellAsymCutsSM[iSM][index]) ;
             }
             
-            if(fFillAngleHisto)
+            if ( fFillAngleHisto )
             {
               snprintf(key,   buffersize,"hReOpAngle_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
               snprintf(title, buffersize,"Real #theta_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f ",
@@ -1212,7 +1196,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
               fhRePtNCellAsymCutsOpAngle[index]->SetYTitle("#theta_{#gamma,#gamma} (rad)");
               outputContainer->Add(fhRePtNCellAsymCutsOpAngle[index]) ;
               
-              if(DoOwnMix())
+              if ( DoOwnMix() )
               {
                 snprintf(key,   buffersize,"hMiOpAngle_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
                 snprintf(title, buffersize,"Mixed #theta_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f",
@@ -1223,13 +1207,16 @@ TList * AliAnaPi0::GetCreateOutputObjects()
                 outputContainer->Add(fhMiPtNCellAsymCutsOpAngle[index]) ;
               }
             
-              //printf("\t %p, %p\n", fhRePtNCellAsymCutsOpAngle[index],  fhMiPtNCellAsymCutsOpAngle[index]);
-              if(fFillSMCombinations)
+              if ( fFillSMCombinations )
               {
                 for(Int_t iSM = 0; iSM < fNModules; iSM++)
                 {
-                  if(iSM < fFirstModule || iSM > fLastModule) continue;
-
+                  if ( iSM < fFirstModule || iSM > fLastModule )
+                  {
+                    fhRePtNCellAsymCutsSMOpAngle[iSM][index] = 0x0;
+                    continue;
+                  }
+                  
                   snprintf(key,   buffersize,"hReOpAngle_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
                   snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f, SM %d ",
                            fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
@@ -1247,7 +1234,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
   } // multi cuts analysis
   
-  if(fFillSSCombinations)
+  if ( fFillSSCombinations )
   {
     fhReSS[0] = new TH2F("hRe_SS_Tight"," 0.01 < #lambda_{0}^{2} < 0.4",
                          nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
@@ -1270,7 +1257,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhReSS[2]) ;
   }
   
-  if(DoOwnMix())
+  if ( DoOwnMix() )
   {
     fhEventBin=new TH1I("hEventBin","Number of real pairs per bin(cen,vz,rp)",
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
@@ -1286,7 +1273,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhEventMixBin) ;
   }
   
-  if( IsHighMultiplicityAnalysisOn() )
+  if ( IsHighMultiplicityAnalysisOn() )
   {
     fhCentrality=new TH1F("hCentralityBin","Number of events in centrality bin",GetNCentrBin(),0.,1.*GetNCentrBin()) ;
     fhCentrality->SetXTitle("Centrality bin");
@@ -1302,7 +1289,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhEventPlaneResolution) ;
   }
   
-  if(fFillAngleHisto)
+  if ( fFillAngleHisto )
   {
     fhRealOpeningAngle  = new TH2F
     ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
@@ -1358,7 +1345,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   }
   
   // Histograms filled only if MC data is requested
-  if(IsDataMC())
+  if ( IsDataMC() )
   {
     fhReMCFromConversion = new TH2F("hReMCFromConversion","Invariant mass of 2 clusters originated in conversions",
                                     nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
@@ -1746,16 +1733,53 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  if(fFillSMCombinations)
-  {
+  
+  if ( fFillSMCombinations )
+  {  
+    AliDebug(1,Form("*** NMod = %d first %d last %d\n",fNModules, fFirstModule, fLastModule));
+    if(fLastModule >= fNModules)
+      AliError(Form("Last module number <%d> is larger than total SM number <%d>, please check configuration \n",fLastModule,fNModules));
+
     if(!fPairWithOtherDetector)
     {
+      // Init the number of modules, set in the class AliCalorimeterUtils  
+      fhReMod  = new TH2F*[fNModules] ;
+      
+      if(GetCalorimeter() == kPHOS)
+      {
+        fhReDiffPHOSMod        = new TH2F*[fNModules]   ;
+      }
+      else
+      {
+        fhReSameSectorEMCALMod = new TH2F*[fNModules/2] ;
+        fhReSameSideEMCALMod   = new TH2F*[fNModules-2] ;
+      }
+      
+      if(DoOwnMix())
+      {
+        fhMiMod  = new TH2F*[fNModules] ;
+        if(GetCalorimeter() == kPHOS)
+        {
+          fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
+        }
+        else
+        {
+          fhMiSameSectorEMCALMod = new TH2F*[fNModules/2] ;
+          fhMiSameSideEMCALMod   = new TH2F*[fNModules-2] ;
+        }
+      }
+      
       // Single super modules
-      //
+      //      
       for(Int_t imod=0; imod<fNModules; imod++)
       {
-        if(imod < fFirstModule || imod > fLastModule) continue;
-        
+        if ( imod < fFirstModule || imod > fLastModule )
+        {
+          fhReMod[imod] = 0x0;
+          if ( DoOwnMix() )
+            fhMiMod[imod] = 0x0;
+          continue;
+        }
         // Module dependent invariant mass
         snprintf(key, buffersize,"hReMod_%d",imod) ;
         snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for Module %d",imod) ;
@@ -1773,7 +1797,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           outputContainer->Add(fhMiMod[imod]) ;
         }
       }
-      
+
       // Super modules combinations
       //
       if(GetCalorimeter()==kPHOS)
@@ -1782,8 +1806,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         for(Int_t imod=0; imod<10; imod++)
         {
-          if(fNModules == 3 && imod > 2) continue;
-          if(fNModules == 4 && imod > 5) continue;
+          if ( (fNModules == 3 && imod > 2) || (fNModules == 4 && imod > 5) )
+          {
+            fhReDiffPHOSMod[imod]  = 0x0;
+            if ( DoOwnMix() )
+              fhMiDiffPHOSMod[imod] = 0x0;
+            continue;
+          }
           
           snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
           snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
@@ -1873,11 +1902,16 @@ TList * AliAnaPi0::GetCreateOutputObjects()
             outputContainer->Add(fhMiSameSideEMCALMod[iside]) ;
           } // mix
         } // sides
-        
+
       }//EMCAL
     } // Not pair of detectors
     else
     {
+      fhReSameSectorDCALPHOSMod = new TH2F*[6] ;
+      fhReDiffSectorDCALPHOSMod = new TH2F*[8] ;
+      fhMiSameSectorDCALPHOSMod = new TH2F*[6] ;
+      fhMiDiffSectorDCALPHOSMod = new TH2F*[8] ;
+      
       Int_t dcSameSM[6] = {12,13,14,15,16,17}; // Check eta order
       Int_t phSameSM[6] = {3,  3, 2, 2, 1, 1};
 
@@ -1902,7 +1936,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           outputContainer->Add(fhMiDiffSectorDCALPHOSMod[icombi]) ;
         }
         
-        if(icombi > 5) continue ;
+        if ( icombi > 5 ) continue ;
         
         snprintf(key, buffersize,"hReSameSectorDCALPHOS_%d",icombi) ;
         snprintf(title, buffersize,"Real pairs DCAL-PHOS, clusters in same sector, SM(%d,%d)",dcSameSM[icombi],phSameSM[icombi]) ;
@@ -1925,7 +1959,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   } // SM combinations
   
   //
-  if(fFillOpAngleCutHisto)
+  if ( fFillOpAngleCutHisto )
   {
     for(Int_t icut = 0; icut < fNAngleCutBins; icut++)
     {
@@ -2195,7 +2229,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     } // angle bin
   }  
 
-  if(IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn())
+  if ( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
   {
     TString mcGenNames[] = {"","_MC_Pi0Merged","_MC_Pi0Decay","_MC_EtaDecay","_MC_PhotonOther","_MC_Electron","_MC_Other"};
     TString mcGenTitle[] = {"",",MC Pi0-Merged",",MC Pi0-Decay",", MC Eta-Decay",", MC Photon other sources",", MC Electron",", MC other sources"};
@@ -2473,10 +2507,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-//  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
-//
-//    printf("Histogram %d, name: %s\n ",i, outputContainer->At(i)->GetName());
-//
+//  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
+//  {
+//    printf("Histogram %d, name: %s\n",i, outputContainer->At(i)->GetName());
 //  }
   
   return outputContainer;
@@ -2550,97 +2583,54 @@ void AliAnaPi0::FillAcceptanceHistograms()
   Float_t cen = GetEventCentrality();
   Float_t ep  = GetEventPlaneAngle();
   
-  TParticle        * primStack = 0;
-  AliAODMCParticle * primAOD   = 0;
+  AliVParticle * primary = 0;
   
   TString genName = "";
   
   for(Int_t i=0 ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
+        
+    primary = GetMC()->GetTrack(i) ;
+    if(!primary)
+    {
+      AliWarning("Primaries pointer not available!!");
+      continue;
+    }
+    
+    // If too small  skip
+    if( primary->E() < 0.4 ) continue;
+    
+    pdg       = primary->PdgCode();
+    // Select only pi0 or eta
+    if( pdg != 111 && pdg != 221) continue ;
+    
+    nDaught   = primary->GetNDaughters();
+    iphot1    = primary->GetDaughterLabel(0) ;
+    iphot2    = primary->GetDaughterLabel(1) ;
+    
+    // Protection against floating point exception
+    if ( primary->E() == TMath::Abs(primary->Pz()) || 
+        (primary->E() - primary->Pz()) < 1e-3      ||
+        (primary->E() + primary->Pz()) < 0           )  continue ; 
+    
+    //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
+    //       prim->GetName(), prim->GetPdgCode());
+    
+    //Photon kinematics
+    primary->Momentum(fMCPrimMesonMom);
+    
+    mesonY = 0.5*TMath::Log((primary->E()+primary->Pz())/(primary->E()-primary->Pz())) ;
     
     Bool_t inacceptance = kTRUE;
+    if ( IsFiducialCutOn() || IsRealCaloAcceptanceOn() ) 
+    {
+      // Check if pi0 enters the calo
+      if(IsRealCaloAcceptanceOn() && !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), primary )) inacceptance = kFALSE;
+      if(IsFiducialCutOn() && inacceptance && !GetFiducialCut()->IsInFiducialCut(fMCPrimMesonMom.Eta(), fMCPrimMesonMom.Phi(), GetCalorimeter())) inacceptance = kFALSE;
+    }
+    else inacceptance = kFALSE;
     
-    if(GetReader()->ReadStack())
-    {
-      primStack = GetMC()->Particle(i) ;
-      if(!primStack)
-      {
-        AliWarning("ESD primaries pointer not available!!");
-        continue;
-      }
-      
-      // If too small  skip
-      if( primStack->Energy() < 0.4 ) continue;
-      
-      pdg       = primStack->GetPdgCode();
-      // Select only pi0 or eta
-      if( pdg != 111 && pdg != 221) continue ;
-      
-      nDaught   = primStack->GetNDaughters();
-      iphot1    = primStack->GetDaughter(0) ;
-      iphot2    = primStack->GetDaughter(1) ;
-
-      // Protection against floating point exception
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
-          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
-          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
-      
-      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
-      //       prim->GetName(), prim->GetPdgCode());
-      
-      //Photon kinematics
-      primStack->Momentum(fMCPrimMesonMom);
-      
-      mesonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
-      
-      if ( IsFiducialCutOn() || IsRealCaloAcceptanceOn() ) 
-      {
-        // Check if pi0 enters the calo
-        if(IsRealCaloAcceptanceOn() && !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), primStack )) inacceptance = kFALSE;
-        if(IsFiducialCutOn() && inacceptance && !GetFiducialCut()->IsInFiducialCut(fMCPrimMesonMom.Eta(), fMCPrimMesonMom.Phi(), GetCalorimeter())) inacceptance = kFALSE;
-      }
-      else inacceptance = kFALSE;
-    }
-    else // AODs
-    {
-      primAOD = (AliAODMCParticle *) GetMC()->GetTrack(i);
-      if(!primAOD)
-      {
-        AliWarning("AOD primaries pointer not available!!");
-        continue;
-      }
-      
-      // If too small  skip
-      if( primAOD->E() < 0.4 ) continue;
-      
-      pdg     = primAOD->GetPdgCode();
-      // Select only pi0 or eta
-      if( pdg != 111 && pdg != 221) continue ;
-      
-      nDaught = primAOD->GetNDaughters();
-      iphot1  = primAOD->GetFirstDaughter() ;
-      iphot2  = primAOD->GetLastDaughter() ;
-      
-      // Protection against floating point exception
-      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
-          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
-          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
-      
-      // Photon kinematics
-      fMCPrimMesonMom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
-      
-      mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
-      
-      if ( IsFiducialCutOn() || IsRealCaloAcceptanceOn() ) 
-      {
-        // Check if pi0 enters the calo
-        if(IsRealCaloAcceptanceOn() && !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), primAOD )) inacceptance = kFALSE;
-        if(IsFiducialCutOn() && inacceptance && !GetFiducialCut()->IsInFiducialCut(fMCPrimMesonMom.Eta(), fMCPrimMesonMom.Phi(), GetCalorimeter())) inacceptance = kFALSE;
-      }
-      else inacceptance = kFALSE;
-    }
-        
     mesonPt  = fMCPrimMesonMom.Pt () ;
     mesonE   = fMCPrimMesonMom.E  () ;
     mesonYeta= fMCPrimMesonMom.Eta() ;
@@ -2741,32 +2731,20 @@ void AliAnaPi0::FillAcceptanceHistograms()
     // Origin of meson
     if(fFillOriginHisto && TMath::Abs(mesonY) < 0.7)
     {
-      Int_t momindex  = -1;
+      Int_t momindex = primary->GetMother();
       Int_t mompdg    = -1;
       Int_t momstatus = -1;
       Int_t status    = -1;
       Float_t momR    =  0;
-      if(GetReader()->ReadStack())          momindex = primStack->GetFirstMother();
-      if(GetReader()->ReadAODMCParticles()) momindex = primAOD  ->GetMother();
       
       if(momindex >= 0 && momindex < nprim)
       {
-        if(GetReader()->ReadStack())
-        {
-          status = primStack->GetStatusCode();
-          TParticle* mother = GetMC()->Particle(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatusCode();
-          momR      = mother->R();
-        }
-        else if(GetReader()->ReadAODMCParticles())
-        {
-          status = primAOD->GetStatus();
-          AliAODMCParticle* mother = (AliAODMCParticle*) GetMC()->GetTrack(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatus();
-          momR      = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-        }
+        status = primary->MCStatusCode();
+        AliVParticle* mother = GetMC()->GetTrack(momindex);
+        mompdg    = TMath::Abs(mother->PdgCode());
+        momstatus = mother->MCStatusCode();
+        //momR      = mother->R();
+        momR      = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
         
         if(pdg == 111)
         {
@@ -2840,47 +2818,23 @@ void AliAnaPi0::FillAcceptanceHistograms()
     Int_t pdg2 = 0;
     Bool_t inacceptance1 = kTRUE;
     Bool_t inacceptance2 = kTRUE;
+        
+    AliVParticle * phot1 = GetMC()->GetTrack(iphot1) ;
+    AliVParticle * phot2 = GetMC()->GetTrack(iphot2) ;
     
-    if(GetReader()->ReadStack())
-    {
-      TParticle * phot1 = GetMC()->Particle(iphot1) ;
-      TParticle * phot2 = GetMC()->Particle(iphot2) ;
-      
-      if(!phot1 || !phot2) continue ;
-      
-      pdg1 = phot1->GetPdgCode();
-      pdg2 = phot2->GetPdgCode();
-      
-      phot1->Momentum(fPhotonMom1);
-      phot2->Momentum(fPhotonMom2);
-      
-      // Check if photons hit the Calorimeter acceptance
-      if(IsRealCaloAcceptanceOn())
-      {
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot1 )) inacceptance1 = kFALSE ;
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot2 )) inacceptance2 = kFALSE ;
-      }
-    }
+    if(!phot1 || !phot2) continue ;
     
-    if(GetReader()->ReadAODMCParticles())
+    pdg1 = phot1->PdgCode();
+    pdg2 = phot2->PdgCode();
+    
+    fPhotonMom1.SetPxPyPzE(phot1->Px(),phot1->Py(),phot1->Pz(),phot1->E());
+    fPhotonMom2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
+    
+    // Check if photons hit the Calorimeter acceptance
+    if(IsRealCaloAcceptanceOn())
     {
-      AliAODMCParticle * phot1 = (AliAODMCParticle *) GetMC()->GetTrack(iphot1) ;
-      AliAODMCParticle * phot2 = (AliAODMCParticle *) GetMC()->GetTrack(iphot2) ;
-      
-      if(!phot1 || !phot2) continue ;
-      
-      pdg1 = phot1->GetPdgCode();
-      pdg2 = phot2->GetPdgCode();
-      
-      fPhotonMom1.SetPxPyPzE(phot1->Px(),phot1->Py(),phot1->Pz(),phot1->E());
-      fPhotonMom2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
-      
-      // Check if photons hit the Calorimeter acceptance
-      if(IsRealCaloAcceptanceOn())
-      {
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot1 )) inacceptance1 = kFALSE ;
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot2 )) inacceptance2 = kFALSE ;
-      }
+      if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot1 )) inacceptance1 = kFALSE ;
+      if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot2 )) inacceptance2 = kFALSE ;
     }
     
     if( pdg1 != 22 || pdg2 !=22) continue ;
@@ -3196,37 +3150,20 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
         {
           fhMCPi0PtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight()*weightPt);
           
-          Float_t momOK = kFALSE;
-          //Int_t uniqueId = -1;
-          if(GetReader()->ReadStack())
+          AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
+          status   = ancestor->MCStatusCode();
+          momindex = ancestor->GetMother();
+          
+          Bool_t momOK = kFALSE;
+          if(momindex >= 0) 
           {
-            TParticle* ancestor = GetMC()->Particle(ancLabel);
-            status   = ancestor->GetStatusCode();
-            momindex = ancestor->GetFirstMother();
-            if(momindex >= 0) 
-            {
-              TParticle* mother = GetMC()->Particle(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatusCode();
-              prodR = mother->R();
-              //uniqueId = mother->GetUniqueID();
-              momOK = kTRUE;
-            }
-          }
-          else
-          {
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(ancLabel);
-            status   = ancestor->GetStatus();
-            momindex = ancestor->GetMother();
-            if(momindex >= 0) 
-            {
-              AliAODMCParticle* mother = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatus();
-              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-              //uniqueId = mother->GetUniqueID();
-              momOK = kTRUE;
-            }
+            AliVParticle* mother = GetMC()->GetTrack(momindex);
+            mompdg    = TMath::Abs(mother->PdgCode());
+            momstatus = mother->MCStatusCode();
+            prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+            //prodR = mother->R();
+            //uniqueId = mother->GetUniqueID();
+            momOK = kTRUE;
           }
           
           if(momOK)
@@ -3344,31 +3281,16 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           
           Float_t momOK = kFALSE;
           
-          if(GetReader()->ReadStack())
+          AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
+          momindex  = ancestor->GetMother();
+          if(momindex >= 0) 
           {
-            TParticle* ancestor = GetMC()->Particle(ancLabel);
-            momindex  = ancestor->GetFirstMother();
-            if(momindex >= 0) 
-            {
-              TParticle* mother = GetMC()->Particle(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatusCode();
-              prodR = mother->R();
-              momOK = kTRUE;
-            }
-          }
-          else
-          {
-            AliAODMCParticle* ancestor = (AliAODMCParticle *) GetMC()->GetTrack(ancLabel);
-            momindex  = ancestor->GetMother();
-            if(momindex >= 0) 
-            {
-              AliAODMCParticle* mother = (AliAODMCParticle *) GetMC()->GetTrack(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatus();
-              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-              momOK = kTRUE;
-            }
+            AliVParticle* mother = GetMC()->GetTrack(momindex);
+            mompdg    = TMath::Abs(mother->PdgCode());
+            momstatus = mother->MCStatusCode();
+            //prodR = mother->R();
+            prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+            momOK = kTRUE;
           }
           
           if(momOK)
@@ -3945,7 +3867,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if(IsDataMC())
       {
         ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(p1->GetLabel(), p2->GetLabel(),
-                                                             GetReader(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
+                                                             GetMC(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
         if( ancLabel >= 0 )
         {
           TString genName;

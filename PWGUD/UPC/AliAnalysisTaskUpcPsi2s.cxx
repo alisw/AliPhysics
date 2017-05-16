@@ -1063,7 +1063,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }//Track loop
   
   fJPsiAODTracks->Clear("C");
-  if(nGoodTracks == 2){
+  if(0){
+  //if(nGoodTracks == 2){
 
    	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
 	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
@@ -1130,7 +1131,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   for(UInt_t i=0; i<2; i++)delete KFpart[i];
   delete KFvtx; 
 
-  if(!isMC) fJPsiTree ->Fill();
+  //if(!isMC) fJPsiTree ->Fill();
   }
   
    nGoodTracks = 0;
@@ -1235,7 +1236,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }
   
   if(isMC){
-  	fJPsiTree ->Fill();
+  	//fJPsiTree ->Fill();
 	fPsi2sTree ->Fill();
   }
   

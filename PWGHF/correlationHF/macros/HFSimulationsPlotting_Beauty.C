@@ -34,7 +34,7 @@ Int_t HFSimulationsPlotting_Beauty(){
     LoadLibraries();
     
     //Step 2: Correlations + thr options + name ?
-    TString filename="AnalysisResults.root";
+    TString filename="AnalysisResults_Perugia2011_Boost.root";
     Bool_t Savingfiles= kTRUE; //Want to save your files ?
     
     DoCorreleations(filename, Savingfiles);
@@ -345,9 +345,9 @@ void CompareInSingleCanvas(TString Orgn= "NULL", TString pTth){
     
     TH1D     *ThCorr[12];
     
-    const Int_t i=3;
+    const Int_t i=4;
     TCanvas* cnew= new TCanvas(CanName1D.Data(), CanName1D.Data(),1200,400);
-    cnew->Divide(3,1);
+    cnew->Divide(4,1);
     
     for(Int_t f=0; f<12; f++){
         TString path = filenames[f];
@@ -380,6 +380,13 @@ void CompareInSingleCanvas(TString Orgn= "NULL", TString pTth){
     ThCorr[7]->SetMinimum(ThCorr[7]->GetMinimum()*0.85);
     ThCorr[8]->Draw("samep");
     ThCorr[9]->Draw("samep");
+
+    cnew->cd(4);
+    ThCorr[9]->Draw("p");
+    ThCorr[9]->SetMaximum(ThCorr[9]->GetMaximum()*1.15);
+    ThCorr[9]->SetMinimum(ThCorr[9]->GetMinimum()*0.85);
+    ThCorr[10]->Draw("samep");
+    ThCorr[11]->Draw("samep");   
     
     cnew->SaveAs(Form("plots_Compare/png/1DCompare_allDpT%s_AssoPt_%sGeVc_%s.png",Orgn.Data(), pTth.Data(),genName.Data()));
     

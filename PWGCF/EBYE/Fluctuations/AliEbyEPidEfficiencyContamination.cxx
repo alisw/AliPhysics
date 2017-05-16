@@ -987,8 +987,20 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   }
   
   Double_t ptot = track->P();
-  if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
-  if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE; 
+  //if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+  if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
+
+  Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
+  Double_t pz = track->Pz();
+  Double_t en = TMath::Sqrt( ptot*ptot + partMass*partMass );
+  Double_t rap = -999.;
+  if( en != TMath::Abs(pz) ){
+    rap = 0.5*TMath::Log( (en + pz)/(en - pz) );
+  }
+  else rap = -999.;
+  
+  if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
+  
   if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 
 
   return kTRUE;
@@ -1000,8 +1012,20 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   if(!particle) return kFALSE;
   if (particle->Charge() == 0.0) return kFALSE; 
   Double_t ptotMC = particle->P();
-  if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+  //if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
   if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
+
+  //rapidity cut
+  Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
+  Double_t pz = particle->Pz();
+  Double_t en = TMath::Sqrt( ptotMC*ptotMC + partMass*partMass );
+  Double_t rap;
+  if( en != TMath::Abs(pz) ){
+    rap = 0.5*TMath::Log( (en + pz)/(en - pz) );
+  }
+  else rap = -999;
+  
+  if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
   if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
   
   return kTRUE;
