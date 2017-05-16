@@ -30,19 +30,24 @@ First, you must add some additional options to your run macro. In particular, we
 
 ### Configure the EMCal Correction Framework AddTask for side-by-side testing
 
-To enable side-by-side testing, we will need to setup the copy of branches before setting up the EMCal Correction Framework AddTask (ie. this code must be **executed before the Correction Framework AddTask** in your run macro or LEGO train). This is required to ensure that the two correction frameworks do not interfere with each other. To copy the proper input objects (we only need to copy cells and tracks - clusters will be created automatically), use something like the code below (assuming AOD branch naming):
+To enable side-by-side testing, we will need to setup the copy of branches before setting up the EMCal Correction Framework AddTask and the old correction framework AddTask (ie. this code must be **executed before the Correction Framework AddTask** and **before the old correction framework AddTask** in your run macro or LEGO train). This is required to ensure that the two correction frameworks do not interfere with each other. To copy the proper input objects, use something like the code below (be certain to set ``IsEsd`` as appropriate):
 
 ~~~{.cxx}
 // Cells
-AliEmcalContainerUtils::InputObject_t inputObject = AliEmcalContainerUtils::kCaloCells;
 bool IsEsd = (iDataType == kEsd);
+AliEmcalContainerUtils::InputObject_t inputObject = AliEmcalContainerUtils::kCaloCells;
 TString inputObjectBranchName = AliEmcalContainerUtils::DetermineUseDefaultName(inputObject, IsEsd);
 TString newBranchName = inputObjectBranchName;
 newBranchName += "New";
 AliEmcalCopyCollection * copyTaskCells = AddTaskEmcalCopyCollection(inputObject, inputObjectBranchName.Data(), newBranchName.Data());
 
 // Clusters
-// We don't need to copy clusters since we are reclusterizing
+inputObject = AliEmcalContainerUtils::kCluster;
+inputObjectBranchName = AliEmcalContainerUtils::DetermineUseDefaultName(inputObject, IsEsd);
+newBranchName = inputObjectBranchName;
+newBranchName += "New";
+AliEmcalCopyCollection * copyTaskClusters = AddTaskEmcalCopyCollection(inputObject, inputObjectBranchName.Data(), newBranchName.Data());
+
 // Tracks
 inputObject = AliEmcalContainerUtils::kTrack;
 inputObjectBranchName = AliEmcalContainerUtils::DetermineUseDefaultName(inputObject, IsEsd);
@@ -105,22 +110,23 @@ taskNew->OptionOne();
 
 **Note**: If you don't use the "usedefault" pattern, then you'll have to set the names manually. You should just set the tracks and clusters names as usual.
 
-### Special note on the track containers
+### Special note on track containers
 
-As noted above, if you use jets, you will need to configure two jet finders. Due to using nonstandard track and cluster names to compare the two frameworks, the jet finder will not be configured properly if you just pass the names. Instead, you will need to remove the particle container and add a new track container based on the "tracksNew" branch. In code, it will look like,
+When running the tasks side-by-side, we are forced to use non-standard input object names (such as "tracksNew"). If a task implements the "usedefault" pattern then it will likely not handle the non-standard track names properly - it will create a track container for the standard name and a particle container for the non-standard name. This will almost certainly lead to disagreements, so it needs to be fixed! To fix it, you will need to remove the particle container and add a new track container based on the (for example) "tracksNew" branch. In code, it will look like,
 
 ~~~{.cxx}
 // Remove wrong particle container
-pFullJet02TaskNew->RemoveParticleContainer(0);
+taskName->RemoveParticleContainer(0);
 // Add track container. The macro won't do this automatically, because the branch name is not "tracks" or "Tracks"
 AliTrackContainer * newTracks = new AliTrackContainer(newFrameworkTracks.Data());
 // Set the cuts for the new track container
+// min pt, for example
 newTracks->SetParticlePtCut(minTrackPt);
 // Add it to the jet finder
-pFullJet02TaskNew->AdoptTrackContainer(newTracks);
+taskName->AdoptTrackContainer(newTracks);
 ~~~
 
-If your analysis uses a track container, and you use the "usedefault" pattern in your analysis task AddTask, repeat the above lines (adapted for your task) for your task's track container.
+Some example tasks for which this applies include the jet finder, the EMCal sample tasks, and perhaps even your own analysis task!
 
 ## Verify the changes
 
@@ -156,11 +162,17 @@ python compareHistos.py -f ../exampleDir/AnalysisResults.root -s -t 0.01
 
 After all that, if they still do not match, then please let us know!
 
-Help for the script is available with `python compareHistos.py --help`. (If you are using aliBuild, you'll may to set your ``$PYTHONPATH`` variable. In bash, you can do this by setting ``export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH``. Other shells may vary.)
+Help for the script is available with `python compareHistos.py --help`. (If you are using aliBuild, you may need to
+set your ``$PYTHONPATH`` variable. In bash, you can do this by setting
+``export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH``. Other shells may vary.)
 
 # Some suggestions and tips if the tests disagree
 
-Testing is very important, but it can take **a few iterations** to get all of your settings right! If they don't match the first time, check your settings again closely. Anecdotally, we have observed the time cuts, non-linearity function, and clusterizer type to cause many of the issues. In addition, a few defaults were updated in the EMCal and EMCal-Jet sample tasks that are work checking. Those values include:
+Testing is very important, but it can take **a few iterations** to get all of your settings right! If they
+don't match the first time, check your settings again closely. It is often helpful to test locally with a
+relatively small number of events (perhaps ~1000) to allow rapid iteration. Anecdotally, we have observed the
+time cuts, non-linearity function, and clusterizer type to cause many of the issues. In addition, a few defaults
+were updated in the EMCal and EMCal-Jet sample tasks that are work checking. Those values include:
 
 | Settings               | Previous value     | New default          | Reason for change                         |
 | ---------------------- | ------------------ | -------------------- | ----------------------------------------- |
@@ -168,5 +180,9 @@ Testing is very important, but it can take **a few iterations** to get all of yo
 | Non-linearity function | kBeamTestCorrected | kBeamTestCorrectedv3 | Update in EMCal %Analysis Recommendations |
 | Mass for track prop    | Pion mass          | PID mass hypothesis  | Experts decided this was the best setting |
 | Point for track prop   | Vertex             | DCA                  | Experts decided this was the best setting |
+
+Lastly, please note that due to small differences in the Tender clusterizer and the New Corrections Framework
+clusterizer, exact agreement may not be possible. However, the differences should be very small. Note that this
+does **not** apply to the standalone clusterizer (where perfect agreement is expected)!
 
 */
