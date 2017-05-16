@@ -1,6 +1,6 @@
 #ifndef AliAnalysisTaskShoShaTests_h
 #define AliAnalysisTaskShoShaTests_h
-
+//task for EMCAL cluster shower shape investigations
 // $Id$
 
 class TH1;

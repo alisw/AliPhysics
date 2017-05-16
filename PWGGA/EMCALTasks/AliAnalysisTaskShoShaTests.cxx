@@ -1,6 +1,6 @@
 // $Id$
 //
-// Task to compute the trigger contamination by exotics.
+//task for EMCAL cluster shower shape investigations
 //
 // Authors: M.Cosentino
 
