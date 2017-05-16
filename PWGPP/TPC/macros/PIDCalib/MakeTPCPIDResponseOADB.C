@@ -152,10 +152,14 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   //
 
   // for the moment use
-  //   - 16k splines up to 16k
-  //   - 16l splines for remaining 2016 data
+  //   - 16k splines for 16a to 16e and 16g to 16k
+  //   - 16f for the low field run
+  //   - 16l splines for remaining pp 2016 data
   // ---| pass1 |---------------------------------------------------------------
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/16k.pass1/v1/splines_16k.pass1.root", 247174, 258860, "1");
+  // low field data
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/16k.pass1/v1/splines_16k.pass1.root", 247174, 253609, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16f.pass1/splines_16f.pass1.root",  253610, 253987, "1"); 
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/16k.pass1/v1/splines_16k.pass1.root", 253988, 258860, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/16l.pass1/v1/splines_16l.pass1.root", 258861, 264895, "1");
 
   // ---| pPb periods |---------------------------------------------------------
