@@ -706,6 +706,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 				       knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
 	fnSparseMC[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
 	fnSparseMC[i]->GetAxis(1)->SetTitle("y");
+	fnSparseMC[i]->Sumw2();
 	fOutput->Add(fnSparseMC[i]);
                 
 	//Dplus
@@ -714,6 +715,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 					      knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
 	  fnSparseMCDplus[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
 	  fnSparseMCDplus[i]->GetAxis(1)->SetTitle("y");
+	  fnSparseMCDplus[i]->Sumw2();
 	  fOutput->Add(fnSparseMCDplus[i]);
 	}
       }
@@ -723,6 +725,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 	for (Int_t j=0; j<knVarForSparse; j++) {
 	  fnSparseMC[i]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
 	}
+	fnSparseMC[i]->Sumw2();
 	fOutput->Add(fnSparseMC[i]);
                 
 	//Dplus
@@ -732,6 +735,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 	  for (Int_t j=0; j<knVarForSparse; j++) {
 	    fnSparseMCDplus[i]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
 	  }
+	  fnSparseMCDplus[i]->Sumw2();
 	  fOutput->Add(fnSparseMCDplus[i]);
 	}
       }
@@ -741,6 +745,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 	fnSparseIP->GetAxis(j)->SetTitle(Form("%s",axisIP[j].Data()));
       }
       fnSparseIP->GetAxis(5)->SetTitle("candType (0.5=bkg; 1.5=prompt; 2.5=FD)");
+      fnSparseIP->Sumw2();
       fOutput->Add(fnSparseIP);
     }
     else {
@@ -748,6 +753,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       for (Int_t j=0; j<knVarForSparse; j++) {
 	fnSparse->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
       }
+      fnSparse->Sumw2();
       fOutput->Add(fnSparse);
     }
   }
@@ -762,6 +768,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       for (Int_t j=0; j<3; j++) {
 	fImpParSparse->GetAxis(j)->SetTitle(Form("%s",axisImpPar[j].Data()));
       }
+      fImpParSparse->Sumw2();
       fOutput->Add(fImpParSparse);
     }
     else {
@@ -773,6 +780,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       for (Int_t j=0; j<3; j++) {
 	fImpParSparseMC->GetAxis(j)->SetTitle(Form("%s",axisImpPar[j].Data()));
       }
+      fImpParSparseMC->Sumw2();
       fOutput->Add(fImpParSparseMC);
     }
   }
@@ -1123,7 +1131,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    fMassHist[indexMCKKpi]->Fill(invMass,weightKKpi);
 	    if(isPhiKKpi) {
 	      fMassHistPhi[indexMCKKpi]->Fill(invMass,weightKKpi);
-	      if(fFillSparse) {
+	      if(fFillSparse || fFillImpParSparse) {
 		if(indexMCKKpi==GetSignalHistoIndex(iPtBin) || labDplus >= 0) {
 		  AliAODMCParticle *partDs;
 		  if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) partDs = (AliAODMCParticle*)arrayMC->At(labDs);
@@ -1176,7 +1184,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    fMassHist[indexMCpiKK]->Fill(invMass,weightpiKK);
 	    if(isPhipiKK) {
 	      fMassHistPhi[indexMCpiKK]->Fill(invMass,weightpiKK);
-	      if(fFillSparse) {
+	      if(fFillSparse || fFillImpParSparse) {
 		if(indexMCpiKK==GetSignalHistoIndex(iPtBin) || labDplus >= 0) {
 		  AliAODMCParticle *partDs;
 		  if(indexMCpiKK==GetSignalHistoIndex(iPtBin)) partDs = (AliAODMCParticle*)arrayMC->At(labDs);
