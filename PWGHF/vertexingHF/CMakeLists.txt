@@ -103,6 +103,7 @@ set(SRCS
   AliHFMassFitterVAR.cxx
   AliHFInvMassFitter.cxx
   AliHFMultiTrials.cxx
+  AliHFInvMassMultiTrialFit.cxx
   AliHFPtSpectrum.cxx
   AliHFsubtractBFDcuts.cxx
   AliNormalizationCounter.cxx
