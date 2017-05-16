@@ -988,7 +988,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
 /// Configure the task doing standard calorimeter QA
 ///
 AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
-                                         Bool_t /*simulation*/  , Int_t year,    Int_t debugLevel)
+                                         Bool_t  simulation , 
+                                         Int_t   year,        Int_t   debugLevel)
 {
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
   ana->SetDebug(debugLevel); //10 for lots of messages
@@ -1033,9 +1034,8 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
   return ana;
 }
 
-
 ///
-/// Configure the selection of MC events
+/// Configure histograms ranges and bins
 ///
 void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter, Bool_t caloType,
                             TString collision,               Int_t year)
