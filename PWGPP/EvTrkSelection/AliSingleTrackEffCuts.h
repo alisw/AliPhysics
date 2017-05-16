@@ -58,6 +58,8 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   //
   // Setters
   //
+  // Set maximum distance of particle origin from interaction point
+  void SetMaxRadiusOfParticleOrigin(Float_t rmax){fMaxProdRadius=rmax;}
   // Set eta range for acceptance cut (both MC and reco level)
   void SetEtaRange(Float_t etamin, Float_t etamax){ fEtaMin=etamin; fEtaMax=etamax; }
   // Set rapidity range for acceptance cut (both MC and reco level)
@@ -132,6 +134,7 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
 
   Bool_t fIsPdgCode; // flag to check pdg code
   Int_t fPdgCode;    // particle pdg code
+  Float_t fMaxProdRadius;  // maximum radius (cm) for primary selection
 
   Float_t fEtaMin;   // minimum eta cut
   Float_t fEtaMax;   // maximum eta cut
@@ -171,7 +174,7 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   Int_t 	fuseCombinPid;	  // Bayesiand PID (0=no, 1=maximum, 2=Threshold)
   Float_t	fThreshold;		  // Threshold for PID Combined
 
-  ClassDef(AliSingleTrackEffCuts,2)  // base class for cuts on single tracks
+  ClassDef(AliSingleTrackEffCuts,3)  // base class for cuts on single tracks
  };
 
 #endif
