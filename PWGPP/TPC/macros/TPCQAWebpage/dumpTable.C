@@ -20,6 +20,8 @@
 #include "TObjArray.h"
 #include "AliXRDPROOFtoolkit.h"
 #include "TError.h"
+#include "TVectorF.h"
+#include "TF1.h"
 #include "AliTPCPerformanceSummary.h"
 
 
