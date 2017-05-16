@@ -118,6 +118,9 @@ AliPerformanceTPC::AliPerformanceTPC(TRootIOCtor*):
   h_tpc_track_neg_recvertex_4_5_6(NULL)
 {
   // io ctor
+    fMult = 0;
+    fMultP = 0;
+    fMultN = 0;
 }
 
 //_____________________________________________________________________________
