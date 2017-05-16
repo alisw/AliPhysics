@@ -13,8 +13,6 @@ class AliESDtrackCuts;
 
 ///class TFile;
 #include "AliAnalysisTaskSE.h"
-#include "AliITSPIDResponse.h"
-#include "THnSparse.h"
 
 class AliAnalysisTaskKinkpp5TeVMC : public AliAnalysisTaskSE {
  public:
