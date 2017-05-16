@@ -919,6 +919,13 @@ void AliPerformanceTPC::Analyse()
     if(fUseSparse){
         TObjArray *aFolderObj = new TObjArray;
         TString selString;
+
+//
+    // Cluster histograms
+    //
+    AddProjection(aFolderObj, "clust", fTPCClustHisto, 0, 1, 2);
+    
+
         selString = "all";
         for(Int_t i=0; i <= 2; i++) {
           AddProjection(aFolderObj, "clust", fTPCClustHisto, i, &selString);
